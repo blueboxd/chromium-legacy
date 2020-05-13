@@ -13,8 +13,6 @@ source_set("web_state_list") {
     "web_state_list_delegate.h",
     "web_state_list_favicon_driver_observer.h",
     "web_state_list_favicon_driver_observer.mm",
-    "web_state_list_metrics_observer.h",
-    "web_state_list_metrics_observer.mm",
     "web_state_list_observer.h",
     "web_state_list_observer.mm",
     "web_state_list_observer_bridge.h",
@@ -44,11 +42,15 @@ source_set("agents") {
   sources = [
     "tab_insertion_browser_agent.h",
     "tab_insertion_browser_agent.mm",
+    "web_state_list_metrics_browser_agent.h",
+    "web_state_list_metrics_browser_agent.mm",
   ]
   deps = [
     ":web_state_list",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/main:public",
+    "//ios/chrome/browser/sessions:restoration_agent",
+    "//ios/chrome/browser/sessions:restoration_observer",
     "//ios/web/public",
   ]
   libs = [ "Foundation.framework" ]

@@ -9,6 +9,7 @@ include_rules = [
   "+chrome/browser/ui/messages/android",
   "+chrome/browser/util/android/java",
   "+chrome/browser/xsurface/android",
+  "+components/browser_ui/android/bottomsheet",
   "+components/browser_ui/modaldialog/android",
   "+components/browser_ui/site_settings/android",
   "+components/browser_ui/util/android",

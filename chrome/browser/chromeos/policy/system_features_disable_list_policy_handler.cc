@@ -12,6 +12,10 @@
 
 namespace policy {
 
+const char kCameraFeature[] = "camera";
+const char kBrowserSettingsFeature[] = "browser_settings";
+const char kOsSettingsFeature[] = "os_settings";
+
 SystemFeaturesDisableListPolicyHandler::SystemFeaturesDisableListPolicyHandler()
     : policy::ListPolicyHandler(key::kSystemFeaturesDisableList,
                                 base::Value::Type::STRING) {}
@@ -43,11 +47,11 @@ void SystemFeaturesDisableListPolicyHandler::ApplyList(
 
 SystemFeature SystemFeaturesDisableListPolicyHandler::ConvertToEnum(
     const std::string& system_feature) {
-  if (system_feature == "camera")
+  if (system_feature == kCameraFeature)
     return SystemFeature::CAMERA;
-  if (system_feature == "os_settings")
+  if (system_feature == kOsSettingsFeature)
     return SystemFeature::OS_SETTINGS;
-  if (system_feature == "browser_settings")
+  if (system_feature == kBrowserSettingsFeature)
     return SystemFeature::BROWSER_SETTINGS;
 
   NOTREACHED() << "Unsupported system feature: " << system_feature;

@@ -143,9 +143,10 @@ std::unique_ptr<PageNodeImpl> PerformanceManagerImpl::CreatePageNode(
 
 // static
 std::unique_ptr<ProcessNodeImpl> PerformanceManagerImpl::CreateProcessNode(
+    content::ProcessType process_type,
     RenderProcessHostProxy proxy) {
   return CreateNodeImpl<ProcessNodeImpl>(
-      base::OnceCallback<void(ProcessNodeImpl*)>(), proxy);
+      base::OnceCallback<void(ProcessNodeImpl*)>(), process_type, proxy);
 }
 
 // static

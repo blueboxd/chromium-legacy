@@ -65,6 +65,10 @@ class SecondaryAccountConsentLogger {
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  // Returns the text version which reqires invalidation of the secondary
+  // accounts added before the consent text changes.
+  static std::string GetSecondaryAccountsInvalidationVersion();
+
   // Logs the consent.
   void StartLogging();
 

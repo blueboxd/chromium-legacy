@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap_observer_list.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
 
@@ -53,15 +54,17 @@ class FakeContextNotifier final : public GarbageCollected<FakeContextNotifier>,
   HeapObserverList<ContextLifecycleObserver> observers_;
 };
 
+template <HeapMojoWrapperMode Mode>
 class GCOwner;
 
+template <HeapMojoWrapperMode Mode>
 class HeapMojoAssociatedReceiverSetGCBaseTest : public TestSupportingGC {
  public:
   FakeContextNotifier* context() { return context_; }
   scoped_refptr<base::NullTaskRunner> task_runner() {
     return null_task_runner_;
   }
-  GCOwner* owner() { return owner_; }
+  GCOwner<Mode>* owner() { return owner_; }
   void set_is_owner_alive(bool alive) { is_owner_alive_ = alive; }
 
   void ClearOwner() { owner_ = nullptr; }
@@ -69,7 +72,7 @@ class HeapMojoAssociatedReceiverSetGCBaseTest : public TestSupportingGC {
  protected:
   void SetUp() override {
     context_ = MakeGarbageCollected<FakeContextNotifier>();
-    owner_ = MakeGarbageCollected<GCOwner>(context(), this);
+    owner_ = MakeGarbageCollected<GCOwner<Mode>>(context(), this);
   }
   void TearDown() override {
     owner_ = nullptr;
@@ -77,24 +80,25 @@ class HeapMojoAssociatedReceiverSetGCBaseTest : public TestSupportingGC {
   }
 
   Persistent<FakeContextNotifier> context_;
-  Persistent<GCOwner> owner_;
+  Persistent<GCOwner<Mode>> owner_;
   bool is_owner_alive_ = false;
   scoped_refptr<base::NullTaskRunner> null_task_runner_ =
       base::MakeRefCounted<base::NullTaskRunner>();
 };
 
-class GCOwner : public GarbageCollected<GCOwner>,
+template <HeapMojoWrapperMode Mode>
+class GCOwner : public GarbageCollected<GCOwner<Mode>>,
                 public sample::blink::Service {
  public:
   explicit GCOwner(FakeContextNotifier* context,
-                   HeapMojoAssociatedReceiverSetGCBaseTest* test)
+                   HeapMojoAssociatedReceiverSetGCBaseTest<Mode>* test)
       : associated_receiver_set_(this, context), test_(test) {
     test_->set_is_owner_alive(true);
   }
   void Dispose() { test_->set_is_owner_alive(false); }
   void Trace(Visitor* visitor) { visitor->Trace(associated_receiver_set_); }
 
-  HeapMojoAssociatedReceiverSet<sample::blink::Service, GCOwner>&
+  HeapMojoAssociatedReceiverSet<sample::blink::Service, GCOwner, Mode>&
   associated_receiver_set() {
     return associated_receiver_set_;
   }
@@ -106,22 +110,31 @@ class GCOwner : public GarbageCollected<GCOwner>,
   void GetPort(mojo::PendingReceiver<sample::blink::Port> receiver) override {}
 
  private:
-  HeapMojoAssociatedReceiverSet<sample::blink::Service, GCOwner>
+  HeapMojoAssociatedReceiverSet<sample::blink::Service, GCOwner, Mode>
       associated_receiver_set_;
-  HeapMojoAssociatedReceiverSetGCBaseTest* test_;
+  HeapMojoAssociatedReceiverSetGCBaseTest<Mode>* test_;
 };
 
 }  // namespace
 
+class HeapMojoAssociatedReceiverSetGCWithContextObserverTest
+    : public HeapMojoAssociatedReceiverSetGCBaseTest<
+          HeapMojoWrapperMode::kWithContextObserver> {};
+class HeapMojoAssociatedReceiverSetGCWithoutContextObserverTest
+    : public HeapMojoAssociatedReceiverSetGCBaseTest<
+          HeapMojoWrapperMode::kWithoutContextObserver> {};
+
 // Remove() a PendingAssociatedReceiver from HeapMojoAssociatedReceiverSet and
 // verify that the receiver is no longer part of the set.
-TEST_F(HeapMojoAssociatedReceiverSetGCBaseTest, RemovesReceiver) {
+TEST_F(HeapMojoAssociatedReceiverSetGCWithContextObserverTest,
+       RemovesReceiver) {
   auto& associated_receiver_set = owner()->associated_receiver_set();
-  mojo::AssociatedRemote<sample::blink::Service> remote;
-  auto receiver = remote.BindNewEndpointAndPassDedicatedReceiverForTesting();
+  mojo::AssociatedRemote<sample::blink::Service> associated_remote;
+  auto associated_receiver =
+      associated_remote.BindNewEndpointAndPassDedicatedReceiverForTesting();
 
-  mojo::ReceiverId rid =
-      associated_receiver_set.Add(std::move(receiver), task_runner());
+  mojo::ReceiverId rid = associated_receiver_set.Add(
+      std::move(associated_receiver), task_runner());
   EXPECT_TRUE(associated_receiver_set.HasReceiver(rid));
 
   associated_receiver_set.Remove(rid);
@@ -129,14 +142,73 @@ TEST_F(HeapMojoAssociatedReceiverSetGCBaseTest, RemovesReceiver) {
   EXPECT_FALSE(associated_receiver_set.HasReceiver(rid));
 }
 
-// Clear() a HeapMojoAssociatedReceiverSet and verify that it is empty.
-TEST_F(HeapMojoAssociatedReceiverSetGCBaseTest, ClearLeavesSetEmpty) {
+// Same, without ContextObserver.
+TEST_F(HeapMojoAssociatedReceiverSetGCWithoutContextObserverTest,
+       RemovesReceiver) {
   auto& associated_receiver_set = owner()->associated_receiver_set();
-  mojo::AssociatedRemote<sample::blink::Service> remote;
-  auto receiver = remote.BindNewEndpointAndPassDedicatedReceiverForTesting();
+  mojo::AssociatedRemote<sample::blink::Service> associated_remote;
+  auto associated_receiver =
+      associated_remote.BindNewEndpointAndPassDedicatedReceiverForTesting();
 
-  mojo::ReceiverId rid =
-      associated_receiver_set.Add(std::move(receiver), task_runner());
+  mojo::ReceiverId rid = associated_receiver_set.Add(
+      std::move(associated_receiver), task_runner());
+  EXPECT_TRUE(associated_receiver_set.HasReceiver(rid));
+
+  associated_receiver_set.Remove(rid);
+
+  EXPECT_FALSE(associated_receiver_set.HasReceiver(rid));
+}
+
+// Check that the wrapper does not outlive the owner when ConservativeGC finds
+// the wrapper.
+TEST_F(HeapMojoAssociatedReceiverSetGCWithContextObserverTest,
+       NoClearOnConservativeGC) {
+  auto* wrapper = owner_->associated_receiver_set().wrapper_.Get();
+
+  mojo::AssociatedRemote<sample::blink::Service> associated_remote;
+  auto associated_receiver =
+      associated_remote.BindNewEndpointAndPassDedicatedReceiverForTesting();
+
+  mojo::ReceiverId rid = owner()->associated_receiver_set().Add(
+      std::move(associated_receiver), task_runner());
+  EXPECT_TRUE(wrapper->associated_receiver_set().HasReceiver(rid));
+
+  ClearOwner();
+  EXPECT_TRUE(is_owner_alive_);
+
+  ConservativelyCollectGarbage();
+
+  EXPECT_TRUE(wrapper->associated_receiver_set().HasReceiver(rid));
+  EXPECT_TRUE(is_owner_alive_);
+}
+
+// Clear() a HeapMojoAssociatedReceiverSet and verify that it is empty.
+TEST_F(HeapMojoAssociatedReceiverSetGCWithContextObserverTest,
+       ClearLeavesSetEmpty) {
+  auto& associated_receiver_set = owner()->associated_receiver_set();
+  mojo::AssociatedRemote<sample::blink::Service> associated_remote;
+  auto associated_receiver =
+      associated_remote.BindNewEndpointAndPassDedicatedReceiverForTesting();
+
+  mojo::ReceiverId rid = associated_receiver_set.Add(
+      std::move(associated_receiver), task_runner());
+  EXPECT_TRUE(associated_receiver_set.HasReceiver(rid));
+
+  associated_receiver_set.Clear();
+
+  EXPECT_FALSE(associated_receiver_set.HasReceiver(rid));
+}
+
+// Same, without ContextObserver.
+TEST_F(HeapMojoAssociatedReceiverSetGCWithoutContextObserverTest,
+       ClearLeavesSetEmpty) {
+  auto& associated_receiver_set = owner()->associated_receiver_set();
+  mojo::AssociatedRemote<sample::blink::Service> associated_remote;
+  auto associated_receiver =
+      associated_remote.BindNewEndpointAndPassDedicatedReceiverForTesting();
+
+  mojo::ReceiverId rid = associated_receiver_set.Add(
+      std::move(associated_receiver), task_runner());
   EXPECT_TRUE(associated_receiver_set.HasReceiver(rid));
 
   associated_receiver_set.Clear();

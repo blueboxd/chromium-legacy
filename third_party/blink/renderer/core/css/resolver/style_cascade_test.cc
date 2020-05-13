@@ -1728,7 +1728,7 @@ TEST_F(StyleCascadeTest, SubstituteRegisteredUniversal) {
 }
 
 TEST_F(StyleCascadeTest, SubstituteRegisteredUniversalInvalid) {
-  RegisterProperty(GetDocument(), "--x", "*", g_null_atom, false);
+  RegisterProperty(GetDocument(), "--x", "*", base::nullopt, false);
 
   TestCascade cascade(GetDocument());
   cascade.Add("--y", " var(--x) ");

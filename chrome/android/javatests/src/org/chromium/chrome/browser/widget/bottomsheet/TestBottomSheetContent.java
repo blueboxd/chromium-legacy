@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /** A simple sheet content to test with. This only displays two empty white views. */

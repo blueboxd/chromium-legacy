@@ -2749,7 +2749,7 @@ void Document::UpdateStyleAndLayoutTreeForNode(const Node* node) {
   if (!NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(*node))
     return;
 
-  DisplayLockUtilities::ScopedChainForcedUpdate scoped_update_forced(node);
+  DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(node);
   UpdateStyleAndLayoutTree();
 }
 
@@ -2764,7 +2764,7 @@ void Document::UpdateStyleAndLayoutTreeForSubtree(const Node* node) {
 
   if (NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(*node) ||
       node->ChildNeedsStyleRecalc() || node->ChildNeedsStyleInvalidation()) {
-    DisplayLockUtilities::ScopedChainForcedUpdate scoped_update_forced(node);
+    DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(node);
     UpdateStyleAndLayoutTree();
   }
 }
@@ -2775,7 +2775,7 @@ void Document::UpdateStyleAndLayoutForNode(const Node* node,
   if (!node->InActiveDocument())
     return;
 
-  DisplayLockUtilities::ScopedChainForcedUpdate scoped_update_forced(node);
+  DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(node);
   UpdateStyleAndLayout(reason);
 }
 
@@ -3004,7 +3004,7 @@ void Document::EnsurePaintLocationDataValidForNode(
   if (!node->InActiveDocument())
     return;
 
-  DisplayLockUtilities::ScopedChainForcedUpdate scoped_update_forced(node);
+  DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(node);
 
   // For all nodes we must have up-to-date style and have performed layout to do
   // any location-based calculation.

@@ -1326,7 +1326,7 @@ void StyleEngine::ScheduleInvalidationsForRuleSets(
     const HeapHashSet<Member<RuleSet>>& rule_sets,
     InvalidationScope invalidation_scope) {
 #if DCHECK_IS_ON()
-  // Full scope recalcs should be handled while collecting the ruleSets before
+  // Full scope recalcs should be handled while collecting the rule sets before
   // calling this method.
   for (auto rule_set : rule_sets)
     DCHECK(!rule_set->Features().NeedsFullRecalcForRuleSetInvalidation());
@@ -1366,10 +1366,12 @@ void StyleEngine::ScheduleInvalidationsForRuleSets(
       }
     }
 
-    if (element->GetStyleChangeType() < kSubtreeStyleChange)
+    if (element->GetStyleChangeType() < kSubtreeStyleChange &&
+        element->GetComputedStyle()) {
       element = ElementTraversal::Next(*element, stay_within);
-    else
+    } else {
       element = ElementTraversal::NextSkippingChildren(*element, stay_within);
+    }
   }
 }
 

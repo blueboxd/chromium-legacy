@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 
 /**
  * An interface for notifications about the state of the bottom sheet.

@@ -40,7 +40,7 @@
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/frame_host/navigator.h"
-#include "content/browser/frame_host/navigator_impl.h"
+#include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/frame_host/origin_policy_throttle.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/browser_initiated_resource_request.h"
@@ -109,6 +109,7 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
+#include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
@@ -1272,7 +1273,7 @@ void NavigationRequest::BeginNavigation() {
     // Select an appropriate RenderFrameHost.
     render_frame_host_ =
         frame_tree_node_->render_manager()->GetFrameHostForNavigation(this);
-    if (!NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
+    if (!Navigator::CheckWebUIRendererDoesNotDisplayNormalURL(
             render_frame_host_, common_params_->url,
             /* is_renderer_initiated_check */ false)) {
       // TODO(nasko): Convert this to CHECK once it is confirmed that it does
@@ -2047,7 +2048,7 @@ void NavigationRequest::OnResponseStarted(
     render_frame_host_ =
         frame_tree_node_->render_manager()->GetFrameHostForNavigation(this);
 
-    if (!NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
+    if (!Navigator::CheckWebUIRendererDoesNotDisplayNormalURL(
             render_frame_host_, common_params_->url,
             /* is_renderer_initiated_check */ false)) {
       // TODO(nasko): Convert this to CHECK once it is confirmed that it does
@@ -2312,7 +2313,7 @@ void NavigationRequest::OnRequestFailedInternal(
   // to be committed in a WebUI process as shown in https://crbug.com/944086.
   if (SiteIsolationPolicy::IsErrorPageIsolationEnabled(
           frame_tree_node_->IsMainFrame())) {
-    if (!NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
+    if (!Navigator::CheckWebUIRendererDoesNotDisplayNormalURL(
             render_frame_host_, common_params_->url,
             /* is_renderer_initiated_check */ false)) {
       // TODO(nasko): Convert this to CHECK once it is confirmed that it does
@@ -2603,7 +2604,12 @@ void NavigationRequest::OnRedirectChecksComplete(
 
   net::HttpRequestHeaders modified_headers = TakeModifiedRequestHeaders();
   std::vector<std::string> removed_headers = TakeRemovedRequestHeaders();
+  // Removes all Client Hints from the request, that were passed on from the
+  // previous one.
+  for (size_t i = 0; i < blink::kClientHintsMappingsCount; ++i)
+    removed_headers.push_back(blink::kClientHintsHeaderMapping[i]);
 
+  // Add any required Client Hints to the current request.
   BrowserContext* browser_context =
       frame_tree_node_->navigator()->GetController()->GetBrowserContext();
   ClientHintsControllerDelegate* client_hints_delegate =

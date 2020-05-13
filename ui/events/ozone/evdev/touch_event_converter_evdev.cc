@@ -35,6 +35,7 @@
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 #include "ui/events/ozone/evdev/touch_evdev_types.h"
 #include "ui/events/ozone/evdev/touch_filter/false_touch_finder.h"
+#include "ui/events/ozone/evdev/touch_filter/neural_stylus_palm_detection_filter.h"
 #include "ui/events/ozone/evdev/touch_filter/palm_detection_filter.h"
 #include "ui/events/ozone/evdev/touch_filter/palm_detection_filter_factory.h"
 #include "ui/events/ozone/features.h"
@@ -123,6 +124,14 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(
           base::FeatureList::IsEnabled(kEnablePalmOnMaxTouchMajor)),
       palm_on_tool_type_palm_(
           base::FeatureList::IsEnabled(kEnablePalmOnToolTypePalm)) {
+  if (base::FeatureList::IsEnabled(kEnableNeuralPalmDetectionFilter) &&
+      NeuralStylusPalmDetectionFilter::
+          CompatibleWithNeuralStylusPalmDetectionFilter(devinfo)) {
+    // When a neural net palm detector is enabled, we do not look at tool_type
+    // nor the max size of the touch as indicators of palm, merely the NN
+    // system.
+    palm_on_tool_type_palm_ = palm_on_touch_major_max_ = false;
+  }
   touch_evdev_debug_buffer_.Initialize(devinfo);
 }
 

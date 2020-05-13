@@ -17,6 +17,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/printing/common/print_messages.h"
 #include "components/printing/test/mock_printer.h"
 #include "components/printing/test/print_mock_render_thread.h"
@@ -146,7 +147,6 @@ class DidPreviewPageListener : public IPC::Listener {
 
   bool OnMessageReceived(const IPC::Message& message) override {
     if (message.type() == PrintHostMsg_MetafileReadyForPrinting::ID ||
-        message.type() == PrintHostMsg_PrintPreviewFailed::ID ||
         message.type() == PrintHostMsg_PrintPreviewCancelled::ID ||
         message.type() == PrintHostMsg_PrintPreviewInvalidPrinterSettings::ID)
       run_loop_->Quit();
@@ -156,6 +156,30 @@ class DidPreviewPageListener : public IPC::Listener {
  private:
   base::RunLoop* const run_loop_;
   DISALLOW_COPY_AND_ASSIGN(DidPreviewPageListener);
+};
+
+class FakePrintPreviewUI : public mojom::PrintPreviewUI {
+ public:
+  FakePrintPreviewUI() = default;
+  ~FakePrintPreviewUI() override = default;
+
+  mojo::PendingAssociatedRemote<mojom::PrintPreviewUI> BindReceiver() {
+    return receiver_.BindNewEndpointAndPassDedicatedRemoteForTesting();
+  }
+
+  bool preview_failed() const { return preview_failed_; }
+
+  // mojom::PrintPreviewUI:
+  void SetOptionsFromDocument(const mojom::OptionsFromDocumentParamsPtr params,
+                              int32_t request_id) override {}
+  void PrintPreviewFailed(int32_t document_cookie,
+                          int32_t request_id) override {
+    preview_failed_ = true;
+  }
+
+ private:
+  bool preview_failed_ = false;
+  mojo::AssociatedReceiver<mojom::PrintPreviewUI> receiver_{this};
 };
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
@@ -216,6 +240,11 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
   }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  void BindToFakePrintPreviewUI() {
+    PrintRenderFrameHelper* frame_helper = GetPrintRenderFrameHelper();
+    frame_helper->SetPrintPreviewUI(preview_ui_.BindReceiver());
+  }
+
   // The renderer should be done calculating the number of rendered pages
   // according to the specified settings defined in the mock render thread.
   // Verify the page count is correct.
@@ -341,8 +370,14 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
   }
 
   PrintMockRenderThread* print_render_thread() { return print_render_thread_; }
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  FakePrintPreviewUI* preview_ui() { return &preview_ui_; }
+#endif
 
  private:
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  FakePrintPreviewUI preview_ui_;
+#endif
   // Naked pointer as ownership is with
   // |content::RenderViewTest::render_thread_|.
   PrintMockRenderThread* print_render_thread_ = nullptr;
@@ -652,6 +687,11 @@ class MAYBE_PrintRenderFrameHelperPreviewTest
   MAYBE_PrintRenderFrameHelperPreviewTest() = default;
   ~MAYBE_PrintRenderFrameHelperPreviewTest() override = default;
 
+  void SetUp() override {
+    PrintRenderFrameHelperTestBase::SetUp();
+    BindToFakePrintPreviewUI();
+  }
+
  protected:
   void VerifyPrintPreviewCancelled(bool expect_cancel) {
     bool print_preview_cancelled =
@@ -661,10 +701,7 @@ class MAYBE_PrintRenderFrameHelperPreviewTest
   }
 
   void VerifyPrintPreviewFailed(bool expect_fail) {
-    bool print_preview_failed =
-        !!render_thread_->sink().GetUniqueMessageMatching(
-            PrintHostMsg_PrintPreviewFailed::ID);
-    EXPECT_EQ(expect_fail, print_preview_failed);
+    EXPECT_EQ(expect_fail, preview_ui()->preview_failed());
   }
 
   void VerifyPrintPreviewGenerated(bool expect_generated) {

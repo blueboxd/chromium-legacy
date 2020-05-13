@@ -173,8 +173,10 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   search_provider_logos::LogoService* logo_service_;
   GURL last_blacklisted_;
   GetBackgroundCollectionsCallback background_collections_callback_;
+  base::TimeTicks background_collections_request_start_time_;
   std::string images_request_collection_id_;
   GetBackgroundImagesCallback background_images_callback_;
+  base::TimeTicks background_images_request_start_time_;
   std::vector<GetOneGoogleBarPartsCallback> one_google_bar_parts_callbacks_;
   OneGoogleBarService* one_google_bar_service_;
   ScopedObserver<OneGoogleBarService, OneGoogleBarServiceObserver>

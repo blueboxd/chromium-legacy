@@ -19,11 +19,24 @@ class CORE_EXPORT DisplayLockUtilities {
  public:
   // This class forces updates on display locks from the given node up the
   // ancestor chain until the local frame root.
-  class CORE_EXPORT ScopedChainForcedUpdate {
-    DISALLOW_COPY_AND_ASSIGN(ScopedChainForcedUpdate);
+  class CORE_EXPORT ScopedForcedUpdate {
+    DISALLOW_COPY_AND_ASSIGN(ScopedForcedUpdate);
+    STACK_ALLOCATED();
 
    public:
-    ~ScopedChainForcedUpdate();
+    ScopedForcedUpdate(ScopedForcedUpdate&& other) : impl_(other.impl_) {
+      other.impl_ = nullptr;
+    }
+    ~ScopedForcedUpdate() {
+      if (impl_)
+        impl_->Destroy();
+    }
+
+    ScopedForcedUpdate& operator=(ScopedForcedUpdate&& other) {
+      impl_ = other.impl_;
+      other.impl_ = nullptr;
+      return *this;
+    }
 
    private:
     // It is important not to create multiple ScopedChainForcedUpdate scopes.
@@ -38,24 +51,42 @@ class CORE_EXPORT DisplayLockUtilities {
     friend void Document::EnsurePaintLocationDataValidForNode(
         const Node* node,
         DocumentUpdateReason reason);
+
+    friend class DisplayLockContext;
+
+    // Test friends.
+    friend class DisplayLockContextRenderingTest;
+
+    explicit ScopedForcedUpdate(const Node* node, bool include_self = false)
+        : impl_(MakeGarbageCollected<Impl>(node, include_self)) {}
+
     friend class DisplayLockDocumentState;
 
-    explicit ScopedChainForcedUpdate(const Node* node,
-                                     bool include_self = false);
+    class CORE_EXPORT Impl final : public GarbageCollected<Impl> {
+     public:
+      explicit Impl(const Node* node, bool include_self = false);
 
-    // Create a scope for the parent frame recursively.
-    void CreateParentFrameScopeIfNeeded(const Node* node);
+      // Adds another display-lock scope to this chain. Added when a new lock is
+      // created in the ancestor chain of this chain's node.
+      void AddForcedUpdateScopeForContext(DisplayLockContext*);
 
-    // Adds another display-lock scope to this chain. Added when a new lock is
-    // created in the ancestor chain of this chain's node.
-    void AddScopedForcedUpdate(DisplayLockContext*);
+      void Destroy();
 
-    UntracedMember<const Node> node_;
-    HashMap<UntracedMember<DisplayLockContext>,
-            DisplayLockContext::ScopedForcedUpdate>
-        scoped_update_forced_map_;
-    std::unique_ptr<ScopedChainForcedUpdate> parent_frame_scope_;
+      void Trace(Visitor* visitor) {
+        visitor->Trace(node_);
+        visitor->Trace(forced_context_set_);
+        visitor->Trace(parent_frame_impl_);
+      }
+
+     private:
+      Member<const Node> node_;
+      HeapHashSet<Member<DisplayLockContext>> forced_context_set_;
+      Member<Impl> parent_frame_impl_;
+    };
+
+    Impl* impl_ = nullptr;
   };
+
   // Activates all the nodes within a find-in-page match |range|.
   // Returns true if at least one node gets activated.
   // See: http://bit.ly/2RXULVi, "beforeactivate Event" part.
@@ -137,6 +168,11 @@ class CORE_EXPORT DisplayLockUtilities {
   static void SelectionChanged(const EphemeralRangeInFlatTree& old_selection,
                                const EphemeralRangeInFlatTree& new_selection);
   static void SelectionRemovedFromDocument(Document& document);
+
+ private:
+  static bool UpdateStyleAndLayoutForRangeIfNeeded(
+      const EphemeralRangeInFlatTree& range,
+      DisplayLockActivationReason reason);
 };
 
 }  // namespace blink

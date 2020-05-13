@@ -167,6 +167,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   Settings* GetSettings() const;
   String GetUserAgent() const;
   base::Optional<UserAgentMetadata> GetUserAgentMetadata() const;
+  const FeaturePolicy* GetFeaturePolicy() const override;
   const ClientHintsPreferences GetClientHintsPreferences() const;
   float GetDevicePixelRatio() const;
 
@@ -176,7 +177,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
                             const url::Origin& resource_origin,
                             bool is_1p_origin,
                             network::mojom::blink::WebClientHintsType,
-                            mojom::blink::FeaturePolicyFeature,
                             const ClientHintsPreferences&,
                             const WebEnabledClientHints&) const;
   void SetFirstPartyCookie(ResourceRequest&);

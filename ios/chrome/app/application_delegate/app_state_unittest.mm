@@ -470,7 +470,6 @@ using AppStateNoFixtureTest = PlatformTest;
 TEST_F(AppStateNoFixtureTest, willResignActive) {
   // Setup.
   id tabModel = [OCMockObject mockForClass:[TabModel class]];
-  [[tabModel expect] recordSessionMetrics];
 
   StubBrowserInterfaceProvider* interfaceProvider =
       [[StubBrowserInterfaceProvider alloc] init];

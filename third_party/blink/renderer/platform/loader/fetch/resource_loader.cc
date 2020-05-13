@@ -41,6 +41,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
@@ -705,8 +706,13 @@ bool ResourceLoader::WillFollowRedirect(
     network::mojom::ReferrerPolicy new_referrer_policy,
     const WebString& new_method,
     const WebURLResponse& passed_redirect_response,
-    bool& report_raw_headers) {
+    bool& report_raw_headers,
+    std::vector<std::string>* removed_headers) {
   DCHECK(!passed_redirect_response.IsNull());
+  if (removed_headers) {
+    FindClientHintsToRemove(Context().GetFeaturePolicy(),
+                            GURL(new_url.GetString().Utf8()), removed_headers);
+  }
 
   if (is_cache_aware_loading_activated_) {
     // Fail as cache miss if cached response is a redirect.

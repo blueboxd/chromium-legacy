@@ -44,6 +44,8 @@ namespace printing {
 
 namespace {
 
+// TODO(https://crbug.com/1008939): Remove this once all preview UI messages
+// are moved to print_preview_ui.cc.
 void StopWorker(int document_cookie) {
   if (document_cookie <= 0)
     return;
@@ -263,17 +265,6 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
         print_preview_ui, ids,
         base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(metafile));
   }
-}
-
-void PrintPreviewMessageHandler::OnPrintPreviewFailed(
-    int document_cookie,
-    const PrintHostMsg_PreviewIds& ids) {
-  StopWorker(document_cookie);
-
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
-  if (!print_preview_ui)
-    return;
-  print_preview_ui->OnPrintPreviewFailed(ids.request_id);
 }
 
 void PrintPreviewMessageHandler::OnDidGetDefaultPageLayout(
@@ -518,8 +509,6 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidStartPreview, OnDidStartPreview)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrepareDocumentForPreview,
                         OnDidPrepareForDocumentToPdf)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewFailed,
-                        OnPrintPreviewFailed)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetDefaultPageLayout,
                         OnDidGetDefaultPageLayout)
     IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewCancelled,

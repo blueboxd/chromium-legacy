@@ -14,7 +14,7 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 
 /** Payment minimal UI. */
 /* package */ class MinimalUIView implements BottomSheetContent {

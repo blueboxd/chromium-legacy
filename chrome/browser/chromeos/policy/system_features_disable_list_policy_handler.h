@@ -24,6 +24,10 @@ enum SystemFeature {
   LAST_SYSTEM_FEATURE
 };
 
+extern const char kCameraFeature[];
+extern const char kBrowserSettingsFeature[];
+extern const char kOsSettingsFeature[];
+
 class SystemFeaturesDisableListPolicyHandler
     : public policy::ListPolicyHandler {
  public:

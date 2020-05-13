@@ -399,6 +399,10 @@ bool NeuralStylusPalmDetectionFilter::
       !code_check(ABS_MT_TOUCH_MINOR)) {
     return false;
   }
+  // Only work with internal touchscreens.
+  if (devinfo.device_type() != INPUT_DEVICE_INTERNAL) {
+    return false;
+  }
   return true;
 }
 

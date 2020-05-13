@@ -20,6 +20,15 @@ const char QuietNotificationPermissionUiConfig::kCrowdDenyHoldBackChance[] =
     "crowd_deny_hold_back_chance";
 
 // static
+const char
+    QuietNotificationPermissionUiConfig::kEnableAbusiveRequestBlocking[] =
+        "enable_abusive_request_triggering";
+
+// static
+const char QuietNotificationPermissionUiConfig::kEnableAbusiveRequestWarning[] =
+    "enable_abusive_request_warning";
+
+// static
 bool QuietNotificationPermissionUiConfig::IsAdaptiveActivationEnabled() {
   if (!base::FeatureList::IsEnabled(features::kQuietNotificationPrompts))
     return false;
@@ -43,4 +52,24 @@ bool QuietNotificationPermissionUiConfig::IsCrowdDenyTriggeringEnabled() {
 double QuietNotificationPermissionUiConfig::GetCrowdDenyHoldBackChance() {
   return base::GetFieldTrialParamByFeatureAsDouble(
       features::kQuietNotificationPrompts, kCrowdDenyHoldBackChance, 0);
+}
+
+// static
+bool QuietNotificationPermissionUiConfig::IsAbusiveRequestBlockingEnabled() {
+  if (!base::FeatureList::IsEnabled(features::kQuietNotificationPrompts))
+    return false;
+
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kQuietNotificationPrompts, kEnableAbusiveRequestBlocking,
+      false /* default */);
+}
+
+// static
+bool QuietNotificationPermissionUiConfig::IsAbusiveRequestWarningEnabled() {
+  if (!base::FeatureList::IsEnabled(features::kQuietNotificationPrompts))
+    return false;
+
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kQuietNotificationPrompts, kEnableAbusiveRequestWarning,
+      false /* default */);
 }

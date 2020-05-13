@@ -43,6 +43,7 @@
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
@@ -221,13 +222,18 @@ void ResourceDispatcher::OnReceivedRedirect(
                                     redirect_info.new_url);
 
   ToLocalURLResponseHead(*request_info, *response_head);
-  if (request_info->peer->OnReceivedRedirect(redirect_info,
-                                             response_head.Clone())) {
+  std::vector<std::string> removed_headers;
+  if (request_info->peer->OnReceivedRedirect(
+          redirect_info, response_head.Clone(), &removed_headers)) {
     // Double-check if the request is still around. The call above could
     // potentially remove it.
     request_info = GetPendingRequestInfo(request_id);
     if (!request_info)
       return;
+    // TODO(yoav): If request_info doesn't change above, we could avoid this
+    // copy.
+    request_info->removed_headers = removed_headers;
+
     request_info->response_url = redirect_info.new_url;
     request_info->has_pending_redirect = true;
     NotifyResourceRedirectReceived(request_info->render_frame_id,
@@ -253,7 +259,7 @@ void ResourceDispatcher::FollowPendingRedirect(
       request_info->url_loader->FollowRedirectForcingRestart();
     } else {
       request_info->url_loader->FollowRedirect(
-          {} /* removed_headers */, {} /* modified_headers */,
+          request_info->removed_headers, {} /* modified_headers */,
           {} /* modified_cors_exempt_headers */);
     }
   }
@@ -469,8 +475,9 @@ void ResourceDispatcher::StartSync(
 
   while (response->context_for_redirect) {
     DCHECK(response->redirect_info);
-    bool follow_redirect = peer->OnReceivedRedirect(*response->redirect_info,
-                                                    response->head.Clone());
+    bool follow_redirect = peer->OnReceivedRedirect(
+        *response->redirect_info, response->head.Clone(),
+        nullptr /* removed_headers */);
     redirect_or_response_event.Reset();
     if (follow_redirect) {
       task_runner->PostTask(

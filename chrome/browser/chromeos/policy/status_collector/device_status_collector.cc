@@ -946,13 +946,63 @@ class DeviceStatusCollectorState : public StatusCollectorState {
         }
 
         case cros_healthd::CpuResult::Tag::CPU_INFO: {
-          for (const auto& cpu : cpu_result->get_cpu_info()) {
+          const auto& cpu_info = cpu_result->get_cpu_info();
+
+          if (cpu_info.is_null()) {
+            LOG(ERROR) << "Null CpuInfo from cros_healthd";
+            break;
+          }
+
+          long clock_ticks_per_second = sysconf(_SC_CLK_TCK);
+          if (clock_ticks_per_second == -1 || clock_ticks_per_second == 0) {
+            LOG(ERROR) << "Failed getting number of clock ticks per second";
+            break;
+          }
+
+          em::GlobalCpuInfo* const global_cpu_info_out =
+              response_params_.device_status->mutable_global_cpu_info();
+          global_cpu_info_out->set_num_total_threads(
+              cpu_info->num_total_threads);
+
+          for (const auto& physical_cpu : cpu_info->physical_cpus) {
+            if (physical_cpu.is_null())
+              continue;
+
             em::CpuInfo* const cpu_info_out =
                 response_params_.device_status->add_cpu_info();
-            cpu_info_out->set_model_name(cpu->model_name);
+            cpu_info_out->set_model_name(physical_cpu->model_name);
             cpu_info_out->set_architecture(
-                em::CpuInfo::Architecture(cpu->architecture));
-            cpu_info_out->set_max_clock_speed_khz(cpu->max_clock_speed_khz);
+                static_cast<em::CpuInfo::Architecture>(cpu_info->architecture));
+
+            for (const auto& logical_cpu : physical_cpu->logical_cpus) {
+              if (logical_cpu.is_null())
+                continue;
+
+              em::LogicalCpuInfo* const logical_cpu_info_out =
+                  cpu_info_out->add_logical_cpus();
+              logical_cpu_info_out->set_scaling_max_frequency_khz(
+                  logical_cpu->scaling_max_frequency_khz);
+              logical_cpu_info_out->set_scaling_current_frequency_khz(
+                  logical_cpu->scaling_current_frequency_khz);
+              logical_cpu_info_out->set_idle_time_seconds(
+                  logical_cpu->idle_time_user_hz / clock_ticks_per_second);
+
+              if (!cpu_info_out->has_max_clock_speed_khz()) {
+                cpu_info_out->set_max_clock_speed_khz(
+                    logical_cpu->max_clock_speed_khz);
+              }
+
+              for (const auto& c_state : logical_cpu->c_states) {
+                if (c_state.is_null())
+                  continue;
+
+                em::CpuCStateInfo* const c_state_info_out =
+                    logical_cpu_info_out->add_c_states();
+                c_state_info_out->set_name(c_state->name);
+                c_state_info_out->set_time_in_state_since_last_boot_us(
+                    c_state->time_in_state_since_last_boot_us);
+              }
+            }
           }
           break;
         }

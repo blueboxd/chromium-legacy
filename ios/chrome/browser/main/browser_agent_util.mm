@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_metrics_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
@@ -51,9 +52,11 @@ void AttachBrowserAgents(Browser* browser) {
   SessionRestorationBrowserAgent::CreateForBrowser(
       browser, [SessionServiceIOS sharedService]);
 
-  // TabUsageRecorderBrowserAgent observes the SessionRestorationBrowserAgent,
-  // So it should be created after the the SessionRestorationBrowserAgent is
-  // created. Normal browser states are the only ones to get tab usage recorder.
+  // TabUsageRecorderBrowserAgent and WebStateListMetricsBrowserAgent observe
+  // the SessionRestorationBrowserAgent, so they should be created after the the
+  // SessionRestorationBrowserAgent is created.
+  WebStateListMetricsBrowserAgent::CreateForBrowser(browser);
+  // Normal browser states are the only ones to get tab usage recorder.
   if (!browser->GetBrowserState()->IsOffTheRecord())
     TabUsageRecorderBrowserAgent::CreateForBrowser(browser);
 

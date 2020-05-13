@@ -32,37 +32,6 @@ const Node* GetFrameOwnerNode(const Node* child) {
   return child->GetDocument().GetFrame()->OwnerLayoutObject()->GetNode();
 }
 
-bool UpdateStyleAndLayoutForRangeIfNeeded(const EphemeralRangeInFlatTree& range,
-                                          DisplayLockActivationReason reason) {
-  if (range.IsNull() || range.IsCollapsed())
-    return false;
-  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
-      range.GetDocument()
-              .GetDisplayLockDocumentState()
-              .LockedDisplayLockCount() ==
-          range.GetDocument()
-              .GetDisplayLockDocumentState()
-              .DisplayLockBlockingAllActivationCount())
-    return false;
-  Vector<DisplayLockContext::ScopedForcedUpdate> scoped_forced_update_list_;
-  for (Node& node : range.Nodes()) {
-    for (Element* locked_activatable_ancestor :
-         DisplayLockUtilities::ActivatableLockedInclusiveAncestors(node,
-                                                                   reason)) {
-      DCHECK(locked_activatable_ancestor->GetDisplayLockContext());
-      DCHECK(locked_activatable_ancestor->GetDisplayLockContext()->IsLocked());
-      scoped_forced_update_list_.push_back(
-          locked_activatable_ancestor->GetDisplayLockContext()
-              ->GetScopedForcedUpdate());
-    }
-  }
-  if (!scoped_forced_update_list_.IsEmpty()) {
-    range.GetDocument().UpdateStyleAndLayout(
-        DocumentUpdateReason::kDisplayLock);
-  }
-  return !scoped_forced_update_list_.IsEmpty();
-}
-
 void PopulateAncestorContexts(Node* node,
                               std::set<DisplayLockContext*>* contexts) {
   DCHECK(node);
@@ -199,14 +168,15 @@ DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
   return elements_to_activate;
 }
 
-DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
-    const Node* node,
-    bool include_self)
+DisplayLockUtilities::ScopedForcedUpdate::Impl::Impl(const Node* node,
+                                                     bool include_self)
     : node_(node) {
   if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
     return;
 
-  CreateParentFrameScopeIfNeeded(node);
+  auto* owner_node = GetFrameOwnerNode(node);
+  if (owner_node)
+    parent_frame_impl_ = MakeGarbageCollected<Impl>(owner_node, true);
 
   node->GetDocument().GetDisplayLockDocumentState().BeginNodeForcedScope(
       node, include_self, this);
@@ -241,30 +211,28 @@ DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
     auto* ancestor_node = DynamicTo<Element>(ancestor);
     if (!ancestor_node)
       continue;
-    if (auto* context = ancestor_node->GetDisplayLockContext())
-      scoped_update_forced_map_.Set(context, context->GetScopedForcedUpdate());
+    if (auto* context = ancestor_node->GetDisplayLockContext()) {
+      context->NotifyForcedUpdateScopeStarted();
+      forced_context_set_.insert(context);
+    }
   }
 }
 
-DisplayLockUtilities::ScopedChainForcedUpdate::~ScopedChainForcedUpdate() {
-  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
-    return;
-  node_->GetDocument().GetDisplayLockDocumentState().EndNodeForcedScope(this);
+void DisplayLockUtilities::ScopedForcedUpdate::Impl::Destroy() {
+  if (RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
+    node_->GetDocument().GetDisplayLockDocumentState().EndNodeForcedScope(this);
+  if (parent_frame_impl_)
+    parent_frame_impl_->Destroy();
+  for (auto context : forced_context_set_) {
+    context->NotifyForcedUpdateScopeEnded();
+  }
 }
 
-void DisplayLockUtilities::ScopedChainForcedUpdate::
-    CreateParentFrameScopeIfNeeded(const Node* node) {
-  auto* owner_node = GetFrameOwnerNode(node);
-  if (owner_node)
-    parent_frame_scope_.reset(new ScopedChainForcedUpdate(owner_node, true));
-}
-
-void DisplayLockUtilities::ScopedChainForcedUpdate::AddScopedForcedUpdate(
-    DisplayLockContext* context) {
-  auto it = scoped_update_forced_map_.find(context);
-  if (it != scoped_update_forced_map_.end())
-    return;
-  scoped_update_forced_map_.Set(context, context->GetScopedForcedUpdate());
+void DisplayLockUtilities::ScopedForcedUpdate::Impl::
+    AddForcedUpdateScopeForContext(DisplayLockContext* context) {
+  auto result = forced_context_set_.insert(context);
+  if (result.is_new_entry)
+    context->NotifyForcedUpdateScopeStarted();
 }
 
 const Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(
@@ -556,6 +524,43 @@ Element* DisplayLockUtilities::LockedAncestorPreventingStyle(const Node& node) {
   return LockedAncestorPreventingUpdate(node, [](DisplayLockContext* context) {
     return !context->ShouldStyle(DisplayLockLifecycleTarget::kChildren);
   });
+}
+
+bool DisplayLockUtilities::UpdateStyleAndLayoutForRangeIfNeeded(
+    const EphemeralRangeInFlatTree& range,
+    DisplayLockActivationReason reason) {
+  if (range.IsNull() || range.IsCollapsed())
+    return false;
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
+      range.GetDocument()
+              .GetDisplayLockDocumentState()
+              .LockedDisplayLockCount() ==
+          range.GetDocument()
+              .GetDisplayLockDocumentState()
+              .DisplayLockBlockingAllActivationCount())
+    return false;
+  HeapVector<Member<DisplayLockContext>> forced_context_list_;
+  for (Node& node : range.Nodes()) {
+    for (Element* locked_activatable_ancestor :
+         DisplayLockUtilities::ActivatableLockedInclusiveAncestors(node,
+                                                                   reason)) {
+      DCHECK(locked_activatable_ancestor->GetDisplayLockContext());
+      DCHECK(locked_activatable_ancestor->GetDisplayLockContext()->IsLocked());
+      auto* context = locked_activatable_ancestor->GetDisplayLockContext();
+      // TODO(vmpstr): Clean this up not to call
+      // |NotifyForcedUpdateScopeStarted()| directly.
+      context->NotifyForcedUpdateScopeStarted();
+      forced_context_list_.push_back(context);
+    }
+  }
+  if (!forced_context_list_.IsEmpty()) {
+    range.GetDocument().UpdateStyleAndLayout(
+        DocumentUpdateReason::kDisplayLock);
+  }
+  for (auto context : forced_context_list_) {
+    context->NotifyForcedUpdateScopeEnded();
+  }
+  return !forced_context_list_.IsEmpty();
 }
 
 }  // namespace blink

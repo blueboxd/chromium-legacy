@@ -19,7 +19,6 @@
 #include <string>
 
 #include "base/debug/alias.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
@@ -530,48 +529,13 @@ File CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
   File file;
 
   // Although it is nearly impossible to get a duplicate name with GUID, we
-  // still use a loop here in case it happens. TODO(grt): remove this loop
-  // because the probability of a name collision is so very, very low.
+  // still use a loop here in case it happens.
   for (int i = 0; i < 100; ++i) {
     temp_name =
         dir.Append(UTF8ToWide(GenerateGUID()) + FILE_PATH_LITERAL(".tmp"));
     file.Initialize(temp_name, kFlags);
     if (file.IsValid())
       break;
-    const auto create_error = ::GetLastError();
-    debug::Alias(&create_error);
-    // PATH_NOT_FOUND means that |dir| does not exist. This likely means that
-    // the caller specified a custom directory and forgot to create it before
-    // trying to put a file in it, so consider it programmer error (though there
-    // is a chance that a user has set TMP to a non-existent dir).
-    // Unfortunately, too many tests crash if we put the following here:
-    // DCHECK_NE(create_error, DWORD{ERROR_PATH_NOT_FOUND});
-    //
-    // So for now tolerate it. Other popular errors are more difficult to
-    // understand. Capture some info to try to diagnose them in case there's
-    // something to be done about them; see https://crbug.com/1075917.
-    if (!i) {
-      static const bool hit = [&temp_name]() {
-        const DWORD attributes = ::GetFileAttributes(temp_name.value().c_str());
-        const auto attr_error = ::GetLastError();
-        size_t num_entries = 0;
-        FileEnumerator enumerator(
-            temp_name.DirName(), /*recursive=*/false,
-            FileEnumerator::FILES | FileEnumerator::DIRECTORIES,
-            FilePath::StringType());
-        while (!enumerator.Next().empty())
-          ++num_entries;
-        wchar_t path_copy[MAX_PATH];
-        wcslcpy(path_copy, temp_name.value().c_str(), size(path_copy));
-        debug::Alias(&attributes);
-        debug::Alias(&attr_error);
-        debug::Alias(&num_entries);
-        debug::Alias(path_copy);
-        debug::DumpWithoutCrashing();
-        return true;
-      }();
-      debug::Alias(&hit);
-    }
   }
 
   if (!file.IsValid()) {

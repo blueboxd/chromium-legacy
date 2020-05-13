@@ -169,6 +169,10 @@ void MetricsLog::RecordCoreSystemProfile(MetricsServiceClient* client,
   RecordCoreSystemProfile(client->GetVersionString(), client->GetChannel(),
                           client->GetApplicationLocale(),
                           client->GetAppPackageName(), system_profile);
+
+  std::string brand_code;
+  if (client->GetBrand(&brand_code))
+    system_profile->set_brand_code(brand_code);
 }
 
 // static
@@ -318,10 +322,6 @@ const SystemProfileProto& MetricsLog::RecordEnvironment(
   SystemProfileProto* system_profile = uma_proto_.mutable_system_profile();
   WriteMetricsEnableDefault(client_->GetMetricsReportingDefaultState(),
                             system_profile);
-
-  std::string brand_code;
-  if (client_->GetBrand(&brand_code))
-    system_profile->set_brand_code(brand_code);
 
   delegating_provider->ProvideSystemProfileMetricsWithLogCreationTime(
       creation_time_, system_profile);

@@ -126,7 +126,7 @@ mojom::blink::NotificationDataPtr CreateNotificationData(
     else
       NOTREACHED() << "Unknown action type: " << action->type();
 
-    if (action->hasPlaceholder() &&
+    if (!action->placeholder().IsNull() &&
         notification_action->type ==
             mojom::blink::NotificationActionType::BUTTON) {
       exception_state.ThrowTypeError(

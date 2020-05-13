@@ -78,6 +78,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   void OpenURL(SiteInstance* site_instance,
                const OpenURLParams& params,
                base::OnceCallback<void(WebContents*)> callback) override;
+  std::vector<std::unique_ptr<NavigationThrottle>> CreateThrottlesForNavigation(
+      NavigationHandle* navigation_handle) override;
   std::unique_ptr<LoginDelegate> CreateLoginDelegate(
       const net::AuthChallengeInfo& auth_info,
       content::WebContents* web_contents,
@@ -152,6 +154,12 @@ class ShellContentBrowserClient : public ContentBrowserClient {
     register_browser_interface_binders_for_frame_callback_ =
         register_browser_interface_binders_for_frame_callback;
   }
+  void set_create_throttles_for_navigation_callback(
+      base::RepeatingCallback<std::vector<std::unique_ptr<NavigationThrottle>>(
+          NavigationHandle*)> create_throttles_for_navigation_callback) {
+    create_throttles_for_navigation_callback_ =
+        create_throttles_for_navigation_callback;
+  }
 
  protected:
   // Call this if CreateBrowserMainParts() is overridden in a subclass.
@@ -184,6 +192,9 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       RenderFrameHost* render_frame_host,
       mojo::BinderMapWithContext<RenderFrameHost*>* map)>
       register_browser_interface_binders_for_frame_callback_;
+  base::RepeatingCallback<std::vector<std::unique_ptr<NavigationThrottle>>(
+      NavigationHandle*)>
+      create_throttles_for_navigation_callback_;
 
   // Owned by content::BrowserMainLoop.
   ShellBrowserMainParts* shell_browser_main_parts_ = nullptr;

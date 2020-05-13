@@ -31,6 +31,7 @@ android_library("public_java") {
     # TODO(crbug.com/1004415): Remove dependency on chrome_java and depend on
     # bottomsheet directly. Add public_java to chrome_java target instead.
     "//chrome/android:chrome_java",
+    "//components/browser_ui/android/bottomsheet:java",
     "//ui/android:ui_java",
   ]
 
@@ -73,6 +74,7 @@ android_library("test_java") {
     "//chrome/android:chrome_test_util_java",
     "//chrome/browser/touch_to_fill/android/internal:java",
     "//chrome/test/android:chrome_java_test_support",
+    "//components/browser_ui/android/bottomsheet:java",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
     "//third_party/espresso:espresso_all_java",

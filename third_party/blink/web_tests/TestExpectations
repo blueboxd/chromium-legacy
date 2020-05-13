@@ -71,10 +71,105 @@ crbug.com/887140 virtual/hdr/color-jpeg-with-color-profile.html [ Failure ]
 crbug.com/887140 virtual/hdr/color-profile-video.html [ Failure ]
 crbug.com/887140 virtual/hdr/video-canvas-alpha.html [ Failure ]
 
-crbug.com/1014421 external/wpt/css/cssom-view/MediaQueryList-addListener-handleEvent.html [ Timeout ]
+crbug.com/1014421 crbug.com/1075614 external/wpt/css/cssom-view/MediaQueryList-addListener-handleEvent.html [ Pass Failure Timeout ]
 
 # Tested by paint/background/root-element-background-transparency.html for now.
 external/wpt/css/compositing/root-element-background-transparency.html [ Failure ]
+
+# Now that the accessibility serializer is turned on for all web tests, it is
+# causing new failures, crashes and timeouts.
+# These failing tests are tested by virtual/disable-ax-serializer for now.
+# See https://crrev.com/c/2181915/ for more info.
+# TODO(aleventhal) Burn down this list.
+crbug.com/1075614 virtual/disable-ax-serializer/* [ Pass ]
+crbug.com/1045672 crbug.com/1006759 virtual/disable-ax-serializer/fast/forms/select/listbox-tap.html [ Failure ]
+crbug.com/1075614 accessibility/aom-click-action.html [ Crash Timeout ]
+crbug.com/1075614 accessibility/aom-virtual.html [ Crash Timeout ]
+crbug.com/1075614 accessibility/clickable.html [ Pass Failure ]
+crbug.com/1075614 external/wpt/css/css-text/text-transform/text-transform-upperlower-041.html [ Pass Failure Crash ]
+crbug.com/1075614 external/wpt/css/css-text/text-transform/text-transform-upperlower-043.html [ Pass Failure Crash ]
+crbug.com/1075614 external/wpt/css/css-text/text-transform/text-transform-upperlower-044.html [ Pass Failure Crash ]
+crbug.com/1075614 external/wpt/css/cssom-view/MediaQueryList-addListener-removeListener.html [ Pass Failure ]
+crbug.com/1075614 external/wpt/css/cssom-view/MediaQueryList-extends-EventTarget.html [ Pass Failure ]
+crbug.com/1075614 external/wpt/css/cssom-view/MediaQueryList-extends-EventTarget-interop.html [ Pass Failure ]
+crbug.com/1075614 external/wpt/css/cssom-view/MediaQueryListEvent.html [ Pass Failure ]
+crbug.com/1075614 external/wpt/dom/ranges/Range-mutations-replaceData.html [ Crash ]
+crbug.com/1075614 external/wpt/html/user-activation/consumption-crossorigin.sub.tentative.html [ Pass Timeout ]
+crbug.com/1075614 external/wpt/web-animations/timing-model/timelines/update-and-send-events-replacement.html [ Failure ]
+crbug.com/1075614 fast/forms/select_detached_textarea_crash.html [ Crash ]
+crbug.com/1075614 fast/forms/time-multiple-fields/time-multiple-fields-losing-renderer-on-click.html [ Pass Crash ]
+crbug.com/1075614 http/tests/devtools/console/console-context-selector.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/console/console-error-on-call-frame.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/debugger/fetch-breakpoints.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/elements/accessibility/autocomplete-attribute.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/elements/accessibility/edit-aria-attributes.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-async/async-await/async-pause-on-exception.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-async/async-callstack.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-async/async-callstack-in-console.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-navigation.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-breakpoints/debugger-breakpoints-not-activated-on-reload.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints-reload.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints.js [ Pass Failure Crash Timeout ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-breakpoints/provisional-breakpoints.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-breakpoints/restore-locations-for-breakpoint-with-broken-source-map.js [ Pass Failure Crash ]
+crbug.com/1075614 [ Release ] http/tests/devtools/sources/debugger-breakpoints/set-breakpoint.js [ Pass Failure Timeout ]
+crbug.com/1075614 [ Release ] http/tests/devtools/sources/debugger-breakpoints/set-conditional-breakpoint.js [ Pass Failure Timeout ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-breakpoints/set-logpoint.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-console/debug-console-command.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-frameworks/frameworks-skip-step-in.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-frameworks/frameworks-sourcemap.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-frameworks/frameworks-step-into-skips-setTimeout.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-frameworks/frameworks-steppings.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-pause/debugger-pause-infinite-loop.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-pause/debugger-pause-on-promise-rejection.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-pause/pause-in-internal-script.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-step/debugger-step-into-custom-element-callbacks.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-step/debugger-step-into-event-listener.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-step/debugger-step-out-custom-element-callbacks.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-step/debugger-step-out-event-listener.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-step/debugger-step-through-promises.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-ui/custom-element-lifecycle-events.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-ui/debugger-inline-values.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-ui/debugger-inline-values-frames.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-ui/reveal-not-skipped.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger-ui/script-formatter-breakpoints-2.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger/debugger-proto-property.js [ Pass Failure Crash Timeout ]
+crbug.com/1075614 http/tests/devtools/sources/debugger/live-edit.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger/mutation-observer-suspend-while-paused.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger/source-frame-breakpoint-decorations.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/devtools/sources/debugger/source-frame-inline-breakpoint-decorations.js [ Pass Failure Crash ]
+crbug.com/1075614 http/tests/inspector-protocol/side-effects/evaluate-embedder-side-effect-free-attributes.js [ Timeout ]
+crbug.com/1075614 http/tests/misc/object-image-error.html [ Pass Failure Crash ]
+crbug.com/1075614 inspector-protocol/runtime/runtime-console-special-functions.js [ Skip ]
+crbug.com/1075614 plugins/focus.html [ Failure ]
+crbug.com/1075614 storage/indexeddb/cursor-continue-validity.html [ Pass Failure Timeout ]
+crbug.com/1075614 [ Release ] storage/indexeddb/index-cursor.html [ Pass Failure Timeout ]
+crbug.com/1075614 storage/indexeddb/mozilla/indexes.html [ Pass Failure Timeout ]
+crbug.com/1075614 storage/indexeddb/mozilla/test_objectStore_openKeyCursor.html [ Pass Failure Timeout ]
+crbug.com/1075614 storage/indexeddb/objectstore-cursor.html [ Pass Failure Timeout ]
+crbug.com/1075614 storage/indexeddb/mozilla/cursors.html [ Pass Failure Timeout ]
+crbug.com/1075614 storage/indexeddb/objectstore-keycursor.html [ Pass Failure Timeout ]
+crbug.com/1075614 virtual/controls-refresh/calendar-picker/date-picker-ax.html [ Failure ]
+crbug.com/1075614 virtual/disable-ax-serializer/http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-shifted-breakpoint.js [ Pass Failure Timeout ]
+crbug.com/1075614 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-basic-movement.html [ Timeout Failure ]
+crbug.com/1075614 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-dont-send-keyboard-events.html [ Timeout Failure ]
+crbug.com/1075614 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-enter-exit-focus.html [ Timeout Failure ]
+# crbug.com/1075614 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-enter-from-interest.html [ Timeout Failure ]
+crbug.com/1075614 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-form-does-not-submit.html [ Timeout Failure ]
+crbug.com/1075614 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-form-state-on-click.html [ Timeout Failure ]
+crbug.com/1075614 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-navigate-from-focus.html [ Timeout Failure ]
+crbug.com/1075614 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-video-on-click-a11y.html [ Timeout Failure ]
+crbug.com/1075614 virtual/text-antialias/text-transform-lower-turkic.html [ Crash ]
+crbug.com/1075614 virtual/text-antialias/text-transform-upper-lithuanian.html [ Crash ]
+crbug.com/1075614 wpt_internal/display-lock/css-content-visibility/content-visibility-026.html [ Failure ]
+crbug.com/1075614 virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/calendar-picker-mouse-operations.html [ Pass Timeout Crash ]
+crbug.com/1075614 virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/week-picker-mouse-operations.html [ Skip ]
+# The following line causes a redundant warning in presubmit, but is necessary to avoid test breakage:
+crbug.com/1075614 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Timeout ]
+crbug.com/1075614 virtual/scalefactor200/css3/filters/backdrop-filter-svg.html [ Skip ]
+crbug.com/1075614 virtual/web-components-v0-disabled/external/wpt/dom/ranges/Range-mutations-replaceData.html [ Skip ]
+crbug.com/963183 crbug.com/1075614 virtual/disable-ax-serializer/http/tests/devtools/sources/debugger-breakpoints/disable-breakpoints.js [ Pass Failure ]
 
 # ====== Site Isolation failures from here ======
 # See also third_party/blink/web_tests/virtual/not-site-per-process/README.md
@@ -264,7 +359,7 @@ crbug.com/968791 virtual/scalefactor200/css3/filters/filterRegions.html [ Failur
 crbug.com/968791 crbug.com/1051044 virtual/scalefactor200/external/wpt/css/filter-effects/effect-reference-feimage-001.html [ Failure ]
 crbug.com/968791 crbug.com/1051044 virtual/scalefactor200/external/wpt/css/filter-effects/effect-reference-feimage-002.html [ Failure ]
 crbug.com/968791 crbug.com/1051044 virtual/scalefactor200/external/wpt/css/filter-effects/effect-reference-feimage-003.html [ Failure ]
-crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/filters-test-brightness-003.html [ Failure ]
+crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/filters-test-brightness-003.html [ Pass Failure ]
 
 # Copying these from elsewhere in TestExpectations (for non-scalefactor200 virtual suite)
 crbug.com/591099 virtual/scalefactor200/external/wpt/css/filter-effects/filtered-inline-applies-to-float.html [ Failure ]
@@ -1466,7 +1561,7 @@ crbug.com/1035582 [ Mac10.10 ] virtual/controls-refresh-hc/virtual/controls-refr
 crbug.com/1035582 [ Mac10.10 ] virtual/controls-refresh-hc/virtual/controls-refresh/color-scheme/select/select-multiple-appearance-basic.html [ Skip ]
 
 # Bug in FormControlsRefresh <select multiple> tap behavior:
-crbug.com/1045672 fast/forms/select/listbox-tap.html [ Failure ]
+crbug.com/1045672 fast/forms/select/listbox-tap.html [ Pass Failure ]
 
 ### sheriff 2019-07-16
 crbug.com/983799 [ Win ] http/tests/navigation/redirect-on-back-updates-history-item.html [ Timeout Pass ]
@@ -1800,7 +1895,7 @@ crbug.com/1081237 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/eve
 crbug.com/1049641 [ Debug ] http/tests/devtools/sources/debugger/js-with-inline-stylesheets.js [ Pass Failure ]
 crbug.com/1049641 [ Debug ] http/tests/devtools/sources/debugger-breakpoints/set-breakpoint.js [ Pass Failure ]
 crbug.com/1049641 [ Debug ] http/tests/devtools/sources/debugger-breakpoints/set-conditional-breakpoint.js [ Pass Failure ]
-crbug.com/1049641 http/tests/devtools/sources/debugger/debugger-disable-enable.js [ Pass Timeout ]
+crbug.com/1049641 crbug.com/1075614 http/tests/devtools/sources/debugger/debugger-disable-enable.js [ Pass Timeout Crash ]
 
 # Sheriff 2019-08-19
 crbug.com/626703 [ Win7 ] external/wpt/xhr/responsexml-document-properties.htm [ Failure ]
@@ -1880,7 +1975,7 @@ crbug.com/400841 media/video-canvas-draw.html [ Failure ]
 crbug.com/400829 virtual/stable/media/stable/video-object-fit-stable.html [ Failure ]
 
 # Source map asyncification requires some 3-way changes with the DevTools frontend.
-crbug.com/1032016 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-shifted-breakpoint.js [ Pass Failure Timeout ]
+crbug.com/1032016 crbug.com/1075614 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-shifted-breakpoint.js [ Pass Failure Timeout Crash ]
 
 # Renaming front_end/protocol to front_end/protocol_client requires a 3-way change. Temporarliy disable web tests that use |Protocol|
 crbug.com/1011811 http/tests/devtools/inspector-backend-commands.js [ Pass Failure ]
@@ -3057,7 +3152,7 @@ crbug.com/626703 external/wpt/css/css-lists/li-value-counter-reset-001.html [ Fa
 crbug.com/626703 external/wpt/xhr/event-readystatechange-loaded.any.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-005.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-008.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-animations/animationevent-marker-pseudoelement.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-animations/animationevent-marker-pseudoelement.html [ Pass Timeout ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-normal-keep-all-001.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/media-elements/src_object_blob.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-lists/list-item-definition.html [ Failure ]
@@ -4080,7 +4175,7 @@ crbug.com/852645 external/wpt/fullscreen/api/element-request-fullscreen-two-ifra
 
 # snav tests fail because of a DCHECK
 crbug.com/985520 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-enter-from-interest-a11y.html [ Crash ]
-crbug.com/985520 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-enter-from-interest.html [ Crash ]
+crbug.com/985520 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-enter-from-interest.html [ Crash Failure ]
 
 # User-Agent is not able to be set on XHR/fetch
 crbug.com/571722 external/wpt/xhr/preserve-ua-header-on-redirect.htm [ Failure ]
@@ -5515,7 +5610,7 @@ crbug.com/963183 http/tests/devtools/jump-to-previous-editing-location.js [ Pass
 crbug.com/1040270 http/tests/devtools/elements/styles-1/disable-property-workingcopy-update.js [ Pass Timeout ]
 
 # Broken in https://chromium-review.googlesource.com/c/chromium/src/+/1636716
-crbug.com/963183 http/tests/devtools/sources/debugger-breakpoints/disable-breakpoints.js [ Pass Failure Timeout ]
+crbug.com/963183 crbug.com/1075614 http/tests/devtools/sources/debugger-breakpoints/disable-breakpoints.js [ Pass Failure Timeout Crash ]
 
 crbug.com/836300 fast/css3-text/css3-text-decoration/text-decoration-skip-ink-links.html [ Pass Failure ]
 

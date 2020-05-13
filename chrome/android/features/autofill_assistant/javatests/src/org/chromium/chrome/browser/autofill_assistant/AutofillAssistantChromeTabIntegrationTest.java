@@ -16,10 +16,10 @@ import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVi
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntil;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewAssertionTrue;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
@@ -306,7 +306,6 @@ public class AutofillAssistantChromeTabIntegrationTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/1081788")
     public void backButtonTerminatesAutofillAssistant() {
         ChromeTabUtils.loadUrlOnUiThread(
                 mTestRule.getActivity().getActivityTab(), getURL(TEST_PAGE_B));
@@ -333,13 +332,13 @@ public class AutofillAssistantChromeTabIntegrationTest {
         Espresso.pressBack();
         Espresso.pressBack();
         waitUntilViewMatchesCondition(withText(containsString("Sorry")), isCompletelyDisplayed());
-        assertThat(mTestRule.getActivity().getActivityTab().getUrl().getSpec(),
-                is(getURL(TEST_PAGE_A)));
+        waitUntil(()
+                          -> mTestRule.getActivity().getActivityTab().getUrl().getSpec().equals(
+                                  getURL(TEST_PAGE_A)));
     }
 
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/1081608")
     public void interactingWithLocationBarHidesAutofillAssistant() throws Exception {
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add((ActionProto) ActionProto.newBuilder()

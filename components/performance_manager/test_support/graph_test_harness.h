@@ -93,9 +93,10 @@ struct TestNodeWrapper<FrameNodeImpl>::Factory {
 template <>
 struct TestNodeWrapper<ProcessNodeImpl>::Factory {
   static std::unique_ptr<ProcessNodeImpl> Create(
+      content::ProcessType process_type = content::PROCESS_TYPE_RENDERER,
       RenderProcessHostProxy proxy = RenderProcessHostProxy()) {
     // Provide an empty RenderProcessHostProxy by default.
-    return std::make_unique<ProcessNodeImpl>(std::move(proxy));
+    return std::make_unique<ProcessNodeImpl>(process_type, std::move(proxy));
   }
 };
 

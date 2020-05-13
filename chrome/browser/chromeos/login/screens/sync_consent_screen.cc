@@ -112,10 +112,6 @@ void SyncConsentScreen::Init() {
 }
 
 bool SyncConsentScreen::MaybeSkip() {
-  if (!g_is_branded_build) {
-    exit_callback_.Run(Result::NOT_APPLICABLE);
-    return true;
-  }
   Init();
 
   if (behavior_ == SyncScreenBehavior::SKIP) {
@@ -243,6 +239,10 @@ SyncConsentScreen::GetDelegateForTesting() const {
 
 SyncConsentScreen::SyncScreenBehavior SyncConsentScreen::GetSyncScreenBehavior()
     const {
+  // Skip for developer (non-branded) builds.
+  if (!g_is_branded_build)
+    return SyncScreenBehavior::SKIP;
+
   // Skip for users without Gaia account.
   if (!user_->HasGaiaAccount())
     return SyncScreenBehavior::SKIP;

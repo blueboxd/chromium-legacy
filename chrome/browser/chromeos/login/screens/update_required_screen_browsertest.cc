@@ -278,8 +278,8 @@ IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest, TestUpdateOverMeteredNetwork) {
 }
 
 // This tests the state of update required screen when the device is initially
-// not connected to any network and the user connects to Wifi to start the
-// update.
+// not connected to any network and the user connects to Wifi to show update
+// required screen.
 IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest, TestUpdateRequiredNoNetwork) {
   // Disconnect from all networks and show update required screen.
   network_state_test_helper_->service_test()->ClearServices();
@@ -292,22 +292,17 @@ IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest, TestUpdateRequiredNoNetwork) {
       {kUpdateRequiredScreen, kUpdateRequiredDialog});
   test::OobeJS().ExpectVisiblePath({kUpdateRequiredScreen, KNoNetworkDialog});
 
-  // Connect to a WiFi network and update starts automatically.
+  // Connect to a WiFi network.
   network_state_test_helper_->service_test()->AddService(
       kWifiServicePath, kWifiServicePath, kWifiServicePath /* name */,
       shill::kTypeWifi, shill::kStateOnline, true);
 
+  // Update required screen is shown when user moves from no network to a good
+  // network.
   test::OobeJS()
-      .CreateVisibilityWaiter(true, {kUpdateRequiredScreen, kUpdateProcess})
+      .CreateVisibilityWaiter(true,
+                              {kUpdateRequiredScreen, kUpdateRequiredDialog})
       ->Wait();
-
-  // Expect screen to show progress of the update process.
-  test::OobeJS().ExpectHiddenPath({kUpdateRequiredScreen, KNoNetworkDialog});
-  test::OobeJS().ExpectVisiblePath({kUpdateRequiredScreen, kUpdateProcess});
-
-  SetUpdateEngineStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
-  // UpdateStatusChanged(status) calls RebootAfterUpdate().
-  EXPECT_EQ(1, update_engine_client()->reboot_after_update_call_count());
 }
 
 // This tests the condition when the user switches to a metered network during

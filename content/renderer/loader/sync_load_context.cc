@@ -18,6 +18,7 @@
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
@@ -149,8 +150,16 @@ void SyncLoadContext::OnUploadProgress(uint64_t position, uint64_t size) {}
 
 bool SyncLoadContext::OnReceivedRedirect(
     const net::RedirectInfo& redirect_info,
-    network::mojom::URLResponseHeadPtr head) {
+    network::mojom::URLResponseHeadPtr head,
+    std::vector<std::string>* removed_headers) {
   DCHECK(!Completed());
+  if (removed_headers) {
+    // TODO(yoav): Get the actual FeaturePolicy here to support selective
+    // removal for sync XHR.
+    blink::FindClientHintsToRemove(nullptr /* feature_policy */,
+                                   redirect_info.new_url, removed_headers);
+  }
+
   response_->url = redirect_info.new_url;
   response_->head = std::move(head);
   response_->redirect_info = redirect_info;

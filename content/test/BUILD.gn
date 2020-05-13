@@ -1651,7 +1651,7 @@ test("content_unittests") {
     "../browser/frame_host/navigation_entry_impl_unittest.cc",
     "../browser/frame_host/navigation_request_unittest.cc",
     "../browser/frame_host/navigation_throttle_runner_unittest.cc",
-    "../browser/frame_host/navigator_impl_unittest.cc",
+    "../browser/frame_host/navigator_unittest.cc",
     "../browser/frame_host/origin_policy_throttle_unittest.cc",
     "../browser/frame_host/render_frame_host_feature_policy_unittest.cc",
     "../browser/frame_host/render_frame_host_impl_unittest.cc",

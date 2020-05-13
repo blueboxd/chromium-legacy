@@ -3,6 +3,7 @@ include_rules = [
   "+components/page_load_metrics/browser",
   "+components/security_state/core",
   "+components/sync_preferences",
+  "+components/url_formatter",
   "+content/public/browser",
   "+content/public/common",
   "+content/public/test",

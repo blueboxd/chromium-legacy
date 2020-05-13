@@ -5,9 +5,12 @@
 #include "components/performance_manager/public/graph/policies/tab_loading_frame_navigation_policy.h"
 
 #include "base/bind.h"
+#include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "components/performance_manager/graph/page_node_impl.h"
+#include "components/performance_manager/public/features.h"
+#include "components/performance_manager/public/mechanisms/tab_loading_frame_navigation_scheduler.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,16 +24,42 @@ namespace policies {
 
 namespace {
 
+// A default implementation of the mechanism delegate that uses the
+// TabLoadingFrameNavigationScheduler.
+class DefaultMechanismDelegate
+    : public TabLoadingFrameNavigationPolicy::MechanismDelegate {
+ public:
+  using MechanismClass = mechanisms::TabLoadingFrameNavigationScheduler;
+
+  DefaultMechanismDelegate() = default;
+  ~DefaultMechanismDelegate() override = default;
+
+  // MechanismDelegate implementation:
+  void SetThrottlingEnabled(bool enabled) override {
+    return MechanismClass::SetThrottlingEnabled(enabled);
+  }
+  void StopThrottling(content::WebContents* contents,
+                      int64_t last_navigation_id) override {
+    MechanismClass::StopThrottling(contents, last_navigation_id);
+  }
+
+  static DefaultMechanismDelegate* Instance() {
+    static base::NoDestructor<DefaultMechanismDelegate> default_mechanism;
+    return default_mechanism.get();
+  }
+};
+
 bool CanThrottleUrlScheme(const GURL& url) {
   return url.SchemeIs("http") || url.SchemeIs("https");
 }
 
 }  // namespace
 
-TabLoadingFrameNavigationPolicy::TabLoadingFrameNavigationPolicy(
-    StopThrottlingCallback stop_throttling_callback)
-    : stop_throttling_callback_(stop_throttling_callback) {
-  DCHECK(!stop_throttling_callback.is_null());
+TabLoadingFrameNavigationPolicy::TabLoadingFrameNavigationPolicy()
+    : mechanism_(DefaultMechanismDelegate::Instance()) {
+  auto params = features::TabLoadingFrameNavigationThrottlesParams::GetParams();
+  timeout_min_ = params.minimum_throttle_timeout;
+  timeout_max_ = params.maximum_throttle_timeout;
 }
 
 TabLoadingFrameNavigationPolicy::~TabLoadingFrameNavigationPolicy() {
@@ -113,15 +142,16 @@ void TabLoadingFrameNavigationPolicy::OnFirstContentfulPaint(
   if (!frame_node->IsMainFrame() || !frame_node->IsCurrent())
     return;
 
-  // Wait for another FCP time period, waiting a minimum of 1 second.
+  // Wait for another FCP time period, but enforce a lower bound.
   double fcp_ms = time_since_navigation_start.InMillisecondsF();
-  double delta_ms = std::max(1000.0, fcp_ms);
+  double delta_ms = std::max(timeout_min_.InMillisecondsF(), fcp_ms);
   MaybeUpdatePageTimeout(frame_node->GetPageNode(),
                          base::TimeDelta::FromMillisecondsD(delta_ms));
 }
 
 void TabLoadingFrameNavigationPolicy::OnPassedToGraph(Graph* graph) {
   DCHECK(NothingRegistered(graph));
+  mechanism_->SetThrottlingEnabled(true);
   graph->AddFrameNodeObserver(this);
   graph->AddPageNodeObserver(this);
   graph->RegisterObject(this);
@@ -132,6 +162,7 @@ void TabLoadingFrameNavigationPolicy::OnTakenFromGraph(Graph* graph) {
   graph->UnregisterObject(this);
   graph->RemovePageNodeObserver(this);
   graph->RemoveFrameNodeObserver(this);
+  mechanism_->SetThrottlingEnabled(false);
 }
 
 // static
@@ -169,8 +200,7 @@ void TabLoadingFrameNavigationPolicy::SetPageNodeThrottledImpl(
   }
 
   // Create a brand new timeout for the page.
-  // TODO(chrisha): Make this configurable via Finch experiment.
-  CreatePageTimeout(page_node, timeout_);
+  CreatePageTimeout(page_node, timeout_max_);
 }
 
 void TabLoadingFrameNavigationPolicy::CreatePageTimeout(
@@ -279,18 +309,19 @@ void TabLoadingFrameNavigationPolicy::StopThrottlingExpiredPages() {
     timeouts_.pop();
 
     // Post a task to the UI thread to notify the mechanism to stop throttling
-    // the contents.
+    // the contents. Note that |mechanism_| is expected to effectively live
+    // forever (it is only a testing seam, in production it is a static
+    // singleton), so passing base::Unretained is safe.
     base::PostTask(
         FROM_HERE,
         {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
         base::BindOnce(
-            [](StopThrottlingCallback stop_throttling_callback,
-               const WebContentsProxy& proxy) {
+            [](MechanismDelegate* mechanism, const WebContentsProxy& proxy) {
               auto* contents = proxy.Get();
               if (contents)
-                stop_throttling_callback.Run(contents);
+                mechanism->StopThrottling(contents, proxy.LastNavigationId());
             },
-            stop_throttling_callback_, page_node->GetContentsProxy()));
+            base::Unretained(mechanism_), page_node->GetContentsProxy()));
   }
 }
 

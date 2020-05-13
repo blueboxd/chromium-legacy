@@ -11,6 +11,7 @@
 #include "components/autofill_assistant/browser/fake_script_executor_delegate.h"
 #include "components/autofill_assistant/browser/generic_ui.pb.h"
 #include "components/autofill_assistant/browser/user_model.h"
+#include "components/autofill_assistant/browser/value_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
@@ -77,7 +78,7 @@ TEST_F(BasicInteractionsTest, ComputeValueBooleanAnd) {
   user_model_.SetValue("value_3",
                        SimpleValue(true, /* is_client_side_only = */ true));
   EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
-  EXPECT_EQ(user_model_.GetValue("output"), SimpleValue(true, true));
+  EXPECT_TRUE(user_model_.GetValue("output")->is_client_side_only());
 
   // Mixing types is not allowed.
   user_model_.SetValue("value_1", ValueProto());
@@ -116,7 +117,7 @@ TEST_F(BasicInteractionsTest, ComputeValueBooleanOr) {
   user_model_.SetValue("value_2",
                        SimpleValue(true, /* is_client_side_only = */ true));
   EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
-  EXPECT_EQ(user_model_.GetValue("output"), SimpleValue(true, true));
+  EXPECT_TRUE(user_model_.GetValue("output")->is_client_side_only());
 
   // Mixing types is not allowed.
   user_model_.SetValue("value_1", ValueProto());
@@ -149,7 +150,7 @@ TEST_F(BasicInteractionsTest, ComputeValueBooleanNot) {
   user_model_.SetValue("value",
                        SimpleValue(false, /* is_client_side_only = */ true));
   EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
-  EXPECT_EQ(user_model_.GetValue("value"), SimpleValue(true, true));
+  EXPECT_TRUE(user_model_.GetValue("value")->is_client_side_only());
 
   // Not a boolean.
   user_model_.SetValue("value", ValueProto());
@@ -166,8 +167,8 @@ TEST_F(BasicInteractionsTest, ComputeValueBooleanNot) {
 TEST_F(BasicInteractionsTest, ComputeValueToString) {
   ComputeValueProto proto;
   proto.mutable_to_string()->mutable_value()->set_model_identifier("value");
-  user_model_.SetValue("value", SimpleValue(1),
-                       /* is_client_side_only = */ true);
+  user_model_.SetValue("value", SimpleValue(1,
+                                            /* is_client_side_only = */ true));
 
   // Result model identifier not set.
   EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
@@ -222,12 +223,32 @@ TEST_F(BasicInteractionsTest, ComputeValueToString) {
   user_model_.SetValue("value", ValueProto());
   EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
 
-  // Multi value fails.
+  // Multi value succeeds.
   ValueProto multi_value;
   multi_value.mutable_booleans()->add_values(true);
   multi_value.mutable_booleans()->add_values(false);
   user_model_.SetValue("value", multi_value);
-  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  ValueProto expected_result;
+  expected_result.mutable_strings()->add_values("true");
+  expected_result.mutable_strings()->add_values("false");
+  EXPECT_EQ(*user_model_.GetValue("output"), expected_result);
+
+  multi_value.Clear();
+  multi_value.mutable_ints()->add_values(5);
+  multi_value.mutable_ints()->add_values(13);
+  user_model_.SetValue("value", multi_value);
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  expected_result.Clear();
+  expected_result.mutable_strings()->add_values("5");
+  expected_result.mutable_strings()->add_values("13");
+  EXPECT_EQ(*user_model_.GetValue("output"), expected_result);
+
+  // is_client_side_only flag is sticky.
+  multi_value.set_is_client_side_only(true);
+  user_model_.SetValue("value", multi_value);
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  EXPECT_TRUE(user_model_.GetValue("output")->is_client_side_only());
 }
 
 TEST_F(BasicInteractionsTest, ComputeValueIntegerSum) {
@@ -268,7 +289,7 @@ TEST_F(BasicInteractionsTest, ComputeValueIntegerSum) {
   user_model_.SetValue("value_b",
                        SimpleValue(5, /* is_client_side_only = */ true));
   EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
-  EXPECT_EQ(user_model_.GetValue("result"), SimpleValue(7, true));
+  EXPECT_TRUE(user_model_.GetValue("result")->is_client_side_only());
 }
 
 TEST_F(BasicInteractionsTest, EndActionWithoutCallbackFails) {
@@ -394,7 +415,7 @@ TEST_F(BasicInteractionsTest, ComputeValueCompare) {
   user_model_.SetValue("value_b",
                        SimpleValue(1, /* is_client_side_only = */ true));
   EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
-  EXPECT_EQ(user_model_.GetValue("result"), SimpleValue(true, true));
+  EXPECT_EQ(*user_model_.GetValue("result"), SimpleValue(true, true));
 }
 
 TEST_F(BasicInteractionsTest, ComputeValueCreateCreditCardResponse) {

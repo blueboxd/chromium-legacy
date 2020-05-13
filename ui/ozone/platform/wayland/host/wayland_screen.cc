@@ -4,11 +4,15 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_screen.h"
 
+#include <set>
+#include <vector>
+
+#include "base/stl_util.h"
 #include "ui/display/display.h"
 #include "ui/display/display_finder.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_cursor_position.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
@@ -170,6 +174,14 @@ gfx::AcceleratedWidget WaylandScreen::GetAcceleratedWidgetAtScreenPoint(
   if (window && window->GetBounds().Contains(point))
     return window->GetWidget();
   return gfx::kNullAcceleratedWidget;
+}
+
+gfx::AcceleratedWidget WaylandScreen::GetLocalProcessWidgetAtPoint(
+    const gfx::Point& point,
+    const std::set<gfx::AcceleratedWidget>& ignore) const {
+  auto widget = GetAcceleratedWidgetAtScreenPoint(point);
+  return !widget || base::Contains(ignore, widget) ? gfx::kNullAcceleratedWidget
+                                                   : widget;
 }
 
 display::Display WaylandScreen::GetDisplayNearestPoint(

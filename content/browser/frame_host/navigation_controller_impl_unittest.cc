@@ -27,7 +27,6 @@
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
-#include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webui/content_web_ui_controller_factory.h"
@@ -3003,7 +3002,7 @@ TEST_F(NavigationControllerTest, ShowBrowserURLAfterFailUntilModified) {
 
   // Suppose it aborts before committing, if it's a 204 or download or due to a
   // stop or a new navigation from the user.  The URL should remain visible.
-  static_cast<NavigatorImpl*>(main_test_rfh()->frame_tree_node()->navigator())
+  static_cast<Navigator*>(main_test_rfh()->frame_tree_node()->navigator())
       ->CancelNavigation(main_test_rfh()->frame_tree_node());
   EXPECT_EQ(url, controller.GetVisibleEntry()->GetURL());
 

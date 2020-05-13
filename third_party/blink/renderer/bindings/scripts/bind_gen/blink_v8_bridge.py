@@ -170,7 +170,8 @@ def blink_type_info(idl_type):
             or real_type.is_variadic):
         element_type = real_type.element_type
         element_type_info = blink_type_info(real_type.element_type)
-        if element_type.type_definition_object is not None:
+        if (element_type.type_definition_object is not None
+                and not element_type.is_enumeration):
             # In order to support recursive IDL data structures, we have to
             # avoid recursive C++ header inclusions and utilize C++ forward
             # declarations.  Since |VectorOf| requires complete type

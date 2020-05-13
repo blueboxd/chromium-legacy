@@ -9,9 +9,6 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/branding_buildflags.h"
-#include "build/buildflag.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -20,13 +17,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
-#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -74,8 +68,7 @@ class PasswordGenerationPopupViewViews::GeneratedPasswordBox
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Construct a ColumnSet with one view on the left and another on the right.
-  static void BuildColumnSet(views::GridLayout* layout,
-                             bool should_show_google_icon);
+  static void BuildColumnSet(views::GridLayout* layout);
 
   views::Label* suggestion_label_ = nullptr;
   views::Label* password_label_ = nullptr;
@@ -87,7 +80,7 @@ void PasswordGenerationPopupViewViews::GeneratedPasswordBox::Init(
   controller_ = controller;
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>());
-  BuildColumnSet(layout, controller->ShouldShowGoogleIcon());
+  BuildColumnSet(layout);
   layout->StartRow(views::GridLayout::kFixedSize, 0);
 
   suggestion_label_ = layout->AddView(std::make_unique<views::Label>(
@@ -101,15 +94,6 @@ void PasswordGenerationPopupViewViews::GeneratedPasswordBox::Init(
   password_label_ = layout->AddView(std::make_unique<views::Label>(
       controller_->password(), ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
       STYLE_SECONDARY_MONOSPACED));
-
-  if (controller->ShouldShowGoogleIcon()) {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-    auto* icon_view = layout->AddView(std::make_unique<views::ImageView>());
-    icon_view->SetImage(gfx::CreateVectorIcon(
-        kGoogleGLogoIcon, gfx::kFaviconSize, gfx::kPlaceholderColor));
-    icon_view->set_can_process_events_within_subtree(false);
-#endif
-  }
 }
 
 void PasswordGenerationPopupViewViews::GeneratedPasswordBox::OnMouseEntered(
@@ -157,8 +141,7 @@ void PasswordGenerationPopupViewViews::GeneratedPasswordBox::OnGestureEvent(
 
 // static
 void PasswordGenerationPopupViewViews::GeneratedPasswordBox::BuildColumnSet(
-    views::GridLayout* layout,
-    bool should_show_google_icon) {
+    views::GridLayout* layout) {
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                         0 /* resize_percent */,
@@ -170,15 +153,6 @@ void PasswordGenerationPopupViewViews::GeneratedPasswordBox::BuildColumnSet(
   column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                         1.0 /* resize_percent */,
                         views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
-  if (should_show_google_icon) {
-    // TODO(crbug.com/1060131): Set the final margins for the icon.
-    column_set->AddPaddingColumn(0 /* resize_percent */,
-                                 ChromeLayoutProvider::Get()->GetDistanceMetric(
-                                     views::DISTANCE_RELATED_LABEL_HORIZONTAL));
-    column_set->AddColumn(views::GridLayout::TRAILING,
-                          views::GridLayout::CENTER, 0 /* resize_percent */,
-                          views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
-  }
 }
 
 PasswordGenerationPopupViewViews::PasswordGenerationPopupViewViews(

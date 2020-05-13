@@ -6,6 +6,7 @@
 
 #include <linux/input.h>
 
+#include "base/system/sys_info.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
@@ -32,13 +33,16 @@ class PalmDetectionFilterFactoryTest : public testing::Test {
     EXPECT_TRUE(
         CapabilitiesToDeviceInfo(kNocturneStylus, &nocturne_stylus_info_));
     EXPECT_TRUE(CapabilitiesToDeviceInfo(kEveStylus, &eve_stylus_info_));
+    EXPECT_TRUE(CapabilitiesToDeviceInfo(kKohakuTouchscreen,
+                                         &kohaku_touchscreen_info_));
     scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
   }
 
  protected:
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
   EventDeviceInfo eve_touchscreen_info_, eve_stylus_info_,
-      nocturne_touchscreen_info_, nocturne_stylus_info_;
+      nocturne_touchscreen_info_, nocturne_stylus_info_,
+      kohaku_touchscreen_info_;
   SharedPalmDetectionFilterState shared_palm_state_;
 
   DISALLOW_COPY_AND_ASSIGN(PalmDetectionFilterFactoryTest);
@@ -46,6 +50,25 @@ class PalmDetectionFilterFactoryTest : public testing::Test {
 
 class PalmDetectionFilterFactoryDeathTest
     : public PalmDetectionFilterFactoryTest {};
+
+#if defined(OS_CHROMEOS)
+TEST_F(PalmDetectionFilterFactoryTest, Radiuses) {
+  std::string lsb_release = "CHROMEOS_RELEASE_BOARD=hatch\n";
+  base::SysInfo::SetChromeOSVersionInfoForTest(lsb_release, base::Time());
+  EXPECT_EQ("0.090477715, 3.9225964", internal::FetchNeuralPalmRadiusPolynomial(
+                                          kohaku_touchscreen_info_, ""));
+
+  lsb_release = "CHROMEOS_RELEASE_BOARD=reef\n";
+  base::SysInfo::SetChromeOSVersionInfoForTest(lsb_release, base::Time());
+  EXPECT_EQ("0.17889799, 4.22584412", internal::FetchNeuralPalmRadiusPolynomial(
+                                          kohaku_touchscreen_info_, ""));
+
+  lsb_release = "CHROMEOS_RELEASE_BOARD=octopus\n";
+  base::SysInfo::SetChromeOSVersionInfoForTest(lsb_release, base::Time());
+  EXPECT_EQ("", internal::FetchNeuralPalmRadiusPolynomial(
+                    kohaku_touchscreen_info_, ""));
+}
+#endif
 
 TEST_F(PalmDetectionFilterFactoryTest, AllDisabled) {
   scoped_feature_list_->InitWithFeatures(
@@ -55,7 +78,6 @@ TEST_F(PalmDetectionFilterFactoryTest, AllDisabled) {
       CreatePalmDetectionFilter(eve_touchscreen_info_, &shared_palm_state_);
   EXPECT_EQ(OpenPalmDetectionFilter::kFilterName,
             palm_filter->FilterNameForTesting());
-
   palm_filter = CreatePalmDetectionFilter(nocturne_touchscreen_info_,
                                           &shared_palm_state_);
   EXPECT_EQ(OpenPalmDetectionFilter::kFilterName,

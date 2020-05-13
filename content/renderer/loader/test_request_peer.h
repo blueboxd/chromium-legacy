@@ -33,7 +33,8 @@ class TestRequestPeer : public RequestPeer {
 
   void OnUploadProgress(uint64_t position, uint64_t size) override;
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
-                          network::mojom::URLResponseHeadPtr head) override;
+                          network::mojom::URLResponseHeadPtr head,
+                          std::vector<std::string>*) override;
   void OnReceivedResponse(network::mojom::URLResponseHeadPtr head) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;

@@ -439,6 +439,9 @@ void WebAppInstallTask::OnGetWebApplicationInfo(
     DCHECK(install_params_->fallback_start_url.is_valid());
     web_app_info->app_url = install_params_->fallback_start_url;
 
+    if (install_params_->fallback_app_name.has_value())
+      web_app_info->title = install_params_->fallback_app_name.value();
+
     // If `additional_search_terms` was a manifest property, it would be
     // sanitized while parsing the manifest. Since it's not, we sanitize it
     // here.

@@ -49,6 +49,11 @@ interface PrintPreviewUI {
   // the print preview.
   [EnableIf=enable_print_preview]
   SetOptionsFromDocument(OptionsFromDocumentParams params, int32 request_id);
+
+  // Tells the browser print preview failed. |document_cookie| is the param to
+  // ensure correctness and |request_id| is the id for the preview request.
+  [EnableIf=enable_print_preview]
+  PrintPreviewFailed(int32 document_cookie, int32 request_id);
 };
 
 // Render process interface exposed to the browser to handle most of the

@@ -50,6 +50,14 @@ class WebStateObserver {
   virtual void DidStartNavigation(WebState* web_state,
                                   NavigationContext* navigation_context) {}
 
+  // Called when an in-progress main-frame navigation in |web_state| receives
+  // a server redirect to a different URL. At the point where this is called,
+  // |navigation_context|'s URL has already been updated, so calling GetUrl()
+  // on |navigation_context| will return the redirect URL rather than the
+  // original URL.
+  virtual void DidRedirectNavigation(WebState* web_state,
+                                     NavigationContext* navigation_context) {}
+
   // Called when a navigation finished in the WebState for the main frame. This
   // happens when a navigation is committed, aborted or replaced by a new one.
   // To know if the navigation has resulted in an error page, use

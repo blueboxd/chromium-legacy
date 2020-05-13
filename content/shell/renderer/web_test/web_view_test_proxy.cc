@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/command_line.h"
+#include "content/public/common/content_switches.h"
 #include "content/shell/common/web_test/web_test_string_util.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/renderer/web_test/mock_screen_orientation_client.h"
@@ -94,7 +96,15 @@ void WebViewTestProxy::Reset() {
 }
 
 void WebViewTestProxy::Install(blink::WebLocalFrame* frame) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableAxSerializerForTesting)) {
+    RenderFrame* render_frame = RenderFrame::FromWebFrame(frame);
+    if (render_frame)
+      render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  }
+
   accessibility_controller_.Install(frame);
+
   text_input_controller_.Install(frame);
 }
 

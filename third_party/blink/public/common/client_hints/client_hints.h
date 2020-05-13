@@ -11,13 +11,26 @@
 #include "base/optional.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom-shared.h"
 #include "third_party/blink/public/common/common_export.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom.h"
+
+class GURL;
 
 namespace blink {
 
-// Mapping from WebClientHintsType to the hint's to the hint's outgoing header
+class FeaturePolicy;
+
+// Mapping from WebClientHintsType to the hint's outgoing header
 // (e.g. kLang => "sec-ch-lang"). The ordering matches the ordering of enums in
 // services/network/public/mojom/web_client_hints_types.mojom
 BLINK_COMMON_EXPORT extern const char* const kClientHintsHeaderMapping[];
+
+// Mapping from WebClientHintsType to the corresponding Feature-Policy (e.g.
+// kDpr => kClientHintsDPR). The order matches the header mapping and the enum
+// order in services/network/public/mojom/web_client_hints_types.mojom
+BLINK_COMMON_EXPORT extern const mojom::FeaturePolicyFeature
+    kClientHintsFeaturePolicyMapping[];
+
+// The size of the mapping arrays.
 BLINK_COMMON_EXPORT extern const size_t kClientHintsMappingsCount;
 
 // Mapping from WebEffectiveConnectionType to the header value. This value is
@@ -46,6 +59,13 @@ base::Optional<std::vector<network::mojom::WebClientHintsType>> FilterAcceptCH(
     base::Optional<std::vector<network::mojom::WebClientHintsType>> in,
     bool permit_lang_hints,
     bool permit_ua_hints);
+
+// Add a list of Client Hints headers to be removed to the output vector, based
+// on FeaturePolicy and the url's origin.
+BLINK_COMMON_EXPORT void FindClientHintsToRemove(
+    const FeaturePolicy* feature_policy,
+    const GURL& url,
+    std::vector<std::string>* removed_headers);
 
 }  // namespace blink
 

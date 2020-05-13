@@ -140,8 +140,10 @@ void DictionaryTest::Reset() {
   boolean_member_ = base::nullopt;
   double_member_ = base::nullopt;
   unrestricted_double_member_ = base::nullopt;
-  string_member_ = String();
+  string_member_ = base::nullopt;
   string_member_with_default_ = String("Should not be returned");
+  byte_string_member_ = base::nullopt;
+  usv_string_member_ = base::nullopt;
   string_sequence_member_ = base::nullopt;
   string_sequence_member_with_default_.Fill("Should not be returned", 1);
   string_sequence_or_null_member_ = base::nullopt;
@@ -154,8 +156,9 @@ void DictionaryTest::Reset() {
   object_or_null_member_with_default_ = ScriptValue();
   double_or_string_member_ = DoubleOrString();
   event_target_or_null_member_ = nullptr;
-  derived_string_member_ = String();
+  derived_string_member_ = base::nullopt;
   derived_string_member_with_default_ = String();
+  derived_derived_string_member_ = base::nullopt;
   required_boolean_member_ = false;
   dictionary_member_properties_ = base::nullopt;
   internal_enum_or_internal_enum_sequence_ =
@@ -188,10 +191,13 @@ void DictionaryTest::GetInternals(InternalDictionary* dict) {
     dict->setDoubleMember(double_member_.value());
   if (unrestricted_double_member_)
     dict->setUnrestrictedDoubleMember(unrestricted_double_member_.value());
-  dict->setStringMember(string_member_);
+  if (string_member_)
+    dict->setStringMember(string_member_.value());
   dict->setStringMemberWithDefault(string_member_with_default_);
-  dict->setByteStringMember(byte_string_member_);
-  dict->setUsvStringMember(usv_string_member_);
+  if (byte_string_member_)
+    dict->setByteStringMember(byte_string_member_.value());
+  if (usv_string_member_)
+    dict->setUsvStringMember(usv_string_member_.value());
   if (string_sequence_member_)
     dict->setStringSequenceMember(string_sequence_member_.value());
   dict->setStringSequenceMemberWithDefault(
@@ -219,13 +225,15 @@ void DictionaryTest::GetInternals(InternalDictionary* dict) {
   dict->setInternalEnumOrInternalEnumSequenceMember(
       internal_enum_or_internal_enum_sequence_);
   dict->setAnyMember(any_member_);
-  dict->setCallbackFunctionMember(callback_function_member_);
+  if (callback_function_member_)
+    dict->setCallbackFunctionMember(callback_function_member_);
 }
 
 void DictionaryTest::GetDerivedInternals(InternalDictionaryDerived* dict) {
   GetInternals(dict);
 
-  dict->setDerivedStringMember(derived_string_member_);
+  if (derived_string_member_)
+    dict->setDerivedStringMember(derived_string_member_.value());
   dict->setDerivedStringMemberWithDefault(derived_string_member_with_default_);
   dict->setRequiredBooleanMember(required_boolean_member_);
 }
@@ -234,7 +242,8 @@ void DictionaryTest::GetDerivedDerivedInternals(
     InternalDictionaryDerivedDerived* dict) {
   GetDerivedInternals(dict);
 
-  dict->setDerivedDerivedStringMember(derived_derived_string_member_);
+  if (derived_derived_string_member_)
+    dict->setDerivedDerivedStringMember(derived_derived_string_member_.value());
 }
 
 void DictionaryTest::Trace(Visitor* visitor) {

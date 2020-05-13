@@ -55,6 +55,7 @@
 #import "ios/chrome/browser/ui/safe_mode/safe_mode_coordinator.h"
 #import "ios/chrome/browser/ui/util/multi_window_support.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_metrics_browser_agent.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #include "ios/net/cookies/system_cookie_util.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -462,7 +463,10 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   UMA_HISTOGRAM_CUSTOM_TIMES("Session.TotalDurationMax1Day", duration,
                              base::TimeDelta::FromMilliseconds(1),
                              base::TimeDelta::FromHours(24), 50);
-  [currentInterface.tabModel recordSessionMetrics];
+  if (currentInterface.browser) {
+    WebStateListMetricsBrowserAgent::FromBrowser(currentInterface.browser)
+        ->RecordSessionMetrics();
+  }
 
   if (currentInterface.browserState) {
     IOSProfileSessionDurationsService* psdService =

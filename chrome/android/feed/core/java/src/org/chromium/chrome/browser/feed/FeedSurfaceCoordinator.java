@@ -579,9 +579,13 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
                 && maxPosFraction <= 1.0f
             : "Max position fraction should be ranging between 0.0 and 1.0";
 
-        int sectionHeaderTop = mSectionHeaderView.getTop();
-        if (sectionHeaderTop < 0) return false;
-        if (sectionHeaderTop > maxPosFraction * mRootView.getHeight()) return false;
+        // Get the top position of the section header view in the recycler view.
+        int[] headerPositions = new int[2];
+        mSectionHeaderView.getLocationOnScreen(headerPositions);
+        int topPosInStream = headerPositions[1] - mRootView.getTop();
+
+        if (topPosInStream < 0) return false;
+        if (topPosInStream > maxPosFraction * mRootView.getHeight()) return false;
 
         return true;
     }

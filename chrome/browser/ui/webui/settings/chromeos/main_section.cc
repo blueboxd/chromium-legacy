@@ -116,6 +116,9 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("isOSSettings", true);
 
   html_source->AddBoolean("isGuest", features::IsGuestModeActive());
+  html_source->AddBoolean(
+      "isKioskModeActive",
+      user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp());
   html_source->AddBoolean("isSupervised", profile()->IsSupervised());
 
   // Add the System Web App resources for Settings.

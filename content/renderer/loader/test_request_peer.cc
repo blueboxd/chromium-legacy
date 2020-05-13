@@ -24,7 +24,8 @@ void TestRequestPeer::OnUploadProgress(uint64_t position, uint64_t size) {
 
 bool TestRequestPeer::OnReceivedRedirect(
     const net::RedirectInfo& redirect_info,
-    network::mojom::URLResponseHeadPtr head) {
+    network::mojom::URLResponseHeadPtr head,
+    std::vector<std::string>*) {
   EXPECT_FALSE(context_->cancelled);
   EXPECT_FALSE(context_->complete);
   ++context_->seen_redirects;

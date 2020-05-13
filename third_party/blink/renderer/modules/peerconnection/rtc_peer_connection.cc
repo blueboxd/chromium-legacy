@@ -183,7 +183,7 @@ bool IsIceCandidateMissingSdp(
   if (candidate.IsRTCIceCandidateInit()) {
     const RTCIceCandidateInit* ice_candidate_init =
         candidate.GetAsRTCIceCandidateInit();
-    return !ice_candidate_init->hasSdpMid() &&
+    return ice_candidate_init->sdpMid().IsNull() &&
            !ice_candidate_init->hasSdpMLineIndex();
   }
 
@@ -1103,8 +1103,7 @@ DOMException* RTCPeerConnection::checkSdpForStateErrors(
 
 base::Optional<ComplexSdpCategory> RTCPeerConnection::CheckForComplexSdp(
     const RTCSessionDescriptionInit* session_description_init) const {
-  if (!session_description_init->hasType() ||
-      !session_description_init->hasSdp())
+  if (!session_description_init->hasType())
     return base::nullopt;
 
   base::Optional<SdpFormat> sdp_format = DeduceSdpFormat(
@@ -1345,8 +1344,7 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
   }
 
   DCHECK(script_state->ContextIsValid());
-  if (session_description_init->type().IsNull() &&
-      session_description_init->sdp().IsNull()) {
+  if (!session_description_init->hasType()) {
     return setLocalDescription(script_state);
   }
   String sdp;

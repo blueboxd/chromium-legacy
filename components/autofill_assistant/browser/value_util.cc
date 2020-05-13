@@ -40,6 +40,8 @@ bool operator==(const google::protobuf::RepeatedField<T>& values_a,
 
 // Compares two |ValueProto| instances and returns true if they exactly match.
 bool operator==(const ValueProto& value_a, const ValueProto& value_b) {
+  // Note: this comparison intentionally ignores |is_client_side_only|, as that
+  // flag is metadata and should not affect this comparison.
   if (value_a.kind_case() != value_b.kind_case()) {
     return false;
   }
@@ -283,7 +285,6 @@ std::ostream& operator<<(std::ostream& out, const ValueProto& value) {
       break;
     case ValueProto::kLoginOptionResponse:
       out << value.login_option_response();
-      ;
       break;
     case ValueProto::KIND_NOT_SET:
       break;

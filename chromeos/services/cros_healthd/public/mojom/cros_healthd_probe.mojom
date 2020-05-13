@@ -150,19 +150,51 @@ struct CachedVpdInfo {
 // retrieving the information.
 union CpuResult {
   // Valid CpuInfo.
-  array<CpuInfo> cpu_info;
+  CpuInfo cpu_info;
   // The error that occurred attempting to retrieve the CpuInfo.
   ProbeError error;
 };
 
-// Information related to a device's CPU.
+// Information about the device's CPUs.
 struct CpuInfo {
+  // Number of total threads available.
+  uint32 num_total_threads;
+  // The CPU architecture - it's assumed all of a device's CPUs share an
+  // architecture.
+  CpuArchitectureEnum architecture;
+  // Information about the device's physical CPUs.
+  array<PhysicalCpuInfo> physical_cpus;
+};
+
+// Information related to a particular physical CPU.
+struct PhysicalCpuInfo {
   // The CPU model name.
   string model_name;
-  // The CPU architecture.
-  CpuArchitectureEnum architecture;
+  // Logical CPUs corresponding to this physical CPU.
+  array<LogicalCpuInfo> logical_cpus;
+};
+
+// Information related to a particular logical CPU.
+struct LogicalCpuInfo {
   // The max CPU clock speed in kHz.
   uint32 max_clock_speed_khz;
+  // Maximum frequency the CPU is allowed to run at, by policy.
+  uint32 scaling_max_frequency_khz;
+  // Current frequency the CPU is running at.
+  uint32 scaling_current_frequency_khz;
+  // Idle time since last boot. USER_HZ can be converted to seconds with the
+  // conversion factor given by sysconf(_SC_CLK_TCK).
+  uint32 idle_time_user_hz;
+  // Information about the logical CPU's time in various C-states.
+  array<CpuCStateInfo> c_states;
+};
+
+// Information about a CPU's C-states.
+struct CpuCStateInfo {
+  // Name of the state.
+  string name;
+  // Time spent in the state since the last reboot, in microseconds.
+  uint64 time_in_state_since_last_boot_us;
 };
 
 // Timezone probe result. Can either be populated with the TimezoneInfo or an

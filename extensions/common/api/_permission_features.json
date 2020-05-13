@@ -477,12 +477,7 @@
     "session_types": ["kiosk.autolaunched"]
   }, {
     "channel": "stable",
-    "extension_types": [
-      "extension",
-      "legacy_packaged_app",
-      "platform_app",
-      "login_screen_extension"
-    ],
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "platforms": ["chromeos", "mac", "win", "linux"],
     "whitelist": [
       "0DE0F05680A4A056BCEC864ED8DDA84296F82B40",  // http://crbug.com/434651
@@ -508,15 +503,7 @@
       "61FF4757F9420B62B19BA5C96084649339DB31F5",  // http://crbug.com/731941
       "6FB7E1B6C0247B687AC14772E87A117F5F5E4497",  // http://crbug.com/731941
       "9834387FDA1F66A1B5CA06CB442137B556F12F2A",  // http://crbug.com/772346
-      "A9A9FC0228ADF541F0334F22BEFB8F9C245B21D7",  // http://crbug.com/839189
-      // TODO(crbug.com/1075877, hendrich) remove this when
-      // enterprise.networkingAttributes has landed
-      "E219EE36A3B40612FD2A8CD6937B03EF0C97D3FE", // Imprivata (login screen) crbug.com/1075877
-      "4DBFC1C52D6660DD90791976DF7FEF7B3D360509", // Imprivata (login screen) crbug.com/1075877
-      "CDA6A10BE50CE65C59B766D0CE6A27E8E0A1533F", // Imprivata (login screen) crbug.com/1075877
-      "A24DE1B21A67E25FB62AC8491642038FE25DA75B", // Imprivata (in-session) crbug.com/1075877
-      "6B25164FFE2BADB5F1DBBD301CC022170267022D", // Imprivata (in-session) crbug.com/1075877
-      "4D15F9AFCF54E56F0A6E06D22DD15F133DCF0882"  // Imprivata (in-session) crbug.com/1075877
+      "A9A9FC0228ADF541F0334F22BEFB8F9C245B21D7"   // http://crbug.com/839189
     ]
   }],
   "networkingPrivate": {

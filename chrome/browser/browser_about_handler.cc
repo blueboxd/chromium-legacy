@@ -49,9 +49,11 @@ bool WillHandleBrowserAboutURL(GURL* url,
   std::string host(url->host());
   std::string path;
 
+#if !defined(OS_CHROMEOS)
   // Handle chrome://settings.
   if (host == chrome::kChromeUISettingsHost)
     return true;  // Prevent further rewriting - this is a valid URL.
+#endif            // !defined(OS_CHROMEOS)
 
   // Do not handle chrome://help.
   if (host == chrome::kChromeUIHelpHost)
@@ -64,16 +66,6 @@ bool WillHandleBrowserAboutURL(GURL* url,
   if (host == chrome::kChromeUISyncHost) {
     // Replace sync with sync-internals (for legacy reasons).
     host = chrome::kChromeUISyncInternalsHost;
-// Redirect chrome://extensions and chrome://settings/extensions all to
-// chrome://extensions and forward path.
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  } else if (host == chrome::kChromeUIExtensionsHost ||
-             (host == chrome::kChromeUISettingsHost &&
-              url->path() ==
-                  std::string("/") + chrome::kDeprecatedExtensionsSubPage)) {
-    host = chrome::kChromeUIExtensionsHost;
-    path = url->path();
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   } else if (host == chrome::kChromeUIHistoryHost) {
     // Redirect chrome://history.
     path = url->path();

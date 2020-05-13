@@ -151,6 +151,7 @@ TEST_F(MetricsLogTest, BasicRecord) {
   system_profile->set_client_uuid(kClientId);
   system_profile->set_channel(client.GetChannel());
   system_profile->set_application_locale(client.GetApplicationLocale());
+  system_profile->set_brand_code(TestMetricsServiceClient::kBrandForTesting);
 
 #if defined(ADDRESS_SANITIZER) || DCHECK_IS_ON()
   system_profile->set_is_instrumented_build(true);

@@ -17,6 +17,7 @@ ch-ua-full-version
 ch-ua-mobile
 ch-ua-model
 ch-ua-platform
+ch-ua-platform-version
 ch-viewport-width
 ch-width
 conversion-measurement

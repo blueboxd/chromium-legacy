@@ -1298,12 +1298,6 @@ void InterceptionJob::FollowRedirect(
     const net::HttpRequestHeaders& modified_headers,
     const net::HttpRequestHeaders& modified_cors_exempt_headers,
     const base::Optional<GURL>& new_url) {
-  // TODO(arthursonzogni, juncai): This seems to be correctly implemented, but
-  // not used nor tested so far. Add tests and remove this DCHECK to support
-  // this feature if needed. See https://crbug.com/845683.
-  DCHECK(removed_headers.empty())
-      << "Redirect with removed headers is not supported yet. See "
-         "https://crbug.com/845683";
   DCHECK(!new_url.has_value()) << "Redirect with modified url was not "
                                   "supported yet. crbug.com/845683";
   DCHECK(!waiting_for_resolution_);

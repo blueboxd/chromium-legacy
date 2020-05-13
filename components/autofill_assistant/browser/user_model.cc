@@ -59,7 +59,9 @@ void UserModel::SetValue(const std::string& identifier,
                          const ValueProto& value,
                          bool force_notification) {
   auto result = values_.emplace(identifier, value);
-  if (!force_notification && !result.second && result.first->second == value) {
+  if (!force_notification && !result.second && result.first->second == value &&
+      value.is_client_side_only() ==
+          result.first->second.is_client_side_only()) {
     return;
   } else if (!result.second) {
     result.first->second = value;

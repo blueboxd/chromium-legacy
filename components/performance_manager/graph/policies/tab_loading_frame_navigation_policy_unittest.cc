@@ -8,7 +8,9 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "components/performance_manager/public/features.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/performance_manager/test_support/performance_manager_test_harness.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -26,7 +28,10 @@ namespace policies {
 namespace {
 
 class TabLoadingFrameNavigationPolicyTest
-    : public PerformanceManagerTestHarness {
+    : public PerformanceManagerTestHarness,
+      public TabLoadingFrameNavigationPolicy::MechanismDelegate {
+  using Super = PerformanceManagerTestHarness;
+
  public:
   TabLoadingFrameNavigationPolicyTest()
       : PerformanceManagerTestHarness(
@@ -38,23 +43,49 @@ class TabLoadingFrameNavigationPolicyTest
   ~TabLoadingFrameNavigationPolicyTest() override = default;
 
   void SetUp() override {
-    PerformanceManagerTestHarness::SetUp();
+    Super::SetUp();
 
-    // The unittest fixture outlives the graph under test, so passing an
-    // unretained pointer is safe.
-    auto callback = base::BindRepeating(
-        &TabLoadingFrameNavigationPolicyTest::OnStopThrottlingWrapper,
-        base::Unretained(this));
+    // When the policy is created we expect it to enable the mechanism.
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    EXPECT_CALL(*this, OnSetThrottlingEnabled(true));
+    PerformanceManager::CallOnGraph(
+        FROM_HERE,
+        base::BindLambdaForTesting([policy = this->policy_](Graph* graph) {
+          // Destroy the policy object early, so that it invokes
+          // StopThrottlingEverything in a controlled way.
+          graph->TakeFromGraph(policy);
+        }));
 
     // Create the policy object and inject it into the graph.
     std::unique_ptr<TabLoadingFrameNavigationPolicy> policy =
-        std::make_unique<TabLoadingFrameNavigationPolicy>(callback);
+        std::make_unique<TabLoadingFrameNavigationPolicy>();
+    policy->SetMechanismDelegateForTesting(this);
     policy_ = policy.get();
     PerformanceManager::PassToGraph(FROM_HERE, std::move(policy));
+    run_loop.Run();
+    testing::Mock::VerifyAndClearExpectations(this);
 
     // Ensure that the policy default initializes with no throttles in place.
     ExpectThrottledPageCount(0);
     start_ = task_environment()->GetMockTickClock()->NowTicks();
+  }
+
+  void TearDown() override {
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    EXPECT_CALL(*this, OnSetThrottlingEnabled(false));
+    PerformanceManager::CallOnGraph(
+        FROM_HERE,
+        base::BindLambdaForTesting([policy = this->policy_](Graph* graph) {
+          // Destroy the policy object early, so that it invokes
+          // StopThrottlingEverything in a controlled way.
+          graph->TakeFromGraph(policy);
+        }));
+    policy_ = nullptr;
+    run_loop.Run();
+    testing::Mock::VerifyAndClearExpectations(this);
+    Super::TearDown();
   }
 
   void RunUntilStopThrottling() {
@@ -98,7 +129,8 @@ class TabLoadingFrameNavigationPolicyTest
     run_loop.Run();
   }
 
-  // Invoked by the policy when throttling should stop for a given contents.
+  // The MechanismDelegate calls redirect here.
+  MOCK_METHOD1(OnSetThrottlingEnabled, void(bool));
   MOCK_METHOD1(OnStopThrottling, void(content::WebContents*));
 
   // Accessors.
@@ -110,12 +142,19 @@ class TabLoadingFrameNavigationPolicyTest
     base::TimeTicks now = task_environment()->GetMockTickClock()->NowTicks();
     base::TimeDelta elapsed = now - start_;
     double relative =
-        elapsed.InSecondsF() / policy_->GetTimeoutForTesting().InSecondsF();
+        elapsed.InSecondsF() / policy_->GetMaxTimeoutForTesting().InSecondsF();
     return relative;
   }
 
  private:
-  void OnStopThrottlingWrapper(content::WebContents* contents) {
+  // MechanismDelegate implementation:
+  void SetThrottlingEnabled(bool enabled) override {
+    OnSetThrottlingEnabled(enabled);
+    // Always expect the quit closure to be set for calls to this.
+    quit_closure_.Run();
+  }
+  void StopThrottling(content::WebContents* contents,
+                      int64_t last_navigation_id_unused) override {
     OnStopThrottling(contents);
 
     // Time can be manually advanced as well, so we're not always in a RunLoop.
@@ -246,7 +285,7 @@ TEST_F(TabLoadingFrameNavigationPolicyTest, TimeoutWorks) {
   ASSERT_EQ(0.0, GetRelativeTime());
 
   // Advance time by half of a timeout. No callbacks should fire.
-  task_environment()->FastForwardBy(policy()->GetTimeoutForTesting() * 0.5);
+  task_environment()->FastForwardBy(policy()->GetMaxTimeoutForTesting() * 0.5);
   testing::Mock::VerifyAndClearExpectations(this);
 
   // We are now at time T / 2.
@@ -264,7 +303,7 @@ TEST_F(TabLoadingFrameNavigationPolicyTest, TimeoutWorks) {
   RunUntilStopThrottling();
   ExpectThrottledPageCount(1);
   base::TimeTicks stop1 = task_environment()->GetMockTickClock()->NowTicks();
-  EXPECT_EQ(policy()->GetTimeoutForTesting(), stop1 - start());
+  EXPECT_EQ(policy()->GetMaxTimeoutForTesting(), stop1 - start());
 
   // We are now at time T.
   ASSERT_EQ(1.0, GetRelativeTime());
@@ -279,7 +318,7 @@ TEST_F(TabLoadingFrameNavigationPolicyTest, TimeoutWorks) {
   // Advance time by a quarter of the timeout period, bringing us to time
   // 1.25 T. This means there will be 1/4 of the timeout left on the second as
   // it expires at 1.5 T.
-  task_environment()->FastForwardBy(policy()->GetTimeoutForTesting() * 0.25);
+  task_environment()->FastForwardBy(policy()->GetMaxTimeoutForTesting() * 0.25);
   testing::Mock::VerifyAndClearExpectations(this);
   ExpectThrottledPageCount(2);
 
@@ -296,7 +335,7 @@ TEST_F(TabLoadingFrameNavigationPolicyTest, TimeoutWorks) {
 
   // Advance time to a time past when the second notification *would* have
   // expired, and expect no notifications. We'll go to 1.6 T, so 0.35 T further.
-  task_environment()->FastForwardBy(policy()->GetTimeoutForTesting() * 0.35);
+  task_environment()->FastForwardBy(policy()->GetMaxTimeoutForTesting() * 0.35);
   testing::Mock::VerifyAndClearExpectations(this);
 
   // We are now at time 1.6 T.
@@ -307,10 +346,30 @@ TEST_F(TabLoadingFrameNavigationPolicyTest, TimeoutWorks) {
   RunUntilStopThrottling();
   ExpectThrottledPageCount(0);
   base::TimeTicks stop3 = task_environment()->GetMockTickClock()->NowTicks();
-  EXPECT_EQ(policy()->GetTimeoutForTesting(), stop3 - stop1);
+  EXPECT_EQ(policy()->GetMaxTimeoutForTesting(), stop3 - stop1);
 
   // We are now at time 2 T.
   ASSERT_EQ(2.0, GetRelativeTime());
+}
+
+TEST(TabLoadingFrameNavigationThrottlesParams, FeatureParamsWork) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kTabLoadingFrameNavigationThrottles,
+      {{"MinimumThrottleTimeoutMilliseconds", "2500"},
+       {"MaximumThrottleTimeoutMilliseconds", "25000"}});
+
+  // Make sure the parsing works.
+  auto params = features::TabLoadingFrameNavigationThrottlesParams::GetParams();
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(2500),
+            params.minimum_throttle_timeout);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(25), params.maximum_throttle_timeout);
+
+  // And make sure the plumbing works.
+  std::unique_ptr<TabLoadingFrameNavigationPolicy> policy =
+      std::make_unique<TabLoadingFrameNavigationPolicy>();
+  EXPECT_EQ(params.minimum_throttle_timeout, policy->GetMinTimeoutForTesting());
+  EXPECT_EQ(params.maximum_throttle_timeout, policy->GetMaxTimeoutForTesting());
 }
 
 }  // namespace policies

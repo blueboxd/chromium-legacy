@@ -85,14 +85,16 @@ PropertyRegistration* CreateLengthRegistration(const String& name, int px) {
 void RegisterProperty(Document& document,
                       const String& name,
                       const String& syntax,
-                      const String& initial_value,
+                      const base::Optional<String>& initial_value,
                       bool is_inherited) {
+  DCHECK(!initial_value || !initial_value.value().IsNull());
   DummyExceptionStateForTesting exception_state;
   PropertyDefinition* property_definition = PropertyDefinition::Create();
   property_definition->setName(name);
   property_definition->setSyntax(syntax);
-  property_definition->setInitialValue(initial_value);
   property_definition->setInherits(is_inherited);
+  if (initial_value)
+    property_definition->setInitialValue(initial_value.value());
   PropertyRegistration::registerProperty(document.GetExecutionContext(),
                                          property_definition, exception_state);
   ASSERT_FALSE(exception_state.HadException());

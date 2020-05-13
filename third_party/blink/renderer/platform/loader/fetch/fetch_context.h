@@ -54,6 +54,7 @@ namespace blink {
 
 enum class ResourceType : uint8_t;
 class ClientHintsPreferences;
+class FeaturePolicy;
 class KURL;
 class ResourceTimingInfo;
 class WebScopedVirtualTimePauser;
@@ -141,6 +142,8 @@ class PLATFORM_EXPORT FetchContext : public GarbageCollected<FetchContext> {
   virtual FetchContext* Detach() {
     return MakeGarbageCollected<FetchContext>();
   }
+
+  virtual const FeaturePolicy* GetFeaturePolicy() const { return nullptr; }
 
   // Determine if the request is on behalf of an advertisement. If so, return
   // true.

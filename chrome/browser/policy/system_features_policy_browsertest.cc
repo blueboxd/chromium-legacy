@@ -11,21 +11,35 @@
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/webui_url_constants.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/policy_constants.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 
 namespace policy {
 
-class SystemFeaturesPolicyTest : public PolicyTest {};
+class SystemFeaturesPolicyTest : public PolicyTest {
+ protected:
+  content::WebUI* GetCommittedWebUI(const GURL& url) {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    content::WaitForLoadStop(web_contents);
+
+    return web_contents->GetCommittedWebUI();
+  }
+};
 
 IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, DisableCameraBeforeInstall) {
   PolicyMap policies;
   std::unique_ptr<base::Value> system_features =
       std::make_unique<base::Value>(base::Value::Type::LIST);
-  system_features->Append("camera");
+  system_features->Append(kCameraFeature);
   policies.Set(key::kSystemFeaturesDisableList, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::move(system_features), nullptr);
@@ -85,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, DisableCameraAfterInstall) {
   PolicyMap policies;
   std::unique_ptr<base::Value> system_features =
       std::make_unique<base::Value>(base::Value::Type::LIST);
-  system_features->Append("camera");
+  system_features->Append(kCameraFeature);
   policies.Set(key::kSystemFeaturesDisableList, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::move(system_features), nullptr);
@@ -122,6 +136,27 @@ IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, DisableCameraAfterInstall) {
         EXPECT_FALSE(apps::IconEffects::kBlocked &
                      update.IconKey()->icon_effects);
       });
+}
+
+IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, RedirectChromeSettingsURL) {
+  PolicyMap policies;
+  std::unique_ptr<base::Value> system_features =
+      std::make_unique<base::Value>(base::Value::Type::LIST);
+  system_features->Append(kBrowserSettingsFeature);
+  policies.Set(key::kSystemFeaturesDisableList, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::move(system_features), nullptr);
+  UpdateProviderPolicy(policies);
+
+  GURL settings_url = GURL(chrome::kChromeUISettingsURL);
+  ASSERT_FALSE(GetCommittedWebUI(settings_url));
+
+  policies.Set(key::kSystemFeaturesDisableList, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(), nullptr);
+  UpdateProviderPolicy(policies);
+
+  ASSERT_TRUE(GetCommittedWebUI(settings_url));
 }
 
 }  // namespace policy

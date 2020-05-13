@@ -11,6 +11,7 @@
 #include "base/process/process.h"
 #include "base/task/task_traits.h"
 #include "components/performance_manager/public/graph/node.h"
+#include "content/public/common/process_type.h"
 
 namespace base {
 class Process;
@@ -43,6 +44,9 @@ class ProcessNode : public Node {
 
   ProcessNode();
   ~ProcessNode() override;
+
+  // Returns the type of this process.
+  virtual content::ProcessType GetProcessType() const = 0;
 
   // Returns the process ID associated with this process. Use this in preference
   // to querying GetProcess.Pid(). It's always valid to access, but will return

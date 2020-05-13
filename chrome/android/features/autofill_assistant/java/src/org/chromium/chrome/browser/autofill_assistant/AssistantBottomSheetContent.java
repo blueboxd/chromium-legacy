@@ -13,7 +13,7 @@ import android.widget.ScrollView;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 
 /**
  * The {@link BottomSheetContent} for the Autofill Assistant. It supports notifying the

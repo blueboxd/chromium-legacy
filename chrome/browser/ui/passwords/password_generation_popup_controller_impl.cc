@@ -84,8 +84,7 @@ PasswordGenerationPopupControllerImpl::GetOrCreate(
     const base::WeakPtr<password_manager::PasswordManagerDriver>& driver,
     PasswordGenerationPopupObserver* observer,
     content::WebContents* web_contents,
-    content::RenderFrameHost* frame,
-    password_manager::SyncState password_sync_state) {
+    content::RenderFrameHost* frame) {
   if (previous.get() && previous->element_bounds() == bounds &&
       previous->web_contents() == web_contents &&
       previous->driver_.get() == driver.get() &&
@@ -98,8 +97,7 @@ PasswordGenerationPopupControllerImpl::GetOrCreate(
 
   PasswordGenerationPopupControllerImpl* controller =
       new PasswordGenerationPopupControllerImpl(bounds, ui_data, driver,
-                                                observer, web_contents, frame,
-                                                password_sync_state);
+                                                observer, web_contents, frame);
   return controller->GetWeakPtr();
 }
 
@@ -109,8 +107,7 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
     const base::WeakPtr<password_manager::PasswordManagerDriver>& driver,
     PasswordGenerationPopupObserver* observer,
     content::WebContents* web_contents,
-    content::RenderFrameHost* frame,
-    password_manager::SyncState password_sync_state)
+    content::RenderFrameHost* frame)
     : content::WebContentsObserver(web_contents),
       view_(nullptr),
       form_data_(ui_data.form_data),
@@ -128,8 +125,7 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
                          web_contents->GetNativeView()),
       password_selected_(false),
       state_(kOfferGeneration),
-      key_press_handler_manager_(new KeyPressRegistrator(frame)),
-      password_sync_state_(password_sync_state) {
+      key_press_handler_manager_(new KeyPressRegistrator(frame)) {
 #if !defined(OS_ANDROID)
   zoom::ZoomController* zoom_controller =
       zoom::ZoomController::FromWebContents(web_contents);
@@ -308,17 +304,6 @@ void PasswordGenerationPopupControllerImpl::SelectionCleared() {
 
 void PasswordGenerationPopupControllerImpl::SetSelected() {
   PasswordSelected(true);
-}
-
-bool PasswordGenerationPopupControllerImpl::ShouldShowGoogleIcon() const {
-  // If the user has just opted in to passwords account storage, it's possible
-  // the state still evaluates to NOT_SYNCING. The popup is not shown in any
-  // other situation where the state is NOT_SYNCING, so adding it to the check
-  // here is fine.
-  return password_sync_state_ ==
-             password_manager::SyncState::
-                 ACCOUNT_PASSWORDS_ACTIVE_NORMAL_ENCRYPTION ||
-         password_sync_state_ == password_manager::SyncState::NOT_SYNCING;
 }
 
 gfx::NativeView PasswordGenerationPopupControllerImpl::container_view() const {

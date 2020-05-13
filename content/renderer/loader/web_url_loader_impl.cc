@@ -382,7 +382,8 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
 
   void OnUploadProgress(uint64_t position, uint64_t size);
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
-                          network::mojom::URLResponseHeadPtr head);
+                          network::mojom::URLResponseHeadPtr head,
+                          std::vector<std::string>* removed_headers);
   void OnReceivedResponse(network::mojom::URLResponseHeadPtr head);
   void OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle body);
   void OnTransferSizeUpdated(int transfer_size_diff);
@@ -446,7 +447,8 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
   // RequestPeer methods:
   void OnUploadProgress(uint64_t position, uint64_t size) override;
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
-                          network::mojom::URLResponseHeadPtr head) override;
+                          network::mojom::URLResponseHeadPtr head,
+                          std::vector<std::string>* removed_headers) override;
   void OnReceivedResponse(network::mojom::URLResponseHeadPtr head) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
@@ -475,7 +477,8 @@ class WebURLLoaderImpl::SinkPeer : public RequestPeer {
   // RequestPeer implementation:
   void OnUploadProgress(uint64_t position, uint64_t size) override {}
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
-                          network::mojom::URLResponseHeadPtr head) override {
+                          network::mojom::URLResponseHeadPtr head,
+                          std::vector<std::string>*) override {
     return true;
   }
   void OnReceivedResponse(network::mojom::URLResponseHeadPtr head) override {}
@@ -724,7 +727,8 @@ void WebURLLoaderImpl::Context::OnUploadProgress(uint64_t position,
 
 bool WebURLLoaderImpl::Context::OnReceivedRedirect(
     const net::RedirectInfo& redirect_info,
-    network::mojom::URLResponseHeadPtr head) {
+    network::mojom::URLResponseHeadPtr head,
+    std::vector<std::string>* removed_headers) {
   if (!client_)
     return false;
 
@@ -742,7 +746,7 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
       Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
           redirect_info.new_referrer_policy),
       WebString::FromUTF8(redirect_info.new_method), response,
-      report_raw_headers_);
+      report_raw_headers_, removed_headers);
 }
 
 void WebURLLoaderImpl::Context::OnReceivedResponse(
@@ -847,8 +851,10 @@ void WebURLLoaderImpl::RequestPeerImpl::OnUploadProgress(uint64_t position,
 
 bool WebURLLoaderImpl::RequestPeerImpl::OnReceivedRedirect(
     const net::RedirectInfo& redirect_info,
-    network::mojom::URLResponseHeadPtr head) {
-  return context_->OnReceivedRedirect(redirect_info, std::move(head));
+    network::mojom::URLResponseHeadPtr head,
+    std::vector<std::string>* removed_headers) {
+  return context_->OnReceivedRedirect(redirect_info, std::move(head),
+                                      removed_headers);
 }
 
 void WebURLLoaderImpl::RequestPeerImpl::OnReceivedResponse(

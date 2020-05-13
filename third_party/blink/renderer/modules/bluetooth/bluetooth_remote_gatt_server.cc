@@ -27,6 +27,7 @@ namespace blink {
 BluetoothRemoteGATTServer::BluetoothRemoteGATTServer(ExecutionContext* context,
                                                      BluetoothDevice* device)
     : ExecutionContextLifecycleObserver(context),
+      client_receivers_(this, context),
       device_(device),
       connected_(false) {}
 
@@ -79,12 +80,10 @@ void BluetoothRemoteGATTServer::DispatchDisconnected() {
 
 void BluetoothRemoteGATTServer::Dispose() {
   DisconnectIfConnected();
-  // The pipe to this object must be closed when is marked unreachable to
-  // prevent messages from being dispatched before lazy sweeping.
-  client_receivers_.Clear();
 }
 
 void BluetoothRemoteGATTServer::Trace(Visitor* visitor) {
+  visitor->Trace(client_receivers_);
   visitor->Trace(active_algorithms_);
   visitor->Trace(device_);
   ScriptWrappable::Trace(visitor);
@@ -116,7 +115,7 @@ ScriptPromise BluetoothRemoteGATTServer::connect(ScriptState* script_state) {
   // See https://bit.ly/2S0zRAS for task types.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
-  client_receivers_.Add(this, client.InitWithNewEndpointAndPassReceiver(),
+  client_receivers_.Add(client.InitWithNewEndpointAndPassReceiver(),
                         std::move(task_runner));
 
   service->RemoteServerConnect(

@@ -20,6 +20,7 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
+#include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -423,14 +424,15 @@ struct ClientHintsExtendedData {
 };
 
 bool ShouldAddClientHint(const ClientHintsExtendedData& data,
-                         network::mojom::WebClientHintsType type,
-                         blink::mojom::FeaturePolicyFeature feature) {
+                         network::mojom::WebClientHintsType type) {
   if (!data.hints.IsEnabled(type))
     return false;
   if (!IsFeaturePolicyForClientHintsEnabled() || data.is_main_frame)
     return data.is_1p_origin;
-  return data.feature_policy && data.feature_policy->IsFeatureEnabledForOrigin(
-                                    feature, data.resource_origin);
+  return data.feature_policy &&
+         data.feature_policy->IsFeatureEnabledForOrigin(
+             blink::kClientHintsFeaturePolicyMapping[static_cast<int>(type)],
+             data.resource_origin);
 }
 
 bool IsJavascriptEnabled(FrameTreeNode* frame_tree_node) {
@@ -506,37 +508,32 @@ void UpdateNavigationRequestClientUaHeadersImpl(
     ClientHintsExtendedData data(url, frame_tree_node, delegate);
 
     if (ShouldAddClientHint(
-            data, network::mojom::WebClientHintsType::kUAFullVersion,
-            blink::mojom::FeaturePolicyFeature::kClientHintUAFullVersion)) {
+            data, network::mojom::WebClientHintsType::kUAFullVersion)) {
       AddUAHeader(headers, network::mojom::WebClientHintsType::kUAFullVersion,
                   SerializeHeaderString(ua_metadata->full_version));
     }
 
-    if (ShouldAddClientHint(
-            data, network::mojom::WebClientHintsType::kUAArch,
-            blink::mojom::FeaturePolicyFeature::kClientHintUAArch)) {
+    if (ShouldAddClientHint(data,
+                            network::mojom::WebClientHintsType::kUAArch)) {
       AddUAHeader(headers, network::mojom::WebClientHintsType::kUAArch,
                   SerializeHeaderString(ua_metadata->architecture));
     }
 
-    if (ShouldAddClientHint(
-            data, network::mojom::WebClientHintsType::kUAPlatform,
-            blink::mojom::FeaturePolicyFeature::kClientHintUAPlatform)) {
+    if (ShouldAddClientHint(data,
+                            network::mojom::WebClientHintsType::kUAPlatform)) {
       AddUAHeader(headers, network::mojom::WebClientHintsType::kUAPlatform,
                   SerializeHeaderString(ua_metadata->platform));
     }
 
     if (ShouldAddClientHint(
-            data, network::mojom::WebClientHintsType::kUAPlatformVersion,
-            blink::mojom::FeaturePolicyFeature::kClientHintUAPlatform)) {
+            data, network::mojom::WebClientHintsType::kUAPlatformVersion)) {
       AddUAHeader(headers,
                   network::mojom::WebClientHintsType::kUAPlatformVersion,
                   SerializeHeaderString(ua_metadata->platform_version));
     }
 
-    if (ShouldAddClientHint(
-            data, network::mojom::WebClientHintsType::kUAModel,
-            blink::mojom::FeaturePolicyFeature::kClientHintUAModel)) {
+    if (ShouldAddClientHint(data,
+                            network::mojom::WebClientHintsType::kUAModel)) {
       AddUAHeader(headers, network::mojom::WebClientHintsType::kUAModel,
                   SerializeHeaderString(ua_metadata->model));
     }
@@ -608,38 +605,30 @@ void AddNavigationRequestClientHintsHeaders(
   const ClientHintsExtendedData data(url, frame_tree_node, delegate);
 
   // Add Headers
-  if (ShouldAddClientHint(
-          data, network::mojom::WebClientHintsType::kDeviceMemory,
-          blink::mojom::FeaturePolicyFeature::kClientHintDeviceMemory)) {
+  if (ShouldAddClientHint(data,
+                          network::mojom::WebClientHintsType::kDeviceMemory)) {
     AddDeviceMemoryHeader(headers);
   }
-  if (ShouldAddClientHint(data, network::mojom::WebClientHintsType::kDpr,
-                          blink::mojom::FeaturePolicyFeature::kClientHintDPR)) {
+  if (ShouldAddClientHint(data, network::mojom::WebClientHintsType::kDpr)) {
     AddDPRHeader(headers, context, url);
   }
-  if (ShouldAddClientHint(
-          data, network::mojom::WebClientHintsType::kViewportWidth,
-          blink::mojom::FeaturePolicyFeature::kClientHintViewportWidth)) {
+  if (ShouldAddClientHint(data,
+                          network::mojom::WebClientHintsType::kViewportWidth)) {
     AddViewportWidthHeader(headers, context, url);
   }
   network::NetworkQualityTracker* network_quality_tracker =
       delegate->GetNetworkQualityTracker();
-  if (ShouldAddClientHint(data, network::mojom::WebClientHintsType::kRtt,
-                          blink::mojom::FeaturePolicyFeature::kClientHintRTT)) {
+  if (ShouldAddClientHint(data, network::mojom::WebClientHintsType::kRtt)) {
     AddRttHeader(headers, network_quality_tracker, url);
   }
-  if (ShouldAddClientHint(
-          data, network::mojom::WebClientHintsType::kDownlink,
-          blink::mojom::FeaturePolicyFeature::kClientHintDownlink)) {
+  if (ShouldAddClientHint(data,
+                          network::mojom::WebClientHintsType::kDownlink)) {
     AddDownlinkHeader(headers, network_quality_tracker, url);
   }
-  if (ShouldAddClientHint(data, network::mojom::WebClientHintsType::kEct,
-                          blink::mojom::FeaturePolicyFeature::kClientHintECT)) {
+  if (ShouldAddClientHint(data, network::mojom::WebClientHintsType::kEct)) {
     AddEctHeader(headers, network_quality_tracker, url);
   }
-  if (ShouldAddClientHint(
-          data, network::mojom::WebClientHintsType::kLang,
-          blink::mojom::FeaturePolicyFeature::kClientHintLang)) {
+  if (ShouldAddClientHint(data, network::mojom::WebClientHintsType::kLang)) {
     AddLangHeader(headers, context);
   }
 

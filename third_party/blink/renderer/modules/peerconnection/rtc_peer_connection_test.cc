@@ -380,11 +380,11 @@ class RTCPeerConnectionTest : public testing::Test {
  public:
   RTCPeerConnection* CreatePC(
       V8TestingScope& scope,
-      const String& sdpSemantics = String(),
+      const String& sdp_semantics = String(),
       bool force_encoded_audio_insertable_streams = false,
       bool force_encoded_video_insertable_streams = false) {
     RTCConfiguration* config = RTCConfiguration::Create();
-    config->setSdpSemantics(sdpSemantics);
+    config->setSdpSemantics(sdp_semantics);
     config->setForceEncodedAudioInsertableStreams(
         force_encoded_audio_insertable_streams);
     config->setForceEncodedVideoInsertableStreams(

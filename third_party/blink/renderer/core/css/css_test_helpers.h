@@ -55,7 +55,7 @@ PropertyRegistration* CreateLengthRegistration(const String& name, int px);
 void RegisterProperty(Document& document,
                       const String& name,
                       const String& syntax,
-                      const String& initial_value,
+                      const base::Optional<String>& initial_value,
                       bool is_inherited);
 
 scoped_refptr<CSSVariableData> CreateVariableData(String);

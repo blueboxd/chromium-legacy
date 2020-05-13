@@ -136,13 +136,12 @@ class SubresourceLoader : public network::mojom::URLLoader,
       const net::HttpRequestHeaders& modified_headers,
       const net::HttpRequestHeaders& modified_cors_exempt_headers,
       const base::Optional<GURL>& new_url) override {
-    DCHECK(removed_headers.empty() && modified_headers.IsEmpty() &&
-           modified_cors_exempt_headers.IsEmpty())
+    DCHECK(modified_headers.IsEmpty() && modified_cors_exempt_headers.IsEmpty())
         << "Redirect with modified headers was not supported yet. "
            "crbug.com/845683";
     if (!handler_) {
       network_loader_->FollowRedirect(
-          {} /* removed_headers */, {} /* modified_headers */,
+          removed_headers, {} /* modified_headers */,
           {} /* modified_cors_exempt_headers */, base::nullopt /* new_url */);
       return;
     }

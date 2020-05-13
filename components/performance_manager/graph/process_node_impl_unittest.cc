@@ -196,6 +196,22 @@ TEST_F(ProcessNodeImplTest, ObserverWorks) {
   graph()->RemoveProcessNodeObserver(&obs);
 }
 
+TEST_F(ProcessNodeImplTest, ConstructionArguments) {
+  constexpr int kRenderProcessHostId = 0xF0B;
+  auto process_node = CreateNode<ProcessNodeImpl>(
+      content::PROCESS_TYPE_GPU,
+      RenderProcessHostProxy::CreateForTesting(kRenderProcessHostId));
+
+  const ProcessNode* public_process_node = process_node.get();
+
+  EXPECT_EQ(content::PROCESS_TYPE_GPU, process_node->process_type());
+  EXPECT_EQ(content::PROCESS_TYPE_GPU, public_process_node->GetProcessType());
+
+  EXPECT_EQ(kRenderProcessHostId,
+            public_process_node->GetRenderProcessHostProxy()
+                .render_process_host_id());
+}
+
 TEST_F(ProcessNodeImplTest, PublicInterface) {
   auto process_node = CreateNode<ProcessNodeImpl>();
   const ProcessNode* public_process_node = process_node.get();
@@ -209,6 +225,8 @@ TEST_F(ProcessNodeImplTest, PublicInterface) {
 
   // Simply test that the public interface impls yield the same result as their
   // private counterpart.
+  EXPECT_EQ(process_node->process_type(),
+            public_process_node->GetProcessType());
 
   const base::Process self = base::Process::Current();
   const base::Time launch_time = base::Time::Now();

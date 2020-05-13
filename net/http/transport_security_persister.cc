@@ -213,7 +213,7 @@ bool DeserializeExpectCTState(const base::DictionaryValue* parsed,
 void OnWriteFinishedTask(scoped_refptr<base::SequencedTaskRunner> task_runner,
                          base::OnceClosure callback,
                          bool result) {
-  task_runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback)));
+  task_runner->PostTask(FROM_HERE, std::move(callback));
 }
 
 }  // namespace

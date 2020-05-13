@@ -96,6 +96,17 @@ bool IsUserHomePage(content::BrowserContext* browser_context, const GURL& url) {
                            ->GetString(prefs::kHomePage);
 }
 
+std::unique_ptr<base::trace_event::TracedValue> CumulativeShiftScoreTraceData(
+    float layout_shift_score,
+    float layout_shift_score_before_input_or_scroll) {
+  std::unique_ptr<base::trace_event::TracedValue> data =
+      std::make_unique<base::trace_event::TracedValue>();
+  data->SetDouble("layoutShiftScore", layout_shift_score);
+  data->SetDouble("layoutShiftScoreBeforeInputOrScroll",
+                  layout_shift_score_before_input_or_scroll);
+  return data;
+}
+
 }  // namespace
 
 // static
@@ -584,6 +595,14 @@ void UkmPageLoadMetricsObserver::ReportLayoutStability() {
       "PageLoad.LayoutInstability.CumulativeShiftScore",
       LayoutShiftUmaValue(
           GetDelegate().GetPageRenderData().layout_shift_score));
+
+  TRACE_EVENT_INSTANT1("loading", "CumulativeShiftScore::AllFrames::UMA",
+                       TRACE_EVENT_SCOPE_THREAD, "data",
+                       CumulativeShiftScoreTraceData(
+                           GetDelegate().GetPageRenderData().layout_shift_score,
+                           GetDelegate()
+                               .GetPageRenderData()
+                               .layout_shift_score_before_input_or_scroll));
 
   UMA_HISTOGRAM_COUNTS_100(
       "PageLoad.LayoutInstability.CumulativeShiftScore.MainFrame",

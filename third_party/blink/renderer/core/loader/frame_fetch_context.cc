@@ -536,7 +536,6 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if (ShouldSendClientHint(
           ClientHintsMode::kLegacy, policy, resource_origin, is_1p_origin,
           network::mojom::blink::WebClientHintsType::kDeviceMemory,
-          mojom::blink::FeaturePolicyFeature::kClientHintDeviceMemory,
           hints_preferences, enabled_hints)) {
     request.SetHttpHeaderField(
         "Device-Memory",
@@ -548,7 +547,6 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if (ShouldSendClientHint(ClientHintsMode::kLegacy, policy, resource_origin,
                            is_1p_origin,
                            network::mojom::blink::WebClientHintsType::kDpr,
-                           mojom::blink::FeaturePolicyFeature::kClientHintDPR,
                            hints_preferences, enabled_hints)) {
     request.SetHttpHeaderField("DPR", AtomicString(String::Number(dpr)));
   }
@@ -556,7 +554,6 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if (ShouldSendClientHint(
           ClientHintsMode::kLegacy, policy, resource_origin, is_1p_origin,
           network::mojom::blink::WebClientHintsType::kViewportWidth,
-          mojom::blink::FeaturePolicyFeature::kClientHintViewportWidth,
           hints_preferences, enabled_hints) &&
       !GetResourceFetcherProperties().IsDetached() && GetFrame()->View()) {
     request.SetHttpHeaderField(
@@ -567,7 +564,6 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if (ShouldSendClientHint(
           ClientHintsMode::kLegacy, policy, resource_origin, is_1p_origin,
           network::mojom::blink::WebClientHintsType::kResourceWidth,
-          mojom::blink::FeaturePolicyFeature::kClientHintWidth,
           hints_preferences, enabled_hints)) {
     if (resource_width.is_set) {
       float physical_width = resource_width.width * dpr;
@@ -579,7 +575,6 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if (ShouldSendClientHint(ClientHintsMode::kStandard, policy, resource_origin,
                            is_1p_origin,
                            network::mojom::blink::WebClientHintsType::kRtt,
-                           mojom::blink::FeaturePolicyFeature::kClientHintRTT,
                            hints_preferences, enabled_hints)) {
     base::Optional<base::TimeDelta> http_rtt =
         GetNetworkStateNotifier().GetWebHoldbackHttpRtt();
@@ -598,7 +593,6 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if (ShouldSendClientHint(
           ClientHintsMode::kStandard, policy, resource_origin, is_1p_origin,
           network::mojom::blink::WebClientHintsType::kDownlink,
-          mojom::blink::FeaturePolicyFeature::kClientHintDownlink,
           hints_preferences, enabled_hints)) {
     base::Optional<double> throughput_mbps =
         GetNetworkStateNotifier().GetWebHoldbackDownlinkThroughputMbps();
@@ -617,7 +611,6 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if (ShouldSendClientHint(ClientHintsMode::kStandard, policy, resource_origin,
                            is_1p_origin,
                            network::mojom::blink::WebClientHintsType::kEct,
-                           mojom::blink::FeaturePolicyFeature::kClientHintECT,
                            hints_preferences, enabled_hints)) {
     base::Optional<WebEffectiveConnectionType> holdback_ect =
         GetNetworkStateNotifier().GetWebHoldbackEffectiveType();
@@ -634,7 +627,6 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if (ShouldSendClientHint(ClientHintsMode::kStandard, policy, resource_origin,
                            is_1p_origin,
                            network::mojom::blink::WebClientHintsType::kLang,
-                           mojom::blink::FeaturePolicyFeature::kClientHintLang,
                            hints_preferences, enabled_hints)) {
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
@@ -649,7 +641,6 @@ void FrameFetchContext::AddClientHintsIfNecessary(
       ShouldSendClientHint(
           ClientHintsMode::kStandard, policy, resource_origin, is_1p_origin,
           network::mojom::blink::WebClientHintsType::kUAArch,
-          mojom::blink::FeaturePolicyFeature::kClientHintUAArch,
           hints_preferences, enabled_hints)) {
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
@@ -661,7 +652,6 @@ void FrameFetchContext::AddClientHintsIfNecessary(
       ShouldSendClientHint(
           ClientHintsMode::kStandard, policy, resource_origin, is_1p_origin,
           network::mojom::blink::WebClientHintsType::kUAPlatform,
-          mojom::blink::FeaturePolicyFeature::kClientHintUAPlatform,
           hints_preferences, enabled_hints)) {
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
@@ -673,7 +663,6 @@ void FrameFetchContext::AddClientHintsIfNecessary(
       ShouldSendClientHint(
           ClientHintsMode::kStandard, policy, resource_origin, is_1p_origin,
           network::mojom::blink::WebClientHintsType::kUAPlatformVersion,
-          mojom::blink::FeaturePolicyFeature::kClientHintUAPlatform,
           hints_preferences, enabled_hints)) {
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
@@ -685,7 +674,6 @@ void FrameFetchContext::AddClientHintsIfNecessary(
       ShouldSendClientHint(
           ClientHintsMode::kStandard, policy, resource_origin, is_1p_origin,
           network::mojom::blink::WebClientHintsType::kUAModel,
-          mojom::blink::FeaturePolicyFeature::kClientHintUAModel,
           hints_preferences, enabled_hints)) {
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
@@ -697,7 +685,6 @@ void FrameFetchContext::AddClientHintsIfNecessary(
       ShouldSendClientHint(
           ClientHintsMode::kStandard, policy, resource_origin, is_1p_origin,
           network::mojom::blink::WebClientHintsType::kUAFullVersion,
-          mojom::blink::FeaturePolicyFeature::kClientHintUAFullVersion,
           hints_preferences, enabled_hints)) {
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
@@ -935,6 +922,11 @@ base::Optional<UserAgentMetadata> FrameFetchContext::GetUserAgentMetadata()
   return GetLocalFrameClient()->UserAgentMetadata();
 }
 
+const FeaturePolicy* FrameFetchContext::GetFeaturePolicy() const {
+  return document_ ? document_->GetSecurityContext().GetFeaturePolicy()
+                   : nullptr;
+}
+
 const ClientHintsPreferences FrameFetchContext::GetClientHintsPreferences()
     const {
   if (GetResourceFetcherProperties().IsDetached())
@@ -956,7 +948,6 @@ bool FrameFetchContext::ShouldSendClientHint(
     const url::Origin& resource_origin,
     bool is_1p_origin,
     network::mojom::blink::WebClientHintsType type,
-    mojom::blink::FeaturePolicyFeature feature_policy_feature,
     const ClientHintsPreferences& hints_preferences,
     const WebEnabledClientHints& enabled_hints) const {
   bool origin_ok;
@@ -965,8 +956,10 @@ bool FrameFetchContext::ShouldSendClientHint(
       base::FeatureList::IsEnabled(kAllowClientHintsToThirdParty)) {
     origin_ok = true;
   } else if (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled()) {
-    origin_ok = (policy && policy->IsFeatureEnabledForOrigin(
-                               feature_policy_feature, resource_origin));
+    origin_ok =
+        (policy && policy->IsFeatureEnabledForOrigin(
+                       kClientHintsFeaturePolicyMapping[static_cast<int>(type)],
+                       resource_origin));
   } else {
     origin_ok = is_1p_origin;
   }

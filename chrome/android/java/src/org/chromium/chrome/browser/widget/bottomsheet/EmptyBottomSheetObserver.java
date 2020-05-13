@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.widget.bottomsheet;
 
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 
 /**
  * An empty base implementation of the {@link BottomSheetObserver} interface.

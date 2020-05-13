@@ -29,7 +29,9 @@ namespace policies {
 // helper functions for "pulling" those decisions from the policy engine, rather
 // than having them "pushed" to the mechanism. Once throttling has started the
 // subsequent policy decision of when to stop throttling is pushed to the
-// mechanism as is more typical.
+// mechanism as is more typical. By default the policy object will connect to
+// the TabLoadingFrameNavigationScheduler as its policy mechanism, but this can
+// be overridden for tests.
 //
 // At this moment the policy is the following:
 //
@@ -51,13 +53,11 @@ class TabLoadingFrameNavigationPolicy
       public GraphRegisteredImpl<TabLoadingFrameNavigationPolicy>,
       public PageNode::ObserverDefaultImpl {
  public:
+  class MechanismDelegate;
   using StopThrottlingCallback =
       base::RepeatingCallback<void(content::WebContents*)>;
 
-  // The |stop_throttling_callback| is used to inform the mechanism of when
-  // navigation throttles applied to a WebContents can be released.
-  explicit TabLoadingFrameNavigationPolicy(
-      StopThrottlingCallback stop_throttling_callback);
+  TabLoadingFrameNavigationPolicy();
   ~TabLoadingFrameNavigationPolicy() override;
 
   // Exposes policy decisions to the scheduler. This must be called on the UI
@@ -76,7 +76,20 @@ class TabLoadingFrameNavigationPolicy
 
   // Exposed for testing. Can be called on any sequence, as this is initialized
   // at construction and stays constant afterwards.
-  base::TimeDelta GetTimeoutForTesting() const { return timeout_; }
+  base::TimeDelta GetMinTimeoutForTesting() const { return timeout_min_; }
+  base::TimeDelta GetMaxTimeoutForTesting() const { return timeout_max_; }
+
+  // Exposed for testing. Allows setting a MechanismDelegate. This should be
+  // done immediately after construction and *before* passing to the PM graph.
+  // Note that the provided mechanism will always be invoked on the UI thread.
+  // Note also that it is expected to live until this policy object is taken
+  // from the graph. In production the mechanism is backed by a static
+  // singleton, but code using this seam must manually ensure lifetime
+  // semantics are observed.
+  void SetMechanismDelegateForTesting(MechanismDelegate* mechanism) {
+    DCHECK(mechanism);
+    mechanism_ = mechanism;
+  }
 
  private:
   // PageNodeObserver:
@@ -143,10 +156,10 @@ class TabLoadingFrameNavigationPolicy
   };
   base::IntrusiveHeap<Timeout> timeouts_;
 
-  // The timeout after which throttling is stopped. This defaults to the 99th
-  // %ile of LargestContentfulPaint (LCP).
-  // TODO(chrisha): Make this Finch configurable.
-  const base::TimeDelta timeout_ = base::TimeDelta::FromSeconds(40);
+  // The timeout after which throttling is stopped. Configured via Finch.
+  // See features.cc.
+  base::TimeDelta timeout_min_;
+  base::TimeDelta timeout_max_;
 
   // A one shot timer that is used to timeout existing throttles. This will be
   // running whenever |timeouts_| is not empty.
@@ -159,9 +172,27 @@ class TabLoadingFrameNavigationPolicy
   // timeout_timer_.desired_run_time(), but this isn't precise.
   base::TimeTicks scheduled_timer_ = base::TimeTicks::Min();
 
-  // The callback that is invoked to inform the mechanism that throttling should
-  // stop.
-  StopThrottlingCallback stop_throttling_callback_;
+  // The mechanism delegate that this object is using
+  MechanismDelegate* mechanism_ = nullptr;
+};
+
+class TabLoadingFrameNavigationPolicy::MechanismDelegate {
+ public:
+  MechanismDelegate() = default;
+  virtual ~MechanismDelegate() = default;
+
+  // Notifies the mechanism when it is enabled/disabled. Mechanisms should start
+  // in a disabled state, and only start throttling when explicitly enabled.
+  // When they are subsequently disabled they should release any outstanding
+  // throttles, and stop creating new ones.
+  virtual void SetThrottlingEnabled(bool enabled) = 0;
+
+  // Notifies a single |contents| that it should stop throttling the specified
+  // |last_navigation_id|. The navigation ID is specified because of the race
+  // between navigations on the UI thread and policy messages dispatched from
+  // the PM sequence.
+  virtual void StopThrottling(content::WebContents* contents,
+                              int64_t last_navigation_id) = 0;
 };
 
 }  // namespace policies

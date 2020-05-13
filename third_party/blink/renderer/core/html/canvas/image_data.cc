@@ -463,7 +463,7 @@ ImageData* ImageData::CreateImageData(ImageDataArray& data,
     NOTREACHED();
   }
 
-  if (storage_format_name != color_settings->storageFormat())
+  if (color_settings->storageFormat() != storage_format_name)
     color_settings->setStorageFormat(storage_format_name);
 
   if (!ImageData::ValidateConstructorArguments(

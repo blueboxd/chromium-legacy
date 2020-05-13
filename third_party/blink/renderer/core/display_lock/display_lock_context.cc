@@ -397,7 +397,7 @@ void DisplayLockContext::CommitForActivationWithSignal(
   if (RuntimeEnabledFeatures::CSSContentVisibilityActivationEventEnabled()) {
     document_->EnqueueDisplayLockActivationTask(
         WTF::Bind(&DisplayLockContext::FireActivationEvent,
-                  weak_factory_.GetWeakPtr(), WrapPersistent(activated_element)));
+                  WrapWeakPersistent(this), WrapPersistent(activated_element)));
   }
 
   RecordActivationReason(document_, reason);
@@ -457,8 +457,7 @@ bool DisplayLockContext::ShouldCommitForActivation(
   return IsActivatable(reason) && IsLocked();
 }
 
-DisplayLockContext::ScopedForcedUpdate
-DisplayLockContext::GetScopedForcedUpdate() {
+void DisplayLockContext::NotifyForcedUpdateScopeStarted() {
   ++update_forced_;
   if (update_forced_ == 1) {
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
@@ -475,7 +474,6 @@ DisplayLockContext::GetScopedForcedUpdate() {
     MarkForLayoutIfNeeded();
     MarkAncestorsForPrePaintIfNeeded();
   }
-  return ScopedForcedUpdate(this);
 }
 
 void DisplayLockContext::NotifyForcedUpdateScopeEnded() {
@@ -1006,30 +1004,6 @@ void DisplayLockContext::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(document_);
   visitor->Trace(whitespace_reattach_set_);
-}
-
-// Scoped objects implementation
-// -----------------------------------------------
-DisplayLockContext::ScopedForcedUpdate::ScopedForcedUpdate(
-    DisplayLockContext* context)
-    : context_(context) {}
-
-DisplayLockContext::ScopedForcedUpdate::ScopedForcedUpdate(
-    ScopedForcedUpdate&& other)
-    : context_(other.context_) {
-  other.context_ = nullptr;
-}
-
-DisplayLockContext::ScopedForcedUpdate::~ScopedForcedUpdate() {
-  if (context_)
-    context_->NotifyForcedUpdateScopeEnded();
-}
-
-DisplayLockContext::ScopedForcedUpdate&
-DisplayLockContext::ScopedForcedUpdate::operator=(ScopedForcedUpdate&& other) {
-  context_ = other.context_;
-  other.context_ = nullptr;
-  return *this;
 }
 
 }  // namespace blink

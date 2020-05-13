@@ -351,4 +351,19 @@ TEST_F(UserModelTest, SetProfiles) {
   EXPECT_THAT(model_.GetProfile(profile_b.guid())->Compare(profile_b), Eq(0));
 }
 
+TEST_F(UserModelTest, ClientSideOnlyNotifications) {
+  testing::InSequence seq;
+  model_.SetValue("identifier",
+                  SimpleValue(1, /* is_client_side_only = */ false));
+  EXPECT_CALL(mock_observer_, OnValueChanged("identifier", _)).Times(0);
+  model_.SetValue("identifier",
+                  SimpleValue(1, /* is_client_side_only = */ false));
+
+  EXPECT_CALL(mock_observer_, OnValueChanged("identifier", _)).Times(1);
+  model_.SetValue("identifier",
+                  SimpleValue(1, /* is_client_side_only = */ true));
+
+  EXPECT_TRUE(GetValues().at("identifier").is_client_side_only());
+}
+
 }  // namespace autofill_assistant

@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -96,13 +97,9 @@ class DisplayLockContextTest
   DisplayLockContextTest()
       : ScopedCSSContentVisibilityHiddenMatchableForTest(true) {}
 
-  void SetUp() override {
-    web_view_helper_.Initialize();
-  }
+  void SetUp() override { web_view_helper_.Initialize(); }
 
-  void TearDown() override {
-    web_view_helper_.Reset();
-  }
+  void TearDown() override { web_view_helper_.Reset(); }
 
   Document& GetDocument() {
     return *static_cast<Document*>(
@@ -1774,6 +1771,11 @@ class DisplayLockContextRenderingTest
     for (auto& task : start_of_lifecycle_tasks)
       std::move(task).Run();
   }
+  DisplayLockUtilities::ScopedForcedUpdate GetScopedForcedUpdate(
+      const Node* node,
+      bool include_self = false) {
+    return DisplayLockUtilities::ScopedForcedUpdate(node, include_self);
+  }
 };
 
 TEST_F(DisplayLockContextRenderingTest, FrameDocumentRemovedWhileAcquire) {
@@ -1884,8 +1886,7 @@ TEST_F(DisplayLockContextRenderingTest,
 
   ASSERT_TRUE(lockable->GetDisplayLockContext());
   {
-    DisplayLockContext::ScopedForcedUpdate forced_scope =
-        lockable->GetDisplayLockContext()->GetScopedForcedUpdate();
+    auto scope = GetScopedForcedUpdate(lockable, true /* include self */);
 
     // The following should not crash/DCHECK.
     UpdateAllLifecyclePhasesForTest();
@@ -2419,8 +2420,7 @@ TEST_F(DisplayLockContextRenderingTest,
   EXPECT_TRUE(new_parent->GetLayoutObject()->NeedsLayout());
 
   {
-    DisplayLockContext::ScopedForcedUpdate forced_scope =
-        hide->GetDisplayLockContext()->GetScopedForcedUpdate();
+    auto scope = GetScopedForcedUpdate(hide, true /* include self */);
 
     // Updating the lifecycle should update target and new_parent, since it is
     // in a locked but forced subtree.
@@ -2566,7 +2566,7 @@ TEST_F(DisplayLockContextRenderingTest,
   EXPECT_EQ(compositor->GetCompositingInputsRoot(), container_layer);
 
   {
-    auto scoped_update = hide->GetDisplayLockContext()->GetScopedForcedUpdate();
+    auto scope = GetScopedForcedUpdate(hide, true /* include self */);
     UpdateAllLifecyclePhasesForTest();
   }
 
@@ -2604,7 +2604,7 @@ TEST_F(DisplayLockContextRenderingTest,
   auto* target = GetDocument().getElementById("target");
   target->classList().Add("backface_hidden");
 
-  auto forced_scope = hide->GetDisplayLockContext()->GetScopedForcedUpdate();
+  auto scope = GetScopedForcedUpdate(hide, true /* include self */);
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdateForNode(*target));
 }
 

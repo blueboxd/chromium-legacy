@@ -35,9 +35,10 @@ class RenderProcessHostProxy {
   // not a renderer.
   int render_process_host_id() const { return render_process_host_id_; }
 
+  static RenderProcessHostProxy CreateForTesting(int render_process_host_id);
+
  protected:
   friend class RenderProcessUserData;
-  FRIEND_TEST_ALL_PREFIXES(FrameNodeImplTest, GetFrameNodeById);
 
   explicit RenderProcessHostProxy(int render_process_host_id);
 

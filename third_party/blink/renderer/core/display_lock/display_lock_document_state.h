@@ -76,16 +76,16 @@ class CORE_EXPORT DisplayLockDocumentState final
   // Notify the display locks that selection was removed.
   void NotifySelectionRemoved();
 
-  // This is called when the ScopedChainForcedUpdate is created or destroyed.
-  // This is used to ensure that we can create new locks that are immediately
-  // forced by the existing forced scope.
+  // This is called when the forced scope is created or destroyed in
+  // |ScopedForcedUpdate::Impl|. This is used to ensure that we can create new
+  // locks that are immediately forced by the existing forced scope.
   //
   // Consider the situation A -> B -> C, where C is the child node which is the
   // target of the forced lock (the parameter passed here), and B is its parent
   // and A is its grandparent. Suppose that A and B have locks, but since style
   // was blocked by A, B's lock has not been created yet. When we force the
   // update from C we call `NotifyNodeForced()`, and A's lock is forced by the
-  // given ScopedChainForcedUpdate. Then we process the style and while
+  // given |ScopedForcedUpdate::Impl|. Then we process the style and while
   // processing B's style, we find that there is a new lock there. This lock
   // needs to be forced immediately, since it is in the ancestor chain of C.
   // This is done by calling `ForceLockIfNeeded()` below, which adds B's scope
@@ -98,28 +98,35 @@ class CORE_EXPORT DisplayLockDocumentState final
   void BeginNodeForcedScope(
       const Node* node,
       bool self_was_forced,
-      DisplayLockUtilities::ScopedChainForcedUpdate* scope);
-  void EndNodeForcedScope(DisplayLockUtilities::ScopedChainForcedUpdate* scope);
+      DisplayLockUtilities::ScopedForcedUpdate::Impl* chain);
+  void EndNodeForcedScope(
+      DisplayLockUtilities::ScopedForcedUpdate::Impl* chain);
 
   // Forces the lock on the given element, if it isn't yet forced but appears on
   // the ancestor chain for the forced element (which was set via
   // `BeginNodeForcedScope()`).
   void ForceLockIfNeeded(Element*);
 
- private:
-  struct ForcedNodeInfo {
+  class ForcedNodeInfo {
+    DISALLOW_NEW();
+
+   public:
     ForcedNodeInfo(const Node* node,
                    bool self_forced,
-                   DisplayLockUtilities::ScopedChainForcedUpdate* scope)
-        : node(node), self_forced(self_forced), scope(scope) {}
+                   DisplayLockUtilities::ScopedForcedUpdate::Impl* chain)
+        : node(node), self_forced(self_forced), chain(chain) {}
 
-    // Since this is created via a Scoped stack-only object, we know that GC
-    // won't run so this is safe to store as an untraced member.
-    UntracedMember<const Node> node;
+    void Trace(Visitor* visitor) {
+      visitor->Trace(node);
+      visitor->Trace(chain);
+    }
+
+    Member<const Node> node;
     bool self_forced;
-    DisplayLockUtilities::ScopedChainForcedUpdate* scope;
+    Member<DisplayLockUtilities::ScopedForcedUpdate::Impl> chain;
   };
 
+ private:
   IntersectionObserver& EnsureIntersectionObserver();
 
   void ProcessDisplayLockActivationObservation(
@@ -127,9 +134,7 @@ class CORE_EXPORT DisplayLockDocumentState final
 
   void ForceLockIfNeededForInfo(Element*, ForcedNodeInfo*);
 
-  // Note that since this class is owned by the document, it is important not to
-  // take a strong reference for the backpointer.
-  WeakMember<Document> document_ = nullptr;
+  Member<Document> document_;
 
   Member<IntersectionObserver> intersection_observer_ = nullptr;
   HeapHashSet<WeakMember<DisplayLockContext>> display_lock_contexts_;
@@ -142,9 +147,15 @@ class CORE_EXPORT DisplayLockDocumentState final
 
   // Contains all of the currently forced node infos, each of which represents
   // the node that caused the scope to be created.
-  Vector<ForcedNodeInfo> forced_node_info_;
+  HeapVector<ForcedNodeInfo> forced_node_info_;
 };
 
 }  // namespace blink
+
+// This ensures |blink::DisplayLockDocumentState::ForcedNodeInfo| does not touch
+// other on-heap objects in its destructor and so it can be cleared with memset.
+// This is needed to allocate it in HeapVector directly.
+WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(
+    blink::DisplayLockDocumentState::ForcedNodeInfo)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DISPLAY_LOCK_DISPLAY_LOCK_DOCUMENT_STATE_H_

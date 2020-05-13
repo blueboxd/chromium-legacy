@@ -88,7 +88,6 @@ class WebAppInstallManager final : public InstallManager,
   void OnBookmarkAppInstalledAfterSync(
       const AppId& bookmark_app_id,
       std::unique_ptr<WebApplicationInfo> web_application_info,
-      bool is_locally_installed,
       OnceInstallCallback callback,
       const AppId& web_app_id,
       InstallResultCode code);

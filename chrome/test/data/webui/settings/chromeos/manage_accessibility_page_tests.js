@@ -2,6 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * Checks whether a given element is visible to the user.
+ * @param {!Element} element
+ * @returns {boolean}
+ */
+function isVisible(element) {
+  return !!(element && element.getBoundingClientRect().width > 0);
+}
+
 suite('ManageAccessibilityPageTests', function() {
   let page = null;
   let browserProxy = null;
@@ -34,21 +43,27 @@ suite('ManageAccessibilityPageTests', function() {
     }
   }
 
+  function initPage() {
+    page = document.createElement('settings-manage-a11y-page');
+    document.body.appendChild(page);
+  }
+
   setup(function() {
     browserProxy = new TestDevicePageBrowserProxy();
     settings.DevicePageBrowserProxyImpl.instance_ = browserProxy;
 
     PolymerTest.clearBody();
 
-    page = document.createElement('settings-manage-a11y-page');
-    document.body.appendChild(page);
   });
 
   teardown(function() {
-    page.remove();
+    if (page) {
+      page.remove();
+    }
   });
 
   test('Pointers row only visible if mouse/touchpad present', function() {
+    initPage();
     const row = page.$$('#pointerSubpageButton');
     assertFalse(row.hidden);
 
@@ -67,5 +82,33 @@ suite('ManageAccessibilityPageTests', function() {
     // Has both ==> not hidden.
     browserProxy.hasTouchpad = true;
     assertFalse(row.hidden);
+  });
+
+  test('some parts are hidden in kiosk mode', function() {
+    loadTimeData.overrideValues({
+      isKioskModeActive: true,
+    });
+    initPage();
+    // Add mouse and touchpad to show some hidden settings.
+    browserProxy.hasMouse = true;
+    browserProxy.hasTouchpad = true;
+    Polymer.dom.flush();
+
+    // Accessibility learn more link should be hidden.
+    assertFalse(isVisible(page.$$('setings-localized-link')));
+
+    const allowed_subpages = [
+      'chromeVoxSubpageButton', 'selectToSpeakSubpageButton', 'ttsSubpageButton'
+    ];
+
+    const subpages = page.root.querySelectorAll('cr-link-row');
+    subpages.forEach(function(subpage) {
+      if (isVisible(subpage)) {
+        assertTrue(allowed_subpages.includes(subpage.id));
+      }
+    });
+
+    // Additional features link is not visible.
+    assertFalse(isVisible(page.$.additionalFeaturesLink));
   });
 });

@@ -75,26 +75,6 @@ class CORE_EXPORT DisplayLockContext final
     kStyleUpdateDescendants
   };
 
-  // See GetScopedForcedUpdate() for description.
-  class CORE_EXPORT ScopedForcedUpdate {
-    DISALLOW_NEW();
-
-   public:
-    ScopedForcedUpdate() = default;
-    ScopedForcedUpdate(ScopedForcedUpdate&&);
-    ~ScopedForcedUpdate();
-
-    ScopedForcedUpdate& operator=(ScopedForcedUpdate&&);
-
-   private:
-    friend class DisplayLockContext;
-    friend class DisplayLockDocumentState;
-
-    ScopedForcedUpdate(DisplayLockContext*);
-
-    UntracedMember<DisplayLockContext> context_ = nullptr;
-  };
-
   explicit DisplayLockContext(Element*);
   ~DisplayLockContext() = default;
 
@@ -142,13 +122,6 @@ class CORE_EXPORT DisplayLockContext final
 
   // Returns true if this context is locked.
   bool IsLocked() const { return is_locked_; }
-
-  // Returns a ScopedForcedUpdate object which for the duration of its lifetime
-  // will allow updates to happen on this element's subtree. For the element
-  // itself, the frame rect will still be the same as at the time the lock was
-  // acquired. Only one ScopedForcedUpdate can be retrieved from the same
-  // context at a time.
-  ScopedForcedUpdate GetScopedForcedUpdate();
 
   bool UpdateForced() const { return update_forced_; }
 
@@ -225,6 +198,10 @@ class CORE_EXPORT DisplayLockContext final
   void Trace(Visitor*) override;
 
  private:
+  // Give access to |NotifyForcedUpdateScopeStarted()| and
+  // |NotifyForcedUpdateScopeEnded()|.
+  friend class DisplayLockUtilities;
+
   // Test friends.
   friend class DisplayLockContextRenderingTest;
   friend class DisplayLockContextTest;
@@ -236,6 +213,10 @@ class CORE_EXPORT DisplayLockContext final
   // Request that this context be unlocked. Called when style determines that
   // the subtree rooted at this element should be rendered.
   void RequestUnlock();
+
+  // Called in |DisplayLockUtilities| to notify the state of scope.
+  void NotifyForcedUpdateScopeStarted();
+  void NotifyForcedUpdateScopeEnded();
 
   // Records the locked context counts on the document as well as context that
   // block all activation.
@@ -267,10 +248,6 @@ class CORE_EXPORT DisplayLockContext final
   bool IsElementDirtyForStyleRecalc() const;
   bool IsElementDirtyForLayout() const;
   bool IsElementDirtyForPrePaint() const;
-
-  // When ScopedForcedUpdate is destroyed, it calls this function. See
-  // GetScopedForcedUpdate() for more information.
-  void NotifyForcedUpdateScopeEnded();
 
   // Helper to schedule an animation to delay lifecycle updates for the next
   // frame.
@@ -387,10 +364,6 @@ class CORE_EXPORT DisplayLockContext final
 
   bool render_affecting_state_[static_cast<int>(
       RenderAffectingState::kNumRenderAffectingStates)] = {false};
-
-  // TODO(vmpstr): This is only needed while we're still sending activation
-  // events.
-  base::WeakPtrFactory<DisplayLockContext> weak_factory_{this};
 };
 
 }  // namespace blink

@@ -61,6 +61,19 @@ void RecordFirstMeaningfulPaintStatus(
                             internal::FIRST_MEANINGFUL_PAINT_LAST_ENTRY);
 }
 
+std::unique_ptr<base::trace_event::TracedValue> FirstInputDelayTraceData(
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  std::unique_ptr<base::trace_event::TracedValue> data =
+      std::make_unique<base::trace_event::TracedValue>();
+  data->SetDouble(
+      "firstInputDelayInMilliseconds",
+      timing.interactive_timing->first_input_delay->InMillisecondsF());
+  data->SetDouble(
+      "navStartToFirstInputTimestampInMilliseconds",
+      timing.interactive_timing->first_input_timestamp->InMillisecondsF());
+  return data;
+}
+
 }  // namespace
 
 namespace internal {
@@ -583,6 +596,11 @@ void CorePageLoadMetricsObserver::OnFirstInputInPage(
       50);
   PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstInputTimestamp,
                       timing.interactive_timing->first_input_timestamp.value());
+  TRACE_EVENT_MARK_WITH_TIMESTAMP1(
+      "loading", "FirstInputDelay::AllFrames::UMA",
+      GetDelegate().GetNavigationStart() +
+          timing.interactive_timing->first_input_timestamp.value(),
+      "data", FirstInputDelayTraceData(timing));
 }
 
 void CorePageLoadMetricsObserver::OnParseStart(
@@ -828,6 +846,11 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
     UMA_HISTOGRAM_ENUMERATION(
         internal::kHistogramLargestContentfulPaintContentType,
         all_frames_largest_contentful_paint.Type());
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1(
+        "loading", "NavStartToLargestContentfulPaint::AllFrames::UMA",
+        GetDelegate().GetNavigationStart() +
+            all_frames_largest_contentful_paint.Time().value(),
+        "data", all_frames_largest_contentful_paint.DataAsTraceValue());
 
     // Note: This depends on PageLoadMetrics internally processing loading
     // behavior before timing metrics if they come in the same IPC update.

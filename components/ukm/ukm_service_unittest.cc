@@ -427,6 +427,31 @@ TEST_F(UkmServiceTest, MetricsProviderTest) {
   EXPECT_TRUE(provider->provide_system_profile_metrics_called());
 }
 
+// Currently just testing brand is set, would be good to test other core
+// system profile fields.
+TEST_F(UkmServiceTest, SystemProfileTest) {
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
+  TestRecordingHelper recorder(&service);
+
+  service.Initialize();
+
+  task_runner_->RunUntilIdle();
+  service.EnableRecording(/*extensions=*/false);
+  service.EnableReporting();
+
+  ukm::SourceId id = GetWhitelistedSourceId(0);
+  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+  TestEvent1(id).Record(&service);
+  service.Flush();
+  EXPECT_EQ(GetPersistedLogCount(), 1);
+
+  Report proto_report = GetPersistedReport();
+  EXPECT_EQ(metrics::TestMetricsServiceClient::kBrandForTesting,
+            proto_report.system_profile().brand_code());
+}
+
 TEST_F(UkmServiceTest, AddUserDemograhicsWhenAvailableAndFeatureEnabled) {
   ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
 

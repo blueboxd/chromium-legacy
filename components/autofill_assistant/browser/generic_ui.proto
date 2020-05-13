@@ -151,7 +151,8 @@ message BooleanNotProto {
   reserved 1;
 }
 
-// Creates a string representation of the specified value.
+// Creates a string representation of the specified value. For input lists, will
+// create a corresponding string result list.
 message ToStringProto {
   // The value to stringify.
   optional ValueReferenceProto value = 3;

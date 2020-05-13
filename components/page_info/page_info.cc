@@ -1103,10 +1103,6 @@ void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
 
 content_settings::TabSpecificContentSettings*
 PageInfo::GetTabSpecificContentSettings() const {
-  // When |web_contents| is not from a Tab, |web_contents| does not have a
-  // |TabSpecificContentSettings| and need to create one; otherwise, noop.
-  content_settings::TabSpecificContentSettings::CreateForWebContents(
-      web_contents(), delegate_->GetTabSpecificContentSettingsDelegate());
   return content_settings::TabSpecificContentSettings::FromWebContents(
       web_contents());
 }

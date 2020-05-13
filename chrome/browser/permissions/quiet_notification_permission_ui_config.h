@@ -21,6 +21,16 @@ class QuietNotificationPermissionUiConfig {
   // rate.
   static const char kEnableCrowdDenyTriggering[];
 
+  // Name of the boolean variation parameter that determines if the quiet
+  // notification permission prompt UI should be enabled as a one-off on sites
+  // with abusive permission request flows.
+  static const char kEnableAbusiveRequestBlocking[];
+
+  // Name of the boolean variation parameter that determines if a console
+  // message in Developer Tools should be printed on sites that are on the
+  // warning list for abusive permission request flows.
+  static const char kEnableAbusiveRequestWarning[];
+
   // Name of the variation parameter that represents the chance that a
   // quiet notifications permission prompt UI triggered by crowd deny will be
   // replaced by the normal UI. This ensures that a small percentage of
@@ -43,6 +53,16 @@ class QuietNotificationPermissionUiConfig {
   // crowd deny will be replaced by the normal UI. This is per individual
   // permission prompt.
   static double GetCrowdDenyHoldBackChance();
+
+  // Whether or not triggering via the abusive requests list is enabled. This
+  // means that on sites with abusive permission request flows, the quiet UI
+  // will be shown as a one-off, even when it is not turned on for all sites in
+  // prefs.
+  static bool IsAbusiveRequestBlockingEnabled();
+
+  // Whether or not showing a console message in Developer Tools is enabled for
+  // sites on the abusive requests warning list is enabled.
+  static bool IsAbusiveRequestWarningEnabled();
 };
 
 #endif  // CHROME_BROWSER_PERMISSIONS_QUIET_NOTIFICATION_PERMISSION_UI_CONFIG_H_

@@ -1850,7 +1850,7 @@ void PrintRenderFrameHelper::DidFinishPrinting(PrintingResult result) {
       if (!is_print_ready_metafile_sent_) {
         if (notify_browser_of_print_failure_) {
           LOG(ERROR) << "CreatePreviewDocument failed";
-          Send(new PrintHostMsg_PrintPreviewFailed(routing_id(), cookie, ids));
+          preview_ui_->PrintPreviewFailed(cookie, ids.request_id);
         } else {
           Send(new PrintHostMsg_PrintPreviewCancelled(routing_id(), cookie,
                                                       ids));

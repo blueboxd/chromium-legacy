@@ -187,6 +187,7 @@ source_set("application_delegate_internal") {
     "//ios/chrome/browser/url_loading",
     "//ios/chrome/browser/web:tab_id_tab_helper",
     "//ios/chrome/browser/web_state_list",
+    "//ios/chrome/browser/web_state_list:agents",
     "//ios/chrome/common/app_group:main_app",
     "//ios/net",
     "//ios/public/provider/chrome/browser",

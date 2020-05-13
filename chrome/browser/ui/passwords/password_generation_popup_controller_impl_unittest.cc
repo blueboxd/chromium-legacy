@@ -35,8 +35,6 @@ class PasswordGenerationPopupControllerImplTest
     : public ChromeRenderViewHostTestHarness {
  public:
   std::unique_ptr<MockPasswordManagerDriver> CreateDriver();
-  const password_manager::SyncState kPasswordSyncState =
-      password_manager::SyncState::SYNCING_NORMAL_ENCRYPTION;
 };
 
 std::unique_ptr<MockPasswordManagerDriver>
@@ -55,12 +53,12 @@ TEST_F(PasswordGenerationPopupControllerImplTest, GetOrCreateTheSame) {
   base::WeakPtr<PasswordGenerationPopupControllerImpl> controller1 =
       PasswordGenerationPopupControllerImpl::GetOrCreate(
           nullptr, ui_data.bounds, ui_data, driver->AsWeakPtr(), nullptr,
-          web_contents.get(), main_rfh(), kPasswordSyncState);
+          web_contents.get(), main_rfh());
 
   base::WeakPtr<PasswordGenerationPopupControllerImpl> controller2 =
       PasswordGenerationPopupControllerImpl::GetOrCreate(
           controller1, ui_data.bounds, ui_data, driver->AsWeakPtr(), nullptr,
-          web_contents.get(), main_rfh(), kPasswordSyncState);
+          web_contents.get(), main_rfh());
 
   EXPECT_EQ(controller1.get(), controller2.get());
 }
@@ -77,13 +75,13 @@ TEST_F(PasswordGenerationPopupControllerImplTest, GetOrCreateDifferentBounds) {
   base::WeakPtr<PasswordGenerationPopupControllerImpl> controller1 =
       PasswordGenerationPopupControllerImpl::GetOrCreate(
           nullptr, rect, ui_data, driver->AsWeakPtr(), nullptr,
-          web_contents.get(), main_rfh(), kPasswordSyncState);
+          web_contents.get(), main_rfh());
 
   rect = gfx::RectF(200, 30);
   base::WeakPtr<PasswordGenerationPopupControllerImpl> controller2 =
       PasswordGenerationPopupControllerImpl::GetOrCreate(
           controller1, rect, ui_data, driver->AsWeakPtr(), nullptr,
-          web_contents.get(), main_rfh(), kPasswordSyncState);
+          web_contents.get(), main_rfh());
 
   EXPECT_FALSE(controller1);
   EXPECT_TRUE(controller2);
@@ -100,13 +98,13 @@ TEST_F(PasswordGenerationPopupControllerImplTest, GetOrCreateDifferentTabs) {
   base::WeakPtr<PasswordGenerationPopupControllerImpl> controller1 =
       PasswordGenerationPopupControllerImpl::GetOrCreate(
           nullptr, ui_data.bounds, ui_data, driver->AsWeakPtr(), nullptr,
-          web_contents.get(), main_rfh(), kPasswordSyncState);
+          web_contents.get(), main_rfh());
 
   web_contents = CreateTestWebContents();
   base::WeakPtr<PasswordGenerationPopupControllerImpl> controller2 =
       PasswordGenerationPopupControllerImpl::GetOrCreate(
           controller1, ui_data.bounds, ui_data, driver->AsWeakPtr(), nullptr,
-          web_contents.get(), main_rfh(), kPasswordSyncState);
+          web_contents.get(), main_rfh());
 
   EXPECT_FALSE(controller1);
   EXPECT_TRUE(controller2);
@@ -123,13 +121,13 @@ TEST_F(PasswordGenerationPopupControllerImplTest, GetOrCreateDifferentDrivers) {
   base::WeakPtr<PasswordGenerationPopupControllerImpl> controller1 =
       PasswordGenerationPopupControllerImpl::GetOrCreate(
           nullptr, ui_data.bounds, ui_data, driver->AsWeakPtr(), nullptr,
-          web_contents.get(), main_rfh(), kPasswordSyncState);
+          web_contents.get(), main_rfh());
 
   driver = CreateDriver();
   base::WeakPtr<PasswordGenerationPopupControllerImpl> controller2 =
       PasswordGenerationPopupControllerImpl::GetOrCreate(
           controller1, ui_data.bounds, ui_data, driver->AsWeakPtr(), nullptr,
-          web_contents.get(), main_rfh(), kPasswordSyncState);
+          web_contents.get(), main_rfh());
 
   EXPECT_FALSE(controller1);
   EXPECT_TRUE(controller2);
@@ -147,13 +145,13 @@ TEST_F(PasswordGenerationPopupControllerImplTest,
   base::WeakPtr<PasswordGenerationPopupControllerImpl> controller1 =
       PasswordGenerationPopupControllerImpl::GetOrCreate(
           nullptr, ui_data.bounds, ui_data, driver->AsWeakPtr(), nullptr,
-          web_contents.get(), main_rfh(), kPasswordSyncState);
+          web_contents.get(), main_rfh());
 
   ui_data.generation_element_id = autofill::FieldRendererId(200);
   base::WeakPtr<PasswordGenerationPopupControllerImpl> controller2 =
       PasswordGenerationPopupControllerImpl::GetOrCreate(
           controller1, ui_data.bounds, ui_data, driver->AsWeakPtr(), nullptr,
-          web_contents.get(), main_rfh(), kPasswordSyncState);
+          web_contents.get(), main_rfh());
 
   EXPECT_FALSE(controller1);
   EXPECT_TRUE(controller2);
@@ -170,7 +168,7 @@ TEST_F(PasswordGenerationPopupControllerImplTest, DestroyInPasswordAccepted) {
   base::WeakPtr<PasswordGenerationPopupController> controller =
       PasswordGenerationPopupControllerImpl::GetOrCreate(
           nullptr /*previous*/, ui_data.bounds, ui_data, driver->AsWeakPtr(),
-          nullptr, web_contents.get(), main_rfh(), kPasswordSyncState);
+          nullptr, web_contents.get(), main_rfh());
 
   // Destroying the controller in GeneratedPasswordAccepted() should not cause a
   // crash.

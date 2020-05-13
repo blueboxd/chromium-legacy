@@ -21,6 +21,7 @@
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/performance_manager/public/render_process_host_proxy.h"
 #include "components/performance_manager/public/web_contents_proxy.h"
+#include "content/public/common/process_type.h"
 
 class GURL;
 
@@ -103,6 +104,7 @@ class PerformanceManagerImpl : public PerformanceManager {
       bool is_audible,
       base::TimeTicks visibility_change_time);
   static std::unique_ptr<ProcessNodeImpl> CreateProcessNode(
+      content::ProcessType process_type,
       RenderProcessHostProxy proxy);
   static std::unique_ptr<WorkerNodeImpl> CreateWorkerNode(
       const std::string& browser_context_id,

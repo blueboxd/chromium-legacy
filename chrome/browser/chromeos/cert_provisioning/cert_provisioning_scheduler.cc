@@ -34,7 +34,7 @@ namespace cert_provisioning {
 namespace {
 
 template <typename Container, typename Value>
-void EraseKey(Container& container, const Value& value) {
+void EraseByKey(Container& container, const Value& value) {
   auto iter = container.find(value);
   if (iter == container.end()) {
     return;
@@ -319,7 +319,10 @@ void CertProvisioningScheduler::UpdateOneCert(
 
   RecordEvent(cert_scope_, CertProvisioningEvent::kWorkerRetryManual);
 
+  EraseByKey(failed_cert_profiles_, cert_profile_id);
+
   if (!CheckInternetConnection()) {
+    WaitForInternetConnection();
     return;
   }
 
@@ -334,7 +337,9 @@ void CertProvisioningScheduler::UpdateOneCert(
 void CertProvisioningScheduler::UpdateCerts() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  is_waiting_for_online_ = false;
   if (!CheckInternetConnection()) {
+    WaitForInternetConnection();
     return;
   }
 
@@ -527,9 +532,17 @@ CertProvisioningScheduler::GetFailedCertProfileIds() const {
 bool CertProvisioningScheduler::CheckInternetConnection() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const NetworkState* network = network_state_handler_->DefaultNetwork();
-  bool is_online = network && network->IsOnline();
-  is_waiting_for_online_ = !is_online;
-  return is_online;
+  return network && network->IsOnline();
+}
+
+void CertProvisioningScheduler::WaitForInternetConnection() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  VLOG(0) << "Waiting for internet connection";
+  is_waiting_for_online_ = true;
+  for (auto& kv : workers_) {
+    auto& worker_ptr = kv.second;
+    worker_ptr->Pause();
+  }
 }
 
 void CertProvisioningScheduler::OnNetworkChange(
@@ -537,6 +550,13 @@ void CertProvisioningScheduler::OnNetworkChange(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (is_waiting_for_online_ && network && network->IsOnline()) {
     UpdateCerts();
+    return;
+  }
+
+  if (!is_waiting_for_online_ && !workers_.empty() &&
+      !CheckInternetConnection()) {
+    WaitForInternetConnection();
+    return;
   }
 }
 

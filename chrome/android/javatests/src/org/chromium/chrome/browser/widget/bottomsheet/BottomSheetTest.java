@@ -23,10 +23,11 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent.HeightMode;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent.HeightMode;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.ExecutionException;

@@ -21,30 +21,6 @@ namespace blink {
 // InternalPopupMenu::WriteDocument.
 #if !defined(OS_ANDROID)
 
-TEST(InternalPopupMenuTest, WriteDocumentInStyleDirtyTree) {
-  auto dummy_page_holder_ =
-      std::make_unique<DummyPageHolder>(IntSize(800, 600));
-  Document& document = dummy_page_holder_->GetDocument();
-  document.body()->setInnerHTML(R"HTML(
-    <select id="select">
-        <option value="foo">Foo</option>
-        <option value="bar" style="display:none">Bar</option>
-    </select>
-  )HTML");
-  document.View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
-  auto* select = To<HTMLSelectElement>(document.getElementById("select"));
-  ASSERT_TRUE(select);
-  auto* menu = MakeGarbageCollected<InternalPopupMenu>(
-      MakeGarbageCollected<EmptyChromeClient>(), *select);
-
-  document.body()->SetInlineStyleProperty(CSSPropertyID::kColor, "blue");
-
-  scoped_refptr<SharedBuffer> buffer = SharedBuffer::Create();
-
-  // Don't DCHECK in Element::EnsureComputedStyle.
-  static_cast<PagePopupClient*>(menu)->WriteDocument(buffer.get());
-}
-
 TEST(InternalPopupMenuTest, ShowSelectDisplayNone) {
   auto dummy_page_holder_ =
       std::make_unique<DummyPageHolder>(IntSize(800, 600));

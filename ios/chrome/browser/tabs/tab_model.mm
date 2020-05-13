@@ -44,7 +44,6 @@
 #import "ios/chrome/browser/tabs/tab_parenting_observer.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_metrics_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
 #include "ios/web/public/browser_state.h"
@@ -222,9 +221,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   // WebStateListObserverBridges.
   NSArray<id<WebStateListObserving>>* _retainedWebStateListObservers;
 
-  // Counters for metrics.
-  WebStateListMetricsObserver* _webStateListMetricsObserver;
-
   // Backs up property with the same name.
   TabUsageRecorderBrowserAgent* _tabUsageRecorder;
 
@@ -303,12 +299,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 
     _webStateListObservers.push_back(std::make_unique<TabParentingObserver>());
 
-    auto webStateListMetricsObserver =
-        std::make_unique<WebStateListMetricsObserver>();
-    _webStateListMetricsObserver = webStateListMetricsObserver.get();
-    _sessionRestorationBrowserAgent->AddObserver(_webStateListMetricsObserver);
-    _webStateListObservers.push_back(std::move(webStateListMetricsObserver));
-
     for (const auto& webStateListObserver : _webStateListObservers)
       _webStateList->AddObserver(webStateListObserver.get());
     _retainedWebStateListObservers = [retainedWebStateListObservers copy];
@@ -342,11 +332,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   _webStateList->CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);
 }
 
-- (void)recordSessionMetrics {
-  if (_webStateListMetricsObserver)
-    _webStateListMetricsObserver->RecordSessionMetrics();
-}
-
 // NOTE: This can be called multiple times, so must be robust against that.
 - (void)disconnect {
   if (!_browserState)
@@ -355,14 +340,9 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   TabModelList::UnregisterTabModelFromChromeBrowserState(_browserState, self);
 
-  _sessionRestorationBrowserAgent->RemoveObserver(_webStateListMetricsObserver);
-
   _sessionRestorationBrowserAgent = nullptr;
   _tabUsageRecorder = nullptr;
   _browserState = nullptr;
-
-  // Clear weak pointer to observers before destroying them.
-  _webStateListMetricsObserver = nullptr;
 
   // Close all tabs. Do this in an @autoreleasepool as WebStateList observers
   // will be notified (they are unregistered later). As some of them may be

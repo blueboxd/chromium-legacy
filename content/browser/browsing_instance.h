@@ -202,7 +202,7 @@ class CONTENT_EXPORT BrowsingInstance final
   // contain every active SiteInstance, because a race exists where two
   // SiteInstances can be assigned to the same site.  This is ok in rare cases.
   // It also does not contain SiteInstances which have not yet been assigned a
-  // site, such as about:blank.  See NavigatorImpl::ShouldAssignSiteForURL.
+  // site, such as about:blank.  See SiteInstance::ShouldAssignSiteForURL.
   // This map only contains instances that map to a single site. The
   // |default_site_instance_|, which associates multiple sites with a single
   // instance, is not contained in this map.

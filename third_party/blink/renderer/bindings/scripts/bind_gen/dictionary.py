@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import itertools
+import multiprocessing
 import os.path
 
 import web_idl
@@ -37,7 +39,9 @@ from .codegen_utils import make_forward_declarations
 from .codegen_utils import make_header_include_directives
 from .codegen_utils import write_code_node_to_file
 from .mako_renderer import MakoRenderer
+from .package_initializer import package_initializer
 from .path_manager import PathManager
+
 
 _DICT_MEMBER_PRESENCE_PREDICATES = {
     "ScriptValue": "!{}.IsEmpty()",
@@ -710,9 +714,8 @@ def generate_dictionary(dictionary):
         base_class_name=base_class_name)
 
     # Filepaths
-    basename = "dictionary_example"
-    header_path = path_manager.api_path(filename=basename, ext="h")
-    source_path = path_manager.api_path(filename=basename, ext="cc")
+    header_path = path_manager.api_path(ext="h")
+    source_path = path_manager.api_path(ext="cc")
 
     # Root nodes
     header_node = ListNode(tail="\n")
@@ -876,6 +879,31 @@ def generate_dictionary(dictionary):
     write_code_node_to_file(source_node, path_manager.gen_path_to(source_path))
 
 
-def generate_dictionaries(web_idl_database):
-    dictionary = web_idl_database.find("RTCQuicStreamWriteParameters")
+def run_multiprocessing_task(args):
+    dictionary, package_initializer = args
+    package_initializer.init()
     generate_dictionary(dictionary)
+
+
+def generate_dictionaries(web_idl_database):
+    # More processes do not mean better performance.  The default size was
+    # chosen heuristically.
+    process_pool_size = 8
+    cpu_count = multiprocessing.cpu_count()
+    process_pool_size = max(1, min(cpu_count / 2, process_pool_size))
+
+    pool = multiprocessing.Pool(process_pool_size)
+    # Prior to Python3, Pool.map doesn't support user interrupts (e.g. Ctrl-C),
+    # although Pool.map_async(...).get(...) does.
+    timeout_in_sec = 3600  # Just enough long time
+    pool.map_async(
+        run_multiprocessing_task,
+        map(lambda dictionary: (dictionary, package_initializer()),
+            web_idl_database.dictionaries)).get(timeout_in_sec)
+
+    return
+
+    # When it is difficult to see errors in generator, use following loop
+    # instead of parallel runs above.
+    for dictionary in web_idl_database.dictionaries:
+        generate_dictionary(dictionary)

@@ -178,11 +178,6 @@ bool CreateShortcutsInPaths(const base::FilePath& web_app_path,
                             const std::vector<base::FilePath>& shortcut_paths,
                             web_app::ShortcutCreationReason creation_reason,
                             std::vector<base::FilePath>* out_filenames) {
-  // Ensure web_app_path exists.
-  if (!base::PathExists(web_app_path) && !base::CreateDirectory(web_app_path)) {
-    return false;
-  }
-
   // Generates file name to use with persisted ico and shortcut file.
   base::FilePath icon_file =
       web_app::internals::GetIconFilePath(web_app_path, shortcut_info.title);
@@ -342,9 +337,6 @@ void CreateIconAndSetRelaunchDetails(
   ui::win::SetRelaunchDetailsForWindow(command_line.GetCommandLineString(),
                                        shortcut_info.title, hwnd);
 
-  if (!base::PathExists(web_app_path) && !base::CreateDirectory(web_app_path))
-    return;
-
   ui::win::SetAppIconForWindow(icon_file, 0, hwnd);
   web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info.favicon, true);
 }
@@ -384,6 +376,9 @@ bool CheckAndSaveIcon(const base::FilePath& icon_file,
                       bool refresh_shell_icon_cache) {
   if (!ShouldUpdateIcon(icon_file, image))
     return true;
+
+  if (!base::CreateDirectory(icon_file.DirName()))
+    return false;
 
   if (!SaveIconWithCheckSum(icon_file, image))
     return false;

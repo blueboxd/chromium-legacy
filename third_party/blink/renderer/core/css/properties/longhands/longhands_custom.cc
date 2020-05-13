@@ -6241,6 +6241,15 @@ const CSSValue* TextOrientation::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.GetTextOrientation());
 }
 
+void TextOrientation::ApplyInitial(StyleResolverState& state) const {
+  state.SetTextOrientation(
+      ComputedStyleInitialValues::InitialTextOrientation());
+}
+
+void TextOrientation::ApplyInherit(StyleResolverState& state) const {
+  state.SetTextOrientation(state.ParentStyle()->GetTextOrientation());
+}
+
 void TextOrientation::ApplyValue(StyleResolverState& state,
                                  const CSSValue& value) const {
   state.SetTextOrientation(
@@ -7886,6 +7895,13 @@ const CSSValue* WebkitWritingMode::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.GetWritingMode());
 }
 
+void WebkitWritingMode::ApplyInitial(StyleResolverState& state) const {
+  state.SetWritingMode(ComputedStyleInitialValues::InitialWritingMode());
+}
+void WebkitWritingMode::ApplyInherit(StyleResolverState& state) const {
+  state.SetWritingMode(state.ParentStyle()->GetWritingMode());
+}
+
 void WebkitWritingMode::ApplyValue(StyleResolverState& state,
                                    const CSSValue& value) const {
   state.SetWritingMode(
@@ -8087,6 +8103,14 @@ const CSSValue* WritingMode::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.GetWritingMode());
+}
+
+void WritingMode::ApplyInitial(StyleResolverState& state) const {
+  state.SetWritingMode(ComputedStyleInitialValues::InitialWritingMode());
+}
+
+void WritingMode::ApplyInherit(StyleResolverState& state) const {
+  state.SetWritingMode(state.ParentStyle()->GetWritingMode());
 }
 
 void WritingMode::ApplyValue(StyleResolverState& state,

@@ -61,7 +61,9 @@ source_set("browsertest_support") {
     "//components/performance_manager",
     "//content/shell:content_shell_lib",
     "//content/test:browsertest_support",
+    "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/base",
   ]
 }

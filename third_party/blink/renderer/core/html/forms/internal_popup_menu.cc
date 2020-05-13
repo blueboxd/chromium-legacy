@@ -218,7 +218,7 @@ void InternalPopupMenu::WriteDocument(SharedBuffer* data) {
   // When writing the document, we ensure the ComputedStyle of the select
   // element's items (see AddElementStyle). This requires a style-clean tree.
   // See Element::EnsureComputedStyle for further explanation.
-  owner_element.GetDocument().UpdateStyleAndLayoutTree();
+  DCHECK(!owner_element.GetDocument().NeedsLayoutTreeUpdate());
   IntRect anchor_rect_in_screen = chrome_client_->ViewportToScreen(
       owner_element.VisibleBoundsInVisualViewport(),
       owner_element.GetDocument().View());

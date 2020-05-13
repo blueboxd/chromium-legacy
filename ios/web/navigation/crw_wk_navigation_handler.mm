@@ -1492,6 +1492,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   }
 
   self.userInteractionState->ResetLastTransferTime();
+  self.webStateImpl->OnNavigationRedirected(context);
 }
 
 // WKNavigation objects are used as a weak key to store web::NavigationContext.

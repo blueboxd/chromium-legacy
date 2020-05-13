@@ -289,8 +289,11 @@ ScriptValue IncomingStream::CreateAbortException(IsLocalAbort is_local_abort) {
 void IncomingStream::CloseAbortAndReset() {
   DVLOG(1) << "IncomingStream::CloseAbortAndReset() this=" << this;
 
-  controller_->Close();
-  controller_ = nullptr;
+  if (controller_) {
+    controller_->Close();
+    controller_ = nullptr;
+  }
+
   AbortAndReset();
 }
 

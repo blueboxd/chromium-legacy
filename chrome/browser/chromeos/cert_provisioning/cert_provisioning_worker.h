@@ -80,6 +80,8 @@ class CertProvisioningWorker {
   // clean ups (deletes serialized state, keys, and so on) and returns |state|
   // via callback.
   virtual void Stop(CertProvisioningWorkerState state) = 0;
+  // Make worker pause all activity and wait for DoStep.
+  virtual void Pause() = 0;
   // Returns true, if the worker is waiting for some future event. |DoStep| can
   // be called to try continue right now.
   virtual bool IsWaiting() const = 0;
@@ -111,6 +113,7 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
   // CertProvisioningWorker
   void DoStep() override;
   void Stop(CertProvisioningWorkerState state) override;
+  void Pause() override;
   bool IsWaiting() const override;
   const CertProfile& GetCertProfile() const override;
   const std::string& GetPublicKey() const override;

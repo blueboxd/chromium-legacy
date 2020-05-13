@@ -194,6 +194,50 @@ CertProvisioningWorkerImpl::CertProvisioningWorkerImpl(
 
 CertProvisioningWorkerImpl::~CertProvisioningWorkerImpl() = default;
 
+bool CertProvisioningWorkerImpl::IsWaiting() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_waiting_;
+}
+
+const CertProfile& CertProvisioningWorkerImpl::GetCertProfile() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return cert_profile_;
+}
+
+const std::string& CertProvisioningWorkerImpl::GetPublicKey() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return public_key_;
+}
+
+CertProvisioningWorkerState CertProvisioningWorkerImpl::GetState() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return state_;
+}
+
+CertProvisioningWorkerState CertProvisioningWorkerImpl::GetPreviousState()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return prev_state_;
+}
+
+base::Time CertProvisioningWorkerImpl::GetLastUpdateTime() const {
+  return last_update_time_;
+}
+
+void CertProvisioningWorkerImpl::Stop(CertProvisioningWorkerState state) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(IsFinalState(state));
+
+  CancelScheduledTasks();
+  UpdateState(state);
+}
+
+void CertProvisioningWorkerImpl::Pause() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CancelScheduledTasks();
+  is_waiting_ = true;
+}
+
 void CertProvisioningWorkerImpl::DoStep() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -234,14 +278,6 @@ void CertProvisioningWorkerImpl::DoStep() {
       return;
   }
   NOTREACHED() << " " << static_cast<uint>(state_);
-}
-
-void CertProvisioningWorkerImpl::Stop(CertProvisioningWorkerState state) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsFinalState(state));
-
-  CancelScheduledTasks();
-  UpdateState(state);
 }
 
 void CertProvisioningWorkerImpl::UpdateState(
@@ -549,36 +585,6 @@ void CertProvisioningWorkerImpl::OnImportCertDone(
   }
 
   UpdateState(CertProvisioningWorkerState::kSucceeded);
-}
-
-bool CertProvisioningWorkerImpl::IsWaiting() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return is_waiting_;
-}
-
-const CertProfile& CertProvisioningWorkerImpl::GetCertProfile() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return cert_profile_;
-}
-
-const std::string& CertProvisioningWorkerImpl::GetPublicKey() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return public_key_;
-}
-
-CertProvisioningWorkerState CertProvisioningWorkerImpl::GetPreviousState()
-    const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return prev_state_;
-}
-
-base::Time CertProvisioningWorkerImpl::GetLastUpdateTime() const {
-  return last_update_time_;
-}
-
-CertProvisioningWorkerState CertProvisioningWorkerImpl::GetState() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return state_;
 }
 
 bool CertProvisioningWorkerImpl::ProcessResponseErrors(

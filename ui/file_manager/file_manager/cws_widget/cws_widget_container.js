@@ -111,6 +111,7 @@ class CWSWidgetContainer {
     this.webstoreButton_ = document.createElement('div');
     this.webstoreButton_.hidden = true;
     this.webstoreButton_.setAttribute('role', 'button');
+    this.webstoreButton_.classList.add('button2');
     this.webstoreButton_.tabIndex = 0;
 
     /**

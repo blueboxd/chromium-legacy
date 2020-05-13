@@ -36,9 +36,20 @@ namespace {
 
 constexpr char kConsentApiPath[] =
     "people/me/consentsForSecondaryAccounts:create";
-// Format of the text version is "v<GERRIT_CL_NUMBER>" with number of the last
-// CL where strings with information for parents were changed.
+
+// Version of the parental consent text. Must be updated when consent text is
+// changed. Format of the text version is "v<GERRIT_CL_NUMBER>" with number of
+// the last CL where strings with information for parents were changed.
 constexpr char kConsentScreenTextVersion[] = "v2153049";
+// The text version which requires invalidation of the secondary accounts added
+// before consent text changes. Format of the invalidation version is
+// "iv<GERRIT_CL_NUMBER>".
+// =============================================================================
+// WARNING: change of the current version will result in invalidation of
+// secondary accounts added with previous versions.
+// =============================================================================
+constexpr char kSecondaryAccountsInvalidationVersion[] = "iv2153049";
+
 constexpr int kNumConsentLogRetries = 1;
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("secondary_account_consent_logger",
@@ -78,6 +89,15 @@ void SecondaryAccountConsentLogger::RegisterPrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterStringPref(chromeos::prefs::kEduCoexistenceId,
                                std::string() /* default_value */);
+  registry->RegisterStringPref(
+      chromeos::prefs::kEduCoexistenceSecondaryAccountsInvalidationVersion,
+      "iv2153049" /* default_value, the first invalidation version */);
+}
+
+// static
+std::string
+SecondaryAccountConsentLogger::GetSecondaryAccountsInvalidationVersion() {
+  return kSecondaryAccountsInvalidationVersion;
 }
 
 SecondaryAccountConsentLogger::SecondaryAccountConsentLogger(

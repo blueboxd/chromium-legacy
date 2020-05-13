@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 
 class BottomSheetUtils {
     /** Request {@code controller} to show {@code content} and expand the sheet when it is shown. */

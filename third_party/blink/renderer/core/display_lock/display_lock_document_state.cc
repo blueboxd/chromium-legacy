@@ -20,6 +20,7 @@ void DisplayLockDocumentState::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(intersection_observer_);
   visitor->Trace(display_lock_contexts_);
+  visitor->Trace(forced_node_info_);
 }
 
 void DisplayLockDocumentState::AddDisplayLockContext(
@@ -134,14 +135,14 @@ void DisplayLockDocumentState::NotifySelectionRemoved() {
 void DisplayLockDocumentState::BeginNodeForcedScope(
     const Node* node,
     bool self_was_forced,
-    DisplayLockUtilities::ScopedChainForcedUpdate* scope) {
-  forced_node_info_.emplace_back(node, self_was_forced, scope);
+    DisplayLockUtilities::ScopedForcedUpdate::Impl* impl) {
+  forced_node_info_.push_back(ForcedNodeInfo(node, self_was_forced, impl));
 }
 
 void DisplayLockDocumentState::EndNodeForcedScope(
-    DisplayLockUtilities::ScopedChainForcedUpdate* scope) {
+    DisplayLockUtilities::ScopedForcedUpdate::Impl* impl) {
   for (wtf_size_t i = 0; i < forced_node_info_.size(); ++i) {
-    if (forced_node_info_[i].scope == scope) {
+    if (forced_node_info_[i].chain == impl) {
       forced_node_info_.EraseAt(i);
       return;
     }
@@ -165,7 +166,7 @@ void DisplayLockDocumentState::ForceLockIfNeededForInfo(
           : FlatTreeTraversal::AncestorsOf(*forced_node_info->node);
   for (Node& ancestor : ancestor_view) {
     if (element == &ancestor) {
-      forced_node_info->scope->AddScopedForcedUpdate(
+      forced_node_info->chain->AddForcedUpdateScopeForContext(
           element->GetDisplayLockContext());
       break;
     }

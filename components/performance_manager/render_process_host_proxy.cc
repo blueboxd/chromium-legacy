@@ -24,4 +24,10 @@ RenderProcessHostProxy::RenderProcessHostProxy(int render_process_host_id)
   DCHECK(render_process_host_id_ >= 0);
 }
 
+// static
+RenderProcessHostProxy RenderProcessHostProxy::CreateForTesting(
+    int render_process_host_id) {
+  return RenderProcessHostProxy(render_process_host_id);
+}
+
 }  // namespace performance_manager

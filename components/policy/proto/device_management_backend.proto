@@ -1014,7 +1014,28 @@ message SystemStatus {
   optional string vpd_sku_number = 1;
 }
 
-// Status of a single physical CPU.
+// Status of a single C-state. C-states are various modes the CPU can transition
+// to in order to use more or less power.
+message CpuCStateInfo {
+  // Name of the state.
+  optional string name = 1;
+  // Time spent in the state since the last reboot, in microseconds.
+  optional uint64 time_in_state_since_last_boot_us = 2;
+}
+
+// Status of a single logical CPU.
+message LogicalCpuInfo {
+  // Maximum frequency the CPU is allowed to run at, by policy.
+  optional uint32 scaling_max_frequency_khz = 1;
+  // Current frequency the CPU is running at.
+  optional uint32 scaling_current_frequency_khz = 2;
+  // Idle time since last boot.
+  optional uint32 idle_time_seconds = 3;
+  // Information about the logical CPU's time in various C-states.
+  repeated CpuCStateInfo c_states = 4;
+}
+
+// Status of a single physical CPU on the device.
 message CpuInfo {
   // The CPU model name.
   optional string model_name = 1;
@@ -1028,6 +1049,14 @@ message CpuInfo {
 
   // The max CPU clock speed in kHz.
   optional uint32 max_clock_speed_khz = 3;
+
+  repeated LogicalCpuInfo logical_cpus = 4;
+}
+
+// Overall CPU information for the device.
+message GlobalCpuInfo {
+  // Total number of threads on the device.
+  optional uint32 num_total_threads = 1;
 }
 
 // Status for a single display.  A display screen with resolution 1920x1080
@@ -1236,6 +1265,9 @@ message DeviceStatusReportRequest {
 
   // Information about the device's fans.
   repeated FanInfo fan_info = 38;
+
+  // Overall information about the device's CPUs.
+  optional GlobalCpuInfo global_cpu_info = 39;
 }
 
 message OsUpdateStatus {

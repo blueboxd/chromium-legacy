@@ -312,6 +312,12 @@ void TestWebState::OnNavigationStarted(NavigationContext* navigation_context) {
     observer.DidStartNavigation(this, navigation_context);
 }
 
+void TestWebState::OnNavigationRedirected(
+    NavigationContext* navigation_context) {
+  for (auto& observer : observers_)
+    observer.DidRedirectNavigation(this, navigation_context);
+}
+
 void TestWebState::OnNavigationFinished(NavigationContext* navigation_context) {
   for (auto& observer : observers_)
     observer.DidFinishNavigation(this, navigation_context);

@@ -731,6 +731,7 @@ class WebStateObserverMock : public WebStateObserver {
   WebStateObserverMock() = default;
 
   MOCK_METHOD2(DidStartNavigation, void(WebState*, NavigationContext*));
+  MOCK_METHOD2(DidRedirectNavigation, void(WebState*, NavigationContext*));
   MOCK_METHOD2(DidFinishNavigation, void(WebState*, NavigationContext*));
   MOCK_METHOD1(DidStartLoading, void(WebState*));
   MOCK_METHOD1(DidStopLoading, void(WebState*));
@@ -1882,15 +1883,35 @@ TEST_F(WebStateObserverTest, RedirectNavigation) {
           web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
           &nav_id));
 
-  // 5 calls on ShouldAllowRequest for redirections.
+  // 5 calls on ShouldAllowRequest and DidRedirectNavigation for redirections.
   WebStatePolicyDecider::RequestInfo expected_redirect_request_info(
       ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(
       *decider_,
       ShouldAllowRequest(_, RequestInfoMatch(expected_redirect_request_info)))
-      .Times(5)
-      .WillRepeatedly(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
+      .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
+  EXPECT_CALL(observer_, DidRedirectNavigation(web_state(), _));
+  EXPECT_CALL(
+      *decider_,
+      ShouldAllowRequest(_, RequestInfoMatch(expected_redirect_request_info)))
+      .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
+  EXPECT_CALL(observer_, DidRedirectNavigation(web_state(), _));
+  EXPECT_CALL(
+      *decider_,
+      ShouldAllowRequest(_, RequestInfoMatch(expected_redirect_request_info)))
+      .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
+  EXPECT_CALL(observer_, DidRedirectNavigation(web_state(), _));
+  EXPECT_CALL(
+      *decider_,
+      ShouldAllowRequest(_, RequestInfoMatch(expected_redirect_request_info)))
+      .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
+  EXPECT_CALL(observer_, DidRedirectNavigation(web_state(), _));
+  EXPECT_CALL(
+      *decider_,
+      ShouldAllowRequest(_, RequestInfoMatch(expected_redirect_request_info)))
+      .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
+  EXPECT_CALL(observer_, DidRedirectNavigation(web_state(), _));
 
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
       .WillOnce(

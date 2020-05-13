@@ -24,9 +24,6 @@ class PasswordGenerationPopupController
   // Called by the view when the password was selected.
   virtual void SetSelected() = 0;
 
-  // Whether the view should display an additional right-aligned G icon.
-  virtual bool ShouldShowGoogleIcon() const = 0;
-
   // Accessors
   virtual GenerationUIState state() const = 0;
   virtual bool password_selected() const = 0;

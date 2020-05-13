@@ -23,6 +23,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.TimeoutException;

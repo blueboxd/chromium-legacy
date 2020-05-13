@@ -797,6 +797,11 @@ void WebStateImpl::OnNavigationStarted(web::NavigationContextImpl* context) {
     observer.DidStartNavigation(this, context);
 }
 
+void WebStateImpl::OnNavigationRedirected(web::NavigationContextImpl* context) {
+  for (auto& observer : observers_)
+    observer.DidRedirectNavigation(this, context);
+}
+
 void WebStateImpl::OnNavigationFinished(web::NavigationContextImpl* context) {
   // Navigation manager loads internal URLs to restore session history and
   // create back-forward entries for WebUI. Do not trigger external callbacks.

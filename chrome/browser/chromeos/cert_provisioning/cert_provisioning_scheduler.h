@@ -120,6 +120,7 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
   CertProvisioningWorker* FindWorker(CertProfileId profile_id);
 
   bool CheckInternetConnection();
+  void WaitForInternetConnection();
   void OnNetworkChange(const NetworkState* network);
   // NetworkStateHandlerObserver
   void DefaultNetworkChanged(const NetworkState* network) override;

@@ -74,7 +74,9 @@ TEST_F(NeuralStylusPalmDetectionFilterTest, EventDeviceSimpleTest) {
       {kEveTouchScreen, true},
       {kLinkTouchscreen, true},  // No ABS_MT_TOOL_TYPE
       {kNocturneStylus, false},
-      {kKohakuTouchscreen, true}};
+      {kKohakuTouchscreen, true},
+      // The Wacom Intuos is external.
+      {kWacomIntuosPtS_Finger, false}};
   for (const auto& it : devices) {
     EXPECT_TRUE(CapabilitiesToDeviceInfo(it.first, &devinfo));
     EXPECT_EQ(it.second,

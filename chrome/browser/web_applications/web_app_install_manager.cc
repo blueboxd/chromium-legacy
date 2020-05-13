@@ -23,6 +23,33 @@
 
 namespace web_app {
 
+namespace {
+
+#if defined(OS_CHROMEOS)
+constexpr bool kLocallyInstallWebAppsOnSync = true;
+#else
+constexpr bool kLocallyInstallWebAppsOnSync = false;
+#endif
+
+InstallManager::InstallParams CreateSyncInstallParams(
+    const GURL& start_url,
+    const base::string16& app_name,
+    DisplayMode user_display_mode) {
+  InstallManager::InstallParams params;
+  params.user_display_mode = user_display_mode;
+  params.fallback_start_url = start_url;
+  params.fallback_app_name = app_name;
+  // If app is not locally installed then no OS integration like OS shortcuts.
+  params.locally_installed = kLocallyInstallWebAppsOnSync;
+  params.add_to_applications_menu = kLocallyInstallWebAppsOnSync;
+  params.add_to_desktop = kLocallyInstallWebAppsOnSync;
+  // Never add the app to the quick launch bar after sync.
+  params.add_to_quick_launch_bar = false;
+  return params;
+}
+
+}  // namespace
+
 WebAppInstallManager::WebAppInstallManager(Profile* profile)
     : InstallManager(profile),
       url_loader_(std::make_unique<WebAppUrlLoader>()) {
@@ -127,12 +154,6 @@ void WebAppInstallManager::InstallBookmarkAppFromSync(
     return;
   }
 
-  bool is_locally_installed = false;
-#if defined(OS_CHROMEOS)
-  // On Chrome OS, sync always locally installs an app.
-  is_locally_installed = true;
-#endif
-
   // If bookmark_app_id is not installed enqueue full background installation
   // flow. This install may produce a web app or an extension-based bookmark
   // app, depending on the BMO flag.
@@ -143,25 +164,15 @@ void WebAppInstallManager::InstallBookmarkAppFromSync(
       finalizer(), data_retriever_factory_.Run());
 
   task->ExpectAppId(bookmark_app_id);
+  task->SetInstallParams(CreateSyncInstallParams(
+      launch_url, web_application_info->title,
+      web_application_info->open_as_window ? DisplayMode::kStandalone
+                                           : DisplayMode::kBrowser));
 
-  InstallParams params;
-  params.user_display_mode = web_application_info->open_as_window
-                                 ? DisplayMode::kStandalone
-                                 : DisplayMode::kBrowser;
-  params.fallback_start_url = launch_url;
-  // If app is not locally installed then no OS integration like OS shortcuts.
-  params.locally_installed = is_locally_installed;
-  params.add_to_applications_menu = is_locally_installed;
-  params.add_to_desktop = is_locally_installed;
-
-  // Never add the app to the quick launch bar after sync.
-  params.add_to_quick_launch_bar = false;
-  task->SetInstallParams(params);
-
-  OnceInstallCallback task_completed_callback = base::BindOnce(
-      &WebAppInstallManager::OnBookmarkAppInstalledAfterSync,
-      base::Unretained(this), bookmark_app_id, std::move(web_application_info),
-      is_locally_installed, std::move(callback));
+  OnceInstallCallback task_completed_callback =
+      base::BindOnce(&WebAppInstallManager::OnBookmarkAppInstalledAfterSync,
+                     base::Unretained(this), bookmark_app_id,
+                     std::move(web_application_info), std::move(callback));
 
   base::OnceClosure start_task = base::BindOnce(
       &WebAppInstallTask::LoadAndInstallWebAppFromManifestWithFallback,
@@ -211,6 +222,9 @@ void WebAppInstallManager::InstallWebAppsAfterSync(
         finalizer(), data_retriever_factory_.Run());
 
     task->ExpectAppId(web_app->app_id());
+    task->SetInstallParams(CreateSyncInstallParams(
+        web_app->launch_url(), base::UTF8ToUTF16(web_app->sync_data().name),
+        web_app->user_display_mode()));
 
     OnceInstallCallback sync_install_callback =
         base::BindOnce(&WebAppInstallManager::OnWebAppInstalledAfterSync,
@@ -251,7 +265,6 @@ void WebAppInstallManager::SetUrlLoaderForTesting(
 void WebAppInstallManager::OnBookmarkAppInstalledAfterSync(
     const AppId& bookmark_app_id,
     std::unique_ptr<WebApplicationInfo> web_application_info,
-    bool is_locally_installed,
     OnceInstallCallback callback,
     const AppId& web_app_id,
     InstallResultCode code) {
@@ -264,7 +277,7 @@ void WebAppInstallManager::OnBookmarkAppInstalledAfterSync(
     // Install failed. Do the fallback install from info.
     InstallFinalizer::FinalizeOptions options;
     options.install_source = WebappInstallSource::SYNC;
-    options.locally_installed = is_locally_installed;
+    options.locally_installed = kLocallyInstallWebAppsOnSync;
 
     FilterAndResizeIconsGenerateMissing(web_application_info.get(),
                                         /*icons_map=*/nullptr);

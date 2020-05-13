@@ -20,17 +20,19 @@
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="osAccessibility" focus-config="[[focusConfig_]]">
       <div route-path="default">
-        <settings-toggle-button
-            id="a11yImageLabels"
-            class="hr"
-            hidden$="[[!showAccessibilityLabelsSetting_]]"
-            pref="{{prefs.settings.a11y.enable_accessibility_image_labels}}"
-            on-change="onToggleAccessibilityImageLabels_"
-            label="$i18n{accessibleImageLabelsTitle}"
-            sub-label="$i18n{accessibleImageLabelsSubtitle}">
-        </settings-toggle-button>
+        <template is="dom-if" if="[[showAccessibilityLabelsSetting_]]">
+          <settings-toggle-button
+              id="a11yImageLabels"
+              class="hr"
+              pref="{{prefs.settings.a11y.enable_accessibility_image_labels}}"
+              on-change="onToggleAccessibilityImageLabels_"
+              label="$i18n{accessibleImageLabelsTitle}"
+              sub-label="$i18n{accessibleImageLabelsSubtitle}">
+          </settings-toggle-button>
+        </template>
         <settings-toggle-button id="optionsInMenuToggle"
             class="hr"
+            hidden="[[isKioskModeActive_]]"
             label="$i18n{optionsInMenuLabel}"
             pref="{{prefs.settings.a11y.enable_menu}}">
         </settings-toggle-button>
@@ -45,7 +47,8 @@
       <template is="dom-if" route-path="/manageAccessibility">
         <settings-subpage
             associated-control="[[$$('#subpage-trigger')]]"
-            page-title="$i18n{manageAccessibilityFeatures}">
+            page-title="$i18n{manageAccessibilityFeatures}"
+            hide-close-button="[[isKioskModeActive_]]">
           <settings-manage-a11y-page prefs="{{prefs}}">
           </settings-manage-a11y-page>
         </settings-subpage>

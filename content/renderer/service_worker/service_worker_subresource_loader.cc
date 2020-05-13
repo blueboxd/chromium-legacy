@@ -716,9 +716,8 @@ void ServiceWorkerSubresourceLoader::FollowRedirect(
   // TODO(arthursonzogni, juncai): This seems to be correctly implemented, but
   // not used so far. Add tests and remove this DCHECK to support this feature
   // if needed. See https://crbug.com/845683.
-  DCHECK(removed_headers.empty() && modified_headers.IsEmpty() &&
-         modified_cors_exempt_headers.IsEmpty())
-      << "Redirect with removed or modified headers is not supported yet. See "
+  DCHECK(modified_headers.IsEmpty() && modified_cors_exempt_headers.IsEmpty())
+      << "Redirect with modified headers is not supported yet. See "
          "https://crbug.com/845683";
   DCHECK(!new_url.has_value()) << "Redirect with modified url was not "
                                   "supported yet. crbug.com/845683";

@@ -61,7 +61,8 @@ void ExtensionLocalizationPeer::OnUploadProgress(uint64_t position,
 
 bool ExtensionLocalizationPeer::OnReceivedRedirect(
     const net::RedirectInfo& redirect_info,
-    network::mojom::URLResponseHeadPtr head) {
+    network::mojom::URLResponseHeadPtr head,
+    std::vector<std::string>*) {
   NOTREACHED();
   return false;
 }

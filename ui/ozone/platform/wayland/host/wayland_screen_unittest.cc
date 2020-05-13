@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/display_switches.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_screen.h"
@@ -286,6 +287,28 @@ TEST_P(WaylandScreenTest, GetAcceleratedWidgetAtScreenPoint) {
   widget_at_screen_point =
       platform_screen_->GetAcceleratedWidgetAtScreenPoint(gfx::Point(0, 0));
   EXPECT_EQ(widget_at_screen_point, window_->GetWidget());
+
+  // Reset the focus to avoid crash on dtor as long as there is no real pointer
+  // object.
+  window_->SetPointerFocus(false);
+}
+
+TEST_P(WaylandScreenTest, GetLocalProcessWidgetAtPoint) {
+  gfx::Point point(10, 10);
+  EXPECT_EQ(platform_screen_->GetLocalProcessWidgetAtPoint(point, {}),
+            gfx::kNullAcceleratedWidget);
+
+  // Set a focus to the main window. Now, that focused window must be returned.
+  window_->SetPointerFocus(true);
+  EXPECT_EQ(platform_screen_->GetLocalProcessWidgetAtPoint(point, {}),
+            window_->GetWidget());
+
+  // Null widget must be returned when the focused window is part of the
+  // |ignore| list.
+  gfx::AcceleratedWidget w = window_->GetWidget();
+  EXPECT_EQ(
+      platform_screen_->GetLocalProcessWidgetAtPoint(point, {w - 1, w, w + 1}),
+      gfx::kNullAcceleratedWidget);
 
   // Reset the focus to avoid crash on dtor as long as there is no real pointer
   // object.

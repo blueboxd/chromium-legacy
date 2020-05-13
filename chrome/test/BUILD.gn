@@ -6445,6 +6445,7 @@ if (!is_fuchsia && !is_android) {
     data = [
       "//chrome/test/data/password/",
       "//chrome/test/data/sync/",
+      "//chrome/test/data/web_apps/",
       "//net/tools/testserver/",
       "//third_party/pywebsocket3/src/mod_pywebsocket/",
       "//third_party/tlslite/",

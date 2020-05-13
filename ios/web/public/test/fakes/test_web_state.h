@@ -132,6 +132,7 @@ class TestWebState : public WebState {
   // Notifier for tests.
   void OnPageLoaded(PageLoadCompletionStatus load_completion_status);
   void OnNavigationStarted(NavigationContext* navigation_context);
+  void OnNavigationRedirected(NavigationContext* context);
   void OnNavigationFinished(NavigationContext* navigation_context);
   void OnRenderProcessGone();
   void OnBackForwardStateChanged();

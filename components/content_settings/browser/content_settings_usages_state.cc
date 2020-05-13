@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/content_settings/core/browser/content_settings_usages_state.h"
+#include "components/content_settings/browser/content_settings_usages_state.h"
 
 #include <string>
 
@@ -13,15 +13,12 @@
 ContentSettingsUsagesState::ContentSettingsUsagesState(
     HostContentSettingsMap* host_content_settings_map,
     ContentSettingsType type)
-    : host_content_settings_map_(host_content_settings_map),
-      type_(type) {
-}
+    : host_content_settings_map_(host_content_settings_map), type_(type) {}
 
-ContentSettingsUsagesState::~ContentSettingsUsagesState() {
-}
+ContentSettingsUsagesState::~ContentSettingsUsagesState() {}
 
-void ContentSettingsUsagesState::OnPermissionSet(
-    const GURL& requesting_origin, bool allowed) {
+void ContentSettingsUsagesState::OnPermissionSet(const GURL& requesting_origin,
+                                                 bool allowed) {
   state_map_[requesting_origin] =
       allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
 }
@@ -71,9 +68,9 @@ void ContentSettingsUsagesState::GetDetailedInfo(
       std::string formatted_host = GURLToFormattedHost(i->first);
       std::string final_formatted_host =
           repeated_formatted_hosts.find(formatted_host) ==
-          repeated_formatted_hosts.end() ?
-          formatted_host :
-          i->first.spec();
+                  repeated_formatted_hosts.end()
+              ? formatted_host
+              : i->first.spec();
       (*formatted_hosts_per_state)[i->second].insert(final_formatted_host);
     }
 

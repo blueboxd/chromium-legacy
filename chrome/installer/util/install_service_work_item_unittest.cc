@@ -76,8 +76,10 @@ class InstallServiceWorkItemTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    base::win::RegKey key(HKEY_LOCAL_MACHINE, L"", KEY_READ | KEY_WOW64_32KEY);
-    key.DeleteKey(kProductRegPath);
+    base::win::RegKey(HKEY_LOCAL_MACHINE, L"", KEY_READ | KEY_WOW64_32KEY)
+        .DeleteKey(kProductRegPath);
+
+    base::win::RegKey key(HKEY_LOCAL_MACHINE, L"", KEY_READ);
     key.DeleteKey(kClsidRegPath);
     key.DeleteKey(kAppidRegPath);
     key.DeleteKey(IID_REGISTRY_PATH);

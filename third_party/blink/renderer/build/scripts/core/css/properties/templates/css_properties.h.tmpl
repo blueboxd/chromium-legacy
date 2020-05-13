@@ -49,6 +49,7 @@ namespace {{namespace}} {
   (property.font and 'kAffectsFont' or ''),
   (property.is_background and 'kBackground' or ''),
   (property.is_border and 'kBorder' or ''),
+  (property.computed_value_comparable and 'kComputedValueComparable' or ''),
 ] | reject('==', '') | join(' | ') %}
 {% set ctor_args = (not is_alias and [property_id, flags, separator] or []) %}
 // {{property.name}}
@@ -84,6 +85,9 @@ class {{class_name}} final : public {{property.superclass}} {
   {% for property_method in property.property_methods %}
   {{property_method.return_type}} {{property_method.name}}{{property_method.parameters}} const override;
   {% endfor %}
+  {% if property.computed_value_comparable %}
+  bool ComputedValuesEqual(const ComputedStyle& a, const ComputedStyle& b) const override;
+  {% endif %}
   {% if property.direction_aware_options %}
   const CSSProperty& ResolveDirectionAwareProperty(TextDirection, blink::WritingMode) const override;
   const CSSValue* CSSValueFromComputedStyleInternal(

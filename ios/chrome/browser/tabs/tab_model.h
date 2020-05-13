@@ -52,9 +52,6 @@ class Browser;
 // Closes ALL the tabs.
 - (void)closeAllTabs;
 
-// Records tab session metrics.
-- (void)recordSessionMetrics;
-
 // Tells the receiver to disconnect from the model object it depends on. This
 // should be called before destroying the browser state that the receiver was
 // initialized with.

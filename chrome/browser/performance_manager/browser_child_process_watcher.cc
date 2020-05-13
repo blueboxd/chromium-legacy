@@ -32,8 +32,8 @@ void BrowserChildProcessWatcher::Initialize() {
   DCHECK(!browser_process_node_);
   DCHECK(gpu_process_nodes_.empty());
 
-  browser_process_node_ =
-      PerformanceManagerImpl::CreateProcessNode(RenderProcessHostProxy());
+  browser_process_node_ = PerformanceManagerImpl::CreateProcessNode(
+      content::PROCESS_TYPE_BROWSER, RenderProcessHostProxy());
   OnProcessLaunched(base::Process::Current(), browser_process_node_.get());
   BrowserChildProcessObserver::Add(this);
 }
@@ -57,7 +57,8 @@ void BrowserChildProcessWatcher::BrowserChildProcessLaunchedAndConnected(
     const content::ChildProcessData& data) {
   if (data.process_type == content::PROCESS_TYPE_GPU) {
     std::unique_ptr<ProcessNodeImpl> gpu_node =
-        PerformanceManagerImpl::CreateProcessNode(RenderProcessHostProxy());
+        PerformanceManagerImpl::CreateProcessNode(content::PROCESS_TYPE_GPU,
+                                                  RenderProcessHostProxy());
     OnProcessLaunched(data.GetProcess(), gpu_node.get());
     gpu_process_nodes_[data.id] = std::move(gpu_node);
   }

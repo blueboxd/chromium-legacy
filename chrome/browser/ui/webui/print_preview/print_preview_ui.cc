@@ -25,12 +25,15 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/printing/background_printing_manager.h"
+#include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_data_service.h"
+#include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
@@ -50,6 +53,8 @@
 #include "components/printing/common/print_messages.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -72,6 +77,7 @@
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #endif
 
+using content::BrowserThread;
 using content::WebContents;
 
 namespace printing {
@@ -91,6 +97,20 @@ constexpr char kGeneratedPath[] =
 #endif
 
 PrintPreviewUI::TestDelegate* g_test_delegate = nullptr;
+
+void StopWorker(int document_cookie) {
+  if (document_cookie <= 0)
+    return;
+  scoped_refptr<PrintQueriesQueue> queue =
+      g_browser_process->print_job_manager()->queue();
+  std::unique_ptr<PrinterQuery> printer_query =
+      queue->PopPrinterQuery(document_cookie);
+  if (printer_query) {
+    base::PostTask(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&PrinterQuery::StopWorker, std::move(printer_query)));
+  }
+}
 
 // Thread-safe wrapper around a base::flat_map to keep track of mappings from
 // PrintPreviewUI IDs to most recent print preview request IDs.
@@ -748,6 +768,12 @@ void PrintPreviewUI::SetOptionsFromDocument(
     int32_t request_id) {
   handler_->SendPrintPresetOptions(params->is_scaling_disabled, params->copies,
                                    params->duplex, request_id);
+}
+
+void PrintPreviewUI::PrintPreviewFailed(int32_t document_cookie,
+                                        int32_t request_id) {
+  StopWorker(document_cookie);
+  OnPrintPreviewFailed(request_id);
 }
 
 // static

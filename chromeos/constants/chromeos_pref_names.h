@@ -19,6 +19,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kAudioVolumePercent[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kAudioDevicesState[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kEduCoexistenceId[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kEduCoexistenceSecondaryAccountsInvalidationVersion[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kQuirksClientLastServerCheck[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDeviceWiFiFastTransitionEnabled[];

@@ -38,6 +38,12 @@ class PerformanceManagerBrowserTestHarness
   // call this if you need multiple independent WebContents.
   content::Shell* CreateShell();
 
+  // Starts a navigation for the given |contents|.
+  void StartNavigation(content::WebContents* contents, const GURL& url);
+
+  // Waits for an ongoing navigation to terminate on the given |contents|.
+  void WaitForLoad(content::WebContents* contents);
+
  private:
   std::unique_ptr<PerformanceManagerTestHarnessHelper> helper_;
 };

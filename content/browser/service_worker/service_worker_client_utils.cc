@@ -18,6 +18,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
@@ -247,7 +248,7 @@ void OpenWindowOnUI(
     return;
   }
 
-  // The following code is a rough copy of NavigatorImpl::RequestOpenURL. That
+  // The following code is a rough copy of Navigator::RequestOpenURL. That
   // function can't be used directly since there is no render frame host yet
   // that the navigation will occur in.
 

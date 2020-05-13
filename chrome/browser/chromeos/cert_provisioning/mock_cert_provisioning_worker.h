@@ -65,6 +65,7 @@ class MockCertProvisioningWorker : public CertProvisioningWorker {
 
   MOCK_METHOD(void, DoStep, (), (override));
   MOCK_METHOD(void, Stop, (CertProvisioningWorkerState), (override));
+  MOCK_METHOD(void, Pause, (), (override));
   MOCK_METHOD(bool, IsWaiting, (), (const override));
   MOCK_METHOD(const CertProfile&, GetCertProfile, (), (const override));
   MOCK_METHOD(const std::string&, GetPublicKey, (), (const override));

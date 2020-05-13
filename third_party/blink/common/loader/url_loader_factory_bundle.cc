@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/debug/alias.h"
 #include "base/notreached.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -96,25 +95,6 @@ network::mojom::URLLoaderFactory* URLLoaderFactoryBundle::GetFactory(
   return default_factory_.is_bound() ? default_factory_.get() : nullptr;
 }
 
-size_t EstimateBodyLength(network::ResourceRequestBody* body) {
-  if (!body)
-    return 0;
-  size_t len = 0;
-  for (const auto& elem : *body->elements()) {
-    if (elem.length() != std::numeric_limits<uint64_t>::max())
-      len += elem.length();
-  }
-  return len;
-}
-
-size_t EstimateHeadersLength(const net::HttpRequestHeaders& headers) {
-  net::HttpRequestHeaders::Iterator iter(headers);
-  size_t len = 0;
-  while (iter.GetNext())
-    len += iter.name().size() + iter.value().size();
-  return len;
-}
-
 void URLLoaderFactoryBundle::CreateLoaderAndStart(
     mojo::PendingReceiver<network::mojom::URLLoader> loader,
     int32_t routing_id,
@@ -124,20 +104,6 @@ void URLLoaderFactoryBundle::CreateLoaderAndStart(
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   network::mojom::URLLoaderFactory* factory_ptr = GetFactory(request);
-
-  // Some CreateLoaderAndStart messages are too large and cause crashes.
-  // TODO(https://crbug.com/1074146): Remove this instrumentation after the bug
-  // is fixed.
-  size_t url_length = request.url.possibly_invalid_spec().size();
-  base::debug::Alias(&url_length);
-  bool has_body = !!request.request_body;
-  base::debug::Alias(&has_body);
-  size_t body_length = EstimateBodyLength(request.request_body.get());
-  base::debug::Alias(&body_length);
-  size_t header_length = EstimateHeadersLength(request.headers) +
-                         EstimateHeadersLength(request.cors_exempt_headers);
-  base::debug::Alias(&header_length);
-
   factory_ptr->CreateLoaderAndStart(std::move(loader), routing_id, request_id,
                                     options, request, std::move(client),
                                     traffic_annotation);

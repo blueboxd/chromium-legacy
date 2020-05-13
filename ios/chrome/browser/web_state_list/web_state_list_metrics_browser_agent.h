@@ -2,18 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_LIST_METRICS_OBSERVER_H_
-#define IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_LIST_METRICS_OBSERVER_H_
+#ifndef IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_LIST_METRICS_BROWSER_AGENT_H_
+#define IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_LIST_METRICS_BROWSER_AGENT_H_
 
 #include "base/macros.h"
+#import "ios/chrome/browser/main/browser_observer.h"
+#import "ios/chrome/browser/main/browser_user_data.h"
 #include "ios/chrome/browser/sessions/session_restoration_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 
-class WebStateListMetricsObserver : public WebStateListObserver,
-                                    public SessionRestorationObserver {
+class WebStateListMetricsBrowserAgent
+    : BrowserObserver,
+      public WebStateListObserver,
+      public SessionRestorationObserver,
+      public BrowserUserData<WebStateListMetricsBrowserAgent> {
  public:
-  WebStateListMetricsObserver();
-  ~WebStateListMetricsObserver() override;
+  WebStateListMetricsBrowserAgent();
+  ~WebStateListMetricsBrowserAgent() override;
 
   void RecordSessionMetrics();
 
@@ -32,11 +37,12 @@ class WebStateListMetricsObserver : public WebStateListObserver,
                            ActiveWebStateChangeReason reason) override;
 
  private:
-  // Counters for metrics.
-  int inserted_web_state_counter_;
-  int detached_web_state_counter_;
-  int activated_web_state_counter_;
-  bool metric_collection_paused_;
+  explicit WebStateListMetricsBrowserAgent(Browser* browser);
+  friend class BrowserUserData<WebStateListMetricsBrowserAgent>;
+  BROWSER_USER_DATA_KEY_DECL();
+
+  // BrowserObserver methods
+  void BrowserDestroyed(Browser* browser) override;
 
   // Reset metrics counters.
   void ResetSessionMetrics();
@@ -46,7 +52,16 @@ class WebStateListMetricsObserver : public WebStateListObserver,
   void SessionRestorationFinished(
       const std::vector<web::WebState*>& restored_web_states) override;
 
-  DISALLOW_COPY_AND_ASSIGN(WebStateListMetricsObserver);
+  // The WebStateList containing all the monitored tabs.
+  WebStateList* web_state_list_;  // weak
+
+  // Counters for metrics.
+  int inserted_web_state_counter_;
+  int detached_web_state_counter_;
+  int activated_web_state_counter_;
+  bool metric_collection_paused_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebStateListMetricsBrowserAgent);
 };
 
-#endif  // IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_LIST_METRICS_OBSERVER_H_
+#endif  // IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_LIST_METRICS_BROWSER_AGENT_H_

@@ -414,6 +414,8 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
         FeatureDefault(FeaturePolicy::FeatureDefault::EnableForSelf)},
        {mojom::FeaturePolicyFeature::kClientHintUAFullVersion,
         FeatureDefault(FeaturePolicy::FeatureDefault::EnableForSelf)},
+       {mojom::FeaturePolicyFeature::kClientHintUAPlatformVersion,
+        FeatureDefault(FeaturePolicy::FeatureDefault::EnableForSelf)},
        {mojom::FeaturePolicyFeature::kClientHintViewportWidth,
         FeatureDefault(FeaturePolicy::FeatureDefault::EnableForSelf)},
        {mojom::FeaturePolicyFeature::kClientHintWidth,

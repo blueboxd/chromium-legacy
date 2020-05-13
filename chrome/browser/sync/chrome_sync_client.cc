@@ -448,6 +448,8 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   }
 #endif  // defined(OS_CHROMEOS)
 
+// Chrome prefers OS provided spell checkers where they exist. So only sync the
+// custom dictionary on platforms that typically don't provide one.
 #if defined(OS_LINUX) || defined(OS_WIN)
   // Dictionary sync is enabled by default.
   if (!disabled_types.Has(syncer::DICTIONARY)) {

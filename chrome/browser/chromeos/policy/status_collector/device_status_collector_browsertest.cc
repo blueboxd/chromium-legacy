@@ -142,12 +142,20 @@ constexpr char kFakeBatteryStatus[] = "fake_battery_status";
 // Cached VPD test values:
 constexpr char kFakeSkuNumber[] = "fake_sku_number";
 // CPU test values:
+constexpr uint32_t kFakeNumTotalThreads = 8;
 constexpr char kFakeModelName[] = "fake_cpu_model_name";
 constexpr cros_healthd::CpuArchitectureEnum kFakeMojoArchitecture =
     cros_healthd::CpuArchitectureEnum::kX86_64;
 constexpr em::CpuInfo::Architecture kFakeProtoArchitecture =
     em::CpuInfo::X86_64;
 constexpr uint32_t kFakeMaxClockSpeed = 3400000;
+constexpr uint32_t kFakeScalingMaxFrequency = 2700000;
+constexpr uint32_t kFakeScalingCurFrequency = 2400000;
+// Since this number is divided by the result of the sysconf(_SC_CLK_TCK)
+// syscall, we need it to be 0 to avoid flaky tests,
+constexpr uint32_t kFakeIdleTime = 0;
+constexpr char kFakeCStateName[] = "fake_c_state_name";
+constexpr uint64_t kFakeTimeInStateSinceLastBoot = 87;
 // CPU Temperature test values:
 constexpr char kFakeCpuLabel[] = "fake_cpu_label";
 constexpr int kFakeCpuTemp = 91832;
@@ -471,11 +479,31 @@ cros_healthd::CachedVpdResultPtr CreateVpdResult() {
       cros_healthd::CachedVpdInfo::New(kFakeSkuNumber));
 }
 
+std::vector<cros_healthd::CpuCStateInfoPtr> CreateCStateInfo() {
+  std::vector<cros_healthd::CpuCStateInfoPtr> c_states;
+  c_states.push_back(cros_healthd::CpuCStateInfo::New(
+      kFakeCStateName, kFakeTimeInStateSinceLastBoot));
+  return c_states;
+}
+
+std::vector<cros_healthd::LogicalCpuInfoPtr> CreateLogicalCpu() {
+  std::vector<cros_healthd::LogicalCpuInfoPtr> logical_cpus;
+  logical_cpus.push_back(cros_healthd::LogicalCpuInfo::New(
+      kFakeMaxClockSpeed, kFakeScalingMaxFrequency, kFakeScalingCurFrequency,
+      kFakeIdleTime, CreateCStateInfo()));
+  return logical_cpus;
+}
+
+std::vector<cros_healthd::PhysicalCpuInfoPtr> CreatePhysicalCpu() {
+  std::vector<cros_healthd::PhysicalCpuInfoPtr> physical_cpus;
+  physical_cpus.push_back(
+      cros_healthd::PhysicalCpuInfo::New(kFakeModelName, CreateLogicalCpu()));
+  return physical_cpus;
+}
+
 cros_healthd::CpuResultPtr CreateCpuResult() {
-  std::vector<cros_healthd::CpuInfoPtr> cpu_vector;
-  cpu_vector.push_back(cros_healthd::CpuInfo::New(
-      kFakeModelName, kFakeMojoArchitecture, kFakeMaxClockSpeed));
-  return cros_healthd::CpuResult::NewCpuInfo(std::move(cpu_vector));
+  return cros_healthd::CpuResult::NewCpuInfo(cros_healthd::CpuInfo::New(
+      kFakeNumTotalThreads, kFakeMojoArchitecture, CreatePhysicalCpu()));
 }
 
 cros_healthd::TimezoneResultPtr CreateTimezoneResult() {
@@ -3034,11 +3062,29 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   EXPECT_EQ(device_status_.system_status().vpd_sku_number(), kFakeSkuNumber);
 
   // Verify the CPU data.
+  ASSERT_TRUE(device_status_.has_global_cpu_info());
+  EXPECT_EQ(device_status_.global_cpu_info().num_total_threads(),
+            kFakeNumTotalThreads);
+
+  // Verify the physical CPU.
   ASSERT_EQ(device_status_.cpu_info_size(), 1);
   const auto& cpu = device_status_.cpu_info(0);
   EXPECT_EQ(cpu.model_name(), kFakeModelName);
   EXPECT_EQ(cpu.architecture(), kFakeProtoArchitecture);
   EXPECT_EQ(cpu.max_clock_speed_khz(), kFakeMaxClockSpeed);
+  // Verify the logical CPU.
+  ASSERT_EQ(cpu.logical_cpus_size(), 1);
+  const auto& logical_cpu = cpu.logical_cpus(0);
+  EXPECT_EQ(logical_cpu.scaling_max_frequency_khz(), kFakeScalingMaxFrequency);
+  EXPECT_EQ(logical_cpu.scaling_current_frequency_khz(),
+            kFakeScalingCurFrequency);
+  EXPECT_EQ(logical_cpu.idle_time_seconds(), kFakeIdleTime);
+  // Verify the C-state data.
+  ASSERT_EQ(logical_cpu.c_states_size(), 1);
+  const auto& c_state = logical_cpu.c_states(0);
+  EXPECT_EQ(c_state.name(), kFakeCStateName);
+  EXPECT_EQ(c_state.time_in_state_since_last_boot_us(),
+            kFakeTimeInStateSinceLastBoot);
 
   // Verify the Timezone info.
   ASSERT_TRUE(device_status_.has_timezone_info());

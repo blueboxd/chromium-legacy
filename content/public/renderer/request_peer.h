@@ -39,12 +39,15 @@ class CONTENT_EXPORT RequestPeer {
   // note: only for requests with upload progress enabled.
   virtual void OnUploadProgress(uint64_t position, uint64_t size) = 0;
 
-  // Called when a redirect occurs.  The implementation may return false to
-  // suppress the redirect.  The URLResponseHead provides information about
+  // Called when a redirect occurs. The implementation may return false to
+  // suppress the redirect. The URLResponseHead provides information about
   // the redirect response and the RedirectInfo includes information about the
-  // request to be made if the method returns true.
-  virtual bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
-                                  network::mojom::URLResponseHeadPtr head) = 0;
+  // request to be made if the method returns true. |removed_headers| outputs
+  // header field names that need to be removed.
+  virtual bool OnReceivedRedirect(
+      const net::RedirectInfo& redirect_info,
+      network::mojom::URLResponseHeadPtr head,
+      std::vector<std::string>* removed_headers) = 0;
 
   // Called when response headers are available (after all redirects have
   // been followed).

@@ -80,8 +80,6 @@ class PrintPreviewMessageHandler
       content::RenderFrameHost* render_frame_host,
       const PrintHostMsg_DidPreviewDocument_Params& params,
       const PrintHostMsg_PreviewIds& ids);
-  void OnPrintPreviewFailed(int document_cookie,
-                            const PrintHostMsg_PreviewIds& ids);
   void OnPrintPreviewCancelled(int document_cookie,
                                const PrintHostMsg_PreviewIds& ids);
   void OnInvalidPrinterSettings(int document_cookie,

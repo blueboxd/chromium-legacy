@@ -42,6 +42,12 @@ const char kAudioDevicesState[] = "settings.audio.device_state";
 // consent in EDU account addition flow.
 const char kEduCoexistenceId[] = "account_manager.edu_coexistence_id";
 
+// A string pref storing a parental consent text version that requires
+// invalidation of the secondary accounts added with the previous consent
+// versions.
+const char kEduCoexistenceSecondaryAccountsInvalidationVersion[] =
+    "account_manager.edu_coexistence_secondary_accounts_invalidation_version";
+
 // A dictionary of info for Quirks Client/Server interaction, mostly last server
 // request times, keyed to display product_id's.
 const char kQuirksClientLastServerCheck[] = "quirks_client.last_server_check";

@@ -439,7 +439,11 @@ disableTextSelectAndDrag(function(e) {
 (function() {
 'use strict';
 
-document.addEventListener('DOMContentLoaded', function() {
+function initializeOobe() {
+  if (document.readyState === 'loading')
+    return;
+  document.removeEventListener('DOMContentLoaded', initializeOobe);
+
   try {
     Oobe.initialize();
   } finally {
@@ -451,11 +455,21 @@ document.addEventListener('DOMContentLoaded', function() {
     // readyForTesting even on failures, just to make test bots happy.
     Oobe.readyForTesting = true;
   }
-});
+}
 
 // Install a global error handler so stack traces are included in logs.
 window.onerror = function(message, file, line, column, error) {
   if (error && error.stack)
     console.error(error.stack);
 };
+
+/**
+ * Final initialization performed after DOM and all scripts have loaded.
+ */
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeOobe);
+} else {
+  initializeOobe();
+}
+
 })();

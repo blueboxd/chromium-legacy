@@ -367,7 +367,6 @@ const char kClearBrowserDataSubPage[] = "clearBrowserData";
 const char kCloudPrintersSubPage[] = "cloudPrinters";
 const char kContentSettingsSubPage[] = "content";
 const char kCookieSettingsSubPage[] = "cookies";
-const char kDeprecatedExtensionsSubPage[] = "extensions";
 const char kDownloadsSubPage[] = "downloads";
 const char kHandlerSettingsSubPage[] = "handlers";
 const char kImportDataSubPage[] = "importData";

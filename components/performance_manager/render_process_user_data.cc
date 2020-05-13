@@ -31,7 +31,7 @@ RenderProcessUserData::RenderProcessUserData(
     : host_(render_process_host) {
   host_->AddObserver(this);
   process_node_ = PerformanceManagerImpl::CreateProcessNode(
-      RenderProcessHostProxy(host_->GetID()));
+      content::PROCESS_TYPE_RENDERER, RenderProcessHostProxy(host_->GetID()));
 }
 
 RenderProcessUserData::~RenderProcessUserData() {

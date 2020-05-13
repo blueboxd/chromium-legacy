@@ -13,8 +13,10 @@
 
 namespace performance_manager {
 
-ProcessNodeImpl::ProcessNodeImpl(RenderProcessHostProxy render_process_proxy)
-    : render_process_host_proxy_(std::move(render_process_proxy)) {
+ProcessNodeImpl::ProcessNodeImpl(content::ProcessType process_type,
+                                 RenderProcessHostProxy render_process_proxy)
+    : process_type_(process_type),
+      render_process_host_proxy_(std::move(render_process_proxy)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -140,6 +142,11 @@ void ProcessNodeImpl::SetProcessImpl(base::Process process,
 
   // Set the process variable last, as it will fire the notification.
   process_.SetAndNotify(this, std::move(process));
+}
+
+content::ProcessType ProcessNodeImpl::GetProcessType() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return process_type();
 }
 
 base::ProcessId ProcessNodeImpl::GetProcessId() const {

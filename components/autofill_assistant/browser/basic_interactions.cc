@@ -90,76 +90,85 @@ bool ValueToString(UserModel* user_model,
                    const std::string& result_model_identifier,
                    const ToStringProto& proto) {
   auto value = user_model->GetValue(proto.value());
-  std::string result;
-
   if (!value.has_value()) {
     DVLOG(2) << "Error evaluating " << __func__ << ": " << proto.value()
              << " not found in model";
     return false;
   }
-  if (!AreAllValuesOfSize({*value}, 1)) {
-    DVLOG(2) << "Error evaluating " << __func__
-             << ": expected single value, but got a list instead";
+  if (GetValueSize(*value) == 0) {
+    DVLOG(2) << "Error evaluating " << __func__ << ": input value empty";
     return false;
   }
-  if (AreAllValuesOfType({*value}, ValueProto::kUserActions)) {
-    DVLOG(2) << "Error evaluating " << __func__
-             << ": does not support stringifying user actions";
-    return false;
-  }
-  switch (value->kind_case()) {
-    case ValueProto::kStrings:
-      result = value->strings().values(0);
-      break;
-    case ValueProto::kBooleans:
-      result = value->booleans().values(0) ? "true" : "false";
-      break;
-    case ValueProto::kInts:
-      result = base::NumberToString(value->ints().values(0));
-      break;
-    case ValueProto::kUserActions:
-      NOTREACHED();
-      return false;
-    case ValueProto::kDates: {
-      if (proto.date_format().date_format().empty()) {
-        DVLOG(2) << "Error evaluating " << __func__ << ": date_format not set";
-        return false;
-      }
-      auto date = value->dates().values(0);
-      base::Time::Exploded exploded_time = {date.year(),
-                                            date.month(),
-                                            /* day_of_week = */ -1,
-                                            date.day(),
-                                            /* hour = */ 0,
-                                            /* minute = */ 0,
-                                            /* second = */ 0,
-                                            /* millisecond = */ 0};
-      base::Time time;
-      if (!base::Time::FromLocalExploded(exploded_time, &time)) {
-        DVLOG(2) << "Error evaluating " << __func__ << ": invalid date "
-                 << *value;
-        return false;
-      }
 
-      result = base::UTF16ToUTF8(base::TimeFormatWithPattern(
-          time, proto.date_format().date_format().c_str()));
-      break;
-    }
+  switch (value->kind_case()) {
+    case ValueProto::kUserActions:
+    case ValueProto::kLoginOptions:
     case ValueProto::kCreditCards:
     case ValueProto::kProfiles:
-    case ValueProto::kLoginOptions:
     case ValueProto::kCreditCardResponse:
     case ValueProto::kLoginOptionResponse:
-      DVLOG(2) << "Error evaluating " << __func__ << ": kind not supported for "
-               << *value;
+      DVLOG(2) << "Error evaluating " << __func__
+               << ": does not support values of type " << value->kind_case();
       return false;
-    case ValueProto::KIND_NOT_SET:
-      DVLOG(2) << "Error evaluating " << __func__ << ": kind not set";
-      return false;
+    default:
+      break;
   }
 
-  user_model->SetValue(result_model_identifier,
-                       SimpleValue(result, value->is_client_side_only()));
+  ValueProto result;
+  result.set_is_client_side_only(value->is_client_side_only());
+  for (int i = 0; i < GetValueSize(*value); ++i) {
+    switch (value->kind_case()) {
+      case ValueProto::kStrings:
+        result.mutable_strings()->add_values(value->strings().values(i));
+        break;
+      case ValueProto::kBooleans:
+        result.mutable_strings()->add_values(
+            value->booleans().values(i) ? "true" : "false");
+        break;
+      case ValueProto::kInts:
+        result.mutable_strings()->add_values(
+            base::NumberToString(value->ints().values(i)));
+        break;
+      case ValueProto::kDates: {
+        if (proto.date_format().date_format().empty()) {
+          DVLOG(2) << "Error evaluating " << __func__
+                   << ": date_format not set";
+          return false;
+        }
+        auto date = value->dates().values(i);
+        base::Time::Exploded exploded_time = {date.year(),
+                                              date.month(),
+                                              /* day_of_week = */ -1,
+                                              date.day(),
+                                              /* hour = */ 0,
+                                              /* minute = */ 0,
+                                              /* second = */ 0,
+                                              /* millisecond = */ 0};
+        base::Time time;
+        if (!base::Time::FromLocalExploded(exploded_time, &time)) {
+          DVLOG(2) << "Error evaluating " << __func__ << ": invalid date "
+                   << *value;
+          return false;
+        }
+
+        result.mutable_strings()->add_values(
+            base::UTF16ToUTF8(base::TimeFormatWithPattern(
+                time, proto.date_format().date_format().c_str())));
+        break;
+      }
+      case ValueProto::kUserActions:
+      case ValueProto::kLoginOptions:
+      case ValueProto::kCreditCards:
+      case ValueProto::kProfiles:
+      case ValueProto::kCreditCardResponse:
+      case ValueProto::kLoginOptionResponse:
+      case ValueProto::KIND_NOT_SET:
+        NOTREACHED();
+        return false;
+    }
+  }
+
+  user_model->SetValue(result_model_identifier, result);
   return true;
 }
 

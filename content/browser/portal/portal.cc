@@ -11,8 +11,8 @@
 #include "base/memory/ptr_util.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
-#include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
@@ -378,8 +378,8 @@ void Portal::Activate(blink::TransferableMessage data,
   if (owner_render_frame_host_->HasPendingCommitNavigation() ||
       (outer_navigation &&
        outer_navigation->state() >= NavigationRequest::WILL_PROCESS_RESPONSE) ||
-      NavigatorImpl::ShouldIgnoreIncomingRendererRequest(outer_navigation,
-                                                         has_user_gesture)) {
+      Navigator::ShouldIgnoreIncomingRendererRequest(outer_navigation,
+                                                     has_user_gesture)) {
     std::move(callback).Run(blink::mojom::PortalActivateResult::
                                 kRejectedDueToPredecessorNavigation);
     return;

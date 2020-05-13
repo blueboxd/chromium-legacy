@@ -289,6 +289,91 @@ IN_PROC_BROWSER_TEST_P(TwoClientWebAppsSyncTest, DISABLED_SyncFaviconOnly) {
   EXPECT_EQ(GetRegistrar(destProfile).GetAppIconInfos(app_id).size(), 1u);
 }
 
+// Tests that we don't use the manifest start_url if it differs from what came
+// through sync.
+IN_PROC_BROWSER_TEST_P(TwoClientWebAppsSyncTest, SyncUsingStartUrlFallback) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameWebAppIds());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  Profile* source_profile = GetProfile(0);
+  Profile* dest_profile = GetProfile(1);
+
+  WebAppInstallObserver dest_install_observer(dest_profile);
+
+  // Install app with name.
+  WebApplicationInfo info;
+  info.title = base::UTF8ToUTF16("Test app");
+  info.app_url =
+      embedded_test_server()->GetURL("/web_apps/different_start_url.html");
+  AppId app_id = InstallApp(info, GetProfile(0));
+  EXPECT_EQ(GetRegistrar(source_profile).GetAppShortName(app_id), "Test app");
+  EXPECT_EQ(GetRegistrar(source_profile).GetAppLaunchURL(app_id), info.app_url);
+
+  // Wait for app to sync across.
+  AppId synced_app_id = dest_install_observer.AwaitNextInstall();
+  ASSERT_EQ(synced_app_id, app_id);
+  EXPECT_EQ(GetRegistrar(dest_profile).GetAppShortName(app_id), "Test app");
+  EXPECT_EQ(GetRegistrar(dest_profile).GetAppLaunchURL(app_id), info.app_url);
+}
+
+// Tests that we don't use the page title if there's no manifest.
+// Pages without a manifest are usually not the correct page to draw information
+// from e.g. login redirects or loading pages.
+// Context: https://crbug.com/1078286
+IN_PROC_BROWSER_TEST_P(TwoClientWebAppsSyncTest, SyncUsingNameFallback) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameWebAppIds());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  Profile* source_profile = GetProfile(0);
+  Profile* dest_profile = GetProfile(1);
+
+  WebAppInstallObserver dest_install_observer(dest_profile);
+
+  // Install app with name.
+  WebApplicationInfo info;
+  info.title = base::UTF8ToUTF16("Correct App Name");
+  info.app_url =
+      embedded_test_server()->GetURL("/web_apps/bad_title_only.html");
+  AppId app_id = InstallApp(info, GetProfile(0));
+  EXPECT_EQ(GetRegistrar(source_profile).GetAppShortName(app_id),
+            "Correct App Name");
+
+  // Wait for app to sync across.
+  AppId synced_app_id = dest_install_observer.AwaitNextInstall();
+  EXPECT_EQ(synced_app_id, app_id);
+  EXPECT_EQ(GetRegistrar(dest_profile).GetAppShortName(app_id),
+            "Correct App Name");
+}
+
+// Negative test of SyncUsingNameFallback above. Don't use the app name fallback
+// if there's a name provided by the manifest during sync.
+IN_PROC_BROWSER_TEST_P(TwoClientWebAppsSyncTest, SyncWithoutUsingNameFallback) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameWebAppIds());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  Profile* source_profile = GetProfile(0);
+  Profile* dest_profile = GetProfile(1);
+
+  WebAppInstallObserver dest_install_observer(dest_profile);
+
+  // Install app with name.
+  WebApplicationInfo info;
+  info.title = base::UTF8ToUTF16("Incorrect App Name");
+  info.app_url = embedded_test_server()->GetURL("/web_apps/basic.html");
+  AppId app_id = InstallApp(info, GetProfile(0));
+  EXPECT_EQ(GetRegistrar(source_profile).GetAppShortName(app_id),
+            "Incorrect App Name");
+
+  // Wait for app to sync across.
+  AppId synced_app_id = dest_install_observer.AwaitNextInstall();
+  EXPECT_EQ(synced_app_id, app_id);
+  EXPECT_EQ(GetRegistrar(dest_profile).GetAppShortName(app_id),
+            "Basic web app");
+}
+
 INSTANTIATE_TEST_SUITE_P(All,
                          TwoClientWebAppsSyncTest,
                          ::testing::Values(ProviderType::kBookmarkApps,

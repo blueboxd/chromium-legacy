@@ -213,6 +213,9 @@ class CONTENT_EXPORT ResourceDispatcher {
     // For mojo loading.
     std::unique_ptr<blink::ThrottlingURLLoader> url_loader;
     std::unique_ptr<URLLoaderClientImpl> url_loader_client;
+
+    // The Client Hints headers that need to be removed from a redirect.
+    std::vector<std::string> removed_headers;
   };
   using PendingRequestMap = std::map<int, std::unique_ptr<PendingRequestInfo>>;
 

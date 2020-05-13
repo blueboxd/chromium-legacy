@@ -389,6 +389,7 @@ void NewTabPageHandler::GetBackgroundCollections(
         std::vector<new_tab_page::mojom::BackgroundCollectionPtr>());
     return;
   }
+  background_collections_request_start_time_ = base::TimeTicks::Now();
   background_collections_callback_ = std::move(callback);
   ntp_background_service_->FetchCollectionInfo();
 }
@@ -406,6 +407,7 @@ void NewTabPageHandler::GetBackgroundImages(
     return;
   }
   images_request_collection_id_ = collection_id;
+  background_images_request_start_time_ = base::TimeTicks::Now();
   background_images_callback_ = std::move(callback);
   ntp_background_service_->FetchCollectionImageInfo(collection_id);
 }
@@ -765,6 +767,21 @@ void NewTabPageHandler::OnCollectionInfoAvailable() {
     return;
   }
 
+  base::TimeDelta duration =
+      base::TimeTicks::Now() - background_collections_request_start_time_;
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "NewTabPage.BackgroundService.Collections.RequestLatency", duration);
+  // Any response where no collections are returned is considered a failure.
+  if (ntp_background_service_->collection_info().empty()) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "NewTabPage.BackgroundService.Collections.RequestLatency.Failure",
+        duration);
+  } else {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "NewTabPage.BackgroundService.Collections.RequestLatency.Success",
+        duration);
+  }
+
   std::vector<new_tab_page::mojom::BackgroundCollectionPtr> collections;
   for (const auto& info : ntp_background_service_->collection_info()) {
     auto collection = new_tab_page::mojom::BackgroundCollection::New();
@@ -780,6 +797,20 @@ void NewTabPageHandler::OnCollectionImagesAvailable() {
   if (!background_images_callback_) {
     return;
   }
+
+  base::TimeDelta duration =
+      base::TimeTicks::Now() - background_images_request_start_time_;
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "NewTabPage.BackgroundService.Images.RequestLatency", duration);
+  // Any response where no images are returned is considered a failure.
+  if (ntp_background_service_->collection_images().empty()) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "NewTabPage.BackgroundService.Images.RequestLatency.Failure", duration);
+  } else {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "NewTabPage.BackgroundService.Images.RequestLatency.Success", duration);
+  }
+
   std::vector<new_tab_page::mojom::BackgroundImagePtr> images;
   if (ntp_background_service_->collection_images().empty()) {
     std::move(background_images_callback_).Run(std::move(images));

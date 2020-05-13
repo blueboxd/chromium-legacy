@@ -64,10 +64,10 @@ class DictionaryTest : public ScriptWrappable {
   base::Optional<bool> boolean_member_;
   base::Optional<double> double_member_;
   base::Optional<double> unrestricted_double_member_;
-  String string_member_;
+  base::Optional<String> string_member_;
   String string_member_with_default_;
-  String byte_string_member_;
-  String usv_string_member_;
+  base::Optional<String> byte_string_member_;
+  base::Optional<String> usv_string_member_;
   base::Optional<Vector<String>> string_sequence_member_;
   Vector<String> string_sequence_member_with_default_;
   base::Optional<Vector<String>> string_sequence_or_null_member_;
@@ -81,9 +81,9 @@ class DictionaryTest : public ScriptWrappable {
   DoubleOrString double_or_string_member_;
   base::Optional<HeapVector<DoubleOrString>> double_or_string_sequence_member_;
   Member<EventTarget> event_target_or_null_member_;
-  String derived_string_member_;
+  base::Optional<String> derived_string_member_;
   String derived_string_member_with_default_;
-  String derived_derived_string_member_;
+  base::Optional<String> derived_derived_string_member_;
   bool required_boolean_member_;
   base::Optional<HashMap<String, String>> dictionary_member_properties_;
   InternalEnumOrInternalEnumSequence internal_enum_or_internal_enum_sequence_;

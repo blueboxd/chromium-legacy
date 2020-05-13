@@ -41,8 +41,9 @@ class InstallServiceWorkItem : public WorkItem {
   // the SCM. For example,
   // "C:\Program Files (x86)\Google\Chrome\ElevationService.exe" /svc
   //
-  // |registry_path| is the path in HKEY_LOCAL_MACHINE under which
-  // the service persists information, for instance if the service has to
+  // NOTE: |registry_path| is mapped to the 32-bit view of the registry for
+  // legacy reasons. |registry_path| is the path in HKEY_LOCAL_MACHINE under
+  // which the service persists information, for instance if the service has to
   // persist a versioned service name. An example |registry_path| is
   // "Software\ProductFoo".
   //

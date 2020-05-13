@@ -45,7 +45,8 @@ class ProcessNodeImpl
  public:
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kProcess; }
 
-  explicit ProcessNodeImpl(RenderProcessHostProxy render_process_proxy);
+  ProcessNodeImpl(content::ProcessType process_type,
+                  RenderProcessHostProxy render_process_proxy);
 
   ~ProcessNodeImpl() override;
 
@@ -78,6 +79,7 @@ class ProcessNodeImpl
   // Otherwise, returns nullptr.
   PageNodeImpl* GetPageNodeIfExclusive() const;
 
+  content::ProcessType process_type() const { return process_type_; }
   // Use process_id() in preference to process().Pid(). It's always valid to
   // access, but will return kNullProcessId when the process is not valid. It
   // will also retain the process ID for a process that has exited.
@@ -128,6 +130,7 @@ class ProcessNodeImpl
 
   // ProcessNode implementation. These are private so that users of the impl use
   // the private getters rather than the public interface.
+  content::ProcessType GetProcessType() const override;
   base::ProcessId GetProcessId() const override;
   const base::Process& GetProcess() const override;
   base::Time GetLaunchTime() const override;
@@ -160,6 +163,7 @@ class ProcessNodeImpl
   base::Time launch_time_;
   base::Optional<int32_t> exit_status_;
 
+  const content::ProcessType process_type_;
   const RenderProcessHostProxy render_process_host_proxy_;
 
   ObservedProperty::NotifiesAlways<

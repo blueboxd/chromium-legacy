@@ -10,7 +10,7 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 
 /** A LinearLayout that can notify when its size changes. */
 public class SizeListenableLinearLayout extends LinearLayout {

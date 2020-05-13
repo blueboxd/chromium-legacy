@@ -128,7 +128,7 @@ enum FeaturePolicyFeature {
   // Storage Access API
   kStorageAccessAPI = 70,
 
-  // Yet Another Client Hint
+  // Client Hint for the full browser version.
   kClientHintUAFullVersion = 71,
 
   // Trust Token API redemption and request signing operations
@@ -136,6 +136,9 @@ enum FeaturePolicyFeature {
 
   // Controls use of Conversion Measurement API
   kConversionMeasurement = 73,
+
+  // Client Hint for UA platform version.
+  kClientHintUAPlatformVersion = 74,
 
   // Don't change assigned numbers of any item, and don't reuse removed slots.
   // Add new features at the end of the enum.

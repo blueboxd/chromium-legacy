@@ -20,7 +20,6 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/renderer_id.h"
 #include "components/autofill/core/common/signatures.h"
-#include "components/password_manager/core/browser/password_manager_client.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -79,8 +78,7 @@ class PasswordGenerationPopupControllerImpl
       const base::WeakPtr<password_manager::PasswordManagerDriver>& driver,
       PasswordGenerationPopupObserver* observer,
       content::WebContents* web_contents,
-      content::RenderFrameHost* frame,
-      password_manager::SyncState password_sync_state);
+      content::RenderFrameHost* frame);
   ~PasswordGenerationPopupControllerImpl() override;
 
   // Create a PasswordGenerationPopupView if one doesn't already exist.
@@ -122,8 +120,7 @@ class PasswordGenerationPopupControllerImpl
       const base::WeakPtr<password_manager::PasswordManagerDriver>& driver,
       PasswordGenerationPopupObserver* observer,
       content::WebContents* web_contents,
-      content::RenderFrameHost* frame,
-      password_manager::SyncState password_sync_state);
+      content::RenderFrameHost* frame);
 
   // Handle to the popup. May be NULL if popup isn't showing.
   PasswordGenerationPopupView* view_;
@@ -135,7 +132,6 @@ class PasswordGenerationPopupControllerImpl
   void ViewDestroyed() override;
   void SelectionCleared() override;
   void SetSelected() override;
-  bool ShouldShowGoogleIcon() const override;
   void PasswordAccepted() override;
   gfx::NativeView container_view() const override;
   const gfx::RectF& element_bounds() const override;
@@ -192,9 +188,6 @@ class PasswordGenerationPopupControllerImpl
   GenerationUIState state_;
 
   std::unique_ptr<KeyPressRegistrator> key_press_handler_manager_;
-
-  // The state of password sync when the popup was created.
-  password_manager::SyncState password_sync_state_;
 
   base::WeakPtrFactory<PasswordGenerationPopupControllerImpl> weak_ptr_factory_{
       this};

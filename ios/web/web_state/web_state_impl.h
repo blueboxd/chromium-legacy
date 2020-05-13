@@ -78,6 +78,9 @@ class WebStateImpl : public WebState,
   // Notifies the observers that a navigation has started.
   void OnNavigationStarted(web::NavigationContextImpl* context);
 
+  // Notifies the observers that a navigation was redirected.
+  void OnNavigationRedirected(web::NavigationContextImpl* context);
+
   // Notifies the observers that a navigation has finished. For same-document
   // navigations notifies the observers about favicon URLs update using
   // candidates received in OnFaviconUrlUpdated.

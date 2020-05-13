@@ -57,6 +57,8 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
   // Called when following a redirect. |new_.*| arguments contain the
   // information about the received redirect. When |report_raw_headers| is
   // updated it'll be used for filtering data of the next redirect or response.
+  // |removed_headers| outputs headers that need to be removed from the
+  // redirect request.
   //
   // Implementations should return true to instruct the loader to follow the
   // redirect, or false otherwise.
@@ -67,7 +69,8 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
       network::mojom::ReferrerPolicy new_referrer_policy,
       const WebString& new_method,
       const WebURLResponse& passed_redirect_response,
-      bool& report_raw_headers) {
+      bool& report_raw_headers,
+      std::vector<std::string>* removed_headers) {
     return true;
   }
 

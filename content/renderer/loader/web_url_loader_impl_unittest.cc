@@ -195,7 +195,8 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
                           network::mojom::ReferrerPolicy new_referrer_policy,
                           const blink::WebString& new_method,
                           const blink::WebURLResponse& passed_redirect_response,
-                          bool& report_raw_headers) override {
+                          bool& report_raw_headers,
+                          std::vector<std::string>*) override {
     EXPECT_TRUE(loader_);
 
     // No test currently simulates mutiple redirects.
@@ -326,8 +327,10 @@ class WebURLLoaderImplTest : public testing::Test {
     redirect_info.new_url = GURL(kTestURL);
     redirect_info.new_site_for_cookies =
         net::SiteForCookies::FromUrl(GURL(kTestURL));
+    std::vector<std::string> removed_headers;
     peer()->OnReceivedRedirect(redirect_info,
-                               network::mojom::URLResponseHead::New());
+                               network::mojom::URLResponseHead::New(),
+                               &removed_headers);
     EXPECT_TRUE(client()->did_receive_redirect());
   }
 
@@ -340,7 +343,7 @@ class WebURLLoaderImplTest : public testing::Test {
     redirect_info.new_site_for_cookies =
         net::SiteForCookies::FromUrl(GURL(kTestHTTPSURL));
     peer()->OnReceivedRedirect(redirect_info,
-                               network::mojom::URLResponseHead::New());
+                               network::mojom::URLResponseHead::New(), nullptr);
     EXPECT_TRUE(client()->did_receive_redirect());
   }
 

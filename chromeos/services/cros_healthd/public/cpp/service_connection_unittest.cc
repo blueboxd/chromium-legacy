@@ -104,17 +104,42 @@ mojom::CachedVpdResultPtr MakeCachedVpdResult() {
       mojom::CachedVpdInfo::New("fake_sku_number" /* sku_number */));
 }
 
+std::vector<mojom::CpuCStateInfoPtr> MakeCStateInfo() {
+  std::vector<mojom::CpuCStateInfoPtr> c_states;
+  c_states.push_back(mojom::CpuCStateInfo::New(
+      "c_state_0" /* name */, 679 /* time_in_state_since_last_boot_us */));
+  c_states.push_back(mojom::CpuCStateInfo::New(
+      "c_state_1" /* name */, 12354 /* time_in_state_since_last_boot_us */));
+  return c_states;
+}
+
+std::vector<mojom::LogicalCpuInfoPtr> MakeLogicalCpus() {
+  std::vector<mojom::LogicalCpuInfoPtr> logical_cpus;
+  logical_cpus.push_back(mojom::LogicalCpuInfo::New(
+      11 /* max_clock_speed_khz */, 14 /* scaling_max_frequency_khz */,
+      99 /* scaling_current_frequency_khz */, 889 /* idle_time_user_hz */,
+      MakeCStateInfo()));
+  logical_cpus.push_back(mojom::LogicalCpuInfo::New(
+      987 /* max_clock_speed_khz */, 543 /* scaling_max_frequency_khz */,
+      2349 /* scaling_current_frequency_khz */, 688 /* idle_time_user_hz */,
+      MakeCStateInfo()));
+  return logical_cpus;
+}
+
+std::vector<mojom::PhysicalCpuInfoPtr> MakePhysicalCpus() {
+  std::vector<mojom::PhysicalCpuInfoPtr> physical_cpus;
+  physical_cpus.push_back(mojom::PhysicalCpuInfo::New(
+      "Dank CPU 1" /* model_name */, MakeLogicalCpus()));
+  physical_cpus.push_back(mojom::PhysicalCpuInfo::New(
+      "Dank CPU 2" /* model_name */, MakeLogicalCpus()));
+  return physical_cpus;
+}
+
 mojom::CpuResultPtr MakeCpuResult() {
-  std::vector<mojom::CpuInfoPtr> cpu_info;
-  cpu_info.push_back(mojom::CpuInfo::New(
-      "Dank CPU 1" /* model_name */,
+  return mojom::CpuResult::NewCpuInfo(mojom::CpuInfo::New(
+      10 /* num_total_threads */,
       mojom::CpuArchitectureEnum::kX86_64 /* architecture */,
-      3400000 /* max_clock_speed_khz */));
-  cpu_info.push_back(mojom::CpuInfo::New(
-      "Dank CPU 2" /* model_name */,
-      mojom::CpuArchitectureEnum::kX86_64 /* architecture */,
-      2600000 /* max_clock_speed_khz */));
-  return mojom::CpuResult::NewCpuInfo(std::move(cpu_info));
+      MakePhysicalCpus()));
 }
 
 mojom::TimezoneResultPtr MakeTimezoneResult() {

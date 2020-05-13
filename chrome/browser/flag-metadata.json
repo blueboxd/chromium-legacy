@@ -2445,7 +2445,7 @@
   {
     "name": "files-unified-media-view",
     "owners": [ "fukino", "weifangsun" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 87
   },
   {
     "name": "files-zip-no-nacl",

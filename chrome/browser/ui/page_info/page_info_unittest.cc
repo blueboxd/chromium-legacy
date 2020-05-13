@@ -18,6 +18,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
 #include "chrome/browser/infobars/mock_infobar_service.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ssl/tls_deprecation_test_utils.h"
@@ -147,6 +148,10 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
     ASSERT_TRUE(cert_);
 
     MockInfoBarService::CreateForWebContents(web_contents());
+    content_settings::TabSpecificContentSettings::CreateForWebContents(
+        web_contents(),
+        std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+            web_contents()));
 
     // Setup mock ui.
     ResetMockUI();

@@ -18,7 +18,8 @@
 namespace performance_manager {
 
 TestProcessNodeImpl::TestProcessNodeImpl()
-    : ProcessNodeImpl(RenderProcessHostProxy()) {}
+    : ProcessNodeImpl(content::PROCESS_TYPE_RENDERER,
+                      RenderProcessHostProxy()) {}
 
 void TestProcessNodeImpl::SetProcessWithPid(base::ProcessId pid,
                                             base::Process process,

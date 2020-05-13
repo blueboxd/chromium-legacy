@@ -175,6 +175,12 @@ void RegisterFileHandlersWithOsTask(
     const base::string16& app_name_extension) {
   base::FilePath web_app_path =
       GetOsIntegrationResourcesDirectoryForApp(profile_path, app_id, GURL());
+  if (!base::CreateDirectory(web_app_path)) {
+    DPLOG(ERROR) << "Unable to create web app dir";
+    RecordRegistration(RegistrationResult::kFailToCopyFromGenericLauncher);
+    return;
+  }
+
   base::string16 utf16_app_name = base::UTF8ToUTF16(app_name);
   base::FilePath icon_path =
       internals::GetIconFilePath(web_app_path, utf16_app_name);

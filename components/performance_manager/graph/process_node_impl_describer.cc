@@ -109,6 +109,14 @@ base::Value ProcessNodeImplDescriber::DescribeProcessNodeData(
     ret.SetIntKey("render_process_id", impl->GetRenderProcessId());
   }
 
+  // The content function returns "Tab" for renderers - whereas "Renderer" is
+  // the common vernacular here.
+  std::string process_type =
+      content::GetProcessTypeNameInEnglish(impl->process_type());
+  if (impl->process_type() == content::PROCESS_TYPE_RENDERER)
+    process_type = "Renderer";
+  ret.SetStringKey("process_type", process_type);
+
   ret.SetStringKey("pid", base::NumberToString(impl->process_id()));
 
   ret.SetKey("process", GetProcessValueDict(impl->process()));

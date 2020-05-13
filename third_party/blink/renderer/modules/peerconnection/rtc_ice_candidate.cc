@@ -48,14 +48,13 @@ RTCIceCandidate* RTCIceCandidate::Create(
     ExecutionContext* context,
     const RTCIceCandidateInit* candidate_init,
     ExceptionState& exception_state) {
-  if (!candidate_init->hasSdpMid() && !candidate_init->hasSdpMLineIndex()) {
+  if (candidate_init->sdpMid().IsNull() &&
+      !candidate_init->hasSdpMLineIndex()) {
     exception_state.ThrowTypeError("sdpMid and sdpMLineIndex are both null.");
     return nullptr;
   }
 
-  String sdp_mid;
-  if (candidate_init->hasSdpMid())
-    sdp_mid = candidate_init->sdpMid();
+  String sdp_mid = candidate_init->sdpMid();
 
   base::Optional<uint16_t> sdp_m_line_index;
   if (candidate_init->hasSdpMLineIndex()) {

@@ -41,8 +41,7 @@ class TestPasswordGenerationPopupController
                     ->AsWeakPtr(),
             nullptr /* PasswordGenerationPopupObserver*/,
             web_contents,
-            web_contents->GetMainFrame(),
-            password_manager::SyncState::SYNCING_NORMAL_ENCRYPTION) {}
+            web_contents->GetMainFrame()) {}
 
   ~TestPasswordGenerationPopupController() override {}
 

@@ -926,8 +926,6 @@ jumbo_source_set("browser") {
     "frame_host/navigator.cc",
     "frame_host/navigator.h",
     "frame_host/navigator_delegate.h",
-    "frame_host/navigator_impl.cc",
-    "frame_host/navigator_impl.h",
     "frame_host/origin_policy_throttle.cc",
     "frame_host/origin_policy_throttle.h",
     "frame_host/popup_menu_helper_mac.h",

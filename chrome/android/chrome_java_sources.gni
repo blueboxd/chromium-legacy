@@ -1797,7 +1797,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/DateDividedAdapter.java",
   "java/src/org/chromium/chrome/browser/widget/ScrimView.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheet.java",
-  "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetContent.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetController.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetObserver.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetSwipeDetector.java",

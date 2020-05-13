@@ -61,7 +61,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
-#include "content/browser/frame_host/navigator_impl.h"
+#include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -568,11 +568,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       render_view_host_delegate_view_(nullptr),
       created_with_opener_(false),
       node_(this),
-      frame_tree_(new NavigatorImpl(&controller_, this),
-                  this,
-                  this,
-                  this,
-                  this),
+      frame_tree_(new Navigator(&controller_, this), this, this, this, this),
       is_load_to_different_document_(false),
       crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       crashed_error_code_(0),

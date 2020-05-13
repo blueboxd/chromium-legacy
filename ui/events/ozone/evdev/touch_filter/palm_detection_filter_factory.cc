@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/touch_filter/heuristic_stylus_palm_detection_filter.h"
@@ -40,14 +41,25 @@ std::vector<float> ParseRadiusPolynomial(const std::string& radius_string) {
   return return_value;
 }
 
-}  // namespace internal
-
-namespace {
 std::string FetchNeuralPalmRadiusPolynomial(const EventDeviceInfo& devinfo,
                                             const std::string param_string) {
   if (!param_string.empty()) {
     return param_string;
   }
+
+#if defined(OS_CHROMEOS)
+  // We should really only be running in chromeos anyway; We do a check here
+  // temporarily for hatch and reef.  These numbers should live in config on
+  // chromeos side but for now during experiment are hard-coded here.
+  // TODO(robsc): Investigate a better way of doing this configuration.
+  std::string release_board = base::SysInfo::GetLsbReleaseBoard();
+  if ("hatch" == release_board) {
+    return "0.090477715, 3.9225964";
+  } else if ("reef" == release_board) {
+    return "0.17889799, 4.22584412";
+  }
+#endif
+
   // Basking. Does not report vendor_id / product_id
   if (devinfo.name() == "Elan Touchscreen") {
     return "0.17889799,4.22584412";
@@ -56,7 +68,7 @@ std::string FetchNeuralPalmRadiusPolynomial(const EventDeviceInfo& devinfo,
   // By default, return the original.
   return param_string;
 }
-}  // namespace
+}  // namespace internal
 
 std::unique_ptr<PalmDetectionFilter> CreatePalmDetectionFilter(
     const EventDeviceInfo& devinfo,
@@ -64,8 +76,8 @@ std::unique_ptr<PalmDetectionFilter> CreatePalmDetectionFilter(
   if (base::FeatureList::IsEnabled(kEnableNeuralPalmDetectionFilter) &&
       NeuralStylusPalmDetectionFilter::
           CompatibleWithNeuralStylusPalmDetectionFilter(devinfo)) {
-    std::vector<float> radius_polynomial =
-        internal::ParseRadiusPolynomial(FetchNeuralPalmRadiusPolynomial(
+    std::vector<float> radius_polynomial = internal::ParseRadiusPolynomial(
+        internal::FetchNeuralPalmRadiusPolynomial(
             devinfo, kNeuralPalmRadiusPolynomial.Get()));
     // Theres only one model right now.
     std::unique_ptr<NeuralStylusPalmDetectionFilterModel> model =

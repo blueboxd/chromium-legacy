@@ -60,6 +60,9 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   bool AffectsFont() const { return flags_ & kAffectsFont; }
   bool IsBackground() const { return flags_ & kBackground; }
   bool IsBorder() const { return flags_ & kBorder; }
+  bool IsComputedValueComparable() const {
+    return flags_ & kComputedValueComparable;
+  }
 
   bool IsRepeated() const { return repetition_separator_ != '\0'; }
   char RepetitionSeparator() const { return repetition_separator_; }
@@ -70,6 +73,13 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   virtual bool IsLayoutDependentProperty() const { return false; }
   virtual bool IsLayoutDependent(const ComputedStyle* style,
                                  LayoutObject* layout_object) const {
+    return false;
+  }
+
+  virtual bool ComputedValuesEqual(const ComputedStyle&,
+                                   const ComputedStyle&) const {
+    // May only be called if IsComputedValueComparable() is true.
+    NOTREACHED();
     return false;
   }
 
@@ -137,6 +147,8 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
     // element, the native appearance must be disabled.
     kBackground = 1 << 16,
     kBorder = 1 << 17,
+    // Set if ComputedValuesEqual is implemented for the given CSSProperty.
+    kComputedValueComparable = 1 << 18,
   };
 
   constexpr CSSProperty(CSSPropertyID property_id,

@@ -14,6 +14,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**

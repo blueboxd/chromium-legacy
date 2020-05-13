@@ -26,6 +26,7 @@ std::vector<base::FilePath> GetShortcutPaths(
 // refreshed, ensuring the correct icon is displayed, but causing a flicker.
 // Refreshing the icon cache is not necessary on shortcut creation as the shell
 // will be notified when the shortcut is created.
+// Creates the parent dir of icon_file, if it doesn't exist.
 bool CheckAndSaveIcon(const base::FilePath& icon_file,
                       const gfx::ImageFamily& image,
                       bool refresh_shell_icon_cache);

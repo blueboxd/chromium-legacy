@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_USAGES_STATE_H_
-#define COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_USAGES_STATE_H_
+#ifndef COMPONENTS_CONTENT_SETTINGS_BROWSER_CONTENT_SETTINGS_USAGES_STATE_H_
+#define COMPONENTS_CONTENT_SETTINGS_BROWSER_CONTENT_SETTINGS_USAGES_STATE_H_
 
 #include <map>
 #include <set>
@@ -20,15 +20,12 @@ class HostContentSettingsMap;
 // the content setting usage.
 class ContentSettingsUsagesState {
  public:
-  ContentSettingsUsagesState(
-      HostContentSettingsMap* host_content_settings_map,
-      ContentSettingsType type);
+  ContentSettingsUsagesState(HostContentSettingsMap* host_content_settings_map,
+                             ContentSettingsType type);
   ~ContentSettingsUsagesState();
 
   typedef std::map<GURL, ContentSetting> StateMap;
-  const StateMap& state_map() const {
-    return state_map_;
-  }
+  const StateMap& state_map() const { return state_map_; }
 
   // Sets the state for |requesting_origin|.
   void OnPermissionSet(const GURL& requesting_origin, bool allowed);
@@ -52,7 +49,7 @@ class ContentSettingsUsagesState {
   };
 
   // Maps ContentSetting to a set of hosts formatted for presentation.
-  typedef std::map<ContentSetting, std::set<std::string> >
+  typedef std::map<ContentSetting, std::set<std::string>>
       FormattedHostsPerState;
 
   void GetDetailedInfo(FormattedHostsPerState* formatted_hosts_per_state,

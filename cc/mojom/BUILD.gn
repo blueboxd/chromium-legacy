@@ -6,7 +6,10 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
   generate_java = true
-  sources = [ "touch_action.mojom" ]
+  sources = [
+    "overscroll_behavior.mojom",
+    "touch_action.mojom",
+  ]
 
   public_deps = [ "//mojo/public/mojom/base" ]
 
@@ -21,6 +24,23 @@ mojom("mojom") {
     traits_public_deps = [ "//cc/ipc" ]
   }
 
-  cpp_typemaps = [ touch_action_typemap ]
-  blink_cpp_typemaps = [ touch_action_typemap ]
+  overscroll_behavior_typemap = {
+    types = [
+      {
+        mojom = "cc.mojom.OverscrollBehavior"
+        cpp = "::cc::OverscrollBehavior"
+      },
+    ]
+    traits_headers = [ "//cc/ipc/cc_param_traits_macros.h" ]
+    traits_public_deps = [ "//cc/ipc" ]
+  }
+
+  cpp_typemaps = [
+    overscroll_behavior_typemap,
+    touch_action_typemap,
+  ]
+  blink_cpp_typemaps = [
+    overscroll_behavior_typemap,
+    touch_action_typemap,
+  ]
 }

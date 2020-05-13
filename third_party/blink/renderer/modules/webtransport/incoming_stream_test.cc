@@ -166,6 +166,19 @@ TEST_F(IncomingStreamTest, AbortReading) {
   EXPECT_TRUE(result.done);
 }
 
+TEST_F(IncomingStreamTest, AbortReadingTwice) {
+  V8TestingScope scope;
+
+  auto* incoming_stream = CreateIncomingStream(scope);
+
+  EXPECT_CALL(mock_forget_stream_, Run());
+
+  incoming_stream->AbortReading(nullptr);
+
+  // The second call to AbortReading should be a no-op.
+  incoming_stream->AbortReading(nullptr);
+}
+
 TEST_F(IncomingStreamTest, ReadArrayBuffer) {
   V8TestingScope scope;
 

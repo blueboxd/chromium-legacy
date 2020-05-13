@@ -155,6 +155,14 @@
       valid_type: "bool",
     },
 
+    // - computed_value_comparable
+    //
+    // If true, a CSSProperty::ComputedValuesEqual function is generated.
+    computed_value_comparable: {
+      default: false,
+      valid_type: "bool",
+    },
+
     // - runtime_flag
     // The name of the flag on RuntimeEnabledFeatures
     // (e.g. "CSSOverscrollBehavior") that conditionally enables the
@@ -698,6 +706,7 @@
       style_builder_custom_functions: ["value"],
       priority: "High",
       valid_for_marker: true,
+      computed_value_comparable: true,
     },
     {
       name: "font-family",
@@ -954,7 +963,7 @@
       typedom_types: ["Keyword"],
       default_value: "mixed",
       getter: "GetTextOrientation",
-      style_builder_custom_functions: ["value"],
+      style_builder_custom_functions: ["initial", "inherit", "value"],
       priority: "High",
     },
     {
@@ -975,17 +984,19 @@
       typedom_types: ["Keyword"],
       default_value: "horizontal-tb",
       type_name: "WritingMode",
-      style_builder_custom_functions: ["value"],
+      style_builder_custom_functions: ["initial", "inherit", "value"],
       priority: "High",
+      computed_value_comparable: true,
     },
     {
       name: "-webkit-writing-mode",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       type_name: "WritingMode",
-      style_builder_custom_functions: ["value"],
+      style_builder_custom_functions: ["initial", "inherit", "value"],
       priority: "High",
       surrogate_for: "writing-mode",
+      computed_value_comparable: true,
     },
     {
       name: "text-rendering",
@@ -1264,6 +1275,7 @@
       affected_by_forced_colors: true,
       valid_for_first_letter: true,
       is_border: true,
+      computed_value_comparable: true,
     },
     {
       name: "border-bottom-left-radius",
@@ -1410,6 +1422,7 @@
       affected_by_forced_colors: true,
       valid_for_first_letter: true,
       is_border: true,
+      computed_value_comparable: true,
     },
     {
       name: "border-left-style",
@@ -1459,6 +1472,7 @@
       affected_by_forced_colors: true,
       valid_for_first_letter: true,
       is_border: true,
+      computed_value_comparable: true,
     },
     {
       name: "border-right-style",
@@ -1508,6 +1522,7 @@
       affected_by_forced_colors: true,
       valid_for_first_letter: true,
       is_border: true,
+      computed_value_comparable: true,
     },
     {
       name: "border-top-left-radius",

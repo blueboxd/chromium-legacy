@@ -14,13 +14,11 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/version_info/version_info.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/features/feature_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -51,15 +49,7 @@ dnr_api::Rule CreateGenericParsedRule() {
   return rule;
 }
 
-class IndexedRuleTest : public testing::Test {
- public:
-  IndexedRuleTest() : channel_(::version_info::Channel::UNKNOWN) {}
-
- private:
-  ScopedCurrentChannel channel_;
-
-  DISALLOW_COPY_AND_ASSIGN(IndexedRuleTest);
-};
+using IndexedRuleTest = ::testing::Test;
 
 TEST_F(IndexedRuleTest, IDParsing) {
   struct {

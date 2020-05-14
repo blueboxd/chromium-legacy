@@ -267,6 +267,14 @@ var valueAttributes = {
     scale: 1.0,
     width: 1.0
   },
+  // kPackagePowerConstraint.
+  13: {
+    color: '#dd0050',
+    minRange: 0.0,
+    name: 'CPU package constraint milli-watts.',
+    scale: 1.0,
+    width: 1.0
+  },
 };
 
 /**

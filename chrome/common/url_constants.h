@@ -364,6 +364,9 @@ extern const char kSmbSharesLearnMoreURL[];
 // navigation buttons in tablet mode (the buttons are hidden by default in
 // favour of the gestures in question).
 extern const char kTabletModeGesturesLearnMoreURL[];
+
+// The URL for the help center article about Wi-Fi sync.
+extern const char kWifiSyncLearnMoreURL[];
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)

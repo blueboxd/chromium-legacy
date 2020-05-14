@@ -10,6 +10,9 @@
 namespace plugin_vm {
 namespace prefs {
 
+// A boolean preference indicating whether Plugin VM is allowed by the
+// corresponding user policy.
+const char kPluginVmAllowed[] = "plugin_vm.allowed";
 // A dictionary preference used to store information about PluginVm image.
 // Stores a url for downloading PluginVm image and a SHA-256 hash for verifying
 // finished download.
@@ -38,6 +41,7 @@ const char kPluginVmUserId[] = "plugin_vm.user_id";
 const char kEngagementPrefsPrefix[] = "plugin_vm.metrics";
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(kPluginVmAllowed, false);
   registry->RegisterDictionaryPref(kPluginVmImage);
   registry->RegisterBooleanPref(kPluginVmImageExists, false);
 

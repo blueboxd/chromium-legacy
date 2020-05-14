@@ -411,6 +411,33 @@ class DeclarativeNetRequestBrowserTest
     ASSERT_EQ("success", ExecuteScriptInBackgroundPage(extension_id, script));
   }
 
+  void UpdateEnabledRulesets(
+      const ExtensionId& extension_id,
+      const std::vector<std::string>& ruleset_ids_to_remove,
+      const std::vector<std::string>& ruleset_ids_to_add) {
+    static constexpr char kScript[] = R"(
+      chrome.declarativeNetRequest.updateEnabledRulesets($1, $2, () => {
+        window.domAutomationController.send(chrome.runtime.lastError ?
+            chrome.runtime.lastError.message : 'success');
+      });
+    )";
+
+    std::unique_ptr<base::Value> ids_to_remove =
+        ListBuilder()
+            .Append(ruleset_ids_to_remove.begin(), ruleset_ids_to_remove.end())
+            .Build();
+    std::unique_ptr<base::Value> ids_to_add =
+        ListBuilder()
+            .Append(ruleset_ids_to_add.begin(), ruleset_ids_to_add.end())
+            .Build();
+
+    // A cast is necessary from ListValue to Value, else this fails to compile.
+    const std::string script = content::JsReplace(
+        kScript, static_cast<const base::Value&>(*ids_to_remove),
+        static_cast<const base::Value&>(*ids_to_add));
+    ASSERT_EQ("success", ExecuteScriptInBackgroundPage(extension_id, script));
+  }
+
   void SetActionsAsBadgeText(const ExtensionId& extension_id, bool pref) {
     const char* pref_string = pref ? "true" : "false";
     static constexpr char kSetActionCountAsBadgeTextScript[] = R"(
@@ -3989,11 +4016,15 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   ASSERT_NO_FATAL_FAILURE(
       AddDynamicRules(extension_id, {CreateMainFrameBlockRule("dynamic")}));
 
+  // Also update the set of enabled static rulesets.
+  ASSERT_NO_FATAL_FAILURE(
+      UpdateEnabledRulesets(extension_id, {"id1"}, {"id2", "id3"}));
+
   CompositeMatcher* composite_matcher =
       ruleset_manager()->GetMatcherForExtension(extension_id);
   ASSERT_TRUE(composite_matcher);
   EXPECT_THAT(GetPublicRulesetIDs(*extension, *composite_matcher),
-              UnorderedElementsAre("id1", "id3", dnr_api::DYNAMIC_RULESET_ID));
+              UnorderedElementsAre("id2", "id3", dnr_api::DYNAMIC_RULESET_ID));
 
   // Also sanity check the extension prefs entry for the rulesets.
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
@@ -4013,6 +4044,13 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
       &checksum));
   EXPECT_TRUE(
       prefs->GetDNRDynamicRulesetChecksum(extension_id, &dynamic_checksum_1));
+  base::Optional<std::set<RulesetID>> enabled_static_rulesets =
+      prefs->GetDNREnabledStaticRulesets(extension_id);
+  ASSERT_TRUE(enabled_static_rulesets);
+  EXPECT_THAT(
+      *enabled_static_rulesets,
+      UnorderedElementsAre(RulesetID(kMinValidStaticRulesetID.value() + 1),
+                           RulesetID(kMinValidStaticRulesetID.value() + 2)));
 
   std::vector<TestRulesetInfo> new_rulesets = {
       create_single_rule_ruleset("id1", true, "yahoo"),
@@ -4044,6 +4082,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   EXPECT_TRUE(
       prefs->GetDNRDynamicRulesetChecksum(extension_id, &dynamic_checksum_2));
   EXPECT_EQ(dynamic_checksum_2, dynamic_checksum_1);
+
+  // Ensure the preference for enabled static rulesets is cleared on extension
+  // update.
+  EXPECT_FALSE(prefs->GetDNREnabledStaticRulesets(extension_id));
 }
 
 // Tests extension update for an extension using declarativeNetRequest.

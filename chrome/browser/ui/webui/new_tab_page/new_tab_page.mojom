@@ -118,6 +118,7 @@ struct SearchBoxTheme {
   skia.mojom.SkColor results_dim_selected;
   skia.mojom.SkColor results_text;
   skia.mojom.SkColor results_text_selected;
+  skia.mojom.SkColor results_url;
   skia.mojom.SkColor results_url_selected;
   skia.mojom.SkColor text;
 };
@@ -131,6 +132,8 @@ struct Theme {
   skia.mojom.SkColor shortcut_text_color;
   // True if |shortcut_background_color| is dark.
   bool shortcut_use_white_add_icon;
+  // True if the shortcuts titles should be wrapped in a pill.
+  bool shortcut_use_title_pill;
   // True if the theme is dark (e.g. NTP background color is dark).
   bool is_dark;
   // Color of Google logo. If not set show the logo multi-colored.
@@ -304,6 +307,8 @@ interface PageHandler {
   // Logs that the One Google Bar was added to the DOM / loaded in an iframe at
   // |time|.
   OnOneGoogleBarRendered(double time);
+  // Logs that the promo iframe was loaded at |time|.
+  OnPromoRendered(double time);
   // Logs that |tile| at position |index| was triggered to navigate to that
   // most visited entry.
   OnMostVisitedTileNavigation(MostVisitedTile tile, uint32 index);
@@ -313,6 +318,8 @@ interface PageHandler {
   OnDoodleImageClicked(DoodleImageType type);
   // Logs that the |type| image of an image doodle has been shown at |time|.
   OnDoodleImageRendered(DoodleImageType type, double time);
+  // Logs that a link on a promo has been clicked.
+  OnPromoLinkClicked();
 
   // ======= REALBOX =======
   // Queries autocomplete matches from the browser.

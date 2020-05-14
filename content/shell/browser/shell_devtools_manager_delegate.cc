@@ -200,10 +200,8 @@ void ShellDevToolsManagerDelegate::ClientDetached(
 
 scoped_refptr<DevToolsAgentHost>
 ShellDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
-  Shell* shell = Shell::CreateNewWindow(browser_context_,
-                                        url,
-                                        nullptr,
-                                        gfx::Size());
+  Shell* shell = Shell::CreateNewWindow(browser_context_, url, nullptr,
+                                        Shell::GetShellDefaultSize());
   if (switches::IsRunWebTestsSwitchPresent())
     SecondaryTestWindowObserver::CreateForWebContents(shell->web_contents());
   return DevToolsAgentHost::GetOrCreateFor(shell->web_contents());

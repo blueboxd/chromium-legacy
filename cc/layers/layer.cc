@@ -78,6 +78,7 @@ Layer::Inputs::Inputs(int layer_id)
     : layer_id(layer_id),
       hit_testable(false),
       contents_opaque(false),
+      contents_opaque_for_text(false),
       is_drawable(false),
       double_sided(true),
       has_will_change_transform_hint(false),
@@ -804,9 +805,19 @@ void Layer::SetContentsOpaque(bool opaque) {
   if (inputs_.contents_opaque == opaque)
     return;
   inputs_.contents_opaque = opaque;
+  inputs_.contents_opaque_for_text = opaque;
   SetNeedsCommit();
   SetSubtreePropertyChanged();
   SetPropertyTreesNeedRebuild();
+}
+
+void Layer::SetContentsOpaqueForText(bool opaque) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (inputs_.contents_opaque_for_text == opaque)
+    return;
+  DCHECK(!contents_opaque() || opaque);
+  inputs_.contents_opaque_for_text = opaque;
+  SetNeedsCommit();
 }
 
 void Layer::SetPosition(const gfx::PointF& position) {
@@ -1321,6 +1332,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
     layer->SetWheelEventHandlerRegion(Region());
   }
   layer->SetContentsOpaque(inputs_.contents_opaque);
+  layer->SetContentsOpaqueForText(inputs_.contents_opaque_for_text);
   layer->SetShouldCheckBackfaceVisibility(should_check_backface_visibility_);
 
   layer->UpdateScrollable();

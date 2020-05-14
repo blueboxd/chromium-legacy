@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tab;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -16,6 +17,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
@@ -23,7 +27,23 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
  * Unit tests for the {@link TabViewManager} class.
  */
 @RunWith(BaseRobolectricTestRunner.class)
+@Config(shadows = {TabViewManagerTest.TabBrowserControlsOffsetHelperShadow.class})
 public class TabViewManagerTest {
+    /**
+     * A shadow implementation of {@link TabBrowserControlsOffsetHelper}.
+     */
+    @Implements(TabBrowserControlsOffsetHelper.class)
+    public static class TabBrowserControlsOffsetHelperShadow {
+        @Implementation
+        public static TabBrowserControlsOffsetHelper get(Tab tab) {
+            TabBrowserControlsOffsetHelper mockTabBrowserControlsOffsetHelper =
+                    mock(TabBrowserControlsOffsetHelper.class);
+            when(mockTabBrowserControlsOffsetHelper.contentOffset()).thenReturn(0);
+            when(mockTabBrowserControlsOffsetHelper.bottomControlsOffset()).thenReturn(0);
+            return mockTabBrowserControlsOffsetHelper;
+        }
+    }
+
     @Mock
     private TabImpl mTab;
     @Mock

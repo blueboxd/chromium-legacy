@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_BLINK_H_
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "v8/include/v8.h"
 
 namespace mojo {
@@ -86,11 +87,22 @@ BLINK_EXPORT void DecommitFreeableMemory();
 BLINK_EXPORT void MemoryPressureNotificationToWorkerThreadIsolates(
     v8::MemoryPressureLevel);
 
-// Set the RAIL performance mode on all worker thread isolates.
-BLINK_EXPORT void SetRAILModeOnWorkerThreadIsolates(v8::RAILMode);
-
 // Logs Runtime Call Stats table for Blink.
 BLINK_EXPORT void LogRuntimeCallStats();
+
+// Allows disabling domain relaxation.
+BLINK_EXPORT void SetDomainRelaxationForbidden(bool forbidden,
+                                               const WebString& scheme);
+// Undos all calls to SetDomainRelaxationForbidden().
+BLINK_EXPORT void ResetDomainRelaxation();
+
+// Force the webgl context to fail so that webglcontextcreationerror
+// event gets generated/tested.
+BLINK_EXPORT void ForceNextWebGLContextCreationToFailForTest();
+
+// Force the drawing buffer used by webgl contexts to fail so that the webgl
+// context's ability to deal with that failure gracefully can be tested.
+BLINK_EXPORT void ForceNextDrawingBufferCreationToFailForTest();
 
 }  // namespace blink
 

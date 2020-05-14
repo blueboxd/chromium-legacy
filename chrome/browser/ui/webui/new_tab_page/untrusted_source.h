@@ -77,6 +77,7 @@ class UntrustedSource : public content::URLDataSource,
   PromoService* promo_service_;
   ScopedObserver<PromoService, PromoServiceObserver> promo_service_observer_{
       this};
+  base::Optional<base::TimeTicks> promo_load_start_time_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_NEW_TAB_PAGE_UNTRUSTED_SOURCE_H_

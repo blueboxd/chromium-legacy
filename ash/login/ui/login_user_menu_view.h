@@ -15,6 +15,7 @@
 
 namespace ash {
 
+struct LoginUserInfo;
 class RemoveUserButton;
 
 class ASH_EXPORT LoginUserMenuView : public LoginBaseBubbleView,
@@ -25,6 +26,7 @@ class ASH_EXPORT LoginUserMenuView : public LoginBaseBubbleView,
     explicit TestApi(LoginUserMenuView* bubble);
     views::View* remove_user_button();
     views::View* remove_user_confirm_data();
+    views::View* managed_user_data();
     views::Label* username_label();
 
    private:
@@ -33,13 +35,9 @@ class ASH_EXPORT LoginUserMenuView : public LoginBaseBubbleView,
     DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
-  LoginUserMenuView(const base::string16& username,
-                    const base::string16& email,
-                    user_manager::UserType type,
-                    bool is_owner,
+  LoginUserMenuView(const LoginUserInfo& user,
                     views::View* anchor_view,
                     LoginButton* bubble_opener,
-                    bool show_remove_user,
                     base::RepeatingClosure on_remove_user_warning_shown,
                     base::RepeatingClosure on_remove_user_requested);
 
@@ -64,6 +62,7 @@ class ASH_EXPORT LoginUserMenuView : public LoginBaseBubbleView,
   LoginButton* bubble_opener_ = nullptr;
   base::RepeatingClosure on_remove_user_warning_shown_;
   base::RepeatingClosure on_remove_user_requested_;
+  views::View* managed_user_data_ = nullptr;
   views::View* remove_user_confirm_data_ = nullptr;
   RemoveUserButton* remove_user_button_ = nullptr;
   views::Label* username_label_ = nullptr;

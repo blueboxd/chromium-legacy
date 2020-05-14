@@ -18,6 +18,7 @@ class LabelButton;
 namespace ash {
 
 class QuickAnswersUiController;
+class QuickAnswersPreTargetHandler;
 
 namespace quick_answers {
 
@@ -54,7 +55,7 @@ class UserConsentView : public views::View, public views::ButtonListener {
   // Cached bounds of the anchor this view is tied to.
   gfx::Rect anchor_view_bounds_;
 
-  std::unique_ptr<EventHandler> event_handler_;
+  std::unique_ptr<QuickAnswersPreTargetHandler> event_handler_;
   QuickAnswersUiController* const ui_controller_;
 
   // Owned by view hierarchy.

@@ -12,7 +12,6 @@ import android.text.TextUtils;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.Callback;
 import org.chromium.base.Consumer;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
@@ -30,23 +29,15 @@ import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.site_settings.CookieControlsBridge;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
-import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.page_info.PageInfoControllerDelegate;
 import org.chromium.components.page_info.PageInfoControllerDelegate.OfflinePageState;
 import org.chromium.components.page_info.PageInfoControllerDelegate.PreviewPageState;
-import org.chromium.components.page_info.PageInfoFeatureList;
-import org.chromium.components.page_info.PageInfoRowView;
-import org.chromium.components.page_info.PageInfoView;
 import org.chromium.components.page_info.PageInfoView.PageInfoViewParams;
-import org.chromium.components.page_info.PageInfoViewV2;
-import org.chromium.components.page_info.PermissionParamsListBuilder;
-import org.chromium.components.page_info.SystemSettingsActivityRequiredListener;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
@@ -64,7 +55,6 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
     private final Context mContext;
     private String mOfflinePageCreationDate;
     private OfflinePageLoadUrlDelegate mOfflinePageLoadUrlDelegate;
-    private PermissionParamsListBuilder mPermissionParamsListBuilder;
 
     // Bridge updating the CookieControlsView when cookie settings change.
     private CookieControlsBridge mBridge;
@@ -273,48 +263,6 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
     @Override
     public void setThirdPartyCookieBlockingEnabledForSite(boolean blockCookies) {
         mBridge.setThirdPartyCookieBlockingEnabledForSite(blockCookies);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void createPermissionParamsListBuilder(AndroidPermissionDelegate permissionDelegate,
-            String fullUrl, boolean shouldShowTitle,
-            SystemSettingsActivityRequiredListener systemSettingsActivityRequiredListener,
-            Callback<PageInfoView.PermissionParams> displayPermissionsCallback) {
-        mPermissionParamsListBuilder = new PermissionParamsListBuilder(mContext, permissionDelegate,
-                fullUrl, shouldShowTitle, systemSettingsActivityRequiredListener,
-                displayPermissionsCallback, new ChromePermissionParamsListBuilderDelegate());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void addPermissionEntry(
-            String name, int type, @ContentSettingValues int currentSettingValue) {
-        assert (mPermissionParamsListBuilder != null);
-        mPermissionParamsListBuilder.addPermissionEntry(name, type, currentSettingValue);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void updatePermissionDisplay(PageInfoView view) {
-        assert (mPermissionParamsListBuilder != null);
-        PageInfoView.PermissionParams params = mPermissionParamsListBuilder.build();
-        if (PageInfoFeatureList.isEnabled(PageInfoFeatureList.PAGE_INFO_V2)) {
-            PageInfoRowView.ViewParams rowParams = new PageInfoRowView.ViewParams();
-            rowParams.visible = true;
-            rowParams.title = mContext.getString(R.string.page_info_permissions_title);
-            // TODO(crbug.com/1077766): Create a permissions subtitle string that represents
-            // the state, potentially using R.plurals.
-            ((PageInfoViewV2) view).getPermissionsRowView().setParams(rowParams);
-        } else {
-            view.setPermissions(params);
-        }
     }
 
     @VisibleForTesting

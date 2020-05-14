@@ -10,6 +10,7 @@
 #include "base/hash/hash.h"
 #include "base/notreached.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -99,10 +100,8 @@ void IconHelper::DidUpdateFaviconURL(
   }
 }
 
-void IconHelper::DidStartNavigationToPendingEntry(
-    const GURL& url,
-    content::ReloadType reload_type) {
-  if (reload_type == content::ReloadType::BYPASSING_CACHE)
+void IconHelper::DidStartNavigation(content::NavigationHandle* navigation) {
+  if (navigation->GetReloadType() == content::ReloadType::BYPASSING_CACHE)
     ClearUnableToDownloadFavicons();
 }
 

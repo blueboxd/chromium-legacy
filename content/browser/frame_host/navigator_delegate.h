@@ -82,11 +82,6 @@ class CONTENT_EXPORT NavigatorDelegate {
   // WebContents::NotifyNavigationStateChanged.
   virtual void NotifyChangedNavigationState(InvalidateTypes changed_flags) = 0;
 
-  // Notifies the Navigator embedder that a navigation to the pending
-  // NavigationEntry has started in the browser process.
-  virtual void DidStartNavigationToPendingEntry(const GURL& url,
-                                                ReloadType reload_type) = 0;
-
   // Opens a URL with the given parameters. See PageNavigator::OpenURL, which
   // this is an alias of.
   virtual WebContents* OpenURL(const OpenURLParams& params) = 0;

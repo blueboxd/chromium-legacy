@@ -60,6 +60,12 @@ class CAPTURE_EXPORT VideoCaptureDeviceFuchsia : public VideoCaptureDevice {
   // Callback for WatchResolution().
   void OnWatchResolutionResult(fuchsia::math::Size frame_size);
 
+  // Watches for orientation updates and updates |orientation_| accordingly.
+  void WatchOrientation();
+
+  // Callback for WatchOrientation().
+  void OnWatchOrientationResult(fuchsia::camera3::Orientation orientation);
+
   // Watches for sysmem buffer collection updates from the camera.
   void WatchBufferCollection();
 
@@ -95,6 +101,8 @@ class CAPTURE_EXPORT VideoCaptureDeviceFuchsia : public VideoCaptureDevice {
   std::unique_ptr<SysmemBufferReader> buffer_reader_;
 
   base::Optional<gfx::Size> frame_size_;
+  fuchsia::camera3::Orientation orientation_ =
+      fuchsia::camera3::Orientation::UP;
 
   base::TimeTicks start_time_;
 

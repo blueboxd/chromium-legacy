@@ -163,9 +163,23 @@ void PlatformThread::SetCurrentThreadPriorityImpl(ThreadPriority priority) {
       [[NSThread currentThread] setThreadPriority:0];
       break;
     case ThreadPriority::NORMAL:
-    case ThreadPriority::DISPLAY:
       [[NSThread currentThread] setThreadPriority:0.5];
       break;
+    case ThreadPriority::DISPLAY: {
+      // Apple has suggested that insufficient priority may be the reason for
+      // Metal shader compilation hangs. A priority of 50 is higher than user
+      // input.
+      // https://crbug.com/974219.
+      [[NSThread currentThread] setThreadPriority:1.0];
+      sched_param param;
+      int policy;
+      pthread_t thread = pthread_self();
+      if (!pthread_getschedparam(thread, &policy, &param)) {
+        param.sched_priority = 50;
+        pthread_setschedparam(thread, policy, &param);
+      }
+      break;
+    }
     case ThreadPriority::REALTIME_AUDIO:
       SetPriorityRealtimeAudio();
       DCHECK_EQ([[NSThread currentThread] threadPriority], 1.0);

@@ -2296,8 +2296,14 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_NTP_DISCOVER_ON" desc="Title in the feed header when the feed is turned on. Please use the branded term for Discover, as listed under Product Names in the Google Glossary Manager.">
         Discover
       </message>
+      <message name="IDS_NTP_DISCOVER_ON_BRANDED" desc="Title in the feed header when the feed is turned on and the default search engine is not Google. Please use the branded term for Discover, as listed under Product Names in the Google Glossary Manager.">
+        Discover by Google
+      </message>
       <message name="IDS_NTP_DISCOVER_OFF" desc="Title in the feed header when the feed is turned off. Please use the branded term for Discover, as listed under Product Names in the Google Glossary Manager.">
         Discover - off
+      </message>
+      <message name="IDS_NTP_DISCOVER_OFF_BRANDED" desc="Title in the feed header when the feed is turned off and the default search engine is not Google. Please use the branded term for Discover, as listed under Product Names in the Google Glossary Manager.">
+        Discover by Google - off
       </message>
       <message name="IDS_NTP_FEED_MENU_IPH" desc="In-product help that points at the menu icon for the news feed on Chrome's new tab page. This string instructs the user to open the menu for settings that let them control the content that appears on the feed.">
         Control your stories here
@@ -3623,6 +3629,21 @@ Only you can see what your camera is looking at. The site can't see your camera'
         chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS">%1$s<ex>1582667748515</ex></ph>
       </message>
 
+      <message name="IDS_QR_CODE_SUCCESSFUL_DOWNLOAD_TITLE" desc="Notification title for successful QR code download.">
+        QR code downloaded
+      </message>
+
+      <message name="IDS_QR_CODE_SUCCESSFUL_DOWNLOAD_TEXT" desc="Notification text for successful QR code download.">
+        Tap to open QR code
+      </message>
+
+      <message name="IDS_QR_CODE_FAILED_DOWNLOAD_TITLE" desc="Notification title for failed QR code download.">
+        Can't download QR code
+      </message>
+
+      <message name="IDS_QR_CODE_FAILED_DOWNLOAD_TEXT" desc="Notification text for failed QR code download.">
+        Something went wrong
+      </message>
       <!-- Chime DFM module strings -->
       <message name="IDS_CHIME_MODULE_TITLE" desc="Text shown when the chime module is referenced in install start, success, failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to 'Installing Google Notifications Platform for Chrome…').">
         Google Notifications Platform

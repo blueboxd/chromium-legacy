@@ -46,7 +46,9 @@ constexpr char kVeIdParamKey[] = "veId";
 
 // Supported alarm/timer action deep link param values.
 constexpr char kAddTimeToTimer[] = "addTimeToTimer";
-constexpr char kRemoveAlarmTimer[] = "removeAlarmTimer";
+constexpr char kPauseTimer[] = "pauseTimer";
+constexpr char kRemoveAlarmOrTimer[] = "removeAlarmOrTimer";
+constexpr char kResumeTimer[] = "resumeTimer";
 
 // Supported proactive suggestions action deep link param values.
 constexpr char kCardClick[] = "cardClick";
@@ -78,6 +80,21 @@ constexpr char kAssistantWhatsOnMyScreenPrefix[] =
     "googleassistant://whats-on-my-screen";
 
 // Helpers ---------------------------------------------------------------------
+
+std::string GetAlarmTimerActionParamValue(AlarmTimerAction action) {
+  switch (action) {
+    case AlarmTimerAction::kAddTimeToTimer:
+      return kAddTimeToTimer;
+    case AlarmTimerAction::kPauseTimer:
+      return kPauseTimer;
+    case AlarmTimerAction::kRemoveAlarmOrTimer:
+      return kRemoveAlarmOrTimer;
+    case AlarmTimerAction::kResumeTimer:
+      return kResumeTimer;
+  }
+  NOTREACHED();
+  return std::string();
+}
 
 std::string GetDeepLinkParamKey(DeepLinkParam param) {
   switch (param) {
@@ -146,24 +163,24 @@ base::Optional<GURL> CreateAlarmTimerDeepLink(
     AlarmTimerAction action,
     base::Optional<std::string> alarm_timer_id,
     base::Optional<base::TimeDelta> duration) {
-  GURL url = GURL(kAssistantAlarmTimerPrefix);
-
   switch (action) {
     case assistant::util::AlarmTimerAction::kAddTimeToTimer:
       DCHECK(alarm_timer_id.has_value() && duration.has_value());
       if (!alarm_timer_id.has_value() || !duration.has_value())
         return base::nullopt;
-      url = net::AppendOrReplaceQueryParameter(url, kActionParamKey,
-                                               kAddTimeToTimer);
       break;
-    case assistant::util::AlarmTimerAction::kRemove:
+    case assistant::util::AlarmTimerAction::kPauseTimer:
+    case assistant::util::AlarmTimerAction::kRemoveAlarmOrTimer:
+    case assistant::util::AlarmTimerAction::kResumeTimer:
       DCHECK(alarm_timer_id.has_value() && !duration.has_value());
       if (!alarm_timer_id.has_value() || duration.has_value())
         return base::nullopt;
-      url = net::AppendOrReplaceQueryParameter(url, kActionParamKey,
-                                               kRemoveAlarmTimer);
       break;
   }
+
+  GURL url = net::AppendOrReplaceQueryParameter(
+      GURL(kAssistantAlarmTimerPrefix), kActionParamKey,
+      GetAlarmTimerActionParamValue(action));
 
   if (alarm_timer_id.has_value()) {
     url = net::AppendOrReplaceQueryParameter(url, kIdParamKey,
@@ -236,8 +253,14 @@ base::Optional<AlarmTimerAction> GetDeepLinkParamAsAlarmTimerAction(
   if (action_string_value.value() == kAddTimeToTimer)
     return AlarmTimerAction::kAddTimeToTimer;
 
-  if (action_string_value.value() == kRemoveAlarmTimer)
-    return AlarmTimerAction::kRemove;
+  if (action_string_value.value() == kPauseTimer)
+    return AlarmTimerAction::kPauseTimer;
+
+  if (action_string_value.value() == kRemoveAlarmOrTimer)
+    return AlarmTimerAction::kRemoveAlarmOrTimer;
+
+  if (action_string_value.value() == kResumeTimer)
+    return AlarmTimerAction::kResumeTimer;
 
   return base::nullopt;
 }

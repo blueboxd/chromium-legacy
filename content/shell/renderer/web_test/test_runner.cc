@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/shell/common/web_test/web_test_constants.h"
 #include "content/shell/common/web_test/web_test_string_util.h"
 #include "content/shell/renderer/web_test/app_banner_service.h"
@@ -46,6 +47,7 @@
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_data.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_array_buffer.h"
@@ -55,6 +57,8 @@
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_manifest_manager.h"
+#include "third_party/blink/public/web/web_render_theme.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_security_policy.h"
 #include "third_party/blink/public/web/web_serialized_script_value.h"
@@ -182,7 +186,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void FocusDevtoolsSecondaryWindow();
   void ForceNextDrawingBufferCreationToFail();
   void ForceNextWebGLContextCreationToFail();
-  void ForceRedSelectionColors();
   void GetBluetoothManualChooserEvents(v8::Local<v8::Function> callback);
   void GetManifestThen(v8::Local<v8::Function> callback);
   base::FilePath::StringType GetWritableDirectory();
@@ -262,7 +265,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetTextSubpixelPositioning(bool value);
   void SetTrustTokenKeyCommitments(const std::string& raw_commitments,
                                    v8::Local<v8::Function> callback);
-  void SetViewSourceForFrame(const std::string& name, bool enabled);
   void SetWillSendRequestClearHeader(const std::string& header);
   void SetWillSendRequestClearReferrer();
   void SimulateBrowserWindowFocus(bool value);
@@ -406,12 +408,16 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("addDisallowedURL", &TestRunnerBindings::NotImplemented)
       .SetMethod("addOriginAccessAllowListEntry",
                  &TestRunnerBindings::AddOriginAccessAllowListEntry)
+      // Permits the adding of only one opaque overlay. May only be called from
+      // inside the main frame.
       .SetMethod("addWebPageOverlay", &TestRunnerBindings::AddWebPageOverlay)
       .SetMethod("capturePixelsAsyncThen",
                  &TestRunnerBindings::CapturePixelsAsyncThen)
       .SetMethod("clearAllDatabases", &TestRunnerBindings::ClearAllDatabases)
       .SetMethod("clearBackForwardList", &TestRunnerBindings::NotImplemented)
       .SetMethod("clearPrinting", &TestRunnerBindings::ClearPrinting)
+      // Clears persistent Trust Tokens state in the browser. See
+      // https://github.com/wicg/trust-token-api.
       .SetMethod("clearTrustTokenState",
                  &TestRunnerBindings::ClearTrustTokenState)
       .SetMethod("copyImageAtAndCapturePixelsAsyncThen",
@@ -474,12 +480,13 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("findString", &TestRunnerBindings::FindString)
       .SetMethod("focusDevtoolsSecondaryWindow",
                  &TestRunnerBindings::FocusDevtoolsSecondaryWindow)
+      // Sets a flag causing the next call to WebGLRenderingContext::Create() to
+      // fail.
       .SetMethod("forceNextDrawingBufferCreationToFail",
                  &TestRunnerBindings::ForceNextDrawingBufferCreationToFail)
+      // Sets a flag causing the next call to DrawingBuffer::Create() to fail.
       .SetMethod("forceNextWebGLContextCreationToFail",
                  &TestRunnerBindings::ForceNextWebGLContextCreationToFail)
-      .SetMethod("forceRedSelectionColors",
-                 &TestRunnerBindings::ForceRedSelectionColors)
 
       // The Bluetooth functions are specified at
       // https://webbluetoothcg.github.io/web-bluetooth/tests/.
@@ -490,10 +497,14 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::GetWritableDirectory)
       .SetMethod("insertStyleSheet", &TestRunnerBindings::InsertStyleSheet)
       .SetMethod("isChooserShown", &TestRunnerBindings::IsChooserShown)
+      // Checks if an internal editing command is currently available for the
+      // frame's document.
       .SetMethod("isCommandEnabled", &TestRunnerBindings::IsCommandEnabled)
       .SetMethod("keepWebHistory", &TestRunnerBindings::NotImplemented)
       .SetMethod("updateAllLifecyclePhasesAndComposite",
                  &TestRunnerBindings::UpdateAllLifecyclePhasesAndComposite)
+      // Note, the reply callback is executed synchronously. Wrap in
+      // setTimeout() to run asynchronously.
       .SetMethod("updateAllLifecyclePhasesAndCompositeThen",
                  &TestRunnerBindings::UpdateAllLifecyclePhasesAndCompositeThen)
       .SetMethod("setAnimationRequiresRaster",
@@ -515,15 +526,26 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("queueReload", &TestRunnerBindings::QueueReload)
       .SetMethod("removeSpellCheckResolvedCallback",
                  &TestRunnerBindings::RemoveSpellCheckResolvedCallback)
+      // Removes an overlay added by addWebPageOverlay(). May only be called
+      // from inside the main frame.
       .SetMethod("removeWebPageOverlay",
                  &TestRunnerBindings::RemoveWebPageOverlay)
       .SetMethod("resolveBeforeInstallPromptPromise",
                  &TestRunnerBindings::ResolveBeforeInstallPromptPromise)
+      // Immediately run all pending idle tasks, including all pending
+      // requestIdleCallback calls.  Invoke the callback when all
+      // idle tasks are complete.
       .SetMethod("runIdleTasks", &TestRunnerBindings::RunIdleTasks)
       .SetMethod("selectionAsMarkup", &TestRunnerBindings::SelectionAsMarkup)
 
       // The Bluetooth functions are specified at
       // https://webbluetoothcg.github.io/web-bluetooth/tests/.
+
+      // Calls the BluetoothChooser::EventHandler with the arguments here. Valid
+      // event strings are:
+      //  * "cancel" - simulates the user canceling the chooser.
+      //  * "select" - simulates the user selecting a device whose device ID is
+      //               in the 2nd parameter.
       .SetMethod("sendBluetoothManualChooserEvent",
                  &TestRunnerBindings::SendBluetoothManualChooserEvent)
       .SetMethod("setAcceptLanguages", &TestRunnerBindings::SetAcceptLanguages)
@@ -536,10 +558,12 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setAudioData", &TestRunnerBindings::SetAudioData)
       .SetMethod("setBackingScaleFactor",
                  &TestRunnerBindings::SetBackingScaleFactor)
-      // The Bluetooth functions are specified at
-      // https://webbluetoothcg.github.io/web-bluetooth/tests/.
+      // Change the bluetooth test data while running a web test.
       .SetMethod("setBluetoothFakeAdapter",
                  &TestRunnerBindings::SetBluetoothFakeAdapter)
+      // If |enable| is true, makes the Bluetooth chooser record its input and
+      // wait for instructions from the test program on how to proceed.
+      // Otherwise falls back to the browser's default chooser.
       .SetMethod("setBluetoothManualChooser",
                  &TestRunnerBindings::SetBluetoothManualChooser)
       .SetMethod("setCallCloseOnWebViews", &TestRunnerBindings::NotImplemented)
@@ -603,15 +627,17 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       // elements or inserts a '\t' char in text area
       .SetMethod("setTabKeyCyclesThroughElements",
                  &TestRunnerBindings::SetTabKeyCyclesThroughElements)
+      // Changes the direction of text for the frame's focused element.
       .SetMethod("setTextDirection", &TestRunnerBindings::SetTextDirection)
       .SetMethod("setTextSubpixelPositioning",
                  &TestRunnerBindings::SetTextSubpixelPositioning)
+      // Sets the network service-global Trust Tokens key commitments.
+      // Takes a |raw_commitments| string that should be JSON-encoded according
+      // to the format expected by NetworkService::SetTrustTokenKeyCommitments.
       .SetMethod("setTrustTokenKeyCommitments",
                  &TestRunnerBindings::SetTrustTokenKeyCommitments)
       .SetMethod("setUseDashboardCompatibilityMode",
                  &TestRunnerBindings::NotImplemented)
-      .SetMethod("setViewSourceForFrame",
-                 &TestRunnerBindings::SetViewSourceForFrame)
       .SetMethod("setWillSendRequestClearHeader",
                  &TestRunnerBindings::SetWillSendRequestClearHeader)
       .SetMethod("setWillSendRequestClearReferrer",
@@ -746,13 +772,15 @@ void TestRunnerBindings::TriggerTestInspectorIssue(gin::Arguments* args) {
 }
 
 bool TestRunnerBindings::IsCommandEnabled(const std::string& command) {
-  return view_runner_->IsCommandEnabled(command);
+  return frame_->GetWebFrame()->IsCommandEnabled(
+      blink::WebString::FromUTF8(command));
 }
 
 void TestRunnerBindings::SetDomainRelaxationForbiddenForURLScheme(
     bool forbidden,
     const std::string& scheme) {
-  view_runner_->SetDomainRelaxationForbiddenForURLScheme(forbidden, scheme);
+  blink::SetDomainRelaxationForbidden(forbidden,
+                                      blink::WebString::FromUTF8(scheme));
 }
 
 void TestRunnerBindings::SetDumpConsoleMessages(bool enabled) {
@@ -857,10 +885,6 @@ void TestRunnerBindings::AddOriginAccessAllowListEntry(
   }
 }
 
-void TestRunnerBindings::ForceRedSelectionColors() {
-  view_runner_->ForceRedSelectionColors();
-}
-
 void TestRunnerBindings::InsertStyleSheet(const std::string& source_code) {
   if (runner_)
     runner_->InsertStyleSheet(source_code);
@@ -869,11 +893,29 @@ void TestRunnerBindings::InsertStyleSheet(const std::string& source_code) {
 bool TestRunnerBindings::FindString(
     const std::string& search_text,
     const std::vector<std::string>& options_array) {
-  return view_runner_->FindString(search_text, options_array);
+  bool match_case = true;
+  bool forward = true;
+  bool find_next = true;
+  bool wrap_around = false;
+  for (const auto& option : options_array) {
+    if (option == "CaseInsensitive")
+      match_case = false;
+    else if (option == "Backwards")
+      forward = false;
+    else if (option == "StartInSelection")
+      find_next = false;
+    else if (option == "WrapAround")
+      wrap_around = true;
+  }
+
+  const bool find_result = frame_->GetWebFrame()->FindForTesting(
+      0, blink::WebString::FromUTF8(search_text), match_case, forward,
+      find_next, false /* force */, wrap_around);
+  return find_result;
 }
 
 std::string TestRunnerBindings::SelectionAsMarkup() {
-  return view_runner_->SelectionAsMarkup();
+  return frame_->GetWebFrame()->SelectionAsMarkup().Utf8();
 }
 
 void TestRunnerBindings::SetTextSubpixelPositioning(bool value) {
@@ -884,8 +926,9 @@ void TestRunnerBindings::SetTextSubpixelPositioning(bool value) {
 void TestRunnerBindings::SetTrustTokenKeyCommitments(
     const std::string& raw_commitments,
     v8::Local<v8::Function> callback) {
-  if (view_runner_)
-    view_runner_->SetTrustTokenKeyCommitments(raw_commitments, callback);
+  runner_->blink_test_runner_->SetTrustTokenKeyCommitments(
+      raw_commitments,
+      view_runner_->CreateClosureThatPostsV8Callback(std::move(callback)));
 }
 
 void TestRunnerBindings::SetPageVisibility(const std::string& new_visibility) {
@@ -893,7 +936,18 @@ void TestRunnerBindings::SetPageVisibility(const std::string& new_visibility) {
 }
 
 void TestRunnerBindings::SetTextDirection(const std::string& direction_name) {
-  view_runner_->SetTextDirection(direction_name);
+  // Map a direction name to a base::i18n::TextDirection value.
+  base::i18n::TextDirection direction;
+  if (direction_name == "auto")
+    direction = base::i18n::UNKNOWN_DIRECTION;
+  else if (direction_name == "rtl")
+    direction = base::i18n::RIGHT_TO_LEFT;
+  else if (direction_name == "ltr")
+    direction = base::i18n::LEFT_TO_RIGHT;
+  else
+    return;
+
+  frame_->GetWebFrame()->SetTextDirection(direction);
 }
 
 void TestRunnerBindings::UseUnfortunateSynchronousResizeMode() {
@@ -1200,8 +1254,8 @@ void TestRunnerBindings::ClearPrinting() {
 
 void TestRunnerBindings::ClearTrustTokenState(
     v8::Local<v8::Function> callback) {
-  if (view_runner_)
-    view_runner_->ClearTrustTokenState(callback);
+  runner_->blink_test_runner_->ClearTrustTokenState(
+      view_runner_->CreateClosureThatPostsV8Callback(std::move(callback)));
 }
 
 void TestRunnerBindings::SetShouldGeneratePixelResults(bool value) {
@@ -1329,11 +1383,13 @@ void TestRunnerBindings::SetColorProfile(const std::string& name,
 void TestRunnerBindings::SetBluetoothFakeAdapter(
     const std::string& adapter_name,
     v8::Local<v8::Function> callback) {
-  view_runner_->SetBluetoothFakeAdapter(adapter_name, callback);
+  runner_->blink_test_runner_->SetBluetoothFakeAdapter(
+      adapter_name,
+      view_runner_->CreateClosureThatPostsV8Callback(std::move(callback)));
 }
 
 void TestRunnerBindings::SetBluetoothManualChooser(bool enable) {
-  view_runner_->SetBluetoothManualChooser(enable);
+  runner_->blink_test_runner_->SetBluetoothManualChooser(enable);
 }
 
 void TestRunnerBindings::GetBluetoothManualChooserEvents(
@@ -1344,7 +1400,7 @@ void TestRunnerBindings::GetBluetoothManualChooserEvents(
 void TestRunnerBindings::SendBluetoothManualChooserEvent(
     const std::string& event,
     const std::string& argument) {
-  view_runner_->SendBluetoothManualChooserEvent(event, argument);
+  runner_->blink_test_runner_->SendBluetoothManualChooserEvent(event, argument);
 }
 
 void TestRunnerBindings::SetPOSIXLocale(const std::string& locale) {
@@ -1405,24 +1461,32 @@ void TestRunnerBindings::SimulateWebContentIndexDelete(const std::string& id) {
 }
 
 void TestRunnerBindings::SetHighlightAds() {
-  view_runner_->SetHighlightAds(true);
+  blink::WebView* web_view = frame_->GetWebFrame()->View();
+  web_view->GetSettings()->SetHighlightAds(true);
 }
 
 void TestRunnerBindings::AddWebPageOverlay() {
-  view_runner_->AddWebPageOverlay();
+  DCHECK(frame_->IsMainFrame());
+  frame_->GetWebFrame()->SetMainFrameOverlayColor(SK_ColorCYAN);
 }
 
 void TestRunnerBindings::RemoveWebPageOverlay() {
-  view_runner_->RemoveWebPageOverlay();
+  DCHECK(frame_->IsMainFrame());
+  frame_->GetWebFrame()->SetMainFrameOverlayColor(SK_ColorTRANSPARENT);
 }
 
 void TestRunnerBindings::UpdateAllLifecyclePhasesAndComposite() {
-  view_runner_->UpdateAllLifecyclePhasesAndComposite();
+  auto* frame_proxy = static_cast<WebFrameTestProxy*>(frame_);
+  frame_proxy->GetLocalRootWebWidgetTestProxy()->SynchronouslyComposite(
+      /*raster=*/true);
 }
 
 void TestRunnerBindings::UpdateAllLifecyclePhasesAndCompositeThen(
     v8::Local<v8::Function> callback) {
-  view_runner_->UpdateAllLifecyclePhasesAndCompositeThen(callback);
+  UpdateAllLifecyclePhasesAndComposite();
+
+  view_runner_->InvokeV8Callback(v8::UniquePersistent<v8::Function>(
+      blink::MainThreadIsolate(), std::move(callback)));
 }
 
 void TestRunnerBindings::SetAnimationRequiresRaster(bool do_raster) {
@@ -1431,8 +1495,24 @@ void TestRunnerBindings::SetAnimationRequiresRaster(bool do_raster) {
   runner_->SetAnimationRequiresRaster(do_raster);
 }
 
+static void GetManifestReply(base::WeakPtr<TestRunner> test_runner,
+                             TestRunnerForSpecificView* view_runner,
+                             v8::UniquePersistent<v8::Function> callback,
+                             const blink::WebURL& manifest_url,
+                             const blink::Manifest& manifest) {
+  if (!test_runner)
+    return;
+  view_runner->PostV8CallbackWithArgs(std::move(callback), 0, nullptr);
+}
+
 void TestRunnerBindings::GetManifestThen(v8::Local<v8::Function> callback) {
-  view_runner_->GetManifestThen(callback);
+  auto blink_callback = v8::UniquePersistent<v8::Function>(
+      blink::MainThreadIsolate(), std::move(callback));
+
+  blink::WebManifestManager::RequestManifestForTesting(
+      frame_->GetWebFrame(),
+      base::BindOnce(&GetManifestReply, runner_, view_runner_,
+                     std::move(blink_callback)));
 }
 
 void TestRunnerBindings::CapturePixelsAsyncThen(
@@ -1440,21 +1520,33 @@ void TestRunnerBindings::CapturePixelsAsyncThen(
   view_runner_->CapturePixelsAsyncThen(callback);
 }
 
+static void ProxyToRunJSCallbackWithBitmap(
+    base::WeakPtr<TestRunner> test_runner,
+    TestRunnerForSpecificView* view_runner,
+    v8::UniquePersistent<v8::Function> callback,
+    const SkBitmap& snapshot) {
+  if (!test_runner)
+    return;
+  // TODO(danakj): Move this method over to TestRunner or TestRunnerBindings
+  // and drop this ProxyTo function.
+  view_runner->RunJSCallbackWithBitmap(std::move(callback), snapshot);
+}
+
 void TestRunnerBindings::CopyImageAtAndCapturePixelsAsyncThen(
     int x,
     int y,
     v8::Local<v8::Function> callback) {
-  view_runner_->CopyImageAtAndCapturePixelsAsyncThen(x, y, callback);
+  auto blink_callback = v8::UniquePersistent<v8::Function>(
+      blink::MainThreadIsolate(), std::move(callback));
+  CopyImageAtAndCapturePixels(
+      frame_, x, y,
+      base::BindOnce(&ProxyToRunJSCallbackWithBitmap, runner_, view_runner_,
+                     std::move(blink_callback)));
 }
 
 void TestRunnerBindings::SetCustomTextOutput(const std::string& output) {
   if (runner_)
     runner_->SetCustomTextOutput(output);
-}
-
-void TestRunnerBindings::SetViewSourceForFrame(const std::string& name,
-                                               bool enabled) {
-  view_runner_->SetViewSourceForFrame(name, enabled);
 }
 
 void TestRunnerBindings::SetPermission(const std::string& name,
@@ -1520,7 +1612,11 @@ void TestRunnerBindings::ResolveBeforeInstallPromptPromise(
 }
 
 void TestRunnerBindings::RunIdleTasks(v8::Local<v8::Function> callback) {
-  view_runner_->RunIdleTasks(callback);
+  blink::scheduler::WebThreadScheduler* scheduler =
+      content::RenderThreadImpl::current()->GetWebMainThreadScheduler();
+  blink::scheduler::RunIdleTasksForTesting(
+      scheduler,
+      view_runner_->CreateClosureThatPostsV8Callback(std::move(callback)));
 }
 
 std::string TestRunnerBindings::PlatformName() {
@@ -1542,7 +1638,7 @@ int TestRunnerBindings::WebHistoryItemCount() {
 }
 
 void TestRunnerBindings::ForceNextWebGLContextCreationToFail() {
-  view_runner_->ForceNextWebGLContextCreationToFail();
+  blink::ForceNextWebGLContextCreationToFailForTest();
 }
 
 void TestRunnerBindings::FocusDevtoolsSecondaryWindow() {
@@ -1550,7 +1646,7 @@ void TestRunnerBindings::FocusDevtoolsSecondaryWindow() {
 }
 
 void TestRunnerBindings::ForceNextDrawingBufferCreationToFail() {
-  view_runner_->ForceNextDrawingBufferCreationToFail();
+  blink::ForceNextDrawingBufferCreationToFailForTest();
 }
 
 void TestRunnerBindings::NotImplemented(const gin::Arguments& args) {}
@@ -1664,6 +1760,7 @@ void TestRunner::Reset() {
 #if defined(OS_LINUX) || defined(OS_FUCHSIA)
   blink::WebFontRenderStyle::SetSubpixelPositioning(false);
 #endif
+  blink::ResetDomainRelaxation();
 
   if (blink_test_runner_) {
     // Reset the default quota for each origin.
@@ -1699,6 +1796,21 @@ void TestRunner::Reset() {
     blink_test_runner_->CloseRemainingWindows();
   else
     close_remaining_windows_ = true;
+}
+
+void TestRunner::ResetWebView(WebViewTestProxy* web_view_test_proxy) {
+  blink::WebView* web_view = web_view_test_proxy->GetWebView();
+
+  web_view->SetTabKeyCyclesThroughElements(true);
+  web_view->GetSettings()->SetHighlightAds(false);
+}
+
+void TestRunner::ResetWebFrame(WebFrameTestProxy* web_frame_test_proxy) {
+  blink::WebLocalFrame* web_frame = web_frame_test_proxy->GetWebFrame();
+
+  if (web_frame_test_proxy->IsMainFrame()) {
+    web_frame->SetMainFrameOverlayColor(SK_ColorTRANSPARENT);
+  }
 }
 
 void TestRunner::SetTestIsRunning(bool running) {

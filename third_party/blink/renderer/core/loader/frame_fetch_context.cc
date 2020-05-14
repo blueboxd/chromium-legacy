@@ -42,6 +42,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/conversions/conversions.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
@@ -121,25 +122,14 @@ namespace {
 // If that flag is disabled (the default), then all hints are always sent for
 // first-party subresources, and the kAllowClientHintsToThirdParty feature
 // controls whether some specific hints are sent to third parties. (Only
-// device-memory, resource-width, viewport-width and the limited UA hints are
-// sent under this model). This feature is enabled by default on Android, and
-// disabled by default on all other platforms.
+// device-memory, resource-width, viewport-width and DPR are sent under this
+// model). This feature is enabled by default on Android, and disabled by
+// default on all other platforms.
 //
 // When the runtime flag is enabled, all client hints except UA are controlled
 // entirely by feature policy on all platforms. In that case, hints will
 // generally be sent for first-party resources, and not for third-party
 // resources, unless specifically enabled by policy.
-
-// If kAllowClientHintsToThirdParty is enabled, then device-memory,
-// resource-width and viewport-width client hints can be sent to third-party
-// origins if the first-party has opted in to receiving client hints.
-#if defined(OS_ANDROID)
-const base::Feature kAllowClientHintsToThirdParty{
-    "AllowClientHintsToThirdParty", base::FEATURE_ENABLED_BY_DEFAULT};
-#else
-const base::Feature kAllowClientHintsToThirdParty{
-    "AllowClientHintsToThirdParty", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 // Determines FetchCacheMode for |frame|. This FetchCacheMode should be a base
 // policy to consider one of each resource belonging to the frame, and should
@@ -514,7 +504,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   bool is_1p_origin = IsFirstPartyOrigin(request.Url());
 
   if (!RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
-      !base::FeatureList::IsEnabled(kAllowClientHintsToThirdParty) &&
+      !base::FeatureList::IsEnabled(features::kAllowClientHintsToThirdParty) &&
       !is_1p_origin) {
     // No client hints for 3p origins.
     return;
@@ -953,7 +943,7 @@ bool FrameFetchContext::ShouldSendClientHint(
   bool origin_ok;
 
   if (mode == ClientHintsMode::kLegacy &&
-      base::FeatureList::IsEnabled(kAllowClientHintsToThirdParty)) {
+      base::FeatureList::IsEnabled(features::kAllowClientHintsToThirdParty)) {
     origin_ok = true;
   } else if (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled()) {
     origin_ok =

@@ -71,6 +71,7 @@ class PLATFORM_EXPORT SchemeRegistry {
 
   static void SetDomainRelaxationForbiddenForURLScheme(bool forbidden,
                                                        const String&);
+  static void ResetDomainRelaxation();
   static bool IsDomainRelaxationForbiddenForURLScheme(const String&);
 
   // Such schemes should delegate to SecurityOrigin::canRequest for any URL

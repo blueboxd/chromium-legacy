@@ -590,6 +590,7 @@ class OncMojo {
           security: mojom.SecurityType.kNone,
           signalStrength: 0,
           ssid: '',
+          isSyncable: false,
         };
         break;
       default:
@@ -727,6 +728,7 @@ class OncMojo {
             ssid: OncMojo.createManagedString(''),
             security: mojom.SecurityType.kNone,
             signalStrength: 0,
+            isSyncable: false,
           }
         };
         break;

@@ -216,6 +216,7 @@ js_library("settings") {
     "autofill_page:password_manager_proxy",
     "people_page:sync_browser_proxy.m",
     "privacy_page:privacy_page_browser_proxy.m",
+    "safety_check_page:safety_check_browser_proxy",
     "search_engines_page:search_engines_browser_proxy.m",
     "settings_ui:settings_ui",
   ]

@@ -69,7 +69,9 @@ enum class DeepLinkParam {
 // Enumeration of alarm/timer deep link actions.
 enum class AlarmTimerAction {
   kAddTimeToTimer,
-  kRemove,
+  kPauseTimer,
+  kRemoveAlarmOrTimer,
+  kResumeTimer,
 };
 
 // Enumeration of proactive suggestions deep link actions.

@@ -9,7 +9,7 @@
 #include "components/query_tiles/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace upboarding {
+namespace query_tiles {
 namespace {
 
 using TileInfoGroup = query_tiles::proto::TileInfoGroup;
@@ -47,7 +47,7 @@ void InitResponseProto(ResponseGroupProto* response,
 }
 
 void TestTileConversion(Tile& expected) {
-  upboarding::query_tiles::proto::Tile proto;
+  query_tiles::proto::Tile proto;
   Tile actual;
   TileToProto(&expected, &proto);
   TileFromProto(&proto, &actual);
@@ -58,7 +58,7 @@ void TestTileConversion(Tile& expected) {
 }
 
 void TestTileGroupConversion(TileGroup& expected) {
-  upboarding::query_tiles::proto::TileGroup proto;
+  query_tiles::proto::TileGroup proto;
   TileGroup actual;
   TileGroupToProto(&expected, &proto);
   TileGroupFromProto(&proto, &actual);
@@ -105,4 +105,4 @@ TEST(TileProtoConversionTest, TileGroupFromResponseConversions) {
 
 }  // namespace
 
-}  // namespace upboarding
+}  // namespace query_tiles

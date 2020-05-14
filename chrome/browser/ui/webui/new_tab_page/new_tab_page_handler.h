@@ -102,6 +102,7 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
       std::vector<new_tab_page::mojom::MostVisitedTilePtr> tiles,
       double time) override;
   void OnOneGoogleBarRendered(double time) override;
+  void OnPromoRendered(double time) override;
   void OnMostVisitedTileNavigation(new_tab_page::mojom::MostVisitedTilePtr tile,
                                    uint32_t index) override;
   void OnCustomizeDialogAction(
@@ -109,6 +110,7 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   void OnDoodleImageClicked(new_tab_page::mojom::DoodleImageType type) override;
   void OnDoodleImageRendered(new_tab_page::mojom::DoodleImageType type,
                              double time) override;
+  void OnPromoLinkClicked() override;
   void QueryAutocomplete(const base::string16& input,
                          bool prevent_inline_autocomplete) override;
   void StopAutocomplete(bool clear_result) override;

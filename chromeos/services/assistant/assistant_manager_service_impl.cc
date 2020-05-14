@@ -1310,9 +1310,19 @@ void AssistantManagerServiceImpl::AddTimeToTimer(const std::string& id,
       id, duration.InSeconds());
 }
 
-void AssistantManagerServiceImpl::RemoveAlarmTimer(const std::string& id) {
+void AssistantManagerServiceImpl::PauseTimer(const std::string& id) {
+  if (assistant_manager_internal_)
+    assistant_manager_internal_->GetAlarmTimerManager()->PauseTimer(id);
+}
+
+void AssistantManagerServiceImpl::RemoveAlarmOrTimer(const std::string& id) {
   if (assistant_manager_internal_)
     assistant_manager_internal_->GetAlarmTimerManager()->RemoveEvent(id);
+}
+
+void AssistantManagerServiceImpl::ResumeTimer(const std::string& id) {
+  if (assistant_manager_internal_)
+    assistant_manager_internal_->GetAlarmTimerManager()->ResumeTimer(id);
 }
 
 void AssistantManagerServiceImpl::NotifyEntryIntoAssistantUi(

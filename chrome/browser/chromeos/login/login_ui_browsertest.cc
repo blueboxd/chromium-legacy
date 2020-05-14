@@ -279,4 +279,87 @@ IN_PROC_BROWSER_TEST_F(LoginUITestBase, SystemInfoVisible) {
   EXPECT_TRUE(ash::LoginScreenTestApi::IsSystemInfoShown());
 }
 
+class UserManagementDisclosureTest : public LoginManagerTest {
+ public:
+  UserManagementDisclosureTest() : LoginManagerTest() {}
+
+  void LoginAndLock(const LoginManagerMixin::TestUserInfo& test_user,
+                    UserPolicyMixin* user_policy_mixin) {
+    if (user_policy_mixin)
+      user_policy_mixin->RequestPolicyUpdate();
+
+    chromeos::WizardController::SkipPostLoginScreensForTesting();
+
+    auto context = LoginManagerMixin::CreateDefaultUserContext(test_user);
+    login_manager_mixin_.LoginAndWaitForActiveSession(context);
+
+    ScreenLockerTester screen_locker_tester;
+    screen_locker_tester.Lock();
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    LoginManagerTest::SetUpInProcessBrowserTestFixture();
+    // Login as a managed user would save force-online-signin to true and
+    // invalidate the auth token into local state, which would prevent to focus
+    // during the second part of the test which happens in the login screen.
+    UserSelectionScreen::SetSkipForceOnlineSigninForTesting(true);
+  }
+
+  void TearDownInProcessBrowserTestFixture() override {
+    LoginManagerTest::TearDownInProcessBrowserTestFixture();
+    UserSelectionScreen::SetSkipForceOnlineSigninForTesting(false);
+  }
+
+ protected:
+  const LoginManagerMixin::TestUserInfo not_managed_user{
+      AccountId::FromUserEmailGaiaId("user@gmail.com", "1111")};
+  const LoginManagerMixin::TestUserInfo managed_user{
+      AccountId::FromUserEmailGaiaId("user@example.com", "11111")};
+  UserPolicyMixin managed_user_policy_mixin_{&mixin_host_,
+                                             managed_user.account_id};
+  LoginManagerMixin login_manager_mixin_{&mixin_host_};
+};
+
+// Check if the user management disclosure is hidden on the lock screen after
+// having logged an unmanaged user into a session and having locked the screen.
+IN_PROC_BROWSER_TEST_F(UserManagementDisclosureTest,
+                       PRE_EnterpriseIconInvisibleNotManagedUser) {
+  LoginAndLock(not_managed_user, nullptr);
+  EXPECT_FALSE(
+      ash::LoginScreenTestApi::IsManagedIconShown(not_managed_user.account_id));
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsManagedMessageInMenuShown(
+      not_managed_user.account_id));
+}
+
+// Check if the user management disclosure is shown on the login screen for an
+// unmanaged user.
+IN_PROC_BROWSER_TEST_F(UserManagementDisclosureTest,
+                       EnterpriseIconInvisibleNotManagedUser) {
+  EXPECT_FALSE(
+      ash::LoginScreenTestApi::IsManagedIconShown(not_managed_user.account_id));
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsManagedMessageInMenuShown(
+      not_managed_user.account_id));
+}
+
+// Check if the user management disclosure is shown on the lock screen after
+// having logged a managed user into a session and having locked the screen.
+IN_PROC_BROWSER_TEST_F(UserManagementDisclosureTest,
+                       PRE_EnterpriseIconVisibleManagedUser) {
+  LoginAndLock(managed_user, &managed_user_policy_mixin_);
+  EXPECT_TRUE(
+      ash::LoginScreenTestApi::IsManagedIconShown(managed_user.account_id));
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsManagedMessageInMenuShown(
+      managed_user.account_id));
+}
+
+// Check if the user management disclosure is shown on the login screen for a
+// managed user.
+IN_PROC_BROWSER_TEST_F(UserManagementDisclosureTest,
+                       EnterpriseIconVisibleManagedUser) {
+  EXPECT_TRUE(
+      ash::LoginScreenTestApi::IsManagedIconShown(managed_user.account_id));
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsManagedMessageInMenuShown(
+      managed_user.account_id));
+}
+
 }  // namespace chromeos

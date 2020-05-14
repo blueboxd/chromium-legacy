@@ -648,7 +648,7 @@ struct AutocompleteMatch {
   std::vector<AutocompleteMatch> duplicate_matches;
 
   // A list of query tiles to be shown as part of this match.
-  std::vector<upboarding::Tile> query_tiles;
+  std::vector<query_tiles::Tile> query_tiles;
 
   // So users of AutocompleteMatch can use the same ellipsis that it uses.
   static const char kEllipsis[];

@@ -53,9 +53,9 @@ bool TruncateAndroidPropertyForTesting(const std::string& line,
 // Expands properties (i.e. {property-name}) in |input| with the dictionary
 // |config| provides, and writes the results to |output|. Returns true if the
 // output file is successfully written.
-bool ExpandPropertyFile(const base::FilePath& input,
-                        const base::FilePath& output,
-                        CrosConfig* config);
+bool ExpandPropertyFileForTesting(const base::FilePath& input,
+                                  const base::FilePath& output,
+                                  CrosConfig* config);
 
 // Calls ExpandPropertyFile for {build,default}.prop files in |source_path|.
 // Expanded files are written in |dest_path|. Returns true on success.

@@ -15586,6 +15586,18 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="OfflineIndicator.Hidden">
+  <owner>sinansahin@google.com</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>Recorded when the offline indicator is hidden.</description>
+</action>
+
+<action name="OfflineIndicator.Shown">
+  <owner>sinansahin@google.com</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>Recorded when the offline indicator is shown.</description>
+</action>
+
 <action name="OfflinePages.Edit.RemoveButtonClicked">
   <obsolete>Offline pages were pulled out of bookmarks UI.</obsolete>
   <owner>jianli@chromium.org</owner>

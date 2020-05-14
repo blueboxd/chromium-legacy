@@ -14,7 +14,7 @@
 
 class SkBitmap;
 
-namespace upboarding {
+namespace query_tiles {
 
 // Loads image for query tiles.
 class ImageLoader {
@@ -37,6 +37,6 @@ class ImageLoader {
   virtual void PrefetchImage(const GURL& url, SuccessCallback callback) = 0;
 };
 
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_INTERNAL_IMAGE_LOADER_H_

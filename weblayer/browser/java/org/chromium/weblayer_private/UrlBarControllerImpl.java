@@ -27,6 +27,7 @@ import org.chromium.components.omnibox.SecurityButtonAnimationDelegate;
 import org.chromium.components.omnibox.SecurityStatusIcon;
 import org.chromium.components.page_info.PageInfoController;
 import org.chromium.components.page_info.PageInfoControllerDelegate;
+import org.chromium.components.page_info.PermissionParamsListBuilderDelegate;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IUrlBarController;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
@@ -172,7 +173,8 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
                             new AutocompleteSchemeClassifierImpl(),
                             /** vrHandler= */ null,
                             /** isSiteSettingsAvailable= */ false,
-                            /** cookieControlsShown= */ false));
+                            /** cookieControlsShown= */ false),
+                    new PermissionParamsListBuilderDelegate(mBrowserImpl.getProfile()));
         }
 
         @DrawableRes

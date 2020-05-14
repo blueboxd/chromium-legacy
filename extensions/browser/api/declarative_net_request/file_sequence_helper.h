@@ -114,6 +114,7 @@ class FileSequenceHelper {
 
   // Loads rulesets for |load_data|. Invokes |ui_callback| on the UI thread once
   // loading is done. Also tries to reindex the rulesets on failure.
+  // |load_data.rulesets| must not be empty.
   using LoadRulesetsUICallback = base::OnceCallback<void(LoadRequestData)>;
   void LoadRulesets(LoadRequestData load_data,
                     LoadRulesetsUICallback ui_callback) const;

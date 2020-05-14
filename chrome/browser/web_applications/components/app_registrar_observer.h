@@ -27,6 +27,10 @@ class AppRegistrarObserver : public base::CheckedObserver {
 
   virtual void OnAppRegistrarDestroyed() {}
 
+  virtual void OnWebAppLocallyInstalledStateChanged(const AppId& app_id,
+                                                    bool is_locally_installed) {
+  }
+
   // The disabled status WebApp::chromeos_data().is_disabled of the app backing
   // |app_id| is updated. Sometimes OnWebAppDisabledStateChanged is called but
   // WebApp::chromos_data().is_disabled isn't updated yet, that's why it's

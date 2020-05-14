@@ -166,14 +166,12 @@ void QuickAnswersView::StateChanged(views::Button::ButtonState old_state) {
 
 void QuickAnswersView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
-  preempt_last_click_event_ = false;
   if (sender == dogfood_button_) {
     controller_->OnDogfoodButtonPressed();
     return;
   }
   if (sender == retry_label_) {
     controller_->OnRetryLabelPressed();
-    preempt_last_click_event_ = true;
     return;
   }
   if (sender == this) {

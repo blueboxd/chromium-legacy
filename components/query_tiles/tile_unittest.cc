@@ -10,7 +10,7 @@
 #include "components/query_tiles/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace upboarding {
+namespace query_tiles {
 namespace {
 
 TEST(TileTest, CompareOperators) {
@@ -102,4 +102,4 @@ TEST(TileTest, MoveOperator) {
 
 }  // namespace
 
-}  // namespace upboarding
+}  // namespace query_tiles

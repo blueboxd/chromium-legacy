@@ -6,7 +6,7 @@
 
 #include <utility>
 
-namespace upboarding {
+namespace query_tiles {
 
 namespace {
 
@@ -50,4 +50,4 @@ TileGroup& TileGroup::operator=(const TileGroup& other) {
 
 TileGroup& TileGroup::operator=(TileGroup&& other) = default;
 
-}  // namespace upboarding
+}  // namespace query_tiles

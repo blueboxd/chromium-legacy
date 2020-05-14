@@ -246,7 +246,7 @@ class MonitoringWarningView : public NonAccessibleView {
   enum class WarningType { kNone, kSoftWarning, kFullWarning };
 
   void UpdateForUser(const LoginUserInfo& user) {
-    enterprise_domain_ = user.public_account_info->enterprise_domain;
+    enterprise_domain_ = user.public_account_info->device_enterprise_domain;
     UpdateLabel();
   }
 
@@ -785,8 +785,8 @@ LoginExpandedPublicAccountView::LoginExpandedPublicAccountView(
   SetPreferredSize(gfx::Size(kExpandedViewWidthDp, kExpandedViewHeightDp));
 
   user_view_ = new LoginUserView(
-      LoginDisplayStyle::kLarge, false /*show_dropdown*/, true /*show_domain*/,
-      base::DoNothing(), base::RepeatingClosure(), base::RepeatingClosure());
+      LoginDisplayStyle::kLarge, false /*show_dropdown*/, base::DoNothing(),
+      base::RepeatingClosure(), base::RepeatingClosure());
   user_view_->SetForceOpaque(true);
   user_view_->SetTapEnabled(false);
 

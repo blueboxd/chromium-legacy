@@ -58,6 +58,8 @@ class AppListTestHelper {
 
   AppListView* GetAppListView();
 
+  TestAppListClient* app_list_client() { return app_list_client_.get(); }
+
  private:
   AppListControllerImpl* app_list_controller_ = nullptr;
   std::unique_ptr<TestAppListClient> app_list_client_;

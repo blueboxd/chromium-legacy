@@ -5,6 +5,7 @@
 #include "chrome/common/net/x509_certificate_model_nss.h"
 
 #include <cert.h>
+#include <certt.h>
 #include <cms.h>
 #include <hasht.h>
 #include <keyhi.h>  // SECKEY_DestroyPrivateKey
@@ -29,6 +30,7 @@
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertificate.h"
 #include "chrome/third_party/mozilla_security_manager/nsUsageArrayHelper.h"
 #include "components/url_formatter/url_formatter.h"
+#include "crypto/nss_key_util.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
 #include "net/cert/x509_util_nss.h"
@@ -301,6 +303,14 @@ string ProcessSecAlgorithmSignatureWrap(CERTCertificate* cert_handle) {
 
 string ProcessSubjectPublicKeyInfo(CERTCertificate* cert_handle) {
   return psm::ProcessSubjectPublicKeyInfo(&cert_handle->subjectPublicKeyInfo);
+}
+
+string ProcessRawSubjectPublicKeyInfo(base::span<const uint8_t> spki_der) {
+  crypto::ScopedCERTSubjectPublicKeyInfo spki =
+      crypto::DecodeSubjectPublicKeyInfoNSS(spki_der);
+  if (!spki)
+    return std::string();
+  return psm::ProcessSubjectPublicKeyInfo(spki.get());
 }
 
 string ProcessRawBitsSignatureWrap(CERTCertificate* cert_handle) {

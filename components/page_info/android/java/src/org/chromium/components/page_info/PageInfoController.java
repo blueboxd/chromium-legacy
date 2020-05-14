@@ -114,6 +114,11 @@ public class PageInfoController implements ModalDialogProperties.Controller,
 
     // Whether Version 2 of the PageInfoView is enabled.
     private boolean mIsV2Enabled;
+    // Used to show Site settings from Page Info UI.
+    private final PermissionParamsListBuilder mPermissionParamsListBuilder;
+
+    // Delegate used by PermissionParamsListBuilder.
+    private final PermissionParamsListBuilderDelegate mPermissionParamsListBuilderDelegate;
 
     /**
      * Creates the PageInfoController, but does not display it. Also initializes the corresponding
@@ -126,11 +131,13 @@ public class PageInfoController implements ModalDialogProperties.Controller,
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     public PageInfoController(WebContents webContents, int securityLevel, String publisher,
-            PageInfoControllerDelegate delegate, boolean isV2Enabled) {
+            PageInfoControllerDelegate delegate, boolean isV2Enabled,
+            PermissionParamsListBuilderDelegate permissionParamsListBuilderDelegate) {
         mWebContents = webContents;
         mSecurityLevel = securityLevel;
         mDelegate = delegate;
         mIsV2Enabled = isV2Enabled;
+        mPermissionParamsListBuilderDelegate = permissionParamsListBuilderDelegate;
         mRunAfterDismissConsumer = new Consumer<Runnable>() {
             @Override
             public void accept(Runnable r) {
@@ -234,8 +241,9 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         if (isSheet(mContext)) mView.setBackgroundColor(Color.WHITE);
         // TODO(crbug.com/1040091): Remove when cookie controls are launched.
         boolean showTitle = viewParams.cookieControlsShown;
-        mDelegate.createPermissionParamsListBuilder(
-                mWindowAndroid, mFullUrl, showTitle, this, mView::setPermissions);
+        mPermissionParamsListBuilder =
+                new PermissionParamsListBuilder(mContext, mWindowAndroid, mFullUrl, showTitle, this,
+                        mView::setPermissions, mPermissionParamsListBuilderDelegate);
 
         mNativePageInfoController = PageInfoControllerJni.get().init(this, mWebContents);
         if (mIsV2Enabled) {
@@ -316,7 +324,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     @CalledByNative
     private void addPermissionSection(
             String name, int type, @ContentSettingValues int currentSettingValue) {
-        mDelegate.addPermissionEntry(name, type, currentSettingValue);
+        mPermissionParamsListBuilder.addPermissionEntry(name, type, currentSettingValue);
     }
 
     /**
@@ -324,7 +332,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
      */
     @CalledByNative
     private void updatePermissionDisplay() {
-        mDelegate.updatePermissionDisplay(mView);
+        assert (mPermissionParamsListBuilder != null);
+        mView.setPermissions(mPermissionParamsListBuilder.build());
     }
 
     /**
@@ -466,7 +475,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
      */
     public static void show(final Activity activity, WebContents webContents,
             final String contentPublisher, @OpenedFromSource int source,
-            PageInfoControllerDelegate delegate) {
+            PageInfoControllerDelegate delegate,
+            PermissionParamsListBuilderDelegate permissionParamsListBuilderDelegate) {
         // If the activity's decor view is not attached to window, we don't show the dialog because
         // the window manager might have revoked the window token for this activity. See
         // https://crbug.com/921450.
@@ -485,7 +495,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
 
         sLastPageInfoControllerForTesting = new WeakReference<>(new PageInfoController(webContents,
                 SecurityStateModel.getSecurityLevelForWebContents(webContents), contentPublisher,
-                delegate, PageInfoFeatureList.isEnabled(PageInfoFeatureList.PAGE_INFO_V2)));
+                delegate, PageInfoFeatureList.isEnabled(PageInfoFeatureList.PAGE_INFO_V2),
+                permissionParamsListBuilderDelegate));
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)

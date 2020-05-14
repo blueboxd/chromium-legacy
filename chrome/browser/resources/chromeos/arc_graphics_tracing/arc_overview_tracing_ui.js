@@ -490,7 +490,7 @@ function addPowerView(parent, title, resolution, duration, eventType) {
     maxValue: 10000,
     minValue: 0,
     name: 'watts',
-    scale: 1.0 / 1024,
+    scale: 1.0 / 1000,
     width: 1.0
   };
   for (i = 0; i < models.length; i++) {
@@ -535,6 +535,9 @@ function refreshModels() {
   addDeltaView(parent, resolution, duration, true /* appView */);
   addFPSView(parent, resolution, duration, false /* appView */);
   addDeltaView(parent, resolution, duration, false /* appView */);
+  addPowerView(
+      parent, 'Package power constraint', resolution, duration,
+      13 /* eventType */);
   addPowerView(parent, 'CPU Power', resolution, duration, 10 /* eventType */);
   addPowerView(parent, 'GPU Power', resolution, duration, 11 /* eventType */);
   addPowerView(

@@ -20,6 +20,7 @@ Polymer({
     CrPolicyNetworkBehaviorMojo,
     settings.RouteObserverBehavior,
     I18nBehavior,
+    WebUIListenerBehavior,
   ],
 
   properties: {
@@ -31,6 +32,9 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    /** @private Indicates if wi-fi sync is enabled for the active user.  */
+    isWifiSyncEnabled_: Boolean,
 
     /** @private {!chromeos.networkConfig.mojom.ManagedProperties|undefined} */
     managedProperties_: {
@@ -199,14 +203,39 @@ Polymer({
   /** @private  {settings.InternetPageBrowserProxy} */
   browserProxy_: null,
 
+  /** @private {?settings.OsSyncBrowserProxy} */
+  osSyncBrowserProxy_: null,
+
+  /** @private {?settings.SyncBrowserProxy} */
+  syncBrowserProxy_: null,
+
   /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   networkConfig_: null,
+
+  /** @override */
+  attached() {
+    if (loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
+      this.addWebUIListener(
+          'os-sync-prefs-changed', this.handleOsSyncPrefsChanged_.bind(this));
+      this.osSyncBrowserProxy_.sendOsSyncPrefsChanged();
+    } else {
+      this.addWebUIListener(
+          'sync-prefs-changed', this.handleSyncPrefsChanged_.bind(this));
+      this.syncBrowserProxy_.sendSyncPrefsChanged();
+    }
+  },
 
   /** @override */
   created() {
     this.browserProxy_ = settings.InternetPageBrowserProxyImpl.getInstance();
     this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
                               .getMojoServiceRemote();
+
+    if (loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
+      this.osSyncBrowserProxy_ = settings.OsSyncBrowserProxyImpl.getInstance();
+    } else {
+      this.syncBrowserProxy_ = settings.SyncBrowserProxyImpl.getInstance();
+    }
   },
 
   /**
@@ -232,6 +261,23 @@ Polymer({
     const type = queryParams.get('type') || 'WiFi';
     const name = queryParams.get('name') || type;
     this.init(guid, type, name);
+  },
+
+  /**
+   * Handler for when the sync preferences are updated.
+   * @private
+   */
+  handleSyncPrefsChanged_(syncPrefs) {
+    this.isWifiSyncEnabled_ = !!syncPrefs && syncPrefs.wifiConfigurationsSynced;
+  },
+
+  /**
+   * Handler for when os sync preferences are updated.
+   * @private
+   */
+  handleOsSyncPrefsChanged_(osSyncFeatureEnabled, osSyncPrefs) {
+    this.isWifiSyncEnabled_ = osSyncFeatureEnabled && !!osSyncPrefs &&
+        osSyncPrefs.osWifiConfigurationsSynced;
   },
 
   /**
@@ -1314,18 +1360,75 @@ Polymer({
   },
 
   /**
+   * @return {boolean} If managedProperties_ is null or this.isBlockedByPolicy_.
+   * @private
+   */
+  propertiesMissingOrBlockedByPolicy_() {
+    return !this.managedProperties_ ||
+        this.isBlockedByPolicy_(
+            this.managedProperties_, this.globalPolicy,
+            this.managedNetworkAvailable);
+  },
+
+  /**
    * @param {!mojom.ManagedProperties} managedProperties
    * @param {!mojom.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
-   * @return {boolean} True if the shared message should be shown.
+   * @param {boolean} isWifiSyncEnabled
+   * @return {boolean} If the synced/shared message section should be shown.
    * @private
    */
-  showShared_(managedProperties, globalPolicy, managedNetworkAvailable) {
-    return !!managedProperties &&
-        (managedProperties.source == mojom.OncSource.kDevice ||
-         managedProperties.source == mojom.OncSource.kDevicePolicy) &&
-        !this.isBlockedByPolicy_(
-            managedProperties, globalPolicy, managedNetworkAvailable);
+  showSyncedShared_(
+      managedProperties, globalPolicy, managedNetworkAvailable,
+      isWifiSyncEnabled) {
+    if (this.propertiesMissingOrBlockedByPolicy_()) {
+      return false;
+    }
+
+    return managedProperties.source == mojom.OncSource.kDevice &&
+        (isWifiSyncEnabled && !!managedProperties.typeProperties.wifi &&
+         managedProperties.typeProperties.wifi.isSyncable);
+  },
+
+  /**
+   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!mojom.GlobalPolicy} globalPolicy
+   * @param {boolean} managedNetworkAvailable
+   * @param {boolean} isWifiSyncEnabled
+   * @return {boolean} If the synced/shared message section should be shown.
+   * @private
+   */
+  showSyncedUser_(
+      managedProperties, globalPolicy, managedNetworkAvailable,
+      isWifiSyncEnabled) {
+    if (this.propertiesMissingOrBlockedByPolicy_()) {
+      return false;
+    }
+
+    return managedProperties.source == mojom.OncSource.kUser &&
+        isWifiSyncEnabled && !!managedProperties.typeProperties.wifi &&
+        managedProperties.typeProperties.wifi.isSyncable;
+  },
+
+  /**
+   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!mojom.GlobalPolicy} globalPolicy
+   * @param {boolean} managedNetworkAvailable
+   * @param {boolean} isWifiSyncEnabled
+   * @return {boolean} If the synced/shared message section should be shown.
+   * @private
+   */
+  showShared_(
+      managedProperties, globalPolicy, managedNetworkAvailable,
+      isWifiSyncEnabled) {
+    if (this.propertiesMissingOrBlockedByPolicy_()) {
+      return false;
+    }
+
+    return (managedProperties.source == mojom.OncSource.kDevice ||
+            managedProperties.source == mojom.OncSource.kDevicePolicy) &&
+        (!isWifiSyncEnabled || !managedProperties.typeProperties.wifi ||
+         !managedProperties.typeProperties.wifi.isSyncable);
   },
 
   /**

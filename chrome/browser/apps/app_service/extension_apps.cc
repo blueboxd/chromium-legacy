@@ -55,7 +55,7 @@ apps::mojom::AppPtr ExtensionApps::Convert(
     apps::mojom::Readiness readiness) {
   apps::mojom::AppPtr app = ConvertImpl(extension, readiness);
 
-  app->icon_key = icon_key_factory_.MakeIconKey(GetIconEffects(extension));
+  app->icon_key = icon_key_factory().MakeIconKey(GetIconEffects(extension));
 
   app->has_badge = apps::mojom::OptionalBool::kFalse;
   app->paused = apps::mojom::OptionalBool::kFalse;

@@ -211,19 +211,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // so do not keep a reference to it afterward.
   virtual void DidFinishNavigation(NavigationHandle* navigation_handle) {}
 
-  // Navigation (obsolete and deprecated) --------------------------------------
-
-  // This method is invoked after the browser process starts a navigation to a
-  // pending NavigationEntry. It is not called for renderer-initiated
-  // navigations unless they are sent to the browser process via OpenURL. It may
-  // be called multiple times for a given navigation, such as a typed URL
-  // followed by a cross-process client or server redirect.
-  //
-  // SOON TO BE DEPRECATED. Use DidStartNavigation instead.
-  // TODO(clamy): Remove this function.
-  virtual void DidStartNavigationToPendingEntry(const GURL& url,
-                                                ReloadType reload_type) {}
-
   // Document load events ------------------------------------------------------
 
   // These three methods correspond to the points in time when a document starts

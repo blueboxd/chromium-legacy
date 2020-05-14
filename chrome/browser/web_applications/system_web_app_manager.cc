@@ -121,6 +121,7 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
                   SystemAppInfo("Help", GURL("chrome://help-app/pwa.html")));
     infos.at(SystemAppType::HELP).additional_search_terms = {
         IDS_GENIUS_APP_NAME, IDS_HELP_APP_PERKS, IDS_HELP_APP_OFFERS};
+    infos.at(SystemAppType::HELP).minimum_window_size = {600, 320};
   }
 
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::MEDIA)) {

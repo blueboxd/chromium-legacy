@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-namespace upboarding {
+namespace query_tiles {
 
 struct Tile;
 struct TileGroup;
@@ -63,6 +63,6 @@ class TileIterator {
   const int levels_;
 };
 
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_INTERNAL_TILE_ITERATOR_H_

@@ -20,25 +20,10 @@ namespace crypto {
 
 namespace {
 
-struct PublicKeyInfoDeleter {
-  inline void operator()(CERTSubjectPublicKeyInfo* spki) {
-    SECKEY_DestroySubjectPublicKeyInfo(spki);
-  }
-};
-
-typedef std::unique_ptr<CERTSubjectPublicKeyInfo, PublicKeyInfoDeleter>
-    ScopedPublicKeyInfo;
-
 // Decodes |input| as a SubjectPublicKeyInfo and returns a SECItem containing
 // the CKA_ID of that public key or nullptr on error.
 ScopedSECItem MakeIDFromSPKI(base::span<const uint8_t> input) {
-  // First, decode and save the public key.
-  SECItem key_der;
-  key_der.type = siBuffer;
-  key_der.data = const_cast<unsigned char*>(input.data());
-  key_der.len = input.size();
-
-  ScopedPublicKeyInfo spki(SECKEY_DecodeDERSubjectPublicKeyInfo(&key_der));
+  ScopedCERTSubjectPublicKeyInfo spki = DecodeSubjectPublicKeyInfoNSS(input);
   if (!spki)
     return nullptr;
 
@@ -188,6 +173,19 @@ ScopedSECKEYPrivateKey FindNSSKeyFromPublicKeyInfoInSlot(
 
   return ScopedSECKEYPrivateKey(
       PK11_FindKeyByKeyID(slot, cka_id.get(), nullptr));
+}
+
+ScopedCERTSubjectPublicKeyInfo DecodeSubjectPublicKeyInfoNSS(
+    base::span<const uint8_t> input) {
+  // First, decode and save the public key.
+  SECItem key_der;
+  key_der.type = siBuffer;
+  key_der.data = const_cast<unsigned char*>(input.data());
+  key_der.len = input.size();
+
+  ScopedCERTSubjectPublicKeyInfo spki(
+      SECKEY_DecodeDERSubjectPublicKeyInfo(&key_der));
+  return spki;
 }
 
 }  // namespace crypto

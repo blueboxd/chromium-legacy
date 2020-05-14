@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
+#include "components/version_info/channel.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/flat_ruleset_indexer.h"
@@ -35,6 +36,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_resource.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest_constants.h"
@@ -302,14 +304,20 @@ std::vector<RulesetSource> RulesetSource::CreateStatic(
       declarative_net_request::DNRManifestData::GetRulesets(extension);
 
   std::vector<RulesetSource> sources;
-  for (const auto& info : rulesets) {
-    sources.push_back(RulesetSource(
-        extension.path().Append(info.relative_path),
-        extension.path().Append(
-            file_util::GetIndexedRulesetRelativePath(info.id.value())),
-        info.id, dnr_api::MAX_NUMBER_OF_RULES, extension.id(), info.enabled));
-  }
+  for (const auto& info : rulesets)
+    sources.push_back(CreateStatic(extension, info));
+
   return sources;
+}
+
+RulesetSource RulesetSource::CreateStatic(
+    const Extension& extension,
+    const DNRManifestData::RulesetInfo& info) {
+  return RulesetSource(
+      extension.path().Append(info.relative_path),
+      extension.path().Append(
+          file_util::GetIndexedRulesetRelativePath(info.id.value())),
+      info.id, dnr_api::MAX_NUMBER_OF_RULES, extension.id(), info.enabled);
 }
 
 // static
@@ -323,7 +331,7 @@ RulesetSource RulesetSource::CreateDynamic(content::BrowserContext* context,
       dynamic_ruleset_directory.AppendASCII(kDynamicRulesJSONFilename),
       dynamic_ruleset_directory.AppendASCII(kDynamicIndexedRulesFilename),
       kDynamicRulesetID, dnr_api::MAX_NUMBER_OF_DYNAMIC_RULES, extension_id,
-      true /* enabled */);
+      true /* enabled_by_default */);
 }
 
 // static
@@ -341,7 +349,8 @@ std::unique_ptr<RulesetSource> RulesetSource::CreateTemporarySource(
   // Use WrapUnique since RulesetSource constructor is private.
   return base::WrapUnique(new RulesetSource(
       std::move(temporary_file_json), std::move(temporary_file_indexed), id,
-      rule_count_limit, std::move(extension_id), true /* enabled */));
+      rule_count_limit, std::move(extension_id),
+      true /* enabled_by_default */));
 }
 
 RulesetSource::~RulesetSource() = default;
@@ -350,7 +359,7 @@ RulesetSource& RulesetSource::operator=(RulesetSource&&) = default;
 
 RulesetSource RulesetSource::Clone() const {
   return RulesetSource(json_path_, indexed_path_, id_, rule_count_limit_,
-                       extension_id_, enabled_);
+                       extension_id_, enabled_by_default_);
 }
 
 IndexAndPersistJSONRulesetResult
@@ -404,6 +413,15 @@ ParseInfo RulesetSource::IndexAndPersistRules(
       bool inserted = id_set.insert(rule_id).second;
       if (!inserted)
         return ParseInfo(ParseResult::ERROR_DUPLICATE_IDS, &rule_id);
+
+      // Ensure modifyHeaders actions don't have any side-effects on Stable
+      // since it's under development.
+      // TODO(crbug.com/947591): Remove the channel check once implementation
+      // of modifyHeaders action is complete.
+      if (rule.action.type == dnr_api::RULE_ACTION_TYPE_MODIFYHEADERS &&
+          GetCurrentChannel() == version_info::Channel::STABLE) {
+        continue;
+      }
 
       IndexedRule indexed_rule;
       ParseResult parse_result = IndexedRule::CreateIndexedRule(
@@ -492,13 +510,13 @@ RulesetSource::RulesetSource(base::FilePath json_path,
                              RulesetID id,
                              size_t rule_count_limit,
                              ExtensionId extension_id,
-                             bool enabled)
+                             bool enabled_by_default)
     : json_path_(std::move(json_path)),
       indexed_path_(std::move(indexed_path)),
       id_(id),
       rule_count_limit_(rule_count_limit),
       extension_id_(std::move(extension_id)),
-      enabled_(enabled) {}
+      enabled_by_default_(enabled_by_default) {}
 
 }  // namespace declarative_net_request
 }  // namespace extensions

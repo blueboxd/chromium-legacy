@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_util.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -72,12 +76,37 @@ void MoveTabAcrossWindows(Browser* source_browser,
       to_index, std::move(detached_contents), add_types, to_group_id);
 }
 
+bool IsDraggedTab(const ui::OSExchangeData& drop_data) {
+  base::Pickle pickle;
+  drop_data.GetPickledData(ui::ClipboardFormatType::GetWebCustomDataType(),
+                           &pickle);
+  base::PickleIterator iter(pickle);
+
+  uint32_t entry_count = 0;
+  if (!iter.ReadUInt32(&entry_count))
+    return false;
+
+  for (uint32_t i = 0; i < entry_count; ++i) {
+    base::StringPiece16 type;
+    base::StringPiece16 data;
+    if (!iter.ReadStringPiece16(&type) || !iter.ReadStringPiece16(&data))
+      return false;
+
+    // TODO(https://crbug.com/1069869): handle tab group drags.
+    if (type == base::ASCIIToUTF16(kWebUITabIdDataType))
+      return true;
+  }
+
+  return false;
+}
+
 bool DropTabsInNewBrowser(Browser* new_browser,
                           const ui::OSExchangeData& drop_data) {
   base::Pickle pickle;
   drop_data.GetPickledData(ui::ClipboardFormatType::GetWebCustomDataType(),
                            &pickle);
 
+  // TODO(https://crbug.com/1069869): handle tab group drags.
   base::string16 tab_id_str;
   ui::ReadCustomDataForType(pickle.data(), pickle.size(),
                             base::ASCIIToUTF16(kWebUITabIdDataType),

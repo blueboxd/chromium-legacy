@@ -31,7 +31,7 @@ void TextfieldTestApi::ResetTouchSelectionController() {
 }
 
 void TextfieldTestApi::SetCursorViewRect(gfx::Rect bounds) {
-  textfield_->cursor_view_.SetBoundsRect(bounds);
+  textfield_->cursor_view_->SetBoundsRect(bounds);
 }
 
 bool TextfieldTestApi::IsTextDirectionCheckedInContextMenu(

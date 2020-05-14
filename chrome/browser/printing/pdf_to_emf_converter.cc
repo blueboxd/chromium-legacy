@@ -408,6 +408,16 @@ void PdfConverterImpl::RecordConversionMetrics() {
       UMA_HISTOGRAM_MEMORY_KB("Printing.ConversionSize.PostScript3",
                               average_page_size_in_kb);
       return;
+    case PdfRenderSettings::Mode::EMF_WITH_REDUCED_RASTERIZATION:
+      UMA_HISTOGRAM_MEMORY_KB(
+          "Printing.ConversionSize.EmfWithReducedRasterization",
+          average_page_size_in_kb);
+      return;
+    case PdfRenderSettings::Mode::EMF_WITH_REDUCED_RASTERIZATION_AND_GDI_TEXT:
+      UMA_HISTOGRAM_MEMORY_KB(
+          "Printing.ConversionSize.EmfWithReducedRasterizationAndGdiText",
+          average_page_size_in_kb);
+      return;
     default:
       NOTREACHED();
       return;

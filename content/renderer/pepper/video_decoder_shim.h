@@ -83,9 +83,9 @@ class VideoDecoderShim : public media::VideoDecodeAccelerator {
 
   // The current decoded frame size.
   gfx::Size texture_size_;
-  // Map that takes the plugin's GL texture id to the renderer's GL texture id.
-  using TextureIdMap = std::unordered_map<uint32_t, uint32_t>;
-  TextureIdMap texture_id_map_;
+  // Map that takes the plugin's GL texture id to the renderer's mailbox.
+  using IdToMailboxMap = std::unordered_map<uint32_t, gpu::Mailbox>;
+  IdToMailboxMap texture_mailbox_map_;
   // Available textures (these are plugin ids.)
   using TextureIdSet = std::unordered_set<uint32_t>;
   TextureIdSet available_textures_;

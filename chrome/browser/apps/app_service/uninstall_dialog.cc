@@ -39,6 +39,7 @@ UninstallDialog::UninstallDialog(Profile* profile,
 
   switch (app_type) {
     case apps::mojom::AppType::kArc:
+    case apps::mojom::AppType::kPluginVm:
       break;
     case apps::mojom::AppType::kCrostini:
       // Crostini icons might be a big image, and not fit the size, so add the

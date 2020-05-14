@@ -407,6 +407,9 @@ const char kSmbSharesLearnMoreURL[] =
 
 const char kTabletModeGesturesLearnMoreURL[] =
     "https://support.google.com/chromebook?p=tablet_mode_gestures";
+
+const char kWifiSyncLearnMoreURL[] =
+    "https://support.google.com/chromebook/?p=wifisync";
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)

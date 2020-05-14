@@ -97,9 +97,7 @@ suite('ManageAccessibilityPageTests', function() {
     // Accessibility learn more link should be hidden.
     assertFalse(isVisible(page.$$('setings-localized-link')));
 
-    const allowed_subpages = [
-      'chromeVoxSubpageButton', 'selectToSpeakSubpageButton', 'ttsSubpageButton'
-    ];
+    const allowed_subpages = ['selectToSpeakSubpageButton', 'ttsSubpageButton'];
 
     const subpages = page.root.querySelectorAll('cr-link-row');
     subpages.forEach(function(subpage) {

@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/in_process_importer_bridge.h"
+#include "chrome/browser/service_sandbox_type.h"
 #include "chrome/common/importer/firefox_importer_utils.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/grit/generated_resources.h"
@@ -41,7 +42,6 @@ void ExternalProcessImporterClient::Start() {
       profile_import_.BindNewPipeAndPassReceiver(),
       content::ServiceProcessHost::Options()
           .WithDisplayName(IDS_UTILITY_PROCESS_PROFILE_IMPORTER_NAME)
-          .WithSandboxType(service_manager::SandboxType::kNoSandbox)
           .Pass());
   profile_import_.set_disconnect_handler(
       base::BindOnce(&ExternalProcessImporterClient::OnProcessCrashed, this));

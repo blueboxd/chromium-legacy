@@ -516,17 +516,6 @@ void BlinkTestRunner::OnSetupRendererProcessForNonTestWindow() {
   // Allows the window to receive replicated WebTestRuntimeFlags and to
   // control or end the test.
   interfaces->SetTestIsRunning(true);
-
-  // All non-main windows get sized to 800x600 (so does the main window).
-  // This is done for the main frame only, not child local roots in other
-  // processes.
-  if (web_view_test_proxy_->GetMainRenderFrame()) {
-    RenderWidget* widget =
-        web_view_test_proxy_->GetMainRenderFrame()->GetLocalRootRenderWidget();
-    gfx::Rect window_rect(widget->WindowRect().x, widget->WindowRect().y, 800,
-                          600);
-    widget->SetWindowRectSynchronouslyForTesting(window_rect);
-  }
 }
 
 void BlinkTestRunner::ApplyTestConfiguration(
@@ -551,15 +540,7 @@ void BlinkTestRunner::OnSetTestConfiguration(
     mojom::WebTestRunTestConfigurationPtr params) {
   DCHECK(web_view_test_proxy_->GetMainRenderFrame());
 
-  gfx::Size window_size = params->initial_size;
-
   ApplyTestConfiguration(std::move(params));
-
-  RenderWidget* widget =
-      web_view_test_proxy_->GetMainRenderFrame()->GetLocalRootRenderWidget();
-  gfx::Rect window_rect(widget->WindowRect().x, widget->WindowRect().y,
-                        window_size.width(), window_size.height());
-  widget->SetWindowRectSynchronouslyForTesting(window_rect);
 }
 
 void BlinkTestRunner::OnResetRendererAfterWebTest() {

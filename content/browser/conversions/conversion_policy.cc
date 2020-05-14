@@ -42,8 +42,8 @@ std::unique_ptr<ConversionPolicy> ConversionPolicy::CreateForTesting(
 
 ConversionPolicy::ConversionPolicy(bool debug_mode)
     : debug_mode_(debug_mode),
-      noise_provider_(debug_mode ? std::make_unique<NoiseProvider>()
-                                 : nullptr) {}
+      noise_provider_(debug_mode ? nullptr
+                                 : std::make_unique<NoiseProvider>()) {}
 
 ConversionPolicy::ConversionPolicy(
     std::unique_ptr<ConversionPolicy::NoiseProvider> noise_provider)

@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/new_tab_page/untrusted_source.h"
+#include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -229,6 +230,9 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
                     profile_, chrome::FaviconUrlFormat::kFavicon2));
   content::URLDataSource::Add(profile_,
                               std::make_unique<UntrustedSource>(profile_));
+  content::URLDataSource::Add(
+      profile_,
+      std::make_unique<ThemeSource>(profile_, /*serve_untrusted=*/true));
 
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
 

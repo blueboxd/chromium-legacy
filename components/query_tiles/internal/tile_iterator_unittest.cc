@@ -12,7 +12,7 @@
 #include "components/query_tiles/tile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace upboarding {
+namespace query_tiles {
 
 TEST(TileIteratorTest, EmtpyTileIterator) {
   TileIterator it(std::vector<const Tile*>(), TileIterator::kAllTiles);
@@ -105,4 +105,4 @@ TEST(TileIteratorTest, TileGroupIterate) {
   EXPECT_FALSE(it.Next());
 }
 
-}  // namespace upboarding
+}  // namespace query_tiles

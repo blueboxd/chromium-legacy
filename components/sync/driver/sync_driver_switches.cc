@@ -66,6 +66,6 @@ const base::Feature kSyncDeviceInfoInTransportMode{
 
 // Enables the running of backend ProfileSyncService tasks on the ThreadPool.
 const base::Feature kProfileSyncServiceUsesThreadPool{
-    "ProfileSyncServiceUsesThreadPool", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ProfileSyncServiceUsesThreadPool", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace switches

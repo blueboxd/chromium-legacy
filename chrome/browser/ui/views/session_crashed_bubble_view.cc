@@ -171,10 +171,13 @@ SessionCrashedBubbleView::SessionCrashedBubbleView(views::View* anchor_view,
       ignored_(true) {
   DCHECK(anchor_view);
 
+  SetShowCloseButton(true);
   SetTitle(l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_BUBBLE_TITLE));
 
+  // Allow unit tests to leave out Browser.
   const SessionStartupPref session_startup_pref =
-      SessionStartupPref::GetStartupPref(browser_->profile());
+      browser_ ? SessionStartupPref::GetStartupPref(browser_->profile())
+               : SessionStartupPref{SessionStartupPref::DEFAULT};
   // Offer the option to open the startup pages using the cancel button, but
   // only when the user has selected the URLS option, and set at least one url.
   DialogDelegate::SetButtons(

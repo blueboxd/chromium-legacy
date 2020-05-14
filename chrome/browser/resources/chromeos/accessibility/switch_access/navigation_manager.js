@@ -373,7 +373,8 @@ class NavigationManager {
   }
 
   /**
-   * Set |this.group_| to |group|.
+   * Set |this.group_| to |group|, and optionally sets |this.node_| to the
+   * group's first child.
    * @param {!SARootNode} group
    * @param {boolean} shouldSetNode
    * @private

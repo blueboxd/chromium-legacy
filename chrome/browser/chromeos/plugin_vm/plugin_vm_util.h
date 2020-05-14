@@ -122,8 +122,9 @@ class PluginVmPolicySubscription {
   // The user-provided callback method.
   PluginVmAllowedChanged callback_;
 
+  std::unique_ptr<PrefChangeRegistrar> user_allowed_pref_change_registrar_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      allowed_subscription_;
+      device_allowed_subscription_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       license_subscription_;
   std::unique_ptr<base::CallbackList<void(void)>::Subscription>

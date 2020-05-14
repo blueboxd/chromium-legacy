@@ -18,6 +18,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
+#include "google_apis/google_api_keys.h"
 
 using component_updater::CrOSComponentManager;
 
@@ -69,6 +70,17 @@ void LacrosLoader::Init() {
   if (chromeos::features::IsLacrosSupportEnabled()) {
     // TODO(crbug.com/1078607): Remove non-error logging from this class.
     LOG(WARNING) << "Starting lacros component load.";
+
+    // If the user has specified a path for the lacros-chrome binary, use that
+    // rather than component manager.
+    base::FilePath lacros_chrome_path =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+            chromeos::switches::kLacrosChromePath);
+    if (!lacros_chrome_path.empty()) {
+      OnLoadComplete(CrOSComponentManager::Error::NONE, lacros_chrome_path);
+      return;
+    }
+
     cros_component_manager_->Load(kLacrosComponentName,
                                   CrOSComponentManager::MountPolicy::kMount,
                                   CrOSComponentManager::UpdatePolicy::kForce,
@@ -107,6 +119,18 @@ void LacrosLoader::Start() {
   base::LaunchOptions options;
   options.environment["EGL_PLATFORM"] = "surfaceless";
   options.environment["XDG_RUNTIME_DIR"] = "/run/chrome";
+
+  std::string api_key;
+  if (google_apis::HasAPIKeyConfigured())
+    api_key = google_apis::GetAPIKey();
+  else
+    api_key = google_apis::GetNonStableAPIKey();
+  options.environment["GOOGLE_API_KEY"] = api_key;
+  options.environment["GOOGLE_DEFAULT_CLIENT_ID"] =
+      google_apis::GetOAuth2ClientID(google_apis::CLIENT_MAIN);
+  options.environment["GOOGLE_DEFAULT_CLIENT_SECRET"] =
+      google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_MAIN);
+
   options.kill_on_parent_death = true;
 
   std::vector<std::string> argv = {

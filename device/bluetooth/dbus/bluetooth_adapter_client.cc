@@ -182,8 +182,6 @@ BluetoothAdapterClient::Properties::Properties(
   RegisterProperty(bluetooth_adapter::kDiscoveringProperty, &discovering);
   RegisterProperty(bluetooth_adapter::kUUIDsProperty, &uuids);
   RegisterProperty(bluetooth_adapter::kModaliasProperty, &modalias);
-  RegisterProperty(bluetooth_adapter::kUseSuspendNotifierProperty,
-                   &use_kernel_suspend_notifier);
 }
 
 BluetoothAdapterClient::Properties::~Properties() = default;

@@ -4,6 +4,7 @@
 
 #include "components/query_tiles/tile_service_factory_helper.h"
 
+#include <string>
 #include <utility>
 
 #include "base/sequenced_task_runner.h"
@@ -16,6 +17,7 @@
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/leveldb_proto/public/shared_proto_database_client_list.h"
 #include "components/query_tiles/internal/cached_image_loader.h"
+#include "components/query_tiles/internal/image_prefetcher.h"
 #include "components/query_tiles/internal/init_aware_tile_service.h"
 #include "components/query_tiles/internal/tile_config.h"
 #include "components/query_tiles/internal/tile_fetcher.h"
@@ -23,7 +25,7 @@
 #include "components/query_tiles/internal/tile_service_impl.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-namespace upboarding {
+namespace query_tiles {
 namespace {
 const base::FilePath::CharType kTileDbName[] =
     FILE_PATH_LITERAL("UpboardingQueryTileDatabase");
@@ -46,6 +48,8 @@ std::unique_ptr<TileService> CreateTileService(
       image_fetcher::ImageFetcherConfig::kReducedMode);
   auto image_loader = std::make_unique<CachedImageLoader>(
       cached_image_fetcher, reduced_mode_image_fetcher);
+  auto image_prefetcher = ImagePrefetcher::Create(
+      TileConfig::GetImagePrefetchMode(), std::move(image_loader));
 
   auto* clock = base::DefaultClock::GetInstance();
   // Create tile store and manager.
@@ -65,9 +69,9 @@ std::unique_ptr<TileService> CreateTileService(
       api_key, TileConfig::GetExperimentTag(), url_loader_factory);
 
   auto tile_service_impl = std::make_unique<TileServiceImpl>(
-      std::move(image_loader), std::move(tile_manager), scheduler,
+      std::move(image_prefetcher), std::move(tile_manager), scheduler,
       std::move(tile_fetcher), clock);
   return std::make_unique<InitAwareTileService>(std::move(tile_service_impl));
 }
 
-}  // namespace upboarding
+}  // namespace query_tiles

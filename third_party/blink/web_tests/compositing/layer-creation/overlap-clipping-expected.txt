@@ -24,6 +24,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV id='overlap')",
       "position": [400, 0],
       "bounds": [100, 100],
+      "contentsOpaqueForText": true,
       "transform": 2
     }
   ],

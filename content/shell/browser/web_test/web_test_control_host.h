@@ -41,7 +41,6 @@
 class SkBitmap;
 
 namespace content {
-
 class DevToolsProtocolTestBindings;
 class RenderFrameHost;
 class Shell;
@@ -265,6 +264,12 @@ class WebTestControlHost : public WebContentsObserver,
   void CompositeNodeQueueThen(base::OnceCallback<void()> callback);
   void BuildDepthFirstQueue(Node* node);
 
+#if defined(OS_MACOSX)
+  // Bypasses system APIs to force a resize on the RenderWidgetHostView when in
+  // headless web tests.
+  static void PlatformResizeWindowMac(Shell* shell, const gfx::Size& size);
+#endif
+
  public:
   std::unique_ptr<WebTestResultPrinter> printer_;
 
@@ -292,7 +297,6 @@ class WebTestControlHost : public WebContentsObserver,
 
   // Per test config.
   std::string expected_pixel_hash_;
-  gfx::Size initial_size_;
   GURL test_url_;
   bool protocol_mode_;
 

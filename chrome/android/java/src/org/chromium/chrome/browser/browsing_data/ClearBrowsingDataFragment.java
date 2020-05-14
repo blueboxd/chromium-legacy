@@ -590,7 +590,7 @@ public abstract class ClearBrowsingDataFragment extends PreferenceFragmentCompat
 
         // Add button to bottom of the preferences view.
         ButtonCompat clearButton =
-                (ButtonCompat) inflater.inflate(R.xml.clear_browsing_data_button, view, false);
+                (ButtonCompat) inflater.inflate(R.layout.clear_browsing_data_button, view, false);
         clearButton.setOnClickListener((View v) -> onClearButtonClicked());
         view.addView(clearButton);
 

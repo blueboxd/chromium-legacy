@@ -21,7 +21,7 @@
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/dragdrop/os_exchange_data_provider_aurax11.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_x11.h"
 #include "ui/base/layout.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_drag_context.h"
@@ -283,7 +283,7 @@ void DesktopDragDropClientAuraX11::DragTranslate(
 
   DCHECK(target_current_context());
   *data = std::make_unique<OSExchangeData>(
-      std::make_unique<ui::OSExchangeDataProviderAuraX11>(
+      std::make_unique<ui::OSExchangeDataProviderX11>(
           xwindow(), target_current_context()->fetched_targets()));
   gfx::Point location = root_location;
   aura::Window::ConvertPointToTarget(root_window_, target_window_, &location);
@@ -398,7 +398,7 @@ int DesktopDragDropClientAuraX11::PerformDrop() {
         aura::client::GetDragDropDelegate(target_window_);
     if (delegate) {
       auto data(std::make_unique<ui::OSExchangeData>(
-          std::make_unique<ui::OSExchangeDataProviderAuraX11>(
+          std::make_unique<ui::OSExchangeDataProviderX11>(
               xwindow(), target_current_context()->fetched_targets())));
 
       ui::DropTargetEvent drop_event(

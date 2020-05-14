@@ -73,8 +73,8 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
   CertProvisioningScheduler(const CertProvisioningScheduler&) = delete;
   CertProvisioningScheduler& operator=(const CertProvisioningScheduler&) =
       delete;
-  // Intended to be called when a user press a button in certificate manager UI.
-  // Retries provisioning of a specific certificate.
+  // Intended to be called when a user presses a button in certificate manager
+  // UI. Retries provisioning of a specific certificate.
   void UpdateOneCert(const std::string& cert_profile_id);
   void UpdateCerts();
   void OnProfileFinished(const CertProfile& profile,
@@ -97,6 +97,8 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
   void CleanVaKeysIfIdle();
   void OnCleanVaKeysIfIdleDone(base::Optional<bool> delete_result);
   void RegisterForPrefsChanges();
+
+  void UpdateOneCertImpl(const std::string& cert_profile_id);
 
   void OnPrefsChange();
   void DailyUpdateCerts();

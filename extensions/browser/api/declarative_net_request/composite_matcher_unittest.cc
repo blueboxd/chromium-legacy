@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/strings/stringprintf.h"
-#include "components/version_info/version_info.h"
+#include "components/version_info/channel.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/request_params.h"
@@ -34,16 +34,7 @@ using ActionInfo = CompositeMatcher::ActionInfo;
 
 namespace dnr_api = api::declarative_net_request;
 
-class CompositeMatcherTest : public ::testing::Test {
- public:
-  CompositeMatcherTest() : channel_(::version_info::Channel::UNKNOWN) {}
-
- private:
-  // Run this on the trunk channel to ensure the API is available.
-  ScopedCurrentChannel channel_;
-
-  DISALLOW_COPY_AND_ASSIGN(CompositeMatcherTest);
-};
+using CompositeMatcherTest = ::testing::Test;
 
 // Ensure that the rules in a CompositeMatcher are in the same priority space.
 TEST_F(CompositeMatcherTest, SamePrioritySpace) {
@@ -193,6 +184,10 @@ TEST_F(CompositeMatcherTest, HeadersMaskForRules) {
 
 // Tests the GetModifyHeadersActions method.
 TEST_F(CompositeMatcherTest, GetModifyHeadersActions) {
+  // TODO(crbug.com/947591): Remove the channel override once implementation of
+  // modifyHeaders action is complete.
+  ScopedCurrentChannel channel(::version_info::Channel::UNKNOWN);
+
   auto create_modify_headers_rule =
       [](int id, int priority, const std::string& url_filter,
          std::vector<TestHeaderInfo> request_headers_list) {

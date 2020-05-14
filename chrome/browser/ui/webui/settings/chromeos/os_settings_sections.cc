@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/webui/settings/chromeos/multidevice_section.h"
 #include "chrome/browser/ui/webui/settings/chromeos/people_section.h"
 #include "chrome/browser/ui/webui/settings/chromeos/personalization_section.h"
-#include "chrome/browser/ui/webui/settings/chromeos/plugin_vm_section.h"
 #include "chrome/browser/ui/webui/settings/chromeos/printing_section.h"
 #include "chrome/browser/ui/webui/settings/chromeos/privacy_section.h"
 #include "chrome/browser/ui/webui/settings/chromeos/reset_section.h"
@@ -90,11 +89,6 @@ OsSettingsSections::OsSettingsSections(
       profile, search_tag_registry, profile->GetPrefs());
   sections_map_[mojom::Section::kCrostini] = crostini_section.get();
   sections_.push_back(std::move(crostini_section));
-
-  auto plugin_vm_section = std::make_unique<PluginVmSection>(
-      profile, search_tag_registry, profile->GetPrefs());
-  sections_map_[mojom::Section::kPluginVm] = plugin_vm_section.get();
-  sections_.push_back(std::move(plugin_vm_section));
 
   auto date_time_section =
       std::make_unique<DateTimeSection>(profile, search_tag_registry);

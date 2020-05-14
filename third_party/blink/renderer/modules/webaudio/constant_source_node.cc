@@ -70,7 +70,7 @@ void ConstantSourceHandler::Process(uint32_t frames_to_process) {
     return;
   }
 
-  bool is_sample_accurate = offset_->HasSampleAccurateValuesTimeline();
+  bool is_sample_accurate = offset_->HasSampleAccurateValues();
 
   if (is_sample_accurate && offset_->IsAudioRate()) {
     DCHECK_LE(frames_to_process, sample_accurate_values_.size());

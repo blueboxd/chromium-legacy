@@ -254,6 +254,24 @@ void CompositedLayerMapping::CreatePrimaryGraphicsLayer() {
   graphics_layer_->SetHitTestable(true);
 }
 
+void CompositedLayerMapping::UpdateGraphicsLayerContentsOpaque(
+    bool should_check_children) {
+  if (BackgroundPaintsOntoGraphicsLayer()) {
+    bool contents_opaque = owning_layer_.BackgroundIsKnownToBeOpaqueInRect(
+        CompositedBounds(), should_check_children);
+    graphics_layer_->SetContentsOpaque(contents_opaque);
+    if (!contents_opaque) {
+      graphics_layer_->SetContentsOpaqueForText(
+          GetLayoutObject().TextIsKnownToBeOnOpaqueBackground());
+    }
+  } else {
+    // If we only paint the background onto the scrolling contents layer we
+    // are going to leave a hole in the m_graphicsLayer where the background
+    // is so it is not opaque.
+    graphics_layer_->SetContentsOpaque(false);
+  }
+}
+
 void CompositedLayerMapping::UpdateContentsOpaque() {
   // If there is a foreground layer, children paint into that layer and
   // not graphics_layer_, and so don't contribute to the opaqueness of the
@@ -289,28 +307,34 @@ void CompositedLayerMapping::UpdateContentsOpaque() {
     // TODO(flackr): This should actually check the entire overflow rect
     // within the scrolling contents layer but since we currently only trigger
     // this for solid color backgrounds the answer will be the same.
-    scrolling_contents_layer_->SetContentsOpaque(
-        owning_layer_.BackgroundIsKnownToBeOpaqueInRect(
-            ToLayoutBox(GetLayoutObject()).PhysicalPaddingBoxRect(),
-            should_check_children));
-
-    if (BackgroundPaintsOntoGraphicsLayer()) {
-      graphics_layer_->SetContentsOpaque(
-          owning_layer_.BackgroundIsKnownToBeOpaqueInRect(
-              CompositedBounds(), should_check_children));
-    } else {
-      // If we only paint the background onto the scrolling contents layer we
-      // are going to leave a hole in the m_graphicsLayer where the background
-      // is so it is not opaque.
-      graphics_layer_->SetContentsOpaque(false);
+    bool contents_opaque = owning_layer_.BackgroundIsKnownToBeOpaqueInRect(
+        ToLayoutBox(GetLayoutObject()).PhysicalPaddingBoxRect(),
+        should_check_children);
+    scrolling_contents_layer_->SetContentsOpaque(contents_opaque);
+    if (!contents_opaque) {
+      scrolling_contents_layer_->SetContentsOpaqueForText(
+          GetLayoutObject().TextIsKnownToBeOnOpaqueBackground());
     }
+
+    UpdateGraphicsLayerContentsOpaque(should_check_children);
   } else {
     DCHECK(BackgroundPaintsOntoGraphicsLayer());
     if (HasScrollingLayer())
       scrolling_contents_layer_->SetContentsOpaque(false);
-    graphics_layer_->SetContentsOpaque(
-        owning_layer_.BackgroundIsKnownToBeOpaqueInRect(CompositedBounds(),
-                                                        should_check_children));
+    UpdateGraphicsLayerContentsOpaque(should_check_children);
+  }
+
+  if (squashing_layer_) {
+    squashing_layer_->SetContentsOpaque(false);
+    bool contents_opaque_for_text = true;
+    for (const GraphicsLayerPaintInfo& squashed_layer : squashed_layers_) {
+      if (!squashed_layer.paint_layer->GetLayoutObject()
+               .TextIsKnownToBeOnOpaqueBackground()) {
+        contents_opaque_for_text = false;
+        break;
+      }
+    }
+    squashing_layer_->SetContentsOpaqueForText(contents_opaque_for_text);
   }
 }
 

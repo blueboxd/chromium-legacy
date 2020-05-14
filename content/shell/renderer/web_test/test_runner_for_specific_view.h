@@ -18,10 +18,8 @@
 class SkBitmap;
 
 namespace blink {
-struct Manifest;
 class WebLocalFrame;
 class WebView;
-class WebURL;
 }  // namespace blink
 
 namespace gfx {
@@ -62,25 +60,21 @@ class TestRunnerForSpecificView {
   base::OnceClosure CreateClosureThatPostsV8Callback(
       const v8::Local<v8::Function>& callback);
 
- private:
-  friend class TestRunnerBindings;
-
-  void PostTask(base::OnceClosure callback);
-
-  void UpdateAllLifecyclePhasesAndComposite();
-  void UpdateAllLifecyclePhasesAndCompositeThen(
-      v8::Local<v8::Function> callback);
-
-  // The callback will be called after the next full frame update and raster,
-  // with the captured snapshot as the parameters (width, height, snapshot).
-  // The snapshot is in uint8_t RGBA format.
-  void CapturePixelsAsyncThen(v8::Local<v8::Function> callback);
-
   void RunJSCallbackAfterCompositorLifecycle(
       v8::UniquePersistent<v8::Function> callback,
       const gfx::PresentationFeedback&);
   void RunJSCallbackWithBitmap(v8::UniquePersistent<v8::Function> callback,
                                const SkBitmap& snapshot);
+
+ private:
+  friend class TestRunnerBindings;
+
+  void PostTask(base::OnceClosure callback);
+
+  // The callback will be called after the next full frame update and raster,
+  // with the captured snapshot as the parameters (width, height, snapshot).
+  // The snapshot is in uint8_t RGBA format.
+  void CapturePixelsAsyncThen(v8::Local<v8::Function> callback);
 
   // Similar to CapturePixelsAsyncThen(). Copies to the clipboard the image
   // located at a particular point in the WebView (if there is such an image),
@@ -91,11 +85,6 @@ class TestRunnerForSpecificView {
       int y,
       const v8::Local<v8::Function> callback);
 
-  void GetManifestThen(v8::Local<v8::Function> callback);
-  void GetManifestCallback(v8::UniquePersistent<v8::Function> callback,
-                           const blink::WebURL& manifest_url,
-                           const blink::Manifest& manifest);
-
   // Calls |callback| with a DOMString[] representing the events recorded since
   // the last call to this function.
   void GetBluetoothManualChooserEvents(v8::Local<v8::Function> callback);
@@ -103,51 +92,11 @@ class TestRunnerForSpecificView {
       v8::UniquePersistent<v8::Function> callback,
       const std::vector<std::string>& events);
 
-  // Change the bluetooth test data while running a web test.
-  void SetBluetoothFakeAdapter(const std::string& adapter_name,
-                               v8::Local<v8::Function> callback);
-
-  // If |enable| is true, makes the Bluetooth chooser record its input and wait
-  // for instructions from the test program on how to proceed. Otherwise falls
-  // back to the browser's default chooser.
-  void SetBluetoothManualChooser(bool enable);
-
-  // Calls the BluetoothChooser::EventHandler with the arguments here. Valid
-  // event strings are:
-  //  * "cancel" - simulates the user canceling the chooser.
-  //  * "select" - simulates the user selecting a device whose device ID is in
-  //               |argument|.
-  void SendBluetoothManualChooserEvent(const std::string& event,
-                                       const std::string& argument);
-
-  // Immediately run all pending idle tasks, including all pending
-  // requestIdleCallback calls.  Invoke the callback when all
-  // idle tasks are complete.
-  void RunIdleTasks(v8::Local<v8::Function> callback);
-
-  // Checks if an internal command is currently available.
-  bool IsCommandEnabled(const std::string& command);
-
-  // Forces the selection colors for testing under Linux.
-  void ForceRedSelectionColors();
-
   // Switch the visibility of the page.
   void SetPageVisibility(const std::string& new_visibility);
 
   // Changes the direction of the focused element.
   void SetTextDirection(const std::string& direction_name);
-
-  // Permits the adding and removing of only one opaque overlay.
-  void AddWebPageOverlay();
-  void RemoveWebPageOverlay();
-
-  void SetHighlightAds(bool);
-
-  // Sets a flag causing the next call to WebGLRenderingContext::create to fail.
-  void ForceNextWebGLContextCreationToFail();
-
-  // Sets a flag causing the next call to DrawingBuffer::create to fail.
-  void ForceNextDrawingBufferCreationToFail();
 
   // Pointer lock handling.
   void DidAcquirePointerLock();
@@ -165,8 +114,6 @@ class TestRunnerForSpecificView {
     PointerLockWillFailSync,
   } pointer_lock_planned_result_;
 
-  void SetDomainRelaxationForbiddenForURLScheme(bool forbidden,
-                                                const std::string& scheme);
   v8::Local<v8::Value> EvaluateScriptInIsolatedWorldAndReturnValue(
       int32_t world_id,
       const std::string& script);
@@ -175,20 +122,6 @@ class TestRunnerForSpecificView {
   void SetIsolatedWorldInfo(int32_t world_id,
                             v8::Local<v8::Value> security_origin,
                             v8::Local<v8::Value> content_security_policy);
-  bool FindString(const std::string& search_text,
-                  const std::vector<std::string>& options_array);
-  std::string SelectionAsMarkup();
-  void SetViewSourceForFrame(const std::string& name, bool enabled);
-
-  // Sets the network service-global Trust Tokens key commitments.
-  // |raw_commitments| should be JSON-encoded according to the format expected
-  // by NetworkService::SetTrustTokenKeyCommitments.
-  void SetTrustTokenKeyCommitments(const std::string& raw_commitments,
-                                   v8::Local<v8::Function> callback);
-
-  // Clears persistent Trust Tokens state
-  // (https://github.com/wicg/trust-token-api) via a test-only Mojo interface.
-  void ClearTrustTokenState(v8::Local<v8::Function> callback);
 
   // Many parts of the web test harness assume that the main frame is local.
   // Having all of them go through the helper below makes it easier to catch

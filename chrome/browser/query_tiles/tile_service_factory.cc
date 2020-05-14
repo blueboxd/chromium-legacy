@@ -26,7 +26,7 @@
 #include "google_apis/google_api_keys.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-namespace upboarding {
+namespace query_tiles {
 namespace {
 
 // Issue 1076964: Currently the variation service can be only reached in full
@@ -35,9 +35,9 @@ namespace {
 std::string GetCountryCode() {
   std::string country_code;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(upboarding::switches::kQueryTilesCountryCode)) {
+  if (command_line->HasSwitch(query_tiles::switches::kQueryTilesCountryCode)) {
     country_code = command_line->GetSwitchValueASCII(
-        upboarding::switches::kQueryTilesCountryCode);
+        query_tiles::switches::kQueryTilesCountryCode);
     if (!country_code.empty())
       return country_code;
   }
@@ -109,4 +109,4 @@ std::unique_ptr<KeyedService> TileServiceFactory::BuildServiceInstanceFor(
                            url_loader_factory);
 }
 
-}  // namespace upboarding
+}  // namespace query_tiles

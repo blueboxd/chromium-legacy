@@ -55,7 +55,12 @@ public class HeaderProcessor implements DropdownItemProcessor {
      * @param model The model to populate.
      * @param headerText Text to be displayed for this group header.
      */
-    public void populateModel(PropertyModel model, String headerText) {
-        model.set(HeaderViewProperties.TITLE, headerText.toUpperCase());
+    public void populateModel(final PropertyModel model, final String headerText) {
+        model.set(HeaderViewProperties.TITLE, headerText);
+        model.set(HeaderViewProperties.IS_EXPANDED, true);
+        model.set(HeaderViewProperties.DELEGATE, () -> {
+            boolean state = model.get(HeaderViewProperties.IS_EXPANDED);
+            model.set(HeaderViewProperties.IS_EXPANDED, !state);
+        });
     }
 }

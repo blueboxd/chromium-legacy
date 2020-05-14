@@ -71,10 +71,48 @@ const std::string GetMirroringNamespace(const base::Value& message) {
   }
 }
 
-MirroringType GetMirroringType(const MediaRoute& route, int tab_id) {
+// Get the mirroring type for a media route.  Note that |target_tab_id| is
+// usually ignored here, because mirroring typically only happens with a special
+// URL that includes the tab ID it needs, which should be the same as the tab ID
+// selected by the media router.
+base::Optional<MirroringActivityRecord::MirroringType> GetMirroringType(
+    const MediaRoute& route,
+    int target_tab_id) {
   if (!route.is_local())
-    return MirroringType::kNonLocal;
-  return tab_id == -1 ? MirroringType::kDesktop : MirroringType::kTab;
+    return base::nullopt;
+
+  const auto source = route.media_source();
+  if (source.IsTabMirroringSource())
+    return MirroringActivityRecord::MirroringType::kTab;
+  if (source.IsDesktopMirroringSource())
+    return MirroringActivityRecord::MirroringType::kDesktop;
+
+  if (source.url().is_valid()) {
+    if (source.IsCastPresentationUrl()) {
+      const auto cast_source = CastMediaSource::FromMediaSource(source);
+      if (cast_source && cast_source->ContainsStreamingApp()) {
+        // This is a weird case.  Normally if the source is a presentation URL,
+        // we use 2-UA mode rather than mirroring, but if the app ID it
+        // specifies is one of the special streaming app IDs, we activate
+        // mirroring instead. This only happens when a Cast SDK client requests
+        // a mirroring app ID, which causes its own tab to be mirrored.  This is
+        // a strange thing to do and it's not officially supported, but some
+        // apps, like, Google Slides rely on it.  Unlike a proper tab-based
+        // MediaSource, this kind of MediaSource doesn't specify a tab in the
+        // URL, so we choose the tab that was active when the request was made.
+        DCHECK_GE(target_tab_id, 0);
+        return MirroringActivityRecord::MirroringType::kTab;
+      } else {
+        NOTREACHED() << "Non-mirroring Cast app: " << source;
+        return base::nullopt;
+      }
+    } else if (source.url().SchemeIsHTTPOrHTTPS()) {
+      return MirroringActivityRecord::MirroringType::kOffscreenTab;
+    }
+  }
+
+  NOTREACHED() << "Invalid source: " << source;
+  return base::nullopt;
 }
 
 }  // namespace
@@ -90,17 +128,22 @@ MirroringActivityRecord::MirroringActivityRecord(
     OnStopCallback callback)
     : ActivityRecord(route, app_id, message_handler, session_tracker),
       channel_id_(cast_data.cast_channel_id),
-      // TODO(jrw): MirroringType::kOffscreenTab should be a possible value here
-      // once the Presentation API 1UA mode is supported.
       mirroring_type_(GetMirroringType(route, target_tab_id)),
       on_stop_(std::move(callback)) {
   // TODO(jrw): Detect and report errors.
 
   mirroring_tab_id_ = target_tab_id;
 
+  if (!mirroring_type_) {
+    // Non-local activity doesn't need to handle messages, so return without
+    // setting up Mojo bindings.
+    return;
+  }
+
   // Get a reference to the mirroring service host.
-  switch (mirroring_type_) {
+  switch (*mirroring_type_) {
     case MirroringType::kDesktop: {
+      DCHECK_EQ(target_tab_id, -1);
       auto stream_id = route.media_source().DesktopStreamId();
       DCHECK(stream_id);
       media_router->GetMirroringServiceHostForDesktop(
@@ -108,15 +151,15 @@ MirroringActivityRecord::MirroringActivityRecord(
       break;
     }
     case MirroringType::kTab:
+      DCHECK_GE(target_tab_id, 0);
       media_router->GetMirroringServiceHostForTab(
           target_tab_id, host_.BindNewPipeAndPassReceiver());
       break;
-    case MirroringType::kNonLocal:
-      // Non-local activity doesn't need to handle messages, so return without
-      // setting up Mojo bindings.
-      return;
-    default:
-      NOTREACHED();
+    case MirroringType::kOffscreenTab:
+      media_router->GetMirroringServiceHostForOffscreenTab(
+          route.media_source().url(), route.presentation_id(),
+          host_.BindNewPipeAndPassReceiver());
+      break;
   }
 
   // Derive session type from capabilities.
@@ -169,7 +212,8 @@ void MirroringActivityRecord::DidStart() {
   base::UmaHistogramTimes(
       kHistogramSessionLaunch,
       *did_start_mirroring_timestamp_ - *will_start_mirroring_timestamp_);
-  base::UmaHistogramEnumeration(kHistogramStartSuccess, mirroring_type_);
+  DCHECK(mirroring_type_);
+  base::UmaHistogramEnumeration(kHistogramStartSuccess, *mirroring_type_);
   will_start_mirroring_timestamp_.reset();
 }
 

@@ -18,6 +18,7 @@
 #include "ash/system/accessibility/select_to_speak_tray.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_tray.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -65,6 +66,26 @@ std::unique_ptr<views::View> CreateButtonRowContainer(int padding) {
       views::BoxLayout::Orientation::kHorizontal,
       gfx::Insets(0, padding, padding, padding), padding));
   return button_container;
+}
+
+std::string GetDescriptionForMovedToPosition(FloatingMenuPosition position) {
+  switch (position) {
+    case FloatingMenuPosition::kBottomRight:
+      return l10n_util::GetStringUTF8(
+          IDS_ASH_FLOATING_ACCESSIBILITY_MAIN_MENU_MOVED_BOTTOM_RIGHT);
+    case FloatingMenuPosition::kBottomLeft:
+      return l10n_util::GetStringUTF8(
+          IDS_ASH_FLOATING_ACCESSIBILITY_MAIN_MENU_MOVED_BOTTOM_LEFT);
+    case FloatingMenuPosition::kTopLeft:
+      return l10n_util::GetStringUTF8(
+          IDS_ASH_FLOATING_ACCESSIBILITY_MAIN_MENU_MOVED_TOP_LEFT);
+    case FloatingMenuPosition::kTopRight:
+      return l10n_util::GetStringUTF8(
+          IDS_ASH_FLOATING_ACCESSIBILITY_MAIN_MENU_MOVED_TOP_RIGHT);
+    case FloatingMenuPosition::kSystemDefault:
+      NOTREACHED();
+      return std::string();
+  }
 }
 
 }  // namespace
@@ -214,6 +235,10 @@ void FloatingAccessibilityView::ButtonPressed(views::Button* sender,
     }
     Shell::Get()->accessibility_controller()->SetFloatingMenuPosition(
         new_position);
+    Shell::Get()
+        ->accessibility_controller()
+        ->TriggerAccessibilityAlertWithMessage(
+            GetDescriptionForMovedToPosition(new_position));
   }
   return;
 }

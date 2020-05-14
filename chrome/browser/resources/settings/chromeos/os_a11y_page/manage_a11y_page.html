@@ -51,11 +51,13 @@
         pref="{{prefs.settings.accessibility}}"
         label="$i18n{chromeVoxLabel}">
     </settings-toggle-button>
-    <iron-collapse opened="[[prefs.settings.accessibility.value]]">
-      <cr-link-row id="chromeVoxSubpageButton"
-          class="settings-box" on-click="onChromeVoxSettingsTap_"
-          label="$i18n{chromeVoxOptionsLabel}" external></cr-link-row>
-    </iron-collapse>
+    <template is="dom-if" if="[[!isKioskModeActive_]]">
+      <iron-collapse opened="[[prefs.settings.accessibility.value]]">
+        <cr-link-row id="chromeVoxSubpageButton"
+            class="settings-box" on-click="onChromeVoxSettingsTap_"
+            label="$i18n{chromeVoxOptionsLabel}" external></cr-link-row>
+      </iron-collapse>
+    </template>
     <settings-toggle-button
         pref="{{prefs.settings.a11y.select_to_speak}}"
         class="hr"

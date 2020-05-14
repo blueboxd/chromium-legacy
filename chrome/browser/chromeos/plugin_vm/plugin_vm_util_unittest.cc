@@ -116,6 +116,11 @@ TEST_F(PluginVmUtilTest, AddPluginVmPolicyObserver) {
   EXPECT_CALL(*this, OnPolicyChanged(true));
   testing_profile_->ScopedCrosSettingsTestHelper()->SetBoolean(
       chromeos::kPluginVmAllowed, true);
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  EXPECT_CALL(*this, OnPolicyChanged(false));
+  testing_profile_->GetPrefs()->SetBoolean(plugin_vm::prefs::kPluginVmAllowed,
+                                           false);
 }
 
 TEST_F(PluginVmUtilTest, DriveLinkDetection) {

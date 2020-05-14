@@ -8,6 +8,7 @@
  * 'ui/webui/resources/shared_vars_css.m.js'.
  */
 html {
+  /* Colors: */
   --ntp-active-background-color: rgba(var(--google-grey-900-rgb), .16);
   --ntp-background-override-color: white;
   --ntp-border-color: var(--google-grey-refresh-300);
@@ -20,10 +21,14 @@ html {
   --ntp-selected-border-color: var(--google-blue-600);
   --ntp-selected-light-background-color: rgba(var(--google-blue-600-rgb), .24);
   --ntp-selected-primary-text-color: var(--google-blue-refresh-700);
+
+  /* Other: */
+  --ntp-focus-shadow: 0 0 0 2px var(--ntp-focus-shadow-color);
 }
 
 @media (prefers-color-scheme: dark) {
   html {
+    /* Colors: */
     --ntp-active-background-color: rgba(var(--google-grey-200-rgb), .16);
     --ntp-background-override-color: var(--google-grey-900);
     --ntp-border-color: var(--google-grey-refresh-700);

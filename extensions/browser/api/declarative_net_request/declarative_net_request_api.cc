@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
@@ -27,6 +28,8 @@
 #include "extensions/browser/quota_service.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
+#include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
+#include "extensions/common/error_utils.h"
 #include "extensions/common/extension_id.h"
 
 namespace extensions {
@@ -142,6 +145,105 @@ void DeclarativeNetRequestGetDynamicRulesFunction::OnDynamicRulesFetched(
 
   Respond(ArgumentList(
       dnr_api::GetDynamicRules::Results::Create(read_json_result.rules)));
+}
+
+DeclarativeNetRequestUpdateEnabledRulesetsFunction::
+    DeclarativeNetRequestUpdateEnabledRulesetsFunction() = default;
+DeclarativeNetRequestUpdateEnabledRulesetsFunction::
+    ~DeclarativeNetRequestUpdateEnabledRulesetsFunction() = default;
+
+ExtensionFunction::ResponseAction
+DeclarativeNetRequestUpdateEnabledRulesetsFunction::Run() {
+  using Params = dnr_api::UpdateEnabledRulesets::Params;
+  using RulesetID = declarative_net_request::RulesetID;
+  using DNRManifestData = declarative_net_request::DNRManifestData;
+
+  base::string16 error;
+  std::unique_ptr<Params> params(Params::Create(*args_, &error));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  EXTENSION_FUNCTION_VALIDATE(error.empty());
+
+  auto* rules_monitor_service =
+      declarative_net_request::RulesMonitorService::Get(browser_context());
+  DCHECK(rules_monitor_service);
+  DCHECK(extension());
+
+  std::set<RulesetID> ids_to_disable;
+  std::set<RulesetID> ids_to_enable;
+  const DNRManifestData::ManifestIDToRulesetMap& public_id_map =
+      DNRManifestData::GetManifestIDToRulesetMap(*extension());
+
+  for (const std::string& public_id_to_enable : params->ruleset_ids_to_enable) {
+    auto it = public_id_map.find(public_id_to_enable);
+    if (it == public_id_map.end()) {
+      return RespondNow(Error(ErrorUtils::FormatErrorMessage(
+          declarative_net_request::kInvalidRulesetIDError,
+          public_id_to_enable)));
+    }
+
+    ids_to_enable.insert(it->second->id);
+  }
+
+  for (const std::string& public_id_to_disable :
+       params->ruleset_ids_to_disable) {
+    auto it = public_id_map.find(public_id_to_disable);
+    if (it == public_id_map.end()) {
+      return RespondNow(Error(ErrorUtils::FormatErrorMessage(
+          declarative_net_request::kInvalidRulesetIDError,
+          public_id_to_disable)));
+    }
+
+    // |ruleset_ids_to_enable| takes priority over |ruleset_ids_to_disable|.
+    RulesetID id = it->second->id;
+    if (base::Contains(ids_to_enable, id))
+      continue;
+
+    ids_to_disable.insert(id);
+  }
+
+  rules_monitor_service->UpdateEnabledStaticRulesets(
+      *extension(), std::move(ids_to_disable), std::move(ids_to_enable),
+      base::BindOnce(&DeclarativeNetRequestUpdateEnabledRulesetsFunction::
+                         OnEnabledStaticRulesetsUpdated,
+                     this));
+
+  return did_respond() ? AlreadyResponded() : RespondLater();
+}
+
+void DeclarativeNetRequestUpdateEnabledRulesetsFunction::
+    OnEnabledStaticRulesetsUpdated(base::Optional<std::string> error) {
+  if (error)
+    Respond(Error(std::move(*error)));
+  else
+    Respond(NoArguments());
+}
+
+DeclarativeNetRequestGetEnabledRulesetsFunction::
+    DeclarativeNetRequestGetEnabledRulesetsFunction() = default;
+DeclarativeNetRequestGetEnabledRulesetsFunction::
+    ~DeclarativeNetRequestGetEnabledRulesetsFunction() = default;
+
+ExtensionFunction::ResponseAction
+DeclarativeNetRequestGetEnabledRulesetsFunction::Run() {
+  auto* rules_monitor_service =
+      declarative_net_request::RulesMonitorService::Get(browser_context());
+  DCHECK(rules_monitor_service);
+
+  std::vector<std::string> public_ids;
+  declarative_net_request::CompositeMatcher* matcher =
+      rules_monitor_service->ruleset_manager()->GetMatcherForExtension(
+          extension_id());
+  if (matcher) {
+    DCHECK(extension());
+    public_ids = GetPublicRulesetIDs(*extension(), *matcher);
+
+    // Exclude the dynamic ruleset ID if present, as expected by the API
+    // function.
+    base::Erase(public_ids, dnr_api::DYNAMIC_RULESET_ID);
+  }
+
+  return RespondNow(
+      ArgumentList(dnr_api::GetEnabledRulesets::Results::Create(public_ids)));
 }
 
 // static

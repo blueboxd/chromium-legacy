@@ -32,10 +32,10 @@ TEST_F(LoginUserMenuViewTest, RemoveUserRequiresTwoActivations) {
   bool remove_warning_called = false;
   bool remove_called = false;
 
+  LoginUserInfo login_user_info;
+  login_user_info.can_remove = true;
   auto* bubble = new LoginUserMenuView(
-      base::string16(), base::string16(), user_manager::USER_TYPE_REGULAR,
-      false /*is_owner*/, anchor, nullptr /*bubble_opener*/,
-      true /*show_remove_user*/,
+      login_user_info, anchor, nullptr /*bubble_opener*/,
       base::BindRepeating([](bool* warning_called) { *warning_called = true; },
                           &remove_warning_called),
       base::BindRepeating([](bool* remove_called) { *remove_called = true; },
@@ -69,12 +69,17 @@ TEST_F(LoginUserMenuViewTest, LongUserNameAndEmailLaidOutCorrectly) {
       views::BoxLayout::Orientation::kVertical));
   SetWidget(CreateWidgetWithContent(anchor));
 
-  auto* bubble = new LoginUserMenuView(
-      base::UTF8ToUTF16("NedHasAReallyLongName StarkHasAReallyLongName"),
-      base::UTF8ToUTF16("reallyreallyextralonggaianame@gmail.com"),
-      user_manager::USER_TYPE_REGULAR, false /*is_owner*/, anchor,
-      nullptr /*bubble_opener*/, true /*show_remove_user*/, base::DoNothing(),
-      base::DoNothing());
+  LoginUserInfo login_user_info;
+  login_user_info.basic_user_info.display_name =
+      "NedHasAReallyLongName StarkHasAReallyLongName";
+  login_user_info.basic_user_info.display_email =
+      "reallyreallyextralonggaianame@gmail.com";
+  login_user_info.basic_user_info.type = user_manager::USER_TYPE_REGULAR;
+  login_user_info.is_device_owner = false;
+  login_user_info.can_remove = true;
+  auto* bubble =
+      new LoginUserMenuView(login_user_info, anchor, nullptr /*bubble_opener*/,
+                            base::DoNothing(), base::DoNothing());
 
   anchor->AddChildView(bubble);
   bubble->Show();
@@ -122,10 +127,9 @@ TEST_F(LoginUserMenuViewTest, LoginButtonRipple) {
             views::InkDropHostView::InkDropMode::ON);
   EXPECT_TRUE(ink_drop_api.HasInkDrop());
 
-  auto* bubble = new LoginUserMenuView(
-      base::string16(), base::string16(), user_manager::USER_TYPE_REGULAR,
-      false /*is_owner*/, container /*anchor*/, bubble_opener,
-      true /*show_remove_user*/, base::DoNothing(), base::DoNothing());
+  auto* bubble = new LoginUserMenuView(LoginUserInfo(), container /*anchor*/,
+                                       bubble_opener, base::DoNothing(),
+                                       base::DoNothing());
 
   container->AddChildView(bubble);
 
@@ -149,10 +153,11 @@ TEST_F(LoginUserMenuViewTest, ResetStateHidesConfirmData) {
       views::BoxLayout::Orientation::kVertical));
   SetWidget(CreateWidgetWithContent(container));
 
-  auto* bubble = new LoginUserMenuView(
-      base::string16(), base::string16(), user_manager::USER_TYPE_REGULAR,
-      false /*is_owner*/, nullptr /*anchor*/, nullptr /*bubble_opener*/,
-      true /*show_remove_user*/, base::DoNothing(), base::DoNothing());
+  LoginUserInfo login_user_info;
+  login_user_info.can_remove = true;
+  auto* bubble = new LoginUserMenuView(login_user_info, nullptr /*anchor*/,
+                                       nullptr /*bubble_opener*/,
+                                       base::DoNothing(), base::DoNothing());
   container->AddChildView(bubble);
 
   bubble->Show();

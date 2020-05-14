@@ -220,6 +220,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   bool BackgroundIsKnownToBeOpaqueInRect(
       const PhysicalRect& local_rect) const override;
+  bool TextIsKnownToBeOnOpaqueBackground() const override;
 
   virtual bool BackgroundShouldAlwaysBeClipped() const { return false; }
 

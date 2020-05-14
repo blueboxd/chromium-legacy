@@ -251,7 +251,7 @@ TEST_F(WebContentsViewAuraTest, DragDropFiles) {
   ASSERT_NE(nullptr, view->current_drop_data_);
 
 #if defined(USE_X11)
-  // By design, OSExchangeDataProviderAuraX11::GetString returns an empty string
+  // By design, OSExchangeDataProviderX11::GetString returns an empty string
   // if file data is also present.
   EXPECT_TRUE(view->current_drop_data_->text.string().empty());
 #else
@@ -281,7 +281,7 @@ TEST_F(WebContentsViewAuraTest, DragDropFiles) {
   CheckDropData(view);
 
 #if defined(USE_X11)
-  // By design, OSExchangeDataProviderAuraX11::GetString returns an empty string
+  // By design, OSExchangeDataProviderX11::GetString returns an empty string
   // if file data is also present.
   EXPECT_TRUE(drop_complete_data_->drop_data.text.string().empty());
 #else
@@ -340,7 +340,7 @@ TEST_F(WebContentsViewAuraTest, DragDropFilesOriginateFromRenderer) {
   ASSERT_NE(nullptr, view->current_drop_data_);
 
 #if defined(USE_X11)
-  // By design, OSExchangeDataProviderAuraX11::GetString returns an empty string
+  // By design, OSExchangeDataProviderX11::GetString returns an empty string
   // if file data is also present.
   EXPECT_TRUE(view->current_drop_data_->text.string().empty());
 #else
@@ -363,7 +363,7 @@ TEST_F(WebContentsViewAuraTest, DragDropFilesOriginateFromRenderer) {
   CheckDropData(view);
 
 #if defined(USE_X11)
-  // By design, OSExchangeDataProviderAuraX11::GetString returns an empty string
+  // By design, OSExchangeDataProviderX11::GetString returns an empty string
   // if file data is also present.
   EXPECT_TRUE(drop_complete_data_->drop_data.text.string().empty());
 #else

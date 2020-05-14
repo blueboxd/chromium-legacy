@@ -71,6 +71,14 @@ SemaphoreHandle GetVkSemaphoreHandle(
 COMPONENT_EXPORT(VULKAN)
 std::string VkVersionToString(uint32_t version);
 
+COMPONENT_EXPORT(VULKAN)
+VKAPI_ATTR VkResult VKAPI_CALL QueueSubmitHook(VkQueue queue,
+                                               uint32_t submitCount,
+                                               const VkSubmitInfo* pSubmits,
+                                               VkFence fence);
+
+COMPONENT_EXPORT(VULKAN) void ReportQueueSubmitPerSwapBuffers();
+
 }  // namespace gpu
 
 #endif  // GPU_VULKAN_VULKAN_UTIL_H_

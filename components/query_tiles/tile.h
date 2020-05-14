@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "url/gurl.h"
 
-namespace upboarding {
+namespace query_tiles {
 
 // Metadata of a tile image.
 struct ImageMetadata {
@@ -58,6 +58,6 @@ struct Tile {
   std::vector<std::unique_ptr<Tile>> sub_tiles;
 };
 
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_TILE_H_

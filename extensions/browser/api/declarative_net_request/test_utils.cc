@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
-#include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 #include "extensions/browser/api/declarative_net_request/indexed_rule.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
@@ -370,15 +369,6 @@ dnr_api::ModifyHeaderInfo CreateModifyHeaderInfo(
 bool EqualsForTesting(const dnr_api::ModifyHeaderInfo& lhs,
                       const dnr_api::ModifyHeaderInfo& rhs) {
   return lhs.operation == rhs.operation && lhs.header == rhs.header;
-}
-
-std::vector<std::string> GetPublicRulesetIDs(const Extension& extension,
-                                             const CompositeMatcher& matcher) {
-  std::vector<std::string> ids;
-  for (const std::unique_ptr<RulesetMatcher>& matcher : matcher.matchers())
-    ids.push_back(GetPublicRulesetID(extension, matcher->id()));
-
-  return ids;
 }
 
 RulesetManagerObserver::RulesetManagerObserver(RulesetManager* manager)

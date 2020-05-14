@@ -9,7 +9,6 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.page_info.PermissionParamsListBuilderDelegate;
 
@@ -19,7 +18,10 @@ import org.chromium.components.page_info.PermissionParamsListBuilderDelegate;
 public class ChromePermissionParamsListBuilderDelegate extends PermissionParamsListBuilderDelegate {
     private static Profile sProfileForTesting;
 
-    public ChromePermissionParamsListBuilderDelegate() {}
+    public ChromePermissionParamsListBuilderDelegate() {
+        super((sProfileForTesting != null) ? sProfileForTesting
+                                           : Profile.getLastUsedRegularProfile());
+    }
 
     @Override
     @Nullable
@@ -27,12 +29,6 @@ public class ChromePermissionParamsListBuilderDelegate extends PermissionParamsL
         assert origin != null;
         TrustedWebActivityPermissionManager manager = TrustedWebActivityPermissionManager.get();
         return manager.getDelegateAppName(origin);
-    }
-
-    @Override
-    public BrowserContextHandle getBrowserContextHandle() {
-        return (sProfileForTesting != null) ? sProfileForTesting
-                                            : Profile.getLastUsedRegularProfile();
     }
 
     @VisibleForTesting

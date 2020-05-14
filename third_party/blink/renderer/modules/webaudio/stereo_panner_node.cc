@@ -59,7 +59,7 @@ void StereoPannerHandler::Process(uint32_t frames_to_process) {
     return;
   }
 
-  bool is_sample_accurate = pan_->HasSampleAccurateValuesTimeline();
+  bool is_sample_accurate = pan_->HasSampleAccurateValues();
 
   if (is_sample_accurate && pan_->IsAudioRate()) {
     // Apply sample-accurate panning specified by AudioParam automation.

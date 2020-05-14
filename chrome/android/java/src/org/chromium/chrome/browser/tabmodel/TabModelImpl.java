@@ -128,6 +128,19 @@ public class TabModelImpl extends TabModelJniBridge {
     @Override
     public void broadcastSessionRestoreComplete() {
         super.broadcastSessionRestoreComplete();
+
+        // This is to make sure TabModel has a valid index when it has at least one valid Tab after
+        // TabState is initialized. Otherwise, TabModel can have an invalid index even though it has
+        // valid tabs, if the TabModel becomes active before any Tab is restored to that model.
+        if (hasValidTab() && mIndex == INVALID_TAB_INDEX) {
+            // Actually select the first tab if it is the active model, otherwise just set mIndex.
+            if (isCurrentModel()) {
+                TabModelUtils.setIndex(this, 0);
+            } else {
+                mIndex = 0;
+            }
+        }
+
         for (TabModelObserver observer : mObservers) observer.restoreCompleted();
     }
 

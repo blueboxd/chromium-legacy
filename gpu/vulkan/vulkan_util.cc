@@ -5,10 +5,14 @@
 #include "gpu/vulkan/vulkan_util.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 
 namespace gpu {
+namespace {
+uint64_t g_submit_count = 0;
+}
 
 bool SubmitSignalVkSemaphores(VkQueue vk_queue,
                               const base::span<VkSemaphore>& vk_semaphores,
@@ -79,6 +83,21 @@ std::string VkVersionToString(uint32_t version) {
   return base::StringPrintf("%u.%u.%u", VK_VERSION_MAJOR(version),
                             VK_VERSION_MINOR(version),
                             VK_VERSION_PATCH(version));
+}
+
+VkResult QueueSubmitHook(VkQueue queue,
+                         uint32_t submitCount,
+                         const VkSubmitInfo* pSubmits,
+                         VkFence fence) {
+  g_submit_count++;
+  return vkQueueSubmit(queue, submitCount, pSubmits, fence);
+}
+
+void ReportQueueSubmitPerSwapBuffers() {
+  static uint64_t last_count = 0;
+  UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.Vulkan.QueueSubmitPerSwapBuffers",
+                              g_submit_count - last_count, 1, 50, 50);
+  last_count = g_submit_count;
 }
 
 }  // namespace gpu

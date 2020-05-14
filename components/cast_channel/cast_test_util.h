@@ -178,11 +178,12 @@ class MockCastMessageHandler : public CastMessageHandler {
                void(int,
                     const std::vector<std::string>&,
                     const BroadcastRequest&));
-  MOCK_METHOD5(LaunchSession,
+  MOCK_METHOD6(LaunchSession,
                void(int,
                     const std::string&,
                     base::TimeDelta,
                     const std::vector<std::string>&,
+                    const std::string&,
                     LaunchSessionCallback callback));
   MOCK_METHOD4(StopSession,
                void(int channel_id,

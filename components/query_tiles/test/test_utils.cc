@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-namespace upboarding {
+namespace query_tiles {
 namespace test {
 
 namespace {
@@ -191,4 +191,4 @@ bool AreTilesIdentical(std::vector<Tile> lhs, std::vector<Tile> rhs) {
 
 }  // namespace test
 
-}  // namespace upboarding
+}  // namespace query_tiles

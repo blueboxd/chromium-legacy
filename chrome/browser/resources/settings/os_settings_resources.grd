@@ -230,6 +230,24 @@
       <structure name="IDR_OS_SETTINGS_APP_MANAGEMENT_PAGE_APP_UNINSTALL_BUTTON_HTML"
                  file="chromeos/os_apps_page/app_management_page/uninstall_button.html"
                  compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_APP_MANAGEMENT_PLUGIN_VM_DETAIL_VIEW_JS"
+                 file="chromeos/os_apps_page/app_management_page/plugin_vm_page/plugin_vm_detail_view.js"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_APP_MANAGEMENT_PLUGIN_VM_DETAIL_VIEW_HTML"
+                file="chromeos/os_apps_page/app_management_page/plugin_vm_page/plugin_vm_detail_view.html"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_APP_MANAGEMENT_PLUGIN_VM_SHARED_PATHS_HTML"
+                file="chromeos/os_apps_page/app_management_page/plugin_vm_page/plugin_vm_shared_paths.html"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_APP_MANAGEMENT_PLUGIN_VM_SHARED_PATHS_JS"
+                file="chromeos/os_apps_page/app_management_page/plugin_vm_page/plugin_vm_shared_paths.js"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_APP_MANAGEMENT_PLUGIN_VM_BROWSER_PROXY_JS"
+                file="chromeos/os_apps_page/app_management_page/plugin_vm_page/plugin_vm_browser_proxy.js"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_APP_MANAGEMENT_PLUGIN_VM_BROWSER_PROXY_HTML"
+                file="chromeos/os_apps_page/app_management_page/plugin_vm_page/plugin_vm_browser_proxy.html"
+                 compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_CAPTIONS_SUBPAGE_JS"
                  file="a11y_page/captions_subpage.js"
                  compress="false" type="chrome_html" />
@@ -1313,36 +1331,6 @@
                  compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_PEOPLE_FINGERPRINT_BROWSER_PROXY_HTML"
                  file="chromeos/os_people_page/fingerprint_browser_proxy.html"
-                 compress="false" type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_PLUGIN_VM_PAGE_HTML"
-                 file="chromeos/plugin_vm_page/plugin_vm_page.html"
-                 compress="false" type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_PLUGIN_VM_PAGE_JS"
-                 file="chromeos/plugin_vm_page/plugin_vm_page.js"
-                 compress="false" type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_PLUGIN_VM_SHARED_PATHS_HTML"
-                 file="chromeos/plugin_vm_page/plugin_vm_shared_paths.html"
-                 compress="false" type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_PLUGIN_VM_SHARED_PATHS_JS"
-                 file="chromeos/plugin_vm_page/plugin_vm_shared_paths.js"
-                 compress="false" type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_PLUGIN_VM_SUBPAGE_HTML"
-                 file="chromeos/plugin_vm_page/plugin_vm_subpage.html"
-                 compress="false" type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_PLUGIN_VM_SUBPAGE_JS"
-                 file="chromeos/plugin_vm_page/plugin_vm_subpage.js"
-                 compress="false" type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_PLUGIN_VM_BROWSER_PROXY_JS"
-                 file="chromeos/plugin_vm_page/plugin_vm_browser_proxy.js"
-                 compress="false" type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_PLUGIN_VM_BROWSER_PROXY_HTML"
-                 file="chromeos/plugin_vm_page/plugin_vm_browser_proxy.html"
-                 compress="false" type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_PLUGIN_VM_REMOVE_CONFIRMATION_DIALOG_JS"
-                 file="chromeos/plugin_vm_page/plugin_vm_remove_confirmation_dialog.js"
-                 compress="false" type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_PLUGIN_VM_REMOVE_CONFIRMATION_DIALOG_HTML"
-                 file="chromeos/plugin_vm_page/plugin_vm_remove_confirmation_dialog.html"
                  compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_USERS_PAGE_ADD_USER_DIALOG_JS"
                  file="chromeos/os_people_page/users_add_user_dialog.js"

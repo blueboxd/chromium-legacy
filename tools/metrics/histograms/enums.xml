@@ -2788,6 +2788,8 @@ Unknown properties are collapsed to zero. -->
   <int value="7" label="App Management main view (Chrome app)"/>
   <int value="8" label="App Management main view (Web App)"/>
   <int value="9" label="OS Settings main page"/>
+  <int value="10" label="App Management main view (Plugin VM)"/>
+  <int value="11" label="DBus Service (Plugin VM)"/>
 </enum>
 
 <enum name="AppManagementUserAction">
@@ -2808,6 +2810,8 @@ Unknown properties are collapsed to zero. -->
   <int value="14" label="Contacts turned off"/>
   <int value="15" label="Storage turned on"/>
   <int value="16" label="Storage turned off"/>
+  <int value="17" label="Printing turned on"/>
+  <int value="18" label="Printing turned off"/>
 </enum>
 
 <enum name="AppPromoAction">
@@ -20223,6 +20227,8 @@ Called by update_document_policy_enum.py.-->
   <int value="702" label="ReportDeviceAppInfo"/>
   <int value="703" label="AccessibilityImageLabelsEnabled"/>
   <int value="704" label="AppCacheForceEnabled"/>
+  <int value="705" label="UserPluginVmAllowed"/>
+  <int value="706" label="PrintRasterizationMode"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -22920,6 +22926,8 @@ Called by update_extension_histograms.py.-->
   <int value="1468" label="AUTOTESTPRIVATE_STOPSMOOTHNESSTRACKING"/>
   <int value="1469" label="ACCESSIBILITY_PRIVATE_UPDATESWITCHACCESSBUBBLE"/>
   <int value="1470" label="TERMINALPRIVATE_OPENOPTIONSPAGE"/>
+  <int value="1471" label="DECLARATIVENETREQUEST_UPDATEENABLEDRULESETS"/>
+  <int value="1472" label="DECLARATIVENETREQUEST_GETENABLEDRULESETS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -38362,7 +38370,6 @@ from previous Chrome versions.
   <int value="-1939003674" label="NetworkServiceInProcess:disabled"/>
   <int value="-1938263248" label="enable-extension-info-dialog"/>
   <int value="-1937077699" label="http-form-warning"/>
-  <int value="-1936630125" label="BluetoothKernelSuspendNotifier:enabled"/>
   <int value="-1936032607" label="enable-experimental-webassembly-features"/>
   <int value="-1934661084" label="ForceUnifiedConsentBump:disabled"/>
   <int value="-1933425042" label="OfflinePreviews:enabled"/>
@@ -38768,7 +38775,6 @@ from previous Chrome versions.
   <int value="-1472825316" label="ContextualSearchLongpressResolve:enabled"/>
   <int value="-1471021059"
       label="OmniboxUIExperimentShowSuggestionFavicons:disabled"/>
-  <int value="-1470178735" label="BluetoothKernelSuspendNotifier:disabled"/>
   <int value="-1469536698" label="ChromeHomeDoodle:enabled"/>
   <int value="-1469228683" label="QuickUnlockPinSignin:disabled"/>
   <int value="-1468126425" label="ResourceLoadScheduler:disabled"/>
@@ -39655,6 +39661,7 @@ from previous Chrome versions.
   <int value="-508346329" label="TerminalSystemAppLegacySettings:disabled"/>
   <int value="-508250572" label="ServiceWorkerLongRunningMessage:disabled"/>
   <int value="-508143738" label="disable-accelerated-fixed-root-background"/>
+  <int value="-507066244" label="AndroidDarkSearch:enabled"/>
   <int value="-506706655" label="respect-autocomplete-off-autofill"/>
   <int value="-506366023" label="VizHitTest:enabled"/>
   <int value="-505679399" label="FontCacheScaling:enabled"/>
@@ -40656,6 +40663,7 @@ from previous Chrome versions.
   <int value="656864700" label="FillOnAccountSelectHttp:disabled"/>
   <int value="659086147" label="OverlayScrollbarFlashWhenMouseEnter:enabled"/>
   <int value="661020875" label="AutofillSaveCardShowNoThanks:disabled"/>
+  <int value="662331859" label="ConversionMeasurement:enabled"/>
   <int value="663027937" label="NewTabPageCustomLinks:enabled"/>
   <int value="663069508" label="TabToGTSAnimation:enabled"/>
   <int value="663294302" label="ForceUseAPDownloadProtection:disabled"/>
@@ -40745,6 +40753,7 @@ from previous Chrome versions.
   <int value="749516419" label="DragToSnapInClamshellMode:disabled"/>
   <int value="752194066" label="enable-app-window-cycling"/>
   <int value="752939691" label="disable-tab-for-desktop-share"/>
+  <int value="757645375" label="AndroidDarkSearch:disabled"/>
   <int value="760542355" label="ServiceWorkerScriptFullCodeCache:enabled"/>
   <int value="762700519" label="enable-checker-imaging"/>
   <int value="763947368" label="HomepageLocationPolicy:disabled"/>
@@ -40772,6 +40781,7 @@ from previous Chrome versions.
   <int value="783270752" label="AndroidHistoryManager:enabled"/>
   <int value="787080596" label="DynamicTcmallocTuning:enabled"/>
   <int value="787385958" label="RegionalLocalesAsDisplayUI:enabled"/>
+  <int value="798696013" label="ImeInputLogicMozc:enabled"/>
   <int value="799680074" label="ContextualSearchTranslationModel:enabled"/>
   <int value="803282885" label="PreferHtmlOverPlugins:disabled"/>
   <int value="805661595" label="ChromeosVideoDecoder:enabled"/>
@@ -40860,6 +40870,7 @@ from previous Chrome versions.
   <int value="913138924" label="RecurrentInterstitialFeature:disabled"/>
   <int value="913855453" label="VirtualKeyboardFloatingResizable:disabled"/>
   <int value="916316159" label="disable-new-app-list-mixer"/>
+  <int value="917561046" label="ConversionMeasurement:disabled"/>
   <int value="918046854" label="NtlmV2Enabled:disabled"/>
   <int value="921536672" label="OfflinePagesDescriptiveFailStatus:enabled"/>
   <int value="921561616" label="WebAssemblyTiering:disabled"/>
@@ -41488,6 +41499,7 @@ from previous Chrome versions.
   <int value="1622131033" label="ozone-test-single-overlay-support"/>
   <int value="1622672308" label="ReaderMode:enabled"/>
   <int value="1626824478" label="ExperimentalAppBanners:disabled"/>
+  <int value="1627416551" label="ImeInputLogicMozc:disabled"/>
   <int value="1627666567" label="ChromeOSAmbientMode:disabled"/>
   <int value="1628259213" label="DuetTabStripIntegrationAndroid:enabled"/>
   <int value="1628831121" label="SafeBrowsingUseLocalBlacklistsV2:enabled"/>
@@ -41791,6 +41803,7 @@ from previous Chrome versions.
       label="AutofillEnableFixedPaymentsBubbleLogging:enabled"/>
   <int value="1964816410" label="AndroidPayIntegrationV2:enabled"/>
   <int value="1965055310" label="SyncSetupFriendlySettings:enabled"/>
+  <int value="1965534355" label="conversions-debug-mode"/>
   <int value="1965976546" label="NewOverviewAnimations:disabled"/>
   <int value="1966730288" label="disable-threaded-compositing"/>
   <int value="1968199744" label="PrintJobManagementApp:disabled"/>
@@ -43837,6 +43850,11 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="kSuccess"/>
   <int value="2" label="kKeySystemNotSupported"/>
   <int value="3" label="kInvalidPlayerState"/>
+</enum>
+
+<enum name="MediaKeySystem">
+  <int value="0" label="Clear Key"/>
+  <int value="1" label="Widevine"/>
 </enum>
 
 <enum name="MediaKeySystemSupportStatus">
@@ -48110,6 +48128,10 @@ Called by update_net_trust_anchors.py.-->
       label="Clicked on the Refresh button in the all dismissed state"/>
   <int value="11" label="Opened an explore sites tile"/>
   <int value="12" label="Opened the manage interests page from the feed"/>
+  <int value="13"
+      label="Triggered a block content action, which typically results in the
+             content being removed from the feed, and a setting written
+             server side to avoid serving that content again."/>
 </enum>
 
 <enum name="NewTabPageActioniOS">
@@ -48955,6 +48977,13 @@ Called by update_net_trust_anchors.py.-->
 <enum name="OfflineIndicatorCTREvent">
   <int value="0" label="Displayed"/>
   <int value="1" label="Clicked"/>
+</enum>
+
+<enum name="OfflineIndicatorSurfaceState">
+  <int value="0" label="Can animate controls"/>
+  <int value="1" label="Can animate controls, omnibox focused"/>
+  <int value="2" label="Cannot animate controls"/>
+  <int value="3" label="Cannot animate controls, omnibox focused"/>
 </enum>
 
 <enum name="OfflineItemsStateAtCancel">
@@ -66003,6 +66032,21 @@ would be helpful to identify which type is being sent.
   <int value="7" label="OOM">
     TERMINATION_STATUS_OOM on ChromeOS and Android
   </int>
+</enum>
+
+<enum name="TextFragmentAnchorParameters">
+  <summary>
+    Indicates which parameters were specified in a text fragment anchor.
+  </summary>
+  <int value="0" label="Unknown"/>
+  <int value="1" label="ExactText"/>
+  <int value="2" label="ExactTextWithPrefix"/>
+  <int value="3" label="ExactTextWithSuffix"/>
+  <int value="4" label="ExactTextWithContext"/>
+  <int value="5" label="TextRange"/>
+  <int value="6" label="TextRangeWithPrefix"/>
+  <int value="7" label="TextRangeWithSuffix"/>
+  <int value="8" label="TextRangeWithContext"/>
 </enum>
 
 <enum name="TextToSpeechEvent">

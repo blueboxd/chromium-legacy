@@ -4,7 +4,7 @@
 
 #include "components/query_tiles/switches.h"
 
-namespace upboarding {
+namespace query_tiles {
 namespace features {
 const base::Feature kQueryTiles{"QueryTiles",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
@@ -21,4 +21,4 @@ const char kQueryTilesCountryCode[] = "query-tiles-country-code";
 const char kQueryTilesInstantBackgroundTask[] =
     "query-tiles-instant-background-task";
 }  // namespace switches
-}  // namespace upboarding
+}  // namespace query_tiles

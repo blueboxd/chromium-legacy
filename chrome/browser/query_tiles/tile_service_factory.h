@@ -16,7 +16,7 @@ template <typename T>
 struct DefaultSingletonTraits;
 }  // namespace base
 
-namespace upboarding {
+namespace query_tiles {
 
 class TileService;
 
@@ -38,6 +38,6 @@ class TileServiceFactory : public SimpleKeyedServiceFactory {
   DISALLOW_COPY_AND_ASSIGN(TileServiceFactory);
 };
 
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // CHROME_BROWSER_QUERY_TILES_TILE_SERVICE_FACTORY_H_

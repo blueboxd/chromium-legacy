@@ -125,9 +125,8 @@ TEST_F(DlcserviceClientTest, GetExistingDlcsSuccessTest) {
 }
 
 TEST_F(DlcserviceClientTest, GetExistingDlcsFailureTest) {
-  // TODO(kimjae): Use |kGetExistingDlcsMethod| once system_api is uprev'ed.
   dbus::MethodCall method_call(dlcservice::kDlcServiceInterface,
-                               "GetExsitingDlcs");
+                               dlcservice::kGetExistingDlcsMethod);
   method_call.SetSerial(123);
   err_responses_.push_back(dbus::ErrorResponse::FromMethodCall(
       &method_call, DBUS_ERROR_FAILED, "some-unknown-error"));

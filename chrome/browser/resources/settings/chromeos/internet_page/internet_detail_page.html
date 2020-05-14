@@ -24,7 +24,9 @@
 <link rel="import" href="../../controls/controlled_button.html">
 <link rel="import" href="../../controls/settings_toggle_button.html">
 <link rel="import" href="../../i18n_setup.html">
+<link rel="import" href="../../people_page/sync_browser_proxy.html">
 <link rel="import" href="../../prefs/prefs.html">
+<link rel="import" href="../os_people_page/os_sync_browser_proxy.html">
 <link rel="import" href="../os_route.html">
 <link rel="import" href="../../router.html">
 <link rel="import" href="../metrics_recorder.html">
@@ -143,11 +145,37 @@
       <iron-icon class="policy" icon="cr20:domain"></iron-icon>
       <div class="settings-box-text">$i18n{networkConnectNotAllowed}</div>
     </div>
-    <div class="settings-box continuation settings-box-text"
-        hidden$="[[!showShared_(managedProperties_, globalPolicy,
-            managedNetworkAvailable)]]">
-      $i18n{networkShared}
-    </div>
+
+
+    <!-- Notice of synced and/or shared network. -->
+    <template is="dom-if"
+        if="[[showSyncedShared_(managedProperties_, globalPolicy,
+            managedNetworkAvailable, isWifiSyncEnabled_)]]">
+      <!-- Network is both synced and shared. -->
+      <div class="settings-box continuation settings-box-text">
+          <settings-localized-link
+            localized-string="[[i18nAdvanced('networkSyncedShared')]]">
+          </settings-localized-link>
+      </div>
+    </template>
+    <template is="dom-if"
+        if="[[showSyncedUser_(managedProperties_, globalPolicy,
+            managedNetworkAvailable, isWifiSyncEnabled_)]]">
+      <!-- Network is synced but not shared. -->
+      <div class="settings-box continuation settings-box-text">
+          <settings-localized-link
+            localized-string="[[i18nAdvanced('networkSyncedUser')]]">
+          </settings-localized-link>
+      </div>
+    </template>
+    <template is="dom-if"
+        if="[[showShared_(managedProperties_, globalPolicy,
+            managedNetworkAvailable, isWifiSyncEnabled_)]]">
+      <!-- Network is shared but not synced. -->
+      <div class="settings-box continuation settings-box-text">
+        [[i18n('networkShared')]]
+      </div>
+    </template>
 
     <template is="dom-if" if="[[isSecondaryUser_]]">
       <!-- Show message for non primary users. -->

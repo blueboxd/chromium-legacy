@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/api/declarative_net_request/dnr_test_base.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "components/version_info/channel.h"
 #include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
@@ -27,6 +28,7 @@
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/url_pattern.h"
@@ -529,6 +531,10 @@ TEST_P(RulesetManagerTest, RemoveHeaders) {
 
 // Test that the correct modifyHeaders actions are returned for each extension.
 TEST_P(RulesetManagerTest, ModifyHeaders) {
+  // TODO(crbug.com/947591): Remove the channel override once implementation of
+  // modifyHeaders action is complete.
+  ScopedCurrentChannel channel(::version_info::Channel::UNKNOWN);
+
   const Extension* extension_1 = nullptr;
   const Extension* extension_2 = nullptr;
 
@@ -600,6 +606,10 @@ TEST_P(RulesetManagerTest, ModifyHeaders) {
 // Test that an extension's modify header rules are applied on a request only if
 // it has host permissions for the request.
 TEST_P(RulesetManagerTest, ModifyHeaders_HostPermissions) {
+  // TODO(crbug.com/947591): Remove the channel override once implementation of
+  // modifyHeaders action is complete.
+  ScopedCurrentChannel channel(::version_info::Channel::UNKNOWN);
+
   // Add an extension which removes the "header1" header with host permissions
   // for example.com.
   std::unique_ptr<CompositeMatcher> matcher;

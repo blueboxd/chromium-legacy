@@ -151,6 +151,7 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   // Opaque means that we know the layer contents have no alpha.
   bool ContentsOpaque() const;
   void SetContentsOpaque(bool);
+  void SetContentsOpaqueForText(bool);
 
   void SetHitTestable(bool);
   bool GetHitTestable() const { return hit_testable_; }

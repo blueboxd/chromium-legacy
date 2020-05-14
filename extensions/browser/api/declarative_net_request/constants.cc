@@ -91,6 +91,15 @@ const char kInternalErrorGettingDynamicRules[] =
 const char kDynamicRuleCountExceeded[] = "Dynamic rule count exceeded.";
 const char kDynamicRegexRuleCountExceeded[] =
     "Dynamic rule count for regex rules exceeded.";
+
+const char kInvalidRulesetIDError[] = "Invalid ruleset id: *.";
+const char kEnabledRulesetsRuleCountExceeded[] =
+    "The set of enabled rulesets exceeds the rule count limit.";
+const char kEnabledRulesetsRegexRuleCountExceeded[] =
+    "The set of enabled rulesets exceeds the regular expression rule count "
+    "limit.";
+const char kInternalErrorUpdatingEnabledRulesets[] = "Internal error.";
+
 const char kIndexAndPersistRulesTimeHistogram[] =
     "Extensions.DeclarativeNetRequest.IndexAndPersistRulesTime";
 const char kManifestRulesCountHistogram[] =

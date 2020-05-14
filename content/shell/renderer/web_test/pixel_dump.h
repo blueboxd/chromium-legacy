@@ -14,15 +14,16 @@ class WebLocalFrame;
 }  // namespace blink
 
 namespace content {
+class RenderFrame;
 
 // Asks |web_frame| to print itself and calls |callback| with the result.
 void PrintFrameAsync(blink::WebLocalFrame* web_frame,
                      base::OnceCallback<void(const SkBitmap&)> callback);
 
-// Copy to clipboard the image present at |x|, |y| coordinates in |web_frame|
+// Copy to clipboard the image present at |x|, |y| coordinates in |frame|
 // and pass the captured image to |callback|.
 void CopyImageAtAndCapturePixels(
-    blink::WebLocalFrame* web_frame,
+    RenderFrame* frame,
     int x,
     int y,
     base::OnceCallback<void(const SkBitmap&)> callback);

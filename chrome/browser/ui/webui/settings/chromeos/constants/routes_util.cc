@@ -72,6 +72,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       chromeos::settings::mojom::kAppManagementSubpagePath,
       chromeos::settings::mojom::kAppDetailsSubpagePath,
       chromeos::settings::mojom::kGooglePlayStoreSubpagePath,
+      chromeos::settings::mojom::kPluginVmSharedPathsSubpagePath,
 
       // Crostini section.
       chromeos::settings::mojom::kCrostiniSectionPath,
@@ -82,11 +83,6 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       chromeos::settings::mojom::kCrostiniDevelopAndroidAppsSubpagePath,
       chromeos::settings::mojom::kCrostiniPortForwardingSubpagePath,
       chromeos::settings::mojom::kCrostiniDiskResizeSubpagePath,
-
-      // Plugin VM section.
-      chromeos::settings::mojom::kPluginVmSectionPath,
-      chromeos::settings::mojom::kPluginVmDetailsSubpagePath,
-      chromeos::settings::mojom::kPluginVmSharedPathsSubpagePath,
 
       // Date and Time section.
       chromeos::settings::mojom::kDateAndTimeSectionPath,

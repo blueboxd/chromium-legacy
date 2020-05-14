@@ -15,6 +15,7 @@
       "name": "LayoutBlockFlow (positioned) TD id='moveMe' class='fixed'",
       "position": [-100, 0],
       "bounds": [200, 100],
+      "contentsOpaqueForText": true,
       "backgroundColor": "#008000",
       "invalidations": [
         [0, 0, 200, 100]

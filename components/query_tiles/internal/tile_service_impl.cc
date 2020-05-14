@@ -17,7 +17,7 @@
 #include "components/query_tiles/internal/tile_config.h"
 #include "components/query_tiles/switches.h"
 
-namespace upboarding {
+namespace query_tiles {
 namespace {
 
 // Default periodic interval of background task.
@@ -37,12 +37,12 @@ void OnInstantFetchComplete(bool success) {}
 }  // namespace
 
 TileServiceImpl::TileServiceImpl(
-    std::unique_ptr<ImageLoader> image_loader,
+    std::unique_ptr<ImagePrefetcher> image_prefetcher,
     std::unique_ptr<TileManager> tile_manager,
     background_task::BackgroundTaskScheduler* scheduler,
     std::unique_ptr<TileFetcher> tile_fetcher,
     base::Clock* clock)
-    : image_loader_(std::move(image_loader)),
+    : image_prefetcher_(std::move(image_prefetcher)),
       tile_manager_(std::move(tile_manager)),
       scheduler_(scheduler),
       tile_fetcher_(std::move(tile_fetcher)),
@@ -112,12 +112,13 @@ void TileServiceImpl::StartFetchForTiles(
   DCHECK(tile_fetcher_);
   tile_fetcher_->StartFetchForTiles(base::BindOnce(
       &TileServiceImpl::OnFetchFinished, weak_ptr_factory_.GetWeakPtr(),
-      std::move(task_finished_callback)));
+      is_from_reduced_mode, std::move(task_finished_callback)));
 }
 
 // TODO(crbug.com/1077173): Handle the failures, retry mechanism and
 // related metrics.
 void TileServiceImpl::OnFetchFinished(
+    bool is_from_reduced_mode,
     BackgroundTaskFinishedCallback task_finished_callback,
     TileInfoRequestStatus status,
     const std::unique_ptr<std::string> response_body) {
@@ -129,10 +130,12 @@ void TileServiceImpl::OnFetchFinished(
       TileGroupFromResponse(response_proto, &group);
       group.id = base::GenerateGUID();
       group.last_updated_ts = clock_->Now();
+      auto group_copy = std::make_unique<TileGroup>(group);
       tile_manager_->SaveTiles(
-          std::make_unique<TileGroup>(group),
+          std::move(group_copy),
           base::BindOnce(&TileServiceImpl::OnTilesSaved,
-                         weak_ptr_factory_.GetWeakPtr(),
+                         weak_ptr_factory_.GetWeakPtr(), std::move(group),
+                         is_from_reduced_mode,
                          std::move(task_finished_callback)));
     }
   } else {
@@ -141,9 +144,26 @@ void TileServiceImpl::OnFetchFinished(
 }
 
 void TileServiceImpl::OnTilesSaved(
+    TileGroup tile_group,
+    bool is_from_reduced_mode,
     BackgroundTaskFinishedCallback task_finished_callback,
     TileGroupStatus status) {
+  if (status != TileGroupStatus::kSuccess) {
+    std::move(task_finished_callback).Run(false /*reschedule*/);
+    return;
+  }
+
+  image_prefetcher_->Prefetch(
+      std::move(tile_group), is_from_reduced_mode,
+      base::BindOnce(&TileServiceImpl::OnPrefetchImagesDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(task_finished_callback)));
+}
+
+void TileServiceImpl::OnPrefetchImagesDone(
+    BackgroundTaskFinishedCallback task_finished_callback) {
+  DCHECK(task_finished_callback);
   std::move(task_finished_callback).Run(false /*reschedule*/);
 }
 
-}  // namespace upboarding
+}  // namespace query_tiles

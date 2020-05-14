@@ -291,7 +291,6 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
   if (command_line->HasSwitch(switches::kDoubleBufferCompositing))
     capabilities_.max_frames_pending = 1;
 
-  capabilities_.only_invalidates_damage_rect = false;
   // Set supports_surfaceless to enable overlays.
   capabilities_.supports_surfaceless = true;
   capabilities_.preserve_buffer_content = true;

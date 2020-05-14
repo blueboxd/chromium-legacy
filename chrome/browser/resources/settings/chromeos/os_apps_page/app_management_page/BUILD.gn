@@ -67,10 +67,8 @@ js_library("app_management_page") {
 
 js_library("app_detail_view") {
   deps = [
-    ":arc_detail_view",
-    ":chrome_app_detail_view",
+    ":actions",
     ":dom_switch",
-    ":pwa_detail_view",
     ":store_client",
     "../..:os_route",
     "../../..:router",
@@ -104,6 +102,7 @@ js_library("chrome_app_detail_view") {
 }
 
 js_library("constants") {
+  deps = [ "//chrome/browser/ui/webui/app_management:mojo_bindings_js_library_for_compile" ]
 }
 
 js_library("dom_switch") {
@@ -131,6 +130,7 @@ js_library("main_view") {
 
 js_library("permission_item") {
   deps = [
+    ":browser_proxy",
     ":fake_page_handler",
     ":store_client",
     ":toggle_row",

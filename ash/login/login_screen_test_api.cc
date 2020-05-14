@@ -14,6 +14,8 @@
 #include "ash/login/ui/login_big_user_view.h"
 #include "ash/login/ui/login_expanded_public_account_view.h"
 #include "ash/login/ui/login_password_view.h"
+#include "ash/login/ui/login_user_menu_view.h"
+#include "ash/login/ui/login_user_view.h"
 #include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
@@ -226,6 +228,38 @@ bool LoginScreenTestApi::IsDisplayPasswordButtonShown(
   EXPECT_EQ(display_password_button_visible,
             password_test.display_password_button()->GetVisible());
   return display_password_button_visible;
+}
+
+// static
+bool LoginScreenTestApi::IsManagedIconShown(const AccountId& account_id) {
+  LockScreen::TestApi lock_screen_test(LockScreen::Get());
+  LockContentsView::TestApi lock_contents_test(
+      lock_screen_test.contents_view());
+  LoginBigUserView* big_user_view = lock_contents_test.FindBigUser(account_id);
+  if (!big_user_view) {
+    ADD_FAILURE() << "Could not find user " << account_id.Serialize();
+    return false;
+  }
+  LoginUserView::TestApi user_test(big_user_view->GetUserView());
+  auto* enterprise_icon = user_test.enterprise_icon();
+  return enterprise_icon->GetVisible();
+}
+
+// static
+bool LoginScreenTestApi::IsManagedMessageInMenuShown(
+    const AccountId& account_id) {
+  LockScreen::TestApi lock_screen_test(LockScreen::Get());
+  LockContentsView::TestApi lock_contents_test(
+      lock_screen_test.contents_view());
+  LoginBigUserView* big_user_view = lock_contents_test.FindBigUser(account_id);
+  if (!big_user_view) {
+    ADD_FAILURE() << "Could not find user " << account_id.Serialize();
+    return false;
+  }
+  LoginUserView::TestApi user_test(big_user_view->GetUserView());
+  LoginUserMenuView::TestApi user_menu_test(user_test.menu());
+  auto* managed_user_data = user_menu_test.managed_user_data();
+  return managed_user_data && managed_user_data->GetVisible();
 }
 
 // static

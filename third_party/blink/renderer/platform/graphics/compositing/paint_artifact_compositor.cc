@@ -1226,6 +1226,8 @@ void PaintArtifactCompositor::Update(
     const ViewportProperties& viewport_properties,
     const Settings& settings,
     const Vector<const TransformPaintPropertyNode*>& scroll_translation_nodes) {
+  DCHECK(scroll_translation_nodes.IsEmpty() ||
+         RuntimeEnabledFeatures::ScrollUnificationEnabled());
   DCHECK(NeedsUpdate());
   DCHECK(root_layer_);
   // The tree will be null after detaching and this update can be ignored.

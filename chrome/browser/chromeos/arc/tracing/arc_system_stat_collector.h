@@ -88,6 +88,8 @@ class ArcSystemStatCollector {
   struct SystemReadersContext;
 
   struct RuntimeFrame {
+    RuntimeFrame();
+
     base::TimeTicks timestamp;
     // read, written sectors and total time in milliseconds.
     int64_t zram_stat[base::size(kZramStatColumns) - 1] = {0};
@@ -105,6 +107,8 @@ class ArcSystemStatCollector {
     int64_t gpu_energy = 0;
     // Memory energy in micro-joules for some Intel platforms.
     int64_t memory_energy = 0;
+    // Power constraint for CPU package.
+    int64_t package_power_constraint = 0;
   };
 
   // Schedules reading System stat files in |ReadSystemStatOnBackgroundThread|

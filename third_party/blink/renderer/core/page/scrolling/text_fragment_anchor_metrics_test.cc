@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor_metrics.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -103,6 +106,25 @@ TEST_F(TextFragmentAnchorMetricsTest, UMAMetricsCollected) {
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollIntoView",
                                      1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.DirectiveLength", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.DirectiveLength", 18,
+                                       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.ExactTextLength", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.ExactTextLength", 4,
+                                       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.RangeMatchLength", 0);
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.StartTextLength", 0);
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.EndTextLength", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.Parameters", 1);
+  histogram_tester_.ExpectUniqueSample(
+      "TextFragmentAnchor.Parameters",
+      static_cast<int>(
+          TextFragmentAnchorMetrics::TextFragmentAnchorParameters::kExactText),
+      1);
 }
 
 // Test UMA metrics collection when there is no match found
@@ -147,6 +169,18 @@ TEST_F(TextFragmentAnchorMetricsTest, NoMatchFound) {
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollIntoView",
                                      0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.DirectiveLength", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.DirectiveLength", 8,
+                                       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.ExactTextLength", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.RangeMatchLength", 0);
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.StartTextLength", 0);
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.EndTextLength", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.Parameters", 0);
 }
 
 // Test that we don't collect any metrics when there is no text directive
@@ -175,6 +209,18 @@ TEST_F(TextFragmentAnchorMetricsTest, NoTextFragmentAnchor) {
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollIntoView",
                                      0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.DirectiveLength", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.ExactTextLength", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.RangeMatchLength", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.StartTextLength", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.EndTextLength", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.Parameters", 0);
 }
 
 // Test that the correct metrics are collected when we found a match but didn't
@@ -213,6 +259,207 @@ TEST_F(TextFragmentAnchorMetricsTest, MatchFoundNoScroll) {
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollIntoView",
                                      1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.DirectiveLength", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.DirectiveLength", 9,
+                                       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.ExactTextLength", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.ExactTextLength", 4,
+                                       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.RangeMatchLength", 0);
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.StartTextLength", 0);
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.EndTextLength", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.Parameters", 1);
+  histogram_tester_.ExpectUniqueSample(
+      "TextFragmentAnchor.Parameters",
+      static_cast<int>(
+          TextFragmentAnchorMetrics::TextFragmentAnchorParameters::kExactText),
+      1);
+}
+
+// Test that the correct metrics are collected for all possible combinations of
+// context terms on an exact text directive.
+TEST_F(TextFragmentAnchorMetricsTest, ExactTextParameters) {
+  SimRequest request(
+      "https://example.com/"
+      "test.html#:~:text=this&text=is-,a&text=test,-page&text=with-,some,-"
+      "content",
+      "text/html");
+  LoadURL(
+      "https://example.com/"
+      "test.html#:~:text=this&text=is-,a&text=test,-page&text=with-,some,-"
+      "content");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <p>This is a test page</p>
+    <p>With some content</p>
+  )HTML");
+  RunAsyncMatchingTasks();
+
+  Compositor().BeginFrame();
+  BeginEmptyFrame();
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.SelectorCount", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.SelectorCount", 4,
+                                       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.MatchRate", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.MatchRate", 100, 1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.AmbiguousMatch", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.AmbiguousMatch", 0,
+                                       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.ScrollCancelled", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.ScrollCancelled", 0,
+                                       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.DidScrollIntoView", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.DidScrollIntoView",
+                                       0, 1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollIntoView",
+                                     1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.DirectiveLength", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.DirectiveLength", 61,
+                                       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.ExactTextLength", 4);
+  // "this", "test", "some"
+  histogram_tester_.ExpectBucketCount("TextFragmentAnchor.ExactTextLength", 4,
+                                      3);
+  // "a"
+  histogram_tester_.ExpectBucketCount("TextFragmentAnchor.ExactTextLength", 1,
+                                      1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.RangeMatchLength", 0);
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.StartTextLength", 0);
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.EndTextLength", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.Parameters", 4);
+  histogram_tester_.ExpectBucketCount(
+      "TextFragmentAnchor.Parameters",
+      static_cast<int>(
+          TextFragmentAnchorMetrics::TextFragmentAnchorParameters::kExactText),
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "TextFragmentAnchor.Parameters",
+      static_cast<int>(TextFragmentAnchorMetrics::TextFragmentAnchorParameters::
+                           kExactTextWithPrefix),
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "TextFragmentAnchor.Parameters",
+      static_cast<int>(TextFragmentAnchorMetrics::TextFragmentAnchorParameters::
+                           kExactTextWithSuffix),
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "TextFragmentAnchor.Parameters",
+      static_cast<int>(TextFragmentAnchorMetrics::TextFragmentAnchorParameters::
+                           kExactTextWithContext),
+      1);
+}
+
+// Test that the correct metrics are collected for all possible combinations of
+// context terms on a range text directive.
+TEST_F(TextFragmentAnchorMetricsTest, TextRangeParameters) {
+  SimRequest request(
+      "https://example.com/"
+      "test.html#:~:text=this,is&text=a-,test,page&text=with,some,-content&"
+      "text=about-,nothing,at,-all",
+      "text/html");
+  LoadURL(
+      "https://example.com/"
+      "test.html#:~:text=this,is&text=a-,test,page&text=with,some,-content&"
+      "text=about-,nothing,at,-all");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <p>This is a test page</p>
+    <p>With some content</p>
+    <p>About nothing at all</p>
+  )HTML");
+  RunAsyncMatchingTasks();
+
+  Compositor().BeginFrame();
+  BeginEmptyFrame();
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.SelectorCount", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.SelectorCount", 4,
+                                       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.MatchRate", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.MatchRate", 100, 1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.AmbiguousMatch", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.AmbiguousMatch", 0,
+                                       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.ScrollCancelled", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.ScrollCancelled", 0,
+                                       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.DidScrollIntoView", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.DidScrollIntoView",
+                                       0, 1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollIntoView",
+                                     1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.DirectiveLength", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.DirectiveLength", 82,
+                                       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.ExactTextLength", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.RangeMatchLength", 4);
+  // "This is"
+  histogram_tester_.ExpectBucketCount("TextFragmentAnchor.RangeMatchLength", 7,
+                                      1);
+  // "test page", "with some"
+  histogram_tester_.ExpectBucketCount("TextFragmentAnchor.RangeMatchLength", 9,
+                                      2);
+  // "nothing at"
+  histogram_tester_.ExpectBucketCount("TextFragmentAnchor.RangeMatchLength", 10,
+                                      1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.StartTextLength", 4);
+  // "this", "test", "with"
+  histogram_tester_.ExpectBucketCount("TextFragmentAnchor.StartTextLength", 4,
+                                      3);
+  // "nothing"
+  histogram_tester_.ExpectBucketCount("TextFragmentAnchor.StartTextLength", 7,
+                                      1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.EndTextLength", 4);
+  // "is", "at"
+  histogram_tester_.ExpectBucketCount("TextFragmentAnchor.EndTextLength", 2, 2);
+  // "page", "some"
+  histogram_tester_.ExpectBucketCount("TextFragmentAnchor.EndTextLength", 4, 2);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.Parameters", 4);
+  histogram_tester_.ExpectBucketCount(
+      "TextFragmentAnchor.Parameters",
+      static_cast<int>(
+          TextFragmentAnchorMetrics::TextFragmentAnchorParameters::kTextRange),
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "TextFragmentAnchor.Parameters",
+      static_cast<int>(TextFragmentAnchorMetrics::TextFragmentAnchorParameters::
+                           kTextRangeWithPrefix),
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "TextFragmentAnchor.Parameters",
+      static_cast<int>(TextFragmentAnchorMetrics::TextFragmentAnchorParameters::
+                           kTextRangeWithSuffix),
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "TextFragmentAnchor.Parameters",
+      static_cast<int>(TextFragmentAnchorMetrics::TextFragmentAnchorParameters::
+                           kTextRangeWithContext),
+      1);
 }
 
 // Test that the ScrollCancelled metric gets reported when a user scroll cancels
@@ -275,6 +522,25 @@ TEST_F(TextFragmentAnchorMetricsTest, ScrollCancelled) {
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollIntoView",
                                      0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.DirectiveLength", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.DirectiveLength", 9,
+                                       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.ExactTextLength", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.ExactTextLength", 4,
+                                       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.RangeMatchLength", 0);
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.StartTextLength", 0);
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.EndTextLength", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.Parameters", 1);
+  histogram_tester_.ExpectUniqueSample(
+      "TextFragmentAnchor.Parameters",
+      static_cast<int>(
+          TextFragmentAnchorMetrics::TextFragmentAnchorParameters::kExactText),
+      1);
 }
 
 // Test that the TapToDismiss feature gets use counted when the user taps to

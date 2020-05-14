@@ -3,6 +3,8 @@ if (self.importScripts) {
   importScripts('/fetch/resources/thorough-util.js');
 }
 
+var {BASE_ORIGIN, OTHER_ORIGIN, BASE_URL, OTHER_BASE_URL} = get_thorough_test_options();
+
 var TEST_TARGETS = [
   // Auth check
   [BASE_URL + 'Auth&mode=same-origin&credentials=omit',

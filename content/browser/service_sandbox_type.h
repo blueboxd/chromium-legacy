@@ -25,4 +25,18 @@ content::GetServiceSandboxType<audio::mojom::AudioService>() {
   return content::SandboxType::kAudio;
 }
 
+// device::mojom::XRDeviceService
+#if defined(OS_WIN)
+namespace device {
+namespace mojom {
+class XRDeviceService;
+}
+}  // namespace device
+template <>
+inline content::SandboxType
+content::GetServiceSandboxType<device::mojom::XRDeviceService>() {
+  return content::SandboxType::kXrCompositing;
+}
+#endif  // OS_WIN
+
 #endif  // CONTENT_BROWSER_SERVICE_SANDBOX_TYPE_H_

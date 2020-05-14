@@ -191,7 +191,6 @@ TEST_F(MHTMLLoadingTest, ShadowDom) {
   Document* document = frame->GetDocument();
   ASSERT_TRUE(document);
 
-  EXPECT_TRUE(IsShadowHost(document->getElementById("h1")));
   EXPECT_TRUE(IsShadowHost(document->getElementById("h2")));
   // The nested shadow DOM tree is created.
   EXPECT_TRUE(IsShadowHost(

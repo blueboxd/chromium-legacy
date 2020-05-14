@@ -368,6 +368,7 @@ namespace declarativeNetRequest {
   callback GetAllowedPagesCallback = void(DOMString[] result);
   callback GetRulesCallback = void(Rule[] rules);
   callback GetMatchedRulesCallback = void(RulesMatchedDetails details);
+  callback GetEnabledRulesetsCallback = void(DOMString[] rulesetIds);
 
   interface Functions {
 
@@ -376,7 +377,8 @@ namespace declarativeNetRequest {
     // and then the rules given in <code>rulesToAdd</code> are added. This
     // update happens as a single atomic operation: either all specified rules
     // are added and removed, or an error is returned.
-    // These rules are persisted across browser sessions.
+    // These rules are persisted across browser sessions and across extension
+    // updates.
     // Any ids in <code>ruleIdsToRemove</code> that are not present will be
     // ignored.
     // Note that static rules specified as part of the extension package can
@@ -386,10 +388,10 @@ namespace declarativeNetRequest {
     // |ruleIdsToRemove|: The IDs of rules to remove.
     // |rulesToAdd|: The rules to add.
     // |callback|: Called once the update is complete or has failed. In case of
-    // an error, $(ref:runtime.lastError) will be set to denote the error
-    // message and no change will be made to the rule set. This can happen for
-    // multiple reasons, such as invalid rule format, duplicate rule ID, rule
-    // count limit exceeded, internal errors, and others.
+    // an error, $(ref:runtime.lastError) will be set and no change will be made
+    // to the rule set. This can happen for multiple reasons, such as invalid
+    // rule format, duplicate rule ID, rule count limit exceeded, internal
+    // errors, and others.
     static void updateDynamicRules(long[] ruleIdsToRemove, Rule[] rulesToAdd,
                                    optional EmptyCallback callback);
 
@@ -397,6 +399,35 @@ namespace declarativeNetRequest {
     // |callback|: Called with the set of dynamic rules. An error might be
     // raised in case of transient internal errors.
     static void getDynamicRules(GetRulesCallback callback);
+
+    // Updates the set of enabled static rulesets for the extension. The
+    // rulesets with IDs listed in <code>rulesetIDsToDisable</code> are first
+    // removed, and then the rulesets listed in <code>rulesetIDsToEnable</code>
+    // are added.
+    // Note that the set of enabled static rulesets is persisted across sessions
+    // but not across extension updates, i.e. the <code>rule_resources</code>
+    // manifest key will determine the set of enabled static rulesets on each
+    // extension update.
+    // |rulesetIdsToDisable|: The set of ids corresponding to a static
+    // $(ref:Ruleset) that should be disabled.
+    // |rulesetIdsToEnable|: The set of ids corresponding to a static
+    // $(ref:Ruleset) that should be enabled.
+    // |callback|: Called once the update is complete. In case of an error,
+    // $(ref:runtime.lastError) will be set and no change will be made to set of
+    // enabled rulesets. This can happen for multiple reasons, such as invalid
+    // ruleset IDs, rule count limit exceeded, or internal errors.
+    // TODO(crbug.com/754526): Enable the documentation.
+    [nodoc]
+    static void updateEnabledRulesets(
+        DOMString[] rulesetIdsToDisable, DOMString[] rulesetIdsToEnable,
+        EmptyCallback callback);
+
+    // Returns the ids for the current set of enabled static rulesets.
+    // |callback|: Called with a list of ids, where each id corresponds to an
+    // enabled static $(ref:Ruleset).
+    // TODO(crbug.com/754526): Enable the documentation.
+    [nodoc]
+    static void getEnabledRulesets(GetEnabledRulesetsCallback callback);
 
     // Returns all rules matched for the extension. Callers can optionally
     // filter the list of matched rules by specifying a |filter|. This method is

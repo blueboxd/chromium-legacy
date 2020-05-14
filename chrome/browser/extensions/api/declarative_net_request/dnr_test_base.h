@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
-#include "extensions/common/features/feature_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -32,8 +31,6 @@ class DNRTestBase : public ExtensionServiceTestBase,
   std::unique_ptr<ChromeTestExtensionLoader> CreateExtensionLoader();
 
  private:
-  ScopedCurrentChannel channel_;
-
   DISALLOW_COPY_AND_ASSIGN(DNRTestBase);
 };
 

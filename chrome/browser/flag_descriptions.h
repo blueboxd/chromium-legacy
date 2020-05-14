@@ -76,6 +76,12 @@ extern const char kAllowSignedHTTPExchangeCertsWithoutExtensionDescription[];
 extern const char kAllowSyncXHRInPageDismissalName[];
 extern const char kAllowSyncXHRInPageDismissalDescription[];
 
+extern const char kConversionMeasurementApiName[];
+extern const char kConversionMeasurementApiDescription[];
+
+extern const char kConversionMeasurementDebugModeName[];
+extern const char kConversionMeasurementDebugModeDescription[];
+
 extern const char kEnableClipboardProviderImageSuggestionsName[];
 extern const char kEnableClipboardProviderImageSuggestionsDescription[];
 
@@ -1625,6 +1631,9 @@ extern const char kUsageStatsName[];
 extern const char kInlineUpdateFlowName[];
 extern const char kInlineUpdateFlowDescription[];
 
+extern const char kAndroidDarkSearchName[];
+extern const char kAndroidDarkSearchDescription[];
+
 extern const char kAndroidNightModeTabReparentingName[];
 extern const char kAndroidNightModeTabReparentingDescription[];
 
@@ -1875,9 +1884,6 @@ extern const char kBluetoothAggressiveAppearanceFilterDescription[];
 
 extern const char kBluetoothFixA2dpPacketSizeName[];
 extern const char kBluetoothFixA2dpPacketSizeDescription[];
-
-extern const char kBluetoothKernelSuspendNotifierName[];
-extern const char kBluetoothKernelSuspendNotifierDescription[];
 
 extern const char kBluetoothNextHandsfreeProfileName[];
 extern const char kBluetoothNextHandsfreeProfileDescription[];
@@ -2146,6 +2152,9 @@ extern const char kImeInputLogicFstDescription[];
 
 extern const char kImeInputLogicHmmName[];
 extern const char kImeInputLogicHmmDescription[];
+
+extern const char kImeInputLogicMozcName[];
+extern const char kImeInputLogicMozcDescription[];
 
 extern const char kImeMozcProtoName[];
 extern const char kImeMozcProtoDescription[];

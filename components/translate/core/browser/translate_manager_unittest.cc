@@ -544,6 +544,7 @@ TEST_F(TranslateManagerTest, ShouldHonorExperimentRankerEnforcement_Enforce) {
   EXPECT_EQ("hi", TranslateManager::GetTargetLanguage(
                       &translate_prefs_, &mock_language_model_, {"en"}));
   translate_manager_->InitiateTranslation("en");
+  EXPECT_TRUE(translate_manager_->GetLanguageState().translate_enabled());
   EXPECT_THAT(
       histogram_tester.GetAllSamples(kInitiationStatusName),
       ElementsAre(Bucket(metrics::INITIATION_STATUS_ABORTED_BY_RANKER, 1),
@@ -582,6 +583,7 @@ TEST_F(TranslateManagerTest,
   EXPECT_EQ("hi", TranslateManager::GetTargetLanguage(
                       &translate_prefs_, &mock_language_model_, {}));
   translate_manager_->InitiateTranslation("fr");
+  EXPECT_TRUE(translate_manager_->GetLanguageState().translate_enabled());
   EXPECT_THAT(histogram_tester.GetAllSamples(kInitiationStatusName),
               ElementsAre(Bucket(metrics::INITIATION_STATUS_SHOW_INFOBAR, 1),
                           Bucket(metrics::INITIATION_STATUS_SHOW_ICON, 1)));

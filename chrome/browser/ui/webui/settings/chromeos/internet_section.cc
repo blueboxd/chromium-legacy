@@ -538,6 +538,17 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
   html_source->AddString("networkGoogleNameserversLearnMoreUrl",
                          chrome::kGoogleNameserversLearnMoreURL);
+
+  html_source->AddString(
+      "networkSyncedShared",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_INTERNET_NETWORK_SYNCED_SHARED,
+          GetHelpUrlWithBoard(chrome::kWifiSyncLearnMoreURL)));
+  html_source->AddString(
+      "networkSyncedUser",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_INTERNET_NETWORK_SYNCED_USER,
+          GetHelpUrlWithBoard(chrome::kWifiSyncLearnMoreURL)));
   html_source->AddString(
       "internetNoNetworksMobileData",
       l10n_util::GetStringFUTF16(

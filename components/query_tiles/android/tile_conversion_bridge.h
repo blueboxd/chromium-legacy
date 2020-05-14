@@ -12,7 +12,7 @@
 
 using base::android::ScopedJavaLocalRef;
 
-namespace upboarding {
+namespace query_tiles {
 
 // Helper class providing tile conversion utility methods between C++ and Java.
 class TileConversionBridge {
@@ -22,6 +22,6 @@ class TileConversionBridge {
       const std::vector<Tile>& tiles);
 };
 
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_ANDROID_TILE_CONVERSION_BRIDGE_H_

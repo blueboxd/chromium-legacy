@@ -483,6 +483,8 @@ class PasswordFormMetricsRecorder
 
   base::Optional<JsOnlyInput> js_only_input_;
 
+  bool is_mixed_content_form_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(PasswordFormMetricsRecorder);
 };
 

@@ -43,6 +43,11 @@ interface ConversionInternalsHandler {
   // being sent.
   GetPendingReports() => (array<WebUIConversionReport> reports);
 
+  // Sends all stored reports, ignoring delay, returning when the
+  // operation has been completed and all reports have been cleared from
+  // storage.
+  SendPendingReports() => ();
+
   // Deletes all persisted data for the Conversion API, returning when the
   // operation has been completed.
   ClearStorage() => ();

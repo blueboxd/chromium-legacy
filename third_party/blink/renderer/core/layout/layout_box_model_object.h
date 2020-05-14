@@ -416,6 +416,9 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   virtual bool BackgroundIsKnownToBeOpaqueInRect(const PhysicalRect&) const {
     return false;
   }
+  // Returns true if all text in the paint-order subtree will be painted on
+  // opaque background.
+  virtual bool TextIsKnownToBeOnOpaqueBackground() const { return false; }
 
   // This object's background is transferred to its LayoutView if:
   // 1. it's the document element, or

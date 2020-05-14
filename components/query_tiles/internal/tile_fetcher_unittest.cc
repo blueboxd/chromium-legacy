@@ -38,7 +38,7 @@ const char kTileGroupsMessage[] = R"pb(
   })pb";
 }  // namespace
 
-namespace upboarding {
+namespace query_tiles {
 class TileFetcherTest : public testing::Test {
  public:
   TileFetcherTest();
@@ -234,4 +234,4 @@ TEST_F(TileFetcherTest, Success) {
             "https://www.test.com/?country_code=US");
 }
 
-}  // namespace upboarding
+}  // namespace query_tiles

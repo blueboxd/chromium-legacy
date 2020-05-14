@@ -48,6 +48,8 @@ std::unique_ptr<JSONObject> CCLayerAsJSON(const cc::Layer* layer,
 
   if (layer->contents_opaque())
     json->SetBoolean("contentsOpaque", true);
+  else if (layer->contents_opaque_for_text())
+    json->SetBoolean("contentsOpaqueForText", true);
 
   if (!layer->DrawsContent())
     json->SetBoolean("drawsContent", false);

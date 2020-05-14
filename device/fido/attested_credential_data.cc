@@ -14,6 +14,7 @@
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/p256_public_key.h"
 #include "device/fido/public_key.h"
+#include "device/fido/rsa_public_key.h"
 
 namespace device {
 
@@ -92,23 +93,33 @@ AttestedCredentialData::ConsumeFromCtapResponse(
     return base::nullopt;
   }
 
-  if (public_key_type->second.is_unsigned() &&
-      public_key_type->second.GetUnsigned() ==
-          static_cast<int64_t>(CoseKeyTypes::kEC2)) {
-    auto curve = public_key_map.find(
-        cbor::Value(static_cast<int64_t>(CoseKeyKey::kEllipticCurve)));
-    if (curve == public_key_map.end() || !curve->second.is_integer()) {
-      return base::nullopt;
-    }
-
-    if (curve->second.GetInteger() == static_cast<int64_t>(CoseCurves::kP256)) {
-      auto p256_key = P256PublicKey::ExtractFromCOSEKey(
-          algorithm, public_key_cbor_bytes, public_key_map);
-      if (!p256_key) {
-        FIDO_LOG(ERROR) << "Invalid P-256 public key";
+  if (public_key_type->second.is_unsigned()) {
+    const int64_t key_type = public_key_type->second.GetUnsigned();
+    if (key_type == static_cast<int64_t>(CoseKeyTypes::kEC2)) {
+      auto curve = public_key_map.find(
+          cbor::Value(static_cast<int64_t>(CoseKeyKey::kEllipticCurve)));
+      if (curve == public_key_map.end() || !curve->second.is_integer()) {
         return base::nullopt;
       }
-      public_key = std::move(p256_key);
+
+      if (curve->second.GetInteger() ==
+          static_cast<int64_t>(CoseCurves::kP256)) {
+        auto p256_key = P256PublicKey::ExtractFromCOSEKey(
+            algorithm, public_key_cbor_bytes, public_key_map);
+        if (!p256_key) {
+          FIDO_LOG(ERROR) << "Invalid P-256 public key";
+          return base::nullopt;
+        }
+        public_key = std::move(p256_key);
+      }
+    } else if (key_type == static_cast<int64_t>(CoseKeyTypes::kRSA)) {
+      auto rsa_key = RSAPublicKey::ExtractFromCOSEKey(
+          algorithm, public_key_cbor_bytes, public_key_map);
+      if (!rsa_key) {
+        FIDO_LOG(ERROR) << "Invalid RSA public key";
+        return base::nullopt;
+      }
+      public_key = std::move(rsa_key);
     }
   }
 

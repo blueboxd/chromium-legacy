@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_COMMON_API_DECLARATIVE_NET_REQUEST_DNR_MANIFEST_DATA_H_
 #define EXTENSIONS_COMMON_API_DECLARATIVE_NET_REQUEST_DNR_MANIFEST_DATA_H_
 
+#include <map>
+#include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -29,6 +31,7 @@ struct DNRManifestData : Extension::ManifestData {
 
     // ID provided for the ruleset in the extension manifest. Uniquely
     // identifies the ruleset.
+    // TODO(karandeepb): Rename to |public_id|.
     std::string manifest_id;
 
     // Uniquely identifies an extension ruleset. The order of rulesets within
@@ -46,6 +49,8 @@ struct DNRManifestData : Extension::ManifestData {
     bool enabled = false;
   };
 
+  using ManifestIDToRulesetMap = std::map<std::string, const RulesetInfo*>;
+
   explicit DNRManifestData(std::vector<RulesetInfo> ruleset);
   ~DNRManifestData() override;
 
@@ -54,13 +59,20 @@ struct DNRManifestData : Extension::ManifestData {
   static const std::vector<RulesetInfo>& GetRulesets(
       const Extension& extension);
 
-  // Returns the |manifest_id| corresponding to the given |ruleset_id|.
-  static const std::string& GetManifestID(const Extension& extension,
-                                          RulesetID ruleset_id);
+  // Returns the RulesetInfo corresponding to the given |ruleset_id|. Must only
+  // be called for a valid |ruleset_id|.
+  static const RulesetInfo& GetRuleset(const Extension& extension,
+                                       RulesetID ruleset_id);
+
+  static const ManifestIDToRulesetMap& GetManifestIDToRulesetMap(
+      const Extension& extension);
 
   // Static rulesets specified by the extension in its manifest, in the order in
   // which they were specified.
   std::vector<RulesetInfo> rulesets;
+
+  // Map from the manifest ID to the corresponding RulesetInfo.
+  ManifestIDToRulesetMap manifest_id_to_ruleset_map;
 
   DISALLOW_COPY_AND_ASSIGN(DNRManifestData);
 };

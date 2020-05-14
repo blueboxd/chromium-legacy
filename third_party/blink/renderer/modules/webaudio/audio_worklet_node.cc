@@ -109,7 +109,7 @@ void AudioWorkletHandler::Process(uint32_t frames_to_process) {
     for (const auto& param_name : param_value_map_.Keys()) {
       auto* const param_handler = param_handler_map_.at(param_name);
       AudioFloatArray* param_values = param_value_map_.at(param_name);
-      if (param_handler->HasSampleAccurateValuesTimeline() &&
+      if (param_handler->HasSampleAccurateValues() &&
           param_handler->IsAudioRate()) {
         param_handler->CalculateSampleAccurateValues(
             param_values->Data(), static_cast<uint32_t>(frames_to_process));

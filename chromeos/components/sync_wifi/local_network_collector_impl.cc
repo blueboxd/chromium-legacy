@@ -5,6 +5,7 @@
 #include "chromeos/components/sync_wifi/local_network_collector_impl.h"
 
 #include "base/guid.h"
+#include "chromeos/components/sync_wifi/network_eligibility_checker.h"
 #include "chromeos/components/sync_wifi/network_identifier.h"
 #include "chromeos/components/sync_wifi/network_type_conversions.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
@@ -124,49 +125,14 @@ std::string LocalNetworkCollectorImpl::InitializeRequest() {
 
 bool LocalNetworkCollectorImpl::IsEligible(
     const network_config::mojom::NetworkStatePropertiesPtr& network) {
-  if (!network) {
-    return false;
-  }
-
-  if (network->type != network_config::mojom::NetworkType::kWiFi) {
-    return false;
-  }
-
-  if (!network->connectable) {
-    NET_LOG(EVENT) << NetworkGuidId(network->guid)
-                   << " is not eligible, it is not connectable.";
-    return false;
-  }
-
-  if (network->source != network_config::mojom::OncSource::kUser &&
-      !network_metadata_store_->GetIsCreatedByUser(network->guid)) {
-    NET_LOG(EVENT) << NetworkGuidId(network->guid)
-                   << " is not eligible, was not configured by user.";
+  if (!network || network->type != network_config::mojom::NetworkType::kWiFi) {
     return false;
   }
 
   const network_config::mojom::WiFiStatePropertiesPtr& wifi_properties =
       network->type_state->get_wifi();
-  if (wifi_properties->security !=
-          network_config::mojom::SecurityType::kWepPsk &&
-      wifi_properties->security !=
-          network_config::mojom::SecurityType::kWpaPsk) {
-    NET_LOG(EVENT) << NetworkGuidId(network->guid)
-                   << " is not eligible, security type not supported: "
-                   << wifi_properties->security;
-    return false;
-  }
-
-  base::TimeDelta timestamp =
-      network_metadata_store_->GetLastConnectedTimestamp(network->guid);
-  if (timestamp.is_zero()) {
-    NET_LOG(EVENT) << NetworkGuidId(network->guid)
-                   << " is not eligible, never connected.";
-    return false;
-  }
-
-  NET_LOG(EVENT) << NetworkGuidId(network->guid) << " is eligible for sync.";
-  return true;
+  return IsEligibleForSync(network->guid, network->connectable, network->source,
+                           wifi_properties->security, /*log_result=*/true);
 }
 
 void LocalNetworkCollectorImpl::StartGetNetworkDetails(

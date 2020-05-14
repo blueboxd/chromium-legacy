@@ -49,6 +49,7 @@
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
@@ -71,9 +72,14 @@ namespace {
 
 const float kResourceAdjustedRatio = 0.5;
 
-static bool g_should_fail_drawing_buffer_creation_for_testing = false;
+bool g_should_fail_drawing_buffer_creation_for_testing = false;
 
 }  // namespace
+
+// Function defined in third_party/blink/public/web/blink.h.
+void ForceNextDrawingBufferCreationToFailForTest() {
+  g_should_fail_drawing_buffer_creation_for_testing = true;
+}
 
 scoped_refptr<DrawingBuffer> DrawingBuffer::Create(
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
@@ -147,10 +153,6 @@ scoped_refptr<DrawingBuffer> DrawingBuffer::Create(
     return scoped_refptr<DrawingBuffer>();
   }
   return drawing_buffer;
-}
-
-void DrawingBuffer::ForceNextDrawingBufferCreationToFail() {
-  g_should_fail_drawing_buffer_creation_for_testing = true;
 }
 
 DrawingBuffer::DrawingBuffer(

@@ -81,8 +81,7 @@ GURL GenerateVshInCroshUrl(Profile* profile,
 
 apps::AppLaunchParams GenerateTerminalAppLaunchParams() {
   apps::AppLaunchParams launch_params(
-      extension_misc::kCroshBuiltinAppId,
-      apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      /*app_id=*/"", apps::mojom::LaunchContainer::kLaunchContainerWindow,
       WindowOpenDisposition::NEW_WINDOW,
       apps::mojom::AppLaunchSource::kSourceAppLauncher);
   launch_params.override_app_name =

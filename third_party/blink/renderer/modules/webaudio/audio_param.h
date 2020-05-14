@@ -179,21 +179,9 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
 
   void ResetSmoothedValue() { timeline_.SetSmoothedValue(IntrinsicValue()); }
 
+  // An AudioParam needs sample accurate processing if there are
+  // automations scheduled or if there are connections.
   bool HasSampleAccurateValues() {
-    if (automation_rate_ != kAudio)
-      return false;
-
-    bool has_values =
-        timeline_.HasValues(destination_handler_->CurrentSampleFrame(),
-                            destination_handler_->SampleRate());
-
-    return has_values || NumberOfRenderingConnections();
-  }
-
-  // TODO(crbug.com/1015760) This is like HasSAmpleAccurateValues, but
-  // we don't check for the rate.  When the bug is fixed,
-  // HasSampleAccurateValues can be removed and this methed renamed.
-  bool HasSampleAccurateValuesTimeline() {
     bool has_values =
         timeline_.HasValues(destination_handler_->CurrentSampleFrame(),
                             destination_handler_->SampleRate());

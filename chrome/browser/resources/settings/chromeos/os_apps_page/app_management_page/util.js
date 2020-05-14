@@ -133,6 +133,8 @@ cr.define('app_management.util', function() {
         return PwaPermissionType[permissionType];
       case AppType.kArc:
         return ArcPermissionType[permissionType];
+      case AppType.kPluginVm:
+        return PluginVmPermissionType[permissionType];
       default:
         assertNotReached();
     }
@@ -221,6 +223,8 @@ cr.define('app_management.util', function() {
         return 'AppManagement.AppDetailViews.ChromeApp';
       case AppType.kWeb:
         return 'AppManagement.AppDetailViews.WebApp';
+      case AppType.kPluginVm:
+        return 'AppManagement.AppDetailViews.PluginVmApp';
       default:
         assertNotReached();
     }

@@ -1289,6 +1289,31 @@ void LockContentsView::ShowAuthErrorMessageForDebug(int unlock_attempt) {
   ShowAuthErrorMessage();
 }
 
+void LockContentsView::ToggleManagementForUserForDebug(const AccountId& user) {
+  auto replace = [](const LoginUserInfo& user_info) {
+    auto changed = user_info;
+    if (user_info.user_enterprise_domain)
+      changed.user_enterprise_domain.reset();
+    else
+      changed.user_enterprise_domain = "example@example.com";
+    return changed;
+  };
+
+  LoginBigUserView* big = TryToFindBigUser(user, false /*require_auth_active*/);
+  if (big) {
+    big->UpdateForUser(replace(big->GetCurrentUser()));
+    return;
+  }
+
+  LoginUserView* user_view =
+      users_list_ ? users_list_->GetUserView(user) : nullptr;
+  if (user_view) {
+    user_view->UpdateForUser(replace(user_view->current_user()),
+                             false /*animate*/);
+    return;
+  }
+}
+
 void LockContentsView::FocusNextWidget(bool reverse) {
   Shelf* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
   // Tell the focus direction to the status area or the shelf so they can focus

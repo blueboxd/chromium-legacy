@@ -6,7 +6,7 @@ syntax = "proto3";
 
 option optimize_for = LITE_RUNTIME;
 
-package upboarding.query_tiles.proto;
+package query_tiles.proto;
 
 // The Tile is the schema to represent data in entries.
 // Next tag: 7

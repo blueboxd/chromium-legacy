@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.features.start_surface;
 
+import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
@@ -82,13 +83,19 @@ import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
+import org.chromium.chrome.browser.compositor.layouts.StaticLayout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
+import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_management.TabProperties;
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorTestingRobot;
@@ -129,6 +136,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 // clang-format off
@@ -1686,7 +1694,7 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_greater_than = O_MR1, message = "crbug.com/1077191")
+    @DisableIf.Build(sdk_is_greater_than = N_MR1, message = "crbug.com/1077191, crbug.com/1081909")
     public void testActivityCanBeGarbageCollectedAfterFinished() throws Exception {
         prepareTabs(1, 0, "about:blank");
 
@@ -1702,6 +1710,101 @@ public class StartSurfaceLayoutTest {
         mActivityTestRule.setActivity(activity);
 
         assertTrue(GarbageCollectionTestUtils.canBeGarbageCollected(activityRef));
+    }
+
+    /**
+     * This test is to simulate closing all incognito tabs during the activity recreation stage.
+     * This is a regression test for crbug.com/1044557. The test ensures all incognito tabs closed,
+     * which leads to a TabModel switching event, before the first normal tab is restored.
+     */
+    @Test
+    @MediumTest
+    @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    // clang-format off
+    @DisabledTest(message = "crbug.com/1044557 This regression test fails deterministically with" +
+            " the bot, but passes with local emulator. Disable the test for now.")
+    public void
+    closeAllIncognitoTabsBeforeRestoreCompleted() {
+        // clang-format on
+        prepareTabs(3, 1, "about:blank");
+
+        assertTrue(mActivityTestRule.getActivity().getCurrentTabModel().isIncognito());
+
+        // Need to wait for contentsState to be initialized for the tab to restore correctly.
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> TabState.from(mActivityTestRule.getActivity().getActivityTab())
+                                   .contentsState
+                        != null,
+                "Incognito tab contentsState is null");
+
+        ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
+                mActivityTestRule.getActivity(), true, false);
+
+        mActivityTestRule.loadUrl("about:blank");
+
+        // Need to wait for contentsState to be initialized for the tab to restore correctly.
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> TabState.from(mActivityTestRule.getActivity().getActivityTab())
+                                   .contentsState
+                        != null,
+                "Incognito tab contentsState is null");
+
+        PseudoTab.clearForTesting();
+
+        AtomicBoolean tabModelRestoreCompleted = new AtomicBoolean(false);
+        AtomicBoolean normalModelIsEmpty = new AtomicBoolean(true);
+
+        ChromeTabbedActivity newActivity =
+                ApplicationTestUtils.recreateActivity(mActivityTestRule.getActivity());
+
+        new TabModelSelectorTabModelObserver(newActivity.getTabModelSelector()) {
+            @Override
+            public void restoreCompleted() {
+                tabModelRestoreCompleted.set(true);
+            }
+
+            @Override
+            public void willAddTab(Tab tab, int type) {
+                if (tab.isIncognito() || !normalModelIsEmpty.get()) return;
+
+                // Ensure normal tab model is active before its first tab restores.
+                CriteriaHelper.pollUiThread(
+                        ()
+                                -> !newActivity.getCurrentTabModel().isIncognito(),
+                        "Had not switched to Normal TabModel before the first normal Tab restored");
+            }
+
+            @Override
+            public void didAddTab(Tab tab, int type, int creationState) {
+                if (tab.isIncognito()) return;
+                normalModelIsEmpty.set(false);
+            }
+        };
+
+        CriteriaHelper.pollUiThread(()
+                                            -> newActivity.didFinishNativeInitialization(),
+                "New Activity has not finished initialized yet");
+        CriteriaHelper.pollUiThread(()
+                                            -> newActivity.getCurrentTabModel().isIncognito(),
+                "New Activity current TabModel is not incognito");
+        TestThreadUtils.runOnUiThreadBlocking(IncognitoUtils::closeAllIncognitoTabs);
+
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> DeferredStartupHandler.getInstance().isDeferredStartupCompleteForApp(),
+                "Deferred startup never completed");
+
+        CriteriaHelper.pollUiThread(()
+                                            -> tabModelRestoreCompleted.get(),
+                "New Activity normal TabModel has never restored");
+
+        assertFalse(newActivity.getCurrentTabModel().isIncognito());
+        assertNotNull(newActivity.getTabModelSelector().getCurrentTab());
+        // With the fix, StaticLayout guarantees to be shown. Otherwise, StartSurfaceLayout could be
+        // shown, not guaranteed.
+        assertTrue(newActivity.getLayoutManager().getActiveLayout() instanceof StaticLayout);
     }
 
     private void enterTabGroupManualSelection(ChromeTabbedActivity cta) {

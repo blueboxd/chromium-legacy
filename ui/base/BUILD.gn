@@ -507,8 +507,8 @@ jumbo_component("base") {
     if (!is_chromeos) {
       # These Aura X11 files aren't used on ChromeOS.
       sources += [
-        "dragdrop/os_exchange_data_provider_aurax11.cc",
-        "dragdrop/os_exchange_data_provider_aurax11.h",
+        "dragdrop/os_exchange_data_provider_x11.cc",
+        "dragdrop/os_exchange_data_provider_x11.h",
       ]
     }
   }
@@ -1170,7 +1170,7 @@ test("ui_base_unittests") {
 
   if (use_x11) {
     sources += [
-      "dragdrop/os_exchange_data_provider_aurax11_unittest.cc",
+      "dragdrop/os_exchange_data_provider_x11_unittest.cc",
       "x/selection_requestor_unittest.cc",
     ]
   }

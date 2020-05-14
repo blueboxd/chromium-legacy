@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/core_initializer.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/core/css/media_feature_names.h"
@@ -66,6 +67,11 @@
 namespace blink {
 
 CoreInitializer* CoreInitializer::instance_ = nullptr;
+
+// Function defined in third_party/blink/public/web/blink.h.
+void ForceNextWebGLContextCreationToFailForTest() {
+  CoreInitializer::GetInstance().ForceNextWebGLContextCreationToFail();
+}
 
 void CoreInitializer::RegisterEventFactory() {
   static bool is_registered = false;

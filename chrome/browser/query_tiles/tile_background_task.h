@@ -13,7 +13,7 @@ struct TaskParameters;
 struct TaskInfo;
 }  // namespace background_task
 
-namespace upboarding {
+namespace query_tiles {
 
 using BackgroundTask = background_task::BackgroundTask;
 using TaskInfo = background_task::TaskInfo;
@@ -50,6 +50,6 @@ class TileBackgroundTask : public BackgroundTask {
   TaskFinishedCallback callback_;
 };
 
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // CHROME_BROWSER_QUERY_TILES_TILE_BACKGROUND_TASK_H_

@@ -423,8 +423,7 @@ public class AutocompleteMediatorUnitTest {
                 ((DropdownItemViewInfo) model.get(2)).type, OmniboxSuggestionUiType.DEFAULT);
 
         DropdownItemViewInfo header = (DropdownItemViewInfo) model.get(0);
-        Assert.assertEquals(
-                header.model.get(HeaderViewProperties.TITLE), headers.get(1).toUpperCase());
+        Assert.assertEquals(header.model.get(HeaderViewProperties.TITLE), headers.get(1));
     }
 
     @CalledByNativeJavaTest
@@ -478,10 +477,8 @@ public class AutocompleteMediatorUnitTest {
         DropdownItemViewInfo header1 = (DropdownItemViewInfo) model.get(1);
         DropdownItemViewInfo header2 = (DropdownItemViewInfo) model.get(4);
 
-        Assert.assertEquals(
-                header1.model.get(HeaderViewProperties.TITLE), headers.get(1).toUpperCase());
-        Assert.assertEquals(
-                header2.model.get(HeaderViewProperties.TITLE), headers.get(2).toUpperCase());
+        Assert.assertEquals(header1.model.get(HeaderViewProperties.TITLE), headers.get(1));
+        Assert.assertEquals(header2.model.get(HeaderViewProperties.TITLE), headers.get(2));
     }
 
     @CalledByNativeJavaTest

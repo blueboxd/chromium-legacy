@@ -26,19 +26,49 @@
 #if defined(OS_WIN)
 #include "base/command_line.h"
 #include "chrome/browser/printing/pdf_to_emf_converter.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "content/public/browser/web_contents.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/printed_page_win.h"
+#include "printing/printing_features.h"
 #endif
 
 using base::TimeDelta;
 
 namespace printing {
 
+namespace {
+
 // Helper function to ensure |job| is valid until at least |callback| returns.
 void HoldRefCallback(scoped_refptr<PrintJob> job, base::OnceClosure callback) {
   std::move(callback).Run();
 }
+
+#if defined(OS_WIN)
+// Those must be kept in sync with the values defined in policy_templates.json.
+enum class PrintRasterizationMode {
+  // Do full page rasterization if necessary. Default value when policy not set.
+  kFull = 0,
+  // Avoid rasterization if possible.
+  kFast = 1,
+  kMaxValue = kFast,
+};
+
+bool PrintWithReducedRasterization(PrefService* prefs) {
+  // Managed preference takes precedence over user preference and field trials.
+  if (prefs->IsManagedPreference(prefs::kPrintRasterizationMode)) {
+    int value = prefs->GetInteger(prefs::kPrintRasterizationMode);
+    return value == static_cast<int>(PrintRasterizationMode::kFast);
+  }
+
+  return base::FeatureList::IsEnabled(features::kPrintWithReducedRasterization);
+}
+#endif
+
+}  // namespace
 
 PrintJob::PrintJob() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -319,11 +349,25 @@ void PrintJob::StartPdfToEmfConversion(
   bool print_text_with_gdi =
       settings.print_text_with_gdi() && !settings.printer_is_xps() &&
       base::FeatureList::IsEnabled(::features::kGdiTextPrinting);
+
+  Profile* profile = Profile::FromBrowserContext(
+      worker_->GetWebContents()->GetBrowserContext());
+  bool print_with_reduced_rasterization =
+      PrintWithReducedRasterization(profile->GetPrefs());
+
+  using RenderMode = PdfRenderSettings::Mode;
+  RenderMode mode;
+  if (print_with_reduced_rasterization) {
+    mode = print_text_with_gdi
+               ? RenderMode::EMF_WITH_REDUCED_RASTERIZATION_AND_GDI_TEXT
+               : RenderMode::EMF_WITH_REDUCED_RASTERIZATION;
+  } else {
+    mode = print_text_with_gdi ? RenderMode::GDI_TEXT : RenderMode::NORMAL;
+  }
+
   PdfRenderSettings render_settings(
       content_area, gfx::Point(0, 0), settings.dpi_size(),
-      /*autorotate=*/true, settings.color() == COLOR,
-      print_text_with_gdi ? PdfRenderSettings::Mode::GDI_TEXT
-                          : PdfRenderSettings::Mode::NORMAL);
+      /*autorotate=*/true, settings.color() == COLOR, mode);
   pdf_conversion_state_->Start(
       bytes, render_settings,
       base::BindOnce(&PrintJob::OnPdfConversionStarted, this));
@@ -581,4 +625,5 @@ PrintedDocument* JobEventDetails::document() const { return document_.get(); }
 #if defined(OS_WIN)
 PrintedPage* JobEventDetails::page() const { return page_.get(); }
 #endif
+
 }  // namespace printing

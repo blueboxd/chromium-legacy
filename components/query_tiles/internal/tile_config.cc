@@ -7,7 +7,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "components/query_tiles/switches.h"
 
-namespace upboarding {
+namespace query_tiles {
 
 // Default base URL string for the Query Tiles server.
 constexpr char kDefaultBaseURL[] =
@@ -122,4 +122,4 @@ int TileConfig::GetOneoffTaskWindowInMs() {
       features::kQueryTiles, kOneoffTaskWindowKey, kDefaultOneoffTaskWindow);
 }
 
-}  // namespace upboarding
+}  // namespace query_tiles

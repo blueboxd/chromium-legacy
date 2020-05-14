@@ -1,0 +1,52 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="../browser_proxy.html">
+<link rel="import" href="../icons.html">
+<link rel="import" href="../permission_item.html">
+<link rel="import" href="../pin_to_shelf_item.html">
+<link rel="import" href="../shared_style.html">
+<link rel="import" href="../store_client.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+
+<dom-module id="app-management-plugin-vm-detail-view">
+  <template>
+    <style include="app-management-shared-css">
+    </style>
+
+    <div class="permission-list">
+      <!-- TODO(1082000): |app_| property on app-management-pin-to-shelf-item
+        should not be private. -->
+      <app-management-pin-to-shelf-item
+          id="pin-to-shelf-setting"
+          class="permission-card-row separated-row header-text"
+          app_="[[app_]]">
+      </app-management-pin-to-shelf-item>
+      <div class="permission-card-row">
+        <div class="permission-section-header">
+          <div class="header-text">$i18n{appManagementPermissionsLabel}</div>
+        </div>
+        <div class="permission-list indented-permission-block">
+          <app-management-permission-item
+              class="subpermission-row" icon="cr:print"
+              permission-label="$i18n{appManagementPrintingPermissionLabel}"
+              permission-type="PRINTING">
+          </app-management-permission-item>
+        </div>
+      </div>
+
+      <div class="permission-card-row separated-row header-text clickable"
+          on-click="onSharedPathsClick_">
+        <div id="label" class="header-text" aria-hidden="true">
+          $i18n{pluginVmSharedPaths}
+        </div>
+        <div class="permission-row-controls">
+          <cr-icon-button class="subpage-arrow app-management-item-arrow"
+            role="link" tabindex="0" aria-labelledby="label">
+          </cr-icon-button>
+        </div>
+      </div>
+    </div>
+  </template>
+  <script src="plugin_vm_detail_view.js"></script>
+</dom-module>

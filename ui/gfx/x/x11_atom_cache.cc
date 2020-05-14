@@ -258,16 +258,8 @@ X11AtomCache::X11AtomCache() : connection_(x11::Connection::Get()) {
 
   std::vector<x11::Future<x11::XProto::InternAtomReply>> requests;
   requests.reserve(kCacheCount);
-  for (const char* name : kAtomsToCache) {
-    // TODO(thomasanderson):  The xcbproto descriptions were designed to
-    // generate C bindings for libxcb, so all list-like fields have a separate
-    // length field.  However in our C++ bindings, the lists (std::array,
-    // std::vector, std::string) always have a length associated with them, so
-    // the length field is redundant.  Therefore, they should be removed from
-    // client-visible APIs.
-    requests.push_back(
-        connection_->InternAtom({.name_len = strlen(name), .name = name}));
-  }
+  for (const char* name : kAtomsToCache)
+    requests.push_back(connection_->InternAtom({.name = name}));
   for (size_t i = 0; i < kCacheCount; ++i) {
     if (auto response = requests[i].Sync())
       cached_atoms_[kAtomsToCache[i]] = static_cast<XAtom>(response->atom);
@@ -283,9 +275,7 @@ XAtom X11AtomCache::GetAtom(const char* name) const {
     return it->second;
 
   XAtom atom = 0;
-  if (auto response =
-          connection_->InternAtom({.name_len = strlen(name), .name = name})
-              .Sync()) {
+  if (auto response = connection_->InternAtom({.name = name}).Sync()) {
     atom = static_cast<XAtom>(response->atom);
     cached_atoms_.emplace(name, atom);
   } else {

@@ -10,6 +10,7 @@
       "name": "LayoutBlockFlow DIV class='box'",
       "position": [-30, -30],
       "bounds": [160, 160],
+      "contentsOpaqueForText": true,
       "backgroundColor": "#0000FF",
       "transform": 1
     }

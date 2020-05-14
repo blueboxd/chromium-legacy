@@ -39,8 +39,7 @@ class MirroringActivityRecord : public ActivityRecord,
     kTab,           // Mirror a single tab.
     kDesktop,       // Mirror the whole desktop.
     kOffscreenTab,  // Used for Presentation API 1UA mode.
-    kNonLocal,      // Activity started by other sender devices.
-    kMaxValue = kNonLocal,
+    kMaxValue = kOffscreenTab,
   };
 
   MirroringActivityRecord(const MediaRoute& route,
@@ -95,7 +94,7 @@ class MirroringActivityRecord : public ActivityRecord,
   base::Optional<base::Time> did_start_mirroring_timestamp_;
 
   const int channel_id_;
-  const MirroringType mirroring_type_;
+  const base::Optional<MirroringType> mirroring_type_;
   OnStopCallback on_stop_;
   base::WeakPtrFactory<MirroringActivityRecord> weak_ptr_factory_{this};
 };

@@ -847,6 +847,7 @@ public class FeedActionParserTest {
                 BLOCK_CONTENT_ACTION, mStreamActionApi, /* view= */ null, ActionSource.CLICK);
         verify(mStreamActionApi)
                 .handleBlockContent(mStreamDataOperations, ActionPayload.getDefaultInstance());
+        verify(mStreamActionApi).onClientAction(ActionType.BLOCK_CONTENT);
     }
 
     @Test

@@ -96,8 +96,8 @@ cr.define('policy', function() {
     },
     /**
      * Populate the box with the given cloud policy status.
-     * @param {string} scope The policy scope, either "device", "machine", or
-     *     "user".
+     * @param {string} scope The policy scope, either "device", "machine",
+     *     "user", or "updater".
      * @param {Object} status Dictionary with information about the status.
      */
     initialize(scope, status) {
@@ -144,6 +144,15 @@ cr.define('policy', function() {
             '.machine-enrollment-token', status.enrollmentToken);
         this.setLabelAndShow_('.machine-enrollment-name', status.machine);
         this.setLabelAndShow_('.machine-enrollment-domain', status.domain);
+      } else if (scope === 'updater') {
+        this.querySelector('.legend').textContent =
+            loadTimeData.getString('statusUpdater');
+        if (status.version) {
+          this.setLabelAndShow_('.version', status.version);
+        }
+        if (status.domain) {
+          this.setLabelAndShow_('.enterprise-enrollment-domain', status.domain);
+        }
       } else {
         // For user policy, set the appropriate title and populate the topmost
         // status item with the username that policies apply to.
@@ -161,15 +170,19 @@ cr.define('policy', function() {
                   status.isAffiliated ? 'isAffiliatedYes' : 'isAffiliatedNo'));
         }
       }
-      this.setLabelAndShow_(
-          '.time-since-last-refresh', status.timeSinceLastRefresh, false);
-      this.setLabelAndShow_('.refresh-interval', status.refreshInterval, false);
-      this.setLabelAndShow_('.status', status.status, false);
-      this.setLabelAndShow_(
-          '.policy-push',
-          loadTimeData.getString(
-              status.policiesPushAvailable ? 'policiesPushOn' :
-                                             'policiesPushOff'));
+
+      if (scope !== 'updater') {
+        this.setLabelAndShow_(
+            '.time-since-last-refresh', status.timeSinceLastRefresh, false);
+        this.setLabelAndShow_(
+            '.refresh-interval', status.refreshInterval, false);
+        this.setLabelAndShow_('.status', status.status, false);
+        this.setLabelAndShow_(
+            '.policy-push',
+            loadTimeData.getString(
+                status.policiesPushAvailable ? 'policiesPushOn' :
+                                               'policiesPushOff'));
+      }
     },
   };
 

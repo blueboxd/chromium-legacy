@@ -40,6 +40,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV class='scrolled')",
       "position": [5, 49],
       "bounds": [60, 128],
+      "contentsOpaqueForText": true,
       "backfaceVisibility": "hidden",
       "transform": 1
     },

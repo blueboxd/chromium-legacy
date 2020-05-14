@@ -15,19 +15,16 @@ namespace content {
 
 ConversionReporterImpl::ConversionReporterImpl(
     StoragePartition* storage_partition,
-    ConversionManager* conversion_manager,
     const base::Clock* clock)
-    : conversion_manager_(conversion_manager),
-      clock_(clock),
+    : clock_(clock),
       network_sender_(
-          std::make_unique<ConversionNetworkSenderImpl>(storage_partition)) {
-  DCHECK(conversion_manager_);
-}
+          std::make_unique<ConversionNetworkSenderImpl>(storage_partition)) {}
 
 ConversionReporterImpl::~ConversionReporterImpl() = default;
 
 void ConversionReporterImpl::AddReportsToQueue(
-    std::vector<ConversionReport> reports) {
+    std::vector<ConversionReport> reports,
+    base::RepeatingCallback<void(int64_t)> report_sent_callback) {
   DCHECK(!reports.empty());
 
   std::vector<std::unique_ptr<ConversionReport>> swappable_reports;
@@ -45,8 +42,9 @@ void ConversionReporterImpl::AddReportsToQueue(
 
   for (std::unique_ptr<ConversionReport>& report : swappable_reports) {
     // If the given report is already being processed, ignore it.
-    bool inserted =
-        conversion_ids_being_processed_.insert(*(report->conversion_id)).second;
+    bool inserted = conversion_report_callbacks_
+                        .emplace(*(report->conversion_id), report_sent_callback)
+                        .second;
     if (inserted)
       report_queue_.push(std::move(report));
   }
@@ -84,14 +82,18 @@ void ConversionReporterImpl::MaybeScheduleNextReport() {
   // Unretained is safe because the task should never actually be posted if the
   // timer itself is destroyed
   send_report_timer_.Start(
-      FROM_HERE, report_time - current_time,
+      FROM_HERE,
+      (report_time < current_time) ? base::TimeDelta()
+                                   : report_time - current_time,
       base::BindOnce(&ConversionReporterImpl::SendNextReport,
                      base::Unretained(this)));
 }
 
 void ConversionReporterImpl::OnReportSent(int64_t conversion_id) {
-  conversion_ids_being_processed_.erase(conversion_id);
-  conversion_manager_->HandleSentReport(conversion_id);
+  auto it = conversion_report_callbacks_.find(conversion_id);
+  DCHECK(it != conversion_report_callbacks_.end());
+  std::move(it->second).Run(conversion_id);
+  conversion_report_callbacks_.erase(it);
 }
 
 bool ConversionReporterImpl::ReportComparator::operator()(

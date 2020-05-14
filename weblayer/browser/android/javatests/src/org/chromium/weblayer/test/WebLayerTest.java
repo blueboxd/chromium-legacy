@@ -24,6 +24,7 @@ public class WebLayerTest {
 
     @Test
     @SmallTest
+    @MinWebLayerVersion(84)
     public void getUserAgentString() {
         final String userAgent = TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> { return mActivityTestRule.getWebLayer().getUserAgentString(); });

@@ -100,16 +100,17 @@
     background: url(icons/googlemic_clr_24px.svg) no-repeat center;
     background-size: 21px 21px;
     border: none;
+    border-radius: 2px;
     cursor: pointer;
-    height: 21px;
+    height: 100%;
     outline: none;
     padding: 0;
     pointer-events: auto;
-    width: 21px;
+    width: 26px;
   }
 
   :host-context(.focus-outline-visible) #voiceSearchButton:focus {
-    box-shadow: 0 0 0 2px var(--ntp-focus-shadow-color);
+    box-shadow: var(--ntp-focus-shadow);
   }
 </style>
 <input id="input" on-pointerdown="onPointerDown_" on-paste="onPaste_"

@@ -24,7 +24,6 @@ import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IBrowser;
 import org.chromium.weblayer_private.interfaces.IBrowserClient;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
-import org.chromium.weblayer_private.interfaces.IProfile;
 import org.chromium.weblayer_private.interfaces.ITab;
 import org.chromium.weblayer_private.interfaces.IUrlBarController;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
@@ -209,7 +208,7 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     @Override
-    public IProfile getProfile() {
+    public ProfileImpl getProfile() {
         StrictModeWorkaround.apply();
         return mProfile;
     }

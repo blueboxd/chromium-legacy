@@ -55,7 +55,8 @@ static std::string& GetFakeUserId() {
 // * PluginVm feature should be enabled.
 // * Device should be enterprise enrolled:
 //   * User should be affiliated.
-//   * PluginVmAllowed should be set.
+//   * PluginVmAllowed device policy should be set to true.
+//   * UserPluginVmAllowed user policy should be set to true.
 // * At least one of the following should be set:
 //   * PluginVmLicenseKey policy.
 //   * PluginVmUserId policy.
@@ -93,7 +94,9 @@ bool IsPluginVmAllowedForProfile(const Profile* profile) {
           chromeos::kPluginVmAllowed, &plugin_vm_allowed_for_device)) {
     return false;
   }
-  if (!plugin_vm_allowed_for_device)
+  bool plugin_vm_allowed_for_user =
+      profile->GetPrefs()->GetBoolean(plugin_vm::prefs::kPluginVmAllowed);
+  if (!plugin_vm_allowed_for_device || !plugin_vm_allowed_for_user)
     return false;
 
   if (GetPluginVmLicenseKey().empty() && GetPluginVmUserId().empty())
@@ -224,7 +227,13 @@ PluginVmPolicySubscription::PluginVmPolicySubscription(
   DCHECK(chromeos::CrosSettings::IsInitialized());
   chromeos::CrosSettings* cros_settings = chromeos::CrosSettings::Get();
   // Subscriptions are automatically removed when this object is destroyed.
-  allowed_subscription_ = cros_settings->AddSettingsObserver(
+  user_allowed_pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+  user_allowed_pref_change_registrar_->Init(profile->GetPrefs());
+  user_allowed_pref_change_registrar_->Add(
+      plugin_vm::prefs::kPluginVmAllowed,
+      base::BindRepeating(&PluginVmPolicySubscription::OnPolicyChanged,
+                          base::Unretained(this)));
+  device_allowed_subscription_ = cros_settings->AddSettingsObserver(
       chromeos::kPluginVmAllowed,
       base::BindRepeating(&PluginVmPolicySubscription::OnPolicyChanged,
                           base::Unretained(this)));

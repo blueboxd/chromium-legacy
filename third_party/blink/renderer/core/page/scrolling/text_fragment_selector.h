@@ -30,7 +30,7 @@ class CORE_EXPORT TextFragmentSelector final {
                        const String& end,
                        const String& prefix,
                        const String& suffix);
-  TextFragmentSelector(SelectorType type);
+  explicit TextFragmentSelector(SelectorType type);
   ~TextFragmentSelector() = default;
 
   SelectorType Type() const { return type_; }

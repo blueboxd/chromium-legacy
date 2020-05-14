@@ -601,8 +601,8 @@ class BBJSONGenerator(object):
     elif self.is_chromeos(tester_config) and tester_config.get('use_swarming',
                                                                True):
       # The presence of the "device_type" dimension indicates that the tests
-      # are targetting CrOS hardware and so need the special trigger script.
-      dimension_sets = tester_config['swarming']['dimension_sets']
+      # are targeting CrOS hardware and so need the special trigger script.
+      dimension_sets = test['swarming']['dimension_sets']
       if all('device_type' in ds for ds in dimension_sets):
         test['trigger_script'] = {
           'script': '//testing/trigger_scripts/chromeos_device_trigger.py',

@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
+#include "components/version_info/channel.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
@@ -31,6 +32,7 @@
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/features/feature_channel.h"
 #include "url/origin.h"
 
 namespace extensions {
@@ -453,11 +455,15 @@ std::vector<RequestAction> RulesetManager::EvaluateRequestInternal(
   if (!remove_headers_actions.empty())
     return remove_headers_actions;
 
-  std::vector<RequestAction> modify_headers_actions =
-      GetModifyHeadersActions(rulesets_to_evaluate, request, params);
+  // TODO(crbug.com/947591): Remove the channel check once implementation of
+  // modifyHeaders action is complete.
+  if (GetCurrentChannel() != version_info::Channel::STABLE) {
+    std::vector<RequestAction> modify_headers_actions =
+        GetModifyHeadersActions(rulesets_to_evaluate, request, params);
 
-  if (!modify_headers_actions.empty())
-    return modify_headers_actions;
+    if (!modify_headers_actions.empty())
+      return modify_headers_actions;
+  }
 
   return actions;
 }

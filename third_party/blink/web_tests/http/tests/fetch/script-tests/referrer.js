@@ -3,6 +3,7 @@ if (self.importScripts) {
   importScripts('/fetch/resources/fetch-test-helpers.js');
 }
 
+const {BASE_ORIGIN, OTHER_ORIGIN} = get_fetch_test_options();
 const BASE_URL = BASE_ORIGIN + '/fetch/resources/referrer.php';
 const OTHER_URL = OTHER_ORIGIN + '/fetch/resources/referrer.php';
 const REFERRER_SOURCE = location.href;

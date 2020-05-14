@@ -52,6 +52,7 @@ bool LoadValueEvents(const base::Value* value, ValueEvents* value_events) {
       case ArcValueEvent::Type::kCpuPower:
       case ArcValueEvent::Type::kGpuPower:
       case ArcValueEvent::Type::kMemoryPower:
+      case ArcValueEvent::Type::kPackagePowerConstraint:
         break;
       default:
         return false;

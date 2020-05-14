@@ -21,14 +21,16 @@ const size_t kMaxTraceEventStringLength = 1000;
 TextFragmentAnchorMetrics::TextFragmentAnchorMetrics(Document* document)
     : document_(document) {}
 
-void TextFragmentAnchorMetrics::DidCreateAnchor(int selector_count) {
+void TextFragmentAnchorMetrics::DidCreateAnchor(int selector_count,
+                                                int directive_length) {
   UseCounter::Count(document_, WebFeature::kTextFragmentAnchor);
   create_time_ = base::TimeTicks::Now();
   selector_count_ = selector_count;
+  directive_length_ = directive_length;
 }
 
-void TextFragmentAnchorMetrics::DidFindMatch(const String text) {
-  matches_.push_back(text);
+void TextFragmentAnchorMetrics::DidFindMatch(Match match) {
+  matches_.push_back(match);
 }
 
 void TextFragmentAnchorMetrics::ResetMatchCount() {
@@ -68,6 +70,12 @@ void TextFragmentAnchorMetrics::ReportMetrics() {
                        TRACE_EVENT_SCOPE_THREAD, "selector_count",
                        selector_count_);
 
+  UMA_HISTOGRAM_COUNTS_1000("TextFragmentAnchor.DirectiveLength",
+                            directive_length_);
+  TRACE_EVENT_INSTANT1("blink", "TextFragmentAnchorMetrics::ReportMetrics",
+                       TRACE_EVENT_SCOPE_THREAD, "directive_length",
+                       directive_length_);
+
   const int match_rate_percent =
       static_cast<int>(100 * ((matches_.size() + 0.0) / selector_count_));
   UMA_HISTOGRAM_PERCENTAGE("TextFragmentAnchor.MatchRate", match_rate_percent);
@@ -75,11 +83,41 @@ void TextFragmentAnchorMetrics::ReportMetrics() {
                        TRACE_EVENT_SCOPE_THREAD, "match_rate",
                        match_rate_percent);
 
-  for (const String& match : matches_) {
-    TRACE_EVENT_INSTANT2("blink", "TextFragmentAnchorMetrics::ReportMetrics",
-                         TRACE_EVENT_SCOPE_THREAD, "match_found",
-                         match.Utf8().substr(0, kMaxTraceEventStringLength),
-                         "match_length", match.length());
+  for (const Match& match : matches_) {
+    TRACE_EVENT_INSTANT2(
+        "blink", "TextFragmentAnchorMetrics::ReportMetrics",
+        TRACE_EVENT_SCOPE_THREAD, "match_found",
+        match.text.Utf8().substr(0, kMaxTraceEventStringLength), "match_length",
+        match.text.length());
+
+    if (match.selector.Type() == TextFragmentSelector::kExact) {
+      UMA_HISTOGRAM_COUNTS_1000("TextFragmentAnchor.ExactTextLength",
+                                match.text.length());
+      TRACE_EVENT_INSTANT1("blink", "TextFragmentAnchorMetrics::ReportMetrics",
+                           TRACE_EVENT_SCOPE_THREAD, "exact_text_length",
+                           match.text.length());
+    } else if (match.selector.Type() == TextFragmentSelector::kRange) {
+      UMA_HISTOGRAM_COUNTS_1000("TextFragmentAnchor.RangeMatchLength",
+                                match.text.length());
+      TRACE_EVENT_INSTANT1("blink", "TextFragmentAnchorMetrics::ReportMetrics",
+                           TRACE_EVENT_SCOPE_THREAD, "range_match_length",
+                           match.text.length());
+
+      UMA_HISTOGRAM_COUNTS_1000("TextFragmentAnchor.StartTextLength",
+                                match.selector.Start().length());
+      TRACE_EVENT_INSTANT1("blink", "TextFragmentAnchorMetrics::ReportMetrics",
+                           TRACE_EVENT_SCOPE_THREAD, "start_text_length",
+                           match.selector.Start().length());
+
+      UMA_HISTOGRAM_COUNTS_1000("TextFragmentAnchor.EndTextLength",
+                                match.selector.End().length());
+      TRACE_EVENT_INSTANT1("blink", "TextFragmentAnchorMetrics::ReportMetrics",
+                           TRACE_EVENT_SCOPE_THREAD, "end_text_length",
+                           match.selector.End().length());
+    }
+
+    UMA_HISTOGRAM_ENUMERATION("TextFragmentAnchor.Parameters",
+                              GetParametersForMatch(match));
   }
 
   UMA_HISTOGRAM_BOOLEAN("TextFragmentAnchor.AmbiguousMatch", ambiguous_match_);
@@ -124,6 +162,35 @@ void TextFragmentAnchorMetrics::Dismissed() {
 
 void TextFragmentAnchorMetrics::Trace(Visitor* visitor) {
   visitor->Trace(document_);
+}
+
+TextFragmentAnchorMetrics::TextFragmentAnchorParameters
+TextFragmentAnchorMetrics::GetParametersForMatch(const Match& match) {
+  TextFragmentAnchorParameters parameters =
+      TextFragmentAnchorParameters::kUnknown;
+
+  if (match.selector.Type() == TextFragmentSelector::SelectorType::kExact) {
+    if (match.selector.Prefix().length() && match.selector.Suffix().length())
+      parameters = TextFragmentAnchorParameters::kExactTextWithContext;
+    else if (match.selector.Prefix().length())
+      parameters = TextFragmentAnchorParameters::kExactTextWithPrefix;
+    else if (match.selector.Suffix().length())
+      parameters = TextFragmentAnchorParameters::kExactTextWithSuffix;
+    else
+      parameters = TextFragmentAnchorParameters::kExactText;
+  } else if (match.selector.Type() ==
+             TextFragmentSelector::SelectorType::kRange) {
+    if (match.selector.Prefix().length() && match.selector.Suffix().length())
+      parameters = TextFragmentAnchorParameters::kTextRangeWithContext;
+    else if (match.selector.Prefix().length())
+      parameters = TextFragmentAnchorParameters::kTextRangeWithPrefix;
+    else if (match.selector.Suffix().length())
+      parameters = TextFragmentAnchorParameters::kTextRangeWithSuffix;
+    else
+      parameters = TextFragmentAnchorParameters::kTextRange;
+  }
+
+  return parameters;
 }
 
 }  // namespace blink

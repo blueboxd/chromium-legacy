@@ -52,10 +52,6 @@ void TestConversionManager::HandleConversion(
   num_conversions_++;
 }
 
-void TestConversionManager::HandleSentReport(int64_t conversion_id) {
-  last_sent_report_id_ = conversion_id;
-}
-
 void TestConversionManager::GetActiveImpressionsForWebUI(
     base::OnceCallback<void(std::vector<StorableImpression>)> callback) {
   std::move(callback).Run(impressions_);
@@ -65,6 +61,11 @@ void TestConversionManager::GetReportsForWebUI(
     base::OnceCallback<void(std::vector<ConversionReport>)> callback,
     base::Time max_report_time) {
   std::move(callback).Run(reports_);
+}
+
+void TestConversionManager::SendReportsForWebUI(base::OnceClosure done) {
+  reports_.clear();
+  std::move(done).Run();
 }
 
 const ConversionPolicy& TestConversionManager::GetConversionPolicy() const {
@@ -94,7 +95,6 @@ void TestConversionManager::SetReportsForWebUI(
 void TestConversionManager::Reset() {
   num_impressions_ = 0u;
   num_conversions_ = 0u;
-  last_sent_report_id_ = 0UL;
 }
 
 // Builds an impression with default values. This is done as a builder because

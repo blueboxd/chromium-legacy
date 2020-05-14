@@ -119,7 +119,12 @@ void FakeAssistantManagerServiceImpl::AddTimeToTimer(const std::string& id,
                                                      base::TimeDelta duration) {
 }
 
-void FakeAssistantManagerServiceImpl::RemoveAlarmTimer(const std::string& id) {}
+void FakeAssistantManagerServiceImpl::PauseTimer(const std::string& id) {}
+
+void FakeAssistantManagerServiceImpl::RemoveAlarmOrTimer(
+    const std::string& id) {}
+
+void FakeAssistantManagerServiceImpl::ResumeTimer(const std::string& id) {}
 
 void FakeAssistantManagerServiceImpl::SetStateAndInformObservers(
     State new_state) {

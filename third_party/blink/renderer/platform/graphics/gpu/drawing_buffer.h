@@ -138,7 +138,6 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
       ChromiumImageUsage,
       const CanvasColorParams&,
       gl::GpuPreference);
-  static void ForceNextDrawingBufferCreationToFail();
 
   ~DrawingBuffer() override;
 

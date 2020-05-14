@@ -58,6 +58,7 @@ class PLATFORM_EXPORT AudioDelayDSPKernel : public AudioDSPKernel {
   virtual void CalculateSampleAccurateValues(float* delay_times,
                                              uint32_t frames_to_process);
   virtual double DelayTime(float sample_rate);
+  virtual bool IsAudioRate();
 
   AudioFloatArray buffer_;
 

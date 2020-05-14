@@ -2173,14 +2173,12 @@ void AppListView::OnScreenKeyboardShown(bool shown) {
     if (folder_offset != 0) {
       OffsetYPositionOfAppList(folder_offset);
       offset_to_show_folder_with_onscreen_keyboard_ = true;
-      app_list_main_view_->contents_view()->NotifySearchBoxBoundsUpdated();
     }
   } else if (offset_to_show_folder_with_onscreen_keyboard_) {
     // If the keyboard is closing or a folder isn't being shown, reset
     // the app list's position
     OffsetYPositionOfAppList(0);
     offset_to_show_folder_with_onscreen_keyboard_ = false;
-    app_list_main_view_->contents_view()->NotifySearchBoxBoundsUpdated();
   }
 
   if (!shown) {

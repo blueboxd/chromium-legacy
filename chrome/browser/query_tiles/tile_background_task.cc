@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/query_tiles/tile_service_factory.h"
 
-namespace upboarding {
+namespace query_tiles {
 
 TileBackgroundTask::TileBackgroundTask() = default;
 
@@ -49,10 +49,9 @@ void TileBackgroundTask::StartFetchTask(SimpleFactoryKey* key,
                                         TaskFinishedCallback callback) {
   if (is_from_reduced_mode)
     return;
-  auto* tile_service =
-      upboarding::TileServiceFactory::GetInstance()->GetForKey(key);
+  auto* tile_service = TileServiceFactory::GetInstance()->GetForKey(key);
   DCHECK(tile_service);
   tile_service->StartFetchForTiles(is_from_reduced_mode, std::move(callback));
 }
 
-}  // namespace upboarding
+}  // namespace query_tiles

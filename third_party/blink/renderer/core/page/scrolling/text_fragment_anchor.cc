@@ -156,7 +156,9 @@ TextFragmentAnchor::TextFragmentAnchor(
   DCHECK(!text_fragment_selectors.IsEmpty());
   DCHECK(frame_->View());
 
-  metrics_->DidCreateAnchor(text_fragment_selectors.size());
+  metrics_->DidCreateAnchor(
+      text_fragment_selectors.size(),
+      frame.GetDocument()->GetFragmentDirective().length());
 
   text_fragment_finders_.ReserveCapacity(text_fragment_selectors.size());
   for (TextFragmentSelector selector : text_fragment_selectors)
@@ -236,7 +238,9 @@ void TextFragmentAnchor::Trace(Visitor* visitor) {
   FragmentAnchor::Trace(visitor);
 }
 
-void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
+void TextFragmentAnchor::DidFindMatch(
+    const EphemeralRangeInFlatTree& range,
+    const TextFragmentAnchorMetrics::Match match_metrics) {
   if (search_finished_)
     return;
 
@@ -293,7 +297,7 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
         DocumentUpdateReason::kFindInPage);
   }
 
-  metrics_->DidFindMatch(PlainText(range));
+  metrics_->DidFindMatch(match_metrics);
   did_find_match_ = true;
 
   if (first_match_needs_scroll_) {

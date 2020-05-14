@@ -389,9 +389,6 @@ void TestAllOSSettingPages(const GURL& base_url) {
       ChromePage::MANAGEACCESSIBILITYTTS,
       base_url.Resolve(chromeos::settings::mojom::kTextToSpeechSubpagePath));
   TestOpenChromePage(
-      ChromePage::PLUGINVMDETAILS,
-      base_url.Resolve(chromeos::settings::mojom::kPluginVmDetailsSubpagePath));
-  TestOpenChromePage(
       ChromePage::PLUGINVMSHAREDPATHS,
       base_url.Resolve(
           chromeos::settings::mojom::kPluginVmSharedPathsSubpagePath));

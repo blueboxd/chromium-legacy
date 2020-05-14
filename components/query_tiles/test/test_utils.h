@@ -11,7 +11,7 @@
 #include "components/query_tiles/internal/tile_group.h"
 #include "components/query_tiles/tile.h"
 
-namespace upboarding {
+namespace query_tiles {
 namespace test {
 
 // Print data in Tile, also with tree represent by adjacent nodes
@@ -42,6 +42,6 @@ bool AreTilesIdentical(std::vector<Tile*> lhs, std::vector<Tile*> rhs);
 bool AreTilesIdentical(std::vector<Tile> lhs, std::vector<Tile> rhs);
 
 }  // namespace test
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_TEST_TEST_UTILS_H_

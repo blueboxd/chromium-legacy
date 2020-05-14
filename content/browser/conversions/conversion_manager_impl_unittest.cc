@@ -51,13 +51,25 @@ class TestConversionReporter
   ~TestConversionReporter() override = default;
 
   // ConversionManagerImpl::ConversionReporter
-  void AddReportsToQueue(std::vector<ConversionReport> reports) override {
+  void AddReportsToQueue(
+      std::vector<ConversionReport> reports,
+      base::RepeatingCallback<void(int64_t)> report_sent_callback) override {
     num_reports_ += reports.size();
     last_conversion_id_ = *reports.back().conversion_id;
     last_report_time_ = reports.back().report_time;
 
+    if (should_run_report_sent_callbacks_) {
+      for (const auto& report : reports) {
+        report_sent_callback.Run(*report.conversion_id);
+      }
+    }
+
     if (quit_closure_ && num_reports_ >= expected_num_reports_)
       std::move(quit_closure_).Run();
+  }
+
+  void ShouldRunReportSentCallbacks(bool should_run_report_sent_callbacks) {
+    should_run_report_sent_callbacks_ = should_run_report_sent_callbacks;
   }
 
   size_t num_reports() { return num_reports_; }
@@ -77,6 +89,7 @@ class TestConversionReporter
   }
 
  private:
+  bool should_run_report_sent_callbacks_ = false;
   size_t expected_num_reports_ = 0u;
   size_t num_reports_ = 0u;
   int64_t last_conversion_id_ = 0UL;
@@ -213,15 +226,13 @@ TEST_F(ConversionManagerImplTest, QueuedReportNotSent_QueuedAgain) {
 }
 
 TEST_F(ConversionManagerImplTest, QueuedReportSent_NotQueuedAgain) {
+  test_reporter_->ShouldRunReportSentCallbacks(true);
   conversion_manager_->HandleImpression(
       ImpressionBuilder(clock().Now()).SetExpiry(kImpressionExpiry).Build());
   conversion_manager_->HandleConversion(DefaultConversion());
   task_environment_.FastForwardBy(kFirstReportingWindow -
                                   kConversionManagerQueueReportsInterval);
   EXPECT_EQ(1u, test_reporter_->num_reports());
-
-  // Notify the manager that the report has been sent.
-  conversion_manager_->HandleSentReport(test_reporter_->last_conversion_id());
 
   // The report should not be added to the queue again.
   task_environment_.FastForwardBy(kConversionManagerQueueReportsInterval);
@@ -256,9 +267,9 @@ TEST_F(ConversionManagerImplTest, ExpiredReportsAtStartup_Queued) {
 
   // Create the manager and check that the first report is queued immediately.
   CreateManager();
+  test_reporter_->ShouldRunReportSentCallbacks(true);
   test_reporter_->WaitForNumReports(1);
   EXPECT_EQ(1u, test_reporter_->num_reports());
-  conversion_manager_->HandleSentReport(test_reporter_->last_conversion_id());
 
   // The second report is still queued at the correct time.
   task_environment_.FastForwardBy(kConversionManagerQueueReportsInterval);
@@ -287,6 +298,19 @@ TEST_F(ConversionManagerImplTest, ClearData) {
     size_t expected_reports = match_url ? 0u : 1u;
     EXPECT_EQ(expected_reports, test_reporter_->num_reports());
   }
+}
+
+TEST_F(ConversionManagerImplTest, ConversionsSentFromUI_ReportedImmediately) {
+  conversion_manager_->HandleImpression(
+      ImpressionBuilder(clock().Now()).SetExpiry(kImpressionExpiry).Build());
+  conversion_manager_->HandleImpression(
+      ImpressionBuilder(clock().Now()).SetExpiry(kImpressionExpiry).Build());
+  conversion_manager_->HandleConversion(DefaultConversion());
+  EXPECT_EQ(0u, test_reporter_->num_reports());
+
+  conversion_manager_->SendReportsForWebUI(base::DoNothing());
+  task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(0));
+  EXPECT_EQ(2u, test_reporter_->num_reports());
 }
 
 TEST_F(ConversionManagerImplTest, ExpiredReportsAtStartup_Delayed) {

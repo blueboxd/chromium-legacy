@@ -10,19 +10,19 @@
 
 namespace leveldb_proto {
 
-void DataToProto(upboarding::TileGroup* data,
-                 upboarding::query_tiles::proto::TileGroup* proto) {
+void DataToProto(query_tiles::TileGroup* data,
+                 query_tiles::proto::TileGroup* proto) {
   TileGroupToProto(data, proto);
 }
 
-void ProtoToData(upboarding::query_tiles::proto::TileGroup* proto,
-                 upboarding::TileGroup* data) {
+void ProtoToData(query_tiles::proto::TileGroup* proto,
+                 query_tiles::TileGroup* data) {
   TileGroupFromProto(proto, data);
 }
 
 }  // namespace leveldb_proto
 
-namespace upboarding {
+namespace query_tiles {
 
 TileStore::TileStore(TileProtoDb db) : db_(std::move(db)) {}
 
@@ -83,4 +83,4 @@ void TileStore::OnDataLoaded(
   std::move(callback).Run(true, std::move(keys_and_entries));
 }
 
-}  // namespace upboarding
+}  // namespace query_tiles

@@ -289,7 +289,7 @@
   # src_internal is available. Lower bound is that we bundle ~100 images for
   # offline articles with the app, as well as strings in every language (74),
   # and bundled content in the top 25 languages (25 x 2).
-  "chromeos/components/help_app_ui/resources/app/help_app_bundle_resources.grd": {
+  "chromeos/components/help_app_ui/resources/prod/help_app_bundle_resources.grd": {
     "META": {"sizes": {"includes": [300],}},  # Relies on src-internal.
     "includes": [2540],
   },

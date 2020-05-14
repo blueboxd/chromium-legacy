@@ -10,7 +10,7 @@
 #include "components/query_tiles/proto/tile_response.pb.h"
 #include "components/query_tiles/tile.h"
 
-namespace upboarding {
+namespace query_tiles {
 
 using ResponseGroupProto = query_tiles::proto::ServerResponse;
 using ResponseTileProto = query_tiles::proto::TileInfo;
@@ -33,6 +33,6 @@ void TileGroupFromProto(TileGroupProto* proto, TileGroup* group);
 void TileGroupFromResponse(const ResponseGroupProto& response,
                            TileGroup* tile_group);
 
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_INTERNAL_PROTO_CONVERSION_H_

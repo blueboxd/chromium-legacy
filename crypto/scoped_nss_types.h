@@ -7,6 +7,7 @@
 
 #include <keyhi.h>
 #include <nss.h>
+#include <nss/certt.h>
 #include <pk11pub.h>
 #include <plarena.h>
 
@@ -57,6 +58,10 @@ typedef std::unique_ptr<SECItem,
 typedef std::unique_ptr<PLArenaPool,
                         NSSDestroyer1<PLArenaPool, PORT_FreeArena, PR_FALSE>>
     ScopedPLArenaPool;
+typedef std::unique_ptr<
+    CERTSubjectPublicKeyInfo,
+    NSSDestroyer<CERTSubjectPublicKeyInfo, SECKEY_DestroySubjectPublicKeyInfo>>
+    ScopedCERTSubjectPublicKeyInfo;
 
 }  // namespace crypto
 

@@ -44,6 +44,11 @@ bool TooltipControllerTestHelper::IsTooltipVisible() {
   return controller_->IsTooltipVisible();
 }
 
+void TooltipControllerTestHelper::SetTooltipShowDelayEnable(
+    bool tooltip_show_delay) {
+  controller_->tooltip_show_delayed_ = tooltip_show_delay;
+}
+
 TooltipTestView::TooltipTestView() = default;
 
 TooltipTestView::~TooltipTestView() = default;

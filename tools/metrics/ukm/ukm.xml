@@ -5438,6 +5438,63 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Media.EME.CreateMediaKeys">
+  <owner>xhwang@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Event recorded when createMediaKeys() is called as part of Encrypted Media
+    Extensions (EME) API.
+  </summary>
+  <metric name="IsAdFrame" enum="Boolean">
+    <summary>
+      Whether the frame is an ad frame.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="IsCrossOrigin" enum="Boolean">
+    <summary>
+      Whether the frame is Cross-Origin to the main frame.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="IsTopFrame" enum="Boolean">
+    <summary>
+      Whether the frame is the main frame.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="KeySystem" enum="MediaKeySystem">
+    <summary>
+      The key system associated with this call.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="Media.EME.RequestMediaKeySystemAccess">
   <owner>xhwang@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
@@ -5481,7 +5538,7 @@ be describing additional metrics about the same event.
       </history>
     </aggregation>
   </metric>
-  <metric name="KeySystem">
+  <metric name="KeySystem" enum="MediaKeySystem">
     <summary>
       The key system passed in requestMediaKeySystemAccess() call.
     </summary>

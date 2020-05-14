@@ -75,7 +75,7 @@ LoginPublicAccountUserView::LoginPublicAccountUserView(
   DCHECK(callbacks.on_public_account_tapped);
 
   auto user_view = std::make_unique<LoginUserView>(
-      LoginDisplayStyle::kLarge, false /*show_dropdown*/, true /*show_domain*/,
+      LoginDisplayStyle::kLarge, false /*show_dropdown*/,
       base::BindRepeating(&LoginPublicAccountUserView::OnUserViewTap,
                           base::Unretained(this)),
       base::RepeatingClosure(), base::RepeatingClosure());

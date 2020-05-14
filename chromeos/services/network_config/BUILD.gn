@@ -12,6 +12,7 @@ static_library("network_config") {
 
   deps = [
     "//base",
+    "//chromeos/components/sync_wifi:network_eligibility_checker",
     "//chromeos/login/login_state",
     "//chromeos/network",
     "//chromeos/services/network_config/public/cpp",

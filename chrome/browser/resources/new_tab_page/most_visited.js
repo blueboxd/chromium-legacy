@@ -86,6 +86,12 @@ class MostVisitedElement extends PolymerElement {
         reflectToAttribute: true,
       },
 
+      /* If true wraps the tile titles in white pills. */
+      useTitlePill: {
+        type: Boolean,
+        reflectToAttribute: true,
+      },
+
       /** @private */
       columnCount_: {
         type: Number,

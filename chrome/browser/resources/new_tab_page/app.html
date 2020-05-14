@@ -99,7 +99,7 @@
   }
 
   :host-context(.focus-outline-visible) #customizeButton:focus {
-    box-shadow: 0 0 0 2px var(--ntp-focus-shadow-color);
+    box-shadow: var(--ntp-focus-shadow);
   }
 
   #customizeIcon {
@@ -220,7 +220,8 @@
       theme="[[theme_.searchBox]]" hidden$="[[!realboxEnabled_]]">
   </ntp-realbox>
   <ntp-most-visited id="mostVisited" dark$="[[theme_.isDark]]"
-      use-white-add-icon$="[[theme_.shortcutUseWhiteAddIcon]]">
+      use-white-add-icon$="[[theme_.shortcutUseWhiteAddIcon]]"
+      use-title-pill$="[[theme_.shortcutUseTitlePill]]">
   </ntp-most-visited>
   <dom-if if="[[lazyRender_]]">
     <template>
@@ -245,7 +246,8 @@
            results when a custom background is set. Therefore, wrap customize
            button in container to enfore solid background color. -->
       <div id="customizeButtonContainer">
-        <cr-button id="customizeButton" on-click="onCustomizeClick_">
+        <cr-button id="customizeButton" on-click="onCustomizeClick_"
+            title="$i18n{customizeThisPage}">
           <div id="customizeIcon"></div>
           <div id="customizeText" hidden$="[[showBackgroundImage_]]">
             $i18n{customizeButton}

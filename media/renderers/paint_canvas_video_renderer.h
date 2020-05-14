@@ -245,8 +245,7 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
 
   bool PrepareVideoFrame(scoped_refptr<VideoFrame> video_frame,
                          viz::RasterContextProvider* raster_context_provider,
-                         unsigned int textureTarget,
-                         unsigned int texture);
+                         const gpu::MailboxHolder& dest_holder);
 
   base::Optional<Cache> cache_;
 

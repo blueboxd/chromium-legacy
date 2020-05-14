@@ -235,6 +235,8 @@ enum class CtapRequestCommand : uint8_t {
 enum class CoseKeyKey : int {
   kAlg = 3,
   kKty = 1,
+  kRSAModulus = -1,
+  kRSAPublicExponent = -2,
   kEllipticCurve = -1,
   kEllipticX = -2,
   kEllipticY = -3,
@@ -242,13 +244,19 @@ enum class CoseKeyKey : int {
 
 // Enumerates COSE key types. See
 // https://tools.ietf.org/html/rfc8152#section-13
-enum class CoseKeyTypes : int { kEC2 = 2 };
+enum class CoseKeyTypes : int {
+  kEC2 = 2,
+  kRSA = 3,
+};
 
 // Enumerates COSE elliptic curves. See
 // https://tools.ietf.org/html/rfc8152#section-13.1
 enum class CoseCurves : int { kP256 = 1 };
 
-enum class CoseAlgorithmIdentifier : int { kCoseEs256 = -7 };
+enum class CoseAlgorithmIdentifier : int {
+  kCoseEs256 = -7,
+  kCoseRs256 = -257,
+};
 
 // APDU instruction code for U2F request encoding.
 // https://fidoalliance.org/specs/fido-u2f-v1.0-ps-20141009/fido-u2f-u2f.h-v1.0-ps-20141009.pdf

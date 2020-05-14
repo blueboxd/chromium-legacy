@@ -55,6 +55,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       layer_property_changed_from_property_trees_(false),
       may_contain_video_(false),
       contents_opaque_(false),
+      contents_opaque_for_text_(false),
       should_check_backface_visibility_(false),
       draws_content_(false),
       contributes_to_drawn_render_surface_(false),
@@ -374,6 +375,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->has_transform_node_ = has_transform_node_;
   layer->offset_to_transform_parent_ = offset_to_transform_parent_;
   layer->contents_opaque_ = contents_opaque_;
+  layer->contents_opaque_for_text_ = contents_opaque_for_text_;
   layer->may_contain_video_ = may_contain_video_;
   layer->should_check_backface_visibility_ = should_check_backface_visibility_;
   layer->draws_content_ = draws_content_;
@@ -571,6 +573,12 @@ SkColor LayerImpl::SafeOpaqueBackgroundColor() const {
 
 void LayerImpl::SetContentsOpaque(bool opaque) {
   contents_opaque_ = opaque;
+  contents_opaque_for_text_ = opaque;
+}
+
+void LayerImpl::SetContentsOpaqueForText(bool opaque) {
+  DCHECK(!contents_opaque_ || opaque);
+  contents_opaque_for_text_ = opaque;
 }
 
 float LayerImpl::Opacity() const {

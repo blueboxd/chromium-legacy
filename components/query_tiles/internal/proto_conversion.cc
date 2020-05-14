@@ -9,7 +9,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 
-namespace upboarding {
+namespace query_tiles {
 namespace {
 
 // Helper method to convert base::Time to integer for serialization. Loses
@@ -133,4 +133,4 @@ void TileGroupFromResponse(const ResponseGroupProto& response,
     tile_group->tiles.emplace_back(std::move(new_tile));
   }
 }
-}  // namespace upboarding
+}  // namespace query_tiles

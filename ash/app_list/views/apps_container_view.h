@@ -97,6 +97,7 @@ class APP_LIST_EXPORT AppsContainerView : public AppListPage {
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   // AppListPage overrides:
+  void OnShown() override;
   void OnWillBeHidden() override;
   void OnAnimationStarted(AppListState from_state,
                           AppListState to_state) override;

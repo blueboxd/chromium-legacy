@@ -353,6 +353,7 @@
       },
       'Android arm Builder (dbg)': {
         'additional_compile_targets': [
+          'boundary_interface_example_apk',
           'dump_syms',
           'microdump_stackwalk',
         ],
@@ -831,22 +832,14 @@
           'chromiumos_preflight',
         ],
         'browser_config': 'cros-chrome',
+        'mixins': [
+          'chromeos-amd64-generic',
+        ],
         'os_type': 'chromeos',
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_chromeos_telemetry_tests',
           'gtest_tests': 'chromeos_vm_gtests',
           'isolated_scripts': 'chromeos_isolated_scripts',
-        },
-        # TODO(crbug.com/1080809): Move this to a mixin once mixins are no
-        # longer broken for CrOS builders.
-        'swarming': {
-          'dimension_sets': [
-            {
-              'kvm': '1',
-              'os': 'Ubuntu-16.04',
-              'pool': 'chromium.tests.cros.vm.template',
-            },
-          ],
         },
       },
       'chromeos-arm-generic-dbg': {
@@ -863,19 +856,9 @@
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
-        # TODO(crbug.com/1080809): Move this to a mixin once mixins are no
-        # longer broken for CrOS builders.
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'ChromeOS',
-              'device_type': 'kevin',
-              # Special pool is needed for the devices since they also run
-              # swarmbucket builds.
-              'pool': 'chrome-cros-dut.template',
-            },
-          ],
-        },
+        'mixins': [
+          'chromeos-kevin',
+        ],
         'test_suites': {
           'gtest_tests': 'chromeos_device_gtests',
           'isolated_scripts': 'chromeos_remote_device_isolated_tests',
@@ -1288,7 +1271,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
-          'isolated_scripts': 'gpu_dawn_deps_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
       'Dawn Linux x64 DEPS Release (NVIDIA)': {
@@ -1299,7 +1282,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
-          'isolated_scripts': 'gpu_dawn_deps_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
       'Dawn Linux x64 Release (Intel HD 630)': {
@@ -1310,7 +1293,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_gtests',
-          'isolated_scripts': 'gpu_dawn_tot_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
       'Dawn Linux x64 Release (NVIDIA)': {
@@ -1321,7 +1304,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_gtests',
-          'isolated_scripts': 'gpu_dawn_tot_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
       'Dawn Mac x64 Builder' : {},
@@ -1334,7 +1317,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
-          'isolated_scripts': 'gpu_dawn_deps_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
       'Dawn Mac x64 DEPS Release (Intel)': {
@@ -1345,7 +1328,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
-          'isolated_scripts': 'gpu_dawn_deps_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
       'Dawn Mac x64 Release (AMD)': {
@@ -1356,7 +1339,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_gtests',
-          'isolated_scripts': 'gpu_dawn_tot_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
       'Dawn Mac x64 Release (Intel)': {
@@ -1367,7 +1350,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_gtests',
-          'isolated_scripts': 'gpu_dawn_tot_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
       'Dawn Win10 x64 Builder' : {},
@@ -1380,7 +1363,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
-          'isolated_scripts': 'gpu_dawn_deps_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
       'Dawn Win10 x64 DEPS Release (NVIDIA)': {
@@ -1391,7 +1374,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
-          'isolated_scripts': 'gpu_dawn_deps_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
       'Dawn Win10 x64 Release (Intel HD 630)': {
@@ -1402,7 +1385,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_gtests',
-          'isolated_scripts': 'gpu_dawn_tot_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
       'Dawn Win10 x64 Release (NVIDIA)': {
@@ -1413,7 +1396,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_gtests',
-          'isolated_scripts': 'gpu_dawn_tot_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
       'Dawn Win10 x86 Builder' : {},
@@ -1426,7 +1409,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
-          'isolated_scripts': 'gpu_dawn_deps_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
       'Dawn Win10 x86 DEPS Release (NVIDIA)': {
@@ -1437,7 +1420,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
-          'isolated_scripts': 'gpu_dawn_deps_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
       'Dawn Win10 x86 Release (Intel HD 630)': {
@@ -1448,7 +1431,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_gtests',
-          'isolated_scripts': 'gpu_dawn_tot_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
       'Dawn Win10 x86 Release (NVIDIA)': {
@@ -1459,7 +1442,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_gtests',
-          'isolated_scripts': 'gpu_dawn_tot_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
     }
@@ -3135,19 +3118,11 @@
         'browser_config': 'cros-chrome',
         'os_type': 'chromeos',
         'skip_merge_script': True,
+        'mixins': [
+          'chromeos-amd64-generic',
+        ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
-        },
-        # TODO(crbug.com/1080809): Move this to a mixin once mixins are no
-        # longer broken for CrOS builders.
-        'swarming': {
-          'dimension_sets': [
-            {
-              'kvm': '1',
-              'os': 'Ubuntu-16.04',
-              'pool': 'chromium.tests.cros.vm.template',
-            },
-          ],
         },
       },
       'ChromeOS FYI Release (kevin)': {
@@ -3158,23 +3133,11 @@
         'os_type': 'chromeos',
         'skip_merge_script': True,
         'mixins': [
+          'chromeos-kevin',
           'limited_capacity_bot',
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
-        },
-        # TODO(crbug.com/1080809): Move this to a mixin once mixins are no
-        # longer broken for CrOS builders.
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'ChromeOS',
-              'device_type': 'kevin',
-              # Special pool is needed for the devices since they also run
-              # swarmbucket builds.
-              'pool': 'chrome-cros-dut.template',
-            },
-          ],
         },
       },
       'GPU FYI Fuchsia Builder' : {

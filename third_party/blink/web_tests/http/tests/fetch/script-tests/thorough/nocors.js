@@ -3,6 +3,7 @@ if (self.importScripts) {
   importScripts('/fetch/resources/thorough-util.js');
 }
 
+var {BASE_URL, OTHER_BASE_URL} = get_thorough_test_options();
 var TEST_TARGETS = [
   // Test that default mode is no-cors in serviceworker-proxied tests.
   onlyOnServiceWorkerProxiedTest(

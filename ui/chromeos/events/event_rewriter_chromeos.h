@@ -57,6 +57,8 @@ class EventRewriterChromeOS : public EventRewriter {
     // Browser Back, Browser Forward, Refresh, Full Screen, Overview,
     // Brightness Down, Brightness Up, Mute, Volume Down, Volume Up.
     kKbdTopRowLayout1 = 1,
+    kKbdTopRowLayoutDefault = kKbdTopRowLayout1,
+    kKbdTopRowLayoutMin = kKbdTopRowLayout1,
     // 2017 keyboard layout: Browser Forward is gone and Play/Pause
     // key is added between Brightness Up and Mute.
     kKbdTopRowLayout2 = 2,
@@ -64,9 +66,10 @@ class EventRewriterChromeOS : public EventRewriter {
     kKbdTopRowLayoutWilco = 3,
     kKbdTopRowLayoutDrallion = 4,
 
-    kKbdTopRowLayoutDefault = kKbdTopRowLayout1,
-    kKbdTopRowLayoutMin = kKbdTopRowLayout1,
-    kKbdTopRowLayoutMax = kKbdTopRowLayoutDrallion
+    // Handling for all keyboards that support supplying a custom layout
+    // via sysfs attribute (aka Vivaldi). See crbug.com/1076241
+    kKbdTopRowLayoutCustom = 5,
+    kKbdTopRowLayoutMax = kKbdTopRowLayoutCustom
   };
 
   // Things that keyboard-related rewriter phases can change about an Event.
@@ -235,6 +238,19 @@ class EventRewriterChromeOS : public EventRewriter {
   int RewriteLocatedEvent(const Event& event);
   int RewriteModifierClick(const MouseEvent& event, int* flags);
 
+  // Reads the keyboard mapping for new CrOS keyboards that support
+  // supplying a custom layout via sysfs and stores it mapped to
+  // |keyboard_device| in |top_row_scan_code_map_|.
+  bool StoreCustomTopRowMapping(const ui::InputDevice& keyboard_device);
+
+  // Handle Function <-> Action key remapping for new CrOS keyboards that
+  // support supplying a custom layout via sysfs.
+  bool RewriteTopRowKeysForCustomLayout(
+      int device_id,
+      const ui::KeyEvent& key_event,
+      bool search_is_pressed,
+      ui::EventRewriterChromeOS::MutableKeyState* state);
+
   // Handle Fn/Action key remapping for Wilco keyboard layout.
   bool RewriteTopRowKeysForLayoutWilco(const KeyEvent& key_event,
                                        bool search_is_pressed,
@@ -259,6 +275,12 @@ class EventRewriterChromeOS : public EventRewriter {
   std::set<int> pressed_device_ids_;
 
   std::map<int, DeviceInfo> device_id_to_info_;
+
+  // Maps a device ID to a mapping of scan_code to MutableKeyState on keyboards
+  // that supply it via a sysfs attribute.
+  // eg. map<device_id, Map<scan_code, MutableKeyState>>.
+  base::flat_map<int, base::flat_map<uint32_t, MutableKeyState>>
+      top_row_scan_code_map_;
 
   // The |source_device_id()| of the most recent keyboard event,
   // used to interpret modifiers on pointer events.

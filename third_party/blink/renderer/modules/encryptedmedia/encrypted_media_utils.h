@@ -17,6 +17,13 @@ enum class EmeInitDataType;
 
 namespace blink {
 
+// Reported to UKM. Existing values must not change and new values must be
+// added at the end of the list.
+enum KeySystemForUkm {
+  kClearKey = 0,
+  kWidevine = 1,
+};
+
 // Enum for EME MediaKeySystemAccess, MediaKeys and MediaKeySession APIs.
 // Reported to UKM. Existing values should NEVER be changed.
 enum class EmeApiType {

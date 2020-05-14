@@ -87,18 +87,6 @@ bool CheckPINToken(base::span<const uint8_t> pin_token,
          CRYPTO_memcmp(pin_auth.data(), calculated_pin_auth, 16) == 0;
 }
 
-// Checks that whether the received MakeCredential request includes EA256
-// algorithm in publicKeyCredParam.
-bool AreMakeCredentialParamsValid(const CtapMakeCredentialRequest& request) {
-  const auto& params =
-      request.public_key_credential_params.public_key_credential_params();
-  return std::any_of(
-      params.begin(), params.end(), [](const auto& credential_info) {
-        return credential_info.algorithm ==
-               base::strict_cast<int>(CoseAlgorithmIdentifier::kCoseEs256);
-      });
-}
-
 std::vector<uint8_t> ConstructSignatureBuffer(
     const AuthenticatorData& authenticator_data,
     base::span<const uint8_t, kClientDataHashLength> client_data_hash) {
@@ -399,6 +387,10 @@ VirtualCtap2Device::Config::~Config() = default;
 VirtualCtap2Device::VirtualCtap2Device() : VirtualFidoDevice() {
   device_info_ =
       AuthenticatorGetInfoResponse({ProtocolVersion::kCtap2}, kDeviceAaguid);
+  device_info_->algorithms = {
+      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256),
+      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseRs256),
+  };
 }
 
 VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
@@ -758,11 +750,28 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
   }
 
   // Step 7.
-  if (!AreMakeCredentialParamsValid(request)) {
-    DLOG(ERROR) << "Virtual CTAP2 device does not support options required by "
-                   "the request.";
+  std::unique_ptr<PrivateKey> private_key;
+  for (const auto& param :
+       request.public_key_credential_params.public_key_credential_params()) {
+    switch (param.algorithm) {
+      default:
+        continue;
+      case static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256):
+        private_key = FreshP256Key();
+        break;
+      case static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseRs256):
+        private_key = FreshRSAKey();
+        break;
+    }
+    break;
+  }
+
+  if (!private_key) {
+    DLOG(ERROR) << "Virtual CTAP2 device does not support any public-key "
+                   "algorithm listed in the request";
     return CtapDeviceResponseCode::kCtap2ErrUnsupportedAlgorithm;
   }
+  std::unique_ptr<PublicKey> public_key(private_key->GetPublicKey());
 
   // Step 8.
   if ((request.resident_key_required && !options.supports_resident_key) ||
@@ -774,12 +783,6 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
   if (!user_verified && !SimulatePress()) {
     return base::nullopt;
   }
-
-  // Create key to register.
-  // Note: Non-deterministic, you need to mock this out if you rely on
-  // deterministic behavior.
-  std::unique_ptr<PrivateKey> private_key(FreshP256Key());
-  std::unique_ptr<PublicKey> public_key(private_key->GetPublicKey());
 
   // Our key handles are simple hashes of the public key.
   const auto key_handle = crypto::SHA256Hash(public_key->cose_key_bytes());

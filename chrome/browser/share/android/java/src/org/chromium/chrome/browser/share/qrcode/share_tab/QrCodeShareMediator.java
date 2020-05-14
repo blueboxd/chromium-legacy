@@ -76,10 +76,10 @@ class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
 
         // Notify success.
         Toast.makeText(mContext,
-                     mContext.getResources().getString(R.string.download_notification_completed),
+                     mContext.getResources().getString(R.string.qr_code_successful_download_title),
                      Toast.LENGTH_LONG)
                 .show();
-        SaveImageNotificationManager.showSuccessNotification(mContext, uri, displayName);
+        SaveImageNotificationManager.showSuccessNotification(mContext, uri);
     }
 
     @Override
@@ -92,9 +92,9 @@ class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
 
         // Notify failure.
         Toast.makeText(mContext,
-                     mContext.getResources().getString(R.string.download_notification_failed),
+                     mContext.getResources().getString(R.string.qr_code_failed_download_title),
                      Toast.LENGTH_LONG)
                 .show();
-        SaveImageNotificationManager.showFailureNotification(mContext, null, displayName);
+        SaveImageNotificationManager.showFailureNotification(mContext, null);
     }
 }

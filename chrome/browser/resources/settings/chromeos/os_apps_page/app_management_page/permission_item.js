@@ -257,6 +257,10 @@ Polymer({
         return permissionValue ? AppManagementUserAction.StorageTurnedOn :
                                  AppManagementUserAction.StorageTurnedOff;
 
+      case 'PRINTING':
+        return permissionValue ? AppManagementUserAction.PrintingTurnedOn :
+                                 AppManagementUserAction.PrintingTurnedOff;
+
       default:
         assertNotReached();
     }

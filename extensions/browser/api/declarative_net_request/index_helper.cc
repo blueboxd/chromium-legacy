@@ -64,7 +64,7 @@ IndexHelper::Result CombineResults(
     total_index_and_persist_time += index_result.index_and_persist_time;
     total_rules_count += index_result.rules_count;
 
-    if (source->enabled()) {
+    if (source->enabled_by_default()) {
       enabled_rules_count += index_result.rules_count;
       enabled_regex_rules_count += index_result.regex_rules_count;
     }

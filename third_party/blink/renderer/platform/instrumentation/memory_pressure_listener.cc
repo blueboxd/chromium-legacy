@@ -26,7 +26,7 @@
 
 namespace blink {
 
-// Wrapper function defined in WebKit.h
+// Function defined in third_party/blink/public/web/blink.h.
 void DecommitFreeableMemory() {
   CHECK(IsMainThread());
   base::PartitionAllocMemoryReclaimer::Instance()->Reclaim();

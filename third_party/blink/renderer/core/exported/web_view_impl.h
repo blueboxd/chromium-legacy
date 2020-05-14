@@ -134,7 +134,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetTabKeyCyclesThroughElements(bool value) override;
   bool IsActive() const override;
   void SetIsActive(bool value) override;
-  void SetDomainRelaxationForbidden(bool, const WebString& scheme) override;
   void SetWindowFeatures(const WebWindowFeatures&) override;
   void SetOpenedByDOM() override;
   void ResizeWithBrowserControls(const WebSize& main_frame_widget_size,
@@ -196,7 +195,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void DidCloseContextMenu() override;
   void CancelPagePopup() override;
   WebPagePopupImpl* GetPagePopup() const override { return page_popup_.get(); }
-  void SetMainFrameOverlayColor(SkColor) override;
   void AcceptLanguagesChanged() override;
   void SetPageFrozen(bool frozen) override;
   void PutPageIntoBackForwardCache() override;
@@ -385,9 +383,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Called anytime browser controls layout height or content offset have
   // changed.
   void DidUpdateBrowserControls();
-
-  void ForceNextWebGLContextCreationToFail() override;
-  void ForceNextDrawingBufferCreationToFail() override;
 
   void AddAutoplayFlags(int32_t) override;
   void ClearAutoplayFlags() override;

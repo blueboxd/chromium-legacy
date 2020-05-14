@@ -14,7 +14,7 @@ namespace image_fetcher {
 class ImageFetcher;
 }  // namespace image_fetcher
 
-namespace upboarding {
+namespace query_tiles {
 
 // Loads image with image fetcher service, which provides a disk cache to reduce
 // network data consumption.
@@ -38,6 +38,6 @@ class CachedImageLoader : public ImageLoader {
   image_fetcher::ImageFetcher* reduced_mode_image_fetcher_;
 };
 
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_INTERNAL_CACHED_IMAGE_LOADER_H_

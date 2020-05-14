@@ -9,12 +9,14 @@
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited'",
       "position": [10, 10],
-      "bounds": [590, 210]
+      "bounds": [590, 210],
+      "contentsOpaqueForText": true
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited'",
       "position": [10, 10],
       "bounds": [590, 210],
+      "contentsOpaqueForText": true,
       "transform": 1
     },
     {

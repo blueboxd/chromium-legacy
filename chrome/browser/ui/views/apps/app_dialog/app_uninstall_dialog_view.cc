@@ -104,7 +104,6 @@ base::string16 AppUninstallDialogView::GetWindowTitle() const {
     case apps::mojom::AppType::kUnknown:
     case apps::mojom::AppType::kBuiltIn:
     case apps::mojom::AppType::kMacNative:
-    case apps::mojom::AppType::kPluginVm:
     case apps::mojom::AppType::kLacros:
       NOTREACHED();
       return base::string16();
@@ -120,6 +119,7 @@ base::string16 AppUninstallDialogView::GetWindowTitle() const {
       return base::string16();
 #endif
     case apps::mojom::AppType::kCrostini:
+    case apps::mojom::AppType::kPluginVm:
 #if defined(OS_CHROMEOS)
       FALLTHROUGH;
 #else
@@ -149,7 +149,6 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
     case apps::mojom::AppType::kUnknown:
     case apps::mojom::AppType::kBuiltIn:
     case apps::mojom::AppType::kMacNative:
-    case apps::mojom::AppType::kPluginVm:
     case apps::mojom::AppType::kLacros:
       NOTREACHED();
       break;
@@ -160,9 +159,18 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
       NOTREACHED();
 #endif
       break;
+    case apps::mojom::AppType::kPluginVm:
+#if defined(OS_CHROMEOS)
+      InitializeViewWithMessage(l10n_util::GetStringFUTF16(
+          IDS_PLUGIN_VM_UNINSTALL_PROMPT_BODY, base::UTF8ToUTF16(app_name())));
+#else
+      NOTREACHED();
+#endif
+      break;
     case apps::mojom::AppType::kCrostini:
 #if defined(OS_CHROMEOS)
-      InitializeViewForCrostiniApp(profile, app_id);
+      InitializeViewWithMessage(l10n_util::GetStringUTF16(
+          IDS_CROSTINI_APPLICATION_UNINSTALL_CONFIRM_BODY));
 #else
       NOTREACHED();
 #endif
@@ -310,21 +318,13 @@ void AppUninstallDialogView::InitializeViewForArcApp(
         ui::DIALOG_BUTTON_OK,
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON));
   } else {
-    base::string16 subheading_text = l10n_util::GetStringUTF16(
-        IDS_ARC_APP_UNINSTALL_PROMPT_DATA_REMOVAL_WARNING);
-    auto* label = AddChildView(std::make_unique<views::Label>(subheading_text));
-    label->SetMultiLine(true);
-    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    label->SetAllowCharacterBreak(true);
+    InitializeViewWithMessage(l10n_util::GetStringUTF16(
+        IDS_ARC_APP_UNINSTALL_PROMPT_DATA_REMOVAL_WARNING));
   }
 }
 
-void AppUninstallDialogView::InitializeViewForCrostiniApp(
-    Profile* profile,
-    const std::string& app_id) {
-  base::string16 message = l10n_util::GetStringFUTF16(
-      IDS_CROSTINI_APPLICATION_UNINSTALL_CONFIRM_BODY,
-      base::UTF8ToUTF16(app_name()));
+void AppUninstallDialogView::InitializeViewWithMessage(
+    const base::string16& message) {
   auto* label = AddChildView(std::make_unique<views::Label>(message));
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

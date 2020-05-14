@@ -10,6 +10,7 @@
       "name": "LayoutTableRow TR id='target'",
       "position": [8, 94],
       "bounds": [186, 64],
+      "contentsOpaqueForText": true,
       "backgroundColor": "#ADD8E6",
       "invalidations": [
         [0, 0, 186, 64]

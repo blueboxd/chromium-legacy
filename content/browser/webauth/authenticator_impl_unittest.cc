@@ -52,6 +52,7 @@
 #include "device/fido/fido_test_data.h"
 #include "device/fido/hid/fake_hid_impl_for_testing.h"
 #include "device/fido/mock_fido_device.h"
+#include "device/fido/public_key.h"
 #include "device/fido/test_callback_receiver.h"
 #include "device/fido/virtual_fido_device_factory.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -913,6 +914,39 @@ TEST_F(AuthenticatorImplTest, TestMakeCredentialTimeout) {
   task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
   callback_receiver.WaitForCallback();
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+}
+
+TEST_F(AuthenticatorImplTest, TestMakeCredentialRSA) {
+  virtual_device_factory_->SetSupportedProtocol(
+      device::ProtocolVersion::kCtap2);
+  SimulateNavigation(GURL(kTestOrigin1));
+
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
+  options->public_key_parameters = GetTestPublicKeyCredentialParameters(
+      static_cast<int32_t>(device::CoseAlgorithmIdentifier::kCoseRs256));
+  TestMakeCredentialCallback callback;
+  authenticator->MakeCredential(std::move(options), callback.callback());
+  base::RunLoop().RunUntilIdle();
+  callback.WaitForCallback();
+
+  ASSERT_EQ(callback.status(), AuthenticatorStatus::SUCCESS);
+
+  base::Optional<Value> attestation_value =
+      Reader::Read(callback.value()->attestation_object);
+  ASSERT_TRUE(attestation_value);
+  ASSERT_TRUE(attestation_value->is_map());
+  const auto& attestation = attestation_value->GetMap();
+
+  const auto auth_data_it = attestation.find(Value("authData"));
+  ASSERT_TRUE(auth_data_it != attestation.end());
+  ASSERT_TRUE(auth_data_it->second.is_bytestring());
+  auto auth_data = device::AuthenticatorData::DecodeAuthenticatorData(
+      auth_data_it->second.GetBytestring());
+  EXPECT_EQ(static_cast<int32_t>(device::CoseAlgorithmIdentifier::kCoseRs256),
+            auth_data->attested_data()->public_key()->algorithm());
 }
 
 // Verify behavior for various combinations of origins and RP IDs.

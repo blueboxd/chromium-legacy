@@ -11,6 +11,8 @@
         --google-grey-200: rgb(var(--google-grey-200-rgb));
         --google-grey-900-rgb: 32, 33, 36;  /* #202124 */
         --google-grey-900: rgb(var(--google-grey-900-rgb));
+        --google-blue-refresh-300-rgb: 138, 180, 248;  /* #8ab4f8 */
+        --google-blue-refresh-300: rgb(var(--google-blue-refresh-300-rgb));
         --google-grey-refresh-300-rgb: 218, 220, 224;  /* #dadce0 */
         --google-grey-refresh-300: rgb(var(--google-grey-refresh-300-rgb));
         --google-grey-refresh-700-rgb: 95, 99, 104;  /* #5f6368 */
@@ -60,9 +62,17 @@
         text-decoration: none;
       }
 
+      body > div > a:focus {
+        outline: solid 2px rgba(var(--google-blue-600-rgb), .4);
+      }
+
       @media (prefers-color-scheme: dark) {
         body > div > a {
           color: var(--google-blue-400);
+        }
+
+        body > div > a:focus {
+          outline: solid 2px rgba(var(--google-blue-refresh-300-rgb), .5);
         }
       }
 

@@ -63,10 +63,10 @@ void BiquadProcessor::CheckForDirtyCoefficients() {
   filter_coefficients_dirty_ = false;
   has_sample_accurate_values_ = false;
 
-  if (parameter1_->HasSampleAccurateValuesTimeline() ||
-      parameter2_->HasSampleAccurateValuesTimeline() ||
-      parameter3_->HasSampleAccurateValuesTimeline() ||
-      parameter4_->HasSampleAccurateValuesTimeline()) {
+  if (parameter1_->HasSampleAccurateValues() ||
+      parameter2_->HasSampleAccurateValues() ||
+      parameter3_->HasSampleAccurateValues() ||
+      parameter4_->HasSampleAccurateValues()) {
     // Coefficients are dirty if any of them has automations or if there are
     // connections to the AudioParam.
     filter_coefficients_dirty_ = true;

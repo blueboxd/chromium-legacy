@@ -159,10 +159,6 @@ void ExtensionAppsChromeOs::ObserveArc() {
 
 void ExtensionAppsChromeOs::Initialize() {
   app_window_registry_.Add(extensions::AppWindowRegistry::Get(profile()));
-  auto* provider = web_app::WebAppProvider::Get(profile());
-  if (provider) {
-    registrar_observer_.Add(&provider->registrar());
-  }
   notification_display_service_.Add(
       NotificationDisplayServiceFactory::GetForProfile(profile()));
 
@@ -709,7 +705,7 @@ apps::mojom::AppPtr ExtensionAppsChromeOs::Convert(
                                  : readiness);
   bool paused = paused_apps_.IsPaused(extension->id());
   app->icon_key =
-      icon_key_factory_.MakeIconKey(GetIconEffects(extension, paused));
+      icon_key_factory().MakeIconKey(GetIconEffects(extension, paused));
 
   app->has_badge = app_notifications_.HasNotification(extension->id())
                        ? apps::mojom::OptionalBool::kTrue
@@ -762,7 +758,7 @@ void ExtensionAppsChromeOs::SetIconEffect(const std::string& app_id) {
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_type = app_type();
   app->app_id = app_id;
-  app->icon_key = icon_key_factory_.MakeIconKey(
+  app->icon_key = icon_key_factory().MakeIconKey(
       GetIconEffects(extension, paused_apps_.IsPaused(app_id)));
   Publish(std::move(app), subscribers());
 }
@@ -870,10 +866,6 @@ void ExtensionAppsChromeOs::OnWebAppDisabledStateChanged(
       Convert(extension, is_disabled ? apps::mojom::Readiness::kDisabledByPolicy
                                      : apps::mojom::Readiness::kReady),
       subscribers());
-}
-
-void ExtensionAppsChromeOs::OnAppRegistrarDestroyed() {
-  registrar_observer_.RemoveAll();
 }
 
 }  // namespace apps

@@ -161,6 +161,7 @@ void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
 
 }  // namespace
 
+// Function defined in third_party/blink/public/web/blink.h.
 void Initialize(Platform* platform,
                 mojo::BinderMap* binders,
                 scheduler::WebThreadScheduler* main_thread_scheduler) {
@@ -169,6 +170,7 @@ void Initialize(Platform* platform,
   InitializeCommon(platform, binders);
 }
 
+// Function defined in third_party/blink/public/web/blink.h.
 void CreateMainThreadAndInitialize(Platform* platform,
                                    mojo::BinderMap* binders) {
   DCHECK(binders);

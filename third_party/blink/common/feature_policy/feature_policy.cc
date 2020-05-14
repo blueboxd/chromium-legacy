@@ -411,7 +411,7 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
        {mojom::FeaturePolicyFeature::kClientHintUAModel,
         FeatureDefault(FeaturePolicy::FeatureDefault::EnableForSelf)},
        {mojom::FeaturePolicyFeature::kClientHintUAMobile,
-        FeatureDefault(FeaturePolicy::FeatureDefault::EnableForSelf)},
+        FeatureDefault(FeaturePolicy::FeatureDefault::EnableForAll)},
        {mojom::FeaturePolicyFeature::kClientHintUAFullVersion,
         FeatureDefault(FeaturePolicy::FeatureDefault::EnableForSelf)},
        {mojom::FeaturePolicyFeature::kClientHintUAPlatformVersion,

@@ -113,7 +113,7 @@ class WebTestResult(object):
 # This doesn't belong in common.net, but we don't have a better place for it yet.
 class WebTestResults(object):
     @classmethod
-    def results_from_string(cls, string, step_name=None):
+    def results_from_string(cls, string):
         """Creates a WebTestResults object from a test result JSON string.
 
         Args:
@@ -128,15 +128,11 @@ class WebTestResults(object):
         if not json_dict:
             return None
 
-        return cls(json_dict, step_name=step_name)
+        return cls(json_dict)
 
-    def __init__(self, parsed_json, chromium_revision=None, step_name=None):
+    def __init__(self, parsed_json, chromium_revision=None):
         self._results = parsed_json
         self._chromium_revision = chromium_revision
-        self._step_name = step_name
-
-    def step_name(self):
-        return self._step_name
 
     def run_was_interrupted(self):
         return self._results['interrupted']

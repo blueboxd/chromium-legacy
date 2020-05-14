@@ -106,10 +106,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterClient : public BluezDBusClient {
     // Local Device ID information in Linux kernel modalias format. Read-only.
     dbus::Property<std::string> modalias;
 
-    // Flag to enable usage of kernel suspend notifier.
-    // TODO(b/149795111): Remove once feature is default behavior in stable.
-    dbus::Property<bool> use_kernel_suspend_notifier;
-
     Properties(dbus::ObjectProxy* object_proxy,
                const std::string& interface_name,
                const PropertyChangedCallback& callback);

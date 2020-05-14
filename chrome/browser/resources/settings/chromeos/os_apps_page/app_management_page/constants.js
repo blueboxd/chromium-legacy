@@ -31,6 +31,8 @@ const Bool = {
 
 const PwaPermissionType = appManagement.mojom.PwaPermissionType;
 
+const PluginVmPermissionType = appManagement.mojom.PluginVmPermissionType;
+
 const ArcPermissionType = appManagement.mojom.ArcPermissionType;
 
 const AppType = apps.mojom.AppType;
@@ -63,6 +65,8 @@ const AppManagementEntryPoint = {
   MainViewChromeApp: 7,
   MainViewWebApp: 8,
   OsSettingsMainPage: 9,
+  MainViewPluginVm: 10,
+  DBusServicePluginVm: 11,
 };
 
 /**
@@ -88,4 +92,6 @@ const AppManagementUserAction = {
   ContactsTurnedOff: 14,
   StorageTurnedOn: 15,
   StorageTurnedOff: 16,
+  PrintingTurnedOn: 17,
+  PrintingTurnedOff: 18,
 };

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.feed.library.feedactionparser;
 
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkState;
+import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.BLOCK_CONTENT;
 import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.DOWNLOAD;
 import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.LEARN_MORE;
 import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.MANAGE_INTERESTS;
@@ -205,6 +206,7 @@ public final class FeedActionParser implements ActionParser {
                         mProtocolAdapter.createOperations(
                                 feedActionMetadata.getBlockContentData().getDataOperationsList()),
                         feedActionMetadata.getBlockContentData().getPayload());
+                streamActionApi.onClientAction(ActionTypesConverter.convert(BLOCK_CONTENT));
                 break;
             case REPORT_VIEW:
                 ViewReportData viewReportData = feedActionMetadata.getViewReportData();

@@ -672,10 +672,19 @@ void ShelfView::ButtonPressed(views::Button* sender,
   last_pressed_index_ = view_model_->GetIndexOfView(sender);
   DCHECK_LT(-1, last_pressed_index_);
 
-  // Place new windows on the same display as the button.
+  // Place new windows on the same display as the button. Opening windows is
+  // usually an async operation so we wait until window activation changes
+  // (ShelfItemStatusChanged) before destroying the scoped object. Post a task
+  // to destroy the scoped object just in case the window activation event does
+  // not get fired.
   aura::Window* window = sender->GetWidget()->GetNativeWindow();
   scoped_root_window_for_new_windows_ =
       std::make_unique<ScopedRootWindowForNewWindows>(window->GetRootWindow());
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&ShelfView::DestroyScopedRootWindow,
+                     weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(100));
 
   // Slow down activation animations if Control key is pressed.
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> slowing_animations;
@@ -1920,6 +1929,8 @@ void ShelfView::ShelfItemDelegateChanged(const ShelfID& id,
 }
 
 void ShelfView::ShelfItemStatusChanged(const ShelfID& id) {
+  scoped_root_window_for_new_windows_.reset();
+
   int index = model_->ItemIndexByID(id);
   if (index < 0)
     return;
@@ -2005,7 +2016,6 @@ void ShelfView::AfterItemSelected(const ShelfItem& item,
     }
   }
   shelf_->shelf_layout_manager()->OnShelfItemSelected(action);
-  scoped_root_window_for_new_windows_.reset();
 }
 
 void ShelfView::ShowShelfContextMenu(
@@ -2183,6 +2193,10 @@ void ShelfView::UpdateVisibleIndices() {
   // always the index to the last shelf item.
   first_visible_index_ = view_model()->view_size() == 0 ? -1 : 0;
   last_visible_index_ = model_->item_count() - 1;
+}
+
+void ShelfView::DestroyScopedRootWindow() {
+  scoped_root_window_for_new_windows_.reset();
 }
 
 }  // namespace ash

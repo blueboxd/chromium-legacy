@@ -75,6 +75,15 @@ std::vector<uint8_t> AuthenticatorGetInfoResponse::EncodeToCBOR(
         8, base::strict_cast<int64_t>(*response.max_credential_id_length));
   }
 
+  if (!response.algorithms.empty()) {
+    std::vector<cbor::Value> algorithms_cbor;
+    algorithms_cbor.reserve(response.algorithms.size());
+    for (const auto& algorithm : response.algorithms) {
+      algorithms_cbor.emplace_back(cbor::Value(algorithm));
+    }
+    device_info_map.emplace(10, std::move(algorithms_cbor));
+  }
+
   auto encoded_bytes =
       cbor::Writer::Write(cbor::Value(std::move(device_info_map)));
   DCHECK(encoded_bytes);

@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
+import org.chromium.chrome.browser.page_info.ChromePermissionParamsListBuilderDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
@@ -225,7 +226,8 @@ public class StatusViewCoordinator implements View.OnClickListener, UrlTextChang
                 new ChromePageInfoControllerDelegate(activity, webContents,
                         mModalDialogManagerSupplier,
                         /*offlinePageLoadUrlDelegate=*/
-                        new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab)));
+                        new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab)),
+                new ChromePermissionParamsListBuilderDelegate());
     }
 
     /**

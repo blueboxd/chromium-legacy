@@ -158,6 +158,12 @@ cr.define('settings', function() {
           r.APPS, mojom.GOOGLE_PLAY_STORE_SUBPAGE_PATH,
           Subpage.kGooglePlayStore);
     }
+    if (loadTimeData.valueExists('showPluginVm') &&
+        loadTimeData.getBoolean('showPluginVm')) {
+      r.APP_MANAGEMENT_PLUGIN_VM_SHARED_PATHS = createSubpage(
+          r.APP_MANAGEMENT, mojom.PLUGIN_VM_SHARED_PATHS_SUBPAGE_PATH,
+          Subpage.kPluginVmSharedPaths);
+    }
 
     // Crostini section.
     if (loadTimeData.valueExists('showCrostini') &&
@@ -191,19 +197,6 @@ cr.define('settings', function() {
             r.CROSTINI_DETAILS, mojom.CROSTINI_DISK_RESIZE_SUBPAGE_PATH,
             Subpage.kCrostiniDiskResize);
       }
-    }
-
-    // Plugin VM section.
-    if (loadTimeData.valueExists('showPluginVm') &&
-        loadTimeData.getBoolean('showPluginVm')) {
-      r.PLUGIN_VM = createSection(
-          r.BASIC, mojom.PLUGIN_VM_SECTION_PATH, Section.kPluginVm);
-      r.PLUGIN_VM_DETAILS = createSubpage(
-          r.PLUGIN_VM, mojom.PLUGIN_VM_DETAILS_SUBPAGE_PATH,
-          Subpage.kPluginVmDetails);
-      r.PLUGIN_VM_SHARED_PATHS = createSubpage(
-          r.PLUGIN_VM, mojom.PLUGIN_VM_SHARED_PATHS_SUBPAGE_PATH,
-          Subpage.kPluginVmSharedPaths);
     }
 
     // Date and Time section.

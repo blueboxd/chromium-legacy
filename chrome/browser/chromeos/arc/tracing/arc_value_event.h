@@ -28,6 +28,7 @@ struct ArcValueEvent {
     kCpuPower,
     kGpuPower,
     kMemoryPower,
+    kPackagePowerConstraint,
   };
 
   ArcValueEvent(int64_t timestamp, Type type, int value);
@@ -50,6 +51,7 @@ struct ArcValueEvent {
    * kCpuPower - milli-watts
    * kGpuPower - milli-watts
    * kMemporyPower - milli-watts
+   * kPackagePowerConstraint - milli-watts
    */
   int value;
 };

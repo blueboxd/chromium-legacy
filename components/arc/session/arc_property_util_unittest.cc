@@ -211,10 +211,10 @@ TEST_F(ArcPropertyUtilTest, ExpandPropertyFile_NoExpansion) {
   base::WriteFile(path, kValidProp, strlen(kValidProp));
 
   const base::FilePath dest = GetTempDir().Append("new.prop");
-  EXPECT_TRUE(ExpandPropertyFile(path, dest, config()));
+  EXPECT_TRUE(ExpandPropertyFileForTesting(path, dest, config()));
   std::string content;
   EXPECT_TRUE(base::ReadFileToString(dest, &content));
-  // Note: ExpandPropertyFile() adds a trailing LF.
+  // Note: ExpandPropertyFileForTesting() adds a trailing LF.
   EXPECT_EQ(std::string(kValidProp) + "\n", content);
 }
 
@@ -230,10 +230,10 @@ TEST_F(ArcPropertyUtilTest, ExpandPropertyFile_Expansion) {
   base::WriteFile(path, kValidProp, strlen(kValidProp));
 
   const base::FilePath dest = GetTempDir().Append("new.prop");
-  EXPECT_TRUE(ExpandPropertyFile(path, dest, config()));
+  EXPECT_TRUE(ExpandPropertyFileForTesting(path, dest, config()));
   std::string content;
   EXPECT_TRUE(base::ReadFileToString(dest, &content));
-  // Note: ExpandPropertyFile() adds a trailing LF.
+  // Note: ExpandPropertyFileForTesting() adds a trailing LF.
   EXPECT_EQ("ro.foo=v1\nro.baz=v2\n", content);
 }
 
@@ -249,10 +249,10 @@ TEST_F(ArcPropertyUtilTest, ExpandPropertyFile_NestedExpansion) {
   base::WriteFile(path, kValidProp, strlen(kValidProp));
 
   const base::FilePath dest = GetTempDir().Append("new.prop");
-  EXPECT_TRUE(ExpandPropertyFile(path, dest, config()));
+  EXPECT_TRUE(ExpandPropertyFileForTesting(path, dest, config()));
   std::string content;
   EXPECT_TRUE(base::ReadFileToString(dest, &content));
-  // Note: ExpandPropertyFile() adds a trailing LF.
+  // Note: ExpandPropertyFileForTesting() adds a trailing LF.
   EXPECT_EQ("ro.foo=v2\nro.baz=v2\n", content);
 }
 
@@ -264,14 +264,15 @@ TEST_F(ArcPropertyUtilTest, ExpandPropertyFile_CannotExpand) {
   ASSERT_TRUE(CreateTemporaryFileInDir(GetTempDir(), &path));
   base::WriteFile(path, kValidProp, strlen(kValidProp));
   const base::FilePath dest = GetTempDir().Append("new.prop");
-  EXPECT_FALSE(ExpandPropertyFile(path, dest, config()));
+  EXPECT_FALSE(ExpandPropertyFileForTesting(path, dest, config()));
 }
 
 // Test that ExpandPropertyFile handles the case where the input file is not
 // found.
 TEST_F(ArcPropertyUtilTest, ExpandPropertyFile_NoSourceFile) {
-  EXPECT_FALSE(ExpandPropertyFile(base::FilePath("/nonexistent"),
-                                  base::FilePath("/nonexistent2"), config()));
+  EXPECT_FALSE(ExpandPropertyFileForTesting(base::FilePath("/nonexistent"),
+                                            base::FilePath("/nonexistent2"),
+                                            config()));
 }
 
 // Test that ExpandPropertyFile handles the case where the output file cannot
@@ -281,8 +282,8 @@ TEST_F(ArcPropertyUtilTest, ExpandPropertyFile_CannotWrite) {
   base::FilePath path;
   ASSERT_TRUE(CreateTemporaryFileInDir(GetTempDir(), &path));
   base::WriteFile(path, kValidProp, strlen(kValidProp));
-  EXPECT_FALSE(
-      ExpandPropertyFile(path, base::FilePath("/nonexistent2"), config()));
+  EXPECT_FALSE(ExpandPropertyFileForTesting(
+      path, base::FilePath("/nonexistent2"), config()));
 }
 
 TEST_F(ArcPropertyUtilTest, ExpandPropertyFiles_NoSource) {
@@ -322,7 +323,7 @@ TEST_F(ArcPropertyUtilTest, ExpandPropertyFiles_NoSource) {
   EXPECT_TRUE(base::PathExists(dest_dir.Append("vendor_build.prop")));
 
   // Verify their content.
-  // Note: ExpandPropertyFile() adds a trailing LF.
+  // Note: ExpandPropertyFileForTesting() adds a trailing LF.
   std::string content;
   EXPECT_TRUE(
       base::ReadFileToString(dest_dir.Append("default.prop"), &content));

@@ -5,9 +5,12 @@
 package org.chromium.chrome.browser.omnibox.suggestions.header;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.text.TextUtils.TruncateAt;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -23,6 +26,7 @@ import org.chromium.components.browser_ui.styles.ChromeColors;
 public class HeaderView extends SimpleHorizontalLayoutView {
     private final TextView mHeaderText;
     private final ImageView mHeaderIcon;
+    private boolean mIsExpanded;
 
     /**
      * Constructs a new header view.
@@ -42,6 +46,7 @@ public class HeaderView extends SimpleHorizontalLayoutView {
         mHeaderText.setLayoutParams(LayoutParams.forDynamicView());
         mHeaderText.setMaxLines(1);
         mHeaderText.setEllipsize(TruncateAt.END);
+        mHeaderText.setAllCaps(true);
         mHeaderText.setTextAppearance(ChromeColors.getMediumTextSecondaryStyle(false));
         mHeaderText.setMinHeight(context.getResources().getDimensionPixelSize(
                 R.dimen.omnibox_suggestion_header_height));
@@ -68,5 +73,36 @@ public class HeaderView extends SimpleHorizontalLayoutView {
     /** Return TextView used to present group header text. */
     TextView getTextView() {
         return mHeaderText;
+    }
+
+    /**
+     * Specifies whether view should be announced as expanded or collapsed.
+     *
+     * @param isExpanded true, if view should be announced as expanded.
+     */
+    void setExpandedStateForAccessibility(boolean isExpanded) {
+        mIsExpanded = isExpanded;
+    }
+
+    @Override
+    public boolean isFocused() {
+        return super.isFocused() || (isSelected() && !isInTouchMode());
+    }
+
+    @Override
+    public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
+        super.onInitializeAccessibilityNodeInfo(info);
+        info.getActionList().add(mIsExpanded ? AccessibilityAction.ACTION_COLLAPSE
+                                             : AccessibilityAction.ACTION_EXPAND);
+    }
+
+    @Override
+    public boolean performAccessibilityAction(int action, Bundle arguments) {
+        if (action == AccessibilityNodeInfo.ACTION_EXPAND
+                || action == AccessibilityNodeInfo.ACTION_COLLAPSE) {
+            performClick();
+            return true;
+        }
+        return super.performAccessibilityAction(action, arguments);
     }
 }

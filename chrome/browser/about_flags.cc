@@ -1875,15 +1875,15 @@ const FeatureEntry::Choice kWebOtpBackendChoices[] = {
 const FeatureEntry::Choice kQueryTilesCountryChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kQueryTilesCountryCodeUS,
-     upboarding::switches::kQueryTilesCountryCode, "US"},
+     query_tiles::switches::kQueryTilesCountryCode, "US"},
     {flag_descriptions::kQueryTilesCountryCodeIndia,
-     upboarding::switches::kQueryTilesCountryCode, "IN"},
+     query_tiles::switches::kQueryTilesCountryCode, "IN"},
     {flag_descriptions::kQueryTilesCountryCodeBrazil,
-     upboarding::switches::kQueryTilesCountryCode, "BR"},
+     query_tiles::switches::kQueryTilesCountryCode, "BR"},
     {flag_descriptions::kQueryTilesCountryCodeNigeria,
-     upboarding::switches::kQueryTilesCountryCode, "NG"},
+     query_tiles::switches::kQueryTilesCountryCode, "NG"},
     {flag_descriptions::kQueryTilesCountryCodeIndonesia,
-     upboarding::switches::kQueryTilesCountryCode, "ID"},
+     query_tiles::switches::kQueryTilesCountryCode, "ID"},
 };
 
 #endif  // defined(OS_ANDROID)
@@ -2221,10 +2221,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBluetoothFixA2dpPacketSizeName,
      flag_descriptions::kBluetoothFixA2dpPacketSizeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kBluetoothFixA2dpPacketSize)},
-    {"bluetooth-kernel-suspend-notifier",
-     flag_descriptions::kBluetoothKernelSuspendNotifierName,
-     flag_descriptions::kBluetoothKernelSuspendNotifierDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kBluetoothKernelSuspendNotifier)},
     {"bluetooth-next-handsfree-profile",
      flag_descriptions::kBluetoothNextHandsfreeProfileName,
      flag_descriptions::kBluetoothNextHandsfreeProfileDescription, kOsCrOS,
@@ -2849,20 +2845,21 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(offline_pages::kOnTheFlyMhtmlHashComputationFeature)},
     {"query-tiles", flag_descriptions::kQueryTilesName,
      flag_descriptions::kQueryTilesDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(upboarding::features::kQueryTiles)},
+     FEATURE_VALUE_TYPE(query_tiles::features::kQueryTiles)},
     {"query-tiles-omnibox", flag_descriptions::kQueryTilesOmniboxName,
      flag_descriptions::kQueryTilesOmniboxDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(upboarding::features::kQueryTilesInOmnibox)},
+     FEATURE_VALUE_TYPE(query_tiles::features::kQueryTilesInOmnibox)},
     {"query-tiles-enable-query-editing",
      flag_descriptions::kQueryTilesEnableQueryEditingName,
      flag_descriptions::kQueryTilesEnableQueryEditingDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(upboarding::features::kQueryTilesEnableQueryEditing)},
+     FEATURE_VALUE_TYPE(query_tiles::features::kQueryTilesEnableQueryEditing)},
     {"query-tiles-country-code", flag_descriptions::kQueryTilesCountryCode,
      flag_descriptions::kQueryTilesCountryCodeDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kQueryTilesCountryChoices)},
     {"query-tiles-instant-fetch", flag_descriptions::kQueryTilesInstantFetch,
      flag_descriptions::kQueryTilesInstantFetchDescription, kOsAndroid,
-     SINGLE_VALUE_TYPE(upboarding::switches::kQueryTilesInstantBackgroundTask)},
+     SINGLE_VALUE_TYPE(
+         query_tiles::switches::kQueryTilesInstantBackgroundTask)},
     {"android-picture-in-picture-api",
      flag_descriptions::kAndroidPictureInPictureAPIName,
      flag_descriptions::kAndroidPictureInPictureAPIDescription, kOsAndroid,
@@ -2989,6 +2986,10 @@ const FeatureEntry kFeatureEntries[] = {
                                     "ForceDarkVariations")},
 #endif  // !OS_CHROMEOS
 #if defined(OS_ANDROID)
+    {"enable-android-dark-search", flag_descriptions::kAndroidDarkSearchName,
+     flag_descriptions::kAndroidDarkSearchDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kAndroidDarkSearch)},
+
     {"enable-android-night-mode-tab-reparenting",
      flag_descriptions::kAndroidNightModeTabReparentingName,
      flag_descriptions::kAndroidNightModeTabReparentingDescription, kOsAndroid,
@@ -3034,6 +3035,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImeInputLogicHmmName,
      flag_descriptions::kImeInputLogicHmmDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kImeInputLogicHmm)},
+    {"enable-cros-ime-input-logic-mozc",
+     flag_descriptions::kImeInputLogicMozcName,
+     flag_descriptions::kImeInputLogicMozcDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kImeInputLogicMozc)},
     {"enable-cros-ime-mozc-proto", flag_descriptions::kImeMozcProtoName,
      flag_descriptions::kImeMozcProtoDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kImeMozcProto)},
@@ -5583,6 +5588,15 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableCardNicknameManagement)},
+
+    {"conversion-measurement-api",
+     flag_descriptions::kConversionMeasurementApiName,
+     flag_descriptions::kConversionMeasurementApiDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kConversionMeasurement)},
+    {"conversion-measurement-debug-mode",
+     flag_descriptions::kConversionMeasurementDebugModeName,
+     flag_descriptions::kConversionMeasurementDebugModeDescription, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kConversionsDebugMode)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

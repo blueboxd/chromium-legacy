@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
+#import "base/ios/ios_util.h"
 #import "base/ios/ns_error_util.h"
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
@@ -102,15 +103,20 @@ std::unique_ptr<web::WebMainParts> ChromeWebClient::CreateWebMainParts() {
 }
 
 void ChromeWebClient::PreWebViewCreation() const {
-  // Initialize the audio session to allow a web page's audio to continue
-  // playing after the app is backgrounded.
-  VoiceSearchProvider* voice_provider =
-      ios::GetChromeBrowserProvider()->GetVoiceSearchProvider();
-  if (voice_provider) {
-    AudioSessionController* audio_controller =
-        voice_provider->GetAudioSessionController();
-    if (audio_controller) {
-      audio_controller->InitializeSessionIfNecessary();
+  // TODO(crbug.com/1082371): Confirm that this code is no longer needed and
+  // remove it entirely. Until then, prevent this from running on iOS 13.4+, as
+  // it occasionally triggers a permissions prompt.
+  if (!base::ios::IsRunningOnOrLater(13, 4, 0)) {
+    // Initialize the audio session to allow a web page's audio to continue
+    // playing after the app is backgrounded.
+    VoiceSearchProvider* voice_provider =
+        ios::GetChromeBrowserProvider()->GetVoiceSearchProvider();
+    if (voice_provider) {
+      AudioSessionController* audio_controller =
+          voice_provider->GetAudioSessionController();
+      if (audio_controller) {
+        audio_controller->InitializeSessionIfNecessary();
+      }
     }
   }
 }

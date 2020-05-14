@@ -123,13 +123,15 @@ void CreditCardFIDOAuthenticator::OptOut() {
 
 void CreditCardFIDOAuthenticator::IsUserVerifiable(
     base::OnceCallback<void(bool)> callback) {
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillCreditCardAuthentication)) {
-    authenticator()->IsUserVerifyingPlatformAuthenticatorAvailable(
-        std::move(callback));
-  } else {
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillCreditCardAuthentication) ||
+      !authenticator()) {
     std::move(callback).Run(false);
+    return;
   }
+
+  authenticator()->IsUserVerifyingPlatformAuthenticatorAvailable(
+      std::move(callback));
 }
 
 bool CreditCardFIDOAuthenticator::IsUserOptedIn() {
@@ -752,12 +754,18 @@ void CreditCardFIDOAuthenticator::UpdateUserPref() {
 }
 
 InternalAuthenticator* CreditCardFIDOAuthenticator::authenticator() {
-  if (!authenticator_) {
-    authenticator_ =
-        autofill_driver_->GetOrCreateCreditCardInternalAuthenticator();
+  if (authenticator_)
+    return authenticator_;
+
+  authenticator_ =
+      autofill_driver_->GetOrCreateCreditCardInternalAuthenticator();
+
+  // |authenticator_| may be null for unsupported platforms.
+  if (authenticator_) {
     authenticator()->SetEffectiveOrigin(
         url::Origin::Create(payments::GetBaseSecureUrl()));
   }
+
   return authenticator_;
 }
 }  // namespace autofill

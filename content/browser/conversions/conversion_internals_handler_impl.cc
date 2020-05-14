@@ -100,6 +100,16 @@ void ConversionInternalsHandlerImpl::GetPendingReports(
   }
 }
 
+void ConversionInternalsHandlerImpl::SendPendingReports(
+    ::mojom::ConversionInternalsHandler::SendPendingReportsCallback callback) {
+  if (ConversionManager* manager =
+          manager_provider_->GetManager(web_ui_->GetWebContents())) {
+    manager->SendReportsForWebUI(std::move(callback));
+  } else {
+    std::move(callback).Run();
+  }
+}
+
 void ConversionInternalsHandlerImpl::ClearStorage(
     ::mojom::ConversionInternalsHandler::ClearStorageCallback callback) {
   if (ConversionManager* manager =

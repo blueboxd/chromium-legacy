@@ -710,12 +710,12 @@ void PannerHandler::SetChannelCountMode(const String& mode,
 }
 
 bool PannerHandler::HasSampleAccurateValues() const {
-  return position_x_->HasSampleAccurateValuesTimeline() ||
-         position_y_->HasSampleAccurateValuesTimeline() ||
-         position_z_->HasSampleAccurateValuesTimeline() ||
-         orientation_x_->HasSampleAccurateValuesTimeline() ||
-         orientation_y_->HasSampleAccurateValuesTimeline() ||
-         orientation_z_->HasSampleAccurateValuesTimeline();
+  return position_x_->HasSampleAccurateValues() ||
+         position_y_->HasSampleAccurateValues() ||
+         position_z_->HasSampleAccurateValues() ||
+         orientation_x_->HasSampleAccurateValues() ||
+         orientation_y_->HasSampleAccurateValues() ||
+         orientation_z_->HasSampleAccurateValues();
 }
 
 bool PannerHandler::IsAudioRate() const {

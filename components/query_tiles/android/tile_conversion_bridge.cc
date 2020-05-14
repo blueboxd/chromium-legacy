@@ -11,7 +11,7 @@
 #include "base/android/jni_string.h"
 #include "components/query_tiles/jni_headers/TileConversionBridge_jni.h"
 
-namespace upboarding {
+namespace query_tiles {
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ToJavaArrayOfStrings;
@@ -49,4 +49,4 @@ ScopedJavaLocalRef<jobject> TileConversionBridge::CreateJavaTiles(
   return jlist;
 }
 
-}  // namespace upboarding
+}  // namespace query_tiles

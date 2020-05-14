@@ -25,6 +25,7 @@
     {
       "name": "LayoutView #document",
       "bounds": [250, 170],
+      "contentsOpaqueForText": true,
       "backgroundColor": "#C0C0C0",
       "transform": 5
     },
@@ -53,6 +54,7 @@
     {
       "name": "LayoutView #document",
       "bounds": [250, 170],
+      "contentsOpaqueForText": true,
       "backgroundColor": "#C0C0C0",
       "transform": 10
     },

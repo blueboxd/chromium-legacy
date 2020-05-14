@@ -5,6 +5,7 @@
 #include "ash/drag_drop/tab_drag_drop_delegate.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "ash/public/cpp/ash_features.h"
@@ -29,39 +30,25 @@
 #include "ui/gfx/geometry/vector2d.h"
 
 using ::testing::_;
+using ::testing::NiceMock;
 using ::testing::Return;
 
 namespace ash {
 
 namespace {
 
-std::unique_ptr<ui::OSExchangeData> MakeDragData(const std::string& mime_type,
-                                                 const std::string& data) {
-  auto result = std::make_unique<ui::OSExchangeData>();
-
-  base::flat_map<base::string16, base::string16> data_map;
-  data_map.emplace(base::ASCIIToUTF16(mime_type), base::ASCIIToUTF16(data));
-
-  base::Pickle inner_data;
-  ui::WriteCustomDataToPickle(data_map, &inner_data);
-
-  result->SetPickledData(ui::ClipboardFormatType::GetWebCustomDataType(),
-                         inner_data);
-  return result;
-}
-
 class MockShellDelegate : public TestShellDelegate {
  public:
   MockShellDelegate() = default;
   ~MockShellDelegate() override = default;
+
+  MOCK_METHOD(bool, IsTabDrag, (const ui::OSExchangeData&), (override));
 
   MOCK_METHOD(aura::Window*,
               CreateBrowserForTabDrop,
               (aura::Window*, const ui::OSExchangeData&),
               (override));
 };
-
-static constexpr char kTabMimeType[] = "application/vnd.chromium.tab";
 
 }  // namespace
 
@@ -75,7 +62,7 @@ class TabDragDropDelegateTest : public AshTestBase {
 
   // AshTestBase:
   void SetUp() override {
-    auto mock_shell_delegate = std::make_unique<MockShellDelegate>();
+    auto mock_shell_delegate = std::make_unique<NiceMock<MockShellDelegate>>();
     mock_shell_delegate_ = mock_shell_delegate.get();
     AshTestBase::SetUp(std::move(mock_shell_delegate));
     ash::TabletModeControllerTestApi().EnterTabletMode();
@@ -91,17 +78,15 @@ class TabDragDropDelegateTest : public AshTestBase {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  MockShellDelegate* mock_shell_delegate_ = nullptr;
+  NiceMock<MockShellDelegate>* mock_shell_delegate_ = nullptr;
 };
 
-TEST_F(TabDragDropDelegateTest, AcceptsValidDrags) {
-  EXPECT_TRUE(
-      TabDragDropDelegate::IsChromeTabDrag(*MakeDragData(kTabMimeType, "foo")));
-}
+TEST_F(TabDragDropDelegateTest, ForwardsDragCheckToShellDelegate) {
+  ON_CALL(*mock_shell_delegate(), IsTabDrag(_)).WillByDefault(Return(false));
+  EXPECT_FALSE(TabDragDropDelegate::IsChromeTabDrag(ui::OSExchangeData()));
 
-TEST_F(TabDragDropDelegateTest, RejectsInvalidDrags) {
-  EXPECT_FALSE(
-      TabDragDropDelegate::IsChromeTabDrag(*MakeDragData("text/plain", "bar")));
+  ON_CALL(*mock_shell_delegate(), IsTabDrag(_)).WillByDefault(Return(true));
+  EXPECT_TRUE(TabDragDropDelegate::IsChromeTabDrag(ui::OSExchangeData()));
 }
 
 TEST_F(TabDragDropDelegateTest, DragToExistingTabStrip) {
@@ -146,8 +131,8 @@ TEST_F(TabDragDropDelegateTest, DragToNewWindow) {
       .Times(1)
       .WillOnce(Return(new_window.get()));
 
-  auto drop_data = MakeDragData(kTabMimeType, "fake_id");
-  delegate.Drop(drag_start_location + gfx::Vector2d(2, 0), *drop_data);
+  delegate.Drop(drag_start_location + gfx::Vector2d(2, 0),
+                ui::OSExchangeData());
 
   EXPECT_FALSE(
       SplitViewController::Get(source_window.get())->InTabletSplitViewMode());
@@ -176,8 +161,7 @@ TEST_F(TabDragDropDelegateTest, DropOnEdgeEntersSplitView) {
       .Times(1)
       .WillOnce(Return(new_window.get()));
 
-  auto drop_data = MakeDragData(kTabMimeType, "fake_id");
-  delegate.Drop(drag_end_location, *drop_data);
+  delegate.Drop(drag_end_location, ui::OSExchangeData());
 
   SplitViewController* const split_view_controller =
       SplitViewController::Get(source_window.get());

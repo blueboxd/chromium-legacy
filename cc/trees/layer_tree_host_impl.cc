@@ -3799,7 +3799,7 @@ base::flat_set<int> LayerTreeHostImpl::NonFastScrollableNodes(
   return non_fast_scrollable_nodes;
 }
 
-ScrollNode* LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint(
+ScrollNode* LayerTreeHostImpl::FindScrollNodeForCompositedScrolling(
     const gfx::PointF& device_viewport_point,
     LayerImpl* layer_impl,
     bool* scroll_on_main_thread,
@@ -3986,7 +3986,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
       }
     }
 
-    ScrollNode* starting_node = FindScrollNodeForDeviceViewportPoint(
+    ScrollNode* starting_node = FindScrollNodeForCompositedScrolling(
         device_viewport_point, layer_impl, &scroll_on_main_thread,
         &scroll_status.main_thread_scrolling_reasons);
 
@@ -4034,6 +4034,43 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
   return scroll_status;
 }
 
+ScrollNode* LayerTreeHostImpl::HitTestScrollNode(
+    const gfx::PointF& device_viewport_point) const {
+  LayerImpl* layer_impl =
+      active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
+
+  if (!layer_impl)
+    return nullptr;
+
+  // There are some cases where the hit layer may not be correct (e.g. layer
+  // squashing). If we detect this case, we can't target a scroll node here.
+  {
+    LayerImpl* first_scrolling_layer_or_scrollbar =
+        active_tree_->FindFirstScrollingLayerOrScrollbarThatIsHitByPoint(
+            device_viewport_point);
+
+    if (!IsInitialScrollHitTestReliable(layer_impl,
+                                        first_scrolling_layer_or_scrollbar)) {
+      TRACE_EVENT_INSTANT0("cc", "Failed Hit Test", TRACE_EVENT_SCOPE_THREAD);
+      return nullptr;
+    }
+  }
+
+  // If we hit a scrollbar layer, get the ScrollNode from its associated
+  // scrolling layer, rather than directly from the scrollbar layer. The latter
+  // would return the parent scroller's ScrollNode.
+  if (layer_impl->IsScrollbarLayer()) {
+    layer_impl = active_tree_->LayerByElementId(
+        ToScrollbarLayer(layer_impl)->scroll_element_id());
+    DCHECK(layer_impl);
+  }
+
+  ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
+  ScrollNode* scroll_node = scroll_tree.Node(layer_impl->scroll_tree_index());
+
+  return GetNodeToScroll(scroll_node);
+}
+
 // Requires falling back to main thread scrolling when it hit tests in scrollbar
 // from touch.
 bool LayerTreeHostImpl::IsTouchDraggingScrollbar(
@@ -4076,23 +4113,9 @@ ScrollNode* LayerTreeHostImpl::GetNodeToScroll(ScrollNode* node) const {
   return node;
 }
 
-// Initial scroll hit testing can be unreliable in the presence of squashed
-// layers. In this case, we fall back to main thread scrolling. This function
-// compares |layer_impl| returned from a regular hit test to the layer
-// returned from a hit test performed only on scrollers and scrollbars. If the
-// closest scrolling ancestor of |layer_impl| is not the other layer, then the
-// layer_impl must be a squasing layer overtop of some other scroller and we
-// must rely on the main thread.
-//
-// Note, position: fixed layers use the inner viewport as their ScrollNode
-// (since they don't scroll with the outer viewport), however, scrolls from the
-// fixed layer still chain to the outer viewport. It's also possible for a node
-// to have the inner viewport as its ancestor without going through the outer
-// viewport; however, it may still scroll using the viewport(). Hence, this
-// method must use the same scroll chaining logic we use in ApplyScroll.
 bool LayerTreeHostImpl::IsInitialScrollHitTestReliable(
     LayerImpl* layer_impl,
-    LayerImpl* first_scrolling_layer_or_scrollbar) {
+    LayerImpl* first_scrolling_layer_or_scrollbar) const {
   if (!first_scrolling_layer_or_scrollbar)
     return true;
 
@@ -5046,33 +5069,18 @@ InputHandlerPointerResult LayerTreeHostImpl::MouseMoveAt(
 
   gfx::PointF device_viewport_point = gfx::ScalePoint(
       gfx::PointF(viewport_point), active_tree_->device_scale_factor());
-  LayerImpl* layer_impl =
-      active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
+  ScrollNode* scroll_node = HitTestScrollNode(device_viewport_point);
 
-  // Check if mouse is over a scrollbar or not.
-  // TODO(sahel): get rid of this extera checking when
-  // FindScrollNodeForDeviceViewportPoint finds the proper node for scrolling on
-  // the main thread when the mouse is over a scrollbar as well.
-  ElementId scroll_element_id;
-  if (layer_impl && layer_impl->IsScrollbarLayer())
-    scroll_element_id = ToScrollbarLayer(layer_impl)->scroll_element_id();
-  if (!scroll_element_id) {
-    bool scroll_on_main_thread = false;
-    uint32_t main_thread_scrolling_reasons;
-    auto* scroll_node = FindScrollNodeForDeviceViewportPoint(
-        device_viewport_point, layer_impl, &scroll_on_main_thread,
-        &main_thread_scrolling_reasons);
-    if (scroll_node)
-      scroll_element_id = scroll_node->element_id;
+  // The hit test can fail in some cases, e.g. we don't know if a region of a
+  // squashed layer has content or is empty.
+  if (!scroll_node)
+    return result;
 
-    // Scrollbars for the viewport are registered with the outer viewport layer.
-    if (InnerViewportScrollNode() &&
-        scroll_element_id == InnerViewportScrollNode()->element_id) {
-      DCHECK(OuterViewportScrollNode());
-      scroll_element_id = OuterViewportScrollNode()->element_id;
-    }
-  }
+  // Scrollbars for the viewport are registered with the outer viewport layer.
+  if (scroll_node->scrolls_inner_viewport)
+    scroll_node = OuterViewportScrollNode();
 
+  ElementId scroll_element_id = scroll_node->element_id;
   ScrollbarAnimationController* new_animation_controller =
       ScrollbarAnimationControllerForElementId(scroll_element_id);
   if (scroll_element_id != scroll_element_id_mouse_currently_over_) {
@@ -5084,7 +5092,7 @@ InputHandlerPointerResult LayerTreeHostImpl::MouseMoveAt(
 
     scroll_element_id_mouse_currently_over_ = scroll_element_id;
 
-    // Experiment: Enables will flash scorllbar when user move mouse enter a
+    // Experiment: Enables will flash scrollbar when user move mouse enter a
     // scrollable area.
     if (settings_.scrollbar_flash_when_mouse_enter && new_animation_controller)
       new_animation_controller->DidScrollUpdate();

@@ -345,6 +345,9 @@ static_library("content_shell_lib") {
     "browser/web_test/web_test_permission_manager.h",
     "browser/web_test/web_test_push_messaging_service.cc",
     "browser/web_test/web_test_push_messaging_service.h",
+    "browser/web_test/web_test_shell_platform_delegate.cc",
+    "browser/web_test/web_test_shell_platform_delegate.h",
+    "browser/web_test/web_test_shell_platform_delegate_mac.mm",
     "browser/web_test/web_test_tts_controller_delegate.cc",
     "browser/web_test/web_test_tts_controller_delegate.h",
     "browser/web_test/web_test_tts_platform.cc",
@@ -379,6 +382,13 @@ static_library("content_shell_lib") {
     "CONTENT_SHELL_VERSION=\"$content_shell_version\"",
     "CONTENT_SHELL_MAJOR_VERSION=\"$content_shell_major_version\"",
   ]
+
+  # This is to support our dependency on //content/browser.
+  # See comment at the top of //content/BUILD.gn for why this is disabled in
+  # component builds.
+  if (is_component_build) {
+    check_includes = false
+  }
 
   public_deps = [
     ":android_shell_descriptors",
@@ -419,7 +429,9 @@ static_library("content_shell_lib") {
     "//content:content_resources",
     "//content:dev_ui_content_resources",
     "//content/app/resources",
+    "//content/browser:for_content_tests",  # For non-component builds.
     "//content/gpu",
+    "//content/public/browser",  # For component builds.
     "//content/public/common",
     "//content/public/common:service_names",
     "//content/test:blink_test_browser_support",

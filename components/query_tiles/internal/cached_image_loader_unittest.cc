@@ -24,7 +24,7 @@ using image_fetcher::RequestMetadata;
 using ::testing::_;
 using ::testing::Invoke;
 
-namespace upboarding {
+namespace query_tiles {
 namespace {
 
 class CachedImageLoaderTest : public testing::Test {
@@ -107,4 +107,4 @@ TEST_F(CachedImageLoaderTest, PrefetchImage) {
 }
 
 }  // namespace
-}  // namespace upboarding
+}  // namespace query_tiles

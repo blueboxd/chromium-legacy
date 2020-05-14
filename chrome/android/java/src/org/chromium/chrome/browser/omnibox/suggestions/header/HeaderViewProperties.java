@@ -7,14 +7,21 @@ package org.chromium.chrome.browser.omnibox.suggestions.header;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 /** The properties associated with the header suggestions. */
 public class HeaderViewProperties {
+    /** The runnable object that is executed whenever user taps the header suggestion. */
+    public static final WritableObjectPropertyKey<Runnable> DELEGATE =
+            new WritableObjectPropertyKey<>();
+    /** The expanded state of the header suggestion. */
+    public static final WritableBooleanPropertyKey IS_EXPANDED = new WritableBooleanPropertyKey();
     /** The text content to be displayed as a header text. */
     public static final WritableObjectPropertyKey<String> TITLE = new WritableObjectPropertyKey<>();
 
-    public static final PropertyKey[] ALL_UNIQUE_KEYS = new PropertyKey[] {TITLE};
+    public static final PropertyKey[] ALL_UNIQUE_KEYS =
+            new PropertyKey[] {DELEGATE, IS_EXPANDED, TITLE};
 
     public static final PropertyKey[] ALL_KEYS =
             PropertyModel.concatKeys(ALL_UNIQUE_KEYS, SuggestionCommonProperties.ALL_KEYS);

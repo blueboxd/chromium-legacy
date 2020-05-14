@@ -13,7 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
-#include "components/version_info/version_info.h"
+#include "components/version_info/channel.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
@@ -42,14 +42,7 @@ namespace {
 
 namespace dnr_api = api::declarative_net_request;
 
-class RulesetMatcherTest : public ExtensionsTest {
- public:
-  RulesetMatcherTest() : channel_(::version_info::Channel::UNKNOWN) {}
-
- private:
-  // Run this on the trunk channel to ensure the API is available.
-  ScopedCurrentChannel channel_;
-};
+using RulesetMatcherTest = ExtensionsTest;
 
 // Tests a simple blocking rule.
 TEST_F(RulesetMatcherTest, BlockingRule) {
@@ -313,6 +306,10 @@ TEST_F(RulesetMatcherTest, RemoveHeadersMultipleRules) {
 }
 
 TEST_F(RulesetMatcherTest, ModifyHeaders_IsExtraHeaderMatcher) {
+  // TODO(crbug.com/947591): Remove the channel override once implementation of
+  // modifyHeaders action is complete.
+  ScopedCurrentChannel channel(::version_info::Channel::UNKNOWN);
+
   TestRule rule = CreateGenericRule();
   rule.condition->url_filter = std::string("example.com");
   std::unique_ptr<RulesetMatcher> matcher;
@@ -327,6 +324,10 @@ TEST_F(RulesetMatcherTest, ModifyHeaders_IsExtraHeaderMatcher) {
 }
 
 TEST_F(RulesetMatcherTest, ModifyHeaders) {
+  // TODO(crbug.com/947591): Remove the channel override once implementation of
+  // modifyHeaders action is complete.
+  ScopedCurrentChannel channel(::version_info::Channel::UNKNOWN);
+
   TestRule rule_1 = CreateGenericRule();
   rule_1.id = kMinValidID;
   rule_1.priority = kMinValidPriority + 1;
@@ -578,6 +579,10 @@ TEST_F(RulesetMatcherTest, UrlTransform) {
 
 // Tests regex rules are evaluated correctly for different action types.
 TEST_F(RulesetMatcherTest, RegexRules) {
+  // TODO(crbug.com/947591): Remove the channel override once implementation of
+  // modifyHeaders action is complete.
+  ScopedCurrentChannel channel(::version_info::Channel::UNKNOWN);
+
   auto create_regex_rule = [](size_t id, const std::string& regex_filter) {
     TestRule rule = CreateGenericRule();
     rule.id = id;
@@ -1104,6 +1109,10 @@ TEST_F(RulesetMatcherTest, RegexAndFilterListRules_RemoveHeaders) {
 }
 
 TEST_F(RulesetMatcherTest, RegexAndFilterListRules_ModifyHeaders) {
+  // TODO(crbug.com/947591): Remove the channel override once implementation of
+  // modifyHeaders action is complete.
+  ScopedCurrentChannel channel(::version_info::Channel::UNKNOWN);
+
   std::vector<TestRule> rules;
 
   TestRule rule = CreateGenericRule();
@@ -1361,14 +1370,7 @@ TEST_F(RulesetMatcherTest, BreakTiesByActionPriority) {
 
 // Test fixture to test allowAllRequests rules. We inherit from ExtensionsTest
 // to ensure we can work with WebContentsTester and associated classes.
-class AllowAllRequestsTest : public ExtensionsTest {
- public:
-  AllowAllRequestsTest() : channel_(::version_info::Channel::UNKNOWN) {}
-
- private:
-  // Run this on the trunk channel to ensure the API is available.
-  ScopedCurrentChannel channel_;
-};
+using AllowAllRequestsTest = ExtensionsTest;
 
 // Tests that we track allowlisted frames (frames matching allowAllRequests
 // rules) correctly.

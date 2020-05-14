@@ -227,6 +227,11 @@ void USER_MANAGER_EXPORT SetOfflineSigninLimit(const AccountId& account_id,
 base::TimeDelta USER_MANAGER_EXPORT
 GetOfflineSigninLimit(const AccountId& account_id);
 
+void USER_MANAGER_EXPORT SetIsManaged(const AccountId& account_id,
+                                      bool is_managed);
+
+bool USER_MANAGER_EXPORT GetIsManaged(const AccountId& account_id);
+
 // Removes all user preferences associated with |account_id|.
 // Not exported as code should not be calling this outside this component
 void RemovePrefs(const AccountId& account_id);

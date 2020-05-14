@@ -303,12 +303,11 @@ Textfield::Textfield()
       selection_controller_(this) {
   set_context_menu_controller(this);
   set_drag_controller(this);
-  cursor_view_.SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-  cursor_view_.layer()->SetColor(GetTextColor());
-  // |cursor_view_| is owned by Textfield view.
-  cursor_view_.set_owned_by_client();
-  cursor_view_.GetViewAccessibility().OverrideIsIgnored(true);
-  AddChildView(&cursor_view_);
+  auto cursor_view = std::make_unique<View>();
+  cursor_view->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+  cursor_view->layer()->SetColor(GetTextColor());
+  cursor_view->GetViewAccessibility().OverrideIsIgnored(true);
+  cursor_view_ = AddChildView(std::move(cursor_view));
   GetRenderText()->SetFontList(GetDefaultFontList());
   UpdateBorder();
   SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -590,7 +589,7 @@ size_t Textfield::GetCursorPosition() const {
 
 void Textfield::SetColor(SkColor value) {
   GetRenderText()->SetColor(value);
-  cursor_view_.layer()->SetColor(value);
+  cursor_view_->layer()->SetColor(value);
   OnPropertyChanged(&model_ + kTextfieldTextColor, kPropertyEffectsPaint);
 }
 
@@ -1128,7 +1127,7 @@ void Textfield::OnFocus() {
   GetRenderText()->set_focused(true);
   if (ShouldShowCursor()) {
     UpdateCursorViewPosition();
-    cursor_view_.SetVisible(true);
+    cursor_view_->SetVisible(true);
   }
   if (GetInputMethod())
     GetInputMethod()->SetFocusedTextInputClient(this);
@@ -1157,7 +1156,7 @@ void Textfield::OnBlur() {
 #endif  // defined(OS_CHROMEOS)
   }
   StopBlinkingCursor();
-  cursor_view_.SetVisible(false);
+  cursor_view_->SetVisible(false);
 
   DestroyTouchSelection();
 
@@ -1181,7 +1180,7 @@ void Textfield::OnThemeChanged() {
   render_text->set_selection_color(GetSelectionTextColor());
   render_text->set_selection_background_focused_color(
       GetSelectionBackgroundColor());
-  cursor_view_.layer()->SetColor(GetTextColor());
+  cursor_view_->layer()->SetColor(GetTextColor());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2253,7 +2252,7 @@ void Textfield::UpdateAfterChange(bool text_changed, bool cursor_changed) {
 }
 
 void Textfield::UpdateCursorVisibility() {
-  cursor_view_.SetVisible(ShouldShowCursor());
+  cursor_view_->SetVisible(ShouldShowCursor());
   if (ShouldBlinkCursor())
     StartBlinkingCursor();
   else
@@ -2266,7 +2265,7 @@ void Textfield::UpdateCursorViewPosition() {
   location.set_height(
       std::min(location.height(),
                GetLocalBounds().height() - location.y() - location.y()));
-  cursor_view_.SetBoundsRect(location);
+  cursor_view_->SetBoundsRect(location);
 }
 
 int Textfield::GetTextStyle() const {
@@ -2457,7 +2456,7 @@ void Textfield::StopBlinkingCursor() {
 void Textfield::OnCursorBlinkTimerFired() {
   DCHECK(ShouldBlinkCursor());
   UpdateCursorViewPosition();
-  cursor_view_.SetVisible(!cursor_view_.GetVisible());
+  cursor_view_->SetVisible(!cursor_view_->GetVisible());
 }
 
 void Textfield::OnEnabledChanged() {

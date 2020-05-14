@@ -18,6 +18,7 @@
 <link rel="import" href="android_apps_subpage.html">
 <link rel="import" href="app_management_page/app_management_page.html">
 <link rel="import" href="app_management_page/app_detail_view.html">
+<link rel="import" href="app_management_page/plugin_vm_page/plugin_vm_shared_paths.html">
 <link rel="import" href="app_management_page/uninstall_button.html">
 
 <dom-module id="os-settings-apps-page">
@@ -110,6 +111,16 @@
           <settings-android-apps-subpage
               android-apps-info="[[androidAppsInfo]]" prefs="{{prefs}}">
           </settings-android-apps-subpage>
+        </settings-subpage>
+      </template>
+    </template>
+
+    <!-- Plugin VM -->
+    <template is="dom-if" if="[[showPluginVm]]" restamp>
+      <template is="dom-if" route-path="/app-management/pluginVm/sharedPaths">
+        <settings-subpage page-title="$i18n{pluginVmSharedPaths}">
+          <settings-plugin-vm-shared-paths prefs="{{prefs}}">
+          </settings-plugin-vm-shared-paths>
         </settings-subpage>
       </template>
     </template>

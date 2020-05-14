@@ -7,6 +7,7 @@
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/window_properties.h"
@@ -44,7 +45,8 @@ void ShowSettingsOnCurrentDesktop(Browser* browser) {
 
 bool AreSystemWebAppsEnabled(Profile* profile) {
   return web_app::SystemWebAppManager::IsEnabled() &&
-         web_app::AreWebAppsEnabled(profile);
+         web_app::AreWebAppsEnabled(profile) &&
+         !chrome::IsRunningInForcedAppMode();
 }
 
 }  // namespace

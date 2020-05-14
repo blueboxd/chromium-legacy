@@ -57,6 +57,7 @@ import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
+import org.chromium.chrome.browser.page_info.ChromePermissionParamsListBuilderDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
@@ -610,7 +611,8 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
                         new ChromePageInfoControllerDelegate(activity, webContents,
                                 activity::getModalDialogManager,
                                 /*offlinePageLoadUrlDelegate=*/
-                                new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(currentTab)));
+                                new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(currentTab)),
+                        new ChromePermissionParamsListBuilderDelegate());
             });
         }
 

@@ -64,9 +64,9 @@ grit("help_app_resources") {
 # Resources automatically served by the chrome://help-app bundle, obtained via DEPS.
 grit("help_app_bundle_resources") {
   if (enable_cros_help_app) {
-    # Obtained via src-internal/DEPS.
+    # Obtained via an internal CIPD package in src/DEPS.
     source =
-        "../components/help_app_ui/resources/app/help_app_bundle_resources.grd"
+        "../components/help_app_ui/resources/prod/help_app_bundle_resources.grd"
   } else {
     source = "../components/help_app_ui/resources/mock/help_app_bundle_mock_resources.grd"
   }

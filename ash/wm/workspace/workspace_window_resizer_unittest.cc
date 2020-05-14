@@ -196,10 +196,6 @@ class WorkspaceWindowResizerTest : public AshTestBase {
     return workspace_resizer_->snap_phantom_window_controller_.get();
   }
 
-  std::vector<aura::Window*> empty_windows() const {
-    return std::vector<aura::Window*>();
-  }
-
   void InitTouchResizeWindow(const gfx::Rect& bounds, int window_component) {
     touch_resize_delegate_.set_window_component(window_component);
     touch_resize_window_.reset(CreateTestWindowInShellWithDelegate(
@@ -2014,29 +2010,33 @@ TEST_F(WorkspaceWindowResizerTest, DragToSnapMaximize) {
   EXPECT_EQ(gfx::Rect(800, 600), window_->bounds());
 }
 
-using MultiDisplayWorkspaceWindowResizerTest = AshTestBase;
+TEST_F(WorkspaceWindowResizerTest, DragToMaximizeStartingInSnapRegion) {
+  UpdateDisplay("800x648");
 
-// Makes sure that window drag magnetism still works when a window is dragged
-// between different displays.
-TEST_F(MultiDisplayWorkspaceWindowResizerTest, Magnetism) {
-  UpdateDisplay("800x600,500x500");
-  auto roots = Shell::GetAllRootWindows();
-  ASSERT_EQ(2u, roots.size());
+  // Drag starting in the snap to maximize region. If we do not leave it, on
+  // drag release the window will not get maximized.
+  window_->SetBounds(gfx::Rect(200, 200));
+  window_->SetProperty(aura::client::kResizeBehaviorKey,
+                       aura::client::kResizeBehaviorCanResize |
+                           aura::client::kResizeBehaviorCanMaximize);
+  WindowState::Get(window_.get())->Maximize();
 
-  // Create two windows one on the first display, and the other on the second.
-  auto win1 = CreateToplevelTestWindow(gfx::Rect(10, 10, 100, 100), /*id=*/1);
-  auto win2 = CreateToplevelTestWindow(gfx::Rect(1250, 100, 50, 50), /*id=*/2);
-  EXPECT_EQ(win1->GetRootWindow(), roots[0]);
-  EXPECT_EQ(win2->GetRootWindow(), roots[1]);
+  std::unique_ptr<WindowResizer> resizer(
+      CreateResizerForTest(window_.get(), gfx::Point(400.f, 1.f), HTCAPTION));
+  resizer->Drag(gfx::PointF(400.f, 25.f), 0);
+  resizer->CompleteDrag();
+  ASSERT_FALSE(WindowState::Get(window_.get())->IsMaximized());
 
-  std::unique_ptr<WindowResizer> resizer = CreateWindowResizer(
-      win1.get(), gfx::PointF(), HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_MOUSE);
-  ASSERT_TRUE(resizer.get());
-
-  // Drag `win1` such that its right edge is 5 pixels from the left edge of
-  // `win2`. Expect that `win1` will snap to `win2` on its left edge.
-  resizer->Drag(CalculateDragPoint(*resizer, 1135, 0), /*event_flags=*/0);
-  EXPECT_EQ(gfx::Rect(1150, 10, 100, 100), win1->GetBoundsInScreen());
+  // This time exit the snap region. On returning and completing the drag, the
+  // window should be maximized.
+  WindowState::Get(window_.get())->Maximize();
+  resizer.reset();
+  resizer.reset(
+      CreateResizerForTest(window_.get(), gfx::Point(400.f, 1.f), HTCAPTION));
+  resizer->Drag(gfx::PointF(400.f, 400.f), 0);
+  resizer->Drag(gfx::PointF(400.f, 25.f), 0);
+  resizer->CompleteDrag();
+  EXPECT_TRUE(WindowState::Get(window_.get())->IsMaximized());
 }
 
 // Makes sure that we are not creating any resizer in kiosk mode.
@@ -2061,6 +2061,31 @@ TEST_F(WorkspaceWindowResizerTest, DoNotCreateResizerIfNotActiveSession) {
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::ACTIVE);
   EXPECT_TRUE(CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
+}
+
+using MultiDisplayWorkspaceWindowResizerTest = AshTestBase;
+
+// Makes sure that window drag magnetism still works when a window is dragged
+// between different displays.
+TEST_F(MultiDisplayWorkspaceWindowResizerTest, Magnetism) {
+  UpdateDisplay("800x600,500x500");
+  auto roots = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, roots.size());
+
+  // Create two windows one on the first display, and the other on the second.
+  auto win1 = CreateToplevelTestWindow(gfx::Rect(10, 10, 100, 100), /*id=*/1);
+  auto win2 = CreateToplevelTestWindow(gfx::Rect(1250, 100, 50, 50), /*id=*/2);
+  EXPECT_EQ(win1->GetRootWindow(), roots[0]);
+  EXPECT_EQ(win2->GetRootWindow(), roots[1]);
+
+  std::unique_ptr<WindowResizer> resizer = CreateWindowResizer(
+      win1.get(), gfx::PointF(), HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_MOUSE);
+  ASSERT_TRUE(resizer.get());
+
+  // Drag `win1` such that its right edge is 5 pixels from the left edge of
+  // `win2`. Expect that `win1` will snap to `win2` on its left edge.
+  resizer->Drag(CalculateDragPoint(*resizer, 1135, 0), /*event_flags=*/0);
+  EXPECT_EQ(gfx::Rect(1150, 10, 100, 100), win1->GetBoundsInScreen());
 }
 
 }  // namespace ash

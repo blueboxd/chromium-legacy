@@ -89,6 +89,8 @@ class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
   // views::View:
   const char* GetClassName() const override;
 
+  SearchResultActionsView* actions_view() { return actions_view_; }
+
  protected:
   ~SearchResultBaseView() override;
 
@@ -97,8 +99,6 @@ class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
   void set_actions_view(SearchResultActionsView* actions_view) {
     actions_view_ = actions_view;
   }
-
-  SearchResultActionsView* actions_view() { return actions_view_; }
 
  private:
   // Selects the initial action that should be associated with the result view,

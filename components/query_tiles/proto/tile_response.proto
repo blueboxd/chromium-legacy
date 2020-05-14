@@ -6,7 +6,7 @@ syntax = "proto3";
 
 option optimize_for = LITE_RUNTIME;
 
-package upboarding.query_tiles.proto;
+package query_tiles.proto;
 
 // URL and id of the image to be displayed on tiles.
 message TileImage {

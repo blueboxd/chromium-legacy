@@ -17,7 +17,7 @@
 #include "components/query_tiles/internal/tile_types.h"
 #include "components/query_tiles/tile.h"
 
-namespace upboarding {
+namespace query_tiles {
 
 // Manages the in-memory tile group and coordinates with storage layer.
 class TileManager {
@@ -56,6 +56,6 @@ class TileManager {
   TileManager& operator=(const TileManager& other) = delete;
 };
 
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_INTERNAL_TILE_MANAGER_H_

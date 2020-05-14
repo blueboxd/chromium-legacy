@@ -315,11 +315,7 @@ VideoDecoderShim::VideoDecoderShim(PepperVideoDecoderHost* host,
 
 VideoDecoderShim::~VideoDecoderShim() {
   DCHECK(RenderThreadImpl::current());
-  // Delete any remaining textures.
-  auto it = texture_id_map_.begin();
-  for (; it != texture_id_map_.end(); ++it)
-    DeleteTexture(it->second);
-  texture_id_map_.clear();
+  texture_mailbox_map_.clear();
 
   FlushCommandBuffer();
 
@@ -404,14 +400,11 @@ void VideoDecoderShim::AssignPictureBuffers(
   std::vector<gpu::Mailbox> mailboxes = host_->TakeMailboxes();
   DCHECK_EQ(buffers.size(), mailboxes.size());
   GLuint num_textures = base::checked_cast<GLuint>(buffers.size());
-  std::vector<uint32_t> local_texture_ids(num_textures);
-  gpu::raster::RasterInterface* ri = context_provider_->RasterInterface();
   for (uint32_t i = 0; i < num_textures; i++) {
     DCHECK_EQ(1u, buffers[i].client_texture_ids().size());
-    local_texture_ids[i] = ri->CreateAndConsumeForGpuRaster(mailboxes[i]);
-    // Map the plugin texture id to the local texture id.
+    // Map the plugin texture id to the mailbox
     uint32_t plugin_texture_id = buffers[i].client_texture_ids()[0];
-    texture_id_map_[plugin_texture_id] = local_texture_ids[i];
+    texture_mailbox_map_[plugin_texture_id] = mailboxes[i];
     available_textures_.insert(plugin_texture_id);
   }
   SendPictures();
@@ -422,7 +415,8 @@ void VideoDecoderShim::ReusePictureBuffer(int32_t picture_buffer_id) {
   uint32_t texture_id = static_cast<uint32_t>(picture_buffer_id);
   if (textures_to_dismiss_.find(texture_id) != textures_to_dismiss_.end()) {
     DismissTexture(texture_id);
-  } else if (texture_id_map_.find(texture_id) != texture_id_map_.end()) {
+  } else if (texture_mailbox_map_.find(texture_id) !=
+             texture_mailbox_map_.end()) {
     available_textures_.insert(texture_id);
     SendPictures();
   } else {
@@ -484,9 +478,8 @@ void VideoDecoderShim::OnOutputComplete(std::unique_ptr<PendingFrame> frame) {
       // If the size has changed, all current textures must be dismissed. Add
       // all textures to |textures_to_dismiss_| and dismiss any that aren't in
       // use by the plugin. We will dismiss the rest as they are recycled.
-      for (TextureIdMap::const_iterator it = texture_id_map_.begin();
-           it != texture_id_map_.end();
-           ++it) {
+      for (IdToMailboxMap::const_iterator it = texture_mailbox_map_.begin();
+           it != texture_mailbox_map_.end(); ++it) {
         textures_to_dismiss_.insert(it->first);
       }
       for (auto it = available_textures_.begin();
@@ -517,10 +510,11 @@ void VideoDecoderShim::SendPictures() {
     uint32_t texture_id = *it;
     available_textures_.erase(it);
 
-    uint32_t local_texture_id = texture_id_map_[texture_id];
-    ConvertFromVideoFrameYUVTextures(frame->video_frame.get(),
-                                     context_provider_.get(), GL_TEXTURE_2D,
-                                     local_texture_id);
+    gpu::MailboxHolder destination_holder;
+    destination_holder.mailbox = texture_mailbox_map_[texture_id];
+    destination_holder.texture_target = GL_TEXTURE_2D;
+    ConvertFromVideoFrameYUV(frame->video_frame.get(), context_provider_.get(),
+                             destination_holder);
     host_->PictureReady(media::Picture(texture_id, frame->decode_id,
                                        frame->video_frame->visible_rect(),
                                        gfx::ColorSpace(), false));
@@ -567,15 +561,9 @@ void VideoDecoderShim::NotifyCompletedDecodes() {
 void VideoDecoderShim::DismissTexture(uint32_t texture_id) {
   DCHECK(host_);
   textures_to_dismiss_.erase(texture_id);
-  DCHECK(texture_id_map_.find(texture_id) != texture_id_map_.end());
-  DeleteTexture(texture_id_map_[texture_id]);
-  texture_id_map_.erase(texture_id);
+  DCHECK(texture_mailbox_map_.find(texture_id) != texture_mailbox_map_.end());
+  texture_mailbox_map_.erase(texture_id);
   host_->DismissPictureBuffer(texture_id);
-}
-
-void VideoDecoderShim::DeleteTexture(uint32_t texture_id) {
-  gpu::raster::RasterInterface* ri = context_provider_->RasterInterface();
-  ri->DeleteGpuRasterTexture(texture_id);
 }
 
 void VideoDecoderShim::FlushCommandBuffer() {

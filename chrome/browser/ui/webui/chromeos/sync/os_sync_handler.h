@@ -40,6 +40,7 @@ class OSSyncHandler : public content::WebUIMessageHandler,
   // Callbacks from the page. Visible for testing.
   void HandleDidNavigateToOsSyncPage(const base::ListValue* args);
   void HandleDidNavigateAwayFromOsSyncPage(const base::ListValue* args);
+  void HandleOsSyncPrefsDispatch(const base::ListValue* args);
   void HandleSetOsSyncFeatureEnabled(const base::ListValue* args);
   void HandleSetOsSyncDatatypes(const base::ListValue* args);
 

@@ -2,6 +2,7 @@ if (self.importScripts) {
   importScripts('../resources/fetch-test-helpers.js');
 }
 
+var {BASE_ORIGIN, OTHER_ORIGIN} = get_fetch_test_options();
 var URL = 'https://www.example.com/test.html';
 
 test(function() {

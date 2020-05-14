@@ -41,30 +41,7 @@ bool TabDragDropDelegate::IsChromeTabDrag(const ui::OSExchangeData& drag_data) {
   if (!features::IsWebUITabStripTabDragIntegrationEnabled())
     return false;
 
-  base::Pickle pickle;
-  drag_data.GetPickledData(ui::ClipboardFormatType::GetWebCustomDataType(),
-                           &pickle);
-  base::PickleIterator iter(pickle);
-
-  uint32_t entry_count = 0;
-  if (!iter.ReadUInt32(&entry_count))
-    return false;
-
-  for (uint32_t i = 0; i < entry_count; ++i) {
-    base::StringPiece16 type;
-    base::StringPiece16 data;
-    if (!iter.ReadStringPiece16(&type) || !iter.ReadStringPiece16(&data))
-      return false;
-
-    // TODO(https://crbug.com/1069869): share this constant between Ash
-    // and Chrome instead of hardcoding it in both places.
-    static const base::NoDestructor<base::string16> chrome_tab_type(
-        base::ASCIIToUTF16("application/vnd.chromium.tab"));
-    if (type == *chrome_tab_type)
-      return true;
-  }
-
-  return false;
+  return Shell::Get()->shell_delegate()->IsTabDrag(drag_data);
 }
 
 TabDragDropDelegate::TabDragDropDelegate(

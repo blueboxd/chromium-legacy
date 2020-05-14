@@ -567,7 +567,8 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
   }
 
   ScopedJavaLocalRef<jobject> j_query_tiles =
-      upboarding::TileConversionBridge::CreateJavaTiles(env, match.query_tiles);
+      query_tiles::TileConversionBridge::CreateJavaTiles(env,
+                                                         match.query_tiles);
 
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile_);

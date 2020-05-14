@@ -14,7 +14,9 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/dbus/plugin_vm_service/plugin_vm_service.pb.h"
@@ -23,6 +25,10 @@
 
 // A fixed UUID where the first 4 bytes spell 'test', reported when under test.
 constexpr char kFakeUUID[] = "74657374-4444-4444-8888-888888888888";
+
+// These are the accepted inputs to the ShowSettingsPage D-Bus method.
+constexpr char kShowSettingsPageDetails[] = "pluginVm/details";
+constexpr char kShowSettingsPageSharedPaths[] = "pluginVm/sharedPaths";
 
 namespace chromeos {
 
@@ -95,11 +101,15 @@ void PluginVmServiceProvider::ShowSettingsPage(
     return;
   }
 
-  // Validate subpage path.
-  if ((request.subpage_path() !=
-       chromeos::settings::mojom::kPluginVmDetailsSubpagePath) &&
-      (request.subpage_path() !=
-       chromeos::settings::mojom::kPluginVmSharedPathsSubpagePath)) {
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  if (request.subpage_path() == kShowSettingsPageDetails) {
+    chrome::ShowAppManagementPage(
+        profile, plugin_vm::kPluginVmAppId,
+        AppManagementEntryPoint::kDBusServicePluginVm);
+  } else if (request.subpage_path() == kShowSettingsPageSharedPaths) {
+    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+        profile, chromeos::settings::mojom::kPluginVmSharedPathsSubpagePath);
+  } else {
     constexpr char error_message[] = "Invalid subpage_path";
     LOG(ERROR) << error_message;
     std::move(response_sender)
@@ -108,8 +118,6 @@ void PluginVmServiceProvider::ShowSettingsPage(
     return;
   }
 
-  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-      ProfileManager::GetPrimaryUserProfile(), request.subpage_path());
   std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 

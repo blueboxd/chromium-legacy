@@ -18,7 +18,7 @@ using testing::InSequence;
 using testing::Invoke;
 using testing::StrictMock;
 
-namespace upboarding {
+namespace query_tiles {
 namespace {
 
 class MockInitializableTileService : public InitializableTileService {
@@ -206,4 +206,4 @@ TEST_F(InitAwareTileServiceTest, BeforeInitFailureNotFlushedThrough) {
 }
 
 }  // namespace
-}  // namespace upboarding
+}  // namespace query_tiles

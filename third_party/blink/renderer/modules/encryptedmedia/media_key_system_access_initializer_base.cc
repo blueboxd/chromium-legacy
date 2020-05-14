@@ -168,13 +168,6 @@ void MediaKeySystemAccessInitializerBase::GenerateWarningAndReportMetrics()
   const char kWidevineKeySystem[] = "com.widevine.alpha";
   const char kWidevineHwSecureAllRobustness[] = "HW_SECURE_ALL";
 
-  // Reported to UKM. Existing values must not change and new values must be
-  // added at the end of the list.
-  enum KeySystemForUkm {
-    kClearKey = 0,
-    kWidevine = 1,
-  };
-
   // Only check for widevine key system for now.
   if (KeySystem() != kWidevineKeySystem)
     return;

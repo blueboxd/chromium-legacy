@@ -1357,6 +1357,11 @@ const char kPrintPreviewDisabled[] = "printing.print_preview_disabled";
 const char kPrintPreviewDefaultDestinationSelectionRules[] =
     "printing.default_destination_selection_rules";
 
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINTING)
+// An integer pref that holds the rasterization mode to use when printing.
+const char kPrintRasterizationMode[] = "printing.rasterization_mode";
+#endif
+
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 // A pref that sets the default destination in Print Preview to always be the
 // OS default printer instead of the most recently used destination.

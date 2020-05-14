@@ -270,6 +270,10 @@ Shell* Shell::CreateNewWindowWithSessionStorageNamespace(
   return shell;
 }
 
+void Shell::RenderViewReady() {
+  g_platform->RenderViewReady(this);
+}
+
 void Shell::LoadURL(const GURL& url) {
   LoadURLForFrame(
       url, std::string(),

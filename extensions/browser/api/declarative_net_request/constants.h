@@ -129,6 +129,12 @@ extern const char kInternalErrorGettingDynamicRules[];
 extern const char kDynamicRuleCountExceeded[];
 extern const char kDynamicRegexRuleCountExceeded[];
 
+// Static ruleset toggling API errors.
+extern const char kInvalidRulesetIDError[];
+extern const char kEnabledRulesetsRuleCountExceeded[];
+extern const char kEnabledRulesetsRegexRuleCountExceeded[];
+extern const char kInternalErrorUpdatingEnabledRulesets[];
+
 // Histogram names.
 extern const char kIndexAndPersistRulesTimeHistogram[];
 extern const char kManifestRulesCountHistogram[];

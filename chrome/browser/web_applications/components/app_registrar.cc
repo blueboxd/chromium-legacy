@@ -53,6 +53,13 @@ void AppRegistrar::NotifyWebAppUninstalled(const AppId& app_id) {
   RecordWebAppUninstallation(profile()->GetPrefs(), app_id);
 }
 
+void AppRegistrar::NotifyWebAppLocallyInstalledStateChanged(
+    const AppId& app_id,
+    bool is_locally_installed) {
+  for (AppRegistrarObserver& observer : observers_)
+    observer.OnWebAppLocallyInstalledStateChanged(app_id, is_locally_installed);
+}
+
 void AppRegistrar::NotifyWebAppDisabledStateChanged(const AppId& app_id,
                                                     bool is_disabled) {
   for (AppRegistrarObserver& observer : observers_)

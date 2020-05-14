@@ -427,13 +427,21 @@ LayoutUnit ComputeInlineSizeForFragment(
         MinMaxSizesInput(space.PercentageResolutionBlockSize()), &space);
   };
 
+  Length min_length = style.LogicalMinWidth();
   // TODO(cbiesinger): Audit callers of ResolveMainInlineLength to see
   // whether they need to respect aspect ratio and consider adding a helper
   // function for that.
   LayoutUnit extent = kIndefiniteSize;
-  if (logical_width.IsAuto())
+  if (style.AspectRatio() && logical_width.IsAuto())
     extent = ComputeInlineSizeFromAspectRatio(space, style, border_padding);
-  if (LIKELY(extent == kIndefiniteSize)) {
+  if (UNLIKELY(extent != kIndefiniteSize)) {
+    // This means we successfully applied aspect-ratio and now need to check
+    // if we need to apply the implied minimum size:
+    // https://drafts.csswg.org/css-sizing-4/#aspect-ratio-minimum
+    if (style.OverflowInlineDirection() == EOverflow::kVisible &&
+        min_length.IsAuto())
+      min_length = Length::MinContent();
+  } else {
     if (logical_width.IsAuto() && space.IsShrinkToFit())
       logical_width = Length::FitContent();
     extent = ResolveMainInlineLength(space, style, border_padding,
@@ -443,9 +451,9 @@ LayoutUnit ComputeInlineSizeForFragment(
   LayoutUnit max = ResolveMaxInlineLength(
       space, style, border_padding, MinMaxSizesFunc, style.LogicalMaxWidth(),
       LengthResolvePhase::kLayout);
-  LayoutUnit min = ResolveMinInlineLength(
-      space, style, border_padding, MinMaxSizesFunc, style.LogicalMinWidth(),
-      LengthResolvePhase::kLayout);
+  LayoutUnit min =
+      ResolveMinInlineLength(space, style, border_padding, MinMaxSizesFunc,
+                             min_length, LengthResolvePhase::kLayout);
   return ConstrainByMinMax(extent, min, max);
 }
 

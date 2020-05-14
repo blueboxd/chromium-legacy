@@ -13,6 +13,7 @@
     {
       "name": "LayoutView #document",
       "bounds": [300, 100],
+      "contentsOpaqueForText": true,
       "backgroundColor": "#FFFF00"
     },
     {

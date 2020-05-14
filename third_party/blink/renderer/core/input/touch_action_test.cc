@@ -270,6 +270,8 @@ void TouchActionTest::RunTestOnTree(
     // debugging).
     Persistent<DOMRectList> rects = element->getClientRects();
     ASSERT_GE(rects->length(), 0u) << failure_context.ToString();
+    if (!rects->length())
+      continue;
     Persistent<DOMRect> r = rects->item(0);
     FloatRect client_float_rect =
         FloatRect(r->left(), r->top(), r->width(), r->height());

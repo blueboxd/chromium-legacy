@@ -24,6 +24,10 @@ const base::Feature kEnableCustomMacPaperSizes{
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
+// When using GDI printing, avoid rasterization if possible.
+const base::Feature kPrintWithReducedRasterization{
+    "PrintWithReducedRasterization", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use XPS for printing instead of GDI.
 const base::Feature kUseXpsForPrinting{"UseXpsForPrinting",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/services/app_service/public/cpp/publisher_base.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -46,12 +47,18 @@ class PluginVmApps : public apps::PublisherBase {
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
               int64_t display_id) override;
+  void SetPermission(const std::string& app_id,
+                     apps::mojom::PermissionPtr permission) override;
+  void Uninstall(const std::string& app_id,
+                 bool clear_site_data,
+                 bool report_abuse) override;
   void GetMenuModel(const std::string& app_id,
                     apps::mojom::MenuType menu_type,
                     int64_t display_id,
                     GetMenuModelCallback callback) override;
 
   void OnPluginVmAllowedChanged(bool is_allowed);
+  void OnPluginVmConfiguredChanged();
 
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
@@ -61,6 +68,7 @@ class PluginVmApps : public apps::PublisherBase {
   bool is_allowed_;
 
   std::unique_ptr<plugin_vm::PluginVmPolicySubscription> policy_subscription_;
+  PrefChangeRegistrar pref_registrar_;
 };
 
 }  // namespace apps

@@ -5934,3 +5934,7 @@ crbug.com/984467 [ Mac Debug ] virtual/gpu/fast/canvas/canvas-composite-stroke-a
 # Sheriff 2020-05-06
 crbug.com/1078863 [ Mac ] fast/speech/scripted/speechrecognition-restart-onend.html [ Pass Timeout ]
 crbug.com/1071915 fast/hidpi/image-srcset-png-canvas.html [ Pass Failure ]
+
+# Sheriff 2020-05-13
+# Flaking on Webkit Linux Leak
+crbug.com/998948 [ Linux ] external/wpt/pointerevents/pointerevent_capture_mouse.html [ Pass Failure ]

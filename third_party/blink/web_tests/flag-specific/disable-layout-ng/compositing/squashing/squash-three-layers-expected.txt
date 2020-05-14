@@ -17,6 +17,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
       "position": [-60, -60],
       "bounds": [180, 190],
+      "contentsOpaqueForText": true,
       "transform": 1
     }
   ],

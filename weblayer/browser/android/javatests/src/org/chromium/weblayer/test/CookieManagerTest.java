@@ -46,6 +46,7 @@ public class CookieManagerTest {
 
     @Test
     @SmallTest
+    @MinWebLayerVersion(83)
     public void testSetCookie() throws Exception {
         Assert.assertTrue(setCookie("foo=bar"));
 
@@ -57,6 +58,7 @@ public class CookieManagerTest {
 
     @Test
     @SmallTest
+    @MinWebLayerVersion(83)
     public void testSetCookieInvalid() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             try {
@@ -70,12 +72,14 @@ public class CookieManagerTest {
 
     @Test
     @SmallTest
+    @MinWebLayerVersion(83)
     public void testSetCookieNotSet() throws Exception {
         Assert.assertFalse(setCookie("foo=bar; Secure"));
     }
 
     @Test
     @SmallTest
+    @MinWebLayerVersion(83)
     public void testSetCookieNullCallback() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mCookieManager.setCookie(mBaseUri, "foo=bar", null); });
@@ -91,6 +95,7 @@ public class CookieManagerTest {
 
     @Test
     @SmallTest
+    @MinWebLayerVersion(83)
     public void testGetCookie() throws Exception {
         Assert.assertEquals(getCookie(), "");
         Assert.assertTrue(setCookie("foo="));
@@ -101,6 +106,7 @@ public class CookieManagerTest {
 
     @Test
     @SmallTest
+    @MinWebLayerVersion(83)
     public void testCookieChanged() throws Exception {
         CookieChangedCallbackHelper helper = new CookieChangedCallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(
@@ -121,6 +127,7 @@ public class CookieManagerTest {
 
     @Test
     @SmallTest
+    @MinWebLayerVersion(83)
     public void testCookieChangedRemoveCallback() throws Exception {
         CookieChangedCallbackHelper helper = new CookieChangedCallbackHelper();
         Runnable remove = TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -143,6 +150,7 @@ public class CookieManagerTest {
 
     @Test
     @SmallTest
+    @MinWebLayerVersion(83)
     public void testCookieChangedRemoveCallbackAfterProfileDestroyed() throws Exception {
         // Removing change callback should be a no-op after the profile is destroyed.
         TestThreadUtils.runOnUiThreadBlocking(() -> {

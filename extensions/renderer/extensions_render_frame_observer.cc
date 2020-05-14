@@ -97,6 +97,10 @@ void ExtensionsRenderFrameObserver::BindAppWindowReceiver(
 }
 
 void ExtensionsRenderFrameObserver::SetVisuallyDeemphasized(bool deemphasized) {
+  // TODO(danakj): This mojo API should be a MainFrame-only interface and object
+  // rather than an every-frame interface and object.
+  DCHECK(render_frame()->IsMainFrame());
+
   if (webview_visually_deemphasized_ == deemphasized)
     return;
 
@@ -104,8 +108,7 @@ void ExtensionsRenderFrameObserver::SetVisuallyDeemphasized(bool deemphasized) {
 
   SkColor color =
       deemphasized ? SkColorSetARGB(178, 0, 0, 0) : SK_ColorTRANSPARENT;
-  render_frame()->GetRenderView()->GetWebView()->SetMainFrameOverlayColor(
-      color);
+  render_frame()->GetWebFrame()->SetMainFrameOverlayColor(color);
 }
 
 void ExtensionsRenderFrameObserver::DetailedConsoleMessageAdded(

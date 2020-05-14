@@ -215,6 +215,7 @@ int DragDropController::StartDragAndDrop(
     DCHECK(!tab_drag_drop_delegate_);
     tab_drag_drop_delegate_.emplace(root_window, drag_source_window_,
                                     start_location_);
+    drag_image_->SetTouchDragOperationHintOff();
   }
 
   if (should_block_during_drag_drop_) {
@@ -475,8 +476,6 @@ void DragDropController::DragUpdate(aura::Window* target,
       else if (op & ui::DragDropTypes::DRAG_MOVE)
         cursor = ui::mojom::CursorType::kGrabbing;
 
-      // TODO(https://crbug.com/1069869): don't show kNoDrop cursor for
-      // a tab drag that can drop into a new window.
       Shell::Get()->cursor_manager()->SetCursor(cursor);
     }
   }

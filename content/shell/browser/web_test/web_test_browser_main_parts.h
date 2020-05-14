@@ -22,8 +22,10 @@ class WebTestBrowserMainParts : public ShellBrowserMainParts {
   ~WebTestBrowserMainParts() override;
 
  private:
+  // ShellBrowserMainParts overrides.
   void InitializeBrowserContexts() override;
   void InitializeMessageLoopContext() override;
+  std::unique_ptr<ShellPlatformDelegate> CreateShellPlatformDelegate() override;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   std::unique_ptr<ShellPluginServiceFilter> plugin_service_filter_;

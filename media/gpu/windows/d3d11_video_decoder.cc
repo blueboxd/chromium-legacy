@@ -19,7 +19,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
@@ -191,7 +190,7 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
                                    CdmContext* /* cdm_context */,
                                    InitCB init_cb,
                                    const OutputCB& output_cb,
-                                   const WaitingCB& waiting_cb) {
+                                   const WaitingCB& /* waiting_cb */) {
   TRACE_EVENT0("gpu", "D3D11VideoDecoder::Initialize");
   if (already_initialized_)
     AddLifetimeProgressionStage(D3D11LifetimeProgression::kPlaybackSucceeded);
@@ -199,14 +198,12 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(output_cb);
-  DCHECK(waiting_cb);
 
   state_ = State::kInitializing;
 
   config_ = config;
   init_cb_ = std::move(init_cb);
   output_cb_ = output_cb;
-  waiting_cb_ = waiting_cb;
 
   // Verify that |config| matches one of the supported configurations.  This
   // helps us skip configs that are supported by the VDA but not us, since
@@ -222,6 +219,11 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   if (!is_supported) {
     NotifyError("D3D11VideoDecoder does not support this config");
+    return;
+  }
+
+  if (config.is_encrypted()) {
+    NotifyError("D3D11VideoDecoder does not support encrypted stream");
     return;
   }
 
@@ -333,12 +335,6 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
       return;
     }
 
-    if (config.is_encrypted() && dec_config.guidConfigBitstreamEncryption !=
-                                     D3D11_DECODER_ENCRYPTION_HW_CENC) {
-      // For encrypted media, it has to use HW CENC decoder config.
-      continue;
-    }
-
     if (config.codec() == kCodecVP9 && dec_config.ConfigBitstreamRaw == 1) {
       // DXVA VP9 specification mentions ConfigBitstreamRaw "shall be 1".
       found = true;
@@ -361,12 +357,6 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
       decoder_configurator_->DecoderDescriptor(), &dec_config, &video_decoder);
   if (!video_decoder.Get()) {
     NotifyError("Failed to create a video decoder");
-    return;
-  }
-
-  // Ensure that if we are encrypted, that we have a CDM.
-  if (config_.is_encrypted()) {
-    NotifyError("Encrypted stream not supported");
     return;
   }
 
@@ -574,9 +564,8 @@ void D3D11VideoDecoder::DoDecode() {
       }
       CreatePictureBuffers();
     } else if (result == media::AcceleratedVideoDecoder::kTryAgain) {
-      state_ = State::kWaitingForNewKey;
-      waiting_cb_.Run(WaitingReason::kNoDecryptionKey);
-      // Another DoDecode() task would be posted in OnCdmContextEvent().
+      LOG(ERROR) << "Try again is not supported";
+      NotifyError("Try again is not supported");
       return;
     } else {
       LOG(ERROR) << "VDA Error " << result;
@@ -605,21 +594,6 @@ void D3D11VideoDecoder::Reset(base::OnceClosure closure) {
 
   // TODO(liberato): how do we signal an error?
   accelerated_video_decoder_->Reset();
-
-  if (state_ == State::kWaitingForReset && config_.is_encrypted()) {
-    // On a hardware context loss event, a new swap chain has to be created (in
-    // the compositor). By clearing the picture buffers, next DoDecode() call
-    // will create a new texture. This makes the compositor to create a new swap
-    // chain.
-    // More detailed explanation at crbug.com/858286
-    picture_buffers_.clear();
-  }
-
-  // Transition out of kWaitingForNewKey since the new buffer could be clear or
-  // have a different key ID. Transition out of kWaitingForReset since reset
-  // just happened.
-  if (state_ == State::kWaitingForNewKey || state_ == State::kWaitingForReset)
-    state_ = State::kRunning;
 
   std::move(closure).Run();
 }
@@ -794,45 +768,9 @@ bool D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY,
                                 allow_overlay);
 
-  if (config_.is_encrypted()) {
-    frame->metadata()->SetBoolean(VideoFrameMetadata::PROTECTED_VIDEO, true);
-    frame->metadata()->SetBoolean(VideoFrameMetadata::HW_PROTECTED, true);
-  }
-
   frame->set_color_space(output_color_space);
   output_cb_.Run(frame);
   return true;
-}
-
-void D3D11VideoDecoder::OnCdmContextEvent(CdmContext::Event event) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DVLOG(1) << __func__ << ": event = " << static_cast<int>(event);
-
-  if (state_ == State::kInitializing || state_ == State::kError) {
-    DVLOG(1) << "Do nothing in " << static_cast<int>(state_) << " state.";
-    return;
-  }
-
-  switch (event) {
-    case CdmContext::Event::kHasAdditionalUsableKey:
-      // Note that this event may happen before DoDecode() because the key
-      // acquisition stack runs independently of the media decoding stack.
-      // So if this isn't in kWaitingForNewKey state no "resuming" is
-      // required therefore no special action taken here.
-      if (state_ != State::kWaitingForNewKey)
-        return;
-
-      state_ = State::kRunning;
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(&D3D11VideoDecoder::DoDecode,
-                                    weak_factory_.GetWeakPtr()));
-      return;
-
-    case CdmContext::Event::kHardwareContextLost:
-      state_ = State::kWaitingForReset;
-      waiting_cb_.Run(WaitingReason::kDecoderStateLost);
-      return;
-  }
 }
 
 // TODO(tmathmeyer) eventually have this take a Status and pass it through
@@ -938,10 +876,6 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
     return {};
   }
 
-  const bool allow_encrypted =
-      (usable_feature_level > D3D_FEATURE_LEVEL_11_0) &&
-      base::FeatureList::IsEnabled(kHardwareSecureDecryption);
-
   std::vector<SupportedVideoDecoderConfig> configs;
   // VP9 has no default resolutions since it may not even be supported.
   ResolutionPair max_h264_resolutions(gfx::Size(1920, 1088), gfx::Size());
@@ -964,7 +898,7 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
                                        1),  // profile_max
         min_resolution,                     // coded_size_min
         max_h264_resolutions.first,         // coded_size_max
-        allow_encrypted,                    // allow_encrypted
+        false,                              // allow_encrypted
         false));                            // require_encrypted
     configs.push_back(SupportedVideoDecoderConfig(
         static_cast<VideoCodecProfile>(H264PROFILE_HIGH10PROFILE +
@@ -972,7 +906,7 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
         H264PROFILE_MAX,                    // profile_max
         min_resolution,                     // coded_size_min
         max_h264_resolutions.first,         // coded_size_max
-        allow_encrypted,                    // allow_encrypted
+        false,                              // allow_encrypted
         false));                            // require_encrypted
 
     // portrait
@@ -982,7 +916,7 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
                                        1),  // profile_max
         min_resolution,                     // coded_size_min
         max_h264_resolutions.second,        // coded_size_max
-        allow_encrypted,                    // allow_encrypted
+        false,                              // allow_encrypted
         false));                            // require_encrypted
     configs.push_back(SupportedVideoDecoderConfig(
         static_cast<VideoCodecProfile>(H264PROFILE_HIGH10PROFILE +
@@ -990,7 +924,7 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
         H264PROFILE_MAX,                    // profile_max
         min_resolution,                     // coded_size_min
         max_h264_resolutions.second,        // coded_size_max
-        allow_encrypted,                    // allow_encrypted
+        false,                              // allow_encrypted
         false));                            // require_encrypted
   }
 
@@ -1003,7 +937,7 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
         VP9PROFILE_PROFILE0,                 // profile_max
         min_resolution,                      // coded_size_min
         max_vp9_profile0_resolutions.first,  // coded_size_max
-        allow_encrypted,                     // allow_encrypted
+        false,                               // allow_encrypted
         false));                             // require_encrypted
     // portrait
     configs.push_back(SupportedVideoDecoderConfig(
@@ -1011,7 +945,7 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
         VP9PROFILE_PROFILE0,                  // profile_max
         min_resolution,                       // coded_size_min
         max_vp9_profile0_resolutions.second,  // coded_size_max
-        allow_encrypted,                      // allow_encrypted
+        false,                                // allow_encrypted
         false));                              // require_encrypted
   }
 
@@ -1023,7 +957,7 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
           VP9PROFILE_PROFILE2,                 // profile_max
           min_resolution,                      // coded_size_min
           max_vp9_profile2_resolutions.first,  // coded_size_max
-          allow_encrypted,                     // allow_encrypted
+          false,                               // allow_encrypted
           false));                             // require_encrypted
       // portrait
       configs.push_back(SupportedVideoDecoderConfig(
@@ -1031,12 +965,12 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
           VP9PROFILE_PROFILE2,                  // profile_max
           min_resolution,                       // coded_size_min
           max_vp9_profile2_resolutions.second,  // coded_size_max
-          allow_encrypted,                      // allow_encrypted
+          false,                                // allow_encrypted
           false));                              // require_encrypted
     }
   }
 
-  // TODO(liberato): Should we separate out h264, vp9, and encrypted?
+  // TODO(liberato): Should we separate out h264 and vp9?
   UMA_HISTOGRAM_ENUMERATION(uma_name, NotSupportedReason::kVideoIsSupported);
 
   return configs;

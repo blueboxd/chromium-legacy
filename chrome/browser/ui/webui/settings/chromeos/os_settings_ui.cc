@@ -8,13 +8,10 @@
 
 #include "ash/public/cpp/network_config_service.h"
 #include "base/metrics/histogram_functions.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_storage_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager_factory.h"
-#include "chrome/browser/ui/webui/settings/chromeos/plugin_vm_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/settings_user_action_tracker.h"
@@ -57,13 +54,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   OsSettingsManager* manager = OsSettingsManagerFactory::GetForProfile(profile);
   manager->AddHandlers(web_ui);
   manager->AddLoadTimeData(html_source);
-
-  // TODO(https://crbug.com/1074101): Move to AppsSections::AddHandler().
-  if (plugin_vm::IsPluginVmAllowedForProfile(profile) ||
-      profile->GetPrefs()->GetBoolean(plugin_vm::prefs::kPluginVmImageExists)) {
-    web_ui->AddMessageHandler(
-        std::make_unique<chromeos::settings::PluginVmHandler>(profile));
-  }
 
   // TODO(khorimoto): Move to DeviceSection::AddHandler() once |html_source|
   // parameter is removed.

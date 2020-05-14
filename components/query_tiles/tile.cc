@@ -6,7 +6,7 @@
 
 #include <utility>
 
-namespace upboarding {
+namespace query_tiles {
 namespace {
 
 void DeepCopyTiles(const Tile& input, Tile* out) {
@@ -68,4 +68,4 @@ Tile& Tile::operator=(const Tile& other) {
 
 Tile& Tile::operator=(Tile&& other) noexcept = default;
 
-}  // namespace upboarding
+}  // namespace query_tiles

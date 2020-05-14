@@ -41,6 +41,7 @@ TEST(CastMediaSourceTest, FromCastURL) {
       "&launchTimeout=30000"
       "&autoJoinPolicy=tab_and_origin_scoped"
       "&defaultActionPolicy=cast_this_tab"
+      "&appParams=appParams"
       "&supportedAppTypes=ANDROID_TV,WEB");
   std::unique_ptr<CastMediaSource> source =
       CastMediaSource::FromMediaSourceId(source_id);
@@ -62,6 +63,7 @@ TEST(CastMediaSourceTest, FromCastURL) {
   EXPECT_EQ(DefaultActionPolicy::kCastThisTab, source->default_action_policy());
   EXPECT_EQ(ReceiverAppType::kAndroidTv, source->supported_app_types()[0]);
   EXPECT_EQ(ReceiverAppType::kWeb, source->supported_app_types()[1]);
+  EXPECT_EQ("appParams", source->app_params());
 }
 
 TEST(CastMediaSourceTest, FromLegacyCastURL) {

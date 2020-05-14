@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor_metrics.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_selector.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -21,7 +22,9 @@ class CORE_EXPORT TextFragmentFinder final {
  public:
   class Client {
    public:
-    virtual void DidFindMatch(const EphemeralRangeInFlatTree& range) = 0;
+    virtual void DidFindMatch(
+        const EphemeralRangeInFlatTree& range,
+        const TextFragmentAnchorMetrics::Match match_metrics) = 0;
     virtual void DidFindAmbiguousMatch() = 0;
   };
 

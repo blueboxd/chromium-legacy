@@ -456,7 +456,7 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
   // dispatches the message and returns false. We return true in this
   // case to ensure that the message loop peeks again instead of calling
   // MsgWaitForMultipleObjectsEx.
-  bool sent_messages_in_queue = false;
+  bool more_work_is_plausible = false;
   {
     // Individually trace ::GetQueueStatus and ::PeekMessage because sampling
     // profiler is hinting that we're spending a surprising amount of time with
@@ -468,7 +468,7 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
                  "MessagePumpForUI::ProcessNextWindowsMessage GetQueueStatus");
     DWORD queue_status = ::GetQueueStatus(QS_SENDMESSAGE);
     if (HIWORD(queue_status) & QS_SENDMESSAGE)
-      sent_messages_in_queue = true;
+      more_work_is_plausible = true;
   }
 
   MSG msg;
@@ -483,19 +483,19 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
     static const auto kAdditionalFlags =
         FeatureList::IsEnabled(kNoYieldFromNativePeek) ? PM_NOYIELD : 0x0;
 
-    // PeekMessage can run a message if |sent_messages_in_queue|, trace that and
+    // PeekMessage can run a message if there are sent messages, trace that and
     // emit the boolean param to see if it ever janks independently (ref.
     // comment on GetQueueStatus).
     TRACE_EVENT1("base",
                  "MessagePumpForUI::ProcessNextWindowsMessage PeekMessage",
-                 "sent_messages_in_queue", sent_messages_in_queue);
+                 "sent_messages_in_queue", more_work_is_plausible);
     has_msg = ::PeekMessage(&msg, nullptr, 0, 0,
                             kAdditionalFlags | PM_REMOVE) != FALSE;
   }
   if (has_msg)
-    return ProcessMessageHelper(msg);
+    more_work_is_plausible |= ProcessMessageHelper(msg);
 
-  return sent_messages_in_queue;
+  return more_work_is_plausible;
 }
 
 bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {

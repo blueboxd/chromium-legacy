@@ -12,6 +12,8 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/web_applications/system_web_app_integration_test.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/system_web_app_manager_browsertest.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
@@ -19,7 +21,10 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 class HelpAppIntegrationTest : public SystemWebAppIntegrationTest {
  public:
@@ -45,6 +50,25 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2SearchInLauncher) {
   EXPECT_EQ(
       std::vector<std::string>({"Get Help", "Perks", "Offers"}),
       GetManager().GetAdditionalSearchTerms(web_app::SystemAppType::HELP));
+}
+
+// Test that the Help App has a minimum window size of 600x320.
+IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2MinWindowSize) {
+  WaitForSystemAppInstallAndLaunch(web_app::SystemAppType::HELP);
+  auto app_id = LaunchParamsForApp(web_app::SystemAppType::HELP).app_id;
+  EXPECT_EQ(GetManager().GetMinimumWindowSize(app_id), gfx::Size(600, 320));
+}
+
+// Test that the Help App has a default size of 960x600 and is in the center of
+// the screen.
+IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2DefaultWindowBounds) {
+  auto* browser =
+      WaitForSystemAppInstallAndLaunch(web_app::SystemAppType::HELP);
+  gfx::Rect work_area =
+      display::Screen::GetScreen()->GetDisplayForNewWindows().work_area();
+  int x = (work_area.width() - 960) / 2;
+  int y = (work_area.height() - 600) / 2;
+  EXPECT_EQ(browser->window()->GetBounds(), gfx::Rect(x, y, 960, 600));
 }
 
 // Test that the Help App logs metric when launching the app using the

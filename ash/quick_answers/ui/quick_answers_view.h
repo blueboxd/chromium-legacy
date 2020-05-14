@@ -60,8 +60,6 @@ class ASH_EXPORT QuickAnswersView : public views::Button,
 
   void ShowRetryView();
 
-  bool preempt_last_click_event() const { return preempt_last_click_event_; }
-
  private:
   void InitLayout();
   void InitWidget();
@@ -79,7 +77,6 @@ class ASH_EXPORT QuickAnswersView : public views::Button,
   gfx::Rect anchor_view_bounds_;
   QuickAnswersUiController* const controller_;
   bool has_second_row_answer_ = false;
-  bool preempt_last_click_event_ = false;
   std::string title_;
   views::View* main_view_ = nullptr;
   views::View* content_view_ = nullptr;

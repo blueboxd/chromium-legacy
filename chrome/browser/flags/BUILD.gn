@@ -69,7 +69,10 @@ java_library("flags_junit_tests") {
 
 android_library("javatests") {
   testonly = true
-  sources = [ "android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureListInstrumentationTest.java" ]
+  sources = [
+    "android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureListInstrumentationTest.java",
+    "android/java/src/org/chromium/chrome/browser/flags/FieldTrialsInstrumentationTest.java",
+  ]
   deps = [
     ":java",
     "//base:base_java",

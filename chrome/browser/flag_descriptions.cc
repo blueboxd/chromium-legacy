@@ -75,6 +75,17 @@ const char kConditionalTabStripAndroidName[] = "Conditional Tab Strip";
 const char kConditionalTabStripAndroidDescription[] =
     "Allows users to access conditional tab strip.";
 
+const char kConversionMeasurementApiName[] = "Conversion Measurement API";
+const char kConversionMeasurementApiDescription[] =
+    "Enables usage of the Conversion Measurement API.";
+
+const char kConversionMeasurementDebugModeName[] =
+    "Conversion Measurement Debug Mode";
+const char kConversionMeasurementDebugModeDescription[] =
+    "Enables debug mode for the Conversion Measurement API. This removes all "
+    "reporting delays and noise. Only works if the Conversion Measurement API "
+    "is already enabled.";
+
 const char kEnableClipboardProviderImageSuggestionsName[] =
     "Omnibox clipboard image search suggestions";
 const char kEnableClipboardProviderImageSuggestionsDescription[] =
@@ -2812,6 +2823,11 @@ const char kInlineUpdateFlowDescription[] =
     "flow where they do not have to leave Chrome until the update is ready "
     "to install.";
 
+const char kAndroidDarkSearchName[] = "Show darkened search pages on Android";
+const char kAndroidDarkSearchDescription[] =
+    "If enabled, users will see a darkened search page if Chrome is in "
+    "nightmode as well.";
+
 const char kAndroidNightModeTabReparentingName[] =
     "Android Chrome UI dark mode tab reparenting";
 const char kAndroidNightModeTabReparentingDescription[] =
@@ -3228,12 +3244,6 @@ const char kBluetoothFixA2dpPacketSizeName[] = "Bluetooth fix A2DP packet size";
 const char kBluetoothFixA2dpPacketSizeDescription[] =
     "Fixes Bluetooth A2DP packet size to a smaller default value to improve "
     "audio quality and may fix audio stutter.";
-
-const char kBluetoothKernelSuspendNotifierName[] =
-    "Bluetooth kernel suspend notifier handler";
-const char kBluetoothKernelSuspendNotifierDescription[] =
-    "Enables the Bluetooth kernel suspend notifier which will allow wake from "
-    "suspend using Bluetooth HID devices.";
 
 const char kBluetoothNextHandsfreeProfileName[] =
     "Enable next version of Bluetooth Handsfree profile";
@@ -3662,6 +3672,10 @@ const char kImeInputLogicFstDescription[] =
 const char kImeInputLogicHmmName[] = "Enable HMM Input Logic on IME";
 const char kImeInputLogicHmmDescription[] =
     "Enable HMM Input Logic to replace the IME legacy input logic on NaCl";
+
+const char kImeInputLogicMozcName[] = "Enable MOZC Input Logic on IME";
+const char kImeInputLogicMozcDescription[] =
+    "Enable MOZC Input Logic to replace the IME legacy input logic on NaCl";
 
 const char kImeMozcProtoName[] = "Enable protobuf on Japanese IME";
 const char kImeMozcProtoDescription[] =

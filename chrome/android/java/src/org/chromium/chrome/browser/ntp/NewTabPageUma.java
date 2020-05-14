@@ -65,7 +65,7 @@ public class NewTabPageUma {
     /** User navigated to the webpage for a snippet shown on the NTP. */
     public static final int ACTION_OPENED_SNIPPET = 8;
 
-    /** User clicked on the "learn more" link in the footer. */
+    /** User clicked on the "learn more" link in the footer or in the feed header menu. */
     public static final int ACTION_CLICKED_LEARN_MORE = 9;
 
     /** User clicked on the "Refresh" button in the "all dismissed" state. */
@@ -74,11 +74,23 @@ public class NewTabPageUma {
     /** User opened an explore sites tile. */
     public static final int ACTION_OPENED_EXPLORE_SITES_TILE = 11;
 
-    /** User clicked on the "Manage Interests" item in the snippet card menu. */
+    /**
+     * User clicked on the "Manage Interests" item in the snippet card menu or in the feed header
+     * menu.
+     */
     public static final int ACTION_CLICKED_MANAGE_INTERESTS = 12;
 
+    /** User triggered a block content action. **/
+    public static final int ACTION_BLOCK_CONTENT = 13;
+
+    /** User clicked on the "Manage activity" item in the feed header menu. */
+    public static final int ACTION_CLICKED_MANAGE_ACTIVITY = 14;
+
+    /** User clicked on the feed header menu button item in the feed header menu. */
+    public static final int ACTION_CLICKED_FEED_HEADER_MENU = 15;
+
     /** The number of possible actions. */
-    private static final int NUM_ACTIONS = 13;
+    private static final int NUM_ACTIONS = 16;
 
     /** Regular NTP impression (usually when a new tab is opened). */
     public static final int NTP_IMPRESSION_REGULAR = 0;

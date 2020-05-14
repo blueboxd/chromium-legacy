@@ -20,6 +20,7 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
 #include "content/shell/browser/web_test/web_test_browser_context.h"
+#include "content/shell/browser/web_test/web_test_shell_platform_delegate.h"
 #include "content/shell/common/shell_switches.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_module.h"
@@ -59,6 +60,11 @@ void WebTestBrowserMainParts::InitializeMessageLoopContext() {
   plugin_service_filter_.reset(new ShellPluginServiceFilter);
   plugin_service->SetFilter(plugin_service_filter_.get());
 #endif
+}
+
+std::unique_ptr<ShellPlatformDelegate>
+WebTestBrowserMainParts::CreateShellPlatformDelegate() {
+  return std::make_unique<WebTestShellPlatformDelegate>();
 }
 
 }  // namespace content

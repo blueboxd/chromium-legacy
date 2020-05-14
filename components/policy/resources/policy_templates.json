@@ -1019,6 +1019,7 @@
         'ExternalPrintServers',
         'ExternalPrintServersWhitelist',
         'PrinterTypeDenyList',
+        'PrintRasterizationMode',
       ]
     },
     {
@@ -17965,9 +17966,29 @@
       'id': 503,
       'caption': '''Allow devices to use a <ph name="PLUGIN_VM_NAME">PluginVm</ph> on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>''',
       'tags': [],
-      'desc': '''Enable this device to run PluginVm.
+      'desc': '''Allow this device to run PluginVm.
 
-      If the policy is set to false or left unset, <ph name="PLUGIN_VM_NAME">PluginVm</ph> is not enabled for the device. If set to true, <ph name="PLUGIN_VM_NAME">PluginVm</ph> is enabled for the device as long as other settings also allow it. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME">PluginVmAllowed</ph> needs to be true, and either <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME">PluginVmLicenseKey</ph> or <ph name="PLUGIN_VM_USER_ID_POLICY_NAME">PluginVmUserId</ph> or <ph name="PLUGIN_VM_IMAGE_POLICY_NAME">PluginVmImage</ph> need to be set for <ph name="PLUGIN_VM_NAME">PluginVm</ph> to be allowed to run.''',
+      If the policy is set to false or left unset, <ph name="PLUGIN_VM_NAME">PluginVm</ph> is not enabled for the device.
+      If set to true, <ph name="PLUGIN_VM_NAME">PluginVm</ph> is enabled for the device as long as other settings also allow it. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME">PluginVmAllowed</ph> and <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME">UserPluginVmAllowed</ph> need to be true, and either <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME">PluginVmLicenseKey</ph> or <ph name="PLUGIN_VM_USER_ID_POLICY_NAME">PluginVmUserId</ph> need to be set for <ph name="PLUGIN_VM_NAME">PluginVm</ph> to be allowed to run.''',
+    },
+    {
+      'name': 'UserPluginVmAllowed',
+      'owners': ['okalitova@chromium.org', 'janagrill@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:84-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 705,
+      'caption': '''Allow users to use a <ph name="PLUGIN_VM_NAME">PluginVm</ph> on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>''',
+      'tags': [],
+      'desc': '''Allow this user to run PluginVm.
+
+      If the policy is set to false or left unset, <ph name="PLUGIN_VM_NAME">PluginVm</ph> is not enabled for the user.
+      If set to true, <ph name="PLUGIN_VM_NAME">PluginVm</ph> is enabled for the user as long as other settings also allow it. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME">PluginVmAllowed</ph> and <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME">UserPluginVmAllowed</ph> need to be true, and either <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME">PluginVmLicenseKey</ph> or <ph name="PLUGIN_VM_USER_ID_POLICY_NAME">PluginVmUserId</ph> need to be set for <ph name="PLUGIN_VM_NAME">PluginVm</ph> to be allowed to run.''',
     },
     {
       'name': 'PluginVmLicenseKey',
@@ -20637,6 +20658,45 @@
       Local printers are also known as native printing destinations, and include destinations available to the local machine and shared network printers.'''
     },
     {
+      'name': 'PrintRasterizationMode',
+      'owners': ['thestig@chromium.org', 'file://printing/OWNERS'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1 ],
+      },
+      'items': [
+        {
+          'name': 'Full',
+          'value': 0,
+          'caption': '''available''',
+        },
+        {
+          'name': 'Fast',
+          'value': 1,
+          'caption': '''disabled''',
+        },
+      ],
+      'supported_on': ['chrome.win:84-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 1,
+      'id': 706,
+      'caption': '''Print Rasterization Mode''',
+      'tags': [],
+      'desc': '''Controls how <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> prints on Windows.
+
+      When printing to a non-PostScript printer on Windows, sometimes print jobs need to be rasterized to print correctly.
+
+      When this policy is set to Full, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will do full page rasterization if necessary.
+
+      When this policy is set to Fast, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will avoid rasterization if possible, reducing the amount of rasterization can help reduce print job sizes and increase printing speed.
+
+      When this policy is not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will be in Full mode.'''
+    },
+    {
       'name': 'AmbientAuthenticationInPrivateModesEnabled',
       'owners': ['rhalavati@chromium.org', 'roagarwal@chromium.org', 'chrome-privacy-core@google.com'],
       'type': 'int-enum',
@@ -21895,6 +21955,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       'caption': '''PluginVm''',
       'policies': [
         'PluginVmAllowed',
+        'UserPluginVmAllowed',
         'PluginVmLicenseKey',
         'PluginVmImage',
         'PluginVmUserId',
@@ -22013,6 +22074,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 704,
+  'highest_id_currently_used': 706,
   'highest_atomic_group_id_currently_used': 38
 }

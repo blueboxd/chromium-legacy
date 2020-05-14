@@ -29,14 +29,24 @@ void RecordShowShelfNavigationButtonsValueChange(bool enabled) {
       enabled);
 }
 
+bool IsTabletModeEnabled() {
+  return ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode();
+}
+
 }  // namespace
 
 AccessibilityHandler::AccessibilityHandler(Profile* profile)
-    : profile_(profile) {}
+    : profile_(profile) {
+  if (ash::TabletMode::Get())
+    ash::TabletMode::Get()->AddObserver(this);
+}
 
 AccessibilityHandler::~AccessibilityHandler() {
   if (a11y_nav_buttons_toggle_metrics_reporter_timer_.IsRunning())
     a11y_nav_buttons_toggle_metrics_reporter_timer_.FireNow();
+
+  if (ash::TabletMode::Get())
+    ash::TabletMode::Get()->RemoveObserver(this);
 }
 
 void AccessibilityHandler::RegisterMessages() {
@@ -100,31 +110,18 @@ void AccessibilityHandler::HandleManageA11yPageReady(
     const base::ListValue* args) {
   AllowJavascript();
 
-  // When tablet mode is active we can return early since tablet mode
-  // is supported.
-  if (ash::TabletMode::Get()->InTabletMode()) {
-    FireWebUIListener(
-        "initial-data-ready",
-        base::Value(AccessibilityManager::Get()->GetStartupSoundEnabled()),
-        base::Value(true /* tablet_mode_supported */));
-    return;
-  }
-
-  PowerManagerClient::Get()->GetSwitchStates(
-      base::BindOnce(&AccessibilityHandler::OnReceivedSwitchStates,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void AccessibilityHandler::OnReceivedSwitchStates(
-    base::Optional<PowerManagerClient::SwitchStates> switch_states) {
-  bool tablet_mode_supported =
-      switch_states.has_value() &&
-      switch_states->tablet_mode != PowerManagerClient::TabletMode::UNSUPPORTED;
-
   FireWebUIListener(
       "initial-data-ready",
       base::Value(AccessibilityManager::Get()->GetStartupSoundEnabled()),
-      base::Value(tablet_mode_supported));
+      base::Value(IsTabletModeEnabled()));
+}
+
+void AccessibilityHandler::OnTabletModeStarted() {
+  FireWebUIListener("tablet-mode-changed", base::Value(IsTabletModeEnabled()));
+}
+
+void AccessibilityHandler::OnTabletModeEnded() {
+  FireWebUIListener("tablet-mode-changed", base::Value(IsTabletModeEnabled()));
 }
 
 void AccessibilityHandler::OpenExtensionOptionsPage(const char extension_id[]) {

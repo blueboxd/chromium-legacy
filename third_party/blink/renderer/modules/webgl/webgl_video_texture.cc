@@ -40,7 +40,7 @@ void WebGLVideoTexture::Trace(Visitor* visitor) {
   WebGLExtension::Trace(visitor);
 }
 
-VideoFrameMetadata* WebGLVideoTexture::VideoElementTargetVideoTexture(
+VideoFrameMetadata* WebGLVideoTexture::shareVideoImageWEBGL(
     ExecutionContext* execution_context,
     unsigned target,
     HTMLVideoElement* video,
@@ -90,10 +90,10 @@ VideoFrameMetadata* WebGLVideoTexture::VideoElementTargetVideoTexture(
 
   // TODO(shaobo.yan@intel.com) : A fallback path or exception needs to be
   // added when video is not using gpu decoder.
-  video->PrepareVideoFrameForWebGL(scoped.Context()->ContextGL(), target,
-                                   texture->Object(), already_uploaded_id,
-                                   frame_metadata_ptr);
-  if (!frame_metadata_ptr) {
+  bool success = video->PrepareVideoFrameForWebGL(
+      scoped.Context()->ContextGL(), target, texture->Object(),
+      already_uploaded_id, frame_metadata_ptr);
+  if (!success) {
     exception_state.ThrowTypeError("Failed to share video to texture.");
     return nullptr;
   }
@@ -123,6 +123,15 @@ VideoFrameMetadata* WebGLVideoTexture::VideoElementTargetVideoTexture(
   current_frame_metadata_->setPresentedFrames(0);
   return current_frame_metadata_;
 #endif  // defined OS_ANDROID
+}
+
+bool WebGLVideoTexture::releaseVideoImageWEBGL(
+    ExecutionContext* execution_context,
+    unsigned target,
+    ExceptionState& exception_state) {
+  // NOTE: In current WEBGL_video_texture status, there is no lock on video
+  // frame. So this API doesn't need to do anything.
+  return true;
 }
 
 }  // namespace blink

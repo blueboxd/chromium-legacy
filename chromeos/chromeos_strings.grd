@@ -166,6 +166,11 @@ Try tapping the mic to ask me anything.
         <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph> manages this device and may be able to monitor your activity.
       </message>
 
+      <!-- Managed user session warning -->
+      <message name="IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_USER_WARNING" desc="Text shown in the user pod in case the user is managed.">
+        <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph> manages this user. It may remotely manage settings and monitor user activity.
+      </message>
+
       <!-- Status tray enterprise management. -->
       <message name="IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY" desc="Text for notifications showing that this device is enterpise managed. Used when the organization's domain name is available.">
         This device is managed by <ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph>.

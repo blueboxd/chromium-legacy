@@ -146,8 +146,6 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
       chromeos::settings::mojom::kMultiDeviceSectionPath},
      {ChromePage::NETWORKSTYPEVPN,
       chromeos::settings::mojom::kVpnDetailsSubpagePath},
-     {ChromePage::PLUGINVMDETAILS,
-      chromeos::settings::mojom::kPluginVmDetailsSubpagePath},
      {ChromePage::PLUGINVMSHAREDPATHS,
       chromeos::settings::mojom::kPluginVmSharedPathsSubpagePath},
      {ChromePage::OSACCESSIBILITY,
@@ -195,10 +193,14 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kAboutPagesMapping[] =
      {ChromePage::ABOUTDOWNLOADS, "about:downloads"},
      {ChromePage::ABOUTHISTORY, "about:history"}};
 
+constexpr arc::mojom::ChromePage kDeprecatedPages[] = {
+    ChromePage::DEPRECATED_PLUGINVMDETAILS};
+
 // mojom::ChromePage::LAST returns the amount of valid entries - 1.
 static_assert(base::size(kOSSettingsMapping) +
                       base::size(kBrowserSettingsMapping) +
-                      base::size(kAboutPagesMapping) ==
+                      base::size(kAboutPagesMapping) +
+                      base::size(kDeprecatedPages) ==
                   static_cast<size_t>(arc::mojom::ChromePage::LAST) + 1,
               "ChromePage mapping is out of sync");
 

@@ -16,7 +16,7 @@
 
 class PrefService;
 
-namespace upboarding {
+namespace query_tiles {
 
 // Coordinates with native background task scheduler to schedule or cancel a
 // TileBackgroundTask.
@@ -55,6 +55,6 @@ class TileServiceScheduler {
   TileServiceScheduler();
 };
 
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_INTERNAL_TILE_SERVICE_SCHEDULER_H_

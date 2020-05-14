@@ -58,6 +58,10 @@ double DelayDSPKernel::DelayTime(float) {
   return GetDelayProcessor()->DelayTime().FinalValue();
 }
 
+bool DelayDSPKernel::IsAudioRate() {
+  return GetDelayProcessor()->DelayTime().IsAudioRate();
+}
+
 void DelayDSPKernel::ProcessOnlyAudioParams(uint32_t frames_to_process) {
   DCHECK_LE(frames_to_process, audio_utilities::kRenderQuantumFrames);
 

@@ -163,6 +163,20 @@
       valid_type: "bool",
     },
 
+    // - computed_value_compare_fields
+    //
+    // If present, the ComputedStyle fields listed will be used in the
+    // generated ComputedvaluesEqual function. This is useful if the value
+    // of a property is stored in multiple fields. For example, for
+    // vertical-align:
+    //
+    // computed_value_compare_fields: ['VerticalAlign', 'GetVerticalAlignLength']
+    //
+    // Has no effect unless computed_value_comparable is true.
+    computed_value_compare_fields: {
+      default: [],
+    },
+
     // - runtime_flag
     // The name of the flag on RuntimeEnabledFeatures
     // (e.g. "CSSOverscrollBehavior") that conditionally enables the
@@ -3826,6 +3840,8 @@
       typedom_types: ["Keyword", "Length", "Percentage"],
       keywords: ["baseline", "sub", "super", "text-top", "text-bottom", "middle"],
       valid_for_first_letter: true,
+      computed_value_comparable: true,
+      computed_value_compare_fields: ['VerticalAlign', 'GetVerticalAlignLength']
     },
     {
       name: "visibility",

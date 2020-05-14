@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static android.os.Build.VERSION_CODES.M;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.longClick;
@@ -42,6 +43,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -125,6 +127,7 @@ public class ConditionalTabStripTest {
 
     @Test
     @MediumTest
+    @DisableIf.Build(sdk_is_less_than = M, message = "crbug.com/1081832")
     public void testStrip_updateWithAddition() throws Exception {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         verifyHidingStrip();
@@ -195,6 +198,7 @@ public class ConditionalTabStripTest {
 
     @Test
     @MediumTest
+    @DisableIf.Build(sdk_is_less_than = M, message = "crbug.com/1081832")
     public void testStrip_updateWithSelection() throws Exception {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         verifyHidingStrip();
@@ -275,6 +279,7 @@ public class ConditionalTabStripTest {
 
     @Test
     @MediumTest
+    @DisableIf.Build(sdk_is_less_than = M, message = "crbug.com/1081832")
     public void testStrip_switchTabWithStrip() throws Exception {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         verifyHidingStrip();
@@ -292,6 +297,7 @@ public class ConditionalTabStripTest {
 
     @Test
     @MediumTest
+    @DisableIf.Build(sdk_is_less_than = M, message = "crbug.com/1081832")
     public void testStrip_closeTabWithStrip() throws Exception {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         verifyHidingStrip();

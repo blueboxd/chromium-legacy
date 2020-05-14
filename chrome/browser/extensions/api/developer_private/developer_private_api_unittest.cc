@@ -1479,14 +1479,7 @@ TEST_F(DeveloperPrivateApiUnitTest, RemoveHostPermission) {
   EXPECT_FALSE(modifier.HasGrantedHostPermission(kMapsGoogleCom));
 }
 
-// This test is flaky on chromeos.
-// https://crbug.com/937355
-#if defined(OS_CHROMEOS)
-#define MAYBE_UpdateHostAccess DISABLED_UpdateHostAccess
-#else
-#define MAYBE_UpdateHostAccess UpdateHostAccess
-#endif
-TEST_F(DeveloperPrivateApiUnitTest, MAYBE_UpdateHostAccess) {
+TEST_F(DeveloperPrivateApiUnitTest, UpdateHostAccess) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("test").AddPermission("<all_urls>").Build();
   service()->AddExtension(extension.get());

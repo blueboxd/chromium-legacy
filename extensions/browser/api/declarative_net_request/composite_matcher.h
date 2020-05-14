@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "base/macros.h"
@@ -53,9 +54,19 @@ class CompositeMatcher {
 
   const MatcherList& matchers() const { return matchers_; }
 
+  // Returns the set of matchers and resets |matchers_| to an empty vector.
+  MatcherList GetAndResetMatchers();
+
+  // Updates the set of matchers. IDs for all the |matchers| must be unique.
+  void SetMatchers(MatcherList matchers);
+
   // Adds the |new_matcher| to the list of matchers. If a matcher with the
   // corresponding ID is already present, updates the matcher.
   void AddOrUpdateRuleset(std::unique_ptr<RulesetMatcher> new_matcher);
+
+  // Computes and returns the set of static RulesetIDs corresponding to
+  // |matchers_|.
+  std::set<RulesetID> ComputeStaticRulesetIDs() const;
 
   // Returns a RequestAction for the network request specified by |params|, or
   // base::nullopt if there is no matching rule.
@@ -87,8 +98,12 @@ class CompositeMatcher {
   void OnDidFinishNavigation(content::RenderFrameHost* host);
 
  private:
+  // This must be called whenever |matchers_| are modified.
+  void OnMatchersModified();
+
   bool ComputeHasAnyExtraHeadersMatcher() const;
 
+  // The RulesetMatchers, in an arbitrary order.
   MatcherList matchers_;
 
   // Denotes the cached return value for |HasAnyExtraHeadersMatcher|. Care must

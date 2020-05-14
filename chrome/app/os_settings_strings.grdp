@@ -850,47 +850,6 @@
     Primary account
   </message>
 
-  <!-- Plugin VM page (OS settings) -->
-  <message name="IDS_SETTINGS_PLUGIN_VM_PAGE_TITLE" desc="The title of Plugin VM section.">
-    Plugin VM
-  </message>
-  <message name="IDS_SETTINGS_PLUGIN_VM_PAGE_LABEL" desc="The text associated with the primary section setting for Plugin VM.">
-    Plugin VM
-  </message>
-  <message name="IDS_SETTINGS_PLUGIN_VM_PAGE_SUBTEXT" desc="Description for the section for managing Plugin VM.">
-    Set up permissions
-  </message>
-  <message name="IDS_SETTINGS_PLUGIN_VM_PRINTER_ACCESS" desc="The text in the settings page for allowing printer access from Plugin VM.">
-    Give access to printers
-  </message>
-  <message name="IDS_SETTINGS_PLUGIN_VM_SHARED_PATHS" desc="Label for managing shared folders for Plugin VM.">
-    Manage shared folders
-  </message>
-  <message name="IDS_SETTINGS_PLUGIN_VM_SHARED_PATHS_LIST_HEADING" desc="Label for list of shared folders.">
-    Shared folders
-  </message>
-  <message name="IDS_SETTINGS_PLUGIN_VM_SHARED_PATHS_INSTRUCTIONS_ADD" desc="Instructions for how to add shared folders in Plugin VM.">
-    To share, right-click on a folder in Files app, then select "Share with Plugin VM".
-  </message>
-  <message name="IDS_SETTINGS_PLUGIN_VM_SHARED_PATHS_INSTRUCTIONS_REMOVE" desc="Instructions for removing shared folders in Plugin VM.">
-    Removing folders will stop sharing but will not delete files.
-  </message>
-  <message name="IDS_SETTINGS_PLUGIN_VM_SHARED_PATHS_REMOVE_SHARING" desc="Tooltip to show when hovering on the remove icon for a Plugin VM shared folder.">
-    Stop sharing
-  </message>
-  <message name="IDS_SETTINGS_PLUGIN_VM_REMOVE_LABEL" desc="Label for the row to open a dialog confirming removal of Plugin VM.">
-    Uninstall Plugin VM
-  </message>
-  <message name="IDS_SETTINGS_PLUGIN_VM_REMOVE_BUTTON" desc="Label for the button to open a dialog confirming removal of Plugin VM.">
-    Uninstall
-  </message>
-  <message name="IDS_SETTINGS_PLUGIN_VM_CONFIRM_REMOVE_DIALOG_BODY" desc="Message of the confirmation dialog displayed before removal begins.">
-    Removing Plugin VM will delete your VM. This includes its applications, settings, and data. Are you sure you wish to continue?
-  </message>
-  <message name="IDS_SETTINGS_PLUGIN_VM_CAMERA_ACCESS_TITLE" desc="The text in the settings page for allowing camera access from Plugin VM.">
-    Give access to camera
-  </message>
-
   <!-- Crostini -->
   <message name="IDS_SETTINGS_CROSTINI_TITLE" desc="The title of Crostini section.">
     Linux (Beta)
@@ -2658,6 +2617,23 @@
     Content you’ve purchased such as movies, TV shows, music, books, or other in-app purchases may also be deleted.
     <ph name="LINE_BREAKS2">&lt;br&gt;&lt;br&gt;</ph>
     This doesn’t affect apps or content on other devices.
+  </message>
+
+  <!-- Apps > Manage your apps > Plugin VM > Shared folders -->
+  <message name="IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS" desc="Label for managing shared folders for Plugin VM.">
+    Manage shared folders
+  </message>
+  <message name="IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_LIST_HEADING" desc="Label for list of shared folders.">
+    Shared folders
+  </message>
+  <message name="IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_INSTRUCTIONS_ADD" desc="Instructions for how to add shared folders in Plugin VM.">
+    To share, right-click on a folder in Files app, then select "Share with Plugin VM".
+  </message>
+  <message name="IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_INSTRUCTIONS_REMOVE" desc="Instructions for removing shared folders in Plugin VM.">
+    Removing folders will stop sharing but will not delete files.
+  </message>
+  <message name="IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_REMOVE_SHARING" desc="Tooltip to show when hovering on the remove icon for a Plugin VM shared folder.">
+    Stop sharing
   </message>
 
   <!-- Storage -->

@@ -406,6 +406,10 @@ void ProfileImpl::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kPrintPreviewDisabled, false);
   registry->RegisterStringPref(
       prefs::kPrintPreviewDefaultDestinationSelectionRules, std::string());
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINTING)
+  registry->RegisterIntegerPref(prefs::kPrintRasterizationMode, 0);
+#endif
+
   registry->RegisterBooleanPref(prefs::kForceEphemeralProfiles, false);
   registry->RegisterBooleanPref(prefs::kEnableMediaRouter, true);
 #if defined(OS_CHROMEOS)

@@ -12,15 +12,11 @@
 
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/workspace/magnetism_matcher.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/display/display.h"
 #include "ui/gfx/geometry/point_f.h"
-
-namespace display {
-class Display;
-}  // namespace display
 
 namespace ash {
 class PhantomWindowController;
@@ -34,6 +30,9 @@ class WindowState;
 // attempt to restore the old height.
 class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
  public:
+  // Possible states the window can end up in after a drag is complete.
+  enum class SnapType { kLeft, kRight, kMaximize, kNone };
+
   // Min height we'll force on screen when dragging the caption.
   // TODO: this should come from a property on the window.
   static constexpr int kMinOnscreenHeight = 32;
@@ -52,9 +51,6 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
  private:
   friend class WorkspaceWindowResizerTest;
-
-  // Possible states the window can end up in after a drag is complete.
-  enum class SnapType { kLeft, kRight, kMaximize, kNone };
 
   WorkspaceWindowResizer(WindowState* window_state,
                          const std::vector<aura::Window*>& attached_windows);
@@ -160,6 +156,10 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   void StartDragForAttachedWindows();
   void EndDragForAttachedWindows(bool revert_drag);
 
+  // Gets the display associated with GetTarget() if touch dragging. Gets the
+  // display associated with the cursor if mouse dragging.
+  display::Display GetDisplay() const;
+
   WindowState* window_state() { return window_state_; }
   const WindowState* window_state() const { return window_state_; }
 
@@ -192,6 +192,12 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   // The edge to which the window should be snapped to at the end of the drag.
   SnapType snap_type_ = SnapType::kNone;
+
+  // Tracks whether a window can be maximized depending on distance dragged.
+  // This is false when a window's initial drag location is within the drag to
+  // snap region - it will become true once the window has been dragged out
+  // of the snap region once. Used to reduce accidental snaps.
+  bool can_snap_to_maximize_ = false;
 
   // The mouse location passed to Drag().
   gfx::PointF last_mouse_location_;

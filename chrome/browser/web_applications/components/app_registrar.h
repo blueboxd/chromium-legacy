@@ -151,6 +151,8 @@ class AppRegistrar {
 
   void NotifyWebAppInstalled(const AppId& app_id);
   void NotifyWebAppUninstalled(const AppId& app_id);
+  void NotifyWebAppLocallyInstalledStateChanged(const AppId& app_id,
+                                                bool is_locally_installed);
   void NotifyWebAppDisabledStateChanged(const AppId& app_id, bool is_disabled);
 
  protected:

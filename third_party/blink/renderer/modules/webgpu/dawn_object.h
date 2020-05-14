@@ -42,6 +42,31 @@ class DawnObjectBase {
   scoped_refptr<DawnControlClientHolder> dawn_control_client_;
 };
 
+// This class allows objects to hold onto a DawnControlClientHolder and a
+// device client id. Now one GPUDevice is related to one WebGPUSerializer in
+// the client side of WebGPU context. When the GPUDevice and all the other
+// WebGPU objects that are created from the GPUDevice are destroyed, this
+// object will be destroyed and in the destructor of this object we will
+// trigger the clean-ups to the corresponding WebGPUSerailzer and other data
+// structures in the GPU process.
+class DawnDeviceClientSerializerHolder
+    : public RefCounted<DawnDeviceClientSerializerHolder> {
+ public:
+  DawnDeviceClientSerializerHolder(
+      scoped_refptr<DawnControlClientHolder> dawn_control_client,
+      uint64_t device_client_id);
+
+ private:
+  friend class RefCounted<DawnDeviceClientSerializerHolder>;
+  ~DawnDeviceClientSerializerHolder();
+
+  scoped_refptr<DawnControlClientHolder> dawn_control_client_;
+  uint64_t device_client_id_;
+};
+
+// TODO(jiawei.shao@intel.com): Remove the redundant reference of
+// scoped_refptr<DawnControlClientHolder> inherited from DawnObjectBase as now
+// we can access it from device_client_serializer_holder_.
 class DawnObjectImpl : public ScriptWrappable, public DawnObjectBase {
  public:
   DawnObjectImpl(GPUDevice* device);
@@ -51,6 +76,8 @@ class DawnObjectImpl : public ScriptWrappable, public DawnObjectBase {
 
  protected:
   Member<GPUDevice> device_;
+  scoped_refptr<DawnDeviceClientSerializerHolder>
+      device_client_serializer_holder_;
 };
 
 template <typename Handle>
@@ -66,17 +93,33 @@ class DawnObject : public DawnObjectImpl {
   Handle const handle_;
 };
 
+// TODO(jiawei.shao@intel.com): Remove the redundant reference of
+// scoped_refptr<DawnControlClientHolder> inherited from DawnObjectBase as now
+// we can access it from device_client_serializer_holder_.
 template <>
 class DawnObject<WGPUDevice> : public DawnObjectBase {
  public:
   DawnObject(scoped_refptr<DawnControlClientHolder> dawn_control_client,
+             uint64_t device_client_id,
              WGPUDevice handle)
-      : DawnObjectBase(std::move(dawn_control_client)), handle_(handle) {}
+      : DawnObjectBase(std::move(dawn_control_client)),
+        handle_(handle),
+        device_client_serializer_holder_(
+            base::MakeRefCounted<DawnDeviceClientSerializerHolder>(
+                GetDawnControlClient(),
+                device_client_id)) {}
 
   WGPUDevice GetHandle() const { return handle_; }
 
+  const scoped_refptr<DawnDeviceClientSerializerHolder>&
+  GetDeviceClientSerializerHolder() const {
+    return device_client_serializer_holder_;
+  }
+
  private:
   WGPUDevice const handle_;
+  scoped_refptr<DawnDeviceClientSerializerHolder>
+      device_client_serializer_holder_;
 };
 
 }  // namespace blink

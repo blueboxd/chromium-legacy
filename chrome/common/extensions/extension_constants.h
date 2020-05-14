@@ -90,9 +90,6 @@ extern const char kHTermDevAppId[];
 // The extension id of the Identity API UI application.
 extern const char kIdentityApiUiAppId[];
 
-// The extension id of the Crosh component app for ChromeOS.
-extern const char kCroshBuiltinAppId[];
-
 // The extension id of the Text Editor application.
 extern const char kTextEditorAppId[];
 

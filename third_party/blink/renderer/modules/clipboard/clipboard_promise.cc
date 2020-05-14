@@ -433,6 +433,13 @@ void ClipboardPromise::RequestPermission(
     return;
   }
 
+  if (is_raw_ && !LocalFrame::HasTransientUserActivation(GetLocalFrame())) {
+    script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kSecurityError,
+        "Must be handling a user gesture to use raw clipboard"));
+    return;
+  }
+
   if (!GetPermissionService()) {
     script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError,

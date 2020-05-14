@@ -26,10 +26,6 @@ void RawClipboardHostImpl::Create(
     mojo::PendingReceiver<blink::mojom::RawClipboardHost> receiver) {
   DCHECK(render_frame_host);
 
-  PermissionControllerImpl* permission_controller =
-      PermissionControllerImpl::FromBrowserContext(
-          render_frame_host->GetProcess()->GetBrowserContext());
-
   // Feature flags and permission should already be checked in the renderer
   // process, but recheck in the browser process in case of a hijacked renderer.
   if (!base::FeatureList::IsEnabled(blink::features::kRawClipboard)) {
@@ -37,15 +33,28 @@ void RawClipboardHostImpl::Create(
     return;
   }
 
+  // Renderer process should already check for user activation before sending
+  // this request. Double check in case of compromised renderer.
+  if (!render_frame_host->HasTransientUserActivation()) {
+    // mojo::ReportBadMessage() is not appropriate here, because user
+    // activation may expire after the renderer check but before the browser
+    // check.
+    return;
+  }
+
+  PermissionControllerImpl* permission_controller =
+      PermissionControllerImpl::FromBrowserContext(
+          render_frame_host->GetProcess()->GetBrowserContext());
+
   blink::mojom::PermissionStatus status =
       permission_controller->GetPermissionStatusForFrame(
           PermissionType::CLIPBOARD_READ_WRITE, render_frame_host,
           render_frame_host->GetLastCommittedOrigin().GetURL());
 
   if (status != blink::mojom::PermissionStatus::GRANTED) {
-    // This may be hit by a race condition, where permission is denied after
-    // the renderer check, but before the browser check. It may also be hit by
-    // a compromised renderer.
+    // mojo::ReportBadMessage() is not appropriate here because the permission
+    // may be granted after the renderer check, but revoked before the browser
+    // check.
     return;
   }
 
@@ -53,7 +62,7 @@ void RawClipboardHostImpl::Create(
   // loops. Use manual memory management instead of SelfOwnedReceiver<T> which
   // synchronously destroys on failure and can result in some unfortunate
   // use-after-frees after the nested message loops exit.
-  auto* host = new RawClipboardHostImpl(std::move(receiver));
+  auto* host = new RawClipboardHostImpl(std::move(receiver), render_frame_host);
   host->receiver_.set_disconnect_handler(base::BindOnce(
       [](RawClipboardHostImpl* host) {
         base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, host);
@@ -66,14 +75,20 @@ RawClipboardHostImpl::~RawClipboardHostImpl() {
 }
 
 RawClipboardHostImpl::RawClipboardHostImpl(
-    mojo::PendingReceiver<blink::mojom::RawClipboardHost> receiver)
+    mojo::PendingReceiver<blink::mojom::RawClipboardHost> receiver,
+    RenderFrameHost* render_frame_host)
     : receiver_(this, std::move(receiver)),
       clipboard_(ui::Clipboard::GetForCurrentThread()),
       clipboard_writer_(
-          new ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)) {}
+          new ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)),
+      render_frame_host_(render_frame_host) {
+  DCHECK(render_frame_host);
+}
 
 void RawClipboardHostImpl::ReadAvailableFormatNames(
     ReadAvailableFormatNamesCallback callback) {
+  if (!HasTransientUserActivation())
+    return;
   std::vector<base::string16> raw_types =
       clipboard_->ReadAvailablePlatformSpecificFormatNames(
           ui::ClipboardBuffer::kCopyPaste);
@@ -82,6 +97,8 @@ void RawClipboardHostImpl::ReadAvailableFormatNames(
 
 void RawClipboardHostImpl::Read(const base::string16& format,
                                 ReadCallback callback) {
+  if (!HasTransientUserActivation())
+    return;
   if (format.size() >= kMaxFormatSize) {
     receiver_.ReportBadMessage("Requested format string length too long.");
     return;
@@ -98,6 +115,8 @@ void RawClipboardHostImpl::Read(const base::string16& format,
 
 void RawClipboardHostImpl::Write(const base::string16& format,
                                  mojo_base::BigBuffer data) {
+  if (!HasTransientUserActivation())
+    return;
   if (format.size() >= kMaxFormatSize) {
     receiver_.ReportBadMessage("Target format string length too long.");
     return;
@@ -134,6 +153,14 @@ void RawClipboardHostImpl::Write(const base::string16& format,
 void RawClipboardHostImpl::CommitWrite() {
   clipboard_writer_.reset(
       new ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste));
+}
+
+bool RawClipboardHostImpl::HasTransientUserActivation() const {
+  // Renderer process should already check for user activation before sending
+  // this request. Double check in case of compromised renderer.
+  // mojo::ReportBadMessage() is not appropriate here, because user activation
+  // may expire after the renderer check but before the browser check.
+  return render_frame_host_->HasTransientUserActivation();
 }
 
 }  // namespace content

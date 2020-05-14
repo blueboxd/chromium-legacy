@@ -19,8 +19,10 @@
 #include "components/url_pattern_index/url_pattern_index.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
@@ -274,7 +276,17 @@ std::string GetPublicRulesetID(const Extension& extension,
     return dnr_api::DYNAMIC_RULESET_ID;
 
   DCHECK_GE(ruleset_id, kMinValidStaticRulesetID);
-  return DNRManifestData::GetManifestID(extension, ruleset_id);
+  return DNRManifestData::GetRuleset(extension, ruleset_id).manifest_id;
+}
+
+std::vector<std::string> GetPublicRulesetIDs(const Extension& extension,
+                                             const CompositeMatcher& matcher) {
+  std::vector<std::string> ids;
+  ids.reserve(matcher.matchers().size());
+  for (const std::unique_ptr<RulesetMatcher>& matcher : matcher.matchers())
+    ids.push_back(GetPublicRulesetID(extension, matcher->id()));
+
+  return ids;
 }
 
 }  // namespace declarative_net_request

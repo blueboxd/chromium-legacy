@@ -33,6 +33,7 @@ public class TabTest {
 
     @Test
     @SmallTest
+    @MinWebLayerVersion(82)
     public void testBeforeUnload() {
         String url = mActivityTestRule.getTestDataURL("before_unload.html");
         mActivity = mActivityTestRule.launchShellWithUrl(url);
@@ -137,6 +138,7 @@ public class TabTest {
 
     @Test
     @SmallTest
+    @MinWebLayerVersion(84)
     public void testCaptureScreenShot() throws TimeoutException {
         String url = mActivityTestRule.getTestDataURL("quadrant_colors.html");
         mActivity = mActivityTestRule.launchShellWithUrl(url);
@@ -153,6 +155,7 @@ public class TabTest {
 
     @Test
     @SmallTest
+    @MinWebLayerVersion(84)
     public void testCaptureScreenShotDoesNotHang() throws TimeoutException {
         String startupUrl = "about:blank";
         mActivity = mActivityTestRule.launchShellWithUrl(startupUrl);

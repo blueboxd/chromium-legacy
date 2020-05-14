@@ -42,7 +42,7 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
   InMemoryURLIndex* GetInMemoryURLIndex() override;
   scoped_refptr<ShortcutsBackend> GetShortcutsBackend() override;
   scoped_refptr<ShortcutsBackend> GetShortcutsBackendIfExists() override;
-  upboarding::TileService* GetQueryTileService() const override;
+  query_tiles::TileService* GetQueryTileService() const override;
 
   void set_in_memory_url_index(std::unique_ptr<InMemoryURLIndex> index) {
     in_memory_url_index_ = std::move(index);
@@ -65,7 +65,7 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
   std::unique_ptr<InMemoryURLIndex> in_memory_url_index_;
   std::unique_ptr<history::HistoryService> history_service_;
   scoped_refptr<ShortcutsBackend> shortcuts_backend_;
-  std::unique_ptr<upboarding::TileService> tile_service_;
+  std::unique_ptr<query_tiles::TileService> tile_service_;
 
   // Substring used to match URLs for IsTabOpenWithURL().
   std::string substring_to_match_;

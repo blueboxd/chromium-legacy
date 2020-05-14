@@ -356,10 +356,10 @@ ShellPlatformDelegate::~ShellPlatformDelegate() = default;
 void ShellPlatformDelegate::CreatePlatformWindow(
     Shell* shell,
     const gfx::Size& initial_size) {
-  ShellData* shell_data = new ShellData;
-  shell->set_platform_data(shell_data);
+  DCHECK(!base::Contains(shell_data_map_, shell));
+  ShellData& shell_data = shell_data_map_[shell];
 
-  shell_data->content_size = initial_size;
+  shell_data.content_size = initial_size;
 
   if (shell->headless()) {
     if (!platform_->aura)
@@ -370,18 +370,18 @@ void ShellPlatformDelegate::CreatePlatformWindow(
   }
 
 #if defined(OS_CHROMEOS)
-  shell_data->window_widget = views::Widget::CreateWindowWithContext(
+  shell_data.window_widget = views::Widget::CreateWindowWithContext(
       new ShellWindowDelegateView(shell),
       platform_->wm_test_helper->GetDefaultParent(nullptr, gfx::Rect()),
       gfx::Rect(initial_size));
 #else
-  shell_data->window_widget = new views::Widget();
+  shell_data.window_widget = new views::Widget();
   views::Widget::InitParams params;
   params.bounds = gfx::Rect(initial_size);
   params.delegate = new ShellWindowDelegateView(shell);
   params.wm_class_class = "chromium-content_shell";
   params.wm_class_name = params.wm_class_class;
-  shell_data->window_widget->Init(std::move(params));
+  shell_data.window_widget->Init(std::move(params));
 #endif
 
   // |window_widget| is made visible in PlatformSetContents(), so that the
@@ -389,20 +389,20 @@ void ShellPlatformDelegate::CreatePlatformWindow(
 }
 
 gfx::NativeWindow ShellPlatformDelegate::GetNativeWindow(Shell* shell) {
-  ShellData* shell_data = shell->platform_data();
-  return shell_data->window_widget->GetNativeWindow();
+  DCHECK(base::Contains(shell_data_map_, shell));
+  ShellData& shell_data = shell_data_map_[shell];
+
+  return shell_data.window_widget->GetNativeWindow();
 }
 
 void ShellPlatformDelegate::CleanUp(Shell* shell) {
-  ShellData* shell_data = shell->platform_data();
-
-  delete shell_data;
-  // This shouldn't be used anymore, but just in case.
-  shell->set_platform_data(nullptr);
+  DCHECK(base::Contains(shell_data_map_, shell));
+  shell_data_map_.erase(shell);
 }
 
 void ShellPlatformDelegate::SetContents(Shell* shell) {
-  ShellData* shell_data = shell->platform_data();
+  DCHECK(base::Contains(shell_data_map_, shell));
+  ShellData& shell_data = shell_data_map_[shell];
 
   if (shell->headless()) {
     aura::Window* content = shell->web_contents()->GetNativeView();
@@ -414,20 +414,20 @@ void ShellPlatformDelegate::SetContents(Shell* shell) {
       content->MoveCursorTo(gfx::Point());
       content->Show();
     }
-    content->SetBounds(gfx::Rect(shell_data->content_size));
+    content->SetBounds(gfx::Rect(shell_data.content_size));
     RenderWidgetHostView* host_view =
         shell->web_contents()->GetRenderWidgetHostView();
     if (host_view)
-      host_view->SetSize(shell_data->content_size);
+      host_view->SetSize(shell_data.content_size);
   } else {
     views::WidgetDelegate* widget_delegate =
-        shell_data->window_widget->widget_delegate();
+        shell_data.window_widget->widget_delegate();
     auto* delegate_view =
         static_cast<ShellWindowDelegateView*>(widget_delegate);
     delegate_view->SetWebContents(shell->web_contents(),
-                                  shell_data->content_size);
-    shell_data->window_widget->GetNativeWindow()->GetHost()->Show();
-    shell_data->window_widget->Show();
+                                  shell_data.content_size);
+    shell_data.window_widget->GetNativeWindow()->GetHost()->Show();
+    shell_data.window_widget->Show();
   }
 }
 
@@ -442,10 +442,11 @@ void ShellPlatformDelegate::EnableUIControl(Shell* shell,
   if (shell->headless() || Shell::ShouldHideToolbar())
     return;
 
-  ShellData* shell_data = shell->platform_data();
+  DCHECK(base::Contains(shell_data_map_, shell));
+  ShellData& shell_data = shell_data_map_[shell];
 
   auto* delegate_view = static_cast<ShellWindowDelegateView*>(
-      shell_data->window_widget->widget_delegate());
+      shell_data.window_widget->widget_delegate());
   if (control == BACK_BUTTON) {
     delegate_view->EnableUIControl(ShellWindowDelegateView::BACK_BUTTON,
                                    is_enabled);
@@ -462,10 +463,11 @@ void ShellPlatformDelegate::SetAddressBarURL(Shell* shell, const GURL& url) {
   if (shell->headless() || Shell::ShouldHideToolbar())
     return;
 
-  ShellData* shell_data = shell->platform_data();
+  DCHECK(base::Contains(shell_data_map_, shell));
+  ShellData& shell_data = shell_data_map_[shell];
 
   auto* delegate_view = static_cast<ShellWindowDelegateView*>(
-      shell_data->window_widget->widget_delegate());
+      shell_data.window_widget->widget_delegate());
   delegate_view->SetAddressBarURL(url);
 }
 
@@ -476,21 +478,25 @@ void ShellPlatformDelegate::SetTitle(Shell* shell,
   if (shell->headless())
     return;
 
-  ShellData* shell_data = shell->platform_data();
+  DCHECK(base::Contains(shell_data_map_, shell));
+  ShellData& shell_data = shell_data_map_[shell];
 
   auto* delegate_view = static_cast<ShellWindowDelegateView*>(
-      shell_data->window_widget->widget_delegate());
+      shell_data.window_widget->widget_delegate());
   delegate_view->SetWindowTitle(title);
-  shell_data->window_widget->UpdateWindowTitle();
+  shell_data.window_widget->UpdateWindowTitle();
 }
+
+void ShellPlatformDelegate::RenderViewReady(Shell* shell) {}
 
 bool ShellPlatformDelegate::DestroyShell(Shell* shell) {
   if (shell->headless())
     return false;  // Shell destroys itself.
 
-  ShellData* shell_data = shell->platform_data();
+  DCHECK(base::Contains(shell_data_map_, shell));
+  ShellData& shell_data = shell_data_map_[shell];
 
-  shell_data->window_widget->CloseNow();
+  shell_data.window_widget->CloseNow();
   return true;  // The CloseNow() will do the destruction of Shell.
 }
 

@@ -14,6 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
@@ -54,9 +55,11 @@ constexpr char kOrigin[] = "https://google.com";
 constexpr int kTabId = 1;
 constexpr char kAppId1[] = "ABCDEFGH";
 constexpr char kAppId2[] = "BBBBBBBB";
+constexpr char kAppParams[] = "{params:\"value\"}";
 
 std::string MakeSourceId(const std::string& app_id = kAppId1) {
-  return "cast:" + app_id + "?clientId=theClientId";
+  return base::StrCat(
+      {"cast:", app_id, "?clientId=theClientId&appParams=", kAppParams});
 }
 
 base::Value MakeReceiverStatus(const std::string& app_id,
@@ -174,8 +177,8 @@ class CastActivityManagerTest : public testing::Test,
     std::vector<std::string> supported_app_types = {"WEB"};
     EXPECT_CALL(message_handler_,
                 LaunchSession(kChannelId, app_id, kDefaultLaunchTimeout,
-                              supported_app_types, _))
-        .WillOnce(WithArg<4>([this](auto callback) {
+                              supported_app_types, kAppParams, _))
+        .WillOnce(WithArg<5>([this](auto callback) {
           launch_session_callback_ = std::move(callback);
         }));
 
@@ -390,12 +393,12 @@ TEST_F(CastActivityManagerTest, LaunchSessionTerminatesExistingSessionOnSink) {
 
   std::move(stop_session_callback_).Run(cast_channel::Result::kOk);
 
-  // LaunchSession() should not be called until we notify |maanger_| that the
+  // LaunchSession() should not be called until we notify |mananger_| that the
   // previous session was removed.
   std::vector<std::string> supported_app_types = {"WEB"};
   EXPECT_CALL(message_handler_,
               LaunchSession(kChannelId, "BBBBBBBB", kDefaultLaunchTimeout,
-                            supported_app_types, _));
+                            supported_app_types, _, _));
   manager_->OnSessionRemoved(sink_);
 }
 

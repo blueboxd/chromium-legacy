@@ -88,6 +88,8 @@ android_library("weblayer_java_test_support") {
   sources = [
     "src/org/chromium/weblayer/test/BoundedCountDownLatch.java",
     "src/org/chromium/weblayer/test/InstrumentationActivityTestRule.java",
+    "src/org/chromium/weblayer/test/MinWebLayerVersion.java",
+    "src/org/chromium/weblayer/test/MinWebLayerVersionSkipCheck.java",
     "src/org/chromium/weblayer/test/NavigationWaiter.java",
     "src/org/chromium/weblayer/test/ResourceUtil.java",
     "src/org/chromium/weblayer/test/WebLayerJUnit4ClassRunner.java",
@@ -182,7 +184,14 @@ copy("weblayer_instrumentation_test_versions_apk") {
 android_test_apk("weblayer_bundle_test_apk") {
   apk_name = "WebLayerBundleTest"
   android_manifest = "AndroidManifest_bundle.xml"
-  sources = [ "src/org/chromium/weblayer/test/BundleLanguageTest.java" ]
+  sources = [
+    "src/org/chromium/weblayer/test/BundleLanguageTest.java",
+
+    # This is run both in the bundle tests and the standard instrumentation
+    # tests to make sure bundles don't do anything weird with WebLayer/WebView
+    # compatibility.
+    "src/org/chromium/weblayer/test/WebViewCompatibilityTest.java",
+  ]
   deps = [
     ":weblayer_java_test_support",
     "//third_party/android_support_test_runner:rules_java",
@@ -210,5 +219,7 @@ instrumentation_test_runner("weblayer_bundle_test") {
   ]
   android_test_apk = ":weblayer_bundle_test_apk"
   android_test_apk_name = "WebLayerBundleTest"
+  additional_apks = [ "//net/android:net_test_support_apk" ]
+  data = [ "//weblayer/test/data/" ]
   never_incremental = true
 }

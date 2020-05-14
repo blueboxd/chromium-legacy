@@ -23,7 +23,7 @@ JNI_TileProviderFactory_GetForProfile(
   if (profile_key == nullptr)
     return base::android::ScopedJavaLocalRef<jobject>();
 
-  upboarding::TileService* tile_service =
-      upboarding::TileServiceFactory::GetInstance()->GetForKey(profile_key);
-  return upboarding::TileProviderBridge::GetBridgeForTileService(tile_service);
+  query_tiles::TileService* tile_service =
+      query_tiles::TileServiceFactory::GetInstance()->GetForKey(profile_key);
+  return query_tiles::TileProviderBridge::GetBridgeForTileService(tile_service);
 }

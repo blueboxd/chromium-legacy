@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
 
-namespace upboarding {
+namespace query_tiles {
 
 InitAwareTileService::InitAwareTileService(
     std::unique_ptr<InitializableTileService> tile_service)
@@ -102,4 +102,4 @@ bool InitAwareTileService::IsFailed() const {
 
 InitAwareTileService::~InitAwareTileService() = default;
 
-}  // namespace upboarding
+}  // namespace query_tiles

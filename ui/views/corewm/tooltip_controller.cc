@@ -141,9 +141,12 @@ int TooltipController::GetMaxWidth(const gfx::Point& location) const {
 }
 
 void TooltipController::UpdateTooltip(aura::Window* target) {
-  // If tooltip is visible, we may want to hide it. If it is not, we are ok.
-  if (tooltip_window_ == target && tooltip_->IsVisible())
+  // Ensure relevant tooltip is updated when it is visible or scheduled to
+  // show. Otherwise, a stale tooltip might be shown.
+  if (tooltip_window_ == target &&
+      (tooltip_->IsVisible() || tooltip_defer_timer_.IsRunning())) {
     UpdateIfRequired();
+  }
 
   // Reset |tooltip_window_at_mouse_press_| if the moving within the same window
   // but over a region that has different tooltip text.

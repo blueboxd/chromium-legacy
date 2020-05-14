@@ -14,7 +14,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
-namespace upboarding {
+namespace query_tiles {
 namespace {
 
 const char kRequestContentType[] = "application/x-protobuf";
@@ -167,4 +167,4 @@ std::unique_ptr<TileFetcher> TileFetcher::Create(
 TileFetcher::TileFetcher() = default;
 TileFetcher::~TileFetcher() = default;
 
-}  // namespace upboarding
+}  // namespace query_tiles

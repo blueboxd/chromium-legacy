@@ -408,11 +408,12 @@ void ExtensionAppsBase::Initialize(
       HostContentSettingsMapFactory::GetForProfile(profile_));
   app_service_ = app_service.get();
 
-  auto* web_app_provider = web_app::WebAppProvider::Get(profile_);
-  if (app_type_ == apps::mojom::AppType::kWeb && web_app_provider) {
-    web_app_provider->system_web_app_manager().on_apps_synchronized().Post(
+  auto* provider = web_app::WebAppProvider::Get(profile_);
+  if (app_type_ == apps::mojom::AppType::kWeb && provider) {
+    provider->system_web_app_manager().on_apps_synchronized().Post(
         FROM_HERE, base::BindOnce(&ExtensionAppsBase::OnSystemWebAppsInstalled,
                                   weak_factory_.GetWeakPtr()));
+    app_registrar_observer_.Add(&provider->registrar());
   }
 
   if (app_type_ == apps::mojom::AppType::kWeb &&
@@ -674,6 +675,23 @@ void ExtensionAppsBase::OnExtensionLastLaunchTimeChanged(
 void ExtensionAppsBase::OnExtensionPrefsWillBeDestroyed(
     extensions::ExtensionPrefs* prefs) {
   prefs_observer_.Remove(prefs);
+}
+
+void ExtensionAppsBase::OnAppRegistrarDestroyed() {
+  app_registrar_observer_.RemoveAll();
+}
+
+void ExtensionAppsBase::OnWebAppLocallyInstalledStateChanged(
+    const web_app::AppId& app_id,
+    bool is_locally_installed) {
+  const extensions::Extension* extension = MaybeGetExtension(app_id);
+  if (!extension)
+    return;
+  auto app = apps::mojom::App::New();
+  app->app_type = apps::mojom::AppType::kWeb;
+  app->app_id = app_id;
+  app->icon_key = icon_key_factory_.MakeIconKey(GetIconEffects(extension));
+  Publish(std::move(app), subscribers_);
 }
 
 void ExtensionAppsBase::OnExtensionLoaded(

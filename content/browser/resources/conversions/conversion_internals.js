@@ -155,12 +155,30 @@ function clearStorage() {
   });
 }
 
+/**
+ * Sends all conversion reports, and updates the page once they are sent.
+ * Disables the button while the reports are still being sent.
+ */
+function sendReports() {
+  const button = $('send-reports');
+  const previousText = $('send-reports').innerText;
+
+  button.disabled = true;
+  button.innerText = 'Sending...';
+  pageHandler.sendPendingReports().then(() => {
+    updatePageData();
+    button.disabled = false;
+    button.innerText = previousText;
+  });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   // Setup the mojo interface.
   pageHandler = mojom.ConversionInternalsHandler.getRemote();
 
   $('refresh').addEventListener('click', updatePageData);
   $('clear-data').addEventListener('click', clearStorage);
+  $('send-reports').addEventListener('click', sendReports);
 
   // Automatically refresh every 2 minutes.
   setInterval(updatePageData, 2 * 60 * 1000);

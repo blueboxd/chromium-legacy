@@ -18,7 +18,7 @@ namespace gfx {
 class Image;
 }  // namespace gfx
 
-namespace upboarding {
+namespace query_tiles {
 
 using TileList = std::vector<Tile>;
 using GetTilesCallback = base::OnceCallback<void(TileList)>;
@@ -47,6 +47,6 @@ class TileService : public KeyedService, public base::SupportsUserData {
   TileService& operator=(const TileService&) = delete;
 };
 
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_TILE_SERVICE_H_

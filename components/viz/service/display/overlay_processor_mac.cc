@@ -37,6 +37,12 @@ bool OverlayProcessorMac::IsOverlaySupported() const {
   return could_overlay_;
 }
 
+gfx::Rect OverlayProcessorMac::GetPreviousFrameOverlaysBoundingRect() const {
+  // TODO(dcastagna): Implement me.
+  NOTIMPLEMENTED();
+  return gfx::Rect();
+}
+
 gfx::Rect OverlayProcessorMac::GetAndResetOverlayDamage() {
   gfx::Rect result = ca_overlay_damage_rect_;
   ca_overlay_damage_rect_ = gfx::Rect();

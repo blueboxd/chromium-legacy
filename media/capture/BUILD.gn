@@ -393,6 +393,16 @@ test("capture_unittests") {
     ]
   }
 
+  if (is_fuchsia) {
+    deps += [
+      "//media/fuchsia/camera:test_support",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.camera3",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sysmem",
+      "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
+    ]
+    sources += [ "video/fuchsia/video_capture_device_fuchsia_test.cc" ]
+  }
+
   if (is_win) {
     sources += [
       "video/win/video_capture_device_factory_win_unittest.cc",

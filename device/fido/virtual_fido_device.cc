@@ -9,17 +9,21 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "components/cbor/values.h"
+#include "components/cbor/writer.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
 #include "crypto/openssl_util.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/p256_public_key.h"
 #include "device/fido/public_key.h"
+#include "third_party/boringssl/src/include/openssl/bn.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/ec.h"
 #include "third_party/boringssl/src/include/openssl/ec_key.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
+#include "third_party/boringssl/src/include/openssl/rsa.h"
 
 namespace device {
 
@@ -134,6 +138,52 @@ class P256PrivateKey : public EVPBackedPrivateKey {
   }
 };
 
+class RSAPrivateKey : public EVPBackedPrivateKey {
+ public:
+  RSAPrivateKey() : EVPBackedPrivateKey(EVP_PKEY_RSA, ConfigureKeyGen) {}
+
+  explicit RSAPrivateKey(bssl::UniquePtr<EVP_PKEY> pkey)
+      : EVPBackedPrivateKey(std::move(pkey)) {}
+
+  std::unique_ptr<PublicKey> GetPublicKey() const override {
+    const RSA* rsa = EVP_PKEY_get0_RSA(pkey_.get());
+    const BIGNUM* n = RSA_get0_n(rsa);
+    const BIGNUM* e = RSA_get0_e(rsa);
+
+    std::vector<uint8_t> modulus(BN_num_bytes(n));
+    BN_bn2bin(n, modulus.data());
+
+    std::vector<uint8_t> public_exponent(BN_num_bytes(e));
+    BN_bn2bin(e, public_exponent.data());
+
+    cbor::Value::MapValue map;
+    map.emplace(static_cast<int64_t>(CoseKeyKey::kAlg),
+                static_cast<int64_t>(CoseAlgorithmIdentifier::kCoseRs256));
+    map.emplace(static_cast<int64_t>(CoseKeyKey::kKty),
+                static_cast<int64_t>(CoseKeyTypes::kRSA));
+    map.emplace(static_cast<int64_t>(CoseKeyKey::kRSAModulus),
+                std::move(modulus));
+    map.emplace(static_cast<int64_t>(CoseKeyKey::kRSAPublicExponent),
+                std::move(public_exponent));
+
+    base::Optional<std::vector<uint8_t>> cbor_bytes(
+        cbor::Writer::Write(cbor::Value(std::move(map))));
+
+    std::vector<uint8_t> der_bytes(
+        CBBFunctionToVector<decltype(EVP_marshal_public_key),
+                            EVP_marshal_public_key>(pkey_.get()));
+
+    return std::make_unique<PublicKey>(
+        static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseRs256), *cbor_bytes,
+        std::move(der_bytes));
+  }
+
+ private:
+  static int ConfigureKeyGen(EVP_PKEY_CTX* ctx) {
+    return EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, 2048);
+  }
+};
+
 }  // namespace
 
 // VirtualFidoDevice::PrivateKey ----------------------------------------------
@@ -167,6 +217,10 @@ VirtualFidoDevice::PrivateKey::FromPKCS8(
         return base::nullopt;
       }
       return std::unique_ptr<PrivateKey>(new P256PrivateKey(std::move(pkey)));
+
+    case EVP_PKEY_RSA:
+      return std::unique_ptr<PrivateKey>(new RSAPrivateKey(std::move(pkey)));
+
     default:
       return base::nullopt;
   }
@@ -284,6 +338,12 @@ std::vector<uint8_t> VirtualFidoDevice::GetAttestationKey() {
 std::unique_ptr<VirtualFidoDevice::PrivateKey>
 VirtualFidoDevice::FreshP256Key() {
   return std::make_unique<P256PrivateKey>();
+}
+
+// static
+std::unique_ptr<VirtualFidoDevice::PrivateKey>
+VirtualFidoDevice::FreshRSAKey() {
+  return std::unique_ptr<PrivateKey>(new RSAPrivateKey);
 }
 
 bool VirtualFidoDevice::Sign(crypto::ECPrivateKey* private_key,

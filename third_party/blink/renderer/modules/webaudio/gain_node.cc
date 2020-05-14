@@ -71,7 +71,7 @@ void GainHandler::Process(uint32_t frames_to_process) {
   } else {
     scoped_refptr<AudioBus> input_bus = Input(0).Bus();
 
-    bool is_sample_accurate = gain_->HasSampleAccurateValuesTimeline();
+    bool is_sample_accurate = gain_->HasSampleAccurateValues();
 
     if (is_sample_accurate && gain_->IsAudioRate()) {
       // Apply sample-accurate gain scaling for precise envelopes, grain

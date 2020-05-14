@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
@@ -97,7 +98,9 @@ new_tab_page::mojom::ThemePtr MakeTheme(const NtpTheme& ntp_theme) {
   theme->shortcut_text_color = ntp_theme.text_color;
   theme->shortcut_use_white_add_icon =
       color_utils::IsDark(ntp_theme.shortcut_color);
-  theme->is_dark = !color_utils::IsDark(ntp_theme.text_color);
+  theme->shortcut_use_title_pill = ntp_theme.has_theme_image;
+  theme->is_dark =
+      ntp_theme.has_theme_image || !color_utils::IsDark(ntp_theme.text_color);
   if (ntp_theme.logo_alternate) {
     theme->logo_color = ntp_theme.logo_color;
   }
@@ -111,6 +114,10 @@ new_tab_page::mojom::ThemePtr MakeTheme(const NtpTheme& ntp_theme) {
     } else {
       theme->background_image_url = ntp_theme.custom_background_url;
     }
+  } else if (ntp_theme.has_theme_image) {
+    theme->background_image_url =
+        GURL(base::StrCat({"chrome-untrusted://theme/IDR_THEME_NTP_BACKGROUND?",
+                           ntp_theme.theme_id}));
   }
   if (!ntp_theme.custom_background_attribution_line_1.empty()) {
     theme->background_image_attribution_1 =
@@ -141,6 +148,7 @@ new_tab_page::mojom::ThemePtr MakeTheme(const NtpTheme& ntp_theme) {
   search_box->results_text = ntp_theme.search_box.results_text;
   search_box->results_text_selected =
       ntp_theme.search_box.results_text_selected;
+  search_box->results_url = ntp_theme.search_box.results_url;
   search_box->results_url_selected = ntp_theme.search_box.results_url_selected;
   search_box->text = ntp_theme.search_box.text;
   theme->search_box = std::move(search_box);
@@ -495,6 +503,11 @@ void NewTabPageHandler::OnOneGoogleBarRendered(double time) {
                     base::Time::FromJsTime(time) - ntp_navigation_start_time_);
 }
 
+void NewTabPageHandler::OnPromoRendered(double time) {
+  logger_->LogEvent(NTP_MIDDLE_SLOT_PROMO_SHOWN,
+                    base::Time::FromJsTime(time) - ntp_navigation_start_time_);
+}
+
 void NewTabPageHandler::OnMostVisitedTileNavigation(
     new_tab_page::mojom::MostVisitedTilePtr tile,
     uint32_t index) {
@@ -591,6 +604,10 @@ void NewTabPageHandler::OnDoodleImageRendered(
   }
   logger_->LogEvent(event,
                     base::Time::FromJsTime(time) - ntp_navigation_start_time_);
+}
+
+void NewTabPageHandler::OnPromoLinkClicked() {
+  LogEvent(NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED);
 }
 
 void NewTabPageHandler::QueryAutocomplete(const base::string16& input,

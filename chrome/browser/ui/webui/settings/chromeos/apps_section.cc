@@ -6,9 +6,12 @@
 
 #include "base/no_destructor.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/webui/app_management/app_management_page_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/android_apps_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/plugin_vm_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
@@ -116,11 +119,19 @@ void AddAppManagementStrings(content::WebUIDataSource* html_source) {
       {"appManagementNotificationsLabel", IDS_APP_MANAGEMENT_NOTIFICATIONS},
       {"appManagementPermissionsLabel", IDS_APP_MANAGEMENT_PERMISSIONS},
       {"appManagementPinToShelfLabel", IDS_APP_MANAGEMENT_PIN_TO_SHELF},
+      {"appManagementPrintingPermissionLabel", IDS_APP_MANAGEMENT_PRINTING},
       {"appManagementSearchPrompt", IDS_APP_MANAGEMENT_SEARCH_PROMPT},
       {"appManagementStoragePermissionLabel", IDS_APP_MANAGEMENT_STORAGE},
       {"appManagementUninstallLabel", IDS_APP_MANAGEMENT_UNINSTALL_APP},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+}
+
+bool ShowPluginVm(const Profile* profile, const PrefService& pref_service) {
+  // Even if not allowed, we still want to show Plugin VM if the VM image is on
+  // disk, so that users are still able to delete the image at will.
+  return plugin_vm::IsPluginVmAllowedForProfile(profile) ||
+         pref_service.GetBoolean(plugin_vm::prefs::kPluginVmImageExists);
 }
 
 }  // namespace
@@ -196,11 +207,17 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
   AddAppManagementStrings(html_source);
   AddAndroidAppStrings(html_source);
+  AddPluginVmLoadTimeData(html_source);
 }
 
 void AppsSection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::AndroidAppsHandler>(profile()));
+
+  if (ShowPluginVm(profile(), *pref_service_)) {
+    web_ui->AddMessageHandler(
+        std::make_unique<chromeos::settings::PluginVmHandler>(profile()));
+  }
 }
 
 void AppsSection::OnAppRegistered(const std::string& app_id,
@@ -233,6 +250,25 @@ void AppsSection::AddAndroidAppStrings(content::WebUIDataSource* html_source) {
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_ANDROID_APPS_SUBTEXT, ui::GetChromeOSDeviceName(),
           GetHelpUrlWithBoard(chrome::kAndroidAppsLearnMoreURL)));
+}
+
+void AppsSection::AddPluginVmLoadTimeData(
+    content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"pluginVmSharedPaths", IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS},
+      {"pluginVmSharedPathsListHeading",
+       IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_LIST_HEADING},
+      {"pluginVmSharedPathsInstructionsAdd",
+       IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_INSTRUCTIONS_ADD},
+      {"pluginVmSharedPathsInstructionsRemove",
+       IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_INSTRUCTIONS_REMOVE},
+      {"pluginVmSharedPathsRemoveSharing",
+       IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_REMOVE_SHARING},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  html_source->AddBoolean("showPluginVm",
+                          ShowPluginVm(profile(), *pref_service_));
 }
 
 void AppsSection::UpdateAndroidSearchTags() {

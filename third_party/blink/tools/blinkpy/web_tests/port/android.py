@@ -38,7 +38,6 @@ import time
 from blinkpy.common import exit_codes
 from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
 from blinkpy.common.path_finder import WEB_TESTS_LAST_COMPONENT
-from blinkpy.common.path_finder import get_blink_dir
 from blinkpy.common.path_finder import get_chromium_src_dir
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.profiler import SingleFileOutputProfiler
@@ -63,37 +62,6 @@ devil_env = None
 intent = None
 perf_control = None
 # pylint: enable=invalid-name
-
-# product constants used by the wpt runner.
-ANDROID_WEBLAYER = 'android_weblayer'
-ANDROID_WEBVIEW = 'android_webview'
-CHROME_ANDROID = 'chrome_android'
-
-PRODUCTS = [ANDROID_WEBLAYER, ANDROID_WEBVIEW, CHROME_ANDROID]
-
-PRODUCTS_TO_STEPNAMES = {
-    ANDROID_WEBLAYER: 'weblayer_shell_wpt',
-    ANDROID_WEBVIEW: 'system_webview_wpt',
-    CHROME_ANDROID: 'chrome_public_wpt',
-}
-
-PRODUCTS_TO_BROWSER_TAGS = {
-    ANDROID_WEBLAYER: 'weblayer',
-    ANDROID_WEBVIEW: 'webview',
-    CHROME_ANDROID: 'chrome',
-}
-
-# Android web tests directory, which contains override expectation files
-ANDROID_WEB_TESTS_DIR = os.path.join(get_blink_dir(), 'web_tests', 'android')
-
-PRODUCTS_TO_EXPECTATION_FILE_PATHS = {
-    ANDROID_WEBLAYER: os.path.join(
-        ANDROID_WEB_TESTS_DIR, 'WeblayerWPTOverrideExpectations'),
-    ANDROID_WEBVIEW: os.path.join(
-        ANDROID_WEB_TESTS_DIR, 'WebviewWPTOverrideExpectations'),
-    CHROME_ANDROID: os.path.join(
-        ANDROID_WEB_TESTS_DIR, 'ClankWPTOverrideExpectations'),
-}
 
 _friendly_browser_names = {
     'weblayershell': 'weblayer',
@@ -344,10 +312,6 @@ class AndroidPort(base.Port):
             prepared_devices = self.get_option('prepared_devices', [])
             for serial in prepared_devices:
                 self._devices.set_device_prepared(serial)
-
-    def bot_expectations(self):
-        # TODO(rmhasan) Add bot expectations to WPT metadata.
-        return {}
 
     def get_platform_tags(self):
         _sanitize_tag = lambda t: t.replace('_', '-').replace(' ', '-')

@@ -42,7 +42,7 @@ apps::mojom::AppPtr WebApps::Convert(const web_app::WebApp* web_app,
                                      apps::mojom::Readiness readiness) {
   apps::mojom::AppPtr app = ConvertImpl(web_app, readiness);
 
-  app->icon_key = icon_key_factory_.MakeIconKey(GetIconEffects(web_app));
+  app->icon_key = icon_key_factory().MakeIconKey(GetIconEffects(web_app));
 
   app->has_badge = apps::mojom::OptionalBool::kFalse;
   app->paused = apps::mojom::OptionalBool::kFalse;

@@ -227,6 +227,10 @@ constexpr const char kDNRDynamicRulesetPref[] = "dnr_dynamic_ruleset";
 // Net Request API.
 constexpr const char kDNRChecksumKey[] = "checksum";
 
+// Key corresponding to the list of enabled static ruleset IDs for an extension.
+// Used for the Declarative Net Request API.
+constexpr const char kDNREnabledStaticRulesetIDs[] = "dnr_enabled_ruleset_ids";
+
 // A boolean preference that indicates whether the extension's icon should be
 // automatically badged to the matched action count for a tab. False by default.
 constexpr const char kPrefDNRUseActionCountAsBadgeText[] =
@@ -1869,6 +1873,36 @@ void ExtensionPrefs::SetDNRDynamicRulesetChecksum(
                       std::make_unique<base::Value>(checksum));
 }
 
+base::Optional<std::set<declarative_net_request::RulesetID>>
+ExtensionPrefs::GetDNREnabledStaticRulesets(
+    const ExtensionId& extension_id) const {
+  std::set<declarative_net_request::RulesetID> ids;
+  const base::ListValue* ids_value = nullptr;
+  if (!ReadPrefAsList(extension_id, kDNREnabledStaticRulesetIDs, &ids_value))
+    return base::nullopt;
+
+  DCHECK(ids_value);
+  for (const base::Value& id_value : ids_value->GetList()) {
+    if (!id_value.is_int())
+      return base::nullopt;
+
+    ids.insert(declarative_net_request::RulesetID(id_value.GetInt()));
+  }
+
+  return ids;
+}
+
+void ExtensionPrefs::SetDNREnabledStaticRulesets(
+    const ExtensionId& extension_id,
+    const std::set<declarative_net_request::RulesetID>& ids) {
+  std::vector<base::Value> ids_list;
+  for (const auto& id : ids)
+    ids_list.push_back(base::Value(id.value()));
+
+  UpdateExtensionPref(extension_id, kDNREnabledStaticRulesetIDs,
+                      std::make_unique<base::Value>(ids_list));
+}
+
 bool ExtensionPrefs::GetDNRUseActionCountAsBadgeText(
     const ExtensionId& extension_id) const {
   return ReadPrefAsBooleanAndReturn(extension_id,
@@ -2064,6 +2098,10 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
     extension_dict->SetDictionary(kDNRStaticRulesetPref,
                                   std::move(ruleset_prefs));
   }
+
+  // Clear the list of enabled static rulesets for the extension since it
+  // shouldn't persist across extension updates.
+  extension_dict->Remove(kDNREnabledStaticRulesetIDs, nullptr /* out_value */);
 
   if (util::CanWithholdPermissionsFromExtension(*extension)) {
     // If the withhold permission creation flag is present it takes precedence

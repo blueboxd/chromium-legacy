@@ -10,6 +10,7 @@ class PrefRegistrySimple;
 namespace plugin_vm {
 namespace prefs {
 
+extern const char kPluginVmAllowed[];
 extern const char kPluginVmImage[];
 extern const char kPluginVmImageExists[];
 extern const char kPluginVmPrintersAllowed[];

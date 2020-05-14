@@ -77,8 +77,9 @@ export function createTheme() {
     resultsDimSelected: {value: 0xff000008},
     resultsText: {value: 0xff000009},
     resultsTextSelected: {value: 0xff00000a},
-    resultsUrlSelected: {value: 0xff00000b},
-    text: {value: 0xff00000c},
+    resultsUrl: {value: 0xff00000b},
+    resultsUrlSelected: {value: 0xff00000c},
+    text: {value: 0xff00000d},
   };
   return {
     type: newTabPage.mojom.ThemeType.DEFAULT,
@@ -95,5 +96,6 @@ export function createTheme() {
     dailyRefreshCollectionId: '',
     searchBox: searchBox,
     shortcutUseWhiteAddIcon: false,
+    shortcutUseTitlePill: false,
   };
 }

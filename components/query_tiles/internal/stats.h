@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_QUERY_TILES_INTERNAL_STATS_H_
 #define COMPONENTS_QUERY_TILES_INTERNAL_STATS_H_
 
-namespace upboarding {
+namespace query_tiles {
 namespace stats {
 
 // Event to track image loading metrics.
@@ -21,6 +21,6 @@ enum class ImageLoadingEvent {
 void RecordImageLoading(ImageLoadingEvent event);
 
 }  // namespace stats
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_INTERNAL_STATS_H_

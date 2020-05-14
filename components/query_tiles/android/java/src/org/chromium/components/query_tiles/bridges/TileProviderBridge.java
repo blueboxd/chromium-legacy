@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Bridge to the native query tile service for the given {@link Profile}.
  */
-@JNINamespace("upboarding")
+@JNINamespace("query_tiles")
 public class TileProviderBridge implements TileProvider {
     private long mNativeTileProviderBridge;
 

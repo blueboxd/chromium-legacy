@@ -111,6 +111,7 @@ import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper.MenuButtonState;
 import org.chromium.chrome.browser.omaha.notification.UpdateNotificationController;
 import org.chromium.chrome.browser.omaha.notification.UpdateNotificationControllerFactory;
 import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
+import org.chromium.chrome.browser.page_info.ChromePermissionParamsListBuilderDelegate;
 import org.chromium.chrome.browser.paint_preview.PaintPreviewInitializer;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -1991,7 +1992,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     new ChromePageInfoControllerDelegate(this, webContents,
                             this::getModalDialogManager,
                             /*offlinePageLoadUrlDelegate=*/
-                            new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(currentTab)));
+                            new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(currentTab)),
+                    new ChromePermissionParamsListBuilderDelegate());
         } else if (id == R.id.translate_id) {
             RecordUserAction.record("MobileMenuTranslate");
             Tracker tracker = TrackerFactory.getTrackerForProfile(

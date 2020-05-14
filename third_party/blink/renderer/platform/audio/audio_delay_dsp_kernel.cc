@@ -73,6 +73,10 @@ void AudioDelayDSPKernel::CalculateSampleAccurateValues(float*, uint32_t) {
   NOTREACHED();
 }
 
+bool AudioDelayDSPKernel::IsAudioRate() {
+  return true;
+}
+
 double AudioDelayDSPKernel::DelayTime(float sample_rate) {
   return desired_delay_frames_ / sample_rate;
 }
@@ -92,7 +96,7 @@ void AudioDelayDSPKernel::Process(const float* source,
   float sample_rate = this->SampleRate();
   double max_time = MaxDelayTime();
 
-  if (HasSampleAccurateValues()) {
+  if (HasSampleAccurateValues() && IsAudioRate()) {
     float* delay_times = delay_times_.Data();
     CalculateSampleAccurateValues(delay_times, frames_to_process);
 

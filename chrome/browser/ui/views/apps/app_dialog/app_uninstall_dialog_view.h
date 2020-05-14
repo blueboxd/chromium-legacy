@@ -57,8 +57,7 @@ class AppUninstallDialogView : public apps::UninstallDialog::UiBase,
   void InitializeViewForWebApp(Profile* profile, const std::string& app_id);
 #if defined(OS_CHROMEOS)
   void InitializeViewForArcApp(Profile* profile, const std::string& app_id);
-  void InitializeViewForCrostiniApp(Profile* profile,
-                                    const std::string& app_id);
+  void InitializeViewWithMessage(const base::string16& message);
 #endif
 
   // views::StyledLabelListener methods.

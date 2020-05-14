@@ -40,6 +40,7 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
                      const GPUDeviceDescriptor* descriptor)
     : ExecutionContextClient(execution_context),
       DawnObject(dawn_control_client,
+                 client_id,
                  dawn_control_client->GetInterface()->GetDevice(client_id)),
       adapter_(adapter),
       queue_(MakeGarbageCollected<GPUQueue>(
@@ -61,7 +62,6 @@ GPUDevice::~GPUDevice() {
   }
   queue_ = nullptr;
   GetProcs().deviceRelease(GetHandle());
-  GetInterface()->RemoveDevice(client_id_);
 }
 
 uint64_t GPUDevice::GetClientID() const {

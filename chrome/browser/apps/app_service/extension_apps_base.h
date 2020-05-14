@@ -13,7 +13,11 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/app_registrar_observer.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/services/app_service/public/cpp/publisher_base.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -50,7 +54,8 @@ class ExtensionAppsEnableFlow;
 class ExtensionAppsBase : public apps::PublisherBase,
                           public extensions::ExtensionPrefsObserver,
                           public extensions::ExtensionRegistryObserver,
-                          public content_settings::Observer {
+                          public content_settings::Observer,
+                          public web_app::AppRegistrarObserver {
  public:
   ExtensionAppsBase(const mojo::Remote<apps::mojom::AppService>& app_service,
                     Profile* profile,
@@ -104,6 +109,10 @@ class ExtensionAppsBase : public apps::PublisherBase,
     return weak_factory_.GetWeakPtr();
   }
 
+  apps_util::IncrementingIconKeyFactory& icon_key_factory() {
+    return icon_key_factory_;
+  }
+
  private:
   void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
 
@@ -151,6 +160,11 @@ class ExtensionAppsBase : public apps::PublisherBase,
   void OnExtensionPrefsWillBeDestroyed(
       extensions::ExtensionPrefs* prefs) override;
 
+  // web_app::AppRegistrarObserver:
+  void OnAppRegistrarDestroyed() override;
+  void OnWebAppLocallyInstalledStateChanged(const web_app::AppId& app_id,
+                                            bool is_locally_installed) override;
+
   // extensions::ExtensionRegistryObserver overrides.
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const extensions::Extension* extension) override;
@@ -194,6 +208,8 @@ class ExtensionAppsBase : public apps::PublisherBase,
 
   const apps::mojom::AppType app_type_;
 
+  apps_util::IncrementingIconKeyFactory icon_key_factory_;
+
   ScopedObserver<extensions::ExtensionPrefs, extensions::ExtensionPrefsObserver>
       prefs_observer_{this};
   ScopedObserver<extensions::ExtensionRegistry,
@@ -201,6 +217,8 @@ class ExtensionAppsBase : public apps::PublisherBase,
       registry_observer_{this};
   ScopedObserver<HostContentSettingsMap, content_settings::Observer>
       content_settings_observer_{this};
+  ScopedObserver<web_app::AppRegistrar, web_app::AppRegistrarObserver>
+      app_registrar_observer_{this};
 
   using EnableFlowPtr = std::unique_ptr<ExtensionAppsEnableFlow>;
   std::map<std::string, EnableFlowPtr> enable_flow_map_;

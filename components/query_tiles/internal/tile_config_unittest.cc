@@ -8,7 +8,7 @@
 #include "components/query_tiles/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace upboarding {
+namespace query_tiles {
 
 namespace {
 
@@ -68,4 +68,4 @@ TEST(TileConfigTest, GetImagePrefetchMode) {
                         ImagePrefetchMode::kAll);
 }
 
-}  // namespace upboarding
+}  // namespace query_tiles

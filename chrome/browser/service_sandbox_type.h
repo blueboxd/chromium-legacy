@@ -27,4 +27,16 @@ content::GetServiceSandboxType<chrome::mojom::UtilWin>() {
 }
 #endif
 
+// chrome::mojom::ProfileImport
+namespace chrome {
+namespace mojom {
+class ProfileImport;
+}
+}  // namespace chrome
+template <>
+inline content::SandboxType
+content::GetServiceSandboxType<chrome::mojom::ProfileImport>() {
+  return content::SandboxType::kNoSandbox;
+}
+
 #endif  // CHROME_BROWSER_SERVICE_SANDBOX_TYPE_H_

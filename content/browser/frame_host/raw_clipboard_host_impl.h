@@ -19,6 +19,9 @@ namespace content {
 
 class RenderFrameHost;
 
+// Instances destroy themselves when the blink::mojom::RawClipboardHost is
+// disconnected, and this can only be used on the frame and sequence it's
+// created on.
 class CONTENT_EXPORT RawClipboardHostImpl
     : public blink::mojom::RawClipboardHost {
  public:
@@ -30,8 +33,9 @@ class CONTENT_EXPORT RawClipboardHostImpl
   ~RawClipboardHostImpl() override;
 
  private:
-  explicit RawClipboardHostImpl(
-      mojo::PendingReceiver<blink::mojom::RawClipboardHost> receiver);
+  RawClipboardHostImpl(
+      mojo::PendingReceiver<blink::mojom::RawClipboardHost> receiver,
+      RenderFrameHost* render_frame_host);
 
   // mojom::RawClipboardHost.
   void ReadAvailableFormatNames(
@@ -40,9 +44,15 @@ class CONTENT_EXPORT RawClipboardHostImpl
   void Write(const base::string16& format, mojo_base::BigBuffer data) override;
   void CommitWrite() override;
 
+  bool HasTransientUserActivation() const;
+
   mojo::Receiver<blink::mojom::RawClipboardHost> receiver_;
   ui::Clipboard* const clipboard_;  // Not owned.
   std::unique_ptr<ui::ScopedClipboardWriter> clipboard_writer_;
+  // Not owned. Raw pointer usage is safe here because RawClipboardHostImpl is
+  // per-frame, so |render_frame_host_| is guaranteed to outlive the
+  // RawClipboardHostImpl.
+  RenderFrameHost* const render_frame_host_;
 };
 
 }  // namespace content

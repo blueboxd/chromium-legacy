@@ -2086,8 +2086,6 @@ static_library("ui") {
       "webui/settings/chromeos/personalization_section.h",
       "webui/settings/chromeos/plugin_vm_handler.cc",
       "webui/settings/chromeos/plugin_vm_handler.h",
-      "webui/settings/chromeos/plugin_vm_section.cc",
-      "webui/settings/chromeos/plugin_vm_section.h",
       "webui/settings/chromeos/pref_names.cc",
       "webui/settings/chromeos/pref_names.h",
       "webui/settings/chromeos/printing_section.cc",

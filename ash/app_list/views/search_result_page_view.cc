@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <memory>
+#include <utility>
 
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
@@ -17,6 +17,7 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_base_view.h"
 #include "ash/app_list/views/search_result_list_view.h"
+#include "ash/app_list/views/search_result_page_anchored_dialog.h"
 #include "ash/app_list/views/search_result_tile_item_list_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
@@ -42,6 +43,7 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/window/dialog_delegate.h"
 
 namespace ash {
 
@@ -443,6 +445,27 @@ void SearchResultPageView::OnAssistantPrivacyInfoViewCloseButtonPressed() {
   ReorderSearchResultContainers();
 }
 
+void SearchResultPageView::ShowAnchoredDialog(
+    std::unique_ptr<views::DialogDelegateView> dialog) {
+  ContentsView* const contents_view = AppListPage::contents_view();
+  if (contents_view->GetActiveState() != AppListState::kStateSearchResults)
+    return;
+
+  anchored_dialog_ = std::make_unique<SearchResultPageAnchoredDialog>(
+      std::move(dialog), contents_view,
+      base::BindOnce(&SearchResultPageView::OnAnchoredDialogClosed,
+                     base::Unretained(this)));
+  const gfx::Rect anchor_bounds =
+      contents_view->GetSearchBoxBounds(AppListState::kStateSearchResults);
+  anchored_dialog_->UpdateBounds(anchor_bounds);
+
+  anchored_dialog_->widget()->Show();
+}
+
+void SearchResultPageView::OnWillBeHidden() {
+  anchored_dialog_.reset();
+}
+
 void SearchResultPageView::OnHidden() {
   // Hide the search results page when it is behind search box to avoid focus
   // being moved onto suggested apps when zero state is enabled.
@@ -478,12 +501,27 @@ void SearchResultPageView::AnimateYPosition(AppListViewState target_view_state,
 
   animator.Run(default_offset, layer(), this);
   animator.Run(default_offset, view_shadow_->shadow()->shadow_layer(), nullptr);
+  if (anchored_dialog_) {
+    const float offset =
+        anchored_dialog_->AdjustVerticalTransformOffset(default_offset);
+    animator.Run(offset, anchored_dialog_->widget()->GetLayer(), nullptr);
+  }
 }
 
 void SearchResultPageView::UpdatePageOpacityForState(AppListState state,
                                                      float search_box_opacity,
                                                      bool restore_opacity) {
   layer()->SetOpacity(search_box_opacity);
+}
+
+void SearchResultPageView::UpdatePageBoundsForState(
+    AppListState state,
+    const gfx::Rect& contents_bounds,
+    const gfx::Rect& search_box_bounds) {
+  AppListPage::UpdatePageBoundsForState(state, contents_bounds,
+                                        search_box_bounds);
+  if (anchored_dialog_)
+    anchored_dialog_->UpdateBounds(search_box_bounds);
 }
 
 gfx::Rect SearchResultPageView::GetPageBoundsForState(
@@ -601,6 +639,10 @@ views::View* SearchResultPageView::GetFirstFocusableView() {
 views::View* SearchResultPageView::GetLastFocusableView() {
   return GetFocusManager()->GetNextFocusableView(
       this, GetWidget(), true /* reverse */, false /* dont_loop */);
+}
+
+void SearchResultPageView::OnAnchoredDialogClosed() {
+  anchored_dialog_.reset();
 }
 
 }  // namespace ash

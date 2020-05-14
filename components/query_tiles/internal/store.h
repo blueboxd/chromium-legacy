@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 
-namespace upboarding {
+namespace query_tiles {
 
 // Interface of query tile collection store.
 template <typename T>
@@ -42,6 +42,6 @@ class Store {
   Store& operator=(const Store& other) = delete;
 };
 
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_INTERNAL_STORE_H_

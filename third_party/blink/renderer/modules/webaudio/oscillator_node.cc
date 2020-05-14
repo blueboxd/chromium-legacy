@@ -192,8 +192,7 @@ bool OscillatorHandler::CalculateSampleAccuratePhaseIncrements(
 
   float final_scale = periodic_wave_->RateScale();
 
-  if (frequency_->HasSampleAccurateValuesTimeline() &&
-      frequency_->IsAudioRate()) {
+  if (frequency_->HasSampleAccurateValues() && frequency_->IsAudioRate()) {
     has_sample_accurate_values = true;
     has_frequency_changes = true;
 
@@ -207,7 +206,7 @@ bool OscillatorHandler::CalculateSampleAccuratePhaseIncrements(
     final_scale *= frequency;
   }
 
-  if (detune_->HasSampleAccurateValuesTimeline() && detune_->IsAudioRate()) {
+  if (detune_->HasSampleAccurateValues() && detune_->IsAudioRate()) {
     has_sample_accurate_values = true;
 
     // Get the sample-accurate detune values.

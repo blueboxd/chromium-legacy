@@ -5,6 +5,8 @@
 #include "ash/app_list/views/apps_container_view.h"
 
 #include <algorithm>
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "ash/app_list/views/app_list_folder_view.h"
@@ -17,6 +19,7 @@
 #include "ash/app_list/views/page_switcher.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/suggestion_chip_container_view.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/command_line.h"
@@ -351,6 +354,16 @@ void AppsContainerView::OnGestureEvent(ui::GestureEvent* event) {
   // If the temporary event was handled, we don't want to handle it again.
   if (grid_event.handled())
     event->SetHandled();
+}
+
+void AppsContainerView::OnShown() {
+  // Explicitly hide the virtual keyboard before showing the apps container
+  // view. This prevents the virtual keyboard's "transient blur" feature from
+  // kicking in - if a text input loses focus, and a text input gains it within
+  // seconds, the virtual keyboard gets reshown. This is undesirable behavior
+  // for the app list (where search box gets focus by default).
+  if (keyboard::KeyboardUIController::HasInstance())
+    keyboard::KeyboardUIController::Get()->HideKeyboardExplicitlyBySystem();
 }
 
 void AppsContainerView::OnWillBeHidden() {

@@ -452,7 +452,7 @@ void SpdyHttpStream::OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) {
 }
 
 void SpdyHttpStream::OnDataSent() {
-  if (HasUploadData()) {
+  if (request_info_ && HasUploadData()) {
     request_body_buf_size_ = 0;
     ReadAndSendRequestBodyData();
   } else {

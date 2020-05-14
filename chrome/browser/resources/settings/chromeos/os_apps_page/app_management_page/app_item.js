@@ -51,6 +51,8 @@ Polymer({
         return AppManagementEntryPoint.MainViewChromeApp;
       case AppType.kWeb:
         return AppManagementEntryPoint.MainViewWebApp;
+      case AppType.kPluginVm:
+        return AppManagementEntryPoint.MainViewPluginVm;
       default:
         assertNotReached();
     }

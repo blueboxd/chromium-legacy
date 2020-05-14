@@ -5073,11 +5073,13 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeMouseMove) {
   SetupViewportLayersInnerScrolls(viewport_size, content_size);
   auto* root_scroll = OuterViewportScrollLayer();
 
+  const int kScrollbarThickness = 5;
   auto* vert_scrollbar = AddLayer<SolidColorScrollbarLayerImpl>(
-      host_impl_->active_tree(), VERTICAL, 5, 0, false);
+      host_impl_->active_tree(), VERTICAL, kScrollbarThickness, 0, false);
   SetupScrollbarLayer(root_scroll, vert_scrollbar);
   vert_scrollbar->SetBounds(gfx::Size(10, 200));
-  vert_scrollbar->SetOffsetToTransformParent(gfx::Vector2dF(300, 0));
+  vert_scrollbar->SetOffsetToTransformParent(
+      gfx::Vector2dF(300 - kScrollbarThickness, 0));
 
   host_impl_->active_tree()->UpdateScrollbarGeometries();
 
@@ -5087,24 +5089,25 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeMouseMove) {
           root_scroll->element_id());
 
   const float kDistanceToTriggerThumb =
+      vert_scrollbar->ComputeThumbQuadRect().height() +
       SingleScrollbarAnimationControllerThinning::
           kMouseMoveDistanceToTriggerExpand;
 
-  // Move the mouse near the thumb in the top position.
-  auto near_thumb_at_top = gfx::Point(300, -kDistanceToTriggerThumb + 1);
+  // Move the mouse near the thumb while its at the viewport top.
+  auto near_thumb_at_top = gfx::Point(295, kDistanceToTriggerThumb - 1);
   host_impl_->MouseMoveAt(near_thumb_at_top);
   EXPECT_TRUE(scrollbar_controller->MouseIsNearScrollbarThumb(VERTICAL));
 
   // Move the mouse away from the thumb.
-  host_impl_->MouseMoveAt(gfx::Point(300, -kDistanceToTriggerThumb - 1));
+  host_impl_->MouseMoveAt(gfx::Point(295, kDistanceToTriggerThumb + 1));
   EXPECT_FALSE(scrollbar_controller->MouseIsNearScrollbarThumb(VERTICAL));
 
-  // Scroll the page down which moves the thumb down.
-  host_impl_->ScrollBegin(BeginState(gfx::Point(), gfx::Vector2dF(0, 100),
+  // Scroll the page down which moves the thumb down to the viewport bottom.
+  host_impl_->ScrollBegin(BeginState(gfx::Point(), gfx::Vector2dF(0, 800),
                                      ui::ScrollInputType::kWheel)
                               .get(),
                           ui::ScrollInputType::kWheel);
-  host_impl_->ScrollUpdate(UpdateState(gfx::Point(), gfx::Vector2d(0, 100),
+  host_impl_->ScrollUpdate(UpdateState(gfx::Point(), gfx::Vector2d(0, 800),
                                        ui::ScrollInputType::kWheel)
                                .get());
   host_impl_->ScrollEnd();
@@ -5114,11 +5117,11 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeMouseMove) {
   EXPECT_FALSE(scrollbar_controller->MouseIsNearScrollbarThumb(VERTICAL));
 
   // Scroll the page up which moves the thumb back up.
-  host_impl_->ScrollBegin(BeginState(gfx::Point(), gfx::Vector2dF(0, -100),
+  host_impl_->ScrollBegin(BeginState(gfx::Point(), gfx::Vector2dF(0, -800),
                                      ui::ScrollInputType::kWheel)
                               .get(),
                           ui::ScrollInputType::kWheel);
-  host_impl_->ScrollUpdate(UpdateState(gfx::Point(), gfx::Vector2d(0, -100),
+  host_impl_->ScrollUpdate(UpdateState(gfx::Point(), gfx::Vector2d(0, -800),
                                        ui::ScrollInputType::kWheel)
                                .get());
   host_impl_->ScrollEnd();

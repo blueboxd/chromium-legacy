@@ -146,9 +146,6 @@ class WebView {
   virtual bool IsActive() const = 0;
   virtual void SetIsActive(bool) = 0;
 
-  // Allows disabling domain relaxation.
-  virtual void SetDomainRelaxationForbidden(bool, const WebString& scheme) = 0;
-
   // Allows setting the state of the various bars exposed via BarProp
   // properties on the window object. The size related fields of
   // WebWindowFeatures are ignored.
@@ -399,11 +396,6 @@ class WebView {
                                   bool is_initial_state) = 0;
   virtual mojom::PageVisibilityState GetVisibilityState() = 0;
 
-  // FrameOverlay ----------------------------------------------------------
-
-  // Overlay this WebView with a solid color.
-  virtual void SetMainFrameOverlayColor(SkColor) = 0;
-
   // Page Importance Signals ----------------------------------------------
 
   virtual WebPageImportanceSignals* PageImportanceSignals() { return nullptr; }
@@ -426,16 +418,6 @@ class WebView {
   // Unhooks eviction, resumes a page and dispatches a pageshow event.
   virtual void RestorePageFromBackForwardCache(
       base::TimeTicks navigation_start) = 0;
-
-  // Testing functionality for TestRunner ---------------------------------
-
-  // Force the webgl context to fail so that webglcontextcreationerror
-  // event gets generated/tested.
-  virtual void ForceNextWebGLContextCreationToFail() = 0;
-
-  // Force the drawing buffer used by webgl contexts to fail so that the webgl
-  // context's ability to deal with that failure gracefully can be tested.
-  virtual void ForceNextDrawingBufferCreationToFail() = 0;
 
   // Autoplay configuration -----------------------------------------------
 

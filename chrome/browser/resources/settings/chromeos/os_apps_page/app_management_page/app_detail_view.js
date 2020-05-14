@@ -91,6 +91,8 @@ Polymer({
         return 'chrome-app-detail-view';
       case (AppType.kArc):
         return 'arc-detail-view';
+      case (AppType.kPluginVm):
+        return 'plugin-vm-detail-view';
       default:
         assertNotReached();
     }

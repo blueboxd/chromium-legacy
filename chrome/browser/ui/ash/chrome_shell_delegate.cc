@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
 #include <memory>
+#include <utility>
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/screenshot_delegate.h"
@@ -73,10 +74,15 @@ bool ChromeShellDelegate::CanGoBack(gfx::NativeWindow window) const {
   return contents->GetController().CanGoBack();
 }
 
+bool ChromeShellDelegate::IsTabDrag(const ui::OSExchangeData& drop_data) {
+  DCHECK(ash::features::IsWebUITabStripTabDragIntegrationEnabled());
+  return tab_strip_ui::IsDraggedTab(drop_data);
+}
+
 aura::Window* ChromeShellDelegate::CreateBrowserForTabDrop(
     aura::Window* source_window,
     const ui::OSExchangeData& drop_data) {
-  CHECK(ash::features::IsWebUITabStripTabDragIntegrationEnabled());
+  DCHECK(ash::features::IsWebUITabStripTabDragIntegrationEnabled());
 
   BrowserView* source_view = BrowserView::GetBrowserViewForNativeWindow(
       source_window->GetToplevelWindow());

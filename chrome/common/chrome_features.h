@@ -29,6 +29,8 @@ namespace features {
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAddToHomescreenMessaging;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAndroidDarkSearch;
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)

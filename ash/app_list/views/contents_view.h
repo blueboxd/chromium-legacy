@@ -56,16 +56,6 @@ class SearchResultTileItemListView;
 class APP_LIST_EXPORT ContentsView : public views::View,
                                      public PaginationModelObserver {
  public:
-  // This class observes the search box Updates.
-  class SearchBoxUpdateObserver : public base::CheckedObserver {
-   public:
-    // Called when search box bounds is updated.
-    virtual void OnSearchBoxBoundsUpdated() = 0;
-
-    // Called when the search box is cleaded and deactivated.
-    virtual void OnSearchBoxClearAndDeactivated() = 0;
-  };
-
   // Used to SetActiveState without animations.
   class ScopedSetActiveStateAnimationDisabler {
    public:
@@ -223,11 +213,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   std::unique_ptr<ui::ScopedLayerAnimationSettings>
   CreateTransitionAnimationSettings(ui::Layer* layer) const;
 
-  void NotifySearchBoxBoundsUpdated();
-
-  void AddSearchBoxUpdateObserver(SearchBoxUpdateObserver* observer);
-  void RemoveSearchBoxUpdateObserver(SearchBoxUpdateObserver* observer);
-
   // Adjusts search box view size so it fits within the contents view margins
   // (when centered).
   gfx::Size AdjustSearchBoxSizeToFitMargins(
@@ -327,8 +312,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // to a new app list view state.
   base::Optional<AppListState> target_page_for_last_view_state_update_;
   base::Optional<AppListViewState> last_target_view_state_;
-
-  base::ObserverList<SearchBoxUpdateObserver> search_box_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentsView);
 };

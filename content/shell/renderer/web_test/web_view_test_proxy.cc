@@ -80,7 +80,7 @@ void WebViewTestProxy::Reset() {
   view_test_runner_.Reset();
 
   // Resets things on the WebView that TestRunnerBindings can modify.
-  GetWebView()->SetTabKeyCyclesThroughElements(true);
+  GetTestRunner()->ResetWebView(this);
 
   for (blink::WebFrame* frame = GetWebView()->MainFrame(); frame;
        frame = frame->TraverseNext()) {

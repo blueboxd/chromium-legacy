@@ -76,7 +76,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
   void NotifyEntryIntoAssistantUi(
       mojom::AssistantEntryPoint entry_point) override;
   void AddTimeToTimer(const std::string& id, base::TimeDelta duration) override;
-  void RemoveAlarmTimer(const std::string& id) override;
+  void PauseTimer(const std::string& id) override;
+  void RemoveAlarmOrTimer(const std::string& id) override;
+  void ResumeTimer(const std::string& id) override;
 
   // Update the state to the corresponding value, and inform the
   // |AssistantStateObserver| of the change.

@@ -20,7 +20,11 @@ DNRManifestData::RulesetInfo& DNRManifestData::RulesetInfo::operator=(
     RulesetInfo&&) = default;
 
 DNRManifestData::DNRManifestData(std::vector<RulesetInfo> rulesets)
-    : rulesets(std::move(rulesets)) {}
+    : rulesets(std::move(rulesets)) {
+  for (const RulesetInfo& info : this->rulesets)
+    manifest_id_to_ruleset_map.emplace(info.manifest_id, &info);
+}
+
 DNRManifestData::~DNRManifestData() = default;
 
 // static
@@ -39,9 +43,24 @@ const std::vector<DNRManifestData::RulesetInfo>& DNRManifestData::GetRulesets(
   return static_cast<DNRManifestData*>(data)->rulesets;
 }
 
+const DNRManifestData::ManifestIDToRulesetMap&
+DNRManifestData::GetManifestIDToRulesetMap(const Extension& extension) {
+  // Since we return a reference, use a function local static for the case where
+  // the extension didn't specify any rulesets.
+  static const base::NoDestructor<ManifestIDToRulesetMap> empty_map;
+
+  Extension::ManifestData* data =
+      extension.GetManifestData(manifest_keys::kDeclarativeNetRequestKey);
+  if (!data)
+    return *empty_map;
+
+  return static_cast<DNRManifestData*>(data)->manifest_id_to_ruleset_map;
+}
+
 // static
-const std::string& DNRManifestData::GetManifestID(const Extension& extension,
-                                                  RulesetID ruleset_id) {
+const DNRManifestData::RulesetInfo& DNRManifestData::GetRuleset(
+    const Extension& extension,
+    RulesetID ruleset_id) {
   Extension::ManifestData* data =
       extension.GetManifestData(manifest_keys::kDeclarativeNetRequestKey);
   DCHECK(data);
@@ -53,7 +72,7 @@ const std::string& DNRManifestData::GetManifestID(const Extension& extension,
   CHECK_GE(index, 0);
   CHECK_LT(static_cast<size_t>(index), rulesets.size());
 
-  return rulesets[index].manifest_id;
+  return rulesets[index];
 }
 
 }  // namespace declarative_net_request

@@ -29,9 +29,6 @@ struct WebTestRunTestConfiguration {
   // The expected MD5 hash of the pixel results.
   string expected_pixel_hash;
 
-  // The initial size of the test window.
-  gfx.mojom.Size initial_size;
-
   // Whether the test is running in protocol mode.
   // See TestInfo::protocol_mode in browser/web_test/test_info_extractor.h.
   bool protocol_mode;

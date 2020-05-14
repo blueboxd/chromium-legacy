@@ -4,14 +4,18 @@
 
 // clang-format off
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {HatsBrowserProxyImpl, LifetimeBrowserProxyImpl, MetricsBrowserProxyImpl, OpenWindowProxyImpl, PasswordManagerImpl, PasswordManagerProxy, Router, routes, SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckExtensionsStatus, SafetyCheckIconStatus, SafetyCheckInteractions, SafetyCheckParentStatus, SafetyCheckPasswordsStatus, SafetyCheckSafeBrowsingStatus, SafetyCheckUpdatesStatus} from 'chrome://settings/settings.js';
-import {TestHatsBrowserProxy} from 'chrome://test/settings/test_hats_browser_proxy.js';
-import {TestLifetimeBrowserProxy} from 'chrome://test/settings/test_lifetime_browser_proxy.m.js';
-import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.js';
-import {TestOpenWindowProxy} from 'chrome://test/settings/test_open_window_proxy.js';
-import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.js';
-import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+
+import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+import {TestBrowserProxy} from '../test_browser_proxy.m.js';
+
+import {TestHatsBrowserProxy} from './test_hats_browser_proxy.js';
+import {TestLifetimeBrowserProxy} from './test_lifetime_browser_proxy.m.js';
+import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
+import {TestOpenWindowProxy} from './test_open_window_proxy.js';
+import {TestPasswordManagerProxy} from './test_password_manager_proxy.js';
 
 // clang-format on
 
@@ -19,7 +23,7 @@ const testDisplayString = 'Test display string';
 
 /**
  * Fire a safety check parent event.
- * @param {SafetyCheckParentStatus}
+ * @param {SafetyCheckParentStatus} state
  */
 function fireSafetyCheckParentEvent(state) {
   const event = {};
@@ -30,7 +34,7 @@ function fireSafetyCheckParentEvent(state) {
 
 /**
  * Fire a safety check updates event.
- * @param {SafetyCheckUpdatesStatus}
+ * @param {SafetyCheckUpdatesStatus} state
  */
 function fireSafetyCheckUpdatesEvent(state) {
   const event = {};
@@ -41,7 +45,7 @@ function fireSafetyCheckUpdatesEvent(state) {
 
 /**
  * Fire a safety check passwords event.
- * @param {SafetyCheckPasswordsStatus}
+ * @param {SafetyCheckPasswordsStatus} state
  */
 function fireSafetyCheckPasswordsEvent(state) {
   const event = {};
@@ -53,7 +57,7 @@ function fireSafetyCheckPasswordsEvent(state) {
 
 /**
  * Fire a safety check safe browsing event.
- * @param {SafetyCheckSafeBrowsingStatus}
+ * @param {SafetyCheckSafeBrowsingStatus} state
  */
 function fireSafetyCheckSafeBrowsingEvent(state) {
   const event = {};
@@ -65,7 +69,7 @@ function fireSafetyCheckSafeBrowsingEvent(state) {
 
 /**
  * Fire a safety check extensions event.
- * @param {SafetyCheckExtensionsStatus}
+ * @param {SafetyCheckExtensionsStatus} state
  */
 function fireSafetyCheckExtensionsEvent(state) {
   const event = {};
@@ -79,12 +83,12 @@ function fireSafetyCheckExtensionsEvent(state) {
  * as specified.
  * @param {!{
  *   page: !PolymerElement,
- *   iconStatus: !SafetyCheckExtensionsStatus,
+ *   iconStatus: !SafetyCheckIconStatus,
  *   label: string,
- *   buttonLabel: string|undefined,
- *   buttonAriaLabel: string|undefined,
- *   buttonClass: string|undefined,
- *   managedIcon: string|undefined,
+ *   buttonLabel: (string|undefined),
+ *   buttonAriaLabel: (string|undefined),
+ *   buttonClass: (string|undefined),
+ *   managedIcon: (boolean|undefined),
  * }} destructured1
  */
 function assertSafetyCheckChild({
@@ -107,25 +111,56 @@ function assertSafetyCheckChild({
   assertTrue(!!managedIcon === !!safetyCheckChild.managedIcon);
 }
 
+/** @implements {SafetyCheckBrowserProxy} */
+class TestSafetyCheckBrowserProxy extends TestBrowserProxy {
+  constructor() {
+    super([
+      'getParentRanDisplayString',
+      'runSafetyCheck',
+    ]);
+
+    /** @private {string} */
+    this.parentRanDisplayString_ = '';
+  }
+
+  /** @override */
+  runSafetyCheck() {
+    this.methodCalled('runSafetyCheck');
+  }
+
+  /** @param {string} string */
+  setParentRanDisplayString(string) {
+    this.parentRanDisplayString_ = string;
+  }
+
+  /** @override */
+  getParentRanDisplayString() {
+    this.methodCalled('getParentRanDisplayString');
+    return Promise.resolve(this.parentRanDisplayString_);
+  }
+}
+
 suite('SafetyCheckPageUiTests', function() {
-  /** @type {settings.TestMetricsBrowserProxy} */
+  /** @type {?TestMetricsBrowserProxy} */
   let metricsBrowserProxy = null;
-  /** @type {SafetyCheckBrowserProxy} */
+
+  /** @type {?TestSafetyCheckBrowserProxy} */
   let safetyCheckBrowserProxy = null;
-  /** @type {SettingsBasicPageElement} */
-  let page = null;
+
+  /** @type {!SettingsSafetyCheckPageElement} */
+  let page;
 
   setup(function() {
     metricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.instance_ = metricsBrowserProxy;
-    safetyCheckBrowserProxy =
-        TestBrowserProxy.fromClass(SafetyCheckBrowserProxy);
-    safetyCheckBrowserProxy.setResultFor(
-        'getParentRanDisplayString', Promise.resolve('Dummy string'));
+
+    safetyCheckBrowserProxy = new TestSafetyCheckBrowserProxy();
+    safetyCheckBrowserProxy.setParentRanDisplayString('Dummy string');
     SafetyCheckBrowserProxyImpl.instance_ = safetyCheckBrowserProxy;
 
-    PolymerTest.clearBody();
-    page = document.createElement('settings-safety-check-page');
+    document.body.innerHTML = '';
+    page = /** @type {!SettingsSafetyCheckPageElement} */ (
+        document.createElement('settings-safety-check-page'));
     document.body.appendChild(page);
     flush();
   });
@@ -140,7 +175,9 @@ suite('SafetyCheckPageUiTests', function() {
     assertTrue(!!page.$$('#safetyCheckParentButton'));
     assertFalse(!!page.$$('#safetyCheckParentIconButton'));
     // Collapse is not opened.
-    assertFalse(page.$$('#safetyCheckCollapse').opened);
+    const collapse =
+        /** @type {!IronCollapseElement} */ (page.$$('#safetyCheckCollapse'));
+    assertFalse(collapse.opened);
 
     // User starts check.
     page.$$('#safetyCheckParentButton').click();
@@ -160,7 +197,7 @@ suite('SafetyCheckPageUiTests', function() {
     assertFalse(!!page.$$('#safetyCheckParentButton'));
     assertTrue(!!page.$$('#safetyCheckParentIconButton'));
     // Collapse is opened.
-    assertTrue(page.$$('#safetyCheckCollapse').opened);
+    assertTrue(collapse.opened);
 
     // Mock all incoming messages that indicate safety check completion.
     fireSafetyCheckUpdatesEvent(SafetyCheckUpdatesStatus.UPDATED);
@@ -191,12 +228,13 @@ suite('SafetyCheckPageUiTests', function() {
 });
 
 suite('SafetyCheckChildTests', function() {
-  /** @type {SettingsBasicPageElement} */
-  let page = null;
+  /** @type {!SettingsSafetyCheckChildElement} */
+  let page;
 
   setup(function() {
-    PolymerTest.clearBody();
-    page = document.createElement('settings-safety-check-child');
+    document.body.innerHTML = '';
+    page = /** @type {!SettingsSafetyCheckChildElement} */ (
+        document.createElement('settings-safety-check-child'));
     document.body.appendChild(page);
   });
 
@@ -308,12 +346,14 @@ suite('SafetyCheckChildTests', function() {
 });
 
 suite('SafetyCheckUpdatesElementUiTests', function() {
-  /** @type {?LifetimeBrowserProxy} */
+  /** @type {?TestLifetimeBrowserProxy} */
   let lifetimeBrowserProxy = null;
-  /** @type {settings.TestMetricsBrowserProxy} */
+
+  /** @type {?TestMetricsBrowserProxy} */
   let metricsBrowserProxy = null;
-  /** @type {SettingsBasicPageElement} */
-  let page = null;
+
+  /** @type {!SettingsSafetyCheckUpdatesElementElement} */
+  let page;
 
   setup(function() {
     lifetimeBrowserProxy = new TestLifetimeBrowserProxy();
@@ -321,8 +361,9 @@ suite('SafetyCheckUpdatesElementUiTests', function() {
     metricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.instance_ = metricsBrowserProxy;
 
-    PolymerTest.clearBody();
-    page = document.createElement('settings-safety-check-updates-element');
+    document.body.innerHTML = '';
+    page = /** @type {!SettingsSafetyCheckUpdatesElementElement} */ (
+        document.createElement('settings-safety-check-updates-element'));
     document.body.appendChild(page);
     flush();
   });
@@ -430,17 +471,19 @@ suite('SafetyCheckUpdatesElementUiTests', function() {
 });
 
 suite('SafetyCheckPasswordsElementUiTests', function() {
-  /** @type {settings.TestMetricsBrowserProxy} */
+  /** @type {?TestMetricsBrowserProxy} */
   let metricsBrowserProxy = null;
-  /** @type {SettingsBasicPageElement} */
-  let page = null;
+
+  /** @type {!SettingsSafetyCheckPasswordsElementElement} */
+  let page;
 
   setup(function() {
     metricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.instance_ = metricsBrowserProxy;
 
-    PolymerTest.clearBody();
-    page = document.createElement('settings-safety-check-passwords-element');
+    document.body.innerHTML = '';
+    page = /** @type {!SettingsSafetyCheckPasswordsElementElement} */ (
+        document.createElement('settings-safety-check-passwords-element'));
     document.body.appendChild(page);
     flush();
   });
@@ -450,7 +493,7 @@ suite('SafetyCheckPasswordsElementUiTests', function() {
   });
 
   test('passwordCheckingUiTest', function() {
-    fireSafetyCheckPasswordsEvent(SafetyCheckUpdatesStatus.CHECKING);
+    fireSafetyCheckPasswordsEvent(SafetyCheckPasswordsStatus.CHECKING);
     flush();
     assertSafetyCheckChild({
       page: page,
@@ -534,18 +577,19 @@ suite('SafetyCheckPasswordsElementUiTests', function() {
 });
 
 suite('SafetyCheckSafeBrowsingElementUiTests', function() {
-  /** @type {settings.TestMetricsBrowserProxy} */
+  /** @type {?TestMetricsBrowserProxy} */
   let metricsBrowserProxy = null;
-  /** @type {SettingsBasicPageElement} */
-  let page = null;
+
+  /** @type {!SettingsSafetyCheckSafeBrowsingElementElement} */
+  let page;
 
   setup(function() {
     metricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.instance_ = metricsBrowserProxy;
 
-    PolymerTest.clearBody();
-    page =
-        document.createElement('settings-safety-check-safe-browsing-element');
+    document.body.innerHTML = '';
+    page = /** @type {!SettingsSafetyCheckSafeBrowsingElementElement} */ (
+        document.createElement('settings-safety-check-safe-browsing-element'));
     document.body.appendChild(page);
     flush();
   });
@@ -638,12 +682,14 @@ suite('SafetyCheckSafeBrowsingElementUiTests', function() {
 });
 
 suite('SafetyCheckExtensionsElementUiTests', function() {
-  /** @type {settings.TestMetricsBrowserProxy} */
+  /** @type {?TestMetricsBrowserProxy} */
   let metricsBrowserProxy = null;
-  /** @type {OpenWindowProxy} */
+
+  /** @type {?TestOpenWindowProxy} */
   let openWindowProxy = null;
-  /** @type {SettingsBasicPageElement} */
-  let page = null;
+
+  /** @type {!SettingsSafetyCheckExtensionsElementElement} */
+  let page;
 
   setup(function() {
     metricsBrowserProxy = new TestMetricsBrowserProxy();
@@ -651,8 +697,9 @@ suite('SafetyCheckExtensionsElementUiTests', function() {
     openWindowProxy = new TestOpenWindowProxy();
     OpenWindowProxyImpl.instance_ = openWindowProxy;
 
-    PolymerTest.clearBody();
-    page = document.createElement('settings-safety-check-extensions-element');
+    document.body.innerHTML = '';
+    page = /** @type {!SettingsSafetyCheckExtensionsElementElement} */ (
+        document.createElement('settings-safety-check-extensions-element'));
     document.body.appendChild(page);
     flush();
   });

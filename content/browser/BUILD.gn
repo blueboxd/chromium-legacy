@@ -2760,7 +2760,12 @@ if (is_android) {
 group("for_content_tests") {
   visibility = [
     "//content/test/*",
-    "//content/public/test/*",
+    "//content/public/test/android/*",
+
+    # TODO(danakj): Split out the web test parts of //content/shell/browser
+    # and only point to them here (similar to //content/renderer and
+    # //content/shell:web_test_renderer).
+    "//content/shell:content_shell_lib",
   ]
   if (!is_component_build) {
     public_deps = [ ":browser" ]

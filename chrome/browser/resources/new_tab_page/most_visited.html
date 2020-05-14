@@ -53,6 +53,7 @@
     height: var(--tile-size);
     margin-bottom: var(--tile-margin);
     opacity: 1;
+    outline: none;
     padding-top: var(--tile-margin);
     position: relative;
     text-decoration: none;
@@ -63,19 +64,16 @@
     width: var(--tile-size);
   }
 
+  :host-context(.focus-outline-visible) .tile:focus,
+  :host-context(.focus-outline-visible) #addShortcut:focus {
+    box-shadow: var(--ntp-focus-shadow);
+  }
+
   #addShortcut {
     background-color: transparent;
     border: none;
     box-shadow: none;
     padding: 0;
-  }
-
-  :host-context(.focus-outline-visible) #addShortcut:focus {
-    outline: auto;
-  }
-
-  :host-context(html:not(.focus-outline-visible)) .tile {
-    outline: none;
   }
 
   :host(:not([reordering_])) .tile:hover,
@@ -100,15 +98,32 @@
   }
 
   .tile-title {
+    align-items: center;
+    border-radius: 12px;
     color: var(--ntp-theme-text-color);
+    display: flex;
+    height: 24px;
+    margin-top: 7px;
+    padding: 0 8px;
+    width: 88px;
+  }
+
+  :host([use-title-pill]) .tile-title {
+    background-color: white;
+  }
+
+  .tile-title span {
     font-weight: 400;
-    margin-top:  16px;
     overflow: hidden;
     text-align: center;
     text-overflow: ellipsis;
     text-shadow: var(--ntp-theme-text-shadow);
     white-space: nowrap;
-    width: 88px;
+    width: 100%;
+  }
+
+  :host([use-title-pill]) .tile-title span {
+    text-shadow: none;
   }
 
   .title-rtl {
@@ -175,7 +190,7 @@
           <img src$="[[getFaviconUrl_(item.url)]]" draggable="false"></img>
         </div>
         <div class$="tile-title [[getTileTitleDirectionClass_(item)]]">
-          [[item.title]]
+          <span>[[item.title]]</span>
         </div>
       </a>
     </template>
@@ -185,7 +200,9 @@
     <div class="tile-icon">
       <div id="addShortcutIcon" draggable="false"></div>
     </div>
-    <div class="tile-title">$i18n{addLinkTitle}</div>
+    <div class="tile-title">
+      <span>$i18n{addLinkTitle}</span>
+    </div>
   </cr-button>
   <cr-dialog id="dialog" on-close="onDialogClose_">
     <div slot="title">[[dialogTitle_]]</div>

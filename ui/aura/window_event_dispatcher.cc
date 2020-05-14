@@ -195,8 +195,11 @@ void WindowEventDispatcher::ProcessedTouchEvent(
 }
 
 void WindowEventDispatcher::HoldPointerMoves() {
-  if (!move_hold_count_)
+  if (!move_hold_count_) {
+    // |synthesize_mouse_events_| is explicitly not changed. It is handled and
+    // reset in ReleasePointerMoves.
     held_event_factory_.InvalidateWeakPtrs();
+  }
   ++move_hold_count_;
   TRACE_EVENT_ASYNC_BEGIN0("ui", "WindowEventDispatcher::HoldPointerMoves",
                            this);
@@ -206,6 +209,11 @@ void WindowEventDispatcher::ReleasePointerMoves() {
   --move_hold_count_;
   DCHECK_GE(move_hold_count_, 0);
   if (!move_hold_count_) {
+    // HoldPointerMoves cancels the pending synthesized mouse move if any.
+    // So ReleasePointerMoves should ensure that |synthesize_mouse_move_|
+    // resets. Otherwise, PostSynthesizeMouseMove is blocked indefintely.
+    const bool pending_synthesize_mouse_move = synthesize_mouse_move_;
+    synthesize_mouse_move_ = false;
     if (held_move_event_) {
       // We don't want to call DispatchHeldEvents directly, because this might
       // be called from a deep stack while another event, in which case
@@ -220,6 +228,11 @@ void WindowEventDispatcher::ReleasePointerMoves() {
     } else {
       if (did_dispatch_held_move_event_callback_)
         std::move(did_dispatch_held_move_event_callback_).Run();
+      if (pending_synthesize_mouse_move) {
+        // Schedule a synthesized mouse move event when there is no held mouse
+        // move and we should generate one.
+        PostSynthesizeMouseMove();
+      }
     }
   }
   TRACE_EVENT_ASYNC_END0("ui", "WindowEventDispatcher::HoldPointerMoves", this);
@@ -313,10 +326,7 @@ ui::EventDispatchDetails WindowEventDispatcher::DispatchMouseEnterOrExit(
   // coordinate system.
   if (!target)
     target = window();
-  ui::MouseEvent translated_event(event,
-                                  target,
-                                  mouse_moved_handler_,
-                                  type,
+  ui::MouseEvent translated_event(event, target, mouse_moved_handler_, type,
                                   event.flags() | ui::EF_IS_SYNTHESIZED);
   return DispatchEvent(mouse_moved_handler_, &translated_event);
 }
@@ -694,8 +704,10 @@ void WindowEventDispatcher::OnWindowBoundsChanged(
     Window::ConvertRectToTarget(window->parent(), host_->window(),
                                 &new_bounds_in_root);
     gfx::Point last_mouse_location = GetLastMouseLocationInRoot();
-    if (old_bounds_in_root.Contains(last_mouse_location) !=
-        new_bounds_in_root.Contains(last_mouse_location)) {
+    if ((old_bounds_in_root.Contains(last_mouse_location) !=
+         new_bounds_in_root.Contains(last_mouse_location)) ||
+        (new_bounds_in_root.Contains(last_mouse_location) &&
+         new_bounds_in_root.origin() != old_bounds_in_root.origin())) {
       PostSynthesizeMouseMove();
     }
   }
@@ -875,8 +887,7 @@ DispatchDetails WindowEventDispatcher::PreDispatchMouseEvent(
   // We allow synthesized mouse exit events through even if mouse events are
   // disabled. This ensures that hover state, etc on controls like buttons is
   // cleared.
-  if (cursor_client &&
-      !cursor_client->IsMouseEventsEnabled() &&
+  if (cursor_client && !cursor_client->IsMouseEventsEnabled() &&
       (event->flags() & ui::EF_IS_SYNTHESIZED) &&
       (event->type() != ui::ET_MOUSE_EXITED)) {
     event->SetHandled();

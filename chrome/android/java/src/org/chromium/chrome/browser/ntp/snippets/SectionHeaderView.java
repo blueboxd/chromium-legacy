@@ -14,6 +14,7 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.user_education.IPHCommandBuilder;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
@@ -119,6 +120,8 @@ public class SectionHeaderView extends LinearLayout implements View.OnClickListe
     }
 
     private void displayMenu() {
+        NewTabPageUma.recordAction(NewTabPageUma.ACTION_CLICKED_FEED_HEADER_MENU);
+
         if (mMenuView == null) {
             assert false : "No menu view to display the menu";
             return;

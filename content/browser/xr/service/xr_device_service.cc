@@ -6,6 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "build/build_config.h"
+#include "content/browser/service_sandbox_type.h"
 #include "content/public/browser/service_process_host.h"
 
 namespace content {
@@ -26,9 +27,6 @@ const mojo::Remote<device::mojom::XRDeviceService>& GetXRDeviceService() {
     content::ServiceProcessHost::Launch(
         remote->BindNewPipeAndPassReceiver(),
         content::ServiceProcessHost::Options()
-#if defined(OS_WIN)
-            .WithSandboxType(service_manager::SandboxType::kXrCompositing)
-#endif
             .WithDisplayName("Isolated XR Device Service")
             .Pass());
 

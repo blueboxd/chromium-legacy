@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.CompositorView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
+import org.chromium.chrome.browser.page_info.ChromePermissionParamsListBuilderDelegate;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.RedirectHandlerTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
@@ -577,7 +578,8 @@ public class VrShell extends GvrLayout
                 new ChromePageInfoControllerDelegate(mActivity, webContents,
                         mActivity::getModalDialogManager,
                         /*offlinePageLoadUrlDelegate=*/
-                        new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab)));
+                        new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab)),
+                new ChromePermissionParamsListBuilderDelegate());
     }
 
     // Called because showing audio permission dialog isn't supported in VR. This happens when

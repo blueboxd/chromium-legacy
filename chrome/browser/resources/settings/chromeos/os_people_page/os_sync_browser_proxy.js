@@ -39,6 +39,11 @@ cr.define('settings', function() {
     didNavigateAwayFromOsSyncPage() {}
 
     /**
+     * Function to invoke when the WebUI wants an update of the OsSyncPrefs.
+     */
+    sendOsSyncPrefsChanged() {}
+
+    /**
      * Sets whether the OS sync feature should be enabled. Sync will not start
      * until the user either navigates away from the page or closes settings.
      * @param {boolean} enabled
@@ -64,6 +69,11 @@ cr.define('settings', function() {
     /** @override */
     didNavigateAwayFromOsSyncPage() {
       chrome.send('DidNavigateAwayFromOsSyncPage');
+    }
+
+    /** @override */
+    sendOsSyncPrefsChanged() {
+      chrome.send('OsSyncPrefsDispatch');
     }
 
     /** @override */

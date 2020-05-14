@@ -35,6 +35,13 @@ OverlayProcessorUsingStrategy::OverlayProcessorUsingStrategy()
 
 OverlayProcessorUsingStrategy::~OverlayProcessorUsingStrategy() = default;
 
+gfx::Rect OverlayProcessorUsingStrategy::GetPreviousFrameOverlaysBoundingRect()
+    const {
+  gfx::Rect result = overlay_damage_rect_;
+  result.Union(previous_frame_underlay_rect_);
+  return result;
+}
+
 gfx::Rect OverlayProcessorUsingStrategy::GetAndResetOverlayDamage() {
   gfx::Rect result = overlay_damage_rect_;
   overlay_damage_rect_ = gfx::Rect();

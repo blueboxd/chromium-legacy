@@ -37,9 +37,6 @@ namespace chromeos {
 
 namespace {
 
-// TODO(kimjae): Delete and remove usages once system_api is uprev'ed.
-const char kGetExistingDlcsMethod[] = "GetExistingDlcs";
-
 DlcserviceClient* g_instance = nullptr;
 
 class DlcserviceErrorResponseHandler {
@@ -192,9 +189,8 @@ class DlcserviceClientImpl : public DlcserviceClient {
     }
 
     TaskStarted();
-    // TODO(kimjae): Use |kGetExistingDlcsMethod| once system_api is uprev'ed.
     dbus::MethodCall method_call(dlcservice::kDlcServiceInterface,
-                                 kGetExistingDlcsMethod);
+                                 dlcservice::kGetExistingDlcsMethod);
 
     VLOG(1) << "Requesting to get existing DLC(s).";
     dlcservice_proxy_->CallMethodWithErrorResponse(

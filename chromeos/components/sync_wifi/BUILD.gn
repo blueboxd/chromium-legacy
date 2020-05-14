@@ -29,6 +29,7 @@ static_library("sync_wifi") {
     "wifi_configuration_sync_service.h",
   ]
   deps = [
+    ":network_eligibility_checker",
     "//ash/public/cpp",
     "//base",
     "//chromeos/dbus/shill",
@@ -41,6 +42,17 @@ static_library("sync_wifi") {
     "//components/sync",
     "//components/version_info",
     "//dbus",
+  ]
+}
+
+static_library("network_eligibility_checker") {
+  sources = [
+    "network_eligibility_checker.cc",
+    "network_eligibility_checker.h",
+  ]
+  deps = [
+    "//chromeos/network",
+    "//chromeos/services/network_config/public/mojom",
   ]
 }
 

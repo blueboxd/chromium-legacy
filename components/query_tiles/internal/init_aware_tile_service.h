@@ -13,7 +13,7 @@
 #include "components/query_tiles/internal/tile_service_impl.h"
 #include "components/query_tiles/tile_service.h"
 
-namespace upboarding {
+namespace query_tiles {
 
 // TileService that can cache API calls before the underlying |tile_service_| is
 // initialized. After a successful initialization of |tile_service_|, all cached
@@ -50,6 +50,6 @@ class InitAwareTileService : public TileService {
   base::WeakPtrFactory<InitAwareTileService> weak_ptr_factory_{this};
 };
 
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_INTERNAL_INIT_AWARE_TILE_SERVICE_H_

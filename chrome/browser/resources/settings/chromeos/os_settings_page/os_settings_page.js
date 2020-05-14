@@ -45,6 +45,8 @@ Polymer({
 
     showCrostini: Boolean,
 
+    showPluginVm: Boolean,
+
     showReset: Boolean,
 
     allowCrostini_: Boolean,

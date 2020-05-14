@@ -43,9 +43,11 @@ Polymer({
   /** @return {?CrToolbarSearchFieldElement} */
   getSearchField() {
     if (this.newOsSettingsSearch_) {
-      assertNotReached(
-          'New OS Search should not be using OsToolbar.getSearchField()');
+      return /** @type {?CrToolbarSearchFieldElement} */ (
+          this.shadowRoot.querySelector('os-settings-search-box')
+              .$$('cr-toolbar-search-field'));
     }
+    // TODO(crbug/1080777): Remove when new settings search complete.
     return /** @type {?CrToolbarSearchFieldElement} */ (
         this.$$('cr-toolbar-search-field'));
   },

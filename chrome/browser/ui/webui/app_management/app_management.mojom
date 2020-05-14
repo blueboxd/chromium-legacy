@@ -83,3 +83,8 @@ enum PwaPermissionType {
   MEDIASTREAM_MIC = 9,
   MEDIASTREAM_CAMERA = 10,
 };
+
+// The Plugin VM app publisher uses this enum directly.
+enum PluginVmPermissionType {
+  PRINTING = 0,
+};

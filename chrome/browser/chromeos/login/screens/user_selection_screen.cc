@@ -56,6 +56,7 @@
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/user_activity/user_activity_detector.h"
@@ -930,6 +931,11 @@ UserSelectionScreen::UpdateAndReturnUserListForAsh() {
     user_info.can_remove = CanRemoveUser(user);
     user_info.fingerprint_state = GetInitialFingerprintState(user);
     user_info.show_pin_pad_for_password = false;
+    if (user_manager::known_user::GetIsManaged(user->GetAccountId()) &&
+        user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
+      user_info.user_enterprise_domain =
+          gaia::ExtractDomainName(user->display_email());
+    }
     chromeos::CrosSettings::Get()->GetBoolean(
         chromeos::kDeviceShowNumericKeyboardForPassword,
         &user_info.show_pin_pad_for_password);
@@ -951,7 +957,7 @@ UserSelectionScreen::UpdateAndReturnUserListForAsh() {
       std::string domain;
       user_info.public_account_info.emplace();
       if (GetEnterpriseDomain(&domain))
-        user_info.public_account_info->enterprise_domain = domain;
+        user_info.public_account_info->device_enterprise_domain = domain;
 
       user_info.public_account_info->using_saml = user->using_saml();
 

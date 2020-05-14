@@ -124,8 +124,7 @@ namespace content {
 
 struct ShellPlatformDelegate::ShellData {
   gfx::NativeWindow window;
-  NSTextField* url_edit_view;
-  gfx::Size content_size;
+  NSTextField* url_edit_view = nullptr;
 };
 
 struct ShellPlatformDelegate::PlatformData {};
@@ -140,13 +139,10 @@ void ShellPlatformDelegate::Initialize(const gfx::Size& default_window_size) {
 void ShellPlatformDelegate::CreatePlatformWindow(
     Shell* shell,
     const gfx::Size& initial_size) {
-  ShellData* shell_data = new ShellData;
-  shell->set_platform_data(shell_data);
+  DCHECK(!shell->headless());
 
-  if (shell->headless()) {
-    shell_data->content_size = initial_size;
-    return;
-  }
+  DCHECK(!base::Contains(shell_data_map_, shell));
+  ShellData& shell_data = shell_data_map_[shell];
 
   int width = initial_size.width();
   int height = initial_size.height();
@@ -214,42 +210,35 @@ void ShellPlatformDelegate::CreatePlatformWindow(
     [url_edit_view setAction:@selector(takeURLStringValueFrom:)];
     [[url_edit_view cell] setWraps:NO];
     [[url_edit_view cell] setScrollable:YES];
-    shell_data->url_edit_view = url_edit_view.get();
+    shell_data.url_edit_view = url_edit_view.get();
   }
 
   // Show the new window.
   [window makeKeyAndOrderFront:nil];
 
-  shell_data->window = window;
+  shell_data.window = window;
 }
 
 gfx::NativeWindow ShellPlatformDelegate::GetNativeWindow(Shell* shell) {
-  ShellData* shell_data = shell->platform_data();
-  return shell_data->window;
+  DCHECK(base::Contains(shell_data_map_, shell));
+  ShellData& shell_data = shell_data_map_[shell];
+
+  return shell_data.window;
 }
 
 void ShellPlatformDelegate::CleanUp(Shell* shell) {
-  ShellData* shell_data = shell->platform_data();
-
-  // Any ShellData cleanup happens here.
-
-  delete shell_data;
-  // This shouldn't be used anymore, but just in case.
-  shell->set_platform_data(nullptr);
+  DCHECK(base::Contains(shell_data_map_, shell));
+  shell_data_map_.erase(shell);
 }
 
 void ShellPlatformDelegate::SetContents(Shell* shell) {
-  ShellData* shell_data = shell->platform_data();
+  DCHECK(base::Contains(shell_data_map_, shell));
+  ShellData& shell_data = shell_data_map_[shell];
 
   NSView* web_view = shell->web_contents()->GetNativeView().GetNativeNSView();
   [web_view setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
 
-  if (shell->headless()) {
-    ResizeWebContent(shell, shell_data->content_size);
-    return;
-  }
-
-  NSView* content = [shell_data->window.GetNativeNSWindow() contentView];
+  NSView* content = [shell_data.window.GetNativeNSWindow() contentView];
   [content addSubview:web_view];
 
   NSRect frame = [content bounds];
@@ -261,28 +250,24 @@ void ShellPlatformDelegate::SetContents(Shell* shell) {
 
 void ShellPlatformDelegate::ResizeWebContent(Shell* shell,
                                              const gfx::Size& content_size) {
-  ShellData* shell_data = shell->platform_data();
+  DCHECK(!shell->headless());
 
-  if (!shell->headless()) {
-    int toolbar_height = Shell::ShouldHideToolbar() ? 0 : kURLBarHeight;
-    NSRect frame = NSMakeRect(0, 0, content_size.width(),
-                              content_size.height() + toolbar_height);
-    [shell_data->window.GetNativeNSWindow().contentView setFrame:frame];
-    return;
-  }
+  DCHECK(base::Contains(shell_data_map_, shell));
+  ShellData& shell_data = shell_data_map_[shell];
 
-  NSView* web_view = shell->web_contents()->GetNativeView().GetNativeNSView();
-  NSRect frame = NSMakeRect(0, 0, content_size.width(), content_size.height());
-  [web_view setFrame:frame];
+  int toolbar_height = Shell::ShouldHideToolbar() ? 0 : kURLBarHeight;
+  NSRect frame = NSMakeRect(0, 0, content_size.width(),
+                            content_size.height() + toolbar_height);
+  [shell_data.window.GetNativeNSWindow().contentView setFrame:frame];
 }
 
 void ShellPlatformDelegate::EnableUIControl(Shell* shell,
                                             UIControl control,
                                             bool is_enabled) {
-  if (shell->headless())
-    return;
+  DCHECK(!shell->headless());
 
-  ShellData* shell_data = shell->platform_data();
+  DCHECK(base::Contains(shell_data_map_, shell));
+  ShellData& shell_data = shell_data_map_[shell];
 
   int id;
   switch (control) {
@@ -299,99 +284,89 @@ void ShellPlatformDelegate::EnableUIControl(Shell* shell,
       NOTREACHED() << "Unknown UI control";
       return;
   }
-  [[[shell_data->window.GetNativeNSWindow() contentView] viewWithTag:id]
+  [[[shell_data.window.GetNativeNSWindow() contentView] viewWithTag:id]
       setEnabled:is_enabled];
 }
 
 void ShellPlatformDelegate::SetAddressBarURL(Shell* shell, const GURL& url) {
-  if (shell->headless() || Shell::ShouldHideToolbar())
+  DCHECK(!shell->headless());
+
+  if (Shell::ShouldHideToolbar())
     return;
 
-  ShellData* shell_data = shell->platform_data();
+  DCHECK(base::Contains(shell_data_map_, shell));
+  ShellData& shell_data = shell_data_map_[shell];
 
   NSString* url_string = base::SysUTF8ToNSString(url.spec());
-  [shell_data->url_edit_view setStringValue:url_string];
+  [shell_data.url_edit_view setStringValue:url_string];
 }
 
 void ShellPlatformDelegate::SetIsLoading(Shell* shell, bool loading) {}
 
 void ShellPlatformDelegate::SetTitle(Shell* shell,
                                      const base::string16& title) {
-  if (shell->headless())
-    return;
+  DCHECK(!shell->headless());
 
-  ShellData* shell_data = shell->platform_data();
+  DCHECK(base::Contains(shell_data_map_, shell));
+  ShellData& shell_data = shell_data_map_[shell];
 
   NSString* title_string = base::SysUTF16ToNSString(title);
-  [shell_data->window.GetNativeNSWindow() setTitle:title_string];
+  [shell_data.window.GetNativeNSWindow() setTitle:title_string];
+}
+
+void ShellPlatformDelegate::RenderViewReady(Shell* shell) {
+  DCHECK(!shell->headless());
 }
 
 bool ShellPlatformDelegate::DestroyShell(Shell* shell) {
-  if (shell->headless())
-    return false;  // Shell destroys itself.
+  DCHECK(!shell->headless());
 
-  ShellData* shell_data = shell->platform_data();
+  DCHECK(base::Contains(shell_data_map_, shell));
+  ShellData& shell_data = shell_data_map_[shell];
 
-  [shell_data->window.GetNativeNSWindow() performClose:nil];
+  [shell_data.window.GetNativeNSWindow() performClose:nil];
   return true;  // The performClose() will do the destruction of Shell.
 }
 
 void ShellPlatformDelegate::ActivateContents(Shell* shell,
                                              WebContents* top_contents) {
-  ShellData* shell_data = shell->platform_data();
+  DCHECK(!shell->headless());
 
-  if (!shell->headless()) {
-    // This focuses the main frame RenderWidgetHost in the window, but does not
-    // make the window itself active. The WebContentsDelegate (this class) is
-    // responsible for doing both.
-    top_contents->Focus();
-    // This makes the window the active window for the application, and when the
-    // app is active, the window will be also. That makes all RenderWidgetHosts
-    // for the window active (which is separate from focused on mac).
-    [shell_data->window.GetNativeNSWindow() makeKeyAndOrderFront:nil];
-    // This makes the application active so that we can actually move focus
-    // between windows and the renderer can receive focus/blur events.
-    [NSApp activateIgnoringOtherApps:YES];
-    return;
-  }
+  DCHECK(base::Contains(shell_data_map_, shell));
+  ShellData& shell_data = shell_data_map_[shell];
 
-  // In headless mode, there are no system windows, so we can't go down the
-  // normal path which relies on calling the OS to move focus/active states.
-  // Instead we fake it out by just informing the RenderWidgetHost directly.
-
-  // For all windows other than this one, blur them.
-  for (Shell* window : Shell::windows()) {
-    if (window != shell) {
-      WebContents* other_top_contents = window->web_contents();
-      RenderWidgetHost* other_main_widget =
-          other_top_contents->GetMainFrame()->GetView()->GetRenderWidgetHost();
-      other_main_widget->Blur();
-      other_main_widget->SetActive(false);
-    }
-  }
-
-  RenderWidgetHost* main_widget =
-      top_contents->GetMainFrame()->GetView()->GetRenderWidgetHost();
-  main_widget->Focus();
-  main_widget->SetActive(true);
+  // This focuses the main frame RenderWidgetHost in the window, but does not
+  // make the window itself active. The WebContentsDelegate (this class) is
+  // responsible for doing both.
+  top_contents->Focus();
+  // This makes the window the active window for the application, and when the
+  // app is active, the window will be also. That makes all RenderWidgetHosts
+  // for the window active (which is separate from focused on mac).
+  [shell_data.window.GetNativeNSWindow() makeKeyAndOrderFront:nil];
+  // This makes the application active so that we can actually move focus
+  // between windows and the renderer can receive focus/blur events.
+  [NSApp activateIgnoringOtherApps:YES];
 }
 
 bool ShellPlatformDelegate::HandleKeyboardEvent(
     Shell* shell,
     WebContents* source,
     const NativeWebKeyboardEvent& event) {
-  if (event.skip_in_browser || shell->headless() || Shell::ShouldHideToolbar())
+  DCHECK(!shell->headless());
+
+  if (event.skip_in_browser || Shell::ShouldHideToolbar())
     return false;
 
-  ShellData* shell_data = shell->platform_data();
+  DCHECK(base::Contains(shell_data_map_, shell));
+  ShellData& shell_data = shell_data_map_[shell];
 
   // The event handling to get this strictly right is a tangle; cheat here a bit
   // by just letting the menus have a chance at it.
   if ([event.os_event type] == NSKeyDown) {
     if (([event.os_event modifierFlags] & NSCommandKeyMask) &&
         [[event.os_event characters] isEqual:@"l"]) {
-      [shell_data->window.GetNativeNSWindow()
-          makeFirstResponder:shell_data->url_edit_view];
+      [shell_data.window.GetNativeNSWindow()
+          makeFirstResponder:shell_data.url_edit_view];
       return true;
     }
 

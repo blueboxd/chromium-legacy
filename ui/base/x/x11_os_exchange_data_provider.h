@@ -23,7 +23,7 @@
 
 namespace ui {
 
-class OSExchangeDataProviderAuraX11Test;
+class OSExchangeDataProviderX11Test;
 
 // Generic OSExchangeDataProvider implementation for X11.  Lacks the event
 // handling; the subclass should listen for SelectionRequest X events and
@@ -93,8 +93,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XOSExchangeDataProvider
   gfx::Vector2d GetDragImageOffset() const override;
 
  protected:
-  friend class OSExchangeDataProviderAuraX11Test;
-  typedef std::map<ClipboardFormatType, base::Pickle> PickleData;
+  friend class OSExchangeDataProviderX11Test;
+  using PickleData = std::map<ClipboardFormatType, base::Pickle>;
 
   bool own_window() const { return own_window_; }
   XID x_window() const { return x_window_; }

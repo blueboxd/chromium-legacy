@@ -211,13 +211,13 @@
     ]
   },
   "declarativeNetRequest": {
-    "channel": "beta",
+    "channel": "stable",
     "extension_types": ["extension"],
     "min_manifest_version": 2,
     "feature_flag": "DeclarativeNetRequest"
   },
   "declarativeNetRequestFeedback": {
-    "channel": "beta",
+    "channel": "stable",
     "extension_types": ["extension"],
     "min_manifest_version": 2,
     "feature_flag": "DeclarativeNetRequest"

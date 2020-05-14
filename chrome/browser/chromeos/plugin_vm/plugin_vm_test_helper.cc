@@ -99,6 +99,8 @@ PluginVmTestHelper::PluginVmTestHelper(TestingProfile* testing_profile)
 PluginVmTestHelper::~PluginVmTestHelper() = default;
 
 void PluginVmTestHelper::SetPolicyRequirementsToAllowPluginVm() {
+  testing_profile_->GetPrefs()->SetBoolean(plugin_vm::prefs::kPluginVmAllowed,
+                                           true);
   testing_profile_->ScopedCrosSettingsTestHelper()->SetBoolean(
       chromeos::kPluginVmAllowed, true);
   testing_profile_->ScopedCrosSettingsTestHelper()->SetString(

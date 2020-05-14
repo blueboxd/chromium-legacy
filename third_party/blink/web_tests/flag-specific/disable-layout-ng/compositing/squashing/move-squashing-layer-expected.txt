@@ -26,6 +26,7 @@ This tests that squashed layers' offset from renderer is updated properly. If no
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV id='squashed')",
       "position": [-92, -92],
       "bounds": [100, 100],
+      "contentsOpaqueForText": true,
       "transform": 2
     }
   ],

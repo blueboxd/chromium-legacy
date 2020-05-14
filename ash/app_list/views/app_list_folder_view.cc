@@ -48,6 +48,7 @@ namespace {
 
 constexpr int kFolderHeaderPadding = 12;
 constexpr int kOnscreenKeyboardTopPadding = 16;
+constexpr int kFolderHorizontalMargin = 8;
 
 // Indexes of interesting views in ViewModel of AppListFolderView.
 constexpr int kIndexBackground = 0;
@@ -605,11 +606,18 @@ void AppListFolderView::UpdatePreferredBounds() {
   const gfx::Size search_box_size =
       contents_view_->GetSearchBoxSize(AppListState::kStateApps);
   // Adjust for apps container margins.
-  container_bounds.Inset(container_view_->CalculateMarginsForAvailableBounds(
-      container_bounds, search_box_size));
+  gfx::Insets adjusted_margins =
+      container_view_->CalculateMarginsForAvailableBounds(container_bounds,
+                                                          search_box_size);
+  // App list folders can open past the app list bounds and within
+  // |kFolderHorizontalMargin| px of the screen.
+  adjusted_margins.set_left(kFolderHorizontalMargin);
+  adjusted_margins.set_right(kFolderHorizontalMargin);
+  container_bounds.Inset(adjusted_margins);
+
   // Avoid overlap with the search box widget.
   container_bounds.Inset(
-      8, search_box_size.height() + SearchBoxView::GetFocusRingSpacing(), 8, 0);
+      0, search_box_size.height() + SearchBoxView::GetFocusRingSpacing(), 0, 0);
   preferred_bounds_.AdjustToFit(container_bounds);
 
   // Calculate the folder icon's bounds relative to this view.

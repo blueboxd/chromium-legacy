@@ -191,6 +191,11 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 // Enables resampling GestureScroll events on compositor thread.
 BLINK_COMMON_EXPORT extern const base::Feature kResamplingScrollEvents;
 
+// Enables the device-memory, resource-width, viewport-width and DPR client
+// hints to be sent to third-party origins if the first-party has opted in to
+// receiving client hints, regardless of Feature Policy.
+BLINK_COMMON_EXPORT extern const base::Feature kAllowClientHintsToThirdParty;
+
 // The type of scroll predictor to use for the resampling scroll events. These
 // values are used as the 'predictor' feature param for
 // |kResamplingScrollEvents|.

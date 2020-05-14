@@ -253,6 +253,10 @@ void WebFrameTestProxy::Reset() {
   // the main frame on each navigation, including to about:blank and then to the
   // next test. So resetting the frame or RenderWidget won't be meaningful then.
 
+  TestInterfaces* interfaces = web_view_test_proxy_->test_interfaces();
+  TestRunner* test_runner = interfaces->GetTestRunner();
+  test_runner->ResetWebFrame(this);
+
   if (IsMainFrame()) {
     GetWebFrame()->SetName(blink::WebString());
     GetWebFrame()->ClearOpener();

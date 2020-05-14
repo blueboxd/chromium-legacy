@@ -61,6 +61,11 @@ CRYPTO_EXPORT ScopedSECKEYPrivateKey
 FindNSSKeyFromPublicKeyInfoInSlot(base::span<const uint8_t> input,
                                   PK11SlotInfo* slot);
 
+// Decodes |input| as a DER-encoded X.509 SubjectPublicKeyInfo and returns the
+// NSS representation of it.
+CRYPTO_EXPORT ScopedCERTSubjectPublicKeyInfo
+DecodeSubjectPublicKeyInfoNSS(base::span<const uint8_t> input);
+
 }  // namespace crypto
 
 #endif  // CRYPTO_NSS_KEY_UTIL_H_

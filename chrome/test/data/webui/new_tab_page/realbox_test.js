@@ -100,7 +100,7 @@ suite('NewTabPageRealboxTest', () => {
     assertStyle(realbox, '--search-box-bg', 'rgba(0, 0, 0, 255)');
     assertStyle(realbox, '--search-box-placeholder', 'rgba(0, 0, 3, 255)');
     assertStyle(realbox, '--search-box-results-bg', 'rgba(0, 0, 4, 255)');
-    assertStyle(realbox, '--search-box-text', 'rgba(0, 0, 12, 255)');
+    assertStyle(realbox, '--search-box-text', 'rgba(0, 0, 13, 255)');
     assertStyle(realbox, '--search-box-icon', 'rgba(0, 0, 1, 255)');
   });
 

@@ -211,11 +211,6 @@ void ChromeContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
   chrome::internal::PopulateChromeWebUIFrameBinders(map);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host);
-  if (!web_contents)
-    return;
-
   const GURL& site = render_frame_host->GetSiteInstance()->GetSiteURL();
   if (!site.SchemeIs(extensions::kExtensionScheme))
     return;

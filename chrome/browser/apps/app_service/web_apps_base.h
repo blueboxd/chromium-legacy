@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
@@ -80,6 +81,10 @@ class WebAppsBase : public apps::PublisherBase,
     return weak_ptr_factory_.GetWeakPtr();
   }
 
+  apps_util::IncrementingIconKeyFactory& icon_key_factory() {
+    return icon_key_factory_;
+  }
+
  private:
   void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
 
@@ -121,6 +126,8 @@ class WebAppsBase : public apps::PublisherBase,
   // web_app::AppRegistrarObserver:
   void OnWebAppInstalled(const web_app::AppId& app_id) override;
   void OnAppRegistrarDestroyed() override;
+  void OnWebAppLocallyInstalledStateChanged(const web_app::AppId& app_id,
+                                            bool is_locally_installed) override;
   // TODO(loyso): Implement app->last_launch_time field for the new system.
 
   void SetShowInFields(apps::mojom::AppPtr& app,
@@ -141,6 +148,8 @@ class WebAppsBase : public apps::PublisherBase,
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
   Profile* const profile_;
+
+  apps_util::IncrementingIconKeyFactory icon_key_factory_;
 
   ScopedObserver<web_app::AppRegistrar, web_app::AppRegistrarObserver>
       registrar_observer_{this};

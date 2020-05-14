@@ -410,6 +410,8 @@ class GenXproto:
             tmp_id = self.new_uid()
             self.write('auto& tmp%d = %s.%s;' % (tmp_id, obj, field_name))
             self.write('auto& %s = tmp%d;' % (field_name, tmp_id))
+        elif field.for_list:
+            self.write('%s %s;' % (self.fieldtype(field), field_name))
         else:
             self.write('auto& %s = %s.%s;' % (field_name, obj, field_name))
 
@@ -613,7 +615,7 @@ class GenXproto:
         t = field.type
         name = safe_name(field.field_name)
 
-        if not field.wire or not field.visible:
+        if not field.wire or not field.visible or field.for_list:
             return
 
         if t.is_switch:
@@ -640,6 +642,11 @@ class GenXproto:
                 self.write('Pad(&buf, %d);' % t.nmemb)
         elif not field.visible:
             self.copy_special_field(field)
+        elif field.for_list:
+            if not self.is_read:
+                self.write('%s = %s.size();' %
+                           (name, safe_name(field.for_list.field_name)))
+            self.copy_primitive(name)
         elif t.is_switch:
             self.copy_switch(field)
         elif t.is_list:
@@ -843,10 +850,16 @@ class GenXproto:
 
         for field in fields.values():
             field.parent = t
+            field.for_list = None
             if field.type.is_switch or field.type.is_case_or_bitcase:
                 self.resolve_type(field.type, field.field_type)
             elif field.type.is_list:
                 self.resolve_type(field.type.member, field.type.member.name)
+                expr = field.type.expr
+                if not expr.op and expr.lenfield_name in fields:
+                    fields[expr.lenfield_name].for_list = field
+            else:
+                self.resolve_type(field.type, field.type.name)
 
         if isinstance(t, self.xcbgen.xtypes.Request) and t.reply:
             self.resolve_type(t.reply, t.reply.name)
@@ -868,6 +881,9 @@ class GenXproto:
             del self.enum_types[x]
 
         for t in self.types:
+            # Lots of fields have types like uint8_t.  Ignore these.
+            if len(t) == 1:
+                continue
             l = list(self.types[t])
             # For some reason, FDs always have distint types so they appear
             # duplicated in the set.  If the set contains only FDs, then bail.

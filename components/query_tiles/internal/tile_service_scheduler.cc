@@ -12,7 +12,7 @@
 #include "components/query_tiles/internal/tile_config.h"
 #include "net/base/backoff_entry_serializer.h"
 
-namespace upboarding {
+namespace query_tiles {
 namespace {
 
 // Key for query tiles backoff entry stored in pref service.
@@ -177,4 +177,4 @@ TileServiceScheduler::TileServiceScheduler() = default;
 
 TileServiceScheduler::~TileServiceScheduler() = default;
 
-}  // namespace upboarding
+}  // namespace query_tiles

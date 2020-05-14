@@ -19,7 +19,7 @@
 using leveldb_proto::test::FakeDB;
 using InitStatus = leveldb_proto::Enums::InitStatus;
 
-namespace upboarding {
+namespace query_tiles {
 namespace {
 
 class TileStoreTest : public testing::Test {
@@ -55,7 +55,7 @@ class TileStoreTest : public testing::Test {
   void CreateTestDbEntries(TestEntries input) {
     for (auto& entry : input) {
       TileGroupProto proto;
-      upboarding::TileGroupToProto(&entry, &proto);
+      query_tiles::TileGroupToProto(&entry, &proto);
       db_entries_.emplace(entry.id, proto);
     }
   }
@@ -199,4 +199,4 @@ TEST_F(TileStoreTest, DeleteSuccess) {
 }
 
 }  // namespace
-}  // namespace upboarding
+}  // namespace query_tiles

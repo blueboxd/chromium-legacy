@@ -187,14 +187,6 @@ class Shell : public WebContentsDelegate,
     delay_popup_contents_delegate_for_testing_ = delay;
   }
 
-  // This pointer is owned and used only by ShellPlatformDelegate.
-  void set_platform_data(ShellPlatformDelegate::ShellData* data) {
-    platform_data_ = data;
-  }
-  ShellPlatformDelegate::ShellData* platform_data() const {
-    return platform_data_;
-  }
-
   // TODO(danakj): Move this to WebTestShellPlatformDelegate (a test-only
   // subclass of ShellPlatformDelegate that does not exist yet).
   bool headless() const { return headless_; }
@@ -228,10 +220,9 @@ class Shell : public WebContentsDelegate,
   void LoadProgressChanged(double progress) override;
 #endif
   void TitleWasSet(NavigationEntry* entry) override;
+  void RenderViewReady() override;
 
   void OnDevToolsWebContentsDestroyed();
-
-  ShellPlatformDelegate::ShellData* platform_data_ = nullptr;
 
   std::unique_ptr<ShellJavaScriptDialogManager> dialog_manager_;
 

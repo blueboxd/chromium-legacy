@@ -7,7 +7,7 @@
 
 #include "base/feature_list.h"
 
-namespace upboarding {
+namespace query_tiles {
 namespace features {
 
 // Main feature flag for the query tiles feature.
@@ -33,6 +33,6 @@ extern const char kQueryTilesCountryCode[];
 extern const char kQueryTilesInstantBackgroundTask[];
 
 }  // namespace switches
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_SWITCHES_H_

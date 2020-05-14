@@ -19,7 +19,7 @@ namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
 
-namespace upboarding {
+namespace query_tiles {
 
 class TileFetcher {
  public:
@@ -50,6 +50,6 @@ class TileFetcher {
   TileFetcher();
 };
 
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_INTERNAL_TILE_FETCHER_H_

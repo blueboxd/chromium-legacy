@@ -80,7 +80,7 @@ class PluginVmInstallerViewBrowserTest : public DialogBrowserTest {
   void AllowPluginVm() {
     EnterpriseEnrollDevice();
     SetUserWithAffiliation();
-    SetPluginVmDevicePolicies();
+    SetPluginVmPolicies();
     // Set correct PluginVmImage preference value.
     SetPluginVmImagePref(embedded_test_server()->GetURL(kZipFile).spec(),
                          kZipFileHash);
@@ -139,7 +139,11 @@ class PluginVmInstallerViewBrowserTest : public DialogBrowserTest {
                                                            "device_id");
   }
 
-  void SetPluginVmDevicePolicies() {
+  void SetPluginVmPolicies() {
+    // User polcies.
+    browser()->profile()->GetPrefs()->SetBoolean(
+        plugin_vm::prefs::kPluginVmAllowed, true);
+    // Device policies.
     scoped_testing_cros_settings_.device_settings()->Set(
         chromeos::kPluginVmAllowed, base::Value(true));
     scoped_testing_cros_settings_.device_settings()->Set(

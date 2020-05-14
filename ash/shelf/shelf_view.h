@@ -487,6 +487,8 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   bool ShouldHandleGestures(const ui::GestureEvent& event) const;
 
+  void DestroyScopedRootWindow();
+
   // Different from GetTitleForView, |view| here must be a child view.
   base::string16 GetTitleForChildView(const views::View* view) const;
 
@@ -542,6 +544,9 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   // Responsible for building and running all menus.
   std::unique_ptr<ShelfMenuModelAdapter> shelf_menu_model_adapter_;
+
+  // Created when a shelf icon is pressed, so that new windows will be on the
+  // same root window as the press event.
   std::unique_ptr<ScopedRootWindowForNewWindows>
       scoped_root_window_for_new_windows_;
 

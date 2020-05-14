@@ -30,6 +30,8 @@ class ASH_PUBLIC_EXPORT LoginScreenTestApi {
   static bool IsWarningBubbleShown();
   static bool IsSystemInfoShown();
   static bool IsDisplayPasswordButtonShown(const AccountId& account_id);
+  static bool IsManagedIconShown(const AccountId& account_id);
+  static bool IsManagedMessageInMenuShown(const AccountId& account_id);
   static bool IsForcedOnlineSignin(const AccountId& account_id);
   static void SubmitPassword(const AccountId& account_id,
                              const std::string& password,

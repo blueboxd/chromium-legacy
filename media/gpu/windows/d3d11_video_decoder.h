@@ -19,7 +19,6 @@
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_preferences.h"
 #include "media/base/callback_registry.h"
-#include "media/base/cdm_context.h"
 #include "media/base/video_decoder.h"
 #include "media/base/win/d3d11_create_device_cb.h"
 #include "media/gpu/command_buffer_helper.h"
@@ -201,24 +200,9 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
     // creation is pending.
     kRunning,
 
-    // The decoder cannot make progress because it doesn't have the key to
-    // decrypt the buffer. Waiting for a new key to be available.
-    // This should only be transitioned from kRunning, and should only
-    // transition to kRunning or kWaitingForReset.
-    kWaitingForNewKey,
-
-    // The decoder cannot make progress because it's waiting for a Reset(). This
-    // could happen as a result of CdmContext hardware context loss. This should
-    // only be transitioned from kRunning or kWaitingForNewKey, and should only
-    // transition to kRunning.
-    kWaitingForReset,
-
     // A fatal error occurred. A terminal state.
     kError,
   };
-
-  // Callback to notify that new CdmContext event is available.
-  void OnCdmContextEvent(CdmContext::Event event);
 
   // Enter the kError state.  This will fail any pending |init_cb_| and / or
   // pending decode as well.
@@ -243,7 +227,6 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   VideoDecoderConfig config_;
   InitCB init_cb_;
   OutputCB output_cb_;
-  WaitingCB waiting_cb_;
 
   // Callback to be used as a release CB for VideoFrames.  Be sure to
   // BindToCurrentLoop the closure that it takes.
@@ -274,9 +257,6 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   scoped_refptr<DecoderBuffer> current_buffer_;
   DecodeCB current_decode_cb_;
   base::TimeDelta current_timestamp_;
-
-  // Callback registration to keep the new key callback registered.
-  std::unique_ptr<CallbackRegistration> new_key_callback_registration_;
 
   // Must be called on the gpu main thread.  So, don't call it from here,
   // since we don't know what thread we're on.

@@ -12,6 +12,8 @@ source_set("internal") {
     "cached_image_loader.cc",
     "cached_image_loader.h",
     "image_loader.h",
+    "image_prefetcher.cc",
+    "image_prefetcher.h",
     "init_aware_tile_service.cc",
     "init_aware_tile_service.h",
     "proto_conversion.cc",
@@ -59,6 +61,7 @@ source_set("unit_tests") {
 
   sources = [
     "cached_image_loader_unittest.cc",
+    "image_prefetcher_unittest.cc",
     "init_aware_tile_service_unittest.cc",
     "proto_conversion_unittest.cc",
     "tile_config_unittest.cc",

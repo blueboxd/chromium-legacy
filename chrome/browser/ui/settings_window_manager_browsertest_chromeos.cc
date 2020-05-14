@@ -21,6 +21,7 @@
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -204,4 +205,18 @@ IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, OpenSettings) {
   // Showing a browser setting sub-page reuses the browser window.
   chrome::ShowSettingsSubPage(browser(), chrome::kAutofillSubPage);
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, KioskMode) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kForceAppMode);
+
+  // Open settings window.
+  settings_manager_->ShowOSSettings(browser()->profile());
+  Browser* settings_browser =
+      settings_manager_->FindBrowserForProfile(browser()->profile());
+  ASSERT_TRUE(settings_browser);
+
+  // In kiosk mode, browser should be created, but it should not be a system web
+  // app.
+  EXPECT_EQ(settings_browser->app_controller(), nullptr);
 }

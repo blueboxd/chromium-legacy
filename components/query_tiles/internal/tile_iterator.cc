@@ -7,7 +7,7 @@
 #include "components/query_tiles/internal/tile_group.h"
 #include "components/query_tiles/tile.h"
 
-namespace upboarding {
+namespace query_tiles {
 
 TileIterator::TileIterator(std::vector<const Tile*> tiles, int levels)
     : levels_(levels) {
@@ -52,4 +52,4 @@ void TileIterator::MaybeAddToQueue(int level, const Tile* tile) {
   tiles_queue_.push(TileLevelPair(level, tile));
 }
 
-}  // namespace upboarding
+}  // namespace query_tiles

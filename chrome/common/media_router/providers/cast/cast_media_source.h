@@ -165,6 +165,10 @@ class CastMediaSource {
   DefaultActionPolicy default_action_policy() const {
     return default_action_policy_;
   }
+  const std::string& app_params() const { return app_params_; }
+  void set_app_params(const std::string& app_params) {
+    app_params_ = app_params;
+  }
   const std::vector<ReceiverAppType>& supported_app_types() const {
     return supported_app_types_;
   }
@@ -180,6 +184,7 @@ class CastMediaSource {
   std::string client_id_;
   base::Optional<cast_channel::BroadcastRequest> broadcast_request_;
   std::vector<ReceiverAppType> supported_app_types_ = {ReceiverAppType::kWeb};
+  std::string app_params_;
 };
 
 }  // namespace media_router

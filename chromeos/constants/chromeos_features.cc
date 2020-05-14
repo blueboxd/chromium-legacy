@@ -66,10 +66,6 @@ const base::Feature kBluetoothFixA2dpPacketSize{
 const base::Feature kBluetoothPhoneFilter{"BluetoothPhoneFilter",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables using the kernel suspend notifier instead of powerd.
-const base::Feature kBluetoothKernelSuspendNotifier{
-    "BluetoothKernelSuspendNotifier", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If enabled, browser will notify Chrome OS audio server to register HFP 1.7
 // to BlueZ, which includes wideband speech feature.
 const base::Feature kBluetoothNextHandsfreeProfile{

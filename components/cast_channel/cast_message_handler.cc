@@ -197,6 +197,7 @@ void CastMessageHandler::LaunchSession(
     const std::string& app_id,
     base::TimeDelta launch_timeout,
     const std::vector<std::string>& supported_app_types,
+    const std::string& app_params,
     LaunchSessionCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CastSocket* socket = socket_service_->GetSocket(channel_id);

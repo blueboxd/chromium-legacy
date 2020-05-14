@@ -30,6 +30,7 @@ public abstract class TabModelFilter implements TabModelObserver, TabList {
     private TabModel mTabModel;
     protected ObserverList<TabModelObserver> mFilteredObservers = new ObserverList<>();
     private boolean mTabRestoreCompleted;
+    private boolean mTabStateInitialized;
 
     public TabModelFilter(TabModel tabModel) {
         mTabModel = tabModel;
@@ -54,6 +55,16 @@ public abstract class TabModelFilter implements TabModelObserver, TabList {
 
     public boolean isCurrentlySelectedFilter() {
         return getTabModel().isCurrentModel();
+    }
+
+    /**
+     * Mark TabState initialized, and TabModelFilter ready to use. This should only be called once,
+     * and should only be called by {@link TabModelFilterProvider}.
+     */
+    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
+    public void markTabStateInitialized() {
+        assert !mTabStateInitialized;
+        mTabStateInitialized = true;
     }
 
     /**
@@ -150,7 +161,11 @@ public abstract class TabModelFilter implements TabModelObserver, TabList {
      * @return Whether the tab model is fully restored.
      */
     public boolean isTabModelRestored() {
-        return mTabRestoreCompleted || isIncognito();
+        // TODO(crbug.com/1081339): Remove |mTabRestoreCompleted|. |mTabRestoreCompleted| is always
+        // false for incognito, while |mTabStateInitialized| is not. |mTabStateInitialized| is
+        // marked after the TabModelSelector is initialized, therefore it is the true state of the
+        // TabModel.
+        return mTabRestoreCompleted || mTabStateInitialized;
     }
 
     /**

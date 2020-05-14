@@ -130,6 +130,8 @@ component("fido") {
     "reset_request_handler.h",
     "response_data.cc",
     "response_data.h",
+    "rsa_public_key.cc",
+    "rsa_public_key.h",
     "set_pin_request_handler.cc",
     "set_pin_request_handler.h",
     "u2f_command_constructor.cc",

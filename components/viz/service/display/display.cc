@@ -520,9 +520,9 @@ void Display::InitializeRenderer(bool enable_shared_images) {
   // Outputting a partial list of quads might not work in cases where contents
   // outside the damage rect might be needed by the renderer.
   bool output_partial_list =
-      output_surface_->capabilities().only_invalidates_damage_rect &&
       renderer_->use_partial_swap() &&
-      !overlay_processor_->IsOverlaySupported();
+      (!overlay_processor_->IsOverlaySupported() ||
+       output_surface_->capabilities().supports_target_damage);
 
   aggregator_ = std::make_unique<SurfaceAggregator>(
       surface_manager_, resource_provider_.get(), output_partial_list,
@@ -609,9 +609,13 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
   {
     FrameRateDecider::ScopedAggregate scoped_aggregate(
         frame_rate_decider_.get());
-    frame =
-        aggregator_->Aggregate(current_surface_id_, expected_display_time,
-                               current_display_transform, ++swapped_trace_id_);
+    gfx::Rect target_damage_bounding_rect;
+    if (output_surface_->capabilities().supports_target_damage)
+      target_damage_bounding_rect = renderer_->GetTargetDamageBoundingRect();
+
+    frame = aggregator_->Aggregate(
+        current_surface_id_, expected_display_time, current_display_transform,
+        target_damage_bounding_rect, ++swapped_trace_id_);
   }
 
 #if defined(OS_ANDROID)

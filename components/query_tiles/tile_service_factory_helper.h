@@ -26,7 +26,7 @@ namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
 
-namespace upboarding {
+namespace query_tiles {
 
 class TileService;
 
@@ -40,6 +40,6 @@ std::unique_ptr<TileService> CreateTileService(
     const std::string& api_key,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_TILE_SERVICE_FACTORY_HELPER_H_

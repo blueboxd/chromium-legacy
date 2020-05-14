@@ -122,6 +122,7 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   std::unique_ptr<PolicyStatusProvider> user_status_provider_;
   std::unique_ptr<PolicyStatusProvider> device_status_provider_;
   std::unique_ptr<PolicyStatusProvider> machine_status_provider_;
+  std::unique_ptr<PolicyStatusProvider> updater_status_provider_;
 
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   std::unique_ptr<policy::PolicyMap> updater_policies_;

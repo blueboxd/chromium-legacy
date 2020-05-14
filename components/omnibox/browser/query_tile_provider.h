@@ -13,11 +13,10 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 
-namespace upboarding {
+namespace query_tiles {
 class TileService;
 struct Tile;
-
-}  // namespace upboarding
+}  // namespace query_tiles
 
 class AutocompleteProviderClient;
 class AutocompleteProviderListener;
@@ -52,25 +51,25 @@ class QueryTileProvider : public AutocompleteProvider {
   // Callback invoked in response to fetching the top level tiles from
   // TileService.
   void OnTopLevelTilesFetched(const AutocompleteInput& input,
-                              std::vector<upboarding::Tile> tiles);
+                              std::vector<query_tiles::Tile> tiles);
 
   // Callback invoked in response to fetching subtiles of a selected query tile
   // from TileService.
   void OnSubTilesFetched(const AutocompleteInput& input,
-                         base::Optional<upboarding::Tile> tile);
+                         base::Optional<query_tiles::Tile> tile);
 
   // For the given |input| and optionally a selected tile denoted by |parent|,
   // checks if a suggestion should be shown. If yes, builds a query tile
   // suggestion with the matching |tiles|.
   void BuildSuggestion(const AutocompleteInput& input,
-                       base::Optional<upboarding::Tile> parent,
-                       std::vector<upboarding::Tile> tiles);
+                       base::Optional<query_tiles::Tile> parent,
+                       std::vector<query_tiles::Tile> tiles);
 
   AutocompleteProviderClient* const client_;
   AutocompleteProviderListener* const listener_;
 
   // The backend providing query tiles.
-  upboarding::TileService* const tile_service_;
+  query_tiles::TileService* const tile_service_;
 
   base::WeakPtrFactory<QueryTileProvider> weak_ptr_factory_{this};
 };

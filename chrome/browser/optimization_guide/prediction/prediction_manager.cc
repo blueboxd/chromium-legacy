@@ -622,6 +622,11 @@ void PredictionManager::UpdatePredictionModels(
     if (ProcessAndStorePredictionModel(model)) {
       prediction_model_update_data->CopyPredictionModelIntoUpdateData(model);
       models_to_store = true;
+      base::UmaHistogramSparse(
+          "OptimizationGuide.PredictionModelUpdateVersion." +
+              GetStringNameForOptimizationTarget(
+                  model.model_info().optimization_target()),
+          model.model_info().version());
     }
   }
   if (models_to_store) {
@@ -734,7 +739,7 @@ void PredictionManager::OnLoadPredictionModel(
     return;
 
   if (ProcessAndStorePredictionModel(*model)) {
-    base::UmaHistogramSparse("OptimizationGuide.PredictionModelVersion." +
+    base::UmaHistogramSparse("OptimizationGuide.PredictionModelLoadedVersion." +
                                  GetStringNameForOptimizationTarget(
                                      model->model_info().optimization_target()),
                              model->model_info().version());

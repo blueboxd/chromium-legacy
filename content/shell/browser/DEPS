@@ -16,12 +16,6 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "shell\.cc": [
-    "+content/shell/browser/layout_test",
-  ],
-  "shell_devtools_manager_delegate\.cc": [
-    "+content/shell/browser/layout_test",
-  ],
   "shell_browser_main_parts\.cc": [
     "+ui/gtk",
   ],

@@ -50,8 +50,6 @@ class ExtensionApps : public apps::ExtensionAppsBase {
   bool ShouldShownInLauncher(const extensions::Extension* extension) override;
   apps::mojom::AppPtr Convert(const extensions::Extension* extension,
                               apps::mojom::Readiness readiness) override;
-
-  apps_util::IncrementingIconKeyFactory icon_key_factory_;
 };
 
 }  // namespace apps

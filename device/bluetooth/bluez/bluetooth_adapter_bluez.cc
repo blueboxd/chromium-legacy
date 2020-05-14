@@ -15,7 +15,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -26,7 +25,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
-#include "device/base/features.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
@@ -52,7 +50,6 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/devicetype.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/chromeos/bluetooth_utils.h"
@@ -1078,10 +1075,6 @@ void BluetoothAdapterBlueZ::SetAdapter(const dbus::ObjectPath& object_path) {
   if (properties->discovering.value())
     DiscoveringChanged(true);
 
-#if defined(OS_CHROMEOS)
-  SetChromeOSKernelSuspendNotifier(properties);
-#endif
-
   std::vector<dbus::ObjectPath> device_paths =
       bluez::BluezDBusManager::Get()
           ->GetBluetoothDeviceClient()
@@ -1120,25 +1113,6 @@ void BluetoothAdapterBlueZ::SetStandardChromeOSAdapterName() {
   alias = base::StringPrintf("%s_%04X", alias.c_str(),
                              base::PersistentHash(address) & 0xFFFF);
   SetName(alias, base::DoNothing(), base::DoNothing());
-}
-
-// If the property is available, set the value according to the feature flag.
-void BluetoothAdapterBlueZ::SetChromeOSKernelSuspendNotifier(
-    bluez::BluetoothAdapterClient::Properties* properties) {
-  if (!properties->use_kernel_suspend_notifier.is_valid())
-    return;
-
-  bool use_notifier = base::FeatureList::IsEnabled(
-      chromeos::features::kBluetoothKernelSuspendNotifier);
-
-  base::OnceCallback<void(bool)> cb = base::BindOnce(
-      [](bool value, bool success) {
-        if (!success) {
-          BLUETOOTH_LOG(ERROR) << "Failed to set suspend notifier to " << value;
-        }
-      },
-      use_notifier);
-  properties->use_kernel_suspend_notifier.Set(use_notifier, std::move(cb));
 }
 #endif
 

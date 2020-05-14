@@ -40,7 +40,7 @@ FakeAutocompleteProviderClient::FakeAutocompleteProviderClient(
       GetHistoryService(), base::FilePath(), true);
   shortcuts_backend_->Init();
 
-  tile_service_ = std::make_unique<upboarding::FakeTileService>();
+  tile_service_ = std::make_unique<query_tiles::FakeTileService>();
 }
 
 FakeAutocompleteProviderClient::~FakeAutocompleteProviderClient() {
@@ -87,7 +87,7 @@ FakeAutocompleteProviderClient::GetShortcutsBackendIfExists() {
   return shortcuts_backend_;
 }
 
-upboarding::TileService* FakeAutocompleteProviderClient::GetQueryTileService()
+query_tiles::TileService* FakeAutocompleteProviderClient::GetQueryTileService()
     const {
   return tile_service_.get();
 }

@@ -113,8 +113,6 @@ class WebAppsChromeOs : public WebAppsBase,
 
   bool Accepts(const std::string& app_id) override;
 
-  apps_util::IncrementingIconKeyFactory icon_key_factory_;
-
   apps::InstanceRegistry* instance_registry_;
 
   PausedApps paused_apps_;

@@ -214,6 +214,25 @@ bool ExpandPropertyContents(const std::string& content,
   return true;
 }
 
+bool ExpandPropertyFile(const base::FilePath& input,
+                        const base::FilePath& output,
+                        CrosConfig* config) {
+  std::string content;
+  std::string expanded;
+  if (!base::ReadFileToString(input, &content)) {
+    PLOG(ERROR) << "Failed to read " << input;
+    return false;
+  }
+  if (!ExpandPropertyContents(content, config, &expanded))
+    return false;
+  if (base::WriteFile(output, expanded.data(), expanded.size()) !=
+      static_cast<int>(expanded.size())) {
+    PLOG(ERROR) << "Failed to write to " << output;
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 CrosConfig::CrosConfig() {
@@ -265,23 +284,10 @@ bool TruncateAndroidPropertyForTesting(const std::string& line,
   return TruncateAndroidProperty(line, truncated);
 }
 
-bool ExpandPropertyFile(const base::FilePath& input,
-                        const base::FilePath& output,
-                        CrosConfig* config) {
-  std::string content;
-  std::string expanded;
-  if (!base::ReadFileToString(input, &content)) {
-    PLOG(ERROR) << "Failed to read " << input;
-    return false;
-  }
-  if (!ExpandPropertyContents(content, config, &expanded))
-    return false;
-  if (base::WriteFile(output, expanded.data(), expanded.size()) !=
-      static_cast<int>(expanded.size())) {
-    PLOG(ERROR) << "Failed to write to " << output;
-    return false;
-  }
-  return true;
+bool ExpandPropertyFileForTesting(const base::FilePath& input,
+                                  const base::FilePath& output,
+                                  CrosConfig* config) {
+  return ExpandPropertyFile(input, output, config);
 }
 
 bool ExpandPropertyFiles(const base::FilePath& source_path,

@@ -31,7 +31,6 @@ class Extension;
 
 namespace declarative_net_request {
 
-class CompositeMatcher;
 class RulesetSource;
 class RulesetMatcher;
 struct TestRule;
@@ -83,11 +82,6 @@ api::declarative_net_request::ModifyHeaderInfo CreateModifyHeaderInfo(
 bool EqualsForTesting(
     const api::declarative_net_request::ModifyHeaderInfo& lhs,
     const api::declarative_net_request::ModifyHeaderInfo& rhs);
-
-// Returns the public ruleset IDs corresponding to the given |extension| and
-// |matcher|.
-std::vector<std::string> GetPublicRulesetIDs(const Extension& extension,
-                                             const CompositeMatcher& matcher);
 
 // Test observer for RulesetManager. This is a multi-use observer i.e.
 // WaitForExtensionsWithRulesetsCount can be called multiple times per lifetime

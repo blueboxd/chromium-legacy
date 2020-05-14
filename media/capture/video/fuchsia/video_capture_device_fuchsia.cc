@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "media/base/video_types.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
+#include "third_party/libyuv/include/libyuv/video_common.h"
 #include "ui/gfx/buffer_format_util.h"
 
 namespace media {
@@ -21,71 +22,68 @@ size_t RoundUp(size_t value, size_t alignment) {
   return ((value + alignment - 1) / alignment) * alignment;
 }
 
-void CopyAndConvertFrame(
-    base::span<const uint8_t> src_span,
-    fuchsia::sysmem::PixelFormatType src_pixel_format,
-    size_t src_stride_y,
-    size_t src_coded_height,
-    std::unique_ptr<VideoCaptureBufferHandle> output_handle,
-    gfx::Size output_size) {
-  const uint8_t* src_y = src_span.data();
-  size_t src_y_plane_size = src_stride_y * src_coded_height;
-
-  // Calculate offsets and strides for the output buffer.
-  uint8_t* dst_y = output_handle->data();
-  int dst_stride_y = output_size.width();
-  size_t dst_y_plane_size = output_size.width() * output_size.height();
-  uint8_t* dst_u = dst_y + dst_y_plane_size;
-  int dst_stride_u = output_size.width() / 2;
-  uint8_t* dst_v = dst_u + dst_y_plane_size / 4;
-  int dst_stride_v = output_size.width() / 2;
-
-  // Check that the output fits in the buffer.
-  const uint8_t* dst_end = dst_v + dst_y_plane_size / 4;
-  CHECK_LE(dst_end, output_handle->data() + output_handle->mapped_size());
-
+libyuv::FourCC GetFourccForPixelFormat(
+    fuchsia::sysmem::PixelFormatType src_pixel_format) {
   switch (src_pixel_format) {
+    case fuchsia::sysmem::PixelFormatType::I420:
+      return libyuv::FourCC::FOURCC_I420;
     case fuchsia::sysmem::PixelFormatType::YV12:
-    case fuchsia::sysmem::PixelFormatType::I420: {
-      const uint8_t* src_u = src_y + src_y_plane_size;
-      int src_stride_u = src_stride_y / 2;
-      size_t src_u_plane_size = src_stride_u * src_coded_height / 2;
-      const uint8_t* src_v = src_u + src_u_plane_size;
-      int src_stride_v = src_stride_y / 2;
-
-      if (src_pixel_format == fuchsia::sysmem::PixelFormatType::YV12) {
-        // Swap U and V planes to account for different plane order in YV12.
-        std::swap(src_u, src_v);
-      }
-
-      size_t src_v_plane_size = src_stride_v * src_coded_height / 2;
-      const uint8_t* src_end = src_v + src_v_plane_size;
-      CHECK_LE(src_end, src_span.data() + src_span.size());
-
-      libyuv::I420Copy(src_y, src_stride_y, src_u, src_stride_u, src_v,
-                       src_stride_v, dst_y, dst_stride_y, dst_u, dst_stride_u,
-                       dst_v, dst_stride_v, output_size.width(),
-                       output_size.height());
-      break;
-    }
-
-    case fuchsia::sysmem::PixelFormatType::NV12: {
-      const uint8_t* src_uv = src_y + src_stride_y * src_coded_height;
-      int src_stride_uv = src_stride_y;
-
-      int src_uv_plane_size = src_stride_uv * src_coded_height / 2;
-      const uint8_t* src_end = src_uv + src_uv_plane_size;
-      CHECK_LE(src_end, src_span.data() + src_span.size());
-
-      libyuv::NV12ToI420(src_y, src_stride_y, src_uv, src_stride_uv, dst_y,
-                         dst_stride_y, dst_u, dst_stride_u, dst_v, dst_stride_v,
-                         output_size.width(), output_size.height());
-
-      break;
-    }
-
+      return libyuv::FourCC::FOURCC_YV12;
+    case fuchsia::sysmem::PixelFormatType::NV12:
+      return libyuv::FourCC::FOURCC_NV12;
     default:
       NOTREACHED();
+      return libyuv::FourCC::FOURCC_I420;
+  }
+}
+
+libyuv::RotationMode CameraOrientationToLibyuvRotation(
+    fuchsia::camera3::Orientation orientation,
+    bool* flip_y) {
+  switch (orientation) {
+    case fuchsia::camera3::Orientation::UP:
+      *flip_y = false;
+      return libyuv::RotationMode::kRotate0;
+
+    case fuchsia::camera3::Orientation::DOWN:
+      *flip_y = false;
+      return libyuv::RotationMode::kRotate180;
+
+    case fuchsia::camera3::Orientation::LEFT:
+      *flip_y = false;
+      return libyuv::RotationMode::kRotate270;
+
+    case fuchsia::camera3::Orientation::RIGHT:
+      *flip_y = false;
+      return libyuv::RotationMode::kRotate90;
+
+    case fuchsia::camera3::Orientation::UP_FLIPPED:
+      *flip_y = true;
+      return libyuv::RotationMode::kRotate180;
+
+    case fuchsia::camera3::Orientation::DOWN_FLIPPED:
+      *flip_y = true;
+      return libyuv::RotationMode::kRotate0;
+
+    case fuchsia::camera3::Orientation::LEFT_FLIPPED:
+      *flip_y = true;
+      return libyuv::RotationMode::kRotate90;
+
+    case fuchsia::camera3::Orientation::RIGHT_FLIPPED:
+      *flip_y = true;
+      return libyuv::RotationMode::kRotate270;
+  }
+}
+
+gfx::Size RotateSize(gfx::Size size, libyuv::RotationMode rotation) {
+  switch (rotation) {
+    case libyuv::RotationMode::kRotate0:
+    case libyuv::RotationMode::kRotate180:
+      return size;
+
+    case libyuv::RotationMode::kRotate90:
+    case libyuv::RotationMode::kRotate270:
+      return gfx::Size(size.height(), size.width());
   }
 }
 
@@ -150,6 +148,7 @@ void VideoCaptureDeviceFuchsia::AllocateAndStart(
       fit::bind_member(this, &VideoCaptureDeviceFuchsia::OnStreamError));
 
   WatchResolution();
+  WatchOrientation();
 
   // Call SetBufferCollection() with a new buffer collection token to indicate
   // that we are interested in buffer collection negotiation. The collection
@@ -211,6 +210,21 @@ void VideoCaptureDeviceFuchsia::OnWatchResolutionResult(
   frame_size_ = gfx::Size(frame_size.width, frame_size.height);
 
   WatchResolution();
+}
+
+void VideoCaptureDeviceFuchsia::WatchOrientation() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  stream_->WatchOrientation(fit::bind_member(
+      this, &VideoCaptureDeviceFuchsia::OnWatchOrientationResult));
+}
+
+void VideoCaptureDeviceFuchsia::OnWatchOrientationResult(
+    fuchsia::camera3::Orientation orientation) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  orientation_ = orientation;
+  WatchOrientation();
 }
 
 void VideoCaptureDeviceFuchsia::WatchBufferCollection() {
@@ -333,8 +347,15 @@ void VideoCaptureDeviceFuchsia::ProcessNewFrame(
       sysmem_buffer_format.bytes_per_row_divisor);
   gfx::Size visible_size =
       frame_size_.value_or(gfx::Size(src_coded_width, src_coded_height));
-  gfx::Size output_size((visible_size.width() + 1) & ~1,
-                        (visible_size.height() + 1) & ~1);
+  gfx::Size nonrotated_output_size((visible_size.width() + 1) & ~1,
+                                   (visible_size.height() + 1) & ~1);
+
+  bool flip_y;
+  libyuv::RotationMode rotation =
+      CameraOrientationToLibyuvRotation(orientation_, &flip_y);
+
+  gfx::Size output_size = RotateSize(nonrotated_output_size, rotation);
+  visible_size = RotateSize(visible_size, rotation);
 
   base::TimeTicks reference_time =
       base::TimeTicks::FromZxTime(frame_info.timestamp);
@@ -375,11 +396,36 @@ void VideoCaptureDeviceFuchsia::ProcessNewFrame(
     return;
   }
 
-  auto src_pixel_format = buffer_reader_->buffer_settings()
-                              .image_format_constraints.pixel_format.type;
-  CopyAndConvertFrame(src_span, src_pixel_format, src_stride, src_coded_height,
-                      buffer.handle_provider->GetHandleForInProcessAccess(),
-                      output_size);
+  std::unique_ptr<VideoCaptureBufferHandle> output_handle =
+      buffer.handle_provider->GetHandleForInProcessAccess();
+
+  // Calculate offsets and strides for the output buffer.
+  uint8_t* dst_y = output_handle->data();
+  int dst_stride_y = output_size.width();
+  size_t dst_y_plane_size = output_size.width() * output_size.height();
+  uint8_t* dst_u = dst_y + dst_y_plane_size;
+  int dst_stride_u = output_size.width() / 2;
+  uint8_t* dst_v = dst_u + dst_y_plane_size / 4;
+  int dst_stride_v = output_size.width() / 2;
+
+  // Check that the output fits in the buffer.
+  const uint8_t* dst_end = dst_v + dst_y_plane_size / 4;
+  CHECK_LE(dst_end, output_handle->data() + output_handle->mapped_size());
+
+  // Vertical flip is indicated to ConvertToI420() by negating src_height.
+  int flipped_src_height = static_cast<int>(src_coded_height);
+  if (flip_y)
+    flipped_src_height = -flipped_src_height;
+
+  auto four_cc =
+      GetFourccForPixelFormat(buffer_reader_->buffer_settings()
+                                  .image_format_constraints.pixel_format.type);
+
+  libyuv::ConvertToI420(src_span.data(), src_span.size(), dst_y, dst_stride_y,
+                        dst_u, dst_stride_u, dst_v, dst_stride_v,
+                        /*crop_x=*/0, /*crop_y=*/0, src_stride,
+                        flipped_src_height, nonrotated_output_size.width(),
+                        nonrotated_output_size.height(), rotation, four_cc);
 
   client_->OnIncomingCapturedBufferExt(
       std::move(buffer), capture_format, gfx::ColorSpace(), reference_time,

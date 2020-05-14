@@ -50,17 +50,23 @@ SwitchAccessNavigationManagerTest.prototype = {
 function moveToPageContents() {
   const navigator = NavigationManager.instance;
   // Start from the desktop node.
-  navigator.group_ = DesktopNode.build(navigator.desktop_);
-  navigator.node_ = navigator.group_.firstChild;
+  navigator.setGroup_(DesktopNode.build(navigator.desktop_));
 
   // The first item should be the browser window.
-  navigator.selectCurrentNode();
+  assertTrue(
+      navigator.node_.isGroup(),
+      'Browser window should be the desktop\'s first child');
+  NavigationManager.enterGroup();
 
+  // Find the page contents in the browser window.
   // The third item in the browser window is the page contents.
   // TODO(anastasi): find the browser window dynamically.
   NavigationManager.moveForward();
   NavigationManager.moveForward();
-  navigator.selectCurrentNode();
+  assertTrue(
+      navigator.node_.isGroup(),
+      'Page contents should be the browser window\'s third child');
+  NavigationManager.enterGroup();
 }
 
 function currentNode() {
@@ -170,6 +176,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'JumpTo', function() {
 
 TEST_F('SwitchAccessNavigationManagerTest', 'SelectButton', function() {
   const website = `<button id="test" aria-pressed=false>First Button</button>
+      <button>Second Button</button>
       <script>
         let state = false;
         let button = document.getElementById("test");
@@ -194,10 +201,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'SelectButton', function() {
               'Checked state changed on unexpected node');
         }));
 
-    chrome.automation.getDesktop(this.newCallback((d) => {
-      NavigationManager.initialize(d);
-      NavigationManager.instance.selectCurrentNode();
-    }));
+    NavigationManager.instance.node_.performAction('select');
   });
 });
 

@@ -13,6 +13,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/query_tiles/internal/image_prefetcher.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
@@ -23,7 +24,7 @@
 using testing::_;
 using ::testing::Invoke;
 
-namespace upboarding {
+namespace query_tiles {
 namespace {
 
 class MockTileManager : public TileManager {
@@ -46,6 +47,14 @@ class MockBackgroundTaskScheduler
   MOCK_METHOD1(Cancel, void(int));
 };
 
+class MockImagePrefetcher : public ImagePrefetcher {
+ public:
+  MockImagePrefetcher() = default;
+  ~MockImagePrefetcher() override = default;
+
+  MOCK_METHOD(void, Prefetch, (TileGroup, bool, base::OnceClosure), (override));
+};
+
 }  // namespace
 
 class TileServiceImplTest : public testing::Test {
@@ -59,6 +68,13 @@ class TileServiceImplTest : public testing::Test {
   void SetUp() override {
     auto tile_manager = std::make_unique<MockTileManager>();
     tile_manager_ = tile_manager.get();
+    auto image_prefetcher = std::make_unique<MockImagePrefetcher>();
+    image_prefetcher_ = image_prefetcher.get();
+    ON_CALL(*image_prefetcher_, Prefetch(_, _, _))
+        .WillByDefault(Invoke([](TileGroup, bool, base::OnceClosure callback) {
+          std::move(callback).Run();
+        }));
+
     auto tile_fetcher =
         TileFetcher::Create(GURL("https://www.test.com"), "US", "en", "apikey",
                             "", test_shared_url_loader_factory_);
@@ -69,7 +85,7 @@ class TileServiceImplTest : public testing::Test {
         }));
     EXPECT_CALL(task_scheduler_, Schedule(_));
     tile_service_impl_ = std::make_unique<TileServiceImpl>(
-        nullptr /* image_loader */, std::move(tile_manager), &task_scheduler_,
+        std::move(image_prefetcher), std::move(tile_manager), &task_scheduler_,
         std::move(tile_fetcher), &clock_);
   }
 
@@ -115,6 +131,7 @@ class TileServiceImplTest : public testing::Test {
   }
 
   MockTileManager* tile_manager() { return tile_manager_; }
+  MockImagePrefetcher* image_prefetcher() { return image_prefetcher_; }
 
  private:
   base::test::TaskEnvironment task_environment_;
@@ -122,6 +139,7 @@ class TileServiceImplTest : public testing::Test {
   std::unique_ptr<TileServiceImpl> tile_service_impl_;
   MockBackgroundTaskScheduler task_scheduler_;
   MockTileManager* tile_manager_;
+  MockImagePrefetcher* image_prefetcher_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory>
       test_shared_url_loader_factory_;
@@ -154,6 +172,8 @@ TEST_F(TileServiceImplTest, FetchForTilesSucceeded) {
                           base::OnceCallback<void(TileGroupStatus)> callback) {
         std::move(callback).Run(TileGroupStatus::kSuccess);
       }));
+  EXPECT_CALL(*image_prefetcher(), Prefetch(_, _, _));
+
   FetchForTilesSuceeded();
 }
 
@@ -162,4 +182,4 @@ TEST_F(TileServiceImplTest, FetchForTilesFailed) {
   FetchForTilesWithError();
 }
 
-}  // namespace upboarding
+}  // namespace query_tiles

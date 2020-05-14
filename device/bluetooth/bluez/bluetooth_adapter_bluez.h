@@ -351,10 +351,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
 #if defined(OS_CHROMEOS)
   // Set the adapter name to one chosen from the system information.
   void SetStandardChromeOSAdapterName();
-
-  // Set the kernel suspend notifier property based off value of chrome://flags.
-  void SetChromeOSKernelSuspendNotifier(
-      bluez::BluetoothAdapterClient::Properties* properties);
 #endif
 
   // Remove the currently tracked adapter. IsPresent() will return false after

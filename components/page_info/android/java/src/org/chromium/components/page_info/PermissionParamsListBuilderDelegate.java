@@ -14,7 +14,10 @@ import org.chromium.components.embedder_support.util.Origin;
  * logic.
  */
 public class PermissionParamsListBuilderDelegate {
-    public PermissionParamsListBuilderDelegate() {}
+    private final BrowserContextHandle mBrowserContextHandle;
+    public PermissionParamsListBuilderDelegate(BrowserContextHandle browserContextHandle) {
+        mBrowserContextHandle = browserContextHandle;
+    }
 
     /**
      * Returns the user visible name of the app that will handle permission delegation for the
@@ -29,6 +32,6 @@ public class PermissionParamsListBuilderDelegate {
      * Returns the BrowserContextHandle to be used by PermissionParamsListBuilder.
      */
     public BrowserContextHandle getBrowserContextHandle() {
-        return null;
+        return mBrowserContextHandle;
     }
 }

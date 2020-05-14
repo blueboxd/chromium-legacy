@@ -118,8 +118,8 @@ chromeos::assistant::mojom::AssistantNotificationPtr CreateTimerNotification(
   const std::string message = CreateTimerNotificationMessage(timer);
 
   base::Optional<GURL> stop_alarm_timer_action_url =
-      assistant::util::CreateAlarmTimerDeepLink(AlarmTimerAction::kRemove,
-                                                timer.id);
+      assistant::util::CreateAlarmTimerDeepLink(
+          AlarmTimerAction::kRemoveAlarmOrTimer, timer.id);
 
   base::Optional<GURL> add_time_to_timer_action_url =
       assistant::util::CreateAlarmTimerDeepLink(
@@ -323,8 +323,17 @@ void AssistantAlarmTimerController::PerformAlarmTimerAction(
       }
       assistant_->AddTimeToTimer(alarm_timer_id, duration.value());
       break;
-    case AlarmTimerAction::kRemove:
-      assistant_->RemoveAlarmTimer(alarm_timer_id);
+    case AlarmTimerAction::kPauseTimer:
+      DCHECK(!duration.has_value());
+      assistant_->PauseTimer(alarm_timer_id);
+      break;
+    case AlarmTimerAction::kRemoveAlarmOrTimer:
+      DCHECK(!duration.has_value());
+      assistant_->RemoveAlarmOrTimer(alarm_timer_id);
+      break;
+    case AlarmTimerAction::kResumeTimer:
+      DCHECK(!duration.has_value());
+      assistant_->ResumeTimer(alarm_timer_id);
       break;
   }
 }

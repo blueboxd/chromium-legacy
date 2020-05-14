@@ -9,7 +9,6 @@
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "components/version_info/version_info.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
@@ -17,7 +16,6 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/value_builder.h"
@@ -41,7 +39,7 @@ std::string GetRuleResourcesKey() {
 // Fixture testing the kDeclarativeNetRequestKey manifest key.
 class DNRManifestTest : public testing::Test {
  public:
-  DNRManifestTest() : channel_(::version_info::Channel::UNKNOWN) {}
+  DNRManifestTest() = default;
 
  protected:
   // Loads the extension and verifies the |expected_error|.
@@ -80,8 +78,8 @@ class DNRManifestTest : public testing::Test {
 
       EXPECT_EQ(info[i].enabled, rulesets[i].enabled);
 
-      EXPECT_EQ(rulesets[i].manifest_id,
-                DNRManifestData::GetManifestID(*extension, rulesets[i].id));
+      EXPECT_EQ(&rulesets[i],
+                &DNRManifestData::GetRuleset(*extension, rulesets[i].id));
     }
   }
 
@@ -111,7 +109,6 @@ class DNRManifestTest : public testing::Test {
 
  private:
   base::ScopedTempDir temp_dir_;
-  ScopedCurrentChannel channel_;
 
   DISALLOW_COPY_AND_ASSIGN(DNRManifestTest);
 };

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tab;
 
 import android.util.SparseIntArray;
 import android.view.View;
+import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -54,6 +55,8 @@ public class TabViewManager implements UserData, Comparator<TabViewProvider> {
 
     private PriorityQueue<TabViewProvider> mTabViewProviders;
     private TabImpl mTab;
+    private View mCurrentView;
+    private BrowserControlsOffsetObserver mBrowserControlsOffsetObserver;
 
     public static TabViewManager get(Tab tab) {
         if (tab.getUserDataHost().getUserData(USER_DATA_KEY) == null) {
@@ -66,6 +69,8 @@ public class TabViewManager implements UserData, Comparator<TabViewProvider> {
     TabViewManager(Tab tab) {
         mTab = (TabImpl) tab;
         mTabViewProviders = new PriorityQueue<>(PRIORITIZED_TAB_VIEW_PROVIDER_TYPES.length, this);
+        mBrowserControlsOffsetObserver = new BrowserControlsOffsetObserver();
+        mTab.addObserver(mBrowserControlsOffsetObserver);
     }
 
     /**
@@ -111,10 +116,27 @@ public class TabViewManager implements UserData, Comparator<TabViewProvider> {
                 view = currentTabViewProvider.getView();
                 assert view != null;
             }
-            mTab.setCustomView(view);
+            mCurrentView = view;
+            updateViewMargins();
+            mTab.setCustomView(mCurrentView);
             if (previousTabViewProvider != null) previousTabViewProvider.onHidden();
             if (currentTabViewProvider != null) currentTabViewProvider.onShown();
         }
+    }
+
+    /**
+     * Updates the top margin for the current view according to
+     * {@link TabBrowserControlsOffsetHelper}.
+     */
+    private void updateViewMargins() {
+        if (mCurrentView == null) return;
+
+        int topOffset = TabBrowserControlsOffsetHelper.get(mTab).contentOffset();
+        int bottomOffset = TabBrowserControlsOffsetHelper.get(mTab).bottomControlsOffset();
+        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+        layoutParams.setMargins(0, topOffset, 0, bottomOffset);
+        mCurrentView.setLayoutParams(layoutParams);
     }
 
     /**
@@ -136,6 +158,16 @@ public class TabViewManager implements UserData, Comparator<TabViewProvider> {
         TabViewProvider currentTabViewProvider = mTabViewProviders.peek();
         if (currentTabViewProvider != null) currentTabViewProvider.onHidden();
         mTabViewProviders.clear();
+        mTab.removeObserver(mBrowserControlsOffsetObserver);
         mTab = null;
+    }
+
+    private class BrowserControlsOffsetObserver extends EmptyTabObserver {
+        @Override
+        public void onBrowserControlsOffsetChanged(Tab tab, int topControlsOffsetY,
+                int bottomControlsOffsetY, int contentOffsetY, int topControlsMinHeightOffsetY,
+                int bottomControlsMinHeightOffsetY) {
+            updateViewMargins();
+        }
     }
 }

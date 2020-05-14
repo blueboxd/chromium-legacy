@@ -293,4 +293,13 @@ suite('NewTabPageAppTest', () => {
     await testProxy.callbackRouterRemote.$.flushForTesting();
     assertTrue(app.$.mostVisited.hasAttribute('use-white-add-icon'));
   });
+
+  test('theme updates use title pill', async () => {
+    const theme = createTheme();
+    theme.shortcutUseTitlePill = true;
+    testProxy.callbackRouterRemote.setTheme(theme);
+    assertFalse(app.$.mostVisited.hasAttribute('use-title-pill'));
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+    assertTrue(app.$.mostVisited.hasAttribute('use-title-pill'));
+  });
 });

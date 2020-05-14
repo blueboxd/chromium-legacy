@@ -18,6 +18,7 @@ js_library("settings_ui") {
     "..:page_visibility",
     "..:route",
     "..:router.m",
+    "../basic_page:basic_page",
     "../prefs:prefs.m",
     "../settings_main:settings_main",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",

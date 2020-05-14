@@ -83,21 +83,9 @@ TEST_F(WebElementTest, IsAutonomousCustomElement) {
                           { extends:'button' });
     document.body.appendChild(
         document.createElement('button', { is: 'v1-builtin' }));
-
-    document.registerElement('v0-custom');
-    document.body.appendChild(document.createElement('v0-custom'));
-    document.registerElement('v0-typext', {
-        prototype: Object.create(HTMLInputElement.prototype),
-        extends: 'input' });
-    document.body.appendChild(document.createElement('input', 'v0-typeext'));
   )JS");
   GetDocument().body()->appendChild(script);
-  auto* v0typeext = GetDocument().body()->lastChild();
-  EXPECT_FALSE(WebElement(To<Element>(v0typeext)).IsAutonomousCustomElement());
-  auto* v0autonomous = v0typeext->previousSibling();
-  EXPECT_TRUE(
-      WebElement(To<Element>(v0autonomous)).IsAutonomousCustomElement());
-  auto* v1builtin = v0autonomous->previousSibling();
+  auto* v1builtin = GetDocument().body()->lastChild();
   EXPECT_FALSE(WebElement(To<Element>(v1builtin)).IsAutonomousCustomElement());
   auto* v1autonomous = v1builtin->previousSibling();
   EXPECT_TRUE(

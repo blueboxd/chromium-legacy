@@ -434,6 +434,8 @@ IN_PROC_BROWSER_TEST_F(
       "OptimizationGuide.PredictionManager.HostModelFeaturesStored", true, 1);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionManager.PredictionModelsStored", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelUpdateVersion.PainfulPageLoad", 0);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -453,6 +455,8 @@ IN_PROC_BROWSER_TEST_F(
       "OptimizationGuide.PredictionManager.HostModelFeaturesStored", true, 1);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.PredictionManager.PredictionModelsStored", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionModelUpdateVersion.PainfulPageLoad", 2, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -477,6 +481,8 @@ IN_PROC_BROWSER_TEST_F(
       "OptimizationGuide.PredictionManager.HostModelFeaturesStored", 0);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionManager.PredictionModelsStored", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelUpdateVersion.PainfulPageLoad", 0);
 }
 
 IN_PROC_BROWSER_TEST_F(

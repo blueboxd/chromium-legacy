@@ -2425,9 +2425,9 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, EnableChromeVox) {
   chromeos::SpeechMonitor speech_monitor;
 
   // Enable ChromeVox.
-    ASSERT_FALSE(
-        chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
-    chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(true);
+  ASSERT_FALSE(
+      chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+  chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(true);
 
   ash::RootWindowController* controller =
       ash::Shell::GetRootWindowControllerWithDisplayId(
@@ -2435,6 +2435,11 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, EnableChromeVox) {
   views::View* home_button = ash::ShelfTestApi().GetHomeButton();
   ui::test::EventGenerator event_generator(controller->GetRootWindow());
   auto* generator_ptr = &event_generator;
+
+  // There is a mouse move event being dispatched at the beginning of test
+  // that confuses ChromeVox. This brings back ChromeVox state so that
+  // GestureTapAt at home button could successfully change ChromeVox focus.
+  event_generator.MoveMouseTo(home_button->GetBoundsInScreen().CenterPoint());
 
   // AccessibilityManager sends an empty warmup utterance first.
   speech_monitor.ExpectSpeech("");
@@ -2465,7 +2470,7 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, EnableChromeVox) {
     ASSERT_EQ(ash::HotseatState::kExtended,
               controller->shelf()->shelf_layout_manager()->hotseat_state());
   });
-
+  
   speech_monitor.Call([generator_ptr]() {
     // Press the search + right. Expects that the browser icon receives the
     // accessibility focus and the hotseat remains in kExtended state.

@@ -12,10 +12,8 @@ from blinkpy.common.system.executive_mock import mock_git_commands
 from blinkpy.common.system.filesystem_mock import MockFileSystem
 from blinkpy.w3c.local_wpt_mock import MockLocalWPT
 from blinkpy.w3c.import_notifier import ImportNotifier, TestFailure
-from blinkpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
+from blinkpy.w3c.wpt_expectations_updater import UMBRELLA_BUG
 
-
-UMBRELLA_BUG = WPTExpectationsUpdater.UMBRELLA_BUG
 MOCK_WEB_TESTS = '/mock-checkout/' + RELATIVE_WEB_TESTS
 
 

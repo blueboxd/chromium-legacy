@@ -10,7 +10,8 @@
 #include <queue>
 #include <vector>
 
-#include "base/containers/flat_set.h"
+#include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/browser/conversions/conversion_manager_impl.h"
@@ -24,7 +25,6 @@ class Clock;
 
 namespace content {
 
-class ConversionManager;
 class StoragePartition;
 
 // This class is responsible for managing the dispatch of conversion reports to
@@ -52,14 +52,15 @@ class CONTENT_EXPORT ConversionReporterImpl
   };
 
   ConversionReporterImpl(StoragePartition* storage_partition,
-                         ConversionManager* manager,
                          const base::Clock* clock);
   ConversionReporterImpl(const ConversionReporterImpl&) = delete;
   ConversionReporterImpl& operator=(const ConversionReporterImpl&) = delete;
   ~ConversionReporterImpl() override;
 
   // ConversionManagerImpl::ConversionReporter:
-  void AddReportsToQueue(std::vector<ConversionReport> reports) override;
+  void AddReportsToQueue(
+      std::vector<ConversionReport> reports,
+      base::RepeatingCallback<void(int64_t)> report_sent_callback) override;
 
   void SetNetworkSenderForTesting(
       std::unique_ptr<NetworkSender> network_sender);
@@ -86,13 +87,12 @@ class CONTENT_EXPORT ConversionReporterImpl
                       ReportComparator>
       report_queue_;
 
-  // Set of all conversion ids that are currently in |report_queue| or are being
-  // sent by |network_sender_|. The number of concurrent conversion reports
-  // being sent at any time is expected to be small, so a flat_set is used.
-  base::flat_set<int64_t> conversion_ids_being_processed_;
-
-  // Must outlive |this|.
-  ConversionManager* conversion_manager_;
+  // Map of all conversion ids that are currently in |report_queue| or are being
+  // sent by |network_sender_|, and their associated report sent callbacks. The
+  // number of concurrent conversion reports being sent at any time is expected
+  // to be small, so a flat_map is used.
+  base::flat_map<int64_t, base::OnceCallback<void(int64_t)>>
+      conversion_report_callbacks_;
 
   const base::Clock* clock_;
 

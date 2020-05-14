@@ -789,7 +789,7 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
 
   // Build child views.
   auto user_view = std::make_unique<LoginUserView>(
-      LoginDisplayStyle::kLarge, true /*show_dropdown*/, false /*show_domain*/,
+      LoginDisplayStyle::kLarge, true /*show_dropdown*/,
       base::BindRepeating(&LoginAuthUserView::OnUserViewTap,
                           base::Unretained(this)),
       callbacks.on_remove_warning_shown, callbacks.on_remove);

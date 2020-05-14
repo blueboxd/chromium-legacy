@@ -3699,6 +3699,16 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   CheckCanUseLCDText(LCDTextDisallowedReason::kNone, grand_child_);
 }
 
+TEST_P(LCDTextTest, CanUseLCDTextWithContentsOpaqueForText) {
+  child_->SetContentsOpaque(false);
+  child_->SetBackgroundColor(SK_ColorGREEN);
+  child_->SetContentsOpaqueForText(true);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, child_);
+
+  child_->SetContentsOpaqueForText(false);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kContentsNotOpaque, child_);
+}
+
 TEST_P(LCDTextTest, CanUseLCDTextWithAnimation) {
   // Sanity check: Make sure can_use_lcd_text_ is set on each node.
   UpdateActiveTreeDrawProperties();

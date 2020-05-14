@@ -16,6 +16,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV)",
       "position": [47, 47],
       "bounds": [500, 500],
+      "contentsOpaqueForText": true,
       "invalidations": [
         [0, 0, 500, 500]
       ],

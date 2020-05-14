@@ -446,12 +446,6 @@ void ComponentLoader::AddDefaultComponentExtensions(
   }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
-  // Skip all other extensions that require user session presence.
-  if (!skip_session_components) {
-    Add(IDR_CROSH_BUILTIN_MANIFEST, base::FilePath(FILE_PATH_LITERAL(
-        "/usr/share/chromeos-assets/crosh_builtin")));
-  }
-
   AddKeyboardApp();
 #else  // defined(OS_CHROMEOS)
   DCHECK(!skip_session_components);

@@ -3005,11 +3005,13 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
   }
 
   WTF::Vector<const TransformPaintPropertyNode*> scroll_translation_nodes;
-  ForAllNonThrottledLocalFrameViews(
-      [&scroll_translation_nodes](LocalFrameView& frame_view) {
-        scroll_translation_nodes.AppendVector(
-            frame_view.GetScrollTranslationNodes());
-      });
+  if (RuntimeEnabledFeatures::ScrollUnificationEnabled()) {
+    ForAllNonThrottledLocalFrameViews(
+        [&scroll_translation_nodes](LocalFrameView& frame_view) {
+          scroll_translation_nodes.AppendVector(
+              frame_view.GetScrollTranslationNodes());
+        });
+  }
 
   paint_artifact_compositor_->Update(
       paint_controller_->GetPaintArtifactShared(), viewport_properties,

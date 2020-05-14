@@ -55,7 +55,7 @@ constexpr char kInterfaceMapLabel[] =
 
 }  // namespace
 
-// Wrapper function defined in blink.h
+// Function defined in third_party/blink/public/web/blink.h.
 v8::Isolate* MainThreadIsolate() {
   return V8PerIsolateData::MainThreadIsolate();
 }

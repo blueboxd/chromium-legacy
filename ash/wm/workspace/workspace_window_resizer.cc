@@ -6,9 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
-#include <memory>
 #include <utility>
-#include <vector>
 
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
@@ -31,7 +29,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
-#include "base/memory/weak_ptr.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_types.h"
@@ -40,7 +37,6 @@
 #include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
-#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/transform.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -306,6 +302,38 @@ void ResetFrameRestoreLookKey(WindowState* window_state) {
     window->SetProperty(kFrameRestoreLookKey, false);
 }
 
+// Returns the snap type based on the |location_in_screen|.
+WorkspaceWindowResizer::SnapType GetSnapType(
+    const display::Display& display,
+    const gfx::PointF& location_in_screen) {
+  gfx::Rect area = display.work_area();
+  // Add tolerance for snapping near each display edge that is the same as the
+  // corresponding work area edge. For example, assuming the shelf is the only
+  // element that alters work area, dragging a window to the left edge when the
+  // shelf is aligned to the bottom will trigger a window snap if the location
+  // is between 0 and |kScreenEdgeInsetForSnapping|, but dragging a window to
+  // the left edge when the shelf is aligned to the left will trigger a window
+  // snap once it is past the shelf's right edge.
+  gfx::Insets insets;
+  if (area.x() == display.bounds().x())
+    insets.set_left(kScreenEdgeInsetForSnapping);
+  if (area.right() == display.bounds().right())
+    insets.set_right(kScreenEdgeInsetForSnapping);
+  if (area.y() == display.bounds().y())
+    insets.set_top(kScreenEdgeInsetForSnapping);
+  area.Inset(insets);
+
+  if (location_in_screen.x() <= area.x()) {
+    return WorkspaceWindowResizer::SnapType::kLeft;
+  } else if (location_in_screen.x() >= area.right() - 1) {
+    return WorkspaceWindowResizer::SnapType::kRight;
+  } else if (location_in_screen.y() <= area.y() &&
+             location_in_screen.y() >= display.bounds().y()) {
+    return WorkspaceWindowResizer::SnapType::kMaximize;
+  }
+  return WorkspaceWindowResizer::SnapType::kNone;
+}
+
 }  // namespace
 
 std::unique_ptr<WindowResizer> CreateWindowResizer(
@@ -509,8 +537,16 @@ void WorkspaceWindowResizer::Drag(const gfx::PointF& location_in_parent,
     if (!resizer)
       return;
   }
+
   gfx::PointF location_in_screen = location_in_parent;
   ::wm::ConvertPointToScreen(GetTarget()->parent(), &location_in_screen);
+  if (!can_snap_to_maximize_) {
+    // Check if |location_in_screen| is outside the snap region. If it is,
+    // update |can_snap_to_maximize_| and skip this check on subsequent drags.
+    can_snap_to_maximize_ =
+        ::ash::GetSnapType(GetDisplay(), location_in_screen) !=
+        SnapType::kMaximize;
+  }
   UpdateSnapPhantomWindow(location_in_screen, bounds);
 }
 
@@ -1114,19 +1150,8 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(
   if (!did_move_or_resize_ || details().window_component != HTCAPTION)
     return;
 
-  display::Screen* screen = display::Screen::GetScreen();
-  display::Display display;
-  if (details().source == ::wm::WINDOW_MOVE_SOURCE_TOUCH) {
-    display = screen->GetDisplayNearestWindow(GetTarget());
-  } else {
-    // The |Display| object returned by |CursorManager::GetDisplay| may be
-    // stale, but will have the correct id.
-    // TODO(oshima): Change the API so |GetDisplay| just returns a display id.
-    screen->GetDisplayWithDisplayId(
-        Shell::Get()->cursor_manager()->GetDisplay().id(), &display);
-  }
+  display::Display display = GetDisplay();
   SnapType last_type = snap_type_;
-  DCHECK(display.is_valid());
   snap_type_ = GetSnapType(display, location_in_screen);
 
   // Reset the controller if no snap or switching snap types. The latter is so
@@ -1196,32 +1221,7 @@ void WorkspaceWindowResizer::RestackWindows() {
 WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
     const display::Display& display,
     const gfx::PointF& location_in_screen) const {
-  gfx::Rect area = display.work_area();
-  // Add tolerance for snapping near each display edge that is the same as the
-  // corresponding work area edge. For example, assuming the shelf is the only
-  // element that alters work area, dragging a window to the left edge when the
-  // shelf is aligned to the bottom will trigger a window snap if the location
-  // is between 0 and |kScreenEdgeInsetForSnapping|, but dragging a window to
-  // the left edge when the shelf is aligned to the left will trigger a window
-  // snap once it is past the shelf's right edge.
-  gfx::Insets insets;
-  if (area.x() == display.bounds().x())
-    insets.set_left(kScreenEdgeInsetForSnapping);
-  if (area.right() == display.bounds().right())
-    insets.set_right(kScreenEdgeInsetForSnapping);
-  if (area.y() == display.bounds().y())
-    insets.set_top(kScreenEdgeInsetForSnapping);
-  area.Inset(insets);
-
-  SnapType snap_type = SnapType::kNone;
-  if (location_in_screen.x() <= area.x()) {
-    snap_type = SnapType::kLeft;
-  } else if (location_in_screen.x() >= area.right() - 1) {
-    snap_type = SnapType::kRight;
-  } else if (location_in_screen.y() <= area.y() &&
-             location_in_screen.y() >= display.bounds().y()) {
-    snap_type = SnapType::kMaximize;
-  }
+  SnapType snap_type = ::ash::GetSnapType(display, location_in_screen);
 
   // Change |snap_type| to none if the requested snap type is not compatible
   // with the window.
@@ -1232,7 +1232,7 @@ WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
         snap_type = SnapType::kNone;
       break;
     case SnapType::kMaximize:
-      if (!window_state()->CanMaximize())
+      if (!window_state()->CanMaximize() || !can_snap_to_maximize_)
         snap_type = SnapType::kNone;
       break;
     case SnapType::kNone:
@@ -1331,6 +1331,22 @@ void WorkspaceWindowResizer::EndDragForAttachedWindows(bool revert_drag) {
       window_state->OnCompleteDrag(last_mouse_location_);
     window_state->DeleteDragDetails();
   }
+}
+
+display::Display WorkspaceWindowResizer::GetDisplay() const {
+  display::Screen* screen = display::Screen::GetScreen();
+  display::Display display;
+  if (details().source == ::wm::WINDOW_MOVE_SOURCE_TOUCH) {
+    display = screen->GetDisplayNearestWindow(GetTarget());
+  } else {
+    // The |Display| object returned by |CursorManager::GetDisplay| may be
+    // stale, but will have the correct id.
+    // TODO(oshima): Change the API so |GetDisplay| just returns a display id.
+    screen->GetDisplayWithDisplayId(
+        Shell::Get()->cursor_manager()->GetDisplay().id(), &display);
+  }
+  DCHECK(display.is_valid());
+  return display;
 }
 
 }  // namespace ash

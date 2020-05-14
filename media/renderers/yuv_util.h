@@ -15,6 +15,10 @@ class GrBackendTexture;
 class GrContext;
 class SkImage;
 
+namespace gpu {
+struct MailboxHolder;
+}
+
 namespace viz {
 class RasterContextProvider;
 }  // namespace viz
@@ -23,14 +27,13 @@ namespace media {
 
 class VideoFrame;
 
-// Converts a YUV video frame to RGB format and stored the results in the GL
-// texture with ID |texture_out_id|. The caller of this function maintains
-// ownership of the out texture.
-MEDIA_EXPORT void ConvertFromVideoFrameYUVTextures(
+// Converts a YUV video frame to RGB format and stores the results in the
+// provided mailbox. The caller of this function maintains ownership of the
+// mailbox.
+MEDIA_EXPORT void ConvertFromVideoFrameYUV(
     const VideoFrame* video_frame,
     viz::RasterContextProvider* raster_context_provider,
-    unsigned int texture_out_target,
-    unsigned int texture_out_id);
+    const gpu::MailboxHolder& dest_mailbox_holder);
 
 MEDIA_EXPORT sk_sp<SkImage>
 NewSkImageFromVideoFrameYUVTexturesWithExternalBackend(

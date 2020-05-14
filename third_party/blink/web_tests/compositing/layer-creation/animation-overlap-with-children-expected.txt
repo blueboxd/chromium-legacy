@@ -25,6 +25,7 @@ Should be composited
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='test1 box')",
       "position": [5, 15],
       "bounds": [100, 100],
+      "contentsOpaqueForText": true,
       "transform": 3
     },
     {

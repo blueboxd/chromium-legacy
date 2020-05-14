@@ -9,6 +9,7 @@
     {
       "name": "LayoutTableRow TR",
       "position": [8, 18],
+      "contentsOpaqueForText": true,
       "drawsContent": false,
       "backgroundColor": "#0000FF"
     },
@@ -16,12 +17,14 @@
       "name": "LayoutTableRow TR",
       "position": [8, 28],
       "bounds": [234, 102],
+      "contentsOpaqueForText": true,
       "backgroundColor": "#0000FF"
     },
     {
       "name": "LayoutTableRow TR class='shadow-inset'",
       "position": [8, 140],
       "bounds": [234, 102],
+      "contentsOpaqueForText": true,
       "backgroundColor": "#0000FF",
       "invalidations": [
         [10, 0, 102, 102]

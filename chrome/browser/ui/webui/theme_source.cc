@@ -72,12 +72,17 @@ void ProcessResourceOnUiThread(int resource_id,
 ////////////////////////////////////////////////////////////////////////////////
 // ThemeSource, public:
 
-ThemeSource::ThemeSource(Profile* profile) : profile_(profile) {}
+ThemeSource::ThemeSource(Profile* profile)
+    : profile_(profile), serve_untrusted_(false) {}
+
+ThemeSource::ThemeSource(Profile* profile, bool serve_untrusted)
+    : profile_(profile), serve_untrusted_(serve_untrusted) {}
 
 ThemeSource::~ThemeSource() = default;
 
 std::string ThemeSource::GetSource() {
-  return chrome::kChromeUIThemeHost;
+  return serve_untrusted_ ? chrome::kChromeUIUntrustedThemeURL
+                          : chrome::kChromeUIThemeHost;
 }
 
 void ThemeSource::StartDataRequest(

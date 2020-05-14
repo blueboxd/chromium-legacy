@@ -333,8 +333,23 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // must be opaque or visual errors can occur. This applies only to this layer
   // and not to children, and does not imply the layer should be composited
   // opaquely, as effects may be applied such as opacity() or filters().
+  // Note that this also calls SetContentsOpaqueForText(opaque) internally.
+  // To override a different contents_opaque_for_text, the client should call
+  // SetContentsOpaqueForText() after SetContentsOpaque().
   void SetContentsOpaque(bool opaque);
   bool contents_opaque() const { return inputs_.contents_opaque; }
+
+  // Whether the contents area containing text is known to be opaque.
+  // For example, blink will SetContentsOpaque(false) but
+  // SetContentsOpaqueForText(true) for the following case:
+  //   <div style="overflow: hidden; border-radius: 10px; background: white">
+  //     TEXT
+  //   </div>
+  // See also the note for SetContentsOpaque().
+  void SetContentsOpaqueForText(bool opaque);
+  bool contents_opaque_for_text() const {
+    return inputs_.contents_opaque_for_text;
+  }
 
   // Set or get whether this layer should be a hit test target
   void SetHitTestable(bool should_hit_test);
@@ -829,6 +844,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     bool hit_testable : 1;
 
     bool contents_opaque : 1;
+    bool contents_opaque_for_text : 1;
     bool is_drawable : 1;
 
     bool double_sided : 1;

@@ -136,7 +136,8 @@ class CastMessageHandlerTest : public testing::Test {
   void CreatePendingRequests() {
     EXPECT_CALL(*transport_, SendMessage(_, _)).Times(AnyNumber());
     handler_.LaunchSession(channel_id_, "theAppId", base::TimeDelta::Max(),
-                           {"WEB"}, launch_session_callback_.Get());
+                           {"WEB"}, /* appParams */ "",
+                           launch_session_callback_.Get());
     for (int i = 0; i < 2; i++) {
       handler_.RequestAppAvailability(&cast_socket_, "theAppId",
                                       get_app_availability_callback_.Get());
@@ -318,6 +319,7 @@ TEST_F(CastMessageHandlerTest, LaunchSession) {
 
   handler_.LaunchSession(
       channel_id_, "AAAAAAAA", base::TimeDelta::FromSeconds(30), {"WEB"},
+      /* appParams */ "",
       base::BindOnce(&CastMessageHandlerTest::ExpectSessionLaunchResult,
                      base::Unretained(this),
                      LaunchSessionResponse::Result::kOk));
@@ -356,6 +358,7 @@ TEST_F(CastMessageHandlerTest, LaunchSessionTimedOut) {
 
   handler_.LaunchSession(
       channel_id_, "AAAAAAAA", base::TimeDelta::FromSeconds(30), {"WEB"},
+      /* appParams */ "",
       base::BindOnce(&CastMessageHandlerTest::ExpectSessionLaunchResult,
                      base::Unretained(this),
                      LaunchSessionResponse::Result::kTimedOut));

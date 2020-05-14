@@ -38,6 +38,7 @@ class TooltipControllerTestHelper {
   void FireTooltipShownTimer();
   bool IsTooltipShownTimerRunning();
   bool IsTooltipVisible();
+  void SetTooltipShowDelayEnable(bool tooltip_show_delay);
 
  private:
   TooltipController* controller_;

@@ -396,6 +396,11 @@ const char kIgnoreUserProfileMappingForTests[] =
 // chrome://flags
 const char kKernelnextRestrictVMs[] = "kernelnext-restrict-vms";
 
+// If this switch is set, then ash-chrome will exec the lacros-chrome binary
+// from the indicated path rather than from component updater. Note that the
+// path should be to a directory that contains a binary named 'chrome'.
+const char kLacrosChromePath[] = "lacros-chrome-path";
+
 // Enables Chrome-as-a-login-manager behavior.
 const char kLoginManager[] = "login-manager";
 

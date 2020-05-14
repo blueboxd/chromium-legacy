@@ -5,6 +5,7 @@
 #ifndef ASH_APP_LIST_VIEWS_SEARCH_RESULT_PAGE_VIEW_H_
 #define ASH_APP_LIST_VIEWS_SEARCH_RESULT_PAGE_VIEW_H_
 
+#include <memory>
 #include <vector>
 
 #include "ash/app_list/app_list_export.h"
@@ -18,11 +19,16 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 
+namespace views {
+class DialogDelegateView;
+}
+
 namespace ash {
 
 class AppListViewDelegate;
 class SearchResultBaseView;
 class ViewShadow;
+class SearchResultPageAnchoredDialog;
 
 // The search results page for the app list.
 class APP_LIST_EXPORT SearchResultPageView
@@ -51,6 +57,7 @@ class APP_LIST_EXPORT SearchResultPageView
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // AppListPage overrides:
+  void OnWillBeHidden() override;
   void OnHidden() override;
   void OnShown() override;
   void AnimateYPosition(AppListViewState target_view_state,
@@ -59,6 +66,9 @@ class APP_LIST_EXPORT SearchResultPageView
   void UpdatePageOpacityForState(AppListState state,
                                  float search_box_opacity,
                                  bool restore_opacity) override;
+  void UpdatePageBoundsForState(AppListState state,
+                                const gfx::Rect& contents_bounds,
+                                const gfx::Rect& search_box_bounds) override;
   gfx::Rect GetPageBoundsForState(
       AppListState state,
       const gfx::Rect& contents_bounds,
@@ -86,11 +96,22 @@ class APP_LIST_EXPORT SearchResultPageView
 
   void OnAssistantPrivacyInfoViewCloseButtonPressed();
 
+  // Shows a dialog widget, and anchors it within the search results page. The
+  // dialog will be positioned relative to the search box bounds, and will be
+  // repositioned as the page layout changes. The dialog will be closed if the
+  // search results page gets hidden.
+  // |dialog| should not yet have a widget.
+  void ShowAnchoredDialog(std::unique_ptr<views::DialogDelegateView> dialog);
+
   views::View* contents_view() { return contents_view_; }
 
   SearchResultBaseView* first_result_view() const { return first_result_view_; }
   ResultSelectionController* result_selection_controller() {
     return result_selection_controller_.get();
+  }
+
+  SearchResultPageAnchoredDialog* anchored_dialog_for_test() {
+    return anchored_dialog_.get();
   }
 
  private:
@@ -132,6 +153,9 @@ class APP_LIST_EXPORT SearchResultPageView
   // selected search result view.
   void NotifySelectedResultChanged();
 
+  // Called when the widget anchored in the search results page gets closed.
+  void OnAnchoredDialogClosed();
+
   AppListViewDelegate* view_delegate_;
 
   // The search model for which the results are displayed.
@@ -167,6 +191,9 @@ class APP_LIST_EXPORT SearchResultPageView
   views::View* assistant_privacy_info_view_ = nullptr;
 
   std::unique_ptr<ViewShadow> view_shadow_;
+
+  // The dialog anchored within the search results page.
+  std::unique_ptr<SearchResultPageAnchoredDialog> anchored_dialog_;
 
   ScopedObserver<SearchBoxModel, SearchBoxModelObserver> search_box_observer_{
       this};

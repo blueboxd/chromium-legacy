@@ -14,7 +14,7 @@ using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 
-namespace upboarding {
+namespace query_tiles {
 
 // Helper class responsible for bridging the TileProvider between C++ and Java.
 class TileProviderBridge : public base::SupportsUserData::Data {
@@ -43,6 +43,6 @@ class TileProviderBridge : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(TileProviderBridge);
 };
 
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_ANDROID_TILE_PROVIDER_BRIDGE_H_

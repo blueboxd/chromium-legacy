@@ -608,6 +608,16 @@ class ExtensionPrefs : public KeyedService {
   void SetDNRDynamicRulesetChecksum(const ExtensionId& extension_id,
                                     int checksum);
 
+  // Returns the set of enabled static ruleset IDs or base::nullopt if the
+  // extension hasn't updated the set of enabled static rulesets.
+  base::Optional<std::set<declarative_net_request::RulesetID>>
+  GetDNREnabledStaticRulesets(const ExtensionId& extension_id) const;
+  // Updates the set of enabled static rulesets for the |extension_id|. This
+  // preference gets cleared on extension update.
+  void SetDNREnabledStaticRulesets(
+      const ExtensionId& extension_id,
+      const std::set<declarative_net_request::RulesetID>& ids);
+
   // Whether the extension with the given |extension_id| is using its ruleset's
   // matched action count for the badge text. This is set via the
   // setActionCountAsBadgeText API call.

@@ -391,6 +391,50 @@ TEST_F('OSSettingsAppManagementArcDetailViewTest', 'AllJsTests', () => {
   mocha.run();
 });
 
+// Test fixture for the app management Plugin VM detail view element.
+// eslint-disable-next-line no-var
+var OSSettingsAppManagementPluginVmDetailViewTest =
+    class extends OSSettingsAppManagementBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'app_management/plugin_vm_detail_view.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'app_management/plugin_vm_detail_view_test.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsAppManagementPluginVmDetailViewTest', 'AllJsTests', () => {
+  mocha.run();
+});
+
+// Test fixture for the Plugin VM page.
+// eslint-disable-next-line no-var
+var OSSettingsAppManagementPluginVmPageTest =
+    class extends OSSettingsAppManagementBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload +
+        'app_management/plugin_vm_page/plugin_vm_shared_folders.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      'app_management/plugin_vm_shared_folders_test.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsAppManagementPluginVmPageTest', 'AllJsTests', () => {
+  mocha.run();
+});
+
 // Test fixture for the app management managed app view.
 // eslint-disable-next-line no-var
 var OSSettingsAppManagementManagedAppTest =
@@ -1136,30 +1180,6 @@ var OSSettingsPersonalizationPageTest = class extends OSSettingsBrowserTest {
 };
 
 TEST_F('OSSettingsPersonalizationPageTest', 'AllJsTests', () => {
-  mocha.run();
-});
-
-// Test fixture for the Plugin VM page.
-// eslint-disable-next-line no-var
-var OSSettingsPluginVmPageTest = class extends OSSettingsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return super.browsePreload + 'chromeos/plugin_vm_page/plugin_vm_page.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '//ui/webui/resources/js/promise_resolver.js',
-      '//ui/webui/resources/js/util.js',
-      BROWSER_SETTINGS_PATH + '../test_util.js',
-      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
-      'plugin_vm_page_test.js',
-    ]);
-  }
-};
-
-TEST_F('OSSettingsPluginVmPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 

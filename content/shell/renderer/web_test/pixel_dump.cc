@@ -86,20 +86,18 @@ void PrintFrameAsync(blink::WebLocalFrame* web_frame,
 }
 
 void CopyImageAtAndCapturePixels(
-    blink::WebLocalFrame* web_frame,
+    RenderFrame* frame,
     int x,
     int y,
     base::OnceCallback<void(const SkBitmap&)> callback) {
   mojo::Remote<blink::mojom::ClipboardHost> clipboard;
-  content::RenderFrame* render_frame =
-      content::RenderFrame::FromWebFrame(web_frame);
-  render_frame->GetBrowserInterfaceBroker()->GetInterface(
+  frame->GetBrowserInterfaceBroker()->GetInterface(
       clipboard.BindNewPipeAndPassReceiver());
 
   uint64_t sequence_number_before = 0;
   clipboard->GetSequenceNumber(ui::ClipboardBuffer::kCopyPaste,
                                &sequence_number_before);
-  web_frame->CopyImageAtForTesting(gfx::Point(x, y));
+  frame->GetWebFrame()->CopyImageAtForTesting(gfx::Point(x, y));
   uint64_t sequence_number_after = 0;
   while (sequence_number_before == sequence_number_after) {
     clipboard->GetSequenceNumber(ui::ClipboardBuffer::kCopyPaste,

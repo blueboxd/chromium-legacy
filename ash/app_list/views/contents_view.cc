@@ -598,8 +598,6 @@ bool ContentsView::Back() {
     case AppListState::kStateSearchResults:
       GetSearchBoxView()->ClearSearchAndDeactivateSearchBox();
       ShowSearchResults(false);
-      for (auto& observer : search_box_observers_)
-        observer.OnSearchBoxClearAndDeactivated();
       break;
     case AppListState::kStateEmbeddedAssistant:
       ShowEmbeddedAssistantUI(false);
@@ -914,21 +912,6 @@ ContentsView::CreateTransitionAnimationSettings(ui::Layer* layer) const {
   settings->SetTransitionDuration(
       pagination_model_.GetTransitionAnimationSlideDuration());
   return settings;
-}
-
-void ContentsView::NotifySearchBoxBoundsUpdated() {
-  for (auto& observer : search_box_observers_)
-    observer.OnSearchBoxBoundsUpdated();
-}
-
-void ContentsView::AddSearchBoxUpdateObserver(
-    SearchBoxUpdateObserver* observer) {
-  search_box_observers_.AddObserver(observer);
-}
-
-void ContentsView::RemoveSearchBoxUpdateObserver(
-    SearchBoxUpdateObserver* observer) {
-  search_box_observers_.RemoveObserver(observer);
 }
 
 bool ContentsView::ShouldLayoutPage(AppListPage* page,

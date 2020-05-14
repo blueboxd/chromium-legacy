@@ -52,7 +52,7 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   std::vector<base::string16> GetBuiltinsToProvideAsUserTypes() override;
   component_updater::ComponentUpdateService* GetComponentUpdateService()
       override;
-  upboarding::TileService* GetQueryTileService() const override;
+  query_tiles::TileService* GetQueryTileService() const override;
 
   bool IsOffTheRecord() const override;
   bool SearchSuggestEnabled() const override;

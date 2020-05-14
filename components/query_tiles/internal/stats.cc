@@ -6,7 +6,7 @@
 
 #include "base/notreached.h"
 
-namespace upboarding {
+namespace query_tiles {
 namespace stats {
 
 void RecordImageLoading(ImageLoadingEvent event) {
@@ -14,4 +14,4 @@ void RecordImageLoading(ImageLoadingEvent event) {
 }
 
 }  // namespace stats
-}  // namespace upboarding
+}  // namespace query_tiles

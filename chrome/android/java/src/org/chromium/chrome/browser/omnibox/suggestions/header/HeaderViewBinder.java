@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.omnibox.suggestions.header;
 import androidx.core.view.ViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -27,6 +28,18 @@ public class HeaderViewBinder {
         } else if (propertyKey == SuggestionCommonProperties.LAYOUT_DIRECTION) {
             ViewCompat.setLayoutDirection(
                     view, model.get(SuggestionCommonProperties.LAYOUT_DIRECTION));
+        } else if (propertyKey == HeaderViewProperties.IS_EXPANDED) {
+            boolean isExpanded = model.get(HeaderViewProperties.IS_EXPANDED);
+            view.getIconView().setImageResource(isExpanded ? R.drawable.ic_expand_less_black_24dp
+                                                           : R.drawable.ic_expand_more_black_24dp);
+            view.setExpandedStateForAccessibility(isExpanded);
+        } else if (propertyKey == HeaderViewProperties.DELEGATE) {
+            Runnable delegate = model.get(HeaderViewProperties.DELEGATE);
+            if (delegate != null) {
+                view.setOnClickListener(v -> delegate.run());
+            } else {
+                view.setOnClickListener(null);
+            }
         }
     }
 }

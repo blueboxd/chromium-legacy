@@ -47,10 +47,6 @@ class CONTENT_EXPORT ConversionManager {
   // conversion reports to storage.
   virtual void HandleConversion(const StorableConversion& conversion) = 0;
 
-  // Notify storage to delete the given |conversion_id| when it's associated
-  // report has been sent.
-  virtual void HandleSentReport(int64_t conversion_id) = 0;
-
   // Get all impressions that are currently stored in this partition. Used for
   // populating WebUI.
   virtual void GetActiveImpressionsForWebUI(
@@ -61,6 +57,10 @@ class CONTENT_EXPORT ConversionManager {
   virtual void GetReportsForWebUI(
       base::OnceCallback<void(std::vector<ConversionReport>)> callback,
       base::Time max_report_time) = 0;
+
+  // Sends all pending reports immediately, and runs |done| once they have all
+  // been sent.
+  virtual void SendReportsForWebUI(base::OnceClosure done) = 0;
 
   // Returns the ConversionPolicy that is used to control API policies such
   // as noise.

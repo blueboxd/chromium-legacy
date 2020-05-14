@@ -36,7 +36,7 @@ class LoginUserViewUnittest : public LoginTestBase {
     }
 
     auto* view =
-        new LoginUserView(display_style, show_dropdown, public_account,
+        new LoginUserView(display_style, show_dropdown,
                           base::BindRepeating(&LoginUserViewUnittest::OnTapped,
                                               base::Unretained(this)),
                           on_remove_warning_shown, on_remove);

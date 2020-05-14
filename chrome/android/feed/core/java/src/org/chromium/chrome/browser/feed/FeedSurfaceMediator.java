@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
+import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.ntp.cards.promo.HomepagePromoController.HomepagePromoStateListener;
@@ -41,6 +42,8 @@ import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenuItemProperties;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
+import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -50,9 +53,10 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
  * A mediator for the {@link FeedSurfaceCoordinator} responsible for interacting with the
  * native library and handling business logic.
  */
-class FeedSurfaceMediator
-        implements NewTabPageLayout.ScrollDelegate, ContextMenuManager.TouchEnabledDelegate,
-                   TemplateUrlServiceObserver, ListMenu.Delegate, HomepagePromoStateListener {
+class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
+                                     ContextMenuManager.TouchEnabledDelegate,
+                                     TemplateUrlServiceObserver, ListMenu.Delegate,
+                                     HomepagePromoStateListener, IdentityManager.Observer {
     private static final float IPH_TRIGGER_BAR_TRANSITION_FRACTION = 1.0f;
     private static final float IPH_STREAM_MIN_SCROLL_FRACTION = 0.10f;
     private static final float IPH_FEED_HEADER_MAX_POS_FRACTION = 0.35f;
@@ -226,6 +230,7 @@ class FeedSurfaceMediator
                     }
                 };
                 mCoordinator.getStream().addScrollListener(new HeaderIphScrollListener(delegate));
+                mSigninManager.getIdentityManager().addObserver(this);
             }
         }
         // Show feed if there is no header that would allow user to hide feed.
@@ -266,6 +271,7 @@ class FeedSurfaceMediator
 
         mPrefChangeRegistrar.removeObserver(Pref.NTP_ARTICLES_LIST_VISIBLE);
         TemplateUrlServiceFactory.get().removeObserver(this);
+        mSigninManager.getIdentityManager().removeObserver(this);
     }
 
     /**
@@ -311,12 +317,19 @@ class FeedSurfaceMediator
     /** Returns the section header text based on the selected default search engine */
     private String getSectionHeaderText(boolean isExpanded) {
         Resources res = mCoordinator.getSectionHeaderView().getResources();
+        final boolean isDefaultSearchEngineGoogle =
+                TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle();
         final int sectionHeaderStringId;
         if (mHasHeaderMenu) {
-            sectionHeaderStringId =
-                    isExpanded ? R.string.ntp_discover_on : R.string.ntp_discover_off;
+            if (isDefaultSearchEngineGoogle) {
+                sectionHeaderStringId =
+                        isExpanded ? R.string.ntp_discover_on : R.string.ntp_discover_off;
+            } else {
+                sectionHeaderStringId = isExpanded ? R.string.ntp_discover_on_branded
+                                                   : R.string.ntp_discover_off_branded;
+            }
         } else {
-            sectionHeaderStringId = TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle()
+            sectionHeaderStringId = isDefaultSearchEngineGoogle
                     ? R.string.ntp_article_suggestions_section_header
                     : R.string.ntp_article_suggestions_section_header_branded;
         }
@@ -326,10 +339,12 @@ class FeedSurfaceMediator
     private ModelList buildMenuItems() {
         ModelList itemList = new ModelList();
         int icon_id = 0;
-        itemList.add(buildMenuListItem(
-                R.string.ntp_manage_my_activity, R.id.ntp_feed_header_menu_item_activity, icon_id));
-        itemList.add(buildMenuListItem(
-                R.string.ntp_manage_interests, R.id.ntp_feed_header_menu_item_interest, icon_id));
+        if (mSigninManager.getIdentityManager().hasPrimaryAccount()) {
+            itemList.add(buildMenuListItem(R.string.ntp_manage_my_activity,
+                    R.id.ntp_feed_header_menu_item_activity, icon_id));
+            itemList.add(buildMenuListItem(R.string.ntp_manage_interests,
+                    R.id.ntp_feed_header_menu_item_interest, icon_id));
+        }
         itemList.add(buildMenuListItem(
                 R.string.learn_more, R.id.ntp_feed_header_menu_item_learn, icon_id));
         if (mSectionHeader.isExpanded()) {
@@ -454,12 +469,14 @@ class FeedSurfaceMediator
         if (itemId == R.id.ntp_feed_header_menu_item_activity) {
             mPageNavigationDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB,
                     new LoadUrlParams("https://myactivity.google.com/myactivity?product=50"));
+            NewTabPageUma.recordAction(NewTabPageUma.ACTION_CLICKED_MANAGE_ACTIVITY);
         } else if (itemId == R.id.ntp_feed_header_menu_item_interest) {
             mPageNavigationDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB,
                     new LoadUrlParams("https://www.google.com/preferences/interests"));
+            NewTabPageUma.recordAction(NewTabPageUma.ACTION_CLICKED_MANAGE_INTERESTS);
         } else if (itemId == R.id.ntp_feed_header_menu_item_learn) {
-            mPageNavigationDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB,
-                    new LoadUrlParams("https://www.google.com/chrome/privacy"));
+            mPageNavigationDelegate.navigateToHelpPage();
+            NewTabPageUma.recordAction(NewTabPageUma.ACTION_CLICKED_LEARN_MORE);
         } else if (itemId == R.id.ntp_feed_header_menu_item_toggle_switch) {
             mSectionHeader.toggleHeader();
             SuggestionsMetrics.recordExpandableHeaderTapped(mSectionHeader.isExpanded());
@@ -473,6 +490,18 @@ class FeedSurfaceMediator
     @Override
     public void onHomepagePromoStateChange() {
         mCoordinator.updateHeaderViews(mSignInPromo != null && mSignInPromo.isVisible());
+    }
+
+    // IdentityManager.Delegate interface.
+
+    @Override
+    public void onPrimaryAccountSet(CoreAccountInfo account) {
+        updateSectionHeader();
+    }
+
+    @Override
+    public void onPrimaryAccountCleared(CoreAccountInfo account) {
+        updateSectionHeader();
     }
 
     /**

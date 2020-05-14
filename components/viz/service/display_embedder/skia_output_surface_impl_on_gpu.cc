@@ -68,6 +68,7 @@
 
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "components/viz/service/display_embedder/skia_output_device_vulkan.h"
+#include "gpu/vulkan/vulkan_util.h"
 #endif
 
 #if (BUILDFLAG(ENABLE_VULKAN) || BUILDFLAG(SKIA_USE_DAWN)) && defined(USE_X11)
@@ -1040,6 +1041,10 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
   }
   context_state_->UpdateSkiaOwnedMemorySize();
   destroy_after_swap_.clear();
+#if BUILDFLAG(ENABLE_VULKAN)
+  if (is_using_vulkan())
+    gpu::ReportQueueSubmitPerSwapBuffers();
+#endif
 }
 
 void SkiaOutputSurfaceImplOnGpu::SwapBuffersSkipped(
@@ -1050,6 +1055,10 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffersSkipped(
   scoped_output_device_paint_.reset();
   context_state_->UpdateSkiaOwnedMemorySize();
   destroy_after_swap_.clear();
+#if BUILDFLAG(ENABLE_VULKAN)
+  if (is_using_vulkan())
+    gpu::ReportQueueSubmitPerSwapBuffers();
+#endif
 }
 
 void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(

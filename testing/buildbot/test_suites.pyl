@@ -1943,160 +1943,52 @@
     # GPU gtests that test only Dawn
     'gpu_dawn_gtests': {
       'dawn_end2end_no_spvc_tests': {
-        'desktop_args': [
-          '--use-gpu-in-tests',
-          # Dawn test retries deliberately disabled to prevent flakiness.
-          '--test-launcher-retry-limit=0',
+        'mixins': ['dawn_end2end_gpu_test'],
+        'args': [
           '--no-use-spvc',
           '--no-use-spvc-parser',
-          '--exclusive-device-type-preference=discrete,integrated',
         ],
         'test': 'dawn_end2end_tests',
       },
       'dawn_end2end_skip_validation_tests': {
-        'desktop_args': [
-          '--use-gpu-in-tests',
-          # Dawn test retries deliberately disabled to prevent flakiness.
-          '--test-launcher-retry-limit=0',
+        'mixins': ['dawn_end2end_gpu_test'],
+        'args': [
           '--skip-validation',
-          '--exclusive-device-type-preference=discrete,integrated',
         ],
         'test': 'dawn_end2end_tests',
       },
       'dawn_end2end_tests': {
-        'desktop_args': [
-          '--use-gpu-in-tests',
-          # Dawn test retries deliberately disabled to prevent flakiness.
-          '--test-launcher-retry-limit=0',
-          '--exclusive-device-type-preference=discrete,integrated',
-        ],
+        'mixins': ['dawn_end2end_gpu_test'],
       },
       'dawn_end2end_use_spvc_parser_tests': {
-        'desktop_args': [
-          '--use-gpu-in-tests',
-          # Dawn test retries deliberately disabled to prevent flakiness.
-          '--test-launcher-retry-limit=0',
+        'mixins': ['dawn_end2end_gpu_test'],
+        'args': [
           '--use-spvc',
           '--use-spvc-parser',
-          '--exclusive-device-type-preference=discrete,integrated',
         ],
         'test': 'dawn_end2end_tests',
       },
       'dawn_end2end_use_spvc_tests': {
-        'desktop_args': [
-          '--use-gpu-in-tests',
-          # Dawn test retries deliberately disabled to prevent flakiness.
-          '--test-launcher-retry-limit=0',
+        'mixins': ['dawn_end2end_gpu_test'],
+        'args': [
           '--use-spvc',
           '--no-use-spvc-parser',
-          '--exclusive-device-type-preference=discrete,integrated',
         ],
         'test': 'dawn_end2end_tests',
       },
       'dawn_end2end_validation_layers_tests': {
-        'desktop_args': [
-          '--use-gpu-in-tests',
-          # Dawn test retries deliberately disabled to prevent flakiness.
-          '--test-launcher-retry-limit=0',
+        'mixins': ['dawn_end2end_gpu_test'],
+        'args': [
           '--enable-backend-validation',
-          '--exclusive-device-type-preference=discrete,integrated',
         ],
         'test': 'dawn_end2end_tests',
       },
       'dawn_end2end_wire_tests': {
-        'desktop_args': [
-          '--use-gpu-in-tests',
-          # Dawn test retries deliberately disabled to prevent flakiness.
-          '--test-launcher-retry-limit=0',
+        'mixins': ['dawn_end2end_gpu_test'],
+        'args': [
           '--use-wire',
-          '--exclusive-device-type-preference=discrete,integrated',
         ],
         'test': 'dawn_end2end_tests',
-      },
-    },
-
-    # GPU gtests that test Dawn and integration with Chromium
-    # These tests are run both on the CI and trybots which test DEPS Dawn.
-    'gpu_dawn_integration_gtests': {
-      'dawn_end2end_no_spvc_tests': {
-        'desktop_args': [
-          '--use-gpu-in-tests',
-          # Dawn test retries deliberately disabled to prevent flakiness.
-          '--test-launcher-retry-limit=0',
-          '--no-use-spvc',
-          '--no-use-spvc-parser',
-          '--exclusive-device-type-preference=discrete,integrated',
-        ],
-        'test': 'dawn_end2end_tests',
-      },
-      'dawn_end2end_skip_validation_tests': {
-        'desktop_args': [
-          '--use-gpu-in-tests',
-          # Dawn test retries deliberately disabled to prevent flakiness.
-          '--test-launcher-retry-limit=0',
-          '--skip-validation',
-          '--exclusive-device-type-preference=discrete,integrated',
-        ],
-        'test': 'dawn_end2end_tests',
-      },
-      'dawn_end2end_tests': {
-        'desktop_args': [
-          '--use-gpu-in-tests',
-          # Dawn test retries deliberately disabled to prevent flakiness.
-          '--test-launcher-retry-limit=0',
-          '--exclusive-device-type-preference=discrete,integrated',
-        ],
-      },
-      'dawn_end2end_use_spvc_parser_tests': {
-        'desktop_args': [
-          '--use-gpu-in-tests',
-          # Dawn test retries deliberately disabled to prevent flakiness.
-          '--test-launcher-retry-limit=0',
-          '--use-spvc',
-          '--use-spvc-parser',
-          '--exclusive-device-type-preference=discrete,integrated',
-        ],
-        'test': 'dawn_end2end_tests',
-      },
-      'dawn_end2end_use_spvc_tests': {
-        'desktop_args': [
-          '--use-gpu-in-tests',
-          # Dawn test retries deliberately disabled to prevent flakiness.
-          '--test-launcher-retry-limit=0',
-          '--use-spvc',
-          '--no-use-spvc-parser',
-          '--exclusive-device-type-preference=discrete,integrated',
-        ],
-        'test': 'dawn_end2end_tests',
-      },
-      'dawn_end2end_validation_layers_tests': {
-        'desktop_args': [
-          '--use-gpu-in-tests',
-          # Dawn test retries deliberately disabled to prevent flakiness.
-          '--test-launcher-retry-limit=0',
-          '--enable-backend-validation',
-          '--exclusive-device-type-preference=discrete,integrated',
-        ],
-        'test': 'dawn_end2end_tests',
-      },
-      'dawn_end2end_wire_tests': {
-        'desktop_args': [
-          '--use-gpu-in-tests',
-          # Dawn test retries deliberately disabled to prevent flakiness.
-          '--test-launcher-retry-limit=0',
-          '--use-wire',
-          '--exclusive-device-type-preference=discrete,integrated',
-        ],
-        'test': 'dawn_end2end_tests',
-      },
-      'gl_tests': {
-        'desktop_args': [
-          '--use-gpu-in-tests',
-        ],
-      },
-      'gl_unittests': {
-        'desktop_args': ['--use-gpu-in-tests'],
-        'linux_args': ['--no-xvfb'],
       },
     },
 
@@ -4588,12 +4480,14 @@
       'gpu_gl_renderer_small_telemetry_tests',
     ],
 
-    'gpu_dawn_deps_isolated_scripts': [
-      'gpu_dawn_perf_smoke_isolated_scripts',
-      'gpu_webgpu_integration_isolated_scripts',
+    # GPU gtests that test Dawn and integration with Chromium
+    # These tests are run both on the CI and trybots which test DEPS Dawn.
+    'gpu_dawn_integration_gtests': [
+      'gpu_dawn_gtests',
+      'gpu_common_gtests',
     ],
 
-    'gpu_dawn_tot_isolated_scripts': [
+    'gpu_dawn_isolated_scripts': [
       'gpu_dawn_perf_smoke_isolated_scripts',
       'gpu_webgpu_integration_isolated_scripts',
     ],

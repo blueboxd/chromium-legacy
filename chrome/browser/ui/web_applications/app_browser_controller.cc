@@ -89,6 +89,7 @@ namespace {
 constexpr gfx::Rect TERMINAL_DEFAULT_BOUNDS(gfx::Point(64, 64),
                                             gfx::Size(652, 484));
 constexpr gfx::Size TERMINAL_SETTINGS_DEFAULT_SIZE(768, 512);
+constexpr gfx::Size HELP_DEFAULT_SIZE(960, 600);
 }  // namespace
 
 // static
@@ -317,6 +318,12 @@ gfx::Rect AppBrowserController::GetDefaultBounds() const {
       return bounds;
     }
     return TERMINAL_DEFAULT_BOUNDS;
+  } else if (system_app_type_ == SystemAppType::HELP) {
+    // Help app is centered.
+    gfx::Rect bounds =
+        display::Screen::GetScreen()->GetDisplayForNewWindows().work_area();
+    bounds.ClampToCenteredSize(HELP_DEFAULT_SIZE);
+    return bounds;
   }
   return gfx::Rect();
 }

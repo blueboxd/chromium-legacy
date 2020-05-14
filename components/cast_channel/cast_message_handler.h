@@ -185,6 +185,7 @@ class CastMessageHandler : public CastSocket::Observer {
       const std::string& app_id,
       base::TimeDelta launch_timeout,
       const std::vector<std::string>& supported_app_types,
+      const std::string& app_params,
       LaunchSessionCallback callback);
 
   // Stops the session given by |session_id| on the device given by

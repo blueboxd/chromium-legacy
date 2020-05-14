@@ -11,10 +11,12 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/app_list/views/app_list_main_view.h"
+#include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/remove_query_confirmation_dialog.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_actions_view.h"
 #include "ash/app_list/views/search_result_list_view.h"
+#include "ash/app_list/views/search_result_page_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
@@ -155,7 +157,7 @@ void SearchResultView::CreateDetailsRenderText() {
   details_text_ = std::move(render_text);
 }
 
-void SearchResultView::OnQueryRemovalAccepted(bool accepted, int event_flags) {
+void SearchResultView::OnQueryRemovalAccepted(int event_flags, bool accepted) {
   if (accepted) {
     list_view_->SearchResultActionActivated(
         this, OmniBoxZeroStateAction::kRemoveSuggestion, event_flags);
@@ -411,13 +413,14 @@ void SearchResultView::OnSearchResultActionActivated(size_t index,
     if (button_action == OmniBoxZeroStateAction::kRemoveSuggestion) {
       RecordZeroStateSearchResultUserActionHistogram(
           ZeroStateSearchResultUserActionType::kRemoveResult);
-      RemoveQueryConfirmationDialog* dialog = new RemoveQueryConfirmationDialog(
+      auto dialog = std::make_unique<RemoveQueryConfirmationDialog>(
           result()->title(),
           base::BindOnce(&SearchResultView::OnQueryRemovalAccepted,
-                         weak_ptr_factory_.GetWeakPtr()),
-          event_flags, list_view_->app_list_main_view()->contents_view());
-
-      dialog->Show(GetWidget()->GetNativeWindow());
+                         weak_ptr_factory_.GetWeakPtr(), event_flags));
+      list_view_->app_list_main_view()
+          ->contents_view()
+          ->search_results_page_view()
+          ->ShowAnchoredDialog(std::move(dialog));
     } else if (button_action == OmniBoxZeroStateAction::kAppendSuggestion) {
       RecordZeroStateSearchResultUserActionHistogram(
           ZeroStateSearchResultUserActionType::kAppendResult);

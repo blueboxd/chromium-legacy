@@ -5,12 +5,14 @@
 #include "chromeos/services/network_config/cros_network_config.h"
 
 #include "base/strings/string_util.h"
+#include "chromeos/components/sync_wifi/network_eligibility_checker.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_metadata_store.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
@@ -1405,6 +1407,10 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       wifi->signal_strength = GetInt32(wifi_dict, ::onc::wifi::kSignalStrength);
       wifi->tethering_state =
           GetString(wifi_dict, ::onc::wifi::kTetheringState);
+      wifi->is_syncable = sync_wifi::IsEligibleForSync(
+          result->guid, result->connectable, result->source, wifi->security,
+          /*log_result=*/false);
+
       result->type_properties =
           mojom::NetworkTypeManagedProperties::NewWifi(std::move(wifi));
       break;

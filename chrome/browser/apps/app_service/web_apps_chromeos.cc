@@ -249,7 +249,7 @@ void WebAppsChromeOs::OnWebAppDisabledStateChanged(const web_app::AppId& app_id,
   apps::mojom::AppPtr app = WebAppsBase::ConvertImpl(
       web_app, is_disabled ? apps::mojom::Readiness::kDisabledByPolicy
                            : apps::mojom::Readiness::kReady);
-  app->icon_key = icon_key_factory_.MakeIconKey(
+  app->icon_key = icon_key_factory().MakeIconKey(
       GetIconEffects(web_app, paused_apps_.IsPaused(app_id), is_disabled));
   Publish(std::move(app), subscribers());
 }
@@ -360,7 +360,7 @@ apps::mojom::AppPtr WebAppsChromeOs::Convert(const web_app::WebApp* web_app,
       is_disabled ? apps::mojom::Readiness::kDisabledByPolicy : readiness);
 
   bool paused = paused_apps_.IsPaused(web_app->app_id());
-  app->icon_key = icon_key_factory_.MakeIconKey(
+  app->icon_key = icon_key_factory().MakeIconKey(
       GetIconEffects(web_app, paused, is_disabled));
 
   app->paused = paused ? apps::mojom::OptionalBool::kTrue
@@ -415,7 +415,7 @@ void WebAppsChromeOs::SetIconEffect(const std::string& app_id) {
   app->app_type = apps::mojom::AppType::kWeb;
   app->app_id = app_id;
   DCHECK(web_app->chromeos_data().has_value());
-  app->icon_key = icon_key_factory_.MakeIconKey(
+  app->icon_key = icon_key_factory().MakeIconKey(
       GetIconEffects(web_app, paused_apps_.IsPaused(app_id),
                      web_app->chromeos_data()->is_disabled));
   Publish(std::move(app), subscribers());

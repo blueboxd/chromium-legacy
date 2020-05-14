@@ -283,6 +283,10 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
     if (is_main_frame_secure_) {
       UMA_HISTOGRAM_ENUMERATION(
           "PasswordManager.FillingAssistance.SecureOrigin", filling_assistance);
+      if (is_mixed_content_form_) {
+        UMA_HISTOGRAM_ENUMERATION("PasswordManager.FillingAssistance.MixedForm",
+                                  filling_assistance);
+      }
     } else {
       UMA_HISTOGRAM_ENUMERATION(
           "PasswordManager.FillingAssistance.InsecureOrigin",
@@ -454,6 +458,11 @@ void PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric(
     metrics_util::PasswordAccountStorageUsageLevel
         account_storage_usage_level) {
   CalculateJsOnlyInput(submitted_form);
+  if (is_main_frame_secure_ && submitted_form.action.is_valid() &&
+      !submitted_form.is_action_empty &&
+      !submitted_form.action.SchemeIsCryptographic()) {
+    is_mixed_content_form_ = true;
+  }
 
   filling_source_ = FillingSource::kNotFilled;
   account_storage_usage_level_ = account_storage_usage_level;

@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "components/query_tiles/tile.h"
 
-namespace upboarding {
+namespace query_tiles {
 
 // A group of query tiles and metadata.
 struct TileGroup {
@@ -41,6 +41,6 @@ struct TileGroup {
   std::vector<std::unique_ptr<Tile>> tiles;
 };
 
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_INTERNAL_TILE_GROUP_H_

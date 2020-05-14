@@ -497,6 +497,19 @@ This file contains the strings for ash.
         Floating accessibility menu
       </message>
 
+      <message name="IDS_ASH_FLOATING_ACCESSIBILITY_MAIN_MENU_MOVED_TOP_LEFT" desc="Accessibility event message that is triggered when the menu is moved to the top-left corner.">
+        Menu moved to the top-left corner of the screen.
+      </message>
+      <message name="IDS_ASH_FLOATING_ACCESSIBILITY_MAIN_MENU_MOVED_TOP_RIGHT" desc="Accessibility event message that is triggered when the menu is moved to the top-right corner.">
+        Menu moved to the top-right corner of the screen.
+      </message>
+      <message name="IDS_ASH_FLOATING_ACCESSIBILITY_MAIN_MENU_MOVED_BOTTOM_LEFT" desc="Accessibility event message that is triggered when the menu is moved to the bottom-left corner.">
+        Menu moved to the bottom-left corner of the screen.
+      </message>
+      <message name="IDS_ASH_FLOATING_ACCESSIBILITY_MAIN_MENU_MOVED_BOTTOM_RIGHT" desc="Accessibility event message that is triggered when the menu is moved to the bottom-right corner.">
+        Menu moved to the bottom-right corner of the screen.
+      </message>
+
       <message name="IDS_ASH_STATUS_TRAY_MIC_GAIN" desc="The accessible text for the toggle mic muted button in the tray audio settings">
         Toggle Mic. <ph name="STATE_TEXT">$1<ex>Mic is muted</ex></ph>
       </message>
@@ -1946,6 +1959,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_PIN_KEYBOARD_DELETE_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the delete button of the PIN keyboard.">
         Delete
+      </message>
+      <message name="IDS_ASH_LOGIN_POD_MANAGED_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the user pod when the user is managed.">
+        <ph name="USER_EMAIL_ADDRESS">$1<ex>john.doe@example.com</ex></ph> Managed user
       </message>
       <message name="IDS_ASH_LOGIN_POD_OWNER_USER" desc="Login/lock screen user pod menu title for a user who owns the device.">
         <ph name="USER_NAME">$1<ex>Ivan Arbuzov</ex></ph> (owner)

@@ -16,18 +16,24 @@ struct EnumTraits<printing::mojom::PdfRenderSettings::Mode,
                   printing::PdfRenderSettings::Mode> {
   static printing::mojom::PdfRenderSettings::Mode ToMojom(
       printing::PdfRenderSettings::Mode mode) {
+    using MojomMode = printing::mojom::PdfRenderSettings::Mode;
+    using PrintMode = printing::PdfRenderSettings::Mode;
     switch (mode) {
-      case printing::PdfRenderSettings::Mode::NORMAL:
-        return printing::mojom::PdfRenderSettings::Mode::NORMAL;
+      case PrintMode::NORMAL:
+        return MojomMode::NORMAL;
 #if defined(OS_WIN)
-      case printing::PdfRenderSettings::Mode::TEXTONLY:
-        return printing::mojom::PdfRenderSettings::Mode::TEXTONLY;
-      case printing::PdfRenderSettings::Mode::GDI_TEXT:
-        return printing::mojom::PdfRenderSettings::Mode::GDI_TEXT;
-      case printing::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2:
-        return printing::mojom::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2;
-      case printing::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3:
-        return printing::mojom::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3;
+      case PrintMode::TEXTONLY:
+        return MojomMode::TEXTONLY;
+      case PrintMode::GDI_TEXT:
+        return MojomMode::GDI_TEXT;
+      case PrintMode::POSTSCRIPT_LEVEL2:
+        return MojomMode::POSTSCRIPT_LEVEL2;
+      case PrintMode::POSTSCRIPT_LEVEL3:
+        return MojomMode::POSTSCRIPT_LEVEL3;
+      case PrintMode::EMF_WITH_REDUCED_RASTERIZATION:
+        return MojomMode::EMF_WITH_REDUCED_RASTERIZATION;
+      case PrintMode::EMF_WITH_REDUCED_RASTERIZATION_AND_GDI_TEXT:
+        return MojomMode::EMF_WITH_REDUCED_RASTERIZATION_AND_GDI_TEXT;
 #endif
     }
     NOTREACHED() << "Unknown mode " << static_cast<int>(mode);
@@ -36,22 +42,30 @@ struct EnumTraits<printing::mojom::PdfRenderSettings::Mode,
 
   static bool FromMojom(printing::mojom::PdfRenderSettings::Mode input,
                         printing::PdfRenderSettings::Mode* output) {
+    using MojomMode = printing::mojom::PdfRenderSettings::Mode;
+    using PrintMode = printing::PdfRenderSettings::Mode;
     switch (input) {
-      case printing::mojom::PdfRenderSettings::Mode::NORMAL:
-        *output = printing::PdfRenderSettings::Mode::NORMAL;
+      case MojomMode::NORMAL:
+        *output = PrintMode::NORMAL;
         return true;
 #if defined(OS_WIN)
-      case printing::mojom::PdfRenderSettings::Mode::TEXTONLY:
-        *output = printing::PdfRenderSettings::Mode::TEXTONLY;
+      case MojomMode::TEXTONLY:
+        *output = PrintMode::TEXTONLY;
         return true;
-      case printing::mojom::PdfRenderSettings::Mode::GDI_TEXT:
-        *output = printing::PdfRenderSettings::Mode::GDI_TEXT;
+      case MojomMode::GDI_TEXT:
+        *output = PrintMode::GDI_TEXT;
         return true;
-      case printing::mojom::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2:
-        *output = printing::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2;
+      case MojomMode::POSTSCRIPT_LEVEL2:
+        *output = PrintMode::POSTSCRIPT_LEVEL2;
         return true;
-      case printing::mojom::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3:
-        *output = printing::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3;
+      case MojomMode::POSTSCRIPT_LEVEL3:
+        *output = PrintMode::POSTSCRIPT_LEVEL3;
+        return true;
+      case MojomMode::EMF_WITH_REDUCED_RASTERIZATION:
+        *output = PrintMode::EMF_WITH_REDUCED_RASTERIZATION;
+        return true;
+      case MojomMode::EMF_WITH_REDUCED_RASTERIZATION_AND_GDI_TEXT:
+        *output = PrintMode::EMF_WITH_REDUCED_RASTERIZATION_AND_GDI_TEXT;
         return true;
 #endif
     }

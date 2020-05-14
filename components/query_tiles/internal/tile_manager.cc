@@ -15,7 +15,7 @@
 #include "components/query_tiles/internal/tile_iterator.h"
 #include "components/query_tiles/internal/tile_manager.h"
 
-namespace upboarding {
+namespace query_tiles {
 namespace {
 
 class TileManagerImpl : public TileManager {
@@ -212,4 +212,4 @@ std::unique_ptr<TileManager> TileManager::Create(
                                            locale);
 }
 
-}  // namespace upboarding
+}  // namespace query_tiles

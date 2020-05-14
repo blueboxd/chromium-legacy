@@ -512,37 +512,39 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
 
   browser_context->GetClientHintsControllerDelegate()->ResetForTesting();
 
-  initial_size_ = Shell::GetShellDefaultSize();
+  const gfx::Size window_size = Shell::GetShellDefaultSize();
+
   if (!main_window_) {
     main_window_ = content::Shell::CreateNewWindow(
-        browser_context, GURL(url::kAboutBlankURL), nullptr, initial_size_);
+        browser_context, GURL(url::kAboutBlankURL), nullptr, window_size);
     WebContentsObserver::Observe(main_window_->web_contents());
 
     current_pid_ = base::kNullProcessId;
-    default_prefs_ = main_window_->web_contents()
-                         ->GetRenderViewHost()
-                         ->GetWebkitPreferences();
-  } else {
+
     RenderViewHost* render_view_host =
         main_window_->web_contents()->GetRenderViewHost();
-    RenderWidgetHost* render_widget_host = render_view_host->GetWidget();
-
+    default_prefs_ = render_view_host->GetWebkitPreferences();
+  } else {
     // Set a different size first to reset the possibly inconsistent state
     // caused by the previous test using unfortunate synchronous resize mode.
     // This forces SetSize() not to early return which would otherwise happen
-    // when we set the size to initial_size_ which is the same as its current
+    // when we set the size to |window_size| which is the same as its current
     // size. See http://crbug.com/1011191 for more details.
-    render_widget_host->GetView()->SetSize(
-        gfx::ScaleToCeiledSize(initial_size_, 0.5, 1));
-    render_widget_host->GetView()->SetSize(initial_size_);
+    // TODO(crbug.com/309760): This resize to half-size could go away if
+    // testRunner.useUnfortunateSynchronousResizeMode() goes away.
+    main_window_->ResizeWebContentForTests(
+        gfx::ScaleToCeiledSize(window_size, 0.5f, 1));
+    main_window_->ResizeWebContentForTests(window_size);
 
+    RenderViewHost* render_view_host =
+        main_window_->web_contents()->GetRenderViewHost();
     render_view_host->UpdateWebkitPreferences(default_prefs_);
   }
 
   if (is_devtools_js_test && !secondary_window_) {
     secondary_window_ = content::Shell::CreateNewWindow(
         ShellContentBrowserClient::Get()->browser_context(),
-        GURL(url::kAboutBlankURL), nullptr, initial_size_);
+        GURL(url::kAboutBlankURL), nullptr, window_size);
   }
 
   // The main frame is constructed along with the Shell, which is before we can
@@ -1089,7 +1091,6 @@ void WebTestControlHost::HandleNewRenderFrameHost(RenderFrameHost* frame) {
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kAllowExternalPages);
     params->expected_pixel_hash = expected_pixel_hash_;
-    params->initial_size = initial_size_;
     params->protocol_mode = protocol_mode_;
 
     if (did_send_initial_test_configuration_) {

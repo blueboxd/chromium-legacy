@@ -251,14 +251,14 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &password_manager::features::kPasswordEditingAndroid,
     &password_manager::features::kPasswordManagerOnboardingAndroid,
     &password_manager::features::kRecoverFromNeverSaveAndroid,
+    &query_tiles::features::kQueryTiles,
+    &query_tiles::features::kQueryTilesInOmnibox,
+    &query_tiles::features::kQueryTilesEnableQueryEditing,
     &security_state::features::kMarkHttpAsFeature,
     &signin::kMobileIdentityConsistency,
     &switches::kSyncErrorInfoBarAndroid,
     &switches::kSyncUseSessionsUnregisterDelay,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
-    &upboarding::features::kQueryTiles,
-    &upboarding::features::kQueryTilesInOmnibox,
-    &upboarding::features::kQueryTilesEnableQueryEditing,
 };
 
 const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {

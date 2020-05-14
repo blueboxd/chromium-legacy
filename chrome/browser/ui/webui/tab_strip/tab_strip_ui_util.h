@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_TAB_STRIP_TAB_STRIP_UI_UTIL_H_
 #define CHROME_BROWSER_UI_WEBUI_TAB_STRIP_TAB_STRIP_UI_UTIL_H_
 
+#include <string>
+
 #include "base/optional.h"
 #include "components/tab_groups/tab_group_id.h"
 
@@ -30,6 +32,10 @@ void MoveTabAcrossWindows(
     Browser* target_browser,
     int to_index,
     base::Optional<tab_groups::TabGroupId> to_group_id = base::nullopt);
+
+// Returns whether |drop_data| is a tab drag originating from a WebUI
+// tab strip.
+bool IsDraggedTab(const ui::OSExchangeData& drop_data);
 
 // Handles dropping tabs not destined for an existing tab strip.
 // |new_browser| should be the newly created Browser with no tabs, and

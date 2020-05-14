@@ -12,6 +12,7 @@ Test CSS clip with composited layers. Left and right sides should look the same.
       "name": "LayoutBlockFlow (positioned) DIV class='composited box'",
       "position": [-5, -5],
       "bounds": [110, 110],
+      "contentsOpaqueForText": true,
       "backgroundColor": "#808080",
       "transform": 2
     },

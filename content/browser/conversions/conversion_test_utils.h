@@ -57,13 +57,13 @@ class TestConversionManager : public ConversionManager {
   // ConversionManager:
   void HandleImpression(const StorableImpression& impression) override;
   void HandleConversion(const StorableConversion& conversion) override;
-  void HandleSentReport(int64_t conversion_id) override;
   void GetActiveImpressionsForWebUI(
       base::OnceCallback<void(std::vector<StorableImpression>)> callback)
       override;
   void GetReportsForWebUI(
       base::OnceCallback<void(std::vector<ConversionReport>)> callback,
       base::Time max_report_time) override;
+  void SendReportsForWebUI(base::OnceClosure done) override;
   const ConversionPolicy& GetConversionPolicy() const override;
   void ClearData(base::Time delete_begin,
                  base::Time delete_end,
@@ -80,13 +80,10 @@ class TestConversionManager : public ConversionManager {
   size_t num_impressions() const { return num_impressions_; }
   size_t num_conversions() const { return num_conversions_; }
 
-  int64_t last_sent_report_id() { return last_sent_report_id_; }
-
  private:
   ConversionPolicy policy_;
   size_t num_impressions_ = 0;
   size_t num_conversions_ = 0;
-  int64_t last_sent_report_id_ = 0L;
 
   std::vector<StorableImpression> impressions_;
   std::vector<ConversionReport> reports_;

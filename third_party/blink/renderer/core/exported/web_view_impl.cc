@@ -146,7 +146,6 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
-#include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
@@ -160,7 +159,6 @@
 #include "third_party/blink/renderer/platform/scheduler/public/page_lifecycle_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
-#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
 
 #include "ui/gfx/skia_util.h"
@@ -2950,12 +2948,6 @@ bool WebViewImpl::IsActive() const {
   return GetPage() ? GetPage()->GetFocusController().IsActive() : false;
 }
 
-void WebViewImpl::SetDomainRelaxationForbidden(bool forbidden,
-                                               const WebString& scheme) {
-  SchemeRegistry::SetDomainRelaxationForbiddenForURLScheme(forbidden,
-                                                           String(scheme));
-}
-
 void WebViewImpl::SetWindowFeatures(const WebWindowFeatures& features) {
   AsView().page->SetWindowFeatures(features);
 }
@@ -3097,12 +3089,6 @@ void WebViewImpl::ClearBackgroundColorOverride() {
 void WebViewImpl::SetZoomFactorOverride(float zoom_factor) {
   zoom_factor_override_ = zoom_factor;
   SetZoomLevel(ZoomLevel());
-}
-
-void WebViewImpl::SetMainFrameOverlayColor(SkColor color) {
-  DCHECK(AsView().page->MainFrame());
-  if (auto* local_frame = DynamicTo<LocalFrame>(AsView().page->MainFrame()))
-    local_frame->SetMainFrameColorOverlay(color);
 }
 
 Element* WebViewImpl::FocusedElement() const {
@@ -3333,14 +3319,6 @@ void WebViewImpl::SetVisibilityState(
 mojom::blink::PageVisibilityState WebViewImpl::GetVisibilityState() {
   DCHECK(GetPage());
   return GetPage()->GetVisibilityState();
-}
-
-void WebViewImpl::ForceNextWebGLContextCreationToFail() {
-  CoreInitializer::GetInstance().ForceNextWebGLContextCreationToFail();
-}
-
-void WebViewImpl::ForceNextDrawingBufferCreationToFail() {
-  DrawingBuffer::ForceNextDrawingBufferCreationToFail();
 }
 
 float WebViewImpl::DeviceScaleFactor() const {

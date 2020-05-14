@@ -877,6 +877,8 @@ bool TranslateManager::IsTranslatableLanguagePair(
 void TranslateManager::MaybeShowOmniboxIcon(
     const TranslateTriggerDecision& decision) {
   if (decision.IsTriggeringPossible()) {
+    // Show the omnibox icon if any translate trigger is possible.
+    language_state_.SetTranslateEnabled(true);
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_SHOW_ICON);
   }

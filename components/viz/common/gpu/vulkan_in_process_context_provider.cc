@@ -11,11 +11,13 @@
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_instance.h"
+#include "gpu/vulkan/vulkan_util.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/vk/GrVkExtensions.h"
 
 namespace viz {
 
+// static
 scoped_refptr<VulkanInProcessContextProvider>
 VulkanInProcessContextProvider::Create(
     gpu::VulkanImplementation* vulkan_implementation,
@@ -71,8 +73,12 @@ bool VulkanInProcessContextProvider::Initialize(
 
   GrVkGetProc get_proc = [](const char* proc_name, VkInstance instance,
                             VkDevice device) {
-    return device ? vkGetDeviceProcAddr(device, proc_name)
-                  : vkGetInstanceProcAddr(instance, proc_name);
+    if (device) {
+      if (std::strcmp("vkQueueSubmit", proc_name) == 0)
+        return reinterpret_cast<PFN_vkVoidFunction>(&gpu::QueueSubmitHook);
+      return vkGetDeviceProcAddr(device, proc_name);
+    }
+    return vkGetInstanceProcAddr(instance, proc_name);
   };
 
   std::vector<const char*> device_extensions;

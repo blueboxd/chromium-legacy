@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/quick_answers/quick_answers_ui_controller.h"
+#include "ash/quick_answers/ui/quick_answers_pre_target_handler.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -111,71 +112,12 @@ class CustomizedLabelButton : public views::LabelButton {
 
 }  // namespace
 
-// UserConsentViewPreTargetHandler ---------------------------------------------
-
-// TODO(siabhijeet): Reuse pre-target handler for QuickAnswersView.
-class UserConsentViewPreTargetHandler : public ui::EventHandler {
- public:
-  explicit UserConsentViewPreTargetHandler(UserConsentView* view)
-      : view_(view) {
-    Shell::Get()->AddPreTargetHandler(this);
-  }
-
-  ~UserConsentViewPreTargetHandler() override {
-    Shell::Get()->RemovePreTargetHandler(this);
-  }
-
-  UserConsentViewPreTargetHandler(const UserConsentViewPreTargetHandler&) =
-      delete;
-  UserConsentViewPreTargetHandler& operator=(
-      const UserConsentViewPreTargetHandler&) = delete;
-
-  // ui::EventHandler:
-  void OnEvent(ui::Event* event) override {
-    if (!event->IsLocatedEvent())
-      return;
-    auto* located_event = event->AsLocatedEvent();
-    auto location = located_event->target()->GetScreenLocation(*located_event);
-    if (view_->GetBoundsInScreen().Contains(location)) {
-      DoDispatchEvent(view_, located_event);
-      event->StopPropagation();
-      auto* tooltip_manager = view_->GetWidget()->GetTooltipManager();
-      if (tooltip_manager)
-        tooltip_manager->UpdateTooltip();
-    }
-  }
-
- private:
-  // TODO(siabhijeet): Investigate using SendEventsToSink() instead.
-  bool DoDispatchEvent(views::View* view, ui::LocatedEvent* event) {
-    if (event->handled())
-      return true;
-
-    // Convert |event| to local coordinates of |view|.
-    gfx::Point location = event->target()->GetScreenLocation(*event);
-    views::View::ConvertPointFromScreen(view, &location);
-    event->set_location(location);
-    ui::Event::DispatcherApi(event).set_target(view);
-
-    // Process event and dispatch on children recursively.
-    view->OnEvent(event);
-    for (auto* child : view->children()) {
-      if (DoDispatchEvent(child, event))
-        return true;
-    }
-    return false;
-  }
-
-  // Associated view handled by this class.
-  UserConsentView* const view_;
-};
-
 // UserConsentView -------------------------------------------------------------
 
 UserConsentView::UserConsentView(const gfx::Rect& anchor_view_bounds,
                                  QuickAnswersUiController* ui_controller)
     : anchor_view_bounds_(anchor_view_bounds),
-      event_handler_(std::make_unique<UserConsentViewPreTargetHandler>(this)),
+      event_handler_(std::make_unique<QuickAnswersPreTargetHandler>(this)),
       ui_controller_(ui_controller) {
   InitLayout();
   InitWidget();
@@ -201,6 +143,9 @@ gfx::Size UserConsentView::CalculatePreferredSize() const {
 void UserConsentView::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
   if (sender == consent_button_) {
+    // When user-consent is acknowledged, QuickAnswersView will be displayed
+    // instead of dismissing the menu.
+    event_handler_->set_dismiss_anchor_menu_on_view_closed(false);
     ui_controller_->OnConsentGrantedButtonPressed();
     return;
   }

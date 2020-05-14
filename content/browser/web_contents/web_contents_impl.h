@@ -834,8 +834,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void SetMainFrameMimeType(const std::string& mime_type) override;
   bool CanOverscrollContent() const override;
   void NotifyChangedNavigationState(InvalidateTypes changed_flags) override;
-  void DidStartNavigationToPendingEntry(const GURL& url,
-                                        ReloadType reload_type) override;
   bool ShouldTransferNavigation(bool is_main_frame_navigation) override;
   void DidStartLoading(FrameTreeNode* frame_tree_node,
                        bool to_different_document) override;

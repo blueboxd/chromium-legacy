@@ -9,14 +9,11 @@ import android.content.Intent;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
-import org.chromium.base.Callback;
 import org.chromium.base.Consumer;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.omnibox.AutocompleteSchemeClassifier;
 import org.chromium.components.page_info.PageInfoView.PageInfoViewParams;
-import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
 import java.lang.annotation.Retention;
@@ -208,45 +205,4 @@ public class PageInfoControllerDelegate {
      * Notes whether third party cookies should be blocked for the site.
      */
     public void setThirdPartyCookieBlockingEnabledForSite(boolean blockCookies) {}
-
-    // TODO(crbug.com/1058595): Componentize PermissionParamsBuilder once site settings code has
-    // been componentized. These methods can be removed at that point.
-    /**
-     * Creates a Permission Params List builder and holds on to it.
-     * @param permissionDelegate Delegate for checking system permissions.
-     * @param fullUrl Full URL of the site whose permissions are being displayed.
-     * @param shouldShowTitle Should show section title for permissions in Page Info UI.
-     * @param systemSettingsActivityRequiredListener Listener for when we need the user to enable
-     *                                               a system setting to proceed.
-     * @param displayPermissionsCallback Callback to run to display fresh permissions in response to
-     *                                   user interaction with a permission entry.
-     */
-    public void createPermissionParamsListBuilder(AndroidPermissionDelegate permissionDelegate,
-            String fullUrl, boolean shouldShowTitle,
-            SystemSettingsActivityRequiredListener systemSettingsActivityRequiredListener,
-            Callback<PageInfoView.PermissionParams> displayPermissionsCallback) {
-        // TODO(crbug.com/1058597): Override for Webayer once PermissionParamsListBuilder has been
-        // componentized.
-    }
-
-    /**
-     * Adds a permission entry corresponding to the input params.
-     * @param name Name of the permission to add.
-     * @param type Type of the permission to add.
-     * @param currentSettingValue The value of the permission to add.
-     */
-    public void addPermissionEntry(
-            String name, int type, @ContentSettingValues int currentSettingValue) {
-        // TODO(crbug.com/1058597): Override for Webayer once PermissionParamsListBuilder has been
-        // componentized.
-    }
-
-    /**
-     * Updates the Page Info View passed in with up to date permissions info.
-     * @param view The Page Info view to update.
-     */
-    public void updatePermissionDisplay(PageInfoView view) {
-        // TODO(crbug.com/1058597): Override for Webayer once PermissionParamsListBuilder has been
-        // componentized.
-    }
 }

@@ -95,9 +95,19 @@ interface Assistant {
   // this method is a no-op if there is no existing timer identified by |id|.
   AddTimeToTimer(string id, mojo_base.mojom.TimeDelta duration);
 
+  // Pauses the timer specified by |id|. Note that this method is a no-op if
+  // there is no existing timer identified by |id| or if a timer does exist but
+  // is already paused.
+  PauseTimer(string id);
+
   // Remove the alarm/timer specified by |id|.
   // NOTE: this is a no-op if no such alarm/timer exists.
-  RemoveAlarmTimer(string id);
+  RemoveAlarmOrTimer(string id);
+
+  // Resumes the timer specified by |id|. Note that this method is a no-op if
+  // there is no existing timer identified by |id| or if a timer does exist but
+  // isn't currently paused.
+  ResumeTimer(string id);
 };
 
 // Enumeration of Assistant entry points. These values are persisted to logs.

@@ -419,11 +419,6 @@
     "expiry_milestone": 86
   },
   {
-    "name": "bluetooth-kernel-suspend-notifier",
-    "owners": [ "abhishekpandit", "chromeos-bluetooth@google.com" ],
-    "expiry_milestone": 84
-  },
-  {
     "name": "bluetooth-next-handsfree-profile",
     "owners": [ "hychao" ],
     "expiry_milestone": 85
@@ -616,6 +611,16 @@
     "expiry_milestone": 86
   },
   {
+    "name": "conversion-measurement-api",
+    "owners": [ "//content/browser/conversions/OWNERS" ],
+    "expiry_milestone": 87
+  },
+  {
+    "name": "conversion-measurement-debug-mode",
+    "owners": [ "//content/browser/conversions/OWNERS" ],
+    "expiry_milestone": 87
+  },
+  {
     "name": "cookie-deprecation-messages",
     "owners": [ "bingler", "chlily", "aarontag" ],
     "expiry_milestone": 90
@@ -717,7 +722,7 @@
   },
   {
     "name": "cups-ipp-printing-backend",
-    "owners": [ "dhoss", "chrome-print@google.com" ],
+    "owners": [ "dhoss", "//printing/OWNERS" ],
     "expiry_milestone": 89
   },
   {
@@ -1077,10 +1082,15 @@
     "owners": [ "ftirelo" ],
     "expiry_milestone": 73
   },
+    {
+    "name": "enable-android-dark-search",
+    "owners": [ "wylieb", "twellington", "fgorski"],
+    "expiry_milestone": 90
+  },
   {
     "name": "enable-android-night-mode-tab-reparenting",
     "owners": [ "wylieb", "twellington", "tedchoc"],
-    "expiry_milestone": 85
+    "expiry_milestone": 88
   },
   {
     "name": "enable-android-spellchecker",
@@ -1341,6 +1351,11 @@
     "name": "enable-cros-ime-input-logic-hmm",
     "owners": [ "essential-inputs-team@google.com" ],
     "expiry_milestone": 85
+  },
+  {
+    "name": "enable-cros-ime-input-logic-mozc",
+    "owners": [ "essential-inputs-team@google.com" ],
+    "expiry_milestone": 86
   },
   {
     "name": "enable-cros-ime-mozc-proto",
@@ -2582,7 +2597,7 @@
   {
     "name": "gdi-text-printing",
     "owners": [ "//printing/OWNERS" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 89
   },
   {
     "name": "gesture-properties-dbus-service",
@@ -3466,7 +3481,7 @@
   {
     "name": "pdf-form-save",
     "owners": [ "thestig" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 89
   },
   {
     "name": "pdf-two-up-view",

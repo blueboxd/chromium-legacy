@@ -285,6 +285,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                                       WebPrintPresetOptions*) override;
   bool CapturePaintPreview(const WebRect& bounds,
                            cc::PaintCanvas* canvas) override;
+  void SetMainFrameOverlayColor(SkColor) override;
   bool ShouldSuppressKeyboardForFocusedElement() override;
   WebPerformance Performance() const override;
   bool IsAdSubframe() const override;

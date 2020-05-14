@@ -95,7 +95,7 @@ class APP_LIST_EXPORT AppListPage : public views::View {
       const gfx::Rect& contents_bounds,
       const gfx::Rect& search_box_bounds) const = 0;
 
-  const ContentsView* contents_view() const { return contents_view_; }
+  ContentsView* contents_view() { return contents_view_; }
   void set_contents_view(ContentsView* contents_view) {
     contents_view_ = contents_view;
   }

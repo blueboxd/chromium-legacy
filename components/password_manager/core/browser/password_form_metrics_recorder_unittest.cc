@@ -638,22 +638,39 @@ void CheckFillingAssistanceTestCase(
   struct SubCase {
     bool is_main_frame_secure;
     PasswordAccountStorageUsageLevel account_storage_usage_level;
+    // Is mixed form only makes sense when is_main_frame_secure is true.
+    bool is_mixed_form = false;
   } sub_cases[] = {
       {.is_main_frame_secure = true,
        .account_storage_usage_level =
-           PasswordAccountStorageUsageLevel::kNotUsingAccountStorage},
+           PasswordAccountStorageUsageLevel::kNotUsingAccountStorage,
+       .is_mixed_form = false},
+      {.is_main_frame_secure = true,
+       .account_storage_usage_level =
+           PasswordAccountStorageUsageLevel::kNotUsingAccountStorage,
+       .is_mixed_form = true},
       {.is_main_frame_secure = false,
        .account_storage_usage_level =
            PasswordAccountStorageUsageLevel::kNotUsingAccountStorage},
       {.is_main_frame_secure = true,
        .account_storage_usage_level =
-           PasswordAccountStorageUsageLevel::kUsingAccountStorage},
+           PasswordAccountStorageUsageLevel::kUsingAccountStorage,
+       .is_mixed_form = false},
+      {.is_main_frame_secure = true,
+       .account_storage_usage_level =
+           PasswordAccountStorageUsageLevel::kUsingAccountStorage,
+       .is_mixed_form = true},
       {.is_main_frame_secure = false,
        .account_storage_usage_level =
            PasswordAccountStorageUsageLevel::kUsingAccountStorage},
       {.is_main_frame_secure = true,
        .account_storage_usage_level =
-           PasswordAccountStorageUsageLevel::kSyncing},
+           PasswordAccountStorageUsageLevel::kSyncing,
+       .is_mixed_form = false},
+      {.is_main_frame_secure = true,
+       .account_storage_usage_level =
+           PasswordAccountStorageUsageLevel::kUsingAccountStorage,
+       .is_mixed_form = true},
       {.is_main_frame_secure = false,
        .account_storage_usage_level =
            PasswordAccountStorageUsageLevel::kSyncing}};
@@ -664,12 +681,20 @@ void CheckFillingAssistanceTestCase(
         << ", is_main_frame_secure: " << std::boolalpha
         << sub_case.is_main_frame_secure << ", account_storage_usage_level: "
         << metrics_util::GetPasswordAccountStorageUsageLevelHistogramSuffix(
-               sub_case.account_storage_usage_level));
+               sub_case.account_storage_usage_level)
+        << ", is_mixed_form: " << std::boolalpha << sub_case.is_mixed_form);
 
     base::test::TaskEnvironment task_environment;
     base::HistogramTester histogram_tester;
 
     FormData form_data = ConvertToFormData(test_case.fields);
+    if (sub_case.is_main_frame_secure) {
+      if (sub_case.is_mixed_form) {
+        form_data.action = GURL("http://notsecure.test");
+      } else {
+        form_data.action = GURL("https://secure.test");
+      }
+    }
 
     // Note: Don't bother with the profile store vs. account store distinction
     // here; there are separate tests that cover the filling source.
@@ -699,6 +724,9 @@ void CheckFillingAssistanceTestCase(
         !sub_case.is_main_frame_secure ? expected_count : 0;
     int expected_secure_count =
         sub_case.is_main_frame_secure ? expected_count : 0;
+    int expected_mixed_count =
+        sub_case.is_main_frame_secure && sub_case.is_mixed_form ? expected_count
+                                                                : 0;
 
     // Split by account storage usage level.
     int expected_not_using_account_storage_count = 0;
@@ -725,6 +753,8 @@ void CheckFillingAssistanceTestCase(
     histogram_tester.ExpectTotalCount(
         "PasswordManager.FillingAssistance.SecureOrigin",
         expected_secure_count);
+    histogram_tester.ExpectTotalCount(
+        "PasswordManager.FillingAssistance.MixedForm", expected_mixed_count);
 
     histogram_tester.ExpectTotalCount(
         "PasswordManager.FillingAssistance.NotUsingAccountStorage",
@@ -744,6 +774,12 @@ void CheckFillingAssistanceTestCase(
               ? "PasswordManager.FillingAssistance.SecureOrigin"
               : "PasswordManager.FillingAssistance.InsecureOrigin",
           *test_case.expectation, 1);
+
+      if (sub_case.is_main_frame_secure && sub_case.is_mixed_form) {
+        histogram_tester.ExpectUniqueSample(
+            "PasswordManager.FillingAssistance.MixedForm",
+            *test_case.expectation, 1);
+      }
 
       std::string account_storage_histogram;
       switch (sub_case.account_storage_usage_level) {

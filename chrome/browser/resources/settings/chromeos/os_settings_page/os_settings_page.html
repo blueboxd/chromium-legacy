@@ -16,7 +16,6 @@
 <link rel="import" href="../../settings_page_css.html">
 <link rel="import" href="../bluetooth_page/bluetooth_page.html">
 <link rel="import" href="../crostini_page/crostini_page.html">
-<link rel="import" href="../plugin_vm_page/plugin_vm_page.html">
 <link rel="import" href="../../prefs/prefs_behavior.html">
 <link rel="import" href="../os_route.html">
 <link rel="import" href="../../router.html">
@@ -173,7 +172,8 @@
               prefs="{{prefs}}"
               android-apps-info="[[androidAppsInfo]]"
               have-play-store-app="[[havePlayStoreApp]]"
-              show-android-apps="[[showAndroidApps]]">
+              show-android-apps="[[showAndroidApps]]"
+              show-plugin-vm="[[showPluginVm]]">
           </os-settings-apps-page>
         </settings-section>
         <template is="dom-if" if="[[showCrostini]]" restamp>
@@ -182,13 +182,6 @@
             <settings-crostini-page prefs="{{prefs}}"
                 allow-crostini="[[allowCrostini_]]">
             </settings-crostini-page>
-          </settings-section>
-        </template>
-        <template is="dom-if" if="[[showPluginVm]]" restamp>
-          <settings-section page-title="$i18n{pluginVmPageTitle}"
-              section="pluginVm">
-            <settings-plugin-vm-page prefs="{{prefs}}">
-            </settings-plugin-vm-page>
           </settings-section>
         </template>
       </div>

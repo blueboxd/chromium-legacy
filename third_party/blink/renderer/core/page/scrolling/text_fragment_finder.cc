@@ -177,6 +177,7 @@ TextFragmentFinder::TextFragmentFinder(Client& client,
                                        const TextFragmentSelector& selector)
     : client_(client), selector_(selector) {
   DCHECK(!selector_.Start().IsEmpty());
+  DCHECK(selector_.Type() != TextFragmentSelector::SelectorType::kInvalid);
 }
 
 void TextFragmentFinder::FindMatch(Document& document) {
@@ -191,7 +192,18 @@ void TextFragmentFinder::FindMatch(Document& document) {
       FindMatchFromPosition(document, search_start);
 
   if (match.IsNotNull()) {
-    client_.DidFindMatch(match);
+    TextFragmentAnchorMetrics::Match match_metrics(selector_);
+
+    if (selector_.Type() == TextFragmentSelector::SelectorType::kExact) {
+      // If it's an exact match, we don't need to do the PlainText conversion,
+      // we can just use the text from the selector.
+      DCHECK_EQ(selector_.Start().length(), PlainText(match).length());
+      match_metrics.text = selector_.Start();
+    } else if (selector_.Type() == TextFragmentSelector::SelectorType::kRange) {
+      match_metrics.text = PlainText(match);
+    }
+
+    client_.DidFindMatch(match, match_metrics);
 
     // Continue searching to see if we have an ambiguous selector.
     // TODO(crbug.com/919204): This is temporary and only for measuring

@@ -67,7 +67,7 @@ class APP_LIST_EXPORT SearchResultView
   void CreateDetailsRenderText();
 
   // Callback for query suggstion removal confirmation.
-  void OnQueryRemovalAccepted(bool accepted, int event_flags);
+  void OnQueryRemovalAccepted(int event_flags, bool accepted);
 
   // views::View overrides:
   const char* GetClassName() const override;

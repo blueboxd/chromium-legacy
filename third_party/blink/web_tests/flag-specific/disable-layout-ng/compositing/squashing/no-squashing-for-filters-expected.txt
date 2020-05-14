@@ -22,7 +22,8 @@
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='trysquashed')",
       "position": [50, 50],
-      "bounds": [50, 50]
+      "bounds": [50, 50],
+      "contentsOpaqueForText": true
     }
   ],
   "transforms": [

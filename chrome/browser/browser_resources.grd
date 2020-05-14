@@ -255,7 +255,6 @@
         <include name="IDR_URGENT_PASSWORD_EXPIRY_NOTIFICATION_HTML" file="resources\chromeos\password_change\urgent_password_expiry_notification.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" compress="gzip" />
         <include name="IDR_URGENT_PASSWORD_EXPIRY_NOTIFICATION_JS" file="resources\chromeos\password_change\urgent_password_expiry_notification.js" type="chrome_html" compress="gzip" />
 
-        <include name="IDR_CROSH_BUILTIN_MANIFEST" file="resources\chromeos\crosh_builtin\manifest.json" type="BINDATA" />
         <include name="IDR_CROSTINI_INSTALLER_INDEX_HTML" file="resources\chromeos\crostini_installer\index.html" compress="gzip" type="BINDATA" />
         <include name="IDR_CROSTINI_INSTALLER_APP_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\crostini_installer\app.js" compress="gzip" type="BINDATA" use_base_dir="false" />
         <include name="IDR_CROSTINI_INSTALLER_BROWSER_PROXY_JS" file="resources\chromeos\crostini_installer\browser_proxy.js" compress="gzip" type="BINDATA" />

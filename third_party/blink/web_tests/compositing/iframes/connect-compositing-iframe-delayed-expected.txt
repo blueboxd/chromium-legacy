@@ -17,6 +17,7 @@ When the parent document becomes composited, the layer trees should get connecte
     {
       "name": "Scrolling Contents Layer",
       "bounds": [285, 230],
+      "contentsOpaqueForText": true,
       "backgroundColor": "#C0C0C0",
       "transform": 2
     },

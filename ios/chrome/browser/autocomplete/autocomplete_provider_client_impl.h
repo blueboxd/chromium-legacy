@@ -47,7 +47,7 @@ class AutocompleteProviderClientImpl : public AutocompleteProviderClient {
   scoped_refptr<ShortcutsBackend> GetShortcutsBackendIfExists() override;
   std::unique_ptr<KeywordExtensionsDelegate> GetKeywordExtensionsDelegate(
       KeywordProvider* keyword_provider) override;
-  upboarding::TileService* GetQueryTileService() const override;
+  query_tiles::TileService* GetQueryTileService() const override;
   std::string GetAcceptLanguages() const override;
   std::string GetEmbedderRepresentationOfAboutScheme() const override;
   std::vector<base::string16> GetBuiltinURLs() override;

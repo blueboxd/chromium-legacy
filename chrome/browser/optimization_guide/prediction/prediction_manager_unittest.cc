@@ -711,6 +711,8 @@ TEST_F(PredictionManagerTest, UpdatePredictionModelsWithInvalidModel) {
 
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionModelValidationLatency", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelUpdatedVersion.PainfulPageLoad", 0);
 }
 
 TEST_F(PredictionManagerTest, UpdateModelWithSameVersion) {
@@ -733,6 +735,8 @@ TEST_F(PredictionManagerTest, UpdateModelWithSameVersion) {
       get_models_response.get());
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.PredictionManager.PredictionModelsStored", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionModelUpdateVersion.PainfulPageLoad", 3, 1);
 
   get_models_response =
       BuildGetModelsResponse({} /* hosts */, {} /* client features */);
@@ -1053,7 +1057,7 @@ TEST_F(PredictionManagerTest,
       PredictionManagerModelStatus::kStoreAvailableModelNotLoaded, 1);
 
   histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.PredictionModelVersion.PainfulPageLoad", 0);
+      "OptimizationGuide.PredictionModelLoadedVersion.PainfulPageLoad", 0);
 }
 
 TEST_F(PredictionManagerTest,
@@ -1597,7 +1601,7 @@ TEST_F(PredictionManagerTest,
 
   EXPECT_FALSE(prediction_model_fetcher()->models_fetched());
   histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.PredictionModelVersion.PainfulPageLoad", 1, 1);
+      "OptimizationGuide.PredictionModelLoadedVersion.PainfulPageLoad", 1, 1);
 }
 
 TEST_F(PredictionManagerTest,
@@ -1623,7 +1627,7 @@ TEST_F(PredictionManagerTest,
 
   EXPECT_FALSE(prediction_model_fetcher()->models_fetched());
   histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.PredictionModelVersion.PainfulPageLoad", 1, 1);
+      "OptimizationGuide.PredictionModelLoadedVersion.PainfulPageLoad", 1, 1);
 }
 
 TEST_F(PredictionManagerTest, ModelFetcherTimerRetryDelay) {

@@ -331,6 +331,16 @@
     ]
   },
 
+  "PrintRasterizationMode": {
+    "os": ["win"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "PrintRasterizationMode": 1 },
+        "prefs": { "printing.rasterization_mode": {} }
+      }
+    ]
+  },
+
   "PrinterTypeDenyList": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "PrinterTypeDenyList": ["privet", "extension"] },
@@ -4765,6 +4775,18 @@
           "power.ac_screen_brightness_percent": {},
           "power.battery_screen_brightness_percent": {}
         }
+      }
+    ]
+  },
+
+  "UserPluginVmAllowed": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "UserPluginVmAllowed": true
+        },
+        "prefs": { "plugin_vm.allowed": {} }
       }
     ]
   },

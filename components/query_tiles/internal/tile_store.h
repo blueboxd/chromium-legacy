@@ -22,14 +22,14 @@
 
 namespace leveldb_proto {
 
-void DataToProto(upboarding::TileGroup* data,
-                 upboarding::query_tiles::proto::TileGroup* proto);
-void ProtoToData(upboarding::query_tiles::proto::TileGroup* proto,
-                 upboarding::TileGroup* data);
+void DataToProto(query_tiles::TileGroup* data,
+                 query_tiles::proto::TileGroup* proto);
+void ProtoToData(query_tiles::proto::TileGroup* proto,
+                 query_tiles::TileGroup* data);
 
 }  // namespace leveldb_proto
 
-namespace upboarding {
+namespace query_tiles {
 // TileStore is the storage layer of all TileGroup which contains
 // the top-level tile entries and group metadata. Sub-level tiles are
 // recursively owned by their parents.
@@ -70,6 +70,6 @@ class TileStore : public Store<TileGroup> {
   base::WeakPtrFactory<TileStore> weak_ptr_factory_{this};
 };
 
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_INTERNAL_TILE_STORE_H_

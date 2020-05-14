@@ -65,6 +65,7 @@
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
@@ -1195,12 +1196,16 @@ void ExistingUserController::OnProfilePrepared(Profile* profile,
 
   profile_prepared_ = true;
 
+  chromeos::UserContext user_context =
+      UserContext(*chromeos::ProfileHelper::Get()->GetUserByProfile(profile));
+  auto* profile_connector = profile->GetProfilePolicyConnector();
+  user_manager::known_user::SetIsManaged(user_context.GetAccountId(),
+                                         profile_connector->IsManaged());
+
   // Inform |auth_status_consumer_| about successful login.
   // TODO(nkostylev): Pass UserContext back crbug.com/424550
   if (auth_status_consumer_) {
-    const user_manager::User* const user =
-        chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-    auth_status_consumer_->OnAuthSuccess(UserContext(*user));
+    auth_status_consumer_->OnAuthSuccess(user_context);
   }
 }
 

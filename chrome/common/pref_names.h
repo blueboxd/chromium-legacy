@@ -16,6 +16,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "printing/buildflags/buildflags.h"
 #include "rlz/buildflags/buildflags.h"
 
 namespace prefs {
@@ -427,6 +428,10 @@ extern const char kPrintingEnabled[];
 extern const char kPrintHeaderFooter[];
 extern const char kPrintPreviewDisabled[];
 extern const char kPrintPreviewDefaultDestinationSelectionRules[];
+
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINTING)
+extern const char kPrintRasterizationMode[];
+#endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 extern const char kPrintPreviewUseSystemDefaultPrinter[];

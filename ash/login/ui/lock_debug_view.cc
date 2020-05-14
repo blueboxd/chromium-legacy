@@ -68,6 +68,7 @@ enum {
   kPerUserAuthFingerprintSuccessState,
   kPerUserAuthFingerprintFailState,
   kPerUserForceOnlineSignIn,
+  kPerUserToggleIsManaged,
   kPerUserToggleAuthEnabled,
   kPerUserUseDetachableBase,
   kPerUserTogglePublicAccount,
@@ -150,7 +151,8 @@ LoginUserInfo PopulateUserData(const LoginUserInfo& user,
 
   if (is_public_account) {
     result.public_account_info.emplace();
-    result.public_account_info->enterprise_domain = kDebugEnterpriseDomain;
+    result.public_account_info->device_enterprise_domain =
+        kDebugEnterpriseDomain;
     result.public_account_info->default_locale = kDebugDefaultLocaleCode;
     result.public_account_info->show_expanded_view = true;
 
@@ -185,10 +187,12 @@ class LockDebugView::DebugDataDispatcherTransformer
   DebugDataDispatcherTransformer(
       mojom::TrayActionState initial_lock_screen_note_state,
       LoginDataDispatcher* dispatcher,
-      const base::RepeatingClosure& on_users_received)
+      const base::RepeatingClosure& on_users_received,
+      LockDebugView* lock_debug_view)
       : root_dispatcher_(dispatcher),
         lock_screen_note_state_(initial_lock_screen_note_state),
-        on_users_received_(on_users_received) {
+        on_users_received_(on_users_received),
+        lock_debug_view_(lock_debug_view) {
     root_dispatcher_->AddObserver(this);
   }
   ~DebugDataDispatcherTransformer() override {
@@ -350,6 +354,13 @@ class LockDebugView::DebugDataDispatcherTransformer
   void ForceOnlineSignInForUserIndex(size_t user_index) {
     DCHECK(user_index >= 0 && user_index < debug_users_.size());
     debug_dispatcher_.ForceOnlineSignInForUser(
+        debug_users_[user_index].account_id);
+  }
+
+  // Enables or disables user management for the user at |user_index|.
+  void ToggleManagementForUserIndex(size_t user_index) {
+    DCHECK(user_index >= 0 && user_index < debug_users_.size());
+    lock_debug_view_->lock()->ToggleManagementForUserForDebug(
         debug_users_[user_index].account_id);
   }
 
@@ -526,6 +537,12 @@ class LockDebugView::DebugDataDispatcherTransformer
   // Called when a new user list has been received.
   base::RepeatingClosure on_users_received_;
 
+  // Called for testing functions not belonging to the login data dispatcher.
+  // In such a case, we want to bypass the event handling mechanism and do
+  // direct calls to the lock screen. We need either an instance of
+  // LockDebugView or LockContentsView in order to do so.
+  LockDebugView* const lock_debug_view_;
+
   // When auth is disabled, this property is used to define the reason, which
   // customizes the UI accordingly.
   AuthDisabledReason auth_disabled_reason_ =
@@ -667,7 +684,8 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
           Shell::Get()->login_screen_controller()->data_dispatcher(),
           base::BindRepeating(
               &LockDebugView::UpdatePerUserActionContainerAndLayout,
-              base::Unretained(this)))),
+              base::Unretained(this)),
+          this)),
       next_auth_error_type_(AuthErrorType::kFirstUnlockFailed) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal));
@@ -1026,6 +1044,11 @@ void LockDebugView::ButtonPressed(views::Button* sender,
   if (sender->GetID() == ButtonId::kPerUserForceOnlineSignIn)
     debug_data_dispatcher_->ForceOnlineSignInForUserIndex(sender->tag());
 
+  // Enable or disable user management.
+  if (sender->GetID() == ButtonId::kPerUserToggleIsManaged) {
+    debug_data_dispatcher_->ToggleManagementForUserIndex(sender->tag());
+  }
+
   // Enable or disable auth.
   if (sender->GetID() == ButtonId::kPerUserToggleAuthEnabled)
     debug_data_dispatcher_->ToggleAuthEnabledForUserIndex(sender->tag());
@@ -1082,6 +1105,8 @@ void LockDebugView::UpdatePerUserActionContainer() {
               ButtonId::kPerUserAuthFingerprintFailState, row)
         ->set_tag(i);
     AddButton("Force online sign-in", ButtonId::kPerUserForceOnlineSignIn, row)
+        ->set_tag(i);
+    AddButton("Toggle user is managed", ButtonId::kPerUserToggleIsManaged, row)
         ->set_tag(i);
     AddButton("Toggle auth enabled", ButtonId::kPerUserToggleAuthEnabled, row)
         ->set_tag(i);

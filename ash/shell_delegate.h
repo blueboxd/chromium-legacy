@@ -58,6 +58,11 @@ class ASH_EXPORT ShellDelegate {
   // Check whether the current tab of the browser window can go back.
   virtual bool CanGoBack(gfx::NativeWindow window) const = 0;
 
+  // Checks whether a drag-drop operation is a tab drag.
+  virtual bool IsTabDrag(const ui::OSExchangeData& drop_data);
+
+  // Drops tab in a new browser window. |drop_data| must be from a tab
+  // drag as determined by IsTabDrag() above.
   virtual aura::Window* CreateBrowserForTabDrop(
       aura::Window* source_window,
       const ui::OSExchangeData& drop_data);

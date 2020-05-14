@@ -195,8 +195,8 @@ void CertProvisioningScheduler::ScheduleRetry(const CertProfile& profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&CertProvisioningScheduler::ProcessProfile,
-                 weak_factory_.GetWeakPtr(), profile),
+      base::Bind(&CertProvisioningScheduler::UpdateOneCertImpl,
+                 weak_factory_.GetWeakPtr(), profile.profile_id),
       kInconsistentDataErrorRetryDelay);
 }
 
@@ -316,8 +316,13 @@ void CertProvisioningScheduler::OnPrefsChange() {
 void CertProvisioningScheduler::UpdateOneCert(
     const std::string& cert_profile_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   RecordEvent(cert_scope_, CertProvisioningEvent::kWorkerRetryManual);
+  UpdateOneCertImpl(cert_profile_id);
+}
+
+void CertProvisioningScheduler::UpdateOneCertImpl(
+    const std::string& cert_profile_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   EraseByKey(failed_cert_profiles_, cert_profile_id);
 

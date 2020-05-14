@@ -11,16 +11,6 @@
 # Tests against older WebLayer implementations.
 # ---------------------------------------------
 
-# Cookie manager was added in M83.
-[ impl_lte_82 ] org.chromium.weblayer.test.CookieManagerTest#testCookieChanged [ Skip ]
-[ impl_lte_82 ] org.chromium.weblayer.test.CookieManagerTest#testCookieChangedRemoveCallback [ Skip ]
-[ impl_lte_82 ] org.chromium.weblayer.test.CookieManagerTest#testCookieChangedRemoveCallbackAfterProfileDestroyed [ Skip ]
-[ impl_lte_82 ] org.chromium.weblayer.test.CookieManagerTest#testGetCookie [ Skip ]
-[ impl_lte_82 ] org.chromium.weblayer.test.CookieManagerTest#testSetCookie [ Skip ]
-[ impl_lte_82 ] org.chromium.weblayer.test.CookieManagerTest#testSetCookieInvalid [ Skip ]
-[ impl_lte_82 ] org.chromium.weblayer.test.CookieManagerTest#testSetCookieNotSet [ Skip ]
-[ impl_lte_82 ] org.chromium.weblayer.test.CookieManagerTest#testSetCookieNullCallback [ Skip ]
-
 # Strict mode violation was fixed in M83 in https://crrev.com/c/2108603.
 [ impl_lte_82 ] org.chromium.weblayer.test.InputTypesTest#testColorInput [ Skip ]
 
@@ -35,21 +25,11 @@
 [ impl_lte_83 ] org.chromium.weblayer.test.TabTest#testBeforeUnloadNoHandler [ Skip ]
 [ impl_lte_83 ] org.chromium.weblayer.test.TabTest#testBeforeUnloadNoInteraction [ Skip ]
 
-# Implemented in https://crrev.com/c/2170425.
-[ impl_lte_83 ] org.chromium.weblayer.test.TabTest#testCaptureScreenShot [ Skip ]
-[ impl_lte_83 ] org.chromium.weblayer.test.TabTest#testCaptureScreenShotDoesNotHang [ Skip ]
-
-# New API added in crbug.com/1033029.
-[ impl_lte_83 ] org.chromium.weblayer.test.WebLayerTest#getUserAgentString [ Skip ]
-
 # Replace was removed in https://crrev.com/c/2150968, see https://crbug.com/1070851.
 [ impl_lte_83 ] org.chromium.weblayer.test.NavigationTest#testReplace [ Skip ]
 
 # Fixed in https://crrev.com/c/2180022, see https://crbug.com/1077243.
 [ impl_lte_83 ] org.chromium.weblayer.test.FullscreenCallbackTest#testExitFullscreenWhenTabDestroyed [ Skip ]
-
-# Implemented in https://crrev.com/f933c913dd25657b0d6ed6201f14
-[ impl_lte_81 ] org.chromium.weblayer.test.FindInPageTest#testHideOnNavigate [ Skip ]
 
 # https://crbug.com/1079489.
 [ impl_lte_83 ] org.chromium.weblayer.test.BottomControlsTest#testBasic [ Skip ]
@@ -57,9 +37,6 @@
 
 # https://crbug.com/1079491.
 [ impl_lte_83 ] org.chromium.weblayer.test.NavigationTest#testSetUserAgentString [ Skip ]
-
-# Implemented in https://crrev.com/0193f6791133ee7a90d034aa4009
-[ impl_lte_81 ] org.chromium.weblayer.test.TabTest#testBeforeUnload [ Skip ]
 
 # DownloadCallback moved from Tab to Profile in M83: https://crrev.com/cc967e92032594c0e54d02e31824f92aff5f30cd
 [ impl_lte_82 ] org.chromium.weblayer.test.DownloadCallbackTest#testBasic [ Skip ]

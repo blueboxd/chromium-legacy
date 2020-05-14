@@ -5,6 +5,7 @@ if (self.importScripts) {
 
 // This test assumes TEST_TARGETS are executed in order and sequentially.
 var TEST_TARGETS = [];
+var {BASE_ORIGIN, BASE_URL, OTHER_BASE_URL} = get_thorough_test_options();
 
 // cookieCheckX checks the cookies sent in the request.
 // SetCookie=cookieX indicates to set cookies in the response.

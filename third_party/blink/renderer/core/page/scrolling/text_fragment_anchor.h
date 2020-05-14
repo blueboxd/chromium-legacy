@@ -59,7 +59,9 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
   void Trace(Visitor*) override;
 
   // TextFragmentFinder::Client interface
-  void DidFindMatch(const EphemeralRangeInFlatTree& range) override;
+  void DidFindMatch(
+      const EphemeralRangeInFlatTree& range,
+      const TextFragmentAnchorMetrics::Match match_metrics) override;
   void DidFindAmbiguousMatch() override;
 
  private:

@@ -2148,8 +2148,13 @@ bool NGBoxFragmentPainter::HitTestBlockChildren(
 
     if (block_child.IsPaintedAtomically()) {
       if (HitTestAllPhasesInFragment(block_child, hit_test_location,
-                                     child_offset, &result))
+                                     child_offset, &result)) {
+        if (const LayoutObject* child_object = block_child.GetLayoutObject()) {
+          child_object->UpdateHitTestResult(
+              result, hit_test_location.Point() - accumulated_offset);
+        }
         return true;
+      }
 
       continue;
     }

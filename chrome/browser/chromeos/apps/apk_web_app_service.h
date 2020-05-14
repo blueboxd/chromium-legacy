@@ -49,6 +49,9 @@ class ApkWebAppService : public KeyedService,
 
   bool IsWebOnlyTwa(const web_app::AppId& web_app_id);
 
+  base::Optional<std::string> GetCertificateSha256Fingerprint(
+      const web_app::AppId& web_app_id);
+
   using WebAppCallbackForTesting =
       base::OnceCallback<void(const std::string& package_name,
                               const web_app::AppId& web_app_id)>;
@@ -89,6 +92,7 @@ class ApkWebAppService : public KeyedService,
   void OnDidFinishInstall(const std::string& package_name,
                           const web_app::AppId& web_app_id,
                           bool is_web_only_twa,
+                          const base::Optional<std::string> sha256_fingerprint,
                           web_app::InstallResultCode code);
   bool IsWebAppInstalledFromArc(const web_app::AppId& web_app_id);
 

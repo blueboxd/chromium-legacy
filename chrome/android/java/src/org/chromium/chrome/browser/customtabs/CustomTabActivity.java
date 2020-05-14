@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
+import org.chromium.chrome.browser.page_info.ChromePermissionParamsListBuilderDelegate;
 import org.chromium.chrome.browser.previews.Previews;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
@@ -216,7 +217,8 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
                     new ChromePageInfoControllerDelegate(this, webContents,
                             this::getModalDialogManager,
                             /*offlinePageLoadUrlDelegate=*/
-                            new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab)));
+                            new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab)),
+                    new ChromePermissionParamsListBuilderDelegate());
             return true;
         }
         return super.onMenuOrKeyboardAction(id, fromMenu);

@@ -304,6 +304,8 @@ void LayoutBox::WillBeDestroyed() {
       NGFragmentItems::LayoutObjectWillBeDestroyed(*this);
       ClearFirstInlineFragmentItemIndex();
     }
+    if (measure_result_)
+      measure_result_->PhysicalFragment().LayoutObjectWillBeDestroyed();
     for (auto result : layout_results_)
       result->PhysicalFragment().LayoutObjectWillBeDestroyed();
   }
@@ -1078,6 +1080,11 @@ FloatQuad LayoutBox::AbsoluteContentQuad(MapCoordinatesFlags flags) const {
 
 PhysicalRect LayoutBox::PhysicalBackgroundRect(
     BackgroundRectType rect_type) const {
+  // If the background transfers to view, the used background of this object
+  // is transparent.
+  if (rect_type == kBackgroundKnownOpaqueRect && BackgroundTransfersToView())
+    return PhysicalRect();
+
   EFillBox background_box = EFillBox::kText;
   // Find the largest background rect of the given opaqueness.
   if (const FillLayer* current = &(StyleRef().BackgroundLayers())) {
@@ -1918,11 +1925,6 @@ bool LayoutBox::GetBackgroundPaintedExtent(PhysicalRect& painted_extent) const {
 
 bool LayoutBox::BackgroundIsKnownToBeOpaqueInRect(
     const PhysicalRect& local_rect) const {
-  // If the background transfers to view, the used background of this object
-  // is transparent.
-  if (BackgroundTransfersToView())
-    return false;
-
   // If the element has appearance, it might be painted by theme.
   // We cannot be sure if theme paints the background opaque.
   // In this case it is safe to not assume opaqueness.
@@ -1940,6 +1942,25 @@ bool LayoutBox::BackgroundIsKnownToBeOpaqueInRect(
     return false;
   return PhysicalBackgroundRect(kBackgroundKnownOpaqueRect)
       .Contains(local_rect);
+}
+
+// TODO(wangxianzhu): The current rules are very basic. May use more complex
+// rules if they can improve LCD text.
+bool LayoutBox::TextIsKnownToBeOnOpaqueBackground() const {
+  // Text may overflow the background area.
+  if (HasVisualOverflow() && !ShouldClipOverflow())
+    return false;
+  // Same as BackgroundIsKnownToBeOpaqueInRect() about appearance.
+  if (StyleRef().HasEffectiveAppearance())
+    return false;
+  // Text may be drawn in the corner outside the rounded border.
+  if (StyleRef().HasBorderRadius() && !ShouldClipOverflow())
+    return false;
+
+  PhysicalRect rect = PhysicalBorderBoxRect();
+  if (ShouldClipOverflow())
+    rect.Intersect(OverflowClipRect(PhysicalOffset()));
+  return PhysicalBackgroundRect(kBackgroundKnownOpaqueRect).Contains(rect);
 }
 
 static bool IsCandidateForOpaquenessTest(const LayoutBox& child_box) {
@@ -2529,10 +2550,18 @@ void LayoutBox::SetCachedLayoutResult(
 
   if (result->GetConstraintSpaceForCaching().CacheSlot() ==
       NGCacheSlot::kMeasure) {
+    // We don't early return here, when setting the "measure" result we also
+    // set the "layout" result.
     if (measure_result_)
       InvalidateItems(*measure_result_);
     measure_result_ = result;
-    // When setting the "measure" result we also set the "layout" result.
+  } else {
+    // We have a "layout" result, and we may need to clear the old "measure"
+    // result if we needed non-simplified layout.
+    if (measure_result_ && NeedsLayout() && !NeedsSimplifiedLayoutOnly()) {
+      InvalidateItems(*measure_result_);
+      measure_result_ = nullptr;
+    }
   }
 
   AddLayoutResult(std::move(result), 0);

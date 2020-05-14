@@ -17,7 +17,7 @@
 
 using base::android::AttachCurrentThread;
 
-namespace upboarding {
+namespace query_tiles {
 
 namespace {
 const char kTileProviderBridgeKey[] = "tile_provider_bridge";
@@ -67,4 +67,4 @@ void TileProviderBridge::GetQueryTiles(JNIEnv* env,
       &RunGetTilesCallback, ScopedJavaGlobalRef<jobject>(jcallback)));
 }
 
-}  // namespace upboarding
+}  // namespace query_tiles

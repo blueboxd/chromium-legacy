@@ -393,3 +393,25 @@ QUIC_FLAG(
 
 // If true, support for IETF QUIC 0-rtt is enabled.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_zero_rtt_for_tls, false)
+
+// If true, default on PTO which unifies TLP + RTO loss recovery.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_default_on_pto, false)
+
+// When true, QUIC+TLS will not send nor parse the old-format Google-specific
+// transport parameters.
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_google_transport_param_omit_old,
+          false)
+
+// When true, QUIC+TLS will send and parse the new-format Google-specific
+// transport parameters.
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_google_transport_param_send_new,
+          true)
+
+// If true, if a buffered MTU packet causes a write to return MSG_TOO_BIG, this
+// error will be ignored.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_ignore_msg_too_big_from_buffered_packets,
+    true)

@@ -44,6 +44,11 @@ enum class Status {
 // Called when a network request is started for |report|, for logging metrics.
 void LogMetricsOnReportSend(ConversionReport* report) {
   DCHECK(report);
+
+  // Reports sent from the WebUI should not log metrics.
+  if (report->report_time == base::Time::Min())
+    return;
+
   // Use a large time range to capture users that might not open the browser for
   // a long time while a conversion report is pending. Revisit this range if it
   // is non-ideal for real world data.

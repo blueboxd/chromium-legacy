@@ -29,6 +29,7 @@ namespace extensions {
 struct WebRequestInfo;
 
 namespace declarative_net_request {
+class CompositeMatcher;
 
 // Returns true if |data| represents a valid data buffer containing indexed
 // ruleset data with |expected_checksum|.
@@ -92,6 +93,11 @@ flat::ActionType ConvertToFlatActionType(
 // the |DYNAMIC_RULESET_ID| API constant.
 std::string GetPublicRulesetID(const Extension& extension,
                                RulesetID ruleset_id);
+
+// Returns the public ruleset IDs corresponding to the given |extension| and
+// |matcher|.
+std::vector<std::string> GetPublicRulesetIDs(const Extension& extension,
+                                             const CompositeMatcher& matcher);
 
 // Helper to convert a flatbufffers::String to a string-like object with type T.
 template <typename T>

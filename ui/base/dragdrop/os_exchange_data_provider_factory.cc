@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 
 #if defined(USE_X11)
-#include "ui/base/dragdrop/os_exchange_data_provider_aurax11.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_x11.h"
 #elif defined(OS_LINUX)
 #if defined(USE_OZONE)
 #include "ui/base/dragdrop/os_exchange_data_provider_factory_ozone.h"
@@ -26,7 +26,7 @@ namespace ui {
 std::unique_ptr<OSExchangeDataProvider>
 OSExchangeDataProviderFactory::CreateProvider() {
 #if defined(USE_X11)
-  return std::make_unique<OSExchangeDataProviderAuraX11>();
+  return std::make_unique<OSExchangeDataProviderX11>();
 #elif defined(OS_LINUX)
 #if defined(USE_OZONE)
   // The instance can be nullptr in tests that do not instantiate the platform,

@@ -21,7 +21,7 @@ using image_fetcher::ImageFetcher;
 using image_fetcher::ImageFetcherParams;
 using image_fetcher::RequestMetadata;
 
-namespace upboarding {
+namespace query_tiles {
 namespace {
 
 // A string used to log UMA for query tiles in image fetcher service.
@@ -105,4 +105,4 @@ void CachedImageLoader::PrefetchImage(const GURL& url,
       CreateImageFetcherParams());
 }
 
-}  // namespace upboarding
+}  // namespace query_tiles

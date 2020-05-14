@@ -42,9 +42,8 @@ bool HasValidTargetDevice(Profile* profile) {
 
 bool AreContentRequirementsMet(const GURL& url, Profile* profile) {
   bool is_http_or_https = url.SchemeIsHTTPOrHTTPS();
-  bool is_native_page = url.SchemeIs(content::kChromeUIScheme);
   bool is_incognito_mode = profile->IsIncognitoProfile();
-  return is_http_or_https && !is_native_page && !is_incognito_mode;
+  return is_http_or_https && !is_incognito_mode;
 }
 
 bool ShouldOfferFeature(content::WebContents* web_contents) {

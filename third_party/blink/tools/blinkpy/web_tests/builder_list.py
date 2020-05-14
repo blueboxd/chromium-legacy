@@ -42,10 +42,10 @@ class BuilderList(object):
 
         The given dictionary maps builder names to dicts with the keys:
             "port_name": A fully qualified port name.
-            "specifiers": A list of specifiers used to describe a builder.
-                The specifiers list will at the very least have a valid
-                port version specifier like "Mac10.15" and and a valid build
-                type specifier like "Release".
+            "specifiers": A two-item list: [version specifier, build type specifier].
+                Valid values for the version specifier can be found in
+                TestExpectationsParser._configuration_tokens_list, and valid
+                values for the build type specifier include "Release" and "Debug".
             "is_try_builder": Whether the builder is a trybot.
             "master": The master name of the builder. It is deprecated, but still required
                 by test-results.appspot.com API."
@@ -57,11 +57,8 @@ class BuilderList(object):
         """
         self._builders = builders_dict
         for builder in builders_dict:
-            specifiers = {
-                s.lower() for s in builders_dict[builder].get('specifiers', {})}
             assert 'port_name' in builders_dict[builder]
-            assert ('android' in specifiers or
-                    len(builders_dict[builder]['specifiers']) == 2)
+            assert len(builders_dict[builder]['specifiers']) == 2
 
     @staticmethod
     def load_default_builder_list(filesystem):
@@ -75,29 +72,12 @@ class BuilderList(object):
         return sorted(self._builders)
 
     def all_try_builder_names(self):
-        return self.filter_builders(is_try=True)
+        return sorted(b for b in self._builders
+                      if self._builders[b].get('is_try_builder'))
 
     def all_continuous_builder_names(self):
-        return self.filter_builders(is_try=False)
-
-    def filter_builders(self, exclude_specifiers=None, include_specifiers=None,
-                        is_try=False):
-        _lower_specifiers = lambda specifiers: {s.lower() for s in specifiers}
-        exclude_specifiers = _lower_specifiers(exclude_specifiers or {})
-        include_specifiers = _lower_specifiers(include_specifiers or {})
-        builders = []
-        for b in self._builders:
-            builder_specifiers = _lower_specifiers(
-                self._builders[b].get('specifiers', {}))
-            if self._builders[b].get('is_try_builder', False) != is_try:
-                continue
-            if builder_specifiers & exclude_specifiers:
-                continue
-            if  (include_specifiers and
-                     not include_specifiers & builder_specifiers):
-                continue
-            builders.append(b)
-        return sorted(builders)
+        return sorted(b for b in self._builders
+                      if not self._builders[b].get('is_try_builder'))
 
     def all_port_names(self):
         return sorted({b['port_name'] for b in self._builders.values()})

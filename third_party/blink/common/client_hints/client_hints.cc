@@ -7,11 +7,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/features.h"
 #include "url/origin.h"
 
 namespace blink {
@@ -34,11 +36,16 @@ const char* const kClientHintsHeaderMapping[] = {
     "sec-ch-ua-platform-version",
 };
 
+const unsigned kClientHintsNumberOfLegacyHints = 4;
+
 const mojom::FeaturePolicyFeature kClientHintsFeaturePolicyMapping[] = {
+    // Legacy Hints that are sent cross-origin regardless of FeaturePolicy when
+    // kAllowClientHintsToThirdParty is enabled
     mojom::FeaturePolicyFeature::kClientHintDeviceMemory,
     mojom::FeaturePolicyFeature::kClientHintDPR,
     mojom::FeaturePolicyFeature::kClientHintWidth,
     mojom::FeaturePolicyFeature::kClientHintViewportWidth,
+    // End of legacy hints.
     mojom::FeaturePolicyFeature::kClientHintRTT,
     mojom::FeaturePolicyFeature::kClientHintDownlink,
     mojom::FeaturePolicyFeature::kClientHintECT,
@@ -119,6 +126,15 @@ base::Optional<std::vector<network::mojom::WebClientHintsType>> FilterAcceptCH(
   return base::make_optional(std::move(result));
 }
 
+namespace {
+
+bool IsClientHintSentByDefault(network::mojom::WebClientHintsType type) {
+  return (type == network::mojom::WebClientHintsType::kUA ||
+          type == network::mojom::WebClientHintsType::kUAMobile);
+}
+
+}  // namespace
+
 // Add a list of Client Hints headers to be removed to the output vector, based
 // on FeaturePolicy and the url's origin.
 void FindClientHintsToRemove(const FeaturePolicy* feature_policy,
@@ -126,13 +142,22 @@ void FindClientHintsToRemove(const FeaturePolicy* feature_policy,
                              std::vector<std::string>* removed_headers) {
   DCHECK(removed_headers);
   url::Origin origin = url::Origin::Create(url);
-  for (size_t i = 0; i < blink::kClientHintsMappingsCount; ++i) {
-    // TODO(yoav): When FeaturePolicy is not present, we need to conserve the
-    // hints that are sent by default.
-    // TODO(yoav): We need to take legacy hints into account here.
-    if (!feature_policy ||
-        !feature_policy->IsFeatureEnabledForOrigin(
-            blink::kClientHintsFeaturePolicyMapping[i], origin)) {
+  size_t startHint = 0;
+  if (base::FeatureList::IsEnabled(features::kAllowClientHintsToThirdParty)) {
+    // Do not remove any legacy Client Hints
+    startHint = kClientHintsNumberOfLegacyHints;
+  }
+  for (size_t i = startHint; i < blink::kClientHintsMappingsCount; ++i) {
+    // Remove the hint if any is true:
+    // * Feature policy is null (we're in a sync XHR case) and the hint is not
+    // sent by default.
+    // * Feature policy exists and doesn't allow for the hint.
+    if ((!feature_policy &&
+         !IsClientHintSentByDefault(
+             static_cast<network::mojom::WebClientHintsType>(i))) ||
+        (feature_policy &&
+         !feature_policy->IsFeatureEnabledForOrigin(
+             blink::kClientHintsFeaturePolicyMapping[i], origin))) {
       removed_headers->push_back(blink::kClientHintsHeaderMapping[i]);
     }
   }

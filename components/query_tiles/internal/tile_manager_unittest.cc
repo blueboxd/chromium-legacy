@@ -19,7 +19,7 @@
 using testing::_;
 using ::testing::Invoke;
 
-namespace upboarding {
+namespace query_tiles {
 namespace {
 
 class MockTileStore : public Store<TileGroup> {
@@ -368,4 +368,4 @@ TEST_F(TileManagerTest, GetTilesForNonStoredLocale) {
 
 }  // namespace
 
-}  // namespace upboarding
+}  // namespace query_tiles

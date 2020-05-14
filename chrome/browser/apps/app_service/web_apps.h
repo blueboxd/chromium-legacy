@@ -42,7 +42,6 @@ class WebApps : public WebAppsBase {
                               apps::mojom::Readiness readiness) override;
   bool Accepts(const std::string& app_id) override;
 
-  apps_util::IncrementingIconKeyFactory icon_key_factory_;
 };
 
 }  // namespace apps

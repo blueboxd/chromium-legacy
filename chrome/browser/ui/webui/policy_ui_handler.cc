@@ -107,7 +107,11 @@
 #endif
 
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include <DSRole.h>
+
 #include "chrome/browser/google/google_update_policy_fetcher_win.h"
+#include "chrome/install_static/install_util.h"
+#include "components/update_client/updater_state.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -438,6 +442,23 @@ class DeviceActiveDirectoryPolicyStatusProvider
 };
 #endif
 
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+class UpdaterStatusProvider : public PolicyStatusProvider {
+ public:
+  UpdaterStatusProvider();
+  ~UpdaterStatusProvider() override = default;
+  void GetStatus(base::DictionaryValue* dict) override;
+
+ private:
+  static std::string FetchActiveDirectoryDomain();
+  void OnDomainReceived(std::string domain);
+
+  std::string version_;
+  std::string domain_;
+  base::WeakPtrFactory<UpdaterStatusProvider> weak_factory_{this};
+};
+#endif
+
 PolicyStatusProvider::PolicyStatusProvider() {}
 
 PolicyStatusProvider::~PolicyStatusProvider() {}
@@ -710,6 +731,51 @@ void DeviceActiveDirectoryPolicyStatusProvider::GetStatus(
 
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+UpdaterStatusProvider::UpdaterStatusProvider() {
+  auto state =
+      update_client::UpdaterState::GetState(install_static::IsSystemInstall());
+  const auto& version = state->find("version");
+  if (version != state->end())
+    version_ = version->second;
+
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&UpdaterStatusProvider::FetchActiveDirectoryDomain),
+      base::BindOnce(&UpdaterStatusProvider::OnDomainReceived,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void UpdaterStatusProvider::GetStatus(base::DictionaryValue* dict) {
+  if (!version_.empty())
+    dict->SetString("version", version_);
+  if (!domain_.empty())
+    dict->SetString("domain", domain_);
+}
+
+// static
+std::string UpdaterStatusProvider::FetchActiveDirectoryDomain() {
+  std::string domain;
+  ::DSROLE_PRIMARY_DOMAIN_INFO_BASIC* info = nullptr;
+  if (::DsRoleGetPrimaryDomainInformation(nullptr,
+                                          ::DsRolePrimaryDomainInfoBasic,
+                                          (PBYTE*)&info) != ERROR_SUCCESS) {
+    return domain;
+  }
+  if (info->DomainNameDns)
+    domain = base::WideToUTF8(info->DomainNameDns);
+  ::DsRoleFreeMemory(info);
+  return domain;
+}
+
+void UpdaterStatusProvider::OnDomainReceived(std::string domain) {
+  domain_ = std::move(domain);
+  NotifyStatusChange();
+}
+#endif
+
 PolicyUIHandler::PolicyUIHandler() {}
 
 PolicyUIHandler::~PolicyUIHandler() {
@@ -822,6 +888,7 @@ void PolicyUIHandler::RegisterMessages() {
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  updater_status_provider_ = std::make_unique<UpdaterStatusProvider>();
   base::PostTaskAndReplyWithResult(
       base::ThreadPool::CreateCOMSTATaskRunner(
           {base::TaskPriority::USER_BLOCKING,
@@ -838,12 +905,15 @@ void PolicyUIHandler::RegisterMessages() {
     device_status_provider_ = std::make_unique<PolicyStatusProvider>();
   if (!machine_status_provider_.get())
     machine_status_provider_ = std::make_unique<PolicyStatusProvider>();
+  if (!updater_status_provider_.get())
+    updater_status_provider_ = std::make_unique<PolicyStatusProvider>();
 
   auto update_callback(base::BindRepeating(&PolicyUIHandler::SendStatus,
                                            base::Unretained(this)));
   user_status_provider_->SetStatusChangeCallback(update_callback);
   device_status_provider_->SetStatusChangeCallback(update_callback);
   machine_status_provider_->SetStatusChangeCallback(update_callback);
+  updater_status_provider_->SetStatusChangeCallback(update_callback);
   GetPolicyService()->AddObserver(policy::POLICY_DOMAIN_CHROME, this);
   GetPolicyService()->AddObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
 
@@ -1033,6 +1103,10 @@ void PolicyUIHandler::SendStatus() {
       new base::DictionaryValue);
   machine_status_provider_->GetStatus(machine_status.get());
 
+  std::unique_ptr<base::DictionaryValue> updater_status(
+      new base::DictionaryValue);
+  updater_status_provider_->GetStatus(updater_status.get());
+
   base::DictionaryValue status;
   if (!device_status->empty())
     status.Set("device", std::move(device_status));
@@ -1040,6 +1114,8 @@ void PolicyUIHandler::SendStatus() {
     status.Set("machine", std::move(machine_status));
   if (!user_status->empty())
     status.Set("user", std::move(user_status));
+  if (!updater_status->empty())
+    status.Set("updater", std::move(updater_status));
 
   FireWebUIListener("status-updated", status);
 }

@@ -657,7 +657,7 @@ class VIEWS_EXPORT Textfield : public View,
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
 
   // View containing the text cursor.
-  View cursor_view_;
+  View* cursor_view_ = nullptr;
 
 #if defined(OS_MACOSX)
   // Used to track active password input sessions.

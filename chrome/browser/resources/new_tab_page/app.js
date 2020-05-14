@@ -615,6 +615,11 @@ class AppElement extends PolymerElement {
       };
       this.eventTracker_.add(window, 'resize', onResize);
       onResize();
+      BrowserProxy.getInstance().handler.onPromoRendered(
+          BrowserProxy.getInstance().now());
+    } else if (data.messageType === 'link-clicked') {
+      BrowserProxy.getInstance().handler.onPromoLinkClicked(
+          BrowserProxy.getInstance().now());
     }
   }
 

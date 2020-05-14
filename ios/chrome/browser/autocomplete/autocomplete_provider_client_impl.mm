@@ -136,7 +136,7 @@ AutocompleteProviderClientImpl::GetKeywordExtensionsDelegate(
   return nullptr;
 }
 
-upboarding::TileService* AutocompleteProviderClientImpl::GetQueryTileService()
+query_tiles::TileService* AutocompleteProviderClientImpl::GetQueryTileService()
     const {
   return nullptr;
 }

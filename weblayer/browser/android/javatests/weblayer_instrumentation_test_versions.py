@@ -182,8 +182,14 @@ def main():
       '--additional-apk',
       os.path.join(args.client_outdir, 'apks/ChromiumNetTestSupport.apk')]
 
-  cmd = [executable_path] + executable_args + remaining_args
-  cmd = [sys.executable] + cmd
+  cmd = [sys.executable, executable_path] + executable_args + remaining_args
+
+  # Pass along the implementation version if it's set so that tests can
+  # be filtered through the @MinWebLayerVersion annotation.
+  # Note: The Chrome Android command line library requires the flag be passed
+  #       with "=" rather than as two arguments.
+  if args.impl_version != 'trunk':
+    cmd.append('--impl-version=%s' % args.impl_version)
 
   tests = []
   if args.test_expectations:

@@ -24,6 +24,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/browser_test_utils.h"
 
 namespace chrome {
 
@@ -55,15 +56,18 @@ class FakeWebContentsObserver : public content::WebContentsObserver {
   explicit FakeWebContentsObserver(content::WebContents* contents)
       : WebContentsObserver(contents),
         contents_(contents),
+        did_start_observer_(contents),
         url_(contents->GetURL()),
         num_reloads_(0) {}
 
-  void DidStartNavigationToPendingEntry(
-      const GURL& url,
-      content::ReloadType reload_type) override {
-    if (url_ == url)
+  void DidStartNavigation(content::NavigationHandle* navigation) override {
+    fprintf(stderr, "### DidStartNavigation reload_type = %d, url = %s\n",
+            navigation->GetReloadType(), navigation->GetURL().spec().c_str());
+    if (navigation->GetReloadType() == content::ReloadType::NONE)
+      return;
+    if (url_ == navigation->GetURL())
       num_reloads_++;
-    current_url_ = url;
+    current_url_ = navigation->GetURL();
   }
 
   const GURL& url() const { return url_; }
@@ -74,6 +78,8 @@ class FakeWebContentsObserver : public content::WebContentsObserver {
 
   bool can_go_back() const { return contents_->GetController().CanGoBack(); }
 
+  void WaitForNavigationStart() { did_start_observer_.Wait(); }
+
  protected:
   friend class BrowserInstantControllerTest;
   FRIEND_TEST_ALL_PREFIXES(BrowserInstantControllerTest,
@@ -82,6 +88,7 @@ class FakeWebContentsObserver : public content::WebContentsObserver {
 
  private:
   content::WebContents* contents_;
+  content::DidStartNavigationObserver did_start_observer_;
   const GURL& url_;
   GURL current_url_;
   int num_reloads_;
@@ -123,8 +130,17 @@ TEST_F(BrowserInstantControllerTest, DefaultSearchProviderChanged) {
     }
 
     // Ensure only the expected tabs(contents) reloaded.
-    base::RunLoop loop;
-    loop.RunUntilIdle();
+    // RunUntilIdle() ensures that tasks posted by TabReloader::Reload run.
+    base::RunLoop().RunUntilIdle();
+    if (observer->web_contents()->IsLoading()) {
+      // Ensure that we get DidStartNavigation, which can be dispatched
+      // asynchronously.
+      observer->WaitForNavigationStart();
+    }
+
+    // WaitForLoadStop ensures that all relevant navigation callbacks caused by
+    // TabReloader::Run complete.
+    // content::WaitForLoadStop(observer->web_contents());
     EXPECT_EQ(test.should_reload ? 1 : 0, observer->num_reloads())
         << test.description;
 

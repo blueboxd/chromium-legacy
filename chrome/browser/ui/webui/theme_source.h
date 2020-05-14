@@ -18,6 +18,7 @@ class Profile;
 class ThemeSource : public content::URLDataSource {
  public:
   explicit ThemeSource(Profile* profile);
+  ThemeSource(Profile* profile, bool serve_untrusted);
   ~ThemeSource() override;
 
   // content::URLDataSource implementation.
@@ -49,6 +50,9 @@ class ThemeSource : public content::URLDataSource {
 
   // The profile this object was initialized with.
   Profile* profile_;
+
+  // Whether this source services chrome-unstrusted://theme.
+  bool serve_untrusted_;
 
   DISALLOW_COPY_AND_ASSIGN(ThemeSource);
 };

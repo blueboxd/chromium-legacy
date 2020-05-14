@@ -24,6 +24,7 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/cursor_manager.h"
+#include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -40,16 +41,18 @@ void RecursiveSchedulePainter(ui::Layer* layer) {
 }  // namespace
 
 // static
-DragWindowResizer* DragWindowResizer::instance_ = NULL;
+DragWindowResizer* DragWindowResizer::instance_ = nullptr;
 
 DragWindowResizer::~DragWindowResizer() {
-  if (window_state_)
-    window_state_->DeleteDragDetails();
   Shell* shell = Shell::Get();
+  if (window_state_) {
+    window_state_->DeleteDragDetails();
+    shell->shadow_controller()->UpdateShadowForWindow(window_state_->window());
+  }
   shell->mouse_cursor_filter()->set_mouse_warp_enabled(true);
   shell->mouse_cursor_filter()->HideSharedEdgeIndicator();
   if (instance_ == this)
-    instance_ = NULL;
+    instance_ = nullptr;
 }
 
 void DragWindowResizer::Drag(const gfx::PointF& location, int event_flags) {
@@ -97,6 +100,8 @@ DragWindowResizer::DragWindowResizer(
   mouse_cursor_filter->set_mouse_warp_enabled(ShouldAllowMouseWarp());
   if (ShouldAllowMouseWarp())
     mouse_cursor_filter->ShowSharedEdgeIndicator(GetTarget()->GetRootWindow());
+  Shell::Get()->shadow_controller()->UpdateShadowForWindow(
+      window_state->window());
   instance_ = this;
 }
 

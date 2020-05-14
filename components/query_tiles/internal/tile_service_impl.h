@@ -10,13 +10,13 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/background_task_scheduler/background_task_scheduler.h"
-#include "components/query_tiles/internal/image_loader.h"
+#include "components/query_tiles/internal/image_prefetcher.h"
 #include "components/query_tiles/internal/tile_fetcher.h"
 #include "components/query_tiles/internal/tile_manager.h"
 #include "components/query_tiles/internal/tile_types.h"
 #include "components/query_tiles/tile_service.h"
 
-namespace upboarding {
+namespace query_tiles {
 
 // A TileService that needs to be explicitly initialized.
 class InitializableTileService : public TileService {
@@ -30,7 +30,7 @@ class InitializableTileService : public TileService {
 
 class TileServiceImpl : public InitializableTileService {
  public:
-  TileServiceImpl(std::unique_ptr<ImageLoader> image_loader,
+  TileServiceImpl(std::unique_ptr<ImagePrefetcher> image_prefetcher,
                   std::unique_ptr<TileManager> tile_manager,
                   background_task::BackgroundTaskScheduler* scheduler,
                   std::unique_ptr<TileFetcher> tile_fetcher,
@@ -59,16 +59,23 @@ class TileServiceImpl : public InitializableTileService {
   void ScheduleDailyTask();
 
   // Called when fetching from server is completed.
-  void OnFetchFinished(BackgroundTaskFinishedCallback task_finished_callback,
+  void OnFetchFinished(bool is_from_reduced_mode,
+                       BackgroundTaskFinishedCallback task_finished_callback,
                        TileInfoRequestStatus status,
                        const std::unique_ptr<std::string> response_body);
 
   // Called when saving to db via manager layer is completed.
-  void OnTilesSaved(BackgroundTaskFinishedCallback task_finished_callback,
+  void OnTilesSaved(TileGroup tile_group,
+                    bool is_from_reduced_mode,
+                    BackgroundTaskFinishedCallback task_finished_callback,
                     TileGroupStatus status);
 
-  // Used to load tile images.
-  std::unique_ptr<ImageLoader> image_loader_;
+  // Called when image prefetching are finished.
+  void OnPrefetchImagesDone(
+      BackgroundTaskFinishedCallback task_finished_callback);
+
+  // Used to preload tile images.
+  std::unique_ptr<ImagePrefetcher> image_prefetcher_;
 
   // Manages in memory tile group and coordinates with TileStore.
   std::unique_ptr<TileManager> tile_manager_;
@@ -86,6 +93,6 @@ class TileServiceImpl : public InitializableTileService {
   base::WeakPtrFactory<TileServiceImpl> weak_ptr_factory_{this};
 };
 
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_INTERNAL_TILE_SERVICE_IMPL_H_

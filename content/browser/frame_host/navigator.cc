@@ -361,8 +361,9 @@ void Navigator::Navigate(std::unique_ptr<NavigationRequest> request,
   GURL dest_url = request->common_params().url;
   FrameTreeNode* frame_tree_node = request->frame_tree_node();
 
-  navigation_data_.reset(new NavigationMetricsData(
-      request->common_params().navigation_start, dest_url, restore_type));
+  navigation_data_.reset(
+      new NavigationMetricsData(request->common_params().navigation_start,
+                                request->common_params().url, restore_type));
 
   // Check if the BeforeUnload event needs to execute before assigning the
   // NavigationRequest to the FrameTreeNode. Assigning it to the FrameTreeNode
@@ -405,10 +406,6 @@ void Navigator::Navigate(std::unique_ptr<NavigationRequest> request,
   // Make sure no code called via RFH::Navigate clears the pending entry.
   if (is_pending_entry)
     CHECK_EQ(nav_entry_id, controller_->GetPendingEntry()->GetUniqueID());
-
-  // Notify observers about navigation.
-  if (delegate_ && is_pending_entry)
-    delegate_->DidStartNavigationToPendingEntry(dest_url, reload_type);
 }
 
 void Navigator::RequestOpenURL(

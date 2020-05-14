@@ -210,7 +210,8 @@ std::unique_ptr<CastMediaSource> CreateFromURLParams(
     const std::string& broadcast_namespace,
     const std::string& encoded_broadcast_message,
     const std::string& launch_timeout_str,
-    const std::vector<ReceiverAppType>& supported_app_types) {
+    const std::vector<ReceiverAppType>& supported_app_types,
+    const std::string& app_params) {
   if (app_infos.empty())
     return nullptr;
 
@@ -233,9 +234,9 @@ std::unique_ptr<CastMediaSource> CreateFromURLParams(
         base::TimeDelta::FromMilliseconds(launch_timeout_millis));
   }
 
-  if (!supported_app_types.empty()) {
+  if (!supported_app_types.empty())
     cast_source->set_supported_app_types(supported_app_types);
-  }
+  cast_source->set_app_params(app_params);
 
   return cast_source;
 }
@@ -258,8 +259,8 @@ std::unique_ptr<CastMediaSource> ParseCastUrl(const MediaSource::Id& source_id,
       FindValueOr(params, "broadcastNamespace", ""),
       FindValueOr(params, "broadcastMessage", ""),
       FindValueOr(params, "launchTimeout", ""),
-      SupportedAppTypesFromString(
-          FindValueOr(params, "supportedAppTypes", "")));
+      SupportedAppTypesFromString(FindValueOr(params, "supportedAppTypes", "")),
+      FindValueOr(params, "appParams", ""));
 }
 
 std::unique_ptr<CastMediaSource> ParseLegacyCastUrl(
@@ -317,7 +318,8 @@ std::unique_ptr<CastMediaSource> ParseLegacyCastUrl(
       FindValueOr(params, "__castBroadcastNamespace__", ""),
       FindValueOr(params, "__castBroadcastMessage__", ""),
       FindValueOr(params, "__castLaunchTimeout__", ""),
-      /* supported_app_types */ {});
+      /* supported_app_types */ {},
+      /* appParams */ "");
 }
 
 }  // namespace

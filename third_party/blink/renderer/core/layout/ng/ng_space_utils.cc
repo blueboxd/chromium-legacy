@@ -35,6 +35,7 @@ NGConstraintSpace CreateIndefiniteConstraintSpaceForChild(
                                    child.CreatesNewFormattingContext());
   SetOrthogonalFallbackInlineSizeIfNeeded(container_style, child, &builder);
 
+  builder.SetCacheSlot(NGCacheSlot::kMeasure);
   builder.SetAvailableSize(indefinite_size);
   builder.SetPercentageResolutionSize(indefinite_size);
   builder.SetReplacedPercentageResolutionSize(indefinite_size);

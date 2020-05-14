@@ -159,10 +159,10 @@ ChromeAutocompleteProviderClient::GetRemoteSuggestionsService(
                                                         create_if_necessary);
 }
 
-upboarding::TileService* ChromeAutocompleteProviderClient::GetQueryTileService()
-    const {
+query_tiles::TileService*
+ChromeAutocompleteProviderClient::GetQueryTileService() const {
   ProfileKey* profile_key = profile_->GetProfileKey();
-  return upboarding::TileServiceFactory::GetForKey(profile_key);
+  return query_tiles::TileServiceFactory::GetForKey(profile_key);
 }
 
 DocumentSuggestionsService*

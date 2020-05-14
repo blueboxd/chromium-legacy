@@ -34,29 +34,25 @@ void ShellPlatformDelegate::Initialize(const gfx::Size& default_window_size) {
 void ShellPlatformDelegate::CreatePlatformWindow(
     Shell* shell,
     const gfx::Size& initial_size) {
-  ShellData* shell_data = new ShellData;
-  shell->set_platform_data(shell_data);
+  DCHECK(!base::Contains(shell_data_map_, shell));
+  ShellData& shell_data = shell_data_map_[shell];
 
   if (!shell->headless())
     platform_->aura->ShowWindow();
   platform_->aura->ResizeWindow(initial_size);
 
-  shell_data->window = platform_->aura->host()->window();
+  shell_data.window = platform_->aura->host()->window();
 }
 
 gfx::NativeWindow ShellPlatformDelegate::GetNativeWindow(Shell* shell) {
-  ShellData* shell_data = shell->platform_data();
-  return shell_data->window;
+  DCHECK(base::Contains(shell_data_map_, shell));
+  ShellData& shell_data = shell_data_map_[shell];
+  return shell_data.window;
 }
 
 void ShellPlatformDelegate::CleanUp(Shell* shell) {
-  ShellData* shell_data = shell->platform_data();
-
-  // Any ShellData cleanup happens here.
-
-  delete shell_data;
-  // This shouldn't be used anymore, but just in case.
-  shell->set_platform_data(nullptr);
+  DCHECK(base::Contains(shell_data_map_, shell));
+  shell_data_map_.erase(shell);
 }
 
 void ShellPlatformDelegate::SetContents(Shell* shell) {
@@ -83,6 +79,8 @@ void ShellPlatformDelegate::SetIsLoading(Shell* shell, bool loading) {}
 
 void ShellPlatformDelegate::SetTitle(Shell* shell,
                                      const base::string16& title) {}
+
+void ShellPlatformDelegate::RenderViewReady(Shell* shell) {}
 
 bool ShellPlatformDelegate::DestroyShell(Shell* shell) {
   return false;  // Shell destroys itself.

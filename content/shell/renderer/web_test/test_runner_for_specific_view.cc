@@ -21,7 +21,6 @@
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/renderer/render_thread_impl.h"
 #include "content/shell/common/web_test/web_test_string_util.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/renderer/web_test/layout_dump.h"
@@ -54,7 +53,6 @@
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_manifest_manager.h"
 #include "third_party/blink/public/web/web_render_theme.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_security_policy.h"
@@ -86,13 +84,6 @@ void TestRunnerForSpecificView::Reset() {
   if (!web_view() || !web_view()->MainFrame())
     return;
 
-  RemoveWebPageOverlay();
-
-#if !defined(OS_MACOSX) && !defined(OS_WIN)
-  // (Constants copied because we can't depend on the header that defined
-  // them from this file.)
-  blink::SetSelectionColors(0xff1e90ff, 0xff000000, 0xffc8c8c8, 0xff323232);
-#endif
   if (web_view()->MainFrame()->IsWebLocalFrame()) {
     web_view()->MainFrame()->ToWebLocalFrame()->EnableViewSourceMode(false);
     web_view()->SetTextZoomFactor(1);
@@ -208,21 +199,6 @@ base::OnceClosure TestRunnerForSpecificView::CreateClosureThatPostsV8Callback(
                          blink::MainThreadIsolate(), callback)));
 }
 
-void TestRunnerForSpecificView::UpdateAllLifecyclePhasesAndComposite() {
-  // Note, this is executed synchronously. Wrap in setTimeout() to run
-  // asynchronously.
-  main_frame_render_widget()->SynchronouslyComposite(/*raster=*/true);
-}
-
-void TestRunnerForSpecificView::UpdateAllLifecyclePhasesAndCompositeThen(
-    v8::Local<v8::Function> callback) {
-  // Note, this is executed synchronously. Wrap in setTimeout() to run
-  // asynchronously.
-  UpdateAllLifecyclePhasesAndComposite();
-  InvokeV8Callback(
-      v8::UniquePersistent<v8::Function>(blink::MainThreadIsolate(), callback));
-}
-
 void TestRunnerForSpecificView::CapturePixelsAsyncThen(
     v8::Local<v8::Function> callback) {
   v8::UniquePersistent<v8::Function> persistent_callback(
@@ -305,45 +281,6 @@ void TestRunnerForSpecificView::RunJSCallbackWithBitmap(
   PostV8CallbackWithArgs(std::move(callback), base::size(argv), argv);
 }
 
-void TestRunnerForSpecificView::CopyImageAtAndCapturePixelsAsyncThen(
-    int x,
-    int y,
-    v8::Local<v8::Function> callback) {
-  v8::UniquePersistent<v8::Function> persistent_callback(
-      blink::MainThreadIsolate(), callback);
-  CopyImageAtAndCapturePixels(
-      web_view()->MainFrame()->ToWebLocalFrame(), x, y,
-      base::BindOnce(&TestRunnerForSpecificView::RunJSCallbackWithBitmap,
-                     weak_factory_.GetWeakPtr(),
-                     std::move(persistent_callback)));
-}
-
-void TestRunnerForSpecificView::GetManifestThen(
-    v8::Local<v8::Function> callback) {
-  // TODO(danakj): Move GetManifestThen method to per-frame TestRunnerBindings,
-  // instead of per-view bindings. Then we don't need to find a (main) frame.
-  if (!web_view()->MainFrame()->IsWebLocalFrame()) {
-    CHECK(false) << "This function cannot be called if the main frame is not a "
-                    "local frame.";
-  }
-
-  v8::UniquePersistent<v8::Function> persistent_callback(
-      blink::MainThreadIsolate(), callback);
-
-  blink::WebManifestManager::RequestManifestForTesting(
-      web_view()->MainFrame()->ToWebLocalFrame(),
-      base::BindOnce(&TestRunnerForSpecificView::GetManifestCallback,
-                     weak_factory_.GetWeakPtr(),
-                     std::move(persistent_callback)));
-}
-
-void TestRunnerForSpecificView::GetManifestCallback(
-    v8::UniquePersistent<v8::Function> callback,
-    const blink::WebURL& manifest_url,
-    const blink::Manifest& manifest) {
-  PostV8CallbackWithArgs(std::move(callback), 0, nullptr);
-}
-
 void TestRunnerForSpecificView::GetBluetoothManualChooserEvents(
     v8::Local<v8::Function> callback) {
   return blink_test_runner()->GetBluetoothManualChooserEvents(base::BindOnce(
@@ -374,39 +311,6 @@ void TestRunnerForSpecificView::GetBluetoothManualChooserEventsCallback(
   PostV8CallbackWithArgs(std::move(callback), 1, &arg);
 }
 
-void TestRunnerForSpecificView::SetBluetoothFakeAdapter(
-    const std::string& adapter_name,
-    v8::Local<v8::Function> callback) {
-  blink_test_runner()->SetBluetoothFakeAdapter(
-      adapter_name, CreateClosureThatPostsV8Callback(callback));
-}
-
-void TestRunnerForSpecificView::SetBluetoothManualChooser(bool enable) {
-  blink_test_runner()->SetBluetoothManualChooser(enable);
-}
-
-void TestRunnerForSpecificView::SendBluetoothManualChooserEvent(
-    const std::string& event,
-    const std::string& argument) {
-  blink_test_runner()->SendBluetoothManualChooserEvent(event, argument);
-}
-
-void TestRunnerForSpecificView::RunIdleTasks(v8::Local<v8::Function> callback) {
-  blink::scheduler::WebThreadScheduler* scheduler =
-      content::RenderThreadImpl::current()->GetWebMainThreadScheduler();
-  blink::scheduler::RunIdleTasksForTesting(
-      scheduler, CreateClosureThatPostsV8Callback(std::move(callback)));
-}
-
-bool TestRunnerForSpecificView::IsCommandEnabled(const std::string& command) {
-  return web_view()->FocusedFrame()->IsCommandEnabled(
-      blink::WebString::FromUTF8(command));
-}
-
-void TestRunnerForSpecificView::ForceRedSelectionColors() {
-  blink::SetSelectionColors(0xffee0000, 0xff00ee00, 0xff000000, 0xffc0c0c0);
-}
-
 void TestRunnerForSpecificView::SetPageVisibility(
     const std::string& new_visibility) {
   content::PageVisibilityState visibility;
@@ -434,42 +338,6 @@ void TestRunnerForSpecificView::SetPageVisibility(
   }
   web_view_test_proxy_->ApplyPageVisibilityState(visibility,
                                                  /*initial_setting=*/false);
-}
-
-void TestRunnerForSpecificView::SetTextDirection(
-    const std::string& direction_name) {
-  // Map a direction name to a base::i18n::TextDirection value.
-  base::i18n::TextDirection direction;
-  if (direction_name == "auto")
-    direction = base::i18n::UNKNOWN_DIRECTION;
-  else if (direction_name == "rtl")
-    direction = base::i18n::RIGHT_TO_LEFT;
-  else if (direction_name == "ltr")
-    direction = base::i18n::LEFT_TO_RIGHT;
-  else
-    return;
-
-  web_view()->FocusedFrame()->SetTextDirection(direction);
-}
-
-void TestRunnerForSpecificView::AddWebPageOverlay() {
-  web_view()->SetMainFrameOverlayColor(SK_ColorCYAN);
-}
-
-void TestRunnerForSpecificView::RemoveWebPageOverlay() {
-  web_view()->SetMainFrameOverlayColor(SK_ColorTRANSPARENT);
-}
-
-void TestRunnerForSpecificView::SetHighlightAds(bool enabled) {
-  web_view()->GetSettings()->SetHighlightAds(enabled);
-}
-
-void TestRunnerForSpecificView::ForceNextWebGLContextCreationToFail() {
-  web_view()->ForceNextWebGLContextCreationToFail();
-}
-
-void TestRunnerForSpecificView::ForceNextDrawingBufferCreationToFail() {
-  web_view()->ForceNextDrawingBufferCreationToFail();
 }
 
 void TestRunnerForSpecificView::DidAcquirePointerLock() {
@@ -514,13 +382,6 @@ void TestRunnerForSpecificView::DidLosePointerLockInternal() {
   pointer_locked_ = false;
   if (was_locked)
     web_view()->MainFrameWidget()->DidLosePointerLock();
-}
-
-void TestRunnerForSpecificView::SetDomainRelaxationForbiddenForURLScheme(
-    bool forbidden,
-    const std::string& scheme) {
-  web_view()->SetDomainRelaxationForbidden(forbidden,
-                                           blink::WebString::FromUTF8(scheme));
 }
 
 v8::Local<v8::Value>
@@ -589,64 +450,6 @@ void TestRunner::InsertStyleSheet(const std::string& source_code) {
   blink::WebLocalFrame::FrameForCurrentContext()
       ->GetDocument()
       .InsertStyleSheet(blink::WebString::FromUTF8(source_code));
-}
-
-// Sets the network service-global Trust Tokens key commitments.
-// |raw_commitments| should be JSON-encoded according to the format expected
-// by NetworkService::SetTrustTokenKeyCommitments.
-void TestRunnerForSpecificView::SetTrustTokenKeyCommitments(
-    const std::string& raw_commitments,
-    v8::Local<v8::Function> callback) {
-  blink_test_runner()->SetTrustTokenKeyCommitments(
-      raw_commitments, CreateClosureThatPostsV8Callback(callback));
-}
-
-// Clears persistent Trust Tokens state
-// (https://github.com/wicg/trust-token-api) via a test-only Mojo interface.
-void TestRunnerForSpecificView::ClearTrustTokenState(
-    v8::Local<v8::Function> callback) {
-  blink_test_runner()->ClearTrustTokenState(
-      CreateClosureThatPostsV8Callback(callback));
-}
-
-bool TestRunnerForSpecificView::FindString(
-    const std::string& search_text,
-    const std::vector<std::string>& options_array) {
-  bool match_case = true;
-  bool forward = true;
-  bool find_next = true;
-  bool wrap_around = false;
-  for (const std::string& option : options_array) {
-    if (option == "CaseInsensitive")
-      match_case = false;
-    else if (option == "Backwards")
-      forward = false;
-    else if (option == "StartInSelection")
-      find_next = false;
-    else if (option == "WrapAround")
-      wrap_around = true;
-  }
-
-  blink::WebLocalFrame* frame = GetLocalMainFrame();
-  const bool find_result = frame->FindForTesting(
-      0, blink::WebString::FromUTF8(search_text), match_case, forward,
-      find_next, false /* force */, wrap_around);
-  return find_result;
-}
-
-std::string TestRunnerForSpecificView::SelectionAsMarkup() {
-  return GetLocalMainFrame()->SelectionAsMarkup().Utf8();
-}
-
-void TestRunnerForSpecificView::SetViewSourceForFrame(const std::string& name,
-                                                      bool enabled) {
-  blink::WebFrame* target_frame =
-      GetLocalMainFrame()->FindFrameByName(blink::WebString::FromUTF8(name));
-  if (target_frame) {
-    CHECK(target_frame->IsWebLocalFrame())
-        << "This function requires that the target frame is a local frame.";
-    target_frame->ToWebLocalFrame()->EnableViewSourceMode(enabled);
-  }
 }
 
 blink::WebLocalFrame* TestRunnerForSpecificView::GetLocalMainFrame() {

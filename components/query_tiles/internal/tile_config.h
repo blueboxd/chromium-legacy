@@ -12,7 +12,7 @@
 #include "components/query_tiles/internal/tile_types.h"
 #include "url/gurl.h"
 
-namespace upboarding {
+namespace query_tiles {
 
 // Default URL string for GetQueryTiles RPC.
 extern const char kDefaultGetQueryTilePath[];
@@ -71,6 +71,6 @@ class TileConfig {
   static int GetOneoffTaskWindowInMs();
 };
 
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_INTERNAL_TILE_CONFIG_H_

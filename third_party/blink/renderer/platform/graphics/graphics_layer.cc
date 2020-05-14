@@ -567,6 +567,10 @@ void GraphicsLayer::SetContentsOpaque(bool opaque) {
     contents_layer_->SetContentsOpaque(opaque);
 }
 
+void GraphicsLayer::SetContentsOpaqueForText(bool opaque) {
+  CcLayer()->SetContentsOpaqueForText(opaque);
+}
+
 void GraphicsLayer::SetMaskLayer(GraphicsLayer* mask_layer) {
   if (mask_layer == mask_layer_)
     return;

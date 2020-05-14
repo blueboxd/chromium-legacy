@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
 <body>
+<script src = "/resources/get-host-info.js?pipe=sub"></script>
 <script src = "/resources/testharness.js"></script>
 <script src = "/resources/testharnessreport.js"></script>
 <script src = "/serviceworker/resources/test-helpers.js"></script>
@@ -11,6 +12,7 @@ const SCRIPT =
    '/fetch/referrer/resources/origin-when-cross-origin-simple-onfetch-js.php';
 const SCOPE = location.href;
 
+const {BASE_ORIGIN, OTHER_ORIGIN} = get_fetch_test_options();
 const BASE_URL = BASE_ORIGIN + '/fetch/resources/referrer.php';
 const OTHER_URL = OTHER_ORIGIN + '/fetch/resources/referrer.php';
 const REFERRER_SOURCE = location.href;

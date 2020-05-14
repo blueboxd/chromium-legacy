@@ -35,7 +35,8 @@
 
 namespace blink {
 
-// Wrapper functions defined in blink.h
+// ==== Functions defined in third_party/blink/public/web/blink.h. ====
+
 void SetWebTestMode(bool value) {
   WebTestSupport::SetIsRunningWebTest(value);
 }
@@ -51,6 +52,8 @@ void SetFontAntialiasingEnabledForTest(bool value) {
 bool FontAntialiasingEnabledForTest() {
   return WebTestSupport::IsFontAntialiasingEnabledForTest();
 }
+
+// ==== State methods defined in WebTestSupport. ====
 
 static bool g_is_running_web_test = false;
 static bool g_is_font_antialiasing_enabled = false;

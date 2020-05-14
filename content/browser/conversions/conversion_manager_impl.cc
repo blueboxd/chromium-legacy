@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
@@ -52,7 +53,6 @@ ConversionManagerImpl::ConversionManagerImpl(
     : ConversionManagerImpl(
           std::make_unique<ConversionReporterImpl>(
               storage_partition,
-              this,
               base::DefaultClock::GetInstance()),
           std::make_unique<ConversionPolicy>(
               base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -124,13 +124,6 @@ void ConversionManagerImpl::HandleConversion(
     GetAndQueueReportsForNextInterval();
 }
 
-void ConversionManagerImpl::HandleSentReport(int64_t conversion_id) {
-  storage_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(base::IgnoreResult(&ConversionStorage::DeleteConversion),
-                     base::Unretained(storage_.get()), conversion_id));
-}
-
 void ConversionManagerImpl::GetActiveImpressionsForWebUI(
     base::OnceCallback<void(std::vector<StorableImpression>)> callback) {
   // Unretained is safe because any task to delete |storage_| will be posted
@@ -145,13 +138,14 @@ void ConversionManagerImpl::GetActiveImpressionsForWebUI(
 void ConversionManagerImpl::GetReportsForWebUI(
     base::OnceCallback<void(std::vector<ConversionReport>)> callback,
     base::Time max_report_time) {
-  // Unretained is safe because any task to delete |storage_| will be posted
-  // after this one because |storage_| uses base::OnTaskRunnerDeleter.
-  base::PostTaskAndReplyWithResult(
-      storage_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&ConversionStorage::GetConversionsToReport,
-                     base::Unretained(storage_.get()), max_report_time),
-      std::move(callback));
+  GetAndHandleReports(std::move(callback), max_report_time);
+}
+
+void ConversionManagerImpl::SendReportsForWebUI(base::OnceClosure done) {
+  GetAndHandleReports(
+      base::BindOnce(&ConversionManagerImpl::HandleReportsSentFromWebUI,
+                     weak_factory_.GetWeakPtr(), std::move(done)),
+      base::Time::Max());
 }
 
 const ConversionPolicy& ConversionManagerImpl::GetConversionPolicy() const {
@@ -181,7 +175,8 @@ void ConversionManagerImpl::OnInitCompleted(bool success) {
   // Chrome was not running and handle these specially.
   GetAndHandleReports(
       base::BindOnce(&ConversionManagerImpl::HandleReportsExpiredAtStartup,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr()),
+      clock_->Now() + kConversionManagerQueueReportsInterval);
 
   // Start a repeating timer that will fetch reports once every
   // |kConversionManagerQueueReportsInterval| and add them to |reporter_|.
@@ -191,12 +186,12 @@ void ConversionManagerImpl::OnInitCompleted(bool success) {
 }
 
 void ConversionManagerImpl::GetAndHandleReports(
-    ReportsHandlerFunc handler_function) {
+    ReportsHandlerFunc handler_function,
+    base::Time max_report_time) {
   base::PostTaskAndReplyWithResult(
       storage_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ConversionStorage::GetConversionsToReport,
-                     base::Unretained(storage_.get()),
-                     clock_->Now() + kConversionManagerQueueReportsInterval),
+                     base::Unretained(storage_.get()), max_report_time),
       std::move(handler_function));
 }
 
@@ -204,13 +199,20 @@ void ConversionManagerImpl::GetAndQueueReportsForNextInterval() {
   // Get all the reports that will be reported in the next interval and them to
   // the |reporter_|.
   GetAndHandleReports(base::BindOnce(&ConversionManagerImpl::QueueReports,
-                                     weak_factory_.GetWeakPtr()));
+                                     weak_factory_.GetWeakPtr()),
+                      clock_->Now() + kConversionManagerQueueReportsInterval);
 }
 
 void ConversionManagerImpl::QueueReports(
     std::vector<ConversionReport> reports) {
-  if (!reports.empty())
-    reporter_->AddReportsToQueue(std::move(reports));
+  if (!reports.empty()) {
+    // |reporter_| is owned by |this|, so base::Unretained() is safe as the
+    // reporter and callbacks will be deleted first.
+    reporter_->AddReportsToQueue(
+        std::move(reports),
+        base::BindRepeating(&ConversionManagerImpl::OnReportSent,
+                            base::Unretained(this)));
+  }
 }
 
 void ConversionManagerImpl::HandleReportsExpiredAtStartup(
@@ -230,6 +232,51 @@ void ConversionManagerImpl::HandleReportsExpiredAtStartup(
     report.report_time = updated_report_time;
   }
   QueueReports(std::move(reports));
+}
+
+void ConversionManagerImpl::HandleReportsSentFromWebUI(
+    base::OnceClosure done,
+    std::vector<ConversionReport> reports) {
+  if (reports.empty()) {
+    std::move(done).Run();
+    return;
+  }
+
+  // All reports should be sent immediately.
+  for (ConversionReport& report : reports) {
+    report.report_time = base::Time::Min();
+  }
+
+  // Wraps |done| so that is will run once all of the reports have finished
+  // sending.
+  base::RepeatingClosure all_reports_sent =
+      base::BarrierClosure(reports.size(), std::move(done));
+
+  // |reporter_| is owned by |this|, so base::Unretained() is safe as the
+  // reporter and callbacks will be deleted first.
+  reporter_->AddReportsToQueue(
+      std::move(reports),
+      base::BindRepeating(&ConversionManagerImpl::OnReportSentFromWebUI,
+                          base::Unretained(this), std::move(all_reports_sent)));
+}
+
+void ConversionManagerImpl::OnReportSent(int64_t conversion_id) {
+  storage_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(base::IgnoreResult(&ConversionStorage::DeleteConversion),
+                     base::Unretained(storage_.get()), conversion_id));
+}
+
+void ConversionManagerImpl::OnReportSentFromWebUI(
+    base::OnceClosure reports_sent_barrier,
+    int64_t conversion_id) {
+  // |reports_sent_barrier| is a OnceClosure view of a RepeatingClosure obtained
+  // by base::BarrierClosure().
+  storage_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(base::IgnoreResult(&ConversionStorage::DeleteConversion),
+                     base::Unretained(storage_.get()), conversion_id),
+      std::move(reports_sent_barrier));
 }
 
 }  // namespace content

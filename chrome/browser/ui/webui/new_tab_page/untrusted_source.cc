@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -120,6 +121,7 @@ void UntrustedSource::StartDataRequest(
     if (promo_service_->promo_data().has_value()) {
       OnPromoDataUpdated();
     }
+    promo_load_start_time_ = base::TimeTicks::Now();
     promo_service_->Refresh();
     return;
   }
@@ -236,6 +238,27 @@ void UntrustedSource::OnOneGoogleBarServiceShuttingDown() {
 }
 
 void UntrustedSource::OnPromoDataUpdated() {
+  if (promo_load_start_time_.has_value()) {
+    base::TimeDelta duration = base::TimeTicks::Now() - *promo_load_start_time_;
+    UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Promos.RequestLatency2", duration);
+    if (promo_service_->promo_status() == PromoService::Status::OK_WITH_PROMO) {
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "NewTabPage.Promos.RequestLatency2.SuccessWithPromo", duration);
+    } else if (promo_service_->promo_status() ==
+               PromoService::Status::OK_BUT_BLOCKED) {
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "NewTabPage.Promos.RequestLatency2.SuccessButBlocked", duration);
+    } else if (promo_service_->promo_status() ==
+               PromoService::Status::OK_WITHOUT_PROMO) {
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "NewTabPage.Promos.RequestLatency2.SuccessWithoutPromo", duration);
+    } else {
+      UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Promos.RequestLatency2.Failure",
+                                 duration);
+    }
+    promo_load_start_time_ = base::nullopt;
+  }
+
   const auto& data = promo_service_->promo_data();
   std::string html;
   if (data.has_value() && !data->promo_html.empty()) {

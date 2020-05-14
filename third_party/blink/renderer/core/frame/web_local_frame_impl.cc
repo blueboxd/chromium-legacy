@@ -2392,6 +2392,10 @@ static String CreateMarkupInRect(LocalFrame* frame,
   return CreateMarkup(end_position, start_position, create_markup_options);
 }
 
+void WebLocalFrameImpl::SetMainFrameOverlayColor(SkColor color) {
+  GetFrame()->SetMainFrameColorOverlay(color);
+}
+
 bool WebLocalFrameImpl::ShouldSuppressKeyboardForFocusedElement() {
   if (!autofill_client_)
     return false;

@@ -562,6 +562,13 @@ into:
 
 `https://chrome-gpu-gold.skia.org/search?query=name%3D<test name>`
 
+**NOTE** If you have a grace period active for your test, then Gold will be told
+to ignore results for the test. This is so that it does not comment on unrelated
+CLs about untriaged images if your test is noisy. Images will still be uploaded
+to Gold and can be triaged, but will not show up on the main page's untriaged
+image list, and you will need to enable the "Ignored" toggle at the top of the
+page when looking at the triage page specific to your test.
+
 ## Stamping out Flakiness
 
 It's critically important to aggressively investigate and eliminate the root

@@ -85,6 +85,8 @@ void BookmarkAppRegistryController::SetAppIsLocallyInstalled(
     bool is_locally_installed) {
   SetBookmarkAppIsLocallyInstalled(profile(), GetExtension(app_id),
                                    is_locally_installed);
+  registrar_->NotifyWebAppLocallyInstalledStateChanged(app_id,
+                                                       is_locally_installed);
 }
 
 web_app::WebAppSyncBridge* BookmarkAppRegistryController::AsWebAppSyncBridge() {

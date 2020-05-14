@@ -6,7 +6,7 @@
 
 #include <utility>
 
-namespace upboarding {
+namespace query_tiles {
 namespace {
 
 std::unique_ptr<Tile> CreateTile(const std::string& id,
@@ -88,4 +88,4 @@ void FakeTileService::StartFetchForTiles(
     bool is_from_reduced_mode,
     BackgroundTaskFinishedCallback callback) {}
 
-}  // namespace upboarding
+}  // namespace query_tiles

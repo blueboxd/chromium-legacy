@@ -56,10 +56,12 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
    public:
     virtual ~ConversionReporter() = default;
 
-    // Adds |reports| to a shared queue of reports that need to be sent. The
-    // reporter needs to notify it's owning manager when a report has been sent
-    // via ConversionManager::HandleSentReport().
-    virtual void AddReportsToQueue(std::vector<ConversionReport> reports) = 0;
+    // Adds |reports| to a shared queue of reports that need to be sent. Runs
+    // |report_sent_callback| for every report that is sent, with the associated
+    // |conversion_id| of the report.
+    virtual void AddReportsToQueue(
+        std::vector<ConversionReport> reports,
+        base::RepeatingCallback<void(int64_t)> report_sent_callback) = 0;
   };
 
   static std::unique_ptr<ConversionManagerImpl> CreateForTesting(
@@ -81,13 +83,13 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
   // ConversionManager:
   void HandleImpression(const StorableImpression& impression) override;
   void HandleConversion(const StorableConversion& conversion) override;
-  void HandleSentReport(int64_t conversion_id) override;
   void GetActiveImpressionsForWebUI(
       base::OnceCallback<void(std::vector<StorableImpression>)> callback)
       override;
   void GetReportsForWebUI(
       base::OnceCallback<void(std::vector<ConversionReport>)> callback,
       base::Time max_report_time) override;
+  void SendReportsForWebUI(base::OnceClosure done) override;
   const ConversionPolicy& GetConversionPolicy() const override;
   void ClearData(base::Time delete_begin,
                  base::Time delete_end,
@@ -104,9 +106,12 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
 
   void OnInitCompleted(bool success);
 
+  // Retrieves reports from storage whose |report_time| <= |max_report_time|,
+  // and calls |handler_function| on them.
   using ReportsHandlerFunc =
       base::OnceCallback<void(std::vector<ConversionReport>)>;
-  void GetAndHandleReports(ReportsHandlerFunc handler_function);
+  void GetAndHandleReports(ReportsHandlerFunc handler_function,
+                           base::Time max_report_time);
 
   // Get the next set of reports from storage that need to be sent before the
   // next call from |get_and_queue_reports_timer_|. Adds the reports to
@@ -117,6 +122,18 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
   void QueueReports(std::vector<ConversionReport> reports);
 
   void HandleReportsExpiredAtStartup(std::vector<ConversionReport> reports);
+
+  void HandleReportsSentFromWebUI(base::OnceClosure done,
+                                  std::vector<ConversionReport> reports);
+
+  // Notify storage to delete the given |conversion_id| when it's associated
+  // report has been sent.
+  void OnReportSent(int64_t conversion_id);
+
+  // Similar to OnReportSent, but invokes |reports_sent_barrier| when the
+  // report has been removed from storage.
+  void OnReportSentFromWebUI(base::OnceClosure reports_sent_barrier,
+                             int64_t conversion_id);
 
   // Friend to expose the ConversionStorage and task runner, consider changing
   // to just expose the storage if it moves to SequenceBound.

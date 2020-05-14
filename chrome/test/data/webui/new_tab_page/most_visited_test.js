@@ -4,7 +4,7 @@
 
 import {BrowserProxy} from 'chrome://new-tab-page/new_tab_page.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
-import {assertStyle, createTestProxy, keydown} from 'chrome://test/new_tab_page/test_support.js';
+import {assertNotStyle, assertStyle, createTestProxy, keydown} from 'chrome://test/new_tab_page/test_support.js';
 import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageMostVisitedTest', () => {
@@ -722,6 +722,23 @@ suite('NewTabPageMostVisitedTest', () => {
     assertStyle(
         mostVisited.$.addShortcutIcon, 'background-color',
         'rgb(255, 255, 255)');
+  });
+
+  test('add title pill', () => {
+    mostVisited.style.setProperty('--ntp-theme-text-shadow', '1px 2px');
+    queryAll('.tile-title').forEach(tile => {
+      assertStyle(tile, 'background-color', 'rgba(0, 0, 0, 0)');
+    });
+    queryAll('.tile-title span').forEach(tile => {
+      assertNotStyle(tile, 'text-shadow', 'none');
+    });
+    mostVisited.toggleAttribute('use-title-pill', true);
+    queryAll('.tile-title').forEach(tile => {
+      assertStyle(tile, 'background-color', 'rgb(255, 255, 255)');
+    });
+    queryAll('.tile-title span').forEach(tile => {
+      assertStyle(tile, 'text-shadow', 'none');
+    });
   });
 
   test('rendering tiles logs event', async () => {

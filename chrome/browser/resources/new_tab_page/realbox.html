@@ -92,16 +92,17 @@
   }
 
   #voiceSearchButton {
-    background-size: 21px;
     background: url(icons/googlemic_clr_24px.svg) no-repeat center;
+    background-size: 21px;
     border: none;
+    border-radius: 2px;
     cursor: pointer;
     height: 100%;
     outline: none;
     padding: 0;
     position: absolute;
     right: 16px;
-    width: 21px;
+    width: 26px;
   }
 
   :host-context([dir='rtl']) #voiceSearchButton {
@@ -110,7 +111,7 @@
   }
 
   :host-context(.focus-outline-visible) #voiceSearchButton:focus {
-    box-shadow: 0 0 0 2px var(--ntp-focus-shadow-color);
+    box-shadow: var(--ntp-focus-shadow);
   }
 </style>
 <div id="realboxInputWrapper">

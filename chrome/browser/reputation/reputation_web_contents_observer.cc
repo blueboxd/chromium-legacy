@@ -105,6 +105,14 @@ void OnSafetyTipClosed(ReputationCheckResult result,
   RecordHeuristicsUKMData(result, navigation_source_id, action);
 }
 
+// Safety Tips does not use starts_active (since flagged sites are so rare to
+// begin with), so this function records the same metric as "SafetyTipShown",
+// but does so after the flag check, which may impact flag recording.
+void RecordPostFlagCheckHistogram(security_state::SafetyTipStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("Security.SafetyTips.SafetyTipShown_AfterFlag",
+                            status);
+}
+
 }  // namespace
 
 ReputationWebContentsObserver::~ReputationWebContentsObserver() = default;
@@ -248,11 +256,13 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
       ReputationService::Get(profile_)->OnUIDisabledFirstVisit(result.url);
     }
 
+    RecordPostFlagCheckHistogram(result.safety_tip_status);
     FinalizeReputationCheckWhenTipNotShown(record_ukm_if_tip_not_shown, result,
                                            navigation_source_id);
     return;
   }
 
+  RecordPostFlagCheckHistogram(result.safety_tip_status);
   ShowSafetyTipDialog(web_contents(), result.safety_tip_status, result.url,
                       result.suggested_url,
                       base::BindOnce(OnSafetyTipClosed, result,

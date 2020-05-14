@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 45
+// Next MinVersion: 46
 
 module arc.mojom;
 
@@ -43,6 +43,9 @@ struct WebAppInfo {
 
   // If the web app is tied to a web-only TWA.
   [MinVersion=44] bool is_web_only_twa;
+
+  // SHA256 fingerprint of the APK the web app belongs to.
+  [MinVersion=45] string? certificate_sha256_fingerprint;
 };
 
 // Describes ARC package.

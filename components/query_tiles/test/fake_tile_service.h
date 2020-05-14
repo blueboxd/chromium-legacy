@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/query_tiles/tile_service.h"
 
-namespace upboarding {
+namespace query_tiles {
 
 // A fake TileService that can be used for tests.
 class FakeTileService : public TileService {
@@ -34,6 +34,6 @@ class FakeTileService : public TileService {
   base::WeakPtrFactory<FakeTileService> weak_ptr_factory_{this};
 };
 
-}  // namespace upboarding
+}  // namespace query_tiles
 
 #endif  // COMPONENTS_QUERY_TILES_TEST_FAKE_TILE_SERVICE_H_

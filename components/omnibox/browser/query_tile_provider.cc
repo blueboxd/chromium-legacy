@@ -20,7 +20,7 @@ const int kQueryTilesMatchRelevanceScore = 1599;
 // selected query tile, if any. If there is no query tile selected, empty input
 // text is considered a match.
 bool TextMatchesQueryTile(base::string16 input_text,
-                          base::Optional<upboarding::Tile> tile) {
+                          base::Optional<query_tiles::Tile> tile) {
   auto trimmed_input =
       base::TrimWhitespace(input_text, base::TrimPositions::TRIM_TRAILING);
   auto tile_text = tile.has_value() ? tile->query_text : "";
@@ -121,24 +121,25 @@ bool QueryTileProvider::AllowQueryTileSuggestions(
 
 void QueryTileProvider::OnTopLevelTilesFetched(
     const AutocompleteInput& input,
-    std::vector<upboarding::Tile> tiles) {
+    std::vector<query_tiles::Tile> tiles) {
   BuildSuggestion(input, base::nullopt, std::move(tiles));
 }
 
 void QueryTileProvider::OnSubTilesFetched(
     const AutocompleteInput& input,
-    base::Optional<upboarding::Tile> tile) {
+    base::Optional<query_tiles::Tile> tile) {
   DCHECK(tile.has_value());
-  std::vector<upboarding::Tile> sub_tiles;
+  std::vector<query_tiles::Tile> sub_tiles;
   for (const auto& sub_tile : std::move(tile->sub_tiles))
     sub_tiles.emplace_back(std::move(*sub_tile.get()));
 
   BuildSuggestion(input, tile, std::move(sub_tiles));
 }
 
-void QueryTileProvider::BuildSuggestion(const AutocompleteInput& input,
-                                        base::Optional<upboarding::Tile> parent,
-                                        std::vector<upboarding::Tile> tiles) {
+void QueryTileProvider::BuildSuggestion(
+    const AutocompleteInput& input,
+    base::Optional<query_tiles::Tile> parent,
+    std::vector<query_tiles::Tile> tiles) {
   if (done_)
     return;
 

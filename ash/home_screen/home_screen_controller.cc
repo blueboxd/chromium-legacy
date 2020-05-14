@@ -341,10 +341,13 @@ void HomeScreenController::OnOverviewModeStarting() {
       IsHomeScreenVisible() &&
       (overview_enter_type == OverviewEnterExitType::kSlideInEnter ||
        overview_enter_type == OverviewEnterExitType::kFadeInEnter);
+  const bool use_scale_transition =
+      overview_enter_type == OverviewEnterExitType::kFadeInEnter ||
+      (features::IsDragFromShelfToHomeOrOverviewEnabled() &&
+       overview_enter_type != OverviewEnterExitType::kSlideInEnter);
   const HomeScreenPresenter::TransitionType transition =
-      overview_enter_type == OverviewEnterExitType::kFadeInEnter
-          ? HomeScreenPresenter::TransitionType::kScaleHomeOut
-          : HomeScreenPresenter::TransitionType::kSlideHomeOut;
+      use_scale_transition ? HomeScreenPresenter::TransitionType::kScaleHomeOut
+                           : HomeScreenPresenter::TransitionType::kSlideHomeOut;
 
   home_screen_presenter_.ScheduleOverviewModeAnimation(transition, animate);
 }
@@ -385,10 +388,13 @@ void HomeScreenController::OnOverviewModeEndingAnimationComplete(
   const bool animate =
       *overview_exit_type_ == OverviewEnterExitType::kSlideOutExit ||
       *overview_exit_type_ == OverviewEnterExitType::kFadeOutExit;
+  const bool use_scale_transition =
+      *overview_exit_type_ == OverviewEnterExitType::kFadeOutExit ||
+      (features::IsDragFromShelfToHomeOrOverviewEnabled() &&
+       *overview_exit_type_ != OverviewEnterExitType::kSlideOutExit);
   const HomeScreenPresenter::TransitionType transition =
-      *overview_exit_type_ == OverviewEnterExitType::kFadeOutExit
-          ? HomeScreenPresenter::TransitionType::kScaleHomeIn
-          : HomeScreenPresenter::TransitionType::kSlideHomeIn;
+      use_scale_transition ? HomeScreenPresenter::TransitionType::kScaleHomeIn
+                           : HomeScreenPresenter::TransitionType::kSlideHomeIn;
   overview_exit_type_ = base::nullopt;
 
   home_screen_presenter_.ScheduleOverviewModeAnimation(transition, animate);

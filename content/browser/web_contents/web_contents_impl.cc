@@ -4475,13 +4475,6 @@ void WebContentsImpl::NotifyChangedNavigationState(
   NotifyNavigationStateChanged(changed_flags);
 }
 
-void WebContentsImpl::DidStartNavigationToPendingEntry(const GURL& url,
-                                                       ReloadType reload_type) {
-  // Notify observers about navigation.
-  for (auto& observer : observers_)
-    observer.DidStartNavigationToPendingEntry(url, reload_type);
-}
-
 bool WebContentsImpl::ShouldTransferNavigation(bool is_main_frame_navigation) {
   if (!delegate_)
     return true;

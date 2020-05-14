@@ -369,6 +369,19 @@ void WebAppsBase::OnAppRegistrarDestroyed() {
   registrar_observer_.RemoveAll();
 }
 
+void WebAppsBase::OnWebAppLocallyInstalledStateChanged(
+    const web_app::AppId& app_id,
+    bool is_locally_installed) {
+  const web_app::WebApp* web_app = GetWebApp(app_id);
+  if (!web_app)
+    return;
+  auto app = apps::mojom::App::New();
+  app->app_type = apps::mojom::AppType::kWeb;
+  app->app_id = app_id;
+  app->icon_key = icon_key_factory().MakeIconKey(GetIconEffects(web_app));
+  Publish(std::move(app), subscribers_);
+}
+
 void WebAppsBase::SetShowInFields(apps::mojom::AppPtr& app,
                                   const web_app::WebApp* web_app) {
   if (web_app->chromeos_data().has_value()) {

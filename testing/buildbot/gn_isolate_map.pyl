@@ -257,6 +257,10 @@
     "script": "//testing/scripts/run_isolated_script_test.py",
     "type": "script",
   },
+  "boundary_interface_example_apk": {
+    "label": "//android_webview/support_library/boundary_interfaces:boundary_interface_example_apk",
+    "type": "additional_compile_target",
+  },
   "devtools_web_tests": {
     "args": [
       "../../third_party/blink/tools/run_web_tests.py",

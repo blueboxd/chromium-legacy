@@ -16,6 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (el.target !== '_blank') {
       el.target = '_top';
     }
+    el.addEventListener('click', () => {
+      window.parent.postMessage(
+          {frameType: 'promo', messageType: 'link-clicked'},
+          'chrome://new-tab-page');
+    });
   });
   // Inform the embedder that the promo has loaded and can be displayed.
   window.parent.postMessage(

@@ -955,9 +955,24 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   bool IsTouchDraggingScrollbar(
       LayerImpl* first_scrolling_layer_or_drawn_scrollbar,
       ui::ScrollInputType type);
+
+  // Initial scroll hit testing can be unreliable in the presence of squashed
+  // layers. In this case, we fall back to main thread scrolling. This function
+  // compares |layer_impl| returned from a regular hit test to the layer
+  // returned from a hit test performed only on scrollers and scrollbars. If the
+  // closest scrolling ancestor of |layer_impl| is not the other layer, then the
+  // layer_impl must be a squasing layer overtop of some other scroller and we
+  // must rely on the main thread.
+  //
+  // Note, position: fixed layers use the inner viewport as their ScrollNode
+  // (since they don't scroll with the outer viewport), however, scrolls from
+  // the fixed layer still chain to the outer viewport. It's also possible for a
+  // node to have the inner viewport as its ancestor without going through the
+  // outer viewport; however, it may still scroll using the viewport(). Hence,
+  // this method must use the same scroll chaining logic we use in ApplyScroll.
   bool IsInitialScrollHitTestReliable(
       LayerImpl* layer,
-      LayerImpl* first_scrolling_layer_or_drawn_scrollbar);
+      LayerImpl* first_scrolling_layer_or_drawn_scrollbar) const;
 
   // Given a starting node (determined by hit-test), walks up the scroll tree
   // looking for the first node that can consume scroll from the given
@@ -1001,7 +1016,18 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   void ClearCurrentlyScrollingNode();
 
-  ScrollNode* FindScrollNodeForDeviceViewportPoint(
+  // Performs a hit test to determine the ScrollNode to use when scrolling at
+  // |viewport_point|. Can return nullptr if the hit test fails; see the
+  // comment in IsInitialScrollHitTestReliable
+  ScrollNode* HitTestScrollNode(const gfx::PointF& device_viewport_point) const;
+
+  // Similar to above but includes complicated logic to determine whether the
+  // ScrollNode is able to be scrolled on the compositor or requires main
+  // thread scrolling. If main thread scrolling is required
+  // |scroll_on_main_thread| is set to true and the reason is given in
+  // |main_thread_scrolling_reason| to on of the enum values in
+  // main_thread_scrolling_reason.h.
+  ScrollNode* FindScrollNodeForCompositedScrolling(
       const gfx::PointF& device_viewport_point,
       LayerImpl* layer_hit_by_point,
       bool* scroll_on_main_thread,

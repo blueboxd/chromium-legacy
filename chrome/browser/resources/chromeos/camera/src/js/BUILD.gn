@@ -110,7 +110,6 @@ js_library("state") {
   deps = [
     ":perf",
     ":type",
-    "views:view",
   ]
 }
 
@@ -140,6 +139,7 @@ js_library("tooltip") {
 
 js_library("util") {
   deps = [
+    ":state",
     ":tooltip",
     ":type",
     "browser_proxy:browser_proxy",

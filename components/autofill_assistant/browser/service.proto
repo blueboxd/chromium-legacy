@@ -418,6 +418,21 @@ enum DropdownSelectStrategy {
   LABEL_STARTS_WITH = 3;
 }
 
+// This type disambiguates the term "clicking" on a node in the DOM by defining
+// what strategy should be used to execute the "click".
+enum ClickType {
+  NOT_SET = 0;
+
+  // Send a tap event to the node.
+  TAP = 1;
+
+  // Use JavaScript's `node.click()` to click the element.
+  JAVASCRIPT = 2;
+
+  // Send a click event to the node.
+  CLICK = 3;
+}
+
 // An action could be performed.
 message ActionProto {
   // Wait these many milliseconds before executing the action, if set.
@@ -730,12 +745,6 @@ enum VisibilityRequirement {
 
 // Contain all arguments to perform a click.
 message ClickProto {
-  enum ClickType {
-    NOT_SET = 0;
-    TAP = 1;
-    JAVASCRIPT = 2;
-    CLICK = 3;
-  }
   optional ElementReferenceProto element_to_click = 1;
   optional ClickType click_type = 2;
 }
@@ -856,6 +865,14 @@ message UseAddressProto {
     // Usually used together with simulate_key_presses.
     optional bool forced = 5;
 
+    // For JavaScript implemented dropdowns. This first clicks on the |element|,
+    // then waits for |option_element_to_click| to appear and clicks it. The
+    // selector must match a generic option, an |inner_text_pattern| will be
+    // added to this element reference to match a single option.
+    // Both clicks use the same |click_type|.
+    optional ElementReferenceProto option_element_to_click = 9;
+    optional ClickType click_type = 10;
+
     reserved 1, 3;
   }
 
@@ -915,6 +932,14 @@ message UseCreditCardProto {
     // cases where the way autofill sets the field doesn't work on the website.
     // Usually used together with simulate_key_presses.
     optional bool forced = 5;
+
+    // For JavaScript implemented dropdowns. This first clicks on the |element|,
+    // then waits for |option_element_to_click| to appear and clicks it. The
+    // selector must match a generic option, an |inner_text_pattern| will be
+    // added to this element reference to match a single option.
+    // Both clicks use the same |click_type|.
+    optional ElementReferenceProto option_element_to_click = 9;
+    optional ClickType click_type = 10;
 
     reserved 1, 3;
   }
@@ -1274,9 +1299,9 @@ message LoginDetailsProto {
     // If the option was chosen, this payload will be returned to the server.
     optional bytes payload = 1;
 
-    // Whether the UI should automatically choose this login option if it is the
-    // only available choice.
-    optional bool choose_automatically_if_no_other_options = 2;
+    // Whether the UI should automatically choose this login option if no
+    // password manager login options are available.
+    optional bool choose_automatically_if_no_stored_login = 2;
 
     // Determines the priority with which to pre-select this login choice.
     // The lower the value, the higher the priority.

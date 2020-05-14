@@ -27,6 +27,7 @@
 #include "net/base/load_flags.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/http/http_request_headers.h"
+#include "net/quic/quic_transport_client.h"
 #include "net/ssl/ssl_info.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -735,13 +736,20 @@ void ReportSameSiteCookieIssue(
           std::move(details)));
 }
 
-void OnQuicTransportHandshakeFailed(RenderFrameHostImpl* frame,
-                                    const GURL& url) {
+void OnQuicTransportHandshakeFailed(
+    RenderFrameHostImpl* frame,
+    const GURL& url,
+    const base::Optional<net::QuicTransportError>& error) {
   FrameTreeNode* ftn = frame->frame_tree_node();
   if (!ftn)
     return;
   std::string text = base::StringPrintf(
-      "Failed to establish a connection to %s.", url.spec().c_str());
+      "Failed to establish a connection to %s", url.spec().c_str());
+  if (error) {
+    text += ": ";
+    text += net::QuicTransportErrorToString(*error);
+  }
+  text += ".";
   auto entry = protocol::Log::LogEntry::Create()
                    .SetSource(protocol::Log::LogEntry::SourceEnum::Network)
                    .SetLevel(protocol::Log::LogEntry::LevelEnum::Error)

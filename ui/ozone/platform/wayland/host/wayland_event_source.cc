@@ -176,22 +176,7 @@ void WaylandEventSource::OnPointerButtonEvent(EventType type,
   int flags = pointer_flags_ | keyboard_modifiers_ | changed_button;
   MouseEvent event(type, pointer_location_, pointer_location_,
                    EventTimeForNow(), flags, changed_button);
-
-  // Update implicit grab state for the currently focused window, if any, before
-  // dispatching the event, so event dispatchers can determine if they should or
-  // not process this event.
-  if (type == ET_MOUSE_PRESSED)
-    UpdateImplicitGrab();
-
   DispatchEvent(&event);
-
-  // Reset implicit grab only after the event has been sent. Otherwise, we may
-  // end up in a situation where a target checks for a pointer grab on the
-  // MouseRelease event type, and fails to release capture due to early pointer
-  // focus reset. Setting implicit grab is done normally before the event has
-  // been sent.
-  if (type == ET_MOUSE_RELEASED)
-    UpdateImplicitGrab();
 }
 
 void WaylandEventSource::OnPointerMotionEvent(const gfx::PointF& location) {
@@ -312,16 +297,6 @@ void WaylandEventSource::OnWindowRemoved(WaylandWindow* window) {
   });
 }
 
-void WaylandEventSource::UpdateImplicitGrab() {
-  if (!pointer_)
-    return;
-
-  if (auto* focused_window = window_manager_->GetCurrentFocusedWindow()) {
-    focused_window->set_has_implicit_grab(
-        HasAnyPointerButtonFlag(pointer_flags_));
-  }
-}
-
 // Currently EF_MOD3_DOWN means that the CapsLock key is currently down, and
 // EF_CAPS_LOCK_ON means the caps lock state is enabled (and the key may or
 // may not be down, but usually isn't). There does need to be two different
@@ -361,8 +336,6 @@ void WaylandEventSource::HandlePointerFocusChange(WaylandWindow* window,
     // menus), in this case, |window| is null, otherwise it must be equal to
     // |window_with_pointer_focus_|. In both cases, they must be equal.
     DCHECK_EQ(window_with_pointer_focus_, window);
-    if (window)
-      window->set_has_implicit_grab(false);
     window_with_pointer_focus_ = nullptr;
   }
 }

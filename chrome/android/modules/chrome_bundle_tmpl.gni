@@ -74,7 +74,6 @@ template("chrome_bundle") {
   android_app_bundle(target_name) {
     forward_variables_from(invoker,
                            [
-                             "android_manifest_for_lint",
                              "base_module_target",
                              "bundle_name",
                              "compress_shared_libraries",

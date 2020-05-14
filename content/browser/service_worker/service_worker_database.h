@@ -21,6 +21,7 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/services/storage/public/mojom/service_worker_database.mojom.h"
+#include "components/services/storage/public/mojom/service_worker_storage_control.mojom.h"
 #include "content/common/content_export.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/navigation_preload_state.mojom.h"
@@ -191,7 +192,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   Status WriteUserData(
       int64_t registration_id,
       const GURL& origin,
-      const std::vector<std::pair<std::string, std::string>>& name_value_pairs);
+      const std::vector<storage::mojom::ServiceWorkerUserDataPtr>& user_data);
 
   // Deletes user data for |registration_id| and |user_data_names| from the
   // database. Returns OK if all are successfully deleted or not found in the

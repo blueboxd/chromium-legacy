@@ -100,6 +100,8 @@ cr.define('cr.ui.Oobe', function() {
 
       cr.ui.Bubble.decorate($('bubble'));
 
+      // TODO(crbug.com/1082670): Remove excessive logging after investigation.
+      console.warn('oobe : Initialize');
       chrome.send('screenStateInitialize');
     },
 

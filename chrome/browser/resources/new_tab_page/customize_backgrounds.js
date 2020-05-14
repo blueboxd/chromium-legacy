@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import './grid.js';
 import './mini_page.js';
 import './untrusted_iframe.js';
 
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import {BrowserProxy} from './browser_proxy.js';
 import {BackgroundSelection, BackgroundSelectionType} from './customize_dialog.js';
 
@@ -27,6 +30,19 @@ class CustomizeBackgroundsElement extends PolymerElement {
         type: Object,
         value: () => ({type: BackgroundSelectionType.NO_SELECTION}),
         notify: true,
+      },
+
+      /** @private */
+      customBackgroundDisabledByPolicy_: {
+        type: Boolean,
+        value: () =>
+            loadTimeData.getBoolean('customBackgroundDisabledByPolicy'),
+      },
+
+      /** @private */
+      showBackgroundSelection_: {
+        type: Boolean,
+        computed: 'computeShowBackgroundSelection_(selectedCollection)',
       },
 
       /** @private {newTabPage.mojom.BackgroundCollection} */
@@ -50,11 +66,22 @@ class CustomizeBackgroundsElement extends PolymerElement {
 
   constructor() {
     super();
+    if (this.customBackgroundDisabledByPolicy_) {
+      return;
+    }
     /** @private {newTabPage.mojom.PageHandlerRemote} */
     this.pageHandler_ = BrowserProxy.getInstance().handler;
     this.pageHandler_.getBackgroundCollections().then(({collections}) => {
       this.collections_ = collections;
     });
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShowBackgroundSelection_() {
+    return !this.customBackgroundDisabledByPolicy_ && !this.selectedCollection;
   }
 
   /**

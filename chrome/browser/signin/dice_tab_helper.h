@@ -47,9 +47,24 @@ class DiceTabHelper : public content::WebContentsUserData<DiceTabHelper>,
   // Returns false if the user or the page has navigated away from |signin_url|.
   bool IsChromeSigninPage() const;
 
+  // Returns true if a signin flow was initialized with the reason
+  // REASON_SIGNIN_PRIMARY_ACCOUNT and is not yet complete.
+  // Note that there is not guarantee that the flow would ever finish, and in
+  // some rare cases it is possible that a "non-sync" signin happens while this
+  // is true (if the user aborts the flow and then re-uses the same tab for a
+  // normal web signin).
+  bool IsSyncSigninInProgress() const;
+
+  // Called to notify that the sync signin is complete.
+  void OnSyncSigninFlowComplete();
+
  private:
   friend class content::WebContentsUserData<DiceTabHelper>;
   explicit DiceTabHelper(content::WebContents* web_contents);
+
+  // kStarted: a Sync signin flow was started and not completed.
+  // kNotStarted: there is no sync signin flow in progress.
+  enum class SyncSigninFlowStatus { kNotStarted, kStarted };
 
   // content::WebContentsObserver:
   void DidStartNavigation(
@@ -71,6 +86,8 @@ class DiceTabHelper : public content::WebContentsUserData<DiceTabHelper>,
       signin_metrics::Reason::REASON_UNKNOWN_REASON;
   bool is_chrome_signin_page_ = false;
   bool signin_page_load_recorded_ = false;
+  SyncSigninFlowStatus sync_signin_flow_status_ =
+      SyncSigninFlowStatus::kNotStarted;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

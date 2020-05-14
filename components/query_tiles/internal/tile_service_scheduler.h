@@ -12,6 +12,7 @@
 #include "components/background_task_scheduler/background_task_scheduler.h"
 #include "components/query_tiles/internal/tile_config.h"
 #include "components/query_tiles/internal/tile_types.h"
+#include "components/query_tiles/tile_service_prefs.h"
 #include "net/base/backoff_entry_serializer.h"
 
 class PrefService;

@@ -436,6 +436,9 @@ void InstantService::SetCustomBackgroundInfo(
     const GURL& action_url,
     const std::string& collection_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (IsCustomBackgroundDisabledByPolicy()) {
+    return;
+  }
   bool is_backdrop_collection =
       background_service_ &&
       background_service_->IsValidBackdropCollection(collection_id);
@@ -484,6 +487,9 @@ void InstantService::SetBackgroundToLocalResource() {
 }
 
 void InstantService::SelectLocalBackgroundImage(const base::FilePath& path) {
+  if (IsCustomBackgroundDisabledByPolicy()) {
+    return;
+  }
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&CopyFileToProfilePath, path, profile_->GetPath()),

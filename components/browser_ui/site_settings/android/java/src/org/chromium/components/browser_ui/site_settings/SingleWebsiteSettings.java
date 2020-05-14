@@ -347,6 +347,8 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
                     setUpAdsPreference(preference);
                 } else if (i == ContentSettingException.Type.SOUND) {
                     setUpSoundPreference(preference);
+                } else if (i == ContentSettingException.Type.JAVASCRIPT) {
+                    setUpJavascriptPreference(preference);
                 } else {
                     setUpListPreference(preference, mSite.getContentSettingPermission(i));
                 }
@@ -806,6 +808,22 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
                                    ContentSettingsType.SOUND)
                     ? ContentSettingValues.ALLOW
                     : ContentSettingValues.BLOCK;
+        }
+        setUpListPreference(preference, currentValue);
+    }
+
+    private void setUpJavascriptPreference(Preference preference) {
+        @ContentSettingValues
+        @Nullable
+        Integer currentValue =
+                mSite.getContentSettingPermission(ContentSettingException.Type.JAVASCRIPT);
+        // If Javascript is blocked by default, then always show a Javascript permission.
+        // To do this, set it to the default value (blocked).
+        if ((currentValue == null)
+                && !WebsitePreferenceBridge.isCategoryEnabled(
+                        getSiteSettingsClient().getBrowserContextHandle(),
+                        ContentSettingsType.JAVASCRIPT)) {
+            currentValue = ContentSettingValues.BLOCK;
         }
         setUpListPreference(preference, currentValue);
     }

@@ -110,10 +110,10 @@ class ModeConfig {
   /**
    * Get stream constraints for HALv1 of this mode.
    * @param {?string} deviceId
-   * @return {!Promise<!Array<!MediaStreamConstraints>>}
+   * @return {!Array<!MediaStreamConstraints>}
    * @abstract
    */
-  async getV1Constraints(deviceId) {}
+  getV1Constraints(deviceId) {}
 
   /* eslint-disable getter-return */
 
@@ -203,11 +203,10 @@ export class Modes {
      * Returns a set of available constraints for HALv1 device.
      * @param {boolean} videoMode Is getting constraints for video mode.
      * @param {?string} deviceId Id of video device.
-     * @return {!Promise<!Array<!MediaStreamConstraints>>} Result of
+     * @return {!Array<!MediaStreamConstraints>} Result of
      *     constraints-candidates.
      */
-    const getV1Constraints = async function(videoMode, deviceId) {
-      const defaultFacing = await util.getDefaultFacing();
+    const getV1Constraints = function(videoMode, deviceId) {
       return [
         {
           aspectRatio: {ideal: videoMode ? 1.7777777778 : 1.3333333333},
@@ -225,7 +224,7 @@ export class Modes {
           // HALv1 devices are unable to know facing before stream
           // configuration, deviceId is set to null for requesting camera with
           // default facing.
-          constraint.facingMode = {exact: defaultFacing};
+          constraint.facingMode = {exact: util.getDefaultFacing()};
         }
         return {
           audio: videoMode ? {echoCancellation: false} : false,
@@ -387,11 +386,10 @@ export class Modes {
    * given mode on camera HALv1 device.
    * @param {!Mode} mode
    * @param {?string} deviceId
-   * @return {!Promise<!Array<!CaptureCandidate>>}
+   * @return {!Array<!CaptureCandidate>}
    */
-  async getResolutionCandidatesV1(mode, deviceId) {
-    const previewCandidates =
-        await this.allModes_[mode].getV1Constraints(deviceId);
+  getResolutionCandidatesV1(mode, deviceId) {
+    const previewCandidates = this.allModes_[mode].getV1Constraints(deviceId);
     return [{resolution: null, previewCandidates}];
   }
 

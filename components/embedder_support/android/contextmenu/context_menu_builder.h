@@ -16,6 +16,9 @@ namespace context_menu {
 base::android::ScopedJavaGlobalRef<jobject> BuildJavaContextMenuParams(
     const content::ContextMenuParams& params);
 
+content::ContextMenuParams* ContextMenuParamsFromJavaObject(
+    const base::android::JavaRef<jobject>& jcontext_menu_params);
+
 }  // namespace context_menu
 
 #endif  // COMPONENTS_EMBEDDER_SUPPORT_ANDROID_CONTEXTMENU_CONTEXT_MENU_BUILDER_H_

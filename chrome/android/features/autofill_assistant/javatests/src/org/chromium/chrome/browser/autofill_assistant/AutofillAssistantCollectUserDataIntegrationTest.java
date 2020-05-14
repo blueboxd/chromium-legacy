@@ -59,6 +59,7 @@ import org.chromium.chrome.browser.autofill_assistant.carousel.ButtonView;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipType;
+import org.chromium.chrome.browser.autofill_assistant.proto.ClickType;
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataProto.TermsAndConditionsState;
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataResultProto;
@@ -152,23 +153,32 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
                                                     .setTermsAndConditionsState(
                                                             TermsAndConditionsState.ACCEPTED))
                         .build());
-        list.add((ActionProto) ActionProto.newBuilder()
-                         .setUseCard(
-                                 UseCreditCardProto.newBuilder()
-                                         .setFormFieldElement(
-                                                 ElementReferenceProto.newBuilder().addSelectors(
-                                                         "#card_number"))
-                                         .addRequiredFields(
-                                                 RequiredField.newBuilder()
-                                                         .setValueExpression("57")
-                                                         .setElement(
-                                                                 ElementReferenceProto.newBuilder()
-                                                                         .addSelectors(
-                                                                                 "#fallback_entry"))
-                                                         .setFillStrategy(
-                                                                 KeyboardValueFillStrategy
-                                                                         .SIMULATE_KEY_PRESSES)))
-                         .build());
+
+        RequiredField fallbackTextField =
+                (RequiredField) RequiredField.newBuilder()
+                        .setValueExpression("57")
+                        .setElement(
+                                ElementReferenceProto.newBuilder().addSelectors("#fallback_entry"))
+                        .setFillStrategy(KeyboardValueFillStrategy.SIMULATE_KEY_PRESSES)
+                        .build();
+        RequiredField fallbackJsDropdownField =
+                (RequiredField) RequiredField.newBuilder()
+                        .setValueExpression("55")
+                        .setElement(ElementReferenceProto.newBuilder().addSelectors(
+                                "#js_dropdown_value"))
+                        .setOptionElementToClick(ElementReferenceProto.newBuilder().addSelectors(
+                                "#js_dropdown_options li"))
+                        .setClickType(ClickType.TAP)
+                        .build();
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setUseCard(UseCreditCardProto.newBuilder()
+                                            .setFormFieldElement(
+                                                    ElementReferenceProto.newBuilder().addSelectors(
+                                                            "#card_number"))
+                                            .addRequiredFields(fallbackTextField)
+                                            .addRequiredFields(fallbackJsDropdownField))
+                        .build());
         list.add((ActionProto) ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
                                  PromptProto.Choice.newBuilder()))
@@ -203,6 +213,7 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
         assertThat(getElementValue(getWebContents(), "exp_month"), is("12"));
         assertThat(getElementValue(getWebContents(), "exp_year"), is("2050"));
         assertThat(getElementValue(getWebContents(), "fallback_entry"), is("12/2050"));
+        assertThat(getElementValue(getWebContents(), "js_dropdown_value"), is("2050"));
     }
 
     /**

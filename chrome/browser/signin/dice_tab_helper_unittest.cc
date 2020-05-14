@@ -169,3 +169,24 @@ TEST_F(DiceTabHelperTest, Metrics) {
       "Signin.SigninStartedAccessPoint.WithDefault",
       signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS, 1);
 }
+
+TEST_F(DiceTabHelperTest, IsSyncSigninInProgress) {
+  DiceTabHelper::CreateForWebContents(web_contents());
+  DiceTabHelper* dice_tab_helper =
+      DiceTabHelper::FromWebContents(web_contents());
+  EXPECT_FALSE(dice_tab_helper->IsSyncSigninInProgress());
+
+  // Non-sync signin.
+  InitializeDiceTabHelper(dice_tab_helper,
+                          signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS,
+                          signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT);
+  EXPECT_FALSE(dice_tab_helper->IsSyncSigninInProgress());
+
+  // Sync signin
+  InitializeDiceTabHelper(
+      dice_tab_helper, signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS,
+      signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT);
+  EXPECT_TRUE(dice_tab_helper->IsSyncSigninInProgress());
+  dice_tab_helper->OnSyncSigninFlowComplete();
+  EXPECT_FALSE(dice_tab_helper->IsSyncSigninInProgress());
+}

@@ -34,6 +34,7 @@ namespace net {
 class SSLInfo;
 class X509Certificate;
 struct CookieWithStatus;
+struct QuicTransportError;
 }  // namespace net
 
 namespace download {
@@ -179,8 +180,10 @@ void ReportSameSiteCookieIssue(
     blink::mojom::SameSiteCookieOperation operation,
     const base::Optional<std::string>& devtools_request_id);
 
-void OnQuicTransportHandshakeFailed(RenderFrameHostImpl* frame_host,
-                                    const GURL& url);
+void OnQuicTransportHandshakeFailed(
+    RenderFrameHostImpl* frame_host,
+    const GURL& url,
+    const base::Optional<net::QuicTransportError>& error);
 
 }  // namespace devtools_instrumentation
 

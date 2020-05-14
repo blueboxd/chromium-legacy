@@ -5,6 +5,7 @@
 #include "components/query_tiles/internal/tile_service_scheduler.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/rand_util.h"
 #include "base/time/default_tick_clock.h"
@@ -14,9 +15,6 @@
 
 namespace query_tiles {
 namespace {
-
-// Key for query tiles backoff entry stored in pref service.
-constexpr char kBackoffEntryKey[] = "query_tiles.backoff_entry_key";
 
 class TileServiceSchedulerImpl : public TileServiceScheduler {
  public:

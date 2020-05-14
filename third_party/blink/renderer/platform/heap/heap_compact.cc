@@ -357,7 +357,8 @@ bool HeapCompact::ShouldCompact(BlinkGC::StackState stack_state,
 
   // Only enable compaction when in a memory reduction garbage collection as it
   // may significantly increase the final garbage collection pause.
-  if (reason == BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC) {
+  if (reason == BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC ||
+      reason == BlinkGC::GCReason::kUnifiedHeapForcedForTestingGC) {
     return free_list_size_ > kFreeListSizeThreshold;
   }
 

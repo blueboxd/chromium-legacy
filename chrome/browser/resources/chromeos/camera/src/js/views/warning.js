@@ -4,7 +4,8 @@
 
 import {browserProxy} from '../browser_proxy/browser_proxy.js';
 import {assertString} from '../chrome_util.js';
-import {View, ViewName} from './view.js';
+import {ViewName} from '../type.js';
+import {View} from './view.js';
 
 /**
  * Creates the warning-view controller.

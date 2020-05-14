@@ -51,7 +51,7 @@ public class RevampedContextMenuHeaderMediatorTest {
                                 PerformanceClass.PERFORMANCE_UNKNOWN)
                         .build();
         final ContextMenuParams params =
-                new ContextMenuParams(ContextMenuDataMediaType.IMAGE, "https://example.org",
+                new ContextMenuParams(0, ContextMenuDataMediaType.IMAGE, "https://example.org",
                         "https://example.org/sitemap", "", "", "", "", null, false, 0, 0, 0);
         final RevampedContextMenuHeaderMediator mediator = new RevampedContextMenuHeaderMediator(
                 mActivity, model, PerformanceClass.PERFORMANCE_FAST, params, mProfile);
@@ -68,7 +68,7 @@ public class RevampedContextMenuHeaderMediatorTest {
                                 PerformanceClass.PERFORMANCE_UNKNOWN)
                         .build();
         final ContextMenuParams params =
-                new ContextMenuParams(ContextMenuDataMediaType.IMAGE, "https://example.org",
+                new ContextMenuParams(0, ContextMenuDataMediaType.IMAGE, "https://example.org",
                         "https://example.org/sitemap", "", "", "", "", null, false, 0, 0, 0);
         final RevampedContextMenuHeaderMediator mediator = new RevampedContextMenuHeaderMediator(
                 mActivity, model, PerformanceClass.PERFORMANCE_FAST, params, mProfile);
@@ -84,7 +84,7 @@ public class RevampedContextMenuHeaderMediatorTest {
                         .with(RevampedContextMenuHeaderProperties.URL_PERFORMANCE_CLASS,
                                 PerformanceClass.PERFORMANCE_UNKNOWN)
                         .build();
-        final ContextMenuParams params = new ContextMenuParams(ContextMenuDataMediaType.IMAGE,
+        final ContextMenuParams params = new ContextMenuParams(0, ContextMenuDataMediaType.IMAGE,
                 "https://example.org", "", "", "", "", "", null, false, 0, 0, 0);
         final RevampedContextMenuHeaderMediator mediator = new RevampedContextMenuHeaderMediator(
                 mActivity, model, PerformanceClass.PERFORMANCE_FAST, params, mProfile);

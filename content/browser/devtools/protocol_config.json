@@ -10,6 +10,10 @@
         "export_header": "content/common/content_export.h",
         "options": [
             {
+                "domain": "Audits",
+                "include": ["enable", "disable"]
+            },
+            {
                 "domain": "BackgroundService",
                 "async": ["startObserving"]
             },

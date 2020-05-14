@@ -99,6 +99,22 @@ export const Facing = {
   UNKNOWN: 'unknown',
 };
 
+/**
+ * @enum {string}
+ */
+export const ViewName = {
+  CAMERA: 'view-camera',
+  EXPERT_SETTINGS: 'view-expert-settings',
+  GRID_SETTINGS: 'view-grid-settings',
+  MESSAGE_DIALOG: 'view-message-dialog',
+  PHOTO_RESOLUTION_SETTINGS: 'view-photo-resolution-settings',
+  RESOLUTION_SETTINGS: 'view-resolution-settings',
+  SETTINGS: 'view-settings',
+  SPLASH: 'view-splash',
+  TIMER_SETTINGS: 'view-timer-settings',
+  VIDEO_RESOLUTION_SETTINGS: 'view-video-resolution-settings',
+  WARNING: 'view-warning',
+};
 
 // The types here are used only in jsdoc and are required to be explicitly
 // exported in order to be referenced by closure compiler.

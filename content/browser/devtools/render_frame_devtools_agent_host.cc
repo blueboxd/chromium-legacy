@@ -21,6 +21,7 @@
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_renderer_channel.h"
 #include "content/browser/devtools/devtools_session.h"
+#include "content/browser/devtools/protocol/audits_handler.h"
 #include "content/browser/devtools/protocol/background_service_handler.h"
 #include "content/browser/devtools/protocol/browser_handler.h"
 #include "content/browser/devtools/protocol/dom_handler.h"
@@ -291,6 +292,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   auto emulation_handler = std::make_unique<protocol::EmulationHandler>();
   protocol::EmulationHandler* emulation_handler_ptr = emulation_handler.get();
 
+  session->AddHandler(std::make_unique<protocol::AuditsHandler>());
   session->AddHandler(std::make_unique<protocol::BackgroundServiceHandler>());
   auto browser_handler = std::make_unique<protocol::BrowserHandler>(
       session->GetClient()->MayWriteLocalFiles());

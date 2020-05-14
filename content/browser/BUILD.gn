@@ -257,6 +257,8 @@ jumbo_source_set("browser") {
   ]
 
   sources = [
+    "$target_gen_dir/devtools/protocol/audits.cc",
+    "$target_gen_dir/devtools/protocol/audits.h",
     "$target_gen_dir/devtools/protocol/background_service.cc",
     "$target_gen_dir/devtools/protocol/background_service.h",
     "$target_gen_dir/devtools/protocol/base_string_adapter.cc",
@@ -755,6 +757,8 @@ jumbo_source_set("browser") {
     "devtools/devtools_video_consumer.h",
     "devtools/forwarding_agent_host.cc",
     "devtools/forwarding_agent_host.h",
+    "devtools/protocol/audits_handler.cc",
+    "devtools/protocol/audits_handler.h",
     "devtools/protocol/background_service_handler.cc",
     "devtools/protocol/background_service_handler.h",
     "devtools/protocol/browser_handler.cc",

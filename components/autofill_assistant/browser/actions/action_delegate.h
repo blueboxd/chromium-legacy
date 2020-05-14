@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "components/autofill_assistant/browser/actions/click_action.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/info_box.h"
@@ -98,7 +97,7 @@ class ActionDelegate {
   // Click or tap the element given by |selector| on the web page.
   virtual void ClickOrTapElement(
       const Selector& selector,
-      ClickAction::ClickType click_type,
+      ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Have the UI enter the prompt mode and make the given actions available.

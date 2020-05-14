@@ -127,7 +127,7 @@ void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info) {
   paint_info.context.Clip(PixelSnappedIntRect(focus_rect));
   paint_info.context.DrawFocusRing(
       path, area_element_style->GetOutlineStrokeWidthForFocusRing(),
-      area_element_style->OutlineOffset(),
+      area_element_style->OutlineOffsetInt(),
       layout_image_.ResolveColor(*area_element_style,
                                  GetCSSPropertyOutlineColor()));
   paint_info.context.Restore();

@@ -123,7 +123,7 @@ TEST_F(JsAutofillManagerTest, ExtractForms) {
         @"is_focusable" : @true,
         @"value" : @"",
         @"label" : @"First Name",
-        @"unique_renderer_id" : @1
+        @"unique_renderer_id" : @"1"
       },
       @{
         @"aria_description" : @"",
@@ -139,7 +139,7 @@ TEST_F(JsAutofillManagerTest, ExtractForms) {
         @"is_focusable" : @true,
         @"value" : @"",
         @"label" : @"",
-        @"unique_renderer_id" : @2
+        @"unique_renderer_id" : @"2"
       },
       @{
         @"aria_description" : @"Email Address",
@@ -155,7 +155,7 @@ TEST_F(JsAutofillManagerTest, ExtractForms) {
         @"is_focusable" : @true,
         @"value" : @"",
         @"label" : @"",
-        @"unique_renderer_id" : @3
+        @"unique_renderer_id" : @"3"
       }
     ]
   };
@@ -217,7 +217,7 @@ TEST_F(JsAutofillManagerTest, ExtractForms2) {
         @"is_focusable" : @true,
         @"value" : @"",
         @"label" : @"First Name",
-        @"unique_renderer_id" : @1
+        @"unique_renderer_id" : @"1"
       },
       @{
         @"aria_description" : @"",
@@ -233,7 +233,7 @@ TEST_F(JsAutofillManagerTest, ExtractForms2) {
         @"is_focusable" : @true,
         @"value" : @"",
         @"label" : @"",
-        @"unique_renderer_id" : @2
+        @"unique_renderer_id" : @"2"
       },
       @{
         @"aria_description" : @"Email Address",
@@ -249,7 +249,7 @@ TEST_F(JsAutofillManagerTest, ExtractForms2) {
         @"is_focusable" : @true,
         @"value" : @"",
         @"label" : @"",
-        @"unique_renderer_id" : @3
+        @"unique_renderer_id" : @"3"
       }
     ]
   };

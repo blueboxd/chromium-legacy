@@ -21,6 +21,7 @@ import org.chromium.ui.base.MenuSourceType;
  */
 @JNINamespace("context_menu")
 public class ContextMenuParams {
+    private final long mNativePtr;
     private final String mPageUrl;
     private final String mLinkUrl;
     private final String mLinkText;
@@ -38,6 +39,11 @@ public class ContextMenuParams {
     private final int mTriggeringTouchYDp;
 
     private final int mSourceType;
+
+    @CalledByNative
+    private long getNativePointer() {
+        return mNativePtr;
+    }
 
     /**
      * @return The URL associated with the main frame of the page that triggered the context menu.
@@ -160,10 +166,11 @@ public class ContextMenuParams {
     }
 
     @VisibleForTesting
-    public ContextMenuParams(@ContextMenuDataMediaType int mediaType, String pageUrl,
-            String linkUrl, String linkText, String unfilteredLinkUrl, String srcUrl,
-            String titleText, Referrer referrer, boolean canSaveMedia, int triggeringTouchXDp,
-            int triggeringTouchYDp, @MenuSourceType int sourceType) {
+    public ContextMenuParams(long nativePtr, @ContextMenuDataMediaType int mediaType,
+            String pageUrl, String linkUrl, String linkText, String unfilteredLinkUrl,
+            String srcUrl, String titleText, Referrer referrer, boolean canSaveMedia,
+            int triggeringTouchXDp, int triggeringTouchYDp, @MenuSourceType int sourceType) {
+        mNativePtr = nativePtr;
         mPageUrl = pageUrl;
         mLinkUrl = linkUrl;
         mLinkText = linkText;
@@ -182,15 +189,16 @@ public class ContextMenuParams {
     }
 
     @CalledByNative
-    private static ContextMenuParams create(@ContextMenuDataMediaType int mediaType, String pageUrl,
-            String linkUrl, String linkText, String unfilteredLinkUrl, String srcUrl,
-            String titleText, String sanitizedReferrer, int referrerPolicy, boolean canSaveMedia,
-            int triggeringTouchXDp, int triggeringTouchYDp, @MenuSourceType int sourceType) {
+    private static ContextMenuParams create(long nativePtr, @ContextMenuDataMediaType int mediaType,
+            String pageUrl, String linkUrl, String linkText, String unfilteredLinkUrl,
+            String srcUrl, String titleText, String sanitizedReferrer, int referrerPolicy,
+            boolean canSaveMedia, int triggeringTouchXDp, int triggeringTouchYDp,
+            @MenuSourceType int sourceType) {
         Referrer referrer = TextUtils.isEmpty(sanitizedReferrer)
                 ? null
                 : new Referrer(sanitizedReferrer, referrerPolicy);
-        return new ContextMenuParams(mediaType, pageUrl, linkUrl, linkText, unfilteredLinkUrl,
-                srcUrl, titleText, referrer, canSaveMedia, triggeringTouchXDp, triggeringTouchYDp,
-                sourceType);
+        return new ContextMenuParams(nativePtr, mediaType, pageUrl, linkUrl, linkText,
+                unfilteredLinkUrl, srcUrl, titleText, referrer, canSaveMedia, triggeringTouchXDp,
+                triggeringTouchYDp, sourceType);
     }
 }

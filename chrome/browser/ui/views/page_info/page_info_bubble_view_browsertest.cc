@@ -299,7 +299,6 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
   bool VerifyUi() override {
     if (!DialogBrowserTest::VerifyUi())
       return false;
-#if defined(TOOLKIT_VIEWS)
     // Check that each expected View is present in the Page Info bubble.
     views::View* page_info_bubble_view =
         PageInfoBubbleView::GetPageInfoBubbleForTesting()->GetContentsView();
@@ -309,10 +308,6 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
         return false;
     }
     return true;
-#else
-    NOTIMPLEMENTED();
-    return false;
-#endif
   }
 
  protected:

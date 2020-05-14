@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 331 tests; 151 PASS, 180 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 343 tests; 153 PASS, 190 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS URL's constructor's base argument: file://example:1/ should throw
 FAIL URL's href: file://example:1/ should throw assert_throws_js: function "() => url.href = test.input" did not throw
@@ -229,6 +229,18 @@ PASS XHR: https://256.0.0.1/test should throw
 PASS sendBeacon(): https://256.0.0.1/test should throw
 FAIL Location's href: https://256.0.0.1/test should throw assert_throws_js: function "() => self[0].location = test.input" threw object "SyntaxError: Failed to set the 'href' property on 'Location': 'https://256.0.0.1/test' is not a valid URL." ("SyntaxError") expected instance of function "function TypeError() { [native code] }" ("TypeError")
 PASS window.open(): https://256.0.0.1/test should throw
+PASS URL's constructor's base argument: \\\.\Y: should throw
+FAIL URL's href: \\\.\Y: should throw assert_throws_js: function "() => url.href = test.input" did not throw
+FAIL XHR: \\\.\Y: should throw assert_throws_dom: function "() => client.open("GET", test.input)" did not throw
+FAIL sendBeacon(): \\\.\Y: should throw assert_throws_js: function "() => self.navigator.sendBeacon(test.input)" did not throw
+FAIL Location's href: \\\.\Y: should throw assert_throws_js: function "() => self[0].location = test.input" did not throw
+FAIL window.open(): \\\.\Y: should throw assert_throws_dom: function "() => self.open(test.input).close()" did not throw
+PASS URL's constructor's base argument: \\\.\y: should throw
+FAIL URL's href: \\\.\y: should throw assert_throws_js: function "() => url.href = test.input" did not throw
+FAIL XHR: \\\.\y: should throw assert_throws_dom: function "() => client.open("GET", test.input)" did not throw
+FAIL sendBeacon(): \\\.\y: should throw assert_throws_js: function "() => self.navigator.sendBeacon(test.input)" did not throw
+FAIL Location's href: \\\.\y: should throw assert_throws_js: function "() => self[0].location = test.input" did not throw
+FAIL window.open(): \\\.\y: should throw assert_throws_dom: function "() => self.open(test.input).close()" did not throw
 PASS URL's constructor's base argument: https://[0::0::0] should throw
 FAIL URL's href: https://[0::0::0] should throw assert_throws_js: function "() => url.href = test.input" did not throw
 PASS XHR: https://[0::0::0] should throw

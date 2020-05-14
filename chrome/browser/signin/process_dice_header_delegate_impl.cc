@@ -8,8 +8,11 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/dice_web_signin_interceptor.h"
 #include "chrome/browser/signin/dice_web_signin_interceptor_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/navigation_controller.h"
@@ -25,31 +28,41 @@ void RedirectToNtp(content::WebContents* contents) {
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
 }
 
+// Helper function similar to DiceTabHelper::FromWebContents(), but also handles
+// the case where |contents| is nullptr.
+DiceTabHelper* GetDiceTabHelperFromWebContents(content::WebContents* contents) {
+  if (!contents)
+    return nullptr;
+  return DiceTabHelper::FromWebContents(contents);
+}
+
 }  // namespace
 
 ProcessDiceHeaderDelegateImpl::ProcessDiceHeaderDelegateImpl(
     content::WebContents* web_contents,
-    signin::IdentityManager* identity_manager,
-    DiceWebSigninInterceptor* interceptor,
-    bool is_sync_signin_tab,
     EnableSyncCallback enable_sync_callback,
-    ShowSigninErrorCallback show_signin_error_callback,
-    const GURL& redirect_url)
+    ShowSigninErrorCallback show_signin_error_callback)
     : content::WebContentsObserver(web_contents),
-      identity_manager_(identity_manager),
-      dice_web_signin_interceptor_(interceptor),
+      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       enable_sync_callback_(std::move(enable_sync_callback)),
-      show_signin_error_callback_(std::move(show_signin_error_callback)),
-      is_sync_signin_tab_(is_sync_signin_tab),
-      redirect_url_(redirect_url) {
+      show_signin_error_callback_(std::move(show_signin_error_callback)) {
   DCHECK(web_contents);
-  DCHECK(identity_manager_);
+  DCHECK(profile_);
+
+  DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(web_contents);
+  if (tab_helper) {
+    is_sync_signin_tab_ = tab_helper->IsSyncSigninInProgress();
+    redirect_url_ = tab_helper->redirect_url();
+    access_point_ = tab_helper->signin_access_point();
+    promo_action_ = tab_helper->signin_promo_action();
+    reason_ = tab_helper->signin_reason();
+  }
 }
 
 ProcessDiceHeaderDelegateImpl::~ProcessDiceHeaderDelegateImpl() = default;
 
 bool ProcessDiceHeaderDelegateImpl::ShouldEnableSync() {
-  if (identity_manager_->HasPrimaryAccount()) {
+  if (IdentityManagerFactory::GetForProfile(profile_)->HasPrimaryAccount()) {
     VLOG(1) << "Do not start sync after web sign-in [already authenticated].";
     return false;
   }
@@ -66,12 +79,21 @@ bool ProcessDiceHeaderDelegateImpl::ShouldEnableSync() {
 void ProcessDiceHeaderDelegateImpl::HandleTokenExchangeSuccess(
     CoreAccountId account_id,
     bool is_new_account) {
-  dice_web_signin_interceptor_->MaybeInterceptWebSignin(
-      web_contents(), account_id, is_new_account);
+  // is_sync_signin_tab_ tells whether the current signin is happening in a tab
+  // that was opened from a "Enable Sync" Chrome UI. Usually this is indeed a
+  // sync signin, but it is not always the case: the user may abandon the sync
+  // signin and do a simple web signin in the same tab instead.
+  DiceWebSigninInterceptorFactory::GetForProfile(profile_)
+      ->MaybeInterceptWebSignin(web_contents(), account_id, is_new_account,
+                                is_sync_signin_tab_);
 }
 
 void ProcessDiceHeaderDelegateImpl::EnableSync(
     const CoreAccountId& account_id) {
+  DiceTabHelper* tab_helper = GetDiceTabHelperFromWebContents(web_contents());
+  if (tab_helper)
+    tab_helper->OnSyncSigninFlowComplete();
+
   if (!ShouldEnableSync()) {
     // No special treatment is needed if the user is not enabling sync.
     return;
@@ -79,7 +101,9 @@ void ProcessDiceHeaderDelegateImpl::EnableSync(
 
   content::WebContents* web_contents = this->web_contents();
   VLOG(1) << "Start sync after web sign-in.";
-  std::move(enable_sync_callback_).Run(web_contents, account_id);
+  std::move(enable_sync_callback_)
+      .Run(profile_, access_point_, promo_action_, reason_, web_contents,
+           account_id);
 
   if (!web_contents)
     return;
@@ -101,6 +125,10 @@ void ProcessDiceHeaderDelegateImpl::HandleTokenExchangeFailure(
     const std::string& email,
     const GoogleServiceAuthError& error) {
   DCHECK_NE(GoogleServiceAuthError::NONE, error.state());
+  DiceTabHelper* tab_helper = GetDiceTabHelperFromWebContents(web_contents());
+  if (tab_helper)
+    tab_helper->OnSyncSigninFlowComplete();
+
   bool should_enable_sync = ShouldEnableSync();
 
   content::WebContents* web_contents = this->web_contents();
@@ -110,5 +138,5 @@ void ProcessDiceHeaderDelegateImpl::HandleTokenExchangeFailure(
   // Show the error even if the WebContents was closed, because the user may be
   // signed out of the web.
   std::move(show_signin_error_callback_)
-      .Run(web_contents, error.ToString(), email);
+      .Run(profile_, web_contents, error.ToString(), email);
 }

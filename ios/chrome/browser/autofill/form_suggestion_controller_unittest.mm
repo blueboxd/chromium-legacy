@@ -57,7 +57,9 @@ using autofill::FieldRendererId;
 @implementation TestSuggestionProvider {
   NSArray* _suggestions;
   NSString* _formName;
+  FormRendererId _uniqueFormID;
   NSString* _fieldIdentifier;
+  FieldRendererId _uniqueFieldID;
   NSString* _frameID;
   FormSuggestion* _suggestion;
 }
@@ -123,13 +125,17 @@ using autofill::FieldRendererId;
 
 - (void)didSelectSuggestion:(FormSuggestion*)suggestion
                        form:(NSString*)formName
+               uniqueFormID:(FormRendererId)uniqueFormID
             fieldIdentifier:(NSString*)fieldIdentifier
+              uniqueFieldID:(FieldRendererId)uniqueFieldID
                     frameID:(NSString*)frameID
           completionHandler:(SuggestionHandledCompletion)completion {
   self.selected = YES;
   _suggestion = suggestion;
   _formName = [formName copy];
+  _uniqueFormID = uniqueFormID;
   _fieldIdentifier = [fieldIdentifier copy];
+  _uniqueFieldID = uniqueFieldID;
   _frameID = [frameID copy];
   completion();
 }

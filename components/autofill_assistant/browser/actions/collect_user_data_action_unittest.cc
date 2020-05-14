@@ -321,7 +321,7 @@ TEST_F(CollectUserDataActionTest, LoginChoiceAutomaticIfNoOtherOptions) {
   auto* login_option = login_details->add_login_options();
   login_option->mutable_custom()->set_label("Guest Checkout");
   login_option->set_payload("guest");
-  login_option->set_choose_automatically_if_no_other_options(true);
+  login_option->set_choose_automatically_if_no_stored_login(true);
   login_option = login_details->add_login_options();
   login_option->mutable_password_manager();
   login_option->set_payload("password_manager");
@@ -342,6 +342,187 @@ TEST_F(CollectUserDataActionTest, LoginChoiceAutomaticIfNoOtherOptions) {
                                     false))))));
   CollectUserDataAction action(&mock_action_delegate_, action_proto);
   action.ProcessAction(callback_.Get());
+}
+
+TEST_F(CollectUserDataActionTest,
+       LoginChoiceAutomaticIfNoPasswordManagerLogins) {
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_request_terms_and_conditions(false);
+  auto* login_details = collect_user_data_proto->mutable_login_details();
+  auto* login_option = login_details->add_login_options();
+  login_option->mutable_custom()->set_label("Guest Checkout");
+  login_option->set_payload("guest");
+  login_option->set_choose_automatically_if_no_stored_login(true);
+
+  login_option = login_details->add_login_options();
+  login_option->mutable_custom()->set_label("Manual");
+  login_option->set_payload("manual");
+  login_option->set_choose_automatically_if_no_stored_login(false);
+
+  login_option = login_details->add_login_options();
+  login_option->mutable_password_manager();
+  login_option->set_payload("password_manager");
+
+  ON_CALL(mock_website_login_manager_, OnGetLoginsForUrl(_, _))
+      .WillByDefault(
+          RunOnceCallback<1>(std::vector<WebsiteLoginManager::Login>{}));
+
+  EXPECT_CALL(mock_action_delegate_, CollectUserData(_)).Times(0);
+  EXPECT_CALL(callback_,
+              Run(Pointee(AllOf(
+                  Property(&ProcessedActionProto::status, ACTION_APPLIED),
+                  Property(&ProcessedActionProto::collect_user_data_result,
+                           Property(&CollectUserDataResultProto::login_payload,
+                                    "guest")),
+                  Property(&ProcessedActionProto::collect_user_data_result,
+                           Property(&CollectUserDataResultProto::shown_to_user,
+                                    false))))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(CollectUserDataActionTest, EarlyActionReturnIfOnlyLoginRequested) {
+  ActionProto action_proto;
+  auto* proto = action_proto.mutable_collect_user_data();
+  auto* login_details = proto->mutable_login_details();
+  auto* login_option = login_details->add_login_options();
+  login_option->mutable_custom()->set_label("Guest Checkout");
+  login_option->set_payload("guest");
+  login_option->set_choose_automatically_if_no_stored_login(true);
+
+  login_option = login_details->add_login_options();
+  login_option->mutable_password_manager();
+  login_option->set_payload("password_manager");
+
+  ON_CALL(mock_website_login_manager_, OnGetLoginsForUrl(_, _))
+      .WillByDefault(
+          RunOnceCallback<1>(std::vector<WebsiteLoginManager::Login>{}));
+
+  // Terms requested, no early return.
+  proto->set_request_terms_and_conditions(true);
+  proto->set_accept_terms_and_conditions_text("I accept");
+  proto->set_show_terms_as_checkbox(true);
+  {
+    EXPECT_CALL(mock_action_delegate_, CollectUserData(_)).Times(1);
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    action.ProcessAction(callback_.Get());
+  }
+
+  // Contact info requested, no early return.
+  proto->set_request_terms_and_conditions(false);
+  proto->mutable_contact_details()->set_request_payer_name(true);
+  proto->mutable_contact_details()->set_contact_details_name("name");
+  {
+    EXPECT_CALL(mock_action_delegate_, CollectUserData(_)).Times(1);
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    action.ProcessAction(callback_.Get());
+  }
+
+  // Shipping info requested, no early return.
+  proto->clear_contact_details();
+  proto->set_shipping_address_name("shipping");
+  {
+    EXPECT_CALL(mock_action_delegate_, CollectUserData(_)).Times(1);
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    action.ProcessAction(callback_.Get());
+  }
+
+  // Payment info requested, no early return.
+  proto->clear_shipping_address_name();
+  proto->set_request_payment_method(true);
+  proto->set_billing_address_name("billing");
+  {
+    EXPECT_CALL(mock_action_delegate_, CollectUserData(_)).Times(1);
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    action.ProcessAction(callback_.Get());
+  }
+
+  // Date/time range info requested, no early return.
+  proto->clear_request_payment_method();
+  proto->clear_billing_address_name();
+  auto* date_time_range = proto->mutable_date_time_range();
+  SetDateProto(date_time_range->mutable_start_date(), 2020, 1, 1);
+  SetDateProto(date_time_range->mutable_end_date(), 2020, 1, 15);
+  SetDateProto(date_time_range->mutable_min_date(), 2020, 1, 1);
+  SetDateProto(date_time_range->mutable_max_date(), 2020, 12, 31);
+  date_time_range->set_start_time_slot(0);
+  date_time_range->set_end_time_slot(0);
+  date_time_range->set_start_date_label("Start date");
+  date_time_range->set_end_date_label("End date");
+  date_time_range->set_start_time_label("Start time");
+  date_time_range->set_end_time_label("End time");
+  date_time_range->set_date_not_set_error("Date not set");
+  date_time_range->set_time_not_set_error("Time not set");
+  auto* time_slot = date_time_range->add_time_slots();
+  time_slot->set_label("08:00 AM");
+  time_slot->set_comparison_value(0);
+  time_slot = date_time_range->add_time_slots();
+  time_slot->set_label("09:00 AM");
+  time_slot->set_comparison_value(1);
+  {
+    EXPECT_CALL(mock_action_delegate_, CollectUserData(_)).Times(1);
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    action.ProcessAction(callback_.Get());
+  }
+
+  // Generic UI model identifier set, no early return.
+  proto->clear_date_time_range();
+  proto->set_additional_model_identifier_to_check("identifier");
+  {
+    EXPECT_CALL(mock_action_delegate_, CollectUserData(_)).Times(1);
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    action.ProcessAction(callback_.Get());
+  }
+
+  // Additional prepended input section, no early return.
+  proto->clear_additional_model_identifier_to_check();
+  auto* section = proto->add_additional_prepended_sections();
+  section->set_title("Title");
+  auto* input_field = section->mutable_text_input_section()->add_input_fields();
+  input_field->set_hint("hint");
+  input_field->set_input_type(TextInputProto::INPUT_TEXT);
+  input_field->set_client_memory_key("key");
+  {
+    EXPECT_CALL(mock_action_delegate_, CollectUserData(_)).Times(1);
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    action.ProcessAction(callback_.Get());
+  }
+
+  // Additional appended input section, no early return.
+  proto->clear_additional_prepended_sections();
+  section = proto->add_additional_appended_sections();
+  section->set_title("title");
+  auto* popup = section->mutable_popup_list_section();
+  popup->set_additional_value_key("key");
+  popup->add_item_names("item");
+  popup->set_no_selection_error_message("error");
+  {
+    EXPECT_CALL(mock_action_delegate_, CollectUserData(_)).Times(1);
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    action.ProcessAction(callback_.Get());
+  }
+
+  // Additional static section is allowed, expect early return.
+  proto->clear_additional_appended_sections();
+  section = proto->add_additional_appended_sections();
+  section->set_title("title");
+  section->mutable_static_text_section()->set_text("text");
+  {
+    EXPECT_CALL(mock_action_delegate_, CollectUserData(_)).Times(0);
+    EXPECT_CALL(
+        callback_,
+        Run(Pointee(AllOf(
+            Property(&ProcessedActionProto::status, ACTION_APPLIED),
+            Property(
+                &ProcessedActionProto::collect_user_data_result,
+                Property(&CollectUserDataResultProto::login_payload, "guest")),
+            Property(&ProcessedActionProto::collect_user_data_result,
+                     Property(&CollectUserDataResultProto::shown_to_user,
+                              false))))));
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    action.ProcessAction(callback_.Get());
+  }
 }
 
 TEST_F(CollectUserDataActionTest, SelectLoginFailsIfNoOptionAvailable) {
@@ -846,24 +1027,24 @@ TEST_F(CollectUserDataActionTest, SelectDateTimeRange) {
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
   collect_user_data_proto->set_request_terms_and_conditions(false);
 
-  auto* date_time_rage = collect_user_data_proto->mutable_date_time_range();
-  SetDateProto(date_time_rage->mutable_start_date(), 2020, 1, 1);
-  SetDateProto(date_time_rage->mutable_end_date(), 2020, 1, 15);
-  SetDateProto(date_time_rage->mutable_min_date(), 2020, 1, 1);
-  SetDateProto(date_time_rage->mutable_max_date(), 2020, 12, 31);
-  date_time_rage->set_start_time_slot(0);
-  date_time_rage->set_end_time_slot(0);
-  date_time_rage->set_start_date_label("Start date");
-  date_time_rage->set_end_date_label("End date");
-  date_time_rage->set_start_time_label("Start time");
-  date_time_rage->set_end_time_label("End time");
-  date_time_rage->set_date_not_set_error("Date not set");
-  date_time_rage->set_time_not_set_error("Time not set");
+  auto* date_time_range = collect_user_data_proto->mutable_date_time_range();
+  SetDateProto(date_time_range->mutable_start_date(), 2020, 1, 1);
+  SetDateProto(date_time_range->mutable_end_date(), 2020, 1, 15);
+  SetDateProto(date_time_range->mutable_min_date(), 2020, 1, 1);
+  SetDateProto(date_time_range->mutable_max_date(), 2020, 12, 31);
+  date_time_range->set_start_time_slot(0);
+  date_time_range->set_end_time_slot(0);
+  date_time_range->set_start_date_label("Start date");
+  date_time_range->set_end_date_label("End date");
+  date_time_range->set_start_time_label("Start time");
+  date_time_range->set_end_time_label("End time");
+  date_time_range->set_date_not_set_error("Date not set");
+  date_time_range->set_time_not_set_error("Time not set");
 
-  auto* time_slot = date_time_rage->add_time_slots();
+  auto* time_slot = date_time_range->add_time_slots();
   time_slot->set_label("08:00 AM");
   time_slot->set_comparison_value(0);
-  time_slot = date_time_rage->add_time_slots();
+  time_slot = date_time_range->add_time_slots();
   time_slot->set_label("09:00 AM");
   time_slot->set_comparison_value(1);
 

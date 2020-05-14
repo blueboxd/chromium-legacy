@@ -32,6 +32,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 using autofill::FormData;
+using autofill::FormRendererId;
 using autofill::PasswordForm;
 using autofill::PasswordFormFillData;
 using base::test::ios::kWaitForJSCompletionTimeout;
@@ -142,15 +143,6 @@ class PasswordFormHelperTest : public web::WebTestWithWebState {
   }
 
  protected:
-  // Returns an identifier for the |form_index|th form in the page.
-  std::string GetFormId(int form_index) {
-    NSString* kGetFormIdScript =
-        @"__gCrWeb.form.getFormIdentifier("
-         "    document.querySelectorAll('form')[%d]);";
-    return base::SysNSStringToUTF8(ExecuteJavaScript(
-        [NSString stringWithFormat:kGetFormIdScript, form_index]));
-  }
-
   // PasswordFormHelper for testing.
   PasswordFormHelper* helper_;
 
@@ -387,10 +379,13 @@ TEST_F(PasswordFormHelperTest, ExtractPasswordFormData) {
             "<input id='p2' type='password' name='pw2'></form>"
             "<form><input id='u3' type='text' name='un3'>"
             "<input id='p3' type='password' name='pw3'></form>");
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
+  // Run password forms search to set up unique IDs.
+  EXPECT_TRUE(ExecuteJavaScript(@"__gCrWeb.passwords.findPasswordForms();"));
   __block int call_counter = 0;
   __block int success_counter = 0;
   __block FormData result = FormData();
-  [helper_ extractPasswordFormData:base::SysUTF8ToNSString(GetFormId(1))
+  [helper_ extractPasswordFormData:FormRendererId(0)
                  completionHandler:^(BOOL complete, const FormData& form) {
                    ++call_counter;
                    if (complete) {
@@ -402,13 +397,13 @@ TEST_F(PasswordFormHelperTest, ExtractPasswordFormData) {
     return call_counter == 1;
   }));
   EXPECT_EQ(1, success_counter);
-  EXPECT_EQ(result.name, base::ASCIIToUTF16(GetFormId(1)));
+  EXPECT_EQ(result.unique_renderer_id, FormRendererId(0));
 
   call_counter = 0;
   success_counter = 0;
   result = FormData();
 
-  [helper_ extractPasswordFormData:@"unknown"
+  [helper_ extractPasswordFormData:FormRendererId(404)
                  completionHandler:^(BOOL complete, const FormData& form) {
                    ++call_counter;
                    if (complete) {

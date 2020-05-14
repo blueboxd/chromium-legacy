@@ -106,6 +106,8 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       {"backgroundsMenuItem", IDS_NTP_CUSTOMIZE_MENU_BACKGROUND_LABEL},
       {"cancelButton", IDS_CANCEL},
       {"colorPickerLabel", IDS_NTP_CUSTOMIZE_COLOR_PICKER_LABEL},
+      {"customBackgroundDisabled",
+       IDS_NTP_CUSTOMIZE_MENU_BACKGROUND_DISABLED_LABEL},
       {"customizeButton", IDS_NTP_CUSTOMIZE_BUTTON_LABEL},
       {"customizeThisPage", IDS_NTP_CUSTOM_BG_CUSTOMIZE_NTP_LABEL},
       {"defaultThemeLabel", IDS_NTP_CUSTOMIZE_DEFAULT_LABEL},
@@ -222,8 +224,10 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
       // for the unlikely case where the NewTabPageHandler is created before we
       // received the DidStartNavigation event.
       navigation_start_time_(base::Time::Now()) {
-  content::WebUIDataSource::Add(profile_,
-                                CreateNewTabPageUiHtmlSource(profile_));
+  auto* source = CreateNewTabPageUiHtmlSource(profile_);
+  source->AddBoolean("customBackgroundDisabledByPolicy",
+                     instant_service_->IsCustomBackgroundDisabledByPolicy());
+  content::WebUIDataSource::Add(profile_, source);
 
   content::URLDataSource::Add(
       profile_, std::make_unique<FaviconSource>(

@@ -20,7 +20,7 @@ import * as nav from './nav.js';
 import {PerfEvent} from './perf.js';
 import * as state from './state.js';
 import * as tooltip from './tooltip.js';
-import {Mode} from './type.js';
+import {Mode, ViewName} from './type.js';
 import * as util from './util.js';
 import {Camera} from './views/camera.js';
 import {CameraIntent} from './views/camera_intent.js';
@@ -30,7 +30,7 @@ import {
   MasterSettings,
   ResolutionSettings,
 } from './views/settings.js';
-import {View, ViewName} from './views/view.js';
+import {View} from './views/view.js';
 import {Warning} from './views/warning.js';
 
 /**

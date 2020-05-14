@@ -9,6 +9,8 @@
            file="images/arrow_down.svg" type="BINDATA" compress="gzip" />
   <include name="IDR_WEBUI_IMAGES_ARROW_RIGHT"
            file="images/arrow_right.svg" type="BINDATA" compress="gzip" />
+  <include name="IDR_WEBUI_IMAGES_BUSINESS" file="images/business.svg"
+           type="BINDATA" compress="gzip" />
   <include name="IDR_WEBUI_IMAGES_DARK_ARROW_DOWN"
            file="images/dark/arrow_down.svg" type="BINDATA" compress="gzip" />
   <include name="IDR_WEBUI_IMAGES_DARK_ICON_SEARCH"

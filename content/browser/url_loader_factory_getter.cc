@@ -293,6 +293,7 @@ void URLLoaderFactoryGetter::HandleNetworkFactoryRequestOnUIThread(
   // The browser process is considered trusted.
   params->is_trusted = true;
   params->process_id = network::mojom::kBrowserProcessId;
+  params->automatically_assign_isolation_info = true;
   params->is_corb_enabled = is_corb_enabled;
   params->disable_web_security =
       base::CommandLine::ForCurrentProcess()->HasSwitch(

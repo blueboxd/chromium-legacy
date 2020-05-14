@@ -20,6 +20,17 @@
         on.style.display = "none";
       }
     }
+
+    function onDropdown() {
+      document.getElementById("js_dropdown_options").style.display = "block";
+    }
+
+    function onOption(value) {
+      const el = document.getElementById("js_dropdown_value");
+      el.innerHTML = value;
+      el.value = value;
+      document.getElementById("js_dropdown_options").style.display = "none";
+    }
   </script>
   <body>
     <h3>Form filling</h3>
@@ -59,6 +70,14 @@
           <option value="2050">2050</option>
         </select>
         Fallback: <input type="text" id="fallback_entry" name="fallback_entry"/><br/>
+        Created Dropdown: <div id="js_dropdown_value" onclick="onDropdown()">Click me</div>
+        <ul id="js_dropdown_options" style="display: none;">
+          <li onclick="onOption('2020')">2020</li>
+          <li onclick="onOption('2021')">2021</li>
+          <li onclick="onOption('2022')">2022</li>
+          <li onclick="onOption('2023')">2023</li>
+          <li onclick="onOption('2050')">2050</li>
+        </ul>
       </form>
     </div>
 

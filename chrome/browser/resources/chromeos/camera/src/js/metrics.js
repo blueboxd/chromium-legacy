@@ -137,13 +137,27 @@ export const IntentResultType = {
 };
 
 /**
+ * Types of different ways to trigger shutter button.
+ * @enum {string}
+ */
+export const ShutterType = {
+  UNKNOWN: 'unknown',
+  MOUSE: 'mouse',
+  KEYBOARD: 'keyboard',
+  TOUCH: 'touch',
+  VOLUME_KEY: 'volume-key',
+};
+
+/**
  * Sends capture type event.
  * @param {!Facing} facingMode Camera facing-mode of the capture.
  * @param {number} length Length of 1 minute buckets for captured video.
  * @param {!Resolution} resolution Capture resolution.
  * @param {!IntentResultType} intentResult
+ * @param {!ShutterType} shutterType
  */
-function sendCaptureEvent(facingMode, length, resolution, intentResult) {
+function sendCaptureEvent(
+    facingMode, length, resolution, intentResult, shutterType) {
   /**
    * @param {!Array<state.StateUnion>} states
    * @param {state.StateUnion=} cond
@@ -183,6 +197,7 @@ function sendCaptureEvent(facingMode, length, resolution, intentResult) {
         [10, resolution.toString()],
         [11, condState([State.FPS_30, State.FPS_60], Mode.VIDEO, true)],
         [12, intentResult],
+        [21, shutterType],
       ]));
 }
 

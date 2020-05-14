@@ -311,8 +311,6 @@ Still reading?
   <issue id="ResourceAsColor" severity="ignore"/>
   <issue id="ResourceType" severity="Error">
     <ignore regexp="/javatests/"/>
-    <!-- TODO(crbug.com/1081236): To fix -->
-    <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/browsing_data/ClearBrowsingDataFragment.java"/>
   </issue>
   <!-- TODO(crbug.com/831774): Play Services starts complaining about RestrictedApi. Needs investigation -->
   <issue id="RestrictedApi" severity="ignore"/>

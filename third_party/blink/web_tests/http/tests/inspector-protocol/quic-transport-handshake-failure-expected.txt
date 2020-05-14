@@ -4,5 +4,5 @@ Instantiate QuicTransport.
 Log.onEntryAdded
 source: network
 level: error
-text: Failed to establish a connection to quic-transport://localhost/.
+text: Failed to establish a connection to quic-transport://localhost/: net::ERR_NOT_IMPLEMENTED.
 

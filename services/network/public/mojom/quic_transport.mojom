@@ -7,6 +7,25 @@ module network.mojom;
 import "mojo/public/mojom/base/read_only_buffer.mojom";
 import "url/mojom/url.mojom";
 
+// Represents a QuicTransport error.
+// See also: net/quic/quic_transport_client.h
+struct QuicTransportError {
+  // A net error (see net/base/net_errors.h).
+  int32 net_error = 0;
+
+  // A QUIC error (see
+  // net/third_party/quiche/src/quic/core/quic_error_codes.h).
+  int32 quic_error = 0;
+
+  // Human-readable error summary.
+  string details;
+
+  // QuicTransport requires that the connection errors have to be
+  // undistinguishable until the peer is confirmed to be a QuicTransport
+  // endpoint.  See https://wicg.github.io/web-transport/#protocol-security
+  bool safe_to_report_details = false;
+};
+
 // A mojo interface for https://wicg.github.io/web-transport/#quic-transport.
 interface QuicTransport {
   // A datagram message is sent from the client. The response message represents
@@ -52,11 +71,18 @@ interface QuicTransportClient {
 // Used to create a QuicTransport connection. This is split from QuicTransport
 // so that the handshake part can be intercepted, by Chrome extensions for
 // example.
+// Some parameters may contain information that cannot be handed to the
+// initiator renderer due to security and privacy reasons. There should be
+// an QuicTransportHandshakeClient implementation in the browser process
+// which ensures that a QuicTransportHandshakeClient implemented in renderers
+// doesn't see such information.
 interface QuicTransportHandshakeClient {
   // Called when the handshake succeeds.
   OnConnectionEstablished(pending_remote<QuicTransport> transport,
                           pending_receiver<QuicTransportClient> client);
 
   // Called when the handshake fails.
-  OnHandshakeFailed();
+  // |error| contains the error details. The actual error information issued
+  // by the network service should not be handed to the initiator renderer.
+  OnHandshakeFailed(QuicTransportError? error);
 };

@@ -11,6 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/mac/foundation_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -120,12 +121,14 @@ bool ExtractFormData(const base::Value& form_value,
   // main_frame_origin is used for logging UKM.
   form_data->main_frame_origin = url::Origin::Create(main_frame_url);
 
-  int unique_renderer_id = kNotSetRendererID;
-  form_dictionary->GetInteger("unique_renderer_id", &unique_renderer_id);
-  form_data->unique_renderer_id =
-      (unique_renderer_id != kNotSetRendererID
-           ? FormRendererId(static_cast<uint32_t>(unique_renderer_id))
-           : FormRendererId());
+  std::string unique_renderer_id;
+  form_dictionary->GetString("unique_renderer_id", &unique_renderer_id);
+  if (!unique_renderer_id.empty()) {
+    base::StringToUint(unique_renderer_id,
+                       &form_data->unique_renderer_id.value());
+  } else {
+    form_data->unique_renderer_id = FormRendererId();
+  }
 
   // Action is optional.
   base::string16 action;
@@ -164,12 +167,14 @@ bool ExtractFormFieldData(const base::DictionaryValue& field,
     return false;
   }
 
-  int unique_renderer_id = kNotSetRendererID;
-  field.GetInteger("unique_renderer_id", &unique_renderer_id);
-  field_data->unique_renderer_id =
-      (unique_renderer_id != kNotSetRendererID
-           ? FieldRendererId(static_cast<uint32_t>(unique_renderer_id))
-           : FieldRendererId());
+  std::string unique_renderer_id;
+  field.GetString("unique_renderer_id", &unique_renderer_id);
+  if (!unique_renderer_id.empty()) {
+    base::StringToUint(unique_renderer_id,
+                       &field_data->unique_renderer_id.value());
+  } else {
+    field_data->unique_renderer_id = FieldRendererId();
+  }
 
   // Optional fields.
   field.GetString("name_attribute", &field_data->name_attribute);

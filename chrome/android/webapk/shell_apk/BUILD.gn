@@ -44,11 +44,7 @@ mustache_pass("generate_new_style_manifest_for_upload") {
 # name conflict.
 template("webapk_java") {
   android_library(target_name) {
-    forward_variables_from(invoker,
-                           [
-                             "android_manifest_for_lint",
-                             "deps",
-                           ])
+    forward_variables_from(invoker, [ "deps" ])
 
     sources = [
       "src/org/chromium/webapk/shell_apk/ChooseHostBrowserDialog.java",
@@ -75,24 +71,18 @@ template("webapk_java") {
       "//chrome/android/webapk/libs/common:common_java",
       "//chrome/android/webapk/libs/common:splash_java",
     ]
-    min_sdk_version = 21
   }
 }
 
 template("webapk_with_service_java") {
   android_library(target_name) {
-    forward_variables_from(invoker,
-                           [
-                             "android_manifest_for_lint",
-                             "deps",
-                           ])
+    forward_variables_from(invoker, [ "deps" ])
 
     sources = [
       "src/org/chromium/webapk/shell_apk/WebApkServiceFactory.java",
       "src/org/chromium/webapk/shell_apk/WebApkServiceImplWrapper.java",
     ]
     deps += [ ":compiled_in_runtime_library_java" ]
-    min_sdk_version = 21
   }
 }
 
@@ -228,7 +218,6 @@ template("webapk_tmpl") {
   }
 
   webapk_java(_java_without_services_target_name) {
-    android_manifest_for_lint = _manifest_output
     deps = [
       ":$_manifest_target_name",
       ":$_resources_target_name",
@@ -236,7 +225,6 @@ template("webapk_tmpl") {
   }
 
   webapk_with_service_java(_java_with_services_target_name) {
-    android_manifest_for_lint = _manifest_output
     deps = [
       ":$_java_without_services_target_name",
       ":$_manifest_target_name",

@@ -1806,13 +1806,13 @@ body:not(.files-ng) .volume-warning .drive-text {
   margin-inline-end: 51px;
 }
 
-body.files-ng .volume-warning .button-group {
+body.files-ng .button-group {
   display: flex;
   flex-direction: row-reverse;
   margin-inline-start: auto;
 }
 
-body.files-ng .volume-warning .button-group > a {
+body.files-ng .button-group > a {
   text-decoration-line: none;
 }
 
@@ -1852,23 +1852,7 @@ body.files-ng .banner-close {
   margin-inline-end: 20px;
   padding-inline-end: 16px;
   padding-inline-start: 16px;
-  position: absolute;
-}
-
-body.files-ng .volume-warning .banner-close {
-  height: 32px;
-  margin-inline-end: 20px;
-  padding-inline-end: 16px;
-  padding-inline-start: 16px;
   position: relative;
-}
-
-html[dir='ltr'] .banner-close {
-  right: 0;
-}
-
-html[dir='rtl'] .banner-close {
-  left: 0;
 }
 
 body:not(.files-ng) .banner-cloud-bg {

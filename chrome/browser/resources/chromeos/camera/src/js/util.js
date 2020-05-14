@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 import {browserProxy} from './browser_proxy/browser_proxy.js';
-import {ChromeHelper} from './mojo/chrome_helper.js';
+import * as state from './state.js';
 import * as tooltip from './tooltip.js';
-import {Resolution} from './type.js';
+import {Facing, Resolution} from './type.js';
 
 /**
  * Gets the clockwise rotation and flip that can orient a photo to its upright
@@ -331,11 +331,10 @@ export function blobToImage(blob) {
 
 /**
  * Gets default facing according to device mode.
- * @return {!Promise<string>}
+ * @return {!Facing}
  */
-export async function getDefaultFacing() {
-  return await ChromeHelper.getInstance().isTabletMode() ? 'environment' :
-                                                           'user';
+export function getDefaultFacing() {
+  return state.get(state.State.TABLET) ? Facing.ENVIRONMENT : Facing.USER;
 }
 
 /**

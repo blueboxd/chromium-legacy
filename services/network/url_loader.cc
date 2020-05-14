@@ -518,7 +518,15 @@ URLLoader::URLLoader(
       DCHECK(url_request_->isolation_info().site_for_cookies().IsEquivalent(
           request.site_for_cookies));
     }
+  } else if (factory_params_->automatically_assign_isolation_info) {
+    url::Origin origin = url::Origin::Create(request.url);
+    url_request_->set_isolation_info(net::IsolationInfo::Create(
+        net::IsolationInfo::RedirectMode::kUpdateNothing, origin, origin,
+        net::SiteForCookies()));
   }
+
+  if (url_request_context_->require_network_isolation_key())
+    DCHECK(!url_request_->isolation_info().IsEmpty());
 
   if (factory_params_->disable_secure_dns) {
     url_request_->SetDisableSecureDns(true);

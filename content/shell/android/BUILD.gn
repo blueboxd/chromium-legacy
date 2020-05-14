@@ -101,7 +101,6 @@ android_library("content_shell_java") {
     "java/src/org/chromium/content_shell/ShellViewAndroidDelegate.java",
   ]
 
-  android_manifest_for_lint = content_shell_manifest
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 

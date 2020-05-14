@@ -81,6 +81,24 @@ CREATE VIEW SufficientChromeProcesses AS
         SELECT name FROM ChromeProcessesInfo GROUP BY name
     )) END AS haveEnoughProcesses;
 
+-- A simple table that checks the time between VSync (this can be used to
+-- determine if we're scrolling at 90 FPS or 60 FPS.
+--
+-- Note: In traces without the "Java" category there will be no VSync
+--       TraceEvents
+DROP TABLE IF EXISTS VSyncIntervals;
+
+CREATE TABLE VSyncIntervals AS
+  SELECT
+    slice_id,
+    ts,
+    dur,
+    track_id,
+    LEAD(ts) OVER(PARTITION BY track_id ORDER BY ts) - ts AS timeToNextVsync
+  FROM slice
+  WHERE name = "VSync"
+  ORDER BY track_id, ts;
+
 DROP VIEW IF EXISTS ScrollBeginsAndEnds;
 
 CREATE VIEW ScrollBeginsAndEnds AS
@@ -102,8 +120,10 @@ CREATE VIEW ScrollBeginsAndEnds AS
     );
 
 -- Now we take the Begin and the End events and join the information into a
--- single row per scroll.
-
+-- single row per scroll. We also compute the average Vysnc interval of the
+-- scroll (hopefully this would be either 60 FPS for the whole scroll or 90 FPS
+-- but that isn't always the case). If the trace doesn't contain the VSync
+-- TraceEvent we just fall back on assuming its 60 FPS.
 DROP VIEW IF EXISTS JoinedScrollBeginsAndEnds;
 
 CREATE VIEW JoinedScrollBeginsAndEnds AS
@@ -116,7 +136,16 @@ CREATE VIEW JoinedScrollBeginsAndEnds AS
     begin.gestureScrollId as gestureScrollId,
     end.ts AS scrollEndTs,
     end.ts + end.dur AS maybeScrollEnd,
-    end.traceId AS scrollEndTraceId
+    end.traceId AS scrollEndTraceId,
+    COALESCE((
+      SELECT
+        CAST(AVG(timeToNextVsync) AS FLOAT)
+      FROM VsyncIntervals in_query
+      WHERE
+        timeToNextVsync IS NOT NULL AND
+        in_query.ts > begin.ts AND
+        in_query.ts < end.ts
+    ), 1.6e+7) AS scrollAvgVsyncInterval
   FROM ScrollBeginsAndEnds begin JOIN ScrollBeginsAndEnds end ON
     begin.traceId < end.traceId AND
     begin.name = 'InputLatency::GestureScrollBegin' AND
@@ -138,10 +167,6 @@ CREATE VIEW JoinedScrollBeginsAndEnds AS
 -- We remove updates with |dur| == -1 because this means we have no end event
 -- and can't reasonably determine what it should be. We have separate tracking
 -- to ensure this only happens at the end of the trace.
---
--- TODO(nuskos): Replace 1.6e.7 with a sub query that computes the vsync
---               interval for this scrol
-
 DROP TABLE IF EXISTS GestureScrollUpdates;
 
 CREATE TABLE GestureScrollUpdates AS
@@ -164,7 +189,7 @@ CREATE TABLE GestureScrollUpdates AS
     dur,
     track_id,
     traceId,
-    dur/1.6e+7 AS scrollFramesExact
+    dur/scrollAvgVsyncInterval AS scrollFramesExact
   FROM JoinedScrollBeginsAndEnds beginAndEnd JOIN (
     SELECT
       EXTRACT_ARG(arg_set_id, "chrome_latency_info.trace_id") AS traceId,

@@ -3,23 +3,8 @@
 // found in the LICENSE file.
 
 import {assertInstanceof} from '../chrome_util.js';
-
-/**
- * @enum {string}
- */
-export const ViewName = {
-  CAMERA: 'view-camera',
-  EXPERT_SETTINGS: 'view-expert-settings',
-  GRID_SETTINGS: 'view-grid-settings',
-  MESSAGE_DIALOG: 'view-message-dialog',
-  PHOTO_RESOLUTION_SETTINGS: 'view-photo-resolution-settings',
-  RESOLUTION_SETTINGS: 'view-resolution-settings',
-  SETTINGS: 'view-settings',
-  SPLASH: 'view-splash',
-  TIMER_SETTINGS: 'view-timer-settings',
-  VIDEO_RESOLUTION_SETTINGS: 'view-video-resolution-settings',
-  WARNING: 'view-warning',
-};
+// eslint-disable-next-line no-unused-vars
+import {ViewName} from '../type.js';
 
 /* eslint-disable no-unused-vars */
 

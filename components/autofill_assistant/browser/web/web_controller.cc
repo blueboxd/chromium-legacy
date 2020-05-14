@@ -284,7 +284,7 @@ void WebController::LoadURL(const GURL& url) {
 
 void WebController::ClickOrTapElement(
     const Selector& selector,
-    ClickAction::ClickType click_type,
+    ClickType click_type,
     base::OnceCallback<void(const ClientStatus&)> callback) {
   VLOG(3) << __func__ << " " << selector;
   DCHECK(!selector.empty());
@@ -297,7 +297,7 @@ void WebController::ClickOrTapElement(
 
 void WebController::OnFindElementForClickOrTap(
     base::OnceCallback<void(const ClientStatus&)> callback,
-    ClickAction::ClickType click_type,
+    ClickType click_type,
     const ClientStatus& status,
     std::unique_ptr<ElementFinder::Result> result) {
   // Found element must belong to a frame.
@@ -322,7 +322,7 @@ void WebController::OnFindElementForClickOrTap(
 
 void WebController::OnWaitDocumentToBecomeInteractiveForClickOrTap(
     base::OnceCallback<void(const ClientStatus&)> callback,
-    ClickAction::ClickType click_type,
+    ClickType click_type,
     std::unique_ptr<ElementFinder::Result> target_element,
     bool result) {
   if (!result) {
@@ -335,7 +335,7 @@ void WebController::OnWaitDocumentToBecomeInteractiveForClickOrTap(
 
 void WebController::ClickOrTapElement(
     std::unique_ptr<ElementFinder::Result> target_element,
-    ClickAction::ClickType click_type,
+    ClickType click_type,
     base::OnceCallback<void(const ClientStatus&)> callback) {
   std::string element_object_id = target_element->object_id;
   std::vector<std::unique_ptr<runtime::CallArgument>> argument;
@@ -356,7 +356,7 @@ void WebController::ClickOrTapElement(
 void WebController::OnScrollIntoView(
     std::unique_ptr<ElementFinder::Result> target_element,
     base::OnceCallback<void(const ClientStatus&)> callback,
-    ClickAction::ClickType click_type,
+    ClickType click_type,
     const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   ClientStatus status =
@@ -367,7 +367,7 @@ void WebController::OnScrollIntoView(
     return;
   }
 
-  if (click_type == ClickAction::JAVASCRIPT) {
+  if (click_type == ClickType::JAVASCRIPT) {
     std::string element_object_id = target_element->object_id;
     std::vector<std::unique_ptr<runtime::CallArgument>> argument;
     AddRuntimeCallArgumentObjectId(element_object_id, &argument);
@@ -411,7 +411,7 @@ void WebController::TapOrClickOnCoordinates(
     ElementPositionGetter* getter_to_release,
     base::OnceCallback<void(const ClientStatus&)> callback,
     const std::string& node_frame_id,
-    ClickAction::ClickType click_type,
+    ClickType click_type,
     bool has_coordinates,
     int x,
     int y) {
@@ -425,8 +425,8 @@ void WebController::TapOrClickOnCoordinates(
     return;
   }
 
-  DCHECK(click_type == ClickAction::TAP || click_type == ClickAction::CLICK);
-  if (click_type == ClickAction::CLICK) {
+  DCHECK(click_type == ClickType::TAP || click_type == ClickType::CLICK);
+  if (click_type == ClickType::CLICK) {
     devtools_client_->GetInput()->DispatchMouseEvent(
         input::DispatchMouseEventParams::Builder()
             .SetX(x)
@@ -725,7 +725,7 @@ void WebController::FillAddressForm(
     const autofill::AutofillProfile* profile,
     const Selector& selector,
     base::OnceCallback<void(const ClientStatus&)> callback) {
-  VLOG(3) << __func__ << selector;
+  VLOG(3) << __func__ << " " << selector;
   auto data_to_autofill = std::make_unique<FillFormInputData>();
   data_to_autofill->profile =
       std::make_unique<autofill::AutofillProfile>(*profile);
@@ -1398,7 +1398,7 @@ void WebController::OnFindElementForSendKeyboardInput(
     return;
   }
   ClickOrTapElement(
-      selector, ClickAction::CLICK,
+      selector, ClickType::CLICK,
       base::BindOnce(&WebController::OnClickElementForSendKeyboardInput,
                      weak_ptr_factory_.GetWeakPtr(),
                      element_result->node_frame_id, codepoints,

@@ -94,7 +94,6 @@ void WaylandSurface::Show(bool inactive) {
     return;
   }
 
-  set_keyboard_focus(true);
   UpdateBufferScale(false);
 }
 

@@ -14,7 +14,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "components/autofill_assistant/browser/actions/action.h"
-#include "components/autofill_assistant/browser/actions/required_fields_fallback_handler.h"
+#include "components/autofill_assistant/browser/actions/fallback_handler/fallback_data.h"
+#include "components/autofill_assistant/browser/actions/fallback_handler/required_fields_fallback_handler.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -43,13 +44,12 @@ class UseAddressAction : public Action {
   void OnWaitForElement(const ClientStatus& element_status);
 
   // Called when the address has been filled.
-  void OnFormFilled(std::unique_ptr<RequiredFieldsFallbackHandler::FallbackData>
-                        fallback_data,
+  void OnFormFilled(std::unique_ptr<FallbackData> fallback_data,
                     const ClientStatus& status);
 
   // Create fallback data.
-  std::unique_ptr<RequiredFieldsFallbackHandler::FallbackData>
-  CreateFallbackData(const autofill::AutofillProfile& profile);
+  std::unique_ptr<FallbackData> CreateFallbackData(
+      const autofill::AutofillProfile& profile);
 
   // Usage of the autofilled address.
   std::string name_;

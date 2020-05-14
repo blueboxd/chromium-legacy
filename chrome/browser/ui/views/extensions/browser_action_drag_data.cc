@@ -49,7 +49,6 @@ bool BrowserActionDragData::IsFromProfile(const Profile* profile) const {
   return profile_ == profile;
 }
 
-#if defined(TOOLKIT_VIEWS)
 void BrowserActionDragData::Write(
     Profile* profile, ui::OSExchangeData* data) const {
   DCHECK(data);
@@ -80,7 +79,6 @@ BrowserActionDragData::GetBrowserActionFormatType() {
 
   return *format;
 }
-#endif
 
 void BrowserActionDragData::WriteToPickle(Profile* profile,
                                           base::Pickle* pickle) const {

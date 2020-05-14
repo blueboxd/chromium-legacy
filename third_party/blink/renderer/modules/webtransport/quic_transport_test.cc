@@ -432,7 +432,7 @@ TEST_F(QuicTransportTest, FailedConnect) {
   mojo::Remote<network::mojom::blink::QuicTransportHandshakeClient>
       handshake_client(std::move(args[0].handshake_client));
 
-  handshake_client->OnHandshakeFailed();
+  handshake_client->OnHandshakeFailed(nullptr);
 
   test::RunPendingTasks();
   EXPECT_FALSE(quic_transport->HasPendingActivity());

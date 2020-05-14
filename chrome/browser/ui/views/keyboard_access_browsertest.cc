@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This functionality currently works on Windows and on Linux when
-// toolkit_views is defined (i.e. for Chrome OS). It's not needed
-// on the Mac, and it's not yet implemented on Linux.
-
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"

@@ -589,6 +589,10 @@ void ServiceWorkerRegistry::StoreUserData(
                            blink::ServiceWorkerStatusCode::kErrorFailed));
     return;
   }
+  std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data;
+  // TODO(crbug.com/1055677): Change this method to take a vector of
+  // storage::mojom::ServiceWorkerUserDataPtr instead of converting
+  //|key_value_pairs|.
   for (const auto& kv : key_value_pairs) {
     if (kv.first.empty()) {
       RunSoon(FROM_HERE,
@@ -596,10 +600,12 @@ void ServiceWorkerRegistry::StoreUserData(
                              blink::ServiceWorkerStatusCode::kErrorFailed));
       return;
     }
+    user_data.push_back(
+        storage::mojom::ServiceWorkerUserData::New(kv.first, kv.second));
   }
 
   storage()->StoreUserData(
-      registration_id, origin, key_value_pairs,
+      registration_id, origin, std::move(user_data),
       base::BindOnce(&ServiceWorkerRegistry::DidStoreUserData,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }

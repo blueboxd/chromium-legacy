@@ -413,7 +413,12 @@ void QuicTransport::OnConnectionFailed() {
 
   DCHECK(handshake_client_);
 
-  handshake_client_->OnHandshakeFailed();
+  const net::QuicTransportError& error = transport_->error();
+  // Here we assume that the error is not going to handed to the
+  // initiator renderer.
+  handshake_client_->OnHandshakeFailed(mojom::QuicTransportError::New(
+      error.net_error, static_cast<int>(error.quic_error), error.details,
+      error.safe_to_report_details));
 
   TearDown();
 }

@@ -673,6 +673,7 @@ blink_core_tests("unit_tests") {
     "resolver/font_builder_test.cc",
     "resolver/font_style_resolver_test.cc",
     "resolver/match_result_test.cc",
+    "resolver/matched_properties_cache_test.cc",
     "resolver/selector_filter_parent_scope_test.cc",
     "resolver/style_adjuster_test.cc",
     "resolver/style_builder_test.cc",

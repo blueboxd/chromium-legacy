@@ -200,9 +200,9 @@ testcase.tabindexFocusDirectorySelected = async () => {
     chrome.test.assertTrue(
         await remoteCall.checkNextTabFocus(appId, 'gear-button'));
     chrome.test.assertTrue(
-        await remoteCall.checkNextTabFocus(appId, 'welcome-dismiss'));
-    chrome.test.assertTrue(
         await remoteCall.checkNextTabFocus(appId, 'drive-welcome-link'));
+    chrome.test.assertTrue(
+        await remoteCall.checkNextTabFocus(appId, 'welcome-dismiss'));
     chrome.test.assertTrue(
         await remoteCall.checkNextTabFocus(appId, 'file-list'));
   } else {

@@ -15,6 +15,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -56,7 +57,14 @@ class AppBrowserController : public TabStripModelObserver,
   static bool IsForWebAppBrowser(const Browser* browser, const AppId& app_id);
 
   // Renders |url|'s origin as Unicode.
-  static base::string16 FormatUrlOrigin(const GURL& url);
+  static base::string16 FormatUrlOrigin(
+      const GURL& url,
+      url_formatter::FormatUrlTypes format_types =
+          url_formatter::kFormatUrlOmitUsernamePassword |
+          url_formatter::kFormatUrlOmitHTTPS |
+          url_formatter::kFormatUrlOmitHTTP |
+          url_formatter::kFormatUrlOmitTrailingSlashOnBareHostname |
+          url_formatter::kFormatUrlOmitTrivialSubdomains);
 
   // Returns a theme built from the current page or app's theme color.
   const ui::ThemeProvider* GetThemeProvider() const;

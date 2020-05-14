@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "components/autofill/core/common/renderer_id.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 #include "url/gurl.h"
@@ -70,9 +71,10 @@ class WebState;
 // for (optional as @"") confirm password field |confirmPasswordIdentifier| in
 // the form identified by |formData|. Invokes |completionHandler| with true if
 // any fields were filled, false otherwise.
-- (void)fillPasswordForm:(NSString*)formName
-        newPasswordIdentifier:(NSString*)newPasswordIdentifier
-    confirmPasswordIdentifier:(NSString*)confirmPasswordIdentifier
+- (void)fillPasswordForm:(autofill::FormRendererId)formIdentifier
+        newPasswordIdentifier:(autofill::FieldRendererId)newPasswordIdentifier
+    confirmPasswordIdentifier:
+        (autofill::FieldRendererId)confirmPasswordIdentifier
             generatedPassword:(NSString*)generatedPassword
             completionHandler:(nullable void (^)(BOOL))completionHandler;
 
@@ -89,10 +91,10 @@ class WebState;
                            completionHandler:
                                (nullable void (^)(BOOL))completionHandler;
 
-// Finds the password form named |formName| and calls
+// Finds the password form with unique ID |formIdentifier| and calls
 // |completionHandler| with the populated |FormData| data structure. |found| is
 // YES if the current form was found successfully, NO otherwise.
-- (void)extractPasswordFormData:(NSString*)formName
+- (void)extractPasswordFormData:(autofill::FormRendererId)formIdentifier
               completionHandler:
                   (void (^)(BOOL found,
                             const autofill::FormData& form))completionHandler;

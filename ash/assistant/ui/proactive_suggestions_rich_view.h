@@ -57,7 +57,10 @@ class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsRichView
                              bool from_user_gesture) override;
 
  private:
+  AssistantWebView* ContentsView();
+
   std::unique_ptr<AssistantWebView> contents_view_;
+  AssistantWebView* contents_view_ptr_ = nullptr;
   std::unique_ptr<views::EventMonitor> event_monitor_;
   std::unique_ptr<ViewShadow> view_shadow_;
 

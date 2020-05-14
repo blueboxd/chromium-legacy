@@ -284,6 +284,13 @@ class NET_EXPORT URLRequestContext
   // Returns current value of the |check_cleartext_permitted| flag.
   bool check_cleartext_permitted() const { return check_cleartext_permitted_; }
 
+  void set_require_network_isolation_key(bool require_network_isolation_key) {
+    require_network_isolation_key_ = require_network_isolation_key;
+  }
+  bool require_network_isolation_key() const {
+    return require_network_isolation_key_;
+  }
+
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   void set_ftp_auth_cache(FtpAuthCache* auth_cache) {
     ftp_auth_cache_ = auth_cache;
@@ -344,6 +351,10 @@ class NET_EXPORT URLRequestContext
   // Enables checking system policy before allowing a cleartext http or ws
   // request. Only used on Android.
   bool check_cleartext_permitted_;
+
+  // Triggers a DCHECK if a NetworkIsolationKey/IsolationInfo is not provided to
+  // a request when true.
+  bool require_network_isolation_key_;
 
   // An optional name which can be set to describe this URLRequestContext.
   // Used in MemoryDumpProvier to annotate memory usage. The name does not need

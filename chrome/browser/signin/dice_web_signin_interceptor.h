@@ -32,12 +32,20 @@ class DiceWebSigninInterceptor : public KeyedService,
   DiceWebSigninInterceptor(const DiceWebSigninInterceptor&) = delete;
   DiceWebSigninInterceptor& operator=(const DiceWebSigninInterceptor&) = delete;
 
+  // Called when an account has been added in Chrome from the web (using the
+  // DICE protocol).
   // |web_contents| is the tab where the signin event happened. It must belong
   // to the profile associated with this service. It may be nullptr if the tab
   // was closed.
-  void MaybeInterceptWebSignin(content::WebContents* web_contents,
-                               CoreAccountId account_id,
-                               bool is_new_account);
+  // |is_new_account| is true if the account was not already in Chrome (i.e.
+  // this is not a reauth).
+  // |is_sync_signin| is true if the user is signing in with the intent of
+  // enabling sync for that account.
+  // Virtual for testing.
+  virtual void MaybeInterceptWebSignin(content::WebContents* web_contents,
+                                       CoreAccountId account_id,
+                                       bool is_new_account,
+                                       bool is_sync_signin);
 
  private:
   Profile* const profile_;

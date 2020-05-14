@@ -99,7 +99,7 @@ void PaintComplexOutline(GraphicsContext& graphics_context,
   // Construct a clockwise path along the outer edge of the outline.
   SkRegion region;
   uint16_t width = style.OutlineWidthInt();
-  int outset = style.OutlineOffset() + style.OutlineWidthInt();
+  int outset = style.OutlineOffsetInt() + style.OutlineWidthInt();
   for (auto& r : rects) {
     IntRect rect = r;
     rect.Inflate(outset);
@@ -205,7 +205,7 @@ void PaintSingleRectangleOutline(const PaintInfo& paint_info,
   DCHECK(!style.OutlineStyleIsAuto());
 
   PhysicalRect inner(rect);
-  inner.Inflate(LayoutUnit(style.OutlineOffset()));
+  inner.Inflate(LayoutUnit(style.OutlineOffsetInt()));
   PhysicalRect outer(inner);
   outer.Inflate(LayoutUnit(style.OutlineWidthInt()));
   const BorderEdge common_edge_info(style.OutlineWidthInt(), color,
@@ -563,7 +563,7 @@ void ObjectPainterBase::PaintOutlineRects(
     float border_radius = GetFocusRingBorderRadius(style);
     paint_info.context.DrawFocusRing(
         pixel_snapped_outline_rects, style.GetOutlineStrokeWidthForFocusRing(),
-        style.OutlineOffset(), border_radius, min_border_width, color);
+        style.OutlineOffsetInt(), border_radius, min_border_width, color);
     return;
   }
 

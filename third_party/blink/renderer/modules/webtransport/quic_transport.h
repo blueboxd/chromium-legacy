@@ -77,7 +77,7 @@ class MODULES_EXPORT QuicTransport final
       mojo::PendingRemote<network::mojom::blink::QuicTransport>,
       mojo::PendingReceiver<network::mojom::blink::QuicTransportClient>)
       override;
-  void OnHandshakeFailed() override;
+  void OnHandshakeFailed(network::mojom::blink::QuicTransportErrorPtr) override;
 
   // QuicTransportClient implementation
   void OnDatagramReceived(base::span<const uint8_t> data) override;

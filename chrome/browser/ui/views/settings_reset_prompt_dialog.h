@@ -45,7 +45,7 @@ class SettingsResetPromptDialog : public views::DialogDelegateView {
 
  private:
   Browser* browser_;
-  safe_browsing::SettingsResetPromptController* const controller_;
+  safe_browsing::SettingsResetPromptController* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsResetPromptDialog);
 };

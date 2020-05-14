@@ -213,6 +213,7 @@ class VotesUploader {
   bool is_manual_generation_ = false;
 
   // A password field name that is used for generation.
+  // TODO(crbug.com/1075444): Use unique renderer id of a field instead.
   base::string16 generation_element_;
 
   // True iff a user edited the username value in a prompt and new username is

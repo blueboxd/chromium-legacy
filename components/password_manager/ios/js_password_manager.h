@@ -6,6 +6,7 @@
 #define COMPONENTS_PASSWORD_MANAGER_IOS_JS_PASSWORD_MANAGER_H_
 
 #include "base/ios/block_types.h"
+#include "components/autofill/core/common/renderer_id.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 
 namespace autofill {
@@ -51,8 +52,8 @@ NSString* SerializePasswordFormFillData(
 // For example. the JSON string for a form with a single password field is:
 // {"action":null,"method":null,"usernameElement":"","usernameValue":"",
 // "passwords":[{"element":"","value":"asd"}]}
-- (void)extractForm:(NSString*)formName
-  completionHandler:(void (^)(NSString*))completionHandler;
+- (void)extractForm:(autofill::FormRendererId)formIdentifier
+    completionHandler:(void (^)(NSString*))completionHandler;
 
 // Fills in the password form specified by |JSONString| with the given
 // |username| and |password|. Assumes JavaScript has been injected previously
@@ -69,9 +70,10 @@ NSString* SerializePasswordFormFillData(
 // (optional) confirm password field |confirmPasswordIdentifier| in the form
 // identified by |formData|. Invokes |completionHandler| with true if any fields
 // were filled, false otherwise.
-- (void)fillPasswordForm:(NSString*)formName
-        newPasswordIdentifier:(NSString*)newPasswordIdentifier
-    confirmPasswordIdentifier:(NSString*)confirmPasswordIdentifier
+- (void)fillPasswordForm:(autofill::FormRendererId)formIdentifier
+        newPasswordIdentifier:(autofill::FieldRendererId)newPasswordIdentifier
+    confirmPasswordIdentifier:
+        (autofill::FieldRendererId)confirmPasswordIdentifier
             generatedPassword:(NSString*)generatedPassword
             completionHandler:(void (^)(BOOL))completionHandler;
 

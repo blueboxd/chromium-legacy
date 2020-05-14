@@ -992,6 +992,11 @@ float StyleBuilderConverter::ConvertBorderWidth(StyleResolverState& state,
                         defaultMaximumForClamp<float>());
 }
 
+LayoutUnit StyleBuilderConverter::ConvertLayoutUnit(StyleResolverState& state,
+                                                    const CSSValue& value) {
+  return LayoutUnit::Clamp(ConvertComputedLength<float>(state, value));
+}
+
 GapLength StyleBuilderConverter::ConvertGapLength(StyleResolverState& state,
                                                   const CSSValue& value) {
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);

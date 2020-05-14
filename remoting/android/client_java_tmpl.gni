@@ -112,8 +112,5 @@ template("remoting_android_client_java_tmpl") {
     if (defined(invoker.remoting_google_play_services_library)) {
       deps += [ invoker.remoting_google_play_services_library ]
     }
-
-    android_manifest_for_lint =
-        "$root_gen_dir/remoting/android/AndroidManifest.xml"
   }
 }

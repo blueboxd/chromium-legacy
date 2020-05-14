@@ -36,13 +36,19 @@ namespace {
 // Struct that describes suggestion state.
 struct AutofillSuggestionState {
   AutofillSuggestionState(const std::string& form_name,
+                          FormRendererId unique_form_id,
                           const std::string& field_identifier,
+                          FieldRendererId unique_field_id,
                           const std::string& frame_identifier,
                           const std::string& typed_value);
   // The name of the form for autofill.
   std::string form_name;
+  // The unique numeric identifier of the form for autofill.
+  FormRendererId unique_form_id;
   // The identifier of the field for autofill.
   std::string field_identifier;
+  // The unique numeric identifier of the field for autofill.
+  FieldRendererId unique_field_id;
   // The identifier of the frame for autofill.
   std::string frame_identifier;
   // The user-typed value in the field.
@@ -53,11 +59,15 @@ struct AutofillSuggestionState {
 
 AutofillSuggestionState::AutofillSuggestionState(
     const std::string& form_name,
+    FormRendererId unique_form_id,
     const std::string& field_identifier,
+    FieldRendererId unique_field_id,
     const std::string& frame_identifier,
     const std::string& typed_value)
     : form_name(form_name),
+      unique_form_id(unique_form_id),
       field_identifier(field_identifier),
+      unique_field_id(unique_field_id),
       frame_identifier(frame_identifier),
       typed_value(typed_value) {}
 
@@ -317,8 +327,10 @@ AutofillSuggestionState::AutofillSuggestionState(
   [_provider
       didSelectSuggestion:suggestion
                      form:base::SysUTF8ToNSString(_suggestionState->form_name)
+             uniqueFormID:_suggestionState->unique_form_id
           fieldIdentifier:base::SysUTF8ToNSString(
                               _suggestionState->field_identifier)
+            uniqueFieldID:_suggestionState->unique_field_id
                   frameID:base::SysUTF8ToNSString(
                               _suggestionState->frame_identifier)
         completionHandler:^{
@@ -333,9 +345,10 @@ AutofillSuggestionState::AutofillSuggestionState(
           accessoryViewUpdateBlock:
               (FormSuggestionsReadyCompletion)accessoryViewUpdateBlock {
   [self processPage:webState];
-  _suggestionState.reset(
-      new AutofillSuggestionState(params.form_name, params.field_identifier,
-                                  params.frame_id, params.value));
+  _suggestionState.reset(new AutofillSuggestionState(
+      params.form_name, FormRendererId(params.unique_form_id),
+      params.field_identifier, FieldRendererId(params.unique_field_id),
+      params.frame_id, params.value));
   _accessoryViewUpdateBlock = [accessoryViewUpdateBlock copy];
   [self retrieveSuggestionsForForm:params webState:webState];
 }

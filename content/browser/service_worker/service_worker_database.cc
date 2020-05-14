@@ -923,10 +923,10 @@ ServiceWorkerDatabase::ReadUserKeysAndDataByKeyPrefix(
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteUserData(
     int64_t registration_id,
     const GURL& origin,
-    const std::vector<std::pair<std::string, std::string>>& name_value_pairs) {
+    const std::vector<storage::mojom::ServiceWorkerUserDataPtr>& user_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, registration_id);
-  DCHECK(!name_value_pairs.empty());
+  DCHECK(!user_data.empty());
 
   Status status = LazyOpen(false);
   if (IsNewOrNonexistentDatabase(status))
@@ -941,10 +941,10 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteUserData(
     return status;
 
   leveldb::WriteBatch batch;
-  for (const auto& pair : name_value_pairs) {
-    DCHECK(!pair.first.empty());
-    batch.Put(CreateUserDataKey(registration_id, pair.first), pair.second);
-    batch.Put(CreateHasUserDataKey(registration_id, pair.first), "");
+  for (const auto& entry : user_data) {
+    DCHECK(!entry->key.empty());
+    batch.Put(CreateUserDataKey(registration_id, entry->key), entry->value);
+    batch.Put(CreateHasUserDataKey(registration_id, entry->key), "");
   }
   return WriteBatch(&batch);
 }

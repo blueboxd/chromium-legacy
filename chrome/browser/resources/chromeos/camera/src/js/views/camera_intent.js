@@ -133,12 +133,12 @@ export class CameraIntent extends Camera {
   /**
    * @override
    */
-  beginTake_() {
+  beginTake_(shutterType) {
     // TODO(inker): Clean unused photo result blob properly.
     this.photoResult_ = null;
     this.videoResult_ = null;
 
-    const take = super.beginTake_();
+    const take = super.beginTake_(shutterType);
     if (take === null) {
       return null;
     }
@@ -161,7 +161,8 @@ export class CameraIntent extends Camera {
           metrics.Type.CAPTURE, this.facingMode_, result.duration || 0,
           result.resolution,
           confirmed ? metrics.IntentResultType.CONFIRMED :
-                      metrics.IntentResultType.CANCELED);
+                      metrics.IntentResultType.CANCELED,
+          this.shutterType_);
       if (confirmed) {
         await this.intent_.finish();
         window.close();

@@ -48,6 +48,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
@@ -132,15 +133,13 @@ bool AppBrowserController::IsForWebAppBrowser(const Browser* browser,
 }
 
 // static
-base::string16 AppBrowserController::FormatUrlOrigin(const GURL& url) {
-  return url_formatter::FormatUrl(
-      url.GetOrigin(),
-      url_formatter::kFormatUrlOmitUsernamePassword |
-          url_formatter::kFormatUrlOmitHTTPS |
-          url_formatter::kFormatUrlOmitHTTP |
-          url_formatter::kFormatUrlOmitTrailingSlashOnBareHostname |
-          url_formatter::kFormatUrlOmitTrivialSubdomains,
-      net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
+base::string16 AppBrowserController::FormatUrlOrigin(
+    const GURL& url,
+    url_formatter::FormatUrlTypes format_types) {
+  auto origin = url::Origin::Create(url);
+  return url_formatter::FormatUrl(origin.opaque() ? url : origin.GetURL(),
+                                  format_types, net::UnescapeRule::SPACES,
+                                  nullptr, nullptr, nullptr);
 }
 
 const ui::ThemeProvider* AppBrowserController::GetThemeProvider() const {

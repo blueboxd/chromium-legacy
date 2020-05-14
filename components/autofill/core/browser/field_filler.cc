@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/field_filler.h"
 
 #include <stdint.h>
+#include <vector>
 
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
@@ -421,10 +422,13 @@ void FillCreditCardNumberField(const AutofillField& field,
   base::string16 value = number;
 
   // |field|'s max_length truncates credit card number to fit within.
-  if (field.credit_card_number_offset() < value.length())
-    value = value.substr(field.credit_card_number_offset());
-
-  field_data->value = value;
+  if (field.credit_card_number_offset() < number.length()) {
+    field_data->value = number.substr(
+        field.credit_card_number_offset(),
+        field.max_length > 0 ? field.max_length : base::string16::npos);
+  } else {
+    field_data->value = base::string16();
+  }
 }
 
 // Fills in the select control |field| with |value|. If an exact match is not

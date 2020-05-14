@@ -5,16 +5,20 @@
 package org.chromium.chrome.browser.tab;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.util.Pair;
 import android.view.ContextMenu;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ObserverList.RewindableIterator;
-import org.chromium.chrome.browser.contextmenu.ContextMenuHelper;
+import org.chromium.chrome.browser.contextmenu.ContextMenuImageFormat;
 import org.chromium.chrome.browser.contextmenu.ContextMenuItem;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
+import org.chromium.content_public.browser.RenderFrameHost;
 
 import java.util.List;
 
@@ -57,10 +61,24 @@ public class TabContextMenuPopulator implements ContextMenuPopulator {
     }
 
     @Override
-    public boolean onItemSelected(ContextMenuHelper helper, ContextMenuParams params, int itemId) {
-        return mPopulator.onItemSelected(helper, params, itemId);
+    public boolean onItemSelected(
+            ContextMenuParams params, RenderFrameHost renderFrameHost, int itemId) {
+        return mPopulator.onItemSelected(params, renderFrameHost, itemId);
     }
 
     @Override
-    public void onMenuClosed() {}
+    public void getThumbnail(RenderFrameHost renderFrameHost, final Callback<Bitmap> callback) {
+        mPopulator.getThumbnail(renderFrameHost, callback);
+    }
+
+    @Override
+    public void retrieveImage(RenderFrameHost renderFrameHost,
+            @ContextMenuImageFormat int imageFormat, Callback<Uri> callback) {
+        mPopulator.retrieveImage(renderFrameHost, imageFormat, callback);
+    }
+
+    @Override
+    public void onMenuClosed() {
+        mPopulator.onMenuClosed();
+    }
 }

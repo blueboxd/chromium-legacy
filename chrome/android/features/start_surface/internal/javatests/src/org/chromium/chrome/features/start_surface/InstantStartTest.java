@@ -20,10 +20,12 @@ import android.graphics.drawable.BitmapDrawable;
 import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 import android.util.Base64;
+import android.view.View;
 import android.widget.ImageView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.hamcrest.core.AllOf;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,6 +63,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
+import org.chromium.chrome.test.util.ViewUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -509,8 +512,7 @@ public class InstantStartTest {
                 mActivityTestRule.getActivity().findViewById(R.id.tab_list_view);
         CriteriaHelper.pollUiThread(
                 Criteria.equals(true, () -> allCardsHaveThumbnail(recyclerView)));
-        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
-                "tabSwitcher_3tabs");
+        mRenderTestRule.render(recyclerView, "tabSwitcher_3tabs");
 
         // Resume native initialization and make sure the GTS looks the same.
         startAndWaitNativeInitialization();
@@ -520,8 +522,7 @@ public class InstantStartTest {
         // TODO(crbug.com/1065314): find a better way to wait for a stable rendering.
         Thread.sleep(2000);
         // The titles on the tab cards changes to "Google" because we use M26_GOOGLE_COM.
-        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
-                "tabSwitcher_3tabs_postNative");
+        mRenderTestRule.render(recyclerView, "tabSwitcher_3tabs_postNative");
     }
 
     @Test
@@ -582,5 +583,45 @@ public class InstantStartTest {
                         .size());
         // TODO(crbug.com/1065314): fix thumbnail changing in post-native rendering and make sure
         //  post-native GTS looks the same.
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"RenderTest"})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
+        ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
+        "force-fieldtrials=Study/Group",
+        IMMEDIATE_RETURN_PARAMS +
+            "/start_surface_variation/single" +
+            "/exclude_mv_tiles/true" +
+            "/hide_switch_when_no_incognito_tabs/true" +
+            "/show_last_active_tab_only/true"})
+    public void renderSingleAsHomepage_SingleTabNoMVTiles()
+        throws IOException, InterruptedException {
+        // clang-format on
+        createTabStateFile(new int[] {0});
+        createThumbnailBitmapAndWriteToFile(0);
+        TabAttributeCache.setTitleForTesting(0, "Google");
+
+        startMainActivityFromLauncher();
+        CriteriaHelper.pollUiThread(
+                () -> mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+
+        View surface = mActivityTestRule.getActivity().findViewById(
+                org.chromium.chrome.start_surface.R.id.primary_tasks_surface_view);
+
+        ViewUtils.onViewWaiting(AllOf.allOf(withId(R.id.single_tab_view), isDisplayed()));
+        ChromeRenderTestRule.sanitize(surface);
+        // TODO(crbug.com/1065314): fix favicon.
+        mRenderTestRule.render(surface, "singlePane_singleTab_noMV");
+
+        // Initializes native.
+        startAndWaitNativeInitialization();
+
+        // TODO(crbug.com/1065314): fix login button animation in post-native rendering and
+        //  make sure post-native single-tab card looks the same.
     }
 }

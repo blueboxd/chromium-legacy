@@ -205,6 +205,21 @@ public class Website implements Serializable {
                         new ContentSettingException(ContentSettingsType.ADS,
                                 getAddress().getOrigin(), ContentSettingValues.BLOCK, "");
             }
+        } else if (type == ContentSettingException.Type.JAVASCRIPT) {
+            // It is possible to set the permission without having an existing exception,
+            // because we show the javascript permission in Site Settings if javascript
+            // is blocked by default.
+            if (mContentSettingException[type] == null) {
+                mContentSettingException[type] = new ContentSettingException(
+                        ContentSettingsType.JAVASCRIPT, getAddress().getHost(), value, "");
+            }
+            // It's possible for either action to be emitted. This code path is hit
+            // regardless of whether there was an existing permission or not.
+            if (value == ContentSettingValues.BLOCK) {
+                RecordUserAction.record("JavascriptContentSetting.EnableBy.SiteSettings");
+            } else {
+                RecordUserAction.record("JavascriptContentSetting.DisableBy.SiteSettings");
+            }
         } else if (type == ContentSettingException.Type.SOUND) {
             // It is possible to set the permission without having an existing exception,
             // because we always show the sound permission in Site Settings.
@@ -217,9 +232,10 @@ public class Website implements Serializable {
             } else {
                 RecordUserAction.record("SoundContentSetting.UnmuteBy.SiteSettings");
             }
-            // We want setContentSetting to be called even after calling setSoundException
-            // above because this will trigger the actual change on the PrefServiceBridge.
         }
+        // We want to call setContentSetting even after explicitly setting
+        // mContentSettingException above because this will trigger the actual change
+        // on the PrefServiceBridge.
         if (mContentSettingException[type] != null) {
             mContentSettingException[type].setContentSetting(browserContextHandle, value);
         }

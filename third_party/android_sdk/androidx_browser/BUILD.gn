@@ -49,7 +49,6 @@ android_library("androidx_browser_java") {
     "//third_party/android_deps:com_android_support_support_compat_java",
   ]
   srcjar_deps = [ ":androidx_browser_service_aidl" ]
-  android_manifest_for_lint = "src/browser/browser/src/main/AndroidManifest.xml"
   chromium_code = false
 }
 

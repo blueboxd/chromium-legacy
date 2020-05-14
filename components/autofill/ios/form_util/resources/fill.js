@@ -12,7 +12,7 @@ goog.require('__crWeb.form');
  * @typedef {{
  *   name: string,
  *   value: string,
- *   unique_renderer_id: number,
+ *   unique_renderer_id: string,
  *   form_control_type: string,
  *   autocomplete_attributes: string,
  *   max_length: number,
@@ -30,7 +30,7 @@ let AutofillFormFieldData;
 /**
  * @typedef {{
  *   name: string,
- *   unique_renderer_id: number,
+ *   unique_renderer_id: string,
  *   origin: string,
  *   action: string,
  *   fields: Array<AutofillFormFieldData>
@@ -139,9 +139,9 @@ __gCrWeb.fill.ROLE_ATTRIBUTE_PRESENTATION = 0;
  * This variable is |kNotSetRendererID| from
  * chromium/src/components/autofill/ios/browser/autofill_util.h
  *
- * @const {number}
+ * @const {string}
  */
-__gCrWeb.fill.RENDERER_ID_NOT_SET = -1;
+__gCrWeb.fill.RENDERER_ID_NOT_SET = '-1';
 
 /**
  * Returns true if an element can be autocompleted.
@@ -841,7 +841,7 @@ __gCrWeb.fill.webFormElementToFormData = function(
   try {
     __gCrWeb.fill.setUniqueIDIfNeeded(formElement);
     const uniqueID = Symbol.for('__gChrome~uniqueID');
-    form['unique_renderer_id'] = formElement[uniqueID];
+    form['unique_renderer_id'] = formElement[uniqueID].toString();
   } catch (e) {
     form['unique_renderer_id'] = __gCrWeb.fill.RENDERER_ID_NOT_SET;
   }
@@ -1940,7 +1940,7 @@ __gCrWeb.fill.webFormControlElementToFormField = function(
 
   try {
     const uniqueID = Symbol.for('__gChrome~uniqueID');
-    field['unique_renderer_id'] = element[uniqueID];
+    field['unique_renderer_id'] = element[uniqueID].toString();
   } catch (e) {
     field['unique_renderer_id'] = __gCrWeb.fill.RENDERER_ID_NOT_SET;
   }

@@ -444,6 +444,9 @@ function initializeOobe() {
     return;
   document.removeEventListener('DOMContentLoaded', initializeOobe);
 
+  // TODO(crbug.com/1082670): Remove excessive logging after investigation.
+  console.warn('initializing OOBE');
+
   try {
     Oobe.initialize();
   } finally {
@@ -462,6 +465,9 @@ window.onerror = function(message, file, line, column, error) {
   if (error && error.stack)
     console.error(error.stack);
 };
+
+// TODO(crbug.com/1082670): Remove excessive logging after investigation.
+console.warn('cr_ui loaded');
 
 /**
  * Final initialization performed after DOM and all scripts have loaded.

@@ -18,8 +18,6 @@ class ClientStatus;
 // This action performs a click on a given element.
 class ClickAction : public Action {
  public:
-  enum ClickType { TAP = 0, JAVASCRIPT = 1, CLICK = 2 };
-
   explicit ClickAction(ActionDelegate* delegate, const ActionProto& proto);
   ~ClickAction() override;
 

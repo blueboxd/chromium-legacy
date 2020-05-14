@@ -538,7 +538,7 @@ void ServiceWorkerStorage::DoomUncommittedResources(
 void ServiceWorkerStorage::StoreUserData(
     int64_t registration_id,
     const GURL& origin,
-    const std::vector<std::pair<std::string, std::string>>& key_value_pairs,
+    std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data,
     DatabaseStatusCallback callback) {
   switch (state_) {
     case STORAGE_STATE_DISABLED:
@@ -550,7 +550,7 @@ void ServiceWorkerStorage::StoreUserData(
     case STORAGE_STATE_UNINITIALIZED:
       LazyInitialize(base::BindOnce(
           &ServiceWorkerStorage::StoreUserData, weak_factory_.GetWeakPtr(),
-          registration_id, origin, key_value_pairs, std::move(callback)));
+          registration_id, origin, std::move(user_data), std::move(callback)));
       return;
     case STORAGE_STATE_INITIALIZED:
       break;
@@ -559,13 +559,13 @@ void ServiceWorkerStorage::StoreUserData(
   // TODO(bashi): Consider replacing these DCHECKs with returning errors once
   // this class is moved to the Storage Service.
   DCHECK_NE(registration_id, blink::mojom::kInvalidServiceWorkerRegistrationId);
-  DCHECK(!key_value_pairs.empty());
+  DCHECK(!user_data.empty());
 
   base::PostTaskAndReplyWithResult(
       database_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ServiceWorkerDatabase::WriteUserData,
                      base::Unretained(database_.get()), registration_id, origin,
-                     key_value_pairs),
+                     std::move(user_data)),
       base::BindOnce(&ServiceWorkerStorage::DidStoreUserData,
                      weak_factory_.GetWeakPtr(), std::move(callback), origin));
 }

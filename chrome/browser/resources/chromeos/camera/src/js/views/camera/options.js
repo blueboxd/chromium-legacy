@@ -8,13 +8,11 @@ import {assertInstanceof} from '../../chrome_util.js';
 import {Camera3DeviceInfo} from '../../device/camera3_device_info.js';
 // eslint-disable-next-line no-unused-vars
 import {DeviceInfoUpdater} from '../../device/device_info_updater.js';
-import {ChromeHelper} from '../../mojo/chrome_helper.js';
 import * as nav from '../../nav.js';
 import {PerfEvent} from '../../perf.js';
 import * as state from '../../state.js';
-import {Facing} from '../../type.js';
+import {Facing, ViewName} from '../../type.js';
 import * as util from '../../util.js';
-import {ViewName} from '../view.js';
 
 /**
  * Creates a controller for the options of Camera view.
@@ -267,9 +265,7 @@ export class Options {
       devices = await this.infoUpdater_.getDevicesInfo();
     }
 
-    const defaultFacing = await ChromeHelper.getInstance().isTabletMode() ?
-        Facing.ENVIRONMENT :
-        Facing.USER;
+    const defaultFacing = util.getDefaultFacing();
     // Put the selected video device id first.
     const sorted = devices.map((device) => device.deviceId).sort((a, b) => {
       if (a === b) {

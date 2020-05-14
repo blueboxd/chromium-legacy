@@ -78,7 +78,4 @@ android_library("glue") {
     "java/src/com/android/webview/chromium/WebViewRenderProcessClientAdapter.java",
     "java/src/com/android/webview/chromium/WebkitToSharedGlueConverter.java",
   ]
-
-  android_manifest_for_lint = system_webview_android_manifest
-  min_sdk_version = 21
 }

@@ -739,6 +739,9 @@ class ComputedStyle : public ComputedStyleBase,
     return OutlineWidthInternal().ToUnsigned();
   }
 
+  // outline-offset
+  int16_t OutlineOffsetInt() const { return OutlineOffset().ToInt(); }
+
   // -webkit-perspective-origin-x
   const Length& PerspectiveOriginX() const { return PerspectiveOrigin().X(); }
   void SetPerspectiveOriginX(const Length& v) {

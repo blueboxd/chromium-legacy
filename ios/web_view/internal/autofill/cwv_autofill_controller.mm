@@ -303,7 +303,9 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
   } else {
     [_autofillAgent didSelectSuggestion:suggestion.formSuggestion
                                    form:suggestion.formName
+                           uniqueFormID:_lastFormActivityUniqueFormID
                         fieldIdentifier:suggestion.fieldIdentifier
+                          uniqueFieldID:_lastFormActivityUniqueFieldID
                                 frameID:suggestion.frameID
                       completionHandler:^{
                         if (completionHandler) {

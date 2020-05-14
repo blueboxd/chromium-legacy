@@ -107,11 +107,15 @@ class EnrollmentLocalPolicyServerBase : public OobeBaseTest {
                                      FakeGaiaMixin::kFakeAuthCode);
   }
 
+  std::unique_ptr<content::WindowedNotificationObserver>
+  CreateLoginVisibleWaiter() {
+    return std::make_unique<content::WindowedNotificationObserver>(
+        chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+        content::NotificationService::AllSources());
+  }
+
   void ConfirmAndWaitLoginScreen() {
-    auto login_screen_waiter =
-        std::make_unique<content::WindowedNotificationObserver>(
-            chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-            content::NotificationService::AllSources());
+    auto login_screen_waiter = CreateLoginVisibleWaiter();
     enrollment_screen()->OnConfirmationClosed();
     login_screen_waiter->Wait();
   }
@@ -498,7 +502,9 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
   EXPECT_TRUE(InstallAttributes::Get()->IsCloudManaged());
+  auto login_waiter = CreateLoginVisibleWaiter();
   enrollment_ui_.LeaveDeviceAttributeErrorScreen();
+  login_waiter->Wait();
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
 }
 

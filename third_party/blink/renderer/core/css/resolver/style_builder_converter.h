@@ -162,6 +162,7 @@ class StyleBuilderConverter {
   template <typename T>
   static T ConvertLineWidth(StyleResolverState&, const CSSValue&);
   static float ConvertBorderWidth(StyleResolverState&, const CSSValue&);
+  static LayoutUnit ConvertLayoutUnit(StyleResolverState&, const CSSValue&);
   static GapLength ConvertGapLength(const StyleResolverState&, const CSSValue&);
   static Length ConvertLength(const StyleResolverState&, const CSSValue&);
   static UnzoomedLength ConvertUnzoomedLength(const StyleResolverState&,

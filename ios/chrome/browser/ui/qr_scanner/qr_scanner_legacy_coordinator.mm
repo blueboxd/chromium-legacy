@@ -57,7 +57,7 @@
   self.viewController.modalPresentationStyle = UIModalPresentationFullScreen;
 
   [self.baseViewController
-      presentViewController:[self.viewController getViewControllerToPresent]
+      presentViewController:[self.viewController viewControllerToPresent]
                    animated:YES
                  completion:nil];
 }

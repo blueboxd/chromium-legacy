@@ -52,6 +52,52 @@ using autofill_assistant::TermsAndConditionsState;
 using autofill_assistant::UserData;
 using autofill_assistant::UserModel;
 
+bool IsReadOnlyAdditionalSection(
+    const autofill_assistant::UserFormSectionProto& section) {
+  switch (section.section_case()) {
+    case autofill_assistant::UserFormSectionProto::kStaticTextSection:
+      return true;
+    case autofill_assistant::UserFormSectionProto::kTextInputSection:
+    case autofill_assistant::UserFormSectionProto::kPopupListSection:
+    case autofill_assistant::UserFormSectionProto::SECTION_NOT_SET:
+      return false;
+  }
+}
+
+bool OnlyLoginRequested(
+    const CollectUserDataOptions& collect_user_data_options) {
+  if (!collect_user_data_options.request_login_choice) {
+    return false;
+  }
+
+  auto find_additional_input_sections =
+      [&](const autofill_assistant::UserFormSectionProto& section) {
+        return !IsReadOnlyAdditionalSection(section);
+      };
+  bool has_input_sections =
+      std::find_if(
+          collect_user_data_options.additional_prepended_sections.begin(),
+          collect_user_data_options.additional_prepended_sections.end(),
+          find_additional_input_sections) !=
+          collect_user_data_options.additional_prepended_sections.end() ||
+      std::find_if(
+          collect_user_data_options.additional_appended_sections.begin(),
+          collect_user_data_options.additional_appended_sections.end(),
+          find_additional_input_sections) !=
+          collect_user_data_options.additional_appended_sections.end();
+  LOG(ERROR) << "HAS_INPUT_SECTIONS: " << has_input_sections;
+
+  return !has_input_sections && !collect_user_data_options.request_payer_name &&
+         !collect_user_data_options.request_payer_email &&
+         !collect_user_data_options.request_payer_phone &&
+         !collect_user_data_options.request_shipping &&
+         !collect_user_data_options.request_payment_method &&
+         !collect_user_data_options.request_date_time_range &&
+         collect_user_data_options.accept_terms_and_conditions_text.empty() &&
+         !collect_user_data_options.additional_model_identifier_to_check
+              .has_value();
+}
+
 bool IsCompleteContact(
     const autofill::AutofillProfile* profile,
     const CollectUserDataOptions& collect_user_data_options) {
@@ -447,19 +493,19 @@ void SetInitialUserDataForAdditionalSection(
 namespace autofill_assistant {
 
 CollectUserDataAction::LoginDetails::LoginDetails(
-    bool _choose_automatically_if_no_other_options,
+    bool _choose_automatically_if_no_stored_login,
     const std::string& _payload,
     const WebsiteLoginManager::Login& _login)
-    : choose_automatically_if_no_other_options(
-          _choose_automatically_if_no_other_options),
+    : choose_automatically_if_no_stored_login(
+          _choose_automatically_if_no_stored_login),
       payload(_payload),
       login(_login) {}
 
 CollectUserDataAction::LoginDetails::LoginDetails(
-    bool _choose_automatically_if_no_other_options,
+    bool _choose_automatically_if_no_stored_login,
     const std::string& _payload)
-    : choose_automatically_if_no_other_options(
-          _choose_automatically_if_no_other_options),
+    : choose_automatically_if_no_stored_login(
+          _choose_automatically_if_no_stored_login),
       payload(_payload) {}
 
 CollectUserDataAction::LoginDetails::~LoginDetails() = default;
@@ -489,6 +535,7 @@ void CollectUserDataAction::InternalProcessAction(
     ProcessActionCallback callback) {
   callback_ = std::move(callback);
   if (!CreateOptionsFromProto()) {
+    LOG(ERROR) << "INVALID";
     EndAction(ClientStatus(INVALID_ACTION));
     return;
   }
@@ -549,7 +596,7 @@ void CollectUserDataAction::OnGetLogins(
             : base::nullopt);
     login_details_map_.emplace(
         identifier, std::make_unique<LoginDetails>(
-                        login_option.choose_automatically_if_no_other_options(),
+                        login_option.choose_automatically_if_no_stored_login(),
                         login_option.payload(), login));
   }
   ShowToUser();
@@ -596,35 +643,37 @@ void CollectUserDataAction::OnShowToUser(UserData* user_data,
     return;
   }
 
-  // Special case: if the only available login option has
-  // |choose_automatically_if_no_other_options=true|, the section will not be
-  // shown.
-  bool only_login_requested =
-      collect_user_data_options_->request_login_choice &&
-      !collect_user_data_options_->request_payer_name &&
-      !collect_user_data_options_->request_payer_email &&
-      !collect_user_data_options_->request_payer_phone &&
-      !collect_user_data_options_->request_shipping &&
-      !collect_user_data_options_->request_payment_method &&
-      !collect_user_data.request_terms_and_conditions();
+  bool has_password_manager_logins =
+      std::find_if(login_details_map_.begin(), login_details_map_.end(),
+                   [&](const auto& pair) {
+                     return pair.second->login.has_value();
+                   }) != login_details_map_.end();
+  auto automatic_choice_it = std::find_if(
+      login_details_map_.begin(), login_details_map_.end(),
+      [&](const auto& pair) {
+        return pair.second->choose_automatically_if_no_stored_login;
+      });
 
-  if (collect_user_data_options_->login_choices.size() == 1 &&
-      login_details_map_
-          .at(collect_user_data_options_->login_choices.at(0).identifier)
-          ->choose_automatically_if_no_other_options) {
-    collect_user_data_options_->request_login_choice = false;
-
-    user_data->login_choice_identifier_.assign(
-        collect_user_data_options_->login_choices[0].identifier);
+  // Special case: if the login choice can be made implicitly (there are no PWM
+  // logins and there is a |choose_automatically_if_no_stored_login| choice),
+  // the section will not be shown.
+  if (automatic_choice_it != login_details_map_.end() &&
+      !has_password_manager_logins) {
+    user_data->login_choice_identifier_.assign(automatic_choice_it->first);
 
     // If only the login section is requested and the choice has already been
     // made implicitly, the entire UI will not be shown and the action will
     // complete immediately.
-    if (only_login_requested) {
+    if (OnlyLoginRequested(*collect_user_data_options_)) {
       user_data->succeed_ = true;
       std::move(collect_user_data_options_->confirm_callback)
           .Run(user_data, nullptr);
       return;
+    }
+    if (collect_user_data_options_->login_choices.size() == 1) {
+      // The login section does not offer a meaningful choice, but there is at
+      // least one other section being shown. Hide the logins, show the rest.
+      collect_user_data_options_->request_login_choice = false;
     }
   }
 
@@ -851,7 +900,7 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
         login_details_map_.emplace(
             choice.identifier,
             std::make_unique<LoginDetails>(
-                login_option.choose_automatically_if_no_other_options(),
+                login_option.choose_automatically_if_no_stored_login(),
                 login_option.payload()));
         break;
       }

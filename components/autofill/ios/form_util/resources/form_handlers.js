@@ -110,8 +110,8 @@ function formActivity_(evt) {
   if (target !== lastFocusedElement) {
     return;
   }
-  let formUniqueIdString = '-1';
-  let fieldUniqueIdString = '-1';
+  let formUniqueIdString = __gCrWeb.fill.RENDERER_ID_NOT_SET;
+  let fieldUniqueIdString = __gCrWeb.fill.RENDERER_ID_NOT_SET;
   try {
     __gCrWeb.fill.setUniqueIDIfNeeded(target.form);
     __gCrWeb.fill.setUniqueIDIfNeeded(target);

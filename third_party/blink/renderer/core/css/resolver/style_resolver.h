@@ -181,16 +181,16 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
    public:
     bool is_inherited_cache_hit;
     bool is_non_inherited_cache_hit;
-    unsigned cache_hash;
+    MatchedPropertiesCache::Key key;
     const CachedMatchedProperties* cached_matched_properties;
 
     CacheSuccess(bool is_inherited_cache_hit,
                  bool is_non_inherited_cache_hit,
-                 unsigned cache_hash,
+                 MatchedPropertiesCache::Key key,
                  const CachedMatchedProperties* cached_matched_properties)
         : is_inherited_cache_hit(is_inherited_cache_hit),
           is_non_inherited_cache_hit(is_non_inherited_cache_hit),
-          cache_hash(cache_hash),
+          key(key),
           cached_matched_properties(cached_matched_properties) {}
 
     bool IsFullCacheHit() const {

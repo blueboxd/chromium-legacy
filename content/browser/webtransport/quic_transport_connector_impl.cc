@@ -7,6 +7,35 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "net/quic/quic_transport_client.h"
+
+namespace mojo {
+// We cannot use type mapping due to a build error in iOS (see
+// https://crrev.com/c/2189716/10 and
+// https://cr-buildbucket.appspot.com/build/8880349779729215008).
+// TODO(yhirano): Fix the build error and use type mapping.
+template <>
+struct TypeConverter<base::Optional<net::QuicTransportError>,
+                     network::mojom::QuicTransportErrorPtr> {
+  static base::Optional<net::QuicTransportError> Convert(
+      const network::mojom::QuicTransportErrorPtr& in) {
+    if (!in) {
+      return base::nullopt;
+    }
+    if (in->net_error > 0 || in->quic_error < 0 ||
+        in->quic_error >= quic::QUIC_LAST_ERROR) {
+      return base::nullopt;
+    }
+    auto out = base::make_optional<net::QuicTransportError>();
+    out->net_error = in->net_error;
+    out->quic_error = static_cast<quic::QuicErrorCode>(in->quic_error);
+    out->details = in->details;
+    out->safe_to_report_details = in->safe_to_report_details;
+    return out;
+  }
+};
+
+}  // namespace mojo
 
 namespace content {
 
@@ -30,11 +59,15 @@ class InterceptingHandshakeClient final : public QuicTransportHandshakeClient {
       override {
     remote_->OnConnectionEstablished(std::move(transport), std::move(client));
   }
-  void OnHandshakeFailed() override {
-    remote_->OnHandshakeFailed();
+  void OnHandshakeFailed(network::mojom::QuicTransportErrorPtr error) override {
+    // Here we pass null because it is dangerous to pass the error details
+    // to the initiator renderer.
+    remote_->OnHandshakeFailed(nullptr);
 
     if (RenderFrameHostImpl* frame = frame_.get()) {
-      devtools_instrumentation::OnQuicTransportHandshakeFailed(frame, url_);
+      devtools_instrumentation::OnQuicTransportHandshakeFailed(
+          frame, url_,
+          mojo::ConvertTo<base::Optional<net::QuicTransportError>>(error));
     }
   }
 

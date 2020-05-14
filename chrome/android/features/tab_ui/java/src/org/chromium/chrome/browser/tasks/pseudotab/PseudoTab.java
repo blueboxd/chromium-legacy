@@ -52,6 +52,7 @@ public class PseudoTab {
     private static final Map<Integer, PseudoTab> sAllTabs = new LinkedHashMap<>();
     private static boolean sReadStateFile;
     private static List<PseudoTab> sAllTabsFromStateFile;
+    private static PseudoTab sActiveTabFromStateFile;
 
     /**
      * An interface to get the title to be used for a tab.
@@ -285,6 +286,12 @@ public class PseudoTab {
         return sAllTabsFromStateFile;
     }
 
+    @Nullable
+    public static PseudoTab getActiveTabFromStateFile() {
+        readAllPseudoTabsFromStateFile();
+        return sActiveTabFromStateFile;
+    }
+
     private static void readAllPseudoTabsFromStateFile() {
         if (sReadStateFile) return;
         sReadStateFile = true;
@@ -321,6 +328,10 @@ public class PseudoTab {
                         // Skip restoring of non-selected NTP to match the real restoration logic.
                         if (NewTabPage.isNTPUrl(url) && !isStandardActiveIndex) return;
                         PseudoTab tab = PseudoTab.fromTabId(id);
+                        if (isStandardActiveIndex) {
+                            assert sActiveTabFromStateFile == null;
+                            sActiveTabFromStateFile = tab;
+                        }
                         int rootId = tab.getRootId();
                         if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
                                 && seenRootId.contains(rootId)) {

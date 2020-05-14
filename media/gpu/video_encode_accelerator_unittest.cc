@@ -301,8 +301,12 @@ bool ShouldSkipTest(VideoPixelFormat format) {
       // Disable mid_stream_bitrate_switch test cases for elm/hana.
       {"elm", "MidStreamParamSwitchBitrate", PIXEL_FORMAT_UNKNOWN},
       {"elm", "MultipleEncoders", PIXEL_FORMAT_UNKNOWN},
+      {"elm-kernelnext", "MidStreamParamSwitchBitrate", PIXEL_FORMAT_UNKNOWN},
+      {"elm-kernelnext", "MultipleEncoders", PIXEL_FORMAT_UNKNOWN},
       {"hana", "MidStreamParamSwitchBitrate", PIXEL_FORMAT_UNKNOWN},
       {"hana", "MultipleEncoders", PIXEL_FORMAT_UNKNOWN},
+      {"hana-kernelnext", "MidStreamParamSwitchBitrate", PIXEL_FORMAT_UNKNOWN},
+      {"hana-kernelnext", "MultipleEncoders", PIXEL_FORMAT_UNKNOWN},
 
       // crbug.com/965348#c6: Tegra driver calculates the wrong plane size of
       // NV12. Disable all tests on nyan family for NV12 test.

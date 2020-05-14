@@ -118,6 +118,12 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
   DCHECK(context_);
   DCHECK(origin_access_list_);
   DCHECK_NE(mojom::kInvalidProcessId, process_id_);
+  if (params->automatically_assign_isolation_info) {
+    DCHECK(params->isolation_info.IsEmpty());
+    // Only the browser process is currently permitted to use automatically
+    // assigned IsolationInfo, to prevent cross-site information leaks.
+    DCHECK_EQ(mojom::kBrowserProcessId, process_id_);
+  }
   factory_bound_origin_access_list_ = std::make_unique<OriginAccessList>();
   if (params->factory_bound_access_patterns) {
     factory_bound_origin_access_list_->SetAllowListForOrigin(

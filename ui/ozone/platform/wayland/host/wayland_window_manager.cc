@@ -20,6 +20,25 @@ void WaylandWindowManager::RemoveObserver(WaylandWindowObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void WaylandWindowManager::GrabLocatedEvents(WaylandWindow* window) {
+  DCHECK_NE(located_events_grabber_, window);
+
+  // Wayland doesn't allow to grab the mouse. However, we start forwarding all
+  // mouse events received by WaylandWindow to the aura::WindowEventDispatcher
+  // which has capture.
+  auto* old_grabber = located_events_grabber_;
+  located_events_grabber_ = window;
+  if (old_grabber)
+    old_grabber->OnWindowLostCapture();
+}
+
+void WaylandWindowManager::UngrabLocatedEvents(WaylandWindow* window) {
+  DCHECK_EQ(located_events_grabber_, window);
+  auto* old_grabber = located_events_grabber_;
+  located_events_grabber_ = nullptr;
+  old_grabber->OnWindowLostCapture();
+}
+
 WaylandWindow* WaylandWindowManager::GetWindow(
     gfx::AcceleratedWidget widget) const {
   auto it = window_map_.find(widget);

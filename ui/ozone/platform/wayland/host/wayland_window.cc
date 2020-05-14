@@ -45,6 +45,10 @@ WaylandWindow* WaylandWindow::FromSurface(wl_surface* surface) {
       wl_proxy_get_user_data(reinterpret_cast<wl_proxy*>(surface)));
 }
 
+void WaylandWindow::OnWindowLostCapture() {
+  delegate_->OnLostCapture();
+}
+
 void WaylandWindow::UpdateBufferScale(bool update_bounds) {
   DCHECK(connection_->wayland_output_manager());
   const auto* screen = connection_->wayland_output_manager()->wayland_screen();
@@ -128,17 +132,25 @@ gfx::Rect WaylandWindow::GetBounds() {
 void WaylandWindow::SetTitle(const base::string16& title) {}
 
 void WaylandWindow::SetCapture() {
-  // Wayland does implicit grabs, and doesn't allow for explicit grabs. The
-  // exception to that are menus, but we explicitly send events to a
-  // parent menu if such exists.
+  // Wayland doesn't allow explicit grabs. Instead, it sends events to "entered"
+  // windows. That is, if user enters their mouse pointer to a window, that
+  // window starts to receive events. However, Chromium may want to reroute
+  // these events to another window. In this case, tell the window manager that
+  // this specific window has grabbed the events, and they will be rerouted in
+  // WaylandWindow::DispatchEvent method.
+  if (!HasCapture())
+    connection_->wayland_window_manager()->GrabLocatedEvents(this);
 }
 
 void WaylandWindow::ReleaseCapture() {
+  if (HasCapture())
+    connection_->wayland_window_manager()->UngrabLocatedEvents(this);
   // See comment in SetCapture() for details on wayland and grabs.
 }
 
 bool WaylandWindow::HasCapture() const {
-  return has_implicit_grab_;
+  return connection_->wayland_window_manager()->located_events_grabber() ==
+         this;
 }
 
 void WaylandWindow::ToggleFullscreen() {}
@@ -222,20 +234,6 @@ void WaylandWindow::SetWindowIcons(const gfx::ImageSkia& window_icon,
 void WaylandWindow::SizeConstraintsChanged() {}
 
 bool WaylandWindow::CanDispatchEvent(const PlatformEvent& event) {
-  // This window is a nested menu window, all the events must be forwarded
-  // to the main menu window.
-  if (child_window_ && wl::IsMenuType(child_window_->type()))
-    return wl::IsMenuType(type());
-
-  // If this is a nested menu window with a parent, it mustn't recieve any
-  // events.
-  if (parent_window_ && wl::IsMenuType(parent_window_->type()))
-    return false;
-
-  // If another window has capture, return early before checking focus.
-  if (HasCapture())
-    return true;
-
   if (event->IsMouseEvent())
     return has_pointer_focus_;
   if (event->IsKeyEvent())
@@ -247,38 +245,35 @@ bool WaylandWindow::CanDispatchEvent(const PlatformEvent& event) {
 
 uint32_t WaylandWindow::DispatchEvent(const PlatformEvent& native_event) {
   Event* event = static_cast<Event*>(native_event);
+
   if (event->IsLocatedEvent()) {
-    // Wayland sends locations in DIP so they need to be translated to
-    // physical pixels.
-    event->AsLocatedEvent()->set_location_f(gfx::ScalePoint(
-        event->AsLocatedEvent()->location_f(), buffer_scale_, buffer_scale_));
-
-    // If the window does not have a pointer focus, but received this event, it
-    // means the window is a menu window with a child menu window. In this case,
-    // the location of the event must be converted from the nested menu to the
-    // main menu, which the menu controller needs to properly handle events.
-    if (wl::IsMenuType(type())) {
-      // Parent window of the main menu window is not a menu, but rather an
-      // xdg surface.
-      DCHECK(!wl::IsMenuType(parent_window_->type()) ||
-             parent_window_->type() != PlatformWindowType::kTooltip);
-      auto* window =
-          connection_->wayland_window_manager()->GetCurrentFocusedWindow();
-      if (window) {
-        ConvertEventLocationToTargetWindowLocation(GetBounds().origin(),
-                                                   window->GetBounds().origin(),
-                                                   event->AsLocatedEvent());
-      }
+    auto* event_grabber =
+        connection_->wayland_window_manager()->located_events_grabber();
+    auto* root_parent_window = GetRootParentWindow();
+    // We must reroute the events to the event grabber iff these windows belong
+    // to the same root parent window. For example, there are 2 top level
+    // Wayland windows. One of them (window_1) has a child menu window that is
+    // the event grabber. If the mouse is moved over the window_1, it must
+    // reroute the events to the event grabber. If the mouse is moved over the
+    // window_2, the events mustn't be rerouted, because that belongs to another
+    // stack of windows. Remember that Wayland sends local surface coordinates,
+    // and continuing rerouting all the events may result in events sent to the
+    // grabber even though the mouse is over another root window.
+    //
+    if (event_grabber &&
+        root_parent_window == event_grabber->GetRootParentWindow()) {
+      ConvertEventLocationToTargetWindowLocation(
+          event_grabber->GetBounds().origin(), GetBounds().origin(),
+          event->AsLocatedEvent());
+      return event_grabber->DispatchEventToDelegate(native_event);
     }
-
-    auto copied_event = Event::Clone(*event);
-    UpdateCursorPositionFromEvent(std::move(copied_event));
   }
 
-  DispatchEventFromNativeUiEvent(
-      native_event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
-                                   base::Unretained(delegate_)));
-  return POST_DISPATCH_STOP_PROPAGATION;
+  // Dispatch all keyboard events to the root window.
+  if (event->IsKeyEvent())
+    return GetRootParentWindow()->DispatchEventToDelegate(event);
+
+  return DispatchEventToDelegate(native_event);
 }
 
 void WaylandWindow::HandleSurfaceConfigure(int32_t widht,
@@ -487,6 +482,18 @@ void WaylandWindow::MaybeUpdateOpaqueRegion() {
 
 bool WaylandWindow::IsOpaqueWindow() const {
   return opacity_ == ui::PlatformWindowOpacity::kOpaqueWindow;
+}
+
+uint32_t WaylandWindow::DispatchEventToDelegate(
+    const PlatformEvent& native_event) {
+  auto* event = static_cast<Event*>(native_event);
+  if (event->IsLocatedEvent())
+    UpdateCursorPositionFromEvent(Event::Clone(*event));
+
+  DispatchEventFromNativeUiEvent(
+      native_event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
+                                   base::Unretained(delegate_)));
+  return POST_DISPATCH_STOP_PROPAGATION;
 }
 
 // static

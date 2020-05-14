@@ -10,10 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
-
-#if defined(TOOLKIT_VIEWS)
 #include "ui/base/dragdrop/os_exchange_data.h"
-#endif
 
 class Profile;
 
@@ -40,7 +37,7 @@ class BrowserActionDragData {
   // Returns true if this data is from the specified profile.
   bool IsFromProfile(const Profile* profile) const;
 
-#if defined(TOOLKIT_VIEWS)
+  // Write data, attributed to the specified profile, to the clipboard.
   void Write(Profile* profile, ui::OSExchangeData* data) const;
 
   // Restores this data from the clipboard, returning true on success.
@@ -48,7 +45,6 @@ class BrowserActionDragData {
 
   // Returns the ClipboardFormatType this class supports (for Browser Actions).
   static const ui::ClipboardFormatType& GetBrowserActionFormatType();
-#endif
 
  private:
   void WriteToPickle(Profile* profile, base::Pickle* pickle) const;

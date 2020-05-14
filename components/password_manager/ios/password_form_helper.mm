@@ -25,6 +25,8 @@
 #endif
 
 using autofill::FormData;
+using autofill::FormRendererId;
+using autofill::FieldRendererId;
 using autofill::PasswordForm;
 using autofill::PasswordFormFillData;
 using password_manager::FillData;
@@ -311,13 +313,13 @@ constexpr char kCommandPrefix[] = "passwordForm";
        completionHandler:completionHandler];
 }
 
-- (void)fillPasswordForm:(NSString*)formName
-        newPasswordIdentifier:(NSString*)newPasswordIdentifier
-    confirmPasswordIdentifier:(NSString*)confirmPasswordIdentifier
+- (void)fillPasswordForm:(FormRendererId)formIdentifier
+        newPasswordIdentifier:(FieldRendererId)newPasswordIdentifier
+    confirmPasswordIdentifier:(FieldRendererId)confirmPasswordIdentifier
             generatedPassword:(NSString*)generatedPassword
             completionHandler:(nullable void (^)(BOOL))completionHandler {
   // Send JSON over to the web view.
-  [self.jsPasswordManager fillPasswordForm:formName
+  [self.jsPasswordManager fillPasswordForm:formIdentifier
                      newPasswordIdentifier:newPasswordIdentifier
                  confirmPasswordIdentifier:confirmPasswordIdentifier
                          generatedPassword:generatedPassword
@@ -375,7 +377,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
 // Finds the password form named |formName| and calls
 // |completionHandler| with the populated |FormData| data structure. |found| is
 // YES if the current form was found successfully, NO otherwise.
-- (void)extractPasswordFormData:(NSString*)formName
+- (void)extractPasswordFormData:(FormRendererId)formIdentifier
               completionHandler:(void (^)(BOOL found, const FormData& form))
                                     completionHandler {
   DCHECK(completionHandler);
@@ -407,7 +409,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
     completionHandler(YES, formData);
   };
 
-  [self.jsPasswordManager extractForm:formName
+  [self.jsPasswordManager extractForm:formIdentifier
                     completionHandler:extractFormDataCompletionHandler];
 }
 

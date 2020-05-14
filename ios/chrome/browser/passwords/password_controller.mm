@@ -137,7 +137,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 @property(nonatomic, assign) BOOL isPasswordGenerated;
 
 // Tracks field when current password was generated.
-@property(nonatomic, copy) NSString* passwordGeneratedIdentifier;
+@property(nonatomic) FieldRendererId passwordGeneratedIdentifier;
 
 // Tracks current potential generated password until accepted or rejected.
 @property(nonatomic, copy) NSString* generatedPotentialPassword;
@@ -200,7 +200,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   std::unique_ptr<autofill::PasswordForm> _pendingAutoSigninPasswordForm;
 
   // Form data for password generation on this page.
-  std::map<base::string16, PasswordFormGenerationData> _formGenerationData;
+  std::map<FormRendererId, PasswordFormGenerationData> _formGenerationData;
 
   NSString* _lastTypedfieldIdentifier;
   NSString* _lastTypedValue;
@@ -399,7 +399,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
                        }];
 
   if (self.isPasswordGenerated &&
-      [formQuery.fieldIdentifier isEqual:self.passwordGeneratedIdentifier]) {
+      formQuery.uniqueFieldID == self.passwordGeneratedIdentifier) {
     // On other platforms, when the user clicks on generation field, we show
     // password in clear text. And the user has the possibility to edit it. On
     // iOS, it's harder to do (it's probably bad idea to change field type from
@@ -407,14 +407,14 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     // flow and avoid the manual flow, for a cleaner and simpler UI.
     if (formQuery.typedValue.length < kMinimumLengthForEditedPassword) {
       self.isPasswordGenerated = NO;
-      self.passwordGeneratedIdentifier = nil;
+      self.passwordGeneratedIdentifier = FieldRendererId();
       self.passwordManager->OnPasswordNoLongerGenerated(
           self.passwordManagerDriver);
     } else {
       // Inject updated value to possibly update confirmation field.
-      [self injectGeneratedPasswordForFormName:formQuery.formName
-                             generatedPassword:formQuery.typedValue
-                             completionHandler:nil];
+      [self injectGeneratedPasswordForFormId:formQuery.uniqueFormID
+                           generatedPassword:formQuery.typedValue
+                           completionHandler:nil];
     }
   }
 
@@ -469,8 +469,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     suggestion_state = PasswordDropdownState::kStandard;
   }
 
-  if ([self canGeneratePasswordForForm:formQuery.formName
-                       fieldIdentifier:formQuery.fieldIdentifier
+  if ([self canGeneratePasswordForForm:formQuery.uniqueFormID
+                       fieldIdentifier:formQuery.uniqueFieldID
                              fieldType:formQuery.fieldType]) {
     // Add "Suggest Password...".
     NSString* suggestPassword = GetNSString(IDS_IOS_SUGGEST_PASSWORD);
@@ -495,7 +495,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 
 - (void)didSelectSuggestion:(FormSuggestion*)suggestion
                        form:(NSString*)formName
+               uniqueFormID:(FormRendererId)uniqueFormID
             fieldIdentifier:(NSString*)fieldIdentifier
+              uniqueFieldID:(FieldRendererId)uniqueFieldID
                     frameID:(NSString*)frameID
           completionHandler:(SuggestionHandledCompletion)completion {
   switch (suggestion.identifier) {
@@ -512,8 +514,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     case autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY: {
       // Don't call completion because current siggestion state should remain
       // whether user injects a generated password or cancels.
-      [self generatePasswordForFormName:formName
-                        fieldIdentifier:fieldIdentifier];
+      [self generatePasswordForFormId:uniqueFormID
+                      fieldIdentifier:uniqueFieldID];
       password_manager::metrics_util::LogPasswordDropdownItemSelected(
           password_manager::metrics_util::PasswordDropdownSelectedOption::
               kGenerate,
@@ -650,7 +652,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 }
 
 - (void)formEligibleForGenerationFound:(const PasswordFormGenerationData&)form {
-  _formGenerationData[form.form_name] = form;
+  _formGenerationData[form.form_renderer_id] = form;
 }
 
 #pragma mark - PasswordFormHelperDelegate
@@ -853,8 +855,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   self.notifyAutoSigninViewController = nil;
 }
 
-- (BOOL)canGeneratePasswordForForm:(NSString*)formName
-                   fieldIdentifier:(NSString*)fieldIdentifier
+- (BOOL)canGeneratePasswordForForm:(FormRendererId)formIdentifier
+                   fieldIdentifier:(FieldRendererId)fieldIdentifier
                          fieldType:(NSString*)fieldType {
   if (_passwordManagerClient->IsIncognito() ||
       !_passwordManagerDriver->GetPasswordGenerationHelper()
@@ -864,31 +866,30 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   if (![fieldType isEqual:kPasswordFieldType])
     return NO;
   const PasswordFormGenerationData* generation_data =
-      [self getFormForGenerationFromFormName:formName];
+      [self getFormForGenerationFromFormId:formIdentifier];
   if (!generation_data)
     return NO;
 
-  NSString* newPasswordIdentifier =
-      SysUTF16ToNSString(generation_data->new_password_element);
-  if ([fieldIdentifier isEqual:newPasswordIdentifier])
+  FieldRendererId newPasswordIdentifier =
+      generation_data->new_password_renderer_id;
+  if (fieldIdentifier == newPasswordIdentifier)
     return YES;
 
   // Don't show password generation if the field is 'confirm password'.
   return NO;
 }
 
-- (const PasswordFormGenerationData*)getFormForGenerationFromFormName:
-    (NSString*)formName {
-  const base::string16 name = SysNSStringToUTF16(formName);
-  if (_formGenerationData.find(name) != _formGenerationData.end()) {
-    return &_formGenerationData[name];
+- (const PasswordFormGenerationData*)getFormForGenerationFromFormId:
+    (FormRendererId)formIdentifier {
+  if (_formGenerationData.find(formIdentifier) != _formGenerationData.end()) {
+    return &_formGenerationData[formIdentifier];
   }
   return nullptr;
 }
 
-- (void)generatePasswordForFormName:(NSString*)formName
-                    fieldIdentifier:(NSString*)fieldIdentifier {
-  if (![self getFormForGenerationFromFormName:formName])
+- (void)generatePasswordForFormId:(FormRendererId)formIdentifier
+                  fieldIdentifier:(FieldRendererId)fieldIdentifier {
+  if (![self getFormForGenerationFromFormId:formIdentifier])
     return;
 
   // TODO(crbug.com/886583): pass correct |max_length|.
@@ -931,10 +932,10 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       addItemWithTitle:GetNSString(IDS_IOS_USE_SUGGESTED_PASSWORD)
                 action:^{
                   [weakSelf
-                      injectGeneratedPasswordForFormName:formName
-                                       generatedPassword:
-                                           weakSelf.generatedPotentialPassword
-                                       completionHandler:popupDismissed];
+                      injectGeneratedPasswordForFormId:formIdentifier
+                                     generatedPassword:
+                                         weakSelf.generatedPotentialPassword
+                                     completionHandler:popupDismissed];
                 }
                  style:UIAlertActionStyleDefault];
 
@@ -982,17 +983,19 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   [self.actionSheetCoordinator updateAttributedText];
 }
 
-- (void)injectGeneratedPasswordForFormName:(NSString*)formName
-                         generatedPassword:(NSString*)generatedPassword
-                         completionHandler:(void (^)())completionHandler {
+- (void)injectGeneratedPasswordForFormId:(FormRendererId)formIdentifier
+                       generatedPassword:(NSString*)generatedPassword
+                       completionHandler:(void (^)())completionHandler {
   const autofill::PasswordFormGenerationData* generation_data =
-      [self getFormForGenerationFromFormName:formName];
+      [self getFormForGenerationFromFormId:formIdentifier];
   if (!generation_data)
     return;
   NSString* newPasswordIdentifier =
       SysUTF16ToNSString(generation_data->new_password_element);
-  NSString* confirmPasswordIdentifier =
-      SysUTF16ToNSString(generation_data->confirmation_password_element);
+  FieldRendererId newPasswordUniqueId =
+      generation_data->new_password_renderer_id;
+  FieldRendererId confirmPasswordUniqueId =
+      generation_data->confirmation_password_renderer_id;
 
   auto generatedPasswordInjected = ^(BOOL success) {
     auto passwordPresaved = ^(BOOL found, const autofill::FormData& form) {
@@ -1006,18 +1009,18 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       // and here. There isn't much that can be done.
     };
     if (success) {
-      [self.formHelper extractPasswordFormData:formName
+      [self.formHelper extractPasswordFormData:formIdentifier
                              completionHandler:passwordPresaved];
       self.isPasswordGenerated = YES;
-      self.passwordGeneratedIdentifier = newPasswordIdentifier;
+      self.passwordGeneratedIdentifier = newPasswordUniqueId;
     }
     if (completionHandler)
       completionHandler();
   };
 
-  [self.formHelper fillPasswordForm:formName
-              newPasswordIdentifier:newPasswordIdentifier
-          confirmPasswordIdentifier:confirmPasswordIdentifier
+  [self.formHelper fillPasswordForm:formIdentifier
+              newPasswordIdentifier:newPasswordUniqueId
+          confirmPasswordIdentifier:confirmPasswordUniqueId
                   generatedPassword:generatedPassword
                   completionHandler:generatedPasswordInjected];
 }

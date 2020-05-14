@@ -6251,6 +6251,24 @@
             ]
         }
     ],
+    "UnidoOnSignInV2": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_2020-05-13",
+                    "enable_features": [
+                        "SharingPreferVapid",
+                        "SharingSendViaSync",
+                        "SyncDeviceInfoInTransportMode"
+                    ]
+                }
+            ]
+        }
+    ],
     "UnifiedAutoplay": [
         {
             "platforms": [

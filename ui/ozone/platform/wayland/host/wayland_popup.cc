@@ -41,8 +41,6 @@ void WaylandPopup::Show(bool inactive) {
   if (shell_popup_)
     return;
 
-  set_keyboard_focus(true);
-
   if (!CreateShellPopup()) {
     Close();
     return;
@@ -71,11 +69,6 @@ void WaylandPopup::Hide() {
 
 bool WaylandPopup::IsVisible() const {
   return !!shell_popup_;
-}
-
-bool WaylandPopup::HasCapture() const {
-  // WaylandPopups always have captures.
-  return shell_popup();
 }
 
 void WaylandPopup::HandlePopupConfigure(const gfx::Rect& bounds_dip) {

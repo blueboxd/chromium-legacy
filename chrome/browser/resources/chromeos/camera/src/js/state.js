@@ -4,10 +4,11 @@
 
 import {assert} from './chrome_util.js';
 import {PerfEvent} from './perf.js';
-import {Mode} from './type.js';
-// eslint-disable-next-line no-unused-vars
-import {PerfInformation} from './type.js';
-import {ViewName} from './views/view.js';
+import {
+  Mode,
+  PerfInformation,  // eslint-disable-line no-unused-vars
+  ViewName,
+} from './type.js';
 
 /**
  * @enum {string}
@@ -43,6 +44,7 @@ export const State = {
   SQUARE_PREVIEW: 'square-preview',
   STREAMING: 'streaming',
   SUSPEND: 'suspend',
+  TABLET: 'tablet',
   TABLET_LANDSCAPE: 'tablet-landscape',
   TAB_NAVIGATION: 'tab-navigation',
   TAKING: 'taking',

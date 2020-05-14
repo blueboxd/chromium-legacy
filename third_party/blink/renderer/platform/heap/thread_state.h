@@ -276,7 +276,9 @@ class PLATFORM_EXPORT ThreadState final {
   // Returns true if the current GC is a memory reducing GC.
   bool IsMemoryReducingGC() const {
     return current_gc_data_.reason ==
-           BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC;
+               BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC ||
+           current_gc_data_.reason ==
+               BlinkGC::GCReason::kUnifiedHeapForcedForTestingGC;
   }
 
   bool IsUnifiedHeapGC() const {

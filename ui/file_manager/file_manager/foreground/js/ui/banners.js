@@ -215,10 +215,6 @@ class Banners extends cr.EventTarget {
 
     let close, links;
     if (util.isFilesNg()) {
-      close =
-          util.createChild(wrapper, 'banner-close text-button', 'cr-button');
-      close.innerHTML = str('DRIVE_WELCOME_DISMISS');
-
       const message = util.createChild(wrapper, 'drive-welcome-message');
 
       const title = util.createChild(message, 'drive-welcome-title headline2');
@@ -230,6 +226,12 @@ class Banners extends cr.EventTarget {
       text.innerHTML = str(messageId);
 
       links = util.createChild(body, 'drive-welcome-links');
+
+      const buttonGroup = util.createChild(wrapper, 'button-group', 'div');
+
+      close = util.createChild(
+          buttonGroup, 'banner-close text-button', 'cr-button');
+      close.innerHTML = str('DRIVE_WELCOME_DISMISS');
     } else {
       close = util.createChild(wrapper, 'banner-close', 'button');
 
@@ -682,6 +684,10 @@ class Banners extends cr.EventTarget {
         e.preventDefault();
       });
 
+      const buttonGroup = this.document_.createElement('div');
+      buttonGroup.className = 'button-group';
+      box.appendChild(buttonGroup);
+
       const closeType = util.isFilesNg() ? 'cr-button' : 'button';
       const close = this.document_.createElement(closeType);
       close.className = 'banner-close';
@@ -691,7 +697,7 @@ class Banners extends cr.EventTarget {
         close.innerHTML = str('DRIVE_WELCOME_DISMISS');
         close.className = 'banner-close text-button';
       }
-      box.appendChild(close);
+      buttonGroup.appendChild(close);
       close.addEventListener('click', () => {
         const values = {};
         values[DOWNLOADS_WARNING_DISMISSED_KEY] = Date.now();

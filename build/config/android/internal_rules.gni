@@ -578,7 +578,7 @@ template("test_runner_script") {
                                "deps",
                                "public_deps",
                              ])
-      data_deps = []
+      data_deps = [ "//tools/android/md5sum" ]
       if (defined(invoker.data_deps)) {
         data_deps += invoker.data_deps
       }
@@ -2691,7 +2691,6 @@ if (enable_java_templates) {
     _script = "//build/android/gyp/apkbuilder.py"
     _apksigner = "$android_sdk_build_tools/lib/apksigner.jar"
     _zipalign = "$android_sdk_build_tools/zipalign"
-    _data_deps = [ "//tools/android/md5sum" ]
 
     _inputs = [
       invoker.build_config,
@@ -2841,7 +2840,6 @@ if (enable_java_templates) {
       depfile = "$target_gen_dir/$target_name.d"
       inputs = _inputs
       deps = _deps
-      data_deps = _data_deps
       data = _data
       outputs = _outputs
       script = _script
@@ -3235,10 +3233,6 @@ if (enable_java_templates) {
   #    any other target that has requires_android.
   #  include_java_resources: Optional. If True, include Java (not Android)
   #    resources into final .jar file.
-  #  android_manifest_for_lint: Optional path to Android manifest to use
-  #    if Android linting is enabled. Ignored for 'android_apk' types
-  #    (since the value of android_manifest will be used instead).
-  #  lint_suppressions_file: Optional lint suppressions input file.
   #  jar_excluded_patterns: Optional list of .class file patterns to exclude
   #    from the final .jar file.
   #  jar_included_patterns: Optional list of .class file patterns to include
@@ -3603,13 +3597,6 @@ if (enable_java_templates) {
     if (_has_sources || _is_prebuilt) {
       _header_target_name = "${target_name}__header"
     }
-
-    # Temporary to avoid downstream breakage: https://crbug.com/1017190
-    not_needed(invoker,
-               [
-                 "min_sdk_version",
-                 "android_manifest_for_lint",
-               ])
 
     if (_has_sources) {
       if (defined(invoker.enable_errorprone)) {

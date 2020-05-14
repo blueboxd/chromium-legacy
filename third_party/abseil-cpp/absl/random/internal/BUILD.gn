@@ -6,15 +6,11 @@ import("//third_party/abseil-cpp/absl.gni")
 
 absl_source_set("traits") {
   public = [ "traits.h" ]
-  visibility = []
-  visibility += [ "//third_party/abseil-cpp/absl/random/*" ]
   deps = [ "//third_party/abseil-cpp/absl/base:config" ]
 }
 
 absl_source_set("distribution_caller") {
   public = [ "distribution_caller.h" ]
-  visibility = []
-  visibility += [ "//third_party/abseil-cpp/absl/random/*" ]
   deps = [ "//third_party/abseil-cpp/absl/base:config" ]
 }
 
@@ -32,8 +28,6 @@ absl_source_set("distributions") {
 
 absl_source_set("fast_uniform_bits") {
   public = [ "fast_uniform_bits.h" ]
-  visibility = []
-  visibility += [ "//third_party/abseil-cpp/absl/random/*" ]
   deps = [ "//third_party/abseil-cpp/absl/base:config" ]
 }
 
@@ -257,6 +251,7 @@ absl_source_set("nanobenchmark") {
   deps = [
     ":platform",
     ":randen_engine",
+    "//third_party/abseil-cpp/absl/base:config",
     "//third_party/abseil-cpp/absl/base:core_headers",
     "//third_party/abseil-cpp/absl/base:raw_logging_internal",
   ]

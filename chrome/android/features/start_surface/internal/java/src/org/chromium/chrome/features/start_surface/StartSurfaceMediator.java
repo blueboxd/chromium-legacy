@@ -31,10 +31,13 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
@@ -45,12 +48,14 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 
 /** The mediator implements the logic to interact with the surfaces and caller. */
 class StartSurfaceMediator
@@ -358,8 +363,18 @@ class StartSurfaceMediator
             mPropertyModel.set(IS_SHOWING_STACK_TAB_SWITCHER, false);
 
             setExploreSurfaceVisibility(!mIsIncognito && mFeedSurfaceCreator != null);
-            setTabCarouselVisibility(
-                    mTabModelSelector.getModel(false).getCount() > 0 && !mIsIncognito);
+            boolean hasNormalTab;
+            if (CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)
+                    && !mTabModelSelector.isTabStateInitialized()) {
+                List<PseudoTab> allTabs;
+                try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+                    allTabs = PseudoTab.getAllPseudoTabsFromStateFile();
+                }
+                hasNormalTab = allTabs != null && !allTabs.isEmpty();
+            } else {
+                hasNormalTab = mTabModelSelector.getModel(false).getCount() > 0;
+            }
+            setTabCarouselVisibility(hasNormalTab && !mIsIncognito);
             setMVTilesVisibility(!mIsIncognito);
             setFakeBoxVisibility(!mIsIncognito);
             setSecondaryTasksSurfaceVisibility(mIsIncognito);

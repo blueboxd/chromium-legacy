@@ -17,17 +17,10 @@ namespace autofill_assistant {
 ClickAction::ClickAction(ActionDelegate* delegate, const ActionProto& proto)
     : Action(delegate, proto) {
   DCHECK(proto_.has_click());
-  switch (proto.click().click_type()) {
-    case ClickProto_ClickType_NOT_SET:  // default: TAP
-    case ClickProto_ClickType_TAP:
-      click_type_ = TAP;
-      break;
-    case ClickProto_ClickType_JAVASCRIPT:
-      click_type_ = JAVASCRIPT;
-      break;
-    case ClickProto_ClickType_CLICK:
-      click_type_ = CLICK;
-      break;
+  click_type_ = proto.click().click_type();
+  if (click_type_ == ClickType::NOT_SET) {
+    // default: TAP
+    click_type_ = ClickType::TAP;
   }
 }
 

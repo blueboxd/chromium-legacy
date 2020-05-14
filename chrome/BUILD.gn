@@ -1440,7 +1440,7 @@ if (is_android) {
   }
 
   java_cpp_enum("context_menu_image_format_enum_javagen") {
-    sources = [ "browser/ui/android/context_menu_helper.h" ]
+    sources = [ "browser/android/context_menu/chrome_context_menu_populator.h" ]
   }
 
   source_set("chrome_android_core") {

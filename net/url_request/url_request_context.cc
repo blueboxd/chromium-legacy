@@ -55,6 +55,7 @@ URLRequestContext::URLRequestContext()
       url_requests_(std::make_unique<std::set<const URLRequest*>>()),
       enable_brotli_(false),
       check_cleartext_permitted_(false),
+      require_network_isolation_key_(false),
       name_("unknown") {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "URLRequestContext", base::ThreadTaskRunnerHandle::Get());

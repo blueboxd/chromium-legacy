@@ -115,7 +115,6 @@ class WaylandEventSource : public PlatformEventSource,
   // WaylandWindowObserver
   void OnWindowRemoved(WaylandWindow* window) override;
 
-  void UpdateImplicitGrab();
   void UpdateKeyboardModifiers(int modifier, bool down);
   void HandleKeyboardFocusChange(WaylandWindow* window, bool focused);
   void HandlePointerFocusChange(WaylandWindow* window, bool focused);

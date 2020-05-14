@@ -29,8 +29,6 @@ android_library("webview_ui_test_app_java") {
     ":webview_ui_test_app_apk_resources",
     "//base:base_java",
   ]
-
-  android_manifest_for_lint = "java/AndroidManifest.xml"
 }
 
 android_resources("webview_ui_test_app_apk_resources") {

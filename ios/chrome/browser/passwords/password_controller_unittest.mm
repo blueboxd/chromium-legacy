@@ -1216,7 +1216,9 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
     };
     [passwordController_ didSelectSuggestion:suggestion
                                         form:SysUTF8ToNSString(FormName(0))
+                                uniqueFormID:form_renderer_id
                              fieldIdentifier:@"u"
+                               uniqueFieldID:username_renderer_id
                                      frameID:SysUTF8ToNSString(mainFrameID)
                            completionHandler:completion];
     EXPECT_TRUE(

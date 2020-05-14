@@ -83,9 +83,6 @@ android_library("java") {
     "//third_party/android_deps:androidx_lifecycle_lifecycle_viewmodel_java",
     "//weblayer/browser/java:interfaces_java",
   ]
-
-  min_sdk_version = 21
-  android_manifest_for_lint = weblayer_client_manifest
 }
 
 dist_aar("client_aar") {

@@ -63,6 +63,9 @@ class QRCodeGeneratorBubble : public QRCodeGeneratorBubbleView,
   // Updates the central QR code image with |qr_image|.
   void UpdateQRImage(gfx::ImageSkia qr_image);
 
+  // Updates the central QR code image with a placeholder.
+  void DisplayPlaceholderImage();
+
   // LocationBarBubbleDelegateView:
   View* GetInitiallyFocusedView() override;
   base::string16 GetWindowTitle() const override;

@@ -12,30 +12,31 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "components/signin/public/base/account_consistency_method.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
 class WebContents;
 }
 
-namespace signin {
-class IdentityManager;
-}
-
-class DiceWebSigninInterceptor;
+class Profile;
 
 class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
                                       public content::WebContentsObserver {
  public:
   // Callback starting Sync.
   using EnableSyncCallback =
-      base::OnceCallback<void(content::WebContents*,
-                              const CoreAccountId& /* account_id */)>;
+      base::OnceCallback<void(Profile*,
+                              signin_metrics::AccessPoint,
+                              signin_metrics::PromoAction,
+                              signin_metrics::Reason,
+                              content::WebContents*,
+                              const CoreAccountId&)>;
 
   // Callback showing a signin error UI.
   using ShowSigninErrorCallback =
-      base::OnceCallback<void(content::WebContents*,
+      base::OnceCallback<void(Profile*,
+                              content::WebContents*,
                               const std::string& /* error_message */,
                               const std::string& /* email */)>;
 
@@ -43,12 +44,8 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
   // tab.
   ProcessDiceHeaderDelegateImpl(
       content::WebContents* web_contents,
-      signin::IdentityManager* identity_manager,
-      DiceWebSigninInterceptor* interceptor,
-      bool is_sync_signin_tab,
       EnableSyncCallback enable_sync_callback,
-      ShowSigninErrorCallback show_signin_error_callback,
-      const GURL& redirect_url = GURL::EmptyGURL());
+      ShowSigninErrorCallback show_signin_error_callback);
   ~ProcessDiceHeaderDelegateImpl() override;
 
   // ProcessDiceHeaderDelegate:
@@ -62,11 +59,16 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
   // Returns true if sync should be enabled after the user signs in.
   bool ShouldEnableSync();
 
-  signin::IdentityManager* identity_manager_;
-  DiceWebSigninInterceptor* dice_web_signin_interceptor_;
+  Profile* profile_;
   EnableSyncCallback enable_sync_callback_;
   ShowSigninErrorCallback show_signin_error_callback_;
-  bool is_sync_signin_tab_;
+  bool is_sync_signin_tab_ = false;
+  signin_metrics::AccessPoint access_point_ =
+      signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN;
+  signin_metrics::PromoAction promo_action_ =
+      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO;
+  signin_metrics::Reason reason_ =
+      signin_metrics::Reason::REASON_UNKNOWN_REASON;
   GURL redirect_url_;
   DISALLOW_COPY_AND_ASSIGN(ProcessDiceHeaderDelegateImpl);
 };

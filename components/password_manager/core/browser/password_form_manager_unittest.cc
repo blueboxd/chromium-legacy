@@ -48,6 +48,7 @@ using autofill::AutofillUploadContents;
 using autofill::FieldPropertiesFlags;
 using autofill::FormData;
 using autofill::FormFieldData;
+using autofill::FormRendererId;
 using autofill::FormSignature;
 using autofill::FormStructure;
 using autofill::GaiaIdHash;
@@ -299,7 +300,7 @@ class PasswordFormManagerTest : public testing::Test,
     observed_form_.url = origin;
     observed_form_.action = action;
     observed_form_.name = ASCIIToUTF16("sign-in");
-    observed_form_.unique_renderer_id = autofill::FormRendererId(1);
+    observed_form_.unique_renderer_id = FormRendererId(0);
     observed_form_.is_form_tag = true;
 
     observed_form_only_password_fields_ = observed_form_;
@@ -333,7 +334,7 @@ class PasswordFormManagerTest : public testing::Test,
     field.id_attribute = field.name;
     field.name_attribute = field.name;
     field.form_control_type = "password";
-    field.unique_renderer_id = autofill::FieldRendererId(5);
+    field.unique_renderer_id = autofill::FieldRendererId(4);
     observed_form_only_password_fields_.fields.push_back(field);
 
 // On iOS the unique_id member uniquely addresses this field in the DOM.
@@ -556,9 +557,9 @@ TEST_P(PasswordFormManagerTest, AutofillSignUpForm) {
   EXPECT_TRUE(fill_data.password_field.unique_renderer_id.is_null());
   EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
 #if defined(OS_IOS)
-  EXPECT_EQ(ASCIIToUTF16("sign-in"), generation_data.form_name);
+  EXPECT_EQ(observed_form_.unique_renderer_id,
+            generation_data.form_renderer_id);
   EXPECT_EQ(ASCIIToUTF16("password"), generation_data.new_password_element);
-  EXPECT_EQ(base::string16(), generation_data.confirmation_password_element);
 #else
   EXPECT_EQ(observed_form_.fields.back().unique_renderer_id,
             generation_data.new_password_renderer_id);
@@ -591,9 +592,9 @@ TEST_P(PasswordFormManagerTest, GenerationOnNewAndConfirmPasswordFields) {
 
   task_environment_.FastForwardUntilNoTasksRemain();
 #if defined(OS_IOS)
-  EXPECT_EQ(ASCIIToUTF16("sign-in"), generation_data.form_name);
+  EXPECT_EQ(observed_form_.unique_renderer_id,
+            generation_data.form_renderer_id);
   EXPECT_EQ(ASCIIToUTF16("password"), generation_data.new_password_element);
-  EXPECT_EQ(base::string16(), generation_data.confirmation_password_element);
 #else
   EXPECT_EQ(new_password_render_id, generation_data.new_password_renderer_id);
   EXPECT_EQ(confirm_password_render_id,

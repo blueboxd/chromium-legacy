@@ -4,8 +4,12 @@
 
 package org.chromium.chrome.browser.contextmenu;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.net.MailTo;
+import android.net.Uri;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.Pair;
@@ -17,6 +21,9 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Callback;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
@@ -37,6 +44,8 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.share.LensUtils;
 import org.chromium.chrome.browser.share.ShareDelegate;
+import org.chromium.chrome.browser.share.ShareHelper;
+import org.chromium.chrome.browser.share.ShareImageFileUtils;
 import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
 import org.chromium.components.embedder_support.util.UrlUtilities;
@@ -45,8 +54,10 @@ import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.BrowserStartupController;
+import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ContentUrlConstants;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.URI;
 
 import java.lang.annotation.Retention;
@@ -60,12 +71,15 @@ import java.util.List;
  */
 public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     private static final String TAG = "CCMenuPopulator";
+    private static final int MAX_SHARE_DIMEN_PX = 2048;
+
     private final ContextMenuItemDelegate mDelegate;
     private final @ContextMenuMode int mMode;
     private final Supplier<ShareDelegate> mShareDelegateSupplier;
     private final ExternalAuthUtils mExternalAuthUtils;
     private boolean mEnableLensWithSearchByImageText;
     private @Nullable UkmRecorder.Bridge mUkmRecorderBridge;
+    private long mNativeChromeContextMenuPopulator;
 
     // True when the tracker indicates IPH in the form of "new" label needs to be shown.
     private Boolean mShowEphemeralTabNewLabel;
@@ -90,6 +104,27 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         int NORMAL = 0; /* Default mode*/
         int CUSTOM_TAB = 1; /* Custom tab mode */
         int WEB_APP = 2; /* Full screen mode */
+    }
+
+    /**
+     * See function for details.
+     */
+    private static byte[] sHardcodedImageBytesForTesting;
+    private static String sHardcodedImageExtensionForTesting;
+
+    /**
+     * The tests trigger the context menu via JS rather than via a true native call which means
+     * the native code does not have a reference to the image's render frame host. Instead allow
+     * test cases to hardcode the test image bytes that will be shared.
+     * @param hardcodedImageBytes The hard coded image bytes to fake or null if image should not be
+     *         faked.
+     * @param hardcodedImageExtension The hard coded image extension.
+     */
+    @VisibleForTesting
+    public static void setHardcodedImageBytesForTesting(
+            byte[] hardcodedImageBytes, String hardcodedImageExtension) {
+        sHardcodedImageBytesForTesting = hardcodedImageBytes;
+        sHardcodedImageExtensionForTesting = hardcodedImageExtension;
     }
 
     static class ContextMenuUma {
@@ -282,11 +317,14 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         mShareDelegateSupplier = shareDelegate;
         mMode = mode;
         mExternalAuthUtils = externalAuthUtils;
+        mNativeChromeContextMenuPopulator =
+                ChromeContextMenuPopulatorJni.get().init(delegate.getWebContents());
     }
 
     @Override
     public void onDestroy() {
         mDelegate.onDestroy();
+        mNativeChromeContextMenuPopulator = 0;
     }
 
     /**
@@ -531,7 +569,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     }
 
     @Override
-    public boolean onItemSelected(ContextMenuHelper helper, ContextMenuParams params, int itemId) {
+    public boolean onItemSelected(
+            ContextMenuParams params, RenderFrameHost renderFrameHost, int itemId) {
         if (itemId == R.id.contextmenu_open_in_new_tab) {
             recordContextMenuSelection(params, ContextMenuUma.Action.OPEN_IN_NEW_TAB);
             mDelegate.onOpenInNewTab(params.getUrl(), params.getReferrer());
@@ -559,7 +598,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             mDelegate.onOpenInEphemeralTab(params.getSrcUrl(), title);
         } else if (itemId == R.id.contextmenu_copy_image) {
             recordContextMenuSelection(params, ContextMenuUma.Action.COPY_IMAGE);
-            helper.copyImageToClipboard(mDelegate);
+            copyImageToClipboard(renderFrameHost);
         } else if (itemId == R.id.contextmenu_copy_link_address) {
             recordContextMenuSelection(params, ContextMenuUma.Action.COPY_LINK_ADDRESS);
             mDelegate.onSaveToClipboard(
@@ -595,45 +634,45 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         } else if (itemId == R.id.contextmenu_save_image) {
             recordContextMenuSelection(params, ContextMenuUma.Action.SAVE_IMAGE);
             if (mDelegate.startDownload(params.getSrcUrl(), false)) {
-                helper.startContextMenuDownload(false);
+                startContextMenuDownload(params, false);
             }
         } else if (itemId == R.id.contextmenu_save_video) {
             recordContextMenuSelection(params, ContextMenuUma.Action.SAVE_VIDEO);
             if (mDelegate.startDownload(params.getSrcUrl(), false)) {
-                helper.startContextMenuDownload(false);
+                startContextMenuDownload(params, false);
             }
         } else if (itemId == R.id.contextmenu_save_link_as) {
             recordContextMenuSelection(params, ContextMenuUma.Action.SAVE_LINK);
             String url = params.getUnfilteredLinkUrl();
             if (mDelegate.startDownload(url, true)) {
                 ContextMenuUma.recordSaveLinkTypes(url);
-                helper.startContextMenuDownload(true);
+                startContextMenuDownload(params, true);
             }
         } else if (itemId == R.id.contextmenu_share_link) {
             recordContextMenuSelection(params, ContextMenuUma.Action.SHARE_LINK);
             ShareParams linkShareParams =
-                    new ShareParams.Builder(helper.getWindow(), params.getUrl(), params.getUrl())
+                    new ShareParams.Builder(getWindow(), params.getUrl(), params.getUrl())
                             .setShareDirectly(false)
                             .setSaveLastUsed(true)
                             .build();
             mShareDelegateSupplier.get().share(linkShareParams);
         } else if (itemId == R.id.contextmenu_search_with_google_lens) {
             recordContextMenuSelection(params, ContextMenuUma.Action.SEARCH_WITH_GOOGLE_LENS);
-            helper.searchWithGoogleLens(mDelegate.isIncognito());
+            searchWithGoogleLens(params, renderFrameHost, mDelegate.isIncognito());
             SharedPreferencesManager prefManager = SharedPreferencesManager.getInstance();
             prefManager.writeBoolean(
                     ChromePreferenceKeys.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS_CLICKED, true);
         } else if (itemId == R.id.contextmenu_search_by_image) {
             if (mEnableLensWithSearchByImageText) {
                 recordContextMenuSelection(params, ContextMenuUma.Action.SEARCH_WITH_GOOGLE_LENS);
-                helper.searchWithGoogleLens(mDelegate.isIncognito());
+                searchWithGoogleLens(params, renderFrameHost, mDelegate.isIncognito());
             } else {
                 recordContextMenuSelection(params, ContextMenuUma.Action.SEARCH_BY_IMAGE);
-                helper.searchForImage();
+                searchForImage(renderFrameHost, params);
             }
         } else if (itemId == R.id.contextmenu_share_image) {
             recordContextMenuSelection(params, ContextMenuUma.Action.SHARE_IMAGE);
-            helper.shareImage();
+            shareImage(renderFrameHost);
         } else if (itemId == R.id.contextmenu_open_in_chrome) {
             recordContextMenuSelection(params, ContextMenuUma.Action.OPEN_IN_CHROME);
             mDelegate.onOpenInChrome(params.getUrl(), params.getPageUrl());
@@ -655,13 +694,120 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
     @Override
     public void onMenuClosed() {
-        if (!mShowEphemeralTabNewLabel) return;
-        // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
-        // incognito profile) instead of always using regular profile. It works correctly now, but
-        // it is not safe.
-        Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile());
-        if (!tracker.isInitialized()) return;
-        tracker.dismissed(FeatureConstants.EPHEMERAL_TAB_FEATURE);
+        if (mShowEphemeralTabNewLabel != null && mShowEphemeralTabNewLabel) {
+            // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
+            // incognito profile) instead of always using regular profile. It works correctly now,
+            // but it is not safe.
+            Tracker tracker =
+                    TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile());
+            if (tracker.isInitialized()) tracker.dismissed(FeatureConstants.EPHEMERAL_TAB_FEATURE);
+        }
+    }
+
+    private WindowAndroid getWindow() {
+        return mDelegate.getWebContents().getTopLevelNativeWindow();
+    }
+
+    private Activity getActivity() {
+        return getWindow().getActivity().get();
+    }
+
+    /**
+     * Copy the image, that triggered the current context menu, to system clipboard.
+     * @param renderFrameHost {@link RenderFrameHost} to get the encoded images from.
+     */
+    private void copyImageToClipboard(RenderFrameHost renderFrameHost) {
+        retrieveImage(renderFrameHost, ContextMenuImageFormat.ORIGINAL,
+                (Uri imageUri) -> { mDelegate.onSaveImageToClipboard(imageUri); });
+    }
+
+    /**
+     * Search for the image by intenting to the lens app with the image data attached.
+     * @param params The {@link ContextMenuParams} that indicate what menu items to show.
+     * @param renderFrameHost {@link RenderFrameHost} to get the encoded images from.
+     * @param isIncognito Whether the image to search came from an incognito context.
+     */
+    private void searchWithGoogleLens(
+            ContextMenuParams params, RenderFrameHost renderFrameHost, boolean isIncognito) {
+        retrieveImage(renderFrameHost, ContextMenuImageFormat.PNG, (Uri imageUri) -> {
+            ShareHelper.shareImageWithGoogleLens(
+                    getWindow(), imageUri, isIncognito, params.getSrcUrl(), params.getTitleText());
+        });
+    }
+
+    /**
+     * Share the image that triggered the current context menu.
+     * Package-private, allowing access only from the context menu item to ensure that
+     * it will use the right activity set when the menu was displayed.
+     * @param renderFrameHost {@link RenderFrameHost} to get the encoded images from.
+     */
+    void shareImage(RenderFrameHost renderFrameHost) {
+        retrieveImage(renderFrameHost, ContextMenuImageFormat.ORIGINAL,
+                (Uri imageUri) -> { ShareHelper.shareImage(getWindow(), null, imageUri); });
+    }
+
+    @Override
+    public void retrieveImage(RenderFrameHost renderFrameHost,
+            @ContextMenuImageFormat int imageFormat, Callback<Uri> callback) {
+        if (mNativeChromeContextMenuPopulator == 0) return;
+        final Activity activity = getActivity();
+
+        Callback<ImageCallbackResult> imageRetrievalCallback = (result) -> {
+            if (activity == null) return;
+            ShareImageFileUtils.generateTemporaryUriFromData(
+                    activity, result.imageData, result.extension, callback);
+        };
+
+        if (sHardcodedImageBytesForTesting != null) {
+            imageRetrievalCallback.onResult(createImageCallbackResultForTesting());
+        } else {
+            ChromeContextMenuPopulatorJni.get().retrieveImageForShare(
+                    mNativeChromeContextMenuPopulator, ChromeContextMenuPopulator.this,
+                    renderFrameHost, imageRetrievalCallback, MAX_SHARE_DIMEN_PX, MAX_SHARE_DIMEN_PX,
+                    imageFormat);
+        }
+    }
+
+    /**
+     * Starts a download based on the current {@link ContextMenuParams}.
+     * @param params The {@link ContextMenuParams} that indicate what menu items to show.
+     * @param isLink Whether or not the download target is a link.
+     */
+    private void startContextMenuDownload(ContextMenuParams params, boolean isLink) {
+        if (mNativeChromeContextMenuPopulator == 0) return;
+        ChromeContextMenuPopulatorJni.get().onStartDownload(
+                mNativeChromeContextMenuPopulator, ChromeContextMenuPopulator.this, params, isLink);
+    }
+
+    /**
+     * Trigger an image search for the current image that triggered the context menu.
+     * @param renderFrameHost {@link RenderFrameHost} to get the encoded images from.
+     * @param params The {@link ContextMenuParams} that indicate what menu items to show.
+     */
+    private void searchForImage(RenderFrameHost renderFrameHost, ContextMenuParams params) {
+        if (mNativeChromeContextMenuPopulator == 0) return;
+        ChromeContextMenuPopulatorJni.get().searchForImage(mNativeChromeContextMenuPopulator,
+                ChromeContextMenuPopulator.this, renderFrameHost, params);
+    }
+
+    /**
+     * Gets the thumbnail of the current image that triggered the context menu.
+     * @param renderFrameHost {@link RenderFrameHost} to get the encoded images from.
+     * @param callback Called once the the thumbnail is received.
+     */
+    @Override
+    public void getThumbnail(RenderFrameHost renderFrameHost, final Callback<Bitmap> callback) {
+        if (mNativeChromeContextMenuPopulator == 0) return;
+
+        final Resources res = getActivity().getResources();
+        final int maxHeightPx =
+                res.getDimensionPixelSize(R.dimen.revamped_context_menu_header_image_max_size);
+        final int maxWidthPx =
+                res.getDimensionPixelSize(R.dimen.revamped_context_menu_header_image_max_size);
+
+        ChromeContextMenuPopulatorJni.get().retrieveImageForContextMenu(
+                mNativeChromeContextMenuPopulator, ChromeContextMenuPopulator.this, renderFrameHost,
+                callback, maxWidthPx, maxHeightPx);
     }
 
     /**
@@ -811,5 +957,47 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             return false;
         }
         return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_COPY_IMAGE);
+    }
+
+    /**
+     * The class hold the |retrieveImageForShare| callback result.
+     */
+    @VisibleForTesting
+    static class ImageCallbackResult {
+        public byte[] imageData;
+        public String extension;
+
+        public ImageCallbackResult(byte[] imageData, String extension) {
+            this.imageData = imageData;
+            this.extension = extension;
+        }
+    }
+
+    private static ImageCallbackResult createImageCallbackResultForTesting() {
+        return new ImageCallbackResult(
+                sHardcodedImageBytesForTesting, sHardcodedImageExtensionForTesting);
+    }
+
+    @CalledByNative
+    private static ImageCallbackResult createImageCallbackResult(
+            byte[] imageData, String extension) {
+        return new ImageCallbackResult(imageData, extension);
+    }
+
+    @NativeMethods
+    interface Natives {
+        long init(WebContents webContents);
+        void onStartDownload(long nativeChromeContextMenuPopulator,
+                ChromeContextMenuPopulator caller, ContextMenuParams params, boolean isLink);
+        void retrieveImageForShare(long nativeChromeContextMenuPopulator,
+                ChromeContextMenuPopulator caller, RenderFrameHost renderFrameHost,
+                Callback<ImageCallbackResult> callback, int maxWidthPx, int maxHeightPx,
+                @ContextMenuImageFormat int imageFormat);
+        void retrieveImageForContextMenu(long nativeChromeContextMenuPopulator,
+                ChromeContextMenuPopulator caller, RenderFrameHost renderFrameHost,
+                Callback<Bitmap> callback, int maxWidthPx, int maxHeightPx);
+        void searchForImage(long nativeChromeContextMenuPopulator,
+                ChromeContextMenuPopulator caller, RenderFrameHost renderFrameHost,
+                ContextMenuParams params);
     }
 }

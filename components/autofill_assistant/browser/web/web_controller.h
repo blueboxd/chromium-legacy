@@ -77,7 +77,7 @@ class WebController {
   // |selector| and return the result through callback.
   virtual void ClickOrTapElement(
       const Selector& selector,
-      ClickAction::ClickType click_type,
+      ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Fill the address form given by |selector| with the given address
@@ -255,12 +255,12 @@ class WebController {
 
   void OnFindElementForClickOrTap(
       base::OnceCallback<void(const ClientStatus&)> callback,
-      ClickAction::ClickType click_type,
+      ClickType click_type,
       const ClientStatus& status,
       std::unique_ptr<ElementFinder::Result> result);
   void OnWaitDocumentToBecomeInteractiveForClickOrTap(
       base::OnceCallback<void(const ClientStatus&)> callback,
-      ClickAction::ClickType click_type,
+      ClickType click_type,
       std::unique_ptr<ElementFinder::Result> target_element,
       bool result);
   void OnFindElementForTap(
@@ -269,21 +269,21 @@ class WebController {
       std::unique_ptr<ElementFinder::Result> result);
   void ClickOrTapElement(
       std::unique_ptr<ElementFinder::Result> target_element,
-      ClickAction::ClickType click_type,
+      ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback);
   void OnClickJS(base::OnceCallback<void(const ClientStatus&)> callback,
                  const DevtoolsClient::ReplyStatus& reply_status,
                  std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnScrollIntoView(std::unique_ptr<ElementFinder::Result> target_element,
                         base::OnceCallback<void(const ClientStatus&)> callback,
-                        ClickAction::ClickType click_type,
+                        ClickType click_type,
                         const DevtoolsClient::ReplyStatus& reply_status,
                         std::unique_ptr<runtime::CallFunctionOnResult> result);
   void TapOrClickOnCoordinates(
       ElementPositionGetter* getter_to_release,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const std::string& node_frame_id,
-      ClickAction::ClickType click_type,
+      ClickType click_type,
       bool has_coordinates,
       int x,
       int y);

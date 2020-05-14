@@ -5,22 +5,27 @@
 package org.chromium.chrome.browser.contextmenu;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.util.Pair;
 import android.view.ContextMenu;
 
+import org.chromium.base.Callback;
 import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
+import org.chromium.content_public.browser.RenderFrameHost;
 
 import java.util.List;
 
 /**
  * A delegate responsible for populating context menus and processing results from
- * {@link ContextMenuHelper}.
+ * ContextMenuHelper.
+ * TODO(jinsukkim): Consider ContextMenuPopulatorFactory.
  */
 public interface ContextMenuPopulator {
     /**
      *  Called when this ContextMenuPopulator is about to be destroyed.
      */
-    public void onDestroy();
+    void onDestroy();
 
     /**
      * Should be used to populate {@code menu} with the correct context menu items.
@@ -33,20 +38,37 @@ public interface ContextMenuPopulator {
      *         group will likely say "IMAGE". If the link pressed is contains multiple items (like
      *         an image link) the list will have both an image list and a link list.
      */
-    public List<Pair<Integer, List<ContextMenuItem>>> buildContextMenu(
+    List<Pair<Integer, List<ContextMenuItem>>> buildContextMenu(
             ContextMenu menu, Context context, ContextMenuParams params);
 
     /**
      * Called when a context menu item has been selected.
-     * @param helper The {@link ContextMenuHelper} driving the menu operations.
      * @param params The parameters that represent what is being shown in the context menu.
+     * @param renderFrameHost {@link RenderFrameHost} to get the encoded images from.
      * @param itemId The id of the selected menu item.
      * @return       Whether or not the selection was handled.
      */
-    public boolean onItemSelected(ContextMenuHelper helper, ContextMenuParams params, int itemId);
+    boolean onItemSelected(ContextMenuParams params, RenderFrameHost renderFrameHost, int itemId);
+
+    /**
+     * Gets the thumbnail of the current image that triggered the context menu.
+     * @param renderFrameHost {@link RenderFrameHost} to get the render frame from.
+     * @param callback Called once the the thumbnail is received.
+     */
+    void getThumbnail(RenderFrameHost renderFrameHost, final Callback<Bitmap> callback);
+
+    /**
+     * Retrieves a URI for the selected image for sharing with external apps. If the function fails
+     * to retrieve the image bytes or generate a URI the callback will *not* be called.
+     * @param renderFrameHost {@link RenderFrameHost} to get the render frame from.
+     * @param imageFormat The image format will be requested.
+     * @param callback Called once the image is generated and ready to be shared.
+     */
+    void retrieveImage(RenderFrameHost renderFrameHost, @ContextMenuImageFormat int imageFormat,
+            Callback<Uri> callback);
 
     /**
      * Called when the context menu is closed.
      */
-    public void onMenuClosed();
+    void onMenuClosed();
 }

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
@@ -670,6 +671,33 @@ IN_PROC_BROWSER_TEST_P(CustomTabBarViewBrowserTest, InterstitialCanHideOrigin) {
             app_view->toolbar()->custom_tab_bar()->location_for_testing());
   EXPECT_TRUE(
       app_view->toolbar()->custom_tab_bar()->IsShowingOriginForTesting());
+}
+
+// Verify that blob URLs are displayed in the location text.
+IN_PROC_BROWSER_TEST_P(CustomTabBarViewBrowserTest, BlobUrlLocation) {
+  InstallPWA(https_server()->GetURL("/simple.html"));
+  EXPECT_TRUE(app_browser_);
+  BrowserView* app_browser_view =
+      BrowserView::GetBrowserViewForBrowser(app_browser_);
+  EXPECT_NE(app_browser_view, browser_view_);
+  content::WebContents* web_contents =
+      app_browser_->tab_strip_model()->GetActiveWebContents();
+
+  content::TestNavigationObserver nav_observer(web_contents,
+                                               /*number_of_navigations=*/1);
+  std::string script =
+      "window.open("
+      "    URL.createObjectURL("
+      "        new Blob([], {type: 'text/html'})"
+      "    ),"
+      "    '_self');";
+  EXPECT_TRUE(content::ExecuteScript(web_contents, script));
+  nav_observer.Wait();
+
+  EXPECT_EQ(
+      app_browser_view->toolbar()->custom_tab_bar()->location_for_testing() +
+          base::ASCIIToUTF16("/"),
+      base::ASCIIToUTF16(https_server()->GetURL("/").spec()));
 }
 
 INSTANTIATE_TEST_SUITE_P(

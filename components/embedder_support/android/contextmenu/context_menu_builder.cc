@@ -27,7 +27,8 @@ base::android::ScopedJavaGlobalRef<jobject> BuildJavaContextMenuParams(
 
   return base::android::ScopedJavaGlobalRef<jobject>(
       Java_ContextMenuParams_create(
-          env, static_cast<int>(params.media_type),
+          env, reinterpret_cast<intptr_t>(&params),
+          static_cast<int>(params.media_type),
           ConvertUTF8ToJavaString(env, params.page_url.spec()),
           ConvertUTF8ToJavaString(env, params.link_url.spec()),
           ConvertUTF16ToJavaString(env, params.link_text),
@@ -37,6 +38,13 @@ base::android::ScopedJavaGlobalRef<jobject> BuildJavaContextMenuParams(
           ConvertUTF8ToJavaString(env, sanitizedReferrer.spec()),
           static_cast<int>(params.referrer_policy), can_save, params.x,
           params.y, params.source_type));
+}
+
+content::ContextMenuParams* ContextMenuParamsFromJavaObject(
+    const base::android::JavaRef<jobject>& jcontext_menu_params) {
+  return reinterpret_cast<content::ContextMenuParams*>(
+      Java_ContextMenuParams_getNativePointer(
+          base::android::AttachCurrentThread(), jcontext_menu_params));
 }
 
 }  // namespace context_menu

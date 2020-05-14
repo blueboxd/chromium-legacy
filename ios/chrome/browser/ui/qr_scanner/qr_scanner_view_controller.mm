@@ -104,7 +104,7 @@ using base::UserMetricsAction;
 
 #pragma mark - Public methods
 
-- (UIViewController*)getViewControllerToPresent {
+- (UIViewController*)viewControllerToPresent {
   DCHECK(self.cameraController);
   switch ([self.cameraController getAuthorizationStatus]) {
     case AVAuthorizationStatusNotDetermined:

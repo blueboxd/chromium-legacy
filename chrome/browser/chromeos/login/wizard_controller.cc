@@ -48,6 +48,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
+#include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/screens/app_downloading_screen.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
@@ -989,12 +990,20 @@ void WizardController::OnEnrollmentDone() {
   // We need a log to understand when the device finished enrollment.
   VLOG(1) << "Enrollment done";
 
-  if (KioskAppManager::Get()->IsAutoLaunchEnabled())
+  if (KioskAppManager::Get()->IsAutoLaunchEnabled()) {
     AutoLaunchKioskApp();
-  else if (WebKioskAppManager::Get()->GetAutoLaunchAccountId().is_valid())
+  } else if (WebKioskAppManager::Get()->GetAutoLaunchAccountId().is_valid()) {
     AutoLaunchWebKioskApp();
-  else
+  } else if (g_browser_process->platform_part()
+                 ->browser_policy_connector_chromeos()
+                 ->IsEnterpriseManaged()) {
+    // Could be not managed in tests.
+    DCHECK_EQ(LoginDisplayHost::default_host()->GetOobeUI()->display_type(),
+              OobeUI::kOobeDisplay);
+    SwitchWebUItoMojo();
+  } else {
     ShowLoginScreen();
+  }
 }
 
 void WizardController::OnEnableAdbSideloadingScreenExit() {

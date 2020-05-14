@@ -62,8 +62,6 @@ android_library("devui_java") {
     "//third_party/android_deps:androidx_fragment_fragment_java",
     "//ui/android:ui_java",
   ]
-  android_manifest_for_lint = system_webview_android_manifest
-  min_sdk_version = 21
 }
 
 android_library("services_java") {
@@ -92,8 +90,6 @@ android_library("services_java") {
     "//components/variations/android:variations_java",
     "//components/version_info/android:version_constants_java",
   ]
-  android_manifest_for_lint = system_webview_android_manifest
-  min_sdk_version = 21
 }
 
 source_set("nonembedded") {

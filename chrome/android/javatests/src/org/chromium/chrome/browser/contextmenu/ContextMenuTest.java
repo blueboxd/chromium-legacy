@@ -101,7 +101,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
         mTestServer.stopAndDestroyServer();
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
         deleteTestFiles();
-        ContextMenuHelper.setHardcodedImageBytesForTesting(null, null);
+        ChromeContextMenuPopulator.setHardcodedImageBytesForTesting(null, null);
         LensUtils.setFakePassableLensEnvironmentForTesting(false);
     }
 
@@ -110,7 +110,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mTestUrl = mTestServer.getURL(TEST_PATH);
         deleteTestFiles();
-        ContextMenuHelper.setHardcodedImageBytesForTesting(null, null);
+        ChromeContextMenuPopulator.setHardcodedImageBytesForTesting(null, null);
         LensUtils.setFakePassableLensEnvironmentForTesting(false);
         mDownloadTestRule.startMainActivityWithURL(mTestUrl);
         mDownloadTestRule.assertWaitForPageScaleFactorMatch(0.5f);
@@ -753,7 +753,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
         String mockImageData = "randomdata";
         byte[] mockImageByteArray = mockImageData.getBytes();
         // See function javadoc for more context.
-        ContextMenuHelper.setHardcodedImageBytesForTesting(mockImageByteArray, extension);
+        ChromeContextMenuPopulator.setHardcodedImageBytesForTesting(mockImageByteArray, extension);
     }
 
     private void assertStringContains(String subString, String superString) {

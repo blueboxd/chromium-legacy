@@ -313,6 +313,7 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
     network::mojom::URLLoaderFactoryParamsPtr params =
         network::mojom::URLLoaderFactoryParams::New();
     params->process_id = network::mojom::kBrowserProcessId;
+    params->automatically_assign_isolation_info = true;
     params->is_corb_enabled = false;
     mojo::PendingRemote<network::mojom::URLLoaderFactory> loader_factory;
     content::BrowserContext::GetDefaultStoragePartition(profile())

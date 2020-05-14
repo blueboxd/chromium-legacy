@@ -28,8 +28,6 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/cookie_reminter_factory.h"
 #include "chrome/browser/signin/dice_response_handler.h"
-#include "chrome/browser/signin/dice_tab_helper.h"
-#include "chrome/browser/signin/dice_web_signin_interceptor_factory.h"
 #include "chrome/browser/signin/header_modification_delegate_impl.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/process_dice_header_delegate_impl.h"
@@ -363,37 +361,13 @@ void ProcessDiceHeader(
   if (!AccountConsistencyModeManager::IsDiceEnabledForProfile(profile))
     return;
 
-  signin_metrics::AccessPoint access_point =
-      signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN;
-  signin_metrics::PromoAction promo_action =
-      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO;
-  signin_metrics::Reason reason = signin_metrics::Reason::REASON_UNKNOWN_REASON;
-  // This is the URL that the browser specified to redirect to after the user
-  // signs in. Not to be confused with the redirect header from GAIA response.
-  GURL redirect_after_signin_url = GURL::EmptyGURL();
-
-  bool is_sync_signin_tab = false;
-  DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(web_contents);
-  if (tab_helper) {
-    is_sync_signin_tab = true;
-    access_point = tab_helper->signin_access_point();
-    promo_action = tab_helper->signin_promo_action();
-    reason = tab_helper->signin_reason();
-    redirect_after_signin_url = tab_helper->redirect_url();
-  }
-
   DiceResponseHandler* dice_response_handler =
       DiceResponseHandler::GetForProfile(profile);
   dice_response_handler->ProcessDiceHeader(
       dice_params,
       std::make_unique<ProcessDiceHeaderDelegateImpl>(
-          web_contents, IdentityManagerFactory::GetForProfile(profile),
-          DiceWebSigninInterceptorFactory::GetForProfile(profile),
-          is_sync_signin_tab,
-          base::BindOnce(&CreateDiceTurnOnSyncHelper, base::Unretained(profile),
-                         access_point, promo_action, reason),
-          base::BindOnce(&ShowDiceSigninError, base::Unretained(profile)),
-          redirect_after_signin_url));
+          web_contents, base::BindOnce(&CreateDiceTurnOnSyncHelper),
+          base::BindOnce(&ShowDiceSigninError)));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 

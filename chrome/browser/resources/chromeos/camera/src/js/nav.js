@@ -7,11 +7,11 @@ import {assertInstanceof} from './chrome_util.js';
 import {DeviceOperator} from './mojo/device_operator.js';
 import * as state from './state.js';
 import * as toast from './toast.js';
+// eslint-disable-next-line no-unused-vars
+import {ViewName} from './type.js';
 import * as util from './util.js';
-import {
-  View,      // eslint-disable-line no-unused-vars
-  ViewName,  // eslint-disable-line no-unused-vars
-} from './views/view.js';
+// eslint-disable-next-line no-unused-vars
+import {View} from './views/view.js';
 
 /**
  * All views stacked in ascending z-order (DOM order) for navigation, and only

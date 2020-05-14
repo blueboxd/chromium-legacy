@@ -113,6 +113,8 @@ content::WebUI* OobeBaseTest::GetLoginUI() {
 }
 
 void OobeBaseTest::WaitForOobeUI() {
+  // TODO(crbug.com/1082670): Remove excessive logging after investigation.
+  LOG(ERROR) << "Start waiting for OOBE UI.";
   // Wait for OobeUI to finish loading.
   base::RunLoop run_loop;
   if (!LoginDisplayHost::default_host()->GetOobeUI()->IsJSReady(

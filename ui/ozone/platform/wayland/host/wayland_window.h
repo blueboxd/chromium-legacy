@@ -44,6 +44,8 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
 
   static WaylandWindow* FromSurface(wl_surface* surface);
 
+  void OnWindowLostCapture();
+
   // Updates the surface buffer scale of the window.  Top level windows take
   // scale from the output attached to either their current display or the
   // primary one if their widget is not yet created, children inherit scale from
@@ -77,11 +79,6 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   // shell_popups as long as they must be destroyed in the back order.
   void set_child_window(WaylandWindow* window) { child_window_ = window; }
   WaylandWindow* child_window() const { return child_window_; }
-
-  // Set whether this window has an implicit grab (often referred to as capture
-  // in Chrome code). Implicit grabs happen while a pointer is down.
-  void set_has_implicit_grab(bool value) { has_implicit_grab_ = value; }
-  bool has_implicit_grab() const { return has_implicit_grab_; }
 
   int32_t buffer_scale() const { return buffer_scale_; }
   int32_t ui_scale() const { return ui_scale_; }
@@ -197,6 +194,8 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
 
   bool IsOpaqueWindow() const;
 
+  uint32_t DispatchEventToDelegate(const PlatformEvent& native_event);
+
   // Additional initialization of derived classes.
   virtual bool OnInitialize(PlatformWindowInitProperties properties) = 0;
 
@@ -226,7 +225,6 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   bool has_pointer_focus_ = false;
   bool has_keyboard_focus_ = false;
   bool has_touch_focus_ = false;
-  bool has_implicit_grab_ = false;
   // Wayland's scale factor for the output that this window currently belongs
   // to.
   int32_t buffer_scale_ = 1;

@@ -6261,7 +6261,8 @@ class NetworkContextSplitCacheTest : public NetworkContextTest {
                            const net::IsolationInfo& isolation_info,
                            bool was_cached,
                            bool expect_redirect = false,
-                           base::Optional<GURL> new_url = base::nullopt) {
+                           base::Optional<GURL> new_url = base::nullopt,
+                           bool automatically_assign_isolation_info = false) {
     ResourceRequest request = CreateResourceRequest("GET", url);
     request.load_flags |= net::LOAD_SKIP_CACHE_VALIDATION;
 
@@ -6277,6 +6278,9 @@ class NetworkContextSplitCacheTest : public NetworkContextTest {
       request.trusted_params->isolation_info = isolation_info;
       params->is_trusted = true;
     }
+
+    params->automatically_assign_isolation_info =
+        automatically_assign_isolation_info;
 
     request.site_for_cookies = isolation_info.site_for_cookies();
 
@@ -6406,6 +6410,29 @@ TEST_F(NetworkContextSplitCacheTest,
           net::SiteForCookies::FromOrigin(redirected_origin));
   LoadAndVerifyCached(redirected_url, non_navigation_redirected_info,
                       true /* was_cached */);
+}
+
+TEST_F(NetworkContextSplitCacheTest, AutomaticallyAssignIsolationInfo) {
+  GURL url = test_server()->GetURL("/resource");
+  // Load with an automatically assigned IsolationInfo, which should populate
+  // the cache using the IsolationInfo for |url|'s origin.
+  LoadAndVerifyCached(url, net::IsolationInfo(), false /* was_cached */,
+                      false /* expect_redirect */, base::nullopt /* new_url */,
+                      true /* automatically_assign_isolation_info */);
+
+  // Load again with a different isolation info. The cached entry should not be
+  // loaded.
+  url::Origin other_origin = url::Origin::Create(GURL("http://other.test/"));
+  net::IsolationInfo other_info =
+      net::IsolationInfo::CreateForInternalRequest(other_origin);
+  LoadAndVerifyCached(url, other_info, false /* was_cached */);
+
+  // Load explicitly using the requested URL's own IsolationInfo, which should
+  // use the cached entry.
+  url::Origin origin = url::Origin::Create(GURL(url));
+  net::IsolationInfo info =
+      net::IsolationInfo::CreateForInternalRequest(origin);
+  LoadAndVerifyCached(url, info, true /* was_cached */);
 }
 
 TEST_F(NetworkContextTest, EnableTrustTokens) {

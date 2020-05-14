@@ -82,6 +82,8 @@ URLLoaderFactory::URLLoaderFactory(
   // Only non-navigation IsolationInfos should be bound to URLLoaderFactories.
   DCHECK_EQ(net::IsolationInfo::RedirectMode::kUpdateNothing,
             params_->isolation_info.redirect_mode());
+  DCHECK(!params_->automatically_assign_isolation_info ||
+         params_->isolation_info.IsEmpty());
 
   if (!params_->top_frame_id) {
     params_->top_frame_id = base::UnguessableToken::Create();

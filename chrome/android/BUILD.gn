@@ -509,8 +509,6 @@ android_library("chrome_java") {
     "//net:effective_connection_type_java",
   ]
 
-  android_manifest_for_lint = chrome_public_android_manifest
-
   # From java_sources.gni.
   sources = chrome_java_sources + [
               app_hooks_impl,
@@ -1815,7 +1813,6 @@ android_library("monochrome_java") {
   ]
   sources =
       [ "java/src/org/chromium/chrome/browser/MonochromeApplication.java" ]
-  min_sdk_version = 24
 }
 
 # Defines a target that derives from the monochrome public application. This
@@ -2752,6 +2749,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/compositor/scene_layer/ToolbarSceneLayer.java",
     "java/src/org/chromium/chrome/browser/consent_auditor/ConsentAuditorBridge.java",
     "java/src/org/chromium/chrome/browser/content/ContentUtils.java",
+    "java/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuPopulator.java",
     "java/src/org/chromium/chrome/browser/contextmenu/ContextMenuHelper.java",
     "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchContext.java",
     "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchManager.java",

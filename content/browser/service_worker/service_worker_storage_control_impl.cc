@@ -260,14 +260,7 @@ void ServiceWorkerStorageControlImpl::StoreUserData(
     const GURL& origin,
     std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data,
     StoreUserDataCallback callback) {
-  // TODO(bashi): Change ServiceWorkerStorage::StoreUserData to take
-  // |user_data| so that we don't need to convert it.
-  std::vector<std::pair<std::string, std::string>> key_value_pairs;
-  for (auto& entry : user_data) {
-    key_value_pairs.push_back(
-        std::make_pair(std::move(entry->key), std::move(entry->value)));
-  }
-  storage_->StoreUserData(registration_id, origin, std::move(key_value_pairs),
+  storage_->StoreUserData(registration_id, origin, std::move(user_data),
                           std::move(callback));
 }
 

@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
@@ -409,6 +410,79 @@ TEST_F(AutofillFieldFillerTest, FillFormField_AutocompleteOff_CreditCardField) {
 
   // Verify that the field is filled.
   EXPECT_EQ(ASCIIToUTF16("4111111111111111"), field.value);
+}
+
+// Verify that an empty credit card value is returned if the offset exceeds the
+// length.
+TEST_F(AutofillFieldFillerTest,
+       FillFormField_MaxLength_CreditCardField_MaxLenghtExceedsLength) {
+  AutofillField field;
+  field.max_length = 30;
+  field.set_credit_card_number_offset(2);
+  field.set_heuristic_type(CREDIT_CARD_NUMBER);
+
+  // Credit card related field.
+  credit_card()->SetNumber(ASCIIToUTF16("0123456789999999"));
+  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
+  filler.FillFormField(field, *credit_card(), &field, /*cvc=*/base::string16());
+
+  // Verify that the field is filled with the fourth digit of the credit card
+  // number.
+  EXPECT_EQ(ASCIIToUTF16("23456789999999"), field.value);
+}
+
+// Verify that an empty credit card value is returned if the offset exceeds the
+// length.
+TEST_F(AutofillFieldFillerTest,
+       FillFormField_MaxLength_CreditCardField_OffsetExceedsLength) {
+  AutofillField field;
+  field.max_length = 1;
+  field.set_credit_card_number_offset(18);
+  field.set_heuristic_type(CREDIT_CARD_NUMBER);
+
+  // Credit card related field.
+  credit_card()->SetNumber(ASCIIToUTF16("0123456789999999"));
+  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
+  filler.FillFormField(field, *credit_card(), &field, /*cvc=*/base::string16());
+
+  // Verify that the field is filled with an empty value.
+  // number.
+  EXPECT_EQ(ASCIIToUTF16(""), field.value);
+}
+
+// Verify that only the truncated and offsetted value of the credit card number
+// is set.
+TEST_F(AutofillFieldFillerTest,
+       FillFormField_MaxLength_CreditCardField_WithOffset) {
+  AutofillField field;
+  field.max_length = 1;
+  field.set_credit_card_number_offset(3);
+  field.set_heuristic_type(CREDIT_CARD_NUMBER);
+
+  // Credit card related field.
+  credit_card()->SetNumber(ASCIIToUTF16("0123456789999999"));
+  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
+  filler.FillFormField(field, *credit_card(), &field, /*cvc=*/base::string16());
+
+  // Verify that the field is filled with the third digit of the credit card
+  // number.
+  EXPECT_EQ(ASCIIToUTF16("3"), field.value);
+}
+
+// Verify that only the truncated value of the credit card number is set.
+TEST_F(AutofillFieldFillerTest, FillFormField_MaxLength_CreditCardField) {
+  AutofillField field;
+  field.max_length = 1;
+  field.set_heuristic_type(CREDIT_CARD_NUMBER);
+
+  // Credit card related field.
+  credit_card()->SetNumber(ASCIIToUTF16("4111111111111111"));
+  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
+  filler.FillFormField(field, *credit_card(), &field, /*cvc=*/base::string16());
+
+  // Verify that the field is filled with only the first digit of the credit
+  // card number.
+  EXPECT_EQ(ASCIIToUTF16("4"), field.value);
 }
 
 // Verify that when the relevant feature is enabled, the invalid fields don't

@@ -19,9 +19,10 @@ import {
   Facing,
   Resolution,      // eslint-disable-line no-unused-vars
   ResolutionList,  // eslint-disable-line no-unused-vars
+  ViewName,
 } from '../type.js';
 import * as util from '../util.js';
-import {View, ViewName} from './view.js';
+import {View} from './view.js';
 
 /* eslint-disable no-unused-vars */
 

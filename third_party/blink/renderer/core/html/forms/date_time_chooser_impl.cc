@@ -123,7 +123,10 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
         GetLocale().QueryString(IDS_FORM_OTHER_DATE_LABEL);
   }
 
-  AddString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
+  AddString(
+      "<!DOCTYPE html><head><meta charset='UTF-8'><meta name='color-scheme' "
+      "content='light,dark'><style>\n",
+      data);
 
   data->Append(ChooserResourceLoader::GetPickerCommonStyleSheet());
   if (!features::IsFormControlsRefreshEnabled())
@@ -213,9 +216,9 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
         data);
     AddProperty("otherDateLabel", other_date_label_string, data);
 
-    DCHECK(OwnerElement().GetComputedStyle());
+    const ComputedStyle* style = OwnerElement().GetComputedStyle();
     WebColorScheme color_scheme =
-        OwnerElement().GetComputedStyle()->UsedColorScheme();
+        style ? style->UsedColorScheme() : WebColorScheme::kLight;
 
     AddProperty("suggestionHighlightColor",
                 LayoutTheme::GetTheme()

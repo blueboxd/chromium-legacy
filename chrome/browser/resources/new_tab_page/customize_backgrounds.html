@@ -1,4 +1,9 @@
-<style>
+<style include="cr-hidden-style">
+  :host {
+    display: flex;
+    height: -webkit-fill-available;
+  }
+
   #container {
     padding: 4px;
   }
@@ -122,6 +127,30 @@
     width: 32px;
   }
 
+  #backgroundsDisabled {
+    align-items: center;
+    align-self: center;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  #backgroundsDisabledIcon {
+    -webkit-mask-image: url(chrome://resources/images/business.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: 100%;
+    background-color: var(--ntp-primary-text-color);
+    height: 48px;
+    margin: auto;
+    width: 48px;
+  }
+
+  #backgroundsDisabledTitle {
+    margin-top: 10px;
+    text-align: center;
+    width: 50%;
+  }
+
   @media (prefers-color-scheme: dark) {
     .selected .image,
     .selected #uploadFromDevice {
@@ -134,7 +163,11 @@
     }
   }
 </style>
-<ntp-grid id="collections" columns="3" hidden="[[selectedCollection]]">
+<div id="backgroundsDisabled" hidden$="[[!customBackgroundDisabledByPolicy_]]">
+  <div id="backgroundsDisabledIcon"></div>
+  <div id="backgroundsDisabledTitle">$i18n{customBackgroundDisabled}</div>
+</div>
+<ntp-grid id="collections" columns="3" hidden="[[!showBackgroundSelection_]]">
   <div id="uploadFromDevice" class="tile" role="button"
       on-click="onUploadFromDeviceClick_" tabindex="0">
     <div class$="[[getCustomBackgroundClass_(theme, backgroundSelection)]]">

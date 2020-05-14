@@ -2430,6 +2430,8 @@ static_library("browser") {
       "android/compositor/tab_content_manager.h",
       "android/consent_auditor/consent_auditor_bridge.cc",
       "android/content/content_utils.cc",
+      "android/context_menu/chrome_context_menu_populator.cc",
+      "android/context_menu/chrome_context_menu_populator.h",
       "android/contextualsearch/contextual_search_context.cc",
       "android/contextualsearch/contextual_search_context.h",
       "android/contextualsearch/contextual_search_delegate.cc",

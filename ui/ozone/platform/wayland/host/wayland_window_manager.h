@@ -27,6 +27,17 @@ class WaylandWindowManager {
   void AddObserver(WaylandWindowObserver* observer);
   void RemoveObserver(WaylandWindowObserver* observer);
 
+  // Stores the window that should grab the located events.
+  void GrabLocatedEvents(WaylandWindow* event_grabber);
+
+  // Removes the window that should grab the located events.
+  void UngrabLocatedEvents(WaylandWindow* event_grabber);
+
+  // Returns current event grabber.
+  WaylandWindow* located_events_grabber() const {
+    return located_events_grabber_;
+  }
+
   // Returns a window found by |widget|.
   WaylandWindow* GetWindow(gfx::AcceleratedWidget widget) const;
 
@@ -53,6 +64,8 @@ class WaylandWindowManager {
   base::ObserverList<WaylandWindowObserver> observers_;
 
   base::flat_map<gfx::AcceleratedWidget, WaylandWindow*> window_map_;
+
+  WaylandWindow* located_events_grabber_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandWindowManager);
 };

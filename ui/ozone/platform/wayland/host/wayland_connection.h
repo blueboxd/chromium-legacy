@@ -77,6 +77,9 @@ class WaylandConnection {
   // Returns the current pointer, which may be null.
   WaylandPointer* pointer() const { return pointer_.get(); }
 
+  // Returns the current keyboard, which may be null.
+  WaylandKeyboard* keyboard() const { return keyboard_.get(); }
+
   WaylandClipboard* clipboard() const { return clipboard_.get(); }
 
   WaylandDataSource* drag_data_source() const {

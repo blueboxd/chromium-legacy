@@ -104,12 +104,12 @@ NSString* JSONEscape(NSString* JSONString) {
              }];
 }
 
-- (void)extractForm:(NSString*)formName
-      completionHandler:(void (^)(NSString*))completionHandler {
+- (void)extractForm:(FormRendererId)formIdentifier
+    completionHandler:(void (^)(NSString*))completionHandler {
   DCHECK(completionHandler);
   NSString* extra = [NSString
-      stringWithFormat:@"__gCrWeb.passwords.getPasswordFormDataAsString(%@)",
-                       JSONEscape(formName)];
+      stringWithFormat:@"__gCrWeb.passwords.getPasswordFormDataAsString(%u)",
+                       formIdentifier.value()];
   [_receiver executeJavaScript:extra
              completionHandler:^(id result, NSError*) {
                completionHandler(base::mac::ObjCCastStrict<NSString>(result));
@@ -130,16 +130,16 @@ NSString* JSONEscape(NSString* JSONString) {
              }];
 }
 
-- (void)fillPasswordForm:(NSString*)formName
-        newPasswordIdentifier:(NSString*)newPasswordIdentifier
-    confirmPasswordIdentifier:(NSString*)confirmPasswordIdentifier
+- (void)fillPasswordForm:(FormRendererId)formIdentifier
+        newPasswordIdentifier:(FieldRendererId)newPasswordIdentifier
+    confirmPasswordIdentifier:(FieldRendererId)confirmPasswordIdentifier
             generatedPassword:(NSString*)generatedPassword
             completionHandler:(void (^)(BOOL))completionHandler {
   NSString* script = [NSString
       stringWithFormat:@"__gCrWeb.passwords."
-                       @"fillPasswordFormWithGeneratedPassword(%@, %@, %@, %@)",
-                       JSONEscape(formName), JSONEscape(newPasswordIdentifier),
-                       JSONEscape(confirmPasswordIdentifier),
+                       @"fillPasswordFormWithGeneratedPassword(%u, %u, %u, %@)",
+                       formIdentifier.value(), newPasswordIdentifier.value(),
+                       confirmPasswordIdentifier.value(),
                        JSONEscape(generatedPassword)];
   [_receiver executeJavaScript:script
              completionHandler:^(id result, NSError*) {

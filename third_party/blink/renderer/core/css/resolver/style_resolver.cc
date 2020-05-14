@@ -1726,12 +1726,6 @@ void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
   }
 }
 
-static unsigned ComputeMatchedPropertiesHash(
-    const MatchedProperties* properties,
-    unsigned size) {
-  return StringHasher::HashMemory(properties, sizeof(MatchedProperties) * size);
-}
-
 void StyleResolver::InvalidateMatchedPropertiesCache() {
   matched_properties_cache_.Clear();
 }
@@ -1847,17 +1841,12 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
     const MatchResult& match_result) {
   const Element& element = state.GetElement();
 
-  unsigned cache_hash = match_result.IsCacheable()
-                            ? ComputeMatchedPropertiesHash(
-                                  match_result.GetMatchedProperties().data(),
-                                  match_result.GetMatchedProperties().size())
-                            : 0;
+  MatchedPropertiesCache::Key key(match_result);
+
   bool is_inherited_cache_hit = false;
   bool is_non_inherited_cache_hit = false;
   const CachedMatchedProperties* cached_matched_properties =
-      cache_hash ? matched_properties_cache_.Find(
-                       cache_hash, state, match_result.GetMatchedProperties())
-                 : nullptr;
+      key.IsValid() ? matched_properties_cache_.Find(key, state) : nullptr;
 
   if (cached_matched_properties && MatchedPropertiesCache::IsCacheable(state)) {
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
@@ -1895,8 +1884,8 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
     UpdateFont(state);
   }
 
-  return CacheSuccess(is_inherited_cache_hit, is_non_inherited_cache_hit,
-                      cache_hash, cached_matched_properties);
+  return CacheSuccess(is_inherited_cache_hit, is_non_inherited_cache_hit, key,
+                      cached_matched_properties);
 }
 
 void StyleResolver::MaybeAddToMatchedPropertiesCache(
@@ -1904,13 +1893,14 @@ void StyleResolver::MaybeAddToMatchedPropertiesCache(
     const CacheSuccess& cache_success,
     const MatchResult& match_result) {
   if (!state.IsAnimatingCustomProperties() &&
-      !cache_success.cached_matched_properties && cache_success.cache_hash &&
+      !cache_success.cached_matched_properties && cache_success.key.IsValid() &&
       MatchedPropertiesCache::IsCacheable(state)) {
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                   matched_property_cache_added, 1);
-    matched_properties_cache_.Add(*state.Style(), *state.ParentStyle(),
-                                  cache_success.cache_hash,
-                                  match_result.GetMatchedProperties());
+    // TODO(crbug.com/1057072): Pass dependencies to MatchedPropertiesCache.
+    HashSet<CSSPropertyName> unused_dependencies;
+    matched_properties_cache_.Add(cache_success.key, *state.Style(),
+                                  *state.ParentStyle(), unused_dependencies);
   }
 }
 

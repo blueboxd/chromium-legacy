@@ -38,8 +38,8 @@ ProactiveSuggestionsRichView::ProactiveSuggestionsRichView(
     : ProactiveSuggestionsView(delegate) {}
 
 ProactiveSuggestionsRichView::~ProactiveSuggestionsRichView() {
-  if (contents_view_)
-    contents_view_->RemoveObserver(this);
+  if (ContentsView())
+    ContentsView()->RemoveObserver(this);
 }
 
 const char* ProactiveSuggestionsRichView::GetClassName() const {
@@ -63,11 +63,11 @@ void ProactiveSuggestionsRichView::InitLayout() {
   params.suppress_navigation = true;
 
   // Initialize |contents_view_|.
-  // Note that we retain ownership of the underlying pointer so that it is
-  // cleaned up in the event that the view is never added to the view hierarchy.
+  // Note that we retain ownership of the underlying pointer until it is
+  // inserted into the view hierarchy so that it is cleaned up in the event that
+  // the view isn't inserted.
   contents_view_ = AssistantWebViewFactory::Get()->Create(params);
-  contents_view_->set_owned_by_client();
-  contents_view_->AddObserver(this);
+  ContentsView()->AddObserver(this);
 
   // Encode the html for the entry point to be URL safe.
   std::string encoded_html;
@@ -76,7 +76,7 @@ void ProactiveSuggestionsRichView::InitLayout() {
 
   // Navigate to the data URL representing our encoded HTML.
   constexpr char kDataUriPrefix[] = "data:text/html;base64,";
-  contents_view_->Navigate(GURL(kDataUriPrefix + encoded_html));
+  ContentsView()->Navigate(GURL(kDataUriPrefix + encoded_html));
 }
 
 void ProactiveSuggestionsRichView::AddedToWidget() {
@@ -152,12 +152,12 @@ void ProactiveSuggestionsRichView::Close() {
 }
 
 void ProactiveSuggestionsRichView::DidStopLoading() {
-  AddChildView(contents_view_.get());
+  contents_view_ptr_ = AddChildView(std::move(contents_view_));
   PreferredSizeChanged();
 
   // Once the view for the embedded web contents has been fully initialized,
   // it's safe to set our desired corner radius.
-  contents_view_->GetNativeView()->layer()->SetRoundedCornerRadius(
+  ContentsView()->GetNativeView()->layer()->SetRoundedCornerRadius(
       gfx::RoundedCornersF(
           GetProactiveSuggestionsRichEntryPointCornerRadius()));
 
@@ -167,7 +167,7 @@ void ProactiveSuggestionsRichView::DidStopLoading() {
   const int background_blur_radius =
       GetProactiveSuggestionsRichEntryPointBackgroundBlurRadius();
   if (background_blur_radius > 0) {
-    contents_view_->GetNativeView()->layer()->SetBackgroundBlur(
+    ContentsView()->GetNativeView()->layer()->SetBackgroundBlur(
         background_blur_radius);
   }
 
@@ -183,6 +183,10 @@ void ProactiveSuggestionsRichView::DidSuppressNavigation(
     bool from_user_gesture) {
   if (from_user_gesture)
     AssistantController::Get()->OpenUrl(url);
+}
+
+AssistantWebView* ProactiveSuggestionsRichView::ContentsView() {
+  return contents_view_ptr_ ? contents_view_ptr_ : contents_view_.get();
 }
 
 }  // namespace ash

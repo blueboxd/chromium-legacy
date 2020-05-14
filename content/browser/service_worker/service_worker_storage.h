@@ -225,7 +225,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   void StoreUserData(
       int64_t registration_id,
       const GURL& origin,
-      const std::vector<std::pair<std::string, std::string>>& key_value_pairs,
+      std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data,
       DatabaseStatusCallback callback);
   // Responds OK if all are successfully deleted or not found in the database.
   void ClearUserData(int64_t registration_id,

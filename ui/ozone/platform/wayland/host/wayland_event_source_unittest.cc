@@ -57,7 +57,7 @@ class WaylandEventSourceTest : public WaylandTest {
 };
 
 // Verify WaylandEventSource properly manages its internal state as pointer
-// button events are sent. More specifically, pointer flags and implicit grab.
+// button events are sent. More specifically - pointer flags.
 TEST_P(WaylandEventSourceTest, CheckPointerButtonHandling) {
   MockPlatformWindowDelegate delegate;
   wl_seat_send_capabilities(server_.seat()->resource(),
@@ -74,7 +74,6 @@ TEST_P(WaylandEventSourceTest, CheckPointerButtonHandling) {
                                                kDefaultBounds, &delegate);
   Sync();
 
-  EXPECT_FALSE(window1->has_implicit_grab());
   ASSERT_TRUE(server_.seat()->pointer());
 
   uint32_t serial = 0;
@@ -90,7 +89,6 @@ TEST_P(WaylandEventSourceTest, CheckPointerButtonHandling) {
   Sync();
 
   EXPECT_TRUE(event_source_->IsPointerButtonPressed(EF_LEFT_MOUSE_BUTTON));
-  EXPECT_TRUE(window1->has_implicit_grab());
 
   wl_pointer_send_button(pointer_res, serial++, tstamp++, BTN_RIGHT,
                          WL_POINTER_BUTTON_STATE_PRESSED);
@@ -98,7 +96,6 @@ TEST_P(WaylandEventSourceTest, CheckPointerButtonHandling) {
   Sync();
 
   EXPECT_TRUE(event_source_->IsPointerButtonPressed(EF_RIGHT_MOUSE_BUTTON));
-  EXPECT_TRUE(window1->has_implicit_grab());
 
   wl_pointer_send_button(pointer_res, serial++, tstamp++, BTN_LEFT,
                          WL_POINTER_BUTTON_STATE_RELEASED);
@@ -109,7 +106,6 @@ TEST_P(WaylandEventSourceTest, CheckPointerButtonHandling) {
 
   EXPECT_FALSE(event_source_->IsPointerButtonPressed(EF_LEFT_MOUSE_BUTTON));
   EXPECT_FALSE(event_source_->IsPointerButtonPressed(EF_RIGHT_MOUSE_BUTTON));
-  EXPECT_FALSE(window1->has_implicit_grab());
 }
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,

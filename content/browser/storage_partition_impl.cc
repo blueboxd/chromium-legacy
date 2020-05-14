@@ -2428,6 +2428,7 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal(
   network::mojom::URLLoaderFactoryParamsPtr params =
       network::mojom::URLLoaderFactoryParams::New();
   params->process_id = network::mojom::kBrowserProcessId;
+  params->automatically_assign_isolation_info = true;
   params->is_corb_enabled = corb_enabled;
   // Corb requests are likely made on behalf of untrusted renderers.
   if (!corb_enabled)

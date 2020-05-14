@@ -2016,6 +2016,9 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
   auto result =
       URLRequestContextOwner(std::move(pref_service), builder.Build());
 
+  result.url_request_context->set_require_network_isolation_key(
+      params_->require_network_isolation_key);
+
   // Subscribe the CertVerifier to configuration changes that are exposed via
   // the mojom::SSLConfig, but which are not part of the
   // net::SSLConfig[Service] interfaces.

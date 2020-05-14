@@ -56,12 +56,12 @@ constexpr gfx::Size GetQRImageSize() {
 }
 
 // Renders a solid square of color {r, g, b} at 100% alpha.
-gfx::ImageSkia GetPlaceholderImageSkia(unsigned r, unsigned g, unsigned b) {
+gfx::ImageSkia GetPlaceholderImageSkia(const SkColor color) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(kQRImageSizePx, kQRImageSizePx);
   bitmap.eraseARGB(0xFF, 0xFF, 0xFF, 0xFF);
   // TODO(skare): rounded rect
-  bitmap.eraseARGB(0xFF, r, g, b);
+  bitmap.eraseColor(color);
   return gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, 1.0f));
 }
 
@@ -108,6 +108,11 @@ void QRCodeGeneratorBubble::Hide() {
 }
 
 void QRCodeGeneratorBubble::UpdateQRContent() {
+  if (textfield_url_->GetText().empty()) {
+    DisplayPlaceholderImage();
+    return;
+  }
+
   mojom::GenerateQRCodeRequestPtr request = mojom::GenerateQRCodeRequest::New();
   request->data = base::UTF16ToASCII(textfield_url_->GetText());
   request->should_render = true;
@@ -126,7 +131,7 @@ void QRCodeGeneratorBubble::UpdateQRContent() {
 void QRCodeGeneratorBubble::OnCodeGeneratorResponse(
     const mojom::GenerateQRCodeResponsePtr response) {
   if (response->error_code != mojom::QRCodeGeneratorError::NONE) {
-    UpdateQRImage(GetPlaceholderImageSkia(0xFF, 0xFF, 0xFF));
+    DisplayPlaceholderImage();
     return;
   }
 
@@ -138,6 +143,10 @@ void QRCodeGeneratorBubble::UpdateQRImage(gfx::ImageSkia qr_image) {
   qr_code_image_->SetImage(qr_image);
   qr_code_image_->SetImageSize(GetQRImageSize());
   qr_code_image_->SetBackground(nullptr);
+}
+
+void QRCodeGeneratorBubble::DisplayPlaceholderImage() {
+  UpdateQRImage(GetPlaceholderImageSkia(gfx::kGoogleGrey100));
 }
 
 views::View* QRCodeGeneratorBubble::GetInitiallyFocusedView() {
@@ -193,10 +202,9 @@ void QRCodeGeneratorBubble::Init() {
   qr_code_image->SetVerticalAlignment(Alignment::kCenter);
   qr_code_image->SetImageSize(GetQRImageSize());
   qr_code_image->SetPreferredSize(GetQRImageSize());
-  // google-gray-100
-  qr_code_image->SetImage(GetPlaceholderImageSkia(0xF1, 0xF3, 0xF4));
   layout->StartRow(views::GridLayout::kFixedSize, kQRImageColumnSetId);
   qr_code_image_ = layout->AddView(std::move(qr_code_image));
+  DisplayPlaceholderImage();
 
   // Padding
   AddSmallPaddingRow(layout);

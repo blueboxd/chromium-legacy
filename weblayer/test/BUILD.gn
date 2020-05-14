@@ -48,8 +48,6 @@ if (is_android) {
     ]
 
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-
-    android_manifest_for_lint = weblayer_browsertests_manifest
   }
 
   generate_jni("weblayer_browsertests_jni") {

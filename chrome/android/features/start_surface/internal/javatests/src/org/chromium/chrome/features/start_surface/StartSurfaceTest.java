@@ -15,10 +15,13 @@ import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -58,6 +61,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
+import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -145,6 +149,7 @@ public class StartSurfaceTest {
             // Instant start because we cannot unload native library.
             // Create fake TabState files to emulate having one tab in previous session.
             InstantStartTest.createTabStateFile(new int[] {0});
+            TabAttributeCache.setTitleForTesting(0, "tab title");
             startMainActivityFromLauncher();
         } else {
             // Cannot use startMainActivityFromLauncher().
@@ -272,13 +277,10 @@ public class StartSurfaceTest {
         onView(withId(R.id.search_box_text)).check(matches(isDisplayed()));
         onView(withId(org.chromium.chrome.tab_ui.R.id.mv_tiles_container))
                 .check(matches(isDisplayed()));
-        if (!isInstantReturn()) {
-            // TODO(crbug.com/1065314): show tab switcher section.
-            onView(withId(org.chromium.chrome.tab_ui.R.id.tab_switcher_title))
-                    .check(matches(isDisplayed()));
-            onView(withId(org.chromium.chrome.tab_ui.R.id.carousel_tab_switcher_container))
-                    .check(matches(isDisplayed()));
-        }
+        onView(withId(org.chromium.chrome.tab_ui.R.id.tab_switcher_title))
+                .check(matches(isDisplayed()));
+        onView(withId(org.chromium.chrome.tab_ui.R.id.carousel_tab_switcher_container))
+                .check(matches(isDisplayed()));
         onView(withId(org.chromium.chrome.tab_ui.R.id.tasks_surface_body))
                 .check(matches(isDisplayed()));
 
@@ -334,13 +336,10 @@ public class StartSurfaceTest {
         onView(withId(R.id.search_box_text)).check(matches(isDisplayed()));
         onView(withId(org.chromium.chrome.tab_ui.R.id.mv_tiles_container))
                 .check(matches(withEffectiveVisibility(GONE)));
-        if (!isInstantReturn()) {
-            // TODO(crbug.com/1065314): show tab switcher section.
-            onView(withId(org.chromium.chrome.tab_ui.R.id.tab_switcher_title))
-                    .check(matches(isDisplayed()));
-            onView(withId(org.chromium.chrome.tab_ui.R.id.carousel_tab_switcher_container))
-                    .check(matches(isDisplayed()));
-        }
+        onView(withId(org.chromium.chrome.tab_ui.R.id.tab_switcher_title))
+                .check(matches(isDisplayed()));
+        onView(withId(org.chromium.chrome.tab_ui.R.id.carousel_tab_switcher_container))
+                .check(matches(isDisplayed()));
         onView(withId(org.chromium.chrome.tab_ui.R.id.tasks_surface_body))
                 .check(matches(isDisplayed()));
 
@@ -402,15 +401,12 @@ public class StartSurfaceTest {
         onView(withId(R.id.search_box_text)).check(matches(isDisplayed()));
         onView(withId(org.chromium.chrome.tab_ui.R.id.mv_tiles_container))
                 .check(matches(withEffectiveVisibility(GONE)));
-        if (!isInstantReturn()) {
-            // TODO(crbug.com/1065314): show tab switcher section.
-            onView(withId(org.chromium.chrome.tab_ui.R.id.tab_switcher_title))
-                    .check(matches(isDisplayed()));
-            onView(withId(org.chromium.chrome.tab_ui.R.id.carousel_tab_switcher_container))
-                    .check(matches(isDisplayed()));
-            onView(withId(org.chromium.chrome.tab_ui.R.id.single_tab_view))
-                    .check(matches(isDisplayed()));
-        }
+        onView(withId(org.chromium.chrome.tab_ui.R.id.tab_switcher_title))
+                .check(matches(isDisplayed()));
+        onView(withId(org.chromium.chrome.tab_ui.R.id.carousel_tab_switcher_container))
+                .check(matches(isDisplayed()));
+        onView(withId(org.chromium.chrome.tab_ui.R.id.single_tab_view))
+                .check(matches(isDisplayed()));
         onView(withId(org.chromium.chrome.tab_ui.R.id.tasks_surface_body))
                 .check(matches(isDisplayed()));
 
@@ -419,6 +415,8 @@ public class StartSurfaceTest {
             onView(withId(org.chromium.chrome.tab_ui.R.id.incognito_switch))
                     .check(matches(withEffectiveVisibility(GONE)));
         }
+        onViewWaiting(allOf(
+                withId(org.chromium.chrome.tab_ui.R.id.tab_title_view), withText(not(is("")))));
 
         // Note that onView(R.id.more_tabs).perform(click()) can not be used since it requires 90
         // percent of the view's area is displayed to the users. However, this view has negative

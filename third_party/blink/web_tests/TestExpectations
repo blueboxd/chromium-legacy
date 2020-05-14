@@ -1202,8 +1202,6 @@ crbug.com/6606 external/wpt/mathml/presentation-markup/operators/mo-form-minus-p
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/mo-form.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/mo-movablelimits.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/mo-paint-lspace-rspace.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/operators/operator-dictionary-001.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/operators/operator-dictionary-002.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/radicals/root-parameters-1.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/scripts/underover-parameters-2.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/scripts/underover-parameters-3.html [ Failure ]
@@ -5934,3 +5932,7 @@ crbug.com/984467 [ Mac Debug ] virtual/gpu/fast/canvas/canvas-composite-stroke-a
 # Sheriff 2020-05-06
 crbug.com/1078863 [ Mac ] fast/speech/scripted/speechrecognition-restart-onend.html [ Pass Timeout ]
 crbug.com/1071915 fast/hidpi/image-srcset-png-canvas.html [ Pass Failure ]
+
+# Flaky test blocking wpt import
+crbug.com/1082739 external/wpt/event-timing/dblclick.html [ Pass Failure ]
+

@@ -346,11 +346,10 @@ void CustomTabBarView::UpdateContents() {
   base::string16 title, location;
   if (entry) {
     title = Browser::FormatTitleForDisplay(entry->GetTitleForDisplay());
-    if (ShouldDisplayUrl(contents))
-      location = url_formatter::FormatUrl(entry->GetVirtualURL().GetOrigin(),
-                                          url_formatter::kFormatUrlOmitDefaults,
-                                          net::UnescapeRule::NORMAL, nullptr,
-                                          nullptr, nullptr);
+    if (ShouldDisplayUrl(contents)) {
+      location = web_app::AppBrowserController::FormatUrlOrigin(
+          contents->GetVisibleURL(), url_formatter::kFormatUrlOmitDefaults);
+    }
   }
 
   title_origin_view_->Update(title, location);

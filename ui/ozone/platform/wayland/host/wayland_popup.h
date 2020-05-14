@@ -23,7 +23,6 @@ class WaylandPopup : public WaylandWindow {
   void Show(bool inactive) override;
   void Hide() override;
   bool IsVisible() const override;
-  bool HasCapture() const override;
 
  private:
   // WaylandWindow overrides:

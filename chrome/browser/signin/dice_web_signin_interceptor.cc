@@ -21,9 +21,17 @@ DiceWebSigninInterceptor::~DiceWebSigninInterceptor() = default;
 void DiceWebSigninInterceptor::MaybeInterceptWebSignin(
     content::WebContents* web_contents,
     CoreAccountId account_id,
-    bool is_new_account) {
+    bool is_new_account,
+    bool is_sync_signin) {
   if (!base::FeatureList::IsEnabled(kDiceWebSigninInterceptionFeature))
     return;
+
+  // Do not intercept signins from the Sync startup flow. Note: |is_sync_signin|
+  // is an approximation, and in rare cases it may be true when in fact the
+  // signin was not a sync signin. In this case the interception is missed.
+  if (is_sync_signin)
+    return;
+
   if (is_interception_in_progress_)
     return;  // Multiple concurrent interceptions are not supported.
   if (!is_new_account)

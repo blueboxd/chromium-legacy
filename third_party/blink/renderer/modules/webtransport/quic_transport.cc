@@ -498,7 +498,10 @@ void QuicTransport::OnConnectionEstablished(
 
 QuicTransport::~QuicTransport() = default;
 
-void QuicTransport::OnHandshakeFailed() {
+void QuicTransport::OnHandshakeFailed(
+    network::mojom::blink::QuicTransportErrorPtr error) {
+  // |error| should be null from security/privacy reasons.
+  DCHECK(!error);
   DVLOG(1) << "QuicTransport::OnHandshakeFailed() this=" << this;
   ScriptState::Scope scope(script_state_);
   {

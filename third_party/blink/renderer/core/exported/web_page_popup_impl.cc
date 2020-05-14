@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/dom/context_features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
 #include "third_party/blink/renderer/core/exported/web_settings_impl.h"
@@ -292,6 +293,22 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
   page_->GetSettings().SetPrimaryPointerType(
       main_settings.GetPrimaryPointerType());
 
+  // The style can be out-of-date if e.g. a key event handler modified the
+  // OwnerElement()'s style before the default handler started opening the
+  // popup. If the key handler forced a style update the style may be up-to-date
+  // and null.
+  // Note that if there's a key event handler which changes the color-scheme
+  // between the key is pressed and the popup is opened, the color-scheme of the
+  // form element and its popup may not match.
+  // If we think it's important to have an up-to-date style here, we need to run
+  // an UpdateStyleAndLayoutTree() before opening the popup in the various
+  // default event handlers.
+  if (const auto* style = popup_client_->OwnerElement().GetComputedStyle()) {
+    page_->GetSettings().SetPreferredColorScheme(
+        style->UsedColorScheme() == WebColorScheme::kDark
+            ? PreferredColorScheme::kDark
+            : PreferredColorScheme::kLight);
+  }
   popup_client_->CreatePagePopupController(*page_, *this);
 
   ProvideContextFeaturesTo(*page_, std::make_unique<PagePopupFeaturesClient>());

@@ -137,6 +137,9 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
     # Must be off since we are now passing in annotation processor generated
     # code as a source jar (deduplicating work with turbine).
     'RefersToDaggerCodegen',
+    # We already have presubmit checks for this. Not necessary to warn on
+    # every build.
+    'RemoveUnusedImports',
 ]
 
 # Full list of checks: https://errorprone.info/bugpatterns
@@ -150,7 +153,6 @@ ERRORPRONE_WARNINGS_TO_ERROR = [
     'LongLiteralLowerCaseSuffix',
     'MultiVariableDeclaration',
     'RedundantOverride',
-    'RemoveUnusedImports',
     'StaticQualifiedUsingExpression',
     'StringEquality',
     'TimeUnitMismatch',

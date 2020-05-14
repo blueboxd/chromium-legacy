@@ -179,7 +179,7 @@ static bool NeedsDecorationOutlineLayer(const PaintLayer& paint_layer,
       layout_object.IsCanvas() || IsA<LayoutVideo>(layout_object);
 
   return could_obscure_decorations && layout_object.StyleRef().HasOutline() &&
-         layout_object.StyleRef().OutlineOffset() < -min_border_width;
+         layout_object.StyleRef().OutlineOffsetInt() < -min_border_width;
 }
 
 CompositedLayerMapping::CompositedLayerMapping(PaintLayer& layer)

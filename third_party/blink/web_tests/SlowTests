@@ -522,11 +522,5 @@ crbug.com/24182 [ Mac10.10 ] virtual/threaded/external/wpt/css/css-scroll-snap/s
 crbug.com/24182 [ Mac10.10 ] virtual/threaded/external/wpt/css/css-animations/CSSAnimation-canceling.tentative.html [ Slow ]
 
 # These MathML tests operator over a huge dictionary and are slow.
-crbug.com/6606 external/wpt/mathml/presentation-markup/operators/operator-dictionary-001.html [ Slow ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/operators/operator-dictionary-002.html [ Slow ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/operators/operator-dictionary-003.html [ Slow ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/operators/operator-dictionary-004.html [ Slow ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/operators/operator-dictionary-005.html [ Slow ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/operators/operator-dictionary-006.html [ Slow ]
 
 crbug.com/1043669 [ Mac ] inspector-protocol/emulation/set-vision-deficiency.js [ Slow ]

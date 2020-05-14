@@ -10,8 +10,12 @@ import static org.chromium.chrome.browser.tasks.SingleTabViewProperties.IS_VISIB
 import static org.chromium.chrome.browser.tasks.SingleTabViewProperties.TITLE;
 
 import android.graphics.drawable.Drawable;
+
 import org.chromium.base.ObserverList;
+import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabList;
@@ -19,6 +23,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.tab_management.TabListFaviconProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -66,6 +71,20 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                 if (!newModel.isIncognito()) mShouldIgnoreNextSelect = true;
             }
+
+            @Override
+            public void onTabStateInitialized() {
+                TabModel normalTabModel = mTabModelSelector.getModel(false);
+                int selectedTabIndex = normalTabModel.index();
+                if (selectedTabIndex != TabList.INVALID_TAB_INDEX) {
+                    assert normalTabModel.getCount() > 0;
+
+                    Tab tab = normalTabModel.getTabAt(selectedTabIndex);
+                    mPropertyModel.set(TITLE, tab.getTitle());
+                    mTabListFaviconProvider.getFaviconForUrlAsync(tab.getUrlString(), false,
+                            (Drawable favicon) -> { mPropertyModel.set(FAVICON, favicon); });
+                }
+            }
         };
     }
 
@@ -110,17 +129,33 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
     @Override
     public void showOverview(boolean animate) {
         TabModel normalTabModel = mTabModelSelector.getModel(false);
-        normalTabModel.addObserver(mNormalTabModelObserver);
+        if (normalTabModel != null) {
+            normalTabModel.addObserver(mNormalTabModelObserver);
+        } else {
+            assert CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)
+                : "Normal tab model should exist except for instant start";
+        }
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
 
-        int selectedTabIndex = normalTabModel.index();
-        if (selectedTabIndex != TabList.INVALID_TAB_INDEX) {
-            assert normalTabModel.getCount() > 0;
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)
+                && !mTabModelSelector.isTabStateInitialized()) {
+            PseudoTab activeTab;
+            try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+                activeTab = PseudoTab.getActiveTabFromStateFile();
+            }
+            if (activeTab != null) {
+                mPropertyModel.set(TITLE, activeTab.getTitle());
+            }
+        } else {
+            int selectedTabIndex = normalTabModel.index();
+            if (selectedTabIndex != TabList.INVALID_TAB_INDEX) {
+                assert normalTabModel.getCount() > 0;
 
-            Tab tab = normalTabModel.getTabAt(selectedTabIndex);
-            mPropertyModel.set(TITLE, tab.getTitle());
-            mTabListFaviconProvider.getFaviconForUrlAsync(tab.getUrlString(), false,
-                    (Drawable favicon) -> { mPropertyModel.set(FAVICON, favicon); });
+                Tab tab = normalTabModel.getTabAt(selectedTabIndex);
+                mPropertyModel.set(TITLE, tab.getTitle());
+                mTabListFaviconProvider.getFaviconForUrlAsync(tab.getUrlString(), false,
+                        (Drawable favicon) -> { mPropertyModel.set(FAVICON, favicon); });
+            }
         }
         mPropertyModel.set(IS_VISIBLE, true);
 

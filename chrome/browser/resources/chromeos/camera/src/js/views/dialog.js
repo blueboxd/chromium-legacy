@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 import {assertInstanceof, assertString} from '../chrome_util.js';
-import {View,
-        ViewName,  // eslint-disable-line no-unused-vars
-} from './view.js';
+// eslint-disable-next-line no-unused-vars
+import {ViewName} from '../type.js';
+import {View} from './view.js';
 
 /**
  * Creates the Dialog view controller.

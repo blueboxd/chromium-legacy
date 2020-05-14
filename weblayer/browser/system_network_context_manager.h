@@ -37,6 +37,10 @@ class SystemNetworkContextManager {
   static network::mojom::NetworkContextParamsPtr
   CreateDefaultNetworkContextParams(const std::string& user_agent);
 
+  static void ConfigureDefaultNetworkContextParams(
+      network::mojom::NetworkContextParams* network_context_params,
+      const std::string& user_agent);
+
   ~SystemNetworkContextManager();
 
   // Returns the System NetworkContext. Does any initialization of the

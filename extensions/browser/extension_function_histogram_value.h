@@ -1533,6 +1533,7 @@ enum HistogramValue {
   TERMINALPRIVATE_OPENOPTIONSPAGE = 1470,
   DECLARATIVENETREQUEST_UPDATEENABLEDRULESETS = 1471,
   DECLARATIVENETREQUEST_GETENABLEDRULESETS = 1472,
+  TERMINALPRIVATE_OPENWINDOW = 1473,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

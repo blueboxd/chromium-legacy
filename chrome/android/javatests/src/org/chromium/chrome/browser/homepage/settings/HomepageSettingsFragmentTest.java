@@ -173,6 +173,35 @@ public class HomepageSettingsFragmentTest {
     @Test
     @SmallTest
     @Feature({"Homepage"})
+    public void testStartUp_ChromeNTP_WithPartner() {
+        PartnerBrowserCustomizations.getInstance().setHomepageForTests(TEST_URL_FOO);
+        mHomepageTestRule.useChromeNTPForTest();
+
+        launchSettingsActivity();
+
+        Assert.assertTrue(ASSERT_MESSAGE_SWITCH_ENABLE, mSwitch.isEnabled());
+        Assert.assertTrue(ASSERT_MESSAGE_RADIO_BUTTON_ENABLED, mChromeNtpRadioButton.isEnabled());
+        Assert.assertTrue(ASSERT_MESSAGE_RADIO_BUTTON_ENABLED, mCustomUriRadioButton.isEnabled());
+        Assert.assertTrue(ASSERT_MESSAGE_TITLE_ENABLED, mTitleTextView.isEnabled());
+
+        Assert.assertTrue(ASSERT_MESSAGE_SWITCH_CHECK, mSwitch.isChecked());
+        Assert.assertTrue(ASSERT_MESSAGE_RADIO_BUTTON_NTP_CHECK, mChromeNtpRadioButton.isChecked());
+        Assert.assertFalse(
+                ASSERT_MESSAGE_RADIO_BUTTON_CUSTOMIZED_CHECK, mCustomUriRadioButton.isChecked());
+        Assert.assertEquals(ASSERT_MESSAGE_EDIT_TEXT, TEST_URL_FOO,
+                mCustomUriRadioButton.getPrimaryText().toString());
+
+        Assert.assertEquals(ASSERT_HOMEPAGE_LOCATION_TYPE_MISMATCH,
+                HomepageLocationType.USER_CUSTOMIZED_NTP,
+                HomepageManager.getInstance().getHomepageLocationType());
+
+        // Reset partner provided information
+        PartnerBrowserCustomizations.destroy();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Homepage"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testStartUp_ChromeNTP_BottomToolbar() {
         mHomepageTestRule.useCustomizedHomepageForTest(TEST_URL_BAR);

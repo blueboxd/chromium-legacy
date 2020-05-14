@@ -22928,6 +22928,7 @@ Called by update_extension_histograms.py.-->
   <int value="1470" label="TERMINALPRIVATE_OPENOPTIONSPAGE"/>
   <int value="1471" label="DECLARATIVENETREQUEST_UPDATEENABLEDRULESETS"/>
   <int value="1472" label="DECLARATIVENETREQUEST_GETENABLEDRULESETS"/>
+  <int value="1473" label="TERMINALPRIVATE_OPENWINDOW"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -39610,6 +39611,7 @@ from previous Chrome versions.
   <int value="-567920515" label="disable-experimental-hotwording"/>
   <int value="-563980787" label="disable-webrtc"/>
   <int value="-563600258" label="PhotoPickerVideoSupport:disabled"/>
+  <int value="-562771426" label="InstantStart:disabled"/>
   <int value="-562274241" label="enable-extension-action-redesign"/>
   <int value="-561194974" label="AutofillExpandedPopupViews:enabled"/>
   <int value="-560551550" label="use-memory-pressure-chromeos"/>
@@ -40704,6 +40706,7 @@ from previous Chrome versions.
   <int value="705407202" label="AutofillSaveCardImprovedUserConsent:disabled"/>
   <int value="705712478" label="EnablePalmOnToolTypePalm:disabled"/>
   <int value="705713283" label="EasyUnlockPromotions:disabled"/>
+  <int value="709138900" label="InstantStart:enabled"/>
   <int value="709850261" label="disable-touch-editing"/>
   <int value="710700286" label="ImmersiveFullscreen:disabled"/>
   <int value="711424932" label="enable-cloud-print-xps"/>
@@ -40847,6 +40850,7 @@ from previous Chrome versions.
   <int value="879699575" label="disable-gesture-tap-highlight"/>
   <int value="879992337" label="disable-pull-to-refresh-effect"/>
   <int value="880510010" label="enable-permissions-bubbles"/>
+  <int value="883190338" label="PrintWithReducedRasterization:disabled"/>
   <int value="884106779" label="supervised-user-safesites"/>
   <int value="885004540" label="ArcEnableApplicationZoomFeature:enabled"/>
   <int value="885971656" label="EnablePlayStoreAppSearch:enabled"/>
@@ -41522,6 +41526,7 @@ from previous Chrome versions.
   <int value="1639314588" label="LookalikeUrlNavigationSuggestions:disabled"/>
   <int value="1640386037" label="ContextualSuggestionsSlimPeekUI:disabled"/>
   <int value="1643626730" label="PrinterStatus:disabled"/>
+  <int value="1643712769" label="PrintWithReducedRasterization:enabled"/>
   <int value="1645447927" label="MixedContentSiteSetting:disabled"/>
   <int value="1645479440" label="HistoryManipulationIntervention:disabled"/>
   <int value="1646498561" label="OfflineBookmarks:disabled"/>
@@ -59821,6 +59826,14 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="8" label="SKIPPED_VERSION_CHECK_EQUAL"/>
 </enum>
 
+<enum name="SBPhishingClassifierEvent">
+  <int value="0" label="Phishing detection was requested to start"/>
+  <int value="1" label="Page text was captured"/>
+  <int value="2" label="Page text not loaded"/>
+  <int value="3" label="Url should not be classified"/>
+  <int value="4" label="Phishing classifier was destructed"/>
+</enum>
+
 <enum name="ScheduledNavigationType">
   <obsolete>
     Deprecated August 2018
@@ -65689,6 +65702,14 @@ would be helpful to identify which type is being sent.
   <int value="0" label="Initializing"/>
   <int value="1" label="Not Active"/>
   <int value="2" label="Active"/>
+</enum>
+
+<enum name="SystemFeature">
+  <summary>System Features to be disabled by a policy.</summary>
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Camera"/>
+  <int value="2" label="Browser Settings"/>
+  <int value="3" label="OS Settings"/>
 </enum>
 
 <enum name="SystemLogPIIType">

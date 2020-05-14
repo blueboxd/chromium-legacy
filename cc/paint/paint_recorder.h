@@ -39,6 +39,9 @@ class CC_PAINT_EXPORT PaintRecorder {
 
   bool ListHasDrawOps() const;
 
+  // Ops with nested paint ops are considered as a single op.
+  size_t num_paint_ops() const;
+
  protected:
   virtual std::unique_ptr<RecordPaintCanvas> CreateCanvas(DisplayItemList* list,
                                                           const SkRect& bounds);

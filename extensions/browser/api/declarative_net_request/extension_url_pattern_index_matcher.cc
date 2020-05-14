@@ -40,24 +40,10 @@ std::vector<url_pattern_index::UrlPatternIndexMatcher> GetMatchers(
 
 bool IsExtraHeadersMatcherInternal(
     const std::vector<url_pattern_index::UrlPatternIndexMatcher>& matchers) {
-  // We only support removing a subset of extra headers currently. If that
-  // changes, the implementation here should change as well.
-  static_assert(flat::IndexType_count == 6,
+  static_assert(flat::IndexType_count == 3,
                 "Modify this method to ensure IsExtraHeadersMatcherInternal is "
                 "updated as new actions are added.");
-  static const flat::IndexType extra_header_indices[] = {
-      flat::IndexType_remove_cookie_header,
-      flat::IndexType_remove_referer_header,
-      flat::IndexType_remove_set_cookie_header,
-      flat::IndexType_modify_headers,
-  };
-
-  for (flat::IndexType index : extra_header_indices) {
-    if (matchers[index].GetRulesCount() > 0)
-      return true;
-  }
-
-  return false;
+  return matchers[flat::IndexType_modify_headers].GetRulesCount() > 0;
 }
 
 size_t GetRulesCountInternal(
@@ -83,62 +69,6 @@ ExtensionUrlPatternIndexMatcher::ExtensionUrlPatternIndexMatcher(
       rules_count_(GetRulesCountInternal(matchers_)) {}
 
 ExtensionUrlPatternIndexMatcher::~ExtensionUrlPatternIndexMatcher() = default;
-
-uint8_t ExtensionUrlPatternIndexMatcher::GetRemoveHeadersMask(
-    const RequestParams& params,
-    uint8_t excluded_remove_headers_mask,
-    std::vector<RequestAction>* remove_headers_actions) const {
-  // The same flat_rule::UrlRule may be split across different action indices.
-  // To ensure we return one RequestAction for one ID/rule, maintain a map from
-  // the rule to the mask of rules removed for that rule.
-  base::flat_map<const flat_rule::UrlRule*, uint8_t> rule_to_mask_map;
-  auto handle_remove_header_bit = [this, &params, excluded_remove_headers_mask,
-                                   &rule_to_mask_map](uint8_t bit,
-                                                      flat::IndexType index) {
-    if (excluded_remove_headers_mask & bit)
-      return;
-
-    const flat_rule::UrlRule* rule = GetMatchingRule(params, index);
-    if (!rule)
-      return;
-
-    rule_to_mask_map[rule] |= bit;
-  };
-
-  // Iterate over each RemoveHeaderType value.
-  uint8_t bit = 0;
-  for (int i = 0; i <= dnr_api::REMOVE_HEADER_TYPE_LAST; ++i) {
-    switch (i) {
-      case dnr_api::REMOVE_HEADER_TYPE_NONE:
-        break;
-      case dnr_api::REMOVE_HEADER_TYPE_COOKIE:
-        bit = flat::RemoveHeaderType_cookie;
-        handle_remove_header_bit(bit, flat::IndexType_remove_cookie_header);
-        break;
-      case dnr_api::REMOVE_HEADER_TYPE_REFERER:
-        bit = flat::RemoveHeaderType_referer;
-        handle_remove_header_bit(bit, flat::IndexType_remove_referer_header);
-        break;
-      case dnr_api::REMOVE_HEADER_TYPE_SETCOOKIE:
-        bit = flat::RemoveHeaderType_set_cookie;
-        handle_remove_header_bit(bit, flat::IndexType_remove_set_cookie_header);
-        break;
-    }
-  }
-
-  uint8_t mask = 0;
-  for (const auto& it : rule_to_mask_map) {
-    uint8_t mask_for_rule = it.second;
-    DCHECK(mask_for_rule);
-    mask |= mask_for_rule;
-
-    remove_headers_actions->push_back(
-        GetRemoveHeadersActionForMask(*it.first, mask_for_rule));
-  }
-
-  DCHECK(!(mask & excluded_remove_headers_mask));
-  return mask;
-}
 
 base::Optional<RequestAction>
 ExtensionUrlPatternIndexMatcher::GetAllowAllRequestsAction(
@@ -191,7 +121,6 @@ ExtensionUrlPatternIndexMatcher::GetBeforeRequestActionHelper(
     case flat::ActionType_upgrade_scheme:
       return CreateUpgradeAction(params, *rule);
     case flat::ActionType_allow_all_requests:
-    case flat::ActionType_remove_headers:
     case flat::ActionType_modify_headers:
     case flat::ActionType_count:
       NOTREACHED();

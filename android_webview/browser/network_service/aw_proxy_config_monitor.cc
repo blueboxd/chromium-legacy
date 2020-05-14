@@ -42,7 +42,7 @@ AwProxyConfigMonitor* AwProxyConfigMonitor::GetInstance() {
 }
 
 void AwProxyConfigMonitor::AddProxyToNetworkContextParams(
-    network::mojom::NetworkContextParamsPtr& network_context_params) {
+    network::mojom::NetworkContextParams* network_context_params) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(kProxyServerSwitch)) {

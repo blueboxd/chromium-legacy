@@ -48,10 +48,13 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
   blink::UserAgentMetadata GetUserAgentMetadata() override;
   void OverrideWebkitPrefs(content::RenderViewHost* render_view_host,
                            content::WebPreferences* prefs) override;
-  mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
+  void ConfigureNetworkContextParams(
       content::BrowserContext* context,
       bool in_memory,
-      const base::FilePath& relative_partition_path) override;
+      const base::FilePath& relative_partition_path,
+      network::mojom::NetworkContextParams* network_context_params,
+      network::mojom::CertVerifierCreationParams* cert_verifier_creation_params)
+      override;
   void OnNetworkServiceCreated(
       network::mojom::NetworkService* network_service) override;
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>>

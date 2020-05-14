@@ -167,6 +167,8 @@
     NSString* password =
         PasswordWithKeychainIdentifier(credential.keychainIdentifier);
     if (password) {
+      UpdateUMACountForKey(
+          app_group::kCredentialExtensionQuickPasswordUseCount);
       ASPasswordCredential* ASCredential =
           [ASPasswordCredential credentialWithUser:credential.user
                                           password:password];

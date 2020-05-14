@@ -86,6 +86,53 @@ public class LensUtilsTest {
     }
 
     /**
+     * Test {@link LensUtils#getShareWithGoogleLensIntent()} method and that variations
+     * are added to the URI.
+     */
+    @Test
+    @SmallTest
+    public void getShareWithGoogleLensIntentWithVariationsTest() {
+        LensUtils.setFakeVariationsForTesting(" 123 456 ");
+        SigninTestUtil.signIn(SigninTestUtil.addTestAccount("test@gmail.com"));
+
+        final String contentUrl = "content://image-url";
+        Intent intentWithContentUri = getShareWithGoogleLensIntentOnUiThread(Uri.parse(contentUrl),
+                /* isIncognito= */ false, 1234L, /* srcUrl */ "",
+                /* titleOrAltText */ "");
+        // The account name should not be included in the intent because the uesr is incognito.
+        Assert.assertEquals("Intent with image has incorrect URI",
+                "googleapp://lens?LensBitmapUriKey=content%3A%2F%2Fimage-url&AccountNameUriKey="
+                        + "test%40gmail.com&IncognitoUriKey=false&ActivityLaunchTimestampNanos="
+                        + "1234&Gid=123%20456",
+                intentWithContentUri.getData().toString());
+        Assert.assertEquals("Intent with image has incorrect action", Intent.ACTION_VIEW,
+                intentWithContentUri.getAction());
+    }
+
+    /**
+     * Test {@link LensUtils#getShareWithGoogleLensIntent()} method and that variations
+     * are not sent when the user is incognito.
+     */
+    @Test
+    @SmallTest
+    public void getShareWithGoogleLensIntentWithVariationsIncognitoTest() {
+        LensUtils.setFakeVariationsForTesting(" 123 456 ");
+        SigninTestUtil.signIn(SigninTestUtil.addTestAccount("test@gmail.com"));
+
+        final String contentUrl = "content://image-url";
+        Intent intentWithContentUri = getShareWithGoogleLensIntentOnUiThread(Uri.parse(contentUrl),
+                /* isIncognito= */ true, 1234L, /* srcUrl */ "",
+                /* titleOrAltText */ "");
+        // The account name should not be included in the intent because the uesr is incognito.
+        Assert.assertEquals("Intent with image has incorrect URI",
+                "googleapp://lens?LensBitmapUriKey=content%3A%2F%2Fimage-url&AccountNameUriKey="
+                        + "&IncognitoUriKey=true&ActivityLaunchTimestampNanos=1234",
+                intentWithContentUri.getData().toString());
+        Assert.assertEquals("Intent with image has incorrect action", Intent.ACTION_VIEW,
+                intentWithContentUri.getAction());
+    }
+
+    /**
      * Test {@link LensUtils#getShareWithGoogleLensIntent()} method when user is not
      * signed in.
      */

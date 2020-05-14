@@ -820,6 +820,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 #endif  // defined(OS_ANDROID)
   settings->SetForceDarkModeEnabled(prefs.force_dark_mode_enabled);
 
+  settings->SetAccessibilityAlwaysShowFocus(prefs.always_show_focus);
+
   switch (prefs.autoplay_policy) {
     case AutoplayPolicy::kNoUserGestureRequired:
       settings->SetAutoplayPolicy(

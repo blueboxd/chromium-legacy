@@ -17,16 +17,16 @@
 <h2 id="manifest">Manifest</h2>
 
 <p>
-You must declare the <code>"declarativeNetRequest"</code> permission in the
-extension <a href="manifest">manifest</a> to use this API. The
+Extensions must declare the <code>"declarativeNetRequest"</code> permission in
+the extension <a href="manifest">manifest</a> to use this API. The
 <code>"declarativeNetRequestFeedback"</code> permission is required to access
 functions and events which return information on declarative rules matched.
 <a href="declare_permissions">Host permissions</a> are required if the extension
-wants to redirect requests. You must also declare the
+wants to redirect requests. To specify static
+<a href="#type-Ruleset">Rulesets</a>, extensions must also declare the
 <code>"declarative_net_request"</code> manifest key, which should be a
 dictionary with a single key called <code>"rule_resources"</code>. It should be
-a list containing a single dictionary of type
-<a href="#type-Ruleset">Ruleset</a>, as shown below.
+a list containing dictionaries of type $(ref:Ruleset), as shown below.
 </p>
 
 <pre data-filename="manifest.json">
@@ -38,7 +38,11 @@ a list containing a single dictionary of type
     "rule_resources" : [{
       "id": "ruleset_1",
       "enabled": true,
-      "path": "rules.json"
+      "path": "rules_1.json"
+    }, {
+      "id": "ruleset_2",
+      "enabled": false,
+      "path": "rules_2.json"
     }]
   },
   "permissions": [
@@ -53,18 +57,18 @@ a list containing a single dictionary of type
 <h2 id="rule-resources">Rule Resources</h2>
 
 <p>
-The JSON file specified as part of <code>"rule_resources"</code> in the manifest
-contains a list of rules. The number of rules that an extension can specify is
-bound by the <a href="#property-MAX_NUMBER_OF_RULES">
-chrome.declarativeNetRequest.MAX_NUMBER_OF_RULES</a> constant.
+An extension can specify up to $(ref:MAX_NUMBER_OF_STATIC_RULESETS)
+<a href="#type-Ruleset">rulesets</a> as part of the
+<code>"rule_resources"</code> manifest key. The number of rules
+across <b>enabled</b> static rulesets must be less than the
+$(ref:MAX_NUMBER_OF_RULES) constant.
 </p>
 
 <h2 id="rules">Rules</h2>
 
 <p>
-A single declarative rule consists of four fields: <code>id</code>,
-<code>priority</code>, <code>condition</code> and <code>action</code>. See the
-<a href="#type-Rule">Rule</a> section below for more information on the format.
+A single declarative $(ref:Rule) consists of four fields: <code>id</code>,
+<code>priority</code>, <code>condition</code> and <code>action</code>.
 There are the following kinds of rules:
 </p>
 
@@ -168,25 +172,39 @@ pattern which is matched against the request URL. Some examples of URL filters:
 
 <p>
 To add or remove rules dynamically, extensions can use the
-<a href="#method-updateDynamicRules">
-chrome.declarativeNetRequest.updateDynamicRules</a> API method.
+$(ref:updateDynamicRules) API method.
 
 <ul>
 <li>
   The number of dynamic rules that an an extension can add is bounded by the
-  <a href="#property-MAX_NUMBER_OF_DYNAMIC_RULES">chrome.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES</a>
-  constant.
+  $(ref:MAX_NUMBER_OF_DYNAMIC_RULES) constant.
 </li>
 <li>
-  An extension's dynamic ruleset is maintained separately from its static
-  ruleset (the ruleset specified as part of the extension package). For example,
-  it's possible to have the same rule ID across static and dynamic rulesets.
-</li>
-<li>
-  For conflicting actions, dynamic rules are given priority over static rules.
+  The dynamic rules for an extension are persisted across both sessions and
+  extension updates.
 </li>
 </ul>
 
+</p>
+
+<h2 id="updating-enabled-rulesets">Updating enabled rulesets</h2>
+
+<p>
+An extension can update the set of enabled static rulesets using the
+$(ref:updateEnabledRulesets) API method.
+
+<ul>
+  <li>
+    The number of rules across enabled static rulesets must be less than the
+    $(ref:MAX_NUMBER_OF_RULES) constant.
+  </li>
+  <li>
+    The set of enabled static rulesets is persisted across sessions but not
+    across extension updates. The <code>rule_resources</code> manifest key will
+    determine the set of enabled static rulesets on initial extension install
+    and on each subsequent extension update.
+  </li>
+</ul>
 </p>
 
 <h2 id="implementation-details">Implementation details</h2>

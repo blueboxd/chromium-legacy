@@ -298,15 +298,14 @@ void ContentBrowserClientImpl::OverrideWebkitPrefs(
     tab->SetWebPreferences(prefs);
 }
 
-mojo::Remote<network::mojom::NetworkContext>
-ContentBrowserClientImpl::CreateNetworkContext(
+void ContentBrowserClientImpl::ConfigureNetworkContextParams(
     content::BrowserContext* context,
     bool in_memory,
-    const base::FilePath& relative_partition_path) {
-  mojo::Remote<network::mojom::NetworkContext> network_context;
-  network::mojom::NetworkContextParamsPtr context_params =
-      SystemNetworkContextManager::CreateDefaultNetworkContextParams(
-          GetUserAgent());
+    const base::FilePath& relative_partition_path,
+    network::mojom::NetworkContextParams* context_params,
+    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
+  SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
+      context_params, GetUserAgent());
   // Headers coming from the embedder are implicitly trusted and should not
   // trigger CORS checks.
   context_params->allow_any_cors_exempt_header_for_browser = true;
@@ -333,10 +332,7 @@ ContentBrowserClientImpl::CreateNetworkContext(
         proxy_config,
         net::DefineNetworkTrafficAnnotation("undefined", "Nothing here yet."));
   }
-  variations::UpdateCorsExemptHeaderForVariations(context_params.get());
-  content::GetNetworkService()->CreateNetworkContext(
-      network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
-  return network_context;
+  variations::UpdateCorsExemptHeaderForVariations(context_params);
 }
 
 void ContentBrowserClientImpl::OnNetworkServiceCreated(

@@ -27,6 +27,7 @@
 #include "fuchsia/base/test_navigation_listener.h"
 #include "media/base/media_switches.h"
 #include "media/fuchsia/audio/fake_audio_consumer.h"
+#include "media/fuchsia/camera/fake_fuchsia_camera.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_request_headers.h"
 #include "net/socket/tcp_client_socket.h"
@@ -97,6 +98,26 @@ class WebEngineIntegrationTest : public testing::Test {
     create_params.mutable_content_directories()->emplace_back(
         std::move(provider));
 
+    return create_params;
+  }
+
+  fuchsia::web::CreateContextParams
+  ContextParamsWithFilteredServiceDirectory() {
+    filtered_service_directory_ =
+        std::make_unique<base::fuchsia::FilteredServiceDirectory>(
+            base::fuchsia::ComponentContextForCurrentProcess()->svc().get());
+    fidl::InterfaceHandle<fuchsia::io::Directory> svc_dir;
+    filtered_service_directory_->ConnectClient(svc_dir.NewRequest());
+
+    // Push all services from /svc to the service directory.
+    base::FileEnumerator file_enum(base::FilePath("/svc"), false,
+                                   base::FileEnumerator::FILES);
+    for (auto file = file_enum.Next(); !file.empty(); file = file_enum.Next()) {
+      filtered_service_directory_->AddService(file.BaseName().value().c_str());
+    }
+
+    fuchsia::web::CreateContextParams create_params;
+    create_params.set_service_directory(std::move(svc_dir));
     return create_params;
   }
 
@@ -193,6 +214,9 @@ class WebEngineIntegrationTest : public testing::Test {
   std::unique_ptr<cr_fuchsia::TestNavigationListener> navigation_listener_;
   std::unique_ptr<fidl::Binding<fuchsia::web::NavigationEventListener>>
       navigation_listener_binding_;
+
+  std::unique_ptr<base::fuchsia::FilteredServiceDirectory>
+      filtered_service_directory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebEngineIntegrationTest);
 };
@@ -449,25 +473,13 @@ TEST_F(WebEngineIntegrationTest, PlayAudio) {
 
   // Use a FilteredServiceDirectory in order to inject a fake AudioConsumer
   // service.
-  base::fuchsia::FilteredServiceDirectory filtered_services(
-      base::fuchsia::ComponentContextForCurrentProcess()->svc().get());
-  fidl::InterfaceHandle<fuchsia::io::Directory> svc_dir;
-  filtered_services.ConnectClient(svc_dir.NewRequest());
+  fuchsia::web::CreateContextParams create_params =
+      ContextParamsWithFilteredServiceDirectory();
 
-  // Push all services from /svc to the service directory.
-  base::FileEnumerator file_enum(base::FilePath("/svc"), false,
-                                 base::FileEnumerator::FILES);
-  for (auto file = file_enum.Next(); !file.empty(); file = file_enum.Next()) {
-    filtered_services.AddService(file.BaseName().value().c_str());
-  }
-
-  // Publish fake AudioConsumer in the service directory.
   media::FakeAudioConsumerService fake_audio_consumer_service(
-      filtered_services.outgoing_directory()->GetOrCreateDirectory("svc"));
+      filtered_service_directory_->outgoing_directory()->GetOrCreateDirectory(
+          "svc"));
 
-  // Create Context and Frame.
-  fuchsia::web::CreateContextParams create_params;
-  create_params.set_service_directory(std::move(svc_dir));
   create_params.mutable_content_directories()->push_back(
       CreateTestDataDirectoryProvider());
   create_params.set_features(fuchsia::web::ContextFeatureFlags::AUDIO);
@@ -666,4 +678,41 @@ TEST_F(MAYBE_VulkanWebEngineIntegrationTest,
   navigation_listener_->RunUntilLoaded();
 
   EXPECT_EQ(navigation_listener_->title(), "present");
+}
+
+TEST_F(WebEngineIntegrationTest, CameraAccess_WithPermission) {
+  StartWebEngine();
+  fuchsia::web::CreateContextParams create_params =
+      ContextParamsWithFilteredServiceDirectory();
+
+  media::FakeCameraDeviceWatcher fake_camera_device_watcher(
+      filtered_service_directory_->outgoing_directory());
+
+  CreateContextAndFrame(std::move(create_params));
+
+  GrantPermission(fuchsia::web::PermissionType::CAMERA,
+                  embedded_test_server_.GetURL("/").GetOrigin().spec());
+
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      navigation_controller_.get(), fuchsia::web::LoadUrlParams(),
+      embedded_test_server_.GetURL("/camera.html").spec()));
+
+  navigation_listener_->RunUntilTitleEquals("ended");
+}
+
+TEST_F(WebEngineIntegrationTest, CameraAccess_WithoutPermission) {
+  StartWebEngine();
+  fuchsia::web::CreateContextParams create_params =
+      ContextParamsWithFilteredServiceDirectory();
+
+  media::FakeCameraDeviceWatcher fake_camera_device_watcher(
+      filtered_service_directory_->outgoing_directory());
+
+  CreateContextAndFrame(std::move(create_params));
+
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      navigation_controller_.get(), fuchsia::web::LoadUrlParams(),
+      embedded_test_server_.GetURL("/camera.html?NoPermission").spec()));
+
+  navigation_listener_->RunUntilTitleEquals("ended");
 }

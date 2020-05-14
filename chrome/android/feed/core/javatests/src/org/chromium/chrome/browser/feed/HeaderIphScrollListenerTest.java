@@ -49,25 +49,28 @@ public final class HeaderIphScrollListenerTest {
             List<ParameterSet> parameters = new ArrayList<>();
             // Trigger IPH.
             parameters.add(new ParameterSet().value(true, ScrollState.IDLE,
-                    TriggerState.HAS_NOT_BEEN_DISPLAYED, true, 10, true, true));
+                    TriggerState.HAS_NOT_BEEN_DISPLAYED, true, 10, true, true, true));
             // Don't trigger the IPH because the scroll state not iDLE.
             parameters.add(new ParameterSet().value(false, ScrollState.DRAGGING,
-                    TriggerState.HAS_NOT_BEEN_DISPLAYED, true, 10, true, true));
+                    TriggerState.HAS_NOT_BEEN_DISPLAYED, true, 10, true, true, true));
             // Don't trigger the IPH because the state is not set to has been displayed.
             parameters.add(new ParameterSet().value(false, ScrollState.IDLE,
-                    TriggerState.HAS_BEEN_DISPLAYED, true, 10, true, true));
+                    TriggerState.HAS_BEEN_DISPLAYED, true, 10, true, true, true));
             // Don't trigger the IPH because because the tracker would not trigger.
             parameters.add(new ParameterSet().value(false, ScrollState.IDLE,
-                    TriggerState.HAS_NOT_BEEN_DISPLAYED, false, 10, true, true));
+                    TriggerState.HAS_NOT_BEEN_DISPLAYED, false, 10, true, true, true));
             // Don't trigger the IPH because there was not enough scroll done.
             parameters.add(new ParameterSet().value(false, ScrollState.IDLE,
-                    TriggerState.HAS_NOT_BEEN_DISPLAYED, true, 1, true, true));
+                    TriggerState.HAS_NOT_BEEN_DISPLAYED, true, 1, true, true, true));
             // Don't trigger the IPH because the position in the stream is not suitable for the IPH.
             parameters.add(new ParameterSet().value(false, ScrollState.IDLE,
-                    TriggerState.HAS_NOT_BEEN_DISPLAYED, true, 10, false, true));
+                    TriggerState.HAS_NOT_BEEN_DISPLAYED, true, 10, false, true, true));
             // Don't trigger the IPH because the feed is not expanded.
             parameters.add(new ParameterSet().value(false, ScrollState.IDLE,
-                    TriggerState.HAS_NOT_BEEN_DISPLAYED, true, 10, false, false));
+                    TriggerState.HAS_NOT_BEEN_DISPLAYED, true, 10, false, false, true));
+            // Don't trigger the IPH because the user is not signed in.
+            parameters.add(new ParameterSet().value(false, ScrollState.IDLE,
+                    TriggerState.HAS_NOT_BEEN_DISPLAYED, true, 10, false, true, false));
             return parameters;
         }
     }
@@ -110,8 +113,8 @@ public final class HeaderIphScrollListenerTest {
     @ParameterAnnotations.UseMethodParameter(TestParams.class)
     public void onScrollStateChanged_triggerIph(boolean expectEnabled, int scrollState,
             int triggerState, boolean wouldTriggerHelpUI, int verticallScrollOffset,
-            boolean isFeedHeaderPositionInRecyclerViewSuitableForIPH, boolean isFeedExpanded)
-            throws Exception {
+            boolean isFeedHeaderPositionInRecyclerViewSuitableForIPH, boolean isFeedExpanded,
+            boolean isSignedIn) throws Exception {
         // Set Tracker mock.
         when(mTracker.getTriggerState(FeatureConstants.FEED_HEADER_MENU_FEATURE))
                 .thenReturn(triggerState);
@@ -147,6 +150,10 @@ public final class HeaderIphScrollListenerTest {
             @Override
             public int getRootViewHeight() {
                 return FEED_VIEW_HEIGHT;
+            }
+            @Override
+            public boolean isSignedIn() {
+                return isSignedIn;
             }
         };
 

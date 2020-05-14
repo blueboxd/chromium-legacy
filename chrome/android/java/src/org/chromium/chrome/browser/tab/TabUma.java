@@ -240,7 +240,7 @@ public class TabUma extends EmptyTabObserver implements UserData {
                     }
                 }
             };
-            TabModelSelector.from(tab).addObserver(mNewTabObserver);
+            getTabModelSelector(tab).addObserver(mNewTabObserver);
         }
 
         // Record "tab age upon first display" metrics. previousTimestampMillis is persisted through
@@ -266,6 +266,11 @@ public class TabUma extends EmptyTabObserver implements UserData {
         updateTabState(TAB_STATE_ACTIVE);
     }
 
+    private static TabModelSelector getTabModelSelector(Tab tab) {
+        TabImpl tabImpl = (TabImpl) tab;
+        return tabImpl.getActivity().getTabModelSelector();
+    }
+
     @Override
     public void onHidden(Tab tab, @TabHidingType int type) {
         if (type == TabHidingType.ACTIVITY_HIDDEN) {
@@ -287,7 +292,7 @@ public class TabUma extends EmptyTabObserver implements UserData {
 
         recordNumBackgroundTabsOpened();
         if (mNewTabObserver != null) {
-            TabModelSelector.from(tab).removeObserver(mNewTabObserver);
+            getTabModelSelector(tab).removeObserver(mNewTabObserver);
             mNewTabObserver = null;
         }
         tab.removeObserver(this);

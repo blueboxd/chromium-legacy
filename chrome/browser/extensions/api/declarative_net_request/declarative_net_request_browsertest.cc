@@ -2645,54 +2645,6 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, DynamicRules) {
   EXPECT_TRUE(IsNavigationBlocked(yahoo_url));
 }
 
-// Tests removal of the 'Referer' request header.
-IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
-                       BlockRefererRequestHeader) {
-  auto test_referrer_blocked = [this](bool expected_referrer_blocked) {
-    const GURL initial_url =
-        embedded_test_server()->GetURL("example.com", "/simulate_click.html");
-    const GURL url_with_referrer =
-        embedded_test_server()->GetURL("example.com", "/echoheader?referer");
-    content::TestNavigationObserver observer(web_contents(),
-                                             2 /* number_of_navigations */);
-    observer.set_wait_event(
-        content::TestNavigationObserver::WaitEvent::kNavigationFinished);
-    ui_test_utils::NavigateToURL(browser(), initial_url);
-    observer.WaitForNavigationFinished();
-    ASSERT_EQ(url_with_referrer, observer.last_navigation_url());
-
-    std::string expected_referrer =
-        expected_referrer_blocked ? "None" : initial_url.spec();
-    EXPECT_EQ(expected_referrer, GetPageBody());
-  };
-
-  test_referrer_blocked(false);
-
-  // Load an extension which blocks the Referer header for requests to
-  // "example.com".
-  TestRule rule = CreateGenericRule();
-  rule.condition->url_filter = std::string("||example.com");
-  rule.condition->resource_types = std::vector<std::string>({"main_frame"});
-  rule.action->type = std::string("removeHeaders");
-  rule.action->remove_headers_list = std::vector<std::string>({"referer"});
-
-  EXPECT_FALSE(
-      ExtensionWebRequestEventRouter::GetInstance()->HasAnyExtraHeadersListener(
-          profile()));
-  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}));
-  EXPECT_TRUE(
-      ExtensionWebRequestEventRouter::GetInstance()->HasAnyExtraHeadersListener(
-          profile()));
-  test_referrer_blocked(true);
-
-  DisableExtension(last_loaded_extension_id());
-  WaitForExtensionsWithRulesetsCount(0);
-  EXPECT_FALSE(
-      ExtensionWebRequestEventRouter::GetInstance()->HasAnyExtraHeadersListener(
-          profile()));
-  test_referrer_blocked(false);
-}
-
 // Tests rules using the Redirect dictionary.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, Redirect) {
   TestRule rule1 = CreateGenericRule();
@@ -2810,14 +2762,11 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
     int priority;
     std::string action_type;
     base::Optional<std::string> redirect_url;
-    base::Optional<std::vector<std::string>> remove_headers_list;
   } rules_data[] = {
-      {"abc.com", 1, 1, "block", base::nullopt, base::nullopt},
-      {"def.com", 2, 1, "redirect", "http://zzz.com", base::nullopt},
-      {"jkl.com", 3, 1, "removeHeaders", base::nullopt,
-       std::vector<std::string>({"referer"})},
-      {"abcd.com", 4, 1, "block", base::nullopt, base::nullopt},
-      {"abcd", 5, 1, "allow", base::nullopt, base::nullopt},
+      {"abc.com", 1, 1, "block", base::nullopt},
+      {"def.com", 2, 1, "redirect", "http://zzz.com"},
+      {"abcd.com", 4, 1, "block", base::nullopt},
+      {"abcd", 5, 1, "allow", base::nullopt},
   };
 
   // Load the extension.
@@ -2832,7 +2781,6 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
     rule.action->type = rule_data.action_type;
     rule.action->redirect.emplace();
     rule.action->redirect->url = rule_data.redirect_url;
-    rule.action->remove_headers_list = rule_data.remove_headers_list;
     rules.push_back(rule);
   }
 
@@ -2862,16 +2810,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       // def.com is redirected by a matching rule and should increment the badge
       // text.
       {"def.com", "2", false},
-      // jkl.com matches with a removeHeaders rule, but has no headers.
-      // Therefore no action is taken and the badge text stays the same.
-      {"jkl.com", "2", false},
-      // jkl.com matches with a removeHeaders rule and has a referrer header.
-      // Therefore the badge text should be incremented.
-      {"jkl.com", "3", true},
       // abcd.com matches both a block rule and an allow rule. Since the allow
       // rule overrides the block rule, no action is taken and the badge text
       // stays the same,
-      {"abcd.com", "3", false},
+      {"abcd.com", "2", false},
   };
 
   ui_test_utils::NavigateToURL(browser(), page_url);
@@ -2937,11 +2879,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // Four rules should be matched on the tab with |first_tab_id|:
   //   - the block rule for abc.com (ruleId = 1)
   //   - the redirect rule for def.com (ruleId = 2)
-  //   - the removeHeaders rule for jkl.com (ruleId = 3)
   //   - the allow rule for abcd.com (ruleId = 5)
-  EXPECT_EQ(base::StringPrintf("1,%s|2,%s|3,%s|5,%s", kDefaultRulesetID,
-                               kDefaultRulesetID, kDefaultRulesetID,
-                               kDefaultRulesetID),
+  EXPECT_EQ(base::StringPrintf("1,%s|2,%s|5,%s", kDefaultRulesetID,
+                               kDefaultRulesetID, kDefaultRulesetID),
             get_matched_rules(first_tab_id));
 
   // No rule should be matched on the tab with |second_tab_id|.
@@ -3240,10 +3180,6 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                                           "/pages_with_script/index.html");
   };
 
-  auto get_set_cookie_url = [this](std::string hostname) {
-    return embedded_test_server()->GetURL(hostname, "/set-cookie?a=b");
-  };
-
   struct {
     std::string url_filter;
     int id;
@@ -3251,23 +3187,16 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
     std::string action_type;
     std::vector<std::string> resource_types;
     base::Optional<std::string> redirect_url;
-    base::Optional<std::vector<std::string>> remove_headers_list;
   } rules_data[] = {
       {"abc.com", 1, 1, "block", std::vector<std::string>({"script"}),
-       base::nullopt, base::nullopt},
+       base::nullopt},
       {"||def.com", 2, 1, "redirect", std::vector<std::string>({"main_frame"}),
-       get_url_for_host("abc.com").spec(), base::nullopt},
+       get_url_for_host("abc.com").spec()},
       {"gotodef.com", 3, 1, "redirect",
        std::vector<std::string>({"main_frame"}),
-       get_url_for_host("def.com").spec(), base::nullopt},
+       get_url_for_host("def.com").spec()},
       {"ghi.com", 4, 1, "block", std::vector<std::string>({"main_frame"}),
-       base::nullopt, base::nullopt},
-      {"gotosetcookie.com", 5, 1, "redirect",
-       std::vector<std::string>({"main_frame"}),
-       get_set_cookie_url("setcookie.com").spec(), base::nullopt},
-      {"setcookie.com", 6, 1, "removeHeaders",
-       std::vector<std::string>({"main_frame"}), base::nullopt,
-       std::vector<std::string>({"setCookie"})},
+       base::nullopt},
   };
 
   // Load the extension.
@@ -3281,7 +3210,6 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
     rule.action->type = rule_data.action_type;
     rule.action->redirect.emplace();
     rule.action->redirect->url = rule_data.redirect_url;
-    rule.action->remove_headers_list = rule_data.remove_headers_list;
     rules.push_back(rule);
   }
 
@@ -3317,10 +3245,6 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       // gotodef.com to def.com caused by a rule match. Therefore the badge text
       // should be 3.
       {"gotodef.com", "3"},
-      // The request to gotosetcookie.com will match with a rule and redirect to
-      // setcookie.com. The Set-Cookie header on setcookie.com will also match
-      // with a rule and get removed. Therefore the badge text should be 2.
-      {"gotosetcookie.com", "2"},
   };
 
   int first_tab_id = ExtensionTabUtil::GetTabId(web_contents());
@@ -3331,125 +3255,6 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_EQ(test_case.expected_badge_text,
               action->GetDisplayBadgeText(first_tab_id));
-  }
-}
-
-// Test that the badge text for extensions will update correctly for
-// removeHeader rules.
-IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
-                       RemoveHeadersBadgeText) {
-  auto get_referer_url = [this](std::string host) {
-    return embedded_test_server()->GetURL(host, "/set-header?referer: none");
-  };
-  auto get_set_cookie_url = [this](std::string host) {
-    return embedded_test_server()->GetURL(host, "/set-cookie?a=b");
-  };
-
-  auto create_remove_headers_rule =
-      [](int id, const std::string& url_filter,
-         const std::vector<std::string>& remove_headers_list) {
-        TestRule rule = CreateGenericRule();
-        rule.id = id;
-        rule.condition->url_filter = url_filter;
-        rule.condition->resource_types =
-            std::vector<std::string>({"sub_frame"});
-        rule.action->type = "removeHeaders";
-        rule.action->remove_headers_list = remove_headers_list;
-
-        return rule;
-      };
-
-  const std::string kFrameName1 = "frame1";
-  const GURL page_url = embedded_test_server()->GetURL(
-      "nomatch.com", "/page_with_two_frames.html");
-
-  // Create an extension with rules and get the ExtensionAction for it.
-  TestRule example_set_cookie_rule =
-      create_remove_headers_rule(kMinValidID, "example.com", {"setCookie"});
-
-  TestRule both_headers_rule = create_remove_headers_rule(
-      kMinValidID + 1, "google.com", {"referer", "setCookie"});
-
-  TestRule abc_set_cookie_rule =
-      create_remove_headers_rule(kMinValidID + 2, "abc.com", {"setCookie"});
-
-  TestRule abc_referer_rule =
-      create_remove_headers_rule(kMinValidID + 3, "abc.com", {"referer"});
-
-  ASSERT_NO_FATAL_FAILURE(
-      LoadExtensionWithRules({example_set_cookie_rule, both_headers_rule,
-                              abc_set_cookie_rule, abc_referer_rule},
-                             "extension_1", {}));
-
-  const ExtensionId extension_1_id = last_loaded_extension_id();
-  ExtensionPrefs::Get(profile())->SetDNRUseActionCountAsBadgeText(
-      extension_1_id, true);
-
-  ExtensionAction* extension_1_action =
-      ExtensionActionManager::Get(web_contents()->GetBrowserContext())
-          ->GetExtensionAction(*extension_registry()->GetExtensionById(
-              extension_1_id, extensions::ExtensionRegistry::ENABLED));
-
-  // Create another extension which removes the referer header from example.com
-  // and get the ExtensionAction for it.
-  TestRule example_referer_rule =
-      create_remove_headers_rule(kMinValidID, "example.com", {"referer"});
-
-  ASSERT_NO_FATAL_FAILURE(
-      LoadExtensionWithRules({example_referer_rule}, "extension_2", {}));
-
-  const ExtensionId extension_2_id = last_loaded_extension_id();
-  ExtensionPrefs::Get(profile())->SetDNRUseActionCountAsBadgeText(
-      extension_2_id, true);
-
-  ExtensionAction* extension_2_action =
-      ExtensionActionManager::Get(web_contents()->GetBrowserContext())
-          ->GetExtensionAction(*extension_registry()->GetExtensionById(
-              extension_2_id, extensions::ExtensionRegistry::ENABLED));
-
-  struct {
-    GURL url;
-    bool use_referrer;
-    std::string expected_ext_1_badge_text;
-    std::string expected_ext_2_badge_text;
-  } test_cases[] = {
-      // This request only has a Set-Cookie header. Only the badge text for the
-      // extension with a remove Set-Cookie header rule should be incremented.
-      {get_set_cookie_url("example.com"), false, "1", ""},
-      // This request only has a Referer header. Only the badge text for the
-      // extension with a remove Referer header rule should be incremented.
-      {get_referer_url("example.com"), true, "1", "1"},
-      // This request has both a Referer and a Set-Cookie header. The badge text
-      // for both extensions should be incremented.
-      {get_set_cookie_url("example.com"), true, "2", "2"},
-      // This request with a Referer and Set-Cookie header matches with one rule
-      // from |extension_1| and so the action count for |extension_1| should
-      // only increment by one,
-      {get_set_cookie_url("google.com"), true, "3", "2"},
-      // This request with a Referer and Set-Cookie header matches with two
-      // separate rules from |extension_1| and so the action count for
-      // |extension_1| should increment by two.
-      {get_set_cookie_url("abc.com"), true, "5", "2"},
-  };
-
-  ui_test_utils::NavigateToURL(browser(), page_url);
-  ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
-
-  int first_tab_id = ExtensionTabUtil::GetTabId(web_contents());
-  EXPECT_EQ("", extension_1_action->GetDisplayBadgeText(first_tab_id));
-  EXPECT_EQ("", extension_2_action->GetDisplayBadgeText(first_tab_id));
-
-  for (const auto& test_case : test_cases) {
-    SCOPED_TRACE(base::StringPrintf("Testing URL: %s, using referrer: %s",
-                                    test_case.url.spec().c_str(),
-                                    test_case.use_referrer ? "true" : "false"));
-
-    NavigateFrame(kFrameName1, test_case.url, test_case.use_referrer);
-    EXPECT_EQ(test_case.expected_ext_1_badge_text,
-              extension_1_action->GetDisplayBadgeText(first_tab_id));
-
-    EXPECT_EQ(test_case.expected_ext_2_badge_text,
-              extension_2_action->GetDisplayBadgeText(first_tab_id));
   }
 }
 
@@ -3479,89 +3284,6 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       GetParam() == ExtensionLoadType::UNPACKED ? "true" : "false";
 
   ASSERT_EQ(expected_event_availability, actual_event_availability);
-}
-
-// Test that the onRuleMatchedDebug event returns the correct number of matched
-// rules for a request which is matched with multiple rules.
-IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Unpacked,
-                       OnRuleMatchedDebugMultipleRules) {
-  // This is only tested for unpacked extensions since the onRuleMatchedDebug
-  // event is only available for unpacked extensions.
-  ASSERT_EQ(ExtensionLoadType::UNPACKED, GetParam());
-
-  // Load the extension with a background script so scripts can be run from its
-  // generated background page. Also grant the feedback permission for the
-  // extension so it has access to the onRuleMatchedDebug event.
-  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript |
-                   ConfigFlag::kConfig_HasFeedbackPermission);
-
-  auto create_remove_headers_rule =
-      [](int id, const std::string& url_filter,
-         const std::vector<std::string>& remove_headers_list) {
-        TestRule rule = CreateGenericRule();
-        rule.id = id;
-        rule.condition->url_filter = url_filter;
-        rule.condition->resource_types =
-            std::vector<std::string>({"sub_frame"});
-        rule.action->type = "removeHeaders";
-        rule.action->remove_headers_list = remove_headers_list;
-
-        return rule;
-      };
-
-  const std::string kFrameName1 = "frame1";
-  const std::string sub_frame_host = "abc.com";
-  const GURL page_url = embedded_test_server()->GetURL(
-      "nomatch.com", "/page_with_two_frames.html");
-
-  TestRule abc_referer_rule =
-      create_remove_headers_rule(kMinValidID, sub_frame_host, {"referer"});
-
-  TestRule abc_set_cookie_rule = create_remove_headers_rule(
-      kMinValidID + 1, sub_frame_host, {"setCookie"});
-
-  // Load an extension with removeHeaders rules for the Referer and Set-Cookie
-  // headers.
-  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
-      {abc_set_cookie_rule, abc_referer_rule}, "extension_1", {}));
-
-  ui_test_utils::NavigateToURL(browser(), page_url);
-  ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
-
-  // Start the onRuleMatchedDebug observer.
-  const char kOnRuleMatchedDebugScript[] = R"(
-    var matchedRules = [];
-    var onRuleMatchedDebugCallback = (rule) => {
-      matchedRules.push(rule);
-    };
-
-    chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(
-      onRuleMatchedDebugCallback);
-    window.domAutomationController.send('ready');
-  )";
-
-  ASSERT_EQ("ready", ExecuteScriptInBackgroundPage(last_loaded_extension_id(),
-                                                   kOnRuleMatchedDebugScript));
-
-  auto set_cookie_and_referer_url =
-      embedded_test_server()->GetURL(sub_frame_host, "/set-cookie?a=b");
-
-  NavigateFrame(kFrameName1, set_cookie_and_referer_url);
-
-  // Now query the onRuleMatchedDebug results.
-  const char kQueryMatchedRulesScript[] = R"(
-    chrome.declarativeNetRequest.onRuleMatchedDebug.removeListener(
-      onRuleMatchedDebugCallback);
-    var ruleIds = matchedRules.map(matchedRule => matchedRule.rule.ruleId);
-    window.domAutomationController.send(ruleIds.sort().join());
-  )";
-
-  std::string matched_rule_ids = ExecuteScriptInBackgroundPage(
-      last_loaded_extension_id(), kQueryMatchedRulesScript);
-
-  // The request to |set_cookie_and_referer_url| should be matched with the
-  // Referer rule (ruleId 1) and the Set-Cookie rule (ruleId 2).
-  EXPECT_EQ("1,2", matched_rule_ids);
 }
 
 // Test that getMatchedRules returns the correct rules when called by different

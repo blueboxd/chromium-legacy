@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 enum class AmbientAuthProfileBit {
@@ -80,10 +81,12 @@ bool AmbientAuthenticationTestHelper::IsAmbientAuthAllowedForProfile(
   ProfileNetworkContextService* profile_network_context_service =
       ProfileNetworkContextServiceFactory::GetForContext(profile);
   base::FilePath empty_relative_partition_path;
-  network::mojom::NetworkContextParamsPtr network_context_params_ptr =
-      profile_network_context_service->CreateNetworkContextParams(
-          /*in_memory=*/false, empty_relative_partition_path);
-  return network_context_params_ptr->http_auth_static_network_context_params
+  network::mojom::NetworkContextParams network_context_params;
+  network::mojom::CertVerifierCreationParams cert_verifier_creation_params;
+  profile_network_context_service->ConfigureNetworkContextParams(
+      /*in_memory=*/false, empty_relative_partition_path,
+      &network_context_params, &cert_verifier_creation_params);
+  return network_context_params.http_auth_static_network_context_params
              ->allow_default_credentials ==
          net::HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS;
 }

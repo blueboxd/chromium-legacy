@@ -39,7 +39,7 @@
 -LevelDBTransactionRangeTests/LevelDBTransactionRangeTest.*
 
 # Flaky: https://crbug.com/780508.
--ServiceWorkerProviderHostTest.*
+-ServiceWorkerContainerHostTest.*
 
 # Flaky, https://crbug.com/784449.
 -WebContentsAudioInputStreamTest.MirroringOneStreamAfterTargetChange*

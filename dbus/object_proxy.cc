@@ -119,8 +119,7 @@ ObjectProxy::ObjectProxy(Bus* bus,
     : bus_(bus),
       service_name_(service_name),
       object_path_(object_path),
-      ignore_service_unknown_errors_(
-          options & IGNORE_SERVICE_UNKNOWN_ERRORS) {
+      ignore_service_unknown_errors_(options & IGNORE_SERVICE_UNKNOWN_ERRORS) {
   LOG_IF(FATAL, !object_path_.IsValid()) << object_path_.value();
 }
 
@@ -137,8 +136,7 @@ std::unique_ptr<Response> ObjectProxy::CallMethodAndBlockWithErrorDetails(
     ScopedDBusError* error) {
   bus_->AssertOnDBusThread();
 
-  if (!bus_->Connect() ||
-      !method_call->SetDestination(service_name_) ||
+  if (!bus_->Connect() || !method_call->SetDestination(service_name_) ||
       !method_call->SetPath(object_path_))
     return std::unique_ptr<Response>();
 
@@ -152,13 +150,11 @@ std::unique_ptr<Response> ObjectProxy::CallMethodAndBlockWithErrorDetails(
   UMA_HISTOGRAM_ENUMERATION("DBus.SyncMethodCallSuccess",
                             response_message ? 1 : 0,
                             kSuccessRatioHistogramMaxValue);
-  statistics::AddBlockingSentMethodCall(service_name_,
-                                        method_call->GetInterface(),
-                                        method_call->GetMember());
+  statistics::AddBlockingSentMethodCall(
+      service_name_, method_call->GetInterface(), method_call->GetMember());
 
   if (!response_message) {
-    LogMethodCallFailure(method_call->GetInterface(),
-                         method_call->GetMember(),
+    LogMethodCallFailure(method_call->GetInterface(), method_call->GetMember(),
                          error->is_set() ? error->name() : "unknown error type",
                          error->is_set() ? error->message() : "");
     return std::unique_ptr<Response>();
@@ -216,8 +212,7 @@ void ObjectProxy::CallMethodWithErrorResponse(
   DBusMessage* request_message = method_call->raw_message();
   dbus_message_ref(request_message);
 
-  statistics::AddSentMethodCall(service_name_,
-                                method_call->GetInterface(),
+  statistics::AddSentMethodCall(service_name_, method_call->GetInterface(),
                                 method_call->GetMember());
 
   // Wait for the response in the D-Bus thread.
@@ -442,16 +437,14 @@ bool ObjectProxy::ConnectToNameOwnerChangedSignal() {
 
   // Add a match_rule listening NameOwnerChanged for the well-known name
   // |service_name_|.
-  const std::string name_owner_changed_match_rule =
-      base::StringPrintf(
-          "type='signal',interface='org.freedesktop.DBus',"
-          "member='NameOwnerChanged',path='/org/freedesktop/DBus',"
-          "sender='org.freedesktop.DBus',arg0='%s'",
-          service_name_.c_str());
+  const std::string name_owner_changed_match_rule = base::StringPrintf(
+      "type='signal',interface='org.freedesktop.DBus',"
+      "member='NameOwnerChanged',path='/org/freedesktop/DBus',"
+      "sender='org.freedesktop.DBus',arg0='%s'",
+      service_name_.c_str());
 
-  const bool success =
-      AddMatchRuleWithoutCallback(name_owner_changed_match_rule,
-                                  "org.freedesktop.DBus.NameOwnerChanged");
+  const bool success = AddMatchRuleWithoutCallback(
+      name_owner_changed_match_rule, "org.freedesktop.DBus.NameOwnerChanged");
 
   // Try getting the current name owner. It's not guaranteed that we can get
   // the name owner at this moment, as the service may not yet be started. If
@@ -487,8 +480,7 @@ bool ObjectProxy::ConnectToSignalInternal(const std::string& interface_name,
       "type='signal', sender='%s', interface='%s', path='%s'",
       service_name_.c_str(), interface_name.c_str(),
       object_path_.value().c_str());
-  return AddMatchRuleWithCallback(match_rule,
-                                  absolute_signal_name,
+  return AddMatchRuleWithCallback(match_rule, absolute_signal_name,
                                   signal_callback);
 }
 
@@ -514,9 +506,8 @@ void ObjectProxy::WaitForServiceToBeAvailableInternal() {
   }
 }
 
-DBusHandlerResult ObjectProxy::HandleMessage(
-    DBusConnection* connection,
-    DBusMessage* raw_message) {
+DBusHandlerResult ObjectProxy::HandleMessage(DBusConnection* connection,
+                                             DBusMessage* raw_message) {
   bus_->AssertOnDBusThread();
 
   if (dbus_message_get_type(raw_message) != DBUS_MESSAGE_TYPE_SIGNAL)
@@ -551,8 +542,8 @@ DBusHandlerResult ObjectProxy::HandleMessage(
   statistics::AddReceivedSignal(service_name_, interface, member);
 
   // Check if we know about the signal.
-  const std::string absolute_signal_name = GetAbsoluteMemberName(
-      interface, member);
+  const std::string absolute_signal_name =
+      GetAbsoluteMemberName(interface, member);
   MethodTable::const_iterator iter = method_table_.find(absolute_signal_name);
   if (iter == method_table_.end()) {
     // Don't know about the signal.
@@ -601,10 +592,9 @@ void ObjectProxy::RunMethod(base::TimeTicks start_time,
                       base::TimeTicks::Now() - start_time);
 }
 
-DBusHandlerResult ObjectProxy::HandleMessageThunk(
-    DBusConnection* connection,
-    DBusMessage* raw_message,
-    void* user_data) {
+DBusHandlerResult ObjectProxy::HandleMessageThunk(DBusConnection* connection,
+                                                  DBusMessage* raw_message,
+                                                  void* user_data) {
   ObjectProxy* self = reinterpret_cast<ObjectProxy*>(user_data);
   return self->HandleMessage(connection, raw_message);
 }
@@ -620,8 +610,8 @@ void ObjectProxy::LogMethodCallFailure(
 
   std::ostringstream msg;
   msg << "Failed to call method: " << interface_name << "." << method_name
-      << ": object_path= " << object_path_.value()
-      << ": " << error_name << ": " << error_message;
+      << ": object_path= " << object_path_.value() << ": " << error_name << ": "
+      << error_message;
 
   // "UnknownObject" indicates that an object or service is no longer available,
   // e.g. a Shill network service has gone out of range. Treat these as warnings
@@ -730,10 +720,8 @@ DBusHandlerResult ObjectProxy::HandleNameOwnerChanged(
       signal->GetSender() == kDBusSystemObjectAddress) {
     MessageReader reader(signal.get());
     std::string name, old_owner, new_owner;
-    if (reader.PopString(&name) &&
-        reader.PopString(&old_owner) &&
-        reader.PopString(&new_owner) &&
-        name == service_name_) {
+    if (reader.PopString(&name) && reader.PopString(&old_owner) &&
+        reader.PopString(&new_owner) && name == service_name_) {
       service_name_owner_ = new_owner;
       bus_->GetOriginTaskRunner()->PostTask(
           FROM_HERE, base::BindOnce(&ObjectProxy::RunNameOwnerChangedCallback,

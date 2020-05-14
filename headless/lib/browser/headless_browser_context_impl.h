@@ -100,9 +100,12 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
   const base::UnguessableToken* GetDevToolsFrameTokenForFrameTreeNodeId(
       int frame_tree_node_id) const;
 
-  mojo::Remote<::network::mojom::NetworkContext> CreateNetworkContext(
+  void ConfigureNetworkContextParams(
       bool in_memory,
-      const base::FilePath& relative_partition_path);
+      const base::FilePath& relative_partition_path,
+      ::network::mojom::NetworkContextParams* network_context_params,
+      ::network::mojom::CertVerifierCreationParams*
+          cert_verifier_creation_params);
 
  private:
   HeadlessBrowserContextImpl(

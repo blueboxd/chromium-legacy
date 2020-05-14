@@ -21,6 +21,11 @@
   // standard.
   [MeasureAs=QuicTransportStreamApis] ReadableStream receiveStreams();
 
+  // From BidirectionalStreamsTransport
+  [CallWith=ScriptState, RaisesException, MeasureAs=QuicTransportStreamApis] Promise<BidirectionalStream>
+      createBidirectionalStream();
+  [MeasureAs=QuicTransportStreamApis] ReadableStream receiveBidirectionalStreams();
+
   // From DatagramTransport mixin
   [MeasureAs=QuicTransportDatagramApis] WritableStream sendDatagrams();
   [MeasureAs=QuicTransportDatagramApis] ReadableStream receiveDatagrams();

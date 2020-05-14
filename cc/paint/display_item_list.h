@@ -181,6 +181,9 @@ class CC_PAINT_EXPORT DisplayItemList
   std::string ToString() const;
   bool has_draw_ops() const { return paint_op_buffer_.has_draw_ops(); }
 
+  // Ops with nested paint ops are considered as a single op.
+  size_t num_paint_ops() const { return paint_op_buffer_.size(); }
+
  private:
   friend class DisplayItemListTest;
   friend gpu::raster::RasterImplementation;

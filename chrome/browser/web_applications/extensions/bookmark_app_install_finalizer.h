@@ -69,6 +69,7 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
 
   void OnExtensionInstalled(const GURL& app_url,
                             LaunchType launch_type,
+                            bool enable_experimental_tabbed_window,
                             bool is_locally_installed,
                             bool is_system_app,
                             InstallFinalizedCallback callback,

@@ -25,6 +25,7 @@ namespace web_app {
 enum class ExternalInstallSource;
 enum class InstallResultCode;
 class AppRegistrar;
+class AppRegistryController;
 class WebAppUiManager;
 
 // An abstract finalizer for the installation process, represents the last step.
@@ -102,16 +103,20 @@ class InstallFinalizer {
                            bool shortcut_created,
                            content::WebContents* web_contents);
 
-  void SetSubsystems(AppRegistrar* registrar, WebAppUiManager* ui_manager);
+  void SetSubsystems(AppRegistrar* registrar,
+                     WebAppUiManager* ui_manager,
+                     AppRegistryController* registry_controller);
 
   virtual ~InstallFinalizer() = default;
 
  protected:
   AppRegistrar& registrar() const { return *registrar_; }
   WebAppUiManager& ui_manager() const { return *ui_manager_; }
+  AppRegistryController& registry_controller() { return *registry_controller_; }
 
  private:
   AppRegistrar* registrar_ = nullptr;
+  AppRegistryController* registry_controller_ = nullptr;
   WebAppUiManager* ui_manager_ = nullptr;
 };
 

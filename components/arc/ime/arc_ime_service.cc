@@ -441,8 +441,10 @@ void ArcImeService::InsertChar(const ui::KeyEvent& event) {
   // According to the document in text_input_client.h, InsertChar() is called
   // even when the text input type is NONE. We ignore such events, since for
   // ARC we are only interested in the event as a method of text input.
-  if (ime_type_ == ui::TEXT_INPUT_TYPE_NONE)
+  if (ime_type_ == ui::TEXT_INPUT_TYPE_NONE ||
+      ime_type_ == ui::TEXT_INPUT_TYPE_NULL) {
     return;
+  }
 
   InvalidateSurroundingTextAndSelectionRange();
 

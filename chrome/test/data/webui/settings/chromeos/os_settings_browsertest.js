@@ -527,7 +527,7 @@ TEST_F('OSSettingsCrostiniPageTest', 'MainPage', function() {
   mocha.grep('MainPage').run();
 });
 
-TEST_F('OSSettingsCrostiniPageTest', 'SubPageDefault', function() {
+TEST_F('OSSettingsCrostiniPageTest', 'DISABLED_SubPageDefault', function() {
   mocha.grep('SubPageDefault').run();
 });
 

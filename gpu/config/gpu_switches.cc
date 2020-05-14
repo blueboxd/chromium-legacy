@@ -57,4 +57,24 @@ const char kNoDelayForDX12VulkanInfoCollection[] =
 // Enables measures of how long GPU Main Thread was blocked between SwapBuffers
 const char kEnableGpuBlockedTime[] = "enable-gpu-blocked-time";
 
+// Passes the active graphics vendor id from browser process to info collection
+// GPU process.
+const char kGpuVendorId[] = "gpu-vendor-id";
+
+// Passes the active graphics device id from browser process to info collection
+// GPU process.
+const char kGpuDeviceId[] = "gpu-device-id";
+
+// Passes the active graphics sub system id from browser process to info
+// collection GPU process.
+const char kGpuSubSystemId[] = "gpu-sub-system-id";
+
+// Passes the active graphics revision info from browser process to info
+// collection GPU process.
+const char kGpuRevision[] = "gpu-revision";
+
+// Passes the active graphics driver version from browser process to info
+// collection GPU process.
+const char kGpuDriverVersion[] = "gpu-driver-version";
+
 }  // namespace switches

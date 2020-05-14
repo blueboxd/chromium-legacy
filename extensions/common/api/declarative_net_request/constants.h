@@ -46,7 +46,6 @@ extern const char kResourceTypesKey[];
 extern const char kExcludedResourceTypesKey[];
 extern const char kDomainTypeKey[];
 extern const char kRuleActionTypeKey[];
-extern const char kRemoveHeadersListKey[];
 extern const char kRedirectPath[];
 extern const char kExtensionPathPath[];
 extern const char kTransformSchemePath[];

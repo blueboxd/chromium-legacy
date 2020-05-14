@@ -36,7 +36,7 @@ class MODULES_EXPORT IncomingStream final
 
  public:
   IncomingStream(ScriptState*,
-                 base::OnceClosure forget_stream,
+                 base::OnceClosure on_abort,
                  mojo::ScopedDataPipeConsumerHandle);
   ~IncomingStream();
 
@@ -119,7 +119,7 @@ class MODULES_EXPORT IncomingStream final
 
   const Member<ScriptState> script_state_;
 
-  base::OnceClosure forget_stream_;
+  base::OnceClosure on_abort_;
 
   mojo::ScopedDataPipeConsumerHandle data_pipe_;
 

@@ -16,17 +16,21 @@ class PrefRegistrySimple;
 namespace policy {
 
 // A system feature that can be disabled by SystemFeaturesDisableList policy.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum SystemFeature {
-  CAMERA = 0,        // The camera chrome app on Chrome OS.
-  BROWSER_SETTINGS,  // Browser settings.
-  OS_SETTINGS,       // The settings feature on Chrome OS.
-
-  LAST_SYSTEM_FEATURE
+  UNKNOWN_SYSTEM_FEATURE = 0,
+  CAMERA = 1,            // The camera chrome app on Chrome OS.
+  BROWSER_SETTINGS = 2,  // Browser settings.
+  OS_SETTINGS = 3,       // The settings feature on Chrome OS.
+  kMaxValue = OS_SETTINGS
 };
 
 extern const char kCameraFeature[];
 extern const char kBrowserSettingsFeature[];
 extern const char kOsSettingsFeature[];
+
+extern const char kSystemFeaturesDisableListHistogram[];
 
 class SystemFeaturesDisableListPolicyHandler
     : public policy::ListPolicyHandler {

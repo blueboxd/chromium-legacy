@@ -2122,8 +2122,6 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
 
   screen_orientation_provider_.reset(new ScreenOrientationProvider(this));
 
-  manifest_manager_host_.reset(new ManifestManagerHost(this));
-
 #if defined(OS_ANDROID)
   DateTimeChooserAndroid::CreateForWebContents(this);
 #endif
@@ -4204,7 +4202,10 @@ bool WebContentsImpl::WasEverAudible() {
 }
 
 void WebContentsImpl::GetManifest(GetManifestCallback callback) {
-  manifest_manager_host_->GetManifest(std::move(callback));
+  // TODO(yuzus, 1061899): Move this function to RenderFrameHostImpl.
+  ManifestManagerHost* manifest_manager_host =
+      ManifestManagerHost::GetOrCreateForCurrentDocument(GetMainFrame());
+  manifest_manager_host->GetManifest(std::move(callback));
 }
 
 void WebContentsImpl::ExitFullscreen(bool will_cause_resize) {
@@ -5939,17 +5940,12 @@ void WebContentsImpl::DidStopLoading() {
   // Use the last committed entry rather than the active one, in case a
   // pending entry has been created.
   NavigationEntry* entry = controller_.GetLastCommittedEntry();
-  Navigator* navigator = frame_tree_.root()->navigator();
 
   // An entry may not exist for a stop when loading an initial blank page or
   // if an iframe injected by script into a blank page finishes loading.
   if (entry) {
-    base::TimeDelta elapsed =
-        base::TimeTicks::Now() - navigator->GetCurrentLoadStart();
-
     details.reset(new LoadNotificationDetails(
         entry->GetVirtualURL(),
-        elapsed,
         &controller_,
         controller_.GetCurrentEntryIndex()));
   }

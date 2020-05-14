@@ -11,6 +11,7 @@
 #include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace leveldb_proto {
 class ProtoDatabaseProvider;
@@ -199,9 +200,13 @@ class TestStoragePartition : public StoragePartition {
   void FlushNetworkInterfaceForTesting() override;
   void WaitForDeletionTasksForTesting() override;
   void WaitForCodeCacheShutdownForTesting() override;
+  void SetNetworkContextForTesting(
+      mojo::PendingRemote<network::mojom::NetworkContext>
+          network_context_remote) override;
 
  private:
   base::FilePath file_path_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_remote_;
   network::mojom::NetworkContext* network_context_ = nullptr;
   network::mojom::CookieManager* cookie_manager_for_browser_process_ = nullptr;
   storage::QuotaManager* quota_manager_ = nullptr;

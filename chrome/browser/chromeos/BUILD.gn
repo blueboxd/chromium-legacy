@@ -3153,6 +3153,7 @@ source_set("unit_tests") {
     "policy/status_collector/app_info_generator_unittest.cc",
     "policy/status_collector/interval_map_unittest.cc",
     "policy/status_uploader_unittest.cc",
+    "policy/system_features_disable_list_policy_handler_unittest.cc",
     "policy/system_log_uploader_unittest.cc",
     "policy/system_proxy_manager_unittest.cc",
     "policy/tpm_auto_update_mode_policy_handler_unittest.cc",

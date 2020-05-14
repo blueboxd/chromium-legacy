@@ -48,7 +48,7 @@ import java.util.Random;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class ChromeActionModeHandlerTest {
+public class ChromeActionModeHandlerUnitTest {
     @Mock
     private TabImpl mTab;
     @Mock
@@ -60,7 +60,7 @@ public class ChromeActionModeHandlerTest {
 
     private class TestChromeActionModeCallback extends ChromeActionModeHandler.ActionModeCallback {
         public TestChromeActionModeCallback(Tab tab, ActionModeCallbackHelper helper) {
-            super(tab, null, visible -> {});
+            super(tab, null, visible -> {}, urlParams -> {});
         }
 
         @Override

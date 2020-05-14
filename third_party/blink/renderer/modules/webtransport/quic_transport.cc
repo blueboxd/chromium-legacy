@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/streams/underlying_source_base.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/webtransport/bidirectional_stream.h"
 #include "third_party/blink/renderer/modules/webtransport/receive_stream.h"
 #include "third_party/blink/renderer/modules/webtransport/send_stream.h"
 #include "third_party/blink/renderer/modules/webtransport/web_transport_stream.h"
@@ -37,6 +38,33 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
+
+namespace {
+
+// Creates a mojo DataPipe with the options we use for our stream data pipes. On
+// success, returns true. On failure, throws an exception and returns false.
+bool CreateStreamDataPipe(mojo::ScopedDataPipeProducerHandle* producer,
+                          mojo::ScopedDataPipeConsumerHandle* consumer,
+                          ExceptionState& exception_state) {
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  options.element_num_bytes = 1;
+  // TODO(ricea): Find an appropriate value for capacity_num_bytes.
+  options.capacity_num_bytes = 0;
+
+  MojoResult result = mojo::CreateDataPipe(&options, producer, consumer);
+  if (result != MOJO_RESULT_OK) {
+    // Probably out of resources.
+    exception_state.ThrowDOMException(DOMExceptionCode::kUnknownError,
+                                      "Insufficient resources.");
+    return false;
+  }
+
+  return true;
+}
+
+}  // namespace
 
 // Sends a datagram on write().
 class QuicTransport::DatagramUnderlyingSink final : public UnderlyingSinkBase {
@@ -161,14 +189,30 @@ class QuicTransport::DatagramUnderlyingSource final
   Member<QuicTransport> quic_transport_;
 };
 
-class QuicTransport::ReceivedStreamsUnderlyingSource final
+class QuicTransport::StreamVendingUnderlyingSource final
     : public UnderlyingSourceBase {
  public:
-  ReceivedStreamsUnderlyingSource(ScriptState* script_state,
-                                  QuicTransport* quic_transport)
+  class StreamVendor : public GarbageCollected<StreamVendor> {
+   public:
+    using EnqueueCallback = base::OnceCallback<void(ScriptWrappable*)>;
+    virtual void RequestStream(EnqueueCallback) = 0;
+    virtual void Trace(Visitor*) {}
+  };
+
+  template <class VendorType>
+  static StreamVendingUnderlyingSource* CreateWithVendor(
+      ScriptState* script_state,
+      QuicTransport* quic_transport) {
+    auto* vendor =
+        MakeGarbageCollected<VendorType>(script_state, quic_transport);
+    return MakeGarbageCollected<StreamVendingUnderlyingSource>(script_state,
+                                                               vendor);
+  }
+
+  StreamVendingUnderlyingSource(ScriptState* script_state, StreamVendor* vendor)
       : UnderlyingSourceBase(script_state),
         script_state_(script_state),
-        quic_transport_(quic_transport) {}
+        vendor_(vendor) {}
 
   ScriptPromise pull(ScriptState* script_state) override {
     if (!is_opened_) {
@@ -176,9 +220,8 @@ class QuicTransport::ReceivedStreamsUnderlyingSource final
       return ScriptPromise::CastUndefined(script_state);
     }
 
-    quic_transport_->quic_transport_->AcceptUnidirectionalStream(WTF::Bind(
-        &ReceivedStreamsUnderlyingSource::OnAcceptUnidirectionalStreamResponse,
-        WrapWeakPersistent(this)));
+    vendor_->RequestStream(WTF::Bind(&StreamVendingUnderlyingSource::Enqueue,
+                                     WrapWeakPersistent(this)));
 
     return ScriptPromise::CastUndefined(script_state);
   }
@@ -203,12 +246,40 @@ class QuicTransport::ReceivedStreamsUnderlyingSource final
 
   void Trace(Visitor* visitor) override {
     visitor->Trace(script_state_);
-    visitor->Trace(quic_transport_);
+    visitor->Trace(vendor_);
     UnderlyingSourceBase::Trace(visitor);
   }
 
  private:
+  void Enqueue(ScriptWrappable* stream) { Controller()->Enqueue(stream); }
+
+  const Member<ScriptState> script_state_;
+  const Member<StreamVendor> vendor_;
+  bool is_opened_ = false;
+  bool is_pull_waiting_ = false;
+};
+
+class QuicTransport::ReceiveStreamVendor final
+    : public QuicTransport::StreamVendingUnderlyingSource::StreamVendor {
+ public:
+  ReceiveStreamVendor(ScriptState* script_state, QuicTransport* quic_transport)
+      : script_state_(script_state), quic_transport_(quic_transport) {}
+
+  void RequestStream(EnqueueCallback enqueue) override {
+    quic_transport_->quic_transport_->AcceptUnidirectionalStream(
+        WTF::Bind(&ReceiveStreamVendor::OnAcceptUnidirectionalStreamResponse,
+                  WrapWeakPersistent(this), std::move(enqueue)));
+  }
+
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(script_state_);
+    visitor->Trace(quic_transport_);
+    StreamVendor::Trace(visitor);
+  }
+
+ private:
   void OnAcceptUnidirectionalStreamResponse(
+      EnqueueCallback enqueue,
       uint32_t stream_id,
       mojo::ScopedDataPipeConsumerHandle readable) {
     ScriptState::Scope scope(script_state_);
@@ -219,13 +290,52 @@ class QuicTransport::ReceivedStreamsUnderlyingSource final
     CHECK_LT(stream_id, 0xfffffffe);
     quic_transport_->stream_map_.insert(stream_id, receive_stream);
 
-    Controller()->Enqueue(receive_stream);
+    std::move(enqueue).Run(receive_stream);
   }
 
   const Member<ScriptState> script_state_;
   const Member<QuicTransport> quic_transport_;
-  bool is_opened_ = false;
-  bool is_pull_waiting_ = false;
+};
+
+class QuicTransport::BidirectionalStreamVendor final
+    : public QuicTransport::StreamVendingUnderlyingSource::StreamVendor {
+ public:
+  BidirectionalStreamVendor(ScriptState* script_state,
+                            QuicTransport* quic_transport)
+      : script_state_(script_state), quic_transport_(quic_transport) {}
+
+  void RequestStream(EnqueueCallback enqueue) override {
+    quic_transport_->quic_transport_->AcceptBidirectionalStream(WTF::Bind(
+        &BidirectionalStreamVendor::OnAcceptBidirectionalStreamResponse,
+        WrapWeakPersistent(this), std::move(enqueue)));
+  }
+
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(script_state_);
+    visitor->Trace(quic_transport_);
+    StreamVendor::Trace(visitor);
+  }
+
+ private:
+  void OnAcceptBidirectionalStreamResponse(
+      EnqueueCallback enqueue,
+      uint32_t stream_id,
+      mojo::ScopedDataPipeConsumerHandle incoming_consumer,
+      mojo::ScopedDataPipeProducerHandle outgoing_producer) {
+    ScriptState::Scope scope(script_state_);
+    auto* bidirectional_stream = MakeGarbageCollected<BidirectionalStream>(
+        script_state_, quic_transport_, stream_id, std::move(outgoing_producer),
+        std::move(incoming_consumer));
+    bidirectional_stream->Init();
+    // 0xfffffffe and 0xffffffff are reserved values in stream_map_.
+    CHECK_LT(stream_id, 0xfffffffe);
+    quic_transport_->stream_map_.insert(stream_id, bidirectional_stream);
+
+    std::move(enqueue).Run(bidirectional_stream);
+  }
+
+  const Member<ScriptState> script_state_;
+  const Member<QuicTransport> quic_transport_;
 };
 
 QuicTransport* QuicTransport::Create(ScriptState* script_state,
@@ -264,6 +374,37 @@ ScriptPromise QuicTransport::createSendStream(ScriptState* script_state,
     return ScriptPromise();
   }
 
+  mojo::ScopedDataPipeProducerHandle data_pipe_producer;
+  mojo::ScopedDataPipeConsumerHandle data_pipe_consumer;
+
+  if (!CreateStreamDataPipe(&data_pipe_producer, &data_pipe_consumer,
+                            exception_state)) {
+    return ScriptPromise();
+  }
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  create_stream_resolvers_.insert(resolver);
+  quic_transport_->CreateStream(
+      std::move(data_pipe_consumer), mojo::ScopedDataPipeProducerHandle(),
+      WTF::Bind(&QuicTransport::OnCreateSendStreamResponse,
+                WrapWeakPersistent(this), WrapWeakPersistent(resolver),
+                std::move(data_pipe_producer)));
+
+  return resolver->Promise();
+}
+
+ScriptPromise QuicTransport::createBidirectionalStream(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
+  DVLOG(1) << "QuicTransport::createBidirectionalStream() this=" << this;
+
+  if (!quic_transport_.is_bound()) {
+    // TODO(ricea): We should wait if we are still connecting.
+    exception_state.ThrowDOMException(DOMExceptionCode::kNetworkError,
+                                      "No connection.");
+    return ScriptPromise();
+  }
+
   MojoCreateDataPipeOptions options;
   options.struct_size = sizeof(MojoCreateDataPipeOptions);
   options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
@@ -271,24 +412,27 @@ ScriptPromise QuicTransport::createSendStream(ScriptState* script_state,
   // TODO(ricea): Find an appropriate value for capacity_num_bytes.
   options.capacity_num_bytes = 0;
 
-  mojo::ScopedDataPipeProducerHandle data_pipe_producer;
-  mojo::ScopedDataPipeConsumerHandle data_pipe_consumer;
-  MojoResult result =
-      mojo::CreateDataPipe(&options, &data_pipe_producer, &data_pipe_consumer);
-  if (result != MOJO_RESULT_OK) {
-    // Probably out of resources.
-    exception_state.ThrowDOMException(DOMExceptionCode::kUnknownError,
-                                      "Insufficient resources.");
+  mojo::ScopedDataPipeProducerHandle outgoing_producer;
+  mojo::ScopedDataPipeConsumerHandle outgoing_consumer;
+  if (!CreateStreamDataPipe(&outgoing_producer, &outgoing_consumer,
+                            exception_state)) {
+    return ScriptPromise();
+  }
+
+  mojo::ScopedDataPipeProducerHandle incoming_producer;
+  mojo::ScopedDataPipeConsumerHandle incoming_consumer;
+  if (!CreateStreamDataPipe(&incoming_producer, &incoming_consumer,
+                            exception_state)) {
     return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  create_send_stream_resolvers_.insert(resolver);
+  create_stream_resolvers_.insert(resolver);
   quic_transport_->CreateStream(
-      std::move(data_pipe_consumer), mojo::ScopedDataPipeProducerHandle(),
-      WTF::Bind(&QuicTransport::OnCreateStreamResponse,
+      std::move(outgoing_consumer), std::move(incoming_producer),
+      WTF::Bind(&QuicTransport::OnCreateBidirectionalStreamResponse,
                 WrapWeakPersistent(this), WrapWeakPersistent(resolver),
-                std::move(data_pipe_producer)));
+                std::move(outgoing_producer), std::move(incoming_consumer)));
 
   return resolver->Promise();
 }
@@ -309,6 +453,7 @@ void QuicTransport::close(const WebTransportCloseInfo* close_info) {
   }
 
   received_streams_underlying_source_->Close();
+  received_bidirectional_streams_underlying_source_->Close();
 
   // If we don't manage to close the writable stream here, then it will
   // error when a write() is attempted.
@@ -346,6 +491,7 @@ void QuicTransport::OnConnectionEstablished(
   quic_transport_.Bind(std::move(quic_transport), task_runner);
 
   received_streams_underlying_source_->NotifyOpened();
+  received_bidirectional_streams_underlying_source_->NotifyOpened();
 
   ready_resolver_->Resolve();
 }
@@ -390,8 +536,11 @@ void QuicTransport::OnIncomingStreamClosed(uint32_t stream_id,
   DVLOG(1) << "QuicTransport::OnIncomingStreamClosed(" << stream_id << ", "
            << fin_received << ") this=" << this;
   WebTransportStream* stream = stream_map_.at(stream_id);
-  DCHECK(stream);
-  stream->OnIncomingStreamClosed(fin_received);
+  // |stream| can be unset because of races between different ways of closing
+  // |bidirectional streams.
+  if (stream) {
+    stream->OnIncomingStreamClosed(fin_received);
+  }
 }
 
 void QuicTransport::ContextDestroyed() {
@@ -412,7 +561,6 @@ bool QuicTransport::HasPendingActivity() const {
 
 void QuicTransport::SendFin(uint32_t stream_id) {
   quic_transport_->SendFin(stream_id);
-  stream_map_.erase(stream_id);
 }
 
 void QuicTransport::ForgetStream(uint32_t stream_id) {
@@ -424,7 +572,7 @@ void QuicTransport::Trace(Visitor* visitor) {
   visitor->Trace(received_datagrams_controller_);
   visitor->Trace(outgoing_datagrams_);
   visitor->Trace(script_state_);
-  visitor->Trace(create_send_stream_resolvers_);
+  visitor->Trace(create_stream_resolvers_);
   visitor->Trace(quic_transport_);
   visitor->Trace(handshake_client_receiver_);
   visitor->Trace(client_receiver_);
@@ -435,6 +583,8 @@ void QuicTransport::Trace(Visitor* visitor) {
   visitor->Trace(stream_map_);
   visitor->Trace(received_streams_);
   visitor->Trace(received_streams_underlying_source_);
+  visitor->Trace(received_bidirectional_streams_);
+  visitor->Trace(received_bidirectional_streams_underlying_source_);
   ExecutionContextLifecycleObserver::Trace(visitor);
   ScriptWrappable::Trace(visitor);
 }
@@ -514,10 +664,18 @@ void QuicTransport::Init(const String& url, ExceptionState& exception_state) {
       script_state_, MakeGarbageCollected<DatagramUnderlyingSink>(this), 1);
 
   received_streams_underlying_source_ =
-      MakeGarbageCollected<ReceivedStreamsUnderlyingSource>(script_state_,
-                                                            this);
+      StreamVendingUnderlyingSource::CreateWithVendor<ReceiveStreamVendor>(
+          script_state_, this);
   received_streams_ = ReadableStream::CreateWithCountQueueingStrategy(
       script_state_, received_streams_underlying_source_, 1);
+
+  received_bidirectional_streams_underlying_source_ =
+      StreamVendingUnderlyingSource::CreateWithVendor<
+          BidirectionalStreamVendor>(script_state_, this);
+
+  received_bidirectional_streams_ =
+      ReadableStream::CreateWithCountQueueingStrategy(
+          script_state_, received_bidirectional_streams_underlying_source_, 1);
 }
 
 void QuicTransport::ResetAll() {
@@ -554,6 +712,7 @@ void QuicTransport::OnConnectionError() {
       received_datagrams_controller_ = nullptr;
     }
     received_streams_underlying_source_->Error(reason);
+    received_bidirectional_streams_underlying_source_->Error(reason);
     WritableStreamDefaultController::ErrorIfNeeded(
         script_state_, outgoing_datagrams_->Controller(), reason);
     ready_resolver_->Reject(reason);
@@ -567,18 +726,18 @@ void QuicTransport::OnConnectionError() {
 void QuicTransport::RejectPendingStreamResolvers() {
   v8::Local<v8::Value> reason = V8ThrowException::CreateTypeError(
       script_state_->GetIsolate(), "Connection lost.");
-  for (ScriptPromiseResolver* resolver : create_send_stream_resolvers_) {
+  for (ScriptPromiseResolver* resolver : create_stream_resolvers_) {
     resolver->Reject(reason);
   }
-  create_send_stream_resolvers_.clear();
+  create_stream_resolvers_.clear();
 }
 
-void QuicTransport::OnCreateStreamResponse(
+void QuicTransport::OnCreateSendStreamResponse(
     ScriptPromiseResolver* resolver,
     mojo::ScopedDataPipeProducerHandle producer,
     bool succeeded,
     uint32_t stream_id) {
-  DVLOG(1) << "QuicTransport::OnCreateStreamResponse() this=" << this
+  DVLOG(1) << "QuicTransport::OnCreateSendStreamResponse() this=" << this
            << " succeeded=" << succeeded << " stream_id=" << stream_id;
 
   // Shouldn't resolve the promise if the execution context has gone away.
@@ -586,7 +745,7 @@ void QuicTransport::OnCreateStreamResponse(
     return;
 
   // Shouldn't resolve the promise if the mojo interface is disconnected.
-  if (!resolver || !create_send_stream_resolvers_.Take(resolver))
+  if (!resolver || !create_stream_resolvers_.Take(resolver))
     return;
 
   ScriptState::Scope scope(script_state_);
@@ -606,6 +765,43 @@ void QuicTransport::OnCreateStreamResponse(
   stream_map_.insert(stream_id, send_stream);
 
   resolver->Resolve(send_stream);
+}
+
+void QuicTransport::OnCreateBidirectionalStreamResponse(
+    ScriptPromiseResolver* resolver,
+    mojo::ScopedDataPipeProducerHandle outgoing_producer,
+    mojo::ScopedDataPipeConsumerHandle incoming_consumer,
+    bool succeeded,
+    uint32_t stream_id) {
+  DVLOG(1) << "QuicTransport::OnCreateBidirectionalStreamResponse() this="
+           << this << " succeeded=" << succeeded << " stream_id=" << stream_id;
+
+  // Shouldn't resolve the promise if the execution context has gone away.
+  if (!GetExecutionContext())
+    return;
+
+  // Shouldn't resolve the promise if the mojo interface is disconnected.
+  if (!resolver || !create_stream_resolvers_.Take(resolver))
+    return;
+
+  ScriptState::Scope scope(script_state_);
+  if (!succeeded) {
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state_->GetIsolate(), DOMExceptionCode::kNetworkError,
+        "Failed to create bidirectional stream."));
+    return;
+  }
+
+  auto* bidirectional_stream = MakeGarbageCollected<BidirectionalStream>(
+      script_state_, this, stream_id, std::move(outgoing_producer),
+      std::move(incoming_consumer));
+  bidirectional_stream->Init();
+
+  // 0xfffffffe and 0xffffffff are reserved values in stream_map_.
+  CHECK_LT(stream_id, 0xfffffffe);
+  stream_map_.insert(stream_id, bidirectional_stream);
+
+  resolver->Resolve(bidirectional_stream);
 }
 
 }  // namespace blink

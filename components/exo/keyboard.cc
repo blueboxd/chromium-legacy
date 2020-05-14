@@ -71,8 +71,10 @@ bool ConsumedByIme(Surface* focus, const ui::KeyEvent* event) {
   views::Widget* widget =
       views::Widget::GetTopLevelWidgetForNativeView(focus->window());
   ui::InputMethod* ime = widget ? widget->GetInputMethod() : nullptr;
-  if (!ime || ime->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE)
+  if (!ime || ime->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE ||
+      ime->GetTextInputType() == ui::TEXT_INPUT_TYPE_NULL) {
     return false;
+  }
 
   // Case 1:
   // When IME ate a key event but did not emit character insertion event yet
@@ -300,10 +302,11 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
 
   switch (event->type()) {
     case ui::ET_KEY_PRESSED: {
-      // Process key press event if not already handled and not already pressed.
       auto it = pressed_keys_.find(physical_code);
       if (it == pressed_keys_.end() && !consumed_by_ime && !event->handled() &&
           physical_code != ui::DomCode::NONE) {
+        // Process key press event if not already handled and not already
+        // pressed.
         uint32_t serial =
             delegate_->OnKeyboardKey(event->time_stamp(), event->code(), true);
         if (AreKeyboardKeyAcksNeeded()) {
@@ -316,6 +319,14 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
         // Keep track of both the physical code and potentially re-written
         // code that this event generated.
         pressed_keys_.insert({physical_code, event->code()});
+      } else if (it != pressed_keys_.end() && !event->handled()) {
+        // Non-repeate key events for already pressed key can be sent in some
+        // cases (e.g. Holding 'A' key then holding 'B' key then releasing 'A'
+        // key sends a non-repeat 'B' key press event).
+        // When it happens, we don't want to send the press event to a client
+        // and also want to avoid it from invoking any accelerator.
+        if (AreKeyboardKeyAcksNeeded())
+          event->SetHandled();
       }
     } break;
     case ui::ET_KEY_RELEASED: {

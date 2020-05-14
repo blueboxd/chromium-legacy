@@ -9,9 +9,9 @@
 #include "base/location.h"
 #include "base/optional.h"
 #include "build/build_config.h"
+#include "chrome/browser/service_sandbox_type.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/sandbox_type.h"
 #include "content/public/browser/service_process_host.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -158,17 +158,10 @@ void ImageWriterUtilityClient::BindServiceIfNeeded() {
   if (removable_storage_writer_)
     return;
 
-#if defined(OS_WIN)
-  constexpr auto kSandboxType =
-      service_manager::SandboxType::kNoSandboxAndElevatedPrivileges;
-#else
-  constexpr auto kSandboxType = service_manager::SandboxType::kNoSandbox;
-#endif
   content::ServiceProcessHost::Launch(
       removable_storage_writer_.BindNewPipeAndPassReceiver(),
       content::ServiceProcessHost::Options()
           .WithDisplayName(IDS_UTILITY_PROCESS_IMAGE_WRITER_NAME)
-          .WithSandboxType(kSandboxType)
           .Pass());
   removable_storage_writer_.set_disconnect_handler(
       base::BindOnce(&ImageWriterUtilityClient::OnConnectionError, this));

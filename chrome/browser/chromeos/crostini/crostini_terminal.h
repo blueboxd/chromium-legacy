@@ -9,6 +9,7 @@
 
 #include "base/optional.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "ui/gfx/geometry/point.h"
 
 class GURL;
@@ -126,8 +127,14 @@ void LaunchContainerTerminal(Profile* profile,
                              const std::string& container_name,
                              const std::vector<std::string>& terminal_args);
 
+// Launches the terminal tabbed app.
+Browser* LaunchTerminal(
+    Profile* profile,
+    const std::string& vm_name = kCrostiniDefaultVmName,
+    const std::string& container_name = kCrostiniDefaultContainerName);
+
 // Launches the terminal settings popup window.
-void LaunchTerminalSettings(Profile* profile);
+Browser* LaunchTerminalSettings(Profile* profile);
 
 // Record which terminal settings have been changed by users.
 void RecordTerminalSettingsChangesUMAs(Profile* profile);

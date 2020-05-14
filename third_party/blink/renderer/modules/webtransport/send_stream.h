@@ -56,7 +56,7 @@ class MODULES_EXPORT SendStream final : public ScriptWrappable,
 
   // Implementation of OutgoingStream::Client
   void SendFin() override;
-  void ForgetStream() override;
+  void OnOutgoingStreamAbort() override;
 
   void Trace(Visitor*) override;
 

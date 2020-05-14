@@ -610,23 +610,27 @@ void ArcApps::Uninstall(const std::string& app_id,
 }
 
 void ArcApps::PauseApp(const std::string& app_id) {
-  paused_apps_.MaybeAddApp(app_id);
+  if (paused_apps_.MaybeAddApp(app_id)) {
+    SetIconEffect(app_id);
+  }
+
   constexpr bool kPaused = true;
   Publish(paused_apps_.GetAppWithPauseStatus(apps::mojom::AppType::kArc, app_id,
                                              kPaused),
           subscribers_);
 
-  SetIconEffect(app_id);
   CloseTasks(app_id);
 }
 
 void ArcApps::UnpauseApps(const std::string& app_id) {
-  paused_apps_.MaybeRemoveApp(app_id);
+  if (paused_apps_.MaybeRemoveApp(app_id)) {
+    SetIconEffect(app_id);
+  }
+
   constexpr bool kPaused = false;
   Publish(paused_apps_.GetAppWithPauseStatus(apps::mojom::AppType::kArc, app_id,
                                              kPaused),
           subscribers_);
-  SetIconEffect(app_id);
 }
 
 void ArcApps::GetMenuModel(const std::string& app_id,

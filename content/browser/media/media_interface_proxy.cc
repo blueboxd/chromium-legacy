@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/service_sandbox_type.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/media_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -125,7 +126,6 @@ media::mojom::CdmService& GetCdmServiceForGuid(const base::Token& guid,
         remote.BindNewPipeAndPassReceiver(),
         ServiceProcessHost::Options()
             .WithDisplayName(cdm_name)
-            .WithSandboxType(service_manager::SandboxType::kCdm)
             .Pass());
     remote.set_disconnect_handler(
         base::BindOnce(&EraseCdmServiceForGuid, guid));
@@ -135,7 +135,7 @@ media::mojom::CdmService& GetCdmServiceForGuid(const base::Token& guid,
 
   return *remote.get();
 }
-#endif
+#endif  // ENABLE_LIBRARY_CDMS
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(OS_MACOSX)
 

@@ -55,10 +55,13 @@ class WebEngineContentBrowserClient : public content::ContentBrowserClient {
       const base::RepeatingCallback<content::WebContents*()>& wc_getter,
       content::NavigationUIData* navigation_ui_data,
       int frame_tree_node_id) final;
-  mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
+  void ConfigureNetworkContextParams(
       content::BrowserContext* context,
       bool in_memory,
-      const base::FilePath& relative_partition_path) override;
+      const base::FilePath& relative_partition_path,
+      network::mojom::NetworkContextParams* network_context_params,
+      network::mojom::CertVerifierCreationParams* cert_verifier_creation_params)
+      override;
 
  private:
   fidl::InterfaceRequest<fuchsia::web::Context> request_;

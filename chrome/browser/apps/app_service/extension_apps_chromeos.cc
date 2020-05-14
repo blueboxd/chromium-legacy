@@ -278,12 +278,13 @@ void ExtensionAppsChromeOs::Uninstall(const std::string& app_id,
 }
 
 void ExtensionAppsChromeOs::PauseApp(const std::string& app_id) {
-  paused_apps_.MaybeAddApp(app_id);
+  if (paused_apps_.MaybeAddApp(app_id)) {
+    SetIconEffect(app_id);
+  }
+
   constexpr bool kPaused = true;
   Publish(paused_apps_.GetAppWithPauseStatus(app_type(), app_id, kPaused),
           subscribers());
-
-  SetIconEffect(app_id);
 
   if (instance_registry_->GetWindows(app_id).empty()) {
     return;
@@ -316,12 +317,13 @@ void ExtensionAppsChromeOs::PauseApp(const std::string& app_id) {
 }
 
 void ExtensionAppsChromeOs::UnpauseApps(const std::string& app_id) {
-  paused_apps_.MaybeRemoveApp(app_id);
+  if (paused_apps_.MaybeRemoveApp(app_id)) {
+    SetIconEffect(app_id);
+  }
+
   constexpr bool kPaused = false;
   Publish(paused_apps_.GetAppWithPauseStatus(app_type(), app_id, kPaused),
           subscribers());
-
-  SetIconEffect(app_id);
 
   for (auto* browser : *BrowserList::GetInstance()) {
     if (!browser->is_type_app()) {

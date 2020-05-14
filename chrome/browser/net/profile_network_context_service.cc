@@ -259,18 +259,14 @@ ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
 
 ProfileNetworkContextService::~ProfileNetworkContextService() = default;
 
-mojo::Remote<network::mojom::NetworkContext>
-ProfileNetworkContextService::CreateNetworkContext(
+void ProfileNetworkContextService::ConfigureNetworkContextParams(
     bool in_memory,
-    const base::FilePath& relative_partition_path) {
-  mojo::Remote<network::mojom::NetworkContext> network_context;
-
-  content::GetNetworkService()->CreateNetworkContext(
-      network_context.BindNewPipeAndPassReceiver(),
-      CreateNetworkContextParams(in_memory, relative_partition_path));
-
-  network_context->SetSplitAuthCacheByNetworkIsolationKey(
-      ShouldSplitAuthCacheByNetworkIsolationKey());
+    const base::FilePath& relative_partition_path,
+    network::mojom::NetworkContextParams* network_context_params,
+    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
+  ConfigureNetworkContextParamsInternal(in_memory, relative_partition_path,
+                                        network_context_params,
+                                        cert_verifier_creation_params);
 
   if ((!in_memory && !profile_->IsOffTheRecord())) {
     // TODO(jam): delete this code 1 year after Network Service shipped to all
@@ -287,11 +283,6 @@ ProfileNetworkContextService::CreateNetworkContext(
         base::BindOnce(base::IgnoreResult(&base::DeleteFile), media_cache_path,
                        true /* recursive */));
   }
-
-  std::vector<network::mojom::NetworkContext*> contexts{network_context.get()};
-  UpdateCTPolicyForContexts(contexts);
-
-  return network_context;
 }
 
 #if defined(OS_CHROMEOS)
@@ -384,8 +375,7 @@ void ProfileNetworkContextService::UpdateReferrersEnabled() {
           enable_referrers_.GetValue()));
 }
 
-void ProfileNetworkContextService::UpdateCTPolicyForContexts(
-    const std::vector<network::mojom::NetworkContext*>& contexts) {
+network::mojom::CTPolicyPtr ProfileNetworkContextService::GetCTPolicy() {
   auto* prefs = profile_->GetPrefs();
   const base::ListValue* ct_required =
       prefs->GetList(certificate_transparency::prefs::kCTRequiredHosts);
@@ -403,9 +393,15 @@ void ProfileNetworkContextService::UpdateCTPolicyForContexts(
   std::vector<std::string> excluded_legacy_spkis(
       TranslateStringArray(ct_excluded_legacy_spkis));
 
+  return network::mojom::CTPolicy::New(std::move(required), std::move(excluded),
+                                       std::move(excluded_spkis),
+                                       std::move(excluded_legacy_spkis));
+}
+
+void ProfileNetworkContextService::UpdateCTPolicyForContexts(
+    const std::vector<network::mojom::NetworkContext*>& contexts) {
   for (auto* context : contexts) {
-    context->SetCTPolicy(required, excluded, excluded_spkis,
-                         excluded_legacy_spkis);
+    context->SetCTPolicy(GetCTPolicy());
   }
 }
 
@@ -614,27 +610,18 @@ bool GetHttpCacheBackendResetParam(PrefService* local_state) {
          current_field_trial_status != previous_field_trial_status;
 }
 
-network::mojom::NetworkContextParamsPtr
-ProfileNetworkContextService::CreateNetworkContextParams(
+void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
     bool in_memory,
-    const base::FilePath& relative_partition_path) {
+    const base::FilePath& relative_partition_path,
+    network::mojom::NetworkContextParams* network_context_params,
+    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
   if (profile_->IsOffTheRecord())
     in_memory = true;
   base::FilePath path(GetPartitionPath(relative_partition_path));
 
-  network::mojom::NetworkContextParamsPtr network_context_params =
-      g_browser_process->system_network_context_manager()
-          ->CreateDefaultNetworkContextParams();
-
-  network::mojom::CertVerifierCreationParamsPtr cert_verifier_creation_params;
-  // Grab the existing CertVerifierCreationParams, if any.
-  if (network_context_params->cert_verifier_creation_params) {
-    cert_verifier_creation_params =
-        std::move(network_context_params->cert_verifier_creation_params);
-  } else {
-    cert_verifier_creation_params =
-        network::mojom::CertVerifierCreationParams::New();
-  }
+  g_browser_process->system_network_context_manager()
+      ->ConfigureDefaultNetworkContextParams(network_context_params,
+                                             cert_verifier_creation_params);
 
   network_context_params->context_name = std::string("main");
 
@@ -743,10 +730,12 @@ ProfileNetworkContextService::CreateNetworkContextParams(
       base::FeatureList::IsEnabled(features::kFtpProtocol);
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
-  proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());
+  proxy_config_monitor_.AddToNetworkContextParams(network_context_params);
 
   network_context_params->enable_certificate_reporting = true;
   network_context_params->enable_expect_ct_reporting = true;
+
+  network_context_params->ct_policy = GetCTPolicy();
 
 #if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
   // Require the use_builtin_cert_verifier to be explicitly initialized, as
@@ -845,10 +834,8 @@ ProfileNetworkContextService::CreateNetworkContextParams(
   network_context_params->reset_http_cache_backend =
       GetHttpCacheBackendResetParam(g_browser_process->local_state());
 
-  network_context_params->cert_verifier_creation_params =
-      std::move(cert_verifier_creation_params);
-
-  return network_context_params;
+  network_context_params->split_auth_cache_by_network_isolation_key =
+      ShouldSplitAuthCacheByNetworkIsolationKey();
 }
 
 base::FilePath ProfileNetworkContextService::GetPartitionPath(

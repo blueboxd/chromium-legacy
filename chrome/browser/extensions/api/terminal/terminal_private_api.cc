@@ -493,6 +493,14 @@ void TerminalPrivateAckOutputFunction::AckOutputOnRegistryTaskRunner(
   chromeos::ProcessProxyRegistry::Get()->AckOutput(terminal_id);
 }
 
+TerminalPrivateOpenWindowFunction::~TerminalPrivateOpenWindowFunction() =
+    default;
+
+ExtensionFunction::ResponseAction TerminalPrivateOpenWindowFunction::Run() {
+  crostini::LaunchTerminal(Profile::FromBrowserContext(browser_context()));
+  return RespondNow(NoArguments());
+}
+
 TerminalPrivateOpenOptionsPageFunction::
     ~TerminalPrivateOpenOptionsPageFunction() = default;
 

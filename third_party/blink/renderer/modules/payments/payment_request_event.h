@@ -91,10 +91,10 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   String payment_request_origin_;
   String payment_request_id_;
   HeapVector<Member<PaymentMethodData>> method_data_;
-  Member<PaymentCurrencyAmount> total_;
+  Member<const PaymentCurrencyAmount> total_;
   HeapVector<Member<PaymentDetailsModifier>> modifiers_;
   String instrument_key_;
-  Member<PaymentOptions> payment_options_;
+  Member<const PaymentOptions> payment_options_;
   HeapVector<Member<PaymentShippingOption>> shipping_options_;
 
   Member<ScriptPromiseResolver> change_payment_request_details_resolver_;

@@ -68,26 +68,6 @@ namespace web_app {
 
 namespace {
 
-void TestAcceptDialogCallback(
-    content::WebContents* initiator_web_contents,
-    std::unique_ptr<WebApplicationInfo> web_app_info,
-    ForInstallableSite for_installable_site,
-    InstallManager::WebAppInstallationAcceptanceCallback acceptance_callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(acceptance_callback), true /*accept*/,
-                                std::move(web_app_info)));
-}
-
-void TestDeclineDialogCallback(
-    content::WebContents* initiator_web_contents,
-    std::unique_ptr<WebApplicationInfo> web_app_info,
-    ForInstallableSite for_installable_site,
-    InstallManager::WebAppInstallationAcceptanceCallback acceptance_callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(acceptance_callback),
-                                false /*accept*/, std::move(web_app_info)));
-}
-
 WebAppInstallManager::InstallParams MakeParams(
     web_app::DisplayMode display_mode = DisplayMode::kUndefined) {
   WebAppInstallManager::InstallParams params;
@@ -116,11 +96,13 @@ class WebAppInstallTaskTest : public WebAppTest {
     ui_manager_ = std::make_unique<TestWebAppUiManager>();
 
     install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
-        profile(), &controller().sync_bridge(), icon_manager_.get());
+        profile(), icon_manager_.get());
     shortcut_manager_ = std::make_unique<TestAppShortcutManager>(profile());
     file_handler_manager_ = std::make_unique<TestFileHandlerManager>(profile());
 
-    install_finalizer_->SetSubsystems(&registrar(), ui_manager_.get());
+    install_finalizer_->SetSubsystems(
+        &registrar(), ui_manager_.get(),
+        &test_registry_controller_->sync_bridge());
     shortcut_manager_->SetSubsystems(&registrar());
     file_handler_manager_->SetSubsystems(&registrar());
 

@@ -10,7 +10,6 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.components.external_intents.AuthenticatorNavigationInterceptor;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.InterceptNavigationDelegateClient;
@@ -111,7 +110,7 @@ public class InterceptNavigationDelegateClientImpl implements InterceptNavigatio
 
     @Override
     public void closeTab() {
-        TabModelSelector.from(mTab).closeTab(mTab);
+        mTab.getActivity().getTabModelSelector().closeTab(mTab);
     }
 
     @Override

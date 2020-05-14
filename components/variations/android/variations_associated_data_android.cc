@@ -35,5 +35,12 @@ ScopedJavaLocalRef<jstring> JNI_VariationsAssociatedData_GetFeedbackVariations(
   return ConvertUTF8ToJavaString(env, values);
 }
 
+ScopedJavaLocalRef<jstring> JNI_VariationsAssociatedData_GetGoogleAppVariations(
+    JNIEnv* env) {
+  const std::string values = VariationsHttpHeaderProvider::GetInstance()
+                                 ->GetGoogleAppVariationsString();
+  return ConvertUTF8ToJavaString(env, values);
+}
+
 }  // namespace android
 }  // namespace variations

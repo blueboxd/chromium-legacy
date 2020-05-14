@@ -451,7 +451,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   base::WeakPtr<ServiceWorkerContainerHost> GetWeakPtr();
 
  private:
-  friend class ServiceWorkerProviderHostTest;
+  friend class ServiceWorkerContainerHostTest;
   friend class service_worker_object_host_unittest::ServiceWorkerObjectHostTest;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerJobTest, Unregister);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerJobTest, RegisterDuplicateScript);

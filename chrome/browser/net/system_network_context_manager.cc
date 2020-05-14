@@ -24,7 +24,6 @@
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/component_updater/tls_deprecation_config_component_installer.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
-#include "chrome/browser/net/dns_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/ssl_config_service_manager.h"
 #include "chrome/common/channel_info.h"
@@ -65,6 +64,7 @@
 #include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
@@ -536,13 +536,12 @@ void SystemNetworkContextManager::AddSSLConfigToNetworkContextParams(
       network_context_params);
 }
 
-network::mojom::NetworkContextParamsPtr
-SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
-  network::mojom::NetworkContextParamsPtr network_context_params =
-      network::mojom::NetworkContextParams::New();
-  content::UpdateCorsExemptHeader(network_context_params.get());
-  variations::UpdateCorsExemptHeaderForVariations(network_context_params.get());
-  GoogleURLLoaderThrottle::UpdateCorsExemptHeader(network_context_params.get());
+void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
+    network::mojom::NetworkContextParams* network_context_params,
+    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
+  content::UpdateCorsExemptHeader(network_context_params);
+  variations::UpdateCorsExemptHeaderForVariations(network_context_params);
+  GoogleURLLoaderThrottle::UpdateCorsExemptHeader(network_context_params);
 
   network_context_params->enable_brotli = true;
 
@@ -596,7 +595,7 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
   // configuration. The SystemNetworkContextManager is owned by the
   // BrowserProcess itself, so will only be destroyed on shutdown, at which
   // point, all NetworkContexts will be destroyed as well.
-  AddSSLConfigToNetworkContextParams(network_context_params.get());
+  AddSSLConfigToNetworkContextParams(network_context_params);
 
 #if !defined(OS_ANDROID)
 
@@ -631,19 +630,26 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
   }
 #endif
 
-  network_context_params->cert_verifier_creation_params =
-      network::mojom::CertVerifierCreationParams::New();
-
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
-  network_context_params->cert_verifier_creation_params
-      ->use_builtin_cert_verifier =
+  cert_verifier_creation_params->use_builtin_cert_verifier =
       ShouldUseBuiltinCertVerifier(local_state_)
           ? network::mojom::CertVerifierCreationParams::CertVerifierImpl::
                 kBuiltin
           : network::mojom::CertVerifierCreationParams::CertVerifierImpl::
                 kSystem;
 #endif
+}
 
+network::mojom::NetworkContextParamsPtr
+SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
+  network::mojom::NetworkContextParamsPtr network_context_params =
+      network::mojom::NetworkContextParams::New();
+  network::mojom::CertVerifierCreationParamsPtr cert_verifier_creation_params =
+      network::mojom::CertVerifierCreationParams::New();
+  ConfigureDefaultNetworkContextParams(network_context_params.get(),
+                                       cert_verifier_creation_params.get());
+  network_context_params->cert_verifier_creation_params =
+      std::move(cert_verifier_creation_params);
   return network_context_params;
 }
 

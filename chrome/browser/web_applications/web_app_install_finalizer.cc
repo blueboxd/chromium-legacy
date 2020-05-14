@@ -129,10 +129,8 @@ void SetWebAppFileHandlers(
 }  // namespace
 
 WebAppInstallFinalizer::WebAppInstallFinalizer(Profile* profile,
-                                               WebAppSyncBridge* sync_bridge,
                                                WebAppIconManager* icon_manager)
     : profile_(profile),
-      sync_bridge_(sync_bridge),
       icon_manager_(icon_manager) {}
 
 WebAppInstallFinalizer::~WebAppInstallFinalizer() = default;
@@ -179,6 +177,12 @@ void WebAppInstallFinalizer::FinalizeInstall(
 
   UpdateIntWebAppPref(profile_->GetPrefs(), app_id, kLatestWebAppInstallSource,
                       static_cast<int>(options.install_source));
+
+  // TODO(crbug.com/897314): Store this as a display mode on WebApp to
+  // participate in the DB transactional model.
+  registry_controller().SetExperimentalTabbedWindowMode(
+      app_id, web_app_info.enable_experimental_tabbed_window);
+
   SetWebAppManifestFieldsAndWriteData(web_app_info, std::move(web_app),
                                       /*is_new_install=*/true,
                                       std::move(callback));
@@ -328,7 +332,7 @@ void WebAppInstallFinalizer::UninstallWebApp(const AppId& app_id,
   if (ShouldRegisterShortcutsMenuWithOs())
     UnregisterShortcutsMenuWithOs(app_id, profile_->GetPath());
 
-  ScopedRegistryUpdate update(sync_bridge_);
+  ScopedRegistryUpdate update(registry_controller().AsWebAppSyncBridge());
   update->DeleteApp(app_id);
 
   icon_manager_->DeleteData(
@@ -352,7 +356,7 @@ void WebAppInstallFinalizer::UninstallWebAppOrRemoveSource(
   if (app->HasOnlySource(source)) {
     UninstallWebApp(app_id, std::move(callback));
   } else {
-    ScopedRegistryUpdate update(sync_bridge_);
+    ScopedRegistryUpdate update(registry_controller().AsWebAppSyncBridge());
     WebApp* app_to_update = update->UpdateApp(app_id);
     app_to_update->RemoveSource(source);
 
@@ -428,7 +432,8 @@ void WebAppInstallFinalizer::OnIconsDataWritten(
 
   AppId app_id = web_app->app_id();
 
-  std::unique_ptr<WebAppRegistryUpdate> update = sync_bridge_->BeginUpdate();
+  std::unique_ptr<WebAppRegistryUpdate> update =
+      registry_controller().AsWebAppSyncBridge()->BeginUpdate();
 
   WebApp* app_to_override = update->UpdateApp(app_id);
   if (app_to_override)
@@ -436,7 +441,7 @@ void WebAppInstallFinalizer::OnIconsDataWritten(
   else
     update->CreateApp(std::move(web_app));
 
-  sync_bridge_->CommitUpdate(
+  registry_controller().AsWebAppSyncBridge()->CommitUpdate(
       std::move(update),
       base::BindOnce(&WebAppInstallFinalizer::OnDatabaseCommitCompleted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),

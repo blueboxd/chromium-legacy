@@ -452,7 +452,7 @@ if (enable_nacl) {
       ":ppapi_nacl_tests(//build/toolchain/nacl:newlib_pnacl)",
     ]
 
-    if (target_cpu != "mipsel" && !is_mac) {
+    if (target_cpu != "mipsel" && !is_mac && !is_win) {
       data_deps +=
           [ ":ppapi_nacl_tests(//build/toolchain/nacl:glibc_${target_cpu})" ]
     }

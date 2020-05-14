@@ -3823,6 +3823,11 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
+    {"print-with-reduced-rasterization",
+     flag_descriptions::kPrintWithReducedRasterizationName,
+     flag_descriptions::kPrintWithReducedRasterizationDescription, kOsWin,
+     FEATURE_VALUE_TYPE(printing::features::kPrintWithReducedRasterization)},
+
     {"use-xps-for-printing", flag_descriptions::kUseXpsForPrintingName,
      flag_descriptions::kUseXpsForPrintingDescription, kOsWin,
      FEATURE_VALUE_TYPE(printing::features::kUseXpsForPrinting)},
@@ -3863,6 +3868,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kStartSurfaceAndroid,
                                     kStartSurfaceAndroidVariations,
                                     "ChromeStart")},
+
+    {"enable-instant-start", flag_descriptions::kInstantStartName,
+     flag_descriptions::kInstantStartDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kInstantStart)},
 
     {"enable-close-tab-suggestions",
      flag_descriptions::kCloseTabSuggestionsName,

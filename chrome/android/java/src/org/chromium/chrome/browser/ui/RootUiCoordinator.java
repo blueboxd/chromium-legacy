@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ui;
 
 import android.os.Bundle;
 import android.os.CancellationSignal;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -31,6 +32,7 @@ import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.directactions.DirectActionInitializer;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.findinpage.FindToolbarObserver;
 import org.chromium.chrome.browser.flags.ActivityType;
@@ -38,13 +40,16 @@ import org.chromium.chrome.browser.identity_disc.IdentityDiscController;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.metrics.UkmRecorder;
+import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.paint_preview.PaintPreviewTabHelper;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.share.ShareButtonController;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.ShareUtils;
 import org.chromium.chrome.browser.tab.AccessibilityVisibilityHandler;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ButtonDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
@@ -60,7 +65,11 @@ import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
+import org.chromium.components.feature_engagement.EventConstants;
+import org.chromium.content_public.browser.ActionModeCallbackHelper;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogManagerObserver;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.vr.VrModeObserver;
@@ -264,8 +273,23 @@ public class RootUiCoordinator
             };
             mActivity.getModalDialogManager().addObserver(mModalDialogManagerObserver);
         }
-        mChromeActionModeHandler = new ChromeActionModeHandler(
-                mActivity.getActivityTabProvider(), mToolbarManager::onActionBarVisibilityChanged);
+        mChromeActionModeHandler = new ChromeActionModeHandler(mActivity.getActivityTabProvider(),
+                mToolbarManager::onActionBarVisibilityChanged, (searchText) -> {
+                    TabModelSelector selector = mActivity.getTabModelSelector();
+                    if (selector == null) return;
+
+                    String query = ActionModeCallbackHelper.sanitizeQuery(
+                            searchText, ActionModeCallbackHelper.MAX_SEARCH_QUERY_LENGTH);
+                    if (TextUtils.isEmpty(query)) return;
+
+                    Tab tab = mActivity.getActivityTabProvider().get();
+                    TrackerFactory
+                            .getTrackerForProfile(Profile.fromWebContents(tab.getWebContents()))
+                            .notifyEvent(EventConstants.WEB_SEARCH_PERFORMED);
+
+                    selector.openNewTab(generateUrlParamsForSearch(tab, query),
+                            TabLaunchType.FROM_LONGPRESS_FOREGROUND, tab, tab.isIncognito());
+                });
         mVrModeObserver = new VrModeObserver() {
             @Override
             public void onEnterVr() {
@@ -276,6 +300,19 @@ public class RootUiCoordinator
             public void onExitVr() {}
         };
         VrModuleProvider.registerVrModeObserver(mVrModeObserver);
+    }
+
+    /**
+     * Generate the LoadUrlParams necessary to load the specified search query.
+     */
+    private static LoadUrlParams generateUrlParamsForSearch(Tab tab, String query) {
+        String url = TemplateUrlServiceFactory.get().getUrlForSearchQuery(query);
+        String headers = GeolocationHeader.getGeoHeader(url, tab);
+
+        LoadUrlParams loadUrlParams = new LoadUrlParams(url);
+        loadUrlParams.setVerbatimHeaders(headers);
+        loadUrlParams.setTransitionType(PageTransition.GENERATED);
+        return loadUrlParams;
     }
 
     /**

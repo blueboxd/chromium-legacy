@@ -13,6 +13,22 @@
 // require a non-utility sandbox can be added here.  See
 // ServiceProcessHost::Launch() for how these templates are consumed.
 
+// chrome::mojom::RemovableStorageWriter
+namespace chrome {
+namespace mojom {
+class RemovableStorageWriter;
+}  // namespace mojom
+}  // namespace chrome
+template <>
+inline content::SandboxType
+content::GetServiceSandboxType<chrome::mojom::RemovableStorageWriter>() {
+#if defined(OS_WIN)
+  return SandboxType::kNoSandboxAndElevatedPrivileges;
+#else
+  return SandboxType::kNoSandbox;
+#endif
+}
+
 // chrome::mojom::UtilWin
 #if defined(OS_WIN)
 namespace chrome {

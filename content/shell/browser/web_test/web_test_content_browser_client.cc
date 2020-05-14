@@ -30,6 +30,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/shell/browser/shell_browser_context.h"
+#include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/web_test/fake_bluetooth_chooser.h"
 #include "content/shell/browser/web_test/fake_bluetooth_chooser_factory.h"
 #include "content/shell/browser/web_test/fake_bluetooth_delegate.h"
@@ -487,11 +488,12 @@ std::unique_ptr<LoginDelegate> WebTestContentBrowserClient::CreateLoginDelegate(
   return nullptr;
 }
 
-network::mojom::NetworkContextParamsPtr
-WebTestContentBrowserClient::CreateNetworkContextParams(
-    BrowserContext* context) {
-  network::mojom::NetworkContextParamsPtr context_params =
-      ShellContentBrowserClient::CreateNetworkContextParams(context);
+void WebTestContentBrowserClient::ConfigureNetworkContextParamsForShell(
+    BrowserContext* context,
+    network::mojom::NetworkContextParams* context_params,
+    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
+  ShellContentBrowserClient::ConfigureNetworkContextParamsForShell(
+      context, context_params, cert_verifier_creation_params);
 
 #if BUILDFLAG(ENABLE_REPORTING)
   // Configure the Reporting service in a manner expected by certain Web
@@ -503,8 +505,6 @@ WebTestContentBrowserClient::CreateNetworkContextParams(
       kReportingDeliveryIntervalTimeForWebTests;
   context_params->skip_reporting_send_permission_check = true;
 #endif
-
-  return context_params;
 }
 
 void WebTestContentBrowserClient::CreateFakeBluetoothChooserFactory(

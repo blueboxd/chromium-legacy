@@ -45,6 +45,7 @@ import java.util.Locale;
  */
 public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     private final TabImpl mTab;
+    private final TabModelSelector mTabModelSelector;
     private boolean mLoadOriginalImageRequestedForPageLoad;
     private EmptyTabObserver mDataReductionProxyContextMenuTabObserver;
     private final Supplier<EphemeralTabCoordinator> mEphemeralTabCoordinatorSupplier;
@@ -52,9 +53,10 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     /**
      * Builds a {@link TabContextMenuItemDelegate} instance.
      */
-    public TabContextMenuItemDelegate(
-            Tab tab, Supplier<EphemeralTabCoordinator> ephemeralTabCoordinatorSupplier) {
+    public TabContextMenuItemDelegate(Tab tab, TabModelSelector tabModelSelector,
+            Supplier<EphemeralTabCoordinator> ephemeralTabCoordinatorSupplier) {
         mTab = (TabImpl) tab;
+        mTabModelSelector = tabModelSelector;
         mEphemeralTabCoordinatorSupplier = ephemeralTabCoordinatorSupplier;
 
         mDataReductionProxyContextMenuTabObserver = new EmptyTabObserver() {
@@ -88,7 +90,8 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
 
     @Override
     public boolean isOpenInOtherWindowSupported() {
-        return MultiWindowUtils.getInstance().isOpenInOtherWindowSupported(mTab.getActivity());
+        return MultiWindowUtils.getInstance().isOpenInOtherWindowSupported(
+                TabUtils.getActivity(mTab));
     }
 
     @Override
@@ -124,7 +127,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.setData(Uri.parse(uri));
-        IntentUtils.safeStartActivity(mTab.getActivity(), intent);
+        IntentUtils.safeStartActivity(mTab.getContext(), intent);
     }
 
     @Override
@@ -139,7 +142,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.setData(Uri.parse(url));
-        IntentUtils.safeStartActivity(mTab.getActivity(), intent);
+        IntentUtils.safeStartActivity(mTab.getContext(), intent);
     }
 
     @Override
@@ -153,7 +156,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     public void onSendTextMessage(String url) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse("sms:" + UrlUtilities.getTelNumber(url)));
-        IntentUtils.safeStartActivity(mTab.getActivity(), intent);
+        IntentUtils.safeStartActivity(mTab.getContext(), intent);
     }
 
     @Override
@@ -174,7 +177,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         } else if (UrlUtilities.isTelScheme(url)) {
             intent.putExtra(ContactsContract.Intents.Insert.PHONE, UrlUtilities.getTelNumber(url));
         }
-        IntentUtils.safeStartActivity(mTab.getActivity(), intent);
+        IntentUtils.safeStartActivity(mTab.getContext(), intent);
     }
 
     @Override
@@ -182,7 +185,8 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         TabDelegate tabDelegate = new TabDelegate(mTab.isIncognito());
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
         loadUrlParams.setReferrer(referrer);
-        tabDelegate.createTabInOtherWindow(loadUrlParams, mTab.getActivity(), mTab.getParentId());
+        tabDelegate.createTabInOtherWindow(
+                loadUrlParams, TabUtils.getActivity(mTab), mTab.getParentId());
     }
 
     @Override
@@ -191,7 +195,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         RecordUserAction.record("LinkOpenedInNewTab");
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
         loadUrlParams.setReferrer(referrer);
-        TabModelSelector.from(mTab).openNewTab(
+        mTabModelSelector.openNewTab(
                 loadUrlParams, TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab, isIncognito());
     }
 
@@ -209,7 +213,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     @Override
     public void onOpenInNewIncognitoTab(String url) {
         RecordUserAction.record("MobileNewTabOpened");
-        TabModelSelector.from(mTab).openNewTab(
+        mTabModelSelector.openNewTab(
                 new LoadUrlParams(url), TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab, true);
     }
 
@@ -230,7 +234,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     public void onOpenImageInNewTab(String url, Referrer referrer) {
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
         loadUrlParams.setReferrer(referrer);
-        mTab.getActivity().getTabModelSelector().openNewTab(
+        mTabModelSelector.openNewTab(
                 loadUrlParams, TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab, isIncognito());
     }
 
@@ -274,9 +278,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         }
 
         if (!activityStarted) {
-            Context context = mTab.getActivity();
-            if (context == null) context = applicationContext;
-            context.startActivity(chromeIntent);
+            mTab.getContext().startActivity(chromeIntent);
             activityStarted = true;
         }
     }
@@ -293,7 +295,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
             IntentHandler.addTrustedIntentExtras(intent);
             IntentHandler.setTabLaunchType(intent, TabLaunchType.FROM_EXTERNAL_APP);
         }
-        IntentUtils.safeStartActivity(mTab.getActivity(), intent);
+        IntentUtils.safeStartActivity(mTab.getContext(), intent);
     }
 
     @Override
@@ -305,7 +307,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     public void onOpenInDefaultBrowser(String url) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         CustomTabsIntent.setAlwaysUseBrowserUI(intent);
-        IntentUtils.safeStartActivity(mTab.getActivity(), intent);
+        IntentUtils.safeStartActivity(mTab.getContext(), intent);
     }
 
     /**

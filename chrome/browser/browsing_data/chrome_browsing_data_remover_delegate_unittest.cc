@@ -93,10 +93,12 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/mock_download_manager.h"
@@ -1122,12 +1124,13 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
     content::GetNetworkService();
     task_environment_.RunUntilIdle();
 
-    auto network_context = std::make_unique<network::NetworkContext>(
+    mojo::PendingRemote<network::mojom::NetworkContext> network_context_remote;
+    network_context_ = std::make_unique<network::NetworkContext>(
         network::NetworkService::GetNetworkServiceForTesting(),
-        network_context_remote_.BindNewPipeAndPassReceiver(),
+        network_context_remote.InitWithNewPipeAndPassReceiver(),
         network::mojom::NetworkContextParams::New());
-    network_context_ = network_context.get();
-    profile_->SetNetworkContext(std::move(network_context));
+    content::BrowserContext::GetDefaultStoragePartition(profile_.get())
+        ->SetNetworkContextForTesting(std::move(network_context_remote));
 
     ProtocolHandlerRegistryFactory::GetInstance()->SetTestingFactory(
         profile_.get(), base::BindRepeating(&BuildProtocolHandlerRegistry));
@@ -1207,7 +1210,7 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
     return remover_->GetLastUsedOriginTypeMaskForTesting();
   }
 
-  network::NetworkContext* network_context() { return network_context_; }
+  network::NetworkContext* network_context() { return network_context_.get(); }
 
   TestingProfile* GetProfile() {
     return profile_.get();
@@ -1225,8 +1228,7 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
   content::BrowsingDataRemover* remover_;
 
   content::BrowserTaskEnvironment task_environment_;
-  mojo::Remote<network::mojom::NetworkContext> network_context_remote_;
-  network::NetworkContext* network_context_;
+  std::unique_ptr<network::NetworkContext> network_context_;
   std::unique_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowsingDataRemoverDelegateTest);

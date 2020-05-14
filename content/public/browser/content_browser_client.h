@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
@@ -1460,15 +1461,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void OnNetworkServiceCreated(
       network::mojom::NetworkService* network_service);
 
-  // Creates a NetworkContext for a BrowserContext's StoragePartition. If the
-  // network service is enabled, it must return a NetworkContext using the
-  // network service. If the network service is disabled, the embedder may
-  // return a NetworkContext, or it may return nullptr, in which case the
-  // StoragePartition will create one wrapping the URLRequestContext obtained
-  // from the BrowserContext.
-  //
-  // Called before the corresonding BrowserContext::CreateRequestContext method
-  // is called.
+  // Configures the NetworkContextParams (|network_context_params|) and
+  // CertVerifierCreationParams (|cert_verifier_creation_params|) for a
+  // BrowserContext's StoragePartition. StoragePartition will use the
+  // NetworkService to create a new NetworkContext using these params.
   //
   // If |in_memory| is true, |relative_partition_path| is still a path that
   // uniquely identifies the storage partition, though nothing should be written
@@ -1476,14 +1472,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   //
   // If |relative_partition_path| is the empty string, it means this needs to
   // create the default NetworkContext for the BrowserContext.
-  //
-  // For NetworkContexts returned from the Network Service, some requirements:
-  //   -enable data URL support (or else data URLs will fail)
-  //   -disable file URL support (for security)
-  virtual mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
+  virtual void ConfigureNetworkContextParams(
       BrowserContext* context,
       bool in_memory,
-      const base::FilePath& relative_partition_path);
+      const base::FilePath& relative_partition_path,
+      network::mojom::NetworkContextParams* network_context_params,
+      network::mojom::CertVerifierCreationParams*
+          cert_verifier_creation_params);
 
   // Returns the parent paths that contain all the network service's
   // BrowserContexts' storage. Multiple paths can be returned, e.g. in case the

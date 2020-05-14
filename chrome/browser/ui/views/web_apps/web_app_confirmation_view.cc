@@ -25,6 +25,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/checkbox.h"
+#include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
@@ -34,6 +35,13 @@ namespace {
 
 bool g_auto_accept_web_app_for_testing = false;
 bool g_auto_check_open_in_window_for_testing = false;
+
+bool ShowRadioButtons() {
+  // This UI is only for prototyping and is not intended for shipping.
+  DCHECK_EQ(features::kDesktopPWAsTabStrip.default_state,
+            base::FEATURE_DISABLED_BY_DEFAULT);
+  return base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip);
+}
 
 }  // namespace
 
@@ -88,16 +96,54 @@ WebAppConfirmationView::WebAppConfirmationView(
   layout->AddPaddingRow(
       views::GridLayout::kFixedSize,
       layout_provider->GetDistanceMetric(DISTANCE_CONTROL_LIST_VERTICAL));
-  auto open_as_window_checkbox = std::make_unique<views::Checkbox>(
-      l10n_util::GetStringUTF16(IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_WINDOW));
-  open_as_window_checkbox->SetChecked(web_app_info_->open_as_window);
-  layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
-  layout->SkipColumns(1);
-  open_as_window_checkbox_ =
-      layout->AddView(std::move(open_as_window_checkbox));
+
+  if (ShowRadioButtons()) {
+    constexpr int kRadioGroupId = 1;
+    auto open_as_tab_radio = std::make_unique<views::RadioButton>(
+        l10n_util::GetStringUTF16(IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_TAB),
+        kRadioGroupId);
+    auto open_as_window_radio = std::make_unique<views::RadioButton>(
+        l10n_util::GetStringUTF16(IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_WINDOW),
+        kRadioGroupId);
+    auto open_as_tabbed_window_radio = std::make_unique<views::RadioButton>(
+        l10n_util::GetStringUTF16(
+            IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_TABBED_WINDOW),
+        kRadioGroupId);
+
+    layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
+    layout->SkipColumns(1);
+    open_as_tab_radio_ = layout->AddView(std::move(open_as_tab_radio));
+
+    layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
+    layout->SkipColumns(1);
+    open_as_window_radio_ = layout->AddView(std::move(open_as_window_radio));
+
+    layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
+    layout->SkipColumns(1);
+    open_as_tabbed_window_radio_ =
+        layout->AddView(std::move(open_as_tabbed_window_radio));
+
+    if (!web_app_info_->open_as_window)
+      open_as_tab_radio_->SetChecked(true);
+    else if (!web_app_info_->enable_experimental_tabbed_window)
+      open_as_window_radio_->SetChecked(true);
+    else
+      open_as_tabbed_window_radio_->SetChecked(true);
+  } else {
+    auto open_as_window_checkbox = std::make_unique<views::Checkbox>(
+        l10n_util::GetStringUTF16(IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_WINDOW));
+    open_as_window_checkbox->SetChecked(web_app_info_->open_as_window);
+    layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
+    layout->SkipColumns(1);
+    open_as_window_checkbox_ =
+        layout->AddView(std::move(open_as_window_checkbox));
+  }
 
   if (g_auto_check_open_in_window_for_testing) {
-    open_as_window_checkbox_->SetChecked(true);
+    if (ShowRadioButtons())
+      open_as_window_radio_->SetChecked(true);
+    else
+      open_as_window_checkbox_->SetChecked(true);
   }
 
   title_tf_->SelectAll(true);
@@ -130,8 +176,17 @@ void WebAppConfirmationView::WindowClosing() {
 bool WebAppConfirmationView::Accept() {
   DCHECK(web_app_info_);
   web_app_info_->title = GetTrimmedTitle();
-  web_app_info_->open_as_window =
-      open_as_window_checkbox_ && open_as_window_checkbox_->GetChecked();
+  if (ShowRadioButtons()) {
+    if (open_as_tabbed_window_radio_->GetChecked()) {
+      web_app_info_->open_as_window = true;
+      web_app_info_->enable_experimental_tabbed_window = true;
+    } else {
+      web_app_info_->open_as_window = open_as_window_radio_->GetChecked();
+      web_app_info_->enable_experimental_tabbed_window = false;
+    }
+  } else {
+    web_app_info_->open_as_window = open_as_window_checkbox_->GetChecked();
+  }
   std::move(callback_).Run(true, std::move(web_app_info_));
   return true;
 }

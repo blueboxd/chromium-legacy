@@ -201,8 +201,8 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
 
   auto icon_manager = std::make_unique<WebAppIconManager>(
       profile, *registrar, std::make_unique<FileUtilsWrapper>());
-  install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
-      profile, sync_bridge.get(), icon_manager.get());
+  install_finalizer_ =
+      std::make_unique<WebAppInstallFinalizer>(profile, icon_manager.get());
   file_handler_manager_ = std::make_unique<WebAppFileHandlerManager>(profile);
   shortcut_manager_ = std::make_unique<WebAppShortcutManager>(
       profile, icon_manager.get(), file_handler_manager_.get());
@@ -238,7 +238,8 @@ void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
 void WebAppProvider::ConnectSubsystems() {
   DCHECK(!started_);
 
-  install_finalizer_->SetSubsystems(registrar_.get(), ui_manager_.get());
+  install_finalizer_->SetSubsystems(registrar_.get(), ui_manager_.get(),
+                                    registry_controller_.get());
   install_manager_->SetSubsystems(registrar_.get(), shortcut_manager_.get(),
                                   file_handler_manager_.get(),
                                   install_finalizer_.get());

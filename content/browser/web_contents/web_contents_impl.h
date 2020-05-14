@@ -102,7 +102,6 @@ class DisplayCutoutHostImpl;
 class FindRequestManager;
 class JavaScriptDialogManager;
 class JavaScriptDialogNavigationDeferrer;
-class ManifestManagerHost;
 class MediaWebContentsObserver;
 class NFCHost;
 class PluginContentOriginAllowlist;
@@ -311,10 +310,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   std::vector<WebContentsImpl*> GetWebContentsAndAllInner();
 
   void NotifyManifestUrlChanged(const base::Optional<GURL>& manifest_url);
-
-  ManifestManagerHost* GetManifestManagerHost() const {
-    return manifest_manager_host_.get();
-  }
 
 #if defined(OS_ANDROID)
   void SetMainFrameImportance(ChildProcessImportance importance);
@@ -1901,8 +1896,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       color_chooser_factory_receivers_;
 
   std::unique_ptr<ScreenOrientationProvider> screen_orientation_provider_;
-
-  std::unique_ptr<ManifestManagerHost> manifest_manager_host_;
 
   // The accessibility mode for all frames. This is queried when each frame
   // is created, and broadcast to all frames when it changes.

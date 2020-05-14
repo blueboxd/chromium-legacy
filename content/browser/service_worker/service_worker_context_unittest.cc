@@ -1026,8 +1026,6 @@ TEST_F(ServiceWorkerContextTest, ContainerHostIterator) {
       CreateProviderHostForServiceWorkerContext(
           kRenderProcessId2, true /* is_parent_frame_secure */, version.get(),
           context()->AsWeakPtr(), &remote_endpoints.back());
-  EXPECT_NE(provider_host4->provider_id(),
-            blink::kInvalidServiceWorkerProviderId);
 
   ASSERT_TRUE(container_host1);
   ASSERT_TRUE(container_host2);

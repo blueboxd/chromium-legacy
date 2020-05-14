@@ -81,6 +81,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/mathml_names.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
@@ -794,7 +795,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (GetNode()->HasTagName(html_names::kDtTag))
     return ax::mojom::Role::kDescriptionListTerm;
 
-  if (GetNode()->nodeName() == "math")
+  if (GetNode()->nodeName() == mathml_names::kMathTag.LocalName())
     return ax::mojom::Role::kMath;
 
   if (GetNode()->HasTagName(html_names::kRpTag) ||
@@ -889,7 +890,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (GetNode()->HasTagName(html_names::kFigureTag))
     return ax::mojom::Role::kFigure;
 
-  if (GetNode()->nodeName() == "TIME")
+  if (GetNode()->HasTagName(html_names::kTimeTag))
     return ax::mojom::Role::kTime;
 
   if (IsA<HTMLPlugInElement>(GetNode())) {

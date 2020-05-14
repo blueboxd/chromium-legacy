@@ -22,6 +22,9 @@ CONTENT_EXPORT void SetRenderDocumentHostUserData(
     const void* key,
     std::unique_ptr<base::SupportsUserData::Data> data);
 
+CONTENT_EXPORT void RemoveRenderDocumentHostUserData(RenderFrameHost* rfh,
+                                                     const void* key);
+
 // This class approximates the lifetime of a single blink::Document in the
 // browser process. At the moment RenderFrameHost can correspond to multiple
 // blink::Documents (when RenderFrameHost is reused for same-process
@@ -80,6 +83,12 @@ class RenderDocumentHostUserData : public base::SupportsUserData::Data {
   static T* GetForCurrentDocument(RenderFrameHost* rfh) {
     DCHECK(rfh);
     return static_cast<T*>(GetRenderDocumentHostUserData(rfh, UserDataKey()));
+  }
+
+  static void DeleteForCurrentDocument(RenderFrameHost* rfh) {
+    DCHECK(rfh);
+    DCHECK(GetForCurrentDocument(rfh));
+    RemoveRenderDocumentHostUserData(rfh, UserDataKey());
   }
 
   static const void* UserDataKey() { return &T::kUserDataKey; }

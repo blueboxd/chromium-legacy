@@ -23,7 +23,6 @@ const char kResourceTypesKey[] = "resourceTypes";
 const char kExcludedResourceTypesKey[] = "excludedResourceTypes";
 const char kDomainTypeKey[] = "domainType";
 const char kRuleActionTypeKey[] = "type";
-const char kRemoveHeadersListKey[] = "removeHeadersList";
 const char kRedirectPath[] = "action.redirect";
 const char kExtensionPathPath[] = "action.redirect.extensionPath";
 const char kTransformSchemePath[] = "action.redirect.transform.scheme";

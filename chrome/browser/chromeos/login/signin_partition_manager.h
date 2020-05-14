@@ -40,6 +40,9 @@ class SigninPartitionManager : public KeyedService {
   using GetSystemNetworkContextTask =
       base::RepeatingCallback<network::mojom::NetworkContext*()>;
 
+  using OnCreateNewStoragePartition =
+      base::RepeatingCallback<void(content::StoragePartition*)>;
+
   using StartSigninSessionDoneCallback =
       base::OnceCallback<void(const std::string& partition_name)>;
 
@@ -85,6 +88,8 @@ class SigninPartitionManager : public KeyedService {
       ClearStoragePartitionTask clear_storage_partition_task);
   void SetGetSystemNetworkContextForTesting(
       GetSystemNetworkContextTask get_system_network_context_task);
+  void SetOnCreateNewStoragePartitionForTesting(
+      OnCreateNewStoragePartition on_create_new_storage_partition);
 
   class Factory : public BrowserContextKeyedServiceFactory {
    public:
@@ -113,6 +118,7 @@ class SigninPartitionManager : public KeyedService {
 
   ClearStoragePartitionTask clear_storage_partition_task_;
   GetSystemNetworkContextTask get_system_network_context_task_;
+  OnCreateNewStoragePartition on_create_new_storage_partition_;
 
   // GuestView StoragePartitions use the host of the embedder site's URL as the
   // domain of their StoragePartition.

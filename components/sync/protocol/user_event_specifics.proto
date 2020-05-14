@@ -179,6 +179,19 @@ message UserEventSpecifics {
     optional EventTrigger event_trigger = 1;
   }
 
+  message FlocIdComputed {
+    enum EventTrigger {
+      UNSPECIFIED = 0;
+      // Event added because the floc id is computed for the 1st floc session.
+      NEW = 1;
+      // Event added because the floc id is re-computed due to a long period of
+      // time has passed since the last computation.
+      REFRESHED = 2;
+    }
+    optional EventTrigger event_trigger = 1;
+    optional uint64 floc_id = 2;
+  }
+
   oneof event {
     Test test_event = 8;
     LanguageDetection language_detection_event = 10 [deprecated = true];
@@ -187,6 +200,7 @@ message UserEventSpecifics {
     // Happens when a user types their Google account password on another site.
     GaiaPasswordReuse gaia_password_reuse_event = 104;
     GaiaPasswordCaptured gaia_password_captured_event = 15;
+    FlocIdComputed floc_id_computed_event = 16;
   }
   reserved "field_trial_event";
   reserved 9;

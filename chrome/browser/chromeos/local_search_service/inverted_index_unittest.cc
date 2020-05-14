@@ -41,6 +41,7 @@ class InvertedIndexTest : public ::testing::Test {
                                        TokenPosition("body", 3, 1),
                                        TokenPosition("header", 5, 1),
                                        TokenPosition("body", 7, 1)})}});
+    PopulateTfidfCache();
   }
 
   PostingList FindTerm(const base::string16& term) {
@@ -60,12 +61,18 @@ class InvertedIndexTest : public ::testing::Test {
     return index_.GetTfidf(term);
   }
 
+  void PopulateTfidfCache() { index_.PopulateTfidfCache(); }
+
   std::unordered_map<base::string16, PostingList> GetDictionary() {
     return index_.dictionary_;
   }
 
   std::unordered_map<std::string, int> GetDocLength() {
     return index_.doc_length_;
+  }
+
+  std::unordered_map<base::string16, std::vector<TfidfResult>> GetTfidfCache() {
+    return index_.tfidf_cache_;
   }
 
  private:
@@ -183,5 +190,33 @@ TEST_F(InvertedIndexTest, TfidfTest) {
 
   results = GetTfidf(base::UTF8ToUTF16("D"));
   EXPECT_EQ(results.size(), static_cast<unsigned long>(0));
+}
+
+TEST_F(InvertedIndexTest, PopulateTfidfCacheTest) {
+  // Replaces "doc1"
+  AddDocument("doc1",
+              {{base::UTF8ToUTF16("A"),
+                {{"header", 1, 1}, {"body", 2, 1}, {"header", 4, 1}}},
+               {base::UTF8ToUTF16("D"), {{"header", 3, 1}, {"body", 5, 1}}}});
+
+  PopulateTfidfCache();
+
+  std::vector<TfidfResult> results = GetTfidf(base::UTF8ToUTF16("A"));
+  EXPECT_EQ(results.size(), static_cast<unsigned long>(2));
+  const std::vector<float> idf_scores = {
+      std::roundf(std::get<2>(results[0]) * 100) / 100.0,
+      std::roundf(std::get<2>(results[1]) * 100) / 100.0};
+  EXPECT_THAT(idf_scores, testing::UnorderedElementsAre(0.6, 0.33));
+
+  results = GetTfidf(base::UTF8ToUTF16("B"));
+  EXPECT_EQ(results.size(), static_cast<unsigned long>(0));
+
+  results = GetTfidf(base::UTF8ToUTF16("C"));
+  EXPECT_EQ(results.size(), static_cast<unsigned long>(1));
+  EXPECT_NEAR(std::get<2>(results[0]), 0.94, 0.01);
+
+  results = GetTfidf(base::UTF8ToUTF16("D"));
+  EXPECT_EQ(results.size(), static_cast<unsigned long>(1));
+  EXPECT_NEAR(std::get<2>(results[0]), 0.56, 0.01);
 }
 }  // namespace local_search_service

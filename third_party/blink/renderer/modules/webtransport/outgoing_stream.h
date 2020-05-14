@@ -46,8 +46,10 @@ class MODULES_EXPORT OutgoingStream final
     // that the QuicTransport object drop its reference to the stream.
     virtual void SendFin() = 0;
 
-    // Request that the QuicTransport object drop its reference to the stream.
-    virtual void ForgetStream() = 0;
+    // Indicates that this stream is aborted. QuicTransport should drop its
+    // reference to the stream, and in a bidirectional stream the incoming side
+    // should be reset.
+    virtual void OnOutgoingStreamAbort() = 0;
   };
 
   OutgoingStream(ScriptState*, Client*, mojo::ScopedDataPipeProducerHandle);

@@ -33,10 +33,9 @@ class CORE_EXPORT Variable : public Longhand {
   static bool IsStaticInstance(const CSSProperty&);
 
  protected:
-  constexpr Variable(bool inherited)
+  explicit constexpr Variable(CSSProperty::Flags flags)
       : Longhand(CSSPropertyID::kVariable,
-                 kProperty | (inherited ? kInherited : 0) |
-                     kValidForFirstLetter | kValidForMarker,
+                 kProperty | kValidForFirstLetter | kValidForMarker | flags,
                  '\0') {}
 };
 

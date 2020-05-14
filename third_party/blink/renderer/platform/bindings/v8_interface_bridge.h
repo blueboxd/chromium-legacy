@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_INTERFACE_BRIDGE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_INTERFACE_BRIDGE_H_
 
-#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
@@ -14,6 +13,8 @@
 #include "v8/include/v8.h"
 
 namespace blink {
+
+class DOMWrapperWorld;
 
 namespace bindings {
 
@@ -34,21 +35,17 @@ class PLATFORM_EXPORT V8InterfaceBridgeBase {
   //   trial feature gets enabled later on), install only (c) properties that
   //   are associated to the origin trial feature that has got enabled.
   //
-  // FeatureSelector(world) is used for usage 1) and
-  // FeatureSelector(world, feature) is used for usage 2).
+  // FeatureSelector() is used for usage 1) and
+  // FeatureSelector(feature) is used for usage 2).
   class FeatureSelector final {
    public:
     // Selects all properties not associated to any origin trial feature and
     // properties associated with the origin trial features that are already
     // enabled.
-    FeatureSelector(const DOMWrapperWorld& world)
-        : does_support_origin_trials_(DoesSupportOriginTrials(world)),
-          does_select_all_(true) {}
+    FeatureSelector() : does_select_all_(true) {}
     // Selects only the properties that are associated to the given origin
     // trial feature.
-    FeatureSelector(const DOMWrapperWorld& world, OriginTrialFeature feature)
-        : does_support_origin_trials_(DoesSupportOriginTrials(world)),
-          selector_(feature) {}
+    FeatureSelector(OriginTrialFeature feature) : selector_(feature) {}
     FeatureSelector(const FeatureSelector&) = default;
     FeatureSelector(FeatureSelector&&) = default;
     ~FeatureSelector() = default;
@@ -62,22 +59,13 @@ class PLATFORM_EXPORT V8InterfaceBridgeBase {
     // with any origin trial feature.
     bool AnyOf() const { return does_select_all_; }
     bool AnyOf(OriginTrialFeature feature1) const {
-      if (!does_support_origin_trials_)
-        return false;
       return does_select_all_ || selector_ == feature1;
     }
     bool AnyOf(OriginTrialFeature feature1, OriginTrialFeature feature2) const {
-      if (!does_support_origin_trials_)
-        return false;
       return does_select_all_ || selector_ == feature1 || selector_ == feature2;
     }
 
    private:
-    static bool DoesSupportOriginTrials(const DOMWrapperWorld& world) {
-      return world.IsMainWorld() || world.IsWorkerWorld();
-    }
-
-    bool does_support_origin_trials_;
     bool does_select_all_ = false;
     OriginTrialFeature selector_ = OriginTrialFeature::kNonExisting;
   };

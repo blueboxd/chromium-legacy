@@ -516,6 +516,15 @@ interface BeforeUnloadEvent : Event
     getter returnValue
     method constructor
     setter returnValue
+interface BidirectionalStream
+    attribute @@toStringTag
+    getter readable
+    getter readingAborted
+    getter writable
+    getter writingAborted
+    method abortReading
+    method abortWriting
+    method constructor
 interface BiquadFilterNode : AudioNode
     attribute @@toStringTag
     getter Q
@@ -6274,7 +6283,9 @@ interface QuicTransport
     getter ready
     method close
     method constructor
+    method createBidirectionalStream
     method createSendStream
+    method receiveBidirectionalStreams
     method receiveDatagrams
     method receiveStreams
     method sendDatagrams

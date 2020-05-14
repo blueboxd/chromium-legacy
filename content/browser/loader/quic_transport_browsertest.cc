@@ -288,5 +288,52 @@ IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, DISABLED_ReceiveStream) {
   ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("PASS"), {ASCIIToUTF16("FAIL")}));
 }
 
+IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, BidirectionalStream) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
+
+  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("Title Of Awesomeness")));
+
+  ASSERT_TRUE(ExecuteScript(
+      shell(), base::StringPrintf(R"JS(
+    async function run() {
+      const transport = new QuicTransport('quic-transport://localhost:%d/echo');
+
+      await transport.ready;
+
+      const data = [65, 66, 67];
+
+      const bidiStream = await transport.createBidirectionalStream();
+      const writer = bidiStream.writable.getWriter();
+      await writer.write(new Uint8Array(data));
+
+      const reader = bidiStream.readable.getReader();
+
+      const {value, done: done1} = await reader.read();
+      if (done1) {
+        throw new Error('reading should not be done');
+      }
+      const actual = Array.from(value);
+      if (JSON.stringify(actual) !== JSON.stringify(data)) {
+        throw new Error('arrays do not match');
+      }
+
+      await writer.close();
+
+      const {done: done2} = await reader.read();
+      if (!done2) {
+        throw new Error('receiveStream should be done');
+      }
+    }
+
+    run().then(() => { document.title = 'PASS'; },
+               (e) => { console.log(e); document.title = 'FAIL'; });
+)JS",
+                                  server_.server_address().port())));
+
+  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("PASS"), {ASCIIToUTF16("FAIL")}));
+}
+
 }  // namespace
 }  // namespace content

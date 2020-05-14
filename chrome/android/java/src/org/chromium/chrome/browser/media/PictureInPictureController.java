@@ -216,7 +216,7 @@ public class PictureInPictureController {
                 new DismissActivityOnTabModelSelectorEventObserver(activity);
         final WebContentsObserver webContentsObserver =
                 new DismissActivityOnWebContentsObserver(activity);
-        final TabModelSelector tabModelSelector = TabModelSelector.from(activityTab);
+        final TabModelSelector tabModelSelector = activity.getTabModelSelector();
         final FullscreenListener fullscreenListener = new FullscreenListener() {
             @Override
             public void onExitFullscreen(Tab tab) {

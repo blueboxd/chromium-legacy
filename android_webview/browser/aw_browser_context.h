@@ -112,9 +112,12 @@ class AwBrowserContext : public content::BrowserContext,
 
   void SetExtendedReportingAllowed(bool allowed);
 
-  network::mojom::NetworkContextParamsPtr GetNetworkContextParams(
+  void ConfigureNetworkContextParams(
       bool in_memory,
-      const base::FilePath& relative_partition_path);
+      const base::FilePath& relative_partition_path,
+      network::mojom::NetworkContextParams* network_context_params,
+      network::mojom::CertVerifierCreationParams*
+          cert_verifier_creation_params);
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaBrowserContext();
 

@@ -83,8 +83,6 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // Returns the NavigationController associated with this Navigator.
   NavigationController* GetController();
 
-  base::TimeTicks GetCurrentLoadStart();
-
   // Notifications coming from the RenderFrameHosts ----------------------------
 
   // The RenderFrameHostImpl has failed to load the document.

@@ -70,22 +70,6 @@ base::Optional<RequestAction> RulesetMatcher::GetBeforeRequestAction(
       regex_matcher_.GetBeforeRequestAction(params));
 }
 
-uint8_t RulesetMatcher::GetRemoveHeadersMask(
-    const RequestParams& params,
-    uint8_t excluded_remove_headers_mask,
-    std::vector<RequestAction>* remove_headers_actions) const {
-  DCHECK(remove_headers_actions);
-  static_assert(
-      flat::RemoveHeaderType_ANY <= std::numeric_limits<uint8_t>::max(),
-      "flat::RemoveHeaderType can't fit in a uint8_t");
-
-  uint8_t mask = url_pattern_index_matcher_.GetRemoveHeadersMask(
-      params, excluded_remove_headers_mask, remove_headers_actions);
-  return mask | regex_matcher_.GetRemoveHeadersMask(
-                    params, excluded_remove_headers_mask | mask,
-                    remove_headers_actions);
-}
-
 std::vector<RequestAction> RulesetMatcher::GetModifyHeadersActions(
     const RequestParams& params) const {
   std::vector<RequestAction> modify_header_actions =

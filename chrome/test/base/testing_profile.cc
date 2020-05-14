@@ -1139,31 +1139,13 @@ Profile::ExitType TestingProfile::GetLastSessionExitType() {
   return last_session_exited_cleanly_ ? EXIT_NORMAL : EXIT_CRASHED;
 }
 
-void TestingProfile::SetNetworkContext(
-    std::unique_ptr<network::mojom::NetworkContext> network_context) {
-  DCHECK(!network_context_);
-  network_context_ = std::move(network_context);
-}
-
-mojo::Remote<network::mojom::NetworkContext>
-TestingProfile::CreateNetworkContext(
+void TestingProfile::ConfigureNetworkContextParams(
     bool in_memory,
-    const base::FilePath& relative_partition_path) {
-  if (network_context_) {
-    mojo::Remote<network::mojom::NetworkContext> network_context_remote;
-    network_context_receivers_.Add(
-        network_context_.get(),
-        network_context_remote.BindNewPipeAndPassReceiver());
-    return network_context_remote;
-  }
-  mojo::Remote<network::mojom::NetworkContext> network_context;
-  network::mojom::NetworkContextParamsPtr context_params =
-      network::mojom::NetworkContextParams::New();
-  context_params->user_agent = GetUserAgent();
-  context_params->accept_language = "en-us,en";
-  content::GetNetworkService()->CreateNetworkContext(
-      network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
-  return network_context;
+    const base::FilePath& relative_partition_path,
+    network::mojom::NetworkContextParams* network_context_params,
+    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
+  network_context_params->user_agent = GetUserAgent();
+  network_context_params->accept_language = "en-us,en";
 }
 
 TestingProfile::Builder::Builder()

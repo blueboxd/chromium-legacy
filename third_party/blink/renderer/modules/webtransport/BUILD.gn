@@ -6,6 +6,8 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("webtransport") {
   sources = [
+    "bidirectional_stream.cc",
+    "bidirectional_stream.h",
     "incoming_stream.cc",
     "incoming_stream.h",
     "outgoing_stream.cc",
@@ -23,9 +25,12 @@ blink_modules_sources("webtransport") {
 jumbo_source_set("unit_tests") {
   testonly = true
   sources = [
+    "bidirectional_stream_test.cc",
     "incoming_stream_test.cc",
     "outgoing_stream_test.cc",
     "quic_transport_test.cc",
+    "test_utils.cc",
+    "test_utils.h",
   ]
 
   configs += [

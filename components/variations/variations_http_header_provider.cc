@@ -55,7 +55,8 @@ std::string VariationsHttpHeaderProvider::GetClientDataHeader(
   return variation_ids_header_copy;
 }
 
-std::string VariationsHttpHeaderProvider::GetVariationsString() {
+std::string VariationsHttpHeaderProvider::GetVariationsString(
+    IDCollectionKey key) {
   InitVariationIDsCacheIfNeeded();
 
   // Construct a space-separated string with leading and trailing spaces from
@@ -65,13 +66,21 @@ std::string VariationsHttpHeaderProvider::GetVariationsString() {
   {
     base::AutoLock scoped_lock(lock_);
     for (const VariationIDEntry& entry : GetAllVariationIds()) {
-      if (entry.second == GOOGLE_WEB_PROPERTIES) {
+      if (entry.second == key) {
         ids_string.append(base::NumberToString(entry.first));
         ids_string.push_back(' ');
       }
     }
   }
   return ids_string;
+}
+
+std::string VariationsHttpHeaderProvider::GetGoogleAppVariationsString() {
+  return GetVariationsString(GOOGLE_APP);
+}
+
+std::string VariationsHttpHeaderProvider::GetVariationsString() {
+  return GetVariationsString(GOOGLE_WEB_PROPERTIES);
 }
 
 std::vector<VariationID> VariationsHttpHeaderProvider::GetVariationsVector(
@@ -157,6 +166,7 @@ void VariationsHttpHeaderProvider::OnFieldTrialGroupFinalized(
   CacheVariationsId(trial_name, group_name, GOOGLE_WEB_PROPERTIES);
   CacheVariationsId(trial_name, group_name, GOOGLE_WEB_PROPERTIES_SIGNED_IN);
   CacheVariationsId(trial_name, group_name, GOOGLE_WEB_PROPERTIES_TRIGGER);
+  CacheVariationsId(trial_name, group_name, GOOGLE_APP);
   if (variation_ids_set_.size() != old_size)
     UpdateVariationIDsHeaderValue();
 }
@@ -179,6 +189,8 @@ void VariationsHttpHeaderProvider::OnSyntheticTrialsChanged(
       synthetic_variation_ids_set_.insert(
           VariationIDEntry(id, GOOGLE_WEB_PROPERTIES_SIGNED_IN));
     }
+    // Google App IDs omitted because they should never be defined
+    // synthetically.
   }
   UpdateVariationIDsHeaderValue();
 }
@@ -203,6 +215,7 @@ void VariationsHttpHeaderProvider::InitVariationIDsCacheIfNeeded() {
                       GOOGLE_WEB_PROPERTIES_SIGNED_IN);
     CacheVariationsId(entry.trial_name, entry.group_name,
                       GOOGLE_WEB_PROPERTIES_TRIGGER);
+    CacheVariationsId(entry.trial_name, entry.group_name, GOOGLE_APP);
   }
   UpdateVariationIDsHeaderValue();
 
@@ -254,6 +267,9 @@ std::string VariationsHttpHeaderProvider::GenerateBase64EncodedProto(
         break;
       case GOOGLE_WEB_PROPERTIES_TRIGGER:
         proto.add_trigger_variation_id(entry.first);
+        break;
+      case GOOGLE_APP:
+        // These IDs should not be added into Google Web headers.
         break;
       case ID_COLLECTION_COUNT:
         // This case included to get full enum coverage for switch, so that

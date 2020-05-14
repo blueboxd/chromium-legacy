@@ -180,7 +180,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                               .setDelegateFactory(delegateFactory)
                               .setInitiallyHidden(!openInForeground)
                               .build();
-                TabParentIntent.from(tab).set(parentIntent);
+                TabParentIntent.from(tab).set(parentIntent).setCurrentTab(selector::getCurrentTab);
                 webContents.resumeLoadingCreatedWebContents();
             } else if (!openInForeground && SysUtils.isLowEndDevice()) {
                 // On low memory devices the tabs opened in background are not loaded automatically

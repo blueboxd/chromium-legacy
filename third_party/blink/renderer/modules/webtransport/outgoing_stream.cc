@@ -388,7 +388,7 @@ void OutgoingStream::AbortAndReset() {
   }
 
   if (client_) {
-    client_->ForgetStream();
+    client_->OnOutgoingStreamAbort();
     client_ = nullptr;
   }
 

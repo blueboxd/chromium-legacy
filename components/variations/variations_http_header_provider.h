@@ -52,9 +52,17 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   // Returns a space-separated string containing the list of current active
   // variations (as would be reported in the |variation_id| repeated field of
   // the ClientVariations proto). Does not include variation ids that should be
-  // sent for signed-in users only. The returned string is guaranteed to have a
-  // a leading and trailing space, e.g. " 123 234 345 ".
+  // sent for signed-in users only and does not include Google app variations.
+  // The returned string is guaranteed to have a leading and trailing space,
+  // e.g. " 123 234 345 ".
   std::string GetVariationsString();
+
+  // Same as GetVariationString(), but returns Google App variation ids rather
+  // than Google Web variations.
+  // IMPORTANT: This string is only approved for integrations with the Android
+  // Google App and must receive a privacy review before extending to other
+  // apps.
+  std::string GetGoogleAppVariationsString();
 
   // Returns the collection of of variation ids matching the given |key|. Each
   // entry in the returned vector will be unique.
@@ -108,12 +116,19 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
                            OnFieldTrialGroupFinalized);
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
+                           GetGoogleAppVariationsString);
+  FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
                            GetVariationsString);
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
                            GetVariationsVector);
 
   VariationsHttpHeaderProvider();
   ~VariationsHttpHeaderProvider() override;
+
+  // Returns a space-separated string containing the list of current active
+  // variations (as would be reported in the |variation_id| repeated field of
+  // the ClientVariations proto) for a given ID collection.
+  std::string GetVariationsString(IDCollectionKey key);
 
   // base::FieldTrialList::Observer:
   // This will add the variation ID associated with |trial_name| and

@@ -36,7 +36,6 @@ enum class ParseResult {
   ERROR_NON_ASCII_EXCLUDED_DOMAIN,
 
   ERROR_INVALID_URL_FILTER,
-  ERROR_EMPTY_REMOVE_HEADERS_LIST,
   ERROR_INVALID_REDIRECT,
   ERROR_INVALID_EXTENSION_PATH,
   ERROR_INVALID_TRANSFORM_SCHEME,
@@ -100,7 +99,6 @@ extern const char kErrorInvalidRedirectUrl[];
 extern const char kErrorDuplicateIDs[];
 extern const char kErrorPersisting[];
 extern const char kErrorNonAscii[];
-extern const char kErrorEmptyRemoveHeadersList[];
 extern const char kErrorInvalidKey[];
 extern const char kErrorInvalidTransformScheme[];
 extern const char kErrorQueryAndTransformBothSpecified[];

@@ -128,7 +128,9 @@ suite('NewTabPageRealboxTest', () => {
 
   test('left-clicking input when empty queries autocomplete', async () => {
     realbox.$.input.value = '';
-    realbox.$.input.onmousedown(createTrustedEvent('mousedown', {button: 0}));
+    // Cannot use realbox.$.input.dispatchEvent() since the parameter is not of
+    // type 'Event'.
+    realbox.onInputMouseDown_(createTrustedEvent('mousedown', {button: 0}));
     assertEquals(1, testProxy.handler.getCallCount('queryAutocomplete'));
     await testProxy.handler.whenCalled('queryAutocomplete').then((args) => {
       assertTrue(decodeString16(args.input) === '');
@@ -136,16 +138,16 @@ suite('NewTabPageRealboxTest', () => {
     });
 
     // Only left clicks query autocomplete.
-    realbox.$.input.onmousedown(createTrustedEvent('mousedown', {button: 1}));
+    realbox.onInputMouseDown_(createTrustedEvent('mousedown', {button: 1}));
     assertEquals(1, testProxy.handler.getCallCount('queryAutocomplete'));
 
     // Untrusted events won't qeury autocomplete.
-    realbox.$.input.onmousedown(new MouseEvent('mousedown', {button: 0}));
+    realbox.onInputMouseDown_(new MouseEvent('mousedown', {button: 0}));
     assertEquals(1, testProxy.handler.getCallCount('queryAutocomplete'));
 
     // Non-empty input won't query autocomplete.
     realbox.$.input.value = '   ';
-    realbox.$.input.onmousedown(createTrustedEvent('mousedown', {button: 0}));
+    realbox.onInputMouseDown_(createTrustedEvent('mousedown', {button: 0}));
     assertEquals(1, testProxy.handler.getCallCount('queryAutocomplete'));
   });
 });

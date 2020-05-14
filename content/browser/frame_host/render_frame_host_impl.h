@@ -1595,6 +1595,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
     document_associated_data_.SetUserData(key, std::move(data));
   }
 
+  void RemoveRenderDocumentHostUserData(const void* key) {
+    document_associated_data_.RemoveUserData(key);
+  }
+
   // Returns the child RenderFrameHostImpl if |child_frame_routing_id| is an
   // immediate child of this FrameTreeNode. |child_frame_routing_id| is
   // considered untrusted, so the renderer process is killed if it refers to a

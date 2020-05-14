@@ -23,4 +23,8 @@ void SetRenderDocumentHostUserData(
       key, std::move(data));
 }
 
+void RemoveRenderDocumentHostUserData(RenderFrameHost* rfh, const void* key) {
+  static_cast<RenderFrameHostImpl*>(rfh)->RemoveRenderDocumentHostUserData(key);
+}
+
 }  // namespace content

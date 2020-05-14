@@ -57,7 +57,8 @@ public class TabbedModeTabDelegateFactory implements TabDelegateFactory {
     @Override
     public ContextMenuPopulator createContextMenuPopulator(Tab tab) {
         return new ChromeContextMenuPopulator(
-                new TabContextMenuItemDelegate(tab, mEphemeralTabCoordinatorSupplier),
+                new TabContextMenuItemDelegate(
+                        tab, mActivity.getTabModelSelector(), mEphemeralTabCoordinatorSupplier),
                 mShareDelegateSupplier, ChromeContextMenuPopulator.ContextMenuMode.NORMAL,
                 ExternalAuthUtils.getInstance());
     }

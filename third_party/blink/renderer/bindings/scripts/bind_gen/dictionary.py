@@ -169,6 +169,22 @@ def _make_forward_declarations(cg_context):
             source_class_fwd_decls, source_struct_fwd_decls)
 
 
+def make_dict_constructors(cg_context):
+    decls = ListNode()
+    defs = ListNode()
+
+    dictionary = cg_context.dictionary
+    class_name = blink_class_name(dictionary)
+
+    ctor_decl = CxxFuncDeclNode(name=class_name,
+                                arg_decls=[],
+                                return_type="",
+                                default=True)
+    decls.append(ctor_decl)
+
+    return decls, defs
+
+
 def make_dict_member_get(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
@@ -742,8 +758,7 @@ def generate_dictionary(dictionary):
     create_decl, create_def = make_dict_create_funcs(cg_context)
 
     # Constructor and destructor
-    constructor_decl = CxxFuncDeclNode(
-        name=cg_context.class_name, arg_decls=[], return_type="", default=True)
+    constructor_decls, constructor_defs = make_dict_constructors(cg_context)
     destructor_decl = CxxFuncDeclNode(
         name="~${class_name}", arg_decls=[], return_type="", default=True)
 
@@ -833,7 +848,7 @@ def generate_dictionary(dictionary):
     header_blink_ns.body.append(class_def)
     class_def.public_section.extend([
         create_decl,
-        constructor_decl,
+        constructor_decls,
         destructor_decl,
         TextNode(""),
         trace_decl,
@@ -857,6 +872,8 @@ def generate_dictionary(dictionary):
         member_presense_var_defs,
     ])
     source_blink_ns.body.extend([
+        constructor_defs,
+        TextNode(""),
         get_v8_member_names_def,
         TextNode(""),
         create_def,

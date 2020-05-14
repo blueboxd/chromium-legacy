@@ -11,8 +11,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/net/dns_util.h"
 #include "chrome/browser/net/secure_dns_config.h"
+#include "chrome/browser/net/secure_dns_util.h"
 #include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/chrome_features.h"
@@ -203,9 +203,9 @@ void SecureDnsHandler::HandleParseCustomDnsEntry(const base::ListValue* args) {
 
   // Return all templates in the entry, or none if they are not all valid.
   base::Value templates(base::Value::Type::LIST);
-  if (chrome_browser_net::IsValidDohTemplateGroup(custom_entry)) {
+  if (chrome_browser_net::secure_dns::IsValidGroup(custom_entry)) {
     for (base::StringPiece t :
-         chrome_browser_net::SplitDohTemplateGroup(custom_entry)) {
+         chrome_browser_net::secure_dns::SplitGroup(custom_entry)) {
       templates.Append(t);
     }
   }
@@ -236,7 +236,7 @@ void SecureDnsHandler::HandleProbeCustomDnsTemplate(
   overrides.attempts = 1;
   overrides.randomize_ports = false;
   overrides.secure_dns_mode = net::DnsConfig::SecureDnsMode::SECURE;
-  chrome_browser_net::ApplyDohTemplate(&overrides, server_template);
+  chrome_browser_net::secure_dns::ApplyTemplate(&overrides, server_template);
   DCHECK(!runner_);
   runner_ = std::make_unique<chrome_browser_net::DnsProbeRunner>(
       overrides, network_context_getter_);

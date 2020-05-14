@@ -158,13 +158,15 @@ void WebAppsChromeOs::Uninstall(const std::string& app_id,
 }
 
 void WebAppsChromeOs::PauseApp(const std::string& app_id) {
-  paused_apps_.MaybeAddApp(app_id);
+  if (paused_apps_.MaybeAddApp(app_id)) {
+    SetIconEffect(app_id);
+  }
+
   constexpr bool kPaused = true;
   Publish(paused_apps_.GetAppWithPauseStatus(apps::mojom::AppType::kWeb, app_id,
                                              kPaused),
           subscribers());
 
-  SetIconEffect(app_id);
   for (auto* browser : *BrowserList::GetInstance()) {
     if (!browser->is_type_app()) {
       continue;
@@ -176,13 +178,14 @@ void WebAppsChromeOs::PauseApp(const std::string& app_id) {
 }
 
 void WebAppsChromeOs::UnpauseApps(const std::string& app_id) {
-  paused_apps_.MaybeRemoveApp(app_id);
+  if (paused_apps_.MaybeRemoveApp(app_id)) {
+    SetIconEffect(app_id);
+  }
+
   constexpr bool kPaused = false;
   Publish(paused_apps_.GetAppWithPauseStatus(apps::mojom::AppType::kWeb, app_id,
                                              kPaused),
           subscribers());
-
-  SetIconEffect(app_id);
 }
 
 void WebAppsChromeOs::GetMenuModel(const std::string& app_id,

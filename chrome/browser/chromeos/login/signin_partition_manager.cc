@@ -105,6 +105,9 @@ void SigninPartitionManager::StartSigninSession(
   current_storage_partition_ =
       content::BrowserContext::GetStoragePartitionForSite(browser_context_,
                                                           guest_site, true);
+  if (on_create_new_storage_partition_) {
+    on_create_new_storage_partition_.Run(current_storage_partition_);
+  }
 
   TransferHttpAuthCacheProxyEntries(
       get_system_network_context_task_.Run(), current_storage_partition_,
@@ -136,6 +139,11 @@ void SigninPartitionManager::SetClearStoragePartitionTaskForTesting(
 void SigninPartitionManager::SetGetSystemNetworkContextForTesting(
     GetSystemNetworkContextTask get_system_network_context_task) {
   get_system_network_context_task_ = get_system_network_context_task;
+}
+
+void SigninPartitionManager::SetOnCreateNewStoragePartitionForTesting(
+    OnCreateNewStoragePartition on_create_new_storage_partition) {
+  on_create_new_storage_partition_ = on_create_new_storage_partition;
 }
 
 const std::string& SigninPartitionManager::GetCurrentStoragePartitionName()

@@ -144,34 +144,6 @@ ActionInfo CompositeMatcher::GetBeforeRequestAction(
   return ActionInfo(base::nullopt, notify_request_withheld);
 }
 
-uint8_t CompositeMatcher::GetRemoveHeadersMask(
-    const RequestParams& params,
-    uint8_t excluded_remove_headers_mask,
-    std::vector<RequestAction>* remove_headers_actions) const {
-  uint8_t mask = 0;
-  for (const auto& matcher : matchers_) {
-    // An allow or allowAllRequests rule will override remove header rules
-    // within |matcher|.
-    if (!params.allow_rule_cache.contains(matcher.get())) {
-      // GetBeforeRequestAction is normally called before GetRemoveHeadersMask,
-      // so this should never happen in non-test builds. There are tests that
-      // call GetRemoveHeadersMask directly, though.
-      base::Optional<RequestAction> action =
-          matcher->GetBeforeRequestAction(params);
-      params.allow_rule_cache[matcher.get()] =
-          action && action->IsAllowOrAllowAllRequests();
-    }
-    if (params.allow_rule_cache[matcher.get()])
-      return 0;
-
-    mask |= matcher->GetRemoveHeadersMask(
-        params, mask | excluded_remove_headers_mask, remove_headers_actions);
-  }
-
-  DCHECK(!(mask & excluded_remove_headers_mask));
-  return mask;
-}
-
 std::vector<RequestAction> CompositeMatcher::GetModifyHeadersActions(
     const RequestParams& params) const {
   std::vector<RequestAction> modify_headers_actions;

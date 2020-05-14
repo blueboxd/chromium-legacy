@@ -2382,7 +2382,8 @@ const char kContentIndexingNTPDescription[] =
 
 const char kContextMenuCopyImageName[] = "Copy Image";
 const char kContextMenuCopyImageDescription[] =
-    "Enable copying image to system clipboard via context menu.";
+    "Enable copying image to system clipboard via context menu. Copy image is "
+    "not available for Android O.";
 
 const char kContextMenuPerformanceInfoName[] = "Context menu performance hints";
 const char kContextMenuPerformanceInfoDescription[] =
@@ -2500,6 +2501,10 @@ const char kHomepageSettingsUIConversionDescription[] =
     "Enable new homepage setting UI, which allows user set up customized "
     "homepage URL through a radio button group, and add promo box on NTP "
     "if homepage is not enabled.";
+
+const char kInstantStartName[] = "Enable instant start";
+const char kInstantStartDescription[] =
+    "Show start surface before native library is loaded.";
 
 const char kIntentBlockExternalFormRedirectsNoGestureName[] =
     "Block intents from form submissions without user gesture";
@@ -3051,6 +3056,11 @@ const char kUseWinrtMidiApiDescription[] =
     "later).";
 
 #if BUILDFLAG(ENABLE_PRINTING)
+const char kPrintWithReducedRasterizationName[] =
+    "Print with reduced rasterization";
+const char kPrintWithReducedRasterizationDescription[] =
+    "When using GDI printing, avoid rasterization if possible.";
+
 const char kUseXpsForPrintingName[] = "Use XPS for printing";
 const char kUseXpsForPrintingDescription[] =
     "When enabled, use XPS printing API instead of the GDI print API.";

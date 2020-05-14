@@ -51,12 +51,20 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams(
     const std::string& user_agent) {
   network::mojom::NetworkContextParamsPtr network_context_params =
       network::mojom::NetworkContextParams::New();
+  ConfigureDefaultNetworkContextParams(network_context_params.get(),
+                                       user_agent);
+  return network_context_params;
+}
+
+// static
+void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
+    network::mojom::NetworkContextParams* network_context_params,
+    const std::string& user_agent) {
   network_context_params->user_agent = user_agent;
 #if defined(OS_LINUX) || defined(OS_WIN)
   // We're not configuring the cookie encryption on these platforms yet.
   network_context_params->enable_encrypted_cookies = false;
 #endif
-  return network_context_params;
 }
 
 SystemNetworkContextManager::SystemNetworkContextManager(

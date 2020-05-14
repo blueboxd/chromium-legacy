@@ -168,7 +168,6 @@ TestRuleAction& TestRuleAction::operator=(const TestRuleAction&) = default;
 std::unique_ptr<base::DictionaryValue> TestRuleAction::ToValue() const {
   auto dict = std::make_unique<base::DictionaryValue>();
   SetValue(dict.get(), kRuleActionTypeKey, type);
-  SetValue(dict.get(), kRemoveHeadersListKey, remove_headers_list);
   SetValue(dict.get(), kRequestHeadersKey, request_headers);
   SetValue(dict.get(), kResponseHeadersKey, response_headers);
   SetValue(dict.get(), kRedirectKey, redirect);

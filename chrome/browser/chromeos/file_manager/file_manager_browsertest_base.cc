@@ -78,6 +78,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/network_connection_change_simulator.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -1468,6 +1469,13 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   if (IsOfflineTest()) {
     command_line->AppendSwitchASCII(chromeos::switches::kShillStub, "clear=1");
   }
+
+  // TODO(crbug.com/937746): See crbug.com/1081581 for context, but
+  // the FilesApp does not work when custom elements v0 are enabled.
+  // Make sure they are disabled here. Remove this once WCv0 features
+  // are removed completely.
+  command_line->AppendSwitchASCII(switches::kDisableBlinkFeatures,
+                                  "ShadowDOMV0,CustomElementsV0,HTMLImports");
 
   std::vector<base::Feature> enabled_features;
   std::vector<base::Feature> disabled_features;

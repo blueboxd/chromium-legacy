@@ -177,8 +177,9 @@ class NaClBrowserTestGLibcExtension : public NaClBrowserTestGLibc {
 #endif
 
 // NaCl glibc toolchain is not available on MIPS
-// It also no longer runs on recent versions of MacOS
-#if defined(ARCH_CPU_MIPS_FAMILY) || defined(OS_MACOSX)
+// It also no longer runs on recent versions of MacOS, and is flaky on Windows
+// due to use of cygwin.
+#if defined(ARCH_CPU_MIPS_FAMILY) || defined(OS_MACOSX) || defined(OS_WIN)
 #  define MAYBE_GLIBC(test_name) DISABLED_##test_name
 #else
 #  define MAYBE_GLIBC(test_name) test_name

@@ -25,6 +25,30 @@ content::GetServiceSandboxType<audio::mojom::AudioService>() {
   return content::SandboxType::kAudio;
 }
 
+// media::mojom::CdmService
+namespace media {
+namespace mojom {
+class CdmService;
+}
+}  // namespace media
+template <>
+inline content::SandboxType
+content::GetServiceSandboxType<media::mojom::CdmService>() {
+  return content::SandboxType::kCdm;
+}
+
+// network::mojom::NetworkService
+namespace network {
+namespace mojom {
+class NetworkService;
+}
+}  // namespace network
+template <>
+inline content::SandboxType
+content::GetServiceSandboxType<network::mojom::NetworkService>() {
+  return content::SandboxType::kNetwork;
+}
+
 // device::mojom::XRDeviceService
 #if defined(OS_WIN)
 namespace device {

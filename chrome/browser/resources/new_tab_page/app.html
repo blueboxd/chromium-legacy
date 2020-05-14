@@ -49,6 +49,14 @@
     margin-bottom: 32px;
   }
 
+  ntp-realbox {
+    visibility: hidden;
+  }
+
+  ntp-realbox[shown] {
+    visibility: visible;
+  }
+
   ntp-most-visited[dark] {
     --icon-button-color-active: var(--google-grey-refresh-300);
     --icon-button-color: white;
@@ -197,6 +205,10 @@
   .fadein {
     animation: 100ms ease-in-out fadein;
   }
+
+  svg {
+    position: fixed;
+  }
 </style>
 <div id="content"
     style="--ntp-theme-text-color: [[rgbaOrInherit_(theme_.shortcutTextColor)]];
@@ -217,7 +229,8 @@
       hidden$="[[realboxEnabled_]]">
   </ntp-fakebox>
   <ntp-realbox id="realbox" on-open-voice-search="onVoiceSearchClick_"
-      theme="[[theme_.searchBox]]" hidden$="[[!realboxEnabled_]]">
+      theme="[[theme_.searchBox]]" shown$="[[realboxShown_]]"
+      hidden$="[[!realboxEnabled_]]">
   </ntp-realbox>
   <ntp-most-visited id="mostVisited" dark$="[[theme_.isDark]]"
       use-white-add-icon$="[[theme_.shortcutUseWhiteAddIcon]]"
@@ -271,7 +284,7 @@
     </ntp-customize-dialog>
   </template>
 </dom-if>
-<svg hidden>
+<svg>
   <defs>
     <clipPath id="oneGoogleBarClipPath">
       <rect x="0" y="0" width="100vw" height="56"></rect>

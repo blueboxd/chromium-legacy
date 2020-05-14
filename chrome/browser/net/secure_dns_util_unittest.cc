@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/dns_util.h"
+#include "chrome/browser/net/secure_dns_util.h"
 
 #include <memory>
 
@@ -25,6 +25,8 @@ const char kAlternateErrorPagesBackup[] = "alternate_error_pages.backup";
 
 }  // namespace
 
+namespace secure_dns {
+
 class DNSUtilTest : public testing::Test {
  public:
   void SetUp() override { DisableRedesign(); }
@@ -41,7 +43,7 @@ class DNSUtilTest : public testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-TEST_F(DNSUtilTest, MigrateDNSProbesPref) {
+TEST_F(DNSUtilTest, MigrateProbesPref) {
   TestingPrefServiceSimple prefs;
   prefs.registry()->RegisterBooleanPref(
       embedder_support::kAlternateErrorPagesEnabled, true);
@@ -53,19 +55,19 @@ TEST_F(DNSUtilTest, MigrateDNSProbesPref) {
       prefs.FindPreference(kAlternateErrorPagesBackup);
 
   // No migration happens if the privacy settings redesign is not enabled.
-  MigrateDNSProbesSettingToOrFromBackup(&prefs);
+  MigrateProbesSettingToOrFromBackup(&prefs);
   EXPECT_FALSE(backup_pref->HasUserSetting());
 
   // The hardcoded default value of TRUE gets correctly migrated.
   EnableRedesign();
-  MigrateDNSProbesSettingToOrFromBackup(&prefs);
+  MigrateProbesSettingToOrFromBackup(&prefs);
   EXPECT_FALSE(current_pref->HasUserSetting());
   EXPECT_TRUE(backup_pref->HasUserSetting());
   EXPECT_TRUE(prefs.GetBoolean(kAlternateErrorPagesBackup));
 
   // And correctly restored.
   DisableRedesign();
-  MigrateDNSProbesSettingToOrFromBackup(&prefs);
+  MigrateProbesSettingToOrFromBackup(&prefs);
   EXPECT_TRUE(current_pref->HasUserSetting());
   EXPECT_TRUE(prefs.GetBoolean(embedder_support::kAlternateErrorPagesEnabled));
   EXPECT_FALSE(backup_pref->HasUserSetting());
@@ -73,14 +75,14 @@ TEST_F(DNSUtilTest, MigrateDNSProbesPref) {
   // An explicit user value of TRUE will be correctly migrated.
   EnableRedesign();
   prefs.SetBoolean(embedder_support::kAlternateErrorPagesEnabled, true);
-  MigrateDNSProbesSettingToOrFromBackup(&prefs);
+  MigrateProbesSettingToOrFromBackup(&prefs);
   EXPECT_FALSE(current_pref->HasUserSetting());
   EXPECT_TRUE(backup_pref->HasUserSetting());
   EXPECT_TRUE(prefs.GetBoolean(kAlternateErrorPagesBackup));
 
   // And correctly restored.
   DisableRedesign();
-  MigrateDNSProbesSettingToOrFromBackup(&prefs);
+  MigrateProbesSettingToOrFromBackup(&prefs);
   EXPECT_TRUE(current_pref->HasUserSetting());
   EXPECT_TRUE(prefs.GetBoolean(embedder_support::kAlternateErrorPagesEnabled));
   EXPECT_FALSE(backup_pref->HasUserSetting());
@@ -88,14 +90,14 @@ TEST_F(DNSUtilTest, MigrateDNSProbesPref) {
   // An explicit user value of FALSE will also be correctly migrated.
   EnableRedesign();
   prefs.SetBoolean(embedder_support::kAlternateErrorPagesEnabled, false);
-  MigrateDNSProbesSettingToOrFromBackup(&prefs);
+  MigrateProbesSettingToOrFromBackup(&prefs);
   EXPECT_FALSE(current_pref->HasUserSetting());
   EXPECT_TRUE(backup_pref->HasUserSetting());
   EXPECT_FALSE(prefs.GetBoolean(kAlternateErrorPagesBackup));
 
   // And correctly restored.
   DisableRedesign();
-  MigrateDNSProbesSettingToOrFromBackup(&prefs);
+  MigrateProbesSettingToOrFromBackup(&prefs);
   EXPECT_TRUE(current_pref->HasUserSetting());
   EXPECT_FALSE(prefs.GetBoolean(embedder_support::kAlternateErrorPagesEnabled));
   EXPECT_FALSE(backup_pref->HasUserSetting());
@@ -106,14 +108,14 @@ TEST_F(DNSUtilTest, MigrateDNSProbesPref) {
   prefs.SetManagedPref(embedder_support::kAlternateErrorPagesEnabled,
                        std::make_unique<base::Value>(true));
   EnableRedesign();
-  MigrateDNSProbesSettingToOrFromBackup(&prefs);
+  MigrateProbesSettingToOrFromBackup(&prefs);
   EXPECT_FALSE(current_pref->HasUserSetting());
   EXPECT_TRUE(backup_pref->HasUserSetting());
   EXPECT_FALSE(prefs.GetBoolean(kAlternateErrorPagesBackup));
 
   // And correctly restored.
   DisableRedesign();
-  MigrateDNSProbesSettingToOrFromBackup(&prefs);
+  MigrateProbesSettingToOrFromBackup(&prefs);
   EXPECT_TRUE(current_pref->HasUserSetting());
   {
     const base::Value* user_pref =
@@ -130,14 +132,14 @@ TEST_F(DNSUtilTest, MigrateDNSProbesPref) {
   prefs.SetManagedPref(embedder_support::kAlternateErrorPagesEnabled,
                        std::make_unique<base::Value>(false));
   EnableRedesign();
-  MigrateDNSProbesSettingToOrFromBackup(&prefs);
+  MigrateProbesSettingToOrFromBackup(&prefs);
   EXPECT_FALSE(current_pref->HasUserSetting());
   EXPECT_TRUE(backup_pref->HasUserSetting());
   EXPECT_TRUE(prefs.GetBoolean(kAlternateErrorPagesBackup));
 
   // And correctly restored.
   DisableRedesign();
-  MigrateDNSProbesSettingToOrFromBackup(&prefs);
+  MigrateProbesSettingToOrFromBackup(&prefs);
   EXPECT_TRUE(current_pref->HasUserSetting());
   {
     const base::Value* user_pref =
@@ -148,28 +150,28 @@ TEST_F(DNSUtilTest, MigrateDNSProbesPref) {
   EXPECT_FALSE(backup_pref->HasUserSetting());
 }
 
-TEST(DNSUtil, SplitDohTemplateGroup) {
-  EXPECT_THAT(SplitDohTemplateGroup("a"), ElementsAre("a"));
-  EXPECT_THAT(SplitDohTemplateGroup("a b"), ElementsAre("a", "b"));
-  EXPECT_THAT(SplitDohTemplateGroup("a \tb\nc"), ElementsAre("a", "b\nc"));
-  EXPECT_THAT(SplitDohTemplateGroup(" \ta b\n"), ElementsAre("a", "b"));
+TEST(DNSUtil, SplitGroup) {
+  EXPECT_THAT(SplitGroup("a"), ElementsAre("a"));
+  EXPECT_THAT(SplitGroup("a b"), ElementsAre("a", "b"));
+  EXPECT_THAT(SplitGroup("a \tb\nc"), ElementsAre("a", "b\nc"));
+  EXPECT_THAT(SplitGroup(" \ta b\n"), ElementsAre("a", "b"));
 }
 
-TEST(DNSUtil, IsValidDohTemplateGroup) {
-  EXPECT_TRUE(IsValidDohTemplateGroup(""));
-  EXPECT_TRUE(IsValidDohTemplateGroup("https://valid"));
-  EXPECT_TRUE(IsValidDohTemplateGroup("https://valid https://valid2"));
+TEST(DNSUtil, IsValidGroup) {
+  EXPECT_TRUE(IsValidGroup(""));
+  EXPECT_TRUE(IsValidGroup("https://valid"));
+  EXPECT_TRUE(IsValidGroup("https://valid https://valid2"));
 
-  EXPECT_FALSE(IsValidDohTemplateGroup("https://valid invalid"));
-  EXPECT_FALSE(IsValidDohTemplateGroup("invalid https://valid"));
-  EXPECT_FALSE(IsValidDohTemplateGroup("invalid"));
-  EXPECT_FALSE(IsValidDohTemplateGroup("invalid invalid2"));
+  EXPECT_FALSE(IsValidGroup("https://valid invalid"));
+  EXPECT_FALSE(IsValidGroup("invalid https://valid"));
+  EXPECT_FALSE(IsValidGroup("invalid"));
+  EXPECT_FALSE(IsValidGroup("invalid invalid2"));
 }
 
 TEST(DNSUtil, ApplyDohTemplatePost) {
   std::string post_template("https://valid");
   net::DnsConfigOverrides overrides;
-  ApplyDohTemplate(&overrides, post_template);
+  ApplyTemplate(&overrides, post_template);
 
   EXPECT_THAT(overrides.dns_over_https_servers,
               testing::Optional(ElementsAre(net::DnsOverHttpsServerConfig(
@@ -179,11 +181,13 @@ TEST(DNSUtil, ApplyDohTemplatePost) {
 TEST(DNSUtil, ApplyDohTemplateGet) {
   std::string get_template("https://valid/{?dns}");
   net::DnsConfigOverrides overrides;
-  ApplyDohTemplate(&overrides, get_template);
+  ApplyTemplate(&overrides, get_template);
 
   EXPECT_THAT(overrides.dns_over_https_servers,
               testing::Optional(ElementsAre(net::DnsOverHttpsServerConfig(
                   {get_template, false /* use_post */}))));
 }
+
+}  // namespace secure_dns
 
 }  // namespace chrome_browser_net

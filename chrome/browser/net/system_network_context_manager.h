@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
-#include "chrome/browser/net/dns_util.h"
 #include "chrome/browser/net/proxy_config_monitor.h"
 #include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -118,7 +117,15 @@ class SystemNetworkContextManager {
   void AddSSLConfigToNetworkContextParams(
       network::mojom::NetworkContextParams* network_context_params);
 
-  // Returns default set of parameters for configuring the network service.
+  // Configures default set of parameters for configuring the network context.
+  void ConfigureDefaultNetworkContextParams(
+      network::mojom::NetworkContextParams* network_context_params,
+      network::mojom::CertVerifierCreationParams*
+          cert_verifier_creation_params);
+
+  // Same as ConfigureDefaultNetworkContextParams() but returns a newly
+  // allocated network::mojom::NetworkContextParams with the
+  // CertVerifierCreationParams already placed into the NetworkContextParams.
   network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams();
 
   // Returns a shared global NetExportFileWriter instance, used by net-export.

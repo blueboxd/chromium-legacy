@@ -59,12 +59,15 @@ class ProfileNetworkContextService
   explicit ProfileNetworkContextService(Profile* profile);
   ~ProfileNetworkContextService() override;
 
-  // Creates a NetworkContext for the BrowserContext, using the specified
-  // parameters. An empty |relative_partition_path| corresponds to the main
-  // network context.
-  mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
+  // Configures the NetworkContextParams and the CertVerifierCreationParams for
+  // the BrowserContext, using the specified parameters. An empty
+  // |relative_partition_path| corresponds to the main network context.
+  void ConfigureNetworkContextParams(
       bool in_memory,
-      const base::FilePath& relative_partition_path);
+      const base::FilePath& relative_partition_path,
+      network::mojom::NetworkContextParams* network_context_params,
+      network::mojom::CertVerifierCreationParams*
+          cert_verifier_creation_params);
 
 #if defined(OS_CHROMEOS)
   void UpdateAdditionalCertificates();
@@ -117,6 +120,9 @@ class ProfileNetworkContextService
 
   void UpdateReferrersEnabled();
 
+  // Gets the current CTPolicy from preferences.
+  network::mojom::CTPolicyPtr GetCTPolicy();
+
   // Update the CTPolicy for the given NetworkContexts.
   void UpdateCTPolicyForContexts(
       const std::vector<network::mojom::NetworkContext*>& contexts);
@@ -135,9 +141,12 @@ class ProfileNetworkContextService
   // Creates parameters for the NetworkContext. Use |in_memory| instead of
   // |profile_->IsOffTheRecord()| because sometimes normal profiles want off the
   // record partitions (e.g. for webview tag).
-  network::mojom::NetworkContextParamsPtr CreateNetworkContextParams(
+  void ConfigureNetworkContextParamsInternal(
       bool in_memory,
-      const base::FilePath& relative_partition_path);
+      const base::FilePath& relative_partition_path,
+      network::mojom::NetworkContextParams* network_context_params,
+      network::mojom::CertVerifierCreationParams*
+          cert_verifier_creation_params);
 
   // Returns the path for a given storage partition.
   base::FilePath GetPartitionPath(

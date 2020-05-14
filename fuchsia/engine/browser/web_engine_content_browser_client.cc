@@ -192,29 +192,22 @@ WebEngineContentBrowserClient::CreateURLLoaderThrottles(
   return throttles;
 }
 
-mojo::Remote<network::mojom::NetworkContext>
-WebEngineContentBrowserClient::CreateNetworkContext(
+void WebEngineContentBrowserClient::ConfigureNetworkContextParams(
     content::BrowserContext* context,
     bool in_memory,
-    const base::FilePath& relative_partition_path) {
-  // Same as ContentBrowserClient::CreateNetworkContext().
-  mojo::Remote<network::mojom::NetworkContext> network_context;
-  network::mojom::NetworkContextParamsPtr params =
-      network::mojom::NetworkContextParams::New();
-  params->user_agent = GetUserAgent();
-  params->accept_language = "en-us,en";
+    const base::FilePath& relative_partition_path,
+    network::mojom::NetworkContextParams* network_context_params,
+    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
+  // Same as ContentBrowserClient::ConfigureNetworkContextParams().
+  network_context_params->user_agent = GetUserAgent();
+  network_context_params->accept_language = "en-us,en";
 
   // Set the list of cors_exempt_headers which may be specified in a URLRequest,
   // starting with the headers passed in via
   // |CreateContextParams.cors_exempt_headers|.
-  params->cors_exempt_header_list = cors_exempt_headers_;
+  network_context_params->cors_exempt_header_list = cors_exempt_headers_;
 
   // Exempt the minimal headers needed for CORS preflight checks (Purpose,
   // X-Requested-With).
-  content::UpdateCorsExemptHeader(params.get());
-
-  content::GetNetworkService()->CreateNetworkContext(
-      network_context.BindNewPipeAndPassReceiver(), std::move(params));
-
-  return network_context;
+  content::UpdateCorsExemptHeader(network_context_params);
 }

@@ -157,8 +157,58 @@ bool SupportsOOPRaster(const gl::GLVersionInfo& gl_info) {
 
 namespace gpu {
 
+bool CollectGraphicsDeviceInfoFromCommandLine(
+    const base::CommandLine* command_line,
+    GPUInfo* gpu_info) {
+  GPUInfo::GPUDevice& gpu = gpu_info->gpu;
+
+  if (command_line->HasSwitch(switches::kGpuVendorId)) {
+    const std::string vendor_id_str =
+        command_line->GetSwitchValueASCII(switches::kGpuVendorId);
+    base::StringToUint(vendor_id_str, &gpu.vendor_id);
+  }
+
+  if (command_line->HasSwitch(switches::kGpuDeviceId)) {
+    const std::string device_id_str =
+        command_line->GetSwitchValueASCII(switches::kGpuDeviceId);
+    base::StringToUint(device_id_str, &gpu.device_id);
+  }
+
+#if defined(OS_WIN)
+  if (command_line->HasSwitch(switches::kGpuSubSystemId)) {
+    const std::string syb_system_id_str =
+        command_line->GetSwitchValueASCII(switches::kGpuSubSystemId);
+    base::StringToUint(syb_system_id_str, &gpu.sub_sys_id);
+  }
+
+  if (command_line->HasSwitch(switches::kGpuRevision)) {
+    const std::string revision_str =
+        command_line->GetSwitchValueASCII(switches::kGpuRevision);
+    base::StringToUint(revision_str, &gpu.revision);
+  }
+#endif
+
+  if (command_line->HasSwitch(switches::kGpuDriverVersion)) {
+    gpu.driver_version =
+        command_line->GetSwitchValueASCII(switches::kGpuDriverVersion);
+  }
+
+  bool info_updated = gpu.vendor_id || gpu.device_id ||
+#if defined(OS_WIN)
+                      gpu.sub_sys_id || gpu.revision ||
+#endif
+                      !gpu.driver_version.empty();
+
+  return info_updated;
+}
+
 bool CollectBasicGraphicsInfo(const base::CommandLine* command_line,
                               GPUInfo* gpu_info) {
+  // In the info-collection GPU process on Windows, we get the device info from
+  // the browser.
+  if (CollectGraphicsDeviceInfoFromCommandLine(command_line, gpu_info))
+    return true;
+
   std::string use_gl = command_line->GetSwitchValueASCII(switches::kUseGL);
   std::string use_angle =
       command_line->GetSwitchValueASCII(switches::kUseANGLE);

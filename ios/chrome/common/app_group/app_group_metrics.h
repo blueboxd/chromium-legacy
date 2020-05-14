@@ -58,6 +58,10 @@ extern NSString* const kCredentialExtensionSearchCount;
 // selected a Password from the list since last Chrome launch.
 extern NSString* const kCredentialExtensionPasswordUseCount;
 
+// An app_group key to the number of times Credential Extension returned
+// a Password to the context without direct user intervention.
+extern NSString* const kCredentialExtensionQuickPasswordUseCount;
+
 // Offsets the sessionID to avoid collision. The sessionID is limited to 1<<23.
 int AppGroupSessionID(int sessionID, AppGroupApplications application);
 

@@ -9,8 +9,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
-#include "chrome/browser/net/dns_util.h"
 #include "chrome/browser/net/secure_dns_config.h"
+#include "chrome/browser/net/secure_dns_util.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/browser/policy_error_map.h"
@@ -77,7 +77,7 @@ bool SecureDnsPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
                mode_str == SecureDnsConfig::kModeOff) {
       errors->AddError(key::kDnsOverHttpsTemplates,
                        IDS_POLICY_SECURE_DNS_TEMPLATES_IRRELEVANT_MODE_ERROR);
-    } else if (!chrome_browser_net::IsValidDohTemplateGroup(templates_str)) {
+    } else if (!chrome_browser_net::secure_dns::IsValidGroup(templates_str)) {
       errors->AddError(key::kDnsOverHttpsTemplates,
                        IDS_POLICY_SECURE_DNS_TEMPLATES_INVALID_ERROR);
     }

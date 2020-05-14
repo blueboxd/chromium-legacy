@@ -21,8 +21,8 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/net/dns_util.h"
 #include "chrome/browser/net/secure_dns_config.h"
+#include "chrome/browser/net/secure_dns_util.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -336,7 +336,7 @@ SecureDnsConfig StubResolverConfigReader::GetAndUpdateConfiguration(
   if (!doh_templates.empty() &&
       secure_dns_mode != net::DnsConfig::SecureDnsMode::OFF) {
     for (base::StringPiece server_template :
-    chrome_browser_net::SplitDohTemplateGroup(doh_templates)) {
+         chrome_browser_net::secure_dns::SplitGroup(doh_templates)) {
       if (!net::dns_util::IsValidDohTemplate(server_template, &server_method)) {
         continue;
       }

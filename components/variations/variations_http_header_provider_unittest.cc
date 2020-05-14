@@ -211,6 +211,21 @@ TEST_F(VariationsHttpHeaderProviderTest, OnFieldTrialGroupFinalized) {
   }
 }
 
+TEST_F(VariationsHttpHeaderProviderTest, GetGoogleAppVariationsString) {
+  base::test::SingleThreadTaskEnvironment task_environment;
+  // All GOOGLE_WEB_PROPERTIES(_X) ids shouldn't be included.
+  CreateTrialAndAssociateId("t1", "g1", GOOGLE_WEB_PROPERTIES, 123);
+  CreateTrialAndAssociateId("t2", "g2", GOOGLE_WEB_PROPERTIES, 124);
+  CreateTrialAndAssociateId("t3", "g3", GOOGLE_WEB_PROPERTIES_SIGNED_IN, 125);
+
+  // GOOGLE_APP ids should be included.
+  CreateTrialAndAssociateId("t4", "g4", GOOGLE_APP, 126);
+
+  VariationsHttpHeaderProvider provider;
+  provider.ForceVariationIds({"100", "200"}, "");
+  EXPECT_EQ(" 126 ", provider.GetGoogleAppVariationsString());
+}
+
 TEST_F(VariationsHttpHeaderProviderTest, GetVariationsString) {
   base::test::SingleThreadTaskEnvironment task_environment;
 
@@ -218,6 +233,8 @@ TEST_F(VariationsHttpHeaderProviderTest, GetVariationsString) {
   CreateTrialAndAssociateId("t2", "g2", GOOGLE_WEB_PROPERTIES, 124);
   // SIGNED_IN ids shouldn't be included.
   CreateTrialAndAssociateId("t3", "g3", GOOGLE_WEB_PROPERTIES_SIGNED_IN, 125);
+  // GOOGLE_APP ids shouldn't be included.
+  CreateTrialAndAssociateId("t4", "g4", GOOGLE_APP, 126);
 
   VariationsHttpHeaderProvider provider;
   provider.ForceVariationIds({"100", "200"}, "");
@@ -231,6 +248,7 @@ TEST_F(VariationsHttpHeaderProviderTest, GetVariationsVector) {
   CreateTrialAndAssociateId("t3", "g3", GOOGLE_WEB_PROPERTIES_TRIGGER, 123);
   CreateTrialAndAssociateId("t4", "g4", GOOGLE_WEB_PROPERTIES_TRIGGER, 124);
   CreateTrialAndAssociateId("t5", "g5", GOOGLE_WEB_PROPERTIES_SIGNED_IN, 125);
+  CreateTrialAndAssociateId("t6", "g6", GOOGLE_APP, 126);
 
   VariationsHttpHeaderProvider provider;
   provider.ForceVariationIds({"100", "200", "t101"}, "");
@@ -241,6 +259,8 @@ TEST_F(VariationsHttpHeaderProviderTest, GetVariationsVector) {
             provider.GetVariationsVector(GOOGLE_WEB_PROPERTIES_TRIGGER));
   EXPECT_EQ((std::vector<VariationID>{125}),
             provider.GetVariationsVector(GOOGLE_WEB_PROPERTIES_SIGNED_IN));
+  EXPECT_EQ((std::vector<VariationID>{126}),
+            provider.GetVariationsVector(GOOGLE_APP));
 }
 
 }  // namespace variations

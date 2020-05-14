@@ -15,6 +15,16 @@
 
 namespace blink {
 
+namespace {
+
+CSSProperty::Flags InheritedFlag(const PropertyRegistration* registration) {
+  if (!registration || registration->Inherits())
+    return CSSProperty::kInherited;
+  return 0;
+}
+
+}  // namespace
+
 CustomProperty::CustomProperty(const AtomicString& name,
                                const Document& document)
     : CustomProperty(
@@ -27,7 +37,8 @@ CustomProperty::CustomProperty(const AtomicString& name,
 
 CustomProperty::CustomProperty(const AtomicString& name,
                                const PropertyRegistration* registration)
-    : Variable(!registration || registration->Inherits()),
+    : Variable(InheritedFlag(registration) |
+               CSSProperty::kComputedValueComparable),
       name_(name),
       registration_(registration) {}
 
@@ -151,6 +162,20 @@ const CSSValue* CustomProperty::ParseSingleValue(
         return nullptr;
       return ParseUntyped(range, context, local_context);
   }
+}
+
+bool CustomProperty::ComputedValuesEqual(const ComputedStyle& a,
+                                         const ComputedStyle& b) const {
+  if (registration_) {
+    const CSSValue* a_value = a.GetVariableValue(name_, IsInherited());
+    const CSSValue* b_value = b.GetVariableValue(name_, IsInherited());
+    if (!DataEquivalent(a_value, b_value))
+      return false;
+  }
+
+  CSSVariableData* a_data = a.GetVariableData(name_, IsInherited());
+  CSSVariableData* b_data = b.GetVariableData(name_, IsInherited());
+  return DataEquivalent(a_data, b_data);
 }
 
 const CSSValue* CustomProperty::CSSValueFromComputedStyleInternal(

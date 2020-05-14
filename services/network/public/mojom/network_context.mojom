@@ -190,6 +190,14 @@ struct HttpAuthStaticNetworkContextParams {
      = DefaultCredentials.ALLOW_DEFAULT_CREDENTIALS;
 };
 
+[EnableIf=is_ct_supported]
+struct CTPolicy {
+  array<string> required_hosts;
+  array<string> excluded_hosts;
+  array<string> excluded_spkis;
+  array<string> excluded_legacy_spkis;
+};
+
 // Parameters for constructing a network context.
 struct NetworkContextParams {
   // Name used by memory tools to identify the context.
@@ -353,6 +361,11 @@ struct NetworkContextParams {
   [EnableIf=is_ct_supported]
   array<CTLogInfo> ct_logs;
 
+  // The initial CT policy to be used for requests. See
+  // NetworkContext.SetCTPolicy() for more.
+  [EnableIf=is_ct_supported]
+  CTPolicy? ct_policy;
+
   // When the Certificate Transparency logs in |ct_logs| were last updated. If
   // |enforce_chrome_ct_policy| is set, and |ct_log_update_time| is not
   // sufficiently recent, enforcement of the "Certificate Transparency in
@@ -370,6 +383,11 @@ struct NetworkContextParams {
 
   // Parameters for constructing the cookie manager.
   CookieManagerParams? cookie_manager_params;
+
+  // Binds to the cookie manager associated with this network context, which
+  // should only be handed out to trusted processes.
+  [EnableIf=is_android]
+  pending_receiver<CookieManager>? cookie_manager;
 
   // Whether to enable Domain Reliability.
   bool enable_domain_reliability = false;
@@ -451,6 +469,9 @@ struct NetworkContextParams {
   // A reset throws out all existing cache content when loading the cache,
   // effectively starting with an empty cache.
   bool reset_http_cache_backend = false;
+
+  // See comments on NetworkContext.SetSplitAuthCacheByNetworkIsolationKey.
+  bool split_auth_cache_by_network_isolation_key = false;
 };
 
 struct NetworkConditions {
@@ -986,10 +1007,7 @@ interface NetworkContext {
   // TODO(rsleevi): Remove this once Chrome-specific policies are moved out
   // of the network service.
   [EnableIf=is_ct_supported]
-  SetCTPolicy(array<string> required_hosts,
-              array<string> excluded_hosts,
-              array<string> excluded_spkis,
-              array<string> excluded_legacy_spkis);
+  SetCTPolicy(CTPolicy ct_policy);
 
   // Adds explicitly-specified data as if it was processed from an Expect-CT
   // header.

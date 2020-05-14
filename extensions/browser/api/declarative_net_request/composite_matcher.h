@@ -74,16 +74,6 @@ class CompositeMatcher {
       const RequestParams& params,
       PermissionsData::PageAccess page_access) const;
 
-  // Returns the bitmask of headers to remove from the request corresponding to
-  // rules matched from this extension. The bitmask corresponds to
-  // RemoveHeadersMask type. |excluded_remove_headers_mask| denotes the current
-  // mask of headers to be skipped for evaluation and is excluded in the return
-  // value.
-  uint8_t GetRemoveHeadersMask(
-      const RequestParams& params,
-      uint8_t excluded_remove_headers_mask,
-      std::vector<RequestAction>* remove_headers_actions) const;
-
   // Returns all matching RequestActions for the request corresponding to
   // modifyHeaders rules matched from this extension, sorted in descending order
   // by rule priority.

@@ -8,6 +8,8 @@
 #include <fuchsia/camera3/cpp/fidl.h>
 #include <fuchsia/camera3/cpp/fidl_test_base.h>
 #include <lib/fidl/cpp/binding.h>
+#include <lib/fidl/cpp/binding_set.h>
+#include <lib/sys/cpp/outgoing_directory.h>
 
 #include <vector>
 
@@ -147,6 +149,44 @@ class FakeCameraDevice : public fuchsia::camera3::testing::Device_TestBase {
 
   fidl::Binding<fuchsia::camera3::Device> binding_;
   FakeCameraStream* const stream_;
+};
+
+class FakeCameraDeviceWatcher {
+ public:
+  explicit FakeCameraDeviceWatcher(sys::OutgoingDirectory* outgoing_directory);
+  ~FakeCameraDeviceWatcher();
+
+  FakeCameraDeviceWatcher(const FakeCameraDeviceWatcher&) = delete;
+  FakeCameraDeviceWatcher& operator=(const FakeCameraDeviceWatcher&) = delete;
+
+ private:
+  class Client : public fuchsia::camera3::testing::DeviceWatcher_TestBase {
+   public:
+    explicit Client(FakeCameraDevice* device);
+    ~Client() final;
+
+    Client(const Client&) = delete;
+    Client& operator=(const Client&) = delete;
+
+    // fuchsia::camera3::testing::DeviceWatcher_TestBase override.
+    void NotImplemented_(const std::string& name) final;
+
+    // fuchsia::camera3::DeviceWatcher implementation.
+    void WatchDevices(WatchDevicesCallback callback) final;
+    void ConnectToDevice(
+        uint64_t id,
+        fidl::InterfaceRequest<fuchsia::camera3::Device> request) final;
+
+   private:
+    bool devices_sent_ = false;
+    FakeCameraDevice* const device_;
+  };
+
+  fidl::BindingSet<fuchsia::camera3::DeviceWatcher, std::unique_ptr<Client>>
+      bindings_;
+
+  FakeCameraStream stream_;
+  FakeCameraDevice device_{&stream_};
 };
 
 }  // namespace media

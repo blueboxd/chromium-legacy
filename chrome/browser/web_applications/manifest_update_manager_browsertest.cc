@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
+#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
@@ -109,10 +110,7 @@ class ManifestUpdateManagerBrowserTest
     : public InProcessBrowserTest,
       public ::testing::WithParamInterface<ProviderType> {
  public:
-  ManifestUpdateManagerBrowserTest() = default;
-  ~ManifestUpdateManagerBrowserTest() override = default;
-
-  void SetUp() override {
+  ManifestUpdateManagerBrowserTest() {
     if (GetParam() == ProviderType::kWebApps) {
       scoped_feature_list_.InitWithFeatures(
           {features::kDesktopPWAsLocalUpdating,
@@ -123,7 +121,11 @@ class ManifestUpdateManagerBrowserTest
           {features::kDesktopPWAsLocalUpdating},
           {features::kDesktopPWAsWithoutExtensions});
     }
+  }
 
+  ~ManifestUpdateManagerBrowserTest() override = default;
+
+  void SetUp() override {
     http_server_.AddDefaultHandlers(GetChromeTestDataDir());
     http_server_.RegisterRequestHandler(base::BindRepeating(
         &ManifestUpdateManagerBrowserTest::RequestHandlerOverride,
@@ -131,6 +133,10 @@ class ManifestUpdateManagerBrowserTest
     ASSERT_TRUE(http_server_.Start());
 
     InProcessBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    GetProvider().shortcut_manager().SuppressShortcutsForTesting();
   }
 
   std::unique_ptr<net::test_server::HttpResponse> RequestHandlerOverride(
@@ -172,16 +178,10 @@ class ManifestUpdateManagerBrowserTest
 
     AppId app_id;
     base::RunLoop run_loop;
-    InstallManager::InstallParams params;
-    params.fallback_start_url = http_server_.GetURL("/fallback-url");
-    params.add_to_applications_menu = false;
-    params.add_to_desktop = false;
-    params.add_to_quick_launch_bar = false;
-    params.bypass_service_worker_check = true;
-    params.require_manifest = false;
-    GetProvider().install_manager().InstallWebAppWithParams(
-        browser()->tab_strip_model()->GetActiveWebContents(), params,
-        WebappInstallSource::OMNIBOX_INSTALL_ICON,
+    GetProvider().install_manager().InstallWebAppFromManifestWithFallback(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        /*force_shortcut_app=*/false, WebappInstallSource::OMNIBOX_INSTALL_ICON,
+        base::BindOnce(TestAcceptDialogCallback),
         base::BindLambdaForTesting(
             [&](const AppId& new_app_id, InstallResultCode code) {
               EXPECT_EQ(code, InstallResultCode::kSuccessNewInstall);

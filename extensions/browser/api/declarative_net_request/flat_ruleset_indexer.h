@@ -45,11 +45,8 @@ class FlatRulesetIndexer {
  private:
   using UrlPatternIndexBuilder = url_pattern_index::UrlPatternIndexBuilder;
 
-  uint8_t GetRemoveHeadersMask(const IndexedRule& indexed_rule) const;
   std::vector<UrlPatternIndexBuilder*> GetBuilders(
       const IndexedRule& indexed_rule);
-  std::vector<UrlPatternIndexBuilder*> GetRemoveHeaderBuilders(
-      const std::set<api::declarative_net_request::RemoveHeaderType>& types);
 
   flatbuffers::FlatBufferBuilder builder_;
 

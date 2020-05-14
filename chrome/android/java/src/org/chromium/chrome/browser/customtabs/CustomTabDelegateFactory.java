@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tab_activity_glue.ActivityTabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
@@ -456,8 +457,10 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
                     mActivity.getActivityTabProvider(), mActivity::getCurrentTabCreator,
                     mActivity::getBottomSheetController, () -> false);
         }
-        return new ChromeContextMenuPopulator(
-                new TabContextMenuItemDelegate(tab, () -> mEphemeralTabCoordinator),
+        TabModelSelector tabModelSelector =
+                mActivity != null ? mActivity.getTabModelSelector() : null;
+        return new ChromeContextMenuPopulator(new TabContextMenuItemDelegate(tab, tabModelSelector,
+                                                      () -> mEphemeralTabCoordinator),
                 shareDelegateSupplier, contextMenuMode, ExternalAuthUtils.getInstance());
     }
 

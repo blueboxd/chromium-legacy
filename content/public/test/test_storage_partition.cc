@@ -186,4 +186,8 @@ void TestStoragePartition::WaitForDeletionTasksForTesting() {}
 
 void TestStoragePartition::WaitForCodeCacheShutdownForTesting() {}
 
+void TestStoragePartition::SetNetworkContextForTesting(
+    mojo::PendingRemote<network::mojom::NetworkContext>
+        network_context_remote) {}
+
 }  // namespace content

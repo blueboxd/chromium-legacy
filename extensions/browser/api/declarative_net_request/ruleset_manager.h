@@ -124,9 +124,6 @@ class RulesetManager {
       const std::vector<RulesetAndPageAccess>& rulesets,
       const WebRequestInfo& request,
       const RequestParams& params) const;
-  std::vector<RequestAction> GetRemoveHeadersActions(
-      const std::vector<RulesetAndPageAccess>& rulesets,
-      const RequestParams& params) const;
 
   // Returns the list of matching modifyHeaders actions sorted in descending
   // order of priority (|rulesets| is sorted in descending order of extension

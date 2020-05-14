@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.contextmenu;
 
 import android.content.Context;
 import android.net.MailTo;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.ContextMenu;
@@ -419,7 +420,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                     if (mShowEphemeralTabNewLabel) item.setShowInProductHelp();
                     imageTab.add(item);
                 }
-                if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_COPY_IMAGE)) {
+                if (isCopyImageEnabled()) {
                     imageTab.add(new ChromeContextMenuItem(Item.COPY_IMAGE));
                 }
                 if (isSrcDownloadableScheme) {
@@ -796,5 +797,19 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             mUkmRecorderBridge.recordEventWithIntegerMetric(
                     webContents, eventName, "Action", actionId);
         }
+    }
+
+    /**
+     * Whether copy image should enabled.
+     * @return Whether to show the copy image menu item.
+     **/
+    @VisibleForTesting
+    public static boolean isCopyImageEnabled() {
+        // TODO(crbug.com/1081987): Find a way to make copying image works on Android O.
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O
+                || Build.VERSION.SDK_INT == Build.VERSION_CODES.O_MR1) {
+            return false;
+        }
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_COPY_IMAGE);
     }
 }

@@ -59,6 +59,9 @@ struct CheckedPtrNoOpImpl {
   static ALWAYS_INLINE uintptr_t Advance(uintptr_t wrapped_ptr, size_t delta) {
     return wrapped_ptr + delta;
   }
+
+  // This is for accounting only, used by unit tests.
+  static ALWAYS_INLINE void IncrementSwapCountForTest() {}
 };
 
 template <typename T>
@@ -206,6 +209,7 @@ class CheckedPtr {
   }
 
   ALWAYS_INLINE void swap(CheckedPtr& other) noexcept {
+    Impl::IncrementSwapCountForTest();
     std::swap(wrapped_ptr_, other.wrapped_ptr_);
   }
 
@@ -258,8 +262,8 @@ ALWAYS_INLINE bool operator!=(U* lhs, const CheckedPtr<T, I>& rhs) {
   return !operator==(lhs, rhs);
 }
 
-template <typename T>
-ALWAYS_INLINE void swap(CheckedPtr<T>& lhs, CheckedPtr<T>& rhs) noexcept {
+template <typename T, typename I>
+ALWAYS_INLINE void swap(CheckedPtr<T, I>& lhs, CheckedPtr<T, I>& rhs) noexcept {
   lhs.swap(rhs);
 }
 

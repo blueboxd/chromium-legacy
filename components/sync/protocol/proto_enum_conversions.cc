@@ -427,6 +427,19 @@ const char* ProtoEnumToString(
 }
 
 const char* ProtoEnumToString(
+    sync_pb::UserEventSpecifics::FlocIdComputed::EventTrigger trigger) {
+  ASSERT_ENUM_BOUNDS(sync_pb::UserEventSpecifics::FlocIdComputed, EventTrigger,
+                     UNSPECIFIED, REFRESHED);
+  switch (trigger) {
+    ENUM_CASE(sync_pb::UserEventSpecifics::FlocIdComputed, UNSPECIFIED);
+    ENUM_CASE(sync_pb::UserEventSpecifics::FlocIdComputed, NEW);
+    ENUM_CASE(sync_pb::UserEventSpecifics::FlocIdComputed, REFRESHED);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(
     sync_pb::WalletMaskedCreditCard::WalletCardStatus wallet_card_status) {
   ASSERT_ENUM_BOUNDS(sync_pb::WalletMaskedCreditCard, WalletCardStatus, VALID,
                      EXPIRED);

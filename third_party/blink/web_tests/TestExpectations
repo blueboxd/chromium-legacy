@@ -305,7 +305,7 @@ crbug.com/1066634 external/wpt/css/css-images/image-orientation/image-orientatio
 # Fail due to lack of fuzzy matching on Linux, Win and Mac platforms for WPT. The pixels in the pre-rotated reference
 # images do not exactly match the exif rotated images, probably due to jpeg decoding/encoding issues. Maybe
 # adjusting the image size to a multiple of 8 would fix this (so all jpeg blocks are solid color).
-crbug.com/997202 external/wpt/2dcontext/drawing-images-to-the-canvas/image-orientation/drawImage-with-src-rect.tentative.html [ Failure ]
+crbug.com/997202 external/wpt/html/canvas/element/drawing-images-to-the-canvas/image-orientation/drawImage-with-src-rect.tentative.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-default.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-from-image-composited-dynamic1.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-from-image-composited.html [ Failure ]
@@ -5934,7 +5934,3 @@ crbug.com/984467 [ Mac Debug ] virtual/gpu/fast/canvas/canvas-composite-stroke-a
 # Sheriff 2020-05-06
 crbug.com/1078863 [ Mac ] fast/speech/scripted/speechrecognition-restart-onend.html [ Pass Timeout ]
 crbug.com/1071915 fast/hidpi/image-srcset-png-canvas.html [ Pass Failure ]
-
-# Sheriff 2020-05-13
-# Flaking on Webkit Linux Leak
-crbug.com/998948 [ Linux ] external/wpt/pointerevents/pointerevent_capture_mouse.html [ Pass Failure ]

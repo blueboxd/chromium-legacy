@@ -109,6 +109,8 @@ android_library("java") {
 android_resources("java_resources") {
   custom_package = "org.chromium.components.browser_ui.widget"
   sources = [
+    "java/res/anim/image_grid_enter.xml",
+    "java/res/anim/image_tile_enter.xml",
     "java/res/anim/menu_enter.xml",
     "java/res/anim/menu_enter_from_bottom.xml",
     "java/res/anim/menu_exit.xml",

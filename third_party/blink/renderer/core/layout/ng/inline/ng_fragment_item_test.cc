@@ -26,6 +26,45 @@ class NGFragmentItemTest : public NGLayoutTest,
       : ScopedLayoutNGFragmentItemForTest(true),
         ScopedLayoutNGFragmentTraversalForTest(true) {}
 
+  LayoutBlockFlow* GetLayoutBlockFlowByElementId(const char* id) {
+    return To<LayoutBlockFlow>(GetLayoutObjectByElementId(id));
+  }
+
+  const NGFragmentItems* GetFragmentItemsByElementId(const char* id) {
+    const auto* block_flow =
+        To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
+    return block_flow->FragmentItems();
+  }
+
+  Vector<NGInlineCursorPosition> GetLines(NGInlineCursor* cursor) {
+    Vector<NGInlineCursorPosition> lines;
+    for (cursor->MoveToFirstLine(); *cursor; cursor->MoveToNextLine())
+      lines.push_back(cursor->Current());
+    return lines;
+  }
+
+  wtf_size_t IndexOf(const Vector<NGInlineCursorPosition>& items,
+                     const NGFragmentItem* target) {
+    wtf_size_t index = 0;
+    for (const auto& item : items) {
+      if (item.Item() == target)
+        return index;
+      ++index;
+    }
+    return kNotFound;
+  }
+
+  void TestFirstDirtyLineIndex(const char* id, wtf_size_t expected_index) {
+    LayoutBlockFlow* block_flow = GetLayoutBlockFlowByElementId(id);
+    const NGFragmentItems* items = block_flow->FragmentItems();
+    items->DirtyLinesFromNeedsLayout(block_flow);
+    const NGFragmentItem* end_reusable_item = items->EndOfReusableItems();
+
+    NGInlineCursor cursor(*items);
+    const auto lines = GetLines(&cursor);
+    EXPECT_EQ(IndexOf(lines, end_reusable_item), expected_index);
+  }
+
   Vector<const NGFragmentItem*> ItemsForAsVector(
       const LayoutObject& layout_object) {
     Vector<const NGFragmentItem*> list;
@@ -237,6 +276,141 @@ TEST_F(NGFragmentItemTest, CulledInlineBox) {
   Vector<const NGFragmentItem*> items_for_span2 = ItemsForAsVector(*span2);
   EXPECT_EQ(items_for_span2.size(), 0u);
   EXPECT_EQ(IntRect(0, 20, 80, 10), span2->AbsoluteBoundingBoxRect());
+}
+
+TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyByRemoveChildAfterForcedBreak) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=container>
+      line 1<br>
+      <b id=target>line 2</b><br>
+      line 3<br>
+    </div>
+  )HTML");
+  Element& target = *GetDocument().getElementById("target");
+  target.remove();
+  // TODO(kojii): This can be more optimized.
+  TestFirstDirtyLineIndex("container", 0);
+}
+
+TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyByRemoveForcedBreak) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=container>
+      line 1<br>
+      line 2<br id=target>
+      line 3<br>
+    </div>"
+  )HTML");
+  Element& target = *GetDocument().getElementById("target");
+  target.remove();
+  // TODO(kojii): This can be more optimized.
+  TestFirstDirtyLineIndex("container", 0);
+}
+
+TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyByRemoveSpanWithForcedBreak) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=container>
+      line 1<br>
+      line 2<span id=target><br>
+      </span>line 3<br>
+    </div>
+  )HTML");
+  // |target| is a culled inline box. There is no fragment in fragment tree.
+  Element& target = *GetDocument().getElementById("target");
+  target.remove();
+  // TODO(kojii): This can be more optimized.
+  TestFirstDirtyLineIndex("container", 0);
+}
+
+TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyByInsertAtStart) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=container>
+      line 1<br>
+      <b id=target>line 2</b><br>
+      line 3<br>
+    </div>
+  )HTML");
+  Element& target = *GetDocument().getElementById("target");
+  target.parentNode()->insertBefore(Text::Create(GetDocument(), "XYZ"),
+                                    &target);
+  GetDocument().UpdateStyleAndLayoutTree();
+  // TODO(kojii): This can be more optimized.
+  TestFirstDirtyLineIndex("container", 0);
+}
+
+TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyByInsertAtLast) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=container>
+      line 1<br>
+      <b id=target>line 2</b><br>
+      line 3<br>
+    </div>
+  )HTML");
+  Element& target = *GetDocument().getElementById("target");
+  target.parentNode()->appendChild(Text::Create(GetDocument(), "XYZ"));
+  GetDocument().UpdateStyleAndLayoutTree();
+  TestFirstDirtyLineIndex("container", 1);
+}
+
+TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyByInsertAtMiddle) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=container>
+      line 1<br>
+      <b id=target>line 2</b><br>
+      line 3<br>
+    </div>
+  )HTML");
+  Element& target = *GetDocument().getElementById("target");
+  target.parentNode()->insertBefore(Text::Create(GetDocument(), "XYZ"),
+                                    target.nextSibling());
+  GetDocument().UpdateStyleAndLayoutTree();
+  // TODO(kojii): This can be more optimized.
+  TestFirstDirtyLineIndex("container", 0);
+}
+
+TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyByTextSetData) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=container>
+      line 1<br>
+      <b id=target>line 2</b><br>
+      line 3<br>
+    </div>
+  )HTML");
+  Element& target = *GetDocument().getElementById("target");
+  To<Text>(*target.firstChild()).setData("abc");
+  // TODO(kojii): This can be more optimized.
+  TestFirstDirtyLineIndex("container", 0);
+}
+
+TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyWrappedLine) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    #container {
+      font-size: 10px;
+      width: 10ch;
+    }
+    </style>
+    <div id=container>
+      1234567
+      123456<span id="target">7</span>
+    </div>
+  )HTML");
+  Element& target = *GetDocument().getElementById("target");
+  target.remove();
+  // TODO(kojii): This can be more optimized.
+  TestFirstDirtyLineIndex("container", 0);
+}
+
+TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyInsideInlineBlock) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=container>
+      <div id="inline-block" style="display: inline-block">
+        <span id="target">DELETE ME</span>
+      </div>
+    </div>
+  )HTML");
+  Element& target = *GetDocument().getElementById("target");
+  target.remove();
+  TestFirstDirtyLineIndex("container", 0);
 }
 
 }  // namespace blink

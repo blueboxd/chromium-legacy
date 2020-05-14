@@ -878,6 +878,11 @@ VISIT_PROTO_FIELDS(
   VISIT_ENUM(event_trigger);
 }
 
+VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::FlocIdComputed& proto) {
+  VISIT_ENUM(event_trigger);
+  VISIT(floc_id);
+}
+
 VISIT_PROTO_FIELDS(const sync_pb::TabNavigation& proto) {
   VISIT(virtual_url);
   VISIT(referrer);
@@ -998,6 +1003,7 @@ VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics& proto) {
   VISIT(test_event);
   VISIT(gaia_password_reuse_event);
   VISIT(gaia_password_captured_event);
+  VISIT(floc_id_computed_event);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::Test& proto) {}

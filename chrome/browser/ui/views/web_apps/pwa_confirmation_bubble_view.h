@@ -10,6 +10,10 @@
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/web_contents.h"
 
+namespace views {
+class Checkbox;
+}
+
 // PWAConfirmationBubbleView provides a bubble dialog for accepting or rejecting
 // the installation of a PWA (Progressive Web App) anchored off the PWA install
 // icon in the omnibox.
@@ -31,6 +35,9 @@ class PWAConfirmationBubbleView : public LocationBarBubbleDelegateView {
  private:
   std::unique_ptr<WebApplicationInfo> web_app_info_;
   chrome::AppInstallationAcceptanceCallback callback_;
+
+  // Checkbox to launch window with tab strip.
+  views::Checkbox* tabbed_window_checkbox_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PWAConfirmationBubbleView);
 };

@@ -23,6 +23,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/network_isolation_key.h"
 #include "net/cookies/cookie_store.h"
@@ -84,14 +85,7 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
     // Wait for the Network Service to initialize on the IO thread.
     content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
 
-    auto network_context = std::make_unique<network::NetworkContext>(
-        network::NetworkService::GetNetworkServiceForTesting(),
-        signin_network_context_remote_.BindNewPipeAndPassReceiver(),
-        network::mojom::NetworkContextParams::New());
-    signin_network_context_ = network_context.get();
-    TestingProfile::Builder()
-        .BuildIncognito(signin_browser_context_.get())
-        ->SetNetworkContext(std::move(network_context));
+    TestingProfile::Builder().BuildIncognito(signin_browser_context_.get());
 
     signin_ui_web_contents_ = content::WebContentsTester::CreateTestWebContents(
         GetSigninProfile(), content::SiteInstance::Create(GetSigninProfile()));
@@ -113,6 +107,10 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
         base::BindRepeating(
             &SigninPartitionManagerTest::GetSystemNetworkContext,
             base::Unretained(this)));
+    GetSigninPartitionManager()->SetOnCreateNewStoragePartitionForTesting(
+        base::BindRepeating(
+            &SigninPartitionManagerTest::OnCreateNewStoragePartition,
+            base::Unretained(this)));
   }
 
   void TearDown() override {
@@ -121,6 +119,8 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
     signin_ui_web_contents_.reset();
 
     signin_browser_context_.reset();
+
+    signin_network_context_.reset();
 
     ChromeRenderViewHostTestHarness::TearDown();
   }
@@ -160,6 +160,7 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
         webcontents,
         base::BindOnce(&StorePartitionNameAndQuitLoop, &loop, &partition_name));
     loop.Run();
+
     return partition_name;
   }
 
@@ -172,7 +173,7 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   network::NetworkContext* GetSigninNetworkContextImpl() {
-    return signin_network_context_;
+    return signin_network_context_.get();
   }
 
  private:
@@ -181,12 +182,24 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
     pending_clear_tasks_.push_back({partition, std::move(clear_done_closure)});
   }
 
+  void OnCreateNewStoragePartition(
+      content::StoragePartition* storage_partition) {
+    // Bind the NetworkContext for the new StoragePartition.
+    mojo::PendingRemote<network::mojom::NetworkContext>
+        signin_network_context_remote;
+    signin_network_context_ = std::make_unique<network::NetworkContext>(
+        network::NetworkService::GetNetworkServiceForTesting(),
+        signin_network_context_remote.InitWithNewPipeAndPassReceiver(),
+        network::mojom::NetworkContextParams::New());
+    storage_partition->SetNetworkContextForTesting(
+        std::move(signin_network_context_remote));
+  }
+
   mojo::Remote<network::mojom::NetworkContext> system_network_context_remote_;
   std::unique_ptr<network::NetworkContext> system_network_context_;
 
   std::unique_ptr<TestingProfile> signin_browser_context_;
-  mojo::Remote<network::mojom::NetworkContext> signin_network_context_remote_;
-  network::NetworkContext* signin_network_context_;
+  std::unique_ptr<network::NetworkContext> signin_network_context_;
 
   // Web contents of the sign-in UI, embedder of the signin-frame webview.
   std::unique_ptr<content::WebContents> signin_ui_web_contents_;

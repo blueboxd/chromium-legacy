@@ -1679,6 +1679,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "enable-instant-start",
+    "owners": [ "hanxi", "wychen"],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-javascript-harmony",
     "owners": [ "adamk", "hablich" ],
     // This flag is used by web developers to test upcoming javascript features.
@@ -3537,6 +3542,11 @@
     "name": "print-job-management-app",
     "owners": [ "jimmyxgong", "cros-peripherals@google.com"],
     "expiry_milestone": 85
+  },
+  {
+    "name": "print-with-reduced-rasterization",
+    "owners": [ "thestig" ],
+    "expiry_milestone": 89
   },
   {
     "name": "printer-status",

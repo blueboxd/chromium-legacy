@@ -193,6 +193,8 @@ android_apk("weblayer_support_apk") {
   target_sdk_version = 28
   android_manifest_dep = ":weblayer_support_manifest"
   shared_resources = true
+  version_name = chrome_version_name
+  version_code = webview_stable_version_code
 
   product_config_java_packages = [ weblayer_product_config_java_package ]
 

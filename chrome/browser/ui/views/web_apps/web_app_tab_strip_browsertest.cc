@@ -52,10 +52,8 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest,
   web_app_info->scope = embedded_test_server()->GetURL("/web_apps");
   web_app_info->title = base::ASCIIToUTF16("Test app");
   web_app_info->open_as_window = true;
+  web_app_info->enable_experimental_tabbed_window = true;
   AppId app_id = InstallWebApp(profile, std::move(web_app_info));
-  WebAppProviderBase::GetProviderBase(profile)
-      ->registry_controller()
-      .SetExperimentalTabbedWindowMode(app_id, true);
 
   Browser* app_browser = LaunchWebAppBrowser(profile, app_id);
   CustomTabBarView* custom_tab_bar =
@@ -106,10 +104,8 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, TabThemeColor) {
   web_app_info->scope = app_url.GetWithoutFilename();
   web_app_info->title = base::ASCIIToUTF16("Test app");
   web_app_info->open_as_window = true;
+  web_app_info->enable_experimental_tabbed_window = true;
   AppId app_id = InstallWebApp(profile, std::move(web_app_info));
-  WebAppProviderBase::GetProviderBase(profile)
-      ->registry_controller()
-      .SetExperimentalTabbedWindowMode(app_id, true);
   Browser* app_browser = LaunchWebAppBrowser(profile, app_id);
   content::WebContents* web_contents =
       app_browser->tab_strip_model()->GetActiveWebContents();

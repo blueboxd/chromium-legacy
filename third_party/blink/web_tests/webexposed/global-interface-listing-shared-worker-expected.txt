@@ -47,6 +47,15 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker]     method detect
+[Worker] interface BidirectionalStream
+[Worker]     attribute @@toStringTag
+[Worker]     getter readable
+[Worker]     getter readingAborted
+[Worker]     getter writable
+[Worker]     getter writingAborted
+[Worker]     method abortReading
+[Worker]     method abortWriting
+[Worker]     method constructor
 [Worker] interface Blob
 [Worker]     attribute @@toStringTag
 [Worker]     getter size
@@ -1138,7 +1147,9 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter ready
 [Worker]     method close
 [Worker]     method constructor
+[Worker]     method createBidirectionalStream
 [Worker]     method createSendStream
+[Worker]     method receiveBidirectionalStreams
 [Worker]     method receiveDatagrams
 [Worker]     method receiveStreams
 [Worker]     method sendDatagrams

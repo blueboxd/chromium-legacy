@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/dns_util.h"
+#include "chrome/browser/net/secure_dns_util.h"
 
 #include <algorithm>
 #include <string>
@@ -20,17 +20,19 @@
 
 namespace chrome_browser_net {
 
+namespace secure_dns {
+
 namespace {
 
 const char kAlternateErrorPagesBackup[] = "alternate_error_pages.backup";
 
 }  // namespace
 
-void RegisterDNSProbesSettingBackupPref(PrefRegistrySimple* registry) {
+void RegisterProbesSettingBackupPref(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kAlternateErrorPagesBackup, true);
 }
 
-void MigrateDNSProbesSettingToOrFromBackup(PrefService* prefs) {
+void MigrateProbesSettingToOrFromBackup(PrefService* prefs) {
   // If the privacy settings redesign is enabled and the user value of the
   // preference hasn't been backed up yet, back it up, and clear it. That way,
   // the preference will revert to using the hardcoded default value (unless
@@ -66,23 +68,23 @@ void MigrateDNSProbesSettingToOrFromBackup(PrefService* prefs) {
   }
 }
 
-std::vector<base::StringPiece> SplitDohTemplateGroup(base::StringPiece group) {
+std::vector<base::StringPiece> SplitGroup(base::StringPiece group) {
   // Templates in a group are whitespace-separated.
   return SplitStringPiece(group, " ", base::TRIM_WHITESPACE,
                           base::SPLIT_WANT_NONEMPTY);
 }
 
-bool IsValidDohTemplateGroup(base::StringPiece group) {
+bool IsValidGroup(base::StringPiece group) {
   // All templates must be valid for the group to be considered valid.
-  std::vector<base::StringPiece> templates = SplitDohTemplateGroup(group);
+  std::vector<base::StringPiece> templates = SplitGroup(group);
   return std::all_of(templates.begin(), templates.end(), [](auto t) {
     std::string method;
     return net::dns_util::IsValidDohTemplate(t, &method);
   });
 }
 
-void ApplyDohTemplate(net::DnsConfigOverrides* overrides,
-                      base::StringPiece server_template) {
+void ApplyTemplate(net::DnsConfigOverrides* overrides,
+                   base::StringPiece server_template) {
   std::string server_method;
   // We only allow use of templates that have already passed a format
   // validation check.
@@ -90,5 +92,7 @@ void ApplyDohTemplate(net::DnsConfigOverrides* overrides,
   overrides->dns_over_https_servers.emplace({net::DnsOverHttpsServerConfig(
       std::string(server_template), server_method == "POST")});
 }
+
+}  // namespace secure_dns
 
 }  // namespace chrome_browser_net

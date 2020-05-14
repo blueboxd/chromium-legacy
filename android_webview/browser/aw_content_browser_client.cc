@@ -211,20 +211,6 @@ void AwContentsMessageFilter::OnSubFrameCreated(int parent_render_frame_id,
                                             child_render_frame_id);
 }
 
-void PassMojoCookieManagerToAwCookieManager(
-    CookieManager* cookie_manager,
-    const mojo::Remote<network::mojom::NetworkContext>& network_context) {
-  // Get the CookieManager from the NetworkContext.
-  mojo::PendingRemote<network::mojom::CookieManager> cookie_manager_remote;
-  network_context->GetCookieManager(
-      cookie_manager_remote.InitWithNewPipeAndPassReceiver());
-
-  // Pass the mojo::PendingRemote<network::mojom::CookieManager> to
-  // android_webview::CookieManager, so it can implement its APIs with this mojo
-  // CookieManager.
-  cookie_manager->SetMojoCookieManager(std::move(cookie_manager_remote));
-}
-
 // Helper method that checks the RenderProcessHost is still alive before hopping
 // over to the IO thread.
 void MaybeCreateSafeBrowsing(
@@ -311,32 +297,35 @@ void AwContentBrowserClient::OnNetworkServiceCreated(
   content::GetNetworkService()->SetUpHttpAuth(std::move(auth_static_params));
 }
 
-mojo::Remote<network::mojom::NetworkContext>
-AwContentBrowserClient::CreateNetworkContext(
+void AwContentBrowserClient::ConfigureNetworkContextParams(
     content::BrowserContext* context,
     bool in_memory,
-    const base::FilePath& relative_partition_path) {
+    const base::FilePath& relative_partition_path,
+    network::mojom::NetworkContextParams* network_context_params,
+    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
   DCHECK(context);
 
   content::GetNetworkService()->ConfigureHttpAuthPrefs(
       AwBrowserProcess::GetInstance()->CreateHttpAuthDynamicParams());
 
-  auto* aw_context = static_cast<AwBrowserContext*>(context);
-  mojo::Remote<network::mojom::NetworkContext> network_context;
-  network::mojom::NetworkContextParamsPtr context_params =
-      aw_context->GetNetworkContextParams(in_memory, relative_partition_path);
+  AwBrowserContext* aw_context = static_cast<AwBrowserContext*>(context);
+  aw_context->ConfigureNetworkContextParams(in_memory, relative_partition_path,
+                                            network_context_params,
+                                            cert_verifier_creation_params);
+
+  mojo::PendingRemote<network::mojom::CookieManager> cookie_manager_remote;
+  network_context_params->cookie_manager =
+      cookie_manager_remote.InitWithNewPipeAndPassReceiver();
+
 #if DCHECK_IS_ON()
   g_created_network_context_params = true;
 #endif
-  content::GetNetworkService()->CreateNetworkContext(
-      network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
 
-  // Pass a CookieManager to the code supporting AwCookieManager.java (i.e., the
-  // Cookies APIs).
-  PassMojoCookieManagerToAwCookieManager(aw_context->GetCookieManager(),
-                                         network_context);
-
-  return network_context;
+  // Pass the mojo::PendingRemote<network::mojom::CookieManager> to
+  // android_webview::CookieManager, so it can implement its APIs with this mojo
+  // CookieManager.
+  aw_context->GetCookieManager()->SetMojoCookieManager(
+      std::move(cookie_manager_remote));
 }
 
 AwBrowserContext* AwContentBrowserClient::InitBrowserContext() {

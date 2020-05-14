@@ -5,9 +5,9 @@
 #include "base/memory/checked_ptr.h"
 
 #include <string>
-#include <tuple>        // for std::ignore
-#include <type_traits>  // for std::is_trivially_copyable
-#include <utility>      // for std::swap
+#include <tuple>
+#include <type_traits>
+#include <utility>
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -52,11 +52,13 @@ namespace {
 static int g_get_for_dereference_cnt = INT_MIN;
 static int g_get_for_extraction_cnt = INT_MIN;
 static int g_get_for_comparison_cnt = INT_MIN;
+static int g_checked_ptr_swap_cnt = INT_MIN;
 
 static void ClearCounters() {
   g_get_for_dereference_cnt = 0;
   g_get_for_extraction_cnt = 0;
   g_get_for_comparison_cnt = 0;
+  g_checked_ptr_swap_cnt = 0;
 }
 
 struct CheckedPtrCountingNoOpImpl : base::internal::CheckedPtrNoOpImpl {
@@ -78,6 +80,10 @@ struct CheckedPtrCountingNoOpImpl : base::internal::CheckedPtrNoOpImpl {
       uintptr_t wrapped_ptr) {
     ++g_get_for_comparison_cnt;
     return Super::UnsafelyUnwrapPtrForComparison(wrapped_ptr);
+  }
+
+  static ALWAYS_INLINE void IncrementSwapCountForTest() {
+    ++g_checked_ptr_swap_cnt;
   }
 };
 
@@ -368,22 +374,27 @@ TEST(CheckedPtr, Cast) {
 }
 
 TEST(CheckedPtr, CustomSwap) {
+  ClearCounters();
   int foo1, foo2;
-  CheckedPtr<int> ptr1(&foo1);
-  CheckedPtr<int> ptr2(&foo2);
+  CountingCheckedPtr<int> ptr1(&foo1);
+  CountingCheckedPtr<int> ptr2(&foo2);
+  // Recommended use pattern.
   using std::swap;
   swap(ptr1, ptr2);
   EXPECT_EQ(ptr1.get(), &foo2);
   EXPECT_EQ(ptr2.get(), &foo1);
+  EXPECT_EQ(g_checked_ptr_swap_cnt, 1);
 }
 
 TEST(CheckedPtr, StdSwap) {
+  ClearCounters();
   int foo1, foo2;
-  CheckedPtr<int> ptr1(&foo1);
-  CheckedPtr<int> ptr2(&foo2);
+  CountingCheckedPtr<int> ptr1(&foo1);
+  CountingCheckedPtr<int> ptr2(&foo2);
   std::swap(ptr1, ptr2);
   EXPECT_EQ(ptr1.get(), &foo2);
   EXPECT_EQ(ptr2.get(), &foo1);
+  EXPECT_EQ(g_checked_ptr_swap_cnt, 0);
 }
 
 TEST(CheckedPtr, AdvanceIntArray) {

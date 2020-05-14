@@ -183,6 +183,9 @@ class CONTENT_EXPORT StoragePartitionImpl
   void FlushNetworkInterfaceForTesting() override;
   void WaitForDeletionTasksForTesting() override;
   void WaitForCodeCacheShutdownForTesting() override;
+  void SetNetworkContextForTesting(
+      mojo::PendingRemote<network::mojom::NetworkContext>
+          network_context_remote) override;
   BackgroundFetchContext* GetBackgroundFetchContext();
   PaymentAppContextImpl* GetPaymentAppContext();
   BroadcastChannelProvider* GetBroadcastChannelProvider();

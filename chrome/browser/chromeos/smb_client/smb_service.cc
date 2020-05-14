@@ -890,6 +890,12 @@ bool SmbService::IsShareMounted(const SmbUrl& share) const {
       return true;
     }
   }
+
+  for (const auto& entry : smbfs_shares_) {
+    if (entry.second->share_url().ToString() == share.ToString()) {
+      return true;
+    }
+  }
   return false;
 }
 

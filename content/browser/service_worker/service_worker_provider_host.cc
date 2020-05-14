@@ -31,12 +31,6 @@ namespace content {
 
 namespace {
 
-// This function provides the next ServiceWorkerProviderHost ID.
-int NextProviderId() {
-  static int g_next_provider_id = 0;
-  return g_next_provider_id++;
-}
-
 void CreateQuicTransportConnectorImpl(
     int process_id,
     const url::Origin& origin,
@@ -59,8 +53,7 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
         host_receiver,
     ServiceWorkerVersion* running_hosted_version,
     base::WeakPtr<ServiceWorkerContextCore> context)
-    : provider_id_(NextProviderId()),
-      running_hosted_version_(running_hosted_version),
+    : running_hosted_version_(running_hosted_version),
       container_host_(std::make_unique<content::ServiceWorkerContainerHost>(
           std::move(context))),
       host_receiver_(container_host_.get(), std::move(host_receiver)) {

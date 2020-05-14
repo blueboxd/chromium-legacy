@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
@@ -1659,15 +1660,17 @@ bool SelectorChecker::MatchesFocusVisiblePseudoClass(const Element& element) {
     return false;
 
   const Document& document = element.GetDocument();
-  bool always_show_focus_ring = element.MayTriggerVirtualKeyboard();
+  const Settings* settings = document.GetSettings();
+  bool always_show_focus = settings->GetAccessibilityAlwaysShowFocus();
+  bool is_text_input = element.MayTriggerVirtualKeyboard();
   bool last_focus_from_mouse =
       document.GetFrame() &&
       document.GetFrame()->Selection().FrameIsFocusedAndActive() &&
       document.LastFocusType() == mojom::blink::FocusType::kMouse;
   bool had_keyboard_event = document.HadKeyboardEvent();
 
-  return (!last_focus_from_mouse || had_keyboard_event ||
-          always_show_focus_ring);
+  return (always_show_focus || is_text_input || !last_focus_from_mouse ||
+          had_keyboard_event);
 }
 
 // static

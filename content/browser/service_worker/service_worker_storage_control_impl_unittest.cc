@@ -514,12 +514,13 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
   // Create a registration with a single resource and stores the registration.
   DatabaseStatus CreateAndStoreRegistration(int64_t registration_id,
                                             int64_t version_id,
+                                            int64_t resource_id,
                                             const GURL& scope,
                                             const GURL& script_url,
                                             int64_t script_size) {
     std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources;
     resources.push_back(storage::mojom::ServiceWorkerResourceRecord::New(
-        registration_id, script_url, script_size));
+        resource_id, script_url, script_size));
 
     auto data = storage::mojom::ServiceWorkerRegistrationData::New();
     data->registration_id = registration_id;
@@ -682,8 +683,10 @@ TEST_F(ServiceWorkerStorageControlImplTest, UpdateToActiveState) {
   // Preparation: Store a registration.
   const int64_t registration_id = GetNewRegistrationId();
   const int64_t version_id = GetNewVersionId();
-  DatabaseStatus status = CreateAndStoreRegistration(
-      registration_id, version_id, kScope, kScriptUrl, kScriptSize);
+  const int64_t resource_id = GetNewResourceId();
+  DatabaseStatus status =
+      CreateAndStoreRegistration(registration_id, version_id, resource_id,
+                                 kScope, kScriptUrl, kScriptSize);
   ASSERT_EQ(status, DatabaseStatus::kOk);
 
   // The stored registration shouldn't be activated yet.
@@ -717,8 +720,10 @@ TEST_F(ServiceWorkerStorageControlImplTest, UpdateLastUpdateCheckTime) {
   // Preparation: Store a registration.
   const int64_t registration_id = GetNewRegistrationId();
   const int64_t version_id = GetNewVersionId();
-  DatabaseStatus status = CreateAndStoreRegistration(
-      registration_id, version_id, kScope, kScriptUrl, kScriptSize);
+  const int64_t resource_id = GetNewResourceId();
+  DatabaseStatus status =
+      CreateAndStoreRegistration(registration_id, version_id, resource_id,
+                                 kScope, kScriptUrl, kScriptSize);
   ASSERT_EQ(status, DatabaseStatus::kOk);
 
   // The stored registration shouldn't have the last update check time yet.
@@ -753,8 +758,10 @@ TEST_F(ServiceWorkerStorageControlImplTest, Update) {
   // Preparation: Store a registration.
   const int64_t registration_id = GetNewRegistrationId();
   const int64_t version_id = GetNewVersionId();
-  DatabaseStatus status = CreateAndStoreRegistration(
-      registration_id, version_id, kScope, kScriptUrl, kScriptSize);
+  const int64_t resource_id = GetNewResourceId();
+  DatabaseStatus status =
+      CreateAndStoreRegistration(registration_id, version_id, resource_id,
+                                 kScope, kScriptUrl, kScriptSize);
   ASSERT_EQ(status, DatabaseStatus::kOk);
 
   // Check the stored registration has default navigation preload fields.
@@ -800,13 +807,17 @@ TEST_F(ServiceWorkerStorageControlImplTest, GetRegistrationsForOrigin) {
   DatabaseStatus status;
   const int64_t registration_id1 = GetNewRegistrationId();
   const int64_t version_id1 = GetNewVersionId();
-  status = CreateAndStoreRegistration(registration_id1, version_id1, kScope1,
-                                      kScriptUrl1, kScriptSize);
+  const int64_t resource_id1 = GetNewResourceId();
+  status =
+      CreateAndStoreRegistration(registration_id1, version_id1, resource_id1,
+                                 kScope1, kScriptUrl1, kScriptSize);
   ASSERT_EQ(status, DatabaseStatus::kOk);
   const int64_t registration_id2 = GetNewRegistrationId();
   const int64_t version_id2 = GetNewVersionId();
-  status = CreateAndStoreRegistration(registration_id2, version_id2, kScope2,
-                                      kScriptUrl2, kScriptSize);
+  const int64_t resource_id2 = GetNewResourceId();
+  status =
+      CreateAndStoreRegistration(registration_id2, version_id2, resource_id2,
+                                 kScope2, kScriptUrl2, kScriptSize);
   ASSERT_EQ(status, DatabaseStatus::kOk);
 
   // Get registrations for the origin.
@@ -932,9 +943,10 @@ TEST_F(ServiceWorkerStorageControlImplTest, StoreAndGetUserData) {
 
   const int64_t registration_id = GetNewRegistrationId();
   const int64_t version_id = GetNewVersionId();
+  const int64_t resource_id = GetNewResourceId();
   DatabaseStatus status;
-  status = CreateAndStoreRegistration(registration_id, version_id, kScope,
-                                      kScriptUrl, kScriptSize);
+  status = CreateAndStoreRegistration(registration_id, version_id, resource_id,
+                                      kScope, kScriptUrl, kScriptSize);
   ASSERT_EQ(status, DatabaseStatus::kOk);
 
   // Store user data with two entries.
@@ -991,13 +1003,15 @@ TEST_F(ServiceWorkerStorageControlImplTest, StoreAndGetUserData) {
   // scope.
   const int64_t new_registration_id = GetNewRegistrationId();
   const int64_t new_version_id = GetNewVersionId();
+  const int64_t new_resource_id = GetNewResourceId();
   {
     DeleteRegistrationResult result =
         DeleteRegistration(registration_id, kScope.GetOrigin());
     ASSERT_EQ(result.status, DatabaseStatus::kOk);
 
     status = CreateAndStoreRegistration(new_registration_id, new_version_id,
-                                        kScope, kScriptUrl, kScriptSize);
+                                        new_resource_id, kScope, kScriptUrl,
+                                        kScriptSize);
     ASSERT_EQ(status, DatabaseStatus::kOk);
   }
 
@@ -1020,9 +1034,10 @@ TEST_F(ServiceWorkerStorageControlImplTest, StoreAndGetUserDataByKeyPrefix) {
 
   const int64_t registration_id = GetNewRegistrationId();
   const int64_t version_id = GetNewVersionId();
+  const int64_t resource_id = GetNewResourceId();
   DatabaseStatus status;
-  status = CreateAndStoreRegistration(registration_id, version_id, kScope,
-                                      kScriptUrl, kScriptSize);
+  status = CreateAndStoreRegistration(registration_id, version_id, resource_id,
+                                      kScope, kScriptUrl, kScriptSize);
   ASSERT_EQ(status, DatabaseStatus::kOk);
 
   // Store some user data with prefixes.
@@ -1097,13 +1112,17 @@ TEST_F(ServiceWorkerStorageControlImplTest,
   DatabaseStatus status;
   const int64_t registration_id1 = GetNewRegistrationId();
   const int64_t version_id1 = GetNewVersionId();
-  status = CreateAndStoreRegistration(registration_id1, version_id1, kScope1,
-                                      kScriptUrl1, kScriptSize);
+  const int64_t resource_id1 = GetNewResourceId();
+  status =
+      CreateAndStoreRegistration(registration_id1, version_id1, resource_id1,
+                                 kScope1, kScriptUrl1, kScriptSize);
   ASSERT_EQ(status, DatabaseStatus::kOk);
   const int64_t registration_id2 = GetNewRegistrationId();
   const int64_t version_id2 = GetNewVersionId();
-  status = CreateAndStoreRegistration(registration_id2, version_id2, kScope2,
-                                      kScriptUrl2, kScriptSize);
+  const int64_t resource_id2 = GetNewResourceId();
+  status =
+      CreateAndStoreRegistration(registration_id2, version_id2, resource_id2,
+                                 kScope2, kScriptUrl2, kScriptSize);
   ASSERT_EQ(status, DatabaseStatus::kOk);
 
   // Preparation: Store some user data to registrations. Both registrations have
@@ -1197,13 +1216,17 @@ TEST_F(ServiceWorkerStorageControlImplTest, ApplyPolicyUpdates) {
   DatabaseStatus status;
   const int64_t registration_id1 = GetNewRegistrationId();
   const int64_t version_id1 = GetNewVersionId();
-  status = CreateAndStoreRegistration(registration_id1, version_id1, kScope1,
-                                      kScriptUrl1, kScriptSize);
+  const int64_t resource_id1 = GetNewResourceId();
+  status =
+      CreateAndStoreRegistration(registration_id1, version_id1, resource_id1,
+                                 kScope1, kScriptUrl1, kScriptSize);
   ASSERT_EQ(status, DatabaseStatus::kOk);
   const int64_t registration_id2 = GetNewRegistrationId();
   const int64_t version_id2 = GetNewVersionId();
-  status = CreateAndStoreRegistration(registration_id2, version_id2, kScope2,
-                                      kScriptUrl2, kScriptSize);
+  const int64_t resource_id2 = GetNewResourceId();
+  status =
+      CreateAndStoreRegistration(registration_id2, version_id2, resource_id2,
+                                 kScope2, kScriptUrl2, kScriptSize);
   ASSERT_EQ(status, DatabaseStatus::kOk);
 
   // Update policies to purge the registration for |kScope2| on shutdown.

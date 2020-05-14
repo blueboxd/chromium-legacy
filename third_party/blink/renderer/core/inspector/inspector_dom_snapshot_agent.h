@@ -57,14 +57,6 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   void CharacterDataModified(CharacterData*);
   void DidInsertDOMNode(Node*);
 
-  // Helpers for traversal.
-  static bool HasChildren(const Node& node,
-                          bool include_user_agent_shadow_tree);
-  static Node* FirstChild(const Node& node,
-                          bool include_user_agent_shadow_tree);
-  static Node* NextSibling(const Node& node,
-                           bool include_user_agent_shadow_tree);
-
   // Helpers for rects
   static PhysicalRect RectInDocument(const LayoutObject* layout_object);
   static PhysicalRect TextFragmentRectInDocument(
@@ -88,7 +80,8 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
                const String& value);
   void SetRare(protocol::DOMSnapshot::RareBooleanData* data, int index);
   void VisitDocument(Document*);
-  int VisitNode(Node*, int parent_index);
+
+  void VisitNode(Node*, int parent_index);
   void VisitContainerChildren(Node* container, int parent_index);
   void VisitPseudoElements(Element* parent, int parent_index);
   std::unique_ptr<protocol::Array<int>> BuildArrayForElementAttributes(Node*);
@@ -127,6 +120,7 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   Member<InspectedFrames> inspected_frames_;
   Member<InspectorDOMDebuggerAgent> dom_debugger_agent_;
   InspectorAgentState::Boolean enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(InspectorDOMSnapshotAgent);
 };
 

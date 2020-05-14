@@ -71,10 +71,13 @@ class CastNetworkContexts : public net::ProxyConfigService::Observer,
   // system NetworkContext, if the network service is enabled.
   void OnNetworkServiceCreated(network::mojom::NetworkService* network_service);
 
-  mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
+  void ConfigureNetworkContextParams(
       content::BrowserContext* context,
       bool in_memory,
-      const base::FilePath& relative_partition_path);
+      const base::FilePath& relative_partition_path,
+      network::mojom::NetworkContextParams* network_context_params,
+      network::mojom::CertVerifierCreationParams*
+          cert_verifier_creation_params);
 
   // Called when the locale has changed.
   void OnLocaleUpdate();
@@ -85,8 +88,10 @@ class CastNetworkContexts : public net::ProxyConfigService::Observer,
  private:
   class URLLoaderFactoryForSystem;
 
-  // Returns default set of parameters for configuring the network service.
-  network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams();
+  // Fills in |network_context_params| with the default set of parameters for
+  // configuring the network service.
+  void ConfigureDefaultNetworkContextParams(
+      network::mojom::NetworkContextParams* network_context_params);
 
   // Creates parameters for the system NetworkContext. May only be called once,
   // since it initializes some class members.

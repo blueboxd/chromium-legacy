@@ -70,11 +70,20 @@ class InvertedIndex {
   // not in the index.
   void RemoveDocument(const std::string& document_id);
 
-  // Gets TF-IDF scores for a term.
+  // Gets TF-IDF scores for a term. The result is pre-computed from
+  // |tfidf_cache_|.
   std::vector<TfidfResult> GetTfidf(const base::string16& term);
+
+  // Populates the TF-IDF score cache so that TF-IDF scores can be obtained
+  // faster. This function should be called after the inverted index is updated
+  // (after adding/removing documents).
+  void PopulateTfidfCache();
 
  private:
   friend class InvertedIndexTest;
+
+  // Calculates TF-IDF scores for a term.
+  std::vector<TfidfResult> CalculateTfidf(const base::string16& term);
 
   // Contains the length of the document (the number of terms in the document).
   // The size of this map will always equal to the number of documents in the
@@ -82,6 +91,8 @@ class InvertedIndex {
   std::unordered_map<std::string, int> doc_length_;
   // A map from term to PostingList.
   std::unordered_map<base::string16, PostingList> dictionary_;
+  // Contains the TF-IDF scores for all the term in the index.
+  std::unordered_map<base::string16, std::vector<TfidfResult>> tfidf_cache_;
 };
 
 }  // namespace local_search_service

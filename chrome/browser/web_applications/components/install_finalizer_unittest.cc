@@ -21,6 +21,7 @@
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
@@ -84,8 +85,7 @@ class InstallFinalizerUnitTest
     switch (GetParam()) {
       case ProviderType::kWebApps:
         finalizer_ = std::make_unique<WebAppInstallFinalizer>(
-            profile(), &test_registry_controller_->sync_bridge(),
-            icon_manager_.get());
+            profile(), icon_manager_.get());
         break;
       case ProviderType::kBookmarkApps:
         InitializeEmptyExtensionService(profile());
@@ -94,7 +94,8 @@ class InstallFinalizerUnitTest
         break;
     }
 
-    finalizer_->SetSubsystems(&registrar(), ui_manager_.get());
+    finalizer_->SetSubsystems(&registrar(), ui_manager_.get(),
+                              &test_registry_controller_->sync_bridge());
     test_registry_controller_->Init();
   }
 

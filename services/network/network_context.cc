@@ -370,6 +370,19 @@ NetworkContext::NetworkContext(
   }
 
   InitializeCorsParams();
+
+  SetSplitAuthCacheByNetworkIsolationKey(
+      params_->split_auth_cache_by_network_isolation_key);
+
+#if BUILDFLAG(IS_CT_SUPPORTED)
+  if (params_->ct_policy)
+    SetCTPolicy(std::move(params_->ct_policy));
+#endif
+
+#if defined(OS_ANDROID)
+  if (params_->cookie_manager)
+    GetCookieManager(std::move(params_->cookie_manager));
+#endif
 }
 
 NetworkContext::NetworkContext(
@@ -950,16 +963,13 @@ void NetworkContext::UpdateAdditionalCertificates(
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
-void NetworkContext::SetCTPolicy(
-    const std::vector<std::string>& required_hosts,
-    const std::vector<std::string>& excluded_hosts,
-    const std::vector<std::string>& excluded_spkis,
-    const std::vector<std::string>& excluded_legacy_spkis) {
+void NetworkContext::SetCTPolicy(mojom::CTPolicyPtr ct_policy) {
   if (!require_ct_delegate_)
     return;
 
-  require_ct_delegate_->UpdateCTPolicies(required_hosts, excluded_hosts,
-                                         excluded_spkis, excluded_legacy_spkis);
+  require_ct_delegate_->UpdateCTPolicies(
+      ct_policy->required_hosts, ct_policy->excluded_hosts,
+      ct_policy->excluded_spkis, ct_policy->excluded_legacy_spkis);
 }
 
 void NetworkContext::AddExpectCT(const std::string& domain,

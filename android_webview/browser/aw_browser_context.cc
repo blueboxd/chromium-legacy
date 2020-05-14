@@ -456,14 +456,13 @@ void AwBrowserContext::SetExtendedReportingAllowed(bool allowed) {
       ::prefs::kSafeBrowsingExtendedReportingOptInAllowed, allowed);
 }
 
-// TODO(amalova): Make sure NetworkContext is configured correctly when
+// TODO(amalova): Make sure NetworkContextParams is configured correctly when
 // off-the-record
-network::mojom::NetworkContextParamsPtr
-AwBrowserContext::GetNetworkContextParams(
+void AwBrowserContext::ConfigureNetworkContextParams(
     bool in_memory,
-    const base::FilePath& relative_partition_path) {
-  network::mojom::NetworkContextParamsPtr context_params =
-      network::mojom::NetworkContextParams::New();
+    const base::FilePath& relative_partition_path,
+    network::mojom::NetworkContextParams* context_params,
+    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
   context_params->user_agent = android_webview::GetUserAgent();
 
   // TODO(ntfschr): set this value to a proper value based on the user's
@@ -515,14 +514,12 @@ AwBrowserContext::GetNetworkContextParams(
 
   // Update the cors_exempt_header_list to include internally-added headers, to
   // avoid triggering CORS checks.
-  content::UpdateCorsExemptHeader(context_params.get());
-  variations::UpdateCorsExemptHeaderForVariations(context_params.get());
+  content::UpdateCorsExemptHeader(context_params);
+  variations::UpdateCorsExemptHeaderForVariations(context_params);
 
   // Add proxy settings
   AwProxyConfigMonitor::GetInstance()->AddProxyToNetworkContextParams(
       context_params);
-
-  return context_params;
 }
 
 base::android::ScopedJavaLocalRef<jobject> JNI_AwBrowserContext_GetDefaultJava(

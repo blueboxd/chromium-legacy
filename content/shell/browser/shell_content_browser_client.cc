@@ -381,17 +381,14 @@ void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
-mojo::Remote<network::mojom::NetworkContext>
-ShellContentBrowserClient::CreateNetworkContext(
+void ShellContentBrowserClient::ConfigureNetworkContextParams(
     BrowserContext* context,
     bool in_memory,
-    const base::FilePath& relative_partition_path) {
-  network::mojom::NetworkContextParamsPtr context_params =
-      CreateNetworkContextParams(context);
-  mojo::Remote<network::mojom::NetworkContext> network_context;
-  GetNetworkService()->CreateNetworkContext(
-      network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
-  return network_context;
+    const base::FilePath& relative_partition_path,
+    network::mojom::NetworkContextParams* network_context_params,
+    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
+  ConfigureNetworkContextParamsForShell(context, network_context_params,
+                                        cert_verifier_creation_params);
 }
 
 std::vector<base::FilePath>
@@ -408,11 +405,11 @@ ShellBrowserContext*
   return shell_browser_main_parts_->off_the_record_browser_context();
 }
 
-network::mojom::NetworkContextParamsPtr
-ShellContentBrowserClient::CreateNetworkContextParams(BrowserContext* context) {
-  network::mojom::NetworkContextParamsPtr context_params =
-      network::mojom::NetworkContextParams::New();
-  UpdateCorsExemptHeader(context_params.get());
+void ShellContentBrowserClient::ConfigureNetworkContextParamsForShell(
+    BrowserContext* context,
+    network::mojom::NetworkContextParams* context_params,
+    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
+  UpdateCorsExemptHeader(context_params);
   context_params->allow_any_cors_exempt_header_for_browser =
       allow_any_cors_exempt_header_for_browser_;
   context_params->user_agent = GetUserAgent();
@@ -422,7 +419,6 @@ ShellContentBrowserClient::CreateNetworkContextParams(BrowserContext* context) {
           "cors_exempt_header_list");
   if (!exempt_header.empty())
     context_params->cors_exempt_header_list.push_back(exempt_header);
-  return context_params;
 }
 
 }  // namespace content

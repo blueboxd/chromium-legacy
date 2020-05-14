@@ -88,7 +88,7 @@ class RenderDocumentHostUserDataTest : public ContentBrowserTest {
 
 // Test basic functionality of RenderDocumentHostUserData.
 IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,
-                       GetAndCreateForCurrentDocument) {
+                       GetCreateAndDeleteForCurrentDocument) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
 
@@ -104,8 +104,14 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,
   // 3) Create Data and check that GetForCurrentDocument shouldn't return null
   // now.
   Data::CreateForCurrentDocument(rfh_a);
-  data = Data::GetForCurrentDocument(rfh_a);
-  EXPECT_TRUE(data);
+  base::WeakPtr<Data> created_data =
+      Data::GetForCurrentDocument(rfh_a)->GetWeakPtr();
+  EXPECT_TRUE(created_data);
+
+  // 4) Delete Data and check that GetForCurrentDocument should return null.
+  Data::DeleteForCurrentDocument(rfh_a);
+  EXPECT_FALSE(created_data);
+  EXPECT_FALSE(Data::GetForCurrentDocument(rfh_a));
 }
 
 // Tests that RenderDocumentHostUserData objects are different for each

@@ -16,8 +16,8 @@ cr.define('settings', function() {
   /* #export */ let ResolverOption;
 
   /**
-   * Contains the possible string values for the secure DNS mode. This should be
-   * kept in sync with the modes in chrome/browser/net/dns_util.h.
+   * Contains the possible string values for the secure DNS mode. This must be
+   * kept in sync with the mode names in chrome/browser/net/secure_dns_config.h.
    * @enum {string}
    */
   /* #export */ const SecureDnsMode = {
@@ -28,7 +28,7 @@ cr.define('settings', function() {
 
   /**
    * Contains the possible management modes. This should be kept in sync with
-   * the management modes in chrome/browser/net/dns_util.h.
+   * the management modes in chrome/browser/net/secure_dns_config.h.
    * @enum {number}
    */
   /* #export */ const SecureDnsUiManagementMode = {

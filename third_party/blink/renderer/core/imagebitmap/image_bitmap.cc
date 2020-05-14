@@ -1071,15 +1071,17 @@ Vector<uint8_t> ImageBitmap::CopyBitmapData() {
 unsigned ImageBitmap::width() const {
   if (!image_)
     return 0;
-  DCHECK_GT(image_->width(), 0);
-  return image_->width();
+  IntSize size = image_->SizeRespectingOrientation();
+  DCHECK_GT(size.Width(), 0);
+  return size.Width();
 }
 
 unsigned ImageBitmap::height() const {
   if (!image_)
     return 0;
-  DCHECK_GT(image_->height(), 0);
-  return image_->height();
+  IntSize size = image_->SizeRespectingOrientation();
+  DCHECK_GT(size.Height(), 0);
+  return size.Height();
 }
 
 bool ImageBitmap::IsAccelerated() const {

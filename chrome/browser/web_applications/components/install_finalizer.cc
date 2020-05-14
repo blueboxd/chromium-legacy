@@ -41,10 +41,13 @@ void InstallFinalizer::UninstallExternalWebAppByUrl(
                           std::move(callback));
 }
 
-void InstallFinalizer::SetSubsystems(AppRegistrar* registrar,
-                                     WebAppUiManager* ui_manager) {
+void InstallFinalizer::SetSubsystems(
+    AppRegistrar* registrar,
+    WebAppUiManager* ui_manager,
+    AppRegistryController* registry_controller) {
   registrar_ = registrar;
   ui_manager_ = ui_manager;
+  registry_controller_ = registry_controller;
 }
 
 bool InstallFinalizer::CanAddAppToQuickLaunchBar() const {

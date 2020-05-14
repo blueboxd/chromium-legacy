@@ -125,7 +125,6 @@ struct TestRuleAction : public DictionarySource {
   TestRuleAction& operator=(const TestRuleAction&);
 
   base::Optional<std::string> type;
-  base::Optional<std::vector<std::string>> remove_headers_list;
   base::Optional<std::vector<TestHeaderInfo>> request_headers;
   base::Optional<std::vector<TestHeaderInfo>> response_headers;
   base::Optional<TestRuleRedirect> redirect;

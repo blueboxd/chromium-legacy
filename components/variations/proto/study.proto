@@ -46,7 +46,7 @@ message Study {
 
   // An experiment within the study.
   //
-  // Next tag: 14
+  // Next tag: 16
   message Experiment {
     // A named parameter value for this experiment.
     //
@@ -77,6 +77,13 @@ message Study {
 
     // Optional id used to uniquely identify this experiment for Chrome Sync.
     optional uint64 chrome_sync_experiment_id = 10;
+
+    // Optional id used to uniquely identify this experiment when activating
+    // integrations with the Android Google App.
+    // IMPORTANT: This field is only approved for integrations with the Android
+    // Google App and must receive a privacy review before extending to other
+    // apps.
+    optional uint64 google_app_experiment_id = 15;
 
     // Specifies the feature association parameters for this experiment group.
     //

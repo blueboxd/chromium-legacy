@@ -5804,7 +5804,7 @@ static void InstallContextDependentPropertiesAdapter(
   ${class_name}::{}(
       context, world, instance_object, prototype_object, interface_object,
       interface_template,
-      bindings::V8InterfaceBridgeBase::FeatureSelector(world));
+      bindings::V8InterfaceBridgeBase::FeatureSelector());
 }}
 """
         wrapper_type_info_def.append(
@@ -6645,7 +6645,7 @@ v8::Local<v8::Object> instance_object;
 v8::Local<v8::Object> prototype_object;
 v8::Local<v8::Function> interface_object;
 v8::Local<v8::FunctionTemplate> interface_template;
-V8InterfaceBridgeBase::FeatureSelector feature_selector(world, feature);
+V8InterfaceBridgeBase::FeatureSelector feature_selector(feature);
 
 for (const auto& pair : wrapper_type_info_list) {
   const WrapperTypeInfo* wrapper_type_info = pair.first;

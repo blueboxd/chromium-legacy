@@ -65,6 +65,9 @@ enum IDCollectionKey {
   // server side experimental behavior, transmitted through the
   // X-Client-Data header.
   GOOGLE_WEB_PROPERTIES_TRIGGER,
+  // This collection is used by the Google App and is passed at the time
+  // the cross-app communication is triggered.
+  GOOGLE_APP,
   // The total count of collections.
   ID_COLLECTION_COUNT,
 };

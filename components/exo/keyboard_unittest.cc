@@ -706,6 +706,22 @@ TEST_F(KeyboardTest, AckKeyboardKey) {
   // AcceleratorPressed is not called when the accelerator is already handled.
   keyboard->AckKeyboardKey(3, true /* handled */);
 
+  // A repeat key event should not be sent to the client and also should not
+  // invoke the accelerator.
+  EXPECT_CALL(*shell_surface.get(), AcceleratorPressed(ui::Accelerator(
+                                        ui::VKEY_W, ui::EF_CONTROL_DOWN,
+                                        ui::Accelerator::KeyState::PRESSED)))
+      .Times(0);
+  generator.PressKey(ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_IS_REPEAT);
+
+  // Another key press event while holding the key is also ignored and should
+  // not invoke the accelerator.
+  EXPECT_CALL(*shell_surface.get(), AcceleratorPressed(ui::Accelerator(
+                                        ui::VKEY_W, ui::EF_CONTROL_DOWN,
+                                        ui::Accelerator::KeyState::PRESSED)))
+      .Times(0);
+  generator.PressKey(ui::VKEY_W, ui::EF_CONTROL_DOWN);
+
   // Release the key and reset modifier_flags.
   EXPECT_CALL(delegate, OnKeyboardModifiers(0));
   EXPECT_CALL(delegate, OnKeyboardKey(testing::_, ui::DomCode::US_W, false));

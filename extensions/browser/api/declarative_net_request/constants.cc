@@ -35,9 +35,6 @@ const char kErrorDuplicateIDs[] = "Rule with id * does not have a unique ID.";
 const char kErrorPersisting[] = "Internal error while parsing rules.";
 const char kErrorNonAscii[] =
     "Rule with id * cannot have non-ascii characters as part of \"*\" key.";
-const char kErrorEmptyRemoveHeadersList[] =
-    "Rule with id * does not specify the value for \"*\" key. This is required "
-    "for \"removeHeaders\" rules.";
 const char kErrorInvalidKey[] =
     "Rule with id * specifies an incorrect value for the \"*\" key.";
 const char kErrorInvalidTransformScheme[] =

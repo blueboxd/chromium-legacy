@@ -6,6 +6,8 @@
 
 #include <string.h>
 
+#include <utility>
+
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
@@ -65,10 +67,10 @@ class IncomingStream::UnderlyingSource final : public UnderlyingSourceBase {
 };
 
 IncomingStream::IncomingStream(ScriptState* script_state,
-                               base::OnceClosure forget_stream,
+                               base::OnceClosure on_abort,
                                mojo::ScopedDataPipeConsumerHandle handle)
     : script_state_(script_state),
-      forget_stream_(std::move(forget_stream)),
+      on_abort_(std::move(on_abort)),
       data_pipe_(std::move(handle)),
       read_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       close_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC) {}
@@ -126,19 +128,14 @@ void IncomingStream::AbortReading(StreamAbortInfo*) {
 void IncomingStream::Reset() {
   DVLOG(1) << "IncomingStream::Reset() this=" << this;
 
-  // We no longer need to call |forget_stream_|.
-  forget_stream_.Reset();
+  // We no longer need to call |on_abort_|.
+  on_abort_.Reset();
 
   ErrorStreamAbortAndReset(CreateAbortException(IsLocalAbort(false)));
 }
 
 void IncomingStream::ContextDestroyed() {
   DVLOG(1) << "IncomingStream::ContextDestroyed() this=" << this;
-
-  if (forget_stream_) {
-    // Make QuicTransport drop its reference to us.
-    std::move(forget_stream_).Run();
-  }
 
   ResetPipe();
 }
@@ -317,9 +314,9 @@ void IncomingStream::AbortAndReset() {
     reading_aborted_resolver_ = nullptr;
   }
 
-  if (forget_stream_) {
+  if (on_abort_) {
     // Cause QuicTransport to drop its reference to us.
-    std::move(forget_stream_).Run();
+    std::move(on_abort_).Run();
   }
 
   ResetPipe();

@@ -1,0 +1,27 @@
+<style>
+  :host {
+    display: block;
+  }
+
+  a {
+    color: inherit;
+    display: block;
+    font-size: 16px;
+    line-height: 1;
+    outline: none;
+    overflow: hidden;
+    padding-bottom: 8px;
+    padding-inline-end: 16px;
+    padding-inline-start: 52px;
+    padding-top: 8px;
+    position: relative;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+</style>
+<a id="link" href$="[[match.destinationUrl.url]]">
+  <span id="contents">[[decodeString16_(match.contents)]]</span>
+  [[separatorText_]]
+  <span id="description">[[decodeString16_(match.description)]]</span>
+</a>

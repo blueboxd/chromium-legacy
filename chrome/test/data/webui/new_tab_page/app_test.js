@@ -117,6 +117,14 @@ suite('NewTabPageAppTest', () => {
     // Assert.
     assertNotStyle($$(app, '#fakebox'), 'display', 'none');
     assertStyle($$(app, '#realbox'), 'display', 'none');
+    assertStyle($$(app, '#realbox'), 'visibility', 'hidden');
+
+    // Act.
+    testProxy.callbackRouterRemote.setTheme(createTheme());
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+
+    // Assert.
+    assertStyle($$(app, '#realbox'), 'visibility', 'visible');
   });
 
   test('open voice search event opens voice search overlay', async () => {

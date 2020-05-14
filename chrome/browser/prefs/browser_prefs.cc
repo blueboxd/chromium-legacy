@@ -39,10 +39,10 @@
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_stats_mac.h"
 #include "chrome/browser/memory/enterprise_memory_limit_pref_observer.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
-#include "chrome/browser/net/dns_util.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/profile_network_context_service.h"
+#include "chrome/browser/net/secure_dns_util.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/notifications/notification_channels_provider_android.h"
 #include "chrome/browser/notifications/notification_display_service_impl.h"
@@ -632,7 +632,7 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterStringPref(kInvalidatorInvalidationState, std::string());
   registry->RegisterStringPref(kInvalidatorClientId, std::string());
 
-  chrome_browser_net::RegisterDNSProbesSettingBackupPref(registry);
+  chrome_browser_net::secure_dns::RegisterProbesSettingBackupPref(registry);
 
 #if defined(OS_CHROMEOS)
   registry->RegisterIntegerPref(kAmbientModeTopicSource, 0);
@@ -1249,7 +1249,8 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 3/2020.
   profile_prefs->ClearPref(kDataReductionNetworkProperties);
-  chrome_browser_net::MigrateDNSProbesSettingToOrFromBackup(profile_prefs);
+  chrome_browser_net::secure_dns::MigrateProbesSettingToOrFromBackup(
+      profile_prefs);
 
 #if defined(OS_CHROMEOS)
   // Added 4/2020.

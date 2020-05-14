@@ -267,10 +267,6 @@ class TestingProfile : public Profile {
 
   sync_preferences::TestingPrefServiceSyncable* GetTestingPrefService();
 
-  // Sets the Profile's NetworkContext.
-  void SetNetworkContext(
-      std::unique_ptr<network::mojom::NetworkContext> network_context);
-
   // Called on the parent of an OffTheRecord |otr_profile|. Usually called from
   // the constructor of an OffTheRecord TestingProfile, but can also be used by
   // tests to provide an OffTheRecordProfileImpl instance.
@@ -376,9 +372,12 @@ class TestingProfile : public Profile {
   bool IsNewProfile() override;
   void SetExitType(ExitType exit_type) override {}
   ExitType GetLastSessionExitType() override;
-  mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
+  void ConfigureNetworkContextParams(
       bool in_memory,
-      const base::FilePath& relative_partition_path) override;
+      const base::FilePath& relative_partition_path,
+      network::mojom::NetworkContextParams* network_context_params,
+      network::mojom::CertVerifierCreationParams* cert_verifier_creation_params)
+      override;
 
 #if defined(OS_CHROMEOS)
   void ChangeAppLocale(const std::string&, AppLocaleChangedVia) override;
@@ -452,9 +451,6 @@ class TestingProfile : public Profile {
 
   std::unique_ptr<net::CookieStore, content::BrowserThread::DeleteOnIOThread>
       extensions_cookie_store_;
-
-  std::unique_ptr<network::mojom::NetworkContext> network_context_;
-  mojo::ReceiverSet<network::mojom::NetworkContext> network_context_receivers_;
 
   std::unique_ptr<Profile> incognito_profile_;
   TestingProfile* original_profile_;

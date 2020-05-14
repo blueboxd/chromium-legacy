@@ -18,6 +18,8 @@ js_type_check("closure_compile") {
     ":grid",
     ":logo",
     ":realbox",
+    ":realbox_dropdown",
+    ":realbox_match",
     ":theme_icon",
     ":untrusted_iframe",
     ":utils",
@@ -146,6 +148,23 @@ js_library("realbox") {
   ]
 }
 
+js_library("realbox_dropdown") {
+  deps = [
+    ":utils",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
+}
+
+js_library("realbox_match") {
+  deps = [
+    ":utils",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
+}
+
 js_library("logo") {
   deps = [
     ":doodle_share_dialog",
@@ -182,6 +201,8 @@ html_to_js("web_components") {
     "mini_page.js",
     "most_visited.js",
     "realbox.js",
+    "realbox_dropdown.js",
+    "realbox_match.js",
     "theme_icon.js",
     "untrusted_iframe.js",
     "voice_search_overlay.js",

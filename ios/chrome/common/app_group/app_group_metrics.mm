@@ -44,6 +44,9 @@ NSString* const kCredentialExtensionSearchCount =
 NSString* const kCredentialExtensionPasswordUseCount =
     @"CredentialExtensionPasswordUseCount";
 
+NSString* const kCredentialExtensionQuickPasswordUseCount =
+    @"CredentialExtensionQuickPasswordUseCount";
+
 // To avoid collision between session_ids from chrome or external
 // components, the session ID is offset depending on the application.
 int AppGroupSessionID(int session_id, AppGroupApplications application) {

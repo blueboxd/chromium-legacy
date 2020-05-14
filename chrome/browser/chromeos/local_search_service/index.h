@@ -36,11 +36,11 @@ struct Data {
 };
 
 struct SearchParams {
-  double relevance_threshold = 0.3;
+  double relevance_threshold = 0.32;
   double partial_match_penalty_rate = 0.9;
   bool use_prefix_only = false;
-  bool use_weighted_ratio = true;
   bool use_edit_distance = false;
+  bool split_search_tags = true;
 };
 
 // A numeric range used to represent the start and end position.
@@ -109,11 +109,12 @@ class Index {
 
   void SetSearchParams(const local_search_service::SearchParams& search_params);
 
-  void GetSearchParamsForTesting(double* relevance_threshold,
-                                 double* partial_match_penalty_rate,
-                                 bool* use_prefix_only,
-                                 bool* use_weighted_ratio,
-                                 bool* use_edit_distance);
+  void GetSearchTagsForTesting(
+      const std::string& id,
+      std::vector<base::string16>* search_tags,
+      std::vector<base::string16>* individual_search_tags);
+
+  SearchParams GetSearchParamsForTesting();
 
  private:
   // Returns all search results for a given query.
@@ -122,7 +123,15 @@ class Index {
       uint32_t max_results) const;
 
   // A map from key to tokenized search-tags.
-  std::map<std::string, std::vector<std::unique_ptr<TokenizedString>>> data_;
+  // The 1st component corresponds to the tokens of original input search tags.
+  // The 2nd component is only filled if |search_params_.split_search_tags| is
+  // true. For a data item, if all its search tags contain single words
+  // the corresponding 2nd component will be empty, as it'll be the same
+  // as the original input.
+  std::map<std::string,
+           std::pair<std::vector<std::unique_ptr<TokenizedString>>,
+                     std::vector<std::unique_ptr<TokenizedString>>>>
+      data_;
 
   // Search parameters.
   local_search_service::SearchParams search_params_;

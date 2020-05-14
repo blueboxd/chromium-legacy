@@ -64,7 +64,7 @@ class MODULES_EXPORT ImageDecoderExternal final : public ScriptWrappable,
 
   // Construction parameters.
   Member<const ImageDecoderInit> init_data_;
-  Member<ImageBitmapOptions> options_;
+  Member<const ImageBitmapOptions> options_;
 
   bool data_complete_ = false;
 

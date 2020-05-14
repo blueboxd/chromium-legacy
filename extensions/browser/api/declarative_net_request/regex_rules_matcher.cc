@@ -25,16 +25,15 @@ bool IsExtraHeadersMatcherInternal(
 
   // We only support removing a subset of extra headers currently. If that
   // changes, the implementation here should change as well.
-  static_assert(flat::ActionType_count == 7,
+  static_assert(flat::ActionType_count == 6,
                 "Modify this method to ensure IsExtraHeadersMatcherInternal is "
                 "updated as new actions are added.");
 
-  return std::any_of(
-      regex_list->begin(), regex_list->end(),
-      [](const flat::RegexRule* regex_rule) {
-        return regex_rule->action_type() == flat::ActionType_remove_headers ||
-               regex_rule->action_type() == flat::ActionType_modify_headers;
-      });
+  return std::any_of(regex_list->begin(), regex_list->end(),
+                     [](const flat::RegexRule* regex_rule) {
+                       return regex_rule->action_type() ==
+                              flat::ActionType_modify_headers;
+                     });
 }
 
 re2::StringPiece ToRE2StringPiece(const ::flatbuffers::String& str) {
@@ -64,7 +63,6 @@ bool IsBeforeRequestAction(flat::ActionType action_type) {
     case flat::ActionType_upgrade_scheme:
     case flat::ActionType_allow_all_requests:
       return true;
-    case flat::ActionType_remove_headers:
     case flat::ActionType_modify_headers:
       return false;
     case flat::ActionType_count:
@@ -96,45 +94,6 @@ RegexRulesMatcher::RegexRulesMatcher(const ExtensionId& extension_id,
 }
 
 RegexRulesMatcher::~RegexRulesMatcher() = default;
-
-uint8_t RegexRulesMatcher::GetRemoveHeadersMask(
-    const RequestParams& params,
-    uint8_t excluded_remove_headers_mask,
-    std::vector<RequestAction>* remove_headers_actions) const {
-  DCHECK(remove_headers_actions);
-
-  const std::vector<RegexRuleInfo>& potential_matches =
-      GetPotentialMatches(params);
-
-  // Subtracts |mask2| from |mask1|.
-  auto subtract_mask = [](uint8_t mask1, uint8_t mask2) {
-    return mask1 & (~mask2);
-  };
-
-  uint8_t mask = 0;
-  for (const RegexRuleInfo& info : potential_matches) {
-    if (info.regex_rule->action_type() != flat::ActionType_remove_headers)
-      continue;
-
-    // The current rule won't be responsible for any headers already removed (in
-    // |mask|) or any headers to be ignored (in |excluded_remove_headers_mask|).
-    uint8_t effective_mask_for_rule =
-        subtract_mask(info.regex_rule->remove_headers_mask(),
-                      excluded_remove_headers_mask | mask);
-    if (!effective_mask_for_rule)
-      continue;
-
-    if (!re2::RE2::PartialMatch(params.url->spec(), *info.regex))
-      continue;
-
-    mask |= effective_mask_for_rule;
-    remove_headers_actions->push_back(GetRemoveHeadersActionForMask(
-        *info.regex_rule->url_rule(), effective_mask_for_rule));
-  }
-
-  DCHECK(!(mask & excluded_remove_headers_mask));
-  return mask;
-}
 
 std::vector<RequestAction> RegexRulesMatcher::GetModifyHeadersActions(
     const RequestParams& params) const {
@@ -201,7 +160,6 @@ RegexRulesMatcher::GetBeforeRequestActionIgnoringAncestors(
       return CreateUpgradeAction(params, rule);
     case flat::ActionType_allow_all_requests:
       return CreateAllowAllRequestsAction(params, rule);
-    case flat::ActionType_remove_headers:
     case flat::ActionType_modify_headers:
     case flat::ActionType_count:
       NOTREACHED();

@@ -36,11 +36,7 @@ WebApplicationShortcutInfo& WebApplicationShortcutInfo::operator=(
 WebApplicationShortcutInfo& WebApplicationShortcutInfo::operator=(
     WebApplicationShortcutInfo&&) noexcept = default;
 
-WebApplicationInfo::WebApplicationInfo()
-    : mobile_capable(MOBILE_CAPABLE_UNSPECIFIED),
-      generated_icon_color(SK_ColorTRANSPARENT),
-      display_mode(blink::mojom::DisplayMode::kBrowser),
-      open_as_window(false) {}
+WebApplicationInfo::WebApplicationInfo() = default;
 
 WebApplicationInfo::WebApplicationInfo(const WebApplicationInfo& other) =
     default;

@@ -57,7 +57,7 @@ class MODULES_EXPORT ReceiveStream final : public ScriptWrappable,
   void Trace(Visitor*) override;
 
  private:
-  void ForgetStream();
+  void OnAbort();
 
   const Member<IncomingStream> incoming_stream_;
   const Member<QuicTransport> quic_transport_;

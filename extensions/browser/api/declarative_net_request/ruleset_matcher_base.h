@@ -41,15 +41,6 @@ class RulesetMatcherBase {
   base::Optional<RequestAction> GetBeforeRequestAction(
       const RequestParams& params) const;
 
-  // Returns the bitmask of headers to remove from the request. The bitmask
-  // corresponds to flat::RemoveHeaderType. |excluded_remove_headers_mask|
-  // denotes the mask of headers to be skipped for evaluation and is excluded in
-  // the return value.
-  virtual uint8_t GetRemoveHeadersMask(
-      const RequestParams& params,
-      uint8_t excluded_remove_headers_mask,
-      std::vector<RequestAction>* remove_headers_actions) const = 0;
-
   // Returns a vector of RequestAction for all matching modifyHeaders rules.
   virtual std::vector<RequestAction> GetModifyHeadersActions(
       const RequestParams& params) const = 0;
@@ -111,12 +102,6 @@ class RulesetMatcherBase {
       const RequestParams& params,
       const url_pattern_index::flat::UrlRule& rule,
       GURL redirect_url) const;
-
-  // Helper to create a RequestAction of type |REMOVE_HEADERS|. |mask|
-  // corresponds to bitmask of flat::RemoveHeaderType, and must be non-empty.
-  RequestAction GetRemoveHeadersActionForMask(
-      const url_pattern_index::flat::UrlRule& rule,
-      uint8_t mask) const;
 
   // Helper to create a list of RequestActions of type |MODIFY_HEADERS| with the
   // appropriate list of headers for each action.

@@ -551,11 +551,10 @@ base::string16 AXPlatformNodeBase::GetInnerText() const {
     return GetNameAsString16();
 
   base::string16 text;
-  // TODO(Nektar): Remove const_cast by making all tree traversal methods const.
-  AXPlatformNodeBase* child =
-      const_cast<AXPlatformNodeBase*>(this)->GetFirstChild();
-  for (; child; child = child->GetNextSibling())
-    text += child->GetInnerText();
+  for (auto child_iter = AXPlatformNodeChildrenBegin();
+       child_iter != AXPlatformNodeChildrenEnd(); ++child_iter) {
+    text += child_iter->GetInnerText();
+  }
   return text;
 }
 
@@ -1440,10 +1439,12 @@ int32_t AXPlatformNodeBase::GetHypertextOffsetFromChild(
   // cross-tree traversal is necessary.
   if (child->IsTextOnlyObject()) {
     int32_t hypertext_offset = 0;
-    for (AXPlatformNodeBase* sibling = GetFirstChild();
-         sibling && sibling != child; sibling = sibling->GetNextSibling()) {
-      if (sibling->IsTextOnlyObject()) {
-        hypertext_offset += (int32_t)sibling->GetHypertext().size();
+    for (auto child_iter = AXPlatformNodeChildrenBegin();
+         child_iter != AXPlatformNodeChildrenEnd() && child_iter.get() != child;
+         ++child_iter) {
+      if (child_iter->IsTextOnlyObject()) {
+        hypertext_offset +=
+            static_cast<int32_t>(child_iter->GetHypertext().size());
       } else {
         ++hypertext_offset;
       }
@@ -1553,10 +1554,10 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
   // We can safely assume that the endpoint is in another part of the tree or
   // at common parent, and that this object is a descendant of common parent.
   base::Optional<int> endpoint_index_in_common_parent;
-  for (AXPlatformNodeBase* child = common_parent->GetFirstChild();
-       child != nullptr; child = child->GetNextSibling()) {
-    if (endpoint_object->IsDescendantOf(child)) {
-      endpoint_index_in_common_parent = child->GetIndexInParent();
+  for (auto child_iter = common_parent->AXPlatformNodeChildrenBegin();
+       child_iter != common_parent->AXPlatformNodeChildrenEnd(); ++child_iter) {
+    if (endpoint_object->IsDescendantOf(child_iter.get())) {
+      endpoint_index_in_common_parent = child_iter->GetIndexInParent();
       break;
     }
   }
@@ -2092,17 +2093,17 @@ int AXPlatformNodeBase::GetSelectedItems(
     int max_items,
     std::vector<AXPlatformNodeBase*>* out_selected_items) const {
   int selected_count = 0;
-  // TODO(Nektar): Remove const_cast by making all tree traversal methods const.
-  for (AXPlatformNodeBase* child =
-           const_cast<AXPlatformNodeBase*>(this)->GetFirstChild();
-       child && selected_count < max_items; child = child->GetNextSibling()) {
-    if (!IsItemLike(child->GetData().role)) {
-      selected_count += child->GetSelectedItems(max_items - selected_count,
-                                                out_selected_items);
-    } else if (child->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
+  for (auto child_iter = AXPlatformNodeChildrenBegin();
+       child_iter != AXPlatformNodeChildrenEnd() && selected_count < max_items;
+       ++child_iter) {
+    if (!IsItemLike(child_iter->GetData().role)) {
+      selected_count += child_iter->GetSelectedItems(max_items - selected_count,
+                                                     out_selected_items);
+    } else if (child_iter->GetBoolAttribute(
+                   ax::mojom::BoolAttribute::kSelected)) {
       selected_count++;
       if (out_selected_items)
-        out_selected_items->emplace_back(child);
+        out_selected_items->emplace_back(child_iter.get());
     }
   }
   return selected_count;

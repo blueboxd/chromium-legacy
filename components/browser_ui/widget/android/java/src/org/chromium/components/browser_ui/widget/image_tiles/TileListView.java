@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.view.View;
+import android.view.animation.AnimationUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -52,6 +53,9 @@ class TileListView {
         mLayoutManager = new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false);
         mView.setLayoutManager(mLayoutManager);
         mView.addItemDecoration(new ItemDecorationImpl(context));
+        mView.setLayoutAnimation(
+                AnimationUtils.loadLayoutAnimation(context, R.anim.image_grid_enter));
+
         mTileSizeSupplier = new TileSizeSupplier(context);
 
         PropertyModelChangeProcessor.create(
@@ -71,6 +75,7 @@ class TileListView {
     /** Scrolls the recycler view to the given {@code position}. */
     public void scrollToPosition(int position) {
         mView.getLayoutManager().scrollToPosition(0);
+        mView.scheduleLayoutAnimation();
     }
 
     private class ItemDecorationImpl extends ItemDecoration {

@@ -43,8 +43,6 @@ RequestAction CreateRequestActionForTesting(RequestAction::Type type,
         return dnr_api::RULE_ACTION_TYPE_REDIRECT;
       case RequestAction::Type::UPGRADE:
         return dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME;
-      case RequestAction::Type::REMOVE_HEADERS:
-        return dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS;
       case RequestAction::Type::ALLOW_ALL_REQUESTS:
         return dnr_api::RULE_ACTION_TYPE_ALLOWALLREQUESTS;
       case RequestAction::Type::MODIFY_HEADERS:
@@ -71,15 +69,9 @@ std::ostream& operator<<(std::ostream& output,
 // with gtest. This reuses the logic used to test action equality in
 // TestRequestAction in test_utils.h.
 bool operator==(const RequestAction& lhs, const RequestAction& rhs) {
-  static_assert(flat::IndexType_count == 6,
+  static_assert(flat::IndexType_count == 3,
                 "Modify this method to ensure it stays updated as new actions "
                 "are added.");
-
-  auto are_vectors_equal = [](std::vector<const char*> a,
-                              std::vector<const char*> b) {
-    return std::set<base::StringPiece>(a.begin(), a.end()) ==
-           std::set<base::StringPiece>(b.begin(), b.end());
-  };
 
   auto get_members_tuple = [](const RequestAction& action) {
     return std::tie(action.type, action.redirect_url, action.rule_id,
@@ -102,10 +94,6 @@ bool operator==(const RequestAction& lhs, const RequestAction& rhs) {
   };
 
   return get_members_tuple(lhs) == get_members_tuple(rhs) &&
-         are_vectors_equal(lhs.request_headers_to_remove,
-                           rhs.request_headers_to_remove) &&
-         are_vectors_equal(lhs.response_headers_to_remove,
-                           rhs.response_headers_to_remove) &&
          are_headers_equal(lhs.request_headers_to_modify,
                            rhs.request_headers_to_modify) &&
          are_headers_equal(lhs.response_headers_to_modify,
@@ -129,9 +117,6 @@ std::ostream& operator<<(std::ostream& output, RequestAction::Type type) {
     case RequestAction::Type::UPGRADE:
       output << "UPGRADE";
       break;
-    case RequestAction::Type::REMOVE_HEADERS:
-      output << "REMOVE_HEADERS";
-      break;
     case RequestAction::Type::ALLOW_ALL_REQUESTS:
       output << "ALLOW_ALL_REQUESTS";
       break;
@@ -153,10 +138,6 @@ std::ostream& operator<<(std::ostream& output, const RequestAction& action) {
   output << "|index_priority| " << action.index_priority << "\n";
   output << "|ruleset_id| " << action.ruleset_id << "\n";
   output << "|extension_id| " << action.extension_id << "\n";
-  output << "|request_headers_to_remove| "
-         << ::testing::PrintToString(action.request_headers_to_remove) << "\n";
-  output << "|response_headers_to_remove| "
-         << ::testing::PrintToString(action.response_headers_to_remove) << "\n";
   output << "|request_headers_to_modify| "
          << ::testing::PrintToString(action.request_headers_to_modify) << "\n";
   output << "|response_headers_to_modify| "
@@ -223,9 +204,6 @@ std::ostream& operator<<(std::ostream& output, const ParseResult& result) {
       break;
     case ParseResult::ERROR_INVALID_URL_FILTER:
       output << "ERROR_INVALID_URL_FILTER";
-      break;
-    case ParseResult::ERROR_EMPTY_REMOVE_HEADERS_LIST:
-      output << "ERROR_EMPTY_REMOVE_HEADERS_LIST";
       break;
     case ParseResult::ERROR_INVALID_REDIRECT:
       output << "ERROR_INVALID_REDIRECT";

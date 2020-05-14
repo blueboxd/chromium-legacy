@@ -55,7 +55,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost {
       base::WeakPtr<ServiceWorkerContextCore> context);
   ~ServiceWorkerProviderHost();
 
-  int provider_id() const { return provider_id_; }
   int worker_process_id() const { return worker_process_id_; }
   ServiceWorkerVersion* running_hosted_version() const {
     return running_hosted_version_;
@@ -83,9 +82,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost {
   void ReportNoBinderForInterface(const std::string& error);
 
  private:
-  // Unique among all provider hosts.
-  const int provider_id_;
-
   int worker_process_id_ = ChildProcessHost::kInvalidUniqueID;
 
   // The instance of service worker this provider hosts.

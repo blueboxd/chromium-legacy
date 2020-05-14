@@ -439,6 +439,7 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
   indexed_db_control.SetForceKeepSessionState();
 }
 
+// static
 void BrowserContext::SetDownloadManagerForTesting(
     BrowserContext* browser_context,
     std::unique_ptr<content::DownloadManager> download_manager) {

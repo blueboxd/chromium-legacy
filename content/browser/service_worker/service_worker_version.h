@@ -590,7 +590,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class EmbeddedWorkerInstanceTest;
   friend class ServiceWorkerPingController;
-  friend class ServiceWorkerProviderHostTest;
+  friend class ServiceWorkerContainerHostTest;
   friend class ServiceWorkerReadFromCacheJobTest;
   friend class ServiceWorkerVersionBrowserTest;
   friend class ServiceWorkerActivationTest;
@@ -604,8 +604,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(service_worker_controllee_request_handler_unittest::
                                ServiceWorkerControlleeRequestHandlerTest,
                            FallbackWithNoFetchHandler);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProviderHostTest,
-                           DontSetControllerInDestructor);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerJobTest, Register);
   FRIEND_TEST_ALL_PREFIXES(
       service_worker_version_unittest::ServiceWorkerVersionTest,

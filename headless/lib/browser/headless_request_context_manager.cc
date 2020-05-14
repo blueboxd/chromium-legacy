@@ -19,6 +19,7 @@
 #include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/url_request_context_builder_mojo.h"
 
@@ -172,9 +173,19 @@ HeadlessRequestContextManager::CreateSystemContext(
   auto* network_service = content::GetNetworkService();
   network_service->ConfigureHttpAuthPrefs(std::move(auth_params));
 
+  ::network::mojom::NetworkContextParamsPtr network_context_params =
+      ::network::mojom::NetworkContextParams::New();
+  ::network::mojom::CertVerifierCreationParamsPtr
+      cert_verifier_creation_params =
+          ::network::mojom::CertVerifierCreationParams::New();
+  manager->ConfigureNetworkContextParamsInternal(
+      /* is_system = */ true, network_context_params.get(),
+      cert_verifier_creation_params.get());
+  network_context_params->cert_verifier_creation_params =
+      std::move(cert_verifier_creation_params);
   network_service->CreateNetworkContext(
       manager->system_context_.InitWithNewPipeAndPassReceiver(),
-      manager->CreateNetworkContextParams(/* is_system = */ true));
+      std::move(network_context_params));
 
   return manager;
 }
@@ -217,21 +228,22 @@ HeadlessRequestContextManager::~HeadlessRequestContextManager() {
     HeadlessProxyConfigMonitor::DeleteSoon(std::move(proxy_config_monitor_));
 }
 
-mojo::Remote<::network::mojom::NetworkContext>
-HeadlessRequestContextManager::CreateNetworkContext(
+void HeadlessRequestContextManager::ConfigureNetworkContextParams(
     bool in_memory,
-    const base::FilePath& relative_partition_path) {
-  mojo::Remote<::network::mojom::NetworkContext> network_context;
-  content::GetNetworkService()->CreateNetworkContext(
-      network_context.BindNewPipeAndPassReceiver(),
-      CreateNetworkContextParams(/* is_system = */ false));
-  return network_context;
+    const base::FilePath& relative_partition_path,
+    ::network::mojom::NetworkContextParams* network_context_params,
+    ::network::mojom::CertVerifierCreationParams*
+        cert_verifier_creation_params) {
+  ConfigureNetworkContextParamsInternal(
+      /*is_system=*/false, network_context_params,
+      cert_verifier_creation_params);
 }
 
-::network::mojom::NetworkContextParamsPtr
-HeadlessRequestContextManager::CreateNetworkContextParams(bool is_system) {
-  auto context_params = ::network::mojom::NetworkContextParams::New();
-
+void HeadlessRequestContextManager::ConfigureNetworkContextParamsInternal(
+    bool is_system,
+    ::network::mojom::NetworkContextParams* context_params,
+    ::network::mojom::CertVerifierCreationParams*
+        cert_verifier_creation_params) {
   context_params->user_agent = user_agent_;
   context_params->accept_language = accept_language_;
   context_params->primary_network_context = is_system;
@@ -259,10 +271,9 @@ HeadlessRequestContextManager::CreateNetworkContextParams(bool is_system) {
     context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
         *proxy_config_, GetProxyConfigTrafficAnnotationTag());
   } else {
-    proxy_config_monitor_->AddToNetworkContextParams(context_params.get());
+    proxy_config_monitor_->AddToNetworkContextParams(context_params);
   }
-  content::UpdateCorsExemptHeader(context_params.get());
-  return context_params;
+  content::UpdateCorsExemptHeader(context_params);
 }
 
 }  // namespace headless

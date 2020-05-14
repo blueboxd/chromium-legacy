@@ -107,8 +107,11 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
 
  private:
   // ShellContentBrowserClient overrides.
-  network::mojom::NetworkContextParamsPtr CreateNetworkContextParams(
-      BrowserContext* context) override;
+  void ConfigureNetworkContextParamsForShell(
+      BrowserContext* context,
+      network::mojom::NetworkContextParams* context_params,
+      network::mojom::CertVerifierCreationParams* cert_verifier_creation_params)
+      override;
 
   // Creates and stores a FakeBluetoothChooserFactory instance.
   void CreateFakeBluetoothChooserFactory(

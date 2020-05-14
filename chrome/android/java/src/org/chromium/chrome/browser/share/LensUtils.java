@@ -13,6 +13,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.text.TextUtils;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
@@ -20,6 +22,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.variations.VariationsAssociatedData;
 
 /**
  * This class provides utilities for intenting into Google Lens.
@@ -32,6 +35,7 @@ public class LensUtils {
     private static final String LAUNCH_TIMESTAMP_URI_KEY = "ActivityLaunchTimestampNanos";
     private static final String IMAGE_SRC_URI_KEY = "ImageSrc";
     private static final String ALT_URI_KEY = "ImageAlt";
+    private static final String VARIATION_ID_URI_KEY = "Gid";
 
     private static final String MIN_AGSA_VERSION_FEATURE_PARAM_NAME = "minAgsaVersionName";
     private static final String USE_SEARCH_BY_IMAGE_TEXT_FEATURE_PARAM_NAME =
@@ -45,6 +49,7 @@ public class LensUtils {
      * See function for details.
      */
     private static boolean sFakePassableLensEnvironmentForTesting;
+    private static String sFakeVariationsForTesting;
 
     /*
      * If true, short-circuit the version name intent check to always return a high enough version.
@@ -54,6 +59,16 @@ public class LensUtils {
      */
     public static void setFakePassableLensEnvironmentForTesting(boolean shouldFake) {
         sFakePassableLensEnvironmentForTesting = shouldFake;
+    }
+
+    /*
+     * If set, short-circuit the JNI call to retrieve the variation IDs.
+     * Used by test cases.
+     * @param fakeIdString Whether to fake the version check.
+     */
+    @VisibleForTesting
+    static void setFakeVariationsForTesting(String fakeVariations) {
+        sFakeVariationsForTesting = fakeVariations;
     }
 
     /**
@@ -180,19 +195,28 @@ public class LensUtils {
                                 SEND_SRC_PARAM_NAME, false)) {
                     lensUriBuilder.appendQueryParameter(IMAGE_SRC_URI_KEY, srcUrl);
                 }
-
                 if ((titleOrAltText != null)
                         && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                                 ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS,
                                 SEND_ALT_PARAM_NAME, false)) {
                     lensUriBuilder.appendQueryParameter(ALT_URI_KEY, titleOrAltText);
                 }
+                String variations = sFakeVariationsForTesting == null
+                        ? VariationsAssociatedData.getGoogleAppVariations()
+                        : sFakeVariationsForTesting;
+                variations = variations.trim();
+                if (!variations.isEmpty()) {
+                    lensUriBuilder.appendQueryParameter(VARIATION_ID_URI_KEY, variations);
+                }
+                lensUri = lensUriBuilder.build();
             }
 
             lensUri = lensUriBuilder.build();
             ContextUtils.getApplicationContext().grantUriPermission(
                     IntentHandler.PACKAGE_GSA, imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
+        ContextUtils.getApplicationContext().grantUriPermission(
+                IntentHandler.PACKAGE_GSA, imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
         Intent intent = new Intent(Intent.ACTION_VIEW).setData(lensUri);
         intent.setPackage(IntentHandler.PACKAGE_GSA);

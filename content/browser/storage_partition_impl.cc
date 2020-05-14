@@ -2282,6 +2282,13 @@ void StoragePartitionImpl::WaitForCodeCacheShutdownForTesting() {
   }
 }
 
+void StoragePartitionImpl::SetNetworkContextForTesting(
+    mojo::PendingRemote<network::mojom::NetworkContext>
+        network_context_remote) {
+  network_context_.reset();
+  network_context_.Bind(std::move(network_context_remote));
+}
+
 BrowserContext* StoragePartitionImpl::browser_context() const {
   return browser_context_;
 }
@@ -2374,8 +2381,24 @@ void StoragePartitionImpl::GetQuotaSettings(
 }
 
 void StoragePartitionImpl::InitNetworkContext() {
-  network_context_ = GetContentClient()->browser()->CreateNetworkContext(
-      browser_context_, is_in_memory_, relative_partition_path_);
+  network::mojom::NetworkContextParamsPtr context_params =
+      network::mojom::NetworkContextParams::New();
+  network::mojom::CertVerifierCreationParamsPtr cert_verifier_creation_params =
+      network::mojom::CertVerifierCreationParams::New();
+  GetContentClient()->browser()->ConfigureNetworkContextParams(
+      browser_context_, is_in_memory_, relative_partition_path_,
+      context_params.get(), cert_verifier_creation_params.get());
+  DCHECK(!context_params->cert_verifier_creation_params)
+      << "|cert_verifier_creation_params| should not be set in the "
+         "NetworkContextParams, as they will eventually be removed when the "
+         "CertVerifierService ships.";
+
+  context_params->cert_verifier_creation_params =
+      std::move(cert_verifier_creation_params);
+
+  network_context_.reset();
+  GetNetworkService()->CreateNetworkContext(
+      network_context_.BindNewPipeAndPassReceiver(), std::move(context_params));
   DCHECK(network_context_);
 
   network_context_client_receiver_.reset();

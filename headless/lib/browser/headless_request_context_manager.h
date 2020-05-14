@@ -35,17 +35,23 @@ class HeadlessRequestContextManager {
                                 base::FilePath user_data_path);
   ~HeadlessRequestContextManager();
 
-  mojo::Remote<::network::mojom::NetworkContext> CreateNetworkContext(
+  void ConfigureNetworkContextParams(
       bool in_memory,
-      const base::FilePath& relative_partition_path);
+      const base::FilePath& relative_partition_path,
+      ::network::mojom::NetworkContextParams* network_context_params,
+      ::network::mojom::CertVerifierCreationParams*
+          cert_verifier_creation_params);
 
   content::ResourceContext* GetResourceContext() {
     return resource_context_.get();
   }
 
  private:
-  ::network::mojom::NetworkContextParamsPtr CreateNetworkContextParams(
-      bool is_system);
+  void ConfigureNetworkContextParamsInternal(
+      bool is_system,
+      ::network::mojom::NetworkContextParams* network_context_params,
+      ::network::mojom::CertVerifierCreationParams*
+          cert_verifier_creation_params);
 
   const bool cookie_encryption_enabled_;
 

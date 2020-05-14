@@ -17,7 +17,7 @@ namespace dbus {
 namespace {
 
 // Returns whether |value| is exactly representable by double or not.
-template<typename T>
+template <typename T>
 bool IsExactlyRepresentableByDouble(T value) {
   return value == static_cast<T>(static_cast<double>(value));
 }
@@ -135,8 +135,8 @@ std::unique_ptr<base::Value> PopDataAsValue(MessageReader* reader) {
     case Message::INT64: {
       int64_t value = 0;
       if (reader->PopInt64(&value)) {
-        DLOG_IF(WARNING, !IsExactlyRepresentableByDouble(value)) <<
-            value << " is not exactly representable by double";
+        DLOG_IF(WARNING, !IsExactlyRepresentableByDouble(value))
+            << value << " is not exactly representable by double";
         result = std::make_unique<base::Value>(static_cast<double>(value));
       }
       break;
@@ -144,8 +144,8 @@ std::unique_ptr<base::Value> PopDataAsValue(MessageReader* reader) {
     case Message::UINT64: {
       uint64_t value = 0;
       if (reader->PopUint64(&value)) {
-        DLOG_IF(WARNING, !IsExactlyRepresentableByDouble(value)) <<
-            value << " is not exactly representable by double";
+        DLOG_IF(WARNING, !IsExactlyRepresentableByDouble(value))
+            << value << " is not exactly representable by double";
         result = std::make_unique<base::Value>(static_cast<double>(value));
       }
       break;
@@ -265,8 +265,8 @@ void AppendValueData(MessageWriter* writer, const base::Value& value) {
       value.GetAsDictionary(&dictionary);
       dbus::MessageWriter array_writer(nullptr);
       writer->OpenArray("{sv}", &array_writer);
-      for (base::DictionaryValue::Iterator iter(*dictionary);
-           !iter.IsAtEnd(); iter.Advance()) {
+      for (base::DictionaryValue::Iterator iter(*dictionary); !iter.IsAtEnd();
+           iter.Advance()) {
         dbus::MessageWriter dict_entry_writer(nullptr);
         array_writer.OpenDictEntry(&dict_entry_writer);
         dict_entry_writer.AppendString(iter.key());

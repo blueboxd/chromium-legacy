@@ -161,6 +161,12 @@ class AppElement extends PolymerElement {
         value: () => loadTimeData.getBoolean('realboxEnabled'),
       },
 
+      /** @private */
+      realboxShown_: {
+        type: Boolean,
+        computed: 'computeRealboxShown_(theme_)',
+      },
+
       /**
        * If true, renders additional elements that were not deemed crucial to
        * to show up immediately on load.
@@ -408,6 +414,17 @@ class AppElement extends PolymerElement {
       default:
         return '';
     }
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeRealboxShown_() {
+    // If realbox is to match the Omnibox's theme, keep it hidden until the
+    // theme arrives. Otherwise mismatching colors will cause flicker.
+    return !loadTimeData.getBoolean('realboxMatchOmniboxTheme') ||
+        !!this.theme_;
   }
 
   /** @private */

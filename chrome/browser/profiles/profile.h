@@ -464,11 +464,15 @@ class Profile : public content::BrowserContext {
   virtual bool ShouldRestoreOldSessionCookies();
   virtual bool ShouldPersistSessionCookies();
 
-  // Creates NetworkContext for the specified isolated app (or for the profile
-  // itself, if |relative_path| is empty).
-  virtual mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
+  // Configures NetworkContextParams and CertVerifierCreationParams for the
+  // specified isolated app (or for the profile itself, if |relative_path| is
+  // empty).
+  virtual void ConfigureNetworkContextParams(
       bool in_memory,
-      const base::FilePath& relative_partition_path);
+      const base::FilePath& relative_partition_path,
+      network::mojom::NetworkContextParams* network_context_params,
+      network::mojom::CertVerifierCreationParams*
+          cert_verifier_creation_params);
 
   // Stop sending accessibility events until ResumeAccessibilityEvents().
   // Calls to Pause nest; no events will be sent until the number of

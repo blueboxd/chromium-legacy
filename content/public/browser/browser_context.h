@@ -25,6 +25,7 @@
 #include "net/url_request/url_request_job_factory.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom-forward.h"
 #include "services/network/public/mojom/cors_origin_pattern.mojom-forward.h"
+#include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-forward.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-forward.h"
 

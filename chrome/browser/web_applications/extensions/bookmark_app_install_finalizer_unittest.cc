@@ -22,6 +22,7 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
+#include "chrome/browser/web_applications/test/test_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -152,10 +153,13 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
                                         false /* autoupdate_enabled */);
 
     registrar_ = std::make_unique<BookmarkAppRegistrar>(profile());
+    registry_controller_ =
+        std::make_unique<web_app::TestAppRegistryController>(profile());
     ui_manager_ = std::make_unique<web_app::TestWebAppUiManager>();
 
     finalizer_ = std::make_unique<BookmarkAppInstallFinalizer>(profile());
-    finalizer_->SetSubsystems(registrar_.get(), ui_manager_.get());
+    finalizer_->SetSubsystems(registrar_.get(), ui_manager_.get(),
+                              registry_controller_.get());
   }
 
   web_app::AppId InstallExternalApp(const GURL& app_url) {
@@ -201,6 +205,7 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
 
  private:
   std::unique_ptr<BookmarkAppRegistrar> registrar_;
+  std::unique_ptr<web_app::TestAppRegistryController> registry_controller_;
   std::unique_ptr<web_app::TestWebAppUiManager> ui_manager_;
   std::unique_ptr<BookmarkAppInstallFinalizer> finalizer_;
 

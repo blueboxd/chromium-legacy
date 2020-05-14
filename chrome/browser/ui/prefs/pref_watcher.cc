@@ -16,6 +16,10 @@
 #include "components/language/core/browser/pref_names.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/public/cpp/ash_pref_names.h"
+#endif
+
 namespace {
 
 // The list of prefs we want to observe.
@@ -51,6 +55,9 @@ const char* const kWebPrefsToObserve[] = {
     prefs::kWebkitTabsToLinks,
     prefs::kWebKitTextAreasAreResizable,
     prefs::kWebKitWebSecurityEnabled,
+#if defined(OS_CHROMEOS)
+    ash::prefs::kAccessibilityFocusHighlightEnabled,
+#endif
 };
 
 const int kWebPrefsToObserveLength = base::size(kWebPrefsToObserve);

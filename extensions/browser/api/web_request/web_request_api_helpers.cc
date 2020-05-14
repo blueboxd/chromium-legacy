@@ -332,34 +332,16 @@ static_assert(ValidateHeaderEntries(kResponseHeaderEntries),
 bool HasMatchingRemovedDNRRequestHeader(
     const extensions::WebRequestInfo& request,
     const std::string& header) {
-  for (const auto& action : *request.dnr_actions) {
-    if (std::find_if(action.request_headers_to_remove.begin(),
-                     action.request_headers_to_remove.end(),
-                     [&header](const char* header_to_remove) {
-                       return base::EqualsCaseInsensitiveASCII(header_to_remove,
-                                                               header);
-                     }) != action.request_headers_to_remove.end()) {
-      return true;
-    }
-  }
-
+  // TODO(crbug.com/947591): Reimplement this method with
+  // |action.request_headers_to_modify|.
   return false;
 }
 
 bool HasMatchingRemovedDNRResponseHeader(
     const extensions::WebRequestInfo& request,
     const std::string& header) {
-  for (const auto& action : *request.dnr_actions) {
-    if (std::find_if(action.response_headers_to_remove.begin(),
-                     action.response_headers_to_remove.end(),
-                     [&header](const char* header_to_remove) {
-                       return base::EqualsCaseInsensitiveASCII(
-                           header, header_to_remove);
-                     }) != action.response_headers_to_remove.end()) {
-      return true;
-    }
-  }
-
+  // TODO(crbug.com/947591): Reimplement this method with
+  // |action.response_headers_to_modify|.
   return false;
 }
 

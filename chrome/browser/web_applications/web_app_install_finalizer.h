@@ -20,12 +20,10 @@ namespace web_app {
 class WebApp;
 class WebAppIconManager;
 class WebAppRegistrar;
-class WebAppSyncBridge;
 
 class WebAppInstallFinalizer final : public InstallFinalizer {
  public:
   WebAppInstallFinalizer(Profile* profile,
-                         WebAppSyncBridge* sync_bridge,
                          WebAppIconManager* icon_manager);
   ~WebAppInstallFinalizer() override;
 
@@ -82,7 +80,6 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   WebAppRegistrar& GetWebAppRegistrar() const;
 
   Profile* const profile_;
-  WebAppSyncBridge* const sync_bridge_;
   WebAppIconManager* const icon_manager_;
 
   base::WeakPtrFactory<WebAppInstallFinalizer> weak_ptr_factory_{this};

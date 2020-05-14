@@ -26,7 +26,7 @@ class AwProxyConfigMonitor : public net::ProxyConfigService::Observer {
   static AwProxyConfigMonitor* GetInstance();
 
   void AddProxyToNetworkContextParams(
-      network::mojom::NetworkContextParamsPtr& network_context_params);
+      network::mojom::NetworkContextParams* network_context_params);
   std::string SetProxyOverride(
       const std::vector<net::ProxyConfigServiceAndroid::ProxyOverrideRule>&
           proxy_rules,

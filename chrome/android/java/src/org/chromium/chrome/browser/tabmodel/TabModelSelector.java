@@ -4,15 +4,11 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import android.app.Activity;
-
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.List;
@@ -23,20 +19,6 @@ import java.util.List;
  * be using.
  */
 public interface TabModelSelector {
-    /**
-     * @param tab The Tab to get its {@link TabModelSelector} from.
-     * @return {@link TabModelSelector} that currently hosts the {@link TabModel} for this
-     *         {@link Tab}.
-     */
-    public static TabModelSelector from(Tab tab) {
-        // TODO(jinsukkim): Remove this method.
-        Activity activity = TabUtils.getActivity(tab);
-        if (activity instanceof ChromeActivity) {
-            return ((ChromeActivity) activity).getTabModelSelector();
-        }
-        return null;
-    }
-
     /**
      * A delegate interface to push close all tabs requests.
      */

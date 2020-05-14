@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
@@ -68,7 +69,7 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
   crx_installer->set_installer_callback(base::BindOnce(
       &BookmarkAppInstallFinalizer::OnExtensionInstalled,
       weak_ptr_factory_.GetWeakPtr(), web_app_info.app_url, launch_type,
-      options.locally_installed,
+      web_app_info.enable_experimental_tabbed_window, options.locally_installed,
       options.install_source == WebappInstallSource::SYSTEM_DEFAULT,
       std::move(callback), crx_installer));
 
@@ -244,6 +245,7 @@ const Extension* BookmarkAppInstallFinalizer::GetEnabledExtension(
 void BookmarkAppInstallFinalizer::OnExtensionInstalled(
     const GURL& app_url,
     LaunchType launch_type,
+    bool enable_experimental_tabbed_window,
     bool is_locally_installed,
     bool is_system_app,
     InstallFinalizedCallback callback,
@@ -286,6 +288,9 @@ void BookmarkAppInstallFinalizer::OnExtensionInstalled(
   DCHECK_EQ(AppLaunchInfo::GetLaunchWebURL(extension), app_url);
 
   SetLaunchType(profile_, extension->id(), launch_type);
+
+  registry_controller().SetExperimentalTabbedWindowMode(
+      extension->id(), enable_experimental_tabbed_window);
 
   SetBookmarkAppIsLocallyInstalled(profile_, extension, is_locally_installed);
 

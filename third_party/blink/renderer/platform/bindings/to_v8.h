@@ -45,7 +45,7 @@ inline v8::Local<v8::Value> ToV8(ScriptWrappable* impl,
 
 // Dictionary
 
-inline v8::Local<v8::Value> ToV8(bindings::DictionaryBase* dictionary,
+inline v8::Local<v8::Value> ToV8(const bindings::DictionaryBase* dictionary,
                                  v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
   if (UNLIKELY(!dictionary))

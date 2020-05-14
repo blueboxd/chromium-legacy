@@ -4,6 +4,9 @@
 
 #include "chrome/browser/web_applications/test/web_app_test.h"
 
+#include "base/threading/thread_task_runner_handle.h"
+#include "chrome/common/web_application_info.h"
+
 namespace web_app {
 
 std::string ProviderTypeParamToString(
@@ -14,6 +17,26 @@ std::string ProviderTypeParamToString(
     case ProviderType::kWebApps:
       return "WebApps";
   }
+}
+
+void TestAcceptDialogCallback(
+    content::WebContents* initiator_web_contents,
+    std::unique_ptr<WebApplicationInfo> web_app_info,
+    ForInstallableSite for_installable_site,
+    InstallManager::WebAppInstallationAcceptanceCallback acceptance_callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(acceptance_callback), true /*accept*/,
+                                std::move(web_app_info)));
+}
+
+void TestDeclineDialogCallback(
+    content::WebContents* initiator_web_contents,
+    std::unique_ptr<WebApplicationInfo> web_app_info,
+    ForInstallableSite for_installable_site,
+    InstallManager::WebAppInstallationAcceptanceCallback acceptance_callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(acceptance_callback),
+                                false /*accept*/, std::move(web_app_info)));
 }
 
 }  // namespace web_app

@@ -54,6 +54,15 @@ interface BarcodeDetector
     attribute @@toStringTag
     method constructor
     method detect
+interface BidirectionalStream
+    attribute @@toStringTag
+    getter readable
+    getter readingAborted
+    getter writable
+    getter writingAborted
+    method abortReading
+    method abortWriting
+    method constructor
 interface Blob
     attribute @@toStringTag
     getter size
@@ -1248,7 +1257,9 @@ interface QuicTransport
     getter ready
     method close
     method constructor
+    method createBidirectionalStream
     method createSendStream
+    method receiveBidirectionalStreams
     method receiveDatagrams
     method receiveStreams
     method sendDatagrams

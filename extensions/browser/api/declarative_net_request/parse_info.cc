@@ -84,10 +84,6 @@ std::string GetError(ParseResult error_reason, const int* rule_id) {
     case ParseResult::ERROR_INVALID_URL_FILTER:
       return ErrorUtils::FormatErrorMessage(
           kErrorInvalidKey, base::NumberToString(*rule_id), kUrlFilterKey);
-    case ParseResult::ERROR_EMPTY_REMOVE_HEADERS_LIST:
-      return ErrorUtils::FormatErrorMessage(kErrorEmptyRemoveHeadersList,
-                                            base::NumberToString(*rule_id),
-                                            kRemoveHeadersListKey);
     case ParseResult::ERROR_INVALID_REDIRECT:
       return ErrorUtils::FormatErrorMessage(
           kErrorInvalidKey, base::NumberToString(*rule_id), kRedirectPath);

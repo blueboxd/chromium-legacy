@@ -27,8 +27,7 @@ PostingList InvertedIndex::FindTerm(const base::string16& term) const {
   if (dictionary_.find(term) != dictionary_.end())
     return dictionary_.at(term);
 
-  PostingList empty_list;
-  return empty_list;
+  return {};
 }
 
 InvertedIndex::InvertedIndex() = default;
@@ -62,6 +61,21 @@ void InvertedIndex::RemoveDocument(const std::string& document_id) {
 }
 
 std::vector<TfidfResult> InvertedIndex::GetTfidf(const base::string16& term) {
+  if (tfidf_cache_.find(term) != tfidf_cache_.end())
+    return tfidf_cache_.at(term);
+
+  return {};
+}
+
+void InvertedIndex::PopulateTfidfCache() {
+  tfidf_cache_.clear();
+  for (const auto& item : dictionary_) {
+    tfidf_cache_[item.first] = CalculateTfidf(item.first);
+  }
+}
+
+std::vector<TfidfResult> InvertedIndex::CalculateTfidf(
+    const base::string16& term) {
   std::vector<TfidfResult> results;
   const float idf =
       1.0 + log((1.0 + doc_length_.size()) / (1.0 + dictionary_[term].size()));
@@ -72,4 +86,5 @@ std::vector<TfidfResult> InvertedIndex::GetTfidf(const base::string16& term) {
   }
   return results;
 }
+
 }  // namespace local_search_service

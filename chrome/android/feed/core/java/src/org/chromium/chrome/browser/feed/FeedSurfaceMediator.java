@@ -228,6 +228,10 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
                     public int getRootViewHeight() {
                         return mCoordinator.getView().getHeight();
                     }
+                    @Override
+                    public boolean isSignedIn() {
+                        return mSigninManager.getIdentityManager().hasPrimaryAccount();
+                    }
                 };
                 mCoordinator.getStream().addScrollListener(new HeaderIphScrollListener(delegate));
                 mSigninManager.getIdentityManager().addObserver(this);

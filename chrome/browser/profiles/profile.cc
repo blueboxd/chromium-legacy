@@ -396,11 +396,15 @@ bool Profile::ShouldPersistSessionCookies() {
   return false;
 }
 
-mojo::Remote<network::mojom::NetworkContext> Profile::CreateNetworkContext(
+void Profile::ConfigureNetworkContextParams(
     bool in_memory,
-    const base::FilePath& relative_partition_path) {
-  return ProfileNetworkContextServiceFactory::GetForContext(this)
-      ->CreateNetworkContext(in_memory, relative_partition_path);
+    const base::FilePath& relative_partition_path,
+    network::mojom::NetworkContextParams* network_context_params,
+    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
+  ProfileNetworkContextServiceFactory::GetForContext(this)
+      ->ConfigureNetworkContextParams(in_memory, relative_partition_path,
+                                      network_context_params,
+                                      cert_verifier_creation_params);
 }
 
 bool Profile::IsNewProfile() {

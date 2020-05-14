@@ -33,7 +33,6 @@ import org.chromium.chrome.browser.history.HistoryPage;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.RenderTestUtils;
@@ -618,7 +617,7 @@ public class VrBrowserNavigationTest {
         VrBrowserTransitionUtils.forceExitVr();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Close the tab that's automatically open at test start.
-            TabModelSelector.from(mTestRule.getActivity().getActivityTab()).closeAllTabs();
+            mTestRule.getActivity().getTabModelSelector().closeAllTabs();
             // Create an Incognito tab. Closing all tabs automatically goes to overview mode, but
             // appears to take some amount of time to do so. Instead of waiting until then and
             // creating through the menu item, just create an Incognito tab directly.

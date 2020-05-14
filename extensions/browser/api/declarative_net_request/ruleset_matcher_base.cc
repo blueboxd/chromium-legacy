@@ -15,9 +15,7 @@
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "net/base/url_util.h"
-#include "net/http/http_request_headers.h"
 #include "url/gurl.h"
-#include "url/url_constants.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -25,8 +23,6 @@ namespace flat_rule = url_pattern_index::flat;
 namespace dnr_api = api::declarative_net_request;
 
 namespace {
-
-constexpr const char kSetCookieResponseHeader[] = "set-cookie";
 
 bool ShouldCollapseResourceType(flat_rule::ElementType type) {
   // TODO(crbug.com/848842): Add support for other element types like
@@ -366,39 +362,6 @@ base::Optional<RequestAction> RulesetMatcherBase::CreateRedirectAction(
       CreateRequestAction(RequestAction::Type::REDIRECT, rule);
   redirect_action.redirect_url = std::move(redirect_url);
   return redirect_action;
-}
-
-RequestAction RulesetMatcherBase::GetRemoveHeadersActionForMask(
-    const url_pattern_index::flat::UrlRule& rule,
-    uint8_t mask) const {
-  DCHECK(mask);
-  RequestAction action =
-      CreateRequestAction(RequestAction::Type::REMOVE_HEADERS, rule);
-
-  for (int header = 0; header <= dnr_api::REMOVE_HEADER_TYPE_LAST; ++header) {
-    switch (header) {
-      case dnr_api::REMOVE_HEADER_TYPE_NONE:
-        break;
-      case dnr_api::REMOVE_HEADER_TYPE_COOKIE:
-        if (mask & flat::RemoveHeaderType_cookie) {
-          action.request_headers_to_remove.push_back(
-              net::HttpRequestHeaders::kCookie);
-        }
-        break;
-      case dnr_api::REMOVE_HEADER_TYPE_REFERER:
-        if (mask & flat::RemoveHeaderType_referer) {
-          action.request_headers_to_remove.push_back(
-              net::HttpRequestHeaders::kReferer);
-        }
-        break;
-      case dnr_api::REMOVE_HEADER_TYPE_SETCOOKIE:
-        if (mask & flat::RemoveHeaderType_set_cookie)
-          action.response_headers_to_remove.push_back(kSetCookieResponseHeader);
-        break;
-    }
-  }
-
-  return action;
 }
 
 std::vector<RequestAction>

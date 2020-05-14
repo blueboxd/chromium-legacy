@@ -39,9 +39,7 @@
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_item_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader_dialog.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -146,11 +144,11 @@ void OnSharePathForLaunchApplication(
       base::BindOnce(OnApplicationLaunched, std::move(callback), app_id));
 }
 
-void LaunchTerminal(Profile* profile,
-                    apps::AppLaunchParams launch_params,
-                    GURL vsh_in_crosh_url,
-                    Browser* browser,
-                    crostini::LaunchCrostiniAppCallback callback) {
+void LaunchTerminalApp(Profile* profile,
+                       apps::AppLaunchParams launch_params,
+                       GURL vsh_in_crosh_url,
+                       Browser* browser,
+                       crostini::LaunchCrostiniAppCallback callback) {
   crostini::ShowContainerTerminal(profile, launch_params, vsh_in_crosh_url,
                                   browser);
   RecordAppLaunchResultHistogram(crostini::CrostiniResult::SUCCESS);
@@ -409,12 +407,8 @@ void LaunchCrostiniAppImpl(
     DCHECK(files.empty());
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kTerminal);
 
-    GURL vsh_in_crosh_url = GenerateVshInCroshUrl(
-        profile, vm_name, container_name, std::vector<std::string>());
-
     if (base::FeatureList::IsEnabled(features::kTerminalSystemApp)) {
-      auto* browser = web_app::LaunchSystemWebApp(
-          profile, web_app::SystemAppType::TERMINAL, vsh_in_crosh_url);
+      auto* browser = LaunchTerminal(profile, vm_name, container_name);
       if (browser == nullptr) {
         RecordAppLaunchResultHistogram(crostini::CrostiniResult::UNKNOWN_ERROR);
       } else {
@@ -423,6 +417,8 @@ void LaunchCrostiniAppImpl(
       return;
     }
 
+    GURL vsh_in_crosh_url = GenerateVshInCroshUrl(
+        profile, vm_name, container_name, std::vector<std::string>());
     apps::AppLaunchParams launch_params = GenerateTerminalAppLaunchParams();
     // Create the terminal here so it's created in the right display. If the
     // browser creation is delayed into the callback the root window for new
@@ -430,7 +426,7 @@ void LaunchCrostiniAppImpl(
     Browser* browser =
         CreateContainerTerminal(profile, launch_params, vsh_in_crosh_url);
     launch_closure =
-        base::BindOnce(&LaunchTerminal, profile, launch_params,
+        base::BindOnce(&LaunchTerminalApp, profile, launch_params,
                        vsh_in_crosh_url, browser, std::move(callback));
   } else {
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kRegisteredApp);

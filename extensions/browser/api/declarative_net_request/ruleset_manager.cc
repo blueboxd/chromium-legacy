@@ -188,17 +188,14 @@ bool RulesetManager::HasExtraHeadersMatcherForRequest(
   const std::vector<RequestAction>& actions =
       EvaluateRequest(request, is_incognito_context);
 
-  static_assert(flat::ActionType_count == 7,
+  static_assert(flat::ActionType_count == 6,
                 "Modify this method to ensure HasExtraHeadersMatcherForRequest "
                 "is updated as new actions are added.");
 
-  for (const auto& action : actions) {
-    if (action.type == RequestAction::Type::REMOVE_HEADERS ||
-        action.type == RequestAction::Type::MODIFY_HEADERS)
-      return true;
-  }
-
-  return false;
+  return std::any_of(
+      actions.begin(), actions.end(), [](const RequestAction& action) {
+        return action.type == RequestAction::Type::MODIFY_HEADERS;
+      });
 }
 
 void RulesetManager::OnRenderFrameCreated(content::RenderFrameHost* host) {
@@ -268,7 +265,6 @@ base::Optional<RequestAction> RulesetManager::GetBeforeRequestAction(
       case RequestAction::Type::ALLOW:
       case RequestAction::Type::ALLOW_ALL_REQUESTS:
         return 1;
-      case RequestAction::Type::REMOVE_HEADERS:
       case RequestAction::Type::MODIFY_HEADERS:
         NOTREACHED();
         return 0;
@@ -298,33 +294,6 @@ base::Optional<RequestAction> RulesetManager::GetBeforeRequestAction(
   }
 
   return action;
-}
-
-std::vector<RequestAction> RulesetManager::GetRemoveHeadersActions(
-    const std::vector<RulesetAndPageAccess>& rulesets,
-    const RequestParams& params) const {
-  std::vector<RequestAction> remove_headers_actions;
-
-  // Keep a combined mask of all headers to be removed to be passed into
-  // GetRemoveHeadersMask. This is done to ensure the ruleset matchers will skip
-  // matching rules for headers already slated to be removed.
-  uint8_t combined_mask = 0;
-  for (const RulesetAndPageAccess& ruleset_and_access : rulesets) {
-    const ExtensionRulesetData* ruleset = ruleset_and_access.first;
-
-    uint8_t extension_ruleset_mask = ruleset->matcher->GetRemoveHeadersMask(
-        params, combined_mask /* excluded_remove_headers_mask */,
-        &remove_headers_actions);
-    if (!extension_ruleset_mask)
-      continue;
-
-    // Sanity check that extension matchers do not try to remove a header that
-    // has already been marked as removed.
-    DCHECK(!(extension_ruleset_mask & combined_mask));
-    combined_mask |= extension_ruleset_mask;
-  }
-
-  return remove_headers_actions;
 }
 
 std::vector<RequestAction> RulesetManager::GetModifyHeadersActions(
@@ -445,15 +414,6 @@ std::vector<RequestAction> RulesetManager::EvaluateRequestInternal(
     actions.push_back(std::move(std::move(*action)));
     return actions;
   }
-
-  // Removing headers doesn't require host permissions.
-  // Note: If we add other "non-destructive" actions (i.e., actions that don't
-  // end the request), we should combine them with the remove-headers action.
-  std::vector<RequestAction> remove_headers_actions =
-      GetRemoveHeadersActions(rulesets_to_evaluate, params);
-
-  if (!remove_headers_actions.empty())
-    return remove_headers_actions;
 
   // TODO(crbug.com/947591): Remove the channel check once implementation of
   // modifyHeaders action is complete.

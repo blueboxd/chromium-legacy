@@ -15,6 +15,7 @@
 namespace views {
 class Checkbox;
 class Textfield;
+class RadioButton;
 }  // namespace views
 
 // WebAppConfirmationView provides views for editing the details to
@@ -54,6 +55,11 @@ class WebAppConfirmationView : public views::DialogDelegateView,
 
   // Checkbox to launch as a window.
   views::Checkbox* open_as_window_checkbox_ = nullptr;
+
+  // Radio buttons to launch as a tab, window or tabbed window.
+  views::RadioButton* open_as_tab_radio_ = nullptr;
+  views::RadioButton* open_as_window_radio_ = nullptr;
+  views::RadioButton* open_as_tabbed_window_radio_ = nullptr;
 
   // Textfield showing the title of the app.
   views::Textfield* title_tf_ = nullptr;

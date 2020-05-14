@@ -8,8 +8,8 @@
 #include "base/callback_forward.h"
 #include "base/containers/id_map.h"
 #include "base/macros.h"
-#include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_receiver_set.h"
+#include "content/public/browser/render_document_host_user_data.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/manifest/manifest_manager.mojom.h"
 #include "third_party/blink/public/mojom/manifest/manifest_observer.mojom.h"
@@ -21,16 +21,16 @@ struct Manifest;
 namespace content {
 
 class RenderFrameHost;
-class WebContents;
+class RenderFrameHostImpl;
 
 // ManifestManagerHost is a helper class that allows callers to get the Manifest
 // associated with the main frame of the observed WebContents. It handles the
 // IPC messaging with the child process.
 // TODO(mlamouri): keep a cached version and a dirty bit here.
-class ManifestManagerHost : public WebContentsObserver,
-                            public blink::mojom::ManifestUrlChangeObserver {
+class ManifestManagerHost
+    : public RenderDocumentHostUserData<ManifestManagerHost>,
+      public blink::mojom::ManifestUrlChangeObserver {
  public:
-  explicit ManifestManagerHost(WebContents* web_contents);
   ~ManifestManagerHost() override;
 
   using GetManifestCallback =
@@ -44,10 +44,18 @@ class ManifestManagerHost : public WebContentsObserver,
   void RequestManifestDebugInfo(
       blink::mojom::ManifestManager::RequestManifestDebugInfoCallback callback);
 
-  // WebContentsObserver
-  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
+  void BindObserver(
+      mojo::PendingAssociatedReceiver<blink::mojom::ManifestUrlChangeObserver>
+          receiver);
+
+  static ManifestManagerHost* GetOrCreateForCurrentDocument(
+      RenderFrameHostImpl* rfh);
 
  private:
+  explicit ManifestManagerHost(RenderFrameHost* render_frame_host);
+
+  friend class RenderDocumentHostUserData<ManifestManagerHost>;
+
   using CallbackMap = base::IDMap<std::unique_ptr<GetManifestCallback>>;
 
   blink::mojom::ManifestManager& GetManifestManager();
@@ -60,13 +68,14 @@ class ManifestManagerHost : public WebContentsObserver,
   // blink::mojom::ManifestUrlChangeObserver:
   void ManifestUrlChanged(const base::Optional<GURL>& manifest_url) override;
 
-  RenderFrameHost* manifest_manager_frame_ = nullptr;
+  RenderFrameHost* manifest_manager_frame_;
   mojo::Remote<blink::mojom::ManifestManager> manifest_manager_;
   CallbackMap callbacks_;
 
-  WebContentsFrameReceiverSet<blink::mojom::ManifestUrlChangeObserver>
-      manifest_url_change_observer_receivers_;
+  mojo::AssociatedReceiver<blink::mojom::ManifestUrlChangeObserver>
+      manifest_url_change_observer_receiver_{this};
 
+  RENDER_DOCUMENT_HOST_USER_DATA_KEY_DECL();
   DISALLOW_COPY_AND_ASSIGN(ManifestManagerHost);
 };
 

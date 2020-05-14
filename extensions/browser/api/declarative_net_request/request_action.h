@@ -49,8 +49,6 @@ struct RequestAction {
     REDIRECT,
     // Upgrade the scheme of the network request.
     UPGRADE,
-    // Remove request/response headers.
-    REMOVE_HEADERS,
     // Allow the network request. This request is either for an allowlisted
     // frame or originated from one.
     ALLOW_ALL_REQUESTS,
@@ -87,11 +85,6 @@ struct RequestAction {
 
   // The id of the extension the action is attributed to.
   ExtensionId extension_id;
-
-  // Valid iff |type| is |REMOVE_HEADERS|. The vectors point to strings of
-  // static storage duration.
-  std::vector<const char*> request_headers_to_remove;
-  std::vector<const char*> response_headers_to_remove;
 
   // Valid iff |type| is |MODIFY_HEADERS|.
   // TODO(crbug.com/1074530): Constructing these vectors could involve lots of

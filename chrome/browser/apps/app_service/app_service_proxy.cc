@@ -699,7 +699,16 @@ void AppServiceProxy::OnLoadIconForPauseDialog(
 
 void AppServiceProxy::OnPauseDialogClosed(apps::mojom::AppType app_type,
                                           const std::string& app_id) {
-  if (pending_pause_requests_.IsPaused(app_id)) {
+  bool should_pause_app = pending_pause_requests_.IsPaused(app_id);
+  if (!should_pause_app) {
+    cache_.ForOneApp(
+        app_id, [&should_pause_app](const apps::AppUpdate& update) {
+          if (update.Paused() == apps::mojom::OptionalBool::kTrue) {
+            should_pause_app = true;
+          }
+        });
+  }
+  if (should_pause_app) {
     app_service_->PauseApp(app_type, app_id);
   }
 }

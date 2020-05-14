@@ -626,6 +626,10 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Feature({"Browser", "ContextMenu"})
     @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_COPY_IMAGE})
     public void testCopyImage() throws Throwable {
+        if (!ChromeContextMenuPopulator.isCopyImageEnabled()) {
+            return;
+        }
+
         hardcodeTestImageForSharing(TEST_GIF_IMAGE_FILE_EXTENSION);
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         // Allow all thread policies temporarily in main thread to avoid

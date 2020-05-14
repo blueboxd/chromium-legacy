@@ -369,6 +369,7 @@
 #include "chrome/browser/apps/intent_helper/mac_apps_navigation_throttle.h"
 #include "chrome/browser/chrome_browser_main_mac.h"
 #elif defined(OS_CHROMEOS)
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "chrome/app/chrome_crash_reporter_client.h"
 #include "chrome/browser/browser_process.h"
@@ -3171,6 +3172,11 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   web_prefs->force_dark_mode_enabled =
       prefs->GetBoolean(prefs::kWebKitForceDarkModeEnabled);
 
+#if defined(OS_CHROMEOS)
+  web_prefs->always_show_focus =
+      prefs->GetBoolean(ash::prefs::kAccessibilityFocusHighlightEnabled);
+#endif
+
 #if defined(OS_ANDROID)
   web_prefs->password_echo_enabled =
       prefs->GetBoolean(prefs::kWebKitPasswordEchoEnabled);
@@ -4760,13 +4766,16 @@ void ChromeContentBrowserClient::OnNetworkServiceCreated(
       network_service);
 }
 
-mojo::Remote<network::mojom::NetworkContext>
-ChromeContentBrowserClient::CreateNetworkContext(
+void ChromeContentBrowserClient::ConfigureNetworkContextParams(
     content::BrowserContext* context,
     bool in_memory,
-    const base::FilePath& relative_partition_path) {
+    const base::FilePath& relative_partition_path,
+    network::mojom::NetworkContextParams* network_context_params,
+    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
   Profile* profile = Profile::FromBrowserContext(context);
-  return profile->CreateNetworkContext(in_memory, relative_partition_path);
+  profile->ConfigureNetworkContextParams(in_memory, relative_partition_path,
+                                         network_context_params,
+                                         cert_verifier_creation_params);
 }
 
 std::vector<base::FilePath>

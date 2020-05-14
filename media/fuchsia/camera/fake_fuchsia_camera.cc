@@ -17,6 +17,8 @@ namespace media {
 
 namespace {
 
+constexpr uint64_t kDefaultFakeDeviceId = 42;
+
 constexpr uint8_t kYPlaneSalt = 1;
 constexpr uint8_t kUPlaneSalt = 2;
 constexpr uint8_t kVPlaneSalt = 3;
@@ -471,6 +473,44 @@ void FakeCameraDevice::ConnectToStream(
 }
 
 void FakeCameraDevice::NotImplemented_(const std::string& name) {
+  ADD_FAILURE() << "NotImplemented_: " << name;
+}
+
+FakeCameraDeviceWatcher::FakeCameraDeviceWatcher(
+    sys::OutgoingDirectory* outgoing_directory) {
+  outgoing_directory->AddPublicService<fuchsia::camera3::DeviceWatcher>(
+      [this](fidl::InterfaceRequest<fuchsia::camera3::DeviceWatcher> request) {
+        bindings_.AddBinding(std::make_unique<Client>(&device_),
+                             std::move(request));
+      });
+}
+
+FakeCameraDeviceWatcher::~FakeCameraDeviceWatcher() = default;
+
+FakeCameraDeviceWatcher::Client::Client(FakeCameraDevice* device)
+    : device_(device) {}
+FakeCameraDeviceWatcher::Client::~Client() {}
+
+void FakeCameraDeviceWatcher::Client::WatchDevices(
+    WatchDevicesCallback callback) {
+  if (devices_sent_)
+    return;
+
+  std::vector<fuchsia::camera3::WatchDevicesEvent> events(1);
+  events[0].set_added(kDefaultFakeDeviceId);
+  callback(std::move(events));
+
+  devices_sent_ = true;
+}
+
+void FakeCameraDeviceWatcher::Client::ConnectToDevice(
+    uint64_t id,
+    fidl::InterfaceRequest<fuchsia::camera3::Device> request) {
+  if (id == kDefaultFakeDeviceId)
+    device_->Bind(std::move(request));
+}
+
+void FakeCameraDeviceWatcher::Client::NotImplemented_(const std::string& name) {
   ADD_FAILURE() << "NotImplemented_: " << name;
 }
 

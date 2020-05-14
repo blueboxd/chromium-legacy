@@ -907,7 +907,7 @@ ScriptPromise MediaCapabilities::GetEmeSupport(
     return ScriptPromise();
   }
 
-  MediaCapabilitiesKeySystemConfiguration* key_system_config =
+  const MediaCapabilitiesKeySystemConfiguration* key_system_config =
       configuration->keySystemConfiguration();
   if (!key_system_config->hasKeySystem() ||
       key_system_config->keySystem().IsEmpty()) {

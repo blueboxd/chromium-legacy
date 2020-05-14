@@ -504,10 +504,13 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       override;
   void OnNetworkServiceCreated(
       network::mojom::NetworkService* network_service) override;
-  mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
+  void ConfigureNetworkContextParams(
       content::BrowserContext* context,
       bool in_memory,
-      const base::FilePath& relative_partition_path) override;
+      const base::FilePath& relative_partition_path,
+      network::mojom::NetworkContextParams* network_context_params,
+      network::mojom::CertVerifierCreationParams* cert_verifier_creation_params)
+      override;
   std::vector<base::FilePath> GetNetworkContextsParentDirectory() override;
   bool AllowRenderingMhtmlOverHttp(
       content::NavigationUIData* navigation_ui_data) override;

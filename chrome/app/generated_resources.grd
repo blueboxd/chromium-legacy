@@ -2301,8 +2301,14 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_BOOKMARK_APP_AX_BUBBLE_NAME_LABEL" desc="Text preceding the name of a bookmark app, read by spoken feedback.">
         Shortcut name
       </message>
+      <message name="IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_TAB" desc="Checkbox text for opening the bookmark app as a browser tab.">
+        Open as tab
+      </message>
       <message name="IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_WINDOW" desc="Checkbox text for opening the bookmark app as a window.">
         Open as window
+      </message>
+      <message name="IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_TABBED_WINDOW" desc="Checkbox text for opening the bookmark app as a tabbed window.">
+        Open as tabbed window
       </message>
 
       <!-- Finish policy app installation dialog -->
@@ -3748,12 +3754,12 @@ are declared in tools/grit/grit_rule.gni.
 
       <!-- Extension alerts. -->
       <message name="IDS_EXTENSION_ALERT_TITLE" desc="Titlebar of the extension notification alert">
-        {NUM_EXTENSIONS, plural, 
+        {NUM_EXTENSIONS, plural,
         =1 {This extension may be dangerous}
         other {These extensions may be dangerous}}
       </message>
       <message name="IDS_APP_ALERT_TITLE" desc="Titlebar of the app notification alert">
-       {NUM_APPS, plural, 
+       {NUM_APPS, plural,
         =1 {This app may be dangerous}
         other {These apps may be dangerous}}
       </message>

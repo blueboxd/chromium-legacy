@@ -795,6 +795,11 @@
   <message name="IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_DESCRIPTION" desc="Description of the Account Manager Settings page for child users. Shown just below the title of the page.">
     Add a school account or manage child accounts here. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
+  <message name="IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_DESCRIPTION_2" desc="Description of the Account Manager Settings page for child users. Shown just below the title of the page.">
+    Manage your accounts here. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>&lt;br&gt;&lt;br&gt;
+    Bookmarks, passwords, and other browser data are synced with the primary account.&lt;br&gt;&lt;br&gt;
+    Adding a school account enables easy sign-in to websites and extensions as a student while still operating under parental controls.
+  </message>
   <message name="IDS_SETTINGS_ACCOUNT_MANAGER_LIST_HEADER" desc="List header for Account List in Account Manager Settings page.">
     Accounts
   </message>
@@ -815,6 +820,9 @@
   </message>
   <message name="IDS_SETTINGS_ACCOUNT_MANAGER_ADD_SCHOOL_ACCOUNT_LABEL" desc="Label of the button to add a school/EDU account in Account Manager.">
     Add school account
+  </message>
+  <message name="IDS_SETTINGS_ACCOUNT_MANAGER_ADD_SCHOOL_ACCOUNT_LABEL_2" desc="Label of the button to add a school/EDU account in Account Manager.">
+    School Account
   </message>
   <message name="IDS_SETTINGS_ACCOUNT_MANAGER_SECONDARY_ACCOUNTS_DISABLED_TEXT" desc="Text for 'secondary accounts disabled' message in Settings page.">
     Your administrator has disabled the addition of more Google Accounts
@@ -845,6 +853,12 @@
   </message>
   <message name="IDS_SETTINGS_ACCOUNT_MANAGER_MANAGEMENT_STATUS_MANAGED_ACCOUNT" desc="Management status label for managed accounts. This will be e.g. 'Managed by google.com' for Enterprise accounts and 'Managed by Family Link' for child accounts.">
     Managed by <ph name="DOMAIN">$1<ex>google.com</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_ACCOUNT_MANAGER_MANAGEMENT_PRIMARY_ACCOUNT" desc="Indicates this account is the primary account, when the primary account is a child account.">
+    Primary Account
+  </message>
+  <message name="IDS_SETTINGS_ACCOUNT_MANAGER_MANAGEMENT_SCHOOL_ACCOUNT" desc="Indicates this account is the school account, when the primary account is a child account.">
+    School Account
   </message>
   <message name="IDS_SETTINGS_ACCOUNT_MANAGER_MANAGEMENT_STATUS_UNMANAGED_ACCOUNT" desc="Management status label for unmanaged accounts.">
     Primary account

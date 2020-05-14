@@ -55,10 +55,13 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
       std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
   bool ShouldEnableStrictSiteIsolation() override;
 
-  mojo::Remote<::network::mojom::NetworkContext> CreateNetworkContext(
+  void ConfigureNetworkContextParams(
       content::BrowserContext* context,
       bool in_memory,
-      const base::FilePath& relative_partition_path) override;
+      const base::FilePath& relative_partition_path,
+      ::network::mojom::NetworkContextParams* network_context_params,
+      ::network::mojom::CertVerifierCreationParams*
+          cert_verifier_creation_params) override;
 
   std::string GetProduct() override;
   std::string GetUserAgent() override;

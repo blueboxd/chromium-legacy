@@ -40,9 +40,10 @@ void SendStream::ContextDestroyed() {
 
 void SendStream::SendFin() {
   quic_transport_->SendFin(stream_id_);
+  quic_transport_->ForgetStream(stream_id_);
 }
 
-void SendStream::ForgetStream() {
+void SendStream::OnOutgoingStreamAbort() {
   quic_transport_->ForgetStream(stream_id_);
 }
 

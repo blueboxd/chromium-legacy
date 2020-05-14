@@ -59,11 +59,13 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   // content::ContentBrowserClient:
   void OnNetworkServiceCreated(
       network::mojom::NetworkService* network_service) override;
-  mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
+  void ConfigureNetworkContextParams(
       content::BrowserContext* context,
       bool in_memory,
-      const base::FilePath& relative_partition_path) override;
-
+      const base::FilePath& relative_partition_path,
+      network::mojom::NetworkContextParams* network_context_params,
+      network::mojom::CertVerifierCreationParams* cert_verifier_creation_params)
+      override;
   std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
   content::WebContentsViewDelegate* GetWebContentsViewDelegate(

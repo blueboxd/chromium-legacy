@@ -40,6 +40,7 @@ class HeaderIphScrollListener implements ScrollListener {
         int getVerticalScrollOffset();
         boolean isFeedExpanded();
         int getRootViewHeight();
+        boolean isSignedIn();
     }
 
     private Delegate mDelegate;
@@ -77,6 +78,9 @@ class HeaderIphScrollListener implements ScrollListener {
 
         // Check whether the feed is expanded.
         if (!mDelegate.isFeedExpanded()) return;
+
+        // Check whether the user is signed in.
+        if (!mDelegate.isSignedIn()) return;
 
         // Check that enough scrolling was done proportionally to the stream height.
         if ((float) mDelegate.getVerticalScrollOffset()

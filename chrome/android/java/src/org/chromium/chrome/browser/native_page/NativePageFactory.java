@@ -78,7 +78,7 @@ public class NativePageFactory {
         }
 
         protected NativePage buildNewTabPage(Tab tab) {
-            NativePageHost nativePageHost = new TabShim(tab, mActivity.getFullscreenManager());
+            NativePageHost nativePageHost = new TabShim(tab, mActivity);
             if (tab.isIncognito()) return new IncognitoNewTabPage(mActivity, nativePageHost);
 
             return new NewTabPage(mActivity, mActivity.getFullscreenManager(),
@@ -89,28 +89,26 @@ public class NativePageFactory {
         }
 
         protected NativePage buildBookmarksPage(Tab tab) {
-            return new BookmarkPage(mActivity, new TabShim(tab, mActivity.getFullscreenManager()));
+            return new BookmarkPage(mActivity, new TabShim(tab, mActivity));
         }
 
         protected NativePage buildDownloadsPage(Tab tab) {
-            return new DownloadPage(mActivity, new TabShim(tab, mActivity.getFullscreenManager()));
+            return new DownloadPage(mActivity, new TabShim(tab, mActivity));
         }
 
         protected NativePage buildExploreSitesPage(Tab tab) {
-            return new ExploreSitesPage(
-                    mActivity, new TabShim(tab, mActivity.getFullscreenManager()), tab);
+            return new ExploreSitesPage(mActivity, new TabShim(tab, mActivity), tab);
         }
 
         protected NativePage buildHistoryPage(Tab tab) {
-            return new HistoryPage(mActivity, new TabShim(tab, mActivity.getFullscreenManager()));
+            return new HistoryPage(mActivity, new TabShim(tab, mActivity));
         }
 
         protected NativePage buildRecentTabsPage(Tab tab) {
             RecentTabsManager recentTabsManager = new RecentTabsManager(tab,
                     Profile.fromWebContents(tab.getWebContents()), mActivity,
                     () -> HistoryManagerUtils.showHistoryManager(mActivity, tab));
-            return new RecentTabsPage(mActivity, recentTabsManager,
-                    new TabShim(tab, mActivity.getFullscreenManager()));
+            return new RecentTabsPage(mActivity, recentTabsManager, new TabShim(tab, mActivity));
         }
     }
 
@@ -232,10 +230,12 @@ public class NativePageFactory {
     private static class TabShim implements NativePageHost {
         private final Tab mTab;
         private final ChromeFullscreenManager mFullscreenManager;
+        private final TabModelSelector mTabModelSelector;
 
-        public TabShim(Tab tab, ChromeFullscreenManager fullscreenManager) {
+        public TabShim(Tab tab, ChromeActivity activity) {
             mTab = tab;
-            mFullscreenManager = fullscreenManager;
+            mFullscreenManager = activity.getFullscreenManager();
+            mTabModelSelector = activity.getTabModelSelector();
         }
 
         @Override
@@ -246,9 +246,8 @@ public class NativePageFactory {
         @Override
         public void loadUrl(LoadUrlParams urlParams, boolean incognito) {
             if (incognito && !mTab.isIncognito()) {
-                TabModelSelector.from(mTab).openNewTab(urlParams,
-                        TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab,
-                        /* incognito = */ true);
+                mTabModelSelector.openNewTab(urlParams, TabLaunchType.FROM_LONGPRESS_FOREGROUND,
+                        mTab, /* incognito = */ true);
                 return;
             }
 
@@ -262,7 +261,7 @@ public class NativePageFactory {
 
         @Override
         public boolean isVisible() {
-            return mTab == TabModelSelector.from(mTab).getCurrentTab();
+            return mTab == mTabModelSelector.getCurrentTab();
         }
 
         @Override

@@ -61,6 +61,7 @@
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_preferences.h"
+#include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/host/shader_disk_cache.h"
 #include "gpu/ipc/in_process_command_buffer.h"
@@ -1120,6 +1121,25 @@ bool GpuProcessHost::LaunchGpuProcess() {
     cmd_line->AppendSwitch(service_manager::switches::kDisableGpuSandbox);
     cmd_line->AppendSwitchASCII(switches::kUseGL,
                                 gl::kGLImplementationDisabledName);
+
+    // Pass the current device info to the info-collection GPU process for
+    // crash key logging.
+    const gpu::GPUInfo::GPUDevice& device_info = GetGPUInfo().active_gpu();
+    cmd_line->AppendSwitchASCII(
+        switches::kGpuVendorId,
+        base::StringPrintf("%u", device_info.vendor_id));
+    cmd_line->AppendSwitchASCII(
+        switches::kGpuDeviceId,
+        base::StringPrintf("%u", device_info.device_id));
+#if defined(OS_WIN)
+    cmd_line->AppendSwitchASCII(
+        switches::kGpuSubSystemId,
+        base::StringPrintf("%u", device_info.sub_sys_id));
+    cmd_line->AppendSwitchASCII(switches::kGpuRevision,
+                                base::StringPrintf("%u", device_info.revision));
+#endif
+    cmd_line->AppendSwitchASCII(switches::kGpuDriverVersion,
+                                device_info.driver_version.c_str());
   }
 
   // TODO(penghuang): Replace all GPU related switches with GpuPreferences.

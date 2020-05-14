@@ -35,6 +35,7 @@
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
@@ -143,8 +144,7 @@ class WebAppInstallManagerTest : public WebAppTest {
                                                         std::move(file_utils));
 
     install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
-        profile(), &test_registry_controller_->sync_bridge(),
-        icon_manager_.get());
+        profile(), icon_manager_.get());
 
     shortcut_manager_ = std::make_unique<TestAppShortcutManager>(profile());
     file_handler_manager_ = std::make_unique<TestFileHandlerManager>(profile());
@@ -163,7 +163,9 @@ class WebAppInstallManagerTest : public WebAppTest {
 
     ui_manager_ = std::make_unique<TestWebAppUiManager>();
 
-    install_finalizer_->SetSubsystems(&registrar(), ui_manager_.get());
+    install_finalizer_->SetSubsystems(
+        &registrar(), ui_manager_.get(),
+        &test_registry_controller_->sync_bridge());
   }
 
   void TearDown() override {

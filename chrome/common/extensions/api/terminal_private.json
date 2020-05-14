@@ -186,6 +186,19 @@
         ]
       },
       {
+        "name": "openWindow",
+        "type": "function",
+        "description": "Open the Terminal tabbed window.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Callback that will be called when complete.",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "openOptionsPage",
         "type": "function",
         "description": "Open the Terminal Settings page.",

@@ -21,6 +21,7 @@
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
+#include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
@@ -111,11 +112,7 @@ class TestNetworkContext : public mojom::NetworkContext {
       mojom::AdditionalCertificatesPtr additional_certificates) override {}
 #endif
 #if BUILDFLAG(IS_CT_SUPPORTED)
-  void SetCTPolicy(
-      const std::vector<std::string>& required_hosts,
-      const std::vector<std::string>& excluded_hosts,
-      const std::vector<std::string>& excluded_spkis,
-      const std::vector<std::string>& excluded_legacy_spkis) override {}
+  void SetCTPolicy(mojom::CTPolicyPtr ct_policy) override {}
   void AddExpectCT(const std::string& domain,
                    base::Time expiry,
                    bool enforce,

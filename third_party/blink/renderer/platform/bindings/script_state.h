@@ -24,7 +24,7 @@ class ScriptValue;
 class V8PerContextData;
 
 // ScriptState is an abstraction class that holds all information about script
-// exectuion (e.g., v8::Isolate, v8::Context, DOMWrapperWorld, ExecutionContext
+// execution (e.g., v8::Isolate, v8::Context, DOMWrapperWorld, ExecutionContext
 // etc). If you need any info about the script execution, you're expected to
 // pass around ScriptState in the code base. ScriptState is in a 1:1
 // relationship with v8::Context.

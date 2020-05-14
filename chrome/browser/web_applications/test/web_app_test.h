@@ -5,8 +5,18 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_TEST_WEB_APP_TEST_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_TEST_WEB_APP_TEST_H_
 
+#include <memory>
+
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
+#include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+struct WebApplicationInfo;
+
+namespace content {
+class WebContents;
+}  // namespace content
 
 namespace web_app {
 
@@ -14,6 +24,18 @@ enum class ProviderType { kBookmarkApps, kWebApps };
 
 std::string ProviderTypeParamToString(
     const ::testing::TestParamInfo<ProviderType>& provider_type);
+
+void TestAcceptDialogCallback(
+    content::WebContents* initiator_web_contents,
+    std::unique_ptr<WebApplicationInfo> web_app_info,
+    ForInstallableSite for_installable_site,
+    InstallManager::WebAppInstallationAcceptanceCallback acceptance_callback);
+
+void TestDeclineDialogCallback(
+    content::WebContents* initiator_web_contents,
+    std::unique_ptr<WebApplicationInfo> web_app_info,
+    ForInstallableSite for_installable_site,
+    InstallManager::WebAppInstallationAcceptanceCallback acceptance_callback);
 
 }  // namespace web_app
 

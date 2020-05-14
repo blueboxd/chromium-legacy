@@ -70,9 +70,11 @@ constexpr char kTestUser[] = "foobar";
 constexpr char kTestPassword[] = "my_secret_password";
 constexpr char kTestDomain[] = "EXAMPLE.COM";
 constexpr char kSharePath[] = "\\\\server\\foobar";
+constexpr char kSharePath2[] = "\\\\server2\\second_share";
 constexpr char kShareUrl[] = "smb://server/foobar";
 constexpr char kDisplayName[] = "My Share";
 constexpr char kMountPath[] = "/share/mount/path";
+constexpr char kMountPath2[] = "/share/mount/second_path";
 
 constexpr char kTestADUser[] = "ad-test-user";
 constexpr char kTestADDomain[] = "foorbar.corp";
@@ -1144,8 +1146,7 @@ TEST_F(SmbServiceWithSmbfsTest, GetSmbFsShareForPath) {
                                 base::BindOnce([](SmbMountResult result) {
                                   EXPECT_EQ(SmbMountResult::kSuccess, result);
                                 })));
-  const char kMountPath2[] = "/share/mount/second_path";
-  ignore_result(MountBasicShare(kSharePath, kMountPath2,
+  ignore_result(MountBasicShare(kSharePath2, kMountPath2,
                                 base::BindOnce([](SmbMountResult result) {
                                   EXPECT_EQ(SmbMountResult::kSuccess, result);
                                 })));
@@ -1167,6 +1168,29 @@ TEST_F(SmbServiceWithSmbfsTest, GetSmbFsShareForPath) {
       smb_service_->GetSmbFsShareForPath(base::FilePath("/share/mount")));
   EXPECT_FALSE(smb_service_->GetSmbFsShareForPath(
       base::FilePath("/share/mount/third_path")));
+}
+
+TEST_F(SmbServiceWithSmbfsTest, MountDuplicate) {
+  CreateService(profile_);
+  WaitForSetupComplete();
+
+  ignore_result(MountBasicShare(kSharePath, kMountPath,
+                                base::BindOnce([](SmbMountResult result) {
+                                  EXPECT_EQ(SmbMountResult::kSuccess, result);
+                                })));
+
+  // A second mount with the same share path should fail.
+  ignore_result(MountBasicShare(
+      kSharePath, kMountPath2, base::BindOnce([](SmbMountResult result) {
+        EXPECT_EQ(SmbMountResult::kMountExists, result);
+      })));
+
+  // Unmounting and mounting again should succeed.
+  smb_service_->UnmountSmbFs(base::FilePath(kMountPath));
+  ignore_result(MountBasicShare(kSharePath, kMountPath2,
+                                base::BindOnce([](SmbMountResult result) {
+                                  EXPECT_EQ(SmbMountResult::kSuccess, result);
+                                })));
 }
 
 }  // namespace smb_client

@@ -20,7 +20,7 @@ ReceiveStream::ReceiveStream(ScriptState* script_state,
                              mojo::ScopedDataPipeConsumerHandle handle)
     : incoming_stream_(MakeGarbageCollected<IncomingStream>(
           script_state,
-          WTF::Bind(&ReceiveStream::ForgetStream, WrapWeakPersistent(this)),
+          WTF::Bind(&ReceiveStream::OnAbort, WrapWeakPersistent(this)),
           std::move(handle))),
       quic_transport_(quic_transport),
       stream_id_(stream_id) {}
@@ -44,7 +44,7 @@ void ReceiveStream::Trace(Visitor* visitor) {
   WebTransportStream::Trace(visitor);
 }
 
-void ReceiveStream::ForgetStream() {
+void ReceiveStream::OnAbort() {
   quic_transport_->ForgetStream(stream_id_);
 }
 

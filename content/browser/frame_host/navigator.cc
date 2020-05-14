@@ -177,10 +177,6 @@ NavigationController* Navigator::GetController() {
   return controller_;
 }
 
-base::TimeTicks Navigator::GetCurrentLoadStart() {
-  return base::TimeTicks::Now();
-}
-
 void Navigator::DidFailLoadWithError(RenderFrameHostImpl* render_frame_host,
                                      const GURL& url,
                                      int error_code) {

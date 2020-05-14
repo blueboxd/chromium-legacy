@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/optional.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chrome/common/string_matching/fuzzy_tokenized_string_match.h"
 #include "chrome/common/string_matching/tokenized_string.h"
@@ -17,19 +18,42 @@ namespace {
 
 using Hits = std::vector<local_search_service::Range>;
 
+// |individual_tokenized| can be nullptr if there is no need to split
+// the input search tags by space.
 void TokenizeSearchTags(
     const std::vector<base::string16>& search_tags,
-    std::vector<std::unique_ptr<TokenizedString>>* tokenized) {
+    std::vector<std::unique_ptr<TokenizedString>>* tokenized,
+    std::vector<std::unique_ptr<TokenizedString>>* individual_tokenized) {
   DCHECK(tokenized);
+
+  bool has_multiple_words = false;
+  std::set<base::string16> unique_tags;
   for (const auto& tag : search_tags) {
     tokenized->push_back(std::make_unique<TokenizedString>(tag));
+    if (individual_tokenized) {
+      const std::vector<base::string16> words =
+          base::SplitString(tag, base::kWhitespaceASCIIAs16,
+                            base::WhitespaceHandling::TRIM_WHITESPACE,
+                            base::SplitResult::SPLIT_WANT_NONEMPTY);
+      std::copy(words.begin(), words.end(),
+                std::inserter(unique_tags, unique_tags.end()));
+      if (words.size() > 1) {
+        has_multiple_words = true;
+      }
+    }
+  }
+
+  if (!has_multiple_words)
+    return;
+
+  DCHECK(individual_tokenized);
+  for (const auto& tag : unique_tags) {
+    individual_tokenized->push_back(std::make_unique<TokenizedString>(tag));
   }
 }
 
 // Returns whether a given item with |search_tags| is relevant to |query| using
 // fuzzy string matching.
-// TODO(1018613): add weight decay to relevance scores for search tags. Tags
-// at the front should have higher scores.
 bool IsItemRelevant(
     const TokenizedString& query,
     const std::vector<std::unique_ptr<TokenizedString>>& search_tags,
@@ -96,8 +120,12 @@ void Index::AddOrUpdate(const std::vector<local_search_service::Data>& data) {
     DCHECK(!id.empty());
 
     // If a key already exists, it will overwrite earlier data.
-    data_[id] = std::vector<std::unique_ptr<TokenizedString>>();
-    TokenizeSearchTags(item.search_tags, &data_[id]);
+    data_[id] = {std::vector<std::unique_ptr<TokenizedString>>(),
+                 std::vector<std::unique_ptr<TokenizedString>>()};
+    auto& tokenized = data_[id];
+    TokenizeSearchTags(
+        item.search_tags, &tokenized.first,
+        search_params_.split_search_tags ? &tokenized.second : nullptr);
   }
 }
 
@@ -138,39 +166,74 @@ void Index::SetSearchParams(
   search_params_ = search_params;
 }
 
-void Index::GetSearchParamsForTesting(double* relevance_threshold,
-                                      double* partial_match_penalty_rate,
-                                      bool* use_prefix_only,
-                                      bool* use_weighted_ratio,
-                                      bool* use_edit_distance) {
-  DCHECK(relevance_threshold);
-  DCHECK(partial_match_penalty_rate);
-  DCHECK(use_prefix_only);
-  DCHECK(use_weighted_ratio);
-  DCHECK(use_edit_distance);
+void Index::GetSearchTagsForTesting(
+    const std::string& id,
+    std::vector<base::string16>* search_tags,
+    std::vector<base::string16>* individual_search_tags) {
+  DCHECK(search_tags);
+  DCHECK(individual_search_tags);
 
-  *relevance_threshold = search_params_.relevance_threshold;
-  *partial_match_penalty_rate = search_params_.partial_match_penalty_rate;
-  *use_prefix_only = search_params_.use_prefix_only;
-  *use_weighted_ratio = search_params_.use_weighted_ratio;
-  *use_edit_distance = search_params_.use_edit_distance;
+  search_tags->clear();
+  individual_search_tags->clear();
+
+  const auto& it = data_.find(id);
+  if (it != data_.end()) {
+    for (const auto& tag : it->second.first) {
+      search_tags->push_back(tag->text());
+    }
+    for (const auto& tag : it->second.second) {
+      individual_search_tags->push_back(tag->text());
+    }
+  }
 }
 
+SearchParams Index::GetSearchParamsForTesting() {
+  return search_params_;
+}
+
+// For each data item, each of its search tag could be a single word
+// or multiple words. When we match a query with a search tag, we could match
+// the query with the full search tag, or with individual words in the search
+// tag.
+// 1. If the query itself is a single word, then we consider it a match if the
+// query matches with a word of the search tag. In this case, we use simple
+// fuzzy ratio and prefix matching (instead of weighted ratio) for better
+// accuracy and speeds. However, if the search tag is not split into words, then
+// we would need weighted ratio to discover the match. The accuracy may be
+// lower.
+// 2. If the query contains multiple words, then we will have to match it with
+// the full search tag because we do not split the query words.
+// TODO(jiameng): this is complex and multi-word query and search tags should
+// really be handled by TF-IDF based matching. We will soon move to TF-IDF
+// method.
 std::vector<local_search_service::Result> Index::GetSearchResults(
     const base::string16& query,
     uint32_t max_results) const {
+  const std::vector<base::string16> query_words =
+      base::SplitString(query, base::kWhitespaceASCIIAs16,
+                        base::WhitespaceHandling::TRIM_WHITESPACE,
+                        base::SplitResult::SPLIT_WANT_NONEMPTY);
+  const bool query_has_multiple_words = query_words.size() > 1;
+  const bool use_weighted_ratio =
+      query_has_multiple_words || !search_params_.split_search_tags;
+
   std::vector<local_search_service::Result> results;
   const TokenizedString tokenized_query(query);
 
   for (const auto& item : data_) {
     double relevance_score = 0.0;
     Hits hits;
-    if (IsItemRelevant(
-            tokenized_query, item.second, search_params_.relevance_threshold,
-            search_params_.use_prefix_only, search_params_.use_weighted_ratio,
-            search_params_.use_edit_distance,
-            search_params_.partial_match_penalty_rate, &relevance_score,
-            &hits)) {
+    // Use the full search tags if we use weighted ratio or if this data item
+    // has not split search tags.
+    const auto& used_search_tags =
+        (use_weighted_ratio || item.second.second.empty()) ? item.second.first
+                                                           : item.second.second;
+    if (IsItemRelevant(tokenized_query, used_search_tags,
+                       search_params_.relevance_threshold,
+                       search_params_.use_prefix_only, use_weighted_ratio,
+                       search_params_.use_edit_distance,
+                       search_params_.partial_match_penalty_rate,
+                       &relevance_score, &hits)) {
       local_search_service::Result result;
       result.id = item.first;
       result.score = relevance_score;

@@ -103,10 +103,13 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       int child_process_id,
       content::PosixFileDescriptorInfo* mappings) override;
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
-  mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
+  void ConfigureNetworkContextParams(
       BrowserContext* context,
       bool in_memory,
-      const base::FilePath& relative_partition_path) override;
+      const base::FilePath& relative_partition_path,
+      network::mojom::NetworkContextParams* network_context_params,
+      network::mojom::CertVerifierCreationParams* cert_verifier_creation_params)
+      override;
   std::vector<base::FilePath> GetNetworkContextsParentDirectory() override;
 
   ShellBrowserContext* browser_context();
@@ -167,10 +170,13 @@ class ShellContentBrowserClient : public ContentBrowserClient {
     shell_browser_main_parts_ = parts;
   }
 
-  // Used by CreateNetworkContext(), and can be overridden to change the
-  // parameters used there.
-  virtual network::mojom::NetworkContextParamsPtr CreateNetworkContextParams(
-      BrowserContext* context);
+  // Used by ConfigureNetworkContextParams(), and can be overridden to change
+  // the parameters used there.
+  virtual void ConfigureNetworkContextParamsForShell(
+      BrowserContext* context,
+      network::mojom::NetworkContextParams* context_params,
+      network::mojom::CertVerifierCreationParams*
+          cert_verifier_creation_params);
 
  private:
   static bool allow_any_cors_exempt_header_for_browser_;

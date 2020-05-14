@@ -89,10 +89,10 @@ struct WebApplicationInfo {
 
   // Whether the page is marked as mobile-capable, including apple specific meta
   // tag.
-  MobileCapable mobile_capable;
+  MobileCapable mobile_capable = MOBILE_CAPABLE_UNSPECIFIED;
 
   // The color to use if an icon needs to be generated for the web app.
-  SkColor generated_icon_color;
+  SkColor generated_icon_color = SK_ColorTRANSPARENT;
 
   // The color to use for the web app frame.
   base::Optional<SkColor> theme_color;
@@ -101,13 +101,17 @@ struct WebApplicationInfo {
   // in a window (with or without minimal-ui buttons), or full screen. Defaults
   // to browser display mode as specified in
   // https://w3c.github.io/manifest/#display-modes
-  blink::mojom::DisplayMode display_mode;
+  blink::mojom::DisplayMode display_mode = blink::mojom::DisplayMode::kBrowser;
 
   // User preference as to whether the app should be opened in a window.
   // If false, the app will be opened in a tab.
   // If true, the app will be opened in a window, with minimal-ui buttons
   // if display_mode is kBrowser or kMinimalUi.
-  bool open_as_window;
+  bool open_as_window = false;
+
+  // Whether standalone app windows should have a tab strip. Currently a user
+  // preference for the sake of experimental exploration.
+  bool enable_experimental_tabbed_window = false;
 
   // The extensions and mime types the app can handle.
   std::vector<blink::Manifest::FileHandler> file_handlers;

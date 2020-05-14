@@ -42,8 +42,6 @@ struct PhysicalSize;
 // 2. Allows to save |Current()|, and can move back later. Moving to |Position|
 // is faster than moving to |NGFragmentItem|.
 class CORE_EXPORT NGInlineCursorPosition {
-  STACK_ALLOCATED();
-
  public:
   using ItemsSpan = base::span<const scoped_refptr<const NGFragmentItem>>;
 

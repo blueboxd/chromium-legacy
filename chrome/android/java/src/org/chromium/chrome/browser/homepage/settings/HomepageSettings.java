@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.homepage.settings;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 
 import androidx.annotation.VisibleForTesting;
 import androidx.preference.Preference;
@@ -189,11 +190,18 @@ public class HomepageSettings extends PreferenceFragmentCompat {
         if (HomepagePolicyManager.isHomepageManagedByPolicy()) {
             return HomepagePolicyManager.getHomepageUrl();
         }
+
+        String defaultUrl = HomepageManager.getDefaultHomepageUri();
+        String customUrl = mHomepageManager.getPrefHomepageCustomUri();
         if (mHomepageManager.getPrefHomepageUseDefaultUri()) {
-            String defaultUrl = HomepageManager.getDefaultHomepageUri();
             return NewTabPage.isNTPUrl(defaultUrl) ? "" : defaultUrl;
         }
-        return mHomepageManager.getPrefHomepageCustomUri();
+
+        if (TextUtils.isEmpty(customUrl) && !NewTabPage.isNTPUrl(defaultUrl)) {
+            return defaultUrl;
+        }
+
+        return customUrl;
     }
 
     private PreferenceValues createPreferenceValuesForRadioGroup() {

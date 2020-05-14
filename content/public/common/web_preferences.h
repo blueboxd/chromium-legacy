@@ -358,6 +358,10 @@ struct CONTENT_EXPORT WebPreferences {
   // sites.
   bool allow_mixed_content_upgrades;
 
+  // Whether the focused element should always be indicated (for example, by
+  // forcing :focus-visible to match regardless of focus method).
+  bool always_show_focus;
+
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
   // the embedder to use the same default value.

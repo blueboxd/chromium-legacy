@@ -9,7 +9,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {isTabElement, TabElement} from './tab.js';
 import {isTabGroupElement, TabGroupElement} from './tab_group.js';
-import {TabData, TabNetworkState, TabsApiProxy} from './tabs_api_proxy.js';
+import {TabData, TabNetworkState, TabsApiProxy, TabsApiProxyImpl} from './tabs_api_proxy.js';
 
 /** @const {number} */
 export const PLACEHOLDER_TAB_ID = -1;
@@ -107,7 +107,7 @@ class DragSession {
     this.srcGroup = srcGroup;
 
     /** @private @const {!TabsApiProxy} */
-    this.tabsProxy_ = TabsApiProxy.getInstance();
+    this.tabsProxy_ = TabsApiProxyImpl.getInstance();
   }
 
   /**
@@ -433,7 +433,7 @@ export class DragManager {
     this.dragSession_ = null;
 
     /** @private {!TabsApiProxy} */
-    this.tabsProxy_ = TabsApiProxy.getInstance();
+    this.tabsProxy_ = TabsApiProxyImpl.getInstance();
   }
 
   /** @private */

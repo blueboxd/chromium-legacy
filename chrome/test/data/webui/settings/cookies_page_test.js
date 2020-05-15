@@ -119,7 +119,6 @@ suite('CrSettingsCookiesPageTest', function() {
           contentSetting: ContentSetting.BLOCK,
           cookieControlsMode: CookieControlsMode.BLOCK_THIRD_PARTY,
           blockThirdParty: true,
-          clearOnExitForcedOff: true,
         },
       },
       {
@@ -128,7 +127,6 @@ suite('CrSettingsCookiesPageTest', function() {
           contentSetting: ContentSetting.ALLOW,
           cookieControlsMode: CookieControlsMode.BLOCK_THIRD_PARTY,
           blockThirdParty: true,
-          clearOnExitForcedOff: false,
         },
       },
       {
@@ -137,7 +135,6 @@ suite('CrSettingsCookiesPageTest', function() {
           contentSetting: ContentSetting.ALLOW,
           cookieControlsMode: CookieControlsMode.INCOGNITO_ONLY,
           blockThirdParty: false,
-          clearOnExitForcedOff: false,
         },
       },
       {
@@ -146,7 +143,6 @@ suite('CrSettingsCookiesPageTest', function() {
           contentSetting: ContentSetting.ALLOW,
           cookieControlsMode: CookieControlsMode.OFF,
           blockThirdParty: false,
-          clearOnExitForcedOff: false,
         },
       }
     ];
@@ -154,7 +150,7 @@ suite('CrSettingsCookiesPageTest', function() {
 
     for (const test of testList) {
       test.element.click();
-      let update = await siteSettingsBrowserProxy.whenCalled(
+      const update = await siteSettingsBrowserProxy.whenCalled(
           'setDefaultValueForContentType');
       flush();
       assertEquals(update[0], ContentSettingsTypes.COOKIES);
@@ -169,38 +165,21 @@ suite('CrSettingsCookiesPageTest', function() {
       // Calls to setDefaultValueForContentType don't actually update the test
       // proxy internals, so we need to manually update them.
       await updateTestCookieContentSetting(test.updates.contentSetting);
-      assertEquals(clearOnExit.disabled, test.updates.clearOnExitForcedOff);
       siteSettingsBrowserProxy.reset();
-
-      if (!test.updates.clearOnExitForcedOff) {
-        clearOnExit.click();
-        update = await siteSettingsBrowserProxy.whenCalled(
-            'setDefaultValueForContentType');
-        assertEquals(update[0], ContentSettingsTypes.COOKIES);
-        assertEquals(update[1], ContentSetting.SESSION_ONLY);
-        siteSettingsBrowserProxy.reset();
-        clearOnExit.checked = false;
-      }
     }
   });
 
   test('RespectChangedCookieSetting_ContentSetting', async function() {
     await updateTestCookieContentSetting(ContentSetting.BLOCK);
     assertTrue(blockAll.checked);
-    assertFalse(clearOnExit.checked);
-    assertTrue(clearOnExit.disabled);
     siteSettingsBrowserProxy.reset();
 
     await updateTestCookieContentSetting(ContentSetting.ALLOW);
     assertTrue(allowAll.checked);
-    assertFalse(clearOnExit.checked);
-    assertFalse(clearOnExit.disabled);
     siteSettingsBrowserProxy.reset();
 
     await updateTestCookieContentSetting(ContentSetting.SESSION_ONLY);
     assertTrue(allowAll.checked);
-    assertTrue(clearOnExit.checked);
-    assertFalse(clearOnExit.disabled);
     siteSettingsBrowserProxy.reset();
   });
 
@@ -211,8 +190,6 @@ suite('CrSettingsCookiesPageTest', function() {
     flush();
     await siteSettingsBrowserProxy.whenCalled('getDefaultValueForContentType');
     assertTrue(blockThirdPartyIncognito.checked);
-    assertFalse(clearOnExit.checked);
-    assertFalse(clearOnExit.disabled);
   });
 
   test('RespectChangedCookieSetting_BlockThirdPartyPref', async function() {
@@ -220,8 +197,6 @@ suite('CrSettingsCookiesPageTest', function() {
     flush();
     await siteSettingsBrowserProxy.whenCalled('getDefaultValueForContentType');
     assertTrue(blockThirdParty.checked);
-    assertFalse(clearOnExit.checked);
-    assertFalse(clearOnExit.disabled);
   });
 
   test('ElementVisibility', async function() {
@@ -354,13 +329,8 @@ suite('CrSettingsCookiesPageTest', function() {
       assertEquals(button.policyIndicatorType, 'devicePolicy');
     }
 
-    // Check the clear on exit toggle is correctly indicating it is managed.
-    assertTrue(clearOnExit.checked);
-    assertTrue(clearOnExit.controlDisabled());
-    assertTrue(isChildVisible(clearOnExit, 'cr-policy-pref-indicator'));
-    let exceptionLists = page.shadowRoot.querySelectorAll('site-list');
-
     // Check all exception lists are read only.
+    let exceptionLists = page.shadowRoot.querySelectorAll('site-list');
     assertEquals(exceptionLists.length, 3);
     for (const list of exceptionLists) {
       assertTrue(!!list.readOnlyList);
@@ -393,11 +363,6 @@ suite('CrSettingsCookiesPageTest', function() {
       assertFalse(button.disabled);
       assertEquals(button.policyIndicatorType, 'none');
     }
-
-    // Check the clear on exit toggle no longer indicates it is managed.
-    assertFalse(clearOnExit.checked);
-    assertFalse(clearOnExit.controlDisabled());
-    assertFalse(isChildVisible(clearOnExit, 'cr-policy-pref-indicator'));
 
     // Check all exception lists are no longer read only.
     exceptionLists = page.shadowRoot.querySelectorAll('site-list');

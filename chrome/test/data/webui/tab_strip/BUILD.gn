@@ -1,0 +1,34 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/closure_compiler/compile_js.gni")
+
+js_type_check("closure_compile") {
+  is_polymer3 = true
+  closure_flags = default_closure_args + [
+                    "browser_resolver_prefix_replacements=\"chrome://tab-strip/=../../chrome/browser/resources/tab-strip/\"",
+                    "js_module_root=../../chrome/test/data/webui/",
+                    "js_module_root=./gen/chrome/test/data/webui/",
+                  ]
+
+  # TODO(crbug.com/1000989): Add JS type checking for all commented out targets.
+  deps = [
+    #":alert_indicator_test",
+    #":alert_indicators_test",
+    #":drag_manager_test",
+    #":tab_group_test",
+    #":tab_list_test",
+    #":tab_swiper_test",
+    #":tab_test",
+    #":test_tab_strip_embedder_proxy",
+    ":test_tabs_api_proxy",
+  ]
+}
+
+js_library("test_tabs_api_proxy") {
+  deps = [
+    "..:test_browser_proxy.m",
+    "//chrome/browser/resources/tab_strip:tabs_api_proxy",
+  ]
+}

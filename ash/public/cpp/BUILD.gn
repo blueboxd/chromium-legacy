@@ -78,6 +78,8 @@ component("cpp") {
     "assistant/assistant_web_view.h",
     "assistant/assistant_web_view_factory.cc",
     "assistant/assistant_web_view_factory.h",
+    "assistant/controller/assistant_alarm_timer_controller.cc",
+    "assistant/controller/assistant_alarm_timer_controller.h",
     "assistant/controller/assistant_controller.cc",
     "assistant/controller/assistant_controller.h",
     "assistant/controller/assistant_controller_observer.h",

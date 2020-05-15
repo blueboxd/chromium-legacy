@@ -96,7 +96,11 @@ class AshEventGeneratorDelegate
 // implementation.
 class TestWidgetDelegate : public views::WidgetDelegateView {
  public:
-  TestWidgetDelegate() = default;
+  TestWidgetDelegate() {
+    SetCanMaximize(true);
+    SetCanMinimize(true);
+    SetCanResize(true);
+  }
   ~TestWidgetDelegate() override = default;
 
   // views::WidgetDelegateView:
@@ -104,9 +108,6 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
       views::Widget* widget) override {
     return Shell::Get()->CreateDefaultNonClientFrameView(widget);
   }
-  bool CanResize() const override { return true; }
-  bool CanMaximize() const override { return true; }
-  bool CanMinimize() const override { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestWidgetDelegate);

@@ -27,6 +27,9 @@ enum class ASH_PUBLIC_EXPORT FocusRingType { GLOW, SOLID, DASHED };
 // - |focus_ring_type| the visual style of the focus ring.
 // - |color| the color of the focus ring.
 // - |secondary_color| a secondary color, used by some visual styles.
+// - |background_color| The color to draw a background outside of the focus
+//       ring and over the rest of the display. Set to fully transparent
+//       for none.
 // TODO: This struct could possibly be merged with ash::AccessibilityFocusRing.
 struct ASH_PUBLIC_EXPORT AccessibilityFocusRingInfo {
   AccessibilityFocusRingInfo();
@@ -39,6 +42,7 @@ struct ASH_PUBLIC_EXPORT AccessibilityFocusRingInfo {
   FocusRingType type = FocusRingType::GLOW;
   SkColor color = SK_ColorTRANSPARENT;
   SkColor secondary_color = SK_ColorTRANSPARENT;
+  SkColor background_color = SK_ColorTRANSPARENT;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AccessibilityFocusRingInfo);

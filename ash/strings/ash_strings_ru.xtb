@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
 <translation id="1012876632442809908">Устройство USB-C (порт спереди)</translation>
+<translation id="1013598600051641573">Для экрана "<ph name="DISPLAY_NAME" />" установлено разрешение <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Гц). Чтобы сохранить изменения, нажмите "Подтвердить". Предыдущие настройки восстановятся через <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth. Введите на нем PIN-код: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Батарея стилуса почти разряжена</translation>
 <translation id="1037492556044956303">Добавлено устройство <ph name="DEVICE_NAME" /></translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">Показать языковые настройки</translation>
 <translation id="1460620680449458626">Сейчас звук выключен.</translation>
 <translation id="1467432559032391204">Слева</translation>
+<translation id="1479909375538722835">Плавающее меню специальных возможностей</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">Включено</translation>
 <translation id="1516740043221086139">Режим "Не беспокоить" включен</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">Трансляция экрана</translation>
 <translation id="5030687792513154421">Время вышло</translation>
 <translation id="5035236842988137213">Устройство <ph name="DEVICE_NAME" /> подключено к новому телефону</translation>
+<translation id="5035389544768382859">Подтвердите конфигурацию экрана</translation>
 <translation id="5083553833479578423">Получите доступ к другим возможностям Ассистента.</translation>
 <translation id="5136175204352732067">Подключена другая клавиатура</translation>
 <translation id="5168181903108465623">Доступны устройства для трансляции</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">Сеть может отслеживаться</translation>
 <translation id="7536035074519304529">IP-адрес: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Пора ложиться спать</translation>
+<translation id="7561982940498449837">Закрыть меню</translation>
 <translation id="7562368315689366235">Меню смайликов</translation>
 <translation id="7564874036684306347">При переносе окон на другой рабочий стол иногда возникают ошибки. Уведомления и диалоговые окна могут появляться на разных рабочих столах.</translation>
 <translation id="7568294522609223312">Выключение автоматического нажатия</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">Увеличить</translation>
 <translation id="8029629653277878342">В качестве дополнительной меры безопасности введите PIN-код или пароль.</translation>
 <translation id="8030169304546394654">Отключено</translation>
+<translation id="8042893070933512245">Открыть меню настроек специальных возможностей</translation>
 <translation id="8048123526339889627">Настройки Bluetooth</translation>
 <translation id="8054466585765276473">Подсчет оставшегося времени работы от батареи…</translation>
 <translation id="8061464966246066292">Высокая контрастность</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">Создать напоминание</translation>
 <translation id="8878886163241303700">Раскрытый экран</translation>
 <translation id="890616557918890486">Изменить источник</translation>
+<translation id="8908312332415978740">Экран "<ph name="DISPLAY_NAME" />" не поддерживает разрешение <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Гц). Установлено разрешение <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Гц). Чтобы сохранить изменения, нажмите "Подтвердить". Предыдущие настройки восстановятся через <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Уровень заряда батареи: <ph name="PERCENTAGE" />.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Ассистент не говорит на этом языке</translation>

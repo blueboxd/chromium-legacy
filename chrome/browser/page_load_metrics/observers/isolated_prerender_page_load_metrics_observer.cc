@@ -319,7 +319,7 @@ void IsolatedPrerenderPageLoadMetricsObserver::RecordAfterSRPEvent() {
   ukm::builders::PrefetchProxy_AfterSRPClick builder(
       GetDelegate().GetSourceId());
 
-  builder.SetPrefetchEligibleCount(metrics.prefetch_eligible_count_);
+  builder.SetSRPPrefetchEligibleCount(metrics.prefetch_eligible_count_);
 
   if (metrics.prefetch_status_) {
     builder.SetSRPClickPrefetchStatus(

@@ -192,6 +192,7 @@ class WebTestControlHost : public WebContentsObserver,
   void OverridePreferences(
       const content::WebPreferences& web_preferences) override;
   void CloseRemainingWindows() override;
+  void SetMainWindowHidden(bool hidden) override;
   void GoToOffset(int offset) override;
   void SendBluetoothManualChooserEvent(const std::string& event,
                                        const std::string& argument) override;

@@ -19,6 +19,7 @@ import org.mockito.Mockito;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeJavaTest;
+import org.chromium.components.payments.PackageManagerDelegate;
 import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
@@ -85,10 +86,10 @@ public class AndroidPaymentAppFinderUnitTest {
         Mockito.when(params.getMayCrawl()).thenReturn(false);
         PaymentAppFactoryDelegate delegate = Mockito.mock(PaymentAppFactoryDelegate.class);
         Mockito.when(delegate.getParams()).thenReturn(params);
-        AndroidPaymentAppFinder finder =
-                new AndroidPaymentAppFinder(Mockito.mock(PaymentManifestWebDataService.class),
-                        downloader, parser, packageManagerDelegate, delegate,
-                        /*factory=*/null);
+        AndroidPaymentAppFinder finder = new AndroidPaymentAppFinder(
+                Mockito.mock(PaymentManifestWebDataService.class), downloader, parser,
+                packageManagerDelegate, new TwaPackageManagerDelegate(), delegate,
+                /*factory=*/null);
         finder.bypassIsReadyToPayServiceInTest();
         finder.findAndroidPaymentApps();
         return delegate;

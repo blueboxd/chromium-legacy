@@ -113,6 +113,22 @@ suite('NewTabPageAppTest', () => {
     assertFalse($$(app, '#logo').singleColored);
   });
 
+  test('setting 3p theme shows attribution', async () => {
+    // Arrange.
+    const theme = createTheme();
+    theme.backgroundImage = {
+      url: {url: 'https://foo.com'},
+      attributionUrl: {url: 'chrome://theme/foo'},
+    };
+
+    // Act.
+    testProxy.callbackRouterRemote.setTheme(theme);
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+
+    assertNotStyle($$(app, '#themeAttribution'), 'display', 'none');
+    assertEquals('chrome://theme/foo', $$(app, '#themeAttribution img').src);
+  });
+
   test('realbox is not visible by default', async () => {
     // Assert.
     assertNotStyle($$(app, '#fakebox'), 'display', 'none');

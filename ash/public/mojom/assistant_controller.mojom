@@ -5,41 +5,6 @@
 module ash.mojom;
 
 import "chromeos/services/assistant/public/mojom/assistant_notification.mojom";
-import "mojo/public/mojom/base/time.mojom";
-import "ui/gfx/geometry/mojom/geometry.mojom";
-
-// Represents the current state of an Assistant timer.
-enum AssistantTimerState {
-  kUnknown,
-
-  // The timer is scheduled to fire at some future date.
-  kScheduled,
-
-  // The timer will not fire but is kept in the queue of scheduled events;
-  // it can be resumed after which it will fire in |remaining_time|.
-  kPaused,
-
-  // The timer has fired. In the simplest case this means the timer has
-  // begun ringing.
-  kFired,
-};
-
-// Models an Assistant timer.
-struct AssistantTimer {
-  string id;
-  string label;
-  AssistantTimerState state;
-  mojo_base.mojom.Time fire_time;
-  mojo_base.mojom.TimeDelta remaining_time;
-};
-
-// Interface to the AssistantAlarmTimerController which is owned by the
-// AssistantController. Currently used by the Assistant service to notify Ash
-// of changes to the underlying alarm/timer state in LibAssistant.
-interface AssistantAlarmTimerController {
-  // Invoked when timer state has changed. Note that |timers| may be empty.
-  OnTimerStateChanged(array<AssistantTimer> timers);
-};
 
 // Interface to the AssistantNotificationController which is owned by the
 // AssistantController. Currently used by the Assistant service to modify

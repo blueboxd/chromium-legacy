@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "ash/public/mojom/assistant_controller.mojom-forward.h"
+#include "ash/public/cpp/assistant/controller/assistant_alarm_timer_controller.h"
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
 
@@ -20,13 +20,13 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantAlarmTimerModelObserver
     : public base::CheckedObserver {
  public:
   // Invoked when the specified timer has been added.
-  virtual void OnTimerAdded(const mojom::AssistantTimer& timer) {}
+  virtual void OnTimerAdded(const AssistantTimer& timer) {}
 
   // Invoked when the specified timer has been updated.
-  virtual void OnTimerUpdated(const mojom::AssistantTimer& timer) {}
+  virtual void OnTimerUpdated(const AssistantTimer& timer) {}
 
   // Invoked when the specified timer has been removed.
-  virtual void OnTimerRemoved(const mojom::AssistantTimer& timer) {}
+  virtual void OnTimerRemoved(const AssistantTimer& timer) {}
 
   // Invoked when all timers have been removed.
   virtual void OnAllTimersRemoved() {}

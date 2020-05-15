@@ -140,15 +140,15 @@ void CreatePrintSettingsDictionary(base::DictionaryValue* dict) {
 #endif  // !defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+// TODO(https://crbug.com/1008939): Remove DidPreviewPageListener once all IPC
+// messages are moved to mojo.
 class DidPreviewPageListener : public IPC::Listener {
  public:
   explicit DidPreviewPageListener(base::RunLoop* run_loop)
       : run_loop_(run_loop) {}
 
   bool OnMessageReceived(const IPC::Message& message) override {
-    if (message.type() == PrintHostMsg_MetafileReadyForPrinting::ID ||
-        message.type() == PrintHostMsg_PrintPreviewCancelled::ID ||
-        message.type() == PrintHostMsg_PrintPreviewInvalidPrinterSettings::ID)
+    if (message.type() == PrintHostMsg_MetafileReadyForPrinting::ID)
       run_loop_->Quit();
     return false;
   }
@@ -166,8 +166,13 @@ class FakePrintPreviewUI : public mojom::PrintPreviewUI {
   mojo::PendingAssociatedRemote<mojom::PrintPreviewUI> BindReceiver() {
     return receiver_.BindNewEndpointAndPassDedicatedRemoteForTesting();
   }
+  void SetQuitClosure(base::OnceClosure quit_closure) {
+    quit_closure_ = std::move(quit_closure);
+  }
 
   bool preview_failed() const { return preview_failed_; }
+  bool preview_cancelled() const { return preview_cancelled_; }
+  bool invalid_printer_setting() const { return invalid_printer_setting_; }
 
   // mojom::PrintPreviewUI:
   void SetOptionsFromDocument(const mojom::OptionsFromDocumentParamsPtr params,
@@ -175,10 +180,31 @@ class FakePrintPreviewUI : public mojom::PrintPreviewUI {
   void PrintPreviewFailed(int32_t document_cookie,
                           int32_t request_id) override {
     preview_failed_ = true;
+    RunQuitClosure();
+  }
+  void PrintPreviewCancelled(int32_t document_cookie,
+                             int32_t request_id) override {
+    preview_cancelled_ = true;
+    RunQuitClosure();
+  }
+  void PrinterSettingsInvalid(int32_t document_cookie,
+                              int32_t request_id) override {
+    invalid_printer_setting_ = true;
+    RunQuitClosure();
   }
 
  private:
+  void RunQuitClosure() {
+    if (!quit_closure_)
+      return;
+    std::move(quit_closure_).Run();
+  }
+
   bool preview_failed_ = false;
+  bool preview_cancelled_ = false;
+  bool invalid_printer_setting_ = false;
+  base::OnceClosure quit_closure_;
+
   mojo::AssociatedReceiver<mojom::PrintPreviewUI> receiver_{this};
 };
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -245,6 +271,10 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
     frame_helper->SetPrintPreviewUI(preview_ui_.BindReceiver());
   }
 
+  void WaitMojoMessages(base::RunLoop* run_loop) {
+    preview_ui()->SetQuitClosure(run_loop->QuitClosure());
+  }
+
   // The renderer should be done calculating the number of rendered pages
   // according to the specified settings defined in the mock render thread.
   // Verify the page count is correct.
@@ -299,6 +329,7 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
     DidPreviewPageListener filter(&run_loop);
     render_thread_->sink().AddFilter(&filter);
     print_render_frame_helper->PrintPreview(dict.Clone());
+    WaitMojoMessages(&run_loop);
     run_loop.Run();
     render_thread_->sink().RemoveFilter(&filter);
   }
@@ -694,10 +725,7 @@ class MAYBE_PrintRenderFrameHelperPreviewTest
 
  protected:
   void VerifyPrintPreviewCancelled(bool expect_cancel) {
-    bool print_preview_cancelled =
-        !!render_thread_->sink().GetUniqueMessageMatching(
-            PrintHostMsg_PrintPreviewCancelled::ID);
-    EXPECT_EQ(expect_cancel, print_preview_cancelled);
+    EXPECT_EQ(expect_cancel, preview_ui()->preview_cancelled());
   }
 
   void VerifyPrintPreviewFailed(bool expect_fail) {
@@ -727,10 +755,7 @@ class MAYBE_PrintRenderFrameHelperPreviewTest
   }
 
   void VerifyPrintPreviewInvalidPrinterSettings(bool expect_invalid_settings) {
-    bool print_preview_invalid_printer_settings =
-        !!render_thread_->sink().GetUniqueMessageMatching(
-            PrintHostMsg_PrintPreviewInvalidPrinterSettings::ID);
-    EXPECT_EQ(expect_invalid_settings, print_preview_invalid_printer_settings);
+    EXPECT_EQ(expect_invalid_settings, preview_ui()->invalid_printer_setting());
   }
 
   // |page_number| is 0-based.

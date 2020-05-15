@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionProcessor;
+import org.chromium.chrome.browser.omnibox.suggestions.UrlBarDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
@@ -43,18 +44,6 @@ import java.lang.annotation.RetentionPolicy;
  * the rest of Chrome.
  */
 public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionProcessor {
-    /** An interface for modifying the location bar and it's contents. */
-    public interface LocationBarDelegate {
-        /** Remove focus from the omnibox. */
-        void clearOmniboxFocus();
-
-        /**
-         * Set the text in the omnibox.
-         * @param text The text that should be displayed in the omnibox.
-         */
-        void setOmniboxEditingText(String text);
-    }
-
     /** The actions that can be performed on the suggestion view provided by this class. */
     @IntDef({SuggestionAction.EDIT, SuggestionAction.COPY, SuggestionAction.SHARE,
             SuggestionAction.TAP})
@@ -68,7 +57,7 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
     }
 
     /** The delegate for accessing the location bar for observation and modification. */
-    private final LocationBarDelegate mLocationBarDelegate;
+    private final UrlBarDelegate mUrlBarDelegate;
 
     /** The delegate for accessing the sharing feature. */
     private Supplier<ShareDelegate> mShareDelegateSupplier;
@@ -104,10 +93,10 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
      * @param locationBarDelegate A means of modifying the location bar.
      */
     public EditUrlSuggestionProcessor(Context context, SuggestionHost suggestionHost,
-            LocationBarDelegate locationBarDelegate, Supplier<LargeIconBridge> iconBridgeSupplier) {
+            UrlBarDelegate locationBarDelegate, Supplier<LargeIconBridge> iconBridgeSupplier) {
         mMinViewHeight = context.getResources().getDimensionPixelSize(
                 R.dimen.omnibox_suggestion_comfortable_height);
-        mLocationBarDelegate = locationBarDelegate;
+        mUrlBarDelegate = locationBarDelegate;
         mDesiredFaviconWidthPx = context.getResources().getDimensionPixelSize(
                 R.dimen.omnibox_suggestion_favicon_size);
         mSuggestionHost = suggestionHost;
@@ -148,7 +137,7 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
 
         if (!mHasClearedOmniboxForFocus) {
             mHasClearedOmniboxForFocus = true;
-            mLocationBarDelegate.setOmniboxEditingText("");
+            mUrlBarDelegate.setOmniboxEditingText("");
         }
         return true;
     }
@@ -241,14 +230,14 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
         } else if (R.id.url_share_icon == view.getId()) {
             recordSuggestionAction(SuggestionAction.SHARE);
             RecordUserAction.record("Omnibox.EditUrlSuggestion.Share");
-            mLocationBarDelegate.clearOmniboxFocus();
+            mUrlBarDelegate.clearOmniboxFocus();
             // TODO(mdjones): This should only share the displayed URL instead of the background
             //                tab.
             mShareDelegateSupplier.get().share(activityTab, false);
         } else if (R.id.url_edit_icon == view.getId()) {
             recordSuggestionAction(SuggestionAction.EDIT);
             RecordUserAction.record("Omnibox.EditUrlSuggestion.Edit");
-            mLocationBarDelegate.setOmniboxEditingText(mLastProcessedSuggestion.getUrl().getSpec());
+            mUrlBarDelegate.setOmniboxEditingText(mLastProcessedSuggestion.getUrl().getSpec());
         }
     }
 

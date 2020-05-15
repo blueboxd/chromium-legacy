@@ -256,6 +256,7 @@
 #include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
+#include "third_party/blink/renderer/core/page/named_pages_mapper.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/plugin_script_forbidden_scope.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
@@ -3004,7 +3005,14 @@ void Document::ClearFocusedElementTimerFired(TimerBase*) {
 
 scoped_refptr<const ComputedStyle> Document::StyleForPage(int page_index) {
   UpdateDistributionForUnknownReasons();
-  return EnsureStyleResolver().StyleForPage(page_index);
+
+  AtomicString page_name;
+  if (const LayoutView* layout_view = GetLayoutView()) {
+    if (const NamedPagesMapper* mapper = layout_view->GetNamedPagesMapper())
+      page_name = mapper->NamedPageAtIndex(page_index);
+  }
+
+  return EnsureStyleResolver().StyleForPage(page_index, page_name);
 }
 
 void Document::EnsurePaintLocationDataValidForNode(
@@ -3085,6 +3093,8 @@ void Document::GetPageDescription(int page_index,
   }
   if (!style->MarginLeft().IsAuto())
     description->margin_left = IntValueForLength(style->MarginLeft(), width);
+
+  description->orientation = style->GetPageOrientation();
 }
 
 void Document::SetIsViewSource(bool is_view_source) {

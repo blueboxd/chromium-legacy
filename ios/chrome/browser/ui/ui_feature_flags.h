@@ -56,4 +56,8 @@ extern const base::Feature kPointerSupport;
 // Feature flag to enable MyGoogle account management UI in iOS Settings.
 extern const base::Feature kEnableMyGoogle;
 
+// Feature flag to enable showing a different UI when the setting is managed by
+// an enterprise policy.
+extern const base::Feature kEnableIOSManagedSettingsUI;
+
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

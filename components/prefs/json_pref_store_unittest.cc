@@ -29,10 +29,15 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/prefs/persistent_pref_store_unittest.h"
 #include "components/prefs/pref_filter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_IOS) && !(TARGET_IPHONE_SIMULATOR)
+#include "base/ios/ios_util.h"
+#endif
 
 namespace base {
 namespace {
@@ -394,6 +399,13 @@ TEST_P(JsonPrefStoreTest, PreserveEmptyValues) {
 // This test is just documenting some potentially non-obvious behavior. It
 // shouldn't be taken as normative.
 TEST_P(JsonPrefStoreTest, RemoveClearsEmptyParent) {
+#if defined(OS_IOS) && !(TARGET_IPHONE_SIMULATOR)
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    // TODO(crbug.com/1083299): This test is failing on iOS 12 device.
+    return;
+  }
+#endif
+
   FilePath pref_file = temp_dir_.GetPath().AppendASCII("empty_values.json");
 
   auto pref_store = base::MakeRefCounted<JsonPrefStore>(pref_file);

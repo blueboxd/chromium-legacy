@@ -156,6 +156,9 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       {"facebook", IDS_NTP_DOODLE_SHARE_DIALOG_FACEBOOK_LABEL},
       {"shareDoodle", IDS_NTP_DOODLE_SHARE_LABEL},
       {"twitter", IDS_NTP_DOODLE_SHARE_DIALOG_TWITTER_LABEL},
+
+      // Theme.
+      {"themeCreatedBy", IDS_NEW_TAB_ATTRIBUTION_INTRO},
   };
   AddLocalizedStringsBulk(source, kStrings);
 

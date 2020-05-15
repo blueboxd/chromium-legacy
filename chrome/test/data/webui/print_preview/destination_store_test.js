@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CloudPrintInterfaceEventType, Destination, DestinationConnectionStatus, DestinationErrorType, DestinationOrigin, DestinationStore, DestinationType, makeRecentDestination, NativeLayer, PluginProxy, PrinterType} from 'chrome://print/print_preview.js';
+import {CloudPrintInterfaceEventType, Destination, DestinationConnectionStatus, DestinationErrorType, DestinationOrigin, DestinationStore, DestinationType, makeRecentDestination, NativeLayer, NativeLayerImpl, PluginProxy, PrinterType} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 import {CloudPrintInterfaceStub} from 'chrome://test/print_preview/cloud_print_interface_stub.js';
@@ -57,12 +57,12 @@ suite(destination_store_test.suiteName, function() {
   /** @override */
   setup(function() {
     // Clear the UI.
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
 
     setupTestListenerElement();
 
     nativeLayer = new NativeLayerStub();
-    NativeLayer.setInstance(nativeLayer);
+    NativeLayerImpl.instance_ = nativeLayer;
 
     initialSettings = getDefaultInitialSettings();
     initialSettings.userAccounts = [];

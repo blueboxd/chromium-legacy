@@ -6,7 +6,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {DragManager, PLACEHOLDER_GROUP_ID, PLACEHOLDER_TAB_ID} from 'chrome://tab-strip/drag_manager.js';
 import {TabElement} from 'chrome://tab-strip/tab.js';
 import {TabGroupElement} from 'chrome://tab-strip/tab_group.js';
-import {TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
+import {TabsApiProxyImpl} from 'chrome://tab-strip/tabs_api_proxy.js';
 
 import {TestTabsApiProxy} from './test_tabs_api_proxy.js';
 
@@ -119,7 +119,7 @@ suite('DragManager', () => {
   setup(() => {
     loadTimeData.overrideValues(strings);
     testTabsApiProxy = new TestTabsApiProxy();
-    TabsApiProxy.instance_ = testTabsApiProxy;
+    TabsApiProxyImpl.instance_ = testTabsApiProxy;
 
     delegate = new MockDelegate();
     tabs.forEach(tab => {

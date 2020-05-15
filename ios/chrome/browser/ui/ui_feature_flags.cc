@@ -50,3 +50,6 @@ const base::Feature kPointerSupport{"PointerSupport",
 
 const base::Feature kEnableMyGoogle{"EnableMyGoogle",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEnableIOSManagedSettingsUI{
+    "EnableIOSManagedSettingsUI", base::FEATURE_DISABLED_BY_DEFAULT};

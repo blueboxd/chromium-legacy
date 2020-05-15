@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/ambient/ambient_mode_state.h"
 #include "ash/public/cpp/assistant/assistant_state_base.h"
+#include "ash/public/cpp/assistant/controller/assistant_alarm_timer_controller.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_forward.h"
@@ -111,17 +112,16 @@ action::AppStatus GetActionAppStatus(mojom::AppStatus status) {
   }
 }
 
-ash::mojom::AssistantTimerState GetTimerState(
-    assistant_client::Timer::State state) {
+ash::AssistantTimerState GetTimerState(assistant_client::Timer::State state) {
   switch (state) {
     case assistant_client::Timer::State::UNKNOWN:
-      return ash::mojom::AssistantTimerState::kUnknown;
+      return ash::AssistantTimerState::kUnknown;
     case assistant_client::Timer::State::SCHEDULED:
-      return ash::mojom::AssistantTimerState::kScheduled;
+      return ash::AssistantTimerState::kScheduled;
     case assistant_client::Timer::State::PAUSED:
-      return ash::mojom::AssistantTimerState::kPaused;
+      return ash::AssistantTimerState::kPaused;
     case assistant_client::Timer::State::FIRED:
-      return ash::mojom::AssistantTimerState::kFired;
+      return ash::AssistantTimerState::kFired;
   }
 }
 
@@ -1235,7 +1235,7 @@ void AssistantManagerServiceImpl::OnAlarmTimerStateChanged() {
     return;
   }
 
-  std::vector<ash::mojom::AssistantTimerPtr> timers;
+  std::vector<ash::AssistantTimerPtr> timers;
 
   auto* manager = assistant_manager_internal_->GetAlarmTimerManager();
   for (const auto& event : manager->GetAllEvents()) {
@@ -1250,7 +1250,7 @@ void AssistantManagerServiceImpl::OnAlarmTimerStateChanged() {
       continue;
     }
 
-    ash::mojom::AssistantTimerPtr timer = ash::mojom::AssistantTimer::New();
+    auto timer = std::make_unique<ash::AssistantTimer>();
     timer->id = event.timer_data.timer_id;
     timer->label = event.timer_data.label;
     timer->state = GetTimerState(event.timer_data.state);
@@ -1262,11 +1262,10 @@ void AssistantManagerServiceImpl::OnAlarmTimerStateChanged() {
 
     // If the |timer| is paused, LibAssistant will specify the amount of time
     // remaining. Otherwise we calculate it based on |fire_time|.
-    timer->remaining_time =
-        timer->state == ash::mojom::AssistantTimerState::kPaused
-            ? base::TimeDelta::FromMilliseconds(
-                  event.timer_data.remaining_duration_ms)
-            : timer->fire_time - base::Time::Now();
+    timer->remaining_time = timer->state == ash::AssistantTimerState::kPaused
+                                ? base::TimeDelta::FromMilliseconds(
+                                      event.timer_data.remaining_duration_ms)
+                                : timer->fire_time - base::Time::Now();
 
     timers.push_back(std::move(timer));
   }
@@ -1478,7 +1477,7 @@ std::string AssistantManagerServiceImpl::NewPendingInteraction(
   return id;
 }
 
-ash::mojom::AssistantAlarmTimerController*
+ash::AssistantAlarmTimerController*
 AssistantManagerServiceImpl::assistant_alarm_timer_controller() {
   return context_->assistant_alarm_timer_controller();
 }

@@ -958,12 +958,19 @@ String HTMLCanvasElement::ToDataURLInternal(
       // Currently we only support three encoding types.
       NOTREACHED();
     }
+    const uint64_t context_digest =
+        context_ ? context_->IdentifiabilityTextDigest() : 0;
+    const uint64_t canvas_digest =
+        ResourceProvider() ? ResourceProvider()->GetIdentifiabilityDigest() : 0;
+    const uint64_t context_type =
+        context_ ? context_->GetContextType()
+                 : CanvasRenderingContext::kContextTypeUnknown;
+    const uint64_t final_digest =
+        ((context_digest ^ canvas_digest) << 4) | context_type;
     RecordIdentifiabilityMetric(
         blink::IdentifiableSurface::FromTypeAndInput(
-            blink::IdentifiableSurface::Type::kCanvasReadback,
-            context_ ? context_->GetContextType()
-                     : CanvasRenderingContext::kContextTypeUnknown),
-        0);
+            blink::IdentifiableSurface::Type::kCanvasReadback, final_digest),
+        blink::IdentifiabilityDigestOfBytes(data_url.Span8()));
     return data_url;
   }
 

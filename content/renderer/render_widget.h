@@ -563,9 +563,6 @@ class CONTENT_EXPORT RenderWidget
   base::WeakPtr<RenderWidget> AsWeakPtr();
 
  protected:
-  // Notify subclasses that we initiated the paint operation.
-  virtual void DidInitiatePaint() {}
-
   // Notify subclasses that we handled OnUpdateVisualProperties.
   virtual void AfterUpdateVisualProperties() {}
 

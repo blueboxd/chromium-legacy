@@ -117,6 +117,9 @@ class BuilderList(object):
     def specifiers_for_builder(self, builder_name):
         return self._builders[builder_name]['specifiers']
 
+    def is_try_server_builder(self, builder_name):
+        return self._builders[builder_name].get('is_try_builder', False)
+
     def platform_specifier_for_builder(self, builder_name):
         return self.specifiers_for_builder(builder_name)[0]
 
@@ -150,7 +153,7 @@ class BuilderList(object):
                 return builder_info['specifiers'][0]
         return None
 
-    def builder_name_for_specifiers(self, version, build_type):
+    def builder_name_for_specifiers(self, version, build_type, is_try_builder):
         """Returns the builder name for a give version and build type.
 
         Args:
@@ -161,8 +164,10 @@ class BuilderList(object):
             The builder name if found, or an empty string if no match was found.
         """
         for builder_name, info in sorted(self._builders.items()):
-            specifiers = info['specifiers']
-            if (specifiers[0].lower() == version.lower()
-                    and specifiers[1].lower() == build_type.lower()):
+            specifiers = set(spec.lower() for spec in info['specifiers'])
+            is_try_builder_info = info.get('is_try_builder', False)
+            if (version.lower() in specifiers
+                    and build_type.lower() in specifiers 
+                    and is_try_builder_info == is_try_builder):
                 return builder_name
         return ''

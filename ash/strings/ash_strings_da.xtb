@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="1012876632442809908">USB-C-enhed (port foran)</translation>
+<translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> blev ændret til <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Klik på Bekræft for at gemme ændringerne. De tidligere indstillinger gendannes om <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse. Angiv denne pinkode på den pågældende enhed: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Styluspennen er ved at løbe tør for batteri</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> blev tilføjet</translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">Vis sprogindstillinger</translation>
 <translation id="1460620680449458626">Lyden er slået fra.</translation>
 <translation id="1467432559032391204">Venstre</translation>
+<translation id="1479909375538722835">Svævende menu med hjælpefunktioner</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">Til</translation>
 <translation id="1516740043221086139">Forstyr ikke er aktiveret.</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">Cast skærm</translation>
 <translation id="5030687792513154421">Tiden er gået</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> har oprettet forbindelse til en ny telefon</translation>
+<translation id="5035389544768382859">Bekræft skærmkonfiguration</translation>
 <translation id="5083553833479578423">Få adgang til endnu flere Assistent-funktioner.</translation>
 <translation id="5136175204352732067">Du har tilsluttet et andet tastatur</translation>
 <translation id="5168181903108465623">Tilgængelige Cast-enheder</translation>
@@ -520,6 +523,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7526573455193969409">Netværket kan være overvåget</translation>
 <translation id="7536035074519304529">IP-adresse: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Det er sengetid</translation>
+<translation id="7561982940498449837">Luk menu</translation>
 <translation id="7562368315689366235">Emojipalet</translation>
 <translation id="7564874036684306347">Hvis du flytter vinduer til et andet skrivebord, kan det resultere i uventet adfærd. Efterfølgende notifikationer, vinduer og dialogbokse kan blive delt mellem skriveborde.</translation>
 <translation id="7568294522609223312">Deaktiver automatiske klik</translation>
@@ -562,6 +566,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8004512796067398576">Forøg</translation>
 <translation id="8029629653277878342">Der kræves en pinkode eller adgangskode som ekstra sikkerhed</translation>
 <translation id="8030169304546394654">Afbrudt</translation>
+<translation id="8042893070933512245">Åbn menuen med indstillinger for hjælpefunktioner</translation>
 <translation id="8048123526339889627">Bluetooth-indstillinger</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
 <translation id="8061464966246066292">Høj kontrast</translation>
@@ -637,6 +642,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8877788021141246043">Opret en påmindelse</translation>
 <translation id="8878886163241303700">Udvider skærm</translation>
 <translation id="890616557918890486">Skift kilde</translation>
+<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> understøtter ikke <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Opløsningen blev ændret til <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Klik på Bekræft for at anvende ændringerne. De tidligere indstillinger gendannes om <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Batteriet er på <ph name="PERCENTAGE" /> procent.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google-assistenten taler ikke dette sprog.</translation>

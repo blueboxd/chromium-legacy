@@ -82,6 +82,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_navigation_timings.h"
+#include "third_party/blink/public/web/web_print_page_description.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_range.h"
 #include "third_party/blink/public/web/web_remote_frame.h"
@@ -176,6 +177,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -12832,7 +12834,8 @@ static void TestFramePrinting(WebLocalFrameImpl* frame) {
   print_params.print_content_area.height = page_size.height;
   EXPECT_EQ(1, frame->PrintBegin(print_params, WebNode()));
   PaintRecorder recorder;
-  frame->PrintPagesForTesting(recorder.beginRecording(IntRect()), page_size);
+  frame->PrintPagesForTesting(recorder.beginRecording(IntRect()), page_size,
+                              page_size);
   frame->PrintEnd();
 }
 
@@ -13025,6 +13028,58 @@ TEST_F(WebFrameSimTest, GetPageSizeType) {
                             ASSERT_NO_EXCEPTION);
     EXPECT_EQ(test.page_size_type, main_frame->GetPageSizeType(1));
   }
+}
+
+TEST_F(WebFrameSimTest, PageOrientation) {
+  ScopedNamedPagesForTest named_pages_enabler(true);
+  WebSize page_size(500, 500);
+  WebView().MainFrameWidget()->Resize(page_size);
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        @page upright { page-orientation: upright; }
+        @page clockwise { page-orientation: rotate-right; }
+        @page counter-clockwise { page-orientation: rotate-left; }
+        div { height: 10px; }
+      </style>
+      <!-- First page: -->
+      <div style="page:upright;"></div>
+      <!-- Second page: -->
+      <div style="page:counter-clockwise;"></div>
+      <!-- Third page: -->
+      <div style="page:clockwise;"></div>
+      <div style="page:clockwise;"></div>
+      <!-- Fourth page: -->
+      <div></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+  RunPendingTasks();
+
+  auto* frame = WebView().MainFrame()->ToWebLocalFrame();
+  WebPrintParams print_params;
+  print_params.print_content_area.width = page_size.width;
+  print_params.print_content_area.height = page_size.height;
+  EXPECT_EQ(4, frame->PrintBegin(print_params, WebNode()));
+
+  WebPrintPageDescription description;
+
+  frame->GetPageDescription(0, &description);
+  EXPECT_EQ(description.orientation, PageOrientation::kUpright);
+
+  frame->GetPageDescription(1, &description);
+  EXPECT_EQ(description.orientation, PageOrientation::kRotateLeft);
+
+  frame->GetPageDescription(2, &description);
+  EXPECT_EQ(description.orientation, PageOrientation::kRotateRight);
+
+  frame->GetPageDescription(3, &description);
+  EXPECT_EQ(description.orientation, PageOrientation::kUpright);
+
+  frame->PrintEnd();
 }
 
 TEST_F(WebFrameTest, MediaQueriesInLocalFrameInsideRemote) {

@@ -63,6 +63,8 @@ class LockScreenActionBackgroundView::NoteBackground
 };
 
 LockScreenActionBackgroundView::LockScreenActionBackgroundView() {
+  SetCanMaximize(true);
+
   auto layout_manager = std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical);
   layout_manager->set_cross_axis_alignment(
@@ -104,10 +106,6 @@ void LockScreenActionBackgroundView::InkDropRippleAnimationEnded(
     return;
 
   std::move(animation_end_callback_).Run();
-}
-
-bool LockScreenActionBackgroundView::CanMaximize() const {
-  return true;
 }
 
 bool LockScreenActionBackgroundView::CanActivate() const {

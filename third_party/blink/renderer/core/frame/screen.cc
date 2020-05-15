@@ -28,7 +28,10 @@
 
 #include "third_party/blink/renderer/core/frame/screen.h"
 
+#include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -97,7 +100,20 @@ unsigned Screen::pixelDepth() const {
   return colorDepth();
 }
 
-int Screen::availLeft() const {
+void Screen::RecordIdentifiableSurface(WebFeature feature, int value) const {
+  if (!DomWindow()) return;
+  Document* document = DomWindow()->document();
+  if (!document) return;
+  IdentifiabilityMetricBuilder(
+      base::UkmSourceId::FromInt64(document->UkmSourceID()))
+      .Set(IdentifiableSurface::FromTypeAndInput(
+              IdentifiableSurface::Type::kWebFeature,
+              static_cast<uint64_t>(feature)),
+          IdentifiabilityDigestHelper(value))
+      .Record(document->UkmRecorder());
+}
+
+int Screen::ComputeAvailLeft() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
     return display_->work_area.x();
@@ -114,7 +130,14 @@ int Screen::availLeft() const {
   return static_cast<int>(GetScreenInfo(*frame).available_rect.x);
 }
 
-int Screen::availTop() const {
+int Screen::availLeft() const {
+  int result = ComputeAvailLeft();
+  RecordIdentifiableSurface(
+      WebFeature::kV8Screen_AvailLeft_AttributeGetter, result);
+  return result;
+}
+
+int Screen::ComputeAvailTop() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
     return display_->work_area.y();
@@ -131,7 +154,14 @@ int Screen::availTop() const {
   return static_cast<int>(GetScreenInfo(*frame).available_rect.y);
 }
 
-int Screen::availHeight() const {
+int Screen::availTop() const {
+  int result = ComputeAvailTop();
+  RecordIdentifiableSurface(
+      WebFeature::kV8Screen_AvailTop_AttributeGetter, result);
+  return result;
+}
+
+int Screen::ComputeAvailHeight() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
     return display_->work_area.height();
@@ -148,7 +178,14 @@ int Screen::availHeight() const {
   return GetScreenInfo(*frame).available_rect.height;
 }
 
-int Screen::availWidth() const {
+int Screen::availHeight() const {
+  int result = ComputeAvailHeight();
+  RecordIdentifiableSurface(
+      WebFeature::kV8Screen_AvailHeight_AttributeGetter, result);
+  return result;
+}
+
+int Screen::ComputeAvailWidth() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
     return display_->work_area.width();
@@ -163,6 +200,13 @@ int Screen::availWidth() const {
                                     screen_info.device_scale_factor));
   }
   return GetScreenInfo(*frame).available_rect.width;
+}
+
+int Screen::availWidth() const {
+  int result = ComputeAvailWidth();
+  RecordIdentifiableSurface(
+      WebFeature::kV8Screen_AvailWidth_AttributeGetter, result);
+  return result;
 }
 
 void Screen::Trace(Visitor* visitor) {

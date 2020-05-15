@@ -18,6 +18,8 @@ extern const char kPayloadParamName[];
 COMPONENT_EXPORT(ASSISTANT_SERVICE_SHARED)
 extern const char kKnowledgeApiEndpoint[];
 COMPONENT_EXPORT(ASSISTANT_SERVICE_SHARED)
+extern const char kSampleKnowledgeApiRequest[];
+COMPONENT_EXPORT(ASSISTANT_SERVICE_SHARED)
 extern const char kServiceIdEndpoint[];
 COMPONENT_EXPORT(ASSISTANT_SERVICE_SHARED)
 extern const char kSampleServiceIdRequest[];

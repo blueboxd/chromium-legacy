@@ -54,7 +54,6 @@
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1060292118287751956">Określa częstotliwość aktualizacji ekranu</translation>
 <translation id="1061904396131502319">Wielkimi krokami nadchodzi przerwa</translation>
-<translation id="1064552680598333868">Zmiany ustawień mikrofonu zostaną wprowadzone po następnym uruchomieniu Linuksa.</translation>
 <translation id="1067048845568873861">Utworzono</translation>
 <translation id="1067291318998134776">Linux (Beta)</translation>
 <translation id="1067922213147265141">Inne usługi Google</translation>
@@ -300,7 +299,6 @@
 <translation id="1386387014181100145">Cześć.</translation>
 <translation id="138784436342154190">Przywrócić domyślną stronę startową?</translation>
 <translation id="1390548061267426325">Otwórz jako zwykłą kartę</translation>
-<translation id="1392232653471491344">Wymagane ponowne uruchomienie Linuksa</translation>
 <translation id="1393283411312835250">Słońce i chmury</translation>
 <translation id="1395730723686586365">Aktualizator został uruchomiony</translation>
 <translation id="1396139853388185343">Błąd podczas konfigurowania drukarki</translation>
@@ -705,7 +703,6 @@
 <translation id="186612162884103683">„<ph name="EXTENSION" />” może odczytywać oraz zapisywać pliki graficzne, wideo i dźwiękowe z wybranych lokalizacji.</translation>
 <translation id="1867780286110144690">Przeglądarka <ph name="PRODUCT_NAME" /> jest gotowa do ukończenia instalacji.</translation>
 <translation id="1868193363684582383">„OK Google”</translation>
-<translation id="1870629042957780127">Przyznaj dostęp do mikrofonu</translation>
 <translation id="1871534214638631766">Pokazuj powiązane informacje po kliknięciu prawym przyciskiem lub przytrzymaniu treści</translation>
 <translation id="1871615898038944731"><ph name="DEVICE_TYPE" /> używa aktualnej wersji oprogramowania</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Przenieś kartę do innego okna}few{Przenieś karty do innego okna}many{Przenieś karty do innego okna}other{Przenieś karty do innego okna}}</translation>
@@ -2100,7 +2097,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3661172646479098821">Obecnie obsługiwane są tylko urządzenia z Androidem.</translation>
 <translation id="3664511988987167893">Ikona rozszerzenia</translation>
 <translation id="3665589677786828986">Przeglądarka Chrome wykryła, że niektóre z jej ustawień zostały zmodyfikowane przez inny program, i przywróciła im pierwotne wartości domyślne.</translation>
-<translation id="366867565525278777">Instalacja nie udała się z powodu braku miejsca. Potrzeba co najmniej <ph name="INSTALL_SIZE" /> wolnego miejsca. Aby zwolnić miejsce, usuń pliki z pamięci urządzenia.</translation>
 <translation id="3668801437375206837">Aby lepiej diagnozować problemy z Bluetoothem, pracownicy Google mogą dołączać do raportów z opiniami dodatkowe dzienniki dotyczące działania Bluetootha. Jeśli ta opcja jest zaznaczona, Twój raport będzie zawierał dzienniki btsnoop i HCI z bieżącej sesji, przy czym zostanie usuniętych możliwie najwięcej informacji umożliwiających identyfikację. Dostęp do tych dzienników zostanie ograniczony do menedżerów grupy produktów Chrome OS w Listnr. Dzienniki zostaną usunięte po 90 dniach.</translation>
 <translation id="3668823961463113931">Moduły obsługi</translation>
 <translation id="3670113805793654926">Urządzenia od dowolnego dostawcy</translation>
@@ -3228,7 +3224,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5158983316805876233">Używaj tego samego serwera proxy dla wszystkich protokołów</translation>
 <translation id="5160857336552977725">Zaloguj się na urządzeniu <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936">Wtyczka <ph name="PLUGIN_NAME" /> została zablokowana, ponieważ jest nieaktualna</translation>
-<translation id="5169131225159279624">Dodawanie</translation>
 <translation id="5170568018924773124">Pokaż w folderze</translation>
 <translation id="5171045022955879922">Wyszukaj lub wpisz URL</translation>
 <translation id="5171343362375269016">Zamieniona pamięć</translation>
@@ -3280,7 +3275,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5235565664420173924">Better Together</translation>
 <translation id="5235750401727657667">Zmiana strony, która wyświetla się, gdy otwierasz nową kartę</translation>
 <translation id="5238278114306905396">Aplikacja „<ph name="EXTENSION_NAME" />” została automatycznie usunięta.</translation>
-<translation id="5238435043462632060">Rodzic wyłączył „Uprawnienia stron, aplikacji i rozszerzeń” dla Chrome. <ph name="ACTION_PARAMETER" /> tego elementu <ph name="EXTENSION_TYPE_PARAMETER" /> jest niedozwolone.</translation>
 <translation id="5241128660650683457">Odczyt wszystkich Twoich danych na odwiedzanych stronach internetowych</translation>
 <translation id="5242724311594467048">Włączyć rozszerzenie „<ph name="EXTENSION_NAME" />”?</translation>
 <translation id="5243522832766285132">Spróbuj ponownie za kilka chwil</translation>
@@ -3949,7 +3943,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6085886413119427067">Określa, jak nawiązywać połączenia ze stronami przez zabezpieczone połączenie</translation>
 <translation id="6086846494333236931">Zainstalowane przez administratora</translation>
 <translation id="6087960857463881712">Niesamowita twarz</translation>
-<translation id="6088036808197002565"><ph name="ACTION_PARAMETER" /> elementu <ph name="EXTENSION_TYPE_PARAMETER" /> jest wyłączone</translation>
 <translation id="6091761513005122595">Udział został podłączony.</translation>
 <translation id="6093888419484831006">Anulowanie aktualizacji...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -5920,7 +5913,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8650543407998814195">Chociaż nie możesz już używać swojego starego profilu, możesz go usunąć.</translation>
 <translation id="8651585100578802546">Wymuś ponowne załadowanie tej strony</translation>
 <translation id="8652400352452647993">Błąd rozszerzenia pakietu</translation>
-<translation id="8653578191563425126">Ile miejsca na dysku zarezerwować dla Crostini (później możesz to zmienić).</translation>
 <translation id="8654151524613148204">Plik jest zbyt duży dla komputera. Przepraszamy.</translation>
 <translation id="8655295600908251630">Kanał</translation>
 <translation id="8655319619291175901">Ups... Coś poszło nie tak.</translation>

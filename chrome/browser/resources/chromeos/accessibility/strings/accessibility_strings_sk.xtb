@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">Prepínač</translation>
 <translation id="1299774449519412690">Svetlá nebeská modrá</translation>
 <translation id="1303806948938513162">Klepnutím štyrmi prstami prejdete do ponúk zariadenia ChromeVox</translation>
+<translation id="1325363694295259631"><ph name="NAME" />, výber prepínača položiek ponuky bol zrušený</translation>
 <translation id="1325946044405407859">Okrová</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> z <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">zvuková odozva na znaky a slová</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">Oznamovať aktuálny stav batérie</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, prepínač bol vybraný</translation>
 <translation id="5011664330025416377">Aktivujete stlačením klávesa Hľadať a medzerníka</translation>
+<translation id="5012724933919010465"><ph name="NAME" />, bol vybraný prepínač položiek ponuky</translation>
 <translation id="5020651427400641814">Povoliť zapisovanie reči do denníka</translation>
 <translation id="5041394372352067729">Presunúť zobrazenie Braillovho písma do hornej časti stránky</translation>
 <translation id="5042770794184672516">Zvýšiť hlasitosť reči</translation>

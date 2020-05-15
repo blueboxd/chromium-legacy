@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">ปุ่มเปิด-ปิด</translation>
 <translation id="1299774449519412690">สีฟ้าท้องฟ้าอ่อน</translation>
 <translation id="1303806948938513162">ใช้ 4 นิ้วแตะเพื่อเข้าสู่เมนู ChromeVox</translation>
+<translation id="1325363694295259631">ยกเลิกการเลือกปุ่มตัวเลือกรายการในเมนู <ph name="NAME" /> แล้ว</translation>
 <translation id="1325946044405407859">สีแทน</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> จาก <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">พูดอักขระและคำ</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">ประกาศสถานะปัจจุบันของแบตเตอรี่</translation>
 <translation id="4997282455736854877">ปุ่มตัวเลือก <ph name="NAME" /> ที่เลือกไว้</translation>
 <translation id="5011664330025416377">กด Search+Space เพื่อเปิดใช้งาน</translation>
+<translation id="5012724933919010465">เลือกปุ่มตัวเลือกรายการในเมนู <ph name="NAME" /> แล้ว</translation>
 <translation id="5020651427400641814">เปิดใช้การบันทึกเสียงพูด</translation>
 <translation id="5041394372352067729">เลื่อนการแสดงผลเบรลล์ไปที่ด้านบนของหน้า</translation>
 <translation id="5042770794184672516">เพิ่มความดังเสียงพูด</translation>

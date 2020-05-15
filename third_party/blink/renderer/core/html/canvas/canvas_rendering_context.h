@@ -204,6 +204,8 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   void Trace(Visitor*) override;
   virtual void Stop() = 0;
 
+  virtual uint64_t IdentifiabilityTextDigest() { return 0; }
+
  protected:
   CanvasRenderingContext(CanvasRenderingContextHost*,
                          const CanvasContextCreationAttributesCore&);

@@ -53,7 +53,6 @@
 <translation id="1056898198331236512">Abisua</translation>
 <translation id="1058262162121953039">PUK kodea</translation>
 <translation id="1061904396131502319">Atseden hartzeko garaia izango da laster</translation>
-<translation id="1064552680598333868">Mikrofonoan egindako aldaketek Linux berrabiarazten denean izango dute eragina.</translation>
 <translation id="1067048845568873861">Sortze-data</translation>
 <translation id="1067291318998134776">Linux (beta)</translation>
 <translation id="1067922213147265141">Beste Google-ren zerbitzu batzuk</translation>
@@ -298,7 +297,6 @@
 <translation id="1386387014181100145">Kaixo.</translation>
 <translation id="138784436342154190">Abioko orri lehenetsia leheneratu nahi duzu?</translation>
 <translation id="1390548061267426325">Ireki fitxa arrunt gisa</translation>
-<translation id="1392232653471491344">Linux berrabiarazi behar da</translation>
 <translation id="1393283411312835250">Eguzkia eta lainoak</translation>
 <translation id="1395730723686586365">Eguneratzailea abiarazi da</translation>
 <translation id="1396139853388185343">Errore bat gertatu da inprimagailua konfiguratzean</translation>
@@ -704,7 +702,6 @@
 <translation id="186612162884103683">"<ph name="EXTENSION" />" luzapenak markatutako kokapenetako irudiak, bideoak eta soinu-fitxategiak irakur eta idatz ditzake.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> prest dago instalazioa osatzeko</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
-<translation id="1870629042957780127">Eman mikrofonoa atzitzeko baimena</translation>
 <translation id="1871534214638631766">Erakutsi erlazionatutako informazioa edukia eskuineko botoiarekin edo luze sakatzean</translation>
 <translation id="1871615898038944731">Eguneratuta dago <ph name="DEVICE_TYPE" /> gailua</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Eraman fitxa beste leiho batera}other{Eraman fitxak beste leiho batera}}</translation>
@@ -2090,7 +2087,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="3661172646479098821">Une honetan, eginbidea Android-eko gailuetan bakarrik dago erabilgarri.</translation>
 <translation id="3664511988987167893">Luzapenaren ikonoa</translation>
 <translation id="3665589677786828986">Beste programa batek ezarpen batzuk hondatu dituela hauteman du Chrome-k. Ezarpen horien jatorrizko balio lehenetsiak berrezarri dira.</translation>
-<translation id="366867565525278777">Ezin izan da instalatu ez dagoelako behar adina toki. Gutxienez <ph name="INSTALL_SIZE" /> izan behar dituzu libre. Tokia egiteko, ezabatu gailuko memorian dauden fitxategiak.</translation>
 <translation id="3668801437375206837">Bluetooth konexioaren arazoak hobeto diagnostikatzeko, Google-ko langileek Bluetooth konexioari buruzko erregistro gehiago erants diezazkiekete oharren txostenei. Aukera hau markatuta dagoenean, txostenek uneko saioaren btsnoop eta HCI erregistroak eduki ditzakete, baina pertsonalki identifikatzeko balio duen informazioa kendu egingo da ahal den heinean. Listnr-eko Chrome OS produktuaren taldearen kudeatzaileek soilik atzi ditzakete erregistrook. 90 egunen buruan ezabatuko dira guztiz erregistroak.</translation>
 <translation id="3668823961463113931">Maneiatzaileak</translation>
 <translation id="3670113805793654926">Edozein saltzaileren gailuak</translation>
@@ -3211,7 +3207,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5158983316805876233">Erabili proxy bera protokolo guztietan</translation>
 <translation id="5160857336552977725">Hasi saioa <ph name="DEVICE_TYPE" /> gailuan</translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> blokeatu egin da zaharkituta dagoelako</translation>
-<translation id="5169131225159279624">Gehitzeko aukera</translation>
 <translation id="5170568018924773124">Erakutsi karpetan</translation>
 <translation id="5171045022955879922">Bilatu edo idatzi URLa</translation>
 <translation id="5171343362375269016">Trukatutako memoria</translation>
@@ -3263,7 +3258,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5235565664420173924">Better Together</translation>
 <translation id="5235750401727657667">Aldatu fitxa berriak irekitzean erakusten den orria</translation>
 <translation id="5238278114306905396">"<ph name="EXTENSION_NAME" />" aplikazioa automatikoki kendu da.</translation>
-<translation id="5238435043462632060">Zure gurasoak desaktibatu egin ditu Chrome-ren "Webguneen, aplikazioen eta luzapenen baimenak". Ez da onartzen <ph name="EXTENSION_TYPE_PARAMETER" /> <ph name="ACTION_PARAMETER" />.</translation>
 <translation id="5241128660650683457">Irakurri bisitatzen dituzun webguneetan dituzun datu guztiak</translation>
 <translation id="5242724311594467048">"<ph name="EXTENSION_NAME" />" gaitu nahi duzu?</translation>
 <translation id="5243522832766285132">Saiatu berriro minutu gutxi batzuk barru</translation>
@@ -3931,7 +3925,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="6085886413119427067">Webguneetara konexio seguru baten bidez nola konektatu zehazten du</translation>
 <translation id="6086846494333236931">Administratzaileak instalatu du</translation>
 <translation id="6087960857463881712">Aurpegi zoragarria</translation>
-<translation id="6088036808197002565">Desgaitu egin da <ph name="EXTENSION_TYPE_PARAMETER" /> <ph name="ACTION_PARAMETER" /></translation>
 <translation id="6091761513005122595">Muntatu da fitxategiak partekatzeko biltegia.</translation>
 <translation id="6093888419484831006">Eguneratzea bertan behera uzten…</translation>
 <translation id="6095984072944024315">−</translation>
@@ -5890,7 +5883,6 @@ Gorde gakoen fitxategia leku seguru batean. Zure luzapenaren bertsio berriak sor
 <translation id="8650543407998814195">Ezin duzu atzitu jada profil zaharra, baina baduzu hura kentzeko aukera.</translation>
 <translation id="8651585100578802546">Behartu orria berriro kargatzera.</translation>
 <translation id="8652400352452647993">Paketearen luzapenaren errorea</translation>
-<translation id="8653578191563425126">Crostini-rako erreserbatu beharreko tokia (geroago alda dezakezu).</translation>
 <translation id="8654151524613148204">Fitxategia handiegia da ordenagailuak kudeatu ahal izateko.</translation>
 <translation id="8655295600908251630">Kanala</translation>
 <translation id="8655319619291175901">Arazoren bat izan da.</translation>

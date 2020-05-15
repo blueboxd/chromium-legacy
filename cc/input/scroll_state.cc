@@ -24,4 +24,11 @@ void ScrollState::ConsumeDelta(double x, double y) {
     data_.delta_consumed_for_scroll_sequence = true;
 }
 
+gfx::ScrollOffset ScrollState::DeltaOrHint() const {
+  if (is_beginning())
+    return gfx::ScrollOffset(delta_x_hint(), delta_y_hint());
+
+  return gfx::ScrollOffset(delta_x(), delta_y());
+}
+
 }  // namespace cc

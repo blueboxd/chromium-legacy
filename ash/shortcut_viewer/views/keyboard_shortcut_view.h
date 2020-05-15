@@ -80,9 +80,6 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   void ShowSearchResults(const base::string16& search_query);
 
   // views::WidgetDelegate:
-  bool CanMaximize() const override;
-  bool CanMinimize() const override;
-  bool CanResize() const override;
   views::ClientView* CreateClientView(views::Widget* widget) override;
 
   static KeyboardShortcutView* GetInstanceForTesting();

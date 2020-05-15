@@ -54,7 +54,6 @@
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1060292118287751956">স্ক্ৰীনখন আপডে’ট হোৱা সঘনতা নিৰ্দিষ্ট কৰে</translation>
 <translation id="1061904396131502319">ডিভাইচ লক হওঁ হওঁ</translation>
-<translation id="1064552680598333868">পাছৰবাৰ Linux ৰিষ্টাৰ্ট কৰিলে মাইক্ৰ’ফ’নত কৰা সালসলনিবোৰ কাৰ্যকৰী হ’ব।</translation>
 <translation id="1067048845568873861">সৃষ্টি কৰা হ’ল</translation>
 <translation id="1067291318998134776">Linux (বিটা)</translation>
 <translation id="1067922213147265141">অন্য Google সেৱা</translation>
@@ -300,7 +299,6 @@
 <translation id="1386387014181100145">নমস্কাৰ,</translation>
 <translation id="138784436342154190">আৰম্ভণিতে খোল খোৱা ডিফ’ল্ট পৃষ্ঠাটো পুনঃস্থাপন কৰিবনে?</translation>
 <translation id="1390548061267426325">নিয়মীয়া টেব হিচাপে খোলক</translation>
-<translation id="1392232653471491344">Linux ৰিষ্টাৰ্ট কৰা প্ৰয়োজন</translation>
 <translation id="1393283411312835250">সূৰ্য আৰু মেঘ</translation>
 <translation id="1395730723686586365">আপডে‘টাৰ আৰম্ভ কৰা হৈছে</translation>
 <translation id="1396139853388185343">প্ৰিণ্টাৰ ছেট আপ কৰি থাকোঁতে কিবা আসোঁৱাহ হ’ল</translation>
@@ -706,7 +704,6 @@
 <translation id="186612162884103683">"<ph name="EXTENSION" />"এ পৰীক্ষা কৰা অৱস্থানসমূহত প্ৰতিচ্ছবি, ভিডিঅ’ আৰু ধ্বনিৰ ফাইলসমূহ পঢ়িব আৰু লিখিব পাৰে।</translation>
 <translation id="1867780286110144690">আপোনাৰ ইনষ্টলেশ্বন সম্পূৰ্ণ কৰিবলৈ <ph name="PRODUCT_NAME" /> সাজু আছে</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
-<translation id="1870629042957780127">মাইক্ৰ’ফ’নলৈ এক্সেছ দিয়ক</translation>
 <translation id="1871534214638631766">আপুনি সমলত ৰাইট ক্লিক কৰিলে অথবা দীঘলীয়াকৈ টিপি ধৰি থাকিলে প্ৰাসংগিক তথ্য দেখুৱাওক</translation>
 <translation id="1871615898038944731">আপোনাৰ <ph name="DEVICE_TYPE" /> আপ টু ডে’ট হৈ আছে</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{টেবটো অন্য এখন ৱিণ্ড’লৈ স্থানান্তৰ কৰক}one{টেবসমূহ অন্য এখন ৱিণ্ড’লৈ স্থানান্তৰ কৰক}other{টেবসমূহ অন্য এখন ৱিণ্ড’লৈ স্থানান্তৰ কৰক}}</translation>
@@ -2101,7 +2098,6 @@
 <translation id="3661172646479098821">বৰ্তমান কেৱল Android ডিভাইচসমূহহে সমৰ্থিত।</translation>
 <translation id="3664511988987167893">এক্সটেনশ্বন আইকন</translation>
 <translation id="3665589677786828986">Chromeএ আপোনাৰ ডিভাইচৰ কিছুমান ছেটিং অন্য এটা প্ৰ’গ্ৰেমে বিকল কৰিছে বুলি ধৰা পেলাইছে আৰু সেইসমূহ প্ৰকৃত ডিফ’ল্টলৈ ৰিছেট কৰিছে।</translation>
-<translation id="366867565525278777">ষ্ট’ৰেজৰ ঠাই কম হোৱাৰ কাৰণে ইনষ্টল কৰিব পৰা নগ’ল। অতিকমেও <ph name="INSTALL_SIZE" /> খালী ঠাইৰ আৱশ্যক। খালী ঠাই উলিয়াবলৈ ডিভাইচৰ ষ্ট'ৰেজৰ পৰা ফাইলসমূহ মচক।</translation>
 <translation id="3668801437375206837">ব্লুটুথৰ সমস্যাসমূহ ভালকৈ ধৰা পেলাবলৈ Googlerসকলে অতিৰিক্ত ব্লুটুথ লগ তেওঁলোকৰ মতামতৰ সৈতে অন্তৰ্ভুক্ত কৰিব পাৰে। যেতিয়া এই বিকল্পটো চ্চেক কৰি ৰখা হয় তেতিয়া আপোনাৰ ৰিপ‘ৰ্টত বৰ্তমানৰ ছেশ্বনৰ পৰা btsnoop আৰু HCI লগ অন্তৰ্ভুক্ত কৰা হ‘ব, যিবিলাক যিমান সম্ভৱ সিমান PII আঁতৰাবলৈ ছেনিটাইজ কৰা হয়। এই লগবিলাকলৈ এক্সেছ Listnrত Chrome OS প্ৰ‘ডাক্ট গোটৰ পৰিচালকসকলৰ মাজতে সীমাবদ্ধ থাকিব। লগবিলাক ৯০ দিনৰ পিছত পৰিষ্কাৰ কৰা হ‘ব।</translation>
 <translation id="3668823961463113931">হেণ্ডলাৰসমূহ</translation>
 <translation id="3670113805793654926">যিকোনো বিক্ৰেতাৰ ডিভাইচ</translation>
@@ -3224,7 +3220,6 @@
 <translation id="5158983316805876233">সকলো প্ৰ'ডাক্টৰ বাবে একেই প্ৰ'ক্সি ব্যৱহাৰ কৰক</translation>
 <translation id="5160857336552977725">আপোনাৰ <ph name="DEVICE_TYPE" />ত ছাইন ইন কৰক</translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" />ৰ ম্যাদ উকলাৰ বাবে অৱৰোধ কৰা হৈছে</translation>
-<translation id="5169131225159279624">যোগ কৰি থকা হৈছে</translation>
 <translation id="5170568018924773124">ফ’ল্ডাৰত দেখুৱাওক</translation>
 <translation id="5171045022955879922">সন্ধান কৰক বা URL টাইপ কৰক</translation>
 <translation id="5171343362375269016">ছোৱাইপ কৰা মেম’ৰী</translation>
@@ -3276,7 +3271,6 @@
 <translation id="5235565664420173924">উন্নত সমাযোজন</translation>
 <translation id="5235750401727657667">আপুনি এটা নতুন টেব খুলোঁতে দেখা পোৱা পৃষ্ঠাটো সলনি কৰক</translation>
 <translation id="5238278114306905396">"<ph name="EXTENSION_NAME" />" এপ্‌টো স্বয়ংক্ৰিয়ভাৱে আঁতৰোৱা হ’ল।</translation>
-<translation id="5238435043462632060">আপোনাৰ অভিভাৱকে Chromeৰ বাবে "ছাইট, এপ্ আৰু এক্সটেনশ্বনসমূহৰ বাবে অনুমতি" অফ কৰিছে। এইটো <ph name="EXTENSION_TYPE_PARAMETER" /> <ph name="ACTION_PARAMETER" />ৰ অনুমতি নাই।</translation>
 <translation id="5241128660650683457">আপুনি চোৱা ৱেবছাইটত আপোনাৰ সকলো ডেটা পঢ়ক</translation>
 <translation id="5242724311594467048">"<ph name="EXTENSION_NAME" />" সক্ষম কৰিবনে?</translation>
 <translation id="5243522832766285132">অলপ সময়ৰ পাছত পুনৰ চেষ্টা কৰক</translation>
@@ -3942,7 +3936,6 @@
 <translation id="6085886413119427067">এটা সুৰক্ষিত সংযোগৰ জৰিয়তে কেনেকৈ ৱেবছাইটসমূহৰ সৈতে সংযোগ কৰিব লাগে সেয়া নির্ধাৰণ কৰে</translation>
 <translation id="6086846494333236931">আপোনাৰ প্ৰশাসকে ইনষ্টল কৰিছে</translation>
 <translation id="6087960857463881712">অনন্য মুখমণ্ডল</translation>
-<translation id="6088036808197002565"><ph name="EXTENSION_TYPE_PARAMETER" /> <ph name="ACTION_PARAMETER" /> কার্যটো অক্ষম কৰা হ'ল</translation>
 <translation id="6091761513005122595">শ্বেয়াৰ সফলভাৱে মাউণ্ট কৰা হ’ল।</translation>
 <translation id="6093888419484831006">আপডে'ট বাতিল কৰি থকা হৈছে...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -5904,7 +5897,6 @@
 <translation id="8650543407998814195">যদিও আপুনি নিজৰ পুৰণি প্ৰ’ফাইলটো এক্সেছ কৰিব নোৱাৰে, তথাপি সেইটো আঁতৰাব পাৰে।</translation>
 <translation id="8651585100578802546">এই পৃষ্ঠাটো ৰিল‘ড কৰক-ক বলেৰে চলাওক</translation>
 <translation id="8652400352452647993">এক্সটেনশ্বনৰ আসোঁৱাহ পেক কৰক</translation>
-<translation id="8653578191563425126">Crostiniৰ বাবে সংৰক্ষণ কৰিবলগীয়া ডিস্কৰ ঠাই (আপুনি পাছত এইটো সলনি কৰিব পাৰিব)।</translation>
 <translation id="8654151524613148204">ফাইলটো আপোনাৰ কম্পিউটাৰৰ বাবে অতি ডাঙৰ। দুঃখিত।</translation>
 <translation id="8655295600908251630">চেনেল</translation>
 <translation id="8655319619291175901">আমি দুঃখিত, কিবা ভুল হ'ল।</translation>

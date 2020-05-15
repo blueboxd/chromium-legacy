@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sq">
 <translation id="1012876632442809908">Pajisja USB-C (porta përpara)</translation>
+<translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> ndryshoi në <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Kliko te "Konfirmo" për t'i mbajtur ndryshimet. Cilësimet e mëparshme do të restaurohen për <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Pajisja me Bluetooth, "<ph name="DEVICE_NAME" />" kërkon leje për çiftim. Fut këtë kod PIN në atë pajisje: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Bateria e stilolapsit është e ulët</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> u shtua</translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">Shfaq cilësimet e gjuhës</translation>
 <translation id="1460620680449458626">Volumi është i çaktivizuar.</translation>
 <translation id="1467432559032391204">Majtas</translation>
+<translation id="1479909375538722835">Menyja pluskuese e qasshmërisë</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">Aktive</translation>
 <translation id="1516740043221086139">Modaliteti "Mos shqetëso" është aktiv.</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">Ekrani i transmetimit</translation>
 <translation id="5030687792513154421">Koha mbaroi</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> u lidh me një telefon të ri</translation>
+<translation id="5035389544768382859">Konfirmo konfigurimin e ekranit</translation>
 <translation id="5083553833479578423">Shkyç më shumë funksione të "Asistentit".</translation>
 <translation id="5136175204352732067">Është lidhur një tastierë tjetër</translation>
 <translation id="5168181903108465623">Pajisjet e transmetimit janë të disponueshme</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">Rrjeti mund të jetë i monitoruar</translation>
 <translation id="7536035074519304529">Adresa IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Koha për gjumë</translation>
+<translation id="7561982940498449837">Mbyll menynë</translation>
 <translation id="7562368315689366235">Paleta e emoji-t</translation>
 <translation id="7564874036684306347">Zhvendosja e dritareve te një desktop tjetër mund të shkaktojë një sjellje të papritur. Njoftimet pasuese, dritarja dhe dialogët mund të ndahen mes desktopëve.</translation>
 <translation id="7568294522609223312">Çaktivizo klikimet automatike</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">Rritje</translation>
 <translation id="8029629653277878342">Kërkohet kodi PIN ose fjalëkalimi për më shumë siguri</translation>
 <translation id="8030169304546394654">I shkëputur</translation>
+<translation id="8042893070933512245">Hap menynë e cilësimeve të qasshmërisë</translation>
 <translation id="8048123526339889627">Cilësimet e Bluetooth-it</translation>
 <translation id="8054466585765276473">Po llogarit kohën e baterisë.</translation>
 <translation id="8061464966246066292">Kontrast i lartë</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">Cakto një alarm rikujtues</translation>
 <translation id="8878886163241303700">Ekran i zgjeruar</translation>
 <translation id="890616557918890486">Ndrysho burimin</translation>
+<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> nuk e mbështet <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Rezolucioni ndryshoi në <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Kliko "Konfirmo" për të ruajtur ndryshimet. Cilësimet e mëparshme do të restaurohen për <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Bateria është në <ph name="PERCENTAGE" /> për qind.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">"Asistenti i Google" nuk e flet këtë gjuhë.</translation>

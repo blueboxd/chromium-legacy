@@ -738,9 +738,19 @@ class WebLocalFrame : public WebFrame {
 
   // Testing ------------------------------------------------------------------
 
+  // Get the total spool size (the bounding box of all the pages placed after
+  // oneanother vertically), when printing for testing. Even if we still only
+  // support a uniform page size, some pages may be rotated using
+  // page-orientation.
+  virtual WebSize SpoolSizeInPixelsForTesting(
+      const WebSize& page_size_in_pixels,
+      int page_count) = 0;
+
   // Prints the frame into the canvas, with page boundaries drawn as one pixel
   // wide blue lines. This method exists to support web tests.
-  virtual void PrintPagesForTesting(cc::PaintCanvas*, const WebSize&) = 0;
+  virtual void PrintPagesForTesting(cc::PaintCanvas*,
+                                    const WebSize& page_size_in_pixels,
+                                    const WebSize& spool_size_in_pixels) = 0;
 
   // Returns the bounds rect for current selection. If selection is performed
   // on transformed text, the rect will still bound the selection but will

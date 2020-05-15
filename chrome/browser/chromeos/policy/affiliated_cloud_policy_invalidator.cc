@@ -16,7 +16,18 @@ AffiliatedCloudPolicyInvalidator::AffiliatedCloudPolicyInvalidator(
     PolicyInvalidationScope scope,
     CloudPolicyCore* core,
     AffiliatedInvalidationServiceProvider* invalidation_service_provider)
+    : AffiliatedCloudPolicyInvalidator(scope,
+                                       core,
+                                       invalidation_service_provider,
+                                       /*device_local_account_id=*/"") {}
+
+AffiliatedCloudPolicyInvalidator::AffiliatedCloudPolicyInvalidator(
+    PolicyInvalidationScope scope,
+    CloudPolicyCore* core,
+    AffiliatedInvalidationServiceProvider* invalidation_service_provider,
+    const std::string& device_local_account_id)
     : scope_(scope),
+      device_local_account_id_(device_local_account_id),
       core_(core),
       invalidation_service_provider_(invalidation_service_provider),
       highest_handled_invalidation_version_(0) {
@@ -45,8 +56,8 @@ void AffiliatedCloudPolicyInvalidator::CreateInvalidator(
   DCHECK(!invalidator_);
   invalidator_.reset(new CloudPolicyInvalidator(
       scope_, core_, base::ThreadTaskRunnerHandle::Get(),
-      base::DefaultClock::GetInstance(),
-      highest_handled_invalidation_version_));
+      base::DefaultClock::GetInstance(), highest_handled_invalidation_version_,
+      device_local_account_id_));
   invalidator_->Initialize(invalidation_service);
 }
 

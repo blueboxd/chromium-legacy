@@ -1852,15 +1852,13 @@ void PrintRenderFrameHelper::DidFinishPrinting(PrintingResult result) {
           LOG(ERROR) << "CreatePreviewDocument failed";
           preview_ui_->PrintPreviewFailed(cookie, ids.request_id);
         } else {
-          Send(new PrintHostMsg_PrintPreviewCancelled(routing_id(), cookie,
-                                                      ids));
+          preview_ui_->PrintPreviewCancelled(cookie, ids.request_id);
         }
       }
       print_preview_context_.Failed(notify_browser_of_print_failure_);
       break;
     case INVALID_SETTINGS:
-      Send(new PrintHostMsg_PrintPreviewInvalidPrinterSettings(routing_id(),
-                                                               cookie, ids));
+      preview_ui_->PrinterSettingsInvalid(cookie, ids.request_id);
       print_preview_context_.Failed(false);
       break;
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)

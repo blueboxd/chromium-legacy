@@ -334,6 +334,7 @@ group("closure_compile") {
     ":closure_compile_local",
     "cr_elements:closure_compile",
     "settings:closure_compile",
+    "tab_strip:closure_compile",
 
     # TODO(crbug.com/1000989): Add page specific targets here.
   ]

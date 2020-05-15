@@ -1177,8 +1177,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // time a CompositorFrame is generated.
   gfx::Vector2dF scroll_accumulated_this_frame_;
 
-  // Tracks the last scroll update state received. Used to infer the most
+  // Tracks the last scroll update/begin state received. Used to infer the most
   // recent scroll type and direction.
+  base::Optional<ScrollState> last_scroll_begin_state_;
   base::Optional<ScrollState> last_scroll_update_state_;
 
   std::vector<std::unique_ptr<SwapPromise>>

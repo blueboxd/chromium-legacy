@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">Dugme za uključivanje/isključivanje</translation>
 <translation id="1299774449519412690">Svetla nebeskoplava</translation>
 <translation id="1303806948938513162">Dodirnite sa 4 prsta da biste ušli u ChromeVox menije</translation>
+<translation id="1325363694295259631"><ph name="NAME" />, poništen je izbor dugmeta za izbor stavke menija</translation>
 <translation id="1325946044405407859">Žutomrka</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> od <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">odjek znakova i reči</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">Opisuje trenutni status baterije</translation>
 <translation id="4997282455736854877">Dugme za izbor <ph name="NAME" /> je izabrano</translation>
 <translation id="5011664330025416377">Za aktiviranje pritisnite taster za pretragu + taster za razmak</translation>
+<translation id="5012724933919010465"><ph name="NAME" />, izabrano je dugme za izbor stavke menija</translation>
 <translation id="5020651427400641814">Omogući evidentiranje govora</translation>
 <translation id="5041394372352067729">Pomeranje ekrana sa Brajevom azbukom u vrh stranice</translation>
 <translation id="5042770794184672516">Povećavanje jačine zvuka govora</translation>

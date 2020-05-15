@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="az">
 <translation id="1012876632442809908">USB-C cihazı (ön port)</translation>
+<translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> <ph name="RESOLUTION" /> ilə dəyişdirilib (<ph name="REFRESH_RATE" /> Hz). Dəyişiklikləri saxlamaq üçün "təsdiq edin" seçiminə toxunun. Əvvəlki ayarlar <ph name="TIMEOUT_SECONDS" /> ərzində bərpa ediləcək.</translation>
 <translation id="1013923882670373915">Bluetooth cihazı "<ph name="DEVICE_NAME" />" cütlənmək üçün icazə istəyir. Həmin cihaza PIN kodu daxil edin: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Qramafon iynəsinin batareyası azdır</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> əlavə edildi</translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">Dil ayarlarını göstərin</translation>
 <translation id="1460620680449458626">Səssizdədir.</translation>
 <translation id="1467432559032391204">Sol</translation>
+<translation id="1479909375538722835">üzən əlçatımlılıq menyusu</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">Aktiv</translation>
 <translation id="1516740043221086139">Narahat etməyin rejimi aktivdir</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">Cast ekran</translation>
 <translation id="5030687792513154421">Vaxt bitdi</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> yeni telefona qoşuldu</translation>
+<translation id="5035389544768382859">Displey Konfiqurasiyasını təsdiq edin</translation>
 <translation id="5083553833479578423">Daha çox Assistent funksiyalarını kiliddən çıxarın.</translation>
 <translation id="5136175204352732067">Fərqli klaviatura qoşuldu</translation>
 <translation id="5168181903108465623">Mövcud Cast cihazlar</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">Şəbəkəyə nəzarət edilə bilər</translation>
 <translation id="7536035074519304529">IP ünvanı: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Yatmaq vaxtı</translation>
+<translation id="7561982940498449837">Menyunu bağlayın</translation>
 <translation id="7562368315689366235">Emoji paleti</translation>
 <translation id="7564874036684306347">Pəncərənin digər masaüstünə köçürülməsi gözlənilməz nəticələr verə bilər. Növbəti bildirişlər, pəncərə və dialoqlar masaüstülər arasında bölüşdürülə bilər.</translation>
 <translation id="7568294522609223312">Avtomatik klikləri deaktiv edin</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">Çoxaldın</translation>
 <translation id="8029629653277878342">Əlavə təhlükəsizlik üçün PIN və ya parol tələb olunur</translation>
 <translation id="8030169304546394654">Bağlantı kəsildi</translation>
+<translation id="8042893070933512245">Əlçatımlılıq ayarları menyusunu açın</translation>
 <translation id="8048123526339889627">Bluetooth ayarları</translation>
 <translation id="8054466585765276473">Enerji vaxtı hesablanır.</translation>
 <translation id="8061464966246066292">Yüksək kontrast</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">Xatırlatma ayarlayın</translation>
 <translation id="8878886163241303700">Ekran böyüdülür</translation>
 <translation id="890616557918890486">Mənbəni dəyişin</translation>
+<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> ayırdetmə dəqiqliyini dəstəkləmir (<ph name="SPECIFIED_REFRESH_RATE" /> Hs). Ayırdetmə dəqiqliyi <ph name="FALLBACK_RESOLUTION" /> ilə dəyişdirilib (<ph name="SPECIFIED_REFRESH_RATE" />). Dəyişiklikləri saxlamaq üçün "Təsdiq" seçiminə toxunun. Əvvəlki ayarlar <ph name="TIMEOUT_SECONDS" /> ərzində bərpa ediləcək.</translation>
 <translation id="8909138438987180327">Batareya <ph name="PERCENTAGE" /> faizdir.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistentdə bu dil mövcud deyil.</translation>

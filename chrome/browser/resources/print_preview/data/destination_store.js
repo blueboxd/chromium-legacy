@@ -10,7 +10,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {CloudPrintInterface, CloudPrintInterfaceEventType, CloudPrintInterfacePrinterFailedDetail, CloudPrintInterfaceProcessInviteDetail, CloudPrintInterfaceSearchDoneDetail} from '../cloud_print_interface.js';
 import {Metrics, MetricsContext} from '../metrics.js';
-import {CapabilitiesResponse, LocalDestinationInfo, NativeLayer, PrinterSetupResponse, PrivetPrinterDescription, ProvisionalDestinationInfo} from '../native_layer.js';
+import {CapabilitiesResponse, LocalDestinationInfo, NativeLayer, NativeLayerImpl, PrinterSetupResponse, PrivetPrinterDescription, ProvisionalDestinationInfo} from '../native_layer.js';
 
 import {Cdd, CloudOrigins, createDestinationKey, createRecentDestinationKey, Destination, DestinationConnectionStatus, DestinationOrigin, DestinationProvisionalType, DestinationType, RecentDestination} from './destination.js';
 import {DestinationMatch, originToType, PrinterType} from './destination_match.js';
@@ -229,7 +229,7 @@ export class DestinationStore extends EventTarget {
      * Used to fetch local print destinations.
      * @private {!NativeLayer}
      */
-    this.nativeLayer_ = NativeLayer.getInstance();
+    this.nativeLayer_ = NativeLayerImpl.getInstance();
 
     /**
      * Whether PDF printer is enabled. It's disabled, for example, in App

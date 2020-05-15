@@ -11,6 +11,7 @@ import android.content.pm.Signature;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Log;
+import org.chromium.components.payments.PackageManagerDelegate;
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestDownloader.ManifestDownloadCallback;
 import org.chromium.components.payments.PaymentManifestParser;

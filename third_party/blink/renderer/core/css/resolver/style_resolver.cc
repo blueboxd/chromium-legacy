@@ -1219,7 +1219,9 @@ scoped_refptr<ComputedStyle> StyleResolver::PseudoStyleForElement(
   return state.TakeStyle();
 }
 
-scoped_refptr<const ComputedStyle> StyleResolver::StyleForPage(int page_index) {
+scoped_refptr<const ComputedStyle> StyleResolver::StyleForPage(
+    int page_index,
+    const AtomicString& page_name) {
   scoped_refptr<const ComputedStyle> initial_style =
       InitialStyleForElement(GetDocument());
   if (!GetDocument().documentElement())
@@ -1238,7 +1240,7 @@ scoped_refptr<const ComputedStyle> StyleResolver::StyleForPage(int page_index) {
 
   STACK_UNINITIALIZED StyleCascade cascade(state);
 
-  PageRuleCollector collector(root_element_style, page_index,
+  PageRuleCollector collector(root_element_style, page_index, page_name,
                               cascade.MutableMatchResult());
 
   collector.MatchPageRules(
@@ -2176,62 +2178,10 @@ void StyleResolver::CascadeAndApplyMatchedProperties(StyleResolverState& state,
     cascade.Apply();
   }
 
-  CascadeAndApplyForcedColors(state, result);
-
   state.LoadPendingResources();
   MaybeAddToMatchedPropertiesCache(state, cache_success, result);
 
   DCHECK(!state.GetFontBuilder().FontDirty());
-}
-
-void StyleResolver::CascadeAndApplyForcedColors(StyleResolverState& state,
-                                                const MatchResult& result) {
-  if (!IsForcedColorsModeEnabled())
-    return;
-  if (state.Style()->ForcedColorAdjust() == EForcedColorAdjust::kNone)
-    return;
-
-  Color prev_bg_color = state.Style()->BackgroundColor().GetColor();
-
-  STACK_UNINITIALIZED StyleCascade cascade(state);
-
-  const CSSValue* unset = cssvalue::CSSUnsetValue::Create();
-  const CSSValue* canvas = CSSIdentifierValue::Create(CSSValueID::kCanvas);
-  auto* set =
-      MakeGarbageCollected<MutableCSSPropertyValueSet>(state.GetParserMode());
-  set->SetProperty(CSSPropertyID::kBackgroundColor, *canvas);
-  set->SetProperty(CSSPropertyID::kBorderBottomColor, *unset);
-  set->SetProperty(CSSPropertyID::kBorderLeftColor, *unset);
-  set->SetProperty(CSSPropertyID::kBorderRightColor, *unset);
-  set->SetProperty(CSSPropertyID::kBorderTopColor, *unset);
-  set->SetProperty(CSSPropertyID::kBoxShadow, *unset);
-  set->SetProperty(CSSPropertyID::kColor, *unset);
-  set->SetProperty(CSSPropertyID::kColumnRuleColor, *unset);
-  set->SetProperty(CSSPropertyID::kFill, *unset);
-  set->SetProperty(CSSPropertyID::kOutlineColor, *unset);
-  set->SetProperty(CSSPropertyID::kStroke, *unset);
-  set->SetProperty(CSSPropertyID::kTextDecorationColor, *unset);
-  set->SetProperty(CSSPropertyID::kTextShadow, *unset);
-  set->SetProperty(CSSPropertyID::kWebkitTapHighlightColor, *unset);
-  set->SetProperty(CSSPropertyID::kWebkitTextEmphasisColor, *unset);
-
-  cascade.MutableMatchResult().AddMatchedProperties(set);
-
-  for (const auto& matched_properties : result.UaRules()) {
-    cascade.MutableMatchResult().AddMatchedProperties(
-        matched_properties.properties,
-        matched_properties.types_.link_match_type,
-        static_cast<ValidPropertyFilter>(
-            matched_properties.types_.valid_property_filter));
-  }
-
-  CascadeFilter filter(CSSProperty::kIsAffectedByForcedColors, false);
-  cascade.Apply(filter);
-
-  Color current_bg_color = state.Style()->BackgroundColor().GetColor();
-  Color bg_color(current_bg_color.Red(), current_bg_color.Green(),
-                 current_bg_color.Blue(), prev_bg_color.Alpha());
-  state.Style()->SetBackgroundColor(bg_color);
 }
 
 bool StyleResolver::HasAuthorBackground(const StyleResolverState& state) {

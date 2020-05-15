@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CloudPrintInterface, CloudPrintInterfaceImpl, Destination, DuplexMode, NativeLayer, PluginProxy} from 'chrome://print/print_preview.js';
+import {CloudPrintInterface, CloudPrintInterfaceImpl, Destination, DuplexMode, NativeLayer, NativeLayerImpl, PluginProxy} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {CloudPrintInterfaceStub} from 'chrome://test/print_preview/cloud_print_interface_stub.js';
@@ -73,9 +73,9 @@ suite(print_preview_app_test.suiteName, function() {
   /** @override */
   setup(function() {
     // Stub out the native layer, the cloud print interface, and the plugin.
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     nativeLayer = new NativeLayerStub();
-    NativeLayer.setInstance(nativeLayer);
+    NativeLayerImpl.instance_ = nativeLayer;
     cloudPrintInterface = new CloudPrintInterfaceStub();
     CloudPrintInterfaceImpl.instance_ = cloudPrintInterface;
     pluginProxy = new PDFPluginStub();

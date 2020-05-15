@@ -3,6 +3,7 @@
 <body>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/visibility.js"></script>
 <script>
 'use strict';
 
@@ -10,7 +11,8 @@ promise_test(async t => {
   await internals.setPermission({name: 'screen-wake-lock'}, 'granted',
                                 location.origin, location.origin);
 
-  window.testRunner.setPageVisibility('hidden');
+  await setMainWindowHidden(true);
+  
   assert_true(document.hidden);
   return promise_rejects_dom(t, "NotAllowedError", navigator.wakeLock.request('screen'));
 }, "navigator.wakeLock.request('screen') fails when the document is hidden");
@@ -26,10 +28,10 @@ promise_test(async t => {
   await internals.setPermission({name: 'screen-wake-lock'}, 'granted',
                                 location.origin, location.origin);
 
-  window.testRunner.setPageVisibility('visible');
+  await setMainWindowHidden(false);
 
   const screenLock = navigator.wakeLock.request('screen');
-  window.testRunner.setPageVisibility('hidden');
+  await setMainWindowHidden(true);
   assert_true(document.hidden);
   return promise_rejects_dom(t, "NotAllowedError", screenLock);
 }, "navigator.wakeLock.request('screen') aborts when the page is hidden");
@@ -38,7 +40,7 @@ promise_test(async t => {
   await internals.setPermission({name: 'screen-wake-lock'}, 'granted',
                                 location.origin, location.origin);
 
-  window.testRunner.setPageVisibility('visible');
+  await setMainWindowHidden(false);
 
   const screenLock1 = await navigator.wakeLock.request('screen');
   const screenLock2 = await navigator.wakeLock.request('screen');
@@ -46,7 +48,7 @@ promise_test(async t => {
   const wait1 = new EventWatcher(t, screenLock1, 'release').wait_for('release');
   const wait2 = new EventWatcher(t, screenLock2, 'release').wait_for('release');
 
-  window.testRunner.setPageVisibility('hidden');
+  await setMainWindowHidden(true);
 
   return Promise.all([wait1, wait2]);
 }, "Screen wake locks are released when the document the page is hidden");

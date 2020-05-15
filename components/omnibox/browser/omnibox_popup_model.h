@@ -244,6 +244,11 @@ class OmniboxPopupModel {
   // It doesn't account for some Step methods skipping some selections.
   bool IsSelectionAvailable(Selection selection) const;
 
+  // Triggers the action on |selection| (usually an auxiliary button).
+  // If the popup model supports the action and performs it, this returns true.
+  // This can't handle all actions currently, and returns false in those cases.
+  bool TriggerSelectionAction(Selection selection);
+
  private:
   void OnFaviconFetched(const GURL& page_url, const gfx::Image& icon);
 

@@ -35,11 +35,13 @@ public class HeaderViewBinder {
                                                            : R.drawable.ic_expand_more_black_24dp);
             view.setExpandedStateForAccessibility(isExpanded);
         } else if (propertyKey == HeaderViewProperties.DELEGATE) {
-            Runnable delegate = model.get(HeaderViewProperties.DELEGATE);
+            HeaderViewProperties.Delegate delegate = model.get(HeaderViewProperties.DELEGATE);
             if (delegate != null) {
-                view.setOnClickListener(v -> delegate.run());
+                view.setOnClickListener(v -> delegate.onHeaderClicked());
+                view.setOnSelectListener(delegate::onHeaderSelected);
             } else {
                 view.setOnClickListener(null);
+                view.setOnSelectListener(null);
             }
         }
     }

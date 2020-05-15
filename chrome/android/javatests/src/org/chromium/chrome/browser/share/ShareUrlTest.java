@@ -49,6 +49,7 @@ public class ShareUrlTest {
             Assert.assertTrue(intent.hasExtra(Intent.EXTRA_TEXT));
             String url = intent.getStringExtra(Intent.EXTRA_TEXT);
             Assert.assertEquals(originalUrl, url);
+            window.destroy();
         });
     }
 

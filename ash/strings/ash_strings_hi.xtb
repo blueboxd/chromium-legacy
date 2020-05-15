@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
 <translation id="1012876632442809908">USB-C डिवाइस (सामने वाला पोर्ट)</translation>
+<translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> को <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> हर्ट्ज़) में बदला गया. बदलाव बनाए रखने के लिए, 'जारी रखें' पर क्लिक करें. सेटिंग को <ph name="TIMEOUT_SECONDS" /> में पहले जैसा किया जाएगा.</translation>
 <translation id="1013923882670373915">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. कृपया उस डिवाइस पर यह पिन कोड डालें: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">स्टाइलस की बैटरी कम हो गई है</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> को जोड़ा गया</translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">भाषा सेटिंग दिखाएं</translation>
 <translation id="1460620680449458626">आवाज़ को म्यूट किया गया है.</translation>
 <translation id="1467432559032391204">बाएं</translation>
+<translation id="1479909375538722835">फ़्लोट करने वाले सुलभता मेन्यू</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">चालू है</translation>
 <translation id="1516740043221086139">'परेशान न करें' मोड चालू है.</translation>
@@ -334,6 +336,7 @@
 <translation id="4961318399572185831">स्‍क्रीन कास्‍ट करें</translation>
 <translation id="5030687792513154421">समय पूरा हो गया</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> एक नए फ़ोन से कनेक्ट हो गया है</translation>
+<translation id="5035389544768382859">डिसप्ले के कॉन्फ़िगरेशन की पुष्टि करें</translation>
 <translation id="5083553833479578423">Assistant की और भी सुविधाओं के बारे में जानें.</translation>
 <translation id="5136175204352732067">अलग कीबोर्ड कनेक्ट किया गया</translation>
 <translation id="5168181903108465623">कास्ट डिवाइस उपलब्ध हैं</translation>
@@ -520,6 +523,7 @@
 <translation id="7526573455193969409">नेटवर्क की निगरानी की जा सकती है</translation>
 <translation id="7536035074519304529">आईपी पता: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">सोने का समय हो गया</translation>
+<translation id="7561982940498449837">मेन्यू बंद करें</translation>
 <translation id="7562368315689366235">इमोजी पैलेट</translation>
 <translation id="7564874036684306347">विंडो को किसी दूसरे डेस्कटॉप पर ले जाने से अनचाहा बर्ताव हो सकता है. इसके बाद की सूचनाएं, विंडो और संवाद डेस्कटॉप के बीच बंट सकती हैं.</translation>
 <translation id="7568294522609223312">अपने-आप क्लिक होने की सुविधा बंद करें</translation>
@@ -562,6 +566,7 @@
 <translation id="8004512796067398576">वृद्धि</translation>
 <translation id="8029629653277878342">ज़्यादा सुरक्षा के लिए पिन या पासवर्ड की ज़रूरत है</translation>
 <translation id="8030169304546394654">डिसकनेक्ट किया गया</translation>
+<translation id="8042893070933512245">सुलभता सेटिंग मेन्यू खोलें</translation>
 <translation id="8048123526339889627">ब्लूटूथ की सेटिंग</translation>
 <translation id="8054466585765276473">बैटरी समय की गणना की जा रही है.</translation>
 <translation id="8061464966246066292">उच्च स्क्रीन की रोशनी</translation>
@@ -637,6 +642,7 @@
 <translation id="8877788021141246043">रिमाइंडर लगाओ</translation>
 <translation id="8878886163241303700">स्क्रीन का विस्तार करना</translation>
 <translation id="890616557918890486">स्रोत बदलें</translation>
+<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> हर्ट्ज़) के साथ काम नहीं करता है. इस रिज़ॉल्यूशन को <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) में बदला गया. बदलावों को बनाए रखने के लिए 'पुष्टि करें' पर क्लिक करें. सेटिंग को <ph name="TIMEOUT_SECONDS" /> में पहले जैसा किया जाएगा.</translation>
 <translation id="8909138438987180327"><ph name="PERCENTAGE" /> बैटरी बची है.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistant सेवा इस भाषा में उपलब्ध नहीं है.</translation>

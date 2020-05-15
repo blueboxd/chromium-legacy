@@ -12,7 +12,7 @@ class MenuManager {
   constructor() {
     /**
      * A list of the Menu actions that are currently enabled.
-     * @private {!Array<!SAConstants.MenuAction>}
+     * @private {!Array<!SwitchAccessMenuAction>}
      */
     this.actions_ = [];
 
@@ -197,7 +197,7 @@ class MenuManager {
       manager.selectBackButton_();
     } else {
       // A menu action was selected.
-      manager.node_.performAction(SAConstants.MenuAction.SELECT);
+      manager.node_.performAction(SwitchAccessMenuAction.SELECT);
     }
     return true;
   }
@@ -307,7 +307,7 @@ class MenuManager {
    * should select the current node automatically.
    *
    * @param {!SAChildNode} node
-   * @return {Array<!SAConstants.MenuAction>}
+   * @return {Array<!SwitchAccessMenuAction>}
    * @private
    */
   getMainMenuActionsForNode_(node) {
@@ -319,7 +319,7 @@ class MenuManager {
     }
 
     // Add global actions.
-    actions.push(SAConstants.MenuAction.SETTINGS);
+    actions.push(SwitchAccessMenuAction.SETTINGS);
     return actions;
   }
 
@@ -330,7 +330,7 @@ class MenuManager {
    * @param {!SAChildNode} navNode The currently selected node, for which the
    *     menu is being opened.
    * @param {SAConstants.MenuId} menuId
-   * @return {Array<!SAConstants.MenuAction>}
+   * @return {Array<!SwitchAccessMenuAction>}
    * @private
    */
   getMenuActions_(navNode, menuId) {
@@ -346,19 +346,19 @@ class MenuManager {
 
   /**
    * Get the actions in the text navigation submenu.
-   * @return {Array<!SAConstants.MenuAction>}
+   * @return {Array<!SwitchAccessMenuAction>}
    * @private
    */
   getTextNavigationActions_() {
     return [
-      SAConstants.MenuAction.JUMP_TO_BEGINNING_OF_TEXT,
-      SAConstants.MenuAction.JUMP_TO_END_OF_TEXT,
-      SAConstants.MenuAction.MOVE_BACKWARD_ONE_CHAR_OF_TEXT,
-      SAConstants.MenuAction.MOVE_BACKWARD_ONE_WORD_OF_TEXT,
-      SAConstants.MenuAction.MOVE_DOWN_ONE_LINE_OF_TEXT,
-      SAConstants.MenuAction.MOVE_FORWARD_ONE_CHAR_OF_TEXT,
-      SAConstants.MenuAction.MOVE_FORWARD_ONE_WORD_OF_TEXT,
-      SAConstants.MenuAction.MOVE_UP_ONE_LINE_OF_TEXT
+      SwitchAccessMenuAction.JUMP_TO_BEGINNING_OF_TEXT,
+      SwitchAccessMenuAction.JUMP_TO_END_OF_TEXT,
+      SwitchAccessMenuAction.MOVE_BACKWARD_ONE_CHAR_OF_TEXT,
+      SwitchAccessMenuAction.MOVE_BACKWARD_ONE_WORD_OF_TEXT,
+      SwitchAccessMenuAction.MOVE_DOWN_ONE_LINE_OF_TEXT,
+      SwitchAccessMenuAction.MOVE_FORWARD_ONE_CHAR_OF_TEXT,
+      SwitchAccessMenuAction.MOVE_FORWARD_ONE_WORD_OF_TEXT,
+      SwitchAccessMenuAction.MOVE_UP_ONE_LINE_OF_TEXT
     ];
   }
 
@@ -493,12 +493,12 @@ class MenuManager {
 
   /**
    * Perform a specified action on the Switch Access menu.
-   * @param {!SAConstants.MenuAction} action
+   * @param {!SwitchAccessMenuAction} action
    */
   performAction(action) {
     SwitchAccessMetrics.recordMenuAction(action);
     // Handle global actions.
-    if (action === SAConstants.MenuAction.SETTINGS) {
+    if (action === SwitchAccessMenuAction.SETTINGS) {
       chrome.accessibilityPrivate.openSettingsSubpage(
           'manageAccessibility/switchAccess');
       this.exit_();
@@ -508,44 +508,44 @@ class MenuManager {
     // Handle text editing actions.
     // TODO(anastasi): Move these actions into the nodes themselves.
     switch (action) {
-      case SAConstants.MenuAction.MOVE_CURSOR:
+      case SwitchAccessMenuAction.MOVE_CURSOR:
         if (this.menuOriginNode_) {
           this.openMenu_(
               this.menuOriginNode_, SAConstants.MenuId.TEXT_NAVIGATION,
               true /** Opening a submenu. */);
         }
         return;
-      case SAConstants.MenuAction.JUMP_TO_BEGINNING_OF_TEXT:
+      case SwitchAccessMenuAction.JUMP_TO_BEGINNING_OF_TEXT:
         TextNavigationManager.jumpToBeginning();
         return;
-      case SAConstants.MenuAction.JUMP_TO_END_OF_TEXT:
+      case SwitchAccessMenuAction.JUMP_TO_END_OF_TEXT:
         TextNavigationManager.jumpToEnd();
         return;
-      case SAConstants.MenuAction.MOVE_BACKWARD_ONE_CHAR_OF_TEXT:
+      case SwitchAccessMenuAction.MOVE_BACKWARD_ONE_CHAR_OF_TEXT:
         TextNavigationManager.moveBackwardOneChar();
         return;
-      case SAConstants.MenuAction.MOVE_BACKWARD_ONE_WORD_OF_TEXT:
+      case SwitchAccessMenuAction.MOVE_BACKWARD_ONE_WORD_OF_TEXT:
         TextNavigationManager.moveBackwardOneWord();
         return;
-      case SAConstants.MenuAction.MOVE_DOWN_ONE_LINE_OF_TEXT:
+      case SwitchAccessMenuAction.MOVE_DOWN_ONE_LINE_OF_TEXT:
         TextNavigationManager.moveDownOneLine();
         return;
-      case SAConstants.MenuAction.MOVE_FORWARD_ONE_CHAR_OF_TEXT:
+      case SwitchAccessMenuAction.MOVE_FORWARD_ONE_CHAR_OF_TEXT:
         TextNavigationManager.moveForwardOneChar();
         return;
-      case SAConstants.MenuAction.MOVE_FORWARD_ONE_WORD_OF_TEXT:
+      case SwitchAccessMenuAction.MOVE_FORWARD_ONE_WORD_OF_TEXT:
         TextNavigationManager.moveForwardOneWord();
         return;
-      case SAConstants.MenuAction.MOVE_UP_ONE_LINE_OF_TEXT:
+      case SwitchAccessMenuAction.MOVE_UP_ONE_LINE_OF_TEXT:
         TextNavigationManager.moveUpOneLine();
         return;
-      case SAConstants.MenuAction.SELECT_START:
+      case SwitchAccessMenuAction.START_TEXT_SELECTION:
         TextNavigationManager.saveSelectStart();
         if (this.menuOriginNode_) {
           this.openMenu_(this.menuOriginNode_, SAConstants.MenuId.MAIN);
         }
         return;
-      case SAConstants.MenuAction.SELECT_END:
+      case SwitchAccessMenuAction.END_TEXT_SELECTION:
         TextNavigationManager.resetCurrentlySelecting();
         if (this.menuOriginNode_) {
           this.openMenu_(this.menuOriginNode_, SAConstants.MenuId.MAIN);

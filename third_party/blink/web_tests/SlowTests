@@ -203,9 +203,6 @@ crbug.com/779366 fast/shapes/crash-allocating-very-large-raster-shape.html [ Slo
 # These font-display tests are slow as they test web fonts behavior around the 3-seconds timeout.
 crbug.com/564109 http/tests/webfont/font-display-intervention.html [ Slow ]
 
-# This test has many test cases and each case requires a gesture scroll with pauses in between.
-crbug.com/765326 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/scroll-customization-property.html [ Slow ]
-
 # This test does a lot of IPC because it tests limits on IPC allocations,
 # and is therefore slow.
 crbug.com/826957 fast/peerconnection/RTCPeerConnection-manyCandidates.html [ Slow ]

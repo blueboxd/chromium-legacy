@@ -363,6 +363,9 @@ TEST_F(AnimationHostTest, LayerTreeMutatorUpdateReflectsScrollAnimations) {
 }
 
 TEST_F(AnimationHostTest, TickScrollLinkedAnimation) {
+  client_.RegisterElementId(element_id_, ElementListType::ACTIVE);
+  client_impl_.RegisterElementId(element_id_, ElementListType::PENDING);
+  client_impl_.RegisterElementId(element_id_, ElementListType::ACTIVE);
   PropertyTrees property_trees;
   property_trees.is_main_thread = false;
   property_trees.is_active = true;
@@ -378,7 +381,7 @@ TEST_F(AnimationHostTest, TickScrollLinkedAnimation) {
   scoped_refptr<Animation> animation = Animation::Create(animation_id);
   host_impl_->AddAnimationTimeline(scroll_timeline);
   scroll_timeline->AttachAnimation(animation);
-  animation->AddToTicking();
+
   ASSERT_TRUE(animation->IsScrollLinkedAnimation());
 
   animation->AttachElement(element_id_);
@@ -393,7 +396,7 @@ TEST_F(AnimationHostTest, TickScrollLinkedAnimation) {
   EXPECT_TRUE(host_impl_->TickAnimations(base::TimeTicks(),
                                          property_trees.scroll_tree, false));
 
-  EXPECT_EQ(keyframe_model->run_state(), KeyframeModel::PAUSED);
+  EXPECT_EQ(keyframe_model->run_state(), KeyframeModel::STARTING);
   double tick_time = (scroll_timeline->CurrentTime(scroll_tree, false).value() -
                       base::TimeTicks())
                          .InSecondsF();

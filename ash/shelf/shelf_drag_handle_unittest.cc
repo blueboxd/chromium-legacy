@@ -19,6 +19,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace {
@@ -775,6 +776,61 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleTapShowNudgeInOverview) {
   GetEventGenerator()->GestureTapAt(
       drag_handle->GetBoundsInScreen().CenterPoint());
   EXPECT_TRUE(drag_handle->gesture_nudge_target_visibility());
+}
+
+// Tests that tapping the drag handle in split screen does not show nudge.
+TEST_F(DragHandleContextualNudgeTest,
+       DragHandleTapDoesNotShowNudgeForSplitScreen) {
+  TabletModeControllerTestApi().EnterTabletMode();
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  ShelfWidget* const shelf_widget = GetShelfWidget();
+  DragHandle* const drag_handle = shelf_widget->GetDragHandle();
+
+  // Go into split view mode by first going into overview, and then snapping
+  // the open window on one side.
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(shelf_widget->GetNativeWindow());
+  split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
+  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+
+  // Tapping the drag handle will not show the drag handle.
+  GetEventGenerator()->GestureTapAt(
+      drag_handle->GetBoundsInScreen().CenterPoint());
+  EXPECT_FALSE(drag_handle->gesture_nudge_target_visibility());
+}
+
+// Tests that entering split screen hides the drag handle nudge.
+TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeHiddenOnSplitScreen) {
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  ShelfWidget* const shelf_widget = GetShelfWidget();
+  DragHandle* const drag_handle = shelf_widget->GetDragHandle();
+
+  // Tapping the drag handle should show the drag handle.
+  GetEventGenerator()->GestureTapAt(
+      drag_handle->GetBoundsInScreen().CenterPoint());
+  EXPECT_TRUE(drag_handle->gesture_nudge_target_visibility());
+
+  // Go into split view mode by first going into overview, and then snapping
+  // the open window on one side.
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(shelf_widget->GetNativeWindow());
+  split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
+  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+
+  // The drag handle nudge should no longer be visible.
+  EXPECT_FALSE(drag_handle->gesture_nudge_target_visibility());
 }
 
 TEST_P(DragHandleContextualNudgeTestA11yPrefs, HideNudgesForShelfControls) {

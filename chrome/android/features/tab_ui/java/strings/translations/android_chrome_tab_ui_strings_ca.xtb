@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Crea un grup</translation>
 <translation id="2671423594960767771">Comparteix el grup</translation>
 <translation id="2977480621796371840">Suprimeix del grup</translation>
+<translation id="3328308545011660196">Suggeriment: sembla que hi ha <ph name="NUMBER_OF_TABS" /> pestanyes relacionades. Vols agrupar-les?</translation>
+<translation id="4133493477912226187">Sembla que hi ha <ph name="NUMBER_OF_TABS" /> pestanyes relacionades. Vols agrupar-les?</translation>
 <translation id="4212246570487010370">Continua navegant</translation>
 <translation id="4450893287417543264">No ho tornis a mostrar</translation>
 <translation id="4648718555153979859">Les teves pestanyes s'agrupen aquí</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Suprimeix les pestanyes</translation>
 <translation id="7559245342362162951">Mostra les pestanyes del grup en una quadrícula en pantalla completa</translation>
 <translation id="7792771145871471484">Revisa els suggeriments.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Agrupa <ph name="TABS_COUNT_ONE" /> pestanya seleccionada}other{Agrupa les <ph name="TABS_COUNT_MANY" /> pestanyes seleccionades}}</translation>
 <translation id="7885132941432959125">Mou la pestanya cap a la dreta</translation>
 <translation id="7966321538264951561">Ignora els suggeriments.</translation>
 <translation id="814503310257431685">Mostra-ho tot</translation>

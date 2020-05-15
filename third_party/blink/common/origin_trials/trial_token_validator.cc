@@ -32,8 +32,12 @@ TrialTokenResult::TrialTokenResult(OriginTrialTokenStatus status)
     : status(status) {}
 TrialTokenResult::TrialTokenResult(OriginTrialTokenStatus status,
                                    std::string name,
-                                   base::Time expiry)
-    : status(status), feature_name(name), expiry_time(expiry) {}
+                                   base::Time expiry,
+                                   bool is_third_party)
+    : status(status),
+      feature_name(name),
+      expiry_time(expiry),
+      is_third_party(is_third_party) {}
 TrialTokenResult::~TrialTokenResult() = default;
 
 TrialTokenValidator::TrialTokenValidator() {}
@@ -58,6 +62,14 @@ TrialTokenResult TrialTokenValidator::ValidateToken(
     base::StringPiece token,
     const url::Origin& origin,
     base::Time current_time) const {
+  return ValidateToken(token, origin, nullptr, current_time);
+}
+
+TrialTokenResult TrialTokenValidator::ValidateToken(
+    base::StringPiece token,
+    const url::Origin& origin,
+    const url::Origin* third_party_origin,
+    base::Time current_time) const {
   OriginTrialPolicy* policy = Policy();
 
   if (!policy->IsOriginTrialsSupported())
@@ -78,7 +90,18 @@ TrialTokenResult TrialTokenValidator::ValidateToken(
   if (status != OriginTrialTokenStatus::kSuccess)
     return TrialTokenResult(status);
 
-  status = trial_token->IsValid(origin, current_time);
+  // If the third_party flag is set on the token, we match it against third
+  // party origin if it exists. Otherwise match against document origin.
+  if (trial_token->is_third_party()) {
+    if (third_party_origin) {
+      status = trial_token->IsValid(*third_party_origin, current_time);
+    } else {
+      status = OriginTrialTokenStatus::kWrongOrigin;
+    }
+  } else {
+    status = trial_token->IsValid(origin, current_time);
+  }
+
   if (status != OriginTrialTokenStatus::kSuccess)
     return TrialTokenResult(status);
 
@@ -89,7 +112,8 @@ TrialTokenResult TrialTokenValidator::ValidateToken(
     return TrialTokenResult(OriginTrialTokenStatus::kTokenDisabled);
 
   return TrialTokenResult(status, trial_token->feature_name(),
-                          trial_token->expiry_time());
+                          trial_token->expiry_time(),
+                          trial_token->is_third_party());
 }
 
 bool TrialTokenValidator::RequestEnablesFeature(const net::URLRequest* request,

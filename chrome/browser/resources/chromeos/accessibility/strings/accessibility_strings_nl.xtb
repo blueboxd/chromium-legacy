@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">Schakelknop</translation>
 <translation id="1299774449519412690">Lichthemelsblauw</translation>
 <translation id="1303806948938513162">Tik met vier vingers om de ChromeVox-menu's te openen</translation>
+<translation id="1325363694295259631"><ph name="NAME" />, keuzerondje van menu-item niet geselecteerd</translation>
 <translation id="1325946044405407859">Geelbruin</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> van <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">teken- en woordecho</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">Huidige batterijstatus aankondigen</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, keuzerondje geselecteerd</translation>
 <translation id="5011664330025416377">Druk op Zoeken+spatiebalk om te activeren</translation>
+<translation id="5012724933919010465"><ph name="NAME" />, keuzerondje voor menu-item geselecteerd</translation>
 <translation id="5020651427400641814">Spraakregistratie inschakelen</translation>
 <translation id="5041394372352067729">Brailleweergave naar bovenkant pagina verplaatsen</translation>
 <translation id="5042770794184672516">Spraakvolume verhogen</translation>

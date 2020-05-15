@@ -186,8 +186,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   base::Optional<std::string> access_token_;
 
-  mojo::Remote<ash::mojom::AssistantAlarmTimerController>
-      assistant_alarm_timer_controller_;
   mojo::Remote<ash::mojom::AssistantNotificationController>
       assistant_notification_controller_;
 

@@ -54,6 +54,18 @@ interface PrintPreviewUI {
   // ensure correctness and |request_id| is the id for the preview request.
   [EnableIf=enable_print_preview]
   PrintPreviewFailed(int32 document_cookie, int32 request_id);
+
+  // Tell the browser print preview was cancelled. |document_cookie| is the
+  // param to ensure correctness and |request_id| is the id for the preview
+  // request.
+  [EnableIf=enable_print_preview]
+  PrintPreviewCancelled(int32 document_cookie, int32 request_id);
+
+  // Tell the browser print preview found the selected printer has invalid
+  // settings (which typically caused by disconnected network printer or
+  // printer driver is bogus).
+  [EnableIf=enable_print_preview]
+  PrinterSettingsInvalid(int32 document_cookie, int32 request_id);
 };
 
 // Render process interface exposed to the browser to handle most of the

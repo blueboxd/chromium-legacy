@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Dala iqembu</translation>
 <translation id="2671423594960767771">Yabelana ngeqembu</translation>
 <translation id="2977480621796371840">Susa kusukela kuqembu</translation>
+<translation id="3328308545011660196">Isiphakamiso: amathebhu a-<ph name="NUMBER_OF_TABS" /> abonakala ahlobene. Wenze iqembu?</translation>
+<translation id="4133493477912226187">Amathebhu ayi-<ph name="NUMBER_OF_TABS" /> abonakala ahambisana. Wenze iqembu?</translation>
 <translation id="4212246570487010370">Qhubeka nokuphequlula</translation>
 <translation id="4450893287417543264">Ungabonisi futhi</translation>
 <translation id="4648718555153979859">Amathebhu akho afakwa kuqembu ndawonye lapha</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Susa amathebhu kusukela kuqembu</translation>
 <translation id="7559245342362162951">Bonisa amathebhu eqembu kugridi yesikrini esigcwele</translation>
 <translation id="7792771145871471484">Buyekeza iziphakamiso.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Faka kuqembu ithebhu ekhethiwe e-<ph name="TABS_COUNT_ONE" />}one{Faka kuqembu amathebhu akhethiwe a-<ph name="TABS_COUNT_MANY" />}other{Faka kuqembu amathebhu akhethiwe a-<ph name="TABS_COUNT_MANY" />}}</translation>
 <translation id="7885132941432959125">Yisa ithebhu kwesokudla</translation>
 <translation id="7966321538264951561">Cashisa iziphakamiso.</translation>
 <translation id="814503310257431685">Buka konke</translation>

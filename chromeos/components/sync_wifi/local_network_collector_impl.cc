@@ -14,9 +14,11 @@
 #include "chromeos/network/network_metadata_store.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/services/network_config/public/mojom/network_types.mojom-shared.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/sync/protocol/wifi_configuration_specifics.pb.h"
 #include "dbus/object_path.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace chromeos {
 
@@ -163,11 +165,17 @@ void LocalNetworkCollectorImpl::OnGetManagedPropertiesResult(
   proto.set_automatically_connect(AutomaticallyConnectProtoFromMojo(
       properties->type_properties->get_wifi()->auto_connect));
   proto.set_is_preferred(IsPreferredProtoFromMojo(properties->priority));
-  proto.mutable_proxy_configuration()->CopyFrom(
-      ProxyConfigurationProtoFromMojo(properties->proxy_settings));
+  if (properties->source == network_config::mojom::OncSource::kUser ||
+      !network_metadata_store_->GetIsFieldExternallyModified(
+          properties->guid, shill::kProxyConfigProperty))
+    proto.mutable_proxy_configuration()->CopyFrom(
+        ProxyConfigurationProtoFromMojo(properties->proxy_settings));
 
   if (properties->static_ip_config &&
-      properties->static_ip_config->name_servers) {
+      properties->static_ip_config->name_servers &&
+      (properties->source == network_config::mojom::OncSource::kUser ||
+       !network_metadata_store_->GetIsFieldExternallyModified(
+           properties->guid, shill::kNameServersProperty))) {
     for (const std::string& nameserver :
          properties->static_ip_config->name_servers->active_value) {
       proto.add_custom_dns(nameserver);

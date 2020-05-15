@@ -1,0 +1,15 @@
+{
+  "config_type": "BaseConfig",
+  "dependencies": {
+    "FeedNewTabPageCardInstrumentationTest#launchNTP_withMultipleFeedCardsRendered": {
+      "cloud_storage_base_folder": "wpr-archives",
+      "cloud_storage_bucket": "chrome-wpr-archives",
+      "file_info": {
+        "linux_x86_64": {
+          "cloud_storage_hash": "bce950bebfb9411c64fbf4dd24a63321dd3c0b89",
+          "download_path": "internal/testing/FeedNewTabPageCardInstrumentationTest/data/click_more_button.wprgo"
+        }
+      }
+    }
+  }
+}

@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">Päälle/pois-painike</translation>
 <translation id="1299774449519412690">Vaalea taivaansininen</translation>
 <translation id="1303806948938513162">Avaa ChromeVox-valikot napauttamalla neljällä sormella</translation>
+<translation id="1325363694295259631"><ph name="NAME" />, valikkokohteen painikkeen valinta poistettu</translation>
 <translation id="1325946044405407859">Kellanruskea</translation>
 <translation id="1331702245475014624"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">merkkien ja sanojen puhuminen</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">Sano akun nykyinen tila</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, radiopainike valittu</translation>
 <translation id="5011664330025416377">Aktivoi painamalla Haku+välilyönti</translation>
+<translation id="5012724933919010465"><ph name="NAME" />, valikkokohteen painike valittu</translation>
 <translation id="5020651427400641814">Ota puheen kirjaaminen käyttöön</translation>
 <translation id="5041394372352067729">Siirrä pistekirjoitusnäyttö sivun yläreunaan</translation>
 <translation id="5042770794184672516">Lisää puheen äänenvoimakkuutta</translation>

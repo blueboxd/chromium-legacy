@@ -351,6 +351,7 @@ KeyboardShortcutView::KeyboardShortcutView() {
   DCHECK_EQ(g_ksv_view, nullptr);
   g_ksv_view = this;
 
+  SetCanMinimize(true);
   SetShowTitle(false);
 
   // Default background is transparent.
@@ -587,18 +588,6 @@ void KeyboardShortcutView::ShowSearchResults(
       replacement_strings, nullptr));
   search_results_container_->AddChildView(search_container_content_view);
   InvalidateLayout();
-}
-
-bool KeyboardShortcutView::CanMaximize() const {
-  return false;
-}
-
-bool KeyboardShortcutView::CanMinimize() const {
-  return true;
-}
-
-bool KeyboardShortcutView::CanResize() const {
-  return false;
 }
 
 views::ClientView* KeyboardShortcutView::CreateClientView(

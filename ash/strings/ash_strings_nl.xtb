@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
 <translation id="1012876632442809908">USB-C-apparaat (poort aan voorkant)</translation>
+<translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> gewijzigd in <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Klik op Bevestigen om de wijzigingen te behouden. De vorige instellingen worden over <ph name="TIMEOUT_SECONDS" /> hersteld.</translation>
 <translation id="1013923882670373915">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen. Voer de volgende pincode in op dat apparaat: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Batterij van stylus bijna leeg</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> toegevoegd</translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">Taalinstellingen weergeven</translation>
 <translation id="1460620680449458626">Volume is gedempt.</translation>
 <translation id="1467432559032391204">Links</translation>
+<translation id="1479909375538722835">Zwevend toegankelijkheidsmenu</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">Aan</translation>
 <translation id="1516740043221086139">'Niet storen' is ingeschakeld.</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">Scherm casten</translation>
 <translation id="5030687792513154421">De tijd is voorbij</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> verbonden met nieuwe telefoon</translation>
+<translation id="5035389544768382859">Schermconfiguratie bevestigen</translation>
 <translation id="5083553833479578423">Ontgrendel meer functies van de Assistent.</translation>
 <translation id="5136175204352732067">Ander toetsenbord aangesloten</translation>
 <translation id="5168181903108465623">Cast-apparaten beschikbaar</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">Netwerk kan worden bijgehouden</translation>
 <translation id="7536035074519304529">IP-adres: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Bedtijd</translation>
+<translation id="7561982940498449837">Menu sluiten</translation>
 <translation id="7562368315689366235">Emoji-palet</translation>
 <translation id="7564874036684306347">Verplaatsing van vensters naar een ander bureaublad kan leiden tot onverwacht gedrag. Verdere meldingen, vensters en dialoogvensters worden mogelijk verdeeld over de bureaubladen.</translation>
 <translation id="7568294522609223312">Automatische klikken uitschakelen</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">Hoger</translation>
 <translation id="8029629653277878342">Pincode of wachtwoord vereist voor extra beveiliging</translation>
 <translation id="8030169304546394654">Verbinding verbroken</translation>
+<translation id="8042893070933512245">Menu met toegankelijkheidsinstellingen openen</translation>
 <translation id="8048123526339889627">Bluetooth-instellingen</translation>
 <translation id="8054466585765276473">Accuduur berekenen.</translation>
 <translation id="8061464966246066292">Hoog contrast</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">Stel een herinnering in</translation>
 <translation id="8878886163241303700">Uitgebreid scherm</translation>
 <translation id="890616557918890486">Bron wijzigen</translation>
+<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> ondersteunt geen <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). De resolutie is gewijzigd in <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Klik om te bevestigen en de wijzigingen op te slaan. De vorige instellingen worden over <ph name="TIMEOUT_SECONDS" /> hersteld.</translation>
 <translation id="8909138438987180327">Batterij op <ph name="PERCENTAGE" /> procent.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">De Google Assistent spreekt deze taal niet.</translation>

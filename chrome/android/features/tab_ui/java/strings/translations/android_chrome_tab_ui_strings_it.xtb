@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Crea gruppo</translation>
 <translation id="2671423594960767771">Condividi gruppo</translation>
 <translation id="2977480621796371840">Rimuovi dal gruppo</translation>
+<translation id="3328308545011660196">Suggerimento: <ph name="NUMBER_OF_TABS" /> schede sembrano correlate. Vuoi raggrupparle?</translation>
+<translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> schede sembrano correlate. Vuoi raggrupparle?</translation>
 <translation id="4212246570487010370">Continua la navigazione</translation>
 <translation id="4450893287417543264">Non mostrare più</translation>
 <translation id="4648718555153979859">Le schede sono raggruppate qui</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Rimuovi schede dal gruppo</translation>
 <translation id="7559245342362162951">Mostra le schede del gruppo in una griglia a schermo intero</translation>
 <translation id="7792771145871471484">Controlla i suggerimenti.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Raggruppa <ph name="TABS_COUNT_ONE" /> scheda selezionata}other{Raggruppa <ph name="TABS_COUNT_MANY" /> schede selezionate}}</translation>
 <translation id="7885132941432959125">Sposta scheda a destra</translation>
 <translation id="7966321538264951561">Ignora i suggerimenti.</translation>
 <translation id="814503310257431685">Visualizza tutti</translation>

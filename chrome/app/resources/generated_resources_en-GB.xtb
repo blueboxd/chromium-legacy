@@ -54,7 +54,6 @@
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1060292118287751956">Determines the frequency that the screen updates</translation>
 <translation id="1061904396131502319">Almost time for a break</translation>
-<translation id="1064552680598333868">Changes to microphone will take effect when Linux is next restarted.</translation>
 <translation id="1067048845568873861">Created</translation>
 <translation id="1067291318998134776">Linux (Beta)</translation>
 <translation id="1067922213147265141">Other Google services</translation>
@@ -300,7 +299,6 @@
 <translation id="1386387014181100145">Howdy.</translation>
 <translation id="138784436342154190">Restore default start-up page?</translation>
 <translation id="1390548061267426325">Open as a Standard Tab</translation>
-<translation id="1392232653471491344">Linux restart required</translation>
 <translation id="1393283411312835250">Sun and clouds</translation>
 <translation id="1395730723686586365">Updater started</translation>
 <translation id="1396139853388185343">Error setting up printer</translation>
@@ -709,7 +707,6 @@
 <translation id="186612162884103683">"<ph name="EXTENSION" />" can read and write images, video and sound files in the ticked locations.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> is ready to complete your installation</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
-<translation id="1870629042957780127">Give access to microphone</translation>
 <translation id="1871534214638631766">Show related info when you right-click or long press on content</translation>
 <translation id="1871615898038944731">Your <ph name="DEVICE_TYPE" /> is up to date</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Move tab to another window}other{Move tabs to another window}}</translation>
@@ -2104,7 +2101,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3661172646479098821">Only Android devices are currently supported.</translation>
 <translation id="3664511988987167893">Extension Icon</translation>
 <translation id="3665589677786828986">Chrome detected that some of your settings were corrupted by another program and reset them to their original defaults.</translation>
-<translation id="366867565525278777">Installation failed due to lack of storage space. At least <ph name="INSTALL_SIZE" /> of free space is required. To free up space, delete files from device storage.</translation>
 <translation id="3668801437375206837">To better diagnose Bluetooth issues, Googlers can include additional Bluetooth logs with their feedback reports. When this option is ticked, your report will include btsnoop and HCI logs from your current session, sanitised to remove as much PII as possible. Access to these logs will be restricted to managers of the Chrome OS product group in Listnr. Logs will be purged after 90 days.</translation>
 <translation id="3668823961463113931">Handlers</translation>
 <translation id="3670113805793654926">Devices from any vendor</translation>
@@ -3232,7 +3228,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5158983316805876233">Use the same proxy for all protocols</translation>
 <translation id="5160857336552977725">Sign in to your <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> was blocked because it is out of date</translation>
-<translation id="5169131225159279624">Adding</translation>
 <translation id="5170568018924773124">Show in folder</translation>
 <translation id="5171045022955879922">Search or type URL</translation>
 <translation id="5171343362375269016">Swapped Memory</translation>
@@ -3284,7 +3279,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5235565664420173924">Better Together</translation>
 <translation id="5235750401727657667">Replace the page that you see when opening a new tab</translation>
 <translation id="5238278114306905396">The app "<ph name="EXTENSION_NAME" />" was automatically removed.</translation>
-<translation id="5238435043462632060">Your parent has turned off 'Permissions for sites, apps and extensions' for Chrome. <ph name="ACTION_PARAMETER" /> this <ph name="EXTENSION_TYPE_PARAMETER" /> is not allowed.</translation>
 <translation id="5241128660650683457">Read all your data on the websites that you visit</translation>
 <translation id="5242724311594467048">Enable "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="5243522832766285132">Please try again in a few moments</translation>
@@ -3953,7 +3947,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6085886413119427067">Determines how to connect to websites over a secure connection</translation>
 <translation id="6086846494333236931">Installed by your administrator</translation>
 <translation id="6087960857463881712">Awesome face</translation>
-<translation id="6088036808197002565"><ph name="ACTION_PARAMETER" /> <ph name="EXTENSION_TYPE_PARAMETER" /> is disabled</translation>
 <translation id="6091761513005122595">Share mounted successfully.</translation>
 <translation id="6093888419484831006">Cancelling update...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -5924,7 +5917,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8650543407998814195">Although you can no longer access your old profile, you can still remove it.</translation>
 <translation id="8651585100578802546">Force Reload This Page</translation>
 <translation id="8652400352452647993">Pack extension error</translation>
-<translation id="8653578191563425126">Disk space to reserve for Crostini (you can change this later).</translation>
 <translation id="8654151524613148204">The file is too large for your computer to handle. Sorry.</translation>
 <translation id="8655295600908251630">Channel</translation>
 <translation id="8655319619291175901">Oops, something went wrong.</translation>

@@ -137,6 +137,20 @@ class CORE_EXPORT OriginTrialContext final
   bool EnableTrialFromToken(const SecurityOrigin* origin,
                             bool is_secure,
                             const String& token);
+  // Validate the trial token injected by external script from script_origin.
+  // If is_third_party flag is set on the token, script_origin will be used for
+  // validation. Otherwise it's the same as above.
+  bool EnableTrialFromToken(const SecurityOrigin* origin,
+                            bool is_origin_secure,
+                            const SecurityOrigin* script_origin,
+                            bool is_script_origin_secure,
+                            const String& token);
+
+  // Validate the token result returned from token validator.
+  OriginTrialTokenStatus ValidateTokenResult(const String& trial_name,
+                                             bool is_secure,
+                                             bool is_secure_script_origin,
+                                             bool is_third_party);
 
   // Installs JavaScript bindings on the relevant objects for the specified
   // OriginTrialFeature.
@@ -152,6 +166,8 @@ class CORE_EXPORT OriginTrialContext final
   WTF::HashMap<OriginTrialFeature, base::Time> feature_expiry_times_;
   std::unique_ptr<TrialTokenValidator> trial_token_validator_;
   Member<ExecutionContext> context_;
+
+  friend class OriginTrialContextTest;
 };
 
 }  // namespace blink

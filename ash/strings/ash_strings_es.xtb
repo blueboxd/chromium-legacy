@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
 <translation id="1012876632442809908">Dispositivo USB-C (puerto frontal)</translation>
+<translation id="1013598600051641573">La resolución de <ph name="DISPLAY_NAME" /> se ha cambiado a <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Haz clic en Confirmar para mantener los cambios. La configuración anterior se restaurará en <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse. Introduce el código PIN <ph name="PINCODE" /> en el dispositivo</translation>
 <translation id="1032891413405719768">El lápiz óptico tiene poca batería</translation>
 <translation id="1037492556044956303">Se ha añadido <ph name="DEVICE_NAME" /></translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">Mostrar los ajustes de idioma</translation>
 <translation id="1460620680449458626">El volumen está silenciado.</translation>
 <translation id="1467432559032391204">Izquierda</translation>
+<translation id="1479909375538722835">Menú de accesibilidad flotante</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">Activada</translation>
 <translation id="1516740043221086139">El modo No molestar está activado.</translation>
@@ -334,6 +336,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4961318399572185831">Enviar pantalla</translation>
 <translation id="5030687792513154421">Se ha agotado el tiempo</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> está conectado a un nuevo teléfono</translation>
+<translation id="5035389544768382859">Confirma la configuración de la pantalla</translation>
 <translation id="5083553833479578423">Descubre más funciones del Asistente.</translation>
 <translation id="5136175204352732067">Se ha conectado otro teclado</translation>
 <translation id="5168181903108465623">Dispositivos de transmisión disponibles</translation>
@@ -520,6 +523,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="7526573455193969409">Es posible que la red esté supervisada</translation>
 <translation id="7536035074519304529">Dirección IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Es hora de acostarse</translation>
+<translation id="7561982940498449837">Cerrar menú</translation>
 <translation id="7562368315689366235">Paleta de emojis</translation>
 <translation id="7564874036684306347">Si mueves ventanas a otro escritorio, es posible que se produzca un comportamiento inesperado. Puede que las notificaciones, las ventanas y los cuadros de diálogo que aparezcan después de realizar esta acción se dividan entre los escritorios.</translation>
 <translation id="7568294522609223312">Desactivar clics automáticos</translation>
@@ -562,6 +566,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8004512796067398576">Aumentar</translation>
 <translation id="8029629653277878342">Debes introducir el PIN o la contraseña como medida de seguridad adicional</translation>
 <translation id="8030169304546394654">Desconectado</translation>
+<translation id="8042893070933512245">Abrir menú de configuración de accesibilidad</translation>
 <translation id="8048123526339889627">Configuración de Bluetooth</translation>
 <translation id="8054466585765276473">Calculando duración de la batería...</translation>
 <translation id="8061464966246066292">Contraste alto</translation>
@@ -637,6 +642,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8877788021141246043">Añadir un recordatorio</translation>
 <translation id="8878886163241303700">Ampliando pantalla</translation>
 <translation id="890616557918890486">Cambiar fuente</translation>
+<translation id="8908312332415978740">La pantalla <ph name="DISPLAY_NAME" /> no admite <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Se ha modificado la resolución a <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Haz clic para mantener los cambios. La configuración anterior se restaurará en <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">La batería tiene un <ph name="PERCENTAGE" /> % de carga.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">El Asistente de Google no habla este idioma.</translation>

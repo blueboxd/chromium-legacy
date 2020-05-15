@@ -56,7 +56,7 @@ class OsSettingsSections {
   OsSettingsSections& operator=(const OsSettingsSections& other) = delete;
   ~OsSettingsSections();
 
-  OsSettingsSection* GetSection(mojom::Section section);
+  const OsSettingsSection* GetSection(mojom::Section section) const;
 
   std::vector<std::unique_ptr<OsSettingsSection>>& sections() {
     return sections_;

@@ -52,6 +52,7 @@
 <translation id="1291286136605998134">Κουμπί εναλλαγής</translation>
 <translation id="1299774449519412690">Ανοιχτό μπλε του ουρανού</translation>
 <translation id="1303806948938513162">Πατήστε με τέσσερα δάκτυλα για εισαγωγή στα μενού ChromeVox</translation>
+<translation id="1325363694295259631"><ph name="NAME" />, μη επιλεγμένο κουμπί επιλογής στοιχείου μενού</translation>
 <translation id="1325946044405407859">Ανοιχτό καφέ</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> από <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">εκφώνηση χαρακτήρων και λέξεων</translation>
@@ -515,6 +516,7 @@
 <translation id="4994420463726586413">Ανακοίνωση τρέχουσας κατάστασης μπαταρίας</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, επιλεγμένο κουμπί επιλογής</translation>
 <translation id="5011664330025416377">Πατήστε Αναζήτηση+πλήκτρο αναζήτησης για ενεργοποίηση.</translation>
+<translation id="5012724933919010465"><ph name="NAME" />, επιλεγμένο κουμπί επιλογής στοιχείου μενού</translation>
 <translation id="5020651427400641814">Ενεργοποίηση καταγραφής ομιλίας</translation>
 <translation id="5041394372352067729">Μετακίνηση της οθόνης μπράιγ στο επάνω μέρος της σελίδας</translation>
 <translation id="5042770794184672516">Αύξηση έντασης ομιλίας</translation>

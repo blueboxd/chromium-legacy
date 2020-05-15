@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="1012876632442809908">USB-C 设备（前方端口）</translation>
+<translation id="1013598600051641573">“<ph name="DISPLAY_NAME" />”的分辨率已改为 <ph name="RESOLUTION" />（<ph name="REFRESH_RATE" /> 赫兹）。点击“确认”即可保留更改。将在 <ph name="TIMEOUT_SECONDS" />后恢复以前的设置。</translation>
 <translation id="1013923882670373915">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。请在该设备上输入以下PIN码：<ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">触控笔电池电量较低</translation>
 <translation id="1037492556044956303">已添加<ph name="DEVICE_NAME" /></translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">显示语言设置</translation>
 <translation id="1460620680449458626">当前处于静音状态。</translation>
 <translation id="1467432559032391204">向左</translation>
+<translation id="1479909375538722835">悬浮无障碍功能菜单</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">已开启</translation>
 <translation id="1516740043221086139">“勿扰”模式已开启。</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">投射屏幕</translation>
 <translation id="5030687792513154421">时间到</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" />已连接到新手机</translation>
+<translation id="5035389544768382859">确认显示屏配置</translation>
 <translation id="5083553833479578423">启用更多 Google 助理功能。</translation>
 <translation id="5136175204352732067">所连接的键盘已不是原来的那个</translation>
 <translation id="5168181903108465623">有可用的投射设备</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">网络可能受到了监控</translation>
 <translation id="7536035074519304529">IP 地址：<ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">该睡觉了</translation>
+<translation id="7561982940498449837">关闭菜单</translation>
 <translation id="7562368315689366235">表情符号面板</translation>
 <translation id="7564874036684306347">将窗口移至另一桌面可能会导致出现意外行为 - 后续的通知、窗口和对话框可能会被拆分到不同的桌面中。</translation>
 <translation id="7568294522609223312">关闭自动点击</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">增加</translation>
 <translation id="8029629653277878342">需要输入 PIN 码或密码以增强安全性</translation>
 <translation id="8030169304546394654">连接已断开</translation>
+<translation id="8042893070933512245">打开无障碍功能设置菜单</translation>
 <translation id="8048123526339889627">蓝牙设置</translation>
 <translation id="8054466585765276473">正在计算续航时间。</translation>
 <translation id="8061464966246066292">高对比度</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">设置提醒</translation>
 <translation id="8878886163241303700">正在扩展屏幕</translation>
 <translation id="890616557918890486">更改来源</translation>
+<translation id="8908312332415978740">“<ph name="DISPLAY_NAME" />”不支持 <ph name="SPECIFIED_RESOLUTION" />（<ph name="SPECIFIED_REFRESH_RATE" /> 赫兹）。分辨率已改为 <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />)。点击“确认”即可保留更改。将在 <ph name="TIMEOUT_SECONDS" />后恢复以前的设置。</translation>
 <translation id="8909138438987180327">剩余的电池电量为 <ph name="PERCENTAGE" />%。</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google 助理不支持此语言。</translation>

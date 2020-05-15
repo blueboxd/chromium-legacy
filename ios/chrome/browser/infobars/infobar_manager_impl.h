@@ -28,6 +28,9 @@ class InfoBarManagerImpl : public infobars::InfoBarManager,
  public:
   ~InfoBarManagerImpl() override;
 
+  // Returns the |web_state_| tied to this InfobarManager.
+  web::WebState* web_state() const { return web_state_; }
+
  private:
   friend class web::WebStateUserData<InfoBarManagerImpl>;
 

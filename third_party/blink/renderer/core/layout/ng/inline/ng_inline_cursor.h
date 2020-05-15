@@ -170,6 +170,12 @@ class CORE_EXPORT NGInlineCursorPosition {
   PhysicalOffset LineEndPoint() const;
 
  private:
+  void Set(const ItemsSpan::iterator& iter) {
+    DCHECK(!paint_fragment_);
+    item_iter_ = iter;
+    item_ = iter->get();
+  }
+
   void Clear() {
     paint_fragment_ = nullptr;
     item_ = nullptr;

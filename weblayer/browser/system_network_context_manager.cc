@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "components/variations/net/variations_http_headers.h"
+#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/network_service_instance.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -53,6 +54,8 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams(
       network::mojom::NetworkContextParams::New();
   ConfigureDefaultNetworkContextParams(network_context_params.get(),
                                        user_agent);
+  content::UpdateCorsExemptHeader(network_context_params.get());
+  variations::UpdateCorsExemptHeaderForVariations(network_context_params.get());
   return network_context_params;
 }
 

@@ -272,7 +272,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetJavaScriptCanAccessClipboard(bool can_access);
   void SetMockScreenOrientation(const std::string& orientation);
   void SetPOSIXLocale(const std::string& locale);
-  void SetPageVisibility(const std::string& new_visibility);
+  void SetMainWindowHidden(bool hidden);
   void SetPermission(const std::string& name,
                      const std::string& value,
                      const std::string& origin,
@@ -635,7 +635,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setMockScreenOrientation",
                  &TestRunnerBindings::SetMockScreenOrientation)
       .SetMethod("setPOSIXLocale", &TestRunnerBindings::SetPOSIXLocale)
-      .SetMethod("setPageVisibility", &TestRunnerBindings::SetPageVisibility)
+      .SetMethod("setMainWindowHidden",
+                 &TestRunnerBindings::SetMainWindowHidden)
       .SetMethod("setPermission", &TestRunnerBindings::SetPermission)
       .SetMethod("setPluginsAllowed", &TestRunnerBindings::SetPluginsAllowed)
       .SetMethod("setPluginsEnabled", &TestRunnerBindings::SetPluginsEnabled)
@@ -1056,8 +1057,8 @@ void TestRunnerBindings::SetTrustTokenKeyCommitments(
       raw_commitments, WrapV8Closure(std::move(v8_callback)));
 }
 
-void TestRunnerBindings::SetPageVisibility(const std::string& new_visibility) {
-  view_runner_->SetPageVisibility(new_visibility);
+void TestRunnerBindings::SetMainWindowHidden(bool hidden) {
+  runner_->blink_test_runner_->SetMainWindowHidden(hidden);
 }
 
 void TestRunnerBindings::SetTextDirection(const std::string& direction_name) {

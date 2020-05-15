@@ -87,7 +87,9 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
       const ComputedStyle* parent_style,
       const ComputedStyle* layout_parent_style);
 
-  scoped_refptr<const ComputedStyle> StyleForPage(int page_index);
+  scoped_refptr<const ComputedStyle> StyleForPage(
+      int page_index,
+      const AtomicString& page_name);
   scoped_refptr<const ComputedStyle> StyleForText(Text*);
 
   static scoped_refptr<ComputedStyle> StyleForViewport(Document&);
@@ -268,7 +270,6 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
                            const MatchResult& match_result,
                            bool apply_inherited_only,
                            NeedsApplyPass& needs_apply_pass);
-  void CascadeAndApplyForcedColors(StyleResolverState&, const MatchResult&);
 
   void CascadeAndApplyMatchedProperties(StyleResolverState&,
                                         StyleCascade& cascade);

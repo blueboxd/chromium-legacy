@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pa">
 <translation id="1012876632442809908">USB-C ਡੀਵਾਈਸ (ਅੱਗੇ ਦਾ ਪੋਰਟ)</translation>
+<translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> ਨੂੰ <ph name="RESOLUTION" /> 'ਤੇ ਬਦਲਿਆ ਗਿਆ (<ph name="REFRESH_RATE" /> Hz)। ਤਬਦੀਲੀਆਂ ਨੂੰ ਬਣਾਈ ਰੱਖਣ ਲਈ 'ਤਸਦੀਕ ਕਰੋ' 'ਤੇ ਕਲਿੱਕ ਕਰੋ। ਪਿਛਲੀਆਂ ਸੈਟਿੰਗਾਂ ਨੂੰ <ph name="TIMEOUT_SECONDS" /> ਵਿੱਚ ਮੁੜ-ਬਹਾਲ ਕੀਤਾ ਜਾਵੇਗਾ।</translation>
 <translation id="1013923882670373915">Bluetooth ਡੀਵਾਈਸ "<ph name="DEVICE_NAME" />" ਜੋੜਾਬੱਧ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਚਾਹੁੰਦਾ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਉਸ ਡੀਵਾਈਸ 'ਤੇ ਇਹ ਪਿੰਨ ਦਾਖਲ ਕਰੋ: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">ਸਟਾਈਲਸ ਦੀ ਬੈਟਰੀ ਘੱਟ ਹੈ</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> ਨੂੰ ਸ਼ਾਮਲ ਕੀਤਾ ਗਿਆ</translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">ਭਾਸ਼ਾ ਸੈਟਿੰਗਾਂ ਦਿਖਾਓ</translation>
 <translation id="1460620680449458626">ਅਵਾਜ਼ ਨੂੰ ਮਿਊਟ ਕੀਤਾ ਹੋਇਆ ਹੈ।</translation>
 <translation id="1467432559032391204">ਖੱਬੇ ਪਾਸੇ</translation>
+<translation id="1479909375538722835">ਫ਼ਲੋਟਿੰਗ ਪਹੁੰਚਯੋਗਤਾ ਮੀਨੂ</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">ਚਾਲੂ</translation>
 <translation id="1516740043221086139">'ਪਰੇਸ਼ਾਨ ਨਾ ਕਰੋ' ਚਾਲੂ ਹੈ।</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">ਸਕ੍ਰੀਨ ਕਾਸਟ ਕਰੋ</translation>
 <translation id="5030687792513154421">ਸਮਾਂ ਸਮਾਪਤ ਹੋ ਗਿਆ ਹੈ</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" />ਨੂੰ ਨਵੇਂ ਫ਼ੋਨ ਨਾਲ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ</translation>
+<translation id="5035389544768382859">ਡਿਸਪਲੇ ਸੰਰੂਪਣ ਦੀ ਤਸਦੀਕ ਕਰੋ</translation>
 <translation id="5083553833479578423">'ਸਹਾਇਕ' ਦੀਆਂ ਹੋਰ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਬਾਰੇ ਜਾਣੋ।</translation>
 <translation id="5136175204352732067">ਵੱਖਰਾ ਕੀ-ਬੋਰਡ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="5168181903108465623">ਕਾਸਟ ਡਿਵਾਈਸਾਂ ਉਪਲਬਧ</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">ਹੋ ਸਕਦਾ ਹੈ ਕਿ ਨੈੱਟਵਰਕ ਦੀ ਨਿਗਰਾਨੀ ਹੋ ਰਹੀ ਹੋਵੇ</translation>
 <translation id="7536035074519304529">IP ਪਤਾ: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">ਸੌਣ ਦਾ ਸਮਾਂ ਹੋ ਗਿਆ ਹੈ</translation>
+<translation id="7561982940498449837">ਮੀਨੂ ਬੰਦ ਕਰੋ</translation>
 <translation id="7562368315689366235">ਇਮੋਜੀ ਪੈਲੇਟ</translation>
 <translation id="7564874036684306347">ਵਿੰਡੋਆਂ ਨੂੰ ਕਿਸੇ ਹੋਰ ਡੈਸਕਟਾਪ 'ਤੇ ਲਿਜਾਉਣ ਨਾਲ ਅਣਕਿਆਸਿਆ ਵਰਤਾਅ ਦਿਖ ਸਕਦਾ ਹੈ। ਇਸ ਤੋਂ ਬਾਅਦ ਦੀਆਂ ਸੂਚਨਾਵਾਂ, ਵਿੰਡੋਆਂ ਅਤੇ ਡਾਇਲੌਗ ਡੈਸਕਟਾਪਾਂ ਵਿੱਚ ਵੱਖ-ਵੱਖ ਕੀਤੇ ਜਾ ਸਕਦੇ ਹਨ।</translation>
 <translation id="7568294522609223312">ਸਵੈਚਲਿਤ ਕਲਿੱਕਾਂ ਨੂੰ ਬੰਦ ਕਰੋ</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">ਵਧਾਓ</translation>
 <translation id="8029629653277878342">ਵਧੇਰੇ ਸੁਰੱਖਿਆ ਲਈ ਪਿੰਨ ਜਾਂ ਪਾਸਵਰਡ ਲੋੜੀਂਦਾ ਹੈ</translation>
 <translation id="8030169304546394654">ਡਿਸਕਨੈਕਟ ਕੀਤਾ</translation>
+<translation id="8042893070933512245">ਪਹੁੰਚਯੋਗਤਾ ਸੈਟਿੰਗਾਂ ਮੀਨੂ ਖੋਲ੍ਹੋ</translation>
 <translation id="8048123526339889627">ਬਲੂਟੁੱਥ ਸੈਟਿੰਗਾਂ</translation>
 <translation id="8054466585765276473">ਬੈਟਰੀ ਸਮੇਂ ਦਾ ਅਨੁਮਾਨ ਲਗਾ ਰਿਹਾ ਹੈ।</translation>
 <translation id="8061464966246066292">ਉੱਚ ਕੰਟ੍ਰਾਸਟ</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">ਕੋਈ ਯਾਦ-ਸੂਚਨਾ ਸੈੱਟ ਕਰੋ</translation>
 <translation id="8878886163241303700">ਸਕ੍ਰੀਨ ਦਾ ਵਿਸਤਾਰ ਕਰ ਰਿਹਾ ਹੈ</translation>
 <translation id="890616557918890486">ਸਰੋਤ ਬਦਲੋ</translation>
+<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> ਦਾ ਸਮਰਥਨ ਨਹੀਂ ਕਰਦਾ (<ph name="SPECIFIED_REFRESH_RATE" /> Hz)। ਰੈਜ਼ੋਲਿਊਸ਼ਨ ਨੂੰ <ph name="FALLBACK_RESOLUTION" /> 'ਤੇ ਬਦਲ ਦਿੱਤਾ ਗਿਆ ਸੀ (<ph name="SPECIFIED_REFRESH_RATE" />)। ਤਬਦੀਲੀਆਂ ਨੂੰ ਰੱਖਣ ਲਈ ਤਸਦੀਕ ਕਰੋ 'ਤੇ ਕਲਿੱਕ ਕਰੋ। ਪਿਛਲੀਆਂ ਸੈਟਿੰਗਾਂ ਨੂੰ <ph name="TIMEOUT_SECONDS" /> ਵਿੱਚ ਮੁੜ-ਬਹਾਲ ਕੀਤਾ ਜਾਵੇਗਾ।</translation>
 <translation id="8909138438987180327">ਬੈਟਰੀ <ph name="PERCENTAGE" /> ਫ਼ੀਸਦ ਹੈ।</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google ਸਹਾਇਕ ਇਹ ਭਾਸ਼ਾ ਨਹੀਂ ਬੋਲਦਾ ਹੈ।</translation>

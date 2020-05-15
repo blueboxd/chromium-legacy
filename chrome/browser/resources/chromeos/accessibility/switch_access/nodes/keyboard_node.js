@@ -22,7 +22,7 @@ class KeyboardNode extends NodeWrapper {
     if (this.isGroup()) {
       return [];
     }
-    return [SAConstants.MenuAction.SELECT];
+    return [SwitchAccessMenuAction.SELECT];
   }
 
   // ================= General methods =================
@@ -45,7 +45,7 @@ class KeyboardNode extends NodeWrapper {
 
   /** @override */
   performAction(action) {
-    if (this.isGroup() || action !== SAConstants.MenuAction.SELECT) {
+    if (this.isGroup() || action !== SwitchAccessMenuAction.SELECT) {
       return SAConstants.ActionResponse.NO_ACTION_TAKEN;
     }
 

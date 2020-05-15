@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">전환 버튼</translation>
 <translation id="1299774449519412690">라이트 스카이 블루</translation>
 <translation id="1303806948938513162">ChromeVox 메뉴로 들어가려면 네 손가락으로 탭하세요.</translation>
+<translation id="1325363694295259631"><ph name="NAME" />, 메뉴 항목 라디오 버튼 선택 해제됨</translation>
 <translation id="1325946044405407859">탠</translation>
 <translation id="1331702245475014624"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">문자 및 단어 에코</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">현재 배터리 상태를 음성으로 안내합니다.</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, 라디오 버튼이 선택됨</translation>
 <translation id="5011664330025416377">활성화하려면 Search + Space를 누르세요.</translation>
+<translation id="5012724933919010465"><ph name="NAME" />, 메뉴 항목 라디오 버튼 선택됨</translation>
 <translation id="5020651427400641814">음성 로깅 사용</translation>
 <translation id="5041394372352067729">점자 디스플레이를 페이지 상단으로 이동합니다.</translation>
 <translation id="5042770794184672516">음성 볼륨 높이기</translation>

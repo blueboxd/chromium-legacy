@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">ਗਰੁੱਪ ਬਣਾਓ</translation>
 <translation id="2671423594960767771">ਗਰੁੱਪ ਸਾਂਝਾ ਕਰੋ</translation>
 <translation id="2977480621796371840">ਗਰੁੱਪ ਵਿੱਚੋਂ ਹਟਾਓ</translation>
+<translation id="3328308545011660196">ਸੁਝਾਅ: <ph name="NUMBER_OF_TABS" /> ਟੈਬਾਂ ਸੰਬੰਧਿਤ ਲੱਗਦੀਆਂ ਹਨ। ਕੀ ਉਹਨਾਂ ਨੂੰ ਗਰੁੱਪਬੱਧ ਕਰਨਾ ਹੈ?</translation>
+<translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> ਟੈਬਾਂ ਸੰਬੰਧਿਤ ਲੱਗਦੀਆਂ ਹਨ। ਕੀ ਉਹਨਾਂ ਨੂੰ ਗਰੁੱਪਬੱਧ ਕਰਨਾ ਹੈ?</translation>
 <translation id="4212246570487010370">ਬ੍ਰਾਊਜ਼ਿੰਗ ਜਾਰੀ ਰੱਖੋ</translation>
 <translation id="4450893287417543264">ਦੁਬਾਰਾ ਨਾ ਦਿਖਾਓ</translation>
 <translation id="4648718555153979859">ਤੁਹਾਡੀਆਂ ਟੈਬਾਂ ਇੱਥੇ ਇਕੱਠੇ ਗਰੁੱਪਬੱਧ ਕੀਤੀਆਂ ਜਾਂਦੀਆਂ ਹਨ</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">ਟੈਬਾਂ ਨੂੰ ਗਰੁੱਪ ਵਿੱਚੋਂ ਹਟਾਓ</translation>
 <translation id="7559245342362162951">ਪੂਰੀ-ਸਕ੍ਰੀਨ ਗ੍ਰਿਡ ਵਿੱਚ ਗਰੁੱਪ ਦੀਆਂ ਟੈਬਾਂ ਦਿਖਾਓ</translation>
 <translation id="7792771145871471484">ਸੁਝਾਵਾਂ ਦੀ ਸਮੀਖਿਆ ਕਰੋ।</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{ਚੁਣੀ ਗਈ <ph name="TABS_COUNT_ONE" /> ਟੈਬ ਨੂੰ ਗਰੁੱਪਬੱਧ ਕਰੋ}one{ਚੁਣੀ ਗਈ <ph name="TABS_COUNT_MANY" /> ਟੈਬ ਨੂੰ ਗਰੁੱਪਬੱਧ ਕਰੋ}other{ਚੁਣੀਆਂ ਗਈਆਂ <ph name="TABS_COUNT_MANY" /> ਟੈਬਾਂ ਨੂੰ ਗਰੁੱਪਬੱਧ ਕਰੋ}}</translation>
 <translation id="7885132941432959125">ਟੈਬ ਨੂੰ ਸੱਜੇ ਲਿਜਾਓ</translation>
 <translation id="7966321538264951561">ਸੁਝਾਵਾਂ ਨੂੰ ਖਾਰਜ ਕਰੋ।</translation>
 <translation id="814503310257431685">ਸਭ ਦੇਖੋ</translation>

@@ -59,7 +59,17 @@ enum ExtractMask {
                                  // WebFormControlElement.
   EXTRACT_BOUNDS = 1 << 3,       // Extract bounds from WebFormControlElement,
                                  // could trigger layout if needed.
+  EXTRACT_DATALIST = 1 << 4,     // Extract datalist from WebFormControlElement,
+                                 // the total number of options is up to
+                                 // kMaxListSize and each option has as far as
+                                 // kMaxDataLength.
 };
+
+// Gets up to kMaxListSize data list values (with corresponding label) for the
+// given element, each value and label have as far as kMaxDataLength.
+void GetDataListSuggestions(const blink::WebInputElement& element,
+                            std::vector<base::string16>* values,
+                            std::vector<base::string16>* labels);
 
 // Helper function that strips any authentication data, as well as query and
 // ref portions of URL

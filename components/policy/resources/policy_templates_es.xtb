@@ -2420,6 +2420,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Independientemente de que habilites o inhabilites esta opción, los usuarios no podrán modificarla ni anularla en <ph name="PRODUCT_NAME" />.
 
       Si no se establece esta política, esta opción estará habilitada, pero el usuario podrá modificarla.</translation>
+<translation id="453031441196755904">Esta política está obsoleta.</translation>
 <translation id="4531706050939927436">Las aplicaciones para Android se pueden instalar de manera forzada desde la consola de administración de Google usando Google Play. No utilizan esta política.</translation>
 <translation id="4534500438517478692">Nombre de restricción de Android:</translation>
 <translation id="4541530620466526913">Cuentas locales del dispositivo</translation>

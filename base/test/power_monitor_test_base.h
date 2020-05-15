@@ -18,6 +18,8 @@ class PowerMonitorTestSource : public PowerMonitorSource {
   void GeneratePowerStateEvent(bool on_battery_power);
   void GenerateSuspendEvent();
   void GenerateResumeEvent();
+  void GenerateThermalThrottlingEvent(
+      PowerObserver::DeviceThermalState new_thermal_state);
 
  protected:
   bool IsOnBatteryPowerImpl() override;
@@ -34,18 +36,24 @@ class PowerMonitorTestObserver : public PowerObserver {
   void OnPowerStateChange(bool on_battery_power) override;
   void OnSuspend() override;
   void OnResume() override;
+  void OnThermalStateChange(
+      PowerObserver::DeviceThermalState new_state) override;
 
   // Test status counts.
   bool last_power_state() const { return last_power_state_; }
   int power_state_changes() const { return power_state_changes_; }
   int suspends() const { return suspends_; }
   int resumes() const { return resumes_; }
+  PowerObserver::DeviceThermalState last_thermal_state() const {
+    return last_thermal_state_;
+  }
 
  private:
-  bool last_power_state_; // Last power state we were notified of.
+  bool last_power_state_;    // Last power state we were notified of.
   int power_state_changes_;  // Count of OnPowerStateChange notifications.
-  int suspends_;  // Count of OnSuspend notifications.
-  int resumes_;  // Count of OnResume notifications.
+  int suspends_;             // Count of OnSuspend notifications.
+  int resumes_;              // Count of OnResume notifications.
+  PowerObserver::DeviceThermalState last_thermal_state_;
 };
 
 }  // namespace base

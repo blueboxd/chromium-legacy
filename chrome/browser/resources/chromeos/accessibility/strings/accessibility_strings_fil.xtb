@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">Toggle Button</translation>
 <translation id="1299774449519412690">Light Sky Blue</translation>
 <translation id="1303806948938513162">Mag-tap gamit ang 4 na daliri para makapasok sa mga menu ng ChromeVox</translation>
+<translation id="1325363694295259631">Na-unselect ang <ph name="NAME" />, isang radio button ng item sa menu</translation>
 <translation id="1325946044405407859">Tan</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> ng <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">echo ng character at salita</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">Ianunsyo ang kasalukuyang status ng baterya</translation>
 <translation id="4997282455736854877">Pinili ang <ph name="NAME" />, radio button</translation>
 <translation id="5011664330025416377">Pindutin ang Search+Space para i-activate</translation>
+<translation id="5012724933919010465">Pinili ang <ph name="NAME" />, radio button ng item sa menu</translation>
 <translation id="5020651427400641814">I-enable ang pag-log ng speech</translation>
 <translation id="5041394372352067729">Ilipat ang display ng braille sa itaas ng page</translation>
 <translation id="5042770794184672516">Lakasan ang volume ng speech</translation>

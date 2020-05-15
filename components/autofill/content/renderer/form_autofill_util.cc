@@ -1514,7 +1514,35 @@ bool ScriptModifiedUsernameAcceptable(
   return field_data_manager->FindMachedValue(value);
 }
 
+// Trim the vector before sending it to the browser process to ensure we
+// don't send too much data through the IPC.
+void TrimStringVectorForIPC(std::vector<base::string16>* strings) {
+  // Limit the size of the vector.
+  if (strings->size() > kMaxListSize)
+    strings->resize(kMaxListSize);
+
+  // Limit the size of the strings in the vector.
+  for (auto& string : *strings) {
+    if (string.length() > kMaxDataLength)
+      string.resize(kMaxDataLength);
+  }
+}
+
 }  // namespace
+
+void GetDataListSuggestions(const WebInputElement& element,
+                            std::vector<base::string16>* values,
+                            std::vector<base::string16>* labels) {
+  for (const auto& option : element.FilteredDataListOptions()) {
+    values->push_back(option.Value().Utf16());
+    if (option.Value() != option.Label())
+      labels->push_back(option.Label().Utf16());
+    else
+      labels->push_back(base::string16());
+  }
+  TrimStringVectorForIPC(values);
+  TrimStringVectorForIPC(labels);
+}
 
 GURL StripAuthAndParams(const GURL& gurl) {
   GURL::Replacements rep;
@@ -1754,6 +1782,12 @@ void WebFormControlElementToFormField(
               content::RenderFrame::FromWebFrame(local_frame)) {
         field->bounds = render_frame->ElementBoundsInWindow(element);
       }
+    }
+  }
+  if (extract_mask & EXTRACT_DATALIST) {
+    if (auto* input = blink::ToWebInputElement(&element)) {
+      GetDataListSuggestions(*input, &field->datalist_values,
+                             &field->datalist_labels);
     }
   }
 

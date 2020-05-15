@@ -19,7 +19,7 @@ import {TabElement} from './tab.js';
 import {isTabGroupElement, TabGroupElement} from './tab_group.js';
 import {TabStripEmbedderProxy} from './tab_strip_embedder_proxy.js';
 import {tabStripOptions} from './tab_strip_options.js';
-import {TabData, TabGroupVisualData, TabsApiProxy} from './tabs_api_proxy.js';
+import {TabData, TabGroupVisualData, TabsApiProxy, TabsApiProxyImpl} from './tabs_api_proxy.js';
 
 /**
  * The amount of padding to leave between the edge of the screen and the active
@@ -125,7 +125,7 @@ class TabListElement extends CustomElement {
     this.tabStripEmbedderProxy_ = TabStripEmbedderProxy.getInstance();
 
     /** @private {!TabsApiProxy} */
-    this.tabsApi_ = TabsApiProxy.getInstance();
+    this.tabsApi_ = TabsApiProxyImpl.getInstance();
 
     /** @private {!Element} */
     this.unpinnedTabsElement_ =

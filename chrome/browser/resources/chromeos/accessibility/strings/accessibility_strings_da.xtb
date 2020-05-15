@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">Til/fra-knap</translation>
 <translation id="1299774449519412690">Lys himmelblå</translation>
 <translation id="1303806948938513162">Tryk med fire fingre for at åbne ChromeVox-menuerne</translation>
+<translation id="1325363694295259631">Alternativknappen <ph name="NAME" /> til menupunktet er ikke valgt</translation>
 <translation id="1325946044405407859">Gyldenbrun</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> af <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">tegn- og ordekko</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">Oplæs aktuel batteristatus</translation>
 <translation id="4997282455736854877">Alternativknappen <ph name="NAME" /> er valgt</translation>
 <translation id="5011664330025416377">Tryk på søgetasten+mellemrumstasten for at aktivere</translation>
+<translation id="5012724933919010465">Alternativknappen <ph name="NAME" /> til menupunktet er valgt</translation>
 <translation id="5020651427400641814">Aktivér talelogning</translation>
 <translation id="5041394372352067729">Flyt braille-visningen til toppen af siden</translation>
 <translation id="5042770794184672516">Skru op for talevolumen</translation>

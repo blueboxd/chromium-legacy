@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Tạo nhóm</translation>
 <translation id="2671423594960767771">Chia sẻ nhóm</translation>
 <translation id="2977480621796371840">Xóa khỏi nhóm</translation>
+<translation id="3328308545011660196">Đề xuất: <ph name="NUMBER_OF_TABS" /> thẻ có vẻ liên quan đến nhau. Bạn có muốn nhóm các thẻ đó lại không?</translation>
+<translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> thẻ có vẻ liên quan đến nhau. Bạn có muốn nhóm các thẻ đó lại không?</translation>
 <translation id="4212246570487010370">Tiếp tục duyệt web</translation>
 <translation id="4450893287417543264">Không hiển thị lại</translation>
 <translation id="4648718555153979859">Các tab của bạn được nhóm với nhau tại đây</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Xóa tab khỏi nhóm</translation>
 <translation id="7559245342362162951">Hiển thị các tab của nhóm trong lưới toàn màn hình</translation>
 <translation id="7792771145871471484">Xem lại các đề xuất.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Nhóm <ph name="TABS_COUNT_ONE" /> thẻ đã chọn}other{Nhóm <ph name="TABS_COUNT_MANY" /> thẻ đã chọn}}</translation>
 <translation id="7885132941432959125">Chuyển tab sang phải</translation>
 <translation id="7966321538264951561">Đóng nội dung đề xuất.</translation>
 <translation id="814503310257431685">Xem tất cả</translation>

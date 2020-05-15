@@ -15,6 +15,8 @@
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -110,12 +112,9 @@ class OmniboxRowView::HeaderView : public views::View,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK_EQ(sender, hide_button_);
-
-    if (!row_view_->pref_service_)
-      return;
-
-    omnibox::ToggleSuggestionGroupIdVisibility(row_view_->pref_service_,
-                                               suggestion_group_id_);
+    row_view_->popup_model_->TriggerSelectionAction(
+        OmniboxPopupModel::Selection(row_view_->line_,
+                                     OmniboxPopupModel::HEADER_BUTTON_FOCUSED));
     // The PrefChangeRegistrar will update the actual button toggle state.
   }
 
@@ -142,9 +141,16 @@ class OmniboxRowView::HeaderView : public views::View,
             arrow_down, SkBitmapOperations::ROTATION_180_CW);
 
     // The "untoggled" button state corresponds with the group being shown.
-    // The "toggled" button state corresponds with the group being hidden.
+    // The button's action is therefore to Hide the group, when clicked.
     hide_button_->SetImage(views::Button::STATE_NORMAL, arrow_up);
+    hide_button_->SetTooltipText(
+        l10n_util::GetStringUTF16(IDS_TOOLTIP_HEADER_HIDE_SUGGESTIONS_BUTTON));
+
+    // The "toggled" button state corresponds with the group being hidden.
+    // The button's action is therefore to Show the group, when clicked.
     hide_button_->SetToggledImage(views::Button::STATE_NORMAL, &arrow_down);
+    hide_button_->SetToggledTooltipText(
+        l10n_util::GetStringUTF16(IDS_TOOLTIP_HEADER_SHOW_SUGGESTIONS_BUTTON));
     hide_button_focus_ring_->SchedulePaint();
 
     // It's a little hokey that we're stealing the logic for the background

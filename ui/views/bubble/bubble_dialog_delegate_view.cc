@@ -165,6 +165,15 @@ class BubbleDialogDelegateView::AnchorViewObserver : public ViewObserver {
 // static
 Widget* BubbleDialogDelegateView::CreateBubble(
     BubbleDialogDelegateView* bubble_delegate) {
+  // On Mac, MODAL_TYPE_WINDOW is implemented using sheets, which can't be
+  // anchored at a specific point - they are always placed near the top center
+  // of the window. To avoid unpleasant surprises, disallow setting an anchor
+  // view or rectangle on these types of bubbles.
+  if (bubble_delegate->GetModalType() == ui::MODAL_TYPE_WINDOW) {
+    DCHECK(!bubble_delegate->GetAnchorView());
+    DCHECK_EQ(bubble_delegate->GetAnchorRect(), gfx::Rect());
+  }
+
   bubble_delegate->Init();
   // Get the latest anchor widget from the anchor view at bubble creation time.
   bubble_delegate->SetAnchorView(bubble_delegate->GetAnchorView());

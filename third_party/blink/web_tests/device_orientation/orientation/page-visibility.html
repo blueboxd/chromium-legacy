@@ -3,6 +3,7 @@
 <body>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/visibility.js"></script>
 <script src="../../http/tests/resources/sensor-helpers.js"></script>
 <script src="../resources/device-orientation-helpers.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
@@ -20,8 +21,9 @@ sensor_test(async (t, sensorProvider) => {
   setMockOrientationData(sensorProvider, orientationData);
   await waitForOrientation(orientationData);
 
-  testRunner.setPageVisibility('hidden');
+  await setMainWindowHidden(true);
   let hidden = true;
+  
   let hiddenEventPromise = new Promise((resolve, reject) => {
     window.addEventListener(
         'deviceorientation',
@@ -39,7 +41,7 @@ sensor_test(async (t, sensorProvider) => {
   // while the page is hidden.
   await sleep(100);
   hidden = false;
-  testRunner.setPageVisibility('visible');
+  await setMainWindowHidden(false);
   return Promise.all([hiddenEventPromise, waitForOrientation(orientationData)]);
 }, 'Tests to check that deviceorientation events are not fired when the page is not visible.');
 </script>

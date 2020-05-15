@@ -82,6 +82,17 @@ void PowerMonitor::NotifyResume() {
   GetInstance()->observers_->Notify(FROM_HERE, &PowerObserver::OnResume);
 }
 
+void PowerMonitor::NotifyThermalStateChange(
+    PowerObserver::DeviceThermalState new_state) {
+  DCHECK(IsInitialized());
+#if DCHECK_IS_ON()
+  DVLOG(1) << "ThermalStateChange: "
+           << PowerMonitorSource::DeviceThermalStateToString(new_state);
+#endif
+  GetInstance()->observers_->Notify(
+      FROM_HERE, &PowerObserver::OnThermalStateChange, new_state);
+}
+
 PowerMonitor* PowerMonitor::GetInstance() {
   static base::NoDestructor<PowerMonitor> power_monitor;
   return power_monitor.get();

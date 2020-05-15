@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -58,17 +59,13 @@ bool PageRuleCollector::IsFirstPage(int page_index) const {
   return (!page_index);
 }
 
-String PageRuleCollector::PageName(int /* pageIndex */) const {
-  // FIXME: Implement page index to page name mapping.
-  return "";
-}
-
 PageRuleCollector::PageRuleCollector(const ComputedStyle* root_element_style,
                                      int page_index,
+                                     const AtomicString& page_name,
                                      MatchResult& match_result)
     : is_left_page_(IsLeftPage(root_element_style, page_index)),
       is_first_page_(IsFirstPage(page_index)),
-      page_name_(PageName(page_index)),
+      page_name_(page_name),
       result_(match_result) {}
 
 void PageRuleCollector::MatchPageRules(RuleSet* rules) {
@@ -77,8 +74,7 @@ void PageRuleCollector::MatchPageRules(RuleSet* rules) {
 
   rules->CompactRulesIfNeeded();
   HeapVector<Member<StyleRulePage>> matched_page_rules;
-  MatchPageRulesForList(matched_page_rules, rules->PageRules(), is_left_page_,
-                        is_first_page_, page_name_);
+  MatchPageRulesForList(matched_page_rules, rules->PageRules());
   if (matched_page_rules.IsEmpty())
     return;
 
@@ -92,7 +88,7 @@ void PageRuleCollector::MatchPageRules(RuleSet* rules) {
 static bool CheckPageSelectorComponents(const CSSSelector* selector,
                                         bool is_left_page,
                                         bool is_first_page,
-                                        const String& page_name) {
+                                        const AtomicString& page_name) {
   for (const CSSSelector* component = selector; component;
        component = component->TagHistory()) {
     if (component->Match() == CSSSelector::kTag) {
@@ -114,15 +110,12 @@ static bool CheckPageSelectorComponents(const CSSSelector* selector,
 
 void PageRuleCollector::MatchPageRulesForList(
     HeapVector<Member<StyleRulePage>>& matched_rules,
-    const HeapVector<Member<StyleRulePage>>& rules,
-    bool is_left_page,
-    bool is_first_page,
-    const String& page_name) {
+    const HeapVector<Member<StyleRulePage>>& rules) {
   for (unsigned i = 0; i < rules.size(); ++i) {
     StyleRulePage* rule = rules[i];
 
-    if (!CheckPageSelectorComponents(rule->Selector(), is_left_page,
-                                     is_first_page, page_name))
+    if (!CheckPageSelectorComponents(rule->Selector(), is_left_page_,
+                                     is_first_page_, page_name_))
       continue;
 
     // If the rule has no properties to apply, then ignore it.

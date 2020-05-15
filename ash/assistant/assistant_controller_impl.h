@@ -99,7 +99,7 @@ class ASH_EXPORT AssistantControllerImpl
   // AccessibilityObserver:
   void OnAccessibilityStatusChanged() override;
 
-  AssistantAlarmTimerController* alarm_timer_controller() {
+  AssistantAlarmTimerControllerImpl* alarm_timer_controller() {
     return &assistant_alarm_timer_controller_;
   }
 
@@ -136,9 +136,6 @@ class ASH_EXPORT AssistantControllerImpl
   void OnLockedFullScreenStateChanged(bool enabled) override;
 
   // AssistantInterfaceBinder implementation:
-  void BindAlarmTimerController(
-      mojo::PendingReceiver<mojom::AssistantAlarmTimerController> receiver)
-      override;
   void BindNotificationController(
       mojo::PendingReceiver<mojom::AssistantNotificationController> receiver)
       override;
@@ -156,7 +153,7 @@ class ASH_EXPORT AssistantControllerImpl
   mojo::Remote<chromeos::assistant::mojom::Assistant> assistant_;
 
   // Assistant sub-controllers.
-  AssistantAlarmTimerController assistant_alarm_timer_controller_{this};
+  AssistantAlarmTimerControllerImpl assistant_alarm_timer_controller_{this};
   AssistantInteractionControllerImpl assistant_interaction_controller_{this};
   AssistantNotificationController assistant_notification_controller_;
   AssistantStateController assistant_state_controller_;

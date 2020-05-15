@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 
 class Profile;
@@ -38,6 +40,47 @@ class SearchTagRegistry;
 // (i.e., browser to JS IPC mechanisms) to the page.
 class OsSettingsSection {
  public:
+  // Used to construct a hierarchy of this section (i.e., which settings and
+  // subpages are part of this section). See RegisterHierarchy() below.
+  //
+  // Note on primary vs. alternate setting locations: Some settings are located
+  // in multiple spots of settings. For example, the Wi-Fi on/off toggle appears
+  // in both the top-level Network section as well as the Wi-Fi subpage. In
+  // cases like this, we consider the "primary" location as the more-targeted
+  // one - in this example, the Wi-Fi subpage is the primary location of the
+  // toggle since it is more specific to Wi-Fi, and the alternate location is
+  // the one embedded in the Network section.
+  class HierarchyGenerator {
+   public:
+    virtual ~HierarchyGenerator() = default;
+
+    // Registers a subpage whose parent is this section.
+    virtual void RegisterTopLevelSubpage(mojom::Subpage subpage) = 0;
+
+    // Registers a subpage whose paernt is another subpage in this section.
+    virtual void RegisterNestedSubpage(mojom::Subpage subpage,
+                                       mojom::Subpage parent_subpage) = 0;
+
+    // Registers a setting embedded directly in the section (i.e., not within a
+    // subpage). This functions is for primary locations (see above).
+    virtual void RegisterTopLevelSetting(mojom::Setting setting) = 0;
+
+    // Registers a setting embedded within a subpage in this section. This
+    // function is for primary locations (see above).
+    virtual void RegisterNestedSetting(mojom::Setting setting,
+                                       mojom::Subpage subpage) = 0;
+
+    // Register an alternate location for a setting embedded directly in the
+    // section (i.e., not within a subpage). This function is for alternate
+    // locations (see above).
+    virtual void RegisterTopLevelAltSetting(mojom::Setting setting) = 0;
+
+    // Registers a setting embedded within a subpage in this section. This
+    // function is for alternate locations (see above).
+    virtual void RegisterNestedAltSetting(mojom::Setting setting,
+                                          mojom::Subpage subpage) = 0;
+  };
+
   virtual ~OsSettingsSection();
 
   OsSettingsSection(const OsSettingsSection& other) = delete;
@@ -50,6 +93,9 @@ class OsSettingsSection {
   // Adds SettingsPageUIHandlers to an OS settings instance. Override if the
   // derived type requires one or more handlers for this section.
   virtual void AddHandlers(content::WebUI* web_ui) {}
+
+  // Registers the subpages and/or settings which reside in this section.
+  virtual void RegisterHierarchy(HierarchyGenerator* generator) const {}
 
  protected:
   static base::string16 GetHelpUrlWithBoard(const std::string& original_url);

@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">Перемикач</translation>
 <translation id="1299774449519412690">Світлий небесно-блакитний</translation>
 <translation id="1303806948938513162">Торкніться 4 пальцями, щоб відкрити меню ChromeVox</translation>
+<translation id="1325363694295259631">Скасовано вибір перемикача пункту меню "<ph name="NAME" />"</translation>
 <translation id="1325946044405407859">Жовто-брунатний</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> з <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">озвучення символів і слів</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">Озвучувати поточний стан акумулятора</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, перемикач вибрано</translation>
 <translation id="5011664330025416377">Натисніть клавішу пошуку + пробіл, щоб активувати</translation>
+<translation id="5012724933919010465">Вибрано перемикач пункту меню "<ph name="NAME" />"</translation>
 <translation id="5020651427400641814">Увімкнути реєстрацію мовлення</translation>
 <translation id="5041394372352067729">Перемістити брайлівський дисплей угору сторінки</translation>
 <translation id="5042770794184672516">Збільшити гучність мовлення</translation>

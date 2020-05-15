@@ -20,8 +20,6 @@ class ASH_PUBLIC_EXPORT AssistantInterfaceBinder {
   static AssistantInterfaceBinder* GetInstance();
   static void SetInstance(AssistantInterfaceBinder* binder);
 
-  virtual void BindAlarmTimerController(
-      mojo::PendingReceiver<mojom::AssistantAlarmTimerController> receiver) = 0;
   virtual void BindNotificationController(
       mojo::PendingReceiver<mojom::AssistantNotificationController>
           receiver) = 0;

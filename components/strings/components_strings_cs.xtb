@@ -902,7 +902,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="4877083676943085827">{COUNT,plural, =0{Žádné}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}few{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}many{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Vyhledávání dotazu <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Automatické (výchozí)</translation>
-<translation id="4879725228911483934">Otevírat a umísťovat okna na obrazovkách</translation>
+<translation id="4879725228911483934">Otevírat a umisťovat okna na obrazovkách</translation>
 <translation id="4880827082731008257">Hledat v historii</translation>
 <translation id="4881695831933465202">Otevřít</translation>
 <translation id="4892518386797173871">Zadní</translation>

@@ -9,16 +9,19 @@ import android.content.Context;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.suggestions.DropdownItemProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
+import org.chromium.chrome.browser.omnibox.suggestions.UrlBarDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** A class that handles model and view creation for the suggestion headers. */
 public class HeaderProcessor implements DropdownItemProcessor {
-    final int mMinimumHeight;
+    private final UrlBarDelegate mUrlBarDelegate;
+    private final int mMinimumHeight;
 
     /**
      * @param context An Android context.
      */
-    public HeaderProcessor(Context context) {
+    public HeaderProcessor(Context context, UrlBarDelegate urlDelegate) {
+        mUrlBarDelegate = urlDelegate;
         mMinimumHeight = context.getResources().getDimensionPixelSize(
                 R.dimen.omnibox_suggestion_header_height);
     }
@@ -58,9 +61,17 @@ public class HeaderProcessor implements DropdownItemProcessor {
     public void populateModel(final PropertyModel model, final String headerText) {
         model.set(HeaderViewProperties.TITLE, headerText);
         model.set(HeaderViewProperties.IS_EXPANDED, true);
-        model.set(HeaderViewProperties.DELEGATE, () -> {
-            boolean state = model.get(HeaderViewProperties.IS_EXPANDED);
-            model.set(HeaderViewProperties.IS_EXPANDED, !state);
+        model.set(HeaderViewProperties.DELEGATE, new HeaderViewProperties.Delegate() {
+            @Override
+            public void onHeaderSelected() {
+                mUrlBarDelegate.setOmniboxEditingText(null);
+            }
+
+            @Override
+            public void onHeaderClicked() {
+                boolean state = model.get(HeaderViewProperties.IS_EXPANDED);
+                model.set(HeaderViewProperties.IS_EXPANDED, !state);
+            }
         });
     }
 }

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="1012876632442809908">USB-C 기기(전면 포트)</translation>
+<translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> 화면이 <ph name="RESOLUTION" />(<ph name="REFRESH_RATE" />Hz) 해상도로 변경되었습니다. 변경사항을 적용하려면 확인을 클릭하세요. <ph name="TIMEOUT_SECONDS" /> 후 이전 설정으로 복원됩니다.</translation>
 <translation id="1013923882670373915">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 기기에서 다음 PIN 코드를 입력하세요. <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">스타일러스 배터리 부족</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> 추가됨</translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">언어 설정 표시</translation>
 <translation id="1460620680449458626">음소거되어 있습니다.</translation>
 <translation id="1467432559032391204">왼쪽</translation>
+<translation id="1479909375538722835">플로팅 접근성 메뉴</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" />(HDMI/DP)</translation>
 <translation id="1508507608940204251">사용</translation>
 <translation id="1516740043221086139">방해 금지 모드가 사용 설정되어 있습니다.</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">화면 전송</translation>
 <translation id="5030687792513154421">시간이 다 됨</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" />이(가) 새 휴대전화에 연결되었습니다.</translation>
+<translation id="5035389544768382859">화면 구성 확인</translation>
 <translation id="5083553833479578423">더 많은 어시스턴트 기능을 사용해 보세요.</translation>
 <translation id="5136175204352732067">다른 키보드 연결됨</translation>
 <translation id="5168181903108465623">전송 기기를 사용할 수 있음</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">네트워크가 모니터링될 수 있음</translation>
 <translation id="7536035074519304529">IP 주소: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">취침 시간</translation>
+<translation id="7561982940498449837">메뉴 닫기</translation>
 <translation id="7562368315689366235">그림 이모티콘 팔레트</translation>
 <translation id="7564874036684306347">창을 다른 데스크톱으로 이동하면 예기치 못한 동작이 나타날 수 있습니다. 이후의 알림, 창, 대화상자가 데스크톱 간에 분할될 수 있습니다.</translation>
 <translation id="7568294522609223312">자동 클릭 사용 중지</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">올리기</translation>
 <translation id="8029629653277878342">보안 강화를 위해 PIN 또는 비밀번호가 필요합니다.</translation>
 <translation id="8030169304546394654">연결 끊김</translation>
+<translation id="8042893070933512245">접근성 설정 메뉴 열기</translation>
 <translation id="8048123526339889627">블루투스 설정</translation>
 <translation id="8054466585765276473">배터리 시간 계산 중</translation>
 <translation id="8061464966246066292">고대비</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">알림을 설정해 줘</translation>
 <translation id="8878886163241303700">화면 확대</translation>
 <translation id="890616557918890486">소스 변경</translation>
+<translation id="8908312332415978740"><ph name="DISPLAY_NAME" />에서 <ph name="SPECIFIED_RESOLUTION" />(<ph name="SPECIFIED_REFRESH_RATE" />Hz) 해상도를 지원하지 않습니다. <ph name="FALLBACK_RESOLUTION" />(<ph name="SPECIFIED_REFRESH_RATE" />) 해상도로 변경되었습니다. 변경사항을 적용하려면 확인을 클릭하세요. <ph name="TIMEOUT_SECONDS" /> 후 이전 설정으로 복원됩니다.</translation>
 <translation id="8909138438987180327">남은 배터리는 <ph name="PERCENTAGE" />%입니다.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google 어시스턴트가 이 언어를 지원하지 않음</translation>

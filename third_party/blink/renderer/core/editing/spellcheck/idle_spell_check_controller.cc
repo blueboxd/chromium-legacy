@@ -102,6 +102,8 @@ void IdleSpellCheckController::DisposeIdleCallback() {
 }
 
 void IdleSpellCheckController::Deactivate() {
+  if (state_ == State::kInactive)
+    return;
   state_ = State::kInactive;
   if (cold_mode_timer_.IsActive())
     cold_mode_timer_.Cancel();

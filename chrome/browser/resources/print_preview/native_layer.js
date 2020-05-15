@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 
 import {Cdd, Destination} from './data/destination.js';
 import {PrinterType} from './data/destination_match.js';
@@ -146,44 +146,22 @@ export let ProvisionalDestinationInfo;
 
 /**
  * An interface to the native Chromium printing system layer.
+ * @interface
  */
 export class NativeLayer {
-  /**
-   * Creates a new NativeLayer if the current instance is not set.
-   * @return {!NativeLayer} The singleton instance.
-   */
-  static getInstance() {
-    if (currentInstance === null) {
-      currentInstance = new NativeLayer();
-    }
-    return assert(currentInstance);
-  }
-
-  /**
-   * @param {!NativeLayer} instance The NativeLayer instance
-   *     to set for print preview construction.
-   */
-  static setInstance(instance) {
-    currentInstance = instance;
-  }
-
   // <if expr="chromeos">
   /**
    * Requests access token for cloud print requests for DEVICE origin.
    * @return {!Promise<string>}
    */
-  getAccessToken() {
-    return sendWithPromise('getAccessToken');
-  }
+  getAccessToken() {}
   // </if>
 
   /**
    * Gets the initial settings to initialize the print preview with.
    * @return {!Promise<!NativeInitialSettings>}
    */
-  getInitialSettings() {
-    return sendWithPromise('getInitialSettings');
-  }
+  getInitialSettings() {}
 
   /**
    * Requests the system's print destinations. The promise will be resolved
@@ -193,9 +171,7 @@ export class NativeLayer {
    *     request.
    * @return {!Promise}
    */
-  getPrinters(type) {
-    return sendWithPromise('getPrinters', type);
-  }
+  getPrinters(type) {}
 
   /**
    * Requests the destination's printing capabilities. Returns a promise that
@@ -204,13 +180,7 @@ export class NativeLayer {
    * @param {!PrinterType} type The destination's printer type.
    * @return {!Promise<!CapabilitiesResponse>}
    */
-  getPrinterCapabilities(destinationId, type) {
-    return sendWithPromise(
-        'getPrinterCapabilities', destinationId,
-        destinationId === Destination.GooglePromotedId.SAVE_AS_PDF ?
-            PrinterType.PDF_PRINTER :
-            type);
-  }
+  getPrinterCapabilities(destinationId, type) {}
 
   // <if expr="chromeos">
   /**
@@ -220,9 +190,7 @@ export class NativeLayer {
    * @param {!string} destinationId ID of the destination.
    * @return {!Promise<string>}
    */
-  getEulaUrl(destinationId) {
-    return sendWithPromise('getEulaUrl', destinationId);
-  }
+  getEulaUrl(destinationId) {}
 
   /**
    * Requests Chrome to resolve provisional extension destination by granting
@@ -230,19 +198,14 @@ export class NativeLayer {
    * @param {string} provisionalDestinationId
    * @return {!Promise<!ProvisionalDestinationInfo>}
    */
-  grantExtensionPrinterAccess(provisionalDestinationId) {
-    return sendWithPromise(
-        'grantExtensionPrinterAccess', provisionalDestinationId);
-  }
+  grantExtensionPrinterAccess(provisionalDestinationId) {}
 
   /**
    * Requests that Chrome perform printer setup for the given printer.
    * @param {string} printerId
    * @return {!Promise<!PrinterSetupResponse>}
    */
-  setupPrinter(printerId) {
-    return sendWithPromise('setupPrinter', printerId);
-  }
+  setupPrinter(printerId) {}
   // </if>
 
   /**
@@ -256,17 +219,13 @@ export class NativeLayer {
    * @return {!Promise<number>} Promise that resolves with the unique ID of
    *     the preview UI when the preview has been generated.
    */
-  getPreview(printTicket) {
-    return sendWithPromise('getPreview', printTicket);
-  }
+  getPreview(printTicket) {}
 
   /**
    * Opens the chrome://settings printing page. For Chrome OS, open the
-   *  printing settings in the Settings App.
+   * printing settings in the Settings App.
    */
-  openSettingsPrintPage() {
-    chrome.send('openPrinterSettings');
-  }
+  openSettingsPrintPage() {}
 
   /**
    * Requests that the document be printed.
@@ -275,28 +234,20 @@ export class NativeLayer {
    * @return {!Promise} Promise that will resolve when the print request is
    *     finished or rejected.
    */
-  print(printTicket) {
-    return sendWithPromise('print', printTicket);
-  }
+  print(printTicket) {}
 
   /** Requests that the current pending print request be cancelled. */
-  cancelPendingPrintRequest() {
-    chrome.send('cancelPendingPrintRequest');
-  }
+  cancelPendingPrintRequest() {}
 
   /**
    * Sends the app state to be saved in the sticky settings.
    * @param {string} appStateStr JSON string of the app state to persist.
    */
-  saveAppState(appStateStr) {
-    chrome.send('saveAppState', [appStateStr]);
-  }
+  saveAppState(appStateStr) {}
 
   // <if expr="not chromeos and not is_win">
   /** Shows the system's native printing dialog. */
-  showSystemDialog() {
-    chrome.send('showSystemDialog');
-  }
+  showSystemDialog() {}
   // </if>
 
   /**
@@ -306,17 +257,10 @@ export class NativeLayer {
    * @param {boolean} isCancel whether this was called due to the user
    *     closing the dialog without printing.
    */
-  dialogClose(isCancel) {
-    if (isCancel) {
-      chrome.send('closePrintPreviewDialog');
-    }
-    chrome.send('dialogClose');
-  }
+  dialogClose(isCancel) {}
 
   /** Hide the print preview dialog and allow the native layer to close it. */
-  hidePreview() {
-    chrome.send('hidePreview');
-  }
+  hidePreview() {}
 
   /**
    * Opens the Google Cloud Print sign-in tab. If the user signs in
@@ -324,26 +268,7 @@ export class NativeLayer {
    * @param {boolean} addAccount Whether to open an 'add a new account' or
    *     default sign in page.
    */
-  signIn(addAccount) {
-    chrome.send('signIn', [addAccount]);
-  }
-
-  /**
-   * Sends a message to the test, letting it know that an
-   * option has been set to a particular value and that the change has
-   * finished modifying the preview area.
-   */
-  uiLoadedForTest() {
-    chrome.send('UILoadedForTest');
-  }
-
-  /**
-   * Notifies the test that the option it tried to change
-   * had not been changed successfully.
-   */
-  uiFailedLoadingForTest() {
-    chrome.send('UIFailedLoadingForTest');
-  }
+  signIn(addAccount) {}
 
   /**
    * Notifies the metrics handler to record a histogram value.
@@ -351,11 +276,110 @@ export class NativeLayer {
    * @param {number} bucket The bucket to record
    * @param {number} maxBucket The maximum bucket value in the histogram.
    */
+  recordInHistogram(histogram, bucket, maxBucket) {}
+}
+
+/** @implements {NativeLayer} */
+export class NativeLayerImpl {
+  // <if expr="chromeos">
+  /** @override */
+  getAccessToken() {
+    return sendWithPromise('getAccessToken');
+  }
+  // </if>
+
+  /** @override */
+  getInitialSettings() {
+    return sendWithPromise('getInitialSettings');
+  }
+
+  /** @override */
+  getPrinters(type) {
+    return sendWithPromise('getPrinters', type);
+  }
+
+  /** @override */
+  getPrinterCapabilities(destinationId, type) {
+    return sendWithPromise(
+        'getPrinterCapabilities', destinationId,
+        destinationId === Destination.GooglePromotedId.SAVE_AS_PDF ?
+            PrinterType.PDF_PRINTER :
+            type);
+  }
+
+  // <if expr="chromeos">
+  /** @override */
+  getEulaUrl(destinationId) {
+    return sendWithPromise('getEulaUrl', destinationId);
+  }
+
+  /** @override */
+  grantExtensionPrinterAccess(provisionalDestinationId) {
+    return sendWithPromise(
+        'grantExtensionPrinterAccess', provisionalDestinationId);
+  }
+
+  /** @override */
+  setupPrinter(printerId) {
+    return sendWithPromise('setupPrinter', printerId);
+  }
+  // </if>
+
+  /** @override */
+  getPreview(printTicket) {
+    return sendWithPromise('getPreview', printTicket);
+  }
+
+  /** @override */
+  openSettingsPrintPage() {
+    chrome.send('openPrinterSettings');
+  }
+
+  /** @override */
+  print(printTicket) {
+    return sendWithPromise('print', printTicket);
+  }
+
+  /** @override */
+  cancelPendingPrintRequest() {
+    chrome.send('cancelPendingPrintRequest');
+  }
+
+  /** @override */
+  saveAppState(appStateStr) {
+    chrome.send('saveAppState', [appStateStr]);
+  }
+
+  // <if expr="not chromeos and not is_win">
+  /** @override */
+  showSystemDialog() {
+    chrome.send('showSystemDialog');
+  }
+  // </if>
+
+  /** @override */
+  dialogClose(isCancel) {
+    if (isCancel) {
+      chrome.send('closePrintPreviewDialog');
+    }
+    chrome.send('dialogClose');
+  }
+
+  /** @override */
+  hidePreview() {
+    chrome.send('hidePreview');
+  }
+
+  /** @override */
+  signIn(addAccount) {
+    chrome.send('signIn', [addAccount]);
+  }
+
+  /** @override */
   recordInHistogram(histogram, bucket, maxBucket) {
     chrome.send(
         'metricsHandler:recordInHistogram', [histogram, bucket, maxBucket]);
   }
 }
 
-/** @private {?NativeLayer} */
-let currentInstance = null;
+addSingletonGetter(NativeLayerImpl);

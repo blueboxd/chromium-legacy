@@ -129,6 +129,7 @@ crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/percentage-resolution
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/percentage-resolution-003.tentative.html [ Failure ]
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/percentage-resolution-004.tentative.html [ Failure ]
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/quirks-mode-001.tentative.html [ Failure ]
+crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/quirks-mode-002.tentative.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/clone-nowrap-intrinsic-size-bidi.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-non-replaced-004.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-non-replaced-005.html [ Failure ]

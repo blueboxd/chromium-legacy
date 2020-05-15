@@ -85,7 +85,7 @@ class ActionableTabNode extends NodeWrapper {
 
   /** @override */
   get actions() {
-    return [SAConstants.MenuAction.SELECT];
+    return [SwitchAccessMenuAction.SELECT];
   }
 
   /** @override */

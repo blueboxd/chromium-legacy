@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
 <translation id="1012876632442809908">USB-C சாதனம் (முன்பக்கப் போர்ட்)</translation>
+<translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> இன் தெளிவுத்திறன் <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz) என்பதற்கு மாற்றப்பட்டது. மாற்றங்களை உறுதிசெய்ய 'உறுதிசெய்' என்பதைக் கிளிக் செய்யவும். இன்னும் <ph name="TIMEOUT_SECONDS" /> இல் முந்தைய அமைப்புகள் மீட்டெடுக்கப்படும்.</translation>
 <translation id="1013923882670373915">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />", இணைப்பதற்கான அனுமதியை விரும்புகிறது. அந்தச் சாதனத்தில் இந்த PIN குறியீட்டை உள்ளிடவும்: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">ஸ்டைலஸ் பேட்டரி குறைவாக உள்ளது</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> சேர்க்கப்பட்டது</translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">மொழி அமைப்புகளைக் காட்டும்</translation>
 <translation id="1460620680449458626">ஒலி முடக்கப்பட்டுள்ளது.</translation>
 <translation id="1467432559032391204">இடது</translation>
+<translation id="1479909375538722835">மிதக்கும் அணுகல்தன்மை மெனு</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">ஆன்</translation>
 <translation id="1516740043221086139">'தொந்தரவு செய்ய வேண்டாம்' ஆன் செய்யப்பட்டுள்ளது.</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">திரையை அலைபரப்பு</translation>
 <translation id="5030687792513154421">நேரம் முடிந்தது</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> ஒரு புதிய ஃபோனுடன் இணைக்கப்பட்டுள்ளது</translation>
+<translation id="5035389544768382859">திரை உள்ளமைவை உறுதிசெய்யுங்கள்</translation>
 <translation id="5083553833479578423">மேலும் பல அசிஸ்டண்ட் அம்சங்களைப் பெறுக.</translation>
 <translation id="5136175204352732067">வேறொரு விசைப்பலகை இணைக்கப்பட்டது</translation>
 <translation id="5168181903108465623">Cast சாதனங்கள் உள்ளன</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">நெட்வொர்க் கண்காணிக்கப்படலாம்</translation>
 <translation id="7536035074519304529">IP முகவரி: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">தூங்கும் நேரம்</translation>
+<translation id="7561982940498449837">மெனுவை மூடு</translation>
 <translation id="7562368315689366235">ஈமொஜி தட்டு</translation>
 <translation id="7564874036684306347">சாளரத்தை வேறு டெஸ்க்டாப்க்கு மாற்றினால், அது எதிர்பாராதவிதமாகச் செயல்படக் கூடும். அடுத்தடுத்து வரும் அறிவிப்புகளும் சாளரங்களும் உரையாடல்களும் டெஸ்க்டாப்களுக்கு இடையே பிரிக்கப்படலாம்.</translation>
 <translation id="7568294522609223312">தானாகக் கிளிக் செய்வதை ஆஃப் செய்தல்</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">அதிகரி</translation>
 <translation id="8029629653277878342">மேலும் பாதுகாப்பிற்குக் கடவுச்சொல் அல்லது பின் அவசியம்</translation>
 <translation id="8030169304546394654">துண்டிக்கப்பட்டது</translation>
+<translation id="8042893070933512245">அணுகல்தன்மை அமைப்புகள் மெனுவைத் திற</translation>
 <translation id="8048123526339889627">புளூடூத் அமைப்புகள்</translation>
 <translation id="8054466585765276473">பேட்டரி நேரத்தைக் கணக்கிடுகிறது.</translation>
 <translation id="8061464966246066292">உயர் மாறுபாடு</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">நினைவூட்டலை அமை</translation>
 <translation id="8878886163241303700">திரையை விரிவாக்குகிறது</translation>
 <translation id="890616557918890486">மூலத்தை மாற்று</translation>
+<translation id="8908312332415978740"><ph name="SPECIFIED_RESOLUTION" /> தெளிவுத்திறனை (<ph name="SPECIFIED_REFRESH_RATE" /> Hz) <ph name="DISPLAY_NAME" /> ஆதரிக்கவில்லை. தெளிவுத்திறன் <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) என்பதற்கு மாற்றப்பட்டது. மாற்றங்களை வைத்திருக்க ‘உறுதிசெய்’ என்பதைக் கிளிக் செய்யவும். இன்னும் <ph name="TIMEOUT_SECONDS" /> இல் முந்தைய அமைப்புகள் மீட்டெடுக்கப்படும்.</translation>
 <translation id="8909138438987180327">பேட்டரி: <ph name="PERCENTAGE" /> சதவீதம்.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google அசிஸ்டண்ட், இந்த மொழியை ஆதரிக்கவில்லை.</translation>

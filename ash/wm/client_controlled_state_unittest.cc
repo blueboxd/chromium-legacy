@@ -84,18 +84,13 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   TestWidgetDelegate() = default;
   ~TestWidgetDelegate() override = default;
 
-  // views::WidgetDelegateView:
-  bool CanResize() const override { return can_snap_; }
-  bool CanMaximize() const override { return can_snap_; }
-
   void EnableSnap() {
-    can_snap_ = true;
+    SetCanMaximize(true);
+    SetCanResize(true);
     GetWidget()->OnSizeConstraintsChanged();
   }
 
  private:
-  bool can_snap_ = false;
-
   DISALLOW_COPY_AND_ASSIGN(TestWidgetDelegate);
 };
 

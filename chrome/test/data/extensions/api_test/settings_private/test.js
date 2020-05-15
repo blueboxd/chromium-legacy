@@ -13,6 +13,10 @@ var kTestPrefValue = true;
 // settings_private_apitest.cc.
 var kTestEnforcedPrefName = 'homepage_is_newtabpage';
 
+// Content settings are set in setting_private_apitest.cc such that this
+// preference is disabled.
+var kTestDisabledPrefName = 'generated.cookie_session_only';
+
 var kTestPageId = 'pageId';
 
 function callbackResult(result) {
@@ -90,6 +94,14 @@ var availableTests = [
                   chrome.test.succeed();
                 });
           });
+    });
+  },
+  function getDisabledPref() {
+    chrome.settingsPrivate.getPref(kTestDisabledPrefName, function(value) {
+      chrome.test.assertEq('object', typeof value);
+      callbackResult(true);
+      chrome.test.assertTrue(value.userControlDisabled);
+      chrome.test.succeed();
     });
   },
   function getPref_CrOSSetting() {

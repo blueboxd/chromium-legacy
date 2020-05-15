@@ -58,7 +58,7 @@
         <include name="IDR_COLOR_PICKER_COMMON_JS" file="../renderer/core/html/forms/resources/color_picker_common.js" type="BINDATA" compress="gzip"/>
         <include name="IDR_COLOR_SUGGESTION_PICKER_CSS" file="../renderer/core/html/forms/resources/colorSuggestionPicker.css" type="BINDATA" compress="gzip"/>
         <include name="IDR_COLOR_SUGGESTION_PICKER_JS" file="../renderer/core/html/forms/resources/colorSuggestionPicker.js" type="BINDATA" compress="gzip"/>
-        <include name="IDR_COLOR_PICKER_CSS" file="../renderer/core/html/forms/resources/color_picker.css" type="BINDATA" compress="gzip"/>
+        <include name="IDR_COLOR_PICKER_CSS" file="../renderer/core/html/forms/resources/color_picker.css" flattenhtml="true" type="BINDATA" compress="gzip"/>
         <include name="IDR_COLOR_PICKER_JS" file="../renderer/core/html/forms/resources/color_picker.js" type="BINDATA" compress="gzip"/>
         <include name="IDR_LIST_PICKER_CSS" file="../renderer/core/html/forms/resources/listPicker.css" type="BINDATA" compress="gzip"/>
         <include name="IDR_LIST_PICKER_JS" file="../renderer/core/html/forms/resources/listPicker.js" type="BINDATA" compress="gzip"/>

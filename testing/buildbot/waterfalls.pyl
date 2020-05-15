@@ -564,8 +564,8 @@
       },
       'android-cronet-asan-arm-rel': {
         'mixins': [
-          'hammerhead',
-          'kitkat',
+          'bullhead',
+          'marshmallow',
         ],
         'additional_compile_targets': [
           'cronet_package',
@@ -4365,8 +4365,8 @@
           'gtest_tests': 'chromium_android_gtests',
         },
         'mixins': [
-          'hammerhead',
-          'kitkat',
+          'bullhead',
+          'marshmallow',
         ],
         'os_type': 'android',
       },

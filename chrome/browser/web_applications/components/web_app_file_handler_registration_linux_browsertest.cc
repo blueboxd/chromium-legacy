@@ -10,6 +10,7 @@
 #include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
+#include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/shell_integration_linux.h"
@@ -103,17 +104,19 @@ IN_PROC_BROWSER_TEST_P(WebAppFileHandlerRegistrationLinuxBrowserTest,
       shell_integration_linux::GetMimeTypesRegistrationFileContents(
           file_handlers);
   bool path_reached = false;
-
+  base::RunLoop run_loop;
   RegisterMimeTypesOnLinuxCallback callback = base::BindLambdaForTesting(
-      [&expected_file_contents, &path_reached](base::FilePath filename,
-                                               std::string file_contents) {
+      [&expected_file_contents, &path_reached, &run_loop](
+          base::FilePath filename, std::string file_contents) {
         EXPECT_EQ(file_contents, expected_file_contents);
         path_reached = true;
+        run_loop.Quit();
         return true;
       });
   SetRegisterMimeTypesOnLinuxCallbackForTesting(std::move(callback));
 
   InstallApp(CreateInstallOptions(url));
+  run_loop.Run();
   EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result_code_.value());
   ASSERT_TRUE(path_reached);
 }

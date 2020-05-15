@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Napravi grupu</translation>
 <translation id="2671423594960767771">Deli grupu</translation>
 <translation id="2977480621796371840">Ukloni iz grupe</translation>
+<translation id="3328308545011660196">Predlog: Kartice (<ph name="NUMBER_OF_TABS" />) deluju povezano. Želite li da ih grupišete?</translation>
+<translation id="4133493477912226187">Kartice (<ph name="NUMBER_OF_TABS" />) deluju povezano. Želite li da ih grupišete?</translation>
 <translation id="4212246570487010370">Nastavite sa pregledanjem</translation>
 <translation id="4450893287417543264">Ne prikazuj ponovo</translation>
 <translation id="4648718555153979859">Kartice su grupisane zajedno ovde</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Uklonite kartice iz grupe</translation>
 <translation id="7559245342362162951">Prikazuje kartice grupe u mreži na celom ekranu</translation>
 <translation id="7792771145871471484">Pregledajte predloge.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Dodajte <ph name="TABS_COUNT_ONE" /> izabranu karticu u grupu}one{Dodajte <ph name="TABS_COUNT_MANY" /> izabranu karticu u grupu}few{Dodajte <ph name="TABS_COUNT_MANY" /> izabrane kartice u grupu}other{Dodajte <ph name="TABS_COUNT_MANY" /> izabranih kartica u grupu}}</translation>
 <translation id="7885132941432959125">Premestite karticu udesno</translation>
 <translation id="7966321538264951561">Odbacite predloge.</translation>
 <translation id="814503310257431685">Prikaži sve</translation>

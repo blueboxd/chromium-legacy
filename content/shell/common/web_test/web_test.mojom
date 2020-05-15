@@ -143,6 +143,10 @@ interface WebTestControlHost {
   // Trigger a reload navigation on the main WebView.
   Reload();
 
+  // Show or hide the window. This mimics the user switching tabs in a
+  // multi-tab window, or occluding the window.
+  SetMainWindowHidden(bool hidden);
+
   // Invoked when the embedder should close all but the main WebView.
   CloseRemainingWindows();
 

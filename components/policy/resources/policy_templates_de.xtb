@@ -2357,6 +2357,7 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
       Ist diese Einstellung aktiviert oder deaktiviert, können Nutzer sie in <ph name="PRODUCT_NAME" /> nicht ändern oder außer Kraft setzen.
 
       Ist die Richtlinie nicht konfiguriert, so wird die Einstellung aktiviert, wobei der Nutzer dies ändern kann.</translation>
+<translation id="453031441196755904">Diese Richtlinie ist veraltet.</translation>
 <translation id="4531706050939927436">Die Installation von Android-Apps kann von der Google Admin-Konsole aus über Google Play erzwungen werden. Android-Apps nutzen diese Richtlinie nicht.</translation>
 <translation id="4534500438517478692">Name der Android-Einschränkung:</translation>
 <translation id="4541530620466526913">Lokale Gerätekonten</translation>

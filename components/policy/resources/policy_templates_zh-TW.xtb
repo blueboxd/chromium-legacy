@@ -2326,6 +2326,7 @@
       不論你啟用或停用這項設定，使用者都無法變更或覆寫 <ph name="PRODUCT_NAME" /> 中的這項設定。
 
       如果你未設定這項政策，系統會使用這項設定，不過使用者可以加以變更。</translation>
+<translation id="453031441196755904">這項政策已遭到淘汰。</translation>
 <translation id="4531706050939927436">你可以在 Google 管理控制台中使用 Google Play 強制安裝 Android 應用程式 (不會使用這項政策)。</translation>
 <translation id="4534500438517478692">Android 限制名稱：</translation>
 <translation id="4541530620466526913">裝置本機帳戶</translation>

@@ -181,6 +181,7 @@ class MockWebExternalWidgetClient : public blink::WebExternalWidgetClient {
       HandleInputEvent,
       blink::WebInputEventResult(const blink::WebCoalescedInputEvent&));
   MOCK_METHOD1(RequestNewLayerTreeFrameSink, void(LayerTreeFrameSinkCallback));
+  MOCK_METHOD0(DidCommitAndDrawCompositorFrame, void());
 };
 
 }  // namespace

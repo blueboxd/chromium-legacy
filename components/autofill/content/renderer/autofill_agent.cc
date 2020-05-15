@@ -16,6 +16,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/location.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -98,34 +99,6 @@ namespace {
 // upon, instead of multiple in close succession (debounce time).
 size_t kWaitTimeForSelectOptionsChangesMs = 50;
 
-// Gets all the data list values (with corresponding label) for the given
-// element.
-void GetDataListSuggestions(const WebInputElement& element,
-                            std::vector<base::string16>* values,
-                            std::vector<base::string16>* labels) {
-  for (const auto& option : element.FilteredDataListOptions()) {
-    values->push_back(option.Value().Utf16());
-    if (option.Value() != option.Label())
-      labels->push_back(option.Label().Utf16());
-    else
-      labels->push_back(base::string16());
-  }
-}
-
-// Trim the vector before sending it to the browser process to ensure we
-// don't send too much data through the IPC.
-void TrimStringVectorForIPC(std::vector<base::string16>* strings) {
-  // Limit the size of the vector.
-  if (strings->size() > kMaxListSize)
-    strings->resize(kMaxListSize);
-
-  // Limit the size of the strings in the vector.
-  for (size_t i = 0; i < strings->size(); ++i) {
-    if ((*strings)[i].length() > kMaxDataLength)
-      (*strings)[i].resize(kMaxDataLength);
-  }
-}
-
 }  // namespace
 
 AutofillAgent::ShowSuggestionsOptions::ShowSuggestionsOptions()
@@ -134,6 +107,68 @@ AutofillAgent::ShowSuggestionsOptions::ShowSuggestionsOptions()
       show_full_suggestion_list(false),
       show_password_suggestions_only(false),
       autoselect_first_suggestion(false) {}
+
+AutofillAgent::UmaFormDynamicityLogger::UmaFormDynamicityLogger() = default;
+
+AutofillAgent::UmaFormDynamicityLogger::~UmaFormDynamicityLogger() {
+  FlushCache();
+}
+
+AutofillAgent::UmaFormDynamicityLogger::FormStats::FormStats() = default;
+
+AutofillAgent::UmaFormDynamicityLogger::FormStats::FormStats(const FormStats&) =
+    default;
+
+AutofillAgent::UmaFormDynamicityLogger::FormStats&
+AutofillAgent::UmaFormDynamicityLogger::FormStats::operator=(
+    const AutofillAgent::UmaFormDynamicityLogger::FormStats&) = default;
+
+AutofillAgent::UmaFormDynamicityLogger::FormStats::~FormStats() = default;
+
+void AutofillAgent::UmaFormDynamicityLogger::LogForm(const FormData& form) {
+  FormRendererId form_renderer_id = form.unique_renderer_id;
+  FormSignature form_signature = CalculateFormSignature(form);
+
+  Cache::iterator it = cache_.Get(form_renderer_id);
+  bool cache_hit = it != cache_.end();
+  if (!cache_hit) {
+    FormStats stats;
+    stats.form_renderer_id = form_renderer_id;
+    stats.form_signature = form_signature;
+    it = cache_.Put(form_renderer_id, std::move(stats));
+  }
+  FormStats& stats = it->second;
+
+  stats.form_signature_changed |= form_signature != stats.form_signature;
+  for (const FormFieldData& field : form.fields) {
+    FieldRendererId renderer_id = field.unique_renderer_id;
+    FieldSignature signature = CalculateFieldSignatureForField(field);
+    if (cache_hit) {
+      auto it = stats.fields.find(renderer_id);
+      if (it == stats.fields.end()) {
+        stats.some_field_renderer_id_added |= true;
+      } else if (signature != it->second) {
+        stats.some_field_signature_changed |= true;
+      }
+    }
+    stats.fields[renderer_id] = signature;
+  }
+}
+
+void AutofillAgent::UmaFormDynamicityLogger::FlushCache() {
+  for (const auto& entry : cache_) {
+    const FormStats& stats = entry.second;
+    // |metric| is a three bit number. Leaving hash collisions aside,
+    // |some_field_signature_changed| or |some_field_renderer_id_added| implies
+    // |form_signature_changed|. Therefore we effectively expect only
+    // expect five distinct values: 000, 100, 101, 110, 111.
+    int metric = (stats.some_field_signature_changed << 0) |
+                 (stats.some_field_renderer_id_added << 1) |
+                 (stats.form_signature_changed << 2);
+    UMA_HISTOGRAM_ENUMERATION("Autofill.FormDynamicity", metric, 8);
+  }
+  cache_.Clear();
+}
 
 AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
                              PasswordAutofillAgent* password_autofill_agent,
@@ -160,6 +195,9 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
       &AutofillAgent::BindPendingReceiver, base::Unretained(this)));
 }
 
+// The destructor is not guaranteed to be called. Destruction happens (only)
+// through the OnDestruct() event, which posts a task to delete this object.
+// The process may be killed before this deletion can happen.
 AutofillAgent::~AutofillAgent() {
   RemoveFormObserver(this);
 }
@@ -189,6 +227,7 @@ void AutofillAgent::DidCommitProvisionalLoad(bool is_same_document_navigation,
   // Navigation to a new page or a page refresh.
 
   element_.Reset();
+  form_dynamicity_logger_.FlushCache();
 
   form_cache_.Reset();
   ResetLastInteractedElements();
@@ -228,6 +267,7 @@ void AutofillAgent::DidChangeScrollOffsetImpl(
   if (FindFormAndFieldForFormControlElement(element_, field_data_manager_.get(),
                                             form_util::EXTRACT_BOUNDS, &form,
                                             &field)) {
+    form_dynamicity_logger_.LogForm(form);
     GetAutofillDriver()->TextFieldDidScroll(form, field, field.bounds);
   }
 
@@ -277,12 +317,14 @@ void AutofillAgent::FocusedElementChanged(const WebElement& element) {
   if (FindFormAndFieldForFormControlElement(element_, field_data_manager_.get(),
                                             form_util::EXTRACT_BOUNDS, &form,
                                             &field)) {
+    form_dynamicity_logger_.LogForm(form);
     GetAutofillDriver()->FocusOnFormField(form, field, field.bounds);
   }
 }
 
 void AutofillAgent::OnDestruct() {
   Shutdown();
+  form_dynamicity_logger_.FlushCache();
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
@@ -358,6 +400,7 @@ void AutofillAgent::OnTextFieldDidChange(const WebInputElement& element) {
   if (FindFormAndFieldForFormControlElement(element, field_data_manager_.get(),
                                             form_util::EXTRACT_BOUNDS, &form,
                                             &field)) {
+    form_dynamicity_logger_.LogForm(form);
     GetAutofillDriver()->TextFieldDidChange(form, field, field.bounds,
                                             AutofillTickClock::NowTicks());
   }
@@ -446,6 +489,7 @@ void AutofillAgent::TriggerRefillIfNeeded(const FormData& form) {
   if (FindFormAndFieldForFormControlElement(element_, field_data_manager_.get(),
                                             &updated_form, &field) &&
       (!element_.IsAutofilled() || !form.DynamicallySameFormAs(updated_form))) {
+    form_dynamicity_logger_.LogForm(updated_form);
     base::TimeTicks forms_seen_timestamp = AutofillTickClock::NowTicks();
     WebLocalFrame* frame = render_frame()->GetWebFrame();
     std::vector<FormData> forms;
@@ -716,6 +760,7 @@ void AutofillAgent::GetElementFormAndFieldData(
   bool success = FindFormAndFieldForFormControlElement(
       target_form_control_element, field_data_manager_.get(), &form, &field);
   if (success) {
+    form_dynamicity_logger_.LogForm(form);
     // Remember this element so as to autofill the form without focusing the
     // field for Autofill Assistant.
     element_ = target_form_control_element;
@@ -795,6 +840,7 @@ void AutofillAgent::QueryAutofillSuggestions(
                                             form_util::EXTRACT_BOUNDS),
         &field);
   }
+  form_dynamicity_logger_.LogForm(form);
 
   if (is_secure_context_required_ &&
       !(element.GetDocument().IsSecureContext())) {
@@ -803,13 +849,10 @@ void AutofillAgent::QueryAutofillSuggestions(
     return;
   }
 
-  const WebInputElement* input_element = ToWebInputElement(&element);
-  if (input_element) {
+  if (const WebInputElement* input_element = ToWebInputElement(&element)) {
     // Find the datalist values and send them to the browser process.
-    GetDataListSuggestions(*input_element, &field.datalist_values,
-                           &field.datalist_labels);
-    TrimStringVectorForIPC(&field.datalist_values);
-    TrimStringVectorForIPC(&field.datalist_labels);
+    form_util::GetDataListSuggestions(*input_element, &field.datalist_values,
+                                      &field.datalist_labels);
   }
 
   is_popup_possibly_visible_ = true;
@@ -843,6 +886,10 @@ void AutofillAgent::ProcessForms() {
   WebLocalFrame* frame = render_frame()->GetWebFrame();
   std::vector<FormData> forms =
       form_cache_.ExtractNewForms(field_data_manager_.get());
+
+  for (const FormData& form : forms) {
+    form_dynamicity_logger_.LogForm(form);
+  }
 
   // Always communicate to browser process for topmost frame.
   if (!forms.empty() || !frame->Parent()) {
@@ -944,6 +991,7 @@ void AutofillAgent::SelectWasUpdated(
   if (FindFormAndFieldForFormControlElement(element, field_data_manager_.get(),
                                             &form, &field) &&
       !field.option_values.empty()) {
+    form_dynamicity_logger_.LogForm(form);
     GetAutofillDriver()->SelectFieldOptionsDidChange(form);
   }
 }
@@ -1039,6 +1087,7 @@ void AutofillAgent::OnProvisionallySaveForm(
       if (FindFormAndFieldForFormControlElement(
               element, field_data_manager_.get(), form_util::EXTRACT_BOUNDS,
               &form, &field)) {
+        form_dynamicity_logger_.LogForm(form);
         GetAutofillDriver()->SelectControlDidChange(form, field, field.bounds);
       }
     }

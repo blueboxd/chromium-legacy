@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Opprett en gruppe</translation>
 <translation id="2671423594960767771">Del gruppe</translation>
 <translation id="2977480621796371840">Fjern fra gruppen</translation>
+<translation id="3328308545011660196">Forslag: <ph name="NUMBER_OF_TABS" /> faner ser ut til å være relaterte. Vil du gruppere dem?</translation>
+<translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> faner ser ut til å være relaterte. Vil du gruppere dem?</translation>
 <translation id="4212246570487010370">Fortsett å surfe</translation>
 <translation id="4450893287417543264">Ikke vis igjen</translation>
 <translation id="4648718555153979859">Fanene dine er gruppert sammen her</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Fjern faner fra gruppen</translation>
 <translation id="7559245342362162951">Vis gruppens faner i fullskjermrutenett</translation>
 <translation id="7792771145871471484">Gjennomgå forslagene.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Gruppér <ph name="TABS_COUNT_ONE" /> valgt fane}other{Gruppér <ph name="TABS_COUNT_MANY" /> valgte faner}}</translation>
 <translation id="7885132941432959125">Flytt fanen mot høyre</translation>
 <translation id="7966321538264951561">Avvis forslagene.</translation>
 <translation id="814503310257431685">Vis alle</translation>

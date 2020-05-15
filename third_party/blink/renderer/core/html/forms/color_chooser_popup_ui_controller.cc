@@ -225,6 +225,7 @@ void ColorChooserPopupUIController::SetValue(const String& value) {
 
 void ColorChooserPopupUIController::DidClosePopup() {
   popup_ = nullptr;
+  eye_dropper_chooser_.reset();
 
   if (!chooser_)
     EndChooser();

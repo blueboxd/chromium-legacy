@@ -917,6 +917,9 @@ extern const char kUseNewAcceptLanguageHeaderDescription[];
 extern const char kOverscrollHistoryNavigationName[];
 extern const char kOverscrollHistoryNavigationDescription[];
 
+extern const char kPaintHoldingName[];
+extern const char kPaintHoldingDescription[];
+
 extern const char kParallelDownloadingName[];
 extern const char kParallelDownloadingDescription[];
 
@@ -1198,13 +1201,13 @@ extern const char kTouchDragDropDescription[];
 extern const char kTouchEventsName[];
 extern const char kTouchEventsDescription[];
 
-extern const char kTouchpadOverscrollHistoryNavigationName[];
-extern const char kTouchpadOverscrollHistoryNavigationDescription[];
-
 extern const char kTouchSelectionStrategyName[];
 extern const char kTouchSelectionStrategyDescription[];
 extern const char kTouchSelectionStrategyCharacter[];
 extern const char kTouchSelectionStrategyDirection[];
+
+extern const char kTouchpadOverscrollHistoryNavigationName[];
+extern const char kTouchpadOverscrollHistoryNavigationDescription[];
 
 extern const char kTraceUploadUrlName[];
 extern const char kTraceUploadUrlDescription[];
@@ -1301,14 +1304,6 @@ extern const char kWebrtcStunOriginDescription[];
 
 extern const char kWebrtcUseMinMaxVEADimensionsName[];
 extern const char kWebrtcUseMinMaxVEADimensionsDescription[];
-
-#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
-extern const char kWebUITabStripName[];
-extern const char kWebUITabStripDescription[];
-
-extern const char kWebUITabStripDemoOptionsName[];
-extern const char kWebUITabStripDemoOptionsDescription[];
-#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
 extern const char kWebXrForceRuntimeName[];
 extern const char kWebXrForceRuntimeDescription[];
@@ -1749,8 +1744,8 @@ extern const char kElasticOverscrollWinDescription[];
 extern const char kEnableMediaFoundationVideoCaptureName[];
 extern const char kEnableMediaFoundationVideoCaptureDescription[];
 
-extern const char kGdiTextPrinting[];
-extern const char kGdiTextPrintingDescription[];
+extern const char kRunVideoCaptureServiceInBrowserProcessName[];
+extern const char kRunVideoCaptureServiceInBrowserProcessDescription[];
 
 extern const char kUseAngleName[];
 extern const char kUseAngleDescription[];
@@ -1765,6 +1760,9 @@ extern const char kUseWinrtMidiApiName[];
 extern const char kUseWinrtMidiApiDescription[];
 
 #if BUILDFLAG(ENABLE_PRINTING)
+extern const char kGdiTextPrinting[];
+extern const char kGdiTextPrintingDescription[];
+
 extern const char kPrintWithReducedRasterizationName[];
 extern const char kPrintWithReducedRasterizationDescription[];
 
@@ -2300,15 +2298,6 @@ extern const char kZeroStateFilesDescription[];
 
 #endif  // #if defined(OS_CHROMEOS)
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
-
-#if BUILDFLAG(USE_TCMALLOC)
-extern const char kDynamicTcmallocName[];
-extern const char kDynamicTcmallocDescription[];
-#endif  // BUILDFLAG(USE_TCMALLOC)
-
-#endif  // #if defined(OS_CHROMEOS) || defined(OS_LINUX)
-
 // All views-based platforms --------------------------------------------------
 
 #if defined(TOOLKIT_VIEWS)
@@ -2335,13 +2324,6 @@ extern const char kWebGL2ComputeContextName[];
 extern const char kWebGL2ComputeContextDescription[];
 
 #endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
-
-#if BUILDFLAG(ENABLE_CLICK_TO_CALL)
-
-extern const char kClickToCallUIName[];
-extern const char kClickToCallUIDescription[];
-
-#endif  // BUILDFLAG(ENABLE_CLICK_TO_CALL)
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
@@ -2378,12 +2360,29 @@ extern const char kWebContentsOcclusionDescription[];
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if BUILDFLAG(USE_TCMALLOC)
+extern const char kDynamicTcmallocName[];
+extern const char kDynamicTcmallocDescription[];
+#endif  // BUILDFLAG(USE_TCMALLOC)
+#endif  // #if defined(OS_CHROMEOS) || defined(OS_LINUX)
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+extern const char kUserDataSnapshotName[];
+extern const char kUserDataSnapshotDescription[];
+#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+
 // Feature flags --------------------------------------------------------------
 
 #if defined(DCHECK_IS_CONFIGURABLE)
 extern const char kDcheckIsFatalName[];
 extern const char kDcheckIsFatalDescription[];
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
+
+#if BUILDFLAG(ENABLE_CLICK_TO_CALL)
+extern const char kClickToCallUIName[];
+extern const char kClickToCallUIDescription[];
+#endif  // BUILDFLAG(ENABLE_CLICK_TO_CALL)
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 extern const char kDiceWebSigninInterceptionName[];
@@ -2401,12 +2400,9 @@ extern const char kPaintPreviewDemoDescription[];
 #endif  // ENABLE_PAINT_PREVIEW && defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-
 #if defined(OS_CHROMEOS)
-
 extern const char kPdfAnnotations[];
 extern const char kPdfAnnotationsDescription[];
-
 #endif  // defined(OS_CHROMEOS)
 
 extern const char kPdfFormSaveName[];
@@ -2414,8 +2410,15 @@ extern const char kPdfFormSaveDescription[];
 
 extern const char kPdfTwoUpViewName[];
 extern const char kPdfTwoUpViewDescription[];
-
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
+
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+extern const char kWebUITabStripName[];
+extern const char kWebUITabStripDescription[];
+
+extern const char kWebUITabStripDemoOptionsName[];
+extern const char kWebUITabStripDemoOptionsDescription[];
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
@@ -2424,29 +2427,10 @@ extern const char kAutofillCreditCardUploadDescription[];
 
 #endif  // defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
-extern const char kPaintHoldingName[];
-extern const char kPaintHoldingDescription[];
-
 #if defined(WEBRTC_USE_PIPEWIRE)
-
 extern const char kWebrtcPipeWireCapturerName[];
 extern const char kWebrtcPipeWireCapturerDescription[];
-
 #endif  // #if defined(WEBRTC_USE_PIPEWIRE)
-
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-
-extern const char kUserDataSnapshotName[];
-extern const char kUserDataSnapshotDescription[];
-
-#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-
-#if defined(OS_WIN)
-
-extern const char kRunVideoCaptureServiceInBrowserProcessName[];
-extern const char kRunVideoCaptureServiceInBrowserProcessDescription[];
-
-#endif  // defined(OS_WIN)
 
 // ============================================================================
 // Don't just add flags to the end, put them in the right section in

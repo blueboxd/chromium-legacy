@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Skapa grupp</translation>
 <translation id="2671423594960767771">Dela grupp</translation>
 <translation id="2977480621796371840">Ta bort från gruppen</translation>
+<translation id="3328308545011660196">Förslag: <ph name="NUMBER_OF_TABS" /> flikar verkar höra ihop. Vill du gruppera dem?</translation>
+<translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> flikar verkar höra ihop. Vill du gruppera dem?</translation>
 <translation id="4212246570487010370">Fortsätt surfa</translation>
 <translation id="4450893287417543264">Visa inte igen</translation>
 <translation id="4648718555153979859">Dina flikar samlas här</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Ta bort flikar från gruppen</translation>
 <translation id="7559245342362162951">Visa gruppens flikar i helskärmsrutnät</translation>
 <translation id="7792771145871471484">Granska förslagen.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Lägg till <ph name="TABS_COUNT_ONE" /> vald flik i gruppen}other{Lägg till <ph name="TABS_COUNT_MANY" /> valda flikar i gruppen}}</translation>
 <translation id="7885132941432959125">Flytta fliken åt höger</translation>
 <translation id="7966321538264951561">Ignorera förslagen.</translation>
 <translation id="814503310257431685">Visa alla</translation>

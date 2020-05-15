@@ -39,11 +39,8 @@ class ToplevelWindow : public views::WidgetDelegateView {
   bool GetSavedWindowPlacement(const views::Widget* widget,
                                gfx::Rect* bounds,
                                ui::WindowShowState* show_state) const override;
-  bool CanResize() const override;
-  bool CanMaximize() const override;
-  bool CanMinimize() const override;
 
-  const CreateParams params_;
+  bool use_saved_placement_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(ToplevelWindow);
 };

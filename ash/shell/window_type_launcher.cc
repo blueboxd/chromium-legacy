@@ -178,6 +178,9 @@ WindowTypeLauncher::WindowTypeLauncher(
     : show_views_examples_callback_(std::move(show_views_examples_callback)),
       create_embedded_browser_callback_(
           std::move(create_embedded_browser_callback)) {
+  SetCanMaximize(true);
+  SetCanMinimize(true);
+  SetCanResize(true);
   SetTitle(base::ASCIIToUTF16("Examples: Window Builder"));
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>());
@@ -233,18 +236,6 @@ void WindowTypeLauncher::OnPaint(gfx::Canvas* canvas) {
 
 bool WindowTypeLauncher::OnMousePressed(const ui::MouseEvent& event) {
   // Overridden so we get OnMouseReleased and can show the context menu.
-  return true;
-}
-
-bool WindowTypeLauncher::CanResize() const {
-  return true;
-}
-
-bool WindowTypeLauncher::CanMaximize() const {
-  return true;
-}
-
-bool WindowTypeLauncher::CanMinimize() const {
   return true;
 }
 

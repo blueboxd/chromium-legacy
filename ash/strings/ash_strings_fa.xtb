@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
 <translation id="1012876632442809908">‏دستگاه USB-C (درگاه جلو)</translation>
+<translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> به <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> هرتز) تغییر کرد. برای حفظ تغییرات، روی تأیید کلیک کنید. تنظیمات قبلی <ph name="TIMEOUT_SECONDS" /> دیگر بازیابی خواهد شد.</translation>
 <translation id="1013923882670373915">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد. لطفاً این کد پین را در آن دستگاه وارد کنید: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">شارژ باتری قلم کم است</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> اضافه شد</translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">نمایش تنظیمات زبان</translation>
 <translation id="1460620680449458626">دکمه میزان صدا صامت است.</translation>
 <translation id="1467432559032391204">چپ</translation>
+<translation id="1479909375538722835">منوی دسترس‌پذیری شناور</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">روشن</translation>
 <translation id="1516740043221086139">«مزاحم نشوید» روشن است.</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">فرستادن محتوای صفحه</translation>
 <translation id="5030687792513154421">وقت تمام شد</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> به تلفن جدیدی متصل است</translation>
+<translation id="5035389544768382859">تأیید پیکربندی نمایشگر</translation>
 <translation id="5083553833479578423">باز کردن قفل ویژگی‌های بیشتری از «دستیار».</translation>
 <translation id="5136175204352732067">صفحه‌کلید دیگری متصل شد</translation>
 <translation id="5168181903108465623">دستگاه‌های فرستادن موجود هستند</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">ممکن است شبکه پایش شود</translation>
 <translation id="7536035074519304529">‏نشانی IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">وقت خواب</translation>
+<translation id="7561982940498449837">بستن منو</translation>
 <translation id="7562368315689366235">پالت صورتک</translation>
 <translation id="7564874036684306347">انتقال پنجره‌ها به میز کار دیگر می‌تواند به رفتار غیرمنتظره منجر شود. اعلان‌ها، پنجره‌ها و کادرهای گفتگوی بعدی ممکن است بین میز کارها تقسیم شوند.</translation>
 <translation id="7568294522609223312">خاموش کردن کلیک‌های خودکار</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">افزایش</translation>
 <translation id="8029629653277878342">برای ایمنی بیشتر به پین یا گذرواژه نیاز است</translation>
 <translation id="8030169304546394654">اتصال قطع شد</translation>
+<translation id="8042893070933512245">باز کردن منوی تنظیمات دسترس‌پذیری</translation>
 <translation id="8048123526339889627">تنظیمات بلوتوث</translation>
 <translation id="8054466585765276473">درحال محاسبه زمان شارژ باتری.</translation>
 <translation id="8061464966246066292">کنتراست بالا</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">‏Set a reminder (یادآوری تنظیم کن)</translation>
 <translation id="8878886163241303700">صفحه گسترش یافته است</translation>
 <translation id="890616557918890486">تغییر منبع</translation>
+<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> از <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> هرتز) پشتیبانی نمی‌کند. وضوح به <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) تغییر کرده است. برای حفظ تغییرات، روی تأیید کلیک کنید. تنظیمات قبلی <ph name="TIMEOUT_SECONDS" /> دیگر بازیابی خواهد شد.</translation>
 <translation id="8909138438987180327">شارژ باتری <ph name="PERCENTAGE" /> درصد است.</translation>
 <translation id="8921554779039049422">H+‎</translation>
 <translation id="8921624153894383499">‏«دستیار Google» به این زبان صحبت نمی‌کند.</translation>

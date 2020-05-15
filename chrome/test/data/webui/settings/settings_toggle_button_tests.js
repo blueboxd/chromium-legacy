@@ -220,4 +220,18 @@ suite('SettingsToggleButton', () => {
 
     assertFalse(!!testElement.$$('cr-policy-pref-indicator'));
   });
+
+  test('user control disabled pref', () => {
+    const pref = {
+      key: 'test',
+      type: chrome.settingsPrivate.PrefType.BOOLEAN,
+      value: false,
+      userControlDisabled: true
+    };
+
+    assertFalse(testElement.$.control.disabled);
+    testElement.set('pref', pref);
+    Polymer.dom.flush();
+    assertTrue(testElement.$.control.disabled);
+  });
 });

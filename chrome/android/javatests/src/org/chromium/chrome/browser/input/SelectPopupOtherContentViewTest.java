@@ -28,7 +28,6 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
-import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
 
 import java.util.concurrent.ExecutionException;
@@ -103,8 +102,7 @@ public class SelectPopupOtherContentViewTest {
 
             ContentView cv = ContentView.createContentView(activity, webContents);
             webContents.initialize("", ViewAndroidDelegate.createBasicDelegate(cv), cv,
-                    new ActivityWindowAndroid(activity),
-                    WebContents.createDefaultInternalsHolder());
+                    activity.getWindowAndroid(), WebContents.createDefaultInternalsHolder());
             webContents.destroy();
         });
 

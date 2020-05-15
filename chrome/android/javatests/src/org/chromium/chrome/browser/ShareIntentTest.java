@@ -202,6 +202,10 @@ public class ShareIntentTest {
         mockActivity.waitForFileCheck();
 
         ShareHelper.setLastShareComponentName(new ComponentName("", ""));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ((TabImpl) mockActivity.getActivityTab()).updateAttachment(null, null);
+            window.destroy();
+        });
     }
 
     @Before

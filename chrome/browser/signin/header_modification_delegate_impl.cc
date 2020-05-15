@@ -103,9 +103,13 @@ bool HeaderModificationDelegateImpl::ShouldIgnoreGuestWebViewRequest(
 
   if (extensions::WebViewRendererState::GetInstance()->IsGuest(
           contents->GetMainFrame()->GetProcess()->GetID())) {
+#if defined(OS_CHROMEOS)
+    return true;
+#else
     GURL identity_api_site = extensions::WebAuthFlow::GetWebViewSiteURL();
     if (contents->GetSiteInstance()->GetSiteURL() != identity_api_site)
       return true;
+#endif
   }
   return false;
 }

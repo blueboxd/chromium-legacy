@@ -65,7 +65,7 @@ TEST_F('SwitchAccessTabNodeTest', 'Construction', function() {
     assertFalse(
         tabToSelect.isGroup(), 'Tab node to select should not be a group');
     assertTrue(
-        tabToSelect.hasAction(SAConstants.MenuAction.SELECT),
+        tabToSelect.hasAction(SwitchAccessMenuAction.SELECT),
         'Tab as a group should have a SELECT action');
     assertFalse(
         RectHelper.areEqual(tabAsRoot.location, tabToSelect.location),
@@ -82,7 +82,7 @@ TEST_F('SwitchAccessTabNodeTest', 'Construction', function() {
         'Close button is not a button');
     assertFalse(close.isGroup(), 'Close button should not be a group');
     assertTrue(
-        close.hasAction(SAConstants.MenuAction.SELECT),
+        close.hasAction(SwitchAccessMenuAction.SELECT),
         'Close button should have a SELECT action');
     assertFalse(
         RectHelper.areEqual(tabAsRoot.location, close.location),

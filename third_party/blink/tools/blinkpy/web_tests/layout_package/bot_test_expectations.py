@@ -39,6 +39,34 @@ from blinkpy.web_tests.models.typ_types import Expectation, ResultType
 
 _log = logging.getLogger(__name__)
 
+class ResultsFilter(object):
+    """Results filter for cq results.
+    Filtering any build which has passing tests in retry without patch.
+    If any test passed during this retry indicates the step has failed,
+    and the results are most likely unreliable.
+
+    For results.json v4 format check ResultsJSON"""
+
+    RESULTS_COUNT_BY_TYPE = 'num_failures_by_type'
+    BUILD_NUMBERS = 'buildNumbers'
+
+    # results.json was originally designed to support
+    # multiple builders in one json file, so the builder_name
+    # is needed to figure out which builder this json file
+    # refers to (and thus where the results are stored)
+    def __init__(self, builder_name, json_dict):
+        self._builds_to_filter = self._get_builds_to_ignore(json_dict[builder_name])
+
+    def _get_builds_to_ignore(self, json_builder_summary):
+        build_count = len(json_builder_summary[self.BUILD_NUMBERS])
+        passing_retries_indices = [
+            i for i, p in enumerate(json_builder_summary[
+                self.RESULTS_COUNT_BY_TYPE][ResultType.Pass][:build_count]) if p > 0]
+        return set([json_builder_summary[self.BUILD_NUMBERS][i] for i in passing_retries_indices])
+
+    def get_build_numbers_to_ignore(self):
+        return self._builds_to_filter
+
 
 class ResultsJSON(object):
     """Contains the contents of a results.json file.
@@ -58,14 +86,16 @@ class ResultsJSON(object):
             }
           }
         }
+        'buildNumbers': [],
+        'secondsSinceEpoch': [],
+        'chromeRevision': [],
+        'failure_map': {},  # Map from letter code to expectation name.
+        'num_failures_by_type: {} # Map result type to list of result count'
       }
-      'buildNumbers': [],
-      'secondsSinceEpoch': [],
-      'chromeRevision': [],
-      'failure_map': {}  # Map from letter code to expectation name.
     }
     """
     TESTS_KEY = 'tests'
+    BUILD_NUMBERS = 'buildNumbers'
     FAILURE_MAP_KEY = 'failure_map'
     RESULTS_KEY = 'results'
     EXPECTATIONS_KEY = 'expected'
@@ -100,6 +130,9 @@ class ResultsJSON(object):
     def expectation_for_type(self, type_char):
         return self._json[self.builder_name][self.FAILURE_MAP_KEY][type_char]
 
+    def build_numbers(self):
+        return self._json[self.builder_name][self.BUILD_NUMBERS]
+
     # Knowing how to parse the run-length-encoded values in results.json
     # is a detail of this class.
     def occurances_and_type_from_result_item(self, item):
@@ -107,9 +140,15 @@ class ResultsJSON(object):
 
 
 class BotTestExpectationsFactory(object):
+    # STEP_NAME is used to fetch results for ci builders and retry without
+    # patch for cq builders.
+    # STEP_NAME_TRY is use to fetch patched cq results.
+    STEP_NAME = 'blink_web_tests'
+    STEP_NAME_TRY = 'blink_web_tests (with patch)'
     RESULTS_URL_FORMAT = (
-        'https://test-results.appspot.com/testfile?testtype=blink_web_tests'
-        '&name=results-small.json&master=%s&builder=%s')
+        'https://test-results.appspot.com/testfile?testtype=%s'
+        '&name=results-small.json&master=%s&builder=%s'
+    )
 
     def __init__(self, builders):
         self.builders = builders
@@ -120,16 +159,33 @@ class BotTestExpectationsFactory(object):
             return None
         return self._results_json_for_builder(builder)
 
-    def _results_url_for_builder(self, builder):
-        return self.RESULTS_URL_FORMAT % (urllib.quote(
-            self.builders.master_for_builder(builder)), urllib.quote(builder))
+    def _results_url_for_builder(self, builder, use_try_step=False):
+        test_type = (self.STEP_NAME_TRY if use_try_step else self.STEP_NAME)
+        return self.RESULTS_URL_FORMAT % (
+            urllib.quote(test_type),
+            urllib.quote(self.builders.master_for_builder(builder)),
+            urllib.quote(builder))
 
     def _results_json_for_builder(self, builder):
-        results_url = self._results_url_for_builder(builder)
+        results_url = self._results_url_for_builder(
+            builder, self.builders.is_try_server_builder(builder))
         try:
             _log.debug('Fetching flakiness data from appengine: %s',
                        results_url)
             return ResultsJSON(builder, json.load(
+                urllib2.urlopen(results_url)))
+        except urllib2.URLError as error:
+            _log.warning(
+                'Could not retrieve flakiness data from the bot.  url: %s',
+                results_url)
+            _log.warning(error)
+
+    def _results_filter_for_builder(self, builder):
+        results_url = self._results_url_for_builder(builder, False)
+        try:
+            _log.debug('Fetching flakiness data from appengine: %s',
+                       results_url)
+            return ResultsFilter(builder, json.load(
                 urllib2.urlopen(results_url)))
         except urllib2.URLError as error:
             _log.warning(
@@ -152,7 +208,11 @@ class BotTestExpectationsFactory(object):
         results_json = self._results_json_for_builder(builder)
         if not results_json:
             return None
-        return BotTestExpectations(results_json, self.builders)
+        results_filter = None
+        if self.builders.is_try_server_builder(builder):
+            results_filter = self._results_filter_for_builder(builder)
+        return BotTestExpectations(results_json, self.builders,
+                                   results_filter=results_filter)
 
 
 class BotTestExpectations(object):
@@ -164,10 +224,11 @@ class BotTestExpectations(object):
     NON_RESULT_TYPES = ['S', 'X']  # SLOW, SKIP
 
     # specifiers arg is used in unittests to avoid the static dependency on builders.
-    def __init__(self, results_json, builders, specifiers=None):
+    def __init__(self, results_json, builders, specifiers=None, results_filter=None):
         self.results_json = results_json
         self.specifiers = specifiers or set(
             builders.specifiers_for_builder(results_json.builder_name))
+        self.filter_results_bitmap = self._get_results_filter(results_filter)
 
     def flakes_by_path(self, only_ignore_very_flaky):
         """Sets test expectations to bot results if there are at least two distinct results."""
@@ -256,6 +317,13 @@ class BotTestExpectations(object):
                 lines.append(line)
         return lines
 
+    def _get_results_filter(self, results_filter):
+        if results_filter:
+            filter_builds = results_filter.get_build_numbers_to_ignore()
+            return [build not in filter_builds for build in self.results_json.build_numbers()]
+        else:
+            return None
+
     def _line_from_test_and_flaky_types(self, test_name, flaky_types):
         return Expectation(
             tags=self.specifiers, test=test_name, results=flaky_types)
@@ -263,14 +331,16 @@ class BotTestExpectations(object):
     def _all_types_in_results(self, run_length_encoded_results):
         results = set()
 
+        result_index = 0
         for result_item in run_length_encoded_results:
-            _, result_types = self.results_json.occurances_and_type_from_result_item(
+            count, result_types = self.results_json.occurances_and_type_from_result_item(
                 result_item)
-
-            for result_type in result_types:
-                if result_type not in self.RESULT_TYPES_TO_IGNORE:
-                    results.add(result_type)
-
+            if (not self.filter_results_bitmap or
+                any(self.filter_results_bitmap[result_index : result_index + count])):
+                for result_type in result_types:
+                    if result_type not in self.RESULT_TYPES_TO_IGNORE:
+                        results.add(result_type)
+            result_index += count
         return results
 
     def _flaky_types_in_results(self, results_entry, only_ignore_very_flaky):

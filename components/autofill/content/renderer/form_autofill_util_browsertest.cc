@@ -788,6 +788,84 @@ TEST_F(FormAutofillUtilsTest, ExtractUnownedBounds) {
   EXPECT_FALSE(form_data.fields.back().bounds.IsEmpty());
 }
 
+TEST_F(FormAutofillUtilsTest, GetDataListSuggestions) {
+  LoadHTML(
+      "<body><input list='datalist_id' name='count' id='i1'><datalist "
+      "id='datalist_id'><option value='1'><option "
+      "value='2'></datalist></body>");
+  WebDocument doc = GetMainFrame()->GetDocument();
+  auto web_control = doc.GetElementById("i1").To<WebInputElement>();
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  GetDataListSuggestions(web_control, &values, &labels);
+  ASSERT_EQ(values.size(), 2u);
+  ASSERT_EQ(labels.size(), 2u);
+  EXPECT_EQ(values[0], base::UTF8ToUTF16("1"));
+  EXPECT_EQ(values[1], base::UTF8ToUTF16("2"));
+  EXPECT_EQ(labels[0], base::UTF8ToUTF16(""));
+  EXPECT_EQ(labels[1], base::UTF8ToUTF16(""));
+}
+
+TEST_F(FormAutofillUtilsTest, GetDataListSuggestionsWithLabels) {
+  LoadHTML(
+      "<body><input list='datalist_id' name='count' id='i1'><datalist "
+      "id='datalist_id'><option value='1'>one</option><option "
+      "value='2'>two</option></datalist></body>");
+  WebDocument doc = GetMainFrame()->GetDocument();
+  auto web_control = doc.GetElementById("i1").To<WebInputElement>();
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  GetDataListSuggestions(web_control, &values, &labels);
+  ASSERT_EQ(values.size(), 2u);
+  ASSERT_EQ(labels.size(), 2u);
+  EXPECT_EQ(values[0], base::UTF8ToUTF16("1"));
+  EXPECT_EQ(values[1], base::UTF8ToUTF16("2"));
+  EXPECT_EQ(labels[0], base::UTF8ToUTF16("one"));
+  EXPECT_EQ(labels[1], base::UTF8ToUTF16("two"));
+}
+
+TEST_F(FormAutofillUtilsTest, ExtractDataList) {
+  LoadHTML(
+      "<body><input list='datalist_id' name='count' id='i1'><datalist "
+      "id='datalist_id'><option value='1'>one</option><option "
+      "value='2'>two</option></datalist></body>");
+  WebDocument doc = GetMainFrame()->GetDocument();
+  auto web_control = doc.GetElementById("i1").To<WebInputElement>();
+  FormData form_data;
+  FormFieldData form_field_data;
+  ASSERT_TRUE(FindFormAndFieldForFormControlElement(
+      web_control, nullptr /*field_data_manager*/, EXTRACT_DATALIST, &form_data,
+      &form_field_data));
+
+  auto& values = form_data.fields.back().datalist_values;
+  auto& labels = form_data.fields.back().datalist_labels;
+  ASSERT_EQ(values.size(), 2u);
+  ASSERT_EQ(labels.size(), 2u);
+  EXPECT_EQ(values[0], base::UTF8ToUTF16("1"));
+  EXPECT_EQ(values[1], base::UTF8ToUTF16("2"));
+  EXPECT_EQ(labels[0], base::UTF8ToUTF16("one"));
+  EXPECT_EQ(labels[1], base::UTF8ToUTF16("two"));
+  EXPECT_EQ(form_field_data.datalist_values, values);
+  EXPECT_EQ(form_field_data.datalist_labels, labels);
+}
+
+TEST_F(FormAutofillUtilsTest, NotExtractDataList) {
+  LoadHTML(
+      "<body><input list='datalist_id' name='count' id='i1'><datalist "
+      "id='datalist_id'><option value='1'>one</option><option "
+      "value='2'>two</option></datalist></body>");
+  WebDocument doc = GetMainFrame()->GetDocument();
+  auto web_control = doc.GetElementById("i1").To<WebInputElement>();
+  FormData form_data;
+  FormFieldData form_field_data;
+  ASSERT_TRUE(FindFormAndFieldForFormControlElement(
+      web_control, nullptr /*field_data_manager*/, &form_data,
+      &form_field_data));
+
+  EXPECT_TRUE(form_data.fields.back().datalist_values.empty());
+  EXPECT_TRUE(form_data.fields.back().datalist_labels.empty());
+}
+
 }  // namespace
 }  // namespace form_util
 }  // namespace autofill

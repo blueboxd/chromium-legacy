@@ -63,10 +63,25 @@ struct StaticColorCheckParam {
 };
 
 std::ostream& operator<<(std::ostream& os, const StaticColorCheckParam& param) {
+  const char* color_type;
+  switch (param.color_type) {
+    case ColorType::kRgb:
+      color_type = "kRgb";
+      break;
+    case ColorType::kRgbA:
+      color_type = "kRgbA";
+      break;
+    case ColorType::kMono:
+      color_type = "kMono";
+      break;
+    case ColorType::kMonoA:
+      color_type = "kMonoA";
+      break;
+  }
   const char* alpha_option =
       (param.alpha_option == ImageDecoder::kAlphaPremultiplied
-           ? "AlphaPremultiplied"
-           : "AlphaNotPremultiplied");
+           ? "kAlphaPremultiplied"
+           : "kAlphaNotPremultiplied");
   const char* color_behavior;
   if (param.color_behavior.IsIgnore()) {
     color_behavior = "Ignore";
@@ -76,10 +91,11 @@ std::ostream& operator<<(std::ostream& os, const StaticColorCheckParam& param) {
     DCHECK(param.color_behavior.IsTransformToSRGB());
     color_behavior = "TransformToSRGB";
   }
-  return os << "StaticColorCheckParam { path: \"" << param.path
-            << "\", bit_depth: " << param.bit_depth
-            << ", alpha_option: " << alpha_option
-            << ", color_behavior: " << color_behavior << " }";
+  return os << "\nStaticColorCheckParam {\n  path: \"" << param.path
+            << "\",\n  bit_depth: " << param.bit_depth
+            << ",\n  color_type: " << color_type
+            << ",\n  alpha_option: " << alpha_option
+            << ",\n  color_behavior: " << color_behavior << "\n}";
 }
 
 StaticColorCheckParam kTestParams[] = {

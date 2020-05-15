@@ -477,6 +477,7 @@ public class VoiceRecognitionHandlerTest {
     @After
     public void tearDown() {
         SysUtils.resetForTesting();
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mWindowAndroid.destroy(); });
     }
 
     /**

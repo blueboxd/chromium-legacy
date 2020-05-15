@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Guruh yaratish</translation>
 <translation id="2671423594960767771">Guruh havolasi</translation>
 <translation id="2977480621796371840">Guruhdan chiqarish</translation>
+<translation id="3328308545011660196">Taklif: <ph name="NUMBER_OF_TABS" /> ta varaq aloqador. Ular guruhlansinmi?</translation>
+<translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> ta aloqador varaq bor. Ular guruhlansinmi?</translation>
 <translation id="4212246570487010370">Saytlarni kezishda davom etish</translation>
 <translation id="4450893287417543264">Boshqa ko‘rsatilmasin</translation>
 <translation id="4648718555153979859">Varaqlaringiz shu guruhda jamlanadi</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Varaqlarni guruhdan olib tashlash</translation>
 <translation id="7559245342362162951">Guruh varaqlarini butun ekranga jadval shaklida chiqarish</translation>
 <translation id="7792771145871471484">Batafsil.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Belgilangan <ph name="TABS_COUNT_ONE" /> ta varaqni guruhlash}other{Belgilangan <ph name="TABS_COUNT_MANY" /> ta varaqni guruhlash}}</translation>
 <translation id="7885132941432959125">Varaqni oʻngga siljitish</translation>
 <translation id="7966321538264951561">Bildirgilarni yopish</translation>
 <translation id="814503310257431685">Hammasi</translation>

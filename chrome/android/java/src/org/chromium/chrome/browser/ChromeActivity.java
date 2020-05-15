@@ -734,13 +734,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         return NO_TOOLBAR_LAYOUT;
     }
 
-    /**
-     * @return Whether contextual search is allowed for this activity or not.
-     */
-    protected boolean isContextualSearchAllowed() {
-        return true;
-    }
-
     @Override
     public void initializeState() {
         super.initializeState();
@@ -757,7 +750,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         getTabContentManager().initWithNative();
         mCompositorViewHolder.onNativeLibraryReady(getWindowAndroid(), getTabContentManager());
 
-        if (isContextualSearchAllowed() && ContextualSearchFieldTrial.isEnabled()) {
+        if (ContextualSearchFieldTrial.isEnabled()) {
             mContextualSearchManager = new ContextualSearchManager(this, this);
         }
 

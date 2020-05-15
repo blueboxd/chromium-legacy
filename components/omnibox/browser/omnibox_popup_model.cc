@@ -562,6 +562,18 @@ void OmniboxPopupModel::SetSelection(Selection selection) {
   }
 }
 
+bool OmniboxPopupModel::TriggerSelectionAction(Selection selection) {
+  auto& match = result().match_at(selection.line);
+  if (selection.state == HEADER_BUTTON_FOCUSED) {
+    DCHECK(match.suggestion_group_id.has_value());
+    omnibox::ToggleSuggestionGroupIdVisibility(
+        pref_service_, match.suggestion_group_id.value());
+    return true;
+  }
+
+  return false;
+}
+
 void OmniboxPopupModel::OnFaviconFetched(const GURL& page_url,
                                          const gfx::Image& icon) {
   if (icon.IsEmpty() || !view_->IsOpen())

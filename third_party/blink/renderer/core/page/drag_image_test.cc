@@ -77,6 +77,8 @@ class TestImage : public Image {
   }
 
   PaintImage PaintImageForCurrentFrame() override {
+    if (!image_)
+      return PaintImage();
     return CreatePaintImageBuilder()
         .set_image(image_, cc::PaintImage::GetNextContentId())
         .TakePaintImage();

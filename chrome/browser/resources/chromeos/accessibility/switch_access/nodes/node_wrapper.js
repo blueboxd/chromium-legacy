@@ -34,26 +34,26 @@ class NodeWrapper extends SAChildNode {
   /** @override */
   get actions() {
     const actions = [];
-    actions.push(SAConstants.MenuAction.SELECT);
+    actions.push(SwitchAccessMenuAction.SELECT);
 
     const ancestor = this.getScrollableAncestor_();
     if (ancestor.scrollable) {
       if (ancestor.scrollX > ancestor.scrollXMin) {
-        actions.push(SAConstants.MenuAction.SCROLL_LEFT);
+        actions.push(SwitchAccessMenuAction.SCROLL_LEFT);
       }
       if (ancestor.scrollX < ancestor.scrollXMax) {
-        actions.push(SAConstants.MenuAction.SCROLL_RIGHT);
+        actions.push(SwitchAccessMenuAction.SCROLL_RIGHT);
       }
       if (ancestor.scrollY > ancestor.scrollYMin) {
-        actions.push(SAConstants.MenuAction.SCROLL_UP);
+        actions.push(SwitchAccessMenuAction.SCROLL_UP);
       }
       if (ancestor.scrollY < ancestor.scrollYMax) {
-        actions.push(SAConstants.MenuAction.SCROLL_DOWN);
+        actions.push(SwitchAccessMenuAction.SCROLL_DOWN);
       }
     }
-    const standardActions = /** @type {!Array<!SAConstants.MenuAction>} */ (
+    const standardActions = /** @type {!Array<!SwitchAccessMenuAction>} */ (
         this.baseNode_.standardActions.filter(
-            action => Object.values(SAConstants.MenuAction).includes(action)));
+            action => Object.values(SwitchAccessMenuAction).includes(action)));
 
     return actions.concat(standardActions);
   }
@@ -139,32 +139,32 @@ class NodeWrapper extends SAChildNode {
   performAction(action) {
     let ancestor;
     switch (action) {
-      case SAConstants.MenuAction.SELECT:
+      case SwitchAccessMenuAction.SELECT:
         if (this.isGroup()) {
           NavigationManager.enterGroup();
         } else {
           this.baseNode_.doDefault();
         }
         return SAConstants.ActionResponse.CLOSE_MENU;
-      case SAConstants.MenuAction.SCROLL_DOWN:
+      case SwitchAccessMenuAction.SCROLL_DOWN:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
           ancestor.scrollDown(() => this.parent_.refresh());
         }
         return SAConstants.ActionResponse.CLOSE_MENU;
-      case SAConstants.MenuAction.SCROLL_UP:
+      case SwitchAccessMenuAction.SCROLL_UP:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
           ancestor.scrollUp(() => this.parent_.refresh());
         }
         return SAConstants.ActionResponse.CLOSE_MENU;
-      case SAConstants.MenuAction.SCROLL_RIGHT:
+      case SwitchAccessMenuAction.SCROLL_RIGHT:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
           ancestor.scrollRight(() => this.parent_.refresh());
         }
         return SAConstants.ActionResponse.CLOSE_MENU;
-      case SAConstants.MenuAction.SCROLL_LEFT:
+      case SwitchAccessMenuAction.SCROLL_LEFT:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
           ancestor.scrollLeft(() => this.parent_.refresh());

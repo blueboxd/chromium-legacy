@@ -20,9 +20,12 @@
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/webrtc/api/frame_transformer_interface.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
+#include "third_party/webrtc/api/test/mock_transformable_video_frame.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
 using testing::_;
+using testing::NiceMock;
+using testing::Return;
 
 namespace blink {
 
@@ -35,26 +38,6 @@ class MockWebRtcTransformedFrameCallback
  public:
   MOCK_METHOD1(OnTransformedFrame,
                void(std::unique_ptr<webrtc::TransformableFrameInterface>));
-};
-
-class FakeVideoFrame : public webrtc::TransformableVideoFrameInterface {
- public:
-  explicit FakeVideoFrame(uint32_t ssrc) : ssrc_(ssrc) {}
-
-  rtc::ArrayView<const uint8_t> GetData() const override {
-    return rtc::ArrayView<const uint8_t>();
-  }
-
-  void SetData(rtc::ArrayView<const uint8_t> data) override {}
-  uint32_t GetTimestamp() const override { return 0; }
-  uint32_t GetSsrc() const override { return ssrc_; }
-  bool IsKeyFrame() const override { return true; }
-  std::vector<uint8_t> GetAdditionalData() const override {
-    return std::vector<uint8_t>();
-  }
-
- private:
-  uint32_t ssrc_;
 };
 
 bool IsDOMException(ScriptState* script_state,
@@ -109,8 +92,11 @@ class RTCEncodedVideoUnderlyingSinkTest : public testing::Test {
   RTCEncodedVideoStreamTransformer* GetTransformer() { return &transformer_; }
 
   ScriptValue CreateEncodedVideoFrameChunk(ScriptState* script_state) {
-    RTCEncodedVideoFrame* frame = MakeGarbageCollected<RTCEncodedVideoFrame>(
-        std::make_unique<FakeVideoFrame>(kSSRC));
+    auto mock_frame =
+        std::make_unique<NiceMock<webrtc::MockTransformableVideoFrame>>();
+    ON_CALL(*mock_frame.get(), GetSsrc).WillByDefault(Return(kSSRC));
+    RTCEncodedVideoFrame* frame =
+        MakeGarbageCollected<RTCEncodedVideoFrame>(std::move(mock_frame));
     return ScriptValue(script_state->GetIsolate(),
                        ToV8(frame, script_state->GetContext()->Global(),
                             script_state->GetIsolate()));

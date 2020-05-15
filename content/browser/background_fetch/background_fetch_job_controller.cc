@@ -377,6 +377,7 @@ void BackgroundFetchJobController::DidGetUploadData(
     Abort(BackgroundFetchFailureReason::SERVICE_WORKER_UNAVAILABLE,
           base::DoNothing());
     std::move(callback).Run(nullptr);
+    return;
   }
 
   DCHECK(blob);

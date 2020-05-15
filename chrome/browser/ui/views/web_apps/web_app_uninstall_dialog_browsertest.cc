@@ -16,11 +16,13 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/web_apps/web_app_uninstall_dialog_view.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
 
 using web_app::AppId;
 
@@ -89,6 +91,58 @@ IN_PROC_BROWSER_TEST_F(WebAppUninstallDialogViewBrowserTest,
   browser()->window()->Close();
   run_loop.Run();
   EXPECT_FALSE(was_uninstalled);
+}
+
+// Test WebAppUninstallDialogDelegateView cancel flow.
+IN_PROC_BROWSER_TEST_F(WebAppUninstallDialogViewBrowserTest,
+                       TestWebAppUninstallDialogDelegateViewCancel) {
+  extensions::ScopedTestDialogAutoConfirm auto_confirm(
+      extensions::ScopedTestDialogAutoConfirm::CANCEL);
+  AppId app_id = InstallTestWebApp(browser()->profile());
+
+  WebAppUninstallDialogViews dialog(browser()->profile(),
+                                    browser()->window()->GetNativeWindow());
+
+  base::RunLoop().RunUntilIdle();
+  base::RunLoop run_loop;
+
+  bool was_uninstalled = false;
+  base::RunLoop run_loop2;
+  dialog.SetDialogShownCallbackForTesting(run_loop2.QuitClosure());
+  dialog.ConfirmUninstall(app_id,
+                          base::BindLambdaForTesting([&](bool uninstalled) {
+                            was_uninstalled = uninstalled;
+                            run_loop.Quit();
+                          }));
+  run_loop2.Run();
+  run_loop.Run();
+  EXPECT_FALSE(was_uninstalled);
+}
+
+// Test WebAppUninstallDialogDelegateView accept flow.
+IN_PROC_BROWSER_TEST_F(WebAppUninstallDialogViewBrowserTest,
+                       TestWebAppUninstallDialogDelegateViewAccept) {
+  extensions::ScopedTestDialogAutoConfirm auto_confirm(
+      extensions::ScopedTestDialogAutoConfirm::ACCEPT_AND_OPTION);
+  AppId app_id = InstallTestWebApp(browser()->profile());
+
+  WebAppUninstallDialogViews dialog(browser()->profile(),
+                                    browser()->window()->GetNativeWindow());
+
+  base::RunLoop().RunUntilIdle();
+  base::RunLoop run_loop;
+
+  bool was_uninstalled = false;
+  base::RunLoop run_loop2;
+  dialog.SetDialogShownCallbackForTesting(run_loop2.QuitClosure());
+  dialog.ConfirmUninstall(app_id,
+                          base::BindLambdaForTesting([&](bool uninstalled) {
+                            was_uninstalled = uninstalled;
+                            run_loop.Quit();
+                          }));
+  run_loop2.Run();
+  run_loop.Run();
+  EXPECT_TRUE(was_uninstalled);
 }
 
 #if defined(OS_CHROMEOS)

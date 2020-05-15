@@ -167,11 +167,4 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     protected Drawable getBackgroundDrawable() {
         return null;
     }
-
-    // We're temporarily disable CS on webapp since there are some issues. (http://crbug.com/471950)
-    // TODO(changwan): re-enable it once the issues are resolved.
-    @Override
-    protected boolean isContextualSearchAllowed() {
-        return false;
-    }
 }

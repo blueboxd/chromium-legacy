@@ -32,6 +32,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/frame/web_feature_forward.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -82,6 +83,11 @@ class CORE_EXPORT Screen final : public ScriptWrappable,
   int64_t DisplayId() const;
 
  private:
+  int ComputeAvailLeft() const;
+  int ComputeAvailTop() const;
+  int ComputeAvailHeight() const;
+  int ComputeAvailWidth() const;
+  void RecordIdentifiableSurface(WebFeature, int) const;
   // A static snapshot of the display's information, provided upon construction.
   // This member is only valid for Screen objects obtained via the experimental
   // Screen Enumeration API.

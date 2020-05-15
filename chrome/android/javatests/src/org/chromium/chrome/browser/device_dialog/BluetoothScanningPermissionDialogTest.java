@@ -66,7 +66,7 @@ public class BluetoothScanningPermissionDialogTest {
 
     private BluetoothScanningPermissionDialog createDialog() {
         return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-            mWindowAndroid = new ActivityWindowAndroid(mActivityTestRule.getActivity());
+            mWindowAndroid = mActivityTestRule.getActivity().getWindowAndroid();
             BluetoothScanningPermissionDialog dialog = new BluetoothScanningPermissionDialog(
                     mWindowAndroid, "https://origin.example.com/", ConnectionSecurityLevel.SECURE,
                     /*nativeBluetoothScanningPermissionDialogPtr=*/42);

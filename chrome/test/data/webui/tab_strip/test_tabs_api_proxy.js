@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {ExtensionsApiTab, TabData, TabGroupVisualData, TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
 
+import {TestBrowserProxy} from '../test_browser_proxy.m.js';
+
+/** @implements {TabsApiProxy} */
 export class TestTabsApiProxy extends TestBrowserProxy {
   constructor() {
     super([
@@ -19,59 +22,73 @@ export class TestTabsApiProxy extends TestBrowserProxy {
       'ungroupTab',
     ]);
 
+    /** @type {!Object<!TabGroupVisualData>} */
     this.groupVisualData_;
+
+    /** @type {!Array<!TabData>} */
     this.tabs_;
   }
 
+  /** @override */
   activateTab(tabId) {
     this.methodCalled('activateTab', tabId);
-    return Promise.resolve({active: true, id: tabId});
+    return Promise.resolve(
+        /** @type {!ExtensionsApiTab} */ ({active: true, id: tabId}));
   }
 
+  /** @override */
   closeTab(tabId, closeTabAction) {
     this.methodCalled('closeTab', [tabId, closeTabAction]);
-    return Promise.resolve();
   }
 
+  /** @override */
   createNewTab() {
     this.methodCalled('createNewTab');
   }
 
+  /** @override */
   getGroupVisualData() {
     this.methodCalled('getGroupVisualData');
     return Promise.resolve(this.groupVisualData_);
   }
 
+  /** @override */
   getTabs() {
     this.methodCalled('getTabs');
     return Promise.resolve(this.tabs_.slice());
   }
 
+  /** @override */
   groupTab(tabId, groupId) {
     this.methodCalled('groupTab', [tabId, groupId]);
   }
 
+  /** @override */
   moveGroup(groupId, newIndex) {
     this.methodCalled('moveGroup', [groupId, newIndex]);
   }
 
-  moveTab(tabId, windowId, newIndex) {
-    this.methodCalled('moveTab', [tabId, windowId, newIndex]);
-    return Promise.resolve();
+  /** @override */
+  moveTab(tabId, newIndex) {
+    this.methodCalled('moveTab', [tabId, newIndex]);
   }
 
+  /** @param {!Array<!TabGroupVisualData>} groupVisualData */
   setGroupVisualData(groupVisualData) {
     this.groupVisualData_ = groupVisualData;
   }
 
+  /** @param {!Array<!TabData>} tabs */
   setTabs(tabs) {
     this.tabs_ = tabs;
   }
 
+  /** @override */
   setThumbnailTracked(tabId, thumbnailTracked) {
     this.methodCalled('setThumbnailTracked', [tabId, thumbnailTracked]);
   }
 
+  /** @override */
   ungroupTab(tabId) {
     this.methodCalled('ungroupTab', [tabId]);
   }

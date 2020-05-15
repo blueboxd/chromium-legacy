@@ -1414,10 +1414,10 @@ public class CustomTabsConnection {
         return false;
     }
 
-    @VisibleForTesting
-    void cleanupAll() {
+    void cleanupAllForTesting() {
         ThreadUtils.assertOnUiThread();
         mClientManager.cleanupAll();
+        mHiddenTabHolder.destroyHiddenTab(null);
     }
 
     /**

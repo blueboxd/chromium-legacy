@@ -22,7 +22,7 @@ class BackButtonNode extends SAChildNode {
 
   /** @override */
   get actions() {
-    return [SAConstants.MenuAction.SELECT];
+    return [SwitchAccessMenuAction.SELECT];
   }
 
   /** @override */
@@ -88,7 +88,7 @@ class BackButtonNode extends SAChildNode {
 
   /** @override */
   performAction(action) {
-    if (action === SAConstants.MenuAction.SELECT &&
+    if (action === SwitchAccessMenuAction.SELECT &&
         BackButtonNode.automationNode_) {
       BackButtonNode.automationNode_.doDefault();
       return SAConstants.ActionResponse.CLOSE_MENU;

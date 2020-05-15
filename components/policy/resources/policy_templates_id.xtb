@@ -2370,6 +2370,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
       Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak akan dapat mengubah atau mengganti setelan ini di <ph name="PRODUCT_NAME" />.
 
       Jika kebijakan ini dibiarkan tidak disetel, kebijakan ini akan diaktifkan namun pengguna akan dapat mengubahnya.</translation>
+<translation id="453031441196755904">Kebijakan ini tidak digunakan lagi.</translation>
 <translation id="4531706050939927436">Aplikasi Android dapat dipasang paksa dari konsol Google Admin menggunakan Google Play. Aplikasi Android tidak menggunakan kebijakan ini.</translation>
 <translation id="4534500438517478692">Nama pembatasan Android:</translation>
 <translation id="4541530620466526913">Akun lokal perangkat</translation>

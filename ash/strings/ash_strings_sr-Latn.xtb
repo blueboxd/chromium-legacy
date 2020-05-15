@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr-Latn">
 <translation id="1012876632442809908">Uređaj sa USB priključkom tipa C (prednji port)</translation>
+<translation id="1013598600051641573">Rezolucija prikaza <ph name="DISPLAY_NAME" /> je promenjena u <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Kliknite na Potvrdi da biste zadržali promene. Prethodna podešavanja će biti vraćena za <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Bluetooth uređaj „<ph name="DEVICE_NAME" />“ želi dozvolu za uparivanje. Unesite ovaj PIN kôd na tom uređaju: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Baterija pisaljke je skoro prazna</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" />: dodato</translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">Pregledajte podešavanja jezika</translation>
 <translation id="1460620680449458626">Zvuk je isključen.</translation>
 <translation id="1467432559032391204">Ulevo</translation>
+<translation id="1479909375538722835">Plutajući meni pristupačnosti</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">Uključeno</translation>
 <translation id="1516740043221086139">Režim Ne uznemiravaj je uključen.</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">Prebacivanje ekrana</translation>
 <translation id="5030687792513154421">Vreme je isteklo</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> se povezao sa novim telefonom</translation>
+<translation id="5035389544768382859">Potvrdite konfiguraciju prikaza</translation>
 <translation id="5083553833479578423">Otključajte još funkcija Pomoćnika.</translation>
 <translation id="5136175204352732067">Neka druga tastatura je povezana</translation>
 <translation id="5168181903108465623">Dostupni su uređaji za prebacivanje</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">Mreža se možda nadgleda</translation>
 <translation id="7536035074519304529">IP adresa: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Vreme je za spavanje</translation>
+<translation id="7561982940498449837">Zatvori meni</translation>
 <translation id="7562368315689366235">Paleta emodžija</translation>
 <translation id="7564874036684306347">Premeštanje prozora na drugi računar može da dovede do neočekivanog ponašanja. Naknadna obaveštenja, prozori i dijalozi će možda biti podeljeni između računara.</translation>
 <translation id="7568294522609223312">Isključite automatske klikove</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">Povećanje</translation>
 <translation id="8029629653277878342">Treba da unesete PIN ili lozinku radi dodatne bezbednosti</translation>
 <translation id="8030169304546394654">Veza je prekinuta</translation>
+<translation id="8042893070933512245">Otvori meni podešavanja pristupačnosti</translation>
 <translation id="8048123526339889627">Podešavanja Bluetooth-a</translation>
 <translation id="8054466585765276473">Izračunavanje vremena trajanja baterije.</translation>
 <translation id="8061464966246066292">Visoki kontrast</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">Podesi podsetnik</translation>
 <translation id="8878886163241303700">Prošireni ekran</translation>
 <translation id="890616557918890486">Promeni izvor</translation>
+<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> ne podržava rezoluciju <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Rezolucija je promenjena u <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Da biste zadržali promene, kliknite na potvrdi. Prethodna podešavanja će biti vraćena za <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Baterija je na <ph name="PERCENTAGE" />%.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google pomoćnik ne govori ovaj jezik.</translation>

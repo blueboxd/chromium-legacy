@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+const SwitchAccessMenuAction =
+    chrome.accessibilityPrivate.SwitchAccessMenuAction;
+
 /** Constants used in Switch Access */
 const SAConstants = {
 
@@ -70,68 +73,6 @@ const SAConstants = {
     MALFORMED_DESKTOP: 8,
     MISSING_LOCATION: 9,
     MISSING_KEYBOARD: 10,
-  },
-
-  /**
-   * Actions available in the Switch Access Menu.
-   * @enum {string}
-   * @const
-   */
-  MenuAction: {
-    // Copy text.
-    COPY: 'copy',
-    // Cut text.
-    CUT: 'cut',
-    // Decrement the value of an input field.
-    DECREMENT: chrome.automation.ActionType.DECREMENT,
-    // Activate dictation for voice input to an editable text region.
-    DICTATION: 'dictation',
-    // Increment the value of an input field.
-    INCREMENT: chrome.automation.ActionType.INCREMENT,
-    // Move text caret to the beginning of the text field.
-    JUMP_TO_BEGINNING_OF_TEXT: 'jumpToBeginningOfText',
-    // Move text caret to the end of the text field.
-    JUMP_TO_END_OF_TEXT: 'jumpToEndOfText',
-    // Open and jump to the virtual keyboard
-    OPEN_KEYBOARD: 'keyboard',
-    // Move text caret one character backward.
-    MOVE_BACKWARD_ONE_CHAR_OF_TEXT: 'moveBackwardOneCharOfText',
-    // Move text caret one word backward.
-    MOVE_BACKWARD_ONE_WORD_OF_TEXT: 'moveBackwardOneWordOfText',
-    // Open the text navigation menu to move the text caret.
-    MOVE_CURSOR: 'moveCursor',
-    // Move text caret one line down.
-    MOVE_DOWN_ONE_LINE_OF_TEXT: 'moveDownOneLineOfText',
-    // Move text caret one character forward.
-    MOVE_FORWARD_ONE_CHAR_OF_TEXT: 'moveForwardOneCharOfText',
-    // Move text caret one word forward.
-    MOVE_FORWARD_ONE_WORD_OF_TEXT: 'moveForwardOneWordOfText',
-    // Move text caret one line up.
-    MOVE_UP_ONE_LINE_OF_TEXT: 'moveUpOneLineOfText',
-    // Paste text.
-    PASTE: 'paste',
-    // Scroll the current element (or its ancestor) logically backwards.
-    // Primarily used by ARC++ apps.
-    SCROLL_BACKWARD: chrome.automation.ActionType.SCROLL_BACKWARD,
-    // Scroll the current element (or its ancestor) down.
-    SCROLL_DOWN: chrome.automation.ActionType.SCROLL_DOWN,
-    // Scroll the current element (or is ancestor) logically forwards.
-    // Primarily used by ARC++ apps.
-    SCROLL_FORWARD: chrome.automation.ActionType.SCROLL_FORWARD,
-    // Scroll the current element (or its ancestor) left.
-    SCROLL_LEFT: chrome.automation.ActionType.SCROLL_LEFT,
-    // Scroll the current element (or its ancestor) right.
-    SCROLL_RIGHT: chrome.automation.ActionType.SCROLL_RIGHT,
-    // Scroll the current element (or its ancestor) up.
-    SCROLL_UP: chrome.automation.ActionType.SCROLL_UP,
-    // Either perform the default action or enter a new group, as applicable.
-    SELECT: 'select',
-    // Open and jump to the Switch Access settings.
-    SETTINGS: 'settings',
-    // Set the end of a text selection.
-    SELECT_END: 'selectEnd',
-    // Set the beginning of a text selection.
-    SELECT_START: 'selectStart'
   },
 
   /**

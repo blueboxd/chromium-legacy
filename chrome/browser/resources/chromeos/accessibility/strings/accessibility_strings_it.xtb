@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">Pulsante di attivazione/disattivazione</translation>
 <translation id="1299774449519412690">Azzurro cielo chiaro</translation>
 <translation id="1303806948938513162">Tocca con quattro dita per aprire i menu di ChromeVox</translation>
+<translation id="1325363694295259631"><ph name="NAME" />, pulsante di opzione di una voce di menu non selezionato</translation>
 <translation id="1325946044405407859">Marrone chiaro</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> di <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">eco caratteri e parole</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">Annuncia stato corrente della batteria</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, pulsante di opzione selezionato</translation>
 <translation id="5011664330025416377">Premi il tasto per la ricerca + barra spaziatrice per attivare</translation>
+<translation id="5012724933919010465"><ph name="NAME" />, pulsante di opzione di una voce di menu selezionato</translation>
 <translation id="5020651427400641814">Attiva la registrazione vocale</translation>
 <translation id="5041394372352067729">Sposta display braille a inizio pagina</translation>
 <translation id="5042770794184672516">Aumenta volume comandi vocali</translation>

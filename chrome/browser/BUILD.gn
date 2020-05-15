@@ -3180,6 +3180,8 @@ static_library("browser") {
       "component_updater/intervention_policy_database_component_installer.h",
       "component_updater/soda_component_installer.cc",
       "component_updater/soda_component_installer.h",
+      "content_settings/generated_cookie_prefs.cc",
+      "content_settings/generated_cookie_prefs.h",
       "custom_handlers/register_protocol_handler_permission_request.cc",
       "custom_handlers/register_protocol_handler_permission_request.h",
       "device_identity/device_identity_provider.cc",

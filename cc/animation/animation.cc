@@ -127,18 +127,13 @@ void Animation::Tick(base::TimeTicks tick_time) {
     // time and then ticks it which side-steps the start time altogether. See
     // crbug.com/1076012 for alternative design choices considered for future
     // improvement.
-    TickWithLocalTime(tick_time - base::TimeTicks());
+    keyframe_effect_->Pause(tick_time - base::TimeTicks(),
+                            PauseCondition::kAfterStart);
+    keyframe_effect_->Tick(base::TimeTicks());
   } else {
     DCHECK(!tick_time.is_null());
     keyframe_effect_->Tick(tick_time);
   }
-}
-
-void Animation::TickWithLocalTime(base::TimeDelta local_time) {
-  // TODO(yigu): KeyframeEffect should support ticking KeyframeModel
-  // directly without using Pause(). https://crbug.com/1076012.
-  keyframe_effect_->Pause(local_time);
-  keyframe_effect_->Tick(base::TimeTicks());
 }
 
 bool Animation::IsScrollLinkedAnimation() const {

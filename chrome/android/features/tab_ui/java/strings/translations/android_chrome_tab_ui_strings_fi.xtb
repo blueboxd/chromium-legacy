@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Luo ryhmä</translation>
 <translation id="2671423594960767771">Jaa ryhmä</translation>
 <translation id="2977480621796371840">Poista ryhmästä</translation>
+<translation id="3328308545011660196">Ehdotus: <ph name="NUMBER_OF_TABS" /> välilehteä vaikuttaa liittyvän toisiinsa. Lisätäänkö ne ryhmäksi?</translation>
+<translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> välilehteä vaikuttaa liittyvän toisiinsa. Lisätäänkö ne ryhmäksi?</translation>
 <translation id="4212246570487010370">Jatka selaamista</translation>
 <translation id="4450893287417543264">Älä näytä uudelleen</translation>
 <translation id="4648718555153979859">Välilehtesi on koottu tänne</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Poista välilehtiä ryhmästä</translation>
 <translation id="7559245342362162951">Näytä ryhmän välilehdet koko näytön ruudukossa</translation>
 <translation id="7792771145871471484">Tarkista ehdotukset.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Lisää <ph name="TABS_COUNT_ONE" /> valittu välilehti ryhmäksi}other{Lisää <ph name="TABS_COUNT_MANY" /> valittua välilehteä ryhmäksi}}</translation>
 <translation id="7885132941432959125">Siirrä välilehti oikealle</translation>
 <translation id="7966321538264951561">Ohita ehdotukset.</translation>
 <translation id="814503310257431685">Näytä kaikki</translation>

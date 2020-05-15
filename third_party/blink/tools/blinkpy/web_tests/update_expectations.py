@@ -63,6 +63,16 @@ def main(host, bot_test_expectations_factory, argv):
         help='also remove lines if there were no results, '
         'e.g. Android-only expectations for tests '
         'that are not in SmokeTests')
+    # TODO(crbug.com/1077883): Including cq results might introduce false
+    # negatives. An in-review change that caused a test with fail test
+    # expectation but no longer fails, to fail again, will result in
+    # the test expectation not being removed even if the change
+    # does not ultimately land.
+    parser.add_argument(
+        '--include-cq-results',
+        action='store_true',
+        default=False,
+        help='include results from cq.')
     parser.add_argument(
         '--show-results',
         '-s',
@@ -83,7 +93,8 @@ def main(host, bot_test_expectations_factory, argv):
         return 1
 
     remover = ExpectationsRemover(host, port, bot_test_expectations_factory,
-                                  webbrowser, args.type, args.remove_missing)
+                                  webbrowser, args.type, args.remove_missing,
+                                  args.include_cq_results)
 
     test_expectations = remover.get_updated_test_expectations()
     if args.show_results:
@@ -101,16 +112,17 @@ class ExpectationsRemover(object):
                  bot_test_expectations_factory,
                  browser,
                  type_flag='all',
-                 remove_missing=False):
+                 remove_missing=False,
+                 include_cq_results=False):
         self._host = host
         self._port = port
         self._expectations_factory = bot_test_expectations_factory
-        self._builder_results_by_path = {}
         self._browser = browser
         self._expectations_to_remove_list = None
         self._type = type_flag
         self._bug_numbers = set()
         self._remove_missing = remove_missing
+        self._include_cq_results = include_cq_results
         self._builder_results_by_path = self._get_builder_results_by_path()
         self._removed_test_names = set()
         self._version_to_os = {}
@@ -163,7 +175,7 @@ class ExpectationsRemover(object):
         # actual results or only a PASS expectation appears in the actual
         # results.
         builders_checked = []
-        configurations = []
+        builders = []
         for config in self._port.all_test_configurations():
             if set(expectation.tags).issubset(
                     set([
@@ -171,17 +183,23 @@ class ExpectationsRemover(object):
                         config.version.lower(),
                         config.build_type.lower()
                     ])):
-                configurations.append(config)
-        for config in configurations:
-            builder_name = self._host.builders.builder_name_for_specifiers(
-                config.version, config.build_type)
-            if not builder_name:
-                _log.debug('No builder with config %s', config)
-                # For many configurations, there is no matching builder in
-                # blinkpy/common/config/builders.json. We ignore these
-                # configurations and make decisions based only on configurations
-                # with actual builders.
-                continue
+                try_server_configs = [False]
+                if self._include_cq_results:
+                    try_server_configs.append(True)
+                for is_try_server in try_server_configs:
+                    builder_name = self._host.builders.builder_name_for_specifiers(
+                            config.version, config.build_type, is_try_server)
+                    if not builder_name:
+                        _log.debug('No builder with config %s for %s',
+                                   config, 'CQ' if is_try_server else 'CI')
+                        # For many configurations, there is no matching builder in
+                        # blinkpy/common/config/builders.json. We ignore these
+                        # configurations and make decisions based only on configurations
+                        # with actual builders.
+                        continue
+                    builders.append(builder_name)
+
+        for builder_name in builders:
 
             builders_checked.append(builder_name)
 
@@ -228,9 +246,16 @@ class ExpectationsRemover(object):
         }
         """
         builder_results_by_path = {}
-        for builder_name in self._host.builders.all_continuous_builder_names():
-            expectations_for_builder = (self._expectations_factory.
-                                        expectations_for_builder(builder_name))
+        builders = []
+        if self._include_cq_results:
+            builders = self._host.builders.all_builder_names()
+        else:
+            builders = self._host.builders.all_continuous_builder_names()
+
+        for builder_name in builders:
+            expectations_for_builder = (
+                self._expectations_factory.expectations_for_builder(builder_name)
+            )
 
             if not expectations_for_builder:
                 # This is not fatal since we may not need to check these

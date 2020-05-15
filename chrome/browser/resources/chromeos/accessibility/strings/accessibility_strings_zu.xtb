@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">Inkinobho yokuguqula</translation>
 <translation id="1299774449519412690">Okuluhlaza okwesibhakabhaka okukhanyayo</translation>
 <translation id="1303806948938513162">Thepha ngeminwe engu-4 ukuze ungene kumamenyu e-ChromeVox</translation>
+<translation id="1325363694295259631"><ph name="NAME" />, inkinobho yerediyo yento yemenyu iyekwe ukukhethwa</translation>
 <translation id="1325946044405407859">I-Tan</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> kokungu-<ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">uhlamvu nesenanelo segama</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">Memezela isimo sebhethri samanje</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, inkinobho yerediyo ikhethiwe</translation>
 <translation id="5011664330025416377">Cindezela okuthi Sesha+Isikhala ukuze wenze kusebenze</translation>
+<translation id="5012724933919010465"><ph name="NAME" />, inkinobho yerediyo yento yemenyu ikhethiwe</translation>
 <translation id="5020651427400641814">Nika amandla ukungena kwenkulumo</translation>
 <translation id="5041394372352067729">Hambisa isibonisi se-braille ngaphezulu kwekhasi</translation>
 <translation id="5042770794184672516">Kuphula ivolumu yenkulumo</translation>

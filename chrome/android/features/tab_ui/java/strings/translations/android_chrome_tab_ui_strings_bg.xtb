@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Създаване на група</translation>
 <translation id="2671423594960767771">Споделяне на групата</translation>
 <translation id="2977480621796371840">Премахване от групата</translation>
+<translation id="3328308545011660196">Предложение: <ph name="NUMBER_OF_TABS" /> раздела изглеждат сродни. Искате ли да ги групирате?</translation>
+<translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> раздела изглеждат сродни. Искате ли да ги групирате?</translation>
 <translation id="4212246570487010370">Продължаване на сърфирането</translation>
 <translation id="4450893287417543264">Да не се показва отново</translation>
 <translation id="4648718555153979859">Разделите ви са групирани заедно тук</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Премахване на раздели</translation>
 <translation id="7559245342362162951">Показване на разделите от групата в решетка на цял екран</translation>
 <translation id="7792771145871471484">Преглед на предложенията.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Добавяне на <ph name="TABS_COUNT_ONE" /> избран раздел към група}other{Добавяне на <ph name="TABS_COUNT_MANY" /> избрани раздела към група}}</translation>
 <translation id="7885132941432959125">Преместване на раздела надясно</translation>
 <translation id="7966321538264951561">Отхвърляне на предложенията.</translation>
 <translation id="814503310257431685">Преглед на всички</translation>

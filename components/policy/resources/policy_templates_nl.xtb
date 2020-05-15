@@ -2389,6 +2389,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Als je deze instelling in- of uitschakelt, kunnen gebruikers de instelling niet aanpassen of negeren in <ph name="PRODUCT_NAME" />.
 
       Als dit beleid niet wordt ingesteld, wordt dit ingeschakeld maar kan de gebruiker dit wijzigen.</translation>
+<translation id="453031441196755904">Dit beleid is beëindigd.</translation>
 <translation id="4531706050939927436">De installatie van Android-apps kan via de Google Admin Console worden afgedwongen door gebruik te maken van Google Play. Deze apps gebruiken dit beleid niet.</translation>
 <translation id="4534500438517478692">Naam Android-beperking:</translation>
 <translation id="4541530620466526913">Lokale accounts op apparaat</translation>

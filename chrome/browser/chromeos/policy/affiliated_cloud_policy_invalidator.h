@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider.h"
@@ -37,6 +38,12 @@ class AffiliatedCloudPolicyInvalidator
       PolicyInvalidationScope scope,
       CloudPolicyCore* core,
       AffiliatedInvalidationServiceProvider* invalidation_service_provider);
+
+  AffiliatedCloudPolicyInvalidator(
+      PolicyInvalidationScope scope,
+      CloudPolicyCore* core,
+      AffiliatedInvalidationServiceProvider* invalidation_service_provider,
+      const std::string& device_local_account_id);
   ~AffiliatedCloudPolicyInvalidator() override;
 
   // AffiliatedInvalidationServiceProvider::Consumer:
@@ -54,6 +61,7 @@ class AffiliatedCloudPolicyInvalidator
   void DestroyInvalidator();
 
   const PolicyInvalidationScope scope_;
+  const std::string device_local_account_id_;
   CloudPolicyCore* const core_;
 
   AffiliatedInvalidationServiceProvider* const invalidation_service_provider_;

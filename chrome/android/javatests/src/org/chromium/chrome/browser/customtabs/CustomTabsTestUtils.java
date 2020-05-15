@@ -75,7 +75,7 @@ public class CustomTabsTestUtils {
     }
 
     public static void cleanupSessions(final CustomTabsConnection connection) {
-        TestThreadUtils.runOnUiThreadBlocking(connection::cleanupAll);
+        TestThreadUtils.runOnUiThreadBlocking(connection::cleanupAllForTesting);
     }
 
     public static ClientAndSession bindWithCallback(final CustomTabsCallback callback)

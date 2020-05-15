@@ -27,7 +27,7 @@ namespace policy {
 // only and leaves interfaces to integrate with subclasses.
 class RemoteCommandsInvalidator : public syncer::InvalidationHandler {
  public:
-  RemoteCommandsInvalidator();
+  explicit RemoteCommandsInvalidator(std::string owner_name);
   ~RemoteCommandsInvalidator() override;
 
   // Initialize this invalidator to pair with |invalidation_service|. Must be
@@ -98,6 +98,9 @@ class RemoteCommandsInvalidator : public syncer::InvalidationHandler {
     STARTED,
   };
   State state_ = SHUT_DOWN;
+
+  // The unique name to be returned with by GetOwnerName().
+  const std::string owner_name_;
 
   // The invalidation service.
   invalidation::InvalidationService* invalidation_service_ = nullptr;

@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Создать группу</translation>
 <translation id="2671423594960767771">Открыть доступ</translation>
 <translation id="2977480621796371840">Удалить из группы</translation>
+<translation id="3328308545011660196">Подсказка: обнаружены похожие вкладки (<ph name="NUMBER_OF_TABS" />). Сгруппировать их?</translation>
+<translation id="4133493477912226187">Обнаружены похожие вкладки (<ph name="NUMBER_OF_TABS" />). Сгруппировать их?</translation>
 <translation id="4212246570487010370">Продолжить просмотр</translation>
 <translation id="4450893287417543264">Больше не показывать</translation>
 <translation id="4648718555153979859">Вкладки сгруппированы здесь</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Удалить вкладки из группы</translation>
 <translation id="7559245342362162951">Показать сетку с вкладками группы на весь экран</translation>
 <translation id="7792771145871471484">Подробнее.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Сгруппировать <ph name="TABS_COUNT_ONE" /> выбранную вкладку}one{Сгруппировать <ph name="TABS_COUNT_MANY" /> выбранную вкладку}few{Сгруппировать <ph name="TABS_COUNT_MANY" /> выбранные вкладки}many{Сгруппировать <ph name="TABS_COUNT_MANY" /> выбранных вкладок}other{Сгруппировать <ph name="TABS_COUNT_MANY" /> выбранных вкладки}}</translation>
 <translation id="7885132941432959125">Переместить вкладку вправо</translation>
 <translation id="7966321538264951561">Скрыть подсказки.</translation>
 <translation id="814503310257431685">Показать все</translation>

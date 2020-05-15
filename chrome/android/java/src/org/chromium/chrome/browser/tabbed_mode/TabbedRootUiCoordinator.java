@@ -161,7 +161,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
             mEphemeralTabCoordinatorSupplier.set(new EphemeralTabCoordinator(mActivity,
                     mActivity.getWindowAndroid(), mActivity.getWindow().getDecorView(),
                     mActivity.getActivityTabProvider(), mActivity::getCurrentTabCreator,
-                    mActivity::getBottomSheetController, () -> !mActivity.isCustomTab()));
+                    mActivity::getBottomSheetController, () -> true));
         }
 
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::initializeIPH);

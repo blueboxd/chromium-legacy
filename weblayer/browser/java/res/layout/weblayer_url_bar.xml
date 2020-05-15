@@ -27,6 +27,7 @@
         android:maxLines="1"
         android:paddingEnd="@dimen/url_text_edge_padding"
         android:paddingStart="@dimen/url_text_edge_padding"
+        android:ellipsize="start"
         style="@style/TextAppearance.TextLarge.Primary"/>
 
 </merge>

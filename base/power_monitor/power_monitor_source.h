@@ -8,6 +8,7 @@
 #include "base/base_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/power_monitor/power_observer.h"
 #include "base/synchronization/lock.h"
 
 namespace base {
@@ -30,15 +31,22 @@ class BASE_EXPORT PowerMonitorSource {
   // Is the computer currently on battery power. Can be called on any thread.
   bool IsOnBatteryPower();
 
+#if DCHECK_IS_ON()
+  static std::string DeviceThermalStateToString(
+      PowerObserver::DeviceThermalState state);
+#endif
+
  protected:
   friend class PowerMonitorTest;
 
   // Friend function that is allowed to access the protected ProcessPowerEvent.
   friend void ProcessPowerEventHelper(PowerEvent);
 
-  // ProcessPowerEvent should only be called from a single thread, most likely
+  // Process*Event should only be called from a single thread, most likely
   // the UI thread or, in child processes, the IO thread.
   static void ProcessPowerEvent(PowerEvent event_id);
+  static void ProcessThermalEvent(
+      PowerObserver::DeviceThermalState new_thermal_state);
 
   // Platform-specific method to check whether the system is currently
   // running on battery power.  Returns true if running on batteries,

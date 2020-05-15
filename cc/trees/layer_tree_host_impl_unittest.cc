@@ -1982,6 +1982,23 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapOnBoth) {
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 }
 
+// Simulate a ScrollBegin and ScrollEnd without any intervening ScrollUpdate.
+// This test passes if it doesn't crash.
+TEST_F(LayerTreeHostImplTest, SnapAfterEmptyScroll) {
+  CreateLayerForSnapping();
+
+  gfx::Point pointer_position(10, 10);
+  gfx::Vector2dF y_delta(0, 20);
+  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
+            host_impl_
+                ->ScrollBegin(BeginState(pointer_position, y_delta,
+                                         ui::ScrollInputType::kWheel)
+                                  .get(),
+                              ui::ScrollInputType::kWheel)
+                .thread);
+  host_impl_->ScrollEnd(true);
+}
+
 TEST_F(LayerTreeHostImplTest, ScrollSnapAfterAnimatedScroll) {
   LayerImpl* overflow = CreateLayerForSnapping();
 

@@ -153,7 +153,7 @@ class TabImpl : public Tab,
   void CaptureScreenShot(
       JNIEnv* env,
       jfloat scale,
-      const base::android::JavaParamRef<jobject>& valueCallback);
+      const base::android::JavaParamRef<jobject>& value_callback);
 #endif
 
   ErrorPageDelegate* error_page_delegate() { return error_page_delegate_; }

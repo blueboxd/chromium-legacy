@@ -701,7 +701,7 @@ sk_sp<PaintFilter> ImagePaintFilter::SnapshotWithImagesInternal(
   PaintImage decoded_paint_image =
       PaintImageBuilder::WithDefault()
           .set_id(image_.stable_id())
-          .set_image(decoded_sk_image, PaintImage::GetNextContentId())
+          .set_texture_image(decoded_sk_image, PaintImage::GetNextContentId())
           .TakePaintImage();
 
   return sk_make_sp<ImagePaintFilter>(std::move(decoded_paint_image), src_rect_,

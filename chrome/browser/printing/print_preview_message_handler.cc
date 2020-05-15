@@ -281,29 +281,6 @@ void PrintPreviewMessageHandler::OnDidGetDefaultPageLayout(
       has_custom_page_size_style, ids.request_id);
 }
 
-void PrintPreviewMessageHandler::OnPrintPreviewCancelled(
-    int document_cookie,
-    const PrintHostMsg_PreviewIds& ids) {
-  // Always need to stop the worker.
-  StopWorker(document_cookie);
-
-  // Notify UI
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
-  if (!print_preview_ui)
-    return;
-  print_preview_ui->OnPrintPreviewCancelled(ids.request_id);
-}
-
-void PrintPreviewMessageHandler::OnInvalidPrinterSettings(
-    int document_cookie,
-    const PrintHostMsg_PreviewIds& ids) {
-  StopWorker(document_cookie);
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
-  if (!print_preview_ui)
-    return;
-  print_preview_ui->OnInvalidPrinterSettings(ids.request_id);
-}
-
 void PrintPreviewMessageHandler::NotifyUIPreviewPageReady(
     PrintPreviewUI* print_preview_ui,
     int page_number,
@@ -511,10 +488,6 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
                         OnDidPrepareForDocumentToPdf)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetDefaultPageLayout,
                         OnDidGetDefaultPageLayout)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewCancelled,
-                        OnPrintPreviewCancelled)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewInvalidPrinterSettings,
-                        OnInvalidPrinterSettings)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

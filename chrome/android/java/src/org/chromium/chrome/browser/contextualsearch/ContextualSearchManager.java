@@ -392,7 +392,9 @@ public class ContextualSearchManager
             }
         }
 
-        if (!mWereSearchResultsSeen && mLoadedSearchUrlTimeMs != 0L) {
+        if (mWereSearchResultsSeen) {
+            mSelectionController.clearSelection();
+        } else if (mLoadedSearchUrlTimeMs != 0L) {
             removeLastSearchVisit();
         }
 

@@ -133,8 +133,11 @@ OsSettingsSections::OsSettingsSections(
 
 OsSettingsSections::~OsSettingsSections() = default;
 
-OsSettingsSection* OsSettingsSections::GetSection(mojom::Section section) {
-  return sections_map_[section];
+const OsSettingsSection* OsSettingsSections::GetSection(
+    mojom::Section section) const {
+  const auto it = sections_map_.find(section);
+  CHECK(it != sections_map_.end());
+  return it->second;
 }
 
 }  // namespace settings

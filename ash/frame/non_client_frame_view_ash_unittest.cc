@@ -84,7 +84,10 @@ class NonClientFrameViewAshTestWidgetDelegate
 class TestWidgetConstraintsDelegate
     : public NonClientFrameViewAshTestWidgetDelegate {
  public:
-  TestWidgetConstraintsDelegate() = default;
+  TestWidgetConstraintsDelegate() {
+    SetCanMaximize(true);
+    SetCanMinimize(true);
+  }
   ~TestWidgetConstraintsDelegate() override = default;
 
   // views::View:
@@ -99,10 +102,6 @@ class TestWidgetConstraintsDelegate
   }
 
   // views::WidgetDelegate:
-  bool CanMaximize() const override { return true; }
-
-  bool CanMinimize() const override { return true; }
-
   void set_minimum_size(const gfx::Size& min_size) { minimum_size_ = min_size; }
 
   void set_maximum_size(const gfx::Size& max_size) { maximum_size_ = max_size; }

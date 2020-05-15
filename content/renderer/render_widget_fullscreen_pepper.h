@@ -71,13 +71,13 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
   ~RenderWidgetFullscreenPepper() override;
 
   // RenderWidget API.
-  void DidInitiatePaint() override;
   void Close(std::unique_ptr<RenderWidget> widget) override;
   void AfterUpdateVisualProperties() override;
 
  private:
   friend class PepperExternalWidgetClient;
 
+  void DidInitiatePaint();
   void UpdateLayerBounds();
   void DidResize(const gfx::Size& size);
   blink::WebInputEventResult ProcessInputEvent(

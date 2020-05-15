@@ -109,42 +109,45 @@ void CanvasRenderingContextHost::CreateCanvasResourceProvider3D(
     AccelerationHint hint) {
   DCHECK(Is3d());
 
-  uint8_t presentation_mode = CanvasResourceProvider::kDefaultPresentationMode;
-  if (RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) {
-    presentation_mode |=
-        CanvasResourceProvider::kAllowImageChromiumPresentationMode;
-  }
-
   std::unique_ptr<CanvasResourceProvider> provider;
   base::WeakPtr<CanvasResourceDispatcher> dispatcher =
       GetOrCreateResourceDispatcher()
           ? GetOrCreateResourceDispatcher()->GetWeakPtr()
           : nullptr;
-  if (SharedGpuContext::IsGpuCompositingEnabled()) {
-    CanvasResourceProvider::ResourceUsage usage;
-    if (LowLatencyEnabled() && RenderingContext() &&
-        RenderingContext()->UsingSwapChain()) {
-      // Allow swap chain presentation only if 3d context is using a swap
-      // chain since we'll be importing it as a passthrough texture.
-      usage = CanvasResourceProvider::ResourceUsage::
-          kAcceleratedDirect3DResourceUsage;
+
+  uint8_t presentation_mode = CanvasResourceProvider::kDefaultPresentationMode;
+  if (RenderingContext() && RenderingContext()->UsingSwapChain()) {
+    DCHECK(LowLatencyEnabled());
+    // Allow swap chain presentation only if 3d context is using a swap
+    // chain since we'll be importing it as a passthrough texture.
+    presentation_mode |=
+        CanvasResourceProvider::kAllowSwapChainPresentationMode;
+  }
+
+  if (SharedGpuContext::IsGpuCompositingEnabled() && LowLatencyEnabled()) {
+    if (RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) {
       presentation_mode |=
-          CanvasResourceProvider::kAllowSwapChainPresentationMode;
-    } else {
-      usage = CanvasResourceProvider::ResourceUsage::
-          kAcceleratedCompositedResourceUsage;
+          CanvasResourceProvider::kAllowImageChromiumPresentationMode;
     }
+
     provider = CanvasResourceProvider::Create(
-        Size(), usage, SharedGpuContext::ContextProviderWrapper(),
-        0 /* msaa_sample_count */, FilterQuality(), ColorParams(),
-        presentation_mode, std::move(dispatcher),
-        RenderingContext()->IsOriginTopLeft());
-  } else {
-    // Here it should try a SoftwareCompositedResourceUsage, but as
-    // SharedGpuCOntext::IsGpuCompositingEnabled() is false and that being true
-    // is a requirement  to try and create a SharedImageProvider if
-    // SoftwareCompositeResourceUsage is used, it will go straight ahead to a
-    // fallback SharedBitmap and then to a Bitmap provider
+        Size(),
+        CanvasResourceProvider::ResourceUsage::
+            kAcceleratedDirect3DResourceUsage,
+        SharedGpuContext::ContextProviderWrapper(), 0 /* msaa_sample_count */,
+        FilterQuality(), ColorParams(), presentation_mode,
+        std::move(dispatcher), RenderingContext()->IsOriginTopLeft());
+  } else if (SharedGpuContext::IsGpuCompositingEnabled()) {
+    uint32_t shared_image_usage_flags = gpu::SHARED_IMAGE_USAGE_DISPLAY;
+    if (RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) {
+      shared_image_usage_flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
+    }
+    provider = CanvasResourceProvider::CreateSharedImageProvider(
+        Size(), SharedGpuContext::ContextProviderWrapper(), FilterQuality(),
+        ColorParams(), RenderingContext()->IsOriginTopLeft(),
+        CanvasResourceProvider::RasterMode::kGPU, shared_image_usage_flags);
+  }
+  if (!provider) {
     provider = CanvasResourceProvider::CreateSharedBitmapProvider(
         Size(), SharedGpuContext::ContextProviderWrapper(), FilterQuality(),
         ColorParams(), std::move(dispatcher));
@@ -185,19 +188,21 @@ void CanvasRenderingContextHost::CreateCanvasResourceProvider2D(
         CanvasResourceProvider::kAllowImageChromiumPresentationMode;
     composited_mode = true;
   }
+  if (base::FeatureList::IsEnabled(features::kLowLatencyCanvas2dSwapChain) &&
+      LowLatencyEnabled() && want_acceleration) {
+    presentation_mode |=
+        CanvasResourceProvider::kAllowSwapChainPresentationMode;
+  }
 
   bool try_swap_chain = false;
 
   CanvasResourceProvider::ResourceUsage usage;
   if (want_acceleration) {
-    if (LowLatencyEnabled() &&
-        base::FeatureList::IsEnabled(features::kLowLatencyCanvas2dSwapChain)) {
+    if (LowLatencyEnabled()) {
       // Allow swap chains only if the runtime feature is enabled and we're
       // in low latency mode too.
       usage = CanvasResourceProvider::ResourceUsage::
           kAcceleratedDirect2DResourceUsage;
-      presentation_mode |=
-          CanvasResourceProvider::kAllowSwapChainPresentationMode;
       try_swap_chain = true;
     } else {
       usage = CanvasResourceProvider::ResourceUsage::

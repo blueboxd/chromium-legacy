@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="km">
 <translation id="1012876632442809908">ឧបករណ៍ USB-C (រន្ធខាងមុខ)</translation>
+<translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> បានប្ដូរទៅ <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz)។ សូមចុច "បញ្ជាក់" ដើម្បីរក្សា​ការផ្លាស់ប្ដូរ។ ការកំណត់​មុននឹងត្រូវបានរក្សាទុក​ក្នុងរយៈពេល <ph name="TIMEOUT_SECONDS" />។</translation>
 <translation id="1013923882670373915">ឧបករណ៍ប៊្លូធូស "<ph name="DEVICE_NAME" />" ចង់បានការអនុញ្ញាតដើម្បីភ្ជាប់។ សូមបញ្ចូលលេខកូដសម្គាល់នៅលើឧបករណ៍នោះ៖ <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">ថាមពល​ថ្មរបស់ប៊ិចនៅសល់តិច</translation>
 <translation id="1037492556044956303">បាន​បញ្ចូល <ph name="DEVICE_NAME" /></translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">បង្ហាញ​ការកំណត់ភាសា</translation>
 <translation id="1460620680449458626">កម្រិតសំឡេង​ត្រូវបានបិទ។</translation>
 <translation id="1467432559032391204">ឆ្វេង</translation>
+<translation id="1479909375538722835">ម៉ឺនុយភាពងាយស្រួលអណ្ដែត</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">បើក</translation>
 <translation id="1516740043221086139">មុខងារ "​កុំ​រំខាន​" ត្រូវបាន​បើក។</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">ខាសអេក្រង់</translation>
 <translation id="5030687792513154421">ដល់ពេល​ហើយ</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> បានភ្ជាប់​ទៅទូរសព្ទថ្មី</translation>
+<translation id="5035389544768382859">បញ្ជាក់​កំណត់​រចនាសម្ព័ន្ធផ្ទាំងអេក្រង់</translation>
 <translation id="5083553833479578423">ដោះសោ​មុខងារ​ជំនួយការ​ជាច្រើនទៀត។</translation>
 <translation id="5136175204352732067">បាន​ភ្ជាប់​ក្ដារចុច​ផ្សេង</translation>
 <translation id="5168181903108465623">មានឧបករណ៍ខាស</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">បណ្ដាញ​អាច​ត្រូវ​បាន​ត្រួតពិនិត្យ</translation>
 <translation id="7536035074519304529">អាសយដ្ឋាន IP ៖ <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">ដល់ពេល​គេង​ហើយ</translation>
+<translation id="7561982940498449837">បិទ​ម៉ឺនុយ</translation>
 <translation id="7562368315689366235">បន្ទះរូបអារម្មណ៍</translation>
 <translation id="7564874036684306347">ការផ្លាស់ទីវិនដូទៅកុំព្យូទ័រ​ផ្សេងទៀតអាចបណ្តាលឱ្យមានសកម្មភាពខុសប្រក្រតី។ ការជូនដំណឹងបន្តបន្ទាប់ វិនដូ និងប្រអប់បញ្ចូលអាចត្រូវបានបំបែកពីកុំព្យូទ័រនីមួយៗ។</translation>
 <translation id="7568294522609223312">បិទការចុច​ដោយស្វ័យប្រវត្តិ</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">ការបន្ថែម</translation>
 <translation id="8029629653277878342">តម្រូវឱ្យបញ្ចូលកូដ PIN ឬពាក្យសម្ងាត់សម្រាប់សុវត្ថិភាពបន្ថែម</translation>
 <translation id="8030169304546394654">បានផ្ដាច់</translation>
+<translation id="8042893070933512245">បើកម៉ឺនុយការកំណត់ភាពងាយស្រួល</translation>
 <translation id="8048123526339889627">ការកំណត់​ប៊្លូធូស</translation>
 <translation id="8054466585765276473">កំពុងគណនារយៈពេលថាមពលថ្ម។</translation>
 <translation id="8061464966246066292">កម្រិត​ពន្លឺខ្ពស់</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">កំណត់​ការរំលឹក</translation>
 <translation id="8878886163241303700">អេក្រង់ពង្រីក</translation>
 <translation id="890616557918890486">ប្ដូរប្រភព</translation>
+<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> មិនអាចប្រើ <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz) បានទេ។ កម្រិតច្បាស់ត្រូវបានប្ដូរទៅ <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />)។ សូមចុច "បញ្ជាក់" ដើម្បីរក្សាការផ្លាស់ប្ដូរ។ ការកំណត់​មុននឹងត្រូវបានរក្សាទុក​ក្នុងរយៈពេល <ph name="TIMEOUT_SECONDS" />។</translation>
 <translation id="8909138438987180327">ថ្ម​មានកម្រិត <ph name="PERCENTAGE" /> ភាគរយ។</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google ជំនួយការមិននិយាយភាសានេះទេ។</translation>

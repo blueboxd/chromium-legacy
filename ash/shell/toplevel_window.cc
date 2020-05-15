@@ -49,7 +49,11 @@ void ToplevelWindow::ClearSavedStateForTest() {
   saved_state = NULL;
 }
 
-ToplevelWindow::ToplevelWindow(const CreateParams& params) : params_(params) {
+ToplevelWindow::ToplevelWindow(const CreateParams& params)
+    : use_saved_placement_(params.use_saved_placement) {
+  SetCanMaximize(params.can_maximize);
+  SetCanMinimize(params.can_maximize);
+  SetCanResize(params.can_resize);
   SetTitle(base::ASCIIToUTF16("Examples: Toplevel Window"));
 }
 
@@ -72,7 +76,7 @@ bool ToplevelWindow::GetSavedWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
   bool is_saved_bounds = !!saved_state;
-  if (saved_state && params_.use_saved_placement) {
+  if (saved_state && use_saved_placement_) {
     *bounds = saved_state->bounds;
     *show_state = saved_state->show_state;
   } else {
@@ -82,18 +86,6 @@ bool ToplevelWindow::GetSavedWindowPlacement(
   WindowPositioner::GetBoundsAndShowStateForNewWindow(
       is_saved_bounds, *show_state, bounds, show_state);
   return true;
-}
-
-bool ToplevelWindow::CanResize() const {
-  return params_.can_resize;
-}
-
-bool ToplevelWindow::CanMaximize() const {
-  return params_.can_maximize;
-}
-
-bool ToplevelWindow::CanMinimize() const {
-  return params_.can_maximize;
 }
 
 }  // namespace shell

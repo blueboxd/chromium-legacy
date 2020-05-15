@@ -912,7 +912,6 @@ crbug.com/982194 fast/multicol/vertical-lr/unsplittable-inline-block.html [ Fail
 crbug.com/982194 fast/multicol/vertical-rl/nested-columns.html [ Failure Pass ]
 crbug.com/982194 fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Failure Pass ]
 crbug.com/982194 fast/scrolling/document-level-touchmove-event-listener-passive-by-default.html [ Failure Pass ]
-crbug.com/982194 fast/scrolling/document-level-wheel-event-listener-passive-by-default.html [ Pass ]
 crbug.com/982194 fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
 crbug.com/982194 http/tests/devtools/application-panel/resources-panel-iframe-idb.js [ Pass ]
 crbug.com/982194 http/tests/devtools/application-panel/storage-view-reports-quota.js [ Pass Timeout ]

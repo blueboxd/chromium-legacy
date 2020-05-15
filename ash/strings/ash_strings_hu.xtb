@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
 <translation id="1012876632442809908">C típusú USB-vel kompatibilis eszköz (elülső port)</translation>
+<translation id="1013598600051641573">A(z) <ph name="DISPLAY_NAME" /> felbontása a következőre módosult: <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). A módosítás megtartásához kattintson a Megerősítés gombra. A beállítás <ph name="TIMEOUT_SECONDS" /> múlva visszaáll a korábbi értékre.</translation>
 <translation id="1013923882670373915">A(z) „<ph name="DEVICE_NAME" />” Bluetooth-eszköz engedélyt kér a párosításra. Kérjük, adja meg ezt a PIN kódot azon az eszközön: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Az érintőceruza töltöttségi szintje alacsony</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> hozzáadva</translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">Nyelvi beállítások megjelenítése</translation>
 <translation id="1460620680449458626">Hang némítva.</translation>
 <translation id="1467432559032391204">Balra</translation>
+<translation id="1479909375538722835">Kisegítő lehetőségek lebegő menüje</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">Be</translation>
 <translation id="1516740043221086139">A Ne zavarjanak funkció be van kapcsolva.</translation>
@@ -334,6 +336,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4961318399572185831">Képernyő átküldése</translation>
 <translation id="5030687792513154421">Lejárt az idő</translation>
 <translation id="5035236842988137213">A(z) <ph name="DEVICE_NAME" /> új telefonhoz csatlakozott</translation>
+<translation id="5035389544768382859">Képernyő-beállítás megerősítése</translation>
 <translation id="5083553833479578423">Hozzáférés a Segéd további funkcióihoz</translation>
 <translation id="5136175204352732067">Új billentyűzet lett csatlakoztatva</translation>
 <translation id="5168181903108465623">Cast-eszközök állnak rendelkezésre</translation>
@@ -520,6 +523,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="7526573455193969409">Elképzelhető, hogy figyelik a hálózatot</translation>
 <translation id="7536035074519304529">IP-cím: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Ideje aludni</translation>
+<translation id="7561982940498449837">Menü bezárása</translation>
 <translation id="7562368315689366235">Hangulatjel-paletta</translation>
 <translation id="7564874036684306347">Az ablakok másik asztalra történő áthelyezése váratlan viselkedést eredményezhet. Az ezt követő értesítéseket, ablakokat és párbeszédpaneleket a rendszer megoszthatja az asztalok között.</translation>
 <translation id="7568294522609223312">Automatikus kattintások kikapcsolása</translation>
@@ -562,6 +566,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8004512796067398576">Növelés</translation>
 <translation id="8029629653277878342">A nagyobb biztonság érdekében PIN-kód vagy jelszó szükséges</translation>
 <translation id="8030169304546394654">Nincs kapcsolat</translation>
+<translation id="8042893070933512245">A kisegítő lehetőségekhez tartozó beállítások menüjének megnyitása</translation>
 <translation id="8048123526339889627">Bluetooth-beállítások</translation>
 <translation id="8054466585765276473">Akkumulátor-időtartam kiszámítása.</translation>
 <translation id="8061464966246066292">Kontrasztos megjelenítés</translation>
@@ -637,6 +642,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8877788021141246043">Emlékeztető beállítása</translation>
 <translation id="8878886163241303700">Kibővített képernyő</translation>
 <translation id="890616557918890486">Forrás módosítása</translation>
+<translation id="8908312332415978740">A(z) <ph name="DISPLAY_NAME" /> nem támogatja a következő felbontást: <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). A felbontás erre módosult: <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). A módosítás megtartásához kattintson a Megerősítés gombra. A beállítás <ph name="TIMEOUT_SECONDS" /> múlva visszaáll a korábbi értékre.</translation>
 <translation id="8909138438987180327">Az akkumulátor töltöttsége <ph name="PERCENTAGE" /> százalék.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">A Google Segéd nem beszél ezen a nyelven.</translation>

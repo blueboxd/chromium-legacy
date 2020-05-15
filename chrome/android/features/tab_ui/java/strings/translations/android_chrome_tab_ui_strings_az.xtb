@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Qrup yaradın</translation>
 <translation id="2671423594960767771">Qrupu paylaşın</translation>
 <translation id="2977480621796371840">Qrupdan çıxarın</translation>
+<translation id="3328308545011660196">Təklif: <ph name="NUMBER_OF_TABS" /> tab əlaqəli görünür. Onlar qruplaşdırılsın?</translation>
+<translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> tab əlaqəli görünür. Onlar qruplaşdırılsın?</translation>
 <translation id="4212246570487010370">Axtarmağa davam edin</translation>
 <translation id="4450893287417543264">Daha göstərməyin</translation>
 <translation id="4648718555153979859">Tablar burada qruplaşdırılır</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Tabları qrupdan silin</translation>
 <translation id="7559245342362162951">Qrup tabını tam ekran cədvəlində göstərin</translation>
 <translation id="7792771145871471484">Təklifləri nəzərdən keçirin.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> seçilmiş tabı qruplaşdırın}other{<ph name="TABS_COUNT_MANY" /> seçilmiş tabı qruplaşdırın}}</translation>
 <translation id="7885132941432959125">Tabı sağa daşıyın</translation>
 <translation id="7966321538264951561">Təkliflərdən imtina edin.</translation>
 <translation id="814503310257431685">Hamısına baxın</translation>

@@ -203,7 +203,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         mHandler = handler;
         mTileSuggestionProcessor =
                 new TileSuggestionProcessor(mContext, queryTileSuggestionCallback);
-        mHeaderProcessor = new HeaderProcessor(mContext);
+        mHeaderProcessor = new HeaderProcessor(mContext, mDelegate);
         mSuggestionProcessors = new ArrayList<>();
         mViewInfoList = new ArrayList<>();
         mAutocompleteResult = new AutocompleteResult(null, null);

@@ -138,13 +138,6 @@
     "args": ["--use-gpu-in-tests"]
   },
   {
-    "prefix": "scroll_customization",
-    "bases": ["fast/events/touch",
-              "fast/scroll-behavior",
-              "fast/scrolling"],
-    "args": ["--enable-blink-features=ScrollCustomization"]
-  },
-  {
     "prefix": "mse-1mb-buffers",
     "bases": ["http/tests/media/media-source/stream_memory_tests"],
     "args": ["--mse-audio-buffer-size-limit-mb=1",

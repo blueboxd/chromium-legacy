@@ -36,16 +36,15 @@ from pylib.instrumentation import instrumentation_test_instance
 from pylib.local.device import local_device_environment
 from pylib.local.device import local_device_test_run
 from pylib.output import remote_output_manager
+from pylib.utils import chrome_proxy_utils
 from pylib.utils import gold_utils
 from pylib.utils import instrumentation_tracing
 from pylib.utils import shared_preference_utils
-
 from py_trace_event import trace_event
 from py_trace_event import trace_time
 from py_utils import contextlib_ext
 from py_utils import tempfile_ext
 import tombstones
-
 
 with host_paths.SysPath(
     os.path.join(host_paths.DIR_SOURCE_ROOT, 'third_party'), 0):
@@ -88,6 +87,8 @@ _EXTRA_PACKAGE_UNDER_TEST = ('org.chromium.chrome.test.pagecontroller.rules.'
 
 FEATURE_ANNOTATION = 'Feature'
 RENDER_TEST_FEATURE_ANNOTATION = 'RenderTest'
+WPR_ARCHIVE_FILE_PATH_ANNOTATION = 'WPRArchiveConfigFilePath'
+WPR_RECORD_REPLAY_TEST_FEATURE_ANNOTATION = 'WPRRecordReplayTest'
 
 # This needs to be kept in sync with formatting in |RenderUtils.imageName|
 RE_RENDER_IMAGE_NAME = re.compile(
@@ -141,11 +142,13 @@ class LocalDeviceInstrumentationTestRun(
   def __init__(self, env, test_instance):
     super(LocalDeviceInstrumentationTestRun, self).__init__(
         env, test_instance)
+    self._chrome_proxy = None
     self._context_managers = collections.defaultdict(list)
     self._flag_changers = {}
+    self._render_tests_device_output_dir = None
     self._shared_prefs_to_restore = []
-    self._skia_gold_work_dir = None
     self._skia_gold_session_manager = None
+    self._skia_gold_work_dir = None
 
   #override
   def TestPackage(self):
@@ -556,14 +559,35 @@ class LocalDeviceInstrumentationTestRun(
       timeout = None
     logging.info('preparing to run %s: %s', test_display_name, test)
 
-    render_tests_device_output_dir = None
     if _IsRenderTest(test):
       # TODO(mikecase): Add DeviceTempDirectory class and use that instead.
-      render_tests_device_output_dir = posixpath.join(
-          device.GetExternalStoragePath(),
-          'render_test_output_dir')
+      self._render_tests_device_output_dir = posixpath.join(
+          device.GetExternalStoragePath(), 'render_test_output_dir')
       flags_to_add.append('--render-test-output-dir=%s' %
-                          render_tests_device_output_dir)
+                          self._render_tests_device_output_dir)
+
+    if _IsWPRRecordReplayTest(test):
+      wpr_archive_config_relative_path = _GetWPRArchiveConfig(test)
+      if not wpr_archive_config_relative_path:
+        raise RuntimeError('Could not find the WPR archive config file path '
+                           'from annotation.')
+      wpr_archive_config_path = os.path.join(host_paths.DIR_SOURCE_ROOT,
+                                             wpr_archive_config_relative_path)
+      if self._test_instance.wpr_replay_mode:
+        # In replay mode, gets archive file from wpr_archive_config_path
+        archive_path = chrome_proxy_utils.GetWPRArchiveFromConfig(
+            self._GetUniqueTestName(test), [wpr_archive_config_path])
+      else:
+        # In record mode, uses test unique name as file name.
+        # The file will be marked as untracked file and need to be
+        # 'git add' later by the user.
+        archive_path = os.path.join(os.path.dirname(wpr_archive_config_path),
+                                    self._GetUniqueTestName(test) + '.wprgo')
+
+      self._chrome_proxy = chrome_proxy_utils.ChromeProxySession()
+      self._chrome_proxy.wpr_record_mode = self._test_instance.wpr_record_mode
+      self._chrome_proxy.Start(device, archive_path)
+      flags_to_add.extend(self._chrome_proxy.GetFlags())
 
     if flags_to_add:
       self._CreateFlagChangerIfNeeded(device)
@@ -620,11 +644,12 @@ class LocalDeviceInstrumentationTestRun(
           # check to see if any failure images were generated even if the test
           # does not fail.
           try:
-            self._ProcessRenderTestResults(
-                device, render_tests_device_output_dir, results)
+            self._ProcessRenderTestResults(device, results)
           finally:
-            device.RemovePath(render_tests_device_output_dir,
-                              recursive=True, force=True)
+            device.RemovePath(self._render_tests_device_output_dir,
+                              recursive=True,
+                              force=True)
+            self._render_tests_device_output_dir = None
 
       def pull_ui_screen_captures():
         screenshots = []
@@ -653,13 +678,23 @@ class LocalDeviceInstrumentationTestRun(
         json_data['image_link'] = image_archive.Link()
         return json_data
 
+      def stop_chrome_proxy():
+        # Removes the port forwarding
+        if self._chrome_proxy:
+          self._chrome_proxy.Stop(device)
+          if self._chrome_proxy.wpr_replay_mode:
+            # Remove the wpr archive file if it previously ran in replay mode
+            os.remove(self._chrome_proxy.wpr_archive_path)
+          self._chrome_proxy = None
+
+
       # While constructing the TestResult objects, we can parallelize several
       # steps that involve ADB. These steps should NOT depend on any info in
       # the results! Things such as whether the test CRASHED have not yet been
       # determined.
       post_test_steps = [
-          restore_flags, restore_timeout_scale, handle_coverage_data,
-          handle_render_test_data, pull_ui_screen_captures
+          restore_flags, restore_timeout_scale, stop_chrome_proxy,
+          handle_coverage_data, handle_render_test_data, pull_ui_screen_captures
       ]
       if self._env.concurrent_adb:
         reraiser_thread.RunAsync(post_test_steps)
@@ -920,16 +955,15 @@ class LocalDeviceInstrumentationTestRun(
           screenshot_device_file.close()
       _SetLinkOnResults(results, link_name, screenshot_host_file.Link())
 
-  def _ProcessRenderTestResults(
-      self, device, render_tests_device_output_dir, results):
-    self._ProcessSkiaGoldRenderTestResults(
-        device, render_tests_device_output_dir, results)
-    self._ProcessLocalRenderTestResults(device, render_tests_device_output_dir,
-                                        results)
+  def _ProcessRenderTestResults(self, device, results):
+    if not self._render_tests_device_output_dir:
+      return
+    self._ProcessSkiaGoldRenderTestResults(device, results)
+    self._ProcessLocalRenderTestResults(device, results)
 
-  def _ProcessSkiaGoldRenderTestResults(
-      self, device, render_tests_device_output_dir, results):
-    gold_dir = posixpath.join(render_tests_device_output_dir, _DEVICE_GOLD_DIR)
+  def _ProcessSkiaGoldRenderTestResults(self, device, results):
+    gold_dir = posixpath.join(self._render_tests_device_output_dir,
+                              _DEVICE_GOLD_DIR)
     if not device.FileExists(gold_dir):
       return
 
@@ -1053,18 +1087,17 @@ class LocalDeviceInstrumentationTestRun(
               'Given unhandled SkiaGoldSession StatusCode %s with error %s',
               status, error)
 
-  def _ProcessLocalRenderTestResults(self, device,
-                                     render_tests_device_output_dir, results):
+  def _ProcessLocalRenderTestResults(self, device, results):
     failure_images_device_dir = posixpath.join(
-        render_tests_device_output_dir, 'failures')
+        self._render_tests_device_output_dir, 'failures')
     if not device.FileExists(failure_images_device_dir):
       return
 
     diff_images_device_dir = posixpath.join(
-        render_tests_device_output_dir, 'diffs')
+        self._render_tests_device_output_dir, 'diffs')
 
     golden_images_device_dir = posixpath.join(
-        render_tests_device_output_dir, 'goldens')
+        self._render_tests_device_output_dir, 'goldens')
 
     for failure_filename in device.ListDirectory(failure_images_device_dir):
 
@@ -1143,6 +1176,22 @@ class LocalDeviceInstrumentationTestRun(
     timeout *= cls._GetTimeoutScaleFromAnnotations(annotations)
 
     return timeout
+
+
+def _IsWPRRecordReplayTest(test):
+  """Determines whether a test or a list of tests is a WPR RecordReplay Test."""
+  if not isinstance(test, list):
+    test = [test]
+  return any([
+      WPR_RECORD_REPLAY_TEST_FEATURE_ANNOTATION in t['annotations'].get(
+          FEATURE_ANNOTATION, {}).get('value', ()) for t in test
+  ])
+
+
+def _GetWPRArchiveConfig(test):
+  """Retrieves the config from the WPRArchiveConfigFilePath annotation."""
+  return test['annotations'].get(WPR_ARCHIVE_FILE_PATH_ANNOTATION,
+                                 {}).get('value', ())
 
 
 def _IsRenderTest(test):

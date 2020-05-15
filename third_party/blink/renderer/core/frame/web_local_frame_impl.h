@@ -291,7 +291,11 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool IsAdSubframe() const override;
   void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type) override;
   void WaitForDebuggerWhenShown() override;
-  void PrintPagesForTesting(cc::PaintCanvas*, const WebSize&) override;
+  WebSize SpoolSizeInPixelsForTesting(const WebSize& page_size_in_pixels,
+                                      int page_count) override;
+  void PrintPagesForTesting(cc::PaintCanvas*,
+                            const WebSize& page_size_in_pixels,
+                            const WebSize& spool_size_in_pixels) override;
   WebRect GetSelectionBoundsRectForTesting() const override;
   gfx::Point GetPositionInViewportForTesting() const override;
   void SetLifecycleState(mojom::FrameLifecycleState state) override;

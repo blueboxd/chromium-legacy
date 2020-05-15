@@ -115,6 +115,9 @@ CSSValue* ConsumeColor(CSSParserTokenRange&,
                        const CSSParserContext&,
                        bool accept_quirky_colors = false);
 
+CSSValue* ConsumeInternalForcedBackgroundColor(CSSParserTokenRange&,
+                                               const CSSParserContext&);
+
 CSSValue* ConsumeLineWidth(CSSParserTokenRange&,
                            const CSSParserContext&,
                            UnitlessQuirk);

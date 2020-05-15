@@ -2323,6 +2323,7 @@ Se questa impostazione viene attivata, i suggerimenti di ricerca verranno utiliz
 Se questa impostazione viene attivata o disattivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME" />.
 
 Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utenti potranno modificarla.</translation>
+<translation id="453031441196755904">Questa norma è obsoleta.</translation>
 <translation id="4531706050939927436">L'installazione di app Android può essere imposta dalla Console d'amministrazione Google tramite Google Play. Questa norma non viene utilizzata.</translation>
 <translation id="4534500438517478692">Nome della limitazione di Android:</translation>
 <translation id="4541530620466526913">Account del dispositivo</translation>

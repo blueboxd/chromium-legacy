@@ -147,8 +147,8 @@ const char kAndroidPictureInPictureAPIName[] =
 const char kAndroidPictureInPictureAPIDescription[] =
     "Enable Picture-in-Picture Web API for Android";
 
-extern const char kAppCacheName[] = "AppCache web API and browser backend";
-extern const char kAppCacheDescription[] =
+const char kAppCacheName[] = "AppCache web API and browser backend";
+const char kAppCacheDescription[] =
     "When disabled, turns off all AppCache code so that developers "
     "can test that their code works properly in the future when AppCache "
     "has been removed.";
@@ -617,9 +617,9 @@ const char kDesktopPWAsLocalUpdatingThrottlePersistenceDescription[] =
     "Persist the throttling of local PWA manifest update checks across browser "
     "restarts.";
 
-extern const char kDesktopPWAsAppIconShortcutsMenuName[] =
+const char kDesktopPWAsAppIconShortcutsMenuName[] =
     "Desktop PWAs app icon shortcuts menu";
-extern const char kDesktopPWAsAppIconShortcutsMenuDescription[] =
+const char kDesktopPWAsAppIconShortcutsMenuDescription[] =
     "Enable installed PWAs to include a menu of shortcuts associated with the "
     "app icon in the taskbar on Windows, or the dock on macOS or Linux.";
 
@@ -1551,10 +1551,12 @@ const char kOverscrollHistoryNavigationName[] = "Overscroll history navigation";
 const char kOverscrollHistoryNavigationDescription[] =
     "History navigation in response to horizontal overscroll.";
 
-const char kTouchpadOverscrollHistoryNavigationName[] =
-    "Overscroll history navigation on Touchpad";
-const char kTouchpadOverscrollHistoryNavigationDescription[] =
-    "Allows swipe left/right from touchpad change browser navigation.";
+const char kPaintHoldingName[] =
+    "Delay the commit to screen for same-origin navigations";
+const char kPaintHoldingDescription[] =
+    "Enables a delay before commiting the page to screen when navigating "
+    "between pages in the same origin. This may help avoid a flash of unstyled "
+    "content for same-origin navigations";
 
 const char kParallelDownloadingName[] = "Parallel downloading";
 const char kParallelDownloadingDescription[] =
@@ -2064,6 +2066,11 @@ const char kTouchSelectionStrategyDescription[] =
 const char kTouchSelectionStrategyCharacter[] = "Character";
 const char kTouchSelectionStrategyDirection[] = "Direction";
 
+const char kTouchpadOverscrollHistoryNavigationName[] =
+    "Overscroll history navigation on Touchpad";
+const char kTouchpadOverscrollHistoryNavigationDescription[] =
+    "Allows swipe left/right from touchpad change browser navigation.";
+
 const char kTraceUploadUrlName[] = "Trace label for navigation tracing";
 const char kTraceUploadUrlDescription[] =
     "This is to be used in conjunction with the enable-navigation-tracing "
@@ -2243,18 +2250,6 @@ const char kWebrtcUseMinMaxVEADimensionsName[] =
 const char kWebrtcUseMinMaxVEADimensionsDescription[] =
     "When enabled, WebRTC will only use the Video Encode Accelerator for "
     "video resolutions inside those published as supported.";
-
-#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
-const char kWebUITabStripName[] = "WebUI tab strip";
-const char kWebUITabStripDescription[] =
-    "When enabled makes use of a WebUI-based tab strip.";
-
-const char kWebUITabStripDemoOptionsName[] = "WebUI tab strip demo options";
-const char kWebUITabStripDemoOptionsDescription[] =
-    "When enabled, displays a set of options to demo and test various features "
-    "and behaviors of the WebUI tab strip. The WebUI tab strip must also be "
-    "enabled.";
-#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
 const char kWebXrForceRuntimeName[] = "Force WebXr Runtime";
 const char kWebXrForceRuntimeDescription[] =
@@ -3030,9 +3025,10 @@ const char kEnableMediaFoundationVideoCaptureDescription[] =
     "Enable/Disable the usage of MediaFoundation for video capture. Fall back "
     "to DirectShow if disabled.";
 
-const char kGdiTextPrinting[] = "GDI Text Printing";
-const char kGdiTextPrintingDescription[] =
-    "Use GDI to print text as simply text";
+const char kRunVideoCaptureServiceInBrowserProcessName[] =
+    "Run video capture service in browser";
+const char kRunVideoCaptureServiceInBrowserProcessDescription[] =
+    "Run the video capture service in the browser process.";
 
 const char kUseAngleName[] = "Choose ANGLE graphics backend";
 const char kUseAngleDescription[] =
@@ -3054,6 +3050,10 @@ const char kUseWinrtMidiApiDescription[] =
     "later).";
 
 #if BUILDFLAG(ENABLE_PRINTING)
+const char kGdiTextPrinting[] = "GDI Text Printing";
+const char kGdiTextPrintingDescription[] =
+    "Use GDI to print text as simply text";
+
 const char kPrintWithReducedRasterizationName[] =
     "Print with reduced rasterization";
 const char kPrintWithReducedRasterizationDescription[] =
@@ -3417,8 +3417,8 @@ const char kEnableArcUnifiedAudioFocusDescription[] =
     "If audio focus is enabled in Chrome then this will delegate audio focus "
     "control in Android apps to Chrome.";
 
-extern const char kEnableAmbientModeName[] = "Enable Ambient Mode";
-extern const char kEnableAmbientModeDescription[] =
+const char kEnableAmbientModeName[] = "Enable Ambient Mode";
+const char kEnableAmbientModeDescription[] =
     "Enable Ambient Mode to show an enhanced lock screen with more functions";
 
 const char kEnableAssistantAppSupportName[] = "Enable Assistant App Support";
@@ -3651,8 +3651,8 @@ const char kGaiaActionButtonsName[] =
 const char kGaiaActionButtonsDescription[] =
     "Enable primary/secondary action button on Gaia login screen.";
 
-extern const char kHelpAppName[] = "Help App";
-extern const char kHelpAppDescription[] =
+const char kHelpAppName[] = "Help App";
+const char kHelpAppDescription[] =
     "Enables the chrome://help-app System Web App (SWA)";
 
 const char kHideArcMediaNotificationsName[] = "Hide ARC media notifications";
@@ -3660,8 +3660,8 @@ const char kHideArcMediaNotificationsDescription[] =
     "Hides media notifications for ARC apps. Requires "
     "#enable-media-session-notifications to be enabled.";
 
-extern const char kImeAssistAutocorrectName[] = "Enable assistive autocorrect";
-extern const char kImeAssistAutocorrectDescription[] =
+const char kImeAssistAutocorrectName[] = "Enable assistive autocorrect";
+const char kImeAssistAutocorrectDescription[] =
     "Enable assistive auto-correct features for native IME";
 
 const char kImeAssistPersonalInfoName[] = "Enable assistive personal info";
@@ -3870,8 +3870,8 @@ const char kUiShowCompositedLayerBordersAll[] = "All";
 const char kUiSlowAnimationsName[] = "Slow UI animations";
 const char kUiSlowAnimationsDescription[] = "Makes all UI animations slow.";
 
-extern const char kUnifiedMediaViewName[] = "Unified media view in Files App";
-extern const char kUnifiedMediaViewDescription[] =
+const char kUnifiedMediaViewName[] = "Unified media view in Files App";
+const char kUnifiedMediaViewDescription[] =
     "Enable unified media view to browse recently-modified media files from"
     " local disk, Google Drive, and Android.";
 
@@ -3920,17 +3920,6 @@ const char kZeroCopyVideoCaptureDescription[] =
 
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
-
-#if BUILDFLAG(USE_TCMALLOC)
-const char kDynamicTcmallocName[] = "Dynamic Tcmalloc Tuning";
-const char kDynamicTcmallocDescription[] =
-    "Allows tcmalloc to dynamically adjust tunables based on system resource "
-    "utilization.";
-#endif  // BUILDFLAG(USE_TCMALLOC)
-
-#endif  // #if defined(OS_CHROMEOS) || defined(OS_LINUX)
-
 // All views-based platforms --------------------------------------------------
 
 #if defined(TOOLKIT_VIEWS)
@@ -3966,16 +3955,6 @@ const char kWebGL2ComputeContextDescription[] =
     "Enable the use of WebGL 2.0 Compute API.";
 
 #endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
-
-#if BUILDFLAG(ENABLE_CLICK_TO_CALL)
-
-const char kClickToCallUIName[] =
-    "Enable click to call feature signals to be handled on desktop";
-const char kClickToCallUIDescription[] =
-    "Enables click to call feature signals to be handled on desktop by showing "
-    "a list of user's available devices with telephony functionality.";
-
-#endif  // BUILDFLAG(ENABLE_CLICK_TO_CALL)
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
@@ -4029,6 +4008,22 @@ const char kWebContentsOcclusionDescription[] =
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if BUILDFLAG(USE_TCMALLOC)
+const char kDynamicTcmallocName[] = "Dynamic Tcmalloc Tuning";
+const char kDynamicTcmallocDescription[] =
+    "Allows tcmalloc to dynamically adjust tunables based on system resource "
+    "utilization.";
+#endif  // BUILDFLAG(USE_TCMALLOC)
+#endif  // #if defined(OS_CHROMEOS) || defined(OS_LINUX)
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+const char kUserDataSnapshotName[] = "Enable user data snapshots";
+const char kUserDataSnapshotDescription[] =
+    "Enables taking snapshots of the user data directory after a Chrome "
+    "update and restoring them after a version rollback.";
+#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+
 // Feature flags --------------------------------------------------------------
 
 #if defined(DCHECK_IS_CONFIGURABLE)
@@ -4037,6 +4032,14 @@ const char kDcheckIsFatalDescription[] =
     "By default Chrome will evaluate in this build, but only log failures, "
     "rather than crashing. If enabled, DCHECKs will crash the calling process.";
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
+
+#if BUILDFLAG(ENABLE_CLICK_TO_CALL)
+const char kClickToCallUIName[] =
+    "Enable click to call feature signals to be handled on desktop";
+const char kClickToCallUIDescription[] =
+    "Enables click to call feature signals to be handled on desktop by showing "
+    "a list of user's available devices with telephony functionality.";
+#endif  // BUILDFLAG(ENABLE_CLICK_TO_CALL)
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 const char kDiceWebSigninInterceptionName[] = "Dice Web-Signin Interception";
@@ -4075,6 +4078,18 @@ const char kPdfTwoUpViewDescription[] =
 
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+const char kWebUITabStripName[] = "WebUI tab strip";
+const char kWebUITabStripDescription[] =
+    "When enabled makes use of a WebUI-based tab strip.";
+
+const char kWebUITabStripDemoOptionsName[] = "WebUI tab strip demo options";
+const char kWebUITabStripDemoOptionsDescription[] =
+    "When enabled, displays a set of options to demo and test various features "
+    "and behaviors of the WebUI tab strip. The WebUI tab strip must also be "
+    "enabled.";
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
 const char kAutofillCreditCardUploadName[] =
@@ -4085,39 +4100,12 @@ const char kAutofillCreditCardUploadDescription[] =
 
 #endif  // defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
-const char kPaintHoldingName[] =
-    "Delay the commit to screen for same-origin navigations";
-const char kPaintHoldingDescription[] =
-    "Enables a delay before commiting the page to screen when navigating "
-    "between pages in the same origin. This may help avoid a flash of unstyled "
-    "content for same-origin navigations";
-
 #if defined(WEBRTC_USE_PIPEWIRE)
-
 const char kWebrtcPipeWireCapturerName[] = "WebRTC PipeWire support";
 const char kWebrtcPipeWireCapturerDescription[] =
     "When enabled the WebRTC will use the PipeWire multimedia server for "
     "capturing the desktop content on the Wayland display server.";
-
 #endif  // #if defined(WEBRTC_USE_PIPEWIRE)
-
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-
-const char kUserDataSnapshotName[] = "Enable user data snapshots";
-const char kUserDataSnapshotDescription[] =
-    "Enables taking snapshots of the user data directory after a Chrome "
-    "update and restoring them after a version rollback.";
-
-#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-
-#if defined(OS_WIN)
-
-const char kRunVideoCaptureServiceInBrowserProcessName[] =
-    "Run video capture service in browser";
-const char kRunVideoCaptureServiceInBrowserProcessDescription[] =
-    "Run the video capture service in the browser process.";
-
-#endif  // defined(OS_WIN)
 
 // ============================================================================
 // Don't just add flags to the end, put them in the right section in

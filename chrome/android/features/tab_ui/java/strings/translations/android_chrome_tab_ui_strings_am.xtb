@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">ቡድን ይፍጠሩ</translation>
 <translation id="2671423594960767771">ቡድንን አጋራ</translation>
 <translation id="2977480621796371840">ከቡድን አስወግድ</translation>
+<translation id="3328308545011660196">የአስተያየት ጥቆማ፦ <ph name="NUMBER_OF_TABS" /> ትሮች የሚዛመዱ ይመስላሉ። ይቦደኑ?</translation>
+<translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> ትሮች የሚዛመዱ ይመስላሉ ይቦደኑ?</translation>
 <translation id="4212246570487010370">ማሰሱን ይቀጥሉ</translation>
 <translation id="4450893287417543264">ዳግም አታሳይ</translation>
 <translation id="4648718555153979859">የእርስዎ ትሮች እዚህ አብረው ይቦደናሉ</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">ትሮችን ከቡድን ያስወግዱ</translation>
 <translation id="7559245342362162951">የቡድን ትሮች በሙሉ ማያ ፍርግርግ አሳይ</translation>
 <translation id="7792771145871471484">ጥቆማ ሐሳቦችን ይገምግሙ።</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> የተመረጠ ትር ቦድን}one{<ph name="TABS_COUNT_MANY" /> የተመረጡ ትሮችን ቦድን}other{<ph name="TABS_COUNT_MANY" /> የተመረጡ ትሮችን ቦድን}}</translation>
 <translation id="7885132941432959125">ቅርን ወደ ቀኝ አንቀሳቅስ</translation>
 <translation id="7966321538264951561">ጥቆማ ሐሳቦችን ያሰናብቱ።</translation>
 <translation id="814503310257431685">ሁሉንም አሳይ</translation>

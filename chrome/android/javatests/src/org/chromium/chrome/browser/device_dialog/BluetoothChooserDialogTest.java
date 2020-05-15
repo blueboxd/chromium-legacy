@@ -128,7 +128,7 @@ public class BluetoothChooserDialogTest {
     private BluetoothChooserDialog createDialog() {
         return TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> {
-                    mWindowAndroid = new ActivityWindowAndroid(mActivityTestRule.getActivity());
+                    mWindowAndroid = mActivityTestRule.getActivity().getWindowAndroid();
                     BluetoothChooserDialog dialog = new BluetoothChooserDialog(mWindowAndroid,
                             "https://origin.example.com/", ConnectionSecurityLevel.SECURE,
                             /*nativeBluetoothChooserDialogPtr=*/42);

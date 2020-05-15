@@ -5,6 +5,7 @@
 #include "ash/assistant/assistant_alarm_timer_controller.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "ash/assistant/assistant_controller_impl.h"
@@ -28,10 +29,10 @@ namespace {
 // Helpers ---------------------------------------------------------------------
 
 // Creates a timer with the specified |id| which is firing now.
-mojom::AssistantTimerPtr CreateFiringTimer(const std::string& id) {
-  mojom::AssistantTimerPtr timer = mojom::AssistantTimer::New();
+AssistantTimerPtr CreateFiringTimer(const std::string& id) {
+  auto timer = std::make_unique<AssistantTimer>();
   timer->id = id;
-  timer->state = mojom::AssistantTimerState::kFired;
+  timer->state = AssistantTimerState::kFired;
   timer->fire_time = base::Time::Now();
   timer->remaining_time = base::TimeDelta();
   return timer;
@@ -158,7 +159,7 @@ TEST_F(AssistantAlarmTimerControllerTest, AddsAndUpdatesTimerNotification) {
     ScopedNotificationModelObserver notification_model_observer;
 
     // Fire a timer.
-    std::vector<mojom::AssistantTimerPtr> timers;
+    std::vector<AssistantTimerPtr> timers;
     timers.push_back(CreateFiringTimer(/*id=*/"1"));
     controller()->OnTimerStateChanged(std::move(timers));
 

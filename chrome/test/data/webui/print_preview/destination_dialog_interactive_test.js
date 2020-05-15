@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CloudPrintInterfaceImpl, Destination, makeRecentDestination, NativeLayer, State} from 'chrome://print/print_preview.js';
+import {CloudPrintInterfaceImpl, Destination, makeRecentDestination, NativeLayer, NativeLayerImpl, State} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {CloudPrintInterfaceStub} from 'chrome://test/print_preview/cloud_print_interface_stub.js';
@@ -34,11 +34,11 @@ suite(destination_dialog_interactive_test.suiteName, function() {
 
   /** @override */
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
 
     // Create destinations.
     nativeLayer = new NativeLayerStub();
-    NativeLayer.setInstance(nativeLayer);
+    NativeLayerImpl.instance_ = nativeLayer;
     const localDestinations = [];
     const destinations = getDestinations(nativeLayer, localDestinations);
     const recentDestinations = [makeRecentDestination(destinations[4])];

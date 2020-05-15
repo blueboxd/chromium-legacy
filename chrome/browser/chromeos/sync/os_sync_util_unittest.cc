@@ -28,7 +28,6 @@ class OsSyncUtilTest : public testing::Test {
 TEST_F(OsSyncUtilTest, SimpleMigration) {
   os_sync_util::MigrateOsSyncPreferences(&prefs_);
   EXPECT_TRUE(prefs_.GetBoolean(sp::kOsSyncPrefsMigrated));
-  EXPECT_TRUE(prefs_.GetBoolean(sp::kOsSyncFeatureEnabled));
   EXPECT_TRUE(prefs_.GetBoolean(sp::kSyncAllOsTypes));
 }
 
@@ -73,7 +72,6 @@ TEST_F(OsSyncUtilTest, Rollback) {
   // Do initial migration.
   os_sync_util::MigrateOsSyncPreferences(&prefs_);
   EXPECT_TRUE(prefs_.GetBoolean(sp::kOsSyncPrefsMigrated));
-  EXPECT_TRUE(prefs_.GetBoolean(sp::kOsSyncFeatureEnabled));
 
   {
     // Simulate disabling the feature (e.g. disabling via Finch).
@@ -83,7 +81,6 @@ TEST_F(OsSyncUtilTest, Rollback) {
 
     // OS sync is marked as not migrated.
     EXPECT_FALSE(prefs_.GetBoolean(sp::kOsSyncPrefsMigrated));
-    EXPECT_FALSE(prefs_.GetBoolean(sp::kOsSyncFeatureEnabled));
   }
 
   // Simulate re-enabling the feature.
@@ -92,9 +89,8 @@ TEST_F(OsSyncUtilTest, Rollback) {
     feature_list.InitAndEnableFeature(chromeos::features::kSplitSettingsSync);
     os_sync_util::MigrateOsSyncPreferences(&prefs_);
 
-    // OS sync is re-enabled.
+    // OS sync is marked as migrated.
     EXPECT_TRUE(prefs_.GetBoolean(sp::kOsSyncPrefsMigrated));
-    EXPECT_TRUE(prefs_.GetBoolean(sp::kOsSyncFeatureEnabled));
   }
 }
 

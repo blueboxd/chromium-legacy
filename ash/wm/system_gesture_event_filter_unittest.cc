@@ -40,13 +40,14 @@ namespace {
 
 class ResizableWidgetDelegate : public views::WidgetDelegateView {
  public:
-  ResizableWidgetDelegate() = default;
+  ResizableWidgetDelegate() {
+    SetCanMaximize(true);
+    SetCanMinimize(true);
+    SetCanResize(true);
+  }
   ~ResizableWidgetDelegate() override = default;
 
  private:
-  bool CanResize() const override { return true; }
-  bool CanMaximize() const override { return true; }
-  bool CanMinimize() const override { return true; }
   void DeleteDelegate() override { delete this; }
 
   DISALLOW_COPY_AND_ASSIGN(ResizableWidgetDelegate);
@@ -82,13 +83,13 @@ class MaxSizeNCFV : public views::NonClientFrameView {
 
 class MaxSizeWidgetDelegate : public views::WidgetDelegateView {
  public:
-  MaxSizeWidgetDelegate() = default;
+  MaxSizeWidgetDelegate() {
+    SetCanMinimize(true);
+    SetCanResize(true);
+  }
   ~MaxSizeWidgetDelegate() override = default;
 
  private:
-  bool CanResize() const override { return true; }
-  bool CanMaximize() const override { return false; }
-  bool CanMinimize() const override { return true; }
   void DeleteDelegate() override { delete this; }
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {

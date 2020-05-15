@@ -53,7 +53,6 @@
 <translation id="1056898198331236512">Upozornění</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1061904396131502319">Brzy bude čas na přestávku</translation>
-<translation id="1064552680598333868">Změny nastavení mikrofonu se projeví po restartu Linuxu.</translation>
 <translation id="1067048845568873861">Vytvořeno</translation>
 <translation id="1067291318998134776">Linux (beta)</translation>
 <translation id="1067922213147265141">Další služby Google</translation>
@@ -298,7 +297,6 @@
 <translation id="1386387014181100145">Nazdárek!</translation>
 <translation id="138784436342154190">Obnovit výchozí počáteční stránku?</translation>
 <translation id="1390548061267426325">Otevřít jako běžnou kartu</translation>
-<translation id="1392232653471491344">Je vyžadován restart Linuxu</translation>
 <translation id="1393283411312835250">Slunce a mraky</translation>
 <translation id="1395730723686586365">Byl spuštěn nástroj na aktualizaci</translation>
 <translation id="1396139853388185343">Při nastavování tiskárny došlo k chybě</translation>
@@ -704,7 +702,6 @@ Na aplikace a obsah v jiných zařízeních tato akce nemá vliv.</translation
 <translation id="186612162884103683">Rozšíření <ph name="EXTENSION" /> může číst obrázky, video a zvukové soubory v povolených umístěních a zapisovat do nich.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> je připraven dokončit instalaci.</translation>
 <translation id="1868193363684582383">„Ok Google“</translation>
-<translation id="1870629042957780127">Povolit přístup k mikrofonu</translation>
 <translation id="1871534214638631766">Zobrazovat související informace, když na obsah kliknete pravým tlačítkem nebo ho dlouze stisknete</translation>
 <translation id="1871615898038944731">Vaše zařízení <ph name="DEVICE_TYPE" /> je aktuální</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Přesunout kartu do jiného okna}few{Přesunout karty do jiného okna}many{Přesunout karty do jiného okna}other{Přesunout karty do jiného okna}}</translation>
@@ -2089,7 +2086,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3661172646479098821">V současné době jsou podporována jen zařízení Android.</translation>
 <translation id="3664511988987167893">Ikona rozšíření</translation>
 <translation id="3665589677786828986">Prohlížeč Chrome zjistil, že některá z vašich nastavení byla upravena jiným programem, a obnovil je na původní výchozí hodnoty.</translation>
-<translation id="366867565525278777">Instalace se nezdařila z důvodu nedostatku místa v úložišti. Je potřeba alespoň <ph name="INSTALL_SIZE" /> volného místa. Místo uvolníte smazáním souborů z úložiště zařízení.</translation>
 <translation id="3668801437375206837">Pro lepší diagnostiku problémů s rozhraním Bluetooth mohou zaměstnanci společnosti Google ke zpětné vazbě přiložit protokoly rozhraní Bluetooth. Když je tato možnost zaškrtnutá, bude hlášení zahrnovat protokoly btsnoop a HCI z aktuální návštěvy, z nichž bylo odstraněno co nejvíc údajů umožňujících zjištění totožnosti. K těmto protokolům budou mít přístup pouze správci skupiny produktů Chrome OS v nástroji Listnr. Po 90 dnech budou protokoly trvale odstraněny.</translation>
 <translation id="3668823961463113931">Obslužné nástroje</translation>
 <translation id="3670113805793654926">Zařízení od libovolného dodavatele</translation>
@@ -3209,7 +3205,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5158983316805876233">Pro všechny protokoly použít stejný proxy server</translation>
 <translation id="5160857336552977725">Přihlaste se do zařízení <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936">Plugin <ph name="PLUGIN_NAME" /> byl zablokován, protože je zastaralý</translation>
-<translation id="5169131225159279624">Přidávání</translation>
 <translation id="5170568018924773124">Zobrazit ve složce</translation>
 <translation id="5171045022955879922">Vyhledávejte či zadejte URL</translation>
 <translation id="5171343362375269016">Stránkovaná paměť</translation>
@@ -3261,7 +3256,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5235565664420173924">Společně ještě lepší</translation>
 <translation id="5235750401727657667">Nahradit stránku, která se zobrazí po otevření nové karty</translation>
 <translation id="5238278114306905396">Aplikace <ph name="EXTENSION_NAME" /> byla automaticky odebrána.</translation>
-<translation id="5238435043462632060">Tvůj rodič pro Chrome vypnul možnost Oprávnění pro weby, aplikace a rozšíření. <ph name="ACTION_PARAMETER" /> <ph name="EXTENSION_TYPE_PARAMETER" /> není povoleno.</translation>
 <translation id="5241128660650683457">Čtení veškerých dat na navštívených webových stránkách</translation>
 <translation id="5242724311594467048">Aktivovat rozšíření <ph name="EXTENSION_NAME" />?</translation>
 <translation id="5243522832766285132">Zkuste to znovu za okamžik</translation>
@@ -3929,7 +3923,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6085886413119427067">Určuje způsob připojení k webům přes zabezpečené připojení</translation>
 <translation id="6086846494333236931">Nainstaloval administrátor</translation>
 <translation id="6087960857463881712">Paráda</translation>
-<translation id="6088036808197002565"><ph name="ACTION_PARAMETER" /> <ph name="EXTENSION_TYPE_PARAMETER" /> je zakázáno</translation>
 <translation id="6091761513005122595">Sdílená složka byla úspěšně připojena.</translation>
 <translation id="6093888419484831006">Rušení aktualizace...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -5888,7 +5881,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8650543407998814195">Ačkoliv svůj starý profil již nemůžete používat, můžete jej odstranit.</translation>
 <translation id="8651585100578802546">Vynutit opětovné načtení této stránky</translation>
 <translation id="8652400352452647993">Chyba zabalení rozšíření</translation>
-<translation id="8653578191563425126">Místo na disku rezervované pro Crostini (toto nastavení můžete později změnit).</translation>
 <translation id="8654151524613148204">Litujeme, soubor je příliš velký na to, aby jej váš počítač dokázal zpracovat.</translation>
 <translation id="8655295600908251630">Kanál</translation>
 <translation id="8655319619291175901">Jejda, něco se pokazilo.</translation>

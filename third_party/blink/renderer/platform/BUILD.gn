@@ -981,6 +981,8 @@ jumbo_component("platform") {
     "graphics/graphics_types.cc",
     "graphics/graphics_types.h",
     "graphics/graphics_types_3d.h",
+    "graphics/identifiability_paint_op_digest.cc",
+    "graphics/identifiability_paint_op_digest.h",
     "graphics/image.cc",
     "graphics/image.h",
     "graphics/image_animation_policy.h",

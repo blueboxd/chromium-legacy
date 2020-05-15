@@ -326,8 +326,8 @@ void PaintOpReader::Read(PaintImage* image) {
 
         *image = PaintImageBuilder::WithDefault()
                      .set_id(PaintImage::GetNextId())
-                     .set_image(SkImage::MakeRasterCopy(pixmap),
-                                PaintImage::kNonLazyStableId)
+                     .set_texture_image(SkImage::MakeRasterCopy(pixmap),
+                                        PaintImage::kNonLazyStableId)
                      .TakePaintImage();
       }
         return;
@@ -366,10 +366,11 @@ void PaintOpReader::Read(PaintImage* image) {
               transfer_cache_entry_id)) {
     if (needs_mips)
       entry->EnsureMips();
-    *image = PaintImageBuilder::WithDefault()
-                 .set_id(PaintImage::GetNextId())
-                 .set_image(entry->image(), PaintImage::kNonLazyStableId)
-                 .TakePaintImage();
+    *image =
+        PaintImageBuilder::WithDefault()
+            .set_id(PaintImage::GetNextId())
+            .set_texture_image(entry->image(), PaintImage::kNonLazyStableId)
+            .TakePaintImage();
   }
 }
 

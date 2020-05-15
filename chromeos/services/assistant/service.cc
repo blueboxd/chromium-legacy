@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ash/public/cpp/assistant/assistant_state.h"
+#include "ash/public/cpp/assistant/controller/assistant_alarm_timer_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/session/session_controller.h"
 #include "base/bind.h"
@@ -147,9 +148,9 @@ class Service::Context : public ServiceContext {
   ~Context() override = default;
 
   // ServiceContext:
-  ash::mojom::AssistantAlarmTimerController* assistant_alarm_timer_controller()
+  ash::AssistantAlarmTimerController* assistant_alarm_timer_controller()
       override {
-    return parent_->assistant_alarm_timer_controller_.get();
+    return ash::AssistantAlarmTimerController::Get();
   }
 
   ash::AssistantController* assistant_controller() override {
@@ -562,10 +563,6 @@ void Service::FinalizeAssistantManagerService() {
   BindAssistant(remote_for_controller.InitWithNewPipeAndPassReceiver());
   ash::AssistantController::Get()->SetAssistant(
       std::move(remote_for_controller));
-
-  // Bind to the AssistantAlarmTimerController in ash.
-  AssistantClient::Get()->RequestAssistantAlarmTimerController(
-      assistant_alarm_timer_controller_.BindNewPipeAndPassReceiver());
 
   // Bind to the AssistantNotificationController in ash.
   AssistantClient::Get()->RequestAssistantNotificationController(

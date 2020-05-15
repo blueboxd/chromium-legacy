@@ -39,7 +39,6 @@ class ASH_EXPORT LockScreenActionBackgroundView
   void InkDropRippleAnimationEnded(views::InkDropState state) override;
 
   // views::WidgetDelegateView:
-  bool CanMaximize() const override;
   bool CanActivate() const override;
 
  private:

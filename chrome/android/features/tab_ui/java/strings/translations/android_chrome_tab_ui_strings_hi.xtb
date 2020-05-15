@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">समूह बनाएं</translation>
 <translation id="2671423594960767771">समूह शेयर करें</translation>
 <translation id="2977480621796371840">समूह से हटाएं</translation>
+<translation id="3328308545011660196">सुझाव: ऐसा लगता है कि <ph name="NUMBER_OF_TABS" /> टैब एक-दूसरे से मिलते-जुलते हैं. इनका ग्रुप बनाएं?</translation>
+<translation id="4133493477912226187">ऐसा लगता है कि <ph name="NUMBER_OF_TABS" /> टैब एक-दूसरे से मिलते-जुलते हैं. इनका ग्रुप बनाएं?</translation>
 <translation id="4212246570487010370">लगातार ब्राउज़िंग</translation>
 <translation id="4450893287417543264">फिर से न दिखाएं</translation>
 <translation id="4648718555153979859">यहां पर आपके टैब एक ही समूह में रखे जाते हैं</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">ग्रुप से टैब हटाएं</translation>
 <translation id="7559245342362162951">समूह के टैब फ़ुलस्क्रीन ग्रिड में दिखाएं</translation>
 <translation id="7792771145871471484">सुझावों की समीक्षा करें.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{चुने गए <ph name="TABS_COUNT_ONE" /> टैब का ग्रुप बनाएं}one{चुने गए <ph name="TABS_COUNT_MANY" /> टैब का ग्रुप बनाएं}other{चुने गए <ph name="TABS_COUNT_MANY" /> टैब का ग्रुप बनाएं}}</translation>
 <translation id="7885132941432959125">टैब को दाईं ओर ले जाएं</translation>
 <translation id="7966321538264951561">सुझावों को खारिज करें.</translation>
 <translation id="814503310257431685">सभी देखें</translation>

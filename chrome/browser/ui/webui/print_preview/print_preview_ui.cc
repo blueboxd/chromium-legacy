@@ -624,10 +624,6 @@ void PrintPreviewUI::OnInitiatorClosed() {
   }
 }
 
-void PrintPreviewUI::OnPrintPreviewCancelled(int request_id) {
-  handler_->OnPrintPreviewCancelled(request_id);
-}
-
 void PrintPreviewUI::OnPrintPreviewRequest(int request_id) {
   if (!initial_preview_start_time_.is_null()) {
     base::UmaHistogramTimes(
@@ -729,10 +725,6 @@ void PrintPreviewUI::OnPrintPreviewFailed(int request_id) {
   handler_->OnPrintPreviewFailed(request_id);
 }
 
-void PrintPreviewUI::OnInvalidPrinterSettings(int request_id) {
-  handler_->OnInvalidPrinterSettings(request_id);
-}
-
 void PrintPreviewUI::OnHidePreviewDialog() {
   WebContents* preview_dialog = web_ui()->GetWebContents();
   BackgroundPrintingManager* background_printing_manager =
@@ -774,6 +766,19 @@ void PrintPreviewUI::PrintPreviewFailed(int32_t document_cookie,
                                         int32_t request_id) {
   StopWorker(document_cookie);
   OnPrintPreviewFailed(request_id);
+}
+
+void PrintPreviewUI::PrintPreviewCancelled(int32_t document_cookie,
+                                           int32_t request_id) {
+  // Always need to stop the worker.
+  StopWorker(document_cookie);
+  handler_->OnPrintPreviewCancelled(request_id);
+}
+
+void PrintPreviewUI::PrinterSettingsInvalid(int32_t document_cookie,
+                                            int32_t request_id) {
+  StopWorker(document_cookie);
+  handler_->OnInvalidPrinterSettings(request_id);
 }
 
 // static

@@ -707,7 +707,6 @@ fast/replaced/selection-rect-transform.html
 fast/ruby/add-text-to-block-ruby-with-after-pseudo-crash.html
 fast/ruby/before-block-doesnt-crash.html
 fast/ruby/parse-rp.html
-fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas-throw.html
 fast/scrolling/scroll-without-document-element-renderer.html
 fast/scrolling/scrollable-area-overflow-auto-display-none.html
 fast/scrolling/scrollable-area-overflow-auto-display-none-in-parent.html

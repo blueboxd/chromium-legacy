@@ -2,6 +2,7 @@
 <html>
 <body>
 <script src="../resources/js-test.js"></script>
+<script src="../resources/visibility.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/services/device/public/mojom/battery_monitor.mojom.js"></script>
 <script src="resources/mock-battery-monitor.js"></script>
@@ -18,7 +19,12 @@ testRunner.waitUntilDone();
 testRunner.setCanOpenWindows();
 testRunner.setCloseRemainingWindowsWhenComplete(true);
 
+document.addEventListener("visibilitychange", function() {
+    debug("first window: page is " + document.visibilityState);
+});
+
 var battery;
+var battery2;
 function batteryStatusSuccess(batteryManager) {
     battery = batteryManager;
     debug('resolution in window');
@@ -28,14 +34,16 @@ function batteryStatusSuccess(batteryManager) {
     firstWindow = window;
     secondWindow = window.open("");
     secondWindow.navigator.getBattery().then(
-        function(battery2) {
-            debug('resolution in secondWindow');
-            testIfBatteryStatusIsUpToDate(battery2);
-            setTimeout(fireNewMockLevel, 0);
-        }, batteryStatusFailure);
+        (b) => { battery2 = b; },
+        batteryStatusFailure);
 
-    testRunner.setPageVisibility("hidden");
-    debug("first window: page is hidden");
+    setMainWindowHidden(true).then(checkBatteryInSecondWindow);
+}
+
+function checkBatteryInSecondWindow() {
+    debug('resolution in secondWindow');
+    testIfBatteryStatusIsUpToDate(battery2);
+    setTimeout(fireNewMockLevel, 0);
 }
 
 function fireNewMockLevel() {
@@ -46,8 +54,8 @@ function fireNewMockLevel() {
 function proceedToVisible() {
     battery.removeEventListener('levelchange', failAndFinish);
     battery.addEventListener('levelchange', onLevelChange);
-    testRunner.setPageVisibility("visible");
-    debug("first window: page is visible");
+
+    setMainWindowHidden(false);
 }
 
 function onLevelChange() {

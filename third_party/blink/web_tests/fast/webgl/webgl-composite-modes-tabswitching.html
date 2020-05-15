@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <body onload="runRepaintTest()">
+<script src="../../resources/visibility.js"></script>
 <span id="description" style="color: white">
 This test is only useful as a pixel test. You should see two rows with 4 canvases in each. The top row of canvases should have a black background, the bottom row should have a dark blue background.
 The canvases in the first two rows should have a single triangle. The canvases on the left should have three triangles superimposed on top of each other.
@@ -120,19 +121,13 @@ function repaintOnVisiblePage() {
 }
 
 function repaintOnHiddenPage() {
-    if (window.testRunner) {
-        testRunner.setPageVisibility("hidden");
-    }
-    // Although page is hidden, WebGL must draw this frame.
-    drawAll(30);
-
-    // runAfterLayoutAndPaint doesn't work when the page is invisible.
-    setTimeout(function() {
-        if (window.testRunner) {
-            testRunner.setPageVisibility("visible");
-        }
-        runAfterLayoutAndPaint(repaintOnVisiblePage);
-    }, 0);
+    setMainWindowHidden(true).then(() => {
+        // Although page is hidden, WebGL must draw this frame.
+        drawAll(30);
+        setMainWindowHidden(false).then(() => {
+            runAfterLayoutAndPaint(repaintOnVisiblePage);
+        });
+    });
 }
 
 function runRepaintTest() {

@@ -18,31 +18,6 @@
 
 namespace ash {
 
-namespace {
-
-class TestWidgetDelegate : public views::WidgetDelegateView {
- public:
-  TestWidgetDelegate(bool can_maximize,
-                     bool can_minimize,
-                     bool close_button_visible)
-      : can_maximize_(can_maximize), can_minimize_(can_minimize) {
-    SetShowCloseButton(close_button_visible);
-  }
-  ~TestWidgetDelegate() override = default;
-
-  bool CanMaximize() const override { return can_maximize_; }
-
-  bool CanMinimize() const override { return can_minimize_; }
-
- private:
-  bool can_maximize_;
-  bool can_minimize_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestWidgetDelegate);
-};
-
-}  // namespace
-
 class FrameCaptionButtonContainerViewTest : public AshTestBase {
  public:
   enum MaximizeAllowed { MAXIMIZE_ALLOWED, MAXIMIZE_DISALLOWED };
@@ -63,10 +38,11 @@ class FrameCaptionButtonContainerViewTest : public AshTestBase {
       WARN_UNUSED_RESULT {
     views::Widget* widget = new views::Widget;
     views::Widget::InitParams params;
-    params.delegate =
-        new TestWidgetDelegate(maximize_allowed == MAXIMIZE_ALLOWED,
-                               minimize_allowed == MINIMIZE_ALLOWED,
-                               close_button_visible == CLOSE_BUTTON_VISIBLE);
+    auto delegate = std::make_unique<views::WidgetDelegateView>();
+    delegate->SetCanMaximize(maximize_allowed == MAXIMIZE_ALLOWED);
+    delegate->SetCanMinimize(minimize_allowed == MINIMIZE_ALLOWED);
+    delegate->SetShowCloseButton(close_button_visible == CLOSE_BUTTON_VISIBLE);
+    params.delegate = delegate.release();
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.context = GetContext();
     widget->Init(std::move(params));

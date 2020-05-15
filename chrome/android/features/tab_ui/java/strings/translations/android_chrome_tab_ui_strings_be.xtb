@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Стварыць групу</translation>
 <translation id="2671423594960767771">Абагуліць групу</translation>
 <translation id="2977480621796371840">Выдаліць з групы</translation>
+<translation id="3328308545011660196">Прапанова: здаецца, гэтыя ўкладкі (<ph name="NUMBER_OF_TABS" />) звязаныя паміж сабой. Згрупаваць іх?</translation>
+<translation id="4133493477912226187">Здаецца, гэтыя ўкладкі (<ph name="NUMBER_OF_TABS" />) звязаныя паміж сабой. Згрупаваць іх?</translation>
 <translation id="4212246570487010370">Бесперапынны прагляд</translation>
 <translation id="4450893287417543264">Больш не паказваць</translation>
 <translation id="4648718555153979859">Укладкі згрупаваны тут</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Выдаліць укладкі з групы</translation>
 <translation id="7559245342362162951">Паказваць укладкі групы ў поўнаэкраннай сетцы</translation>
 <translation id="7792771145871471484">Праглядзець прапановы.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Дадаць <ph name="TABS_COUNT_ONE" /> выбраную ўкладку ў групу}one{Дадаць <ph name="TABS_COUNT_MANY" /> выбраную ўкладку ў групу}few{Дадаць <ph name="TABS_COUNT_MANY" /> выбраныя ўкладкі ў групу}many{Дадаць <ph name="TABS_COUNT_MANY" /> выбраных укладак у групу}other{Дадаць <ph name="TABS_COUNT_MANY" /> выбранай укладкі ў групу}}</translation>
 <translation id="7885132941432959125">Перамясціць укладку ўправа</translation>
 <translation id="7966321538264951561">Адхіліць прапановы.</translation>
 <translation id="814503310257431685">Праглядзець усе</translation>

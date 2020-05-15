@@ -9,6 +9,7 @@ namespace assistant {
 
 const char kPayloadParamName[] = "";
 const char kKnowledgeApiEndpoint[] = "";
+const char kSampleKnowledgeApiRequest[] = "";
 const char kServiceIdEndpoint[] = "";
 const char kSampleServiceIdRequest[] = "";
 const char kServiceIdRequestPayload[] = "";

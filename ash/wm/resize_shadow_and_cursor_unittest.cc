@@ -26,13 +26,14 @@ namespace {
 // views::WidgetDelegate which uses ash::NonClientFrameViewAsh.
 class TestWidgetDelegate : public views::WidgetDelegateView {
  public:
-  TestWidgetDelegate() = default;
+  TestWidgetDelegate() {
+    SetCanMaximize(true);
+    SetCanMinimize(true);
+    SetCanResize(true);
+  }
   ~TestWidgetDelegate() override = default;
 
   // views::WidgetDelegateView overrides:
-  bool CanResize() const override { return true; }
-  bool CanMaximize() const override { return true; }
-  bool CanMinimize() const override { return true; }
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
     return new NonClientFrameViewAsh(widget);

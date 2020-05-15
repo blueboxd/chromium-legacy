@@ -28,7 +28,7 @@ class SAChildNode {
 
   /**
    * Returns a list of all the actions available for this node.
-   * @return {!Array<SAConstants.MenuAction>}
+   * @return {!Array<SwitchAccessMenuAction>}
    * @abstract
    */
   get actions() {}
@@ -106,7 +106,7 @@ class SAChildNode {
 
   /**
    * Given a menu action, returns whether it can be performed on this node.
-   * @param {SAConstants.MenuAction} action
+   * @param {SwitchAccessMenuAction} action
    * @return {boolean}
    */
   hasAction(action) {
@@ -159,7 +159,7 @@ class SAChildNode {
 
   /**
    * Performs the specified action on the node, if it is available.
-   * @param {SAConstants.MenuAction} action
+   * @param {SwitchAccessMenuAction} action
    * @return {SAConstants.ActionResponse} What action the menu should perform in
    *      response.
    * @abstract

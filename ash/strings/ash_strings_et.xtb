@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
 <translation id="1012876632442809908">C-tüüpi USB-seade (eesmine port)</translation>
+<translation id="1013598600051641573">Seadme <ph name="DISPLAY_NAME" /> eraldusvõimeks määrati <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Muudatuste säilitamiseks klõpsake nupul Kinnita. Eelmised seaded taastatakse <ph name="TIMEOUT_SECONDS" /> pärast.</translation>
 <translation id="1013923882670373915">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks. Sisestage seadmes järgmine PIN-kood: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Elektronpliiatsi aku hakkab tühjaks saama</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> lisati</translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">Kuva keeleseaded</translation>
 <translation id="1460620680449458626">Helitugevus on vaigistatud.</translation>
 <translation id="1467432559032391204">Vasakule</translation>
+<translation id="1479909375538722835">Hõljuv juurdepääsetavuse menüü</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">Sees</translation>
 <translation id="1516740043221086139">Režiim Mitte segada on sees.</translation>
@@ -334,6 +336,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4961318399572185831">Ekraani ülekandmine</translation>
 <translation id="5030687792513154421">Aeg on läbi</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> ühendati uue telefoniga</translation>
+<translation id="5035389544768382859">Kuva seadistuse kinnitamine</translation>
 <translation id="5083553833479578423">Avage rohkem assistendi funktsioone.</translation>
 <translation id="5136175204352732067">Ühendatud on teine klaviatuur</translation>
 <translation id="5168181903108465623">Ülekandeseadmed on saadaval</translation>
@@ -520,6 +523,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="7526573455193969409">Võrku võidakse jälgida</translation>
 <translation id="7536035074519304529">IP-adress: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Aeg magama minna</translation>
+<translation id="7561982940498449837">Sule menüü</translation>
 <translation id="7562368315689366235">Emotikonide palett</translation>
 <translation id="7564874036684306347">Kui teisaldate aknad teisele töölauale, võib tagajärjeks olla ootamatu käitumine. Järgmised märguanded, aknad ja dialoogid võivad jaguneda eri töölaudade vahel.</translation>
 <translation id="7568294522609223312">Automaatsete klikkide väljalülitamine</translation>
@@ -562,6 +566,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="8004512796067398576">Juurdekasv</translation>
 <translation id="8029629653277878342">Turvalisuse suurendamiseks on vaja PIN-koodi või parooli</translation>
 <translation id="8030169304546394654">Ühendus katkestatud</translation>
+<translation id="8042893070933512245">Ava juurdepääsetavuse seadete menüü</translation>
 <translation id="8048123526339889627">Bluetoothi seaded</translation>
 <translation id="8054466585765276473">Aku tööaja arvutamine.</translation>
 <translation id="8061464966246066292">Kõrge kontrast</translation>
@@ -637,6 +642,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="8877788021141246043">Määra meeldetuletus</translation>
 <translation id="8878886163241303700">Ekraani laiendamine</translation>
 <translation id="890616557918890486">Vaheta allikat</translation>
+<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> ei toeta eraldusvõimet <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Eraldusvõimeks määrati <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Muudatuste säilitamiseks klõpsake nupul Kinnita. Eelmised seaded taastatakse <ph name="TIMEOUT_SECONDS" /> pärast.</translation>
 <translation id="8909138438987180327">Aku laetuse tase on <ph name="PERCENTAGE" /> protsenti.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google'i assistent ei räägi selles keeles.</translation>

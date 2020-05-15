@@ -104,22 +104,6 @@ Polymer({
       value: NetworkPredictionOptions.NEVER,
     },
 
-    // A "virtual" preference that is use to control the state of the
-    // clear on exit toggle.
-    /** @private {chrome.settingsPrivate.PrefObject} */
-    clearOnExitPref_: {
-      type: Object,
-      value() {
-        return /** @type {chrome.settingsPrivate.PrefObject} */ ({});
-      },
-    },
-
-    /** @private */
-    clearOnExitDisabled_: {
-      type: Boolean,
-      notify: true,
-    },
-
     /** @private */
     contentSetting_: {
       type: Object,
@@ -236,19 +220,6 @@ Polymer({
     } else {
       this.cookiesControlRadioSelected_ = CookiesControl.ALLOW_ALL;
     }
-    this.clearOnExitDisabled_ = contentSetting.setting === ContentSetting.BLOCK;
-
-    // Update virtual preference for the clear on exit toggle.
-    // TODO(crbug.com/1063265): Create toggle that can directly accept state.
-    this.clearOnExitPref_ = {
-      key: '',
-      type: chrome.settingsPrivate.PrefType.BOOLEAN,
-      value: contentSetting.setting === ContentSetting.BLOCK ?
-          false :
-          contentSetting.setting === ContentSetting.SESSION_ONLY,
-      controlledBy: this.getControlledBy_(contentSetting),
-      enforcement: this.getEnforced_(contentSetting),
-    };
 
     // Set the exception lists to read only if the content setting is managed.
     // Display of managed state for individual entries will be handled by each
@@ -355,8 +326,6 @@ Polymer({
 
   /** @private */
   onClearOnExitChange_() {
-    this.browserProxy_.setDefaultValueForContentType(
-        ContentSettingsTypes.COOKIES, this.computeClearOnExitSetting_());
     this.metricsBrowserProxy_.recordSettingsPageHistogram(
         PrivacyElementInteractions.COOKIES_SESSION);
   },

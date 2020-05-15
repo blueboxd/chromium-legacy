@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-HK">
 <translation id="1012876632442809908">USB-C 裝置 (前方連接埠)</translation>
+<translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> 已變更為 <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz)。請按一下 [確認] 以保留變更。系統會在 <ph name="TIMEOUT_SECONDS" />後還原先前的設定。</translation>
 <translation id="1013923882670373915">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限，請在裝置上輸入以下 PIN：<ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">觸控筆電量偏低</translation>
 <translation id="1037492556044956303">已新增 <ph name="DEVICE_NAME" /></translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">顯示語言設定</translation>
 <translation id="1460620680449458626">音量校咗靜音。</translation>
 <translation id="1467432559032391204">向左</translation>
+<translation id="1479909375538722835">浮動式無障礙選單</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">開啟</translation>
 <translation id="1516740043221086139">「請勿騷擾」模式已開啟。</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">投放螢幕</translation>
 <translation id="5030687792513154421">使用時間結束</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> 已連接至新手機</translation>
+<translation id="5035389544768382859">確認螢幕設定</translation>
 <translation id="5083553833479578423">啟用更多「Google 助理」功能。</translation>
 <translation id="5136175204352732067">已連接不同的鍵盤</translation>
 <translation id="5168181903108465623">有可用投放裝置</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">網絡可能會受到監控</translation>
 <translation id="7536035074519304529">IP 位址：<ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">睡覺時間到了</translation>
+<translation id="7561982940498449837">關閉選單</translation>
 <translation id="7562368315689366235">表情圖案選項</translation>
 <translation id="7564874036684306347">將視窗移至其他桌面可能會導致非預期的行為。後續的通知、視窗和對話框可能會在不同的桌面上分開顯示。</translation>
 <translation id="7568294522609223312">關閉自動點擊功能</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">增加</translation>
 <translation id="8029629653277878342">為安全起見，請輸入 PIN 或密碼</translation>
 <translation id="8030169304546394654">已中斷連線</translation>
+<translation id="8042893070933512245">開啟無障礙設定選單</translation>
 <translation id="8048123526339889627">藍牙設定</translation>
 <translation id="8054466585765276473">正在計算電池使用時間。</translation>
 <translation id="8061464966246066292">高對比模式</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">設定提醒</translation>
 <translation id="8878886163241303700">延伸螢幕</translation>
 <translation id="890616557918890486">變更來源</translation>
+<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> 不支援 <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz)。解析度已變更為 <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />)。請按一下 [確認] 以保留變更。系統會在 <ph name="TIMEOUT_SECONDS" />後還原先前的設定。</translation>
 <translation id="8909138438987180327">電量剩番 <ph name="PERCENTAGE" />%。</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google 助理不支援這種語言。</translation>

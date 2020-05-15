@@ -1262,7 +1262,6 @@ TEST_F(PdfAccessibilityTreeTest, TestEmptyPdfAxActions) {
   EXPECT_FALSE(pdf_action_target->SetSelected(false));
   EXPECT_FALSE(pdf_action_target->SetSequentialFocusNavigationStartingPoint());
   EXPECT_FALSE(pdf_action_target->SetValue("test"));
-  EXPECT_FALSE(pdf_action_target->ShowContextMenu());
   EXPECT_FALSE(pdf_action_target->ScrollToMakeVisible());
 }
 
@@ -1420,6 +1419,38 @@ TEST_F(PdfAccessibilityTreeTest, TestSelectionActionDataConversion) {
   ASSERT_EQ(ui::AXActionTarget::Type::kPdf, pdf_focus_action_target->GetType());
   EXPECT_FALSE(pdf_anchor_action_target->SetSelection(
       pdf_anchor_action_target.get(), 1, pdf_focus_action_target.get(), 5));
+}
+
+TEST_F(PdfAccessibilityTreeTest, TestShowContextMenuAction) {
+  text_runs_.emplace_back(kFirstTextRun);
+  text_runs_.emplace_back(kSecondTextRun);
+  chars_.insert(chars_.end(), std::begin(kDummyCharsData),
+                std::end(kDummyCharsData));
+
+  page_info_.text_run_count = text_runs_.size();
+  page_info_.char_count = chars_.size();
+
+  content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+  ASSERT_TRUE(render_frame);
+  render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
+
+  ActionHandlingFakePepperPluginInstance fake_pepper_instance;
+  FakeRendererPpapiHost host(view_->GetMainRenderFrame(),
+                             &fake_pepper_instance);
+  PP_Instance instance = 0;
+  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
+  pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
+                                                  chars_, page_objects_);
+  ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
+  ASSERT_TRUE(root_node);
+
+  std::unique_ptr<ui::AXActionTarget> pdf_action_target =
+      pdf_accessibility_tree.CreateActionTarget(*root_node);
+  ASSERT_EQ(ui::AXActionTarget::Type::kPdf, pdf_action_target->GetType());
+  EXPECT_TRUE(pdf_action_target->ShowContextMenu());
 }
 
 }  // namespace pdf

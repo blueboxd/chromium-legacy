@@ -114,7 +114,9 @@ void SyncConsentScreen::Init() {
 bool SyncConsentScreen::MaybeSkip() {
   Init();
 
-  if (behavior_ == SyncScreenBehavior::SKIP) {
+  if (behavior_ == SyncScreenBehavior::kSkip ||
+      behavior_ == SyncScreenBehavior::kSkipAndEnableSync) {
+    MaybeEnableSyncForSkip();
     exit_callback_.Run(Result::NOT_APPLICABLE);
     return true;
   }
@@ -125,7 +127,7 @@ bool SyncConsentScreen::MaybeSkip() {
 void SyncConsentScreen::ShowImpl() {
   Init();
 
-  if (behavior_ != SyncScreenBehavior::SHOW) {
+  if (behavior_ != SyncScreenBehavior::kShow) {
     // Wait for updates and set the loading throbber to be visible.
     view_->SetThrobberVisible(true /*visible*/);
     syncer::SyncService* service = GetSyncService(profile_);
@@ -180,9 +182,13 @@ void SyncConsentScreen::OnAcceptAndContinue(
   // Record that the user saw the consent text, regardless of which features
   // they chose to enable.
   RecordConsent(CONSENT_GIVEN, consent_description, consent_confirmation);
-  profile_->GetPrefs()->SetBoolean(syncer::prefs::kOsSyncFeatureEnabled,
-                                   enable_os_sync);
+  UpdateSyncSettings(enable_os_sync, enable_browser_sync);
+  exit_callback_.Run(Result::NEXT);
+}
 
+void SyncConsentScreen::UpdateSyncSettings(bool enable_os_sync,
+                                           bool enable_browser_sync) {
+  DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
   // For historical reasons, Chrome OS always has a "sync-consented" primary
   // account in IdentityManager and always has browser sync "enabled". If the
   // user disables the browser sync toggle we disable all browser data types,
@@ -195,6 +201,7 @@ void SyncConsentScreen::OnAcceptAndContinue(
   syncer::SyncService* sync_service = GetSyncService(profile_);
   if (sync_service) {
     syncer::SyncUserSettings* sync_settings = sync_service->GetUserSettings();
+    sync_settings->SetOsSyncFeatureEnabled(enable_os_sync);
     if (!enable_browser_sync) {
       syncer::UserSelectableTypeSet empty_set;
       sync_settings->SetSelectedTypes(/*sync_everything=*/false, empty_set);
@@ -217,8 +224,19 @@ void SyncConsentScreen::OnAcceptAndContinue(
     if (consent_service)
       consent_service->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
   }
+}
 
-  exit_callback_.Run(Result::NEXT);
+void SyncConsentScreen::MaybeEnableSyncForSkip() {
+  DCHECK(behavior_ == SyncScreenBehavior::kSkip ||
+         behavior_ == SyncScreenBehavior::kSkipAndEnableSync);
+
+  // Prior to SplitSettingsSync, sync is autostarted during ProfileSyncService
+  // creation, so sync is already in the right state.
+  if (!chromeos::features::IsSplitSettingsSyncEnabled())
+    return;
+
+  if (behavior_ == SyncScreenBehavior::kSkipAndEnableSync)
+    UpdateSyncSettings(/*enable_os_sync=*/true, /*enable_browser_sync=*/true);
 }
 
 // static
@@ -239,44 +257,44 @@ SyncConsentScreen::GetDelegateForTesting() const {
 
 SyncConsentScreen::SyncScreenBehavior SyncConsentScreen::GetSyncScreenBehavior()
     const {
-  // Skip for developer (non-branded) builds.
+  // Skip for non-branded (e.g. developer) builds.
   if (!g_is_branded_build)
-    return SyncScreenBehavior::SKIP;
+    return SyncScreenBehavior::kSkipAndEnableSync;
 
   // Skip for users without Gaia account.
   if (!user_->HasGaiaAccount())
-    return SyncScreenBehavior::SKIP;
+    return SyncScreenBehavior::kSkip;
 
   // Skip for public user.
   if (user_->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT)
-    return SyncScreenBehavior::SKIP;
+    return SyncScreenBehavior::kSkip;
 
   const user_manager::UserManager* user_manager =
       user_manager::UserManager::Get();
   // Skip for non-regular ephemeral users.
   if (user_manager->IsUserNonCryptohomeDataEphemeral(user_->GetAccountId()) &&
       (user_->GetType() != user_manager::USER_TYPE_REGULAR)) {
-    return SyncScreenBehavior::SKIP;
+    return SyncScreenBehavior::kSkipAndEnableSync;
   }
 
-  // Skip if disabled by policy.
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kEnableSyncConsent)) {
-    return SyncScreenBehavior::SKIP;
-  }
+  // Skip if the sync consent screen is disabled by policy, for example, in
+  // education scenarios. https://crbug.com/841156
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kEnableSyncConsent))
+    return SyncScreenBehavior::kSkipAndEnableSync;
 
-  // Skip for sync-disabled case.
+  // Skip if sync-the-feature is disabled by policy.
   if (IsProfileSyncDisabledByPolicy())
-    return SyncScreenBehavior::SKIP;
+    return SyncScreenBehavior::kSkip;
 
   if (IsProfileSyncEngineInitialized())
-    return SyncScreenBehavior::SHOW;
+    return SyncScreenBehavior::kShow;
 
-  return SyncScreenBehavior::UNKNOWN;
+  return SyncScreenBehavior::kUnknown;
 }
 
 void SyncConsentScreen::UpdateScreen() {
   const SyncScreenBehavior new_behavior = GetSyncScreenBehavior();
-  if (new_behavior == SyncScreenBehavior::UNKNOWN)
+  if (new_behavior == SyncScreenBehavior::kUnknown)
     return;
 
   const SyncScreenBehavior old_behavior = behavior_;
@@ -285,13 +303,19 @@ void SyncConsentScreen::UpdateScreen() {
   if (is_hidden() || behavior_ == old_behavior)
     return;
 
-  // Screen is shown and behavior has changed.
-  if (behavior_ == SyncScreenBehavior::SKIP)
-    exit_callback_.Run(Result::NEXT);
-
-  if (behavior_ == SyncScreenBehavior::SHOW) {
-    view_->SetThrobberVisible(false /*visible*/);
-    GetSyncService(profile_)->RemoveObserver(this);
+  switch (behavior_) {
+    case SyncScreenBehavior::kShow:
+      view_->SetThrobberVisible(false /*visible*/);
+      GetSyncService(profile_)->RemoveObserver(this);
+      break;
+    case SyncScreenBehavior::kSkip:
+    case SyncScreenBehavior::kSkipAndEnableSync:
+      MaybeEnableSyncForSkip();
+      exit_callback_.Run(Result::NEXT);
+      break;
+    case SyncScreenBehavior::kUnknown:
+      NOTREACHED();
+      break;
   }
 }
 

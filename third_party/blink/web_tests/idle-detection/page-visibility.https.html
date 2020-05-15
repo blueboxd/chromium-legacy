@@ -3,6 +3,7 @@
 <title>Tests the Idle Detection API</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/visibility.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/mojo/public/mojom/base/string16.mojom.js"></script>
 <script src="file:///gen/mojo/public/mojom/base/time.mojom.js"></script>
@@ -37,7 +38,7 @@ promise_test(async t => {
 
   assert_equals(detector.userState, "active");
 
-  testRunner.setPageVisibility("hidden");
+  setMainWindowHidden(true);
 
   monitor.update({
     user: UserIdleState.IDLE,
@@ -48,7 +49,7 @@ promise_test(async t => {
   await watcher.wait_for("change");
   assert_equals(detector.userState, "idle");
 
-  testRunner.setPageVisibility("visible");
+  setMainWindowHidden(false);
 
   monitor.update({
     user: UserIdleState.ACTIVE,

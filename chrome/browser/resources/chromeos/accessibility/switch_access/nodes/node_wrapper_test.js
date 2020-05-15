@@ -133,13 +133,13 @@ TEST_F('SwitchAccessNodeWrapperTest', 'Actions', function() {
         chrome.automation.RoleType.TEXT_FIELD, textField.role,
         'Text field node is not a text field');
     assertTrue(
-        textField.hasAction(SAConstants.MenuAction.OPEN_KEYBOARD),
-        'Text field does not have action OPEN_KEYBOARD');
+        textField.hasAction(SwitchAccessMenuAction.KEYBOARD),
+        'Text field does not have action KEYBOARD');
     assertTrue(
-        textField.hasAction(SAConstants.MenuAction.DICTATION),
+        textField.hasAction(SwitchAccessMenuAction.DICTATION),
         'Text field does not have action DICTATION');
     assertFalse(
-        textField.hasAction(SAConstants.MenuAction.SELECT),
+        textField.hasAction(SwitchAccessMenuAction.SELECT),
         'Text field has action SELECT');
 
     const button = NodeWrapper.create(
@@ -150,13 +150,13 @@ TEST_F('SwitchAccessNodeWrapperTest', 'Actions', function() {
         chrome.automation.RoleType.BUTTON, button.role,
         'Button node is not a button');
     assertTrue(
-        button.hasAction(SAConstants.MenuAction.SELECT),
+        button.hasAction(SwitchAccessMenuAction.SELECT),
         'Button does not have action SELECT');
     assertFalse(
-        button.hasAction(SAConstants.MenuAction.OPEN_KEYBOARD),
-        'Button has action OPEN_KEYBOARD');
+        button.hasAction(SwitchAccessMenuAction.KEYBOARD),
+        'Button has action KEYBOARD');
     assertFalse(
-        button.hasAction(SAConstants.MenuAction.DICTATION),
+        button.hasAction(SwitchAccessMenuAction.DICTATION),
         'Button has action DICTATION');
 
     const slider = NodeWrapper.create(
@@ -167,10 +167,10 @@ TEST_F('SwitchAccessNodeWrapperTest', 'Actions', function() {
         chrome.automation.RoleType.SLIDER, slider.role,
         'Slider node is not a slider');
     assertTrue(
-        slider.hasAction(SAConstants.MenuAction.INCREMENT),
+        slider.hasAction(SwitchAccessMenuAction.INCREMENT),
         'Slider does not have action INCREMENT');
     assertTrue(
-        slider.hasAction(SAConstants.MenuAction.DECREMENT),
+        slider.hasAction(SwitchAccessMenuAction.DECREMENT),
         'Slider does not have action DECREMENT');
   });
 });

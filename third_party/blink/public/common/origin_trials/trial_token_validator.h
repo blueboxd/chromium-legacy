@@ -30,7 +30,8 @@ struct BLINK_COMMON_EXPORT TrialTokenResult {
   explicit TrialTokenResult(OriginTrialTokenStatus);
   TrialTokenResult(OriginTrialTokenStatus status,
                    std::string name,
-                   base::Time expiry);
+                   base::Time expiry,
+                   bool is_third_party);
   ~TrialTokenResult();
 
   OriginTrialTokenStatus status;
@@ -53,11 +54,22 @@ class BLINK_COMMON_EXPORT TrialTokenValidator {
       base::flat_map<std::string /* feature_name */,
                      std::vector<std::string /* token */>>;
 
-  // If the token validates, status is set to OriginTrialTokenStatus::kSuccess,
-  // feature_name is set to name of the feature this token enables, expiry_time
-  // is set to the expiry time of the token. This method is thread-safe.
+  // If the token validates, status will be set to
+  // OriginTrialTokenStatus::kSuccess, the rest will be populated with name of
+  // the feature this token enables, the expiry time of the token and whether it
+  // is a third-party token. Otherwise, only the status will be set.
+  // This method is thread-safe.
   virtual TrialTokenResult ValidateToken(base::StringPiece token,
                                          const url::Origin& origin,
+                                         base::Time current_time) const;
+  // Validates a token for the given |origin|. If identified as a third-party
+  // token, instead validate for the given |third_party_origin|. Validation of a
+  // third-party token will fail if |third_party-origin| is not given. Returns
+  // the same result as ValidateToken() above.
+  // This method is thread-safe.
+  virtual TrialTokenResult ValidateToken(base::StringPiece token,
+                                         const url::Origin& origin,
+                                         const url::Origin* third_party_origin,
                                          base::Time current_time) const;
 
   bool RequestEnablesFeature(const net::URLRequest* request,

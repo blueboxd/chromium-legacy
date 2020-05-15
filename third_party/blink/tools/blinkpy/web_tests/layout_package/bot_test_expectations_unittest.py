@@ -44,6 +44,12 @@ class BotTestExpectationsFactoryTest(unittest.TestCase):
                 'port_name': 'dummy-port',
                 'specifiers': ['dummy', 'release'],
             },
+            'Dummy tryserver builder name': {
+                'master': 'tryserver.dummy.master',
+                'port_name': 'dummy-port',
+                'specifiers': ['dummy', 'release'],
+                "is_try_builder": True
+            },
         })
 
     def fake_results_json_for_builder(self, builder):
@@ -56,8 +62,21 @@ class BotTestExpectationsFactoryTest(unittest.TestCase):
         self.assertEqual(
             factory._results_url_for_builder('Dummy builder name'),
             'https://test-results.appspot.com/testfile?testtype=blink_web_tests'
-            '&name=results-small.json&master=dummy.master&builder=Dummy%20builder%20name'
-        )
+            '&name=results-small.json&master=dummy.master&builder=Dummy%20builder%20name')
+
+        self.assertEqual(
+            factory._results_url_for_builder('Dummy tryserver builder name'),
+            'https://test-results.appspot.com/testfile?'
+            'testtype=blink_web_tests'
+            '&name=results-small.json&master=tryserver.dummy.master'
+            '&builder=Dummy%20tryserver%20builder%20name')
+
+        self.assertEqual(
+            factory._results_url_for_builder('Dummy tryserver builder name', True),
+            'https://test-results.appspot.com/testfile?'
+            'testtype=blink_web_tests%20%28with%20patch%29'
+            '&name=results-small.json&master=tryserver.dummy.master'
+            '&builder=Dummy%20tryserver%20builder%20name')
 
     def test_expectations_for_builder(self):
         factory = bot_test_expectations.BotTestExpectationsFactory(
@@ -168,6 +187,12 @@ class BotTestExpectationsTest(unittest.TestCase):
         }
         return bot_test_expectations.ResultsJSON('builder', json_dict)
 
+    def _results_filter_from_test_data(self, test_data):
+        json_dict = {
+            'builder': test_data,
+        }
+        return bot_test_expectations.ResultsFilter('builder', json_dict)
+
     def _results_from_string(self, results_string):
         return {'results': [[1, results_string]]}
 
@@ -217,6 +242,36 @@ class BotTestExpectationsTest(unittest.TestCase):
             'foo/multiple_pass.html': ['PASS'],
             'foo/fail.html': ['FAIL'],
             'foo/all_types.html': ['CRASH', 'FAIL', 'PASS', 'TIMEOUT']
+        }
+
+        self.assertEqual(results_by_path, expected_output)
+
+    def test_filtered_all_results_by_path(self):
+        test_data = {
+            'buildNumbers': [1, 2 , 3, 4, 5, 6, 7],
+            'tests': {
+                'foo': {
+                    'fail_filtered.html': {'results': [[4, 'P'], [1, 'F'], [1, 'C'], [1, 'P']]},
+                    'fail_not_filtered.html': {'results': [[3, 'P'], [2, 'F'], [2, 'P']]},
+                }
+            }
+        }
+
+        filter_data = {
+            'buildNumbers': [3, 4, 5, 6, 8],
+            'num_failures_by_type' : {
+                'PASS' : [0, 0, 1, 1, 1, 0, 1]
+            }
+        }
+
+        results_json = self._results_json_from_test_data(test_data)
+        results_filter = self._results_filter_from_test_data(filter_data)
+        expectations = bot_test_expectations.BotTestExpectations(results_json, BuilderList({}), set('test'), results_filter)
+        results_by_path = expectations.all_results_by_path()
+
+        expected_output = {
+            'foo/fail_filtered.html': ['PASS'],
+            'foo/fail_not_filtered.html': ['FAIL', 'PASS'],
         }
 
         self.assertEqual(results_by_path, expected_output)

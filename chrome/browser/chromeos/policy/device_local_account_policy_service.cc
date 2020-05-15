@@ -208,7 +208,7 @@ void DeviceLocalAccountPolicyBroker::ConnectIfPossible(
   UpdateRefreshDelay();
   invalidator_.reset(new AffiliatedCloudPolicyInvalidator(
       PolicyInvalidationScope::kDeviceLocalAccount, &core_,
-      invalidation_service_provider_));
+      invalidation_service_provider_, account_id_));
 }
 
 void DeviceLocalAccountPolicyBroker::UpdateRefreshDelay() {

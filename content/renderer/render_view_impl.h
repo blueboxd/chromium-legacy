@@ -268,12 +268,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
                  const mojom::CreateViewParams& params);
   ~RenderViewImpl() override;
 
-  // Called when Page visibility is changed, to update the View/Page in blink.
-  // This is separate from the IPC handlers as tests may call this and need to
-  // be able to specify |initial_setting| where IPC handlers do not.
-  void ApplyPageVisibilityState(PageVisibilityState visibility_state,
-                                bool initial_setting);
-
  private:
   // For unit tests.
   friend class DevToolsAgentTest;

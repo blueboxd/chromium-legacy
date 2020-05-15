@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Створити групу</translation>
 <translation id="2671423594960767771">Поділитися групою</translation>
 <translation id="2977480621796371840">Вилучити з групи</translation>
+<translation id="3328308545011660196">Підказка: схоже, ви відкрили кілька пов'язаних вкладок (<ph name="NUMBER_OF_TABS" />). Додати їх у групу?</translation>
+<translation id="4133493477912226187">Схоже, ви відкрили кілька пов'язаних вкладок (<ph name="NUMBER_OF_TABS" />). Додати їх у групу?</translation>
 <translation id="4212246570487010370">Продовжити перегляд</translation>
 <translation id="4450893287417543264">Більше не показувати</translation>
 <translation id="4648718555153979859">Тут згруповано ваші вкладки</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Видалити вкладки з групи</translation>
 <translation id="7559245342362162951">Показувати вкладки групи в повноекранній сітці</translation>
 <translation id="7792771145871471484">Переглянути ці вкладки.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Додати <ph name="TABS_COUNT_ONE" /> вибрану вкладку в групу}one{Додати <ph name="TABS_COUNT_MANY" /> вибрану вкладку в групу}few{Додати <ph name="TABS_COUNT_MANY" /> вибрані вкладки в групу}many{Додати <ph name="TABS_COUNT_MANY" /> вибраних вкладок у групу}other{Додати <ph name="TABS_COUNT_MANY" /> вибраної вкладки в групу}}</translation>
 <translation id="7885132941432959125">Перемістити вкладку праворуч</translation>
 <translation id="7966321538264951561">Закрити пропозицію.</translation>
 <translation id="814503310257431685">Переглянути все</translation>

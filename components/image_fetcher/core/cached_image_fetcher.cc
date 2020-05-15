@@ -182,11 +182,12 @@ void CachedImageFetcher::OnImageDecodedFromCache(
     // If cache_result_needs_transcoding is true, then this should be stored
     // again to replace the image data already on disk with the transcoded data.
     if (cache_result_needs_transcoding) {
+      std::string uma_client_name(request.params.uma_client_name());
       EncodeAndStoreData(/* cache_result_needs_transcoding */ true,
                          /* is_image_data_transcoded */ true,
                          std::move(request), image);
       ImageFetcherMetricsReporter::ReportEvent(
-          request.params.uma_client_name(),
+          uma_client_name,
           ImageFetcherEvent::kImageQueuedForTranscodingDecoded);
     }
   }

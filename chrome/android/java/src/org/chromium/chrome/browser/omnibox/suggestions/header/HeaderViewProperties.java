@@ -12,8 +12,17 @@ import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 /** The properties associated with the header suggestions. */
 public class HeaderViewProperties {
+    /** Interface that receives events from Header view. */
+    interface Delegate {
+        /** Invoked whenever header view is selected. */
+        void onHeaderSelected();
+
+        /** Invoked whenever header view is clicked. */
+        void onHeaderClicked();
+    }
+
     /** The runnable object that is executed whenever user taps the header suggestion. */
-    public static final WritableObjectPropertyKey<Runnable> DELEGATE =
+    public static final WritableObjectPropertyKey<Delegate> DELEGATE =
             new WritableObjectPropertyKey<>();
     /** The expanded state of the header suggestion. */
     public static final WritableBooleanPropertyKey IS_EXPANDED = new WritableBooleanPropertyKey();

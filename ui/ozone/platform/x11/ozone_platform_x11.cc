@@ -37,7 +37,7 @@
 #include "ui/platform_window/platform_window_init_properties.h"
 
 #if defined(OS_CHROMEOS)
-#include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_non_backed.h"
 #include "ui/base/ime/chromeos/input_method_chromeos.h"
 #else
 #include "ui/base/ime/linux/input_method_auralinux.h"
@@ -151,7 +151,7 @@ class OzonePlatformX11 : public OzonePlatform,
 
   std::unique_ptr<OSExchangeDataProvider> CreateProvider() override {
 #if defined(OS_CHROMEOS)
-    return std::make_unique<OSExchangeDataProviderAura>();
+    return std::make_unique<OSExchangeDataProviderNonBacked>();
 #else
     return std::make_unique<X11OSExchangeDataProviderOzone>();
 #endif

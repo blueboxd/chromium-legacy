@@ -1567,8 +1567,12 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
   const bool alt = event.IsAltDown() || event.IsAltGrDown();
   const bool command = event.IsCommandDown();
   switch (event.key_code()) {
-    case ui::VKEY_RETURN:
-      if (MaybeTriggerSecondaryButton(event)) {
+    case ui::VKEY_RETURN: {
+      OmniboxPopupModel* popup_model = model()->popup_model();
+      if (popup_model &&
+          popup_model->TriggerSelectionAction(popup_model->selection())) {
+        return true;
+      } else if (MaybeTriggerSecondaryButton(event)) {
         return true;
       } else if ((alt && !shift) || (shift && command)) {
         model()->AcceptInput(WindowOpenDisposition::NEW_FOREGROUND_TAB,
@@ -1589,7 +1593,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
         }
       }
       return true;
-
+    }
     case ui::VKEY_ESCAPE:
       return model()->OnEscapeKeyPressed();
 
@@ -1718,12 +1722,19 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       }
       break;
 
-    case ui::VKEY_SPACE:
-      if (!control && !alt && !shift && SelectionAtEnd() &&
-          MaybeTriggerSecondaryButton(event))
-        return true;
-      break;
+    case ui::VKEY_SPACE: {
+      if (!control && !alt && !shift && SelectionAtEnd()) {
+        OmniboxPopupModel* popup_model = model()->popup_model();
+        if (popup_model &&
+            popup_model->TriggerSelectionAction(popup_model->selection())) {
+          return true;
+        }
 
+        if (MaybeTriggerSecondaryButton(event))
+          return true;
+      }
+      break;
+    }
     default:
       break;
   }

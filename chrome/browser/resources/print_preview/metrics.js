@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {NativeLayer} from './native_layer.js';
+import {NativeLayer, NativeLayerImpl} from './native_layer.js';
 
 /**
  * Object used to measure usage statistics.
@@ -89,7 +89,7 @@ export class MetricsContext {
     this.maxBucket_ = maxBucket;
 
     /** @private {!NativeLayer} */
-    this.nativeLayer_ = NativeLayer.getInstance();
+    this.nativeLayer_ = NativeLayerImpl.getInstance();
   }
 
   /**

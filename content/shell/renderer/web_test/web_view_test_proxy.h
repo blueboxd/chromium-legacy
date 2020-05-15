@@ -78,9 +78,6 @@ class WebViewTestProxy : public RenderViewImpl {
   void PrintPage(blink::WebLocalFrame* frame) override;
   blink::WebString AcceptLanguages() override;
 
-  // Exposed for our TestRunner harness.
-  using RenderViewImpl::ApplyPageVisibilityState;
-
   BlinkTestRunner* blink_test_runner() { return &blink_test_runner_; }
   TestInterfaces* test_interfaces() { return test_interfaces_; }
   AccessibilityController* accessibility_controller() {

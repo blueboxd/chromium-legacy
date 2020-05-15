@@ -66,8 +66,7 @@ Commit::ContributionMap CommitProcessor::GatherCommitContributions(
     num_entries += GatherCommitContributionsForTypes(
         Difference(contributing_commit_types,
                    Union(PriorityUserTypes(), ModelTypeSet(NIGORI))),
-        max_entries - num_entries, cookie_jar_mismatch, cookie_jar_empty,
-        &contributions);
+        max_entries, cookie_jar_mismatch, cookie_jar_empty, &contributions);
     DCHECK_LE(num_entries, max_entries);
   }
 

@@ -20,29 +20,29 @@ class EditableTextNode extends NodeWrapper {
   get actions() {
     const actions = super.actions;
     // The SELECT action is used to press buttons, etc. For text inputs, the
-    // equivalent action is OPEN_KEYBOARD, which focuses the input and opens the
+    // equivalent action is KEYBOARD, which focuses the input and opens the
     // keyboard.
-    const selectIndex = actions.indexOf(SAConstants.MenuAction.SELECT);
+    const selectIndex = actions.indexOf(SwitchAccessMenuAction.SELECT);
     if (selectIndex >= 0) {
       actions.splice(selectIndex, 1);
     }
 
-    actions.push(SAConstants.MenuAction.OPEN_KEYBOARD);
-    actions.push(SAConstants.MenuAction.DICTATION);
+    actions.push(SwitchAccessMenuAction.KEYBOARD);
+    actions.push(SwitchAccessMenuAction.DICTATION);
 
     if (SwitchAccess.instance.improvedTextInputEnabled() &&
         this.automationNode.state[StateType.FOCUSED]) {
-      actions.push(SAConstants.MenuAction.MOVE_CURSOR);
-      actions.push(SAConstants.MenuAction.SELECT_START);
+      actions.push(SwitchAccessMenuAction.MOVE_CURSOR);
+      actions.push(SwitchAccessMenuAction.START_TEXT_SELECTION);
       if (TextNavigationManager.currentlySelecting()) {
-        actions.push(SAConstants.MenuAction.SELECT_END);
+        actions.push(SwitchAccessMenuAction.END_TEXT_SELECTION);
       }
       if (TextNavigationManager.selectionExists) {
-        actions.push(SAConstants.MenuAction.CUT);
-        actions.push(SAConstants.MenuAction.COPY);
+        actions.push(SwitchAccessMenuAction.CUT);
+        actions.push(SwitchAccessMenuAction.COPY);
       }
       if (TextNavigationManager.clipboardHasData) {
-        actions.push(SAConstants.MenuAction.PASTE);
+        actions.push(SwitchAccessMenuAction.PASTE);
       }
     }
 
@@ -54,19 +54,19 @@ class EditableTextNode extends NodeWrapper {
   /** @override */
   performAction(action) {
     switch (action) {
-      case SAConstants.MenuAction.OPEN_KEYBOARD:
+      case SwitchAccessMenuAction.KEYBOARD:
         NavigationManager.enterKeyboard();
         return SAConstants.ActionResponse.CLOSE_MENU;
-      case SAConstants.MenuAction.DICTATION:
+      case SwitchAccessMenuAction.DICTATION:
         chrome.accessibilityPrivate.toggleDictation();
         return SAConstants.ActionResponse.CLOSE_MENU;
-      case SAConstants.MenuAction.CUT:
+      case SwitchAccessMenuAction.CUT:
         EventHelper.simulateKeyPress(EventHelper.KeyCode.X, {ctrl: true});
         return SAConstants.ActionResponse.REMAIN_OPEN;
-      case SAConstants.MenuAction.COPY:
+      case SwitchAccessMenuAction.COPY:
         EventHelper.simulateKeyPress(EventHelper.KeyCode.C, {ctrl: true});
         return SAConstants.ActionResponse.REMAIN_OPEN;
-      case SAConstants.MenuAction.PASTE:
+      case SwitchAccessMenuAction.PASTE:
         EventHelper.simulateKeyPress(EventHelper.KeyCode.V, {ctrl: true});
         return SAConstants.ActionResponse.REMAIN_OPEN;
     }

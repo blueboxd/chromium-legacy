@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">切换按钮</translation>
 <translation id="1299774449519412690">浅天蓝色</translation>
 <translation id="1303806948938513162">用 4 根手指点按即可进入 ChromeVox 菜单</translation>
+<translation id="1325363694295259631"><ph name="NAME" />，未选中的菜单项单选按钮</translation>
 <translation id="1325946044405407859">棕褐色</translation>
 <translation id="1331702245475014624">第<ph name="INDEX" />个，共<ph name="TOTAL" />个</translation>
 <translation id="1334095593597963605">字符和字词回显</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">播报当前电池状态</translation>
 <translation id="4997282455736854877"><ph name="NAME" />，已选中的单选按钮</translation>
 <translation id="5011664330025416377">按搜索键+空格键即可激活</translation>
+<translation id="5012724933919010465"><ph name="NAME" />，已选中的菜单项单选按钮</translation>
 <translation id="5020651427400641814">启用语音登录功能</translation>
 <translation id="5041394372352067729">将盲文显示移动到页首</translation>
 <translation id="5042770794184672516">调大朗读音量</translation>

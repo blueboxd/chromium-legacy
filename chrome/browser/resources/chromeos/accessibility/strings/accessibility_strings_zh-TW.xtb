@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">切換按鈕</translation>
 <translation id="1299774449519412690">淺天藍</translation>
 <translation id="1303806948938513162">用四指輕觸即可進入 ChromeVox 選單</translation>
+<translation id="1325363694295259631">已取消選取「<ph name="NAME" />」選單項目圓形按鈕</translation>
 <translation id="1325946044405407859">日曬色</translation>
 <translation id="1331702245475014624">第 <ph name="INDEX" /> 個，共 <ph name="TOTAL" /> 個</translation>
 <translation id="1334095593597963605">字元和字詞語音回應</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">讀出目前的電池狀態</translation>
 <translation id="4997282455736854877">已選取「<ph name="NAME" />」圓形按鈕</translation>
 <translation id="5011664330025416377">按下搜尋鍵 + 空格鍵即可啟用控制項</translation>
+<translation id="5012724933919010465">已選取「<ph name="NAME" />」選單項目圓形按鈕</translation>
 <translation id="5020651427400641814">啟用語音記錄功能</translation>
 <translation id="5041394372352067729">將點字顯示畫面移至頁面頂端</translation>
 <translation id="5042770794184672516">增加說話音量</translation>

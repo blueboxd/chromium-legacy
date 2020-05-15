@@ -18,6 +18,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
@@ -26,6 +27,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/policy/cloud/policy_invalidation_util.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_invalidator.h"
+#include "chrome/common/chrome_features.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/invalidation/impl/invalidator_registrar_with_memory.h"
 #include "components/invalidation/public/invalidation_util.h"
@@ -71,6 +73,10 @@ class CloudPolicyInvalidatorTestBase : public testing::Test {
     StartInvalidator(true, /* initialize */
                      true, /* start_refresh_scheduler */
                      0     /* highest_handled_invalidation_version */);
+  }
+
+  const CloudPolicyInvalidator* invalidator() const {
+    return invalidator_.get();
   }
 
   // Calls Initialize on the invalidator.
@@ -214,6 +220,8 @@ class CloudPolicyInvalidatorTestBase : public testing::Test {
 
   // The currently used policy value.
   const char* policy_value_cur_;
+
+  const char* account_id_;
 };
 
 CloudPolicyInvalidatorTestBase::CloudPolicyInvalidatorTestBase()
@@ -228,7 +236,8 @@ CloudPolicyInvalidatorTestBase::CloudPolicyInvalidatorTestBase()
       topic_b_("zxcv"),
       policy_value_a_("asdf"),
       policy_value_b_("zxcv"),
-      policy_value_cur_(policy_value_a_) {
+      policy_value_cur_(policy_value_a_),
+      account_id_("test_account") {
   clock_.SetNow(base::Time::UnixEpoch() +
                 base::TimeDelta::FromSeconds(987654321));
 }
@@ -245,7 +254,7 @@ void CloudPolicyInvalidatorTestBase::StartInvalidator(
     int64_t highest_handled_invalidation_version) {
   invalidator_.reset(new CloudPolicyInvalidator(
       GetPolicyInvalidationScope(), &core_, task_runner_, &clock_,
-      highest_handled_invalidation_version));
+      highest_handled_invalidation_version, account_id_));
   if (start_refresh_scheduler) {
     ConnectCore();
     StartRefreshScheduler();
@@ -851,6 +860,50 @@ TEST_F(CloudPolicyInvalidatorTest, Disconnect) {
   DisableInvalidationService();
   EXPECT_FALSE(InvalidationsEnabled());
   EXPECT_EQ(0, GetHighestHandledInvalidationVersion());
+}
+
+class CloudPolicyInvalidatorOwnerNameTest
+    : public CloudPolicyInvalidatorTestBase {
+ protected:
+  CloudPolicyInvalidatorOwnerNameTest() {
+    features_.InitAndEnableFeature(::features::kInvalidatorUniqueOwnerName);
+  }
+
+  PolicyInvalidationScope GetPolicyInvalidationScope() const override {
+    return scope_;
+  }
+
+  base::test::ScopedFeatureList features_;
+  PolicyInvalidationScope scope_;
+};
+
+TEST_F(CloudPolicyInvalidatorOwnerNameTest, GetOwnerNameForUserScope) {
+  scope_ = PolicyInvalidationScope::kUser;
+  StartInvalidator(false, /* initialize */
+                   false, /* start_refresh_scheduler */
+                   0 /* highest_handled_invalidation_version*/);
+  ASSERT_TRUE(invalidator());
+  EXPECT_EQ("CloudPolicy.User", invalidator()->GetOwnerName());
+}
+
+TEST_F(CloudPolicyInvalidatorOwnerNameTest, GetOwnerNameForDeviceScope) {
+  scope_ = PolicyInvalidationScope::kDevice;
+  StartInvalidator(false, /* initialize */
+                   false, /* start_refresh_scheduler */
+                   0 /* highest_handled_invalidation_version*/);
+  ASSERT_TRUE(invalidator());
+  EXPECT_EQ("CloudPolicy.Device", invalidator()->GetOwnerName());
+}
+
+TEST_F(CloudPolicyInvalidatorOwnerNameTest,
+       GetOwnerNameForDeviceLocalAccountScope) {
+  scope_ = PolicyInvalidationScope::kDeviceLocalAccount;
+  StartInvalidator(false, /* initialize */
+                   false, /* start_refresh_scheduler */
+                   0 /* highest_handled_invalidation_version*/);
+  ASSERT_TRUE(invalidator());
+  EXPECT_EQ("CloudPolicy.DeviceLocalAccount.test_account",
+            invalidator()->GetOwnerName());
 }
 
 class CloudPolicyInvalidatorUserTypedTest

@@ -51,6 +51,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="1291286136605998134">Av/på-knapp</translation>
 <translation id="1299774449519412690">Lys himmelblå</translation>
 <translation id="1303806948938513162">Trykk med fire fingre for å åpne ChromeVox-menyene</translation>
+<translation id="1325363694295259631"><ph name="NAME" />, menyelement med alternativknapp som ikke er valgt</translation>
 <translation id="1325946044405407859">Gyllenbrun</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> av <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">tegn- og ordekko</translation>
@@ -514,6 +515,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="4994420463726586413">Les opp gjeldende batteristatus</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, alternativknappen valgt</translation>
 <translation id="5011664330025416377">Trykk på Søk + mellomrom for å aktivere</translation>
+<translation id="5012724933919010465"><ph name="NAME" />, menyelement med alternativknapp som er valgt</translation>
 <translation id="5020651427400641814">Slå på loggføring av tale</translation>
 <translation id="5041394372352067729">Flytt leselisten til toppen av siden</translation>
 <translation id="5042770794184672516">Øk talevolumet</translation>

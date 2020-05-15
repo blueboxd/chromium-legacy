@@ -36,6 +36,7 @@
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_factory_impl.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_inserter.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_tab_helper.h"
+#import "ios/chrome/browser/infobars/overlays/translate_overlay_tab_helper.h"
 #import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
 #import "ios/chrome/browser/metrics/pageload_foreground_duration_tab_helper.h"
 #import "ios/chrome/browser/network_activity/network_activity_indicator_tab_helper.h"
@@ -120,6 +121,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   if (base::FeatureList::IsEnabled(kInfobarOverlayUI)) {
     InfobarOverlayRequestInserter::CreateForWebState(web_state);
     InfobarOverlayTabHelper::CreateForWebState(web_state);
+    TranslateOverlayTabHelper::CreateForWebState(web_state);
   }
 
   if (base::FeatureList::IsEnabled(kCaptivePortalMetrics)) {

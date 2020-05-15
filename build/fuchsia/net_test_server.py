@@ -43,6 +43,7 @@ class SSHPortForwarder(chrome_test_server_spawner.PortForwarder):
             '-NT', '-O', 'cancel', '-R', '0:localhost:%d' % host_port]
         task = self._target.RunCommandPiped([],
                                             ssh_args=forwarding_args,
+                                            stdout=open(os.devnull, 'w'),
                                             stderr=subprocess.PIPE)
         task.wait()
         if task.returncode != 0:

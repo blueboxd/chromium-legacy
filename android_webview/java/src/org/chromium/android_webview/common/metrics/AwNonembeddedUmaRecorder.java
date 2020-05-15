@@ -21,7 +21,7 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.UmaRecorder;
 
 /**
- * {@link oUmaRecorder} for nonembedded WebView processes.
+ * {@link UmaRecorder} for nonembedded WebView processes.
  * Can be used as a delegate in {@link org.chromium.base.metrics.UmaRecorderHolder}. This may only
  * be called from non-embedded WebView processes, such as developer UI or Services.
  */

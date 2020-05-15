@@ -30,6 +30,7 @@
         android:padding="15dp"
         android:background="@null"
         android:src="@drawable/ic_more_vert_24dp"
+        app:menuMaxWidth="@dimen/feed_header_menu_max_width"
         app:tint="@color/default_icon_color_tint_list"
         tools:ignore="ContentDescription" />
 </org.chromium.chrome.browser.ntp.snippets.SectionHeaderView>

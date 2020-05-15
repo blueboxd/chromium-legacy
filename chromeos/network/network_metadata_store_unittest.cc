@@ -24,6 +24,7 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace chromeos {
 
@@ -86,10 +87,9 @@ class NetworkMetadataStoreTest : public ::testing::Test {
 
     auto fake_user_manager = std::make_unique<user_manager::FakeUserManager>();
     auto account_id = AccountId::FromUserEmail("account@test.com");
-    const user_manager::User* user = fake_user_manager->AddUser(account_id);
-    fake_user_manager->UserLoggedIn(user->GetAccountId(), user->username_hash(),
-                                    true /* browser_restart */,
-                                    false /* is_child */);
+    auto second_account_id = AccountId::FromUserEmail("account2@test.com");
+    primary_user_ = fake_user_manager->AddUser(account_id);
+    secondary_user_ = fake_user_manager->AddUser(second_account_id);
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         std::move(fake_user_manager));
 
@@ -112,6 +112,17 @@ class NetworkMetadataStoreTest : public ::testing::Test {
     NetworkHandler::Shutdown();
   }
 
+  void SetUp() override { LoginUser(primary_user_); }
+
+  void LoginUser(const user_manager::User* user) {
+    auto* user_manager = static_cast<user_manager::FakeUserManager*>(
+        user_manager::UserManager::Get());
+    user_manager->UserLoggedIn(user->GetAccountId(), user->username_hash(),
+                               true /* browser_restart */,
+                               false /* is_child */);
+    user_manager->SwitchActiveUser(user->GetAccountId());
+  }
+
   std::string ConfigureService(const std::string& shill_json_string) {
     return helper_.ConfigureService(shill_json_string);
   }
@@ -131,6 +142,10 @@ class NetworkMetadataStoreTest : public ::testing::Test {
   NetworkConfigurationHandler* network_configuration_handler() {
     return network_configuration_handler_;
   }
+
+ protected:
+  const user_manager::User* primary_user_;
+  const user_manager::User* secondary_user_;
 
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
@@ -152,6 +167,9 @@ const char* kGuid = "wifi0";
 const char* kConfigWifi0Connectable =
     "{ \"GUID\": \"wifi0\", \"Type\": \"wifi\", \"State\": \"idle\", "
     "  \"Connectable\": true }";
+const char* kConfigWifi1Shared =
+    "{ \"GUID\": \"wifi0\", \"Type\": \"wifi\", \"State\": \"idle\", "
+    "  \"Connectable\": true, \"Profile\": \"/profile/default\" }";
 }  // namespace
 
 TEST_F(NetworkMetadataStoreTest, FirstConnect) {
@@ -197,6 +215,41 @@ TEST_F(NetworkMetadataStoreTest, ConfigurationUpdated) {
   ASSERT_TRUE(metadata_store()->GetLastConnectedTimestamp(kGuid).is_zero());
   ASSERT_FALSE(metadata_store()->GetIsConfiguredBySync(kGuid));
   ASSERT_EQ(1, metadata_observer()->GetNumberOfUpdates(kGuid));
+}
+
+TEST_F(NetworkMetadataStoreTest, SharedConfigurationUpdatedByOtherUser) {
+  std::string service_path = ConfigureService(kConfigWifi1Shared);
+  metadata_store()->OnConfigurationCreated(service_path, kGuid);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(0, metadata_observer()->GetNumberOfUpdates(kGuid));
+  ASSERT_FALSE(metadata_store()->GetIsFieldExternallyModified(
+      kGuid, shill::kProxyConfigProperty));
+
+  LoginUser(secondary_user_);
+
+  base::DictionaryValue other_properties;
+  other_properties.SetKey(shill::kAutoConnectProperty, base::Value(true));
+  other_properties.SetKey(shill::kProxyConfigProperty,
+                          base::Value("proxy_details"));
+
+  network_configuration_handler()->SetShillProperties(
+      service_path, other_properties, base::DoNothing(), base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(metadata_store()->GetIsFieldExternallyModified(
+      kGuid, shill::kProxyConfigProperty));
+
+  LoginUser(primary_user_);
+  base::DictionaryValue owner_properties;
+  owner_properties.SetKey(shill::kProxyConfigProperty,
+                          base::Value("new_proxy_details"));
+
+  network_configuration_handler()->SetShillProperties(
+      service_path, owner_properties, base::DoNothing(), base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_FALSE(metadata_store()->GetIsFieldExternallyModified(
+      kGuid, shill::kProxyConfigProperty));
 }
 
 TEST_F(NetworkMetadataStoreTest, ConfigurationRemoved) {

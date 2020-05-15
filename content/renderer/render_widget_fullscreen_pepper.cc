@@ -159,6 +159,10 @@ class PepperExternalWidgetClient : public blink::WebExternalWidgetClient {
     widget_->RecordTimeToFirstActivePaint(duration);
   }
 
+  void DidCommitAndDrawCompositorFrame() override {
+    widget_->DidInitiatePaint();
+  }
+
  private:
   RenderWidgetFullscreenPepper* widget_;
 };

@@ -51,6 +51,14 @@ class MockTranslateInfoBarDelegate
   MOCK_CONST_METHOD0(ShouldAlwaysTranslate, bool());
   MOCK_METHOD1(AddObserver, void(Observer* observer));
   MOCK_METHOD1(RemoveObserver, void(Observer* observer));
+  MOCK_METHOD0(InfoBarDismissed, void());
+  MOCK_METHOD0(Translate, void());
+  MOCK_METHOD0(ToggleAlwaysTranslate, void());
+  MOCK_METHOD0(ToggleTranslatableLanguageByPrefs, void());
+  MOCK_METHOD0(ToggleSiteBlacklist, void());
+  MOCK_METHOD0(RevertWithoutClosingInfobar, void());
+  MOCK_METHOD1(UpdateTargetLanguage, void(const std::string& language_code));
+  MOCK_METHOD1(UpdateOriginalLanguage, void(const std::string& language_code));
 };
 
 class MockTranslateInfoBarDelegateFactory {
@@ -58,6 +66,9 @@ class MockTranslateInfoBarDelegateFactory {
   MockTranslateInfoBarDelegateFactory(const std::string& original_language,
                                       const std::string& target_language);
   ~MockTranslateInfoBarDelegateFactory();
+
+  std::unique_ptr<MockTranslateInfoBarDelegate>
+  CreateMockTranslateInfoBarDelegate();
 
   MockTranslateInfoBarDelegate* GetMockTranslateInfoBarDelegate() {
     return delegate_.get();

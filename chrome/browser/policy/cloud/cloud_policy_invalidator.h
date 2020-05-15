@@ -75,6 +75,16 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   // |clock| is used to get the current time.
   // |highest_handled_invalidation_version| is the highest invalidation version
   // that was handled already before this invalidator was created.
+  // |device_local_account_id| is a unique identity for invalidator with
+  // DeviceLocalAccount |scope| to have unique owner name. May be let empty
+  // if scope is not DeviceLocalAccount.
+  CloudPolicyInvalidator(
+      PolicyInvalidationScope scope,
+      CloudPolicyCore* core,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      base::Clock* clock,
+      int64_t highest_handled_invalidation_version,
+      const std::string& device_local_account_id);
   CloudPolicyInvalidator(
       PolicyInvalidationScope scope,
       CloudPolicyCore* core,
@@ -176,6 +186,9 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
 
   // The invalidation scope this invalidator is responsible for.
   const PolicyInvalidationScope scope_;
+
+  // The unique name to be returned with by GetOwnerName().
+  const std::string owner_name_;
 
   // The cloud policy core.
   CloudPolicyCore* core_;

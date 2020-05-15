@@ -75,6 +75,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
   // Networks which were created by the logged in user will return true.
   bool GetIsCreatedByUser(const std::string& network_guid);
 
+  // When another user modifies a watched field.
+  bool GetIsFieldExternallyModified(const std::string& network_guid,
+                                    const std::string& field);
+
   // Manage observers.
   void AddObserver(NetworkMetadataObserver* observer);
   void RemoveObserver(NetworkMetadataObserver* observer);
@@ -91,6 +95,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
                base::Value value);
   const base::Value* GetPref(const std::string& network_guid,
                              const std::string& key);
+  void UpdateExternalModifications(const std::string& network_guid,
+                                   const std::string& field);
 
   base::ObserverList<NetworkMetadataObserver> observers_;
   NetworkConfigurationHandler* network_configuration_handler_;

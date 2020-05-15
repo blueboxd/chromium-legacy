@@ -446,6 +446,7 @@
 <translation id="2856444702002559011">আক্রমণকারীরা হয়ত <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> থেকে আপনার তথ্য (যেমন পাসওয়ার্ড, মেসেজ বা ক্রেডিট কার্ড) চুরি করার চেষ্টা করছে। <ph name="BEGIN_LEARN_MORE_LINK" />আরও জানুন<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">পোস্টার ফোল্ড</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2880660355386638022">উইন্ডো প্লেসমেন্ট</translation>
 <translation id="2881276955470682203">কার্ড সেভ করবেন?</translation>
 <translation id="2882949212241984732">ডবল-গেট ফোল্ড</translation>
 <translation id="2903493209154104877">ঠিকানা</translation>
@@ -646,6 +647,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />প্রক্সি, ফায়ারওয়াল এবং ডিএনএস কনফিগারেশন পরীক্ষা করে দেখুন<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">অ্যান্টিভাইরাস, ফায়ারওয়াল এবং ওয়েব-ফিল্টারিং বা প্রক্সি সফ্টওয়্যারের মতো অ্যাপ্লিকেশন এই ধরণের ত্রুটির কারণ হতে পারে।</translation>
 <translation id="373042150751172459">B4 (Envelope)</translation>
+<translation id="3731873414101415120">আপনার ব্রাউজ করা ওয়েবসাইটের বিবরণ এবং নিরাপদ নয় এমন পৃষ্ঠার কন্টেন্ট</translation>
 <translation id="3736520371357197498">আপনি যদি আপনার নিরাপত্তার ঝুঁকিগুলি বুঝতে পারেন, তাহলে ক্ষতিকারক প্রোগ্রাম সরানোর আগে আপনি <ph name="BEGIN_LINK" />বিপজ্জনক সাইটে যেতে পারেন<ph name="END_LINK" />।</translation>
 <translation id="3744899669254331632">এই মূহুর্তে আপনি <ph name="SITE" />-এ যেতে পারবেন না কারণ ওয়েবসাইটি অসংলগ্ন ক্রেডেনশিয়াল পাঠিয়েছে যা Chromium প্রসেস করতে পারেনা৷ নেটওয়ার্ক সমস্যা এবং আক্রমণ সাধারণত অস্থায়ী, তাই এই পৃষ্ঠাটি সম্ভবত পরে কাজ করবে৷</translation>
 <translation id="3745099705178523657">আপনি কনফার্ম করার পর আপনার Google অ্যাকাউন্ট থেকে কার্ডের বিবরণ এই সাইটে শেয়ার করা হবে।</translation>
@@ -912,6 +914,7 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{একটিও নয়}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> সার্চ</translation>
 <translation id="4879491255372875719">অটোমেটিক (ডিফল্ট)</translation>
+<translation id="4879725228911483934">উইন্ডো খুলে আপনার স্ক্রিনে রাখুন</translation>
 <translation id="4880827082731008257">সার্চের ইতিহাস</translation>
 <translation id="4881695831933465202">খুলুন</translation>
 <translation id="4892518386797173871">রিয়ার</translation>

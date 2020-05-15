@@ -268,6 +268,9 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kIntentPickerPWAPersistence;
 #endif  // !defined(OS_ANDROID)
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kInvalidatorUniqueOwnerName;
+
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kKernelnextVMs;

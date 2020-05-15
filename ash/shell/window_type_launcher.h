@@ -54,11 +54,6 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   void OnPaint(gfx::Canvas* canvas) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
 
-  // Overridden from views::WidgetDelegate:
-  bool CanResize() const override;
-  bool CanMaximize() const override;
-  bool CanMinimize() const override;
-
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 

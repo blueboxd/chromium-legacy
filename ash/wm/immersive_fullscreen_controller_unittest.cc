@@ -112,12 +112,13 @@ class ConsumeEventHandler : public ui::test::TestEventHandler {
 
 class TestWidgetDelegate : public views::WidgetDelegateView {
  public:
-  TestWidgetDelegate() = default;
+  TestWidgetDelegate() {
+    SetCanMaximize(true);
+    SetCanResize(true);
+  }
   ~TestWidgetDelegate() override = default;
 
   // views::WidgetDelegateView:
-  bool CanResize() const override { return true; }
-  bool CanMaximize() const override { return true; }
   bool CanActivate() const override { return true; }
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {

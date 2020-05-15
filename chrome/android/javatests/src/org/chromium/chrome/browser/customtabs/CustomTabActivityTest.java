@@ -207,6 +207,7 @@ public class CustomTabActivityTest {
     private String mTestPage2;
     private EmbeddedTestServer mTestServer;
     private TestWebServer mWebServer;
+    private CustomTabsConnection mConnectionToCleanup;
 
     @Rule
     public final ScreenShooter mScreenShooter = new ScreenShooter();
@@ -242,6 +243,10 @@ public class CustomTabActivityTest {
             if (handler != null) handler.hideAppMenu();
         });
         mWebServer.shutdown();
+
+        if (mConnectionToCleanup != null) {
+            CustomTabsTestUtils.cleanupSessions(mConnectionToCleanup);
+        }
     }
 
     private CustomTabActivity getActivity() {
@@ -386,6 +391,15 @@ public class CustomTabActivityTest {
         Tab tab = activity.getActivityTab();
         if (tab == null || tab.getWebContents() == null) return false;
         return WebContentsUtils.isSelectPopupVisible(tab.getWebContents());
+    }
+
+    private void setCanUseHiddenTabForSession(
+            CustomTabsConnection connection, CustomTabsSessionToken token, boolean useHiddenTab) {
+        assert mConnectionToCleanup == null || mConnectionToCleanup == connection;
+        // Save the connection. In case the hidden tab is not consumed by the test, ensure that it
+        // is properly cleaned up after the test.
+        mConnectionToCleanup = connection;
+        connection.setCanUseHiddenTabForSession(token, useHiddenTab);
     }
 
     /**
@@ -1392,7 +1406,7 @@ public class CustomTabActivityTest {
         connection.mClientManager.setHideDomainForSession(token, true);
 
         if (useHiddenTab) {
-            connection.setCanUseHiddenTabForSession(token, true);
+            setCanUseHiddenTabForSession(connection, token, true);
             Assert.assertTrue(connection.mayLaunchUrl(token, Uri.parse(url), null, null));
             ensureCompletedSpeculationForUrl(connection, url);
         }
@@ -1711,7 +1725,7 @@ public class CustomTabActivityTest {
             Assert.assertTrue(channelRequested);
         }
 
-        connection.setCanUseHiddenTabForSession(token, true);
+        setCanUseHiddenTabForSession(connection, token, true);
         session.mayLaunchUrl(Uri.parse(url), null, null);
         ensureCompletedSpeculationForUrl(connection, url);
 
@@ -1781,7 +1795,7 @@ public class CustomTabActivityTest {
         CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
         Assert.assertTrue(connection.newSession(token));
         // Forcing no hidden tab implies falling back to simply creating a spare WebContents.
-        connection.setCanUseHiddenTabForSession(token, false);
+        setCanUseHiddenTabForSession(connection, token, false);
         Assert.assertTrue(connection.mayLaunchUrl(token, Uri.parse(mTestPage), null, null));
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
@@ -1966,7 +1980,7 @@ public class CustomTabActivityTest {
         CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
         connection.newSession(token);
         connection.setIgnoreUrlFragmentsForSession(token, ignoreFragments);
-        connection.setCanUseHiddenTabForSession(token, true);
+        setCanUseHiddenTabForSession(connection, token, true);
         Assert.assertTrue(connection.mayLaunchUrl(token, Uri.parse(initialUrl), null, null));
 
         if (wait) {
@@ -2019,7 +2033,7 @@ public class CustomTabActivityTest {
         final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         CustomTabsSessionToken token = CustomTabsSessionToken.createMockSessionTokenForTesting();
         connection.newSession(token);
-        connection.setCanUseHiddenTabForSession(token, true);
+        setCanUseHiddenTabForSession(connection, token, true);
         Assert.assertTrue(connection.mayLaunchUrl(token, Uri.parse(mTestPage), null, null));
         ensureCompletedSpeculationForUrl(connection, mTestPage);
 
@@ -2042,7 +2056,7 @@ public class CustomTabActivityTest {
         final CustomTabsSessionToken token =
                 CustomTabsSessionToken.createMockSessionTokenForTesting();
         connection.newSession(token);
-        connection.setCanUseHiddenTabForSession(token, true);
+        setCanUseHiddenTabForSession(connection, token, true);
         connection.warmup(0);
 
         // Needs the browser process to be initialized.
@@ -2068,7 +2082,7 @@ public class CustomTabActivityTest {
         final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         CustomTabsSessionToken token = CustomTabsSessionToken.createMockSessionTokenForTesting();
         connection.newSession(token);
-        connection.setCanUseHiddenTabForSession(token, true);
+        setCanUseHiddenTabForSession(connection, token, true);
         Assert.assertFalse(
                 connection.mayLaunchUrl(token, Uri.parse("chrome://version"), null, null));
     }
@@ -2132,7 +2146,7 @@ public class CustomTabActivityTest {
         final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         CustomTabsSessionToken token = CustomTabsSessionToken.createMockSessionTokenForTesting();
         connection.newSession(token);
-        connection.setCanUseHiddenTabForSession(token, true);
+        setCanUseHiddenTabForSession(connection, token, true);
         Assert.assertTrue(connection.mayLaunchUrl(token, Uri.parse(mTestPage), null, null));
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage));
@@ -2342,7 +2356,7 @@ public class CustomTabActivityTest {
             CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
             CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
             connection.newSession(token);
-            connection.setCanUseHiddenTabForSession(token, true);
+            setCanUseHiddenTabForSession(connection, token, true);
             Bundle extras = null;
             if (speculationReferrer != null) {
                 extras = new Bundle();
@@ -2464,7 +2478,7 @@ public class CustomTabActivityTest {
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, navigationUrl);
         CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
         connection.newSession(token);
-        connection.setCanUseHiddenTabForSession(token, true);
+        setCanUseHiddenTabForSession(connection, token, true);
 
         Assert.assertTrue(connection.mayLaunchUrl(token, Uri.parse(speculationUrl), null, null));
         ensureCompletedSpeculationForUrl(connection, speculationUrl);
@@ -2487,7 +2501,7 @@ public class CustomTabActivityTest {
         CustomTabsSessionToken token = CustomTabsSessionToken.createMockSessionTokenForTesting();
         connection.newSession(token);
         Bundle extras = null;
-        connection.setCanUseHiddenTabForSession(token, useHiddenTab);
+        setCanUseHiddenTabForSession(connection, token, useHiddenTab);
         Assert.assertTrue(connection.mayLaunchUrl(token, Uri.parse(mTestPage), extras, null));
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage));

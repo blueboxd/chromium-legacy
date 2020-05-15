@@ -46,6 +46,7 @@ class MultiDeviceSetupClient;
 
 namespace settings {
 
+class Hierarchy;
 class OsSettingsSections;
 class SearchHandler;
 class SearchTagRegistry;
@@ -112,6 +113,7 @@ class OsSettingsManager : public KeyedService {
 
   std::unique_ptr<SearchTagRegistry> search_tag_registry_;
   std::unique_ptr<OsSettingsSections> sections_;
+  std::unique_ptr<Hierarchy> hierarchy_;
   std::unique_ptr<SearchHandler> search_handler_;
 };
 

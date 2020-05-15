@@ -17,6 +17,10 @@ namespace aura {
 class Window;
 }
 
+namespace display {
+class DisplayManager;
+}
+
 namespace ash {
 enum class AppListViewState;
 class DragDropController;
@@ -47,6 +51,7 @@ class ASH_EXPORT ShellTestApi {
   NativeCursorManagerAsh* native_cursor_manager_ash();
   DragDropController* drag_drop_controller();
   PowerPrefs* power_prefs();
+  display::DisplayManager* display_manager();
 
   // Resets |shell_->power_button_controller_| to hold a new object to simulate
   // Chrome starting.

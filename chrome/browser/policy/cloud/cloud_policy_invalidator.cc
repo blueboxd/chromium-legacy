@@ -12,10 +12,12 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/strcat.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/policy/cloud/policy_invalidation_util.h"
+#include "chrome/common/chrome_features.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/topic_invalidation_map.h"
@@ -80,6 +82,25 @@ void RecordPolicyInvalidationMetric(PolicyInvalidationScope scope,
   base::UmaHistogramEnumeration(
       CloudPolicyInvalidator::GetPolicyInvalidationFcmMetricName(scope),
       policy_invalidation_type, POLICY_INVALIDATION_TYPE_SIZE);
+}
+
+std::string ComposeOwnerName(PolicyInvalidationScope scope,
+                             const std::string& device_local_account_id) {
+  if (!base::FeatureList::IsEnabled(features::kInvalidatorUniqueOwnerName)) {
+    return "Cloud";
+  }
+
+  switch (scope) {
+    case PolicyInvalidationScope::kUser:
+      return "CloudPolicy.User";
+    case PolicyInvalidationScope::kDevice:
+      return "CloudPolicy.Device";
+    case PolicyInvalidationScope::kDeviceLocalAccount: {
+      DCHECK(!device_local_account_id.empty());
+      return base::StrCat(
+          {"CloudPolicy.DeviceLocalAccount.", device_local_account_id});
+    }
+  }
 }
 
 }  // namespace
@@ -148,8 +169,23 @@ CloudPolicyInvalidator::CloudPolicyInvalidator(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     base::Clock* clock,
     int64_t highest_handled_invalidation_version)
+    : CloudPolicyInvalidator(scope,
+                             core,
+                             task_runner,
+                             clock,
+                             highest_handled_invalidation_version,
+                             /*device_local_account_id=*/"") {}
+
+CloudPolicyInvalidator::CloudPolicyInvalidator(
+    PolicyInvalidationScope scope,
+    CloudPolicyCore* core,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    base::Clock* clock,
+    int64_t highest_handled_invalidation_version,
+    const std::string& device_local_account_id)
     : state_(UNINITIALIZED),
       scope_(scope),
+      owner_name_(ComposeOwnerName(scope, device_local_account_id)),
       core_(core),
       task_runner_(task_runner),
       clock_(clock),
@@ -238,7 +274,9 @@ void CloudPolicyInvalidator::OnIncomingInvalidation(
   HandleInvalidation(list.back());
 }
 
-std::string CloudPolicyInvalidator::GetOwnerName() const { return "Cloud"; }
+std::string CloudPolicyInvalidator::GetOwnerName() const {
+  return owner_name_;
+}
 
 bool CloudPolicyInvalidator::IsPublicTopic(const syncer::Topic& topic) const {
   return IsPublicInvalidationTopic(topic);

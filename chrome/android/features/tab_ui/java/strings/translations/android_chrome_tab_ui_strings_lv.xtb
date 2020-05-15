@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Izveidot grupu</translation>
 <translation id="2671423594960767771">Kopīgot grupu</translation>
 <translation id="2977480621796371840">Noņemt no grupas</translation>
+<translation id="3328308545011660196">Ieteikums: šķiet, ka <ph name="NUMBER_OF_TABS" /> cilnes ir saistītas. Vai grupēt tās?</translation>
+<translation id="4133493477912226187">Šķiet, ka <ph name="NUMBER_OF_TABS" /> cilnes ir saistītas. Vai grupēt tās?</translation>
 <translation id="4212246570487010370">Turpiniet pārlūkošanu</translation>
 <translation id="4450893287417543264">Vairs nerādīt</translation>
 <translation id="4648718555153979859">Jūsu cilnes šeit ir grupētas kopā</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Noņemt cilnes no grupas</translation>
 <translation id="7559245342362162951">Rādīt grupas cilnes pilnekrāna režģī</translation>
 <translation id="7792771145871471484">Pārskatīt ieteikumus.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Grupēt <ph name="TABS_COUNT_ONE" /> atlasīto cilni}zero{Grupēt <ph name="TABS_COUNT_MANY" /> atlasītās cilnes}one{Grupēt <ph name="TABS_COUNT_MANY" /> atlasīto cilni}other{Grupēt <ph name="TABS_COUNT_MANY" /> atlasītās cilnes}}</translation>
 <translation id="7885132941432959125">Pārvietot cilni pa labi</translation>
 <translation id="7966321538264951561">Nerādīt ieteikumus.</translation>
 <translation id="814503310257431685">Skatīt visu</translation>

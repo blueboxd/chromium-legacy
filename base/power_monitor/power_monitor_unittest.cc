@@ -82,4 +82,22 @@ TEST_F(PowerMonitorTest, PowerNotifications) {
     PowerMonitor::RemoveObserver(&index);
 }
 
+TEST_F(PowerMonitorTest, ThermalThrottling) {
+  PowerMonitorTestObserver observer;
+  EXPECT_TRUE(PowerMonitor::AddObserver(&observer));
+
+  constexpr PowerObserver::DeviceThermalState kThermalStates[] = {
+      PowerObserver::DeviceThermalState::kUnknown,
+      PowerObserver::DeviceThermalState::kNominal,
+      PowerObserver::DeviceThermalState::kFair,
+      PowerObserver::DeviceThermalState::kSerious,
+      PowerObserver::DeviceThermalState::kCritical};
+
+  for (const auto state : kThermalStates) {
+    source()->GenerateThermalThrottlingEvent(state);
+    EXPECT_EQ(observer.last_thermal_state(), state);
+  }
+
+  PowerMonitor::RemoveObserver(&observer);
+}
 }  // namespace base

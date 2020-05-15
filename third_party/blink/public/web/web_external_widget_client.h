@@ -45,6 +45,10 @@ class WebExternalWidgetClient {
   // Requests a LayerTreeFrameSink to submit CompositorFrames to.
   virtual void RequestNewLayerTreeFrameSink(
       LayerTreeFrameSinkCallback callback) = 0;
+
+  // Notification that the BeginMainFrame completed, was committed into the
+  // compositor (thread) and submitted to the display compositor.
+  virtual void DidCommitAndDrawCompositorFrame() = 0;
 };
 
 }  // namespace blink

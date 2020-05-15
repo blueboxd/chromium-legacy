@@ -142,7 +142,6 @@ class CORE_EXPORT LocalFrameUkmAggregator
     kHandleInputEvents,
     kAnimate,
     kUpdateLayers,
-    kProxyCommit,
     kWaitForCommit,
     kCount,
     kMainFrame
@@ -180,7 +179,6 @@ class CORE_EXPORT LocalFrameUkmAggregator
                                              {"HandleInputEvents", true},
                                              {"Animate", true},
                                              {"UpdateLayers", false},
-                                             {"ProxyCommit", true},
                                              {"WaitForCommit", true}};
     return *data;
   }

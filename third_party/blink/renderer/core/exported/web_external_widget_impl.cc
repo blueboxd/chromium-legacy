@@ -111,4 +111,8 @@ void WebExternalWidgetImpl::RecordTimeToFirstActivePaint(
   client_->RecordTimeToFirstActivePaint(duration);
 }
 
+void WebExternalWidgetImpl::DidCommitAndDrawCompositorFrame() {
+  client_->DidCommitAndDrawCompositorFrame();
+}
+
 }  // namespace blink

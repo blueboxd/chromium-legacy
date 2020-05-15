@@ -26,6 +26,9 @@ class CORE_EXPORT NGFragmentItems {
 
   using Span = base::span<const scoped_refptr<const NGFragmentItem>>;
   Span Items() const { return base::make_span(ItemsData(), size_); }
+  bool Equals(const Span& span) const {
+    return ItemsData() == span.data() && Size() == span.size();
+  }
   bool IsSubSpan(const Span& span) const;
 
   const NGFragmentItem& front() const {

@@ -539,6 +539,8 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
     RenderViewHost* render_view_host =
         main_window_->web_contents()->GetRenderViewHost();
     render_view_host->UpdateWebkitPreferences(default_prefs_);
+
+    main_window_->web_contents()->WasShown();
   }
 
   if (is_devtools_js_test && !secondary_window_) {
@@ -1446,6 +1448,13 @@ void WebTestControlHost::Reload() {
 void WebTestControlHost::LoadURLForFrame(const GURL& url,
                                          const std::string& frame_name) {
   main_window_->LoadURLForFrame(url, frame_name, ui::PAGE_TRANSITION_LINK);
+}
+
+void WebTestControlHost::SetMainWindowHidden(bool hidden) {
+  if (hidden)
+    main_window_->web_contents()->WasHidden();
+  else
+    main_window_->web_contents()->WasShown();
 }
 
 void WebTestControlHost::CloseRemainingWindows() {

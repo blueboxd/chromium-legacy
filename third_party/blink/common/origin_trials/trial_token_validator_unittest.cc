@@ -142,6 +142,17 @@ const char kInsecureOriginToken[] =
     "YW1wbGUuY29tOjgwIiwgImZlYXR1cmUiOiAiRnJvYnVsYXRlIiwgImV4cGlyeSI6"
     "IDIwMDAwMDAwMDB9";
 
+// Well-formed token, for match against third party origins.
+// Generate this token with the command (in tools/origin_trials):
+// generate_token.py 3 valid.example.com Frobulate
+// --is-third-party --expire-timestamp=2000000000
+const char kThirdPartyToken[] =
+    "A8ZESIWJHtuoIZyWgaHUPEhuc4CnbiETy5D4"
+    "PeABEP8NB8oI2fUfF9N53elgnNuyL0ltq+fzMta1pgU3VYLyuAcAAABveyJvcmln"
+    "aW4iOiAiaHR0cHM6Ly92YWxpZC5leGFtcGxlLmNvbTo0NDMiLCAiaXNUaGlyZFBh"
+    "cnR5IjogdHJ1ZSwgImZlYXR1cmUiOiAiRnJvYnVsYXRlIiwgImV4cGlyeSI6IDIw"
+    "MDAwMDAwMDB9";
+
 // This timestamp is set to a time after the expiry timestamp of kExpiredToken,
 // but before the expiry timestamp of kValidToken.
 double kNowTimestamp = 1500000000;
@@ -241,12 +252,40 @@ TEST_F(TrialTokenValidatorTest, ValidateValidToken) {
   EXPECT_EQ(blink::OriginTrialTokenStatus::kSuccess, result.status);
   EXPECT_EQ(kAppropriateFeatureName, result.feature_name);
   EXPECT_EQ(kSampleTokenExpiryTime, result.expiry_time);
+  EXPECT_EQ(false, result.is_third_party);
 
   // All signing keys should be able to validate their tokens.
   result = validator_.ValidateToken(kSampleToken2, appropriate_origin_, Now());
   EXPECT_EQ(blink::OriginTrialTokenStatus::kSuccess, result.status);
   EXPECT_EQ(kAppropriateFeatureName, result.feature_name);
   EXPECT_EQ(kSampleTokenExpiryTime, result.expiry_time);
+  EXPECT_EQ(false, result.is_third_party);
+}
+
+TEST_F(TrialTokenValidatorTest, ValidateThirdPartyTokenFromExternalScript) {
+  TrialTokenResult result = validator_.ValidateToken(
+      kThirdPartyToken, inappropriate_origin_, &appropriate_origin_, Now());
+  EXPECT_EQ(blink::OriginTrialTokenStatus::kSuccess, result.status);
+  EXPECT_EQ(kAppropriateFeatureName, result.feature_name);
+  EXPECT_EQ(kSampleTokenExpiryTime, result.expiry_time);
+  EXPECT_EQ(true, result.is_third_party);
+}
+
+TEST_F(TrialTokenValidatorTest,
+       ValidateThirdPartyTokenFromInappropriateScriptOrigin) {
+  EXPECT_EQ(blink::OriginTrialTokenStatus::kWrongOrigin,
+            validator_
+                .ValidateToken(kThirdPartyToken, appropriate_origin_,
+                               &inappropriate_origin_, Now())
+                .status);
+}
+
+TEST_F(TrialTokenValidatorTest, ValidateThirdPartyTokenNotFromExternalScript) {
+  EXPECT_EQ(
+      blink::OriginTrialTokenStatus::kWrongOrigin,
+      validator_
+          .ValidateToken(kThirdPartyToken, appropriate_origin_, nullptr, Now())
+          .status);
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateInappropriateOrigin) {

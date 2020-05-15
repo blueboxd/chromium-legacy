@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="1012876632442809908">USB-C-enhet (porten foran)</translation>
+<translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> endret til <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Klikk på bekreft for å beholde endringene. De forrige innstillingene blir gjenopprettet om <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til. Skriv inn denne PIN-koden på den aktuelle enheten: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Pekepennen har lite batteri</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> er lagt til</translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">Vis språkinnstillinger</translation>
 <translation id="1460620680449458626">Lyden er dempet.</translation>
 <translation id="1467432559032391204">Venstre</translation>
+<translation id="1479909375538722835">Flytende tilgjengelighetsmeny</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">På</translation>
 <translation id="1516740043221086139">Ikke forstyrr er på.</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">Cast skjermen</translation>
 <translation id="5030687792513154421">Tiden er ute</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> koblet til en ny telefon</translation>
+<translation id="5035389544768382859">Bekreft skjermkonfigurasjon</translation>
 <translation id="5083553833479578423">Lås opp flere Assistent-funksjoner.</translation>
 <translation id="5136175204352732067">Et annet tastatur er koblet til</translation>
 <translation id="5168181903108465623">Cast-enheter er tilgjengelige</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">Nettverket kan være overvåket</translation>
 <translation id="7536035074519304529">IP-adresse: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Nå er det sengetid</translation>
+<translation id="7561982940498449837">Lukk menyen</translation>
 <translation id="7562368315689366235">Emoji-palett</translation>
 <translation id="7564874036684306347">Flytting av vinduer til et annet skrivebord kan føre til uventet atferd. Følgende varsler, vinduer og dialogbokser kan bli delt mellom skrivebordene.</translation>
 <translation id="7568294522609223312">Slå av automatiske klikk</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">Øk</translation>
 <translation id="8029629653277878342">PIN-kode eller passord kreves for mer sikkerhet</translation>
 <translation id="8030169304546394654">Frakoblet</translation>
+<translation id="8042893070933512245">Åpne menyen for tilgjengelighetsinnstillinger</translation>
 <translation id="8048123526339889627">Bluetooth-innstillinger</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
 <translation id="8061464966246066292">Høy kontrast</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">Angi en påminnelse</translation>
 <translation id="8878886163241303700">Utvidet skjerm</translation>
 <translation id="890616557918890486">Endre kilde</translation>
+<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> støtter ikke <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Oppløsningen ble endret til <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Klikk på Bekreft for å beholde endringene. De forrige innstillingene blir gjenopprettet om <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Batteriet er <ph name="PERCENTAGE" /> % fullt.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google-assistenten kan ikke dette språket.</translation>

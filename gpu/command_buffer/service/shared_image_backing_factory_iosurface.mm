@@ -186,6 +186,32 @@ class SharedImageRepresentationGLTextureIOSurface
   DISALLOW_COPY_AND_ASSIGN(SharedImageRepresentationGLTextureIOSurface);
 };
 
+class SharedImageRepresentationGLTexturePassthroughIOSurface
+    : public SharedImageRepresentationGLTexturePassthrough {
+ public:
+  SharedImageRepresentationGLTexturePassthroughIOSurface(
+      SharedImageManager* manager,
+      SharedImageBacking* backing,
+      MemoryTypeTracker* tracker,
+      scoped_refptr<gles2::TexturePassthrough> texture_passthrough)
+      : SharedImageRepresentationGLTexturePassthrough(manager,
+                                                      backing,
+                                                      tracker),
+        texture_passthrough_(texture_passthrough) {}
+
+  const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough()
+      override {
+    return texture_passthrough_;
+  }
+  bool BeginAccess(GLenum mode) override { return true; }
+  void EndAccess() override { FlushIOSurfaceGLOperations(); }
+
+ private:
+  scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
+  DISALLOW_COPY_AND_ASSIGN(
+      SharedImageRepresentationGLTexturePassthroughIOSurface);
+};
+
 // Representation of a SharedImageBackingIOSurface as a Skia Texture.
 class SharedImageRepresentationSkiaIOSurface
     : public SharedImageRepresentationSkia {
@@ -414,7 +440,7 @@ class SharedImageBackingIOSurface : public ClearTrackingSharedImageBacking {
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) final {
     DCHECK(io_surface_);
 
-    legacy_texture_ = GenGLTexture();
+    GenGLTexture(&legacy_texture_, nullptr);
     if (!legacy_texture_) {
       return false;
     }
@@ -432,13 +458,26 @@ class SharedImageBackingIOSurface : public ClearTrackingSharedImageBacking {
   std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker) final {
-    gles2::Texture* texture = GenGLTexture();
-    if (!texture) {
+    gles2::Texture* texture = nullptr;
+    GenGLTexture(&texture, nullptr);
+    if (!texture)
       return nullptr;
-    }
-
     return std::make_unique<SharedImageRepresentationGLTextureIOSurface>(
         manager, this, tracker, texture);
+  }
+
+  std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+  ProduceGLTexturePassthrough(SharedImageManager* manager,
+                              MemoryTypeTracker* tracker) override {
+    TRACE_EVENT0("gpu",
+                 "SharedImageBackingFactoryIOSurface::GenGLTexturePassthrough");
+    scoped_refptr<gles2::TexturePassthrough> texture_passthrough;
+    GenGLTexture(nullptr, &texture_passthrough);
+    if (!texture_passthrough)
+      return nullptr;
+    return std::make_unique<
+        SharedImageRepresentationGLTexturePassthroughIOSurface>(
+        manager, this, tracker, texture_passthrough);
   }
 
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
@@ -448,7 +487,7 @@ class SharedImageBackingIOSurface : public ClearTrackingSharedImageBacking {
     gles2::Texture* gles2_texture = nullptr;
     GrBackendTexture gr_backend_texture;
     if (context_state->GrContextIsGL()) {
-      gles2_texture = GenGLTexture();
+      GenGLTexture(&gles2_texture, nullptr);
       if (!gles2_texture)
         return nullptr;
       GetGrBackendTexture(
@@ -493,10 +532,16 @@ class SharedImageBackingIOSurface : public ClearTrackingSharedImageBacking {
   }
 
  private:
-  gles2::Texture* GenGLTexture() {
+  void GenGLTexture(
+      gles2::Texture** texture,
+      scoped_refptr<gles2::TexturePassthrough>* texture_passthrough) {
     TRACE_EVENT0("gpu", "SharedImageBackingFactoryIOSurface::GenGLTexture");
     GLFormatInfo gl_info = GetGLFormatInfo(format());
     DCHECK(gl_info.supported);
+    if (texture)
+      *texture = nullptr;
+    if (texture_passthrough)
+      *texture_passthrough = nullptr;
 
     // Wrap the IOSurface in a GLImageIOSurface
     scoped_refptr<gl::GLImageIOSurface> image(
@@ -504,7 +549,7 @@ class SharedImageBackingIOSurface : public ClearTrackingSharedImageBacking {
     if (!image->Initialize(io_surface_, gfx::GenericSharedMemoryId(),
                            viz::BufferFormat(format()))) {
       LOG(ERROR) << "Failed to create GLImageIOSurface";
-      return nullptr;
+      return;
     }
 
     gl::GLApi* api = gl::g_current_gl_context;
@@ -531,31 +576,41 @@ class SharedImageBackingIOSurface : public ClearTrackingSharedImageBacking {
       LOG(ERROR) << "Failed to bind GLImageIOSurface";
       api->glBindTextureFn(GL_TEXTURE_RECTANGLE, old_texture_binding);
       api->glDeleteTexturesFn(1, &service_id);
-      return nullptr;
+      return;
     }
 
     // If the backing is already cleared, no need to clear it again.
     gfx::Rect cleared_rect = ClearedRect();
 
     // Manually create a gles2::Texture wrapping our driver texture.
-    gles2::Texture* texture = new gles2::Texture(service_id);
-    texture->SetLightweightRef();
-    texture->SetTarget(GL_TEXTURE_RECTANGLE, 1);
-    texture->sampler_state_.min_filter = GL_LINEAR;
-    texture->sampler_state_.mag_filter = GL_LINEAR;
-    texture->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
-    texture->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
-    texture->SetLevelInfo(GL_TEXTURE_RECTANGLE, 0, gl_info.internal_format,
-                          size().width(), size().height(), 1, 0, gl_info.format,
-                          gl_info.type, cleared_rect);
-    texture->SetLevelImage(GL_TEXTURE_RECTANGLE, 0, image.get(),
-                           gles2::Texture::BOUND);
-    texture->SetImmutable(true, false);
+    if (texture) {
+      *texture = new gles2::Texture(service_id);
+      (*texture)->SetLightweightRef();
+      (*texture)->SetTarget(GL_TEXTURE_RECTANGLE, 1);
+      (*texture)->sampler_state_.min_filter = GL_LINEAR;
+      (*texture)->sampler_state_.mag_filter = GL_LINEAR;
+      (*texture)->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
+      (*texture)->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
+      (*texture)->SetLevelInfo(GL_TEXTURE_RECTANGLE, 0, gl_info.internal_format,
+                               size().width(), size().height(), 1, 0,
+                               gl_info.format, gl_info.type, cleared_rect);
+      (*texture)->SetLevelImage(GL_TEXTURE_RECTANGLE, 0, image.get(),
+                                gles2::Texture::BOUND);
+      (*texture)->SetImmutable(true, false);
+    }
+    if (texture_passthrough) {
+      *texture_passthrough = scoped_refptr<gles2::TexturePassthrough>(
+          new gles2::TexturePassthrough(service_id, GL_TEXTURE_RECTANGLE,
+                                        gl_info.internal_format, size().width(),
+                                        size().height(), 1, 0, gl_info.format,
+                                        gl_info.type));
+      (*texture_passthrough)
+          ->SetLevelImage(GL_TEXTURE_RECTANGLE, 0, image.get());
+    }
 
     DCHECK_EQ(image->GetInternalFormat(), gl_info.internal_format);
 
     api->glBindTextureFn(GL_TEXTURE_RECTANGLE, old_texture_binding);
-    return texture;
   }
 
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;

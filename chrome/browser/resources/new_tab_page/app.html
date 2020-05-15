@@ -139,6 +139,14 @@
     }
   }
 
+  #themeAttribution {
+    align-self: flex-start;
+    bottom: 16px;
+    color: var(--ntp-secondary-text-color);
+    margin-inline-start: 16px;
+    position: fixed;
+  }
+
   #backgroundImageAttribution {
     border-radius: 8px;
     bottom: 16px;
@@ -266,6 +274,11 @@
             $i18n{customizeButton}
           </div>
         </cr-button>
+      </div>
+      <div id="themeAttribution"
+          hidden$="[[!theme_.backgroundImage.attributionUrl]]">
+        <div>$i18n{themeCreatedBy}</div>
+        <img src="[[theme_.backgroundImage.attributionUrl.url]]"><img>
       </div>
     </template>
   </dom-if>

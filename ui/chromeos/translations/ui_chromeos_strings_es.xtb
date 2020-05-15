@@ -260,7 +260,7 @@
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3966388904776714213">Reproductor de audio</translation>
 <translation id="4002066346123236978">Título</translation>
-<translation id="4065397611279318371">Para abrir los archivos con la aplicación <ph name="APP_NAME" />, primero debes moverlos a la carpeta <ph name="SHARED_DIRECTORY_LABEL" />.</translation>
+<translation id="4065397611279318371">Para abrir los archivos con aplicaciones <ph name="APP_NAME" />, primero debes moverlos a la carpeta <ph name="SHARED_DIRECTORY_LABEL" />.</translation>
 <translation id="4070370845051020638">Método de introducción de cantonés</translation>
 <translation id="4072248638558688893">Teclado tamil (fonético)</translation>
 <translation id="4124935795427217608">Unicornio</translation>
@@ -562,6 +562,7 @@
 <translation id="7417705661718309329">Mapa de Google</translation>
 <translation id="7419631653042041064">Teclado catalán</translation>
 <translation id="7434823369735508263">Teclado de Reino Unido Dvorak</translation>
+<translation id="7447678886297481665">Los archivos de esta carpeta son de solo lectura. Algunas actividades no son compatibles.</translation>
 <translation id="7460898608667578234">Ucraniano</translation>
 <translation id="7474889694310679759">Teclado inglés canadiense</translation>
 <translation id="7489215562877293245">Archivos encontrados: <ph name="FILE_COUNT" />

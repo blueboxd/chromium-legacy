@@ -391,6 +391,8 @@ String OffscreenCanvasRenderingContext2D::font() const {
 void OffscreenCanvasRenderingContext2D::setFont(const String& new_font) {
   if (GetState().HasRealizedFont() && new_font == GetState().UnparsedFont())
     return;
+  identifiability_study_helper_.MaybeUpdateDigest(CanvasOps::kSetFont,
+                                                  new_font);
 
   base::TimeTicks start_time = base::TimeTicks::Now();
   OffscreenFontCache& font_cache = GetOffscreenFontCache();
@@ -508,6 +510,12 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
     return;
   if (max_width && (!std::isfinite(*max_width) || *max_width <= 0))
     return;
+
+  identifiability_study_helper_.MaybeUpdateDigest(
+      paint_type == CanvasRenderingContext2DState::kFillPaintType
+          ? CanvasOps::kFillText
+          : CanvasOps::kStrokeText,
+      IdentifiabilitySensitiveString(text), x, y, max_width ? *max_width : -1);
 
   const Font& font = AccessFont();
   const SimpleFontData* font_data = font.PrimaryFont();

@@ -4,13 +4,12 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions;
 
-import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
 import org.chromium.ui.base.PageTransition;
 
 /**
  * Provides the additional functionality to trigger and interact with autocomplete suggestions.
  */
-public interface AutocompleteDelegate extends EditUrlSuggestionProcessor.LocationBarDelegate {
+public interface AutocompleteDelegate extends UrlBarDelegate {
     /**
      * Notified that the URL text has changed.
      */

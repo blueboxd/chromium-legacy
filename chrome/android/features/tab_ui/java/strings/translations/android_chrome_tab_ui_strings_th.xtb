@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">สร้างกลุ่ม</translation>
 <translation id="2671423594960767771">แชร์กลุ่ม</translation>
 <translation id="2977480621796371840">นำออกจากกลุ่ม</translation>
+<translation id="3328308545011660196">คำแนะนำ: ดูเหมือนว่ามีแท็บที่เกี่ยวข้อง <ph name="NUMBER_OF_TABS" /> แท็บ ต้องการจัดกลุ่มแท็บไหม</translation>
+<translation id="4133493477912226187">ดูเหมือนว่ามีแท็บที่เกี่ยวข้อง <ph name="NUMBER_OF_TABS" /> แท็บ ต้องการจัดกลุ่มแท็บไหม</translation>
 <translation id="4212246570487010370">ท่องเว็บต่อไป</translation>
 <translation id="4450893287417543264">ไม่ต้องแสดงอีก</translation>
 <translation id="4648718555153979859">แท็บของคุณมีการจัดกลุ่มเข้าด้วยกันที่นี่</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">นำแท็บออกจากกลุ่ม</translation>
 <translation id="7559245342362162951">แสดงแท็บของกลุ่มในตารางกริดแบบเต็มหน้าจอ</translation>
 <translation id="7792771145871471484">ดูคำแนะนำ</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{จัดกลุ่มแท็บที่เลือก <ph name="TABS_COUNT_ONE" /> แท็บ}other{จัดกลุ่มแท็บที่เลือก <ph name="TABS_COUNT_MANY" /> แท็บ}}</translation>
 <translation id="7885132941432959125">ย้ายแท็บไปทางขวา</translation>
 <translation id="7966321538264951561">ปิดคำแนะนำ</translation>
 <translation id="814503310257431685">ดูทั้งหมด</translation>

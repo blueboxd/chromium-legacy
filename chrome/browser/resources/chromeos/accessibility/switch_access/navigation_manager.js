@@ -232,16 +232,15 @@ class NavigationManager {
       return;
     }
 
-    if (this.node_.hasAction(SAConstants.MenuAction.OPEN_KEYBOARD)) {
-      SwitchAccessMetrics.recordMenuAction(
-          SAConstants.MenuAction.OPEN_KEYBOARD);
-      this.node_.performAction(SAConstants.MenuAction.OPEN_KEYBOARD);
+    if (this.node_.hasAction(SwitchAccessMenuAction.KEYBOARD)) {
+      SwitchAccessMetrics.recordMenuAction(SwitchAccessMenuAction.KEYBOARD);
+      this.node_.performAction(SwitchAccessMenuAction.KEYBOARD);
       return;
     }
 
-    if (this.node_.hasAction(SAConstants.MenuAction.SELECT)) {
-      SwitchAccessMetrics.recordMenuAction(SAConstants.MenuAction.SELECT);
-      this.node_.performAction(SAConstants.MenuAction.SELECT);
+    if (this.node_.hasAction(SwitchAccessMenuAction.SELECT)) {
+      SwitchAccessMetrics.recordMenuAction(SwitchAccessMenuAction.SELECT);
+      this.node_.performAction(SwitchAccessMenuAction.SELECT);
     }
   }
 

@@ -13,12 +13,17 @@
 ../../third_party/catapult/common/py_trace_event/third_party/protobuf/encoder.py
 ../../third_party/catapult/common/py_trace_event/third_party/protobuf/wire_format.py
 ../../third_party/catapult/common/py_utils/py_utils/__init__.py
+../../third_party/catapult/common/py_utils/py_utils/atexit_with_log.py
+../../third_party/catapult/common/py_utils/py_utils/binary_manager.py
 ../../third_party/catapult/common/py_utils/py_utils/cloud_storage.py
 ../../third_party/catapult/common/py_utils/py_utils/cloud_storage_global_lock.py
 ../../third_party/catapult/common/py_utils/py_utils/contextlib_ext.py
 ../../third_party/catapult/common/py_utils/py_utils/lock.py
 ../../third_party/catapult/common/py_utils/py_utils/modules_util.py
+../../third_party/catapult/common/py_utils/py_utils/retry_util.py
 ../../third_party/catapult/common/py_utils/py_utils/tempfile_ext.py
+../../third_party/catapult/common/py_utils/py_utils/ts_proxy_server.py
+../../third_party/catapult/common/py_utils/py_utils/webpagereplay_go_server.py
 ../../third_party/catapult/dependency_manager/dependency_manager/__init__.py
 ../../third_party/catapult/dependency_manager/dependency_manager/archive_info.py
 ../../third_party/catapult/dependency_manager/dependency_manager/base_config.py
@@ -196,6 +201,7 @@ pylib/symbols/__init__.py
 pylib/symbols/deobfuscator.py
 pylib/symbols/stack_symbolizer.py
 pylib/utils/__init__.py
+pylib/utils/chrome_proxy_utils.py
 pylib/utils/decorators.py
 pylib/utils/device_dependencies.py
 pylib/utils/dexdump.py

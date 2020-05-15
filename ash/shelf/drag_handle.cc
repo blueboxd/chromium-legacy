@@ -9,6 +9,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_tooltip.h"
 #include "ash/shelf/shelf_observer.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -113,7 +114,9 @@ bool DragHandle::MaybeShowDragHandleNudge() {
   // Do not show drag handle nudge if it is already shown or drag handle is not
   // visible.
   if (gesture_nudge_target_visibility() ||
-      window_drag_from_shelf_in_progress_ || !GetVisible()) {
+      window_drag_from_shelf_in_progress_ || !GetVisible() ||
+      SplitViewController::Get(shelf_->shelf_widget()->GetNativeWindow())
+          ->InSplitViewMode()) {
     return false;
   }
   show_nudge_animation_in_progress_ = true;
@@ -125,6 +128,7 @@ bool DragHandle::MaybeShowDragHandleNudge() {
 }
 
 void DragHandle::ShowDragHandleNudge() {
+  DCHECK(!gesture_nudge_target_visibility_);
   PrefService* pref =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   base::TimeDelta nudge_duration = contextual_tooltip::GetNudgeTimeout(
@@ -132,6 +136,8 @@ void DragHandle::ShowDragHandleNudge() {
   AnimateDragHandleShow();
   ShowDragHandleTooltip();
   gesture_nudge_target_visibility_ = true;
+  split_view_observer_.Add(
+      SplitViewController::Get(shelf_->shelf_widget()->GetNativeWindow()));
 
   if (!nudge_duration.is_zero()) {
     hide_drag_handle_nudge_timer_.Start(
@@ -172,6 +178,7 @@ void DragHandle::HideDragHandleNudge(
   if (!gesture_nudge_target_visibility())
     return;
 
+  split_view_observer_.RemoveAll();
   hide_drag_handle_nudge_timer_.Stop();
   HideDragHandleNudgeHelper(/*hidden_by_tap=*/context ==
                             contextual_tooltip::DismissNudgeReason::kTap);
@@ -242,6 +249,15 @@ void DragHandle::OnShellDestroying() {
   // Removes the overview controller observer.
   StopDragHandleNudgeShowTimer();
   hide_drag_handle_nudge_timer_.Stop();
+}
+
+void DragHandle::OnSplitViewStateChanged(
+    SplitViewController::State previous_state,
+    SplitViewController::State state) {
+  if (SplitViewController::Get(shelf_->shelf_widget()->GetNativeWindow())
+          ->InSplitViewMode()) {
+    HideDragHandleNudge(contextual_tooltip::DismissNudgeReason::kOther);
+  }
 }
 
 void DragHandle::OnImplicitAnimationsCompleted() {

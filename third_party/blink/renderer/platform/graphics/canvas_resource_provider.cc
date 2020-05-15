@@ -733,7 +733,6 @@ enum class CanvasResourceType {
 
 const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
     CanvasResourceProvider::ResourceUsage usage) {
-
   static const Vector<CanvasResourceType> kCompositedFallbackList({
       CanvasResourceType::kSharedImage,
       CanvasResourceType::kSharedBitmap,
@@ -787,14 +786,10 @@ const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
         kSoftwareCompositedDirect2DResourceUsage:
     case CanvasResourceProvider::ResourceUsage::
         kSoftwareCompositedResourceUsage:
-      NOTREACHED();
-      return kEmptyList;
     case CanvasResourceProvider::ResourceUsage::
         kAcceleratedCompositedResourceUsage:
-      if (base::FeatureList::IsEnabled(blink::features::kDawn2dCanvas)) {
-        return kCompositedFallbackListWithDawn;
-      }
-      return kCompositedFallbackList;
+      NOTREACHED();
+      return kEmptyList;
     case CanvasResourceProvider::ResourceUsage::
         kAcceleratedDirect2DResourceUsage:
       return kAcceleratedDirect2DFallbackList;
@@ -824,6 +819,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
   DCHECK(usage != ResourceUsage::kAcceleratedResourceUsage);
   DCHECK(usage != ResourceUsage::kSoftwareCompositedDirect2DResourceUsage);
   DCHECK(usage != ResourceUsage::kSoftwareCompositedResourceUsage);
+  DCHECK(usage != ResourceUsage::kAcceleratedCompositedResourceUsage);
 
   std::unique_ptr<CanvasResourceProvider> provider;
 
@@ -1027,7 +1023,7 @@ CanvasResourceProvider::CreateSharedImageProvider(
   if (raster_mode == RasterMode::kCPU && !is_gpu_memory_buffer_image_allowed)
     return nullptr;
 
-  // If we cannot use overlay, we have to remove scanout flag flag.
+  // If we cannot use overlay, we have to remove the scanout flag.
   if (!is_gpu_memory_buffer_image_allowed ||
       !capabilities.texture_storage_image)
     shared_image_usage_flags &= ~gpu::SHARED_IMAGE_USAGE_SCANOUT;
@@ -1179,7 +1175,8 @@ CanvasResourceProvider::CanvasResourceProvider(
       filter_quality_(filter_quality),
       color_params_(color_params),
       is_origin_top_left_(is_origin_top_left),
-      snapshot_paint_image_id_(cc::PaintImage::GetNextId()) {
+      snapshot_paint_image_id_(cc::PaintImage::GetNextId()),
+      identifiability_paint_op_digest_(size_) {
   if (context_provider_wrapper_)
     context_provider_wrapper_->AddObserver(this);
 }
@@ -1312,6 +1309,9 @@ GrContext* CanvasResourceProvider::GetGrContext() const {
 sk_sp<cc::PaintRecord> CanvasResourceProvider::FlushCanvas() {
   if (!HasRecordedDrawOps())
     return nullptr;
+  // Get PaintOp count before finishRecordingAsPicture() adds more, as these
+  // additional ops don't correspond to canvas context operations.
+  const size_t initial_paint_ops = recorder_->num_paint_ops();
   sk_sp<cc::PaintRecord> last_recording = recorder_->finishRecordingAsPicture();
   RasterRecord(last_recording);
   needs_flush_ = false;
@@ -1319,6 +1319,12 @@ sk_sp<cc::PaintRecord> CanvasResourceProvider::FlushCanvas() {
       recorder_->beginRecording(Size().Width(), Size().Height());
   if (restore_clip_stack_callback_)
     restore_clip_stack_callback_.Run(canvas);
+  identifiability_paint_op_digest_.MaybeUpdateDigest(last_recording,
+                                                     initial_paint_ops);
+  // restore_clip_stack_callback_ also adds PaintOps -- these need to be skipped
+  // during identifiability digest calculation.
+  identifiability_paint_op_digest_.SetPrefixSkipCount(
+      recorder_->num_paint_ops());
   return last_recording;
 }
 
@@ -1384,7 +1390,6 @@ scoped_refptr<CanvasResource> CanvasResourceProvider::CreateResource() {
 }
 
 cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheRGBA8() {
-
   if (use_hardware_decode_cache()) {
     return context_provider_wrapper_->ContextProvider()->ImageDecodeCache(
         kN32_SkColorType);
@@ -1394,7 +1399,6 @@ cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheRGBA8() {
 }
 
 cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheF16() {
-
   if (use_hardware_decode_cache()) {
     return context_provider_wrapper_->ContextProvider()->ImageDecodeCache(
         kRGBA_F16_SkColorType);
@@ -1429,6 +1433,11 @@ void CanvasResourceProvider::ClearRecycledResources() {
 
 void CanvasResourceProvider::OnDestroyResource() {
   --num_inflight_resources_;
+}
+
+uint64_t CanvasResourceProvider::GetIdentifiabilityDigest() {
+  FlushCanvas();
+  return identifiability_paint_op_digest_.digest();
 }
 
 scoped_refptr<CanvasResource> CanvasResourceProvider::NewOrRecycledResource() {

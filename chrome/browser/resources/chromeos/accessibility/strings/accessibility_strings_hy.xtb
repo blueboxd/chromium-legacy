@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">Փոխարկման կոճակ</translation>
 <translation id="1299774449519412690">Բաց երկնագույն</translation>
 <translation id="1303806948938513162">Հպեք 4 մատով՝ ChromeVox-ի ընտրացանկերը բացելու համար</translation>
+<translation id="1325363694295259631"><ph name="NAME" />, ընտրացանկի տարրի կետակոճակն ընտրված չէ</translation>
 <translation id="1325946044405407859">Դեղնաշագանակագույն</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> / <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">Գրանշանների և բառերի հնչեցում</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">Հնչեցնել մարտկոցի ընթացիկ կարգավիճակը</translation>
 <translation id="4997282455736854877">Ընտրված է <ph name="NAME" /> կետակոճակը</translation>
 <translation id="5011664330025416377">Ակտիվացնելու համար սեղմեք Search + բացատ ստեղները</translation>
+<translation id="5012724933919010465"><ph name="NAME" />, ընտրացանկի տարրի կետակոճակն ընտրված է</translation>
 <translation id="5020651427400641814">Միացնել խոսքի գրանցումը</translation>
 <translation id="5041394372352067729">Տեղափոխել Բրայլի ցուցադրիչը էջի վերև</translation>
 <translation id="5042770794184672516">Բարձրացնել խոսքի ձայնը</translation>

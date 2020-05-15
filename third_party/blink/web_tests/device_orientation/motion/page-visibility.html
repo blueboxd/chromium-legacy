@@ -3,6 +3,7 @@
 <body>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/visibility.js"></script>
 <script src="../../http/tests/resources/sensor-helpers.js"></script>
 <script src="../resources/device-orientation-helpers.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
@@ -22,7 +23,7 @@ sensor_test(async (t, sensorProvider) => {
   setMockMotionData(sensorProvider, motionData);
   await waitForMotion(motionData);
 
-  testRunner.setPageVisibility('hidden');
+  await setMainWindowHidden(true);
   let hidden = true;
   let hiddenEventPromise = new Promise((resolve, reject) => {
     window.addEventListener(
@@ -41,7 +42,7 @@ sensor_test(async (t, sensorProvider) => {
   // here to make sure we're not actually getting any events.
   await sleep(100);
   hidden = false;
-  testRunner.setPageVisibility('visible');
+  await setMainWindowHidden(false);
   return Promise.all([hiddenEventPromise, waitForMotion(motionData)]);
 }, 'Tests to check that devicemotion events are not fired when the page is not visible.');
 </script>

@@ -43,7 +43,14 @@ class CC_PAINT_EXPORT PaintImageBuilder {
 
   PaintImageBuilder&& set_image(sk_sp<SkImage> sk_image,
                                 PaintImage::ContentId content_id) {
+    DCHECK(!sk_image->isTextureBacked());
     paint_image_.sk_image_ = std::move(sk_image);
+    paint_image_.content_id_ = content_id;
+    return std::move(*this);
+  }
+  PaintImageBuilder&& set_texture_backing(sk_sp<TextureBacking> texture_backing,
+                                          PaintImage::ContentId content_id) {
+    paint_image_.texture_backing_ = std::move(texture_backing);
     paint_image_.content_id_ = content_id;
     return std::move(*this);
   }
@@ -62,7 +69,6 @@ class CC_PAINT_EXPORT PaintImageBuilder {
     paint_image_.paint_image_generator_ = std::move(generator);
     return std::move(*this);
   }
-
   PaintImageBuilder&& set_animation_type(PaintImage::AnimationType type) {
     paint_image_.animation_type_ = type;
     return std::move(*this);
@@ -105,18 +111,25 @@ class CC_PAINT_EXPORT PaintImageBuilder {
     paint_image_.paint_worklet_input_ = std::move(input);
     return std::move(*this);
   }
-  PaintImageBuilder&& set_texture_backing(sk_sp<TextureBacking> texture_backing,
-                                          PaintImage::ContentId content_id) {
-    paint_image_.texture_backing_ = std::move(texture_backing);
-    paint_image_.content_id_ = content_id;
-    return std::move(*this);
-  }
 
   PaintImage TakePaintImage();
 
  private:
+  friend class PaintOpReader;
+  friend class PaintShader;
+  friend class ImagePaintFilter;
+  friend PaintImage CreateNonDiscardablePaintImage(const gfx::Size& size);
+
   PaintImageBuilder();
   PaintImageBuilder(PaintImage starting_image, bool clear_contents);
+
+  // For GPU process callers using a texture backed SkImage.
+  PaintImageBuilder&& set_texture_image(sk_sp<SkImage> sk_image,
+                                        PaintImage::ContentId content_id) {
+    paint_image_.sk_image_ = std::move(sk_image);
+    paint_image_.content_id_ = content_id;
+    return std::move(*this);
+  }
 
   PaintImage paint_image_;
 #if DCHECK_IS_ON()

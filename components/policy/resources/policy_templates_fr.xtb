@@ -2423,6 +2423,7 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
             Dans les deux cas, les utilisateurs ne peuvent pas le modifier, ni le remplacer dans <ph name="PRODUCT_NAME" />.
 
             Si cette règle n'est pas configurée, ce paramètre est activé, mais l'utilisateur est en mesure de le modifier.</translation>
+<translation id="453031441196755904">Cette règle est obsolète.</translation>
 <translation id="4531706050939927436">L'installation des applications Android peut être forcée depuis la Console d'administration Google via Google Play. Elles n'utilisent pas cette règle.</translation>
 <translation id="4534500438517478692">Nom de la restriction Android :</translation>
 <translation id="4541530620466526913">Comptes locaux de l'appareil</translation>

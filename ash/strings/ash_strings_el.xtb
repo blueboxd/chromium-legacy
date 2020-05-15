@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
 <translation id="1012876632442809908">Συσκευή USB-C (μπροστινή θύρα)</translation>
+<translation id="1013598600051641573">Η ανάλυση της οθόνης <ph name="DISPLAY_NAME" /> άλλαξε σε <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Κάντε κλικ στην Επιβεβαίωση για να κρατήσετε τις αλλαγές. Θα γίνει επαναφορά των προηγούμενων ρυθμίσεων σε <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" ζητά δικαιώματα σύζευξης. Καταχωρίστε αυτόν τον κωδικό PIN στη συγκεκριμένη συσκευή: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Το επίπεδο της μπαταρίας της γραφίδας είναι χαμηλό</translation>
 <translation id="1037492556044956303">Προστέθηκε η συσκευή <ph name="DEVICE_NAME" /></translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">Εμφάνιση ρυθμίσεων γλώσσας</translation>
 <translation id="1460620680449458626">Η ένταση ήχου είναι σε σίγαση.</translation>
 <translation id="1467432559032391204">Αριστερά</translation>
+<translation id="1479909375538722835">Κινούμενο μενού προσβασιμότητας</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">Ενεργό</translation>
 <translation id="1516740043221086139">Η λειτουργία Μην ενοχλείτε είναι ενεργή.</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">Μετάδοση οθόνης</translation>
 <translation id="5030687792513154421">Τέλος χρόνου</translation>
 <translation id="5035236842988137213">Η συσκευή <ph name="DEVICE_NAME" /> συνδέθηκε σε ένα νέο τηλέφωνο</translation>
+<translation id="5035389544768382859">Επιβεβαίωση διαμόρφωσης οθόνης</translation>
 <translation id="5083553833479578423">Ξεκλειδώστε περισσότερες λειτουργίες του Βοηθού.</translation>
 <translation id="5136175204352732067">Συνδέθηκε διαφορετικό πληκτρολόγιο</translation>
 <translation id="5168181903108465623">Διαθέσιμες συσκευές μετάδοσης</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">Το δίκτυο ενδέχεται να παρακολουθείται</translation>
 <translation id="7536035074519304529">Διεύθυνση IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Ώρα για ύπνο</translation>
+<translation id="7561982940498449837">Κλείσιμο μενού</translation>
 <translation id="7562368315689366235">Παλέτα Emoji</translation>
 <translation id="7564874036684306347">Η μετακίνηση των παραθύρων σε άλλη επιφάνεια εργασίας ενδέχεται να οδηγήσει σε μη αναμενόμενη συμπεριφορά. Ενδέχεται να γίνει διαχωρισμός μεταγενέστερων ειδοποιήσεων, παραθύρων και παραθύρων διαλόγου μεταξύ των επιφανειών εργασίας.</translation>
 <translation id="7568294522609223312">Απενεργοποίηση αυτόματων κλικ</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">Αύξηση</translation>
 <translation id="8029629653277878342">Απαιτείται PIN ή κωδικός πρόσβασης για περισσότερη ασφάλεια.</translation>
 <translation id="8030169304546394654">Σε αποσύνδεση</translation>
+<translation id="8042893070933512245">Άνοιγμα μενού ρυθμίσεων προσβασιμότητας</translation>
 <translation id="8048123526339889627">Ρυθμίσεις Bluetooth</translation>
 <translation id="8054466585765276473">Υπολογισμός χρόνου μπαταρίας που απομένει.</translation>
 <translation id="8061464966246066292">Υψηλή αντίθεση</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">Ορισμός υπενθύμισης</translation>
 <translation id="8878886163241303700">Επέκταση οθόνης</translation>
 <translation id="890616557918890486">Αλλαγή πηγής</translation>
+<translation id="8908312332415978740">Η οθόνη <ph name="DISPLAY_NAME" /> δεν υποστηρίζει <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Η ανάλυση άλλαξε σε <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Κάντε κλικ για να επιβεβαιώσετε τις αλλαγές. Θα γίνει επαναφορά των προηγούμενων ρυθμίσεων σε <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Η μπαταρία βρίσκεται στο <ph name="PERCENTAGE" /> τοις εκατό.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Ο Βοηθός Google δεν είναι διαθέσιμος σε αυτήν τη γλώσσα.</translation>

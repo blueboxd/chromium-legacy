@@ -7,6 +7,7 @@
 This makes it easier to query build tables for particular error types as
 exit codes are visible to queries while exception stack traces are not."""
 
+import errno
 import fcntl
 import logging
 import os
@@ -23,17 +24,15 @@ def _PrintException(value, trace):
   print(str(value))
 
 
-# TODO(crbug.com/1080858): Delete function when the stdout print bug is fixed.
-def _LogStdoutBlockingStatus():
-    """Log whether sys.stdout is blocking or non-blocking.
+def IsStdoutBlocking():
+  """Returns True if sys.stdout is blocking or False if non-blocking.
 
-    It should be blocking, but there are intermittent IO errors that suggest
-    that it is set to non-blocking at times during test runs."""
+  sys.stdout should always be blocking.  Non-blocking is associated with
+  intermittent IOErrors (crbug.com/1080858).
+  """
 
-    if fcntl.fcntl(sys.stdout, fcntl.F_GETFD) & os.O_NONBLOCK:
-        logging.error('sys.stdout is non-blocking')
-    else:
-        logging.info('sys.stdout is blocking')
+  nonblocking = fcntl.fcntl(sys.stdout, fcntl.F_GETFL) & os.O_NONBLOCK
+  return not nonblocking
 
 
 def HandleExceptionAndReturnExitCode():
@@ -57,14 +56,15 @@ def HandleExceptionAndReturnExitCode():
 
   if type is FuchsiaTargetException:
     if 'ssh' in str(value).lower():
-        print('Error: FuchsiaTargetException: SSH to Fuchsia target failed.')
-        return 65
+      print('Error: FuchsiaTargetException: SSH to Fuchsia target failed.')
+      return 65
     return 64
   elif type is IOError:
-    if value.errno == 11:
-        print('Info: Python print to sys.stdout probably failed')
-        _LogStdoutBlockingStatus()
-        return 73
+    if value.errno == errno.EAGAIN:
+      logging.info('Python print to sys.stdout probably failed')
+      if not IsStdoutBlocking():
+        logging.warn('sys.stdout is non-blocking')
+      return 73
     return 72
   elif type is subprocess.CalledProcessError:
     if value.cmd[0] == 'scp':

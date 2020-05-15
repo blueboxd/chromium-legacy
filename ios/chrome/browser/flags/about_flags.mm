@@ -642,6 +642,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"password-check", flag_descriptions::kPasswordCheckName,
      flag_descriptions::kPasswordCheckDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordCheck)},
+    {"enable-ios-managed-settings-ui",
+     flag_descriptions::kEnableIOSManagedSettingsUIName,
+     flag_descriptions::kEnableIOSManagedSettingsUIDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableIOSManagedSettingsUI)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

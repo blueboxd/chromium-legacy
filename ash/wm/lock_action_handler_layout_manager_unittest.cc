@@ -48,7 +48,11 @@ aura::Window* GetContainer(ShellWindowId container_id) {
 
 class TestWindowDelegate : public views::WidgetDelegate {
  public:
-  TestWindowDelegate() { SetFocusTraversesOut(true); }
+  TestWindowDelegate() {
+    SetCanMaximize(true);
+    SetCanResize(true);
+    SetFocusTraversesOut(true);
+  }
   ~TestWindowDelegate() override = default;
 
   // views::WidgetDelegate:
@@ -56,8 +60,6 @@ class TestWindowDelegate : public views::WidgetDelegate {
   views::Widget* GetWidget() override { return widget_; }
   const views::Widget* GetWidget() const override { return widget_; }
   bool CanActivate() const override { return true; }
-  bool CanResize() const override { return true; }
-  bool CanMaximize() const override { return true; }
 
   void set_widget(views::Widget* widget) { widget_ = widget; }
 

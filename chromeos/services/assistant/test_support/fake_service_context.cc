@@ -18,7 +18,7 @@ FakeServiceContext::FakeServiceContext() = default;
 FakeServiceContext::~FakeServiceContext() = default;
 
 FakeServiceContext& FakeServiceContext::set_assistant_alarm_timer_controller(
-    ash::mojom::AssistantAlarmTimerController* value) {
+    ash::AssistantAlarmTimerController* value) {
   assistant_alarm_timer_controller_ = value;
   return *this;
 }
@@ -53,7 +53,7 @@ FakeServiceContext& FakeServiceContext::set_assistant_notification_controller(
   return *this;
 }
 
-ash::mojom::AssistantAlarmTimerController*
+ash::AssistantAlarmTimerController*
 FakeServiceContext::assistant_alarm_timer_controller() {
   DCHECK(assistant_alarm_timer_controller_ != nullptr);
   return assistant_alarm_timer_controller_;

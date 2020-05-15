@@ -8,11 +8,11 @@
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_cancel_handler.h"
 
 #include "base/scoped_observer.h"
-#include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
+#import "ios/chrome/browser/infobars/overlays/translate_overlay_tab_helper.h"
 
-class InfobarOverlayRequestInserter;
 class OverlayRequestQueue;
+class TranslateOverlayTabHelper;
 
 namespace translate_infobar_overlays {
 
@@ -22,47 +22,42 @@ namespace translate_infobar_overlays {
 class PlaceholderRequestCancelHandler
     : public InfobarOverlayRequestCancelHandler {
  public:
-  // Constructor for a handler that cancels |request| of |translate_infobar|
-  // from |queue| and insert a banner request into |inserter| when translation
-  // finishes. |inserter| must be non-null.
+  // Constructor for a handler that cancels |request| of |translate_infobar|.
   PlaceholderRequestCancelHandler(OverlayRequest* request,
                                   OverlayRequestQueue* queue,
-                                  InfobarOverlayRequestInserter* inserter,
+                                  TranslateOverlayTabHelper* tab_helper,
                                   InfoBarIOS* translate_infobar);
   ~PlaceholderRequestCancelHandler() override;
 
  private:
-  // Observer of TranslateInfobarDelegate that informs the
-  // PlaceholderRequestCancelHandler about changes to the TranslateStep.
-  class TranslateDelegateObserver
-      : public translate::TranslateInfoBarDelegate::Observer {
+  // Observes TranslateOverlayTabHelper to cancel the placeholder when Translate
+  // finishes.
+  class TranslationFinishedObserver
+      : public TranslateOverlayTabHelper::Observer {
    public:
-    TranslateDelegateObserver(translate::TranslateInfoBarDelegate* delegate,
-                              PlaceholderRequestCancelHandler* cancel_handler);
-    ~TranslateDelegateObserver() override;
+    TranslationFinishedObserver(
+        TranslateOverlayTabHelper* tab_helper,
+        PlaceholderRequestCancelHandler* cancel_handler);
+    ~TranslationFinishedObserver() override;
 
-    // translate::TranslateInfoBarDelegate::Observer.
-    void OnTranslateStepChanged(
-        translate::TranslateStep step,
-        translate::TranslateErrors::Type error_type) override;
-    bool IsDeclinedByUser() override;
-    void OnTranslateInfoBarDelegateDestroyed(
-        translate::TranslateInfoBarDelegate* delegate) override;
+   private:
+    // TranslateOverlayTabHelper::Observer
+    void TranslationFinished(TranslateOverlayTabHelper* tab_helper,
+                             bool success) override;
+    void TranslateOverlayTabHelperDestroyed(
+        TranslateOverlayTabHelper* tab_helper) override;
 
-    // The PlaceholderRequestCancelHandler.
-    PlaceholderRequestCancelHandler* cancel_handler_ = nil;
-    // Scoped observer that facilitates observing a TranslateInfoBarDelegate.
-    ScopedObserver<translate::TranslateInfoBarDelegate,
-                   translate::TranslateInfoBarDelegate::Observer>
+    PlaceholderRequestCancelHandler* cancel_handler_;
+
+    ScopedObserver<TranslateOverlayTabHelper,
+                   TranslateOverlayTabHelper::Observer>
         scoped_observer_;
   };
 
-  // Notify the cancel handler of a change to the current TranslateStep.
-  void TranslateStepChanged(translate::TranslateStep step);
+  // Indicates to the cancel handler that the translation has finished.
+  void TranslationHasFinished();
 
-  // Inserter to add requests to.
-  InfobarOverlayRequestInserter* inserter_ = nullptr;
-  TranslateDelegateObserver translate_delegate_observer_;
+  TranslationFinishedObserver translation_finished_observer_;
 };
 
 }  // namespace translate_infobar_overlays

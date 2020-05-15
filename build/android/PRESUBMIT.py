@@ -86,6 +86,7 @@ def CommonChecks(input_api, output_api):
               J('pylib', 'symbols', 'apk_native_libs_unittest.py'),
               J('pylib', 'symbols', 'elf_symbolizer_unittest.py'),
               J('pylib', 'symbols', 'symbol_utils_unittest.py'),
+              J('pylib', 'utils', 'chrome_proxy_utils_test.py'),
               J('pylib', 'utils', 'decorators_test.py'),
               J('pylib', 'utils', 'device_dependencies_test.py'),
               J('pylib', 'utils', 'dexdump_test.py'),

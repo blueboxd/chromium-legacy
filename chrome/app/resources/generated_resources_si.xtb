@@ -54,7 +54,6 @@
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1060292118287751956">තිරය යාවත්කාලීන වන සංඛ්‍යාතය තීරණ කරයි</translation>
 <translation id="1061904396131502319">විවේකයක් සඳහා වේලාවයි</translation>
-<translation id="1064552680598333868">මයික්‍රොෆෝනය වෙත වෙනස්කම් ලිනක්ස් මීළඟ වරට යළි ඇරඹූ විට ක්‍රියාත්මක වෙයි.</translation>
 <translation id="1067048845568873861">සාදන ලදි</translation>
 <translation id="1067291318998134776">Linux (බීටා)</translation>
 <translation id="1067922213147265141">වෙනත් Google සේවාවන්</translation>
@@ -300,7 +299,6 @@
 <translation id="1386387014181100145">හෙලෝ.</translation>
 <translation id="138784436342154190">පෙරනිමි ආරම්භක පිටුව ප්‍රතිසාධනය කරනවා ද?</translation>
 <translation id="1390548061267426325">සාමාන්‍ය ටැබයක් ලෙස විවෘත කරන්න</translation>
-<translation id="1392232653471491344">ලිනක්ස් යළි ඇරඹුම අවශ්‍යයි</translation>
 <translation id="1393283411312835250">හිරු හා වළාකුළු</translation>
 <translation id="1395730723686586365">යාවත්කාලකය ඇරඹිණි</translation>
 <translation id="1396139853388185343">මුද්‍රණ යන්ත්‍රය පිහිටුවීමේ දෝෂය</translation>
@@ -706,7 +704,6 @@
 <translation id="186612162884103683">"<ph name="EXTENSION" />" ට පරීක්ෂා කළ ස්ථානවල රූප, වීඩියෝ, සහ ශබ්ද ගොනු කියවිය සහ ලිවිය හැක.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> ඔබේ ස්ථාපනය සම්පූර්ණ කිරීමට සූදානම්</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
-<translation id="1870629042957780127">මයික්‍රොෆෝනයට ප්‍රවේශය දෙන්න</translation>
 <translation id="1871534214638631766">ඔබ අන්තර්ගතය දකුණු ක්ලික් කළ විට හෝ දිගු කාලයක් එබූ විට අදාළ තතු පෙන්වන්න</translation>
 <translation id="1871615898038944731">ඔබගේ <ph name="DEVICE_TYPE" /> යාවත්කාලීනයි</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{පටිත්ත වෙනත් කවුළුවකට ගෙන යන්න}one{පටිති වෙනත් කවුළුවකට ගෙන යන්න}other{පටිති වෙනත් කවුළුවකට ගෙන යන්න}}</translation>
@@ -2101,7 +2098,6 @@
 <translation id="3661172646479098821">දැනට Android උපාංගවලට පමණක් සහය දක්වනු ලැබේ.</translation>
 <translation id="3664511988987167893">දිගු නිරූපකය</translation>
 <translation id="3665589677786828986">ඔබගේ ඇතැම් සැකසීම් වෙනත් ක්‍රමලේඛයක් මගින් දූෂිතව ඇති බව Chrome අනාවරණය කර ගත් අතර, ඒවා එහි මුල් පෙරනිමිවලට යළි සකසන ලදී.</translation>
-<translation id="366867565525278777">ආචයන ඉඩ නොමැති වීම නිසා ස්ථාපනය අසාර්ථක විය. අවම වශයෙන් <ph name="INSTALL_SIZE" /> ක හිස් ඉඩක් අවශ්‍යයි. ඉඩ හිස් කිරීමට, උපාංග ගබඩාවෙන් ගොනු මකන්න.</translation>
 <translation id="3668801437375206837">බ්ලූටූත් ගැටලු වඩාත් හොඳින් හඳුනා ගැනීම සඳහා, ගූගල්කරුවන් ඔවුන්ගේ ප්‍රතිපෝෂණ වාර්තා සමඟ අතිරේක බ්ලූටූත් ලොග ඇතුළත් කළ හැකිය. මෙම විකල්පය ලකුණු කරනු ලැබූ විට, ඔබේ වර්තමාන සැසියේ සිට btsnoop සහ HCI ලොග ඇතුළත් වනු ඇත, හැකි තරම් PII ඉවත් කිරීමට පවිත්‍ර කෙරේ. මෙම ලොගවලට පිවිසීමට Listnr හි Chrome OS නිෂ්පාදන කණ්ඩායමේ කළමනාකරුවන්ට සීමා වනු ඇත. දින 90 කට පසුව ලොග ඉවත් කරනු ලැබේ.</translation>
 <translation id="3668823961463113931">හසුරු</translation>
 <translation id="3670113805793654926">ඕනෑම විකුණුම්කරු වෙතින් උපාංග</translation>
@@ -3230,7 +3226,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="5158983316805876233">සියළු නාමාවලි සඳහා එකම ප්‍රොක්සි භාවිත කරන්න</translation>
 <translation id="5160857336552977725">ඔබේ <ph name="DEVICE_TYPE" /> වෙත පුරන්න</translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> කල් පැන ඇති නිසා අවහිර කර ඇත</translation>
-<translation id="5169131225159279624">එක් කිරීම</translation>
 <translation id="5170568018924773124">ෆෝල්ඩරයේ පෙන්වන්න</translation>
 <translation id="5171045022955879922">සොයන්න හෝ ලිපිනය යොදන්න</translation>
 <translation id="5171343362375269016">හුවමාරු කළ මතකය</translation>
@@ -3282,7 +3277,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="5235565664420173924">Better Together</translation>
 <translation id="5235750401727657667">නව ටැබයක් විවෘත කිරීමේදී ඔබ දකින පිටුව ප්‍රතිස්ථාපනය කරන්න</translation>
 <translation id="5238278114306905396">ස්වයංක්‍රීයව "<ph name="EXTENSION_NAME" />" යෙදුම ඉවත් කරන ලදි.</translation>
-<translation id="5238435043462632060">ඔබේ මාපිය Chrome සඳහා "වෙබ් අඩවි, යෙදුම් සහ දිගු සඳහා වන අවසර" අක්‍රිය කර ඇත. <ph name="ACTION_PARAMETER" /> මෙම <ph name="EXTENSION_TYPE_PARAMETER" />ට අවසර නැත.</translation>
 <translation id="5241128660650683457">ඔබ පිවිසෙන සියලුම වෙබ් අඩවිවල ඔබගේ සියලුම දත්ත කියවන්න</translation>
 <translation id="5242724311594467048">"<ph name="EXTENSION_NAME" />" සබල කරන්නද?</translation>
 <translation id="5243522832766285132">කරුණාකර සුළු මොහොතකින් නැවත උත්සාහ කරන්න</translation>
@@ -3952,7 +3946,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="6085886413119427067">සුරක්‍ෂිත සම්බන්ධතාවක් හරහා වෙබ් අඩවිවලට සම්බන්ධ කරන ආකාරය තීරණ කරයි</translation>
 <translation id="6086846494333236931">ඔබේ පරිපාලක විසින් ස්ථාපනය කරන ලදී</translation>
 <translation id="6087960857463881712">නියම මුහුණ</translation>
-<translation id="6088036808197002565"><ph name="ACTION_PARAMETER" /> <ph name="EXTENSION_TYPE_PARAMETER" /> අබලයි</translation>
 <translation id="6091761513005122595">කොටස සාර්ථකව නැංවිණි.</translation>
 <translation id="6093888419484831006">යාවත්කාලීන අවලංගු කරමින්...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -5919,7 +5912,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="8650543407998814195">ඔබට තවදුරටත් ඔබේ පැරණි පැතිකඩට ප්‍රවේශ වීමට නොහැකි වුවද, එය තවමත් ඉවත් කළ හැකිය.</translation>
 <translation id="8651585100578802546">මෙම පිටුව බලෙන් නැවත පටවන්න</translation>
 <translation id="8652400352452647993">ඇසුරුම් දිගු දෝෂය</translation>
-<translation id="8653578191563425126">Crostini සඳහා වෙන් කිරීම සඳහා වන තැටි ඉඩ (පසුව ඔබට මෙය වෙනස් කළ හැක).</translation>
 <translation id="8654151524613148204">කණගාටුයි. මෙම ගොනුව ඔබේ පරිගණකයෙන් පාලනය කිරීම සඳහා විශාල වැඩිය.</translation>
 <translation id="8655295600908251630">නාලිකාව</translation>
 <translation id="8655319619291175901">ඕහ්, යමක් වැරදී ඇත.</translation>

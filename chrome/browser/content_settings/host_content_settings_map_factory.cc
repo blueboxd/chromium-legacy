@@ -77,14 +77,16 @@ scoped_refptr<RefcountedKeyedService>
 
   Profile* profile = static_cast<Profile*>(context);
 
-  // In incognito mode, retrieve the host content settings map of the parent
+  // In OffTheRecord mode, retrieve the host content settings map of the parent
   // profile in order to ensure the preferences have been migrated.
-  if (profile->IsIncognitoProfile())
+  // This is not required for guest sessions, since the parent profile of a
+  // guest OTR profile is empty.
+  if (profile->IsOffTheRecord() && !profile->IsGuestSession())
     GetForProfile(profile->GetOriginalProfile());
 
   scoped_refptr<HostContentSettingsMap> settings_map(new HostContentSettingsMap(
       profile->GetPrefs(),
-      profile->IsIncognitoProfile() || profile->IsGuestSession(),
+      profile->IsOffTheRecord() || profile->IsGuestSession(),
       /*store_last_modified=*/true,
       base::FeatureList::IsEnabled(
           permissions::features::kPermissionDelegation),

@@ -132,7 +132,8 @@ const SettingsBooleanControlBehaviorImpl = {
    * @protected
    */
   controlDisabled() {
-    return this.disabled || this.isPrefEnforced();
+    return this.disabled || this.isPrefEnforced() ||
+        !!(this.pref && this.pref.userControlDisabled);
   },
 };
 

@@ -539,6 +539,13 @@ def AddInstrumentationTestOptions(parser):
       help='Wait for java debugger to attach before running any application '
            'code. Also disables test timeouts and sets retries=0.')
 
+  # WPR record mode.
+  parser.add_argument('--wpr-enable-record',
+                      action='store_true',
+                      default=False,
+                      help='If true, WPR server runs in record mode.'
+                      'otherwise, runs in replay mode.')
+
   # These arguments are suppressed from the help text because they should
   # only ever be specified by an intermediate script.
   parser.add_argument(

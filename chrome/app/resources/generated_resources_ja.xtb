@@ -53,7 +53,6 @@
 <translation id="1056898198331236512">警告</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1061904396131502319">もうすぐ休憩の時間です</translation>
-<translation id="1064552680598333868">マイクの変更は、Linux を再起動すると有効になります。</translation>
 <translation id="1067048845568873861">作成日</translation>
 <translation id="1067291318998134776">Linux（ベータ版）</translation>
 <translation id="1067922213147265141">他の Google サービス</translation>
@@ -298,7 +297,6 @@
 <translation id="1386387014181100145">こんにちは。</translation>
 <translation id="138784436342154190">デフォルトの起動ページに戻しますか？</translation>
 <translation id="1390548061267426325">通常のタブとして開く</translation>
-<translation id="1392232653471491344">Linux の再起動が必要です</translation>
 <translation id="1393283411312835250">太陽と雲</translation>
 <translation id="1395730723686586365">アップデータ起動</translation>
 <translation id="1396139853388185343">プリンタの設定中にエラーが発生しました</translation>
@@ -704,7 +702,6 @@
 <translation id="186612162884103683">「<ph name="EXTENSION" />」はチェックした場所にある画像、動画、音声の各ファイルの読み込みと書き込みが可能です。</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> をインストールする準備ができました</translation>
 <translation id="1868193363684582383">「OK Google」</translation>
-<translation id="1870629042957780127">マイクへのアクセス許可</translation>
 <translation id="1871534214638631766">コンテンツを右クリックまたは長押ししたときに関連情報を表示します</translation>
 <translation id="1871615898038944731">お使いの <ph name="DEVICE_TYPE" /> は最新です</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{タブを別のウィンドウに移動}other{タブを別のウィンドウに移動}}</translation>
@@ -2090,7 +2087,6 @@
 <translation id="3661172646479098821">現在、Android デバイスのみがサポートされています。</translation>
 <translation id="3664511988987167893">拡張機能アイコン</translation>
 <translation id="3665589677786828986">設定の一部が別のプログラムによって変更されていたため、元のデフォルト設定に戻しました。</translation>
-<translation id="366867565525278777">ストレージの空き容量が不足しているため、インストールできませんでした。少なくとも <ph name="INSTALL_SIZE" /> の空き容量が必要です。空き容量を確保するために、デバイスのストレージからファイルを削除してください。</translation>
 <translation id="3668801437375206837">Bluetooth の問題の診断に向けて、Google 社員はフィードバック レポートに追加の Bluetooth ログを含めることができます。このオプションのチェックボックスがオンになっている場合、レポートには現在のセッションの btsnoop ログと HCI ログが含められます。その際、個人を特定できる情報は可能な限り削除されます。これらのログへのアクセスは、Listnr での Chrome OS プロダクト グループのマネージャーのみに制限されます。ログは 90 日経過後に消去されます。</translation>
 <translation id="3668823961463113931">ハンドラ</translation>
 <translation id="3670113805793654926">任意のベンダーのデバイス</translation>
@@ -3211,7 +3207,6 @@
 <translation id="5158983316805876233">すべてのプロトコルで同じプロキシを使用する</translation>
 <translation id="5160857336552977725"><ph name="DEVICE_TYPE" /> にログインしてください</translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> はバージョンが古いためブロックされました</translation>
-<translation id="5169131225159279624">追加</translation>
 <translation id="5170568018924773124">フォルダを開く</translation>
 <translation id="5171045022955879922">検索または URL を入力</translation>
 <translation id="5171343362375269016">スワップ対象メモリ</translation>
@@ -3263,7 +3258,6 @@
 <translation id="5235565664420173924">Better Together</translation>
 <translation id="5235750401727657667">新しいタブを開いたときの表示ページを変更する</translation>
 <translation id="5238278114306905396">アプリ「<ph name="EXTENSION_NAME" />」は自動的に削除されました。</translation>
-<translation id="5238435043462632060">保護者が Chrome の「サイト、アプリ、拡張機能の権限」をオフにしました。この<ph name="EXTENSION_TYPE_PARAMETER" />を<ph name="ACTION_PARAMETER" />することはできません。</translation>
 <translation id="5241128660650683457">アクセスしたウェブサイトでのすべてのユーザーデータの読み取り</translation>
 <translation id="5242724311594467048">「<ph name="EXTENSION_NAME" />」を有効にしますか？</translation>
 <translation id="5243522832766285132">しばらくしてからもう一度お試しください</translation>
@@ -3931,7 +3925,6 @@
 <translation id="6085886413119427067">ウェブサイトに安全に接続する方法を決定します</translation>
 <translation id="6086846494333236931">管理者によりインストールされています</translation>
 <translation id="6087960857463881712">エピック スマイリー</translation>
-<translation id="6088036808197002565"><ph name="EXTENSION_TYPE_PARAMETER" />の<ph name="ACTION_PARAMETER" />は無効になっています</translation>
 <translation id="6091761513005122595">共有フォルダが正常にマウントされました。</translation>
 <translation id="6093888419484831006">更新をキャンセルしています...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -5891,7 +5884,6 @@
 <translation id="8650543407998814195">古いプロフィールにアクセスすることはできませんが、削除することはできます。</translation>
 <translation id="8651585100578802546">ページを再読み込み</translation>
 <translation id="8652400352452647993">拡張機能のパッケージ化のエラー</translation>
-<translation id="8653578191563425126">Crostini 用に予約するディスクの空き容量です（後で変更できます）。</translation>
 <translation id="8654151524613148204">ファイル サイズが大きすぎるため、お使いのパソコンでは処理できません。</translation>
 <translation id="8655295600908251630">チャンネル</translation>
 <translation id="8655319619291175901">エラーが発生しました。</translation>

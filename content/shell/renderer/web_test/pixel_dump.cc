@@ -50,15 +50,16 @@ void CapturePixelsForPrinting(
   blink::WebSize page_size_in_pixels = frame_widget->Size();
 
   int page_count = web_frame->PrintBegin(page_size_in_pixels);
-  int total_height = page_count * (page_size_in_pixels.height + 1) - 1;
+  blink::WebSize spool_size =
+      web_frame->SpoolSizeInPixelsForTesting(page_size_in_pixels, page_count);
 
   bool is_opaque = false;
 
   SkBitmap bitmap;
-  if (!bitmap.tryAllocN32Pixels(page_size_in_pixels.width, total_height,
+  if (!bitmap.tryAllocN32Pixels(spool_size.width, spool_size.height,
                                 is_opaque)) {
     LOG(ERROR) << "Failed to create bitmap width=" << page_size_in_pixels.width
-               << " height=" << total_height;
+               << " height=" << spool_size.height;
     std::move(callback).Run(SkBitmap());
     return;
   }
@@ -67,7 +68,7 @@ void CapturePixelsForPrinting(
                                   printing::PrintSettings::NewCookie());
   cc::SkiaPaintCanvas canvas(bitmap);
   canvas.SetPrintingMetafile(&metafile);
-  web_frame->PrintPagesForTesting(&canvas, page_size_in_pixels);
+  web_frame->PrintPagesForTesting(&canvas, page_size_in_pixels, spool_size);
   web_frame->PrintEnd();
 
   std::move(callback).Run(bitmap);

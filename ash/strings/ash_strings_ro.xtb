@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="1012876632442809908">Dispozitiv USB-C (portul din față)</translation>
+<translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> a fost modificată la <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Dă clic pe Confirmă pentru a păstra modificările. Setările anterioare vor fi restabilite în <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” solicită permisiunea de a se conecta. Introduceți acest cod PIN pe dispozitivul respectiv: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Bateria creionului este descărcată</translation>
 <translation id="1037492556044956303">S-a adăugat <ph name="DEVICE_NAME" /></translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">Arată setările pentru limbă</translation>
 <translation id="1460620680449458626">Sunetul este dezactivat.</translation>
 <translation id="1467432559032391204">Stânga</translation>
+<translation id="1479909375538722835">Meniul de accesibilitate flotant</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">Activat</translation>
 <translation id="1516740043221086139">Funcția Nu deranja este activată.</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">Proiectează ecranul</translation>
 <translation id="5030687792513154421">Timpul a expirat</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> conectat la un telefon nou</translation>
+<translation id="5035389544768382859">Confirmă configurația afișajului</translation>
 <translation id="5083553833479578423">Deblochează mai multe funcții ale Asistentului.</translation>
 <translation id="5136175204352732067">Altă tastatură conectată</translation>
 <translation id="5168181903108465623">Dispozitive de proiecție disponibile</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">Este posibil ca rețeaua să fie monitorizată</translation>
 <translation id="7536035074519304529">Adresă IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Este timpul pentru culcare</translation>
+<translation id="7561982940498449837">Închide meniul</translation>
 <translation id="7562368315689366235">Paletă cu emoji</translation>
 <translation id="7564874036684306347">Mutarea ferestrelor pe alt desktop poate duce la un comportament neașteptat. Notificările, ferestrele și casetele de dialog ulterioare ar putea fi împărțite între ecrane.</translation>
 <translation id="7568294522609223312">Dezactivează clicurile automate</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">Incrementează</translation>
 <translation id="8029629653277878342">Este necesar codul PIN sau parola pentru mai multă siguranță</translation>
 <translation id="8030169304546394654">Deconectat</translation>
+<translation id="8042893070933512245">Deschide meniul cu setări de accesibilitate</translation>
 <translation id="8048123526339889627">Setări Bluetooth</translation>
 <translation id="8054466585765276473">Se calculează durata bateriei.</translation>
 <translation id="8061464966246066292">Contrast ridicat</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">Setează un memento</translation>
 <translation id="8878886163241303700">Ecran extins</translation>
 <translation id="890616557918890486">Schimbă sursa</translation>
+<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> nu acceptă <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Rezoluția a fost modificată la <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Dă clic pe Confirmă pentru a păstra modificările. Setările anterioare vor fi restabilite în <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Nivelul bateriei este <ph name="PERCENTAGE" /> %.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Asistentul Google nu vorbește în această limbă.</translation>

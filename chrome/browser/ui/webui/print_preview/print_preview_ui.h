@@ -62,6 +62,10 @@ class PrintPreviewUI : public ConstrainedWebDialogUI,
   void SetOptionsFromDocument(const mojom::OptionsFromDocumentParamsPtr params,
                               int32_t request_id) override;
   void PrintPreviewFailed(int32_t document_cookie, int32_t request_id) override;
+  void PrintPreviewCancelled(int32_t document_cookie,
+                             int32_t request_id) override;
+  void PrinterSettingsInvalid(int32_t document_cookie,
+                              int32_t request_id) override;
 
   bool IsBound() const;
 
@@ -172,17 +176,9 @@ class PrintPreviewUI : public ConstrainedWebDialogUI,
   // closed, which may occur for several reasons, e.g. tab closure or crash.
   void OnPrintPreviewDialogClosed();
 
-  // Notifies the Web UI that the preview request identified by |request_id|
-  // was cancelled.
-  void OnPrintPreviewCancelled(int request_id);
-
   // Notifies the Web UI that initiator is closed, so we can disable all the
   // controls that need the initiator for generating the preview data.
   void OnInitiatorClosed();
-
-  // Notifies the Web UI that the printer is unavailable or its settings are
-  // invalid. |request_id| is the preview request id with the invalid printer.
-  void OnInvalidPrinterSettings(int request_id);
 
   // Notifies the Web UI to cancel the pending preview request.
   virtual void OnCancelPendingPreviewRequest();

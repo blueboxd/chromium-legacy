@@ -13,6 +13,8 @@
 #include "ash/shell_observer.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_observer.h"
+#include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_observer.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
@@ -26,7 +28,8 @@ class ASH_EXPORT DragHandle : public views::View,
                               public views::ViewTargeterDelegate,
                               public OverviewObserver,
                               public ShellObserver,
-                              public ui::ImplicitAnimationObserver {
+                              public ui::ImplicitAnimationObserver,
+                              public SplitViewObserver {
  public:
   DragHandle(int drag_handle_corner_radius, Shelf* shelf);
   DragHandle(const DragHandle&) = delete;
@@ -70,6 +73,10 @@ class ASH_EXPORT DragHandle : public views::View,
 
   // ShellObserver:
   void OnShellDestroying() override;
+
+  // SplitViewObserver:
+  void OnSplitViewStateChanged(SplitViewController::State previous_state,
+                               SplitViewController::State state) override;
 
   ContextualNudge* drag_handle_nudge() { return drag_handle_nudge_; }
 
@@ -153,6 +160,9 @@ class ASH_EXPORT DragHandle : public views::View,
   ContextualNudge* drag_handle_nudge_ = nullptr;
 
   std::unique_ptr<Shelf::ScopedAutoHideLock> auto_hide_lock_;
+
+  ScopedObserver<SplitViewController, SplitViewObserver> split_view_observer_{
+      this};
 
   ScopedObserver<OverviewController, OverviewObserver> overview_observer_{this};
 

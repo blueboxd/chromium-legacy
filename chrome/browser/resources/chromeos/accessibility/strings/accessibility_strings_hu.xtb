@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">Váltógomb</translation>
 <translation id="1299774449519412690">Világos égkék</translation>
 <translation id="1303806948938513162">A ChromeVox-menük megnyitásához koppintson négy ujjal</translation>
+<translation id="1325363694295259631">A menüelem (<ph name="NAME" />) választógombja nincs kiválasztva</translation>
 <translation id="1325946044405407859">Cserszín</translation>
 <translation id="1331702245475014624"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">karakterek és szavak visszaolvasása</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">Aktuális akkumulátortöltöttség bejelentése</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, kiválasztott választógomb</translation>
 <translation id="5011664330025416377">Az aktiváláshoz nyomja le a Keresés+szóköz billentyűparancsot</translation>
+<translation id="5012724933919010465">A menüelem (<ph name="NAME" />) választógombja kiválasztva</translation>
 <translation id="5020651427400641814">Beszéd naplózásának engedélyezése</translation>
 <translation id="5041394372352067729">A Braille-kijelző áthelyezése az oldal tetejére</translation>
 <translation id="5042770794184672516">Beszéd hangerejének növelése</translation>

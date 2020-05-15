@@ -606,6 +606,7 @@ source_set("unit_tests") {
     "engine_impl/apply_control_data_updates_unittest.cc",
     "engine_impl/backoff_delay_provider_unittest.cc",
     "engine_impl/bookmark_update_preprocessing_unittest.cc",
+    "engine_impl/commit_processor_unittest.cc",
     "engine_impl/cycle/data_type_debug_info_emitter_unittest.cc",
     "engine_impl/cycle/nudge_tracker_unittest.cc",
     "engine_impl/cycle/status_controller_unittest.cc",

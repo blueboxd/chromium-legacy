@@ -129,6 +129,7 @@
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_performance.h"
 #include "third_party/blink/public/web/web_plugin.h"
+#include "third_party/blink/public/web/web_print_page_description.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_print_preset_options.h"
 #include "third_party/blink/public/web/web_range.h"
@@ -323,7 +324,8 @@ class ChromePrintContext : public PrintContext {
 
   void SpoolAllPagesWithBoundariesForTesting(
       cc::PaintCanvas* canvas,
-      const FloatSize& page_size_in_pixels) {
+      const FloatSize& page_size_in_pixels,
+      const FloatSize& spool_size_in_pixels) {
     DispatchEventsForPrintingOnAllFrames();
     if (!GetFrame()->GetDocument() ||
         !GetFrame()->GetDocument()->GetLayoutView())
@@ -336,10 +338,8 @@ class ChromePrintContext : public PrintContext {
 
     ComputePageRects(page_size_in_pixels);
 
-    const float page_width = page_size_in_pixels.Width();
-    wtf_size_t num_pages = PageRects().size();
-    int total_height = num_pages * (page_size_in_pixels.Height() + 1) - 1;
-    FloatRect all_pages_rect(0, 0, page_width, total_height);
+    FloatRect all_pages_rect(0, 0, spool_size_in_pixels.Width(),
+                             spool_size_in_pixels.Height());
 
     PaintRecordBuilder builder(canvas->GetPrintingMetafile());
     GraphicsContext& context = builder.Context();
@@ -349,6 +349,7 @@ class ChromePrintContext : public PrintContext {
     // Fill the whole background by white.
     context.FillRect(all_pages_rect, Color::kWhite);
 
+    wtf_size_t num_pages = PageRects().size();
     int current_height = 0;
     for (wtf_size_t page_index = 0; page_index < num_pages; page_index++) {
       // Draw a line for a page boundary if this isn't the first page.
@@ -356,13 +357,31 @@ class ChromePrintContext : public PrintContext {
         context.Save();
         context.SetStrokeThickness(1);
         context.SetStrokeColor(Color(0, 0, 255));
-        context.DrawLine(IntPoint(0, current_height - 1),
-                         IntPoint(page_width, current_height - 1));
+        context.DrawLine(
+            IntPoint(0, current_height - 1),
+            IntPoint(spool_size_in_pixels.Width(), current_height - 1));
         context.Restore();
       }
 
       AffineTransform transform;
       transform.Translate(0, current_height);
+
+      WebPrintPageDescription description;
+      GetFrame()->GetDocument()->GetPageDescription(page_index, &description);
+      if (description.orientation == PageOrientation::kUpright) {
+        current_height += page_size_in_pixels.Height() + 1;
+      } else {
+        if (description.orientation == PageOrientation::kRotateRight) {
+          transform.Translate(page_size_in_pixels.Height(), 0);
+          transform.Rotate(90);
+        } else {
+          DCHECK_EQ(description.orientation, PageOrientation::kRotateLeft);
+          transform.Translate(0, page_size_in_pixels.Width());
+          transform.Rotate(-90);
+        }
+        current_height += page_size_in_pixels.Width() + 1;
+      }
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
       // Account for the disabling of scaling in spoolPage. In the context of
       // SpoolAllPagesWithBoundariesForTesting the scale HAS NOT been
@@ -376,8 +395,6 @@ class ChromePrintContext : public PrintContext {
       SpoolPage(context, page_index);
 
       context.Restore();
-
-      current_height += page_size_in_pixels.Height() + 1;
     }
     canvas->drawPicture(context.EndRecording());
   }
@@ -1608,13 +1625,37 @@ void WebLocalFrameImpl::GetPageDescription(
   GetFrame()->GetDocument()->GetPageDescription(page_index, description);
 }
 
+WebSize WebLocalFrameImpl::SpoolSizeInPixelsForTesting(
+    const WebSize& page_size_in_pixels,
+    int page_count) {
+  int spool_width = page_size_in_pixels.width;
+  int spool_height = 0;
+  for (int page_index = 0; page_index < page_count; page_index++) {
+    // Make room for the 1px tall page separator.
+    if (page_index)
+      spool_height++;
+
+    WebPrintPageDescription description;
+    GetFrame()->GetDocument()->GetPageDescription(page_index, &description);
+    if (description.orientation == PageOrientation::kUpright) {
+      spool_height += page_size_in_pixels.height;
+    } else {
+      spool_height += page_size_in_pixels.width;
+      spool_width = std::max(spool_width, page_size_in_pixels.height);
+    }
+  }
+  return WebSize(spool_width, spool_height);
+}
+
 void WebLocalFrameImpl::PrintPagesForTesting(
     cc::PaintCanvas* canvas,
-    const WebSize& page_size_in_pixels) {
+    const WebSize& page_size_in_pixels,
+    const WebSize& spool_size_in_pixels) {
   DCHECK(print_context_);
 
   print_context_->SpoolAllPagesWithBoundariesForTesting(
-      canvas, FloatSize(page_size_in_pixels.width, page_size_in_pixels.height));
+      canvas, FloatSize(page_size_in_pixels.width, page_size_in_pixels.height),
+      FloatSize(spool_size_in_pixels.width, spool_size_in_pixels.height));
 }
 
 WebRect WebLocalFrameImpl::GetSelectionBoundsRectForTesting() const {

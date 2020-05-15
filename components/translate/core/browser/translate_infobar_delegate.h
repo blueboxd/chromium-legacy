@@ -111,7 +111,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
 
   virtual base::string16 original_language_name() const;
 
-  void UpdateOriginalLanguage(const std::string& language_code);
+  virtual void UpdateOriginalLanguage(const std::string& language_code);
 
   std::string target_language_code() const {
     return ui_delegate_.GetTargetLanguageCode();
@@ -121,7 +121,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
     return language_name_at(ui_delegate_.GetTargetLanguageIndex());
   }
 
-  void UpdateTargetLanguage(const std::string& language_code);
+  virtual void UpdateTargetLanguage(const std::string& language_code);
 
   // Returns true if the current infobar indicates an error (in which case it
   // should get a yellow background instead of a blue one).
@@ -137,7 +137,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
 
   virtual void Translate();
   virtual void RevertTranslation();
-  void RevertWithoutClosingInfobar();
+  virtual void RevertWithoutClosingInfobar();
   void ReportLanguageDetectionError();
 
   // Called when the user declines to translate a page, by either closing the

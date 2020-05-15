@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Бүлэг үүсгэх</translation>
 <translation id="2671423594960767771">Бүлгийг хуваалцах</translation>
 <translation id="2977480621796371840">Бүлгээс хасах</translation>
+<translation id="3328308545011660196">Зөвлөмж: <ph name="NUMBER_OF_TABS" /> таб холбоотой бололтой. Эдгээрийг бүлэглэх үү?</translation>
+<translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> таб холбоотой бололтой. Эдгээрийг бүлэглэх үү?</translation>
 <translation id="4212246570487010370">Тасралтгүй үзэх</translation>
 <translation id="4450893287417543264">Дахиж бүү харуул</translation>
 <translation id="4648718555153979859">Таны табуудыг энд бүлэглэсэн болно</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Бүлгээс табыг хасах</translation>
 <translation id="7559245342362162951">Бүлгийн табуудыг бүтэн дэлгэцийн торонд харуулах</translation>
 <translation id="7792771145871471484">Зөвлөмжийг шалгах.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Сонгосон <ph name="TABS_COUNT_ONE" /> табыг бүлэглэх}other{Сонгосон <ph name="TABS_COUNT_MANY" /> табыг бүлэглэх}}</translation>
 <translation id="7885132941432959125">Табыг баруун тийш зөөх</translation>
 <translation id="7966321538264951561">Зөвлөмжийг үл хэрэгсэх.</translation>
 <translation id="814503310257431685">Бүгдийг харах</translation>

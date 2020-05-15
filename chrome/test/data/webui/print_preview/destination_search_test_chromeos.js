@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ColorModeRestriction, Destination, DestinationConnectionStatus, DestinationOrigin, DestinationStore, DestinationType, DuplexModeRestriction, InvitationStore, NativeLayer} from 'chrome://print/print_preview.js';
+import {ColorModeRestriction, Destination, DestinationConnectionStatus, DestinationOrigin, DestinationStore, DestinationType, DuplexModeRestriction, InvitationStore, NativeLayer, NativeLayerImpl} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
@@ -39,7 +39,7 @@ suite(destination_search_test_chromeos.suiteName, function() {
   setup(function() {
     // Create data classes
     nativeLayer = new NativeLayerStub();
-    NativeLayer.setInstance(nativeLayer);
+    NativeLayerImpl.instance_ = nativeLayer;
     destinationStore = createDestinationStore();
     nativeLayer.setLocalDestinationCapabilities(
         getCddTemplate('FooDevice', 'FooName'));
@@ -54,7 +54,7 @@ suite(destination_search_test_chromeos.suiteName, function() {
     dialog.activeUser = '';
     dialog.destinationStore = destinationStore;
     dialog.invitationStore = new InvitationStore();
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     document.body.appendChild(dialog);
     return nativeLayer.whenCalled('getPrinterCapabilities').then(function() {
       dialog.show();

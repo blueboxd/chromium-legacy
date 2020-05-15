@@ -2416,6 +2416,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Nếu bạn bật hoặc tắt cài đặt này, người dùng sẽ không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME" />.
 
       Nếu chính sách này không được đặt, cài đặt này sẽ được bật nhưng người dùng có thể thay đổi cài đặt này.</translation>
+<translation id="453031441196755904">Chính sách này không còn dùng nữa.</translation>
 <translation id="4531706050939927436">Các ứng dụng Android có thể bị buộc cài đặt từ Bảng điều khiển dành cho quản trị viên của Google bằng Google Play. Các ứng dụng đó không sử dụng chính sách này.</translation>
 <translation id="4534500438517478692">Tên giới hạn Android:</translation>
 <translation id="4541530620466526913">Tài khoản trong thiết bị</translation>

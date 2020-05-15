@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
 <translation id="1012876632442809908">USB-C ierīce (priekšējā pieslēgvieta)</translation>
+<translation id="1013598600051641573">Displeja “<ph name="DISPLAY_NAME" />” izšķirtspēja tika mainīta uz <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Lai saglabātu izmaiņas, noklikšķiniet uz “Apstiprināt”. Iepriekšējie iestatījumi tiks atjaunoti pēc šāda laika: <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Bluetooth ierīce “<ph name="DEVICE_NAME" />” vēlas saņemt atļauju, lai izveidotu savienojumu pārī. Lūdzu, ierīcē ievadiet šo PIN: <ph name="PINCODE" />.</translation>
 <translation id="1032891413405719768">Skārienekrāna pildspalvas akumulatora līmenis ir zems</translation>
 <translation id="1037492556044956303">Ierīce <ph name="DEVICE_NAME" /> ir pievienota</translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">Rādīt valodas iestatījumus</translation>
 <translation id="1460620680449458626">Skaņa ir izslēgta.</translation>
 <translation id="1467432559032391204">Pa kreisi</translation>
+<translation id="1479909375538722835">Peldoša pieejamības izvēlne</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">Ieslēgts</translation>
 <translation id="1516740043221086139">Režīms “Netraucēt” ir ieslēgts.</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">Ekrāna apraide</translation>
 <translation id="5030687792513154421">Izmantošanas laiks beidzies</translation>
 <translation id="5035236842988137213">Ierīce <ph name="DEVICE_NAME" /> ir savienota ar jaunu tālruni</translation>
+<translation id="5035389544768382859">Displeja konfigurācijas apstiprināšana</translation>
 <translation id="5083553833479578423">Piekļūstiet citām Asistenta funkcijām</translation>
 <translation id="5136175204352732067">Ir pievienota cita tastatūra</translation>
 <translation id="5168181903108465623">Pieejamas apraides ierīces</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">Var tikt pārraudzītas tīklā veiktās darbības</translation>
 <translation id="7536035074519304529">IP adrese: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Laiks naktsmieram</translation>
+<translation id="7561982940498449837">Aizvērt izvēlni</translation>
 <translation id="7562368315689366235">Emocijzīmju palete</translation>
 <translation id="7564874036684306347">Logu pārvietošana uz citu darbvirsmu var izraisīt neparedzētu darbību. Turpmākie paziņojumi, logi un dialoglodziņi var tikt sadalīti pa darbvirsmām.</translation>
 <translation id="7568294522609223312">Izslēgt automātiskos klikšķus</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">Palielināt</translation>
 <translation id="8029629653277878342">Papildu drošībai ir nepieciešams PIN vai parole.</translation>
 <translation id="8030169304546394654">atvienots</translation>
+<translation id="8042893070933512245">Atvērt pieejamības iestatījumu izvēlni</translation>
 <translation id="8048123526339889627">Bluetooth iestatījumi</translation>
 <translation id="8054466585765276473">Notiek akumulatora darbības ilguma aprēķināšana.</translation>
 <translation id="8061464966246066292">Augsts kontrasts</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">Iestatīt atgādinājumu</translation>
 <translation id="8878886163241303700">Notiek ekrāna izvēršana</translation>
 <translation id="890616557918890486">Mainīt avotu</translation>
+<translation id="8908312332415978740">Displejā “<ph name="DISPLAY_NAME" />” netiek atbalstīta izšķirtspēja <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Izšķirtspēja tika mainīta uz <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Noklikšķiniet uz “Apstiprināt”, lai saglabātu izmaiņas. Iepriekšējie iestatījumi tiks atjaunoti pēc šāda laika: <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Akumulatora uzlādes līmenis:<ph name="PERCENTAGE" />.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google asistents nav pieejams šajā valodā.</translation>

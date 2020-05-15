@@ -19,7 +19,7 @@ export {DuplexMode, DuplexType, getInstance, whenReady} from './data/model.js';
 export {ScalingType} from './data/scaling.js';
 export {Size} from './data/size.js';
 export {Error, State} from './data/state.js';
-export {BackgroundGraphicsModeRestriction, NativeLayer} from './native_layer.js';
+export {BackgroundGraphicsModeRestriction, NativeLayer, NativeLayerImpl} from './native_layer.js';
 export {getSelectDropdownBackground} from './print_preview_utils.js';
 export {DEFAULT_MAX_COPIES} from './ui/copies_settings.js';
 export {DestinationState} from './ui/destination_settings.js';

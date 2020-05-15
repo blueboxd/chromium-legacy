@@ -27,7 +27,7 @@ class FakeServiceContext : public ServiceContext {
   ~FakeServiceContext() override;
 
   FakeServiceContext& set_assistant_alarm_timer_controller(
-      ash::mojom::AssistantAlarmTimerController*);
+      ash::AssistantAlarmTimerController*);
   FakeServiceContext& set_main_task_runner(
       scoped_refptr<base::SingleThreadTaskRunner>);
   FakeServiceContext& set_power_manager_client(PowerManagerClient*);
@@ -37,7 +37,7 @@ class FakeServiceContext : public ServiceContext {
       ash::mojom::AssistantNotificationController*);
 
   // ServiceContext implementation:
-  ash::mojom::AssistantAlarmTimerController* assistant_alarm_timer_controller()
+  ash::AssistantAlarmTimerController* assistant_alarm_timer_controller()
       override;
   ash::AssistantController* assistant_controller() override;
   ash::mojom::AssistantNotificationController*
@@ -56,7 +56,7 @@ class FakeServiceContext : public ServiceContext {
   ash::AssistantStateBase* assistant_state_ = nullptr;
   PowerManagerClient* power_manager_client_ = nullptr;
   std::string gaia_id_ = kGaiaId;
-  ash::mojom::AssistantAlarmTimerController* assistant_alarm_timer_controller_ =
+  ash::AssistantAlarmTimerController* assistant_alarm_timer_controller_ =
       nullptr;
   ash::mojom::AssistantNotificationController*
       assistant_notification_controller_ = nullptr;

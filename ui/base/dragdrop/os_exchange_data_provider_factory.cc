@@ -13,7 +13,7 @@
 #if defined(USE_OZONE)
 #include "ui/base/dragdrop/os_exchange_data_provider_factory_ozone.h"
 #endif
-#include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_non_backed.h"
 #elif defined(OS_MACOSX)
 #include "ui/base/dragdrop/os_exchange_data_provider_builder_mac.h"
 #elif defined(OS_WIN)
@@ -39,7 +39,7 @@ OSExchangeDataProviderFactory::CreateProvider() {
       return provider;
   }
 #endif
-  return std::make_unique<OSExchangeDataProviderAura>();
+  return std::make_unique<OSExchangeDataProviderNonBacked>();
 #elif defined(OS_MACOSX)
   return BuildOSExchangeDataProviderMac();
 #elif defined(OS_WIN)

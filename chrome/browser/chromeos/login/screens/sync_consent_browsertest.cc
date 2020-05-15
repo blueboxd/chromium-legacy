@@ -52,6 +52,11 @@ using testing::Contains;
 namespace chromeos {
 namespace {
 
+syncer::SyncUserSettings* GetSyncUserSettings() {
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  return ProfileSyncServiceFactory::GetForProfile(profile)->GetUserSettings();
+}
+
 class ConsentRecordedWaiter
     : public SyncConsentScreen::SyncConsentScreenTestDelegate {
  public:
@@ -554,14 +559,45 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest,
 
   // For historical reasons, browser sync is still on. However, all data types
   // are disabled.
-  syncer::SyncUserSettings* settings =
-      ProfileSyncServiceFactory::GetForProfile(
-          ProfileManager::GetPrimaryUserProfile())
-          ->GetUserSettings();
+  syncer::SyncUserSettings* settings = GetSyncUserSettings();
   EXPECT_TRUE(settings->IsSyncRequested());
   EXPECT_TRUE(settings->IsFirstSetupComplete());
   EXPECT_FALSE(settings->IsSyncEverythingEnabled());
   EXPECT_TRUE(settings->GetSelectedTypes().Empty());
+}
+
+IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest,
+                       SkippedNotBrandedBuild) {
+  auto autoreset = SyncConsentScreen::ForceBrandedBuildForTesting(false);
+  LoginToSyncConsentScreen();
+  WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(), SyncConsentScreen::Result::NOT_APPLICABLE);
+
+  // OS sync is on.
+  syncer::SyncUserSettings* settings = GetSyncUserSettings();
+  EXPECT_TRUE(settings->IsOsSyncFeatureEnabled());
+
+  // Browser sync is on.
+  EXPECT_TRUE(settings->IsSyncRequested());
+  EXPECT_TRUE(settings->IsFirstSetupComplete());
+}
+
+IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest,
+                       SkippedSyncDisabledByPolicy) {
+  auto autoreset = SyncConsentScreen::ForceBrandedBuildForTesting(true);
+  SyncConsentScreen* screen = GetSyncConsentScreen();
+  screen->SetProfileSyncDisabledByPolicyForTesting(true);
+  LoginToSyncConsentScreen();
+  WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(), SyncConsentScreen::Result::NOT_APPLICABLE);
+
+  // OS sync is off.
+  syncer::SyncUserSettings* settings = GetSyncUserSettings();
+  EXPECT_FALSE(settings->IsOsSyncFeatureEnabled());
+
+  // Browser sync is off.
+  EXPECT_FALSE(settings->IsSyncRequested());
+  EXPECT_FALSE(settings->IsFirstSetupComplete());
 }
 
 // Tests that the SyncConsent screen performs a timezone request so that

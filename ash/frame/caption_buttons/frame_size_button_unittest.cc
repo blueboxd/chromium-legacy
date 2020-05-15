@@ -29,13 +29,12 @@ namespace {
 
 class TestWidgetDelegate : public views::WidgetDelegateView {
  public:
-  explicit TestWidgetDelegate(bool resizable) : resizable_(resizable) {}
+  explicit TestWidgetDelegate(bool resizable) {
+    SetCanMaximize(true);
+    SetCanMinimize(true);
+    SetCanResize(resizable);
+  }
   ~TestWidgetDelegate() override = default;
-
-  // Overridden from views::WidgetDelegate:
-  bool CanResize() const override { return resizable_; }
-  bool CanMaximize() const override { return true; }
-  bool CanMinimize() const override { return true; }
 
   FrameCaptionButtonContainerView* caption_button_container() {
     return caption_button_container_;
@@ -76,7 +75,6 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
 
   // Not owned.
   FrameCaptionButtonContainerView* caption_button_container_;
-  bool resizable_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWidgetDelegate);
 };

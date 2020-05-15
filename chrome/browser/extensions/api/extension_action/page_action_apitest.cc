@@ -171,22 +171,6 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, RemovePopup) {
       << "Page action popup should have been removed.";
 }
 
-// Tests popups in page actions.
-// Flaky on the trybots. See http://crbug.com/96725.
-IN_PROC_BROWSER_TEST_F(PageActionApiTest, DISABLED_ShowPageActionPopup) {
-  ASSERT_TRUE(RunExtensionTest("page_action/popup")) << message_;
-  const Extension* extension = GetSingleLoadedExtension();
-  ASSERT_TRUE(extension) << message_;
-
-  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
-
-  {
-    ResultCatcher catcher;
-    ExtensionActionAPI::Get(browser()->profile())
-        ->ShowExtensionActionPopupForAPICall(extension, browser());
-    ASSERT_TRUE(catcher.GetNextResult());
-  }
-}
 
 // Test http://crbug.com/57333: that two page action extensions using the same
 // icon for the page action icon and the extension icon do not crash.

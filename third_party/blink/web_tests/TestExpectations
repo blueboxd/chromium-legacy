@@ -242,7 +242,6 @@ crbug.com/857490 fast/events/touch/gesture/pad-gesture-cancel.html [ Skip ]
 crbug.com/857490 fast/events/touch/gesture/pad-gesture-fling.html [ Skip ]
 crbug.com/857490 fast/events/wheel/mainthread-touchpad-fling-latching.html [ Skip ]
 crbug.com/857490 fast/events/wheel/wheel-fling-cancel.html [ Skip ]
-crbug.com/857490 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Skip ]
 
 crbug.com/980969 http/tests/input/discard-events-to-unstable-iframe.html [ Pass Failure ]
 
@@ -760,10 +759,6 @@ crbug.com/591099 fast/css3-text/css3-text-decoration/text-underline-position/tex
 crbug.com/591099 fast/events/touch/compositor-touch-hit-rects-continuation.html [ Failure ]
 crbug.com/591099 fast/events/touch/compositor-touch-hit-rects-list-translate.html [ Failure ]
 crbug.com/591099 fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
-# The above 3 tests pass under virtual/scroll_customization
-virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-continuation.html [ Pass ]
-virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-list-translate.html [ Pass ]
-virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects.html [ Pass ]
 crbug.com/889721 fast/inline/outline-continuations.html [ Failure ]
 crbug.com/591099 virtual/text-antialias/font-format-support-color-cff2-vertical.html [ Failure ]
 crbug.com/591099 virtual/text-antialias/whitespace/018.html [ Failure ]
@@ -1526,12 +1521,6 @@ crbug.com/520188 [ Win ] http/tests/local/fileapi/file-last-modified-after-delet
 crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Failure Pass ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 
-crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
-crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
-crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas-throw.html [ Pass Failure ]
-crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Pass Failure ]
-crbug.com/410974 fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Pass Failure ]
-
 crbug.com/892032 fast/events/wheel/wheel-latched-scroll-node-removed.html [ Pass Failure ]
 
 crbug.com/518987 http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
@@ -1579,8 +1568,6 @@ crbug.com/770028 external/wpt/dom/events/document-level-touchmove-event-listener
 
 # Only virtual/threaded version of these tests pass (or running them with --enable-threaded-compositing).
 crbug.com/936891 fast/scrolling/document-level-touchmove-event-listener-passive-by-default.html [ Failure ]
-crbug.com/936891 fast/scrolling/document-level-wheel-event-listener-passive-by-default.html [ Failure ]
-crbug.com/936891 virtual/threaded-prefer-compositing/fast/scrolling/document-level-wheel-event-listener-passive-by-default.html [ Pass ]
 crbug.com/936891 virtual/threaded-prefer-compositing/fast/scrolling/document-level-touchmove-event-listener-passive-by-default.html [ Pass ]
 
 crbug.com/597221 fast/dom/Window/window-postmessage-clone-deep-array.html [ Failure ]
@@ -1945,8 +1932,6 @@ crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-page-zoo
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-page.html [ Skip ]
 ### See crbug.com/891427 comment near the top of this file:
 ####crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
-####crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Skip ]
-####crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
 
 # Since there is no compositor thread when running tests then there is no main thread event queue. Hence the
 # logic for this test will be skipped when running Layout tests.
@@ -4657,7 +4642,6 @@ crbug.com/862643 http/tests/serviceworker/navigation_preload/use-counter.html [ 
 crbug.com/863599 [ Debug ] external/wpt/requestidlecallback/callback-iframe.html [ Pass Timeout ]
 
 crbug.com/864888 [ Mac ] editing/selection/offset-from-point-complex-scripts.html [ Failure Pass ]
-crbug.com/864891 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/scroll-customization/scroll-customization-property.html [ Timeout Pass ]
 
 # Sheriff 2018-07-26
 crbug.com/867982 [ Debug ] external/wpt/requestidlecallback/basic.html [ Timeout Pass ]
@@ -4751,10 +4735,6 @@ crbug.com/898378 [ Mac10.13 ] fast/scroll-behavior/smooth-scroll/keyboard-scroll
 # Sheriff 2018-10-29
 crbug.com/766357 [ Win ] virtual/threaded-prefer-compositing/fast/scrolling/wheel-and-touch-scroll-use-count.html [ Failure Pass ]
 
-# Sheriff 2018-10-30
-crbug.com/899222 [ Linux ] virtual/scroll_customization/fast/events/touch/gesture/gesture-scrollbar-touchscreen-fling.html [ Failure Pass ]
-crbug.com/899222 [ Win ] virtual/scroll_customization/fast/events/touch/gesture/gesture-scrollbar-touchscreen-fling.html [ Failure Pass ]
-
 # ecosystem-infra sheriff 2018-11-02, 2019-03-18
 crbug.com/901271 external/wpt/dom/events/Event-dispatch-on-disabled-elements.html [ Pass Failure Timeout ]
 
@@ -4840,7 +4820,6 @@ crbug.com/921151 [ Linux ] http/tests/security/mixedContent/insecure-iframe-with
 # production code. Because such timing bugs are relatively common in tests and it would thus be very
 # difficult to land the dispatch change without some temporary breakage, these tests are disabled
 crbug.com/922951 external/wpt/pointerevents/pointerevent_setpointercapture_disconnected.html [ Failure Pass Timeout Crash ]
-crbug.com/922951 external/wpt/pointerevents/pointerevent_setpointercapture_invalid_pointerid.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 fast/css/pseudo-hover-active-display-none.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 fast/forms/number/number-input-event-composed.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 http/tests/cache/subresource-fragment-identifier.html [ Failure Pass Timeout Crash ]
@@ -5929,9 +5908,6 @@ crbug.com/984467 [ Mac Debug ] virtual/gpu/fast/canvas/canvas-composite-stroke-a
 # Sheriff 2020-05-06
 crbug.com/1078863 [ Mac ] fast/speech/scripted/speechrecognition-restart-onend.html [ Pass Timeout ]
 crbug.com/1071915 fast/hidpi/image-srcset-png-canvas.html [ Pass Failure ]
-
-# Flaky test blocking wpt import
-crbug.com/1082739 external/wpt/event-timing/dblclick.html [ Pass Failure ]
 
 # Sheriff 2020-05-14
 crbug.com/1082804 [ Win7 ] fast/forms/select/listbox-appearance-basic.html [ Pass Failure ]

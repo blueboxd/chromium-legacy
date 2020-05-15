@@ -4570,6 +4570,7 @@ void LayerTreeHostImpl::DidLatchToScroller(const ScrollState& scroll_state,
   scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
   last_latched_scroller_ = CurrentlyScrollingNode()->element_id;
   latched_scroll_type_ = type;
+  last_scroll_begin_state_ = scroll_state;
 
   client_->RenewTreePriority();
   RecordCompositorSlowScrollMetric(type, CC_THREAD);
@@ -4818,13 +4819,20 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
   SnapContainerData& data = scroll_node->snap_container_data.value();
   gfx::ScrollOffset current_position = GetVisualScrollOffset(*scroll_node);
 
-  DCHECK(last_scroll_update_state_);
+  // You might think that if a scroll never received a scroll update we could
+  // just drop the snap. However, if the GSB+GSE arrived while we were mid-snap
+  // from a previous gesture, this would leave the scroller at a
+  // non-snap-point.
+  DCHECK(last_scroll_update_state_ || last_scroll_begin_state_);
+  ScrollState& last_scroll_state = last_scroll_update_state_
+                                       ? *last_scroll_update_state_
+                                       : *last_scroll_begin_state_;
+
   bool imprecise_wheel_scrolling =
       latched_scroll_type_ == ui::ScrollInputType::kWheel &&
-      last_scroll_update_state_->delta_granularity() !=
+      last_scroll_state.delta_granularity() !=
           ui::ScrollGranularity::kScrollByPrecisePixel;
-  gfx::ScrollOffset last_scroll_delta(last_scroll_update_state_->delta_x(),
-                                      last_scroll_update_state_->delta_y());
+  gfx::ScrollOffset last_scroll_delta = last_scroll_state.DeltaOrHint();
 
   std::unique_ptr<SnapSelectionStrategy> strategy;
 
@@ -4950,6 +4958,7 @@ void LayerTreeHostImpl::ClearCurrentlyScrollingNode() {
   scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
   latched_scroll_type_.reset();
   last_scroll_update_state_.reset();
+  last_scroll_begin_state_.reset();
 }
 
 void LayerTreeHostImpl::ScrollEnd(bool should_snap) {

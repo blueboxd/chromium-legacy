@@ -51,6 +51,7 @@ Til að opna vafravalmynd Chrome skal ýta á Alt+F.</translation>
 <translation id="1291286136605998134">Hnappur til að slökkva og kveikja</translation>
 <translation id="1299774449519412690">Ljóshiminblár</translation>
 <translation id="1303806948938513162">Ýttu með fjórum fingrum til að opna valmyndir ChromeVox</translation>
+<translation id="1325363694295259631"><ph name="NAME" />, hringhnappur valmyndaratriðis ekki valinn</translation>
 <translation id="1325946044405407859">Gulbrúnn</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> af <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">upplestur stafa og orða</translation>
@@ -514,6 +515,7 @@ Til að opna vafravalmynd Chrome skal ýta á Alt+F.</translation>
 <translation id="4994420463726586413">TIlkynna núverandi stöðu rafhlöðunnar</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, valhnappur valinn</translation>
 <translation id="5011664330025416377">Ýttu á leitarlykilinn+bilslá til að velja</translation>
+<translation id="5012724933919010465"><ph name="NAME" />, hringhnappur valmyndaratriðis valinn</translation>
 <translation id="5020651427400641814">Leyfa skráningu tals</translation>
 <translation id="5041394372352067729">Færa blindraletursskjá efst á síðuna</translation>
 <translation id="5042770794184672516">Auka hljóðstyrk tals</translation>

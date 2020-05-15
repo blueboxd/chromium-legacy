@@ -16,7 +16,6 @@ import re
 import select
 import subprocess
 import sys
-import time
 import threading
 import uuid
 
@@ -34,7 +33,8 @@ def _AttachKernelLogReader(target):
 
   logging.info('Attaching kernel logger.')
   return target.RunCommandPiped(['dlog', '-f'], stdin=open(os.devnull, 'r'),
-                                stdout=subprocess.PIPE)
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT)
 
 
 def _BuildIdsPaths(package_paths):

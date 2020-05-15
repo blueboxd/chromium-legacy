@@ -317,13 +317,14 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
       protocol::Array<protocol::DOMSnapshot::DocumentSnapshot>>();
 
   css_property_filter_ = std::make_unique<CSSPropertyFilter>();
-  // Look up the CSSPropertyIDs for each entry in |computed_styles|.
-  for (String& entry : *computed_styles) {
-    CSSPropertyID property_id = cssPropertyID(main_window, entry);
-    if (property_id == CSSPropertyID::kInvalid)
-      continue;
-    css_property_filter_->emplace_back(std::move(entry),
-                                       std::move(property_id));
+  // Resolve all property names to CSSProperty references.
+  for (String& property_name : *computed_styles) {
+    const CSSPropertyID id =
+        unresolvedCSSPropertyID(main_window, property_name);
+    if (id == CSSPropertyID::kInvalid || id == CSSPropertyID::kVariable)
+      return Response::InvalidParams("invalid CSS property");
+    const auto& property = CSSProperty::Get(resolveCSSPropertyID(id));
+    css_property_filter_->push_back(&property);
   }
 
   if (include_paint_order.fromMaybe(false)) {
@@ -350,6 +351,8 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
   string_table_.clear();
   document_order_map_.clear();
   documents_.reset();
+  css_value_cache_.clear();
+  style_cache_.clear();
   return Response::Success();
 }
 
@@ -396,7 +399,7 @@ void InspectorDOMSnapshotAgent::VisitDocument(Document* document) {
   // order was calculated, since layout trees were already updated during
   // TraversePaintLayerTree().
   if (!paint_order_map_)
-    document->UpdateStyleAndLayout(DocumentUpdateReason::kInspector);
+    document->UpdateStyleAndLayoutTreeForSubtree(document);
 
   DocumentType* doc_type = document->doctype();
 
@@ -690,12 +693,37 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
 
 std::unique_ptr<protocol::Array<int>>
 InspectorDOMSnapshotAgent::BuildStylesForNode(Node* node) {
-  auto* computed_style_info =
-      MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
+  DCHECK(
+      !node->GetDocument().NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
+          *node, true /* ignore_adjacent_style */));
   auto result = std::make_unique<protocol::Array<int>>();
-  for (const auto& pair : *css_property_filter_) {
-    String value = computed_style_info->GetPropertyValue(pair.second);
-    result->emplace_back(AddString(value));
+  auto* layout_object = node->GetLayoutObject();
+  if (!layout_object)
+    return result;
+  const ComputedStyle* style = node->EnsureComputedStyle(kPseudoIdNone);
+  if (!style)
+    return result;
+  auto cached_style = style_cache_.find(style);
+  if (cached_style != style_cache_.end())
+    return std::make_unique<protocol::Array<int>>(*cached_style->value);
+  style_cache_.insert(style, result.get());
+  result->reserve(css_property_filter_->size());
+  for (const auto* property : *css_property_filter_) {
+    const CSSValue* value = property->CSSValueFromComputedStyle(
+        *style, layout_object, /* allow_visited_style= */ true);
+    if (!value) {
+      result->emplace_back(-1);
+      continue;
+    }
+    int index;
+    auto it = css_value_cache_.find(value);
+    if (it == css_value_cache_.end()) {
+      index = AddString(value->CssText());
+      css_value_cache_.insert(value, index);
+    } else {
+      index = it->value;
+    }
+    result->emplace_back(index);
   }
   return result;
 }
@@ -714,7 +742,7 @@ void InspectorDOMSnapshotAgent::TraversePaintLayerTree(
     PaintOrderMap* paint_order_map) {
   // Update layout before traversal of document so that we inspect a
   // current and consistent state of all trees.
-  document->UpdateStyleAndLayout(DocumentUpdateReason::kInspector);
+  document->UpdateStyleAndLayoutTreeForSubtree(document);
 
   PaintLayer* root_layer = document->GetLayoutView()->Layer();
   // LayoutView requires a PaintLayer.
@@ -748,6 +776,7 @@ void InspectorDOMSnapshotAgent::Trace(Visitor* visitor) {
   visitor->Trace(inspected_frames_);
   visitor->Trace(dom_debugger_agent_);
   visitor->Trace(document_order_map_);
+  visitor->Trace(css_value_cache_);
   InspectorBaseAgent::Trace(visitor);
 }
 

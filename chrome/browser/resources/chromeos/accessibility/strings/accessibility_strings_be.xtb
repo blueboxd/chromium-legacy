@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">Кнопка пераключэння</translation>
 <translation id="1299774449519412690">Светлы нябесна-блакітны</translation>
 <translation id="1303806948938513162">Каб увайсці ў меню ChromeVox, дакраніцеся чатырма пальцамі</translation>
+<translation id="1325363694295259631"><ph name="NAME" />, кнопка-пераключальнік у пункце меню не выбрана</translation>
 <translation id="1325946044405407859">Рудавата-карычневы</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> з <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">рэха сімвалаў і слоў</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">Агучыць бягучы стан акумулятара</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, выбрана кнопка-пераключальнік</translation>
 <translation id="5011664330025416377">Націсніце клавішы Пошук + Прабел, каб актываваць</translation>
+<translation id="5012724933919010465"><ph name="NAME" />, кнопка-пераключальнік у пункце меню выбрана</translation>
 <translation id="5020651427400641814">Уключыць вядзенне журнала маўлення</translation>
 <translation id="5041394372352067729">Перамясціць дысплэй Брайля ўверх старонкі</translation>
 <translation id="5042770794184672516">Павялічыць гучнасць маўлення</translation>

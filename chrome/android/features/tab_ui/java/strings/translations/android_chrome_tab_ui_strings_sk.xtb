@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Vytvoriť skupinu</translation>
 <translation id="2671423594960767771">Zdieľať skupinu</translation>
 <translation id="2977480621796371840">Odstrániť zo skupiny</translation>
+<translation id="3328308545011660196">Návrh: Zdá, sa že niekoľko (<ph name="NUMBER_OF_TABS" />) kariet spolu súvisí. Chcete ich zoskupiť?</translation>
+<translation id="4133493477912226187">Zdá sa, že niekoľko (<ph name="NUMBER_OF_TABS" />) kariet spolu súvisí. Chcete ich zoskupiť?</translation>
 <translation id="4212246570487010370">Pokračovať v prehliadaní</translation>
 <translation id="4450893287417543264">Nabudúce nezobrazovať</translation>
 <translation id="4648718555153979859">Vaše karty sú tu zoskupené</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Oddeliť karty od skupiny</translation>
 <translation id="7559245342362162951">Zobraziť karty skupiny v mriežke na celú obrazovku</translation>
 <translation id="7792771145871471484">Prezrieť návrhy.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Zoskupiť <ph name="TABS_COUNT_ONE" /> vybranú kartu}few{Zoskupiť <ph name="TABS_COUNT_MANY" /> vybrané karty}many{Group <ph name="TABS_COUNT_MANY" /> selected tabs}other{Zoskupiť <ph name="TABS_COUNT_MANY" /> vybraných kariet}}</translation>
 <translation id="7885132941432959125">Presunúť kartu doprava</translation>
 <translation id="7966321538264951561">Zavrieť návrhy.</translation>
 <translation id="814503310257431685">Zobraziť všetko</translation>

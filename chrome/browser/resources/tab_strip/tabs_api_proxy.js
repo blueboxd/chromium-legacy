@@ -67,7 +67,7 @@ export const TabAlertState = {
 export let TabData;
 
 /** @typedef {!Tab} */
-let ExtensionsApiTab;
+export let ExtensionsApiTab;
 
 /**
  * @typedef {{
@@ -78,40 +78,86 @@ let ExtensionsApiTab;
  */
 export let TabGroupVisualData;
 
+/** @interface */
 export class TabsApiProxy {
   /**
    * @param {number} tabId
    * @return {!Promise<!ExtensionsApiTab>}
    */
+  activateTab(tabId) {}
+
+  createNewTab() {}
+
+  /**
+   * @return {!Promise<!Object<!TabGroupVisualData>>} Object of group IDs as
+   *     strings mapped to their visual data.
+   */
+  getGroupVisualData() {}
+
+  /**
+   * @return {!Promise<!Array<!TabData>>}
+   */
+  getTabs() {}
+
+  /**
+   * @param {number} tabId
+   * @param {!CloseTabAction} closeTabAction
+   */
+  closeTab(tabId, closeTabAction) {}
+
+  /**
+   * @param {number} tabId
+   * @param {string} groupId
+   */
+  groupTab(tabId, groupId) {}
+
+  /**
+   * @param {string} groupId
+   * @param {number} newIndex
+   */
+  moveGroup(groupId, newIndex) {}
+
+  /**
+   * @param {number} tabId
+   * @param {number} newIndex
+   */
+  moveTab(tabId, newIndex) {}
+
+  /**
+   * @param {number} tabId
+   * @param {boolean} thumbnailTracked
+   */
+  setThumbnailTracked(tabId, thumbnailTracked) {}
+
+  /** @param {number} tabId */
+  ungroupTab(tabId) {}
+}
+
+/** @implements {TabsApiProxy} */
+export class TabsApiProxyImpl {
+  /** @override */
   activateTab(tabId) {
     return new Promise(resolve => {
       chrome.tabs.update(tabId, {active: true}, resolve);
     });
   }
 
+  /** @override */
   createNewTab() {
     chrome.send('createNewTab');
   }
 
-  /**
-   * @return {!Promise<!Object<!TabGroupVisualData>>} Object of group IDs as
-   *     strings mapped to their visual data.
-   */
+  /** @override */
   getGroupVisualData() {
     return sendWithPromise('getGroupVisualData');
   }
 
-  /**
-   * @return {!Promise<!Array<!TabData>>}
-   */
+  /** @override */
   getTabs() {
     return sendWithPromise('getTabs');
   }
 
-  /**
-   * @param {number} tabId
-   * @param {!CloseTabAction} closeTabAction
-   */
+  /** @override */
   closeTab(tabId, closeTabAction) {
     chrome.send(
         'closeTab', [tabId, closeTabAction === CloseTabAction.SWIPED_TO_CLOSE]);
@@ -120,42 +166,30 @@ export class TabsApiProxy {
         Object.keys(CloseTabAction).length);
   }
 
-  /**
-   * @param {number} tabId
-   * @param {string} groupId
-   */
+  /** @override */
   groupTab(tabId, groupId) {
     chrome.send('groupTab', [tabId, groupId]);
   }
 
-  /**
-   * @param {string} groupId
-   * @param {number} newIndex
-   */
+  /** @override */
   moveGroup(groupId, newIndex) {
     chrome.send('moveGroup', [groupId, newIndex]);
   }
 
-  /**
-   * @param {number} tabId
-   * @param {number} newIndex
-   */
+  /** @override */
   moveTab(tabId, newIndex) {
     chrome.send('moveTab', [tabId, newIndex]);
   }
 
-  /**
-   * @param {number} tabId
-   * @param {boolean} thumbnailTracked
-   */
+  /** @override */
   setThumbnailTracked(tabId, thumbnailTracked) {
     chrome.send('setThumbnailTracked', [tabId, thumbnailTracked]);
   }
 
-  /** @param {number} tabId */
+  /** @override */
   ungroupTab(tabId) {
     chrome.send('ungroupTab', [tabId]);
   }
 }
 
-addSingletonGetter(TabsApiProxy);
+addSingletonGetter(TabsApiProxyImpl);

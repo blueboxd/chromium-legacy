@@ -17,6 +17,7 @@
 namespace blink {
 
 class CharacterData;
+class ComputedStyle;
 class Document;
 class Element;
 class InspectedFrames;
@@ -91,7 +92,7 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   static void TraversePaintLayerTree(Document*, PaintOrderMap* paint_order_map);
   static void VisitPaintLayer(PaintLayer*, PaintOrderMap* paint_order_map);
 
-  using CSSPropertyFilter = Vector<std::pair<String, CSSPropertyID>>;
+  using CSSPropertyFilter = Vector<const CSSProperty*>;
   using OriginUrlMap = WTF::HashMap<DOMNodeId, String>;
 
   // State of current snapshot.
@@ -103,6 +104,10 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
 
   std::unique_ptr<protocol::Array<String>> strings_;
   WTF::HashMap<String, int> string_table_;
+
+  HeapHashMap<Member<const CSSValue>, int> css_value_cache_;
+  HashMap<scoped_refptr<const ComputedStyle>, protocol::Array<int>*>
+      style_cache_;
 
   std::unique_ptr<protocol::Array<protocol::DOMSnapshot::DocumentSnapshot>>
       documents_;

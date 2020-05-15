@@ -115,7 +115,7 @@ CheckOpValueStr(const T& v) {
 class CheckOpResult {
  public:
   // An empty result signals success.
-  constexpr CheckOpResult() = default;
+  constexpr CheckOpResult() {}
 
   // A non-success result. expr_str is something like "foo != bar". v1_str and
   // v2_str are the stringified run-time values of foo and bar. Takes ownership

@@ -70,6 +70,7 @@ ALIGNMENT_ORDER = [
     'BorderValue',
     'StyleColor',
     'Color',
+    'CSSValueID',
     'LayoutUnit',
     'LineClampValue',
     'OutlineValue',

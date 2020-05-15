@@ -76,6 +76,8 @@ class BASE_EXPORT PowerMonitor {
   static void NotifyPowerStateChange(bool battery_in_use);
   static void NotifySuspend();
   static void NotifyResume();
+  static void NotifyThermalStateChange(
+      PowerObserver::DeviceThermalState new_state);
 
   static PowerMonitor* GetInstance();
 

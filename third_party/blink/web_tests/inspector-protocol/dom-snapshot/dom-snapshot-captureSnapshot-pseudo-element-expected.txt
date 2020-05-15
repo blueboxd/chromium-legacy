@@ -288,8 +288,6 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
                 }
                 styles : [
                     [0] : [
-                        [0] : -1
-                        [1] : -1
                     ]
                     [1] : [
                         [0] : 5

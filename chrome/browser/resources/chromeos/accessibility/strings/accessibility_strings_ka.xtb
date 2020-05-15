@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">გადართვის ღილაკი</translation>
 <translation id="1299774449519412690">ღია ცისფერი</translation>
 <translation id="1303806948938513162">ChromeVox-ის მენიუებში შესასვლელად შეეხეთ 4 თითით</translation>
+<translation id="1325363694295259631"><ph name="NAME" />, მენიუს ერთეული არჩევანის ღილაკი აურჩეველი</translation>
 <translation id="1325946044405407859">რუჯისფერი</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> სულ: <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">სიმბოლო და სიტყვის ექო</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">ბატარეის ამჟამინდელი სტატუსის გამოცხადება</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, რადიო ღილაკი არჩეულია</translation>
 <translation id="5011664330025416377">გასააქტიურებლად დააჭირეთ კლავიშთა შემდეგ კომბინაციას: Search+შორისი</translation>
+<translation id="5012724933919010465"><ph name="NAME" />, მენიუს ერთეული არჩევანის ღილაკი არჩეული</translation>
 <translation id="5020651427400641814">მეტყველების აღრიცხვის ჩართვა</translation>
 <translation id="5041394372352067729">გადაადგილეთ ბრაილი ეკრანის საწყის გვერდზე</translation>
 <translation id="5042770794184672516">მეტყველების ხმის აწევა</translation>

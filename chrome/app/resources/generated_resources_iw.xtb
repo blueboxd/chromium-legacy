@@ -53,7 +53,6 @@
 <translation id="1056898198331236512">אזהרה</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1061904396131502319">עוד מעט זמן להפסקה</translation>
-<translation id="1064552680598333868">‏השינויים במיקרופון ייכנסו לתוקף בפעם הבאה שבה תתבצע הפעלה מחדש של Linux.</translation>
 <translation id="1067048845568873861">נוצר</translation>
 <translation id="1067291318998134776">‏Linux (בטא)</translation>
 <translation id="1067922213147265141">‏שירותי Google אחרים</translation>
@@ -298,7 +297,6 @@
 <translation id="1386387014181100145">אהלן.</translation>
 <translation id="138784436342154190">לשחזר את דף הפתיחה שהוגדר כברירת המחדל?</translation>
 <translation id="1390548061267426325">פתח ככרטיסייה רגילה</translation>
-<translation id="1392232653471491344">‏יש להפעיל מחדש את Linux</translation>
 <translation id="1393283411312835250">שמש ועננים</translation>
 <translation id="1395730723686586365">המעדכן הופעל</translation>
 <translation id="1396139853388185343">אירעה שגיאה בהגדרת המדפסת</translation>
@@ -701,7 +699,6 @@
 <translation id="186612162884103683">"<ph name="EXTENSION" />" יכול לקרוא ולכתוב קובצי תמונות, וידאו ואודיו במיקומים המסומנים.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> מוכן להשלים את ההתקנה שלך</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
-<translation id="1870629042957780127">הענקת גישה למיקרופון</translation>
 <translation id="1871534214638631766">הצגת פרטים קשורים אחרי לחיצה ימנית או לחיצה ארוכה על תוכן</translation>
 <translation id="1871615898038944731">ה-<ph name="DEVICE_TYPE" /> שלך מעודכן</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{העברת כרטיסייה לחלון אחר}two{העברת כרטיסיות לחלון אחר}many{העברת כרטיסיות לחלון אחר}other{העברת כרטיסיות לחלון אחר}}</translation>
@@ -2088,7 +2085,6 @@
 <translation id="3661172646479098821">‏נכון לעכשיו, רק מכשירי Android נתמכים.</translation>
 <translation id="3664511988987167893">סמל התוסף</translation>
 <translation id="3665589677786828986">‏Chrome זיהה שחלק מההגדרות שלך נפגמו על ידי תכנית אחרת ואיפס אותן לברירות המחדל המקוריות.</translation>
-<translation id="366867565525278777">ההתקנה נכשלה כי אין מספיק שטח אחסון. צריך שטח אחסון פנוי של <ph name="INSTALL_SIZE" /> לפחות. כדי לפנות שטח, עליך למחוק קבצים מאחסון המכשיר.</translation>
 <translation id="3668801437375206837">‏כדי לשפר את האבחון של בעיות בחיבור Bluetooth, גוגלרים יכולים לכלול יומני Bluetooth נוספים במשובים. אם האפשרות מסומנת, הדוח יכלול את יומני btsnoop ו-HCI מהסשן הנוכחי, והמערכת "תנקה" אותו כדי להסיר כמה שיותר פרטים אישיים מזהים (PII). הגישה ליומנים האלה תוגבל למנהלים של קבוצת מוצרי Chrome OS ב-Listnr. המערכת תמחק לצמיתות את היומנים אחרי 90 ימים.</translation>
 <translation id="3668823961463113931">מטפלים</translation>
 <translation id="3670113805793654926">מכשירים של כל ספק</translation>
@@ -3209,7 +3205,6 @@
 <translation id="5158983316805876233">‏השתמש באותו שרת proxy עבור כל הפרוטוקולים</translation>
 <translation id="5160857336552977725">היכנס אל ה-<ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> נחסם כי הוא לא מעודכן</translation>
-<translation id="5169131225159279624">להוסיף</translation>
 <translation id="5170568018924773124">הצג בתיקייה</translation>
 <translation id="5171045022955879922">טקסט או כתובת אתר לחיפוש</translation>
 <translation id="5171343362375269016">זיכרון מוחלף</translation>
@@ -3261,7 +3256,6 @@
 <translation id="5235565664420173924">Better Together</translation>
 <translation id="5235750401727657667">החלפת הדף שמוצג בפתיחה של כרטיסייה חדשה</translation>
 <translation id="5238278114306905396">היישום "<ph name="EXTENSION_NAME" />" הוסר באופן אוטומטי.</translation>
-<translation id="5238435043462632060">‏אחד מההורים השבית ב-Chrome את ההגדרה "הרשאות לאתרים, אפליקציות ותוספים". לא ניתן <ph name="ACTION_PARAMETER" /> את ה<ph name="EXTENSION_TYPE_PARAMETER" /> הזה.</translation>
 <translation id="5241128660650683457">קריאת כל הנתונים שלך באתרים שבהם אתה מבקר</translation>
 <translation id="5242724311594467048">האם להפעיל את "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="5243522832766285132">צריך לנסות שוב בעוד כמה רגעים</translation>
@@ -3929,7 +3923,6 @@
 <translation id="6085886413119427067">קביעת אופן ההתחברות לאתרים באמצעות קישור מאובטח</translation>
 <translation id="6086846494333236931">הותקן על ידי מנהל המערכת שלך</translation>
 <translation id="6087960857463881712">פרצוף "אדיר!"</translation>
-<translation id="6088036808197002565">לא ניתן <ph name="ACTION_PARAMETER" /> <ph name="EXTENSION_TYPE_PARAMETER" /></translation>
 <translation id="6091761513005122595">התקן הרשת לשיתוף קבצים נטען בהצלחה.</translation>
 <translation id="6093888419484831006">מבטל עדכון...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -5890,7 +5883,6 @@
 <translation id="8650543407998814195">למרות שכבר אין לך גישה לפרופיל הישן, אפשר עדיין להסיר אותו.</translation>
 <translation id="8651585100578802546">אלץ טעינה מחדש של דף זה</translation>
 <translation id="8652400352452647993">שגיאת 'ארוז תוסף'</translation>
-<translation id="8653578191563425126">‏שטח דיסק לשמירה עבור Crostini (אפשר לשנות זאת מאוחר יותר).</translation>
 <translation id="8654151524613148204">הקובץ גדול מכדי שהמחשב שלך יוכל לטפל בו. מצטערים.</translation>
 <translation id="8655295600908251630">ערוץ</translation>
 <translation id="8655319619291175901">אופס. משהו השתבש.</translation>

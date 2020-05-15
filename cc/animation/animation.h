@@ -151,7 +151,6 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
   explicit Animation(int id);
   Animation(int id, std::unique_ptr<KeyframeEffect>);
   virtual ~Animation();
-  void TickWithLocalTime(base::TimeDelta local_time);
 
   AnimationHost* animation_host_;
   AnimationTimeline* animation_timeline_;

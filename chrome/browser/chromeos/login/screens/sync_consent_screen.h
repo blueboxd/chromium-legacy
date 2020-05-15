@@ -27,10 +27,11 @@ namespace chromeos {
 class SyncConsentScreen : public BaseScreen,
                           public syncer::SyncServiceObserver {
  private:
-  enum SyncScreenBehavior {
-    UNKNOWN,  // Not yet known.
-    SHOW,     // Screen should be shown.
-    SKIP      // Skip screen for this user.
+  enum class SyncScreenBehavior {
+    kUnknown,            // Not yet known.
+    kShow,               // Screen should be shown.
+    kSkip,               // Skip screen, don't change sync state.
+    kSkipAndEnableSync,  // Skip screen and enable sync.
   };
 
  public:
@@ -91,6 +92,12 @@ class SyncConsentScreen : public BaseScreen,
                            bool enable_os_sync,
                            bool enable_browser_sync);
 
+  // Configures OS sync and browser sync.
+  void UpdateSyncSettings(bool enable_os_sync, bool enable_browser_sync);
+
+  // Enables sync if required when skipping the dialog.
+  void MaybeEnableSyncForSkip();
+
   static std::unique_ptr<base::AutoReset<bool>> ForceBrandedBuildForTesting(
       bool value);
 
@@ -138,7 +145,7 @@ class SyncConsentScreen : public BaseScreen,
 
   // Controls screen appearance.
   // Spinner is shown until sync status has been decided.
-  SyncScreenBehavior behavior_ = UNKNOWN;
+  SyncScreenBehavior behavior_ = SyncScreenBehavior::kUnknown;
 
   SyncConsentScreenView* const view_;
   ScreenExitCallback exit_callback_;

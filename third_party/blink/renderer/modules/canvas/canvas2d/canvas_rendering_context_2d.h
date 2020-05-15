@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/svg/svg_resource_client.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d_state.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/identifiability_study_helper.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
@@ -204,6 +205,10 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   CanvasColorParams ColorParamsForTest() const { return ColorParams(); }
 
+  uint64_t IdentifiabilityTextDigest() override {
+    return identifiability_study_helper_.digest();
+  }
+
  protected:
   CanvasColorParams ColorParams() const override;
   bool WritePixels(const SkImageInfo& orig_info,
@@ -276,6 +281,8 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   static constexpr float kRasterMetricProbability = 0.01;
   std::mt19937 random_generator_;
   std::bernoulli_distribution bernoulli_distribution_;
+
+  IdentifiabilityStudyHelper identifiability_study_helper_;
 };
 
 }  // namespace blink

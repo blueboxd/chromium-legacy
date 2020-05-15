@@ -41,6 +41,7 @@
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 
 namespace ash {
+class AssistantAlarmTimerController;
 class AssistantStateBase;
 }  // namespace ash
 
@@ -305,7 +306,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
                                 const std::string& description,
                                 bool is_user_initiated);
 
-  ash::mojom::AssistantAlarmTimerController* assistant_alarm_timer_controller();
+  ash::AssistantAlarmTimerController* assistant_alarm_timer_controller();
   ash::mojom::AssistantNotificationController*
   assistant_notification_controller();
   ash::AssistantScreenContextController* assistant_screen_context_controller();

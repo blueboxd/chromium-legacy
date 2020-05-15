@@ -15647,8 +15647,9 @@ class SitePerProcessCompositorViewportBrowserTest
   }
 };
 
+// DISABLED: crbug.com/1071995
 IN_PROC_BROWSER_TEST_P(SitePerProcessCompositorViewportBrowserTest,
-                       OopifCompositorViewportSizeRelativeToParent) {
+                       DISABLED_OopifCompositorViewportSizeRelativeToParent) {
   // Load page with very tall OOPIF.
   GURL main_url(
       embedded_test_server()->GetURL("a.com", "/super_tall_parent.html"));

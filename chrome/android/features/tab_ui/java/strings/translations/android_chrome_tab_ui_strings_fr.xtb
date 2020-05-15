@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Créer un groupe</translation>
 <translation id="2671423594960767771">Partager le groupe</translation>
 <translation id="2977480621796371840">Retirer du groupe</translation>
+<translation id="3328308545011660196">Suggestion : <ph name="NUMBER_OF_TABS" /> onglets semblent liés. Voulez-vous les regrouper ?</translation>
+<translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> onglets semblent liés. Voulez-vous les regrouper ?</translation>
 <translation id="4212246570487010370">Poursuivre la navigation</translation>
 <translation id="4450893287417543264">Ne plus afficher</translation>
 <translation id="4648718555153979859">Vos onglets sont regroupés ici</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Supprimer des onglets</translation>
 <translation id="7559245342362162951">Afficher les onglets du groupe dans une grille en plein écran</translation>
 <translation id="7792771145871471484">Afficher les suggestions.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Regrouper <ph name="TABS_COUNT_ONE" /> onglet sélectionné}one{Group <ph name="TABS_COUNT_MANY" /> selected tabs}other{Regrouper les <ph name="TABS_COUNT_MANY" /> onglets sélectionnés}}</translation>
 <translation id="7885132941432959125">Déplacer l'onglet vers la droite</translation>
 <translation id="7966321538264951561">Fermer les suggestions.</translation>
 <translation id="814503310257431685">Tout afficher</translation>

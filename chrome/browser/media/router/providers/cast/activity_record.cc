@@ -138,8 +138,10 @@ void ActivityRecord::SendSetVolumeRequestToReceiver(
 void ActivityRecord::StopSessionOnReceiver(
     const std::string& client_id,
     cast_channel::ResultCallback callback) {
-  if (!session_id_)
+  if (!session_id_) {
     std::move(callback).Run(cast_channel::Result::kFailed);
+    return;
+  }
 
   message_handler_->StopSession(cast_channel_id(), *session_id_, client_id,
                                 std::move(callback));

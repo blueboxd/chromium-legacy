@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="1012876632442809908">USB-C-Gerät (Port vorne)</translation>
+<translation id="1013598600051641573">"<ph name="DISPLAY_NAME" />" wurde auf <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz) umgestellt. Klicken Sie auf "Bestätigen", um die Änderungen beizubehalten. Die vorherigen Einstellungen werden in <ph name="TIMEOUT_SECONDS" /> wiederhergestellt.</translation>
 <translation id="1013923882670373915">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Geben Sie folgenden PIN-Code auf dem Gerät ein: <ph name="PINCODE" />.</translation>
 <translation id="1032891413405719768">Die Batterie des Eingabestifts ist schwach</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> hinzugefügt</translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">Spracheinstellungen anzeigen</translation>
 <translation id="1460620680449458626">Ton ist aus.</translation>
 <translation id="1467432559032391204">Links</translation>
+<translation id="1479909375538722835">Unverankertes Menü "Bedienungshilfen"</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">An</translation>
 <translation id="1516740043221086139">"Bitte nicht stören" ist aktiviert.</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">Bildschirmübertragung</translation>
 <translation id="5030687792513154421">Die Zeit ist abgelaufen</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> ist mit einem neuen Smartphone verbunden</translation>
+<translation id="5035389544768382859">Displaykonfiguration bestätigen</translation>
 <translation id="5083553833479578423">Möchten Sie weitere Assistant-Funktionen freischalten?</translation>
 <translation id="5136175204352732067">Andere Tastatur angeschlossen</translation>
 <translation id="5168181903108465623">Übertragungsgeräte verfügbar</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">Das Netzwerk wird möglicherweise überwacht</translation>
 <translation id="7536035074519304529">IP-Adresse: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Schlafenszeit</translation>
+<translation id="7561982940498449837">Menü schließen</translation>
 <translation id="7562368315689366235">Emoji-Palette</translation>
 <translation id="7564874036684306347">Das Verschieben von Fenstern auf einen anderen Desktop kann zu unerwartetem Verhalten führen. Nachfolgende Benachrichtigungen, Fenster und Dialogfelder werden unter Umständen zwischen den Desktops aufgeteilt.</translation>
 <translation id="7568294522609223312">Automatische Klicks deaktivieren</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">Erhöhen</translation>
 <translation id="8029629653277878342">Für mehr Sicherheit ist das Passwort oder die PIN erforderlich</translation>
 <translation id="8030169304546394654">Verbindung getrennt</translation>
+<translation id="8042893070933512245">Menü "Bedienungshilfen" öffnen</translation>
 <translation id="8048123526339889627">Bluetooth-Einstellungen</translation>
 <translation id="8054466585765276473">Akku-Laufzeit wird berechnet.</translation>
 <translation id="8061464966246066292">Hoher Kontrast</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">Erinnerungen einrichten</translation>
 <translation id="8878886163241303700">Bildschirmerweiterung</translation>
 <translation id="890616557918890486">Quelle ändern</translation>
+<translation id="8908312332415978740">"<ph name="DISPLAY_NAME" />" unterstützt <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz) nicht. Die Auflösung wurde geändert zu <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Klicken Sie auf "Bestätigen", um die Änderungen beizubehalten. Die vorherigen Einstellungen werden in <ph name="TIMEOUT_SECONDS" /> wiederhergestellt.</translation>
 <translation id="8909138438987180327">Akkustand: <ph name="PERCENTAGE" />.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistant spricht diese Sprache nicht.</translation>

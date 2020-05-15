@@ -22,6 +22,7 @@
 namespace cc {
 
 class Animation;
+enum class PauseCondition { kUnconditional, kAfterStart };
 struct PropertyAnimationState;
 
 // A KeyframeEffect owns a group of KeyframeModels for a single target
@@ -86,7 +87,8 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
   void UpdateState(bool start_ready_keyframe_models, AnimationEvents* events);
   void UpdateTickingState();
 
-  void Pause(base::TimeDelta pause_offset);
+  void Pause(base::TimeDelta pause_offset,
+             PauseCondition = PauseCondition::kUnconditional);
 
   void AddKeyframeModel(std::unique_ptr<KeyframeModel> keyframe_model);
   void PauseKeyframeModel(int keyframe_model_id, base::TimeDelta time_offset);

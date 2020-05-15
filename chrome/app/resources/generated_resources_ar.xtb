@@ -53,7 +53,6 @@
 <translation id="1056898198331236512">تحذير</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1061904396131502319">سيتم قفل الجهاز بعد قليل</translation>
-<translation id="1064552680598333868">‏ستدخل التغييرات التي أجريتها على الميكروفون حيز التنفيذ عند إعادة تشغيل Linux.</translation>
 <translation id="1067048845568873861">تم الإنشاء</translation>
 <translation id="1067291318998134776">‏نظام التشغيل Linux (نسخة تجريبية)</translation>
 <translation id="1067922213147265141">‏خدمات Google الأخرى</translation>
@@ -298,7 +297,6 @@
 <translation id="1386387014181100145">مرحبًا.</translation>
 <translation id="138784436342154190">هل تريد استعادة صفحة بدء التشغيل التلقائية؟</translation>
 <translation id="1390548061267426325">فتح كعلامة تبويب عادية</translation>
-<translation id="1392232653471491344">‏مطلوب إعادة تشغيل نظام Linux</translation>
 <translation id="1393283411312835250">الشمس والسحاب</translation>
 <translation id="1395730723686586365">خدمة التحديث بدأت</translation>
 <translation id="1396139853388185343">حدث خطأ أثناء إعداد الطابعة</translation>
@@ -642,7 +640,7 @@
 <translation id="1802687198411089702">الصفحة لا تستجيب. يمكنك الانتظار أو الخروج منها.</translation>
 <translation id="1802931390041703523">‏تم حظر تشغيل Flash في هذه الصفحة</translation>
 <translation id="1803531841600994172">اللغة التي تريد الترجمة إليها</translation>
-<translation id="1803545009660609783">إعادة التشكيل</translation>
+<translation id="1803545009660609783">إعادة تدريب</translation>
 <translation id="1805738995123446102">هناك علامة تبويب خلفية تستخدم الميكروفون</translation>
 <translation id="1805822111539868586">فحص القراءات</translation>
 <translation id="1805888043020974594">خادم الطباعة</translation>
@@ -704,7 +702,6 @@
 <translation id="186612162884103683">"<ph name="EXTENSION" />" يمكنها قراءة ملفات الصور والفيديو والصوت وكتابتها في المواقع المحددة.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> جاهز لإكمال عملية التثبيت</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
-<translation id="1870629042957780127">منح الإذن للوصول إلى الميكروفون</translation>
 <translation id="1871534214638631766">يمكنك عرض معلومات ذات صلة عند النقر بزر الماوس الأيمن أو الضغط مع الاستمرار على المحتوى.</translation>
 <translation id="1871615898038944731">جهاز <ph name="DEVICE_TYPE" /> مُحدّث</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{نقل علامة تبويب واحدة إلى نافذة أخرى}zero{نقل علامات تبويب إلى نافذة أخرى}two{نقل علامتَي تبويب إلى نافذة أخرى}few{نقل علامات تبويب إلى نافذة أخرى}many{نقل علامات تبويب إلى نافذة أخرى}other{نقل علامات تبويب إلى نافذة أخرى}}</translation>
@@ -2090,7 +2087,6 @@
 <translation id="3661172646479098821">‏لا تتوفَّر حاليًا إلا للأجهزة التي تعمل بنظام التشغيل Android.</translation>
 <translation id="3664511988987167893">رمز الإضافة</translation>
 <translation id="3665589677786828986">‏اكتشف Chrome أن بعض إعداداتك تم إتلافها من قبل برنامج آخر وإعادة تعيينها للحالة التلقائية الأصلية.</translation>
-<translation id="366867565525278777">تعذَّر التثبيت لعدم توفر مساحة تخزين. يتطلب التثبيت <ph name="INSTALL_SIZE" /> على الأقل من المساحة الخالية. لتوفير مساحة، يمكنك حذف الملفات من مساحة تخزين الجهاز.</translation>
 <translation id="3668801437375206837">‏لتشخيص مشاكل البلوتوث بشكل أفضل، يمكن لمستخدمي Google تضمين سجلّات بلوتوث إضافية مع تقارير التعليقات. وعند تحديد هذا الخيار، سيتضمَّن تقريرك للجلسة الحالية ملفات بتنسيقات btsnoop وسجلّات وحدة تحكُّم المُضيف (HCI) مُصحَّحة لإزالة أكبر قدر ممكن من معلومات تحديد الهوية الشخصية. وسيقتصر الوصول إلى هذه السجلّات على مديري مجموعة منتجات نظام التشغيل Chrome في Listnr. وستُزال السجلّات نهائيًا بعد 90 يومًا.</translation>
 <translation id="3668823961463113931">المعالجات</translation>
 <translation id="3670113805793654926">أجهزة من أي مورّد</translation>
@@ -3208,7 +3204,6 @@
 <translation id="5158983316805876233">استخدام نفس الخادم الوكيل مع جميع البروتوكولات</translation>
 <translation id="5160857336552977725">سجّل الدخول إلى <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936">تم حظر <ph name="PLUGIN_NAME" /> لأنه قديم.</translation>
-<translation id="5169131225159279624">إضافة</translation>
 <translation id="5170568018924773124">العرض في المجلد</translation>
 <translation id="5171045022955879922">‏البحث أو إدخال عنوان URL</translation>
 <translation id="5171343362375269016">ذاكرة مساحة التبديل</translation>
@@ -3260,7 +3255,6 @@
 <translation id="5235565664420173924">Better Together</translation>
 <translation id="5235750401727657667">استبدال الصفحة التي تشاهدها عند فتح علامة تبويب جديدة</translation>
 <translation id="5238278114306905396">تمت إزالة التطبيق "<ph name="EXTENSION_NAME" />" تلقائيًا.</translation>
-<translation id="5238435043462632060">‏أوقفَ أحد والدَيك "أذونات المواقع الإلكترونية والتطبيقات والإضافات" لمتصفِّح Chrome. لا يمكن <ph name="ACTION_PARAMETER" /> <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="5241128660650683457">مراجعة كل بياناتك على مواقع الويب التي تزورها</translation>
 <translation id="5242724311594467048">تفعيل "<ph name="EXTENSION_NAME" />"؟</translation>
 <translation id="5243522832766285132">يُرجى إعادة المحاولة بعد بضع لحظات</translation>
@@ -3929,7 +3923,6 @@
 <translation id="6085886413119427067">تحديد طريقة الاتصال بمواقع إلكترونية من خلال اتصال آمن</translation>
 <translation id="6086846494333236931">تم التثبيت من قبل مشرفك</translation>
 <translation id="6087960857463881712">وجه رائع</translation>
-<translation id="6088036808197002565">تم إيقاف <ph name="ACTION_PARAMETER" /> <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="6091761513005122595">تم تحميل المشاركة بنجاح.</translation>
 <translation id="6093888419484831006">جارٍ إلغاء التحديث...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -5890,7 +5883,6 @@
 <translation id="8650543407998814195">يمكنك إزالة ملفك الشخصي القديم حتى لو لم يعد بإمكانك الوصول إليه.</translation>
 <translation id="8651585100578802546">فرض إعادة تحميل هذه الصفحة</translation>
 <translation id="8652400352452647993">خطأ في حزمة الإضافة</translation>
-<translation id="8653578191563425126">‏مساحة القرص التي يجب تخصيصها لـ Crostini (يمكنك تغيير هذا لاحقًا).</translation>
 <translation id="8654151524613148204">عذرًا، الملف كبير جدًا حتى يتمكن الكمبيوتر من معالجته.</translation>
 <translation id="8655295600908251630">القناة</translation>
 <translation id="8655319619291175901">عفوًا، حدث خطأ ما.</translation>

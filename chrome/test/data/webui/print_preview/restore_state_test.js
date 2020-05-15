@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {getInstance, MarginsType, NativeLayer, PluginProxy, ScalingType} from 'chrome://print/print_preview.js';
+import {getInstance, MarginsType, NativeLayer, NativeLayerImpl, PluginProxy, ScalingType} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
@@ -27,8 +27,8 @@ suite(restore_state_test.suiteName, function() {
   /** @override */
   setup(function() {
     nativeLayer = new NativeLayerStub();
-    NativeLayer.setInstance(nativeLayer);
-    PolymerTest.clearBody();
+    NativeLayerImpl.instance_ = nativeLayer;
+    document.body.innerHTML = '';
   });
 
   /**

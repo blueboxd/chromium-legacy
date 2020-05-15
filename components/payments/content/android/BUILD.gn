@@ -58,6 +58,7 @@ android_library("java") {
     "java/src/org/chromium/components/payments/CurrencyFormatter.java",
     "java/src/org/chromium/components/payments/ErrorMessageUtil.java",
     "java/src/org/chromium/components/payments/OriginSecurityChecker.java",
+    "java/src/org/chromium/components/payments/PackageManagerDelegate.java",
     "java/src/org/chromium/components/payments/PayerData.java",
     "java/src/org/chromium/components/payments/PaymentAddressTypeConverter.java",
     "java/src/org/chromium/components/payments/PaymentApp.java",

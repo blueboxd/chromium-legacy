@@ -291,10 +291,6 @@ void LocalFrameUkmAggregator::RecordImplCompositorSample(
     RecordSample(kWaitForCommit, requested, started);
     RecordSample(kImplCompositorCommit, started, completed);
   }
-
-  // This will go away in M-84 when we are confident the WaitForCommit and
-  // ImplCompositorCommit metrics sum to this metric after reporting.
-  RecordSample(kProxyCommit, requested, completed);
 }
 
 void LocalFrameUkmAggregator::RecordEndOfFrameMetrics(
@@ -431,7 +427,6 @@ void LocalFrameUkmAggregator::ReportPreFCPEvent() {
       CASE_FOR_ID(HandleInputEvents);
       CASE_FOR_ID(Animate);
       CASE_FOR_ID(UpdateLayers);
-      CASE_FOR_ID(ProxyCommit);
       CASE_FOR_ID(WaitForCommit);
       case kCount:
       case kMainFrame:
@@ -477,7 +472,6 @@ void LocalFrameUkmAggregator::ReportUpdateTimeEvent() {
       CASE_FOR_ID(HandleInputEvents, i);
       CASE_FOR_ID(Animate, i);
       CASE_FOR_ID(UpdateLayers, i);
-      CASE_FOR_ID(ProxyCommit, i);
       CASE_FOR_ID(WaitForCommit, i);
       case kCount:
       case kMainFrame:

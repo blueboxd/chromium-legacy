@@ -2309,7 +2309,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Discover by Google - off
       </message>
       <message name="IDS_NTP_FEED_MENU_IPH" desc="In-product help that points at the menu icon for the news feed on Chrome's new tab page. This string instructs the user to open the menu for settings that let them control the content that appears on the feed.">
-        Control your stories here
+        Control your stories and activity here
       </message>
       <message name="IDS_ACCESSIBILITY_NTP_FEED_MENU_BUTTON" desc="Content description for the feed header menu button. Please use the branded term for Discover, as listed under Product Names in the Google Glossary Manager.">
         Options for Discover

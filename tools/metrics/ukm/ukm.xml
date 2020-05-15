@@ -1806,11 +1806,13 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="ProxyCommit">
+    <obsolete>
+      Removed in M84 in favor of separate ImplCompositorCommit and WaitForCommit
+      metrics.
+    </obsolete>
     <summary>
       The time spent committing main thread to impl layer tree information,
       between navigation and First Contentful Paint, in microseconds.
-      TODO(crbug.com/1058065): Should be obsolete. Removed February 2020 in
-      favor of separate metrics for the wait time and the actual commit time.
     </summary>
   </metric>
   <metric name="ScrollingCoordinator">
@@ -2504,11 +2506,13 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="ProxyCommit">
+    <obsolete>
+      Removed in M84 in favor of separate ImplCompositorCommit and WaitForCommit
+      metrics.
+    </obsolete>
     <summary>
       The time taken for the proxy to commit to the impl thread in microseconds
-      during the sampled frame. TODO(crbug.com/1058065): Should be obsolete.
-      Removed February 2020 in favor of separate metrics for the wait time and
-      the actual commit time.
+      during the sampled frame.
     </summary>
     <aggregation>
       <history>
@@ -2520,11 +2524,13 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="ProxyCommitPercentage">
+    <obsolete>
+      Removed in M84 in favor of separate ImplCompositorCommit and WaitForCommit
+      metrics.
+    </obsolete>
     <summary>
       The percentage of the main frame time used to commit to the impl thread.
-      An int in the range [0,100]. TODO(crbug.com/1058065): Should be obsolete.
-      Removed February 2020 in favor of separate metrics for the wait time and
-      the actual commit time.
+      An int in the range [0,100].
     </summary>
   </metric>
   <metric name="ScrollingCoordinator">
@@ -9113,12 +9119,6 @@ be describing additional metrics about the same event.
       SRP link.
     </summary>
   </metric>
-  <metric name="PrefetchEligibleCount">
-    <summary>
-      The number of links from the SRP page (the previous page load) that were
-      eligible for prefetch. Always set when this event is recorded.
-    </summary>
-  </metric>
   <metric name="ProbeLatencyMs">
     <summary>
       How long the network probe blocked commit in milliseconds. Recorded only
@@ -9131,6 +9131,12 @@ be describing additional metrics about the same event.
       prefetch the resource. The prefetched url is always the committed URL of
       the page. See |IsolatedPrerenderTabHelper.PrefetchStatus| for a mapping of
       enum values and their meanings.
+    </summary>
+  </metric>
+  <metric name="SRPPrefetchEligibleCount">
+    <summary>
+      The number of links from the SRP page (the previous page load) that were
+      eligible for prefetch. Always set when this event is recorded.
     </summary>
   </metric>
 </event>

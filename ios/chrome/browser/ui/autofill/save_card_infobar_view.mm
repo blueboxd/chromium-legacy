@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/autofill/save_card_infobar_view.h"
 
 #include "base/check_op.h"
+#include "base/feature_list.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/autofill/save_card_infobar_view_delegate.h"
@@ -12,11 +13,13 @@
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/infobars/infobar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -287,6 +290,13 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
     [closeButton.trailingAnchor
         constraintEqualToAnchor:headerView.trailingAnchor],
   ]];
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      closeButton.pointerInteractionEnabled = YES;
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
 
   // Add the content view.
   UIView* contentView = [self contentView];
@@ -347,6 +357,15 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
                            titleColor:[UIColor colorNamed:kBlueColor]
                                target:self
                                action:@selector(didTapCancel)];
+#if defined(__IPHONE_13_4)
+      if (@available(iOS 13.4, *)) {
+        if (base::FeatureList::IsEnabled(kPointerSupport)) {
+          cancelButton.pointerInteractionEnabled = YES;
+          cancelButton.pointerStyleProvider =
+              CreateTransparentButtonPointerStyleProvider();
+        }
+      }
+#endif  // defined(__IPHONE_13_4)
 
       [footerView addArrangedSubview:cancelButton];
     }
@@ -358,6 +377,15 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
                            titleColor:[UIColor colorNamed:kSolidButtonTextColor]
                                target:self
                                action:@selector(didTapConfirm)];
+#if defined(__IPHONE_13_4)
+      if (@available(iOS 13.4, *)) {
+        if (base::FeatureList::IsEnabled(kPointerSupport)) {
+          confirmButton.pointerInteractionEnabled = YES;
+          confirmButton.pointerStyleProvider =
+              CreateOpaqueButtonPointerStyleProvider();
+        }
+      }
+#endif  // defined(__IPHONE_13_4)
 
       [footerView addArrangedSubview:confirmButton];
     }

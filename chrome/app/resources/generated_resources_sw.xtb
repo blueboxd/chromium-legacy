@@ -54,7 +54,6 @@
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1060292118287751956">Hubaini kasi ya kusasisha skrini</translation>
 <translation id="1061904396131502319">Muda wa kupumzika umekaribia</translation>
-<translation id="1064552680598333868">Mabadiliko kwenye maikrofoni yatatekelezwa utakapozima Linux kisha uiwashe.</translation>
 <translation id="1067048845568873861">Kiliundwa</translation>
 <translation id="1067291318998134776">Linux (Beta)</translation>
 <translation id="1067922213147265141">Huduma zingine za Google</translation>
@@ -300,7 +299,6 @@
 <translation id="1386387014181100145">Hujambo.</translation>
 <translation id="138784436342154190">Ungependa kurejesha ukurasa unaoanza chaguomsingi?</translation>
 <translation id="1390548061267426325">Fungua kama Kichupo cha Kawaida</translation>
-<translation id="1392232653471491344">Unahitaji kuzima Linux kisha uiwashe</translation>
 <translation id="1393283411312835250">Jua na mawingu</translation>
 <translation id="1395730723686586365">Kisasishaji kimeanza</translation>
 <translation id="1396139853388185343">Hitilafu imetokea wakati wa kuweka mipangilio ya printa</translation>
@@ -706,7 +704,6 @@ Hatua hii haiathiri programu au maudhui kwenye vifaa vingine.</translation>
 <translation id="186612162884103683">"<ph name="EXTENSION" />" inaweza kusoma na kuandika picha, video, na faili za sauti katika maeneo yaliyowekewa alama.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> iko tayari kukamilisha usakinishaji wako</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
-<translation id="1870629042957780127">Ipe uwezo wa kufikia maikrofoni</translation>
 <translation id="1871534214638631766">Onyesha maelezo yanayohusiana unapobofya kulia au unapobonyeza maudhui kwa muda mrefu</translation>
 <translation id="1871615898038944731">Kifaa chako cha <ph name="DEVICE_TYPE" /> kimesasishwa</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Hamishia kichupo kwenye dirisha jingine}other{Hamishia vichupo kwenye dirisha jingine}}</translation>
@@ -2101,7 +2098,6 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="3661172646479098821">Kwa sasa inaweza kutumia vifaa vya Android pekee.</translation>
 <translation id="3664511988987167893">Aikoni ya Kiendelezi</translation>
 <translation id="3665589677786828986">Chrome imegundua kuwa baadhi ya mipangilio yako ilivurugwa na programu nyingine na ikairejesha kwenye mipangilio yake iliyotoka nayo kiwandani.</translation>
-<translation id="366867565525278777">Imeshindwa kusakinisha kwa sababu nafasi ya hifadhi haitoshi. Unahitaji hifadhi ya angalau <ph name="INSTALL_SIZE" /> ambayo hujatumia. Ili kuokoa hifadhi, futa faili kutoka kwenye hifadhi ya kifaa</translation>
 <translation id="3668801437375206837">Ili kutambua matatizo ya Bluetooth vyema zaidi, WanaGoogle wanaweza kujumuisha kumbukumbu za ziada za Bluetooth kwenye ripoti zao za maoni. Wakati umeteua chaguo hili, ripoti yako itajumuisha kumbukumbu za btsnoop na HCI kuanzia kipindi chako cha sasa, zilizosafishwa ili kuondoa PII nyingi kadri iwezekanavyo. Wasimamizi wa kundi la bidhaa ya Chrome OS katika Listnr ndio tu wataweza kufikia kumbukumbu hizi. Kumbukumbu zitaondolewa kabisa baada ya siku 90.</translation>
 <translation id="3668823961463113931">Vishikilizi</translation>
 <translation id="3670113805793654926">Vifaa kutoka muuzaji yeyote</translation>
@@ -3227,7 +3223,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5158983316805876233">Tumia proksi sawa kwa itifaki zote</translation>
 <translation id="5160857336552977725">Ingia katika kifaa chako cha <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> imefungwa kwa sababu muda wake wa matumizi umekwisha</translation>
-<translation id="5169131225159279624">Kuweka</translation>
 <translation id="5170568018924773124">Onyesha katika folda</translation>
 <translation id="5171045022955879922">Tafuta au charaza URL</translation>
 <translation id="5171343362375269016">Hifadhi Iliyobadilishwa</translation>
@@ -3279,7 +3274,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5235565664420173924">Better Together</translation>
 <translation id="5235750401727657667">Badilisha ukurasa unaoona unapokifungua kichupo kipya</translation>
 <translation id="5238278114306905396">Programu ya "<ph name="EXTENSION_NAME" />" iliondolewa kiotomatiki.</translation>
-<translation id="5238435043462632060">Mzazi wako amezima "Ruhusa za tovuti, programu na viendelezi" kwenye Chrome. Hauruhusiwi <ph name="ACTION_PARAMETER" /> <ph name="EXTENSION_TYPE_PARAMETER" /> hii.</translation>
 <translation id="5241128660650683457">Soma data yako yote kwenye tovuti unazotembelea</translation>
 <translation id="5242724311594467048">Ungependa kuwasha "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="5243522832766285132">Tafadhali jaribu tena baada ya muda mfupi</translation>
@@ -3948,7 +3942,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6085886413119427067">Hubainisha jinsi ya kuunganisha kwenye tovuti kupitia muunganisho salama</translation>
 <translation id="6086846494333236931">Kiendelezi kimesakinishwa na msimamizi wako</translation>
 <translation id="6087960857463881712">Uso wa kuvutia</translation>
-<translation id="6088036808197002565">Huwezi <ph name="ACTION_PARAMETER" /> <ph name="EXTENSION_TYPE_PARAMETER" /></translation>
 <translation id="6091761513005122595">Imepachika faili ya kushiriki.</translation>
 <translation id="6093888419484831006">Inaghairi usasishaji...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -5921,7 +5914,6 @@ Sidhani tovuti hii inapaswa kuzuiwa!</translation>
 <translation id="8650543407998814195">Ingawa huwezi kufikia tena wasifu wako wa awali, bado unaweza kuuondoa.</translation>
 <translation id="8651585100578802546">Lazimisha Ukurasa Huu Upakiwe Tena</translation>
 <translation id="8652400352452647993">Hitilafu ya kiendelezi cha kifurushi</translation>
-<translation id="8653578191563425126">Nafasi ya diski ya kuhifadhi kwenye Crostini (unaweza kubadilisha hali hii baadaye).</translation>
 <translation id="8654151524613148204">Faili hii ni kubwa sana kwa kompyuta yako kuishughulikia. Samahani.</translation>
 <translation id="8655295600908251630">Kituo</translation>
 <translation id="8655319619291175901">Lo! hitilafu fulani imetokea.</translation>

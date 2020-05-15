@@ -449,11 +449,15 @@ class SettingsDialog {
     $('close-settings-button').addEventListener('click', this.close.bind(this));
 
     $('theme-selection').addEventListener('change', (e) => {
-      useTheme(e.target.value);
+      const newTheme = e.target.value;
+      useTheme(newTheme);
+      distiller.storeThemePref(themeClasses.indexOf(newTheme));
     });
 
     $('font-family-selection').addEventListener('change', (e) => {
-      useFontFamily(e.target.value);
+      const newFontFamily = e.target.value;
+      useFontFamily(newFontFamily);
+      distiller.storeFontFamilyPref(fontFamilyClasses.indexOf(newFontFamily));
     });
   }
 

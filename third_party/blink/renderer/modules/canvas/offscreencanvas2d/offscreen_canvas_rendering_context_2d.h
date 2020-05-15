@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_factory.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/identifiability_study_helper.h"
 
 namespace blink {
 
@@ -127,6 +128,10 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   bool PushFrame() override;
 
+  uint64_t IdentifiabilityTextDigest() override {
+    return identifiability_study_helper_.digest();
+  }
+
  protected:
   CanvasColorParams ColorParams() const override;
   bool WritePixels(const SkImageInfo& orig_info,
@@ -160,6 +165,8 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   std::mt19937 random_generator_;
   std::bernoulli_distribution bernoulli_distribution_;
+
+  IdentifiabilityStudyHelper identifiability_study_helper_;
 };
 
 }  // namespace blink

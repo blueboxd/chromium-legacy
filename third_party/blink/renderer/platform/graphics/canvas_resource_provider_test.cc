@@ -166,14 +166,13 @@ TEST_F(CanvasResourceProviderTest,
       CanvasColorSpace::kSRGB, CanvasColorParams::GetNativeCanvasPixelFormat(),
       kNonOpaque);
 
-  auto provider = CanvasResourceProvider::Create(
-      kSize,
-      CanvasResourceProvider::ResourceUsage::
-          kAcceleratedCompositedResourceUsage,
-      context_provider_wrapper_, 0 /* msaa_sample_count */,
-      kMedium_SkFilterQuality, kColorParams,
-      CanvasResourceProvider::kAllowImageChromiumPresentationMode,
-      nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+  const uint32_t shared_image_usage_flags =
+      gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
+
+  auto provider = CanvasResourceProvider::CreateSharedImageProvider(
+      kSize, context_provider_wrapper_, kMedium_SkFilterQuality, kColorParams,
+      true /* is_origin_top_left */, CanvasResourceProvider::RasterMode::kGPU,
+      shared_image_usage_flags);
 
   EXPECT_EQ(provider->Size(), kSize);
   EXPECT_TRUE(provider->IsValid());
@@ -222,14 +221,14 @@ TEST_F(CanvasResourceProviderTest,
       CanvasColorSpace::kSRGB, CanvasColorParams::GetNativeCanvasPixelFormat(),
       kNonOpaque);
 
-  auto provider = CanvasResourceProvider::Create(
-      kSize,
-      CanvasResourceProvider::ResourceUsage::
-          kAcceleratedCompositedResourceUsage,
-      context_provider_wrapper_, 0 /* msaa_sample_count */,
-      kMedium_SkFilterQuality, kColorParams,
-      CanvasResourceProvider::kAllowImageChromiumPresentationMode,
-      nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+  const uint32_t shared_image_usage_flags =
+      gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
+
+  auto provider = CanvasResourceProvider::CreateSharedImageProvider(
+      kSize, context_provider_wrapper_, kMedium_SkFilterQuality, kColorParams,
+      true /* is_origin_top_left */, CanvasResourceProvider::RasterMode::kGPU,
+      shared_image_usage_flags);
+
   ASSERT_TRUE(provider->IsValid());
 
   // Same resource returned until the canvas is updated.
@@ -270,14 +269,14 @@ TEST_F(CanvasResourceProviderTest,
       CanvasColorSpace::kSRGB, CanvasColorParams::GetNativeCanvasPixelFormat(),
       kNonOpaque);
 
-  auto provider = CanvasResourceProvider::Create(
-      kSize,
-      CanvasResourceProvider::ResourceUsage::
-          kAcceleratedCompositedResourceUsage,
-      context_provider_wrapper_, 0 /* msaa_sample_count */,
-      kMedium_SkFilterQuality, kColorParams,
-      CanvasResourceProvider::kAllowImageChromiumPresentationMode,
-      nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+  const uint32_t shared_image_usage_flags =
+      gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
+
+  auto provider = CanvasResourceProvider::CreateSharedImageProvider(
+      kSize, context_provider_wrapper_, kMedium_SkFilterQuality, kColorParams,
+      true /* is_origin_top_left */, CanvasResourceProvider::RasterMode::kGPU,
+      shared_image_usage_flags);
+
   ASSERT_TRUE(provider->IsValid());
 
   // Disabling copy-on-write forces a copy each time the resource is queried.
@@ -518,17 +517,15 @@ TEST_F(CanvasResourceProviderTest, DimensionsExceedMaxTextureSize) {
       // Skipping ResourceUsages that will be removed after this refactor
       // bug(1035589)
       case CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage:
-        continue;
       case CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage:
+      case CanvasResourceProvider::ResourceUsage::
+          kAcceleratedCompositedResourceUsage:
         continue;
       case CanvasResourceProvider::ResourceUsage::
           kSoftwareCompositedResourceUsage:
         continue;
       case CanvasResourceProvider::ResourceUsage::
           kSoftwareCompositedDirect2DResourceUsage:
-        FALLTHROUGH;
-      case CanvasResourceProvider::ResourceUsage::
-          kAcceleratedCompositedResourceUsage:
         FALLTHROUGH;
       case CanvasResourceProvider::ResourceUsage::
           kAcceleratedDirect2DResourceUsage:

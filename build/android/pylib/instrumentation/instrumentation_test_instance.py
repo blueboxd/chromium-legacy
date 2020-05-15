@@ -521,6 +521,8 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._skia_gold_properties = None
     self._initializeSkiaGoldAttributes(args)
 
+    self._wpr_enable_record = args.wpr_enable_record
+
     self._external_shard_index = args.test_launcher_shard_index
     self._total_external_shards = args.test_launcher_total_shards
 
@@ -864,6 +866,14 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def wait_for_java_debugger(self):
     return self._wait_for_java_debugger
+
+  @property
+  def wpr_record_mode(self):
+    return self._wpr_enable_record
+
+  @property
+  def wpr_replay_mode(self):
+    return not self._wpr_enable_record
 
   #override
   def TestType(self):

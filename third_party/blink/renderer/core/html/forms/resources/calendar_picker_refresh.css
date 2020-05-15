@@ -255,6 +255,19 @@ body {
     fill: GrayText;
   }
 
+  .month-popup-button,
+  .month-popup-button:hover,
+  .month-popup-button:disabled {
+    background-color: Canvas;
+    color: CanvasText;
+    forced-color-adjust: none;
+    opacity: 1.0;
+  }
+
+  .month-popup-button:disabled {
+    color: GrayText !important;
+  }
+
   .month-popup-button polygon {
     fill: WindowText !important;
   }

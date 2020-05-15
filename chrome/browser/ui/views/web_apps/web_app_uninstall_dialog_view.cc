@@ -100,8 +100,6 @@ WebAppUninstallDialogDelegateView::WebAppUninstallDialogDelegateView(
   checkbox_ = AddChildView(std::move(checkbox));
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION_UNINSTALL);
-
-  ProcessAutoConfirmValue();
 }
 
 WebAppUninstallDialogDelegateView::~WebAppUninstallDialogDelegateView() {
@@ -204,7 +202,6 @@ void WebAppUninstallDialogViews::ConfirmUninstall(
     WebAppUninstallDialogViews::OnWebAppUninstallDialogClosed closed_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // TODO(loyso): Add UMA_HISTOGRAM_ENUMERATION here.
-
   app_id_ = app_id;
   closed_callback_ = std::move(closed_callback);
 
@@ -231,7 +228,6 @@ void WebAppUninstallDialogViews::SetDialogShownCallbackForTesting(
 void WebAppUninstallDialogViews::OnAllIconsRead(
     std::map<SquareSizePx, SkBitmap> icon_bitmaps) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
   if (parent_ && parent_window_tracker_->WasNativeWindowClosed()) {
     CallCallback(/*uninstalled=*/false);
     return;
@@ -244,6 +240,7 @@ void WebAppUninstallDialogViews::OnAllIconsRead(
 
   if (dialog_shown_callback_for_testing_)
     std::move(dialog_shown_callback_for_testing_).Run();
+  view_->ProcessAutoConfirmValue();
 }
 
 void WebAppUninstallDialogViews::OnWebAppUninstalled(

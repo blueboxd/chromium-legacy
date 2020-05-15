@@ -26,7 +26,7 @@ import {DuplexMode, whenReady} from '../data/model.js';
 import {PrintableArea} from '../data/printable_area.js';
 import {Size} from '../data/size.js';
 import {Error, State} from '../data/state.js';
-import {NativeInitialSettings, NativeLayer} from '../native_layer.js';
+import {NativeInitialSettings, NativeLayer, NativeLayerImpl} from '../native_layer.js';
 
 import {DestinationState} from './destination_settings.js';
 import {PreviewAreaState} from './preview_area.js';
@@ -168,7 +168,7 @@ Polymer({
   /** @override */
   attached() {
     document.documentElement.classList.remove('loading');
-    this.nativeLayer_ = NativeLayer.getInstance();
+    this.nativeLayer_ = NativeLayerImpl.getInstance();
     this.addWebUIListener('print-failed', this.onPrintFailed_.bind(this));
     this.addWebUIListener(
         'print-preset-options', this.onPrintPresetOptions_.bind(this));

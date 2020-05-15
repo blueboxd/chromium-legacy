@@ -129,6 +129,8 @@ struct BackgroundImage {
   url.mojom.Url url;
   // URL to a higher res background image. Can point to untrusted content.
   url.mojom.Url? url_2x;
+  // URL to a logo of the theme. Has chrome:// scheme.
+  url.mojom.Url? attribution_url;
   // CSS styling properties set on the background image.
   string? size;
   string? repeat_x;

@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Event Timing dblclick. assert_greater_than: The entry's processingStart should be greater than startTime. expected a number greater than 2077.215000000251 but got 2077.215000000251
-Harness: the test ran to completion.
-

@@ -18,7 +18,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/file_info/file_info.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_non_backed.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_offer.h"
@@ -373,7 +373,7 @@ void WaylandDataDevice::OnDrop(void* data, wl_data_device* data_device) {
     // until reading is completed.
     self->is_handling_dropped_data_ = true;
     self->received_data_ = std::make_unique<OSExchangeData>(
-        std::make_unique<OSExchangeDataProviderAura>());
+        std::make_unique<OSExchangeDataProviderNonBacked>());
     self->HandleUnprocessedMimeTypes();
   } else {
     // If the drag session had been started internally by chromium,

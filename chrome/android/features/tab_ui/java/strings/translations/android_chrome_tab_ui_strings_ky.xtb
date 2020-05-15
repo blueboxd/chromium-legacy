@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Топ түзүү</translation>
 <translation id="2671423594960767771">Топту бөлүшүү</translation>
 <translation id="2977480621796371840">Топтон алып салуу</translation>
+<translation id="3328308545011660196">Сунуш: <ph name="NUMBER_OF_TABS" /> өтмөк окшош окшойт. Алар топко бириктирилсинби?</translation>
+<translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> өтмөк окшош окшойт. Алар топко бириктирилсинби?</translation>
 <translation id="4212246570487010370">Серептөөнү улантуу</translation>
 <translation id="4450893287417543264">Экинчи көрсөтүлбөсүн</translation>
 <translation id="4648718555153979859">Өтмөктөрүңүз бул жерге топтолот</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Топтогу өтмөктөрдү алып салуу</translation>
 <translation id="7559245342362162951">Топтун өтмөктөрүн толук экрандагы торчодо көрсөтүү</translation>
 <translation id="7792771145871471484">Сунуштарды карап чыгуу.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> тандалган өтмөктү топко бириктирүү}other{<ph name="TABS_COUNT_MANY" /> тандалган өтмөктү топко бириктирүү}}</translation>
 <translation id="7885132941432959125">Өтмөктү оңго жылдыруу</translation>
 <translation id="7966321538264951561">Сунушту жабуу.</translation>
 <translation id="814503310257431685">Баарын көрүү</translation>

@@ -36,12 +36,10 @@ namespace {
 class WallpaperWidgetDelegate : public views::WidgetDelegateView {
  public:
   explicit WallpaperWidgetDelegate(views::View* view) {
+    SetCanMaximize(true);
     AddChildView(view);
     view->SetPaintToLayer();
   }
-
-  // views::WidgetDelegateView:
-  bool CanMaximize() const override { return true; }
 
   // Overrides views::View.
   void Layout() override {

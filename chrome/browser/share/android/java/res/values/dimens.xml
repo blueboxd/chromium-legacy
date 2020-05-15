@@ -9,4 +9,9 @@
     <dimen name="overlay_corner_size">25dp</dimen>
     <dimen name="overlay_corner_width">4dp</dimen>
     <dimen name="overlay_text_top_padding">14dp</dimen>
+
+    <!-- URL formatting in QR code bitmap -->
+    <dimen name="url_box_top_padding">128dp</dimen>
+    <dimen name="url_box_left_padding">40dp</dimen>
+    <dimen name="url_box_bottom_padding">32dp</dimen>
 </resources>

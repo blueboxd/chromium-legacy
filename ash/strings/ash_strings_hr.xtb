@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
 <translation id="1012876632442809908">USB-C uređaj (prednji priključak)</translation>
+<translation id="1013598600051641573">Razlučivost zaslona <ph name="DISPLAY_NAME" /> promijenjena je u <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Kliknite Potvrdi da biste zadržali promjene. Prethodne postavke vratit će se za <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Bluetooth uređaj "<ph name="DEVICE_NAME" />" traži dopuštenje za uparivanje. Unesite ovaj PIN na tom uređaju: <ph name="PINCODE" />.</translation>
 <translation id="1032891413405719768">Baterija pisaljke gotovo je prazna</translation>
 <translation id="1037492556044956303">Dodan je uređaj <ph name="DEVICE_NAME" /></translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">Prikaz postavki jezika</translation>
 <translation id="1460620680449458626">Isključen je zvuk.</translation>
 <translation id="1467432559032391204">Ulijevo</translation>
+<translation id="1479909375538722835">Pomični izbornik pristupačnosti</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">Uključeno</translation>
 <translation id="1516740043221086139">Način Ne uznemiravaj je uključen.</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">Emitiranje zaslona</translation>
 <translation id="5030687792513154421">Vrijeme je isteklo</translation>
 <translation id="5035236842988137213">Uređaj <ph name="DEVICE_NAME" /> povezan je s novim telefonom</translation>
+<translation id="5035389544768382859">Potvrđivanje konfiguracije zaslona</translation>
 <translation id="5083553833479578423">Otključajte više značajki Asistenta.</translation>
 <translation id="5136175204352732067">Povezana je neka druga tipkovnica</translation>
 <translation id="5168181903108465623">Dostupni su uređaji za emitiranje</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">Mreža se možda nadzire</translation>
 <translation id="7536035074519304529">IP adresa: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Vrijeme je za spavanje</translation>
+<translation id="7561982940498449837">Zatvori izbornik</translation>
 <translation id="7562368315689366235">Paleta emojija</translation>
 <translation id="7564874036684306347">Premještanje prozora na drugu radnu površinu može dovesti do neočekivanog ponašanja. Daljnje obavijesti, prozori i dijaloški okviri mogu se podijeliti između radnih površina.</translation>
 <translation id="7568294522609223312">Isključi automatske klikove</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">Pomak unaprijed</translation>
 <translation id="8029629653277878342">Radi dodatne sigurnosti potrebni su PIN ili zaporka</translation>
 <translation id="8030169304546394654">Prekinuta veza</translation>
+<translation id="8042893070933512245">Otvori izbornik postavki pristupačnosti</translation>
 <translation id="8048123526339889627">Postavke Bluetootha</translation>
 <translation id="8054466585765276473">Izračun vremena baterije.</translation>
 <translation id="8061464966246066292">Visoki kontrast</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">Postavi podsjetnik</translation>
 <translation id="8878886163241303700">Produljenje zaslona</translation>
 <translation id="890616557918890486">Promijeni izvor</translation>
+<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> ne podržava <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Razlučivost je promijenjena u <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Kliknite Potvrdi da bi se promjene zadržale. Prethodne postavke vratit će se za <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Baterija je na <ph name="PERCENTAGE" /> posto.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google asistent ne govori taj jezik.</translation>

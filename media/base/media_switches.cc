@@ -502,6 +502,12 @@ const base::Feature kAutoplayWhitelistSettings{
     "AutoplayWhitelistSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
+// Should we allow video playback to use an overlay if it's not needed for
+// security?  Normally, we'd always want to allow this, except as part of the
+// power testing A/B experiment.  https://crbug.com/1081346 .
+const base::Feature kAllowNonSecureOverlays{"AllowNonSecureOverlays",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enable a gesture to make the media controls expaned into the display cutout.
 // TODO(beccahughes): Remove this.
 const base::Feature kMediaControlsExpandGesture{

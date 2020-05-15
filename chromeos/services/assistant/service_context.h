@@ -11,11 +11,11 @@
 #include "base/memory/scoped_refptr.h"
 
 namespace ash {
+class AssistantAlarmTimerController;
 class AssistantController;
 class AssistantStateBase;
 
 namespace mojom {
-class AssistantAlarmTimerController;
 class AssistantNotificationController;
 }  // namespace mojom
 }  // namespace ash
@@ -40,7 +40,7 @@ class ServiceContext {
  public:
   virtual ~ServiceContext() = default;
 
-  virtual ash::mojom::AssistantAlarmTimerController*
+  virtual ash::AssistantAlarmTimerController*
   assistant_alarm_timer_controller() = 0;
 
   virtual ash::AssistantController* assistant_controller() = 0;

@@ -1151,9 +1151,6 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
 
   for (auto& observer : render_frames_)
     observer.DidCommitAndDrawCompositorFrame();
-
-  // Notify subclasses that we initiated the paint operation.
-  DidInitiatePaint();
 }
 
 void RenderWidget::DidCommitCompositorFrame(base::TimeTicks commit_start_time) {

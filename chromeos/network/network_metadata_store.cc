@@ -27,9 +27,25 @@ const char kNetworkMetadataPref[] = "network_metadata";
 const char kLastConnectedTimestampPref[] = "last_connected_timestamp";
 const char kIsFromSync[] = "is_from_sync";
 const char kOwner[] = "owner";
+const char kExternalModifications[] = "external_modifications";
 
 std::string GetPath(const std::string& guid, const std::string& subkey) {
   return base::StringPrintf("%s.%s", guid.c_str(), subkey.c_str());
+}
+
+base::Value CreateOrCloneListValue(const base::Value* list) {
+  if (list)
+    return list->Clone();
+
+  return base::ListValue();
+}
+
+bool ListContains(const base::Value* list, const std::string& value) {
+  if (!list)
+    return false;
+  base::Value::ConstListView list_view = list->GetList();
+  return std::find(list_view.begin(), list_view.end(), base::Value(value)) !=
+         list_view.end();
 }
 
 }  // namespace
@@ -105,6 +121,24 @@ void NetworkMetadataStore::OnConfigurationCreated(
   SetPref(guid, kOwner, base::Value(user->username_hash()));
 }
 
+void NetworkMetadataStore::UpdateExternalModifications(
+    const std::string& network_guid,
+    const std::string& field) {
+  const base::Value* fields = GetPref(network_guid, kExternalModifications);
+  if (GetIsCreatedByUser(network_guid)) {
+    if (ListContains(fields, field)) {
+      base::Value writeable_fields = CreateOrCloneListValue(fields);
+      writeable_fields.EraseListValue(base::Value(field));
+      SetPref(network_guid, kExternalModifications,
+              std::move(writeable_fields));
+    }
+  } else if (!ListContains(fields, field)) {
+    base::Value writeable_fields = CreateOrCloneListValue(fields);
+    writeable_fields.Append(base::Value(field));
+    SetPref(network_guid, kExternalModifications, std::move(writeable_fields));
+  }
+}
+
 void NetworkMetadataStore::OnConfigurationModified(
     const std::string& service_path,
     const std::string& guid,
@@ -114,6 +148,15 @@ void NetworkMetadataStore::OnConfigurationModified(
   }
 
   SetPref(guid, kIsFromSync, base::Value(false));
+
+  if (set_properties->HasKey(shill::kProxyConfigProperty)) {
+    UpdateExternalModifications(guid, shill::kProxyConfigProperty);
+  }
+  if (set_properties->FindPath(
+          base::StringPrintf("%s.%s", shill::kStaticIPConfigProperty,
+                             shill::kNameServersProperty))) {
+    UpdateExternalModifications(guid, shill::kNameServersProperty);
+  }
 
   // Only clear last connected if the passphrase changes.  Other settings
   // (autoconnect, dns, etc.) won't affect the ability to connect to a network.
@@ -201,6 +244,13 @@ bool NetworkMetadataStore::GetIsCreatedByUser(const std::string& network_guid) {
   }
 
   return owner->GetString() == user->username_hash();
+}
+
+bool NetworkMetadataStore::GetIsFieldExternallyModified(
+    const std::string& network_guid,
+    const std::string& field) {
+  const base::Value* fields = GetPref(network_guid, kExternalModifications);
+  return ListContains(fields, field);
 }
 
 void NetworkMetadataStore::SetPref(const std::string& network_guid,

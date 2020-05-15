@@ -21,7 +21,6 @@
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
-#include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_handler/wm_drag_handler.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"

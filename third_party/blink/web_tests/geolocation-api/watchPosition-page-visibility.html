@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
+<script src="../resources/visibility.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/geolocation/public/interfaces/geolocation.mojom.js"></script>
 <script src="file:///gen/third_party/blink/public/mojom/geolocation/geolocation_service.mojom.js"></script>
@@ -53,12 +54,11 @@ function showPageAndUpdatePosition() {
     shouldBeFalse('isPageVisible');
     debug('');
     state++;
-    if (window.testRunner) {
-        debug("*Showing page");
-        testRunner.setPageVisibility("visible");
+    debug("*Showing page");
+    setMainWindowHidden(false).then(() => {
         isPageVisible = true;
-    }
-    updatePosition();
+        updatePosition();
+    });
 }
 
 navigator.geolocation.watchPosition(function(p) {
@@ -68,12 +68,11 @@ navigator.geolocation.watchPosition(function(p) {
     checkPosition(p);
     switch(state) {
         case 2: {
-            if (window.testRunner) {
-                debug("* Hiding page");
-                testRunner.setPageVisibility("hidden");
+            debug("* Hiding page");
+            setMainWindowHidden(true).then(() => {
                 isPageVisible = false;
-            }
-            setTimeout(showPageAndUpdatePosition, 100);
+                showPageAndUpdatePosition();
+            });
             break;
         }
         case 4:

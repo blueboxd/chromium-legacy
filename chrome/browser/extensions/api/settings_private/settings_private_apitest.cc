@@ -11,11 +11,13 @@
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/api/settings_private/settings_private_delegate.h"
 #include "chrome/browser/extensions/api/settings_private/settings_private_delegate_factory.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/extensions/api/settings_private.h"
 #include "chrome/common/pref_names.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -100,6 +102,13 @@ IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, GetRecommendedPref) {
   SetPrefPolicy(policy::key::kHomepageIsNewTabPage,
                 policy::POLICY_LEVEL_RECOMMENDED);
   EXPECT_TRUE(RunSettingsSubtest("getRecommendedPref")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, GetDisabledPref) {
+  HostContentSettingsMapFactory::GetForProfile(profile())
+      ->SetDefaultContentSetting(ContentSettingsType::COOKIES,
+                                 ContentSetting::CONTENT_SETTING_BLOCK);
+  EXPECT_TRUE(RunSettingsSubtest("getDisabledPref")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, GetAllPrefs) {

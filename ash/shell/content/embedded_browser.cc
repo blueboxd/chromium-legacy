@@ -21,6 +21,9 @@ namespace {
 class BrowserWidgetDelegateView : public views::WidgetDelegateView {
  public:
   BrowserWidgetDelegateView(content::BrowserContext* context, const GURL& url) {
+    SetCanMaximize(true);
+    SetCanMinimize(true);
+    SetCanResize(true);
     SetTitle(base::ASCIIToUTF16("WebView Browser"));
     SetLayoutManager(std::make_unique<views::FillLayout>());
     auto* webview = new views::WebView(context);
@@ -29,11 +32,6 @@ class BrowserWidgetDelegateView : public views::WidgetDelegateView {
     webview->LoadInitialURL(url);
   }
   ~BrowserWidgetDelegateView() override = default;
-
-  // views::WidgetDelegateView:
-  bool CanResize() const override { return true; }
-  bool CanMaximize() const override { return true; }
-  bool CanMinimize() const override { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserWidgetDelegateView);

@@ -151,6 +151,10 @@ class BlinkTestRunner {
   // Clear all the permissions set via SetPermission().
   void ResetPermissions();
 
+  // Hide or show the main window. Watch for the |document.visibilityState| to
+  // change in order to wait for the side effects of calling this.
+  void SetMainWindowHidden(bool hidden);
+
   // Causes the beforeinstallprompt event to be sent to the renderer.
   // |event_platforms| are the platforms to be sent with the event. Once the
   // event listener completes, |callback| will be called with a boolean

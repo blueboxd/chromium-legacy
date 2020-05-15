@@ -51,6 +51,7 @@ Chrome ब्राउज़र मेन्यू खोलने के लि
 <translation id="1291286136605998134">टॉगल बटन</translation>
 <translation id="1299774449519412690">हल्का आसमानी नीला</translation>
 <translation id="1303806948938513162">ChromeVox मेन्यू में जाने के लिए चार उंगलियों से टैप करें</translation>
+<translation id="1325363694295259631"><ph name="NAME" />, मेन्यू आइटम रेडियो बटन से चुने का निशान हटाया गया</translation>
 <translation id="1325946044405407859">हल्का भूरा रंग</translation>
 <translation id="1331702245475014624"><ph name="TOTAL" /> में से <ph name="INDEX" /></translation>
 <translation id="1334095593597963605">वर्ण और शब्द इको</translation>
@@ -514,6 +515,7 @@ Chrome ब्राउज़र मेन्यू खोलने के लि
 <translation id="4994420463726586413">बैटरी की मौजूदा स्थिति बताएं</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, रेडियो बटन चयनित</translation>
 <translation id="5011664330025416377">चालू करने के लिए Search+Space दबाएं</translation>
+<translation id="5012724933919010465"><ph name="NAME" />, मेन्यू आइटम रेडियो बटन चुना गया</translation>
 <translation id="5020651427400641814">'बोलकर लॉग करना' चालू करें</translation>
 <translation id="5041394372352067729">ब्रेल डिसप्ले को पेज के ऊपर वाले हिस्से में ले जाएं</translation>
 <translation id="5042770794184672516">बोली वॉल्‍यूम बढ़ाएं</translation>

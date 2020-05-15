@@ -8,8 +8,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/mac/bundle_locations.h"
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
@@ -17,10 +15,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
-#include "base/task/task_traits.h"
-#include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/branding_buildflags.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_listener.h"
@@ -49,28 +43,6 @@
 #include "ui/native_theme/native_theme_mac.h"
 
 namespace {
-
-// Writes an undocumented sentinel file that prevents Spotlight from indexing
-// below a particular path in order to reap some power savings.
-void EnsureMetadataNeverIndexFileOnFileThread(
-    const base::FilePath& user_data_dir) {
-  const char kMetadataNeverIndexFilename[] = ".metadata_never_index";
-  base::FilePath metadata_file_path =
-      user_data_dir.Append(kMetadataNeverIndexFilename);
-  if (base::PathExists(metadata_file_path))
-    return;
-
-  if (base::WriteFile(metadata_file_path, nullptr, 0) == -1)
-    DLOG(FATAL) << "Could not write .metadata_never_index file.";
-}
-
-void EnsureMetadataNeverIndexFile(const base::FilePath& user_data_dir) {
-  base::ThreadPool::PostTask(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::BindOnce(&EnsureMetadataNeverIndexFileOnFileThread, user_data_dir));
-}
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
@@ -355,9 +327,6 @@ void ChromeBrowserMainPartsMac::PostProfileInit() {
 
   g_browser_process->metrics_service()->RecordBreakpadRegistration(
       crash_reporter::GetUploadsEnabled());
-
-  if (first_run::IsChromeFirstRun())
-    EnsureMetadataNeverIndexFile(user_data_dir());
 
   // Activation of Keystone is not automatic but done in response to the
   // counting and reporting of profiles.

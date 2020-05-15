@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">குழுவை உருவாக்கு</translation>
 <translation id="2671423594960767771">குழுவைப் பகிரும்</translation>
 <translation id="2977480621796371840">குழுவிலிருந்து அகற்று</translation>
+<translation id="3328308545011660196">பரிந்துரை: <ph name="NUMBER_OF_TABS" /> தாவல்கள் தொடர்புடையவையாகத் தெரிகின்றன. அவற்றைக் குழுவாக்கவா?</translation>
+<translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> தாவல்கள் தொடர்புடையவையாகத் தெரிகின்றன. அவற்றைக் குழுவாக்கவா?</translation>
 <translation id="4212246570487010370">உலாவலைத் தொடர்க</translation>
 <translation id="4450893287417543264">மீண்டும் காட்டாதே</translation>
 <translation id="4648718555153979859">உங்கள் தாவல்கள் இங்கு குழுவாக்கப்பட்டுள்ளன</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">குழுவிலிருந்து தாவல்களை அகற்று</translation>
 <translation id="7559245342362162951">குழு தாவல்களை முழுத்திரை கட்டத்தில் காட்டு</translation>
 <translation id="7792771145871471484">பரிந்துரைகளை சரிபார்க்கும்.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{தேர்ந்தெடுத்த <ph name="TABS_COUNT_ONE" /> தாவலைக் குழுவாக்கும்}other{தேர்ந்தெடுத்த <ph name="TABS_COUNT_MANY" /> தாவல்களைக் குழுவாக்கும்}}</translation>
 <translation id="7885132941432959125">தாவலை வலதுபுறம் நகர்த்து</translation>
 <translation id="7966321538264951561">பரிந்துரைகளை நிராகரிக்கும்.</translation>
 <translation id="814503310257431685">அனைத்தும் காட்டு</translation>

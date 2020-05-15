@@ -20,6 +20,7 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ionotificationportref.h"
+#include "base/power_monitor/thermal_state_observer_mac.h"
 #endif
 
 #if defined(OS_IOS)
@@ -96,6 +97,9 @@ class BASE_EXPORT PowerMonitorDeviceSource : public PowerMonitorSource {
 
   // Run loop source to observe power-source-change events.
   ScopedCFTypeRef<CFRunLoopSourceRef> power_source_run_loop_source_;
+
+  // Observer of thermal state events: critical temperature etc.
+  std::unique_ptr<ThermalStateObserverMac> thermal_state_observer_;
 #endif
 
 #if defined(OS_IOS)

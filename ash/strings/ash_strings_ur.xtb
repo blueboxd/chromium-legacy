@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ur">
 <translation id="1012876632442809908">‏USB-C آلہ (سانے کا پورٹ)</translation>
+<translation id="1013598600051641573">‏<ph name="DISPLAY_NAME" /> کو <ph name="RESOLUTION" /> (Hz<ph name="REFRESH_RATE" />) پر تبدیل کر دیا گیا ہے۔ تبدیلیاں باقی رکھنے کے لیے تصدیق کریں پر کلک کریں۔ گزشتہ ترتیبات کو <ph name="TIMEOUT_SECONDS" /> میں بحال کر دیا جائے گا۔</translation>
 <translation id="1013923882670373915">‏بلوٹوتھ آلہ "<ph name="DEVICE_NAME" />" جوڑا بنانے کی اجازت چاہتا ہے۔ براہ کرم اس PIN کوڈ کو اس آلہ پر درج کریں: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">اسٹائلس کی بیٹری کم ہے</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> کو شامل کیا گیا</translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">زبان کی ترتیبات دکھائیں</translation>
 <translation id="1460620680449458626">والیوم خاموش کیا ہوا ہے۔</translation>
 <translation id="1467432559032391204">بائیں</translation>
+<translation id="1479909375538722835">فلوٹنگ ایکسیسبیلٹی مینو</translation>
 <translation id="1484102317210609525">‎<ph name="DEVICE_NAME" /> (HDMI/DP)‎</translation>
 <translation id="1508507608940204251">آن</translation>
 <translation id="1516740043221086139">'ڈسٹرب نہ کریں' آن ہے۔</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">اسکرین کاسٹ کریں</translation>
 <translation id="5030687792513154421">وقت ختم ہو گیا</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> نئے فون سے منسلک ہو گیا</translation>
+<translation id="5035389544768382859">ڈسپلے کنفیگریشن کی تصدیق کریں</translation>
 <translation id="5083553833479578423">اسسٹنٹ کی مزید خصوصیات کو غیر مقفل کریں۔</translation>
 <translation id="5136175204352732067">مختلف کی بورڈ منسلک کر دیا گیا</translation>
 <translation id="5168181903108465623">کاسٹ آلات دستیاب ہیں</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">ممکن ہے نیٹ ورک کو مانیٹر کیا جا رہا ہو</translation>
 <translation id="7536035074519304529">‏IP پتہ: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">سونے کا وقت ہو گیا</translation>
+<translation id="7561982940498449837">مینو بند کریں</translation>
 <translation id="7562368315689366235">‏Emoji پیلٹ</translation>
 <translation id="7564874036684306347">ونڈوز کو کسی دوسرے ڈیسک ٹاپ پر منتقل کرنا غیر متوقع برتاؤ کا سبب بن سکتا ہے۔ بعد کی اطلاعات، ونڈوز اور ڈائیلاگز ڈیسک ٹاپ کے بیچ منقسم ہو سکتے ہیں۔</translation>
 <translation id="7568294522609223312">خودکار کلکس کو آف کریں</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">اضافہ</translation>
 <translation id="8029629653277878342">‏مزید سیکیورٹی کیلئے PIN یا پاس ورڈ درکار ہے</translation>
 <translation id="8030169304546394654">منقطع</translation>
+<translation id="8042893070933512245">ایکسیسبیلٹی ترتیبات کا مینو کھولیں</translation>
 <translation id="8048123526339889627">بلوٹوتھ کی ترتیبات</translation>
 <translation id="8054466585765276473">بیٹری کے وقت کا حساب لگایا جا رہا ہے۔</translation>
 <translation id="8061464966246066292">اعلی تناسب امتزاج</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">یاد دہانی سیٹ کریں</translation>
 <translation id="8878886163241303700">اسکرین کو پھیلایا جا رہا ہے</translation>
 <translation id="890616557918890486">ماخذ تبدیل کریں</translation>
+<translation id="8908312332415978740">‏<ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" />(Hz<ph name="SPECIFIED_REFRESH_RATE" />) کو سپورٹ نہیں کرتا ہے۔ ریزولیوشن کو تبدیل کر کے <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) کر دیا گیا تھا۔ تبدیلیاں باقی رکھنے کے لیے تصدیق کریں پر کلک کریں۔ گزشتہ ترتیبات کو <ph name="TIMEOUT_SECONDS" /> میں بحال کر دیا جائے گا۔</translation>
 <translation id="8909138438987180327">بیٹری <ph name="PERCENTAGE" /> فیصد ہے۔</translation>
 <translation id="8921554779039049422">H+‎</translation>
 <translation id="8921624153894383499">‏Google اسسٹنٹ یہ زبان نہیں بولتا ہے۔</translation>

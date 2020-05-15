@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BackgroundGraphicsModeRestriction, NativeLayer, PluginProxy} from 'chrome://print/print_preview.js';
+import {BackgroundGraphicsModeRestriction, NativeLayer, NativeLayerImpl, PluginProxy} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
@@ -29,13 +29,13 @@ suite(policy_tests.suiteName, function() {
    *     loading.
    */
   function loadInitialSettings(initialSettings) {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     const nativeLayer = new NativeLayerStub();
     nativeLayer.setInitialSettings(initialSettings);
     nativeLayer.setLocalDestinationCapabilities(
         getCddTemplate(initialSettings.printerName));
     nativeLayer.setPageCount(3);
-    NativeLayer.setInstance(nativeLayer);
+    NativeLayerImpl.instance_ = nativeLayer;
     const pluginProxy = new PDFPluginStub();
     PluginProxy.setInstance(pluginProxy);
 

@@ -419,6 +419,10 @@ void BlinkTestRunner::ResetPermissions() {
   GetWebTestClientRemote()->ResetPermissions();
 }
 
+void BlinkTestRunner::SetMainWindowHidden(bool hidden) {
+  GetWebTestControlHostRemote()->SetMainWindowHidden(hidden);
+}
+
 void BlinkTestRunner::SetScreenOrientationChanged() {
   GetWebTestControlHostRemote()->SetScreenOrientationChanged();
 }

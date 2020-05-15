@@ -53,7 +53,6 @@
 <translation id="1056898198331236512">Avertissement</translation>
 <translation id="1058262162121953039">Clé PUK</translation>
 <translation id="1061904396131502319">C'est bientôt le moment de prendre une pause</translation>
-<translation id="1064552680598333868">Les changements apportés au microphone prendront effet au prochain redémarrage de Linux.</translation>
 <translation id="1067048845568873861">Créé</translation>
 <translation id="1067291318998134776">Linux (bêta)</translation>
 <translation id="1067922213147265141">Autres services Google</translation>
@@ -298,7 +297,6 @@
 <translation id="1386387014181100145">Bien le bonjour!</translation>
 <translation id="138784436342154190">Restaurer la page de démarrage par défaut?</translation>
 <translation id="1390548061267426325">Ouvrir dans un onglet ordinaire</translation>
-<translation id="1392232653471491344">Linux doit être redémarré</translation>
 <translation id="1393283411312835250">Soleil et nuages</translation>
 <translation id="1395730723686586365">L'outil de mise à jour est actif</translation>
 <translation id="1396139853388185343">Erreur lors de la configuration de l'imprimante</translation>
@@ -704,7 +702,6 @@
 <translation id="186612162884103683">« <ph name="EXTENSION" /> » dispose d'un droit d'accès en lecture et en écriture aux images, aux vidéos et aux fichiers audio figurant dans les dossiers sélectionnés.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> est prêt à terminer l'installation.</translation>
 <translation id="1868193363684582383">« Ok Google »</translation>
-<translation id="1870629042957780127">Autoriser l'accès au microphone</translation>
 <translation id="1871534214638631766">Afficher de l'information connexe lorsque vous faites un clic droit ou un appui prolongé sur un élément</translation>
 <translation id="1871615898038944731">Votre <ph name="DEVICE_TYPE" /> est à jour</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Déplacer l'onglet vers une autre fenêtre}one{Déplacer l'onglet vers une autre fenêtre}other{Déplacer les onglets vers une autre fenêtre}}</translation>
@@ -2091,7 +2088,6 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3661172646479098821">Seuls les appareils Android sont pris en charge pour le moment.</translation>
 <translation id="3664511988987167893">Icône de l'extension</translation>
 <translation id="3665589677786828986">Chrome a détecté que certains paramètres de votre navigateur ont été corrompus par un autre programme, et les a réinitialisé à leurs valeurs par défaut.</translation>
-<translation id="366867565525278777">L'installation a échoué en raison d'un manque d'espace de stockage. Un minimum de <ph name="INSTALL_SIZE" /> d'espace est requis. Pour libérer de l'espace, supprimez des fichiers de l'espace de stockage de l'appareil.</translation>
 <translation id="3668801437375206837">Pour un meilleur diagnostic des problèmes liés au Bluetooth, les employés de Google peuvent inclure des journaux Bluetooth supplémentaires dans leurs rapports de commentaires. Lorsque cette option est cochée, votre rapport inclut les journaux btsnoop et HCI de votre session en cours, qui sont anonymisés de façon à supprimer autant de données personnelles que possible. L'accès à ces journaux est réservé aux gestionnaires du groupe de produits Chrome OS dans Listnr. Les journaux seront supprimés définitivement au bout de 90 jours.</translation>
 <translation id="3668823961463113931">Gestionnaires</translation>
 <translation id="3670113805793654926">Appareils de n'importe quel fournisseur</translation>
@@ -3212,7 +3208,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5158983316805876233">Utiliser le même mandataire pour tous les protocoles</translation>
 <translation id="5160857336552977725">Connexion à votre <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936">Le plugiciel <ph name="PLUGIN_NAME" /> a été bloqué, car il est obsolète</translation>
-<translation id="5169131225159279624">Ajouter</translation>
 <translation id="5170568018924773124">Afficher dans le dossier</translation>
 <translation id="5171045022955879922">Effectuez une recherche ou entrez une adresse URL</translation>
 <translation id="5171343362375269016">Mémoire échangée</translation>
@@ -3264,7 +3259,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5235565664420173924">Mieux ensemble</translation>
 <translation id="5235750401727657667">Remplacer la page qui s'affiche lors de l'ouverture d'un nouvel onglet</translation>
 <translation id="5238278114306905396">L'application « <ph name="EXTENSION_NAME" /> » a été automatiquement supprimée.</translation>
-<translation id="5238435043462632060">Ton parent a désactivé le paramètre « Autorisations pour les sites, les applications et les extensions » dans Chrome. L'action <ph name="ACTION_PARAMETER" /> n'est pas autorisée pour <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="5241128660650683457">Lire toutes vos données sur les sites Web que vous consultez</translation>
 <translation id="5242724311594467048">Activer « <ph name="EXTENSION_NAME" /> »?</translation>
 <translation id="5243522832766285132">Veuillez réessayer dans quelques instants</translation>
@@ -3932,7 +3926,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6085886413119427067">Détermine la manière de communiquer avec des sites Web par connexion sécurisée</translation>
 <translation id="6086846494333236931">Élément installé par votre administrateur</translation>
 <translation id="6087960857463881712">Superbe visage</translation>
-<translation id="6088036808197002565">L'action <ph name="ACTION_PARAMETER" /> pour <ph name="EXTENSION_TYPE_PARAMETER" /> est désactivée</translation>
 <translation id="6091761513005122595">Partage correctement configuré.</translation>
 <translation id="6093888419484831006">Annulation de la mise à jour...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -5891,7 +5884,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8650543407998814195">Bien que vous ne puissiez plus accéder à votre ancien profil, vous pouvez toujours le supprimer.</translation>
 <translation id="8651585100578802546">Forcer l'actualisation de la page</translation>
 <translation id="8652400352452647993">Erreur concernant l'empaquetage d'extensions</translation>
-<translation id="8653578191563425126">Espace disque à réserver pour Crostini (vous pouvez modifier cette valeur plus tard).</translation>
 <translation id="8654151524613148204">Ce fichier est trop volumineux pour votre ordinateur.</translation>
 <translation id="8655295600908251630">Version</translation>
 <translation id="8655319619291175901">Une erreur s'est produite.</translation>

@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Csoport létrehozása</translation>
 <translation id="2671423594960767771">Csoport megosztása</translation>
 <translation id="2977480621796371840">Eltávolítás a csoportból</translation>
+<translation id="3328308545011660196">Javaslat: Úgy tűnik, <ph name="NUMBER_OF_TABS" /> lap kapcsolódik egymáshoz. Csoportosítja őket?</translation>
+<translation id="4133493477912226187">Úgy tűnik, <ph name="NUMBER_OF_TABS" /> lap kapcsolódik egymáshoz. Csoportosítja őket?</translation>
 <translation id="4212246570487010370">Böngészés folytatása</translation>
 <translation id="4450893287417543264">Ne jelenjen meg többé</translation>
 <translation id="4648718555153979859">A lapok itt vannak csoportosítva</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Lapok eltávolítása</translation>
 <translation id="7559245342362162951">A csoportban lévő lapok teljes képernyős rácsszerkezetben való megjelenítése</translation>
 <translation id="7792771145871471484">Javaslatok áttekintése.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> kijelölt lap csoportba helyezése}other{<ph name="TABS_COUNT_MANY" /> kijelölt lap csoportba helyezése}}</translation>
 <translation id="7885132941432959125">Lap mozgatása jobbra</translation>
 <translation id="7966321538264951561">Javaslatok elvetése.</translation>
 <translation id="814503310257431685">Összes megtekintése</translation>

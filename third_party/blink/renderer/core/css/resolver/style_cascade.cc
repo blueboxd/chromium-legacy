@@ -260,6 +260,7 @@ void StyleCascade::ApplyCascadeAffecting(CascadeResolver& resolver) {
 
   LookupAndApply(GetCSSPropertyDirection(), resolver);
   LookupAndApply(GetCSSPropertyWritingMode(), resolver);
+  LookupAndApply(GetCSSPropertyForcedColorAdjust(), resolver);
 
   if (depends_on_cascade_affecting_property_ &&
       (direction != state_.Style()->Direction() ||
@@ -530,12 +531,22 @@ StyleCascade::TokenSequence::BuildVariableData() {
       has_font_units_, has_root_font_units_, absolutized, base_url_, charset_);
 }
 
+bool StyleCascade::ShouldRevert(const CSSProperty& property,
+                                const CSSValue& value,
+                                CascadeOrigin origin) {
+  return value.IsRevertValue() ||
+         (state_.GetDocument().InForcedColorsMode() &&
+          state_.Style()->ForcedColorAdjust() != EForcedColorAdjust::kNone &&
+          property.IsAffectedByForcedColors() &&
+          origin >= CascadeOrigin::kAuthor);
+}
+
 const CSSValue* StyleCascade::Resolve(const CSSProperty& property,
                                       const CSSValue& value,
                                       CascadeOrigin origin,
                                       CascadeResolver& resolver) {
   DCHECK(!property.IsSurrogate());
-  if (value.IsRevertValue())
+  if (ShouldRevert(property, value, origin))
     return ResolveRevert(property, origin, resolver);
   resolver.CollectAuthorFlags(property, origin);
   if (const auto* v = DynamicTo<CSSCustomPropertyDeclaration>(value))

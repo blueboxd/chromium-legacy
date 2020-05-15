@@ -11,6 +11,7 @@
 #include "cc/cc_export.h"
 #include "cc/input/scroll_state_data.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/vector2d.h"
 
 namespace cc {
@@ -80,6 +81,10 @@ class CC_EXPORT ScrollState {
   ui::ScrollGranularity delta_granularity() const {
     return data_.delta_granularity;
   }
+
+  // Returns a the delta hints if this is a scroll begin or the real delta if
+  // it's a scroll update
+  gfx::ScrollOffset DeltaOrHint() const;
 
   ScrollStateData* data() { return &data_; }
 

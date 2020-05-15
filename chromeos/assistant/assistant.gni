@@ -3,7 +3,7 @@ import("//build/config/chrome_build.gni")
 declare_args() {
   # Enable assistant implementation based on libassistant.
   enable_cros_libassistant = is_chromeos && is_chrome_branded
-  enable_on_device_assistant = false
+  enable_cros_on_device_assistant = false
 }
 
 declare_args() {

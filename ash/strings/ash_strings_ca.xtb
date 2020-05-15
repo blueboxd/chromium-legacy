@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
 <translation id="1012876632442809908">Dispositiu USB-C (port frontal)</translation>
+<translation id="1013598600051641573">La resolució de la pantalla <ph name="DISPLAY_NAME" /> ha canviat a <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Fes clic a Confirma per conservar els canvis. La configuració anterior es restaurarà d'aquí a <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se. Introduïu aquest codi PIN al dispositiu: <ph name="PINCODE" />.</translation>
 <translation id="1032891413405719768">El llapis òptic té poca bateria</translation>
 <translation id="1037492556044956303">S'ha afegit <ph name="DEVICE_NAME" /></translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">Mostra la configuració d'idioma</translation>
 <translation id="1460620680449458626">El volum està silenciat.</translation>
 <translation id="1467432559032391204">Esquerra</translation>
+<translation id="1479909375538722835">Menú flotant d'accessibilitat</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">Activat</translation>
 <translation id="1516740043221086139">El mode No molestis està activat.</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">Emet la pantalla</translation>
 <translation id="5030687792513154421">S'ha acabat el temps</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> s'ha connectat a un altre telèfon</translation>
+<translation id="5035389544768382859">Confirma la configuració de la pantalla</translation>
 <translation id="5083553833479578423">Desbloqueja més funcions de l'Assistent.</translation>
 <translation id="5136175204352732067">S'ha connectat un altre teclat</translation>
 <translation id="5168181903108465623">Dispositius d'emissió disponibles</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">És possible que la xarxa estigui supervisada</translation>
 <translation id="7536035074519304529">Adreça IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Ara toca anar a dormir</translation>
+<translation id="7561982940498449837">Tanca el menú</translation>
 <translation id="7562368315689366235">Paleta d'emoji</translation>
 <translation id="7564874036684306347">Moure finestres a un altre escriptori pot provocar un comportament imprevist. És possible que les notificacions, les finestres i els quadres de diàleg següents quedin dividits entre escriptoris.</translation>
 <translation id="7568294522609223312">Desactiva els clics automàtics</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">Incrementa</translation>
 <translation id="8029629653277878342">Cal introduir el PIN o la contrasenya per disposar de més seguretat</translation>
 <translation id="8030169304546394654">Desconnectat</translation>
+<translation id="8042893070933512245">Obre el menú de configuració d'accessibilitat</translation>
 <translation id="8048123526339889627">Configuració del Bluetooth</translation>
 <translation id="8054466585765276473">S'està calculant el temps de la bateria.</translation>
 <translation id="8061464966246066292">Contrast alt</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">Estableix un recordatori</translation>
 <translation id="8878886163241303700">Ampliació de la pantalla</translation>
 <translation id="890616557918890486">Canvia la font</translation>
+<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> no admet la resolució <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). La resolució ha canviat a <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Fes clic a Confirma per conservar els canvis. La configuració anterior es restaurarà d'aquí a <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">La bateria està a un <ph name="PERCENTAGE" />%.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">L'Assistent de Google no parla aquest idioma.</translation>

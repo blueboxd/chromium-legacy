@@ -1171,7 +1171,6 @@
       style_builder_template_args: {
         initial_color: "ComputedStyleInitialValues::InitialBackgroundColor",
       },
-      affected_by_forced_colors: true,
       valid_for_first_letter: true,
       valid_for_cue: true,
       is_background: true,
@@ -5873,6 +5872,21 @@
       default_value: "false",
       name_for_methods: "HasLineIfEmpty",
       converter: "ConvertInternalEmptyLineHeight",
+    },
+
+    // Stores the RGB portion of the background-color used during forced colors
+    // mode. The corresponding alpha channel is retrieved from the
+    // author-defined background-color.
+    {
+      name: "-internal-forced-background-color-rgb",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      field_group: "*",
+      field_template: "external",
+      default_value: "CSSValueID::kCanvas",
+      type_name: "CSSValueID",
+      converter: "ConvertCSSValueID",
+      valid_for_first_letter: true,
+      valid_for_cue: true,
     },
 
     // Aliases; these map to the same CSSPropertyID

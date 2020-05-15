@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/mojom/assistant_controller.mojom-forward.h"
+#include "ash/public/cpp/assistant/controller/assistant_alarm_timer_controller.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -30,7 +30,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantAlarmTimerModel {
   void RemoveObserver(AssistantAlarmTimerModelObserver* observer);
 
   // Adds or updates the timer specified by |timer.id| in the model.
-  void AddOrUpdateTimer(mojom::AssistantTimerPtr timer);
+  void AddOrUpdateTimer(AssistantTimerPtr timer);
 
   // Removes the timer uniquely identified by |id|.
   void RemoveTimer(const std::string& id);
@@ -39,10 +39,10 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantAlarmTimerModel {
   void RemoveAllTimers();
 
   // Returns all timers from the model.
-  std::vector<const mojom::AssistantTimer*> GetAllTimers() const;
+  std::vector<const AssistantTimer*> GetAllTimers() const;
 
   // Returns the timer uniquely identified by |id|.
-  const mojom::AssistantTimer* GetTimerById(const std::string& id) const;
+  const AssistantTimer* GetTimerById(const std::string& id) const;
 
   // Invoke to tick any timers. Note that this will update the |remaining_time|
   // for all timers in the model and trigger an OnTimerUpdated() event.
@@ -52,12 +52,12 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantAlarmTimerModel {
   bool empty() const { return timers_.empty(); }
 
  private:
-  void NotifyTimerAdded(const mojom::AssistantTimer& timer);
-  void NotifyTimerUpdated(const mojom::AssistantTimer& timer);
-  void NotifyTimerRemoved(const mojom::AssistantTimer& timer);
+  void NotifyTimerAdded(const AssistantTimer& timer);
+  void NotifyTimerUpdated(const AssistantTimer& timer);
+  void NotifyTimerRemoved(const AssistantTimer& timer);
   void NotifyAllTimersRemoved();
 
-  std::map<std::string, mojom::AssistantTimerPtr> timers_;
+  std::map<std::string, AssistantTimerPtr> timers_;
 
   base::ObserverList<AssistantAlarmTimerModelObserver> observers_;
 

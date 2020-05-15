@@ -10,6 +10,7 @@ import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.Pair;
 
+import org.chromium.components.payments.PackageManagerDelegate;
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
 import org.chromium.components.payments.intent.WebPaymentIntentHelper;
@@ -23,10 +24,10 @@ public class AndroidPaymentAppFactory implements PaymentAppFactoryInterface {
     // PaymentAppFactoryInterface implementation.
     @Override
     public void create(PaymentAppFactoryDelegate delegate) {
-        AndroidPaymentAppFinder finder =
-                new AndroidPaymentAppFinder(new PaymentManifestWebDataService(),
-                        new PaymentManifestDownloader(), new PaymentManifestParser(),
-                        new PackageManagerDelegate(), delegate, /*factory=*/this);
+        AndroidPaymentAppFinder finder = new AndroidPaymentAppFinder(
+                new PaymentManifestWebDataService(), new PaymentManifestDownloader(),
+                new PaymentManifestParser(), new PackageManagerDelegate(),
+                new TwaPackageManagerDelegate(), delegate, /*factory=*/this);
         finder.findAndroidPaymentApps();
     }
 

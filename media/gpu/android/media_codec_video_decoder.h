@@ -327,6 +327,11 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   // Optional crypto object from the Cdm.
   base::android::ScopedJavaGlobalRef<jobject> media_crypto_;
 
+  // For A/B power testing, this causes all non-L1 content to avoid overlays.
+  // This is only for A/B power testing, and can be removed after that.
+  // See https://crbug.com/1081346 .
+  bool allow_nonsecure_overlays_ = true;
+
   base::WeakPtrFactory<MediaCodecVideoDecoder> weak_factory_{this};
   base::WeakPtrFactory<MediaCodecVideoDecoder> codec_allocator_weak_factory_{
       this};

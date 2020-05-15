@@ -8,6 +8,7 @@
 
 #include "base/json/json_writer.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
+#include "chromeos/services/assistant/public/shared/constants.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -19,12 +20,6 @@ namespace {
 
 using base::Value;
 using network::mojom::URLLoaderFactory;
-
-constexpr base::StringPiece kSearchEndpoint =
-    "https://www.google.com/httpservice/web/KnowledgeApiService/Search?"
-    "fmt=json";
-
-constexpr char kPayloadParam[] = "reqpld";
 
 // The JSON we generate looks like this:
 // {
@@ -66,6 +61,7 @@ std::string BuildSearchRequestPayload(const std::string& selected_text) {
 
   return request_payload_str;
 }
+
 }  // namespace
 
 SearchResultLoader::SearchResultLoader(URLLoaderFactory* url_loader_factory,
@@ -76,11 +72,12 @@ SearchResultLoader::~SearchResultLoader() = default;
 
 GURL SearchResultLoader::BuildRequestUrl(
     const std::string& selected_text) const {
-  GURL result = GURL(kSearchEndpoint);
+  GURL result = GURL(assistant::kKnowledgeApiEndpoint);
 
   // Add encoded request payload.
   result = net::AppendOrReplaceQueryParameter(
-      result, kPayloadParam, BuildSearchRequestPayload(selected_text));
+      result, assistant::kPayloadParamName,
+      BuildSearchRequestPayload(selected_text));
   return result;
 }
 

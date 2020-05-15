@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {NativeLayer, PluginProxy} from 'chrome://print/print_preview.js';
+import {NativeLayer, NativeLayerImpl, PluginProxy} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isChromeOS, isMac, isWindows} from 'chrome://resources/js/cr.m.js';
 import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
@@ -31,7 +31,7 @@ suite(key_event_test.suiteName, function() {
   /** @type {?PrintPreviewAppElement} */
   let page = null;
 
-  /** @type {?PrintPreviewNativeLayer} */
+  /** @type {?NativeLayer} */
   let nativeLayer = null;
 
   /** @override */
@@ -43,11 +43,11 @@ suite(key_event_test.suiteName, function() {
     nativeLayer.setLocalDestinationCapabilities(
         getCddTemplateWithAdvancedSettings(1, initialSettings.printerName));
     nativeLayer.setPageCount(3);
-    NativeLayer.setInstance(nativeLayer);
+    NativeLayerImpl.instance_ = nativeLayer;
     const pluginProxy = new PDFPluginStub();
     PluginProxy.setInstance(pluginProxy);
 
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     page = document.createElement('print-preview-app');
     document.body.appendChild(page);
     const previewArea = page.$.previewArea;

@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">បង្កើត​ក្រុម</translation>
 <translation id="2671423594960767771">ចែករំលែកក្រុម</translation>
 <translation id="2977480621796371840">លុបចេញ​ពីក្រុម</translation>
+<translation id="3328308545011660196">ការណែនាំ៖ ផ្ទាំង <ph name="NUMBER_OF_TABS" /> ហាក់ដូចជាពាក់ព័ន្ធគ្នា។ បញ្ចូលផ្ទាំងទាំងនេះទៅក្នុងក្រុមឬ?</translation>
+<translation id="4133493477912226187">ផ្ទាំង <ph name="NUMBER_OF_TABS" /> ហាក់ដូចជាពាក់ព័ន្ធគ្នា។ បញ្ចូលផ្ទាំងទាំងនេះទៅក្នុងក្រុមឬ?</translation>
 <translation id="4212246570487010370">ការអានបន្ត</translation>
 <translation id="4450893287417543264">កុំបង្ហាញម្ដងទៀត</translation>
 <translation id="4648718555153979859">ផ្ទាំងរបស់អ្នកត្រូវ​បានដាក់ជាក្រុម​រួមគ្នានៅទីនេះ</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">លុបផ្ទាំង​ចេញពីក្រុម</translation>
 <translation id="7559245342362162951">បង្ហាញផ្ទាំង​របស់ក្រុមនៅក្នុងក្រឡា​ពេញ​អេក្រង់</translation>
 <translation id="7792771145871471484">ពិនិត្យមើល​ការណែនាំ​។</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{បញ្ចូលផ្ទាំង​ដែលបានជ្រើសរើស <ph name="TABS_COUNT_ONE" /> ​ទៅក្នុងក្រុម}other{បញ្ចូលផ្ទាំង​ដែលបានជ្រើសរើស <ph name="TABS_COUNT_MANY" /> ​ទៅក្នុងក្រុម}}</translation>
 <translation id="7885132941432959125">ផ្លាស់ទី​ផ្ទាំង​ទៅ​ខាងស្ដាំ</translation>
 <translation id="7966321538264951561">ច្រានចោល​ការណែនាំ​។</translation>
 <translation id="814503310257431685">មើលទាំងអស់</translation>

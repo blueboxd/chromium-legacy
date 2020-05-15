@@ -177,6 +177,7 @@ MEDIA_EXPORT extern const base::Feature kVp9kSVCHWDecoding;
 #endif  // defined(ARCH_CPU_X86_FAMILY) && defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
+MEDIA_EXPORT extern const base::Feature kAllowNonSecureOverlays;
 MEDIA_EXPORT extern const base::Feature kMediaControlsExpandGesture;
 MEDIA_EXPORT extern const base::Feature kMediaDrmPersistentLicense;
 MEDIA_EXPORT extern const base::Feature kMediaDrmPreprovisioning;

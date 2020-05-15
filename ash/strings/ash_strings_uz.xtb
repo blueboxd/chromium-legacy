@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="uz">
 <translation id="1012876632442809908">USB-C qurilma (old port)</translation>
+<translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> tasviri <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz) tiniqligiga oʻtkazildi. Tasdiqlash uchun bosing. Eski sozlamalar <ph name="TIMEOUT_SECONDS" /> dan keyin tiklanadi.</translation>
 <translation id="1013923882670373915">“<ph name="DEVICE_NAME" />” qurilmasi Bluetooth orqali bog‘lanishga ruxsat so‘ramoqda. Bu qurilmada quyidagi PIN-kodni kiriting: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Stilus batareyasi quvvati kam</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> qurilmasi qo‘shildi</translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">Til sozlamalarini ochish</translation>
 <translation id="1460620680449458626">Ovozsiz</translation>
 <translation id="1467432559032391204">Chapga</translation>
+<translation id="1479909375538722835">Erkin harakatlanuvchi maxsus imkoniyatlar menyusi</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">Yoniq</translation>
 <translation id="1516740043221086139">Bezovta qilinmasin rejimi yoniq.</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">Ekranni translatsiya qilish</translation>
 <translation id="5030687792513154421">Vaqt tugadi</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> yangi telefonga ulandi</translation>
+<translation id="5035389544768382859">Displey sozlamalarini tasdiqlash</translation>
 <translation id="5083553833479578423">Assistentning boshqa imkoniyatlarini oching.</translation>
 <translation id="5136175204352732067">Boshqa klaviatura ulandi</translation>
 <translation id="5168181903108465623">Translatsiya qurilmalari mavjud</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">Tarmoq kuzatilishi mumkin</translation>
 <translation id="7536035074519304529">IP manzil: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Uyqu vaqti keldi</translation>
+<translation id="7561982940498449837">Menyuni yopish</translation>
 <translation id="7562368315689366235">Emoji menyusi</translation>
 <translation id="7564874036684306347">Oynalarni boshqa ish stoliga ko‘chirish oqibatida kutilmagan xatti-harakatlar sodir bo‘lishi mumkin. Bildirishnomalar va muloqot oynalari turli ekranlarda ko‘rsatiladi.</translation>
 <translation id="7568294522609223312">Avtomatik kliklarni faolsizlantirish</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">Oshirish</translation>
 <translation id="8029629653277878342">Xavfsizlikni oshirish uchun PIN kod yoki parol kiriting</translation>
 <translation id="8030169304546394654">Uzildi</translation>
+<translation id="8042893070933512245">Maxsus imkoniyatlar sozlamalari menyusini ochish</translation>
 <translation id="8048123526339889627">Bluetooth sozlamalari</translation>
 <translation id="8054466585765276473">Batareyadan ishlash mumkin bo‘lgan vaqt hisoblanmoqda.</translation>
 <translation id="8061464966246066292">Yuqori kontrast</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">Eslatma belgilash</translation>
 <translation id="8878886163241303700">Yoyilgan ekran</translation>
 <translation id="890616557918890486">Manbani almashtirish</translation>
+<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz) tiniqlikda ishlamaydi. Tasvir <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) tiniqligiga qaytarildi. Tasdiqlash uchun bosing. Eski sozlamalar <ph name="TIMEOUT_SECONDS" /> dan keyin tiklanadi.</translation>
 <translation id="8909138438987180327">Batareya quvvati: <ph name="PERCENTAGE" />%.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistent hozircha bu tilda gapirmaydi.</translation>

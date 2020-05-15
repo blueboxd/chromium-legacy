@@ -420,10 +420,18 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 }
 
 // Error during enrollment : 417 - Consumer account with packaged license.
-// Disable due to flaky crash/timeout on ChromeOS. https://crbug.com/1028650
+// Disable due to flaky crash/timeout on MSAN. https://crbug.com/1028650
+// TODO(https://crbug.com/1031275): Slow on MSAN builds.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_EnrollmentErrorConsumerAccountWithPackagedLicense \
+  DISABLED_EnrollmentErrorConsumerAccountWithPackagedLicense
+#else
+#define MAYBE_EnrollmentErrorConsumerAccountWithPackagedLicense \
+  EnrollmentErrorConsumerAccountWithPackagedLicense
+#endif
 IN_PROC_BROWSER_TEST_F(
     EnrollmentLocalPolicyServerBase,
-    DISABLED_EnrollmentErrorConsumerAccountWithPackagedLicense) {
+    MAYBE_EnrollmentErrorConsumerAccountWithPackagedLicense) {
   policy_server_.SetExpectedDeviceEnrollmentError(417);
 
   TriggerEnrollmentAndSignInSuccessfully();

@@ -5,20 +5,25 @@
 package org.chromium.chrome.browser.omnibox.suggestions.header;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.notNull;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
-import android.view.View;
+import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 
@@ -35,7 +40,6 @@ public class HeaderViewBinderUnitTest {
     Activity mActivity;
     PropertyModel mModel;
 
-    @Mock
     HeaderView mHeaderView;
     @Mock
     TextView mHeaderText;
@@ -48,8 +52,10 @@ public class HeaderViewBinderUnitTest {
         mActivity = Robolectric.buildActivity(Activity.class).setup().get();
         mActivity.setTheme(R.style.Light);
 
-        when(mHeaderView.getContext()).thenReturn(mActivity);
-        when(mHeaderView.getResources()).thenReturn(mActivity.getResources());
+        mHeaderView = mock(HeaderView.class,
+                Mockito.withSettings().useConstructor(mActivity).defaultAnswer(
+                        Mockito.CALLS_REAL_METHODS));
+
         when(mHeaderView.getTextView()).thenReturn(mHeaderText);
         when(mHeaderView.getIconView()).thenReturn(mHeaderIcon);
 
@@ -80,20 +86,56 @@ public class HeaderViewBinderUnitTest {
 
     @Test
     public void headerView_listenerInstalledWhenDelegateIsSet() {
-        final Runnable callback = mock(Runnable.class);
-        final ArgumentCaptor<View.OnClickListener> captor =
-                ArgumentCaptor.forClass(View.OnClickListener.class);
+        final HeaderViewProperties.Delegate delegate = mock(HeaderViewProperties.Delegate.class);
 
         // Install.
-        mModel.set(HeaderViewProperties.DELEGATE, callback);
-        verify(mHeaderView, times(1)).setOnClickListener(captor.capture());
+        mModel.set(HeaderViewProperties.DELEGATE, delegate);
+        verify(mHeaderView, times(1)).setOnClickListener(notNull());
+        verify(mHeaderView, times(1)).setOnSelectListener(notNull());
 
         // Call.
-        captor.getValue().onClick(null);
-        verify(callback, times(1)).run();
+        Assert.assertTrue(mHeaderView.performClick());
+        verify(delegate, times(1)).onHeaderClicked();
+
+        // Select.
+        mHeaderView.setSelected(false);
+        verify(delegate, never()).onHeaderSelected();
+        mHeaderView.setSelected(true);
+        verify(delegate, times(1)).onHeaderSelected();
 
         // Remove.
         mModel.set(HeaderViewProperties.DELEGATE, null);
         verify(mHeaderView, times(1)).setOnClickListener(null);
+        verify(mHeaderView, times(1)).setOnSelectListener(null);
+
+        reset(delegate);
+
+        // Call; check that click calls are no longer propagated.
+        // Note: performClick returns value indicating whether onClickListener was invoked.
+        Assert.assertFalse(mHeaderView.performClick());
+        verify(delegate, never()).onHeaderClicked();
+
+        // Select.
+        mHeaderView.setSelected(true);
+        verify(delegate, never()).onHeaderSelected();
+    }
+
+    @Test
+    public void actionIcon_accessibilityAnnouncementsReflectExpandedState() {
+        final AccessibilityNodeInfo info = mock(AccessibilityNodeInfo.class);
+
+        // Expand.
+        mModel.set(HeaderViewProperties.IS_EXPANDED, true);
+        mHeaderView.onInitializeAccessibilityNodeInfo(info);
+        verify(info, times(1)).addAction(AccessibilityAction.ACTION_COLLAPSE);
+        verify(info, never()).addAction(AccessibilityAction.ACTION_EXPAND);
+
+        reset(info);
+
+        // Collapse.
+        mModel.set(HeaderViewProperties.IS_EXPANDED, false);
+        mHeaderView.onInitializeAccessibilityNodeInfo(info);
+        verify(info, never()).addAction(AccessibilityAction.ACTION_COLLAPSE);
+        verify(info, times(1)).addAction(AccessibilityAction.ACTION_EXPAND);
     }
 }

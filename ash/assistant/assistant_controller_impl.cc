@@ -315,12 +315,6 @@ void AssistantControllerImpl::OnLockedFullScreenStateChanged(bool enabled) {
         chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
 }
 
-void AssistantControllerImpl::BindAlarmTimerController(
-    mojo::PendingReceiver<mojom::AssistantAlarmTimerController> receiver) {
-  Shell::Get()->assistant_controller()->alarm_timer_controller()->BindReceiver(
-      std::move(receiver));
-}
-
 void AssistantControllerImpl::BindNotificationController(
     mojo::PendingReceiver<mojom::AssistantNotificationController> receiver) {
   Shell::Get()->assistant_controller()->notification_controller()->BindReceiver(

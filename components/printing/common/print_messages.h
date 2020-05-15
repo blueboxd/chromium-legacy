@@ -431,18 +431,6 @@ IPC_MESSAGE_ROUTED1(PrintHostMsg_PrintingFailed,
                     int /* document cookie */)
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-// Tell the browser print preview was cancelled.
-IPC_MESSAGE_ROUTED2(PrintHostMsg_PrintPreviewCancelled,
-                    int /* document cookie */,
-                    PrintHostMsg_PreviewIds /* ids */)
-
-// Tell the browser print preview found the selected printer has invalid
-// settings (which typically caused by disconnected network printer or printer
-// driver is bogus).
-IPC_MESSAGE_ROUTED2(PrintHostMsg_PrintPreviewInvalidPrinterSettings,
-                    int /* document cookie */,
-                    PrintHostMsg_PreviewIds /* ids */)
-
 // Run a nested run loop in the renderer until print preview for
 // window.print() finishes.
 IPC_SYNC_MESSAGE_ROUTED0_0(PrintHostMsg_SetupScriptedPrintPreview)

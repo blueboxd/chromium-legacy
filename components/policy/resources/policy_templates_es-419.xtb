@@ -2368,6 +2368,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si habilitas o inhabilitas esta configuración, los usuarios no podrán cambiar ni anular esta configuración en <ph name="PRODUCT_NAME" />.
 
       Si esta política no se configura, se habilitará esta configuración, pero el usuario podrá cambiarla.</translation>
+<translation id="453031441196755904">Esta política es obsoleta.</translation>
 <translation id="4531706050939927436">Con Google Play, se puede forzar la instalación de apps de Android desde la Consola del administrador de Google. Estas apps no usan esta política.</translation>
 <translation id="4534500438517478692">Nombre de restricción de Android:</translation>
 <translation id="4541530620466526913">Cuentas locales del dispositivo</translation>

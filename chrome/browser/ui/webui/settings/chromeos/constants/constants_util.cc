@@ -17,7 +17,7 @@ std::vector<T> All() {
   int32_t max_value = static_cast<int32_t>(T::kMaxValue);
 
   std::vector<T> all;
-  for (int32_t i = min_value; i < max_value; ++i) {
+  for (int32_t i = min_value; i <= max_value; ++i) {
     T current = static_cast<T>(i);
 
     // Not every value between the min and max values is valid:

@@ -45,9 +45,15 @@ hue-slider {
 }
 
 eye-dropper {
+  background-image: -webkit-image-set(url(eye_dropper_icon.svg) 1x);
+  background-origin: content-box;
+  background-repeat: no-repeat;
+  background-size: contain;
   border-radius: 2px;
+  box-sizing: border-box;
   height: 32px;
   margin-left: 2%;
+  padding: 6px;
   position: relative;
   width: 32px;
 }
@@ -62,14 +68,6 @@ eye-dropper:not(.selected):hover {
 
 eye-dropper.selected {
   background-color: #CECECE;
-}
-
-eye-dropper > svg {
-  height: 16px;
-  left: 25%;
-  position: absolute;
-  top: 25%;
-  width: 16px;
 }
 
 color-viewer {

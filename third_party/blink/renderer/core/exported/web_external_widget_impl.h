@@ -57,6 +57,7 @@ class WebExternalWidgetImpl : public WebExternalWidget,
                        DocumentUpdateReason reason) override {}
   void RequestNewLayerTreeFrameSink(
       LayerTreeFrameSinkCallback callback) override;
+  void DidCommitAndDrawCompositorFrame() override;
 
  private:
   WebExternalWidgetClient* const client_;

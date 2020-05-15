@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">Pārslēgšanas poga</translation>
 <translation id="1299774449519412690">Gaiši debeszila</translation>
 <translation id="1303806948938513162">Pieskarieties ar četriem pirkstiem, lai ievadītu ChromeVox izvēlni</translation>
+<translation id="1325363694295259631"><ph name="NAME" />, izvēlnes vienuma poga nav atlasīta</translation>
 <translation id="1325946044405407859">Gaiši brūna</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> no <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">rakstzīmju un vārdu atbalss</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">Paziņot pašreizējo akumulatora statusu</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, atlasīta radiopoga</translation>
 <translation id="5011664330025416377">Lai aktivizētu vienumu, vienlaikus nospiediet meklēšanas un atstarpes taustiņu.</translation>
+<translation id="5012724933919010465"><ph name="NAME" />, izvēlnes vienuma poga ir atlasīta</translation>
 <translation id="5020651427400641814">Iespējot runas reģistrēšanu</translation>
 <translation id="5041394372352067729">Pārvietot Braila raksta attēlojumu uz lapas augšdaļu</translation>
 <translation id="5042770794184672516">Palielināt runas skaļumu</translation>

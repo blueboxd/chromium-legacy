@@ -498,8 +498,7 @@ LayoutUnit ComputeBlockSizeForFragmentInternal(
       LengthResolvePhase::kLayout,
       opt_percentage_resolution_block_size_for_min_max);
   if (UNLIKELY((extent == kIndefiniteSize || logical_height.IsAuto()) &&
-               style.LogicalAspectRatio() && inline_size &&
-               !style.LogicalWidth().IsAuto())) {
+               style.LogicalAspectRatio() && inline_size)) {
     extent =
         BlockSizeFromAspectRatio(border_padding, *style.LogicalAspectRatio(),
                                  style.BoxSizing(), *inline_size);

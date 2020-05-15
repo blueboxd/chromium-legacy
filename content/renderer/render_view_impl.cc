@@ -1679,16 +1679,6 @@ bool RenderViewImpl::GetContentStateImmediately() {
   return send_content_state_immediately_;
 }
 
-void RenderViewImpl::ApplyPageVisibilityState(
-    PageVisibilityState visibility_state,
-    bool initial_setting) {
-  GetWebView()->SetVisibilityState(visibility_state, initial_setting);
-  for (auto& observer : observers_)
-    observer.OnPageVisibilityChanged(visibility_state);
-  // Note: RenderWidget visibility is separately set from the IPC handlers, and
-  // does not change when tests override the visibility of the Page.
-}
-
 void RenderViewImpl::OnUpdateWebPreferences(const WebPreferences& prefs) {
   webkit_preferences_ = prefs;
   ApplyWebPreferences(webkit_preferences_, GetWebView());

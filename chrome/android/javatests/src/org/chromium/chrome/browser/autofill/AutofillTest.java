@@ -28,7 +28,6 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.ui.DropdownItem;
-import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -63,7 +62,7 @@ public class AutofillTest {
             View anchorView = viewDelegate.acquireView();
             viewDelegate.setViewPosition(anchorView, 50f, 500f, 500f, 500f, 10, 10);
 
-            mWindowAndroid = new ActivityWindowAndroid(activity);
+            mWindowAndroid = activity.getWindowAndroid();
             mAutofillPopup = new AutofillPopup(activity, anchorView, mMockAutofillCallback);
             mAutofillPopup.filterAndShow(
                     new AutofillSuggestion[0], /* isRtl= */ false, /* isRefresh= */ false);

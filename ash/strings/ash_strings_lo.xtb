@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lo">
 <translation id="1012876632442809908">ອຸ​ປະ​ກອນ USB-C (ຜອດດ້ານໜ້າ)</translation>
+<translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> ໄດ້ປ່ຽນເປັນ <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz) ແລ້ວ. ຄລິກຢືນຢັນເພື່ອຮັກສາການປ່ຽນແປງໄວ້. ລະບົບຈະກູ້ຄືນການຕັ້ງຄ່າກ່ອນໜ້າໃນ <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">ອຸປະກອນ Bluetooth "<ph name="DEVICE_NAME" />" ຢາກຂໍອະນຸຍາດຈັບຄູ່. ກະລຸນາປ້ອນລະຫັດ PIN ນີ້ເຂົ້າໄປໃນອຸປະກອນນັ້ນ: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">ແບັດເຕີຣີປາຍປາກກາເຫຼືອໜ້ອຍ</translation>
 <translation id="1037492556044956303">ເພີ່ມ <ph name="DEVICE_NAME" /> ແລ້ວ</translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">ສະແດງການຕັ້ງຄ່າພາສາ</translation>
 <translation id="1460620680449458626">ລະດັບສຽງປິດຢູ່.</translation>
 <translation id="1467432559032391204">ເບື້ອງຊ້າຍ</translation>
+<translation id="1479909375538722835">ເມນູການຊ່ວຍເຂົ້າເຖິງແບບລອຍ</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">ເປີດ</translation>
 <translation id="1516740043221086139">ໂໝດຫ້າມລົບກວນເປີດຢູ່.</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">ຄາສທ໌ໜ້າຈໍ</translation>
 <translation id="5030687792513154421">ໝົດເວລາແລ້ວ</translation>
 <translation id="5035236842988137213">ເຊື່ອມຕໍ່ <ph name="DEVICE_NAME" />ກັບໂທລະສັບໃໝ່ແລ້ວ</translation>
+<translation id="5035389544768382859">ຢືນຢັນການຕັ້ງຄ່າຈໍສະແດງຜົນ</translation>
 <translation id="5083553833479578423">ປົດລັອກຄຸນສົມບັດເພີ່ມເຕີມຂອງຜູ້ຊ່ວຍ.</translation>
 <translation id="5136175204352732067">ເຊື່ອມຕໍ່ແປ້ນພິມອື່ນແລ້ວ</translation>
 <translation id="5168181903108465623">ອຸປະກອນຄາສທ໌ທີ່ມີໃຫ້</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">ອາດມີການຕິດຕາມເບິ່ງເຄືອຂ່າຍ</translation>
 <translation id="7536035074519304529">ທີ່ຢູ່ IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">ຮອດເວລານອນແລ້ວ</translation>
+<translation id="7561982940498449837">ປິດເມນູ</translation>
 <translation id="7562368315689366235">ແຖບປ້ອນອິໂມຈິ</translation>
 <translation id="7564874036684306347">ການຍ້າຍໜ້າຈໍໄປຫາເດັສທັອບອື່ນອາດຈະເຮັດໃຫ້ເກີດພຶດຕິກຳທີ່ບໍ່ຄາດຄິດ. ການແຈ້ງເຕືອນ, ໜ້າຈໍ ແລະ ກ່ອງໂຕ້ຕອບຕາມມາອາດຈະຖືກແຍກຈາກກັນລະຫວ່າງເດັສທັອບຕ່າງໆ.</translation>
 <translation id="7568294522609223312">ປິດການຄລິກອັດຕະໂນມັດ</translation>
@@ -561,6 +565,7 @@
 <translation id="8004512796067398576">ການເພີ່ມ</translation>
 <translation id="8029629653277878342">ຈຳເປັນຕ້ອງມີ PIN ຫຼື ລະຫັດຜ່ານເພື່ອຄວາມປອດໄພຍິ່ງຂຶ້ນ</translation>
 <translation id="8030169304546394654">ຕັດເຊື່ອມຕໍ່ແລ້ວ</translation>
+<translation id="8042893070933512245">ເປີດເມນູການຕັ້ງຄ່າການຊ່ວຍເຂົ້າເຖິງ</translation>
 <translation id="8048123526339889627">ການຕັ້ງຄ່າ Bluetooth</translation>
 <translation id="8054466585765276473">ການ​ຄິດ​ໄລ່​ເວລາແບັດເຕີຣີ.</translation>
 <translation id="8061464966246066292">ຄວາມເຂັ້ມສູງ</translation>
@@ -636,6 +641,7 @@
 <translation id="8877788021141246043">ຕັ້ງຄ່າການແຈ້ງເຕືອນ</translation>
 <translation id="8878886163241303700">ກໍາລັງຂະ​ຫຍາຍຫນ້າ​ຈໍ​</translation>
 <translation id="890616557918890486">ປ່ຽນແຫຼ່ງ</translation>
+<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> ບໍ່ຮອງຮັບ <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). ຄວາມລະອຽດໄດ້ຖືກປ່ຽນເປັນ <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) ແລ້ວ. ກະລຸນາຄລິກຢືນຢັນເພື່ອຮັກສາການປ່ຽນແປງ. ລະບົບຈະກູ້ຄືນການຕັ້ງຄ່າກ່ອນໜ້າໃນ <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">ແບັດເຕີຣີຢູ່ທີ່ <ph name="PERCENTAGE" /> ເປີເຊັນ.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">ຜູ້ຊ່ວຍ Google ເວົ້າພາສານີ້ບໍ່ໄດ້.</translation>

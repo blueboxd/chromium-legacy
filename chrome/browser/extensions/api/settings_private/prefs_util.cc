@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/content_settings/generated_cookie_prefs.h"
 #include "chrome/browser/extensions/api/settings_private/generated_prefs.h"
 #include "chrome/browser/extensions/api/settings_private/generated_prefs_factory.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"
@@ -293,6 +294,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_DICTIONARY;
 
   // Site Settings prefs.
+  (*s_whitelist)[::content_settings::kCookieSessionOnly] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kBlockThirdPartyCookies] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kCookieControlsMode] =

@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">ჯგუფის შექმნა</translation>
 <translation id="2671423594960767771">ჯგუფის გაზიარება</translation>
 <translation id="2977480621796371840">ჯგუფიდან ამოშლა</translation>
+<translation id="3328308545011660196">შემოთავაზება: როგორც ჩანს, <ph name="NUMBER_OF_TABS" /> ჩანართი დაკავშირებულია. გსურთ მათი დაჯგუფება?</translation>
+<translation id="4133493477912226187">როგორც ჩანს, <ph name="NUMBER_OF_TABS" /> ჩანართი დაკავშირებულია. გსურთ მათი დაჯგუფება?</translation>
 <translation id="4212246570487010370">დათვალიერების გაგრძელება</translation>
 <translation id="4450893287417543264">აღარ გამოჩნდეს</translation>
 <translation id="4648718555153979859">თქვენი ჩანართები აქ დაჯგუფებულია</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">ჩანართების წაშლა ჯგუფიდან</translation>
 <translation id="7559245342362162951">ჯგუფის ჩანართების სრულეკრანიან ბადეში ჩვენება</translation>
 <translation id="7792771145871471484">შემოთავაზებების გადახედვა.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> არჩეული ჩანართის დაჯგუფება}other{<ph name="TABS_COUNT_MANY" /> არჩეული ჩანართის დაჯგუფება}}</translation>
 <translation id="7885132941432959125">ჩანართის მარჯვნივ გადატანა</translation>
 <translation id="7966321538264951561">შემოთავაზებების დახურვა.</translation>
 <translation id="814503310257431685">ყველას ნახვა</translation>

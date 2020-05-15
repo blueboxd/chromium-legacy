@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/overlays/public/common/placeholder_request_config.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_cancel_handler.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
+#import "ios/web/public/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -20,68 +21,37 @@ namespace translate_infobar_overlays {
 PlaceholderRequestCancelHandler::PlaceholderRequestCancelHandler(
     OverlayRequest* request,
     OverlayRequestQueue* queue,
-    InfobarOverlayRequestInserter* inserter,
+    TranslateOverlayTabHelper* tab_helper,
     InfoBarIOS* translate_infobar)
     : InfobarOverlayRequestCancelHandler(request, queue, translate_infobar),
-      inserter_(inserter),
-      translate_delegate_observer_(
-          infobar()->delegate()->AsTranslateInfoBarDelegate(),
-          this) {
-  DCHECK(inserter_);
-}
+      translation_finished_observer_(tab_helper, this) {}
 
 PlaceholderRequestCancelHandler::~PlaceholderRequestCancelHandler() = default;
 
-void PlaceholderRequestCancelHandler::TranslateStepChanged(
-    translate::TranslateStep step) {
-  if (step == translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE) {
-    infobar()->set_accepted(true);
-    size_t insert_index = 0;
-    for (size_t index = 0; index < queue()->size(); index++) {
-      if (queue()->GetRequest(index) == request()) {
-        insert_index = index + 1;
-        break;
-      }
-    }
-
-    // Banner UI will be different from initial banner to show the
-    // AFTER_TRANSLATE state.
-    InsertParams params(infobar());
-    params.overlay_type = InfobarOverlayType::kBanner;
-    params.insertion_index = insert_index;
-    params.source = InfobarOverlayInsertionSource::kInfoBarDelegate;
-    inserter_->InsertOverlayRequest(params);
-    CancelRequest();
-  }
+void PlaceholderRequestCancelHandler::TranslationHasFinished() {
+  CancelRequest();
 }
 
-#pragma mark - TranslateDelegateObserver
+#pragma mark - TranslationFinishedObserver
 
-PlaceholderRequestCancelHandler::TranslateDelegateObserver::
-    TranslateDelegateObserver(translate::TranslateInfoBarDelegate* delegate,
-                              PlaceholderRequestCancelHandler* cancel_handler)
+PlaceholderRequestCancelHandler::TranslationFinishedObserver::
+    TranslationFinishedObserver(TranslateOverlayTabHelper* tab_helper,
+                                PlaceholderRequestCancelHandler* cancel_handler)
     : cancel_handler_(cancel_handler), scoped_observer_(this) {
-  scoped_observer_.Add(delegate);
+  scoped_observer_.Add(tab_helper);
 }
 
-PlaceholderRequestCancelHandler::TranslateDelegateObserver::
-    ~TranslateDelegateObserver() = default;
+PlaceholderRequestCancelHandler::TranslationFinishedObserver::
+    ~TranslationFinishedObserver() = default;
 
-void PlaceholderRequestCancelHandler::TranslateDelegateObserver::
-    OnTranslateStepChanged(translate::TranslateStep step,
-                           translate::TranslateErrors::Type error_type) {
-  cancel_handler_->TranslateStepChanged(step);
+void PlaceholderRequestCancelHandler::TranslationFinishedObserver::
+    TranslationFinished(TranslateOverlayTabHelper* tab_helper, bool success) {
+  cancel_handler_->TranslationHasFinished();
 }
 
-bool PlaceholderRequestCancelHandler::TranslateDelegateObserver::
-    IsDeclinedByUser() {
-  return false;
-}
-
-void PlaceholderRequestCancelHandler::TranslateDelegateObserver::
-    OnTranslateInfoBarDelegateDestroyed(
-        translate::TranslateInfoBarDelegate* delegate) {
-  scoped_observer_.Remove(delegate);
+void PlaceholderRequestCancelHandler::TranslationFinishedObserver::
+    TranslateOverlayTabHelperDestroyed(TranslateOverlayTabHelper* tab_helper) {
+  scoped_observer_.Remove(tab_helper);
 }
 
 }  // namespace translate_infobar_overlays

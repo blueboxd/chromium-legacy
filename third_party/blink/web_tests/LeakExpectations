@@ -14,12 +14,6 @@
 # ask hajimehoshi@ or yuzus@.                                             #
 ###########################################################################
 
-# FIXME: scroll customization leaks memory. See
-# codereview.chromium.org/1236913004/ for context.
-crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/scroll-customization-property.html [ Failure ]
-crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Failure ]
-crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Failure ]
-
 crbug.com/786995 virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Failure Pass ]
 
 # Requests with keepalive specified will be kept alive even when the frame is
@@ -67,10 +61,6 @@ crbug.com/733494 [ Linux ] media/autoplay/document-user-activation.html [ Pass F
 
 # Sheriff 2019-01-07
 crbug.com/919497 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-gpu-tasks.js [ Pass Failure ]
-
-# Sheriff 2019-02-19
-crbug.com/927454 [ Linux ] external/wpt/pointerevents/pointerevent_pointerleave_descendant_over.html [ Pass Failure ]
-crbug.com/927454 [ Linux ] external/wpt/pointerevents/pointerevent_lostpointercapture_is_first.html [ Pass Failure ]
 
 # Sheriff 2019-02-21
 crbug.com/934144 [ Linux ] http/tests/devtools/tracing/timeline-misc/timeline-flame-chart-automatically-size-window.js [ Pass Failure ]

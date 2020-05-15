@@ -12,6 +12,7 @@
 #include "ash/assistant/model/assistant_alarm_timer_model.h"
 #include "ash/assistant/model/assistant_alarm_timer_model_observer.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
+#include "ash/public/cpp/assistant/controller/assistant_alarm_timer_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
@@ -32,20 +33,18 @@ enum class AlarmTimerAction;
 
 class AssistantControllerImpl;
 
-// The AssistantAlarmTimerController is a sub-controller of AssistantController
-// tasked with tracking alarm/timer state and providing alarm/timer APIs.
-class AssistantAlarmTimerController
-    : public mojom::AssistantAlarmTimerController,
+// The AssistantAlarmTimerControllerImpl is a sub-controller of
+// AssistantController tasked with tracking alarm/timer state and providing
+// alarm/timer APIs.
+class AssistantAlarmTimerControllerImpl
+    : public AssistantAlarmTimerController,
       public AssistantControllerObserver,
       public AssistantStateObserver,
       public AssistantAlarmTimerModelObserver {
  public:
-  explicit AssistantAlarmTimerController(
+  explicit AssistantAlarmTimerControllerImpl(
       AssistantControllerImpl* assistant_controller);
-  ~AssistantAlarmTimerController() override;
-
-  void BindReceiver(
-      mojo::PendingReceiver<mojom::AssistantAlarmTimerController> receiver);
+  ~AssistantAlarmTimerControllerImpl() override;
 
   // Returns the underlying model.
   const AssistantAlarmTimerModel* model() const { return &model_; }
@@ -68,14 +67,13 @@ class AssistantAlarmTimerController
   void OnAssistantStatusChanged(
       chromeos::assistant::AssistantStatus status) override;
 
-  // mojom::AssistantAlarmTimerController:
-  void OnTimerStateChanged(
-      std::vector<mojom::AssistantTimerPtr> timers) override;
+  // AssistantAlarmTimerController:
+  void OnTimerStateChanged(std::vector<AssistantTimerPtr> timers) override;
 
   // AssistantAlarmTimerModelObserver:
-  void OnTimerAdded(const mojom::AssistantTimer& timer) override;
-  void OnTimerUpdated(const mojom::AssistantTimer& timer) override;
-  void OnTimerRemoved(const mojom::AssistantTimer& timer) override;
+  void OnTimerAdded(const AssistantTimer& timer) override;
+  void OnTimerUpdated(const AssistantTimer& timer) override;
+  void OnTimerRemoved(const AssistantTimer& timer) override;
   void OnAllTimersRemoved() override;
 
  private:
@@ -84,8 +82,6 @@ class AssistantAlarmTimerController
                                const base::Optional<base::TimeDelta>& duration);
 
   AssistantControllerImpl* const assistant_controller_;  // Owned by Shell.
-
-  mojo::Receiver<mojom::AssistantAlarmTimerController> receiver_{this};
 
   AssistantAlarmTimerModel model_;
 
@@ -97,7 +93,7 @@ class AssistantAlarmTimerController
   ScopedObserver<AssistantController, AssistantControllerObserver>
       assistant_controller_observer_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(AssistantAlarmTimerController);
+  DISALLOW_COPY_AND_ASSIGN(AssistantAlarmTimerControllerImpl);
 };
 
 }  // namespace ash

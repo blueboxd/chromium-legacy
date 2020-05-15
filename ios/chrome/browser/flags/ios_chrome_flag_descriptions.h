@@ -182,9 +182,14 @@ extern const char
     kEnableAutofillCreditCardUploadEditableExpirationDateDescription[];
 
 // Title and description for the flag to enable the clipboard provider to
-// suggest searchihng for copied imagse
+// suggest searchihng for copied images.
 extern const char kEnableClipboardProviderImageSuggestionsName[];
 extern const char kEnableClipboardProviderImageSuggestionsDescription[];
+
+// Title and description for the flag to enable to show a different UI when the
+// setting is managed by an enterprise policy.
+extern const char kEnableIOSManagedSettingsUIName[];
+extern const char kEnableIOSManagedSettingsUIDescription[];
 
 // Title and description for the flag to enable MyGoogle account management
 // UI in iOS Settings.

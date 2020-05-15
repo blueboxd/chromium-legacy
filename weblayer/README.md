@@ -2,13 +2,13 @@
 
 WebLayer is a high level embedding API to support building a browser.
 
-Unlike src/content, which is only concerned with a sandboxed multi-process web
+Unlike `src/content`, which is only concerned with a sandboxed multi-process web
 platform, WebLayer includes modern browser features and Google integration.
 It's the reusable version of Chrome, which might share some portions of the UI
 and also its support for all the modern HTML5 and browser features (e.g. UI for
 permissions, autofill, safe browsing etc...).
 
-While it's built on top of src/content, the expectation is that the API will
+While it's built on top of `src/content`, the expectation is that the API will
 hide the Content API.
 
 ## Design Goals
@@ -31,11 +31,11 @@ Bug tracker: [Internals>WebLayer](https://bugs.chromium.org/p/chromium/issues/li
 
 `shell` sample app
 
-'test' test harnesses and test-only helper code
+`test` test harnesses and test-only helper code
 
-'tools' helper scripts
+`tools` helper scripts
 
-'app' internal code which runs at the beginning of each process
+`app` internal code which runs at the beginning of each process
 
 `browser` internal code which runs in the browser process
 
@@ -49,26 +49,27 @@ Bug tracker: [Internals>WebLayer](https://bugs.chromium.org/p/chromium/issues/li
 
 If you haven't done this already, you first need to set up an Android build. If
 you are a Google employee, reach out to weblayer-team@google.com for internal
-instructions. Otherwise follow the [Android build instructions](/docs/android_build_instructions.md).
+instructions. Otherwise follow the
+[Android build instructions](https://source.chromium.org/chromium/chromium/src/+/master:docs/android_build_instructions.md).
 
 ## Building and Testing
 
 To run the sample app:
 
-$ autoninja -C out/Default run_weblayer_shell
-$ out/Default/bin/run_weblayer_shell
+    $ autoninja -C out/Default run_weblayer_shell
+    $ out/Default/bin/run_weblayer_shell
 
 To run instrumentation tests:
 
-$ autoninja -C out/Default weblayer_instrumentation_test_apk
-$ out/Default/bin/run_weblayer_instrumentation_test_apk
+    $ autoninja -C out/Default weblayer_instrumentation_test_apk
+    $ out/Default/bin/run_weblayer_instrumentation_test_apk
 
 Note: this may not work on some versions of Android. If you see an error setting
 the WebView provider when running instrumentation tests, try running the tests
 using the WebLayer support APK which uses a different loading path:
 
-$ autoninja -C out/Default weblayer_support_instrumentation_test_apk
-$ out/Default/bin/run_weblayer_support_instrumentation_test_apk
+    $ autoninja -C out/Default weblayer_support_instrumentation_test_apk
+    $ out/Default/bin/run_weblayer_support_instrumentation_test_apk
 
 The test script will build and install all necessary APKs.
 
@@ -81,8 +82,8 @@ To run WPT on android against weblayer do the following:
     $ out/Default/bin/run_weblayer_shell
     $ testing/scripts/run_android_wpt.py --webdriver-binary=out/Default/clang_x64/chromedriver --product android_weblayer --isolated-script-test-output /tmp/weblayer_out.json --include ./third_party/blink/web_tests/external/wpt/$WPT_TEST
 
-`run_android_wpt.py` does not install weblayer-shell, you need to do that
-yourself (executing run_weblayer_shell will do that).
+`run_android_wpt.py` does not install `weblayer-shell`, you need to do that
+yourself (executing `run_weblayer_shell` will do that).
 
 To run against clank:
 
@@ -96,11 +97,10 @@ test execution.
 ## Telemetry
 
 Telemetry is run against WebLayer, currently on the bot
-[android-pixel2_weblayer-perf]
-(https://ci.chromium.org/p/chrome/builders/ci/android-pixel2_weblayer-perf).
+[`android-pixel2_weblayer-perf`](https://ci.chromium.org/p/chrome/builders/ci/android-pixel2_weblayer-perf).
 
-Telemetry currently only runs on real hardware. Bug [1067712]
-(https://bugs.chromium.org/p/chromium/issues/detail?id=1067712) is for
+Telemetry currently only runs on real hardware. Bug
+[1067712](https://bugs.chromium.org/p/chromium/issues/detail?id=1067712) is for
 adding support for emulators.
 
 ### Tricks:
@@ -109,11 +109,11 @@ To see the set of stories executed, click on a successful run, search for
 `performance_weblayer_test_suite` and click on the `json.output`
 link.
 
-Googlers can submit jobs against your own patch using [pinpoint]
-(https://pinpoint-dot-chromeperf.appspot.com/). At the time of this
-writing, logcat is *not* captured for successful runs ([1067024]
-(https://bugs.chromium.org/p/chromium/issues/detail?id=1067024)). Submitting
-a pinpoint run against a patch with a CHECK will generate
+Googlers can submit jobs against your own patch using
+[pinpoint](https://pinpoint-dot-chromeperf.appspot.com/). At the time of this
+writing, logcat is *not* captured for successful runs
+([1067024](https://bugs.chromium.org/p/chromium/issues/detail?id=1067024)).
+Submitting a pinpoint run against a patch with a CHECK will generate
 logcat. For such a run, the logcat is viewable by way of:
 
 1. Click on Id next to `task` under `Test`.

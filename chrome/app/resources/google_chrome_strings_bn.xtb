@@ -19,6 +19,7 @@
 <translation id="1587223624401073077">Google Chrome আপনার ক্যামেরা ব্যবহার করছে৷</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> বিপজ্জনক, তাই Chrome এটিকে অবরুদ্ধ করেছে।</translation>
 <translation id="1619887657840448962">Chrome-কে আরও নিরাপদ করতে, আমরা নিচের এক্সটেনশনটি বন্ধ করেছি যা <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />-এ তালিকাবদ্ধ করা হয়নি এবং হয়ত আপনাকে না জানিয়ে যোগ করা হয়েছিল৷</translation>
+<translation id="162629503687514352">Chrome OS আপনার পাসওয়ার্ড সিঙ্ক করতে পারেনি।</translation>
 <translation id="1628000112320670027">Chrome বিষয়ে সাহায্য পান</translation>
 <translation id="1662639173275167396"><ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />-এর মত অতিরিক্ত <ph name="BEGIN_LINK_CROS_OSS" />ওপেন সোর্স সফ্টওয়্যার<ph name="END_LINK_CROS_OSS" /> ব্যবহার করে Chrome OS তৈরি করা সম্ভব হয়েছে।</translation>
 <translation id="1666409074978194368">প্রায় আপডেট হয়ে গেছে! আপডেট সম্পূর্ণ করতে Google Chrome আবার চালু করুন। ছদ্মবেশী উইন্ডো আবার খুলবে না।</translation>
@@ -77,6 +78,7 @@
 <translation id="3065168410429928842">Chrome ট্যাব</translation>
 <translation id="3080151273017101988">Google Chrome বন্ধ হলে পশ্চাদপট অ্যাপ্লিকেশানের চলা অবিরত রাখুন</translation>
 <translation id="3089968997497233615">Google Chrome-এর একটি নতুন, তুলনামূলক নিরাপদ ভার্সন উপলব্ধ৷</translation>
+<translation id="3127818369811890733">Chrome OS আপনার ডেটা সিঙ্ক করতে পারেনি।</translation>
 <translation id="3149510190863420837">Chrome অ্যাপগুলি</translation>
 <translation id="3360895254066713204">Chrome সহায়তাকারী</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome এখন আবার লঞ্চ হবে}=1{Chrome ১ সেকেন্ডের মধ্যে আবার লঞ্চ হবে}one{Chrome # সেকেন্ডের মধ্যে আবার লঞ্চ হবে}other{Chrome # সেকেন্ডের মধ্যে আবার লঞ্চ হবে}}</translation>

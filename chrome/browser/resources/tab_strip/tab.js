@@ -14,7 +14,7 @@ import {CustomElement} from './custom_element.js';
 import {TabStripEmbedderProxy} from './tab_strip_embedder_proxy.js';
 import {tabStripOptions} from './tab_strip_options.js';
 import {TabSwiper} from './tab_swiper.js';
-import {CloseTabAction, TabData, TabNetworkState, TabsApiProxy} from './tabs_api_proxy.js';
+import {CloseTabAction, TabData, TabNetworkState, TabsApiProxy, TabsApiProxyImpl} from './tabs_api_proxy.js';
 
 const DEFAULT_ANIMATION_DURATION = 125;
 
@@ -84,7 +84,7 @@ export class TabElement extends CustomElement {
     this.tab_;
 
     /** @private {!TabsApiProxy} */
-    this.tabsApi_ = TabsApiProxy.getInstance();
+    this.tabsApi_ = TabsApiProxyImpl.getInstance();
 
     /** @private {!TabStripEmbedderProxy} */
     this.embedderApi_ = TabStripEmbedderProxy.getInstance();

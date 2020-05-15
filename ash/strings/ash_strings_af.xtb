@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="af">
 <translation id="1012876632442809908">USB C-toestel (poort aan voorkant)</translation>
+<translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> het verander na <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Klik Bevestig om veranderinge te hou. Die vorige instellings sal oor <ph name="TIMEOUT_SECONDS" /> teruggestel word.</translation>
 <translation id="1013923882670373915">Bluetooth-toestel "<ph name="DEVICE_NAME" />" vra toestemming om saam te bind. Voer asseblief hierdie PIN-kode op daardie toestel in: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Stilus se battery is amper pap</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> is bygevoeg</translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">Wys taalinstellings</translation>
 <translation id="1460620680449458626">Volume is gedemp.</translation>
 <translation id="1467432559032391204">Links</translation>
+<translation id="1479909375538722835">Swewende toeganklikheidkieslys</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">Aan</translation>
 <translation id="1516740043221086139">Moenie Steur Nie is aan.</translation>
@@ -334,6 +336,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="4961318399572185831">Saai skerm uit</translation>
 <translation id="5030687792513154421">Die tyd is om</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> het aan 'n nuwe foon gekoppel</translation>
+<translation id="5035389544768382859">Bevestig vertoonskermopstelling</translation>
 <translation id="5083553833479578423">Ontsluit meer Assistent-kenmerke.</translation>
 <translation id="5136175204352732067">Ander sleutelbord is gekoppel</translation>
 <translation id="5168181903108465623">Uitsaaitoestelle is beskikbaar</translation>
@@ -520,6 +523,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="7526573455193969409">Netwerk kan gemonitor word</translation>
 <translation id="7536035074519304529">IP-adres: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Slaaptyd</translation>
+<translation id="7561982940498449837">Maak kieslys toe</translation>
 <translation id="7562368315689366235">Emosiekoon-palet</translation>
 <translation id="7564874036684306347">Om vensters na 'n ander werkskerm te skuif, kan lei tot onverwagte gedrag. Opeenvolgende kennisgewings, vensters en dialoë kan tussen werkskerms verdeel word.</translation>
 <translation id="7568294522609223312">Skakel outomatiese klikke af</translation>
@@ -562,6 +566,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="8004512796067398576">Inkrement</translation>
 <translation id="8029629653277878342">PIN of wagwoord word vereis vir meer sekuriteit</translation>
 <translation id="8030169304546394654">Ontkoppel</translation>
+<translation id="8042893070933512245">Maak toeganklikheidinstellingskieslys oop</translation>
 <translation id="8048123526339889627">Bluetooth-instellings</translation>
 <translation id="8054466585765276473">Bereken tans batterytyd.</translation>
 <translation id="8061464966246066292">Hoë kontras</translation>
@@ -637,6 +642,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="8877788021141246043">Stel 'n onthounota</translation>
 <translation id="8878886163241303700">Brei skerm uit</translation>
 <translation id="890616557918890486">Verander bron</translation>
+<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> steun nie <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Die resolusie is verander na <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Klik bevestig om veranderinge te hou. Die vorige instellings sal oor <ph name="TIMEOUT_SECONDS" /> teruggestel word.</translation>
 <translation id="8909138438987180327">Battery op <ph name="PERCENTAGE" /> persent.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Die Google Assistent praat nie hierdie taal nie.</translation>

@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.text.TextUtils.TruncateAt;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import android.widget.ImageView;
@@ -18,6 +19,7 @@ import androidx.appcompat.widget.AppCompatImageView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SimpleHorizontalLayoutView;
+import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 
 /**
@@ -27,6 +29,7 @@ public class HeaderView extends SimpleHorizontalLayoutView {
     private final TextView mHeaderText;
     private final ImageView mHeaderIcon;
     private boolean mIsExpanded;
+    private Runnable mOnSelectListener;
 
     /**
      * Constructs a new header view.
@@ -84,6 +87,31 @@ public class HeaderView extends SimpleHorizontalLayoutView {
         mIsExpanded = isExpanded;
     }
 
+    /**
+     * Specify the listener receiving calls when the view is selected.
+     */
+    void setOnSelectListener(Runnable listener) {
+        mOnSelectListener = listener;
+    }
+
+    @Override
+    public void setSelected(boolean selected) {
+        super.setSelected(selected);
+        if (selected && mOnSelectListener != null) {
+            mOnSelectListener.run();
+        }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        boolean isRtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
+        if ((!isRtl && KeyNavigationUtil.isGoRight(event))
+                || (isRtl && KeyNavigationUtil.isGoLeft(event))) {
+            return performClick();
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
     @Override
     public boolean isFocused() {
         return super.isFocused() || (isSelected() && !isInTouchMode());
@@ -92,16 +120,15 @@ public class HeaderView extends SimpleHorizontalLayoutView {
     @Override
     public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
         super.onInitializeAccessibilityNodeInfo(info);
-        info.getActionList().add(mIsExpanded ? AccessibilityAction.ACTION_COLLAPSE
-                                             : AccessibilityAction.ACTION_EXPAND);
+        info.addAction(mIsExpanded ? AccessibilityAction.ACTION_COLLAPSE
+                                   : AccessibilityAction.ACTION_EXPAND);
     }
 
     @Override
     public boolean performAccessibilityAction(int action, Bundle arguments) {
         if (action == AccessibilityNodeInfo.ACTION_EXPAND
                 || action == AccessibilityNodeInfo.ACTION_COLLAPSE) {
-            performClick();
-            return true;
+            return performClick();
         }
         return super.performAccessibilityAction(action, arguments);
     }

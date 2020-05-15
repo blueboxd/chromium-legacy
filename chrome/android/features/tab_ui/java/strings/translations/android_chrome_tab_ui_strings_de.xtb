@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Gruppe erstellen</translation>
 <translation id="2671423594960767771">Gruppe teilen</translation>
 <translation id="2977480621796371840">Aus Gruppe entfernen</translation>
+<translation id="3328308545011660196">Vorschlag: <ph name="NUMBER_OF_TABS" /> Tabs scheinen zusammenzugehören. Sollen sie gruppiert werden?</translation>
+<translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> Tabs scheinen zusammenzugehören. Sollen sie gruppiert werden?</translation>
 <translation id="4212246570487010370">Weitersurfen</translation>
 <translation id="4450893287417543264">Nicht mehr anzeigen</translation>
 <translation id="4648718555153979859">Ihre Tabs werden hier in Gruppen zusammengefasst</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Tabs aus der Gruppe verschieben</translation>
 <translation id="7559245342362162951">Tabs der Gruppe in Vollbildraster anzeigen</translation>
 <translation id="7792771145871471484">Vorschläge ansehen.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> ausgewählten Tab gruppieren}other{<ph name="TABS_COUNT_MANY" /> ausgewählte Tabs gruppieren}}</translation>
 <translation id="7885132941432959125">Tab nach rechts verschieben</translation>
 <translation id="7966321538264951561">Vorschläge ablehnen.</translation>
 <translation id="814503310257431685">Alle anzeigen</translation>

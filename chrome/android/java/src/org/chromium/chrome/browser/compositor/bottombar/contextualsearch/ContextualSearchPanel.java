@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneL
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
+import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.ScrimView;
@@ -924,7 +925,7 @@ public class ContextualSearchPanel extends OverlayPanel {
      * @return Whether the panel content can be displayed in a new tab.
      */
     public boolean canPromoteToNewTab() {
-        return !mActivity.isCustomTab() && canDisplayContentInPanel();
+        return mActivity.getActivityType() == ActivityType.TABBED && canDisplayContentInPanel();
     }
 
     // ============================================================================================

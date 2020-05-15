@@ -24,7 +24,7 @@ function window2Loaded() {
     // Change the visibility of the current page to invisible.
     if (window.testRunner) {
         numVisibilityChanges++;
-        testRunner.setPageVisibility("hidden");
+        testRunner.setMainWindowHidden(true);
     }
 }
 

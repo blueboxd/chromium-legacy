@@ -4334,11 +4334,15 @@ bool Element::IsFocusableStyleAfterUpdate() const {
   // creation. We need to ensure to update style and layout tree to have
   // up-to-date information.
   //
+  // Note also that there may be situations where focus / keyboard navigation
+  // causes us to have dirty style, so we update StyleAndLayoutTreeForNode here.
+  // If the style and layout tree are clean, then this should be a quick
+  // operation. See crbug.com/1079385 for details.
+  //
   // Note that this isn't a part of `IsFocusableStyle()` because there are
   // callers of that function which cannot do a layout tree update (e.g.
   // accessibility).
-  if (RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
-    GetDocument().UpdateStyleAndLayoutTreeForNode(this);
+  GetDocument().UpdateStyleAndLayoutTreeForNode(this);
   return IsFocusableStyle();
 }
 

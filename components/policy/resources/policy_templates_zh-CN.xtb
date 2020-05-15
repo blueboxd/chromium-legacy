@@ -2311,6 +2311,7 @@
       如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME" /> 中更改或替换此设置。
 
       如果未设置此政策，系统就会启用此设置，不过用户也可以更改此设置。</translation>
+<translation id="453031441196755904">此政策已被弃用。</translation>
 <translation id="4531706050939927436">您可以通过 Google Play 从 Google 管理控制台中强制安装 Android 应用。这些应用不会使用此政策。</translation>
 <translation id="4534500438517478692">Android 限制名称：</translation>
 <translation id="4541530620466526913">设备本地帐号</translation>

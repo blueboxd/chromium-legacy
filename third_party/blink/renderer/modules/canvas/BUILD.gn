@@ -9,6 +9,8 @@ blink_modules_sources("canvas") {
   sources = [
     "canvas2d/base_rendering_context_2d.cc",
     "canvas2d/base_rendering_context_2d.h",
+    "canvas2d/blink_identifiability_digest_helpers.cc",
+    "canvas2d/blink_identifiability_digest_helpers.h",
     "canvas2d/canvas_gradient.cc",
     "canvas2d/canvas_gradient.h",
     "canvas2d/canvas_path.cc",
@@ -25,6 +27,7 @@ blink_modules_sources("canvas") {
     "canvas2d/clip_list.h",
     "canvas2d/hit_region.cc",
     "canvas2d/hit_region.h",
+    "canvas2d/identifiability_study_helper.h",
     "canvas2d/path_2d.h",
     "htmlcanvas/canvas_context_creation_attributes_helpers.cc",
     "htmlcanvas/canvas_context_creation_attributes_helpers.h",

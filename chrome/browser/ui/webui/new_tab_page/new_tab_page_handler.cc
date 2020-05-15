@@ -103,9 +103,8 @@ new_tab_page::mojom::ThemePtr MakeTheme(const NtpTheme& ntp_theme) {
   theme->shortcut_text_color = ntp_theme.text_color;
   theme->shortcut_use_white_add_icon =
       color_utils::IsDark(ntp_theme.shortcut_color);
-  theme->shortcut_use_title_pill = ntp_theme.has_theme_image;
-  theme->is_dark =
-      ntp_theme.has_theme_image || !color_utils::IsDark(ntp_theme.text_color);
+  theme->shortcut_use_title_pill = false;
+  theme->is_dark = color_utils::IsDark(ntp_theme.text_color);
   if (ntp_theme.logo_alternate) {
     theme->logo_color = ntp_theme.logo_color;
   }
@@ -121,12 +120,17 @@ new_tab_page::mojom::ThemePtr MakeTheme(const NtpTheme& ntp_theme) {
       background_image->url = ntp_theme.custom_background_url;
     }
   } else if (ntp_theme.has_theme_image) {
+    theme->shortcut_use_title_pill = true;
     background_image->url =
         GURL(base::StrCat({"chrome-untrusted://theme/IDR_THEME_NTP_BACKGROUND?",
                            ntp_theme.theme_id}));
     background_image->url_2x = GURL(
         base::StrCat({"chrome-untrusted://theme/IDR_THEME_NTP_BACKGROUND@2x?",
                       ntp_theme.theme_id}));
+    if (ntp_theme.has_attribution) {
+      background_image->attribution_url = GURL(base::StrCat(
+          {"chrome://theme/IDR_THEME_NTP_ATTRIBUTION?", ntp_theme.theme_id}));
+    }
     background_image->size = "initial";
     switch (ntp_theme.image_tiling) {
       case THEME_BKGRND_IMAGE_NO_REPEAT:

@@ -113,10 +113,12 @@ class UpdateTestExpectationsTest(LoggingTestCase):
 
     def _create_expectations_remover(self,
                                      type_flag='all',
-                                     remove_missing=False):
+                                     remove_missing=False,
+                                     include_cq_results=False):
         return ExpectationsRemover(
             self._host, self._port, self._expectation_factory,
-            self._mock_web_browser, type_flag, remove_missing)
+            self._mock_web_browser, type_flag, remove_missing,
+            include_cq_results)
 
     def _parse_expectations(self, expectations):
         path = self._port.path_to_generic_test_expectations_file()
@@ -950,6 +952,48 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             # A Skip expectation probably won't have any results but we
             # shouldn't consider those passing so this line should remain.
             test/a.html [ Skip ]"""))
+
+    def test_include_cq_results(self):
+        """By default, cq results are ignored."""
+        test_expectations_before = _strip_multiline_string_spaces("""
+            # results: [ Failure Pass ]
+            # Remove this if cq results are ignored.
+            crbug.com/1111 test/a.html [ Failure Pass ]""")
+
+        self._define_builders({
+            'WebKit Linux': {
+                'port_name': 'linux-trusty',
+                'specifiers': ['Trusty', 'Release']
+            },
+            'WebKit Linux try': {
+                'port_name': 'linux-trusty',
+                'specifiers': ['Trusty', 'Release'],
+                'is_try_builder': True
+            },
+        })
+
+        self._port.all_build_types = ('release', )
+        self._port.all_systems = (('trusty', 'x86_64'), )
+
+        self._parse_expectations(test_expectations_before)
+        self._expectation_factory.all_results_by_builder = {
+            'WebKit Linux': {'test/a.html': ['PASS', 'PASS', 'PASS'],},
+            'WebKit Linux try': {'test/a.html': ['PASS', 'FAIL', 'PASS'],}
+
+        }
+        self._expectations_remover = self._create_expectations_remover()
+        updated_expectations = (
+            self._expectations_remover.get_updated_test_expectations())
+        self.assertEquals(
+            updated_expectations,
+            _strip_multiline_string_spaces("""
+                # results: [ Failure Pass ]"""))
+
+        self._expectations_remover = (
+            self._create_expectations_remover(include_cq_results=True))
+        updated_expectations = (
+            self._expectations_remover.get_updated_test_expectations())
+        self.assertEquals(updated_expectations, test_expectations_before)
 
     def test_missing_builders_for_some_configurations(self):
         """Tests the behavior when there are no builders for some configurations.

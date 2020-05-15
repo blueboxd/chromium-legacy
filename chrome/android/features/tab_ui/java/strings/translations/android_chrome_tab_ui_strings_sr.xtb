@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Направи групу</translation>
 <translation id="2671423594960767771">Дели групу</translation>
 <translation id="2977480621796371840">Уклони из групе</translation>
+<translation id="3328308545011660196">Предлог: Картице (<ph name="NUMBER_OF_TABS" />) делују повезано. Желите ли да их групишете?</translation>
+<translation id="4133493477912226187">Картице (<ph name="NUMBER_OF_TABS" />) делују повезано. Желите ли да их групишете?</translation>
 <translation id="4212246570487010370">Наставите са прегледањем</translation>
 <translation id="4450893287417543264">Не приказуј поново</translation>
 <translation id="4648718555153979859">Картице су груписане заједно овде</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Уклоните картице из групе</translation>
 <translation id="7559245342362162951">Приказује картице групе у мрежи на целом екрану</translation>
 <translation id="7792771145871471484">Прегледајте предлоге.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Додајте <ph name="TABS_COUNT_ONE" /> изабрану картицу у групу}one{Додајте <ph name="TABS_COUNT_MANY" /> изабрану картицу у групу}few{Додајте <ph name="TABS_COUNT_MANY" /> изабране картице у групу}other{Додајте <ph name="TABS_COUNT_MANY" /> изабраних картица у групу}}</translation>
 <translation id="7885132941432959125">Преместите картицу удесно</translation>
 <translation id="7966321538264951561">Одбаците предлоге.</translation>
 <translation id="814503310257431685">Прикажи све</translation>

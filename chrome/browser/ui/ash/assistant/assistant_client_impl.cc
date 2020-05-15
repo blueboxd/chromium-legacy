@@ -134,12 +134,6 @@ void AssistantClientImpl::OnAssistantStatusChanged(
   ash::AssistantState::Get()->NotifyStatusChanged(new_status);
 }
 
-void AssistantClientImpl::RequestAssistantAlarmTimerController(
-    mojo::PendingReceiver<ash::mojom::AssistantAlarmTimerController> receiver) {
-  ash::AssistantInterfaceBinder::GetInstance()->BindAlarmTimerController(
-      std::move(receiver));
-}
-
 void AssistantClientImpl::RequestAssistantNotificationController(
     mojo::PendingReceiver<ash::mojom::AssistantNotificationController>
         receiver) {

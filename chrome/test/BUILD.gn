@@ -3588,6 +3588,7 @@ test("unit_tests") {
   if (!is_android) {
     sources += [
       "../browser/component_updater/soda_component_installer_unittest.cc",
+      "../browser/content_settings/generated_cookie_prefs_unittest.cc",
       "../browser/device_identity/device_oauth2_token_service_unittest.cc",
       "../browser/profiles/profile_avatar_icon_util_unittest.cc",
       "../browser/sharing/webrtc/sharing_service_host_unittest.cc",
@@ -5752,6 +5753,7 @@ if (!is_android) {
       "../browser/browser_keyevents_browsertest.cc",
       "../browser/devtools/devtools_sanity_interactive_browsertest.cc",
       "../browser/extensions/api/extension_action/browser_action_interactive_test.cc",
+      "../browser/extensions/api/extension_action/page_action_interactive_test.cc",
       "../browser/extensions/api/notifications/notifications_apitest.cc",
       "../browser/extensions/api/omnibox/omnibox_api_interactive_test.cc",
       "../browser/extensions/api/tabs/tabs_interactive_test.cc",

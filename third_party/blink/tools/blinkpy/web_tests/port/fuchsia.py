@@ -167,7 +167,8 @@ class _TargetHost(object):
             forwarding_flags += ['-R', '%d:localhost:%d' % (port, port)]
         self._proxy = self._target.RunCommandPiped([],
                                                    ssh_args=forwarding_flags,
-                                                   stderr=subprocess.PIPE)
+                                                   stdout=subprocess.PIPE,
+                                                   stderr=subprocess.STDOUT)
 
         self._listener = self._target.RunCommandPiped(['log_listener'],
                                                       stdout=subprocess.PIPE,

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -19,6 +20,8 @@
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/content/renderer/form_cache.h"
 #include "components/autofill/content/renderer/form_tracker.h"
+#include "components/autofill/core/common/renderer_id.h"
+#include "components/autofill/core/common/signatures.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -165,6 +168,40 @@ class AutofillAgent : public content::RenderFrameObserver,
     // Specifies that the first suggestion must be auto-selected when the
     // dropdown is shown. Enabled when the user presses ARROW_DOWN on a field.
     bool autoselect_first_suggestion;
+  };
+
+  // Utility class for logging how dynamic forms are.
+  class UmaFormDynamicityLogger {
+   public:
+    UmaFormDynamicityLogger();
+    UmaFormDynamicityLogger(const UmaFormDynamicityLogger&) = delete;
+    UmaFormDynamicityLogger& operator=(const UmaFormDynamicityLogger&) = delete;
+    ~UmaFormDynamicityLogger();
+
+    void LogForm(const FormData& form);
+    void FlushCache();
+
+   private:
+    struct FormStats {
+      FormStats();
+      FormStats(const FormStats&);
+      FormStats& operator=(const FormStats&);
+      ~FormStats();
+
+      FormRendererId form_renderer_id;
+      FormSignature form_signature;
+      std::map<FieldRendererId, FieldSignature> fields;
+
+      bool form_signature_changed = false;
+      bool some_field_signature_changed = false;
+      bool some_field_renderer_id_added = false;
+    };
+
+    using Cache = base::MRUCache<FormRendererId, FormStats>;
+
+    static constexpr size_t kCacheSize = 32;
+
+    Cache cache_{kCacheSize};
   };
 
   // content::RenderFrameObserver:
@@ -376,6 +413,8 @@ class AutofillAgent : public content::RenderFrameObserver,
   bool is_screen_reader_enabled_ = false;
 
   const scoped_refptr<FieldDataManager> field_data_manager_;
+
+  UmaFormDynamicityLogger form_dynamicity_logger_;
 
   base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_{this};
 

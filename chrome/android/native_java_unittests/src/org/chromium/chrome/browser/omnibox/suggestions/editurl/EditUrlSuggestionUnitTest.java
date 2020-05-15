@@ -23,6 +23,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
+import org.chromium.chrome.browser.omnibox.suggestions.UrlBarDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
@@ -74,7 +75,7 @@ public final class EditUrlSuggestionUnitTest {
     private OmniboxSuggestion mSearchSuggestion;
 
     @Mock
-    private EditUrlSuggestionProcessor.LocationBarDelegate mLocationBarDelegate;
+    private UrlBarDelegate mUrlBarDelegate;
 
     @Mock
     private View mEditButton;
@@ -126,7 +127,7 @@ public final class EditUrlSuggestionUnitTest {
         mModel = new PropertyModel.Builder(EditUrlSuggestionProperties.ALL_KEYS).build();
 
         mProcessor = new EditUrlSuggestionProcessor(
-                mContext, mSuggestionHost, mLocationBarDelegate, () -> mIconBridge);
+                mContext, mSuggestionHost, mUrlBarDelegate, () -> mIconBridge);
         mProcessor.setActivityTabProvider(mTabProvider);
         mProcessor.setShareDelegateSupplier(() -> mShareDelegate);
 
@@ -169,7 +170,7 @@ public final class EditUrlSuggestionUnitTest {
 
         mModel.get(EditUrlSuggestionProperties.BUTTON_CLICK_LISTENER).onClick(mEditButton);
 
-        verify(mLocationBarDelegate).setOmniboxEditingText(mTestUrl.getSpec());
+        verify(mUrlBarDelegate).setOmniboxEditingText(mTestUrl.getSpec());
     }
 
     /** Test that when suggestion is tapped, it still navigates to the correct location. */

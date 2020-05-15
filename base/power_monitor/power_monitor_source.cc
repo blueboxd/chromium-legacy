@@ -17,6 +17,7 @@ bool PowerMonitorSource::IsOnBatteryPower() {
   return on_battery_power_;
 }
 
+// static
 void PowerMonitorSource::ProcessPowerEvent(PowerEvent event_id) {
   if (!PowerMonitor::IsInitialized())
     return;
@@ -58,6 +59,14 @@ void PowerMonitorSource::ProcessPowerEvent(PowerEvent event_id) {
   }
 }
 
+// static
+void PowerMonitorSource::ProcessThermalEvent(
+    PowerObserver::DeviceThermalState new_thermal_state) {
+  if (!PowerMonitor::IsInitialized())
+    return;
+  PowerMonitor::NotifyThermalStateChange(new_thermal_state);
+}
+
 void PowerMonitorSource::SetInitialOnBatteryPowerState(bool on_battery_power) {
   // Must only be called before an initialized PowerMonitor exists, otherwise
   // the caller should have just used a normal
@@ -65,5 +74,26 @@ void PowerMonitorSource::SetInitialOnBatteryPowerState(bool on_battery_power) {
   DCHECK(!PowerMonitor::Source());
   on_battery_power_ = on_battery_power;
 }
+
+#if DCHECK_IS_ON()
+// static
+std::string PowerMonitorSource::DeviceThermalStateToString(
+    PowerObserver::DeviceThermalState state) {
+  switch (state) {
+    case PowerObserver::DeviceThermalState::kUnknown:
+      return "Unknown";
+    case PowerObserver::DeviceThermalState::kNominal:
+      return "Nominal";
+    case PowerObserver::DeviceThermalState::kFair:
+      return "Fair";
+    case PowerObserver::DeviceThermalState::kSerious:
+      return "Serious";
+    case PowerObserver::DeviceThermalState::kCritical:
+      return "Critical";
+  }
+  NOTREACHED();
+  return "Unknown";
+}
+#endif
 
 }  // namespace base

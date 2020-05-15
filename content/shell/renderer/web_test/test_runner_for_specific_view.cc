@@ -78,26 +78,6 @@ TestRunnerForSpecificView::~TestRunnerForSpecificView() = default;
 void TestRunnerForSpecificView::Reset() {
   pointer_locked_ = false;
   pointer_lock_planned_result_ = PointerLockWillSucceed;
-
-  if (!web_view() || !web_view()->MainFrame())
-    return;
-
-  if (web_view()->MainFrame()->IsWebLocalFrame()) {
-    web_view()->MainFrame()->ToWebLocalFrame()->EnableViewSourceMode(false);
-    web_view()->SetTextZoomFactor(1);
-    // As would the browser via IPC, set visibility on the RenderWidget then on
-    // the Page.
-    // TODO(danakj): This should set visibility on all RenderWidgets not just
-    // the main frame.
-    WidgetMsg_WasShown msg(main_frame_render_widget()->routing_id(),
-                           /*show_request_timestamp=*/base::TimeTicks(),
-                           /*was_evicted=*/false,
-                           /*record_tab_switch_time_request=*/base::nullopt);
-    main_frame_render_widget()->OnMessageReceived(msg);
-  }
-  web_view_test_proxy_->ApplyPageVisibilityState(
-      content::PageVisibilityState::kVisible,
-      /*initial_setting=*/true);
 }
 
 bool TestRunnerForSpecificView::RequestPointerLock() {
@@ -253,35 +233,6 @@ void TestRunnerForSpecificView::RunJSCallbackWithBitmap(
       &buffer, context->Global(), isolate);
 
   PostV8CallbackWithArgs(std::move(callback), base::size(argv), argv);
-}
-
-void TestRunnerForSpecificView::SetPageVisibility(
-    const std::string& new_visibility) {
-  content::PageVisibilityState visibility;
-  if (new_visibility == "visible") {
-    visibility = content::PageVisibilityState::kVisible;
-  } else if (new_visibility == "hidden") {
-    visibility = content::PageVisibilityState::kHidden;
-  } else {
-    return;
-  }
-
-  // As would the browser via IPC, set visibility on the RenderWidget then on
-  // the Page.
-  // TODO(danakj): This should set visibility on all RenderWidgets not just the
-  // main frame.
-  if (visibility == content::PageVisibilityState::kVisible) {
-    WidgetMsg_WasShown msg(main_frame_render_widget()->routing_id(),
-                           /*show_request_timestamp=*/base::TimeTicks(),
-                           /*was_evicted=*/false,
-                           /*record_tab_switch_time_request=*/base::nullopt);
-    main_frame_render_widget()->OnMessageReceived(msg);
-  } else {
-    WidgetMsg_WasHidden msg(main_frame_render_widget()->routing_id());
-    main_frame_render_widget()->OnMessageReceived(msg);
-  }
-  web_view_test_proxy_->ApplyPageVisibilityState(visibility,
-                                                 /*initial_setting=*/false);
 }
 
 void TestRunnerForSpecificView::DidAcquirePointerLock() {

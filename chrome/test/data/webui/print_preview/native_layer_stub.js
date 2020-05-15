@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, PrinterType} from 'chrome://print/print_preview.js';
+import {Destination, NativeLayer, PrinterType} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
@@ -11,6 +11,7 @@ import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 
 /**
  * Test version of the native layer.
+ * @implements {NativeLayer}
  */
 export class NativeLayerStub extends TestBrowserProxy {
   constructor() {

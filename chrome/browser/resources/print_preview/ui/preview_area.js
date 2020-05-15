@@ -25,7 +25,7 @@ import {PrintableArea} from '../data/printable_area.js';
 import {ScalingType} from '../data/scaling.js';
 import {Size} from '../data/size.js';
 import {Error, State} from '../data/state.js';
-import {NativeLayer} from '../native_layer.js';
+import {NativeLayer, NativeLayerImpl} from '../native_layer.js';
 import {areRangesEqual} from '../print_preview_utils.js';
 
 import {MARGIN_KEY_MAP} from './margin_control_container.js';
@@ -140,7 +140,7 @@ Polymer({
 
   /** @override */
   attached() {
-    this.nativeLayer_ = NativeLayer.getInstance();
+    this.nativeLayer_ = NativeLayerImpl.getInstance();
     this.addWebUIListener(
         'page-preview-ready', this.onPagePreviewReady_.bind(this));
 

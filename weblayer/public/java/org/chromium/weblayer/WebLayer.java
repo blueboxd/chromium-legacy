@@ -117,8 +117,7 @@ public class WebLayer {
         }
         try {
             Pair<Callable<ClassLoader>, WebLayer.WebViewCompatibilityResult> result =
-                    WebViewCompatibilityHelper.initialize(
-                            appContext, getOrCreateRemoteContext(appContext));
+                    WebViewCompatibilityHelper.initialize(appContext);
             sWebViewCompatClassLoaderGetter = result.first;
             return result.second;
         } catch (Exception e) {
@@ -582,6 +581,13 @@ public class WebLayer {
 
     /* package */ static IWebLayer getIWebLayer(Context appContext) {
         return getWebLayerLoader(appContext).getIWebLayer(appContext);
+    }
+
+    /**
+     * Forces setting the cached remote context.
+     */
+    static void setRemoteContext(Context remoteContext) {
+        sRemoteContext = remoteContext;
     }
 
     /**

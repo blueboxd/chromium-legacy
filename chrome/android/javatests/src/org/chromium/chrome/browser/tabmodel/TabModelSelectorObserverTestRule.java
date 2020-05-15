@@ -17,7 +17,6 @@ import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.base.WindowAndroid;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -30,8 +29,6 @@ public class TabModelSelectorObserverTestRule extends ChromeBrowserTestRule {
     private TabModelSelectorTestTabModel mNormalTabModel;
     private TabModelSelectorTestTabModel mIncognitoTabModel;
 
-    private WindowAndroid mWindowAndroid;
-
     public TabModelSelectorBase getSelector() {
         return mSelector;
     }
@@ -42,10 +39,6 @@ public class TabModelSelectorObserverTestRule extends ChromeBrowserTestRule {
 
     public TabModelSelectorTestTabModel getIncognitoTabModel() {
         return mIncognitoTabModel;
-    }
-
-    public WindowAndroid getWindowAndroid() {
-        return mWindowAndroid;
     }
 
     @Override
@@ -65,10 +58,6 @@ public class TabModelSelectorObserverTestRule extends ChromeBrowserTestRule {
     }
 
     private void initialize() {
-        mWindowAndroid = new WindowAndroid(InstrumentationRegistry.getInstrumentation()
-                                                   .getTargetContext()
-                                                   .getApplicationContext());
-
         mSelector = new TabModelSelectorBase(null, false) {
             @Override
             public Tab openNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent,

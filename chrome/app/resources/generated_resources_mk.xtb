@@ -54,7 +54,6 @@
 <translation id="1058262162121953039">Личен код за деблокирање (PUK)</translation>
 <translation id="1060292118287751956">Ја одредува фреквенцијата на освежување на екранот</translation>
 <translation id="1061904396131502319">Речиси е време за пауза</translation>
-<translation id="1064552680598333868">Промените на микрофонот ќе се применат при следното рестартирање на Linux.</translation>
 <translation id="1067048845568873861">Создадено</translation>
 <translation id="1067291318998134776">Linux (бета)</translation>
 <translation id="1067922213147265141">Други услуги на Google</translation>
@@ -300,7 +299,6 @@
 <translation id="1386387014181100145">Здраво.</translation>
 <translation id="138784436342154190">Да се врати стандардната страница на стартување?</translation>
 <translation id="1390548061267426325">Отвори како обична картичка</translation>
-<translation id="1392232653471491344">Потребно е да се рестартира Linux</translation>
 <translation id="1393283411312835250">Сонце и облаци</translation>
 <translation id="1395730723686586365">Ажурирањето започна</translation>
 <translation id="1396139853388185343">Грешка при поставување на печатачот</translation>
@@ -709,7 +707,6 @@
 <translation id="186612162884103683">„<ph name="EXTENSION" />“ може да чита слики, видео и аудиодатотеки на означените локации.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> е подготвен да ја комплетира инсталацијата</translation>
 <translation id="1868193363684582383">„Ok Google“</translation>
-<translation id="1870629042957780127">Дозволете пристап до микрофонот</translation>
 <translation id="1871534214638631766">Прикажувај поврзани информации кога ќе кликнам со десно копче или кога долго ќе притиснам на содржини</translation>
 <translation id="1871615898038944731">Вашиот <ph name="DEVICE_TYPE" /> е ажуриран</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Преместете ја картичката во друг прозорец}one{Преместете ги картичките во друг прозорец}other{Преместете ги картичките во друг прозорец}}</translation>
@@ -2104,7 +2101,6 @@
 <translation id="3661172646479098821">Во моментов се поддржуваат само уреди со Android.</translation>
 <translation id="3664511988987167893">Икона за екстензијата</translation>
 <translation id="3665589677786828986">Chrome откри дека некои од поставките на прелистувачот ги оштетила друга програма и ги ресетирала на првичните стандардни вредности.</translation>
-<translation id="366867565525278777">Инсталирањето не успеа поради недоволно простор за складирање. Потребен е слободен простор од најмалку <ph name="INSTALL_SIZE" />. За да ослободите простор, избришете датотеки од уредот.</translation>
 <translation id="3668801437375206837">За подобро дијагностицирање проблеми со Bluetooth, вработените во Google може да вклучат дополнителна евиденција за Bluetooth во нивните извештаи со повратни информации. Кога е избрана опцијава, вашиот извештај ќе опфаќа евиденција за btsnoop и HCI од тековната сесија, преработени да се отстранат што е можно повеќе лично идентификувачки информации. Пристапот до оваа евиденција ќе биде ограничена на управниците на групата производи на Chrome OS во Listnr. Евиденцијата ќе се прочистува на секои 90 дена.</translation>
 <translation id="3668823961463113931">Ракувачи</translation>
 <translation id="3670113805793654926">Уреди од кој било продавач</translation>
@@ -3232,7 +3228,6 @@
 <translation id="5158983316805876233">Користи ист прокси за сите протоколи</translation>
 <translation id="5160857336552977725">Најавете се на <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> е блокиран затоа што е застарен</translation>
-<translation id="5169131225159279624">Додавање</translation>
 <translation id="5170568018924773124">Прикажи во папка</translation>
 <translation id="5171045022955879922">Барај или впиши URL</translation>
 <translation id="5171343362375269016">Заменета меморија</translation>
@@ -3284,7 +3279,6 @@
 <translation id="5235565664420173924">Better Together</translation>
 <translation id="5235750401727657667">Заменете ја страницата што ја гледате при отворање нова картичка</translation>
 <translation id="5238278114306905396">Апликацијата „<ph name="EXTENSION_NAME" />“ е автоматски отстранета.</translation>
-<translation id="5238435043462632060">Родителот ги исклучил „Дозволите за сајтови, апликации и екстензии“ за Chrome. <ph name="ACTION_PARAMETER" /> на оваа <ph name="EXTENSION_TYPE_PARAMETER" /> не е дозволено.</translation>
 <translation id="5241128660650683457">Читајте ги сите ваши податоци на веб-локациите што ги посетувате</translation>
 <translation id="5242724311594467048">Да се овозможи „<ph name="EXTENSION_NAME" />“?</translation>
 <translation id="5243522832766285132">Обидете се повторно наскоро</translation>
@@ -3953,7 +3947,6 @@
 <translation id="6085886413119427067">Определува како да се поврзуваат веб-сајтовите преку безбедна врска</translation>
 <translation id="6086846494333236931">Инсталирано од вашиот администратор</translation>
 <translation id="6087960857463881712">Прекрасно лице</translation>
-<translation id="6088036808197002565"><ph name="ACTION_PARAMETER" /> <ph name="EXTENSION_TYPE_PARAMETER" /> е оневозможено</translation>
 <translation id="6091761513005122595">Споделувањето е успешно монтирано.</translation>
 <translation id="6093888419484831006">Се откажува ажурирањето...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -5926,7 +5919,6 @@
 <translation id="8650543407998814195">Иако веќе не може да пристапувате до стариот профил, сѐ уште може да го отстраните.</translation>
 <translation id="8651585100578802546">Принуди повторно вчитување на страницата</translation>
 <translation id="8652400352452647993">Грешка на екстензијата на пакетот</translation>
-<translation id="8653578191563425126">Простор на дискот што ќе се резервира за Crostini (ова може да го промените подоцна).</translation>
 <translation id="8654151524613148204">Датотеката е премногу голема за вашиот компјутер да се справи со неа. Се извинуваме.</translation>
 <translation id="8655295600908251630">Канал</translation>
 <translation id="8655319619291175901">Упс, нешто не е во ред.</translation>

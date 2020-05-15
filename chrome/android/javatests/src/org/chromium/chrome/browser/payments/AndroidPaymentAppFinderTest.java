@@ -56,6 +56,10 @@ public class AndroidPaymentAppFinderTest
     /** Simulates a package manager in memory. */
     private final MockPackageManagerDelegate mPackageManager = new MockPackageManagerDelegate();
 
+    /** Simulates a twa package manager in memory. */
+    private final MockTwaPackageManagerDelegate mTwaPackageManager =
+            new MockTwaPackageManagerDelegate();
+
     /** Downloads from the test server. */
     private static class TestServerDownloader extends PaymentManifestDownloader {
         private GURL mTestServerUrl;
@@ -1384,7 +1388,7 @@ public class AndroidPaymentAppFinderTest
         mRule.runOnUiThread(() -> {
             AndroidPaymentAppFinder finder =
                     new AndroidPaymentAppFinder(new PaymentManifestWebDataService(), mDownloader,
-                            new PaymentManifestParser(), mPackageManager,
+                            new PaymentManifestParser(), mPackageManager, mTwaPackageManager,
                             /*delegate=*/AndroidPaymentAppFinderTest.this, /*factory=*/null);
             finder.bypassIsReadyToPayServiceInTest();
             if (appStorePackageName != null) {
@@ -1413,7 +1417,7 @@ public class AndroidPaymentAppFinderTest
     }
 
     private void setMockTrustedWebActivity(String twaPackageName) {
-        mPackageManager.setMockTrustedWebActivity(twaPackageName);
+        mTwaPackageManager.setMockTrustedWebActivity(twaPackageName);
     }
 
     private void assertPaymentAppsCreated(String... expectedIds) {

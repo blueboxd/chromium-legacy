@@ -85,6 +85,14 @@ class RenderDocumentHostUserData : public base::SupportsUserData::Data {
     return static_cast<T*>(GetRenderDocumentHostUserData(rfh, UserDataKey()));
   }
 
+  static T* GetOrCreateForCurrentDocument(RenderFrameHost* rfh) {
+    DCHECK(rfh);
+    if (!GetForCurrentDocument(rfh)) {
+      CreateForCurrentDocument(rfh);
+    }
+    return GetForCurrentDocument(rfh);
+  }
+
   static void DeleteForCurrentDocument(RenderFrameHost* rfh) {
     DCHECK(rfh);
     DCHECK(GetForCurrentDocument(rfh));

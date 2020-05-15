@@ -56,9 +56,13 @@ class Shell : public TabObserver,
   // Do one time initialization at application startup.
   static void Initialize();
 
+#if defined(OS_ANDROID)
+  static Shell* CreateNewWindow(const GURL& url, const gfx::Size& initial_size);
+#else
   static Shell* CreateNewWindow(Profile* web_profile,
                                 const GURL& url,
                                 const gfx::Size& initial_size);
+#endif
 
   // Returns the currently open windows.
   static std::vector<Shell*>& windows() { return windows_; }
@@ -79,6 +83,10 @@ class Shell : public TabObserver,
 
  private:
   enum UIControl { BACK_BUTTON, FORWARD_BUTTON, STOP_BUTTON };
+
+  static Shell* CreateNewWindowWithTab(std::unique_ptr<Tab> tab,
+                                       const GURL& url,
+                                       const gfx::Size& initial_size);
 
   explicit Shell(std::unique_ptr<Tab> tab);
 

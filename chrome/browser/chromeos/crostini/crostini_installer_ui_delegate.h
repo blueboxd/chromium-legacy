@@ -14,22 +14,6 @@ namespace crostini {
 
 class CrostiniInstallerUIDelegate {
  public:
-  // The size of the download for the VM image.
-  // TODO(timloh): This is just a placeholder.
-  // As of 2020-01-10 the Termina files.zip is ~90MiB and the squashfs container
-  // is ~330MiB.
-  static constexpr int64_t kDownloadSizeInBytes =
-      450ll * 1024 * 1024;  // 450 MiB
-
-  // As of 2020-01-10 Crostini once installed uses ~1.8GiB, and metrics show
-  // that install success rate plummets when users have less than that much free
-  // space.
-  static constexpr int64_t kMinimumDiskSize =
-      int64_t{2} * 1024 * 1024 * 1024;  // 2 GiB
-  static constexpr int64_t kMinimumFreeDiskSpace = kMinimumDiskSize;
-  static constexpr int64_t kDefaultDiskSize =
-      int64_t{20} * 1024 * 1024 * 1024;  // 20 GIB
-
   // |progress_fraction| ranges from 0.0 to 1.0.
   using ProgressCallback =
       base::RepeatingCallback<void(crostini::mojom::InstallerState state,

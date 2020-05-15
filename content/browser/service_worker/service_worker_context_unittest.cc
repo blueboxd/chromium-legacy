@@ -266,6 +266,8 @@ class TestServiceWorkerContextObserver : public ServiceWorkerContextObserver {
     RegistrationStored,
     VersionActivated,
     VersionRedundant,
+    ControlleeAdded,
+    ControlleeRemoved,
     NoControllees,
     VersionStartedRunning,
     VersionStoppedRunning,
@@ -315,6 +317,23 @@ class TestServiceWorkerContextObserver : public ServiceWorkerContextObserver {
     log.type = EventType::VersionRedundant;
     log.version_id = version_id;
     log.url = scope;
+    events_.push_back(log);
+  }
+
+  void OnControlleeAdded(int64_t version_id,
+                         const std::string& client_uuid,
+                         const ServiceWorkerClientInfo& client_info) override {
+    EventLog log;
+    log.type = EventType::ControlleeAdded;
+    log.version_id = version_id;
+    events_.push_back(log);
+  }
+
+  void OnControlleeRemoved(int64_t version_id,
+                           const std::string& client_uuid) override {
+    EventLog log;
+    log.type = EventType::ControlleeRemoved;
+    log.version_id = version_id;
     events_.push_back(log);
   }
 
@@ -403,8 +422,9 @@ TEST_F(ServiceWorkerContextTest, RegistrationCompletedObserver) {
   EXPECT_EQ(scope, events[2].url);
 }
 
-// Make sure OnNoControllees is called on observer.
-TEST_F(ServiceWorkerContextTest, NoControlleesObserver) {
+// Make sure OnControlleeAdded, OnControlleeRemoved and OnNoControllees are
+// called on observer.
+TEST_F(ServiceWorkerContextTest, Observer_ControlleeEvents) {
   GURL scope("https://www.example.com/");
   GURL script_url("https://www.example.com/service_worker.js");
   blink::mojom::ServiceWorkerRegistrationOptions options;
@@ -420,24 +440,28 @@ TEST_F(ServiceWorkerContextTest, NoControlleesObserver) {
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version->SetStatus(ServiceWorkerVersion::ACTIVATED);
 
-  ServiceWorkerRemoteProviderEndpoint endpoint;
+  ServiceWorkerRemoteContainerEndpoint endpoint;
   base::WeakPtr<ServiceWorkerContainerHost> container_host =
       CreateContainerHostForWindow(helper_->mock_render_process_id(), true,
                                    context()->AsWeakPtr(), &endpoint);
 
+  TestServiceWorkerContextObserver observer(context_wrapper());
+
   version->AddControllee(container_host.get());
   base::RunLoop().RunUntilIdle();
 
-  TestServiceWorkerContextObserver observer(context_wrapper());
+  ASSERT_EQ(1u, observer.events().size());
+  EXPECT_EQ(TestServiceWorkerContextObserver::EventType::ControlleeAdded,
+            observer.events()[0].type);
 
   version->RemoveControllee(container_host->client_uuid());
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(1u, observer.events().size());
+  ASSERT_EQ(3u, observer.events().size());
+  EXPECT_EQ(TestServiceWorkerContextObserver::EventType::ControlleeRemoved,
+            observer.events()[1].type);
   EXPECT_EQ(TestServiceWorkerContextObserver::EventType::NoControllees,
-            observer.events()[0].type);
-  EXPECT_EQ(scope, observer.events()[0].url);
-  EXPECT_EQ(2l, observer.events()[0].version_id);
+            observer.events()[2].type);
 }
 
 // Make sure OnVersionActivated is called on observer.
@@ -977,7 +1001,7 @@ TEST_F(ServiceWorkerContextTest, ContainerHostIterator) {
   const int kRenderProcessId2 = 2;
   const GURL kOrigin1 = GURL("https://www.example.com/");
   const GURL kOrigin2 = GURL("https://another-origin.example.net/");
-  std::vector<ServiceWorkerRemoteProviderEndpoint> remote_endpoints;
+  std::vector<ServiceWorkerRemoteContainerEndpoint> remote_endpoints;
 
   // Host1 : process_id=1, origin1.
   remote_endpoints.emplace_back();

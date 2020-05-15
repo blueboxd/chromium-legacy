@@ -9,6 +9,7 @@ import android.net.Uri;
 
 import org.chromium.base.Log;
 import org.chromium.base.PackageManagerUtils;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.browserservices.BrowserServicesMetrics;
 import org.chromium.components.embedder_support.util.Origin;
 
@@ -36,6 +37,10 @@ public class PermissionUpdater {
         mPermissionManager = permissionManager;
         mNotificationPermissionUpdater = notificationPermissionUpdater;
         mLocationPermissionUpdater = locationPermissionUpdater;
+    }
+
+    public static PermissionUpdater get() {
+        return ChromeApplication.getComponent().resolveTwaPermissionUpdater();
     }
 
     /**
@@ -72,5 +77,9 @@ public class PermissionUpdater {
                         BrowserServicesMetrics.getBrowsableIntentResolutionTimingContext()) {
             return PackageManagerUtils.resolveActivity(browsableIntent, 0) != null;
         }
+    }
+
+    void getLocationPermission(Origin origin, long callback) {
+        mLocationPermissionUpdater.checkPermission(origin, callback);
     }
 }

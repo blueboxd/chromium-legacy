@@ -90,7 +90,6 @@ enum Subpage {
   kCrostiniBackupAndRestore = 803,
   kCrostiniDevelopAndroidApps = 804,
   kCrostiniPortForwarding = 805,
-  kCrostiniDiskResize = 806,
 
   // Note: Deprecated Plugin VM section has no subpages.
 
@@ -190,7 +189,6 @@ const string kCrostiniUsbPreferencesSubpagePath = "crostini/sharedUsbDevices";
 const string kCrostiniBackupAndRestoreSubpagePath = "crostini/exportImport";
 const string kCrostiniDevelopAndroidAppsSubpagePath = "crostini/androidAdb";
 const string kCrostiniPortForwardingSubpagePath = "crostini/portForwarding";
-const string kCrostiniDiskResizeSubpagePath = "crostini/diskResize";
 
 // Date and Time section.
 const string kDateAndTimeSectionPath = "dateTime";

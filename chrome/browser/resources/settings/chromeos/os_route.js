@@ -191,12 +191,6 @@ cr.define('settings', function() {
       r.CROSTINI_PORT_FORWARDING = createSubpage(
           r.CROSTINI_DETAILS, mojom.CROSTINI_PORT_FORWARDING_SUBPAGE_PATH,
           Subpage.kCrostiniPortForwarding);
-      if (loadTimeData.valueExists('showCrostiniDiskResize') &&
-          loadTimeData.getBoolean('showCrostiniDiskResize')) {
-        r.CROSTINI_DISK_RESIZE = createSubpage(
-            r.CROSTINI_DETAILS, mojom.CROSTINI_DISK_RESIZE_SUBPAGE_PATH,
-            Subpage.kCrostiniDiskResize);
-      }
     }
 
     // Date and Time section.

@@ -50,6 +50,10 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
   double SampleRate() override;
   int FramesPerBuffer() override;
 
+  // Sets the detect silence flag for SilentSinkSuspender. Invoked by Blink Web
+  // Audio.
+  void SetDetectSilence(bool enable_silence_detection) override;
+
   // AudioRendererSink::RenderCallback implementation.
   int Render(base::TimeDelta delay,
              base::TimeTicks delay_timestamp,

@@ -739,17 +739,38 @@ TYPED_TEST(ClipboardTest, ReadAvailablePlatformSpecificFormatNamesTest) {
 #endif
 }
 
-// Test that a platform-specific write works.
-#if defined(OS_WIN)
-TYPED_TEST(ClipboardTest, WindowsPredefinedFormatWriteDataTest) {
-  const std::string kFormatString = "CF_TEXT";
-  const std::string text = "test string";
-  base::span<const uint8_t> text_span(
-      reinterpret_cast<const uint8_t*>(text.data()), text.size() + 1);
+// Test that platform-specific functionality works, with a predefined format in
+// On X11 Linux, this test uses a simple MIME type, text/plain.
+// On Windows, this test uses a pre-defined ANSI format, CF_TEXT, and tests that
+// the Windows implicitly converts this to UNICODE as expected.
+#if defined(OS_WIN) || defined(USE_X11)
+TYPED_TEST(ClipboardTest, PlatformSpecificDataTest) {
+  // We're testing platform-specific behavior, so use PlatformClipboardTest.
+  // TODO(https://crbug.com/1083050): The template shouldn't know about its
+  // instantiations. Move this information up using a flag, virtual method, or
+  // creating separate test files for different platforms.
+  std::string test_suite_name = ::testing::UnitTest::GetInstance()
+                                    ->current_test_info()
+                                    ->test_suite_name();
+  if (test_suite_name != std::string("ClipboardTest/PlatformClipboardTest"))
+    return;
 
+  const std::string text = "test string";
+#if defined(OS_WIN)
+  // Windows pre-defined ANSI text format.
+  const std::string kFormatString = "CF_TEXT";
+  // Windows requires an extra '\0' at the end for a raw write.
+  const std::string kPlatformSpecificText = text + '\0';
+#elif defined(USE_X11)
+  const std::string kFormatString = "text/plain";  // X11 text format
+  const std::string kPlatformSpecificText = text;
+#endif
+  base::span<const uint8_t> text_span(
+      reinterpret_cast<const uint8_t*>(kPlatformSpecificText.data()),
+      kPlatformSpecificText.size());
   {
     ScopedClipboardWriter clipboard_writer(ClipboardBuffer::kCopyPaste);
-    clipboard_writer.WriteData(UTF8ToUTF16(kFormatString),
+    clipboard_writer.WriteData(ASCIIToUTF16(kFormatString),
                                mojo_base::BigBuffer(text_span));
   }
 
@@ -758,27 +779,32 @@ TYPED_TEST(ClipboardTest, WindowsPredefinedFormatWriteDataTest) {
           ClipboardBuffer::kCopyPaste);
 
   EXPECT_THAT(raw_types, Contains(ASCIIToUTF16(kFormatString)));
+
+#if defined(OS_WIN)
+  // Only Windows ClipboardFormatType recognizes ANSI formats.
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       ClipboardFormatType::GetPlainTextAType(), ClipboardBuffer::kCopyPaste));
+#endif  // defined(OS_WIN)
 
-  // Only ClipboardWin recognizes the Windows-specific CF_TEXT.
-  std::string test_suite_name = ::testing::UnitTest::GetInstance()
-                                    ->current_test_info()
-                                    ->test_suite_name();
-  if (test_suite_name == std::string("ClipboardTest/PlatformClipboardTest")) {
-    std::string text_result;
-    this->clipboard().ReadAsciiText(ClipboardBuffer::kCopyPaste, &text_result);
-    EXPECT_EQ(text, text_result);
+  EXPECT_TRUE(this->clipboard().IsFormatAvailable(
+      ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste));
 
-    // Windows will automatically convert CF_TEXT to its UNICODE version.
-    EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-        ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste));
-    base::string16 text_result16;
-    this->clipboard().ReadText(ClipboardBuffer::kCopyPaste, &text_result16);
-    EXPECT_EQ(base::ASCIIToUTF16(text), text_result16);
-  }
+  std::string text_result;
+  this->clipboard().ReadAsciiText(ClipboardBuffer::kCopyPaste, &text_result);
+  EXPECT_EQ(text_result, text);
+  // Note: Windows will automatically convert CF_TEXT to its UNICODE version.
+  EXPECT_TRUE(this->clipboard().IsFormatAvailable(
+      ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste));
+  base::string16 text_result16;
+  this->clipboard().ReadText(ClipboardBuffer::kCopyPaste, &text_result16);
+  EXPECT_EQ(text_result16, base::ASCIIToUTF16(text));
+
+  std::string platform_specific_result;
+  this->clipboard().ReadData(ClipboardFormatType::GetType(kFormatString),
+                             &platform_specific_result);
+  EXPECT_EQ(platform_specific_result, kPlatformSpecificText);
 }
-#endif
+#endif  // defined(OS_WIN) || defined(USE_X11)
 
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
 TYPED_TEST(ClipboardTest, HyperlinkTest) {

@@ -203,7 +203,7 @@ class ServiceWorkerJobTest : public testing::Test {
 
   BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
-  std::vector<ServiceWorkerRemoteProviderEndpoint> remote_endpoints_;
+  std::vector<ServiceWorkerRemoteContainerEndpoint> remote_endpoints_;
 };
 
 scoped_refptr<ServiceWorkerRegistration> ServiceWorkerJobTest::RunRegisterJob(

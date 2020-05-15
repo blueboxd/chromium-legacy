@@ -42,7 +42,7 @@ class NtpIconSource : public content::URLDataSource {
       content::URLDataSource::GotDataCallback callback) override;
   std::string GetMimeType(const std::string& path) override;
   bool ShouldServiceRequest(const GURL& url,
-                            content::BrowserContext* browser_context,
+                            content::ResourceContext* resource_context,
                             int render_process_id) override;
 
  private:

@@ -42,7 +42,7 @@ import "third_party/blink/public/mojom/page/widget.mojom";
 import "third_party/blink/public/mojom/portal/portal.mojom";
 import "third_party/blink/public/mojom/referrer.mojom";
 import "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom";
-import "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom";
+import "third_party/blink/public/mojom/service_worker/service_worker_container.mojom";
 import "third_party/blink/public/mojom/window_features/window_features.mojom";
 import "ui/base/mojom/window_open_disposition.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
@@ -115,8 +115,8 @@ interface FrameNavigationControl {
   // |controller_service_worker_info| may also be provided by the browser if the
   // frame that is being navigated is supposed to be controlled by a Service
   // Worker.
-  // |provider_info| may also be provided if the browser has created a
-  // ServiceWorkerProviderHost for this navigation.
+  // |container_info| may also be provided if the browser has created a
+  // ServiceWorkerContainerHost for this navigation.
   // |prefetch_loader_factory| is populated only when Network Service is
   // enabled. The pointer is used to start a prefetch loading via the browser
   // process.
@@ -140,7 +140,7 @@ interface FrameNavigationControl {
       blink.mojom.URLLoaderFactoryBundle? subresource_loader_factories,
       array<TransferrableURLLoader>? subresource_overrides,
       blink.mojom.ControllerServiceWorkerInfo? controller_service_worker_info,
-      blink.mojom.ServiceWorkerProviderInfoForClient? provider_info,
+      blink.mojom.ServiceWorkerContainerInfoForClient? container_info,
       pending_remote<network.mojom.URLLoaderFactory>? prefetch_loader_factory,
       mojo_base.mojom.UnguessableToken devtools_navigation_token)
       => (blink.mojom.CommitResult commit_result);

@@ -68,8 +68,8 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
           preference_watcher_receiver,
       mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
           content_settings,
-      blink::mojom::ServiceWorkerProviderInfoForClientPtr
-          service_worker_provider_info,
+      blink::mojom::ServiceWorkerContainerInfoForClientPtr
+          service_worker_container_info,
       const base::UnguessableToken& appcache_host_id,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle>

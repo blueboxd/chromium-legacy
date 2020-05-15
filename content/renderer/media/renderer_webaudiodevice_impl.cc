@@ -223,6 +223,14 @@ int RendererWebAudioDeviceImpl::FramesPerBuffer() {
   return sink_params_.frames_per_buffer();
 }
 
+void RendererWebAudioDeviceImpl::SetDetectSilence(
+    bool enable_silence_detection) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (webaudio_suspender_)
+    webaudio_suspender_->SetDetectSilence(enable_silence_detection);
+}
+
 int RendererWebAudioDeviceImpl::Render(base::TimeDelta delay,
                                        base::TimeTicks delay_timestamp,
                                        int prior_frames_skipped,

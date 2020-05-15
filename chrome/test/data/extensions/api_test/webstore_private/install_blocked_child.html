@@ -10,7 +10,7 @@ runTests([
   function installBlockedChild() {
     var manifest = getManifest();
     var expectedError =
-        "Apps and extensions can only be modified by the manager (test_parent_0@google.com)."
+        "Parent has blocked extension/app installation"
     chrome.webstorePrivate.beginInstallWithManifest3(
         {id: appId, manifest: manifest},
         callbackFail(expectedError, function(result) {

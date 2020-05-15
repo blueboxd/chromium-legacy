@@ -5,6 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_SERVICE_WORKER_CONTEXT_OBSERVER_H_
 #define CONTENT_PUBLIC_BROWSER_SERVICE_WORKER_CONTEXT_OBSERVER_H_
 
+#include <string>
+
+#include "content/public/browser/service_worker_client_info.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -51,6 +54,14 @@ class ServiceWorkerContextObserver {
       int64_t version_id,
       const ServiceWorkerRunningInfo& running_info) {}
   virtual void OnVersionStoppedRunning(int64_t version_id) {}
+
+  // Called when a controllee is added/removed for the service worker with id
+  // |version_id|.
+  virtual void OnControlleeAdded(int64_t version_id,
+                                 const std::string& client_uuid,
+                                 const ServiceWorkerClientInfo& client_info) {}
+  virtual void OnControlleeRemoved(int64_t version_id,
+                                   const std::string& client_uuid) {}
 
   // Called when there are no more controllees for the service worker with id
   // |version_id|.

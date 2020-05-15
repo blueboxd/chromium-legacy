@@ -30,8 +30,6 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   base::string16 GetValue() const override;
 
   bool PlatformIsLeafIncludingIgnored() const override;
-  // Android needs events even on objects that are trimmed away.
-  bool CanFireEvents() const override;
 
   bool IsCheckable() const;
   bool IsChecked() const;

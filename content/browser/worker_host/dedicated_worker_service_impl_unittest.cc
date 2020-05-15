@@ -12,11 +12,13 @@
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/worker_host/dedicated_worker_host.h"
+#include "content/browser/worker_host/dedicated_worker_host_factory_impl.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
@@ -35,10 +37,12 @@ class MockDedicatedWorker
     auto dummy_coep_reporter =
         coep_reporter_remote.InitWithNewPipeAndPassReceiver();
 
-    CreateDedicatedWorkerHostFactory(
-        worker_process_id, render_frame_host_id, render_frame_host_id,
-        url::Origin(), network::CrossOriginEmbedderPolicy(),
-        std::move(coep_reporter_remote), factory_.BindNewPipeAndPassReceiver());
+    mojo::MakeSelfOwnedReceiver(
+        std::make_unique<DedicatedWorkerHostFactoryImpl>(
+            worker_process_id, render_frame_host_id, render_frame_host_id,
+            url::Origin(), network::CrossOriginEmbedderPolicy(),
+            std::move(coep_reporter_remote)),
+        factory_.BindNewPipeAndPassReceiver());
 
     if (base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker)) {
       factory_->CreateWorkerHostAndStartScriptLoad(
@@ -68,8 +72,8 @@ class MockDedicatedWorker
   }
 
   void OnScriptLoadStarted(
-      blink::mojom::ServiceWorkerProviderInfoForClientPtr
-          service_worker_provider_info,
+      blink::mojom::ServiceWorkerContainerInfoForClientPtr
+          service_worker_container_info,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           pending_subresource_loader_factory_bundle,

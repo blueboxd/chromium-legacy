@@ -22,6 +22,7 @@ class SupervisedUserServiceManagementAPIDelegate
   ~SupervisedUserServiceManagementAPIDelegate() override;
 
   // extensions::SupervisedUserServiceDelegate overrides
+  bool IsChild(content::BrowserContext* context) const override;
 
   bool IsSupervisedChildWhoMayInstallExtensions(
       content::BrowserContext* context) const override;
@@ -36,6 +37,11 @@ class SupervisedUserServiceManagementAPIDelegate
       content::WebContents* contents,
       extensions::SupervisedUserServiceDelegate::
           ParentPermissionDialogDoneCallback done_callback) override;
+
+  void ShowExtensionEnableBlockedByParentDialogForExtension(
+      const extensions::Extension* extension,
+      content::WebContents* contents,
+      base::OnceClosure done_callback) override;
 
  private:
   std::unique_ptr<ParentPermissionDialog> parent_permission_dialog_;

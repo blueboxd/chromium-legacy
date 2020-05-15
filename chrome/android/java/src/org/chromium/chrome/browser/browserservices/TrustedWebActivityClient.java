@@ -16,11 +16,14 @@ import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.RemoteException;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.browser.trusted.Token;
+import androidx.browser.trusted.TrustedWebActivityCallback;
 import androidx.browser.trusted.TrustedWebActivityService;
 import androidx.browser.trusted.TrustedWebActivityServiceConnection;
 import androidx.browser.trusted.TrustedWebActivityServiceConnectionPool;
@@ -60,13 +63,23 @@ public class TrustedWebActivityClient {
     private static final Executor UI_THREAD_EXECUTOR =
             (Runnable r) -> PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE, r);
 
+    private static final String EXTRA_COMMAND_EXECUTION_RESULT = "executionResult";
+    private static final String CHECK_LOCATION_PERMISSION_COMMAND_NAME =
+            "checkAndroidLocationPermission";
+
     private final TrustedWebActivityServiceConnectionPool mConnection;
     private final TrustedWebActivityPermissionManager mDelegatesManager;
     private final TrustedWebActivityUmaRecorder mRecorder;
 
-    /** Interface for callbacks to {@link #checkNotificationPermission}. */
-    public interface NotificationPermissionCheckCallback {
-        /** May be called as a result of {@link #checkNotificationPermission}. */
+    /**
+     * Interface for callbacks to {@link #checkNotificationPermission} and {@link
+     * #checkLocationPermission}.
+     */
+    public interface PermissionCheckCallback {
+        /**
+         * May be called as a result of {@link #checkNotificationPermission} or {@link
+         * #checkLocationPermission}.
+         */
         void onPermissionCheck(ComponentName answeringApp, boolean enabled);
     }
 
@@ -103,8 +116,7 @@ public class TrustedWebActivityClient {
      *         Ensure that the app has been added to the {@link TrustedWebActivityPermissionManager}
      *         before calling this.
      */
-    public boolean checkNotificationPermission(Origin origin,
-            NotificationPermissionCheckCallback callback) {
+    public boolean checkNotificationPermission(Origin origin, PermissionCheckCallback callback) {
         Resources res = ContextUtils.getApplicationContext().getResources();
         String channelDisplayName = res.getString(R.string.notification_category_group_general);
 
@@ -112,6 +124,36 @@ public class TrustedWebActivityClient {
                 (originCopy, service)
                         -> callback.onPermissionCheck(service.getComponentName(),
                                 service.areNotificationsEnabled(channelDisplayName)));
+    }
+
+    /**
+     * Check location permission for the TWA of the given origin.
+     * @param callback Will be called on a background thread with whether the permission is granted.
+     * @return {@code false} if no such TWA exists (in which case the callback will not be called).
+     *         Ensure that the app has been added to the {@link TrustedWebActivityPermissionManager}
+     *         before calling this.
+     */
+    public boolean checkLocationPermission(Origin origin, PermissionCheckCallback callback) {
+        return connectAndExecute(origin.uri(), (originCopy, service) -> {
+            TrustedWebActivityCallback resultCallback = new TrustedWebActivityCallback() {
+                @Override
+                public void onExtraCallback(String callbackName, @Nullable Bundle bundle) {
+                    boolean granted = false;
+                    if (TextUtils.equals(callbackName, CHECK_LOCATION_PERMISSION_COMMAND_NAME)
+                            && bundle != null) {
+                        granted = bundle.getBoolean(EXTRA_COMMAND_EXECUTION_RESULT);
+                    }
+                    callback.onPermissionCheck(service.getComponentName(), granted);
+                }
+            };
+
+            Bundle executionResult = service.extraCommand(
+                    CHECK_LOCATION_PERMISSION_COMMAND_NAME, Bundle.EMPTY, resultCallback);
+            // Set permission to false if the service does not know how to handle the extraCommand.
+            if (executionResult == null) {
+                callback.onPermissionCheck(service.getComponentName(), false);
+            }
+        });
     }
 
     /**

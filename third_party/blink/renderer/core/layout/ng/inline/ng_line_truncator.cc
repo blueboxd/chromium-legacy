@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_logical_line_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/platform/fonts/font_baseline.h"
@@ -57,8 +58,8 @@ void NGLineTruncator::SetupEllipsis() {
 }
 
 LayoutUnit NGLineTruncator::PlaceEllipsisNextTo(
-    NGLineBoxFragmentBuilder::ChildList* line_box,
-    NGLineBoxFragmentBuilder::Child* ellipsized_child) {
+    NGLogicalLineItems* line_box,
+    NGLogicalLineItem* ellipsized_child) {
   // Create the ellipsis, associating it with the ellipsized child.
   DCHECK(ellipsized_child->HasInFlowFragment());
   LayoutObject* ellipsized_layout_object =
@@ -97,9 +98,9 @@ wtf_size_t NGLineTruncator::AddTruncatedChild(
     bool leave_one_character,
     LayoutUnit position,
     TextDirection edge,
-    NGLineBoxFragmentBuilder::ChildList* line_box,
+    NGLogicalLineItems* line_box,
     NGInlineLayoutStateStack* box_states) {
-  NGLineBoxFragmentBuilder::ChildList& line = *line_box;
+  NGLogicalLineItems& line = *line_box;
 
   scoped_refptr<ShapeResult> shape_result =
       line[source_index].fragment->TextShapeResult()->CreateShapeResult();
@@ -134,20 +135,19 @@ wtf_size_t NGLineTruncator::AddTruncatedChild(
   return new_index;
 }
 
-LayoutUnit NGLineTruncator::TruncateLine(
-    LayoutUnit line_width,
-    NGLineBoxFragmentBuilder::ChildList* line_box,
-    NGInlineLayoutStateStack* box_states) {
+LayoutUnit NGLineTruncator::TruncateLine(LayoutUnit line_width,
+                                         NGLogicalLineItems* line_box,
+                                         NGInlineLayoutStateStack* box_states) {
   // Shape the ellipsis and compute its inline size.
   SetupEllipsis();
 
   // Loop children from the logical last to the logical first to determine where
   // to place the ellipsis. Children maybe truncated or moved as part of the
   // process.
-  NGLineBoxFragmentBuilder::Child* ellipsized_child = nullptr;
+  NGLogicalLineItem* ellipsized_child = nullptr;
   scoped_refptr<const NGPhysicalTextFragment> truncated_fragment;
   if (IsLtr(line_direction_)) {
-    NGLineBoxFragmentBuilder::Child* first_child = line_box->FirstInFlowChild();
+    NGLogicalLineItem* first_child = line_box->FirstInFlowChild();
     for (auto it = line_box->rbegin(); it != line_box->rend(); it++) {
       auto& child = *it;
       if (EllipsizeChild(line_width, ellipsis_width_, &child == first_child,
@@ -157,7 +157,7 @@ LayoutUnit NGLineTruncator::TruncateLine(
       }
     }
   } else {
-    NGLineBoxFragmentBuilder::Child* first_child = line_box->LastInFlowChild();
+    NGLogicalLineItem* first_child = line_box->LastInFlowChild();
     for (auto& child : *line_box) {
       if (EllipsizeChild(line_width, ellipsis_width_, &child == first_child,
                          &child, &truncated_fragment)) {
@@ -179,7 +179,7 @@ LayoutUnit NGLineTruncator::TruncateLine(
     size_t child_index_to_truncate = ellipsized_child - line_box->begin();
     line_box->InsertChild(child_index_to_truncate + 1);
     box_states->ChildInserted(child_index_to_truncate + 1);
-    NGLineBoxFragmentBuilder::Child* child_to_truncate =
+    NGLogicalLineItem* child_to_truncate =
         &(*line_box)[child_index_to_truncate];
     ellipsized_child = std::next(child_to_truncate);
     *ellipsized_child = *child_to_truncate;
@@ -212,12 +212,12 @@ LayoutUnit NGLineTruncator::TruncateLine(
 // Children with IsPlaceholder() can appear anywhere.
 LayoutUnit NGLineTruncator::TruncateLineInTheMiddle(
     LayoutUnit line_width,
-    NGLineBoxFragmentBuilder::ChildList* line_box,
+    NGLogicalLineItems* line_box,
     NGInlineLayoutStateStack* box_states) {
   // Shape the ellipsis and compute its inline size.
   SetupEllipsis();
 
-  NGLineBoxFragmentBuilder::ChildList& line = *line_box;
+  NGLogicalLineItems& line = *line_box;
   wtf_size_t initial_index_left = kNotFound;
   wtf_size_t initial_index_right = kNotFound;
   for (wtf_size_t i = 0; i < line_box->size(); ++i) {
@@ -378,7 +378,7 @@ LayoutUnit NGLineTruncator::TruncateLineInTheMiddle(
 
 // Hide this child from being painted. Leaves a hidden fragment so that layout
 // queries such as |offsetWidth| work as if it is not truncated.
-void NGLineTruncator::HideChild(NGLineBoxFragmentBuilder::Child* child) {
+void NGLineTruncator::HideChild(NGLogicalLineItem* child) {
   DCHECK(child->HasInFlowFragment());
 
   if (const NGPhysicalTextFragment* text = child->fragment.get()) {
@@ -419,7 +419,7 @@ bool NGLineTruncator::EllipsizeChild(
     LayoutUnit line_width,
     LayoutUnit ellipsis_width,
     bool is_first_child,
-    NGLineBoxFragmentBuilder::Child* child,
+    NGLogicalLineItem* child,
     scoped_refptr<const NGPhysicalTextFragment>* truncated_fragment) {
   DCHECK(truncated_fragment && !*truncated_fragment);
 
@@ -474,7 +474,7 @@ bool NGLineTruncator::EllipsizeChild(
 bool NGLineTruncator::TruncateChild(
     LayoutUnit space_for_child,
     bool is_first_child,
-    const NGLineBoxFragmentBuilder::Child& child,
+    const NGLogicalLineItem& child,
     scoped_refptr<const NGPhysicalTextFragment>* truncated_fragment) {
   DCHECK(truncated_fragment && !*truncated_fragment);
 

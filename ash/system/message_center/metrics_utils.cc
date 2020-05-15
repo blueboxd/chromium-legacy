@@ -5,6 +5,7 @@
 #include "ash/system/message_center/metrics_utils.h"
 
 #include "ash/public/cpp/notification_utils.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "ui/message_center/message_center.h"
@@ -340,6 +341,15 @@ void LogClosedByClearAll(const std::string& notification_id) {
 
   UMA_HISTOGRAM_ENUMERATION("Notifications.Cros.Actions.Tray.ClosedByClearAll",
                             type.value());
+}
+
+void LogNotificationAdded(const std::string& notification_id) {
+  auto type = GetNotificationType(notification_id);
+  if (!type.has_value())
+    return;
+
+  base::UmaHistogramEnumeration("Notifications.Cros.Actions.NotificationAdded",
+                                type.value());
 }
 
 }  // namespace metrics_utils

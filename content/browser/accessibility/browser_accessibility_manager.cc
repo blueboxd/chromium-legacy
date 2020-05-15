@@ -284,6 +284,12 @@ bool BrowserAccessibilityManager::CanFireEvents() const {
   return true;
 }
 
+BrowserAccessibility* BrowserAccessibilityManager::RetargetForEvents(
+    BrowserAccessibility* node,
+    RetargetEventType type) const {
+  return node;
+}
+
 void BrowserAccessibilityManager::FireFocusEvent(BrowserAccessibility* node) {
   if (g_focus_change_callback_for_testing.Get())
     g_focus_change_callback_for_testing.Get().Run();
@@ -324,7 +330,8 @@ BrowserAccessibility* BrowserAccessibilityManager::GetParentNodeFromParentTree()
   ui::AXTreeID parent_tree_id = GetParentTreeID();
   BrowserAccessibilityManager* parent_manager =
       BrowserAccessibilityManager::FromID(parent_tree_id);
-  return parent ? parent_manager->GetFromAXNode(parent) : nullptr;
+  return parent && parent_manager ? parent_manager->GetFromAXNode(parent)
+                                  : nullptr;
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetPopupRoot() const {
@@ -438,6 +445,8 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
     if (!connected_to_parent_tree_node_) {
       parent->OnDataChanged();
       parent->UpdatePlatformAttributes();
+      parent = RetargetForEvents(parent,
+                                 RetargetEventType::RetargetEventTypeGenerated);
       FireGeneratedEvent(ui::AXEventGenerator::Event::CHILDREN_CHANGED, parent);
       connected_to_parent_tree_node_ = true;
     }
@@ -463,6 +472,11 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
   // Fire any events related to changes to the tree.
   for (const auto& targeted_event : event_generator()) {
     BrowserAccessibility* event_target = GetFromAXNode(targeted_event.node);
+    if (!event_target)
+      continue;
+
+    event_target = RetargetForEvents(
+        event_target, RetargetEventType::RetargetEventTypeGenerated);
     if (!event_target || !event_target->CanFireEvents())
       continue;
 
@@ -479,13 +493,20 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
   for (const ui::AXEvent& event : details.events) {
     // Fire the native event.
     BrowserAccessibility* event_target = GetFromID(event.id);
-    if (!event_target || !event_target->CanFireEvents())
+    if (!event_target)
+      continue;
+    RetargetEventType type =
+        event.event_type == ax::mojom::Event::kHover
+            ? RetargetEventType::RetargetEventTypeBlinkHover
+            : RetargetEventType::RetargetEventTypeBlinkGeneral;
+    BrowserAccessibility* retargeted = RetargetForEvents(event_target, type);
+    if (!retargeted || !retargeted->CanFireEvents())
       continue;
 
     if (root_manager && event.event_type == ax::mojom::Event::kHover)
       root_manager->CacheHitTestResult(event_target);
 
-    FireBlinkEvent(event.event_type, event_target);
+    FireBlinkEvent(event.event_type, retargeted);
   }
 
   if (received_load_complete_event) {
@@ -1618,6 +1639,7 @@ void BrowserAccessibilityManager::CollectChangedNodesAndParentsForAtomicUpdate(
 
 bool BrowserAccessibilityManager::ShouldFireEventForNode(
     BrowserAccessibility* node) const {
+  node = RetargetForEvents(node, RetargetEventType::RetargetEventTypeGenerated);
   if (!node || !node->CanFireEvents())
     return false;
 

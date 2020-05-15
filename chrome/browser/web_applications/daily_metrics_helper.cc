@@ -210,7 +210,6 @@ void UpdateRecord(DailyInteraction& record, PrefService* prefs) {
 
 }  // namespace
 
-DailyInteraction::DailyInteraction() = default;
 DailyInteraction::DailyInteraction(GURL start_url) : start_url(start_url) {}
 DailyInteraction::DailyInteraction(const DailyInteraction&) = default;
 DailyInteraction::~DailyInteraction() = default;
@@ -223,12 +222,6 @@ void FlushOldRecordsAndUpdate(DailyInteraction& record, Profile* profile) {
     RemoveRecords(profile->GetPrefs());
   }
   UpdateRecord(record, profile->GetPrefs());
-}
-
-void FlushAllRecordsForTesting(Profile* profile) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  EmitRecords(profile);
-  RemoveRecords(profile->GetPrefs());
 }
 
 void SkipOriginCheckForTesting() {

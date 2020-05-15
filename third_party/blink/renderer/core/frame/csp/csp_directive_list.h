@@ -98,12 +98,6 @@ class CORE_EXPORT CSPDirectiveList final
   bool AllowDynamic(ContentSecurityPolicy::DirectiveType) const;
   bool AllowDynamicWorker() const;
 
-  bool AllowRequestWithoutIntegrity(mojom::RequestContextType,
-                                    network::mojom::RequestDestination,
-                                    const KURL&,
-                                    ResourceRequest::RedirectStatus,
-                                    ReportingDisposition) const;
-
   bool AllowTrustedTypeAssignmentFailure(const String& message,
                                          const String& sample,
                                          const String& sample_prefix) const;
@@ -132,7 +126,6 @@ class CORE_EXPORT CSPDirectiveList final
   }
   const Vector<String>& ReportEndpoints() const { return report_endpoints_; }
   bool UseReportingApi() const { return use_reporting_api_; }
-  uint8_t RequireSRIForTokens() const { return require_sri_for_; }
   bool IsFrameAncestorsEnforced() const {
     return frame_ancestors_.Get() && !IsReportOnly();
   }
@@ -194,13 +187,10 @@ class CORE_EXPORT CSPDirectiveList final
   FRIEND_TEST_ALL_PREFIXES(CSPDirectiveListTest, GetSourceVector);
   FRIEND_TEST_ALL_PREFIXES(CSPDirectiveListTest, OperativeDirectiveGivenType);
 
-  enum RequireSRIForToken { kNone = 0, kScript = 1 << 0, kStyle = 1 << 1 };
-
   bool ParseDirective(const UChar* begin,
                       const UChar* end,
                       String* name,
                       String* value);
-  void ParseRequireSRIFor(const String& name, const String& value);
   void ParseReportURI(const String& name, const String& value);
   void ParseReportTo(const String& name, const String& value);
   void ParseAndAppendReportEndpoints(const String& value);
@@ -266,8 +256,6 @@ class CORE_EXPORT CSPDirectiveList final
                       const String& type,
                       const String& type_attribute) const;
   bool CheckAncestors(SourceListDirective*, LocalFrame*) const;
-  bool CheckRequestWithoutIntegrity(mojom::RequestContextType,
-                                    network::mojom::RequestDestination) const;
 
   void SetEvalDisabledErrorMessage(const String& error_message) {
     eval_disabled_error_message_ = error_message;
@@ -303,11 +291,6 @@ class CORE_EXPORT CSPDirectiveList final
   bool CheckAncestorsAndReportViolation(SourceListDirective*,
                                         LocalFrame*,
                                         const KURL&) const;
-  bool CheckRequestWithoutIntegrityAndReportViolation(
-      mojom::RequestContextType,
-      network::mojom::RequestDestination,
-      const KURL&,
-      ResourceRequest::RedirectStatus) const;
 
   bool DenyIfEnforcingPolicy() const { return IsReportOnly(); }
 
@@ -360,8 +343,6 @@ class CORE_EXPORT CSPDirectiveList final
   Member<SourceListDirective> navigate_to_;
   Member<StringListDirective> trusted_types_;
   Member<RequireTrustedTypesForDirective> require_trusted_types_for_;
-
-  uint8_t require_sri_for_;
 
   // If a "report-to" directive is used:
   // - |report_endpoints_| is a list of token parsed from the "report-to"

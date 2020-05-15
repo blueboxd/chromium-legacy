@@ -29,6 +29,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.e
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabModelTabCount;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabStripFaviconCount;
 
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.filters.MediumTest;
@@ -198,7 +199,6 @@ public class ConditionalTabStripTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_less_than = M, message = "crbug.com/1081832")
     public void testStrip_updateWithSelection() throws Exception {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         verifyHidingStrip();
@@ -288,7 +288,6 @@ public class ConditionalTabStripTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_less_than = M, message = "crbug.com/1081832")
     public void testStrip_switchTabWithStrip() throws Exception {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         verifyHidingStrip();
@@ -306,7 +305,6 @@ public class ConditionalTabStripTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_less_than = M, message = "crbug.com/1081832")
     public void testStrip_closeTabWithStrip() throws Exception {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         verifyHidingStrip();
@@ -514,6 +512,13 @@ public class ConditionalTabStripTest {
     }
 
     private void verifyStripSelectedPosition(ChromeTabbedActivity cta, int index) {
+        assertEquals(cta.getCurrentTabModel().index(), index);
+        // Since View.getForeground() is not supported in 23-, there is not good way for us to
+        // check the selected item from the perspective of Android View. Therefore, skip this check
+        // for API below 23.
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            return;
+        }
         onView(allOf(withParent(withId(R.id.toolbar_container_view)), withId(R.id.tab_list_view)))
                 .check(matches(isDisplayed()))
                 .check((v, e) -> {
@@ -523,7 +528,6 @@ public class ConditionalTabStripTest {
                         View itemView = recyclerView.findViewHolderForAdapterPosition(i).itemView;
                         if (itemView.getForeground() != null) {
                             assertEquals(index, i);
-                            assertEquals(cta.getCurrentTabModel().index(), i);
                         }
                     }
                 });

@@ -114,6 +114,32 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,
   EXPECT_FALSE(Data::GetForCurrentDocument(rfh_a));
 }
 
+// Test GetOrCreateForCurrentDocument API of RenderDocumentHostUserData.
+IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,
+                       GetOrCreateForCurrentDocument) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = top_frame_host();
+
+  // 2) Get the Data associated with this RenderFrameHost. It should be null
+  // before creation.
+  Data* data = Data::GetForCurrentDocument(rfh_a);
+  EXPECT_FALSE(data);
+
+  // 3) |GetOrCreateForCurrentDocument| should create Data.
+  base::WeakPtr<Data> created_data =
+      Data::GetOrCreateForCurrentDocument(rfh_a)->GetWeakPtr();
+  EXPECT_TRUE(created_data);
+
+  // 4) Another call to |GetOrCreateForCurrentDocument| should not create the
+  // new data and the previous data created in 3) should be preserved.
+  Data::GetOrCreateForCurrentDocument(rfh_a);
+  EXPECT_TRUE(created_data);
+}
+
 // Tests that RenderDocumentHostUserData objects are different for each
 // RenderFrameHost in FrameTree when there are multiple frames.
 IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,

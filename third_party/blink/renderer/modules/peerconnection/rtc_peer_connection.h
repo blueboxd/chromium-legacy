@@ -422,6 +422,7 @@ class MODULES_EXPORT RTCPeerConnection final
       RtcPeerConnectionHandlerFactoryCallback);
 
  private:
+  friend class InternalsRTCPeerConnection;
   FRIEND_TEST_ALL_PREFIXES(RTCPeerConnectionTest, GetAudioTrack);
   FRIEND_TEST_ALL_PREFIXES(RTCPeerConnectionTest, GetVideoTrack);
   FRIEND_TEST_ALL_PREFIXES(RTCPeerConnectionTest, GetAudioAndVideoTrack);
@@ -604,6 +605,7 @@ class MODULES_EXPORT RTCPeerConnection final
   // TODO(crbug.com/787254): Use RTCPeerConnectionHandler.
   std::unique_ptr<RTCPeerConnectionHandler> peer_handler_;
 
+  base::OnceClosure dispatch_events_task_created_callback_for_testing_;
   TaskHandle dispatch_scheduled_events_task_handle_;
   HeapVector<Member<EventWrapper>> scheduled_events_;
 

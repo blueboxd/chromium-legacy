@@ -520,7 +520,7 @@ void LocalStorageImpl::DeleteStorage(const url::Origin& origin,
     found->second->storage_area()->ScheduleImmediateCommit();
   } else if (database_) {
     DeleteOrigins(
-        database_.get(), {std::move(origin)},
+        database_.get(), {origin},
         base::BindOnce([](base::OnceClosure callback,
                           leveldb::Status) { std::move(callback).Run(); },
                        std::move(callback)));

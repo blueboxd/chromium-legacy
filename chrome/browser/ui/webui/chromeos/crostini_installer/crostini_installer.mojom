@@ -48,6 +48,10 @@ interface Page {
   // finishes.
   OnCanceled();
   // Used to tell the UI how much disk space is available.
+  // |is_low_space_available| indicates that there is less than the recommended
+  // amount of space available for Crostini (though enough to continue with the
+  // installation).
   OnAmountOfFreeDiskSpace(array<crostini.mojom.DiskSliderTick> ticks,
-                          int8 default_index);
+                          int8 default_index,
+                          bool is_low_space_available);
 };

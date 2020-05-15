@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/supervised_user/parent_permission_dialog.h"
 #include "content/public/browser/web_contents.h"
 
@@ -48,6 +49,14 @@ SupervisedUserServiceManagementAPIDelegate::
 SupervisedUserServiceManagementAPIDelegate::
     ~SupervisedUserServiceManagementAPIDelegate() = default;
 
+bool SupervisedUserServiceManagementAPIDelegate::IsChild(
+    content::BrowserContext* context) const {
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForBrowserContext(context);
+
+  return supervised_user_service->IsChild();
+}
+
 bool SupervisedUserServiceManagementAPIDelegate::
     IsSupervisedChildWhoMayInstallExtensions(
         content::BrowserContext* context) const {
@@ -82,6 +91,18 @@ void SupervisedUserServiceManagementAPIDelegate::
           contents->GetTopLevelNativeWindow(), gfx::ImageSkia(), &extension,
           std::move(inner_done_callback));
   parent_permission_dialog_->ShowDialog();
+}
+
+void SupervisedUserServiceManagementAPIDelegate::
+    ShowExtensionEnableBlockedByParentDialogForExtension(
+        const extensions::Extension* extension,
+        content::WebContents* contents,
+        base::OnceClosure done_callback) {
+  DCHECK(contents);
+
+  chrome::ShowExtensionInstallBlockedByParentDialog(
+      chrome::ExtensionInstalledBlockedByParentDialogAction::kEnable, extension,
+      contents, std::move(done_callback));
 }
 
 }  // namespace extensions

@@ -102,17 +102,17 @@ class SharedWorkerHostTest : public testing::Test {
         client_remote;
     mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
         host_receiver;
-    auto provider_info =
-        blink::mojom::ServiceWorkerProviderInfoForClient::New();
-    provider_info->client_receiver =
+    auto container_info =
+        blink::mojom::ServiceWorkerContainerInfoForClient::New();
+    container_info->client_receiver =
         client_remote.InitWithNewEndpointAndPassReceiver();
     host_receiver =
-        provider_info->host_remote.InitWithNewEndpointAndPassReceiver();
+        container_info->host_remote.InitWithNewEndpointAndPassReceiver();
 
     helper_->context()->CreateContainerHostForWorker(
         std::move(host_receiver), mock_render_process_host_.GetID(),
         std::move(client_remote), ServiceWorkerClientInfo(host->id()));
-    service_worker_handle->OnCreatedProviderHost(std::move(provider_info));
+    service_worker_handle->OnCreatedContainerHost(std::move(container_info));
     host->SetServiceWorkerHandle(std::move(service_worker_handle));
 
     host->Start(std::move(factory), std::move(main_script_load_params),

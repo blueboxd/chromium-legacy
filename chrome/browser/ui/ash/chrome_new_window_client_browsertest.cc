@@ -280,10 +280,6 @@ void TestAllOSSettingPages(const GURL& base_url) {
       ChromePage::CHANGEPICTURE,
       base_url.Resolve(chromeos::settings::mojom::kChangePictureSubpagePath));
   TestOpenChromePage(
-      ChromePage::CROSTINIDISKRESIZE,
-      base_url.Resolve(
-          chromeos::settings::mojom::kCrostiniDiskResizeSubpagePath));
-  TestOpenChromePage(
       ChromePage::CUPSPRINTERS,
       base_url.Resolve(chromeos::settings::mojom::kPrintingDetailsSubpagePath));
   TestOpenChromePage(

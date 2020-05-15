@@ -14,6 +14,8 @@ namespace blink {
 
 class NGInlineLayoutStateStack;
 class NGLineInfo;
+class NGLogicalLineItems;
+struct NGLogicalLineItem;
 
 // A class to truncate lines and place ellipsis, invoked by the CSS
 // 'text-overflow: ellipsis' property.
@@ -30,13 +32,12 @@ class CORE_EXPORT NGLineTruncator final {
   // |line_box| should be after bidi reorder, but before box fragments are
   // created.
   LayoutUnit TruncateLine(LayoutUnit line_width,
-                          NGLineBoxFragmentBuilder::ChildList* line_box,
+                          NGLogicalLineItems* line_box,
                           NGInlineLayoutStateStack* box_states);
 
-  LayoutUnit TruncateLineInTheMiddle(
-      LayoutUnit line_width,
-      NGLineBoxFragmentBuilder::ChildList* line_box,
-      NGInlineLayoutStateStack* box_states);
+  LayoutUnit TruncateLineInTheMiddle(LayoutUnit line_width,
+                                     NGLogicalLineItems* line_box,
+                                     NGInlineLayoutStateStack* box_states);
 
  private:
   const ComputedStyle& EllipsisStyle() const;
@@ -45,9 +46,8 @@ class CORE_EXPORT NGLineTruncator final {
   void SetupEllipsis();
 
   // Add a child for ellipsis next to |ellipsized_child|.
-  LayoutUnit PlaceEllipsisNextTo(
-      NGLineBoxFragmentBuilder::ChildList* line_box,
-      NGLineBoxFragmentBuilder::Child* ellipsized_child);
+  LayoutUnit PlaceEllipsisNextTo(NGLogicalLineItems* line_box,
+                                 NGLogicalLineItem* ellipsized_child);
 
   static constexpr wtf_size_t kDidNotAddChild = WTF::kNotFound;
   // Add a child with truncated text of (*line_box)[source_index].
@@ -65,20 +65,20 @@ class CORE_EXPORT NGLineTruncator final {
                                bool leave_one_character,
                                LayoutUnit position,
                                TextDirection edge,
-                               NGLineBoxFragmentBuilder::ChildList* line_box,
+                               NGLogicalLineItems* line_box,
                                NGInlineLayoutStateStack* box_states);
   bool EllipsizeChild(
       LayoutUnit line_width,
       LayoutUnit ellipsis_width,
       bool is_first_child,
-      NGLineBoxFragmentBuilder::Child*,
+      NGLogicalLineItem*,
       scoped_refptr<const NGPhysicalTextFragment>* truncated_fragment);
   bool TruncateChild(
       LayoutUnit space_for_this_child,
       bool is_first_child,
-      const NGLineBoxFragmentBuilder::Child& child,
+      const NGLogicalLineItem& child,
       scoped_refptr<const NGPhysicalTextFragment>* truncated_fragment);
-  void HideChild(NGLineBoxFragmentBuilder::Child* child);
+  void HideChild(NGLogicalLineItem* child);
 
   scoped_refptr<const ComputedStyle> line_style_;
   LayoutUnit available_width_;

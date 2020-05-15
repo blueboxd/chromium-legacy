@@ -28,6 +28,7 @@
 
 #include <atomic>
 #include <memory>
+#include "base/memory/weak_ptr.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_destination_node.h"
 #include "third_party/blink/renderer/platform/audio/audio_callback_metric_reporter.h"
@@ -40,8 +41,10 @@ class AudioContext;
 class ExceptionState;
 class WebAudioLatencyHint;
 
-class RealtimeAudioDestinationHandler final : public AudioDestinationHandler,
-                                              public AudioIOCallback {
+class RealtimeAudioDestinationHandler final
+    : public AudioDestinationHandler,
+      public AudioIOCallback,
+      public base::SupportsWeakPtr<RealtimeAudioDestinationHandler> {
  public:
   static scoped_refptr<RealtimeAudioDestinationHandler> Create(
       AudioNode&,
@@ -85,6 +88,9 @@ class RealtimeAudioDestinationHandler final : public AudioDestinationHandler,
     return allow_pulling_audio_graph_.load(std::memory_order_acquire);
   }
 
+  // Sets the detect silence flag for the platform destination.
+  void SetDetectSilence(bool detect_silence);
+
  private:
   explicit RealtimeAudioDestinationHandler(AudioNode&,
                                            const WebAudioLatencyHint&,
@@ -93,6 +99,11 @@ class RealtimeAudioDestinationHandler final : public AudioDestinationHandler,
   void CreatePlatformDestination();
   void StartPlatformDestination();
   void StopPlatformDestination();
+
+  // Checks the current silent detection condition (e.g. the number of
+  // automatic pull nodes) and flips the switch if necessary. Called within the
+  // Render() method.
+  void SetDetectSilenceIfNecessary(bool has_automatic_pull_nodes);
 
   // Should only be called from StartPlatformDestination.
   void EnablePullingAudioGraph() {
@@ -120,6 +131,11 @@ class RealtimeAudioDestinationHandler final : public AudioDestinationHandler,
   // DisablePullingAudioGraph) .  This is modified only by the main threda and
   // the audio thread only reads this.
   std::atomic_bool allow_pulling_audio_graph_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // The current condition of silence detection.
+  bool is_detecting_silence_ = false;
 };
 
 // -----------------------------------------------------------------------------

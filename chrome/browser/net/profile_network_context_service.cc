@@ -166,8 +166,14 @@ void InitializeCorsExtraSafelistedRequestHeaderNamesForProfile(
 // TODO(https://crbug.com/458508): Currently, this is determined by OR of the
 // feature flag and policy. Next steps would be changing the feature value to
 // false after enough heads up and then removing the feature.
-bool IsAmbientAuthAllowedForProfile(const Profile* profile) {
+bool IsAmbientAuthAllowedForProfile(Profile* profile) {
   if (profile->IsRegularProfile())
+    return true;
+
+  // Non-primary OTR profiles are not used to create browser windows and are
+  // only technical means for a task that does not need to leave state after
+  // it's completed.
+  if (!profile->IsPrimaryOTRProfile())
     return true;
 
   PrefService* local_state = g_browser_process->local_state();

@@ -80,7 +80,7 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
   std::unique_ptr<ServiceWorkerProviderHost> provider_host_;
-  ServiceWorkerRemoteProviderEndpoint remote_endpoint_;
+  ServiceWorkerRemoteContainerEndpoint remote_endpoint_;
   std::unique_ptr<ServiceWorkerScriptLoaderFactory> factory_;
 };
 

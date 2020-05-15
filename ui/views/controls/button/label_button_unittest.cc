@@ -667,6 +667,25 @@ TEST_F(LabelButtonTest, SetEnabledTextColorsResetsToThemeColors) {
   EXPECT_EQ(TestNativeTheme::kSystemColor, button_->label()->GetEnabledColor());
 }
 
+TEST_F(LabelButtonTest, ImageOrLabelGetClipped) {
+  const base::string16 text(ASCIIToUTF16("abc"));
+  button_->SetText(text);
+
+  const gfx::FontList font_list = button_->label()->font_list();
+  const int image_size = font_list.GetHeight();
+  button_->SetImage(Button::STATE_NORMAL,
+                    CreateTestImage(image_size, image_size));
+
+  button_->SetBoundsRect(gfx::Rect(button_->GetPreferredSize()));
+  // The border size + the content height is more than button's preferred size.
+  button_->SetBorder(CreateEmptyBorder(image_size / 2, 0, image_size / 2, 0));
+  button_->Layout();
+
+  // Ensure that content (image and label) doesn't get clipped by the border.
+  EXPECT_GE(button_->image()->height(), image_size);
+  EXPECT_GE(button_->label()->height(), image_size);
+}
+
 // Test fixture for a LabelButton that has an ink drop configured.
 class InkDropLabelButtonTest : public ViewsTestBase {
  public:

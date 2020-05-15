@@ -72,8 +72,16 @@
     margin-bottom: 41px;
   }
 
-  #username {
-    width: 264px;
+  #configure-message {
+    width: 350px;
+  }
+
+  #disk-size-section {
+    margin-top: 30px;
+  }
+
+  #disk-size-section > div {
+    margin-bottom: 15px;
   }
 
   a[href] {
@@ -106,8 +114,17 @@
             error-message="[[usernameError_]]">
         </cr-input>
       </div>
-      <div hidden="[[!showDiskResizing_()]]">
-        <div id="disk-size-message">$i18n{diskSizeMessage}</div>
+      <div id='disk-size-section' hidden="[[!showDiskResizing_()]]">
+        <div id="disk-size-message">
+          <div style="color:var(--cr-primary-text-color)">
+            $i18n{diskSizeSubtitle}
+          </div>
+          <div>$i18n{diskSizeHint}</div>
+        </div>
+        <div id='low-free-space-warning' hidden="[[!isLowSpaceAvailable_]]">
+          <iron-icon icon="cr:warning"></iron-icon>
+          $i18n{lowSpaceAvailableWarning}
+        </div>
         <div class="outer">
           <cr-slider id="diskSlider" pin="true" value="[[defaultDiskSizeTick_]]"
               aria-describedby="disk-size-message" ticks="[[diskSizeTicks_]]">
@@ -124,8 +141,8 @@
       <paper-progress class="progress-bar" value="[[installerProgress_]]">
       </paper-progress>
     </div>
-    <div id="error-message" hidden="[[!eq_(state_, State.ERROR)]]">
-      <div>[[getErrorMessage_(error_)]]</div>
+    <div id="error-message" hidden="[[!showErrorMessage_(state_)]]">
+      <div>[[errorMessage_]]</div>
     </div>
     <div id="canceling-message" hidden="[[!eq_(state_, State.CANCELING)]]">
       <div>$i18n{cancelingMessage}</div>

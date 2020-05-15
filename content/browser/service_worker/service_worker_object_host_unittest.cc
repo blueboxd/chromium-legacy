@@ -229,7 +229,7 @@ TEST_F(ServiceWorkerObjectHostTest, OnVersionStateChanged) {
   SetUpRegistration(scope, script_url);
   registration_->SetInstallingVersion(version_);
 
-  ServiceWorkerRemoteProviderEndpoint remote_endpoint;
+  ServiceWorkerRemoteContainerEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerContainerHost> container_host =
       CreateContainerHostForWindow(
           helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
@@ -379,7 +379,7 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
       WebContentsTester::CreateTestWebContents(helper_->browser_context(),
                                                nullptr));
   RenderFrameHost* frame_host = web_contents->GetMainFrame();
-  ServiceWorkerRemoteProviderEndpoint remote_endpoint;
+  ServiceWorkerRemoteContainerEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerContainerHost> container_host =
       CreateContainerHostForWindow(
           frame_host->GetProcess()->GetID(), true /* is_parent_frame_secure */,

@@ -53,7 +53,9 @@ RealtimeAudioDestinationHandler::RealtimeAudioDestinationHandler(
     : AudioDestinationHandler(node),
       latency_hint_(latency_hint),
       sample_rate_(sample_rate),
-      allow_pulling_audio_graph_(false) {
+      allow_pulling_audio_graph_(false),
+      task_runner_(Context()->GetExecutionContext()->GetTaskRunner(
+          TaskType::kInternalMediaRealTime)) {
   // Node-specific default channel count and mixing rules.
   channel_count_ = 2;
   SetInternalChannelCountMode(kExplicit);
@@ -230,6 +232,31 @@ void RealtimeAudioDestinationHandler::Render(
   AdvanceCurrentSampleFrame(number_of_frames);
 
   context->UpdateWorkletGlobalScopeOnRenderingThread();
+
+  SetDetectSilenceIfNecessary(
+      context->GetDeferredTaskHandler().HasAutomaticPullNodes());
+}
+
+void RealtimeAudioDestinationHandler::SetDetectSilenceIfNecessary(
+    bool has_automatic_pull_nodes) {
+  // When there is one or more automatic pull nodes, and the input is not
+  // connected, the silence detection should be turned off.
+  bool needs_silence_detection =
+      has_automatic_pull_nodes && !Input(0).IsConnected();
+
+  // Post a cross-thread task only when the detecting condition has changed.
+  if (is_detecting_silence_ != needs_silence_detection) {
+    PostCrossThreadTask(*task_runner_, FROM_HERE,
+        CrossThreadBindOnce(&RealtimeAudioDestinationHandler::SetDetectSilence,
+                            AsWeakPtr(), needs_silence_detection));
+    is_detecting_silence_ = needs_silence_detection;
+  }
+}
+
+void RealtimeAudioDestinationHandler::SetDetectSilence(bool detect_silence) {
+  DCHECK(IsMainThread());
+
+  platform_destination_->SetDetectSilence(detect_silence);
 }
 
 uint32_t RealtimeAudioDestinationHandler::GetCallbackBufferSize() const {

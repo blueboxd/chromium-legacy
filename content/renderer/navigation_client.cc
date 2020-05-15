@@ -25,7 +25,7 @@ void NavigationClient::CommitNavigation(
     base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
+    blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
@@ -40,7 +40,7 @@ void NavigationClient::CommitNavigation(
       std::move(response_head), std::move(response_body),
       std::move(url_loader_client_endpoints), std::move(subresource_loaders),
       std::move(subresource_overrides),
-      std::move(controller_service_worker_info), std::move(provider_info),
+      std::move(controller_service_worker_info), std::move(container_info),
       std::move(prefetch_loader_factory), devtools_navigation_token,
       std::move(callback));
 }

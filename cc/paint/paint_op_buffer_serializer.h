@@ -114,7 +114,7 @@ class CC_PAINT_EXPORT PaintOpBufferSerializer {
   bool context_supports_distance_field_text_;
   int max_texture_size_;
 
-  SkTextBlobCacheDiffCanvas text_blob_canvas_;
+  std::unique_ptr<SkNoDrawCanvas> text_blob_canvas_;
   bool valid_ = true;
 };
 

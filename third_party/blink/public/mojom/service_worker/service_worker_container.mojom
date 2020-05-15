@@ -22,6 +22,14 @@ enum ControllerServiceWorkerPurpose {
   FETCH_SUB_RESOURCE
 };
 
+// Sent from the browser process to the renderer. Contains info needed
+// for a service worker client (window or web worker) to talk with the
+// ServiceWorkerContainerHost in the browser process.
+struct ServiceWorkerContainerInfoForClient {
+  pending_associated_remote<ServiceWorkerContainerHost> host_remote;
+  pending_associated_receiver<ServiceWorkerContainer> client_receiver;
+};
+
 // ServiceWorkerContainerHost is an interface implemented by the browser
 // process. The renderer process uses this interface to request the browser
 // process to do operations involving service worker registrations.

@@ -281,20 +281,21 @@ int LabelButton::GetHeightForWidth(int width) const {
 }
 
 void LabelButton::Layout() {
-  gfx::Rect child_area = GetLocalBounds();
+  gfx::Rect image_area = GetLocalBounds();
 
-  ink_drop_container_->SetBoundsRect(child_area);
-  // The space that the label can use. Its actual bounds may be smaller if the
-  // label is short.
-  gfx::Rect label_area = child_area;
+  ink_drop_container_->SetBoundsRect(image_area);
 
   gfx::Insets insets = GetInsets();
-  child_area.Inset(insets);
-  // Labels can paint over the vertical component of the border insets.
-  label_area.Inset(insets.left(), 0, insets.right(), 0);
+  // If the button have a limited space to fit in, the image and the label
+  // may overlap with the border, which often times contains a lot of empty
+  // padding.
+  image_area.Inset(insets.left(), 0, insets.right(), 0);
+  // The space that the label can use. Labels truncate horizontally, so there
+  // is no need to allow the label to take up the complete horizontal space.
+  gfx::Rect label_area = image_area;
 
   gfx::Size image_size = image_->GetPreferredSize();
-  image_size.SetToMin(child_area.size());
+  image_size.SetToMin(image_area.size());
 
   const auto horizontal_alignment = GetHorizontalAlignment();
   if (!image_size.IsEmpty()) {
@@ -309,22 +310,28 @@ void LabelButton::Layout() {
       std::min(label_area.width(), label_->GetPreferredSize().width()),
       label_area.height());
 
-  gfx::Point image_origin = child_area.origin();
+  gfx::Point image_origin = image_area.origin();
   if (label_->GetMultiLine() && !image_centered_) {
-    image_origin.Offset(
-        0, std::max(
-               0, (label_->font_list().GetHeight() - image_size.height()) / 2));
+    // This code assumes the text is vertically centered.
+    DCHECK_EQ(gfx::ALIGN_MIDDLE, label_->GetVerticalAlignment());
+    int label_height = label_->GetHeightForWidth(label_size.width());
+    int first_line_y =
+        label_area.y() + (label_area.height() - label_height) / 2;
+    int image_origin_y =
+        first_line_y +
+        (label_->font_list().GetHeight() - image_size.height()) / 2;
+    image_origin.Offset(0, std::max(0, image_origin_y));
   } else {
-    image_origin.Offset(0, (child_area.height() - image_size.height()) / 2);
+    image_origin.Offset(0, (image_area.height() - image_size.height()) / 2);
   }
   if (horizontal_alignment == gfx::ALIGN_CENTER) {
     const int spacing = (image_size.width() > 0 && label_size.width() > 0)
                             ? GetImageLabelSpacing()
                             : 0;
     const int total_width = image_size.width() + label_size.width() + spacing;
-    image_origin.Offset((child_area.width() - total_width) / 2, 0);
+    image_origin.Offset((image_area.width() - total_width) / 2, 0);
   } else if (horizontal_alignment == gfx::ALIGN_RIGHT) {
-    image_origin.Offset(child_area.width() - image_size.width(), 0);
+    image_origin.Offset(image_area.width() - image_size.width(), 0);
   }
   image_->SetBoundsRect(gfx::Rect(image_origin, image_size));
 

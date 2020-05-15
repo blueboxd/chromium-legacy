@@ -157,8 +157,8 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   virtual bool IsGuest() = 0;
 
   // Factory method to create a new SiteInstance.  This will create a new
-  // new BrowsingInstance, so it should only be used when creating a new tab
-  // from scratch (or similar circumstances).
+  // BrowsingInstance, so it should only be used when creating a new tab from
+  // scratch (or similar circumstances).
   //
   // The render process host factory may be nullptr.  See SiteInstance
   // constructor.

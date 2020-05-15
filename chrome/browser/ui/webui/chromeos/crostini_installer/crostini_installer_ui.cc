@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/strings/string16.h"
 #include "base/system/sys_info.h"
+#include "chrome/browser/chromeos/crostini/crostini_disk.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_page_handler.h"
@@ -73,7 +74,9 @@ void AddStringResources(content::WebUIDataSource* source) {
       {"cancelingMessage", IDS_CROSTINI_INSTALLER_CANCELING},
 
       {"configureMessage", IDS_CROSTINI_INSTALLER_CONFIGURE_MESSAGE},
-      {"diskSizeMessage", IDS_CROSTINI_INSTALLER_DISK_SIZE_MESSAGE},
+      {"diskSizeSubtitle", IDS_CROSTINI_INSTALLER_DISK_SIZE_SUBTITLE},
+      {"diskSizeHint", IDS_CROSTINI_INSTALLER_DISK_SIZE_HINT},
+      {"insufficientDiskError", IDS_CROSTINI_INSTALLER_INSUFFICIENT_DISK_ERROR},
       {"usernameMessage", IDS_CROSTINI_INSTALLER_USERNAME_MESSAGE},
       {"usernameInvalidFirstCharacterError",
        IDS_CROSTINI_INSTALLER_USERNAME_INVALID_FIRST_CHARACTER_ERROR},
@@ -89,25 +92,31 @@ void AddStringResources(content::WebUIDataSource* source) {
   source->AddString(
       "promptTitle",
       l10n_util::GetStringFUTF8(IDS_CROSTINI_INSTALLER_TITLE, device_name));
-  source->AddString(
-      "promptMessage",
-      l10n_util::GetStringFUTF8(
-          IDS_CROSTINI_INSTALLER_BODY,
-          ui::FormatBytesWithUnits(
-              crostini::CrostiniInstallerUIDelegate::kDownloadSizeInBytes,
-              ui::DATA_UNITS_MEBIBYTE, /*show_units=*/true)));
+  source->AddString("promptMessage",
+                    l10n_util::GetStringFUTF8(
+                        IDS_CROSTINI_INSTALLER_BODY,
+                        ui::FormatBytesWithUnits(
+                            crostini::disk::kDownloadSizeBytes,
+                            ui::DATA_UNITS_MEBIBYTE, /*show_units=*/true)));
   source->AddString("learnMoreUrl",
                     std::string{chrome::kLinuxAppsLearnMoreURL} +
                         "&b=" + base::SysInfo::GetLsbReleaseBoard());
 
   source->AddString(
-      "insufficientDiskError",
+      "minimumFreeSpaceUnmetError",
       l10n_util::GetStringFUTF8(
-          IDS_CROSTINI_INSTALLER_INSUFFICIENT_DISK,
-          ui::FormatBytesWithUnits(
-              crostini::CrostiniInstallerUIDelegate::kMinimumFreeDiskSpace,
-              ui::DATA_UNITS_GIBIBYTE,
-              /*show_units=*/true)));
+          IDS_CROSTINI_INSTALLER_MINIMUM_FREE_SPACE_UNMET_ERROR,
+          ui::FormatBytesWithUnits(crostini::disk::kMinimumDiskSizeBytes +
+                                       crostini::disk::kDiskHeadroomBytes,
+                                   ui::DATA_UNITS_GIBIBYTE,
+                                   /*show_units=*/true)));
+  source->AddString(
+      "lowSpaceAvailableWarning",
+      l10n_util::GetStringFUTF8(
+          IDS_CROSTINI_INSTALLER_DISK_RESIZE_RECOMMENDED_WARNING,
+          ui::FormatBytesWithUnits(crostini::disk::kRecommendedDiskSizeBytes,
+                                   ui::DATA_UNITS_GIBIBYTE,
+                                   /*show_units=*/true)));
   source->AddString("offlineError",
                     l10n_util::GetStringFUTF8(
                         IDS_CROSTINI_INSTALLER_OFFLINE_ERROR, device_name));

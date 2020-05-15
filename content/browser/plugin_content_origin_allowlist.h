@@ -58,9 +58,6 @@ class CONTENT_EXPORT PluginContentOriginAllowlist : public WebContentsObserver {
     RENDER_DOCUMENT_HOST_USER_DATA_KEY_DECL();
   };
 
-  static DocumentPluginContentOriginAllowlist* GetOrCreateAllowlistForFrame(
-      RenderFrameHost* render_frame_host);
-
   static bool IsOriginAllowlistedForFrameForTesting(
       RenderFrameHost* render_frame_host,
       const url::Origin& content_origin);

@@ -43,6 +43,11 @@ void GeolocationPermissionContext::DecidePermission(
   }
 }
 
+base::WeakPtr<GeolocationPermissionContext>
+GeolocationPermissionContext::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 void GeolocationPermissionContext::UpdateTabContext(
     const PermissionRequestID& id,
     const GURL& requesting_frame,

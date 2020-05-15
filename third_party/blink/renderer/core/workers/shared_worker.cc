@@ -99,9 +99,7 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
     UseCounter::Count(window, WebFeature::kFileAccessedSharedWorker);
   }
 
-  KURL script_url = ResolveURL(
-      context, url, exception_state, mojom::RequestContextType::SHARED_WORKER,
-      network::mojom::RequestDestination::kSharedWorker);
+  KURL script_url = ResolveURL(context, url, exception_state);
   if (script_url.IsEmpty())
     return nullptr;
 

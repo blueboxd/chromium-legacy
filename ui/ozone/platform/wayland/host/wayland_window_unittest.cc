@@ -2018,6 +2018,44 @@ TEST_P(WaylandWindowTest, CreatesPopupOnTouchDownSerial) {
   EXPECT_EQ(test_popup->grab_serial(), touch_down_serial);
 }
 
+// Tests nested menu windows get the topmost window in the stack of windows
+// within the same family/tree.
+TEST_P(WaylandWindowTest, NestedPopupWindowsGetCorrectParent) {
+  VerifyAndClearExpectations();
+
+  gfx::Rect menu_window_bounds(gfx::Rect(10, 20, 20, 20));
+  std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
+      PlatformWindowType::kMenu, window_->GetWidget(), menu_window_bounds,
+      &delegate_);
+  EXPECT_TRUE(menu_window);
+
+  EXPECT_TRUE(menu_window->parent_window() == window_.get());
+
+  gfx::Rect menu_window_bounds2(gfx::Rect(20, 40, 30, 20));
+  std::unique_ptr<WaylandWindow> menu_window2 = CreateWaylandWindowWithParams(
+      PlatformWindowType::kMenu, window_->GetWidget(), menu_window_bounds2,
+      &delegate_);
+  EXPECT_TRUE(menu_window2);
+
+  EXPECT_TRUE(menu_window2->parent_window() == menu_window.get());
+
+  gfx::Rect menu_window_bounds3(gfx::Rect(30, 40, 30, 20));
+  std::unique_ptr<WaylandWindow> menu_window3 = CreateWaylandWindowWithParams(
+      PlatformWindowType::kMenu, window_->GetWidget(), menu_window_bounds3,
+      &delegate_);
+  EXPECT_TRUE(menu_window3);
+
+  EXPECT_TRUE(menu_window3->parent_window() == menu_window2.get());
+
+  gfx::Rect menu_window_bounds4(gfx::Rect(40, 40, 30, 20));
+  std::unique_ptr<WaylandWindow> menu_window4 = CreateWaylandWindowWithParams(
+      PlatformWindowType::kMenu, window_->GetWidget(), menu_window_bounds4,
+      &delegate_);
+  EXPECT_TRUE(menu_window4);
+
+  EXPECT_TRUE(menu_window4->parent_window() == menu_window3.get());
+}
+
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandWindowTest,
                          ::testing::Values(kXdgShellStable));

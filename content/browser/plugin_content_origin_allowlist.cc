@@ -62,7 +62,8 @@ void PluginContentOriginAllowlist::OnPluginContentOriginAllowed(
     RenderFrameHost* render_frame_host,
     const url::Origin& content_origin) {
   DocumentPluginContentOriginAllowlist* allowlist =
-      GetOrCreateAllowlistForFrame(render_frame_host);
+      DocumentPluginContentOriginAllowlist::GetOrCreateForCurrentDocument(
+          render_frame_host->GetMainFrame());
   allowlist->InsertOrigin(content_origin);
 
   // TODO(yuzus, crbug.com/1061899): This message should be sent to all the
@@ -73,18 +74,6 @@ void PluginContentOriginAllowlist::OnPluginContentOriginAllowed(
   web_contents()->SendToAllFrames(
       new FrameMsg_UpdatePluginContentOriginAllowlist(MSG_ROUTING_NONE,
                                                       allowlist->origins()));
-}
-
-PluginContentOriginAllowlist::DocumentPluginContentOriginAllowlist*
-PluginContentOriginAllowlist::GetOrCreateAllowlistForFrame(
-    RenderFrameHost* render_frame_host) {
-  RenderFrameHost* main_frame = render_frame_host->GetMainFrame();
-  if (!DocumentPluginContentOriginAllowlist::GetForCurrentDocument(
-          main_frame)) {
-    DocumentPluginContentOriginAllowlist::CreateForCurrentDocument(main_frame);
-  }
-  return DocumentPluginContentOriginAllowlist::GetForCurrentDocument(
-      main_frame);
 }
 
 bool PluginContentOriginAllowlist::IsOriginAllowlistedForFrameForTesting(

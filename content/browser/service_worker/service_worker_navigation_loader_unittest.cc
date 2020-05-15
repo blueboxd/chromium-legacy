@@ -420,7 +420,7 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
       container_host_ = CreateContainerHostForWindow(
           helper_->mock_render_process_id(),
           /*is_parent_frame_secure=*/true, helper_->context()->AsWeakPtr(),
-          &provider_endpoints_);
+          &container_endpoints_);
       container_host_->UpdateUrls(request->url,
                                   net::SiteForCookies::FromUrl(request->url),
                                   url::Origin::Create(request->url));
@@ -509,7 +509,7 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
   std::unique_ptr<ServiceWorkerNavigationLoader> loader_;
   mojo::Remote<network::mojom::URLLoader> loader_remote_;
   base::WeakPtr<ServiceWorkerContainerHost> container_host_;
-  ServiceWorkerRemoteProviderEndpoint provider_endpoints_;
+  ServiceWorkerRemoteContainerEndpoint container_endpoints_;
 
   bool did_call_fallback_callback_ = false;
   bool reset_subresource_loader_params_ = false;
@@ -546,7 +546,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, NoActiveWorker) {
   // Make a container host without a controller.
   container_host_ = CreateContainerHostForWindow(
       helper_->mock_render_process_id(), /*is_parent_frame_secure=*/true,
-      helper_->context()->AsWeakPtr(), &provider_endpoints_);
+      helper_->context()->AsWeakPtr(), &container_endpoints_);
   container_host_->UpdateUrls(
       GURL("https://example.com/"),
       net::SiteForCookies::FromUrl(GURL("https://example.com/")),
@@ -981,7 +981,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, CancelNavigationDuringFetchEvent) {
 
   // Delete the container host during the request. The load should abort without
   // crashing.
-  provider_endpoints_.host_remote()->reset();
+  container_endpoints_.host_remote()->reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(container_host_);
 

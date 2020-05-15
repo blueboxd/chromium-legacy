@@ -31,14 +31,6 @@ void ManifestManagerHost::BindObserver(
   manifest_url_change_observer_receiver_.Bind(std::move(receiver));
 }
 
-ManifestManagerHost* ManifestManagerHost::GetOrCreateForCurrentDocument(
-    RenderFrameHostImpl* rfh) {
-  DCHECK(rfh->is_main_frame());
-  if (!GetForCurrentDocument(rfh))
-    CreateForCurrentDocument(rfh);
-  return GetForCurrentDocument(rfh);
-}
-
 void ManifestManagerHost::GetManifest(GetManifestCallback callback) {
   auto& manifest_manager = GetManifestManager();
   int request_id = callbacks_.Add(

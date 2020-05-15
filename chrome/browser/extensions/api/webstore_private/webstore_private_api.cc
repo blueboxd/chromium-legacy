@@ -171,6 +171,28 @@ const char kEphemeralAppLaunchingNotSupported[] =
 // that prevented the request from completing.
 const char kWebstoreParentPermissionFailedError[] =
     "Parent permission request failed";
+
+const char kParentBlockedExtensionInstallError[] =
+    "Parent has blocked extension/app installation";
+
+void ShowBlockedByParentDialog(const Extension* extension,
+                               content::WebContents* contents,
+                               base::OnceClosure done_callback) {
+  DCHECK(extension);
+  DCHECK(contents);
+
+  if (ScopedTestDialogAutoConfirm::GetAutoConfirmValue() !=
+      ScopedTestDialogAutoConfirm::NONE) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(done_callback));
+    return;
+  }
+
+  chrome::ShowExtensionInstallBlockedByParentDialog(
+      chrome::ExtensionInstalledBlockedByParentDialogAction::kAdd, extension,
+      contents, std::move(done_callback));
+}
+
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 // The number of user gestures to trace back for the referrer chain.
@@ -390,41 +412,6 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
     return;
   }
 
-  // Check the management policy before the installation process begins.
-  Profile* profile = chrome_details_.GetProfile();
-  base::string16 policy_error;
-  bool allow =
-      ExtensionSystem::Get(profile)->management_policy()->UserMayInstall(
-          dummy_extension_.get(), &policy_error);
-  ExtensionInstallStatus install_status =
-      GetWebstoreExtensionInstallStatus(id, profile);
-  if (!allow && install_status != kCanRequest &&
-      install_status != kRequestPending) {
-    bool blocked_for_child = false;
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-    // If the installation was blocked because the user is a child, we send a
-    // different error code so that the Web Store can adjust the UI accordingly.
-    // In that case, the CWS will not show the |policy_error|.
-    if (profile->IsChild()) {
-      SupervisedUserService* service =
-          SupervisedUserServiceFactory::GetForProfile(profile);
-      // Hack: Check that the message matches to make sure installation was
-      // actually blocked due to the user being a child, as opposed to, say,
-      // device policy.
-      if (policy_error == service->GetExtensionsLockedMessage())
-        blocked_for_child = true;
-    }
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
-    if (blocked_for_child) {
-      Respond(
-          BuildResponse(api::webstore_private::RESULT_BLOCKED_FOR_CHILD_ACCOUNT,
-                        base::UTF16ToUTF8(policy_error)));
-      // Matches the AddRef in Run().
-      Release();
-      return;
-    }
-  }
-
   content::WebContents* web_contents = GetSenderWebContents();
   if (!web_contents) {
     // The browser window has gone away.
@@ -434,6 +421,28 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
     Release();
     return;
   }
+
+  Profile* profile = chrome_details_.GetProfile();
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  // Check if the supervised user is allowed to install extensions.
+  // NOTE: we do not block themes.
+  if (!dummy_extension_->is_theme()) {
+    SupervisedUserService* service =
+        SupervisedUserServiceFactory::GetForProfile(profile);
+    if (profile->IsChild() && !service->CanInstallExtensions()) {
+      ShowBlockedByParentDialog(
+          dummy_extension_.get(), web_contents,
+          base::BindOnce(&WebstorePrivateBeginInstallWithManifest3Function::
+                             OnBlockedByParentDialogDone,
+                         this));
+      return;
+    }
+  }
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+
+  // Check the management policy before the installation process begins.
+  ExtensionInstallStatus install_status =
+      GetWebstoreExtensionInstallStatus(id, profile);
   if (install_status == kBlockedByPolicy) {
     ShowBlockedByPolicyDialog(
         dummy_extension_.get(), icon_, web_contents,
@@ -574,6 +583,15 @@ bool WebstorePrivateBeginInstallWithManifest3Function::
 
   return true;
 }
+
+void WebstorePrivateBeginInstallWithManifest3Function::
+    OnBlockedByParentDialogDone() {
+  Respond(BuildResponse(api::webstore_private::RESULT_BLOCKED_FOR_CHILD_ACCOUNT,
+                        kParentBlockedExtensionInstallError));
+  // Matches the AddRef in Run().
+  Release();
+}
+
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 void WebstorePrivateBeginInstallWithManifest3Function::OnInstallPromptDone(

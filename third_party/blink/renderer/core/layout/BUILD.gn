@@ -377,6 +377,8 @@ blink_core_sources("layout") {
     "ng/inline/ng_line_truncator.h",
     "ng/inline/ng_line_utils.cc",
     "ng/inline/ng_line_utils.h",
+    "ng/inline/ng_logical_line_item.cc",
+    "ng/inline/ng_logical_line_item.h",
     "ng/inline/ng_offset_mapping.cc",
     "ng/inline/ng_offset_mapping.h",
     "ng/inline/ng_offset_mapping_builder.cc",

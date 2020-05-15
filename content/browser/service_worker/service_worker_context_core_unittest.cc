@@ -152,7 +152,7 @@ class ServiceWorkerContextCoreTest : public testing::Test,
  private:
   BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
-  std::vector<ServiceWorkerRemoteProviderEndpoint> remote_endpoints_;
+  std::vector<ServiceWorkerRemoteContainerEndpoint> remote_endpoints_;
   GURL scope_for_wait_for_activated_;
   base::OnceClosure quit_closure_for_wait_for_activated_;
   bool is_observing_context_ = false;

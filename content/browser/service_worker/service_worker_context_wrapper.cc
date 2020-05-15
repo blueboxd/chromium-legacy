@@ -377,6 +377,25 @@ void ServiceWorkerContextWrapper::OnReportConsoleMessage(
     observer.OnReportConsoleMessage(version_id, message);
 }
 
+void ServiceWorkerContextWrapper::OnControlleeAdded(
+    int64_t version_id,
+    const std::string& client_uuid,
+    const ServiceWorkerClientInfo& client_info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  for (auto& observer : observer_list_)
+    observer.OnControlleeAdded(version_id, client_uuid, client_info);
+}
+
+void ServiceWorkerContextWrapper::OnControlleeRemoved(
+    int64_t version_id,
+    const std::string& client_uuid) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  for (auto& observer : observer_list_)
+    observer.OnControlleeRemoved(version_id, client_uuid);
+}
+
 void ServiceWorkerContextWrapper::OnNoControllees(int64_t version_id,
                                                   const GURL& scope) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

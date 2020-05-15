@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/check.h"
+#include "base/optional.h"
+#include "base/strings/string_util.h"
 #include "base/test/gtest_util.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/pdfium/pdfium_test_base.h"
@@ -234,6 +236,80 @@ TEST_F(PDFiumPageImageTest, TestImageAltText) {
 
 using PDFiumPageTextTest = PDFiumTestBase;
 
+TEST_F(PDFiumPageTextTest, TestTextRunBounds) {
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine = InitializeEngine(
+      &client, FILE_PATH_LITERAL("leading_trailing_spaces_per_text_run.pdf"));
+  ASSERT_TRUE(engine);
+
+  constexpr int kFirstRunStartIndex = 0;
+  constexpr int kFirstRunEndIndex = 20;
+  constexpr int kPageIndex = 0;
+  base::Optional<pp::PDF::PrivateAccessibilityTextRunInfo> text_run_info_1 =
+      engine->GetTextRunInfo(kPageIndex, kFirstRunStartIndex);
+  ASSERT_TRUE(text_run_info_1.has_value());
+
+  const auto& actual_text_run_1 = text_run_info_1.value();
+  EXPECT_EQ(21u, actual_text_run_1.len);
+
+  EXPECT_TRUE(base::IsUnicodeWhitespace(
+      engine->GetCharUnicode(kPageIndex, kFirstRunStartIndex)));
+  pp::FloatRect text_run_bounds = actual_text_run_1.bounds;
+  EXPECT_TRUE(text_run_bounds.Contains(
+      engine->GetCharBounds(kPageIndex, kFirstRunStartIndex)));
+
+  // Last non-space character should fall in the bounding box of the text run.
+  // Text run looks like this:
+  // " Hello, world! \r\n "<17 characters><first Tj>
+  // " \r\n "<4 characters><second Tj>
+  // " "<1 character><third Tj starting spaces>
+  // Finally generated text run: " Hello, world! \r\n \r\n "
+  constexpr int kFirstRunLastNonSpaceCharIndex = 13;
+  EXPECT_FALSE(base::IsUnicodeWhitespace(
+      engine->GetCharUnicode(kPageIndex, kFirstRunLastNonSpaceCharIndex)));
+  EXPECT_TRUE(text_run_bounds.Contains(
+      engine->GetCharBounds(kPageIndex, kFirstRunLastNonSpaceCharIndex)));
+
+  EXPECT_TRUE(base::IsUnicodeWhitespace(
+      engine->GetCharUnicode(kPageIndex, kFirstRunEndIndex)));
+  pp::FloatRect end_char_rect =
+      engine->GetCharBounds(kPageIndex, kFirstRunEndIndex);
+  EXPECT_FALSE(text_run_bounds.Contains(end_char_rect));
+  // Equals to the length of the previous text run.
+  constexpr int kSecondRunStartIndex = 21;
+  constexpr int kSecondRunEndIndex = 36;
+  // Test the properties of second text run.
+  // Note: The leading spaces in second text run are accounted for in the end
+  // of first text run. Hence we won't see a space leading the second text run.
+  base::Optional<pp::PDF::PrivateAccessibilityTextRunInfo> text_run_info_2 =
+      engine->GetTextRunInfo(kPageIndex, kSecondRunStartIndex);
+  ASSERT_TRUE(text_run_info_2.has_value());
+
+  const auto& actual_text_run_2 = text_run_info_2.value();
+  EXPECT_EQ(16u, actual_text_run_2.len);
+
+  EXPECT_FALSE(base::IsUnicodeWhitespace(
+      engine->GetCharUnicode(kPageIndex, kSecondRunStartIndex)));
+  text_run_bounds = actual_text_run_2.bounds;
+  EXPECT_TRUE(text_run_bounds.Contains(
+      engine->GetCharBounds(kPageIndex, kSecondRunStartIndex)));
+
+  // Last non-space character should fall in the bounding box of the text run.
+  // Text run looks like this:
+  // "Goodbye, world! "<19 characters><first Tj>
+  // Finally generated text run: "Goodbye, world! "
+  constexpr int kSecondRunLastNonSpaceCharIndex = 35;
+  EXPECT_FALSE(base::IsUnicodeWhitespace(
+      engine->GetCharUnicode(kPageIndex, kSecondRunLastNonSpaceCharIndex)));
+  EXPECT_TRUE(text_run_bounds.Contains(
+      engine->GetCharBounds(kPageIndex, kSecondRunLastNonSpaceCharIndex)));
+
+  EXPECT_TRUE(base::IsUnicodeWhitespace(
+      engine->GetCharUnicode(kPageIndex, kSecondRunEndIndex)));
+  EXPECT_FALSE(text_run_bounds.Contains(
+      engine->GetCharBounds(kPageIndex, kSecondRunEndIndex)));
+}
+
 TEST_F(PDFiumPageTextTest, GetTextRunInfo) {
   TestClient client;
   std::unique_ptr<PDFiumEngine> engine =
@@ -333,7 +409,7 @@ TEST_F(PDFiumPageTextTest, TestHighlightTextRunInfo) {
       {7,
        PP_MakeFloatRectFromXYWH(106.66666f, 198.66667f, 73.333336f, 18.666672f),
        PP_PrivateDirection::PP_PRIVATEDIRECTION_LTR, kExpectedStyle},
-      {2, PP_MakeFloatRectFromXYWH(188.0f, 202.66667f, 9.333333f, 14.666667f),
+      {2, PP_MakeFloatRectFromXYWH(181.33333f, 192.0f, 16.0f, 25.333344f),
        PP_PrivateDirection::PP_PRIVATEDIRECTION_NONE, kExpectedStyle},
       {2,
        PP_MakeFloatRectFromXYWH(198.66667f, 202.66667f, 21.333328f, 10.666672f),

@@ -102,6 +102,7 @@ void MessageCenterUiController::HidePopupBubbleInternal() {
 
 void MessageCenterUiController::OnNotificationAdded(
     const std::string& notification_id) {
+  metrics_utils::LogNotificationAdded(notification_id);
   OnMessageCenterChanged();
 }
 

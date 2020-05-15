@@ -81,9 +81,17 @@ bool IsRegularUserOrSupervisedChild(user_manager::UserManager* user_manager) {
 // accounts.
 bool ShouldShowGetStarted(Profile* profile,
                           user_manager::UserManager* user_manager) {
-  if (profile->GetProfilePolicyConnector()->IsManaged())
-    return false;
-  return IsRegularUserOrSupervisedChild(user_manager);
+  // Child users return true for IsManaged. These are not EDU accounts though,
+  // should still see the getting started module.
+  if (profile->IsChild())
+    return true;
+  switch (user_manager->GetActiveUser()->GetType()) {
+    case user_manager::USER_TYPE_REGULAR:
+    case user_manager::USER_TYPE_SUPERVISED:
+      return !profile->GetProfilePolicyConnector()->IsManaged();
+    default:
+      return false;
+  }
 }
 
 // Object of this class waits for system web apps to load. Then it launches the
@@ -157,9 +165,6 @@ bool ShouldLaunchHelpApp(Profile* profile) {
   if (ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode())
     return false;
 
-  if (profile->GetProfilePolicyConnector()->IsManaged())
-    return false;
-
   if (command_line->HasSwitch(::switches::kTestType))
     return false;
 
@@ -170,6 +175,13 @@ bool ShouldLaunchHelpApp(Profile* profile) {
     return false;
 
   if (user_manager->IsCurrentUserNonCryptohomeDataEphemeral())
+    return false;
+
+  // Child accounts show up as managed, so check this first.
+  if (profile->IsChild())
+    return true;
+
+  if (profile->GetProfilePolicyConnector()->IsManaged())
     return false;
 
   return true;

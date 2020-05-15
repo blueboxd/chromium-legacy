@@ -643,23 +643,6 @@ bool ContentSecurityPolicy::AllowPluginTypeForDocument(
   return true;
 }
 
-bool ContentSecurityPolicy::AllowRequestWithoutIntegrity(
-    mojom::RequestContextType context,
-    network::mojom::RequestDestination request_destination,
-    const KURL& url,
-    RedirectStatus redirect_status,
-    ReportingDisposition reporting_disposition,
-    CheckHeaderType check_header_type) const {
-  for (const auto& policy : policies_) {
-    if (CheckHeaderTypeMatches(check_header_type, policy->HeaderType()) &&
-        !policy->AllowRequestWithoutIntegrity(context, request_destination, url,
-                                              redirect_status,
-                                              reporting_disposition))
-      return false;
-  }
-  return true;
-}
-
 static base::Optional<ContentSecurityPolicy::DirectiveType>
 GetDirectiveTypeFromRequestContextType(mojom::RequestContextType context) {
   switch (context) {
@@ -735,13 +718,6 @@ bool ContentSecurityPolicy::AllowRequest(
     RedirectStatus redirect_status,
     ReportingDisposition reporting_disposition,
     CheckHeaderType check_header_type) const {
-  if (integrity_metadata.IsEmpty() &&
-      !AllowRequestWithoutIntegrity(context, request_destination, url,
-                                    redirect_status, reporting_disposition,
-                                    check_header_type)) {
-    return false;
-  }
-
   base::Optional<ContentSecurityPolicy::DirectiveType> type =
       GetDirectiveTypeFromRequestContextType(context);
 
@@ -1365,14 +1341,6 @@ void ContentSecurityPolicy::ReportInvalidSandboxFlags(
       invalid_flags);
 }
 
-void ContentSecurityPolicy::ReportInvalidRequireSRIForTokens(
-    const String& invalid_tokens) {
-  LogToConsole(
-      "Error while parsing the 'require-sri-for' Content Security Policy "
-      "directive: " +
-      invalid_tokens);
-}
-
 void ContentSecurityPolicy::ReportInvalidDirectiveValueCharacter(
     const String& directive_name,
     const String& value) {
@@ -1536,8 +1504,6 @@ const char* ContentSecurityPolicy::GetDirectiveName(const DirectiveType& type) {
       return "plugin-types";
     case DirectiveType::kReportURI:
       return "report-uri";
-    case DirectiveType::kRequireSRIFor:
-      return "require-sri-for";
     case DirectiveType::kTrustedTypes:
       return "trusted-types";
     case DirectiveType::kSandbox:
@@ -1607,8 +1573,6 @@ ContentSecurityPolicy::DirectiveType ContentSecurityPolicy::GetDirectiveType(
     return DirectiveType::kPrefetchSrc;
   if (name == "report-uri")
     return DirectiveType::kReportURI;
-  if (name == "require-sri-for")
-    return DirectiveType::kRequireSRIFor;
   if (name == "require-trusted-types-for")
     return DirectiveType::kRequireTrustedTypesFor;
   if (name == "trusted-types")

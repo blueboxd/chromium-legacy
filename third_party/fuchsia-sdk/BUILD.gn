@@ -15,12 +15,5 @@ group("vulkan_base") {
 }
 
 group("vulkan_validation") {
-  data_deps = [
-    "sdk/pkg/vulkan_layers:VkLayer_core_validation",
-    "sdk/pkg/vulkan_layers:VkLayer_khronos_validation",
-    "sdk/pkg/vulkan_layers:VkLayer_object_lifetimes",
-    "sdk/pkg/vulkan_layers:VkLayer_stateless_validation",
-    "sdk/pkg/vulkan_layers:VkLayer_thread_safety",
-    "sdk/pkg/vulkan_layers:VkLayer_unique_objects",
-  ]
+  data_deps = [ "sdk/pkg/vulkan_layers:VkLayer_khronos_validation" ]
 }

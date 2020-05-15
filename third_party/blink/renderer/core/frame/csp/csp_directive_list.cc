@@ -142,7 +142,6 @@ CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy,
       has_sandbox_policy_(false),
       strict_mixed_content_checking_enforced_(false),
       upgrade_insecure_requests_(false),
-      require_sri_for_(RequireSRIForToken::kNone),
       use_reporting_api_(false) {}
 
 CSPDirectiveList* CSPDirectiveList::Create(ContentSecurityPolicy* policy,
@@ -377,90 +376,6 @@ bool CSPDirectiveList::CheckAncestors(SourceListDirective* directive,
       return false;
   }
   return true;
-}
-
-bool CSPDirectiveList::CheckRequestWithoutIntegrity(
-    mojom::RequestContextType context,
-    network::mojom::RequestDestination request_destination) const {
-  if (require_sri_for_ == RequireSRIForToken::kNone)
-    return true;
-  // SRI specification
-  // (https://w3c.github.io/webappsec-subresource-integrity/#apply-algorithm-to-request)
-  // says to match token with request's destination with the token.
-  // Keep this logic aligned with ContentSecurityPolicy::allowRequest
-  if ((require_sri_for_ & RequireSRIForToken::kScript) &&
-      (context == mojom::RequestContextType::SCRIPT ||
-       context == mojom::RequestContextType::IMPORT ||
-       context == mojom::RequestContextType::SERVICE_WORKER ||
-       context == mojom::RequestContextType::SHARED_WORKER ||
-       context == mojom::RequestContextType::WORKER ||
-       request_destination == network::mojom::RequestDestination::kScript ||
-       request_destination ==
-           network::mojom::RequestDestination::kServiceWorker ||
-       request_destination ==
-           network::mojom::RequestDestination::kSharedWorker ||
-       request_destination == network::mojom::RequestDestination::kWorker)) {
-    return false;
-  }
-  if ((require_sri_for_ & RequireSRIForToken::kStyle) &&
-      context == mojom::RequestContextType::STYLE)
-    return false;
-  return true;
-}
-
-bool CSPDirectiveList::CheckRequestWithoutIntegrityAndReportViolation(
-    mojom::RequestContextType context,
-    network::mojom::RequestDestination request_destination,
-    const KURL& url,
-    ResourceRequest::RedirectStatus redirect_status) const {
-  if (CheckRequestWithoutIntegrity(context, request_destination))
-    return true;
-  String resource_type;
-  switch (context) {
-    case mojom::RequestContextType::SCRIPT:
-    case mojom::RequestContextType::IMPORT:
-      resource_type = "script";
-      break;
-    case mojom::RequestContextType::STYLE:
-      resource_type = "stylesheet";
-      break;
-    case mojom::RequestContextType::SERVICE_WORKER:
-      resource_type = "service worker";
-      break;
-    case mojom::RequestContextType::SHARED_WORKER:
-      resource_type = "shared worker";
-      break;
-    case mojom::RequestContextType::WORKER:
-      resource_type = "worker";
-      break;
-    default:
-      break;
-  }
-
-  ReportViolation(ContentSecurityPolicy::GetDirectiveName(
-                      ContentSecurityPolicy::DirectiveType::kRequireSRIFor),
-                  ContentSecurityPolicy::DirectiveType::kRequireSRIFor,
-                  "Refused to load the " + resource_type + " '" +
-                      url.ElidedString() +
-                      "' because 'require-sri-for' directive requires "
-                      "integrity attribute be present for all " +
-                      resource_type + "s.",
-                  url, redirect_status);
-  return DenyIfEnforcingPolicy();
-}
-
-bool CSPDirectiveList::AllowRequestWithoutIntegrity(
-    mojom::RequestContextType context,
-    network::mojom::RequestDestination request_destination,
-    const KURL& url,
-    ResourceRequest::RedirectStatus redirect_status,
-    ReportingDisposition reporting_disposition) const {
-  if (reporting_disposition == ReportingDisposition::kReport) {
-    return CheckRequestWithoutIntegrityAndReportViolation(
-        context, request_destination, url, redirect_status);
-  }
-  return DenyIfEnforcingPolicy() ||
-         CheckRequestWithoutIntegrity(context, request_destination);
 }
 
 bool CSPDirectiveList::CheckMediaType(MediaListDirective* directive,
@@ -1059,61 +974,6 @@ bool CSPDirectiveList::ParseDirective(const UChar* begin,
   return true;
 }
 
-void CSPDirectiveList::ParseRequireSRIFor(const String& name,
-                                          const String& value) {
-  if (require_sri_for_ != 0) {
-    policy_->ReportDuplicateDirective(name);
-    return;
-  }
-  StringBuilder token_errors;
-  unsigned number_of_token_errors = 0;
-  Vector<UChar> characters;
-  value.AppendTo(characters);
-
-  const UChar* position = characters.data();
-  const UChar* end = position + characters.size();
-
-  while (position < end) {
-    SkipWhile<UChar, IsASCIISpace>(position, end);
-
-    const UChar* token_begin = position;
-    SkipWhile<UChar, IsNotASCIISpace>(position, end);
-
-    if (token_begin < position) {
-      String token =
-          String(token_begin, static_cast<wtf_size_t>(position - token_begin));
-      if (EqualIgnoringASCIICase(token, "script")) {
-        require_sri_for_ |= RequireSRIForToken::kScript;
-      } else if (EqualIgnoringASCIICase(token, "style")) {
-        require_sri_for_ |= RequireSRIForToken::kStyle;
-      } else {
-        if (number_of_token_errors)
-          token_errors.Append(", \'");
-        else
-          token_errors.Append('\'');
-        token_errors.Append(token);
-        token_errors.Append('\'');
-        number_of_token_errors++;
-      }
-    }
-  }
-
-  if (number_of_token_errors == 0)
-    return;
-
-  String invalid_tokens_error_message;
-  if (number_of_token_errors > 1)
-    token_errors.Append(" are invalid 'require-sri-for' tokens.");
-  else
-    token_errors.Append(" is an invalid 'require-sri-for' token.");
-
-  invalid_tokens_error_message = token_errors.ToString();
-
-  DCHECK(!invalid_tokens_error_message.IsEmpty());
-
-  policy_->ReportInvalidRequireSRIForTokens(invalid_tokens_error_message);
-}
-
 void CSPDirectiveList::ParseReportTo(const String& name, const String& value) {
   if (!use_reporting_api_) {
     use_reporting_api_ = true;
@@ -1416,9 +1276,7 @@ void CSPDirectiveList::AddDirective(const String& name, const String& value) {
              ContentSecurityPolicy::DirectiveType::kRequireTrustedTypesFor) {
     RequireTrustedTypesFor(name, value);
   } else if (policy_->ExperimentalFeaturesEnabled()) {
-    if (type == ContentSecurityPolicy::DirectiveType::kRequireSRIFor) {
-      ParseRequireSRIFor(name, value);
-    } else if (type == ContentSecurityPolicy::DirectiveType::kPrefetchSrc) {
+    if (type == ContentSecurityPolicy::DirectiveType::kPrefetchSrc) {
       SetCSPDirective<SourceListDirective>(name, value, prefetch_src_);
     } else {
       policy_->ReportUnsupportedDirective(name);

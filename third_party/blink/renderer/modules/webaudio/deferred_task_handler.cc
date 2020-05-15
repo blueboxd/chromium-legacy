@@ -150,6 +150,16 @@ void DeferredTaskHandler::RemoveAutomaticPullNode(AudioHandler* node) {
   }
 }
 
+bool DeferredTaskHandler::HasAutomaticPullNodes() {
+  DCHECK(IsAudioThread());
+
+  MutexTryLocker try_locker(automatic_pull_handlers_lock_);
+
+  // This assumes there is one or more automatic pull nodes when the mutex
+  // is held by AddAutomaticPullNode() or RemoveAutomaticPullNode() method.
+  return try_locker.Locked() ? automatic_pull_handlers_.size() > 0 : true;
+}
+
 void DeferredTaskHandler::UpdateAutomaticPullNodes() {
   DCHECK(IsAudioThread());
   AssertGraphOwner();

@@ -28,21 +28,19 @@ class RefCountedMemory;
 
 namespace content {
 
-class BrowserContext;
+class ResourceContext;
 class URLDataManagerBackend;
 class URLDataSourceImpl;
 
-// URLDataManagerBackend is used internally by ChromeURLDataManager on the UI
+// URLDataManagerBackend is used internally by ChromeURLDataManager on the IO
 // thread. In most cases you can use the API in ChromeURLDataManager and ignore
-// this class. URLDataManagerBackend is owned by BrowserContext.
+// this class. URLDataManagerBackend is owned by ResourceContext.
 class URLDataManagerBackend : public base::SupportsUserData::Data {
  public:
   typedef int RequestID;
 
   URLDataManagerBackend();
   ~URLDataManagerBackend() override;
-
-  static URLDataManagerBackend* GetForBrowserContext(BrowserContext* context);
 
   // Adds a DataSource to the collection of data sources.
   void AddDataSource(URLDataSourceImpl* source);

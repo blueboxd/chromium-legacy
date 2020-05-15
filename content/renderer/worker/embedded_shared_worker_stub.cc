@@ -40,8 +40,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
         preference_watcher_receiver,
     mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
         content_settings,
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr
-        service_worker_provider_info,
+    blink::mojom::ServiceWorkerContainerInfoForClientPtr
+        service_worker_container_info,
     const base::UnguessableToken& appcache_host_id,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
@@ -93,12 +93,12 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
           std::make_unique<ChildPendingURLLoaderFactoryBundle>(
               std::move(pending_subresource_loader_factory_bundle)));
 
-  if (service_worker_provider_info) {
+  if (service_worker_container_info) {
     service_worker_provider_context_ =
         base::MakeRefCounted<ServiceWorkerProviderContext>(
             blink::mojom::ServiceWorkerContainerType::kForDedicatedWorker,
-            std::move(service_worker_provider_info->client_receiver),
-            std::move(service_worker_provider_info->host_remote),
+            std::move(service_worker_container_info->client_receiver),
+            std::move(service_worker_container_info->host_remote),
             std::move(controller_info), subresource_loader_factory_bundle_);
   }
 

@@ -2991,7 +2991,7 @@ void RenderFrameImpl::CommitNavigation(
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
+    blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
@@ -3005,7 +3005,7 @@ void RenderFrameImpl::CommitNavigation(
       std::move(response_head), std::move(response_body),
       std::move(url_loader_client_endpoints),
       std::move(subresource_loader_factories), std::move(subresource_overrides),
-      std::move(controller_service_worker_info), std::move(provider_info),
+      std::move(controller_service_worker_info), std::move(container_info),
       std::move(prefetch_loader_factory), devtools_navigation_token,
       std::move(commit_callback),
       mojom::NavigationClient::CommitNavigationCallback());
@@ -3022,7 +3022,7 @@ void RenderFrameImpl::CommitPerNavigationMojoInterfaceNavigation(
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
+    blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
@@ -3034,7 +3034,7 @@ void RenderFrameImpl::CommitPerNavigationMojoInterfaceNavigation(
       std::move(response_head), std::move(response_body),
       std::move(url_loader_client_endpoints),
       std::move(subresource_loader_factories), std::move(subresource_overrides),
-      std::move(controller_service_worker_info), std::move(provider_info),
+      std::move(controller_service_worker_info), std::move(container_info),
       std::move(prefetch_loader_factory), devtools_navigation_token,
       mojom::FrameNavigationControl::CommitNavigationCallback(),
       std::move(per_navigation_mojo_interface_callback));
@@ -3051,7 +3051,7 @@ void RenderFrameImpl::CommitNavigationInternal(
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
+    blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
@@ -3096,7 +3096,7 @@ void RenderFrameImpl::CommitNavigationInternal(
       &RenderFrameImpl::CommitNavigationWithParams, weak_factory_.GetWeakPtr(),
       common_params.Clone(), commit_params.Clone(),
       std::move(subresource_loader_factories), std::move(subresource_overrides),
-      std::move(controller_service_worker_info), std::move(provider_info),
+      std::move(controller_service_worker_info), std::move(container_info),
       std::move(prefetch_loader_factory), std::move(document_state));
 
   // Perform a navigation to a data url if needed (for main frames).
@@ -3189,7 +3189,7 @@ void RenderFrameImpl::CommitNavigationWithParams(
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
+    blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     std::unique_ptr<DocumentState> document_state,
@@ -3278,15 +3278,15 @@ void RenderFrameImpl::CommitNavigationWithParams(
   navigation_params->frame_load_type = load_type;
   navigation_params->history_item = item_for_history_navigation;
 
-  if (!provider_info) {
-    // An empty provider will always be created since it is expected in a
-    // certain number of places.
+  if (!container_info) {
+    // An empty network provider will always be created since it is expected in
+    // a certain number of places.
     navigation_params->service_worker_network_provider =
         ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance();
   } else {
     navigation_params->service_worker_network_provider =
         ServiceWorkerNetworkProviderForFrame::Create(
-            this, std::move(provider_info),
+            this, std::move(container_info),
             std::move(controller_service_worker_info),
             network::SharedURLLoaderFactory::Create(
                 new_loader_factories->CloneWithoutAppCacheFactory()));

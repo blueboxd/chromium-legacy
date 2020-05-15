@@ -53,7 +53,7 @@ class FaviconSource : public content::URLDataSource {
   bool AllowCaching() override;
   bool ShouldReplaceExistingSource() override;
   bool ShouldServiceRequest(const GURL& url,
-                            content::BrowserContext* browser_context,
+                            content::ResourceContext* resource_context,
                             int render_process_id) override;
 
  protected:

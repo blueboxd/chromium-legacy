@@ -19,6 +19,9 @@ class SupervisedUserServiceDelegate {
  public:
   virtual ~SupervisedUserServiceDelegate() = default;
 
+  // Returns true if |context| represents a supervised child account.
+  virtual bool IsChild(content::BrowserContext* context) const = 0;
+
   // Returns true if |context| represents a supervised child account
   // who may install extensions with parent permission.
   virtual bool IsSupervisedChildWhoMayInstallExtensions(
@@ -47,6 +50,13 @@ class SupervisedUserServiceDelegate {
       content::BrowserContext* context,
       content::WebContents* contents,
       ParentPermissionDialogDoneCallback done_callback) = 0;
+
+  // Show a dialog indicating that |extension| has been blocked and call
+  // |done_callback| when it completes.
+  virtual void ShowExtensionEnableBlockedByParentDialogForExtension(
+      const extensions::Extension* extension,
+      content::WebContents* contents,
+      base::OnceClosure done_callback) = 0;
 };
 
 }  // namespace extensions

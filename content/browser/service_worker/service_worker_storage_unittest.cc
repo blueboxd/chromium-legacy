@@ -1440,7 +1440,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   registry()->UpdateToActiveState(registration_->id(),
                                   registration_->scope().GetOrigin(),
                                   base::DoNothing());
-  ServiceWorkerRemoteProviderEndpoint remote_endpoint;
+  ServiceWorkerRemoteContainerEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerContainerHost> container_host =
       CreateContainerHostForWindow(33 /* dummy render process id */,
                                    true /* is_parent_frame_secure */,
@@ -1477,7 +1477,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   registry()->UpdateToActiveState(registration_->id(),
                                   registration_->scope().GetOrigin(),
                                   base::DoNothing());
-  ServiceWorkerRemoteProviderEndpoint remote_endpoint;
+  ServiceWorkerRemoteContainerEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerContainerHost> container_host =
       CreateContainerHostForWindow(33 /* dummy render process id */,
                                    true /* is_parent_frame_secure */,
@@ -1615,7 +1615,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   registry()->UpdateToActiveState(registration_->id(),
                                   registration_->scope().GetOrigin(),
                                   base::DoNothing());
-  ServiceWorkerRemoteProviderEndpoint remote_endpoint;
+  ServiceWorkerRemoteContainerEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerContainerHost> container_host =
       CreateContainerHostForWindow(
           33 /* dummy render process id */, true /* is_parent_frame_secure */,

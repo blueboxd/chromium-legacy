@@ -125,6 +125,11 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
                             const GURL& scope) override;
   void OnReportConsoleMessage(int64_t version_id,
                               const ConsoleMessage& message) override;
+  void OnControlleeAdded(int64_t version_id,
+                         const std::string& uuid,
+                         const ServiceWorkerClientInfo& info) override;
+  void OnControlleeRemoved(int64_t version_id,
+                           const std::string& uuid) override;
   void OnNoControllees(int64_t version_id, const GURL& scope) override;
   void OnStarted(int64_t version_id,
                  const GURL& scope,

@@ -213,7 +213,7 @@ void SharedWorkerHost::Start(
       GetContentClient()->browser()->GetUserAgentMetadata(), pause_on_start,
       dev_tools_token_, std::move(renderer_preferences),
       std::move(preference_watcher_receiver), std::move(content_settings),
-      service_worker_handle_->TakeProviderInfo(),
+      service_worker_handle_->TakeContainerInfo(),
       appcache_handle_
           ? base::make_optional(appcache_handle_->appcache_host_id())
           : base::nullopt,

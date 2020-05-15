@@ -62,7 +62,7 @@ bool IsUserPermittedToFetchFromRemoteOptimizationGuide(Profile* profile) {
     return true;
   }
 
-  if (profile->IsIncognitoProfile())
+  if (profile->IsOffTheRecord())
     return false;
 
   if (!optimization_guide::features::IsRemoteFetchingEnabled())

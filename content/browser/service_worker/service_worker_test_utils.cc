@@ -104,7 +104,7 @@ class MockPendingSharedURLLoaderFactory final
 class FakeNavigationClient : public mojom::NavigationClient {
  public:
   using ReceivedProviderInfoCallback = base::OnceCallback<void(
-      blink::mojom::ServiceWorkerProviderInfoForClientPtr)>;
+      blink::mojom::ServiceWorkerContainerInfoForClientPtr)>;
 
   explicit FakeNavigationClient(
       ReceivedProviderInfoCallback on_received_callback)
@@ -125,12 +125,12 @@ class FakeNavigationClient : public mojom::NavigationClient {
           subresource_overrides,
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
-      blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
+      blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token,
       CommitNavigationCallback callback) override {
-    std::move(on_received_callback_).Run(std::move(provider_info));
+    std::move(on_received_callback_).Run(std::move(container_info));
     std::move(callback).Run(nullptr, nullptr);
   }
   void CommitFailedNavigation(
@@ -254,30 +254,32 @@ storage::mojom::ServiceWorkerResourceRecordPtr WriteToDiskCacheSyncInternal(
 
 }  // namespace
 
-ServiceWorkerRemoteProviderEndpoint::ServiceWorkerRemoteProviderEndpoint() {}
-ServiceWorkerRemoteProviderEndpoint::ServiceWorkerRemoteProviderEndpoint(
-    ServiceWorkerRemoteProviderEndpoint&& other)
+ServiceWorkerRemoteContainerEndpoint::ServiceWorkerRemoteContainerEndpoint() =
+    default;
+ServiceWorkerRemoteContainerEndpoint::ServiceWorkerRemoteContainerEndpoint(
+    ServiceWorkerRemoteContainerEndpoint&& other)
     : navigation_client_(std::move(other.navigation_client_)),
       host_remote_(std::move(other.host_remote_)),
       client_receiver_(std::move(other.client_receiver_)) {}
 
-ServiceWorkerRemoteProviderEndpoint::~ServiceWorkerRemoteProviderEndpoint() {}
+ServiceWorkerRemoteContainerEndpoint::~ServiceWorkerRemoteContainerEndpoint() =
+    default;
 
-void ServiceWorkerRemoteProviderEndpoint::BindForWindow(
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr info) {
+void ServiceWorkerRemoteContainerEndpoint::BindForWindow(
+    blink::mojom::ServiceWorkerContainerInfoForClientPtr info) {
   // We establish a message pipe for connecting |navigation_client_| to a fake
   // navigation client, then simulate sending the navigation commit IPC which
-  // carries a service worker provider info over it, then the provider info
+  // carries a service worker container info over it, then the container info
   // received there gets its |host_remote| and |client_receiver| associated
   // with a message pipe so that their users later can make Mojo calls without
   // crash.
-  blink::mojom::ServiceWorkerProviderInfoForClientPtr received_info;
+  blink::mojom::ServiceWorkerContainerInfoForClientPtr received_info;
   base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<FakeNavigationClient>(base::BindOnce(
           [](base::OnceClosure quit_closure,
-             blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_info,
-             blink::mojom::ServiceWorkerProviderInfoForClientPtr info) {
+             blink::mojom::ServiceWorkerContainerInfoForClientPtr* out_info,
+             blink::mojom::ServiceWorkerContainerInfoForClientPtr info) {
             *out_info = std::move(info);
             std::move(quit_closure).Run();
           },
@@ -300,14 +302,14 @@ void ServiceWorkerRemoteProviderEndpoint::BindForWindow(
   host_remote_.Bind(std::move(received_info->host_remote));
 }
 
-void ServiceWorkerRemoteProviderEndpoint::BindForServiceWorker(
+void ServiceWorkerRemoteContainerEndpoint::BindForServiceWorker(
     blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr info) {
   host_remote_.Bind(std::move(info->host_remote));
 }
 
 ServiceWorkerContainerHostAndInfo::ServiceWorkerContainerHostAndInfo(
     base::WeakPtr<ServiceWorkerContainerHost> host,
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr info)
+    blink::mojom::ServiceWorkerContainerInfoForClientPtr info)
     : host(std::move(host)), info(std::move(info)) {}
 
 ServiceWorkerContainerHostAndInfo::~ServiceWorkerContainerHostAndInfo() =
@@ -317,7 +319,7 @@ base::WeakPtr<ServiceWorkerContainerHost> CreateContainerHostForWindow(
     int process_id,
     bool is_parent_frame_secure,
     base::WeakPtr<ServiceWorkerContextCore> context,
-    ServiceWorkerRemoteProviderEndpoint* output_endpoint) {
+    ServiceWorkerRemoteContainerEndpoint* output_endpoint) {
   std::unique_ptr<ServiceWorkerContainerHostAndInfo> host_and_info =
       CreateContainerHostAndInfoForWindow(context, is_parent_frame_secure);
   base::WeakPtr<ServiceWorkerContainerHost> container_host =
@@ -345,7 +347,7 @@ CreateContainerHostAndInfoForWindow(
       client_remote;
   mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
       host_receiver;
-  auto info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
+  auto info = blink::mojom::ServiceWorkerContainerInfoForClient::New();
   info->client_receiver = client_remote.InitWithNewEndpointAndPassReceiver();
   host_receiver = info->host_remote.InitWithNewEndpointAndPassReceiver();
   return std::make_unique<ServiceWorkerContainerHostAndInfo>(
@@ -394,7 +396,7 @@ CreateProviderHostForServiceWorkerContext(
     bool is_parent_frame_secure,
     ServiceWorkerVersion* hosted_version,
     base::WeakPtr<ServiceWorkerContextCore> context,
-    ServiceWorkerRemoteProviderEndpoint* output_endpoint) {
+    ServiceWorkerRemoteContainerEndpoint* output_endpoint) {
   auto provider_info =
       blink::mojom::ServiceWorkerProviderInfoForStartWorker::New();
   auto host = std::make_unique<ServiceWorkerProviderHost>(

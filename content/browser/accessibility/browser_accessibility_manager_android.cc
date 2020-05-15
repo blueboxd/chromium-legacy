@@ -72,6 +72,55 @@ BrowserAccessibility* BrowserAccessibilityManagerAndroid::GetFocus() const {
   return focus;
 }
 
+BrowserAccessibility* BrowserAccessibilityManagerAndroid::RetargetForEvents(
+    BrowserAccessibility* node,
+    RetargetEventType type) const {
+  // Sometimes we get events on nodes in our internal accessibility tree
+  // that aren't exposed on Android. Get |updated| to point to the highest
+  // ancestor that's a leaf node.
+  BrowserAccessibility* updated = node->PlatformGetClosestPlatformObject();
+
+  switch (type) {
+    case RetargetEventType::RetargetEventTypeGenerated: {
+      // If the closest platform object is a password field, the event we're
+      // getting is doing something in the shadow dom, for example replacing a
+      // character with a dot after a short pause. On Android we don't want to
+      // fire an event for those changes, but we do want to make sure our
+      // internal state is correct, so we call OnDataChanged() and then return.
+      if (updated->IsPasswordField() && node != updated) {
+        updated->OnDataChanged();
+        return nullptr;
+      }
+      break;
+    }
+    case RetargetEventType::RetargetEventTypeBlinkGeneral:
+      break;
+    case RetargetEventType::RetargetEventTypeBlinkHover: {
+      // If this node is uninteresting and just a wrapper around a sole
+      // interesting descendant, prefer that descendant instead.
+      const BrowserAccessibilityAndroid* android_node =
+          static_cast<BrowserAccessibilityAndroid*>(updated);
+      const BrowserAccessibilityAndroid* sole_interesting_node =
+          android_node->GetSoleInterestingNodeFromSubtree();
+      if (sole_interesting_node)
+        android_node = sole_interesting_node;
+
+      // Finally, if this node is still uninteresting, try to walk up to
+      // find an interesting parent.
+      while (android_node && !android_node->IsInterestingOnAndroid()) {
+        android_node = static_cast<BrowserAccessibilityAndroid*>(
+            android_node->PlatformGetParent());
+      }
+      updated = const_cast<BrowserAccessibilityAndroid*>(android_node);
+      break;
+    }
+    default:
+      NOTREACHED();
+      break;
+  }
+  return updated;
+}
+
 void BrowserAccessibilityManagerAndroid::FireFocusEvent(
     BrowserAccessibility* node) {
   BrowserAccessibilityManager::FireFocusEvent(node);
@@ -103,10 +152,6 @@ void BrowserAccessibilityManagerAndroid::FireBlinkEvent(
   if (!wcax)
     return;
 
-  // Sometimes we get events on nodes in our internal accessibility tree
-  // that aren't exposed on Android. Update |node| to point to the highest
-  // ancestor that's a leaf node.
-  node = node->PlatformGetClosestPlatformObject();
   BrowserAccessibilityAndroid* android_node =
       static_cast<BrowserAccessibilityAndroid*>(node);
 
@@ -133,23 +178,8 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
   if (!wcax)
     return;
 
-  // Sometimes we get events on nodes in our internal accessibility tree
-  // that aren't exposed on Android. Update |node| to point to the highest
-  // ancestor that's a leaf node.
-  BrowserAccessibility* original_node = node;
-  node = node->PlatformGetClosestPlatformObject();
   BrowserAccessibilityAndroid* android_node =
       static_cast<BrowserAccessibilityAndroid*>(node);
-
-  // If the closest platform object is a password field, the event we're
-  // getting is doing something in the shadow dom, for example replacing a
-  // character with a dot after a short pause. On Android we don't want to
-  // fire an event for those changes, but we do want to make sure our internal
-  // state is correct, so we call OnDataChanged() and then return.
-  if (android_node->IsPasswordField() && original_node != node) {
-    android_node->OnDataChanged();
-    return;
-  }
 
   // Always send AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED to notify
   // the Android system that the accessibility hierarchy rooted at this
@@ -390,25 +420,8 @@ void BrowserAccessibilityManagerAndroid::HandleHoverEvent(
   if (!wcax)
     return;
 
-  // First walk up to the nearest platform node, in case this node isn't
-  // even exposed on the platform.
-  node = node->PlatformGetClosestPlatformObject();
-
-  // If this node is uninteresting and just a wrapper around a sole
-  // interesting descendant, prefer that descendant instead.
-  const BrowserAccessibilityAndroid* android_node =
+  BrowserAccessibilityAndroid* android_node =
       static_cast<BrowserAccessibilityAndroid*>(node);
-  const BrowserAccessibilityAndroid* sole_interesting_node =
-      android_node->GetSoleInterestingNodeFromSubtree();
-  if (sole_interesting_node)
-    android_node = sole_interesting_node;
-
-  // Finally, if this node is still uninteresting, try to walk up to
-  // find an interesting parent.
-  while (android_node && !android_node->IsInterestingOnAndroid()) {
-    android_node = static_cast<BrowserAccessibilityAndroid*>(
-        android_node->PlatformGetParent());
-  }
 
   if (android_node)
     wcax->HandleHover(android_node->unique_id());

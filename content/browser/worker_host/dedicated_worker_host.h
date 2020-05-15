@@ -15,15 +15,12 @@
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
-#include "media/mojo/mojom/video_decode_perf_history.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
-#include "third_party/blink/public/mojom/filesystem/file_system.mojom-forward.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom-forward.h"
-#include "third_party/blink/public/mojom/payments/payment_app.mojom-forward.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom-forward.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom-forward.h"
@@ -32,14 +29,11 @@
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
 #include "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom.h"
+#include "url/origin.h"
 
 #if !defined(OS_ANDROID)
 #include "third_party/blink/public/mojom/serial/serial.mojom-forward.h"
 #endif
-
-namespace url {
-class Origin;
-}
 
 namespace content {
 
@@ -48,18 +42,6 @@ class DedicatedWorkerServiceImpl;
 class ServiceWorkerMainResourceHandle;
 class ServiceWorkerObjectHost;
 class StoragePartitionImpl;
-
-// Creates a host factory for a dedicated worker. This must be called on the UI
-// thread.
-CONTENT_EXPORT void CreateDedicatedWorkerHostFactory(
-    int worker_process_id,
-    base::Optional<GlobalFrameRoutingId> creator_render_frame_host_id,
-    GlobalFrameRoutingId ancestor_render_frame_host_id,
-    const url::Origin& creator_origin,
-    const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
-    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
-        coep_reporter,
-    mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver);
 
 // A host for a single dedicated worker. It deletes itself upon Mojo
 // disconnection from the worker in the renderer or when the RenderProcessHost

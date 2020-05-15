@@ -49,20 +49,33 @@ GURL GetStartupURL() {
 class MainDelegateImpl : public MainDelegate {
  public:
   void PreMainMessageLoopRun() override {
+    // On Android the Profile is created and owned in Java via an
+    // embedder-specific call to WebLayer.createBrowserFragment().
+#if !defined(OS_ANDROID)
     InitializeProfile();
+#endif
 
     Shell::Initialize();
 
+#if defined(OS_ANDROID)
+    Shell::CreateNewWindow(GetStartupURL(), gfx::Size());
+#else
     Shell::CreateNewWindow(profile_.get(), GetStartupURL(), gfx::Size());
+#endif
   }
 
-  void PostMainMessageLoopRun() override { DestroyProfile(); }
+  void PostMainMessageLoopRun() override {
+#if !defined(OS_ANDROID)
+    DestroyProfile();
+#endif
+  }
 
   void SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure) override {
     Shell::SetMainMessageLoopQuitClosure(std::move(quit_closure));
   }
 
  private:
+#if !defined(OS_ANDROID)
   void InitializeProfile() {
     profile_ = Profile::Create("web_shell");
 
@@ -72,6 +85,7 @@ class MainDelegateImpl : public MainDelegate {
   void DestroyProfile() { profile_.reset(); }
 
   std::unique_ptr<Profile> profile_;
+#endif
 };
 
 }  // namespace

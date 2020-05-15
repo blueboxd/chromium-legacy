@@ -4,8 +4,11 @@
 
 #include "chrome/browser/geolocation/geolocation_permission_context_delegate_android.h"
 
+#include <utility>
+
 #include "chrome/browser/android/search_permissions/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/installable/installed_webapp_bridge.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -23,6 +26,29 @@ GeolocationPermissionContextDelegateAndroid::
 
 GeolocationPermissionContextDelegateAndroid::
     ~GeolocationPermissionContextDelegateAndroid() = default;
+
+bool GeolocationPermissionContextDelegateAndroid::DecidePermission(
+    content::WebContents* web_contents,
+    const permissions::PermissionRequestID& id,
+    const GURL& requesting_origin,
+    bool user_gesture,
+    permissions::BrowserPermissionCallback* callback,
+    permissions::GeolocationPermissionContext* context) {
+  if (InstalledWebappBridge::ShouldDelegateLocationPermission(
+          requesting_origin)) {
+    InstalledWebappBridge::PermissionResponseCallback permission_callback =
+        base::BindOnce(
+            &permissions::GeolocationPermissionContext::NotifyPermissionSet,
+            context->GetWeakPtr(), id, requesting_origin,
+            web_contents->GetLastCommittedURL().GetOrigin(),
+            std::move(*callback), false /* persist */);
+    InstalledWebappBridge::DecidePermission(requesting_origin,
+                                            std::move(permission_callback));
+    return true;
+  }
+  return GeolocationPermissionContextDelegate::DecidePermission(
+      web_contents, id, requesting_origin, user_gesture, callback, context);
+}
 
 bool GeolocationPermissionContextDelegateAndroid::IsInteractable(
     content::WebContents* web_contents) {

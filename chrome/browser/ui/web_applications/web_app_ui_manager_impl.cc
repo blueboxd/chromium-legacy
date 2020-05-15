@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
-#include "chrome/browser/ui/web_applications/web_app_metrics.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 
@@ -132,18 +131,6 @@ bool WebAppUiManagerImpl::IsInAppWindow(
     content::WebContents* web_contents) const {
   return AppBrowserController::IsForWebAppBrowser(
       chrome::FindBrowserWithWebContents(web_contents));
-}
-
-void WebAppUiManagerImpl::NotifyOnAssociatedAppChanged(
-    content::WebContents* web_contents,
-    const AppId& previous_app_id,
-    const AppId& new_app_id) const {
-  WebAppMetrics* web_app_metrics = WebAppMetrics::Get(profile_);
-  // Unavailable in guest sessions.
-  if (!web_app_metrics)
-    return;
-  web_app_metrics->NotifyOnAssociatedAppChanged(web_contents, previous_app_id,
-                                                new_app_id);
 }
 
 bool WebAppUiManagerImpl::CanReparentAppTabToWindow(

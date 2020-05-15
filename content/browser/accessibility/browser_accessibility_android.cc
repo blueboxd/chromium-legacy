@@ -165,10 +165,6 @@ bool BrowserAccessibilityAndroid::PlatformIsLeafIncludingIgnored() const {
   return false;
 }
 
-bool BrowserAccessibilityAndroid::CanFireEvents() const {
-  return true;
-}
-
 bool BrowserAccessibilityAndroid::IsCheckable() const {
   return HasIntAttribute(ax::mojom::IntAttribute::kCheckedState);
 }

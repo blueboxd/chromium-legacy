@@ -250,6 +250,12 @@ uint32_t WaylandWindow::DispatchEvent(const PlatformEvent& native_event) {
     auto* event_grabber =
         connection_->wayland_window_manager()->located_events_grabber();
     auto* root_parent_window = GetRootParentWindow();
+
+    // Wayland sends locations in DIP so they need to be translated to
+    // physical pixels.
+    event->AsLocatedEvent()->set_location_f(gfx::ScalePoint(
+        event->AsLocatedEvent()->location_f(), buffer_scale_, buffer_scale_));
+
     // We must reroute the events to the event grabber iff these windows belong
     // to the same root parent window. For example, there are 2 top level
     // Wayland windows. One of them (window_1) has a child menu window that is
@@ -377,11 +383,12 @@ WaylandWindow* WaylandWindow::GetParentWindow(
   // Another case is a notifcation window or a drop down window, which do not
   // have a parent in aura. In this case, take the current focused window as a
   // parent.
-  if (parent_window && parent_window->child_window_)
-    return parent_window->child_window_;
+
   if (!parent_window)
-    return connection_->wayland_window_manager()->GetCurrentFocusedWindow();
-  return parent_window;
+    parent_window =
+        connection_->wayland_window_manager()->GetCurrentFocusedWindow();
+
+  return parent_window ? parent_window->GetTopMostChildWindow() : nullptr;
 }
 
 WaylandWindow* WaylandWindow::GetRootParentWindow() {
@@ -466,6 +473,10 @@ void WaylandWindow::UpdateCursorPositionFromEvent(
 
 WaylandWindow* WaylandWindow::GetTopLevelWindow() {
   return parent_window_ ? parent_window_->GetTopLevelWindow() : this;
+}
+
+WaylandWindow* WaylandWindow::GetTopMostChildWindow() {
+  return child_window_ ? child_window_->GetTopMostChildWindow() : this;
 }
 
 void WaylandWindow::MaybeUpdateOpaqueRegion() {

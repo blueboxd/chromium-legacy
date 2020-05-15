@@ -168,49 +168,66 @@ class CheckedPtr {
     return *this += -delta_elems;
   }
 
-  ALWAYS_INLINE bool operator==(T* p) const { return GetForComparison() == p; }
-  ALWAYS_INLINE bool operator!=(T* p) const { return !operator==(p); }
-
-  // Useful for cases like this:
-  //   class Base {};
-  //   class Derived : public Base {};
-  //   Derived d;
-  //   CheckedPtr<Derived> derived_ptr = &d;
-  //   Base* base_ptr = &d;
-  //   if (derived_ptr == base_ptr) {...}
-  // Without these, such comparisons would end up calling |operator T*()|.
+  // Be careful to cover all cases with CheckedPtr being on both sides, left
+  // side only and right side only. If any case is missed, a more costly
+  // |operator T*()| will get called, instead of |operator==|.
+  friend ALWAYS_INLINE bool operator==(const CheckedPtr& lhs,
+                                       const CheckedPtr& rhs) {
+    return lhs.GetForComparison() == rhs.GetForComparison();
+  }
+  friend ALWAYS_INLINE bool operator!=(const CheckedPtr& lhs,
+                                       const CheckedPtr& rhs) {
+    return !(lhs == rhs);
+  }
+  friend ALWAYS_INLINE bool operator==(const CheckedPtr& lhs, T* rhs) {
+    return lhs.GetForComparison() == rhs;
+  }
+  friend ALWAYS_INLINE bool operator!=(const CheckedPtr& lhs, T* rhs) {
+    return !(lhs == rhs);
+  }
+  friend ALWAYS_INLINE bool operator==(T* lhs, const CheckedPtr& rhs) {
+    return rhs == lhs;  // Reverse order to call the operator above.
+  }
+  friend ALWAYS_INLINE bool operator!=(T* lhs, const CheckedPtr& rhs) {
+    return rhs != lhs;  // Reverse order to call the operator above.
+  }
+  // Needed for cases like |derived_ptr == base_ptr|. Without these, a more
+  // costly |operator T*()| will get called, instead of |operator==|.
   template <typename U>
-  ALWAYS_INLINE bool operator==(U* p) const {
-    // Add |const| when casting, because |U| may have |const| in it. Even if |T|
+  friend ALWAYS_INLINE bool operator==(const CheckedPtr& lhs,
+                                       const CheckedPtr<U, Impl>& rhs) {
+    // Add |const| when casting, in case |U| has |const| in it. Even if |T|
     // doesn't, comparison between |T*| and |const T*| is fine.
-    return GetForComparison() == static_cast<std::add_const_t<T>*>(p);
+    return lhs.GetForComparison() ==
+           static_cast<std::add_const_t<T>*>(rhs.GetForComparison());
   }
   template <typename U>
-  ALWAYS_INLINE bool operator!=(U* p) const {
-    return !operator==(p);
+  friend ALWAYS_INLINE bool operator!=(const CheckedPtr& lhs,
+                                       const CheckedPtr<U, Impl>& rhs) {
+    return !(lhs == rhs);
   }
-
-  ALWAYS_INLINE bool operator==(const CheckedPtr& other) const {
-    return GetForComparison() == other.GetForComparison();
-  }
-  ALWAYS_INLINE bool operator!=(const CheckedPtr& other) const {
-    return !operator==(other);
-  }
-  template <typename U, typename I>
-  ALWAYS_INLINE bool operator==(const CheckedPtr<U, I>& other) const {
-    // Add |const| when casting, because |U| may have |const| in it. Even if |T|
+  template <typename U>
+  friend ALWAYS_INLINE bool operator==(const CheckedPtr& lhs, U* rhs) {
+    // Add |const| when casting, in case |U| has |const| in it. Even if |T|
     // doesn't, comparison between |T*| and |const T*| is fine.
-    return GetForComparison() ==
-           static_cast<std::add_const_t<T>*>(other.GetForComparison());
+    return lhs.GetForComparison() == static_cast<std::add_const_t<T>*>(rhs);
   }
-  template <typename U, typename I>
-  ALWAYS_INLINE bool operator!=(const CheckedPtr<U, I>& other) const {
-    return !operator==(other);
+  template <typename U>
+  friend ALWAYS_INLINE bool operator!=(const CheckedPtr& lhs, U* rhs) {
+    return !(lhs == rhs);
+  }
+  template <typename U>
+  friend ALWAYS_INLINE bool operator==(U* lhs, const CheckedPtr& rhs) {
+    return rhs == lhs;  // Reverse order to call the operator above.
+  }
+  template <typename U>
+  friend ALWAYS_INLINE bool operator!=(U* lhs, const CheckedPtr& rhs) {
+    return rhs != lhs;  // Reverse order to call the operator above.
   }
 
-  ALWAYS_INLINE void swap(CheckedPtr& other) noexcept {
+  friend ALWAYS_INLINE void swap(CheckedPtr& lhs, CheckedPtr& rhs) noexcept {
     Impl::IncrementSwapCountForTest();
-    std::swap(wrapped_ptr_, other.wrapped_ptr_);
+    std::swap(lhs.wrapped_ptr_, rhs.wrapped_ptr_);
   }
 
  private:
@@ -240,32 +257,6 @@ class CheckedPtr {
   template <typename U, typename V>
   friend class CheckedPtr;
 };
-
-// These are for cases where a raw pointer is on the left hand side. Reverse
-// order, so that |CheckedPtr::operator==()| kicks in, which will compare more
-// efficiently. Otherwise the CheckedPtr operand would have to be cast to raw
-// pointer, which may be more costly.
-template <typename T, typename I>
-ALWAYS_INLINE bool operator==(T* lhs, const CheckedPtr<T, I>& rhs) {
-  return rhs == lhs;
-}
-template <typename T, typename I>
-ALWAYS_INLINE bool operator!=(T* lhs, const CheckedPtr<T, I>& rhs) {
-  return !operator==(lhs, rhs);
-}
-template <typename T, typename I, typename U>
-ALWAYS_INLINE bool operator==(U* lhs, const CheckedPtr<T, I>& rhs) {
-  return rhs == lhs;
-}
-template <typename T, typename I, typename U>
-ALWAYS_INLINE bool operator!=(U* lhs, const CheckedPtr<T, I>& rhs) {
-  return !operator==(lhs, rhs);
-}
-
-template <typename T, typename I>
-ALWAYS_INLINE void swap(CheckedPtr<T, I>& lhs, CheckedPtr<T, I>& rhs) noexcept {
-  lhs.swap(rhs);
-}
 
 }  // namespace base
 

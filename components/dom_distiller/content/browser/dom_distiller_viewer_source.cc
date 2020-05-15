@@ -297,7 +297,7 @@ std::string DomDistillerViewerSource::GetMimeType(const std::string& path) {
 
 bool DomDistillerViewerSource::ShouldServiceRequest(
     const GURL& url,
-    content::BrowserContext* browser_context,
+    content::ResourceContext* resource_context,
     int render_process_id) {
   return url.SchemeIs(scheme_);
 }

@@ -142,7 +142,7 @@ public class TrustedWebActivityPermissionStore {
     }
 
     /**
-     * Sets the notification state for the origin.
+     * Sets the permission state for the origin.
      * Returns whether {@code true} if state was changed, {@code false} if the provided state was
      * the same as the state beforehand.
      */

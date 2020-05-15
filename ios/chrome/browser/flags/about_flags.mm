@@ -639,6 +639,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableCardNicknameManagement)},
+    {"password-check", flag_descriptions::kPasswordCheckName,
+     flag_descriptions::kPasswordCheckDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(password_manager::features::kPasswordCheck)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

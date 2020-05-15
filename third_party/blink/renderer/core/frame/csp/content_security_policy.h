@@ -181,7 +181,6 @@ class CORE_EXPORT ContentSecurityPolicy final
     kPrefetchSrc,
     kReportTo,
     kReportURI,
-    kRequireSRIFor,
     kTrustedTypes,
     kSandbox,
     kScriptSrc,
@@ -380,7 +379,6 @@ class CORE_EXPORT ContentSecurityPolicy final
                                   const String& value,
                                   const char);
   void ReportInvalidPluginTypes(const String&);
-  void ReportInvalidRequireSRIForTokens(const String&);
   void ReportInvalidSandboxFlags(const String&);
   void ReportInvalidSourceExpression(const String& directive_name,
                                      const String& source);

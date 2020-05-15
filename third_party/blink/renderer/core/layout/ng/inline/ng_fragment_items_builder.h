@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_logical_line_item.h"
 
 namespace blink {
 
@@ -39,20 +39,18 @@ class CORE_EXPORT NGFragmentItemsBuilder {
                : text_content_;
   }
 
-  // The caller should create a |ChildList| for a complete line and add to this
-  // builder.
+  // The caller should create a |NGLogicalLineItems| for a complete line and add
+  // to this builder.
   //
   // Adding a line is a two-pass operation, because |NGInlineLayoutAlgorithm|
   // creates and positions children within a line box, but its parent algorithm
   // positions the line box. |SetCurrentLine| sets the children, and the next
   // |AddLine| adds them.
   //
-  // TODO(kojii): Moving |ChildList| is not cheap because it has inline
+  // TODO(kojii): Moving |NGLogicalLineItems| is not cheap because it has inline
   // capacity. Reconsider the ownership.
-  using Child = NGLineBoxFragmentBuilder::Child;
-  using ChildList = NGLineBoxFragmentBuilder::ChildList;
   void SetCurrentLine(const NGPhysicalLineBoxFragment& line,
-                      ChildList&& children);
+                      NGLogicalLineItems&& children);
   void AddLine(const NGPhysicalLineBoxFragment& line,
                const LogicalOffset& offset);
 
@@ -122,7 +120,7 @@ class CORE_EXPORT NGFragmentItemsBuilder {
                        void* data);
 
  private:
-  void AddItems(Child* child_begin, Child* child_end);
+  void AddItems(NGLogicalLineItem* child_begin, NGLogicalLineItem* child_end);
 
   void ConvertToPhysical(WritingMode writing_mode,
                          TextDirection direction,
@@ -133,7 +131,7 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   String first_line_text_content_;
 
   // Keeps children of a line until the offset is determined. See |AddLine|.
-  ChildList current_line_;
+  NGLogicalLineItems current_line_;
 
   bool has_floating_descendants_for_paint_ = false;
   bool is_converted_to_physical_ = false;

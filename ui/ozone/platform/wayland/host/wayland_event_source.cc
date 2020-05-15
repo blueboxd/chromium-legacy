@@ -172,6 +172,7 @@ void WaylandEventSource::OnPointerButtonEvent(EventType type,
   pointer_flags_ = type == ET_MOUSE_PRESSED
                        ? (pointer_flags_ | changed_button)
                        : (pointer_flags_ & ~changed_button);
+  last_pointer_button_pressed_ = changed_button;
   // MouseEvent's flags should contain the button that was released too.
   int flags = pointer_flags_ | keyboard_modifiers_ | changed_button;
   MouseEvent event(type, pointer_location_, pointer_location_,

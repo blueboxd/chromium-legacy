@@ -33,8 +33,8 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
         preference_watcher_receiver,
     mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
         content_settings,
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr
-        service_worker_provider_info,
+    blink::mojom::ServiceWorkerContainerInfoForClientPtr
+        service_worker_container_info,
     const base::Optional<base::UnguessableToken>& appcache_host_id,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
@@ -49,7 +49,7 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
       std::move(info), constructor_origin, user_agent, ua_metadata,
       pause_on_start, devtools_worker_token, *renderer_preferences,
       std::move(preference_watcher_receiver), std::move(content_settings),
-      std::move(service_worker_provider_info),
+      std::move(service_worker_container_info),
       appcache_host_id.value_or(base::UnguessableToken()),
       std::move(main_script_load_params),
       std::move(subresource_loader_factories), std::move(controller_info),

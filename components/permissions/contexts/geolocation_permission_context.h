@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/permissions/permission_context_base.h"
@@ -69,6 +70,8 @@ class GeolocationPermissionContext : public PermissionContextBase {
                         bool user_gesture,
                         BrowserPermissionCallback callback) override;
 
+  base::WeakPtr<GeolocationPermissionContext> GetWeakPtr();
+
   // Make this public for use by the delegate implementation.
   using PermissionContextBase::NotifyPermissionSet;
 
@@ -84,6 +87,8 @@ class GeolocationPermissionContext : public PermissionContextBase {
   device::mojom::GeolocationControl* GetGeolocationControl();
 
   mojo::Remote<device::mojom::GeolocationControl> geolocation_control_;
+
+  base::WeakPtrFactory<GeolocationPermissionContext> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationPermissionContext);
 };

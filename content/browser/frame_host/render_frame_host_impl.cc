@@ -122,7 +122,7 @@
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_url_loader_factory_internal.h"
-#include "content/browser/worker_host/dedicated_worker_host.h"
+#include "content/browser/worker_host/dedicated_worker_host_factory_impl.h"
 #include "content/browser/worker_host/shared_worker_service_impl.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_constants_internal.h"
@@ -5617,24 +5617,23 @@ void RenderFrameHostImpl::CommitNavigation(
     base::Optional<SubresourceLoaderParams> subresource_loader_params,
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
+    blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
     const base::UnguessableToken& devtools_navigation_token,
     std::unique_ptr<WebBundleHandle> web_bundle_handle) {
-  web_bundle_handle_ = std::move(web_bundle_handle);
-
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::CommitNavigation",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
                common_params->url.possibly_invalid_spec());
   DCHECK(!IsRendererDebugURL(common_params->url));
 
+  bool is_same_document =
+      NavigationTypeUtils::IsSameDocument(common_params->navigation_type);
   bool is_mhtml_iframe =
       navigation_request && navigation_request->IsForMhtmlSubframe();
 
   // A |response| and a |url_loader_client_endpoints| must always be provided,
   // except for edge cases, where another way to load the document exist.
   DCHECK((response_head && url_loader_client_endpoints) ||
-         common_params->url.SchemeIs(url::kDataScheme) ||
-         NavigationTypeUtils::IsSameDocument(common_params->navigation_type) ||
+         common_params->url.SchemeIs(url::kDataScheme) || is_same_document ||
          !IsURLHandledByNetworkStack(common_params->url) || is_mhtml_iframe);
 
   // All children of MHTML documents must be MHTML documents.
@@ -5697,6 +5696,13 @@ void RenderFrameHostImpl::CommitNavigation(
   const bool is_first_navigation = !has_committed_any_navigation_;
   has_committed_any_navigation_ = true;
 
+  // If this is NOT for same-document navigation, existing |web_bundle_handle_|
+  // should be reset to the new one. Otherwise the existing one should be kept
+  // around so that the subresource requests keep being served from the
+  // WebBundleURLLoaderFactory held by the handle.
+  if (!is_same_document)
+    web_bundle_handle_ = std::move(web_bundle_handle);
+
   UpdatePermissionsForNavigation(*common_params, *commit_params);
 
   // Get back to a clean state, in case we start a new navigation without
@@ -5716,8 +5722,6 @@ void RenderFrameHostImpl::CommitNavigation(
   network::mojom::URLResponseHeadPtr head =
       response_head ? std::move(response_head)
                     : network::mojom::URLResponseHead::New();
-  const bool is_same_document =
-      NavigationTypeUtils::IsSameDocument(common_params->navigation_type);
 
   // TODO(crbug.com/979296): Consider changing this code to copy an origin
   // instead of creating one from a URL which lacks opacity information.
@@ -6109,7 +6113,7 @@ void RenderFrameHostImpl::CommitNavigation(
         std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller),
-        std::move(provider_info), std::move(prefetch_loader_factory),
+        std::move(container_info), std::move(prefetch_loader_factory),
         devtools_navigation_token);
 
     // |remote_object| is an associated interface ptr, so calls can't be made on
@@ -7154,12 +7158,14 @@ void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
 
   // When a dedicated worker is created from the frame script, the frame is both
   // the creator and the ancestor.
-  content::CreateDedicatedWorkerHostFactory(
-      worker_process_id,
-      /*creator_render_frame_host_id=*/GetGlobalFrameRoutingId(),
-      /*ancestor_render_frame_host_id=*/GetGlobalFrameRoutingId(),
-      last_committed_origin_, cross_origin_embedder_policy_,
-      std::move(coep_reporter), std::move(receiver));
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<DedicatedWorkerHostFactoryImpl>(
+          worker_process_id,
+          /*creator_render_frame_host_id=*/GetGlobalFrameRoutingId(),
+          /*ancestor_render_frame_host_id=*/GetGlobalFrameRoutingId(),
+          last_committed_origin_, cross_origin_embedder_policy_,
+          std::move(coep_reporter)),
+      std::move(receiver));
 }
 
 void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {
@@ -7474,9 +7480,17 @@ RenderFrameHostImpl::CreateNavigationRequestForCommit(
         cross_origin_embedder_policy_.reporting_endpoint,
         cross_origin_embedder_policy_.report_only_reporting_endpoint);
   }
-  return NavigationRequest::CreateForCommit(frame_tree_node_, this, params,
-                                            std::move(coep_reporter),
-                                            is_same_document);
+  std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info;
+  if (is_same_document && web_bundle_handle_ &&
+      web_bundle_handle_->navigation_info()) {
+    // Need to set |web_bundle_navigation_info| of NavigationRequest. This
+    // will be passed to FrameNavigationEntry, and will be used for subsequent
+    // history navigations.
+    web_bundle_navigation_info = web_bundle_handle_->navigation_info()->Clone();
+  }
+  return NavigationRequest::CreateForCommit(
+      frame_tree_node_, this, params, std::move(coep_reporter),
+      is_same_document, std::move(web_bundle_navigation_info));
 }
 
 bool RenderFrameHostImpl::NavigationRequestWasIntendedForPendingEntry(
@@ -8116,7 +8130,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
     base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller,
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
+    blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token) {
@@ -8131,7 +8145,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
         std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller),
-        std::move(provider_info), std::move(prefetch_loader_factory),
+        std::move(container_info), std::move(prefetch_loader_factory),
         devtools_navigation_token,
         BuildCommitNavigationCallback(navigation_request));
   } else {
@@ -8142,7 +8156,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
         std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller),
-        std::move(provider_info), std::move(prefetch_loader_factory),
+        std::move(container_info), std::move(prefetch_loader_factory),
         devtools_navigation_token,
         mojom::FrameNavigationControl::CommitNavigationCallback());
   }

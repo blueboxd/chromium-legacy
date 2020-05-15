@@ -5,16 +5,28 @@
 #ifndef CHROME_BROWSER_INSTALLABLE_INSTALLED_WEBAPP_BRIDGE_H_
 #define CHROME_BROWSER_INSTALLABLE_INSTALLED_WEBAPP_BRIDGE_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/installable/installed_webapp_provider.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+
+class GURL;
 
 class InstalledWebappBridge {
  public:
+  using PermissionResponseCallback = base::OnceCallback<void(ContentSetting)>;
+
   static InstalledWebappProvider::RuleList GetInstalledWebappPermissions(
       ContentSettingsType content_type);
 
   static void SetProviderInstance(InstalledWebappProvider* provider);
+
+  // Returns whether permission should be delegate to TWA.
+  static bool ShouldDelegateLocationPermission(const GURL& origin_url);
+
+  static void DecidePermission(const GURL& origin_url,
+                               PermissionResponseCallback callback);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(InstalledWebappBridge);

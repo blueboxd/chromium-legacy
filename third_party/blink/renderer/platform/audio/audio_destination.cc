@@ -380,4 +380,12 @@ void AudioDestination::SetDeviceState(DeviceState state) {
   device_state_ = state;
 }
 
+void AudioDestination::SetDetectSilence(bool detect_silence) {
+  DCHECK(IsMainThread());
+  TRACE_EVENT1("webaudio", "AudioDestination::SetDetectSilence",
+               "detect_silence", detect_silence);
+
+  web_audio_device_->SetDetectSilence(detect_silence);
+}
+
 }  // namespace blink

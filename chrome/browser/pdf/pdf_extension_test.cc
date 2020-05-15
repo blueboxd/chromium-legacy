@@ -1357,16 +1357,12 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, NavigationOnCorrectTab) {
   EXPECT_FALSE(active_web_contents->GetController().GetPendingEntry());
 }
 
-// Flaky: https://crbug.com/851805
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_MultipleDomains) {
-  for (const auto& url :
-       {embedded_test_server()->GetURL("a.com", "/pdf/test.pdf"),
-        embedded_test_server()->GetURL("b.com", "/pdf/test.pdf"),
-        embedded_test_server()->GetURL("c.com", "/pdf/test.pdf"),
-        embedded_test_server()->GetURL("d.com", "/pdf/test.pdf")}) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MultipleDomains) {
+  for (const std::string& domain : {"a.com", "b.com"}) {
+    const GURL url = embedded_test_server()->GetURL(domain, "/pdf/test.pdf");
     ASSERT_TRUE(LoadPdfInNewTab(url));
   }
-  EXPECT_EQ(4, CountPDFProcesses());
+  EXPECT_EQ(2, CountPDFProcesses());
 }
 
 class PDFExtensionLinkClickTest : public PDFExtensionTest {

@@ -15,7 +15,6 @@ class Profile;
 namespace web_app {
 
 struct DailyInteraction {
-  // Required.
   GURL start_url;
   // Implied bool used = true;
   bool installed = false;
@@ -26,8 +25,6 @@ struct DailyInteraction {
   base::TimeDelta foreground_duration;
   base::TimeDelta background_duration;
   int num_sessions = 0;
-
-  DailyInteraction();
   explicit DailyInteraction(GURL start_url);
   DailyInteraction(const DailyInteraction&);
   ~DailyInteraction();
@@ -37,8 +34,6 @@ struct DailyInteraction {
 // from storage. Then stores the given record, updating any stored values for
 // that start_url (ie. replacing or summing as appropriate).
 void FlushOldRecordsAndUpdate(DailyInteraction& record, Profile* profile);
-
-void FlushAllRecordsForTesting(Profile* profile);
 
 // Skip the origin check, which is async and requires a history service.
 void SkipOriginCheckForTesting();

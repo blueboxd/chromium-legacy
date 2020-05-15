@@ -586,7 +586,7 @@ class WPTExpectationsUpdater(object):
                 'No lines to write to TestExpectations,'
                 ' WebdriverExpectations or NeverFixTests.'
             )
-            return
+            return {}
 
         line_list = []
         wont_fix_list = []

@@ -5,7 +5,9 @@
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/cr_slider/cr_slider.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
 import './strings.m.js';
 
@@ -25,6 +27,7 @@ const State = {
   CONFIGURE: 'configure',
   INSTALLING: 'installing',
   ERROR: 'error',
+  ERROR_NO_RETRY: 'error_no_retry',
   CANCELING: 'canceling',
 };
 
@@ -88,8 +91,8 @@ Polymer({
     },
 
     /** @private */
-    error_: {
-      type: Number,
+    errorMessage_: {
+      type: String,
     },
 
     /**
@@ -130,6 +133,10 @@ Polymer({
       type: Number,
     },
 
+    isLowSpaceAvailable_: {
+      type: Boolean,
+    },
+
     username_: {
       type: String,
       value: loadTimeData.getString('defaultContainerUsername')
@@ -161,27 +168,33 @@ Polymer({
           this.closeDialog_();
         } else {
           assert(this.state_ === State.INSTALLING);
-          this.error_ = error;
+          this.errorMessage_ = this.getErrorMessage_(error);
           this.state_ = State.ERROR;
         }
       }),
       callbackRouter.onCanceled.addListener(() => this.closeDialog_()),
-      callbackRouter.onAmountOfFreeDiskSpace.addListener(
-          (ticks, defaultIndex) => {
+    ];
+
+    // TODO(lxj): The listener should only be invoked once, so it is fine to use
+    // it with a promise. However, it is probably better to just make the mojom
+    // method requestAmountOfFreeDiskSpace() returns the result directly.
+    this.diskSpacePromise_ = new Promise((resolve, reject) => {
+      this.listenerIds_.push(callbackRouter.onAmountOfFreeDiskSpace.addListener(
+          (ticks, defaultIndex, isLowSpaceAvailable) => {
             if (ticks.length === 0) {
-              // Error getting the data we need for the slider e.g. unable to
-              // get the amount of free space.
-              // TODO(crbug/1043838): Handle this e.g. show an error to the
-              // user.
+              reject();
             } else {
               this.defaultDiskSizeTick_ = defaultIndex;
               this.diskSizeTicks_ = ticks;
 
               this.minDisk_ = ticks[0].label;
               this.maxDisk_ = ticks[ticks.length - 1].label;
+
+              this.isLowSpaceAvailable_ = isLowSpaceAvailable;
+              resolve();
             }
-          }),
-    ];
+          }));
+    });
 
     document.addEventListener('keyup', event => {
       if (event.key == 'Escape') {
@@ -202,10 +215,28 @@ Polymer({
 
   /** @private */
   onNextButtonClick_() {
-    assert(this.state_ === State.PROMPT);
-    this.state_ = State.CONFIGURE;
-    // Focus the username input and move the cursor to the end.
-    this.$.username.select(this.username_.length, this.username_.length);
+    if (!this.onNextButtonClickIsRunning_) {
+      assert(this.state_ === State.PROMPT);
+      this.onNextButtonClickIsRunning_ = true;
+      // Making this async is not ideal, but we should get the disk space very
+      // soon (if have not already got it) so the user will at worst see a very
+      // short delay.
+      this.diskSpacePromise_
+          .then(() => {
+            this.state_ = State.CONFIGURE;
+            // Focus the username input and move the cursor to the end.
+            this.$.username.select(
+                this.username_.length, this.username_.length);
+          })
+          .catch(() => {
+            this.errorMessage_ =
+                loadTimeData.getString('minimumFreeSpaceUnmetError');
+            this.state_ = State.ERROR_NO_RETRY;
+          })
+          .finally(() => {
+            this.onNextButtonClickIsRunning_ = false;
+          });
+    }
   },
 
   /** @private */
@@ -236,6 +267,7 @@ Polymer({
         BrowserProxy.getInstance().handler.cancel();
         break;
       case State.ERROR:
+      case State.ERROR_NO_RETRY:
         this.closeDialog_();
         break;
       case State.CANCELING:
@@ -268,6 +300,7 @@ Polymer({
         titleId = 'installingTitle';
         break;
       case State.ERROR:
+      case State.ERROR_NO_RETRY:
         titleId = 'errorTitle';
         break;
       case State.CANCELING:
@@ -503,5 +536,10 @@ Polymer({
   getCancelButtonLabel_(state) {
     return loadTimeData.getString(
         state === State.CONFIGURE ? 'back' : 'cancel');
-  }
+  },
+
+  /** @private */
+  showErrorMessage_(state) {
+    return state === State.ERROR || state === State.ERROR_NO_RETRY;
+  },
 });

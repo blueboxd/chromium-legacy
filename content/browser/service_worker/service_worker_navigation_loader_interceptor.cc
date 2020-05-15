@@ -17,7 +17,6 @@
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle_core.h"
-#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
@@ -114,7 +113,7 @@ void MaybeCreateLoaderOnCoreThread(
 
   if (!handle_core->container_host()) {
     // This is the initial request before redirects, so make the container host.
-    // Its lifetime is tied to the |provider_info| in the
+    // Its lifetime is tied to the |container_info| in the
     // ServiceWorkerMainResourceHandle on the UI thread and which will be passed
     // to the renderer when the navigation commits.
     DCHECK(host_receiver);
@@ -263,16 +262,16 @@ void ServiceWorkerNavigationLoaderInterceptor::MaybeCreateLoader(
   mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
       client_remote;
 
-  // If this is the first request before redirects, a provider info has not yet
+  // If this is the first request before redirects, a container info has not yet
   // been created.
-  if (!handle_->has_provider_info()) {
-    auto provider_info =
-        blink::mojom::ServiceWorkerProviderInfoForClient::New();
+  if (!handle_->has_container_info()) {
+    auto container_info =
+        blink::mojom::ServiceWorkerContainerInfoForClient::New();
     host_receiver =
-        provider_info->host_remote.InitWithNewEndpointAndPassReceiver();
-    provider_info->client_receiver =
+        container_info->host_remote.InitWithNewEndpointAndPassReceiver();
+    container_info->client_receiver =
         client_remote.InitWithNewEndpointAndPassReceiver();
-    handle_->OnCreatedProviderHost(std::move(provider_info));
+    handle_->OnCreatedContainerHost(std::move(container_info));
   }
 
   bool initialize_container_host_only = false;

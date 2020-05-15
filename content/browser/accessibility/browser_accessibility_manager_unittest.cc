@@ -1408,10 +1408,12 @@ TEST_F(BrowserAccessibilityManagerTest, TestShouldFireEventForNode) {
   ui::AXNodeData inline_text;
   inline_text.id = 1111;
   inline_text.role = ax::mojom::Role::kInlineTextBox;
+  inline_text.SetName("One two three.");
 
   ui::AXNodeData text;
   text.id = 111;
   text.role = ax::mojom::Role::kStaticText;
+  text.SetName("One two three.");
   text.child_ids = {inline_text.id};
 
   ui::AXNodeData paragraph;
@@ -1432,7 +1434,13 @@ TEST_F(BrowserAccessibilityManagerTest, TestShouldFireEventForNode) {
   EXPECT_TRUE(manager->ShouldFireEventForNode(manager->GetFromID(1)));
   EXPECT_TRUE(manager->ShouldFireEventForNode(manager->GetFromID(11)));
   EXPECT_TRUE(manager->ShouldFireEventForNode(manager->GetFromID(111)));
+#if defined(OS_ANDROID)
+  // On Android, ShouldFireEventForNode walks up the ancestor that's a leaf node
+  // node and the event is fired on the updated target.
+  EXPECT_TRUE(manager->ShouldFireEventForNode(manager->GetFromID(1111)));
+#else
   EXPECT_FALSE(manager->ShouldFireEventForNode(manager->GetFromID(1111)));
+#endif
 }
 
 TEST_F(BrowserAccessibilityManagerTest, NestedChildRoot) {

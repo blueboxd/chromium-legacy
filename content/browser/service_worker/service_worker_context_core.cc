@@ -893,9 +893,9 @@ void ServiceWorkerContextCore::OnControlleeAdded(
     const std::string& client_uuid,
     const ServiceWorkerClientInfo& client_info) {
   DCHECK_EQ(this, version->context().get());
-  observer_list_->Notify(
-      FROM_HERE, &ServiceWorkerContextCoreObserver::OnControlleeAdded,
-      version->version_id(), version->scope(), client_uuid, client_info);
+  observer_list_->Notify(FROM_HERE,
+                         &ServiceWorkerContextCoreObserver::OnControlleeAdded,
+                         version->version_id(), client_uuid, client_info);
 }
 
 void ServiceWorkerContextCore::OnControlleeRemoved(
@@ -904,7 +904,7 @@ void ServiceWorkerContextCore::OnControlleeRemoved(
   DCHECK_EQ(this, version->context().get());
   observer_list_->Notify(FROM_HERE,
                          &ServiceWorkerContextCoreObserver::OnControlleeRemoved,
-                         version->version_id(), version->scope(), client_uuid);
+                         version->version_id(), client_uuid);
 }
 
 void ServiceWorkerContextCore::OnNoControllees(ServiceWorkerVersion* version) {

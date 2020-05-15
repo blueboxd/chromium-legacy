@@ -200,6 +200,9 @@ std::vector<crostini::mojom::DiskSliderTickPtr> GetTicks(
   if (it != end(values)) {
     *it = current;
     *out_default_index = std::distance(begin(values), it);
+  } else {
+    DCHECK(values.empty());
+    return {};
   }
 
   std::vector<crostini::mojom::DiskSliderTickPtr> ticks;

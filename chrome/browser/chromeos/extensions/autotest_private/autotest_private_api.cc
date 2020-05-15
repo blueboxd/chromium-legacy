@@ -3582,11 +3582,9 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWABannerObserver
     switch (installable) {
       case Installable::kNo:
         FALLTHROUGH;
-      case Installable::kNoAlreadyInstalled:
-        FALLTHROUGH;
       case Installable::kUnknown:
         DCHECK(false) << "Unexpected AppBannerManager::Installable value (kNo "
-                         "or kNoAlreadyInstalled or kUnknown)";
+                         "or kUnknown)";
         break;
 
       case Installable::kPromotable:

@@ -211,8 +211,7 @@ public class TrustedWebActivityPermissionManager {
                 return enabled ? ContentSettingValues.ALLOW : ContentSettingValues.BLOCK;
             }
             case ContentSettingsType.GEOLOCATION: {
-                String packageName = getDelegatePackageName(origin);
-                Boolean enabled = hasAndroidLocationPermission(packageName);
+                Boolean enabled = hasAndroidLocationPermission(origin);
 
                 // Skip if the delegated app did not enable location delegation.
                 if (enabled == null) break;
@@ -222,7 +221,8 @@ public class TrustedWebActivityPermissionManager {
                 // Return |ASK| if is the first time (no previous state), and is not enabled.
                 if (storedPermission == null && !enabled) return ContentSettingValues.ASK;
 
-                updatePermission(origin, packageName, ContentSettingsType.GEOLOCATION, enabled);
+                updatePermission(origin, getDelegatePackageName(origin),
+                        ContentSettingsType.GEOLOCATION, enabled);
                 return enabled ? ContentSettingValues.ALLOW : ContentSettingValues.BLOCK;
             }
         }
@@ -230,11 +230,12 @@ public class TrustedWebActivityPermissionManager {
     }
 
     /**
-     * Returns whether the application package has Android location permission, or {@code null} if
-     * it does not exist or did not request location permission.
+     * Returns whether the delegate application for the origin has Android location permission, or
+     *{@code null} if it does not exist or did not request location permission.
      **/
     @Nullable
-    private Boolean hasAndroidLocationPermission(String packageName) {
+    Boolean hasAndroidLocationPermission(Origin origin) {
+        String packageName = getDelegatePackageName(origin);
         try {
             PackageManager pm = ContextUtils.getApplicationContext().getPackageManager();
             PackageInfo packageInfo =

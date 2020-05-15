@@ -737,6 +737,18 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
                 }
             })
 
+    def test_no_expectations_to_write(self):
+        host = self.mock_host()
+        updater = WPTExpectationsUpdater(host)
+        test_expectations = {'external/wpt/test/test1.html': {}}
+        exp_dict = updater.write_to_test_expectations(test_expectations)
+        self.assertEqual(exp_dict, {})
+        logs = ''.join(self.logMessages()).lower()
+        self.assertIn(
+            ('no lines to write to testexpectations,'
+             ' webdriverexpectations or neverfixtests.'),
+            logs)
+
     def test_write_to_test_expectations_with_marker_comment(self):
         host = self.mock_host()
         expectations_path = \

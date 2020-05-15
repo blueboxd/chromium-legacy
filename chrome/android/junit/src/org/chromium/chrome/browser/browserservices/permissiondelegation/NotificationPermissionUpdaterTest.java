@@ -184,8 +184,8 @@ public class NotificationPermissionUpdaterTest {
     private void installTrustedWebActivityService(Origin origin, String packageName) {
         when(mTrustedWebActivityClient.checkNotificationPermission(eq(origin), any()))
                 .thenAnswer(invocation -> {
-                    TrustedWebActivityClient.NotificationPermissionCheckCallback callback =
-                            ((TrustedWebActivityClient.NotificationPermissionCheckCallback)
+                    TrustedWebActivityClient.PermissionCheckCallback callback =
+                            ((TrustedWebActivityClient.PermissionCheckCallback)
                                             invocation.getArgument(1));
                     callback.onPermissionCheck(
                             new ComponentName(packageName, "FakeClass"),

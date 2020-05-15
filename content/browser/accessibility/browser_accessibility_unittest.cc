@@ -73,7 +73,13 @@ TEST_F(BrowserAccessibilityTest, TestCanFireEvents) {
 
   BrowserAccessibility* text_obj = manager->GetFromID(111);
   EXPECT_TRUE(text_obj->PlatformIsLeaf());
+#if !defined(OS_ANDROID)
   EXPECT_TRUE(text_obj->CanFireEvents());
+#endif
+  BrowserAccessibility* retarget = manager->RetargetForEvents(
+      text_obj, BrowserAccessibilityManager::RetargetEventType::
+                    RetargetEventTypeBlinkHover);
+  EXPECT_TRUE(retarget->CanFireEvents());
 
   manager.reset();
 }

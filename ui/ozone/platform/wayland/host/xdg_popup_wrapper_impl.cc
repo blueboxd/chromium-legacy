@@ -375,18 +375,11 @@ struct xdg_positioner* XDGPopupWrapperImpl::CreatePositionerStable(
   if (!positioner)
     return nullptr;
 
-  bool is_right_click_menu =
-      connection->event_source()->IsPointerButtonPressed(EF_RIGHT_MOUSE_BUTTON);
+  auto menu_type = GetMenuTypeForPositioner(connection, parent_window);
 
-  // Different types of menu require different anchors, constraint adjustments,
-  // gravity and etc.
-  MenuType menu_type = MenuType::TYPE_UNKNOWN;
-  if (is_right_click_menu)
-    menu_type = MenuType::TYPE_RIGHT_CLICK;
-  else if (wl::IsMenuType(parent_window->type()))
-    menu_type = MenuType::TYPE_3DOT_CHILD_MENU;
-  else
-    menu_type = MenuType::TYPE_3DOT_PARENT_MENU;
+  // The parent we got must be the topmost in the stack of the same family
+  // windows.
+  DCHECK_EQ(parent_window->GetTopMostChildWindow(), parent_window);
 
   // Place anchor to the end of the possible position.
   gfx::Rect anchor_rect = GetAnchorRect(
@@ -473,18 +466,11 @@ zxdg_positioner_v6* XDGPopupWrapperImpl::CreatePositionerV6(
   if (!positioner)
     return nullptr;
 
-  bool is_right_click_menu =
-      connection->event_source()->IsPointerButtonPressed(EF_RIGHT_MOUSE_BUTTON);
+  auto menu_type = GetMenuTypeForPositioner(connection, parent_window);
 
-  // Different types of menu require different anchors, constraint adjustments,
-  // gravity and etc.
-  MenuType menu_type = MenuType::TYPE_UNKNOWN;
-  if (is_right_click_menu)
-    menu_type = MenuType::TYPE_RIGHT_CLICK;
-  else if (wl::IsMenuType(parent_window->type()))
-    menu_type = MenuType::TYPE_3DOT_CHILD_MENU;
-  else
-    menu_type = MenuType::TYPE_3DOT_PARENT_MENU;
+  // The parent we got must be the topmost in the stack of the same family
+  // windows.
+  DCHECK_EQ(parent_window->GetTopMostChildWindow(), parent_window);
 
   // Place anchor to the end of the possible position.
   gfx::Rect anchor_rect = GetAnchorRect(
@@ -503,6 +489,23 @@ zxdg_positioner_v6* XDGPopupWrapperImpl::CreatePositionerV6(
   zxdg_positioner_v6_set_constraint_adjustment(
       positioner, GetConstraintAdjustment(menu_type, false));
   return positioner;
+}
+
+MenuType XDGPopupWrapperImpl::GetMenuTypeForPositioner(
+    WaylandConnection* connection,
+    WaylandWindow* parent_window) const {
+  bool is_right_click_menu =
+      connection->event_source()->last_pointer_button_pressed() &
+      EF_RIGHT_MOUSE_BUTTON;
+
+  // Different types of menu require different anchors, constraint adjustments,
+  // gravity and etc.
+  if (is_right_click_menu)
+    return MenuType::TYPE_RIGHT_CLICK;
+  else if (!wl::IsMenuType(parent_window->type()))
+    return MenuType::TYPE_3DOT_PARENT_MENU;
+  else
+    return MenuType::TYPE_3DOT_CHILD_MENU;
 }
 
 void XDGPopupWrapperImpl::Configure(void* data,

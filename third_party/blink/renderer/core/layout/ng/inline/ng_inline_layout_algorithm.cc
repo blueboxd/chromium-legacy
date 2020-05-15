@@ -79,7 +79,7 @@ NGInlineLayoutAlgorithm::~NGInlineLayoutAlgorithm() = default;
 NGInlineBoxState* NGInlineLayoutAlgorithm::HandleOpenTag(
     const NGInlineItem& item,
     const NGInlineItemResult& item_result,
-    NGLineBoxFragmentBuilder::ChildList* line_box,
+    NGLogicalLineItems* line_box,
     NGInlineLayoutStateStack* box_states) const {
   NGInlineBoxState* box =
       box_states->OnOpenTag(item, item_result, baseline_type_, line_box);
@@ -164,7 +164,7 @@ void NGInlineLayoutAlgorithm::RebuildBoxStates(
   }
 
   // Create box states for tags that are not closed yet.
-  NGLineBoxFragmentBuilder::ChildList line_box;
+  NGLogicalLineItems line_box;
   box_states->OnBeginPlaceItems(line_info.LineStyle(), baseline_type_,
                                 quirks_mode_, &line_box);
   for (const NGInlineItem* item : open_items) {
@@ -180,7 +180,7 @@ void NGInlineLayoutAlgorithm::CheckBoxStates(
     const NGInlineBreakToken* break_token) const {
   NGInlineLayoutStateStack rebuilt;
   RebuildBoxStates(line_info, break_token, &rebuilt);
-  NGLineBoxFragmentBuilder::ChildList line_box;
+  NGLogicalLineItems line_box;
   rebuilt.OnBeginPlaceItems(line_info.LineStyle(), baseline_type_, quirks_mode_,
                             &line_box);
   DCHECK(box_states_);
@@ -362,13 +362,13 @@ void NGInlineLayoutAlgorithm::CreateLine(
       box_states_->LineBoxState().metrics;
 
   // Place out-of-flow positioned objects.
-  // This adjusts the NGLineBoxFragmentBuilder::Child::offset member to contain
+  // This adjusts the NGLogicalLineItem::offset member to contain
   // the static position of the OOF positioned children relative to the linebox.
   if (has_out_of_flow_positioned_items)
     PlaceOutOfFlowObjects(*line_info, line_box_metrics);
 
   // Place floating objects.
-  // This adjusts the  NGLineBoxFragmentBuilder::Child::offset member to
+  // This adjusts the  NGLogicalLineItem::offset member to
   // contain the position of the float relative to the linebox.
   // Additionally it will perform layout on any unpositioned floats which
   // needed the line height to correctly determine their final position.
@@ -568,7 +568,7 @@ void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
   bool has_rtl_block_level_out_of_flow_objects = false;
   bool is_ltr = IsLtr(line_info.BaseDirection());
 
-  for (NGLineBoxFragmentBuilder::Child& child : line_box_) {
+  for (NGLogicalLineItem& child : line_box_) {
     has_preceding_inline_level_content |= child.HasInFlowFragment();
 
     const LayoutObject* box = child.out_of_flow_positioned_box;
@@ -608,7 +608,7 @@ void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
 
   if (UNLIKELY(has_rtl_block_level_out_of_flow_objects)) {
     has_preceding_inline_level_content = false;
-    for (NGLineBoxFragmentBuilder::Child& child : base::Reversed(line_box_)) {
+    for (NGLogicalLineItem& child : base::Reversed(line_box_)) {
       const LayoutObject* box = child.out_of_flow_positioned_box;
       if (!box) {
         has_preceding_inline_level_content |= child.HasInFlowFragment();
@@ -648,7 +648,7 @@ void NGInlineLayoutAlgorithm::PlaceFloatingObjects(
                                     ? ConstraintSpace().ExpectedBfcBlockOffset()
                                     : line_info.BfcOffset().block_offset;
 
-  for (NGLineBoxFragmentBuilder::Child& child : line_box_) {
+  for (NGLogicalLineItem& child : line_box_) {
     // We need to position any floats which should be on the "next" line now.
     // If this is an empty inline, all floats are positioned during the
     // PositionLeadingFloats step.
@@ -1109,7 +1109,7 @@ void NGInlineLayoutAlgorithm::BidiReorder(TextDirection base_direction) {
   Vector<UBiDiLevel, 32> levels;
   levels.ReserveInitialCapacity(line_box_.size());
   bool has_opaque_items = false;
-  for (NGLineBoxFragmentBuilder::Child& item : line_box_) {
+  for (NGLogicalLineItem& item : line_box_) {
     if (item.IsOpaqueToBidiReordering()) {
       levels.push_back(kOpaqueBidiLevel);
       has_opaque_items = true;
@@ -1136,7 +1136,7 @@ void NGInlineLayoutAlgorithm::BidiReorder(TextDirection base_direction) {
   NGBidiParagraph::IndicesInVisualOrder(levels, &indices_in_visual_order);
 
   // Reorder to the visual order.
-  NGLineBoxFragmentBuilder::ChildList visual_items;
+  NGLogicalLineItems visual_items;
   visual_items.ReserveInitialCapacity(line_box_.size());
   for (unsigned logical_index : indices_in_visual_order) {
     visual_items.AddChild(std::move(line_box_[logical_index]));

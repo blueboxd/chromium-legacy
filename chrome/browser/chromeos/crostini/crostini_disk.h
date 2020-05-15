@@ -38,6 +38,11 @@ constexpr int64_t kDiskHeadroomBytes = 1 * kGiB;
 constexpr int64_t kMinimumDiskSizeBytes = 2 * kGiB;
 constexpr int64_t kRecommendedDiskSizeBytes = 5 * kGiB;
 
+// The size of the download for the VM image.
+// As of 2020-01-10 the Termina files.zip is ~90MiB and the squashfs container
+// is ~330MiB.
+constexpr int64_t kDownloadSizeBytes = 450ll * 1024 * 1024;  // 450 MiB
+
 using OnceDiskInfoCallback =
     base::OnceCallback<void(std::unique_ptr<CrostiniDiskInfo> info)>;
 

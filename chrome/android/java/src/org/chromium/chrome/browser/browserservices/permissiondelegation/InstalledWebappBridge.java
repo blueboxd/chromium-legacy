@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.browserservices.permissiondelegation;
 
+import android.net.Uri;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.content_settings.ContentSettingValues;
@@ -20,6 +22,7 @@ import org.chromium.components.embedder_support.util.Origin;
  */
 public class InstalledWebappBridge {
     private static long sNativeInstalledWebappProvider;
+    private static long sNativePermissionResultCallback;
 
     /**
      * A POD class to store the combination of a permission setting and the origin the permission is
@@ -48,6 +51,12 @@ public class InstalledWebappBridge {
                 sNativeInstalledWebappProvider, type);
     }
 
+    public static void onGetPermissionResult(long callback, boolean allow) {
+        if (callback == 0) return;
+
+        InstalledWebappBridgeJni.get().notifyPermissionResult(callback, allow);
+    }
+
     @CalledByNative
     private static void setInstalledWebappProvider(long provider) {
         sNativeInstalledWebappProvider = provider;
@@ -68,8 +77,22 @@ public class InstalledWebappBridge {
         return permission.setting;
     }
 
+    @CalledByNative
+    private static boolean shouldDelegateLocationPermission(String url) {
+        TrustedWebActivityPermissionManager manager = TrustedWebActivityPermissionManager.get();
+        Origin origin = Origin.create(Uri.parse(url));
+        return manager.isRunningTwa() && manager.hasAndroidLocationPermission(origin) != null;
+    }
+
+    @CalledByNative
+    private static void decidePermission(String url, long callback) {
+        Origin origin = Origin.create(Uri.parse(url));
+        PermissionUpdater.get().getLocationPermission(origin, callback);
+    }
+
     @NativeMethods
     interface Natives {
         void notifyPermissionsChange(long provider, int type);
+        void notifyPermissionResult(long callback, boolean allow);
     }
 }

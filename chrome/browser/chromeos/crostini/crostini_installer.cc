@@ -16,6 +16,7 @@
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/crostini/ansible/ansible_management_service_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_disk.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
@@ -682,8 +683,10 @@ void CrostiniInstaller::OnAvailableDiskSpace(int64_t bytes) {
   free_disk_space_ = bytes;
   // Don't enforce minimum disk size on dev box or trybots because
   // base::SysInfo::AmountOfFreeDiskSpace returns zero in testing.
-  if (free_disk_space_ < kMinimumFreeDiskSpace &&
-      base::SysInfo::IsRunningOnChromeOS()) {
+  if (base::SysInfo::IsRunningOnChromeOS() &&
+      free_disk_space_ < restart_options_.disk_size_bytes.value_or(
+                             crostini::disk::kDiskHeadroomBytes +
+                             crostini::disk::kMinimumDiskSizeBytes)) {
     HandleError(InstallerError::kErrorInsufficientDiskSpace);
     return;
   }

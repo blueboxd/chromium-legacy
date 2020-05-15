@@ -145,7 +145,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
   net::TestDelegate url_request_delegate_;
   GURL scope_;
   GURL script_url_;
-  std::vector<ServiceWorkerRemoteProviderEndpoint> remote_endpoints_;
+  std::vector<ServiceWorkerRemoteContainerEndpoint> remote_endpoints_;
 };
 
 class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {

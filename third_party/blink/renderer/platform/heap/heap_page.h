@@ -1450,7 +1450,7 @@ void NormalPage::IterateCardTable(Function function) const {
   // the loop (this may in turn pessimize barrier implementation).
   for (auto card : card_table_) {
     if (UNLIKELY(card.bit)) {
-      IterateOnCard(std::move(function), card.index);
+      IterateOnCard(function, card.index);
     }
   }
 }

@@ -105,11 +105,9 @@ class CONTENT_EXPORT ServiceWorkerContextWatcher
   void OnReportConsoleMessage(int64_t version_id,
                               const ConsoleMessage& message) override;
   void OnControlleeAdded(int64_t version_id,
-                         const GURL& scope,
                          const std::string& uuid,
                          const ServiceWorkerClientInfo& info) override;
   void OnControlleeRemoved(int64_t version_id,
-                           const GURL& scope,
                            const std::string& uuid) override;
   void OnRegistrationCompleted(int64_t registration_id,
                                const GURL& scope) override;

@@ -150,6 +150,12 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   virtual void OnDragLeave();
   virtual void OnDragSessionClose(uint32_t dnd_action);
 
+  // Returns a root parent window within the same hierarchy.
+  WaylandWindow* GetRootParentWindow();
+
+  // Returns a top most child window within the same hierarchy.
+  WaylandWindow* GetTopMostChildWindow();
+
  protected:
   WaylandWindow(PlatformWindowDelegate* delegate,
                 WaylandConnection* connection);
@@ -174,9 +180,6 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
 
   // Initializes the WaylandWindow with supplied properties.
   bool Initialize(PlatformWindowInitProperties properties);
-
-  // Returns a root parent window.
-  WaylandWindow* GetRootParentWindow();
 
   // Install a surface listener and start getting wl_output enter/leave events.
   void AddSurfaceListener();

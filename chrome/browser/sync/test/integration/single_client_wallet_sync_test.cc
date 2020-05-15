@@ -381,8 +381,17 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletWithAccountStorageSyncTest,
 // Wallet data should get cleared from the database when the user signs out and
 // different data should get downstreamed when the user signs in with a
 // different account.
+//
+// Flaky on Windows ASAN. TODO(crbug.com/1083061): Enable this test.
+#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
+#define MAYBE_ClearOnSignOutAndDownstreamOnSignIn \
+  DISABLED_ClearOnSignOutAndDownstreamOnSignIn
+#else
+#define MAYBE_ClearOnSignOutAndDownstreamOnSignIn \
+  ClearOnSignOutAndDownstreamOnSignIn
+#endif
 IN_PROC_BROWSER_TEST_F(SingleClientWalletWithAccountStorageSyncTest,
-                       ClearOnSignOutAndDownstreamOnSignIn) {
+                       MAYBE_ClearOnSignOutAndDownstreamOnSignIn) {
   ASSERT_TRUE(SetupClients());
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);

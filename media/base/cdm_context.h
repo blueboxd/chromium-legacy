@@ -120,9 +120,6 @@ class MEDIA_EXPORT CdmContext {
   DISALLOW_COPY_AND_ASSIGN(CdmContext);
 };
 
-// A dummy implementation of CdmAttachedCB.
-MEDIA_EXPORT void IgnoreCdmAttached(bool success);
-
 // A reference holder to make sure the CdmContext is always valid as long as
 // |this| is alive. Typically |this| will hold a reference (directly or
 // indirectly) to the host, e.g. a ContentDecryptionModule.

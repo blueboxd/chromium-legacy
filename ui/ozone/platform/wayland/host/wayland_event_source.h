@@ -55,6 +55,10 @@ class WaylandEventSource : public PlatformEventSource,
   WaylandEventSource& operator=(const WaylandEventSource&) = delete;
   ~WaylandEventSource() override;
 
+  int last_pointer_button_pressed() const {
+    return last_pointer_button_pressed_;
+  }
+
   // Starts polling for events from the wayland connection file descriptor.
   // This method assumes connection is already estabilished and input objects
   // are already bound and properly initialized.
@@ -132,6 +136,9 @@ class WaylandEventSource : public PlatformEventSource,
 
   // Bitmask of EventFlags used to keep track of the the pointer state.
   int pointer_flags_ = 0;
+
+  // Bitmask of EventFlags used to keep track of the last changed button.
+  int last_pointer_button_pressed_ = 0;
 
   // Bitmask of EventFlags used to keep track of the the keyboard state.
   int keyboard_modifiers_ = 0;

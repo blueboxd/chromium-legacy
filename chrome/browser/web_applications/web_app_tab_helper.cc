@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/unguessable_token.h"
 #include "chrome/browser/profiles/profile.h"
@@ -56,10 +57,9 @@ void WebAppTabHelper::SetAppId(const AppId& app_id) {
   if (app_id_ == app_id)
     return;
 
-  AppId previous_app_id = app_id_;
   app_id_ = app_id;
 
-  OnAssociatedAppChanged(previous_app_id, app_id_);
+  OnAssociatedAppChanged();
 }
 
 void WebAppTabHelper::ReadyToCommitNavigation(
@@ -155,19 +155,12 @@ void WebAppTabHelper::OnAppRegistrarDestroyed() {
 }
 
 void WebAppTabHelper::ResetAppId() {
-  if (app_id_.empty())
-    return;
-
-  AppId previous_app_id = app_id_;
   app_id_.clear();
 
-  OnAssociatedAppChanged(previous_app_id, app_id_);
+  OnAssociatedAppChanged();
 }
 
-void WebAppTabHelper::OnAssociatedAppChanged(const AppId& previous_app_id,
-                                             const AppId& new_app_id) {
-  provider_->ui_manager().NotifyOnAssociatedAppChanged(
-      web_contents(), previous_app_id, new_app_id);
+void WebAppTabHelper::OnAssociatedAppChanged() {
   UpdateAudioFocusGroupId();
 }
 

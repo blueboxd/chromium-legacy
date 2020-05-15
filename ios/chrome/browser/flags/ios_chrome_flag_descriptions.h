@@ -299,6 +299,11 @@ extern const char kOpenDownloadsInFilesAppDescription[];
 extern const char kImprovedCookieControlsName[];
 extern const char kImprovedCookieControlsDescription[];
 
+// Title and description for the flag to provide user with Password Check
+// feature in Settings.
+extern const char kPasswordCheckName[];
+extern const char kPasswordCheckDescription[];
+
 // Title and description for the flag to enable the new design of the page info.
 extern const char kPageInfoRefactoringName[];
 extern const char kPageInfoRefactoringDescription[];

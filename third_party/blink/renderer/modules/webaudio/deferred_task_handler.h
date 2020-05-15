@@ -80,6 +80,9 @@ class MODULES_EXPORT DeferredTaskHandler final
   void AddAutomaticPullNode(scoped_refptr<AudioHandler>);
   void RemoveAutomaticPullNode(AudioHandler*);
 
+  // Return true if there is one or more nodes in the automatic pull node list.
+  bool HasAutomaticPullNodes();
+
   // Called right before handlePostRenderTasks() to handle nodes which need to
   // be pulled even when they are not connected to anything.
   void ProcessAutomaticPullNodes(uint32_t frames_to_process);

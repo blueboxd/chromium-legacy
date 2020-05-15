@@ -472,6 +472,18 @@ PDFiumPage::GetTextRunInfo(int start_char_index) {
     info.direction = PP_PRIVATEDIRECTION_NONE;
     return info;
   }
+
+  // If the first character in a text run is a space, we need to start
+  // |text_run_bounds| from the space character instead of the first
+  // non-space unicode character.
+  pp::FloatRect text_run_bounds =
+      actual_start_char_index > start_char_index
+          ? GetFloatCharRectInPixels(page, text_page, start_char_index)
+          : pp::FloatRect();
+
+  // Pdfium trims more than 1 consecutive spaces to 1 space.
+  DCHECK_LE(actual_start_char_index - start_char_index, 1);
+
   int char_index = actual_start_char_index;
 
   // Set text run's style info from the first character of the text run.
@@ -494,8 +506,8 @@ PDFiumPage::GetTextRunInfo(int start_char_index) {
   AddCharSizeToAverageCharSize(start_char_rect.Floatsize(), &avg_char_size,
                                &non_whitespace_chars_count);
 
-  // Add first char to text run.
-  pp::FloatRect text_run_bounds = start_char_rect;
+  // Add first non-space char to text run.
+  text_run_bounds = text_run_bounds.Union(start_char_rect);
   PP_PrivateDirection char_direction =
       GetDirectionFromAngle(FPDFText_GetCharAngle(text_page, char_index));
   if (char_index < chars_count)

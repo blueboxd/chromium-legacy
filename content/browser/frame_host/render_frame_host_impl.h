@@ -881,7 +881,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       base::Optional<SubresourceLoaderParams> subresource_loader_params,
       base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
           subresource_overrides,
-      blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
+      blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
       const base::UnguessableToken& devtools_navigation_token,
       std::unique_ptr<WebBundleHandle> web_bundle_handle);
 
@@ -1672,7 +1672,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
           subresource_overrides,
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
-      blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
+      blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token);

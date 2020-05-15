@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/task_runner_util.h"
+#include "content/browser/resource_context_impl.h"
 #include "content/browser/webui/url_data_manager.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/url_data_source_impl.h"
@@ -19,6 +20,20 @@
 
 namespace content {
 
+namespace {
+
+URLDataSource* GetSourceForURLHelper(ResourceContext* resource_context,
+                                     const GURL& url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  URLDataSourceImpl* source =
+      GetURLDataManagerForResourceContext(resource_context)
+          ->GetDataSourceFromURL(url);
+  return source->source();
+}
+
+}  // namespace
+
 // static
 void URLDataSource::Add(BrowserContext* browser_context,
                         std::unique_ptr<URLDataSource> source) {
@@ -26,11 +41,15 @@ void URLDataSource::Add(BrowserContext* browser_context,
 }
 
 // static
-URLDataSource* URLDataSource::GetSourceForURL(BrowserContext* browser_context,
-                                              const GURL& url) {
-  return URLDataManagerBackend::GetForBrowserContext(browser_context)
-      ->GetDataSourceFromURL(url)
-      ->source();
+void URLDataSource::GetSourceForURL(
+    BrowserContext* browser_context,
+    const GURL& url,
+    base::OnceCallback<void(URLDataSource*)> callback) {
+  base::PostTaskAndReplyWithResult(
+      GetIOThreadTaskRunner({}).get(), FROM_HERE,
+      base::BindOnce(&GetSourceForURLHelper,
+                     browser_context->GetResourceContext(), url),
+      std::move(callback));
 }
 
 // static
@@ -44,6 +63,11 @@ std::string URLDataSource::URLToRequestPath(const GURL& url) {
     return spec.substr(offset);
 
   return std::string();
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+URLDataSource::TaskRunnerForRequestPath(const std::string& path) {
+  return GetUIThreadTaskRunner({});
 }
 
 bool URLDataSource::ShouldReplaceExistingSource() {
@@ -97,7 +121,7 @@ bool URLDataSource::ShouldDenyXFrameOptions() {
 }
 
 bool URLDataSource::ShouldServiceRequest(const GURL& url,
-                                         BrowserContext* browser_context,
+                                         ResourceContext* resource_context,
                                          int render_process_id) {
   return url.SchemeIs(kChromeDevToolsScheme) || url.SchemeIs(kChromeUIScheme) ||
          url.SchemeIs(kChromeUIUntrustedScheme);

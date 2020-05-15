@@ -22,6 +22,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/resource_context_impl.h"
 #include "content/browser/webui/shared_resources_data_source.h"
 #include "content/browser/webui/url_data_source_impl.h"
 #include "content/browser/webui/web_ui_data_source_impl.h"
@@ -61,7 +62,6 @@ const char kChromeURLContentSecurityPolicyReportOnlyHeaderValue[] =
 const char kChromeURLXFrameOptionsHeaderName[] = "X-Frame-Options";
 const char kChromeURLXFrameOptionsHeaderValue[] = "DENY";
 const char kNetworkErrorKey[] = "netError";
-const char kURLDataManagerBackendKeyName[] = "url_data_manager_backend";
 
 bool SchemeIsInSchemes(const std::string& scheme,
                        const std::vector<std::string>& schemes) {
@@ -78,19 +78,9 @@ URLDataManagerBackend::URLDataManagerBackend() : next_request_id_(0) {
 
 URLDataManagerBackend::~URLDataManagerBackend() = default;
 
-URLDataManagerBackend* URLDataManagerBackend::GetForBrowserContext(
-    BrowserContext* context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!context->GetUserData(kURLDataManagerBackendKeyName)) {
-    context->SetUserData(kURLDataManagerBackendKeyName,
-                         std::make_unique<URLDataManagerBackend>());
-  }
-  return static_cast<URLDataManagerBackend*>(
-      context->GetUserData(kURLDataManagerBackendKeyName));
-}
-
-void URLDataManagerBackend::AddDataSource(URLDataSourceImpl* source) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+void URLDataManagerBackend::AddDataSource(
+    URLDataSourceImpl* source) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!source->source()->ShouldReplaceExistingSource()) {
     auto i = data_sources_.find(source->source_name());
     if (i != data_sources_.end())

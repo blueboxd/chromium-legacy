@@ -844,7 +844,7 @@ class ServiceWorkerVersionBrowserTest : public ContentBrowserTest {
   scoped_refptr<ServiceWorkerVersion> version_;
   scoped_refptr<ServiceWorkerContextWrapper> wrapper_;
   std::unique_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
-  std::vector<ServiceWorkerRemoteProviderEndpoint> remote_endpoints_;
+  std::vector<ServiceWorkerRemoteContainerEndpoint> remote_endpoints_;
 };
 
 class WaitForLoaded : public EmbeddedWorkerInstance::Listener {

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -50,6 +51,8 @@
 #include "chrome/browser/metrics/network_quality_estimator_provider_impl.h"
 #include "chrome/browser/metrics/sampling_metrics_provider.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
+#include "chrome/browser/privacy_budget/privacy_budget_prefs.h"
+#include "chrome/browser/privacy_budget/privacy_budget_ukm_entry_filter.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_metrics_provider.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
@@ -452,6 +455,7 @@ void ChromeMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
   metrics::MetricsService::RegisterPrefs(registry);
   ukm::UkmService::RegisterPrefs(registry);
   metrics::StabilityMetricsHelper::RegisterPrefs(registry);
+  prefs::RegisterPrivacyBudgetPrefs(registry);
 
   RegisterFileMetricsPreferences(registry);
 
@@ -584,12 +588,18 @@ void ChromeMetricsServiceClient::Initialize() {
     // We only need to restrict to whitelisted Entries if metrics reporting
     // is not forced.
     bool restrict_to_whitelist_entries = !IsMetricsReportingForceEnabled();
-    ukm_service_.reset(new ukm::UkmService(
+    identifiability_study_settings_ =
+        std::make_unique<IdentifiabilityStudySettings>(local_state);
+    ukm_service_ = std::make_unique<ukm::UkmService>(
         local_state, this, restrict_to_whitelist_entries,
         MakeDemographicMetricsProvider(
-            metrics::MetricsLogUploader::MetricServiceType::UKM)));
+            metrics::MetricsLogUploader::MetricServiceType::UKM));
     ukm_service_->SetIsWebstoreExtensionCallback(
         base::BindRepeating(&IsWebstoreExtension));
+    ukm_service_->RegisterEventFilter(
+        std::make_unique<PrivacyBudgetUkmEntryFilter>(
+            identifiability_study_settings_.get()));
+
     RegisterUKMProviders();
   }
 

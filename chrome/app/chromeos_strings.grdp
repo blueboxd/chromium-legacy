@@ -4265,8 +4265,14 @@
   <message name="IDS_CROSTINI_INSTALLER_OFFLINE_ERROR" desc="Text shown in the Crostini installer dialog when there is no internet connection">
     <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is offline. Connect to the Internet and try again.
   </message>
-  <message name="IDS_CROSTINI_INSTALLER_INSUFFICIENT_DISK" desc="Text shown in the Crostini installer dialog when there is not enough free disk space to complete the installation">
-    Install failed due to lack of storage space. At least <ph name="INSTALL_SIZE">$1<ex>1.3GB</ex></ph> of free space is required. To free up space, delete files from device storage.
+  <message name="IDS_CROSTINI_INSTALLER_DISK_RESIZE_RECOMMENDED_WARNING" desc="The message shown indicating the recommended disk size in Gigabytes, when disk space must be freed to make this possible.">
+    <ph name="DISK_SIZE">$1<ex>5GB</ex></ph> of space is recommended for Linux. To increase free space, delete files from your device.
+  </message>
+  <message name="IDS_CROSTINI_INSTALLER_INSUFFICIENT_DISK_ERROR" desc="Text shown in the Crostini installer dialog when there is not enough free disk space to complete the installation">
+    Install failed due to lack of storage space. To free up space, delete files from device storage.
+  </message>
+  <message name="IDS_CROSTINI_INSTALLER_MINIMUM_FREE_SPACE_UNMET_ERROR" desc="Text shown in the Crostini installer dialog when the free space is less than the minimum requirement">
+    <ph name="INSTALL_SIZE">$1<ex>1.3GB</ex></ph> of free space is required to install Linux. To increase free space, delete files from your device.
   </message>
   <message name="IDS_CROSTINI_INSTALLER_LOAD_TERMINA_ERROR" desc="Text shown in the Crostini installer dialog when the VM component fails to load">
     Error downloading the virtual machine. Please try again.
@@ -4301,8 +4307,11 @@
   <message name="IDS_CROSTINI_INSTALLER_CONFIGURE_MESSAGE" desc="Text shown in the Crostini installer dialog describing the purpose of the page for entering extra user-specified options">
     Change how Linux apps will work.
   </message>
-  <message name="IDS_CROSTINI_INSTALLER_DISK_SIZE_MESSAGE" desc="Text shown in the Crostini installer dialog describing how and why to choose the initial size of the Crostini disk">
-    Disk space to reserve for Crostini (you can change this later).
+  <message name="IDS_CROSTINI_INSTALLER_DISK_SIZE_SUBTITLE" desc="A subtitle in Crostini installer dialog for the disk size config section">
+    Disk size
+  </message>
+  <message name="IDS_CROSTINI_INSTALLER_DISK_SIZE_HINT" desc="Text shown in Crostini installer dialog to explain that the disk size can be modified later in Settings">
+    This can be modified later in Settings
   </message>
   <message name="IDS_CROSTINI_INSTALLER_USERNAME_MESSAGE" desc="Text shown in the Crostini installer dialog prompting the user to pick their username">
     Select a username

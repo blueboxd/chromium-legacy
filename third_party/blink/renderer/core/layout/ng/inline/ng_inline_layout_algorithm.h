@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_logical_line_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
@@ -74,7 +74,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
 
   NGInlineBoxState* HandleOpenTag(const NGInlineItem&,
                                   const NGInlineItemResult&,
-                                  NGLineBoxFragmentBuilder::ChildList*,
+                                  NGLogicalLineItems*,
                                   NGInlineLayoutStateStack*) const;
   NGInlineBoxState* HandleCloseTag(const NGInlineItem&,
                                    const NGInlineItemResult&,
@@ -111,7 +111,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                                 const NGExclusionSpace&,
                                 LayoutUnit line_height);
 
-  NGLineBoxFragmentBuilder::ChildList line_box_;
+  NGLogicalLineItems line_box_;
   NGInlineLayoutStateStack* box_states_;
   NGInlineChildLayoutContext* context_;
 

@@ -839,7 +839,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
     RenderFrameHostImpl* render_frame_host,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter,
-    bool is_same_document) {
+    bool is_same_document,
+    std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info) {
   // TODO(clamy): Improve the *NavigationParams and *CommitParams to avoid
   // copying so many parameters here.
   mojom::CommonNavigationParamsPtr common_params =
@@ -900,6 +901,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
       nullptr /* navigation_ui_data */, mojo::NullAssociatedRemote(),
       mojo::NullRemote(), nullptr /* rfh_restored_from_back_forward_cache */));
 
+  navigation_request->web_bundle_navigation_info_ =
+      std::move(web_bundle_navigation_info);
   navigation_request->render_frame_host_ = render_frame_host;
   navigation_request->coep_reporter_ = std::move(coep_reporter);
   navigation_request->StartNavigation(true);
@@ -2864,8 +2867,8 @@ void NavigationRequest::CommitNavigation() {
 
   CreateCoepReporter(render_frame_host_->GetProcess()->GetStoragePartition());
 
-  blink::mojom::ServiceWorkerProviderInfoForClientPtr
-      service_worker_provider_info;
+  blink::mojom::ServiceWorkerContainerInfoForClientPtr
+      service_worker_container_info;
   if (service_worker_handle_) {
     DCHECK(coep_reporter());
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
@@ -2877,7 +2880,7 @@ void NavigationRequest::CommitNavigation() {
         render_frame_host_->GetProcess()->GetID(),
         render_frame_host_->GetRoutingID(),
         render_frame_host_->cross_origin_embedder_policy(),
-        std::move(reporter_remote), &service_worker_provider_info);
+        std::move(reporter_remote), &service_worker_container_info);
   }
 
   if (web_bundle_handle_ && web_bundle_handle_->navigation_info()) {
@@ -2899,7 +2902,7 @@ void NavigationRequest::CommitNavigation() {
       std::move(response_head), std::move(response_body_),
       std::move(url_loader_client_endpoints_), is_view_source_,
       std::move(subresource_loader_params_), std::move(subresource_overrides_),
-      std::move(service_worker_provider_info), devtools_navigation_token_,
+      std::move(service_worker_container_info), devtools_navigation_token_,
       std::move(web_bundle_handle_));
 
   // Give SpareRenderProcessHostManager a heads-up about the most recently used

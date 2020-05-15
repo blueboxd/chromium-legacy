@@ -3462,15 +3462,11 @@
   },
 
   "WebComponentsV0Enabled": {
-    "os": ["win", "linux", "mac", "chromeos", "android"],
-    "test_policy": { "WebComponentsV0Enabled": true },
-    "policy_pref_mapping_tests": { "web_components_v0_enabled": {} }
+    "note": "This policy has been removed. See https://bugs.chromium.org/p/chromium/issues/detail?id=1083085"
   },
 
   "UseLegacyFormControls": {
-    "os": ["win", "linux", "mac", "chromeos", "android"],
-    "test_policy": { "UseLegacyFormControls": true },
-    "policy_pref_mapping_tests": { "use_legacy_form_controls": {} }
+    "note": "This policy has been removed. See https://bugs.chromium.org/p/chromium/issues/detail?id=1083085"
   },
 
   "ScrollToTextFragmentEnabled": {
@@ -6583,15 +6579,7 @@
   },
 
   "ReportSafeBrowsingData": {
-    "os": ["win", "linux", "mac"],
-    "policy_pref_mapping_test": [
-      {
-        "policies": {
-          "ReportSafeBrowsingData": false
-        },
-        "prefs": { "enterprise_reporting.report_safe_browsing_data": {} }
-      }
-    ]
+    "note": "This policy has been removed. See https://bugs.chromium.org/p/chromium/issues/detail?id=1083085"
   },
 
   "CloudExtensionRequestEnabled": {

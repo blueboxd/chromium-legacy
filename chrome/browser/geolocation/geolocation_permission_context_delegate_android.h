@@ -18,6 +18,14 @@ class GeolocationPermissionContextDelegateAndroid
   ~GeolocationPermissionContextDelegateAndroid() override;
 
   // GeolocationPermissionContext::Delegate:
+  bool DecidePermission(
+      content::WebContents* web_contents,
+      const permissions::PermissionRequestID& id,
+      const GURL& requesting_origin,
+      bool user_gesture,
+      permissions::BrowserPermissionCallback* callback,
+      permissions::GeolocationPermissionContext* context) override;
+
   bool IsInteractable(content::WebContents* web_contents) override;
   PrefService* GetPrefs(content::BrowserContext* browser_context) override;
   bool IsRequestingOriginDSE(content::BrowserContext* browser_context,

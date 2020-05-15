@@ -70,6 +70,9 @@ class WebAudioDevice {
 
   virtual double SampleRate() = 0;
   virtual int FramesPerBuffer() = 0;
+
+  // Sets the detect silence flag for |RendererWebAudioDeviceImpl|.
+  virtual void SetDetectSilence(bool detect_silence) {}
 };
 
 }  // namespace blink

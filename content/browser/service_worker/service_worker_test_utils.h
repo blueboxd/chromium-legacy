@@ -65,16 +65,16 @@ blink::ServiceWorkerStatusCode StartServiceWorker(
 
 void StopServiceWorker(ServiceWorkerVersion* version);
 
-// Container for keeping the Mojo connection to the service worker provider on
+// Container for keeping the Mojo connection to the service worker container on
 // the renderer alive.
-class ServiceWorkerRemoteProviderEndpoint {
+class ServiceWorkerRemoteContainerEndpoint {
  public:
-  ServiceWorkerRemoteProviderEndpoint();
-  ServiceWorkerRemoteProviderEndpoint(
-      ServiceWorkerRemoteProviderEndpoint&& other);
-  ~ServiceWorkerRemoteProviderEndpoint();
+  ServiceWorkerRemoteContainerEndpoint();
+  ServiceWorkerRemoteContainerEndpoint(
+      ServiceWorkerRemoteContainerEndpoint&& other);
+  ~ServiceWorkerRemoteContainerEndpoint();
 
-  void BindForWindow(blink::mojom::ServiceWorkerProviderInfoForClientPtr info);
+  void BindForWindow(blink::mojom::ServiceWorkerContainerInfoForClientPtr info);
   void BindForServiceWorker(
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
 
@@ -96,26 +96,26 @@ class ServiceWorkerRemoteProviderEndpoint {
   // blink::mojom::EmbeddedWorkerInstanceClient connection if in the future we
   // really need to make |host_remote_| and |client_receiver_| usable for it.
   mojo::Remote<mojom::NavigationClient> navigation_client_;
-  // Bound with content::ServiceWorkerProviderHost. The provider host will be
+  // Bound with content::ServiceWorkerContainerHost. The container host will be
   // removed asynchronously when this remote is closed.
   mojo::AssociatedRemote<blink::mojom::ServiceWorkerContainerHost> host_remote_;
   // This is the other end of
   // mojo::PendingAssociatedRemote<ServiceWorkerContainer> owned by
-  // content::ServiceWorkerProviderHost.
+  // content::ServiceWorkerContainerHost.
   mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainer>
       client_receiver_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRemoteProviderEndpoint);
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRemoteContainerEndpoint);
 };
 
 struct ServiceWorkerContainerHostAndInfo {
   ServiceWorkerContainerHostAndInfo(
       base::WeakPtr<ServiceWorkerContainerHost> host,
-      blink::mojom::ServiceWorkerProviderInfoForClientPtr);
+      blink::mojom::ServiceWorkerContainerInfoForClientPtr);
   ~ServiceWorkerContainerHostAndInfo();
 
   base::WeakPtr<ServiceWorkerContainerHost> host;
-  blink::mojom::ServiceWorkerProviderInfoForClientPtr info;
+  blink::mojom::ServiceWorkerContainerInfoForClientPtr info;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContainerHostAndInfo);
 };
@@ -127,7 +127,7 @@ base::WeakPtr<ServiceWorkerContainerHost> CreateContainerHostForWindow(
     int process_id,
     bool is_parent_frame_secure,
     base::WeakPtr<ServiceWorkerContextCore> context,
-    ServiceWorkerRemoteProviderEndpoint* output_endpoint);
+    ServiceWorkerRemoteContainerEndpoint* output_endpoint);
 
 // Creates a container host that can be used for a navigation.
 std::unique_ptr<ServiceWorkerContainerHostAndInfo>
@@ -141,7 +141,7 @@ CreateProviderHostForServiceWorkerContext(
     bool is_parent_frame_secure,
     ServiceWorkerVersion* hosted_version,
     base::WeakPtr<ServiceWorkerContextCore> context,
-    ServiceWorkerRemoteProviderEndpoint* output_endpoint);
+    ServiceWorkerRemoteContainerEndpoint* output_endpoint);
 
 // Calls CreateNewRegistration() synchronously.
 scoped_refptr<ServiceWorkerRegistration> CreateNewServiceWorkerRegistration(

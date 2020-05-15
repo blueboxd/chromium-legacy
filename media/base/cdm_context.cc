@@ -48,6 +48,4 @@ FuchsiaCdmContext* CdmContext::GetFuchsiaCdmContext() {
 }
 #endif
 
-void IgnoreCdmAttached(bool /* success */) {}
-
 }  // namespace media

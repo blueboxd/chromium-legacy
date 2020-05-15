@@ -146,13 +146,19 @@ def GetOrCreateRootGroup(project, root_object, group_name):
   return CreateGroup(project, main_group, group_name, path='../..')
 
 
+def GetNameOrPath(object):
+  if 'name' in object:
+    return object['name']
+  return object['path']
+
+
 def ObjectComparatorFactory(objects):
   def CompareObjects(ref1, ref2):
     object1 = objects[ref1]
     object2 = objects[ref2]
     if object1['isa'] != object2['isa']:
       return -cmp(object1['isa'], object2['isa'])
-    return cmp(object1['name'], object2['name'])
+    return cmp(GetNameOrPath(object1), GetNameOrPath(object2))
   return CompareObjects
 
 

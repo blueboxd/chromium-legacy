@@ -340,7 +340,6 @@ void ServiceWorkerContextWatcher::OnReportConsoleMessage(
 
 void ServiceWorkerContextWatcher::OnControlleeAdded(
     int64_t version_id,
-    const GURL& scope,
     const std::string& uuid,
     const ServiceWorkerClientInfo& info) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
@@ -355,7 +354,6 @@ void ServiceWorkerContextWatcher::OnControlleeAdded(
 }
 
 void ServiceWorkerContextWatcher::OnControlleeRemoved(int64_t version_id,
-                                                      const GURL& scope,
                                                       const std::string& uuid) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   auto it = version_info_map_.find(version_id);

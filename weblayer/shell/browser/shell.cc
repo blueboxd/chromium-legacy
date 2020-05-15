@@ -158,15 +158,21 @@ gfx::Size Shell::AdjustWindowSize(const gfx::Size& initial_size) {
   return GetShellDefaultSize();
 }
 
+#if defined(OS_ANDROID)
+Shell* Shell::CreateNewWindow(const GURL& url, const gfx::Size& initial_size) {
+  return CreateNewWindowWithTab(nullptr, url, initial_size);
+}
+#else
 Shell* Shell::CreateNewWindow(Profile* web_profile,
                               const GURL& url,
                               const gfx::Size& initial_size) {
-#if defined(OS_ANDROID)
-  std::unique_ptr<Tab> tab;
-#else
-  auto tab = Tab::Create(web_profile);
+  return CreateNewWindowWithTab(Tab::Create(web_profile), url, initial_size);
+}
 #endif
 
+Shell* Shell::CreateNewWindowWithTab(std::unique_ptr<Tab> tab,
+                                     const GURL& url,
+                                     const gfx::Size& initial_size) {
   Shell* shell = CreateShell(std::move(tab), AdjustWindowSize(initial_size));
   if (!url.is_empty())
     shell->LoadURL(url);

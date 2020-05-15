@@ -168,11 +168,11 @@ class ServiceWorkerVersionTest : public testing::Test {
     return ServiceWorkerVersion::FetchHandlerExistence::EXISTS;
   }
 
-  ServiceWorkerRemoteProviderEndpoint ActivateWithControllee(
+  ServiceWorkerRemoteContainerEndpoint ActivateWithControllee(
       int controllee_process_id = 33) {
     version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
     registration_->SetActiveVersion(version_);
-    ServiceWorkerRemoteProviderEndpoint remote_endpoint;
+    ServiceWorkerRemoteContainerEndpoint remote_endpoint;
     base::WeakPtr<ServiceWorkerContainerHost> container_host =
         CreateContainerHostForWindow(
             controllee_process_id, true /* is_parent_frame_secure */,
@@ -425,7 +425,7 @@ TEST_F(ServiceWorkerVersionTest, Doom) {
   // Add a controllee.
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
-  ServiceWorkerRemoteProviderEndpoint remote_endpoint;
+  ServiceWorkerRemoteContainerEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerContainerHost> container_host =
       CreateContainerHostForWindow(
           33 /* dummy render process id */, true /* is_parent_frame_secure */,
@@ -1189,7 +1189,7 @@ TEST_F(ServiceWorkerVersionTest,
   // Add a controllee, but don't begin the navigation commit yet.  This will
   // cause the client to have an invalid process id like we see in real
   // navigations.
-  ServiceWorkerRemoteProviderEndpoint remote_endpoint;
+  ServiceWorkerRemoteContainerEndpoint remote_endpoint;
   std::unique_ptr<ServiceWorkerContainerHostAndInfo> host_and_info =
       CreateContainerHostAndInfoForWindow(helper_->context()->AsWeakPtr(),
                                           /*are_ancestors_secure=*/true);
@@ -1481,7 +1481,7 @@ class ServiceWorkerVersionTerminationOnNoControlleeTest
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  std::vector<ServiceWorkerRemoteProviderEndpoint> remote_endpoints_;
+  std::vector<ServiceWorkerRemoteContainerEndpoint> remote_endpoints_;
 };
 
 // static

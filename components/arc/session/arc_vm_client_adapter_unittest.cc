@@ -483,6 +483,10 @@ TEST_F(ArcVmClientAdapterTest, StartMiniArc) {
   StartMiniArc();
   // Confirm that no VM is started. ARCVM doesn't support mini ARC yet.
   EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());
+
+  // TODO(wvk): Once mini VM is supported, call StopArcInstance() and
+  // SendVmStoppedSignal() here, then verify arc_instance_stopped_called()
+  // becomes true. See StopArcInstance test for more details.
 }
 
 // Tests that StartMiniArc() still succeeds even when Upstart fails to stop
@@ -494,6 +498,10 @@ TEST_F(ArcVmClientAdapterTest, StartMiniArc_StopArcVmServerProxyJobFail) {
   StartMiniArc();
   // Confirm that no VM is started. ARCVM doesn't support mini ARC yet.
   EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());
+
+  // TODO(wvk): Once mini VM is supported, call StopArcInstance() here,
+  // then verify arc_instance_stopped_called() never becomes true. Same
+  // for other StartMiniArc_...Fail tests.
 }
 
 // Tests that StartMiniArc() fails if Upstart fails to start arc-keymasterd.
@@ -517,7 +525,7 @@ TEST_F(ArcVmClientAdapterTest, StartMiniArc_StopArcKeymasterJobFail) {
 }
 
 // Tests that StartMiniArc() fails when Upstart fails to start the job.
-TEST_F(ArcVmClientAdapterTest, StartMiniArc_Fail) {
+TEST_F(ArcVmClientAdapterTest, StartMiniArc_StartArcVmPerBoardFeaturesJobFail) {
   // Inject failure to FakeUpstartClient.
   InjectUpstartStartJobFailure(kArcVmPerBoardFeaturesJobName);
 

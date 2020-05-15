@@ -7,6 +7,7 @@
 #include "components/translate/core/browser/translate_error_details.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/common/translate_switches.h"
+#include "net/base/mock_network_change_notifier.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "weblayer/browser/tab_impl.h"
@@ -283,6 +284,42 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, PageTranslationTimeoutError) {
   EXPECT_TRUE(translate_client->GetLanguageState().translation_error());
   EXPECT_EQ(translate::TranslateErrors::TRANSLATION_TIMEOUT,
             GetPageTranslatedResult());
+}
+
+// Test that autotranslation kicks in if configured via prefs.
+IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, Autotranslation) {
+  // The translate feature will disable autotranslation if NetworkChangeNotifier
+  // reports that the app is offline, which can occur on bots. Prevent this.
+  net::test::ScopedMockNetworkChangeNotifier mock_network_change_notifier;
+  mock_network_change_notifier.mock_network_change_notifier()
+      ->SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+
+  SetTranslateScript(kTestValidScript);
+
+  TranslateClientImpl* translate_client = GetTranslateClient(shell());
+
+  // By default, autotranslation is disabled if the Google API key is not set.
+  translate_client->GetTranslateManager()->SetIgnoreMissingKeyForTesting(true);
+
+  NavigateAndWaitForCompletion(GURL("about:blank"), shell());
+  WaitUntilLanguageDetermined(shell());
+  EXPECT_EQ("und", translate_client->GetLanguageState().original_language());
+
+  // Before browsing, set autotranslate from French to Chinese.
+  translate_client->GetTranslatePrefs()->WhitelistLanguagePair("fr", "zh-CN");
+
+  // Navigate to a page in French.
+  NavigateAndWaitForCompletion(
+      GURL(embedded_test_server()->GetURL("/french_page.html")), shell());
+  WaitUntilLanguageDetermined(shell());
+  EXPECT_EQ("fr", translate_client->GetLanguageState().original_language());
+
+  // Autotranslation should kick in.
+  WaitUntilPageTranslated(shell());
+
+  EXPECT_FALSE(translate_client->GetLanguageState().translation_error());
+  EXPECT_EQ(translate::TranslateErrors::NONE, GetPageTranslatedResult());
+  EXPECT_EQ("zh-CN", translate_client->GetLanguageState().current_language());
 }
 
 }  // namespace weblayer

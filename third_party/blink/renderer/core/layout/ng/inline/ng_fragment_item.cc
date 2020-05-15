@@ -122,7 +122,7 @@ NGFragmentItem::NGFragmentItem(const NGInlineItem& inline_item,
 }
 
 // static
-void NGFragmentItem::Create(NGLineBoxFragmentBuilder::ChildList* child_list,
+void NGFragmentItem::Create(NGLogicalLineItems* child_list,
                             const String& text_content,
                             WritingMode writing_mode) {
   for (auto& child : *child_list) {

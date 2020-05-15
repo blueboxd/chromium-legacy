@@ -356,6 +356,11 @@ bool IsRemoraRequisitioned() {
   return policy_manager && policy_manager->IsRemoraRequisition();
 }
 
+void DisablePolymer2(content::URLDataSource* shared_source) {
+  if (shared_source)
+    shared_source->DisablePolymer2ForHost(chrome::kChromeUIOobeHost);
+}
+
 }  // namespace
 
 // static
@@ -590,11 +595,10 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   // TODO (https://crbug.com/739611): Remove this exception by migrating to
   // Polymer 2.
   if (base::FeatureList::IsEnabled(features::kWebUIPolymer2Exceptions)) {
-    auto* shared_source = content::URLDataSource::GetSourceForURL(
+    content::URLDataSource::GetSourceForURL(
         Profile::FromWebUI(web_ui),
-        GURL("chrome://resources/polymer/v1_0/polymer/polymer.html"));
-    if (shared_source)
-      shared_source->DisablePolymer2ForHost(chrome::kChromeUIOobeHost);
+        GURL("chrome://resources/polymer/v1_0/polymer/polymer.html"),
+        base::BindOnce(DisablePolymer2));
   }
 }
 

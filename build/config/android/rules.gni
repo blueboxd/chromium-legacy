@@ -1880,6 +1880,7 @@ if (enable_java_templates) {
     java_library_impl(target_name) {
       forward_variables_from(invoker, "*")
       supports_android = true
+      no_desugar_dep = true
       type = "system_java_library"
     }
   }

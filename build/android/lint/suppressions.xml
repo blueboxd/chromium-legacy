@@ -279,8 +279,6 @@ Still reading?
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/multiwindow/MultiWindowUtils.java"/>
     <!-- 1: TODO(crbug.com/1081243): Fix -->
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/photo_picker/PickerVideoPlayer.java"/>
-    <!-- 1: TODO(crbug.com/1081280): Fix -->
-    <ignore regexp="chrome/android/features/tab_ui/javatests/src/org/chromium/chrome/browser/tasks/tab_management/ConditionalTabStripTest.java"/>
     <!-- 1: TODO(crbug.com/1082222): Fix -->
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/header/HeaderView.java"/>
     <!-- Endnote: Please specify number of suppressions when adding more -->

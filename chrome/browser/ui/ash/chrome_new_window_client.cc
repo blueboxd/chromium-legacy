@@ -99,8 +99,6 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
       chromeos::settings::mojom::kMobileDataNetworksSubpagePath},
      {ChromePage::CHANGEPICTURE,
       chromeos::settings::mojom::kChangePictureSubpagePath},
-     {ChromePage::CROSTINIDISKRESIZE,
-      chromeos::settings::mojom::kCrostiniDiskResizeSubpagePath},
      {ChromePage::CONNECTEDDEVICES,
       chromeos::settings::mojom::kMultiDeviceFeaturesSubpagePath},
      {ChromePage::CROSTINISHAREDPATHS,
@@ -194,7 +192,8 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kAboutPagesMapping[] =
      {ChromePage::ABOUTHISTORY, "about:history"}};
 
 constexpr arc::mojom::ChromePage kDeprecatedPages[] = {
-    ChromePage::DEPRECATED_PLUGINVMDETAILS};
+    ChromePage::DEPRECATED_PLUGINVMDETAILS,
+    ChromePage::DEPRECATED_CROSTINIDISKRESIZE};
 
 // mojom::ChromePage::LAST returns the amount of valid entries - 1.
 static_assert(base::size(kOSSettingsMapping) +

@@ -3220,8 +3220,12 @@ void RTCPeerConnection::DidNoteInterestingUsage(int usage_pattern) {
 }
 
 void RTCPeerConnection::UnregisterPeerConnectionHandler() {
-  if (stopped_)
+  if (stopped_) {
+    DCHECK(scheduled_events_.IsEmpty())
+        << "Undelivered events can cause memory leaks due to "
+        << "WrapPersistent(this) in setup function callbacks";
     return;
+  }
 
   stopped_ = true;
   ice_connection_state_ = webrtc::PeerConnectionInterface::kIceConnectionClosed;
@@ -3229,6 +3233,7 @@ void RTCPeerConnection::UnregisterPeerConnectionHandler() {
 
   peer_handler_->StopAndUnregister();
   dispatch_scheduled_events_task_handle_.Cancel();
+  scheduled_events_.clear();
   feature_handle_for_scheduler_.reset();
 }
 
@@ -3437,6 +3442,13 @@ void RTCPeerConnection::ScheduleDispatchEvent(Event* event) {
 
 void RTCPeerConnection::ScheduleDispatchEvent(Event* event,
                                               BoolFunction setup_function) {
+  if (stopped_) {
+    DCHECK(scheduled_events_.IsEmpty())
+        << "Undelivered events can cause memory leaks due to "
+        << "WrapPersistent(this) in setup function callbacks";
+    return;
+  }
+
   scheduled_events_.push_back(
       MakeGarbageCollected<EventWrapper>(event, std::move(setup_function)));
 
@@ -3444,6 +3456,13 @@ void RTCPeerConnection::ScheduleDispatchEvent(Event* event,
     return;
 
   if (auto* context = GetExecutionContext()) {
+    if (dispatch_events_task_created_callback_for_testing_) {
+      context->GetTaskRunner(TaskType::kNetworking)
+          ->PostTask(
+              FROM_HERE,
+              std::move(dispatch_events_task_created_callback_for_testing_));
+    }
+
     // WebRTC spec specifies kNetworking as task source.
     // https://www.w3.org/TR/webrtc/#operation
     dispatch_scheduled_events_task_handle_ = PostCancellableTask(
@@ -3454,8 +3473,12 @@ void RTCPeerConnection::ScheduleDispatchEvent(Event* event,
 }
 
 void RTCPeerConnection::DispatchScheduledEvents() {
-  if (stopped_)
+  if (stopped_) {
+    DCHECK(scheduled_events_.IsEmpty())
+        << "Undelivered events can cause memory leaks due to "
+        << "WrapPersistent(this) in setup function callbacks";
     return;
+  }
 
   HeapVector<Member<EventWrapper>> events;
   events.swap(scheduled_events_);

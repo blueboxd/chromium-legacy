@@ -123,6 +123,13 @@ class ManagementSetEnabledFunction : public ExtensionFunction {
   void OnParentPermissionDone(
       SupervisedUserServiceDelegate::ParentPermissionDialogResult result);
 
+  // Shows the dialog that tells the user that the parent has blocked the
+  // installation of extensions, apps, etc.
+  void ShowBlockedByParentDialog(const Extension* extension);
+
+  // Called when the dialog shown by ShowBlockedByParentDialog() is dismissed.
+  void OnBlockedByParentDialogDone();
+
   std::unique_ptr<SupervisedUserServiceDelegate::ParentPermissionDialogResult>
       parental_permission_dialog_;
 

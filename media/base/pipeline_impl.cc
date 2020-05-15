@@ -1035,14 +1035,11 @@ void PipelineImpl::RendererWrapper::InitializeRenderer(
       break;
   }
 
-  if (cdm_context_) {
-    shared_state_.renderer->SetCdm(cdm_context_,
-                                   base::BindOnce(&IgnoreCdmAttached));
-  }
+  if (cdm_context_)
+    shared_state_.renderer->SetCdm(cdm_context_, base::DoNothing());
 
-  if (latency_hint_) {
+  if (latency_hint_)
     shared_state_.renderer->SetLatencyHint(latency_hint_);
-  }
 
   shared_state_.renderer->Initialize(demuxer_, this, std::move(done_cb));
 }

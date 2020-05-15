@@ -102,21 +102,27 @@ suite('<crostini-installer-app>', () => {
   };
 
   const diskTicks = [
-    {value: 1, ariaValue: '1', label: '1'},
-    {value: 2, ariaValue: '2', label: '2'}
+    {value: 1000, ariaValue: '1', label: '1'},
+    {value: 2000, ariaValue: '2', label: '2'}
   ];
 
   test('installFlow', async () => {
     expectFalse(app.$$('#prompt-message').hidden);
     expectEquals(fakeBrowserProxy.handler.getCallCount('install'), 0);
 
+    // It should wait for disk info to be available.
     await clickNext();
+    await flushTasks();
+    expectFalse(app.$$('#prompt-message').hidden);
+
+    fakeBrowserProxy.page.onAmountOfFreeDiskSpace(diskTicks, 0, false);
+    await flushTasks();
     expectFalse(app.$$('#configure-message').hidden);
     await clickCancel();  // Back to the prompt page.
     expectFalse(app.$$('#prompt-message').hidden);
 
-    fakeBrowserProxy.page.onAmountOfFreeDiskSpace(diskTicks, 0);
     await clickNext();
+    await flushTasks();
     expectFalse(app.$$('#configure-message').hidden);
     await clickInstall();
     await fakeBrowserProxy.handler.whenCalled('install').then(
@@ -131,7 +137,7 @@ suite('<crostini-installer-app>', () => {
     fakeBrowserProxy.page.onProgressUpdate(InstallerState.kStartConcierge, 0.5);
     await flushTasks();
     expectTrue(
-        !!app.$$('#installing-message > div').textContent,
+        !!app.$$('#installing-message > div').textContent.trim(),
         'progress message should be set');
     expectEquals(
         app.$$('#installing-message > paper-progress').getAttribute('value'),
@@ -143,8 +149,105 @@ suite('<crostini-installer-app>', () => {
     expectEquals(fakeBrowserProxy.handler.getCallCount('close'), 1);
   });
 
+  // We only proceed to the config page if disk info is available. Let's make
+  // sure if the user click the next button multiple time very soon it dose not
+  // blow up.
+  test('multipleClickNextBeforeDiskAvailable', async () => {
+    expectFalse(app.$$('#prompt-message').hidden);
+
+    // It should wait for disk info to be available.
+    await clickNext();
+    await clickNext();
+    await clickNext();
+    await flushTasks();
+    expectFalse(app.$$('#prompt-message').hidden);
+
+    fakeBrowserProxy.page.onAmountOfFreeDiskSpace(diskTicks, 0, false);
+    await flushTasks();
+    // Enter configure page as usual
+    expectFalse(app.$$('#configure-message').hidden);
+
+    // Can back to prompt page as usual.
+    await clickCancel();
+    expectFalse(app.$$('#prompt-message').hidden);
+
+    await clickNext();
+    await flushTasks();
+    // Re-enter configure page as usual
+    expectFalse(app.$$('#configure-message').hidden);
+  });
+
+  test('straightToErrorPageIfMinDiskUnmet', async () => {
+    expectFalse(app.$$('#prompt-message').hidden);
+
+    fakeBrowserProxy.page.onAmountOfFreeDiskSpace([], 0, false);
+
+    await clickNext();
+    await flushTasks();
+    expectFalse(app.$$('#error-message').hidden);
+    expectTrue(
+        !!app.$$('#error-message > div').textContent.trim(),
+        'error message should be set');
+    // We do not show retry button in this case.
+    assertTrue(getInstallButton().hidden);
+  });
+
+  test('showWarningIfLowFreeSpace', async () => {
+    expectFalse(app.$$('#prompt-message').hidden);
+
+    fakeBrowserProxy.page.onAmountOfFreeDiskSpace(diskTicks, 0, true);
+
+    await clickNext();
+    await flushTasks();
+    expectFalse(app.$$('#configure-message').hidden);
+    expectFalse(app.$$('#low-free-space-warning').hidden);
+  });
+
+  diskTicks.forEach(async (_, defaultIndex) => {
+    test(`configDiskSpaceWithDefault-${defaultIndex}`, async () => {
+      expectFalse(app.$$('#prompt-message').hidden);
+
+      fakeBrowserProxy.page.onAmountOfFreeDiskSpace(
+          diskTicks, defaultIndex, false);
+
+      await clickNext();
+      await flushTasks();
+
+      expectFalse(app.$$('#configure-message').hidden);
+      expectTrue(app.$$('#low-free-space-warning').hidden);
+
+      await clickInstall();
+      await fakeBrowserProxy.handler.whenCalled('install').then(
+          ([diskSize, username]) => {
+            assertEquals(diskSize, diskTicks[defaultIndex].value);
+          });
+      expectEquals(fakeBrowserProxy.handler.getCallCount('install'), 1);
+    });
+  });
+
+  test('configDiskSpaceWithUserSelection', async () => {
+    expectFalse(app.$$('#prompt-message').hidden);
+
+    fakeBrowserProxy.page.onAmountOfFreeDiskSpace(diskTicks, 0, false);
+
+    await clickNext();
+    await flushTasks();
+
+    expectFalse(app.$$('#configure-message').hidden);
+    expectTrue(app.$$('#low-free-space-warning').hidden);
+
+    app.$$('#diskSlider').value = 1;
+
+    await clickInstall();
+    await fakeBrowserProxy.handler.whenCalled('install').then(
+        ([diskSize, username]) => {
+          assertEquals(diskSize, diskTicks[1].value);
+        });
+    expectEquals(fakeBrowserProxy.handler.getCallCount('install'), 1);
+  });
+
   test('configUsername', async () => {
-    fakeBrowserProxy.page.onAmountOfFreeDiskSpace(diskTicks, 0);
+    fakeBrowserProxy.page.onAmountOfFreeDiskSpace(diskTicks, 0, false);
     await clickNext();
 
     expectEquals(
@@ -189,14 +292,14 @@ suite('<crostini-installer-app>', () => {
   });
 
   test('errorCancel', async () => {
-    fakeBrowserProxy.page.onAmountOfFreeDiskSpace(diskTicks, 0);
+    fakeBrowserProxy.page.onAmountOfFreeDiskSpace(diskTicks, 0, false);
     await clickNext();
     await clickInstall();
     fakeBrowserProxy.page.onInstallFinished(InstallerError.kErrorOffline);
     await flushTasks();
     expectFalse(app.$$('#error-message').hidden);
     expectTrue(
-        !!app.$$('#error-message > div').textContent,
+        !!app.$$('#error-message > div').textContent.trim(),
         'error message should be set');
 
     await clickCancel();
@@ -206,14 +309,14 @@ suite('<crostini-installer-app>', () => {
   });
 
   test('errorRetry', async () => {
-    fakeBrowserProxy.page.onAmountOfFreeDiskSpace(diskTicks, 0);
+    fakeBrowserProxy.page.onAmountOfFreeDiskSpace(diskTicks, 0, false);
     await clickNext();
     await clickInstall();
     fakeBrowserProxy.page.onInstallFinished(InstallerError.kErrorOffline);
     await flushTasks();
     expectFalse(app.$$('#error-message').hidden);
     expectTrue(
-        !!app.$$('#error-message > div').textContent,
+        !!app.$$('#error-message > div').textContent.trim(),
         'error message should be set');
 
     await clickInstall();
@@ -228,7 +331,7 @@ suite('<crostini-installer-app>', () => {
   });
 
   test('cancelAfterStart', async () => {
-    fakeBrowserProxy.page.onAmountOfFreeDiskSpace(diskTicks, 0);
+    fakeBrowserProxy.page.onAmountOfFreeDiskSpace(diskTicks, 0, false);
     await clickNext();
     await clickInstall();
     await clickCancel();

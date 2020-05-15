@@ -24,80 +24,80 @@
 
 namespace file_manager {
 
-// TestCase: FilesAppBrowserTest parameters.
+// FilesAppBrowserTest parameters.
 struct TestCase {
-  explicit TestCase(const char* name) : test_case_name(name) {
-    CHECK(name) << "FATAL: no test case name";
+  explicit TestCase(const char* const name) : name(name) {
+    CHECK(name && *name) << "no test case name";
   }
 
   TestCase& InGuestMode() {
-    guest_mode = IN_GUEST_MODE;
+    opts.guest_mode = IN_GUEST_MODE;
     return *this;
   }
 
   TestCase& InIncognito() {
-    guest_mode = IN_INCOGNITO;
+    opts.guest_mode = IN_INCOGNITO;
     return *this;
   }
 
   TestCase& TabletMode() {
-    tablet_mode = true;
+    opts.tablet_mode = true;
     return *this;
   }
 
   TestCase& EnableDocumentsProvider() {
-    enable_arc = true;
-    enable_documents_provider.emplace(true);
+    opts.arc = true;
+    opts.documents_provider = true;
     return *this;
   }
 
   TestCase& DisableDocumentsProvider() {
-    enable_documents_provider.emplace(false);
+    opts.documents_provider = false;
     return *this;
   }
 
   TestCase& EnableArc() {
-    enable_arc = true;
+    opts.arc = true;
     return *this;
   }
 
   TestCase& Offline() {
-    offline = true;
+    opts.offline = true;
     return *this;
   }
 
   TestCase& FilesNg() {
-    files_ng.emplace(true);
+    opts.files_ng = true;
     return *this;
   }
 
   TestCase& DisableFilesNg() {
-    files_ng.emplace(false);
+    opts.files_ng = false;
     return *this;
   }
 
   TestCase& DisableNativeSmb() {
-    enable_native_smb = false;
+    opts.native_smb = false;
     return *this;
   }
 
   TestCase& EnableSmbfs() {
-    enable_smbfs = true;
+    opts.smbfs = true;
     return *this;
   }
 
   TestCase& EnableUnifiedMediaView() {
-    enable_unified_media_view.emplace(true);
+    opts.unified_media_view = true;
     return *this;
   }
 
   TestCase& DontMountVolumes() {
-    mount_no_volumes = true;
+    opts.mount_volumes = false;
     return *this;
   }
 
   TestCase& DontObserveFileTasks() {
-    observe_file_tasks = false;
+    opts.observe_file_tasks = false;
     return *this;
   }
 
@@ -108,55 +108,48 @@ struct TestCase {
   // active browser in this case, which requires a Browser to be present. See
   // https://crbug.com/736930.
   TestCase& WithBrowser() {
-    with_browser = true;
+    opts.browser = true;
     return *this;
   }
 
-  static std::string GetFullTestCaseName(const TestCase& test) {
-    std::string name(test.test_case_name);
+  std::string GetFullName() const {
+    std::string full_name = name;
 
-    CHECK(!name.empty()) << "FATAL: no test case name.";
+    if (opts.guest_mode == IN_GUEST_MODE)
+      full_name += "_GuestMode";
 
-    if (test.guest_mode == IN_GUEST_MODE)
-      name.append("_GuestMode");
-    else if (test.guest_mode == IN_INCOGNITO)
-      name.append("_Incognito");
+    if (opts.guest_mode == IN_INCOGNITO)
+      full_name += "_Incognito";
 
-    if (test.tablet_mode)
-      name.append("_TabletMode");
+    if (opts.tablet_mode)
+      full_name += "_TabletMode";
 
-    if (!test.files_ng.value_or(true))
-      name.append("_DisableFilesNg");
+    if (!opts.files_ng)
+      full_name += "_DisableFilesNg";
 
-    if (!test.enable_native_smb)
-      name.append("_DisableNativeSmb");
+    if (!opts.native_smb)
+      full_name += "_DisableNativeSmb";
 
-    if (test.enable_documents_provider.value_or(false))
-      name.append("_DocumentsProvider");
+    if (opts.documents_provider)
+      full_name += "_DocumentsProvider";
 
-    return name;
+    return full_name;
   }
 
-  const char* test_case_name = nullptr;
-  GuestMode guest_mode = NOT_IN_GUEST_MODE;
-  bool tablet_mode = false;
-  base::Optional<bool> enable_documents_provider;
-  bool enable_arc = false;
-  bool with_browser = false;
-  bool needs_zip = false;
-  bool offline = false;
-  base::Optional<bool> files_ng;
-  bool enable_native_smb = true;
-  bool enable_smbfs = false;
-  base::Optional<bool> enable_unified_media_view;
-  bool mount_no_volumes = false;
-  bool observe_file_tasks = true;
+  const char* const name;
+  FileManagerBrowserTestBase::Options opts;
 };
 
-// ZipCase: FilesAppBrowserTest with zip/unzip support.
-struct ZipCase : public TestCase {
-  explicit ZipCase(const char* name) : TestCase(name) { needs_zip = true; }
-};
+std::ostream& operator<<(std::ostream& out, const TestCase& test_case) {
+  return out << test_case.opts;
+}
+
+// FilesAppBrowserTest with zip/unzip support.
+TestCase ZipCase(const char* const name) {
+  TestCase test_case(name);
+  test_case.opts.zip = true;
+  return test_case;
+}
 
 // FilesApp browser test.
 class FilesAppBrowserTest : public FileManagerBrowserTestBase,
@@ -169,66 +162,23 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
     FileManagerBrowserTestBase::SetUpCommandLine(command_line);
     // Default mode is clamshell: force Ash into tablet mode if requested,
     // and enable the Ash virtual keyboard sub-system therein.
-    if (GetParam().tablet_mode) {
+    if (GetOptions().tablet_mode) {
       command_line->AppendSwitchASCII("force-tablet-mode", "touch_view");
       command_line->AppendSwitch(keyboard::switches::kEnableVirtualKeyboard);
     }
   }
 
-  GuestMode GetGuestMode() const override { return GetParam().guest_mode; }
-
-  const char* GetTestCaseName() const override {
-    return GetParam().test_case_name;
-  }
+  const char* GetTestCaseName() const override { return GetParam().name; }
 
   std::string GetFullTestCaseName() const override {
-    return TestCase::GetFullTestCaseName(GetParam());
+    return GetParam().GetFullName();
   }
 
   const char* GetTestExtensionManifestName() const override {
     return "file_manager_test_manifest.json";
   }
 
-  bool GetTabletMode() const override { return GetParam().tablet_mode; }
-
-  bool GetEnableDocumentsProvider() const override {
-    return GetParam().enable_documents_provider.value_or(
-        FileManagerBrowserTestBase::GetEnableDocumentsProvider());
-  }
-
-  bool GetEnableArc() const override { return GetParam().enable_arc; }
-
-  bool GetRequiresStartupBrowser() const override {
-    return GetParam().with_browser;
-  }
-
-  bool GetNeedsZipSupport() const override { return GetParam().needs_zip; }
-
-  bool GetIsOffline() const override { return GetParam().offline; }
-
-  bool GetEnableFilesNg() const override {
-    return GetParam().files_ng.value_or(
-        FileManagerBrowserTestBase::GetEnableFilesNg());
-  }
-
-  bool GetEnableNativeSmb() const override {
-    return GetParam().enable_native_smb;
-  }
-
-  bool GetEnableSmbfs() const override { return GetParam().enable_smbfs; }
-
-  bool GetEnableUnifiedMediaView() const override {
-    return GetParam().enable_unified_media_view.value_or(
-        FileManagerBrowserTestBase::GetEnableUnifiedMediaView());
-  }
-
-  bool GetStartWithNoVolumesMounted() const override {
-    return GetParam().mount_no_volumes;
-  }
-
-  bool GetStartWithFileTasksObserver() const override {
-    return GetParam().observe_file_tasks;
-  }
+  Options GetOptions() const override { return GetParam().opts; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FilesAppBrowserTest);
@@ -250,7 +200,7 @@ class ExtendedFilesAppBrowserTest : public FilesAppBrowserTest {
 
 IN_PROC_BROWSER_TEST_P(ExtendedFilesAppBrowserTest, PRE_Test) {
   profile()->GetPrefs()->SetBoolean(prefs::kNetworkFileSharesAllowed,
-                                    GetEnableNativeSmb());
+                                    GetOptions().native_smb);
 }
 
 IN_PROC_BROWSER_TEST_P(ExtendedFilesAppBrowserTest, Test) {
@@ -266,7 +216,7 @@ IN_PROC_BROWSER_TEST_P(ExtendedFilesAppBrowserTest, Test) {
   INSTANTIATE_TEST_SUITE_P(prefix, test_class, generator, &PostTestCaseName)
 
 std::string PostTestCaseName(const ::testing::TestParamInfo<TestCase>& test) {
-  return TestCase::GetFullTestCaseName(test.param);
+  return test.param.GetFullName();
 }
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(

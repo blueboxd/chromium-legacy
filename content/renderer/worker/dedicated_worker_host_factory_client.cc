@@ -116,8 +116,8 @@ void DedicatedWorkerHostFactoryClient::OnWorkerHostCreated(
 }
 
 void DedicatedWorkerHostFactoryClient::OnScriptLoadStarted(
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr
-        service_worker_provider_info,
+    blink::mojom::ServiceWorkerContainerInfoForClientPtr
+        service_worker_container_info,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         pending_subresource_loader_factory_bundle,
@@ -139,12 +139,12 @@ void DedicatedWorkerHostFactoryClient::OnScriptLoadStarted(
   pending_subresource_loader_updater_ = std::move(subresource_loader_updater);
 
   DCHECK(!service_worker_provider_context_);
-  if (service_worker_provider_info) {
+  if (service_worker_container_info) {
     service_worker_provider_context_ =
         base::MakeRefCounted<ServiceWorkerProviderContext>(
             blink::mojom::ServiceWorkerContainerType::kForDedicatedWorker,
-            std::move(service_worker_provider_info->client_receiver),
-            std::move(service_worker_provider_info->host_remote),
+            std::move(service_worker_container_info->client_receiver),
+            std::move(service_worker_container_info->host_remote),
             std::move(controller_info), subresource_loader_factory_bundle_);
   }
 

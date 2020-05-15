@@ -30,7 +30,7 @@ NGFragmentItemsBuilder::NGFragmentItemsBuilder(const NGInlineNode& node) {
 
 void NGFragmentItemsBuilder::SetCurrentLine(
     const NGPhysicalLineBoxFragment& line,
-    ChildList&& children) {
+    NGLogicalLineItems&& children) {
 #if DCHECK_IS_ON()
   current_line_fragment_ = &line;
 #endif
@@ -74,11 +74,12 @@ void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,
   DCHECK_LE(items_.size(), estimated_size);
 }
 
-void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
+void NGFragmentItemsBuilder::AddItems(NGLogicalLineItem* child_begin,
+                                      NGLogicalLineItem* child_end) {
   DCHECK(!is_converted_to_physical_);
 
-  for (Child* child_iter = child_begin; child_iter != child_end;) {
-    Child& child = *child_iter;
+  for (NGLogicalLineItem* child_iter = child_begin; child_iter != child_end;) {
+    NGLogicalLineItem& child = *child_iter;
     // OOF children should have been added to their parent box fragments.
     DCHECK(!child.out_of_flow_positioned_box);
     if (!child.fragment_item) {
@@ -103,7 +104,7 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
 
     // Add all children, including their desendants, skipping this item.
     CHECK_GE(child.children_count, 1u);  // 0 will loop infinitely.
-    Child* end_child_iter = child_iter + child.children_count;
+    NGLogicalLineItem* end_child_iter = child_iter + child.children_count;
     CHECK_LE(end_child_iter - child_begin, child_end - child_begin);
     AddItems(child_iter + 1, end_child_iter);
     child_iter = end_child_iter;

@@ -117,6 +117,9 @@ class PLATFORM_EXPORT AudioDestination
   static float HardwareSampleRate();
   static uint32_t MaxChannelCount();
 
+  // Sets the detect silence flag for |web_audio_device_|.
+  void SetDetectSilence(bool detect_silence);
+
  private:
   // Represents the current state of the underlying |WebAudioDevice| object
   // (RendererWebAudioDeviceImpl).

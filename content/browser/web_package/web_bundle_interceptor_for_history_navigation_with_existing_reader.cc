@@ -8,6 +8,7 @@
 #include "content/browser/web_package/web_bundle_reader.h"
 #include "content/browser/web_package/web_bundle_source.h"
 #include "content/browser/web_package/web_bundle_utils.h"
+#include "net/base/url_util.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "url/gurl.h"
 
@@ -35,12 +36,13 @@ void WebBundleInterceptorForHistoryNavigationWithExistingReader::
                       LoaderCallback callback,
                       FallbackCallback fallback_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(resource_request.url,
+  DCHECK_EQ(net::SimplifyUrlForRequest(resource_request.url),
             url_loader_factory_->reader()->source().is_file()
-                ? web_bundle_utils::GetSynthesizedUrlForWebBundle(
-                      url_loader_factory_->reader()->source().url(),
-                      target_inner_url_)
-                : target_inner_url_);
+                ? net::SimplifyUrlForRequest(
+                      web_bundle_utils::GetSynthesizedUrlForWebBundle(
+                          url_loader_factory_->reader()->source().url(),
+                          target_inner_url_))
+                : net::SimplifyUrlForRequest(target_inner_url_));
   std::move(callback).Run(
       base::MakeRefCounted<SingleRequestURLLoaderFactory>(base::BindOnce(
           &WebBundleInterceptorForHistoryNavigationWithExistingReader::
@@ -54,12 +56,13 @@ void WebBundleInterceptorForHistoryNavigationWithExistingReader::
         mojo::PendingReceiver<network::mojom::URLLoader> receiver,
         mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(resource_request.url,
+  DCHECK_EQ(net::SimplifyUrlForRequest(resource_request.url),
             url_loader_factory_->reader()->source().is_file()
-                ? web_bundle_utils::GetSynthesizedUrlForWebBundle(
-                      url_loader_factory_->reader()->source().url(),
-                      target_inner_url_)
-                : target_inner_url_);
+                ? net::SimplifyUrlForRequest(
+                      web_bundle_utils::GetSynthesizedUrlForWebBundle(
+                          url_loader_factory_->reader()->source().url(),
+                          target_inner_url_))
+                : net::SimplifyUrlForRequest(target_inner_url_));
   CreateLoaderAndStartAndDone(resource_request, std::move(receiver),
                               std::move(client));
 }

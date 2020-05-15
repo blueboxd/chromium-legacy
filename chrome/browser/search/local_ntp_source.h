@@ -78,7 +78,7 @@ class LocalNtpSource : public content::URLDataSource,
   std::string GetMimeType(const std::string& path) override;
   bool AllowCaching() override;
   bool ShouldServiceRequest(const GURL& url,
-                            content::BrowserContext* browser_context,
+                            content::ResourceContext* resource_context,
                             int render_process_id) override;
   bool ShouldAddContentSecurityPolicy() override;
 

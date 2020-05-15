@@ -14,7 +14,7 @@ import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/worker/dedicated_worker_host.mojom";
 import "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom";
 import "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom";
-import "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom";
+import "third_party/blink/public/mojom/service_worker/service_worker_container.mojom";
 import "url/mojom/url.mojom";
 
 // The name of the InterfaceProviderSpec in service manifests used by the
@@ -36,13 +36,13 @@ interface DedicatedWorkerHostFactoryClient {
   // is called after OnWorkerHostCreated(). This is never called when
   // OnScriptLoadStartFailed() is called.
   OnScriptLoadStarted(
-      // The info about the service worker provider in the browser process that
-      // provides support for this worker to be a service worker client.
+      // The info about the service worker container host in the browser process
+      // that provides support for this worker to be a service worker client.
       //
       // This is null if the dedicated worker cannot be a service
       // worker client, because for example, the worker's URL is
       // not http(s) or another service worker supported scheme.
-      ServiceWorkerProviderInfoForClient? service_worker_provider_info,
+      ServiceWorkerContainerInfoForClient? service_worker_container_info,
 
       // Used for passing the main script pre-requested by the browser process
       // and its redirect information.

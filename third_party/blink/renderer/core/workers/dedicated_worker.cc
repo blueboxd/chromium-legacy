@@ -64,9 +64,7 @@ DedicatedWorker* DedicatedWorker::Create(ExecutionContext* context,
     return nullptr;
   }
 
-  KURL script_request_url = ResolveURL(
-      context, url, exception_state, mojom::RequestContextType::SCRIPT,
-      network::mojom::RequestDestination::kScript);
+  KURL script_request_url = ResolveURL(context, url, exception_state);
   if (!script_request_url.IsValid()) {
     // Don't throw an exception here because it's already thrown in
     // ResolveURL().

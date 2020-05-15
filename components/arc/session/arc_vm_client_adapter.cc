@@ -537,8 +537,6 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     VLOG(1) << "OnArcVmServerProxyJobStopped: job "
             << (result ? "stopped" : "not running?");
 
-    should_notify_observers_ = true;
-
     // Make sure to stop arc-keymasterd if it's already started. Always move
     // |callback| as is and ignore |result|.
     chromeos::UpstartClient::Get()->StopJob(
@@ -616,6 +614,8 @@ class ArcVmClientAdapter : public ArcClientAdapter,
       return;
     }
     std::move(callback).Run(true);
+    // StartMiniArc() successful. Update the member variable here.
+    should_notify_observers_ = true;
   }
 
   void OnConciergeStarted(UpgradeParams params,

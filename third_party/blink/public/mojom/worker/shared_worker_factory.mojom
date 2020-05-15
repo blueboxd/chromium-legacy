@@ -11,7 +11,7 @@ import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/renderer_preference_watcher.mojom";
 import "third_party/blink/public/mojom/renderer_preferences.mojom";
 import "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom";
-import "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom";
+import "third_party/blink/public/mojom/service_worker/service_worker_container.mojom";
 import "third_party/blink/public/mojom/worker/shared_worker.mojom";
 import "third_party/blink/public/mojom/worker/shared_worker_host.mojom";
 import "third_party/blink/public/mojom/worker/shared_worker_info.mojom";
@@ -50,13 +50,13 @@ interface SharedWorkerFactory {
       pending_receiver<RendererPreferenceWatcher> preference_watcher_receiver,
       pending_remote<WorkerContentSettingsProxy> content_settings,
 
-      // The info about the service worker provider in the browser process that
-      // provides support for this worker to be a service worker client.
+      // The info about the service worker container host in the browser process
+      // that provides support for this worker to be a service worker client.
       //
       // This is null if the shared worker cannot be a service
       // worker client, because for example, the worker's URL is
       // not http(s) or another service worker supported scheme.
-      ServiceWorkerProviderInfoForClient? service_worker_provider_info,
+      ServiceWorkerContainerInfoForClient? service_worker_container_info,
 
       // The ID of the AppCacheHost in the browser process that serves resources
       // for this shared worker. This is not specified when AppCache doesn't

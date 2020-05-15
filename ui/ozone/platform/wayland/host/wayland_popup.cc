@@ -144,9 +144,7 @@ bool WaylandPopup::OnInitialize(PlatformWindowInitProperties properties) {
 }
 
 gfx::Rect WaylandPopup::AdjustPopupWindowPosition() {
-  auto* top_level_parent = wl::IsMenuType(parent_window()->type())
-                               ? parent_window()->parent_window()
-                               : parent_window();
+  auto* top_level_parent = GetRootParentWindow();
   DCHECK(top_level_parent);
   DCHECK(buffer_scale() == top_level_parent->buffer_scale());
   DCHECK(ui_scale() == top_level_parent->ui_scale());

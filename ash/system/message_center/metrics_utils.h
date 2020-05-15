@@ -93,6 +93,9 @@ void LogPopupShown(const std::string& notification_id);
 // Logs a tray ClosedByClearAll event.
 void LogClosedByClearAll(const std::string& notification_id);
 
+// Logs a notification added event.
+void LogNotificationAdded(const std::string& notification_id);
+
 }  // namespace metrics_utils
 
 }  // namespace ash

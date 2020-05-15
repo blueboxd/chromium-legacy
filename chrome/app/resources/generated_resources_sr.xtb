@@ -266,7 +266,7 @@
 <translation id="1336902454946927954">Ваш безбедносни кључ је закључан јер нисмо успели да препознамо отисак прста. Да бисте га откључали, унесите PIN.</translation>
 <translation id="1338802252451106843"><ph name="ORIGIN" /> жели да отвори ову апликацију.</translation>
 <translation id="1338950911836659113">Брисање...</translation>
-<translation id="13392265090583506">Подешавања приступачности</translation>
+<translation id="13392265090583506">Приступачност</translation>
 <translation id="1340527397989195812">Направите резервну копију медија са уређаја помоћу апликације Датотеке.</translation>
 <translation id="1341988552785875222">Актуелну позадину подешава „<ph name="APP_NAME" />“'. Треба да деинсталирате „<ph name="APP_NAME" />“ да бисте изабрали другу позадину.</translation>
 <translation id="1343865611738742294">Дајте Linux апликацијама дозволу да приступају USB уређајима. Linux неће запамтити USB уређај када га уклоните.</translation>
@@ -520,7 +520,6 @@
 <translation id="1650371550981945235">Приказуј опције уноса</translation>
 <translation id="1651008383952180276">Двапут треба да унесете исту приступну фразу</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Додајте штампач у Google Cloud штампање да бисте могли да штампате било где.}one{Додајте # штампач у Google Cloud штампање да бисте могли да штампате било где.}few{Додајте # штампача у Google Cloud штампање да бисте могли да штампате било где.}other{Додајте # штампача у Google Cloud штампање да бисте могли да штампате било где.}}</translation>
-<translation id="1655937588105566159">{NUM_EXTENSIONS,plural, =1{Овај додатак је можда опасан}one{Ови додаци су можда опасни}few{Ови додаци су можда опасни}other{Ови додаци су можда опасни}}</translation>
 <translation id="1656528038316521561">Непрозирност позадине</translation>
 <translation id="1657406563541664238">Помозите унапређивање <ph name="PRODUCT_NAME" /> прегледача тако што ћете аутоматски слати Google-у статистику коришћења и извештаје о отказивању</translation>
 <translation id="1657937299377480641">Треба ти дозвола родитеља за поновно пријављивање ради приступа образовним ресурсима</translation>
@@ -710,7 +709,6 @@
 <translation id="1875387611427697908">Ово може да се дода само из услуге <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Преузимање токена за потврду идентитета није успело. Одјавите се, па се поново пријавите да бисте пробали поново.</translation>
 <translation id="1877860345998737529">Додељивање радњи прекидачима</translation>
-<translation id="1878541307036593717">Подесите дозволе</translation>
 <translation id="1879000426787380528">Пријавите се као</translation>
 <translation id="1880905663253319515">Желите да избришете сертификат „<ph name="CERTIFICATE_NAME" />“?</translation>
 <translation id="1884013283844450420"><ph name="NETWORK_INDEX" />. мрежа од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, повежи</translation>
@@ -2629,6 +2627,7 @@
 <translation id="4359408040881008151">Инсталиран је због зависних додатака.</translation>
 <translation id="4359717112757026264">Градски пејзажи</translation>
 <translation id="4361142739114356624">Приватни кључ за овај сертификат клијента недостаје или је неважећи</translation>
+<translation id="4361745360460842907">Отвори као картицу</translation>
 <translation id="4363771538994847871">Нема пронађених одредишта за пребацивање. Да ли вам треба помоћ?</translation>
 <translation id="4364327530094270451">Диња</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> дели прозор.</translation>
@@ -3090,7 +3089,6 @@
 <translation id="4994474651455208930">Дозволи сајтовима да захтевају да постану подразумевани обрађивачи протокола</translation>
 <translation id="4994754230098574403">Подешава се</translation>
 <translation id="4997086284911172121">Нема интернет везе.</translation>
-<translation id="4997384734315285248">Деинсталирајте Plugin VM</translation>
 <translation id="4998430619171209993">Укључено</translation>
 <translation id="5000922062037820727">Блокирано (препоручено)</translation>
 <translation id="5005498671520578047">Копирање лозинке</translation>
@@ -3694,6 +3692,7 @@
 <translation id="5785583009707899920">Chrome услужни програми за датотеке</translation>
 <translation id="5787146423283493983">Слагање кључа</translation>
 <translation id="5788367137662787332">Жао нам је, најмање једну партицију на уређају <ph name="DEVICE_LABEL" /> није било могуће укључити.</translation>
+<translation id="5790085346892983794">Успешно</translation>
 <translation id="5792728279623964091">Додирните дугме за напајање</translation>
 <translation id="5793339252089865437">Ако преузмете ажурирање преко мобилне мреже, то може да изазове трошкове прекорачења.</translation>
 <translation id="5794414402486823030">Увек отварај помоћу системског приказивача</translation>
@@ -4626,6 +4625,7 @@
 <translation id="7004402701596653846">Сајт може да користи MIDI</translation>
 <translation id="7004499039102548441">Недавне картице</translation>
 <translation id="7005496624875927304">Додатне дозволе</translation>
+<translation id="7005812687360380971">Грешка</translation>
 <translation id="7005848115657603926">Неисправан опсег страница, користите <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Доња маргина</translation>
 <translation id="7007648447224463482">Отвори све у новом прозору</translation>
@@ -4765,7 +4765,6 @@
 <translation id="7191159667348037">Непознат штампач (USB)</translation>
 <translation id="7193051357671784796">Ову апликацију је додала ваша организација. Поново је покрените да бисте завршили инсталацију.</translation>
 <translation id="7193374945610105795">Ниједна лозинка није сачувана за <ph name="ORIGIN" /></translation>
-<translation id="7194620721202917359">{NUM_APPS,plural, =1{Ова апликација је можда опасна}one{Ове апликације су можда опасне}few{Ове апликације су можда опасне}other{Ове апликације су можда опасне}}</translation>
 <translation id="7196913789568937443">Правите резервне копије на Google диску. Лако враћајте податке или мењајте уређаје у било ком тренутку. Резервна копија обухвата податке апликација. Резервне копије се отпремају на Google и шифрују помоћу лозинке за Google налог. <ph name="BEGIN_LINK1" />Сазнајте више<ph name="END_LINK1" /></translation>
 <translation id="7197190419934240522">Добијте Google претрагу и Google паметне функције сваки пут када прегледате</translation>
 <translation id="7197632491113152433">На налогу смо пронашли апликације (<ph name="NUMBER_OF_APPS" />) које могу да се користе на овом уређају.</translation>
@@ -5008,7 +5007,6 @@
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> је регистрован за управљање предузећем.</translation>
 <translation id="7507207699631365376">Погледајте <ph name="BEGIN_LINK" />политику приватности<ph name="END_LINK" /> овог добављача</translation>
 <translation id="7507930499305566459">Сертификат за одзивник статуса</translation>
-<translation id="7508054832109420082">Омогућите приступ штампачима</translation>
 <translation id="7513029293694390567">Аутоматски се пријављујте на веб-сајтове помоћу сачуваних акредитива. Када је ова функција онемогућена, тражићемо потврду пре сваког пријављивања на веб-сајт.</translation>
 <translation id="7514239104543605883">Копирајте на свој уређај</translation>
 <translation id="7514365320538308">Преузми</translation>
@@ -5167,7 +5165,6 @@
 <translation id="7716781361494605745">URL адреса за смернице ауторитета за издавање Netscape сертификата</translation>
 <translation id="7717014941119698257">Преузимање: <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">Тражење ажурирања</translation>
-<translation id="7719070594859855691">Дајте приступ камери</translation>
 <translation id="7719367874908701697">Зумирање странице</translation>
 <translation id="7721179060400456005">Дозволи да се прозори простиру на више екрана</translation>
 <translation id="7722040605881499779">За ажурирање је потребно: <ph name="NECESSARY_SPACE" /></translation>

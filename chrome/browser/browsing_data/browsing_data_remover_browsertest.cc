@@ -530,7 +530,9 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     storage::FileSystemContext* file_system_context =
         storage_partition->GetFileSystemContext();
     auto container = std::make_unique<LocalDataContainer>(
-        new browsing_data::CookieHelper(storage_partition),
+        new browsing_data::CookieHelper(
+            storage_partition,
+            CookiesTreeModel::GetCookieDeletionDisabledCallback(profile)),
         new browsing_data::DatabaseHelper(profile),
         new browsing_data::LocalStorageHelper(profile),
         /*session_storage_helper=*/nullptr,

@@ -523,7 +523,6 @@
 <translation id="1650371550981945235">Afișează opțiunile de introducere a textului</translation>
 <translation id="1651008383952180276">Trebuie să introduci aceeași expresie de acces de două ori</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Pentru a putea printa de oriunde, adaugă imprimanta în Google Cloud Print.}few{Pentru a putea printa de oriunde, adaugă cele # imprimante în Google Cloud Print.}other{Pentru a putea printa de oriunde, adaugă cele # de imprimante în Google Cloud Print.}}</translation>
-<translation id="1655937588105566159">{NUM_EXTENSIONS,plural, =1{Această extensie poate fi periculoasă}few{Aceste extensii pot fi periculoase}other{Aceste extensii pot fi periculoase}}</translation>
 <translation id="1656528038316521561">Opacitatea fundalului</translation>
 <translation id="1657406563541664238">Trimite automat statistici de utilizare și rapoarte de blocare la Google pentru a contribui la îmbunătățirea <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1657937299377480641">Ca să te conectezi din nou pentru acces la resurse educaționale, solicită permisiunea unui părinte</translation>
@@ -713,7 +712,6 @@
 <translation id="1875387611427697908">Aceasta poate fi adăugată numai din <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Nu s-a putut obține indicativul de autentificare. Pentru a reîncerca, deconectează-te și conectează-te din nou.</translation>
 <translation id="1877860345998737529">Atribuirea acțiunii de comutare</translation>
-<translation id="1878541307036593717">Configurează permisiunile</translation>
 <translation id="1879000426787380528">Conectează-te ca</translation>
 <translation id="1880905663253319515">Șterge certificatul „<ph name="CERTIFICATE_NAME" />”?</translation>
 <translation id="1884013283844450420">Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, conectează-te</translation>
@@ -2632,6 +2630,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4359408040881008151">Instalată din cauza extensiilor dependente.</translation>
 <translation id="4359717112757026264">Cityscape</translation>
 <translation id="4361142739114356624">Cheia privată pentru acest Certificat de client lipsește sau nu este validă</translation>
+<translation id="4361745360460842907">Deschideți ca filă</translation>
 <translation id="4363771538994847871">Nicio destinație Google Cast găsită. Ai nevoie de ajutor?</translation>
 <translation id="4364327530094270451">Pepene galben</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> trimite conținutul unei ferestre.</translation>
@@ -3093,7 +3092,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4994474651455208930">Permiteți site-urilor să solicite să aibă rolul de programe asociate prestabilite pentru protocoale</translation>
 <translation id="4994754230098574403">Se configurează</translation>
 <translation id="4997086284911172121">Nu există conexiune la internet.</translation>
-<translation id="4997384734315285248">Dezinstalează Plugin VM</translation>
 <translation id="4998430619171209993">Activat</translation>
 <translation id="5000922062037820727">Blocată (recomandat)</translation>
 <translation id="5005498671520578047">Copiază parola</translation>
@@ -3696,6 +3694,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5785583009707899920">Utilitare de fișiere Chrome</translation>
 <translation id="5787146423283493983">Acord privind cheia</translation>
 <translation id="5788367137662787332">Ne pare rău, cel puțin o partiție de pe dispozitivul <ph name="DEVICE_LABEL" /> nu a putut fi montată.</translation>
+<translation id="5790085346892983794">Ai reușit</translation>
 <translation id="5792728279623964091">Atinge butonul de pornire</translation>
 <translation id="5793339252089865437">Dacă descarci actualizarea folosind rețeaua mobilă, poți atrage costuri ridicate.</translation>
 <translation id="5794414402486823030">Deschide întotdeauna cu Utilitarul de vizualizare al sistemului</translation>
@@ -4628,6 +4627,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7004402701596653846">Este posibil ca site-ul să folosească dispozitive MIDI</translation>
 <translation id="7004499039102548441">File recente</translation>
 <translation id="7005496624875927304">Permisiuni suplimentare</translation>
+<translation id="7005812687360380971">Eroare</translation>
 <translation id="7005848115657603926">Interval de pagini nevalid, utilizează <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Margine jos</translation>
 <translation id="7007648447224463482">Deschide totul într-o fereastră nouă</translation>
@@ -4767,7 +4767,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7191159667348037">Imprimantă necunoscută (USB)</translation>
 <translation id="7193051357671784796">Aplicația a fost adăugată de organizația ta. Repornește aplicația pentru a finaliza instalarea ei.</translation>
 <translation id="7193374945610105795">Nu s-au salvat parole pentru <ph name="ORIGIN" /></translation>
-<translation id="7194620721202917359">{NUM_APPS,plural, =1{Această aplicație poate fi periculoasă}few{Aceste aplicații pot fi periculoase}other{Aceste aplicații pot fi periculoase}}</translation>
 <translation id="7196913789568937443">Fă backup în Google Drive. Restabilește datele sau schimbă dispozitivul cu ușurință, în orice moment. Backupul include datele aplicațiilor. Backupurile sunt încărcate pe serverele Google și sunt criptate folosind parola pentru Contul Google. <ph name="BEGIN_LINK1" />Află mai multe<ph name="END_LINK1" /></translation>
 <translation id="7197190419934240522">Obține Căutare Google și ingeniozitatea Google de fiecare dată când navighezi.</translation>
 <translation id="7197632491113152433">Am găsit <ph name="NUMBER_OF_APPS" /> aplicații din contul tău care pot fi folosite pe acest dispozitiv.</translation>
@@ -5010,7 +5009,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7506541170099744506">Dispozitivul <ph name="DEVICE_TYPE" /> a fost înscris pentru gestionarea de întreprindere.</translation>
 <translation id="7507207699631365376">Consultă <ph name="BEGIN_LINK" />politica de confidențialitate<ph name="END_LINK" /> a furnizorului</translation>
 <translation id="7507930499305566459">Certificat de respondent de stare</translation>
-<translation id="7508054832109420082">Permite accesul imprimantelor</translation>
 <translation id="7513029293694390567">Te conectezi automat la site-uri folosind datele de conectare stocate. Dacă funcția este dezactivată, ți se va solicita confirmarea de fiecare dată înainte de a te conecta la un site.</translation>
 <translation id="7514239104543605883">Copiază pe dispozitiv</translation>
 <translation id="7514365320538308">Descarcă</translation>
@@ -5169,7 +5167,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7716781361494605745">Adresa URL a politicii privind autoritatea de certificare Netscape</translation>
 <translation id="7717014941119698257">Se descarcă: <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">Caută actualizări</translation>
-<translation id="7719070594859855691">Permite accesul la camera foto</translation>
 <translation id="7719367874908701697">Zoom pe pagină</translation>
 <translation id="7721179060400456005">Permite ca ferestrele să se afișeze pe mai multe ecrane</translation>
 <translation id="7722040605881499779">Spațiul necesar pentru actualizare: <ph name="NECESSARY_SPACE" /></translation>

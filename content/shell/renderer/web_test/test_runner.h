@@ -316,10 +316,6 @@ class TestRunner {
                                      const std::string& destination_host,
                                      bool allow_destination_subdomains);
 
-  // Add |source_code| as an injected stylesheet to the active document of the
-  // window of the current V8 context.
-  void InsertStyleSheet(const std::string& source_code);
-
   // Enables or disables subpixel positioning (i.e. fractional X positions for
   // glyphs) in text rendering on Linux. Since this method changes global
   // settings, tests that call it must use their own custom font family for

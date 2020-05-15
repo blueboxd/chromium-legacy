@@ -32,14 +32,11 @@ WebauthnDialogViewImpl::WebauthnDialogViewImpl(
       AddChildView(CreateSheetViewForAutofillWebAuthn(std::move(model)));
   sheet_view_->ReInitChildViews();
 
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
-                                   model_->GetAcceptButtonLabel());
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
-                                   model_->GetCancelButtonLabel());
-  DialogDelegate::SetButtons(model_->IsAcceptButtonVisible()
-                                  ? ui::DIALOG_BUTTON_OK |
-                                        ui::DIALOG_BUTTON_CANCEL
-                                  : ui::DIALOG_BUTTON_CANCEL);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, model_->GetAcceptButtonLabel());
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, model_->GetCancelButtonLabel());
+  SetButtons(model_->IsAcceptButtonVisible()
+                 ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
+                 : ui::DIALOG_BUTTON_CANCEL);
 }
 
 WebauthnDialogViewImpl::~WebauthnDialogViewImpl() {
@@ -139,15 +136,12 @@ void WebauthnDialogViewImpl::Hide() {
 void WebauthnDialogViewImpl::RefreshContent() {
   sheet_view_->ReInitChildViews();
   sheet_view_->InvalidateLayout();
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
-                                   model_->GetAcceptButtonLabel());
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
-                                   model_->GetCancelButtonLabel());
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, model_->GetAcceptButtonLabel());
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, model_->GetCancelButtonLabel());
   DCHECK(model_->IsCancelButtonVisible());
-  DialogDelegate::SetButtons(model_->IsAcceptButtonVisible()
-                                  ? ui::DIALOG_BUTTON_OK |
-                                        ui::DIALOG_BUTTON_CANCEL
-                                  : ui::DIALOG_BUTTON_CANCEL);
+  SetButtons(model_->IsAcceptButtonVisible()
+                 ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
+                 : ui::DIALOG_BUTTON_CANCEL);
 
   DialogModelChanged();
   Layout();

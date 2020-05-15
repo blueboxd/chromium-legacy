@@ -2665,6 +2665,167 @@ TEST_F(AutofillManagerTest, FillCreditCardForm_YearMonth) {
       response_page_id, response_data, kDefaultPageID, false, "2999", "04");
 }
 
+// Test that only the first 16 credit card number fields are filled.
+TEST_F(AutofillManagerTest, FillOnlyFirstNineteenCreditCardNumberFields) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.url = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+
+  FormFieldData field;
+  test::CreateTestFormField("Card Name", "cardname", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last Name", "cardlastname", "", "text", &field);
+  form.fields.push_back(field);
+
+  // Add 20 credit card number fields with distinct names.
+  for (int i = 0; i < 20; i++) {
+    base::string16 field_name =
+        base::ASCIIToUTF16("Card Number ") + base::NumberToString16(i + 1);
+    test::CreateTestFormField(base::UTF16ToASCII(field_name).c_str(),
+                              "cardnumber", "", "text", &field);
+    form.fields.push_back(field);
+  }
+
+  test::CreateTestFormField("CVC", "cvc", "", "text", &field);
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  const char guid[] = "00000000-0000-0000-0000-000000000004";
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
+                                     MakeFrontendID(guid, std::string()),
+                                     &response_page_id, &response_data);
+  ExpectFilledField("Card Name", "cardname", "Elvis", "text",
+                    response_data.fields[0]);
+  ExpectFilledField("Last Name", "cardlastname", "Presley", "text",
+                    response_data.fields[1]);
+
+  // Verify that the first 19 credit card number fields are filled.
+  for (int i = 0; i < 19; i++) {
+    base::string16 field_name =
+        base::ASCIIToUTF16("Card Number ") + base::NumberToString16(i + 1);
+    ExpectFilledField(base::UTF16ToASCII(field_name).c_str(), "cardnumber",
+                      "4234567890123456", "text", response_data.fields[2 + i]);
+  }
+
+  // Verify that the 20th. credit card number field is not filled.
+  ExpectFilledField("Card Number 20", "cardnumber", "", "text",
+                    response_data.fields[21]);
+
+  ExpectFilledField("CVC", "cvc", "", "text", response_data.fields[22]);
+}
+
+// Test that only the first 16 of identical fields are filled.
+TEST_F(AutofillManagerTest,
+       FillOnlyFirstSixteenIdenticalCreditCardNumberFields) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.url = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+
+  FormFieldData field;
+  test::CreateTestFormField("Card Name", "cardname", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last Name", "cardlastname", "", "text", &field);
+  form.fields.push_back(field);
+
+  // Add 20 identical card number fields.
+  for (int i = 0; i < 20; i++) {
+    test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
+    form.fields.push_back(field);
+  }
+
+  test::CreateTestFormField("CVC", "cvc", "", "text", &field);
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  const char guid[] = "00000000-0000-0000-0000-000000000004";
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
+                                     MakeFrontendID(guid, std::string()),
+                                     &response_page_id, &response_data);
+  ExpectFilledField("Card Name", "cardname", "Elvis", "text",
+                    response_data.fields[0]);
+  ExpectFilledField("Last Name", "cardlastname", "Presley", "text",
+                    response_data.fields[1]);
+
+  // Verify that the first 19 card number fields are filled.
+  for (int i = 0; i < 19; i++) {
+    ExpectFilledField("Card Number", "cardnumber", "4234567890123456", "text",
+                      response_data.fields[2 + i]);
+  }
+  // Verify that the 20th. card number field is not filled.
+  ExpectFilledField("Card Number", "cardnumber", "", "text",
+                    response_data.fields[21]);
+
+  ExpectFilledField("CVC", "cvc", "", "text", response_data.fields[22]);
+}
+
+// Test the credit card number is filled correctly into single-digit fields.
+TEST_F(AutofillManagerTest, FillCreditCardNumberIntoSingleDigitFields) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.url = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+
+  FormFieldData field;
+  test::CreateTestFormField("Card Name", "cardname", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last Name", "cardlastname", "", "text", &field);
+  form.fields.push_back(field);
+
+  // Add 20 identical card number fields.
+  for (int i = 0; i < 20; i++) {
+    test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
+    // Limit the length the field to 1.
+    field.max_length = 1;
+    form.fields.push_back(field);
+  }
+
+  test::CreateTestFormField("CVC", "cvc", "", "text", &field);
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  const char guid[] = "00000000-0000-0000-0000-000000000004";
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
+                                     MakeFrontendID(guid, std::string()),
+                                     &response_page_id, &response_data);
+  ExpectFilledField("Card Name", "cardname", "Elvis", "text",
+                    response_data.fields[0]);
+  ExpectFilledField("Last Name", "cardlastname", "Presley", "text",
+                    response_data.fields[1]);
+
+  // Verify that the first 19 card number fields are filled.
+  base::string16 card_number = base::ASCIIToUTF16("4234567890123456");
+  for (unsigned int i = 0; i < 19; i++) {
+    ExpectFilledField("Card Number", "cardnumber",
+                      i < card_number.length()
+                          ? base::UTF16ToASCII(card_number.substr(i, 1)).c_str()
+                          : "",
+                      "text", response_data.fields[2 + i]);
+  }
+
+  // Verify that the 20th. card number field is not filled.
+  ExpectFilledField("Card Number", "cardnumber", "", "text",
+                    response_data.fields[21]);
+
+  ExpectFilledField("CVC", "cvc", "", "text", response_data.fields[22]);
+}
+
 // Test that we correctly fill a credit card form with first and last cardholder
 // name.
 TEST_F(AutofillManagerTest, FillCreditCardForm_SplitName) {

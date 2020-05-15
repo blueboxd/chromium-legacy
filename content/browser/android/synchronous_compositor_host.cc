@@ -22,7 +22,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/android/sync_compositor_statics.h"
-#include "content/common/input/sync_compositor_messages.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -114,8 +113,8 @@ class SynchronousCompositorControlHost
   }
 
   void BeginFrameResponse(
-      const content::SyncCompositorCommonRendererParams& params) override {
-    if (!bridge_->BeginFrameResponseOnIOThread(params)) {
+      mojom::SyncCompositorCommonRendererParamsPtr params) override {
+    if (!bridge_->BeginFrameResponseOnIOThread(std::move(params))) {
       bad_message::ReceivedBadMessage(
           process_id_, bad_message::SYNC_COMPOSITOR_NO_BEGIN_FRAME);
     }
@@ -202,15 +201,16 @@ SynchronousCompositorHost::DemandDrawHwAsync(
     return frame_future;
   }
 
-  SyncCompositorDemandDrawHwParams params(viewport_size,
-                                          viewport_rect_for_tile_priority,
-                                          transform_for_tile_priority);
+  mojom::SyncCompositorDemandDrawHwParamsPtr params =
+      mojom::SyncCompositorDemandDrawHwParams::New(
+          viewport_size, viewport_rect_for_tile_priority,
+          transform_for_tile_priority);
   mojom::SynchronousCompositor* compositor = GetSynchronousCompositor();
   if (!bridge_->SetFrameFutureOnUIThread(frame_future)) {
     frame_future->SetFrame(nullptr);
   } else {
     DCHECK(compositor);
-    compositor->DemandDrawHwAsync(params);
+    compositor->DemandDrawHwAsync(std::move(params));
   }
   return frame_future;
 }
@@ -219,14 +219,15 @@ SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(
     const gfx::Size& viewport_size,
     const gfx::Rect& viewport_rect_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority) {
-  SyncCompositorDemandDrawHwParams params(viewport_size,
-                                          viewport_rect_for_tile_priority,
-                                          transform_for_tile_priority);
+  mojom::SyncCompositorDemandDrawHwParamsPtr params =
+      mojom::SyncCompositorDemandDrawHwParams::New(
+          viewport_size, viewport_rect_for_tile_priority,
+          transform_for_tile_priority);
   uint32_t layer_tree_frame_sink_id;
   uint32_t metadata_version = 0u;
   base::Optional<viz::CompositorFrame> compositor_frame;
   base::Optional<viz::HitTestRegionList> hit_test_region_list;
-  SyncCompositorCommonRendererParams common_renderer_params;
+  mojom::SyncCompositorCommonRendererParamsPtr common_renderer_params;
 
   {
     mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
@@ -234,13 +235,14 @@ SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(
         allow_base_sync_primitives;
     if (!IsReadyForSynchronousCall() ||
         !GetSynchronousCompositor()->DemandDrawHw(
-            params, &common_renderer_params, &layer_tree_frame_sink_id,
-            &metadata_version, &compositor_frame, &hit_test_region_list)) {
+            std::move(params), &common_renderer_params,
+            &layer_tree_frame_sink_id, &metadata_version, &compositor_frame,
+            &hit_test_region_list)) {
       return SynchronousCompositor::Frame();
     }
   }
 
-  UpdateState(common_renderer_params);
+  UpdateState(std::move(common_renderer_params));
 
   if (!compositor_frame)
     return SynchronousCompositor::Frame();
@@ -288,19 +290,21 @@ bool SynchronousCompositorHost::DemandDrawSwInProc(SkCanvas* canvas) {
   mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope
       allow_base_sync_primitives;
-  SyncCompositorCommonRendererParams common_renderer_params;
+  mojom::SyncCompositorCommonRendererParamsPtr common_renderer_params;
   base::Optional<viz::CompositorFrameMetadata> metadata;
   ScopedSetSkCanvas set_sk_canvas(canvas);
-  SyncCompositorDemandDrawSwParams params;  // Unused.
+  mojom::SyncCompositorDemandDrawSwParamsPtr params =
+      mojom::SyncCompositorDemandDrawSwParams::New();  // Unused.
   uint32_t metadata_version = 0u;
   invalidate_needs_draw_ = false;
   if (!IsReadyForSynchronousCall() ||
-      !GetSynchronousCompositor()->DemandDrawSw(params, &common_renderer_params,
+      !GetSynchronousCompositor()->DemandDrawSw(std::move(params),
+                                                &common_renderer_params,
                                                 &metadata_version, &metadata))
     return false;
   if (!metadata)
     return false;
-  UpdateState(common_renderer_params);
+  UpdateState(std::move(common_renderer_params));
   UpdateFrameMetaData(metadata_version, std::move(*metadata));
   return true;
 }
@@ -332,17 +336,18 @@ bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas) {
   if (use_in_process_zero_copy_software_draw_)
     return DemandDrawSwInProc(canvas);
 
-  SyncCompositorDemandDrawSwParams params;
-  params.size = gfx::Size(canvas->getBaseLayerSize().width(),
-                          canvas->getBaseLayerSize().height());
+  mojom::SyncCompositorDemandDrawSwParamsPtr params =
+      mojom::SyncCompositorDemandDrawSwParams::New();
+  params->size = gfx::Size(canvas->getBaseLayerSize().width(),
+                           canvas->getBaseLayerSize().height());
   SkIRect canvas_clip = canvas->getDeviceClipBounds();
-  params.clip = gfx::SkIRectToRect(canvas_clip);
-  params.transform.matrix() = canvas->getTotalMatrix();
-  if (params.size.IsEmpty())
+  params->clip = gfx::SkIRectToRect(canvas_clip);
+  params->transform.matrix() = canvas->getTotalMatrix();
+  if (params->size.IsEmpty())
     return true;
 
   SkImageInfo info =
-      SkImageInfo::MakeN32Premul(params.size.width(), params.size.height());
+      SkImageInfo::MakeN32Premul(params->size.width(), params->size.height());
   DCHECK_EQ(kRGBA_8888_SkColorType, info.colorType());
   size_t stride = info.minRowBytes();
   size_t buffer_size = info.computeByteSize(stride);
@@ -355,14 +360,15 @@ bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas) {
 
   base::Optional<viz::CompositorFrameMetadata> metadata;
   uint32_t metadata_version = 0u;
-  SyncCompositorCommonRendererParams common_renderer_params;
+  mojom::SyncCompositorCommonRendererParamsPtr common_renderer_params;
   {
     mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
     base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope
         allow_base_sync_primitives;
     if (!IsReadyForSynchronousCall() ||
         !GetSynchronousCompositor()->DemandDrawSw(
-            params, &common_renderer_params, &metadata_version, &metadata)) {
+            std::move(params), &common_renderer_params, &metadata_version,
+            &metadata)) {
       return false;
     }
   }
@@ -370,7 +376,7 @@ bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas) {
   if (!metadata)
     return false;
 
-  UpdateState(common_renderer_params);
+  UpdateState(std::move(common_renderer_params));
   UpdateFrameMetaData(metadata_version, std::move(*metadata));
 
   SkBitmap bitmap;
@@ -412,7 +418,7 @@ void SynchronousCompositorHost::SetSoftwareDrawSharedMemoryIfNeeded(
   }
 
   bool success = false;
-  SyncCompositorCommonRendererParams common_renderer_params;
+  mojom::SyncCompositorCommonRendererParamsPtr common_renderer_params;
   {
     mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
     base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope
@@ -425,7 +431,7 @@ void SynchronousCompositorHost::SetSoftwareDrawSharedMemoryIfNeeded(
     }
   }
   software_draw_shm_ = std::move(software_draw_shm);
-  UpdateState(common_renderer_params);
+  UpdateState(std::move(common_renderer_params));
 }
 
 void SynchronousCompositorHost::SendZeroMemory() {
@@ -481,7 +487,7 @@ void SynchronousCompositorHost::DidChangeRootLayerScrollOffset(
 
 void SynchronousCompositorHost::SynchronouslyZoomBy(float zoom_delta,
                                                     const gfx::Point& anchor) {
-  SyncCompositorCommonRendererParams common_renderer_params;
+  mojom::SyncCompositorCommonRendererParamsPtr common_renderer_params;
   {
     mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
     base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope
@@ -492,7 +498,7 @@ void SynchronousCompositorHost::SynchronouslyZoomBy(float zoom_delta,
       return;
     }
   }
-  UpdateState(common_renderer_params);
+  UpdateState(std::move(common_renderer_params));
 }
 
 void SynchronousCompositorHost::OnComputeScroll(
@@ -538,23 +544,23 @@ void SynchronousCompositorHost::LayerTreeFrameSinkCreated() {
 }
 
 void SynchronousCompositorHost::UpdateState(
-    const SyncCompositorCommonRendererParams& params) {
+    mojom::SyncCompositorCommonRendererParamsPtr params) {
   // Ignore if |renderer_param_version_| is newer than |params.version|. This
   // comparison takes into account when the unsigned int wraps.
-  if ((renderer_param_version_ - params.version) < 0x80000000) {
+  if ((renderer_param_version_ - params->version) < 0x80000000) {
     return;
   }
-  renderer_param_version_ = params.version;
-  root_scroll_offset_ = params.total_scroll_offset;
-  max_scroll_offset_ = params.max_scroll_offset;
-  scrollable_size_ = params.scrollable_size;
-  page_scale_factor_ = params.page_scale_factor;
-  min_page_scale_factor_ = params.min_page_scale_factor;
-  max_page_scale_factor_ = params.max_page_scale_factor;
-  invalidate_needs_draw_ |= params.invalidate_needs_draw;
+  renderer_param_version_ = params->version;
+  root_scroll_offset_ = params->total_scroll_offset;
+  max_scroll_offset_ = params->max_scroll_offset;
+  scrollable_size_ = params->scrollable_size;
+  page_scale_factor_ = params->page_scale_factor;
+  min_page_scale_factor_ = params->min_page_scale_factor;
+  max_page_scale_factor_ = params->max_page_scale_factor;
+  invalidate_needs_draw_ |= params->invalidate_needs_draw;
 
-  if (need_invalidate_count_ != params.need_invalidate_count) {
-    need_invalidate_count_ = params.need_invalidate_count;
+  if (need_invalidate_count_ != params->need_invalidate_count) {
+    need_invalidate_count_ = params->need_invalidate_count;
     if (invalidate_needs_draw_) {
       client_->PostInvalidate(this);
     } else {
@@ -563,8 +569,8 @@ void SynchronousCompositorHost::UpdateState(
   }
 
   if (did_activate_pending_tree_count_ !=
-      params.did_activate_pending_tree_count) {
-    did_activate_pending_tree_count_ = params.did_activate_pending_tree_count;
+      params->did_activate_pending_tree_count) {
+    did_activate_pending_tree_count_ = params->did_activate_pending_tree_count;
     client_->DidUpdateContent(this);
   }
 

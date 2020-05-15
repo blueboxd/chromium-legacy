@@ -32,6 +32,7 @@ import re
 import signal
 import socket
 import subprocess
+import syslog
 import tempfile
 import threading
 import time
@@ -237,12 +238,42 @@ def gen_xorg_config(sizes):
           video_ram=XORG_DUMMY_VIDEO_RAM))
 
 
+def display_manager_is_gdm():
+  try:
+    # Open as binary to avoid any encoding errors
+    with open('/etc/X11/default-display-manager', 'rb') as file:
+      if file.read().strip() in [b'/usr/sbin/gdm', b'/usr/sbin/gdm3']:
+        return True
+    # Fall through to process checking even if the file doesn't contain gdm.
+  except:
+    # If we can't read the file, move on to checking the process list.
+    pass
+
+  for process in psutil.process_iter():
+    if process.name() in ['gdm', 'gdm3']:
+      return True
+
+  return False
+
+
 def is_supported_platform():
   # Always assume that the system is supported if the config directory or
   # session file exist.
   if (os.path.isdir(CONFIG_DIR) or os.path.isfile(SESSION_FILE_PATH) or
       os.path.isfile(SYSTEM_SESSION_FILE_PATH)):
     return True
+
+  # There's a bug in recent versions of GDM that will prevent a user from
+  # logging in via GDM when there is already an x11 session running for that
+  # user (such as the one started by CRD). Since breaking local login is a
+  # pretty serious issue, we want to disallow host set up through the website.
+  # Unfortunately, there's no way to return a specific error to the website, so
+  # we just return False to indicate an unsupported platform. The user can still
+  # set up the host using the headless setup flow, where we can at least display
+  # a warning. See https://gitlab.gnome.org/GNOME/gdm/-/issues/580 for details
+  # of the bug and fix.
+  if display_manager_is_gdm():
+    return False;
 
   # The session chooser expects a Debian-style Xsession script.
   return os.path.isfile(DEBIAN_XSESSION_PATH);
@@ -1528,6 +1559,22 @@ Web Store: https://chrome.google.com/remotedesktop"""
 
   # Start logging to user-session messaging pipe if it exists.
   ParentProcessLogger.try_start_logging(USER_SESSION_MESSAGE_FD)
+
+  if display_manager_is_gdm():
+    # See https://gitlab.gnome.org/GNOME/gdm/-/issues/580 for details on the
+    # bug.
+    gdm_message = (
+        "WARNING: This system uses GDM. Some GDM versions have a bug that "
+        "prevents local login while Chrome Remote Desktop is running. If you "
+        "run into this issue, you can stop Chrome Remote Desktop by visiting "
+        "https://remotedesktop.google.com/access on another machine and "
+        "clicking the delete icon next to this machine. It may take up to five "
+        "minutes for the Chrome Remote Desktop to exit on this machine and for "
+        "local login to start working again.")
+    logging.warning(gdm_message)
+    # Also log to syslog so the user has a higher change of discovering the
+    # message if they go searching.
+    syslog.syslog(syslog.LOG_WARNING | syslog.LOG_DAEMON, gdm_message)
 
   if USE_XORG_ENV_VAR in os.environ:
     default_sizes = DEFAULT_SIZES_XORG

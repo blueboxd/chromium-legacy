@@ -379,6 +379,22 @@ TEST_F(ViewTest, OnBoundsChanged) {
   EXPECT_EQ(v.bounds(), new_rect);
 }
 
+TEST_F(ViewTest, TransformFiresA11yEvent) {
+  TestView v;
+  v.SetPaintToLayer();
+
+  gfx::Rect bounds(0, 0, 200, 200);
+  v.last_a11y_event_ = ax::mojom::Event::kNone;
+  v.SetBoundsRect(bounds);
+  EXPECT_EQ(v.last_a11y_event_, ax::mojom::Event::kLocationChanged);
+
+  gfx::Transform transform;
+  transform.Translate(gfx::Vector2dF(10, 10));
+  v.last_a11y_event_ = ax::mojom::Event::kNone;
+  v.layer()->SetTransform(transform);
+  EXPECT_EQ(v.last_a11y_event_, ax::mojom::Event::kLocationChanged);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // OnStateChanged
 ////////////////////////////////////////////////////////////////////////////////
@@ -2224,16 +2240,16 @@ TEST_F(ViewTest, HandleAccelerator) {
   EXPECT_EQ(1, view->accelerator_count_map_[return_accelerator]);
 
   // Add a child view associated with a child widget.
-  TestView* child_view = new TestView();
-  child_view->Reset();
-  child_view->AddAccelerator(return_accelerator);
-  EXPECT_EQ(child_view->accelerator_count_map_[return_accelerator], 0);
   Widget* child_widget = new Widget;
   Widget::InitParams child_params =
       CreateParams(Widget::InitParams::TYPE_CONTROL);
   child_params.parent = widget->GetNativeView();
   child_widget->Init(std::move(child_params));
-  child_widget->SetContentsView(child_view);
+  TestView* child_view =
+      child_widget->SetContentsView(std::make_unique<TestView>());
+  child_view->Reset();
+  child_view->AddAccelerator(return_accelerator);
+  EXPECT_EQ(child_view->accelerator_count_map_[return_accelerator], 0);
 
   FocusManager* child_focus_manager = child_widget->GetFocusManager();
   ASSERT_TRUE(child_focus_manager);
@@ -2526,10 +2542,11 @@ TEST_F(ViewTest, NativeViewHierarchyChanged) {
   child_params.parent = toplevel1->GetNativeView();
   child->Init(std::move(child_params));
 
-  ToplevelWidgetObserverView* observer_view = new ToplevelWidgetObserverView();
-  EXPECT_EQ(nullptr, observer_view->toplevel());
+  auto owning_observer_view = std::make_unique<ToplevelWidgetObserverView>();
+  EXPECT_EQ(nullptr, owning_observer_view->toplevel());
 
-  child->SetContentsView(observer_view);
+  ToplevelWidgetObserverView* observer_view =
+      child->SetContentsView(std::move(owning_observer_view));
   EXPECT_EQ(toplevel1.get(), observer_view->toplevel());
 
   Widget::ReparentNativeView(child->GetNativeView(),
@@ -2760,15 +2777,12 @@ TEST_F(ViewTest, TransformVisibleBound) {
   widget->Init(std::move(params));
   widget->GetRootView()->SetBoundsRect(viewport_bounds);
 
-  View* viewport = new View;
-  widget->SetContentsView(viewport);
-  View* contents = new View;
-  viewport->AddChildView(contents);
+  View* viewport = widget->SetContentsView(std::make_unique<View>());
+  View* contents = viewport->AddChildView(std::make_unique<View>());
   viewport->SetBoundsRect(viewport_bounds);
   contents->SetBoundsRect(gfx::Rect(0, 0, 100, 200));
 
-  View* child = new View;
-  contents->AddChildView(child);
+  View* child = contents->AddChildView(std::make_unique<View>());
   child->SetBoundsRect(gfx::Rect(10, 90, 50, 50));
   EXPECT_EQ(gfx::Rect(0, 0, 50, 10), child->GetVisibleBounds());
 
@@ -2817,17 +2831,15 @@ TEST_F(ViewTest, OnVisibleBoundsChanged) {
   widget->Init(std::move(params));
   widget->GetRootView()->SetBoundsRect(viewport_bounds);
 
-  View* viewport = new View;
-  widget->SetContentsView(viewport);
-  View* contents = new View;
-  viewport->AddChildView(contents);
+  View* viewport = widget->SetContentsView(std::make_unique<View>());
+  View* contents = viewport->AddChildView(std::make_unique<View>());
   viewport->SetBoundsRect(viewport_bounds);
   contents->SetBoundsRect(gfx::Rect(0, 0, 100, 200));
 
   // Create a view that cares about visible bounds notifications, and position
   // it just outside the visible bounds of the viewport.
-  VisibleBoundsView* child = new VisibleBoundsView;
-  contents->AddChildView(child);
+  VisibleBoundsView* child =
+      contents->AddChildView(std::make_unique<VisibleBoundsView>());
   child->SetBoundsRect(gfx::Rect(10, 110, 50, 50));
 
   // The child bound should be fully clipped.
@@ -2919,14 +2931,13 @@ TEST_F(ViewTest, AddAndRemoveSchedulePaints) {
   widget->Init(std::move(params));
   widget->GetRootView()->SetBoundsRect(viewport_bounds);
 
-  TestView* parent_view = new TestView;
-  widget->SetContentsView(parent_view);
+  TestView* parent_view = widget->SetContentsView(std::make_unique<TestView>());
   parent_view->SetBoundsRect(viewport_bounds);
   parent_view->scheduled_paint_rects_.clear();
 
-  View* child_view = new View;
-  child_view->SetBoundsRect(gfx::Rect(0, 0, 20, 20));
-  parent_view->AddChildView(child_view);
+  auto owning_child_view = std::make_unique<View>();
+  owning_child_view->SetBoundsRect(gfx::Rect(0, 0, 20, 20));
+  View* child_view = parent_view->AddChildView(std::move(owning_child_view));
   ASSERT_EQ(1U, parent_view->scheduled_paint_rects_.size());
   EXPECT_EQ(child_view->bounds(), parent_view->scheduled_paint_rects_.front());
 
@@ -3982,8 +3993,7 @@ TEST_F(ViewLayerTest, LayerToggling) {
   // Because we lazily create textures the calls to DrawTree are necessary to
   // ensure we trigger creation of textures.
   ui::Layer* root_layer = widget()->GetLayer();
-  View* content_view = new View;
-  widget()->SetContentsView(content_view);
+  View* content_view = widget()->SetContentsView(std::make_unique<View>());
 
   // Create v1, give it a bounds and verify everything is set up correctly.
   View* v1 = new View;
@@ -4038,8 +4048,7 @@ TEST_F(ViewLayerTest, LayerToggling) {
 
 // Verifies turning on a layer wires up children correctly.
 TEST_F(ViewLayerTest, NestedLayerToggling) {
-  View* content_view = new View;
-  widget()->SetContentsView(content_view);
+  View* content_view = widget()->SetContentsView(std::make_unique<View>());
 
   // Create v1, give it a bounds and verify everything is set up correctly.
   View* v1 = content_view->AddChildView(std::make_unique<View>());
@@ -4063,8 +4072,7 @@ TEST_F(ViewLayerTest, NestedLayerToggling) {
 }
 
 TEST_F(ViewLayerTest, LayerAnimator) {
-  View* content_view = new View;
-  widget()->SetContentsView(content_view);
+  View* content_view = widget()->SetContentsView(std::make_unique<View>());
 
   View* v1 = content_view->AddChildView(std::make_unique<View>());
   v1->SetPaintToLayer();
@@ -4083,8 +4091,7 @@ TEST_F(ViewLayerTest, LayerAnimator) {
 // Verifies the bounds of a layer are updated if the bounds of ancestor that
 // doesn't have a layer change.
 TEST_F(ViewLayerTest, BoundsChangeWithLayer) {
-  View* content_view = new View;
-  widget()->SetContentsView(content_view);
+  View* content_view = widget()->SetContentsView(std::make_unique<View>());
 
   View* v1 = content_view->AddChildView(std::make_unique<View>());
   v1->SetBoundsRect(gfx::Rect(20, 30, 140, 150));
@@ -4120,8 +4127,7 @@ TEST_F(ViewLayerTest, BoundsChangeWithLayer) {
 // Make sure layers are positioned correctly in RTL.
 TEST_F(ViewLayerTest, BoundInRTL) {
   base::test::ScopedRestoreICUDefaultLocale scoped_locale_("he");
-  View* view = new View;
-  widget()->SetContentsView(view);
+  View* view = widget()->SetContentsView(std::make_unique<View>());
 
   int content_width = view->width();
 
@@ -4171,8 +4177,7 @@ TEST_F(ViewLayerTest, BoundInRTL) {
 // Make sure that resizing a parent in RTL correctly repositions its children.
 TEST_F(ViewLayerTest, ResizeParentInRTL) {
   base::test::ScopedRestoreICUDefaultLocale scoped_locale_("he");
-  View* view = new View;
-  widget()->SetContentsView(view);
+  View* view = widget()->SetContentsView(std::make_unique<View>());
 
   int content_width = view->width();
 
@@ -4218,11 +4223,10 @@ TEST_F(ViewLayerTest, ResizeParentInRTL) {
 
 // Makes sure a transform persists after toggling the visibility.
 TEST_F(ViewLayerTest, ToggleVisibilityWithTransform) {
-  View* view = new View;
+  View* view = widget()->SetContentsView(std::make_unique<View>());
   gfx::Transform transform;
   transform.Scale(2.0, 2.0);
   view->SetTransform(transform);
-  widget()->SetContentsView(view);
   EXPECT_EQ(2.0f, view->GetTransform().matrix().get(0, 0));
 
   view->SetVisible(false);
@@ -4234,11 +4238,10 @@ TEST_F(ViewLayerTest, ToggleVisibilityWithTransform) {
 
 // Verifies a transform persists after removing/adding a view with a transform.
 TEST_F(ViewLayerTest, ResetTransformOnLayerAfterAdd) {
-  View* view = new View;
+  View* view = widget()->SetContentsView(std::make_unique<View>());
   gfx::Transform transform;
   transform.Scale(2.0, 2.0);
   view->SetTransform(transform);
-  widget()->SetContentsView(view);
   EXPECT_EQ(2.0f, view->GetTransform().matrix().get(0, 0));
   ASSERT_TRUE(view->layer() != nullptr);
   EXPECT_EQ(2.0f, view->layer()->transform().matrix().get(0, 0));
@@ -4254,8 +4257,7 @@ TEST_F(ViewLayerTest, ResetTransformOnLayerAfterAdd) {
 
 // Makes sure that layer visibility is correct after toggling View visibility.
 TEST_F(ViewLayerTest, ToggleVisibilityWithLayer) {
-  View* content_view = new View;
-  widget()->SetContentsView(content_view);
+  View* content_view = widget()->SetContentsView(std::make_unique<View>());
 
   // The view isn't attached to a widget or a parent view yet. But it should
   // still have a layer, but the layer should not be attached to the root
@@ -4289,8 +4291,7 @@ TEST_F(ViewLayerTest, ToggleVisibilityWithLayer) {
 // Tests that the layers in the subtree are orphaned after a View is removed
 // from the parent.
 TEST_F(ViewLayerTest, OrphanLayerAfterViewRemove) {
-  View* content_view = new View;
-  widget()->SetContentsView(content_view);
+  View* content_view = widget()->SetContentsView(std::make_unique<View>());
 
   View* v1 = new View;
   content_view->AddChildView(v1);
@@ -4335,8 +4336,8 @@ class PaintTrackingView : public View {
 // Makes sure child views with layers aren't painted when paint starts at an
 // ancestor.
 TEST_F(ViewLayerTest, DontPaintChildrenWithLayers) {
-  PaintTrackingView* content_view = new PaintTrackingView;
-  widget()->SetContentsView(content_view);
+  PaintTrackingView* content_view =
+      widget()->SetContentsView(std::make_unique<PaintTrackingView>());
   content_view->SetPaintToLayer();
   GetRootLayer()->GetCompositor()->ScheduleDraw();
   ui::DrawWaiterForTest::WaitForCompositingEnded(
@@ -4403,9 +4404,8 @@ TEST_F(ViewLayerTest, NoParentPaintWhenSwitchingPaintToLayerFromTrueToTrue) {
 // Tests that the visibility of child layers are updated correctly when a View's
 // visibility changes.
 TEST_F(ViewLayerTest, VisibilityChildLayers) {
-  View* v1 = new View;
+  View* v1 = widget()->SetContentsView(std::make_unique<View>());
   v1->SetPaintToLayer();
-  widget()->SetContentsView(v1);
 
   View* v2 = v1->AddChildView(std::make_unique<View>());
 
@@ -4448,9 +4448,8 @@ TEST_F(ViewLayerTest, VisibilityChildLayers) {
 // reparents views etc. Unrelated changes can appear to break this test. So
 // marking this as FLAKY.
 TEST_F(ViewLayerTest, DISABLED_ViewLayerTreesInSync) {
-  View* content = new View;
+  View* content = widget()->SetContentsView(std::make_unique<View>());
   content->SetPaintToLayer();
-  widget()->SetContentsView(content);
   widget()->Show();
 
   ConstructTree(content, 5);
@@ -4469,8 +4468,7 @@ TEST_F(ViewLayerTest, DISABLED_ViewLayerTreesInSync) {
 // Verifies when views are reordered the layer is also reordered. The widget is
 // providing the parent layer.
 TEST_F(ViewLayerTest, ReorderUnderWidget) {
-  View* content = new View;
-  widget()->SetContentsView(content);
+  View* content = widget()->SetContentsView(std::make_unique<View>());
   View* c1 = content->AddChildView(std::make_unique<View>());
   c1->SetPaintToLayer();
   View* c2 = content->AddChildView(std::make_unique<View>());
@@ -4490,8 +4488,7 @@ TEST_F(ViewLayerTest, ReorderUnderWidget) {
 
 // Verifies that the layer of a view can be acquired properly.
 TEST_F(ViewLayerTest, AcquireLayer) {
-  View* content = new View;
-  widget()->SetContentsView(content);
+  View* content = widget()->SetContentsView(std::make_unique<View>());
   std::unique_ptr<View> c1(new View);
   c1->SetPaintToLayer();
   EXPECT_TRUE(c1->layer());
@@ -4537,8 +4534,7 @@ TEST_F(ViewLayerTest, RecreateLayerZOrder) {
 // Verify the z-order of the layers as a result of calling RecreateLayer when
 // the widget is the parent with the layer.
 TEST_F(ViewLayerTest, RecreateLayerZOrderWidgetParent) {
-  View* v = new View();
-  widget()->SetContentsView(v);
+  View* v = widget()->SetContentsView(std::make_unique<View>());
 
   View* v1 = v->AddChildView(std::make_unique<View>());
   v1->SetPaintToLayer();
@@ -4606,11 +4602,9 @@ std::string ToString(const gfx::Vector2dF& vector) {
 TEST_F(ViewLayerTest, SnapLayerToPixel) {
   viz::ParentLocalSurfaceIdAllocator allocator;
   allocator.GenerateId();
-  View* v1 = new View;
+  View* v1 = widget()->SetContentsView(std::make_unique<View>());
 
   View* v11 = v1->AddChildView(std::make_unique<View>());
-
-  widget()->SetContentsView(v1);
 
   const gfx::Size& size = GetRootLayer()->GetCompositor()->size();
   GetRootLayer()->GetCompositor()->SetScaleAndSize(
@@ -4699,8 +4693,7 @@ TEST_F(ViewLayerTest, LayerBeneathAtFractionalScale) {
   GetRootLayer()->GetCompositor()->SetScaleAndSize(
       device_scale, size, allocator.GetCurrentLocalSurfaceIdAllocation());
 
-  View* view = new View;
-  widget()->SetContentsView(view);
+  View* view = widget()->SetContentsView(std::make_unique<View>());
 
   ui::Layer layer;
   view->AddLayerBeneathView(&layer);
@@ -4962,11 +4955,9 @@ class ViewLayerPixelCanvasTest : public ViewLayerTest {
 TEST_F(ViewLayerPixelCanvasTest, SnapLayerToPixel) {
   viz::ParentLocalSurfaceIdAllocator allocator;
   allocator.GenerateId();
-  View* v1 = new View;
+  View* v1 = widget()->SetContentsView(std::make_unique<View>());
   View* v2 = v1->AddChildView(std::make_unique<View>());
   PaintLayerView* v3 = v2->AddChildView(std::make_unique<PaintLayerView>());
-
-  widget()->SetContentsView(v1);
 
   const gfx::Size& size = GetRootLayer()->GetCompositor()->size();
   GetRootLayer()->GetCompositor()->SetScaleAndSize(
@@ -5034,8 +5025,7 @@ TEST_F(ViewLayerPixelCanvasTest, LayerBeneathOnPixelCanvas) {
   GetRootLayer()->GetCompositor()->SetScaleAndSize(
       device_scale, size, allocator.GetCurrentLocalSurfaceIdAllocation());
 
-  View* view = new View;
-  widget()->SetContentsView(view);
+  View* view = widget()->SetContentsView(std::make_unique<View>());
 
   ui::Layer layer;
   view->AddLayerBeneathView(&layer);

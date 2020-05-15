@@ -21,10 +21,11 @@ namespace viz {
 scoped_refptr<VulkanInProcessContextProvider>
 VulkanInProcessContextProvider::Create(
     gpu::VulkanImplementation* vulkan_implementation,
-    const GrContextOptions& options) {
+    const GrContextOptions& options,
+    const gpu::GPUInfo* gpu_info) {
   scoped_refptr<VulkanInProcessContextProvider> context_provider(
       new VulkanInProcessContextProvider(vulkan_implementation));
-  if (!context_provider->Initialize(options))
+  if (!context_provider->Initialize(options, gpu_info))
     return nullptr;
   return context_provider;
 }
@@ -38,7 +39,8 @@ VulkanInProcessContextProvider::~VulkanInProcessContextProvider() {
 }
 
 bool VulkanInProcessContextProvider::Initialize(
-    const GrContextOptions& context_options) {
+    const GrContextOptions& context_options,
+    const gpu::GPUInfo* gpu_info) {
   DCHECK(!device_queue_);
 
   const auto& instance_extensions = vulkan_implementation_->GetVulkanInstance()
@@ -55,7 +57,8 @@ bool VulkanInProcessContextProvider::Initialize(
     }
   }
 
-  device_queue_ = gpu::CreateVulkanDeviceQueue(vulkan_implementation_, flags);
+  device_queue_ =
+      gpu::CreateVulkanDeviceQueue(vulkan_implementation_, flags, gpu_info);
   if (!device_queue_)
     return false;
 

@@ -21,6 +21,7 @@
 <translation id="1587223624401073077">Google Chrome ले तपाइँको क्यामेरा प्रयोग गर्दैछ।</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> खतरनाक छ, त्यसैले Chrome ले यसमाथि रोक लगाएको छ।</translation>
 <translation id="1619887657840448962">Chrome लाई अझ सुरक्षित बनाउन हामी <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> मा सूचीबद्ध नभएका र तपाईँले थाहा नपाई थपिएका हुन सक्ने निम्न विस्तारलाई असक्षम गर्छौँ।</translation>
+<translation id="162629503687514352">Chrome OS ले तपाईंका पासवर्डहरू सिंक गर्न सकेन।</translation>
 <translation id="1628000112320670027">Chrome को सम्बन्धमा मद्दत प्राप्त गर्नुहोस्</translation>
 <translation id="1662639173275167396">Chrome OS अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS" />खुला स्रोतको सफ्टवेयर<ph name="END_LINK_CROS_OSS" /> अर्थात् <ph name="BEGIN_LINK_LINUX_OSS" />Linux (बिटा)<ph name="END_LINK_LINUX_OSS" /> बाट सम्भव भएको हो।</translation>
 <translation id="1666409074978194368">अद्यावधिक लगभग पूरा भइसक्यो! अद्यावधिक सम्पन्न गर्न Google Chrome पुनः सुरु गर्नुहोस्। इन्कोग्निटो विन्डोहरू पुनः खुल्ने छैनन्।</translation>
@@ -77,6 +78,7 @@
 <translation id="3065168410429928842">Chrome को ट्याब</translation>
 <translation id="3080151273017101988">Google Chrome बन्दा हुँदा पृष्ठभूमि एपहरू चालू हुन जारी राख्नुहोस्</translation>
 <translation id="3089968997497233615">Google Chrome खो नयाँ, सुरक्षित संस्करण उपलब्ध छ।</translation>
+<translation id="3127818369811890733">Chrome OS ले तपाईंको डेटा सिंक गर्न सकेन।</translation>
 <translation id="3149510190863420837">Chrome एपहरू</translation>
 <translation id="3360895254066713204">Chrome सहायककर्ता</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome अब पुनः सुरु हुने छ}=1{Chrome १ सेकेन्डमा पुनः सुरु हुने छ}other{Chrome # सेकेन्डमा पुनः सुरु हुने छ}}</translation>

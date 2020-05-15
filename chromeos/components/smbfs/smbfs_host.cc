@@ -137,4 +137,22 @@ void SmbFsHost::OnDisconnect() {
   delegate_->OnDisconnected();
 }
 
+void SmbFsHost::DeleteRecursively(const base::FilePath& path,
+                                  DeleteRecursivelyCallback callback) {
+  smbfs_->DeleteRecursively(
+      path, base::BindOnce(&SmbFsHost::OnDeleteRecursivelyDone,
+                           base::Unretained(this), std::move(callback)));
+}
+
+void SmbFsHost::OnDeleteRecursivelyDone(
+    DeleteRecursivelyCallback callback,
+    smbfs::mojom::DeleteRecursivelyError error) {
+  base::File::Error file_error =
+      error == smbfs::mojom::DeleteRecursivelyError::kOk
+          ? base::File::FILE_OK
+          : base::File::FILE_ERROR_FAILED;
+
+  std::move(callback).Run(file_error);
+}
+
 }  // namespace smbfs

@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 // eslint-disable-next-line no-unused-vars
+import {TestingErrorCallback} from './error.js';
+// eslint-disable-next-line no-unused-vars
 import {Intent} from './intent.js';
 // eslint-disable-next-line no-unused-vars
 import {PerfLogger} from './perf.js';
@@ -52,10 +54,12 @@ export class BackgroundOps {
   getPerfLogger() {}
 
   /**
-   * @return {boolean} Returns whether window is created for running tests.
+   * Gets callback for reporting error in testing run. Returns null in non
+   * testing run.
+   * @return {?TestingErrorCallback} callbacks
    * @abstract
    */
-  isTesting() {}
+  getTestingErrorCallback() {}
 
   /**
    * Called by foreground window when it's active.

@@ -356,14 +356,35 @@ TEST_F(TileManagerTest, GetTileById) {
   GetSingleTile("id_not_exist", base::nullopt);
 }
 
-// Verify that GetTiles will return empty result if non-stored locale
-// is passed.
-TEST_F(TileManagerTest, GetTilesForNonStoredLocale) {
-  manager()->SetLocaleForTesting("zh");
+// Verify that GetTiles will return empty result if no matching AcceptLanguages
+// is found.
+TEST_F(TileManagerTest, GetTilesWithoutMatchingAcceptLanguages) {
+  manager()->SetAcceptLanguagesForTesting("zh");
   TileGroup group;
   test::ResetTestGroup(&group);
   InitWithData(TileGroupStatus::kSuccess, {group});
+
   GetTiles(std::vector<Tile>());
+}
+
+// Verify that GetTiles will return a valid result if a matching AcceptLanguages
+// is found.
+TEST_F(TileManagerTest, GetTilesWithMatchingAcceptLanguages) {
+  manager()->SetAcceptLanguagesForTesting("zh, en");
+  TileGroup group;
+  group.id = "gid";
+  group.locale = "en-US";
+  group.last_updated_ts = clock()->Now();
+  auto tile = std::make_unique<Tile>();
+  test::ResetTestEntry(tile.get());
+  group.tiles.emplace_back(std::move(tile));
+  InitWithData(TileGroupStatus::kSuccess, {group});
+
+  auto expected_tile = std::make_unique<Tile>();
+  test::ResetTestEntry(expected_tile.get());
+  std::vector<Tile> expected;
+  expected.emplace_back(std::move(*expected_tile.get()));
+  GetTiles(std::move(expected));
 }
 
 }  // namespace

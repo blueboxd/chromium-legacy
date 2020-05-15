@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Samodejni prenosi</translation>
 <translation id="5677928146339483299">Blokirano</translation>
 <translation id="5689516760719285838">Lokacija</translation>
+<translation id="5690795753582697420">Fotoaparat je izklopljen v nastavitvah za Android</translation>
 <translation id="5710871682236653961">Poziv, preden se spletnim mestom dovoli pošiljanje in prejemanje podatkov, ko se dotaknete naprav s tehnologijo NFC (priporočeno)</translation>
 <translation id="5719847187258001597">S tem boste izbrisali vse podatke in piškotke, ki jih je shranilo spletno mesto <ph name="ORIGIN" /> ali njegova aplikacija na vašem začetnem zaslonu.</translation>
 <translation id="5804241973901381774">Dovoljenja</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Več</translation>
 <translation id="6064125863973209585">Dokončani prenosi</translation>
 <translation id="6165508094623778733">Več o tem</translation>
+<translation id="6177111841848151710">Blokirano za trenutni iskalnik</translation>
 <translation id="6181444274883918285">Dodaj izjemo za spletno mesto</translation>
 <translation id="6192792657125177640">Izjeme</translation>
 <translation id="6194112207524046168">Če želite Chromu omogočiti dostop do fotoaparata, fotoaparat vklopite tudi v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Ta stran je nevarna. Podatki o spletnem mestu.</translation>
 <translation id="6965382102122355670">V redu</translation>
 <translation id="6992289844737586249">Prikaži poziv, preden se spletnim mestom dovoli uporaba mikrofona (priporočeno)</translation>
+<translation id="7000754031042624318">Izklopljeno v nastavitvah za Android</translation>
+<translation id="7016516562562142042">Dovoljeno za trenutni iskalnik</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 izbran}one{# izbran}two{# izbrana}few{# izbrani}other{# izbranih}}</translation>
 <translation id="7087918508125750058">Št. izbranih: <ph name="ITEM_COUNT" />. Možnosti so na voljo na zgornjem delu zaslona.</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Dovolitev zvoka za določeno spletno mesto.</translation>
 <translation id="7993619969781047893">Funkcije na nekaterih spletnih mestih morda ne bodo delovale</translation>
 <translation id="7999064672810608036">Ali želite res izbrisati vse lokalne podatke, vključno s piškotki, in ponastaviti vsa dovoljenja za to spletno mesto?</translation>
+<translation id="8007176423574883786">Izklopljeno za to napravo</translation>
 <translation id="802154636333426148">Prenos ni uspel</translation>
 <translation id="8087000398470557479">Ta vsebina je iz domene <ph name="DOMAIN_NAME" /> in jo prikazuje Google.</translation>
 <translation id="8116925261070264013">Prezrto</translation>

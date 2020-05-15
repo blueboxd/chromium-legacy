@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/time/time.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
@@ -428,6 +429,46 @@ TEST_F(BinaryFCMServiceTest, UnregisterTwoTokensTwoCalls) {
   binary_fcm_service_->UnregisterInstanceID(second_id, base::DoNothing());
 
   content::RunAllTasksUntilIdle();
+}
+
+TEST_F(BinaryFCMServiceTest, QueuesGetInstanceIDOnRetriableError) {
+  MockInstanceIDDriver driver;
+  MockInstanceID instance_id;
+  ON_CALL(driver, GetInstanceID(_)).WillByDefault(Return(&instance_id));
+  binary_fcm_service_.reset();
+  binary_fcm_service_ = std::make_unique<BinaryFCMService>(
+      gcm::GCMProfileServiceFactory::GetForProfile(&profile_)->driver(),
+      &driver);
+
+  EXPECT_CALL(instance_id, GetToken(_, _, _, _, _, _))
+      .WillOnce(
+          Invoke([](const std::string&, const std::string&, base::TimeDelta,
+                    const std::map<std::string, std::string>&,
+                    std::set<instance_id::InstanceID::Flags>,
+                    instance_id::InstanceID::GetTokenCallback callback) {
+            std::move(callback).Run(
+                "", instance_id::InstanceID::Result::ASYNC_OPERATION_PENDING);
+          }))
+      .WillOnce(
+          Invoke([](const std::string&, const std::string&, base::TimeDelta,
+                    const std::map<std::string, std::string>&,
+                    std::set<instance_id::InstanceID::Flags>,
+                    instance_id::InstanceID::GetTokenCallback callback) {
+            std::move(callback).Run("token",
+                                    instance_id::InstanceID::Result::SUCCESS);
+          }));
+
+  std::string instance_id_token = BinaryFCMService::kInvalidId;
+  binary_fcm_service_->SetQueuedOperationDelayForTesting(base::TimeDelta());
+  binary_fcm_service_->GetInstanceID(base::BindOnce(
+      [](std::string* target_id, const std::string& instance_id) {
+        *target_id = instance_id;
+      },
+      &instance_id_token));
+
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_NE(instance_id_token, BinaryFCMService::kInvalidId);
 }
 
 }  // namespace safe_browsing

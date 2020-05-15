@@ -26,6 +26,8 @@ namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
 
+class PrefService;
+
 namespace query_tiles {
 
 class TileService;
@@ -38,7 +40,8 @@ std::unique_ptr<TileService> CreateTileService(
     const std::string& accepted_language,
     const std::string& country_code,
     const std::string& api_key,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    PrefService* pref_service);
 
 }  // namespace query_tiles
 

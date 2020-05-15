@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">הורדות אוטומטיות</translation>
 <translation id="5677928146339483299">חסום</translation>
 <translation id="5689516760719285838">מיקום</translation>
+<translation id="5690795753582697420">‏המצלמה מושבתת בהגדרות Android</translation>
 <translation id="5710871682236653961">‏הצגת שאלה לפני מתן הרשאה לאתרים לשלוח ולקבל מידע כשמקישים על מכשירי NFC (מומלץ)</translation>
 <translation id="5719847187258001597">‏הפעולה הזאת תמחק את כל הנתונים ואת קובצי ה-cookie שנשמרו במסך הבית על ידי האתר <ph name="ORIGIN" /> או האפליקציה שלו.</translation>
 <translation id="5804241973901381774">הרשאות</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">עוד</translation>
 <translation id="6064125863973209585">הורדות שהושלמו</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
+<translation id="6177111841848151710">חסוּם למנוע החיפוש הנוכחי</translation>
 <translation id="6181444274883918285">להוספת מקרה חריג של אתר</translation>
 <translation id="6192792657125177640">יוצאי דופן</translation>
 <translation id="6194112207524046168">‏כדי לאפשר ל-Chrome לגשת אל המצלמה, צריך להפעיל אותה גם ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">הדף הזה מסוכן. פרטי האתר</translation>
 <translation id="6965382102122355670">אישור</translation>
 <translation id="6992289844737586249">יש לשאול לפני שמאפשרים לאתרים להשתמש במיקרופון (מומלץ)</translation>
+<translation id="7000754031042624318">‏ההרשאה מושבתת בהגדרות Android</translation>
+<translation id="7016516562562142042">מופעל למנוע החיפוש הנוכחי</translation>
 <translation id="7053983685419859001">חסימה</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{נבחר אחד}two{נבחרו #}many{נבחרו #}other{נבחרו #}}</translation>
 <translation id="7087918508125750058">נבחרו <ph name="ITEM_COUNT" />. האפשרויות מוצגות בחלק העליון של המסך</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">מתן הרשאה להשמעת צלילים באתר ספציפי.</translation>
 <translation id="7993619969781047893">ייתכן שהתכונות של חלק מהאתרים לא יפעלו כראוי</translation>
 <translation id="7999064672810608036">‏האם אתה בטוח שברצונך לנקות את כל הנתונים המקומיים, כולל קובצי Cookie, ולאפס את כל ההרשאות של האתר הזה?</translation>
+<translation id="8007176423574883786">כבוי בשביל המכשיר הזה</translation>
 <translation id="802154636333426148">ההורדה נכשלה</translation>
 <translation id="8087000398470557479">‏התוכן הזה הוא מ-<ph name="DOMAIN_NAME" />, ומוגש על-ידי Google.</translation>
 <translation id="8116925261070264013">מושתקים</translation>

@@ -48,21 +48,21 @@ PermissionPromptBubbleView::PermissionPromptBubbleView(
   // To prevent permissions being accepted accidentally, and as a security
   // measure against crbug.com/619429, permission prompts should not be accepted
   // as the default action.
-  DialogDelegate::SetDefaultButton(ui::DIALOG_BUTTON_NONE);
+  SetDefaultButton(ui::DIALOG_BUTTON_NONE);
 
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW));
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_CANCEL, l10n_util::GetStringUTF16(IDS_PERMISSION_DENY));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW));
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
+                 l10n_util::GetStringUTF16(IDS_PERMISSION_DENY));
   set_close_on_deactivate(false);
 
-  DialogDelegate::SetAcceptCallback(
+  SetAcceptCallback(
       base::BindOnce(&permissions::PermissionPrompt::Delegate::Accept,
                      base::Unretained(delegate)));
-  DialogDelegate::SetCancelCallback(
+  SetCancelCallback(
       base::BindOnce(&permissions::PermissionPrompt::Delegate::Deny,
                      base::Unretained(delegate)));
-  DialogDelegate::SetCloseCallback(
+  SetCloseCallback(
       base::BindOnce(&permissions::PermissionPrompt::Delegate::Closing,
                      base::Unretained(delegate)));
 
@@ -153,7 +153,7 @@ void PermissionPromptBubbleView::AddPermissionRequestLine(
   views::SetImageFromVectorIcon(learn_more_button_,
                                 vector_icons::kHelpOutlineIcon, text_color);
 
-  DialogDelegate::SetExtraView(std::move(learn_more_button));
+  SetExtraView(std::move(learn_more_button));
 }
 
 void PermissionPromptBubbleView::UpdateAnchorPosition() {

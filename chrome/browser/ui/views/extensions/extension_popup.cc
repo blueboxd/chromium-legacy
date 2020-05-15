@@ -188,8 +188,8 @@ ExtensionPopup::ExtensionPopup(
       host_(std::move(host)),
       extension_registry_observer_(this),
       show_action_(show_action) {
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
-  DialogDelegate::set_use_round_corners(false);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
+  set_use_round_corners(false);
 
   set_margins(gfx::Insets());
   SetLayoutManager(std::make_unique<views::FillLayout>());

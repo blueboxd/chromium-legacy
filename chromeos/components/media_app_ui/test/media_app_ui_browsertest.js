@@ -481,3 +481,8 @@ TEST_F('MediaAppUIBrowserTest', 'GuestHasLang', async () => {
   await runTestInGuest('GuestHasLang');
   testDone();
 });
+
+TEST_F('MediaAppUIBrowserTest', 'GuestCanLoadWithCspRestrictions', async () => {
+  await runTestInGuest('GuestCanLoadWithCspRestrictions');
+  testDone();
+});

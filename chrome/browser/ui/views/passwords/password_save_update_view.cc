@@ -308,9 +308,9 @@ PasswordSaveUpdateView::PasswordSaveUpdateView(
                         std::move(password_view_button));
   }
 
-  DialogDelegate::SetFootnoteView(CreateFooterView());
-  DialogDelegate::SetCancelCallback(base::BindOnce(
-      &PasswordSaveUpdateView::OnDialogCancelled, base::Unretained(this)));
+  SetFootnoteView(CreateFooterView());
+  SetCancelCallback(base::BindOnce(&PasswordSaveUpdateView::OnDialogCancelled,
+                                   base::Unretained(this)));
   UpdateDialogButtons();
 }
 
@@ -476,17 +476,16 @@ void PasswordSaveUpdateView::ReplaceWithPromo() {
 
 void PasswordSaveUpdateView::UpdateDialogButtons() {
   if (sign_in_promo_) {
-    DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
+    SetButtons(ui::DIALOG_BUTTON_NONE);
     return;
   }
-  DialogDelegate::SetButtons(
-      (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
-  DialogDelegate::SetButtonLabel(
+  SetButtons((ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(controller_.IsCurrentStateUpdate()
                                     ? IDS_PASSWORD_MANAGER_UPDATE_BUTTON
                                     : IDS_PASSWORD_MANAGER_SAVE_BUTTON));
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(
           is_update_bubble_ ? IDS_PASSWORD_MANAGER_CANCEL_BUTTON

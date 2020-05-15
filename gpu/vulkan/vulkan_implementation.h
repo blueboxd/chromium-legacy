@@ -35,6 +35,7 @@ class VulkanDeviceQueue;
 class VulkanSurface;
 class VulkanImage;
 class VulkanInstance;
+struct GPUInfo;
 struct VulkanYCbCrInfo;
 
 #if defined(OS_FUCHSIA)
@@ -150,7 +151,8 @@ class COMPONENT_EXPORT(VULKAN) VulkanImplementation {
 COMPONENT_EXPORT(VULKAN)
 std::unique_ptr<VulkanDeviceQueue> CreateVulkanDeviceQueue(
     VulkanImplementation* vulkan_implementation,
-    uint32_t option);
+    uint32_t option,
+    const GPUInfo* gpu_info = nullptr);
 
 }  // namespace gpu
 

@@ -275,24 +275,24 @@ IntentPickerBubbleView::IntentPickerBubbleView(
       icon_view_(icon_view),
       icon_type_(icon_type),
       initiating_origin_(initiating_origin) {
-  DialogDelegate::SetButtons(
-      show_stay_in_chrome_ ? (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL)
-                           : ui::DIALOG_BUTTON_OK);
-  DialogDelegate::SetButtonLabel(
+  SetButtons(show_stay_in_chrome_
+                 ? (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL)
+                 : ui::DIALOG_BUTTON_OK);
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(
           icon_type_ == PageActionIconType::kClickToCall
               ? IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_CALL_BUTTON_LABEL
               : IDS_INTENT_PICKER_BUBBLE_VIEW_OPEN));
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_INTENT_PICKER_BUBBLE_VIEW_STAY_IN_CHROME));
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
-      &IntentPickerBubbleView::OnDialogAccepted, base::Unretained(this)));
-  DialogDelegate::SetCancelCallback(base::BindOnce(
-      &IntentPickerBubbleView::OnDialogCancelled, base::Unretained(this)));
-  DialogDelegate::SetCloseCallback(base::BindOnce(
-      &IntentPickerBubbleView::OnDialogClosed, base::Unretained(this)));
+  SetAcceptCallback(base::BindOnce(&IntentPickerBubbleView::OnDialogAccepted,
+                                   base::Unretained(this)));
+  SetCancelCallback(base::BindOnce(&IntentPickerBubbleView::OnDialogCancelled,
+                                   base::Unretained(this)));
+  SetCloseCallback(base::BindOnce(&IntentPickerBubbleView::OnDialogClosed,
+                                  base::Unretained(this)));
 
   // Click to call bubbles need to be closed after navigation if the main frame
   // origin changed. Other intent picker bubbles will be handled in

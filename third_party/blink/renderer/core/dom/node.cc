@@ -1758,6 +1758,16 @@ bool Node::CanStartSelection() const {
   return parent ? parent->CanStartSelection() : true;
 }
 
+void Node::NotifyPriorityScrollAnchorStatusChanged() {
+  auto* node = this;
+  while (node && !node->GetLayoutObject())
+    node = FlatTreeTraversal::Parent(*node);
+  if (node) {
+    DCHECK(node->GetLayoutObject());
+    node->GetLayoutObject()->NotifyPriorityScrollAnchorStatusChanged();
+  }
+}
+
 // StyledElements allow inline style (style="border: 1px"), presentational
 // attributes (ex. color), class names (ex. class="foo bar") and other non-basic
 // styling features. They also control if this element can participate in style

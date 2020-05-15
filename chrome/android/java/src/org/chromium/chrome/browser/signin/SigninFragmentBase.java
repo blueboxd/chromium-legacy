@@ -497,6 +497,7 @@ public abstract class SigninFragmentBase
     @Override
     public void onAccountSelected(String accountName, boolean isDefaultAccount) {
         selectAccount(accountName, isDefaultAccount);
+        getAccountPickerDialogFragment().dismissAllowingStateLoss();
     }
 
     @Override

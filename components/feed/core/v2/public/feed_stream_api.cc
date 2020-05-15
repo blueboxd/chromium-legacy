@@ -9,4 +9,15 @@ namespace feed {
 FeedStreamApi::FeedStreamApi() = default;
 FeedStreamApi::~FeedStreamApi() = default;
 
+FeedStreamApi::SurfaceInterface::SurfaceInterface() {
+  static SurfaceId::Generator id_generator;
+  surface_id_ = id_generator.GenerateNextId();
+}
+
+FeedStreamApi::SurfaceInterface::~SurfaceInterface() = default;
+
+SurfaceId FeedStreamApi::SurfaceInterface::GetSurfaceId() const {
+  return surface_id_;
+}
+
 }  // namespace feed

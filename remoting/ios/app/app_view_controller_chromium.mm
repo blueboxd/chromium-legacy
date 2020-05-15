@@ -8,7 +8,6 @@
 
 #import "remoting/ios/app/app_view_controller.h"
 
-#include "base/logging.h"
 
 #import "remoting/ios/app/remoting_menu_view_controller.h"
 

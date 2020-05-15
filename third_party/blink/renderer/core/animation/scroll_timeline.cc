@@ -232,9 +232,13 @@ ScrollTimeline::TimelineState ScrollTimeline::ComputeTimelineState() const {
 
   // 4. If current scroll offset is greater than or equal to endScrollOffset:
   if (current_offset >= end_offset) {
-    return {TimelinePhase::kAfter,
-            base::TimeDelta::FromMillisecondsD(time_range_), start_offset,
-            end_offset};
+    // If end_offset is greater than or equal to the maximum scroll offset of
+    // scrollSource in orientation then return active phase, otherwise return
+    // after phase.
+    TimelinePhase phase = end_offset >= max_offset ? TimelinePhase::kActive
+                                                   : TimelinePhase::kAfter;
+    return {phase, base::TimeDelta::FromMillisecondsD(time_range_),
+            start_offset, end_offset};
   }
 
   // 5. Return the result of evaluating the following expression:

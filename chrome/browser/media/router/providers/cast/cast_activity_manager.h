@@ -30,8 +30,8 @@
 namespace media_router {
 
 class ActivityRecord;
+class ActivityRecordFactoryForTest;
 class CastActivityRecord;
-class CastActivityRecordFactoryForTest;
 class CastSession;
 class MediaSinkServiceBase;
 
@@ -125,7 +125,7 @@ class CastActivityManager : public CastActivityManagerBase,
                             base::Optional<int> request_id) override;
 
   static void SetActitivyRecordFactoryForTest(
-      CastActivityRecordFactoryForTest* factory) {
+      ActivityRecordFactoryForTest* factory) {
     activity_record_factory_ = factory;
   }
 
@@ -254,11 +254,11 @@ class CastActivityManager : public CastActivityManagerBase,
   // If no conversion should occur, returns base::nullopt.
   base::Optional<MediaSinkInternal> ConvertMirrorToCast(int tab_id);
 
-  static CastActivityRecordFactoryForTest* activity_record_factory_;
+  static ActivityRecordFactoryForTest* activity_record_factory_;
 
   base::flat_set<MediaSource::Id> route_queries_;
 
-  // This map contains all activities--both Cast app acitivties and mirroring
+  // This map contains all activities--both Cast app activities and mirroring
   // activities.
   ActivityMap activities_;
 

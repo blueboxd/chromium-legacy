@@ -51,8 +51,8 @@ void ProfilePicker::Hide() {
 
 ProfilePickerView::ProfilePickerView()
     : web_view_(nullptr), initialized_(InitState::kNotInitialized) {
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
-  DialogDelegate::set_use_custom_frame(false);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
+  set_use_custom_frame(false);
   // TODO(crbug.com/1063856): Add |RecordDialogCreation|.
 }
 
@@ -99,7 +99,7 @@ void ProfilePickerView::Init(Profile* system_profile) {
   AddChildView(web_view_);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  DialogDelegate::CreateDialogWidget(this, nullptr, nullptr);
+  CreateDialogWidget(this, nullptr, nullptr);
 
 #if defined(OS_WIN)
   // Set the app id for the user manager to the app id of its parent.

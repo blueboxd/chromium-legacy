@@ -20,6 +20,7 @@
 <translation id="1587223624401073077">Google Chrome तुमचा कॅमेरा वापरत आहे.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> धोकादायक आहे, त्यामुळे Chrom ने ते अवरोधित केले आहे.</translation>
 <translation id="1619887657840448962">Chrome अधिक सुरक्षित करण्यासाठी, आम्ही <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> मध्ये सूचीबद्ध नसलेला आणि तुमच्या माहितीशिवाय कदाचित जोडले गेलेले खालील एक्स्टेंशन बंद केले आहे.</translation>
+<translation id="162629503687514352">Chrome OS ला तुमचे पासवर्ड सिंक करता आले नाहीत.</translation>
 <translation id="1628000112320670027">Chrome सह मदत मिळवा</translation>
 <translation id="1662639173275167396"><ph name="BEGIN_LINK_LINUX_OSS" />Linux (बीटा)<ph name="END_LINK_LINUX_OSS" /> सारखेच, अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS" />मुक्त स्रोत सॉफ्टवेअर<ph name="END_LINK_CROS_OSS" /> मुळे Chrome OS शक्य झाले आहे.</translation>
 <translation id="1666409074978194368">जवळपास अप टू डेट आहे! अपडेट करणे पूर्ण करण्यासाठी Google Chrome पुन्हा लाँच करा. गुप्त विंडो पुन्हा उघडणार नाहीत.</translation>
@@ -78,6 +79,7 @@
 <translation id="3065168410429928842">Chrome टॅब</translation>
 <translation id="3080151273017101988">जेव्हा Google Chrome बंद असेल तेव्हा पार्श्वभूमीत ॲप्लिकेशन चालणे सुरू ठेवा</translation>
 <translation id="3089968997497233615">Google Chrome ची नवीन, सुरक्षित आवृत्ती उपलब्ध आहे.</translation>
+<translation id="3127818369811890733">Chrome OS ला तुमचा डेटा सिंक करता आला नाही.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
 <translation id="3360895254066713204">Chrome मदतनीस</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome आता पुन्हा लॉंच होईल}=1{Chrome एका सेकंदामध्ये पुन्हा लॉंच होईल}other{Chrome # सेकंदांमध्ये पुन्हा लॉंच होईल}}</translation>

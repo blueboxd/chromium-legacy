@@ -6,9 +6,9 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/notreached.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
 #include "content/public/browser/native_web_keyboard_event.h"

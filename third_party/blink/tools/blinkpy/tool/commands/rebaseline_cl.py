@@ -173,7 +173,8 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
     def selected_try_bots(self):
         if self._selected_try_bots:
             return self._selected_try_bots
-        return frozenset(self._tool.builders.all_try_builder_names())
+        return frozenset(self._tool.builders.filter_builders(
+            is_try=True, exclude_specifiers={'android'}))
 
     def _get_issue_number(self):
         """Returns the current CL issue number, or None."""

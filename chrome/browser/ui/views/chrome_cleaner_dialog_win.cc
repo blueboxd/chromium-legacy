@@ -58,22 +58,22 @@ ChromeCleanerDialog::ChromeCleanerDialog(
   DCHECK(dialog_controller_);
   DCHECK(cleaner_controller_);
 
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_CHROME_CLEANUP_PROMPT_REMOVE_BUTTON_LABEL));
-  details_button_ = DialogDelegate::SetExtraView(views::MdTextButton::Create(
+  details_button_ = SetExtraView(views::MdTextButton::Create(
       this, l10n_util::GetStringUTF16(
                 IDS_CHROME_CLEANUP_PROMPT_DETAILS_BUTTON_LABEL)));
 
-  DialogDelegate::SetAcceptCallback(
+  SetAcceptCallback(
       base::BindOnce(&ChromeCleanerDialog::HandleDialogInteraction,
                      base::Unretained(this), DialogInteractionResult::kAccept));
-  DialogDelegate::SetCancelCallback(
+  SetCancelCallback(
       base::BindOnce(&ChromeCleanerDialog::HandleDialogInteraction,
                      base::Unretained(this), DialogInteractionResult::kCancel));
-  DialogDelegate::SetCloseCallback(
-      base::BindOnce(&ChromeCleanerDialog::HandleDialogInteraction,
-                     base::Unretained(this), DialogInteractionResult::kClose));
+  SetCloseCallback(base::BindOnce(&ChromeCleanerDialog::HandleDialogInteraction,
+                                  base::Unretained(this),
+                                  DialogInteractionResult::kClose));
 
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
   set_margins(

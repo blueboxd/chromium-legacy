@@ -30,9 +30,6 @@ class CompositorFrame;
 namespace content {
 
 class SynchronousLayerTreeFrameSink;
-struct SyncCompositorCommonRendererParams;
-struct SyncCompositorDemandDrawHwParams;
-struct SyncCompositorDemandDrawSwParams;
 
 class SynchronousCompositorProxy : public blink::SynchronousInputHandler,
                                    public SynchronousLayerTreeFrameSinkClient,
@@ -69,16 +66,17 @@ class SynchronousCompositorProxy : public blink::SynchronousInputHandler,
 
   void SetLayerTreeFrameSink(
       SynchronousLayerTreeFrameSink* layer_tree_frame_sink);
-  void PopulateCommonParams(SyncCompositorCommonRendererParams* params);
+
+  mojom::SyncCompositorCommonRendererParamsPtr PopulateNewCommonParams();
 
   // mojom::SynchronousCompositor overrides.
   void DemandDrawHwAsync(
-      const SyncCompositorDemandDrawHwParams& draw_params) final;
-  void DemandDrawHw(const SyncCompositorDemandDrawHwParams& params,
+      mojom::SyncCompositorDemandDrawHwParamsPtr draw_params) final;
+  void DemandDrawHw(mojom::SyncCompositorDemandDrawHwParamsPtr params,
                     DemandDrawHwCallback callback) final;
   void SetSharedMemory(base::WritableSharedMemoryRegion shm_region,
                        SetSharedMemoryCallback callback) final;
-  void DemandDrawSw(const SyncCompositorDemandDrawSwParams& params,
+  void DemandDrawSw(mojom::SyncCompositorDemandDrawSwParamsPtr params,
                     DemandDrawSwCallback callback) final;
   void WillSkipDraw() final;
   void ZeroSharedMemory() final;
@@ -95,10 +93,9 @@ class SynchronousCompositorProxy : public blink::SynchronousInputHandler,
  protected:
   void SendAsyncRendererStateIfNeeded();
   void LayerTreeFrameSinkCreated();
-  void SendBeginFrameResponse(
-      const content::SyncCompositorCommonRendererParams&);
+  void SendBeginFrameResponse(mojom::SyncCompositorCommonRendererParamsPtr);
   void SendDemandDrawHwAsyncReply(
-      const content::SyncCompositorCommonRendererParams&,
+      mojom::SyncCompositorCommonRendererParamsPtr,
       uint32_t layer_tree_frame_sink_id,
       uint32_t metadata_version,
       base::Optional<viz::CompositorFrame>,
@@ -111,7 +108,7 @@ class SynchronousCompositorProxy : public blink::SynchronousInputHandler,
   bool begin_frame_paused_ = false;
 
  private:
-  void DoDemandDrawSw(const SyncCompositorDemandDrawSwParams& params);
+  void DoDemandDrawSw(mojom::SyncCompositorDemandDrawSwParamsPtr params);
   uint32_t NextMetadataVersion();
   void HostDisconnected();
 

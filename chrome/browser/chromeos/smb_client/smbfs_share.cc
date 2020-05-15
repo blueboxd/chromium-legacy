@@ -103,6 +103,44 @@ void SmbFsShare::Remount(const MountOptions& options,
   Mount(std::move(callback));
 }
 
+void SmbFsShare::DeleteRecursively(
+    const base::FilePath& path,
+    SmbFsShare::DeleteRecursivelyCallback callback) {
+  if (!host_) {
+    std::move(callback).Run(base::File::FILE_ERROR_FAILED);
+    return;
+  }
+
+  // Only one recursive delete operation can be outstanding at any time.
+  if (delete_recursively_callback_) {
+    LOG(WARNING) << "A recursive delete operation is already in progress";
+    std::move(callback).Run(base::File::FILE_ERROR_FAILED);
+    return;
+  }
+
+  // smbfs should have no visibility into the full path of the file (which
+  // includes the FUSE mount point): it sees a filesystem rooted at the base of
+  // the mount point path.
+  base::FilePath transformed_path("/");
+  bool success = mount_path().AppendRelativePath(path, &transformed_path);
+  if (!success) {
+    LOG(ERROR)
+        << "Could not construct absolute path for recursive delete operation";
+    std::move(callback).Run(base::File::FILE_ERROR_FAILED);
+    return;
+  }
+
+  delete_recursively_callback_ = std::move(callback);
+  host_->DeleteRecursively(std::move(transformed_path),
+                           base::BindOnce(&SmbFsShare::OnDeleteRecursivelyDone,
+                                          base::Unretained(this)));
+}
+
+void SmbFsShare::OnDeleteRecursivelyDone(base::File::Error error) {
+  DCHECK(delete_recursively_callback_);
+  std::move(delete_recursively_callback_).Run(error);
+}
+
 void SmbFsShare::Unmount(SmbFsShare::UnmountCallback callback) {
   if (unmount_pending_) {
     LOG(WARNING) << "Cannot unmount a shared that is being unmounted";
@@ -185,6 +223,12 @@ void SmbFsShare::OnDisconnected() {
   if (remove_credentials_callback_) {
     LOG(WARNING) << "Mojo disconnected while removing credentials";
     std::move(remove_credentials_callback_).Run(false /* success */);
+  }
+
+  if (delete_recursively_callback_) {
+    LOG(WARNING)
+        << "Mojo disconnected while recursively deleting a path on the share";
+    std::move(delete_recursively_callback_).Run(base::File::FILE_ERROR_FAILED);
   }
 }
 

@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -25,11 +26,6 @@ const CGFloat kFooterHeight = 21;
 const CGFloat kPopupMenuVerticalInsets = 7;
 const CGFloat kScrollIndicatorVerticalInsets = 11;
 }  // namespace
-
-#if defined(__IPHONE_13_4)
-@interface PopupMenuTableViewController (Pointer) <UIPointerInteractionDelegate>
-@end
-#endif  // defined(__IPHONE_13_4)
 
 @interface PopupMenuTableViewController ()
 // Whether the -viewDidAppear: callback has been called.
@@ -227,8 +223,7 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
   if (@available(iOS 13.4, *)) {
     if (base::FeatureList::IsEnabled(kPointerSupport)) {
       if (![self.cellsInMemory containsObject:cell]) {
-        [cell addInteraction:[[UIPointerInteraction alloc]
-                                 initWithDelegate:self]];
+        [cell addInteraction:[[ViewPointerInteraction alloc] init]];
         [self.cellsInMemory addObject:cell];
       }
     }
@@ -236,29 +231,6 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
 #endif  // defined(__IPHONE_13_4)
   return cell;
 }
-
-#if defined(__IPHONE_13_4)
-
-#pragma mark UIPointerInteractionDelegate
-
-- (UIPointerRegion*)pointerInteraction:(UIPointerInteraction*)interaction
-                      regionForRequest:(UIPointerRegionRequest*)request
-                         defaultRegion:(UIPointerRegion*)defaultRegion
-    API_AVAILABLE(ios(13.4)) {
-  return defaultRegion;
-}
-
-- (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
-                       styleForRegion:(UIPointerRegion*)region
-    API_AVAILABLE(ios(13.4)) {
-  UIPointerHoverEffect* effect = [UIPointerHoverEffect
-      effectWithPreview:[[UITargetedPreview alloc]
-                            initWithView:interaction.view]];
-  effect.prefersScaledContent = NO;
-  effect.prefersShadow = NO;
-  return [UIPointerStyle styleWithEffect:effect shape:nil];
-}
-#endif  // defined(__IPHONE_13_4)
 
 #pragma mark - Private
 

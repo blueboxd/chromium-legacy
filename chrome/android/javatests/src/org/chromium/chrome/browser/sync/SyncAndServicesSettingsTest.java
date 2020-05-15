@@ -16,10 +16,10 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -39,7 +40,6 @@ import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
-import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -49,18 +49,18 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class SyncAndServicesSettingsTest {
-    @Rule
-    public SyncTestRule mSyncTestRule = new SyncTestRule();
-    @Rule
-    public SettingsActivityTestRule<SyncAndServicesSettings> mSettingsActivityTestRule =
+    private final SyncTestRule mSyncTestRule = new SyncTestRule();
+
+    private final SettingsActivityTestRule<SyncAndServicesSettings> mSettingsActivityTestRule =
             new SettingsActivityTestRule<>(SyncAndServicesSettings.class);
 
-    private SettingsActivity mSettingsActivity;
-
-    @After
-    public void tearDown() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
-    }
+    // SettingsActivity needs to be initialized and destroyed with the mock
+    // signin environment setup in SyncTestRule
+    // TODO(https://crbug.com/1081153):
+    // Check if to add ProfileSyncService.resetForTests() in SyncTestRule teardown.
+    @Rule
+    public final RuleChain mRuleChain =
+            RuleChain.outerRule(mSyncTestRule).around(mSettingsActivityTestRule);
 
     @Test
     @LargeTest
@@ -365,14 +365,15 @@ public class SyncAndServicesSettingsTest {
     }
 
     private SyncAndServicesSettings startSyncAndServicesPreferences() {
-        mSettingsActivity = mSettingsActivityTestRule.startSettingsActivity();
+        mSettingsActivityTestRule.startSettingsActivity();
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        return (SyncAndServicesSettings) mSettingsActivity.getMainFragment();
+        return mSettingsActivityTestRule.getFragment();
     }
 
     private void closeFragment(SyncAndServicesSettings fragment) {
-        FragmentTransaction transaction =
-                mSettingsActivity.getSupportFragmentManager().beginTransaction();
+        FragmentTransaction transaction = mSettingsActivityTestRule.getActivity()
+                                                  .getSupportFragmentManager()
+                                                  .beginTransaction();
         transaction.remove(fragment);
         transaction.commit();
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();

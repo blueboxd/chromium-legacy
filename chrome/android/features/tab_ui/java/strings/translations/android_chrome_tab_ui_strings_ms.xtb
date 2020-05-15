@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Buat kumpulan</translation>
 <translation id="2671423594960767771">Kongsi kumpulan</translation>
 <translation id="2977480621796371840">Alih keluar daripada kumpulan</translation>
+<translation id="3328308545011660196">Cadangan: <ph name="NUMBER_OF_TABS" /> tab kelihatan berkaitan. Himpunkan semua tab itu?</translation>
+<translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> tab kelihatan berkaitan. Himpunkan semua tab itu?</translation>
 <translation id="4212246570487010370">Teruskan penyemakan imbas</translation>
 <translation id="4450893287417543264">Jangan tunjukkan lagi</translation>
 <translation id="4648718555153979859">Tab anda dikumpulkan bersama di sini</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Alih keluar tab daripada kumpulan</translation>
 <translation id="7559245342362162951">Tunjukkan tab kumpulan dalam grid skrin penuh</translation>
 <translation id="7792771145871471484">Semak cadangan.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Himpunkan <ph name="TABS_COUNT_ONE" /> tab yang dipilih}other{Himpunkan <ph name="TABS_COUNT_MANY" /> tab yang dipilih}}</translation>
 <translation id="7885132941432959125">Alihkan tab ke kanan</translation>
 <translation id="7966321538264951561">Tolak cadangan.</translation>
 <translation id="814503310257431685">Lihat semua</translation>

@@ -77,6 +77,12 @@
 namespace metrics {
 namespace {
 
+#if !defined(OS_ANDROID)
+typedef Browser PlatformBrowser;
+#else
+typedef TabModel PlatformBrowser;
+#endif  // !defined(OS_ANDROID)
+
 // Clears the specified data using BrowsingDataRemover.
 #if !defined(OS_ANDROID)
 void ClearBrowsingData(Profile* profile) {
@@ -93,13 +99,9 @@ void ClearBrowsingData(Profile* profile) {
 }
 #endif  // !defined(OS_ANDROID)
 
-#if !defined(OS_ANDROID)
-// TODO(crbug/1047474): Remove the if / endif around this when enabling the
-// demographics test.
 ukm::UkmService* GetUkmService() {
   return g_browser_process->GetMetricsServicesManager()->GetUkmService();
 }
-#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 
@@ -193,6 +195,31 @@ class UkmBrowserTestBase : public SyncTest {
 #endif  // !defined(OS_ANDROID)
 
  protected:
+  // Creates a platform-appropriate browser for |test_profile|. Note that
+  // |test_profile| is unused on Android because there is only one profile
+  // whereas desktop can have multiple profiles.
+  PlatformBrowser* CreatePlatformBrowser(Profile* test_profile) {
+#if !defined(OS_ANDROID)
+    return CreateBrowser(test_profile);
+#else
+    EXPECT_EQ(1U, TabModelList::size());
+    TabModel* tab_model = TabModelList::get(0);
+    EXPECT_TRUE(content::NavigateToURL(tab_model->GetActiveWebContents(),
+                                       GURL("about:blank")));
+    return tab_model;
+#endif  // !defined(OS_ANDROID)
+  }
+
+  // Closes |browser| in a way that is appropriate for the platform. Note that
+  // this is a no-op on Android.
+  void ClosePlatformBrowser(PlatformBrowser* browser) {
+#if !defined(OS_ANDROID)
+    CloseBrowserSynchronously(browser);
+#else
+    return;
+#endif  // !defined(OS_ANDROID)
+  }
+
   std::unique_ptr<ProfileSyncServiceHarness> EnableSyncForProfile(
       Profile* profile) {
     std::unique_ptr<ProfileSyncServiceHarness> harness =
@@ -566,11 +593,9 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogProtoData) {
 #endif  // !defined(OS_ANDROID)
 
 // TODO(crbug/1016118): Add the remaining test cases.
-// TODO(crbug/1047474): Enable the below test on Android.
 // Keep this test in sync with testUKMDemographicsReportingWithFeatureEnabled
 // and testUKMDemographicsReportingWithFeatureDisabled in
 // ios/chrome/browser/metrics/demographics_egtest.mm.
-#if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithDemographics,
                        AddSyncedUserBirthYearAndGenderToProtoData) {
   ukm::UkmTestHelper ukm_test_helper(GetUkmService());
@@ -598,20 +623,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithDemographics,
   // birth year and gender.
   ASSERT_EQ(1, num_clients());
 
-// TODO(crbug/1080661): Create an abstraction for Browser (desktop) and TabModel
-// (Android).
-// The below code is merely set-up for when the test is enabled; however, the
-// test is not enabled and this code will be improved by resolving the above
-// TODO before the test is enabled.
-#if !defined(OS_ANDROID)
-  Browser* sync_browser = CreateBrowser(test_profile);
-#else
-  // Grab the tab an navigate its contents to generate UKM events.
-  ASSERT_EQ(1U, TabModelList::size());
-  TabModel* tab_model = TabModelList::get(0);
-  EXPECT_TRUE(content::NavigateToURL(tab_model->GetActiveWebContents(),
-                                     GURL("about:blank")));
-#endif
+  PlatformBrowser* browser = CreatePlatformBrowser(test_profile);
 
   EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
   uint64_t original_client_id = ukm_test_helper.GetClientId();
@@ -636,14 +648,8 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithDemographics,
   }
 
   harness->service()->GetUserSettings()->SetSyncRequested(false);
-
-  // TODO(crbug/1080661): Create an abstraction for Browser (desktop) and
-  // TabModel (Android). CloseBrowserSynchronously can be a no-op on Android.
-#if !defined(OS_ANDROID)
-  CloseBrowserSynchronously(sync_browser);
-#endif
+  ClosePlatformBrowser(browser);
 }
-#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
 // Cannot test for the enabled feature on Chrome OS because there are always

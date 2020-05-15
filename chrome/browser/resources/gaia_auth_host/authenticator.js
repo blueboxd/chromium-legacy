@@ -172,6 +172,16 @@ cr.define('cr.login', function() {
     'samlAclUrl',
   ];
 
+  /**
+   * Extract domain name from an URL.
+   * @param {string} url An URL string.
+   * @return {string} The host name of the URL.
+   */
+  function extractDomain(url) {
+    const a = document.createElement('a');
+    a.href = url;
+    return a.hostname;
+  }
 
   /**
    * Handlers for the HTML5 messages received from Gaia.
@@ -1133,7 +1143,6 @@ cr.define('cr.login', function() {
         return;
       }
 
-      this.authDomain = this.samlHandler_.authDomain;
       this.authFlow = AuthFlow.SAML;
 
       this.webview_.focus();
@@ -1262,6 +1271,9 @@ cr.define('cr.login', function() {
     onLoadCommit_(e) {
       if (this.gaiaId_) {
         this.maybeCompleteAuth_();
+      }
+      if (e.isTopLevel) {
+        this.authDomain = extractDomain(e.url);
       }
     }
 

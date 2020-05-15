@@ -120,7 +120,8 @@ class MockInputHandler : public cc::InputHandler {
   }
 
   std::unique_ptr<cc::EventsMetricsManager::ScopedMonitor>
-  GetScopedEventMetricsMonitor(const cc::EventMetrics& event_metrics) override {
+  GetScopedEventMetricsMonitor(
+      std::unique_ptr<cc::EventMetrics> event_metrics) override {
     return nullptr;
   }
 

@@ -102,13 +102,12 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
       app_id_(app_id),
       window_title_(window_title),
       confirm_callback_(std::move(confirm_callback)) {
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK, confirm_button_text);
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
-                                   cancel_button_text);
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
-      &ArcAppDialogView::OnDialogAccepted, base::Unretained(this)));
-  DialogDelegate::SetCancelCallback(base::BindOnce(
-      &ArcAppDialogView::OnDialogCancelled, base::Unretained(this)));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, confirm_button_text);
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, cancel_button_text);
+  SetAcceptCallback(base::BindOnce(&ArcAppDialogView::OnDialogAccepted,
+                                   base::Unretained(this)));
+  SetCancelCallback(base::BindOnce(&ArcAppDialogView::OnDialogCancelled,
+                                   base::Unretained(this)));
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 

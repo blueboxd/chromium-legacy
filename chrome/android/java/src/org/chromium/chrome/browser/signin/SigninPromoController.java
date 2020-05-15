@@ -17,11 +17,11 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.metrics.ImpressionTracker;
-import org.chromium.chrome.browser.metrics.OneShotImpressionListener;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.signin.SigninActivity.AccessPoint;
+import org.chromium.components.browser_ui.widget.impression.ImpressionTracker;
+import org.chromium.components.browser_ui.widget.impression.OneShotImpressionListener;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
 /**

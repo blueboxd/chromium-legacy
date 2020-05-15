@@ -135,6 +135,7 @@ crypto_sources = [
   "src/crypto/fipsmodule/ec/internal.h",
   "src/crypto/fipsmodule/ec/p256-x86_64-table.h",
   "src/crypto/fipsmodule/ec/p256-x86_64.h",
+  "src/crypto/fipsmodule/ec/p256_table.h",
   "src/crypto/fipsmodule/fips_shared_support.c",
   "src/crypto/fipsmodule/is_fips.c",
   "src/crypto/fipsmodule/md5/internal.h",

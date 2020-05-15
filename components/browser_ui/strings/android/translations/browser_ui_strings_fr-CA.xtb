@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Téléchargements automatiques</translation>
 <translation id="5677928146339483299">Bloqué</translation>
 <translation id="5689516760719285838">Lieu</translation>
+<translation id="5690795753582697420">L'appareil photo est désactivé dans les paramètres d'Android</translation>
 <translation id="5710871682236653961">Demander avant d'autoriser les sites à envoyer et à recevoir de l'information lorsque vous touchez des appareils NFC (recommandé)</translation>
 <translation id="5719847187258001597">Cette action entraînera la suppression de l'ensemble des données et des témoins stockés par <ph name="ORIGIN" /> ou son application installée sur votre écran d'accueil.</translation>
 <translation id="5804241973901381774">Autorisations</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Plus</translation>
 <translation id="6064125863973209585">Téléchargements terminés</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
+<translation id="6177111841848151710">Bloquée pour le moteur de recherche actuel</translation>
 <translation id="6181444274883918285">Ajouter une exception pour le site</translation>
 <translation id="6192792657125177640">Exceptions</translation>
 <translation id="6194112207524046168">Pour autoriser Chrome à accéder à votre appareil photo, activez aussi celui-ci dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Cette page est dangereuse. Renseignements sur le site</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6992289844737586249">Demander avant d'autoriser des sites à utiliser votre microphone (recommandé)</translation>
+<translation id="7000754031042624318">Désactivée dans les paramètres Android</translation>
+<translation id="7016516562562142042">Autorisée pour le moteur de recherche actuel</translation>
 <translation id="7053983685419859001">Bloquer</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 élément sélectionné}one{# élément sélectionné}other{# éléments sélectionnés}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> élément(s) sélectionné(s). Options disponibles vers le haut de l'écran</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Autorisez le son sur un site précis.</translation>
 <translation id="7993619969781047893">Des fonctionnalités sur certains sites risquent de ne pas fonctionner</translation>
 <translation id="7999064672810608036">Voulez-vous vraiment effacer toutes les données locales de ce site Web, y compris les témoins, et réinitialiser toutes les autorisations pour ce site Web?</translation>
+<translation id="8007176423574883786">Désactivé pour cet appareil</translation>
 <translation id="802154636333426148">Échec du téléchargement</translation>
 <translation id="8087000398470557479">Ce contenu provient de <ph name="DOMAIN_NAME" />, fourni par Google.</translation>
 <translation id="8116925261070264013">Désactivés</translation>

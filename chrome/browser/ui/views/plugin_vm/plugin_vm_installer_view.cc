@@ -562,16 +562,14 @@ void PluginVmInstallerView::OnStateUpdated() {
   SetBigImage();
 
   int buttons = GetCurrentDialogButtons();
-  DialogDelegate::SetButtons(buttons);
+  SetButtons(buttons);
   if (buttons & ui::DIALOG_BUTTON_OK) {
-    DialogDelegate::SetButtonLabel(
-        ui::DIALOG_BUTTON_OK,
-        GetCurrentDialogButtonLabel(ui::DIALOG_BUTTON_OK));
+    SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                   GetCurrentDialogButtonLabel(ui::DIALOG_BUTTON_OK));
   }
   if (buttons & ui::DIALOG_BUTTON_CANCEL) {
-    DialogDelegate::SetButtonLabel(
-        ui::DIALOG_BUTTON_CANCEL,
-        GetCurrentDialogButtonLabel(ui::DIALOG_BUTTON_CANCEL));
+    SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
+                   GetCurrentDialogButtonLabel(ui::DIALOG_BUTTON_CANCEL));
   }
 
   const bool progress_bar_visible =

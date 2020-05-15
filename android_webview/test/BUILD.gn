@@ -294,6 +294,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "../javatests/src/org/chromium/android_webview/test/services/MinidumpUploadJobTest.java",
     "../javatests/src/org/chromium/android_webview/test/services/MockMetricsBridgeService.java",
     "../javatests/src/org/chromium/android_webview/test/services/MockVariationsSeedServer.java",
+    "../javatests/src/org/chromium/android_webview/test/services/ServiceConnectionHelper.java",
     "../javatests/src/org/chromium/android_webview/test/services/VariationsSeedServerTest.java",
     "../javatests/src/org/chromium/android_webview/test/services/VisualStateCallbackTest.java",
     "../javatests/src/org/chromium/android_webview/test/util/AwQuotaManagerBridgeTestUtil.java",

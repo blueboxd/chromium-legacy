@@ -22,7 +22,6 @@ class LayoutInline;
 class LayoutObject;
 class LayoutText;
 struct NGInlineNodeData;
-class NGDirtyLines;
 
 // NGInlineItemsBuilder builds a string and a list of NGInlineItem from inlines.
 //
@@ -45,12 +44,8 @@ class NGInlineItemsBuilderTemplate {
 
  public:
   // Create a builder that appends items to |items|.
-  //
-  // If |dirty_lines| is given, this builder calls its functions to mark lines
-  // dirty.
-  explicit NGInlineItemsBuilderTemplate(Vector<NGInlineItem>* items,
-                                        NGDirtyLines* dirty_lines = nullptr)
-      : items_(items), dirty_lines_(dirty_lines) {}
+  explicit NGInlineItemsBuilderTemplate(Vector<NGInlineItem>* items)
+      : items_(items) {}
   ~NGInlineItemsBuilderTemplate();
 
   String ToString();
@@ -153,8 +148,6 @@ class NGInlineItemsBuilderTemplate {
 
   Vector<NGInlineItem>* items_;
   StringBuilder text_;
-
-  NGDirtyLines* dirty_lines_;
 
   // |mapping_builder_| builds the whitespace-collapsed offset mapping
   // during inline collection. It is updated whenever |text_| is modified or a

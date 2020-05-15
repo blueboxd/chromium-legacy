@@ -53,6 +53,8 @@ using test::FakeDistiller;
 using test::MockDistillerFactory;
 using test::MockDistillerPage;
 using test::MockDistillerPageFactory;
+using testing::Eq;
+using testing::ExplainMatchResult;
 using testing::HasSubstr;
 using testing::Not;
 
@@ -93,6 +95,26 @@ void ExpectBodyHasThemeAndFont(content::WebContents* contents,
   EXPECT_THAT(result, HasSubstr(expected_theme));
   EXPECT_THAT(result, HasSubstr(expected_font));
 }
+
+class PrefChangeObserver : public DistilledPagePrefs::Observer {
+ public:
+  void WaitForChange(DistilledPagePrefs* prefs) {
+    prefs->AddObserver(this);
+    base::RunLoop run_loop;
+    callback_ = run_loop.QuitClosure();
+    run_loop.Run();
+    prefs->RemoveObserver(this);
+  }
+
+  void OnChangeFontFamily(mojom::FontFamily font_family) override {
+    callback_.Run();
+  }
+  void OnChangeTheme(mojom::Theme theme) override { callback_.Run(); }
+  void OnChangeFontScaling(float scaling) override { callback_.Run(); }
+
+ private:
+  base::RepeatingClosure callback_;
+};
 
 }  // namespace
 
@@ -600,6 +622,72 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, PrefPersist) {
       content::ExecuteScriptAndExtractString(contents, kGetFontSize, &result));
   base::StringToDouble(result, &fontSize);
   ASSERT_FLOAT_EQ(kScale, fontSize / oldFontSize);
+}
+
+IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, UISetsPrefs) {
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Load the distilled page
+  GURL view_url;
+  expect_distillation_ = true;
+  expect_distiller_page_ = true;
+  GURL original_url("http://www.example.com/1");
+  view_url = url_utils::GetDistillerViewUrlFromUrl(kDomDistillerScheme,
+                                                   original_url, "Title");
+  ViewSingleDistilledPage(view_url, "text/html");
+  content::WaitForLoadStop(contents);
+
+  DistilledPagePrefs* distilled_page_prefs =
+      DomDistillerServiceFactory::GetForBrowserContext(browser()->profile())
+          ->GetDistilledPagePrefs();
+
+  // Verify that the initial preferences aren't the same as those set below.
+  ExpectBodyHasThemeAndFont(contents, "light", "sans-serif");
+  EXPECT_NE(mojom::Theme::kDark, distilled_page_prefs->GetTheme());
+  EXPECT_NE(mojom::FontFamily::kMonospace,
+            distilled_page_prefs->GetFontFamily());
+
+  // Wait for all currently executing scripts to finish. Otherwise, the
+  // distiller object used to send the prefs to the browser from the JavaScript
+  // may not exist, causing test flakiness.
+  base::RunLoop().RunUntilIdle();
+
+  // 'Click' the associated UI elements for changing each preference.
+  const std::string script = R"(
+      (() => {
+        const observer = new MutationObserver((mutationsList, observer) => {
+          const classes = document.body.classList;
+          if (classes.contains('dark') && classes.contains('monospace')) {
+            observer.disconnect();
+            window.domAutomationController.send(document.body.className);
+          }
+        });
+
+        observer.observe(document.body, {
+          attributes: true,
+          attributeFilter: [ 'class' ]
+        });
+
+        document.querySelector('.theme-option .dark')
+          .dispatchEvent(new MouseEvent('click'));
+        document.querySelector(
+            '#font-family-selection option[value="monospace"]')
+          .dispatchEvent(new Event("change", { bubbles: true }));
+      })();)";
+  content::DOMMessageQueue queue(contents);
+  std::string result;
+  content::ExecuteScriptAsync(contents, script);
+  ASSERT_TRUE(queue.WaitForMessage(&result));
+
+  // Verify that the preferences changed in the browser-side
+  // DistilledPagePrefs.
+  PrefChangeObserver observer;
+  while (distilled_page_prefs->GetTheme() != mojom::Theme::kDark ||
+         mojom::FontFamily::kMonospace !=
+             distilled_page_prefs->GetFontFamily()) {
+    observer.WaitForChange(distilled_page_prefs);
+  }
 }
 
 }  // namespace dom_distiller

@@ -99,6 +99,10 @@ class PDFiumPage {
   // |link_index| is invalid.
   Area GetLinkTargetAtIndex(int link_index, LinkTarget* target);
 
+  // Returns link type and fills target associated with a link. Returns
+  // NONSELECTABLE_AREA if link detection failed.
+  Area GetLinkTarget(FPDF_LINK link, LinkTarget* target);
+
   // Fills the output params with the (x, y) position in page coordinates and
   // zoom value of a destination.
   void GetPageDestinationTarget(FPDF_DEST destination,
@@ -194,9 +198,6 @@ class PDFiumPage {
   void PopulateHighlight(FPDF_ANNOTATION annot);
   // Populate |text_fields_| with |annot|.
   void PopulateTextField(FPDF_ANNOTATION annot);
-  // Returns link type and fills target associated with a link. Returns
-  // NONSELECTABLE_AREA if link detection failed.
-  Area GetLinkTarget(FPDF_LINK link, LinkTarget* target);
   // Returns link type and fills target associated with a destination. Returns
   // NONSELECTABLE_AREA if detection failed.
   Area GetDestinationTarget(FPDF_DEST destination, LinkTarget* target);

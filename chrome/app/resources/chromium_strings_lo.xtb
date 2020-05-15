@@ -24,6 +24,7 @@
 <translation id="1966382378801805537">Chromium ບໍ່ສາມາດກຳນົດ ຫຼື ຕັ້ງໂປຣແກຣມທ່ອງເວັບເລີ່ມຕົ້ນໄດ້</translation>
 <translation id="2008474315282236005">ນີ້ຈະລຶບ 1 ລາຍການອອກຈາກອຸປະກອນນີ້. ເພື່ອກູ້ຂໍ້ມູນຂອງທ່ານຄືນໃນພາຍຫຼັງ, ກະລຸນາເຂົ້າສູ່ລະບົບ Chromium ເປັນ <ph name="USER_EMAIL" />.</translation>
 <translation id="2185166961232948079">Chromium - ການເຂົ້າສູ່ລະບົບເຄືອຂ່າຍ - <ph name="PAGE_TITLE" /></translation>
+<translation id="2225696941839557119">Chromium OS ບໍ່ສາມາດຊິ້ງຂໍ້ມູນລະຫັດຜ່ານຂອງທ່ານໄດ້.</translation>
 <translation id="2241627712206172106">ຖ້າທ່ານແຊຣ໌ຄອມພິວເຕີ, ໝູ່​ເພື່ອນ ແລະຄອບຄົວຂອງທ່ານ ສາມາດທ່ອງເນັດໄດ້ແຍກຕ່າງຫາກ ແລະຕັ້ງ Chromium ໄດ້ຕາມ​ແບບທີ່ພວກເຂົາຕ້ອງການ.</translation>
 <translation id="2294245788148774212">ບໍ່ບັງຄັບ: ຊ່ວຍປັບປຸງຄຸນສົມບັດ ແລະ ປະສິດທິພາບຂອງ Chromium OS ໂດຍການສົ່ງຂໍ້ມູນການວິເຄາະ ແລະ ການນຳໃຊ້ໃຫ້ Google ໂດຍອັດຕະໂນມັດ.</translation>
 <translation id="2347108572062610441">ສ່ວນຂະຫຍາຍ​ນີ້​ໄດ້ປ່ຽນສິ່ງທີ່ໜ້າສະແດງຂຶ້ນ ເມື່ອທ່ານເລີ່ມຕົ້ນ Chromium​.</translation>
@@ -136,6 +137,7 @@
 <translation id="6134968993075716475">Safe Browsing ປິດຢູ່. Chromium ຂໍແນະນຳໃຫ້ເປີດມັນ.</translation>
 <translation id="6212496753309875659">ຄອມພິວເຕີນີ້ມີ Chromium ລຸ້ນໃໝ່ກ່ວາຢູ່ຮຽບຮ້ອຍແລ້ວ. ຖ້າຊອບແວບໍ່ເຮັດວຽກ, ກະລຸນາຖອນຕິດຕັ້ງ Chromium ແລະລອງໃໝ່ອີກ.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium ຈະເປີດຄືນໃໝ່ດຽວນີ້}=1{Chromium ຈະເປີດຄືນໃໝ່ໃນ 1 ວິນາທີ}other{Chromium ຈະເປີດຄືນໃໝ່ໃນ # ວິນາທີ}}</translation>
+<translation id="623836266260425961">Chromium OS ບໍ່ສາມາດຊິ້ງຂໍ້ມູນຂອງທ່ານໄດ້.</translation>
 <translation id="6248213926982192922">ເຮັດ Chromium ເປັນບຣາວ​ເຊີມາດຕະຖານ</translation>
 <translation id="6266342355635466082">Chromium ບໍ່ສາມາດກວດຫາການອັບເດດໄດ້. ລອງກວດເບິ່ງການເຊື່ອມຕໍ່ອິນເຕີເນັດຂອງທ່ານ.</translation>
 <translation id="6268381023930128611">ອອກຈາກລະບົບ Chromium ບໍ?</translation>

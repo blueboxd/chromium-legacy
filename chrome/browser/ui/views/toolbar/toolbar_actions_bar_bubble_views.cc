@@ -41,20 +41,20 @@ ToolbarActionsBarBubbleViews::ToolbarActionsBarBubbleViews(
     buttons |= ui::DIALOG_BUTTON_OK;
   if (!cancel_text.empty())
     buttons |= ui::DIALOG_BUTTON_CANCEL;
-  DialogDelegate::SetButtons(buttons);
-  DialogDelegate::SetDefaultButton(delegate_->GetDefaultDialogButton());
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK, ok_text);
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, cancel_text);
-  DialogDelegate::SetExtraView(CreateExtraInfoView());
+  SetButtons(buttons);
+  SetDefaultButton(delegate_->GetDefaultDialogButton());
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, ok_text);
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, cancel_text);
+  SetExtraView(CreateExtraInfoView());
 
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
+  SetAcceptCallback(base::BindOnce(
       &ToolbarActionsBarBubbleViews::NotifyDelegateOfClose,
       base::Unretained(this), ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE));
-  DialogDelegate::SetCancelCallback(base::BindOnce(
+  SetCancelCallback(base::BindOnce(
       &ToolbarActionsBarBubbleViews::NotifyDelegateOfClose,
       base::Unretained(this),
       ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION));
-  DialogDelegate::SetCloseCallback(base::BindOnce(
+  SetCloseCallback(base::BindOnce(
       &ToolbarActionsBarBubbleViews::NotifyDelegateOfClose,
       base::Unretained(this),
       ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_DEACTIVATION));

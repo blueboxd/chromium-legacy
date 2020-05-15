@@ -19,11 +19,12 @@ import dalvik.system.PathClassLoader;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /** Helper class which performs initialization needed for WebView compatibility. */
 final class WebViewCompatibilityHelper {
     /** Creates a the ClassLoader to use for WebView compatibility. */
-    static Pair<ClassLoader, WebLayer.WebViewCompatibilityResult> initialize(
+    static Pair<Callable<ClassLoader>, WebLayer.WebViewCompatibilityResult> initialize(
             Context appContext, Context remoteContext)
             throws PackageManager.NameNotFoundException, ReflectiveOperationException {
         PackageInfo info =
@@ -45,18 +46,20 @@ final class WebViewCompatibilityHelper {
             }
         }
 
-        // TODO(cduvall): PathClassLoader may call stat on the library paths, consider moving this
-        // to a background thread.
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        ClassLoader classLoader;
-        try {
-            classLoader = new PathClassLoader(getAllApkPaths(info.applicationInfo),
-                    TextUtils.join(File.pathSeparator, libraryPaths),
-                    ClassLoader.getSystemClassLoader());
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
-        return Pair.create(classLoader, WebLayer.WebViewCompatibilityResult.SUCCESS);
+        String dexPath = getAllApkPaths(info.applicationInfo);
+        String librarySearchPath = TextUtils.join(File.pathSeparator, libraryPaths);
+        Callable<ClassLoader> classLoaderGetter = () -> {
+            // TODO(cduvall): PathClassLoader may call stat on the library paths, consider moving
+            // this to a background thread.
+            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+            try {
+                return new PathClassLoader(
+                        dexPath, librarySearchPath, ClassLoader.getSystemClassLoader());
+            } finally {
+                StrictMode.setThreadPolicy(oldPolicy);
+            }
+        };
+        return Pair.create(classLoaderGetter, WebLayer.WebViewCompatibilityResult.SUCCESS);
     }
 
     /**

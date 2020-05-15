@@ -46,7 +46,6 @@ class ServiceWorkerObjectHost;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistrationObjectHost;
 class ServiceWorkerVersion;
-class WebContents;
 
 // ServiceWorkerContainerHost is the host of a service worker client (a window,
 // dedicated worker, or shared worker) or service worker execution context in
@@ -93,7 +92,6 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
       public ServiceWorkerRegistration::Listener {
  public:
   using ExecutionReadyCallback = base::OnceClosure;
-  using WebContentsGetter = base::RepeatingCallback<WebContents*()>;
 
   // Constructor for service worker.
   explicit ServiceWorkerContainerHost(
@@ -411,10 +409,6 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   int frame_id() const { return frame_id_; }
   int frame_tree_node_id() const { return frame_tree_node_id_; }
 
-  const WebContentsGetter& web_contents_getter() const {
-    return web_contents_getter_;
-  }
-
   // For service worker clients.
   const std::string& client_uuid() const;
 
@@ -656,9 +650,6 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
 
   // The ID of the frame tree node where the navigation occurs.
   const int frame_tree_node_id_ = FrameTreeNode::kFrameTreeNodeInvalidId;
-
-  // Used to retrieve the WebContents where the navigation occurs.
-  const WebContentsGetter web_contents_getter_;
 
   // A token used internally to identify this context in requests. Corresponds
   // to the Fetch specification's concept of a request's associated window:

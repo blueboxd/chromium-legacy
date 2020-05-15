@@ -29,11 +29,13 @@ class FieldFiller {
   // to determine which field type should be filled, and |app_locale_| as hint
   // when filling exceptional cases like phone number values. Returns |true| if
   // the field has been filled, false otherwise. |cvc| is not stored in the
-  // data model and may be needed at fill time.
+  // data model and may be needed at fill time. If |failure_to_fill| is not
+  // null, errors are reported to that string.
   bool FillFormField(const AutofillField& field,
                      const AutofillDataModel& data_model,
                      FormFieldData* field_data,
-                     const base::string16& cvc);
+                     const base::string16& cvc,
+                     std::string* failure_to_fill = nullptr);
 
   // Returns the phone number value for the given |field|. The returned value
   // might be |number|, or could possibly be a meaningful subset |number|, if

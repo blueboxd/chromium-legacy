@@ -91,14 +91,14 @@ CloudServicesDialogView::CloudServicesDialogView(views::View* anchor_view,
                                                  Browser* browser)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       browser_(browser) {
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_ENABLE));
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_CANCEL));
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
-      &CloudServicesDialogView::OnDialogAccepted, base::Unretained(this)));
+  SetAcceptCallback(base::BindOnce(&CloudServicesDialogView::OnDialogAccepted,
+                                   base::Unretained(this)));
   set_close_on_deactivate(false);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 }

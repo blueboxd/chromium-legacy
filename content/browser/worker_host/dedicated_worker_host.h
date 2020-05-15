@@ -20,7 +20,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "net/base/isolation_info.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-forward.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom-forward.h"
@@ -206,10 +205,6 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
   // The origin of this worker.
   // https://html.spec.whatwg.org/C/#concept-settings-object-origin
   const url::Origin worker_origin_;
-
-  // The IsolationInfo to be used for both the worker script and the worker's
-  // subresources.
-  net::IsolationInfo isolation_info_;
 
   // The DedicatedWorker's Cross-Origin-Embedder-Policy(COEP). It is equals to
   // the nearest ancestor frame host's COEP:

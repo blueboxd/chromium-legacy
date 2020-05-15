@@ -93,6 +93,17 @@ void SSLClientSessionCache::Insert(const Key& cache_key,
   iter->second.Push(std::move(session));
 }
 
+void SSLClientSessionCache::ClearEarlyData(const Key& cache_key) {
+  auto iter = cache_.Get(cache_key);
+  if (iter != cache_.end()) {
+    for (auto& session : iter->second.sessions) {
+      if (session) {
+        session.reset(SSL_SESSION_copy_without_early_data(session.get()));
+      }
+    }
+  }
+}
+
 void SSLClientSessionCache::FlushForServer(const HostPortPair& server) {
   auto iter = cache_.begin();
   while (iter != cache_.end()) {

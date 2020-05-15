@@ -49,6 +49,12 @@ int BrowserControlsContainerView::GetContentHeightDelta() {
   return content_view_render_view_->height() - controls_layer_->position().y();
 }
 
+bool BrowserControlsContainerView::IsFullyVisible() const {
+  // At this time this is only needed for top-controls.
+  DCHECK(is_top_);
+  return controls_layer_ && controls_layer_->position().y() == 0;
+}
+
 void BrowserControlsContainerView::CreateControlsLayer(
     JNIEnv* env,
     int id) {

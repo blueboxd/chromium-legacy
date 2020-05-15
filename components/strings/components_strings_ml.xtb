@@ -269,6 +269,7 @@
 <translation id="2094505752054353250">ഡൊമെയ്‌ൻ പൊരുത്തമില്ലായ്‌മ</translation>
 <translation id="2096368010154057602">വകുപ്പ്</translation>
 <translation id="2099652385553570808">ഇടതുവശത്ത് മൂന്ന് തവണ സ്‌റ്റേപ്പിൾ ചെയ്യുക</translation>
+<translation id="2101225219012730419">പതിപ്പ്:</translation>
 <translation id="2102134110707549001">ശക്തമായ പാസ്‌വേഡ് നിർദ്ദേശിക്കുക…</translation>
 <translation id="2107021941795971877">പ്രിന്റ് സപ്പോർട്ടുകൾ</translation>
 <translation id="2108755909498034140">നിങ്ങളുടെ കമ്പ്യൂട്ടർ റീസ്‌റ്റാർട്ട് ചെയ്യുക</translation>
@@ -904,7 +905,7 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{ഒന്നുമില്ല}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> തിരയുക</translation>
 <translation id="4879491255372875719">സ്വമേധയാ (ഡിഫോൾട്ട്)</translation>
-<translation id="4879725228911483934">നിങ്ങളുടെ സ്ക്രീനുകളിൽ വിൻഡോകൾ തുറക്കുക, സ്ഥാപിക്കുക</translation>
+<translation id="4879725228911483934">നിങ്ങളുടെ വിൻഡോ തുറന്ന് സ്ക്രീനിൽ വെയ്ക്കണമെന്നുണ്ട്</translation>
 <translation id="4880827082731008257">തിരയൽ ചരിത്രം</translation>
 <translation id="4881695831933465202">തുറക്കുക</translation>
 <translation id="4892518386797173871">പിൻഭാഗം</translation>

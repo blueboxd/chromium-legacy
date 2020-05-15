@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Muat turun automatik</translation>
 <translation id="5677928146339483299">Disekat</translation>
 <translation id="5689516760719285838">Lokasi</translation>
+<translation id="5690795753582697420">Kamera dimatikan dalam tetapan Android</translation>
 <translation id="5710871682236653961">Tanya sebelum membenarkan tapak menghantar dan menerima maklumat semasa anda mengetik peranti NFC (disyorkan)</translation>
 <translation id="5719847187258001597">Tindakan ini akan mengosongkan semua data dan kuki yang disimpan oleh <ph name="ORIGIN" /> atau oleh aplnya pada Skrin utama anda.</translation>
 <translation id="5804241973901381774">Kebenaran</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Lagi</translation>
 <translation id="6064125863973209585">Muat turun yang telah selesai</translation>
 <translation id="6165508094623778733">Ketahui lebih lanjut</translation>
+<translation id="6177111841848151710">Disekat untuk enjin carian semasa</translation>
 <translation id="6181444274883918285">Tambah pengecualian tapak</translation>
 <translation id="6192792657125177640">Pengecualian</translation>
 <translation id="6194112207524046168">Untuk membenarkan Chrome mengakses kamera anda, hidupkan kamera dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" /> juga.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Halaman ini berbahaya. Maklumat tapak</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6992289844737586249">Tanya dahulu sebelum membenarkan tapak menggunakan mikrofon anda (disyorkan)</translation>
+<translation id="7000754031042624318">Dimatikan dalam tetapan Android</translation>
+<translation id="7016516562562142042">Dibenarkan untuk enjin carian semasa</translation>
 <translation id="7053983685419859001">Sekat</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 dipilih}other{# dipilih}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> dipilih. Pilihan tersedia berhampiran bahagian atas skrin</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Benarkan bunyi untuk tapak tertentu.</translation>
 <translation id="7993619969781047893">Ciri pada sesetengah tapak mungkin rosak</translation>
 <translation id="7999064672810608036">Anda pasti ingin mengosongkan semua data setempat, termasuk kuki dan menetapkan semula semua kebenaran untuk tapak web ini?</translation>
+<translation id="8007176423574883786">Dimatikan untuk peranti ini</translation>
 <translation id="802154636333426148">Muat turun gagal</translation>
 <translation id="8087000398470557479">Kandungan ini adalah daripada <ph name="DOMAIN_NAME" />, disampaikan oleh Google.</translation>
 <translation id="8116925261070264013">Diredam</translation>

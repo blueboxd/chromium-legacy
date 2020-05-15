@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Automaatsed allalaadimised</translation>
 <translation id="5677928146339483299">Blokeeritud</translation>
 <translation id="5689516760719285838">Asukoht</translation>
+<translation id="5690795753582697420">Kaamera on Androidi seadetes välja lülitatud</translation>
 <translation id="5710871682236653961">Küsitakse, enne kui lubatakse saitide jaoks teabe saatmine ja saamine, kui puudutate NFC-seadmeid (soovitatav)</translation>
 <translation id="5719847187258001597">See kustutab saidi <ph name="ORIGIN" /> või selle rakenduse salvestatud kõik andmed ja küpsisefailid teie avakuvalt.</translation>
 <translation id="5804241973901381774">Load</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Rohkem</translation>
 <translation id="6064125863973209585">Lõpetatud allalaadimised</translation>
 <translation id="6165508094623778733">Lisateave</translation>
+<translation id="6177111841848151710">Praeguse otsingumootori puhul blokeeritud</translation>
 <translation id="6181444274883918285">Lisa saidi erand</translation>
 <translation id="6192792657125177640">Erandid</translation>
 <translation id="6194112207524046168">Selleks et anda Chrome'ile juurdepääs teie kaamerale, lülitage kaamera sisse ka <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">See leht on ohtlik. Saidi teave</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6992289844737586249">Küsi enne saitidele minu mikrofoni kasutamiseks juurdepääsu lubamist (soovitatav)</translation>
+<translation id="7000754031042624318">Androidi seadetes välja lülitatud</translation>
+<translation id="7016516562562142042">Praeguse otsingumootori puhul lubatud</translation>
 <translation id="7053983685419859001">Blokeeri</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 on valitud}other{# on valitud}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> on valitud.  Valikud on saadaval ekraanikuva ülaosas</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Konkreetse saidi heli lubamine.</translation>
 <translation id="7993619969781047893">Mõne saidi funktsioonid ei pruugi töötada.</translation>
 <translation id="7999064672810608036">Kas soovite kindlasti kustutada kõik kohalikud andmed (sh küpsised) ja lähtestada kõik selle veebisaidi load?</translation>
+<translation id="8007176423574883786">Selle seadme puhul on välja lülitatud</translation>
 <translation id="802154636333426148">Allalaadimine ebaõnnestus</translation>
 <translation id="8087000398470557479">See sisu pärineb domeenilt <ph name="DOMAIN_NAME" /> ja seda pakub Google.</translation>
 <translation id="8116925261070264013">Vaigistatud</translation>

@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Automatiske downloads</translation>
 <translation id="5677928146339483299">Blokeret</translation>
 <translation id="5689516760719285838">Placering</translation>
+<translation id="5690795753582697420">Kameraet er deaktiveret i Android-indstillingerne</translation>
 <translation id="5710871682236653961">Spørg om tilladelse, før websites får mulighed for at sende og modtage oplysninger, når du parrer NFC-enheder (anbefalet)</translation>
 <translation id="5719847187258001597">Dette rydder alle data og cookies, som er gemt af <ph name="ORIGIN" /> eller de tilhørende apps på din startskærm.</translation>
 <translation id="5804241973901381774">Tilladelser</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Mere</translation>
 <translation id="6064125863973209585">Gennemførte downloads</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
+<translation id="6177111841848151710">Blokeret for den nuværende søgemaskine</translation>
 <translation id="6181444274883918285">Tilføj en undtagelse for et website</translation>
 <translation id="6192792657125177640">Undtagelser</translation>
 <translation id="6194112207524046168">Aktivér også dit kamera i <ph name="BEGIN_LINK" />Android-indstillingerne<ph name="END_LINK" /> for at give Chrome adgang til kameraet.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Denne side er farlig. Websiteoplysninger</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6992289844737586249">Spørg, før websites bruger din mikrofon (anbefales)</translation>
+<translation id="7000754031042624318">Deaktiveret i indstillingerne for Android</translation>
+<translation id="7016516562562142042">Tilladt for den nuværende søgemaskine</translation>
 <translation id="7053983685419859001">Bloker</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 er valgt}one{# er valgt}other{# er valgt}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> er markeret. De tilgængelige valgmuligheder er øverst på skærmen</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Tillad, at et bestemt website afspiller lyd.</translation>
 <translation id="7993619969781047893">Funktioner på visse websites fungerer muligvis ikke</translation>
 <translation id="7999064672810608036">Er du sikker på, at du vil slette alle lokale data, herunder cookies, og nulstille alle tilladelser for dette website?</translation>
+<translation id="8007176423574883786">Deaktiveret på denne enhed</translation>
 <translation id="802154636333426148">Download mislykkedes</translation>
 <translation id="8087000398470557479">Dette indhold er fra <ph name="DOMAIN_NAME" />, som leveres af Google.</translation>
 <translation id="8116925261070264013">Websites, hvor lyden er slået fra</translation>

@@ -160,6 +160,7 @@
 <translation id="161042844686301425">Lục lam</translation>
 <translation id="1620510694547887537">Máy ảnh</translation>
 <translation id="1623104350909869708">Ngăn trang này tạo hộp thoại bổ sung</translation>
+<translation id="1623253368136559158">Di chuyển camera</translation>
 <translation id="16338877384480380">Architecture-B</translation>
 <translation id="1638780421120290329">Không thể lưu thẻ</translation>
 <translation id="1639239467298939599">Đang tải</translation>
@@ -268,6 +269,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="2094505752054353250">Miền không khớp</translation>
 <translation id="2096368010154057602">Khu vực hành chính</translation>
 <translation id="2099652385553570808">Dập 3 ghim bên trái</translation>
+<translation id="2101225219012730419">Phiên bản:</translation>
 <translation id="2102134110707549001">Đề xuất mật khẩu mạnh…</translation>
 <translation id="2107021941795971877">Hỗ trợ in</translation>
 <translation id="2108755909498034140">Khởi động lại máy tính của bạn</translation>
@@ -443,6 +445,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="2856444702002559011">Những kẻ tấn công có thể đang cố gắng đánh cắp thông tin của bạn từ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (ví dụ: mật khẩu, thư hoặc thẻ tín dụng). <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">Gấp kiểu áp phích</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2880660355386638022">Vị trí cửa sổ</translation>
 <translation id="2881276955470682203">Lưu thẻ?</translation>
 <translation id="2882949212241984732">Gấp 2 cửa</translation>
 <translation id="2903493209154104877">Địa chỉ</translation>
@@ -643,6 +646,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Kiểm tra proxy, tường lửa và cấu hình DNS<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">Các ứng dụng có thể gây ra lỗi này gồm có phần mềm diệt vi-rút, tường lửa và lọc web hoặc phần mềm proxy.</translation>
 <translation id="373042150751172459">B4 (Phong bì)</translation>
+<translation id="3731873414101415120">Các trang web bạn truy cập và nội dung của các trang không an toàn</translation>
 <translation id="3736520371357197498">Nếu bạn hiểu các rủi ro bảo mật, bạn có thể <ph name="BEGIN_LINK" />truy cập trang web không an toàn này<ph name="END_LINK" /> trước khi các chương trình nguy hiểm bị xóa.</translation>
 <translation id="3744899669254331632">Bạn không thể truy cập <ph name="SITE" /> ngay bây giờ vì trang web này đã gửi thông tin đăng nhập hỗn độn mà Chromium không thể xử lý. Lỗi mạng và các cuộc tấn công thường chỉ diễn ra tạm thời nên trang này có thể sẽ hoạt động sau.</translation>
 <translation id="3745099705178523657">Sau khi bạn xác nhận, thông tin chi tiết thẻ trong Tài khoản Google của bạn sẽ được chia sẻ với trang web này.</translation>
@@ -909,6 +913,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="4877083676943085827">{COUNT,plural, =0{Không có}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Cụm từ tìm kiếm <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Tự động (mặc định)</translation>
+<translation id="4879725228911483934">Mở và đặt các cửa sổ trên màn hình của bạn</translation>
 <translation id="4880827082731008257">Lịch sử tìm kiếm</translation>
 <translation id="4881695831933465202">Mở</translation>
 <translation id="4892518386797173871">Phía sau</translation>
@@ -1626,6 +1631,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7887885240995164102">Vào chế độ hình trong hình</translation>
 <translation id="7888575728750733395">In theo mục đích tái tạo</translation>
 <translation id="7904208859782148177">C3 (Phong bì)</translation>
+<translation id="7923775243649974918">Di chuyển camera</translation>
 <translation id="7932579305932748336">Phủ</translation>
 <translation id="79338296614623784">Nhập số điện thoại hợp lệ</translation>
 <translation id="7934052535022478634">Thanh toán hoàn tất</translation>

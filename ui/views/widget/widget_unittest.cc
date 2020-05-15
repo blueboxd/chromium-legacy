@@ -1333,9 +1333,8 @@ class DesktopAuraPaintWidgetTest : public DesktopWidgetTest {
         CreateParamsForTestWidget(type));
     paint_widget_ = widget.get();
 
-    View* contents_view = new View();
+    View* contents_view = widget->SetContentsView(std::make_unique<View>());
     contents_view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
-    widget->SetContentsView(contents_view);
 
     widget->Show();
     widget->Activate();
@@ -2009,7 +2008,8 @@ TEST_F(WidgetTest, WidgetDeleted_InOnMousePressed) {
       CreateParams(views::Widget::InitParams::TYPE_POPUP);
   widget->Init(std::move(params));
 
-  widget->SetContentsView(new CloseWidgetView(ui::ET_MOUSE_PRESSED));
+  widget->SetContentsView(
+      std::make_unique<CloseWidgetView>(ui::ET_MOUSE_PRESSED));
 
   widget->SetSize(gfx::Size(100, 100));
   widget->Show();
@@ -2034,7 +2034,8 @@ TEST_F(WidgetTest, WidgetDeleted_InDispatchGestureEvent) {
       CreateParams(views::Widget::InitParams::TYPE_POPUP);
   widget->Init(std::move(params));
 
-  widget->SetContentsView(new CloseWidgetView(ui::ET_GESTURE_TAP_DOWN));
+  widget->SetContentsView(
+      std::make_unique<CloseWidgetView>(ui::ET_GESTURE_TAP_DOWN));
 
   widget->SetSize(gfx::Size(100, 100));
   widget->Show();

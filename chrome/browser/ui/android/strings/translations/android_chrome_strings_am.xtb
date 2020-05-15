@@ -387,7 +387,6 @@
 <translation id="4250229828105606438">ቅጽበታዊ ገጽ እይታ</translation>
 <translation id="4256782883801055595">የክፍት ምንጭ ፍቃዶች</translation>
 <translation id="4269820728363426813">የአገናኝ አድራሻ ቅዳ</translation>
-<translation id="4278390842282768270">ተፈቅዷል</translation>
 <translation id="429312253194641664">አንድ ጣቢያ ሚዲያን በማጫወት ላይ ነው</translation>
 <translation id="4298388696830689168">የተገናኙ ጣቢያዎች</translation>
 <translation id="4307992518367153382">መሠረታዊ</translation>
@@ -435,7 +434,6 @@
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> ዕልባቶች ተሰርዘዋል</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> ወደ እርስዎ መነሻ ገፅ ታክሏል</translation>
 <translation id="4684427112815847243">ሁሉንም ያመሳስሉ</translation>
-<translation id="4688610874307684559">በChrome ውስጥ በማሄድ ላይ (የመጀመሪያው)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 እና <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ተጨማሪ}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 እና <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ተጨማሪ}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 እና <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ተጨማሪ}}</translation>
 <translation id="4696983787092045100">ጽሑፍ ወደ መሣሪያዎችዎ ይላኩ</translation>
 <translation id="4698034686595694889">በ<ph name="APP_NAME" /> ውስጥ ከመስመር ውጭ ይመልከቱ</translation>
@@ -560,10 +558,8 @@
 <translation id="5659593005791499971">ኢሜይል</translation>
 <translation id="5665379678064389456">በ<ph name="APP_NAME" /> ውስጥ ክስተት ይፍጠሩ</translation>
 <translation id="5668404140385795438">የአንድ ድር ጣቢያ ማጉላትን መከልከል ጥያቄ ሻር</translation>
-<translation id="5677928146339483299">ታግዷል</translation>
 <translation id="5684874026226664614">ውይ። ይህ ገጽ ሊተረጎም አይችልም።</translation>
 <translation id="5686790454216892815">የፋይሉ ስም በጣም ረጅም ነው</translation>
-<translation id="5690795753582697420">ካሜራ በAndroid ቅንብሮች ውስጥ ጠፍቷል</translation>
 <translation id="5694049548840660018">በቀላሉ ወደ ቤት ይመለሱ</translation>
 <translation id="569536719314091526">ከተጨማሪ አማራጮች አዝራርሩ ይህን ገጽ ወደ ማንኛውም ቋንቋ ያስተርጉሙ</translation>
 <translation id="572328651809341494">የቅርብ ጊዜ ትሮች</translation>
@@ -619,7 +615,6 @@
 <translation id="614940544461990577">ይሞክሩ፦</translation>
 <translation id="6154478581116148741">የይለፍ ቃላትዎን ከዚህ መሣሪያ ወደ ውጭ ለመላክ በቅንብሮች ውስጥ የማያ ገጽ ቁልፍን ያብሩ</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> የውሂብ ቁጠባዎች</translation>
-<translation id="6177111841848151710">ለአሁኑ የፍለጋ ፕሮግራም ታግዷል</translation>
 <translation id="6192333916571137726">ፋይል ያውርዱ</translation>
 <translation id="6201345951596836663">አገናኝ ተቀድቷል</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> አይደለም?</translation>
@@ -706,7 +701,6 @@
 <translation id="6846298663435243399">በመጫን ላይ…</translation>
 <translation id="6850409657436465440">የእርስዎ ውርድ አሁንም በሂደት ላይ ነው</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> ትሮች ተዘግተዋል</translation>
-<translation id="6864395892908308021">ይህ መሣሪያ NFCን ማንበብ አይችልም</translation>
 <translation id="6864459304226931083">ምስል አውርድ</translation>
 <translation id="6865313869410766144">የራስ-ሙላ ቅጽ ውሂብ</translation>
 <translation id="6884306546558072722">ከመስመር ውጭ ማሰስ ቀጥል</translation>
@@ -721,9 +715,7 @@
 <translation id="6989267951144302301">ማውረድ አልተቻለም</translation>
 <translation id="6990079615885386641">መተግበሪያውን ከGoogle Play መደብር ያግኙ፦ <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">የይለፍ ቃላት በውሂብ ደንብ ጥሰት ተጋላጭ ከሆነ ያስጠንቅቅዎት</translation>
-<translation id="7000754031042624318">በAndroid ቅንብሮች ውስጥ ጠፍቷል</translation>
 <translation id="7015203776128479407">የመጀመሪያው የስምረት ውቅረት አላለቀም። ስምረት ጠፍቷል።</translation>
-<translation id="7016516562562142042">ለአሁኑ የፍለጋ ፕሮግራም ተፈቅዷል</translation>
 <translation id="7022756207310403729">በአሳሽ ውስጥ ክፈት</translation>
 <translation id="702463548815491781">TalkBack ወይም መዳረሻ ቀይር ሲበሩ የሚመከር</translation>
 <translation id="7029809446516969842">የይለፍ ቃላት</translation>
@@ -756,10 +748,10 @@
 <translation id="7328017930301109123">በቀላል ሁነታ ላይ Chrome ገጾችን በበለጠ ፍጥነት የሚጭን ሲሆን እስከ 60 በመቶ ያነሰ ውሂብ ይጠቀማል።</translation>
 <translation id="7333031090786104871">አሁንም ቀዳሚ ጣቢያን በማከል ላይ</translation>
 <translation id="7340958967809483333">ለምርምር አማራጮች</translation>
+<translation id="7352651011704765696">የሆነ ችግር ተፈጥሯል</translation>
 <translation id="7352939065658542140">ቪድዮ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 የተመረጠ ንጥል አጋራ}one{# የተመረጡ ንጥሎችን አጋራ}other{# የተመረጡ ንጥሎችን አጋራ}}</translation>
 <translation id="7359002509206457351">የመዳረሻ መክፈያ ዘዴዎች</translation>
-<translation id="7362144854749094396">ታሪክ ከChrome ጋር ይጋራል። ምርጫዎች ከ<ph name="SITE_NAME" /> ጋር ይጋራሉ።</translation>
 <translation id="7375125077091615385">ዓይነት፦</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />።</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -841,7 +833,6 @@
 <translation id="7986741934819883144">አንድ እውቂያ ይምረጡ</translation>
 <translation id="7998918019931843664">የተዘጋውን ትር ዳግም ይክፈቱ</translation>
 <translation id="8004582292198964060">አሳሽ</translation>
-<translation id="8007176423574883786">ለዚህ መሣሪያ ጠፍቷል</translation>
 <translation id="8013372441983637696">በተጨማሪ ከዚህ መሣሪያ ላይ የእርስዎን Chrome ውሂብ ያጽዱት</translation>
 <translation id="8015452622527143194">በገጹ ላይ ያለውን ሁሉንም ነገር ወደ ነባሪ መጠን መልስ</translation>
 <translation id="8026334261755873520">የአሰሳ ውሂብ አጽዳ</translation>
@@ -931,6 +922,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{የሲግናል ጥንካሬ ደረጃ፦ # አሞሌ}one{የሲግናል ጥንካሬ ደረጃ፦ # አሞሌዎች}other{የሲግናል ጥንካሬ ደረጃ፦ # አሞሌዎች}}</translation>
 <translation id="868929229000858085">እውቂያዎችዎን ይፈልጉ</translation>
 <translation id="869891660844655955">የሚያበቀበት ጊዜ</translation>
+<translation id="8712637175834984815">ገባኝ</translation>
 <translation id="8748850008226585750">ይዘቶች ተደብቀዋል</translation>
 <translation id="8751914237388039244">ምስል ይምረጡ</translation>
 <translation id="8758557275681689734">ሁሉንም የእርስዎ ክፍት ትሮች ይመልከቱ</translation>

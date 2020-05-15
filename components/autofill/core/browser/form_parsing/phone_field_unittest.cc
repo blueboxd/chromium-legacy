@@ -34,7 +34,9 @@ const char* const kFieldTypes[] = {
 
 class PhoneFieldTest : public testing::Test {
  public:
-  PhoneFieldTest() {}
+  PhoneFieldTest() = default;
+  PhoneFieldTest(const PhoneFieldTest&) = delete;
+  PhoneFieldTest& operator=(const PhoneFieldTest&) = delete;
 
  protected:
   // Downcast for tests.
@@ -60,9 +62,6 @@ class PhoneFieldTest : public testing::Test {
   std::vector<std::unique_ptr<AutofillField>> list_;
   std::unique_ptr<PhoneField> field_;
   FieldCandidatesMap field_candidates_map_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PhoneFieldTest);
 };
 
 TEST_F(PhoneFieldTest, Empty) {
@@ -93,7 +92,7 @@ TEST_F(PhoneFieldTest, ParseOneLinePhone) {
     AutofillScanner scanner(list_);
     field_ = Parse(&scanner);
     ASSERT_NE(nullptr, field_.get());
-    field_->AddClassifications(&field_candidates_map_);
+    field_->AddClassificationsForTesting(&field_candidates_map_);
     CheckField("phone1", PHONE_HOME_WHOLE_NUMBER);
   }
 }
@@ -118,7 +117,7 @@ TEST_F(PhoneFieldTest, ParseTwoLinePhone) {
     AutofillScanner scanner(list_);
     field_ = Parse(&scanner);
     ASSERT_NE(nullptr, field_.get());
-    field_->AddClassifications(&field_candidates_map_);
+    field_->AddClassificationsForTesting(&field_candidates_map_);
     CheckField("areacode1", PHONE_HOME_CITY_CODE);
     CheckField("phone2", PHONE_HOME_NUMBER);
   }
@@ -163,7 +162,7 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumber) {
     AutofillScanner scanner(list_);
     field_ = Parse(&scanner);
     ASSERT_NE(nullptr, field_.get());
-    field_->AddClassifications(&field_candidates_map_);
+    field_->AddClassificationsForTesting(&field_candidates_map_);
     CheckField("areacode1", PHONE_HOME_CITY_CODE);
     CheckField("prefix2", PHONE_HOME_NUMBER);
     CheckField("suffix3", PHONE_HOME_NUMBER);
@@ -199,7 +198,7 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix) {
     AutofillScanner scanner(list_);
     field_ = Parse(&scanner);
     ASSERT_NE(nullptr, field_.get());
-    field_->AddClassifications(&field_candidates_map_);
+    field_->AddClassificationsForTesting(&field_candidates_map_);
     CheckField("areacode1", PHONE_HOME_CITY_CODE);
     CheckField("prefix2", PHONE_HOME_NUMBER);
     CheckField("suffix3", PHONE_HOME_NUMBER);
@@ -234,7 +233,7 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix2) {
     AutofillScanner scanner(list_);
     field_ = Parse(&scanner);
     ASSERT_NE(nullptr, field_.get());
-    field_->AddClassifications(&field_candidates_map_);
+    field_->AddClassificationsForTesting(&field_candidates_map_);
     CheckField("phone1", PHONE_HOME_CITY_CODE);
     CheckField("phone2", PHONE_HOME_NUMBER);
     CheckField("phone3", PHONE_HOME_NUMBER);
@@ -265,7 +264,7 @@ TEST_F(PhoneFieldTest, CountryAndCityAndPhoneNumber) {
     AutofillScanner scanner(list_);
     field_ = Parse(&scanner);
     ASSERT_NE(nullptr, field_.get());
-    field_->AddClassifications(&field_candidates_map_);
+    field_->AddClassificationsForTesting(&field_candidates_map_);
     CheckField("country", PHONE_HOME_COUNTRY_CODE);
     CheckField("phone", PHONE_HOME_CITY_AND_NUMBER);
   }
@@ -297,10 +296,43 @@ TEST_F(PhoneFieldTest, CountryAndCityAndPhoneNumberWithLongerMaxLength) {
     AutofillScanner scanner(list_);
     field_ = Parse(&scanner);
     ASSERT_NE(nullptr, field_.get());
-    field_->AddClassifications(&field_candidates_map_);
+    field_->AddClassificationsForTesting(&field_candidates_map_);
     CheckField("country", PHONE_HOME_COUNTRY_CODE);
     CheckField("phone", PHONE_HOME_CITY_AND_NUMBER);
   }
+}
+
+// Tests if the country code, city code and phone number fields are correctly
+// classified by the heuristic when the phone code is a select element.
+TEST_F(PhoneFieldTest, CountryCodeIsSelectElement) {
+  FormFieldData field;
+
+  field.label = ASCIIToUTF16("Phone Country Code");
+  field.name = ASCIIToUTF16("ccode");
+  field.form_control_type = "select-one";
+  list_.push_back(
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("countryCode")));
+
+  field.label = ASCIIToUTF16("Phone City Code");
+  field.name = ASCIIToUTF16("areacode");
+  field.form_control_type = "text";
+  field.max_length = 3;
+  list_.push_back(
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("cityCode")));
+
+  field.label = ASCIIToUTF16("Phone Number");
+  field.name = ASCIIToUTF16("phonenumber");
+  field.max_length = 0;
+  list_.push_back(
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("phoneNumber")));
+
+  AutofillScanner scanner(list_);
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
+  field_->AddClassificationsForTesting(&field_candidates_map_);
+  CheckField("countryCode", PHONE_HOME_COUNTRY_CODE);
+  CheckField("cityCode", PHONE_HOME_CITY_CODE);
+  CheckField("phoneNumber", PHONE_HOME_NUMBER);
 }
 
 }  // namespace autofill

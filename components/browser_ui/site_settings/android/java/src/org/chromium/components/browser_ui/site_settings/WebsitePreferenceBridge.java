@@ -497,6 +497,17 @@ public class WebsitePreferenceBridge {
     }
 
     /**
+     * Some Google-affiliated domains are not allowed to delete cookies for supervised accounts.
+     *
+     * @return Whether deleting cookies is disabled for |origin|.
+     */
+    public static boolean isCookieDeletionDisabled(
+            BrowserContextHandle browserContextHandle, String origin) {
+        return WebsitePreferenceBridgeJni.get().isCookieDeletionDisabled(
+                browserContextHandle, origin);
+    }
+
+    /**
      * @return Whether geolocation information can be shared with content.
      */
     public static boolean isAllowLocationEnabled(BrowserContextHandle browserContextHandle) {
@@ -671,6 +682,7 @@ public class WebsitePreferenceBridge {
                 BrowserContextHandle browserContextHandle, int contentSettingType);
         boolean isContentSettingManaged(
                 BrowserContextHandle browserContextHandle, int contentSettingType);
+        boolean isCookieDeletionDisabled(BrowserContextHandle browserContextHandle, String origin);
         void setContentSettingEnabled(
                 BrowserContextHandle browserContextHandle, int contentSettingType, boolean allow);
         void getContentSettingsExceptions(BrowserContextHandle browserContextHandle,

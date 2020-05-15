@@ -65,6 +65,11 @@ class PDFiumEngine : public PDFEngine,
   static void OverrideSetSelectedTextFunctionForTesting(
       SetSelectedTextFunction function);
 
+  using SetLinkUnderCursorFunction =
+      void (*)(pp::Instance* instance, const std::string& link_under_cursor);
+  static void OverrideSetLinkUnderCursorFunctionForTesting(
+      SetLinkUnderCursorFunction function);
+
   // PDFEngine implementation.
   bool New(const char* url, const char* headers) override;
   void PageOffsetUpdated(const pp::Point& page_offset) override;
@@ -579,7 +584,7 @@ class PDFiumEngine : public PDFEngine,
   // already in view.
   void ScrollIntoView(const pp::Rect& rect);
 
-  void OnFocusedAnnotationUpdated(FPDF_ANNOTATION annot);
+  void OnFocusedAnnotationUpdated(FPDF_ANNOTATION annot, int page_index);
 
   // Fetches and populates the fields of |doc_metadata_|. To be called after the
   // document is loaded.
@@ -600,6 +605,9 @@ class PDFiumEngine : public PDFEngine,
   bool HandleTabEventWithModifiers(uint32_t modifiers);
   bool HandleTabForward(uint32_t modifiers);
   bool HandleTabBackward(uint32_t modifiers);
+
+  void UpdateLinkUnderCursor(const std::string& target_url);
+  void SetLinkUnderCursorForAnnotation(FPDF_ANNOTATION annot, int page_index);
 
   PDFEngine::Client* const client_;
 

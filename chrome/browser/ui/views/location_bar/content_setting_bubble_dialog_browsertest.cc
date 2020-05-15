@@ -207,10 +207,12 @@ void ContentSettingBubbleDialogTest::ShowUi(const std::string& name) {
 
   if (base::StartsWith(name, "notifications_quiet",
                        base::CompareCase::SENSITIVE)) {
-    TriggerQuietNotificationPermissionRequest(
-        name == "notifications_quiet_crowd_deny"
-            ? QuietUiReason::kTriggeredByCrowdDeny
-            : QuietUiReason::kEnabledInPrefs);
+    QuietUiReason reason = QuietUiReason::kEnabledInPrefs;
+    if (name == "notifications_quiet_crowd_deny")
+      reason = QuietUiReason::kTriggeredByCrowdDeny;
+    else if (name == "notifications_quiet_abusive")
+      reason = QuietUiReason::kTriggeredDueToAbusiveRequests;
+    TriggerQuietNotificationPermissionRequest(reason);
     ShowDialogBubble(ImageType::NOTIFICATIONS_QUIET_PROMPT);
     return;
   }
@@ -320,5 +322,10 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest,
 
 IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest,
                        InvokeUi_notifications_quiet_crowd_deny) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest,
+                       InvokeUi_notifications_quiet_abusive) {
   ShowAndVerifyUi();
 }

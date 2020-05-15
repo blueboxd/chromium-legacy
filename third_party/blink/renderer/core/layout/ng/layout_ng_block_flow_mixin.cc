@@ -300,10 +300,9 @@ void LayoutNGBlockFlowMixin<Base>::DirtyLinesFromChangedChild(
   // LayoutNG inline formatting context. New objects are handled in
   // NGInlineNode::MarkLineBoxesDirty().
   if (child->IsInLayoutNGInlineFormattingContext()) {
-    if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-      NGPaintFragment::DirtyLinesFromChangedChild(child);
-    } else if (const NGFragmentItems* items = Base::FragmentItems()) {
-      items->DirtyLinesFromChangedChild(child);
+    if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+      if (const NGFragmentItems* items = Base::FragmentItems())
+        items->DirtyLinesFromChangedChild(child);
     }
   }
 }

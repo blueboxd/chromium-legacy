@@ -388,31 +388,29 @@ bool OriginTrialContext::EnableTrialFromToken(const SecurityOrigin* origin,
 
   bool valid = false;
   StringUTF8Adaptor token_string(token);
-  std::string trial_name_str;
-  base::Time expiry_time;
-  OriginTrialTokenStatus token_result = trial_token_validator_->ValidateToken(
-      token_string.AsStringPiece(), origin->ToUrlOrigin(), base::Time::Now(),
-      &trial_name_str, &expiry_time);
+  TrialTokenResult token_result = trial_token_validator_->ValidateToken(
+      token_string.AsStringPiece(), origin->ToUrlOrigin(), base::Time::Now());
   DVLOG(1) << "EnableTrialFromToken: token_result = "
-           << static_cast<int>(token_result) << ", token = " << token;
-  if (token_result == OriginTrialTokenStatus::kSuccess) {
-    String trial_name =
-        String::FromUTF8(trial_name_str.data(), trial_name_str.size());
+           << static_cast<int>(token_result.status) << ", token = " << token;
+
+  if (token_result.status == OriginTrialTokenStatus::kSuccess) {
+    String trial_name = String::FromUTF8(token_result.feature_name.data(),
+                                         token_result.feature_name.size());
     if (origin_trials::IsTrialValid(trial_name)) {
       // Origin trials are only enabled for secure origins. The only exception
       // is for deprecation trials.
       if (is_secure ||
           origin_trials::IsTrialEnabledForInsecureContext(trial_name)) {
-        valid = EnableTrialFromName(trial_name, expiry_time);
+        valid = EnableTrialFromName(trial_name, token_result.expiry_time);
       } else {
         // Insecure origin and trial is restricted to secure origins.
         DVLOG(1) << "EnableTrialFromToken: not secure";
-        token_result = OriginTrialTokenStatus::kInsecure;
+        token_result.status = OriginTrialTokenStatus::kInsecure;
       }
     }
   }
 
-  RecordTokenValidationResultHistogram(token_result);
+  RecordTokenValidationResultHistogram(token_result.status);
   return valid;
 }
 

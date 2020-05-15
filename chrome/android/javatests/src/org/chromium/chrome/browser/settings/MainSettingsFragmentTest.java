@@ -16,6 +16,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -60,13 +61,19 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 public class MainSettingsFragmentTest {
     private static final String SEARCH_ENGINE_SHORT_NAME = "Google";
 
-    @Rule
-    public HomepageTestRule mHomepageTestRule = new HomepageTestRule();
-    @Rule
-    public SyncTestRule mSyncTestRule = new SyncTestRule();
-    @Rule
-    public SettingsActivityTestRule<MainSettings> mSettingsActivityTestRule =
+    private final HomepageTestRule mHomepageTestRule = new HomepageTestRule();
+
+    private final SyncTestRule mSyncTestRule = new SyncTestRule();
+
+    private final SettingsActivityTestRule<MainSettings> mSettingsActivityTestRule =
             new SettingsActivityTestRule<>(MainSettings.class);
+
+    // SettingsActivity needs to be initialized and destroyed with the mock
+    // signin environment setup in SyncTestRule
+    @Rule
+    public final RuleChain mRuleChain = RuleChain.outerRule(mSyncTestRule)
+                                                .around(mHomepageTestRule)
+                                                .around(mSettingsActivityTestRule);
 
     @Mock
     public TemplateUrlService mMockTemplateUrlService;

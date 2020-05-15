@@ -75,8 +75,7 @@ class URLDataManagerBackend : public base::SupportsUserData::Data {
   static std::vector<std::string> GetWebUISchemes();
 
  private:
-  typedef std::map<std::string,
-      scoped_refptr<URLDataSourceImpl> > DataSourceMap;
+  typedef std::map<std::string, scoped_refptr<URLDataSourceImpl>> DataSourceMap;
 
   // Custom sources of data, keyed by source path (e.g. "favicon").
   DataSourceMap data_sources_;

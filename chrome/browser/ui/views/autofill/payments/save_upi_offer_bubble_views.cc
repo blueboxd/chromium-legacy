@@ -20,10 +20,10 @@ SaveUPIOfferBubbleViews::SaveUPIOfferBubbleViews(
       controller_(controller) {
   DCHECK(controller_);
 
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_UPI_PROMPT_ACCEPT));
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_UPI_PROMPT_REJECT));
 }

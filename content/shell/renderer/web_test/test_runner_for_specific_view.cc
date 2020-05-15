@@ -138,14 +138,6 @@ void TestRunnerForSpecificView::PostTask(base::OnceClosure callback) {
       FROM_HERE, std::move(callback));
 }
 
-void TestRunnerForSpecificView::PostV8Callback(
-    const v8::Local<v8::Function>& callback) {
-  PostTask(base::BindOnce(&TestRunnerForSpecificView::InvokeV8Callback,
-                          weak_factory_.GetWeakPtr(),
-                          v8::UniquePersistent<v8::Function>(
-                              blink::MainThreadIsolate(), callback)));
-}
-
 void TestRunnerForSpecificView::PostV8CallbackWithArgs(
     v8::UniquePersistent<v8::Function> callback,
     int argc,
@@ -159,12 +151,6 @@ void TestRunnerForSpecificView::PostV8CallbackWithArgs(
   PostTask(base::BindOnce(&TestRunnerForSpecificView::InvokeV8CallbackWithArgs,
                           weak_factory_.GetWeakPtr(), std::move(callback),
                           std::move(args)));
-}
-
-void TestRunnerForSpecificView::InvokeV8Callback(
-    const v8::UniquePersistent<v8::Function>& callback) {
-  std::vector<v8::UniquePersistent<v8::Value>> empty_args;
-  InvokeV8CallbackWithArgs(callback, std::move(empty_args));
 }
 
 void TestRunnerForSpecificView::InvokeV8CallbackWithArgs(
@@ -187,16 +173,6 @@ void TestRunnerForSpecificView::InvokeV8CallbackWithArgs(
   frame->CallFunctionEvenIfScriptDisabled(
       v8::Local<v8::Function>::New(isolate, callback), context->Global(),
       local_args.size(), local_args.data());
-}
-
-base::OnceClosure TestRunnerForSpecificView::CreateClosureThatPostsV8Callback(
-    const v8::Local<v8::Function>& callback) {
-  return base::BindOnce(
-      &TestRunnerForSpecificView::PostTask, weak_factory_.GetWeakPtr(),
-      base::BindOnce(&TestRunnerForSpecificView::InvokeV8Callback,
-                     weak_factory_.GetWeakPtr(),
-                     v8::UniquePersistent<v8::Function>(
-                         blink::MainThreadIsolate(), callback)));
 }
 
 void TestRunnerForSpecificView::CapturePixelsAsyncThen(
@@ -279,36 +255,6 @@ void TestRunnerForSpecificView::RunJSCallbackWithBitmap(
       &buffer, context->Global(), isolate);
 
   PostV8CallbackWithArgs(std::move(callback), base::size(argv), argv);
-}
-
-void TestRunnerForSpecificView::GetBluetoothManualChooserEvents(
-    v8::Local<v8::Function> callback) {
-  return blink_test_runner()->GetBluetoothManualChooserEvents(base::BindOnce(
-      &TestRunnerForSpecificView::GetBluetoothManualChooserEventsCallback,
-      weak_factory_.GetWeakPtr(),
-      v8::UniquePersistent<v8::Function>(blink::MainThreadIsolate(),
-                                         callback)));
-}
-
-void TestRunnerForSpecificView::GetBluetoothManualChooserEventsCallback(
-    v8::UniquePersistent<v8::Function> callback,
-    const std::vector<std::string>& events) {
-  // Build the V8 context.
-  v8::Isolate* isolate = blink::MainThreadIsolate();
-  v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context =
-      GetLocalMainFrame()->MainWorldScriptContext();
-  if (context.IsEmpty())
-    return;
-  v8::Context::Scope context_scope(context);
-
-  // Convert the argument.
-  v8::Local<v8::Value> arg;
-  if (!gin::TryConvertToV8(isolate, events, &arg))
-    return;
-
-  // Call the callback.
-  PostV8CallbackWithArgs(std::move(callback), 1, &arg);
 }
 
 void TestRunnerForSpecificView::SetPageVisibility(
@@ -444,12 +390,6 @@ void TestRunnerForSpecificView::SetIsolatedWorldInfo(
   web_view()->FocusedFrame()->ClearIsolatedWorldCSPForTesting(world_id);
 
   web_view()->FocusedFrame()->SetIsolatedWorldInfo(world_id, info);
-}
-
-void TestRunner::InsertStyleSheet(const std::string& source_code) {
-  blink::WebLocalFrame::FrameForCurrentContext()
-      ->GetDocument()
-      .InsertStyleSheet(blink::WebString::FromUTF8(source_code));
 }
 
 blink::WebLocalFrame* TestRunnerForSpecificView::GetLocalMainFrame() {

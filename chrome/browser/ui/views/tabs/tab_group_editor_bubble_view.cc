@@ -107,7 +107,7 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
 
   set_margins(gfx::Insets());
 
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
 
   const base::string16 title = browser_->tab_strip_model()
                                    ->group_model()
@@ -115,8 +115,8 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
                                    ->visual_data()
                                    ->title();
   title_at_opening_ = title;
-  DialogDelegate::SetCloseCallback(base::BindOnce(
-      &TabGroupEditorBubbleView::OnBubbleClose, base::Unretained(this)));
+  SetCloseCallback(base::BindOnce(&TabGroupEditorBubbleView::OnBubbleClose,
+                                  base::Unretained(this)));
 
   const auto* layout_provider = ChromeLayoutProvider::Get();
   const int horizontal_spacing = layout_provider->GetDistanceMetric(

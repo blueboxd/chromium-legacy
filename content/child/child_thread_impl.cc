@@ -570,8 +570,16 @@ void ChildThreadImpl::Init(const Options& options) {
   // IPC mode.
   mojo::ScopedMessagePipeHandle child_process_pipe;
   if (!IsInBrowserProcess()) {
+    scoped_refptr<base::SingleThreadTaskRunner> mojo_ipc_task_runner =
+        GetIOTaskRunner();
+    if (base::FeatureList::IsEnabled(features::kMojoDedicatedThread)) {
+      mojo_ipc_thread_.StartWithOptions(
+          base::Thread::Options(base::MessagePumpType::IO, 0));
+      mojo_ipc_task_runner = mojo_ipc_thread_.task_runner();
+    }
     mojo_ipc_support_.reset(new mojo::core::ScopedIPCSupport(
-        GetIOTaskRunner(), mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST));
+        mojo_ipc_task_runner,
+        mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST));
     mojo::IncomingInvitation invitation = InitializeMojoIPCChannel();
     child_process_pipe = invitation.ExtractMessagePipe(0);
   } else {

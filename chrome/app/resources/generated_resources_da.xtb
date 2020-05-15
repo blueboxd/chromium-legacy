@@ -523,7 +523,6 @@
 <translation id="1650371550981945235">Vis inputmuligheder</translation>
 <translation id="1651008383952180276">Du skal angive den samme adgangssætning to gange</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Føj printeren til Google Cloudprinter, så du kan udskrive, uanset hvor du befinder dig.}one{Føj # printere til Google Cloudprinter, så du kan udskrive, uanset hvor du befinder dig.}other{Føj # printere til Google Cloudprinter, så du kan udskrive, uanset hvor du befinder dig.}}</translation>
-<translation id="1655937588105566159">{NUM_EXTENSIONS,plural, =1{Denne udvidelse kan være skadelig}one{Denne udvidelse kan være skadelig}other{Disse udvidelser kan være skadelige}}</translation>
 <translation id="1656528038316521561">Baggrundens gennemsigtighed</translation>
 <translation id="1657406563541664238">Vær med til at gøre <ph name="PRODUCT_NAME" /> bedre ved automatisk at sende forbrugsstatistikker og rapportere om nedbrud til Google</translation>
 <translation id="1657937299377480641">Hvis du vil logge ind igen, så du kan få adgang til uddannelsesressourcer, skal du bede en forælder om tilladelse</translation>
@@ -713,7 +712,6 @@
 <translation id="1875387611427697908">Denne kan kun tilføjes via <ph name="CHROME_WEB_STORE" />.</translation>
 <translation id="1877520246462554164">Der kunne ikke hentes noget godkendelsestoken. Log ud, og log derefter ind igen for at prøve igen.</translation>
 <translation id="1877860345998737529">Tildeling af handlinger for kontakter</translation>
-<translation id="1878541307036593717">Konfigurer tilladelser</translation>
 <translation id="1879000426787380528">Log ind som</translation>
 <translation id="1880905663253319515">Slet certifikatet "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1884013283844450420">Netværk <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, opret forbindelse</translation>
@@ -1078,7 +1076,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">Noter på låseskærmen gemmes automatisk i <ph name="LOCK_SCREEN_APP_NAME" />. Din seneste note forbliver på låseskærmen.</translation>
 <translation id="2353297238722298836">Der er givet adgang til kameraet og mikrofonen</translation>
-<translation id="2355604387869345912">Slå Automatisk netdeling til</translation>
+<translation id="2355604387869345912">Aktivér Automatisk netdeling</translation>
 <translation id="2356070529366658676">Spørg</translation>
 <translation id="2357330829548294574">Fjern <ph name="USER_NAME" /></translation>
 <translation id="2359345697448000899">Administrer dine udvidelser ved at klikke på Udvidelser i værktøjsmenuen.</translation>
@@ -2152,7 +2150,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3727148787322499904">Hvis denne indstilling ændres, påvirker det alle delte netværk</translation>
 <translation id="3727187387656390258">Undersøg pop op-vindue</translation>
 <translation id="372722114124766626">Kun én gang</translation>
-<translation id="3728681439294129328">Konfigurer netværksadressen</translation>
+<translation id="3728681439294129328">Konfigurer netværksadresse</translation>
 <translation id="3729303374699765035">Spørg, når et website vil søge efter Bluetooth-enheder i nærheden</translation>
 <translation id="3729506734996624908">Tilladte websites</translation>
 <translation id="3730076362938942381">App til skrivning med styluspen</translation>
@@ -2362,7 +2360,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3957844511978444971">Tryk på "Acceptér" for at bekræfte dit valg af disse indstillinger for Google-tjenester.</translation>
 <translation id="3958088479270651626">Importér bogmærker og indstillinger</translation>
 <translation id="3960566196862329469">ONC</translation>
-<translation id="3964480518399667971">Slå mobilnetværk fra</translation>
+<translation id="3964480518399667971">Deaktiver mobilnetværk</translation>
 <translation id="3965811923470826124">Med</translation>
 <translation id="3965965397408324205">Log <ph name="PROFILE_NAME" /> ud</translation>
 <translation id="3966072572894326936">Vælg en anden mappe...</translation>
@@ -2632,6 +2630,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4359408040881008151">Installeret på grund af andre udvidelser, der er afhængige af den.</translation>
 <translation id="4359717112757026264">Cityscape</translation>
 <translation id="4361142739114356624">Den private nøgle til dette klientcertifikat mangler eller er ugyldig</translation>
+<translation id="4361745360460842907">Åbn som fane</translation>
 <translation id="4363771538994847871">Der blev ikke fundet nogen Cast-destinationer. Har du brug for hjælp?</translation>
 <translation id="4364327530094270451">Melon</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> deler et vindue.</translation>
@@ -3093,7 +3092,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4994474651455208930">Tillad, at websites beder om at håndtere protokoller som standard</translation>
 <translation id="4994754230098574403">Konfigurerer</translation>
 <translation id="4997086284911172121">Der er ingen internetforbindelse.</translation>
-<translation id="4997384734315285248">Afinstaller Plugin VM</translation>
 <translation id="4998430619171209993">Til</translation>
 <translation id="5000922062037820727">Blokeret (anbefales)</translation>
 <translation id="5005498671520578047">Kopiér adgangskode</translation>
@@ -3630,7 +3628,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="570043786759263127">Google Play-apps og -tjenester</translation>
 <translation id="5700836101007545240">Tilføjelse af forbindelser er deaktiveret af din administrator</translation>
 <translation id="5701080607174488915">Politikken kunne ikke hentes fra serveren.</translation>
-<translation id="5701212929149679556">Mobilroaming</translation>
+<translation id="5701212929149679556">Roaming på mobilnetværk</translation>
 <translation id="5701381305118179107">Centrér</translation>
 <translation id="5701441174893770082">Opgradering af Linux kan dræne dit batteri betydeligt hurtigere. Slut din enhed til en oplader, og prøv igen.</translation>
 <translation id="5702898740348134351">&amp;Rediger søgemaskiner...</translation>
@@ -3696,6 +3694,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5785583009707899920">Filværktøjer til Chrome</translation>
 <translation id="5787146423283493983">Nøgleoverensstemmelse</translation>
 <translation id="5788367137662787332">Vi beklager, men der kunne ikke oprettes forbindelse til mindst én partition på enheden <ph name="DEVICE_LABEL" />.</translation>
+<translation id="5790085346892983794">Fuldført</translation>
 <translation id="5792728279623964091">Tryk på afbryderknappen</translation>
 <translation id="5793339252089865437">Hvis du downloader opdateringen via dit mobilnetværk, kan der pålægges yderligere gebyrer.</translation>
 <translation id="5794414402486823030">Åbn altid med systemets visningsprogram</translation>
@@ -4107,7 +4106,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6312567056350025599">{NUM_DAYS,plural, =1{Sikkerhedstjekket blev udført for 1 dag siden}one{Sikkerhedstjekket blev udført for {NUM_DAYS} dag siden}other{Sikkerhedstjekket blev udført for {NUM_DAYS} dage siden}}</translation>
 <translation id="6312638141433622592">Tilbyd at vise artikler i Læser-tilstand, når dette understøttes</translation>
 <translation id="6313641880021325787">LUK VR</translation>
-<translation id="6313950457058510656">Slå Automatisk netdeling fra</translation>
+<translation id="6313950457058510656">Deaktiver Automatisk netdeling</translation>
 <translation id="6314819609899340042">Du har aktiveret fejlretningsfunktioner på denne <ph name="IDS_SHORT_PRODUCT_NAME" />-enhed.</translation>
 <translation id="6315493146179903667">Læg alle forrest</translation>
 <translation id="6316806695097060329">Denne <ph name="SHORT_PRODUCT_NAME" />-enhed er designet til at give dig den optimale internetoplevelse.</translation>
@@ -4225,7 +4224,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6466988389784393586">Åbn alle bogmærker</translation>
 <translation id="6467304607960172345">Optimer videoer i fuld skærm</translation>
 <translation id="6468485451923838994">Skrifttyper</translation>
-<translation id="6469557521904094793">Slå mobilnetværk til</translation>
+<translation id="6469557521904094793">Aktivér mobilnetværk</translation>
 <translation id="6472207088655375767">Engangskode</translation>
 <translation id="6472893788822429178">Vis knappen Startside</translation>
 <translation id="6473842110411557830">Powerwash-illustration</translation>
@@ -4355,7 +4354,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="665061930738760572">Åbn i &amp;nyt vindue</translation>
 <translation id="6651237644330755633">Hav tillid til dette certifikat i forbindelse med identificering af websites</translation>
 <translation id="665355505818177700">Chrome <ph name="MS_AD_NAME" />-integration understøttes kun på x86_64-platforme. Chromebooks, der er bygget på en ARM- eller x86-platform, understøtter ikke denne funktionalitet.</translation>
-<translation id="6654509035557065241">Angiv et foretrukket netværk</translation>
+<translation id="6654509035557065241">Foretræk netværk</translation>
 <translation id="6655190889273724601">Udviklertilstand</translation>
 <translation id="6655458902729017087">Skjul konti</translation>
 <translation id="6657585470893396449">Adgangskode</translation>
@@ -4629,6 +4628,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7004402701596653846">Websitet kan anvende MIDI</translation>
 <translation id="7004499039102548441">Seneste faner</translation>
 <translation id="7005496624875927304">Yderligere tilladelser</translation>
+<translation id="7005812687360380971">Fejl</translation>
 <translation id="7005848115657603926">Ugyldigt sideinterval, brug <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Bundmargen</translation>
 <translation id="7007648447224463482">Åbn alle i et nyt vindue</translation>
@@ -4768,7 +4768,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7191159667348037">Ukendt printer (USB)</translation>
 <translation id="7193051357671784796">Din app blev tilføjet af din organisation. Genstart appen for at afslutte installationen.</translation>
 <translation id="7193374945610105795">Der er ikke gemt nogen adgangskoder til <ph name="ORIGIN" /></translation>
-<translation id="7194620721202917359">{NUM_APPS,plural, =1{Denne app kan være skadelig}one{Denne app kan være skadelig}other{Disse apps kan være skadelige}}</translation>
 <translation id="7196913789568937443">Sikkerhedskopiér til Google Drev. Du kan til enhver tid gendanne dine data eller skifte til en anden enhed. Backups omfatter appdata og uploades til Google og krypteres ved hjælp af adgangskoden til din Google-konto. <ph name="BEGIN_LINK1" />Få flere oplysninger<ph name="END_LINK1" /></translation>
 <translation id="7197190419934240522">Få adgang til Google Søgning og Google-intelligens, hver gang du browser</translation>
 <translation id="7197632491113152433">Vi fandt <ph name="NUMBER_OF_APPS" /> apps på din konto, der kan bruges på denne enhed.</translation>
@@ -5011,7 +5010,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7506541170099744506">Din <ph name="DEVICE_TYPE" /> er tilmeldt virksomhedsadministration.</translation>
 <translation id="7507207699631365376">Se denne udbyders <ph name="BEGIN_LINK" />privatlivspolitik<ph name="END_LINK" /></translation>
 <translation id="7507930499305566459">Certifikat for statussvar</translation>
-<translation id="7508054832109420082">Giv adgang til printere</translation>
 <translation id="7513029293694390567">Log automatisk ind på websites ved hjælp af gemte loginoplysninger. Hvis funktionen er slået fra, bliver du bedt om bekræftelse, hver gang du vil logge ind på et website.</translation>
 <translation id="7514239104543605883">Kopiér til din enhed</translation>
 <translation id="7514365320538308">Download</translation>
@@ -5170,7 +5168,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7716781361494605745">Webadresse for Netscapes politik til certifikatautoritet</translation>
 <translation id="7717014941119698257">Downloader: <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">Søg efter opdateringer</translation>
-<translation id="7719070594859855691">Giv adgang til kameraet</translation>
 <translation id="7719367874908701697">Sidezoom</translation>
 <translation id="7721179060400456005">Tillad, at vinduer kan dække flere skærme</translation>
 <translation id="7722040605881499779">Opdateringen kræver: <ph name="NECESSARY_SPACE" /></translation>

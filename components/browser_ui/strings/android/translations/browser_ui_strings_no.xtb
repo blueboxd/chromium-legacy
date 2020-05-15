@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Automatiske nedlastinger</translation>
 <translation id="5677928146339483299">Blokkert</translation>
 <translation id="5689516760719285838">Sted</translation>
+<translation id="5690795753582697420">Kameraet er slått av i Android-innstillingene</translation>
 <translation id="5710871682236653961">Spør før nettsteder får tillatelse til å sende og motta info når du berører NFC-enheter (anbefales)</translation>
 <translation id="5719847187258001597">Dette sletter alle data og informasjonskapsler som er lagret av <ph name="ORIGIN" /> eller den tilhørende appen på startskjermen.</translation>
 <translation id="5804241973901381774">Tillatelser</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Mer</translation>
 <translation id="6064125863973209585">Fullførte nedlastinger</translation>
 <translation id="6165508094623778733">Finn ut mer</translation>
+<translation id="6177111841848151710">Blokkert for den aktive søkemotoren</translation>
 <translation id="6181444274883918285">Legg til et nettsted som unntak</translation>
 <translation id="6192792657125177640">Unntak</translation>
 <translation id="6194112207524046168">For å gi Chrome tilgang til kameraet må du også slå på kameraet i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Denne siden er farlig. Informasjon om nettstedet</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6992289844737586249">Spør før nettsteder får bruke mikrofonen (anbefales)</translation>
+<translation id="7000754031042624318">Slått av i Android-innstillingene</translation>
+<translation id="7016516562562142042">tillatt for den aktive søkemotoren</translation>
 <translation id="7053983685419859001">Blokkér</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 er valgt}other{# er valgt}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> er valgt. Du finner alternativer oppe på skjermen</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Tillat lyd for et bestemt nettsted.</translation>
 <translation id="7993619969781047893">Det kan hende at funksjoner på enkelte nettsteder slutter å fungere</translation>
 <translation id="7999064672810608036">Er du sikker på at du vil slette alle lokale data, deriblant informasjonskapsler, og tilbakestille alle tillatelser for dette nettstedet?</translation>
+<translation id="8007176423574883786">Slått av for denne enheten</translation>
 <translation id="802154636333426148">Nedlastingen mislyktes</translation>
 <translation id="8087000398470557479">Dette innholdet er fra <ph name="DOMAIN_NAME" /> og er levert av Google.</translation>
 <translation id="8116925261070264013">Kuttet lyd</translation>

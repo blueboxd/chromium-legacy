@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Avtomatik yuklamalar</translation>
 <translation id="5677928146339483299">Bloklangan</translation>
 <translation id="5689516760719285838">Joylashuv</translation>
+<translation id="5690795753582697420">Kamera Android sozlamalarida yoqilmagan</translation>
 <translation id="5710871682236653961">NFC qurilmalar ustiga bosilganda saytlarda axborot almashinuviga ruxsat soʻralsin (tavsiya etiladi)</translation>
 <translation id="5719847187258001597">Bunda <ph name="ORIGIN" /> saytidan saqlangan barcha maʼlumotlar va cookie fayllar yoki Bosh ekrandagi ilovalar tozalab tashlanadi.</translation>
 <translation id="5804241973901381774">Ruxsatlar</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Yana</translation>
 <translation id="6064125863973209585">Yuklab olinganlar</translation>
 <translation id="6165508094623778733">Batafsil</translation>
+<translation id="6177111841848151710">Joriy qidiruv tizimiga taqiqlangan</translation>
 <translation id="6181444274883918285">Istisno sayt qo‘shish</translation>
 <translation id="6192792657125177640">Istisno saytlar</translation>
 <translation id="6194112207524046168">Chrome kameradan foydalanishiga ruxsat berish uchun <ph name="BEGIN_LINK" />Android sozlamalari<ph name="END_LINK" /> orqali kamerani yoqing.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Bu sayt xavfli. Sayt axboroti</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6992289844737586249">Mikrofondan foydalanishga ruxsat so‘ralsin (tavsiya etiladi)</translation>
+<translation id="7000754031042624318">Android sozlamalari orqali faolsizlantirilgan</translation>
+<translation id="7016516562562142042">Joriy qidiruv tizimiga ruxsat berilgan</translation>
 <translation id="7053983685419859001">Taqiqlash</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{ 1 ta tanlandi}other{# ta tanlandi}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ta element tanlandi. Parametrlar ekranning yuqoriroq qismida joylashgan</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Muayyan saytga ovoz ijro etish uchun ruxsat berish.</translation>
 <translation id="7993619969781047893">Ayrim saytlardagi funksiyalar ishalamay qolishi mumkin</translation>
 <translation id="7999064672810608036">Siz haqiqatdan ham bu saytning cookie fayllari kabi barcha ma’lumotlarni o‘chirmoqchimisiz (barcha ruxsatnomalar ilk holatga qaytariladi)?</translation>
+<translation id="8007176423574883786">Ushbu qurilma uchun o‘chirilgan</translation>
 <translation id="802154636333426148">Yuklab olib bo‘lmadi</translation>
 <translation id="8087000398470557479"><ph name="DOMAIN_NAME" /> sayti kontenti, Google tomonidan taqdim etildi.</translation>
 <translation id="8116925261070264013">Ovozsiz</translation>

@@ -80,7 +80,7 @@ CrostiniForceCloseView::CrostiniForceCloseView(
     base::OnceClosure force_close_callback)
     : app_name_(base::UTF8ToUTF16(app_name)),
       force_close_callback_(std::move(force_close_callback)) {
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_CROSTINI_FORCE_CLOSE_ACCEPT_BUTTON));
 

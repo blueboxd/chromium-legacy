@@ -963,6 +963,8 @@ jumbo_component("base") {
       "files/file_path_watcher_win.cc",
       "files/file_util_win.cc",
       "files/file_win.cc",
+      "files/important_file_writer_cleaner.cc",
+      "files/important_file_writer_cleaner.h",
       "files/memory_mapped_file_win.cc",
       "logging_win.cc",
       "logging_win.h",
@@ -2862,6 +2864,7 @@ test("base_unittests") {
     sources += [
       "debug/gdi_debug_util_win_unittest.cc",
       "file_version_info_win_unittest.cc",
+      "files/important_file_writer_cleaner_unittest.cc",
       "process/launch_unittest_win.cc",
       "test/test_reg_util_win_unittest.cc",
       "threading/platform_thread_win_unittest.cc",

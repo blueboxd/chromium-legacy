@@ -732,7 +732,7 @@ bool WriteNotFoundResponse(
 bool ServerUrlLoader::InterceptAutofillRequest(
     content::URLLoaderInterceptor::RequestParams* params) {
   static const char kDefaultAutofillServerQueryURL[] =
-      "https://clients1.google.com/tbproxy/af/query";
+      "https://content-autofill.googleapis.com/query";
   const network::ResourceRequest& resource_request = params->url_request;
   base::StringPiece request_url = resource_request.url.spec();
   // Let all requests that are not autofill queries go to WPR.

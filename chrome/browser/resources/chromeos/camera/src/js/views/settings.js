@@ -111,6 +111,10 @@ export class MasterSettings extends BaseSettings {
    * @private
    */
   openFeedback() {
+    // Prevent setting view overlapping preview when sending app window feedback
+    // screenshot b/155938542.
+    this.leave();
+
     const data = {
       'categoryTag': 'chromeos-camera-app',
       'requestFeedback': true,

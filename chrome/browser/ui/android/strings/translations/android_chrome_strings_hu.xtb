@@ -325,7 +325,7 @@ A kereséshez tartsa nyomva a kívánt szót. A keresés finomításához válas
 <translation id="3738139272394829648">Érintéssel keresés</translation>
 <translation id="3739899004075612870">Felvéve a(z) <ph name="PRODUCT_NAME" /> könyvjelzői közé</translation>
 <translation id="3749259744154402564">Nem támogatott</translation>
-<translation id="3763247130972274048">A videó jobb vagy bal oldalon duplán koppintva ugorhat előre vagy vissza 10 másodpercet</translation>
+<translation id="3763247130972274048">A videó jobb vagy bal oldalán duplán koppintva ugorhat előre vagy vissza 10 másodpercet</translation>
 <translation id="3771001275138982843">Nem sikerült letölteni a frissítést</translation>
 <translation id="3771033907050503522">Inkognitólapok</translation>
 <translation id="3771694256347217732">Google Általános Szerződési Feltételek</translation>
@@ -387,7 +387,6 @@ Csak Ön láthatja, hogy mi van a kamera látóterében. A webhely nem látja a 
 <translation id="4250229828105606438">Képernyőkép</translation>
 <translation id="4256782883801055595">Nyílt forráskódú licencek</translation>
 <translation id="4269820728363426813">Link másolása</translation>
-<translation id="4278390842282768270">Engedélyezve</translation>
 <translation id="429312253194641664">Az egyik webhely médiatartalmat játszik le</translation>
 <translation id="4298388696830689168">Összekapcsolt webhelyek</translation>
 <translation id="4307992518367153382">Alapok</translation>
@@ -435,7 +434,6 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> könyvjelző törölve</translation>
 <translation id="4665282149850138822">A(z) <ph name="NAME" /> felkerült a kezdőképernyőre</translation>
 <translation id="4684427112815847243">Az összes szinkronizálása</translation>
-<translation id="4688610874307684559">A Chrome-ban fut (kezdeti)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 és további <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 és további <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">SMS küldése az eszközeire</translation>
 <translation id="4698034686595694889">Megtekintés offline állapotban itt: <ph name="APP_NAME" /></translation>
@@ -560,10 +558,8 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5665379678064389456">Esemény létrehozása a(z) <ph name="APP_NAME" /> alkalmazásban</translation>
 <translation id="5668404140385795438">Felülbírálja a webhely kérelmét, mely megakadályozná a nagyítást</translation>
-<translation id="5677928146339483299">Letiltva</translation>
 <translation id="5684874026226664614">Hoppá! Az oldalt nem sikerült lefordítani.</translation>
 <translation id="5686790454216892815">A fájl neve túl hosszú</translation>
-<translation id="5690795753582697420">A kamera ki van kapcsolva az Android-beállítások között</translation>
 <translation id="5694049548840660018">Egyszerűen megnyithatja a kezdőlapot</translation>
 <translation id="569536719314091526">Bármely nyelvre lefordíthatja ezt az oldalt a További lehetőségek gomb segítségével</translation>
 <translation id="572328651809341494">Nemrég megnyitott lapok</translation>
@@ -619,7 +615,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="614940544461990577">Próbálja ki a következőket:</translation>
 <translation id="6154478581116148741">Kapcsolja be a képernyőzárat a Beállítások menüben, hogy exportálhassa az ezen az eszközön tárolt jelszavait</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" />-os adatmegtakarítás</translation>
-<translation id="6177111841848151710">Tiltott a jelenlegi keresőmotor számára</translation>
 <translation id="6192333916571137726">Fájl letöltése</translation>
 <translation id="6201345951596836663">Link másolva</translation>
 <translation id="6210748933810148297">Nem <ph name="EMAIL" />?</translation>
@@ -706,7 +701,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6846298663435243399">Betöltés…</translation>
 <translation id="6850409657436465440">A letöltés még mindig folyamatban van</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> lap bezárva</translation>
-<translation id="6864395892908308021">Ez az eszköz nem képes az NFC-alapú kommunikáció olvasására</translation>
 <translation id="6864459304226931083">Kép letöltése</translation>
 <translation id="6865313869410766144">Automatikus kitöltési űrlapadatok</translation>
 <translation id="6884306546558072722">Offline állapotban is folytathatja a felfedezést</translation>
@@ -721,9 +715,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6989267951144302301">A letöltés sikertelen</translation>
 <translation id="6990079615885386641">Alkalmazás beszerzése a Google Play Áruházból: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Figyelmeztetés, ha jelszavai adatvédelmi incidens során nyilvánosságra kerülnek</translation>
-<translation id="7000754031042624318">Kikapcsolva az Android beállításaiban</translation>
 <translation id="7015203776128479407">A szinkronizálás kezdeti beállítása nem fejeződött be. A szinkronizálás ki van kapcsolva.</translation>
-<translation id="7016516562562142042">Engedélyezett a jelenlegi keresőmotor számára</translation>
 <translation id="7022756207310403729">Megnyitás böngészőben</translation>
 <translation id="702463548815491781">Ajánlott, amikor a TalkBack vagy a Kapcsolóalapú hozzáférés be van kapcsolva</translation>
 <translation id="7029809446516969842">Jelszavak</translation>
@@ -756,10 +748,10 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7328017930301109123">Lite módban a Chrome gyorsabban betölti az oldalakat, és akár 60 százalékkal kisebb adatforgalmat generál.</translation>
 <translation id="7333031090786104871">Az előző webhely hozzáadása még folyamatban van</translation>
 <translation id="7340958967809483333">A Discover beállításai</translation>
+<translation id="7352651011704765696">Valami nem működik</translation>
 <translation id="7352939065658542140">VIDEÓ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 kijelölt elem megosztása}other{# kijelölt elem megosztása}}</translation>
 <translation id="7359002509206457351">Hozzáférés a fizetési módokhoz</translation>
-<translation id="7362144854749094396">Az előzmények meg vannak osztva a Chrome böngészővel. A beállítások meg vannak osztva a következő webhellyel: <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Típus:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -841,7 +833,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7986741934819883144">Válasszon ki egy névjegyet</translation>
 <translation id="7998918019931843664">Bezárt lap megnyitása</translation>
 <translation id="8004582292198964060">Böngésző</translation>
-<translation id="8007176423574883786">Kikapcsolva ezen az eszközön</translation>
 <translation id="8013372441983637696">Az Ön Chrome-adatai is törlődjenek erről az eszközről</translation>
 <translation id="8015452622527143194">Minden visszaállítása alapértelmezett méretűre</translation>
 <translation id="8026334261755873520">Böngészési adatok törlése</translation>
@@ -931,6 +922,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8687353297350450808">{N_BARS,plural, =1{Jelerősség szintje: # sáv}other{Jelerősség szintje: # sáv}}</translation>
 <translation id="868929229000858085">Keresés a névjegyek között</translation>
 <translation id="869891660844655955">Lejárati dátum</translation>
+<translation id="8712637175834984815">Sikerült</translation>
 <translation id="8748850008226585750">Tartalom elrejtve</translation>
 <translation id="8751914237388039244">Válasszon képet</translation>
 <translation id="8758557275681689734">Az összes megnyitott ablak megtekintése</translation>

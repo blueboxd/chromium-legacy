@@ -4,6 +4,7 @@
 
 #include "base/profiler/stack_sampler.h"
 
+#include "base/check.h"
 #include "base/profiler/native_unwinder_win.h"
 #include "base/profiler/stack_copier_suspend.h"
 #include "base/profiler/stack_sampler_impl.h"
@@ -16,8 +17,8 @@ namespace base {
 std::unique_ptr<StackSampler> StackSampler::Create(
     SamplingProfilerThreadToken thread_token,
     ModuleCache* module_cache,
-    StackSamplerTestDelegate* test_delegate,
-    std::unique_ptr<Unwinder> native_unwinder) {
+    std::unique_ptr<Unwinder> native_unwinder,
+    StackSamplerTestDelegate* test_delegate) {
   DCHECK(!native_unwinder);
 #if defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_ARM64)
   return std::make_unique<StackSamplerImpl>(

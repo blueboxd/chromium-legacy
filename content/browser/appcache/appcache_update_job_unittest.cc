@@ -1160,12 +1160,12 @@ class AppCacheUpdateJobTest : public testing::Test,
     // Get the expected expiration date of the test token.
     {
       blink::TrialTokenValidator validator;
-      std::string token_feature;
-      ASSERT_EQ(validator.ValidateToken(
-                    kTestAppCacheOriginTrialToken, MockHttpServer::GetOrigin(),
-                    base::Time::Now(), &token_feature, &expect_token_expires_),
-                blink::OriginTrialTokenStatus::kSuccess);
-      EXPECT_EQ(GetAppCacheOriginTrialNameForTesting(), token_feature);
+      blink::TrialTokenResult result = validator.ValidateToken(
+          kTestAppCacheOriginTrialToken, MockHttpServer::GetOrigin(),
+          base::Time::Now());
+      expect_token_expires_ = result.expiry_time;
+      ASSERT_EQ(result.status, blink::OriginTrialTokenStatus::kSuccess);
+      EXPECT_EQ(GetAppCacheOriginTrialNameForTesting(), result.feature_name);
       EXPECT_NE(base::Time(), expect_token_expires_);
     }
 
@@ -4049,12 +4049,12 @@ class AppCacheUpdateJobTest : public testing::Test,
     // Get the expected expiration date of the test token.
     {
       blink::TrialTokenValidator validator;
-      std::string token_feature;
-      ASSERT_EQ(validator.ValidateToken(
-                    kTestAppCacheOriginTrialToken, MockHttpServer::GetOrigin(),
-                    base::Time::Now(), &token_feature, &expect_token_expires_),
-                blink::OriginTrialTokenStatus::kSuccess);
-      EXPECT_EQ(GetAppCacheOriginTrialNameForTesting(), token_feature);
+      blink::TrialTokenResult result = validator.ValidateToken(
+          kTestAppCacheOriginTrialToken, MockHttpServer::GetOrigin(),
+          base::Time::Now());
+      expect_token_expires_ = result.expiry_time;
+      ASSERT_EQ(result.status, blink::OriginTrialTokenStatus::kSuccess);
+      EXPECT_EQ(GetAppCacheOriginTrialNameForTesting(), result.feature_name);
       EXPECT_NE(base::Time(), expect_token_expires_);
     }
 

@@ -377,8 +377,9 @@ void RenderWidgetInputHandler::HandleInputEvent(
       nullptr);
   auto scoped_event_metrics_monitor =
       widget_->layer_tree_host()->GetScopedEventMetricsMonitor(
-          {input_event.GetTypeAsUiEventType(), input_event.TimeStamp(),
-           input_event.GetScrollInputType()});
+          cc::EventMetrics::Create(input_event.GetTypeAsUiEventType(),
+                                   input_event.TimeStamp(),
+                                   input_event.GetScrollInputType()));
 
   bool prevent_default = false;
   bool show_virtual_keyboard_for_mouse = false;
@@ -697,9 +698,9 @@ void RenderWidgetInputHandler::HandleInjectedScrollGestures(
           widget_->layer_tree_host()->GetSwapPromiseManager(), nullptr);
       auto scoped_event_metrics_monitor =
           widget_->layer_tree_host()->GetScopedEventMetricsMonitor(
-              {gesture_event->GetTypeAsUiEventType(),
-               gesture_event->TimeStamp(),
-               gesture_event->GetScrollInputType()});
+              cc::EventMetrics::Create(gesture_event->GetTypeAsUiEventType(),
+                                       gesture_event->TimeStamp(),
+                                       gesture_event->GetScrollInputType()));
       widget_->GetWebWidget()->HandleInputEvent(blink::WebCoalescedInputEvent(
           *gesture_event, scrollbar_latency_info));
     }

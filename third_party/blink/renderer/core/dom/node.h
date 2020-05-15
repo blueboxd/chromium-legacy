@@ -682,6 +682,8 @@ class CORE_EXPORT Node : public EventTarget {
   // Whether or not a selection can be started in this object
   virtual bool CanStartSelection() const;
 
+  void NotifyPriorityScrollAnchorStatusChanged();
+
   // ---------------------------------------------------------------------------
   // Integration with layout tree
 

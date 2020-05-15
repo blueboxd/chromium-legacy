@@ -85,7 +85,7 @@ CardUnmaskPromptViews::CardUnmaskPromptViews(
     : controller_(controller), web_contents_(web_contents) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CARD_UNMASK);
   if (controller_->CanStoreLocally()) {
-    storage_checkbox_ = DialogDelegate::SetFootnoteView(
+    storage_checkbox_ = SetFootnoteView(
         CreateSaveCheckbox(controller_->GetStoreLocallyStartState()));
   }
 
@@ -468,11 +468,9 @@ void CardUnmaskPromptViews::UpdateButtons() {
       controller_->GetVerificationResult();
   bool has_ok = result != AutofillClient::PERMANENT_FAILURE &&
                 result != AutofillClient::NETWORK_ERROR;
-  DialogDelegate::SetButtons(has_ok ? ui::DIALOG_BUTTON_OK |
-                                           ui::DIALOG_BUTTON_CANCEL
-                                     : ui::DIALOG_BUTTON_CANCEL);
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
-                                   controller_->GetOkButtonLabel());
+  SetButtons(has_ok ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
+                    : ui::DIALOG_BUTTON_CANCEL);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, controller_->GetOkButtonLabel());
 }
 
 void CardUnmaskPromptViews::LinkClicked() {

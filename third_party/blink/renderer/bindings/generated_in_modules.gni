@@ -404,6 +404,8 @@ generated_interface_sources_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_battery_manager.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_before_install_prompt_event.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_before_install_prompt_event.h",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_bidirectional_stream.cc",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_bidirectional_stream.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_biquad_filter_node.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_biquad_filter_node.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_blob_event.cc",

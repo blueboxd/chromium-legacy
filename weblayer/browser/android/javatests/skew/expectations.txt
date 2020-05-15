@@ -43,6 +43,13 @@
 [ impl_lte_82 ] org.chromium.weblayer.test.DownloadCallbackTest#testInterceptDownloadByContentDisposition [ Skip ]
 [ impl_lte_82 ] org.chromium.weblayer.test.DownloadCallbackTest#testInterceptDownloadByLinkAttribute [ Skip ]
 
+# ExternalNavigationTest intent launching changed from using ApplicationContext
+# to Activity after M81.
+[ impl_lte_81 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentAfterRedirectLaunched [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentInSameTabLaunchedOnLinkClick [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentWithFallbackUrlAfterRedirectLaunched [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.ExternalNavigationTest#testNonHandledExternalIntentWithFallbackUrlAfterRedirectGoesToFallbackUrl [ Skip ]
+
 # Many M81 tests are broken, see https://crbug.com/1081102.
 [ impl_lte_81 ] org.chromium.weblayer.test.BrowserFragmentLifecycleTest#restoreAfterRecreate [ Skip ]
 [ impl_lte_81 ] org.chromium.weblayer.test.BrowserFragmentLifecycleTest#restoreTabGuidAfterRecreate [ Skip ]
@@ -57,10 +64,6 @@
 [ impl_lte_81 ] org.chromium.weblayer.test.CookieManagerTest#testSetCookieNullCallback [ Skip ]
 [ impl_lte_81 ] org.chromium.weblayer.test.CrashReporterTest#testCrashReporterLoading [ Skip ]
 [ impl_lte_81 ] org.chromium.weblayer.test.DowngradeTest#testDowngradeDeletesData [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentAfterRedirectLaunched [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentInSameTabLaunchedOnLinkClick [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentWithFallbackUrlAfterRedirectLaunched [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.ExternalNavigationTest#testNonHandledExternalIntentWithFallbackUrlAfterRedirectGoesToFallbackUrl [ Skip ]
 [ impl_lte_81 ] org.chromium.weblayer.test.InputTypesTest#testColorInput [ Skip ]
 [ impl_lte_81 ] org.chromium.weblayer.test.NavigationTest#testRepostConfirmation [ Skip ]
 [ impl_lte_81 ] org.chromium.weblayer.test.NavigationTest#testSetRequestHeaderInRedirect [ Skip ]

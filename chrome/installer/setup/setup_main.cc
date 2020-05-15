@@ -48,6 +48,7 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "build/branding_buildflags.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -1343,6 +1344,11 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   base::EnableTerminationOnOutOfMemory();
   base::win::RegisterInvalidParamHandler();
   base::win::SetupCRT(cmd_line);
+
+#if defined(ARCH_CPU_64_BITS) || defined(NDEBUG)
+  // Disable the handle verifier for all but 32-bit debug builds.
+  base::win::DisableHandleVerifier();
+#endif
 
   const bool is_uninstall = cmd_line.HasSwitch(installer::switches::kUninstall);
 

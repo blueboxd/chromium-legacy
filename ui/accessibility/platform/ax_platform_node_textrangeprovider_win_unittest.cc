@@ -2971,13 +2971,17 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   //
   // root
   // |
-  // paragraph_________________________________________
-  // |               |                |                |
-  // static_text     link             search input     pdf_highlight
-  // |               |                |                |
-  // text_node       static_text      text_node        static_text
-  //                 |                                 |
-  //                 text_node                         text_node
+  // paragraph______________________________________________
+  // |               |            |       |                |
+  // static_text     link         link    search input     pdf_highlight
+  // |               |            |       |                |
+  // text_node       static_text  ul      text_node        static_text
+  //                 |            |                        |
+  //                 text_node    li                       text_node
+  //                              |
+  //                              static_text
+  //                              |
+  //                              text_node
 
   ui::AXNodeData root_data;
   root_data.id = 1;
@@ -3013,31 +3017,56 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   inline_text_data2.role = ax::mojom::Role::kInlineTextBox;
   static_text_data2.child_ids.push_back(inline_text_data2.id);
 
-  ui::AXNodeData search_box;
-  search_box.id = 8;
-  search_box.role = ax::mojom::Role::kSearchBox;
-  paragraph_data.child_ids.push_back(search_box.id);
+  ui::AXNodeData link_data2;
+  link_data2.id = 8;
+  link_data2.role = ax::mojom::Role::kLink;
+  paragraph_data.child_ids.push_back(link_data2.id);
 
-  ui::AXNodeData search_text;
-  search_text.id = 9;
-  search_text.role = ax::mojom::Role::kStaticText;
-  search_text.SetName("placeholder");
-  search_box.child_ids.push_back(search_text.id);
+  ui::AXNodeData list_data;
+  list_data.id = 9;
+  list_data.role = ax::mojom::Role::kList;
+  link_data2.child_ids.push_back(list_data.id);
 
-  ui::AXNodeData pdf_highlight_data;
-  pdf_highlight_data.id = 10;
-  pdf_highlight_data.role = ax::mojom::Role::kPdfActionableHighlight;
-  paragraph_data.child_ids.push_back(pdf_highlight_data.id);
+  ui::AXNodeData list_item_data;
+  list_item_data.id = 10;
+  list_item_data.role = ax::mojom::Role::kListItem;
+  list_data.child_ids.push_back(list_item_data.id);
 
   ui::AXNodeData static_text_data3;
   static_text_data3.id = 11;
   static_text_data3.role = ax::mojom::Role::kStaticText;
-  pdf_highlight_data.child_ids.push_back(static_text_data3.id);
+  list_item_data.child_ids.push_back(static_text_data3.id);
 
   ui::AXNodeData inline_text_data3;
   inline_text_data3.id = 12;
   inline_text_data3.role = ax::mojom::Role::kInlineTextBox;
   static_text_data3.child_ids.push_back(inline_text_data3.id);
+
+  ui::AXNodeData search_box;
+  search_box.id = 13;
+  search_box.role = ax::mojom::Role::kSearchBox;
+  paragraph_data.child_ids.push_back(search_box.id);
+
+  ui::AXNodeData search_text;
+  search_text.id = 14;
+  search_text.role = ax::mojom::Role::kStaticText;
+  search_text.SetName("placeholder");
+  search_box.child_ids.push_back(search_text.id);
+
+  ui::AXNodeData pdf_highlight_data;
+  pdf_highlight_data.id = 15;
+  pdf_highlight_data.role = ax::mojom::Role::kPdfActionableHighlight;
+  paragraph_data.child_ids.push_back(pdf_highlight_data.id);
+
+  ui::AXNodeData static_text_data4;
+  static_text_data4.id = 16;
+  static_text_data4.role = ax::mojom::Role::kStaticText;
+  pdf_highlight_data.child_ids.push_back(static_text_data4.id);
+
+  ui::AXNodeData inline_text_data4;
+  inline_text_data4.id = 17;
+  inline_text_data4.role = ax::mojom::Role::kInlineTextBox;
+  static_text_data4.child_ids.push_back(inline_text_data4.id);
 
   ui::AXTreeUpdate update;
   ui::AXTreeData tree_data;
@@ -3052,11 +3081,16 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   update.nodes.push_back(link_data);
   update.nodes.push_back(static_text_data2);
   update.nodes.push_back(inline_text_data2);
+  update.nodes.push_back(link_data2);
+  update.nodes.push_back(list_data);
+  update.nodes.push_back(list_item_data);
+  update.nodes.push_back(static_text_data3);
+  update.nodes.push_back(inline_text_data3);
   update.nodes.push_back(search_box);
   update.nodes.push_back(search_text);
   update.nodes.push_back(pdf_highlight_data);
-  update.nodes.push_back(static_text_data3);
-  update.nodes.push_back(inline_text_data3);
+  update.nodes.push_back(static_text_data4);
+  update.nodes.push_back(inline_text_data4);
 
   Init(update);
 
@@ -3067,33 +3101,46 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   AXNode* inline_text_node1 = static_text_node1->children()[0];
   AXNode* static_text_node2 = link_node->children()[0];
   AXNode* inline_text_node2 = static_text_node2->children()[0];
-  AXNode* search_box_node = paragraph_node->children()[2];
-  AXNode* search_text_node = search_box_node->children()[0];
-  AXNode* pdf_highlight_node = paragraph_node->children()[3];
-  AXNode* static_text_node3 = pdf_highlight_node->children()[0];
+  AXNode* link_node2 = paragraph_node->children()[2];
+  AXNode* list_node = link_node2->children()[0];
+  AXNode* list_item_node = list_node->children()[0];
+  AXNode* static_text_node3 = list_item_node->children()[0];
   AXNode* inline_text_node3 = static_text_node3->children()[0];
+  AXNode* search_box_node = paragraph_node->children()[3];
+  AXNode* search_text_node = search_box_node->children()[0];
+  AXNode* pdf_highlight_node = paragraph_node->children()[4];
+  AXNode* static_text_node4 = pdf_highlight_node->children()[0];
+  AXNode* inline_text_node4 = static_text_node4->children()[0];
 
   ComPtr<IRawElementProviderSimple> link_node_raw =
       QueryInterfaceFromNode<IRawElementProviderSimple>(link_node);
   ComPtr<IRawElementProviderSimple> static_text_node_raw1 =
       QueryInterfaceFromNode<IRawElementProviderSimple>(static_text_node1);
+  ComPtr<IRawElementProviderSimple> static_text_node_raw2 =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(static_text_node2);
+  ComPtr<IRawElementProviderSimple> static_text_node_raw3 =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(static_text_node3);
   ComPtr<IRawElementProviderSimple> inline_text_node_raw1 =
       QueryInterfaceFromNode<IRawElementProviderSimple>(inline_text_node1);
   ComPtr<IRawElementProviderSimple> inline_text_node_raw2 =
       QueryInterfaceFromNode<IRawElementProviderSimple>(inline_text_node2);
+  ComPtr<IRawElementProviderSimple> inline_text_node_raw3 =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(inline_text_node3);
   ComPtr<IRawElementProviderSimple> search_box_node_raw =
       QueryInterfaceFromNode<IRawElementProviderSimple>(search_box_node);
   ComPtr<IRawElementProviderSimple> search_text_node_raw =
       QueryInterfaceFromNode<IRawElementProviderSimple>(search_text_node);
   ComPtr<IRawElementProviderSimple> pdf_highlight_node_raw =
       QueryInterfaceFromNode<IRawElementProviderSimple>(pdf_highlight_node);
-  ComPtr<IRawElementProviderSimple> inline_text_node_raw3 =
-      QueryInterfaceFromNode<IRawElementProviderSimple>(inline_text_node3);
+  ComPtr<IRawElementProviderSimple> inline_text_node_raw4 =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(inline_text_node4);
 
   // Test GetEnclosingElement for the two leaves text nodes. The enclosing
   // element of the first one should be its static text parent (because inline
   // text boxes shouldn't be exposed) and the enclosing element for the text
   // node that is grandchild of the link node should return the link node.
+  // The text node in the link node with a complex subtree should behave
+  // normally and return the static text parent.
   ComPtr<ITextProvider> text_provider;
   EXPECT_HRESULT_SUCCEEDED(inline_text_node_raw1->GetPatternProvider(
       UIA_TextPatternId, &text_provider));
@@ -3117,6 +3164,16 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
       text_range_provider->GetEnclosingElement(&enclosing_element));
   EXPECT_EQ(link_node_raw.Get(), enclosing_element.Get());
 
+  EXPECT_HRESULT_SUCCEEDED(inline_text_node_raw3->GetPatternProvider(
+      UIA_TextPatternId, &text_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider->GetEnclosingElement(&enclosing_element));
+  EXPECT_EQ(static_text_node_raw3.Get(), enclosing_element.Get());
+
   // The enclosing element of a text range in the search text should give the
   // search box
   EXPECT_HRESULT_SUCCEEDED(search_text_node_raw->GetPatternProvider(
@@ -3134,7 +3191,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   // The enclosing element for the text node that is grandchild of the
   // pdf_highlight node should return the pdf_highlight node.
-  EXPECT_HRESULT_SUCCEEDED(inline_text_node_raw3->GetPatternProvider(
+  EXPECT_HRESULT_SUCCEEDED(inline_text_node_raw4->GetPatternProvider(
       UIA_TextPatternId, &text_provider));
 
   EXPECT_HRESULT_SUCCEEDED(

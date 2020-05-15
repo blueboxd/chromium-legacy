@@ -387,7 +387,6 @@ Samo vi možete vidjeti prikaz kamere. Web lokacija ne može vidjeti slike kamer
 <translation id="4250229828105606438">Snimak ekrana</translation>
 <translation id="4256782883801055595">Licence otvorenog koda</translation>
 <translation id="4269820728363426813">Kopiraj adresu linka</translation>
-<translation id="4278390842282768270">Dozvoljeno</translation>
 <translation id="429312253194641664">Web lokacija reproducira medij</translation>
 <translation id="4298388696830689168">Povezane web lokacije</translation>
 <translation id="4307992518367153382">Osnove</translation>
@@ -435,7 +434,6 @@ Vaš Google račun može imati druge oblike historije pregledanja kao što su pr
 <translation id="4663756553811254707">Broj izbrisanih oznaka: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Web lokacija <ph name="NAME" /> je dodana na vaš Početni ekran</translation>
 <translation id="4684427112815847243">Sinhroniziranje svega</translation>
-<translation id="4688610874307684559">Pokrenuto je u Chromeu (početno)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Pošaljite SMS na svoje uređaje</translation>
 <translation id="4698034686595694889">Pogledajte van mreže u aplikaciji <ph name="APP_NAME" /></translation>
@@ -560,10 +558,8 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5659593005791499971">E-pošta</translation>
 <translation id="5665379678064389456">Kreirajte događaj u aplikaciji <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Zaobilaženje zahtjeva web lokacije kako bi se spriječilo zumiranje</translation>
-<translation id="5677928146339483299">Blokirano</translation>
 <translation id="5684874026226664614">Ups. Prijevod ove stranice nije uspio.</translation>
 <translation id="5686790454216892815">Naziv fajla je predugačak</translation>
-<translation id="5690795753582697420">Kamera je isključena u postavkama Androida</translation>
 <translation id="5694049548840660018">Jednostavan povratak na početnu stranicu</translation>
 <translation id="569536719314091526">Prevedite ovu stranicu na bilo koji jezik koristeći dugme Više opcija</translation>
 <translation id="572328651809341494">Nedavne kartice</translation>
@@ -619,7 +615,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="614940544461990577">Pokušajte:</translation>
 <translation id="6154478581116148741">Uključite zaključavanje ekrana u Postavkama da izvezete lozinke s ovog uređaja</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> uštede podataka</translation>
-<translation id="6177111841848151710">Blokirano za trenutačnu tražilicu</translation>
 <translation id="6192333916571137726">Preuzimanje fajla</translation>
 <translation id="6201345951596836663">Link je kopiran</translation>
 <translation id="6210748933810148297">Vi niste <ph name="EMAIL" />?</translation>
@@ -706,7 +701,6 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="6846298663435243399">Učitavanje…</translation>
 <translation id="6850409657436465440">Vaše preuzimanje je još uvijek u toku</translation>
 <translation id="6850830437481525139">Broj zatvorenih kartica: <ph name="TAB_COUNT" /></translation>
-<translation id="6864395892908308021">Ovaj uređaj ne može očitavati NFC</translation>
 <translation id="6864459304226931083">Preuzmi sliku</translation>
 <translation id="6865313869410766144">Podaci za automatsko popunjavanje obrasca</translation>
 <translation id="6884306546558072722">Nastavite istraživati van mreže</translation>
@@ -721,9 +715,7 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="6989267951144302301">Preuzimanje nije uspjelo</translation>
 <translation id="6990079615885386641">Preuzmite aplikaciju s Google Play trgovine: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Upozori ako su lozinke izložene pri narušavanju podataka</translation>
-<translation id="7000754031042624318">Isključeno u postavkama Androida</translation>
 <translation id="7015203776128479407">Početno postavljanje sinhroniziranja nije završeno. Sinhroniziranje je isključeno.</translation>
-<translation id="7016516562562142042">Dozvoljeno za trenutni pretraživač</translation>
 <translation id="7022756207310403729">Otvori u pregledniku</translation>
 <translation id="702463548815491781">Preporučeno kada je uključena funkcija TalkBack ili prekidač za pristup.</translation>
 <translation id="7029809446516969842">Lozinke</translation>
@@ -756,10 +748,10 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="7328017930301109123">U jednostavnom načinu rada, Chrome učitava stranice brže i koristi do 60 procenata manje podataka.</translation>
 <translation id="7333031090786104871">Prethodna web lokacija se još uvijek dodaje</translation>
 <translation id="7340958967809483333">Opcije za Discover</translation>
+<translation id="7352651011704765696">Nešto nije uredu</translation>
 <translation id="7352939065658542140">VIDEOZAPIS</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Dijelite 1 odabranu stavku}one{Dijelite # odabranu stavku}few{Dijelite # odabrane stavke}other{Dijelite # odabranih stavki}}</translation>
 <translation id="7359002509206457351">Pristup načinima plaćanja</translation>
-<translation id="7362144854749094396">Historija se dijeli s Chromeom. Postavke se dijele s web lokacijom <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Vrsta:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -841,7 +833,6 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="7986741934819883144">Odaberite kontakt</translation>
 <translation id="7998918019931843664">Ponovono otvaranje zatvorenih kartica</translation>
 <translation id="8004582292198964060">Preglednik</translation>
-<translation id="8007176423574883786">Isključeno za ovaj uređaj</translation>
 <translation id="8013372441983637696">Također obriši Chrome podatke s ovog uređaja</translation>
 <translation id="8015452622527143194">Sve što je na stranici vratiti na zadanu veličinu</translation>
 <translation id="8026334261755873520">Obrišite podatke pregledanja</translation>
@@ -931,6 +922,7 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="8687353297350450808">{N_BARS,plural, =1{Nivo jačine signala: # stubac}one{Nivo jačine signala: # stubac}few{Nivo jačine signala: # stupca}other{Nivo jačine signala: # stubaca}}</translation>
 <translation id="868929229000858085">Pretražite kontakte</translation>
 <translation id="869891660844655955">Datum isteka</translation>
+<translation id="8712637175834984815">Razumijem</translation>
 <translation id="8748850008226585750">Sadržaj je sakriven</translation>
 <translation id="8751914237388039244">Odaberite sliku</translation>
 <translation id="8758557275681689734">Prikaz svih otvorenih kartica</translation>

@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -245,6 +246,34 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
                           /* user_gesture = */ true, callback.Get());
 
   delete_observer_rfh_a.WaitUntilDeleted();
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
+                       DoesNotCacheIfPictureInPicture) {
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to a page with picture-in-picture functionality.
+  const base::FilePath::CharType picture_in_picture_page[] =
+      FILE_PATH_LITERAL("media/picture-in-picture/window-size.html");
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(picture_in_picture_page));
+  EXPECT_TRUE(content::NavigateToURL(web_contents(), test_page_url));
+
+  // Execute picture-in-picture on the page.
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents(), "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
+
+  content::RenderFrameDeletedObserver deleted(current_frame_host());
+
+  // Navigate away.
+  EXPECT_TRUE(content::NavigateToURL(web_contents(), GetURL("b.com")));
+
+  // The page uses Picture-in-Picture so it should be deleted.
+  deleted.WaitUntilDeleted();
 }
 
 #if defined(OS_ANDROID)

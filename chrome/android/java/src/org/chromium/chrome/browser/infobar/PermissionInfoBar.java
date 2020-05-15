@@ -8,11 +8,11 @@ import android.os.Bundle;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.ui.messages.infobar.ConfirmInfoBar;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarCompactLayout;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
-import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
 import org.chromium.components.permissions.AndroidPermissionRequester;
@@ -29,8 +29,14 @@ public class PermissionInfoBar
     /** The content settings types corresponding to the permission requested in this infobar. */
     protected int[] mContentSettingsTypes;
 
-    /** Whether the last clicked button was the "Manage" (secondary) button. */
-    protected boolean mManageButtonLastClicked;
+    /** Whether the secondary button should act as a "Manage" button to open settings. */
+    protected boolean mSecondaryButtonShouldOpenSettings;
+
+    /**
+     * Whether the last clicked button opened settings, requiring the dialog to stay interactive
+     * when the user switches back.
+     */
+    protected boolean mLastClickOpenedSettings;
 
     /** Whether the infobar should be shown as a compact mini-infobar or a classic expanded one. */
     private boolean mIsExpanded;
@@ -46,12 +52,14 @@ public class PermissionInfoBar
 
     protected PermissionInfoBar(WindowAndroid window, int[] contentSettingsTypes,
             int iconDrawableId, String compactMessage, String compactLinkText, String message,
-            String description, String primaryButtonText, String secondaryButtonText) {
+            String description, String primaryButtonText, String secondaryButtonText,
+            boolean secondaryButtonShouldOpenSettings) {
         super(iconDrawableId, R.color.infobar_icon_drawable_color, null /* iconBitmap */, message,
                 null /* linkText */, primaryButtonText, secondaryButtonText);
         mWindow = window;
         mContentSettingsTypes = contentSettingsTypes;
-        mManageButtonLastClicked = false;
+        mSecondaryButtonShouldOpenSettings = secondaryButtonShouldOpenSettings;
+        mLastClickOpenedSettings = false;
         mIsExpanded = false;
         mCompactLinkText = compactLinkText;
         mCompactMessage = compactMessage;
@@ -75,12 +83,12 @@ public class PermissionInfoBar
     public boolean areControlsEnabled() {
         // The controls need to be enbled after the user clicks `manage` since they will return to
         // the page and the infobar still needs to be kept active.
-        return super.areControlsEnabled() || mManageButtonLastClicked;
+        return super.areControlsEnabled() || mLastClickOpenedSettings;
     }
 
     @Override
     public void onButtonClicked(final boolean isPrimaryButton) {
-        mManageButtonLastClicked = !isPrimaryButton;
+        mLastClickOpenedSettings = false;
         if (getContext() == null) {
             onButtonClickedInternal(isPrimaryButton);
             return;
@@ -93,9 +101,10 @@ public class PermissionInfoBar
                         mWindow, mContentSettingsTypes.clone(), this)) {
                 return;
             }
-        } else {
+        } else if (mSecondaryButtonShouldOpenSettings) {
             launchNotificationsSettingsPage();
         }
+
         onButtonClickedInternal(isPrimaryButton);
     }
 
@@ -130,6 +139,7 @@ public class PermissionInfoBar
     }
 
     private void launchNotificationsSettingsPage() {
+        mLastClickOpenedSettings = true;
         Bundle fragmentArguments = new Bundle();
         fragmentArguments.putString(SingleCategorySettings.EXTRA_CATEGORY,
                 SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.NOTIFICATIONS));
@@ -147,15 +157,19 @@ public class PermissionInfoBar
      * @param compactLinkText       Text of link displayed right to the message in compact state.
      * @param message               Primary message in the extended state.
      * @param description           Secondary message (description) in the expanded state.
-     * @param buttonOk              String to display on the OK button.
-     * @param buttonManage          String to display on the Manage button.
+     * @param primaryButtonText     String to display on the primary button.
+     * @param secondaryButtonText   String to display on the secondary button.
+     * @param secondaryButtonShouldOpenSettings  Whether the secondary button should open site
+     *         settings.
      */
     @CalledByNative
     private static PermissionInfoBar create(WindowAndroid window, int[] contentSettingsTypes,
             int iconId, String compactMessage, String compactLinkText, String message,
-            String description, String buttonOk, String buttonManage) {
+            String description, String primaryButtonText, String secondaryButtonText,
+            boolean secondaryButtonShouldOpenSettings) {
         PermissionInfoBar infoBar = new PermissionInfoBar(window, contentSettingsTypes, iconId,
-                compactMessage, compactLinkText, message, description, buttonOk, buttonManage);
+                compactMessage, compactLinkText, message, description, primaryButtonText,
+                secondaryButtonText, secondaryButtonShouldOpenSettings);
 
         return infoBar;
     }

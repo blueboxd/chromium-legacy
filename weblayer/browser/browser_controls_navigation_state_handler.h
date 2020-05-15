@@ -1,0 +1,84 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef WEBLAYER_BROWSER_BROWSER_CONTROLS_NAVIGATION_STATE_HANDLER_H_
+#define WEBLAYER_BROWSER_BROWSER_CONTROLS_NAVIGATION_STATE_HANDLER_H_
+
+#include "base/optional.h"
+#include "base/timer/timer.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/browser_controls_state.h"
+
+namespace weblayer {
+
+class BrowserControlsNavigationStateHandlerDelegate;
+
+// BrowserControlsNavigationStateHandler is responsible for the tracking the
+// value of content::BrowserControlsState as related to navigation state and
+// notifying the delegate when the state changes.
+//
+// This class is roughly a combination of TopControlsSliderControllerChromeOS
+// and TabStateBrowserControlsVisibilityDelegate.
+class BrowserControlsNavigationStateHandler
+    : public content::WebContentsObserver {
+ public:
+  BrowserControlsNavigationStateHandler(
+      content::WebContents* web_contents,
+      BrowserControlsNavigationStateHandlerDelegate* delegate);
+  BrowserControlsNavigationStateHandler(
+      const BrowserControlsNavigationStateHandler&) = delete;
+  BrowserControlsNavigationStateHandler& operator=(
+      const BrowserControlsNavigationStateHandler&) = delete;
+  ~BrowserControlsNavigationStateHandler() override;
+
+  // content::WebContentsObserver:
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
+  void DidFailLoad(content::RenderFrameHost* render_frame_host,
+                   const GURL& validated_url,
+                   int error_code) override;
+  void DidChangeVisibleSecurityState() override;
+  void DidAttachInterstitialPage() override;
+  void DidDetachInterstitialPage() override;
+  void RenderProcessGone(base::TerminationStatus status) override;
+  void OnRendererUnresponsive(
+      content::RenderProcessHost* render_process_host) override;
+
+ private:
+  // Sets the value of |force_show_during_load_|. Calls to UpdateState() if
+  // the value changed.
+  void SetForceShowDuringLoad(bool value);
+
+  // Schedules a timer to set |force_show_during_load_| to false.
+  void ScheduleStopDelayedForceShow();
+
+  // Checks the current state, and if it has changed notifies the delegate.
+  void UpdateState();
+
+  // Calcultes the current browser controls state.
+  content::BrowserControlsState CalculateCurrentState();
+
+  BrowserControlsNavigationStateHandlerDelegate* delegate_;
+
+  // The controls are forced visible when a navigation starts, and allowed to
+  // hide a short amount of time after done.
+  bool force_show_during_load_ = false;
+
+  // Timer used to set |force_show_during_load_| to false.
+  base::OneShotTimer forced_show_during_load_timer_;
+
+  // Last value supplied to the delegate.
+  base::Optional<content::BrowserControlsState> last_state_;
+
+  // True if an error page is showing.
+  bool is_showing_error_page_ = false;
+};
+
+}  // namespace weblayer
+
+#endif  // WEBLAYER_BROWSER_BROWSER_CONTROLS_NAVIGATION_STATE_HANDLER_H_

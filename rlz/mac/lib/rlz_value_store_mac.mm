@@ -4,9 +4,10 @@
 
 #include "rlz/mac/lib/rlz_value_store_mac.h"
 
+#include "base/check.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "rlz/lib/assert.h"
 #include "rlz/lib/lib_values.h"

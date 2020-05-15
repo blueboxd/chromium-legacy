@@ -55,6 +55,9 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
   void ClearAllDataInRange(base::Time delete_begin, base::Time delete_end);
   void ClearAllDataAllTime();
 
+  bool HasCapacityForStoringImpression(const std::string& serialized_origin);
+  bool HasCapacityForStoringConversion(const std::string& serialized_origin);
+
   bool InitializeSchema();
 
   void DatabaseErrorCallback(int extended_error, sql::Statement* stmt);

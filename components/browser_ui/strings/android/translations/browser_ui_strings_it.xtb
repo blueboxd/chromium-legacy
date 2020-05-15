@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Download automatici</translation>
 <translation id="5677928146339483299">Bloccato</translation>
 <translation id="5689516760719285838">Posizione</translation>
+<translation id="5690795753582697420">La fotocamera è disattivata nelle impostazioni di Android</translation>
 <translation id="5710871682236653961">Chiedi prima di consentire ai siti di inviare e ricevere informazioni quando tocchi i dispositivi NFC (opzione consigliata)</translation>
 <translation id="5719847187258001597">Verranno cancellati tutti i dati e i cookie memorizzati dal sito <ph name="ORIGIN" /> o dalla relativa app nella schermata Home.</translation>
 <translation id="5804241973901381774">Autorizzazioni</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Altro</translation>
 <translation id="6064125863973209585">Download completati</translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
+<translation id="6177111841848151710">Bloccata per il motore di ricerca corrente</translation>
 <translation id="6181444274883918285">Aggiungi eccezione per un sito</translation>
 <translation id="6192792657125177640">Eccezioni</translation>
 <translation id="6194112207524046168">Per consentire a Chrome di accedere alla tua videocamera, devi attivare la videocamera anche nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Questa pagina è pericolosa Informazioni sul sito</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6992289844737586249">Chiedi conferma prima di consentire ai siti di utilizzare il microfono (opzione consigliata)</translation>
+<translation id="7000754031042624318">Disattivata nelle impostazioni Android</translation>
+<translation id="7016516562562142042">Consentita per il motore di ricerca corrente</translation>
 <translation id="7053983685419859001">Blocca</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 elemento selezionato}other{# elementi selezionati}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> elementi selezionati. Opzioni disponibili nella parte superiore dello schermo</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Consenti l'audio per un sito specifico.</translation>
 <translation id="7993619969781047893">Le funzionalità su alcuni siti potrebbero non essere disponibili</translation>
 <translation id="7999064672810608036">Vuoi cancellare tutti i dati locali, inclusi i cookie, e reimpostare tutte le autorizzazioni relative al sito web?</translation>
+<translation id="8007176423574883786">Disattivata per questo dispositivo</translation>
 <translation id="802154636333426148">Download non riuscito</translation>
 <translation id="8087000398470557479">Questi contenuti derivano da <ph name="DOMAIN_NAME" /> e sono offerti da Google.</translation>
 <translation id="8116925261070264013">Con audio disattivato</translation>

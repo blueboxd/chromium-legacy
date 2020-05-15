@@ -118,18 +118,19 @@ class TestResultsFetcher(object):
             builder_name) + '/results/layout-test-results'
 
     @memoized
-    def fetch_results(self, build, full=False):
+    def fetch_results(self, build, full=False, step_name=None):
         """Returns a WebTestResults object for results from a given Build.
         Uses full_results.json if full is True, otherwise failing_results.json.
         """
         if not build.builder_name or not build.build_number:
             _log.debug('Builder name or build number is None')
             return None
+        step_name = step_name or self.get_layout_test_step_name(build)
         return self.fetch_web_test_results(
             self.results_url(
                 build.builder_name,
                 build.build_number,
-                step_name=self.get_layout_test_step_name(build)), full)
+                step_name=step_name), full, step_name)
 
     @memoized
     def get_layout_test_step_name(self, build):
@@ -174,7 +175,7 @@ class TestResultsFetcher(object):
         return suites[0]
 
     @memoized
-    def fetch_web_test_results(self, results_url, full=False):
+    def fetch_web_test_results(self, results_url, full=False, step_name=None):
         """Returns a WebTestResults object for results fetched from a given URL.
         Uses full_results.json if full is True, otherwise failing_results.json.
         """
@@ -185,7 +186,7 @@ class TestResultsFetcher(object):
             _log.debug('Got 404 response from:\n%s/%s', results_url,
                        base_filename)
             return None
-        return WebTestResults.results_from_string(results_file)
+        return WebTestResults.results_from_string(results_file, step_name)
 
     def fetch_webdriver_test_results(self, build, master):
         if not build.builder_name or not build.build_number or not master:

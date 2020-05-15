@@ -1250,13 +1250,15 @@ void StoragePartitionImpl::Initialize() {
   native_file_system_manager_->BindInternalsReceiver(
       native_file_system_context.InitWithNewPipeAndPassReceiver());
   base::FilePath path = is_in_memory_ ? base::FilePath() : partition_path_;
-  indexed_db_context_ = base::MakeRefCounted<IndexedDBContextImpl>(
+  auto indexed_db_context = base::MakeRefCounted<IndexedDBContextImpl>(
       path, browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy,
       base::DefaultClock::GetInstance(),
       ChromeBlobStorageContext::GetRemoteFor(browser_context_),
       std::move(native_file_system_context),
       base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
       /*task_runner=*/nullptr);
+  indexed_db_control_wrapper_ =
+      std::make_unique<IndexedDBControlWrapper>(std::move(indexed_db_context));
 
   cache_storage_context_ = new CacheStorageContextImpl(browser_context_);
   cache_storage_context_->Init(
@@ -1495,26 +1497,12 @@ LockManager* StoragePartitionImpl::GetLockManager() {
 
 storage::mojom::IndexedDBControl& StoragePartitionImpl::GetIndexedDBControl() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(
-      !(indexed_db_control_.is_bound() && !indexed_db_control_.is_connected()))
-      << "Rebinding is not supported yet.";
-
-  if (indexed_db_control_.is_bound())
-    return *indexed_db_control_;
-
-  IndexedDBContextImpl* idb_context = GetIndexedDBContextInternal();
-  idb_context->IDBTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IndexedDBContextImpl::Bind,
-                     base::WrapRefCounted(idb_context),
-                     indexed_db_control_.BindNewPipeAndPassReceiver()));
-
-  return *indexed_db_control_;
+  return *indexed_db_control_wrapper_.get();
 }
 
 IndexedDBContextImpl* StoragePartitionImpl::GetIndexedDBContextInternal() {
   DCHECK(initialized_);
-  return indexed_db_context_.get();
+  return indexed_db_control_wrapper_->GetIndexedDBContextInternal();
 }
 
 NativeFileSystemEntryFactory*

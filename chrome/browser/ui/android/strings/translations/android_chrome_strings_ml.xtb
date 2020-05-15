@@ -387,7 +387,6 @@
 <translation id="4250229828105606438">സ്‌ക്രീൻഷോട്ട്</translation>
 <translation id="4256782883801055595">ഓപ്പൺ സോഴ്‌സ് ലൈസൻസുകൾ</translation>
 <translation id="4269820728363426813">ലിങ്ക് വിലാസം പകർത്തുക</translation>
-<translation id="4278390842282768270">അനുവദനീയം</translation>
 <translation id="429312253194641664">സൈറ്റ്, മീഡിയ പ്ലേ ചെയ്യുന്നു</translation>
 <translation id="4298388696830689168">ലിങ്ക് ചെയ്‌ത സൈറ്റുകൾ</translation>
 <translation id="4307992518367153382">അടിസ്ഥാനങ്ങള്‍</translation>
@@ -435,7 +434,6 @@
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> ബുക്ക്‌മാർക്കുകൾ ഇല്ലാതാക്കി</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> എന്നയാളെ നിങ്ങളുടെ ഹോം സ്‌ക്രീനിൽ ചേർത്തു</translation>
 <translation id="4684427112815847243">എല്ലാം സമന്വയിപ്പിക്കുക</translation>
-<translation id="4688610874307684559">Chrome-ൽ പ്രവർത്തിക്കുന്നു (പ്രാരംഭം)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 എന്നതും ‌മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> പേയ്‌മെന്റ് രീതികളും}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 എന്നതും ‌മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> പേയ്‌മെന്റ് രീതികളും}}</translation>
 <translation id="4696983787092045100">നിങ്ങളുടെ ഉപകരണങ്ങളിലേക്ക് ടെക്‌സ്‌റ്റ് അയയ്‌ക്കുക</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" /> ആപ്പിൽ ഓഫ്‌ലൈനായി കാണുക</translation>
@@ -560,10 +558,8 @@
 <translation id="5659593005791499971">ഇമെയില്‍</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> ആപ്പിൽ ഇവന്റ് സൃഷ്‌ടിക്കുക</translation>
 <translation id="5668404140385795438">സൂം ഇൻ ചെയ്യുന്നത് തടയുന്നതിനുള്ള ഒരു വെബ്സൈറ്റിന്റെ അഭ്യർത്ഥന അസാധുവാക്കുക</translation>
-<translation id="5677928146339483299">തടഞ്ഞു</translation>
 <translation id="5684874026226664614">ക്ഷമിക്കണം. ഈ പേജ് വിവർത്തനം ചെയ്യാനായില്ല.</translation>
 <translation id="5686790454216892815">ഫയലിന്റെ പേര് ദൈർഘ്യമേറിയതാണ്</translation>
-<translation id="5690795753582697420">Android ക്രമീകരണത്തിൽ ക്യാമറ ഓഫാക്കിയിരിക്കുന്നു</translation>
 <translation id="5694049548840660018">ഹോമിലേക്ക് എളുപ്പത്തിൽ മടങ്ങൂ</translation>
 <translation id="569536719314091526">'കൂടുതൽ ഓപ്‌ഷനുകൾ' ബട്ടണിൽ നിന്ന്, ഈ പേജ് ഏത് ഭാഷയിലേക്കും വിവർത്തനം ചെയ്യുക</translation>
 <translation id="572328651809341494">അടുത്തിടെയുള്ള ടാബുകൾ</translation>
@@ -619,7 +615,6 @@
 <translation id="614940544461990577">പരീക്ഷിച്ചുനോക്കൂ:</translation>
 <translation id="6154478581116148741">ഈ ഉപകരണത്തിൽ നിന്ന് നിങ്ങളുടെ പാസ്‌വേഡുകൾ എക്‌സ്‌പോർട്ട് ചെയ്യാൻ ക്രമീകരണത്തിൽ സ്‌ക്രീൻ ലോക്ക് ഓണാക്കുക</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ഡാറ്റ ലാഭിക്കൽ</translation>
-<translation id="6177111841848151710">നിലവിലെ തിരയൽ യന്ത്രത്തിൽ ബ്ലോക്ക് ചെയ്‌തിരിക്കുന്നു</translation>
 <translation id="6192333916571137726">ഫയൽ ഡൗൺലോഡ് ചെയ്യുക</translation>
 <translation id="6201345951596836663">ലിങ്ക് പകർത്തി</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> അല്ലേ?</translation>
@@ -706,7 +701,6 @@
 <translation id="6846298663435243399">ലോഡുചെയ്യുന്നു...</translation>
 <translation id="6850409657436465440">നിങ്ങളുടെ ഡൗൺലോഡ് ഇപ്പോഴും പുരോഗതിയിലാണ്</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> ടാബുകൾ അടച്ചു</translation>
-<translation id="6864395892908308021">ഈ ഉപകരണത്തിന് NFC റീഡ് ചെയ്യാനാവില്ല</translation>
 <translation id="6864459304226931083">ചിത്രം ഡൗൺലോഡ് ചെയ്യുക</translation>
 <translation id="6865313869410766144">ഓട്ടോഫിൽ ഫോം ഡാറ്റ</translation>
 <translation id="6884306546558072722">ഓഫ്‌ലൈനിൽ അടുത്തറിയുന്നത് തുടരുക</translation>
@@ -721,9 +715,7 @@
 <translation id="6989267951144302301">ഡൗൺലോഡ് ചെയ്യാനായില്ല</translation>
 <translation id="6990079615885386641">Google Play സ്റ്റോറിൽ നിന്ന് ആപ്പ് സ്വീകരിക്കുക: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">പാസ്‌വേഡുകൾ, ഡാറ്റാ ലംഘനത്തിന്റെ ഭാഗമായി വെളിപ്പെട്ടാൽ നിങ്ങൾക്ക് മുന്നറിയിപ്പ് നൽകുന്നു</translation>
-<translation id="7000754031042624318">Android ക്രമീകരണത്തിൽ ഓഫാക്കിയിരിക്കുന്നു</translation>
 <translation id="7015203776128479407">പ്രാഥമിക സമന്വയ സജ്ജീകരണം പൂർത്തിയാക്കിയിട്ടില്ല. സമന്വയം ഓഫാണ്.</translation>
-<translation id="7016516562562142042">നിലവിലെ തിരയൽ യന്ത്രത്തിൽ അനുവദിച്ചിരിക്കുന്നു</translation>
 <translation id="7022756207310403729">ബ്രൗസറിൽ തുറക്കുക</translation>
 <translation id="702463548815491781">TalkBack അല്ലെങ്കിൽ ആക്‌സസ് മാറുക ഓണായിരിക്കുമ്പോൾ ശുപാർശ ചെയ്യുന്നു</translation>
 <translation id="7029809446516969842">പാസ്‌വേഡുകള്‍</translation>
@@ -756,10 +748,10 @@
 <translation id="7328017930301109123">ലൈറ്റ് മോഡിൽ, Chrome 60 ശതമാനം വരെ കുറവ് ഡാറ്റ ഉപയോഗിക്കുകയും പേജുകൾ വേഗത്തിൽ ലോഡ് ചെയ്യുകയും ചെയ്യുന്നു.</translation>
 <translation id="7333031090786104871">ഇപ്പോഴും മുമ്പത്തെ സൈറ്റ് ചേർത്തുകൊണ്ടിരിക്കുകയാണ്</translation>
 <translation id="7340958967809483333">Discover-നുള്ള ഓപ്ഷനുകൾ</translation>
+<translation id="7352651011704765696">എന്തോ കുഴപ്പം സംഭവിച്ചു</translation>
 <translation id="7352939065658542140">വീഡിയോ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{തിരഞ്ഞെടുത്ത ഒരു ഇനം പങ്കിടുക}other{തിരഞ്ഞെടുത്ത # ഇനങ്ങൾ പങ്കിടുക}}</translation>
 <translation id="7359002509206457351">പേയ്മെന്റ് രീതികൾ ആക്‌സസ് ചെയ്യുക</translation>
-<translation id="7362144854749094396">ചരിത്രം Chrome-മായി പങ്കിട്ടു. മുൻഗണനകൾ <ph name="SITE_NAME" />-മായി പങ്കിട്ടു.</translation>
 <translation id="7375125077091615385">തരം:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -841,7 +833,6 @@
 <translation id="7986741934819883144">ഒരു കോൺടാക്റ്റ് തിരഞ്ഞെടുക്കുക</translation>
 <translation id="7998918019931843664">അടച്ച ടാബ് വീണ്ടും തുറക്കുക</translation>
 <translation id="8004582292198964060">ബ്രൗസര്‍</translation>
-<translation id="8007176423574883786">ഈ ഉപകരണത്തിനായി ഓഫാക്കി</translation>
 <translation id="8013372441983637696">കൂടാതെ ഈ ഉപകരണത്തിൽ നിന്ന് നിങ്ങളുടെ Chrome ഡാറ്റ മായ്ക്കുക</translation>
 <translation id="8015452622527143194">പേജിലുള്ളതെല്ലാം ഡിഫോൾട്ട് വലുപ്പത്തിലേക്ക് മാറ്റുക</translation>
 <translation id="8026334261755873520">ബ്രൌസിംഗ് ഡാറ്റ മായ്‌ക്കുക</translation>
@@ -931,6 +922,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{സിഗ്‌നൽ സ്‌ട്രെംഗ്‌ത്ത് ലെവൽ # ബാർ}other{സിഗ്‌നൽ സ്‌ട്രെംഗ്‌ത്ത് ലെവൽ # ബാറുകൾ}}</translation>
 <translation id="868929229000858085">നിങ്ങളുടെ കോൺടാക്‌റ്റുകൾ തിരയുക</translation>
 <translation id="869891660844655955">കാലഹരണപ്പെടല്‍‌ തീയതി</translation>
+<translation id="8712637175834984815">മനസ്സിലായി</translation>
 <translation id="8748850008226585750">കോൺടാക്‌റ്റുകൾ മറച്ചു</translation>
 <translation id="8751914237388039244">ഒരു ചിത്രം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="8758557275681689734">നിങ്ങളുടെ തുറന്നിരിക്കുന്ന ടാബുകൾ എല്ലാം കാണുക</translation>

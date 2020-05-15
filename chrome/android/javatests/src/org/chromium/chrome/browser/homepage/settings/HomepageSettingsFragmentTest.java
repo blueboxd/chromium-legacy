@@ -14,8 +14,6 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ActivityState;
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UserActionTester;
@@ -25,7 +23,6 @@ import org.chromium.chrome.browser.homepage.HomepageTestRule;
 import org.chromium.chrome.browser.homepage.settings.HomepageMetricsEnums.HomepageLocationType;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
-import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
@@ -134,15 +131,8 @@ public class HomepageSettingsFragmentTest {
     }
 
     private void finishSettingsActivity() {
-        SettingsActivity activity = mTestRule.getActivity();
-        activity.finish();
-        CriteriaHelper.pollUiThread(new Criteria("Activity should be destroyed, current state: "
-                + ApplicationStatus.getStateForActivity(activity)) {
-            @Override
-            public boolean isSatisfied() {
-                return ApplicationStatus.getStateForActivity(activity) == ActivityState.DESTROYED;
-            }
-        });
+        mTestRule.getActivity().finish();
+        mTestRule.waitTillActivityIsDestroyed();
     }
 
     @Test

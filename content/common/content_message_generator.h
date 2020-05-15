@@ -63,12 +63,6 @@
 #endif
 #include "media/media_buildflags.h"
 
-#undef CONTENT_COMMON_SYNC_COMPOSITOR_MESSAGES_H_
-#include "content/common/input/sync_compositor_messages.h"
-#ifndef CONTENT_COMMON_SYNC_COMPOSITOR_MESSAGES_H_
-#error "Failed to include content/common/input/sync_compositor_messages.h"
-#endif
-
 #if defined(OS_ANDROID)
 #undef CONTENT_COMMON_GIN_JAVA_BRIDGE_MESSAGES_H_
 #include "content/common/gin_java_bridge_messages.h"

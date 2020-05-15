@@ -60,7 +60,7 @@ TEST_F(BrowserMainLoopTest, CreateThreadsInSingleProcess) {
   MainFunctionParams main_function_params(GetProcessCommandLine());
 
   StartupDataImpl startup_data;
-  startup_data.ipc_thread = BrowserTaskExecutor::CreateIOThread();
+  startup_data.io_thread = BrowserTaskExecutor::CreateIOThread();
   main_function_params.startup_data = &startup_data;
 
   BrowserMainLoop browser_main_loop(
@@ -82,7 +82,7 @@ TEST_F(BrowserMainLoopTest,
   MainFunctionParams main_function_params(GetProcessCommandLine());
 
   StartupDataImpl startup_data;
-  startup_data.ipc_thread = BrowserTaskExecutor::CreateIOThread();
+  startup_data.io_thread = BrowserTaskExecutor::CreateIOThread();
   main_function_params.startup_data = &startup_data;
 
   BrowserMainLoop browser_main_loop(

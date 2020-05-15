@@ -26,7 +26,7 @@ extern const base::Feature kWebAuthPhoneSupport{
 
 extern const base::Feature kWebAuthGetAssertionFeaturePolicy{
     "WebAuthenticationGetAssertionFeaturePolicy",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 const base::Feature kWebAuthCableLowLatency{"WebAuthenticationCableLowLatency",

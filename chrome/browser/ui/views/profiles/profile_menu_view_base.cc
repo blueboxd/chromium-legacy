@@ -357,7 +357,7 @@ ProfileMenuViewBase::ProfileMenuViewBase(views::Button* anchor_button,
       close_bubble_helper_(this, browser) {
   DCHECK(!g_profile_bubble_);
   g_profile_bubble_ = this;
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
   // TODO(tluk): Remove when fixing https://crbug.com/822075
   // The sign in webview will be clipped on the bottom corners without these
   // margins, see related bug <http://crbug.com/593203>.

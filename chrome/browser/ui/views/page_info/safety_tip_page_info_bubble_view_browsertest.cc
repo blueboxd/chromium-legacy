@@ -718,16 +718,10 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   CheckRecordedHeuristicsUkmCount(0);
 }
 
-// Disabled due to consistent failure: http://crbug.com/1020109
-#if defined(OS_LINUX)
-#define MAYBE_TriggersOnEditDistance DISABLED_TriggersOnEditDistance
-#else
-#define MAYBE_TriggersOnEditDistance TriggersOnEditDistance
-#endif
 // Tests that Safety Tips trigger (or not) on lookalike domains with edit
 // distance when enabled, and not otherwise.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
-                       MAYBE_TriggersOnEditDistance) {
+                       TriggersOnEditDistance) {
   // This domain is an edit distance of one from the top 500.
   const GURL kNavigatedUrl = GetURL("goooglé.com");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
@@ -810,15 +804,9 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
       security_state::SafetyTipStatus::kBadReputationIgnored, 1);
 }
 
-// Disabled due to consistent failure: http://crbug.com/1020109
-#if defined(OS_LINUX)
-#define MAYBE_InteractionsHistogram DISABLED_InteractionsHistogram
-#else
-#define MAYBE_InteractionsHistogram InteractionsHistogram
-#endif
 // Tests that Safety Tip interactions are recorded in a histogram.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
-                       MAYBE_InteractionsHistogram) {
+                       InteractionsHistogram) {
   const std::string kHistogramPrefix = "Security.SafetyTips.Interaction.";
 
   // These histograms are only recorded when the UI feature is enabled, so bail

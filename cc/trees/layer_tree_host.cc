@@ -246,8 +246,9 @@ SwapPromiseManager* LayerTreeHost::GetSwapPromiseManager() {
 }
 
 std::unique_ptr<EventsMetricsManager::ScopedMonitor>
-LayerTreeHost::GetScopedEventMetricsMonitor(const EventMetrics& event_metrics) {
-  return events_metrics_manager_.GetScopedMonitor(event_metrics);
+LayerTreeHost::GetScopedEventMetricsMonitor(
+    std::unique_ptr<EventMetrics> event_metrics) {
+  return events_metrics_manager_.GetScopedMonitor(std::move(event_metrics));
 }
 
 void LayerTreeHost::ClearEventsMetrics() {

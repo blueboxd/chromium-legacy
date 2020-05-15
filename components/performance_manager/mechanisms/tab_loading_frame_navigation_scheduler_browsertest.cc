@@ -65,9 +65,8 @@ class TabLoadingFrameNavigationSchedulerTest
   }
 
   // content::BrowserTestBase overrides:
-  void CreatedBrowserMainParts(
-      content::BrowserMainParts* browser_main_parts) override {
-    Super::CreatedBrowserMainParts(browser_main_parts);
+  void PreRunTestOnMainThread() override {
+    Super::PreRunTestOnMainThread();
 
     TabLoadingFrameNavigationScheduler::SetPolicyDelegateForTesting(
         &mock_policy_delegate_);

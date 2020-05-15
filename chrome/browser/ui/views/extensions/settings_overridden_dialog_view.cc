@@ -28,8 +28,8 @@ SettingsOverriddenDialogView::SettingsOverriddenDialogView(
   base::string16 ok_button_label = base::ASCIIToUTF16("Change it back");
   // This should be IDS_EXTENSION_SETTINGS_OVERRIDDEN_DIALOG_IGNORE.
   base::string16 cancel_button_label = base::ASCIIToUTF16("Ignore");
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK, ok_button_label);
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, cancel_button_label);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, ok_button_label);
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, cancel_button_label);
   SetLayoutManager(std::make_unique<views::FillLayout>());
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
@@ -42,17 +42,14 @@ SettingsOverriddenDialogView::SettingsOverriddenDialogView(
         &SettingsOverriddenDialogController::HandleDialogResult,
         base::Unretained(controller_.get()), result);
   };
-  DialogDelegate::SetAcceptCallback(
-      make_result_callback(DialogResult::kChangeSettingsBack));
-  DialogDelegate::SetCancelCallback(
-      make_result_callback(DialogResult::kKeepNewSettings));
-  DialogDelegate::SetCloseCallback(
-      make_result_callback(DialogResult::kDialogDismissed));
+  SetAcceptCallback(make_result_callback(DialogResult::kChangeSettingsBack));
+  SetCancelCallback(make_result_callback(DialogResult::kKeepNewSettings));
+  SetCloseCallback(make_result_callback(DialogResult::kDialogDismissed));
 
   SettingsOverriddenDialogController::ShowParams show_params =
       controller_->GetShowParams();
 
-  DialogDelegate::SetTitle(show_params.dialog_title);
+  SetTitle(show_params.dialog_title);
 
   auto message_label = std::make_unique<views::Label>(
       show_params.message, CONTEXT_BODY_TEXT_LARGE,

@@ -341,6 +341,12 @@ class PLATFORM_EXPORT FontCache {
       const FontDescription&,
       UChar32);
 
+  // When true, the font size is removed from primary keys in
+  // |font_platform_data_cache_|. The font size is not necessary in the primary
+  // key, because per-size FontPlatformData are held in a nested map. This is
+  // controlled by a base::Feature to assess impact with an experiment.
+  const bool no_size_in_key_;
+
   // Don't purge if this count is > 0;
   int purge_prevent_count_;
 

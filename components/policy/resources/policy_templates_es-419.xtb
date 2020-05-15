@@ -115,17 +115,6 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1117535567637097036">Los controladores de protocolo establecidos mediante esta política no se usan cuando se controlan intents en Android.</translation>
 <translation id="1118093128235245168">Permite que los sitios soliciten al usuario que otorgue acceso a un dispositivo USB conectado</translation>
-<translation id="1123594119609921068">Establece la función de accesibilidad de comentarios por voz como predeterminada en la pantalla de acceso.
-
-          Si se establece esta política como verdadera, los comentarios por voz estarán habilitados cuando se muestre la pantalla de acceso.
-
-          Si se establece como falsa, esta función estará inhabilitada.
-
-          Si estableces esta política, los usuarios podrán anularla temporalmente habilitando o inhabilitando los comentarios por voz. Sin embargo, no se mantendrá la elección del usuario, y se restablecerá la opción predeterminada siempre que la pantalla de acceso se muestre de nuevo o el usuario permanezca inactivo en esta pantalla por más de un minuto.
-
-          Si no estableces esta política, los comentarios por voz estarán inhabilitados cuando se muestre por primera vez la pantalla de acceso. En este caso, los usuarios podrán habilitar o inhabilitar los comentarios por voz en cualquier momento y la opción que elijan se mantendrá entre los usuarios.
-
-          Nota: <ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME" /> anula esta política si se especifica la política anterior.</translation>
 <translation id="1128717055763152639">Te permite configurar una lista de patrones de URL donde se indiquen los sitios que pueden mostrar contenido mixto (p. ej., contenido HTTP en sitios HTTPS) bloqueable (p. ej., activo) y para los cuales se inhabilitarán las actualizaciones del contenido mixto bloqueable de forma opcional.
 
           Si no se establece esta política, se bloqueará el contenido mixto bloqueable y se actualizará el contenido mixto bloqueable de forma opcional; además, los usuarios podrán establecer excepciones para permitir ese contenido en sitios específicos.
@@ -405,23 +394,9 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
 <translation id="1634989431648355062">Permitir el complemento <ph name="FLASH_PLUGIN_NAME" /> en estos sitios</translation>
 <translation id="1645793986494086629">Esquema:</translation>
 <translation id="1648816843164517573">Lista de nombres que omitirán la revisión de la política de HSTS</translation>
-<translation id="1653229475925941921">Si se configura esta política, controlará el tipo de lupa habilitado. Si la política se configura como "ninguna", se inhabilitará la lupa.
-
-          Si configuras esta política, los usuarios no podrán modificarla ni anularla.
-
-          Si no se configura esta política, inicialmente la lupa estará inhabilitada, pero el usuario podrá habilitarla en cualquier momento.</translation>
 <translation id="1654087023995670109">Aplica el modo de invitado en el navegador</translation>
 <translation id="1655229863189977773">Establecer el tamaño del caché de disco en bytes</translation>
 <translation id="166427968280387991">Servidor proxy</translation>
-<translation id="1667877109169174750">Si esta política se configura como verdadera, las opciones de accesibilidad aparecerán siempre en el menú de la bandeja del sistema.
-
-          Si se configura como falsa, las opciones de accesibilidad no aparecerán nunca en el menú de la bandeja del sistema.
-
-          Si la estableces, los usuarios no podrán cambiarla ni anularla.
-
-          Si no la estableces, las opciones de accesibilidad no aparecerán en el menú de la bandeja del sistema, pero el usuario podrá modificar esto en la página de configuración.
-
-          Si se habilitan las funciones de accesibilidad por otros medios (p. ej., con una combinación de claves), las opciones de accesibilidad aparecerán siempre en el menú de la bandeja del sistema.</translation>
 <translation id="1668836044817793277">Permite o no que la Aplicación de kiosko con ejecución automática sin retraso controle la versión de <ph name="PRODUCT_OS_NAME" />.
 
       Esta política permite o no que la Aplicación de kiosko con ejecución automática sin retraso controle la versión de <ph name="PRODUCT_OS_NAME" /> al declarar una required_platform_version en su manifiesto y usarla como el prefijo de la versión objetivo para la actualización automática.
@@ -1908,15 +1883,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="3811562426301733860">Permitir anuncios en todos los sitios</translation>
 <translation id="3816312845600780067">Habilitar combinación de teclas para acceso directo de rescate para el acceso automático</translation>
 <translation id="3817323252437541502">Habilitar protecciones adicionales para los usuarios inscritos en el Programa de Protección Avanzada</translation>
-<translation id="3820526221169548563">Habilita la función de accesibilidad del teclado en pantalla.
-
-          Si se establece esta política en True, el teclado en pantalla estará siempre habilitado.
-
-          Si se establece esta política en False, el teclado en pantalla estará siempre inhabilitado.
-
-          Si estableces esta política, los usuarios no pueden modificarla ni anularla.
-
-          Si no se establece la política, el teclado en pantalla estará inhabilitado inicialmente, pero el usuario podrá habilitarlo en cualquier momento.</translation>
 <translation id="3821861026311587684">Forzar el cierre de sesión del usuario cuando su cuenta pierde la autenticación</translation>
 <translation id="382476126209906314">Configura el prefijo TalkGadget para los hosts de acceso remoto.</translation>
 <translation id="3824972131618513497">Controla la configuración relacionada con el reinicio y la administración de energía.</translation>
@@ -2191,15 +2157,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="4157003184375321727">Informar la versión de firmware y SO.</translation>
 <translation id="4157594634940419685">Permitir el acceso a las impresoras de CUPS nativas</translation>
 <translation id="4160962198980004898">Fuente de la dirección MAC del dispositivo cuando está conectado</translation>
-<translation id="4164601239783385546">Habilita la función de accesibilidad de las teclas especiales.
-
-          Si se establece esta política como verdadera, las teclas especiales estarán siempre habilitadas.
-
-          Si se establece como falsa, las teclas estarán inhabilitadas.
-
-          Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
-
-          Si no la estableces, inicialmente las teclas especiales estarán inhabilitadas, pero el usuario podrá habilitarlas en cualquier momento.</translation>
 <translation id="4169692397912242417">Habilita la función de accesibilidad de comentarios por voz en la pantalla de acceso.
 
           Si se establece la política como verdadera, los comentarios por voz estarán siempre habilitados en la pantalla de acceso.
@@ -2223,17 +2180,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
           Si no la estableces, la función para resaltar el signo de intercalación estará inicialmente inhabilitada en la pantalla de acceso, pero el usuario podrá habilitarla en cualquier momento.</translation>
 <translation id="4183229833636799228">Configuración predeterminada de <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL para la validación del token de autenticación del cliente de acceso remoto</translation>
-<translation id="420007931282384740">Establece la función de accesibilidad del teclado en pantalla como predeterminada en la pantalla de acceso.
-
-          Si se establece esta política como verdadera, el teclado en pantalla estará habilitado cuando se muestre la pantalla de acceso.
-
-          Si se establece como falsa, esta función estará inhabilitada.
-
-          Si estableces esta política, los usuarios podrán anularla temporalmente habilitando o inhabilitando el teclado en pantalla. Sin embargo, no se mantendrá la elección del usuario, y se restablecerá la opción predeterminada siempre que la pantalla de acceso se muestre de nuevo o el usuario permanezca inactivo en esta pantalla por más de un minuto.
-
-          Si no estableces esta política, el teclado en pantalla estará inhabilitado cuando se muestre por primera vez la pantalla de acceso. En este caso, los usuarios podrán habilitar o inhabilitar el teclado en pantalla en cualquier momento y la opción que elijan se mantendrá entre los usuarios.
-
-          Nota: <ph name="DEVICE_LOGIN_SCREEN_VIRTUAL_KEYBOARD_ENABLED_POLICY_NAME" /> anula esta política si se especifica la política anterior.</translation>
 <translation id="4203389617541558220">Limita el tiempo de actividad del dispositivo mediante la programación de reinicio automático.
 
       Si se establece esta política, se especifica el tiempo de actividad del dispositivo que debe transcurrir para que se programe un reinicio automático.
@@ -2471,11 +2417,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="4625915093043961294">Configurar la lista blanca de instalación de extensiones</translation>
 <translation id="4632343302005518762">Permitir que <ph name="PRODUCT_FRAME_NAME" /> gestione los tipos de contenido que figuran en la lista</translation>
 <translation id="4632566332417930481">No permitir el uso de las Herramientas para desarrolladores en extensiones instaladas por una política empresarial; permitir el uso de las Herramientas para desarrolladores en otros contextos</translation>
-<translation id="4633786464238689684">Modifica el comportamiento predeterminado de las teclas de la fila superior y las convierte en teclas de funciones.
-
-          Si esta política se establece en True, la fila superior de teclas del teclado generará comandos de teclas de funciones de forma predeterminada. Para volver al comportamiento de teclas multimedia, se debe presionar la tecla de búsqueda.
-
-          Si esta política se establece en False o no se establece, el teclado generará comandos de teclas multimedia de forma predeterminada y comandos de teclas de funciones al mantener presionada la tecla de búsqueda.</translation>
 <translation id="4639407427807680016">Nombres de hosts de mensajería nativa que deben excluirse de la lista negra</translation>
 <translation id="4649395978608361979">Destinos de las impresoras locales</translation>
 <translation id="4650759511838826572">Inhabilitar los esquemas de protocolo de la dirección URL</translation>
@@ -2564,15 +2505,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si se inhabilita esta configuración, "Autocompletar" nunca sugerirá ni completará información de tarjetas de crédito. Tampoco guardará información adicional de tarjetas que el usuario haya enviado cuando navegaba en la Web.
 
       Si se habilita esta configuración o no se establece ningún valor, el usuario podrá controlar la función "Autocompletar" para las tarjetas de crédito en la IU.</translation>
-<translation id="4791031774429044540">Habilita la función de accesibilidad del cursor grande.
-
-          Si esta política se establece como verdadera, el cursor grande estará siempre habilitado.
-
-          Si esta política se establece como falsa, el cursor grande estará siempre inhabilitado.
-
-          Si estableces esta política, los usuarios no podrán modificarla ni anularla.
-
-          Si no se establece esta política, inicialmente el cursor grande estará inhabilitado, pero el usuario podrá habilitarlo en cualquier momento.</translation>
 <translation id="4802744647065138872">Limita la cantidad de instantáneas sobre los datos del usuario que se conservan en caso de tener que realizar reversión de emergencia.</translation>
 <translation id="4802905909524200151">Configurar el comportamiento de actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Reinicia siempre cuando el usuario sale de su cuenta.</translation>
@@ -2733,15 +2665,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="5105313908130842249">Demora de bloqueo de pantalla con batería</translation>
 <translation id="5108031557082757679">Impresoras empresariales inhabilitadas asociadas a dispositivos</translation>
 <translation id="5109383437323376357">Determina la disponibilidad de las variantes</translation>
-<translation id="5112121363469561920">Establece el tipo predeterminado de la lupa habilitada en la pantalla de acceso.
-
-          Si se establece esta política, controlará el tipo de lupa que se habilita cuando se muestre la pantalla de acceso. Si la política se configura como "ninguna", se inhabilitará la lupa.
-
-          Si estableces esta política, los usuarios podrán anularla temporalmente al habilitar o inhabilitar la lupa. Sin embargo, no se mantendrá la elección del usuario y se restablecerá la opción predeterminada cada vez que se muestre la pantalla de acceso o el usuario permanezca inactivo en ella más de un minuto.
-
-          Si no estableces esta política, la lupa estará inhabilitada cuando se muestre por primera vez la pantalla de acceso. En este caso, los usuarios podrán habilitar o inhabilitar la lupa en cualquier momento, y la opción que elijan para la pantalla de acceso se mantendrá entre los usuarios.
-
-          Nota: Si se especifica <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" />, anulará esta política.</translation>
 <translation id="5115168755602871392">Envía información sobre las CPU de un dispositivo.
 
       Si se establece la política como falsa o no se establece, no se enviará la información.
@@ -2950,17 +2873,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="5377606826822211923">Controla la forma en que el usuario usa las apps para Android de fuentes no confiables</translation>
 <translation id="537786648513450280">Controla la forma en que se usan las apps para Android de fuentes no confiables</translation>
 <translation id="5378985487213287085">Te permite configurar si los sitios web pueden mostrar notificaciones de escritorio. Esto se puede permitir de manera predeterminada, se puede denegar de manera predeterminada o se le puede preguntar al usuario cada vez que un sitio web quiera mostrar notificaciones de escritorio. Si esta política no se configura, se usará "AskNotifications" y el usuario podrá cambiarlo.</translation>
-<translation id="5380329473151894945">Establece el estado predeterminado de la función de accesibilidad del cursor grande en la pantalla de acceso.
-
-          Si esta política se configura como verdadera, el cursor grande estará habilitado cuando se muestre la pantalla de acceso.
-
-          Si esta política se configura como verdadera, el cursor grande estará inhabilitado cuando se muestre esta pantalla.
-
-          Si configuras esta política, los usuarios podrán anularla temporalmente al habilitar o inhabilitar el cursor grande. Sin embargo, no se mantendrá la elección del usuario, y se restablecerá la opción predeterminada siempre que la pantalla de acceso se muestre de nuevo o el usuario permanezca inactivo en esta pantalla por más de un minuto.
-
-          Si no estableces esta política, el cursor grande estará inhabilitado cuando se muestre por primera vez la pantalla de acceso. En este caso, los usuarios podrán habilitar o inhabilitar el cursor grande en cualquier momento y la opción que elijan se mantendrá entre los usuarios.
-
-          Nota: <ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" /> anula esta política si se especifica la política anterior.</translation>
 <translation id="538108065117008131">Permitir que <ph name="PRODUCT_FRAME_NAME" /> maneje los siguientes tipos de contenido.</translation>
 <translation id="538768040137709073">Habilita la función de portapapeles compartido, que permite que los usuarios compartan texto entre computadoras de escritorios con Chrome y dispositivos Android cuando está habilitada la sincronización y el usuario accedió a su cuenta.
 
@@ -3293,7 +3205,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si se establece como falsa o no se establece, se inhabilitarán las funciones de Web Components v0 de forma predeterminada, a partir de la versión M80.
 
       Después de Chrome 84, se quitará esta política.</translation>
-<translation id="5763698334786515749">Habilita el botón para mostrar la contraseña en la pantalla de inicio o de bloqueo</translation>
 <translation id="5765780083710877561">Descripción:</translation>
 <translation id="5770738360657678870">Canal para desarrolladores (puede ser inestable)</translation>
 <translation id="5774856474228476867">Dirección URL de búsqueda de proveedores de búsqueda predeterminada</translation>
@@ -3805,9 +3716,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si no se configura esta política, el usuario podrá usar cualquier complemento instalado en el sistema, excepto aquellos que sean peligrosos, obsoletos o incompatibles por el código.</translation>
 <translation id="6571871508154591774">Inhabilita la cámara y la configuración del navegador y del SO</translation>
 <translation id="6573305661369899995">Establece una fuente externa de restrcicciones de URL</translation>
-<translation id="6574770600243153999">Permite que este dispositivo ejecute PluginVm.
-
-      Si se establece la política como falsa o no se establece, no se habilitará <ph name="PLUGIN_VM_NAME" /> para este dispositivo. Si se establece como verdadera, se habilitará <ph name="PLUGIN_VM_NAME" /> para el dispositivo, siempre y cuando lo permitan otras opciones de configuración. Para ejecutar <ph name="PLUGIN_VM_NAME" />, <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> debe ser verdadera y deben establecerse <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" />, <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> o <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" />.</translation>
 <translation id="6583851521569686409">Configura una lista de impresoras.
 
       Esta política permite que los administradores proporcionen configuraciones de impresoras
@@ -3866,7 +3774,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="6665670272107384733">Establecer la frecuencia con la que el usuario debe ingresar la contraseña para usar el desbloqueo rápido</translation>
 <translation id="6672070613706645316">Permite que los usuarios personalicen el fondo en la página Nueva pestaña</translation>
 <translation id="6672630473862787247">Permite la autenticación ambiental en sesiones comunes, de incógnito y de invitado.</translation>
-<translation id="6677797768774898583">Esta función permite que se muestre la contraseña en la pantalla de inicio o de bloqueo cuando el usuario hace clic en un botón.</translation>
 <translation id="6685903773201985073">Permite la autenticación ambiental en sesiones comunes y de invitado.</translation>
 <translation id="6689792153960219308">Informar estado de hardware</translation>
 <translation id="6698632841807204978">Habilitar la impresión monocromática</translation>
@@ -3942,15 +3849,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="6907778402784621686">Bloquea el contenido no seguro de estos sitios</translation>
 <translation id="6908640907898649429">Configura el proveedor de búsqueda predeterminado. Se puede especificar el proveedor de búsqueda predeterminado que el usuario usará u optar por inhabilitar la búsqueda predeterminada.</translation>
 <translation id="6913068954484253496">Permitir que <ph name="PRODUCT_NAME" /> se conecte a los dispositivos de transmisión en todas las direcciones IP</translation>
-<translation id="6915442654606973733">Habilita la función de accesibilidad de comentarios por voz.
-
-          Si esta política se establece como verdadera, los comentarios por voz estarán siempre habilitados.
-
-          Si esta política se establece como falsa, los comentarios por voz estarán siempre inhabilitados.
-
-          Si estableces esta política, los usuarios no podrán modificarla ni anularla.
-
-          Si no se establece esta política, inicialmente los comentarios por voz estarán inhabilitados, pero el usuario podrá habilitarlos en cualquier momento.</translation>
 <translation id="6916507170737609563">
       Para revisar la configuración de la política IsolateOriginsAndroid a fin de aprovechar el aislamiento y reducir el impacto que puedan sufrir los usuarios, utiliza IsolateOriginsAndroid con una lista de los sitios que quieras aislar. La configuración SitePerProcessAndroid aísla todos los sitios.
       Si se habilita la política, cada sitio se ejecutará en su propio proceso.
@@ -4179,7 +4077,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           Si se establece esta política como falsa, las solicitudes de bloqueos de activación pantalla se considerarán como del sistema.</translation>
 <translation id="7177857088692019405">Desbloqueo rápido</translation>
-<translation id="718126088895133062">Esta política especifica el ID de usuario de licencia de <ph name="PLUGIN_VM_NAME" /> para este dispositivo.</translation>
+<translation id="718126088895133062">Esta política especifica el ID de usuario de la licencia de <ph name="PLUGIN_VM_NAME" /> para este dispositivo.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="7187447094921703950">Habilita la política de administración energética para el cambio de pico de consumo de energía.
 
@@ -4608,17 +4506,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       La actualización dinámica de esta política es compatible con M56 y versiones posteriores.</translation>
 <translation id="7841880500990419427">Versión mínima de TLS para resguardo</translation>
-<translation id="7842317008224536842">Establece la función de accesibilidad del modo de contraste alto como predeterminada en la pantalla de acceso.
-
-          Si se establece esta política como verdadera, el modo de contraste alto estará habilitado cuando se muestre la pantalla de acceso.
-
-          Si se establece como falsa, esta función estará inhabilitada.
-
-          Si estableces esta política, los usuarios podrán anularla temporalmente habilitando o inhabilitando el modo de contraste alto. Sin embargo, no se mantendrá la elección del usuario, y se restablecerá la opción predeterminada siempre que la pantalla de acceso se muestre de nuevo o el usuario permanezca inactivo en esta pantalla por más de un minuto.
-
-          Si no estableces esta política, el modo de contraste alto estará inhabilitado cuando se muestre por primera vez la pantalla de acceso. En este caso, los usuarios podrán habilitar o inhabilitar el modo de contraste alto en cualquier momento y la opción que elijan se mantendrá entre los usuarios.
-
-          Nota: <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" /> anula esta política si se especifica la política anterior.</translation>
 <translation id="7846952520291088817">Las URL para las que se exponen las IP locales en los candidatos ICE de WebRTC</translation>
 <translation id="7848641140449742406">Configuración del SO</translation>
 <translation id="7858404742201086014">Si habilitas esta configuración, los complementos desactualizados se usarán como complementos normales.
@@ -4820,15 +4707,6 @@ Si se establece como falsa, se inhabilitará la pantalla de privacidad cuando se
 Si la estableces, el usuario no podrá anular el valor cuando se muestre la pantalla de acceso.
 
 Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pero el usuario podrá controlarla cuando se muestre la pantalla de acceso.</translation>
-<translation id="8148901634826284024">Habilita la función de accesibilidad del modo de contraste alto.
-
-          Si esta política se establece como verdadera, el modo de contraste alto estará siempre habilitado.
-
-          Si esta política se establece como falsa, el modo de contraste alto estará siempre inhabilitado.
-
-          Si estableces esta política, los usuarios no podrán modificarla ni anularla.
-
-          Si no se establece esta política, inicialmente el modo de contraste alto estará inhabilitado, pero el usuario podrá habilitarlo en cualquier momento.</translation>
 <translation id="815061180603915310">Si se habilita, esta política cambia el perfil al modo efímero. Si se especifica como política del Sistema operativo (p. ej., GPO en Windows), se aplica a todos los perfiles del sistema. Si se establece como política en la nube, solo se aplica a un perfil que haya accedido con una cuenta administrada.
 
       En este modo, los datos de perfil solo se mantienen en el disco hasta que termine la sesión del usuario. Una vez que se cierra el navegador, no se conservan ciertas funciones, como el historial web, las extensiones y su información, los datos de Internet (las cookies) o las bases de datos web. Sin embargo, esto no impide que el usuario pueda descargar datos en el disco manualmente, guardar páginas o imprimirlas.
@@ -5539,9 +5417,9 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="9217154963008402249">Frecuencia de envío de paquetes de red de control</translation>
 <translation id="922540222991413931">Configurar fuentes de instalación de secuencias de comandos de usuario, aplicaciones y extensiones</translation>
 <translation id="924557436754151212">Importar las contraseñas guardadas del navegador predeterminado en la primera ejecución</translation>
-<translation id="929549405492388749">Si se establece esta política como verdadera, esta acción forzará la habilitación de AppCache, incluso cuando esta función no está disponible en Chrome de forma predeterminada.
+<translation id="929549405492388749">Si se establece esta política como verdadera, se forzará la habilitación de la función AppCache, incluso cuando no esté disponible en Chrome de forma predeterminada.
 
-      Si no se establece o se establece como falsa, AppCache seguirá la configuración predeterminada de Chrome.</translation>
+      Si no se establece o se establece como falsa, AppCache funcionará según la configuración predeterminada de Chrome.</translation>
 <translation id="930930237275114205">Configurar directorio de datos de usuario de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="940706688964479124">Lista de tipos de archivos que deben abrirse automáticamente cuando se descargan</translation>
 <translation id="943865157632139008">Te permite configurar el procesador de HTML predeterminado cuando <ph name="PRODUCT_FRAME_NAME" /> está instalado.

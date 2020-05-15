@@ -781,6 +781,21 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    public void tabAddition_Redundant() {
+        initAndAssertAllProperties();
+        doReturn(true).when(mTabModelFilter).isTabModelRestored();
+        assertThat(mModel.size(), equalTo(2));
+        doReturn(Arrays.asList(mTab1, mTab2)).when(mTabModelFilter).getRelatedTabList(eq(TAB1_ID));
+
+        // Try to do a redundant addition by adding the PropertyModel of an existing tab to the
+        // TabListModel.
+        mTabModelObserverCaptor.getValue().didAddTab(
+                mTab1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+
+        assertThat(mModel.size(), equalTo(2));
+    }
+
+    @Test
     public void tabSelection() {
         initAndAssertAllProperties();
 

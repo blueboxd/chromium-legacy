@@ -45,21 +45,6 @@ public class AccountPickerDialogFragment extends DialogFragment {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        // TODO(https://crbug.com/1075880):
-        // Investigate move this method to account picker mediator ctor
-        // and stop() to mediator.destroy()
-        mCoordinator.start();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        mCoordinator.stop();
-    }
-
-    @Override
     @NonNull
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder =
@@ -74,6 +59,12 @@ public class AccountPickerDialogFragment extends DialogFragment {
         return builder.setTitle(R.string.signin_account_picker_dialog_title)
                 .setView(recyclerView)
                 .create();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mCoordinator.destroy();
     }
 
     /**

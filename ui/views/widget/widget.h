@@ -497,7 +497,18 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Sets the specified view as the contents of this Widget. There can only
   // be one contents view child of this Widget's RootView. This view is sized to
   // fit the entire size of the RootView. The RootView takes ownership of this
-  // View, unless it is set as not being parent-owned.
+  // View, unless it is passed in as a raw pointer and set as not being
+  // parent-owned. Prefer using SetContentsView(std::unique_ptr) over passing a
+  // raw pointer for new code.
+  template <typename T>
+  T* SetContentsView(std::unique_ptr<T> view) {
+    DCHECK(!view->owned_by_client())
+        << "This should only be called if the client is passing over the "
+           "ownership of |view|.";
+    T* raw_pointer = view.get();
+    SetContentsView(view.release());
+    return raw_pointer;
+  }
   void SetContentsView(View* view);
 
   // NOTE: This may not be the same view as WidgetDelegate::GetContentsView().

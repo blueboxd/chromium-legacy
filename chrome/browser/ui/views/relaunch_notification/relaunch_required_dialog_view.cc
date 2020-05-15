@@ -98,20 +98,19 @@ RelaunchRequiredDialogView::RelaunchRequiredDialogView(
           deadline,
           base::BindRepeating(&RelaunchRequiredDialogView::UpdateWindowTitle,
                               base::Unretained(this))) {
-  DialogDelegate::SetDefaultButton(ui::DIALOG_BUTTON_NONE);
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(IDS_RELAUNCH_ACCEPT_BUTTON));
-  DialogDelegate::SetButtonLabel(
+  SetDefaultButton(ui::DIALOG_BUTTON_NONE);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(IDS_RELAUNCH_ACCEPT_BUTTON));
+  SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_RELAUNCH_REQUIRED_CANCEL_BUTTON));
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
+  SetAcceptCallback(base::BindOnce(
       [](base::RepeatingClosure callback) {
         base::RecordAction(base::UserMetricsAction("RelaunchRequired_Accept"));
         callback.Run();
       },
       on_accept));
-  DialogDelegate::SetCancelCallback(base::BindOnce(
+  SetCancelCallback(base::BindOnce(
       base::RecordAction, base::UserMetricsAction("RelaunchRequired_Close")));
   SetLayoutManager(std::make_unique<views::FillLayout>());
   chrome::RecordDialogCreation(chrome::DialogIdentifier::RELAUNCH_REQUIRED);

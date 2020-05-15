@@ -49,15 +49,14 @@ LocalCardMigrationBubbleViews::LocalCardMigrationBubbleViews(
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       controller_(controller) {
   DCHECK(controller);
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BUTTON_LABEL));
-  DialogDelegate::SetCancelCallback(
+  SetButtons(ui::DIALOG_BUTTON_OK);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(
+                     IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BUTTON_LABEL));
+  SetCancelCallback(
       base::BindOnce(&LocalCardMigrationBubbleViews::OnDialogCancelled,
                      base::Unretained(this)));
-  DialogDelegate::SetAcceptCallback(
+  SetAcceptCallback(
       base::BindOnce(&LocalCardMigrationBubbleViews::OnDialogAccepted,
                      base::Unretained(this)));
 }

@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">स्वचालित डाउनलोडहरू</translation>
 <translation id="5677928146339483299">ब्लक गरिएको छ</translation>
 <translation id="5689516760719285838">स्थान</translation>
+<translation id="5690795753582697420">Android का सेटिङमा क्यामेरा बन्द गरिएको छ</translation>
 <translation id="5710871682236653961">तपाईंले NFC यन्त्रहरूमा ट्याप गर्दा साइटहरूलाई जानकारी पठाउने र प्राप्त गर्ने अनुमति दिनुअघि सोध्नुहोस् (सिफारिस गरिएको)</translation>
 <translation id="5719847187258001597">यस कार्यले <ph name="ORIGIN" /> ले वा यसको एपले तपाईंको होम स्क्रिनमा भण्डारण गरेका सबै डेटा र कुकीहरू मेटाउने छ।</translation>
 <translation id="5804241973901381774">अनुमतिहरू</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">थप</translation>
 <translation id="6064125863973209585">पूरा भएका डाउनलोडहरू</translation>
 <translation id="6165508094623778733">थप जान्नुहोस्</translation>
+<translation id="6177111841848151710">हालको खोज इन्जिनका लागि रोक लगाइएको</translation>
 <translation id="6181444274883918285">साइटको अपवाद थप्नुुहोस्</translation>
 <translation id="6192792657125177640">अपवाद</translation>
 <translation id="6194112207524046168">Chrome लाई तपाईंको क्यामेरामाथि पहुँच राख्न दिन <ph name="BEGIN_LINK" />Android का सेटिङहरू<ph name="END_LINK" /> मा गई क्यामेरा पनि सक्रिय गर्नुहोस्।</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">यो पृष्ठ खतरनाक छ। साइटसम्बन्धी जानकारी</translation>
 <translation id="6965382102122355670">ठिक छ</translation>
 <translation id="6992289844737586249">साइटहरूलाई तपाईँको माइक्रोफोन प्रयोग गर्न अनुमति दिनुभन्दा पहिले तपाईँलाई सोध्ने (सिफारिस गरिएको)</translation>
+<translation id="7000754031042624318">Android का सेटिङहरूमा अनुमति निष्क्रिय पारिएको छ</translation>
+<translation id="7016516562562142042">हालको खोज इन्जिनका लागि अनुमति दिइएको</translation>
 <translation id="7053983685419859001">रोक्नुहोस्</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{१ चयन गरियो}other{# चयन गरिए}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> चयन गरिए।  विकल्पहरू स्क्रिनको शीर्षभागको नजिकै उपलब्ध छन्</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">निश्चित साइटको ध्वनिलाई अनुमति दिनुहोस्‌।</translation>
 <translation id="7993619969781047893">कयौँ साइटका सुविधाहरूले काम नगर्न सक्छन्</translation>
 <translation id="7999064672810608036">के तपाईं कुकीहरू सहित सबै स्थानीय डेटा खाली गर्न चाहनुहुन्छ, र यो वेबसाइटको लागि सबै अनुमतिहरू रिसेट गर्न चाहनुहुन्छ?</translation>
+<translation id="8007176423574883786">यस यन्त्रका लागि बन्द गरियो।</translation>
 <translation id="802154636333426148">डाउनलोड गर्न सकिएन</translation>
 <translation id="8087000398470557479">यो Google द्वारा डेलिभर गरिएको <ph name="DOMAIN_NAME" /> को सामग्री हो।</translation>
 <translation id="8116925261070264013">म्युट गरियो</translation>

@@ -10,6 +10,8 @@ import android.view.View;
 
 import org.chromium.base.Callback;
 import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.ReadableBooleanPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.ReadableObjectPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
@@ -46,10 +48,29 @@ public class PromoCardProperties {
     public static final WritableObjectPropertyKey<Callback<View>> SECONDARY_BUTTON_CALLBACK =
             new WritableObjectPropertyKey<>();
 
+    // Impression related properties
+    /**
+     * If true, track the impression on the primary button. Otherwise, track impression on the
+     * entire promo card. Only take effect when {@link #IMPRESSION_SEEN_CALLBACK} is set.
+     */
+    public static final ReadableBooleanPropertyKey IS_IMPRESSION_ON_PRIMARY_BUTTON =
+            new ReadableBooleanPropertyKey();
+
+    /**
+     * Assign the callback when 75% of the promo is seen on the screen. Set {@link
+     * #IS_IMPRESSION_ON_PRIMARY_BUTTON} to change the impression object from the entire promo card
+     * to the primary button.
+     *
+     * @see org.chromium.components.browser_ui.widget.impression.ImpressionTracker
+     */
+    public static final ReadableObjectPropertyKey<Runnable> IMPRESSION_SEEN_CALLBACK =
+            new ReadableObjectPropertyKey<>();
+
     /**
      * All the property keys needed to create the model for {@link PromoCardView}.
      */
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {HAS_SECONDARY_BUTTON, IMAGE,
             ICON_TINT, TITLE, DESCRIPTION, PRIMARY_BUTTON_TEXT, SECONDARY_BUTTON_TEXT,
-            PRIMARY_BUTTON_CALLBACK, SECONDARY_BUTTON_CALLBACK};
+            PRIMARY_BUTTON_CALLBACK, SECONDARY_BUTTON_CALLBACK, IS_IMPRESSION_ON_PRIMARY_BUTTON,
+            IMPRESSION_SEEN_CALLBACK};
 }

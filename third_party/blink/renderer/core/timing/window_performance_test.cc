@@ -84,10 +84,8 @@ class WindowPerformanceTest : public testing::Test {
 
     LocalDOMWindow* window = LocalDOMWindow::From(GetScriptState());
     performance_ = DOMWindowPerformance::performance(*window);
-    unified_clock_ = std::make_unique<Performance::UnifiedClock>(
-        test_task_runner_->GetMockClock(),
-        test_task_runner_->GetMockTickClock());
-    performance_->SetClocksForTesting(unified_clock_.get());
+    performance_->SetClocksForTesting(test_task_runner_->GetMockClock(),
+                                      test_task_runner_->GetMockTickClock());
     performance_->time_origin_ = GetTimeOrigin();
   }
 
@@ -98,7 +96,6 @@ class WindowPerformanceTest : public testing::Test {
   Persistent<WindowPerformance> performance_;
   std::unique_ptr<DummyPageHolder> page_holder_;
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
-  std::unique_ptr<Performance::UnifiedClock> unified_clock_;
 };
 
 TEST_F(WindowPerformanceTest, LongTaskObserverInstrumentation) {

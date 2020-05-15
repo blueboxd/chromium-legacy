@@ -523,7 +523,6 @@
 <translation id="1650371550981945235">Wys invoeropsies</translation>
 <translation id="1651008383952180276">Jy moet dieselfde wagfrase twee keer invoer</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Voeg die drukker by Google Wolk-drukker sodat jy van enige plek af kan druk.}other{Voeg # drukkers by Google Wolk-drukker sodat jy van enige plek af kan druk.}}</translation>
-<translation id="1655937588105566159">{NUM_EXTENSIONS,plural, =1{Hierdie uitbreiding kan gevaarlik wees}other{Hierdie uitbreidings kan gevaarlik wees}}</translation>
 <translation id="1656528038316521561">Agtergrondondeursigtigheid</translation>
 <translation id="1657406563541664238">Help om <ph name="PRODUCT_NAME" /> te verbeter deur gebruikstatistiek en omvalverslae outomaties na Google te stuur</translation>
 <translation id="1657937299377480641">Vra jou ouer om jou toestemming te gee om weer aan te meld vir toegang tot opvoedkundige hulpbronne</translation>
@@ -713,7 +712,6 @@
 <translation id="1875387611427697908">Dit kan net van die <ph name="CHROME_WEB_STORE" /> af bygevoeg word</translation>
 <translation id="1877520246462554164">Kon nie stawingteken kry nie. Meld af en meld dan weer aan om weer te probeer.</translation>
 <translation id="1877860345998737529">Wissel handelingtoewysing</translation>
-<translation id="1878541307036593717">Stel toestemmings op</translation>
 <translation id="1879000426787380528">Meld aan as</translation>
 <translation id="1880905663253319515">Vee sertifikaat "<ph name="CERTIFICATE_NAME" />" uit?</translation>
 <translation id="1884013283844450420">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, koppel</translation>
@@ -2632,6 +2630,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4359408040881008151">Vanweë afhanklike uitbreiding(s) geïnstalleer.</translation>
 <translation id="4359717112757026264">Cityscape</translation>
 <translation id="4361142739114356624">Die private sleutel vir hierdie kliëntsertifikaat ontbreek of is ongeldig</translation>
+<translation id="4361745360460842907">Maak as oortjie oop</translation>
 <translation id="4363771538994847871">Geen Cast-bestemmings gevind nie. Het jy hulp nodig?</translation>
 <translation id="4364327530094270451">Spanspek</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> deel tans 'n venster.</translation>
@@ -3093,7 +3092,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4994474651455208930">Laat werwe toe om te vra om verstekhanteerders van protokolle te word</translation>
 <translation id="4994754230098574403">Stel tans op</translation>
 <translation id="4997086284911172121">Geen internetverbinding nie.</translation>
-<translation id="4997384734315285248">Deïnstalleer Plugin VM</translation>
 <translation id="4998430619171209993">Aan</translation>
 <translation id="5000922062037820727">Geblokkeer (aanbeveel)</translation>
 <translation id="5005498671520578047">Kopieer wagwoord</translation>
@@ -3697,6 +3695,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="5785583009707899920">Chrome-lêernutsgoed</translation>
 <translation id="5787146423283493983">Sleutelooreenkoms</translation>
 <translation id="5788367137662787332">Jammer, ten minste een deel van die toestel <ph name="DEVICE_LABEL" /> kon nie gekoppel word nie.</translation>
+<translation id="5790085346892983794">Suksesvol</translation>
 <translation id="5792728279623964091">Tik asseblief op jou aan/af-skakelaar</translation>
 <translation id="5793339252089865437">As jy die opdatering oor jou selnetwerk aflaai, kan dit tot bykomende koste lei.</translation>
 <translation id="5794414402486823030">Altyd oop met die stelselkyker</translation>
@@ -4629,6 +4628,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7004402701596653846">Werf kan MIDI gebruik</translation>
 <translation id="7004499039102548441">Onlangse oortjies</translation>
 <translation id="7005496624875927304">Bykomende toestemmings</translation>
+<translation id="7005812687360380971">Mislukking</translation>
 <translation id="7005848115657603926">Ongeldige bladsyreeks, gebruik <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Onderste kantlyn</translation>
 <translation id="7007648447224463482">Maak almal in nuwe venster oop</translation>
@@ -4768,7 +4768,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7191159667348037">Onbekende drukker (USB)</translation>
 <translation id="7193051357671784796">Hierdie program is deur jou organisasie bygevoeg. Herbegin die program om installering te voltooi.</translation>
 <translation id="7193374945610105795">Geen wagwoorde vir <ph name="ORIGIN" /> is gestoor nie</translation>
-<translation id="7194620721202917359">{NUM_APPS,plural, =1{Hierdie program kan gevaarlik wees}other{Hierdie programme kan gevaarlik wees}}</translation>
 <translation id="7196913789568937443">Rugsteun in Google Drive. Stel jou data maklik terug of wissel enige tyd tussen toestelle. Jou rugsteun sluit programdata in. Jou rugsteune word in Google opgelaai en met jou Google-rekeningwagwoord geënkripteer. <ph name="BEGIN_LINK1" />Kom meer te wete<ph name="END_LINK1" /></translation>
 <translation id="7197190419934240522">Kry Google Search en Google-slimhede elke keer wanneer jy blaai</translation>
 <translation id="7197632491113152433">Ons het <ph name="NUMBER_OF_APPS" /> programme in jou rekening gekry wat op hierdie toestel gebruik kan word.</translation>
@@ -5011,7 +5010,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7506541170099744506">Jou <ph name="DEVICE_TYPE" /> is suksesvol ingeskryf vir ondernemingbestuur.</translation>
 <translation id="7507207699631365376">Lees hierdie verskaffer se <ph name="BEGIN_LINK" />privaatheidsbeleid<ph name="END_LINK" /></translation>
 <translation id="7507930499305566459">Statusreageerder se sertifikaat</translation>
-<translation id="7508054832109420082">Gee drukkers toegang</translation>
 <translation id="7513029293694390567">Meld outomaties aan by webwerwe wat gebergde eiebewyse gebruik. As dit gedeaktiveer is, sal jy elke keer vir bevestiging gevra word voordat jy by 'n webwerf aanmeld.</translation>
 <translation id="7514239104543605883">Kopieer na jou toestel toe</translation>
 <translation id="7514365320538308">Laai af</translation>
@@ -5170,7 +5168,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7716781361494605745">Netscape-sertifikaatoutoriteit se beleid-URL</translation>
 <translation id="7717014941119698257">Laai tans af: <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">Kyk vir opdaterings</translation>
-<translation id="7719070594859855691">Gee toegang tot kamera</translation>
 <translation id="7719367874908701697">Bladsyzoem:</translation>
 <translation id="7721179060400456005">Laat toe dat vensters oor skerms heen strek</translation>
 <translation id="7722040605881499779">Nodig om op te dateer: <ph name="NECESSARY_SPACE" /></translation>

@@ -80,25 +80,33 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
   }
   bool AllowCaching() override { return false; }
   bool ShouldAddContentSecurityPolicy() override { return parent_->add_csp_; }
-  std::string GetContentSecurityPolicyScriptSrc() override {
-    if (parent_->script_src_set_)
-      return parent_->script_src_;
-    return URLDataSource::GetContentSecurityPolicyScriptSrc();
+  std::string GetContentSecurityPolicyChildSrc() override {
+    return parent_->child_src_.value_or(
+        URLDataSource::GetContentSecurityPolicyChildSrc());
+  }
+  std::string GetContentSecurityPolicyDefaultSrc() override {
+    return parent_->default_src_.value_or(
+        URLDataSource::GetContentSecurityPolicyDefaultSrc());
+  }
+  std::string GetContentSecurityPolicyImgSrc() override {
+    return parent_->img_src_.value_or(
+        URLDataSource::GetContentSecurityPolicyImgSrc());
   }
   std::string GetContentSecurityPolicyObjectSrc() override {
-    if (parent_->object_src_set_)
-      return parent_->object_src_;
-    return URLDataSource::GetContentSecurityPolicyObjectSrc();
+    return parent_->object_src_.value_or(
+        URLDataSource::GetContentSecurityPolicyObjectSrc());
   }
-  std::string GetContentSecurityPolicyChildSrc() override {
-    if (parent_->frame_src_set_)
-      return parent_->frame_src_;
-    return URLDataSource::GetContentSecurityPolicyChildSrc();
+  std::string GetContentSecurityPolicyScriptSrc() override {
+    return parent_->script_src_.value_or(
+        URLDataSource::GetContentSecurityPolicyScriptSrc());
+  }
+  std::string GetContentSecurityPolicyStyleSrc() override {
+    return parent_->style_src_.value_or(
+        URLDataSource::GetContentSecurityPolicyStyleSrc());
   }
   std::string GetContentSecurityPolicyWorkerSrc() override {
-    if (parent_->worker_src_set_)
-      return parent_->worker_src_;
-    return URLDataSource::GetContentSecurityPolicyWorkerSrc();
+    return parent_->worker_src_.value_or(
+        URLDataSource::GetContentSecurityPolicyWorkerSrc());
   }
   std::string GetContentSecurityPolicyFrameAncestors() override {
     std::string frame_ancestors;
@@ -130,8 +138,7 @@ WebUIDataSourceImpl::WebUIDataSourceImpl(const std::string& source_name)
       source_name_(source_name),
       default_resource_(kNonExistentResource) {}
 
-WebUIDataSourceImpl::~WebUIDataSourceImpl() {
-}
+WebUIDataSourceImpl::~WebUIDataSourceImpl() = default;
 
 void WebUIDataSourceImpl::AddString(base::StringPiece name,
                                     const base::string16& value) {
@@ -207,27 +214,38 @@ void WebUIDataSourceImpl::DisableContentSecurityPolicy() {
   add_csp_ = false;
 }
 
-void WebUIDataSourceImpl::OverrideContentSecurityPolicyScriptSrc(
+void WebUIDataSourceImpl::OverrideContentSecurityPolicyChildSrc(
     const std::string& data) {
-  script_src_set_ = true;
-  script_src_ = data;
+  child_src_ = data;
+}
+
+void WebUIDataSourceImpl::OverrideContentSecurityPolicyDefaultSrc(
+    const std::string& data) {
+  default_src_ = data;
+}
+
+void WebUIDataSourceImpl::OverrideContentSecurityPolicyImgSrc(
+    const std::string& data) {
+  img_src_ = data;
 }
 
 void WebUIDataSourceImpl::OverrideContentSecurityPolicyObjectSrc(
     const std::string& data) {
-  object_src_set_ = true;
   object_src_ = data;
 }
 
-void WebUIDataSourceImpl::OverrideContentSecurityPolicyChildSrc(
+void WebUIDataSourceImpl::OverrideContentSecurityPolicyScriptSrc(
     const std::string& data) {
-  frame_src_set_ = true;
-  frame_src_ = data;
+  script_src_ = data;
+}
+
+void WebUIDataSourceImpl::OverrideContentSecurityPolicyStyleSrc(
+    const std::string& data) {
+  style_src_ = data;
 }
 
 void WebUIDataSourceImpl::OverrideContentSecurityPolicyWorkerSrc(
     const std::string& data) {
-  worker_src_set_ = true;
   worker_src_ = data;
 }
 

@@ -5031,6 +5031,7 @@ crbug.com/1050754 external/wpt/webrtc/protocol/crypto-suite.https.html [ Timeout
 crbug.com/1050754 external/wpt/webrtc/protocol/dtls-fingerprint-validation.html [ Timeout ]
 crbug.com/1050754 external/wpt/webrtc/protocol/ice-state.https.html [ Timeout ]
 crbug.com/1050754 external/wpt/webrtc/protocol/video-codecs.https.html [ Failure ]
+crbug.com/1050754 external/wpt/webrtc/simulcast/h264.https.html [ Failure ]
 crbug.com/1050754 external/wpt/webrtc/RTCCertificate-postMessage.html [ Failure ]
 crbug.com/1050754 external/wpt/webrtc/RTCCertificate.html [ Failure ]
 crbug.com/1050754 external/wpt/webrtc/RTCConfiguration-iceServers.html [ Failure ]

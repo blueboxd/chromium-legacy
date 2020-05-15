@@ -13,6 +13,7 @@ import {
   VideoConstraintsPreferrer,
 } from './device/constraints_preferrer.js';
 import {DeviceInfoUpdater} from './device/device_info_updater.js';
+import * as error from './error.js';
 import {GalleryButton} from './gallerybutton.js';
 import * as metrics from './metrics.js';
 import * as filesystem from './models/filesystem.js';
@@ -266,7 +267,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   assert(window['backgroundOps'] !== undefined);
   const /** !BackgroundOps */ bgOps = window['backgroundOps'];
 
-  metrics.initMetrics(bgOps.isTesting());
+  const testErrorCallback = bgOps.getTestingErrorCallback();
+  metrics.initMetrics(testErrorCallback !== null);
+  // TODO(crbug/1082585): Initializes it before any other javascript loaded.
+  error.initialize(testErrorCallback);
 
   const perfLogger = bgOps.getPerfLogger();
 

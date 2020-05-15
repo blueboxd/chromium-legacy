@@ -1018,6 +1018,8 @@ jumbo_source_set("browser") {
     "indexed_db/indexed_db_connection_coordinator.h",
     "indexed_db/indexed_db_context_impl.cc",
     "indexed_db/indexed_db_context_impl.h",
+    "indexed_db/indexed_db_control_wrapper.cc",
+    "indexed_db/indexed_db_control_wrapper.h",
     "indexed_db/indexed_db_cursor.cc",
     "indexed_db/indexed_db_cursor.h",
     "indexed_db/indexed_db_data_format_version.cc",

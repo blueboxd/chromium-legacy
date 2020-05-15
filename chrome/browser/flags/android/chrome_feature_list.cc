@@ -591,7 +591,7 @@ const base::Feature kTestDefaultEnabled{"TestDefaultEnabled",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTrustedWebActivityNewDisclosure{
-    "TrustedWebActivityNewDisclosure", base::FEATURE_DISABLED_BY_DEFAULT};
+    "TrustedWebActivityNewDisclosure", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTrustedWebActivityLocationDelegation{
     "TrustedWebActivityLocationDelegation", base::FEATURE_DISABLED_BY_DEFAULT};

@@ -9,6 +9,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -94,6 +95,8 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
 
         public UrlBarView(@NonNull Context context, Bundle options) {
             super(context);
+            setGravity(Gravity.CENTER_HORIZONTAL);
+
             mTextSize = options.getFloat(UrlBarOptionsKeys.URL_TEXT_SIZE, DEFAULT_TEXT_SIZE);
             mShowPageInfoWhenUrlTextClicked = options.getBoolean(
                     UrlBarOptionsKeys.SHOW_PAGE_INFO_WHEN_URL_TEXT_CLICKED, /*default= */ false);

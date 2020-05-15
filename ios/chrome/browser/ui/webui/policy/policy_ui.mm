@@ -59,6 +59,7 @@ web::WebUIIOSDataSource* CreatePolicyUIHtmlSource() {
       {"labelStatus", IDS_POLICY_LABEL_STATUS},
       {"labelTimeSinceLastRefresh", IDS_POLICY_LABEL_TIME_SINCE_LAST_REFRESH},
       {"labelUsername", IDS_POLICY_LABEL_USERNAME},
+      {"labelVersion", IDS_POLICY_LABEL_VERSION},
       {"noPoliciesSet", IDS_POLICY_NO_POLICIES_SET},
       {"offHoursActive", IDS_POLICY_OFFHOURS_ACTIVE},
       {"offHoursNotActive", IDS_POLICY_OFFHOURS_NOT_ACTIVE},

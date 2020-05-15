@@ -116,17 +116,6 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1117535567637097036">De protocolhandlers die via dit beleid zijn ingesteld, worden niet gebruikt bij de verwerking van Android-intenties.</translation>
 <translation id="1118093128235245168">Toestaan dat sites de gebruiker vragen om toegang te verlenen tot een aangesloten USB-apparaat</translation>
-<translation id="1123594119609921068">De standaardstatus van de toegankelijkheidsfunctie voor gesproken feedback op het inlogscherm instellen.
-
-          Als dit beleid is ingesteld op True, wordt gesproken feedback ingeschakeld als het inlogscherm wordt weergegeven.
-
-          Als dit beleid is ingesteld op False, wordt gesproken feedback uitgeschakeld als het inlogscherm wordt weergegeven.
-
-          Als je dit beleid instelt, kunnen gebruikers het tijdelijk overschrijven door gesproken feedback in of uit te schakelen. De keuze van de gebruiker is echter niet permanent en de standaardinstelling wordt hersteld als het inlogscherm opnieuw wordt weergegeven of als de gebruiker gedurende een minuut niet actief is op het inlogscherm.
-
-          Als dit beleid niet is ingesteld, wordt gesproken feedback uitgeschakeld als het inlogscherm voor het eerst wordt weergegeven. Gebruikers kunnen gesproken feedback op elk gewenst moment in- of uitschakelen. De status op het inlogscherm is van toepassing op alle gebruikers.
-
-          Opmerking: <ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME" /> overschrijft dit beleid als het voorgaande is opgegeven.</translation>
 <translation id="1128717055763152639">Hiermee kun je een lijst met URL-patronen opgeven van sites waarop blokkeerbare (actieve) gecombineerde content (zoals HTTP-content op een HTTPS-site) mag worden weergegeven en waarvoor optioneel blokkeerbare gecombineerde content wordt uitgeschakeld.
 
           Als dit beleid niet is ingesteld, wordt blokkeerbare gecombineerde content geblokkeerd en wordt optioneel blokkeerbare gecombineerde content geüpgraded. Bovendien kunnen gebruikers uitzonderingen instellen om dergelijke content toe te staan voor specifieke sites.
@@ -391,23 +380,9 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
 <translation id="1634989431648355062">De <ph name="FLASH_PLUGIN_NAME" />-plug-in toestaan op deze sites</translation>
 <translation id="1645793986494086629">Schema:</translation>
 <translation id="1648816843164517573">Lijst met namen die de controle van het HSTS-beleid overslaan</translation>
-<translation id="1653229475925941921">Als dit beleid is ingesteld, bepaalt dit het type vergrootglas dat is ingeschakeld. Als het beleid is ingesteld op 'Geen', wordt het vergrootglas uitgeschakeld.
-
-          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of overschrijven.
-
-          Als dit beleid niet is ingesteld, wordt het vergrootglas initieel uitgeschakeld maar kan de gebruiker het op elk moment inschakelen.</translation>
 <translation id="1654087023995670109">Gastmodus voor browser afdwingen</translation>
 <translation id="1655229863189977773">Grootte van schijfcache in bytes instellen</translation>
 <translation id="166427968280387991">Proxyserver</translation>
-<translation id="1667877109169174750">Als dit beleid is ingesteld op True, worden toegankelijkheidsopties altijd weergegeven in het systeemvakmenu.
-
-          Als dit beleid is ingesteld op False, worden toegankelijkheidsopties nooit weergegeven in het systeemvakmenu.
-
-          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of overschrijven.
-
-          Als dit beleid niet is ingesteld, worden toegankelijkheidsopties niet weergegeven in het systeemvakmenu, maar kan de gebruiker er via de pagina Instellingen voor zorgen dat de toegankelijkheidsopties worden weergegeven.
-
-          Als de toegankelijkheidsfuncties zijn ingeschakeld (via een andere manier, zoals een toetsencombinatie), worden de toegankelijkheidsopties altijd weergegeven in het systeemvakmenu.</translation>
 <translation id="1668836044817793277">De kiosk-app die automatisch zonder vertraging is gestart, wel of niet toestaan de <ph name="PRODUCT_OS_NAME" />-versie te beheren.
 
       Met dit beleid wordt bepaald of de kiosk-app die automatisch zonder vertraging is gestart, de <ph name="PRODUCT_OS_NAME" />-versie mag beheren door een required_platform_version te declareren in het bijbehorende manifest en deze te gebruiken als voorvoegsel voor de doelversie van de automatische update.
@@ -1929,15 +1904,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="3811562426301733860">Advertenties toestaan op alle sites</translation>
 <translation id="3816312845600780067">Sneltoets voor automatisch inloggen inschakelen</translation>
 <translation id="3817323252437541502">Extra beveiligingsfuncties inschakelen voor gebruikers die zijn ingeschreven bij 'Geavanceerde beveiliging'</translation>
-<translation id="3820526221169548563">De toegankelijkheidsfunctie voor het schermtoetsenbord inschakelen.
-
-          Als dit beleid is ingesteld op 'True' wordt het schermtoetsenbord altijd ingeschakeld.
-
-          Als dit beleid is ingesteld op 'False' wordt het schermtoetsenbord altijd uitgeschakeld.
-
-          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of negeren.
-
-          Als dit beleid niet is ingesteld, wordt het schermtoetsenbord aanvankelijk uitgeschakeld, maar kan dit door gebruikers op elk moment worden ingeschakeld.</translation>
 <translation id="3821861026311587684">De gebruiker gedwongen uitloggen als zijn of haar account niet meer geverifieerd is</translation>
 <translation id="382476126209906314">Het voorvoegsel voor het TalkGadget configureren voor hosts voor externe toegang</translation>
 <translation id="3824972131618513497">Beheert instellingen met betrekking tot energiebeheer en opnieuw opstarten.</translation>
@@ -2204,15 +2170,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="4157003184375321727">Besturingssysteem- en firmwareversie rapporteren</translation>
 <translation id="4157594634940419685">Toegang verlenen aan systeemeigen CUPS-printers</translation>
 <translation id="4160962198980004898">Bron van MAC-adres van apparaat wanneer het is gedockt</translation>
-<translation id="4164601239783385546">Hiermee kunnen de toegankelijkheidsfuncties voor de plaktoetsen worden ingeschakeld.
-
-          Als dit beleid is ingesteld op True, worden de plaktoetsen altijd ingeschakeld.
-
-          Als dit beleid is ingesteld op False, worden de plaktoetsen altijd uitgeschakeld.
-
-          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of overschrijven.
-
-          Als het beleid niet wordt ingesteld, worden de plaktoetsen eerst uitgeschakeld, maar kunnen deze op elk moment worden ingeschakeld door de gebruiker.</translation>
 <translation id="4169692397912242417">De toegankelijkheidsfunctie voor gesproken feedback op het inlogscherm inschakelen.
 
           Als dit beleid is ingesteld op True, is gesproken feedback altijd ingeschakeld op het inlogscherm.
@@ -2236,17 +2193,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
           Als dit beleid niet is ingesteld, is markering van het caret-teken in eerste instantie uitgeschakeld op het inlogscherm. De gebruiker kan deze functie op elk gewenst moment inschakelen.</translation>
 <translation id="4183229833636799228">Standaardinstelling voor <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL voor het valideren van verificatietoken voor client voor externe toegang</translation>
-<translation id="420007931282384740">De standaardstatus van de toegankelijkheidsfunctie voor het schermtoetsenbord op het inlogscherm instellen.
-
-          Als dit beleid is ingesteld op True, wordt het schermtoetsenbord ingeschakeld als het inlogscherm wordt weergegeven.
-
-         Als dit beleid is ingesteld op False, wordt het schermtoetsenbord uitgeschakeld als het inlogscherm wordt weergegeven.
-
-          Als je dit beleid instelt, kunnen gebruikers het tijdelijk overschrijven door het schermtoetsenbord in of uit te schakelen. De keuze van de gebruiker is echter niet permanent en de standaardinstelling wordt hersteld als het inlogscherm opnieuw wordt weergegeven of als de gebruiker gedurende een minuut niet actief is op het inlogscherm.
-
-          Als dit beleid niet is ingesteld, wordt het schermtoetsenbord uitgeschakeld als het inlogscherm voor de eerste keer wordt weergegeven. Gebruikers kunnen het schermtoetsenbord op elk gewenst moment in- of uitschakelen. De status op het inlogscherm is van toepassing op alle gebruikers.
-
-          Opmerking: <ph name="DEVICE_LOGIN_SCREEN_VIRTUAL_KEYBOARD_ENABLED_POLICY_NAME" /> overschrijft dit beleid als het voorgaande is opgegeven.</translation>
 <translation id="4203389617541558220">De bedrijfstijd van het apparaat beperken door automatisch opnieuw opstarten te plannen.
 
       Wanneer dit beleid is ingesteld, bepaalt het de duur van de bedrijfstijd van het apparaat waarna het automatisch opnieuw opstarten is gepland.
@@ -2492,11 +2438,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="4625915093043961294">Witte lijst voor het installeren van extensies configureren</translation>
 <translation id="4632343302005518762"><ph name="PRODUCT_FRAME_NAME" /> toestaan de vermelde soorten content te verwerken.</translation>
 <translation id="4632566332417930481">Het gebruik van de hulpprogramma's voor ontwikkelaars uitschakelen voor extensies die zijn geïnstalleerd op basis van het bedrijfsbeleid, maar toestaan in andere contexten</translation>
-<translation id="4633786464238689684">Hiermee wordt het standaardgedrag van de toetsen op de bovenste rij gewijzigd in functietoetsen.
-
-          Als dit beleid wordt ingesteld op 'True', voeren de toetsen op de bovenste rij van het toetsenbord standaard opdrachten van functietoetsen uit. De zoektoets moet worden ingedrukt om het gedrag terug te zetten naar mediatoetsen.
-
-          Als dit beleid wordt ingesteld op 'False' of niet wordt ingesteld, voert het toetsenbord standaard opdrachten uit van mediatoetsen, en voert het opdrachten uit van functietoetsen wanneer de zoektoets ingedrukt wordt gehouden.</translation>
 <translation id="4639407427807680016">Namen van de hosts voor systeemeigen berichten die moeten worden vrijgesteld van de zwarte lijst</translation>
 <translation id="4649395978608361979">Lokale printerbestemmingen</translation>
 <translation id="4650759511838826572">URL-protocolschema's uitschakelen</translation>
@@ -2587,15 +2528,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Als deze instelling is uitgeschakeld, worden er nooit creditcardgegevens voorgesteld of ingevuld door 'Automatisch aanvullen'. Er worden ook geen aanvullende creditcardgegevens opgeslagen die de gebruiker mogelijk verzendt terwijl deze browset op internet.
 
       Als deze instelling is ingeschakeld of geen waarde heeft, kan de gebruiker 'Automatisch aanvullen' voor creditcards beheren in de UI.</translation>
-<translation id="4791031774429044540">De toegankelijkheidsfunctie 'Grote muisaanwijzer' inschakelen.
-
-          Als dit beleid op 'True' is ingesteld, is de grote muisaanwijzer altijd ingeschakeld.
-
-          Als dit beleid op 'False' is ingesteld, is de grote muisaanwijzer altijd uitgeschakeld.
-
-          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of negeren.
-
-          Als je dit beleid niet instelt, is de grote muisaanwijzer eerst uitgeschakeld, maar kan de gebruiker deze op elk moment inschakelen.</translation>
 <translation id="4802744647065138872">Beperkt het aantal momentopnamen van gebruikersgegevens dat wordt bewaard voor gebruik bij een noodrollback.</translation>
 <translation id="4802905909524200151">Updategedrag voor <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware configureren</translation>
 <translation id="4804828344300125154">Altijd opnieuw opstarten na uitloggen gebruiker.</translation>
@@ -2757,15 +2689,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="5105313908130842249">Vertraging van schermvergrendeling wanneer op de batterij wordt gewerkt</translation>
 <translation id="5108031557082757679">Zakelijke apparaatprinters uitgeschakeld</translation>
 <translation id="5109383437323376357">De beschikbaarheid van varianten bepalen</translation>
-<translation id="5112121363469561920">Het standaardtype vergrootglas instellen dat op het inlogscherm is ingeschakeld.
-
-          Als dit beleid is ingesteld, bepaalt dit het type vergrootglas dat is ingeschakeld als het inlogscherm wordt weergegeven. Als het beleid is ingesteld op 'None', wordt het vergrootglas uitgeschakeld.
-
-          Als je dit beleid instelt, kunnen gebruikers dit tijdelijk overschrijven door het vergrootglas zelf in of uit te schakelen. De keuze van de gebruiker is echter niet permanent en de standaardinstelling wordt hersteld als het inlogscherm opnieuw wordt weergegeven, of als de gebruiker gedurende een minuut niet actief is op het inlogscherm.
-
-          Als je dit beleid niet instelt, is het vergrootglas uitgeschakeld als het inlogscherm voor de eerste keer wordt weergegeven. Gebruikers kunnen het vergrootglas op elk moment in- of uitschakelen en de status op het inlogscherm is van toepassing op alle gebruikers.
-
-          Opmerking: <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" /> overschrijft dit beleid als het is opgegeven.</translation>
 <translation id="5115168755602871392">Informatie rapporteren voor de CPU('s) voor een apparaat.
 
       Als het beleid is ingesteld op False of niet is ingesteld, worden de gegevens niet gerapporteerd.
@@ -2987,17 +2910,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="5378985487213287085">Hiermee kun je instellen of websites bureaubladmeldingen mogen weergeven. Het weergeven van bureaubladmeldingen kan standaard worden toegestaan of geweigerd, of de gebruiker kan een melding te zien krijgen wanneer een website bureaubladmeldingen wil weergeven.
 
           Als dit beleid niet wordt ingesteld, wordt 'AskNotifications' gebruikt en kan de gebruiker dit aanpassen.</translation>
-<translation id="5380329473151894945">De standaardstatus van de toegankelijkheidsfunctie 'Grote muisaanwijzer' op het inlogscherm instellen.
-
-          Als dit beleid is ingesteld op True, wordt de grote muisaanwijzer ingeschakeld als het inlogscherm wordt weergegeven.
-
-          Als dit beleid is ingesteld op False, wordt de grote muisaanwijzer uitgeschakeld als het inlogscherm wordt weergegeven.
-
-          Als je dit beleid instelt, kunnen gebruikers dit tijdelijk overschrijven door de grote muisaanwijzer in of uit te schakelen. De keuze van de gebruiker is echter niet permanent en de standaardinstelling wordt hersteld als het inlogscherm opnieuw wordt weergegeven of de gebruiker gedurende een minuut niet actief is op het inlogscherm.
-
-          Als dit beleid niet is ingesteld, wordt de grote muisaanwijzer uitgeschakeld wanneer het inlogscherm voor de eerste keer wordt weergegeven. Gebruikers kunnen de grote muisaanwijzer op elk gewenst moment in- of uitschakelen. De status op het inlogscherm is van toepassing op alle gebruikers.
-
-          Opmerking: <ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" /> overschrijft dit beleid als het is opgegeven.</translation>
 <translation id="538108065117008131"><ph name="PRODUCT_FRAME_NAME" /> toestaan de volgende soorten content te verwerken.</translation>
 <translation id="538768040137709073">De functie voor gedeeld klembord inschakelen, waarmee gebruikers tekst kunnen sturen tussen Chrome-desktops en een Android-apparaat als synchronisatie is ingeschakeld en de gebruiker is ingelogd.
 
@@ -3343,7 +3255,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Als dit beleid is ingesteld op False of niet is ingesteld, worden de functies van Web Components v0 standaard uitgeschakeld, vanaf M80.
 
       Dit beleid wordt na Chrome 84 verwijderd.</translation>
-<translation id="5763698334786515749">De knop 'Wachtwoord weergeven' inschakelen op het inlog- en vergrendelingsscherm.</translation>
 <translation id="5765780083710877561">Beschrijving:</translation>
 <translation id="5770738360657678870">Ontwikkelaarskanaal (mogelijk instabiel)</translation>
 <translation id="5774856474228476867">Zoek-URL voor standaardzoekprovider</translation>
@@ -3842,9 +3753,6 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
       Als dit beleid niet is ingesteld, kan de gebruiker elke op het systeem geïnstalleerde plug-in gebruiken, behalve hardgecodeerde ongeschikte, verouderde of gevaarlijke plug-ins.</translation>
 <translation id="6571871508154591774">De camera, browserinstellingen en de OS-instellingen uitschakelen</translation>
 <translation id="6573305661369899995">Een externe bron voor URL-beperkingen instellen</translation>
-<translation id="6574770600243153999">Dit apparaat toestaan om PluginVm uit te voeren.
-
-      Als het beleid is ingesteld op False of niet is ingesteld, is <ph name="PLUGIN_VM_NAME" /> niet ingeschakeld voor het apparaat. Als het beleid is ingesteld op True, is <ph name="PLUGIN_VM_NAME" /> ingeschakeld voor het apparaat, op voorwaarde dat de andere instellingen dit ook toestaan. <ph name="PLUGIN_VM_NAME" /> kan alleen worden uitgevoerd als <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> is ingesteld op True en als <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> of <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> of <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> is ingesteld.</translation>
 <translation id="6583851521569686409">Hiermee wordt een lijst met printers geconfigureerd.
 
       Met dit beleid kunnen beheerders hun gebruikers voorzien van printerconfiguraties.
@@ -3902,7 +3810,6 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
 <translation id="6665670272107384733">Instellen hoe vaak een gebruiker het wachtwoord moet opgeven om de functie voor snel ontgrendelen te kunnen gebruiken</translation>
 <translation id="6672070613706645316">Gebruikers toestaan de achtergrond van de pagina 'Nieuw tabblad' aan te passen</translation>
 <translation id="6672630473862787247">Ambient-verificatie inschakelen in normale, incognito- en gastsessies.</translation>
-<translation id="6677797768774898583">Met deze functie kan het wachtwoord op het inlog- en vergrendelingsscherm worden weergegeven door de gebruiker nadat deze op een knop klikt.</translation>
 <translation id="6685903773201985073">Ambient-verificatie inschakelen in normale en gastsessies.</translation>
 <translation id="6689792153960219308">De hardwarestatus melden</translation>
 <translation id="6698632841807204978">Monochroom afdrukken inschakelen</translation>
@@ -3976,15 +3883,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="6907778402784621686">Niet-beveiligde content op deze sites blokkeren</translation>
 <translation id="6908640907898649429">Hiermee wordt de standaardzoekprovider geconfigureerd. Je kunt de standaardzoekprovider specificeren die de gebruiker gaat gebruiken, of je kunt ervoor kiezen de standaardzoekfunctie uit te schakelen.</translation>
 <translation id="6913068954484253496"><ph name="PRODUCT_NAME" /> toestaan om verbinding te maken met Cast-apparaten op alle IP-adressen.</translation>
-<translation id="6915442654606973733">De toegankelijkheidsfunctie voor gesproken feedback inschakelen.
-
-          Als je dit beleid op 'True' instelt, is gesproken feedback altijd ingeschakeld.
-
-          Als je dit beleid op 'False' instelt, is gesproken feedback altijd uitgeschakeld.
-
-          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of negeren.
-
-          Als je dit beleid niet instelt, is gesproken feedback eerst uitgeschakeld maar kan de gebruiker deze op elk moment inschakelen.</translation>
 <translation id="6916507170737609563">
       Je kunt de beleidsinstelling IsolateOriginsAndroid bekijken om optimaal gebruik te maken van beide functies (isolatie en beperkte impact voor gebruikers) door IsolateOriginsAndroid te gebruiken met een lijst van de sites die je wilt isoleren. Met deze instelling (SitePerProcessAndroid) worden alle sites geïsoleerd.
       Als het beleid is ingeschakeld, wordt elke site in een eigen proces uitgevoerd.
@@ -4657,17 +4555,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Dynamische vernieuwing van dit beleid wordt ondersteund in M56 en hoger.</translation>
 <translation id="7841880500990419427">Minimale TLS-versie om op terug te vallen</translation>
-<translation id="7842317008224536842">De standaardstatus van de toegankelijkheidsfunctie 'Modus voor hoog contrast' op het inlogscherm instellen.
-
-          Als dit beleid is ingesteld op True, wordt de modus voor hoog contrast ingeschakeld als het inlogscherm wordt weergegeven.
-
-          Als dit beleid is ingesteld op False, wordt de modus voor hoog contrast uitgeschakeld als het inlogscherm wordt weergegeven.
-
-          Als je dit beleid instelt, kunnen gebruikers het tijdelijk overschrijven door de modus voor hoog contrast in of uit te schakelen. De keuze van de gebruiker is echter niet permanent en de standaardinstelling wordt hersteld als het inlogscherm opnieuw wordt weergegeven of als de gebruiker gedurende een minuut niet actief is op het inlogscherm.
-
-          Als dit beleid niet is ingesteld, wordt de modus voor hoog contrast uitgeschakeld als het inlogscherm voor de eerste keer wordt weergegeven. Gebruikers kunnen de modus voor hoog contrast op elk gewenst moment in- of uitschakelen. De status op het inlogscherm is van toepassing op alle gebruikers.
-
-          Opmerking: <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" /> overschrijft dit beleid als het voorgaande is opgegeven.</translation>
 <translation id="7846952520291088817">URL's waarvan lokale IP's zichtbaar zijn in WebRTC ICE-kandidaten</translation>
 <translation id="7848641140449742406">OS-instellingen</translation>
 <translation id="7858404742201086014">Als je deze instelling inschakelt, worden verouderde plug-ins gebruikt als normale plug-ins.
@@ -4874,15 +4761,6 @@ Als dit beleid is ingesteld op False, wordt het privacyscherm uitgeschakeld als 
 Als dit beleid is ingesteld, kan de gebruiker de waarde niet overschrijven als het inlogscherm wordt weergegeven.
 
 Als dit beleid niet is ingesteld, wordt het privacyscherm in eerste instantie uitgeschakeld. De gebruiker kan het privacyscherm inschakelen als het inlogscherm wordt weergegeven.</translation>
-<translation id="8148901634826284024">De toegankelijkheidsfunctie Modus voor hoog contrast inschakelen.
-
-          Als dit beleid op 'True' is ingesteld, is de modus voor hoog contrast altijd ingeschakeld.
-
-          Als dit beleid op 'False' is ingesteld, is de modus voor hoog contrast altijd uitgeschakeld.
-
-          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of negeren.
-
-          Als je dit beleid niet instelt, is de modus voor hoog contrast initieel uitgeschakeld maar kan de gebruiker deze op elk moment inschakelen.</translation>
 <translation id="815061180603915310">Als dit beleid is ingeschakeld, schakelt het profiel gedwongen over naar de kort geldige modus. Als dit beleid als OS-beleid wordt ingesteld (bijv. GPO in Windows), is het van toepassing op elk profiel in het systeem. Als het beleid als cloudbeleid is ingesteld, is het alleen van toepassing op een profiel waarop met een beheerd account is ingelogd.
 
       In deze modus worden de profielgegevens alleen voor de duur van de gebruikerssessie opgeslagen op de schijf. Functies als browsergeschiedenis, extensies en de bijbehorende gegevens, webgegevens (zoals cookies) en webdatabases blijven niet behouden nadat de browser is gesloten. Hierdoor wordt echter niet voorkomen dat de gebruiker handmatig gegevens naar de schijf kan downloaden of pagina's kan opslaan of afdrukken.
@@ -5573,9 +5451,9 @@ Dit beleid wordt verwijderd in M75.</translation>
 <translation id="9217154963008402249">Frequentie van netwerkpakketten voor bijhouden</translation>
 <translation id="922540222991413931">Installatiebronnen voor het configureren van extensies, apps en gebruikersscripts</translation>
 <translation id="924557436754151212">Opgeslagen wachtwoorden importeren uit standaardbrowser bij eerste uitvoering</translation>
-<translation id="929549405492388749">Als dit wordt ingesteld op 'true', wordt AppCache gedwongen ingeschakeld, ook als AppCache in Chrome niet standaard beschikbaar is.
+<translation id="929549405492388749">Als dit wordt ingesteld op True, wordt AppCache gedwongen ingeschakeld, ook als AppCache in Chrome niet standaard beschikbaar is.
 
-      Als dit niet is ingesteld of is ingesteld op 'false', volgt AppCache de standaardinstellingen van Chrome.</translation>
+      Als dit niet is ingesteld of is ingesteld op False, volgt AppCache de standaardinstellingen van Chrome.</translation>
 <translation id="930930237275114205">Directory met gebruikersgegevens voor <ph name="PRODUCT_FRAME_NAME" /> instellen</translation>
 <translation id="940706688964479124">Lijst met bestandstypen die automatisch moeten worden geopend nadat ze zijn gedownload</translation>
 <translation id="943865157632139008">Hiermee kun je het standaard html-weergaveprogramma configureren wanneer <ph name="PRODUCT_FRAME_NAME" /> is geïnstalleerd.

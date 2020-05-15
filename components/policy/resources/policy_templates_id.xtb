@@ -103,17 +103,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya dinonaktifkan bagi penggun
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1117535567637097036">Penanganan protokol yang disetel melalui kebijakan ini tidak digunakan ketika menangani maksud Android.</translation>
 <translation id="1118093128235245168">Izinkan situs meminta pengguna memberikan akses ke perangkat USB yang tersambung</translation>
-<translation id="1123594119609921068">Menyetel status default fitur aksesibilitas masukan lisan di layar login.
-
-          Jika kebijakan ini ditetapkan ke true, masukan lisan akan diaktifkan saat layar login ditampilkan.
-
-          Jika kebijakan ini ditetapkan ke false, masukan lisan akan dinonaktifkan saat layar login ditampilkan.
-
-          Jika Anda menetapkan kebijakan ini, pengguna dapat menggantinya sementara dengan mengaktifkan atau menonaktifkan masukan lisan. Namun, pilihan pengguna tidak bertahan lama dan setelan akan kembali ke default jika layar login kembali ditampilkan atau pengguna tidak melakukan aktivitas di layar login selama satu menit.
-
-          Jika kebijakan ini tidak ditetapkan, masukan lisan akan dinonaktifkan saat layar login ditampilkan pertama kali. Pengguna dapat mengaktifkan atau menonaktifkan masukan lisan kapan saja dan statusnya di layar login tetap sesuai dengan pilihan pengguna.
-
-          Catatan: <ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME" /> akan mengganti kebijakan ini jika kebijakan tersebut ditentukan.</translation>
 <translation id="1128717055763152639">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang diizinkan untuk menampilkan konten campuran (yaitu, konten HTTP di situs HTTPS) yang dapat diblokir (aktif), dan situs tempat upgrade konten campuran yang dapat diblokir secara opsional akan dinonaktifkan.
 
           Jika kebijakan ini tidak ditetapkan, konten campuran yang dapat diblokir akan diblokir dan konten campuran yang dapat diblokir secara opsional akan diupgrade, serta pengguna akan diizinkan untuk menetapkan pengecualian guna mengizinkan konten tersebut untuk situs tertentu.
@@ -392,23 +381,9 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
 <translation id="1634989431648355062">Izinkan plugin <ph name="FLASH_PLUGIN_NAME" /> di situs ini</translation>
 <translation id="1645793986494086629">Skema:</translation>
 <translation id="1648816843164517573">Daftar nama yang akan melewati pemeriksaan kebijakan HSTS</translation>
-<translation id="1653229475925941921">Jika ditetapkan, kebijakan ini akan mengontrol jenis kaca pembesar layar yang diaktifkan. Jika ditetapkan ke "None", kebijakan ini akan menonaktifkan kaca pembesar layar.
-
-          Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
-
-          Jika kebijakan ini tidak ditetapkan, kaca pembesar layar mula-mula dinonaktifkan, tetapi dapat diaktifkan oleh pengguna kapan saja.</translation>
 <translation id="1654087023995670109">Terapkan mode tamu browser</translation>
 <translation id="1655229863189977773">Setel ukuran cache disk dalam bita</translation>
 <translation id="166427968280387991">Server proxy</translation>
-<translation id="1667877109169174750">Jika kebijakan ini ditetapkan ke true, opsi Aksesibilitas akan selalu muncul di menu baki sistem.
-
-          Jika kebijakan ini ditetapkan ke false, opsi Aksesibilitas tidak akan muncul di menu baki sistem.
-
-          Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
-
-          Jika kebijakan ini tidak ditetapkan, opsi Aksesibilitas tidak akan muncul di menu baki sistem, tetapi pengguna dapat membuat opsi Aksesibilitas muncul melalui halaman Setelan.
-
-          Jika fitur aksesibilitas diaktifkan dengan cara lain (misalnya dengan kombinasi tombol), opsi Aksesibilitas akan selalu muncul di menu baki sistem.</translation>
 <translation id="1668836044817793277">Mengizinkan peluncuran otomatis dengan aplikasi kios tanpa penundaan untuk mengontrol versi <ph name="PRODUCT_OS_NAME" /> atau tidak.
 
       Kebijakan ini mengontrol apakah peluncuran otomatis dengan aplikasi kios tanpa penundaan untuk mengontrol versi <ph name="PRODUCT_OS_NAME" /> diizinkan atau tidak, dengan menyatakan required_platform_version dalam manifesnya dan menggunakannya sebagai awalan versi target update otomatis.
@@ -1912,15 +1887,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="3811562426301733860">Izinkan iklan di semua situs</translation>
 <translation id="3816312845600780067">Aktifkan pintasan keyboard penyelamatan untuk masuk otomatis</translation>
 <translation id="3817323252437541502">Mengaktifkan perlindungan tambahan untuk pengguna yang terdaftar di Program Perlindungan Lanjutan</translation>
-<translation id="3820526221169548563">Mengaktifkan fitur aksesibilitas keyboard di layar.
-
-          Jika kebijakan ini disetel ke true, keyboard di layar akan selalu diaktifkan.
-
-          Jika kebijakan ini disetel ke false, keyboard di layar akan selalu dinonaktifkan.
-
-          Jika Anda menyetel kebijakan ini, pengguna tidak dapat mengubah atau menggantinya.
-
-          Jika kebijakan ini tidak disetel, keyboard di layar awalnya dinonaktifkan namun dapat diaktifkan oleh pengguna kapan saja.</translation>
 <translation id="3821861026311587684">Memaksa pengguna logout saat akun mereka menjadi tidak terautentikasi</translation>
 <translation id="382476126209906314">Mengonfigurasi awalan TalkGadget untuk hosting akses jarak jauh</translation>
 <translation id="3824972131618513497">Mengontrol setelan yang terkait dengan pengelolaan daya dan reboot.</translation>
@@ -2193,15 +2159,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="4157003184375321727">Laporkan versi OS dan firmware</translation>
 <translation id="4157594634940419685">Izinkan akses ke printer CUPS native</translation>
 <translation id="4160962198980004898">Sumber alamat MAC perangkat saat dipasang di dok</translation>
-<translation id="4164601239783385546">Aktifkan fitur aksesibilitas tombol sticky.
-
-          Jika kebijakan ini disetel ke true, tombol sticky akan selalu diaktifkan.
-
-          Jika kebijakan ini disetel ke false, tombol sticky akan selalu dinonaktifkan.
-
-          Jika Anda menyetel kebijakan ini, pengguna tidak dapat mengubah atau menggantinya.
-
-          Jika kebijakan ini tidak disetel, tombol sticky akan dinonaktifkan, tetapi dapat diaktifkan oleh pengguna kapan saja.</translation>
 <translation id="4169692397912242417">Mengaktifkan fitur aksesibilitas masukan lisan di layar login.
 
           Jika kebijakan ini ditetapkan ke true, masukan lisan akan selalu diaktifkan di layar login.
@@ -2225,17 +2182,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
           Jika kebijakan ini tidak ditetapkan, sorotan kursor teks mula-mula akan dinonaktifkan di layar login, tetapi dapat diaktifkan oleh pengguna kapan saja.</translation>
 <translation id="4183229833636799228">Setelan <ph name="FLASH_PLUGIN_NAME" /> default</translation>
 <translation id="4192388905594723944">URL untuk memvalidasi token autentikasi klien akses jarak jauh</translation>
-<translation id="420007931282384740">Menyetel status default fitur aksesibilitas keyboard di layar di layar login.
-
-          Jika kebijakan ini ditetapkan ke true, keyboard di layar akan diaktifkan saat layar login ditampilkan.
-
-          Jika kebijakan ini ditetapkan ke false, keyboard di layar akan dinonaktifkan saat layar login ditampilkan.
-
-          Jika Anda menetapkan kebijakan ini, pengguna dapat menggantinya sementara dengan mengaktifkan atau menonaktifkan keyboard di layar. Namun, pilihan pengguna tidak bertahan lama dan setelan akan kembali ke default jika layar login kembali ditampilkan atau pengguna tidak memiliki aktivitas di layar login selama satu menit.
-
-          Jika kebijakan ini tidak ditetapkan, keyboard di layar akan dinonaktifkan saat layar login ditampilkan pertama kali. Pengguna dapat mengaktifkan atau menonaktifkan keyboard di layar kapan saja dan statusnya di layar login tetap bertahan walaupun pengguna sudah berbeda.
-
-          Catatan: <ph name="DEVICE_LOGIN_SCREEN_VIRTUAL_KEYBOARD_ENABLED_POLICY_NAME" /> akan mengganti kebijakan ini jika kebijakan tersebut ditentukan.</translation>
 <translation id="4203389617541558220">Membatasi waktu operasi perangkat dengan menjadwalkan mulai ulang otomatis.
 
       Saat kebijakan ini disetel, kebijakan ini menentukan panjang waktu operasi perangkat setelah mulai ulang otomatis dijadwalkan.
@@ -2473,11 +2419,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="4625915093043961294">Mengonfigurasi daftar putih pemasangan ekstensi</translation>
 <translation id="4632343302005518762">Izinkan <ph name="PRODUCT_FRAME_NAME" /> menangani jenis konten yang tercantum</translation>
 <translation id="4632566332417930481">Larang penggunaan Developer Tools pada ekstensi yang diinstal oleh kebijakan perusahaan, izinkan penggunaan Developer Tools dalam konteks lainnya</translation>
-<translation id="4633786464238689684">Mengubah perilaku default tombol baris teratas ke tombol fungsi.
-
-          Jika kebijakan ini disetel ke true, tombol baris teratas keyboard akan membuat perintah tombol fungsi per default. Tombol penelusuran harus ditekan untuk mengembalikan perilakunya ke tombol media.
-
-          Jika kebijakan ini disetel ke false atau dibiarkan tidak disetel, keyboard akan membuat perintah tombol media per default dan perintah tombol fungsi saat tombol penelusuran ditahan.</translation>
 <translation id="4639407427807680016">Nama hosting perpesanan asli untuk dikeluarkan dari daftar hitam</translation>
 <translation id="4649395978608361979">Tujuan printer lokal</translation>
 <translation id="4650759511838826572">Nonaktifkan skema protokol URL</translation>
@@ -2568,15 +2509,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika setelan ini dinonaktifkan, IsiOtomatis tidak akan menyarankan atau mengisi informasi kartu kredit, serta tidak akan menyimpan informasi kartu kredit tambahan yang mungkin dikirim oleh pengguna saat browsing web.
 
       Jika setelan ini diaktifkan atau tidak memiliki nilai, pengguna dapat mengontrol fitur IsiOtomatis untuk kartu kredit di UI.</translation>
-<translation id="4791031774429044540">Mengaktifkan fitur aksesibilitas kursor besar.
-
-          Jika kebijakan ini disetel ke true, kursor besar akan selalu diaktifkan.
-
-          Jika kebijakan ini disetel ke false, kursor besar akan selalu dinonaktifkan.
-
-          Jika Anda menyetel kebijakan ini, pengguna tidak dapat mengubah atau menimpanya.
-
-          Jika kebijakan ini tidak disetel, kursor besar pertama-tama akan dinonaktifkan, namun dapat diaktifkan oleh pengguna kapan saja.</translation>
 <translation id="4802744647065138872">Membatasi jumlah rekaman data pengguna yang disimpan untuk digunakan ketika terjadi rollback darurat.</translation>
 <translation id="4802905909524200151">Mengonfigurasi perilaku update firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Selalu reboot saat pengguna logout.</translation>
@@ -2736,15 +2668,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5105313908130842249">Penundaan penguncian layar saat menggunakan daya baterai</translation>
 <translation id="5108031557082757679">Menonaktifkan printer yang merupakan perangkat perusahaan</translation>
 <translation id="5109383437323376357">Menentukan ketersediaan variasi</translation>
-<translation id="5112121363469561920">Menetapkan jenis default kaca pembesar layar yang diaktifkan pada layar login.
-
-          Jika ditetapkan, kebijakan ini akan mengontrol jenis kaca pembesar layar yang diaktifkan saat layar login ditampilkan. Jika ditetapkan ke "Tidak ada", kebijakan ini akan menonaktifkan kaca pembesar layar.
-
-          Jika Anda menetapkan kebijakan ini, pengguna dapat menggantinya sementara dengan mengaktifkan atau menonaktifkan kaca pembesar layar. Namun, pilihan pengguna tidak bertahan lama dan setelan akan kembali ke default jika layar login kembali ditampilkan atau pengguna tidak memiliki aktivitas di layar login selama satu menit.
-
-          Jika kebijakan ini tidak ditetapkan, kaca pembesar layar akan dinonaktifkan saat layar login pertama kali ditampilkan. Pengguna dapat mengaktifkan atau menonaktifkan kaca pembesar layar kapan saja dan statusnya di layar login tetap bertahan walaupun pengguna sudah berbeda.
-
-          Catatan: <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" /> akan mengganti kebijakan ini jika kebijakan tersebut ditentukan.</translation>
 <translation id="5115168755602871392">Melaporkan informasi untuk CPU perangkat.
 
       Jika kebijakan ditetapkan ke false, atau tidak ditetapkan, informasi tidak akan dilaporkan.
@@ -2954,17 +2877,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5377606826822211923">Mengontrol penggunaan aplikasi Android dari sumber yang tidak tepercaya untuk pengguna</translation>
 <translation id="537786648513450280">Mengontrol penggunaan aplikasi Android dari sumber yang tidak tepercaya untuk perangkat</translation>
 <translation id="5378985487213287085">Memungkinkan Anda menyetel apakah situs web diizinkan untuk menampilkan pemberitahuan desktop. Menampilkan pemberitahuan desktop dapat diizinkan secara default, ditolak secara default, atau pengguna dapat ditanya setiap kali sebuah situs web ingin menampilkan pemberitahuan desktop. Jika kebijakan ini tidak disetel, 'AskNotifications' akan digunakan dan pengguna dapat mengubahnya.</translation>
-<translation id="5380329473151894945">Menyetel status default fitur aksesibilitas kursor besar di layar login.
-
-          Jika kebijakan ini ditetapkan ke true, kursor besar akan aktif saat layar login ditampilkan.
-
-          Jika kebijakan ini ditetapkan ke false, kursor besar akan dinonaktifkan saat layar login ditampilkan.
-
-          Jika Anda menetapkan kebijakan ini, pengguna dapat menggantinya sementara dengan mengaktifkan atau menonaktifkan kursor besar. Namun, pilihan pengguna tidak bertahan lama dan setelan akan kembali ke default jika layar login kembali ditampilkan atau pengguna tidak memiliki aktivitas di layar login selama satu menit.
-
-          Jika kebijakan ini tidak ditetapkan, kursor besar akan dinonaktifkan saat layar login ditampilkan pertama kali. Pengguna dapat mengaktifkan atau menonaktifkan kursor besar kapan saja dan statusnya di layar login tetap sesuai dengan pilihan pengguna.
-
-          Catatan: <ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" /> akan mengganti kebijakan ini jika kebijakan tersebut ditentukan.</translation>
 <translation id="538108065117008131">Izinkan <ph name="PRODUCT_FRAME_NAME" /> menangani jenis konten berikut.</translation>
 <translation id="538768040137709073">Mengaktifkan fitur Papan Klip Bersama yang memungkinkan pengguna mengirim pesan teks antara Desktop Chrome dan perangkat Android saat Sinkronisasi diaktifkan dan pengguna Login.
 
@@ -3304,7 +3216,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika kebijakan ini ditetapkan ke False atau tidak ditetapkan, fitur Web Components v0 akan dinonaktifkan secara default, mulai dari M80.
 
       Kebijakan ini akan dihapus setelah Chrome 84.</translation>
-<translation id="5763698334786515749">Mengaktifkan tampilan tombol sandi pada layar login dan layar kunci</translation>
 <translation id="5765780083710877561">Deskripsi:</translation>
 <translation id="5770738360657678870">Saluran pengembang (mungkin tidak stabil)</translation>
 <translation id="5774856474228476867">URL penelusuran penyedia penelusuran default</translation>
@@ -3793,9 +3704,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika kebijakan ini tidak ditetapkan, pengguna dapat menggunakan plugin mana pun yang diinstal di sistem kecuali plugin yang tidak kompatibel saat dilakukan hard code, usang, atau berbahaya.</translation>
 <translation id="6571871508154591774">Mengonfigurasi kamera, setelan browser, dan fitur setelan OS untuk dinonaktifkan</translation>
 <translation id="6573305661369899995">Setel sumber eksternal batasan URL</translation>
-<translation id="6574770600243153999">Mengaktifkan perangkat ini untuk menjalankan PluginVm.
-
-      Jika kebijakan ditetapkan ke salah atau tidak ditetapkan, <ph name="PLUGIN_VM_NAME" /> tidak diaktifkan untuk perangkat tersebut. Jika ditetapkan ke benar, <ph name="PLUGIN_VM_NAME" /> diaktifkan untuk perangkat tersebut selama setelan lain mengizinkannya. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> harus ditetapkan ke benar, dan <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> atau <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> atau <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> harus ditetapkan agar <ph name="PLUGIN_VM_NAME" /> dapat berjalan.</translation>
 <translation id="6583851521569686409">Mengonfigurasi daftar printer.
 
       Kebijakan ini memungkinkan administrator memberikan konfigurasi printer
@@ -3854,7 +3762,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6665670272107384733">Setel seberapa sering pengguna harus memasukkan sandi untuk menggunakan buka kunci cepat.</translation>
 <translation id="6672070613706645316">Izinkan pengguna menyesuaikan latar belakang di halaman Tab Baru</translation>
 <translation id="6672630473862787247">Mengaktifkan autentikasi standby di sesi reguler, samaran, dan tamu.</translation>
-<translation id="6677797768774898583">Fitur ini memungkinkan sandi pada layar login dan layar kunci ditampilkan setelah pengguna mengklik tombol.</translation>
 <translation id="6685903773201985073">Mengaktifkan autentikasi standby di sesi tamu dan reguler.</translation>
 <translation id="6689792153960219308">Melaporkan status hardware</translation>
 <translation id="6698632841807204978">Aktifkan pencetakan monokrom</translation>
@@ -3930,15 +3837,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6907778402784621686">Blokir konten tidak aman pada situs ini</translation>
 <translation id="6908640907898649429">Mengonfigurasi penyedia penelusuran default. Anda dapat menentukan penyedia penelusuran default yang akan digunakan pengguna atau memilih menonaktifkan penelusuran default.</translation>
 <translation id="6913068954484253496">Izinkan <ph name="PRODUCT_NAME" /> untuk tersambung ke perangkat Cast di semua alamat IP.</translation>
-<translation id="6915442654606973733">Mengaktifkan fitur aksesibilitas masukan yang diucapkan.
-
-          Jika kebijakan ini disetel ke true, masukan yang diucapkan akan selalu diaktifkan.
-
-          Jika kebijakan ini disetel ke false, masukan yang diucapkan akan selalu dinonaktifkan.
-
-          Jika Anda menyetel kebijakan ini, pengguna tidak dapat mengubah atau menimpanya.
-
-          Jika kebijakan ini tidak disetel, masukan yang diucapkan pertama-tama dinonaktifkan, namun dapat diaktifkan oleh pengguna kapan saja.</translation>
 <translation id="6916507170737609563">
       Anda dapat mempertimbangkan setelan kebijakan IsolateOriginsAndroid untuk mendapatkan yang terbaik dari kedua fungsi, yaitu isolasi dan dampak terbatas bagi pengguna, dengan menggunakan IsolateOriginsAndroid yang berisi daftar situs yang ingin Anda isolasi. Setelan ini, SitePerProcessAndroid, mengisolasi semua situs.
       Jika kebijakan diaktifkan, tiap situs akan dijalankan dalam prosesnya sendiri.
@@ -4594,17 +4492,6 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 
       Penyegaran dinamis pada kebijakan ini didukung dalam M56 dan yang lebih baru.</translation>
 <translation id="7841880500990419427">Versi TLS minimum untuk kembali</translation>
-<translation id="7842317008224536842">Menyetel status default fitur aksesibilitas mode kontras tinggi di layar login.
-
-          Jika kebijakan ini ditetapkan ke true, mode kontras tinggi akan diaktifkan saat layar login ditampilkan.
-
-          Jika kebijakan ini ditetapkan ke false, mode kontras tinggi akan dinonaktifkan saat layar login ditampilkan.
-
-          Jika Anda menetapkan kebijakan ini, pengguna dapat menggantinya sementara dengan mengaktifkan atau menonaktifkan mode kontras tinggi. Namun, pilihan pengguna tidak bertahan lama dan setelan akan kembali ke default jika layar login kembali ditampilkan atau pengguna tidak melakukan aktivitas di layar login selama satu menit.
-
-          Jika kebijakan ini tidak ditetapkan, mode kontras tinggi akan dinonaktifkan saat layar login ditampilkan pertama kali. Pengguna dapat mengaktifkan atau menonaktifkan mode kontras tinggi kapan saja dan statusnya di layar login tetap bertahan walaupun pengguna sudah berbeda.
-
-          Catatan: <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" /> akan mengganti kebijakan ini jika kebijakan tersebut ditentukan.</translation>
 <translation id="7846952520291088817">URL yang akan menampilkan IP lokal dalam kandidat WebRTC ICE</translation>
 <translation id="7848641140449742406">Setelan OS</translation>
 <translation id="7858404742201086014">Jika setelan ini diaktifkan, plugin yang sudah tidak berlaku akan digunakan sebagai plugin normal.
@@ -4802,15 +4689,6 @@ Jika kebijakan ini ditetapkan ke False, layar privasi akan dinonaktifkan saat la
 Jika kebijakan ini ditetapkan, pengguna tidak dapat mengganti nilai saat layar login ditampilkan.
 
 Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan, tetapi masih dapat dikontrol oleh pengguna saat layar login ditampilkan.</translation>
-<translation id="8148901634826284024">Mengaktifkan fitur aksesibilitas mode kontras tinggi.
-
-          Jika kebijakan ini disetel ke true, mode kontras tinggi akan selalu diaktifkan.
-
-          Jika kebijakan ini disetel ke false, mode kontras tinggi akan selalu dinonaktifkan.
-
-          Jika Anda menyetel kebijakan ini, pengguna tidak dapat mengubah atau menimpanya.
-
-          Jika kebijakan ini tidak disetel, mode kontras tinggi pertama-tama dinonaktifkan, namun dapat diaktifkan oleh pengguna kapan saja.</translation>
 <translation id="815061180603915310">Jika disetel ke aktif, kebijakan ini akan memaksa profil dialihkan ke mode singkat. Jika ditetapkan sebagai kebijakan OS (misalnya, GPO di Windows), kebijakan ini akan berlaku untuk setiap profil di sistem; jika disetel sebagai kebijakan Awan, kebijakan ini hanya akan berlaku untuk profil tempat masuk dengan akun terkelola.
 
       Dalam mode ini, data profil hanya akan dipertahankan di disk selama durasi sesi pengguna. Beberapa fitur seperti histori browser, ekstensi dan datanya, data web seperti cookie dan basis data web, tidak akan dipertahankan setelah browser ditutup. Namun, hal ini tidak mencegah pengguna mendownload data apa pun ke disk secara manual, menyimpan halaman, atau mencetak halaman

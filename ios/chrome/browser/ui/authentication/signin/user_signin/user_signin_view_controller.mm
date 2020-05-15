@@ -428,8 +428,11 @@ enum AuthenticationButtonType {
   if (@available(iOS 13.4, *)) {
     if (base::FeatureList::IsEnabled(kPointerSupport)) {
       self.confirmationButton.pointerInteractionEnabled = YES;
+      // This button can either have an opaque background (i.e., "Add Account"
+      // or "Yes, I'm in!") or a transparent background (i.e., "More") when
+      // scrolling is needed to reach the bottom of the screen.
       self.confirmationButton.pointerStyleProvider =
-          CreateOpaqueButtonPointerStyleProvider();
+          CreateOpaqueOrTransparentButtonPointerStyleProvider();
     }
   }
 #endif  // defined(__IPHONE_13_4)

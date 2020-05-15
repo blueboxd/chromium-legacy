@@ -24,6 +24,7 @@
 <translation id="1966382378801805537">Chromium ડિફૉલ્ટ બ્રાઉઝરને નિર્ધારિત અથવા સેટ કરી શકતું નથી</translation>
 <translation id="2008474315282236005">આ, 1 આઇટમને આ ડિવાઇસમાંથી ડિલીટ કરશે. પછીથી તમારો ડેટા ફરીથી મેળવવા માટે, Chromium માં <ph name="USER_EMAIL" /> તરીકે સાઇન ઇન કરો.</translation>
 <translation id="2185166961232948079">Chromium - નેટવર્ક સાઇન ઇન - <ph name="PAGE_TITLE" /></translation>
+<translation id="2225696941839557119">Chromium OS તમારા પાસવર્ડને સિંક કરી શક્યું નથી.</translation>
 <translation id="2241627712206172106">જો તમે કમ્પ્યુટરને શેર કરો છો, તો મિત્રો અને કુટુંબીજનો અલગ-અલગ બ્રાઉઝ કરી અને તેમને જોઇએ તેમ Chromium ને સેટ કરી શકે છે.</translation>
 <translation id="2294245788148774212">વૈકલ્પિક: Googleને નિદાન અને વપરાશ ડેટા ઑટોમૅટિક રીતે મોકલીને Chromium OSની સુવિધાઓ અને કાર્યપ્રદર્શનને સુધારવામાં સહાય કરો.</translation>
 <translation id="2347108572062610441">જ્યારે તમે Chromium શરૂ કરો છો ત્યારે જે પૃષ્ઠ દર્શાવવામાં આવે છે તે આ એક્સટેન્શને બદલ્યું છે.</translation>
@@ -136,6 +137,7 @@
 <translation id="6134968993075716475">Safe Browsingની સુવિધા બંધ છે. Chromium તેને ચાલુ રાખવાનો સુઝાવ આપે છે.</translation>
 <translation id="6212496753309875659">આ કમ્પ્યુટર પર પહેલાંથી જ Chromiumનું સૌથી તાજેતરનું વર્ઝન છે. જો સૉફ્ટવેર કાર્ય કરી રહ્યું નથી, તો કૃપા કરીને Chromiumને અનઇન્સ્ટૉલ કરો અને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium હમણાં ફરીથી લૉન્ચ થશે}=1{Chromium 1 સેકન્ડમાં ફરીથી લૉન્ચ થશે}one{Chromium # સેકન્ડમાં ફરીથી લૉન્ચ થશે}other{Chromium # સેકન્ડમાં ફરીથી લૉન્ચ થશે}}</translation>
+<translation id="623836266260425961">Chromium OS તમારા ડેટાને સિંક કરી શક્યું નથી.</translation>
 <translation id="6248213926982192922">Chromium ને ડિફોલ્ટ બ્રાઉઝર બનાવો</translation>
 <translation id="6266342355635466082">Chromium અપડેટ ચેક કરી શકતું નથી. તમારું ઇન્ટરનેટ કનેક્શન ચેક કરવાનો પ્રયાસ કરો.</translation>
 <translation id="6268381023930128611">Chromiumમાંથી સાઇન આઉટ કરીએ?</translation>

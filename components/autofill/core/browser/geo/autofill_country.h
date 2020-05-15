@@ -49,6 +49,17 @@ class AutofillCountry {
     return (address_required_fields_ & ADDRESS_REQUIRES_ZIP) != 0;
   }
 
+  // An address line1 is expected in a complete address for this country.
+  bool requires_line1() const {
+    return (address_required_fields_ & ADDRESS_REQUIRES_LINE1) != 0;
+  }
+
+  // True if a complete address is expected to either contain a state or a ZIP
+  // code. Not true if the address explicitly needs both.
+  bool requires_zip_or_state() const {
+    return (address_required_fields_ & ADDRESS_REQUIRES_ZIP_OR_STATE) != 0;
+  }
+
  private:
   AutofillCountry(const std::string& country_code,
                   const base::string16& name,

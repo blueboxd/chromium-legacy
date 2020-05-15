@@ -387,7 +387,6 @@ Só ti podes ver a que apunta a túa cámara. O sitio non pode ver as imaxes da 
 <translation id="4250229828105606438">Captura de pantalla</translation>
 <translation id="4256782883801055595">Licenzas de código aberto</translation>
 <translation id="4269820728363426813">Copiar enderezo da ligazón</translation>
-<translation id="4278390842282768270">Permitida</translation>
 <translation id="429312253194641664">Un sitio está reproducindo contido multimedia</translation>
 <translation id="4298388696830689168">Sitios vinculados</translation>
 <translation id="4307992518367153382">Opcións básicas</translation>
@@ -435,7 +434,6 @@ Só ti podes ver a que apunta a túa cámara. O sitio non pode ver as imaxes da 
 <translation id="4663756553811254707">Elimináronse <ph name="NUMBER_OF_BOOKMARKS" /> marcadores</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> engadiuse á túa pantalla de inicio</translation>
 <translation id="4684427112815847243">Sincronizar todo</translation>
-<translation id="4688610874307684559">Estase executando en Chrome (inicial)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> máis}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> máis}}</translation>
 <translation id="4696983787092045100">Enviar texto a Os teus dispositivos</translation>
 <translation id="4698034686595694889">Ver contido sen conexión na aplicación <ph name="APP_NAME" /></translation>
@@ -560,10 +558,8 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5665379678064389456">Crea un evento en <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Anular a solicitude dun sitio web para evitar ampliar a imaxe</translation>
-<translation id="5677928146339483299">Bloqueada</translation>
 <translation id="5684874026226664614">Non se puido traducir esta páxina.</translation>
 <translation id="5686790454216892815">O nome do ficheiro é demasiado longo</translation>
-<translation id="5690795753582697420">A cámara está desactivada na sección Configuración de Android</translation>
 <translation id="5694049548840660018">Volver ao inicio facilmente</translation>
 <translation id="569536719314091526">Traduce esta páxina a calquera idioma desde o botón Máis opcións</translation>
 <translation id="572328651809341494">Pestanas recentes</translation>
@@ -619,7 +615,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="614940544461990577">Proba a facer o seguinte:</translation>
 <translation id="6154478581116148741">Activa o bloqueo de pantalla en Configuración para exportar os teus contrasinais deste dispositivo</translation>
 <translation id="6159335304067198720">Redución de datos do <ph name="PERCENT" /></translation>
-<translation id="6177111841848151710">Bloqueado para o motor de busca actual</translation>
 <translation id="6192333916571137726">Queres descargar o ficheiro?</translation>
 <translation id="6201345951596836663">Copiouse a ligazón</translation>
 <translation id="6210748933810148297">Non es <ph name="EMAIL" />?</translation>
@@ -706,7 +701,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="6846298663435243399">Cargando…</translation>
 <translation id="6850409657436465440">A descarga aínda está en curso</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> pestanas pechadas</translation>
-<translation id="6864395892908308021">Este dispositivo non pode ler NFC</translation>
 <translation id="6864459304226931083">Descargar imaxe</translation>
 <translation id="6865313869410766144">Autocompletar datos do formulario</translation>
 <translation id="6884306546558072722">Continuar explorando contido sen conexión</translation>
@@ -721,9 +715,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="6989267951144302301">Non se puido descargar</translation>
 <translation id="6990079615885386641">Descarga a aplicación en Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Avisarte se os teus contrasinais están en risco debido a unha violación da seguranza dos datos</translation>
-<translation id="7000754031042624318">Desactivouse na configuración de Android</translation>
 <translation id="7015203776128479407">A configuración da sincronización inicial non finalizou. A sincronización está desactivada.</translation>
-<translation id="7016516562562142042">Permitido para o motor de busca actual</translation>
 <translation id="7022756207310403729">Abrir no navegador</translation>
 <translation id="702463548815491781">Recoméndase cando están activadas as funcións TalkBack ou Acceso con interruptores</translation>
 <translation id="7029809446516969842">Contrasinais</translation>
@@ -756,10 +748,10 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7328017930301109123">No modo básico, Chrome carga as páxinas máis rápido e usa un 60 por cento menos de datos.</translation>
 <translation id="7333031090786104871">Aínda se está engadindo o sitio anterior</translation>
 <translation id="7340958967809483333">Opcións de Discover</translation>
+<translation id="7352651011704765696">Produciuse un erro</translation>
 <translation id="7352939065658542140">VÍDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Compartir 1 elemento seleccionado}other{Compartir # elementos seleccionados}}</translation>
 <translation id="7359002509206457351">Acceso a métodos de pago</translation>
-<translation id="7362144854749094396">O historial compártese con Chrome. As preferencias compártense con <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Tipo:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -841,7 +833,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7986741934819883144">Seleccionar contacto</translation>
 <translation id="7998918019931843664">Abre de novo a pestana pechada</translation>
 <translation id="8004582292198964060">Navegador</translation>
-<translation id="8007176423574883786">Desactivada para este dispositivo</translation>
 <translation id="8013372441983637696">Borrar tamén deste dispositivo os teus datos de Chrome</translation>
 <translation id="8015452622527143194">Recuperar o tamaño predeterminado da páxina</translation>
 <translation id="8026334261755873520">Borrar datos de navegación</translation>
@@ -931,6 +922,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="8687353297350450808">{N_BARS,plural, =1{Nivel de intensidade do sinal: # barra}other{Nivel de intensidade do sinal: # barras}}</translation>
 <translation id="868929229000858085">Busca nos teus contactos</translation>
 <translation id="869891660844655955">Data de vencemento</translation>
+<translation id="8712637175834984815">De acordo</translation>
 <translation id="8748850008226585750">Contido oculto</translation>
 <translation id="8751914237388039244">Selecciona unha imaxe</translation>
 <translation id="8758557275681689734">Ver todas as pestanas abertas</translation>

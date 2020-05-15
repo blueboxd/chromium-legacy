@@ -693,10 +693,12 @@ StackSamplingProfiler::StackSamplingProfiler(
     SamplingProfilerThreadToken thread_token,
     const SamplingParams& params,
     std::unique_ptr<ProfileBuilder> profile_builder,
+    std::unique_ptr<Unwinder> native_unwinder,
     StackSamplerTestDelegate* test_delegate)
     : StackSamplingProfiler(params, std::move(profile_builder), nullptr) {
-  sampler_ = StackSampler::Create(
-      thread_token, profile_builder_->GetModuleCache(), test_delegate);
+  sampler_ =
+      StackSampler::Create(thread_token, profile_builder_->GetModuleCache(),
+                           std::move(native_unwinder), test_delegate);
 }
 
 StackSamplingProfiler::StackSamplingProfiler(

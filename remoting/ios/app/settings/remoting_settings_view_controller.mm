@@ -16,7 +16,7 @@
 #import "remoting/ios/app/settings/settings_view_cell.h"
 #import "remoting/ios/app/view_utils.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "remoting/base/string_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

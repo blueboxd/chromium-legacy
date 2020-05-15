@@ -15322,6 +15322,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Notifications.Quiet.ContinueBlockingClicked">
+  <owner>engedy@chromium.org</owner>
+  <description>
+    Logged when the user clicks &quot;Continue Blocking&quot;, a button, that
+    upon being clicked, permanently blocks notifications for the site.
+  </description>
+</action>
+
 <action name="Notifications.Quiet.ManageClicked">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>

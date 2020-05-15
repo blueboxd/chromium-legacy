@@ -17,6 +17,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 
@@ -31,6 +32,23 @@ base::TimeDelta RandomInterval(base::TimeDelta mean) {
   return -std::log(base::RandDouble()) * mean;
 }
 
+// Returns collection interval by trying these steps:
+//  - get from command line if available to allow override for a single client
+//  - get from finch if available to allow experiment with different intervals
+//  - return default interval that is best suited for current OS
+int GetCollectionIntervalInMinutes() {
+#if defined(OS_IOS)
+  // Default on iOS is equal to mean value of up process time.
+  const int kDefaultValueInMinutes = 30;
+#else
+  const int kDefaultValueInMinutes = 24 * 60;
+#endif
+
+  return base::GetFieldTrialParamByFeatureAsInt(
+      metrics::CallStackProfileMetricsProvider::kHeapProfilerReporting,
+      "heap-profiler-collection-interval-minutes", kDefaultValueInMinutes);
+}
+
 }  // namespace
 
 HeapProfilerController::HeapProfilerController()
@@ -40,7 +58,7 @@ HeapProfilerController::~HeapProfilerController() {
   stopped_->data.Set();
 }
 
-void HeapProfilerController::Start(base::TimeDelta heap_collection_interval) {
+void HeapProfilerController::Start() {
   if (!base::FeatureList::IsEnabled(
           metrics::CallStackProfileMetricsProvider::kHeapProfilerReporting)) {
     return;
@@ -51,7 +69,9 @@ void HeapProfilerController::Start(base::TimeDelta heap_collection_interval) {
   if (sampling_rate > 0)
     base::SamplingHeapProfiler::Get()->SetSamplingInterval(sampling_rate);
   base::SamplingHeapProfiler::Get()->Start();
-  ScheduleNextSnapshot(stopped_, heap_collection_interval);
+  const int interval = GetCollectionIntervalInMinutes();
+  DCHECK_GT(interval, 0);
+  ScheduleNextSnapshot(stopped_, base::TimeDelta::FromMinutes(interval));
 }
 
 // static

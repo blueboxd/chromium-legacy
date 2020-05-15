@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">自動下載</translation>
 <translation id="5677928146339483299">已封鎖</translation>
 <translation id="5689516760719285838">位置</translation>
+<translation id="5690795753582697420">已關閉 Android 設定中的攝影機</translation>
 <translation id="5710871682236653961">系統必須先詢問你，才能允許網站在你輕觸 NFC 裝置時傳送及接收資訊 (建議設定)</translation>
 <translation id="5719847187258001597">這會清除 <ph name="ORIGIN" /> 或該網站在主畫面上的應用程式所儲存的所有資料和 Cookie。</translation>
 <translation id="5804241973901381774">權限</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">更多</translation>
 <translation id="6064125863973209585">下載完成</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
+<translation id="6177111841848151710">禁止目前的搜尋引擎存取位置資訊</translation>
 <translation id="6181444274883918285">新增例外網站</translation>
 <translation id="6192792657125177640">例外</translation>
 <translation id="6194112207524046168">如要讓 Chrome 存取你的相機，請一併在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中開啟相機。</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">這個網頁不安全。網站資訊</translation>
 <translation id="6965382102122355670">確定</translation>
 <translation id="6992289844737586249">允許網站使用你的麥克風前，必須先詢問你 (建議)</translation>
+<translation id="7000754031042624318">已在 Android 設定中關閉</translation>
+<translation id="7016516562562142042">允許目前的搜尋引擎存取位置資訊</translation>
 <translation id="7053983685419859001">封鎖</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{已選取 1 個項目}other{已選取 # 個項目}}</translation>
 <translation id="7087918508125750058">已選取 <ph name="ITEM_COUNT" /> 個項目。選項位於畫面頂端</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">允許特定網站播放音訊。</translation>
 <translation id="7993619969781047893">某些網站的功能可能無法正常運作</translation>
 <translation id="7999064672810608036">確定要刪除這個網站儲存的所有本機資料 (包括 Cookie 在內)，並重設這個網站的所有權限嗎？</translation>
+<translation id="8007176423574883786">已在這個裝置上關閉</translation>
 <translation id="802154636333426148">下載失敗</translation>
 <translation id="8087000398470557479">這個內容來自 <ph name="DOMAIN_NAME" />，由 Google 所提供。</translation>
 <translation id="8116925261070264013">已設為靜音</translation>

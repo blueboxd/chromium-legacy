@@ -142,6 +142,8 @@ GURL GetOSSettingsUrl(const std::string& sub_page);
 void ShowAppManagementPage(Profile* profile,
                            const std::string& app_id,
                            AppManagementEntryPoint entry_point);
+
+void ShowPrintManagementApp(Profile* profile);
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

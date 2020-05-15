@@ -82,22 +82,19 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
     Profile* profile,
     const base::Callback<void(bool)>& close_callback)
     : profile_(profile), close_callback_(close_callback) {
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_COMMIT));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_COMMIT));
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
-  DialogDelegate::SetAcceptCallback(
+  SetAcceptCallback(
       base::BindOnce(&CreateChromeApplicationShortcutView::OnDialogAccepted,
                      base::Unretained(this)));
   auto canceled = [](CreateChromeApplicationShortcutView* dialog) {
     if (!dialog->close_callback_.is_null())
       dialog->close_callback_.Run(false);
   };
-  DialogDelegate::SetCancelCallback(
-      base::BindOnce(canceled, base::Unretained(this)));
-  DialogDelegate::SetCloseCallback(
-      base::BindOnce(canceled, base::Unretained(this)));
+  SetCancelCallback(base::BindOnce(canceled, base::Unretained(this)));
+  SetCloseCallback(base::BindOnce(canceled, base::Unretained(this)));
   InitControls();
 
   chrome::RecordDialogCreation(

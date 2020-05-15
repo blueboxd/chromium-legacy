@@ -112,17 +112,6 @@ Wenn die Richtlinie nicht festgelegt ist, gilt die Standardeinstellung: Vom Unte
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1117535567637097036">Die über diese Richtlinie festgelegten Protokoll-Handler werden bei der Verarbeitung von Android-Intents nicht verwendet.</translation>
 <translation id="1118093128235245168">Websites dürfen den Nutzer um Zugriff auf ein angeschlossenes USB-Gerät bitten</translation>
-<translation id="1123594119609921068">Hiermit wird der Standardstatus der Bedienungshilfefunktion für das gesprochene Feedback auf dem Anmeldebildschirm festgelegt.
-
-          Wird diese Richtlinie auf "true" gesetzt, ist das gesprochene Feedback aktiviert, wenn der Anmeldebildschirm angezeigt wird.
-
-          Wird sie auf "false" gesetzt, ist das gesprochene Feedback deaktiviert, wenn der Anmeldebildschirm angezeigt wird.
-
-          Wenn Sie diese Richtlinie konfigurieren, können Nutzer sie vorübergehend überschreiben, indem sie das gesprochene Feedback aktivieren bzw. deaktivieren. Die Nutzerauswahl ist jedoch nicht dauerhaft und die Standardeinstellung wird wiederhergestellt, sobald der Anmeldebildschirm neu angezeigt wird oder der Nutzer auf dem Anmeldebildschirm eine Minute lang inaktiv ist.
-
-          Wenn diese Richtlinie nicht konfiguriert wird, ist das gesprochene Feedback deaktiviert, wenn der Anmeldebildschirm das erste Mal angezeigt wird. Die Nutzer können das gesprochene Feedback jederzeit aktivieren oder deaktivieren und dieser Status bleibt auf der Anmeldeseite bei einem Nutzerwechsel erhalten.
-
-          Hinweis: Sofern konfiguriert, überschreibt "<ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME" />" diese Richtlinie.</translation>
 <translation id="1128717055763152639">Mit dieser Richtlinie können Sie eine Liste mit URL-Mustern festlegen und so Websites angeben, auf denen blockierbare (aktive) gemischte Inhalte (HTTP-Inhalte auf HTTPS-Websites) angezeigt werden dürfen und für die HTTPS-Upgrades für optional blockierbare gemischte Inhalte deaktiviert werden.
 
           Ist diese Richtlinie nicht konfiguriert, werden blockierbare gemischte Inhalte gesperrt und optional blockierbare gemischte Inhalte auf HTTPS umgestellt. Nutzer können Ausnahmen für bestimmte Websites festlegen.
@@ -392,23 +381,9 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 <translation id="1634989431648355062">Das Plug-in "<ph name="FLASH_PLUGIN_NAME" />" für diese Websites zulassen</translation>
 <translation id="1645793986494086629">Schema:</translation>
 <translation id="1648816843164517573">Liste der Namen, die vom HSTS-Richtliniencheck ausgenommen sind</translation>
-<translation id="1653229475925941921">Ist diese Richtlinie konfiguriert, wird damit der Lupentyp bestimmt, der aktiviert ist. Wenn Sie die Richtlinie auf "None" setzen, ist die Lupe deaktiviert.
-
-          Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
-
-          Ist die Richtlinie nicht konfiguriert, so ist die Lupe anfangs deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden.</translation>
 <translation id="1654087023995670109">Gastmodus im Browser erzwingen</translation>
 <translation id="1655229863189977773">Cache-Größe für Datenträger in Byte festlegen</translation>
 <translation id="166427968280387991">Proxyserver</translation>
-<translation id="1667877109169174750">Ist diese Richtlinie auf "true" gesetzt, werden die Optionen für Bedienungshilfen immer im Taskleistenmenü angezeigt.
-
-          Wenn sie auf "false" gesetzt ist, werden die Optionen für Bedienungshilfen nie im Taskleistenmenü angezeigt.
-
-          Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
-
-          Ist diese Richtlinie nicht konfiguriert, erscheinen keine Optionen für Bedienungshilfen im Taskleistenmenü, der Nutzer kann sie jedoch auf der Seite "Einstellungen" aktivieren.
-
-          Werden Bedienungshilfen anderweitig aktiviert, z. B. über eine Tastenkombination, erscheinen die Optionen für Bedienungshilfen immer im Taskleistenmenü.</translation>
 <translation id="1668836044817793277">Gibt an, ob der automatisch verzögerungsfrei gestarteten Kiosk-App die Steuerung der <ph name="PRODUCT_OS_NAME" />-Version gestattet werden soll.
 
       Durch diese Richtlinie wird festgelegt, ob der automatisch verzögerungsfrei gestarteten Kiosk-App die Steuerung der <ph name="PRODUCT_OS_NAME" />-Version gestattet wird, indem in ihrem Manifest eine erforderliche Plattformversion (required_platform_version) deklariert und als Zielversionspräfix beim automatischen Update verwendet wird.
@@ -1907,15 +1882,6 @@ Wenn diese Richtlinie nicht festgelegt ist, gilt die Standardeinstellung: Vom Un
 <translation id="3811562426301733860">Werbung auf allen Websites zulassen</translation>
 <translation id="3816312845600780067">Tastenkombination zur Umgehung der automatischen Anmeldung aktivieren</translation>
 <translation id="3817323252437541502">Erweiterte Sicherheitsfunktionen für Teilnehmer des erweiterten Sicherheitsprogramms aktivieren</translation>
-<translation id="3820526221169548563">Aktiviert die Bedienungshilfefunktion für die Bildschirmtastatur.
-
-          Ist diese Richtlinie auf "true" gesetzt, ist die Bildschirmtastatur immer aktiviert.
-
-          Ist diese Richtlinie auf "false" gesetzt, ist die Bildschirmtastatur immer deaktiviert.
-
-          Wenn Sie diese Richtlinie konfigurieren, können die Nutzer sie nicht ändern oder außer Kraft setzen.
-
-          Wird diese Richtlinie nicht konfiguriert, ist die Bildschirmtastatur zunächst deaktiviert, kann vom Nutzer aber jederzeit aktiviert werden.</translation>
 <translation id="3821861026311587684">Abmeldung des Nutzers erzwingen, wenn sein Konto nicht mehr authentifiziert ist</translation>
 <translation id="382476126209906314">TalkGadget-Präfix für Remotezugriff-Hosts konfigurieren</translation>
 <translation id="3824972131618513497">Legt die Einstellungen für das Energiesparen und Neustarten fest.</translation>
@@ -2180,15 +2146,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4157003184375321727">Betriebssystem- und Firmware-Version melden</translation>
 <translation id="4157594634940419685">Zugriff auf native CUPS-Drucker erlauben</translation>
 <translation id="4160962198980004898">Quelle für die Geräte-MAC-Adresse bei angedocktem Gerät</translation>
-<translation id="4164601239783385546">Dadurch wird die Sticky Keys-Bedienungshilfe aktiviert.
-
-          Bei Auswahl von "true" ist die Sticky Keys-Bedienungshilfe immer aktiviert.
-
-          Im Falle von "false" ist die Sticky Keys-Bedienungshilfe immer deaktiviert.
-
-          Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
-
-          Ist die Richtlinie nicht konfiguriert, so ist die Sticky Keys-Bedienungshilfe anfangs deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden.</translation>
 <translation id="4169692397912242417">Hiermit wird die Bedienungshilfe "gesprochenes Feedback" auf dem Anmeldebildschirm aktiviert.
 
           Wird diese Richtlinie auf "true" gesetzt, ist das gesprochene Feedback auf dem Anmeldebildschirm immer aktiviert.
@@ -2212,17 +2169,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
           Wird sie nicht konfiguriert, ist die Bedienungshilfe "Textcursor hervorheben" auf dem Anmeldebildschirm anfangs deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden.</translation>
 <translation id="4183229833636799228">"<ph name="FLASH_PLUGIN_NAME" />" als Standardeinstellung</translation>
 <translation id="4192388905594723944">URL zur Überprüfung des Client-Authentifizierungs-Tokens für den Remotezugriff</translation>
-<translation id="420007931282384740">Hiermit wird der Standardstatus der Bedienungshilfe "Bildschirmtastatur" auf dem Anmeldebildschirm festgelegt.
-
-          Wird diese Richtlinie auf "true" gesetzt, ist die Bildschirmtastatur aktiviert, wenn der Anmeldebildschirm angezeigt wird.
-
-          Wird sie auf "false" gesetzt, ist die Bildschirmtastatur deaktiviert, wenn der Anmeldebildschirm angezeigt wird.
-
-          Wenn Sie diese Richtlinie konfigurieren, können Nutzer sie vorübergehend überschreiben, indem sie die Bildschirmtastatur aktivieren oder deaktivieren. Die Nutzerauswahl ist jedoch nicht dauerhaft und die Standardeinstellung wird wiederhergestellt, sobald der Anmeldebildschirm neu angezeigt wird oder der Nutzer auf dem Anmeldebildschirm eine Minute lang inaktiv ist.
-
-          Wenn diese Richtlinie nicht konfiguriert wird, ist die Bildschirmtastatur deaktiviert, wenn der Anmeldebildschirm das erste Mal angezeigt wird. Die Nutzer können die Bildschirmtastatur jederzeit aktivieren oder deaktivieren und dieser Status bleibt auf der Anmeldeseite bei einem Nutzerwechsel erhalten.
-
-           Hinweis: Sofern konfiguriert, überschreibt "<ph name="DEVICE_LOGIN_SCREEN_VIRTUAL_KEYBOARD_ENABLED_POLICY_NAME" />" diese Richtlinie.</translation>
 <translation id="4203389617541558220">Hiermit kann die Betriebszeit des Geräts durch die Planung automatischer Neustarts begrenzt werden.
 
       Wenn diese Richtlinie konfiguriert ist, wird damit die Dauer der Gerätebetriebszeit angegeben, nach der ein automatischer Neustart geplant ist.
@@ -2460,11 +2406,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4625915093043961294">Weiße Liste für Installation von Erweiterungen konfigurieren</translation>
 <translation id="4632343302005518762">Verarbeitung der gelisteten Inhaltstypen durch <ph name="PRODUCT_FRAME_NAME" /> zulassen</translation>
 <translation id="4632566332417930481">Nutzung der Entwicklertools für Erweiterungen, die über die Unternehmensrichtlinie installiert wurden, nicht zulassen und Nutzung der Entwicklertools in anderen Kontexten zulassen</translation>
-<translation id="4633786464238689684">Ändert das Standardverhalten der Tasten in der obersten Reihe zu Funktionstastenverhalten
-
-Wenn die Richtlinie auf "TRUE" gesetzt wird, führt die oberste Reihe der Tastatur standardmäßig Funktionstastenbefehle aus. Um die Tasten stattdessen wieder als Medientasten zu verwenden, drückt der Nutzer die Suchtaste.
-
-Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die Tastatur standardmäßig Medientastenbefehle aus und führt bei gedrückter Suchtaste Funktionstastenbefehle aus.</translation>
 <translation id="4639407427807680016">Namen der Hosts für natives Messaging, die von der schwarzen Liste ausgenommen werden sollen</translation>
 <translation id="4649395978608361979">Lokale Druckziele</translation>
 <translation id="4650759511838826572">URL-Protokollschemas deaktivieren</translation>
@@ -2555,15 +2496,6 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
       Wenn diese Einstellung deaktiviert ist, schlägt AutoFill weder Kreditkarteninformationen vor oder füllt sie automatisch aus noch werden zusätzliche Kreditkarteninformationen gespeichert, die der Nutzer während des Surfens im Web möglicherweise sendet.
 
       Falls diese Einstellung aktiviert ist oder keinen Wert hat, kann der Nutzer die AutoFill-Funktion in der UI für Kreditkarten steuern.</translation>
-<translation id="4791031774429044540">Hiermit wird die Bedienungshilfefunktion für den großen Cursor aktiviert.
-
-          Ist diese Richtlinie auf "true" gesetzt, ist der große Cursor immer aktiviert.
-
-          Ist diese Richtlinie auf "false" gesetzt, ist der große Cursor immer deaktiviert.
-
-          Wenn Sie diese Richtlinie konfigurieren, können die Nutzer sie nicht ändern oder außer Kraft setzen.
-
-          Falls die Richtlinie nicht konfiguriert wird, ist der große Cursor zunächst deaktiviert, kann aber von den Nutzern jederzeit aktiviert werden.</translation>
 <translation id="4802744647065138872">Begrenzt die Anzahl der Snapshots von Nutzerdaten, die für den Fall eines Notfall-Rollbacks aufbewahrt werden.</translation>
 <translation id="4802905909524200151">Updateverhalten von <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware konfigurieren</translation>
 <translation id="4804828344300125154">Nach Nutzerabmeldung immer neu starten.</translation>
@@ -2725,15 +2657,6 @@ Sollte die Richtlinie nicht konfiguriert sein, so wird der Standardsuchanbieter 
 <translation id="5105313908130842249">Verzögerung für die Bildschirmsperre im Akkubetrieb</translation>
 <translation id="5108031557082757679">Deaktivierte, an Geräte gebundene Unternehmensdrucker</translation>
 <translation id="5109383437323376357">Die Verfügbarkeit von Variationen bestimmen</translation>
-<translation id="5112121363469561920">Mit dieser Richtlinie können Sie den Standardtyp der Lupe festlegen, die auf dem Anmeldebildschirm aktiviert ist.
-
-          Wenn diese Richtlinie eingerichtet ist, legt sie fest, welcher Lupentyp beim Anzeigen des Anmeldebildschirms aktiviert ist. Wenn Sie die Richtlinie auf "None" setzen, ist die Lupe deaktiviert.
-
-          Wenn Sie diese Richtlinie einrichten, können Nutzer sie vorübergehend überschreiben, indem sie die Lupe aktivieren oder deaktivieren. Die Auswahl des Nutzers ist allerdings nicht dauerhaft. Die Standardanzeige wird wiederhergestellt, sobald der Anmeldebildschirm wieder aufgerufen wird oder der Nutzer länger als eine Minute auf dem Bildschirm inaktiv bleibt.
-
-          Wird die Richtlinie nicht konfiguriert, ist die Lupe auf dem Anmeldebildschirm anfangs deaktiviert. Nutzer können die Lupe jederzeit aktivieren oder deaktivieren. Dieser Status bleibt auf dem Anmeldebildschirm auch bei einem Nutzerwechsel erhalten.
-
-          Hinweis: Sofern konfiguriert, überschreibt "<ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" />" diese Richtlinie.</translation>
 <translation id="5115168755602871392">Mit dieser Richtlinie kann festgelegt werden, dass Informationen über die CPU eines Geräts ausgegeben werden.
 
       Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, werden keine Informationen ausgegeben.
@@ -2943,17 +2866,6 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="5377606826822211923">Nutzung von Android-Apps aus nicht vertrauenswürdigen Quellen kontrollieren</translation>
 <translation id="537786648513450280">Nutzung von Android-Apps aus nicht vertrauenswürdigen Quellen für das Gerät konfigurieren</translation>
 <translation id="5378985487213287085">Ermöglicht Ihnen festzulegen, ob Websites Desktop-Benachrichtigungen anzeigen dürfen. Das Anzeigen von Desktop-Benachrichtigungen kann entweder standardmäßig gestattet oder nicht gestattet werden oder auf Anfrage beim Nutzer geschehen. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "AskNotifications" zum Einsatz, wobei dies vom Nutzer geändert werden kann.</translation>
-<translation id="5380329473151894945">Hiermit wird der Standardstatus der Bedienungshilfe "großer Cursor" auf der Anmeldeseite festgelegt.
-
-          Ist diese Richtlinie auf "true" gesetzt, ist der große Cursor aktiviert, wenn die Anmeldeseite angezeigt wird.
-
-          Ist diese Richtlinie auf "false" gesetzt, ist der große Cursor deaktiviert, wenn die Anmeldeseite angezeigt wird.
-
-          Wenn Sie diese Richtlinie konfigurieren, können Nutzer sie vorübergehend überschreiben, indem sie den großen Cursor aktivieren oder deaktivieren. Die Nutzerauswahl wird jedoch nicht beibehalten und die Standardeinstellung wird wiederhergestellt, sobald die Anmeldeseite neu angezeigt wird oder der Nutzer auf der Anmeldeseite eine Minute lang inaktiv ist.
-
-          Wenn diese Richtlinie nicht konfiguriert wird, ist der große Cursor deaktiviert, wenn die Anmeldeseite das erste Mal angezeigt wird. Die Nutzer können den großen Cursor jederzeit aktivieren oder deaktivieren. Dieser Status wird gespeichert und bleibt erhalten, bis sich ein Nutzer mit anderen Einstellungen anmeldet.
-
-          Hinweis: Sofern konfiguriert, überschreibt "<ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" />" diese Richtlinie.</translation>
 <translation id="538108065117008131">Verarbeitung der folgenden Inhaltstypen durch <ph name="PRODUCT_FRAME_NAME" /> zulassen</translation>
 <translation id="538768040137709073">Hiermit wird die Funktion "Geteilte Zwischenablage" aktiviert. Mit ihr kann Text zwischen Chrome-Computern und einem Android-Gerät geteilt werden, solange die Synchronisierung aktiviert und der Nutzer angemeldet ist.
 
@@ -3288,7 +3200,6 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
       Ist sie auf "False" gesetzt oder nicht konfiguriert, sind die Funktionen von Web Components v0 ab M80 standardmäßig deaktiviert.
 
       Diese Richtlinie wird nach Chrome 84 entfernt.</translation>
-<translation id="5763698334786515749">Schaltfläche zum Anzeigen des Passworts auf dem Start- oder Sperrbildschirm aktivieren.</translation>
 <translation id="5765780083710877561">Beschreibung:</translation>
 <translation id="5770738360657678870">Entwicklerversion (möglicherweise nicht stabil)</translation>
 <translation id="5774856474228476867">Such-URL der Standardsuchmaschine</translation>
@@ -3787,9 +3698,6 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
       Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer beliebige auf dem System installierte Plug-ins verwenden, ausgenommen inkompatible, veraltete oder gefährliche Plug-ins, die hartcodiert sind.</translation>
 <translation id="6571871508154591774">Kamera, Browser-Einstellungen und Einstellungsmöglichkeiten des Betriebssystems deaktivieren</translation>
 <translation id="6573305661369899995">Eine externe Quelle für URL-Einschränkungen festlegen</translation>
-<translation id="6574770600243153999">PluginVm für dieses Gerät aktivieren.
-
-      Wenn diese Richtlinie auf "false" gesetzt oder nicht konfiguriert ist, ist <ph name="PLUGIN_VM_NAME" /> für das Gerät nicht aktiviert. Ist die Richtlinie auf "true" gesetzt, ist <ph name="PLUGIN_VM_NAME" /> für das Gerät aktiviert, solange andere Einstellungen dies ebenfalls zulassen. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> muss "true" sein und entweder <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" />, <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> oder <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> müssen für <ph name="PLUGIN_VM_NAME" /> aktiviert sein.</translation>
 <translation id="6583851521569686409">Hiermit wird eine Liste von Druckern konfiguriert.
 
       Mit dieser Richtlinie können Administratoren den Nutzern Druckerkonfigurationen zur Verfügung stellen.
@@ -3847,7 +3755,6 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 <translation id="6665670272107384733">Festlegen, wie oft der Nutzer das Passwort eingeben muss, um das schnelle Entsperren zu verwenden</translation>
 <translation id="6672070613706645316">Nutzern erlauben, den Hintergrund auf der "Neuer Tab"-Seite anzupassen</translation>
 <translation id="6672630473862787247">Aktiviert die passive Authentifizierung für reguläre, Inkognito- und Gastsitzungen.</translation>
-<translation id="6677797768774898583">Wenn die Funktion aktiviert ist, kann der Nutzer eine Schaltfläche anklicken und sich so das Passwort auf dem Start- oder Sperrbildschirm anzeigen lassen.</translation>
 <translation id="6685903773201985073">Aktiviert die passive Authentifizierung für Gast- und reguläre Sitzungen.</translation>
 <translation id="6689792153960219308">Hardwarestatus senden</translation>
 <translation id="6698632841807204978">Schwarz-Weiß-Druck aktivieren</translation>
@@ -3922,15 +3829,6 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 <translation id="6907778402784621686">Unsichere Inhalte auf diesen Websites blockieren</translation>
 <translation id="6908640907898649429">Konfiguriert die Standardsuchmaschine. Sie können die Standardsuchmaschine für die Nutzer auswählen oder die Standardsuche deaktivieren.</translation>
 <translation id="6913068954484253496"><ph name="PRODUCT_NAME" /> erlauben, eine Verbindung zu Übertragungsgeräten unter allen IP-Adressen herzustellen.</translation>
-<translation id="6915442654606973733">Hiermit wird die Bedienungshilfefunktion für das gesprochene Feedback aktiviert.
-
-          Ist diese Richtlinie auf "true" gesetzt, ist das gesprochene Feedback immer aktiviert.
-
-          Ist diese Richtlinie auf "false" gesetzt, ist das gesprochene Feedback immer deaktiviert.
-
-          Wenn Sie diese Richtlinie konfigurieren, können die Nutzer sie nicht ändern oder außer Kraft setzen.
-
-          Wird diese Richtlinie nicht konfiguriert, ist das gesprochene Feedback zunächst deaktiviert, kann aber von den Nutzern jederzeit aktiviert werden.</translation>
 <translation id="6916507170737609563">
       Es ist sinnvoll, sich die Einstellung der Richtlinie "IsolateOriginsAndroid" anzusehen, um die Auswirkungen auf die Nutzer bei der Isolierung von Websites gering zu halten. Verwenden Sie dazu "IsolateOriginsAndroid" mit einer Liste von Websites, die Sie isolieren möchten. Mit der Einstellung "SitePerProcessAndroid" werden alle Websites isoliert.
       Wenn die Richtlinie aktiviert ist, wird für jede Website ein eigener Prozess ausgeführt.
@@ -4587,17 +4485,6 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
 
       Die dynamische Aktualisierung dieser Einstellung wird ab M56 unterstützt.</translation>
 <translation id="7841880500990419427">TLS-Mindestversion für Fallback</translation>
-<translation id="7842317008224536842">Hiermit wird der Standardstatus der Bedienungshilfefunktion für den Modus mit hohem Kontrast auf dem Anmeldebildschirm festgelegt.
-
-          Wird diese Richtlinie auf "true" gesetzt, ist der Modus mit hohem Kontrast aktiviert, wenn der Anmeldebildschirm angezeigt wird.
-
-          Wird sie auf "false" gesetzt, ist der Modus mit hohem Kontrast deaktiviert, wenn der Anmeldebildschirm angezeigt wird.
-
-          Wenn Sie diese Richtlinie konfigurieren, können Nutzer sie vorübergehend überschreiben, indem sie den Modus mit hohem Kontrast aktivieren bzw. deaktivieren. Die Nutzerauswahl ist jedoch nicht dauerhaft und die Standardeinstellung wird wiederhergestellt, sobald der Anmeldebildschirm neu angezeigt wird oder der Nutzer auf dem Anmeldebildschirm eine Minute lang inaktiv ist.
-
-          Wenn diese Richtlinie nicht konfiguriert wird, ist der Modus mit hohem Kontrast deaktiviert, wenn der Anmeldebildschirm das erste Mal angezeigt wird. Die Nutzer können den Modus mit hohem Kontrast jederzeit aktivieren oder deaktivieren und dieser Status bleibt auf der Anmeldeseite bei einem Nutzerwechsel erhalten.
-
-          Hinweis: Sofern konfiguriert, überschreibt "<ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" />" diese Richtlinie.</translation>
 <translation id="7846952520291088817">URLs, für die lokale IPs in WebRTC ICE Candidates offengelegt sind</translation>
 <translation id="7848641140449742406">Einstellungen des Betriebssystems</translation>
 <translation id="7858404742201086014">Wenn Sie diese Einstellung aktivieren, werden veraltete Plug-ins als normale Plug-ins verwendet.
@@ -4799,15 +4686,6 @@ Wenn diese Richtlinie auf "False" gesetzt ist, wird der Datenschutzbildschirm be
 Wird sie konfiguriert, kann der Nutzer den Wert nicht überschreiben, wenn der Anmeldebildschirm angezeigt wird.
 
 Wird diese Richtlinie nicht konfiguriert, ist der Datenschutzbildschirm anfangs deaktiviert. Der Nutzer kann ihn aber steuern, wenn der Anmeldebildschirm angezeigt wird.</translation>
-<translation id="8148901634826284024">Hiermit wird die Bedienungshilfefunktion für den Modus mit hohem Kontrast aktiviert.
-
-          Ist diese Richtlinie auf "true" gesetzt, ist der Modus mit hohem Kontrast immer aktiviert.
-
-          Ist diese Richtlinie auf "false" gesetzt, ist der Modus mit hohem Kontrast immer deaktiviert.
-
-          Wenn Sie diese Richtlinie konfigurieren, können die Nutzer sie nicht ändern oder außer Kraft setzen.
-
-          Wird die Richtlinie nicht konfiguriert, ist der Modus mit hohem Kontrast zunächst deaktiviert, kann aber von den Nutzern jederzeit aktiviert werden.</translation>
 <translation id="815061180603915310">Bei Aktivierung erzwingt diese Richtlinie die Nutzung des flüchtigen Modus. Falls diese Richtlinie als BS-Richtlinie angegeben wird (wie GPO unter Windows), gilt sie für jedes Profil im System. Wird sie hingegen als Cloud-Richtlinie festgelegt, gilt sie nur für ein bei einem verwalteten Konto angemeldetes Profil.
 
       In diesem Modus werden die Profildaten nur für die Dauer der Nutzersitzung auf der Festplatte behalten. Elemente wie der Browserverlauf, Erweiterungen und ihre Daten, Webdaten wie Cookies und Webdatenbanken werden nach dem Schließen des Browsers nicht beibehalten. Dies hindert den Nutzer jedoch nicht daran, Daten manuell auf die Festplatte herunterzuladen, Seiten zu speichern oder zu drucken.
@@ -5486,7 +5364,7 @@ Wenn die Richtlinie auf "true" gesetzt ist, ist "Kopf- und Fußzeilen" im Dialog
 <translation id="924557436754151212">Gespeicherte Passwörter bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="929549405492388749">Wird die Richtlinie auf "true" gesetzt, wird die Aktivierung von AppCache erzwungen, selbst wenn AppCache in Chrome nicht standardmäßig verfügbar ist.
 
-      Wird die Richtlinie nicht oder auf "false" gesetzt, folgt AppCache der Standardeinstellung von Chrome.</translation>
+      Wird die Richtlinie nicht festgelegt oder auf "false" gesetzt, folgt AppCache der Standardeinstellung von Chrome.</translation>
 <translation id="930930237275114205">Verzeichnis für <ph name="PRODUCT_FRAME_NAME" />-Nutzerdaten festlegen</translation>
 <translation id="940706688964479124">Liste von Dateitypen, die nach dem Download automatisch geöffnet werden sollen</translation>
 <translation id="943865157632139008">Mit dieser Richtlinie können Sie den standardmäßigen HTML-Renderer konfigurieren, wenn <ph name="PRODUCT_FRAME_NAME" /> installiert ist.

@@ -45,12 +45,12 @@ def main():
                               command_line_flags_file=${FLAGS_FILE},
                               proguard_mapping_path=resolve(${MAPPING_PATH}),
                               target_cpu=${TARGET_CPU},
-                              system_image_locales=${SYSTEM_IMAGE_LOCALES})
+                              system_image_locales=${SYSTEM_IMAGE_LOCALES},
+                              default_modules=${DEFAULT_MODULES})
 
 if __name__ == '__main__':
   sys.exit(main())
 """)
-
 
 def main(args):
   args = build_utils.ExpandFileArgs(args)
@@ -74,6 +74,7 @@ def main(args):
   parser.add_argument('--proguard-mapping-path')
   parser.add_argument('--target-cpu')
   parser.add_argument('--system-image-locales')
+  parser.add_argument('--default-modules', nargs='*', default=[])
   args = parser.parse_args(args)
 
   def relativize(path):
@@ -114,6 +115,8 @@ def main(args):
         repr(args.target_cpu),
         'SYSTEM_IMAGE_LOCALES':
         repr(build_utils.ParseGnList(args.system_image_locales)),
+        'DEFAULT_MODULES':
+        repr(args.default_modules),
     }
     script.write(SCRIPT_TEMPLATE.substitute(script_dict))
   os.chmod(args.script_output_path, 0750)

@@ -358,10 +358,10 @@ void InputHandlerProxy::DispatchSingleInputEvent(
       input_handler_->CreateLatencyInfoSwapPromiseMonitor(
           &monitored_latency_info);
   auto scoped_event_metrics_monitor =
-      input_handler_->GetScopedEventMetricsMonitor(
-          {event_with_callback->event().GetTypeAsUiEventType(),
-           event_with_callback->event().TimeStamp(),
-           event_with_callback->event().GetScrollInputType()});
+      input_handler_->GetScopedEventMetricsMonitor(cc::EventMetrics::Create(
+          event_with_callback->event().GetTypeAsUiEventType(),
+          event_with_callback->event().TimeStamp(),
+          event_with_callback->event().GetScrollInputType()));
 
   current_overscroll_params_.reset();
 

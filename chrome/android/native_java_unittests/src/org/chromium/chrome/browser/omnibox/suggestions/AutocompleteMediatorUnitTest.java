@@ -562,6 +562,40 @@ public class AutocompleteMediatorUnitTest {
     @CalledByNativeJavaTest
     @NativeJavaTestFeatures.Disable({ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT,
             ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
+    public void
+    updateSuggestionsList_suggestionsAreRebuiltOnSubsequentInteractions() {
+        // This test validates scenario:
+        // 1. user focuses omnibox
+        // 2. AutocompleteMediator receives suggestions
+        // 3. user sees suggestions, but leaves omnibox
+        // 4. user focuses omnibox again
+        // 5. AutocompleteMediator receives same suggestions as in (2)
+        // 6. user sees suggestions again.
+        final List<OmniboxSuggestion> res1 = buildDummySuggestionsList(10, "Suggestion");
+        final List<OmniboxSuggestion> res2 = buildDummySuggestionsList(10, "Suggestion");
+        Assert.assertEquals(res1, res2);
+
+        mMediator.onNativeInitialized();
+        mMediator.onSuggestionsReceived(new AutocompleteResult(res1, null), "");
+        Assert.assertEquals(mMediator.getSuggestionViewInfoListForTest().size(), res1.size());
+        Assert.assertTrue(mListModel.get(SuggestionListProperties.VISIBLE));
+
+        mMediator.onUrlFocusChange(false);
+        Assert.assertFalse(mListModel.get(SuggestionListProperties.VISIBLE));
+        Assert.assertEquals(mMediator.getSuggestionViewInfoListForTest().size(), 0);
+
+        // Simulate omnibox focused. this bypasses the native call to fetch suggestions.
+        mMediator.setSuggestionVisibilityState(
+                AutocompleteMediator.SuggestionVisibilityState.ALLOWED);
+
+        mMediator.onSuggestionsReceived(new AutocompleteResult(res2, null), "");
+        Assert.assertEquals(mMediator.getSuggestionViewInfoListForTest().size(), res2.size());
+        Assert.assertTrue(mListModel.get(SuggestionListProperties.VISIBLE));
+    }
+
+    @CalledByNativeJavaTest
+    @NativeJavaTestFeatures.Disable({ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT,
+            ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
     public void onTextChanged_emptyTextTriggersZeroSuggest() {
         when(mAutocompleteDelegate.isUrlBarFocused()).thenReturn(true);
         when(mAutocompleteDelegate.didFocusUrlFromFakebox()).thenReturn(false);

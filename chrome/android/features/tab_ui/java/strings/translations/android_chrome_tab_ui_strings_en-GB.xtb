@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Create group</translation>
 <translation id="2671423594960767771">Share group</translation>
 <translation id="2977480621796371840">Remove from group</translation>
+<translation id="3328308545011660196">Suggestion: <ph name="NUMBER_OF_TABS" /> tabs seem related. Group them?</translation>
+<translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> tabs seem related. Group them?</translation>
 <translation id="4212246570487010370">Continue browsing</translation>
 <translation id="4450893287417543264">Don't show again</translation>
 <translation id="4648718555153979859">Your tabs are grouped together here</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Remove tabs from group</translation>
 <translation id="7559245342362162951">Show group's tabs in full-screen grid</translation>
 <translation id="7792771145871471484">Review the suggestions.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Group <ph name="TABS_COUNT_ONE" /> selected tab}other{Group <ph name="TABS_COUNT_MANY" /> selected tabs}}</translation>
 <translation id="7885132941432959125">Move tab right</translation>
 <translation id="7966321538264951561">Dismiss the suggestions.</translation>
 <translation id="814503310257431685">View all</translation>

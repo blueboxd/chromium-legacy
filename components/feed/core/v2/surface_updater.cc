@@ -9,6 +9,7 @@
 #include "base/check.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/feed/core/v2/feed_stream.h"
+#include "components/feed/core/v2/metrics_reporter.h"
 
 namespace feed {
 namespace {
@@ -159,7 +160,8 @@ bool SurfaceUpdater::DrawState::operator==(const DrawState& rhs) const {
          std::tie(rhs.loading_more, rhs.loading_initial, rhs.zero_state_type);
 }
 
-SurfaceUpdater::SurfaceUpdater() = default;
+SurfaceUpdater::SurfaceUpdater(MetricsReporter* metrics_reporter)
+    : metrics_reporter_(metrics_reporter) {}
 SurfaceUpdater::~SurfaceUpdater() = default;
 
 void SurfaceUpdater::SetModel(StreamModel* model) {
@@ -194,7 +196,7 @@ void SurfaceUpdater::OnUiUpdate(const StreamModel::UiUpdate& update) {
 }
 
 void SurfaceUpdater::SurfaceAdded(SurfaceInterface* surface) {
-  surface->StreamUpdate(GetUpdateForNewSurface(GetState(), model_));
+  SendUpdateToSurface(surface, GetUpdateForNewSurface(GetState(), model_));
   surfaces_.AddObserver(surface);
 }
 
@@ -264,11 +266,29 @@ void SurfaceUpdater::SendStreamUpdate(
       MakeStreamUpdate(updated_shared_state_ids, sent_content_, model_, state);
 
   for (SurfaceInterface& surface : surfaces_) {
-    surface.StreamUpdate(stream_update);
+    SendUpdateToSurface(&surface, stream_update);
   }
 
   sent_content_ = GetContentSet(model_);
   last_draw_state_ = state;
+}
+
+void SurfaceUpdater::SendUpdateToSurface(SurfaceInterface* surface,
+                                         const feedui::StreamUpdate& update) {
+  surface->StreamUpdate(update);
+
+  // Call |MetricsReporter::SurfaceReceivedContent()| if appropriate.
+
+  bool update_has_content = false;
+  for (const feedui::StreamUpdate_SliceUpdate& slice_update :
+       update.updated_slices()) {
+    if (slice_update.has_slice() && slice_update.slice().has_xsurface_slice()) {
+      update_has_content = true;
+    }
+  }
+  if (!update_has_content)
+    return;
+  metrics_reporter_->SurfaceReceivedContent(surface->GetSurfaceId());
 }
 
 }  // namespace feed

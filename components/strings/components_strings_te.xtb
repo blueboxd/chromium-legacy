@@ -271,6 +271,7 @@
 <translation id="2094505752054353250">డొమైన్ సరిపోలలేదు</translation>
 <translation id="2096368010154057602">శాఖ</translation>
 <translation id="2099652385553570808">ఎడమవైపు ట్రిపుల్ స్టేపుల్</translation>
+<translation id="2101225219012730419">వెర్షన్:</translation>
 <translation id="2102134110707549001">బలమైన పాస్‌వర్డ్‌ను సూచించు…</translation>
 <translation id="2107021941795971877">ప్రింట్ మద్దతులు</translation>
 <translation id="2108755909498034140">మీ కంప్యూటర్‌ను పునఃప్రారంభించండి</translation>
@@ -444,6 +445,7 @@
 <translation id="2856444702002559011">హ్యాకర్‌లు <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> నుండి మీ సమాచారాన్ని దొంగిలించడానికి ప్రయత్నిస్తూ ఉండవచ్చు (ఉదాహరణకు, పాస్‌వర్డ్‌లు, సందేశాలు లేదా క్రెడిట్ కార్డ్‌లు). <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">పోస్టర్ ఫోల్డ్</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2880660355386638022">విండో స్థలం</translation>
 <translation id="2881276955470682203">కార్డ్‌ను సేవ్ చేయాలా?</translation>
 <translation id="2882949212241984732">డబుల్-గేట్ ఫోల్డ్</translation>
 <translation id="2903493209154104877">చిరునామాలు</translation>
@@ -644,6 +646,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />ప్రాక్సీ, ఫైర్‌వాల్ మరియు DNS కాన్ఫిగరేషన్‌ను తనిఖీ చేయడం<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">ఈ ఎర్రర్‌కు దారితీసే అప్లికేషన్‌లలో యాంటీవైరస్, ఫైర్‌వాల్ మరియు వెబ్ ఫిల్టరింగ్ లేదా ప్రాక్సీ సాఫ్ట్‌వేర్ ఉండవచ్చు.</translation>
 <translation id="373042150751172459">B4 (ఎన్వలప్)</translation>
+<translation id="3731873414101415120">మీరు సందర్శించే వెబ్‌సైట్‌లు అలాగే సురక్షితం కాని పేజీల కంటెంట్‌లు</translation>
 <translation id="3736520371357197498">మీ భద్రతకు వాటిల్లే ఆపదల గురించి మీకు అర్థం అయ్యి ఉంటే, ప్రమాదకరమైన ప్రోగ్రామ్‌లు తీసివేయబడటానికి ముందే <ph name="BEGIN_LINK" />ఈ అసురక్షితమైన సైట్‌ను సందర్శించవచ్చు<ph name="END_LINK" />.</translation>
 <translation id="3744899669254331632">మీరు సందర్శించాలనుకుంటున్న <ph name="SITE" /> వెబ్‌సైట్, Chromium ప్రాసెస్ చేయలేని చిందరవందరైన ఆధారాలను పంపినందున ప్రస్తుతం దాన్ని సందర్శించలేరు. నెట్‌వర్క్ ఎర్ర‌ర్‌లు మరియు దాడులు సాధారణంగా తాత్కాలికంగా మాత్రమే ఉంటాయి. కాబట్టి ఈ పేజీ బహుశా తర్వాత పని చేయవచ్చు.</translation>
 <translation id="3745099705178523657">మీరు నిర్ధారించిన తర్వాత, మీ Google ఖాతా నుండి కార్డ్ వివరాలు ఈ సైట్‌తో షేర్ చేయబడతాయి.</translation>
@@ -910,6 +913,7 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{ఏవీ లేవు}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> శోధన</translation>
 <translation id="4879491255372875719">ఆటోమేటిక్ (డిఫాల్ట్)</translation>
+<translation id="4879725228911483934">విండోలను తెరిచి, మీ స్క్రీన్‌లపై ఉంచండి</translation>
 <translation id="4880827082731008257">శోధన చరిత్ర</translation>
 <translation id="4881695831933465202">తెరువు</translation>
 <translation id="4892518386797173871">వెనుక భాగం</translation>

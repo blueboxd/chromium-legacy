@@ -9,10 +9,10 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "components/background_task_scheduler/background_task_scheduler.h"
 #include "components/query_tiles/internal/image_prefetcher.h"
 #include "components/query_tiles/internal/tile_fetcher.h"
 #include "components/query_tiles/internal/tile_manager.h"
+#include "components/query_tiles/internal/tile_service_scheduler.h"
 #include "components/query_tiles/internal/tile_types.h"
 #include "components/query_tiles/tile_service.h"
 
@@ -32,7 +32,7 @@ class TileServiceImpl : public InitializableTileService {
  public:
   TileServiceImpl(std::unique_ptr<ImagePrefetcher> image_prefetcher,
                   std::unique_ptr<TileManager> tile_manager,
-                  background_task::BackgroundTaskScheduler* scheduler,
+                  std::unique_ptr<TileServiceScheduler> scheduler,
                   std::unique_ptr<TileFetcher> tile_fetcher,
                   base::Clock* clock);
   ~TileServiceImpl() override;
@@ -50,13 +50,11 @@ class TileServiceImpl : public InitializableTileService {
   void GetTile(const std::string& tile_id, TileCallback callback) override;
   void StartFetchForTiles(bool is_from_reduced_mode,
                           BackgroundTaskFinishedCallback callback) override;
+  void CancelTask() override;
 
   // Called when tile manager is initialized.
   void OnTileManagerInitialized(SuccessCallback callback,
                                 TileGroupStatus status);
-  // TODO(hesen): Use an one-off task solution instead of periodic task.
-  // Schedules periodic background task to start fetch.
-  void ScheduleDailyTask();
 
   // Called when fetching from server is completed.
   void OnFetchFinished(bool is_from_reduced_mode,
@@ -80,9 +78,8 @@ class TileServiceImpl : public InitializableTileService {
   // Manages in memory tile group and coordinates with TileStore.
   std::unique_ptr<TileManager> tile_manager_;
 
-  // Background task scheduler, obtained from native
-  // BackgroundTaskSchedulerFactory.
-  background_task::BackgroundTaskScheduler* scheduler_;
+  // Scheduler wraps background_task::Scheduler and manages reschedule logic.
+  std::unique_ptr<TileServiceScheduler> scheduler_;
 
   // Fetcher to execute download jobs from Google server.
   std::unique_ptr<TileFetcher> tile_fetcher_;

@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">အုပ်စုဖွဲ့ရန်</translation>
 <translation id="2671423594960767771">အဖွဲ့ကို မျှဝေရန်</translation>
 <translation id="2977480621796371840">အဖွဲ့မှ ဖယ်ရှားပါ</translation>
+<translation id="3328308545011660196">အကြံပြုချက်- တဘ် <ph name="NUMBER_OF_TABS" /> ခုက ဆက်စပ်ပုံပေါ်သည်။ ၎င်းတို့ကို အုပ်စုဖွဲ့မလား။</translation>
+<translation id="4133493477912226187">တဘ် <ph name="NUMBER_OF_TABS" /> ခုက ဆက်စပ်ပုံပေါ်သည်။ ၎င်းတို့ကို အုပ်စုဖွဲ့မလား။</translation>
 <translation id="4212246570487010370">ဆက်တိုက် ရှာကြည့်ခြင်း</translation>
 <translation id="4450893287417543264">ထပ်မပြပါနှင့်</translation>
 <translation id="4648718555153979859">သင့်တဘ်များကို ဤနေရာတွင် အုပ်စုဖွဲ့ထားသည်</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">အုပ်စုမှ တဘ်များကို ဖယ်ရှားရန်</translation>
 <translation id="7559245342362162951">မျက်နှာပြင်ပြည့် ဇယားကွက်အတွင်း အုပ်စု၏ တဘ်များကို ပြရန်</translation>
 <translation id="7792771145871471484">အကြံပြုချက်များကို စစ်ဆေးရန်။</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{ရွေးထားသောတဘ် <ph name="TABS_COUNT_ONE" /> ခုကို အုပ်စုဖွဲ့ရန်}other{ရွေးထားသောတဘ် <ph name="TABS_COUNT_MANY" /> ခုကို အုပ်စုဖွဲ့ရန်}}</translation>
 <translation id="7885132941432959125">တဘ်ကို ညာဘက်သို့ ရွှေ့ရန်</translation>
 <translation id="7966321538264951561">အကြံပြုချက်များကို ပယ်ပါ။</translation>
 <translation id="814503310257431685">အားလုံးကြည့်ရန်</translation>

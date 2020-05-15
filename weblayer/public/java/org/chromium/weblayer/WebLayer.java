@@ -32,11 +32,11 @@ import org.chromium.weblayer_private.interfaces.IWebLayerFactory;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * WebLayer is responsible for initializing state necessary to use any of the classes in web layer.
@@ -62,7 +62,7 @@ public class WebLayer {
     @NonNull
     private final IWebLayer mImpl;
 
-    private static ClassLoader sWebViewCompatClassLoader;
+    private static Callable<ClassLoader> sWebViewCompatClassLoaderGetter;
 
     /** The result of calling {@link #initializeWebViewCompatibilityMode}. */
     public enum WebViewCompatibilityResult {
@@ -97,15 +97,6 @@ public class WebLayer {
         }
     }
 
-    /** Deprecated. Use initializeWebViewCompatibilityMode(Context) instead. */
-    public static void initializeWebViewCompatibilityMode(@NonNull Context appContext,
-            @NonNull File baseDir, @NonNull Callback<WebViewCompatibilityResult> callback) {
-        WebViewCompatibilityResult result = initializeWebViewCompatibilityMode(appContext);
-        if (callback != null) {
-            callback.onResult(result);
-        }
-    }
-
     /**
      * Performs initialization needed to run WebView and WebLayer in the same process.
      *
@@ -114,7 +105,7 @@ public class WebLayer {
     public static WebViewCompatibilityResult initializeWebViewCompatibilityMode(
             @NonNull Context appContext) {
         ThreadCheck.ensureOnUiThread();
-        if (sWebViewCompatClassLoader != null) {
+        if (sWebViewCompatClassLoaderGetter != null) {
             throw new AndroidRuntimeException(
                     "initializeWebViewCompatibilityMode() has already been called.");
         }
@@ -124,10 +115,10 @@ public class WebLayer {
                     + "loaded.");
         }
         try {
-            Pair<ClassLoader, WebLayer.WebViewCompatibilityResult> result =
+            Pair<Callable<ClassLoader>, WebLayer.WebViewCompatibilityResult> result =
                     WebViewCompatibilityHelper.initialize(
                             appContext, getOrCreateRemoteContext(appContext));
-            sWebViewCompatClassLoader = result.first;
+            sWebViewCompatClassLoaderGetter = result.first;
             return result.second;
         } catch (Exception e) {
             Log.e(TAG, "Unable to initialize WebView compatibility", e);
@@ -271,8 +262,8 @@ public class WebLayer {
             int majorVersion = -1;
             String version = "<unavailable>";
             try {
-                if (sWebViewCompatClassLoader != null) {
-                    remoteClassLoader = sWebViewCompatClassLoader;
+                if (sWebViewCompatClassLoaderGetter != null) {
+                    remoteClassLoader = sWebViewCompatClassLoaderGetter.call();
                 }
                 if (remoteClassLoader == null) {
                     remoteClassLoader = getOrCreateRemoteContext(appContext).getClassLoader();
@@ -290,8 +281,7 @@ public class WebLayer {
                 available = mFactory.isClientSupported();
                 majorVersion = mFactory.getImplementationMajorVersion();
                 version = mFactory.getImplementationVersion();
-            } catch (PackageManager.NameNotFoundException | ReflectiveOperationException
-                    | RemoteException e) {
+            } catch (Exception e) {
                 Log.e(TAG, "Unable to create WebLayerFactory", e);
             }
             mAvailable = available;
@@ -533,6 +523,31 @@ public class WebLayer {
         BrowserFragment fragment = new BrowserFragment();
         fragment.setArguments(args);
         return fragment;
+    }
+
+    /**
+     * Provide WebLayer with a set of active external experiment IDs.
+     *
+     * These experiment IDs are to be incorporated into metrics collection performed by WebLayer
+     * to aid in interpretation of data and elimination of confounding factors.
+     *
+     * This method may be called multiple times to update experient IDs if they change.
+     *
+     * @param experimentIds An array of integer active experiment IDs relevant to WebLayer.
+     *
+     * @since 84
+     */
+    public void registerExternalExperimentIDs(
+            @NonNull String trialName, @NonNull int[] experimentIds) {
+        ThreadCheck.ensureOnUiThread();
+        if (getSupportedMajorVersionInternal() < 84) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            mImpl.registerExternalExperimentIDs(trialName, experimentIds);
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
     }
 
     /**

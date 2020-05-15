@@ -2256,6 +2256,38 @@
       },
     },
 
+    'gpu_skia_renderer_dawn_telemetry_tests': {
+      'dawn_pixel_skia': {
+        'name': 'dawn_pixel_skia_gold_test',
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--test-machine-name',
+          '${buildername}',
+          '--extra-browser-args=--enable-features=UseSkiaRenderer,UiGpuRasterization,SkiaDawn --enable-gpu-rasterization --force-gpu-rasterization --enable-oop-rasterization --disable-gpu-sandbox',
+        ],
+        'linux_args': [
+          '--extra-browser-args=--use-vulkan=native',
+        ],
+        'mixins': [
+          'chrome-gpu-gold-service-account',
+          'skia_gold_test',
+        ],
+        'telemetry_test_name': 'pixel',
+      },
+      'screenshot_sync': {
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--extra-browser-args=--enable-features=UseSkiaRenderer,UiGpuRasterization,SkiaDawn --enable-gpu-rasterization --force-gpu-rasterization --enable-oop-rasterization --disable-gpu-sandbox',
+          # TODO(crbug.com/1021566): Enable the rest of these tests once Canvas
+          # and Software Raster are supported on Skia Dawn.
+          '--test-filter=ScreenshotSync_GPURasterWithDivs',
+        ],
+        'linux_args': [
+          '--extra-browser-args=--use-vulkan=native',
+        ],
+      },
+    },
+
     'gpu_skia_renderer_egl_telemetry_tests': {
       'egl_pixel_skia': {
         'name': 'egl_pixel_skia_gold_test',

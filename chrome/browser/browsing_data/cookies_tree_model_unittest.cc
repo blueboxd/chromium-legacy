@@ -10,13 +10,16 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_media_license_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_quota_helper.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/mock_settings_observer.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/browsing_data/content/cookie_helper.h"
 #include "components/browsing_data/content/mock_appcache_helper.h"
 #include "components/browsing_data/content/mock_cache_storage_helper.h"
 #include "components/browsing_data/content/mock_cookie_helper.h"
@@ -2044,5 +2047,25 @@ TEST_F(CookiesTreeModelTest, MediaLicensesFilter) {
               GetDisplayedMediaLicenses(cookies_model.get()));
   }
 }
+
+TEST_F(CookiesTreeModelTest, CookieDeletionFilterNormalUser) {
+  auto callback =
+      CookiesTreeModel::GetCookieDeletionDisabledCallback(profile_.get());
+  EXPECT_FALSE(callback);
+}
+
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+TEST_F(CookiesTreeModelTest, CookieDeletionFilterChildUser) {
+  profile_->SetSupervisedUserId(supervised_users::kChildAccountSUID);
+  auto callback =
+      CookiesTreeModel::GetCookieDeletionDisabledCallback(profile_.get());
+
+  EXPECT_TRUE(callback);
+  EXPECT_FALSE(callback.Run(GURL("https://google.com")));
+  EXPECT_FALSE(callback.Run(GURL("https://example.com")));
+  EXPECT_TRUE(callback.Run(GURL("http://youtube.com")));
+  EXPECT_TRUE(callback.Run(GURL("https://youtube.com")));
+}
+#endif
 
 }  // namespace

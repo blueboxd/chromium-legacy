@@ -180,6 +180,7 @@ chrome.accessibilityPrivate.FocusType = {
  *   type: !chrome.accessibilityPrivate.FocusType,
  *   color: string,
  *   secondaryColor: (string|undefined),
+ *   backgroundColor: (string|undefined),
  *   id: (string|undefined)
  * }}
  */

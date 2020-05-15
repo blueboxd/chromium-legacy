@@ -439,6 +439,54 @@ enum MarkerType {
   suggestion
 };
 
+// The following three enums are associated with an AutomationEvent.
+
+// A command associated with an AutomationEvent.
+enum EventCommandType {
+  clearSelection,
+  cut,
+  delete,
+  dictate,
+  extendSelection,
+  format,
+  insert,
+  marker,
+  moveSelection,
+  paste,
+  replace,
+  setSelection,
+  type
+};
+
+// A text boundary associated with an AutomationEvent.
+enum EventTextBoundaryType {
+  character,
+  format,
+  lineEnd,
+  lineStart,
+  lineStartOrEnd,
+  object,
+  pageEnd,
+  pageStart,
+  pageStartOrEnd,
+  paragraphEnd,
+  paragraphStart,
+  paragraphStartOrEnd,
+  sentenceEnd,
+  sentenceStart,
+  sentenceStartOrEnd,
+  webPage,
+  wordEnd,
+  wordStart,
+  wordStartOrEnd
+};
+
+// A move direction associated with an AutomationEvent.
+enum EventMoveDirectionType {
+  forward,
+  backward
+};
+
   dictionary Rect {
     long left;
     long top;
@@ -488,6 +536,17 @@ enum MarkerType {
   // Called when the result for a <code>query</code> is available.
   callback QueryCallback = void(AutomationNode node);
 
+  [nocompile, noinline_doc] dictionary AutomationIntent {
+    // A command associated with this AutomationEvent.
+    EventCommandType command;
+
+    // A text boundary associated with this AutomationEvent.
+    EventTextBoundaryType textBoundary;
+
+    // A move direction associated with this AutomationEvent.
+    EventMoveDirectionType moveDirection;
+  };
+
   // An event in the Automation tree.
   [nocompile, noinline_doc] dictionary AutomationEvent {
     // The $(ref:automation.AutomationNode) to which the event was targeted.
@@ -501,6 +560,9 @@ enum MarkerType {
 
     long mouseX;
     long mouseY;
+
+    // Intents associated with this event.
+    AutomationIntent[] intents;
 
     // Stops this event from further processing except for any remaining
     // listeners on $(ref:AutomationEvent.target).

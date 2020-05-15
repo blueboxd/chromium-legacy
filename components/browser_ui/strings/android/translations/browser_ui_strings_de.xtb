@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Auto-Downloads</translation>
 <translation id="5677928146339483299">Blockiert</translation>
 <translation id="5689516760719285838">Ort</translation>
+<translation id="5690795753582697420">Die Kamera wurde in den Android-Einstellungen deaktiviert</translation>
 <translation id="5710871682236653961">Fragen, bevor Websites erlaubt wird, Informationen zu senden und zu empfangen, wenn das Smartphone an NFC-Geräte gehalten wird (empfohlen)</translation>
 <translation id="5719847187258001597">Dadurch werden alle von <ph name="ORIGIN" /> oder der zugehörigen App auf dem Startbildschirm gespeicherten Daten und Cookies gelöscht.</translation>
 <translation id="5804241973901381774">Berechtigungen</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Mehr</translation>
 <translation id="6064125863973209585">Abgeschlossene Downloads</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
+<translation id="6177111841848151710">Für die aktuelle Suchmaschine blockiert</translation>
 <translation id="6181444274883918285">Ausnahme für Website hinzufügen</translation>
 <translation id="6192792657125177640">Ausnahmen</translation>
 <translation id="6194112207524046168">Aktivieren Sie die Kamera auch in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" />, damit Chrome auf sie zugreifen kann.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Diese Seite ist gefährlich. Websiteinformationen</translation>
 <translation id="6965382102122355670">Ok</translation>
 <translation id="6992289844737586249">Nachfragen, bevor Websites auf Ihr Mikrofon zugreifen dürfen (empfohlen)</translation>
+<translation id="7000754031042624318">In den Android-Einstellungen deaktiviert</translation>
+<translation id="7016516562562142042">Für die aktuelle Suchmaschine zugelassen</translation>
 <translation id="7053983685419859001">Blockieren</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ausgewählt}other{# ausgewählt}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ausgewählt. Optionen sind oben auf dem Bildschirm verfügbar</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Wiedergabe von Ton auf einer bestimmten Website zulassen.</translation>
 <translation id="7993619969781047893">Funktionen auf manchen Websites funktionieren möglicherweise nicht mehr</translation>
 <translation id="7999064672810608036">Möchten Sie wirklich alle lokalen Daten einschließlich Cookies löschen und alle Berechtigungen für diese Website zurücksetzen?</translation>
+<translation id="8007176423574883786">Für dieses Gerät deaktiviert</translation>
 <translation id="802154636333426148">Downloadfehler</translation>
 <translation id="8087000398470557479">Dieser Inhalt ist von <ph name="DOMAIN_NAME" /> und wurde von Google bereitgestellt.</translation>
 <translation id="8116925261070264013">Stummgeschaltet</translation>

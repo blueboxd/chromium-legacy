@@ -20,6 +20,9 @@ struct POLICY_EXPORT PolicyDetails {
   // True if this policy has been deprecated.
   bool is_deprecated;
 
+  // True if the policy hasn't been released yet.
+  bool is_future;
+
   // True if this policy is a Chrome OS device policy.
   bool is_device_policy;
 

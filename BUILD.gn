@@ -904,6 +904,7 @@ if (is_win) {
       "//net:net_unittests",
       "//printing:printing_unittests",
       "//sql:sql_unittests",
+      "//third_party/breakpad:symupload($host_toolchain)",
       "//ui/base:ui_base_unittests",
       "//ui/gfx:gfx_unittests",
       "//ui/touch_selection:ui_touch_selection_unittests",

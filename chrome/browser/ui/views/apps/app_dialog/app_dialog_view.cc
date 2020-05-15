@@ -44,7 +44,7 @@ bool AppDialogView::ShouldShowWindowIcon() const {
 }
 
 void AppDialogView::InitializeView(const base::string16& heading_text) {
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
+  SetButtons(ui::DIALOG_BUTTON_OK);
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),

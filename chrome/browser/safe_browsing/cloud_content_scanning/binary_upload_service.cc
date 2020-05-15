@@ -176,6 +176,9 @@ void BinaryUploadService::OnGetInstanceID(Request* request,
     return;
   }
 
+  base::UmaHistogramTimes("SafeBrowsingBinaryUploadRequest.TimeToGetToken",
+                          base::TimeTicks::Now() - start_times_[request]);
+
   request->set_fcm_token(instance_id);
   request->GetRequestData(base::BindOnce(&BinaryUploadService::OnGetRequestData,
                                          weakptr_factory_.GetWeakPtr(),

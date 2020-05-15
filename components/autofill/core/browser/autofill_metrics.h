@@ -901,54 +901,61 @@ class AutofillMetrics {
   // an address profile from a form submission.
   enum class AddressProfileImportRequirementMetric {
     // The form must contain either no or only a single unique email address.
-    EMAIL_ADDRESS_UNIQUE_FULFILLED = 0,
-    EMAIL_ADDRESS_UNIQUE_MISSING = 1,
+    EMAIL_ADDRESS_UNIQUE_REQUIREMENT_FULFILLED = 0,
+    EMAIL_ADDRESS_UNIQUE_REQUIREMENT_VIOLATED = 1,
     // The form is not allowed to contain invalid field types.
-    NO_INVALID_FIELD_TYPES_FULFILLED = 2,
-    NO_INVALID_FIELD_TYPES_MISSING = 3,
+    NO_INVALID_FIELD_TYPES_REQUIREMENT_FULFILLED = 2,
+    NO_INVALID_FIELD_TYPES_REQUIREMENT_VIOLATED = 3,
     // If required by |CountryData|, the form must contain a city entry.
     CITY_REQUIREMENT_FULFILLED = 4,
-    CITY_REQUIREMENT_MISSING = 5,
+    CITY_REQUIREMENT_VIOLATED = 5,
     // If required by |CountryData|, the form must contain a state entry.
     STATE_REQUIREMENT_FULFILLED = 6,
-    STATE_REQUIREMENT_MISSING = 7,
+    STATE_REQUIREMENT_VIOLATED = 7,
     // If required by |CountryData|, the form must contain a ZIP entry.
     ZIP_REQUIREMENT_FULFILLED = 8,
-    ZIP_REQUIREMENT_MISSING = 9,
+    ZIP_REQUIREMENT_VIOLATED = 9,
     // If present, the email address must be valid.
-    EMAIL_VALID_FULFILLED = 10,
-    EMAIL_VALID_MISSING = 11,
+    EMAIL_VALID_REQUIREMENT_FULFILLED = 10,
+    EMAIL_VALID_REQUIREMENT_VIOLATED = 11,
     // If present, the country must be valid.
-    COUNTRY_VALID_FULFILLED = 12,
-    COUNTRY_VALID_MISSING = 13,
+    COUNTRY_VALID_REQUIREMENT_FULFILLED = 12,
+    COUNTRY_VALID_REQUIREMENT_VIOLATED = 13,
     // If present, the state must be valid (if verifiable).
-    STATE_VALID_FULFILLED = 14,
-    STATE_VALID_MISSING = 15,
+    STATE_VALID_REQUIREMENT_FULFILLED = 14,
+    STATE_VALID_REQUIREMENT_VIOLATED = 15,
     // If present, the ZIP must be valid (if verifiable).
-    ZIP_VALID_FULFILLED = 16,
-    ZIP_VALID_MISSING = 17,
+    ZIP_VALID_REQUIREMENT_FULFILLED = 16,
+    ZIP_VALID_REQUIREMENT_VIOLATED = 17,
     // If present, the phone number must be valid (if verifiable).
-    PHONE_VALID_FULFILLED = 18,
-    PHONE_VALID_MISSING = 19,
+    PHONE_VALID_REQUIREMENT_FULFILLED = 18,
+    PHONE_VALID_REQUIREMENT_VIOLATED = 19,
     // Indicates the overall status of the import requirements check.
-    OVERALL_FULFILLED = 20,
-    OVERALL_MISSING = 21,
+    OVERALL_REQUIREMENT_FULFILLED = 20,
+    OVERALL_REQUIREMENT_VIOLATED = 21,
+    // If required by |CountryData|, the form must contain a line1 entry.
+    LINE1_REQUIREMENT_FULFILLED = 22,
+    LINE1_REQUIREMENT_VIOLATED = 23,
+    // If required by |CountryData|, the form must contain a either a zip or a
+    // state entry.
+    ZIP_OR_STATE_REQUIREMENT_FULFILLED = 24,
+    ZIP_OR_STATE_REQUIREMENT_VIOLATED = 25,
     // Must be set to the last entry.
-    kMaxValue = OVERALL_MISSING,
+    kMaxValue = ZIP_OR_STATE_REQUIREMENT_VIOLATED,
   };
 
   // Represents the status of the field type requirements that are specific to
   // countries.
   enum class AddressProfileImportCountrySpecificFieldRequirementsMetric {
     ALL_GOOD = 0,
-    ZIP_MISSING = 1,
-    STATE_MISSING = 2,
-    ZIP_STATE_MISSING = 3,
-    CITY_MISSING = 4,
-    ZIP_CITY_MISSING = 5,
-    STATE_CITY_MISSING = 6,
-    ZIP_STATE_CITY_MISSING = 7,
-    kMaxValue = ZIP_STATE_CITY_MISSING,
+    ZIP_REQUIREMENT_VIOLATED = 1,
+    STATE_REQUIREMENT_VIOLATED = 2,
+    ZIP_STATE_REQUIREMENT_VIOLATED = 3,
+    CITY_REQUIREMENT_VIOLATED = 4,
+    ZIP_CITY_REQUIREMENT_VIOLATED = 5,
+    STATE_CITY_REQUIREMENT_VIOLATED = 6,
+    ZIP_STATE_CITY_REQUIREMENT_VIOLATED = 7,
+    kMaxValue = ZIP_STATE_CITY_REQUIREMENT_VIOLATED,
   };
 
   // Utility to log URL keyed form interaction events.

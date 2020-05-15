@@ -6,7 +6,9 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/check_op.h"
+#include "base/files/file.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/smb_client/smb_service.h"
 #include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
@@ -40,6 +42,61 @@ void AllowCredentialsRequestOnUIThread(Profile* profile,
   }
 }
 
+class DeleteRecursivelyOperation {
+ public:
+  DeleteRecursivelyOperation(
+      Profile* profile,
+      const base::FilePath& path,
+      storage::AsyncFileUtil::StatusCallback callback,
+      scoped_refptr<base::SequencedTaskRunner> origin_task_runner)
+      : profile_(profile),
+        path_(path),
+        callback_(std::move(callback)),
+        origin_task_runner_(std::move(origin_task_runner)) {
+    DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
+  }
+
+  DeleteRecursivelyOperation() = delete;
+  DeleteRecursivelyOperation(const DeleteRecursivelyOperation&) = delete;
+  DeleteRecursivelyOperation& operator=(const DeleteRecursivelyOperation&) =
+      delete;
+
+  void Start() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    SmbService* service = SmbServiceFactory::Get(profile_);
+    DCHECK(service);
+    SmbFsShare* share = service->GetSmbFsShareForPath(path_);
+
+    // Because the request is posted from the IO thread, there's no guarantee
+    // the share still exists at this point.
+    if (!share) {
+      origin_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(std::move(callback_), base::File::FILE_ERROR_FAILED));
+      delete this;
+      return;
+    }
+
+    share->DeleteRecursively(
+        path_, base::BindOnce(&DeleteRecursivelyOperation::OnDeleteRecursively,
+                              base::Owned(this)));
+  }
+
+  void OnDeleteRecursively(base::File::Error error) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    // Make StatusCallback on the thread where the operation originated.
+    origin_task_runner_->PostTask(FROM_HERE,
+                                  base::BindOnce(std::move(callback_), error));
+  }
+
+  Profile* const profile_;
+  const base::FilePath path_;
+  storage::AsyncFileUtil::StatusCallback callback_;
+  scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
+};
+
 }  // namespace
 
 SmbFsAsyncFileUtil::SmbFsAsyncFileUtil(Profile* profile)
@@ -68,6 +125,18 @@ void SmbFsAsyncFileUtil::RealReadDirectory(
     ReadDirectoryCallback callback) {
   storage::AsyncFileUtilAdapter::ReadDirectory(std::move(context), url,
                                                std::move(callback));
+}
+
+void SmbFsAsyncFileUtil::DeleteRecursively(
+    std::unique_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
+    StatusCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&DeleteRecursivelyOperation::Start,
+                                base::Unretained(new DeleteRecursivelyOperation(
+                                    profile_, url.path(), std::move(callback),
+                                    base::SequencedTaskRunnerHandle::Get()))));
 }
 
 }  // namespace smb_client

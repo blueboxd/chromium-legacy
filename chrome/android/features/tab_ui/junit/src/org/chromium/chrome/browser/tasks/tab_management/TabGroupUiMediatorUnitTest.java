@@ -820,6 +820,36 @@ public class TabGroupUiMediatorUnitTest {
         verify(mTabGridDialogController).handleBackPressed();
     }
 
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_ANDROID)
+    public void switchTabModel_UiVisible_TabGroup() {
+        initAndAssertProperties(mTab1);
+        assertThat(mTabGroupUiMediator.getIsShowingOverViewModeForTesting(), equalTo(false));
+        TabModel incognitoTabModel = prepareIncognitoTabModel();
+
+        // Mock that tab2 is selected after tab model switch, and tab2 is in a group.
+        doReturn(TAB2_ID).when(mTabModelSelector).getCurrentTabId();
+        mTabModelSelectorObserverArgumentCaptor.getValue().onTabModelSelected(
+                mTabModel, incognitoTabModel);
+
+        verifyResetStrip(true, mTabGroup2);
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_ANDROID)
+    public void switchTabModel_UiNotVisible_TabGroup() {
+        initAndAssertProperties(mTab1);
+        assertThat(mTabGroupUiMediator.getIsShowingOverViewModeForTesting(), equalTo(false));
+        TabModel incognitoTabModel = prepareIncognitoTabModel();
+
+        // Mock that tab1 is selected after tab model switch, and tab1 is a single tab.
+        doReturn(TAB1_ID).when(mTabModelSelector).getCurrentTabId();
+        mTabModelSelectorObserverArgumentCaptor.getValue().onTabModelSelected(
+                mTabModel, incognitoTabModel);
+
+        verifyResetStrip(false, null);
+    }
+
     /*********************** Conditional tab strip related tests *************************/
 
     @Test
@@ -1170,32 +1200,26 @@ public class TabGroupUiMediatorUnitTest {
                 .removeTabGroupObserver(mTabGroupModelFilterObserverArgumentCaptor.capture());
     }
 
-    /*********************** Class common tests *************************/
-
     @Test
-    public void switchToIncognitoTabModel() {
+    @Features.EnableFeatures(ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID)
+    public void switchTabModel_CTS() {
         initAndAssertProperties(mTab1);
-
+        assertThat(mTabGroupUiMediator.getIsShowingOverViewModeForTesting(), equalTo(false));
         TabModel incognitoTabModel = prepareIncognitoTabModel();
 
-        mTabModelSelectorObserverArgumentCaptor.getValue().onTabModelSelected(
-                incognitoTabModel, mTabModel);
-
-        verifyResetStrip(false, null);
-        verify(mSnackbarManager).dismissSnackbars(eq(mTabGroupUiMediator));
-    }
-
-    @Test
-    public void switchToNormalTabModel() {
-        initAndAssertProperties(mTab1);
-
-        TabModel incognitoTabModel = prepareIncognitoTabModel();
+        // Trigger tab strip with a selection.
+        mTabModelObserverArgumentCaptor.getValue().didSelectTab(
+                mTab2, TabSelectionType.FROM_USER, TAB1_ID);
+        verifyResetStrip(true, mAllTabsList);
 
         mTabModelSelectorObserverArgumentCaptor.getValue().onTabModelSelected(
                 mTabModel, incognitoTabModel);
 
-        verifyNeverReset();
+        verify(mSnackbarManager).dismissSnackbars(eq(mTabGroupUiMediator));
+        verifyResetStrip(true, mAllTabsList);
     }
+
+    /*********************** Class common tests *************************/
 
     @Test
     public void themeColorChange() {

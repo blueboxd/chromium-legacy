@@ -9,8 +9,8 @@
 #include <stdint.h>
 #import <UIKit/UIKit.h>
 
-#include "base/logging.h"
 #include "base/metrics/user_metrics.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/system/sys_info.h"

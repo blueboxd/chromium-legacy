@@ -192,12 +192,12 @@ def BulkForkAndCall(func, arg_tuples, **kwargs):
   """Calls |func| in a fork'ed process for each set of args within |arg_tuples|.
 
   Args:
-    kwargs: Common keyword arguments to be passed to |func|.
+    kwargs: Common key word arguments to be passed to |func|.
 
   Yields the return values as they come in.
   """
   arg_tuples = list(arg_tuples)
-  if not arg_tuples:
+  if not len(arg_tuples):
     return
 
   if DISABLE_ASYNC:

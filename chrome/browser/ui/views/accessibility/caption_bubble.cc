@@ -161,8 +161,8 @@ CaptionBubble::CaptionBubble(views::View* anchor,
       destroyed_callback_(std::move(destroyed_callback)),
       ratio_in_parent_x_(kDefaultRatioInParentX),
       ratio_in_parent_y_(kDefaultRatioInParentY) {
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
-  DialogDelegate::set_draggable(true);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
+  set_draggable(true);
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
   // The CaptionBubble is focusable. It will alert the CaptionBubbleFrameView
   // when its focus changes so that the focus ring can be updated.

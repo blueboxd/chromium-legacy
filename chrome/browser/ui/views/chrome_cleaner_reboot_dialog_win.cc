@@ -48,11 +48,10 @@ ChromeCleanerRebootDialog::ChromeCleanerRebootDialog(
     : dialog_controller_(dialog_controller) {
   DCHECK(dialog_controller_);
 
-  DialogDelegate::set_draggable(true);
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(
-          IDS_CHROME_CLEANUP_REBOOT_PROMPT_RESTART_BUTTON_LABEL));
+  set_draggable(true);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(
+                     IDS_CHROME_CLEANUP_REBOOT_PROMPT_RESTART_BUTTON_LABEL));
 
   using Controller = safe_browsing::ChromeCleanerRebootDialogController;
   using ControllerClosureFn = void (Controller::*)(void);
@@ -65,15 +64,15 @@ ChromeCleanerRebootDialog::ChromeCleanerRebootDialog(
     (std::exchange(*controller, nullptr)->*(fn))();
   };
 
-  DialogDelegate::SetAcceptCallback(
-      base::BindOnce(close_callback, base::Unretained(&dialog_controller_),
-                     &Controller::Accept));
-  DialogDelegate::SetCancelCallback(
-      base::BindOnce(close_callback, base::Unretained(&dialog_controller_),
-                     &Controller::Cancel));
-  DialogDelegate::SetCloseCallback(
-      base::BindOnce(close_callback, base::Unretained(&dialog_controller_),
-                     &Controller::Close));
+  SetAcceptCallback(base::BindOnce(close_callback,
+                                   base::Unretained(&dialog_controller_),
+                                   &Controller::Accept));
+  SetCancelCallback(base::BindOnce(close_callback,
+                                   base::Unretained(&dialog_controller_),
+                                   &Controller::Cancel));
+  SetCloseCallback(base::BindOnce(close_callback,
+                                  base::Unretained(&dialog_controller_),
+                                  &Controller::Close));
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
@@ -91,8 +90,8 @@ void ChromeCleanerRebootDialog::Show(Browser* browser) {
   DCHECK(browser);
   DCHECK(dialog_controller_);
 
-  views::Widget* widget = DialogDelegate::CreateDialogWidget(
-      this, nullptr, browser->window()->GetNativeWindow());
+  views::Widget* widget =
+      CreateDialogWidget(this, nullptr, browser->window()->GetNativeWindow());
   widget->SetBounds(GetDialogBounds(browser));
   widget->Show();
 }

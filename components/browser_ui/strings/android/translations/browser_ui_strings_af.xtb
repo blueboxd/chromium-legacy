@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Outomatiese aflaaie</translation>
 <translation id="5677928146339483299">Geblokkeer</translation>
 <translation id="5689516760719285838">Ligging</translation>
+<translation id="5690795753582697420">Kamera is afgeskakel in Android-instellings</translation>
 <translation id="5710871682236653961">Vra voordat jy werwe toelaat om inligting te stuur en te ontvang wanneer jy op NFC-toestelle tik (aanbeveel)</translation>
 <translation id="5719847187258001597">Dit sal alle data en webkoekies uitvee wat deur <ph name="ORIGIN" /> of deur sy program op jou tuisskerm geberg is.</translation>
 <translation id="5804241973901381774">Toestemmings</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Meer</translation>
 <translation id="6064125863973209585">Voltooide aflaaie</translation>
 <translation id="6165508094623778733">Kom meer te wete</translation>
+<translation id="6177111841848151710">Geblokkeer vir huidige soekenjin</translation>
 <translation id="6181444274883918285">Voeg werfuitsondering by</translation>
 <translation id="6192792657125177640">Uitsonderings</translation>
 <translation id="6194112207524046168">Vir Chrome om toegang tot jou kamera te kry, moet jy kamera ook in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aanskakel.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Hierdie bladsy is gevaarlik. Werfinligting</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6992289844737586249">Vra eers voordat werwe toegelaat word om jou mikrofoon te gebruik (aanbeveel)</translation>
+<translation id="7000754031042624318">Afgeskakel in Android-instellings</translation>
+<translation id="7016516562562142042">Toegelaat vir huidige soekenjin</translation>
 <translation id="7053983685419859001">Blokkeer</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 gekies}other{# gekies}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> gekies. Opsies is naby aan die bokant van die skerm beskikbaar</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Laat klank toe vir 'n spesifieke werf.</translation>
 <translation id="7993619969781047893">Kenmerke op sommige werwe kan breek</translation>
 <translation id="7999064672810608036">Is jy seker dat jy alle plaaslike data, insluitend webkoekies, wil uitvee en alle toestemmings vir hierdie webwerf wil terugstel?</translation>
+<translation id="8007176423574883786">Afgeskakel vir hierdie toestel</translation>
 <translation id="802154636333426148">Kon nie aflaai nie</translation>
 <translation id="8087000398470557479">Hierdie inhoud kom van <ph name="DOMAIN_NAME" /> af, afgelewer deur Google.</translation>
 <translation id="8116925261070264013">Gedemp</translation>

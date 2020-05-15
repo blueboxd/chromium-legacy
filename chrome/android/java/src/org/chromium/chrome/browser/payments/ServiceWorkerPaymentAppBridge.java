@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.payments.PayerData;
+import org.chromium.components.payments.PaymentAddressTypeConverter;
 import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.PaymentHandlerHost;
 import org.chromium.content_public.browser.NavigationHandle;

@@ -98,6 +98,9 @@ WebTimeLimitNavigationThrottle::MaybeCreateThrottleFor(
   if (!app_time::WebTimeLimitEnforcer::IsEnabled())
     return nullptr;
 
+  if (!navigation_handle->IsInMainFrame())
+    return nullptr;
+
   // Creating a throttle for both the main frame and sub frames. This prevents
   // kids from circumventing the app restrictions by using iframes in a local
   // html file.

@@ -523,7 +523,6 @@
 <translation id="1650371550981945235">Beviteli lehetőségek megjelenítése</translation>
 <translation id="1651008383952180276">Mindkét alkalommal ugyanazt az összetett jelszót kell megadnia</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Adja hozzá a nyomtatót a Google Cloud Print szolgáltatáshoz, hogy bárhonnan nyomtathasson.}other{Adjon hozzá # nyomtatót a Google Cloud Print szolgáltatáshoz, hogy bárhonnan nyomtathasson.}}</translation>
-<translation id="1655937588105566159">{NUM_EXTENSIONS,plural, =1{Ez a bővítmény veszélyes lehet}other{Ezek a bővítmények veszélyesek lehetnek}}</translation>
 <translation id="1656528038316521561">Háttér átlátszatlansága</translation>
 <translation id="1657406563541664238">Segítsen a <ph name="PRODUCT_NAME" /> fejlesztésében azáltal, hogy automatikusan elküldi a használati statisztikákat és hibajelentéseket a Google részére</translation>
 <translation id="1657937299377480641">Ha újra be szeretnél jelentkezni, hogy hozzáférj az oktatási forrásokhoz, kérd meg egyik szülődet, hogy adjon neked jogosultságot</translation>
@@ -713,7 +712,6 @@
 <translation id="1875387611427697908">Ez csak a következő helyről adható hozzá: <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Nem sikerült lekérni a hitelesítési tokent. Jelentkezzen ki, majd jelentkezzen be újra.</translation>
 <translation id="1877860345998737529">Művelet hozzárendelése kapcsolóhoz</translation>
-<translation id="1878541307036593717">Engedélyek beállítása</translation>
 <translation id="1879000426787380528">Bejelentkezés mint</translation>
 <translation id="1880905663253319515">Törli a "<ph name="CERTIFICATE_NAME" />" tanúsítványt?</translation>
 <translation id="1884013283844450420"><ph name="NETWORK_INDEX" />. hálózat (összesen <ph name="NETWORK_COUNT" />), <ph name="NETWORK_NAME" />, csatlakozás</translation>
@@ -2631,6 +2629,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4359408040881008151">Telepítve az ezt nélkülözni nem tudó bővítmény(ek) miatt.</translation>
 <translation id="4359717112757026264">Városkép</translation>
 <translation id="4361142739114356624">Az ügyféltanúsítvány privát kulcsa hiányzik vagy érvénytelen</translation>
+<translation id="4361745360460842907">Megnyitás lapon</translation>
 <translation id="4363771538994847871">Nem található átküldési cél. Segítségre van szüksége?</translation>
 <translation id="4364327530094270451">Dinnye</translation>
 <translation id="4364567974334641491">A(z) <ph name="APP_NAME" /> megoszt egy ablakot.</translation>
@@ -3092,7 +3091,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4994474651455208930">A webhelyek kérhetik, hogy protokollok alapértelmezett kezelői legyenek</translation>
 <translation id="4994754230098574403">Beállítás</translation>
 <translation id="4997086284911172121">Nincs internetkapcsolat.</translation>
-<translation id="4997384734315285248">A Plugin VM eltávolítása</translation>
 <translation id="4998430619171209993">Be</translation>
 <translation id="5000922062037820727">Letiltva (ajánlott)</translation>
 <translation id="5005498671520578047">Jelszó másolása</translation>
@@ -3631,7 +3629,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="570043786759263127">Google Play-alkalmazások és -szolgáltatások</translation>
 <translation id="5700836101007545240">A Kapcsolat hozzáadása funkciót letiltotta a rendszergazda</translation>
 <translation id="5701080607174488915">Hiba a kiszolgálóról származó irányelv fogadásakor.</translation>
-<translation id="5701212929149679556">Mobil roaming</translation>
+<translation id="5701212929149679556">Mobilroaming</translation>
 <translation id="5701381305118179107">Középre</translation>
 <translation id="5701441174893770082">A Linux frissítése jelentősen igénybe veheti az akkumulátort. Csatlakoztassa töltőre az eszközét, és próbálja újra.</translation>
 <translation id="5702898740348134351">&amp;Keresők szerkesztése...</translation>
@@ -3697,6 +3695,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="5785583009707899920">Chrome-fájlokkal kapcsolatos segédprogramok</translation>
 <translation id="5787146423283493983">Kulcsmegegyezés</translation>
 <translation id="5788367137662787332">Elnézést kérünk, de a(z) <ph name="DEVICE_LABEL" /> eszköz legalább egy partíciója nem csatolható.</translation>
+<translation id="5790085346892983794">Siker</translation>
 <translation id="5792728279623964091">Koppintson a bekapcsológombra</translation>
 <translation id="5793339252089865437">Ha mobilhálózaton keresztül tölti le a frissítést, akkor előfordulhat, hogy jelentős többletdíjat kell fizetnie.</translation>
 <translation id="5794414402486823030">Megnyitás mindig a rendszer megtekintőjével</translation>
@@ -4629,6 +4628,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7004402701596653846">A webhely MIDI-eszközöket használhat</translation>
 <translation id="7004499039102548441">Nemrég megnyitott lapok</translation>
 <translation id="7005496624875927304">További engedélyek</translation>
+<translation id="7005812687360380971">Hiba</translation>
 <translation id="7005848115657603926">Érvénytelen oldaltartomány; próbálja így: <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Alsó margó</translation>
 <translation id="7007648447224463482">Összes megnyitása új ablakban</translation>
@@ -4768,7 +4768,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7191159667348037">Ismeretlen nyomtató (USB)</translation>
 <translation id="7193051357671784796">Ezt az alkalmazást a szervezete adta hozzá. A telepítés befejezéséhez indítsa újra az alkalmazást.</translation>
 <translation id="7193374945610105795">Nincsenek mentett jelszavak a(z) <ph name="ORIGIN" /> webhelyhez</translation>
-<translation id="7194620721202917359">{NUM_APPS,plural, =1{Ez az alkalmazás veszélyes lehet}other{Ezek az alkalmazások veszélyesek lehetnek}}</translation>
 <translation id="7196913789568937443">Biztonsági másolat készítése a Google Drive-ra. Bármikor könnyedén helyreállíthatja adatait, illetve lecserélheti eszközét. A biztonsági másolat alkalmazásadatokat tartalmaz. A biztonsági másolatokat a Google szerveire tölti fel a rendszer, és az Ön Google-fiókjához használt jelszóval titkosítja. <ph name="BEGIN_LINK1" />További információ<ph name="END_LINK1" />.</translation>
 <translation id="7197190419934240522">Böngészés során mindig hozzájut a Google Kereső találataihoz és a Google okos megoldásaihoz</translation>
 <translation id="7197632491113152433"><ph name="NUMBER_OF_APPS" /> olyan alkalmazást találtunk a fiókjában, amely használható ezen az eszközön.</translation>
@@ -5011,7 +5010,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> eszközének vállalati kezelés céljából történő rögzítése sikerült.</translation>
 <translation id="7507207699631365376">Olvassa el a szolgáltató <ph name="BEGIN_LINK" />adatvédelmi irányelveit<ph name="END_LINK" /></translation>
 <translation id="7507930499305566459">Állapotjelentő tanúsítvány</translation>
-<translation id="7508054832109420082">Hozzáférés biztosítása a nyomtatók számára</translation>
 <translation id="7513029293694390567">Automatikus bejelentkezés webhelyekre a tárolt hitelesítő adatokkal. Ha a funkció ki van kapcsolva, akkor a rendszer minden alkalommal megerősítést kér Öntől, mielőtt bejelentkezne az adott webhelyre.</translation>
 <translation id="7514239104543605883">Átmásolás az eszközére</translation>
 <translation id="7514365320538308">Letöltés</translation>
@@ -5170,7 +5168,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7716781361494605745">Netscape tanúsítványkibocsátó -- irányelv URL</translation>
 <translation id="7717014941119698257">Letöltés: <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">Frissítések keresése</translation>
-<translation id="7719070594859855691">Hozzáférés biztosítása a kamerához</translation>
 <translation id="7719367874908701697">Oldal nagyítása/kicsinyítése</translation>
 <translation id="7721179060400456005">Engedélyezi az ablakok több kijelzőre való kiterjesztését</translation>
 <translation id="7722040605881499779">A frissítéshez szükséges tárhely: <ph name="NECESSARY_SPACE" /></translation>
@@ -5460,7 +5457,7 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8058655154417507695">Lejárat éve</translation>
 <translation id="8059417245945632445">&amp;Eszközök vizsgálata</translation>
 <translation id="8059456211585183827">Nincsenek menthető nyomtatók.</translation>
-<translation id="8061091456562007989">Visszaváltoztatás</translation>
+<translation id="8061091456562007989">Visszaállítás</translation>
 <translation id="8063235345342641131">Alapértelmezett zöld avatar</translation>
 <translation id="8063535366119089408">Fájl megtekintése</translation>
 <translation id="8068253693380742035">Érintse meg a bejelentkezéshez</translation>

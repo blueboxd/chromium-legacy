@@ -37,11 +37,6 @@ bool CastDownloadManagerDelegate::DetermineDownloadTarget(
   return true;
 }
 
-bool CastDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
-    const base::FilePath& path) {
-  return false;
-}
-
 bool CastDownloadManagerDelegate::ShouldCompleteDownload(
     download::DownloadItem* item,
     base::OnceClosure callback) {

@@ -3855,6 +3855,7 @@ void AXPlatformNodeAuraLinux::OnInvalidStatusChanged() {
 }
 
 void AXPlatformNodeAuraLinux::OnAlertShown() {
+  DCHECK(ui::IsAlert(GetData().role));
   atk_object_notify_state_change(ATK_OBJECT(GetOrCreateAtkObject()),
                                  ATK_STATE_SHOWING, TRUE);
 }

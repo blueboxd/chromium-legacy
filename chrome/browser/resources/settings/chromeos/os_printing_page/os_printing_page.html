@@ -1,11 +1,13 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/js/assert.js">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="../os_route.html">
 <link rel="import" href="../../router.html">
 <link rel="import" href="../../settings_page/settings_animated_pages.html">
 <link rel="import" href="../../settings_page/settings_subpage.html">
 <link rel="import" href="../../settings_shared_css.html">
+<link rel="import" href="cups_printers_browser_proxy.html">
 <link rel="import" href="cups_printers.html">
 
 <dom-module id="os-settings-printing-page">
@@ -18,6 +20,14 @@
             on-click="onTapCupsPrinters_"
             role-description="$i18n{subpageArrowRoleDescription}">
         </cr-link-row>
+        <template is="dom-if" if="[[isPrintManagementEnabled_]]">
+          <cr-link-row class="hr" id="printManagement"
+              on-click="onOpenPrintManagement_"
+              label="$i18n{printJobsTitle}"
+              sub-label="$i18n{printJobsSublabel}"
+              external>
+          </cr-link-row>
+        </template>
       </div>
       <template is="dom-if" route-path="/cupsPrinters">
         <settings-subpage

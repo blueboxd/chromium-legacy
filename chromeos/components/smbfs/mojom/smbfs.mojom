@@ -4,6 +4,7 @@
 
 module smbfs.mojom;
 
+import "chromeos/components/smbfs/mojom/file_path.mojom";
 import "chromeos/components/smbfs/mojom/ip_address.mojom";
 
 // This file is shared between Chrome and Chrome OS.
@@ -27,6 +28,10 @@ interface SmbFsBootstrap {
 interface SmbFs {
   // Deletes any credentials stored for this share mount.
   RemoveSavedCredentials() => (bool success);
+
+  // Recursively delete |path|, which is the absolute path (within the SMB
+  // share, ie. /dir_a/file_b) of a file or directory.
+  DeleteRecursively(FilePath path) => (DeleteRecursivelyError error);
 };
 
 // Implemented by Chrome, used from SmbFs.
@@ -62,6 +67,26 @@ enum MountError {
 
   // Invalid protocol (i.e. SMB1).
   kInvalidProtocol = 7,
+};
+
+enum DeleteRecursivelyError {
+  // Success.
+  kOk = 0,
+
+  // Generic code for uncategorized errors.
+  kUnknown = 1,
+
+  // The specified path for deletion was not found.
+  kPathNotFound = 2,
+
+  // A file or directory within the tree could not be deleted.
+  kFailedToDeleteNode = 3,
+
+  // A directory within the tree could not be listed.
+  kFailedToListDirectory = 4,
+
+  // A recursive delete is already in progress.
+  kOperationInProgress = 5,
 };
 
 struct Password {

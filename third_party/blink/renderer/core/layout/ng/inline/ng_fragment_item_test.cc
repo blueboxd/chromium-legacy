@@ -6,6 +6,7 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
@@ -25,6 +26,8 @@ class NGFragmentItemTest : public NGLayoutTest,
   NGFragmentItemTest()
       : ScopedLayoutNGFragmentItemForTest(true),
         ScopedLayoutNGFragmentTraversalForTest(true) {}
+
+  void ForceLayout() { RunDocumentLifecycle(); }
 
   LayoutBlockFlow* GetLayoutBlockFlowByElementId(const char* id) {
     return To<LayoutBlockFlow>(GetLayoutObjectByElementId(id));
@@ -278,6 +281,296 @@ TEST_F(NGFragmentItemTest, CulledInlineBox) {
   EXPECT_EQ(IntRect(0, 20, 80, 10), span2->AbsoluteBoundingBoxRect());
 }
 
+// Various nodes/elements to test insertions.
+using CreateNode = Node* (*)(Document&);
+static CreateNode node_creators[] = {
+    [](Document& document) -> Node* { return document.createTextNode("new"); },
+    [](Document& document) -> Node* {
+      return document.CreateRawElement(html_names::kSpanTag);
+    },
+    [](Document& document) -> Node* {
+      Element* element = document.CreateRawElement(html_names::kSpanTag);
+      element->classList().Add("abspos");
+      return element;
+    },
+    [](Document& document) -> Node* {
+      Element* element = document.CreateRawElement(html_names::kSpanTag);
+      element->classList().Add("float");
+      return element;
+    }};
+
+class FragmentItemInsertTest : public NGFragmentItemTest,
+                               public testing::WithParamInterface<CreateNode> {
+};
+
+INSTANTIATE_TEST_SUITE_P(NGFragmentItemTest,
+                         FragmentItemInsertTest,
+                         testing::ValuesIn(node_creators));
+
+// Various nodes/elements to test removals.
+class FragmentItemRemoveTest : public NGFragmentItemTest,
+                               public testing::WithParamInterface<const char*> {
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    NGFragmentItemTest,
+    FragmentItemRemoveTest,
+    testing::Values("text",
+                    "<span>span</span>",
+                    "<span>1234 12345678</span>",
+                    "<span style='display: inline-block'>box</span>",
+                    "<img>",
+                    "<div style='float: left'>float</div>",
+                    "<div style='position: absolute'>abs</div>"));
+
+// Test marking line boxes when inserting a span before the first child.
+TEST_P(FragmentItemInsertTest, MarkLineBoxesDirtyOnInsert) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    .abspos { position: absolute; }
+    .float { float: left; }
+    </style>
+    <div id=container style="font-size: 10px; width: 10ch">
+      12345678
+    </div>
+  )HTML");
+  Node* insert = (*GetParam())(GetDocument());
+  Element* container = GetElementById("container");
+  container->insertBefore(insert, container->firstChild());
+  TestFirstDirtyLineIndex("container", 0);
+}
+
+// Test marking line boxes when appending a span.
+TEST_P(FragmentItemInsertTest, MarkLineBoxesDirtyOnAppend) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    .abspos { position: absolute; }
+    .float { float: left; }
+    </style>
+    <div id=container style="font-size: 10px; width: 10ch">
+      12345678
+    </div>
+  )HTML");
+  Node* insert = (*GetParam())(GetDocument());
+  Element* container = GetElementById("container");
+  container->appendChild(insert);
+  TestFirstDirtyLineIndex("container", 0);
+}
+
+// Test marking line boxes when appending a span on 2nd line.
+TEST_P(FragmentItemInsertTest, MarkLineBoxesDirtyOnAppend2) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    .abspos { position: absolute; }
+    .float { float: left; }
+    </style>
+    <div id=container style="font-size: 10px; width: 10ch">
+      12345678
+      2234
+    </div>
+  )HTML");
+  Node* insert = (*GetParam())(GetDocument());
+  Element* container = GetElementById("container");
+  container->appendChild(insert);
+  TestFirstDirtyLineIndex("container", 1);
+}
+
+// Test marking line boxes when appending a span on 2nd line.
+TEST_P(FragmentItemInsertTest, MarkLineBoxesDirtyOnAppendAfterBR) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    .abspos { position: absolute; }
+    .float { float: left; }
+    </style>
+    <div id=container style="font-size: 10px; width: 10ch">
+      <br>
+      <br>
+    </div>
+  )HTML");
+  Node* insert = (*GetParam())(GetDocument());
+  Element* container = GetElementById("container");
+  container->appendChild(insert);
+  TestFirstDirtyLineIndex("container", 1);
+}
+
+// Test marking line boxes when removing a span.
+TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyOnRemove) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=container style="font-size: 10px; width: 10ch">
+      1234<span id=t>5678</span>
+    </div>
+  )HTML");
+  Element* span = GetElementById("t");
+  span->remove();
+  // TODO(kojii): This can be optimized more.
+  TestFirstDirtyLineIndex("container", 0);
+}
+
+// Test marking line boxes when removing a span.
+TEST_P(FragmentItemRemoveTest, MarkLineBoxesDirtyOnRemoveFirst) {
+  SetBodyInnerHTML(String(R"HTML(
+    <div id=container style="font-size: 10px; width: 10ch">)HTML") +
+                   GetParam() + R"HTML(<span>after</span>
+    </div>
+  )HTML");
+
+  Element* container = GetElementById("container");
+  Node* node = container->firstChild();
+  ASSERT_TRUE(node);
+  node->remove();
+  TestFirstDirtyLineIndex("container", 0);
+}
+
+// Test marking line boxes when removing a span on 2nd line.
+TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyOnRemove2) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=container style="font-size: 10px; width: 10ch">
+      12345678
+      2234<span id=t>5678 3334</span>
+    </div>
+  )HTML");
+  Element* span = GetElementById("t");
+  span->remove();
+  // TODO(kojii): This can be optimized more.
+  TestFirstDirtyLineIndex("container", 0);
+}
+
+// Test marking line boxes when removing a text node on 2nd line.
+TEST_P(FragmentItemRemoveTest, MarkLineBoxesDirtyOnRemoveAfterBR) {
+  SetBodyInnerHTML(String(R"HTML(
+    <div id=container style="font-size: 10px; width: 10ch">
+      line 1
+      <br>)HTML") + GetParam() +
+                   "</div>");
+  Element* container = GetElementById("container");
+  Node* node = container->lastChild();
+  ASSERT_TRUE(node);
+  node->remove();
+  // TODO(kojii): This can be optimized more.
+  TestFirstDirtyLineIndex("container", 0);
+
+  ForceLayout();  // Ensure running layout does not crash.
+}
+
+TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyOnEndSpaceCollapsed) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div {
+      font-size: 10px;
+      width: 8ch;
+    }
+    #empty {
+      background: yellow; /* ensure fragment is created */
+    }
+    #target {
+      display: inline-block;
+    }
+    </style>
+    <div id=container>
+      1234567890
+      1234567890
+      <span id=empty> </span>
+      <span id=target></span></div>
+  )HTML");
+  // Removing #target makes the spaces before it to be collapsed.
+  Element* target = GetElementById("target");
+  target->remove();
+  // TODO(kojii): This can be optimized more.
+  TestFirstDirtyLineIndex("container", 1);
+
+  ForceLayout();  // Ensure running layout does not crash.
+}
+
+// Test marking line boxes when the first span has NeedsLayout. The span is
+// culled.
+TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyOnNeedsLayoutFirst) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=container style="font-size: 10px; width: 10ch">
+      <span id=t>1234</span>5678
+    </div>
+  )HTML");
+  LayoutObject* span = GetLayoutObjectByElementId("t");
+  span->SetNeedsLayout("");
+  // TODO(kojii): This can be optimized more.
+  TestFirstDirtyLineIndex("container", 0);
+}
+
+// Test marking line boxes when the first span has NeedsLayout. The span has a
+// box fragment.
+TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyOnNeedsLayoutFirstWithBox) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=container style="font-size: 10px; width: 10ch">
+      <span id=t style="background: blue">1234</span>5678
+    </div>
+  )HTML");
+  LayoutObject* span = GetLayoutObjectByElementId("t");
+  span->SetNeedsLayout("");
+  // TODO(kojii): This can be optimized more.
+  TestFirstDirtyLineIndex("container", 0);
+}
+
+// Test marking line boxes when a span has NeedsLayout. The span is culled.
+TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyOnNeedsLayout) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=container style="font-size: 10px; width: 10ch">
+      12345678
+      2234<span id=t>5678 3334</span>
+    </div>
+  )HTML");
+  LayoutObject* span = GetLayoutObjectByElementId("t");
+  span->SetNeedsLayout("");
+  // TODO(kojii): This can be optimized more.
+  TestFirstDirtyLineIndex("container", 0);
+}
+
+// Test marking line boxes when a span has NeedsLayout. The span has a box
+// fragment.
+TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyOnNeedsLayoutWithBox) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=container style="font-size: 10px; width: 10ch">
+      12345678
+      2234<span id=t style="background: blue">5678 3334</span>
+    </div>
+  )HTML");
+  LayoutObject* span = GetLayoutObjectByElementId("t");
+  span->SetNeedsLayout("");
+  // TODO(kojii): This can be optimized more.
+  TestFirstDirtyLineIndex("container", 0);
+}
+
+// Test marking line boxes when a span inside a span has NeedsLayout.
+// The parent span has a box fragment, and wraps, so that its fragment
+// is seen earlier in pre-order DFS.
+TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyOnChildOfWrappedBox) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=container style="font-size: 10px">
+      <span style="background: yellow">
+        <span id=t>target</span>
+        <br>
+        12345678
+      </span>
+    </div>
+  )HTML");
+  LayoutObject* span = GetLayoutObjectByElementId("t");
+  span->SetNeedsLayout("");
+  TestFirstDirtyLineIndex("container", 0);
+}
+
+// Test marking line boxes when a span has NeedsLayout. The span has a box
+// fragment.
+TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyInInlineBlock) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=container style="display: inline-block; font-size: 10px">
+      12345678<br>
+      12345678<br>
+    </div>
+  )HTML");
+  Element* container = GetElementById("container");
+  container->appendChild(GetDocument().createTextNode("append"));
+  // TODO(kojii): This can be optimized more.
+  TestFirstDirtyLineIndex("container", 1);
+}
+
 TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyByRemoveChildAfterForcedBreak) {
   SetBodyInnerHTML(R"HTML(
     <div id=container>
@@ -288,7 +581,7 @@ TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyByRemoveChildAfterForcedBreak) {
   )HTML");
   Element& target = *GetDocument().getElementById("target");
   target.remove();
-  // TODO(kojii): This can be more optimized.
+  // TODO(kojii): This can be optimized more.
   TestFirstDirtyLineIndex("container", 0);
 }
 
@@ -302,7 +595,7 @@ TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyByRemoveForcedBreak) {
   )HTML");
   Element& target = *GetDocument().getElementById("target");
   target.remove();
-  // TODO(kojii): This can be more optimized.
+  // TODO(kojii): This can be optimized more.
   TestFirstDirtyLineIndex("container", 0);
 }
 
@@ -317,7 +610,7 @@ TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyByRemoveSpanWithForcedBreak) {
   // |target| is a culled inline box. There is no fragment in fragment tree.
   Element& target = *GetDocument().getElementById("target");
   target.remove();
-  // TODO(kojii): This can be more optimized.
+  // TODO(kojii): This can be optimized more.
   TestFirstDirtyLineIndex("container", 0);
 }
 
@@ -333,7 +626,7 @@ TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyByInsertAtStart) {
   target.parentNode()->insertBefore(Text::Create(GetDocument(), "XYZ"),
                                     &target);
   GetDocument().UpdateStyleAndLayoutTree();
-  // TODO(kojii): This can be more optimized.
+  // TODO(kojii): This can be optimized more.
   TestFirstDirtyLineIndex("container", 0);
 }
 
@@ -363,7 +656,7 @@ TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyByInsertAtMiddle) {
   target.parentNode()->insertBefore(Text::Create(GetDocument(), "XYZ"),
                                     target.nextSibling());
   GetDocument().UpdateStyleAndLayoutTree();
-  // TODO(kojii): This can be more optimized.
+  // TODO(kojii): This can be optimized more.
   TestFirstDirtyLineIndex("container", 0);
 }
 
@@ -377,7 +670,7 @@ TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyByTextSetData) {
   )HTML");
   Element& target = *GetDocument().getElementById("target");
   To<Text>(*target.firstChild()).setData("abc");
-  // TODO(kojii): This can be more optimized.
+  // TODO(kojii): This can be optimized more.
   TestFirstDirtyLineIndex("container", 0);
 }
 
@@ -396,7 +689,7 @@ TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyWrappedLine) {
   )HTML");
   Element& target = *GetDocument().getElementById("target");
   target.remove();
-  // TODO(kojii): This can be more optimized.
+  // TODO(kojii): This can be optimized more.
   TestFirstDirtyLineIndex("container", 0);
 }
 

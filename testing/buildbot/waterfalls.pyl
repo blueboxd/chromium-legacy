@@ -3282,6 +3282,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_skia_renderer_dawn_gtests',
+          'gpu_telemetry_tests': 'gpu_skia_renderer_dawn_telemetry_tests',
         },
       },
       'Linux FYI SkiaRenderer Vulkan (Intel HD 630)': {
@@ -3737,6 +3738,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_skia_renderer_dawn_gtests',
+          'gpu_telemetry_tests': 'gpu_skia_renderer_dawn_telemetry_tests',
         },
       },
       'Win10 FYI x64 SkiaRenderer GL (NVIDIA)': {

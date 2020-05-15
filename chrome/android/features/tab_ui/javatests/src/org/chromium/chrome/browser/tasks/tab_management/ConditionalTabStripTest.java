@@ -237,12 +237,21 @@ public class ConditionalTabStripTest {
         verifyTabModelTabCount(cta, 3, 2);
         assertTrue(cta.getTabModelSelector().isIncognitoSelected());
 
+        // Switch tab model through tab switcher.
         enterTabSwitcher(cta);
         verifyHidingStrip();
         switchTabModel(cta, false);
         verifyHidingStrip();
         clickOnStackTabAtIndex(0, false);
         verifyShowingStrip(cta, false, 3);
+
+        // Switch tab model through creating new tabs.
+        createTabs(cta, true, 2);
+        verifyTabModelTabCount(cta, 3, 4);
+        verifyShowingStrip(cta, true, 4);
+        createTabs(cta, false, 3);
+        verifyTabModelTabCount(cta, 5, 4);
+        verifyShowingStrip(cta, false, 5);
     }
 
     @Test

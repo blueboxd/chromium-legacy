@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Downloads automáticos</translation>
 <translation id="5677928146339483299">Bloqueado</translation>
 <translation id="5689516760719285838">Local</translation>
+<translation id="5690795753582697420">A câmera está desativada nas configurações do Android</translation>
 <translation id="5710871682236653961">Perguntar antes de permitir que sites enviem e recebam informações quando você tocar em dispositivos NFC (recomendado)</translation>
 <translation id="5719847187258001597">Isso limpará todos os dados e cookies armazenados por <ph name="ORIGIN" /> ou pelo app dele na sua tela inicial.</translation>
 <translation id="5804241973901381774">Permissões</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Mais</translation>
 <translation id="6064125863973209585">Downloads concluídos</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
+<translation id="6177111841848151710">Bloqueado para o mecanismo de pesquisa atual</translation>
 <translation id="6181444274883918285">Adicionar site às exceções</translation>
 <translation id="6192792657125177640">Exceções</translation>
 <translation id="6194112207524046168">Para permitir que o Chrome acesse sua câmera, ative-a também nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Esta página é perigosa. Informações do site</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6992289844737586249">Perguntar antes de permitir que sites usem o microfone (recomendado)</translation>
+<translation id="7000754031042624318">Desativada nas configurações do Android</translation>
+<translation id="7016516562562142042">Permitido para o mecanismo de pesquisa atual</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 selecionado}one{# selecionado}other{# selecionados}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> itens selecionados. Opções disponíveis perto da parte superior da tela</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Permitir o som de um site específico.</translation>
 <translation id="7993619969781047893">Os recursos de alguns sites podem apresentar falhas</translation>
 <translation id="7999064672810608036">Você quer mesmo apagar todos os dados locais, inclusive os cookies, e redefinir todas as permissões para este website?</translation>
+<translation id="8007176423574883786">Desativado neste dispositivo</translation>
 <translation id="802154636333426148">Falha no download</translation>
 <translation id="8087000398470557479">Este conteúdo é de <ph name="DOMAIN_NAME" />, veiculado pelo Google.</translation>
 <translation id="8116925261070264013">Com som desativado</translation>

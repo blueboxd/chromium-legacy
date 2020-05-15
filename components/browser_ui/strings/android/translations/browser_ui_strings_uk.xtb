@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Автоматичні завантаження</translation>
 <translation id="5677928146339483299">Заблоковано</translation>
 <translation id="5689516760719285838">Місцезнаходження</translation>
+<translation id="5690795753582697420">Камеру вимкнено в налаштуваннях Android</translation>
 <translation id="5710871682236653961">Запитувати, перш ніж дозволяти сайтам обмінюватися даними з іншими пристроями через NFC (рекомендовано)</translation>
 <translation id="5719847187258001597">Буде видалено всі дані й файли cookie сайту <ph name="ORIGIN" /> або його додатка на головному екрані.</translation>
 <translation id="5804241973901381774">Дозволи</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Більше</translation>
 <translation id="6064125863973209585">Завершені завантаження</translation>
 <translation id="6165508094623778733">Докладніше</translation>
+<translation id="6177111841848151710">Заблоковано для поточної пошукової системи</translation>
 <translation id="6181444274883918285">Додати сайт у список винятків</translation>
 <translation id="6192792657125177640">Винятки</translation>
 <translation id="6194112207524046168">Щоб надати Chrome доступ до камери, також увімкніть її в <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Ця сторінка небезпечна. Інформація про сайт</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6992289844737586249">Запитувати, перш ніж дозволити сайтам використовувати мікрофон (рекомендується)</translation>
+<translation id="7000754031042624318">Вимкнено в налаштуваннях Android</translation>
+<translation id="7016516562562142042">Дозволено для поточної пошукової системи</translation>
 <translation id="7053983685419859001">Блокувати</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Вибрано 1}one{Вибрано #}few{Вибрано #}many{Вибрано #}other{Вибрано #}}</translation>
 <translation id="7087918508125750058">Вибрано <ph name="ITEM_COUNT" />. Панель інструментів розташовано вгорі екрана</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Увімкнути звук для певного сайту.</translation>
 <translation id="7993619969781047893">Функції на деяких сайтах можуть не працювати</translation>
 <translation id="7999064672810608036">Видалити всі локальні дані, зокрема файли cookie, і скинути всі дозволи для цього веб-сайту?</translation>
+<translation id="8007176423574883786">Вимкнено для цього пристрою</translation>
 <translation id="802154636333426148">Не вдалося завантажити</translation>
 <translation id="8087000398470557479">Це вміст із сайту <ph name="DOMAIN_NAME" />, який доставляє Google.</translation>
 <translation id="8116925261070264013">Звук вимкнено</translation>

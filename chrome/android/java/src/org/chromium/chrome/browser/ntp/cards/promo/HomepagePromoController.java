@@ -16,8 +16,6 @@ import androidx.appcompat.content.res.AppCompatResources;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.homepage.HomepageManager.HomepageStateListener;
-import org.chromium.chrome.browser.metrics.ImpressionTracker;
-import org.chromium.chrome.browser.metrics.OneShotImpressionListener;
 import org.chromium.chrome.browser.ntp.cards.promo.HomepagePromoUtils.HomepagePromoAction;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.browser_ui.widget.promo.PromoCardCoordinator;
@@ -57,7 +55,6 @@ public class HomepagePromoController implements HomepageStateListener {
     private HomepagePromoStateListener mStateListener;
     private PromoCardCoordinator mPromoCoordinator;
     private PropertyModel mModel;
-    private @Nullable ImpressionTracker mImpressionTracker;
 
     private boolean mIsPromoShowing;
 
@@ -139,11 +136,6 @@ public class HomepagePromoController implements HomepageStateListener {
 
         HomepagePromoUtils.recordHomepagePromoEvent(HomepagePromoAction.CREATED);
 
-        // Set impression for the promo.
-        mImpressionTracker =
-                new ImpressionTracker(mPromoCoordinator.getKeyViewForImpressionTracking());
-        mImpressionTracker.setListener(new OneShotImpressionListener(this::onPromoSeen));
-
         return mPromoCoordinator;
     }
 
@@ -152,7 +144,9 @@ public class HomepagePromoController implements HomepageStateListener {
 
         PropertyModel.Builder builder = new PropertyModel.Builder(PromoCardProperties.ALL_KEYS);
 
-        builder.with(PromoCardProperties.PRIMARY_BUTTON_CALLBACK, (v) -> onPrimaryButtonClicked());
+        builder.with(PromoCardProperties.PRIMARY_BUTTON_CALLBACK, (v) -> onPrimaryButtonClicked())
+                .with(PromoCardProperties.IMPRESSION_SEEN_CALLBACK, this::onPromoSeen)
+                .with(PromoCardProperties.IS_IMPRESSION_ON_PRIMARY_BUTTON, true);
 
         if (layoutStyle == LayoutStyle.SLIM) {
             Drawable homeIcon =
@@ -216,10 +210,6 @@ public class HomepagePromoController implements HomepageStateListener {
     private void dismissPromoInternal() {
         mIsPromoShowing = false;
         mTracker.dismissed(FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE);
-        if (mImpressionTracker != null) {
-            mImpressionTracker.setListener(null);
-            mImpressionTracker = null;
-        }
         if (mStateListener != null) mStateListener.onHomepagePromoStateChange();
     }
 

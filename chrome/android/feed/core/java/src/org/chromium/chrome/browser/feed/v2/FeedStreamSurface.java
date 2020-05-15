@@ -71,7 +71,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
     /**
      * A {@link TabObserver} that observes navigation related events that originate from Feed
-     * interactions. Calls reportNavigationDone when navigation completes.
+     * interactions. Calls reportPageLoaded when navigation completes.
      */
     private class FeedTabNavigationObserver extends EmptyTabObserver {
         private final boolean mInNewTab;
@@ -82,7 +82,9 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
         @Override
         public void onPageLoadFinished(Tab tab, String url) {
-            FeedStreamSurfaceJni.get().reportNavigationDone(
+            // TODO(jianli): onPageLoadFinished is called on successful load, and if a user manually
+            // stops the page load. We should only capture successful page loads.
+            FeedStreamSurfaceJni.get().reportPageLoaded(
                     mNativeFeedStreamSurface, FeedStreamSurface.this, url, mInNewTab);
             tab.removeObserver(this);
         }
@@ -302,8 +304,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         void reportNavigationStarted(long nativeFeedStreamSurface, FeedStreamSurface caller,
                 String url, boolean inNewTab);
         // TODO(jianli): Call this function at the appropriate time.
-        void reportNavigationDone(long nativeFeedStreamSurface, FeedStreamSurface caller,
-                String url, boolean inNewTab);
+        void reportPageLoaded(long nativeFeedStreamSurface, FeedStreamSurface caller, String url,
+                boolean inNewTab);
         // TODO(jianli): Call this function at the appropriate time.
         void reportOpenAction(
                 long nativeFeedStreamSurface, FeedStreamSurface caller, String sliceId);

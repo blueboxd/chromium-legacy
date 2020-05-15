@@ -274,7 +274,7 @@ public class Fido2CredentialRequestTest {
 
         @Override
         public int getPort() {
-            return 0;
+            return Integer.parseInt(mUrl.getPort());
         }
 
         @Override
@@ -341,6 +341,16 @@ public class Fido2CredentialRequestTest {
             return true;
         }
         return false;
+    }
+
+    @Test
+    @SmallTest
+    public void testConvertOriginToString_defaultPortRemoved() {
+        MockOrigin origin = new MockOrigin();
+        origin.setUrl("https://www.example.com:443");
+
+        String parsedOrigin = mRequest.convertOriginToString(origin);
+        Assert.assertEquals(parsedOrigin, "https://www.example.com");
     }
 
     @Test

@@ -4,13 +4,17 @@
 
 #include "weblayer/browser/weblayer_impl_android.h"
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/page_info/android/page_info_client.h"
+#include "weblayer/browser/android/metrics/weblayer_metrics_service_client.h"
 #include "weblayer/browser/devtools_server_android.h"
 #include "weblayer/browser/java/jni/WebLayerImpl_jni.h"
 #include "weblayer/browser/url_bar/page_info_client_impl.h"
 #include "weblayer/browser/user_agent.h"
+
+using base::android::JavaParamRef;
 
 namespace weblayer {
 
@@ -34,6 +38,22 @@ static base::android::ScopedJavaLocalRef<jstring>
 JNI_WebLayerImpl_GetUserAgentString(JNIEnv* env) {
   return base::android::ConvertUTF8ToJavaString(
       base::android::AttachCurrentThread(), GetUserAgent());
+}
+
+static void JNI_WebLayerImpl_RegisterExternalExperimentIDs(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& jtrial_name,
+    const JavaParamRef<jintArray>& jexperiment_ids) {
+  const std::string trial_name_utf8(ConvertJavaStringToUTF8(env, jtrial_name));
+  std::vector<int> experiment_ids;
+  // A null |jexperiment_ids| is the same as an empty list.
+  if (jexperiment_ids) {
+    base::android::JavaIntArrayToIntVector(env, jexperiment_ids,
+                                           &experiment_ids);
+  }
+
+  WebLayerMetricsServiceClient::GetInstance()
+      ->RegisterSyntheticMultiGroupFieldTrial(trial_name_utf8, experiment_ids);
 }
 
 base::string16 GetClientApplicationName() {

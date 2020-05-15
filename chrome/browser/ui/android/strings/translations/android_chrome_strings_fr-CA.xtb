@@ -387,7 +387,6 @@ Vous seul voyez les images de l'appareil photo. Le site n'y a pas accès.</trans
 <translation id="4250229828105606438">Saisie d'écran</translation>
 <translation id="4256782883801055595">Licences de logiciels libres</translation>
 <translation id="4269820728363426813">Copier l'adresse du lien</translation>
-<translation id="4278390842282768270">Autorisé</translation>
 <translation id="429312253194641664">Un site lit du contenu multimédia</translation>
 <translation id="4298388696830689168">Sites associés</translation>
 <translation id="4307992518367153382">Paramètres de base</translation>
@@ -435,7 +434,6 @@ D'autres formes d'historique de navigation, telles que les recherches et l'activ
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> favoris supprimés</translation>
 <translation id="4665282149850138822">Le site <ph name="NAME" /> a été ajouté à votre écran d'accueil</translation>
 <translation id="4684427112815847243">Tout synchroniser</translation>
-<translation id="4688610874307684559">Exécution dans Chrome (notification initiale)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> autre option de livraison}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> autre option de livraison}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> autres options de livraison}}</translation>
 <translation id="4696983787092045100">Envoyer le message texte à vos appareils</translation>
 <translation id="4698034686595694889">Afficher hors ligne dans <ph name="APP_NAME" /></translation>
@@ -560,10 +558,8 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5659593005791499971">Courriel</translation>
 <translation id="5665379678064389456">Créer un événement dans <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignorer la demande d'un site refusant de faire un zoom avant</translation>
-<translation id="5677928146339483299">Bloqué</translation>
 <translation id="5684874026226664614">Oups… Impossible de traduire cette page.</translation>
 <translation id="5686790454216892815">Nom de fichier trop long</translation>
-<translation id="5690795753582697420">L'appareil photo est désactivé dans les paramètres d'Android</translation>
 <translation id="5694049548840660018">Revenez facilement à votre page d'accueil</translation>
 <translation id="569536719314091526">Utilisez le bouton Plus d'options pour traduire cette page vers n'importe quelle langue</translation>
 <translation id="572328651809341494">Onglets récents</translation>
@@ -619,7 +615,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="614940544461990577">Essayez ceci :</translation>
 <translation id="6154478581116148741">Activez le verrouillage de l'écran dans Paramètres pour exporter vos mots de passe à partir de cet appareil</translation>
 <translation id="6159335304067198720">Économies de données de <ph name="PERCENT" /></translation>
-<translation id="6177111841848151710">Bloquée pour le moteur de recherche actuel</translation>
 <translation id="6192333916571137726">Télécharger le fichier</translation>
 <translation id="6201345951596836663">Lien copié</translation>
 <translation id="6210748933810148297">Pas <ph name="EMAIL" />?</translation>
@@ -706,7 +701,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6846298663435243399">Chargement en cours...</translation>
 <translation id="6850409657436465440">Votre téléchargement est toujours en cours</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> onglets fermés</translation>
-<translation id="6864395892908308021">Cet appareil ne prend pas en charge la technologie NFC</translation>
 <translation id="6864459304226931083">Télécharger l'image</translation>
 <translation id="6865313869410766144">Données de remplissage automatique de formulaires</translation>
 <translation id="6884306546558072722">Continuer d'explorer hors ligne</translation>
@@ -721,9 +715,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6989267951144302301">Échec du téléchargement</translation>
 <translation id="6990079615885386641">Télécharger l'application de la boutique Google Play Store : <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Vous envoyer un avertissement si des mots de passe sont exposés dans une violation de données</translation>
-<translation id="7000754031042624318">Désactivée dans les paramètres Android</translation>
 <translation id="7015203776128479407">La configuration de la synchronisation initiale n'a pas été terminée. La synchronisation est désactivée.</translation>
-<translation id="7016516562562142042">Autorisée pour le moteur de recherche actuel</translation>
 <translation id="7022756207310403729">Ouvrir dans le navigateur</translation>
 <translation id="702463548815491781">Recommandé lorsque le service TalkBack ou Switch Access est activé</translation>
 <translation id="7029809446516969842">Mots de passe</translation>
@@ -756,10 +748,10 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7328017930301109123">En mode simplifié, Chrome charge les pages plus vite et utilise jusqu'à 60 pour cent moins de données.</translation>
 <translation id="7333031090786104871">Ajout du site précédent toujours en cours…</translation>
 <translation id="7340958967809483333">Options pour Découvertes</translation>
+<translation id="7352651011704765696">Une erreur s’est produite</translation>
 <translation id="7352939065658542140">VIDÉO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Partager 1 élément sélectionné}one{Partager # élément sélectionné}other{Partager # éléments sélectionnés}}</translation>
 <translation id="7359002509206457351">Accéder aux modes de paiement</translation>
-<translation id="7362144854749094396">L'historique est partagé avec Chrome. Les préférences sont partagées avec <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Type :</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -841,7 +833,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7986741934819883144">Sélectionner un contact</translation>
 <translation id="7998918019931843664">Rouvrir l'onglet fermé</translation>
 <translation id="8004582292198964060">Navigateur</translation>
-<translation id="8007176423574883786">Désactivé pour cet appareil</translation>
 <translation id="8013372441983637696">Aussi effacer vos données de Chrome de cet appareil</translation>
 <translation id="8015452622527143194">Afficher cette page dans sa taille par défaut</translation>
 <translation id="8026334261755873520">Effacer les données de navigation</translation>
@@ -931,6 +922,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8687353297350450808">{N_BARS,plural, =1{Niveau du signal : # barre}one{Niveau du signal : # barre}other{Niveau du signal : # barres}}</translation>
 <translation id="868929229000858085">Effectuez une recherche dans vos contacts</translation>
 <translation id="869891660844655955">Date d'expiration</translation>
+<translation id="8712637175834984815">OK</translation>
 <translation id="8748850008226585750">Contenus masqués</translation>
 <translation id="8751914237388039244">Sélectionner une image</translation>
 <translation id="8758557275681689734">Afficher tous vos onglets ouverts</translation>

@@ -426,6 +426,12 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, ForceLayout) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, Intents) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "intents.html"))
+      << message_;
+}
+
 #if defined(OS_CHROMEOS)
 
 class AutomationApiTestWithDeviceScaleFactor : public AutomationApiTest {

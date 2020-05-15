@@ -325,7 +325,7 @@
 <translation id="3738139272394829648">المس للبحث</translation>
 <translation id="3739899004075612870">تمت إضافة إشارة مرجعية في <ph name="PRODUCT_NAME" /></translation>
 <translation id="3749259744154402564">غير متوافق</translation>
-<translation id="3763247130972274048">يُرجى النقر بشكل مزدوج على الفيديو يمينًا أو يسارًا لتخطّي 10 ثواني.</translation>
+<translation id="3763247130972274048">يُرجى النقر بشكل مزدوج على الفيديو يمينًا أو يسارًا لتخطّي 10 ثوانٍ.</translation>
 <translation id="3771001275138982843">تعذُّر تنزيل التحديث</translation>
 <translation id="3771033907050503522">علامات تبويب التصفح المتخفي</translation>
 <translation id="3771694256347217732">‏بنود خدمة Google</translation>
@@ -387,7 +387,6 @@
 <translation id="4250229828105606438">لقطة شاشة</translation>
 <translation id="4256782883801055595">تراخيص البرامج المفتوحة المصدر</translation>
 <translation id="4269820728363426813">نسخ عنوان الرابط</translation>
-<translation id="4278390842282768270">منح الإذن</translation>
 <translation id="429312253194641664">تفعيل موقع إلكتروني للوسائط</translation>
 <translation id="4298388696830689168">المواقع المرتبطة</translation>
 <translation id="4307992518367153382">الإعدادات الأساسية</translation>
@@ -435,7 +434,6 @@
 <translation id="4663756553811254707">تم حذف <ph name="NUMBER_OF_BOOKMARKS" /> من الإشارات المرجعية</translation>
 <translation id="4665282149850138822">تمت إضافة <ph name="NAME" /> إلى صفحتك الرئيسية</translation>
 <translation id="4684427112815847243">مزامنة كل شيء</translation>
-<translation id="4688610874307684559">‏قيد التشغيل في Chrome (أوّلي)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 وخيار إضافي واحد (<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />)}zero{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيار إضافي}two{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 وخياران إضافيان (<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />)}few{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيارات إضافية}many{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيارًا إضافيًا}other{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيار إضافي}}</translation>
 <translation id="4696983787092045100">إرسال رسالة نصية إلى أجهزتك</translation>
 <translation id="4698034686595694889">العرض بلا اتصال بالإنترنت في تطبيق <ph name="APP_NAME" /></translation>
@@ -560,10 +558,8 @@
 <translation id="5659593005791499971">البريد الإلكتروني</translation>
 <translation id="5665379678064389456">إنشاء حدث في <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">تجاوز طلب موقع الويب لمنع التكبير</translation>
-<translation id="5677928146339483299">الحظر</translation>
 <translation id="5684874026226664614">عفوًا. تعذرت ترجمة هذه الصفحة.</translation>
 <translation id="5686790454216892815">اسم الملف طويل جدًا</translation>
-<translation id="5690795753582697420">‏تم إيقاف الكاميرا في إعدادات Android.</translation>
 <translation id="5694049548840660018">العودة إلى المنزل بسهولة</translation>
 <translation id="569536719314091526">ترجمة هذه الصفحة إلى أي لغة من خلال الزر "مزيد من الخيارات"</translation>
 <translation id="572328651809341494">علامات التبويب الأخيرة</translation>
@@ -619,7 +615,6 @@
 <translation id="614940544461990577">يمكنك محاولة:</translation>
 <translation id="6154478581116148741">تشغيل قفل الشاشة في الإعدادات لتصدير كلمات المرور من هذا الجهاز</translation>
 <translation id="6159335304067198720">توفير البيانات بنسبة <ph name="PERCENT" /></translation>
-<translation id="6177111841848151710">تم حظره لمحرك البحث الحالي</translation>
 <translation id="6192333916571137726">ملف تحميل</translation>
 <translation id="6201345951596836663">تم نسخ الرابط</translation>
 <translation id="6210748933810148297">ليس <ph name="EMAIL" />؟</translation>
@@ -706,7 +701,6 @@
 <translation id="6846298663435243399">جارٍ التحميل…</translation>
 <translation id="6850409657436465440">لا يزال التنزيل قيد التقدُّم</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> من علامات التبويب المغلقة</translation>
-<translation id="6864395892908308021">‏يتعذّر على هذا الجهاز قراءة NFC.</translation>
 <translation id="6864459304226931083">تنزيل الصورة</translation>
 <translation id="6865313869410766144">الملء التلقائي للبيانات</translation>
 <translation id="6884306546558072722">مواصلة الاطّلاع على المحتوى بلا اتصال بالإنترنت</translation>
@@ -721,9 +715,7 @@
 <translation id="6989267951144302301">تعذّر التنزيل</translation>
 <translation id="6990079615885386641">‏الحصول على التطبيق من متجر Google Play: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">التحذير إذا تم الكشف عن كلمات المرور في عملية اختراق بيانات</translation>
-<translation id="7000754031042624318">‏تم إيقافه في إعدادات Android.</translation>
 <translation id="7015203776128479407">لم ينتهِ إعداد المزامنة الأولية. تم إيقاف المزامنة.</translation>
-<translation id="7016516562562142042">تم منح الإذن لمحرّك البحث الحالي</translation>
 <translation id="7022756207310403729">فتح في المتصفح</translation>
 <translation id="702463548815491781">‏يُوصى به عند تفعيل TalkBack أو الوصول عبر مفتاح التحويل</translation>
 <translation id="7029809446516969842">كلمات المرور</translation>
@@ -756,10 +748,10 @@
 <translation id="7328017930301109123">‏في الوضع البسيط، يُحمِّل Chrome الصفحات بشكلٍ أسرع ويستخدم بيانات أقل بنسبة تصل إلى 60 بالمائة.</translation>
 <translation id="7333031090786104871">لا تزال عملية إضافة موقع الويب السابق جارية</translation>
 <translation id="7340958967809483333">خيارات لميزة "اقتراحات"</translation>
+<translation id="7352651011704765696">حدث خطأ ما</translation>
 <translation id="7352939065658542140">فيديو</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{مشاركة عنصر واحد محدد}zero{مشاركة # عنصر محدد}two{مشاركة عنصرين (#) محددين}few{مشاركة # عناصر محددة}many{مشاركة # عنصرًا محددًا}other{مشاركة # عنصر محدد}}</translation>
 <translation id="7359002509206457351">الوصول إلى طرق الدفع</translation>
-<translation id="7362144854749094396">‏تمت مشاركة السجلّ مع Chrome. وتمت مشاركة الإعدادات المفضّلة مع <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">النوع:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" /></translation>
 <translation id="7400418766976504921">‏عنوان URL</translation>
@@ -841,7 +833,6 @@
 <translation id="7986741934819883144">اختيار جهة اتصال</translation>
 <translation id="7998918019931843664">إعادة فتح علامة التبويب المغلقة</translation>
 <translation id="8004582292198964060">المتصفّح</translation>
-<translation id="8007176423574883786">تم إيقافه لهذا الجهاز</translation>
 <translation id="8013372441983637696">‏محو بيانات Chrome من هذا الجهاز أيضًا</translation>
 <translation id="8015452622527143194">إعادة كامل محتوى الصفحة إلى الحجم التلقائي</translation>
 <translation id="8026334261755873520">محو بيانات التصفُّح</translation>
@@ -931,6 +922,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{مستوى قوة الإشارة: شريط واحد (#)}zero{مستوى قوة الإشارة: # شريط}two{مستوى قوة الإشارة: شريطان (#)}few{مستوى قوة الإشارة: # أشرطة}many{مستوى قوة الإشارة: # شريطًا}other{مستوى قوة الإشارة: # شريط}}</translation>
 <translation id="868929229000858085">البحث في جهات الاتصال</translation>
 <translation id="869891660844655955">تاريخ انتهاء الصلاحية</translation>
+<translation id="8712637175834984815">تم</translation>
 <translation id="8748850008226585750">المحتوى مخفي</translation>
 <translation id="8751914237388039244">اختيار صورة</translation>
 <translation id="8758557275681689734">الاطّلاع على جميع علامات التبويب المفتوحة</translation>

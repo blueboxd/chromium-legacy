@@ -1253,6 +1253,13 @@ struct NativeValueTraits<IDLUnionNotINT<T>> : public NativeValueTraitsBase<T> {
                               exception_state);
     return impl;
   }
+
+  static T ArgumentValue(v8::Isolate* isolate,
+                         int argument_index,
+                         v8::Local<v8::Value> value,
+                         ExceptionState& exception_state) {
+    return NativeValue(isolate, value, exception_state);
+  }
 };
 
 template <typename T>
@@ -1266,6 +1273,13 @@ struct NativeValueTraits<IDLUnionINT<T>> : public NativeValueTraitsBase<T> {
                               exception_state);
     return impl;
   }
+
+  static T ArgumentValue(v8::Isolate* isolate,
+                         int argument_index,
+                         v8::Local<v8::Value> value,
+                         ExceptionState& exception_state) {
+    return NativeValue(isolate, value, exception_state);
+  }
 };
 
 template <typename T>
@@ -1278,6 +1292,13 @@ struct NativeValueTraits<IDLNullable<IDLUnionNotINT<T>>>
       return T();
     return NativeValueTraits<IDLUnionNotINT<T>>::NativeValue(isolate, value,
                                                              exception_state);
+  }
+
+  static T ArgumentValue(v8::Isolate* isolate,
+                         int argument_index,
+                         v8::Local<v8::Value> value,
+                         ExceptionState& exception_state) {
+    return NativeValue(isolate, value, exception_state);
   }
 };
 

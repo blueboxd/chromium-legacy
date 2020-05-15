@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Download otomatis</translation>
 <translation id="5677928146339483299">Diblokir</translation>
 <translation id="5689516760719285838">Lokasi</translation>
+<translation id="5690795753582697420">Kamera dinonaktifkan di setelan Android</translation>
 <translation id="5710871682236653961">Tanyakan sebelum mengizinkan situs untuk mengirim dan menerima info saat Anda mengetuk perangkat NFC (direkomendasikan)</translation>
 <translation id="5719847187258001597">Ini akan menghapus semua data dan cookie yang disimpan oleh <ph name="ORIGIN" /> atau aplikasinya di Layar utama Anda.</translation>
 <translation id="5804241973901381774">Izin</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Lainnya</translation>
 <translation id="6064125863973209585">Download yang selesai</translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
+<translation id="6177111841848151710">Diblokir untuk mesin telusur yang sedang digunakan</translation>
 <translation id="6181444274883918285">Tambahkan pengecualian situs</translation>
 <translation id="6192792657125177640">Pengecualian</translation>
 <translation id="6194112207524046168">Untuk mengizinkan Chrome mengakses kamera Anda, aktifkan juga kamera di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Halaman ini berbahaya. Informasi situs</translation>
 <translation id="6965382102122355670">Oke</translation>
 <translation id="6992289844737586249">Tanya terlebih dahulu sebelum mengizinkan situs menggunakan mikrofon Anda (disarankan)</translation>
+<translation id="7000754031042624318">Dinonaktifkan di setelan Android</translation>
+<translation id="7016516562562142042">Diizinkan untuk mesin telusur yang sedang digunakan</translation>
 <translation id="7053983685419859001">Blokir</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 dipilih}other{# dipilih}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> dipilih. Opsi yang tersedia di dekat bagian atas layar</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Izinkan suara untuk situs tertentu.</translation>
 <translation id="7993619969781047893">Fitur pada beberapa situs mungkin error</translation>
 <translation id="7999064672810608036">Yakin ingin menghapus semua data lokal, termasuk cookie, dan menyetel ulang semua izin untuk situs web ini?</translation>
+<translation id="8007176423574883786">Dinonaktifkan untuk perangkat ini</translation>
 <translation id="802154636333426148">Download gagal</translation>
 <translation id="8087000398470557479">Konten ini dari <ph name="DOMAIN_NAME" />, dikirimkan oleh Google.</translation>
 <translation id="8116925261070264013">Dinonaktifkan</translation>

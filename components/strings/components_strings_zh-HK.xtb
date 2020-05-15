@@ -268,6 +268,7 @@
 <translation id="2094505752054353250">網域不符</translation>
 <translation id="2096368010154057602">省</translation>
 <translation id="2099652385553570808">三釘 (左側)</translation>
+<translation id="2101225219012730419">版本：</translation>
 <translation id="2102134110707549001">建議安全性強的密碼…</translation>
 <translation id="2107021941795971877">列印支援</translation>
 <translation id="2108755909498034140">重新啟動您的電腦</translation>
@@ -437,6 +438,7 @@
 <translation id="2856444702002559011">攻擊者可能會試圖透過 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 竊取您的資料 (例如密碼、訊息或信用卡資料)。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">十字摺</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2880660355386638022">放置視窗</translation>
 <translation id="2881276955470682203">要儲存付款卡嗎？</translation>
 <translation id="2882949212241984732">雙摺頁</translation>
 <translation id="2903493209154104877">地址</translation>
@@ -636,6 +638,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />檢查 Proxy、防火牆和 DNS 設定<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">可能造成此錯誤的應用程式包括防毒軟件、防火牆及網頁篩選或 Proxy 軟件。</translation>
 <translation id="373042150751172459">B4 (信封)</translation>
+<translation id="3731873414101415120">您瀏覽的網站和不安全頁面的內容</translation>
 <translation id="3736520371357197498">如果您瞭解安全性風險，也可以選擇在危險程式尚未被移除的狀態下<ph name="BEGIN_LINK" />瀏覽這個不安全的網站<ph name="END_LINK" />。</translation>
 <translation id="3744899669254331632">您目前無法瀏覽 <ph name="SITE" />，因為該網站傳送了 Chromium 無法處理的干擾憑證。網絡錯誤及攻擊行為通常是短暫性問題，因此這個網頁稍後應可正常運作。</translation>
 <translation id="3745099705178523657">確認後，您的 Google 帳戶會與這個網站共用您的信用卡資料。</translation>
@@ -901,6 +904,7 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{無}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />、<ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />、<ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">搵「<ph name="TEXT" />」</translation>
 <translation id="4879491255372875719">自動 (預設)</translation>
+<translation id="4879725228911483934">在您的螢幕上開啟並放置視窗</translation>
 <translation id="4880827082731008257">搜尋記錄</translation>
 <translation id="4881695831933465202">開啟</translation>
 <translation id="4892518386797173871">後方</translation>

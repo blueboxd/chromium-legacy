@@ -8,6 +8,7 @@
 #include "ios/chrome/common/app_group/app_group_metrics.h"
 #import "ios/chrome/common/credential_provider/credential.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #import "ios/chrome/credential_provider_extension/metrics_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -24,7 +25,7 @@ const CGFloat kHeaderHeight = 70;
 
 #if defined(__IPHONE_13_4)
 // This cell just adds a simple hover pointer interaction to the TableViewCell.
-@interface CredentialListCell : UITableViewCell <UIPointerInteractionDelegate>
+@interface CredentialListCell : UITableViewCell
 @end
 
 @implementation CredentialListCell
@@ -34,33 +35,12 @@ const CGFloat kHeaderHeight = 70;
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
     if (@available(iOS 13.4, *)) {
-      [self
-          addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
+      [self addInteraction:[[ViewPointerInteraction alloc] init]];
     }
   }
   return self;
 }
 
-#pragma mark UIPointerInteractionDelegate
-
-- (UIPointerRegion*)pointerInteraction:(UIPointerInteraction*)interaction
-                      regionForRequest:(UIPointerRegionRequest*)request
-                         defaultRegion:(UIPointerRegion*)defaultRegion
-    API_AVAILABLE(ios(13.4)) {
-  return defaultRegion;
-}
-
-- (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
-                       styleForRegion:(UIPointerRegion*)region
-    API_AVAILABLE(ios(13.4)) {
-  UIPointerHoverEffect* effect = [UIPointerHoverEffect
-      effectWithPreview:[[UITargetedPreview alloc] initWithView:self]];
-  effect.prefersScaledContent = NO;
-  effect.prefersShadow = NO;
-  return [UIPointerStyle styleWithEffect:effect shape:nil];
-}
-
-@end
 #endif  // defined(__IPHONE_13_4)
 
 @interface CredentialListViewController () <UITableViewDataSource,

@@ -287,6 +287,8 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   std::unique_ptr<NavigationItemImpl> empty_window_open_item_;
 
   // The transient item in main frame.
+  // TODO(crbug.com/1028755): Remove the transient item once SafeBrowsing is
+  // launched.
   std::unique_ptr<NavigationItemImpl> transient_item_;
 
   // A placeholder item used when CanTrustLastCommittedItem

@@ -171,7 +171,8 @@ void BrowsingDataSizeCalculator::PerformCalculation() {
         content::BrowserContext::GetDefaultStoragePartition(profile_);
     site_data_size_collector_ = std::make_unique<SiteDataSizeCollector>(
         storage_partition->GetPath(),
-        new browsing_data::CookieHelper(storage_partition),
+        new browsing_data::CookieHelper(storage_partition,
+                                        base::NullCallback()),
         new browsing_data::DatabaseHelper(profile_),
         new browsing_data::LocalStorageHelper(profile_),
         new browsing_data::AppCacheHelper(

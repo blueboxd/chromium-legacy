@@ -101,14 +101,14 @@ class TimeDomainTest : public testing::Test {
 TEST_F(TimeDomainTest, ScheduleWakeUpForQueue) {
   TimeDelta delay = TimeDelta::FromMilliseconds(10);
   TimeTicks delayed_runtime = time_domain_->Now() + delay;
-  EXPECT_TRUE(time_domain_->Empty());
+  EXPECT_TRUE(time_domain_->empty());
   EXPECT_CALL(*time_domain_.get(), SetNextDelayedDoWork(_, delayed_runtime));
   TimeTicks now = time_domain_->Now();
   LazyNow lazy_now(now);
   task_queue_->SetDelayedWakeUpForTesting(
       internal::DelayedWakeUp{now + delay, 0});
 
-  EXPECT_FALSE(time_domain_->Empty());
+  EXPECT_FALSE(time_domain_->empty());
   EXPECT_EQ(delayed_runtime, time_domain_->NextScheduledRunTime());
 
   EXPECT_EQ(task_queue_.get(), time_domain_->NextScheduledTaskQueue());
@@ -199,7 +199,7 @@ TEST_F(TimeDomainTest, UnregisterQueue) {
   std::unique_ptr<TaskQueueImplForTest> task_queue2 =
       std::make_unique<TaskQueueImplForTest>(nullptr, time_domain_.get(),
                                              TaskQueue::Spec("test"));
-  EXPECT_TRUE(time_domain_->Empty());
+  EXPECT_TRUE(time_domain_->empty());
 
   TimeTicks now = time_domain_->Now();
   LazyNow lazy_now(now);
@@ -208,7 +208,7 @@ TEST_F(TimeDomainTest, UnregisterQueue) {
   task_queue_->SetDelayedWakeUpForTesting(internal::DelayedWakeUp{wake_up1, 0});
   TimeTicks wake_up2 = now + TimeDelta::FromMilliseconds(100);
   task_queue2->SetDelayedWakeUpForTesting(internal::DelayedWakeUp{wake_up2, 0});
-  EXPECT_FALSE(time_domain_->Empty());
+  EXPECT_FALSE(time_domain_->empty());
 
   EXPECT_EQ(task_queue_.get(), time_domain_->NextScheduledTaskQueue());
 
@@ -222,7 +222,7 @@ TEST_F(TimeDomainTest, UnregisterQueue) {
   task_queue_->UnregisterTaskQueue();
   task_queue_ = nullptr;
 
-  EXPECT_FALSE(time_domain_->Empty());
+  EXPECT_FALSE(time_domain_->empty());
   testing::Mock::VerifyAndClearExpectations(time_domain_.get());
 
   EXPECT_CALL(*time_domain_.get(), SetNextDelayedDoWork(_, TimeTicks::Max()))
@@ -233,7 +233,7 @@ TEST_F(TimeDomainTest, UnregisterQueue) {
 
   task_queue2->UnregisterTaskQueue();
   task_queue2 = nullptr;
-  EXPECT_TRUE(time_domain_->Empty());
+  EXPECT_TRUE(time_domain_->empty());
 }
 
 TEST_F(TimeDomainTest, MoveReadyDelayedTasksToWorkQueues) {
@@ -345,48 +345,48 @@ TEST_F(TimeDomainTest, HighResolutionWakeUps) {
   TaskQueueImplForTest q2(nullptr, time_domain_.get(), TaskQueue::Spec("test"));
 
   // Add two high resolution wake-ups.
-  EXPECT_FALSE(time_domain_->HasPendingHighResolutionTasks());
+  EXPECT_FALSE(time_domain_->has_pending_high_resolution_tasks());
   time_domain_->SetNextWakeUpForQueue(
       &q1, internal::DelayedWakeUp{run_time1, 0},
       internal::WakeUpResolution::kHigh, &lazy_now);
-  EXPECT_TRUE(time_domain_->HasPendingHighResolutionTasks());
+  EXPECT_TRUE(time_domain_->has_pending_high_resolution_tasks());
   time_domain_->SetNextWakeUpForQueue(
       &q2, internal::DelayedWakeUp{run_time2, 0},
       internal::WakeUpResolution::kHigh, &lazy_now);
-  EXPECT_TRUE(time_domain_->HasPendingHighResolutionTasks());
+  EXPECT_TRUE(time_domain_->has_pending_high_resolution_tasks());
 
   // Remove one of the wake-ups.
   time_domain_->SetNextWakeUpForQueue(
       &q1, nullopt, internal::WakeUpResolution::kLow, &lazy_now);
-  EXPECT_TRUE(time_domain_->HasPendingHighResolutionTasks());
+  EXPECT_TRUE(time_domain_->has_pending_high_resolution_tasks());
 
   // Remove the second one too.
   time_domain_->SetNextWakeUpForQueue(
       &q2, nullopt, internal::WakeUpResolution::kLow, &lazy_now);
-  EXPECT_FALSE(time_domain_->HasPendingHighResolutionTasks());
+  EXPECT_FALSE(time_domain_->has_pending_high_resolution_tasks());
 
   // Change a low resolution wake-up to a high resolution one.
   time_domain_->SetNextWakeUpForQueue(
       &q1, internal::DelayedWakeUp{run_time1, 0},
       internal::WakeUpResolution::kLow, &lazy_now);
-  EXPECT_FALSE(time_domain_->HasPendingHighResolutionTasks());
+  EXPECT_FALSE(time_domain_->has_pending_high_resolution_tasks());
   time_domain_->SetNextWakeUpForQueue(
       &q1, internal::DelayedWakeUp{run_time1, 0},
       internal::WakeUpResolution::kHigh, &lazy_now);
-  EXPECT_TRUE(time_domain_->HasPendingHighResolutionTasks());
+  EXPECT_TRUE(time_domain_->has_pending_high_resolution_tasks());
 
   // Move a high resolution wake-up in time.
   time_domain_->SetNextWakeUpForQueue(
       &q1, internal::DelayedWakeUp{run_time2, 0},
       internal::WakeUpResolution::kHigh, &lazy_now);
-  EXPECT_TRUE(time_domain_->HasPendingHighResolutionTasks());
+  EXPECT_TRUE(time_domain_->has_pending_high_resolution_tasks());
 
   // Cancel the wake-up twice.
   time_domain_->SetNextWakeUpForQueue(
       &q1, nullopt, internal::WakeUpResolution::kLow, &lazy_now);
   time_domain_->SetNextWakeUpForQueue(
       &q1, nullopt, internal::WakeUpResolution::kLow, &lazy_now);
-  EXPECT_FALSE(time_domain_->HasPendingHighResolutionTasks());
+  EXPECT_FALSE(time_domain_->has_pending_high_resolution_tasks());
 
   // Tidy up.
   q1.UnregisterTaskQueue();

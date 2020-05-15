@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assertInstanceof} from './chrome_util.js';
+import * as metrics from './metrics.js';
+
 /**
  * Types of error used in ERROR metrics.
  * @enum {string}
@@ -18,6 +21,23 @@ export const ErrorLevel = {
   WARNING: 'WARNING',
   ERROR: 'ERROR',
 };
+
+/**
+ * Error reported in testing run.
+ * @typedef {{
+ *   type: ErrorType,
+ *   level: ErrorLevel,
+ *   stack: string,
+ *   time: number,
+ * }}
+ */
+let ErrorInfo;  // eslint-disable-line no-unused-vars
+
+/**
+ * Callback for reporting error in testing run.
+ * @typedef {function(!ErrorInfo)}
+ */
+export let TestingErrorCallback;
 
 /**
  * Code location of stack frame.
@@ -73,4 +93,88 @@ export function getStackFrames(error) {
     return null;
   }
   return /** @type {?Array<!StackFrame>} */ (frames);
+}
+
+/**
+ * Gets formatted string stack from error.
+ * @param {!Error} error
+ * @return {string}
+ */
+export function formatErrorStack(error) {
+  if (typeof error.stack === 'string') {
+    return error.stack;
+  }
+  const errorString = error.name + ': ' + error.message;
+  const frames = error.stack || /** @type {!Array<!StackFrame>} */ ([]);
+
+  return errorString +
+      frames
+          .map(({fileName, funcName, lineNo, colNo}) => {
+            let position = '';
+            if (lineNo !== -1) {
+              position = `:${lineNo}`;
+              if (colNo !== -1) {
+                position += `:${colNo}`;
+              }
+            }
+            return `\n    at ${funcName} (${fileName}${position})`;
+          })
+          .join('');
+}
+
+/**
+ * @type {?TestingErrorCallback}
+ */
+let onTestingError = null;
+
+/**
+ * Initializes error collecting functions.
+ * @param {?TestingErrorCallback} onError Callback for reporting error in
+ *     testing run. Set to null in non testing run.
+ */
+export function initialize(onError) {
+  onTestingError = onError;
+  window.addEventListener('unhandledrejection', (e) => {
+    reportError(
+        ErrorType.UNCAUGHT_PROMISE, ErrorLevel.ERROR,
+        assertInstanceof(e.reason, Error));
+  });
+}
+
+/**
+ * All triggered error will be hashed and saved in this set to prevent the same
+ * error being triggered multiple times.
+ * @type {!Set<string>}
+ */
+const triggeredErrorSet = new Set();
+
+/**
+ * Reports error either through test error callback in test run or to error
+ * metrics in non test run.
+ * @param {ErrorType} type
+ * @param {ErrorLevel} level
+ * @param {!Error} error
+ */
+export function reportError(type, level, error) {
+  const time = Date.now();
+  const frames = getStackFrames(error);
+  const errorName = error.name;
+  const frame = (frames !== null && frames.length > 0) ? frames[0] : {};
+  let {fileName = '', lineNo = '', colNo = '', funcName = ''} = frame;
+  lineNo = String(lineNo);
+  colNo = String(colNo);
+
+  const hash = [errorName, fileName, lineNo, colNo].join(',');
+  if (triggeredErrorSet.has(hash)) {
+    return;
+  }
+  triggeredErrorSet.add(hash);
+
+  if (onTestingError !== null) {
+    onTestingError({type, level, stack: formatErrorStack(error), time});
+    return;
+  }
+  metrics.log(
+      metrics.Type.ERROR, type, level, errorName, fileName, funcName, lineNo,
+      colNo);
 }

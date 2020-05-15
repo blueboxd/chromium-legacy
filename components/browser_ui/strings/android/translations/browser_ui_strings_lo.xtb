@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">ດາວ​ໂຫຼດ​ອັດ​ຕະ​ໂນ​ມັດ</translation>
 <translation id="5677928146339483299">ບລັອກແລ້ວ</translation>
 <translation id="5689516760719285838">ສະຖານທີ່</translation>
+<translation id="5690795753582697420">ກ້ອງປິດຢູ່ໃນການຕັ້ງຄ່າ Android</translation>
 <translation id="5710871682236653961">ຖາມກ່ອນທີ່ຈະອະນຸຍາດໃຫ້ເວັບໄຊສົ່ງ ແລະ ຮັບຂໍ້ມູນໃນເວລາທີ່ທ່ານແຕະອຸປະກອນ NFC (ແນະນຳ)</translation>
 <translation id="5719847187258001597">ນີ້ຈະລຶບລ້າງຂໍ້ມູນ ແລະ ຄຸກກີ້ທັງໝົດທີ່ເກັບໄວ້ໂດຍ <ph name="ORIGIN" /> ຫຼື ໂດຍແອັບຂອງມັນໃນໜ້າຈໍຫຼັກຂອງທ່ານ.</translation>
 <translation id="5804241973901381774">ການ​ອະ​ນຸ​ຍາດ</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">ເພີ່ມເຕີມ</translation>
 <translation id="6064125863973209585">ການດາວໂຫຼດສຳເລັດແລ້ວ</translation>
 <translation id="6165508094623778733">ສຶກສາ​ເພີ່ມ​ເຕີມ</translation>
+<translation id="6177111841848151710">ບລັອກໄວ້ສຳລັບໂປຣແກຣມຊອກຫາປັດຈຸບັນແລ້ວ</translation>
 <translation id="6181444274883918285">ເພີ່ມຂໍ້ຍົກເວັ້ນເວັບໄຊ</translation>
 <translation id="6192792657125177640">ຂໍ້​ຍົກ​ເວັ້ນ</translation>
 <translation id="6194112207524046168">ເພື່ອອະນຸຍາດໃຫ້ Chrome ເຂົ້າເຖິງກ້ອງຖ່າຍຮູບຂອງທ່ານ, ກະລຸນາເປີດກ້ອງຖ່າຍຮູບໃນ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າ Android<ph name="END_LINK" /> ນຳ.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">ໜ້ານີ້ອັນຕະລາຍ. ຂໍ້ມູນເວັບໄຊ</translation>
 <translation id="6965382102122355670">ຕົກລົງ</translation>
 <translation id="6992289844737586249">ຖາມກ່ອນທີ່ຈະອະນຸຍາດໃຫ້ເວັບໄຊໃຊ້ໄມໂຄຣໂຟນຂອງທ່ານ (ແນະນຳ)</translation>
+<translation id="7000754031042624318">ປິດໃນການຕັ້ງຄ່າ Android</translation>
+<translation id="7016516562562142042">ອະນຸຍາດສຳລັບໂປຣແກຣມຊອກຫາປັດຈຸບັນແລ້ວ</translation>
 <translation id="7053983685419859001">ບລັອກ</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{ເລືອກ 1 ລາຍການແລ້ວ}other{ເລືອກ # ລາຍການແລ້ວ}}</translation>
 <translation id="7087918508125750058">ເລືອກ <ph name="ITEM_COUNT" /> ລາຍການແລ້ວ.  ມີຕົວເລືອກໃຫ້ນຳໃຊ້ຢູ່ໃກ້ສ່ວນເທິງຂອງໜ້າຈໍ</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">ອະນຸຍາດສຽງສຳລັບເວັບໄຊສະເພາະໃດໜຶ່ງ.</translation>
 <translation id="7993619969781047893">ຄຸນສົມບັດໃນບາງເວັບໄຊອາດຈະໃຊ້ບໍ່ໄດ້</translation>
 <translation id="7999064672810608036">ທ່ານ​ແນ່​ໃຈ​ບໍ​ວ່າ ທ່ານ​ຕ້ອງ​ການ​ລຶບ​ຂໍ້​ມູນໃນ​ເຄື່ອງ​ທັງ​ໝົດ, ລວມ​ທັງ​ຄຸກ​ກີ້, ແລະ​ຕັ້ງ​ຄ່າ​ການ​ອະ​ນຸ​ຍາດ​ທັງ​ໝົດສຳ​ລັບ​ເວັບ​ໄຊ​ທ໌​ນີ້?</translation>
+<translation id="8007176423574883786">ປິດ​ສຳ​ລັບ​ອຸ​ປະ​ກອນ​ນີ້</translation>
 <translation id="802154636333426148">ການດາວໂຫຼດບໍ່ສຳເລັດ</translation>
 <translation id="8087000398470557479">ເນື້ອຫານີ້ມາຈາກ <ph name="DOMAIN_NAME" />, ນຳສົ່ງໂດຍ Google.</translation>
 <translation id="8116925261070264013">ປິດສຽງແລ້ວ</translation>

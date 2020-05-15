@@ -89,13 +89,6 @@ const SecurityOrigin* GetSecurityOrigin(ExecutionContext* context) {
   return nullptr;
 }
 
-const Performance::UnifiedClock* DefaultUnifiedClock() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(Performance::UnifiedClock, unified_clock,
-                                  (base::DefaultClock::GetInstance(),
-                                   base::DefaultTickClock::GetInstance()));
-  return &unified_clock;
-}
-
 bool IsMeasureOptionsEmpty(const PerformanceMeasureOptions& options) {
   return !options.hasDetail() && !options.hasEnd() && !options.hasStart() &&
          !options.hasDuration();
@@ -120,7 +113,7 @@ Performance::Performance(
       element_timing_buffer_max_size_(kDefaultElementTimingBufferSize),
       user_timing_(nullptr),
       time_origin_(time_origin),
-      unified_clock_(DefaultUnifiedClock()),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       observer_filter_options_(PerformanceEntry::kInvalid),
       task_runner_(std::move(task_runner)),
       deliver_observations_timer_(task_runner_,
@@ -129,7 +122,11 @@ Performance::Performance(
       resource_timing_buffer_full_timer_(
           task_runner_,
           this,
-          &Performance::FireResourceTimingBufferFull) {}
+          &Performance::FireResourceTimingBufferFull) {
+  unix_at_zero_monotonic_ = ConvertSecondsToDOMHighResTimeStamp(
+      base::DefaultClock::GetInstance()->Now().ToDoubleT() -
+      tick_clock_->NowTicks().since_origin().InSecondsF());
+}
 
 Performance::~Performance() = default;
 
@@ -207,7 +204,7 @@ ScriptPromise Performance::measureMemory(
 
 DOMHighResTimeStamp Performance::timeOrigin() const {
   DCHECK(!time_origin_.is_null());
-  return unified_clock_->GetUnixAtZeroMonotonic() +
+  return unix_at_zero_monotonic_ +
          ConvertTimeTicksToDOMHighResTimeStamp(time_origin_);
 }
 
@@ -1021,7 +1018,7 @@ base::TimeDelta Performance::MonotonicTimeToTimeDelta(
 }
 
 DOMHighResTimeStamp Performance::now() const {
-  return MonotonicTimeToDOMHighResTimeStamp(unified_clock_->NowTicks());
+  return MonotonicTimeToDOMHighResTimeStamp(tick_clock_->NowTicks());
 }
 
 // static
@@ -1067,25 +1064,13 @@ void Performance::Trace(Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
 }
 
-DOMHighResTimeStamp Performance::UnifiedClock::GetUnixAtZeroMonotonic() const {
-  // When a Performance object is first queried, use the current system time
-  // to calculate what the Unix time would be at the time the monotonic
-  // clock time was zero, assuming no manual changes to the system clock.
-  // This can be calculated as current_unix_time - current_monotonic_time.
-  if (UNLIKELY(!unix_at_zero_monotonic_)) {
-    unix_at_zero_monotonic_ = ConvertSecondsToDOMHighResTimeStamp(
-        clock_->Now().ToDoubleT() -
-        tick_clock_->NowTicks().since_origin().InSecondsF());
-  }
-  return unix_at_zero_monotonic_.value();
-}
-
-base::TimeTicks Performance::UnifiedClock::NowTicks() const {
-  return tick_clock_->NowTicks();
-}
-
-void Performance::SetClocksForTesting(const UnifiedClock* clock) {
-  unified_clock_ = clock;
+void Performance::SetClocksForTesting(const base::Clock* clock,
+                                      const base::TickClock* tick_clock) {
+  tick_clock_ = tick_clock;
+  // Recompute |unix_at_zero_monotonic_|.
+  unix_at_zero_monotonic_ = ConvertSecondsToDOMHighResTimeStamp(
+      clock->Now().ToDoubleT() -
+      tick_clock_->NowTicks().since_origin().InSecondsF());
 }
 
 void Performance::ResetTimeOriginForTesting(base::TimeTicks time_origin) {

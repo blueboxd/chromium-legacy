@@ -63,7 +63,7 @@ PlatformKeysCertificateSelector::PlatformKeysCertificateSelector(
       extension_name_(extension_name),
       callback_(callback) {
   DCHECK(!callback_.is_null());
-  DialogDelegate::SetCancelCallback(base::BindOnce(
+  SetCancelCallback(base::BindOnce(
       [](PlatformKeysCertificateSelector* dialog) {
         std::move(dialog->callback_).Run(nullptr);
       },

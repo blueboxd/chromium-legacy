@@ -57,10 +57,13 @@ class BASE_EXPORT TimeDomain {
   virtual Optional<TimeDelta> DelayTillNextTask(LazyNow* lazy_now) = 0;
 
   void AsValueInto(trace_event::TracedValue* state) const;
-  bool HasPendingHighResolutionTasks() const;
+
+  bool has_pending_high_resolution_tasks() const {
+    return pending_high_res_wake_up_count_;
+  }
 
   // Returns true if there are no pending delayed tasks.
-  bool Empty() const;
+  bool empty() const { return delayed_wake_up_queue_.empty(); }
 
   // This is the signal that virtual time should step forward. If
   // RunLoop::QuitWhenIdle has been called then |quit_when_idle_requested| will

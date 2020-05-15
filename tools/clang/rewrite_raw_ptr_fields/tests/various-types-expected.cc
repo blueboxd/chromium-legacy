@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <cstdint>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/memory/checked_ptr.h"
 
@@ -14,7 +15,16 @@ class SomeClass {
   int data_member;
 };
 
+// The class below deletes the |operator new| - this simulate's Blink's
+// STACK_ALLOCATED macro and/or OilPan / GarbageCollected<T> classes.
+class NoNewOperator {
+  void* operator new(size_t) = delete;
+};
+
 struct MyStruct {
+  // No rewrite expected for classes with no |operator new|.
+  NoNewOperator* no_new_ptr;
+
   // Expected rewrite: CheckedPtr<CheckedPtr<SomeClass>> double_ptr;
   // TODO(lukasza): Handle recursion/nesting.
   CheckedPtr<SomeClass*> double_ptr;
@@ -90,6 +100,35 @@ struct MyStruct {
   typedef SomeClass* SomeClassPtrTypedef;
   // No rewrite expected (for now - in V1 we only rewrite field decls).
   using SomeClassPtrAlias = SomeClass*;
+
+  // Chromium is built with a warning/error that there are no user-defined
+  // constructors invoked when initializing global-scoped values.
+  // CheckedPtr<char> conversion might trigger a global constructor for string
+  // literals:
+  //     struct MyStruct {
+  //       int foo;
+  //       CheckedPtr<const char> bar;
+  //     }
+  //     MyStruct g_foo = {123, "string literal" /* global constr! */};
+  // Because of the above, no rewrite is expected below.
+  char* char_ptr;
+  const char* const_char_ptr;
+  wchar_t* wide_char_ptr;
+  const wchar_t* const_wide_char_ptr;
+
+  // |array_of_ptrs| is an array 123 of pointer to SomeClass.
+  // No rewrite expected (this is not a pointer - this is an array).
+  SomeClass* ptr_array[123];
+
+  // |ptr_to_array| is a pointer to array 123 of const SomeClass.
+  //
+  // This test is based on EqualsFramesMatcher from
+  // //net/websockets/websocket_channel_test.cc
+  //
+  // No rewrite expected (this *is* a pointer, but generating a correct
+  // replacement is tricky, because the |replacement_range| needs to cover
+  // "[123]" that comes *after* the field name).
+  const SomeClass (*ptr_to_array)[123];
 };
 
 }  // namespace my_namespace

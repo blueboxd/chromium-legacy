@@ -113,7 +113,8 @@ class FeedStream : public FeedStreamApi,
   void SetArticlesListVisible(bool is_visible) override;
   bool IsArticlesListVisible() override;
   void ExecuteRefreshTask() override;
-  void LoadMore(base::OnceCallback<void(bool)> callback) override;
+  void LoadMore(SurfaceId surface_id,
+                base::OnceCallback<void(bool)> callback) override;
   void ExecuteOperations(
       std::vector<feedstore::DataOperation> operations) override;
   EphemeralChangeId CreateEphemeralChange(
@@ -124,9 +125,10 @@ class FeedStream : public FeedStreamApi,
   void ForceRefreshForDebugging() override;
   std::string DumpStateForDebugging() override;
 
-  void ReportSliceViewed(const std::string& slice_id) override;
+  void ReportSliceViewed(SurfaceId surface_id,
+                         const std::string& slice_id) override;
   void ReportNavigationStarted() override;
-  void ReportNavigationDone() override;
+  void ReportPageLoaded() override;
   void ReportOpenAction(const std::string& slice_id) override;
   void ReportOpenInNewTabAction(const std::string& slice_id) override;
   void ReportOpenInNewIncognitoTabAction() override;
@@ -151,8 +153,8 @@ class FeedStream : public FeedStreamApi,
   // Called when Chrome's EULA has been accepted. This should happen when
   // Delegate::IsEulaAccepted() changes from false to true.
   void OnEulaAccepted();
-  // Invoked when Chrome is foregrounded.
-  void OnEnterForeground();
+  // Invoked when Chrome is backgrounded.
+  void OnEnterBackground();
   // The user signed in to Chrome.
   void OnSignedIn();
   // The user signed out of Chrome.

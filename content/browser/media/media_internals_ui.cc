@@ -22,14 +22,7 @@ WebUIDataSource* CreateMediaInternalsHTMLSource() {
       WebUIDataSource::Create(kChromeUIMediaInternalsHost);
 
   source->UseStringsJs();
-
-  if (base::FeatureList::IsEnabled(media::kMediaInspectorLogging)) {
-    source->AddResourcePath("media_internals.js",
-                            IDR_MEDIA_INTERNALS_JS_DISABLED);
-  } else {
-    source->AddResourcePath("media_internals.js", IDR_MEDIA_INTERNALS_JS);
-  }
-
+  source->AddResourcePath("media_internals.js", IDR_MEDIA_INTERNALS_JS);
   source->SetDefaultResource(IDR_MEDIA_INTERNALS_HTML);
   return source;
 }

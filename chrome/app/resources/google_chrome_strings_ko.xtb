@@ -21,6 +21,7 @@
 <translation id="1587223624401073077">Chrome에서 카메라를 사용 중입니다.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" />은(는) 위험하므로 Chrome에서 차단했습니다.</translation>
 <translation id="1619887657840448962">Google에서는 Chrome의 보안을 강화하기 위해 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />에 표시되지 않고 사용자가 모르게 추가되었을 수 있는 다음 확장 프로그램의 사용을 중지했습니다.</translation>
+<translation id="162629503687514352">Chrome OS에서 비밀번호를 동기화할 수 없습니다.</translation>
 <translation id="1628000112320670027">Chrome 도움말 보기</translation>
 <translation id="1662639173275167396"><ph name="BEGIN_LINK_LINUX_OSS" />Linux(베타)<ph name="END_LINK_LINUX_OSS" />와 마찬가지로, Chrome OS는 추가 <ph name="BEGIN_LINK_CROS_OSS" />오픈소스 소프트웨어<ph name="END_LINK_CROS_OSS" />를 사용하여 개발되었습니다.</translation>
 <translation id="1666409074978194368">업데이트가 거의 완료되었습니다. 업데이트를 마치려면 Chrome을 다시 실행하세요. 시크릿 창은 다시 열리지 않습니다.</translation>
@@ -79,6 +80,7 @@
 <translation id="3065168410429928842">Chrome 탭</translation>
 <translation id="3080151273017101988">Chrome 종료 후에도 백그라운드 앱을 계속 실행</translation>
 <translation id="3089968997497233615">새롭고 안전한 Chrome의 새 버전을 사용할 수 있습니다.</translation>
+<translation id="3127818369811890733">Chrome OS에서 데이터를 동기화할 수 없습니다.</translation>
 <translation id="3149510190863420837">Chrome 앱</translation>
 <translation id="3360895254066713204">Chrome 도우미</translation>
 <translation id="3379938682270551431">{0,plural, =0{지금 Chrome이 다시 시작됩니다}=1{1초 후 Chrome이 다시 시작됩니다}other{#초 후 Chrome이 다시 시작됩니다}}</translation>

@@ -31,6 +31,8 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.TwaDisclosureUi;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.DisclosureInfobar;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.DisclosureNotification;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.DisclosureSnackbar;
@@ -53,6 +55,7 @@ public class DisclosureUiPickerTest {
     @Mock public DisclosureSnackbar mSnackbar;
     @Mock public DisclosureNotification mNotification;
 
+    @Mock public BrowserServicesIntentDataProvider mIntentDataProvider;
     @Mock public NotificationManagerProxy mNotificationManager;
     @Mock public ActivityLifecycleDispatcher mLifecycleDispatcher;
 
@@ -62,10 +65,13 @@ public class DisclosureUiPickerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
+        when(mIntentDataProvider.getTwaDisclosureUi()).thenReturn(TwaDisclosureUi.DEFAULT);
+
         mPicker = new DisclosureUiPicker(
                 new FilledLazy<>(mInfobar),
                 new FilledLazy<>(mSnackbar),
                 new FilledLazy<>(mNotification),
+                mIntentDataProvider,
                 mNotificationManager,
                 mLifecycleDispatcher);
     }
@@ -74,6 +80,15 @@ public class DisclosureUiPickerTest {
     @Feature("TrustedWebActivities")
     @Features.DisableFeatures({ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NEW_DISCLOSURE})
     public void picksInfobar_whenFeatureDisabled() {
+        mPicker.onFinishNativeInitialization();
+        verify(mInfobar).showIfNeeded();
+    }
+
+    @Test
+    @Feature("TrustedWebActivities")
+    public void pickInfobar_whenRequested() {
+        when(mIntentDataProvider.getTwaDisclosureUi()).thenReturn(TwaDisclosureUi.V1_INFOBAR);
+
         mPicker.onFinishNativeInitialization();
         verify(mInfobar).showIfNeeded();
     }

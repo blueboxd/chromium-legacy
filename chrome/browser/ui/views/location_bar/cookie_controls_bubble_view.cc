@@ -106,7 +106,7 @@ CookieControlsBubbleView::CookieControlsBubbleView(
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       controller_(controller) {
   controller_observer_.Add(controller);
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
 }
 
 CookieControlsBubbleView::~CookieControlsBubbleView() = default;
@@ -155,19 +155,18 @@ void CookieControlsBubbleView::UpdateUi() {
       extra_view_->SetVisible(false);
   }
 
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       intermediate_step_ == IntermediateStep::kTurnOffButton
           ? l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_TURN_OFF_BUTTON)
           : l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_TURN_ON_BUTTON));
-  DialogDelegate::SetButtons(
-      (intermediate_step_ == IntermediateStep::kTurnOffButton ||
-       (status_ == CookieControlsStatus::kDisabledForSite &&
-        enforcement_ == CookieControlsEnforcement::kNoEnforcement))
-          ? ui::DIALOG_BUTTON_OK
-          : ui::DIALOG_BUTTON_NONE);
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
-      &CookieControlsBubbleView::OnDialogAccepted, base::Unretained(this)));
+  SetButtons((intermediate_step_ == IntermediateStep::kTurnOffButton ||
+              (status_ == CookieControlsStatus::kDisabledForSite &&
+               enforcement_ == CookieControlsEnforcement::kNoEnforcement))
+                 ? ui::DIALOG_BUTTON_OK
+                 : ui::DIALOG_BUTTON_NONE);
+  SetAcceptCallback(base::BindOnce(&CookieControlsBubbleView::OnDialogAccepted,
+                                   base::Unretained(this)));
 
   DialogModelChanged();
   Layout();

@@ -269,6 +269,7 @@
 <translation id="2094505752054353250">डोमेन का गलत-मिलान</translation>
 <translation id="2096368010154057602">विभाग</translation>
 <translation id="2099652385553570808">बाईं ओर ट्रिपल स्टेपल</translation>
+<translation id="2101225219012730419">वर्शन:</translation>
 <translation id="2102134110707549001">मज़बूत पासवर्ड सुझाएं…</translation>
 <translation id="2107021941795971877">प्रिंट सहायता</translation>
 <translation id="2108755909498034140">अपना कंप्यूटर फिर से चालू करें</translation>
@@ -442,6 +443,7 @@
 <translation id="2856444702002559011">हो सकता है कि हमलावर <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> से आपकी जानकारी (जैसे- पासवर्ड, मैसेज या क्रेडिट कार्ड वगैरह) चुराने की कोशिश कर रहे हों. <ph name="BEGIN_LEARN_MORE_LINK" />ज़्यादा जानें<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">पोस्टर फ़ोल्ड</translation>
 <translation id="2878424575911748999">ए1</translation>
+<translation id="2880660355386638022">विंडो प्लेसमेंट</translation>
 <translation id="2881276955470682203">कार्ड सेव करें?</translation>
 <translation id="2882949212241984732">डबल-गेट फ़ोल्ड</translation>
 <translation id="2903493209154104877">पते</translation>
@@ -641,6 +643,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />प्रॉक्सी, फायरवॉल और डीएनएस कॉन्फ़िगरेशन की जाँच करें<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">जिन ऐप्लिकेशन की वजह से यह गड़बड़ी हो सकती है उनमें एंटीवायरस, फ़ायरवॉल और वेब-फ़िल्टरिंग या प्रॉक्सी सॉफ़्टवेयर शामिल हैं.</translation>
 <translation id="373042150751172459">बी4 (एन्वेलप)</translation>
+<translation id="3731873414101415120">एडमिन यह देख सकता है कि आप किन वेबसाइटों पर जाते हैं. साथ ही, उन पेजों को भी देख सकता है जिनकी सामग्री सुरक्षित नहीं है</translation>
 <translation id="3736520371357197498">अगर आप अपनी सुरक्षा संबंधी जोखिमों को समझते हैं तो, खतरनाक प्रोग्राम हटाए जाने से पहले आप <ph name="BEGIN_LINK" />इस असुरक्षित साइट पर विज़िट<ph name="END_LINK" /> कर सकते हैं.</translation>
 <translation id="3744899669254331632">आप इस समय <ph name="SITE" /> पर नहीं जा सकते क्‍योंकि वेबसाइट ने ऐसे अव्‍यवस्‍थित क्रेडेंशियल भेजे थे जिन्‍हें क्रोमियम प्रोसेस नहीं कर सकता. नेटवर्क की गड़बड़ी और हमले आमतौर पर कुछ समय के लिए होते हैं, इसलिए हो सकता है कि यह पेज बाद में काम करेगा.</translation>
 <translation id="3745099705178523657">आपके पुष्टि करने के बाद, आपके Google खाते के कार्ड का ब्यौरा इस साइट से शेयर किया जाएगा.</translation>
@@ -907,6 +910,7 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{कोई नहीं}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> खोज</translation>
 <translation id="4879491255372875719">अपने आप (डिफ़ॉल्ट)</translation>
+<translation id="4879725228911483934">यह साइट, विंडो को खोलकर आपकी स्क्रीन पर लगाना चाहती है</translation>
 <translation id="4880827082731008257">खोज इतिहास</translation>
 <translation id="4881695831933465202">खोलें</translation>
 <translation id="4892518386797173871">पीछे का हिस्सा</translation>

@@ -10,7 +10,7 @@
 #import <iomanip>
 #import <numeric>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"

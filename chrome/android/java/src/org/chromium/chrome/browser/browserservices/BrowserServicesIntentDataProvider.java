@@ -49,6 +49,16 @@ public abstract class BrowserServicesIntentDataProvider {
         int OFFLINE_PAGE = 6;
     }
 
+    // The type of Disclosure for TWAs to use.
+    @IntDef({TwaDisclosureUi.DEFAULT, TwaDisclosureUi.V1_INFOBAR,
+            TwaDisclosureUi.V2_NOTIFICATION_OR_SNACKBAR})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface TwaDisclosureUi {
+        int DEFAULT = -1;
+        int V1_INFOBAR = 0;
+        int V2_NOTIFICATION_OR_SNACKBAR = 1;
+    }
+
     /**
      * @return The type of the Activity;
      */
@@ -468,5 +478,10 @@ public abstract class BrowserServicesIntentDataProvider {
     @Nullable
     public PendingIntent getFocusIntent() {
         return null;
+    }
+
+    @TwaDisclosureUi
+    public int getTwaDisclosureUi() {
+        return TwaDisclosureUi.DEFAULT;
     }
 }

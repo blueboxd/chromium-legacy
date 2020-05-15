@@ -29,8 +29,32 @@ const int64_t kExpiryTime = 30;
 
 }  // namespace
 
-int PassThroughStorageDelegate::GetMaxConversionsPerImpression() const {
-  return INT_MAX;
+ConfigurableStorageDelegate::ConfigurableStorageDelegate() = default;
+ConfigurableStorageDelegate::~ConfigurableStorageDelegate() = default;
+
+void ConfigurableStorageDelegate::ProcessNewConversionReports(
+    std::vector<ConversionReport>* reports) {
+  // Note: reports are ordered by impression time, descending.
+  for (auto& report : *reports) {
+    report.report_time = report.impression.impression_time() +
+                         base::TimeDelta::FromMilliseconds(report_time_ms_);
+
+    // If attribution credits were provided, associate them with reports
+    // in order.
+    if (!attribution_credits_.empty()) {
+      report.attribution_credit = attribution_credits_.front();
+      attribution_credits_.pop_front();
+    }
+  }
+}
+int ConfigurableStorageDelegate::GetMaxConversionsPerImpression() const {
+  return max_conversions_per_impression_;
+}
+int ConfigurableStorageDelegate::GetMaxImpressionsPerOrigin() const {
+  return max_impressions_per_origin_;
+}
+int ConfigurableStorageDelegate::GetMaxConversionsPerOrigin() const {
+  return max_conversions_per_origin_;
 }
 
 ConversionManager* TestManagerProvider::GetManager(

@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/dynamic_color_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -35,12 +36,6 @@ const CGFloat kTrailingButtonTrailingMargin = 14;
 NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
     @"OmniboxPopupRowSwitchTabAccessibilityIdentifier";
 }  // namespace
-
-#if defined(__IPHONE_13_4)
-@interface OmniboxPopupRowCell (PointerInteraction) <
-    UIPointerInteractionDelegate>
-@end
-#endif  // defined(__IPHONE_13_4)
 
 @interface OmniboxPopupRowCell ()
 
@@ -129,8 +124,7 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 #if defined(__IPHONE_13_4)
     if (@available(iOS 13.4, *)) {
       if (base::FeatureList::IsEnabled(kPointerSupport)) {
-        [self addInteraction:[[UIPointerInteraction alloc]
-                                 initWithDelegate:self]];
+        [self addInteraction:[[ViewPointerInteraction alloc] init]];
       }
     }
 #endif  // defined(__IPHONE_13_4)
@@ -508,27 +502,5 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 - (void)trailingButtonTapped {
   [self.delegate trailingButtonTappedForCell:self];
 }
-
-#if defined(__IPHONE_13_4)
-
-#pragma mark UIPointerInteractionDelegate
-
-- (UIPointerRegion*)pointerInteraction:(UIPointerInteraction*)interaction
-                      regionForRequest:(UIPointerRegionRequest*)request
-                         defaultRegion:(UIPointerRegion*)defaultRegion
-    API_AVAILABLE(ios(13.4)) {
-  return defaultRegion;
-}
-
-- (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
-                       styleForRegion:(UIPointerRegion*)region
-    API_AVAILABLE(ios(13.4)) {
-  UIPointerHoverEffect* effect = [UIPointerHoverEffect
-      effectWithPreview:[[UITargetedPreview alloc] initWithView:self]];
-  effect.prefersScaledContent = NO;
-  effect.prefersShadow = NO;
-  return [UIPointerStyle styleWithEffect:effect shape:nil];
-}
-#endif  // defined(__IPHONE_13_4)
 
 @end

@@ -46,8 +46,8 @@ void ImportLockDialogView::Show(gfx::NativeWindow parent,
 ImportLockDialogView::ImportLockDialogView(
     const base::Callback<void(bool)>& callback)
     : callback_(callback) {
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_OK));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_OK));
 
   auto done_callback = [](ImportLockDialogView* dialog, bool accepted) {
     if (dialog->callback_) {
@@ -55,9 +55,9 @@ ImportLockDialogView::ImportLockDialogView(
           FROM_HERE, base::BindOnce(dialog->callback_, accepted));
     }
   };
-  DialogDelegate::SetAcceptCallback(
+  SetAcceptCallback(
       base::BindOnce(done_callback, base::Unretained(this), true));
-  DialogDelegate::SetCancelCallback(
+  SetCancelCallback(
       base::BindOnce(done_callback, base::Unretained(this), false));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());

@@ -109,7 +109,7 @@ cr.define('settings', function() {
        */
       narrowThreshold_: {
         type: Number,
-        value: 900,
+        value: 980,
       },
     },
 

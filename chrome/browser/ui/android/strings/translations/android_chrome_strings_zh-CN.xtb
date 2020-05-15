@@ -325,6 +325,7 @@
 <translation id="3738139272394829648">触摸搜索</translation>
 <translation id="3739899004075612870">已在 <ph name="PRODUCT_NAME" /> 中添加书签</translation>
 <translation id="3749259744154402564">不支持</translation>
+<translation id="3763247130972274048">在视频左侧或右侧点按两次即可跳过 10 秒</translation>
 <translation id="3771001275138982843">无法下载此项更新</translation>
 <translation id="3771033907050503522">隐身标签页</translation>
 <translation id="3771694256347217732">Google 服务条款</translation>
@@ -386,7 +387,6 @@
 <translation id="4250229828105606438">屏幕截图</translation>
 <translation id="4256782883801055595">开放源代码许可</translation>
 <translation id="4269820728363426813">复制链接地址</translation>
-<translation id="4278390842282768270">允许</translation>
 <translation id="429312253194641664">某个网站正在播放媒体内容</translation>
 <translation id="4298388696830689168">已关联的网站</translation>
 <translation id="4307992518367153382">基本</translation>
@@ -434,7 +434,6 @@
 <translation id="4663756553811254707">已删除 <ph name="NUMBER_OF_BOOKMARKS" /> 个书签</translation>
 <translation id="4665282149850138822"><ph name="NAME" />已添加到您的主屏幕</translation>
 <translation id="4684427112815847243">同步所有数据类型</translation>
-<translation id="4688610874307684559">正在 Chrome 中运行（初始）</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 种送货方式}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 种送货方式}}</translation>
 <translation id="4696983787092045100">向您的多部设备发送短信</translation>
 <translation id="4698034686595694889">在 <ph name="APP_NAME" /> 中离线查看</translation>
@@ -559,10 +558,8 @@
 <translation id="5659593005791499971">电子邮件</translation>
 <translation id="5665379678064389456">在<ph name="APP_NAME" />中创建活动</translation>
 <translation id="5668404140385795438">覆盖网站的请求，以防止放大</translation>
-<translation id="5677928146339483299">已禁止</translation>
 <translation id="5684874026226664614">糟糕，此网页内容无法翻译。</translation>
 <translation id="5686790454216892815">文件名过长</translation>
-<translation id="5690795753582697420">已在 Android 设置中关闭摄像头</translation>
 <translation id="5694049548840660018">轻松访问主页</translation>
 <translation id="569536719314091526">通过“更多选项”按钮将此页面翻译成任何语言</translation>
 <translation id="572328651809341494">最近打开的标签页</translation>
@@ -618,7 +615,6 @@
 <translation id="614940544461990577">请试试以下办法：</translation>
 <translation id="6154478581116148741">需在“设置”部分中开启屏幕锁定功能，才能从此设备中导出您的密码</translation>
 <translation id="6159335304067198720">节省 <ph name="PERCENT" /> 的数据流量</translation>
-<translation id="6177111841848151710">不允许当前搜索引擎使用</translation>
 <translation id="6192333916571137726">下载文件</translation>
 <translation id="6201345951596836663">已复制链接</translation>
 <translation id="6210748933810148297">不是 <ph name="EMAIL" />？</translation>
@@ -705,7 +701,6 @@
 <translation id="6846298663435243399">正在加载...</translation>
 <translation id="6850409657436465440">您的下载仍在进行中</translation>
 <translation id="6850830437481525139">已关闭 <ph name="TAB_COUNT" /> 个标签页</translation>
-<translation id="6864395892908308021">此设备无法读取 NFC 数据</translation>
 <translation id="6864459304226931083">下载图片</translation>
 <translation id="6865313869410766144">自动填充表单数据</translation>
 <translation id="6884306546558072722">离线时也能畅享网络内容</translation>
@@ -720,9 +715,7 @@
 <translation id="6989267951144302301">无法下载</translation>
 <translation id="6990079615885386641">从 Google Play 商店下载应用：<ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">在密码遭遇数据泄露时，向您发出警告</translation>
-<translation id="7000754031042624318">已在 Android 设置中关闭</translation>
 <translation id="7015203776128479407">初始同步设置未完成。同步功能处于关闭状态。</translation>
-<translation id="7016516562562142042">允许当前搜索引擎使用</translation>
 <translation id="7022756207310403729">在浏览器中打开</translation>
 <translation id="702463548815491781">建议在开启 TalkBack 或“开关控制”时使用</translation>
 <translation id="7029809446516969842">密码</translation>
@@ -755,10 +748,10 @@
 <translation id="7328017930301109123">在精简模式下，Chrome 可更快速地加载网页，并可节省多达百分之 60 的流量。</translation>
 <translation id="7333031090786104871">仍在添加先前的网站</translation>
 <translation id="7340958967809483333">“探索”功能的选项</translation>
+<translation id="7352651011704765696">出了点问题</translation>
 <translation id="7352939065658542140">视频</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 个所选项}other{分享 # 个所选项}}</translation>
 <translation id="7359002509206457351">查询付款方式</translation>
-<translation id="7362144854749094396">已将历史记录分享给 Chrome。已将偏好设置分享给 <ph name="SITE_NAME" />。</translation>
 <translation id="7375125077091615385">类型：</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />。</translation>
 <translation id="7400418766976504921">网址</translation>
@@ -840,7 +833,6 @@
 <translation id="7986741934819883144">选择联系人</translation>
 <translation id="7998918019931843664">重新打开关闭的标签页</translation>
 <translation id="8004582292198964060">浏览器</translation>
-<translation id="8007176423574883786">已对此设备停用</translation>
 <translation id="8013372441983637696">同时从此设备中清除您的 Chrome 数据</translation>
 <translation id="8015452622527143194">将网页上的所有内容恢复到默认大小</translation>
 <translation id="8026334261755873520">清除浏览数据</translation>
@@ -930,6 +922,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{信号强度：# 格}other{信号强度：# 格}}</translation>
 <translation id="868929229000858085">搜索联系人</translation>
 <translation id="869891660844655955">截止日期</translation>
+<translation id="8712637175834984815">知道了</translation>
 <translation id="8748850008226585750">内容已隐藏</translation>
 <translation id="8751914237388039244">选择图片</translation>
 <translation id="8758557275681689734">查看您已打开的所有标签页</translation>

@@ -7,8 +7,9 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/time/time.h"
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/prefs/pref_member.h"

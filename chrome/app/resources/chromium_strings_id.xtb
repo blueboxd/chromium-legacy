@@ -22,6 +22,7 @@
 <translation id="1966382378801805537">Chromium tidak dapat menentukan atau menyetel browser default</translation>
 <translation id="2008474315282236005">Tindakan ini akan menghapus 1 item dari perangkat. Untuk mengambil data nanti, login ke Chromium sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="2185166961232948079">Chromium - Login Jaringan - <ph name="PAGE_TITLE" /></translation>
+<translation id="2225696941839557119">Chromium OS tidak dapat menyinkronkan sandi Anda.</translation>
 <translation id="2241627712206172106">Jika Anda berbagi komputer, teman dan keluarga bisa menjelajah secara terpisah dan menyiapkan Chromium sesuai keinginannya.</translation>
 <translation id="2294245788148774212">Opsional: Bantu sempurnakan fitur dan performa Chromium OS dengan mengirimkan data diagnostik dan penggunaan secara otomatis ke Google.</translation>
 <translation id="2347108572062610441">Ekstensi ini telah mengubah apa yang ditampilkan oleh halaman saat Anda memulai Chromium.</translation>
@@ -134,6 +135,7 @@
 <translation id="6134968993075716475">Safe Browsing nonaktif. Chromium merekomendasikan untuk mengaktifkannya.</translation>
 <translation id="6212496753309875659">Komputer ini sudah memiliki versi Chromium yang lebih baru. Jika software tidak bekerja, harap coba uninstal Chromium, lalu cobalah kembali.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium akan diluncurkan ulang sekarang}=1{Chromium akan diluncurkan ulang dalam 1 detik}other{Chromium akan diluncurkan ulang dalam # detik}}</translation>
+<translation id="623836266260425961">Chromium OS tidak dapat menyinkronkan data Anda.</translation>
 <translation id="6248213926982192922">Jadikan Chromium browser default</translation>
 <translation id="6266342355635466082">Chromium tidak dapat memeriksa update. Coba periksa koneksi internet Anda.</translation>
 <translation id="6268381023930128611">Keluar dari Chromium?</translation>

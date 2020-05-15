@@ -233,6 +233,8 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
       const GURL& server_url,
       std::vector<PrinterDetector::DetectedPrinter>&& returned_printers);
 
+  void HandleOpenPrintManagementApp(const base::ListValue* args);
+
   Profile* profile_;
 
   // Discovery support.  discovery_active_ tracks whether or not the UI

@@ -230,7 +230,7 @@ const base::TimeDelta HatsWebDialog::ContentLoadingTimeout() const {
 
 void HatsWebDialog::CreateWebDialog(Browser* browser) {
   // Create a web dialog aligned to the bottom center of the location bar.
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
   webview_ = new views::WebDialogView(
       otr_profile_, this, std::make_unique<ChromeWebContentsHandler>(),
       /* use_dialog_frame= */ true);

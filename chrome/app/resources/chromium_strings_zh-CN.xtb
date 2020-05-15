@@ -22,6 +22,7 @@
 <translation id="1966382378801805537">Chromium 无法确定或设置默认浏览器</translation>
 <translation id="2008474315282236005">这会从这台设备上删除 1 项内容。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chromium。</translation>
 <translation id="2185166961232948079">Chromium - 网络登录 - <ph name="PAGE_TITLE" /></translation>
+<translation id="2225696941839557119">Chromium 操作系统无法同步您的密码。</translation>
 <translation id="2241627712206172106">如果您与亲朋好友共用计算机，他们将能够使用单独的帐号进行浏览，并可随心所欲地设置Chromium。</translation>
 <translation id="2294245788148774212">（可选）自动向 Google 发送诊断数据和使用情况数据，协助改进 Chromium 操作系统的功能和性能。</translation>
 <translation id="2347108572062610441">此扩展程序更改了 Chromium 启动后系统显示的页面。</translation>
@@ -134,6 +135,7 @@
 <translation id="6134968993075716475">“安全浏览”功能已关闭。Chromium 建议开启此功能。</translation>
 <translation id="6212496753309875659">此计算机已安装了更高版本的 Chromium。如果软件无法正常运行，请卸载 Chromium 并重试。</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium 将立即重新启动}=1{Chromium 将在 1 秒后重新启动}other{Chromium 将在 # 秒后重新启动}}</translation>
+<translation id="623836266260425961">Chromium 操作系统无法同步您的数据。</translation>
 <translation id="6248213926982192922">将 Chromium 设置为默认浏览器</translation>
 <translation id="6266342355635466082">Chromium 无法检查是否有更新。请检查您的互联网连接。</translation>
 <translation id="6268381023930128611">退出 Chromium？</translation>

@@ -160,7 +160,7 @@
 <translation id="161042844686301425">Cyan</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Keine weiteren Dialogfelder auf dieser Seite zulassen</translation>
-<translation id="1623253368136559158">Kameraführung</translation>
+<translation id="1623253368136559158">Kamerabewegung</translation>
 <translation id="16338877384480380">Architecture-B</translation>
 <translation id="1638780421120290329">Karte kann nicht gespeichert werden</translation>
 <translation id="1639239467298939599">Wird geladen...</translation>
@@ -269,6 +269,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="2094505752054353250">Domains stimmen nicht überein.</translation>
 <translation id="2096368010154057602">Abteilung</translation>
 <translation id="2099652385553570808">Drei Heftklammern links</translation>
+<translation id="2101225219012730419">Version:</translation>
 <translation id="2102134110707549001">Starkes Passwort vorschlagen…</translation>
 <translation id="2107021941795971877">Stützstrukturen für Druck</translation>
 <translation id="2108755909498034140">Computer neu starten</translation>
@@ -439,6 +440,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="2856444702002559011">Hacker könnten versuchen, Ihre Daten von <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> zu stehlen, zum Beispiel Passwörter, Nachrichten oder Kreditkartendaten. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">Posterfaltung</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2880660355386638022">Fensterpositionierung</translation>
 <translation id="2881276955470682203">Karte speichern?</translation>
 <translation id="2882949212241984732">Doppelte Fensterfaltung</translation>
 <translation id="2903493209154104877">Adressen</translation>
@@ -637,6 +639,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Proxy, Firewall und DNS-Konfiguration prüfen<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">Anwendungen, die diesen Fehler verursachen können, sind Antivirensoftware, Firewalls, Webfilter- oder Proxy-Software.</translation>
 <translation id="373042150751172459">B4 (Umschlag)</translation>
+<translation id="3731873414101415120">Von Ihnen besuchte Websites und Inhalte von nicht sicheren Seiten</translation>
 <translation id="3736520371357197498">Wenn Sie die Sicherheitsrisiken kennen, können Sie <ph name="BEGIN_LINK" />diese unsichere Website aufrufen<ph name="END_LINK" />, bevor die gefährlichen Programme entfernt wurden.</translation>
 <translation id="3744899669254331632">Sie können <ph name="SITE" /> zurzeit nicht aufrufen, weil die Website verschlüsselte Anmeldedaten gesendet hat, die von Chromium nicht verarbeitet werden können. Netzwerkfehler und Angriffe sind in der Regel nur vorübergehend, sodass die Seite wahrscheinlich später wieder funktioniert.</translation>
 <translation id="3745099705178523657">Nach erfolgter Bestätigung werden die Kartendetails Ihres Google-Kontos an diese Website weitergegeben.</translation>
@@ -903,6 +906,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="4877083676943085827">{COUNT,plural, =0{Keine}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">"<ph name="TEXT" />" suchen</translation>
 <translation id="4879491255372875719">Automatisch (Standard)</translation>
+<translation id="4879725228911483934">Fenster auf Ihren Bildschirmen öffnen und positionieren</translation>
 <translation id="4880827082731008257">Im Verlauf suchen</translation>
 <translation id="4881695831933465202">Öffnen</translation>
 <translation id="4892518386797173871">Hinten</translation>
@@ -1616,7 +1620,7 @@ Weitere Details:
 <translation id="7887885240995164102">Bild-im-Bild-Modus aktivieren</translation>
 <translation id="7888575728750733395">Rendering Intent für Druck</translation>
 <translation id="7904208859782148177">C3 (Umschlag)</translation>
-<translation id="7923775243649974918">Kamera umplatzieren</translation>
+<translation id="7923775243649974918">Kamera bewegen</translation>
 <translation id="7932579305932748336">Im­prä­g­nie­ren</translation>
 <translation id="79338296614623784">Geben Sie eine gültige Telefonnummer ein</translation>
 <translation id="7934052535022478634">Zahlung abgeschlossen</translation>

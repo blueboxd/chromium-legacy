@@ -40,6 +40,9 @@ class TileService : public KeyedService, public base::SupportsUserData {
   virtual void StartFetchForTiles(bool is_from_reduced_mode,
                                   BackgroundTaskFinishedCallback callback) = 0;
 
+  // Cancel any existing scheduled task, and reset backoff.
+  virtual void CancelTask() = 0;
+
   TileService() = default;
   ~TileService() override = default;
 

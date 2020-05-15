@@ -294,7 +294,7 @@ void PDFiumFormFiller::Form_OnFocusChange(FPDF_FORMFILLINFO* param,
 
   engine->ScrollIntoView(screen_rect);
 
-  engine->OnFocusedAnnotationUpdated(annot);
+  engine->OnFocusedAnnotationUpdated(annot, page_index);
 }
 
 // static

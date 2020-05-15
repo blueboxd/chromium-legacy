@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Автоматаар татаж  авах файл</translation>
 <translation id="5677928146339483299">Хаагдсан</translation>
 <translation id="5689516760719285838">Байршил</translation>
+<translation id="5690795753582697420">Камерыг Android тохиргоо хэсэгт унтраасан байна</translation>
 <translation id="5710871682236653961">Таныг NFC төхөөрөмж дээр товших үед мэдээлэл илгээх болон хүлээн авахыг сайтуудад зөвшөөрөхийн өмнө асуух (зөвлөсөн)</translation>
 <translation id="5719847187258001597">Энэ нь <ph name="ORIGIN" /> эсвэл таны Үндсэн нүүрэн дээрх үүний аппаас хадгалсан бүх өгөгдөл болон күүкиг арилгана.</translation>
 <translation id="5804241973901381774">Зөвшөөрлүүд</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Илүү их</translation>
 <translation id="6064125863973209585">Татаж дууссан файл</translation>
 <translation id="6165508094623778733">Нэмэлт мэдээлэл авах</translation>
+<translation id="6177111841848151710">Одоогийн хайлтын хэрэгсэлд блоклосон</translation>
 <translation id="6181444274883918285">Сайтын онцгой тохиолдол нэмэх</translation>
 <translation id="6192792657125177640">Гажих нөхцлүүд</translation>
 <translation id="6194112207524046168">Chrome-д камертаа хандахыг зөвшөөрөхийн тулд камерыг <ph name="BEGIN_LINK" />Android-н тохиргоонд<ph name="END_LINK" /> мөн адил асаана уу.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Энэ хуудас аюултай байна. Сайтын мэдээлэл</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6992289844737586249">Сайтууд микрофон ашиглах зөвшөөрөл авах (санал болгосон)</translation>
+<translation id="7000754031042624318">Андройдын тохиргоонд унтраасан</translation>
+<translation id="7016516562562142042">Одоогийн хайлтын хэрэгсэлд зөвшөөрсөн</translation>
 <translation id="7053983685419859001">Блоклох</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 сонгосон}other{# сонгосон}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" />-г сонгосон. Сонголт дэлгэцийн дээд хэсэгт боломжтой</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Тодорхой сайтад дуу тоглуулахыг зөвшөөрнө үү.</translation>
 <translation id="7993619969781047893">Зарим сайтын онцлогууд ажиллахгүй байж болзошгүй</translation>
 <translation id="7999064672810608036">Та cookies гэх мэт энэ вэбсайтны бүх мэдээллийг устгах мөн бүх зөвшөөрлийг дахин тохируулахдаа итгэлтэй байна уу?</translation>
+<translation id="8007176423574883786">Энэ төхөөрөмж дээр унтраастай байна</translation>
 <translation id="802154636333426148">Татаж чадсангүй</translation>
 <translation id="8087000398470557479"><ph name="DOMAIN_NAME" />-н энэ агуулгыг Google танд хүргэж байна.</translation>
 <translation id="8116925261070264013">Дууг хаасан</translation>

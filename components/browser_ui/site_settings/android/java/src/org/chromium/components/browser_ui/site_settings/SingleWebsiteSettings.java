@@ -334,7 +334,7 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
         } else if (PREF_CLEAR_DATA.equals(preference.getKey())) {
             setUpClearDataPreference((ClearWebsiteStorage) preference);
         } else if (PREF_RESET_SITE.equals(preference.getKey())) {
-            preference.setOnPreferenceClickListener(this);
+            setupResetSitePreference(preference);
         } else {
             assert PERMISSION_PREFERENCE_KEYS.length
                     == ContentSettingException.Type.NUM_ENTRIES + PermissionInfo.Type.NUM_ENTRIES;
@@ -385,8 +385,22 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
                     String.format(context.getString(R.string.origin_settings_storage_usage_brief),
                             Formatter.formatShortFileSize(context, usage)));
             preference.setDataForDisplay(mSite.getTitle(), appFound);
+            if (WebsitePreferenceBridge.isCookieDeletionDisabled(
+                        getSiteSettingsClient().getBrowserContextHandle(),
+                        mSite.getAddress().getOrigin())) {
+                preference.setEnabled(false);
+            }
         } else {
             getPreferenceScreen().removePreference(preference);
+        }
+    }
+
+    private void setupResetSitePreference(Preference preference) {
+        preference.setOnPreferenceClickListener(this);
+        if (WebsitePreferenceBridge.isCookieDeletionDisabled(
+                    getSiteSettingsClient().getBrowserContextHandle(),
+                    mSite.getAddress().getOrigin())) {
+            preference.setEnabled(false);
         }
     }
 

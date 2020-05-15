@@ -105,17 +105,6 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1117535567637097036">Bu politika aracılığıyla ayarlanan protokol işleyicileri, Android amaçları işlenirken kullanılmaz.</translation>
 <translation id="1118093128235245168">Sitelerin, bağlı bir USB cihazına erişmek için kullanıcıdan izin istemesine izin ver</translation>
-<translation id="1123594119609921068">Giriş ekranında sözlü geri bildirim erişilebilirlik özelliğinin varsayılan durumunu ayarlayın.
-
-          Bu politika true (doğru) değerine ayarlanırsa giriş ekranı gösterildiğinde sözlü geri bildirim etkinleştirilir.
-
-          Bu politika false (yanlış) değerine ayarlanırsa giriş ekranı gösterildiğinde sözlü geri bildirim devre dışı olur.
-
-          Bu politikayı ayarlarsanız kullanıcılar sözlü geri bildirimi etkinleştirerek veya devre dışı bırakarak geçici olarak geçersiz kılabilirler. Bununla birlikte, kullanıcının yaptığı seçim kalıcı değildir. Giriş ekranı yeniden gösterildiğinde veya kullanıcı giriş ekranında bir dakika süreyle işlem yapmazsa varsayılan ayar geri yüklenir.
-
-          Bu politika ayarlanmadan bırakılırsa giriş ekranı ilk kez gösterildiğinde sözlü geri bildirim devre dışı bırakılır. Kullanıcılar istedikleri zaman sözlü geri bildirimi etkinleştirebilir veya devre dışı bırakabilirler. Sözlü geri bildirimin giriş ekranındaki durumu kullanıcı değiştiğinde de aynı kalır.
-
-          Not: <ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME" /> belirtilmişse bu politikayı geçersiz kılar.</translation>
 <translation id="1128717055763152639">Engellenebilir (ör. etkin) karma içeriği (ör. HTTPS sitelerindeki HTTP içeriği) görüntülemesine izin verilen sitelerin belirtildiği ve isteğe bağlı olarak engellenebilir karma içerik yükseltmelerinin devre dışı bırakılacağı bir URL kalıpları listesini ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa engellenebilir karma içerik engellenir ve isteğe bağlı olarak engellenebilir karma içerik yükseltilir, ayrıca kullanıcıların belirli sitelerde buna izin vermek üzere istisnalar ayarlamasına izin verilir.
@@ -386,23 +375,9 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
 <translation id="1634989431648355062">Bu sitelerde <ph name="FLASH_PLUGIN_NAME" /> eklentisine izin ver</translation>
 <translation id="1645793986494086629">Şema:</translation>
 <translation id="1648816843164517573">HSTS politika kontrolünü atlayacak olan isimlerin listesi</translation>
-<translation id="1653229475925941921">Bu politika ayarlanırsa, etkinleştirilmiş olan ekran büyütecinin türünü belirler. Politikayı "None" ("Yok") değerine ayarlamak, ekran büyütecini devre dışı bırakır.
-
-          Bu politikayı ayarlarsanız kullanıcılar bunu değiştiremez veya geçersiz kılamazlar.
-
-          Bu politika ayarlanmadan bırakılırsa, başlangıçta ekran büyüteci devre dışıdır, ancak istenildiğinde kullanıcı tarafından etkinleştirilebilir.</translation>
 <translation id="1654087023995670109">Tarayıcı misafir modunu zorunlu tut</translation>
 <translation id="1655229863189977773">Disk önbelleği boyutunu bayt olarak ayarla</translation>
 <translation id="166427968280387991">Proxy sunucu</translation>
-<translation id="1667877109169174750">Bu politika true (doğru) değerine ayarlanırsa Erişilebilirlik seçenekleri her zaman sistem tepsisi menüsünde görüntülenir.
-
-          Bu politika false (yanlış) değerine ayarlanırsa Erişilebilirlik seçenekleri hiçbir zaman sistem tepsisi menüsünde görüntülenmez.
-
-          Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
-
-          Bu politika ayarlanmadan bırakılırsa Erişilebilirlik seçenekleri sistem tepsisi menüsünde görüntülenmez, ancak kullanıcı, Ayarlar sayfasını kullanarak Erişilebilirlik seçeneklerinin görüntülenmesini sağlayabilir.
-
-          Erişilebilirlik özellikleri etkinleştirildiğinde (ör. bir tuş kombinasyonu ile), Erişilebilirlik seçenekleri sistem tepsisi menüsünde her zaman görünür.</translation>
 <translation id="1668836044817793277">Sıfır gecikmeyle otomatik başlatılan kiosk uygulamasının <ph name="PRODUCT_OS_NAME" /> sürümünü kontrol etmesine izin verilip verilmeyeceğini belirtir.
 
       Bu politika sıfır gecikmeyle otomatik başlatılan kiosk uygulamasının bildirim dosyasında bir required_platform_version belirterek <ph name="PRODUCT_OS_NAME" /> sürümünü kontrol etmesine ve bunu otomatik güncelleme hedef sürümü öneki şeklinde kullanmasına izin verilip verilmeyeceğini denetler.
@@ -1931,15 +1906,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 <translation id="3811562426301733860">Tüm sitelerde reklamlara izin ver</translation>
 <translation id="3816312845600780067">Otomatik giriş için kurtarma klavye kısayolunu etkinleştir</translation>
 <translation id="3817323252437541502">Gelişmiş Koruma programına kayıtlı kullanıcılar için ek koruma özelliklerini etkinleştir</translation>
-<translation id="3820526221169548563">Ekran klavyesi erişilebilirliği özelliğini etkinleştirin.
-
-          Bu politika doğru seçeneğine ayarlanırsa ekran klavyesi her zaman etkin olur.
-
-          Bu politika yanlış seçeneğine ayarlanırsa ekran klavyesi her zaman devre dışı olur.
-
-          Bu politikayı ayarlarsanız kullanıcılar tarafından değiştirilemez veya geçersiz kılınamaz.
-
-          Bu politika ayarlanmadan bırakılırsa ekran klavyesi başlangıçta devre dışı olur, ancak kullanıcı istediği zaman bu ayarı etkinleştirilebilir.</translation>
 <translation id="3821861026311587684">Hesabının kimlik doğrulaması geçersiz hale geldiğinde kullanıcıyı çıkış yapmaya zorla</translation>
 <translation id="382476126209906314">Uzaktan erişim ana makineleri için TalkGadget önekini yapılandır</translation>
 <translation id="3824972131618513497">Güç yönetimi ve yeniden başlatmayla ilgili ayarları kontrol eder.</translation>
@@ -2211,15 +2177,6 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika o
 <translation id="4157003184375321727">İşletim sistemi ve donanım yazılımı sürümünü rapor et</translation>
 <translation id="4157594634940419685">Yerel CUPS yazıcılarına erişim izni ver</translation>
 <translation id="4160962198980004898">Yuvaya yerleştirildiğinde cihaz MAC adresi kaynağı</translation>
-<translation id="4164601239783385546">Yapışkan tuşlar erişilebilirlik özelliğini etkinleştirin.
-
-          Bu politika true (doğru) değerine ayarlanırsa yapışkan tuşlar her zaman etkin olur.
-
-          Bu politika false (yanlış) değerine ayarlanırsa yapışkan tuşlar her zaman devre dışı olur.
-
-          Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlarlar.
-
-          Bu politika ayarlanmadan bırakılırsa yapışkan tuşlar başlangıçta devre dışıdır ancak kullanıcı dilediği zaman etkinleştirebilir.</translation>
 <translation id="4169692397912242417">Giriş ekranında sözlü geri bildirim erişilebilirlik özelliğini etkinleştirin.
 
           Bu politika true (doğru) değerine ayarlanırsa giriş ekranında sözlü geri bildirim her zaman etkinleştirilir.
@@ -2243,17 +2200,6 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika o
           Bu politika ayarlanmadan bırakılırsa giriş ekranında metin vurgulama kutusu başlangıçta devre dışı bırakılır, ancak kullanıcılar istedikleri zaman bunu etkinleştirebilir.</translation>
 <translation id="4183229833636799228">Varsayılan <ph name="FLASH_PLUGIN_NAME" /> ayarı</translation>
 <translation id="4192388905594723944">Uzaktan erişim istemci kimlik doğrulama jetonunu doğrulama URL'si</translation>
-<translation id="420007931282384740">Giriş ekranında dokunmatik klavye erişilebilirlik özelliğinin varsayılan durumunu ayarlayın.
-
-          Bu politika true (doğru) değerine ayarlanırsa giriş ekranı gösterildiğinde dokunmatik klavye etkinleştirilir.
-
-          Bu politika false (yanlış) değerine ayarlanırsa giriş ekranı gösterildiğinde dokunmatik klavye devre dışı olur.
-
-          Bu politikayı ayarlarsanız kullanıcılar dokunmatik klavyeyi etkinleştirerek veya devre dışı bırakarak geçici olarak geçersiz kılabilirler. Bununla birlikte, kullanıcının yaptığı seçim kalıcı değildir. Giriş ekranı yeniden gösterildiğinde veya kullanıcı giriş ekranında bir dakika süreyle işlem yapmazsa varsayılan ayar geri yüklenir.
-
-          Bu politika ayarlanmadan bırakılırsa giriş ekranı ilk kez gösterildiğinde dokunmatik klavye devre dışı bırakılır. Kullanıcılar istedikleri zaman dokunmatik klavyeyi etkinleştirebilir veya devre dışı bırakabilirler. Dokunmatik klavyenin giriş ekranındaki durumu kullanıcı değiştiğinde de aynı kalır.
-
-          Not: <ph name="DEVICE_LOGIN_SCREEN_VIRTUAL_KEYBOARD_ENABLED_POLICY_NAME" /> belirtilmişse bu politikayı geçersiz kılar.</translation>
 <translation id="4203389617541558220">Otomatik yeniden başlatmalar planlayarak cihazın açık olduğu süreyi sınırlandır.
 
       Bu politika ayarlandığında, sonrasında otomatik bir yeniden başlatma işleminin planlandığı cihaz açık kalma süresini belirtir.
@@ -2500,11 +2446,6 @@ politikayı geçersiz kılamaz.
 <translation id="4625915093043961294">Uzantı yükleme beyaz listesini yapılandır</translation>
 <translation id="4632343302005518762"><ph name="PRODUCT_FRAME_NAME" /> için listelenen içerik türlerini işlemeye izin ver</translation>
 <translation id="4632566332417930481">Kurumsal politika tarafından yüklenen uzantılarda Geliştirici Araçları kullanımına izin verme, diğer bağlamlarda Geliştirici Araçları kullanımına izin ver</translation>
-<translation id="4633786464238689684">Üst sıra tuşlarının varsayılan davranışını işlev tuşları olarak değiştirir.
-
-          Bu politika true değerine ayarlanırsa klavyedeki tuşların en üst sırası, varsayılan ayara göre işlev tuşu komutları oluşturur. Bunların davranışını tekrar medya tuşlarına döndürmek için arama tuşuna basılması gerekir.
-
-          Bu politika false değerine ayarlanırsa veya ayarlanmadan bırakılırsa, klavye varsayılan ayara göre medya tuşu komutları ve arama tuşu basılı tutulduğunda işlev tuşu komutları oluşturur.</translation>
 <translation id="4639407427807680016">Kara listeden muaf tutulacak yerel mesajlaşma ana makinelerinin adları</translation>
 <translation id="4649395978608361979">Yerel yazıcı hedefleri</translation>
 <translation id="4650759511838826572">URL protokol şemalarını devre dışı bırak</translation>
@@ -2596,15 +2537,6 @@ politikayı geçersiz kılamaz.
       Bu ayar devre dışı bırakılırsa Otomatik Doldurma hiçbir zaman öneride bulunmaz, kredi kartı bilgilerini doldurmaz veya kullanıcının internette gezerken gönderebileceği ek kredi kartı bilgilerini kaydetmez.
 
       Bu ayar etkinleştirilirse veya bir değere sahip olmazsa kullanıcı, kullanıcı arayüzündeki kredi kartı Otomatik Doldurma özelliğini kontrol edebilir.</translation>
-<translation id="4791031774429044540">Büyük imleç erişilebilirlik özelliğini etkinleştir.
-
-          Bu politika true (doğru) olarak ayarlanırsa, büyük imleç her zaman etkinleştirilir.
-
-          Bu politika false (yanlış) olarak ayarlanırsa, büyük imleç her zaman devre dışı bırakılır.
-
-          Bu politikayı ayarlarsanız, kullanıcılar bunu değiştiremez ve geçersiz kılamaz.
-
-          Bu politika ayarlanmadan bırakılırsa, büyük imleç başta devre dışıdır, ancak istenildiğinde kullanıcı tarafından etkinleştirilebilir.</translation>
 <translation id="4802744647065138872">Acil geri alma durumunda kullanılmak üzere saklanan kullanıcı verilerinin anlık görüntü sayısını sınırlar.</translation>
 <translation id="4802905909524200151"><ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımını güncelleme davranışını yapılandır</translation>
 <translation id="4804828344300125154">Kullanıcı oturumu kapatıldığında her zaman cihazı yeniden başlat.</translation>
@@ -2767,15 +2699,6 @@ politikayı geçersiz kılamaz.
 <translation id="5105313908130842249">Pil gücüyle çalışırken ekran kilidi gecikmesi</translation>
 <translation id="5108031557082757679">Devre dışı bırakılmış kurumsal cihaz yazıcıları</translation>
 <translation id="5109383437323376357">Varyasyonların kullanılabilirliğini belirleme</translation>
-<translation id="5112121363469561920">Giriş ekranında etkinleştirilmiş olan varsayılan ekran büyütecinin türünü ayarlar.
-
-          Bu politika ayarlanırsa giriş ekranı gösterildiğinde etkinleştirilmiş olan ekran büyütecinin türünü belirler. Politikayı "None" ("Yok") değerine ayarlamak, ekran büyütecini devre dışı bırakır.
-
-          Bu politikayı ayarlarsanız kullanıcılar ekran büyütecini etkinleştirerek veya devre dışı bırakarak geçici olarak geçersiz kılabilirler. Bununla birlikte, kullanıcının yaptığı seçim kalıcı değildir. Giriş ekranı yeniden gösterildiğinde veya kullanıcı giriş ekranında bir dakika süreyle işlem yapmazsa varsayılan ayar geri yüklenir.
-
-          Bu politika ayarlanmadan bırakılırsa giriş ekranı ilk kez gösterildiğinde ekran büyüteci devre dışı bırakılır. Kullanıcılar istedikleri zaman ekran büyütecini etkinleştirebilir veya devre dışı bırakabilirler. Dokunmatik klavyenin giriş ekranındaki durumu kullanıcı değiştiğinde de aynı kalır.
-
-          Not: <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" /> belirtilmişse bu politikayı geçersiz kılar.</translation>
 <translation id="5115168755602871392">Cihaz CPU'ları için bilgi raporlama
 
       Politika false (yanlış) değerine ayarlanırsa veya ayarlanmadan bırakılırsa bilgiler raporlanmaz.
@@ -2994,17 +2917,6 @@ politikayı geçersiz kılamaz.
 <translation id="5378985487213287085">Web sitelerinin masaüstü bildirimleri görüntülemesine izin verilip verilmeyeceğini ayarlamanıza olanak tanır. Varsayılan olarak masaüstü bildirimlerinin görüntülenmesine izin verilebilir, varsayılan olarak bu reddedilebilir veya bir web sitesi her masaüstü bildirimi gösterme isteğinde bulunduğunda kullanıcıya sorulabilir.
 
           Bu politika ayarlanmadan bırakılırsa, 'AskNotifications' kullanılır ve kullanıcı ayarı değiştirebilir.</translation>
-<translation id="5380329473151894945">Giriş ekranında büyük imleç erişilebilirlik özelliğinin durumunu ayarlayın.
-
-          Bu politika true (doğru) değerine ayarlanırsa giriş ekranı gösterildiğinde büyük imleç etkinleştirilir.
-
-          Bu politika false (yanlış) değerine ayarlanırsa giriş ekranı gösterildiğinde büyük imleç devre dışı bırakılır.
-
-          Bu politikayı ayarlarsanız kullanıcılar büyük imleci etkinleştirerek veya devre dışı bırakarak geçici olarak geçersiz kılabilirler. Bununla birlikte, kullanıcının yaptığı seçim kalıcı değildir. Giriş ekranı yeniden gösterildiğinde veya kullanıcı giriş ekranında bir dakika süreyle işlem yapmazsa varsayılan ayar geri yüklenir.
-
-          Bu politika ayarlanmadan bırakılırsa giriş ekranı ilk kez gösterildiğinde büyük imleç devre dışı bırakılır. Kullanıcılar istedikleri zaman büyük imleci etkinleştirebilir veya devre dışı bırakabilirler. İmlecin durumu kullanıcı değiştiğinde de aynı kalır.
-
-          Not: <ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" /> belirtilmişse bu politikayı geçersiz kılar.</translation>
 <translation id="538108065117008131"><ph name="PRODUCT_FRAME_NAME" /> için aşağıdaki içerik türlerini işlemeye izin ver.</translation>
 <translation id="538768040137709073">Senkronize etme etkin durumda ve kullanıcı Oturum açmışken, kullanıcıların Chrome Masaüstü cihazlar ve bir Android cihaz arasında kısa mesaj göndermesine olanak tanıyan Paylaşılan Pano özelliğini etkinleştirin.
 
@@ -3349,7 +3261,6 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
       Bu politika False (Yanlış) değerine ayarlanır veya hiç ayarlanmazsa Web Bileşenleri v0 özellikleri, M80 düzeyinden itibaren varsayılan olarak devre dışı bırakılır.
 
       Bu politika Chrome 84'ten sonra kaldırılacaktır.</translation>
-<translation id="5763698334786515749">Giriş ve kilit ekranında şifre görüntüleme düğmesini etkinleştirin.</translation>
 <translation id="5765780083710877561">Açıklama:</translation>
 <translation id="5770738360657678870">Yeni geliştirilenler kanalı (kararsız olabilir)</translation>
 <translation id="5774856474228476867">Varsayılan arama sağlayıcı arama URL'si</translation>
@@ -3846,9 +3757,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
       Bu politika ayarlanmadan bırakılırsa kullanıcı, sabit kodlu, uyumsuz, eski veya tehlikeli eklentiler hariç sistemde yüklü herhangi bir eklentiyi kullanabilir.</translation>
 <translation id="6571871508154591774">Devre dışı bırakılacak kamera, tarayıcı ayarları ve OS ayarları özellikleri</translation>
 <translation id="6573305661369899995">URL kısıtlamaları için harici kaynak ayarla</translation>
-<translation id="6574770600243153999">Bu cihazın PluginVm çalıştırmasını etkinleştirir.
-
-      Politika false (yanlış) olarak ayarlanır veya ayarlanmadan bırakılırsa <ph name="PLUGIN_VM_NAME" /> cihaz için etkinleştirilmez. True (doğru) olarak ayarlanırsa diğer ayarlar izin verdiği sürece <ph name="PLUGIN_VM_NAME" /> cihaz için etkinleştirilir. <ph name="PLUGIN_VM_NAME" /> adlı sanal makinenin çalışmasına izin verilebilmesi için<ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> politikasının true (doğru) olarak ayarlanması ve <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> veya <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> ya da<ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> politikasının ayarlanması gerekir.</translation>
 <translation id="6583851521569686409">Yazıcılar listesini yapılandırır.
 
       Bu politika, yöneticilerin kendi kullanıcıları için yazıcı yapılandırmaları
@@ -3907,7 +3815,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 <translation id="6665670272107384733">Hızlı kilit açmayı kullanmak için kullanıcının şifreyi hangi sıklıkta girmesi gerektiğini ayarla</translation>
 <translation id="6672070613706645316">Kullanıcıların Yeni Sekme sayfasındaki arka planı özelleştirmelerin izin ver.</translation>
 <translation id="6672630473862787247">Ambiyans kimlik doğrulamasını normal, gizli ve misafir oturumlarında etkinleştir.</translation>
-<translation id="6677797768774898583">Bu özellik, kullanıcının bir düğmeyi tıklayarak şifreyi giriş ve kilit ekranında görüntülemesine olanak tanır.</translation>
 <translation id="6685903773201985073">Ambiyans kimlik doğrulamasını misafir oturumlarında ve normal oturumlarda etkinleştir.</translation>
 <translation id="6689792153960219308">Donanım durumunu bildir</translation>
 <translation id="6698632841807204978">Tek renk yazdırmayı etkinleştir</translation>
@@ -3983,15 +3890,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 <translation id="6907778402784621686">Bu sitelerde güvenli olmayan içeriği engelle</translation>
 <translation id="6908640907898649429">Varsayılan arama sağlayıcıyı yapılandırır. Kullanıcının kullanacağı varsayılan arama sağlayıcıyı belirleyebilir veya varsayılan aramayı devre dışı bırakmayı seçebilirsiniz.</translation>
 <translation id="6913068954484253496"><ph name="PRODUCT_NAME" /> ürününün tüm IP adreslerindeki Yayın cihazlarına bağlanmasına izin ver</translation>
-<translation id="6915442654606973733">Sesli geri bildirim erişilebilirlik özelliğini etkinleştir.
-
-          Bu politika true (doğru) olarak ayarlanırsa, sesli geri bildirim her zaman etkinleştirilir.
-
-          Bu politika false (yanlış) olarak ayarlanırsa, sesli geri bildirim her zaman devre dışı bırakılır.
-
-          Bu politikayı ayarlarsanız, kullanıcılar bunu değiştiremez ve geçersiz kılamaz.
-
-          Bu politika ayarlanmadan bırakılırsa, sesli geri bildirim başta devre dışıdır, ancak istenildiğinde kullanıcı tarafından etkinleştirilebilir.</translation>
 <translation id="6916507170737609563">
       Hem izolasyondan hem de kullanıcılar için sınırlı etkiden en iyi şekilde yararlanmak üzere IsolateOriginsAndroid politika ayarına bakmak isteyebilirsiniz. Bunun için, izole etmek istediğiniz sitelerin listesiyle IsolateOriginsAndroid'i kullanabilirsiniz. Bu ayar (SitePerProcessAndroid) tüm siteleri izole eder. 
       Bu politika etkinleştirilirse her site kendi işleminde çalışır.
@@ -4666,17 +4564,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 
       Bu politika için yapılan dinamik yenileme, M56 ve sonraki sürümlerde desteklenir.</translation>
 <translation id="7841880500990419427">Yedek olarak kullanılacak minimum TLS sürümü</translation>
-<translation id="7842317008224536842">Giriş ekranında yüksek kontrast modu erişilebilirlik özelliğinin varsayılan durumunu ayarlayın.
-
-          Bu politika true (doğru) değerine ayarlanırsa giriş ekranı gösterildiğinde yüksek kontrast modu etkinleştirilir.
-
-          Bu politika false (yanlış) değerine ayarlanırsa giriş ekranı gösterildiğinde yüksek kontrast modu devre dışı olur.
-
-          Bu politikayı ayarlarsanız kullanıcılar yüksek kontrast modunu etkinleştirerek veya devre dışı bırakarak geçici olarak geçersiz kılabilirler. Bununla birlikte, kullanıcının yaptığı seçim kalıcı değildir. Giriş ekranı yeniden gösterildiğinde veya kullanıcı giriş ekranında bir dakika süreyle işlem yapmazsa varsayılan ayar geri yüklenir.
-
-          Bu politika ayarlanmadan bırakılırsa giriş ekranı ilk kez gösterildiğinde yüksek kontrast modu devre dışı bırakılır. Kullanıcılar istedikleri zaman yüksek kontrast modunu etkinleştirebilir veya devre dışı bırakabilirler. Yüksek kontrast modunun giriş ekranındaki durumu kullanıcı değiştiğinde de aynı kalır.
-
-          Not: <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" /> belirtilmişse bu politikayı geçersiz kılar.</translation>
 <translation id="7846952520291088817">WebRTC ICE adaylarında sunulan yerel IP'ler için URL'ler</translation>
 <translation id="7848641140449742406">OS Ayarları</translation>
 <translation id="7858404742201086014">Bu ayarı etkinleştirirseniz eski eklentiler normal eklentiler gibi kullanılır.
@@ -4883,15 +4770,6 @@ Bu politika False (Yanlış) değerine ayarlanırsa giriş ekranı gösterildiğ
 Bu politika ayarlandığında kullanıcı, giriş ekranı gösterilirken değeri geçersiz kılamaz.
 
 Bu politika ayarlanmadan bırakılırsa gizlilik ekranı başta devre dışı bırakılır, ancak giriş ekranı gösterildiğinde kullanıcı tarafından kontrol edilebilmeye devam eder.</translation>
-<translation id="8148901634826284024">Yüksek kontrast modu erişilebilirlik özelliğini etkinleştir.
-
-          Bu politika true (doğru) olarak ayarlanırsa, yüksek kontrast modu her zaman etkin olur.
-
-          Bu politika false (yanlış) olarak ayarlanırsa, yüksek kontrast modu her zaman devre dışı olur.
-
-          Bu politikayı ayarlarsanız, kullanıcılar bunu değiştiremez ve geçersiz kılamaz.
-
-          Bu politika ayarlanmadan bırakılırsa, başlangıçta yüksek kontrast modu devre dışıdır, ancak istenildiğinde kullanıcı tarafından etkinleştirilebilir.</translation>
 <translation id="815061180603915310">Bu politika etkinleştirilirse profil geçici moda geçmeye zorlanır. Bu politika bir OS politikası olarak belirlenirse (ör. Windows'da GPO) sistemdeki tüm profiller için geçerli olur; Bulut politikası olarak belirlenirse yalnızca yönetilen hesapla oturum açılan bir profil için geçerli olur.
 
       Bu modda, profil verileri disk üzerinde sadece kullanıcının oturumu süresince kalır. Tarayıcı geçmişi gibi özellikler, uzantılar ve uzantıların verilerinin yanı sıra çerezler ve web veritabanları gibi web verileri tarayıcı kapandıktan sonra saklanmaz. Ancak bu durum, kullanıcının verileri manuel olarak diske indirmesine, sayfaları kaydetmesine veya yazdırmasına engel olmaz.

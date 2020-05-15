@@ -387,7 +387,6 @@ Vetëm ti mund të shohësh se çfarë po shikon kamera. Sajti nuk mund të shik
 <translation id="4250229828105606438">Pamje e ekranit</translation>
 <translation id="4256782883801055595">Licencat me burim të hapur</translation>
 <translation id="4269820728363426813">Kopjo adresën e lidhjes</translation>
-<translation id="4278390842282768270">Të lejuara</translation>
 <translation id="429312253194641664">Një sajt po luan media</translation>
 <translation id="4298388696830689168">Sajtet e lidhura</translation>
 <translation id="4307992518367153382">Bazat</translation>
@@ -435,7 +434,6 @@ Llogaria jote e Google mund të ketë forma të tjera të historikut të shfleti
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> faqeshënuesë u fshinë</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> u shtua në ekranin bazë</translation>
 <translation id="4684427112815847243">Sinkronizo gjithçka</translation>
-<translation id="4688610874307684559">Po ekzekutohet në Chrome (fillestare)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 dhe <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> tjetër}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 dhe <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> të tjera}}</translation>
 <translation id="4696983787092045100">Dërgo tekstin te pajisjet e tua</translation>
 <translation id="4698034686595694889">Shiko jashtë linje në <ph name="APP_NAME" /></translation>
@@ -560,10 +558,8 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5659593005791499971">Mail-i</translation>
 <translation id="5665379678064389456">Krijo ngjarje në <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Zëvendësoje kërkesën e një sajti uebi për të parandaluar zmadhimin</translation>
-<translation id="5677928146339483299">Të bllokuara</translation>
 <translation id="5684874026226664614">Mos! Kjo faqe nuk mund të përkthehej.</translation>
 <translation id="5686790454216892815">Emri i skedarit është tepër i gjatë</translation>
-<translation id="5690795753582697420">Kamera është çaktivizuar në cilësimet e Android</translation>
 <translation id="5694049548840660018">Kthehu te faqja kryesore me lehtësi</translation>
 <translation id="569536719314091526">Përktheje këtë faqe në çdo gjuhë nga butoni "Më shumë opsione"</translation>
 <translation id="572328651809341494">Skedat e fundit</translation>
@@ -619,7 +615,6 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="614940544461990577">Provo:</translation>
 <translation id="6154478581116148741">Aktivizo kyçjen e ekranit te "Cilësimet" për të eksportuar fjalëkalime e tua nga kjo pajisje</translation>
 <translation id="6159335304067198720">Kursimi i të dhënave: <ph name="PERCENT" /></translation>
-<translation id="6177111841848151710">Bllokuar për motorin aktual të kërkimit</translation>
 <translation id="6192333916571137726">Shkarko skedarin</translation>
 <translation id="6201345951596836663">Lidhja u kopjua</translation>
 <translation id="6210748933810148297">Nuk je <ph name="EMAIL" />?</translation>
@@ -706,7 +701,6 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="6846298663435243399">Po ngarkohet...</translation>
 <translation id="6850409657436465440">Shkarkimi yt është ende në vazhdim</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> skeda janë mbyllur</translation>
-<translation id="6864395892908308021">Kjo pajisje nuk mund të lexojë NFC-në</translation>
 <translation id="6864459304226931083">Shkarko imazhin</translation>
 <translation id="6865313869410766144">Plotëso automatikisht të dhënat e formularit</translation>
 <translation id="6884306546558072722">Vazhdo të eksplorosh jashtë linje</translation>
@@ -721,9 +715,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="6989267951144302301">Nuk mund të shkarkohej</translation>
 <translation id="6990079615885386641">Merr aplikacionin nga Dyqani i "Google Play": <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Të të paralajmërojë nëse fjalëkalimet janë ekspozuar në një nxjerrje të paautorizuar të të dhënave</translation>
-<translation id="7000754031042624318">E çaktivizuar te cilësimet e Android</translation>
 <translation id="7015203776128479407">Konfigurimi i sinkronizimit fillestar nuk përfundoi. Sinkronizimi është joaktiv.</translation>
-<translation id="7016516562562142042">Lejuar për motorin aktual të kërkimit</translation>
 <translation id="7022756207310403729">Hape në shfletues</translation>
 <translation id="702463548815491781">Rekomandohet kur është aktiv TalkBack ose "Qasja me çelës"</translation>
 <translation id="7029809446516969842">Fjalëkalimet</translation>
@@ -756,10 +748,10 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="7328017930301109123">Në "Modalitetin e lehtë", Chrome i ngarkon faqet më shpejt dhe përdor deri në 60 përqind më pak të dhëna.</translation>
 <translation id="7333031090786104871">Ende po shtohet sajti i mëparshëm</translation>
 <translation id="7340958967809483333">Opsionet për "Zbulo"</translation>
+<translation id="7352651011704765696">Diçka shkoi keq</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Ndaj 1 artikull të zgjedhur}other{Ndaj # artikuj të zgjedhur}}</translation>
 <translation id="7359002509206457351">Qasu te mënyrat e pagesës</translation>
-<translation id="7362144854749094396">Historiku ndahet me Chrome. Preferencat ndahen me <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Shkruaj:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL-ja</translation>
@@ -841,7 +833,6 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="7986741934819883144">Zgjidh një kontakt</translation>
 <translation id="7998918019931843664">Rihap skedën e mbyllur</translation>
 <translation id="8004582292198964060">Shfletuesi</translation>
-<translation id="8007176423574883786">E çaktivizuar për këtë pajisje</translation>
 <translation id="8013372441983637696">Pastro po ashtu të dhënat e tua të Chrome nga kjo pajisje</translation>
 <translation id="8015452622527143194">Ktheje gjithçka në faqe në madhësinë e parazgjedhur</translation>
 <translation id="8026334261755873520">Pastro të dhënat e shfletimit</translation>
@@ -931,6 +922,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="8687353297350450808">{N_BARS,plural, =1{Niveli i forcës së sinjalit: # shirit}other{Niveli i forcës së sinjalit: # shirita}}</translation>
 <translation id="868929229000858085">Kërko te kontaktet e tua</translation>
 <translation id="869891660844655955">Data e skadimit</translation>
+<translation id="8712637175834984815">E kuptova</translation>
 <translation id="8748850008226585750">Përmbajtjet janë të fshehura</translation>
 <translation id="8751914237388039244">Zgjidh një imazh</translation>
 <translation id="8758557275681689734">Shiko të gjitha skedat e tua të hapura</translation>

@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "chromeos/components/smbfs/mojom/smbfs.mojom.h"
@@ -60,6 +61,11 @@ class COMPONENT_EXPORT(SMBFS) SmbFsHost {
   using RemoveSavedCredentialsCallback = base::OnceCallback<void(bool)>;
   void RemoveSavedCredentials(RemoveSavedCredentialsCallback callback);
 
+  // Recursively delete |path| by making a Mojo request to smbfs.
+  using DeleteRecursivelyCallback = base::OnceCallback<void(base::File::Error)>;
+  void DeleteRecursively(const base::FilePath& path,
+                         DeleteRecursivelyCallback callback);
+
  private:
   // Mojo disconnection handler.
   void OnDisconnect();
@@ -71,6 +77,10 @@ class COMPONENT_EXPORT(SMBFS) SmbFsHost {
   // Callback for mojom::SmbFs::RemoveSavedCredentials().
   void OnRemoveSavedCredentialsDone(RemoveSavedCredentialsCallback callback,
                                     bool success);
+
+  // Called after smbfs completes a DeleteRecursively operation.
+  void OnDeleteRecursivelyDone(DeleteRecursivelyCallback callback,
+                               smbfs::mojom::DeleteRecursivelyError error);
 
   const std::unique_ptr<chromeos::disks::MountPoint> mount_point_;
   Delegate* const delegate_;

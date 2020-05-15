@@ -440,13 +440,8 @@ void ServiceWorkerHandler::OnWorkerVersionUpdated(
     for (const auto& client : version.clients) {
       if (client.second.type ==
           blink::mojom::ServiceWorkerClientType::kWindow) {
-        // A navigation may not yet be associated with a RenderFrameHost. Use
-        // the |web_contents_getter| instead.
         WebContents* web_contents =
-            client.second.web_contents_getter
-                ? client.second.web_contents_getter.Run()
-                : WebContents::FromRenderFrameHost(RenderFrameHostImpl::FromID(
-                      client.second.process_id, client.second.route_id));
+            WebContents::FromFrameTreeNodeId(client.second.frame_tree_node_id);
         // There is a possibility that the frame is already deleted
         // because of the thread hopping.
         if (!web_contents)

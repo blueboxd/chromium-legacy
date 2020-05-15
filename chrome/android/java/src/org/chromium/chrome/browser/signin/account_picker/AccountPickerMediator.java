@@ -50,21 +50,16 @@ class AccountPickerMediator {
                 context, context.getResources().getDimensionPixelSize(R.dimen.user_picture_size));
         mSelectedAccountName = selectedAccountName;
         mAccountManagerFacade = AccountManagerFacadeProvider.getInstance();
-    }
 
-    /**
-     * Starts the mediator.
-     * TODO(https://crbug.com/1075880):
-     * Investigate move this method to account picker mediator ctor
-     * and stop() to mediator.destroy()
-     */
-    void start() {
         mAccountManagerFacade.addObserver(mAccountsChangeObserver);
         mProfileDataCache.addObserver(mProfileDataObserver);
         updateAccounts();
     }
 
-    void stop() {
+    /**
+     * Unregisters the observers used by the mediator.
+     */
+    void destroy() {
         mProfileDataCache.removeObserver(mProfileDataObserver);
         mAccountManagerFacade.removeObserver(mAccountsChangeObserver);
     }

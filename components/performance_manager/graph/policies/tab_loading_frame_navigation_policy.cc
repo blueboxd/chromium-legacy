@@ -151,7 +151,13 @@ void TabLoadingFrameNavigationPolicy::OnFirstContentfulPaint(
 
 void TabLoadingFrameNavigationPolicy::OnPassedToGraph(Graph* graph) {
   DCHECK(NothingRegistered(graph));
-  mechanism_->SetThrottlingEnabled(true);
+  base::PostTask(FROM_HERE,
+                 {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+                 base::BindOnce(
+                     [](MechanismDelegate* mechanism) {
+                       mechanism->SetThrottlingEnabled(true);
+                     },
+                     base::Unretained(mechanism_)));
   graph->AddFrameNodeObserver(this);
   graph->AddPageNodeObserver(this);
   graph->RegisterObject(this);
@@ -159,10 +165,16 @@ void TabLoadingFrameNavigationPolicy::OnPassedToGraph(Graph* graph) {
 
 void TabLoadingFrameNavigationPolicy::OnTakenFromGraph(Graph* graph) {
   DCHECK(IsRegistered(graph));
+  base::PostTask(FROM_HERE,
+                 {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+                 base::BindOnce(
+                     [](MechanismDelegate* mechanism) {
+                       mechanism->SetThrottlingEnabled(false);
+                     },
+                     base::Unretained(mechanism_)));
   graph->UnregisterObject(this);
   graph->RemovePageNodeObserver(this);
   graph->RemoveFrameNodeObserver(this);
-  mechanism_->SetThrottlingEnabled(false);
 }
 
 // static

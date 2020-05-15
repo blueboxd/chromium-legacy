@@ -325,6 +325,7 @@
 <translation id="3738139272394829648">Հպեք` որոնելու համար</translation>
 <translation id="3739899004075612870">Էջանշվեց <ph name="PRODUCT_NAME" />-ում</translation>
 <translation id="3749259744154402564">Չի աջակցվում</translation>
+<translation id="3763247130972274048">10 վ առաջ/հետ անցնելու համար կրկնակի հպեք տեսանյութի աջ/ձախ մասում</translation>
 <translation id="3771001275138982843">Չհաջողվեց ներբեռնել թարմացումը</translation>
 <translation id="3771033907050503522">Ինկոգնիտո ներդիրներ</translation>
 <translation id="3771694256347217732">Google-ի օգտագործման պայմաններ</translation>
@@ -386,7 +387,6 @@
 <translation id="4250229828105606438">Սքրինշոթ</translation>
 <translation id="4256782883801055595">Բաց կոդով ծրագրերի արտոնագրեր</translation>
 <translation id="4269820728363426813">Պատճենել հղման հասցեն</translation>
-<translation id="4278390842282768270">Թույլատրված է</translation>
 <translation id="429312253194641664">Կայքում մեդիա ֆայլ է նվագարկվում</translation>
 <translation id="4298388696830689168">Կապված կայքեր</translation>
 <translation id="4307992518367153382">Հիմնական</translation>
@@ -434,7 +434,6 @@
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> էջանիշ ջնջվեց</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> կայքն ավելացվեց ձեր հիմնական էկրանին</translation>
 <translation id="4684427112815847243">Համաժամացնել բոլորը</translation>
-<translation id="4688610874307684559">Աշխատում է Chrome-ում (սկզբնական)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 և ուղարկման ևս <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> տարբերակ}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> more}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 և ուղարկման ևս <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> տարբերակ}}</translation>
 <translation id="4696983787092045100">Ուղարկել SMS սարքերին</translation>
 <translation id="4698034686595694889">Դիտեք <ph name="APP_NAME" /> հավելվածի անցանց ռեժիմում</translation>
@@ -559,10 +558,8 @@
 <translation id="5659593005791499971">Էլփոստ</translation>
 <translation id="5665379678064389456">Ստեղծեք միջոցառում <ph name="APP_NAME" /> հավելվածում</translation>
 <translation id="5668404140385795438">Անտեսել կայքերի՝ խոշորացումը կանխելու հարցումները</translation>
-<translation id="5677928146339483299">Արգելափակված է</translation>
 <translation id="5684874026226664614">Չհաջողվեց թարգմանել այս էջը:</translation>
 <translation id="5686790454216892815">Ֆայլի անունը չափազանց երկար է</translation>
-<translation id="5690795753582697420">Տեսախցիկն անջատված է Android-ի կարգավորումներում</translation>
 <translation id="5694049548840660018">Արագ անցում գլխավոր էջ</translation>
 <translation id="569536719314091526">Թարգմանեք այս կայքը «Այլ ընտրանքներ» կոճակի միջոցով</translation>
 <translation id="572328651809341494">Վերջերս բացված ներդիրներ</translation>
@@ -618,7 +615,6 @@
 <translation id="614940544461990577">Փորձեք՝</translation>
 <translation id="6154478581116148741">Այս սարքից ձեր գաղտնաբառերն արտահանելու համար կարգավորումներում միացրեք էկրանի կողպումը։</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> տվյալների խնայում</translation>
-<translation id="6177111841848151710">Արգելված է ընթացիկ որոնիչին</translation>
 <translation id="6192333916571137726">Ներբեռնել ֆայլը</translation>
 <translation id="6201345951596836663">Հղումը պատճենվեց</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> հաշիվը ձե՞րը չէ</translation>
@@ -705,7 +701,6 @@
 <translation id="6846298663435243399">Բեռնում…</translation>
 <translation id="6850409657436465440">Ներբեռնումն ընթացքում է</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> փակված ներդիր</translation>
-<translation id="6864395892908308021">Այս սարքում NFC-ն չի աջակցվում</translation>
 <translation id="6864459304226931083">Ներբեռնել պատկերը</translation>
 <translation id="6865313869410766144">Ինքնալցման տվյալներ</translation>
 <translation id="6884306546558072722">Բովանդակության հասանելիություն անցանց ռեժիմում</translation>
@@ -720,9 +715,7 @@
 <translation id="6989267951144302301">Չհաջողվեց ներբեռնել</translation>
 <translation id="6990079615885386641">Ձեռք բերեք հավելվածը Google Play Խանութից՝ <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Զգուշացնել, եթե տվյալների արտահոսքի արդյունքում իմ գաղտնաբառերը հայտնի դառնան կողմնակի անձանց</translation>
-<translation id="7000754031042624318">Անջատված է Android-ի կարգավորումներում</translation>
 <translation id="7015203776128479407">Համաժամացման սկզբնական կարգավորումը չի ավարտվել: Համաժամացումն անջատած է:</translation>
-<translation id="7016516562562142042">Թույլատրված է ընթացիկ որոնիչին</translation>
 <translation id="7022756207310403729">Բացել դիտարկիչով</translation>
 <translation id="702463548815491781">Խորհուրդ է տրվում, երբ TalkBack-ը կամ Switch Access-ը միացված են</translation>
 <translation id="7029809446516969842">Գաղտնաբառեր</translation>
@@ -755,10 +748,10 @@
 <translation id="7328017930301109123">Lite ռեժիմում Chrome-ն ավելի արագ է բեռնում էջերը և օգտագործում է մինչև 60 տոկոս պակաս թրաֆիկ:</translation>
 <translation id="7333031090786104871">Դեռ նախորդ կայքն է ավելացվում</translation>
 <translation id="7340958967809483333">Discover-ի կարգավորումներ</translation>
+<translation id="7352651011704765696">Ինչ-որ սխալ տեղի ունեցավ</translation>
 <translation id="7352939065658542140">ՏԵՍԱՆՅՈՒԹ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Հրապարակել ընտրված 1 տարրը}one{Share # selected items}other{Հրապարակել ընտրված # տարրերը}}</translation>
 <translation id="7359002509206457351">Վճարման եղանակների հասանելիություն</translation>
-<translation id="7362144854749094396">Պատմությունը հասանելի է Chrome-ին։ Կարգավորումների տվյալները հասանելի են <ph name="SITE_NAME" /> կայքին։</translation>
 <translation id="7375125077091615385">Տեսակ`</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" /></translation>
 <translation id="7400418766976504921">URL</translation>
@@ -840,7 +833,6 @@
 <translation id="7986741934819883144">Ընտրեք կոնտակտ</translation>
 <translation id="7998918019931843664">Նորից բացել փակված ներդիրը</translation>
 <translation id="8004582292198964060">Դիտարկիչ</translation>
-<translation id="8007176423574883786">Անջատված է այս սարքի համար</translation>
 <translation id="8013372441983637696">Նաև մաքրել Chrome-ի ձեր տվյալներն այս սարքից</translation>
 <translation id="8015452622527143194">Էջում ամեն ինչ վերադարձնել կանխադրված չափին</translation>
 <translation id="8026334261755873520">Դիտարկումների տվյալների մաքրում</translation>
@@ -930,6 +922,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{Ազդանշանի ուժգնությունը՝ # գծիկ}one{Signal Strength Level: # bars}other{Ազդանշանի ուժգնությունը՝ # գծիկ}}</translation>
 <translation id="868929229000858085">Որոնեք կոնտակտներ</translation>
 <translation id="869891660844655955">Սպառման ժամկետ</translation>
+<translation id="8712637175834984815">Պատրաստ է</translation>
 <translation id="8748850008226585750">Բովանդակությունը թաքցված է</translation>
 <translation id="8751914237388039244">Ընտրեք պատկեր</translation>
 <translation id="8758557275681689734">Բոլոր բաց ներդիրների դիտում</translation>

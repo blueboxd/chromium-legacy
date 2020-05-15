@@ -56,12 +56,14 @@ bool DownloadItemImplDelegate::ShouldOpenDownload(
   return false;
 }
 
-bool DownloadItemImplDelegate::ShouldOpenFileBasedOnExtension(
+bool DownloadItemImplDelegate::ShouldAutomaticallyOpenFile(
+    const GURL& url,
     const base::FilePath& path) {
   return false;
 }
 
-bool DownloadItemImplDelegate::ShouldOpenFileByPolicyBasedOnExtension(
+bool DownloadItemImplDelegate::ShouldAutomaticallyOpenFileByPolicy(
+    const GURL& url,
     const base::FilePath& path) {
   return false;
 }

@@ -29,6 +29,18 @@ else:
 
 CHROME_POLICY_KEY = 'SOFTWARE\\\\Policies\\\\Google\\\\Chrome'
 CHROMIUM_POLICY_KEY = 'SOFTWARE\\\\Policies\\\\Chromium'
+PLATFORM_STRINGS = {
+    'chrome_frame': ['win'],
+    'chrome_os': ['chrome_os'],
+    'android': ['android'],
+    'webview_android': ['android'],
+    'ios': ['ios'],
+    'chrome.win': ['win'],
+    'chrome.linux': ['linux'],
+    'chrome.mac': ['mac'],
+    'chrome.*': ['win', 'mac', 'linux'],
+    'chrome.win7': ['win']
+}
 
 
 class PolicyDetails:
@@ -61,6 +73,13 @@ class PolicyDetails:
       self.caption = PolicyDetails._RemovePlaceholders(item['caption'])
       self.value = item['value']
 
+  def _ConvertPlatform(self, platform):
+    '''Converts product platform string in policy_templates.json to platform
+       string that is defined in build config.'''
+    if platform not in PLATFORM_STRINGS:
+      raise RuntimeError('Platform "%s" is not supported' % platform)
+    return PLATFORM_STRINGS[platform]
+
   def __init__(self, policy, chrome_major_version, target_platform, valid_tags):
     self.id = policy['id']
     self.name = policy['name']
@@ -80,27 +99,10 @@ class PolicyDetails:
     if self.has_enterprise_default:
       self.enterprise_default = policy['default_for_enterprise_users']
 
-    self.platforms = []
-    for platform, version_range in [
-        p.split(':') for p in policy.get('supported_on', [])
-    ]:
-      if self.is_device_only and platform != 'chrome_os':
-        raise RuntimeError(
-            'device_only is only allowed for Chrome OS: "%s"' % p)
-      if platform not in [
-          'chrome_frame',
-          'chrome_os',
-          'android',
-          'webview_android',
-          'ios',
-          'chrome.win',
-          'chrome.linux',
-          'chrome.mac',
-          'chrome.*',
-          'chrome.win7',
-      ]:
-        raise RuntimeError('Platform "%s" is not supported' % platform)
-
+    self.platforms = set()
+    self.future_on = set()
+    for platform, version_range in map(lambda s: s.split(':'),
+                                       policy.get('supported_on', [])):
       split_result = version_range.split('-')
       if len(split_result) != 2:
         raise RuntimeError('supported_on must have exactly one dash: "%s"' % p)
@@ -114,20 +116,19 @@ class PolicyDetails:
         if (int(version_min) > chrome_major_version or
             version_max != '' and int(version_max) < chrome_major_version):
           continue
+      self.platforms.update(self._ConvertPlatform(platform))
 
-      if platform.startswith('chrome.'):
-        platform_sub = platform[7:]
-        if platform_sub == '*':
-          self.platforms.extend(['win', 'mac', 'linux'])
-        elif platform_sub == 'win7':
-          self.platforms.append('win')
-        else:
-          self.platforms.append(platform_sub)
-      else:
-        self.platforms.append(platform)
+    for platform in policy.get('future_on', []):
+      self.future_on.update(self._ConvertPlatform(platform))
 
-    self.platforms.sort()
-    self.is_supported = target_platform in self.platforms
+    if self.is_device_only and self.platforms.union(self.future_on) > set(
+        ['chrome_os']):
+      raise RuntimeError('device_only is only allowed for Chrome OS: "%s"' %
+                         self.name)
+
+    self.is_supported = (target_platform in self.platforms
+                         or target_platform in self.future_on)
+    self.is_future = self.is_future or target_platform in self.future_on
 
     if policy['type'] not in PolicyDetails.TYPE_MAP:
       raise NotImplementedError(
@@ -1069,7 +1070,7 @@ namespace policy {
   # is no policy.
   f.write(
       '''const __attribute__((unused)) PolicyDetails kChromePolicyDetails[] = {
-//  is_deprecated  is_device_policy  id    max_external_data_size
+//  is_deprecated is_future is_device_policy  id  max_external_data_size, risk tags
 ''')
   for policy in policies:
     if policy.is_supported:
@@ -1077,11 +1078,11 @@ namespace policy {
       assert (policy.max_size >= MIN_EXTERNAL_DATA_SIZE and
               policy.max_size <= MAX_EXTERNAL_DATA_SIZE)
       f.write('  // %s\n' % policy.name)
-      f.write('  { %-14s %-16s %3s, %24s,\n'
-              '    %s },\n' % ('true,' if policy.is_deprecated else 'false,',
-                               'true,' if policy.is_device_only else 'false,',
-                               policy.id, policy.max_size,
-                               risk_tags.ToInitString(policy.tags)))
+      f.write('  { %-14s%-10s%-17s%4s,%22s, %s },\n' %
+              ('true,' if policy.is_deprecated else 'false,',
+               'true,' if policy.is_future else 'false, ',
+               'true,' if policy.is_device_only else 'false,', policy.id,
+               policy.max_size, risk_tags.ToInitString(policy.tags)))
   f.write('};\n\n')
 
   schema_generator = SchemaNodesGenerator(shared_strings)
@@ -1387,7 +1388,9 @@ def _WritePolicyProto(f, policy, fields):
     _OutputComment(
         f, '\nValue schema:\n%s' % json.dumps(
             policy.schema, sort_keys=True, indent=4, separators=(',', ': ')))
-  _OutputComment(f, '\nSupported on: %s' % ', '.join(policy.platforms))
+  _OutputComment(
+      f, '\nSupported on: %s' %
+      ', '.join(sorted(list(policy.platforms.union(policy.future_on)))))
   if policy.can_be_recommended and not policy.can_be_mandatory:
     _OutputComment(
         f, '\nNote: this policy must have a RECOMMENDED ' +

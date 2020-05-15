@@ -523,7 +523,6 @@
 <translation id="1650371550981945235">Pokaži možnosti vnosa</translation>
 <translation id="1651008383952180276">Dvakrat morate vnesti isto geslo</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Dodajte tiskalnik v Google Tiskanje v oblaku, da boste lahko tiskali od koder koli.}one{Dodajte # tiskalnik v Google Tiskanje v oblaku, da boste lahko tiskali od koder koli.}two{Dodajte # tiskalnika v Google Tiskanje v oblaku, da boste lahko tiskali od koder koli.}few{Dodajte # tiskalnike v Google Tiskanje v oblaku, da boste lahko tiskali od koder koli.}other{Dodajte # tiskalnikov v Google Tiskanje v oblaku, da boste lahko tiskali od koder koli.}}</translation>
-<translation id="1655937588105566159">{NUM_EXTENSIONS,plural, =1{Ta razširitev je morda nevarna}one{Te razširitve so morda nevarne}two{Te razširitve so morda nevarne}few{Te razširitve so morda nevarne}other{Te razširitve so morda nevarne}}</translation>
 <translation id="1656528038316521561">Neprosojnost ozadja</translation>
 <translation id="1657406563541664238">Pomagajte izboljšati <ph name="PRODUCT_NAME" /> s samodejnim pošiljanjem statističnih podatkov o uporabi in poročil o zrušitvah Googlu</translation>
 <translation id="1657937299377480641">Če se želiš znova prijaviti za dostop do izobraževalnih virov, prosi starša za dovoljenje</translation>
@@ -713,7 +712,6 @@
 <translation id="1875387611427697908">To je mogoče dodati samo z mesta <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Ni bilo mogoče dobiti žetona za preverjanje pristnosti. Odjavite se, nato se ponovno prijavite in poskusite znova.</translation>
 <translation id="1877860345998737529">Dodelitev dejanj stikalom</translation>
-<translation id="1878541307036593717">Nastavitev dovoljenj</translation>
 <translation id="1879000426787380528">Prijava kot</translation>
 <translation id="1880905663253319515">Ali želite izbrisati potrdilo »<ph name="CERTIFICATE_NAME" />«?</translation>
 <translation id="1884013283844450420">Omrežje <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, vzpostavitev povezave</translation>
@@ -2632,6 +2630,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4359408040881008151">Nameščeno zaradi odvisnih razširitev.</translation>
 <translation id="4359717112757026264">Urbana pokrajina</translation>
 <translation id="4361142739114356624">Zasebni ključ za to potrdilo odjemalca manjka ali je neveljaven</translation>
+<translation id="4361745360460842907">Odpri kot zavihek</translation>
 <translation id="4363771538994847871">Ni ciljev za predvajanje. Potrebujete pomoč?</translation>
 <translation id="4364327530094270451">Melona</translation>
 <translation id="4364567974334641491">Aplikacija <ph name="APP_NAME" /> je v skupno rabo dala okno.</translation>
@@ -3093,7 +3092,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4994474651455208930">Dovoli spletnim mestom, da zahtevajo, da postanejo privzete rutine za obravnavo protokolov</translation>
 <translation id="4994754230098574403">Nastavljanje</translation>
 <translation id="4997086284911172121">Ni internetne povezave.</translation>
-<translation id="4997384734315285248">Odmestitev vtičnika Plugin VM</translation>
 <translation id="4998430619171209993">Vklopljeno</translation>
 <translation id="5000922062037820727">Blokirano (priporočeno)</translation>
 <translation id="5005498671520578047">Kopiranje gesla</translation>
@@ -3698,6 +3696,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5785583009707899920">Chromova orodja za datoteke</translation>
 <translation id="5787146423283493983">Pogodba o ključu</translation>
 <translation id="5788367137662787332">Vsaj ene particije v napravi <ph name="DEVICE_LABEL" /> ni bilo mogoče vpeti.</translation>
+<translation id="5790085346892983794">Uspešno</translation>
 <translation id="5792728279623964091">Dotaknite se gumba za vklop</translation>
 <translation id="5793339252089865437">Če prenesete posodobitev v mobilnem omrežju, lahko pri tem nastanejo presežni stroški.</translation>
 <translation id="5794414402486823030">Vedno odpri s sistemskim pregledovalnikom</translation>
@@ -4630,6 +4629,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7004402701596653846">Spletno mesto lahko uporablja MIDI</translation>
 <translation id="7004499039102548441">Nedavni zavihki</translation>
 <translation id="7005496624875927304">Dodatna dovoljenja</translation>
+<translation id="7005812687360380971">Napaka</translation>
 <translation id="7005848115657603926">Neveljaven obseg strani, uporabite <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Spodnji rob</translation>
 <translation id="7007648447224463482">Odpri vse v novem oknu</translation>
@@ -4769,7 +4769,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7191159667348037">Neznan tiskalnik (USB)</translation>
 <translation id="7193051357671784796">To aplikacijo je dodala vaša organizacija. Aplikacijo znova zaženite, če želite dokončati namestitev.</translation>
 <translation id="7193374945610105795">Za <ph name="ORIGIN" /> ni shranjenih gesel</translation>
-<translation id="7194620721202917359">{NUM_APPS,plural, =1{Ta aplikacija je morda nevarna}one{Te aplikacije so morda nevarne}two{Te aplikacije so morda nevarne}few{Te aplikacije so morda nevarne}other{Te aplikacije so morda nevarne}}</translation>
 <translation id="7196913789568937443">Varnostno kopiranje v Google Drive. Po želji lahko preprosto obnovite podatke ali napravo zamenjate z drugo. Varnostne kopije vključujejo podatke aplikacij. Varnostne kopije so naložene v Google in šifrirane z geslom za vaš Google Račun. <ph name="BEGIN_LINK1" />Več o tem<ph name="END_LINK1" /></translation>
 <translation id="7197190419934240522">Vsakič brskajte z Iskanjem Google in Googlovimi pametnimi rešitvami</translation>
 <translation id="7197632491113152433">V računu smo našli toliko aplikacij, ki jih je mogoče uporabljati v tej napravi: <ph name="NUMBER_OF_APPS" />.</translation>
@@ -5012,7 +5011,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7506541170099744506">Naprava <ph name="DEVICE_TYPE" /> je bila uspešno prijavljena za upravljanje v podjetju.</translation>
 <translation id="7507207699631365376">Oglejte si <ph name="BEGIN_LINK" />pravilnik o zasebnosti<ph name="END_LINK" /> tega ponudnika</translation>
 <translation id="7507930499305566459">Potrdilo odzivnika stanja</translation>
-<translation id="7508054832109420082">Omogočanje dostopa do tiskalnikov</translation>
 <translation id="7513029293694390567">Samodejna prijava v spletna mesta s shranjenimi poverilnicami. Ko je to onemogočeno, boste morali potrditi pred vsako prijavo v spletno mesto.</translation>
 <translation id="7514239104543605883">Kopiranje v vašo napravo</translation>
 <translation id="7514365320538308">Prenos</translation>
@@ -5171,7 +5169,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7716781361494605745">Spletni naslov pravilnika overitelja Netscapeovega potrdila</translation>
 <translation id="7717014941119698257">Prenos: <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">Preveri, ali so na voljo posodobitve</translation>
-<translation id="7719070594859855691">Omogočite dostop do kamere</translation>
 <translation id="7719367874908701697">Povečava/pomanjšava strani</translation>
 <translation id="7721179060400456005">Dovoli prikaz oken čez več zaslonov</translation>
 <translation id="7722040605881499779">Potrebno za posodobitev: <ph name="NECESSARY_SPACE" /></translation>

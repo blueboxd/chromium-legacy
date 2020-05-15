@@ -275,9 +275,10 @@ class CC_EXPORT InputHandler {
   // During the lifetime of the returned EventsMetricsManager::ScopedMonitor, if
   // SetNeedsOneBeginImplFrame() or SetNeedsRedraw() are called on
   // LayerTreeHostImpl or a scroll animation is updated, |event_metrics| will be
-  // saved for reporting event latency metrics.
+  // saved for reporting event latency metrics. It is allowed to pass nullptr as
+  // |event_metrics| in which case the return value would also be nullptr.
   virtual std::unique_ptr<EventsMetricsManager::ScopedMonitor>
-  GetScopedEventMetricsMonitor(const EventMetrics& event_metrics) = 0;
+  GetScopedEventMetricsMonitor(std::unique_ptr<EventMetrics> event_metrics) = 0;
 
   virtual ScrollElasticityHelper* CreateScrollElasticityHelper() = 0;
 

@@ -54,26 +54,31 @@ PerformanceManagerRegistryImpl* PerformanceManagerRegistryImpl::GetInstance() {
 
 void PerformanceManagerRegistryImpl::AddObserver(
     PerformanceManagerMainThreadObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.AddObserver(observer);
 }
 
 void PerformanceManagerRegistryImpl::RemoveObserver(
     PerformanceManagerMainThreadObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.RemoveObserver(observer);
 }
 
 void PerformanceManagerRegistryImpl::AddMechanism(
     PerformanceManagerMainThreadMechanism* mechanism) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   mechanisms_.AddObserver(mechanism);
 }
 
 void PerformanceManagerRegistryImpl::RemoveMechanism(
     PerformanceManagerMainThreadMechanism* mechanism) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   mechanisms_.RemoveObserver(mechanism);
 }
 
 bool PerformanceManagerRegistryImpl::HasMechanism(
     PerformanceManagerMainThreadMechanism* mechanism) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return mechanisms_.HasObserver(mechanism);
 }
 

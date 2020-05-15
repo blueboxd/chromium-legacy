@@ -716,6 +716,35 @@ PDFiumPage::Area PDFiumPage::GetLinkTargetAtIndex(int link_index,
   return target->url.empty() ? DOCLINK_AREA : WEBLINK_AREA;
 }
 
+PDFiumPage::Area PDFiumPage::GetLinkTarget(FPDF_LINK link, LinkTarget* target) {
+  FPDF_DEST dest_link = FPDFLink_GetDest(engine_->doc(), link);
+  if (dest_link)
+    return GetDestinationTarget(dest_link, target);
+
+  FPDF_ACTION action = FPDFLink_GetAction(link);
+  if (!action)
+    return NONSELECTABLE_AREA;
+
+  switch (FPDFAction_GetType(action)) {
+    case PDFACTION_GOTO: {
+      FPDF_DEST dest_action = FPDFAction_GetDest(engine_->doc(), action);
+      if (dest_action)
+        return GetDestinationTarget(dest_action, target);
+      // TODO(crbug.com/55776): We don't fully support all types of the
+      // in-document links.
+      return NONSELECTABLE_AREA;
+    }
+    case PDFACTION_URI:
+      return GetURITarget(action, target);
+      // TODO(crbug.com/767191): Support PDFACTION_LAUNCH.
+      // TODO(crbug.com/142344): Support PDFACTION_REMOTEGOTO.
+    case PDFACTION_LAUNCH:
+    case PDFACTION_REMOTEGOTO:
+    default:
+      return NONSELECTABLE_AREA;
+  }
+}
+
 PDFiumPage::Area PDFiumPage::GetCharIndex(const pp::Point& point,
                                           PageOrientation orientation,
                                           int* char_index,
@@ -808,35 +837,6 @@ int PDFiumPage::GetCharCount() {
 
 bool PDFiumPage::IsCharIndexInBounds(int index) {
   return index >= 0 && index < GetCharCount();
-}
-
-PDFiumPage::Area PDFiumPage::GetLinkTarget(FPDF_LINK link, LinkTarget* target) {
-  FPDF_DEST dest_link = FPDFLink_GetDest(engine_->doc(), link);
-  if (dest_link)
-    return GetDestinationTarget(dest_link, target);
-
-  FPDF_ACTION action = FPDFLink_GetAction(link);
-  if (!action)
-    return NONSELECTABLE_AREA;
-
-  switch (FPDFAction_GetType(action)) {
-    case PDFACTION_GOTO: {
-      FPDF_DEST dest_action = FPDFAction_GetDest(engine_->doc(), action);
-      if (dest_action)
-        return GetDestinationTarget(dest_action, target);
-      // TODO(crbug.com/55776): We don't fully support all types of the
-      // in-document links.
-      return NONSELECTABLE_AREA;
-    }
-    case PDFACTION_URI:
-      return GetURITarget(action, target);
-    // TODO(crbug.com/767191): Support PDFACTION_LAUNCH.
-    // TODO(crbug.com/142344): Support PDFACTION_REMOTEGOTO.
-    case PDFACTION_LAUNCH:
-    case PDFACTION_REMOTEGOTO:
-    default:
-      return NONSELECTABLE_AREA;
-  }
 }
 
 PDFiumPage::Area PDFiumPage::GetDestinationTarget(FPDF_DEST destination,

@@ -33,17 +33,17 @@ const char kCompanyRe[] =
 const char kAddressLine1Re[] =
     "^address$|address[_-]?line(one)?|address1|addr1|street"
     "|(?:shipping|billing)address$"
-    "|strasse|straße|hausnummer|housenumber"  // de-DE
-    "|house.?name"                            // en-GB
-    "|direccion|dirección"                    // es
-    "|adresse"                                // fr-FR
-    "|indirizzo"                              // it-IT
-    "|^住所$|住所1"                           // ja-JP
-    "|morada|endereço"                        // pt-BR, pt-PT
-    "|Адрес"                                  // ru
-    "|地址"                                   // zh-CN
+    "|strasse|straße|hausnummer|housenumber"    // de-DE
+    "|house.?name"                              // en-GB
+    "|direccion|dirección"                      // es
+    "|adresse"                                  // fr-FR
+    "|indirizzo"                                // it-IT
+    "|^住所$|住所1"                             // ja-JP
+    "|morada|((?<!identificação do )endereço)"  // pt-BR, pt-PT
+    "|Адрес"                                    // ru
+    "|地址"                                     // zh-CN
     "|(\\b|_)adres(\\b|_)"                      // tr
-    "|^주소.?$|주소.?1";                      // ko-KR
+    "|^주소.?$|주소.?1";                        // ko-KR
 const char kAddressLine1LabelRe[] =
     "(^\\W*address)"
     "|(address\\W*$)"

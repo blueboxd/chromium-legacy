@@ -8,8 +8,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"

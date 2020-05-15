@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Аўтаматычнае спампоўванне</translation>
 <translation id="5677928146339483299">Заблакіравана</translation>
 <translation id="5689516760719285838">Месцазнаходжанне</translation>
+<translation id="5690795753582697420">Камера выключана ў наладах Android</translation>
 <translation id="5710871682236653961">Пытацца, перш чым дазволіць сайтам адпраўляць і атрымліваць інфармацыю, калі вы націсканнем выбіраеце прылады NFC (рэкамендуецца)</translation>
 <translation id="5719847187258001597">Будуць выдалены ўсе файлы cookie і даныя, захаваныя сайтам <ph name="ORIGIN" /> і яго праграмай, размешчанай на галоўным экране.</translation>
 <translation id="5804241973901381774">Дазволы</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Яшчэ</translation>
 <translation id="6064125863973209585">Завершаныя спампоўкі</translation>
 <translation id="6165508094623778733">Даведацца больш</translation>
+<translation id="6177111841848151710">Заблакіравана для бягучай пошукавай сістэмы</translation>
 <translation id="6181444274883918285">Дадаць выключэнне з сайтаў</translation>
 <translation id="6192792657125177640">Выключэнні</translation>
 <translation id="6194112207524046168">Каб Chrome атрымаў доступ да камеры, уключыце камеру таксама ў <ph name="BEGIN_LINK" />наладах Android<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Гэта старонка небяспечная. Звесткі пра сайт</translation>
 <translation id="6965382102122355670">ОК</translation>
 <translation id="6992289844737586249">Пытацца, перш чым дазволіць сайтам выкарыстоўваць мікрафон (рэкамендуецца)</translation>
+<translation id="7000754031042624318">Выключана ў наладах Android</translation>
+<translation id="7016516562562142042">Дазволена для бягучай пошукавай сістэмы</translation>
 <translation id="7053983685419859001">Заблакіраваць</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Выбраны 1 элемент}one{Выбраны # элемент}few{Выбрана # элементы}many{Выбрана # элементаў}other{Выбрана # элемента}}</translation>
 <translation id="7087918508125750058">Выбрана: <ph name="ITEM_COUNT" />.  Параметры знаходзяцца ўверсе экрана</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Дазвол гуку на канкрэтным сайце.</translation>
 <translation id="7993619969781047893">Функцыі на некаторых сайтах могуць перастаць працаваць</translation>
 <translation id="7999064672810608036">Вы сапраўды хочаце ачысціць усе лакальныя даныя, у тым ліку файлы cookie, і скінуць усе дазволы для гэтага вэб-сайта?</translation>
+<translation id="8007176423574883786">Выключана для гэтай прылады</translation>
 <translation id="802154636333426148">Збой спампоўкі</translation>
 <translation id="8087000398470557479">Змесціва з <ph name="DOMAIN_NAME" />, пастаўшчык – Google.</translation>
 <translation id="8116925261070264013">Без гуку</translation>

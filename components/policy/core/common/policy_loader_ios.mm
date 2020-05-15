@@ -9,9 +9,9 @@
 #import <UIKit/UIKit.h>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
-#include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"

@@ -16,9 +16,8 @@ class HeapProfilerController {
   HeapProfilerController();
   ~HeapProfilerController();
 
-  // Starts periodic heap snapshot collection. Next heap collection will occur
-  // some time between now and |heap_collection_interval|.
-  void Start(base::TimeDelta heap_collection_interval);
+  // Starts periodic heap snapshot collection.
+  void Start();
 
  private:
   using StoppedFlag = base::RefCountedData<base::AtomicFlag>;

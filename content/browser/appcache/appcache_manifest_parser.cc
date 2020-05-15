@@ -443,14 +443,12 @@ bool ParseManifest(const GURL& manifest_url,
         continue;
 
       blink::TrialTokenValidator validator;
-      std::string token_feature;
-      base::Time expiry_time;
       url::Origin origin = url::Origin::Create(manifest_url);
-      if (validator.ValidateToken(origin_trial_token, origin, base::Time::Now(),
-                                  &token_feature, &expiry_time) ==
-          blink::OriginTrialTokenStatus::kSuccess) {
-        if (token_feature == kAppCacheOriginTrialName)
-          manifest.token_expires = expiry_time;
+      blink::TrialTokenResult result = validator.ValidateToken(
+          origin_trial_token, origin, base::Time::Now());
+      if (result.status == blink::OriginTrialTokenStatus::kSuccess) {
+        if (result.feature_name == kAppCacheOriginTrialName)
+          manifest.token_expires = result.expiry_time;
       }
       continue;
     }

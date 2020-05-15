@@ -88,7 +88,7 @@ HomePageUndoBubble::HomePageUndoBubble(
       browser_(browser),
       undo_value_is_ntp_(undo_value_is_ntp),
       undo_url_(undo_url) {
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
   set_margins(
       ChromeLayoutProvider::Get()->GetInsetsMetric(views::INSETS_DIALOG));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::HOME_PAGE_UNDO);

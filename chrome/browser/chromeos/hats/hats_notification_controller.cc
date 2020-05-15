@@ -49,16 +49,6 @@ constexpr base::TimeDelta kHatsThreshold = base::TimeDelta::FromDays(90);
 // The threshold for a Googler is less.
 constexpr base::TimeDelta kHatsGooglerThreshold = base::TimeDelta::FromDays(30);
 
-// For supervised users, the HaTS survey stores a cookie that expires in this
-// many days.
-constexpr base::TimeDelta kCookieExpiry = base::TimeDelta::FromDays(30);
-
-// If the survey is shown again before the cookie expires, supervised users will
-// just see a blank dialog. We want to avoid this bug.
-static_assert(kCookieExpiry < kHatsThreshold,
-              "The show again threshold shouldn't be less than the cookie "
-              "expiration for supervised users");
-
 // Minimum amount of time after initial login or oobe after which we can show
 // the HaTS notification.
 constexpr base::TimeDelta kHatsNewDeviceThreshold =
@@ -148,6 +138,10 @@ bool HatsNotificationController::ShouldShowSurveyToProfile(Profile* profile) {
   if (profile->IsGuestSession())
     return false;
 
+  // Do not show survey if the user is supervised.
+  if (profile->IsChild())
+    return false;
+
   const bool is_enterprise_enrolled = g_browser_process->platform_part()
                                           ->browser_policy_connector_chromeos()
                                           ->IsEnterpriseManaged();
@@ -159,8 +153,6 @@ bool HatsNotificationController::ShouldShowSurveyToProfile(Profile* profile) {
 
   // In an enterprise enrolled device, the user can never be the owner, hence
   // only check for ownership on a non enrolled device.
-  // TODO(crbug/1060436): Remove the IsOwnerProfile() check so that HaTS is
-  // enabled for all users, not just device owners.
   if (!is_enterprise_enrolled && !ProfileHelper::IsOwnerProfile(profile))
     return false;
 
@@ -177,14 +169,6 @@ bool HatsNotificationController::ShouldShowSurveyToProfile(Profile* profile) {
   // |threshold_time| time delta.
   if (DidShowSurveyToProfileRecently(profile, threshold_time))
     return false;
-
-  // If this profile is a supervised user, ensure we don't show the survey again
-  // before the HaTS cookie expires. Otherwise, the supervised user will just
-  // see a blank dialog.
-  DCHECK(!profile->IsChild() ||
-         !DidShowSurveyToProfileRecently(profile, kCookieExpiry))
-      << "Don't show the HaTS survey to supervised users again before the "
-         "cookie expires";
 
   return true;
 }

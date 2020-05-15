@@ -13,6 +13,8 @@ import android.annotation.TargetApi;
 import android.app.NotificationChannel;
 import android.os.Build;
 
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.TwaDisclosureUi;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.DisclosureNotification;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.DisclosureSnackbar;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.DisclosureInfobar;
@@ -39,6 +41,7 @@ public class DisclosureUiPicker implements NativeInitObserver {
     private final Lazy<DisclosureInfobar> mDisclosureInfobar;
     private final Lazy<DisclosureSnackbar> mDisclosureSnackbar;
     private final Lazy<DisclosureNotification> mDisclosureNotification;
+    private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final NotificationManagerProxy mNotificationManager;
 
     @Inject
@@ -46,11 +49,13 @@ public class DisclosureUiPicker implements NativeInitObserver {
             Lazy<DisclosureInfobar> disclosureInfobar,
             Lazy<DisclosureSnackbar> disclosureSnackbar,
             Lazy<DisclosureNotification> disclosureNotification,
+            BrowserServicesIntentDataProvider intentDataProvider,
             NotificationManagerProxy notificationManager,
             ActivityLifecycleDispatcher lifecycleDispatcher) {
         mDisclosureInfobar = disclosureInfobar;
         mDisclosureSnackbar = disclosureSnackbar;
         mDisclosureNotification = disclosureNotification;
+        mIntentDataProvider = intentDataProvider;
         mNotificationManager = notificationManager;
         lifecycleDispatcher.register(this);
     }
@@ -64,7 +69,8 @@ public class DisclosureUiPicker implements NativeInitObserver {
         // this logic into the constructor and let the Views call showIfNeeded() themselves in
         // their onFinishNativeInitialization.
 
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NEW_DISCLOSURE)) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NEW_DISCLOSURE)
+                || mIntentDataProvider.getTwaDisclosureUi() == TwaDisclosureUi.V1_INFOBAR) {
             mDisclosureInfobar.get().showIfNeeded();
         } else if (areNotificationsEnabled()) {
             mDisclosureNotification.get().onStartWithNative();

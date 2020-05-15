@@ -418,13 +418,20 @@ ActivityRecord* CastActivityManager::AddMirroringActivityRecord(
     const std::string& app_id,
     const int tab_id,
     const CastSinkExtraData& cast_data) {
-  auto activity = std::make_unique<MirroringActivityRecord>(
-      route, app_id, message_handler_, session_tracker_, tab_id, cast_data,
-      media_router_,
-      // NOTE(jrw): We could theoretically use base::Unretained() below instead
-      // of GetWeakPtr(), the that seems like an unnecessary optimization here.
-      base::BindOnce(&CastActivityManager::RemoveActivityByRouteId,
-                     weak_ptr_factory_.GetWeakPtr(), route.media_route_id()));
+  auto activity =
+      activity_record_factory_
+          ? activity_record_factory_->MakeMirroringActivityRecord(route, app_id)
+          : std::make_unique<MirroringActivityRecord>(
+                route, app_id, message_handler_, session_tracker_, tab_id,
+                cast_data,
+                // NOTE(jrw): We could theoretically use base::Unretained()
+                // below instead of GetWeakPtr(), but that seems like an
+                // unnecessary optimization here.
+                base::BindOnce(&CastActivityManager::RemoveActivityByRouteId,
+                               weak_ptr_factory_.GetWeakPtr(),
+                               route.media_route_id()));
+  if (route.is_local())
+    activity->CreateMojoBindings(media_router_);
   auto* const activity_ptr = activity.get();
   activities_.emplace(route.media_route_id(), std::move(activity));
   return activity_ptr;
@@ -607,14 +614,16 @@ void CastActivityManager::AddNonLocalActivityRecord(
                    /* is_local */ false, /* for_display */ true);
   route.set_media_sink_name(sink.sink().name());
 
+  ActivityRecord* activity_ptr = nullptr;
   if (cast_source->ContainsStreamingApp()) {
     route.set_controller_type(RouteControllerType::kMirroring);
-    AddMirroringActivityRecord(route, app_id, -1, sink.cast_data());
+    activity_ptr =
+        AddMirroringActivityRecord(route, app_id, -1, sink.cast_data());
   } else {
     route.set_controller_type(RouteControllerType::kGeneric);
-    auto* activity_ptr = AddCastActivityRecord(route, app_id);
-    activity_ptr->SetOrUpdateSession(session, sink, hash_token_);
+    activity_ptr = AddCastActivityRecord(route, app_id);
   }
+  activity_ptr->SetOrUpdateSession(session, sink, hash_token_);
 }
 
 const MediaRoute* CastActivityManager::GetRoute(
@@ -759,7 +768,8 @@ CastActivityManager::DoLaunchSessionParams::DoLaunchSessionParams(
 
 CastActivityManager::DoLaunchSessionParams::~DoLaunchSessionParams() = default;
 
-CastActivityRecordFactoryForTest*
-    CastActivityManager::activity_record_factory_ = nullptr;
+// static
+ActivityRecordFactoryForTest* CastActivityManager::activity_record_factory_ =
+    nullptr;
 
 }  // namespace media_router

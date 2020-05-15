@@ -387,7 +387,6 @@ Només tu pots veure allò que la càmera veu. El lloc web no pot veure les imat
 <translation id="4250229828105606438">Captura de pantalla</translation>
 <translation id="4256782883801055595">Llicències de programari lliure</translation>
 <translation id="4269820728363426813">Copia l'adreça de l'enllaç</translation>
-<translation id="4278390842282768270">Permès</translation>
 <translation id="429312253194641664">Un lloc web està reproduint contingut multimèdia</translation>
 <translation id="4298388696830689168">Llocs web enllaçats</translation>
 <translation id="4307992518367153382">Configuració bàsica</translation>
@@ -435,7 +434,6 @@ Només tu pots veure allò que la càmera veu. El lloc web no pot veure les imat
 <translation id="4663756553811254707">S'han suprimit <ph name="NUMBER_OF_BOOKMARKS" /> adreces d'interès</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> s'ha afegit a la pantalla d'inici</translation>
 <translation id="4684427112815847243">Sincronitza-ho tot</translation>
-<translation id="4688610874307684559">S'està executant a Chrome (inicial)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> més}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> més}}</translation>
 <translation id="4696983787092045100">Envia text als teus dispositius</translation>
 <translation id="4698034686595694889">Mostra sense connexió a <ph name="APP_NAME" /></translation>
@@ -560,10 +558,8 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5659593005791499971">Correu electrònic</translation>
 <translation id="5665379678064389456">Crea un esdeveniment a <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignora la sol·licitud d'un lloc web per evitar que s'apropi la imatge</translation>
-<translation id="5677928146339483299">Bloquejat</translation>
 <translation id="5684874026226664614">Aquesta pàgina no s'ha pogut traduir.</translation>
 <translation id="5686790454216892815">El nom del fitxer és massa llarg</translation>
-<translation id="5690795753582697420">La càmera està desactivada a la configuració d'Android</translation>
 <translation id="5694049548840660018">Torna a l'inici fàcilment</translation>
 <translation id="569536719314091526">Tradueix aquesta pàgina a qualsevol idioma des del botó Més opcions</translation>
 <translation id="572328651809341494">Pestanyes recents</translation>
@@ -619,7 +615,6 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="614940544461990577">Prova el següent:</translation>
 <translation id="6154478581116148741">Activa el bloqueig de pantalla a Configuració per exportar les teves contrasenyes d'aquest dispositiu</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> de reducció de dades</translation>
-<translation id="6177111841848151710">S'ha bloquejat per al motor de cerca actual</translation>
 <translation id="6192333916571137726">Baixa el fitxer</translation>
 <translation id="6201345951596836663">S'ha copiat l'enllaç</translation>
 <translation id="6210748933810148297">No ets <ph name="EMAIL" />?</translation>
@@ -706,7 +701,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6846298663435243399">S'està carregant…</translation>
 <translation id="6850409657436465440">La baixada encara està en curs</translation>
 <translation id="6850830437481525139">S'han tancat <ph name="TAB_COUNT" /> pestanyes</translation>
-<translation id="6864395892908308021">Aquest dispositiu no pot llegir NFC</translation>
 <translation id="6864459304226931083">Baixa la imatge</translation>
 <translation id="6865313869410766144">Dades d'Emplenament automàtic de formularis</translation>
 <translation id="6884306546558072722">Continua navegant sense connexió</translation>
@@ -721,9 +715,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6989267951144302301">No s'ha pogut baixar</translation>
 <translation id="6990079615885386641">Baixeu l'aplicació des de Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Rep un advertiment si les contrasenyes queden exposades en l'àmbit d'una violació de les dades</translation>
-<translation id="7000754031042624318">Desactivat a la configuració d'Android</translation>
 <translation id="7015203776128479407">La configuració de la sincronització inicial no ha finalitzat. La sincronització està desactivada.</translation>
-<translation id="7016516562562142042">Es permet al motor de cerca actual</translation>
 <translation id="7022756207310403729">Obre al navegador</translation>
 <translation id="702463548815491781">Es recomana quan TalkBack o l'accés amb interruptors estan activats</translation>
 <translation id="7029809446516969842">Contrasenyes</translation>
@@ -756,10 +748,10 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7328017930301109123">En el mode bàsic, Chrome carrega les pàgines més ràpidament i utilitza fins a un 60 per cent menys de dades.</translation>
 <translation id="7333031090786104871">Encara s'hi està afegint el lloc anterior</translation>
 <translation id="7340958967809483333">Opcions per a Discover</translation>
+<translation id="7352651011704765696">S'ha produït un error</translation>
 <translation id="7352939065658542140">VÍDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Comparteix 1 element seleccionat}other{Comparteix # elements seleccionats}}</translation>
 <translation id="7359002509206457351">Accedeix a les formes de pagament</translation>
-<translation id="7362144854749094396">L'historial es comparteix amb Chrome. Les preferències es comparteixen amb <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Tipus:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" /></translation>
 <translation id="7400418766976504921">URL</translation>
@@ -841,7 +833,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7986741934819883144">Selecciona un contacte</translation>
 <translation id="7998918019931843664">Torna a obrir la pestanya tancada</translation>
 <translation id="8004582292198964060">Navegador</translation>
-<translation id="8007176423574883786">Aquesta ubicació està desactivada per a aquest dispositiu</translation>
 <translation id="8013372441983637696">Esborra també les teves dades de Chrome d'aquest dispositiu</translation>
 <translation id="8015452622527143194">Restableix la mida de tots els elements de la pàgina</translation>
 <translation id="8026334261755873520">Esborra les dades de navegació</translation>
@@ -931,6 +922,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8687353297350450808">{N_BARS,plural, =1{Intensitat del senyal: # barra}other{Intensitat del senyal: # barres}}</translation>
 <translation id="868929229000858085">Cerca als contactes</translation>
 <translation id="869891660844655955">Data de caducitat</translation>
+<translation id="8712637175834984815">Entesos</translation>
 <translation id="8748850008226585750">Contingut amagat</translation>
 <translation id="8751914237388039244">Selecciona una imatge</translation>
 <translation id="8758557275681689734">Mostra totes les pestanyes obertes</translation>

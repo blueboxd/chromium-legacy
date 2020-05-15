@@ -62,9 +62,9 @@ class PLATFORM_EXPORT CanvasResourceProvider
   // TODO(juanmihd@ bug/1035589) ResourceUsage will be removed soon, try
   // avoiding using this.
   enum class ResourceUsage {
-    kSoftwareResourceUsage = 0,  // deprecated
-    kSoftwareCompositedResourceUsage = 1,
-    kAcceleratedResourceUsage = 2,  // deprecated
+    kSoftwareResourceUsage = 0,            // deprecated
+    kSoftwareCompositedResourceUsage = 1,  // deprecated
+    kAcceleratedResourceUsage = 2,         // deprecated
     kAcceleratedCompositedResourceUsage = 3,
     kAcceleratedDirect2DResourceUsage = 4,
     kAcceleratedDirect3DResourceUsage = 5,

@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Automatic downloads</translation>
 <translation id="5677928146339483299">Blocked</translation>
 <translation id="5689516760719285838">Location</translation>
+<translation id="5690795753582697420">Camera is turned off in Android settings</translation>
 <translation id="5710871682236653961">Ask before allowing sites to send and receive info when you tap NFC devices (recommended)</translation>
 <translation id="5719847187258001597">This will clear all data and cookies stored by <ph name="ORIGIN" /> or by its app on your home screen.</translation>
 <translation id="5804241973901381774">Permissions</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">More</translation>
 <translation id="6064125863973209585">Completed downloads</translation>
 <translation id="6165508094623778733">Learn more</translation>
+<translation id="6177111841848151710">Blocked for current search engine</translation>
 <translation id="6181444274883918285">Add site exception</translation>
 <translation id="6192792657125177640">Exceptions</translation>
 <translation id="6194112207524046168">To let Chrome access your camera, also turn on camera in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">This page is dangerous. Site information</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6992289844737586249">Ask first before allowing sites to use your microphone (recommended)</translation>
+<translation id="7000754031042624318">Turned off in Android settings</translation>
+<translation id="7016516562562142042">Allowed for current search engine</translation>
 <translation id="7053983685419859001">Block</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 selected}other{# selected}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> selected. Options available near top of the screen</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Allow sound for a specific site.</translation>
 <translation id="7993619969781047893">Features on some sites may break</translation>
 <translation id="7999064672810608036">Are you sure that you want to clear all local data, including cookies, and reset all permissions for this website?</translation>
+<translation id="8007176423574883786">Turned off for this device</translation>
 <translation id="802154636333426148">Download failed</translation>
 <translation id="8087000398470557479">This content is from <ph name="DOMAIN_NAME" />, delivered by Google.</translation>
 <translation id="8116925261070264013">Muted</translation>

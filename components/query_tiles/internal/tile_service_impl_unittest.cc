@@ -35,16 +35,15 @@ class MockTileManager : public TileManager {
   MOCK_METHOD2(GetTile, void(const std::string&, TileCallback));
   MOCK_METHOD2(SaveTiles,
                void(std::unique_ptr<TileGroup>, TileGroupStatusCallback));
-  MOCK_METHOD1(SetLocaleForTesting, void(const std::string&));
+  MOCK_METHOD1(SetAcceptLanguagesForTesting, void(const std::string&));
 };
 
-class MockBackgroundTaskScheduler
-    : public background_task::BackgroundTaskScheduler {
+class MockTileServiceScheduler : public TileServiceScheduler {
  public:
-  MockBackgroundTaskScheduler() = default;
-  ~MockBackgroundTaskScheduler() override = default;
-  MOCK_METHOD1(Schedule, bool(const background_task::TaskInfo& task_info));
-  MOCK_METHOD1(Cancel, void(int));
+  MockTileServiceScheduler() = default;
+  MOCK_METHOD1(OnFetchCompleted, void(TileInfoRequestStatus));
+  MOCK_METHOD1(OnTileManagerInitialized, void(TileGroupStatus));
+  MOCK_METHOD0(CancelTask, void());
 };
 
 class MockImagePrefetcher : public ImagePrefetcher {
@@ -69,6 +68,8 @@ class TileServiceImplTest : public testing::Test {
     auto tile_manager = std::make_unique<MockTileManager>();
     tile_manager_ = tile_manager.get();
     auto image_prefetcher = std::make_unique<MockImagePrefetcher>();
+    auto scheduler = std::make_unique<MockTileServiceScheduler>();
+    scheduler_ = scheduler.get();
     image_prefetcher_ = image_prefetcher.get();
     ON_CALL(*image_prefetcher_, Prefetch(_, _, _))
         .WillByDefault(Invoke([](TileGroup, bool, base::OnceClosure callback) {
@@ -83,10 +84,9 @@ class TileServiceImplTest : public testing::Test {
           EXPECT_TRUE(request.url.is_valid() && !request.url.is_empty());
           last_resource_request_ = request;
         }));
-    EXPECT_CALL(task_scheduler_, Schedule(_));
     tile_service_impl_ = std::make_unique<TileServiceImpl>(
-        std::move(image_prefetcher), std::move(tile_manager), &task_scheduler_,
-        std::move(tile_fetcher), &clock_);
+        std::move(image_prefetcher), std::move(tile_manager),
+        std::move(scheduler), std::move(tile_fetcher), &clock_);
   }
 
   void Initialize(bool expected_result) {
@@ -105,6 +105,8 @@ class TileServiceImplTest : public testing::Test {
   }
 
   void FetchForTilesSuceeded() {
+    EXPECT_CALL(*scheduler(),
+                OnFetchCompleted(TileInfoRequestStatus::kSuccess));
     tile_service_impl_->StartFetchForTiles(
         false, base::BindOnce(&TileServiceImplTest::OnFetchCompleted,
                               base::Unretained(this)));
@@ -115,6 +117,8 @@ class TileServiceImplTest : public testing::Test {
   }
 
   void FetchForTilesWithError() {
+    EXPECT_CALL(*scheduler(),
+                OnFetchCompleted(TileInfoRequestStatus::kShouldSuspend));
     tile_service_impl_->StartFetchForTiles(
         false, base::BindOnce(&TileServiceImplTest::OnFetchCompleted,
                               base::Unretained(this)));
@@ -130,6 +134,7 @@ class TileServiceImplTest : public testing::Test {
     EXPECT_FALSE(reschedule);
   }
 
+  MockTileServiceScheduler* scheduler() { return scheduler_; }
   MockTileManager* tile_manager() { return tile_manager_; }
   MockImagePrefetcher* image_prefetcher() { return image_prefetcher_; }
 
@@ -137,7 +142,7 @@ class TileServiceImplTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   base::SimpleTestClock clock_;
   std::unique_ptr<TileServiceImpl> tile_service_impl_;
-  MockBackgroundTaskScheduler task_scheduler_;
+  MockTileServiceScheduler* scheduler_;
   MockTileManager* tile_manager_;
   MockImagePrefetcher* image_prefetcher_;
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -151,6 +156,18 @@ TEST_F(TileServiceImplTest, ManagerInitSucceeded) {
   EXPECT_CALL(*tile_manager(), Init(_))
       .WillOnce(Invoke([](base::OnceCallback<void(TileGroupStatus)> callback) {
         std::move(callback).Run(TileGroupStatus::kSuccess);
+      }));
+  Initialize(true);
+}
+
+// Tests that TileManager and TileServiceImpl both initialize successfully with
+// no tiles.
+TEST_F(TileServiceImplTest, ManagerInitSucceededWithNoTiles) {
+  EXPECT_CALL(*scheduler(),
+              OnTileManagerInitialized(TileGroupStatus::kNoTiles));
+  EXPECT_CALL(*tile_manager(), Init(_))
+      .WillOnce(Invoke([](base::OnceCallback<void(TileGroupStatus)> callback) {
+        std::move(callback).Run(TileGroupStatus::kNoTiles);
       }));
   Initialize(true);
 }

@@ -289,7 +289,7 @@ constexpr ModelTypeSet AlwaysEncryptedUserTypes() {
 constexpr ModelTypeSet PriorityUserTypes() {
   return ModelTypeSet(DEVICE_INFO, PRIORITY_PREFERENCES,
                       SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS,
-                      OS_PRIORITY_PREFERENCES);
+                      OS_PRIORITY_PREFERENCES, SHARING_MESSAGE);
 }
 
 // Proxy types are placeholder types for handling implicitly enabling real
@@ -321,6 +321,7 @@ constexpr bool IsControlType(ModelType model_type) {
 }
 
 // Types that may commit data, but should never be included in a GetUpdates.
+// These are never encrypted.
 constexpr ModelTypeSet CommitOnlyTypes() {
   return ModelTypeSet(USER_EVENTS, USER_CONSENTS, SECURITY_EVENTS,
                       SHARING_MESSAGE);

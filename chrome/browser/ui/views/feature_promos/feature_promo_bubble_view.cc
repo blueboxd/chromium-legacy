@@ -114,7 +114,7 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
 
   set_margins(gfx::Insets());
   set_title_margins(gfx::Insets());
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
 
   set_color(background_color);
 

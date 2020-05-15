@@ -16,6 +16,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.components.browser_ui.notifications.ChromeNotification;
 import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
+import org.chromium.components.url_formatter.SchemeDisplay;
+import org.chromium.components.url_formatter.UrlFormatter;
 
 /**
  * Helper to build a notification for Media Capture and Streams.
@@ -34,14 +36,13 @@ public class MediaCaptureNotificationUtil {
     /**
      * Creates a notification for the provided parameters.
      * @param mediaType Media type of the notification.
-     * @param url Url of the current webrtc call.
+     * @param url Url of the current webrtc call, or null if no URL should be displayed.
      * @param appName the display name for the app, e.g. "Chromium".
-     * @param isIncognito whether the notification is for an off-the-record context.
      * @param contentIntent the intent to be sent when the notification is clicked.
      * @param stopIntent if non-null, a stop button that triggers this intent will be added.
      */
     public static ChromeNotification createNotification(ChromeNotificationBuilder builder,
-            @MediaType int mediaType, String url, @Nullable String appName, boolean isIncognito,
+            @MediaType int mediaType, @Nullable String url, @Nullable String appName,
             @Nullable PendingIntentProvider contentIntent, @Nullable PendingIntent stopIntent) {
         Context appContext = ContextUtils.getApplicationContext();
         builder.setAutoCancel(false)
@@ -70,15 +71,19 @@ public class MediaCaptureNotificationUtil {
         }
 
         String contentText = null;
-        if (isIncognito) {
+        if (url == null) {
             contentText = appContext.getString(
                     R.string.media_capture_notification_content_text_incognito);
             builder.setSubText(appContext.getString(R.string.notification_incognito_tab));
-        } else if (contentIntent == null) {
-            contentText = url;
         } else {
-            contentText =
-                    appContext.getString(R.string.media_capture_notification_content_text, url);
+            String urlForDisplay = UrlFormatter.formatUrlForSecurityDisplay(
+                    url, SchemeDisplay.OMIT_HTTP_AND_HTTPS);
+            if (contentIntent == null) {
+                contentText = urlForDisplay;
+            } else {
+                contentText = appContext.getString(
+                        R.string.media_capture_notification_content_text, urlForDisplay);
+            }
         }
 
         builder.setContentText(contentText);

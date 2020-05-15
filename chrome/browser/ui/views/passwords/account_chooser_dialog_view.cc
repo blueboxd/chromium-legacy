@@ -91,13 +91,13 @@ AccountChooserDialogView::AccountChooserDialogView(
     : controller_(controller), web_contents_(web_contents) {
   DCHECK(controller);
   DCHECK(web_contents);
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_CANCEL);
-  DialogDelegate::SetButtonLabel(
+  SetButtons(ui::DIALOG_BUTTON_CANCEL);
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_SIGN_IN));
   set_close_on_deactivate(false);
   if (controller_->ShouldShowFooter())
-    DialogDelegate::SetFootnoteView(CreateGoogleAccountFooter());
+    SetFootnoteView(CreateGoogleAccountFooter());
   SetArrow(views::BubbleBorder::NONE);
   set_margins(gfx::Insets(margins().top(), 0, margins().bottom(), 0));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::ACCOUNT_CHOOSER);
@@ -108,10 +108,9 @@ AccountChooserDialogView::~AccountChooserDialogView() = default;
 void AccountChooserDialogView::ShowAccountChooser() {
   // It isn't known until after the creation of this dialog whether the sign-in
   // button should be shown, so always reset the button state here.
-  DialogDelegate::SetButtons(controller_->ShouldShowSignInButton()
-                                  ? ui::DIALOG_BUTTON_OK |
-                                        ui::DIALOG_BUTTON_CANCEL
-                                  : ui::DIALOG_BUTTON_CANCEL);
+  SetButtons(controller_->ShouldShowSignInButton()
+                 ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
+                 : ui::DIALOG_BUTTON_CANCEL);
   DialogModelChanged();
   InitWindow();
   constrained_window::ShowWebModalDialogViews(this, web_contents_);

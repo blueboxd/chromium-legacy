@@ -361,9 +361,8 @@ gfx::Size CollectedCookiesViews::GetMinimumSize() const {
 
 CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
     : web_contents_(web_contents) {
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
-                                   l10n_util::GetStringUTF16(IDS_DONE));
+  SetButtons(ui::DIALOG_BUTTON_OK);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_DONE));
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>());
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
@@ -406,7 +405,7 @@ CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
   layout->StartRow(views::GridLayout::kFixedSize, single_column_layout_id);
   infobar_ = layout->AddView(std::make_unique<InfobarView>());
 
-  DialogDelegate::SetExtraView(CreateButtonsPane());
+  SetExtraView(CreateButtonsPane());
 
   constrained_window::ShowWebModalDialogViews(this, web_contents);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::COLLECTED_COOKIES);

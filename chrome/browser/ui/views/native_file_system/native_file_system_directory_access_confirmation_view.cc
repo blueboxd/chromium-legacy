@@ -83,10 +83,9 @@ NativeFileSystemDirectoryAccessConfirmationView::
         base::ScopedClosureRunner fullscreen_block)
     : callback_(std::move(callback)),
       fullscreen_block_(std::move(fullscreen_block)) {
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(
-          IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_ALLOW_BUTTON));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(
+                     IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_ALLOW_BUTTON));
   const views::LayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
@@ -98,15 +97,12 @@ NativeFileSystemDirectoryAccessConfirmationView::
          permissions::PermissionAction result) {
         std::move(dialog->callback_).Run(result);
       };
-  DialogDelegate::SetAcceptCallback(
-      base::BindOnce(run_callback, base::Unretained(this),
-                     permissions::PermissionAction::GRANTED));
-  DialogDelegate::SetCancelCallback(
-      base::BindOnce(run_callback, base::Unretained(this),
-                     permissions::PermissionAction::DISMISSED));
-  DialogDelegate::SetCloseCallback(
-      base::BindOnce(run_callback, base::Unretained(this),
-                     permissions::PermissionAction::DISMISSED));
+  SetAcceptCallback(base::BindOnce(run_callback, base::Unretained(this),
+                                   permissions::PermissionAction::GRANTED));
+  SetCancelCallback(base::BindOnce(run_callback, base::Unretained(this),
+                                   permissions::PermissionAction::DISMISSED));
+  SetCloseCallback(base::BindOnce(run_callback, base::Unretained(this),
+                                  permissions::PermissionAction::DISMISSED));
 
   if (base::FeatureList::IsEnabled(
           features::kNativeFileSystemOriginScopedPermissions)) {

@@ -81,6 +81,11 @@ class TabSpecificContentSettingsTest
       return {};
     }
 
+    browsing_data::CookieHelper::IsDeletionDisabledCallback
+    GetIsDeletionDisabledCallback() override {
+      return base::NullCallback();
+    }
+
     bool IsMicrophoneCameraStateChanged(
         TabSpecificContentSettings::MicrophoneCameraState
             microphone_camera_state,

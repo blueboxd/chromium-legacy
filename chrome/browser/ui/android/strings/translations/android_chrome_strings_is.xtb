@@ -387,7 +387,6 @@ Aðeins þú getur séð að hverju myndavélin beinist. Vefsvæðið getur ekki
 <translation id="4250229828105606438">Skjámynd</translation>
 <translation id="4256782883801055595">Leyfi opins kóða</translation>
 <translation id="4269820728363426813">Afrita slóð tengils</translation>
-<translation id="4278390842282768270">Leyft</translation>
 <translation id="429312253194641664">Vefsvæði er að spila efni</translation>
 <translation id="4298388696830689168">Tengd vefsvæði</translation>
 <translation id="4307992518367153382">Grunnatriði</translation>
@@ -435,7 +434,6 @@ Google reikningurinn þinn kann að vera með annars konar vefskoðunarferil, sv
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bókamerkjum eytt</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> var bætt við heimaskjáinn þinn</translation>
 <translation id="4684427112815847243">Samstilla allt</translation>
-<translation id="4688610874307684559">Keyrir í Chrome (fyrsta útgáfa)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> í viðbót}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> í viðbót}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> í viðbót}}</translation>
 <translation id="4696983787092045100">Senda texta í tækin þín</translation>
 <translation id="4698034686595694889">Skoðun án nettengingar í <ph name="APP_NAME" /></translation>
@@ -560,10 +558,8 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5659593005791499971">Netfang</translation>
 <translation id="5665379678064389456">Búa til viðburð í <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Hunsa beiðni vefsvæðis um að koma í veg fyrir aðdrátt</translation>
-<translation id="5677928146339483299">Lokað fyrir aðgang</translation>
 <translation id="5684874026226664614">Úbbs. Þessa síðu er ekki hægt að þýða.</translation>
 <translation id="5686790454216892815">Skráarheiti of langt</translation>
-<translation id="5690795753582697420">Slökkt er á myndavél í stillingum Android</translation>
 <translation id="5694049548840660018">Þú kemst alltaf aftur heim</translation>
 <translation id="569536719314091526">Notaðu hnappinn „Fleiri valkostir“ til að þýða þessa síðu yfir á hvaða tungumál sem er</translation>
 <translation id="572328651809341494">Nýlegir flipar</translation>
@@ -619,7 +615,6 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="614940544461990577">Prófaðu að:</translation>
 <translation id="6154478581116148741">Kveiktu á skjálás í stillingunum til að flytja aðgangsorðin þín út úr þessu tæki</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> gagnasparnaður</translation>
-<translation id="6177111841848151710">Á bannlista á núverandi leitarvél</translation>
 <translation id="6192333916571137726">Sækja skrá</translation>
 <translation id="6201345951596836663">Tengill afritaður</translation>
 <translation id="6210748933810148297">Ekki <ph name="EMAIL" />?</translation>
@@ -706,7 +701,6 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="6846298663435243399">Hleður…</translation>
 <translation id="6850409657436465440">Enn er verið að sækja</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> flipum lokað</translation>
-<translation id="6864395892908308021">Þetta tæki getur ekki lesið NFC</translation>
 <translation id="6864459304226931083">Sækja mynd</translation>
 <translation id="6865313869410766144">Gögn sjálfvirkrar útfyllingar eyðublaða</translation>
 <translation id="6884306546558072722">Haltu áfram að vafra án nettengingar</translation>
@@ -721,9 +715,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="6989267951144302301">Ekki tókst að sækja</translation>
 <translation id="6990079615885386641">Sækja forritið í Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Láta vita ef aðgangsorðin þín eru afhjúpuð vegna öryggisbrots</translation>
-<translation id="7000754031042624318">Slökkt í stillingum Android</translation>
 <translation id="7015203776128479407">Fyrstu uppsetningu samstillingar var ekki lokið. Slökkt er á samstillingu.</translation>
-<translation id="7016516562562142042">Leyft á núverandi leitarvél</translation>
 <translation id="7022756207310403729">Opna í vafra</translation>
 <translation id="702463548815491781">Mælt með þegar kveikt er á TalkBack eða rofaaðgangi</translation>
 <translation id="7029809446516969842">Aðgangsorð</translation>
@@ -756,10 +748,10 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="7328017930301109123">Í léttútgáfu hleður Chrome síðum hraðar og notar allt að 60 prósentum minna gagnamagn.</translation>
 <translation id="7333031090786104871">Er enn að bæta fyrra vefsvæði við</translation>
 <translation id="7340958967809483333">Valkostir fyrir Tillögur</translation>
+<translation id="7352651011704765696">Eitthvað fór úrskeiðis</translation>
 <translation id="7352939065658542140">MYNDSKEIÐ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Deila 1 völdu atriði}one{Deila # völdu atriði}other{Deila # völdum atriðum}}</translation>
 <translation id="7359002509206457351">Fá aðgang að greiðslumátum</translation>
-<translation id="7362144854749094396">Ferlinum er deilt með Chrome. Kjörstillingum er deilt með <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Gerð:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">Vefslóð</translation>
@@ -841,7 +833,6 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="7986741934819883144">Velja tengilið</translation>
 <translation id="7998918019931843664">Opna aftur flipa sem var lokað</translation>
 <translation id="8004582292198964060">Vafri</translation>
-<translation id="8007176423574883786">Slökkt fyrir þetta tæki</translation>
 <translation id="8013372441983637696">Hreinsa líka Chrome gögn úr þessu tæki</translation>
 <translation id="8015452622527143194">Færa allt á síðunni í upprunalega stærð</translation>
 <translation id="8026334261755873520">Hreinsa vafragögn</translation>
@@ -931,6 +922,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="8687353297350450808">{N_BARS,plural, =1{Sendistyrkur: # stika}one{Sendistyrkur: # stika}other{Sendistyrkur: # stikur}}</translation>
 <translation id="868929229000858085">Leita í tengiliðum</translation>
 <translation id="869891660844655955">Lokadagsetning</translation>
+<translation id="8712637175834984815">Ég skil</translation>
 <translation id="8748850008226585750">Innihald falið</translation>
 <translation id="8751914237388039244">Veldu mynd</translation>
 <translation id="8758557275681689734">Sjáðu alla opna flipa</translation>

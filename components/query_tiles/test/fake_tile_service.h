@@ -29,6 +29,7 @@ class FakeTileService : public TileService {
   void GetTile(const std::string& tile_id, TileCallback callback) override;
   void StartFetchForTiles(bool is_from_reduced_mode,
                           BackgroundTaskFinishedCallback callback) override;
+  void CancelTask() override;
 
   std::vector<std::unique_ptr<Tile>> tiles_;
   base::WeakPtrFactory<FakeTileService> weak_ptr_factory_{this};

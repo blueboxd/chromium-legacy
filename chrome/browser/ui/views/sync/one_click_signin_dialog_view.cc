@@ -124,12 +124,12 @@ OneClickSigninDialogView::OneClickSigninDialogView(
       },
       base::Unretained(this)));
   advanced_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  DialogDelegate::SetExtraView(std::move(advanced_link));
+  SetExtraView(std::move(advanced_link));
 
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_OK_BUTTON));
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_UNDO_BUTTON));
 

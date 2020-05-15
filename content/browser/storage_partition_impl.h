@@ -32,7 +32,7 @@
 #include "content/browser/content_index/content_index_context_impl.h"
 #include "content/browser/devtools/devtools_background_services_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
-#include "content/browser/indexed_db/indexed_db_context_impl.h"
+#include "content/browser/indexed_db/indexed_db_control_wrapper.h"
 #include "content/browser/locks/lock_manager.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/payments/payment_app_context_impl.h"
@@ -69,6 +69,7 @@ class BackgroundFetchContext;
 class ConversionManagerImpl;
 class CookieStoreContext;
 class BlobRegistryWrapper;
+class IndexedDBContextImpl;
 class PrefetchURLLoaderService;
 class GeneratedCodeCacheContext;
 class NativeFileSystemEntryFactory;
@@ -471,8 +472,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   scoped_refptr<DOMStorageContextWrapper> dom_storage_context_;
   std::unique_ptr<IdleManager> idle_manager_;
   std::unique_ptr<LockManager> lock_manager_;
-  mojo::Remote<storage::mojom::IndexedDBControl> indexed_db_control_;
-  scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
+  std::unique_ptr<IndexedDBControlWrapper> indexed_db_control_wrapper_;
   scoped_refptr<CacheStorageContextImpl> cache_storage_context_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   std::unique_ptr<DedicatedWorkerServiceImpl> dedicated_worker_service_;

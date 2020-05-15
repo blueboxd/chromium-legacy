@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Automatska preuzimanja</translation>
 <translation id="5677928146339483299">Blokirano</translation>
 <translation id="5689516760719285838">Lokacija</translation>
+<translation id="5690795753582697420">Kamera se isključuje u Androidovim postavkama</translation>
 <translation id="5710871682236653961">Pitati prije dopuštenja slanja i primanja informacija s web-lokacija kad dodirnete NFC uređaje (preporučeno)</translation>
 <translation id="5719847187258001597">Izbrisat će se svi podaci i kolačići koje je spremila web-lokacija <ph name="ORIGIN" /> ili njezina aplikacija na vašem početnom zaslonu.</translation>
 <translation id="5804241973901381774">Dozvoljeno</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Više</translation>
 <translation id="6064125863973209585">Dovršena preuzimanja</translation>
 <translation id="6165508094623778733">Saznajte više</translation>
+<translation id="6177111841848151710">Blokirano za trenutačnu tražilicu</translation>
 <translation id="6181444274883918285">Dodaj iznimku za web-lokaciju</translation>
 <translation id="6192792657125177640">Iznimke</translation>
 <translation id="6194112207524046168">Da bi Chrome mogao pristupiti vašoj kameri, uključite kameru i u <ph name="BEGIN_LINK" />postavkama Androida<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Ta je stranica opasna. Informacije o web-lokaciji</translation>
 <translation id="6965382102122355670">U redu</translation>
 <translation id="6992289844737586249">Web-lokacije moraju tražiti dopuštenje za upotrebu mikrofona (preporučeno)</translation>
+<translation id="7000754031042624318">Isključeno u postavkama Androida</translation>
+<translation id="7016516562562142042">Dopušteno za trenutačnu tražilicu</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 odabrana stavka}one{# odabrana stavka}few{# odabrane stavke}other{# odabranih stavki}}</translation>
 <translation id="7087918508125750058">Odabrano: <ph name="ITEM_COUNT" />. Opcije su dostupne pri vrhu zaslona</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Dopuštanje zvuka za određenu web-lokaciju.</translation>
 <translation id="7993619969781047893">Značajke na nekim web-lokacijama mogu prestati funkcionirati</translation>
 <translation id="7999064672810608036">Jeste li sigurni da želite izbrisati sve lokalne podatke, uključujući kolačiće, i poništiti sva dopuštenja za ovu web-lokaciju?</translation>
+<translation id="8007176423574883786">Isključeno za ovaj uređaj</translation>
 <translation id="802154636333426148">Preuzimanje nije uspjelo</translation>
 <translation id="8087000398470557479">Sadržaj potječe s domene <ph name="DOMAIN_NAME" />, a omogućuje ga Google.</translation>
 <translation id="8116925261070264013">Bez zvuka</translation>

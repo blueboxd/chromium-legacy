@@ -370,6 +370,9 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   // Create CookiesTreeModel by profile info.
   static std::unique_ptr<CookiesTreeModel> CreateForProfile(Profile* profile);
 
+  static browsing_data::CookieHelper::IsDeletionDisabledCallback
+  GetCookieDeletionDisabledCallback(Profile* profile);
+
  private:
   enum CookieIconIndex { COOKIE = 0, DATABASE = 1 };
 

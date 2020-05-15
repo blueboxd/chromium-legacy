@@ -134,14 +134,12 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
   if (password_type.account_type() !=
           ReusedPasswordAccountType::SAVED_PASSWORD ||
       show_check_passwords) {
-    DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK |
-                               ui::DIALOG_BUTTON_CANCEL);
+    SetButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
   } else {
-    DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
+    SetButtons(ui::DIALOG_BUTTON_OK);
   }
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
-                                 GetOkButtonLabel(password_type_));
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, GetOkButtonLabel(password_type_));
+  SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_IGNORE_PASSWORD_WARNING_BUTTON));
 
@@ -156,15 +154,13 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
         },
         base::Unretained(&done_callback_), value);
   };
-  DialogDelegate::SetAcceptCallback(
-      (password_type_.account_type() !=
-           ReusedPasswordAccountType::SAVED_PASSWORD ||
-       show_check_passwords)
-          ? make_done_callback(WarningAction::CHANGE_PASSWORD)
-          : base::DoNothing());
-  DialogDelegate::SetCancelCallback(
-      make_done_callback(WarningAction::IGNORE_WARNING));
-  DialogDelegate::SetCloseCallback(make_done_callback(WarningAction::CLOSE));
+  SetAcceptCallback((password_type_.account_type() !=
+                         ReusedPasswordAccountType::SAVED_PASSWORD ||
+                     show_check_passwords)
+                        ? make_done_callback(WarningAction::CHANGE_PASSWORD)
+                        : base::DoNothing());
+  SetCancelCallback(make_done_callback(WarningAction::IGNORE_WARNING));
+  SetCloseCallback(make_done_callback(WarningAction::CLOSE));
 
   // |service| maybe NULL in tests.
   if (service_)

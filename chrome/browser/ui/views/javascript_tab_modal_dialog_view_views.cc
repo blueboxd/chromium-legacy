@@ -65,28 +65,28 @@ JavaScriptTabModalDialogViewViews::JavaScriptTabModalDialogViewViews(
       default_prompt_text_(default_prompt_text),
       dialog_callback_(std::move(dialog_callback)),
       dialog_force_closed_callback_(std::move(dialog_force_closed_callback)) {
-  DialogDelegate::SetDefaultButton(ui::DIALOG_BUTTON_OK);
+  SetDefaultButton(ui::DIALOG_BUTTON_OK);
   const bool is_alert = dialog_type == content::JAVASCRIPT_DIALOG_TYPE_ALERT;
-  DialogDelegate::SetButtons(
+  SetButtons(
       // Alerts only have an OK button, no Cancel, because there is no choice
       // being made.
       is_alert ? ui::DIALOG_BUTTON_OK
                : (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
 
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
+  SetAcceptCallback(base::BindOnce(
       [](JavaScriptTabModalDialogViewViews* dialog) {
         if (dialog->dialog_callback_)
           std::move(dialog->dialog_callback_)
               .Run(true, dialog->message_box_view_->GetInputText());
       },
       base::Unretained(this)));
-  DialogDelegate::SetCancelCallback(base::BindOnce(
+  SetCancelCallback(base::BindOnce(
       [](JavaScriptTabModalDialogViewViews* dialog) {
         if (dialog->dialog_callback_)
           std::move(dialog->dialog_callback_).Run(false, base::string16());
       },
       base::Unretained(this)));
-  DialogDelegate::SetCloseCallback(base::BindOnce(
+  SetCloseCallback(base::BindOnce(
       [](JavaScriptTabModalDialogViewViews* dialog) {
         if (dialog->dialog_force_closed_callback_)
           std::move(dialog->dialog_force_closed_callback_).Run();

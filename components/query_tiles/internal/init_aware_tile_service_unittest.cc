@@ -42,6 +42,7 @@ class MockInitializableTileService : public InitializableTileService {
               StartFetchForTiles,
               (bool, BackgroundTaskFinishedCallback),
               (override));
+  MOCK_METHOD(void, CancelTask, (), (override));
 
   // Callback stubs.
   MOCK_METHOD(void, GetTilesCallbackStub, (TileList), ());

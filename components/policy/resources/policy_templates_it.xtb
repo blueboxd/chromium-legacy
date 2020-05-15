@@ -106,17 +106,6 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1117535567637097036">I gestori di protocollo impostati tramite questa norma non sono utilizzati durante la gestione degli intent di Android.</translation>
 <translation id="1118093128235245168">Consenti ai siti di chiedere all'utente di concedere l'accesso a un dispositivo USB collegato</translation>
-<translation id="1123594119609921068">Consente di impostare lo stato predefinito della funzione di accessibilità della lettura vocale sulla schermata di accesso.
-
-          Se questo criterio è impostato su true, la funzione di lettura vocale viene attivata quando si visualizza la schermata di accesso.
-
-          Se questo criterio è impostato su false, la funzione di lettura vocale viene disattivata quando si visualizza la schermata di accesso.
-
-          Se imposti questo criterio, gli utenti possono ignorarlo temporaneamente attivando o disattivando la funzione di lettura vocale. Poiché la scelta dell'utente non è permanente, il valore predefinito viene ripristinato quando si visualizza nuovamente la schermata di accesso, o quando l'utente rimane inattivo per un minuto sulla schermata di accesso.
-
-          Se questo criterio non viene impostato, la funzione di lettura vocale viene disattivata alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare la funzione di lettura vocale in qualsiasi momento, e il relativo stato nella schermata di accesso persiste per tutti gli utenti.
-
-          Nota: se specificato, <ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME" /> sostituisce questo criterio.</translation>
 <translation id="1128717055763152639">Consente di impostare un elenco di pattern URL che specificano i siti autorizzati a visualizzare contenuti misti (ossia contenuti HTTP su siti HTTPS) bloccabili (ossia attivi) e per i quali gli aggiornamenti dei contenuti misti bloccabili facoltativi verranno disattivati.
 
           Se questo criterio non viene impostato, i contenuti misti bloccabili verranno bloccati e quelli bloccabili facoltativi verranno aggiornati; inoltre, gli utenti potranno configurare eccezioni per consentire i contenuti misti per siti specifici.
@@ -374,23 +363,9 @@ Se l'impostazione è disattivata o non è stata configurata, gli utenti aziendal
 <translation id="1634989431648355062">Consenti il plug-in <ph name="FLASH_PLUGIN_NAME" /> su questi siti</translation>
 <translation id="1645793986494086629">Schema:</translation>
 <translation id="1648816843164517573">Elenco di nomi che eviteranno il controllo dei criteri HSTS</translation>
-<translation id="1653229475925941921">Se questa norma viene impostata, consente di controllare il tipo di lente di ingrandimento che viene attivata. Se imposti la norma su "None", la lente di ingrandimento viene disatttivata.
-
-          Se imposti questa norma, gli utenti non potranno modificarla o sostituirla.
-
-          Se questa norma non è impostata, all'inizio la lente di ingrandimento viene disattivata ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="1654087023995670109">Applica modalità ospite del browser</translation>
 <translation id="1655229863189977773">Imposta le dimensioni della cache su disco in byte</translation>
 <translation id="166427968280387991">Server proxy</translation>
-<translation id="1667877109169174750">Se questo criterio è impostato su true, le opzioni di accessibilità vengono visualizzate sempre nel menu della barra delle applicazioni.
-
-          Se questo criterio è impostato su false, le opzioni di accessibilità non vengono mai visualizzate nel menu della barra delle applicazioni.
-
-          Se imposti questo criterio, gli utenti non potranno modificarlo o sostituirlo.
-
-          Se questo criterio non viene impostato, le opzioni di accessibilità non vengono visualizzate nel menu della barra delle applicazioni, ma l'utente può attivarne la visualizzazione tramite la pagina Impostazioni.
-
-          Quando le funzioni di accessibilità vengono attivate in altri modi, ad esempio con una combinazione di tasti, le opzioni di accessibilità vengono sempre mostrate nel menu della barra delle applicazioni.</translation>
 <translation id="1668836044817793277">Consente o meno all'app kiosk avviata automaticamente senza ritardo di controllare la versione di <ph name="PRODUCT_OS_NAME" />.
 
 Questa norma consente o meno all'app kiosk avviata automaticamente senza ritardo di controllare la versione di <ph name="PRODUCT_OS_NAME" />, dichiarando il valore required_platform_version nel relativo file manifest e utilizzandolo come prefisso per la versione target relativa agli aggiornamenti automatici.
@@ -1881,15 +1856,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3811562426301733860">Consenti annunci su tutti i siti</translation>
 <translation id="3816312845600780067">Attivazione scorciatoia da tastiera bailout per accesso automatico</translation>
 <translation id="3817323252437541502">Attiva protezioni aggiuntive per gli utenti iscritti al programma di protezione avanzata</translation>
-<translation id="3820526221169548563">Attiva la funzione di accessibilità della tastiera sullo schermo.
-
-          Se questa norma viene impostata su true, la tastiera sullo schermo sarà sempre attivata.
-
-          Se questa norma viene impostata su false, la tastiera sullo schermo sarà sempre disattivata.
-
-          Se questa norma viene viene impostata, gli utenti non potranno modificarla o sostituirla.
-
-          Se questa norma non viene impostata, inizialmente la tastiera sullo schermo è disattivata, ma l'utente la può attivare in qualsiasi momento.</translation>
 <translation id="3821861026311587684">Forza la disconnessione dell'utente quando il suo account non è più autenticato</translation>
 <translation id="382476126209906314">Configura il prefisso TalkGadget per gli host di accesso remoto</translation>
 <translation id="3824972131618513497">Consente di controllare le impostazioni relative alla gestione dell'alimentazione e al riavvio.</translation>
@@ -2152,15 +2118,6 @@ Avviso. È consigliabile mantenere attivati gli aggiornamenti automatici per con
 <translation id="4157003184375321727">Indica versione sistema operativo e firmware</translation>
 <translation id="4157594634940419685">Consenti l'accesso a stampanti CUPS native</translation>
 <translation id="4160962198980004898">Origine dell'indirizzo MAC del dispositivo quando inserito nel dock</translation>
-<translation id="4164601239783385546">Attiva la funzione di accessibilità dei tasti permanenti.
-
-          Se questo criterio è impostato su true, i tasti permanenti saranno sempre attivi.
-
-          Se questo criterio è impostato su false, i tasti permanenti saranno sempre disattivati.
-
-          Se questo criterio viene impostato, gli utenti non potranno modificarlo o ignorarlo.
-
-          Se questo criterio non viene impostato, i tasti permanenti sono inizialmente disattivati, ma possono essere attivati dall'utente in qualsiasi momento.</translation>
 <translation id="4169692397912242417">Consente di attivare la funzione di accessibilità della lettura vocale nella schermata di accesso.
 
           Se questo criterio è impostato su true, la funzione di lettura vocale sarà sempre attivata nella schermata di accesso.
@@ -2184,17 +2141,6 @@ Avviso. È consigliabile mantenere attivati gli aggiornamenti automatici per con
           Se questo criterio non viene impostato, inizialmente l'evidenziazione del cursore di testo è disattivata nella schermata di accesso, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="4183229833636799228">Impostazione predefinita per il plug-in <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL per la convalida del token di autenticazione del client di accesso remoto</translation>
-<translation id="420007931282384740">Consente di impostare lo stato predefinito della funzione di accessibilità della tastiera sullo schermo nella schermata di accesso.
-
-          Se questo criterio è impostato su true, la tastiera sullo schermo viene attivata quando si visualizza la schermata di accesso.
-
-          Se questo criterio è impostato su false, la tastiera sullo schermo viene disattivata quando si visualizza la schermata di accesso.
-
-          Se imposti questo criterio, gli utenti possono ignorarlo temporaneamente attivando o disattivando la tastiera sullo schermo. Poiché la scelta dell'utente non è permanente, il valore predefinito viene ripristinato quando si visualizza nuovamente la schermata di accesso, o quando l'utente rimane inattivo per un minuto sulla schermata di accesso.
-
-          Se questo criterio non viene impostato, la tastiera sullo schermo viene disattivata alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare la tastiera sullo schermo in qualsiasi momento, e il relativo stato nella schermata di accesso persiste per tutti gli utenti.
-
-          Nota: se specificato, <ph name="DEVICE_LOGIN_SCREEN_VIRTUAL_KEYBOARD_ENABLED_POLICY_NAME" /> sostituisce questo criterio.</translation>
 <translation id="4203389617541558220">Consente di limitare il tempo di attività del dispositivo programmando riavvii automatici.
 
 Se questa norma viene impostata consente di specificare il periodo di tempo di attività del dispositivo trascorso il quale è programmato un riavvio automatico.
@@ -2426,11 +2372,6 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
 <translation id="4625915093043961294">Configura la whitelist per l'installazione delle estensioni</translation>
 <translation id="4632343302005518762">Consenti a <ph name="PRODUCT_FRAME_NAME" /> di gestire i tipi di contenuti elencati</translation>
 <translation id="4632566332417930481">Non consentire l'utilizzo degli Strumenti per sviluppatori per le estensioni installate in base a norme aziendali; consenti l'utilizzo degli Strumenti per sviluppatori in altri contesti</translation>
-<translation id="4633786464238689684">Consente di modificare il comportamento predefinito dei tasti della fila superiore in tasti funzione.
-
-          Se questa norma è impostata su "true", i tasti della fila superiore della tastiera riprodurranno i comandi dei tasti funzione per impostazione predefinita. Per ripristinare il comportamento dei tasti multimediali, è necessario premere il tasto per la ricerca.
-
-          Se questa norma è impostata su "false" o non viene impostata, la tastiera riprodurrà i comandi dei tasti multimediali per impostazione predefinita e i comandi dei tasti funzione quando viene premuto il tasto per la ricerca.</translation>
 <translation id="4639407427807680016">Nomi degli host di messaggi nativi da escludere dalla lista nera.</translation>
 <translation id="4649395978608361979">Destinazioni stampanti locali</translation>
 <translation id="4650759511838826572">Disabilita schemi di protocollo dell'URL</translation>
@@ -2521,15 +2462,6 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
       Se questa impostazione è disattivata, la funzione Compilazione automatica non suggerirà o non inserirà mai i dati della carta di credito e non salverà i dati di altre carte di credito che l'utente potrebbe inviare durante la navigazione sul Web.
 
       Se questa impostazione è attivata o non è impostata su alcun valore, l'utente potrà gestire la funzione Compilazione automatica per le carte di credito nell'interfaccia utente.</translation>
-<translation id="4791031774429044540">Consente di attivare la funzione di accessibilità del puntatore grande.
-
-Se la norma viene impostata su true, il puntatore grande sarà sempre attivo.
-
-Se la norma viene impostata su false, il puntatore grande sarà sempre disattivato.
-
-Se la norma viene impostata, gli utenti non potranno modificarla o ignorarla.
-
-Se la norma non viene impostata, il puntatore grande sarà inizialmente disattivato ma gli utenti potranno attivarlo in qualsiasi momento.</translation>
 <translation id="4802744647065138872">Limita il numero di istantanee di dati utente conservate per essere utilizzate in caso di rollback di emergenza</translation>
 <translation id="4802905909524200151">Configura il comportamento di aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Riavvia sempre all'uscita dell'utente.</translation>
@@ -2692,15 +2624,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="5105313908130842249">Ritardo blocco schermo in caso di utilizzo della batteria</translation>
 <translation id="5108031557082757679">Stampanti aziendali associate ai dispositivi disattivate</translation>
 <translation id="5109383437323376357">Determina la disponibilità delle varianti</translation>
-<translation id="5112121363469561920">Consente di impostare il tipo predefinito di lente d'ingrandimento che viene attivato nella schermata di accesso.
-
-          Se questo criterio viene impostato, consente di stabilire il tipo di lente d'ingrandimento che viene attivato quando viene mostrata la schermata di accesso. Se il criterio viene impostato su "Nessuno", la lente d'ingrandimento viene disattivata.
-
-          Se imposti questo criterio, gli utenti possono ignorarlo temporaneamente attivando o disattivando la lente d'ingrandimento. Poiché la scelta dell'utente non è permanente, il valore predefinito viene ripristinato ogni volta che viene mostrata nuovamente la schermata di accesso o quando l'utente rimane inattivo per un minuto nella schermata di accesso.
-
-          Se questo criterio non viene impostato, la lente d'ingrandimento viene disattivata quando viene mostrata per la prima volta la schermata di accesso. Gli utenti possono attivare o disattivare la lente d'ingrandimento in qualsiasi momento e il relativo stato nella schermata di accesso persiste per tutti gli utenti.
-
-          Nota: se specificato, <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" /> sostituisce questo criterio.</translation>
 <translation id="5115168755602871392">Consente di segnalare informazioni sulle CPU dei dispositivi.
 
       Se il criterio viene impostato su false o non viene impostato, le informazioni non vengono segnalate.
@@ -2907,17 +2830,6 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 <translation id="5377606826822211923">Controlla l'utilizzo delle app Android di fonti non attendibili per l'utente</translation>
 <translation id="537786648513450280">Controlla l'utilizzo delle app Android di fonti non attendibili per il dispositivo</translation>
 <translation id="5378985487213287085">Permette di stabilire se consentire o meno la visualizzazione di notifiche desktop nei siti web. La visualizzazione di notifiche desktop può essere consentita o negata per impostazione predefinita oppure l'utente può ricevere una richiesta ogni volta che un sito web desidera visualizzare le notifiche desktop. Se questa norma non viene impostata, verrà utilizzato il valore "AskNotifications", che potrà essere modificato dagli utenti.</translation>
-<translation id="5380329473151894945">Consente di impostare lo stato predefinito della funzione di accessibilità del puntatore grande nella schermata di accesso.
-
-          Se questo criterio è impostato su true, il puntatore grande viene attivato quando si visualizza la schermata di accesso.
-
-          Se questo criterio è impostato su false, il puntatore grande viene disattivato quando si visualizza la schermata di accesso.
-
-          Se imposti questo criterio, gli utenti possono ignorarlo temporaneamente attivando o disattivando il puntatore grande. Poiché la scelta dell'utente non è permanente, il valore predefinito viene ripristinato quando si visualizza nuovamente la schermata di accesso, o quando l'utente rimane inattivo per un minuto sulla schermata di accesso.
-
-          Se questo criterio non è impostato, il puntatore grande viene disattivato alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare il puntatore grande in qualsiasi momento, e il relativo stato nella schermata di accesso persiste per tutti gli utenti.
-
-          Nota: se specificato, <ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" /> sostituisce questo criterio.</translation>
 <translation id="538108065117008131">Consenti a <ph name="PRODUCT_FRAME_NAME" /> di gestire i seguenti tipi di contenuto.</translation>
 <translation id="538768040137709073">Consente di attivare la funzione Appunti condivisi che permette agli utenti di inviare messaggi tra computer desktop Chrome e un dispositivo Android quando la sincronizzazione è attivata e l'utente ha effettuato l'accesso.
 
@@ -3255,7 +3167,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Se questo criterio viene impostato su False o non viene impostato, le funzionalità Web Components v0 verranno disattivate per impostazione predefinita a partire dalla versione M80.
 
       Questo criterio verrà rimosso nelle versioni successive alla versione 84 di Chrome.</translation>
-<translation id="5763698334786515749">Attiva il pulsante di visualizzazione della password nella schermata di accesso e di blocco</translation>
 <translation id="5765780083710877561">Descrizione:</translation>
 <translation id="5770738360657678870">Canale Dev (potrebbe essere instabile)</translation>
 <translation id="5774856474228476867">URL di ricerca del provider di ricerca predefinito</translation>
@@ -3761,9 +3672,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se il criterio non viene impostato, l'utente potrà usare qualsiasi plug-in installato sul sistema ad eccezione di quelli hardcoded incompatibili, obsoleti o pericolosi.</translation>
 <translation id="6571871508154591774">Configura la videocamera, le impostazioni del browser e le funzionalità delle impostazioni del sistema operativo in modo che siano disattivate</translation>
 <translation id="6573305661369899995">Imposta una fonte esterna di limitazioni relative agli URL</translation>
-<translation id="6574770600243153999">Consente al dispositivo di eseguire PluginVm.
-
-      Se il criterio viene impostato su false o non viene impostato, <ph name="PLUGIN_VM_NAME" /> non viene attivato per il dispositivo. Se viene impostato su true, <ph name="PLUGIN_VM_NAME" /> viene attivato per il dispositivo, a condizione che anche le altre impostazioni lo permettano. Il valore del criterio <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> deve essere true ed è necessario impostare i criteri <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" />, <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> o <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> per consentire l'esecuzione di <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="6583851521569686409">Consente di configurare un elenco di stampanti.
 
       Questo criterio consente agli amministratori di fornire configurazioni delle stampanti ai propri utenti.
@@ -3821,7 +3729,6 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6665670272107384733">Imposta la frequenza di inserimento della password per poter usare lo sblocco rapido</translation>
 <translation id="6672070613706645316">Consenti agli utenti di personalizzare lo sfondo della pagina Nuova scheda</translation>
 <translation id="6672630473862787247">Attiva l'autenticazione ambientale nelle sessioni standard, Ospite e in modalità in incognito.</translation>
-<translation id="6677797768774898583">Questa funzionalità consente all'utente di visualizzare la password nella schermata di accesso e di blocco dopo aver fatto clic su un pulsante.</translation>
 <translation id="6685903773201985073">Attiva l'autenticazione ambientale nelle sessioni standard e Ospite.</translation>
 <translation id="6689792153960219308">Segnala lo stato dell'hardware</translation>
 <translation id="6698632841807204978">Attiva la stampa monocromatica</translation>
@@ -3897,15 +3804,6 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6907778402784621686">Blocca contenuti non sicuri su questi siti</translation>
 <translation id="6908640907898649429">Configura il provider di ricerca predefinito. Puoi specificare il provider di ricerca predefinito che l'utente utilizzerà oppure scegliere di disattivare la ricerca predefinita.</translation>
 <translation id="6913068954484253496">Consenti a <ph name="PRODUCT_NAME" /> di connettersi ai dispositivi Cast su tutti gli indirizzi IP.</translation>
-<translation id="6915442654606973733">Consente di attivare la funzione di accessibilità di lettura vocale.
-
-Se questa norma viene impostata su true, la lettura vocale sarà sempre attiva.
-
-Se la norma viene impostata su false, la lettura vocale sarà sempre disattivata.
-
-Se la norma viene impostata, gli utenti non potranno modificarla o ignorarla.
-
-Se la norma non viene configurata, la lettura vocale viene inizialmente disattivata ma potrà essere attivata dagli utenti in qualsiasi momento.</translation>
 <translation id="6916507170737609563">
       Potresti considerare l'impostazione della norma IsolateOriginsAndroid per ottenere sia l'isolamento sia un impatto limitato per gli utenti, utilizzando IsolateOriginsAndroid con un elenco di siti che vuoi isolare. Questa impostazione, SitePerProcessAndroid, isola tutti i siti.
       Se la norma viene attivata, ogni sito verrà eseguito in un proprio processo.
@@ -4564,17 +4462,6 @@ La norma ExternalStorageDisabled ha la precedenza su questa norma. Se la norma E
 
 L'aggiornamento dinamico della norma è supportato in M56 e versioni successive.</translation>
 <translation id="7841880500990419427">Versione TLS minima a cui retrocedere</translation>
-<translation id="7842317008224536842">Consente di impostare lo stato predefinito della funzione di accessibilità della modalità ad alto contrasto nella schermata di accesso.
-
-          Se questo criterio è impostato su true, la modalità ad alto contrasto sarà sempre attivata nella schermata di accesso.
-
-          Se questo criterio è impostato su false, la modalità ad alto contrasto sarà sempre disattivata nella schermata di accesso.
-
-          Se imposti questo criterio, gli utenti possono ignorarlo temporaneamente attivando o disattivando la modalità ad alto contrasto. Poiché la scelta dell'utente non è permanente, il valore predefinito viene ripristinato quando si visualizza nuovamente la schermata di accesso, o quando l'utente rimane inattivo per un minuto sulla schermata di accesso.
-
-          Se questo criterio non viene impostato, la modalità ad alto contrasto viene disattivata alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare la modalità ad alto contrasto in qualsiasi momento, e il relativo stato nella schermata di accesso persiste per tutti gli utenti.
-
-          Nota: se specificato, <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" /> sostituisce questo criterio.</translation>
 <translation id="7846952520291088817">URL per cui vengono esposti IP locali nei candidati ICE WebRTC</translation>
 <translation id="7848641140449742406">Impostazioni del sistema operativo</translation>
 <translation id="7858404742201086014">Se attivi questa impostazione, i plug-in obsoleti vengono utilizzati come normali plug-in.
@@ -4774,15 +4661,6 @@ Se questo criterio è impostato su False, la Schermata sulla privacy verrà disa
 Se questo criterio viene impostato, l'utente non potrà sostituire il valore quando la schermata di accesso viene visualizzata.
 
 Se questo criterio non viene impostato, la Schermata sulla privacy viene inizialmente disattivata, ma potrà essere controllata dall'utente quando la schermata di accesso viene visualizzata.</translation>
-<translation id="8148901634826284024">Consente di attivare la funzione di accessibilità della modalità ad alto contrasto.
-
-Se la norma viene impostata su true, la modalità ad alto contrasto sarà sempre attiva.
-
-Se la norma viene impostata su false, la modalità ad alto contrasto sarà sempre disattivata.
-
-Se la norma viene impostata, gli utenti non potranno modificarla o ignorarla.
-
-Se la norma non viene configurata, la modalità ad alto contrasto viene inizialmente disattivata ma potrà essere attivata dagli utenti in qualsiasi momento.</translation>
 <translation id="815061180603915310">Se viene attivata, questa norma forza l'attivazione della modalità temporanea per il profilo. Se viene specificata come norma del sistema operativo (ad esempio GPO su Windows), la norma viene applicata a ogni profilo nel sistema; se la norma viene impostata come norma Cloud, viene applicata soltanto a un profilo a cui viene eseguito l'accesso con un account gestito.
 
       In questa modalità, i dati del profilo rimangono memorizzati su disco soltanto per la durata della sessione utente. Funzionalità quali cronologia del browser, estensioni e relativi dati, dati web quali cookie e database web non rimangono memorizzati alla chiusura del browser. L'utente può comunque scaricare i dati su disco manualmente, salvare pagine o stamparle.

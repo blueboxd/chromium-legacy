@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -30,23 +31,24 @@ class LogManager;
 class PhoneField : public FormField {
  public:
   ~PhoneField() override;
+  PhoneField(const PhoneField&) = delete;
+  PhoneField& operator=(const PhoneField&) = delete;
 
   static std::unique_ptr<FormField> Parse(AutofillScanner* scanner,
                                           LogManager* log_manager);
+
+#if defined(UNIT_TEST)
+  // Assign types to the fields for the testing purposes.
+  void AddClassificationsForTesting(
+      FieldCandidatesMap* field_candidates_for_testing) const {
+    AddClassifications(field_candidates_for_testing);
+  }
+#endif
 
  protected:
   void AddClassifications(FieldCandidatesMap* field_candidates) const override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ParseOneLinePhone);
-  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ParseTwoLinePhone);
-  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ThreePartPhoneNumber);
-  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix);
-  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix2);
-  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, CountryAndCityAndPhoneNumber);
-  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest,
-                           CountryAndCityAndPhoneNumberWithLongerMaxLength);
-
   // This is for easy description of the possible parsing paths of the phone
   // fields.
   enum RegexType {
@@ -97,13 +99,12 @@ class PhoneField : public FormField {
   static bool ParsePhoneField(AutofillScanner* scanner,
                               const std::string& regex,
                               AutofillField** field,
-                              const RegExLogging& logging);
+                              const RegExLogging& logging,
+                              const bool is_country_code_field);
 
   // FIELD_PHONE is always present; holds suffix if prefix is present.
   // The rest could be NULL.
   AutofillField* parsed_phone_fields_[FIELD_MAX];
-
-  DISALLOW_COPY_AND_ASSIGN(PhoneField);
 };
 
 }  // namespace autofill

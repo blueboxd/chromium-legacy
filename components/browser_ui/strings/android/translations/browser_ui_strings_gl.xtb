@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Descargas automáticas</translation>
 <translation id="5677928146339483299">Bloqueada</translation>
 <translation id="5689516760719285838">Localización</translation>
+<translation id="5690795753582697420">A cámara está desactivada na sección Configuración de Android</translation>
 <translation id="5710871682236653961">Pregunta antes de permitir que os sitios envíen e reciban información cando toques dispositivos con NFC (recomendado)</translation>
 <translation id="5719847187258001597">Ao realizar esta acción, borraranse os datos e as cookies que almacenase <ph name="ORIGIN" /> ou a súa aplicación instalada na pantalla de inicio.</translation>
 <translation id="5804241973901381774">Permisos</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Máis</translation>
 <translation id="6064125863973209585">Descargas completadas</translation>
 <translation id="6165508094623778733">Máis información</translation>
+<translation id="6177111841848151710">Bloqueado para o motor de busca actual</translation>
 <translation id="6181444274883918285">Engadir excepción do sitio</translation>
 <translation id="6192792657125177640">Excepcións</translation>
 <translation id="6194112207524046168">Para permitir que Chrome acceda á túa cámara, actívaa tamén en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Esta páxina é perigosa. Información do sitio</translation>
 <translation id="6965382102122355670">Aceptar</translation>
 <translation id="6992289844737586249">Pregunta antes de permitir que os sitios utilicen o teu micrófono (recomendado)</translation>
+<translation id="7000754031042624318">Desactivouse na configuración de Android</translation>
+<translation id="7016516562562142042">Permitido para o motor de busca actual</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 elemento seleccionado}other{# elementos seleccionados}}</translation>
 <translation id="7087918508125750058">Elementos seleccionados: <ph name="ITEM_COUNT" />. Hai opcións dispoñibles na parte superior da pantalla</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Permite o son dun sitio específico.</translation>
 <translation id="7993619969781047893">As funcións dalgúns sitios poden deixar de funcionar</translation>
 <translation id="7999064672810608036">Estás seguro de que queres borrar todos os datos locais, incluídas as cookies, e restablecer todos os permisos para este sitio web?</translation>
+<translation id="8007176423574883786">Desactivada para este dispositivo</translation>
 <translation id="802154636333426148">Produciuse un erro na descarga</translation>
 <translation id="8087000398470557479">Este contido procede de <ph name="DOMAIN_NAME" />, ofrecido por Google.</translation>
 <translation id="8116925261070264013">Silenciados</translation>

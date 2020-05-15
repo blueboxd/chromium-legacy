@@ -81,6 +81,15 @@ namespace content {
 
 namespace {
 
+// A V8 callback with bound arguments, and the ability to pass additional
+// arguments at time of calling Run().
+using BoundV8Callback =
+    base::OnceCallback<void(const std::vector<v8::Local<v8::Value>>&)>;
+// Returns an empty set of args for running the BoundV8Callback.
+std::vector<v8::Local<v8::Value>> NoV8Args() {
+  return {};
+}
+
 void ConvertAndSet(gin::Arguments* args, int* set_param) {
   v8::Local<v8::Value> value = args->PeekNext();
   v8::Maybe<int> result = value->Int32Value(args->GetHolderCreationContext());
@@ -130,6 +139,23 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                       SpellCheckClient* spell_check,
                       bool is_wpt_reftest,
                       bool is_frame_part_of_main_test_window);
+
+  // Wraps the V8 function in a base::OnceCallback that binds in the given V8
+  // arguments. The callback will do nothing when Run() if the
+  // TestRunnerBindings has been destroyed, so it is safe to PostTask(). At the
+  // time of Run(), further arguments can be passed to the V8 function.
+  BoundV8Callback WrapV8Callback(
+      v8::Local<v8::Function> v8_callback,
+      std::vector<v8::Local<v8::Value>> args_to_bind = {});
+  // Same as WrapV8Callback but Run() takes no arguments, so only bound
+  // arguments can be passed to the V8 function.
+  base::OnceClosure WrapV8Closure(
+      v8::Local<v8::Function> v8_callback,
+      std::vector<v8::Local<v8::Value>> args_to_bind = {});
+  // Calls WrapV8Callback() and then posts the resulting callback to the frame's
+  // task runner.
+  void PostV8Callback(v8::Local<v8::Function> v8_callback,
+                      std::vector<v8::Local<v8::Value>> args = {});
 
  private:
   explicit TestRunnerBindings(base::WeakPtr<TestRunner> test_runner,
@@ -298,12 +324,20 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   int WebHistoryItemCount();
   int WindowCount();
 
+  void InvokeV8Callback(v8::UniquePersistent<v8::Function> callback,
+                        std::vector<v8::UniquePersistent<v8::Value>> bound_args,
+                        const std::vector<v8::Local<v8::Value>>& runtime_args);
+
+  blink::WebLocalFrame* GetWebFrame() { return frame_->GetWebFrame(); }
+
   base::WeakPtr<TestRunner> runner_;
   TestRunnerForSpecificView* const view_runner_;
   RenderFrame* const frame_;
   SpellCheckClient* const spell_check_;
   TestPreferences prefs_;
   std::unique_ptr<AppBannerService> app_banner_service_;
+
+  base::WeakPtrFactory<TestRunnerBindings> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestRunnerBindings);
 };
@@ -321,8 +355,7 @@ void TestRunnerBindings::Install(base::WeakPtr<TestRunner> test_runner,
   v8::HandleScope handle_scope(isolate);
   blink::WebLocalFrame* web_frame = frame->GetWebFrame();
   v8::Local<v8::Context> context = web_frame->MainWorldScriptContext();
-  if (context.IsEmpty())
-    return;
+  CHECK(!context.IsEmpty());
 
   v8::Context::Scope context_scope(context);
 
@@ -330,8 +363,7 @@ void TestRunnerBindings::Install(base::WeakPtr<TestRunner> test_runner,
       std::move(test_runner), view_test_runner, frame, spell_check);
   gin::Handle<TestRunnerBindings> bindings =
       gin::CreateHandle(isolate, wrapped);
-  if (bindings.IsEmpty())
-    return;
+  CHECK(!bindings.IsEmpty());
   v8::Local<v8::Object> global = context->Global();
   v8::Local<v8::Value> v8_bindings = bindings.ToV8();
 
@@ -665,6 +697,61 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("windowCount", &TestRunnerBindings::WindowCount);
 }
 
+BoundV8Callback TestRunnerBindings::WrapV8Callback(
+    v8::Local<v8::Function> v8_callback,
+    std::vector<v8::Local<v8::Value>> args_to_bind) {
+  auto persistent_callback = v8::UniquePersistent<v8::Function>(
+      blink::MainThreadIsolate(), std::move(v8_callback));
+
+  std::vector<v8::UniquePersistent<v8::Value>> persistent_args;
+  persistent_args.reserve(args_to_bind.size());
+  for (auto& arg : args_to_bind)
+    persistent_args.emplace_back(blink::MainThreadIsolate(), std::move(arg));
+
+  return base::BindOnce(
+      &TestRunnerBindings::InvokeV8Callback, weak_ptr_factory_.GetWeakPtr(),
+      std::move(persistent_callback), std::move(persistent_args));
+}
+
+base::OnceClosure TestRunnerBindings::WrapV8Closure(
+    v8::Local<v8::Function> v8_callback,
+    std::vector<v8::Local<v8::Value>> args_to_bind) {
+  return base::BindOnce(
+      WrapV8Callback(std::move(v8_callback), std::move(args_to_bind)),
+      NoV8Args());
+}
+
+void TestRunnerBindings::PostV8Callback(
+    v8::Local<v8::Function> v8_callback,
+    std::vector<v8::Local<v8::Value>> args) {
+  const auto& task_runner =
+      GetWebFrame()->GetTaskRunner(blink::TaskType::kInternalTest);
+  task_runner->PostTask(FROM_HERE,
+                        WrapV8Closure(std::move(v8_callback), std::move(args)));
+}
+
+void TestRunnerBindings::InvokeV8Callback(
+    v8::UniquePersistent<v8::Function> callback,
+    std::vector<v8::UniquePersistent<v8::Value>> bound_args,
+    const std::vector<v8::Local<v8::Value>>& runtime_args) {
+  v8::Isolate* isolate = blink::MainThreadIsolate();
+  v8::HandleScope handle_scope(isolate);
+
+  v8::Local<v8::Context> context = GetWebFrame()->MainWorldScriptContext();
+  CHECK(!context.IsEmpty());
+  v8::Context::Scope context_scope(context);
+
+  std::vector<v8::Local<v8::Value>> local_args;
+  for (auto& arg : bound_args)
+    local_args.push_back(v8::Local<v8::Value>::New(isolate, std::move(arg)));
+  for (const auto& arg : runtime_args)
+    local_args.push_back(arg);
+
+  GetWebFrame()->CallFunctionEvenIfScriptDisabled(
+      v8::Local<v8::Function>::New(isolate, std::move(callback)),
+      context->Global(), local_args.size(), local_args.data());
+}
+
 void TestRunnerBindings::LogToStderr(const std::string& output) {
   TRACE_EVENT1("shell", "TestRunner::LogToStderr", "output", output);
   LOG(ERROR) << output;
@@ -745,7 +832,7 @@ void TestRunnerBindings::SetCloseRemainingWindowsWhenComplete(
 
 void TestRunnerBindings::SetTabKeyCyclesThroughElements(
     bool tab_key_cycles_through_elements) {
-  blink::WebView* web_view = frame_->GetWebFrame()->View();
+  blink::WebView* web_view = GetWebFrame()->View();
   web_view->SetTabKeyCyclesThroughElements(tab_key_cycles_through_elements);
 }
 
@@ -762,25 +849,24 @@ void TestRunnerBindings::ExecCommand(gin::Arguments* args) {
   }
 
   // Note: webkit's version does not return the boolean, so neither do we.
-  frame_->GetWebFrame()->ExecuteCommand(blink::WebString::FromUTF8(command),
-                                        blink::WebString::FromUTF8(value));
+  GetWebFrame()->ExecuteCommand(blink::WebString::FromUTF8(command),
+                                blink::WebString::FromUTF8(value));
 }
 
 void TestRunnerBindings::TriggerTestInspectorIssue(gin::Arguments* args) {
-  frame_->GetWebFrame()->AddInspectorIssue(
+  GetWebFrame()->AddInspectorIssue(
       blink::mojom::InspectorIssueCode::kSameSiteCookieIssue);
 }
 
 bool TestRunnerBindings::IsCommandEnabled(const std::string& command) {
-  return frame_->GetWebFrame()->IsCommandEnabled(
-      blink::WebString::FromUTF8(command));
+  return GetWebFrame()->IsCommandEnabled(blink::WebString::FromUTF8(command));
 }
 
 void TestRunnerBindings::SetDomainRelaxationForbiddenForURLScheme(
     bool forbidden,
     const std::string& scheme) {
-  blink::SetDomainRelaxationForbidden(forbidden,
-                                      blink::WebString::FromUTF8(scheme));
+  blink::SetDomainRelaxationForbiddenForTest(
+      forbidden, blink::WebString::FromUTF8(scheme));
 }
 
 void TestRunnerBindings::SetDumpConsoleMessages(bool enabled) {
@@ -886,8 +972,8 @@ void TestRunnerBindings::AddOriginAccessAllowListEntry(
 }
 
 void TestRunnerBindings::InsertStyleSheet(const std::string& source_code) {
-  if (runner_)
-    runner_->InsertStyleSheet(source_code);
+  GetWebFrame()->GetDocument().InsertStyleSheet(
+      blink::WebString::FromUTF8(source_code));
 }
 
 bool TestRunnerBindings::FindString(
@@ -908,14 +994,14 @@ bool TestRunnerBindings::FindString(
       wrap_around = true;
   }
 
-  const bool find_result = frame_->GetWebFrame()->FindForTesting(
+  const bool find_result = GetWebFrame()->FindForTesting(
       0, blink::WebString::FromUTF8(search_text), match_case, forward,
       find_next, false /* force */, wrap_around);
   return find_result;
 }
 
 std::string TestRunnerBindings::SelectionAsMarkup() {
-  return frame_->GetWebFrame()->SelectionAsMarkup().Utf8();
+  return GetWebFrame()->SelectionAsMarkup().Utf8();
 }
 
 void TestRunnerBindings::SetTextSubpixelPositioning(bool value) {
@@ -925,10 +1011,9 @@ void TestRunnerBindings::SetTextSubpixelPositioning(bool value) {
 
 void TestRunnerBindings::SetTrustTokenKeyCommitments(
     const std::string& raw_commitments,
-    v8::Local<v8::Function> callback) {
+    v8::Local<v8::Function> v8_callback) {
   runner_->blink_test_runner_->SetTrustTokenKeyCommitments(
-      raw_commitments,
-      view_runner_->CreateClosureThatPostsV8Callback(std::move(callback)));
+      raw_commitments, WrapV8Closure(std::move(v8_callback)));
 }
 
 void TestRunnerBindings::SetPageVisibility(const std::string& new_visibility) {
@@ -947,7 +1032,7 @@ void TestRunnerBindings::SetTextDirection(const std::string& direction_name) {
   else
     return;
 
-  frame_->GetWebFrame()->SetTextDirection(direction);
+  GetWebFrame()->SetTextDirection(direction);
 }
 
 void TestRunnerBindings::UseUnfortunateSynchronousResizeMode() {
@@ -1253,9 +1338,9 @@ void TestRunnerBindings::ClearPrinting() {
 }
 
 void TestRunnerBindings::ClearTrustTokenState(
-    v8::Local<v8::Function> callback) {
+    v8::Local<v8::Function> v8_callback) {
   runner_->blink_test_runner_->ClearTrustTokenState(
-      view_runner_->CreateClosureThatPostsV8Callback(std::move(callback)));
+      WrapV8Closure(std::move(v8_callback)));
 }
 
 void TestRunnerBindings::SetShouldGeneratePixelResults(bool value) {
@@ -1337,7 +1422,7 @@ std::string TestRunnerBindings::PathToLocalResource(const std::string& path) {
 
 void TestRunnerBindings::SetBackingScaleFactor(
     double value,
-    v8::Local<v8::Function> callback) {
+    v8::Local<v8::Function> v8_callback) {
   // Limit backing scale factor to something low - 15x. Without
   // this limit, arbitrarily large values can be used, which can lead to
   // crashes and other problems. Examples of problems:
@@ -1351,17 +1436,19 @@ void TestRunnerBindings::SetBackingScaleFactor(
   WebWidgetTestProxy* widget = frame_proxy->GetLocalRootWebWidgetTestProxy();
   widget->SetDeviceScaleFactorForTesting(limited_value);
 
-  // TODO(oshima): remove this callback argument when all platforms are migrated
-  // to use-zoom-for-dsf by default
-  v8::UniquePersistent<v8::Function> posted_callback(blink::MainThreadIsolate(),
-                                                     callback);
-  v8::Local<v8::Value> arg =
-      v8::Boolean::New(blink::MainThreadIsolate(), IsUseZoomForDSFEnabled());
-  view_runner_->PostV8CallbackWithArgs(std::move(posted_callback), 1, &arg);
+  v8::Isolate* isolate = blink::MainThreadIsolate();
+  v8::HandleScope handle_scope(isolate);
+
+  WrapV8Callback(std::move(v8_callback))
+      .Run({
+          // TODO(oshima): remove this callback argument when all platforms are
+          // migrated to use-zoom-for-dsf by default.
+          v8::Boolean::New(isolate, IsUseZoomForDSFEnabled()),
+      });
 }
 
 void TestRunnerBindings::SetColorProfile(const std::string& name,
-                                         v8::Local<v8::Function> callback) {
+                                         v8::Local<v8::Function> v8_callback) {
   auto* frame_proxy = static_cast<WebFrameTestProxy*>(frame_);
   WebWidgetTestProxy* widget = frame_proxy->GetLocalRootWebWidgetTestProxy();
 
@@ -1377,24 +1464,52 @@ void TestRunnerBindings::SetColorProfile(const std::string& name,
   }
   widget->SetDeviceColorSpaceForTesting(color_space);
 
-  view_runner_->PostV8Callback(std::move(callback));
+  WrapV8Closure(std::move(v8_callback)).Run();
 }
 
 void TestRunnerBindings::SetBluetoothFakeAdapter(
     const std::string& adapter_name,
-    v8::Local<v8::Function> callback) {
+    v8::Local<v8::Function> v8_callback) {
   runner_->blink_test_runner_->SetBluetoothFakeAdapter(
-      adapter_name,
-      view_runner_->CreateClosureThatPostsV8Callback(std::move(callback)));
+      adapter_name, WrapV8Closure(std::move(v8_callback)));
 }
 
 void TestRunnerBindings::SetBluetoothManualChooser(bool enable) {
   runner_->blink_test_runner_->SetBluetoothManualChooser(enable);
 }
 
+static void GetBluetoothManualChooserEventsReply(
+    base::WeakPtr<TestRunnerBindings> test_runner,
+    RenderFrame* frame,
+    BoundV8Callback callback,
+    const std::vector<std::string>& events) {
+  if (!test_runner)  // This guards the validity of the |frame|.
+    return;
+
+  v8::Isolate* isolate = blink::MainThreadIsolate();
+  v8::HandleScope handle_scope(isolate);
+
+  // gin::TryConvertToV8() requires a v8::Context.
+  v8::Local<v8::Context> context =
+      frame->GetWebFrame()->MainWorldScriptContext();
+  CHECK(!context.IsEmpty());
+  v8::Context::Scope context_scope(context);
+
+  v8::Local<v8::Value> arg;
+  bool converted = gin::TryConvertToV8(isolate, events, &arg);
+  CHECK(converted);
+
+  std::move(callback).Run({
+      arg,
+  });
+}
+
 void TestRunnerBindings::GetBluetoothManualChooserEvents(
     v8::Local<v8::Function> callback) {
-  return view_runner_->GetBluetoothManualChooserEvents(callback);
+  return runner_->blink_test_runner_->GetBluetoothManualChooserEvents(
+      base::BindOnce(&GetBluetoothManualChooserEventsReply,
+                     weak_ptr_factory_.GetWeakPtr(), frame_,
+                     WrapV8Callback(std::move(callback))));
 }
 
 void TestRunnerBindings::SendBluetoothManualChooserEvent(
@@ -1461,7 +1576,7 @@ void TestRunnerBindings::SimulateWebContentIndexDelete(const std::string& id) {
 }
 
 void TestRunnerBindings::SetHighlightAds() {
-  blink::WebView* web_view = frame_->GetWebFrame()->View();
+  blink::WebView* web_view = GetWebFrame()->View();
   web_view->GetSettings()->SetHighlightAds(true);
 }
 
@@ -1482,11 +1597,10 @@ void TestRunnerBindings::UpdateAllLifecyclePhasesAndComposite() {
 }
 
 void TestRunnerBindings::UpdateAllLifecyclePhasesAndCompositeThen(
-    v8::Local<v8::Function> callback) {
+    v8::Local<v8::Function> v8_callback) {
   UpdateAllLifecyclePhasesAndComposite();
 
-  view_runner_->InvokeV8Callback(v8::UniquePersistent<v8::Function>(
-      blink::MainThreadIsolate(), std::move(callback)));
+  WrapV8Closure(std::move(v8_callback)).Run();
 }
 
 void TestRunnerBindings::SetAnimationRequiresRaster(bool do_raster) {
@@ -1495,24 +1609,16 @@ void TestRunnerBindings::SetAnimationRequiresRaster(bool do_raster) {
   runner_->SetAnimationRequiresRaster(do_raster);
 }
 
-static void GetManifestReply(base::WeakPtr<TestRunner> test_runner,
-                             TestRunnerForSpecificView* view_runner,
-                             v8::UniquePersistent<v8::Function> callback,
+static void GetManifestReply(BoundV8Callback callback,
                              const blink::WebURL& manifest_url,
                              const blink::Manifest& manifest) {
-  if (!test_runner)
-    return;
-  view_runner->PostV8CallbackWithArgs(std::move(callback), 0, nullptr);
+  std::move(callback).Run(NoV8Args());
 }
 
-void TestRunnerBindings::GetManifestThen(v8::Local<v8::Function> callback) {
-  auto blink_callback = v8::UniquePersistent<v8::Function>(
-      blink::MainThreadIsolate(), std::move(callback));
-
+void TestRunnerBindings::GetManifestThen(v8::Local<v8::Function> v8_callback) {
   blink::WebManifestManager::RequestManifestForTesting(
-      frame_->GetWebFrame(),
-      base::BindOnce(&GetManifestReply, runner_, view_runner_,
-                     std::move(blink_callback)));
+      GetWebFrame(),
+      base::BindOnce(GetManifestReply, WrapV8Callback(std::move(v8_callback))));
 }
 
 void TestRunnerBindings::CapturePixelsAsyncThen(
@@ -1560,47 +1666,27 @@ void TestRunnerBindings::SetPermission(const std::string& name,
                                 GURL(embedding_origin));
 }
 
-static void DispatchBeforeInstallPromptCallback(
-    base::WeakPtr<TestRunner> test_runner,
-    TestRunnerForSpecificView* view_runner,
-    RenderFrame* frame,
-    v8::UniquePersistent<v8::Function> blink_callback,
-    bool cancelled) {
-  if (!test_runner)
-    return;
-
+static void DispatchBeforeInstallPromptEventReply(BoundV8Callback callback,
+                                                  bool cancelled) {
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-
-  v8::Local<v8::Context> context =
-      frame->GetWebFrame()->MainWorldScriptContext();
-  if (context.IsEmpty())
-    return;
-
-  v8::Context::Scope context_scope(context);
-  v8::Local<v8::Value> arg;
-  arg = v8::Boolean::New(isolate, cancelled);
-
-  view_runner->PostV8CallbackWithArgs(std::move(blink_callback), 1, &arg);
+  std::move(callback).Run({
+      v8::Boolean::New(isolate, cancelled),
+  });
 }
 
 void TestRunnerBindings::DispatchBeforeInstallPromptEvent(
     const std::vector<std::string>& event_platforms,
-    v8::Local<v8::Function> callback) {
+    v8::Local<v8::Function> v8_callback) {
   app_banner_service_ = std::make_unique<AppBannerService>();
   frame_->BindLocalInterface(blink::mojom::AppBannerController::Name_,
                              app_banner_service_->controller()
                                  .BindNewPipeAndPassReceiver()
                                  .PassPipe());
 
-  auto blink_callback = v8::UniquePersistent<v8::Function>(
-      blink::MainThreadIsolate(), std::move(callback));
-  auto reply_callback =
-      base::BindOnce(&DispatchBeforeInstallPromptCallback, runner_,
-                     view_runner_, frame_, std::move(blink_callback));
-
-  app_banner_service_->SendBannerPromptRequest(event_platforms,
-                                               std::move(reply_callback));
+  app_banner_service_->SendBannerPromptRequest(
+      event_platforms, base::BindOnce(&DispatchBeforeInstallPromptEventReply,
+                                      WrapV8Callback(std::move(v8_callback))));
 }
 
 void TestRunnerBindings::ResolveBeforeInstallPromptPromise(
@@ -1611,12 +1697,11 @@ void TestRunnerBindings::ResolveBeforeInstallPromptPromise(
   }
 }
 
-void TestRunnerBindings::RunIdleTasks(v8::Local<v8::Function> callback) {
+void TestRunnerBindings::RunIdleTasks(v8::Local<v8::Function> v8_callback) {
   blink::scheduler::WebThreadScheduler* scheduler =
       content::RenderThreadImpl::current()->GetWebMainThreadScheduler();
   blink::scheduler::RunIdleTasksForTesting(
-      scheduler,
-      view_runner_->CreateClosureThatPostsV8Callback(std::move(callback)));
+      scheduler, WrapV8Closure(std::move(v8_callback)));
 }
 
 std::string TestRunnerBindings::PlatformName() {
@@ -1760,7 +1845,7 @@ void TestRunner::Reset() {
 #if defined(OS_LINUX) || defined(OS_FUCHSIA)
   blink::WebFontRenderStyle::SetSubpixelPositioning(false);
 #endif
-  blink::ResetDomainRelaxation();
+  blink::ResetDomainRelaxationForTest();
 
   if (blink_test_runner_) {
     // Reset the default quota for each origin.

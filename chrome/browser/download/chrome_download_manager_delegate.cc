@@ -436,7 +436,8 @@ bool ChromeDownloadManagerDelegate::DetermineDownloadTarget(
   return true;
 }
 
-bool ChromeDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
+bool ChromeDownloadManagerDelegate::ShouldAutomaticallyOpenFile(
+    const GURL& url,
     const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (path.Extension().empty())
@@ -448,10 +449,11 @@ bool ChromeDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
   if (path.MatchesExtension(extensions::kExtensionFileExtension))
     return false;
 #endif
-  return download_prefs_->IsAutoOpenEnabledBasedOnExtension(path);
+  return download_prefs_->IsAutoOpenEnabled(url, path);
 }
 
-bool ChromeDownloadManagerDelegate::ShouldOpenFileByPolicyBasedOnExtension(
+bool ChromeDownloadManagerDelegate::ShouldAutomaticallyOpenFileByPolicy(
+    const GURL& url,
     const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (path.Extension().empty())
@@ -463,7 +465,7 @@ bool ChromeDownloadManagerDelegate::ShouldOpenFileByPolicyBasedOnExtension(
   if (path.MatchesExtension(extensions::kExtensionFileExtension))
     return false;
 #endif
-  return download_prefs_->IsAutoOpenByPolicyBasedOnExtension(path);
+  return download_prefs_->IsAutoOpenByPolicy(url, path);
 }
 
 // static

@@ -20,7 +20,7 @@
 namespace base {
 class DictionaryValue;
 class RefCountedMemory;
-}
+}  // namespace base
 
 namespace content {
 class BrowserContext;
@@ -111,11 +111,16 @@ class WebUIDataSource {
   // Currently only used by embedders for WebUIs with multiple instances.
   virtual void DisableReplaceExistingSource() = 0;
   virtual void DisableContentSecurityPolicy() = 0;
-  virtual void OverrideContentSecurityPolicyScriptSrc(
+  virtual void OverrideContentSecurityPolicyChildSrc(
       const std::string& data) = 0;
+  virtual void OverrideContentSecurityPolicyDefaultSrc(
+      const std::string& data) = 0;
+  virtual void OverrideContentSecurityPolicyImgSrc(const std::string& data) = 0;
   virtual void OverrideContentSecurityPolicyObjectSrc(
       const std::string& data) = 0;
-  virtual void OverrideContentSecurityPolicyChildSrc(
+  virtual void OverrideContentSecurityPolicyScriptSrc(
+      const std::string& data) = 0;
+  virtual void OverrideContentSecurityPolicyStyleSrc(
       const std::string& data) = 0;
   virtual void OverrideContentSecurityPolicyWorkerSrc(
       const std::string& data) = 0;

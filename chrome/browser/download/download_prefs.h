@@ -14,6 +14,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 
+class GURL;
 class Profile;
 class TrustedSourcesManager;
 
@@ -24,6 +25,10 @@ class DownloadManager;
 
 namespace download {
 class DownloadItem;
+}
+
+namespace policy {
+class URLBlacklist;
 }
 
 namespace user_prefs {
@@ -88,13 +93,11 @@ class DownloadPrefs {
   // by the user for auto-open.
   bool IsAutoOpenByUserUsed() const;
 
-  // Returns true if |path| should be opened automatically based on
-  // |path.Extension()|.
-  bool IsAutoOpenEnabledBasedOnExtension(const base::FilePath& path) const;
+  // Returns true if |path| should be opened automatically.
+  bool IsAutoOpenEnabled(const GURL& url, const base::FilePath& path) const;
 
-  // Returns true if |path| should be opened automatically based on
-  // |path.Extension()|.
-  bool IsAutoOpenByPolicyBasedOnExtension(const base::FilePath& path) const;
+  // Returns true if |path| should be opened automatically by policy.
+  bool IsAutoOpenByPolicy(const GURL& url, const base::FilePath& path) const;
 
   // Enables automatically opening all downloads with the same file type as
   // |file_name|. Returns true on success. The call may fail if |file_name|
@@ -132,6 +135,8 @@ class DownloadPrefs {
 
   void UpdateAutoOpenByPolicy();
 
+  void UpdateAllowedURLsForOpenByPolicy();
+
   Profile* profile_;
 
   BooleanPrefMember prompt_for_download_;
@@ -159,6 +164,8 @@ class DownloadPrefs {
                    AutoOpenCompareFunctor> AutoOpenSet;
   AutoOpenSet auto_open_by_user_;
   AutoOpenSet auto_open_by_policy_;
+
+  std::unique_ptr<policy::URLBlacklist> auto_open_allowed_by_urls_;
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
   bool should_open_pdf_in_system_reader_;

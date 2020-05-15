@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_FEED_CORE_V2_METRICS_REPORTER_H_
 #define COMPONENTS_FEED_CORE_V2_METRICS_REPORTER_H_
 
+#include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_stream.h"
@@ -12,9 +14,7 @@
 namespace base {
 class TickClock;
 }  // namespace base
-
 namespace feed {
-
 namespace internal {
 // This enum is used for a UMA histogram. Keep in sync with FeedEngagementType
 // in enums.xml.
@@ -61,7 +61,7 @@ class MetricsReporter {
 
   // User interactions. See |FeedStreamApi| for definitions.
 
-  virtual void ContentSliceViewed(int index_in_stream);
+  virtual void ContentSliceViewed(SurfaceId surface_id, int index_in_stream);
   void OpenAction(int index_in_stream);
   void OpenInNewTabAction(int index_in_stream);
   void OpenInNewIncognitoTabAction();
@@ -69,7 +69,7 @@ class MetricsReporter {
   void LearnMoreAction();
   void DownloadAction();
   void NavigationStarted();
-  void NavigationDone();
+  void PageLoaded();
   void RemoveAction();
   void NotInterestedInAction();
   void ManageInterestsAction();
@@ -78,8 +78,9 @@ class MetricsReporter {
   // scrolling.
   void StreamScrolled(int distance_dp);
 
-  // Called when the Feed surface is opened.
-  void SurfaceOpened();
+  // Called when the Feed surface is opened and closed.
+  void SurfaceOpened(SurfaceId surface_id);
+  void SurfaceClosed(SurfaceId surface_id);
 
   // Network metrics.
 
@@ -91,12 +92,26 @@ class MetricsReporter {
   virtual void OnLoadStream(LoadStreamStatus load_from_store_status,
                             LoadStreamStatus final_status);
   virtual void OnBackgroundRefresh(LoadStreamStatus final_status);
+  void OnLoadMoreBegin(SurfaceId surface_id);
   virtual void OnLoadMore(LoadStreamStatus final_status);
   virtual void OnClearAll(base::TimeDelta time_since_last_clear);
+  // Called each time the surface receives new content.
+  void SurfaceReceivedContent(SurfaceId surface_id);
+  // Called when Chrome is entering the background.
+  void OnEnterBackground();
 
  private:
+  base::WeakPtr<MetricsReporter> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+  void CardOpenBegin();
+  void CardOpenTimeout(base::TimeTicks start_ticks);
+  void ReportCardOpenEndIfNeeded(bool success);
   void RecordEngagement(int scroll_distance_dp, bool interacted);
   void RecordInteraction();
+  void ReportOpenFeedIfNeeded(SurfaceId surface_id, bool success);
+  void ReportGetMoreIfNeeded(SurfaceId surface_id, bool success);
+  void FinalizeMetrics();
 
   const base::TickClock* clock_;
 
@@ -104,6 +119,20 @@ class MetricsReporter {
   bool engaged_simple_reported_ = false;
   bool engaged_reported_ = false;
   bool scrolled_reported_ = false;
+  // The time a surface was opened, for surfaces still waiting for content.
+  std::map<SurfaceId, base::TimeTicks> surfaces_waiting_for_content_;
+  // The time a surface requested more content, for surfaces still waiting for
+  // more content.
+  std::map<SurfaceId, base::TimeTicks> surfaces_waiting_for_more_content_;
+
+  // Tracking ContentSuggestions.Feed.UserJourney.OpenCard.*:
+  // We assume at most one card is opened at a time. The time the card was
+  // tapped is stored here. Upon timeout, another open attempt, or
+  // |ChromeStopping()|, the open is considered failed. Otherwise, if the
+  // loading the page succeeds, the open is considered successful.
+  base::Optional<base::TimeTicks> pending_open_;
+
+  base::WeakPtrFactory<MetricsReporter> weak_ptr_factory_{this};
 };
 }  // namespace feed
 

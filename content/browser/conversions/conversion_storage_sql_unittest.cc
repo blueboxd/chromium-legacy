@@ -31,9 +31,10 @@ class ConversionStorageSqlTest : public testing::Test {
 
   void OpenDatabase() {
     storage_.reset();
+    auto delegate = std::make_unique<ConfigurableStorageDelegate>();
+    delegate_ = delegate.get();
     storage_ = std::make_unique<ConversionStorageSql>(
-        temp_directory_.GetPath(),
-        std::make_unique<PassThroughStorageDelegate>(), &clock_);
+        temp_directory_.GetPath(), std::move(delegate), &clock_);
     EXPECT_TRUE(storage_->Initialize());
   }
 
@@ -52,9 +53,12 @@ class ConversionStorageSqlTest : public testing::Test {
 
   ConversionStorage* storage() { return storage_.get(); }
 
+  ConfigurableStorageDelegate* delegate() { return delegate_; }
+
  private:
   base::ScopedTempDir temp_directory_;
   std::unique_ptr<ConversionStorage> storage_;
+  ConfigurableStorageDelegate* delegate_ = nullptr;
   base::SimpleTestClock clock_;
 };
 
@@ -69,8 +73,9 @@ TEST_F(ConversionStorageSqlTest,
   EXPECT_EQ(2u, sql::test::CountSQLTables(&raw_db));
 
   // [conversion_origin_idx], [impression_expiry_idx],
-  // [conversion_report_time_idx], [conversion_impression_id_idx].
-  EXPECT_EQ(4u, sql::test::CountSQLIndices(&raw_db));
+  // [impression_origin_idx], [conversion_report_time_idx],
+  // [conversion_impression_id_idx].
+  EXPECT_EQ(5u, sql::test::CountSQLIndices(&raw_db));
 }
 
 TEST_F(ConversionStorageSqlTest, DatabaseReopened_DataPersisted) {
@@ -216,6 +221,42 @@ TEST_F(ConversionStorageSqlTest, DeleteEverything) {
 
   EXPECT_EQ(0u, conversion_rows);
   EXPECT_EQ(0u, impression_rows);
+}
+
+TEST_F(ConversionStorageSqlTest, MaxImpressionsPerOrigin) {
+  OpenDatabase();
+  delegate()->set_max_impressions_per_origin(2);
+  storage()->StoreImpression(ImpressionBuilder(clock()->Now()).Build());
+  storage()->StoreImpression(ImpressionBuilder(clock()->Now()).Build());
+  storage()->StoreImpression(ImpressionBuilder(clock()->Now()).Build());
+  EXPECT_EQ(
+      2, storage()->MaybeCreateAndStoreConversionReports(DefaultConversion()));
+
+  CloseDatabase();
+  sql::Database raw_db;
+  EXPECT_TRUE(raw_db.Open(db_path()));
+  size_t impression_rows;
+  sql::test::CountTableRows(&raw_db, "impressions", &impression_rows);
+  EXPECT_EQ(2u, impression_rows);
+}
+
+TEST_F(ConversionStorageSqlTest, MaxConversionsPerOrigin) {
+  OpenDatabase();
+  delegate()->set_max_conversions_per_origin(2);
+  storage()->StoreImpression(ImpressionBuilder(clock()->Now()).Build());
+  EXPECT_EQ(
+      1, storage()->MaybeCreateAndStoreConversionReports(DefaultConversion()));
+  EXPECT_EQ(
+      1, storage()->MaybeCreateAndStoreConversionReports(DefaultConversion()));
+  EXPECT_EQ(
+      0, storage()->MaybeCreateAndStoreConversionReports(DefaultConversion()));
+
+  CloseDatabase();
+  sql::Database raw_db;
+  EXPECT_TRUE(raw_db.Open(db_path()));
+  size_t conversion_rows;
+  sql::test::CountTableRows(&raw_db, "conversions", &conversion_rows);
+  EXPECT_EQ(2u, conversion_rows);
 }
 
 }  // namespace content

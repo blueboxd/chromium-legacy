@@ -704,7 +704,7 @@ public class StartSurfaceLayoutTest {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
 
         // Prepare two incognito tabs and enter tab switcher.
-        prepareTabs(1, 2, mUrl);
+        createTabs(cta, true, 2);
         enterTabSwitcher(cta);
         onView(withId(R.id.tab_list_view))
                 .check(TabCountAssertion.havingTabCount(2));

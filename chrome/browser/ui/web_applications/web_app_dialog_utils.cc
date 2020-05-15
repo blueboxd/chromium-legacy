@@ -45,8 +45,9 @@ void WebAppInstallDialogCallback(
                                  std::move(web_app_info),
                                  std::move(web_app_acceptance_callback));
   } else {
-    chrome::ShowWebAppDialog(initiator_web_contents, std::move(web_app_info),
-                             std::move(web_app_acceptance_callback));
+    chrome::ShowWebAppInstallDialog(initiator_web_contents,
+                                    std::move(web_app_info),
+                                    std::move(web_app_acceptance_callback));
   }
 }
 

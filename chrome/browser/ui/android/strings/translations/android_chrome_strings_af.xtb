@@ -387,7 +387,6 @@ Net jy kan sien waarna jou kamera kyk. Hierdie werf kan nie jou kamera se prente
 <translation id="4250229828105606438">Skermkiekie</translation>
 <translation id="4256782883801055595">Oopbronlisensies</translation>
 <translation id="4269820728363426813">Kopieer skakeladres</translation>
-<translation id="4278390842282768270">Toegelaat</translation>
 <translation id="429312253194641664">'n Werf speel tans media</translation>
 <translation id="4298388696830689168">Gekoppelde werwe</translation>
 <translation id="4307992518367153382">Basies</translation>
@@ -435,7 +434,6 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> boekmerke is uitgevee</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> is by jou tuisskerm gevoeg</translation>
 <translation id="4684427112815847243">Sinkroniseer alles</translation>
-<translation id="4688610874307684559">Werk tans in Chrome (aanvanklik)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" /> \u2026 en nog <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> \u2026 en nog <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Stuur teks na jou toestelle toe</translation>
 <translation id="4698034686595694889">Bekyk vanlyn in <ph name="APP_NAME" /></translation>
@@ -560,10 +558,8 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5659593005791499971">E-pos</translation>
 <translation id="5665379678064389456">Skep geleentheid in <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignoreer 'n webwerf se versoek om inzoem te verhoed</translation>
-<translation id="5677928146339483299">Geblokkeer</translation>
 <translation id="5684874026226664614">Oeps. Hierdie bladsy kon nie vertaal word nie.</translation>
 <translation id="5686790454216892815">Lêernaam is te lank</translation>
-<translation id="5690795753582697420">Kamera is afgeskakel in Android-instellings</translation>
 <translation id="5694049548840660018">Gaan maklik terug na die tuisblad toe</translation>
 <translation id="569536719314091526">Vertaal hierdie bladsy in enige taal vanaf die Meer Opsies-knoppie</translation>
 <translation id="572328651809341494">Onlangse oortjies</translation>
@@ -619,7 +615,6 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="614940544461990577">Probeer:</translation>
 <translation id="6154478581116148741">Skakel skermslot in Instellings aan om jou wagwoorde van hierdie toestel af uit te voer</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> databesparings</translation>
-<translation id="6177111841848151710">Geblokkeer vir huidige soekenjin</translation>
 <translation id="6192333916571137726">Laai lêer af</translation>
 <translation id="6201345951596836663">Skakel is gekopieer</translation>
 <translation id="6210748933810148297">Nie <ph name="EMAIL" /> nie?</translation>
@@ -706,7 +701,6 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="6846298663435243399">Laai tans …</translation>
 <translation id="6850409657436465440">Jou aflaai is nog aan die gang</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> oortjies is toegemaak</translation>
-<translation id="6864395892908308021">Hierdie toestel kan nie NFC lees nie</translation>
 <translation id="6864459304226931083">Laai prent af</translation>
 <translation id="6865313869410766144">Vul vormdata outomaties in</translation>
 <translation id="6884306546558072722">Hou aan om vanlyn te verken</translation>
@@ -721,9 +715,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="6989267951144302301">Kon nie aflaai nie</translation>
 <translation id="6990079615885386641">Kry die program van die Google Play Winkel af: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Waarsku jou as wagwoorde in 'n dataskending blootgestel is</translation>
-<translation id="7000754031042624318">Afgeskakel in Android-instellings</translation>
 <translation id="7015203776128479407">Aanvanklike sinkroniseringopstelling is nie voltooi nie. Sinkronisering is af.</translation>
-<translation id="7016516562562142042">Toegelaat vir huidige soekenjin</translation>
 <translation id="7022756207310403729">Maak in blaaier oop</translation>
 <translation id="702463548815491781">Aanbeveel wanneer TalkBack of Skakelaartoegang aan is</translation>
 <translation id="7029809446516969842">Wagwoorde</translation>
@@ -756,10 +748,10 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="7328017930301109123">In Ligte modus laai Chrome bladsye vinniger en gebruik tot 60 persent minder data.</translation>
 <translation id="7333031090786104871">Voeg steeds vorige werf by</translation>
 <translation id="7340958967809483333">Opsies vir Ontdek</translation>
+<translation id="7352651011704765696">Iets het verkeerd geloop</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Deel 1 gekose item}other{Deel # gekose items}}</translation>
 <translation id="7359002509206457351">Toegang tot betaalmetodes</translation>
-<translation id="7362144854749094396">Geskiedenis word gedeel met Chrome. Voorkeure word gedeel met <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Tipe:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -841,7 +833,6 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="7986741934819883144">Kies 'n kontak</translation>
 <translation id="7998918019931843664">Heropen toegemaakte oortjie</translation>
 <translation id="8004582292198964060">Blaaier</translation>
-<translation id="8007176423574883786">Afgeskakel vir hierdie toestel</translation>
 <translation id="8013372441983637696">Vee ook jou Chrome-data op hierdie toestel uit</translation>
 <translation id="8015452622527143194">Stel alles op die bladsy terug na verstekgrootte</translation>
 <translation id="8026334261755873520">Vee blaaidata uit</translation>
@@ -931,6 +922,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="8687353297350450808">{N_BARS,plural, =1{Seinsterktevlak: # stafie}other{Seinsterktevlak: # stafies}}</translation>
 <translation id="868929229000858085">Deursoek jou kontakte</translation>
 <translation id="869891660844655955">Vervaldatum</translation>
+<translation id="8712637175834984815">Het dit</translation>
 <translation id="8748850008226585750">Inhoud word versteek</translation>
 <translation id="8751914237388039244">Kies 'n prent</translation>
 <translation id="8758557275681689734">Sien al jou oop oortjies</translation>

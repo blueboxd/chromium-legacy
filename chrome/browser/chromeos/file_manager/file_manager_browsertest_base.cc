@@ -1320,6 +1320,11 @@ class MockSmbFsImpl : public smbfs::mojom::SmbFs {
               (RemoveSavedCredentialsCallback),
               (override));
 
+  MOCK_METHOD(void,
+              DeleteRecursively,
+              (const base::FilePath&, DeleteRecursivelyCallback),
+              (override));
+
  private:
   mojo::Receiver<smbfs::mojom::SmbFs> receiver_;
 };

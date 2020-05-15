@@ -995,8 +995,8 @@ LayerTreeHostImpl::CreateLatencyInfoSwapPromiseMonitor(
 
 std::unique_ptr<EventsMetricsManager::ScopedMonitor>
 LayerTreeHostImpl::GetScopedEventMetricsMonitor(
-    const EventMetrics& event_metrics) {
-  return events_metrics_manager_.GetScopedMonitor(event_metrics);
+    std::unique_ptr<EventMetrics> event_metrics) {
+  return events_metrics_manager_.GetScopedMonitor(std::move(event_metrics));
 }
 
 ScrollElasticityHelper* LayerTreeHostImpl::CreateScrollElasticityHelper() {

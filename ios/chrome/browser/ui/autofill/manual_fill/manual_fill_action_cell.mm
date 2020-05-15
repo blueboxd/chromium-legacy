@@ -11,6 +11,7 @@
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -49,12 +50,6 @@
 
 @end
 
-#if defined(__IPHONE_13_4)
-API_AVAILABLE(ios(13.4))
-@interface ManualFillActionCell (Pointer) <UIPointerInteractionDelegate>
-@end
-#endif  // defined(__IPHONE_13_4)
-
 @interface ManualFillActionCell ()
 
 // The action block to be called when the user taps the title button.
@@ -89,27 +84,6 @@ API_AVAILABLE(ios(13.4))
   self.action = action;
 }
 
-#if defined(__IPHONE_13_4)
-#pragma mark UIPointerInteractionDelegate
-
-- (UIPointerRegion*)pointerInteraction:(UIPointerInteraction*)interaction
-                      regionForRequest:(UIPointerRegionRequest*)request
-                         defaultRegion:(UIPointerRegion*)defaultRegion
-    API_AVAILABLE(ios(13.4)) {
-  return defaultRegion;
-}
-
-- (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
-                       styleForRegion:(UIPointerRegion*)region
-    API_AVAILABLE(ios(13.4)) {
-  UIPointerHoverEffect* effect = [UIPointerHoverEffect
-      effectWithPreview:[[UITargetedPreview alloc] initWithView:self]];
-  effect.prefersScaledContent = NO;
-  effect.prefersShadow = NO;
-  return [UIPointerStyle styleWithEffect:effect shape:nil];
-}
-#endif  // defined(__IPHONE_13_4)
-
 #pragma mark - Private
 
 - (void)createView {
@@ -135,8 +109,7 @@ API_AVAILABLE(ios(13.4))
 #if defined(__IPHONE_13_4)
   if (@available(iOS 13.4, *)) {
     if (base::FeatureList::IsEnabled(kPointerSupport)) {
-      [self
-          addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
+      [self addInteraction:[[ViewPointerInteraction alloc] init]];
     }
   }
 #endif  // defined(__IPHONE_13_4)

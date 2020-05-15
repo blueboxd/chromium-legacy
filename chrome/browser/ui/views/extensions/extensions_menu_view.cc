@@ -91,7 +91,7 @@ ExtensionsMenuView::ExtensionsMenuView(
   browser_->tab_strip_model()->AddObserver(this);
   set_margins(gfx::Insets(0));
 
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
 
   EnableUpDownKeyboardAccelerators();
 

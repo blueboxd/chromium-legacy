@@ -13,6 +13,10 @@ specific_include_rules = {
     "+content/public/browser/web_contents.h",
     "+content/public/browser/web_contents_delegate.h",
   ],
+  ".*file_chooser_impl\.cc": [
+    # TODO(1076947): There is a layer violation to fix in this file.
+    "+content/public/browser/web_contents.h",
+  ],
   ".*interstitial_page_impl\.cc": [
     # TODO(nasko): This should be removed once we remove
     # WebContentsObserver as the method of telling interstitial pages to

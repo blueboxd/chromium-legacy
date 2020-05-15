@@ -317,16 +317,12 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     first_swap_ = true;
     base::UmaHistogramSparse(
         "GPU.DirectComposition.CreateSwapChainForComposition", hr);
-    if (FAILED(hr)) {
-      DLOG(ERROR) << "CreateSwapChainForComposition failed with error "
-                  << std::hex << hr;
-      // If CreateSwapChainForComposition fails, we cannot draw to the
-      // browser window. Failure here is indicative of an unrecoverable driver
-      // bug. Hence, terminate immediately and let the browser process start
-      // a fresh new instance.
-      base::Process::TerminateCurrentProcessImmediately(0);
-      // No code runs beyond this point.
-    }
+
+    // If CreateSwapChainForComposition fails, we cannot draw to the
+    // browser window. Failure here is indicative of an unrecoverable driver
+    // bug.
+    CHECK(SUCCEEDED(hr));
+
     Microsoft::WRL::ComPtr<IDXGISwapChain3> swap_chain;
     if (SUCCEEDED(swap_chain_.As(&swap_chain))) {
       hr = swap_chain->SetColorSpace1(

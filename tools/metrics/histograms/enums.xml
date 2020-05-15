@@ -4031,28 +4031,32 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AutofillAddressProfileImportRequirement">
-  <int value="0" label="Email is unique: Violated"/>
-  <int value="1" label="Email is unique: Fulfilled"/>
-  <int value="2" label="No invalid field types: Violated"/>
-  <int value="3" label="No invalid field types: Fulfilled"/>
-  <int value="4" label="City requirement: Violated"/>
-  <int value="5" label="City requirement: Fulfilled"/>
-  <int value="6" label="State requirement: Violated"/>
-  <int value="7" label="State requirement: Fulfilled"/>
-  <int value="8" label="ZIP requirement: Violated"/>
-  <int value="9" label="ZIP requirement: Fulfilled"/>
-  <int value="10" label="Valid email: Violated"/>
-  <int value="11" label="Valid email: Fulfilled"/>
-  <int value="12" label="Valid country: Violated"/>
-  <int value="13" label="Valid country: Fulfilled"/>
-  <int value="14" label="Valid state: Violated"/>
-  <int value="15" label="Valid state: Fulfilled"/>
-  <int value="16" label="Valid ZIP: Violated"/>
-  <int value="17" label="Valid ZIP: Fulfilled"/>
-  <int value="18" label="Valid phone: Violated"/>
-  <int value="19" label="Valid phone: Fulfilled"/>
-  <int value="20" label="Overall: Violated"/>
-  <int value="21" label="Overall: Fulfilled"/>
+  <int value="0" label="Email is unique: Fulfilled"/>
+  <int value="1" label="Email is unique: Violated"/>
+  <int value="2" label="No invalid field types: Fulfilled"/>
+  <int value="3" label="No invalid field types: Violated"/>
+  <int value="4" label="City requirement: Fulfilled"/>
+  <int value="5" label="City requirement: Violated"/>
+  <int value="6" label="State requirement: Fulfilled"/>
+  <int value="7" label="State requirement: Violated"/>
+  <int value="8" label="ZIP requirement: Fulfilled"/>
+  <int value="9" label="ZIP requirement: Violated"/>
+  <int value="10" label="Valid email: Fulfilled"/>
+  <int value="11" label="Valid email: Violated"/>
+  <int value="12" label="Valid country: Fulfilled"/>
+  <int value="13" label="Valid country: Violated"/>
+  <int value="14" label="Valid state: Fulfilled"/>
+  <int value="15" label="Valid state: Violated"/>
+  <int value="16" label="Valid ZIP: Fulfilled"/>
+  <int value="17" label="Valid ZIP: Violated"/>
+  <int value="18" label="Valid phone: Fulfilled"/>
+  <int value="19" label="Valid phone: Violated"/>
+  <int value="20" label="Overall: Fulfilled"/>
+  <int value="21" label="Overall: Violated"/>
+  <int value="22" label="Line1 requirement: Fulfilled"/>
+  <int value="23" label="Line1 requirement: Violated"/>
+  <int value="24" label="ZIP or state requirement: Fulfilled"/>
+  <int value="25" label="ZIP or state requirement: Violated"/>
 </enum>
 
 <enum name="AutofillAssistantDropOutReason">
@@ -11840,6 +11844,12 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Secure cookie, source scheme is not cryptographic"/>
   <int value="2" label="Not Secure cookie, source scheme is cryptographic"/>
   <int value="3" label="Not Secure cookie, source scheme is not cryptographic"/>
+</enum>
+
+<enum name="CookieStoreMatchType">
+  <int value="0" label="Unspecified"/>
+  <int value="1" label="Equals"/>
+  <int value="2" label="StartsWith"/>
 </enum>
 
 <enum name="CookieType">
@@ -20229,6 +20239,7 @@ Called by update_document_policy_enum.py.-->
   <int value="704" label="AppCacheForceEnabled"/>
   <int value="705" label="UserPluginVmAllowed"/>
   <int value="706" label="PrintRasterizationMode"/>
+  <int value="707" label="AutoOpenAllowedForURLs"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -27325,6 +27336,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3293" label="V8RTCRtpReceiver_CreateEncodedStreams_Method"/>
   <int value="3294" label="ForceEncodedAudioInsertableStreams"/>
   <int value="3295" label="ForceEncodedVideoInsertableStreams"/>
+  <int value="3296" label="TransformStyleContainingBlockComputedUsedMismatch"/>
+  <int value="3297" label="AdditionalGroupingPropertiesForCompat"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -41679,6 +41692,7 @@ from previous Chrome versions.
   <int value="1827369558" label="AndroidPayIntegrationV1:disabled"/>
   <int value="1828660283" label="enable-webfonts-intervention-trigger"/>
   <int value="1830460973" label="disable-network-settings-config"/>
+  <int value="1831545645" label="query-tiles-single-tier"/>
   <int value="1831593339" label="stop-in-background:disabled"/>
   <int value="1831835753" label="MaterialDesignIncognitoNTP:enabled"/>
   <int value="1832552562" label="EnableVirtualKeyboardUkm:enabled"/>
@@ -59826,14 +59840,6 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="8" label="SKIPPED_VERSION_CHECK_EQUAL"/>
 </enum>
 
-<enum name="SBPhishingClassifierEvent">
-  <int value="0" label="Phishing detection was requested to start"/>
-  <int value="1" label="Page text was captured"/>
-  <int value="2" label="Page text not loaded"/>
-  <int value="3" label="Url should not be classified"/>
-  <int value="4" label="Phishing classifier was destructed"/>
-</enum>
-
 <enum name="ScheduledNavigationType">
   <obsolete>
     Deprecated August 2018
@@ -70573,6 +70579,7 @@ Called by update_scheduler_enums.py.-->
   <int value="42" label="AppBanner"/>
   <int value="43" label="Printing"/>
   <int value="44" label="WebDatabase"/>
+  <int value="45" label="PictureInPicture"/>
 </enum>
 
 <enum name="WebShareMethod">

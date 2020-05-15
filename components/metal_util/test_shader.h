@@ -59,7 +59,7 @@ void METAL_UTIL_EXPORT
 TestShader(TestShaderCallback callback,
            const base::TimeDelta& delay = kTestShaderDelay,
            const base::TimeDelta& timeout = kTestShaderTimeout,
-           TestShaderComponent component = TestShaderComponent::kLink);
+           TestShaderComponent component = TestShaderComponent::kCompile);
 
 }  // namespace metal
 

@@ -152,6 +152,7 @@ Aby coś wyszukać, dotknij dowolnego słowa. Aby doprecyzować wyszukiwanie, na
 <translation id="218608176142494674">Udostępnianie</translation>
 <translation id="2227444325776770048">Kontynuuj jako <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Synchronizacja i usługi Google</translation>
+<translation id="2239812875700136898">Zarządzaj wyświetlanymi wiadomościami za pomocą opcji przycisku Discover</translation>
 <translation id="2259659629660284697">Eksportuj hasła…</translation>
 <translation id="2268044343513325586">Zawęź</translation>
 <translation id="2286841657746966508">Adres rozliczeniowy</translation>
@@ -387,7 +388,6 @@ Obraz z kamery będziesz widzieć tylko Ty. Strona nie będzie mieć do niego d
 <translation id="4250229828105606438">Zrzut ekranu</translation>
 <translation id="4256782883801055595">Licencje open source</translation>
 <translation id="4269820728363426813">Kopiuj adres linku</translation>
-<translation id="4278390842282768270">Dopuszczone</translation>
 <translation id="429312253194641664">Strona odtwarza multimedia</translation>
 <translation id="4298388696830689168">Połączone strony</translation>
 <translation id="4307992518367153382">Podstawowe</translation>
@@ -435,7 +435,6 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 <translation id="4663756553811254707">Usunięte zakładki: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Strona <ph name="NAME" /> została dodana do ekranu głównego</translation>
 <translation id="4684427112815847243">Synchronizuj wszystko</translation>
-<translation id="4688610874307684559">Działa w Chrome (powiadomienie początkowe)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}many{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Wyślij tekst na swoje urządzenia</translation>
 <translation id="4698034686595694889">Zobacz offline w <ph name="APP_NAME" /></translation>
@@ -560,10 +559,8 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5665379678064389456">Utwórz wydarzenie w aplikacji <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Zignoruj żądanie strony, gdy chce zapobiec powiększeniu widoku</translation>
-<translation id="5677928146339483299">Zablokowane</translation>
 <translation id="5684874026226664614">Nie można przetłumaczyć tej strony.</translation>
 <translation id="5686790454216892815">Nazwa pliku jest za długa</translation>
-<translation id="5690795753582697420">Kamera jest wyłączona w ustawieniach Androida</translation>
 <translation id="5694049548840660018">Łatwy powrót na stronę główną</translation>
 <translation id="569536719314091526">Możesz przetłumaczyć tę stronę na dowolny język, używając przycisku Więcej opcji</translation>
 <translation id="572328651809341494">Ostatnie karty</translation>
@@ -619,7 +616,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="614940544461990577">Wypróbuj te rozwiązania:</translation>
 <translation id="6154478581116148741">Włącz blokadę ekranu w ustawieniach, by wyeksportować hasła z urządzenia</translation>
 <translation id="6159335304067198720">Oszczędność danych: <ph name="PERCENT" /></translation>
-<translation id="6177111841848151710">Zablokowano dostęp obecnej wyszukiwarce</translation>
 <translation id="6192333916571137726">Pobranie pliku</translation>
 <translation id="6201345951596836663">Link został skopiowany</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> to nie Ty?</translation>
@@ -706,7 +702,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6846298663435243399">Wczytuję…</translation>
 <translation id="6850409657436465440">Pobieranie wciąż trwa</translation>
 <translation id="6850830437481525139">Zamknięte karty: <ph name="TAB_COUNT" /></translation>
-<translation id="6864395892908308021">To urządzenie nie obsługuje NFC</translation>
 <translation id="6864459304226931083">Pobierz obraz</translation>
 <translation id="6865313869410766144">Autouzupełnianie danych formularzy</translation>
 <translation id="6884306546558072722">Strony internetowe offline</translation>
@@ -721,9 +716,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6989267951144302301">Nie udało się pobrać</translation>
 <translation id="6990079615885386641">Pobierz aplikację ze sklepu Google Play: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Ostrzegaj, jeśli wskutek naruszenia bezpieczeństwa danych doszło do ujawnienia haseł</translation>
-<translation id="7000754031042624318">Wyłączone w ustawieniach Androida</translation>
 <translation id="7015203776128479407">Nie ukończono początkowej konfiguracji synchronizacji. Synchronizacja jest wyłączona.</translation>
-<translation id="7016516562562142042">Zezwolono na dostęp obecnej wyszukiwarce</translation>
 <translation id="7022756207310403729">Otwórz w przeglądarce</translation>
 <translation id="702463548815491781">Zalecane, gdy włączono TalkBack lub Switch Access</translation>
 <translation id="7029809446516969842">Hasła</translation>
@@ -756,10 +749,10 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7328017930301109123">Chrome szybciej ładuje strony w wersji uproszczonej, przesyłając nawet o 60 procent mniej danych.</translation>
 <translation id="7333031090786104871">Nadal dodaję poprzednią stronę</translation>
 <translation id="7340958967809483333">Opcje kart Discover</translation>
+<translation id="7352651011704765696">Coś poszło nie tak</translation>
 <translation id="7352939065658542140">FILM</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Udostępnij 1 wybrany element}few{Udostępnij # wybrane elementy}many{Udostępnij # wybranych elementów}other{Udostępnij # wybranego elementu}}</translation>
 <translation id="7359002509206457351">Dostęp do form płatności</translation>
-<translation id="7362144854749094396">Historia jest udostępniana Chrome. Preferencje są udostępniane witrynie <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Typ:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">Adres URL</translation>
@@ -841,7 +834,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7986741934819883144">Wybierz kontakt</translation>
 <translation id="7998918019931843664">Otwórz ponownie zamkniętą kartę</translation>
 <translation id="8004582292198964060">Przeglądarka</translation>
-<translation id="8007176423574883786">Wyłączona na tym urządzeniu</translation>
 <translation id="8013372441983637696">Usuń też swoje dane Chrome z tego urządzenia</translation>
 <translation id="8015452622527143194">Powróć do normalnego rozmiaru całej treści strony</translation>
 <translation id="8026334261755873520">Wyczyść dane przeglądania</translation>
@@ -931,6 +923,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8687353297350450808">{N_BARS,plural, =1{Poziom siły sygnału: # słupek}few{Poziom siły sygnału: # słupki}many{Poziom siły sygnału: # słupków}other{Poziom siły sygnału: # słupka}}</translation>
 <translation id="868929229000858085">Wyszukaj w kontaktach</translation>
 <translation id="869891660844655955">Data wygaśnięcia</translation>
+<translation id="8712637175834984815">Rozumiem</translation>
 <translation id="8748850008226585750">Treści ukryte</translation>
 <translation id="8751914237388039244">Wybierz obraz</translation>
 <translation id="8758557275681689734">Zobacz wszystkie otwarte karty</translation>

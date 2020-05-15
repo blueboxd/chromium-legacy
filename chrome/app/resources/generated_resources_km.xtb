@@ -523,7 +523,6 @@
 <translation id="1650371550981945235">បង្ហាញជម្រើសបញ្ចូល</translation>
 <translation id="1651008383952180276">អ្នក​ត្រូវតែ​បញ្ចូល​ឃ្លាសម្ងាត់​ដូចគ្នា​ពីរដង</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{បន្ថែមម៉ាស៊ីនបោះពុម្ពទៅ Google Cloud Print ដូច្នេះអ្នកអាចបោះពុម្ពពីគ្រប់ទីកន្លែង។}other{បន្ថែមម៉ាស៊ីនបោះពុម្ព # ទៅ Google Cloud Print ដូច្នេះអ្នកអាចបោះពុម្ពពីគ្រប់ទីកន្លែង។}}</translation>
-<translation id="1655937588105566159">{NUM_EXTENSIONS,plural, =1{កម្មវិធី​បន្ថែមនេះ​អាចបង្ក​គ្រោះថ្នាក់}other{កម្មវិធី​បន្ថែមទាំងនេះ​អាចបង្ក​គ្រោះថ្នាក់}}</translation>
 <translation id="1656528038316521561">ភាពស្រអាប់​ផ្ទៃខាងក្រោយ</translation>
 <translation id="1657406563541664238">ជួយធ្វើឲ្យ <ph name="PRODUCT_NAME" /> ប្រសើរជាងមុនដោយការផ្ញើស្ថិតិការប្រើប្រាស់ និងរបាយការណ៍គាំងទៅ Google ដោយស្វ័យប្រវត្តិ។</translation>
 <translation id="1657937299377480641">ដើម្បីចូលគណនីម្ដងទៀត ដើម្បី​ចូលប្រើ​ធនធាន​អប់រំ សូមស្នើសុំការអនុញ្ញាតពីមាតាបិតារបស់អ្នក</translation>
@@ -713,7 +712,6 @@
 <translation id="1875387611427697908">វាអាចត្រូវបានបញ្ចូលពី <ph name="CHROME_WEB_STORE" /> តែប៉ុណ្ណោះ</translation>
 <translation id="1877520246462554164">មិនអាចទាញយកនិមិត្តសញ្ញាផ្ទៀងផ្ទាត់បានទេ។ សូមចេញពីគណនី ហើយចូលមកវិញម្តងទៀត ដើម្បីព្យាយាមម្តងទៀត។</translation>
 <translation id="1877860345998737529">ការចាត់ចែងសកម្មភាព​ប៊ូតុង​ចុច</translation>
-<translation id="1878541307036593717">រៀបចំ​ការអនុញ្ញាត</translation>
 <translation id="1879000426787380528">ចូលជា</translation>
 <translation id="1880905663253319515">លុបវិញ្ញាបនប័ត្រ "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1884013283844450420">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, ភ្ជាប់</translation>
@@ -1146,7 +1144,7 @@
 <translation id="2445081178310039857">តម្រូវឲ្យមានថតឯកសារគោលកម្មវិធីបន្ថែម។</translation>
 <translation id="2445484935443597917">បង្កើត​កម្រង​ព័ត៌មាន​ថ្មី</translation>
 <translation id="2448312741937722512">ប្រភេទ</translation>
-<translation id="2448810255793562605">ការស្កេន​ក្នុងមុខងារប្រើ​ប៊ូតុងចុច​ដោយស្វ័យប្រវត្តិ</translation>
+<translation id="2448810255793562605">ការស្កេនដោយស្វ័យប្រវត្តិ​ក្នុងមុខងារប្រើ​ប៊ូតុងចុច​</translation>
 <translation id="2450223707519584812">អ្នកនឹងមិនអាចបន្ថែមអ្នកប្រើបានទេ ពីព្រោះសោ Google API បានបាត់បង់។ សូមមើល <ph name="DETAILS_URL" /> សម្រាប់ព័ត៌មានលម្អិត។</translation>
 <translation id="2450849356604136918">មិនមាន​ទិដ្ឋភាព​សកម្ម​ទេ</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -2632,6 +2630,7 @@
 <translation id="4359408040881008151">បានតំឡើងដោយសារកម្មវិធីបន្ថែមពឹងអាស្រ័យ។</translation>
 <translation id="4359717112757026264">ទិដ្ឋភាព​ទីក្រុង</translation>
 <translation id="4361142739114356624">លេខកូដ​សម្រាប់​វិញ្ញាបនបត្រ​កម្មវិធី​ភ្ញៀវ​នេះ​បាន​បាត់ ឬ​មិន​ត្រឹមត្រូវ</translation>
+<translation id="4361745360460842907">បើកជាផ្ទាំង</translation>
 <translation id="4363771538994847871">រកមិនឃើញទិសដៅដើម្បីខាសទៅទេ។ ត្រូវការជំនួយដែរទេ?</translation>
 <translation id="4364327530094270451">ត្រសក់​ផ្អែម</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> កំពុងចែករំលែកផ្ទាំងវិនដូ</translation>
@@ -3093,7 +3092,6 @@
 <translation id="4994474651455208930">អនុញ្ញាតឲ្យគេហទំព័រសួរដើម្បីឲ្យក្លាយទៅជាឧបករណ៍ដោះស្រាយប្រូតូកូលលំនាំដើម</translation>
 <translation id="4994754230098574403">កំពុង​រៀបចំ</translation>
 <translation id="4997086284911172121">មិនមាន​ការតភ្ជាប់​អ៊ីនធឺណិត​ទេ។</translation>
-<translation id="4997384734315285248">លុប​ Plugin VM</translation>
 <translation id="4998430619171209993">បើក</translation>
 <translation id="5000922062037820727">បានរារាំង (បានណែនាំ)</translation>
 <translation id="5005498671520578047">ថតចម្លងពាក្យសម្ងាត់</translation>
@@ -3697,6 +3695,7 @@
 <translation id="5785583009707899920">ការប្រើប្រាស់​ឯកសារ Chrome</translation>
 <translation id="5787146423283493983">ការព្រមព្រៀងចំពោះសោ</translation>
 <translation id="5788367137662787332">សូមទោស យ៉ាងហោចណាស់ផ្នែកមួយនៃឧបករណ៍នេះ <ph name="DEVICE_LABEL" /> មិនអាចម៉ោនបានទេ។</translation>
+<translation id="5790085346892983794">ជោគជ័យ</translation>
 <translation id="5792728279623964091">សូមចុចប៊ូតុង​ថាមពលរបស់អ្នក</translation>
 <translation id="5793339252089865437">ប្រសិនបើអ្នក​ទាញយកកំណែថ្មី​តាមរយៈបណ្ដាញ​ទូរសព្ទ​ចល័ត ការទាញយកនេះអាចនឹងមាន​ការគិតប្រាក់លើការប្រើប្រាស់ទិន្នន័យលើសកំណត់។</translation>
 <translation id="5794414402486823030">បើកជាមួយកម្មវិធីមើលប្រព័ន្ធជានិច្ច</translation>
@@ -4629,6 +4628,7 @@
 <translation id="7004402701596653846">គេហទំព័រ​អាចប្រើ MIDI</translation>
 <translation id="7004499039102548441">ផ្ទាំងកន្លងទៅថ្មីៗ</translation>
 <translation id="7005496624875927304">ការអនុញ្ញាតបន្ថែម</translation>
+<translation id="7005812687360380971">ការបរាជ័យ</translation>
 <translation id="7005848115657603926">គម្លាតទំព័រគ្មានសុពលភាព ប្រើ <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">ចន្លោះគែមខាងក្រោម</translation>
 <translation id="7007648447224463482">បើក​ទាំងអស់​នៅក្នុង​វិនដូថ្មី</translation>
@@ -4768,7 +4768,6 @@
 <translation id="7191159667348037">មិនស្គាល់​ម៉ាស៊ីន​បោះពុម្ពទេ (USB)</translation>
 <translation id="7193051357671784796">កម្មវិធី​នេះ​ត្រូវបាន​បញ្ចូល​ដោយ​ស្ថាប័ន​របស់អ្នក។ សូមចាប់ផ្ដើម​កម្មវិធី​នេះឡើងវិញ ដើម្បី​បញ្ចប់​ការដំឡើង។</translation>
 <translation id="7193374945610105795">មិន​មាន​ពាក្យ​សម្ងាត់​ដែល​បាន​រក្សា​ទុក​សម្រាប់ <ph name="ORIGIN" /> ទេ</translation>
-<translation id="7194620721202917359">{NUM_APPS,plural, =1{កម្មវិធីនេះ​អាចបង្ក​​គ្រោះថ្នាក់}other{កម្មវិធី​ទាំងនេះ​អាចបង្ក​គ្រោះថ្នាក់}}</translation>
 <translation id="7196913789568937443">បម្រុងទុក​ទៅ Google ថាស។ ងាយស្រួល​ក្នុងការស្ដារ​ទិន្នន័យ​របស់អ្នក ឬ​ប្ដូរឧបករណ៍​បានគ្រប់​ពេល។ ការបម្រុងទុក​របស់អ្នក​រួមបញ្ចូល​ទាំង​ទិន្នន័យ​កម្មវិធី។ ការបម្រុងទុក​របស់អ្នក​ត្រូវបាន​បង្ហោះ​ទៅ Google និង​អ៊ីនគ្រីប​ដោយប្រើ​ពាក្យសម្ងាត់​គណនី Google របស់អ្នក។ <ph name="BEGIN_LINK1" />ស្វែងយល់​បន្ថែម<ph name="END_LINK1" /></translation>
 <translation id="7197190419934240522">ទទួល​បាន​កម្មវិធី Google ស្វែងរក​ និង Google ឆ្លាតវៃរាល់ពេលដែលអ្នករុករក</translation>
 <translation id="7197632491113152433">យើង​បានរកឃើញ​កម្មវិធី <ph name="NUMBER_OF_APPS" /> ពីគណនីរបស់អ្នក​ដែល​អាចប្រើបាននៅលើ​ឧបករណ៍នេះ។</translation>
@@ -5011,7 +5010,6 @@
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> របស់អ្នកបានចុះឈ្មោះដោយជោគជ័យសម្រាប់ការគ្រប់គ្រងសហគ្រាស។</translation>
 <translation id="7507207699631365376">មើល<ph name="BEGIN_LINK" />គោលការណ៍ឯកជនភាព<ph name="END_LINK" />របស់ក្រុមហ៊ុនផ្ដល់សេវានេះ</translation>
 <translation id="7507930499305566459">វិញ្ញាបនប័ត្រអ្នកឆ្លើយតបស្ថានភាព</translation>
-<translation id="7508054832109420082">ផ្ដល់សិទ្ធិចូលប្រើ​ទៅម៉ាស៊ីនបោះពុម្ព</translation>
 <translation id="7513029293694390567">ចូលគេហទំព័រដោយស្វ័យប្រវត្តិ ដោយប្រើព័ត៌មានសម្គាល់ខ្លួនដែលបានផ្ទុក។ ប្រសិនបើបិទ អ្នកនឹងត្រូវបានស្នើឲ្យធ្វើការបញ្ជាក់មុនពេលចូលគេហទំព័រម្តងៗ។</translation>
 <translation id="7514239104543605883">ចម្លង​ទៅ​ឧបករណ៍​របស់អ្នក</translation>
 <translation id="7514365320538308">ទាញយក</translation>
@@ -5170,7 +5168,6 @@
 <translation id="7716781361494605745">URL គោលការណ៍អាជ្ញាធរវិញ្ញាបនប័ត្រ Netscape</translation>
 <translation id="7717014941119698257">កំពុងទាញយក៖ <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">ពិនិត្យមើលការអាប់ដេត</translation>
-<translation id="7719070594859855691">ផ្ដល់សិទ្ធិឱ្យចូលប្រើ​កាមេរ៉ា</translation>
 <translation id="7719367874908701697">ពង្រីកទំព័រ</translation>
 <translation id="7721179060400456005">អនុញ្ញាតឲ្យវិនដូគ្របដណ្តប់លើការបង្ហាញ</translation>
 <translation id="7722040605881499779">ត្រូវការដើម្បីដំឡើងកំណែ៖ <ph name="NECESSARY_SPACE" /></translation>

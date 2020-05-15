@@ -196,6 +196,7 @@ class CONTENT_EXPORT NavigationRequest
       FrameTreeNode* frame_tree_node,
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter,
       bool is_same_document);
 
   static NavigationRequest* From(NavigationHandle* handle);

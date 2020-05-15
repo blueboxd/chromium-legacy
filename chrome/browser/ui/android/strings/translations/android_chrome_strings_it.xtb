@@ -387,7 +387,6 @@ Soltanto tu puoi vedere cosa sta inquadrando la videocamera. Il sito non può ve
 <translation id="4250229828105606438">Screenshot</translation>
 <translation id="4256782883801055595">Licenze open source</translation>
 <translation id="4269820728363426813">Copia indirizzo link</translation>
-<translation id="4278390842282768270">Consentito</translation>
 <translation id="429312253194641664">Un sito sta riproducendo contenuti multimediali</translation>
 <translation id="4298388696830689168">Siti collegati</translation>
 <translation id="4307992518367153382">Impostazioni di base</translation>
@@ -435,7 +434,6 @@ Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> Preferiti eliminati</translation>
 <translation id="4665282149850138822">Il sito <ph name="NAME" /> è stato aggiunto alla schermata Home</translation>
 <translation id="4684427112815847243">Sincronizza tutto</translation>
-<translation id="4688610874307684559">In esecuzione in Chrome (iniziale)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e altre <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e altre <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Invia un messaggio ai tuoi dispositivi</translation>
 <translation id="4698034686595694889">Visualizza offline in <ph name="APP_NAME" /></translation>
@@ -560,10 +558,8 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5659593005791499971">Email</translation>
 <translation id="5665379678064389456">Crea evento in <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignora la richiesta di un sito per evitare l'aumento dello zoom</translation>
-<translation id="5677928146339483299">Bloccato</translation>
 <translation id="5684874026226664614">Spiacenti. Impossibile tradurre questa pagina.</translation>
 <translation id="5686790454216892815">Nome file troppo lungo</translation>
-<translation id="5690795753582697420">La fotocamera è disattivata nelle impostazioni di Android</translation>
 <translation id="5694049548840660018">Torna alla home page facilmente</translation>
 <translation id="569536719314091526">Traduci questa pagina in una lingua qualsiasi usando il pulsante Altre opzioni</translation>
 <translation id="572328651809341494">Schede recenti</translation>
@@ -619,7 +615,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="614940544461990577">Prova a:</translation>
 <translation id="6154478581116148741">Attiva il blocco schermo in Impostazioni per esportare le tue password da questo dispositivo</translation>
 <translation id="6159335304067198720">Riduzioni dei dati: <ph name="PERCENT" /></translation>
-<translation id="6177111841848151710">Bloccata per il motore di ricerca corrente</translation>
 <translation id="6192333916571137726">Scarica file</translation>
 <translation id="6201345951596836663">Link copiato</translation>
 <translation id="6210748933810148297">Non sei <ph name="EMAIL" />?</translation>
@@ -706,7 +701,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6846298663435243399">Caricamento in corso…</translation>
 <translation id="6850409657436465440">Il download è ancora in corso</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> schede chiuse</translation>
-<translation id="6864395892908308021">Questo dispositivo non può leggere la tecnologia NFC</translation>
 <translation id="6864459304226931083">Scarica immagine</translation>
 <translation id="6865313869410766144">Dati della compilazione automatica dei moduli</translation>
 <translation id="6884306546558072722">Continua a esplorare quando sei offline</translation>
@@ -721,9 +715,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6989267951144302301">Download non riuscito</translation>
 <translation id="6990079615885386641">Scarica l'app dal Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Ricevi un avviso se le password vengono esposte a causa di una violazione dei dati</translation>
-<translation id="7000754031042624318">Disattivata nelle impostazioni Android</translation>
 <translation id="7015203776128479407">La configurazione della sincronizzazione iniziale non è stata terminata. La sincronizzazione è disattivata.</translation>
-<translation id="7016516562562142042">Consentita per il motore di ricerca corrente</translation>
 <translation id="7022756207310403729">Apri nel browser</translation>
 <translation id="702463548815491781">Consigliata quando TalkBack o Switch Access sono attivi</translation>
 <translation id="7029809446516969842">Password</translation>
@@ -756,10 +748,10 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7328017930301109123">Nella modalità Lite, Chrome carica le pagine più rapidamente e utilizza fino al 60 percento di dati in meno.</translation>
 <translation id="7333031090786104871">Aggiunta del sito precedente ancora in corso</translation>
 <translation id="7340958967809483333">Opzioni per Discover</translation>
+<translation id="7352651011704765696">Si è verificato un problema</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Condividi 1 elemento selezionato}other{Condividi # elementi selezionati}}</translation>
 <translation id="7359002509206457351">Accedi ai metodi di pagamento</translation>
-<translation id="7362144854749094396">La cronologia è condivisa con Chrome. Le preferenze sono condivise con <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Tipo:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -841,7 +833,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7986741934819883144">Seleziona un contatto</translation>
 <translation id="7998918019931843664">Riapri la scheda chiusa</translation>
 <translation id="8004582292198964060">Browser</translation>
-<translation id="8007176423574883786">Disattivata per questo dispositivo</translation>
 <translation id="8013372441983637696">Cancella i tuoi dati di Chrome anche da questo dispositivo</translation>
 <translation id="8015452622527143194">Ripristina le dimensioni predefinite della pagina</translation>
 <translation id="8026334261755873520">Cancella dati di navigazione</translation>
@@ -931,6 +922,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8687353297350450808">{N_BARS,plural, =1{Intensità del segnale: # barra}other{Intensità del segnale: # barre}}</translation>
 <translation id="868929229000858085">Cerca nei contatti</translation>
 <translation id="869891660844655955">Data di scadenza</translation>
+<translation id="8712637175834984815">Fatto</translation>
 <translation id="8748850008226585750">Contenuti nascosti</translation>
 <translation id="8751914237388039244">Seleziona un'immagine</translation>
 <translation id="8758557275681689734">Visualizza tutte le schede aperte</translation>

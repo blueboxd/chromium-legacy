@@ -8,6 +8,7 @@
 
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
+#include "build/build_config.h"
 #include "components/feed/core/v2/feed_network_impl.h"
 #include "components/feed/core/v2/feed_store.h"
 #include "components/feed/core/v2/feed_stream.h"
@@ -21,7 +22,6 @@
 
 namespace feed {
 namespace {
-
 class EulaObserver : public web_resource::EulaAcceptedNotifier::Observer {
  public:
   explicit EulaObserver(FeedStream* feed_stream) : feed_stream_(feed_stream) {}
@@ -155,9 +155,13 @@ FeedService::FeedService(
       history_service, static_cast<FeedStream*>(stream_.get()));
   stream_delegate_->Initialize(static_cast<FeedStream*>(stream_.get()));
 
-  // TODO(harringtond): Call FeedStream::OnSignedIn()
-  // TODO(harringtond): Call FeedStream::OnSignedOut()
-  // TODO(harringtond): Call FeedStream::OnEnterForeground()
+// TODO(harringtond): Call FeedStream::OnSignedIn()
+// TODO(harringtond): Call FeedStream::OnSignedOut()
+#if defined(OS_ANDROID)
+  application_status_listener_ =
+      base::android::ApplicationStatusListener::New(base::BindRepeating(
+          &FeedService::OnApplicationStateChange, base::Unretained(this)));
+#endif
 }
 
 FeedService::~FeedService() = default;
@@ -169,5 +173,21 @@ FeedStreamApi* FeedService::GetStream() {
 void FeedService::ClearCachedData() {
   stream_->OnCacheDataCleared();
 }
+
+#if defined(OS_ANDROID)
+void FeedService::OnApplicationStateChange(
+    base::android::ApplicationState state) {
+  if (state == base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) {
+    // If we want to trigger an OnEnterForeground event, we'll need to be
+    // careful about the initial state of foregrounded_.
+    foregrounded_ = true;
+  }
+  if (foregrounded_ &&
+      state == base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES) {
+    foregrounded_ = false;
+    stream_->OnEnterBackground();
+  }
+}
+#endif
 
 }  // namespace feed

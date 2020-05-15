@@ -38,13 +38,14 @@
 namespace blink {
 
 // Function defined in third_party/blink/public/web/blink.h.
-void SetDomainRelaxationForbidden(bool forbidden, const WebString& scheme) {
+void SetDomainRelaxationForbiddenForTest(bool forbidden,
+                                         const WebString& scheme) {
   SchemeRegistry::SetDomainRelaxationForbiddenForURLScheme(forbidden,
                                                            String(scheme));
 }
 
 // Function defined in third_party/blink/public/web/blink.h.
-void ResetDomainRelaxation() {
+void ResetDomainRelaxationForTest() {
   SchemeRegistry::ResetDomainRelaxation();
 }
 

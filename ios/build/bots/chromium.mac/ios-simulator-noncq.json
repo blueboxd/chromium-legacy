@@ -22,6 +22,22 @@
     {
       "xcode parallelization": true,
       "include": "eg2_tests.json",
+      "device type": "iPhone 6s",
+      "os": "13.4",
+      "pool":"chromium.tests.template",
+      "host os": "Mac-10.15"
+    },
+    {
+      "xcode parallelization": true,
+      "include": "eg2_tests.json",
+      "device type": "iPhone 6s",
+      "os": "12.4",
+      "pool":"chromium.tests.template",
+      "host os": "Mac-10.15"
+    },
+    {
+      "xcode parallelization": true,
+      "include": "eg2_tests.json",
       "device type": "iPhone X",
       "os": "13.4",
       "pool":"chromium.tests.template",

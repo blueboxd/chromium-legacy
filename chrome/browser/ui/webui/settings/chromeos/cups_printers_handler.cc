@@ -37,10 +37,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/webui/settings/chromeos/server_printer_url_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/printing/ppd_line_reader.h"
@@ -361,6 +363,13 @@ void CupsPrintersHandler::RegisterMessages() {
       "queryPrintServer",
       base::BindRepeating(&CupsPrintersHandler::HandleQueryPrintServer,
                           base::Unretained(this)));
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kPrintJobManagementApp)) {
+    web_ui()->RegisterMessageCallback(
+        "openPrintManagementApp",
+        base::BindRepeating(&CupsPrintersHandler::HandleOpenPrintManagementApp,
+                            base::Unretained(this)));
+  }
 }
 
 void CupsPrintersHandler::OnJavascriptAllowed() {
@@ -1312,6 +1321,14 @@ void CupsPrintersHandler::OnQueryPrintServerCompleted(
   // Create result value and finish the callback.
   base::Value result_dict = BuildCupsPrintersList(printers);
   ResolveJavascriptCallback(base::Value(callback_id), result_dict);
+}
+
+void CupsPrintersHandler::HandleOpenPrintManagementApp(
+    const base::ListValue* args) {
+  DCHECK(args->empty());
+  DCHECK(
+      base::FeatureList::IsEnabled(chromeos::features::kPrintJobManagementApp));
+  chrome::ShowPrintManagementApp(profile_);
 }
 
 }  // namespace settings

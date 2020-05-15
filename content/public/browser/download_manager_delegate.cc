@@ -21,12 +21,14 @@ bool DownloadManagerDelegate::DetermineDownloadTarget(
   return false;
 }
 
-bool DownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
+bool DownloadManagerDelegate::ShouldAutomaticallyOpenFile(
+    const GURL& url,
     const base::FilePath& path) {
   return false;
 }
 
-bool DownloadManagerDelegate::ShouldOpenFileByPolicyBasedOnExtension(
+bool DownloadManagerDelegate::ShouldAutomaticallyOpenFileByPolicy(
+    const GURL& url,
     const base::FilePath& path) {
   return false;
 }

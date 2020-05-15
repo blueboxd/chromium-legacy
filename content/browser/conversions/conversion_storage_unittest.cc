@@ -44,52 +44,15 @@ base::RepeatingCallback<bool(const url::Origin&)> GetMatcher(
 
 }  // namespace
 
-// Mock delegate which provides default behavior and delays reports by a fixed
-// time from impression.
-class MockStorageDelegate : public ConversionStorage::Delegate {
- public:
-  MockStorageDelegate() = default;
-  ~MockStorageDelegate() override = default;
-
-  // ConversionStorage::Delegate
-  void ProcessNewConversionReports(
-      std::vector<ConversionReport>* reports) override {
-    // Note: reports are ordered by impression time, descending.
-    for (auto& report : *reports) {
-      report.report_time = report.impression.impression_time() +
-                           base::TimeDelta::FromMilliseconds(kReportTime);
-
-      // If attribution credits were provided, associate them with reports
-      // in order.
-      if (!attribution_credits_.empty()) {
-        report.attribution_credit = attribution_credits_.front();
-        attribution_credits_.pop_front();
-      }
-    }
-  }
-
-  int GetMaxConversionsPerImpression() const override {
-    return kMaxConversions;
-  }
-
-  void AddCredits(AttributionCredits credits) {
-    // Add all credits to our list in order.
-    attribution_credits_.splice(attribution_credits_.end(), credits);
-  }
-
- private:
-  // List of attribution credits the mock delegate should associate with
-  // reports.
-  AttributionCredits attribution_credits_;
-};
-
 // Unit test suite for the ConversionStorage interface. All ConversionStorage
 // implementations (including fakes) should be able to re-use this test suite.
 class ConversionStorageTest : public testing::Test {
  public:
   ConversionStorageTest() {
     EXPECT_TRUE(dir_.CreateUniqueTempDir());
-    auto delegate = std::make_unique<MockStorageDelegate>();
+    auto delegate = std::make_unique<ConfigurableStorageDelegate>();
+    delegate->set_report_time_ms(kReportTime);
+    delegate->set_max_conversions_per_impression(kMaxConversions);
     delegate_ = delegate.get();
     storage_ = std::make_unique<ConversionStorageSql>(
         dir_.GetPath(), std::move(delegate), &clock_);
@@ -123,8 +86,10 @@ class ConversionStorageTest : public testing::Test {
 
   ConversionStorage* storage() { return storage_.get(); }
 
+  ConfigurableStorageDelegate* delegate() { return delegate_; }
+
  private:
-  MockStorageDelegate* delegate_;
+  ConfigurableStorageDelegate* delegate_;
   base::SimpleTestClock clock_;
   base::ScopedTempDir dir_;
   std::unique_ptr<ConversionStorage> storage_;
@@ -578,6 +543,26 @@ TEST_F(ConversionStorageTest,
   std::vector<ConversionReport> actual_reports =
       storage()->GetConversionsToReport(clock()->Now());
   EXPECT_TRUE(ReportsEqual(expected_reports, actual_reports));
+}
+
+TEST_F(ConversionStorageTest, MaxImpressionsPerOrigin) {
+  delegate()->set_max_impressions_per_origin(2);
+  storage()->StoreImpression(ImpressionBuilder(clock()->Now()).Build());
+  storage()->StoreImpression(ImpressionBuilder(clock()->Now()).Build());
+  storage()->StoreImpression(ImpressionBuilder(clock()->Now()).Build());
+  EXPECT_EQ(
+      2, storage()->MaybeCreateAndStoreConversionReports(DefaultConversion()));
+}
+
+TEST_F(ConversionStorageTest, MaxConversionsPerOrigin) {
+  delegate()->set_max_conversions_per_origin(2);
+  storage()->StoreImpression(ImpressionBuilder(clock()->Now()).Build());
+  EXPECT_EQ(
+      1, storage()->MaybeCreateAndStoreConversionReports(DefaultConversion()));
+  EXPECT_EQ(
+      1, storage()->MaybeCreateAndStoreConversionReports(DefaultConversion()));
+  EXPECT_EQ(
+      0, storage()->MaybeCreateAndStoreConversionReports(DefaultConversion()));
 }
 
 TEST_F(ConversionStorageTest, ClearDataWithNoMatch_NoDelete) {

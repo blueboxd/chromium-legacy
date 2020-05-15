@@ -4,9 +4,10 @@
 
 #include "components/handoff/handoff_manager.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/objc_release_properties.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/notreached.h"
 #include "net/base/mac/url_conversions.h"
 
 #if defined(OS_IOS)

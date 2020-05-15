@@ -41,8 +41,8 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Java application that takes in an input jar, performs a series of bytecode transformations,
- * and generates an output jar.
+ * Java application that takes in an input jar, performs a series of bytecode
+ * transformations, and generates an output jar.
  */
 class ByteCodeProcessor {
     private static final String CLASS_FILE_SUFFIX = ".class";
@@ -55,6 +55,7 @@ class ByteCodeProcessor {
     private static ClassLoader sDirectClassPathClassLoader;
     private static ClassLoader sFullClassPathClassLoader;
     private static Set<String> sFullClassPathJarPaths;
+    private static Set<String> sMissingClassesAllowlist;
     private static ClassPathValidator sValidator;
 
     private static class EntryDataPair {
@@ -86,10 +87,10 @@ class ByteCodeProcessor {
         }
 
         ClassReader reader = new ClassReader(data);
-
         if (sShouldCheckClassPath) {
             sValidator.validateClassPathsAndOutput(reader, sDirectClassPathClassLoader,
-                    sFullClassPathClassLoader, sFullClassPathJarPaths, sIsPrebuilt, sVerbose);
+                    sFullClassPathClassLoader, sFullClassPathJarPaths, sIsPrebuilt, sVerbose,
+                    sMissingClassesAllowlist);
         }
 
         ClassWriter writer = new ClassWriter(reader, 0);
@@ -220,6 +221,16 @@ class ByteCodeProcessor {
         return new URLClassLoader(jarUrls);
     }
 
+    /**
+     * Extracts a length-encoded list of strings from the arguments, and adds them to |out|. Returns
+     * the new "next index" to be processed.
+     */
+    private static int parseListArgument(String[] args, int index, Collection<String> out) {
+        int argLength = Integer.parseInt(args[index++]);
+        out.addAll(Arrays.asList(Arrays.copyOfRange(args, index, index + argLength)));
+        return index + argLength;
+    }
+
     public static void main(String[] args) throws ClassPathValidator.ClassNotLoadedException,
                                                   ExecutionException, InterruptedException {
         // Invoke this script using //build/android/gyp/bytecode_processor.py
@@ -230,21 +241,21 @@ class ByteCodeProcessor {
         sIsPrebuilt = args[currIndex++].equals("--is-prebuilt");
         sShouldUseThreadAnnotations = args[currIndex++].equals("--enable-thread-annotations");
         sShouldCheckClassPath = args[currIndex++].equals("--enable-check-class-path");
-        int sdkJarsLength = Integer.parseInt(args[currIndex++]);
-        List<String> sdkJarPaths =
-                Arrays.asList(Arrays.copyOfRange(args, currIndex, currIndex + sdkJarsLength));
-        currIndex += sdkJarsLength;
 
-        int directJarsLength = Integer.parseInt(args[currIndex++]);
+        sMissingClassesAllowlist = new HashSet<>();
+        currIndex = parseListArgument(args, currIndex, sMissingClassesAllowlist);
+
+        ArrayList<String> sdkJarPaths = new ArrayList<>();
+        currIndex = parseListArgument(args, currIndex, sdkJarPaths);
+
         ArrayList<String> directClassPathJarPaths = new ArrayList<>();
         directClassPathJarPaths.add(inputJarPath);
         directClassPathJarPaths.addAll(sdkJarPaths);
-        directClassPathJarPaths.addAll(
-                Arrays.asList(Arrays.copyOfRange(args, currIndex, currIndex + directJarsLength)));
-        currIndex += directJarsLength;
+        currIndex = parseListArgument(args, currIndex, directClassPathJarPaths);
         sDirectClassPathClassLoader = loadJars(directClassPathJarPaths);
 
-        // Load all jars that are on the classpath for the input jar for analyzing class hierarchy.
+        // Load all jars that are on the classpath for the input jar for analyzing class
+        // hierarchy.
         sFullClassPathJarPaths = new HashSet<>();
         sFullClassPathJarPaths.clear();
         sFullClassPathJarPaths.add(inputJarPath);

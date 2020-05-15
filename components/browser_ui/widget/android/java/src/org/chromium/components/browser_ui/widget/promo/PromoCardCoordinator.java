@@ -10,8 +10,11 @@ import android.view.View;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.LayoutRes;
+import androidx.annotation.Nullable;
 
 import org.chromium.components.browser_ui.widget.R;
+import org.chromium.components.browser_ui.widget.impression.ImpressionTracker;
+import org.chromium.components.browser_ui.widget.impression.OneShotImpressionListener;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -32,9 +35,13 @@ public class PromoCardCoordinator {
         int SLIM = 2;
     }
 
+    private static final double IMPRESSION_THRESHOLD_RATIO = 0.75;
+
     private PromoCardView mPromoCardView;
     private PropertyModelChangeProcessor mModelChangeProcessor;
     private String mFeatureName;
+
+    private @Nullable ImpressionTracker mImpressionTracker;
 
     /**
      * Create the Coordinator of PromoCard that owns the view and the change process. Default to
@@ -63,13 +70,27 @@ public class PromoCardCoordinator {
         mModelChangeProcessor = PropertyModelChangeProcessor.create(
                 model, mPromoCardView, new PromoCardViewBinder());
         mFeatureName = featureName;
+
+        // Manage impression related properties.
+        Runnable impressionCallback = model.get(PromoCardProperties.IMPRESSION_SEEN_CALLBACK);
+        if (impressionCallback != null) {
+            boolean isImpressionOnPrimaryButton =
+                    model.get(PromoCardProperties.IS_IMPRESSION_ON_PRIMARY_BUTTON);
+            mImpressionTracker = new ImpressionTracker(
+                    isImpressionOnPrimaryButton ? mPromoCardView.mPrimaryButton : mPromoCardView);
+            // TODO(wenyufu): Maybe make the ratio configurable?
+            mImpressionTracker.setImpressionThresholdRatio(IMPRESSION_THRESHOLD_RATIO);
+            mImpressionTracker.setListener(new OneShotImpressionListener(impressionCallback::run));
+        }
     }
 
     /**
-     * Destroy the PromoCard component and release the PropertyModelChangeProcessor.
+     * Destroy the PromoCard component and release dependencies.
      */
     public void destroy() {
         mModelChangeProcessor.destroy();
+        if (mImpressionTracker != null) mImpressionTracker.setListener(null);
+        mImpressionTracker = null;
     }
 
     /**
@@ -77,15 +98,6 @@ public class PromoCardCoordinator {
      */
     public View getView() {
         return mPromoCardView;
-    }
-
-    /**
-     * @return The key view that will be tracking with impression tracker. Currently this returns
-     *         the primary button in the promo view.
-     * TODO(wenyufu): Remove me when ImpressionTracker is moved to //component!
-     */
-    public View getKeyViewForImpressionTracking() {
-        return mPromoCardView.mPrimaryButton;
     }
 
     /**

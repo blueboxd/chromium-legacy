@@ -78,6 +78,11 @@ class NET_EXPORT SSLClientSessionCache {
   // checked for stale entries.
   void Insert(const Key& cache_key, bssl::UniquePtr<SSL_SESSION> session);
 
+  // Clears early data support for all current sessions associated with
+  // |cache_key|. This may be used after a 0-RTT reject to avoid unnecessarily
+  // offering 0-RTT data on retries. See https://crbug.com/1066623.
+  void ClearEarlyData(const Key& cache_key);
+
   // Removes all entries associated with |server|.
   void FlushForServer(const HostPortPair& server);
 

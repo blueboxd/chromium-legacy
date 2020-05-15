@@ -149,12 +149,11 @@ RelaunchRecommendedBubbleView::RelaunchRecommendedBubbleView(
           detection_time,
           base::BindRepeating(&RelaunchRecommendedBubbleView::UpdateWindowTitle,
                               base::Unretained(this))) {
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(IDS_RELAUNCH_ACCEPT_BUTTON));
+  SetButtons(ui::DIALOG_BUTTON_OK);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(IDS_RELAUNCH_ACCEPT_BUTTON));
 
-  DialogDelegate::SetCloseCallback(
+  SetCloseCallback(
       base::BindOnce(&base::RecordAction,
                      base::UserMetricsAction("RelaunchRecommended_Close")));
 

@@ -9,8 +9,10 @@
 
 #include "base/metrics/ukm_source_id.h"
 #include "services/metrics/public/cpp/ukm_entry_builder_base.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-forward.h"
 
 namespace blink {
 
@@ -97,16 +99,30 @@ class BLINK_COMMON_EXPORT IdentifiabilityMetricBuilder
   // Construct a metrics builder for the given |source_id|. The source must be
   // known to UKM.
   explicit IdentifiabilityMetricBuilder(base::UkmSourceId source_id);
+
+  // This has the same effect as the previous constructor but takes the
+  // deprecated ukm::SourceId for convenience. Doing so allows callsites to use
+  // methods like Document::GetUkmSourceId() without an extra conversion. In
+  // addition, when Document::GetUkmSourceId() migrates to returning a
+  // base::UkmSourceId, callsites won't need to change.
+  explicit IdentifiabilityMetricBuilder(ukm::SourceId source_id)
+      : IdentifiabilityMetricBuilder(base::UkmSourceId::FromInt64(source_id)) {}
+
   ~IdentifiabilityMetricBuilder() override;
 
   // Set the metric using a previously constructed |IdentifiableSurface|.
   IdentifiabilityMetricBuilder& Set(IdentifiableSurface surface,
                                     int64_t result);
 
-  // Set the metric using a surface type, input and result.
-  IdentifiabilityMetricBuilder& Set(IdentifiableSurface::Type surface_type,
-                                    int64_t input,
-                                    int64_t result);
+  // Convenience method for recording the result of invoking a simple API
+  // surface with a UseCounter.
+  IdentifiabilityMetricBuilder& SetWebfeature(mojom::WebFeature feature,
+                                              int64_t result) {
+    return Set(IdentifiableSurface::FromTypeAndInput(
+                   IdentifiableSurface::Type::kWebFeature,
+                   static_cast<uint64_t>(feature)),
+               result);
+  }
 
   // Shadow the underlying Record() implementation until the upstream pipeline
   // is ready for identifiability metrics.

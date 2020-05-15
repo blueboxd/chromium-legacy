@@ -19,6 +19,7 @@
 <translation id="1587223624401073077">Google Chrome आपके कैमरे का उपयोग कर रहा है.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> खरतरनाक है, इसलिए Chrome ने उसे अवरोधित कर दिया है.</translation>
 <translation id="1619887657840448962">Chrome को ज़्यादा सुरक्षित बनाने के लिए, हमने निम्न एक्सटेंशन को अक्षम कर दिया है जो <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> में सूचीबद्ध नहीं है और आपकी जानकारी के बिना जोड़ा गया हो सकता है.</translation>
+<translation id="162629503687514352">Chrome OS आपके पासवर्ड सिंक नहीं कर सका.</translation>
 <translation id="1628000112320670027">Chrome में सहायता पाएं</translation>
 <translation id="1662639173275167396">Chrome OS को <ph name="BEGIN_LINK_LINUX_OSS" />Linux (बीटा)<ph name="END_LINK_LINUX_OSS" /> की तरह ही, अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS" />ओपन सोर्स सॉफ़्टवेयर<ph name="END_LINK_CROS_OSS" /> के ज़रिए कारगर बनाया गया है.</translation>
 <translation id="1666409074978194368">करीब-करीब अपडेट हो गया है! अपडेट करना खत्म करने के लिए Google Chrome को फिर से लॉन्च करें. गुप्त विंडो फिर से नहीं खुलेंगी.</translation>
@@ -75,6 +76,7 @@
 <translation id="3065168410429928842">Chrome टैब</translation>
 <translation id="3080151273017101988">Google Chrome के बंद होने पर पृष्ठभूमि ऐप्स  चलाना जारी रखें</translation>
 <translation id="3089968997497233615">Google Chrome का एक नया, सुरक्षित वर्शन उपलब्‍ध है.</translation>
+<translation id="3127818369811890733">Chrome OS आपका डेटा सिंक नहीं कर सका.</translation>
 <translation id="3149510190863420837">Chrome ऐप्स</translation>
 <translation id="3360895254066713204">Chrome सहायक</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome अभी फिर से लॉन्च होगा}=1{Chrome 1 सेकंड में फिर से लॉन्च होगा}one{Chrome # सेकंड में फिर से लॉन्च होगा}other{Chrome # सेकंड में फिर से लॉन्च होगा}}</translation>

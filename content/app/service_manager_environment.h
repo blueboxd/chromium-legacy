@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/threading/thread.h"
 #include "content/common/content_export.h"
 
 namespace mojo {
@@ -27,22 +28,23 @@ struct StartupDataImpl;
 class CONTENT_EXPORT ServiceManagerEnvironment {
  public:
   explicit ServiceManagerEnvironment(
-      std::unique_ptr<BrowserProcessSubThread> ipc_thread);
+      std::unique_ptr<BrowserProcessSubThread> io_thread);
   ~ServiceManagerEnvironment();
 
-  BrowserProcessSubThread* ipc_thread() { return ipc_thread_.get(); }
+  BrowserProcessSubThread* io_thread() { return io_thread_.get(); }
 
   // Returns a new StartupDataImpl which captures and/or reflects the partial
   // state of this ServiceManagerEnvironment. This must be called and the
   // result passed to BrowserMain if the browser is going to be started within
   // Service Manager's process.
   //
-  // After this call, the ServiceManagerEnvironment no longer owns the IPC
-  // thread and |ipc_thread()| returns null.
+  // After this call, the ServiceManagerEnvironment no longer owns the IO
+  // thread and |io_thread()| returns null.
   std::unique_ptr<StartupDataImpl> CreateBrowserStartupData();
 
  private:
-  std::unique_ptr<BrowserProcessSubThread> ipc_thread_;
+  std::unique_ptr<BrowserProcessSubThread> io_thread_;
+  base::Thread mojo_ipc_thread_{"Mojo IPC"};
   std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support_;
   std::unique_ptr<ServiceManagerContext> service_manager_context_;
 

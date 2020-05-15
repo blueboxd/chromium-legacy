@@ -267,12 +267,12 @@ ParentPermissionDialogView::ParentPermissionDialogView(
     std::unique_ptr<Params> params,
     ParentPermissionDialogView::Observer* observer)
     : params_(std::move(params)), observer_(observer) {
-  DialogDelegate::SetDefaultButton(ui::DIALOG_BUTTON_OK);
-  DialogDelegate::set_draggable(true);
-  DialogDelegate::SetButtonLabel(
+  SetDefaultButton(ui::DIALOG_BUTTON_OK);
+  set_draggable(true);
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_PARENT_PERMISSION_PROMPT_APPROVE_BUTTON));
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_PARENT_PERMISSION_PROMPT_CANCEL_BUTTON));
 

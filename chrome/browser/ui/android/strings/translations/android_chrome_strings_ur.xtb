@@ -386,7 +386,6 @@
 <translation id="4250229828105606438">اسکرین شاٹ</translation>
 <translation id="4256782883801055595">اوپن سورس لائسنسز</translation>
 <translation id="4269820728363426813">لنک کا پتہ کاپی کریں</translation>
-<translation id="4278390842282768270">اجازت یافتہ</translation>
 <translation id="429312253194641664">سائٹ پر میڈیا چل رہا ہے</translation>
 <translation id="4298388696830689168">لنک کردہ سائٹس</translation>
 <translation id="4307992518367153382">بنیادی باتیں</translation>
@@ -434,7 +433,6 @@
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> بُک مارکس حذف کر دیے گئے</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> کو آپ کی ہوم اسکرین میں شامل کر دیا گیا تھا</translation>
 <translation id="4684427112815847243">ہر چیز کی مطابقت پذیری کریں</translation>
-<translation id="4688610874307684559">‏Chrome میں چل رہی ہے (ابتدائی)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 اور <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> مزید}other{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 اور <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> مزید}}</translation>
 <translation id="4696983787092045100">اپنے آلات پر متن بھیجیں</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" /> میں آف لائن دیکھیں</translation>
@@ -559,10 +557,8 @@
 <translation id="5659593005791499971">ای میل</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> میں ایونٹ بنائیں</translation>
 <translation id="5668404140385795438">زوم ان کرنے سے بچنے کیلئے کسی ویب سائٹ کی درخواست کو اوور رائیڈ کریں</translation>
-<translation id="5677928146339483299">مسدود کردہ</translation>
 <translation id="5684874026226664614">افوہ۔ اس صفحہ کا ترجمہ نہیں کیا جا سکا۔</translation>
 <translation id="5686790454216892815">فائل کا نام کافی بڑا ہے</translation>
-<translation id="5690795753582697420">‏Android کی ترتیبات میں کیمرا آف ہے</translation>
 <translation id="5694049548840660018">آسانی سے ہوم پر واپس جائيں</translation>
 <translation id="569536719314091526">مزید اختیارات کے بٹن سے کسی بھی زبان میں اس صفحہ کا ترجمہ کریں</translation>
 <translation id="572328651809341494">حالیہ ٹیبز</translation>
@@ -618,7 +614,6 @@
 <translation id="614940544461990577">آزمائیں:</translation>
 <translation id="6154478581116148741">اس آلہ سے اپنے پاس ورڈز برآمد کرنے کے لئے ترتیبات میں اسکرین لاک آن کریں</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ڈیٹا کی سیونگز</translation>
-<translation id="6177111841848151710">موجودہ سرچ انجن کیلئے مسدود</translation>
 <translation id="6192333916571137726">فائل ڈاؤن لوڈ کریں</translation>
 <translation id="6201345951596836663">لنک کاپی ہو گیا</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> نہیں؟</translation>
@@ -705,7 +700,6 @@
 <translation id="6846298663435243399">لوڈ ہو رہا ہے…</translation>
 <translation id="6850409657436465440">آپ کا ڈاؤن لوڈ ابھی بھی پیشرفت میں ہے</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> ٹیبز بند کر دیے گئے</translation>
-<translation id="6864395892908308021">‏یہ آلہ NFC کو نہیں پڑھ سکتا</translation>
 <translation id="6864459304226931083">تصویر ڈاؤن لوڈ کریں</translation>
 <translation id="6865313869410766144">آٹو فل فارم ڈیٹا</translation>
 <translation id="6884306546558072722">آف لائن دریافت کرتے رہیں</translation>
@@ -720,9 +714,7 @@
 <translation id="6989267951144302301">ڈاؤن لوڈ نہیں کیا جا سکا</translation>
 <translation id="6990079615885386641">‏Google Play اسٹور سے ایپ حاصل کریں: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">اگر پاس ورڈز ڈیٹا کی خلاف ورزی میں افشاء ہوتے ہیں تو وارننگ حاصل کریں</translation>
-<translation id="7000754031042624318">‏Android ترتیبات میں آف کر دیا گیا</translation>
 <translation id="7015203776128479407">مطابقت پذیری کا ابتدائی سیٹ اپ مکمل نہیں ہوا۔ مطابقت پذیری آف ہے۔</translation>
-<translation id="7016516562562142042">موجودہ سرچ انجن کیلئے اجازت یافتہ</translation>
 <translation id="7022756207310403729">براؤزر میں کھولیں</translation>
 <translation id="702463548815491781">‏TalkBack یا سوئچ رسائی آن ہونے پر تجویز کردہ</translation>
 <translation id="7029809446516969842">پاس ورڈز</translation>
@@ -755,10 +747,10 @@
 <translation id="7328017930301109123">‏لائٹ موڈ میں، Chrome صفحات کو زیادہ تیزی سے لوڈ کرتا ہے اور60 فیصد تک کم ڈیٹا استعمال کرتا ہے۔</translation>
 <translation id="7333031090786104871">ابھی بھی سابقہ سائٹ شامل کی جا رہی ہے</translation>
 <translation id="7340958967809483333">‏Discover کے لیے اختیارات</translation>
+<translation id="7352651011704765696">کچھ غلط ہو گیا</translation>
 <translation id="7352939065658542140">ویڈیو</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 منتخب کردہ آئٹم کا اشتراک کریں}other{# منتخب کردہ آئٹمز کا اشتراک کریں}}</translation>
 <translation id="7359002509206457351">ادائیگی کے طریقوں تک رسائی حاصل کریں</translation>
-<translation id="7362144854749094396">‏سرگزشت Chrome کے ساتھ اشتراک کردہ ہے۔ ترجیحات <ph name="SITE_NAME" /> کے ساتھ اشتراک کردہ ہیں۔</translation>
 <translation id="7375125077091615385">قسم:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />۔</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -840,7 +832,6 @@
 <translation id="7986741934819883144">رابطہ منتخب کریں</translation>
 <translation id="7998918019931843664">بند ٹیب دوبارہ کھولیں</translation>
 <translation id="8004582292198964060">براؤزر</translation>
-<translation id="8007176423574883786">اس آلے کیلئے آف کر دیا گیا</translation>
 <translation id="8013372441983637696">‏اس آلہ سے اپنا Chrome ڈیٹا بھی صاف کریں</translation>
 <translation id="8015452622527143194">صفحہ پر موجود ہر چیز کو واپس ڈیفالٹ سائز پر کریں</translation>
 <translation id="8026334261755873520">براؤزنگ ڈیٹا صاف کریں</translation>
@@ -930,6 +921,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{سگنل کی مضبوطی کی سطح: # بار}other{سگنل کی مضبوطی کی سطح: # بارز}}</translation>
 <translation id="868929229000858085">اپنے رابطوں کو تلاش کریں</translation>
 <translation id="869891660844655955">میعاد ختم ہونے کی تاریخ</translation>
+<translation id="8712637175834984815">سمجھ آ گئی</translation>
 <translation id="8748850008226585750">مواد مخفی ہیں</translation>
 <translation id="8751914237388039244">ایک تصویر منتخب کریں</translation>
 <translation id="8758557275681689734">اپنے سبھی کھلے ہوئے ٹیبز دیکھیں</translation>

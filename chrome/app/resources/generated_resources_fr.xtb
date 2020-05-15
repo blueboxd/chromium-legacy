@@ -523,7 +523,6 @@
 <translation id="1650371550981945235">Afficher les options de saisie</translation>
 <translation id="1651008383952180276">Vous devez saisir deux fois la même phrase secrète</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Ajoutez l'imprimante à Google Cloud Print pour imprimer des documents où que vous soyez.}one{Ajoutez # imprimante à Google Cloud Print pour imprimer des documents où que vous soyez.}other{Ajoutez # imprimantes à Google Cloud Print pour imprimer des documents où que vous soyez.}}</translation>
-<translation id="1655937588105566159">{NUM_EXTENSIONS,plural, =1{Cette extension peut être dangereuse}one{These extensions may be dangerous}other{Ces extensions peuvent être dangereuses}}</translation>
 <translation id="1656528038316521561">Opacité de l'arrière-plan</translation>
 <translation id="1657406563541664238">Nous aider à améliorer <ph name="PRODUCT_NAME" /> en envoyant automatiquement les statistiques d'utilisation et les rapports d'erreur à Google</translation>
 <translation id="1657937299377480641">Pour te reconnecter afin d'accéder à des ressources pédagogiques, demande à un de tes parents de t'accorder l'autorisation</translation>
@@ -713,7 +712,6 @@
 <translation id="1875387611427697908">Cet élément doit être installé depuis le <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Échec de l'obtention du jeton d'authentification. Veuillez vous déconnecter, puis vous reconnecter, ou bien réessayez.</translation>
 <translation id="1877860345998737529">Attribuer des actions à des commutateurs</translation>
-<translation id="1878541307036593717">Configurer les autorisations</translation>
 <translation id="1879000426787380528">Se connecter à l'aide du compte</translation>
 <translation id="1880905663253319515">Supprimer le certificat "<ph name="CERTIFICATE_NAME" />" ?</translation>
 <translation id="1884013283844450420">Réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, connexion</translation>
@@ -2632,6 +2630,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4359408040881008151">Installée, car une ou plusieurs extensions dépendent de celle-ci.</translation>
 <translation id="4359717112757026264">Paysage urbain</translation>
 <translation id="4361142739114356624">La clé privée de ce certificat client est manquante ou incorrecte</translation>
+<translation id="4361745360460842907">Ouvrir dans un onglet</translation>
 <translation id="4363771538994847871">Aucune destination Cast trouvée. Besoin d'aide?</translation>
 <translation id="4364327530094270451">Melon</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> partage une fenêtre.</translation>
@@ -3093,7 +3092,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4994474651455208930">Permettre aux sites de demander l'autorisation de devenir gestionnaires par défaut des protocoles</translation>
 <translation id="4994754230098574403">Configuration</translation>
 <translation id="4997086284911172121">Aucune connexion Internet.</translation>
-<translation id="4997384734315285248">Désinstaller Plugin VM</translation>
 <translation id="4998430619171209993">Activé</translation>
 <translation id="5000922062037820727">Bloqué (recommandé)</translation>
 <translation id="5005498671520578047">Copier mot de passe</translation>
@@ -3697,6 +3695,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5785583009707899920">Utilitaires de fichiers Chrome</translation>
 <translation id="5787146423283493983">Accord de la clé</translation>
 <translation id="5788367137662787332">Désolé, impossible d'installer au moins une partition du périphérique <ph name="DEVICE_LABEL" />.</translation>
+<translation id="5790085346892983794">Succès</translation>
 <translation id="5792728279623964091">Veuillez appuyer sur le bouton Marche/Arrêt</translation>
 <translation id="5793339252089865437">Si vous téléchargez la mise à jour via votre réseau mobile, cela peut entraîner des frais de dépassement.</translation>
 <translation id="5794414402486823030">Toujours ouvrir avec le lecteur système</translation>
@@ -4384,7 +4383,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6697690052557311665">Pour partager un dossier, faites un clic droit sur le dossier concerné dans l'application Fichiers, puis sélectionnez "Partager avec Linux".</translation>
 <translation id="6698810901424468597">Accéder aux données des sites <ph name="WEBSITE_1" /> et <ph name="WEBSITE_2" />, et les modifier</translation>
 <translation id="6699883973579689168">Vous pouvez désormais gérer tous vos comptes Google au même endroit. L'accès et les autorisations que vous avez accordés aux applications, aux sites Web et aux extensions dans Chrome et Google Play peuvent désormais s'appliquer à tous les comptes auxquels vous êtes connecté. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
-<translation id="6700093763382332031">Verrouillage mobile de la carte SIM</translation>
+<translation id="6700093763382332031">Verrouillage de la carte SIM sur mobile</translation>
 <translation id="6700480081846086223">Caster <ph name="HOST_NAME" /></translation>
 <translation id="6701535245008341853">Impossible de charger le profil.</translation>
 <translation id="6702639462873609204">&amp;Modifier...</translation>
@@ -4629,6 +4628,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7004402701596653846">Le site peut utiliser un appareil MIDI</translation>
 <translation id="7004499039102548441">Onglets récents</translation>
 <translation id="7005496624875927304">Autorisations supplémentaires</translation>
+<translation id="7005812687360380971">Échec</translation>
 <translation id="7005848115657603926">Plage de pages non valide, veuillez utiliser <ph name="EXAMPLE_PAGE_RANGE" />.</translation>
 <translation id="7006634003215061422">Marge inférieure</translation>
 <translation id="7007648447224463482">Tout ouvrir dans une nouvelle fenêtre</translation>
@@ -4768,7 +4768,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7191159667348037">Imprimante inconnue (USB)</translation>
 <translation id="7193051357671784796">Cette application a été ajoutée par votre organisation. Redémarrez-la pour terminer l'installation.</translation>
 <translation id="7193374945610105795">Aucun mot de passe enregistré pour <ph name="ORIGIN" /></translation>
-<translation id="7194620721202917359">{NUM_APPS,plural, =1{Cette application peut être dangereuse}one{These apps may be dangerous}other{Ces applications peuvent être dangereuses}}</translation>
 <translation id="7196913789568937443">Sauvegarder dans Google Drive. Restaurez vos données ou changez d'appareil facilement et à tout moment. La sauvegarde inclut les données d'applications. Vos sauvegardes sont importées dans Google et chiffrées à l'aide du mot de passe de votre compte Google. <ph name="BEGIN_LINK1" />En savoir plus<ph name="END_LINK1" /></translation>
 <translation id="7197190419934240522">Naviguez sur le Web en bénéficiant des fonctionnalités intelligentes de Google et de la recherche Google</translation>
 <translation id="7197632491113152433">Vous avez la possibilité d'utiliser <ph name="NUMBER_OF_APPS" /> application(s) de votre compte sur cet appareil.</translation>
@@ -5011,7 +5010,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7506541170099744506">Votre <ph name="DEVICE_TYPE" /> a bien été enregistré pour bénéficier de la gestion d'entreprise.</translation>
 <translation id="7507207699631365376">Afficher les <ph name="BEGIN_LINK" />Règles de confidentialité<ph name="END_LINK" /> de ce fournisseur</translation>
 <translation id="7507930499305566459">Certificat du répondeur d'état</translation>
-<translation id="7508054832109420082">Autoriser l'accès aux imprimantes</translation>
 <translation id="7513029293694390567">Permet de se connecter automatiquement aux sites Web à l'aide des identifiants enregistrés. Si cette fonctionnalité est désactivée, vous êtes invité à confirmer chaque connexion à un site Web.</translation>
 <translation id="7514239104543605883">Copier sur votre appareil</translation>
 <translation id="7514365320538308">Télécharger</translation>
@@ -5170,7 +5168,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7716781361494605745">URL de stratégie de l'autorité de certification Netscape</translation>
 <translation id="7717014941119698257">Téléchargement : <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">Rechercher des mises à jour</translation>
-<translation id="7719070594859855691">Autoriser l'accès à l'appareil photo</translation>
 <translation id="7719367874908701697">Zoom de la page</translation>
 <translation id="7721179060400456005">Autoriser les fenêtres à occuper plusieurs écrans</translation>
 <translation id="7722040605881499779">Espace nécessaire pour la mise à jour : <ph name="NECESSARY_SPACE" /></translation>

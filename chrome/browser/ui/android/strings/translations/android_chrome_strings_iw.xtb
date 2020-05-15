@@ -387,7 +387,6 @@
 <translation id="4250229828105606438">צילום מסך</translation>
 <translation id="4256782883801055595">רישיונות קוד פתוח</translation>
 <translation id="4269820728363426813">העתקת כתובת של קישור</translation>
-<translation id="4278390842282768270">מותר</translation>
 <translation id="429312253194641664">אתר מסוים מפעיל מדיה</translation>
 <translation id="4298388696830689168">אתרים מקושרים</translation>
 <translation id="4307992518367153382">היסודות</translation>
@@ -435,7 +434,6 @@
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> סימניות נמחקו</translation>
 <translation id="4665282149850138822">האתר <ph name="NAME" /> נוסף למסך דף הבית שלך</translation>
 <translation id="4684427112815847243">סנכרון הכל</translation>
-<translation id="4688610874307684559">‏פועלת ב-Chrome (הודעה התחלתית)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{‏<ph name="SHIPPING_OPTION_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> נוספת}two{‏<ph name="SHIPPING_OPTION_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> נוספות}many{‏<ph name="SHIPPING_OPTION_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> נוספות}other{‏<ph name="SHIPPING_OPTION_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> נוספות}}</translation>
 <translation id="4696983787092045100">שליחת הטקסט למכשירים שלך</translation>
 <translation id="4698034686595694889">הצגה לא מקוונת ב-<ph name="APP_NAME" /></translation>
@@ -560,10 +558,8 @@
 <translation id="5659593005791499971">אימייל</translation>
 <translation id="5665379678064389456">צור אירוע ב-<ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">להתעלם מבקשה של אתר שנועדה למנוע את שינוי הזום</translation>
-<translation id="5677928146339483299">חסום</translation>
 <translation id="5684874026226664614">אופס. לא ניתן היה לתרגם את הדף הזה.</translation>
 <translation id="5686790454216892815">שם הקובץ ארוך מדי</translation>
-<translation id="5690795753582697420">‏המצלמה מושבתת בהגדרות Android</translation>
 <translation id="5694049548840660018">חזרה לדף הבית בקלות</translation>
 <translation id="569536719314091526">דרך לחצן האפשרויות הנוספות אפשר לתרגם את הדף הזה לשפה כלשהי</translation>
 <translation id="572328651809341494">כרטיסיות אחרונות</translation>
@@ -619,7 +615,6 @@
 <translation id="614940544461990577">כדאי לנסות:</translation>
 <translation id="6154478581116148741">יש להפעיל נעילת מסך ב'הגדרות' כדי לייצא את הסיסמאות מהמכשיר הזה</translation>
 <translation id="6159335304067198720">חיסכון בצריכת נתונים בשיעור של <ph name="PERCENT" /></translation>
-<translation id="6177111841848151710">חסוּם למנוע החיפוש הנוכחי</translation>
 <translation id="6192333916571137726">קובץ הורדה</translation>
 <translation id="6201345951596836663">הקישור הועתק</translation>
 <translation id="6210748933810148297">אינך <ph name="EMAIL" />?</translation>
@@ -706,7 +701,6 @@
 <translation id="6846298663435243399">טוען…</translation>
 <translation id="6850409657436465440">ההורדה עדיין מתבצעת</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> כרטיסיות נסגרו</translation>
-<translation id="6864395892908308021">‏NFC לא נתמך במכשיר הזה</translation>
 <translation id="6864459304226931083">הורד תמונה</translation>
 <translation id="6865313869410766144">נתוני טפסים למילוי אוטומטי</translation>
 <translation id="6884306546558072722">המשך גלישה ללא חיבור לאינטרנט</translation>
@@ -721,9 +715,7 @@
 <translation id="6989267951144302301">ההורדה נכשלה</translation>
 <translation id="6990079615885386641">‏קבל את האפליקציה מחנות Google Play‏: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">הצגת אזהרה אם סיסמאות נחשפות עקב פרצה באבטחת מידע</translation>
-<translation id="7000754031042624318">‏ההרשאה מושבתת בהגדרות Android</translation>
 <translation id="7015203776128479407">הגדרת הסנכרון הראשונית לא הושלמה. הסנכרון מושבת.</translation>
-<translation id="7016516562562142042">מופעל למנוע החיפוש הנוכחי</translation>
 <translation id="7022756207310403729">פתיחה בדפדפן</translation>
 <translation id="702463548815491781">‏מומלץ אם הפעלת TalkBack או גישה באמצעות מתג</translation>
 <translation id="7029809446516969842">סיסמאות</translation>
@@ -756,10 +748,10 @@
 <translation id="7328017930301109123">‏במצב טעינה מהירה, Chrome טוען דפים מהר יותר ומפחית את השימוש בנתונים בשיעור של עד 60 אחוזים.</translation>
 <translation id="7333031090786104871">עדיין מוסיף את האתר הקודם</translation>
 <translation id="7340958967809483333">‏אפשרויות של Discover</translation>
+<translation id="7352651011704765696">משהו השתבש</translation>
 <translation id="7352939065658542140">סרטון</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{שתף פריט אחד שנבחר}two{שתף # פריטים שנבחרו}many{שתף # פריטים שנבחרו}other{שתף # פריטים שנבחרו}}</translation>
 <translation id="7359002509206457351">גישה לאמצעי תשלום</translation>
-<translation id="7362144854749094396">‏ל-Chrome יש גישה להיסטוריה. לאתר <ph name="SITE_NAME" /> יש גישה להעדפות.</translation>
 <translation id="7375125077091615385">סוג:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">כתובת אתר</translation>
@@ -841,7 +833,6 @@
 <translation id="7986741934819883144">בחירת איש קשר</translation>
 <translation id="7998918019931843664">פתח מחדש כרטיסייה שנסגרה</translation>
 <translation id="8004582292198964060">דפדפן</translation>
-<translation id="8007176423574883786">כבוי בשביל המכשיר הזה</translation>
 <translation id="8013372441983637696">‏יש לנקות גם את נתוני Chrome מהמכשיר הזה</translation>
 <translation id="8015452622527143194">החזר את כל מה שמופיע בדף לגודל ברירת המחדל</translation>
 <translation id="8026334261755873520">ניקוי נתוני גלישה</translation>
@@ -931,6 +922,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{רמת עוצמת אות: עמודה אחת}two{רמת עוצמת אות: שתי עמודות}many{רמת עוצמת אות: # עמודות}other{רמת עוצמת אות: # עמודות}}</translation>
 <translation id="868929229000858085">חיפוש באנשי הקשר</translation>
 <translation id="869891660844655955">תאריך תפוגה</translation>
+<translation id="8712637175834984815">הבנתי</translation>
 <translation id="8748850008226585750">התוכן מוסתר</translation>
 <translation id="8751914237388039244">בחירת תמונה</translation>
 <translation id="8758557275681689734">צפייה בכל הכרטיסיות הפתוחות</translation>

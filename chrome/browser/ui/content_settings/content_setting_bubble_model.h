@@ -161,6 +161,7 @@ class ContentSettingBubbleModel {
     MediaMenuMap media_menus;
     bool show_learn_more = false;
     base::string16 done_button_text;
+    base::string16 cancel_button_text;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(BubbleContent);
@@ -191,6 +192,7 @@ class ContentSettingBubbleModel {
   virtual void OnMediaMenuClicked(blink::mojom::MediaStreamType type,
                                   const std::string& selected_device_id) {}
   virtual void OnDoneButtonClicked() {}
+  virtual void OnCancelButtonClicked() {}
   // Called by the view code when the bubble is closed
   virtual void CommitChanges() {}
 
@@ -272,6 +274,9 @@ class ContentSettingBubbleModel {
   }
   void set_done_button_text(const base::string16& done_button_text) {
     bubble_content_.done_button_text = done_button_text;
+  }
+  void set_cancel_button_text(const base::string16& cancel_button_text) {
+    bubble_content_.cancel_button_text = cancel_button_text;
   }
   rappor::RapporServiceImpl* rappor_service() const { return rappor_service_; }
 
@@ -423,7 +428,9 @@ class ContentSettingNotificationsBubbleModel
 
   // ContentSettingBubbleModel:
   void OnManageButtonClicked() override;
+  void OnLearnMoreClicked() override;
   void OnDoneButtonClicked() override;
+  void OnCancelButtonClicked() override;
   ContentSettingNotificationsBubbleModel* AsNotificationsBubbleModel() override;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingNotificationsBubbleModel);

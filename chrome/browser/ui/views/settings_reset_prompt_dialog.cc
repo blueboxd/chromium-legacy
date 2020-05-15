@@ -41,23 +41,23 @@ SettingsResetPromptDialog::SettingsResetPromptDialog(
     : browser_(nullptr), controller_(controller) {
   DCHECK(controller_);
 
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_SETTINGS_RESET_PROMPT_ACCEPT_BUTTON_LABEL));
 
   // There is at most one of {Accept(), Cancel(), Close()} will be run for
   // |controller_|. Each of them causes |controller_| deletion.
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
+  SetAcceptCallback(base::BindOnce(
       [](SettingsResetPromptDialog* dialog) {
         std::exchange(dialog->controller_, nullptr)->Accept();
       },
       base::Unretained(this)));
-  DialogDelegate::SetCancelCallback(base::BindOnce(
+  SetCancelCallback(base::BindOnce(
       [](SettingsResetPromptDialog* dialog) {
         std::exchange(dialog->controller_, nullptr)->Cancel();
       },
       base::Unretained(this)));
-  DialogDelegate::SetCloseCallback(base::BindOnce(
+  SetCloseCallback(base::BindOnce(
       [](SettingsResetPromptDialog* dialog) {
         std::exchange(dialog->controller_, nullptr)->Close();
       },

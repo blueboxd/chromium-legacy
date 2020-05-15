@@ -43,7 +43,7 @@
 <translation id="104710386808485638">Linux রিস্টার্ট করবেন?</translation>
 <translation id="1047431265488717055">লিঙ্ক ও টেক্সট কপি করুন</translation>
 <translation id="1048286738600630630">প্রদর্শনগুলি</translation>
-<translation id="1048986595386481879">ডায়ানামিকভাবে সাইজ বরাদ্দ করা হয়েছে</translation>
+<translation id="1048986595386481879">ডায়নামিকভাবে সাইজ বরাদ্দ করা হয়েছে</translation>
 <translation id="1049743911850919806">ছদ্মবেশী</translation>
 <translation id="1049795001945932310">&amp;ভাষা সেটিংস</translation>
 <translation id="1054153489933238809">নতুন ট্যাবে আসল ছবিটি খুলুন</translation>
@@ -227,7 +227,7 @@
 <translation id="1288037062697528143">সূর্যাস্তের সময় নাইট লাইট নিজে থেকেই চালু হবে</translation>
 <translation id="1288300545283011870">ভাষ্য প্রপার্টি</translation>
 <translation id="1293264513303784526">USB-C ডিভাইস (বাঁ পোর্ট)</translation>
-<translation id="1293556467332435079">ফাইল</translation>
+<translation id="1293556467332435079">Files</translation>
 <translation id="1296911687402551044">বেছে নেওয়া ট্যাব পিন করুন</translation>
 <translation id="1297175357211070620">গন্তব্য</translation>
 <translation id="1300415640239881824">সুরক্ষিত কন্টেন্টের উন্নত প্লেব্যাকের জন্য যোগ্যতা নির্ধারণ করতে <ph name="DOMAIN" /> Google-এর মাধ্যমে আপনার ডিভাইসের পরিচয় যাচাই করতে চায়।</translation>
@@ -519,7 +519,6 @@
 <translation id="1650371550981945235">ইনপুট বিকল্পগুলি দেখান</translation>
 <translation id="1651008383952180276">আপনাকে একই পাসফ্রেজ অবশ্যই দু'বার লিখতে হবে</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{আপনি যাতে যেকোনো জায়গা থেকে প্রিন্ট করতে পারেন সেই জন্য Google ক্লাউড প্রিন্টে প্রিন্টারটি যোগ করুন।}one{আপনি যাতে যেকোনো জায়গা থেকে প্রিন্ট করতে পারেন সেই জন্য Google ক্লাউড প্রিন্টে #টি প্রিন্টার যোগ করুন।}other{আপনি যাতে যেকোনো জায়গা থেকে প্রিন্ট করতে পারেন সেই জন্য Google ক্লাউড প্রিন্টে #টি প্রিন্টার যোগ করুন।}}</translation>
-<translation id="1655937588105566159">{NUM_EXTENSIONS,plural, =1{এই এক্সটেনশনটি বিপজ্জনক হতে পারে}one{এই এক্সটেনশনগুলি বিপজ্জনক হতে পারে}other{এই এক্সটেনশনগুলি বিপজ্জনক হতে পারে}}</translation>
 <translation id="1656528038316521561">ব্যাকগ্রাউন্ডের অস্বচ্ছতা</translation>
 <translation id="1657406563541664238">Google-এ ব্যবহারের পরিসংখ্যান এবং ক্র্যাশ রিপোর্ট অটোমেটিক পাঠিয়ে <ph name="PRODUCT_NAME" />কে আরও ভালো করে তুলতে সাহায্য করুন</translation>
 <translation id="1657937299377480641">শিক্ষাগত রিসোর্স অ্যাক্সেস করার জন্য আবার সাইন-ইন করতে, অভিভাবকের কাছ থেকে অনুমতি চান</translation>
@@ -709,7 +708,6 @@
 <translation id="1875387611427697908">এটি কেবলমাত্র <ph name="CHROME_WEB_STORE" /> থেকেই যোগ করা যেতে পারে</translation>
 <translation id="1877520246462554164">যাচাইকরণ টোকেন পাওয়া যায়নি। অনুগ্রহ করে সাইন-আউট-এর পরে সাইন-ইন করে আবার চেষ্টা করুন।</translation>
 <translation id="1877860345998737529">অ্যাকশনে সুইচ অ্যাসাইন করা</translation>
-<translation id="1878541307036593717">অনুমতি সেট-আপ করুন</translation>
 <translation id="1879000426787380528">কোন আইডি দিয়ে সাইন-ইন করবেন</translation>
 <translation id="1880905663253319515">সার্টিফিকেট মুছবেন "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1884013283844450420"><ph name="NETWORK_COUNT" />টির মধ্যে <ph name="NETWORK_INDEX" /> নম্বর নেটওয়ার্ক, <ph name="NETWORK_NAME" />, কানেক্ট করুন</translation>
@@ -2613,6 +2611,7 @@
 <translation id="4359408040881008151">নির্ভরশীল এক্সটেনশন(গুলি) বলে ইনস্টল রয়েছে৷</translation>
 <translation id="4359717112757026264">শহরের দৃশ্য</translation>
 <translation id="4361142739114356624">এই ক্লায়েন্ট সার্টিফিকেটের জন্য ব্যক্তিগত কী পাওয়া যাচ্ছে না বা এটি ভুল</translation>
+<translation id="4361745360460842907">ট্যাব রূপে খুলুন</translation>
 <translation id="4363771538994847871">কোনও Cast গন্তব্য পাওয়া যায়নি। সাহায্য প্রয়োজন?</translation>
 <translation id="4364327530094270451">ফুটি</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> একটি উইন্ডো শেয়ার করছে।</translation>
@@ -3073,7 +3072,6 @@
 <translation id="4994474651455208930">সাইটগুলিকে প্রোটোকলের জন্য ডিফল্ট হ্যান্ডলার হওয়ার জন্য জিজ্ঞাসা করার অনুমতি দেয়</translation>
 <translation id="4994754230098574403">সেট-আপ করা হচ্ছে</translation>
 <translation id="4997086284911172121">কোনও ইন্টারনেট সংযোগ নেই।</translation>
-<translation id="4997384734315285248">Plugin VM আনইনস্টল করুন</translation>
 <translation id="4998430619171209993">চালু করা আছে</translation>
 <translation id="5000922062037820727">অবরুদ্ধ (প্রস্তাবিত)</translation>
 <translation id="5005498671520578047">পাসওয়ার্ড কপি করুন</translation>
@@ -3675,6 +3673,7 @@
 <translation id="5785583009707899920">Chrome ফাইল ইউটিলিটি</translation>
 <translation id="5787146423283493983">কী চুক্তি</translation>
 <translation id="5788367137662787332">দুঃখিত, <ph name="DEVICE_LABEL" /> ডিভাইসটির কমপক্ষে একটি ভাগ আটকানো যায়নি৷</translation>
+<translation id="5790085346892983794">সফল</translation>
 <translation id="5792728279623964091">পাওয়ার বোতাম ট্যাপ করুন</translation>
 <translation id="5793339252089865437">মোবাইল নেটওয়ার্কের মাধ্যমে এই আপডেট ডাউনলোড করলে, ব্যবহারের সীমা অতিক্রম করার জন্য আপনাকে চার্জ করা হতে পারে।</translation>
 <translation id="5794414402486823030">সর্বদা সিস্টেম নিরীক্ষকের সাথে খুলুন</translation>
@@ -4594,6 +4593,7 @@
 <translation id="7004402701596653846">সাইট MIDI ব্যবহার করতে পারে</translation>
 <translation id="7004499039102548441">সাম্প্রতিক ট্যাবগুলি</translation>
 <translation id="7005496624875927304">অতিরিক্ত অনুমতি</translation>
+<translation id="7005812687360380971">ব্যর্থ</translation>
 <translation id="7005848115657603926">ভুল পৃষ্ঠা ব্যাপ্তি, <ph name="EXAMPLE_PAGE_RANGE" /> ব্যবহার করুন</translation>
 <translation id="7006634003215061422">নীচের মার্জিন</translation>
 <translation id="7007648447224463482">সবগুলি নতুন উইন্ডোতে খুলুন</translation>
@@ -4733,7 +4733,6 @@
 <translation id="7191159667348037">অজানা প্রিন্টার (USB)</translation>
 <translation id="7193051357671784796">আপনার সংস্থা এই অ্যাপ যোগ করেছে। ইনস্টল করা সম্পূর্ণ করতে অ্যাপটি আবার চালু করুন।</translation>
 <translation id="7193374945610105795"><ph name="ORIGIN" /> এর জন্য কোনও পাসওয়ার্ড সেভ করা হয়নি</translation>
-<translation id="7194620721202917359">{NUM_APPS,plural, =1{এই অ্যাপটি বিপজ্জনক হতে পারে}one{এই অ্যাপগুলি বিপজ্জনক হতে পারে}other{এই অ্যাপগুলি বিপজ্জনক হতে পারে}}</translation>
 <translation id="7196913789568937443">Google ড্রাইভে ব্যাক-আপ নিন। যেকোনও সময় সহজেই আপনার ডেটা ফিরিয়ে আনুন বা ডিভাইস পাল্টান। আপনার ব্যাক-আপে অ্যাপ ডেটা থাকে। আপনার ব্যাক-আপ ডেটা Google-এ আপলোড করা হয় এবং আপনার Google অ্যাকাউন্টের পাসওয়ার্ড ব্যবহার করে সেগুলিকে এনক্রিপ্ট করা হয়। <ph name="BEGIN_LINK1" />আরও জানুন<ph name="END_LINK1" /></translation>
 <translation id="7197190419934240522">প্রত্যেকবার ব্রাউজ করার সময় Google সার্চ ও Google স্মার্ট পান</translation>
 <translation id="7197632491113152433">আমরা আপনার অ্যাকাউন্ট থেকে <ph name="NUMBER_OF_APPS" />টি অ্যাপ পেয়েছি যা এই ডিভাইসে ব্যবহার করা যাবে।</translation>
@@ -4974,7 +4973,6 @@
 <translation id="7506541170099744506">আপনার <ph name="DEVICE_TYPE" /> এন্টারপ্রাইজ পরিচালনার জন্য সফলভাবে নথিভুক্ত হয়েছে।</translation>
 <translation id="7507207699631365376">এই পরিষেবা প্রদানকারীর <ph name="BEGIN_LINK" />গোপনীয়তা নীতি<ph name="END_LINK" /> দেখুন</translation>
 <translation id="7507930499305566459">স্থিতি প্রতিক্রিয়া সার্টিফিকেট</translation>
-<translation id="7508054832109420082">প্রিন্টারে অ্যাক্সেস দিন</translation>
 <translation id="7513029293694390567">সঞ্চিত সার্টিফিকেট ব্যবহার করে ওয়েবসাইটে অটোমেটিক সাইন-ইন করুন। এটি বন্ধ থাকলে, প্রতিবারই একটি ওয়েবসাইটে সাইন-ইনের সময় আপনাকে যাচাইকরণের জন্য বলা হবে।</translation>
 <translation id="7514239104543605883">আপনার ডিভাইসে কপি করুন</translation>
 <translation id="7514365320538308">ডাউনলোড করুন</translation>
@@ -5133,7 +5131,6 @@
 <translation id="7716781361494605745">Netscape শংসাপত্র কর্তৃপক্ষ নীতি URL</translation>
 <translation id="7717014941119698257">ডাউনলোড হচ্ছে: <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">আপডেটগুলির জন্য চেক করুন</translation>
-<translation id="7719070594859855691">ক্যামেরা অ্যাক্সেস করার অনুমতি দিন</translation>
 <translation id="7719367874908701697">পৃষ্ঠা জুম</translation>
 <translation id="7721179060400456005">উইন্ডোগুলিকে স্ক্রিন জুড়ে দেখানোর অনুমতি দিন।</translation>
 <translation id="7722040605881499779">আপডেটের জন্য প্রয়োজন: <ph name="NECESSARY_SPACE" /></translation>

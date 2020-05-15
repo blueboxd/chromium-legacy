@@ -6,6 +6,7 @@
 
 #include <pthread.h>
 
+#include "base/check.h"
 #include "base/profiler/stack_copier_signal.h"
 #include "base/profiler/stack_sampler_impl.h"
 #include "base/profiler/thread_delegate_posix.h"
@@ -17,8 +18,9 @@ namespace base {
 std::unique_ptr<StackSampler> StackSampler::Create(
     SamplingProfilerThreadToken thread_token,
     ModuleCache* module_cache,
-    StackSamplerTestDelegate* test_delegate,
-    std::unique_ptr<Unwinder> native_unwinder) {
+    std::unique_ptr<Unwinder> native_unwinder,
+    StackSamplerTestDelegate* test_delegate) {
+  DCHECK(native_unwinder);
   return std::make_unique<StackSamplerImpl>(
       std::make_unique<StackCopierSignal>(
           std::make_unique<ThreadDelegatePosix>(thread_token)),

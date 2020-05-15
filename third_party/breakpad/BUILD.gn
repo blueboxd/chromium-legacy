@@ -598,13 +598,13 @@ if (is_linux || is_android) {
       "breakpad/src/client/minidump_file_writer.h",
       "breakpad/src/common/convert_UTF.cc",
       "breakpad/src/common/convert_UTF.h",
+      "breakpad/src/common/linux/breakpad_getcontext.S",
       "breakpad/src/common/linux/elf_core_dump.cc",
       "breakpad/src/common/linux/elf_core_dump.h",
       "breakpad/src/common/linux/elfutils.cc",
       "breakpad/src/common/linux/elfutils.h",
       "breakpad/src/common/linux/file_id.cc",
       "breakpad/src/common/linux/file_id.h",
-      "breakpad/src/common/linux/breakpad_getcontext.S",
       "breakpad/src/common/linux/google_crashdump_uploader.cc",
       "breakpad/src/common/linux/google_crashdump_uploader.h",
       "breakpad/src/common/linux/guid_creator.cc",
@@ -801,7 +801,28 @@ if (is_linux || is_android) {
 }
 
 if (is_win) {
-  if (current_toolchain == host_toolchain) {
+  # Force a native symupload, since Chrome tries to be "helpful" and not really
+  # differentiate target vs. host for x86/x64 builds.
+  #
+  # Normally, this would just use the (current_toolchain == host_toolchain)
+  # condition, which would cause these targets to only be compiled for the host
+  # CPU (i.e. to only build "native" binaries), but the Chrome Windows build
+  # will "always use the target CPU for host builds for x86/x64":
+  # https://crrev.com/3258ed4d9d755a3564d98bef8707bbdb5f8a7974/config/BUILDCONFIG.gn#199
+  # This means that host_toolchain will be x86 (32-bit) if the target is x86,
+  # even when the host is actually x64 (64-bit), which causes this to create
+  # 32-bit binaries, despite wanting native, 64-bit binaries.
+  #
+  # Adding the second condition enables this block for the "true" host
+  # toolchain as well, which allows creating 64-bit binaries even when the host
+  # toolchain is redefined to a 32-bit target.
+  if (is_clang) {
+    symupload_toolchain = "//build/toolchain/win:win_clang_$host_cpu"
+  } else {
+    symupload_toolchain = "//build/toolchain/win:$host_cpu"
+  }
+  if (current_toolchain == host_toolchain ||
+      current_toolchain == symupload_toolchain) {
     static_library("common_windows") {
       include_dirs = [
         "$visual_studio_path/DIA SDK/include",
@@ -878,11 +899,31 @@ if (is_win) {
       }
     }
 
-    executable("symupload") {
+    group("symupload") {
+      deps = [ ":symupload_win($symupload_toolchain)" ]
+    }
+    executable("symupload_win") {
       include_dirs = [
         "$visual_studio_path/DIA SDK/include",
         "breakpad/src",
       ]
+      output_name = "symupload"
+
+      # Invert the normal logic which puts binaries built with the default
+      # (target) toolchain into the root output directory, and other toolchain
+      # binaries into subdirs. This gives preference to the native symupload,
+      # which is what's wanted in most situations. The cross-compiled binary
+      # can still be created (by building "symupload_win" instead of
+      # "symupload") and found in the corresponding toolchain subdir (e.g.
+      # //out/Release/win_clang_x86/ when cross-compiling to x86).
+      if (current_toolchain == symupload_toolchain) {
+        output_dir = "$root_build_dir"
+      } else {
+        output_name = "symupload_$target_cpu"
+        toolchain_parts =
+            string_split(get_path_info(current_toolchain, "name"), ":")
+        output_dir = "$root_out_dir/" + toolchain_parts[1]
+      }
 
       sources = [ "breakpad/src/tools/windows/symupload/symupload.cc" ]
 

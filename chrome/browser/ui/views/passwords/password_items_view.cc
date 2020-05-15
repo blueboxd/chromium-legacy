@@ -221,8 +221,8 @@ PasswordItemsView::PasswordItemsView(content::WebContents* web_contents,
                              anchor_view,
                              /*easily_dismissable=*/true),
       controller_(PasswordsModelDelegateFromWebContents(web_contents)) {
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
-  DialogDelegate::SetExtraView(CreateManageButton(this));
+  SetButtons(ui::DIALOG_BUTTON_OK);
+  SetExtraView(CreateManageButton(this));
 
   if (controller_.local_credentials().empty()) {
     // A LayoutManager is required for GetHeightForWidth() even without content.

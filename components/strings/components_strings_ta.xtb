@@ -269,6 +269,7 @@
 <translation id="2094505752054353250">டொமைன் பொருந்தவில்லை</translation>
 <translation id="2096368010154057602">துறை</translation>
 <translation id="2099652385553570808">டிரிப்பில் ஸ்டேப்பில் லெஃப்ட்</translation>
+<translation id="2101225219012730419">பதிப்பு:</translation>
 <translation id="2102134110707549001">வலுவான கடவுச்சொல்லைப் பரிந்துரைசெய்…</translation>
 <translation id="2107021941795971877">உதவித் தோற்றமைப்புகளை அச்சிடுதல்</translation>
 <translation id="2108755909498034140">கம்ப்யூட்டரை மீண்டும் தொடங்கவும்</translation>
@@ -439,6 +440,7 @@
 <translation id="2856444702002559011"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> தளத்திலிருந்து ஹேக்கர்கள் உங்கள் தகவலை (எடுத்துக்காட்டாக, கடவுச்சொற்கள், செய்திகள் அல்லது கிரெடிட் கார்டுகள்) திருட முயற்சிக்கக்கூடும். <ph name="BEGIN_LEARN_MORE_LINK" />மேலும் அறிக<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">போஸ்டர் ஃபோல்டு</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2880660355386638022">சாளரத்தைக் காட்டுமிடம்</translation>
 <translation id="2881276955470682203">கார்டைச் சேமிக்கவா?</translation>
 <translation id="2882949212241984732">டபுள்-கேட் ஃபோல்டு</translation>
 <translation id="2903493209154104877">முகவரிகள்</translation>
@@ -635,6 +637,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />ப்ராக்ஸி, ஃபயர்வால் மற்றும் DNS உள்ளமைவைச் சரிபார்த்தல்<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">வைரஸ்தடுப்பு, ஃபயர்வால், இணைய வடிப்பான் அல்லது ப்ராக்ஸி மென்பொருள் உள்ளிட்ட ஆப்ஸ்கள் இந்தப் பிழையை ஏற்படுத்தக்கூடும்.</translation>
 <translation id="373042150751172459">B4 (என்வலப்)</translation>
+<translation id="3731873414101415120">நீங்கள் பார்வையிட்ட இணையதளங்களும் பாதுகாப்பற்ற பக்கங்களின் உள்ளடக்கமும்</translation>
 <translation id="3736520371357197498">உங்கள் பாதுகாப்பிற்கான ஆபத்தைப் புரிந்துகொண்டால், தீங்கிழைக்கும் நிரல்கள் அகற்றப்படுவதற்கு முன் <ph name="BEGIN_LINK" />இந்தப் பாதுகாப்பற்ற தளத்தைப் பார்வையிடலாம்<ph name="END_LINK" />.</translation>
 <translation id="3744899669254331632">Chromiumமால் செயல்படுத்த முடியாத தவறான அனுமதிச் சான்றுகளை அனுப்பியுள்ளதால் இப்போது <ph name="SITE" />ஐப் பார்வையிட முடியாது. பொதுவாக நெட்வொர்க் பிழைகளும் தாக்குதல்களும் தற்காலிகமாகவே இருக்கும், சிறிதுநேரம் கழித்து இந்தப் பக்கம் சரியாகச் செயல்படலாம்.</translation>
 <translation id="3745099705178523657">நீங்கள் உறுதிப்படுத்திய பின்னர், உங்கள் Google கணக்கிலிருக்கும் கார்டு விவரங்கள் இந்தத் தளத்துடன் பகிரப்படும்.</translation>
@@ -900,6 +903,7 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{எதுவுமில்லை}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">'<ph name="TEXT" />’ குறித்த தேடல்</translation>
 <translation id="4879491255372875719">தானியங்கு (இயல்பு)</translation>
+<translation id="4879725228911483934">உங்கள் திரைகளில் சாளரங்களைத் திறந்து வைக்க</translation>
 <translation id="4880827082731008257">தேடல் வரலாறு</translation>
 <translation id="4881695831933465202">திற</translation>
 <translation id="4892518386797173871">பின்பக்கம்</translation>

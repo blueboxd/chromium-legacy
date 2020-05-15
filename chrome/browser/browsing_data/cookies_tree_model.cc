@@ -38,6 +38,7 @@
 #include "components/browsing_data/content/service_worker_helper.h"
 #include "components/browsing_data/content/shared_worker_helper.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/permissions/permissions_client.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
@@ -1951,6 +1952,23 @@ void CookiesTreeModel::MaybeNotifyBatchesEnded() {
     SetBatchExpectation(0, true);
   }
 }
+
+// static
+browsing_data::CookieHelper::IsDeletionDisabledCallback
+CookiesTreeModel::GetCookieDeletionDisabledCallback(Profile* profile) {
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+  if (profile->IsChild()) {
+    return base::BindRepeating(
+        [](permissions::PermissionsClient* client,
+           content::BrowserContext* browser_context, const GURL& url) {
+          return client->IsCookieDeletionDisabled(browser_context, url);
+        },
+        permissions::PermissionsClient::Get(), profile);
+  }
+#endif
+  return base::NullCallback();
+}
+
 // static
 std::unique_ptr<CookiesTreeModel> CookiesTreeModel::CreateForProfile(
     Profile* profile) {
@@ -1959,7 +1977,8 @@ std::unique_ptr<CookiesTreeModel> CookiesTreeModel::CreateForProfile(
   auto* file_system_context = storage_partition->GetFileSystemContext();
 
   auto container = std::make_unique<LocalDataContainer>(
-      new browsing_data::CookieHelper(storage_partition),
+      new browsing_data::CookieHelper(
+          storage_partition, GetCookieDeletionDisabledCallback(profile)),
       new browsing_data::DatabaseHelper(profile),
       new browsing_data::LocalStorageHelper(profile),
       /*session_storage_helper=*/nullptr,

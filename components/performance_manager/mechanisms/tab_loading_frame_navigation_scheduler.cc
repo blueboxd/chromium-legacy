@@ -195,6 +195,7 @@ TabLoadingFrameNavigationScheduler::MaybeCreateThrottleForNavigation(
 
 // static
 void TabLoadingFrameNavigationScheduler::SetThrottlingEnabled(bool enabled) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (enabled == g_throttling_enabled)
     return;
   g_throttling_enabled = enabled;
@@ -204,9 +205,15 @@ void TabLoadingFrameNavigationScheduler::SetThrottlingEnabled(bool enabled) {
     return;
   }
 
+  // Remove the mechanism from the registry. Since the shutdown decision is made
+  // on the PM sequence, this notification races with actual destruction of the
+  // PM initiated on the UI sequence. As such, it's possible that the PM no
+  // longer exists by the time we get here in a normal shutdown codepath.
+  if (PerformanceManager::IsAvailable())
+    PerformanceManager::RemoveMechanism(MainThreadMechanism::Instance());
+
   // At this point the throttling is being disabled. Stop throttling all
   // currently-throttled contents.
-  PerformanceManager::RemoveMechanism(MainThreadMechanism::Instance());
   while (g_root)
     g_root->StopThrottlingImpl();  // Causes |g_root| to delete itself.
 }

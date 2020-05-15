@@ -388,7 +388,6 @@
 <translation id="4250229828105606438">ಸ್ಕ್ರೀನ್‌ಶಾಟ್</translation>
 <translation id="4256782883801055595">ಓಪನ್ ಸೋರ್ಸ್ ಪರವಾನಗಿಗಳು</translation>
 <translation id="4269820728363426813">ಲಿಂಕ್ ವಿಳಾಸವನ್ನು ನಕಲಿಸಿ</translation>
-<translation id="4278390842282768270">ಅನುಮತಿಸಲಾಗಿದೆ</translation>
 <translation id="429312253194641664">ಒಂದು ಸೈಟ್, ಮಾಧ್ಯಮವನ್ನು ಪ್ಲೇ ಮಾಡುತ್ತಿದೆ</translation>
 <translation id="4298388696830689168">ಲಿಂಕ್ ಮಾಡಿರುವ ಸೈಟ್‌ಗಳು</translation>
 <translation id="4307992518367153382">ಬೇಸಿಕ್ಸ್</translation>
@@ -435,7 +434,6 @@
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಅಳಿಸಲಾಗಿದೆ</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> ಅನ್ನು ನಿಮ್ಮ ಹೋಮ್ ಪರದೆಗೆ ಸೇರಿಸಲಾಗಿದೆ</translation>
 <translation id="4684427112815847243">ಪ್ರತಿಯೊಂದನ್ನು ಸಿಂಕ್ ಮಾಡಿ</translation>
-<translation id="4688610874307684559">Chrome ನಲ್ಲಿ ರನ್ ಆಗುತ್ತಿದೆ (ಮೊದಲಿಗೆ)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 ಮತ್ತು ಇನ್ನೂ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 ಮತ್ತು ಇನ್ನೂ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 ಮತ್ತು ಇನ್ನೂ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">ನಿಮ್ಮ ಸಾಧನಗಳಿಗೆ ಪಠ್ಯವನ್ನು ಕಳುಹಿಸಿ</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" /> ನಲ್ಲಿ ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ವೀಕ್ಷಿಸಿ</translation>
@@ -560,10 +558,8 @@
 <translation id="5659593005791499971">ಇಮೇಲ್</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> ನಲ್ಲಿ ಈವೆಂಟ್ ಅನ್ನು ರಚಿಸಿ</translation>
 <translation id="5668404140385795438">ಝೂಮ್‌ ಇನ್‌ ಮಾಡುವುದನ್ನು ತಡೆಗಟ್ಟಲು ವೆಬ್‌ಸೈಟ್‌ನ ವಿನಂತಿಯನ್ನು ಅತಿಕ್ರಮಿಸು</translation>
-<translation id="5677928146339483299">ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="5684874026226664614">ಓಹ್. ಈ ಪುಟವನ್ನು ಅನುವಾದಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="5686790454216892815">ಫೈಲ್‌ನ ಹೆಸರು ತುಂಬಾ ಉದ್ದವಾಗಿದೆ</translation>
-<translation id="5690795753582697420">Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಕ್ಯಾಮರಾವನ್ನು ಆಫ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="5694049548840660018">ಸುಲಭವಾಗಿ ಹೋಮ್‌ಗೆ ಹೋಗಿ</translation>
 <translation id="569536719314091526">ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳು ಬಟನ್ ಮೂಲಕ ಈ ಪುಟವನ್ನು ಯಾವ ಭಾಷೆಗಾದರೂ ಅನುವಾದಿಸಿ</translation>
 <translation id="572328651809341494">ಇತ್ತೀಚಿನ ಟ್ಯಾಬ್‌ಗಳು</translation>
@@ -619,7 +615,6 @@
 <translation id="614940544461990577">ಪ್ರಯತ್ನಿಸಿ:</translation>
 <translation id="6154478581116148741">ಈ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಂದ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ರಫ್ತುಮಾಡಲು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಅನ್ನು ಆನ್ ಮಾಡಿ</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ಡೇಟಾ ಉಳಿತಾಯಗಳು</translation>
-<translation id="6177111841848151710">ಪ್ರಸ್ತುತ ಹುಡುಕಾಟ ಇಂಜಿನ್‌ಗೆ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="6192333916571137726">ಫೈಲ್‌ ಅನ್ನು ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಿ</translation>
 <translation id="6201345951596836663">ಲಿಂಕ್ ನಕಲಿಸಲಾಗಿದೆ</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ಅಲ್ಲವೇ?</translation>
@@ -706,7 +701,6 @@
 <translation id="6846298663435243399">ಲೋಡ್ ಆಗುತ್ತಿದೆ...</translation>
 <translation id="6850409657436465440">ನಿಮ್ಮ ಡೌನ್‌ಲೋಡ್ ಇನ್ನೂ ಪ್ರಗತಿಯಲ್ಲಿದೆ</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> ಟ್ಯಾಬ್‌ಗಳನ್ನು ಮುಚ್ಚಲಾಗಿದೆ</translation>
-<translation id="6864395892908308021">ಈ ಸಾಧನವು NFC ಯನ್ನು ಓದಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="6864459304226931083">ಚಿತ್ರ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="6865313869410766144">ಸ್ವಯಂತುಂಬುವಿಕೆ ಫಾರ್ಮ್ ಡೇಟಾ</translation>
 <translation id="6884306546558072722">ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಎಕ್ಸ್‌ಪ್ಲೋರ್ ಮುಂದುವರಿಸಿ</translation>
@@ -721,9 +715,7 @@
 <translation id="6989267951144302301">ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಲಾಗಲಿಲ್ಲ</translation>
 <translation id="6990079615885386641">Google Play Store ನಿಂದ ಅಪ್ಲಿಕೇಶನ್ ಪಡೆದುಕೊಳ್ಳಿ: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">ಡೇಟಾ ಉಲ್ಲಂಘನೆಯಿಂದಾಗಿ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಬಹಿರಂಗಪಡಿಸಿದರೆ ನಿಮಗೆ ಎಚ್ಚರಿಕೆ ನೀಡಲಾಗುತ್ತದೆ</translation>
-<translation id="7000754031042624318">Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಆಫ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="7015203776128479407">ಪ್ರಾರಂಭಿಕ ಸಿಂಕ್ ಸೆಟಪ್ ಮುಗಿದಿಲ್ಲ. ಸಿಂಕ್ ಆಫ್ ಆಗಿದೆ.</translation>
-<translation id="7016516562562142042">ಪ್ರಸ್ತುತ ಹುಡುಕಾಟ ಇಂಜಿನ್‌ಗೆ ಅನುಮತಿಸಲಾಗಿದೆ</translation>
 <translation id="7022756207310403729">ಬ್ರೌಸರ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="702463548815491781">TalkBack ಅಥವಾ ಪ್ರವೇಶ ಬದಲಾಯಿಸಿ ಆನ್ ಆಗಿದ್ದಾಗ ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="7029809446516969842">ಪಾಸ್‌ವರ್ಡ್‌ಗಳು</translation>
@@ -756,10 +748,10 @@
 <translation id="7328017930301109123">ಲೈಟ್ ಮೋಡ್‍ನಲ್ಲಿ, Chrome ವೇಗವಾಗಿ ಪುಟಗಳನ್ನು ಲೋಡ್ ಮಾಡುತ್ತದೆ, ಮತ್ತು ಡೇಟಾವನ್ನು ಸುಮಾರು ಶೇಕಡಾ 60 ರಷ್ಟು ಕಡಿಮೆ ಬಳಸುತ್ತದೆ.</translation>
 <translation id="7333031090786104871">ಇನ್ನೂ ಹಿಂದಿನ ಸೈಟ್ ಅನ್ನು ಸೇರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="7340958967809483333">Discover ಗಾಗಿ ಆಯ್ಕೆಗಳು</translation>
+<translation id="7352651011704765696">ಯಾವುದೋ ತಪ್ಪು ಸಂಭವಿಸಿದೆ</translation>
 <translation id="7352939065658542140">ವೀಡಿಯೊ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{ಆಯ್ಕೆಮಾಡಲಾದ 1 ಐಟಂ ಹಂಚಿಕೊಳ್ಳಿ}one{ಆಯ್ಕೆಮಾಡಲಾದ # ಐಟಂಗಳನ್ನು ಹಂಚಿಕೊಳ್ಳಿ}other{ಆಯ್ಕೆಮಾಡಲಾದ # ಐಟಂಗಳನ್ನು ಹಂಚಿಕೊಳ್ಳಿ}}</translation>
 <translation id="7359002509206457351">ಪಾವತಿ ವಿಧಾನಗಳನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
-<translation id="7362144854749094396">ಇತಿಹಾಸವನ್ನು Chrome ಜೊತೆಗೆ ಹಂಚಿಕೊಳ್ಳಲಾಗಿದೆ. ಆದ್ಯತೆಗಳನ್ನು <ph name="SITE_NAME" /> ಜೊತೆಗೆ ಹಂಚಿಕೊಳ್ಳಲಾಗಿದೆ.</translation>
 <translation id="7375125077091615385">ಪ್ರಕಾರ:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -841,7 +833,6 @@
 <translation id="7986741934819883144">ಸಂಪರ್ಕವನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="7998918019931843664">ಮುಚ್ಚಿದ ಟ್ಯಾಬ್ ಮತ್ತೆ ತೆರೆಯಿರಿ</translation>
 <translation id="8004582292198964060">ಬ್ರೌಸರ್</translation>
-<translation id="8007176423574883786">ಈ ಸಾಧನಕ್ಕೆ ಆಫ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="8013372441983637696">ಈ ಸಾಧನದಿಂದ ನಿಮ್ಮ Chrome ಡೇಟಾವನ್ನು ಸಹ ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="8015452622527143194">ಪುಟದಲ್ಲಿರುವ ಪ್ರತಿಯೊಂದನ್ನೂ ಡೀಫಾಲ್ಟ್ ಗಾತ್ರಕ್ಕೆ ಹಿಂತಿರುಗಿಸಿ</translation>
 <translation id="8026334261755873520">ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಿ</translation>
@@ -931,6 +922,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{ಸಿಗ್ನಲ್‌ ಸಾಮರ್ಥ್ಯದ ಹಂತ: # ಪಟ್ಟಿ}one{ಸಿಗ್ನಲ್‌ ಸಾಮರ್ಥ್ಯದ ಹಂತ: # ಪಟ್ಟಿಗಳು}other{ಸಿಗ್ನಲ್‌ ಸಾಮರ್ಥ್ಯದ ಹಂತ: # ಪಟ್ಟಿಗಳು}}</translation>
 <translation id="868929229000858085">ನಿಮ್ಮ ಸಂಪರ್ಕಗಳನ್ನು ಹುಡುಕಿ</translation>
 <translation id="869891660844655955">ಅವಧಿ ಮುಗಿಯುವ ದಿನಾಂಕ</translation>
+<translation id="8712637175834984815">ಅರ್ಥವಾಯಿತು</translation>
 <translation id="8748850008226585750">ವಿಷಯಗಳನ್ನು ಮರೆಮಾಡಲಾಗಿದೆ</translation>
 <translation id="8751914237388039244">ಚಿತ್ರವನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="8758557275681689734">ನಿಮ್ಮ ಎಲ್ಲಾ ತೆರೆದ ಟ್ಯಾಬ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಿ</translation>

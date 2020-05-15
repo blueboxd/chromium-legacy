@@ -36,7 +36,7 @@ PasswordAutoSignInView::PasswordAutoSignInView(
   SetLayoutManager(std::make_unique<views::FillLayout>());
   const autofill::PasswordForm& form = controller_.pending_password();
 
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
 
   set_margins(
       ChromeLayoutProvider::Get()->GetInsetsMetric(views::INSETS_DIALOG));

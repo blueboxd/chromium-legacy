@@ -7,6 +7,8 @@ import {
   ForegroundOps,  // eslint-disable-line no-unused-vars
 } from './background_ops.js';
 import {browserProxy} from './browser_proxy/browser_proxy.js';
+// eslint-disable-next-line no-unused-vars
+import {TestingErrorCallback} from './error.js';
 import {Intent} from './intent.js';
 import {PerfEvent, PerfLogger} from './perf.js';
 
@@ -33,13 +35,6 @@ const TOPBAR_COLOR = '#000000';
  * @type {string}
  */
 const TEST_API_ORIGIN = 'chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj';
-
-/**
- * It's used in test to ensure that we won't connect to the main.html target
- * before the window is created, otherwise the window might disappear.
- * @type {?function(string): undefined}
- */
-let onAppWindowCreatedForTesting = null;
 
 /**
  * It's used in test to catch the perf event before the creation of app window
@@ -70,40 +65,55 @@ const WindowState = {
 };
 
 /**
+ * Callbacks called when specific window events happened.
+ * @typedef {{
+ *   onActive: !function(CCAWindow),
+ *   onSuspended: !function(CCAWindow),
+ *   onClosed: !function(CCAWindow),
+ * }}
+ */
+let WindowEventCallbacks;  // eslint-disable-line no-unused-vars
+
+/**
+ * Callbacks called when specific window events happened in test run.
+ * onCreated() is called when AppWindow created with window url. onError() is
+ * called with error happening in AppWindow.
+ * @typedef {{
+ *   onCreated: !function(string),
+ *   onError: !TestingErrorCallback,
+ * }}
+ */
+let WindowTestEventCallbacks;  // eslint-disable-line no-unused-vars
+
+/**
+ * Set in test mode for notifying test events.
+ * @type {?WindowTestEventCallbacks}
+ */
+let windowTestEventCallbacks = null;
+
+/**
  * Wrapper of AppWindow for tracking its state.
  * @implements {BackgroundOps}
  */
 class CCAWindow {
   /**
-   * @param {!function(CCAWindow)} onActive Called when window become active
-   *     state.
-   * @param {!function(CCAWindow)} onSuspended Called when window become
-   *     suspended state.
-   * @param {!function(CCAWindow)} onClosed Called when window become closed
-   *     state.
+   * @param {!WindowEventCallbacks} callbacks
+   * @param {?WindowTestEventCallbacks} testingCallbacks
    * @param {?PerfLogger} perfLogger The logger for perf events. If it
    *     is null, we will create a new one for the window.
    * @param {Intent=} intent Intent to be handled by the app window.
    *     Set to null for app window not launching from intent.
    */
-  constructor(onActive, onSuspended, onClosed, perfLogger, intent = null) {
+  constructor(callbacks, testingCallbacks, perfLogger, intent = null) {
     /**
-     * @type {!function(!CCAWindow)}
-     * @private
+     * @type {!WindowEventCallbacks}
      */
-    this.onActive_ = onActive;
+    this.callbacks_ = callbacks;
 
     /**
-     * @type {!function(!CCAWindow)}
-     * @private
+     * @type {?WindowTestEventCallbacks}
      */
-    this.onSuspended_ = onSuspended;
-
-    /**
-     * @type {!function(!CCAWindow)}
-     * @private
-     */
-    this.onClosed_ = onClosed;
+    this.testingCallbacks_ = testingCallbacks;
 
     /**
      * @type {?Intent}
@@ -183,11 +193,11 @@ class CCAWindow {
             if (this.intent_ !== null && !this.intent_.done) {
               this.intent_.cancel();
             }
-            this.onClosed_(this);
+            this.callbacks_.onClosed(this);
           });
           appWindow.contentWindow.backgroundOps = this;
-          if (onAppWindowCreatedForTesting !== null) {
-            onAppWindowCreatedForTesting(windowUrl);
+          if (this.testingCallbacks_ !== null) {
+            this.testingCallbacks_.onCreated(windowUrl);
           }
         });
   }
@@ -217,7 +227,7 @@ class CCAWindow {
     if (this.intent_ !== null && !this.intent_.shouldHandleResult) {
       this.intent_.finish();
     }
-    this.onActive_(this);
+    this.callbacks_.onActive(this);
   }
 
   /**
@@ -225,7 +235,7 @@ class CCAWindow {
    */
   notifySuspension() {
     this.state_ = WindowState.SUSPENDED;
-    this.onSuspended_(this);
+    this.callbacks_.onSuspended(this);
   }
 
   /**
@@ -238,8 +248,8 @@ class CCAWindow {
   /**
    * @override
    */
-  isTesting() {
-    return onAppWindowCreatedForTesting !== null;
+  getTestingErrorCallback() {
+    return this.testingCallbacks_ ? this.testingCallbacks_.onError : null;
   }
 
   /**
@@ -374,8 +384,11 @@ class Background {
         this.processPendingIntent_();
       }
     };
-    const wnd =
-        new CCAWindow(onActive, onSuspended, onClosed, perfLoggerForTesting);
+
+    const wnd = new CCAWindow(
+        {onActive, onSuspended, onClosed}, windowTestEventCallbacks,
+        perfLoggerForTesting);
+    windowTestEventCallbacks = null;
     perfLoggerForTesting = null;
     return wnd;
   }
@@ -417,8 +430,11 @@ class Background {
         this.launcherWindow_.resume();
       }
     };
+
     const wnd = new CCAWindow(
-        onActive, onSuspended, onClosed, perfLoggerForTesting, intent);
+        {onActive, onSuspended, onClosed}, windowTestEventCallbacks,
+        perfLoggerForTesting, intent);
+    windowTestEventCallbacks = null;
     perfLoggerForTesting = null;
     return wnd;
   }
@@ -519,9 +535,13 @@ function handleExternalMessageFromTest(message, sender, sendResponse) {
     console.warn(`Unknown sender id: ${sender.id}`);
     return;
   }
+  // TODO(crbug/1072700): Cleans up old way of connecting test.
   switch (message.action) {
     case 'SET_WINDOW_CREATED_CALLBACK':
-      onAppWindowCreatedForTesting = sendResponse;
+      windowTestEventCallbacks = {
+        onCreated: sendResponse,
+        onError: (errorInfo) => {},
+      };
       return true;
     default:
       console.warn(`Unknown action: ${message.action}`);
@@ -556,6 +576,16 @@ function handleExternalConnectionFromTest(port) {
         }
         perfLoggerForTesting.start(name);
       });
+      return;
+    case 'SET_TEST_CONNECTION':
+      // TODO(crbug/1082133): Documents or adds typing to the test connection
+      // port message.
+      windowTestEventCallbacks = {
+        onCreated: (windowUrl) => {
+          port.postMessage({name: 'connect', windowUrl});
+        },
+        onError: (errorInfo) => port.postMessage({name: 'error', errorInfo}),
+      };
       return;
     default:
       console.warn(`Unknown port name: ${port.name}`);

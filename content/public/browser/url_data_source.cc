@@ -58,25 +58,29 @@ bool URLDataSource::ShouldAddContentSecurityPolicy() {
   return true;
 }
 
-std::string URLDataSource::GetContentSecurityPolicyScriptSrc() {
-  // Note: Do not add 'unsafe-eval' here. Instead override CSP for the
-  // specific pages that need it, see context http://crbug.com/525224.
-  return "script-src chrome://resources 'self';";
+std::string URLDataSource::GetContentSecurityPolicyChildSrc() {
+  return "child-src 'none';";
+}
+
+std::string URLDataSource::GetContentSecurityPolicyDefaultSrc() {
+  return std::string();
+}
+
+std::string URLDataSource::GetContentSecurityPolicyImgSrc() {
+  return std::string();
 }
 
 std::string URLDataSource::GetContentSecurityPolicyObjectSrc() {
   return "object-src 'none';";
 }
 
-std::string URLDataSource::GetContentSecurityPolicyChildSrc() {
-  return "child-src 'none';";
+std::string URLDataSource::GetContentSecurityPolicyScriptSrc() {
+  // Note: Do not add 'unsafe-eval' here. Instead override CSP for the
+  // specific pages that need it, see context http://crbug.com/525224.
+  return "script-src chrome://resources 'self';";
 }
 
 std::string URLDataSource::GetContentSecurityPolicyStyleSrc() {
-  return std::string();
-}
-
-std::string URLDataSource::GetContentSecurityPolicyImgSrc() {
   return std::string();
 }
 

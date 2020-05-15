@@ -69,6 +69,12 @@ class TileConfig {
   // Get the schedule window duration from start to end in one-off task params
   // in ms.
   static int GetOneoffTaskWindowInMs();
+
+  // Get the init delay (unit:ms) argument for backoff policy.
+  static int GetBackoffPolicyArgsInitDelayInMs();
+
+  // Get the max delay (unit:ms) argument for backoff policy.
+  static int GetBackoffPolicyArgsMaxDelayInMs();
 };
 
 }  // namespace query_tiles

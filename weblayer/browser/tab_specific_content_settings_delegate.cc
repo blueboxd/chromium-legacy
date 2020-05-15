@@ -4,6 +4,7 @@
 
 #include "weblayer/browser/tab_specific_content_settings_delegate.h"
 
+#include "base/bind_helpers.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/render_process_host.h"
 #include "weblayer/browser/browser_context_impl.h"
@@ -61,6 +62,11 @@ HostContentSettingsMap* TabSpecificContentSettingsDelegate::GetSettingsMap() {
 std::vector<storage::FileSystemType>
 TabSpecificContentSettingsDelegate::GetAdditionalFileSystemTypes() {
   return {};
+}
+
+browsing_data::CookieHelper::IsDeletionDisabledCallback
+TabSpecificContentSettingsDelegate::GetIsDeletionDisabledCallback() {
+  return base::NullCallback();
 }
 
 bool TabSpecificContentSettingsDelegate::IsMicrophoneCameraStateChanged(

@@ -56,6 +56,7 @@ REPRESENTATIVE_MOBILE = Tag(
 REPRESENTATIVE_WIN_DESKTOP = Tag(
     'representative_win_desktop',
     'Rendering desktop representatives for windows')
+SIMPLE_CANVAS = Tag('simple_canvas', 'Simple canvas stories')
 SIMPLE_MOBILE_SITES = Tag(
     'simple_mobile_sites', 'Simple mobile sites')
 THROUGHPUT_TEST = Tag(

@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Automatické stahování</translation>
 <translation id="5677928146339483299">Zablokováno</translation>
 <translation id="5689516760719285838">Poloha</translation>
+<translation id="5690795753582697420">Fotoaparát je vypnutý v nastavení zařízení Android</translation>
 <translation id="5710871682236653961">Když se dotknete zařízení NFC, nejdříve se zeptat a teprve poté webu případně povolit odesílání a příjem informací (doporučeno)</translation>
 <translation id="5719847187258001597">Tímto vymažete veškerá data a soubory cookie, které uložil web <ph name="ORIGIN" /> nebo jeho aplikace na ploše.</translation>
 <translation id="5804241973901381774">Oprávnění</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Více</translation>
 <translation id="6064125863973209585">Dokončená stahování</translation>
 <translation id="6165508094623778733">Další informace</translation>
+<translation id="6177111841848151710">Pro aktuální vyhledávač blokováno</translation>
 <translation id="6181444274883918285">Přidat výjimku pro konkrétní web</translation>
 <translation id="6192792657125177640">Výjimky</translation>
 <translation id="6194112207524046168">Chcete-li Chromu umožnit přístup k fotoaparátu, zapněte fotoaparát také v <ph name="BEGIN_LINK" />Nastavení Android<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Tato stránka je nebezpečná. Informace o webu</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6992289844737586249">Pokud web bude chtít použít váš mikrofon, zobrazit dotaz (doporučeno)</translation>
+<translation id="7000754031042624318">Vypnuto v nastavení systému Android</translation>
+<translation id="7016516562562142042">Pro aktuální vyhledávač povoleno</translation>
 <translation id="7053983685419859001">Blokovat</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Vybráno: 1}few{Vybráno: #}many{Vybráno: #}other{Vybráno: #}}</translation>
 <translation id="7087918508125750058">Vybrané položky: <ph name="ITEM_COUNT" />. Možnosti jsou k dispozici u horního okraje obrazovky</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Zapne zvuk na konkrétním webu.</translation>
 <translation id="7993619969781047893">Některé weby mohou přestat fungovat</translation>
 <translation id="7999064672810608036">Opravdu chcete vymazat všechna místní data tohoto webu, včetně souborů cookie, a resetovat všechna jeho oprávnění?</translation>
+<translation id="8007176423574883786">Vypnuto v tomto zařízení</translation>
 <translation id="802154636333426148">Stažení se nezdařilo</translation>
 <translation id="8087000398470557479">Tento obsah pochází z domény <ph name="DOMAIN_NAME" />. Poskytováno společností Google.</translation>
 <translation id="8116925261070264013">Ztlumeno</translation>

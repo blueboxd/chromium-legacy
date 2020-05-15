@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Deskarga automatikoak</translation>
 <translation id="5677928146339483299">Blokeatuta</translation>
 <translation id="5689516760719285838">Kokapena</translation>
+<translation id="5690795753582697420">Kamera atzitzeko baimena desaktibatuta dago Android-en ezarpenetan</translation>
 <translation id="5710871682236653961">NFC darabilten gailuak ukitzean, eskatu baimena webguneei informazioa bidali eta jasotzeko (gomendatua)</translation>
 <translation id="5719847187258001597"><ph name="ORIGIN" /> webguneak edo hari dagokion hasierako pantailako aplikazioak gorde dituen datu eta cookie guztiak garbituko dira.</translation>
 <translation id="5804241973901381774">Baimenak</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Gehiago</translation>
 <translation id="6064125863973209585">Osatutako deskargak</translation>
 <translation id="6165508094623778733">Lortu informazio gehiago</translation>
+<translation id="6177111841848151710">Blokeatuta dago uneko bilatzailean</translation>
 <translation id="6181444274883918285">Gehitu webgune bat salbuespen gisa</translation>
 <translation id="6192792657125177640">Salbuespenak</translation>
 <translation id="6194112207524046168">Chrome-ri kamera atzitzeko baimena emateko, kamera aktibatu behar duzu <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Orri hau arriskutsua da. Webguneari buruzko informazioa</translation>
 <translation id="6965382102122355670">Ados</translation>
 <translation id="6992289844737586249">Webguneei mikrofonoa erabiltzeko baimena eman aurretik, eskatu onespena (gomendatua)</translation>
+<translation id="7000754031042624318">Desaktibatuta dago Android-en ezarpenetan</translation>
+<translation id="7016516562562142042">Baimenduta dago uneko bilatzailean</translation>
 <translation id="7053983685419859001">Blokeatu</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 hautatuta}other{# hautatuta}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> hautatu dira. Pantailaren goialdean daude aukera erabilgarriak.</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Baimendu webgune jakin baten audioa.</translation>
 <translation id="7993619969781047893">Baliteke webgune batzuetako eginbideek ez funtzionatzea</translation>
 <translation id="7999064672810608036">Ziur webgune honek gailuan ezarritako datu guztiak (cookieak barne) ezabatu eta baimen guztiak berrezarri nahi dituzula?</translation>
+<translation id="8007176423574883786">Desaktibatu egin da gailu honetan</translation>
 <translation id="802154636333426148">Ezin izan da deskargatu</translation>
 <translation id="8087000398470557479">Eduki hau <ph name="DOMAIN_NAME" /> domeinukoa da eta Google-k eskaintzen du.</translation>
 <translation id="8116925261070264013">Audioa desaktibatuta</translation>

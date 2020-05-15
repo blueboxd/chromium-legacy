@@ -142,8 +142,8 @@ struct NET_EXPORT SSLConfig {
   PrivacyMode privacy_mode = PRIVACY_MODE_DISABLED;
 
   // True if the post-handshake peeking of the transport should be skipped. This
-  // logic ensures 0-RTT and tickets are resolved early, but can interfere with
-  // some unit tests.
+  // logic ensures tickets are resolved early, but can interfere with some unit
+  // tests.
   bool disable_post_handshake_peek_for_testing = false;
 };
 

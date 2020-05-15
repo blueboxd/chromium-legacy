@@ -456,15 +456,15 @@ void ThreadDebugger::GetEventListenersCallback(
 void ThreadDebugger::consoleTime(const v8_inspector::StringView& title) {
   // TODO(dgozman): we can save on a copy here if trace macro would take a
   // pointer with length.
-  TRACE_EVENT_COPY_ASYNC_BEGIN0("blink.console",
-                                ToCoreString(title).Utf8().c_str(), this);
+  TRACE_EVENT_COPY_NESTABLE_ASYNC_BEGIN0(
+      "blink.console", ToCoreString(title).Utf8().c_str(), this);
 }
 
 void ThreadDebugger::consoleTimeEnd(const v8_inspector::StringView& title) {
   // TODO(dgozman): we can save on a copy here if trace macro would take a
   // pointer with length.
-  TRACE_EVENT_COPY_ASYNC_END0("blink.console",
-                              ToCoreString(title).Utf8().c_str(), this);
+  TRACE_EVENT_COPY_NESTABLE_ASYNC_END0(
+      "blink.console", ToCoreString(title).Utf8().c_str(), this);
 }
 
 void ThreadDebugger::consoleTimeStamp(const v8_inspector::StringView& title) {

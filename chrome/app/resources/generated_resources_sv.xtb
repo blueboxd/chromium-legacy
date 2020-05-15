@@ -523,7 +523,6 @@
 <translation id="1650371550981945235">Visa inmatningsalternativ</translation>
 <translation id="1651008383952180276">Du måste ange samma lösenfras två gånger</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Lägg till skrivaren i Google Cloud Print så att du kan skriva ut var du än befinner dig.}other{Lägg till # skrivare i Google Cloud Print så att du kan skriva ut var du än befinner dig.}}</translation>
-<translation id="1655937588105566159">{NUM_EXTENSIONS,plural, =1{Det här tillägget kan vara skadligt}other{De här tilläggen kan vara skadliga}}</translation>
 <translation id="1656528038316521561">Bakgrundens genomskinlighet</translation>
 <translation id="1657406563541664238">Hjälp till att göra <ph name="PRODUCT_NAME" /> bättre genom att automatiskt skicka användningsstatistik och felrapporter till Google</translation>
 <translation id="1657937299377480641">Be en förälder om behörighet att logga in igen till skolans resurser</translation>
@@ -713,7 +712,6 @@
 <translation id="1875387611427697908">Kan endast installeras från <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Det gick inte att hämta autentiseringstoken. Försök igen genom att logga ut och sedan logga in igen.</translation>
 <translation id="1877860345998737529">Åtgärdstilldelning för brytare</translation>
-<translation id="1878541307036593717">Konfigurera behörigheter</translation>
 <translation id="1879000426787380528">Logga in som</translation>
 <translation id="1880905663253319515">Vill du ta bort certifikatet <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="1884013283844450420">Nätverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, anslut</translation>
@@ -1396,7 +1394,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2748061034695037846"><ph name="DOMAIN" /> har pausats</translation>
 <translation id="2749756011735116528">Logga in på <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Kontrollera grammatik och stavning</translation>
-<translation id="2751131328353405138">Linux-behållarens sshfs monteras</translation>
+<translation id="2751131328353405138">Linux-behållarens SSHFS monteras</translation>
 <translation id="2751739896257479635">Fas 2 i EAP-autentisering</translation>
 <translation id="2753677631968972007">Styr webbplatsbehörigheter manuellt.</translation>
 <translation id="2753984311895843016">Inaktivitetsinställningar</translation>
@@ -1895,7 +1893,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3427092606871434483">Tillåt (standard)</translation>
 <translation id="3428419049384081277">Du är inloggad!</translation>
 <translation id="3428747202529429621">Skyddar dig i Chrome och kan användas för förbättrad säkerhet i andra Google-appar där du är inloggad</translation>
-<translation id="3428800329481094896">Linux-behållarens ssh-nycklar hämtas</translation>
+<translation id="3428800329481094896">Linux-behållarens SSH-nycklar hämtas</translation>
 <translation id="3429275422858276529">Lägg till ett bokmärke för den här sidan så att du enkelt kan hitta tillbaka till den</translation>
 <translation id="3432227430032737297">Ta bort alla som visas</translation>
 <translation id="3432757130254800023">Skicka ljud och bild till skärmar i det lokala nätverket</translation>
@@ -2632,6 +2630,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4359408040881008151">Installerades på grund av ett eller flera tillägg som är beroende av detta tillägg.</translation>
 <translation id="4359717112757026264">Cityscape</translation>
 <translation id="4361142739114356624">Det här klientcertifikatets privata nyckel saknas eller är tom</translation>
+<translation id="4361745360460842907">Öppna som en flik</translation>
 <translation id="4363771538994847871">Ingen Cast-destination hittades. Behöver du hjälp?</translation>
 <translation id="4364327530094270451">Melon</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> delar ett fönster.</translation>
@@ -3093,7 +3092,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4994474651455208930">Tillåt att webbplatser begär att bli standardhanterare för protokoll</translation>
 <translation id="4994754230098574403">Konfigurerar</translation>
 <translation id="4997086284911172121">Ingen internetanslutning</translation>
-<translation id="4997384734315285248">Avinstallera Plugin VM</translation>
 <translation id="4998430619171209993">På</translation>
 <translation id="5000922062037820727">Blockeras (rekommenderas)</translation>
 <translation id="5005498671520578047">Kopiera lösenord</translation>
@@ -3696,6 +3694,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5785583009707899920">Chromes filverktyg</translation>
 <translation id="5787146423283493983">Nyckelavtal</translation>
 <translation id="5788367137662787332">Minst en partition på enheten <ph name="DEVICE_LABEL" /> kunde inte monteras.</translation>
+<translation id="5790085346892983794">Klart</translation>
 <translation id="5792728279623964091">Tryck på strömbrytaren</translation>
 <translation id="5793339252089865437">Om du laddar ned uppdateringen via mobilnätverket kan det leda till avgifter för överskriden förbrukningsgräns.</translation>
 <translation id="5794414402486823030">Öppna alltid med systemets visningsprogram</translation>
@@ -4628,6 +4627,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7004402701596653846">MIDI kan användas på webbplatsen</translation>
 <translation id="7004499039102548441">Senaste flikarna</translation>
 <translation id="7005496624875927304">Ytterligare behörigheter</translation>
+<translation id="7005812687360380971">Fel</translation>
 <translation id="7005848115657603926">Ogiltigt sidintervall, använd <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Nedre marginal</translation>
 <translation id="7007648447224463482">Öppna alla i ett nytt fönster</translation>
@@ -4767,7 +4767,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7191159667348037">Okänd skrivare (USB)</translation>
 <translation id="7193051357671784796">Appen lades till av din organisation. Starta om appen för att slutföra installationen.</translation>
 <translation id="7193374945610105795">Inga lösenord har sparats för <ph name="ORIGIN" /></translation>
-<translation id="7194620721202917359">{NUM_APPS,plural, =1{Den här appen kan vara skadlig}other{De här apparna kan vara skadliga}}</translation>
 <translation id="7196913789568937443">Säkerhetskopiera till Google Drive. Återställ enkelt data eller byt enhet när som helst. Säkerhetskopian innehåller appdata. Säkerhetskopiorna krypteras med hjälp av Google-kontots lösenord och laddas upp på Google. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
 <translation id="7197190419934240522">Få Google Sök och Google-teknik varje gång du surfar</translation>
 <translation id="7197632491113152433">Vi hittade <ph name="NUMBER_OF_APPS" /> appar i ditt konto som kan användas på den här enheten.</translation>
@@ -5010,7 +5009,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> har registrerats för företagshantering.</translation>
 <translation id="7507207699631365376">Läs leverantörens <ph name="BEGIN_LINK" />sekretesspolicy<ph name="END_LINK" /></translation>
 <translation id="7507930499305566459">Status för svarscertifikat</translation>
-<translation id="7508054832109420082">Ge åtkomst till skrivare</translation>
 <translation id="7513029293694390567">Logga in automatiskt på webbplatser med hjälp av lagrade inloggningsuppgifter. När funktionen är inaktiverad måste du bekräfta inloggningen varje gång du besöker en webbplats.</translation>
 <translation id="7514239104543605883">Kopiera till din enhet</translation>
 <translation id="7514365320538308">Ladda ned</translation>
@@ -5169,7 +5167,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7716781361494605745">Webbadress till Netscapes princip för certifikatutfärdare</translation>
 <translation id="7717014941119698257">Nedladdning: <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">Sök efter uppdateringar</translation>
-<translation id="7719070594859855691">Ge åtkomst till kameran</translation>
 <translation id="7719367874908701697">Sidzoom</translation>
 <translation id="7721179060400456005">Tillåt att fönster visas över flera skärmar.</translation>
 <translation id="7722040605881499779">Uppdateringen kräver: <ph name="NECESSARY_SPACE" /></translation>

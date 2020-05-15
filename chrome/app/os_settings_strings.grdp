@@ -1602,6 +1602,12 @@
   <message name="IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_REACHABLE_BUT_CANNOT_ADD" desc="Message shown on the print server dialog when we are able to reach the print server but still ran into some error with adding the print server.">
     Couldn't add the print server. Please check the server's configuration and try again.
   </message>
+  <message name="IDS_SETTINGS_PRINTING_PRINT_JOBS_LAUNCH_APP_TITLE_LABEL" desc="Label for launching the print management app from the os settings page.">
+    Print jobs
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_PRINT_JOBS_LAUNCH_APP_SUBLABEL" desc="Sub-label that describes that the print management app lets users view and manage their print jobs.">
+    View and manage print jobs
+  </message>
 
   <!-- Internet page (OS settings) -->
   <message name="IDS_SETTINGS_INTERNET_ADD_CONNECTION" desc="Settings > Internet > Add connection expanding section label.">

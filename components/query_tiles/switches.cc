@@ -16,6 +16,8 @@ const base::Feature kQueryTilesEnableQueryEditing{
 }  // namespace features
 
 namespace switches {
+const char kQueryTilesSingleTier[] = "query-tiles-single-tier";
+
 const char kQueryTilesCountryCode[] = "query-tiles-country-code";
 
 const char kQueryTilesInstantBackgroundTask[] =

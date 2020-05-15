@@ -364,7 +364,7 @@ class TabHoverCardBubbleView::ThumbnailObserver
 
 TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
     : BubbleDialogDelegateView(tab, views::BubbleBorder::TOP_LEFT) {
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
 
   // We'll do all of our own layout inside the bubble, so no need to inset this
   // view inside the client view.

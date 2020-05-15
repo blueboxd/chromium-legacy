@@ -81,4 +81,7 @@ interface IWebLayer {
 
   // Added in Version 84.
   String getUserAgentString() = 14;
+
+  // Added in Version 84.
+  void registerExternalExperimentIDs(in String trialName, in int[] experimentIds) = 15;
 }

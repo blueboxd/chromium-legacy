@@ -321,6 +321,7 @@ base::Optional<SkColor> SkColorFromColorId(
 
     // Trees and Tables (implemented on GTK using the same class)
     case ui::NativeTheme::kColorId_TableBackground:
+    case ui::NativeTheme::kColorId_TableBackgroundAlternate:
     case ui::NativeTheme::kColorId_TreeBackground:
       return GetBgColor(
           "GtkTreeView#treeview.view GtkTreeView#treeview.view.cell");

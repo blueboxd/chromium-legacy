@@ -7,10 +7,12 @@
 #include <memory>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/rand_util.h"
 #include "base/time/default_tick_clock.h"
 #include "components/prefs/pref_service.h"
 #include "components/query_tiles/internal/tile_config.h"
+#include "components/query_tiles/switches.h"
 #include "net/base/backoff_entry_serializer.h"
 
 namespace query_tiles {
@@ -66,8 +68,16 @@ class TileServiceSchedulerImpl : public TileServiceScheduler {
 
   void ScheduleTask(bool is_init_schedule) {
     background_task::OneOffInfo one_off_task_info;
-    GetTaskWindow(&one_off_task_info.window_start_time_ms,
-                  &one_off_task_info.window_end_time_ms, is_init_schedule);
+    bool instant_fetch_task = base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kQueryTilesInstantBackgroundTask);
+    if (instant_fetch_task) {
+      GetInstantTaskWindow(&one_off_task_info.window_start_time_ms,
+                           &one_off_task_info.window_end_time_ms,
+                           is_init_schedule);
+    } else {
+      GetTaskWindow(&one_off_task_info.window_start_time_ms,
+                    &one_off_task_info.window_end_time_ms, is_init_schedule);
+    }
     background_task::TaskInfo task_info(
         static_cast<int>(background_task::TaskIds::QUERY_TILE_JOB_ID),
         one_off_task_info);
@@ -105,13 +115,26 @@ class TileServiceSchedulerImpl : public TileServiceScheduler {
     return GetCurrentBackoff()->GetTimeUntilRelease().InMilliseconds();
   }
 
+  // Schedule next task in next 10 to 20 seconds in debug mode.
+  void GetInstantTaskWindow(int64_t* start_time_ms,
+                            int64_t* end_time_ms,
+                            bool is_init_schedule) {
+    auto now = clock_->Now().ToDeltaSinceWindowsEpoch().InMilliseconds();
+    if (is_init_schedule) {
+      *start_time_ms = now + 10 * 1000;
+    } else {
+      *start_time_ms = GetDelaysFromBackoff();
+    }
+    *end_time_ms = now + 20 * 1000;
+  }
+
   void GetTaskWindow(int64_t* start_time_ms,
                      int64_t* end_time_ms,
                      bool is_init_schedule) {
+    auto now = clock_->Now().ToDeltaSinceWindowsEpoch().InMilliseconds();
     if (is_init_schedule) {
       *start_time_ms =
-          clock_->Now().ToDeltaSinceWindowsEpoch().InMilliseconds() +
-          TileConfig::GetScheduleIntervalInMs() +
+          now + TileConfig::GetScheduleIntervalInMs() +
           base::RandGenerator(TileConfig::GetMaxRandomWindowInMs());
     } else {
       *start_time_ms = GetDelaysFromBackoff();

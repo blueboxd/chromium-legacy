@@ -313,7 +313,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   std::unique_ptr<SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency) override;
   std::unique_ptr<EventsMetricsManager::ScopedMonitor>
-  GetScopedEventMetricsMonitor(const EventMetrics& event_metrics) override;
+  GetScopedEventMetricsMonitor(
+      std::unique_ptr<EventMetrics> event_metrics) override;
   ScrollElasticityHelper* CreateScrollElasticityHelper() override;
   bool GetScrollOffsetForLayer(ElementId element_id,
                                gfx::ScrollOffset* offset) override;

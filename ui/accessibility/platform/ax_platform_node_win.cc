@@ -6976,6 +6976,12 @@ bool AXPlatformNodeWin::ShouldHideChildrenForUIA() const {
     // enable pdf highlights to have complex children like links based on user
     // feedback.
     case ax::mojom::Role::kLink:
+      // Links with a single text-only child should hide their subtree.
+      if (GetChildCount() == 1) {
+        AXPlatformNodeBase* only_child = GetFirstChild();
+        return only_child && only_child->IsTextOnlyObject();
+      }
+      return false;
     case ax::mojom::Role::kTextField:
     case ax::mojom::Role::kPdfActionableHighlight:
       return true;

@@ -103,10 +103,7 @@ ServiceWorkerContainerHost::ServiceWorkerContainerHost(
       is_parent_frame_secure_(is_parent_frame_secure),
       container_(std::move(container_remote)),
       client_type_(blink::mojom::ServiceWorkerClientType::kWindow),
-      frame_tree_node_id_(frame_tree_node_id),
-      web_contents_getter_(
-          base::BindRepeating(&WebContents::FromFrameTreeNodeId,
-                              frame_tree_node_id_)) {
+      frame_tree_node_id_(frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(IsContainerForWindowClient());
   DCHECK(context_);
@@ -724,8 +721,7 @@ ServiceWorkerClientInfo ServiceWorkerContainerHost::GetServiceWorkerClientInfo()
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(IsContainerForClient());
 
-  return ServiceWorkerClientInfo(process_id_, frame_id_, web_contents_getter_,
-                                 *client_type_);
+  return ServiceWorkerClientInfo(*client_type_, frame_tree_node_id_);
 }
 
 void ServiceWorkerContainerHost::OnBeginNavigationCommit(

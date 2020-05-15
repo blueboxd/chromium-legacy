@@ -27,6 +27,7 @@
 
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
@@ -81,12 +82,9 @@ unsigned History::length(ExceptionState& exception_state) const {
 
   unsigned result = GetFrame()->Client()->BackForwardLength();
   Document* document = DomWindow()->document();
-  IdentifiabilityMetricBuilder(
-      base::UkmSourceId::FromInt64(document->UkmSourceID()))
-      .Set(IdentifiableSurface::FromTypeAndInput(
-               IdentifiableSurface::Type::kWebFeature,
-               static_cast<uint64_t>(WebFeature::kHistoryLength)),
-           IdentifiabilityDigestHelper(result))
+  IdentifiabilityMetricBuilder(document->UkmSourceID())
+      .SetWebfeature(WebFeature::kHistoryLength,
+                     IdentifiabilityDigestHelper(result))
       .Record(document->UkmRecorder());
   return result;
 }

@@ -7,15 +7,18 @@
 #include <string>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
+#include "base/time/default_tick_clock.h"
 #include "components/background_task_scheduler/background_task_scheduler.h"
 #include "components/image_fetcher/core/image_fetcher_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/leveldb_proto/public/shared_proto_database_client_list.h"
+#include "components/prefs/pref_service.h"
 #include "components/query_tiles/internal/cached_image_loader.h"
 #include "components/query_tiles/internal/image_prefetcher.h"
 #include "components/query_tiles/internal/init_aware_tile_service.h"
@@ -23,12 +26,26 @@
 #include "components/query_tiles/internal/tile_fetcher.h"
 #include "components/query_tiles/internal/tile_manager.h"
 #include "components/query_tiles/internal/tile_service_impl.h"
+#include "components/query_tiles/internal/tile_service_scheduler.h"
+#include "components/query_tiles/switches.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace query_tiles {
 namespace {
 const base::FilePath::CharType kTileDbName[] =
     FILE_PATH_LITERAL("UpboardingQueryTileDatabase");
+
+void BuildBackoffPolicy(net::BackoffEntry::Policy* policy) {
+  policy->num_errors_to_ignore = 0;
+  policy->initial_delay_ms =
+      TileConfig::GetBackoffPolicyArgsInitDelayInMs();  // 30 seconds.
+  policy->maximum_backoff_ms =
+      TileConfig::GetBackoffPolicyArgsMaxDelayInMs();  // 1 day.
+  policy->multiply_factor = 2;
+  policy->jitter_factor = 0.33;
+  policy->entry_lifetime_ms = -1;
+  policy->always_use_initial_delay = false;
+}
 
 }  // namespace
 
@@ -40,7 +57,8 @@ std::unique_ptr<TileService> CreateTileService(
     const std::string& accepted_language,
     const std::string& country_code,
     const std::string& api_key,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    PrefService* pref_service) {
   // Create image loader.
   auto* cached_image_fetcher = image_fetcher_service->GetImageFetcher(
       image_fetcher::ImageFetcherConfig::kDiskCacheOnly);
@@ -68,9 +86,17 @@ std::unique_ptr<TileService> CreateTileService(
       TileConfig::GetQueryTilesServerUrl(), country_code, accepted_language,
       api_key, TileConfig::GetExperimentTag(), url_loader_factory);
 
+  // Wrap background task scheduler.
+  auto policy = std::make_unique<net::BackoffEntry::Policy>();
+  BuildBackoffPolicy(policy.get());
+  auto tile_background_task_scheduler = TileServiceScheduler::Create(
+      scheduler, pref_service, clock, base::DefaultTickClock::GetInstance(),
+      std::move(policy));
+
   auto tile_service_impl = std::make_unique<TileServiceImpl>(
-      std::move(image_prefetcher), std::move(tile_manager), scheduler,
-      std::move(tile_fetcher), clock);
+      std::move(image_prefetcher), std::move(tile_manager),
+      std::move(tile_background_task_scheduler), std::move(tile_fetcher),
+      clock);
   return std::make_unique<InitAwareTileService>(std::move(tile_service_impl));
 }
 

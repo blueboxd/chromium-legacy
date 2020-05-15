@@ -1044,7 +1044,7 @@ DownloadConfirmationReason DownloadTargetDeterminer::NeedsConfirmation(
 #endif
 
   // Don't prompt for file types that are marked for opening automatically.
-  if (download_prefs_->IsAutoOpenEnabledBasedOnExtension(filename))
+  if (download_prefs_->IsAutoOpenEnabled(download_->GetURL(), filename))
     return DownloadConfirmationReason::NONE;
 
   // For everything else, prompting is controlled by the PromptForDownload pref.
@@ -1081,7 +1081,7 @@ DownloadFileType::DangerLevel DownloadTargetDeterminer::GetDangerLevel(
   }
 
   // Anything the user has marked auto-open is OK if it's user-initiated.
-  if (download_prefs_->IsAutoOpenEnabledBasedOnExtension(virtual_path_) &&
+  if (download_prefs_->IsAutoOpenEnabled(download_->GetURL(), virtual_path_) &&
       download_->HasUserGesture())
     return DownloadFileType::NOT_DANGEROUS;
 

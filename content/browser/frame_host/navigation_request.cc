@@ -838,6 +838,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
     FrameTreeNode* frame_tree_node,
     RenderFrameHostImpl* render_frame_host,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+    std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter,
     bool is_same_document) {
   // TODO(clamy): Improve the *NavigationParams and *CommitParams to avoid
   // copying so many parameters here.
@@ -900,6 +901,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
       mojo::NullRemote(), nullptr /* rfh_restored_from_back_forward_cache */));
 
   navigation_request->render_frame_host_ = render_frame_host;
+  navigation_request->coep_reporter_ = std::move(coep_reporter);
   navigation_request->StartNavigation(true);
   DCHECK(navigation_request->IsNavigationStarted());
 

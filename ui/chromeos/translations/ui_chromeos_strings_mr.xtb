@@ -29,7 +29,7 @@
 <translation id="1243314992276662751">अपलोड करा</translation>
 <translation id="1249250836236328755">शैली</translation>
 <translation id="1278813325885878377">हंगेरियन क्वर्टी कीबोर्ड</translation>
-<translation id="1293556467332435079">फाइल</translation>
+<translation id="1293556467332435079">Files</translation>
 <translation id="1297922636971898492">Google ड्राइव्ह आत्ता उपलब्ध नाही. Google ड्राइव्ह एकदा परत आल्यानंतर अपलोड करणे आपोआप रीस्टार्ट होईल.</translation>
 <translation id="1307931752636661898">Linux फाइल पाहू शकत नाही</translation>
 <translation id="1310751437842832374">लिप्यंतरण (mausam → ନମସ୍ତେ)</translation>
@@ -260,6 +260,7 @@
 <translation id="3958548648197196644">किवी</translation>
 <translation id="3966388904776714213">ऑडिओ प्लेयर</translation>
 <translation id="4002066346123236978">शीर्षक</translation>
+<translation id="4065397611279318371"><ph name="APP_NAME" /> अ‍ॅप्ससोबत फाइल उघडण्यासाठी, प्रथम त्या <ph name="SHARED_DIRECTORY_LABEL" /> फोल्डरमध्ये हलवा.</translation>
 <translation id="4070370845051020638">कॅन्टोनिज इनपुट पद्धत</translation>
 <translation id="4072248638558688893">तामिळ (Phonetic)</translation>
 <translation id="4124935795427217608">युनिकॉर्न</translation>

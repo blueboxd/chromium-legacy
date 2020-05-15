@@ -7,8 +7,9 @@
 #import <AppKit/AppKit.h>
 #include <stddef.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/notreached.h"
 #include "content/app/resources/grit/content_resources.h"
 #include "content/public/common/content_client.h"
 #include "skia/ext/skia_utils_mac.h"

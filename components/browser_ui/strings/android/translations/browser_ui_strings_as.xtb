@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">স্বয়ংক্ৰিয়ভাৱে হোৱা ডাউনল’ড</translation>
 <translation id="5677928146339483299">অৱৰোধিত</translation>
 <translation id="5689516760719285838">অৱস্থান</translation>
+<translation id="5690795753582697420">Android ছেটিংসমূহত কেমেৰাটো অফ কৰা হ’ল</translation>
 <translation id="5710871682236653961">আপুনি NFC ডিভাইচসমূহত টিপিলে ছাইটসমূহক তথ্য পঠিওৱা আৰু লাভ কৰাৰ অনুমতি দিয়াৰ আগতে সোধক (চুপাৰিছ কৰা হয়)</translation>
 <translation id="5719847187258001597">এইটোৱে আপোনাৰ গৃহ স্ক্রীনত <ph name="ORIGIN" />এ অথবা ইয়াৰ এপ্‌টোৱে ষ্ট’ৰ কৰা সকলো ডেটা আৰু কুকি মচিব।</translation>
 <translation id="5804241973901381774">অনুমতি</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">অধিক</translation>
 <translation id="6064125863973209585">সম্পূৰ্ণ হোৱা ডাউনল’ডসমূহ</translation>
 <translation id="6165508094623778733">অধিক জানক</translation>
+<translation id="6177111841848151710">বর্তমান ব্যৱহাৰ কৰি থকা সন্ধানৰ ইঞ্জিনৰ বাবে অৱৰোধ কৰা হৈছে</translation>
 <translation id="6181444274883918285">ব্যতিক্ৰম ছাইট যোগ কৰক</translation>
 <translation id="6192792657125177640">ব্যতিক্রমসমূহ</translation>
 <translation id="6194112207524046168">Chromeক আপোনাৰ কেমেৰা এক্সেছ কৰিবলৈ দিবলৈ <ph name="BEGIN_LINK" />Android ছেটিংসমূহ<ph name="END_LINK" />-তো কেমেৰা অন কৰক।</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">এই পৃষ্ঠাটো বিপজ্জনক। ছাইটৰ তথ্য</translation>
 <translation id="6965382102122355670">ঠিক আছে</translation>
 <translation id="6992289844737586249">ছাইটসমূহে আপোনাৰ ডিভাইচৰ মাইক্ৰফ'ন ব্যৱহাৰ কৰাৰ পূর্বে অনুমতি ল'বলৈ দিয়ক (এয়া চুপাৰিছ কৰা হয়)</translation>
+<translation id="7000754031042624318">Androidৰ ছেটিংসমূহত অফ কৰা আছে</translation>
+<translation id="7016516562562142042">বৰ্তমানৰ সন্ধান ইঞ্জিনৰ বাবে অনুমোদন জনোৱা হৈছে</translation>
 <translation id="7053983685419859001">অৱৰোধ কৰক</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{১টা বস্তু বাছনি কৰা হ’ল}one{#টা বস্তু বাছনি কৰা হ’ল}other{#টা বস্তু বাছনি কৰা হ’ল}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" />টা বাছনি কৰা হ’ল।  স্ক্ৰীণৰ ওপৰৰ অংশত কাষত থকা বিকল্পসমূহ</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">নির্দিষ্ট ছাইটৰ বাবে ধ্বনিৰ অনুমতি দিয়ক।</translation>
 <translation id="7993619969781047893">কিছুমান ছাইটত সুবিধাসমূহ ব্যাহত হ’ব পাৰে</translation>
 <translation id="7999064672810608036">আপুনি এই ৱেবছাইটটোৰ কুকিকে ধৰি সকলো স্থানীয় ডেটা মচিব আৰু সকলো অনুমতি ৰিছেট কৰিব বিচাৰে বুলি নিশ্চিতনে?</translation>
+<translation id="8007176423574883786">এই ডিভাইচটোৰ বাবে অফ কৰা হৈছে</translation>
 <translation id="802154636333426148">ডাউনল’ড কৰিব পৰা নগ’ল</translation>
 <translation id="8087000398470557479">এই সমল Googleএ যোগান ধৰা <ph name="DOMAIN_NAME" />ৰ।</translation>
 <translation id="8116925261070264013">মিউট আছে</translation>

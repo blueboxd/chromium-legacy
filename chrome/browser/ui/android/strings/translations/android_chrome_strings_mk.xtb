@@ -152,6 +152,7 @@
 <translation id="218608176142494674">Се споделува</translation>
 <translation id="2227444325776770048">Продолжи како <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Синхронизација и услуги на Google</translation>
+<translation id="2239812875700136898">Контролирајте ги сториите од копчето „Опции за Discover“</translation>
 <translation id="2259659629660284697">Извезување лозинки…</translation>
 <translation id="2268044343513325586">Подобри</translation>
 <translation id="2286841657746966508">Адреса за наплата</translation>
@@ -387,7 +388,6 @@
 <translation id="4250229828105606438">Слика од екран</translation>
 <translation id="4256782883801055595">Лиценци за отворен код</translation>
 <translation id="4269820728363426813">Копирај адреса на врска</translation>
-<translation id="4278390842282768270">Дозволено</translation>
 <translation id="429312253194641664">Сајтот репродуцира аудиовизуелни содржини</translation>
 <translation id="4298388696830689168">Поврзани сајтови</translation>
 <translation id="4307992518367153382">Основи</translation>
@@ -435,7 +435,6 @@
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> обележувачи се избришани</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> е додадена на вашиот Почетен екран</translation>
 <translation id="4684427112815847243">Синхронизирај сѐ</translation>
-<translation id="4688610874307684559">Работи во Chrome (Почетно)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />… и уште <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" />… и уште <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />… и уште <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Испратете SMS до вашите уреди</translation>
 <translation id="4698034686595694889">Прегледајте офлајн во <ph name="APP_NAME" /></translation>
@@ -560,10 +559,8 @@
 <translation id="5659593005791499971">Е-пошта</translation>
 <translation id="5665379678064389456">Создаjте настан во <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Отфрли го барањето на веб-локацијата да спречи зумирање</translation>
-<translation id="5677928146339483299">Блокирано</translation>
 <translation id="5684874026226664614">Оваа страница не може да се преведе.</translation>
 <translation id="5686790454216892815">Името на датотеката е предолго</translation>
-<translation id="5690795753582697420">Камерата е исклучена во поставките за Android</translation>
 <translation id="5694049548840660018">Вратете се дома лесно</translation>
 <translation id="569536719314091526">Преведете ја страницава на кој било јазик со копчето „Повеќе опции“</translation>
 <translation id="572328651809341494">Неодамнешни картички</translation>
@@ -619,7 +616,6 @@
 <translation id="614940544461990577">Обидете се:</translation>
 <translation id="6154478581116148741">Вклучете го заклучувањето на екранот во „Поставки“ за да ги извезете лозинките од уредов</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> заштеда на податоци</translation>
-<translation id="6177111841848151710">Блокирано за тековниот пребарувач</translation>
 <translation id="6192333916571137726">Преземете ја датотеката</translation>
 <translation id="6201345951596836663">Линкот е копиран</translation>
 <translation id="6210748933810148297">Не сте <ph name="EMAIL" />?</translation>
@@ -706,7 +702,6 @@
 <translation id="6846298663435243399">Се вчитува…</translation>
 <translation id="6850409657436465440">Вашето преземање е сѐ уште е во тек</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> затворени картички</translation>
-<translation id="6864395892908308021">Уредов не може да чита NFC</translation>
 <translation id="6864459304226931083">Преземи слика</translation>
 <translation id="6865313869410766144">Автоматско пополнување податоци во формулар</translation>
 <translation id="6884306546558072722">Продолжете да истражувате офлајн</translation>
@@ -721,9 +716,7 @@
 <translation id="6989267951144302301">Не можеше да се преземе</translation>
 <translation id="6990079615885386641">Преземете ја апликацијата од продавницата на Google Play: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Добијте предупредување ако лозинките се откриени при упад во податоците</translation>
-<translation id="7000754031042624318">Исклучена во поставките за Android</translation>
 <translation id="7015203776128479407">Првичното поставување на синхронизацијата не беше завршено. Синхронизацијата е исклучена.</translation>
-<translation id="7016516562562142042">Дозволено за тековниот пребарувач</translation>
 <translation id="7022756207310403729">Отвори во прелистувач</translation>
 <translation id="702463548815491781">Препорачано при вклучен TalkBack или „Пристап со прекинувачи“</translation>
 <translation id="7029809446516969842">Лозинки</translation>
@@ -756,10 +749,10 @@
 <translation id="7328017930301109123">Во Lite-режим, Chrome побрзо ги вчитува страниците и користи до 60 проценти помалку интернет.</translation>
 <translation id="7333031090786104871">Сè уште се додава претходниот сајт</translation>
 <translation id="7340958967809483333">Опции за Discover</translation>
+<translation id="7352651011704765696">Нешто не е во ред</translation>
 <translation id="7352939065658542140">ВИДЕО</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Споделете 1 избрана ставка}one{Споделете # избрана ставка}other{Споделете # избрани ставки}}</translation>
 <translation id="7359002509206457351">Пристап до начините на плаќање</translation>
-<translation id="7362144854749094396">Историјата се споделува со Chrome. Поставките се споделуваат со <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Тип:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -841,7 +834,6 @@
 <translation id="7986741934819883144">Изберете контакт</translation>
 <translation id="7998918019931843664">Повторно отвори ја затворената картичка</translation>
 <translation id="8004582292198964060">Прелистувач</translation>
-<translation id="8007176423574883786">Исклучена за овој уред</translation>
 <translation id="8013372441983637696">Избришете ги и вашите податоци на Chrome од уредов</translation>
 <translation id="8015452622527143194">Врати сѐ што се наоѓа на страницата на стандардна големина</translation>
 <translation id="8026334261755873520">Исчисти податоци од прелистување</translation>
@@ -931,6 +923,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{Ниво на јачина на сигналот: # бар}one{Ниво на јачина на сигналот: # бар}other{Ниво на јачина на сигналот: # бари}}</translation>
 <translation id="868929229000858085">Пребарајте ги контактите</translation>
 <translation id="869891660844655955">Рок на важност</translation>
+<translation id="8712637175834984815">Сфатив</translation>
 <translation id="8748850008226585750">Содржината е скриена</translation>
 <translation id="8751914237388039244">Изберете слика</translation>
 <translation id="8758557275681689734">Видете ги сите отворени картички</translation>

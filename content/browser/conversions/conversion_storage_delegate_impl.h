@@ -32,6 +32,8 @@ class CONTENT_EXPORT ConversionStorageDelegateImpl
   void ProcessNewConversionReports(
       std::vector<ConversionReport>* reports) override;
   int GetMaxConversionsPerImpression() const override;
+  int GetMaxImpressionsPerOrigin() const override;
+  int GetMaxConversionsPerOrigin() const override;
 
  private:
   // Get the time a conversion report should be sent, by batching reports into

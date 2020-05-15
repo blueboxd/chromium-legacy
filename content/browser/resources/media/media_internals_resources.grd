@@ -25,11 +25,6 @@
                flattenhtml="true"
                compress="gzip"
                type="BINDATA" />
-      <include name="IDR_MEDIA_INTERNALS_JS_DISABLED"
-               file="media_internals_disabled.js"
-               flattenhtml="true"
-               compress="gzip"
-               type="BINDATA" />
     </includes>
   </release>
 </grit>

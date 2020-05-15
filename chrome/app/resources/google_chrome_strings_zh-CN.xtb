@@ -19,6 +19,7 @@
 <translation id="1587223624401073077">Google Chrome 正在使用您的摄像头。</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> 存在危险，因此 Chrome 已将其拦截。</translation>
 <translation id="1619887657840448962">为了提高 Chrome 的安全性，我们停用了以下扩展程序（该扩展程序未列在<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />中，并且可能是在您不知情的情况下添加的）。</translation>
+<translation id="162629503687514352">Chrome 操作系统无法同步您的密码。</translation>
 <translation id="1628000112320670027">获取有关 Chrome 的帮助</translation>
 <translation id="1662639173275167396">Chrome 操作系统是借助了其他<ph name="BEGIN_LINK_CROS_OSS" />开放源代码软件<ph name="END_LINK_CROS_OSS" />才得以问世，<ph name="BEGIN_LINK_LINUX_OSS" />Linux（测试版）<ph name="END_LINK_LINUX_OSS" />也是如此。</translation>
 <translation id="1666409074978194368">即将更新到最新版本！重新启动 Google Chrome 即可完成更新。无痕式窗口不会重新打开。</translation>
@@ -75,6 +76,7 @@
 <translation id="3065168410429928842">Chrome 标签页</translation>
 <translation id="3080151273017101988">关闭 Google Chrome 后继续运行后台应用</translation>
 <translation id="3089968997497233615">Google Chrome 浏览器现已推出更安全的新版本。</translation>
+<translation id="3127818369811890733">Chrome 操作系统无法同步您的数据。</translation>
 <translation id="3149510190863420837">Chrome 应用</translation>
 <translation id="3360895254066713204">Chrome 浏览器帮助应用</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome 将立即重新启动}=1{Chrome 将在 1 秒后重新启动}other{Chrome 将在 # 秒后重新启动}}</translation>

@@ -729,9 +729,6 @@ extern const char kMarkHttpAsWarningAndDangerousOnFormEdits[];
 extern const char kMediaHistoryName[];
 extern const char kMediaHistoryDescription[];
 
-extern const char kMediaInspectorLoggingName[];
-extern const char kMediaInspectorLoggingDescription[];
-
 extern const char kMediaRouterCastAllowAllIPsName[];
 extern const char kMediaRouterCastAllowAllIPsDescription[];
 
@@ -1552,6 +1549,8 @@ extern const char kQueryTilesName[];
 extern const char kQueryTilesDescription[];
 extern const char kQueryTilesOmniboxName[];
 extern const char kQueryTilesOmniboxDescription[];
+extern const char kQueryTilesSingleTierName[];
+extern const char kQueryTilesSingleTierDescription[];
 extern const char kQueryTilesEnableQueryEditingName[];
 extern const char kQueryTilesEnableQueryEditingDescription[];
 extern const char kQueryTilesCountryCode[];
@@ -1561,7 +1560,7 @@ extern const char kQueryTilesCountryCodeIndia[];
 extern const char kQueryTilesCountryCodeBrazil[];
 extern const char kQueryTilesCountryCodeNigeria[];
 extern const char kQueryTilesCountryCodeIndonesia[];
-extern const char kQueryTilesInstantFetch[];
+extern const char kQueryTilesInstantFetchName[];
 extern const char kQueryTilesInstantFetchDescription[];
 
 extern const char kReaderModeHeuristicsName[];

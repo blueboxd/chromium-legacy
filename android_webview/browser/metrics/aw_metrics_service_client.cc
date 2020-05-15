@@ -89,6 +89,8 @@ void AwMetricsServiceClient::OnMetricsStart() {
   delegate_->AddWebViewAppStateObserver(this);
 }
 
+void AwMetricsServiceClient::OnMetricsNotStarted() {}
+
 int AwMetricsServiceClient::GetPackageNameLimitRatePerMille() {
   return kPackageNameLimitRatePerMille;
 }

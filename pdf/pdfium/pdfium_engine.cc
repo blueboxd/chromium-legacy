@@ -357,6 +357,14 @@ void SetSelectedText(pp::Instance* instance, const std::string& selected_text) {
   pp::PDF::SetSelectedText(instance, selected_text.c_str());
 }
 
+PDFiumEngine::SetLinkUnderCursorFunction
+    g_set_link_under_cursor_func_for_testing = nullptr;
+
+void SetLinkUnderCursor(pp::Instance* instance,
+                        const std::string& link_under_cursor) {
+  pp::PDF::SetLinkUnderCursor(instance, link_under_cursor.c_str());
+}
+
 }  // namespace
 
 void InitializeSDK(bool enable_v8) {
@@ -440,6 +448,12 @@ void PDFiumEngine::SetDocumentLoaderForTesting(
 void PDFiumEngine::OverrideSetSelectedTextFunctionForTesting(
     SetSelectedTextFunction function) {
   g_set_selected_text_func_for_testing = function;
+}
+
+// static
+void PDFiumEngine::OverrideSetLinkUnderCursorFunctionForTesting(
+    SetLinkUnderCursorFunction function) {
+  g_set_link_under_cursor_func_for_testing = function;
 }
 
 bool PDFiumEngine::New(const char* url, const char* headers) {
@@ -1359,11 +1373,7 @@ bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
                        page_y);
     }
 
-    std::string url = GetLinkAtPosition(event.GetPosition());
-    if (url != link_under_cursor_) {
-      link_under_cursor_ = url;
-      pp::PDF::SetLinkUnderCursor(GetPluginInstance(), url.c_str());
-    }
+    UpdateLinkUnderCursor(GetLinkAtPosition(event.GetPosition()));
 
     // If in form text area while left mouse button is held down, check if form
     // text selection needs to be updated.
@@ -3679,7 +3689,9 @@ void PDFiumEngine::ScrollIntoView(const pp::Rect& rect) {
   }
 }
 
-void PDFiumEngine::OnFocusedAnnotationUpdated(FPDF_ANNOTATION annot) {
+void PDFiumEngine::OnFocusedAnnotationUpdated(FPDF_ANNOTATION annot,
+                                              int page_index) {
+  SetLinkUnderCursorForAnnotation(annot, page_index);
   int form_type = FPDFAnnot_GetFormFieldType(form(), annot);
   if (form_type <= FPDF_FORMFIELD_UNKNOWN) {
     SetInFormTextArea(false);
@@ -3934,6 +3946,31 @@ void PDFiumEngine::UpdatePageCount() {
   InvalidateAllPages();
 }
 #endif  // defined(PDF_ENABLE_XFA)
+
+void PDFiumEngine::UpdateLinkUnderCursor(const std::string& target_url) {
+  if (link_under_cursor_ == target_url)
+    return;
+
+  link_under_cursor_ = target_url;
+
+  SetLinkUnderCursorFunction set_link_under_cursor_func =
+      g_set_link_under_cursor_func_for_testing
+          ? g_set_link_under_cursor_func_for_testing
+          : &SetLinkUnderCursor;
+  set_link_under_cursor_func(GetPluginInstance(), link_under_cursor_);
+}
+
+void PDFiumEngine::SetLinkUnderCursorForAnnotation(FPDF_ANNOTATION annot,
+                                                   int page_index) {
+  if (!PageIndexInBounds(page_index)) {
+    UpdateLinkUnderCursor("");
+    return;
+  }
+
+  PDFiumPage::LinkTarget target;
+  pages_[page_index]->GetLinkTarget(FPDFAnnot_GetLink(annot), &target);
+  UpdateLinkUnderCursor(target.url);
+}
 
 PDFiumEngine::ProgressivePaint::ProgressivePaint(int index,
                                                  const pp::Rect& rect)

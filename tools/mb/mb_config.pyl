@@ -417,7 +417,7 @@
       'GPU FYI Mac Builder': 'gpu_fyi_tests_release_trybot',
       'GPU FYI Mac Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
       'GPU FYI Mac dEQP Builder': 'angle_deqp_release_trybot',
-      'GPU FYI Perf Android 64 Builder': 'gpu_fyi_tests_android_vulkan_ndk_release_trybot_arm64',
+      'GPU FYI Perf Android 64 Builder': 'gpu_fyi_tests_android_vulkan_ndk_release_trybot_dcheck_off_arm64',
       'GPU FYI Win Builder': 'gpu_fyi_tests_release_trybot_x86',
       'GPU FYI Win Builder (dbg)': 'gpu_fyi_tests_debug_trybot_x86',
       'GPU FYI Win dEQP Builder': 'angle_deqp_release_trybot_x86',
@@ -1670,6 +1670,11 @@
     'gpu_fyi_tests_android_vulkan_ndk_release_trybot_arm64': [
       'gpu_fyi_android_tests', 'vulkan_ndk', 'release_trybot', 'arm64',
       'static_angle',
+    ],
+
+    'gpu_fyi_tests_android_vulkan_ndk_release_trybot_dcheck_off_arm64': [
+      'gpu_fyi_android_tests', 'vulkan_ndk', 'release_trybot_dcheck_off',
+      'arm64', 'static_angle',
     ],
 
     'gpu_fyi_tests_chromeos_amd64_release_trybot_dcheck_off': [

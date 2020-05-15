@@ -152,7 +152,8 @@ std::unique_ptr<FormField> PhoneField::Parse(AutofillScanner* scanner,
       if (!ParsePhoneField(
               scanner, GetRegExp(kPhoneFieldGrammars[i].regex),
               &parsed_fields[kPhoneFieldGrammars[i].phone_part],
-              {log_manager, GetRegExpName(kPhoneFieldGrammars[i].regex)}))
+              {log_manager, GetRegExpName(kPhoneFieldGrammars[i].regex)},
+              (kPhoneFieldGrammars[i].phone_part == FIELD_COUNTRY_CODE)))
         break;
       if (kPhoneFieldGrammars[i].max_size &&
           (!parsed_fields[kPhoneFieldGrammars[i].phone_part]->max_length ||
@@ -196,10 +197,12 @@ std::unique_ptr<FormField> PhoneField::Parse(AutofillScanner* scanner,
   if (!phone_field->parsed_phone_fields_[FIELD_SUFFIX]) {
     if (!ParsePhoneField(scanner, kPhoneSuffixRe,
                          &phone_field->parsed_phone_fields_[FIELD_SUFFIX],
-                         {log_manager, "kPhoneSuffixRe"})) {
+                         {log_manager, "kPhoneSuffixRe"},
+                         /*is_country_code_field=*/false)) {
       ParsePhoneField(scanner, kPhoneSuffixSeparatorRe,
                       &phone_field->parsed_phone_fields_[FIELD_SUFFIX],
-                      {log_manager, "kPhoneSuffixSeparatorRe"});
+                      {log_manager, "kPhoneSuffixSeparatorRe"},
+                      /*is_country_code_field=*/false);
     }
   }
 
@@ -208,7 +211,8 @@ std::unique_ptr<FormField> PhoneField::Parse(AutofillScanner* scanner,
   // parsers do not mistaken it for something else.
   ParsePhoneField(scanner, kPhoneExtensionRe,
                   &phone_field->parsed_phone_fields_[FIELD_EXTENSION],
-                  {log_manager, "kPhoneExtensionRe"});
+                  {log_manager, "kPhoneExtensionRe"},
+                  /*is_country_code_field=*/false);
 
   return std::move(phone_field);
 }
@@ -323,9 +327,14 @@ const char* PhoneField::GetRegExpName(RegexType regex_id) {
 bool PhoneField::ParsePhoneField(AutofillScanner* scanner,
                                  const std::string& regex,
                                  AutofillField** field,
-                                 const RegExLogging& logging) {
-  return ParseFieldSpecifics(scanner, base::UTF8ToUTF16(regex),
-                             MATCH_DEFAULT | MATCH_TELEPHONE | MATCH_NUMBER,
+                                 const RegExLogging& logging,
+                                 const bool is_country_code_field) {
+  int match_type = MATCH_DEFAULT | MATCH_TELEPHONE | MATCH_NUMBER;
+  // Include the selection boxes too for the matching of the phone country code.
+  if (is_country_code_field)
+    match_type |= MATCH_SELECT;
+
+  return ParseFieldSpecifics(scanner, base::UTF8ToUTF16(regex), match_type,
                              field, logging);
 }
 

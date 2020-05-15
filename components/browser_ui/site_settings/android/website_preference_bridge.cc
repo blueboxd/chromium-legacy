@@ -1017,6 +1017,15 @@ static jboolean JNI_WebsitePreferenceBridge_IsContentSettingManaged(
       static_cast<ContentSettingsType>(content_settings_type));
 }
 
+static jboolean JNI_WebsitePreferenceBridge_IsCookieDeletionDisabled(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jbrowser_context_handle,
+    const JavaParamRef<jstring>& jorigin) {
+  std::string origin = ConvertJavaStringToUTF8(env, jorigin);
+  return permissions::PermissionsClient::Get()->IsCookieDeletionDisabled(
+      unwrap(jbrowser_context_handle), GURL(origin));
+}
+
 static jboolean JNI_WebsitePreferenceBridge_IsContentSettingEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& jbrowser_context_handle,

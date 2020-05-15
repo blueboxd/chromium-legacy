@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Automatische downloads</translation>
 <translation id="5677928146339483299">Geblokkeerd</translation>
 <translation id="5689516760719285838">Locatie</translation>
+<translation id="5690795753582697420">Camera is uitgeschakeld in de Android-instellingen</translation>
 <translation id="5710871682236653961">Vragen voordat sites informatie mogen sturen en ontvangen als je NFC-apparaten tegen elkaar houdt (aanbevolen)</translation>
 <translation id="5719847187258001597">Hiermee wis je alle gegevens en cookies die zijn opgeslagen door <ph name="ORIGIN" /> of de bijbehorende app op je startscherm.</translation>
 <translation id="5804241973901381774">Rechten</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Meer</translation>
 <translation id="6064125863973209585">Voltooide downloads</translation>
 <translation id="6165508094623778733">Meer informatie</translation>
+<translation id="6177111841848151710">Geblokkeerd voor de huidige zoekmachine</translation>
 <translation id="6181444274883918285">Site-uitzondering toevoegen</translation>
 <translation id="6192792657125177640">Uitzonderingen</translation>
 <translation id="6194112207524046168">Als je Chrome toegang wilt geven tot je camera, moet je de camera ook inschakelen via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Deze pagina is gevaarlijk. Site-informatie</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6992289844737586249">Eerst vragen voordat sites je microfoon mogen gebruiken (aanbevolen)</translation>
+<translation id="7000754031042624318">Uitgeschakeld in Android-instellingen</translation>
+<translation id="7016516562562142042">Toegestaan voor huidige zoekmachine</translation>
 <translation id="7053983685419859001">Blokkeren</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 geselecteerd}other{# geselecteerd}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> geselecteerd. Opties beschikbaar bovenaan het scherm.</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Geluid toestaan voor een specifieke site.</translation>
 <translation id="7993619969781047893">Functies op bepaalde sites werken mogelijk niet meer</translation>
 <translation id="7999064672810608036">Weet je zeker dat je alle gegevens, inclusief cookies, voor deze website wilt wissen en alle rechten opnieuw wilt instellen?</translation>
+<translation id="8007176423574883786">Uitgeschakeld voor dit apparaat</translation>
 <translation id="802154636333426148">Downloaden mislukt</translation>
 <translation id="8087000398470557479">Deze content is afkomstig van <ph name="DOMAIN_NAME" />, geleverd door Google.</translation>
 <translation id="8116925261070264013">Gedempt</translation>

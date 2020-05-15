@@ -363,9 +363,9 @@ class TestMetricsReporter : public MetricsReporter {
       : MetricsReporter(clock) {}
 
   // MetricsReporter.
-  void ContentSliceViewed(int index_in_stream) override {
+  void ContentSliceViewed(SurfaceId surface_id, int index_in_stream) override {
     slice_viewed_index = index_in_stream;
-    MetricsReporter::ContentSliceViewed(index_in_stream);
+    MetricsReporter::ContentSliceViewed(surface_id, index_in_stream);
   }
   void OnLoadStream(LoadStreamStatus load_from_store_status,
                     LoadStreamStatus final_status) override {
@@ -1026,6 +1026,7 @@ TEST_F(FeedStreamTest, ReportSliceViewedIdentifiesCorrectIndex) {
   WaitForIdleTaskQueue();
 
   stream_->ReportSliceViewed(
+      surface.GetSurfaceId(),
       surface.initial_state->updated_slices(1).slice().slice_id());
   EXPECT_EQ(1, metrics_reporter_.slice_viewed_index);
 }
@@ -1038,13 +1039,13 @@ TEST_F(FeedStreamTest, LoadMoreAppendsContent) {
   // Load page 2.
   response_translator_.InjectResponse(MakeTypicalNextPageState(2));
   CallbackReceiver<bool> callback;
-  stream_->LoadMore(callback.Bind());
+  stream_->LoadMore(surface.GetSurfaceId(), callback.Bind());
   WaitForIdleTaskQueue();
   ASSERT_EQ(base::Optional<bool>(true), callback.GetResult());
   EXPECT_EQ("2 slices +spinner -> 4 slices", surface.DescribeUpdates());
   // Load page 3.
   response_translator_.InjectResponse(MakeTypicalNextPageState(3));
-  stream_->LoadMore(callback.Bind());
+  stream_->LoadMore(surface.GetSurfaceId(), callback.Bind());
 
   WaitForIdleTaskQueue();
   ASSERT_EQ(base::Optional<bool>(true), callback.GetResult());
@@ -1060,7 +1061,7 @@ TEST_F(FeedStreamTest, LoadMorePersistsData) {
   // Load page 2.
   response_translator_.InjectResponse(MakeTypicalNextPageState(2));
   CallbackReceiver<bool> callback;
-  stream_->LoadMore(callback.Bind());
+  stream_->LoadMore(surface.GetSurfaceId(), callback.Bind());
 
   WaitForIdleTaskQueue();
   ASSERT_EQ(base::Optional<bool>(true), callback.GetResult());
@@ -1081,7 +1082,7 @@ TEST_F(FeedStreamTest, LoadMorePersistAndLoadMore) {
   // Load page 2.
   response_translator_.InjectResponse(MakeTypicalNextPageState(2));
   CallbackReceiver<bool> callback;
-  stream_->LoadMore(callback.Bind());
+  stream_->LoadMore(surface.GetSurfaceId(), callback.Bind());
   WaitForIdleTaskQueue();
   ASSERT_EQ(base::Optional<bool>(true), callback.GetResult());
 
@@ -1094,7 +1095,7 @@ TEST_F(FeedStreamTest, LoadMorePersistAndLoadMore) {
   WaitForIdleTaskQueue();
   callback.Clear();
   surface.Clear();
-  stream_->LoadMore(callback.Bind());
+  stream_->LoadMore(surface.GetSurfaceId(), callback.Bind());
   WaitForIdleTaskQueue();
 
   ASSERT_EQ(base::Optional<bool>(true), callback.GetResult());
@@ -1113,7 +1114,7 @@ TEST_F(FeedStreamTest, LoadMoreSendsTokens) {
   stream_->GetMetadata()->SetConsistencyToken("token-1");
   response_translator_.InjectResponse(MakeTypicalNextPageState(2));
   CallbackReceiver<bool> callback;
-  stream_->LoadMore(callback.Bind());
+  stream_->LoadMore(surface.GetSurfaceId(), callback.Bind());
 
   WaitForIdleTaskQueue();
   ASSERT_EQ("2 slices +spinner -> 4 slices", surface.DescribeUpdates());
@@ -1129,7 +1130,7 @@ TEST_F(FeedStreamTest, LoadMoreSendsTokens) {
 
   stream_->GetMetadata()->SetConsistencyToken("token-2");
   response_translator_.InjectResponse(MakeTypicalNextPageState(3));
-  stream_->LoadMore(callback.Bind());
+  stream_->LoadMore(surface.GetSurfaceId(), callback.Bind());
 
   WaitForIdleTaskQueue();
   ASSERT_EQ("4 slices +spinner -> 6 slices", surface.DescribeUpdates());
@@ -1153,7 +1154,7 @@ TEST_F(FeedStreamTest, LoadMoreFail) {
   // Don't inject another response, which results in a proto translation
   // failure.
   CallbackReceiver<bool> callback;
-  stream_->LoadMore(callback.Bind());
+  stream_->LoadMore(surface.GetSurfaceId(), callback.Bind());
   WaitForIdleTaskQueue();
 
   EXPECT_EQ(base::Optional<bool>(false), callback.GetResult());
@@ -1169,7 +1170,7 @@ TEST_F(FeedStreamTest, LoadMoreWithClearAllInResponse) {
   // Use a different initial state (which includes a CLEAR_ALL).
   response_translator_.InjectResponse(MakeTypicalInitialModelState(5));
   CallbackReceiver<bool> callback;
-  stream_->LoadMore(callback.Bind());
+  stream_->LoadMore(surface.GetSurfaceId(), callback.Bind());
 
   WaitForIdleTaskQueue();
   ASSERT_EQ(base::Optional<bool>(true), callback.GetResult());
@@ -1197,7 +1198,7 @@ TEST_F(FeedStreamTest, LoadMoreWithClearAllInResponse) {
 
 TEST_F(FeedStreamTest, LoadMoreBeforeLoad) {
   CallbackReceiver<bool> callback;
-  stream_->LoadMore(callback.Bind());
+  stream_->LoadMore(SurfaceId(), callback.Bind());
 
   EXPECT_EQ(base::Optional<bool>(false), callback.GetResult());
 }
@@ -1296,7 +1297,7 @@ TEST_F(FeedStreamTest, LoadMoreUploadsActions) {
 
   network_.consistency_token = "token-12";
 
-  stream_->LoadMore(base::DoNothing());
+  stream_->LoadMore(surface.GetSurfaceId(), base::DoNothing());
   WaitForIdleTaskQueue();
 
   EXPECT_EQ(

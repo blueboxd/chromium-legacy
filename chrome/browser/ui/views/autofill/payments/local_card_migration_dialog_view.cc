@@ -351,17 +351,15 @@ LocalCardMigrationDialogView::LocalCardMigrationDialogView(
     LocalCardMigrationDialogController* controller,
     content::WebContents* web_contents)
     : controller_(controller), web_contents_(web_contents) {
-  DialogDelegate::SetButtons(controller_->AllCardsInvalid()
-                                  ? ui::DIALOG_BUTTON_OK
-                                  : ui::DIALOG_BUTTON_OK |
-                                        ui::DIALOG_BUTTON_CANCEL);
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK, GetOkButtonLabel());
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
-                                   GetCancelButtonLabel());
-  DialogDelegate::SetCancelCallback(
+  SetButtons(controller_->AllCardsInvalid()
+                 ? ui::DIALOG_BUTTON_OK
+                 : ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, GetOkButtonLabel());
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, GetCancelButtonLabel());
+  SetCancelCallback(
       base::BindOnce(&LocalCardMigrationDialogView::OnDialogCancelled,
                      base::Unretained(this)));
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
+  SetAcceptCallback(base::BindOnce(
       &LocalCardMigrationDialogView::OnDialogAccepted, base::Unretained(this)));
   set_close_on_deactivate(false);
   set_margins(gfx::Insets());

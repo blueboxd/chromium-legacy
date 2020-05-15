@@ -377,15 +377,15 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
       (dialog->controller_.*func)();
     };
 
-    DialogDelegate::SetAcceptCallback(base::BindOnce(
-        button_clicked, base::Unretained(this), &Controller::OnSaveClicked));
-    DialogDelegate::SetCancelCallback(base::BindOnce(
+    SetAcceptCallback(base::BindOnce(button_clicked, base::Unretained(this),
+                                     &Controller::OnSaveClicked));
+    SetCancelCallback(base::BindOnce(
         button_clicked, base::Unretained(this),
         is_update_bubble_ ? &Controller::OnNopeUpdateClicked
                           : &Controller::OnNeverForThisSiteClicked));
   }
 
-  DialogDelegate::SetFootnoteView(CreateFooterView());
+  SetFootnoteView(CreateFooterView());
   UpdateDialogButtonsAndAccountPickerVisiblity();
 }
 
@@ -511,13 +511,13 @@ void PasswordSaveUpdateWithAccountStoreView::
 
 void PasswordSaveUpdateWithAccountStoreView::
     UpdateDialogButtonsAndAccountPickerVisiblity() {
-  DialogDelegate::SetButtons((ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
-  DialogDelegate::SetButtonLabel(
+  SetButtons((ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(controller_.IsCurrentStateUpdate()
                                     ? IDS_PASSWORD_MANAGER_UPDATE_BUTTON
                                     : IDS_PASSWORD_MANAGER_SAVE_BUTTON));
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(
           is_update_bubble_ ? IDS_PASSWORD_MANAGER_CANCEL_BUTTON

@@ -4282,6 +4282,7 @@ if (enable_java_templates) {
     _java_library_vars = [
       "enable_bytecode_checks",
       "enable_bytecode_rewriter",
+      "missing_classes_allowlist",
       "enable_jetify",
       "jar_excluded_patterns",
       "jar_included_patterns",
@@ -4443,6 +4444,10 @@ if (enable_java_templates) {
   #    verify_native_libs_and_assets: (optional): If true, will verify the list
   #      of included native libraries and assets is consistent with an
   #      expectation file.
+  #
+  #    default_modules_for_testing: (optional): A list of DFM that the wrapper
+  #      script should install. This is for local testing only, and does not
+  #      affect the actual DFM in production.
   # Example:
   #   android_app_bundle("chrome_public_bundle") {
   #      base_module_target = "//chrome/android:chrome_public_apk"
@@ -4911,6 +4916,9 @@ if (enable_java_templates) {
         "--key-name",
         _keystore_name,
       ]
+      if (defined(invoker.default_modules_for_testing)) {
+        args += [ "--default-modules" ] + invoker.default_modules_for_testing
+      }
       if (defined(invoker.system_image_locale_allowlist)) {
         args += [
           "--system-image-locales=${invoker.system_image_locale_allowlist}",

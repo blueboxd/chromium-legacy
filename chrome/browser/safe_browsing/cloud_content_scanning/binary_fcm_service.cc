@@ -9,6 +9,8 @@
 #include "base/base64.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
@@ -106,14 +108,49 @@ void BinaryFCMService::UnregisterInstanceID(
   }
 }
 
+void BinaryFCMService::SetQueuedOperationDelayForTesting(
+    base::TimeDelta delay) {
+  delay_between_pending_attempts_ = delay;
+}
+
 void BinaryFCMService::OnGetInstanceID(GetInstanceIDCallback callback,
                                        const std::string& instance_id,
                                        instance_id::InstanceID::Result result) {
   if (result == instance_id::InstanceID::SUCCESS) {
     instance_id_caller_counts_[instance_id]++;
     std::move(callback).Run(instance_id);
+
+    // If we have queued operations, we know there is no async operation
+    // currently pending, so start running the next operation early.
+    if (!pending_token_calls_.empty()) {
+      MaybeRunNextQueuedOperation();
+    }
+  } else if (result == instance_id::InstanceID::ASYNC_OPERATION_PENDING) {
+    pending_token_calls_.push_back(
+        base::BindOnce(&BinaryFCMService::GetInstanceID,
+                       weakptr_factory_.GetWeakPtr(), std::move(callback)));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&BinaryFCMService::MaybeRunNextQueuedOperation,
+                       weakptr_factory_.GetWeakPtr()),
+        delay_between_pending_attempts_);
   } else {
     std::move(callback).Run(kInvalidId);
+  }
+}
+
+void BinaryFCMService::MaybeRunNextQueuedOperation() {
+  if (!pending_token_calls_.empty()) {
+    base::OnceClosure pending_operation =
+        std::move(pending_token_calls_.front());
+    pending_token_calls_.pop_front();
+    std::move(pending_operation).Run();
+
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&BinaryFCMService::MaybeRunNextQueuedOperation,
+                       weakptr_factory_.GetWeakPtr()),
+        delay_between_pending_attempts_);
   }
 }
 

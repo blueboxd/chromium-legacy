@@ -448,20 +448,22 @@ bool DownloadManagerImpl::ShouldCompleteDownload(
   return false;
 }
 
-bool DownloadManagerImpl::ShouldOpenFileBasedOnExtension(
+bool DownloadManagerImpl::ShouldAutomaticallyOpenFile(
+    const GURL& url,
     const base::FilePath& path) {
   if (!delegate_)
     return false;
 
-  return delegate_->ShouldOpenFileBasedOnExtension(path);
+  return delegate_->ShouldAutomaticallyOpenFile(url, path);
 }
 
-bool DownloadManagerImpl::ShouldOpenFileByPolicyBasedOnExtension(
+bool DownloadManagerImpl::ShouldAutomaticallyOpenFileByPolicy(
+    const GURL& url,
     const base::FilePath& path) {
   if (!delegate_)
     return false;
 
-  return delegate_->ShouldOpenFileByPolicyBasedOnExtension(path);
+  return delegate_->ShouldAutomaticallyOpenFileByPolicy(url, path);
 }
 
 bool DownloadManagerImpl::ShouldOpenDownload(

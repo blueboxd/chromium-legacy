@@ -52,6 +52,7 @@
 <translation id="1056775291175587022">নেটৱৰ্ক নাই</translation>
 <translation id="1056898198331236512">সতর্কবার্তা</translation>
 <translation id="1058262162121953039">PUK</translation>
+<translation id="1060292118287751956">স্ক্ৰীনখন আপডে’ট হোৱা সঘনতা নিৰ্দিষ্ট কৰে</translation>
 <translation id="1061904396131502319">ডিভাইচ লক হওঁ হওঁ</translation>
 <translation id="1064552680598333868">পাছৰবাৰ Linux ৰিষ্টাৰ্ট কৰিলে মাইক্ৰ’ফ’নত কৰা সালসলনিবোৰ কাৰ্যকৰী হ’ব।</translation>
 <translation id="1067048845568873861">সৃষ্টি কৰা হ’ল</translation>
@@ -151,6 +152,7 @@
 <translation id="11901918071949011">{NUM_FILES,plural, =1{আপোনাৰ কম্পিউটাৰত ষ্ট’ৰ কৰি এটা কোনো ফাইল এক্সেছ কৰক}one{আপোনাৰ কম্পিউটাৰত ষ্ট’ৰ কৰি ৰখা #টা ফাইল এক্সেছ কৰক}other{আপোনাৰ কম্পিউটাৰত ষ্ট’ৰ কৰি ৰখা #টা ফাইল এক্সেছ কৰক}}</translation>
 <translation id="119092896208640858">আপোনাৰ Google একাউণ্টত ব্ৰাউজিং ডেটা ৰাখি কেৱল এই ডিভাইচৰ পৰা সেই ডেটা মচিবলৈ <ph name="BEGIN_LINK" />ছাইন আউট কৰক<ph name="END_LINK" />।</translation>
 <translation id="1193273168751563528">পৰিচালিত ছেশ্বন উল্লেখ কৰক</translation>
+<translation id="1193927020065025187">এই ছাইটটোৱে আপোনাক বিনা অনুমতিত দেখুওৱা জাননীৰ অনুমতি দিবলৈ জালত পেলাব পাৰে</translation>
 <translation id="1195447618553298278">অজ্ঞাত আসোঁৱাহ।</translation>
 <translation id="1195558154361252544">আপুনি অনুমতি দিয়াটোৰ বাদে আন সকলো ছাইটৰ বাবে জাননীসমূহ স্বয়ংক্ৰিয়ভাৱে অৱৰোধ কৰা হয়</translation>
 <translation id="1197088940767939838">কমলা</translation>
@@ -400,6 +402,7 @@
 <translation id="1510785804673676069">আপুনি যদি এটা প্ৰক্সি ছাৰ্ভাৰ ব্যৱহাৰ কৰি আছে তেন্তে প্ৰক্সি ছেটিংসমূহ পৰীক্ষা কৰক বা প্ৰক্সি ছার্ভাৰে কাম কৰি থকাটো পৰীক্ষা কৰিবলৈ নিজৰ নেটৱর্ক প্ৰশাসকৰ সৈতে যোগাযোগ কৰক। যদি আপুনি বিশ্বাস কৰা নাই তেন্তে আপুনি কোনো প্ৰ’ক্সি ছার্ভাৰ ব্যৱহাৰ কৰি আছে , অনুগ্ৰহ কৰি আপোনাৰ : <ph name="LINK_START" />প্ৰক্সি ছেটিংসমূহ<ph name="LINK_END" />.মিলাওক।</translation>
 <translation id="1511997356770098059">এই সুৰক্ষাৰ চাবিটোৱে কোনো ছাইন-ইন ডেটা ষ্ট'ৰ কৰিব নোৱাৰে।</translation>
 <translation id="1512210426710821809">এইটো আনডু কৰাৰ একমাত্ৰ উপায় হৈছে <ph name="IDS_SHORT_PRODUCT_OS_NAME" />পুনৰ ইনষ্টল কৰা</translation>
+<translation id="1512642802859169995"><ph name="FILE_NAME" /> এনক্ৰিপ্ট কৰা আছে। এইটোৰ গৰাকীক ডিক্ৰিপ্ট কৰিবলৈ কওক।</translation>
 <translation id="151501797353681931">Safariৰ পৰা আমদানি কৰা হৈছে</translation>
 <translation id="1515163294334130951">লঞ্চ কৰক</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> - হ’ষ্ট</translation>
@@ -413,6 +416,7 @@
 <translation id="152629053603783244">Linux ৰিষ্টাৰ্ট কৰক</translation>
 <translation id="1526335046150927198">টাচ্‌পেড স্ক্ৰ’ল এক্সিলাৰেশ্বন সক্ষম কৰক</translation>
 <translation id="1526560967942511387">শিৰোনামবিহীন নথি</translation>
+<translation id="1527336312600375509">মনিটৰৰ ৰিফ্ৰেশ্বৰ হাৰ</translation>
 <translation id="1529891865407786369">পাৱাৰৰ উৎস</translation>
 <translation id="1530838837447122178">মাউছ আৰু টাচ্চ্‌পেড ডিভাইচৰ ছেটিংসমূহ খোলক</translation>
 <translation id="1531004739673299060">এপ্লিকেশ্বন ৱিণ্ড’</translation>
@@ -486,6 +490,7 @@
 <translation id="161460670679785907">আপোনাৰ ফ’ন চিনাক্ত কৰিবলৈ সক্ষম নহ’ল</translation>
 <translation id="1616206807336925449">এই এক্সটেনশ্বনটোৰ বাবে কোনো বিশেষ অনুমতি ল'ব নালাগে।</translation>
 <translation id="1616298854599875024">এক্সটেনশ্বন "<ph name="IMPORT_NAME" />" আমদানি কৰিব পৰা নগ'ল কাৰণ এইটো এটা শ্বেয়াৰ কৰা মডিউল নহয়</translation>
+<translation id="1617765145568323981">{NUM_FILES,plural, =0{এই ডেটাখিনি আপোনাৰ প্ৰতিষ্ঠানৰ সুৰক্ষা নীতিসমূহৰ জৰিয়তে পৰীক্ষা কৰি থকা হৈছে...}=1{এই ফাইলটো আপোনাৰ প্ৰতিষ্ঠানৰ সুৰক্ষা নীতিসমূহৰ জৰিয়তে পৰীক্ষা কৰি থকা হৈছে...}one{এই ফাইলসমূহ আপোনাৰ প্ৰতিষ্ঠানৰ সুৰক্ষা নীতিসমূহৰ জৰিয়তে পৰীক্ষা কৰি থকা হৈছে...}other{এই ফাইলসমূহ আপোনাৰ প্ৰতিষ্ঠানৰ সুৰক্ষা নীতিসমূহৰ জৰিয়তে পৰীক্ষা কৰি থকা হৈছে...}}</translation>
 <translation id="1618268899808219593">স&amp;হায়তা কেন্দ্ৰ</translation>
 <translation id="1620307519959413822">ভুল পাছৱৰ্ড। পুনৰ চেষ্টা কৰক অথবা সেইটো ৰিছেট কৰিবলৈ পাছৱৰ্ড পাহৰিলোঁত ক্লিক কৰক।</translation>
 <translation id="1620510694547887537">কেমেৰা</translation>
@@ -520,7 +525,6 @@
 <translation id="1650371550981945235">ইনপুটৰ বিকল্প দেখুৱাওক</translation>
 <translation id="1651008383952180276">আপুনি একেটা পাছফ্ৰেজ দুবাৰ দিবই লাগিব</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{আপুনি যিকোনো ঠাইৰে পৰা প্ৰিণ্ট কৰিবলৈ Google ক্লাউড প্ৰিণ্টত প্ৰিণ্টাৰটো যোগ কৰক।}one{আপুনি যিকোনো ঠাইৰে পৰা প্ৰিণ্ট কৰিবলৈ Google ক্লাউড প্ৰিণ্টত #টা প্ৰিণ্টাৰ যোগ কৰক।}other{আপুনি যিকোনো ঠাইৰে পৰা প্ৰিণ্ট কৰিবলৈ Google ক্লাউড প্ৰিণ্টত #টা প্ৰিণ্টাৰ যোগ কৰক।}}</translation>
-<translation id="1655937588105566159">{NUM_EXTENSIONS,plural, =1{এই এক্সটেনশ্বনটো বিপজ্জনক হ’ব পাৰে}one{এই এক্সটেনশ্বনসমূহ বিপজ্জনক হ’ব পাৰে}other{এই এক্সটেনশ্বনসমূহ বিপজ্জনক হ’ব পাৰে}}</translation>
 <translation id="1656528038316521561">নেপথ্যৰ অস্বচ্ছতা</translation>
 <translation id="1657406563541664238">Googleলৈ ব্যৱহাৰৰ পৰিসংখ্যা আৰু ক্ৰেশ্বৰ অভিযোগ স্বয়ংক্ৰিয়ভাৱে পঠিয়াই <ph name="PRODUCT_NAME" />ক অধিক উন্নত কৰাত সহায় কৰক</translation>
 <translation id="1657937299377480641">শিক্ষামূলক সম্পদসমূহলৈ এক্সেছৰ বাবে পুনৰ ছাইন ইন কৰিবলৈ এগৰাকী অভিভাৱকৰ অনুমতি বিচাৰক</translation>
@@ -710,7 +714,6 @@
 <translation id="1875387611427697908">ইয়াক কেৱল <ph name="CHROME_WEB_STORE" />ৰ পৰাহে যোগ কৰিব পাৰি</translation>
 <translation id="1877520246462554164">বিশ্বাসযোগ্যতা প্ৰমাণীকৰণৰ টকেন পাব পৰা নগ’ল। আকৌ চেষ্টা কৰিবলৈ এবাৰ ছাইন আউট কৰি পুনৰ ছাইন ইন কৰক।</translation>
 <translation id="1877860345998737529">আবণ্টন কৰা কার্য সলনি কৰক</translation>
-<translation id="1878541307036593717">অনুমতিসমূহ ছেট আপ কৰক</translation>
 <translation id="1879000426787380528">এইবুলি ছাইন ইন কৰক</translation>
 <translation id="1880905663253319515">প্ৰমাণপত্ৰ "<ph name="CERTIFICATE_NAME" />" মচিবনে?</translation>
 <translation id="1884013283844450420"><ph name="NETWORK_COUNT" />টা নেটৱৰ্কৰ <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, সংযোগ কৰক</translation>
@@ -1003,6 +1006,7 @@
 <translation id="2262332168014443534">বর্তমান লাইট ম'ডে HTTPSৰ লগতে সকলো পৃষ্ঠাতে ব্ৰাউজিং ক্ষিপ্ৰ কৰে।</translation>
 <translation id="2262477216570151239">পুনৰাবৃত্তিৰ পূর্বে হোৱা বিলম্ব</translation>
 <translation id="2263189956353037928">ছাইন আউট হৈ আকৌ ছাইন ইন কৰক</translation>
+<translation id="2263371730707937087">স্ক্ৰীনৰ ৰিফ্ৰেশ্বৰ হাৰ</translation>
 <translation id="2263497240924215535">(অক্ষম কৰা আছে)</translation>
 <translation id="22665427234727190">কোনো ছাইটে ব্লুটুথ ডিভাইচসমূহ এক্সেছ কৰিবলৈ বিচাৰিলে সোধক (চুপাৰিছ কৰা হয়)</translation>
 <translation id="2266957463645820432">USB (IPPUSB)ৰ মাধ্যমেৰে IPP</translation>
@@ -1104,6 +1108,7 @@
 <translation id="2391419135980381625">মান্য ফণ্ট</translation>
 <translation id="2392163307141705938">আপোনাৰ অভিভাৱকে <ph name="IDS_SHORT_PRODUCT_NAME" />ৰ বাবে ছেট কৰা সময়সীমাত আপুনি উপনীত হৈছে।</translation>
 <translation id="2392369802118427583">সক্ৰিয় কৰক</translation>
+<translation id="2393136602862631930">আপোনাৰ Chromebookত <ph name="APP_NAME" /> ছেট আপ কৰক</translation>
 <translation id="2394566832561516196">পৰৱৰ্তী সময়ত পুনৰ ল'ড হ'লে ছেটিংসমূহ মচা যাব।</translation>
 <translation id="2395616325548404795">আপোনাৰ <ph name="DEVICE_TYPE" /> এণ্টাৰপ্ৰাইজ পৰিচালনাৰ বাবে পঞ্জীয়ন কৰা হ’ল, কিন্তু ইয়াৰ সম্পত্তি আৰু অৱস্থানৰ তথ্য পঠিয়াব পৰা নগ’ল। অনুগ্ৰহ কৰি এই ডিভাইচটোৰ বাবে এই তথ্য আপোনাৰ প্ৰশাসক কনছ’লৰ পৰা মেনুৱেলী দিয়ক।</translation>
 <translation id="2396387085693598316">আপোনাৰ প্ৰশাসকে "<ph name="EXTENSION_NAME" />" অৱৰোধ কৰিছে</translation>
@@ -1211,6 +1216,7 @@
 <translation id="2517472476991765520">স্কেন কৰক</translation>
 <translation id="2518024842978892609">আপোনাৰ ক্লায়েণ্টৰ প্ৰমাণপত্ৰ ব্যৱহাৰ কৰক</translation>
 <translation id="2520644704042891903">ছকেট উপলব্ধ হোৱালৈ অপেক্ষা কৰি থকা হৈছে...</translation>
+<translation id="2521854691574443804"><ph name="FILE_NAME" />ক আপোনাৰ প্ৰতিষ্ঠানৰ সুৰক্ষা নীতিসমূহৰ জৰিয়তে পৰীক্ষা কৰি থকা হৈছে...</translation>
 <translation id="252219247728877310">উপাদান আপডে’ট কৰা হোৱা নাই</translation>
 <translation id="2523184218357549926">আপুনি চোৱা পৃষ্ঠাসমূহৰ URL Googleলৈ পঠিওৱা হয়</translation>
 <translation id="2526277209479171883">ইনষ্টল কৰি অব্যাহত ৰাখক</translation>
@@ -1390,6 +1396,7 @@
 <translation id="274290345632688601">Linux এপ্‌ আৰু ফাইলসমূহ পুনঃস্থাপন কৰি থকা হৈছে</translation>
 <translation id="2743387203779672305">ক্লিপব'ৰ্ডত প্ৰতিলিপি কৰক</translation>
 <translation id="2745080116229976798">Microsoft Qualified Subordination</translation>
+<translation id="2747266560080989517">এই ফাইলটোত সংবেদনশীল অথবা বিপজ্জনক সমল আছে। এইটোৰ গৰাকীক সমাধান কৰিবলৈ কওক।</translation>
 <translation id="2748061034695037846"><ph name="DOMAIN" /> পজ কৰা হৈছে</translation>
 <translation id="2749756011735116528"><ph name="PRODUCT_NAME" />ত ছাইন ইন কৰক</translation>
 <translation id="2749881179542288782">বানান আৰু ব্যাকৰণত থকা ভুলবোৰ চাওক</translation>
@@ -1408,6 +1415,7 @@
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" /> হিচাপে ছাইন ইন কৰিছে।</translation>
 <translation id="2770465223704140727">সূচীৰ পৰা আঁতৰাওক</translation>
 <translation id="2770690685823456775">আপোনাৰ পাছৱৰ্ড বেলেগ ফ’ল্ডাৰলৈ ৰপ্তানি কৰক</translation>
+<translation id="2770929488047004208">মনিটৰৰ ৰিজ’লিউশ্বন</translation>
 <translation id="2771268254788431918">ম’বাইল ডেটা সক্ৰিয় কৰা হল</translation>
 <translation id="2771816809568414714">চ্চীজ</translation>
 <translation id="2772936498786524345">Sneaky</translation>
@@ -1655,6 +1663,7 @@
 <translation id="3088052000289932193">ছাইটটোৱে MIDI ব্যৱহাৰ কৰি আছে</translation>
 <translation id="3088128611727407543">এপ্‌ প্ৰ’ফাইল সাজু কৰি থকা হৈছে...</translation>
 <translation id="3088325635286126843">&amp;নতুন নাম দিয়ক...</translation>
+<translation id="3089064280130434511">ছাইটসমূহক ৱিণ্ড’ খোলা আৰু আপোনাৰ স্ক্ৰীনসমূহত থোৱাৰ পৰা অৱৰোধ কৰক</translation>
 <translation id="3089137131053189723">সন্ধানৰ সমল মচা হ'ল</translation>
 <translation id="3090819949319990166">বাহ্যিক crx ফাইল <ph name="TEMP_CRX_FILE" />লৈ প্ৰতিলিপি কৰিব নোৱাৰি।</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" যোৰা লগোৱা হ’ল</translation>
@@ -1826,6 +1835,7 @@
 <translation id="3317678681329786349">কেমেৰা আৰু মাইক্ৰ’ফ’নৰ ব্যৱহাৰ অৱৰোধ কৰা হৈছে</translation>
 <translation id="3319048459796106952">নতুন &amp;ইনক'গনিট' ৱিণ্ড'</translation>
 <translation id="3320630259304269485">সুৰক্ষিত ব্ৰাউজিং (বিপজ্জনক ছাইটসমূহৰ পৰা সুৰক্ষা) আৰু অন্য সুৰক্ষা সম্পর্কীয় ছেটিংসমূহ</translation>
+<translation id="3323295311852517824">{NUM_FILES,plural, =0{এই ডেটাখিনিত সংবেদনশীল অথবা বিপজ্জনক সমল আছে। এই সমলখিনি আঁতৰাওক আৰু পুনৰ চেষ্টা কৰক।}=1{এই ফাইলটোত সংবেদনশীল অথবা বিপজ্জনক সমল আছে। এই সমলখিনি আঁতৰাওক আৰু পুনৰ চেষ্টা কৰক।}one{এই ফাইলসমূহত সংবেদনশীল অথবা বিপজ্জনক সমল আছে। এই সমলখিনি আঁতৰাওক আৰু পুনৰ চেষ্টা কৰক।}other{এই ফাইলসমূহত সংবেদনশীল অথবা বিপজ্জনক সমল আছে। এই সমলখিনি আঁতৰাওক আৰু পুনৰ চেষ্টা কৰক।}}</translation>
 <translation id="3323521181261657960">ব’নাছ! আপুনি আৰু বেছি স্ক্ৰীণ টাইম পাইছে</translation>
 <translation id="3325910708063135066">Mac ছিষ্টেম অগ্ৰাধিকাৰত কেমেৰা আৰু মাইক্ৰ’ফ’ন অফ কৰা আছে</translation>
 <translation id="3328489342742826322">বেকআপৰ পৰা পুনঃস্থাপন কৰিলে আপোনাৰ Linux ফাইলবোৰৰ ফ’ল্ডাৰত ইতিমধ্যে থকা Linux এপ্লিকেশ্বনটো মচি পেলাব।</translation>
@@ -1866,6 +1876,7 @@
 <translation id="338583716107319301">পৃথকীকাৰক</translation>
 <translation id="338691029516748599"><ph name="NETWORK_COUNT" />টা নেটৱৰ্কৰ <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, ছিগনেলৰ ক্ষমতা <ph name="SIGNAL_STRENGTH" />%, আপোনাৰ প্ৰশাসকে পৰিচালনা কৰে</translation>
 <translation id="3387614642886316601">উন্নত বানান পৰীক্ষক ব্যৱহাৰ কৰক</translation>
+<translation id="3388788256054548012">এই ফাইলটো এনক্ৰিপ্ট কৰা আছে। এইটোৰ গৰাকীক ডিক্ৰিপ্ট কৰিবলৈ কওক।</translation>
 <translation id="3390741581549395454">Linux এপ্‌ আৰু ফাইলসমূহ সফলভাৱে বেক আপ কৰা হৈছে। শীঘ্ৰেই আপগ্রে’ড আৰম্ভ হ’ব।</translation>
 <translation id="3396800784455899911">“মই সন্মত আৰু অব্যাহত ৰাখক” বুটামত ক্লিক কৰি আপুনি ওপৰত বৰ্ণনা কৰাৰ এই Google সেৱাসমূহৰ প্ৰক্ৰিয়াত সন্মতি দিছে।</translation>
 <translation id="3399432415385675819">জাননী অক্ষম কৰা হ’ব</translation>
@@ -1914,6 +1925,7 @@
 <translation id="3445047461171030979">Google Assistantৰ দ্ৰুত উত্তৰসমূহ</translation>
 <translation id="3445925074670675829">ইউএছবি চি ডিভাইচ</translation>
 <translation id="344630545793878684">আপোনাৰ ডেটা ৱেবছাইটসমূহত পঢ়ে</translation>
+<translation id="3446650212859500694">এই ফাইলটোত সংবেদনশীল সমল আছে</translation>
 <translation id="3448086340637592206">Google Chrome আৰু Chrome OSৰ অতিৰিক্ত চৰ্তাৱলী</translation>
 <translation id="3448492834076427715">একাউণ্ট আপডে'ট কৰক</translation>
 <translation id="3449393517661170867">টিপা নতুন ৱিণ্ড’</translation>
@@ -2118,6 +2130,7 @@
 <translation id="3693415264595406141">পাছৱৰ্ড:</translation>
 <translation id="3694027410380121301">পূৰ্বৱৰ্তী টেব বাছনি কৰক</translation>
 <translation id="369489984217678710">পাছৱৰ্ড আৰু ছাইন-ইনৰ অন্য ডেটা</translation>
+<translation id="369522892592566391">{NUM_FILES,plural, =0{সুৰক্ষা পৰীক্ষাসমূহ কৰা হৈছে। আপোনাৰ ডেটা আপল’ড কৰা হ’ব।}=1{সুৰক্ষা পৰীক্ষাসমূহ কৰা হৈছে। আপোনাৰ ফাইলটো আপল’ড কৰা হ’ব।}one{সুৰক্ষা পৰীক্ষাসমূহ কৰা হৈছে। আপোনাৰ ফাইলসমূহ আপল’ড কৰা হ’ব।}other{সুৰক্ষা পৰীক্ষাসমূহ কৰা হৈছে। আপোনাৰ ফাইলসমূহ আপল’ড কৰা হ’ব।}}</translation>
 <translation id="3699624789011381381">ইমেইল ঠিকনা</translation>
 <translation id="3699920817649120894">ছিংক আৰু ব্যক্তিগতকৰণ অফ কৰিবনে?</translation>
 <translation id="3700888195348409686">উপস্থাপন কৰি আছে (<ph name="PAGE_ORIGIN" />)</translation>
@@ -2181,6 +2194,7 @@
 <translation id="3764314093345384080">বিল্ডৰ সবিশেষ তথ্য</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{USB ডিভাইচটোৰ সৈতে যোগাযোগ কৰক}one{#টা USB ডিভাইচৰ সৈতে যোগাযোগ কৰক}other{#টা USB ডিভাইচৰ সৈতে যোগাযোগ কৰক}}</translation>
 <translation id="3765246971671567135">অফলাইন ডেম’ ম’ডৰ নীতি পঢ়িব নোৱাৰিলে।</translation>
+<translation id="3766811143887729231"><ph name="REFRESH_RATE" /> হাৰ্টজ</translation>
 <translation id="3768037234834996183">অগ্ৰাধিকাৰসমূহ ছিংক কৰি থকা হৈছে ...</translation>
 <translation id="377050016711188788">আইচক্ৰীম</translation>
 <translation id="3771290962915251154">অভিভাৱকীয় নিয়ন্ত্ৰণসমূহ অন হৈ থকাৰ বাবে এই ছেটিংটো অক্ষম কৰা হৈছে</translation>
@@ -2311,6 +2325,7 @@
 <translation id="3909791450649380159">কা&amp;ট কৰক</translation>
 <translation id="3911824782900911339">নতুন টেবযুক্ত পৃষ্ঠা</translation>
 <translation id="3915280005470252504">কণ্ঠস্বৰৰ দ্বাৰা সন্ধান</translation>
+<translation id="3916233823027929090">সুৰক্ষা পৰীক্ষা কৰা হৈছে</translation>
 <translation id="3916445069167113093">এনে ধৰণৰ ফাইলে আপোনাৰ কম্পিউটাৰৰ ক্ষতি সাধন কৰিব পাৰে। আপুনি যিকোনো প্ৰকাৰে <ph name="FILE_NAME" /> ৰাখিব খোজেনে?</translation>
 <translation id="3918972485393593704">Googleলৈ সবিশেষৰ ৰিপর্ট পঠিয়াওক</translation>
 <translation id="3919145445993746351">আপোনাৰ সকলো কম্পিউটাৰতে নিজৰ এক্সটেনশ্বনসমূহ পাবলৈ ছিংক অন কৰক</translation>
@@ -2806,6 +2821,7 @@
 <translation id="4606551464649945562">ছাইটসমূহক আপোনাৰ চৌপাশৰ এখন 3D মেপ সৃষ্টি কৰাৰ অথবা কেমেৰাৰ স্থান ট্ৰেক কৰাৰ অনুমতি নিদিব</translation>
 <translation id="4608500690299898628">&amp;বিচাৰক…</translation>
 <translation id="4608520674724523647">সফল পঞ্জীয়নকৰণৰ সবিশেষ বৰ্ণনা</translation>
+<translation id="4608703838363792434"><ph name="FILE_NAME" />ত সংবেদনশীল সমল আছে</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" />এ কিবা আসোঁৱাহ পাইছে</translation>
 <translation id="4610637590575890427">আপুনি <ph name="SITE" />লৈ যাব বিচাৰিছিল নেকি?</translation>
 <translation id="4611114513649582138">ডেটা সংযোগ নাই</translation>
@@ -2952,6 +2968,7 @@
 <translation id="4824958205181053313">ছিংক বাতিল কৰিবনে?</translation>
 <translation id="4827675678516992122">সংযোগ কৰিব পৰা নগ’ল</translation>
 <translation id="4829768588131278040">পিন ছেট আপ কৰক</translation>
+<translation id="4830121310592638841">কোনো ছাইটে ৱিণ্ড’ খুলিবলৈ আৰু আপোনাৰ স্ক্ৰীনসমূহত থ’বলৈ বিচাৰিলে সোধক</translation>
 <translation id="4830502475412647084">OS আপডে'ট ইনষ্টল কৰি থকা হৈছে</translation>
 <translation id="4830573902900904548">আপোনাৰ <ph name="DEVICE_TYPE" /> <ph name="NETWORK_NAME" /> ব্যৱহাৰ কৰি ইণ্টাৰনেটৰ সৈতে সংযোগ হ’ব পৰা নাই। অনুগ্ৰহ কৰি অন্য এটা নেটৱৰ্ক বাছনি কৰক। <ph name="LEARN_MORE_LINK_START" />অধিক জানক<ph name="LEARN_MORE_LINK_END" /></translation>
 <translation id="4833236810053292670">Chromebookত কি নতুন আছে চাওক</translation>
@@ -3019,6 +3036,7 @@
 <translation id="4898011734382862273">"<ph name="CERTIFICATE_NAME" />" প্ৰমাণপত্ৰখনে প্ৰমাণপত্ৰ প্ৰদানকাৰী কৰ্তৃপক্ষক প্ৰতিনিধিত্ব কৰে</translation>
 <translation id="489985760463306091">ক্ষতিকাৰক ছফ্টৱেৰ আঁতৰাবলৈ আপোনাৰ কম্পিউটাৰটো ৰিষ্টাৰ্ট কৰক।</translation>
 <translation id="4900392736118574277">আপোনাৰ আৰম্ভণিতে খোল খুৱা পৃষ্ঠাটো <ph name="URL" />লৈ সলনি কৰা হৈছে।</translation>
+<translation id="490051679772058907"><ph name="REFRESH_RATE" /> হাৰ্টজ - একত্ৰিত</translation>
 <translation id="4902546322522096650"><ph name="NETWORK_COUNT" />টা নেটৱৰ্কৰ <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, ছিগনেলৰ ক্ষমতা <ph name="SIGNAL_STRENGTH" />%, সংযোগ কৰক</translation>
 <translation id="49027928311173603">ছাৰ্ভাৰৰ পৰা ডাউনল’ড কৰা নীতিটো অমান্য: <ph name="VALIDATION_ERROR" />।</translation>
 <translation id="4906490889887219338">নেটৱৰ্কৰ ফাইল শ্বেয়াৰ কৰা সুবিধাটো ছেট আপ অথবা পৰিচালনা কৰক। <ph name="LINK_BEGIN" />অধিক জানক<ph name="LINK_END" /></translation>
@@ -3086,7 +3104,6 @@
 <translation id="4994474651455208930">প্ৰ’ট’ক’লৰ বাবে ছাইটসমূহক ডিফ’ল্ট হেণ্ডলাৰ হ’বলৈ অনুমতি বিচাৰিবলৈ দিয়ক</translation>
 <translation id="4994754230098574403">ছেট আপ কৰি থকা হৈছে</translation>
 <translation id="4997086284911172121">ইণ্টাৰনেট সংযোগ নাই।</translation>
-<translation id="4997384734315285248">প্লাগইন VM আনইনষ্টল কৰক</translation>
 <translation id="4998430619171209993">অন আছে</translation>
 <translation id="5000922062037820727">অৱৰোধিত (চুপাৰিছ কৰা)</translation>
 <translation id="5005498671520578047">পাছৱর্ডটোৰ প্ৰতিলিপি কৰক</translation>
@@ -3192,6 +3209,7 @@
 <translation id="5142793792982256885">টাচ্‌পেড স্ক্র’লৰ গতিবেগ</translation>
 <translation id="5142961317498132443">বিশ্বাসযোগ্যতাৰ প্ৰমাণীকৰণ</translation>
 <translation id="5143374789336132547">আপুনি গৃহ বুটামটো টিপিলে কোনটো পৃষ্ঠা দেখুওৱা হ’ব, সেয়া "<ph name="EXTENSION_NAME" />" এক্সটেনশ্বনে সলনি কৰিছে।</translation>
+<translation id="5143612243342258355">এই ফাইলটো বিপজ্জনক</translation>
 <translation id="5143712164865402236">পূৰ্ণ স্ক্ৰীণলৈ যাওক</translation>
 <translation id="514575469079499857">অৱস্থান নিৰ্ণয় কৰিবলৈ আপোনাৰ আইপি ঠিকনা ব্যৱহাৰ কৰক (ডিফ’ল্ট)</translation>
 <translation id="5147103632304200977">কোনো ছাইটে HID ডিভাইচসমূহ এক্সেছ কৰিবলৈ বিচাৰিলে সোধক (চুপাৰিছ কৰা হৈছে)</translation>
@@ -3892,6 +3910,7 @@
 <translation id="6055392876709372977">RSA এনক্রিপশ্বনৰ সৈতে PKCS #1 SHA-256</translation>
 <translation id="6055907707645252013"><ph name="NETWORK_TYPE" /> নেটৱৰ্ক, সংযোগ হৈ থকা নাই</translation>
 <translation id="6056710589053485679">স্বাভাৱিকভাৱে পুনৰ ল’ড কৰক</translation>
+<translation id="6057312498756061228">এই ফাইলটো ইমানেই ডাঙৰ যে এইটোৰ সুৰক্ষা পৰীক্ষা কৰিব নোৱাৰি। আপুনি ৫০ এমবি পৰ্যন্ত ফাইলসমূহ খুলিব পাৰে।</translation>
 <translation id="6057381398996433816">এই ছাইটটোক গতি আৰু পোহৰৰ ছেন্সৰৰ ব্যৱহাৰ কৰাৰ পৰা অৱৰোধ কৰা হৈছে।</translation>
 <translation id="6058567592298841668">ভাৰ্চুৱেল মেচিন প্লাগ ইন কৰক: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">প্ৰমাণপত্ৰৰ পদানুক্ৰম</translation>
@@ -4232,6 +4251,7 @@
 <translation id="6494974875566443634">কাষ্টমাইজেশ্বন</translation>
 <translation id="6495925982925244349"><ph name="NETWORK_COUNT" />টা নেটৱৰ্কৰ <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ছিগনেলৰ ক্ষমতা <ph name="SIGNAL_STRENGTH" />%, আপোনাৰ প্ৰশাসকে পৰিচালনা কৰে, সবিশেষ</translation>
 <translation id="6496965928959882519">আপোনাৰ ডিভাইচটোৰ ষ্ট’ৰেজৰ খালী ঠাই কমিছে। <ph name="APP_NAME" /> ব্যৱহাৰ কৰিবলৈ অতি কমেও <ph name="RECOMMENDED_SPACE" /> খালী ঠাই থকাটো চুপাৰিছ কৰা হয়। খালী ঠাই বঢ়াবলৈ আপোনাৰ ডিভাইচৰ পৰা ফাইল মচক।</translation>
+<translation id="6497457470714179223">{NUM_FILES,plural, =0{এই ডেটাখিনিত সংবেদনশীল অথবা বিপজ্জনক সমল আছে}=1{এই ফাইলটোত সংবেদনশীল অথবা বিপজ্জনক সমল আছে}one{এই ফাইলসমূহত সংবেদনশীল অথবা বিপজ্জনক সমল আছে}other{এই ফাইলসমূহত সংবেদনশীল অথবা বিপজ্জনক সমল আছে}}</translation>
 <translation id="6497789971060331894">মাউছ ওলোটাকৈ স্ক্র’ল কৰাৰ সুবিধা</translation>
 <translation id="6498249116389603658">&amp;আপোনাৰ সকলো ভাষা</translation>
 <translation id="6499143127267478107">প্ৰক্সি স্ক্ৰিপ্টত হ'ষ্টৰ সমাধান কৰি থকা হৈছে ...</translation>
@@ -4322,6 +4342,7 @@
 <translation id="662080504995468778">ইয়াতে থাকক</translation>
 <translation id="6621715389962683284">নেটৱৰ্ক সংযোগ স্থাপন কৰিব নোৱাৰি।</translation>
 <translation id="6622980291894852883">প্ৰতিচ্ছবি অৱৰোধ কৰাটো অব্যাহত ৰাখক</translation>
+<translation id="6624535038674360844"><ph name="FILE_NAME" />ত সংবেদনশীল অথবা বিপজ্জনক সমল আছে। এইটোৰ গৰাকীক সমাধান কৰিবলৈ কওক।</translation>
 <translation id="6624687053722465643">মিষ্টতা</translation>
 <translation id="6628328486509726751"><ph name="WEBRTC_LOG_UPLOAD_TIME" />এ আপল’ড কৰা হৈছে</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" />ক আপোনাৰ হৈ নিজকে সত্যাপন কৰিবলৈ এখন প্ৰমাণপত্ৰলৈ চিৰদিনৰ বাবে এক্সেছৰ দৰকাৰ।</translation>
@@ -4754,7 +4775,6 @@
 <translation id="7191159667348037">অজ্ঞাত প্ৰিণ্টাৰ (ইউএছবি)</translation>
 <translation id="7193051357671784796">এই এপ্‌টো আপোনাৰ প্ৰতিষ্ঠানে যোগ কৰিছে। এপ্‌টোৰ ইনষ্টল কৰা প্ৰক্ৰিয়া সম্পূর্ণ কৰিবলৈ এপ্‌টো ৰিষ্টার্ট কৰক।</translation>
 <translation id="7193374945610105795"><ph name="ORIGIN" />ৰ কাৰণে কোনো পাছৱৰ্ড ছেভ কৰা হোৱা নাই</translation>
-<translation id="7194620721202917359">{NUM_APPS,plural, =1{এই এপ্‌টো বিপজ্জনক হ’ব পাৰে}one{এই এপ্‌সমূহ বিপজ্জনক হ’ব পাৰে}other{এই এপ্‌সমূহ বিপজ্জনক হ’ব পাৰে}}</translation>
 <translation id="7196913789568937443">Google Driveত বেক আপ লওক৷ আপোনাৰ ডেটা সহজে পুনঃস্থাপন কৰক বা যিকোনো সময়তে ডিভাইচ সলনি কৰক। আপোনাৰ বেকআপত এপ্ ডেটাও আছে। আপোনাৰ বেক আপসমূহ Googleত আপল’ড কৰা হয় আৰু আপোনাৰ Google একাউণ্টৰ পাছৱৰ্ড ব্যৱহাৰ কৰি সেইবোৰ এনক্ৰিপ্ট কৰা হয়৷ <ph name="BEGIN_LINK1" />অধিক জানক<ph name="END_LINK1" /></translation>
 <translation id="7197190419934240522">আপুনি প্ৰতিবাৰে ব্ৰাউজ কৰোঁতে Google Search আৰু Google স্মাৰ্টৰ সহায় পাওক</translation>
 <translation id="7197632491113152433">আমি আপোনাৰ একাউণ্টত এই ডিভাইচটোত ব্যৱহাৰ কৰিব পৰা <ph name="NUMBER_OF_APPS" />টা এপ্ পাইছোঁ।</translation>
@@ -4979,6 +4999,7 @@
 <translation id="7487067081878637334">প্ৰযুক্তিবিদ্যা</translation>
 <translation id="7487141338393529395">উন্নত বানান পৰীক্ষক অন কৰক</translation>
 <translation id="7487969577036436319">কোনো উপদান ইনষ্টল কৰা হোৱা নাই</translation>
+<translation id="7488682689406685343">এই ছাইটটোৱে আপোনাক বিনা অনুমতিত দেখুওৱা জাননীৰ অনুমতি দিবলৈ জালত পেলাব পাৰে।</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{সকলো &amp;খোলক}=1{বুকমার্ক &amp;খোলক}one{সকলো (#) &amp;খোলক}other{সকলো (#) &amp;খোলক}}</translation>
 <translation id="7489761397368794366">আপোনাৰ ডিভাইচৰ পৰা কল কৰক</translation>
 <translation id="749028671485790643">প্ৰ'ফাইল <ph name="VALUE" /></translation>
@@ -4997,7 +5018,6 @@
 <translation id="7506541170099744506">আপোনাৰ <ph name="DEVICE_TYPE" />ক এণ্টাৰপ্ৰাইজ পৰিচালনাৰ বাবে পঞ্জীয়ন কৰা হৈছে।</translation>
 <translation id="7507207699631365376">এই প্ৰদানকাৰীৰ <ph name="BEGIN_LINK" />গোপনীয়তাৰ নীতি<ph name="END_LINK" /> চাওক</translation>
 <translation id="7507930499305566459">স্থিতি উত্তৰদাতাৰ প্ৰমাণপত্ৰ</translation>
-<translation id="7508054832109420082">প্ৰিণ্টাৰসমূহ এক্সেছ কৰাৰ অনুমতি দিয়ক</translation>
 <translation id="7513029293694390567">ষ্ট’ৰ কৰি থোৱা ক্ৰিডেনশ্বিয়েল ব্যৱহাৰ কৰি ৱেবছাইটত স্বয়ংক্রিয়ভাৱে ছাইন ইন কৰক। যদি অক্ষম কৰি ৰখা হয় তেন্তে প্ৰতিবাৰ কোনো ৱেবছাইটত ছাইন ইন কৰাৰ সময়ত আপোনাক নিশ্চিত কৰিবলৈ কোৱা হ’ব।</translation>
 <translation id="7514239104543605883">আপোনাৰ ডিভাইচটোলৈ প্ৰতিলিপি কৰক</translation>
 <translation id="7514365320538308">ডাউনল'ড কৰক</translation>
@@ -5016,6 +5036,7 @@
 <translation id="7537451260744431038">ছাইটসমূহে আপোনাৰ ব্ৰাউজিঙৰ অভিজ্ঞতা উন্নত কৰিবলৈ কুকিসমূহ ব্যৱহাৰ কৰিব নোৱাৰে, যেনে, আপোনাক ছাইন ইন কৰি ৰাখিবলৈ অথবা আপোনাৰ শ্বপিং কার্টত থকা বস্তুবোৰ মনত ৰাখিবলৈ</translation>
 <translation id="7540972813190816353">আপডেট পৰীক্ষা কৰাৰ সময়ত এটা আসোঁৱাহ পোৱা গৈছে: <ph name="ERROR" /></translation>
 <translation id="7541773865713908457"><ph name="APP_NAME" /> এপৰ সৈতে <ph name="ACTION_NAME" /></translation>
+<translation id="754207240458482646">আপোনাৰ একাউণ্টত থকা অন্য ডিভাইচসমূহৰ সৈতে ছিংক কৰা হৈছে। <ph name="LINK_BEGIN" />অধিক জানক<ph name="LINK_END" /></translation>
 <translation id="7543104066686362383">এই <ph name="IDS_SHORT_PRODUCT_NAME" /> ডিভাইচত ডিবাগ কৰা সুবিধাটো সক্ষম কৰক</translation>
 <translation id="7543525346216957623">আপোনাৰ অভিভাৱকক সোধক</translation>
 <translation id="7547317915858803630">সর্তকবার্তা: আপোনাৰ <ph name="PRODUCT_NAME" /> ছেটিংসমূহ কোনো নেটৱর্কৰ ড্ৰাইভত ষ্ট’ৰ কৰা হৈছে। ইয়াৰ ফলত আপোনাৰ কার্য লেহেমীয়া হ’ব পাৰে, ক্ৰেশ্ব হ’ব পাৰে বা আপুনি ডেটা হেৰুৱাব পাৰে।</translation>
@@ -5073,6 +5094,7 @@
 <translation id="7622114377921274169">চ্চার্জ কৰি থকা হৈছে।</translation>
 <translation id="7624337243375417909">কেপছ লক অফ আছে</translation>
 <translation id="7625568159987162309">ছাইটসমূহত সঞ্চিত হৈ থকা অনুমতি আৰূ ডেটা চাওক</translation>
+<translation id="7628201176665550262">ৰিফ্ৰেশ্বৰ হাৰ</translation>
 <translation id="7629827748548208700">টেব: <ph name="TAB_NAME" /></translation>
 <translation id="7631014249255418691">Linux এপ্‌ আৰু ফাইলসমূহ সফলভাৱে বেক আপ কৰা হ'ল</translation>
 <translation id="7631205654593498032">আপুনি নিজৰ ডিভাইচসমূহ সংযোগ কৰিলে আপোনাৰ <ph name="DEVICE_TYPE" />এ এই কাৰ্যসমূহ কৰিব পাৰে বুলি আপুনি সন্মতি দিয়ে:</translation>
@@ -5154,7 +5176,6 @@
 <translation id="7716781361494605745">Netscape প্ৰমাণীকৰণ কৰ্তৃপক্ষ নীতিৰ URL</translation>
 <translation id="7717014941119698257">ডাউনল’ড কৰি থকা হৈছে: <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">আপডে’ট আছে নেকি চাওক</translation>
-<translation id="7719070594859855691">কেমেৰালৈ এক্সেছ দিয়ক</translation>
 <translation id="7719367874908701697">পৃষ্ঠাৰ জুম</translation>
 <translation id="7721179060400456005">ৱিণ্ড’ক ডিছপ্লে’ স্পেন কৰিবলৈ অনুমতি দিয়ক</translation>
 <translation id="7722040605881499779">আপডে’টৰ বাবে প্ৰয়োজনীয় খালী ঠাই: <ph name="NECESSARY_SPACE" /></translation>
@@ -5462,6 +5483,7 @@
 <translation id="8084114998886531721">ছেভ কৰা পাছৱর্ড</translation>
 <translation id="8086015605808120405"><ph name="PRINTER_NAME" /> কনফিগাৰ কৰি থকা হৈছে...</translation>
 <translation id="8086442853986205778"><ph name="PRINTER_NAME" /> ছেট আপ কৰক</translation>
+<translation id="80866457114322936">{NUM_FILES,plural, =1{এই ফাইলটো এনক্ৰিপ্ট কৰা আছে। এইটোৰ গৰাকীক ডিক্ৰিপ্ট কৰিবলৈ কওক।}one{এই ফাইলসমূহৰ কিছুসংখ্যক এনক্ৰিপ্ট কৰা আছে। সেইকেইটাৰ গৰাকীক ডিক্ৰিপ্ট কৰিবলৈ কওক।}other{এই ফাইলসমূহৰ কিছুসংখ্যক এনক্ৰিপ্ট কৰা আছে। সেইকেইটাৰ গৰাকীক ডিক্ৰিপ্ট কৰিবলৈ কওক।}}</translation>
 <translation id="808894953321890993">পাছৱৰ্ড সলনি কৰক</translation>
 <translation id="8090234456044969073">আপুনি সঘনে চোৱা ৱেবছাইটৰ এখন সূচী পঢ়ক</translation>
 <translation id="8093359998839330381"><ph name="PLUGIN_NAME" />য়ে সঁহাৰি দিয়া নাই</translation>
@@ -5476,6 +5498,7 @@
 <translation id="8102159139658438129">আপুনি সংযোগ কৰি থোৱা ফ’নটোৰ বিকল্পসমূহ চাবলৈ <ph name="LINK_BEGIN" />ছেটিংসমূহ<ph name="LINK_END" />লৈ যাওক</translation>
 <translation id="8104696615244072556">আপোনাৰ <ph name="IDS_SHORT_PRODUCT_NAME" /> ডিভাইচ পাৱাৰৱাশ্ব কৰক আৰু পূৰ্বৰ সংস্কৰণলৈ উভটি যাওক</translation>
 <translation id="8107015733319732394">আপোনাৰ <ph name="DEVICE_TYPE" />ত Google Play Store ইনষ্টল কৰি থকা হৈছে। ইয়াৰ বাবে কিছু সময়ৰ প্ৰয়োজন হ'ব পাৰে।</translation>
+<translation id="810728361871746125">ডিছপ্লে’ৰ ৰিজ’লিউশ্বন</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{তৃতীয় পক্ষৰ কুকিসমূহ নাই}=1{১টা তৃতীয় পক্ষৰ কুকি অৱৰোধ কৰা হৈছে}one{#টা তৃতীয় পক্ষৰ কুকীসমূহ অৱৰোধ কৰা হৈছে}other{#টা তৃতীয় পক্ষৰ কুকীসমূহ অৱৰোধ কৰা হৈছে}}</translation>
 <translation id="810875025413331850">কোনো নিকটৱৰ্তী ডিভাইচ বিচাৰি পোৱা নগ’ল।</translation>
 <translation id="8114199541033039755">টেবলেট ম’ডত বুটামৰ জৰিয়তে গৃহপৃষ্ঠালৈ নেভিগে’ট কৰক, উভতি যাওক আৰু এপ্‌সমূহ সলনি কৰক। ChromeVox অথবা স্বয়ংক্ৰিয় ক্লিক সক্ষম কৰিলে অন হয়।</translation>
@@ -5485,6 +5508,7 @@
 <translation id="8117752106453549166">আপোনাৰ প্ৰশাসকে Linux কনফিগাৰ কৰি আছে। কনফিগাৰৰ বাবে কেইমিনিটমান সময়ৰ প্ৰয়োজন হ’ব।</translation>
 <translation id="8118362518458010043">Chromeএ অক্ষম কৰিছে৷ এই এক্সটেনশ্বন অসুৰক্ষিত হ’ব পাৰে৷</translation>
 <translation id="8118488170956489476">আপোনাৰ প্ৰতিষ্ঠানে আপোনাৰ <ph name="BEGIN_LINK" />ব্ৰাউজাৰটো পৰিচালনা কৰে<ph name="END_LINK" /></translation>
+<translation id="8118515372935001629">ডিছপ্লে’ৰ ৰিফ্ৰেশ্বৰ হাৰ</translation>
 <translation id="8118860139461251237">আপোনাৰ ডাউনল’ড পৰিচালনা কৰক</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" />, আৰু বহুতো</translation>
 <translation id="8123590694679414600">আপোনাৰ ছিংক পাছফ্ৰেজৰ সৈতে
@@ -5768,6 +5792,7 @@
 <translation id="8500234928660943538">ভুল PUK। বাকী থকা পুনৰাবৃত্তিৰ সংখ্যা: <ph name="RETRIES" />।</translation>
 <translation id="8502536196501630039">Google Playৰ এপসমূহ ব্যৱহাৰ কৰিবলৈ, আপুনি প্ৰথমে আপোনাৰ এপসমূহ পুনঃস্থাপন কৰিবই লাগিব৷ কিছুমান ডেটা হেৰুৱাব লগা হ’ব পাৰে৷</translation>
 <translation id="8503813439785031346">ব্যৱহাৰকাৰীৰ নাম</translation>
+<translation id="8507227974644337342">স্ক্ৰীনৰ ৰিজ’লিউশ্বন</translation>
 <translation id="850875081535031620">কোনো ক্ষতিকাৰক ছফ্টৱেৰ পোৱা নগ'ল</translation>
 <translation id="8509177919508253835">সুৰক্ষা চাবিসমূহ ৰিছেট কৰি পিন সৃষ্টি কৰক</translation>
 <translation id="8509646642152301857">বানান পৰীক্ষা কৰা অভিধান ডাউনল’ড কৰিব পৰা নগ’ল।</translation>
@@ -5819,6 +5844,7 @@
 <translation id="8573403125070227391">এই বিজ্ঞাপনটোৱে আপোনাৰ ডিভাইচৰ অতি বেছি সমল ব্যৱহাৰ কৰে, সেয়ে Chromeএ এইটো আঁতৰালে।</translation>
 <translation id="8574990355410201600"><ph name="HOST" />ত সদায় শব্দৰ অনুমতি দিয়ক</translation>
 <translation id="8575286410928791436">এয়া অন্ত পেলাবলৈ <ph name="KEY_EQUIVALENT" /> ধৰি থাকক</translation>
+<translation id="8576984108917644670">আপোনাৰ একাউণ্টত থকা অন্য ডিভাইচসমূহৰ সৈতে ছিংক কৰা হৈছে। এই ডিভাইচটোৰ অন্য ব্যৱহাৰকাৰীসকলে এই নেটৱর্কটো ব্যৱহাৰ কৰিব পাৰে। অন্য ব্যৱহাৰকাৰীসকলে সংশোধন কৰা ছেটিংসমূহ ছিংক কৰা নহ’ব। <ph name="LINK_BEGIN" />অধিক জানক<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">৯৯টা বৰ্ণৰ সীমা অতিক্ৰম কৰিব নোৱাৰে</translation>
 <translation id="857943718398505171">অনুমোদিত (চুপাৰিছ কৰা)</translation>
 <translation id="8581809080475256101">পৰৱর্তী পৃষ্ঠালৈ যাবলৈ টিপক, ইতিহাস চাবলৈ প্ৰসংগ মেনুলৈ যাওক</translation>
@@ -5841,6 +5867,7 @@
 <translation id="8609465669617005112">ওপৰলৈ নিয়ক</translation>
 <translation id="8610103157987623234">অশুদ্ধ ফর্মেট, অনুগ্ৰহ কৰি আকৌ চেষ্টা কৰক</translation>
 <translation id="8613164732773110792">কেৱল সৰুফলাৰ বৰ্ণ, অংক, আণ্ডাৰস্ক’ৰ অথবা ডেশ্বসমূহ</translation>
+<translation id="8613786722548417558"><ph name="FILE_NAME" /> ইমানেই ডাঙৰ যে এইটোৰ সুৰক্ষা পৰীক্ষা কৰিব নোৱাৰি। আপুনি ৫০ এমবি পৰ্যন্ত ফাইলসমূহ খুলিব পাৰে।</translation>
 <translation id="8615618338313291042">ইনক’গনিট’ এপ্: <ph name="APP_NAME" /></translation>
 <translation id="8619803522055190423">ছাঁযুক্ত আখৰ</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
@@ -6200,6 +6227,7 @@
 <translation id="9030515284705930323">আপোনাৰ প্ৰতিষ্ঠানে আপোনাৰ একাউণ্টৰ বাবে Google Play Store সক্ষম কৰা নাই৷ অধিক তথ্যৰ বাবে আপোনাৰ প্ৰশাসকৰ সৈতে যোগাযোগ কৰক৷</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9031549947500880805">Google Driveত বেক আপ লওক। আপোনাৰ ডেটা সহজে পুনঃস্থাপন কৰক অথবা যিকোনো সময়তে ডিভাইচ সলনি কৰক। আপোনাৰ বেকআপত এপ্ ডেটাও আছে।</translation>
+<translation id="9033765790910064284">যি হ’লেও অব্যাহত ৰাখক</translation>
 <translation id="9033857511263905942">&amp;পেষ্ট কৰক</translation>
 <translation id="9037965129289936994">প্ৰকৃত সমল দেখুৱাওক</translation>
 <translation id="903797871439633902">এয়া এই <ph name="DEVICE_TYPE" />টোৰ বাবে অন্তিমটো স্বয়ংক্ৰিয় ছফ্টৱেৰ আৰু সুৰক্ষাৰ আপডে’ট। ভৱিষ্যতৰ আপডে’টসমূহ পাবলৈ এটা নতুন ম’ডেললৈ আপগ্ৰে’ড কৰক। &lt;a target="_blank" href="<ph name="URL" />"&gt;অধিক জানক&lt;/a&gt;</translation>
@@ -6331,6 +6359,7 @@
 <translation id="930268624053534560">টাইমষ্টাম্পৰ বিশদ বিৱৰণ</translation>
 <translation id="932327136139879170">গৃহ</translation>
 <translation id="932508678520956232">প্ৰণ্টিং আৰম্ভ কৰিব পৰা নগ'ল।</translation>
+<translation id="933427034780221291">{NUM_FILES,plural, =1{এই ফাইলটো ইমানেই ডাঙৰ যে এইটোৰ সুৰক্ষা পৰীক্ষা কৰিব নোৱাৰি। আপুনি ৫০ এমবি পৰ্যন্ত ফাইলসমূহ আপল’ড কৰিব পাৰে।}one{এই ফাইলসমূহৰ কেইটামান ইমানেই ডাঙৰ যে সেইসমূহৰ সুৰক্ষা পৰীক্ষা কৰিব নোৱাৰি। আপুনি ৫০ এমবি পৰ্যন্ত ফাইলসমূহ আপল’ড কৰিব পাৰে।}other{এই ফাইলসমূহৰ কেইটামান ইমানেই ডাঙৰ যে সেইসমূহৰ সুৰক্ষা পৰীক্ষা কৰিব নোৱাৰি। আপুনি ৫০ এমবি পৰ্যন্ত ফাইলসমূহ আপল’ড কৰিব পাৰে।}}</translation>
 <translation id="93343527085570547">আইনী কাৰণৰ বাবে সমলৰ পৰিৱৰ্তন কৰিবলৈ <ph name="BEGIN_LINK1" />আইন সম্পৰ্কীয় সহায়ক পৃষ্ঠা<ph name="END_LINK1" />লৈ যাওক।  কিছু একাউণ্ট আৰু ছিষ্টেম তথ্য Googleলৈ পঠিওৱা হ’ব পাৰে।  আপুনি আমাক জনোৱা তথ্যখিনি আমি কাৰিকৰী সমস্যাসমূহ সমাধান কৰিবলৈ আৰু আমাৰ সেৱা উন্নত কৰিবলৈ <ph name="BEGIN_LINK2" />গোপনীয়তা নীতি<ph name="END_LINK2" /> আৰু <ph name="BEGIN_LINK3" />সেৱাৰ চৰ্তাৱলী<ph name="END_LINK3" /> অনুযায়ী ব্যৱহাৰ কৰিম।</translation>
 <translation id="93393615658292258">কেৱল পাছৱর্ড</translation>
 <translation id="934244546219308557">এই গোটটোৰ নাম দিয়ক</translation>

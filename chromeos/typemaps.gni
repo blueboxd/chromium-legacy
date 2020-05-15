@@ -2,7 +2,4 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [
-  "//chromeos/components/drivefs/drivefs.typemap",
-  "//chromeos/components/smbfs/smbfs.typemap",
-]
+typemaps = [ "//chromeos/components/drivefs/drivefs.typemap" ]

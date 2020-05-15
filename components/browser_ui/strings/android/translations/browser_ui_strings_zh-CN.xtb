@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">自动下载项</translation>
 <translation id="5677928146339483299">已禁止</translation>
 <translation id="5689516760719285838">位置信息</translation>
+<translation id="5690795753582697420">已在 Android 设置中关闭摄像头</translation>
 <translation id="5710871682236653961">（推荐）网站需先询问并获得您的许可，才能在您触碰 NFC 设备时发送和接收信息</translation>
 <translation id="5719847187258001597">此操作会清除 <ph name="ORIGIN" /> 或其在主屏幕中安装的应用所存储的全部数据和 Cookie。</translation>
 <translation id="5804241973901381774">权限</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">更多</translation>
 <translation id="6064125863973209585">下载已完成</translation>
 <translation id="6165508094623778733">了解详情</translation>
+<translation id="6177111841848151710">不允许当前搜索引擎使用</translation>
 <translation id="6181444274883918285">添加例外网站</translation>
 <translation id="6192792657125177640">例外</translation>
 <translation id="6194112207524046168">要让 Chrome 使用您的摄像头，您还需要在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启摄像头。</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">此网页存在危险。网站信息</translation>
 <translation id="6965382102122355670">确定</translation>
 <translation id="6992289844737586249">在允许网站使用您的麦克风前先询问（推荐）</translation>
+<translation id="7000754031042624318">已在 Android 设置中关闭</translation>
+<translation id="7016516562562142042">允许当前搜索引擎使用</translation>
 <translation id="7053983685419859001">禁止</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{已选择 1 项}other{已选择 # 项}}</translation>
 <translation id="7087918508125750058">已选择 <ph name="ITEM_COUNT" /> 项。选项位于屏幕顶部附近</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">允许特定网站播放声音。</translation>
 <translation id="7993619969781047893">某些网站上的功能可能会无法正常运作</translation>
 <translation id="7999064672810608036">确定要清除该网站的所有本地数据（包括 Cookie）并重置该网站的所有权限吗？</translation>
+<translation id="8007176423574883786">已对此设备停用</translation>
 <translation id="802154636333426148">下载失败</translation>
 <translation id="8087000398470557479">此内容来自 <ph name="DOMAIN_NAME" />（由 Google 提供）。</translation>
 <translation id="8116925261070264013">已静音的网站</translation>

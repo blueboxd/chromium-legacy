@@ -3833,7 +3833,6 @@ crbug.com/789139 http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ F
 # ====== Begin web-components-v0-disabled virtual suite tests ======
 
 # Ignore these - they are tests of the disabled features. Eventually remove these.
-crbug.com/937746 virtual/web-components-v0-disabled/fast/html/imports/* [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/callback-context.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/crash-without-dom-wrapper.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/created-callback.html [ Skip ]
@@ -4829,6 +4828,7 @@ crbug.com/923244 external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Fai
 crbug.com/920979 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCTrackEvent-fire.html [ Timeout ]
 # WebRTC codec tests - software H.264 not present on webkit bot family
 crbug.com/840659 external/wpt/webrtc/protocol/video-codecs.https.html [ Pass Failure ]
+crbug.com/840659 external/wpt/webrtc/simulcast/h264.https.html [ Pass Failure ]
 
 # Mac doesn't support lowLatency/desynchronized Canvas Contexts.
 crbug.com/922218 [ Mac ] fast/canvas-api/canvas-lowlatency-getContext.html [ Failure ]
@@ -5936,3 +5936,7 @@ crbug.com/1071915 fast/hidpi/image-srcset-png-canvas.html [ Pass Failure ]
 # Flaky test blocking wpt import
 crbug.com/1082739 external/wpt/event-timing/dblclick.html [ Pass Failure ]
 
+# Sheriff 2020-05-14
+crbug.com/1082804 [ Win7 ] fast/forms/select/listbox-appearance-basic.html [ Pass Failure ]
+crbug.com/1082804 [ Win7 ] fast/forms/select/select-disabled-appearance.html [ Pass Failure ]
+crbug.com/1082820 [ Win ] media/video-layer-crash.html [ Pass Failure ]

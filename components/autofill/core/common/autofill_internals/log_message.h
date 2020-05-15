@@ -45,7 +45,8 @@ class LogBuffer;
     "Source of country for address requirements: ")                            \
   T(ImportAddressProfileFromFormAddressRequirements,                           \
     "Requirements for the address import: ")                                   \
-  T(FormSubmissionDetected, "Form submission detected: ")
+  T(FormSubmissionDetected, "Form submission detected: ")                      \
+  T(SendFillingData, "Sending data to fill to renderer: ")
 
 // Log messages for chrome://autofill-internals.
 

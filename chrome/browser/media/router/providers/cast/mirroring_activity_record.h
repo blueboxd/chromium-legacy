@@ -48,9 +48,10 @@ class MirroringActivityRecord : public ActivityRecord,
                           CastSessionTracker* session_tracker,
                           int target_tab_id,
                           const CastSinkExtraData& cast_data,
-                          mojom::MediaRouter* media_router,
                           OnStopCallback callback);
   ~MirroringActivityRecord() override;
+
+  virtual void CreateMojoBindings(mojom::MediaRouter* media_router);
 
   // SessionObserver implementation
   void OnError(mirroring::mojom::SessionError error) override;
@@ -93,8 +94,8 @@ class MirroringActivityRecord : public ActivityRecord,
   base::Optional<base::Time> will_start_mirroring_timestamp_;
   base::Optional<base::Time> did_start_mirroring_timestamp_;
 
-  const int channel_id_;
   const base::Optional<MirroringType> mirroring_type_;
+  const CastSinkExtraData cast_data_;
   OnStopCallback on_stop_;
   base::WeakPtrFactory<MirroringActivityRecord> weak_ptr_factory_{this};
 };

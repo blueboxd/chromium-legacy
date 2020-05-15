@@ -35,17 +35,15 @@ DeepScanningFailureModalDialog::DeepScanningFailureModalDialog(
     base::OnceClosure cancel_callback,
     base::OnceClosure open_now_callback)
     : open_now_callback_(std::move(open_now_callback)) {
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(
-          IDS_DEEP_SCANNING_TIMED_OUT_DIALOG_ACCEPT_BUTTON));
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_CANCEL,
-      l10n_util::GetStringUTF16(
-          IDS_DEEP_SCANNING_TIMED_OUT_DIALOG_CANCEL_BUTTON));
-  DialogDelegate::SetAcceptCallback(std::move(accept_callback));
-  DialogDelegate::SetCancelCallback(std::move(cancel_callback));
-  open_now_button_ = DialogDelegate::SetExtraView(views::MdTextButton::Create(
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(
+                     IDS_DEEP_SCANNING_TIMED_OUT_DIALOG_ACCEPT_BUTTON));
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
+                 l10n_util::GetStringUTF16(
+                     IDS_DEEP_SCANNING_TIMED_OUT_DIALOG_CANCEL_BUTTON));
+  SetAcceptCallback(std::move(accept_callback));
+  SetCancelCallback(std::move(cancel_callback));
+  open_now_button_ = SetExtraView(views::MdTextButton::Create(
       this, l10n_util::GetStringUTF16(
                 IDS_DEEP_SCANNING_INFO_DIALOG_OPEN_NOW_BUTTON)));
 

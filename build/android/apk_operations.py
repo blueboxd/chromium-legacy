@@ -1276,6 +1276,7 @@ class _InstallCommand(_Command):
   description = 'Installs the APK or bundle to one or more devices.'
   needs_apk_helper = True
   supports_incremental = True
+  default_modules = []
 
   def _RegisterExtraArgs(self, group):
     if self.is_bundle:
@@ -1283,24 +1284,33 @@ class _InstallCommand(_Command):
           '-m',
           '--module',
           action='append',
-          help='Module to install. Can be specified multiple times. ' +
-          'One of them has to be \'{}\''.format(BASE_MODULE))
+          default=self.default_modules,
+          help='Module to install. Can be specified multiple times.')
       group.add_argument(
           '-f',
           '--fake',
           action='append',
+          default=[],
           help='Fake bundle module install. Can be specified multiple times. '
           'Requires \'-m {0}\' to be given, and \'-f {0}\' is illegal.'.format(
               BASE_MODULE))
+      # Add even if |self.default_modules| is empty, for consistency.
+      group.add_argument('--no-module',
+                         action='append',
+                         choices=self.default_modules,
+                         default=[],
+                         help='Module to exclude from default install.')
 
   def Run(self):
     if self.additional_apk_helpers:
       for additional_apk_helper in self.additional_apk_helpers:
         _InstallApk(self.devices, additional_apk_helper, None)
     if self.is_bundle:
+      modules = list(
+          set(self.args.module) - set(self.args.no_module) -
+          set(self.args.fake))
       _InstallBundle(self.devices, self.apk_helper, self.args.package_name,
-                     self.args.command_line_flags_file, self.args.module,
-                     self.args.fake)
+                     self.args.command_line_flags_file, modules, self.args.fake)
     else:
       _InstallApk(self.devices, self.apk_helper, self.install_dict)
 
@@ -1862,7 +1872,7 @@ def RunForBundle(output_directory, bundle_path, bundle_apks_path,
                  additional_apk_paths, aapt2_path, keystore_path,
                  keystore_password, keystore_alias, package_name,
                  command_line_flags_file, proguard_mapping_path, target_cpu,
-                 system_image_locales):
+                 system_image_locales, default_modules):
   """Entry point for generated app bundle wrapper scripts.
 
   Args:
@@ -1882,6 +1892,8 @@ def RunForBundle(output_directory, bundle_path, bundle_apks_path,
     target_cpu: Chromium target CPU name, used by the 'gdb' command.
     system_image_locales: List of Chromium locales that should be included in
       system image APKs.
+    default_modules: List of modules that are installed in addition to those
+      given by the '-m' switch.
   """
   constants.SetOutputDirectory(output_directory)
   devil_chromium.Initialize(output_directory=output_directory)
@@ -1893,6 +1905,7 @@ def RunForBundle(output_directory, bundle_path, bundle_apks_path,
       keystore_password=keystore_password,
       keystore_alias=keystore_alias,
       system_image_locales=system_image_locales)
+  _InstallCommand.default_modules = default_modules
 
   parser = argparse.ArgumentParser()
   parser.set_defaults(

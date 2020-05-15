@@ -72,23 +72,19 @@ NativeFileSystemPermissionView::NativeFileSystemPermissionView(
     const Request& request,
     base::OnceCallback<void(permissions::PermissionAction result)> callback)
     : request_(request), callback_(std::move(callback)) {
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(GetButtonLabel(request_)));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(GetButtonLabel(request_)));
 
   auto run_callback = [](NativeFileSystemPermissionView* dialog,
                          permissions::PermissionAction result) {
     std::move(dialog->callback_).Run(result);
   };
-  DialogDelegate::SetAcceptCallback(
-      base::BindOnce(run_callback, base::Unretained(this),
-                     permissions::PermissionAction::GRANTED));
-  DialogDelegate::SetCancelCallback(
-      base::BindOnce(run_callback, base::Unretained(this),
-                     permissions::PermissionAction::DISMISSED));
-  DialogDelegate::SetCloseCallback(
-      base::BindOnce(run_callback, base::Unretained(this),
-                     permissions::PermissionAction::DISMISSED));
+  SetAcceptCallback(base::BindOnce(run_callback, base::Unretained(this),
+                                   permissions::PermissionAction::GRANTED));
+  SetCancelCallback(base::BindOnce(run_callback, base::Unretained(this),
+                                   permissions::PermissionAction::DISMISSED));
+  SetCloseCallback(base::BindOnce(run_callback, base::Unretained(this),
+                                  permissions::PermissionAction::DISMISSED));
 
   const views::LayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(

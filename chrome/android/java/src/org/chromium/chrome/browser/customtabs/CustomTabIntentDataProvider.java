@@ -143,6 +143,9 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     private static final String EXTRA_FOCUS_INTENT =
             "androidx.browser.customtabs.extra.FOCUS_INTENT";
 
+    private static final String EXTRA_TWA_DISCLOSURE_UI =
+            "androidx.browser.trusted.extra.DISCLOSURE_VERSION";
+
     private static final int MAX_CUSTOM_MENU_ITEMS = 5;
 
     private static final int MAX_CUSTOM_TOOLBAR_ITEMS = 2;
@@ -786,5 +789,18 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     @Nullable
     public PendingIntent getFocusIntent() {
         return mFocusIntent;
+    }
+
+    @TwaDisclosureUi
+    @Override
+    public int getTwaDisclosureUi() {
+        int version = mIntent.getIntExtra(EXTRA_TWA_DISCLOSURE_UI, TwaDisclosureUi.DEFAULT);
+
+        if (version != TwaDisclosureUi.V1_INFOBAR
+                && version != TwaDisclosureUi.V2_NOTIFICATION_OR_SNACKBAR) {
+            return TwaDisclosureUi.DEFAULT;
+        }
+
+        return version;
     }
 }

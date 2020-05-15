@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
+#include "components/browsing_data/content/cookie_helper.h"
 #include "components/browsing_data/content/local_shared_objects_container.h"
 #include "components/content_settings/browser/content_settings_usages_state.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
@@ -88,6 +89,9 @@ class TabSpecificContentSettings
     // constructing a browsing_data::FileSystemHelper.
     virtual std::vector<storage::FileSystemType>
     GetAdditionalFileSystemTypes() = 0;
+
+    virtual browsing_data::CookieHelper::IsDeletionDisabledCallback
+    GetIsDeletionDisabledCallback() = 0;
 
     // Allows the delegate to provide additional logic for detecting state
     // changes on top of the camera/microphone permission state.

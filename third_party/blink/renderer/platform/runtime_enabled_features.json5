@@ -744,7 +744,7 @@
     },
     {
       name: "FeaturePolicyForClientHints",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "FeaturePolicyForSandbox",
@@ -940,7 +940,7 @@
       // unit tests.
       name: "LayoutNG",
       // Keep this list in sync with the one in LayoutNGFlexBox below.
-      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFragmentItem", "LayoutNGGrid", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity", "LayoutNGTable", "LayoutNGFragmentTraversal"],
+      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFragmentItem", "LayoutNGGrid", "EditingNG", "BidiCaretAffinity", "LayoutNGTable", "LayoutNGFragmentTraversal"],
       status: "stable",
     },
     {
@@ -951,7 +951,7 @@
     },
     {
       name: "LayoutNGFlexBox",
-      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFragmentItem", "LayoutNGGrid", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity", "LayoutNGTable", "LayoutNGFragmentTraversal"],
+      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFragmentItem", "LayoutNGGrid", "EditingNG", "BidiCaretAffinity", "LayoutNGTable", "LayoutNGFragmentTraversal"],
       status: "experimental",
     },
     {
@@ -971,9 +971,6 @@
     },
     {
       name: "LayoutNGGrid",
-    },
-    {
-      name: "LayoutNGLineCache",
     },
     {
       name: "LayoutNGRuby",
@@ -1818,7 +1815,7 @@
     },
     {
       name: "UserAgentClientHint",
-      status: "experimental"
+      status: "stable"
     },
     {
       name: "UseWindowsSystemColors",

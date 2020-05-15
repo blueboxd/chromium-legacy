@@ -9,10 +9,10 @@ import android.os.Bundle;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.datareduction.settings.DataReductionPreferenceFragment;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.ui.messages.infobar.ConfirmInfoBar;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
-import org.chromium.components.browser_ui.settings.SettingsLauncher;
 
 /**
  * An InfoBar that lets the user know that Data Saver Lite Mode now also applies to HTTPS pages.

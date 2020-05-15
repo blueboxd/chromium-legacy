@@ -17,6 +17,8 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 
+import java.util.concurrent.Callable;
+
 /**
  * Tests for (@link WebViewCompatibilityHelper}.
  */
@@ -28,10 +30,10 @@ public class WebViewCompatibilityHelperTest {
     public void testLibraryPaths() throws Exception {
         Context appContext = InstrumentationRegistry.getTargetContext();
         Context remoteContext = WebLayer.getOrCreateRemoteContext(appContext);
-        Pair<ClassLoader, WebLayer.WebViewCompatibilityResult> result =
+        Pair<Callable<ClassLoader>, WebLayer.WebViewCompatibilityResult> result =
                 WebViewCompatibilityHelper.initialize(appContext, remoteContext);
         Assert.assertEquals(result.second, WebLayer.WebViewCompatibilityResult.SUCCESS);
-        String[] libraryPaths = WebViewCompatibilityHelper.getLibraryPaths(result.first);
+        String[] libraryPaths = WebViewCompatibilityHelper.getLibraryPaths(result.first.call());
         for (String path : libraryPaths) {
             Assert.assertTrue(path.startsWith("/./"));
         }

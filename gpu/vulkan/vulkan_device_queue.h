@@ -22,6 +22,7 @@ namespace gpu {
 class VulkanCommandPool;
 class VulkanFenceHelper;
 class VulkanInfo;
+struct GPUInfo;
 
 class COMPONENT_EXPORT(VULKAN) VulkanDeviceQueue {
  public:
@@ -40,6 +41,7 @@ class COMPONENT_EXPORT(VULKAN) VulkanDeviceQueue {
                                    uint32_t queue_family_index)>;
   bool Initialize(
       uint32_t options,
+      const GPUInfo* gpu_info,
       const VulkanInfo& info,
       const std::vector<const char*>& required_extensions,
       const std::vector<const char*>& optional_extensions,

@@ -19,6 +19,7 @@
 <translation id="1587223624401073077">Google Chrome verwendet Ihre Kamera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> ist schädlich und wurde daher von Chrome blockiert.</translation>
 <translation id="1619887657840448962">Um Chrome sicherer zu machen, haben wir die folgende Erweiterung deaktiviert. Sie ist nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> aufgeführt und wurde möglicherweise ohne Ihr Wissen hinzugefügt.</translation>
+<translation id="162629503687514352">Chrome OS konnte Ihre Passwörter nicht synchronisieren.</translation>
 <translation id="1628000112320670027">Hilfe für Chrome aufrufen</translation>
 <translation id="1662639173275167396">Chrome OS und <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" /> werden durch zusätzliche <ph name="BEGIN_LINK_CROS_OSS" />Open-Source-Software<ph name="END_LINK_CROS_OSS" /> möglich gemacht.</translation>
 <translation id="1666409074978194368">Fast geschafft! Starten Sie Google Chrome neu, um die Aktualisierung abzuschließen. Inkognitofenster werden nicht wieder geöffnet.</translation>
@@ -74,6 +75,7 @@
 <translation id="3065168410429928842">Chrome-Tab</translation>
 <translation id="3080151273017101988">Apps im Hintergrund ausführen, wenn Google Chrome geschlossen ist</translation>
 <translation id="3089968997497233615">Es gibt eine neue, sicherere Version von Google Chrome.</translation>
+<translation id="3127818369811890733">Chrome OS konnte Ihre Daten nicht synchronisieren.</translation>
 <translation id="3149510190863420837">Chrome-Apps</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome wird jetzt neu gestartet}=1{Chrome wird in einer Sekunde neu gestartet}other{Chrome wird in # Sekunden neu gestartet}}</translation>

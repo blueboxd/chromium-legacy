@@ -87,14 +87,17 @@ class CanvasResourceDispatcherTest
 
   void CreateCanvasResourceDispatcher() {
     dispatcher_ = std::make_unique<MockCanvasResourceDispatcher>();
-    resource_provider_ = CanvasResourceProvider::Create(
-        IntSize(kWidth, kHeight),
-        CanvasResourceProvider::ResourceUsage::kSoftwareCompositedResourceUsage,
-        nullptr,  // context_provider_wrapper
-        0,        // msaa_sample_count
-        kLow_SkFilterQuality, CanvasColorParams(),
-        CanvasResourceProvider::kDefaultPresentationMode,
-        dispatcher_->GetWeakPtr());
+    // TODO(crbug/1035589) Previously a call to the more generic function
+    // `CanvasResourceProvider::Create` was used but due to `presentationMode =
+    // kDefaultPresentationMode` created a sharedBitmap 100% of the time.
+    // Investigate study if the Bitmap fallback makes sense or not.
+    resource_provider_ = CanvasResourceProvider::CreateSharedBitmapProvider(
+        IntSize(kWidth, kHeight), nullptr /* context_provider_wrapper */,
+        kLow_SkFilterQuality, CanvasColorParams(), dispatcher_->GetWeakPtr());
+    if (!resource_provider_) {
+      resource_provider_ = CanvasResourceProvider::CreateBitmapProvider(
+          IntSize(kWidth, kHeight), kLow_SkFilterQuality, CanvasColorParams());
+    }
   }
 
   MockCanvasResourceDispatcher* Dispatcher() { return dispatcher_.get(); }

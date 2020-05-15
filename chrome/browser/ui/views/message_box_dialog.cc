@@ -217,19 +217,18 @@ MessageBoxDialog::MessageBoxDialog(const base::string16& title,
       message_box_view_(new views::MessageBoxView(
           views::MessageBoxView::InitParams(message))),
       is_system_modal_(is_system_modal) {
-  DialogDelegate::SetButtons(type_ == chrome::MESSAGE_BOX_TYPE_QUESTION
-                                  ? ui::DIALOG_BUTTON_OK |
-                                        ui::DIALOG_BUTTON_CANCEL
-                                  : ui::DIALOG_BUTTON_OK);
+  SetButtons(type_ == chrome::MESSAGE_BOX_TYPE_QUESTION
+                 ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
+                 : ui::DIALOG_BUTTON_OK);
 
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
-      &MessageBoxDialog::OnDialogAccepted, base::Unretained(this)));
-  DialogDelegate::SetCancelCallback(
-      base::BindOnce(&MessageBoxDialog::Done, base::Unretained(this),
-                     chrome::MESSAGE_BOX_RESULT_NO));
-  DialogDelegate::SetCloseCallback(
-      base::BindOnce(&MessageBoxDialog::Done, base::Unretained(this),
-                     chrome::MESSAGE_BOX_RESULT_NO));
+  SetAcceptCallback(base::BindOnce(&MessageBoxDialog::OnDialogAccepted,
+                                   base::Unretained(this)));
+  SetCancelCallback(base::BindOnce(&MessageBoxDialog::Done,
+                                   base::Unretained(this),
+                                   chrome::MESSAGE_BOX_RESULT_NO));
+  SetCloseCallback(base::BindOnce(&MessageBoxDialog::Done,
+                                  base::Unretained(this),
+                                  chrome::MESSAGE_BOX_RESULT_NO));
 
   base::string16 ok_text = yes_text;
   if (ok_text.empty()) {
@@ -238,14 +237,14 @@ MessageBoxDialog::MessageBoxDialog(const base::string16& title,
             ? l10n_util::GetStringUTF16(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL)
             : l10n_util::GetStringUTF16(IDS_OK);
   }
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK, ok_text);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, ok_text);
 
   // Only MESSAGE_BOX_TYPE_QUESTION has a Cancel button.
   if (type_ == chrome::MESSAGE_BOX_TYPE_QUESTION) {
     base::string16 cancel_text = no_text;
     if (cancel_text.empty())
       cancel_text = l10n_util::GetStringUTF16(IDS_CANCEL);
-    DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, cancel_text);
+    SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, cancel_text);
   }
 
   if (!checkbox_text.empty())

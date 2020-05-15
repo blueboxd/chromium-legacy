@@ -1721,6 +1721,9 @@ const char kDownloadExtensionsToOpen[] = "download.extensions_to_open";
 const char kDownloadExtensionsToOpenByPolicy[] =
     "download.extensions_to_open_by_policy";
 
+const char kDownloadAllowedURLsForOpenByPolicy[] =
+    "download.allowed_urls_for_open_by_policy";
+
 // Dictionary of origins that have permission to launch at least one protocol
 // without first prompting the user. Each origin is a nested dictionary.
 // Within an origin dictionary, if a protocol is present with value |true|,

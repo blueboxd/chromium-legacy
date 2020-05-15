@@ -12,5 +12,7 @@ enum CookieMatchType {
 dictionary CookieStoreGetOptions {
   USVString name;
   USVString url;
-  CookieMatchType matchType = "equals";
+  // TODO(ayui): Add default value "equals" back once we are done measuring
+  // usage.
+  CookieMatchType matchType;
 };

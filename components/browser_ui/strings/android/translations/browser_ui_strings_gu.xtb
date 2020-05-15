@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">આપમેળે ડાઉનલોડ્સ</translation>
 <translation id="5677928146339483299">અવરોધિત</translation>
 <translation id="5689516760719285838">સ્થાન</translation>
+<translation id="5690795753582697420">Android સેટિંગમાંથી કૅમેરા બંધ કરવામાં આવ્યો છે</translation>
 <translation id="5710871682236653961">જ્યારે તમે NFC ડિવાઇસ પર ટૅપ કરો ત્યારે સાઇટને માહિતી મોકલવા અને પ્રાપ્ત કરવાની મંજૂરી આપતા પહેલાં પૂછો (સુઝાવ આપેલો છે)</translation>
 <translation id="5719847187258001597">આમ કરવાથી તમારી હોમ સ્ક્રીન પર <ph name="ORIGIN" /> અથવા તેની ઍપ દ્વારા સ્ટોર કરવામાં આવેલો બધો ડેટા અને કૂકી સાફ કરવામાં આવશે.</translation>
 <translation id="5804241973901381774">પરવાનગીઓ</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">વધુ</translation>
 <translation id="6064125863973209585">પૂર્ણ થયેલા ડાઉનલોડ</translation>
 <translation id="6165508094623778733">વધુ જાણો</translation>
+<translation id="6177111841848151710">હાલનાં શોધ એંજિન માટે અવરોધિત</translation>
 <translation id="6181444274883918285">સાઇટ અપવાદ ઉમેરો</translation>
 <translation id="6192792657125177640">અપવાદો</translation>
 <translation id="6194112207524046168">Chrome તમારો કૅમેરા ઍક્સેસ કરી શકે તે માટે <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં પણ કૅમેરા ચાલુ કરો.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">આ પેજ જોખમી છે. સાઇટની માહિતી</translation>
 <translation id="6965382102122355670">બરાબર, સમજાઇ ગયું</translation>
 <translation id="6992289844737586249">સાઇટ્સને તમારા માઇક્રોફોનનો ઉપયોગ કરવાની મંજૂરી આપતાં પહેલા પૂછો (ભલામણ કરેલ)</translation>
+<translation id="7000754031042624318">Android સેટિંગમાં પરવાનગી બંધ કરી છે</translation>
+<translation id="7016516562562142042">હાલનાં શોધ એંજિન માટે મંજૂર</translation>
 <translation id="7053983685419859001">અવરોધિત કરો</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 પસંદ કરી}one{# પસંદ કરી}other{# પસંદ કરી}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" />ની પસંદગી કરી. સ્ક્રીનના ટોચની નજીક વિકલ્પો ઉપલબ્ધ છે</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">કોઈ એક ચોક્કસ સાઇટ માટે અવાજ ચલાવવાની મંજૂરી આપો.</translation>
 <translation id="7993619969781047893">અમુક સાઇટ પરની સુવિધાઓને કદાચ બંધ કરવામાં આવી શકે</translation>
 <translation id="7999064672810608036">શું તમે ખરેખર કૂકીઝ સહિત આ વેબસાઇટ માટેનો બધો ડેટા સાફ કરી અને આ વેબસાઇટ માટેની બધી પરવાનગીઓ ફરીથી સેટ કરવા માગો છો?</translation>
+<translation id="8007176423574883786">આ ઉપકરણ માટે બંધ કર્યું</translation>
 <translation id="802154636333426148">ડાઉનલોડ નિષ્ફળ થયું</translation>
 <translation id="8087000398470557479">આ કન્ટેન્ટ <ph name="DOMAIN_NAME" /> માંથી, Google દ્વારા વિતરિત કરેલ છે.</translation>
 <translation id="8116925261070264013">મ્યૂટ કરેલ</translation>

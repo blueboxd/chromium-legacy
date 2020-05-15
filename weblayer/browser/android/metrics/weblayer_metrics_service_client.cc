@@ -9,8 +9,12 @@
 #include <memory>
 
 #include "base/no_destructor.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/metrics/metrics_service.h"
+#include "components/variations/hashing.h"
+#include "components/variations/variations_associated_data.h"
 #include "components/version_info/android/channel_getter.h"
+#include "weblayer/browser/android/metrics/weblayer_metrics_service_accessor.h"
 #include "weblayer/browser/java/jni/MetricsServiceClient_jni.h"
 
 namespace weblayer {
@@ -48,6 +52,40 @@ WebLayerMetricsServiceClient* WebLayerMetricsServiceClient::GetInstance() {
 WebLayerMetricsServiceClient::WebLayerMetricsServiceClient() = default;
 WebLayerMetricsServiceClient::~WebLayerMetricsServiceClient() = default;
 
+void WebLayerMetricsServiceClient::RegisterSyntheticMultiGroupFieldTrial(
+    base::StringPiece trial_name,
+    const std::vector<int>& experiment_ids) {
+  if (!GetMetricsService()) {
+    if (!IsConsentDetermined()) {
+      post_start_tasks_.push_back(base::BindOnce(
+          &WebLayerMetricsServiceClient::RegisterSyntheticMultiGroupFieldTrial,
+          base::Unretained(this), trial_name, experiment_ids));
+    }
+    return;
+  }
+
+  std::vector<uint32_t> group_name_hashes;
+  group_name_hashes.reserve(experiment_ids.size());
+
+  variations::ActiveGroupId active_group;
+  active_group.name = variations::HashName(trial_name);
+  for (int experiment_id : experiment_ids) {
+    active_group.group =
+        variations::HashName(base::NumberToString(experiment_id));
+
+    // Since external experiments are not based on Chrome's low entropy source,
+    // they are only sent to Google web properties for signed in users to make
+    // sure that this couldn't be used to identify a user that's not signed in.
+    variations::AssociateGoogleVariationIDForceHashes(
+        variations::GOOGLE_WEB_PROPERTIES_SIGNED_IN, active_group,
+        static_cast<variations::VariationID>(experiment_id));
+    group_name_hashes.push_back(active_group.group);
+  }
+
+  WebLayerMetricsServiceAccessor::RegisterSyntheticMultiGroupFieldTrial(
+      GetMetricsService(), trial_name, group_name_hashes);
+}
+
 int32_t WebLayerMetricsServiceClient::GetProduct() {
   return metrics::ChromeUserMetricsExtension::ANDROID_WEBLAYER;
 }
@@ -61,7 +99,16 @@ int WebLayerMetricsServiceClient::GetSampleRatePerMille() {
   return kBetaDevCanarySampledInRatePerMille;
 }
 
-void WebLayerMetricsServiceClient::OnMetricsStart() {}
+void WebLayerMetricsServiceClient::OnMetricsStart() {
+  for (auto& task : post_start_tasks_) {
+    std::move(task).Run();
+  }
+  post_start_tasks_.clear();
+}
+
+void WebLayerMetricsServiceClient::OnMetricsNotStarted() {
+  post_start_tasks_.clear();
+}
 
 int WebLayerMetricsServiceClient::GetPackageNameLimitRatePerMille() {
   return kPackageNameLimitRatePerMille;

@@ -23,6 +23,7 @@
 <translation id="1966382378801805537">Chromium डीफॉल्ट ब्राउझर निर्धारित किंवा सेट करू शकत नाही</translation>
 <translation id="2008474315282236005">हे या डिव्‍हाइस मधून 1 आयटम हटवेल. नंतर तुमचा डेटा पुनर्प्राप्त करण्‍यासाठी, Chromium मध्ये <ph name="USER_EMAIL" /> म्हणून साइन इन करा.</translation>
 <translation id="2185166961232948079">Chromium - नेटवर्क साइन इन - <ph name="PAGE_TITLE" /></translation>
+<translation id="2225696941839557119">Chromium OS ला तुमचे पासवर्ड सिंक करता आले नाहीत.</translation>
 <translation id="2241627712206172106">तुम्ही कॉंप्युटर शेअर केल्यास, मित्र आणि कुटुंब स्वतंत्रपणे ब्राउझ करू शकतात आणि त्यांना पाहिजे तसे Chromium सेट अप करू शकतात.</translation>
 <translation id="2294245788148774212">पर्यायी: Google ला निदान आणि वापर डेटा आपोआप पाठवून, Chromium OS ची वैशिष्ट्ये आणि परफॉर्मन्समध्ये सुधारणा करण्यात मदत करा.</translation>
 <translation id="2347108572062610441">तुम्ही Chromium सुरू करता तेव्हा कोणते पेज दर्शविले जाते हे या एक्स्टेंशनने बदलले आहे.</translation>
@@ -135,6 +136,7 @@
 <translation id="6134968993075716475">सुरक्षित ब्राउझिंग बंद आहे. Chromium ते सुरू करण्याची शिफारस करते.</translation>
 <translation id="6212496753309875659">या कॉंप्युटरवर आधीपासून Chromium ची अगदी अलीकडील आवृत्ती आहे. सॉफ्‍टवेअर काम करत नसल्‍यास, कृपया Chromium अनइंस्टॉल करा आणि पुन्‍हा प्रयत्‍न करा.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium आता पुन्हा लाँच होईल}=1{Chromium एका सेकंदामध्ये पुन्हा लाँच होईल}other{Chromium # सेकंदांमध्ये पुन्हा लाँच होईल}}</translation>
+<translation id="623836266260425961">Chromium OS ला तुमचा डेटा सिंक करता आला नाही.</translation>
 <translation id="6248213926982192922">Chromium ला डीफॉल्‍ट ब्राउझर बनवा</translation>
 <translation id="6266342355635466082">Chromium अपडेट तपासू शकत नाही. तुमचे इंटरनेट कनेक्शन तपासून पहा.</translation>
 <translation id="6268381023930128611">Chromium मधून साइन आउट करायचे?</translation>

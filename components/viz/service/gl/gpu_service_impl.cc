@@ -356,8 +356,19 @@ GpuServiceImpl::GpuServiceImpl(
 
 #if BUILDFLAG(ENABLE_VULKAN)
   if (vulkan_implementation_) {
+    bool is_native_vulkan =
+        gpu_preferences_.use_vulkan == gpu::VulkanImplementationName::kNative ||
+        gpu_preferences_.use_vulkan ==
+            gpu::VulkanImplementationName::kForcedNative;
+    // With swiftshader the vendor_id is 0xffff. For some tests gpu_info is not
+    // initialized, so the vendor_id is 0.
+    bool is_native_gl =
+        gpu_info_.gpu.vendor_id != 0xffff && gpu_info_.gpu.vendor_id != 0;
+    // If GL is using a real GPU, the gpu_info will be passed in and vulkan will
+    // use the same GPU.
     vulkan_context_provider_ = VulkanInProcessContextProvider::Create(
-        vulkan_implementation_, context_options);
+        vulkan_implementation_, context_options,
+        (is_native_vulkan && is_native_gl) ? &gpu_info : nullptr);
     if (vulkan_context_provider_) {
       // If Vulkan is supported, then OOP-R is supported.
       gpu_info_.oop_rasterization_supported = true;

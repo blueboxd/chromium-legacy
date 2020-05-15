@@ -11,7 +11,7 @@
 
 using WebAppConfirmViewBrowserTest = InProcessBrowserTest;
 
-IN_PROC_BROWSER_TEST_F(WebAppConfirmViewBrowserTest, ShowWebAppDialog) {
+IN_PROC_BROWSER_TEST_F(WebAppConfirmViewBrowserTest, ShowWebAppInstallDialog) {
   auto app_info = std::make_unique<WebApplicationInfo>();
   app_info->title = base::UTF8ToUTF16("Test app");
   app_info->app_url = GURL("https://example.com");
@@ -24,8 +24,8 @@ IN_PROC_BROWSER_TEST_F(WebAppConfirmViewBrowserTest, ShowWebAppDialog) {
     is_accepted = result;
   };
 
-  chrome::ShowWebAppDialog(browser()->tab_strip_model()->GetActiveWebContents(),
-                           std::move(app_info),
-                           base::BindLambdaForTesting(callback));
+  chrome::ShowWebAppInstallDialog(
+      browser()->tab_strip_model()->GetActiveWebContents(), std::move(app_info),
+      base::BindLambdaForTesting(callback));
   EXPECT_TRUE(is_accepted);
 }

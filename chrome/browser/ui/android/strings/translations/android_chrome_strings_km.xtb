@@ -387,7 +387,6 @@
 <translation id="4250229828105606438">ថតអេក្រង់</translation>
 <translation id="4256782883801055595">អាជ្ញាប័ណ្ណប្រភពបើកចំហ</translation>
 <translation id="4269820728363426813">ចម្លងអាសយដ្ឋានតំណ</translation>
-<translation id="4278390842282768270">បានអនុញ្ញាត</translation>
 <translation id="429312253194641664">គេហទំព័រ​កំពុង​ចាក់មេឌៀ</translation>
 <translation id="4298388696830689168">គេហទំព័រ​ដែលបានតភ្ជាប់</translation>
 <translation id="4307992518367153382">មូលដ្ឋាន</translation>
@@ -435,7 +434,6 @@
 <translation id="4663756553811254707">បានលុបចំណាំ <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822"><ph name="NAME" /> ត្រូវបានបន្ថែមទៅអេក្រង់ដើមរបស់អ្នក</translation>
 <translation id="4684427112815847243">ធ្វើសមកម្មគ្រប់យ៉ាង</translation>
-<translation id="4688610874307684559">កំពុងដំណើរការ​នៅក្នុង Chrome (ដំបូង)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 និង <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ទៀត}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 និង <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ទៀត}}</translation>
 <translation id="4696983787092045100">ផ្ញើសារ​ជាអក្សរ​ទៅ​ឧបករណ៍​របស់អ្នក</translation>
 <translation id="4698034686595694889">មើលដោយគ្មានអ៊ីនធឺណិតនៅ​ក្នុង <ph name="APP_NAME" /></translation>
@@ -560,10 +558,8 @@
 <translation id="5659593005791499971">អ៊ីម៉េល</translation>
 <translation id="5665379678064389456">បង្កើតព្រឹត្តិការណ៍នៅក្នុង <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">បដិសេធសំណើរគេហទំព័រដើម្បីបង្ការការពង្រីក</translation>
-<translation id="5677928146339483299">បានរារាំង</translation>
 <translation id="5684874026226664614">អូ។ ទំព័រនេះមិនអាចបកប្រែទេ។</translation>
 <translation id="5686790454216892815">ឈ្មោះ​ឯកសារ​វែងពេក</translation>
-<translation id="5690795753582697420">កាមេរ៉ាត្រូវបានបិទនៅក្នុងការកំណត់ Android</translation>
 <translation id="5694049548840660018">ត្រឡប់ទៅ​ទំព័រដើមវិញ​បានយ៉ាង​ងាយស្រួល</translation>
 <translation id="569536719314091526">បកប្រែ​ទំព័រនេះ​ទៅជាភាសា​ណាមួយពី​ប៊ូតុងជម្រើស​ច្រើនទៀត</translation>
 <translation id="572328651809341494">ផ្ទាំងកន្លងទៅថ្មីៗ</translation>
@@ -619,7 +615,6 @@
 <translation id="614940544461990577">សាកល្បង៖</translation>
 <translation id="6154478581116148741">បើកការ​ចាក់សោ​អេក្រង់​នៅក្នុង​ការកំណត់ ដើម្បី​នាំពាក្យ​សម្ងាត់​របស់អ្នកចេញ​ពី​ឧបករណ៍​នេះ</translation>
 <translation id="6159335304067198720">សន្សំសំចៃទិន្នន័យបាន <ph name="PERCENT" /></translation>
-<translation id="6177111841848151710">បាន​រារាំង​សម្រាប់​ម៉ាស៊ីន​ស្វែងរក​​បច្ចុប្បន្ន</translation>
 <translation id="6192333916571137726">ទាញ​យក​ឯកសារ</translation>
 <translation id="6201345951596836663">បានចម្លង​តំណ</translation>
 <translation id="6210748933810148297">មិនមែន <ph name="EMAIL" /> ទេ?</translation>
@@ -706,7 +701,6 @@
 <translation id="6846298663435243399">កំពុងដំណើរការ...</translation>
 <translation id="6850409657436465440">ការទាញយក​របស់អ្នក​កំពុង​ដំណើរការ​នៅឡើយ</translation>
 <translation id="6850830437481525139">បានបិទផ្ទាំង <ph name="TAB_COUNT" /></translation>
-<translation id="6864395892908308021">ឧបករណ៍នេះ​មិនអាចអាន NFC បានទេ</translation>
 <translation id="6864459304226931083">ទាញយករូបភាព</translation>
 <translation id="6865313869410766144">បំពេញទិន្នន័យបែបបទស្វ័យប្រវត្តិ</translation>
 <translation id="6884306546558072722">បន្តរុករក​ដោយគ្មាន​អ៊ីនធឺណិត</translation>
@@ -721,9 +715,7 @@
 <translation id="6989267951144302301">មិន​អាច​ទាញ​យកបាន​ទេ</translation>
 <translation id="6990079615885386641">ទទួលកម្មវិធីនេះពី Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">ទទួលបាន​ការព្រមាន ប្រសិនបើ​ពាក្យសម្ងាត់​​បែកធ្លាយ​នៅក្នុង​ការបំពាន​ទិន្នន័យ</translation>
-<translation id="7000754031042624318">បានបិទនៅក្នុងការកំណត់ Android</translation>
 <translation id="7015203776128479407">ការរៀបចំសមកាលកម្ម​ដំបូង​មិនបាន​បញ្ចប់​ទេ។ សមកាលកម្មបានបិទ។</translation>
-<translation id="7016516562562142042">បានអនុញ្ញាត​សម្រាប់​ម៉ាស៊ីន​ស្វែងរក​​បច្ចុប្បន្ន</translation>
 <translation id="7022756207310403729">បើកនៅក្នុងកម្មវិធីរុករក</translation>
 <translation id="702463548815491781">បានណែនាំ នៅពេល​បើកកម្មវិធីតបវិញ ឬមុខងារ​ប្រើប៊ូតុងចុច​</translation>
 <translation id="7029809446516969842">ពាក្យសម្ងាត់</translation>
@@ -756,10 +748,10 @@
 <translation id="7328017930301109123">នៅក្នុង​មុខងារស្រាល Chrome ផ្ទុកទំព័រ​រហ័សជាងមុន និងប្រើទិន្នន័យ​តិចជាងមុន​រហូតដល់ 60 ភាគរយ។</translation>
 <translation id="7333031090786104871">កំពុង​បញ្ចូល​ទំព័រ​ពីមុន​នៅឡើយ</translation>
 <translation id="7340958967809483333">ជម្រើសសម្រាប់ Discover</translation>
+<translation id="7352651011704765696">មានបញ្ហាអ្វីមួយកើតឡើង</translation>
 <translation id="7352939065658542140">វីដេអូ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{ចែករំលែកធាតុដែលបានជ្រើសរើស 1}other{ចែករំលែកធាតុដែលបានជ្រើសរើស #}}</translation>
 <translation id="7359002509206457351">ចូលប្រើ​វិធី​បង់ប្រាក់</translation>
-<translation id="7362144854749094396">ប្រវត្តិត្រូវបាន​ចែករំលែក​ជាមួយ Chrome។ ចំណូលចិត្ត​ត្រូវបានចែករំលែក​ជាមួយ <ph name="SITE_NAME" />។</translation>
 <translation id="7375125077091615385">ប្រភេទ៖</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" /> ។</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -841,7 +833,6 @@
 <translation id="7986741934819883144">ជ្រើស​រើសទំ​នាក់ទំនង</translation>
 <translation id="7998918019931843664">បើកផ្ទាំងដែលបានបិទឡើងវិញ</translation>
 <translation id="8004582292198964060">កម្មវិធីរុករក</translation>
-<translation id="8007176423574883786">បានបិទសម្រាប់ឧបករណ៍នេះ</translation>
 <translation id="8013372441983637696">ក៏សម្អាតទិន្នន័យ​ Chrome ​របស់អ្នកពី​ឧបករណ៍នេះផងដែរ</translation>
 <translation id="8015452622527143194">ផ្លាស់ប្តូរអ្វីគ្រប់យ៉ាងនៅលើទំព័រនេះទៅទំហំតាមលំនាំដើម</translation>
 <translation id="8026334261755873520">ជម្រះទិន្នន័យរុករក</translation>
@@ -931,6 +922,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{កម្រិត​កម្លាំង​រលកសញ្ញា៖ # កាំ}other{កម្រិត​កម្លាំង​រលកសញ្ញា៖ # កាំ}}</translation>
 <translation id="868929229000858085">ស្វែងរក​ទំនាក់ទំនង​របស់អ្នក</translation>
 <translation id="869891660844655955">កាលបរិច្ឆេទការផុតកំណត់</translation>
+<translation id="8712637175834984815">យល់ហើយ</translation>
 <translation id="8748850008226585750">បានលាក់មាតិកា</translation>
 <translation id="8751914237388039244">ជ្រើសរើស​រូបភាព</translation>
 <translation id="8758557275681689734">មើលផ្ទាំង​ដែលបើក​ទាំងអស់​របស់អ្នក</translation>

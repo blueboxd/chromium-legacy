@@ -71,10 +71,6 @@ enum class DeviceBatteryState {
 @property(nonatomic, assign, readonly)
     BOOL didSeeMemoryWarningShortlyBeforeTerminating;
 
-// Whether or not the system OS was updated between the previous and the
-// current session.
-@property(nonatomic, assign, readonly) BOOL isFirstSessionAfterOSUpgrade;
-
 // Whether the app was updated between the previous and the current session.
 @property(nonatomic, assign, readonly) BOOL isFirstSessionAfterUpgrade;
 

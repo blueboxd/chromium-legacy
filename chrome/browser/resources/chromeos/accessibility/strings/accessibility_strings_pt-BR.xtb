@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">Botão ativar</translation>
 <translation id="1299774449519412690">Azul-celeste-claro</translation>
 <translation id="1303806948938513162">Toque com quatro dedos para entrar nos menus do ChromeVox</translation>
+<translation id="1325363694295259631">Botão de opção <ph name="NAME" /> para item de menu desmarcado</translation>
 <translation id="1325946044405407859">Castanho-claro</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> de <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">eco de caractere e de palavra</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">Ler em voz alta o status atual da bateria</translation>
 <translation id="4997282455736854877">Botão de opção <ph name="NAME" /> selecionado</translation>
 <translation id="5011664330025416377">Pressione Pesquisar+Espaço para ativar</translation>
+<translation id="5012724933919010465">Botão de opção <ph name="NAME" /> para item de menu selecionado</translation>
 <translation id="5020651427400641814">Ativar registros de fala</translation>
 <translation id="5041394372352067729">Mover exibição braille para o topo da página</translation>
 <translation id="5042770794184672516">Aumentar volume da voz</translation>

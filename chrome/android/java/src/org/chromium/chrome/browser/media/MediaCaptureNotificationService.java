@@ -14,7 +14,6 @@ import android.util.SparseIntArray;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.document.ChromeIntentUtil;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
@@ -34,8 +33,6 @@ import org.chromium.components.webrtc.MediaCaptureNotificationUtil;
 import org.chromium.components.webrtc.MediaCaptureNotificationUtil.MediaType;
 import org.chromium.content_public.browser.WebContents;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -185,8 +182,8 @@ public class MediaCaptureNotificationService extends Service {
                 ? buildStopCapturePendingIntent(notificationId)
                 : null;
         ChromeNotification notification = MediaCaptureNotificationUtil.createNotification(builder,
-                mediaType, url, appContext.getString(R.string.app_name), isIncognito, contentIntent,
-                stopIntent);
+                mediaType, isIncognito ? null : url, appContext.getString(R.string.app_name),
+                contentIntent, stopIntent);
 
         mNotificationManager.notify(notification);
         mNotifications.put(notificationId, mediaType);
@@ -276,24 +273,17 @@ public class MediaCaptureNotificationService extends Service {
      * notification identified by tabId.
      * @param tabId Unique notification id.
      * @param webContents The webContents of the tab; used to get the current media type.
-     * @param fullUrl Url of the current webrtc call.
+     * @param url Url of the current webrtc call.
      */
     public static void updateMediaNotificationForTab(
-            Context context, int tabId, @Nullable WebContents webContents, String fullUrl) {
+            Context context, int tabId, @Nullable WebContents webContents, String url) {
         @MediaType
         int mediaType = getMediaType(webContents);
         if (!shouldStartService(context, mediaType, tabId)) return;
         Intent intent = new Intent(context, MediaCaptureNotificationService.class);
         intent.setAction(ACTION_MEDIA_CAPTURE_UPDATE);
         intent.putExtra(NOTIFICATION_ID_EXTRA, tabId);
-        String baseUrl = fullUrl;
-        try {
-            URL url = new URL(fullUrl);
-            baseUrl = url.getProtocol() + "://" + url.getHost();
-        } catch (MalformedURLException e) {
-            Log.w(TAG, "Error parsing the webrtc url, %s ", fullUrl);
-        }
-        intent.putExtra(NOTIFICATION_MEDIA_URL_EXTRA, baseUrl);
+        intent.putExtra(NOTIFICATION_MEDIA_URL_EXTRA, url);
         intent.putExtra(NOTIFICATION_MEDIA_TYPE_EXTRA, mediaType);
         if (TabWindowManager.getInstance().getTabById(tabId) != null) {
             intent.putExtra(NOTIFICATION_MEDIA_IS_INCOGNITO,

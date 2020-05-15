@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
-#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/find_in_page/find_result_observer.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -23,6 +22,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
+#include "weblayer/browser/browser_controls_navigation_state_handler_delegate.h"
 #endif
 
 namespace autofill {
@@ -46,6 +46,7 @@ class SessionTabHelperDelegate;
 }
 
 namespace weblayer {
+class BrowserControlsNavigationStateHandler;
 class BrowserImpl;
 class FullscreenDelegate;
 class NavigationControllerImpl;
@@ -60,6 +61,9 @@ enum class ControlsVisibilityReason;
 class TabImpl : public Tab,
                 public content::WebContentsDelegate,
                 public content::WebContentsObserver,
+#if defined(OS_ANDROID)
+                public BrowserControlsNavigationStateHandlerDelegate,
+#endif
                 public find_in_page::FindResultObserver {
  public:
   enum class ScreenShotErrors {
@@ -141,7 +145,7 @@ class TabImpl : public Tab,
       const base::android::JavaParamRef<jobject>& autofill_provider);
 
   void UpdateBrowserControlsState(JNIEnv* env,
-                                  jint constraint,
+                                  jint raw_new_state,
                                   jboolean animate);
 
   base::android::ScopedJavaLocalRef<jstring> GetGuid(JNIEnv* env);
@@ -246,16 +250,26 @@ class TabImpl : public Tab,
       content::RenderWidgetHostView** rwhv,
       gfx::Rect* src_rect,
       gfx::Size* output_size);
+
+  void UpdateBrowserControlsStateImpl(content::BrowserControlsState new_state,
+                                      content::BrowserControlsState old_state,
+                                      bool animate);
 #endif
 
   // content::WebContentsObserver:
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void DidChangeVisibleSecurityState() override;
 
   // find_in_page::FindResultObserver:
   void OnFindResultAvailable(content::WebContents* web_contents) override;
+
+#if defined(OS_ANDROID)
+  // BrowserControlsNavigationStateHandlerDelegate:
+  void OnBrowserControlsStateStateChanged(
+      content::BrowserControlsState state) override;
+  void OnUpdateBrowserControlsStateBecauseOfProcessSwitch(
+      bool did_commit) override;
+#endif
 
   // Called from closure supplied to delegate to exit fullscreen.
   void OnExitFullscreen();
@@ -286,11 +300,17 @@ class TabImpl : public Tab,
   std::unique_ptr<NavigationControllerImpl> navigation_controller_;
   base::ObserverList<TabObserver>::Unchecked observers_;
   std::unique_ptr<i18n::LocaleChangeSubscription> locale_change_subscription_;
+
 #if defined(OS_ANDROID)
   BrowserControlsContainerView* top_controls_container_view_ = nullptr;
   BrowserControlsContainerView* bottom_controls_container_view_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> java_impl_;
-  base::OneShotTimer update_browser_controls_state_timer_;
+  std::unique_ptr<BrowserControlsNavigationStateHandler>
+      browser_controls_navigation_state_handler_;
+
+  // Last value supplied to UpdateBrowserControlsState().
+  content::BrowserControlsState current_browser_controls_state_ =
+      content::BROWSER_CONTROLS_STATE_SHOWN;
 #endif
 
   bool is_fullscreen_ = false;

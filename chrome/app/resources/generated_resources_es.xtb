@@ -523,7 +523,6 @@
 <translation id="1650371550981945235">Mostrar opciones de entrada</translation>
 <translation id="1651008383952180276">Debes introducir la misma frase de contraseña dos veces</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Añade la impresora a Google Cloud Print para que puedas imprimir desde cualquier parte.}other{Añade # impresoras a Google Cloud Print para que puedas imprimir desde cualquier parte.}}</translation>
-<translation id="1655937588105566159">{NUM_EXTENSIONS,plural, =1{Es posible que esta extensión sea peligrosa}other{Es posible que estas extensiones sean peligrosas}}</translation>
 <translation id="1656528038316521561">Opacidad del fondo</translation>
 <translation id="1657406563541664238">Ayúdanos a mejorar <ph name="PRODUCT_NAME" /> enviando estadísticas de uso e informes sobre fallos.</translation>
 <translation id="1657937299377480641">Para iniciar sesión de nuevo para acceder a recursos educativos, pídele permiso a tu padre o madre</translation>
@@ -713,7 +712,6 @@
 <translation id="1875387611427697908">Este elemento solo se puede añadir desde <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">No se ha podido obtener el token de autenticación. Cierra la sesión y vuelve a iniciarla para intentarlo de nuevo.</translation>
 <translation id="1877860345998737529">Asignación de interruptores a acciones</translation>
-<translation id="1878541307036593717">Configurar permisos</translation>
 <translation id="1879000426787380528">Iniciar sesión como</translation>
 <translation id="1880905663253319515">¿Quieres eliminar el certificado "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1884013283844450420">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, conectar</translation>
@@ -2631,6 +2629,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4359408040881008151">Instalada debido a las extensiones dependientes</translation>
 <translation id="4359717112757026264">Paisaje urbano</translation>
 <translation id="4361142739114356624">Falta la clave privada de este certificado de cliente o no es válida</translation>
+<translation id="4361745360460842907">Abrir como pestaña</translation>
 <translation id="4363771538994847871">No se han encontrado destinos para enviar contenido. ¿Necesitas ayuda?</translation>
 <translation id="4364327530094270451">Melón</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> está compartiendo una ventana.</translation>
@@ -3092,7 +3091,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4994474651455208930">Permitir que los sitios web se conviertan en controladores de protocolos predeterminados</translation>
 <translation id="4994754230098574403">Se está configurando</translation>
 <translation id="4997086284911172121">Sin conexión a Internet.</translation>
-<translation id="4997384734315285248">Desinstalar Plugin VM</translation>
 <translation id="4998430619171209993">Activado</translation>
 <translation id="5000922062037820727">Bloqueado (recomendado)</translation>
 <translation id="5005498671520578047">Copiar contraseña</translation>
@@ -3695,6 +3693,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5785583009707899920">Utilidades de los archivos de Chrome</translation>
 <translation id="5787146423283493983">Acuerdo de claves</translation>
 <translation id="5788367137662787332">Lo sentimos, pero no se ha podido activar al menos una partición del dispositivo <ph name="DEVICE_LABEL" />.</translation>
+<translation id="5790085346892983794">Completado correctamente</translation>
 <translation id="5792728279623964091">Toca el botón de encendido</translation>
 <translation id="5793339252089865437">Descargar la actualización a través de la red móvil podría generar cargos adicionales.</translation>
 <translation id="5794414402486823030">Abrir siempre con el visor del sistema</translation>
@@ -4542,7 +4541,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6904655473976120856">Pulsa el botón de la aplicación para salir.</translation>
 <translation id="6910211073230771657">Eliminado</translation>
 <translation id="691024665142758461">Descargar varios archivos</translation>
-<translation id="691106080621596509">Esta acción borrará todos los datos y las cookies guardados por <ph name="SITE_GROUP_NAME" />, por los sitios web que contenga y por sus aplicaciones instaladas</translation>
+<translation id="691106080621596509">Esta acción borrará todos los datos y las cookies guardados por <ph name="SITE_GROUP_NAME" />, por los sitios web que contenga y por su aplicación instalada</translation>
 <translation id="6911324888870229398">Se ha perdido la conexión de red. Comprueba la conexión o prueba con otra red Wi-Fi.</translation>
 <translation id="6911734910326569517">Uso de memoria</translation>
 <translation id="6912007319859991306">PIN de la SIM del móvil</translation>
@@ -4627,6 +4626,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7004402701596653846">El sitio web puede utilizar MIDI</translation>
 <translation id="7004499039102548441">Pestañas recientes</translation>
 <translation id="7005496624875927304">Permisos adicionales</translation>
+<translation id="7005812687360380971">Error</translation>
 <translation id="7005848115657603926">Intervalo de páginas no válido, utilizar <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Margen inferior</translation>
 <translation id="7007648447224463482">Abrir todo en una ventana nueva</translation>
@@ -4766,7 +4766,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7191159667348037">Impresora desconocida (USB)</translation>
 <translation id="7193051357671784796">Tu organización ha añadido esta aplicación. Reinicia la aplicación para terminar de instalarla.</translation>
 <translation id="7193374945610105795">No hay contraseñas guardadas de <ph name="ORIGIN" /></translation>
-<translation id="7194620721202917359">{NUM_APPS,plural, =1{Es posible que esta aplicación sea peligrosa}other{Es posible que estas aplicaciones sean peligrosas}}</translation>
 <translation id="7196913789568937443">Crear copia de seguridad en Google Drive. Cambia de dispositivo o restaura tus datos fácilmente en cualquier momento. La copia de seguridad incluye datos de las aplicaciones. Tus copias de seguridad se suben a Google y se cifran con la contraseña de tu cuenta de Google. <ph name="BEGIN_LINK1" />Más información<ph name="END_LINK1" /></translation>
 <translation id="7197190419934240522">Disfruta de la Búsqueda de Google y las funciones inteligentes de Google siempre que navegues</translation>
 <translation id="7197632491113152433">Hemos encontrado <ph name="NUMBER_OF_APPS" /> aplicaciones en tu cuenta que se pueden utilizar en este dispositivo.</translation>
@@ -5009,7 +5008,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7506541170099744506">El dispositivo <ph name="DEVICE_TYPE" /> se ha registrado correctamente para ser administrado por la empresa.</translation>
 <translation id="7507207699631365376">Consulta la <ph name="BEGIN_LINK" />política de privacidad<ph name="END_LINK" /> de este proveedor</translation>
 <translation id="7507930499305566459">Certificado de respuesta de estado</translation>
-<translation id="7508054832109420082">Conceder acceso a impresoras</translation>
 <translation id="7513029293694390567">Permite iniciar sesión automáticamente en sitios web con credenciales almacenadas. Si esta función está inhabilitada, se te solicitará la confirmación cada vez que intentes iniciar sesión en un sitio web.</translation>
 <translation id="7514239104543605883">Copiar en tu dispositivo</translation>
 <translation id="7514365320538308">Descargar</translation>
@@ -5168,7 +5166,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7716781361494605745">URL de política de la entidad emisora de certificados de Netscape</translation>
 <translation id="7717014941119698257">Descargando: <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">Buscar actualizaciones</translation>
-<translation id="7719070594859855691">Dar acceso a la cámara</translation>
 <translation id="7719367874908701697">Zoom de la página</translation>
 <translation id="7721179060400456005">Permitir que las ventanas ocupen pantallas</translation>
 <translation id="7722040605881499779">Espacio necesario para la actualización: <ph name="NECESSARY_SPACE" /></translation>

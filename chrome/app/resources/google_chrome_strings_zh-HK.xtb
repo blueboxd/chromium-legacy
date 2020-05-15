@@ -21,6 +21,7 @@
 <translation id="1587223624401073077">Google Chrome 正在使用您的相機。</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> 不安全，因此 Chrome 已封鎖此檔案。</translation>
 <translation id="1619887657840448962">為鞏固 Chrome 的安全性，我們已將未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> 中的擴充功能停用，因為它們可能在您不知情的情況下加入瀏覽器。</translation>
+<translation id="162629503687514352">Chrome 作業系統無法同步您的密碼。</translation>
 <translation id="1628000112320670027">取得 Chrome 相關說明</translation>
 <translation id="1662639173275167396">「Chrome 作業系統」的開發全賴其他<ph name="BEGIN_LINK_CROS_OSS" />開放原始碼軟件<ph name="END_LINK_CROS_OSS" />協助才得以面世，<ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta 版本)<ph name="END_LINK_LINUX_OSS" /> 也一樣。</translation>
 <translation id="1666409074978194368">即將更新至最新版本！重新啟動 Google Chrome 即可完成更新程序。無痕式視窗不會重新開啟。</translation>
@@ -78,6 +79,7 @@
 <translation id="3065168410429928842">Chrome 分頁</translation>
 <translation id="3080151273017101988">Google Chrome 關閉時繼續執行背景應用程式</translation>
 <translation id="3089968997497233615">Google Chrome 推出全新版本，安全性更勝從前。</translation>
+<translation id="3127818369811890733">Chrome 作業系統無法同步您的資料。</translation>
 <translation id="3149510190863420837">Chrome 應用程式</translation>
 <translation id="3360895254066713204">Chrome 輔助工具</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome 將立即重新啟動}=1{Chrome 將於 1 秒後重新啟動}other{Chrome 將於 # 秒後重新啟動}}</translation>

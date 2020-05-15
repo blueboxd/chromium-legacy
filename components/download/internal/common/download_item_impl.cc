@@ -1064,11 +1064,12 @@ bool DownloadItemImpl::CanOpenDownload() {
 }
 
 bool DownloadItemImpl::ShouldOpenFileBasedOnExtension() {
-  return delegate_->ShouldOpenFileBasedOnExtension(GetTargetFilePath());
+  return delegate_->ShouldAutomaticallyOpenFile(GetURL(), GetTargetFilePath());
 }
 
 bool DownloadItemImpl::ShouldOpenFileByPolicyBasedOnExtension() {
-  return delegate_->ShouldOpenFileByPolicyBasedOnExtension(GetTargetFilePath());
+  return delegate_->ShouldAutomaticallyOpenFileByPolicy(GetURL(),
+                                                        GetTargetFilePath());
 }
 
 bool DownloadItemImpl::GetOpenWhenComplete() const {

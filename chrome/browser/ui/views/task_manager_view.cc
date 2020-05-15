@@ -77,7 +77,7 @@ task_manager::TaskManagerTableModel* TaskManagerView::Show(Browser* browser) {
   // will open the task manager on the root window for new windows.
   gfx::NativeWindow context =
       browser ? browser->window()->GetNativeWindow() : nullptr;
-  DialogDelegate::CreateDialogWidget(g_task_manager_view, context, nullptr);
+  CreateDialogWidget(g_task_manager_view, context, nullptr);
   g_task_manager_view->InitAlwaysOnTopState();
 
 #if defined(OS_WIN)
@@ -285,16 +285,16 @@ TaskManagerView::TaskManagerView()
     : tab_table_(nullptr),
       tab_table_parent_(nullptr),
       is_always_on_top_(false) {
-  DialogDelegate::set_use_custom_frame(false);
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL));
+  set_use_custom_frame(false);
+  SetButtons(ui::DIALOG_BUTTON_OK);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL));
 
   // Avoid calling Accept() when closing the dialog, since Accept() here means
   // "kill task" (!).
   // TODO(ellyjones): Remove this once the Accept() override is removed from
   // this class.
-  DialogDelegate::SetCloseCallback(base::DoNothing());
+  SetCloseCallback(base::DoNothing());
 
   Init();
   chrome::RecordDialogCreation(chrome::DialogIdentifier::TASK_MANAGER);

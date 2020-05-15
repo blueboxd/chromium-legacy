@@ -66,6 +66,15 @@ bool IsAutofillEntryWithUseDateDeletable(const base::Time& use_date);
 // Equivalent to roughly 14 months.
 const int64_t kAutocompleteRetentionPolicyPeriodInDays = 14 * 31;
 
+// Limits the number of times the value of a specific type can be filled into a
+// form.
+constexpr int kTypeValueFormFillingLimit = 9;
+
+// Credit card numbers are sometimes distributed between up to 19 individual
+// fields. Therefore, credit cards need a higher limit compared to
+// |kTypeValueFormFillingLimit|.
+constexpr int kCreditCardTypeValueFormFillingLimit = 19;
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_CONSTANTS_H_

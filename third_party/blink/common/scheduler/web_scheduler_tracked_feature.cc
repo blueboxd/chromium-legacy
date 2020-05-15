@@ -95,6 +95,8 @@ const char* FeatureToString(WebSchedulerTrackedFeature feature) {
       return "Printing";
     case WebSchedulerTrackedFeature::kWebDatabase:
       return "WebDatabase";
+    case WebSchedulerTrackedFeature::kPictureInPicture:
+      return "PictureInPicture";
   }
 }
 

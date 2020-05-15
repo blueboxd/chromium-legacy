@@ -32,6 +32,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "net/base/isolation_info.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
@@ -143,9 +144,6 @@ void DedicatedWorkerHost::StartScriptLoad(
     return;
   }
 
-  isolation_info_ =
-      nearest_ancestor_render_frame_host->GetIsolationInfoForSubresources();
-
   // Get a storage domain.
   SiteInstance* site_instance =
       nearest_ancestor_render_frame_host->GetSiteInstance();
@@ -210,8 +208,9 @@ void DedicatedWorkerHost::StartScriptLoad(
       worker_process_host_->GetID(), id_, SharedWorkerId(), script_url,
       creator_render_frame_host,
       nearest_ancestor_render_frame_host->ComputeSiteForCookies(),
-      creator_origin_, isolation_info_, credentials_mode,
-      std::move(outside_fetch_client_settings_object),
+      creator_origin_,
+      nearest_ancestor_render_frame_host->GetIsolationInfoForSubresources(),
+      credentials_mode, std::move(outside_fetch_client_settings_object),
       blink::mojom::ResourceType::kWorker,
       storage_partition_impl->GetServiceWorkerContext(),
       service_worker_handle_.get(),
@@ -372,7 +371,7 @@ void DedicatedWorkerHost::CreateWebSocketConnector(
       std::make_unique<WebSocketConnectorImpl>(
           ancestor_render_frame_host_id_.child_id,
           ancestor_render_frame_host_id_.frame_routing_id, worker_origin_,
-          isolation_info_),
+          ancestor_render_frame_host->GetIsolationInfoForSubresources()),
       std::move(receiver));
 }
 
@@ -389,7 +388,8 @@ void DedicatedWorkerHost::CreateQuicTransportConnector(
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<QuicTransportConnectorImpl>(
           worker_process_host_->GetID(), /*frame=*/nullptr, worker_origin_,
-          isolation_info_.network_isolation_key()),
+          ancestor_render_frame_host->GetIsolationInfoForSubresources()
+              .network_isolation_key()),
       std::move(receiver));
 }
 

@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Utwórz grupę</translation>
 <translation id="2671423594960767771">Udostępnij grupę</translation>
 <translation id="2977480621796371840">Usuń z grupy</translation>
+<translation id="3328308545011660196">Sugestia: liczba prawdopodobnie powiązanych kart wynosi <ph name="NUMBER_OF_TABS" />. Czy chcesz je pogrupować?</translation>
+<translation id="4133493477912226187">Liczba prawdopodobnie powiązanych kart wynosi <ph name="NUMBER_OF_TABS" />. Czy chcesz je pogrupować?</translation>
 <translation id="4212246570487010370">Przeglądaj dalej</translation>
 <translation id="4450893287417543264">Nie pokazuj ponownie</translation>
 <translation id="4648718555153979859">Tutaj są zgrupowane Twoje karty</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Usuń karty z grupy</translation>
 <translation id="7559245342362162951">Pokazuj karty grupy na siatce pełnego ekranu</translation>
 <translation id="7792771145871471484">Sprawdź sugestie.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Dodaj <ph name="TABS_COUNT_ONE" /> wybraną kartę do grupy}few{Dodaj <ph name="TABS_COUNT_MANY" /> wybrane kart do grupy}many{Dodaj <ph name="TABS_COUNT_MANY" /> wybranych kart do grupy}other{Dodaj <ph name="TABS_COUNT_MANY" /> wybranej karty do grupy}}</translation>
 <translation id="7885132941432959125">Przenieś kartę w prawo</translation>
 <translation id="7966321538264951561">Zamknij sugestie.</translation>
 <translation id="814503310257431685">Wyświetl wszystko</translation>

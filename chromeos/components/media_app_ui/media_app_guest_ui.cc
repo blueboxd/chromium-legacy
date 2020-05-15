@@ -40,9 +40,15 @@ content::WebUIDataSource* CreateMediaAppUntrustedDataSource() {
   }
 
   source->AddFrameAncestor(GURL(kChromeUIMediaAppURL));
-  std::string csp =
-      std::string("worker-src ") + kChromeUIMediaAppGuestURL + ";";
-  source->OverrideContentSecurityPolicyChildSrc(csp);
+  // By default, prevent all network access.
+  source->OverrideContentSecurityPolicyDefaultSrc("default-src blob: 'self';");
+  // Need to explicitly set |worker-src| because CSP falls back to |child-src|
+  // which is none.
+  source->OverrideContentSecurityPolicyWorkerSrc("worker-src 'self';");
+  // Allow images to also handle data urls.
+  source->OverrideContentSecurityPolicyImgSrc("img-src blob: data: 'self';");
+  // Allow styles to include inline styling needed for Polymer elements.
+  source->OverrideContentSecurityPolicyStyleSrc("style-src 'unsafe-inline';");
   return source;
 }
 

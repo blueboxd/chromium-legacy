@@ -68,27 +68,26 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   WidgetDelegate::RegisterWindowClosingCallback(base::BindOnce(
       &GlobalErrorWithStandardBubble::BubbleViewDidClose, error_, browser));
 
-  DialogDelegate::SetDefaultButton(error_->GetDefaultDialogButton());
-  DialogDelegate::SetButtons(
-      !error_->GetBubbleViewCancelButtonLabel().empty()
-          ? (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL)
-          : ui::DIALOG_BUTTON_OK);
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
-                                   error_->GetBubbleViewAcceptButtonLabel());
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
-                                   error_->GetBubbleViewCancelButtonLabel());
+  SetDefaultButton(error_->GetDefaultDialogButton());
+  SetButtons(!error_->GetBubbleViewCancelButtonLabel().empty()
+                 ? (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL)
+                 : ui::DIALOG_BUTTON_OK);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 error_->GetBubbleViewAcceptButtonLabel());
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
+                 error_->GetBubbleViewCancelButtonLabel());
 
   // Note that error is already a WeakPtr, so these callbacks will simply do
   // nothing if they are invoked after its destruction.
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
+  SetAcceptCallback(base::BindOnce(
       &GlobalErrorWithStandardBubble::BubbleViewAcceptButtonPressed, error,
       base::Unretained(browser_)));
-  DialogDelegate::SetCancelCallback(base::BindOnce(
+  SetCancelCallback(base::BindOnce(
       &GlobalErrorWithStandardBubble::BubbleViewCancelButtonPressed, error,
       base::Unretained(browser_)));
 
   if (!error_->GetBubbleViewDetailsButtonLabel().empty()) {
-    DialogDelegate::SetExtraView(views::MdTextButton::Create(
+    SetExtraView(views::MdTextButton::Create(
         this, error_->GetBubbleViewDetailsButtonLabel()));
   }
 

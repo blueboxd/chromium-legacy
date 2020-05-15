@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">Создај група</translation>
 <translation id="2671423594960767771">Сподели ја групата</translation>
 <translation id="2977480621796371840">Отстрани од групата</translation>
+<translation id="3328308545011660196">Предлог: <ph name="NUMBER_OF_TABS" /> картички изгледаат поврзани. Да се групираат?</translation>
+<translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> картички изгледаат поврзани. Да се групираат?</translation>
 <translation id="4212246570487010370">Продолжете да прелистувате</translation>
 <translation id="4450893287417543264">Не прикажувај повторно</translation>
 <translation id="4648718555153979859">Вашите картички се групирани заедно тука</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">Отстранете картички од групата</translation>
 <translation id="7559245342362162951">Прикажи ги картичките од групата во табела на цел екран</translation>
 <translation id="7792771145871471484">Прегледајте ги предлозите.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{Групирајте <ph name="TABS_COUNT_ONE" /> избрана картичка}one{Групирајте <ph name="TABS_COUNT_MANY" /> избрана картичка}other{Групирајте <ph name="TABS_COUNT_MANY" /> избрани картички}}</translation>
 <translation id="7885132941432959125">Премести ја картичката надесно</translation>
 <translation id="7966321538264951561">Отфрли ги предлозите.</translation>
 <translation id="814503310257431685">Прикажи ги сите</translation>

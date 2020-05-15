@@ -174,15 +174,12 @@ void MobileSessionShutdownMetricsProvider::ProvidePreviousSessionData(
   bool possible_explanation =
       // Log any of the following cases as a possible explanation for the
       // crash:
-      // - device restarted while the battery was critically low
-      (session_info.deviceBatteryState == DeviceBatteryState::kUnplugged &&
-       session_info.deviceBatteryLevel <= kCriticallyLowBatteryLevel &&
-       session_info.OSRestartedAfterPreviousSession) ||
+      // - device restarted when Chrome was in the foreground (OS was updated,
+      // battery died, or iPhone X or newer was powered off)
+      (session_info.OSRestartedAfterPreviousSession) ||
       // - storage was critically low
       (session_info.availableDeviceStorage >= 0 &&
        session_info.availableDeviceStorage <= kCriticallyLowDeviceStorage) ||
-      // - OS version changed
-      session_info.isFirstSessionAfterOSUpgrade ||
       // - device in abnormal thermal state
       session_info.deviceThermalState == DeviceThermalState::kCritical ||
       session_info.deviceThermalState == DeviceThermalState::kSerious;

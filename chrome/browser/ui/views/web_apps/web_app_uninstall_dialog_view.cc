@@ -68,13 +68,13 @@ WebAppUninstallDialogDelegateView::WebAppUninstallDialogDelegateView(
       IDS_EXTENSION_PROMPT_UNINSTALL_TITLE,
       base::UTF8ToUTF16(provider->registrar().GetAppShortName(app_id_))));
 
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON));
-  DialogDelegate::SetAcceptCallback(
+  SetAcceptCallback(
       base::BindOnce(&WebAppUninstallDialogDelegateView::OnDialogAccepted,
                      base::Unretained(this)));
-  DialogDelegate::SetCancelCallback(
+  SetCancelCallback(
       base::BindOnce(&WebAppUninstallDialogDelegateView::OnDialogCanceled,
                      base::Unretained(this)));
 

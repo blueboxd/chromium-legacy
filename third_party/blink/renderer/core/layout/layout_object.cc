@@ -455,6 +455,19 @@ void LayoutObject::RemoveChild(LayoutObject* old_child) {
   children->RemoveChildNode(this, old_child);
 }
 
+void LayoutObject::NotifyPriorityScrollAnchorStatusChanged() {
+  if (!Parent())
+    return;
+  for (auto* layer = Parent()->EnclosingLayer(); layer;
+       layer = layer->Parent()) {
+    if (PaintLayerScrollableArea* scrollable_area =
+            layer->GetScrollableArea()) {
+      DCHECK(scrollable_area->GetScrollAnchor());
+      scrollable_area->GetScrollAnchor()->ClearSelf();
+    }
+  }
+}
+
 void LayoutObject::RegisterSubtreeChangeListenerOnDescendants(bool value) {
   // If we're set to the same value then we're done as that means it's
   // set down the tree that way already.
@@ -1390,6 +1403,18 @@ bool LayoutObject::ComputeIsFixedContainer(const ComputedStyle* style) const {
   if (ShouldApplyPaintContainment(*style) ||
       ShouldApplyLayoutContainment(*style))
     return true;
+
+  // We intend to change behavior to set containing block based on computed
+  // rather than used style of transform-style. HasTransformRelatedProperty
+  // above will return true if the *used* value of transform-style is
+  // preserve-3d, so to estimate compat we need to count if the line below is
+  // reached.
+  if (style->TransformStyle3D() == ETransformStyle3D::kPreserve3d) {
+    UseCounter::Count(
+        GetDocument(),
+        WebFeature::kTransformStyleContainingBlockComputedUsedMismatch);
+  }
+
   return false;
 }
 
@@ -2504,6 +2529,15 @@ static void ClearAncestorScrollAnchors(LayoutObject* layout_object) {
 
 void LayoutObject::StyleDidChange(StyleDifference diff,
                                   const ComputedStyle* old_style) {
+  if (style_->TransformStyle3D() == ETransformStyle3D::kPreserve3d) {
+    if (style_->HasNonInitialBackdropFilter() || style_->HasBlendMode() ||
+        !style_->HasAutoClip() || style_->ClipPath() ||
+        style_->HasIsolation() || style_->HasMask()) {
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kAdditionalGroupingPropertiesForCompat);
+    }
+  }
+
   // First assume the outline will be affected. It may be updated when we know
   // it's not affected.
   bool has_outline = style_->HasOutline();

@@ -742,9 +742,33 @@ chrome_internal_verifier(
 )
 
 chrome_internal_verifier(
+    builder = 'mac-chrome-beta',
+)
+
+chrome_internal_verifier(
+    builder = 'mac-chrome-stable',
+)
+
+chrome_internal_verifier(
     builder = 'win-chrome',
 )
 
 chrome_internal_verifier(
+    builder = 'win-chrome-beta',
+)
+
+chrome_internal_verifier(
+    builder = 'win-chrome-stable',
+)
+
+chrome_internal_verifier(
     builder = 'win64-chrome',
+)
+
+chrome_internal_verifier(
+    builder = 'win64-chrome-beta',
+)
+
+chrome_internal_verifier(
+    builder = 'win64-chrome-stable',
 )

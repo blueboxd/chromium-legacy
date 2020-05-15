@@ -523,7 +523,6 @@
 <translation id="1650371550981945235">შეყვანის ვარიანტების ჩვენება</translation>
 <translation id="1651008383952180276">შეყვანილი საიდუმლო ფრაზები უნდა ემთხვეოდეს</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{დაამატეთ პრინტერი Google Cloud Print-ს ნებისმიერი ადგილიდან ბეჭდვისთვის.}other{დაამატეთ # პრინტერი Google Cloud Print-ს ნებისმიერი ადგილიდან ბეჭდვისთვის.}}</translation>
-<translation id="1655937588105566159">{NUM_EXTENSIONS,plural, =1{ეს გაფართოება შეიძლება სახიფათო იყოს}other{ეს გაფართოებები შეიძლება სახიფათო იყოს}}</translation>
 <translation id="1656528038316521561">ფონის გაუმჭვირობა</translation>
 <translation id="1657406563541664238">დახმარება აუმჯობესებს <ph name="PRODUCT_NAME" /> ს Google-ისათვის მეხსიერების სტატისტიკის და ავარიული ანგარიშების ავტომატურ მიწოდებას</translation>
 <translation id="1657937299377480641">საგანმანათლებლო რესურსებზე წვდომისთვის სისტემაში ხელახლა შესასვლელად საჭიროა მშობლისგან ნებართვის მიღება</translation>
@@ -713,7 +712,6 @@
 <translation id="1875387611427697908">ამის დამატება შესაძლებელია მხოლოდ <ph name="CHROME_WEB_STORE" />-დან</translation>
 <translation id="1877520246462554164">ავტორიზაციის ჟეტონის მიღება ვერ მოხერხდა. ხელახლა საცდელად, გთხოვთ, გახვიდეთ და ხელახლა შეხვიდეთ სისტემაში.</translation>
 <translation id="1877860345998737529">გადამრთველებისთვის ქმედებების მინიჭება</translation>
-<translation id="1878541307036593717">ნებართვების დაყენება</translation>
 <translation id="1879000426787380528">შესვლა, როგორც</translation>
 <translation id="1880905663253319515">წავშალოთ სერთიფიკატი „<ph name="CERTIFICATE_NAME" />“?</translation>
 <translation id="1884013283844450420">ქსელი <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />-დან, <ph name="NETWORK_NAME" />, დაკავშირება</translation>
@@ -2631,6 +2629,7 @@
 <translation id="4359408040881008151">ინსტალაცია შესრულდა გაფართოებაზე დაყრდნობით.</translation>
 <translation id="4359717112757026264">ქალაქური პეიზაჟი</translation>
 <translation id="4361142739114356624">ამ კლიენტის სერტიფიკატს აკლია პირადი გასაღები, ან ის არასწორია</translation>
+<translation id="4361745360460842907">გახსენით როგორც ჩანართი</translation>
 <translation id="4363771538994847871">ტრანსლირებისთვის სამიზნე მოწყობილობა ვერ მოიძებნა. დახმარება გჭირდებათ?</translation>
 <translation id="4364327530094270451">ნესვი</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> ფანჯარას აზიარებს.</translation>
@@ -3092,7 +3091,6 @@
 <translation id="4994474651455208930">საიტების მხრიდან ამა თუ იმ პროტოკოლის ნაგულისხმევ დამმუშავებლად მათი დაყენების მოთხოვნის დაშვება</translation>
 <translation id="4994754230098574403">მიმდინარეობს დაყენება</translation>
 <translation id="4997086284911172121">ინტერნეტთან კავშირი არ არის.</translation>
-<translation id="4997384734315285248">Plugin VM-ის დეინსტალაცია</translation>
 <translation id="4998430619171209993">ჩართული</translation>
 <translation id="5000922062037820727">დაბლოკილი (რეკომენდებულია)</translation>
 <translation id="5005498671520578047">პაროლის კოპირება</translation>
@@ -3695,6 +3693,7 @@
 <translation id="5785583009707899920">Chrome ფაილების უტილიტები</translation>
 <translation id="5787146423283493983">ძირითადი შეთანხმება</translation>
 <translation id="5788367137662787332">სამწუხაროდ, სულ მცირე, ერთი დანაყოფის მიერთება ვერ მოხერხდა მოწყობილობაში <ph name="DEVICE_LABEL" />.</translation>
+<translation id="5790085346892983794">წარმატება</translation>
 <translation id="5792728279623964091">შეეხეთ ელკვების ღილაკს</translation>
 <translation id="5793339252089865437">განახლების მობილური ქსელის მეშვეობით ჩამოტვირთვამ შეიძლება გამოიწვიოს ლიმიტის გადახარჯვასთან დაკავშირებული ხარჯები.</translation>
 <translation id="5794414402486823030">ყოველთვის გახსნა სისტემის დამთვალიერებლით</translation>
@@ -4627,6 +4626,7 @@
 <translation id="7004402701596653846">საიტს შეუძლია MIDI-ს გამოყენება</translation>
 <translation id="7004499039102548441">ბოლო ჩანართები</translation>
 <translation id="7005496624875927304">დამატებითი ნებართვები</translation>
+<translation id="7005812687360380971">შეცდომა</translation>
 <translation id="7005848115657603926">გვერდების არასწორი დიაპაზონი, გამოიყენეთ <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">ქვედა ზღვარი</translation>
 <translation id="7007648447224463482">ყველას გახსნა ახალ ფანჯარაში</translation>
@@ -4766,7 +4766,6 @@
 <translation id="7191159667348037">უცნობი პრინტერი (USB)</translation>
 <translation id="7193051357671784796">ეს აპი დაამატა თქვენმა ორგანიზაციამ. ინსტალაციის დასასრულებლად საჭიროა მისი გადატვირთვა.</translation>
 <translation id="7193374945610105795"><ph name="ORIGIN" />-სთვის შენახული პაროლები არ არის</translation>
-<translation id="7194620721202917359">{NUM_APPS,plural, =1{ეს აპი შეიძლება სახიფათო იყოს}other{ეს აპები შეიძლება სახიფათო იყოს}}</translation>
 <translation id="7196913789568937443">სარეზერვო კოპირება Google Drive-ში. მარტივად აღადგინეთ თქვენი მონაცემები ან შეცვალეთ მოწყობილობები ნებისმიერ დროს. თქვენი სარეზერვო ასლი მოიცავს აპების მონაცემებს. სარეზერვო ასლები აიტვირთება Google-ში და დაიშიფრება თქვენი Google ანგარიშის პაროლით. <ph name="BEGIN_LINK1" />შეიტყვეთ მეტი<ph name="END_LINK1" /></translation>
 <translation id="7197190419934240522">ისარგებლეთ Google Search-ითა და Google-ის გონიერი ფუნქციებით ვების ყოველი დათვალიერებისას</translation>
 <translation id="7197632491113152433">თქვენს ანგარიშში მოიძებნა <ph name="NUMBER_OF_APPS" /> აპი, რომელიც შეგიძლიათ გამოიყენოთ ამ მოწყობილობაზე.</translation>
@@ -5009,7 +5008,6 @@
 <translation id="7506541170099744506">თქვენი <ph name="DEVICE_TYPE" /> წარმატებით დარეგისტრირდა კორპორატიული მართვისთვის.</translation>
 <translation id="7507207699631365376">ამ პროვაიდერის <ph name="BEGIN_LINK" />კონფიდენციალურობის დებულების<ph name="END_LINK" /> ნახვა</translation>
 <translation id="7507930499305566459">სტატუსის მოპასუხის სერტიფიკატი</translation>
-<translation id="7508054832109420082">პრინტერებზე წვდომის მინიჭება</translation>
 <translation id="7513029293694390567">ავტორიზაციის შენახული მონაცემების მეშვეობით ვებსაიტებში შესვლა ავტომატურად მოხდება. გათიშვის შემთხვევაში, ვებსაიტში შესვლის ყოველი მცდელობისას დადასტურება მოგიწევთ.</translation>
 <translation id="7514239104543605883">თქვენს მოწყობილობაზე კოპირება</translation>
 <translation id="7514365320538308">ჩამოტვირთვა</translation>
@@ -5168,7 +5166,6 @@
 <translation id="7716781361494605745">Netscape სერტიფიკაციის ორგანიზაციის პოლიტიკის URL</translation>
 <translation id="7717014941119698257">ჩამოტვირთვა: <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">განახლებების შემოწმება</translation>
-<translation id="7719070594859855691">კამერაზე წვდომის მინიჭება</translation>
 <translation id="7719367874908701697">გვერდის მასშტაბი</translation>
 <translation id="7721179060400456005">ფანჯრებისთვის ეკრანების გადაფარვის დაშვება</translation>
 <translation id="7722040605881499779">განახლებისთვის საჭიროა: <ph name="NECESSARY_SPACE" /></translation>

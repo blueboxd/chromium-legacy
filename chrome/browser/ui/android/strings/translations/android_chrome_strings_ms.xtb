@@ -152,6 +152,7 @@ Ketik mana-mana perkataan untuk mencari. Untuk memperhalus carian anda, sentuh &
 <translation id="218608176142494674">Perkongsian</translation>
 <translation id="2227444325776770048">Teruskan sebagai <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Segerak dan perkhidmatan Google</translation>
+<translation id="2239812875700136898">Kawal cerita anda daripada butang Pilihan untuk Discover</translation>
 <translation id="2259659629660284697">Eksport kata laluan…</translation>
 <translation id="2268044343513325586">Perhalusi</translation>
 <translation id="2286841657746966508">Alamat pengebilan</translation>
@@ -387,7 +388,6 @@ Anda sahaja yang boleh melihat perkara yang dilihat oleh kamera anda. Tapak ters
 <translation id="4250229828105606438">Tangkapan skrin</translation>
 <translation id="4256782883801055595">Lesen sumber terbuka</translation>
 <translation id="4269820728363426813">Salin alamat pautan</translation>
-<translation id="4278390842282768270">Dibenarkan</translation>
 <translation id="429312253194641664">Tapak sedang memainkan media</translation>
 <translation id="4298388696830689168">Tapak terpaut</translation>
 <translation id="4307992518367153382">Asas</translation>
@@ -435,7 +435,6 @@ Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain s
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> penanda halaman dipadamkan</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> telah ditambahkan ke skrin Utama anda</translation>
 <translation id="4684427112815847243">Segerakkan semua</translation>
-<translation id="4688610874307684559">Dijalankan dalam Chrome (Awal)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> lagi}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> lagi}}</translation>
 <translation id="4696983787092045100">Hantar teks ke Peranti Anda</translation>
 <translation id="4698034686595694889">Lihat di luar talian dalam <ph name="APP_NAME" /></translation>
@@ -560,10 +559,8 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5659593005791499971">E-mel</translation>
 <translation id="5665379678064389456">Buat acara dalam <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Mengatasi permintaan tapak web untuk menghalang zum masuk</translation>
-<translation id="5677928146339483299">Disekat</translation>
 <translation id="5684874026226664614">Op. Halaman ini tidak dapat diterjemahkan.</translation>
 <translation id="5686790454216892815">Nama fail terlalu panjang</translation>
-<translation id="5690795753582697420">Kamera dimatikan dalam tetapan Android</translation>
 <translation id="5694049548840660018">Kembali ke laman utama dengan mudah</translation>
 <translation id="569536719314091526">Terjemahkan halaman ini ke dalam sebarang bahasa lain daripada butang Lagi pilihan</translation>
 <translation id="572328651809341494">Tab terbaharu</translation>
@@ -619,7 +616,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="614940544461990577">Cuba:</translation>
 <translation id="6154478581116148741">Hidupkan kunci skrin dalam Tetapan untuk mengeksport kata laluan anda daripada peranti ini</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> penjimatan data</translation>
-<translation id="6177111841848151710">Disekat untuk enjin carian semasa</translation>
 <translation id="6192333916571137726">Muat turun fail</translation>
 <translation id="6201345951596836663">Pautan Disalin</translation>
 <translation id="6210748933810148297">Bukan <ph name="EMAIL" />?</translation>
@@ -706,7 +702,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6846298663435243399">Memuatkan…</translation>
 <translation id="6850409657436465440">Muat turun anda masih berlangsung</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> tab telah ditutup</translation>
-<translation id="6864395892908308021">Peranti ini tidak dapat membaca NFC</translation>
 <translation id="6864459304226931083">Muat turun imej</translation>
 <translation id="6865313869410766144">Autolengkap data borang</translation>
 <translation id="6884306546558072722">Teruskan meneroka di luar talian</translation>
@@ -721,9 +716,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6989267951144302301">Tidak dapat memuat turun</translation>
 <translation id="6990079615885386641">Dapatkan apl daripada Gedung Play Google: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Beri amaran kepada anda jika kata laluan terdedah dalam pelanggaran data</translation>
-<translation id="7000754031042624318">Dimatikan dalam tetapan Android</translation>
 <translation id="7015203776128479407">Penyediaan penyegerakan awal tidak diselesaikan. Penyegerakan dimatikan.</translation>
-<translation id="7016516562562142042">Dibenarkan untuk enjin carian semasa</translation>
 <translation id="7022756207310403729">Buka dalam penyemak imbas</translation>
 <translation id="702463548815491781">Disyorkan apabila TalkBack atau Akses Suis dihidupkan</translation>
 <translation id="7029809446516969842">Kata laluan</translation>
@@ -756,10 +749,10 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7328017930301109123">Dalam mod Ringkas, Chrome memuatkan halaman lebih pantas dan mengurangkan penggunaan data sehingga 60 peratus.</translation>
 <translation id="7333031090786104871">Masih menambahkan tapak yang terdahulu</translation>
 <translation id="7340958967809483333">Pilihan untuk Discover</translation>
+<translation id="7352651011704765696">Kesilapan telah berlaku</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Kongsi 1 item yang dipilih}other{Kongsi # item yang dipilih}}</translation>
 <translation id="7359002509206457351">Akses kaedah pembayaran</translation>
-<translation id="7362144854749094396">Sejarah dikongsi dengan Chrome. Pilihan dikongsi dengan <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Jenis:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -841,7 +834,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7986741934819883144">Pilih kenalan</translation>
 <translation id="7998918019931843664">Buka semula tab yang ditutup</translation>
 <translation id="8004582292198964060">Penyemak Imbas</translation>
-<translation id="8007176423574883786">Dimatikan untuk peranti ini</translation>
 <translation id="8013372441983637696">Selain itu, kosongkan data Chrome anda daripada peranti ini</translation>
 <translation id="8015452622527143194">Kembalikan semua yg ada pd halaman kpd saiz lalai</translation>
 <translation id="8026334261755873520">Kosongkan data semakan imbas</translation>
@@ -931,6 +923,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="8687353297350450808">{N_BARS,plural, =1{Tahap Kekuatan Isyarat: # bar}other{Tahap Kekuatan Isyarat: # bar}}</translation>
 <translation id="868929229000858085">Cari dalam kenalan anda</translation>
 <translation id="869891660844655955">Tarikh tamat tempoh</translation>
+<translation id="8712637175834984815">Faham</translation>
 <translation id="8748850008226585750">Kandungan tersembunyi</translation>
 <translation id="8751914237388039244">Pilih imej</translation>
 <translation id="8758557275681689734">Lihat semua tab terbuka anda</translation>

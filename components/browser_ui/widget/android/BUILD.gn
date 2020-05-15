@@ -61,6 +61,8 @@ android_library("java") {
     "java/src/org/chromium/components/browser_ui/widget/image_tiles/TileSizeSupplier.java",
     "java/src/org/chromium/components/browser_ui/widget/image_tiles/TileViewHolder.java",
     "java/src/org/chromium/components/browser_ui/widget/image_tiles/TileViewHolderFactory.java",
+    "java/src/org/chromium/components/browser_ui/widget/impression/ImpressionTracker.java",
+    "java/src/org/chromium/components/browser_ui/widget/impression/OneShotImpressionListener.java",
     "java/src/org/chromium/components/browser_ui/widget/listmenu/BasicListMenu.java",
     "java/src/org/chromium/components/browser_ui/widget/listmenu/ListMenu.java",
     "java/src/org/chromium/components/browser_ui/widget/listmenu/ListMenuButton.java",
@@ -220,6 +222,7 @@ android_library("javatests") {
     "java/src/org/chromium/components/browser_ui/widget/highlight/ViewHighlighterTest.java",
     "java/src/org/chromium/components/browser_ui/widget/listmenu/ListMenuRenderTest.java",
     "java/src/org/chromium/components/browser_ui/widget/promo/PromoCardCoordinatorTest.java",
+    "java/src/org/chromium/components/browser_ui/widget/promo/PromoCardImpressionTest.java",
     "java/src/org/chromium/components/browser_ui/widget/promo/PromoCardViewRenderTest.java",
     "java/src/org/chromium/components/browser_ui/widget/scrim/ScrimTest.java",
   ]

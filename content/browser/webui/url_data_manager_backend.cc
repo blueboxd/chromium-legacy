@@ -89,8 +89,7 @@ URLDataManagerBackend* URLDataManagerBackend::GetForBrowserContext(
       context->GetUserData(kURLDataManagerBackendKeyName));
 }
 
-void URLDataManagerBackend::AddDataSource(
-    URLDataSourceImpl* source) {
+void URLDataManagerBackend::AddDataSource(URLDataSourceImpl* source) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!source->source()->ShouldReplaceExistingSource()) {
     auto i = data_sources_.find(source->source_name());
@@ -157,11 +156,12 @@ scoped_refptr<net::HttpResponseHeaders> URLDataManagerBackend::GetHeaders(
   // response headers.
   if (source->ShouldAddContentSecurityPolicy()) {
     std::string csp_header;
-    csp_header.append(source->GetContentSecurityPolicyScriptSrc());
-    csp_header.append(source->GetContentSecurityPolicyObjectSrc());
     csp_header.append(source->GetContentSecurityPolicyChildSrc());
-    csp_header.append(source->GetContentSecurityPolicyStyleSrc());
+    csp_header.append(source->GetContentSecurityPolicyDefaultSrc());
     csp_header.append(source->GetContentSecurityPolicyImgSrc());
+    csp_header.append(source->GetContentSecurityPolicyObjectSrc());
+    csp_header.append(source->GetContentSecurityPolicyScriptSrc());
+    csp_header.append(source->GetContentSecurityPolicyStyleSrc());
     csp_header.append(source->GetContentSecurityPolicyWorkerSrc());
     // TODO(crbug.com/1051745): Both CSP frame ancestors and XFO headers may be
     // added to the response but frame ancestors would take precedence. In the

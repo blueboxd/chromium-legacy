@@ -1034,87 +1034,6 @@ bool NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
   return true;
 }
 
-const NGInlineBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
-    NGInlineNode inline_node,
-    NGPreviousInflowPosition* previous_inflow_position,
-    bool* aborted_out) {
-  DCHECK(RuntimeEnabledFeatures::LayoutNGLineCacheEnabled());
-  LayoutBox* layout_box = inline_node.GetLayoutBox();
-  if (layout_box->SelfNeedsLayout())
-    return nullptr;
-
-  // If floats are intruding into this node, re-layout may be needed.
-  if (!exclusion_space_.IsEmpty())
-    return nullptr;
-
-  // Laying out from a break token is not supported yet, because this logic
-  // synthesize a break token.
-  if (BreakToken())
-    return nullptr;
-
-  const NGPaintFragment* lineboxes =
-      inline_node.ReusableLineBoxContainer(ConstraintSpace());
-  if (!lineboxes)
-    return nullptr;
-
-  // Following is a copy of logic from HandleInFlow(). They need to keep in
-  // sync.
-  if (inline_node.IsEmptyInline())
-    return nullptr;
-  if (!ResolveBfcBlockOffset(previous_inflow_position)) {
-    *aborted_out = true;
-    return nullptr;
-  }
-  DCHECK(container_builder_.BfcBlockOffset());
-
-  WritingMode writing_mode = container_builder_.GetWritingMode();
-  TextDirection direction = container_builder_.Direction();
-  DCHECK_EQ(writing_mode, lineboxes->Style().GetWritingMode());
-  DCHECK_EQ(direction, lineboxes->Style().Direction());
-  const PhysicalSize outer_size = lineboxes->Size();
-
-  LayoutUnit used_block_size = previous_inflow_position->logical_block_offset;
-  const NGBreakToken* last_break_token = nullptr;
-  for (const NGPaintFragment* child : lineboxes->Children()) {
-    if (child->IsDirty())
-      break;
-
-    // Abort if the line propagated its descendants to outside of the line. They
-    // are propagated through NGLayoutResult, which we don't cache.
-    const NGPhysicalLineBoxFragment* line =
-        DynamicTo<NGPhysicalLineBoxFragment>(&child->PhysicalFragment());
-    if (!line || line->HasPropagatedDescendants())
-      break;
-
-    // TODO(kojii): Running the normal layout code at least once for this child
-    // helps reducing the code to setup internal states after the reuse. Remove
-    // the last fragment if it is the end of the fragmentation to do so, but we
-    // should figure out how to setup the states without doing this.
-    const NGBreakToken* break_token = line->BreakToken();
-    DCHECK(break_token);
-    if (break_token->IsFinished())
-      break;
-
-    last_break_token = break_token;
-    LogicalOffset logical_offset = child->Offset().ConvertToLogical(
-        writing_mode, direction, outer_size, line->Size());
-    container_builder_.AddChild(
-        *line, {logical_offset.inline_offset, used_block_size});
-    used_block_size += line->Size().ConvertToLogical(writing_mode).block_size;
-  }
-  if (!last_break_token)
-    return nullptr;
-
-  // Update the internal states to after the re-used fragments.
-  previous_inflow_position->logical_block_offset = used_block_size;
-
-  // In order to layout the rest of lines, return the break token from the last
-  // reused line box.
-  DCHECK(last_break_token);
-  DCHECK(!last_break_token->IsFinished());
-  return To<NGInlineBreakToken>(last_break_token);
-}
-
 void NGBlockLayoutAlgorithm::HandleOutOfFlowPositioned(
     const NGPreviousInflowPosition& previous_inflow_position,
     NGBlockNode child) {
@@ -1648,28 +1567,17 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::HandleInflow(
     is_non_empty_inline = !child_inline_node->IsEmptyInline();
 
     // Add reusable line boxes from |previous_result_| if any.
-    if (is_non_empty_inline && !child_break_token) {
-      if (previous_result_ &&
-          RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-        if (!ResolveBfcBlockOffset(previous_inflow_position))
-          return NGLayoutResult::kBfcBlockOffsetResolved;
-        DCHECK(container_builder_.BfcBlockOffset());
+    if (is_non_empty_inline && !child_break_token && previous_result_ &&
+        RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+      if (!ResolveBfcBlockOffset(previous_inflow_position))
+        return NGLayoutResult::kBfcBlockOffsetResolved;
+      DCHECK(container_builder_.BfcBlockOffset());
 
-        DCHECK(!*previous_inline_break_token);
-        if (TryReuseFragmentsFromCache(*child_inline_node,
-                                       previous_inflow_position,
-                                       previous_inline_break_token))
-          return NGLayoutResult::kSuccess;
-      } else if (RuntimeEnabledFeatures::LayoutNGLineCacheEnabled()) {
-        DCHECK(!*previous_inline_break_token);
-        bool aborted = false;
-        *previous_inline_break_token = TryReuseFragmentsFromCache(
-            *child_inline_node, previous_inflow_position, &aborted);
-        if (*previous_inline_break_token)
-          return NGLayoutResult::kSuccess;
-        if (aborted)
-          return NGLayoutResult::kBfcBlockOffsetResolved;
-      }
+      DCHECK(!*previous_inline_break_token);
+      if (TryReuseFragmentsFromCache(*child_inline_node,
+                                     previous_inflow_position,
+                                     previous_inline_break_token))
+        return NGLayoutResult::kSuccess;
     }
   }
 
@@ -1741,7 +1649,8 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
 
   // Only non self-collapsing children (e.g. "normal children") can be pushed
   // by floats in this way.
-  bool normal_child_had_clearance = layout_result->IsPushedByFloats();
+  bool normal_child_had_clearance =
+      layout_result->IsPushedByFloats() && child.IsBlock();
   DCHECK(!normal_child_had_clearance || !is_self_collapsing);
 
   // A child may have aborted its layout if it resolved its BFC block-offset.

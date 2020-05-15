@@ -86,6 +86,31 @@ TEST_F(LayoutObjectTest, DisplayInlineBlockCreateObject) {
   EXPECT_TRUE(layout_object->IsInline());
 }
 
+TEST_F(LayoutObjectTest, UseCountBackdropFilterAsGroupingProperty) {
+  SetBodyInnerHTML(R"HTML(
+    <style> div { transform-style: preserve-3d; } </style>
+    <div id=target style="backdrop-filter: blur(2px)"></div>
+  )HTML");
+  EXPECT_FALSE(
+      GetLayoutObjectByElementId("target")->StyleRef().HasGroupingProperty());
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kAdditionalGroupingPropertiesForCompat));
+}
+
+TEST_F(LayoutObjectTest, UseCountContainingBlockFixedPosUnderFlattened3D) {
+  SetBodyInnerHTML(R"HTML(
+    <div style='transform-style: preserve-3d; opacity: 0.9'>
+      <div id=target style='position:fixed'></div>
+    </div>
+  )HTML");
+
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  EXPECT_EQ(target->View(), target->Container());
+
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kTransformStyleContainingBlockComputedUsedMismatch));
+}
+
 // Containing block test.
 TEST_F(LayoutObjectTest, ContainingBlockLayoutViewShouldBeNull) {
   EXPECT_EQ(nullptr, GetLayoutView().ContainingBlock());

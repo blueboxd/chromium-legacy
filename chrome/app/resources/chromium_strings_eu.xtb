@@ -24,6 +24,7 @@ Eginbide batzuk agian dira erabilgarri egongo eta hobespenei egindako aldaketak 
 <translation id="1966382378801805537">Chromium-ek ezin du ezarri edo zehaztu arakatzaile lehenetsia</translation>
 <translation id="2008474315282236005">Gailuko elementu bat ezabatuko da. Geroago datuak eskuratu nahi izanez gero, hasi saioa Chromium-en <ph name="USER_EMAIL" /> gisa.</translation>
 <translation id="2185166961232948079">Chromium - Hasi saioa sarean - <ph name="PAGE_TITLE" /></translation>
+<translation id="2225696941839557119">Chromium OS sistema eragileak ezin izan ditu sinkronizatu pasahitzak.</translation>
 <translation id="2241627712206172106">Ordenagailua partekatzen baduzu, lagunek eta familiako kideek euren kontuak erabilita ibil daitezke Interneten, nahi duten moduan.</translation>
 <translation id="2294245788148774212">Aukerakoa: lagundu Chromium OS sistemaren eginbideak eta funtzionamendua hobetzen Google-ri diagnostikoak eta erabilera-datuak automatikoki bidalita.</translation>
 <translation id="2347108572062610441">Luzapenak aldatu egin du Chromium abiarazten duzunean agertzen den orria.</translation>
@@ -136,6 +137,7 @@ Eginbide batzuk agian dira erabilgarri egongo eta hobespenei egindako aldaketak 
 <translation id="6134968993075716475">Arakatze segurua desaktibatuta dago. Aktibatzea gomendatzen du Chromium-ek.</translation>
 <translation id="6212496753309875659">Ordenagailuak Chromium arakatzailearen bertsio berriagoa du. Softwareak ez badu funtzionatzean, desinstalatu Chromium eta saiatu berriro.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Orain berrabiaraziko da Chromium}=1{1 segundo barru berrabiaraziko da Chromium}other{# segundo barru berrabiaraziko da Chromium}}</translation>
+<translation id="623836266260425961">Chromium OS sistema eragileak ezin izan ditu sinkronizatu datuak.</translation>
 <translation id="6248213926982192922">Ezarri Chromium arakatzaile lehenetsi gisa</translation>
 <translation id="6266342355635466082">Chromium-ek ezin du egiaztatu eguneratzerik dagoen. Egiaztatu Internetera konektatuta zaudela.</translation>
 <translation id="6268381023930128611">Chromium-eko saioa amaitu?</translation>

@@ -14,7 +14,7 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/string_split.h"
 #include "base/strings/sys_string_conversions.h"
 #include "remoting/base/string_resources.h"

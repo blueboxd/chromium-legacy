@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
 
 namespace blink {
@@ -169,9 +170,8 @@ double ScrollTimelineOffset::ResolveOffset(Node* scroll_source,
       target_edge += (threshold_adjustment * target_rect.Width());
     }
 
-    // TODO(majidvp): Potentially clip by min/max scroll offsets.
-    // http://crbug.com/1023375
-    return (target_edge - root_edge).ToDouble();
+    LayoutUnit offset = target_edge - root_edge;
+    return std::min(std::max(offset.ToDouble(), 0.0), max_offset);
   } else {
     // Resolve the default case (i.e., 'auto' value)
     return default_offset;

@@ -118,20 +118,41 @@ class CustomWindowTargeter : public aura::WindowTargeter {
 class WindowCycleItemView : public WindowMiniView {
  public:
   explicit WindowCycleItemView(aura::Window* window) : WindowMiniView(window) {
-    SetShowPreview(/*show=*/true);
-    UpdatePreviewRoundedCorners(/*show=*/true);
     SetFocusBehavior(FocusBehavior::ALWAYS);
-    UpdateIconView();
   }
   WindowCycleItemView(const WindowCycleItemView&) = delete;
   WindowCycleItemView& operator=(const WindowCycleItemView&) = delete;
   ~WindowCycleItemView() override = default;
 
+  // Shows the preview and icon. For performance reasons, these are not created
+  // on construction. This should be called at most one time during the lifetime
+  // of |this|.
+  void ShowPreview() {
+    DCHECK(!preview_view());
+
+    UpdateIconView();
+    SetShowPreview(/*show=*/true);
+    UpdatePreviewRoundedCorners(/*show=*/true);
+  }
+
  private:
   // WindowMiniView:
-  // Returns the size for the preview view, scaled to fit within the max bounds.
-  // Scaling is always 1:1 and we only scale down, never up.
   gfx::Size GetPreviewViewSize() const override {
+    // When the preview is not shown, do an estimate of the expected size.
+    // |this| will not be visible anyways, and will get corrected once
+    // ShowPreview() is called.
+    if (!preview_view()) {
+      gfx::SizeF source_size(source_window()->bounds().size());
+      // Windows may have no size in tests.
+      if (source_size.IsEmpty())
+        return gfx::Size();
+      const float aspect_ratio = source_size.width() / source_size.height();
+      return gfx::Size(kFixedPreviewHeightDp * aspect_ratio,
+                       kFixedPreviewHeightDp);
+    }
+
+    // Returns the size for the preview view, scaled to fit within the max
+    // bounds. Scaling is always 1:1 and we only scale down, never up.
     gfx::Size preview_pref_size = preview_view()->GetPreferredSize();
     if (preview_pref_size.width() > kMaxPreviewWidthDp ||
         preview_pref_size.height() > kFixedPreviewHeightDp) {
@@ -148,6 +169,9 @@ class WindowCycleItemView : public WindowMiniView {
   // views::View:
   void Layout() override {
     WindowMiniView::Layout();
+
+    if (!preview_view())
+      return;
 
     // Show the backdrop if the preview view does not take up all the bounds
     // allocated for it.
@@ -187,6 +211,12 @@ class WindowCycleView : public views::WidgetDelegateView,
   explicit WindowCycleView(const WindowCycleList::WindowList& windows) {
     DCHECK(!windows.empty());
 
+    // Start the occlusion tracker pauser. It's used to increase smoothness for
+    // the fade in but we also create windows here which may occlude other
+    // windows.
+    occlusion_tracker_pauser_ =
+        std::make_unique<aura::WindowOcclusionTracker::ScopedPause>();
+
     // The layer for |this| is responsible for showing color, background blur
     // and fading in.
     SetPaintToLayer(ui::LAYER_SOLID_COLOR);
@@ -220,6 +250,8 @@ class WindowCycleView : public views::WidgetDelegateView,
       auto* view = mirror_container_->AddChildView(
           std::make_unique<WindowCycleItemView>(window));
       window_view_map_[window] = view;
+
+      no_previews_set_.insert(view);
     }
 
     // The insets in the WindowCycleItemView are coming from its border, which
@@ -237,6 +269,7 @@ class WindowCycleView : public views::WidgetDelegateView,
 
   void FadeInLayer() {
     DCHECK(GetWidget());
+
     fade_in_fps_counter_ =
         std::make_unique<FpsCounter>(GetWidget()->GetCompositor());
 
@@ -271,11 +304,13 @@ class WindowCycleView : public views::WidgetDelegateView,
   void HandleWindowDestruction(aura::Window* destroying_window,
                                aura::Window* new_target) {
     auto view_iter = window_view_map_.find(destroying_window);
-    views::View* preview = view_iter->second;
+    WindowCycleItemView* preview = view_iter->second;
     views::View* parent = preview->parent();
     DCHECK_EQ(mirror_container_, parent);
     window_view_map_.erase(view_iter);
+    no_previews_set_.erase(preview);
     delete preview;
+
     // With one of its children now gone, we must re-layout
     // |mirror_container_|. This must happen before SetTargetWindow() to make
     // sure our own Layout() works correctly when it's calculating highlight
@@ -286,6 +321,7 @@ class WindowCycleView : public views::WidgetDelegateView,
 
   void DestroyContents() {
     window_view_map_.clear();
+    no_previews_set_.clear();
     target_window_ = nullptr;
     RemoveAllChildViews(true);
   }
@@ -343,6 +379,22 @@ class WindowCycleView : public views::WidgetDelegateView,
       settings->SetAnimationMetricsReporter(this);
     }
     mirror_container_->SetBoundsRect(container_bounds);
+
+    // If an element in |no_previews_set_| is no onscreen (its bounds in |this|
+    // coordinates intersects |this|), create the rest of its elements and
+    // remove it from the set.
+    const gfx::RectF local_bounds(GetLocalBounds());
+    for (auto it = no_previews_set_.begin(); it != no_previews_set_.end();) {
+      WindowCycleItemView* view = *it;
+      gfx::RectF bounds(view->GetLocalBounds());
+      views::View::ConvertRectToTarget(view, this, &bounds);
+      if (bounds.Intersects(local_bounds)) {
+        view->ShowPreview();
+        it = no_previews_set_.erase(it);
+      } else {
+        ++it;
+      }
+    }
   }
 
   View* GetInitiallyFocusedView() override {
@@ -356,6 +408,7 @@ class WindowCycleView : public views::WidgetDelegateView,
     if (smoothness > 0)
       UMA_HISTOGRAM_PERCENTAGE(kShowAnimationSmoothness, smoothness);
     fade_in_fps_counter_.reset();
+    occlusion_tracker_pauser_.reset();
   }
 
   // ui::AnimationMetricsReporter:
@@ -371,8 +424,18 @@ class WindowCycleView : public views::WidgetDelegateView,
   views::View* mirror_container_ = nullptr;
   aura::Window* target_window_ = nullptr;
 
+  // Set which contains items which have been created but have some of their
+  // performance heavy elements not created yet. These elements will be created
+  // once onscreen to improve fade in performance, then removed from this set.
+  base::flat_set<WindowCycleItemView*> no_previews_set_;
+
   // Records the animation smoothness of the fade in animation.
   std::unique_ptr<FpsCounter> fade_in_fps_counter_;
+
+  // Used for preventng occlusion state computations for the duration of the
+  // fade in animation.
+  std::unique_ptr<aura::WindowOcclusionTracker::ScopedPause>
+      occlusion_tracker_pauser_;
 };
 
 WindowCycleList::WindowCycleList(const WindowList& windows)

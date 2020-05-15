@@ -54,10 +54,10 @@ const char k10ByteData[] = "10 bytes..";
 const char k20ByteData[] = "20 bytes............";
 
 const PolicyDetails kPolicyDetails[] = {
-//  is_deprecated  is_device_policy  id    max_external_data_size
-  { false,         false,             1,                        0 },
-  { false,         false,             2,                       10 },
-  { false,         false,             3,                       20 },
+    // deprecated  future, device_policy  id    max_external_data_size
+    {  false,      false,  false,         1,    0},
+    {  false,      false,  false,         2,    10},
+    {  false,      false,  false,         3,    20},
 };
 
 const char kCacheKey[] = "data";

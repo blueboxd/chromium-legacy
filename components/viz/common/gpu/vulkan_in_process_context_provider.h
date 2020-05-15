@@ -19,6 +19,7 @@
 namespace gpu {
 class VulkanImplementation;
 class VulkanDeviceQueue;
+struct GPUInfo;
 }
 
 namespace viz {
@@ -28,7 +29,8 @@ class VIZ_VULKAN_CONTEXT_PROVIDER_EXPORT VulkanInProcessContextProvider
  public:
   static scoped_refptr<VulkanInProcessContextProvider> Create(
       gpu::VulkanImplementation* vulkan_implementation,
-      const GrContextOptions& context_options = GrContextOptions());
+      const GrContextOptions& context_options = GrContextOptions(),
+      const gpu::GPUInfo* gpu_info = nullptr);
 
   void Destroy();
 
@@ -46,7 +48,8 @@ class VIZ_VULKAN_CONTEXT_PROVIDER_EXPORT VulkanInProcessContextProvider
       gpu::VulkanImplementation* vulkan_implementation);
   ~VulkanInProcessContextProvider() override;
 
-  bool Initialize(const GrContextOptions& context_options);
+  bool Initialize(const GrContextOptions& context_options,
+                  const gpu::GPUInfo* gpu_info);
 
 #if BUILDFLAG(ENABLE_VULKAN)
   sk_sp<GrContext> gr_context_;

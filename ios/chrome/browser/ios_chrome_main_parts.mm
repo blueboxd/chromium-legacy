@@ -12,7 +12,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/default_tick_clock.h"
@@ -161,20 +160,7 @@ void IOSChromeMainParts::PreCreateThreads() {
   metrics::CallStackProfileBuilder::SetBrowserProcessReceiverCallback(
       base::BindRepeating(
           &metrics::CallStackProfileMetricsProvider::ReceiveProfile));
-
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  std::string collection_interval_switch = "heap-profiler-collection-interval";
-  int collection_interval = 30;
-
-  if (!command_line->HasSwitch(collection_interval_switch) ||
-      !base::StringToInt(
-          command_line->GetSwitchValueASCII(collection_interval_switch),
-          &collection_interval)) {
-    collection_interval = 30;
-  }
-  DCHECK_GT(collection_interval, 0);
-  heap_profiler_controller_->Start(
-      base::TimeDelta::FromMinutes(collection_interval));
+  heap_profiler_controller_->Start();
 #endif
 
   variations::InitCrashKeys();

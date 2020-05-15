@@ -21,6 +21,8 @@
 #include "content/public/browser/web_contents.h"
 #include "url/origin.h"
 
+class GURL;
+
 namespace content {
 
 class BrowserContext;
@@ -103,12 +105,18 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   virtual bool DetermineDownloadTarget(download::DownloadItem* item,
                                        DownloadTargetCallback* callback);
 
-  // Tests if a file type should be opened automatically.
-  virtual bool ShouldOpenFileBasedOnExtension(const base::FilePath& path);
+  // Tests if a file type should be opened automatically. This consider both
+  // user and policy settings, and should be called when it doesn't matter
+  // what set the auto-open, just if it is set.
+  virtual bool ShouldAutomaticallyOpenFile(const GURL& url,
+                                           const base::FilePath& path);
 
-  // Tests if a file type should be opened automatically by policy.
-  virtual bool ShouldOpenFileByPolicyBasedOnExtension(
-      const base::FilePath& path);
+  // Tests if a file type should be opened automatically by policy. This
+  // should only be used if it matters if the file will auto-open by policy.
+  // Generally used to determine if we need to show UI indicating an active
+  // policy.
+  virtual bool ShouldAutomaticallyOpenFileByPolicy(const GURL& url,
+                                                   const base::FilePath& path);
 
   // Allows the delegate to delay completion of the download.  This function
   // will either return true (in which case the download may complete)

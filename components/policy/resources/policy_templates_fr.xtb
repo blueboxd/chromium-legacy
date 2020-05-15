@@ -116,17 +116,6 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1117535567637097036">Les gestionnaires de protocoles définis par cette règle ne sont pas utilisés pour gérer les intents Android.</translation>
 <translation id="1118093128235245168">Autoriser les sites à demander à l'utilisateur d'accorder l'accès à un appareil USB connecté</translation>
-<translation id="1123594119609921068">Permet de définir l'état par défaut de la fonctionnalité d'accessibilité de commentaires audio sur l'écran de connexion.
-
-          Si cette règle est définie sur "True", les commentaires audio sont activés à l'affichage de l'écran de connexion.
-
-          Si cette règle est définie sur "False", les commentaires audio sont désactivés à l'affichage de l'écran de connexion.
-
-          Si vous configurez cette règle, les utilisateurs peuvent l'ignorer temporairement en activant ou en désactivant les commentaires audio. Toutefois, leur choix n'est pas définitif. En effet, le paramètre par défaut est restauré dès que l'écran de connexion est affiché de nouveau ou si l'utilisateur reste inactif pendant une minute sur ce même écran.
-
-          Si cette règle n'est pas configurée, les commentaires audio sont désactivés au premier affichage de l'écran de connexion. Les utilisateurs peuvent les activer ou les désactiver à tout moment, et leur état sur l'écran de connexion est appliqué à tous les utilisateurs.
-
-          Remarque : Si elle est définie, la règle <ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME" /> remplace cette règle.</translation>
 <translation id="1128717055763152639">Permet de définir une liste de formats d'URL indiquant les sites autorisés à afficher du contenu mixte (contenu HTTP affiché sur des sites HTTPS) blocable (actif), et pour lesquels la mise à niveau du contenu mixte blocable de manière facultative est désactivée.
 
           Si cette règle n'est pas configurée, le contenu mixte blocable est bloqué, et le contenu mixte blocable de manière facultative est mis à niveau. Les utilisateurs peuvent définir des exceptions autorisant l'affichage de ce contenu sur des sites spécifiques.
@@ -408,23 +397,9 @@ Si vous la désactivez, le défilement des pages Web vers des fragments de texte
 <translation id="1634989431648355062">Autoriser le plug-in "<ph name="FLASH_PLUGIN_NAME" />" sur ces sites</translation>
 <translation id="1645793986494086629">Schéma :</translation>
 <translation id="1648816843164517573">Liste des noms qui seront exemptés de la vérification de la règle HSTS</translation>
-<translation id="1653229475925941921">Si cette règle est définie, elle contrôle le type de loupe activé. Définissez la règle sur "None" pour désactiver la loupe.
-
-          Si vous définissez cette règle, les utilisateurs n'ont pas la possibilité de la modifier ni de l'ignorer.
-
-          Si vous ne définissez pas cette règle, la loupe est désactivée au départ, mais peut ensuite être activée à tout moment par les utilisateurs.</translation>
 <translation id="1654087023995670109">Activer le mode Invité du navigateur</translation>
 <translation id="1655229863189977773">Définir la taille du cache du disque en octets</translation>
 <translation id="166427968280387991">Serveur proxy</translation>
-<translation id="1667877109169174750">Si cette règle est définie sur "True", les options d'accessibilité s'affichent en permanence dans le menu de la barre d'état système.
-
-          Si cette règle est définie sur "False", les options d'accessibilité ne s'affichent jamais dans le menu de la barre d'état système.
-
-          Si vous configurez cette règle, les utilisateurs ne peuvent ni la modifier, ni l'ignorer.
-
-          Si vous ne définissez pas cette règle, les options d'accessibilité ne s'affichent pas dans le menu de la barre d'état système, mais l'utilisateur peut activer leur affichage via la page "Paramètres".
-
-          Lorsque les fonctionnalités d'accessibilité sont activées par d'autres moyens (par exemple, une combinaison de touches), les options d'accessibilité restent affichées dans le menu de la barre d'état système.</translation>
 <translation id="1668836044817793277">Autoriser ou non l'application kiosque lancée automatiquement sans délai à contrôler la version de <ph name="PRODUCT_OS_NAME" />.
 
       Cette règle détermine si l'application kiosque lancée automatiquement sans délai est autorisée à contrôler la version de <ph name="PRODUCT_OS_NAME" /> en déclarant un élément "required_platform_version" dans son fichier manifeste et en l'utilisant en tant que préfixe de version cible de la mise à jour automatique.
@@ -1956,15 +1931,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 <translation id="3811562426301733860">Autoriser les annonces sur tous les sites</translation>
 <translation id="3816312845600780067">Activer le raccourci clavier permettant d'ignorer le processus de connexion automatique</translation>
 <translation id="3817323252437541502">Activer les protections supplémentaires pour les utilisateurs inscrits au Programme Protection Avancée</translation>
-<translation id="3820526221169548563">Activer la fonctionnalité d'accessibilité du clavier à l'écran
-
-          Si cette règle est définie sur "True", le clavier à l'écran est toujours activé.
-
-          Si cette règle est définie sur "False", le clavier à l'écran est toujours désactivé.
-
-          Si vous définissez cette règle, les utilisateurs ne peuvent ni la modifier, ni l'ignorer.
-
-          Si vous ne définissez pas cette règle, le clavier à l'écran est initialement désactivé, mais l'utilisateur peut l'activer à tout moment.</translation>
 <translation id="3821861026311587684">Forcer la déconnexion de l'utilisateur lorsque son compte n'est plus authentifié</translation>
 <translation id="382476126209906314">Configurer le préfixe TalkGadget pour les hôtes d'accès à distance</translation>
 <translation id="3824972131618513497">Paramètres de commande de la gestion de l'alimentation et du redémarrage.</translation>
@@ -2238,15 +2204,6 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 <translation id="4157003184375321727">Indiquer la version du système d'exploitation et du micrologiciel</translation>
 <translation id="4157594634940419685">Autoriser l'accès à des imprimantes CUPS en natif</translation>
 <translation id="4160962198980004898">Source de l'adresse MAC de l'appareil lorsqu'il est connecté à une station d'accueil</translation>
-<translation id="4164601239783385546">Permet d'activer la fonctionnalité d'accessibilité aux touches persistantes.
-
-          Si cette règle est définie sur "True", les touches persistantes sont toujours activées.
-
-          Si cette règle est définie sur "False", les touches persistantes sont toujours désactivées.
-
-          Si vous définissez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
-
-          Si vous ne définissez pas cette règle, les touches persistantes sont initialement désactivées, mais les utilisateurs peuvent les activer à tout moment.</translation>
 <translation id="4169692397912242417">Permet d'activer la fonctionnalité d'accessibilité de commentaires audio sur l'écran de connexion.
 
           Si cette règle est définie sur "True", les commentaires audio sont toujours activés sur l'écran de connexion.
@@ -2270,17 +2227,6 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
           Si cette règle n'est pas configurée, la mise en surbrillance du curseur de saisie est initialement désactivée sur l'écran de connexion, mais les utilisateurs peuvent l'activer à tout moment.</translation>
 <translation id="4183229833636799228">Paramètre par défaut pour le plug-in "<ph name="FLASH_PLUGIN_NAME" />"</translation>
 <translation id="4192388905594723944">URL permettant de valider le jeton d'authentification du client d'accès à distance</translation>
-<translation id="420007931282384740">Permet de définir l'état par défaut de la fonctionnalité d'accessibilité de clavier à l'écran sur l'écran de connexion.
-
-          Si cette règle est définie sur "True", le clavier à l'écran est activé à l'affichage de l'écran de connexion.
-
-          Si cette règle est définie sur "False", le clavier à l'écran est désactivé à l'affichage de l'écran de connexion.
-
-          Si vous configurez cette règle, les utilisateurs peuvent l'ignorer temporairement en activant ou en désactivant le clavier à l'écran. Toutefois, leur choix n'est pas définitif. En effet, le paramètre par défaut est restauré dès que l'écran de connexion est affiché de nouveau ou si l'utilisateur reste inactif pendant une minute sur ce même écran.
-
-          Si cette règle n'est pas configurée, le clavier à l'écran est désactivé au premier affichage de l'écran de connexion. Les utilisateurs peuvent l'activer ou le désactiver à tout moment, et son état sur l'écran de connexion est appliqué à tous les utilisateurs.
-
-          Remarque : Si elle est définie, la règle <ph name="DEVICE_LOGIN_SCREEN_VIRTUAL_KEYBOARD_ENABLED_POLICY_NAME" /> remplace cette règle.</translation>
 <translation id="4203389617541558220">Limite la durée de fonctionnement de l'appareil en programmant des redémarrages automatiques.
 
       Lorsque vous définissez cette règle, elle indique la durée de fonctionnement de l'appareil avant la programmation d'un redémarrage automatique.
@@ -2526,11 +2472,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="4625915093043961294">Configurer la liste blanche d'installation des extensions</translation>
 <translation id="4632343302005518762">Autoriser <ph name="PRODUCT_FRAME_NAME" /> à gérer les types de contenu répertoriés</translation>
 <translation id="4632566332417930481">Interdire l'utilisation des outils pour les développeurs avec les extensions installées par la stratégie d'entreprise, mais autoriser l'utilisation des outils pour les développeurs dans les autres cas</translation>
-<translation id="4633786464238689684">Modifie le comportement par défaut de la première rangée de touches, qui deviennent des touches de fonction.
-
-          Si cette règle est définie sur la valeur "true", les touches de la première rangée du clavier deviennent par défaut des touches de fonction. Le comportement d'origine des touches multimédias est rétabli en appuyant sur la touche de recherche.
-
-          Si cette règle est définie sur la valeur "false" ou si elle n'est pas définie, les touches sont des touches multimédias par défaut et deviennent des touches de fonction lorsque la touche de recherche est maintenue enfoncée.</translation>
 <translation id="4639407427807680016">Noms des hôtes de messagerie native à exclure de la liste noire</translation>
 <translation id="4649395978608361979">Destinations des imprimantes locales</translation>
 <translation id="4650759511838826572">Désactiver les schémas de protocole d'URL</translation>
@@ -2622,15 +2563,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
       Si ce paramètre est désactivé, ces informations ne sont jamais suggérées ni saisies automatiquement. De même, les informations complémentaires de carte de crédit que l'utilisateur est susceptible de fournir sur une page Web ne sont pas enregistrées.
 
       Si ce paramètre est activé ou vide, l'utilisateur peut contrôler la saisie automatique pour les cartes de crédit dans l'interface utilisateur.</translation>
-<translation id="4791031774429044540">Active la fonctionnalité d'accessibilité de grand curseur.
-
-          Si vous définissez cette règle sur "True", le grand curseur est activé en permanence.
-
-          Si vous définissez cette règle sur "False", il est toujours désactivé.
-
-          Si vous définissez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
-
-          Si vous ne définissez pas cette règle, le grand curseur est désactivé au départ, mais peut ensuite être activé à tout moment par les utilisateurs.</translation>
 <translation id="4802744647065138872">Limite le nombre d'instantanés de données utilisateur retenus en prévision d'un éventuel rollback d'urgence.</translation>
 <translation id="4802905909524200151">Configurer le comportement de la fonctionnalité de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Redémarrer à chaque déconnexion de l'utilisateur.</translation>
@@ -2793,15 +2725,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="5105313908130842249">Délai de verrouillage de l'écran (batterie)</translation>
 <translation id="5108031557082757679">Imprimantes d'appareils d'entreprise désactivées</translation>
 <translation id="5109383437323376357">Déterminer la disponibilité des variantes</translation>
-<translation id="5112121363469561920">Permet de configurer le type de loupe activé par défaut sur l'écran de connexion.
-
-          Si cette règle est définie, elle contrôle le type de loupe activé lors de l'affichage de l'écran de connexion. Définissez la règle sur "None" pour désactiver la loupe.
-
-          Si vous définissez cette règle, les utilisateurs peuvent la remplacer momentanément en activant ou en désactivant la loupe. Toutefois, leur choix n'est pas définitif. En effet, le paramètre par défaut est restauré dès que l'écran de connexion est affiché de nouveau, ou si l'utilisateur reste inactif pendant une minute sur ce même écran.
-
-          Si vous ne définissez pas cette règle, la loupe est désactivée lors du premier affichage de l'écran de connexion. Les utilisateurs peuvent l'activer ou la désactiver à tout moment, et son état sur l'écran de connexion est appliqué à tous les utilisateurs.
-
-          Remarque : Si elle est définie, la règle <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" /> remplace cette règle.</translation>
 <translation id="5115168755602871392">Permet de transmettre les informations du ou des processeurs d'un appareil.
 
       Si la règle est définie sur "False" ou n'est pas définie, ces informations ne sont pas transmises.
@@ -3024,17 +2947,6 @@ Si cette règle n'est pas configurée, ce paramètre est activé, mais l'utilisa
 <translation id="5378985487213287085">Permet de définir si les sites Web sont autorisés à afficher des notifications sur le bureau. L'affichage des notifications sur le bureau peut être autorisé par défaut, refusé par défaut, ou bien l'utilisateur peut recevoir un message chaque fois qu'un site veut afficher ces notifications. 
 
 Si cette règle n'est pas configurée, le paramètre "AskNotifications" est utilisé et l'utilisateur est en mesure de le modifier.</translation>
-<translation id="5380329473151894945">Permet de définir l'état par défaut de la fonctionnalité d'accessibilité de grand curseur sur l'écran de connexion.
-
-          Si cette règle est définie sur "True", le grand curseur est activé à l'affichage de l'écran de connexion.
-
-          Si cette règle est définie sur "False", le grand curseur est désactivé à l'affichage de l'écran de connexion.
-
-          Si vous configurez cette règle, les utilisateurs peuvent l'ignorer temporairement en activant ou en désactivant le grand curseur. Toutefois, leur choix n'est pas définitif. En effet, le paramètre par défaut est restauré dès que l'écran de connexion est affiché de nouveau ou si l'utilisateur reste inactif pendant une minute sur ce même écran.
-
-          Si cette règle n'est pas configurée, le grand curseur est désactivé au premier affichage de l'écran de connexion. Les utilisateurs peuvent l'activer ou le désactiver à tout moment, et son état sur l'écran de connexion est appliqué à tous les utilisateurs.
-
-          Remarque : Si elle est définie, la règle <ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" /> remplace cette règle.</translation>
 <translation id="538108065117008131">Autoriser <ph name="PRODUCT_FRAME_NAME" /> à gérer les types de contenus suivants.</translation>
 <translation id="538768040137709073">Permet d'activer la fonctionnalité de presse-papiers partagé, qui donne la possibilité aux utilisateurs d'envoyer du texte entre un ordinateur de bureau Chrome et un appareil Android lorsque la synchronisation est activée et que l'utilisateur est connecté.
 
@@ -3375,7 +3287,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
       Si elle est définie sur "False" ou si elle n'est pas définie, les fonctionnalités de Web Components v0 seront désactivées par défaut à compter de la version M80.
 
       Cette règle sera supprimée après Chrome 84.</translation>
-<translation id="5763698334786515749">Activer le bouton permettant d'afficher le mot de passe sur l'écran de connexion et de verrouillage.</translation>
 <translation id="5765780083710877561">Description :</translation>
 <translation id="5770738360657678870">Version en développement (peut être instable)</translation>
 <translation id="5774856474228476867">URL de recherche du moteur de recherche par défaut</translation>
@@ -3729,7 +3640,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
           Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="6368011194414932347">Configurer l'URL de la page d'accueil</translation>
 <translation id="6368403635025849609">Autoriser JavaScript sur ces sites</translation>
-<translation id="6372105930898423193">Permet de réactiver le cache d'applications même s'il est désactivé par défaut.</translation>
+<translation id="6372105930898423193">Permet de réactiver le cache des applications même s'il est désactivé par défaut.</translation>
 <translation id="6376659517206731212">Peut être obligatoire</translation>
 <translation id="6377355597423503887">Cette règle est obsolète. Veuillez utiliser "BrowserSignin" à la place.
 
@@ -3889,9 +3800,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
       Si cette règle n'est pas configurée, l'utilisateur peut utiliser n'importe quel plug-in installé sur le système, à l'exception des plug-ins codés en dur incompatibles, et des plug-ins obsolètes ou dangereux.</translation>
 <translation id="6571871508154591774">Désactiver la caméra, les paramètres du navigateur et les paramètres de l'OS</translation>
 <translation id="6573305661369899995">Définir une source externe pour les restrictions d'URL</translation>
-<translation id="6574770600243153999">Autoriser cet appareil à exécuter PluginVm.
-
-      Si la règle est définie sur "False" ou n'est pas configurée, <ph name="PLUGIN_VM_NAME" /> n'est pas activé pour cet appareil. Si elle est définie sur "True", <ph name="PLUGIN_VM_NAME" /> est activé pour l'appareil à condition que les autres paramètres l'y autorisent aussi. La règle <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> doit être définie sur "True", et <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" />, <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> ou <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> doivent être configurés de sorte à permettre l'exécution de <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="6583851521569686409">Permet de configurer une liste d'imprimantes.
 
       Cette règle offre la possibilité aux administrateurs de proposer des configurations d'imprimantes à leurs utilisateurs.
@@ -3949,7 +3857,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6665670272107384733">Définir la fréquence à laquelle l'utilisateur doit saisir le mot de passe pour utiliser le déverrouillage rapide</translation>
 <translation id="6672070613706645316">Autoriser les utilisateurs à personnaliser l'arrière-plan sur la page "Nouvel onglet"</translation>
 <translation id="6672630473862787247">Activer l'authentification ambiante pour les sessions standards, Invité et de navigation privée.</translation>
-<translation id="6677797768774898583">Permet à l'utilisateur d'afficher le mot de passe en cliquant sur un bouton situé sur l'écran de connexion et de verrouillage.</translation>
 <translation id="6685903773201985073">Activer l'authentification ambiante pour les sessions Invité et standards.</translation>
 <translation id="6689792153960219308">Envoyer des rapports sur l'état du matériel</translation>
 <translation id="6698632841807204978">Activer l'impression monochrome</translation>
@@ -4025,15 +3932,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6907778402784621686">Bloquer le contenu non sécurisé sur ces sites</translation>
 <translation id="6908640907898649429">Configure le moteur de recherche par défaut. Vous pouvez définir le moteur de recherche par défaut dont se servira l'utilisateur ou choisir de désactiver le moteur de recherche par défaut.</translation>
 <translation id="6913068954484253496">Autoriser <ph name="PRODUCT_NAME" /> à se connecter aux appareils Cast sur toutes les adresses IP.</translation>
-<translation id="6915442654606973733">Active la fonctionnalité d'accessibilité de commentaires audio.
-
-          Si vous définissez cette règle sur "True", la fonctionnalité de commentaires audio est activée en permanence.
-
-          Si vous définissez cette règle sur "False", elle est toujours désactivée.
-
-          Si vous définissez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
-
-          Si vous ne définissez pas cette règle, la fonctionnalité de commentaires audio est désactivée au départ, mais peut ensuite être activée à tout moment par les utilisateurs.</translation>
 <translation id="6916507170737609563">
       Nous vous conseillons d'examiner le paramètre de la règle IsolateOriginsAndroid pour obtenir le meilleur résultat, c'est-à-dire l'isolation avec un impact limité sur les utilisateurs, et d'utiliser IsolateOriginsAndroid avec une liste des sites que vous souhaitez isoler. Le paramètre SitePerProcessAndroid isole tous les sites.
       Si cette règle est activée, chaque site exécute son propre processus.
@@ -4703,17 +4601,6 @@ au maximum si un utilisateur se sert de l'appareil.
 
       Cette règle peut être actualisée dynamiquement dans M56 (ou version ultérieure).</translation>
 <translation id="7841880500990419427">Version minimale de TLS à utiliser en remplacement</translation>
-<translation id="7842317008224536842">Permet de définir l'état par défaut de la fonctionnalité d'accessibilité de contraste élevé sur l'écran de connexion.
-
-          Si cette règle est définie sur "True", le contraste élevé est activé à l'affichage de l'écran de connexion.
-
-          Si cette règle est définie sur "False", le contraste élevé est désactivé à l'affichage de l'écran de connexion.
-
-          Si vous configurez cette règle, les utilisateurs peuvent l'ignorer temporairement en activant ou en désactivant le contraste élevé. Toutefois, leur choix n'est pas définitif. En effet, le paramètre par défaut est restauré dès que l'écran de connexion est affiché de nouveau ou si l'utilisateur reste inactif pendant une minute sur ce même écran.
-
-          Si cette règle n'est pas configurée, le contraste élevé est désactivé au premier affichage de l'écran de connexion. Les utilisateurs peuvent l'activer ou le désactiver à tout moment, et son état sur l'écran de connexion est appliqué à tous les utilisateurs.
-
-          Remarque : Si elle est définie, la règle <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" /> remplace cette règle.</translation>
 <translation id="7846952520291088817">URL pour lesquelles les candidats WebRTC ICE affichent les adresses IP locales</translation>
 <translation id="7848641140449742406">Paramètres de l'OS</translation>
 <translation id="7858404742201086014">Si vous activez ce paramètre, les plug-ins obsolètes sont utilisés comme des plug-ins normaux.
@@ -4920,15 +4807,6 @@ Si cette règle est définie sur "False", l'écran de confidentialité est désa
 Si cette règle est définie, l'utilisateur ne peut pas remplacer la valeur lorsque l'écran de connexion s'affiche.
 
 Si cette règle n'est pas définie, l'écran de confidentialité est désactivé initialement, mais l'utilisateur peut le modifier lorsque l'écran de connexion s'affiche.</translation>
-<translation id="8148901634826284024">Active la fonctionnalité d'accessibilité du mode Contraste élevé.
-
-          Si vous définissez cette règle sur "True", le mode Contraste élevé est activé en permanence.
-
-          Si vous définissez cette règle sur "False", ce mode est désactivé en permanence.
-
-          Si vous définissez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
-
-          Si vous ne définissez pas cette règle, le mode Contraste élevé est désactivé au départ, mais peut ensuite être activé à tout moment par l'utilisateur.</translation>
 <translation id="815061180603915310">Si cette règle est activée, elle contraint le profil à basculer en mode éphémère. Si elle est spécifiée en tant que règle OS (par exemple, GPO sous Windows), elle s'applique à tous les profils présents sur le système. Si elle est paramétrée en tant que règle de cloud, elle s'applique uniquement aux profils connectés avec un compte géré.
 
       Dans ce mode, les données de profil ne sont stockées sur le disque que pour la durée de la session utilisateur. Certaines fonctionnalités, telles que l'historique du navigateur, les extensions et leurs données, les données Web comme les cookies et les bases de données Web, ne sont pas conservées après la fermeture du navigateur. L'utilisateur peut toutefois continuer à télécharger manuellement des données sur son disque, enregistrer des pages ou les imprimer.
@@ -5621,9 +5499,9 @@ Si cette règle n'est pas configurée, ce paramètre est activé et l'utilisateu
 <translation id="9217154963008402249">Fréquence des paquets réseau de contrôle</translation>
 <translation id="922540222991413931">Configurer les sources d'installation des extensions, des applications et des scripts d'utilisateur</translation>
 <translation id="924557436754151212">Importer les mots de passe enregistrés du navigateur par défaut à la première exécution</translation>
-<translation id="929549405492388749">Si cette règle est définie sur "vrai", le cache d'application est activé de manière forcée, même s'il n'est pas disponible par défaut dans Chrome.
+<translation id="929549405492388749">Si cette règle est définie sur "vrai", le cache des applications est activé de manière forcée, même s'il n'est pas disponible par défaut dans Chrome.
 
-      Si cette règle n'est pas configurée ou si elle est définie sur "faux", le cache d'applications applique les paramètres par défaut de Chrome.</translation>
+      Si cette règle n'est pas configurée ou si elle est définie sur "faux", le cache des applications applique les paramètres par défaut de Chrome.</translation>
 <translation id="930930237275114205">Définir le répertoire de données utilisateur de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="940706688964479124">Liste des types de fichier à ouvrir automatiquement après leur téléchargement</translation>
 <translation id="943865157632139008">Permet de configurer le moteur de rendu HTML par défaut lorsque <ph name="PRODUCT_FRAME_NAME" /> est installé.

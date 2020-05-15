@@ -176,9 +176,8 @@ SharingDialogView::SharingDialogView(views::View* anchor_view,
                                      SharingDialogData data)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       data_(std::move(data)) {
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
-  DialogDelegate::SetFootnoteView(
-      CreateHelpOrOriginView(data_, web_contents, this));
+  SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetFootnoteView(CreateHelpOrOriginView(data_, web_contents, this));
   set_close_on_main_frame_origin_navigation(true);
 }
 

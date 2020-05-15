@@ -135,13 +135,13 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderUnacceleratedOverlay) {
       CanvasColorSpace::kSRGB, CanvasColorParams::GetNativeCanvasPixelFormat(),
       kNonOpaque);
 
-  auto provider = CanvasResourceProvider::Create(
-      kSize,
-      CanvasResourceProvider::ResourceUsage::kSoftwareCompositedResourceUsage,
-      context_provider_wrapper_, 0 /* msaa_sample_count */,
-      kLow_SkFilterQuality, kColorParams,
-      CanvasResourceProvider::kAllowImageChromiumPresentationMode,
-      nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+  const uint32_t shared_image_usage_flags =
+      gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
+
+  auto provider = CanvasResourceProvider::CreateSharedImageProvider(
+      kSize, context_provider_wrapper_, kLow_SkFilterQuality, kColorParams,
+      true /* is_origin_top_left */, CanvasResourceProvider::RasterMode::kCPU,
+      shared_image_usage_flags);
 
   EXPECT_EQ(provider->Size(), kSize);
   EXPECT_TRUE(provider->IsValid());
@@ -320,13 +320,9 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderSharedBitmap) {
       &client, 1 /* client_id */, 1 /* sink_id */,
       1 /* placeholder_canvas_id */, kSize);
 
-  auto provider = CanvasResourceProvider::Create(
-      kSize,
-      CanvasResourceProvider::ResourceUsage::kSoftwareCompositedResourceUsage,
-      context_provider_wrapper_, 0 /* msaa_sample_count */,
-      kLow_SkFilterQuality, kColorParams,
-      CanvasResourceProvider::kDefaultPresentationMode,
-      resource_dispatcher.GetWeakPtr(), true /* is_origin_top_left */);
+  auto provider = CanvasResourceProvider::CreateSharedBitmapProvider(
+      kSize, context_provider_wrapper_, kLow_SkFilterQuality, kColorParams,
+      resource_dispatcher.GetWeakPtr());
 
   EXPECT_EQ(provider->Size(), kSize);
   EXPECT_TRUE(provider->IsValid());
@@ -527,7 +523,7 @@ TEST_F(CanvasResourceProviderTest, DimensionsExceedMaxTextureSize) {
         continue;
       case CanvasResourceProvider::ResourceUsage::
           kSoftwareCompositedResourceUsage:
-        FALLTHROUGH;
+        continue;
       case CanvasResourceProvider::ResourceUsage::
           kSoftwareCompositedDirect2DResourceUsage:
         FALLTHROUGH;

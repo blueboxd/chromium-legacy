@@ -148,10 +148,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // function adds part of cached fragments to |container_builder_|, update
   // |break_token_| to continue layout from the last reused fragment, and
   // returns |true|. Otherwise returns |false|.
-  const NGInlineBreakToken* TryReuseFragmentsFromCache(
-      NGInlineNode child,
-      NGPreviousInflowPosition*,
-      bool* abort_out);
   bool TryReuseFragmentsFromCache(
       NGInlineNode child,
       NGPreviousInflowPosition*,

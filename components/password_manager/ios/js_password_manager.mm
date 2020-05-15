@@ -4,9 +4,9 @@
 
 #import "components/password_manager/ios/js_password_manager.h"
 
+#include "base/check.h"
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"

@@ -18,31 +18,50 @@ from blinkpy.common.net.git_cl import GitCL
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.log_utils import configure_logging
+from blinkpy.web_tests.port.android import PRODUCTS
 
 _log = logging.getLogger(__name__)
 
-MARKER_COMMENT = '# ====== New tests from wpt-importer added here ======'
-UMBRELLA_BUG = 'crbug.com/626703'
 
 # TODO(robertma): Investigate reusing web_tests.models.test_expectations and
 # alike in this module.
 
-SimpleTestResult = namedtuple('SimpleTestResult',
-                              ['expected', 'actual', 'bug'])
+SimpleTestResult = namedtuple('SimpleTestResult', ['expected', 'actual', 'bug'])
+
+DesktopConfig = namedtuple('DesktopConfig', ['port_name'])
 
 
 class WPTExpectationsUpdater(object):
-    def __init__(self, host):
+    MARKER_COMMENT = '# ====== New tests from wpt-importer added here ======'
+    UMBRELLA_BUG = 'crbug.com/626703'
+
+    def __init__(self, host, args=None):
         self.host = host
         self.port = self.host.port_factory.get()
         self.git_cl = GitCL(host)
         self.finder = PathFinder(self.host.filesystem)
-        self.ports_with_no_results = set()
-        self.ports_with_all_pass = set()
+        self.configs_with_no_results = []
+        self.configs_with_all_pass = []
         self.patchset = None
 
-    def run(self, args=None):
+        # Get options from command line arguments.
         parser = argparse.ArgumentParser(description=__doc__)
+        self.add_arguments(parser)
+        self.options = parser.parse_args(args or [])
+
+    def run(self):
+        """Does required setup before calling update_expectations().
+        Do not override this function!
+        """
+        log_level = logging.DEBUG if self.options.verbose else logging.INFO
+        configure_logging(logging_level=log_level, include_time=True)
+
+        self.patchset = self.options.patchset
+        self.update_expectations()
+
+        return 0
+
+    def add_arguments(self, parser):
         parser.add_argument(
             '--patchset',
             default=None,
@@ -52,15 +71,14 @@ class WPTExpectationsUpdater(object):
             '--verbose',
             action='store_true',
             help='More verbose logging.')
-        args = parser.parse_args(args)
-
-        log_level = logging.DEBUG if args.verbose else logging.INFO
-        configure_logging(logging_level=log_level, include_time=True)
-
-        self.patchset = args.patchset
-        self.update_expectations()
-
-        return 0
+        # TODO(rmhasan): Move this argument to the
+        # AndroidWPTExpectationsUpdater add_arguments implementation.
+        # Also look into using sub parsers to separate android and
+        # desktop specific arguments.
+        parser.add_argument(
+            '--android-product', action='append', default=[],
+            help='Android products whose baselines will be updated.',
+            choices=PRODUCTS)
 
     def update_expectations(self):
         """Downloads text new baselines and adds test expectations lines.
@@ -83,11 +101,21 @@ class WPTExpectationsUpdater(object):
         test_expectations = {}
         for build, job_status in build_to_status.iteritems():
             if job_status.result == 'SUCCESS':
-                self.ports_with_all_pass.add(self.port_name(build))
-            port_results = self.get_failing_results_dict(build)
-            test_expectations = self.merge_dicts(test_expectations,
-                                                 port_results)
+                self.configs_with_all_pass.extend(
+                    self.get_builder_configs(build))
+                continue
+            result_dicts = self.get_failing_results_dicts(build)
+            for result_dict in result_dicts:
+                test_expectations = self.merge_dicts(
+                    test_expectations, result_dict)
 
+        # At this point, test_expectations looks like: {
+        #     'test-with-failing-result': {
+        #         config1: SimpleTestResult,
+        #         config2: SimpleTestResult,
+        #         config3: AnotherSimpleTestResult
+        #     }
+        # }
         # And then we merge results for different platforms that had the same results.
         for test_name, platform_result in test_expectations.iteritems():
             # platform_result is a dict mapping platforms to results.
@@ -96,16 +124,15 @@ class WPTExpectationsUpdater(object):
 
         # At this point, test_expectations looks like: {
         #     'test-with-failing-result': {
-        #         ('port-name1', 'port-name2'): SimpleTestResult,
-        #         'port-name3': AnotherSimpleTestResult
+        #         (config1, config2): SimpleTestResult,
+        #         (config3,): AnotherSimpleTestResult
         #     }
         # }
 
         rebaselined_tests, test_expectations = self.download_text_baselines(
             test_expectations)
-        test_expectation_lines = self.create_line_dict(test_expectations)
-        self.write_to_test_expectations(test_expectation_lines)
-        return rebaselined_tests, test_expectation_lines
+        exp_lines_dict = self.write_to_test_expectations(test_expectations)
+        return rebaselined_tests, exp_lines_dict
 
     def get_issue_number(self):
         """Returns current CL number. Can be replaced in unit tests."""
@@ -116,8 +143,8 @@ class WPTExpectationsUpdater(object):
         return self.git_cl.latest_try_jobs(
             builder_names=self._get_try_bots(), patchset=self.patchset)
 
-    def get_failing_results_dict(self, build):
-        """Returns a nested dict of failing test results.
+    def get_failing_results_dicts(self, build):
+        """Returns a list of nested dicts of failing test results.
 
         Retrieves a full list of web test results from a builder result URL.
         Collects the builder name, platform and a list of tests that did not
@@ -127,79 +154,124 @@ class WPTExpectationsUpdater(object):
             build: A Build object.
 
         Returns:
-            A dictionary with the structure: {
+            A list of dictionaries that have the following structure.
+
+            {
                 'test-with-failing-result': {
-                    'full-port-name': SimpleTestResult
+                    config: SimpleTestResult
                 }
             }
-            If results could be fetched but none are failing,
-            this will return an empty dictionary.
-        """
-        port_name = self.port_name(build)
-        if port_name in self.ports_with_all_pass:
-            # All tests passed, so there should be no failing results.
-            return {}
 
-        test_result_list = [self.host.results_fetcher.fetch_results(build)]
+            If results could be fetched but none are failing,
+            this will return an empty list.
+        """
+
+        test_results_list = self._get_web_test_results(build)
+
         has_webdriver_tests = self.host.builders.has_webdriver_tests_for_builder(
             build.builder_name)
+
         if has_webdriver_tests:
             master = self.host.builders.master_for_builder(build.builder_name)
-            test_result_list.append(
+            test_results_list.append(
                 self.host.results_fetcher.fetch_webdriver_test_results(
                     build, master))
 
-        test_result_list = filter(None, test_result_list)
-        if not test_result_list:
+        test_results_list = filter(None, test_results_list)
+        if not test_results_list:
             _log.warning('No results for build %s', build)
-            self.ports_with_no_results.add(self.port_name(build))
-            return {}
+            self.configs_with_no_results.extend(self.get_builder_configs(build))
+            return []
 
         failing_test_results = []
-        for test_result in test_result_list:
-            failing_test_results += [
-                result
-                for result in test_result.didnt_run_as_expected_results()
-                if not result.did_pass()
-            ]
+        for results_set in test_results_list:
+            results_dict = self.generate_failing_results_dict(
+                build, results_set)
+            if results_dict:
+                failing_test_results.append(results_dict)
+        return failing_test_results
 
-        return self.generate_results_dict(
-            self.port_name(build), failing_test_results)
+    def _get_web_test_results(self, build):
+        """Gets web tests results for a builder.
+
+        Args:
+            build: Named tuple containing builder name and number
+
+        Returns:
+            List of web tests results for each web test step
+            in build.
+        """
+        return [self.host.results_fetcher.fetch_results(build)]
+
+    def get_builder_configs(self, build, *_):
+        return [DesktopConfig(port_name=self.port_name(build))]
 
     @memoized
     def port_name(self, build):
         return self.host.builders.port_name_for_builder_name(
             build.builder_name)
 
-    def generate_results_dict(self, full_port_name, web_test_results):
+    def generate_failing_results_dict(self, build, web_test_results):
         """Makes a dict with results for one platform.
 
         Args:
-            full_port_name: The fully-qualified port name, e.g. "win-win10".
+            builder: Builder instance containing builder information..
             web_test_results: A list of WebTestResult objects.
 
         Returns:
             A dictionary with the structure: {
                 'test-name': {
-                    'full-port-name': SimpleTestResult
+                    ('full-port-name',): SimpleTestResult
                 }
             }
         """
         test_dict = {}
-        for result in web_test_results:
-            test_name = result.test_name()
+        configs = self.get_builder_configs(build, web_test_results)
+        _log.debug('Getting failing results dictionary'
+                   ' for %s step in latest %s build' % (
+                       web_test_results.step_name(), build.builder_name))
 
-            if not self.port.is_wpt_test(test_name):
+        if len(configs) > 1:
+            raise ScriptError('More than one configs were produced for'
+                              ' builder and web tests step combination')
+        if not configs:
+            raise ScriptError('No configuration was found for builder and web test'
+                              ' step combination ')
+        config = configs[0]
+        if config in self.configs_with_all_pass:
+            return {}
+
+        for result in web_test_results.didnt_run_as_expected_results():
+            # TODO(rmhasan) If a test fails unexpectedly then it runs multiple
+            # times until, it passes or a retry limit is reached. Even though
+            # it passed we there are still flaky failures that we are not
+            # creating test expectations for. Maybe we should add a mode
+            # which creates expectations for tests that are flaky but still
+            # pass in a web test step.
+            if result.did_pass():
                 continue
 
+            test_name = result.test_name()
+            if not self._is_wpt_test(test_name):
+                continue
             test_dict[test_name] = {
-                full_port_name:
+                config:
                 SimpleTestResult(
                     expected=result.expected_results(),
                     actual=result.actual_results(),
-                    bug=UMBRELLA_BUG)
+                    bug=self.UMBRELLA_BUG)
             }
         return test_dict
+
+    def _is_wpt_test(self, test_name):
+        """In blink web tests results, each test name is relative to
+        the web_tests directory instead of the wpt directory. We
+        need to use the port.is_wpt_test() function to find out if a test
+        is from the WPT suite.
+
+        Returns: True if a test is in the external/wpt subdirectory of
+            the web_tests directory."""
+        return self.port.is_wpt_test(test_name)
 
     def merge_dicts(self, target, source, path=None):
         """Recursively merges nested dictionaries.
@@ -256,7 +328,7 @@ class WPTExpectationsUpdater(object):
             current_key = keys[0]
             found_match = False
             if current_key == keys[-1]:
-                merged_dict[current_key] = dictionary[current_key]
+                merged_dict[tuple([current_key])] = dictionary[current_key]
                 keys.remove(current_key)
                 break
 
@@ -267,13 +339,13 @@ class WPTExpectationsUpdater(object):
 
                 if next_item == keys[-1]:
                     if found_match:
-                        merged_dict[tuple(
-                            matching_value_keys)] = dictionary[current_key]
+                        merged_dict[
+                            tuple(matching_value_keys)] = dictionary[current_key]
                         keys = [
                             k for k in keys if k not in matching_value_keys
                         ]
                     else:
-                        merged_dict[current_key] = dictionary[current_key]
+                        merged_dict[tuple([current_key])] = dictionary[current_key]
                         keys.remove(current_key)
             matching_value_keys = set()
         return merged_dict
@@ -328,8 +400,8 @@ class WPTExpectationsUpdater(object):
             merged_results: A dictionary with the format:
                 {
                     'test-with-failing-result': {
-                        ('port-name1', 'port-name2'): SimpleTestResult,
-                        'port-name3': SimpleTestResult
+                        (config1, config2): SimpleTestResult,
+                        (config3,): SimpleTestResult
                     }
                 }
 
@@ -338,23 +410,23 @@ class WPTExpectationsUpdater(object):
             (each SimpleTestResult turns into a line).
         """
         line_dict = defaultdict(list)
-        for test_name, port_results in sorted(merged_results.iteritems()):
-            if not self.port.is_wpt_test(test_name):
+        for test_name, test_results in sorted(merged_results.iteritems()):
+            if not self._is_wpt_test(test_name):
                 _log.warning(
                     'Non-WPT test "%s" unexpectedly passed to create_line_dict.',
                     test_name)
                 continue
-            for port_names, result in sorted(port_results.iteritems()):
+            for configs, result in sorted(test_results.iteritems()):
                 line_dict[test_name].extend(
-                    self._create_lines(test_name, port_names, result))
+                    self._create_lines(test_name, configs, result))
         return line_dict
 
-    def _create_lines(self, test_name, port_names, result):
+    def _create_lines(self, test_name, configs, result):
         """Constructs test expectation line strings.
 
         Args:
             test_name: The test name string.
-            port_names: A list of full port names that the line should apply to.
+            configs: A list of full configs that the line should apply to.
             result: A SimpleTestResult.
 
         Returns:
@@ -362,22 +434,20 @@ class WPTExpectationsUpdater(object):
             |test_name|.
         """
         lines = []
-        port_names = self.tuple_or_value_to_list(port_names)
-
         # The set of ports with no results is assumed to have have no
         # overlap with the set of port names passed in here.
-        assert (set(port_names) & self.ports_with_no_results) == set()
+        assert set(configs) & set(self.configs_with_no_results) == set()
 
         # The ports with no results are generally ports of builders that
         # failed, maybe for unrelated reasons. At this point, we add ports
         # with no results to the list of platforms because we're guessing
         # that this new expectation might be cross-platform and should
         # also apply to any ports that we weren't able to get results for.
-        port_names.extend(self.ports_with_no_results)
+        configs = tuple(list(configs) + self.configs_with_no_results)
 
         expectations = '[ %s ]' % \
             ' '.join(self.get_expectations(result, test_name))
-        for specifier in self.normalized_specifiers(test_name, port_names):
+        for specifier in self.normalized_specifiers(test_name, configs):
             line_parts = []
             if specifier:
                 line_parts.append('[ %s ]' % specifier)
@@ -386,27 +456,28 @@ class WPTExpectationsUpdater(object):
             line_parts.append(expectations)
 
             # Only add the bug link if the expectations do not include WontFix.
-            if 'WontFix' not in expectations:
+            if 'WontFix' not in expectations and result.bug:
                 line_parts.insert(0, result.bug)
 
             lines.append(' '.join(line_parts))
         return lines
 
-    def normalized_specifiers(self, test_name, port_names):
+    def normalized_specifiers(self, test_name, configs):
         """Converts and simplifies ports into platform specifiers.
 
         Args:
             test_name: The test name string.
-            port_names: A list of full port names that the line should apply to.
+            configs: A list of full configs that the line should apply to.
 
         Returns:
             A list of specifier string, e.g. ["Mac", "Win"].
             [''] will be returned if the line should apply to all platforms.
         """
         specifiers = []
-        for name in sorted(port_names):
+        for config in configs:
             specifiers.append(
-                self.host.builders.version_specifier_for_port_name(name))
+                self.host.builders.version_specifier_for_port_name(
+                    config.port_name))
 
         if self.specifiers_can_extend_to_all_platforms(specifiers, test_name):
             return ['']
@@ -416,13 +487,6 @@ class WPTExpectationsUpdater(object):
         if not specifiers:
             return ['']
         return specifiers
-
-    @staticmethod
-    def tuple_or_value_to_list(tuple_or_value):
-        """Converts a tuple to a list, and a string value to a one-item list."""
-        if isinstance(tuple_or_value, tuple):
-            return list(tuple_or_value)
-        return [tuple_or_value]
 
     def specifiers_can_extend_to_all_platforms(self, specifiers, test_name):
         """Tests whether a list of specifiers can be extended to all platforms.
@@ -500,7 +564,7 @@ class WPTExpectationsUpdater(object):
                     builder_name).lower())
         return frozenset(all_platform_specifiers)
 
-    def write_to_test_expectations(self, line_dict):
+    def write_to_test_expectations(self, test_expectations):
         """Writes the given lines to the TestExpectations file.
 
         The place in the file where the new lines are inserted is after a marker
@@ -511,11 +575,16 @@ class WPTExpectationsUpdater(object):
         file.
 
         Args:
-            line_dict: A dictionary from test names to a list of test expectation lines.
+            test_expectations: A dictionary mapping test names to a dictionary
+            mapping platforms and test results.
+        Returns:
+            Dictionary mapping test names to lists of test expectation strings.
         """
+        line_dict = self.create_line_dict(test_expectations)
         if not line_dict:
             _log.info(
-                'No lines to write to TestExpectations, WebdriverExpectations or NeverFixTests.'
+                'No lines to write to TestExpectations,'
+                ' WebdriverExpectations or NeverFixTests.'
             )
             return
 
@@ -545,9 +614,9 @@ class WPTExpectationsUpdater(object):
             file_contents = self.host.filesystem.read_text_file(
                 expectations_file_path)
 
-            marker_comment_index = file_contents.find(MARKER_COMMENT)
+            marker_comment_index = file_contents.find(self.MARKER_COMMENT)
             if marker_comment_index == -1:
-                file_contents += '\n%s\n' % MARKER_COMMENT
+                file_contents += '\n%s\n' % self.MARKER_COMMENT
                 file_contents += '\n'.join(lines)
             else:
                 end_of_marker_line = (file_contents[marker_comment_index:].
@@ -572,6 +641,7 @@ class WPTExpectationsUpdater(object):
             wont_fix_file_content += '\n'
             self.host.filesystem.write_text_file(wont_fix_path,
                                                  wont_fix_file_content)
+        return line_dict
 
     # TODO(robertma): Unit test this method.
     def download_text_baselines(self, test_results):
@@ -663,5 +733,7 @@ class WPTExpectationsUpdater(object):
         """Checks whether a given test is a WebDriver test."""
         return self.finder.is_webdriver_test_path(test_name)
 
+    @memoized
     def _get_try_bots(self):
-        return self.host.builders.all_try_builder_names()
+        return self.host.builders.filter_builders(
+            is_try=True, exclude_specifiers={'android'})

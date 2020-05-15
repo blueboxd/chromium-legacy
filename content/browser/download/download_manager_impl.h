@@ -231,9 +231,10 @@ class CONTENT_EXPORT DownloadManagerImpl
                                DownloadTargetCallback callback) override;
   bool ShouldCompleteDownload(download::DownloadItemImpl* item,
                               base::OnceClosure complete_callback) override;
-  bool ShouldOpenFileBasedOnExtension(const base::FilePath& path) override;
-  bool ShouldOpenFileByPolicyBasedOnExtension(
-      const base::FilePath& path) override;
+  bool ShouldAutomaticallyOpenFile(const GURL& url,
+                                   const base::FilePath& path) override;
+  bool ShouldAutomaticallyOpenFileByPolicy(const GURL& url,
+                                           const base::FilePath& path) override;
   bool ShouldOpenDownload(download::DownloadItemImpl* item,
                           ShouldOpenDownloadCallback callback) override;
   void CheckForFileRemoval(download::DownloadItemImpl* download_item) override;

@@ -43,7 +43,7 @@
 <translation id="104710386808485638">Vil du starte Linux på nytt?</translation>
 <translation id="1047431265488717055">Kopiér linkte&amp;kst</translation>
 <translation id="1048286738600630630">Skjermer</translation>
-<translation id="1048986595386481879">Dynamisk fordelt</translation>
+<translation id="1048986595386481879">Dynamisk allokert</translation>
 <translation id="1049743911850919806">Inkognito</translation>
 <translation id="1049795001945932310">&amp;Språkinnstillinger</translation>
 <translation id="1054153489933238809">Åpne det opprinnelige &amp;bildet i en ny fane</translation>
@@ -520,7 +520,6 @@
 <translation id="1650371550981945235">Vis inndataalternativer</translation>
 <translation id="1651008383952180276">Du må skrive inn den samme passordfrasen to ganger</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Legg til skriveren i Google Cloud Print, slik at du kan skrive ut fra hvor som helst.}other{Legg til # skrivere i Google Cloud Print, slik at du kan skrive ut fra hvor som helst.}}</translation>
-<translation id="1655937588105566159">{NUM_EXTENSIONS,plural, =1{Denne utvidelsen kan være farlig}other{Disse utvidelsene kan være farlige}}</translation>
 <translation id="1656528038316521561">Bakgrunnsopasitet</translation>
 <translation id="1657406563541664238">Bidra til å gjøre <ph name="PRODUCT_NAME" /> bedre ved å sende brukerstatistikk og programstopprapporter til Google automatisk</translation>
 <translation id="1657937299377480641">For å logge på igjen for tilgang til læringsressurser, be en forelder om å gi deg tillatelse</translation>
@@ -710,7 +709,6 @@
 <translation id="1875387611427697908">Dette kan bare legges til fra <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Kunne ikke hente autentiseringstokenet. Logg av og på igjen for å prøve på nytt.</translation>
 <translation id="1877860345998737529">Tilordning av bryterhandlinger</translation>
-<translation id="1878541307036593717">Konfigurer tillatelser</translation>
 <translation id="1879000426787380528">Logg på som</translation>
 <translation id="1880905663253319515">Vil du slette sertifikatet «<ph name="CERTIFICATE_NAME" />»?</translation>
 <translation id="1884013283844450420">Nettverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" /> – <ph name="NETWORK_NAME" /> – koble til</translation>
@@ -2627,6 +2625,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4359408040881008151">Installert på grunn av avhengige utvidelser.</translation>
 <translation id="4359717112757026264">Bybilde</translation>
 <translation id="4361142739114356624">Privatnøkkelen for dette klientsertifikatet mangler eller er ugyldig</translation>
+<translation id="4361745360460842907">Åpne som fane</translation>
 <translation id="4363771538994847871">Fant ingen Cast-destinasjoner. Trenger du hjelp?</translation>
 <translation id="4364327530094270451">Melon</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> deler et vindu.</translation>
@@ -3088,7 +3087,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4994474651455208930">Tillat at nettsteder kan be om å bli standard behandlere for protokoller</translation>
 <translation id="4994754230098574403">Konfigurerer</translation>
 <translation id="4997086284911172121">Ingen internettilkobling.</translation>
-<translation id="4997384734315285248">Avinstaller Plugin VM</translation>
 <translation id="4998430619171209993">På</translation>
 <translation id="5000922062037820727">Blokkert (anbefales)</translation>
 <translation id="5005498671520578047">Kopiér passordet</translation>
@@ -3691,6 +3689,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5785583009707899920">Chrome Filverktøy</translation>
 <translation id="5787146423283493983">Nøkkelavtale</translation>
 <translation id="5788367137662787332">Beklager, men minst én partisjon på enheten <ph name="DEVICE_LABEL" /> kunne ikke tilkobles.</translation>
+<translation id="5790085346892983794">Fullført</translation>
 <translation id="5792728279623964091">Trykk på av/på-knappen</translation>
 <translation id="5793339252089865437">Hvis du laster ned oppdateringen via mobilnettverket ditt, kan det føre til ekstrakostnader.</translation>
 <translation id="5794414402486823030">Åpne alltid med systemvisningsprogrammet</translation>
@@ -4623,6 +4622,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7004402701596653846">Nettstedet kan bruke MIDI</translation>
 <translation id="7004499039102548441">Nylige faner</translation>
 <translation id="7005496624875927304">Flere tillatelser</translation>
+<translation id="7005812687360380971">Mislyktes</translation>
 <translation id="7005848115657603926">Ugyldig sideområde. Bruk <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Bunnmarg</translation>
 <translation id="7007648447224463482">Åpne alt i et nytt vindu</translation>
@@ -4762,7 +4762,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7191159667348037">Ukjent skriver (USB)</translation>
 <translation id="7193051357671784796">Denne appen er lagt til av organisasjonen din. Start appen på nytt for å fullføre installasjonen.</translation>
 <translation id="7193374945610105795">Ingen passord er lagret for <ph name="ORIGIN" /></translation>
-<translation id="7194620721202917359">{NUM_APPS,plural, =1{Denne appen kan være farlig}other{Disse appene kan være farlige}}</translation>
 <translation id="7196913789568937443">Sikkerhetskopiér til Google Disk. Gjenopprett data eller bytt enhet når som helst – helt enkelt. Sikkerhetskopiene dine lastes opp til Google og krypteres med passordet for Google-kontoen din. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
 <translation id="7197190419934240522">Få Google Søk og smarte funksjoner fra Google hver gang du surfer på nettet</translation>
 <translation id="7197632491113152433">Vi fant <ph name="NUMBER_OF_APPS" /> apper i kontoen din som kan brukes på denne enheten.</translation>
@@ -5005,7 +5004,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" />-enheten din er nå registrert for bedriftsadministrering.</translation>
 <translation id="7507207699631365376">Se denne leverandørens <ph name="BEGIN_LINK" />personvernerklæring<ph name="END_LINK" /></translation>
 <translation id="7507930499305566459">Sertifikat for statussvar</translation>
-<translation id="7508054832109420082">Gi tilgang til skrivere</translation>
 <translation id="7513029293694390567">Bruk lagret legitimasjon til å logge på nettsteder automatisk. Hvis dette er slått av, blir du bedt om bekreftelse hver gang du logger på et nettsted.</translation>
 <translation id="7514239104543605883">Kopiér til enheten din</translation>
 <translation id="7514365320538308">Last ned</translation>
@@ -5164,7 +5162,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7716781361494605745">Nettadresse for retningslinjer for Netscape-sertifiseringsinstans</translation>
 <translation id="7717014941119698257">Laster ned: <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">Se etter oppdateringer</translation>
-<translation id="7719070594859855691">Gi tilgang til kameraet</translation>
 <translation id="7719367874908701697">Sidezoom</translation>
 <translation id="7721179060400456005">Tillat at vinduer vises over flere skjermer</translation>
 <translation id="7722040605881499779">Trengs for å oppdatere: <ph name="NECESSARY_SPACE" /></translation>

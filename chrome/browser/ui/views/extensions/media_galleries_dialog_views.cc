@@ -77,13 +77,12 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
       auxiliary_button_(nullptr),
       confirm_available_(false),
       accepted_(false) {
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
-                                   controller_->GetAcceptButtonText());
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, controller_->GetAcceptButtonText());
+  SetAcceptCallback(base::BindOnce(
       [](MediaGalleriesDialogViews* dialog) { dialog->accepted_ = true; },
       base::Unretained(this)));
 
-  auxiliary_button_ = DialogDelegate::SetExtraView(
+  auxiliary_button_ = SetExtraView(
       CreateAuxiliaryButton(this, controller_->GetAuxiliaryButtonText()));
 
   InitChildViews();

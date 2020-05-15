@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">خود کار ڈاؤن لوڈز</translation>
 <translation id="5677928146339483299">مسدود کردہ</translation>
 <translation id="5689516760719285838">مقام</translation>
+<translation id="5690795753582697420">‏Android کی ترتیبات میں کیمرا آف ہے</translation>
 <translation id="5710871682236653961">‏NFC آلات پر تھپتھپاتے وقت سائٹس کو معلومات بھیجنے اور وصول کرنے کی اجازت دینے سے پہلے پوچھیں (تجویز کردہ)</translation>
 <translation id="5719847187258001597">اس سے <ph name="ORIGIN" /> یا اس ایپ کے ذریعے آپ کی ہوم اسکرین پر اسٹور کردہ سبھی ڈیٹا اور کوکیز صاف ہو جائیں گی۔</translation>
 <translation id="5804241973901381774">اجازتیں</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">مزید</translation>
 <translation id="6064125863973209585">مکمل کردہ ڈاؤن لوڈز</translation>
 <translation id="6165508094623778733">مزید جانیں</translation>
+<translation id="6177111841848151710">موجودہ سرچ انجن کیلئے مسدود</translation>
 <translation id="6181444274883918285">سائٹ کا استثناء شامل کریں</translation>
 <translation id="6192792657125177640">استثناء</translation>
 <translation id="6194112207524046168">‏Chrome کو اپنے کیمرے تک رسائی دینے کیلئے، <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" /> میں بھی کیمرا آن کریں۔</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">یہ صفحہ خطرناک ہے۔ سائٹ کی معلومات</translation>
 <translation id="6965382102122355670">ٹھیک ہے</translation>
 <translation id="6992289844737586249">سائٹس کو آپ کا مائیکروفون استعمال کرنے کی اجازت دینے سے پہلے پوچھیں (تجویز کردہ)</translation>
+<translation id="7000754031042624318">‏Android ترتیبات میں آف کر دیا گیا</translation>
+<translation id="7016516562562142042">موجودہ سرچ انجن کیلئے اجازت یافتہ</translation>
 <translation id="7053983685419859001">مسدود کریں</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 منتخب ہے}other{# منتخب کردہ}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> منتخب ہو گئے۔ اختیارات اسکرین کے اوپری حصہ کے قریب دستیاب ہیں</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">کسی مخصوص سائٹ کیلئے آواز کی اجازت دیں۔</translation>
 <translation id="7993619969781047893">کچھ سائٹس پر خصوصیات میں خلل ہو سکتا ہے۔</translation>
 <translation id="7999064672810608036">کیا آپ واقعی کوکیز سمیت سبھی مقامی ڈيٹا صاف کرنا اور اس ویب سائٹ کیلئے سبھی اجازتیں دوبارہ ترتیب دینا چاہتے ہیں؟</translation>
+<translation id="8007176423574883786">اس آلے کیلئے آف کر دیا گیا</translation>
 <translation id="802154636333426148">ڈاؤن لوڈ ناکام ہوگیا</translation>
 <translation id="8087000398470557479">‏یہ مواد <ph name="DOMAIN_NAME" /> کی جانب سے ہے، جسے Google نے ڈیلیور کیا ہے۔</translation>
 <translation id="8116925261070264013">‏خاموش کردہ</translation>

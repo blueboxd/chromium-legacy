@@ -31,15 +31,22 @@ class WebLayerMetricsServiceClient
   WebLayerMetricsServiceClient();
   ~WebLayerMetricsServiceClient() override;
 
+  void RegisterSyntheticMultiGroupFieldTrial(
+      base::StringPiece trial_name,
+      const std::vector<int>& experiment_ids);
+
   // metrics::MetricsServiceClient
   int32_t GetProduct() override;
 
   // metrics::AndroidMetricsServiceClient:
   int GetSampleRatePerMille() override;
   void OnMetricsStart() override;
+  void OnMetricsNotStarted() override;
   int GetPackageNameLimitRatePerMille() override;
 
  private:
+  std::vector<base::OnceClosure> post_start_tasks_;
+
   DISALLOW_COPY_AND_ASSIGN(WebLayerMetricsServiceClient);
 };
 

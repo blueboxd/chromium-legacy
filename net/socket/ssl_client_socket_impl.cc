@@ -1490,19 +1490,19 @@ int SSLClientSocketImpl::DoPayloadWrite() {
 }
 
 void SSLClientSocketImpl::DoPeek() {
-  if (ssl_config_.disable_post_handshake_peek_for_testing ||
-      !completed_connect_ || peek_complete_) {
+  if (!completed_connect_) {
     return;
   }
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  if (ssl_config_.early_data_enabled && !recorded_early_data_result_) {
+  if (ssl_config_.early_data_enabled && !handled_early_data_result_) {
     // |SSL_peek| will implicitly run |SSL_do_handshake| if needed, but run it
     // manually to pick up the reject reason.
     int rv = SSL_do_handshake(ssl_.get());
     int ssl_err = SSL_get_error(ssl_.get(), rv);
-    if (ssl_err == SSL_ERROR_WANT_READ || ssl_err == SSL_ERROR_WANT_WRITE) {
+    int err = rv > 0 ? OK : MapOpenSSLError(ssl_err, err_tracer);
+    if (err == ERR_IO_PENDING) {
       return;
     }
 
@@ -1513,11 +1513,26 @@ void SSLClientSocketImpl::DoPeek() {
     UMA_HISTOGRAM_ENUMERATION("Net.SSLHandshakeEarlyDataReason",
                               SSL_get_early_data_reason(ssl_.get()),
                               ssl_early_data_reason_max_value + 1);
-    recorded_early_data_result_ = true;
-    if (ssl_err != SSL_ERROR_NONE) {
+
+    // On early data reject, clear early data on any other sessions in the
+    // cache, so retries do not get stuck attempting 0-RTT. See
+    // https://crbug.com/1066623.
+    if (err == ERR_EARLY_DATA_REJECTED ||
+        err == ERR_WRONG_VERSION_ON_EARLY_DATA) {
+      context_->ssl_client_session_cache()->ClearEarlyData(
+          GetSessionCacheKey(base::nullopt));
+    }
+
+    handled_early_data_result_ = true;
+
+    if (err != OK) {
       peek_complete_ = true;
       return;
     }
+  }
+
+  if (ssl_config_.disable_post_handshake_peek_for_testing || peek_complete_) {
+    return;
   }
 
   char byte;

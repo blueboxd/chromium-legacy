@@ -1266,6 +1266,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
 
         getSuggestionModelList().clear();
         mViewInfoList.clear();
+        mAutocompleteResult = new AutocompleteResult(null, null);
         updateOmniboxSuggestionsVisibility();
     }
 

@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_CONVERSIONS_CONVERSION_TEST_UTILS_H_
 #define CONTENT_BROWSER_CONVERSIONS_CONVERSION_TEST_UTILS_H_
 
+#include <list>
 #include <string>
 #include <vector>
 
@@ -22,16 +23,50 @@
 
 namespace content {
 
-class PassThroughStorageDelegate : public ConversionStorage::Delegate {
+class ConfigurableStorageDelegate : public ConversionStorage::Delegate {
  public:
-  PassThroughStorageDelegate() = default;
-  ~PassThroughStorageDelegate() override = default;
+  using AttributionCredits = std::list<int>;
+  ConfigurableStorageDelegate();
+  ~ConfigurableStorageDelegate() override;
 
   // ConversionStorage::Delegate
   void ProcessNewConversionReports(
-      std::vector<ConversionReport>* reports) override {}
-
+      std::vector<ConversionReport>* reports) override;
   int GetMaxConversionsPerImpression() const override;
+  int GetMaxImpressionsPerOrigin() const override;
+  int GetMaxConversionsPerOrigin() const override;
+
+  void set_max_conversions_per_impression(int max) {
+    max_conversions_per_impression_ = max;
+  }
+
+  void set_max_impressions_per_origin(int max) {
+    max_impressions_per_origin_ = max;
+  }
+
+  void set_max_conversions_per_origin(int max) {
+    max_conversions_per_origin_ = max;
+  }
+
+  void set_report_time_ms(int report_time_ms) {
+    report_time_ms_ = report_time_ms;
+  }
+
+  void AddCredits(AttributionCredits credits) {
+    // Add all credits to our list in order.
+    attribution_credits_.splice(attribution_credits_.end(), credits);
+  }
+
+ private:
+  int max_conversions_per_impression_ = INT_MAX;
+  int max_impressions_per_origin_ = INT_MAX;
+  int max_conversions_per_origin_ = INT_MAX;
+
+  int report_time_ms_ = 0;
+
+  // List of attribution credits the test delegate should associate with
+  // reports.
+  AttributionCredits attribution_credits_;
 };
 
 // Test manager provider which can be used to inject a fake ConversionManager.

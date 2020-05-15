@@ -49,16 +49,12 @@ class TestRunnerForSpecificView {
   bool isPointerLocked();
 
   // Helpers for working with base and V8 callbacks.
-  void PostV8Callback(const v8::Local<v8::Function>& callback);
   void PostV8CallbackWithArgs(v8::UniquePersistent<v8::Function> callback,
                               int argc,
                               v8::Local<v8::Value> argv[]);
-  void InvokeV8Callback(const v8::UniquePersistent<v8::Function>& callback);
   void InvokeV8CallbackWithArgs(
       const v8::UniquePersistent<v8::Function>& callback,
       const std::vector<v8::UniquePersistent<v8::Value>>& args);
-  base::OnceClosure CreateClosureThatPostsV8Callback(
-      const v8::Local<v8::Function>& callback);
 
   void RunJSCallbackAfterCompositorLifecycle(
       v8::UniquePersistent<v8::Function> callback,
@@ -84,13 +80,6 @@ class TestRunnerForSpecificView {
       int x,
       int y,
       const v8::Local<v8::Function> callback);
-
-  // Calls |callback| with a DOMString[] representing the events recorded since
-  // the last call to this function.
-  void GetBluetoothManualChooserEvents(v8::Local<v8::Function> callback);
-  void GetBluetoothManualChooserEventsCallback(
-      v8::UniquePersistent<v8::Function> callback,
-      const std::vector<std::string>& events);
 
   // Switch the visibility of the page.
   void SetPageVisibility(const std::string& new_visibility);

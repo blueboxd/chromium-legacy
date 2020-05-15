@@ -5,8 +5,8 @@
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/location.h"
-#include "base/logging.h"
 #import "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"

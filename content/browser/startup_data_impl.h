@@ -20,7 +20,7 @@ struct CONTENT_EXPORT StartupDataImpl : public StartupData {
   StartupDataImpl();
   ~StartupDataImpl() override;
 
-  std::unique_ptr<BrowserProcessSubThread> ipc_thread;
+  std::unique_ptr<BrowserProcessSubThread> io_thread;
   std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support;
   base::OnceClosure service_manager_shutdown_closure;
 };

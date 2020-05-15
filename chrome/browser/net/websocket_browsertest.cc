@@ -527,7 +527,10 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SendBadUtf8) {
   const GURL url = ws_server_.GetURL("close");
   const std::vector<std::string> requested_protocols;
   const net::SiteForCookies site_for_cookies;
-  const net::IsolationInfo isolation_info;
+  // The actual value of this doesn't actually matter, it just can't be empty,
+  // to avoid a DCHECK.
+  const net::IsolationInfo isolation_info =
+      net::IsolationInfo::CreateForInternalRequest(url::Origin::Create(url));
   std::vector<network::mojom::HttpHeaderPtr> additional_headers;
   const url::Origin origin;
   auto handshake_client = std::make_unique<InvalidUtf8HandshakeClient>(

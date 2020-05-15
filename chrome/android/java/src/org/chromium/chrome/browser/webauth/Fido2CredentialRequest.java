@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsStatics;
+import org.chromium.net.GURLUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.Origin;
@@ -367,7 +368,9 @@ public class Fido2CredentialRequest implements WindowAndroid.IntentCallback {
         }
     }
 
-    private String convertOriginToString(Origin origin) {
-        return origin.getScheme() + "://" + origin.getHost() + ":" + origin.getPort();
+    String convertOriginToString(Origin origin) {
+        // Wrapping with GURLUtils.getOrigin() in order to trim default ports.
+        return GURLUtils.getOrigin(
+                origin.getScheme() + "://" + origin.getHost() + ":" + origin.getPort());
     }
 }

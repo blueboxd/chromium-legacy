@@ -220,29 +220,27 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     default_button = ui::DIALOG_BUTTON_OK;
 #endif
 
-  DialogDelegate::SetDefaultButton(default_button);
-  DialogDelegate::SetButtons(buttons);
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
+  SetDefaultButton(default_button);
+  SetButtons(buttons);
+  SetAcceptCallback(base::BindOnce(
       &ExtensionInstallDialogView::OnDialogAccepted, base::Unretained(this)));
-  DialogDelegate::SetCancelCallback(base::BindOnce(
+  SetCancelCallback(base::BindOnce(
       &ExtensionInstallDialogView::OnDialogCanceled, base::Unretained(this)));
-  DialogDelegate::set_draggable(true);
+  set_draggable(true);
   if (prompt_->has_webstore_data()) {
     auto store_link = std::make_unique<views::Link>(
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_STORE_LINK));
     store_link->set_callback(base::BindRepeating(
         &ExtensionInstallDialogView::LinkClicked, base::Unretained(this)));
-    DialogDelegate::SetExtraView(std::move(store_link));
+    SetExtraView(std::move(store_link));
   } else if (prompt_->ShouldDisplayWithholdingUI()) {
     withhold_permissions_checkbox_ =
-        DialogDelegate::SetExtraView(std::make_unique<views::Checkbox>(
+        SetExtraView(std::make_unique<views::Checkbox>(
             l10n_util::GetStringUTF16(IDS_EXTENSION_WITHHOLD_PERMISSIONS)));
   }
 
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
-                                   prompt_->GetAcceptButtonLabel());
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
-                                   prompt_->GetAbortButtonLabel());
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, prompt_->GetAcceptButtonLabel());
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, prompt_->GetAbortButtonLabel());
   set_close_on_deactivate(false);
   CreateContents();
 

@@ -4556,6 +4556,7 @@ interface Navigator
     getter usb
     getter userActivation
     getter userAgent
+    getter userAgentData
     getter vendor
     getter vendorSub
     getter wakeLock
@@ -4577,6 +4578,12 @@ interface Navigator
     method unregisterProtocolHandler
     method vibrate
     method webkitGetUserMedia
+interface NavigatorUAData
+    attribute @@toStringTag
+    getter brands
+    getter mobile
+    method constructor
+    method getHighEntropyValues
 interface NetworkInformation : EventTarget
     attribute @@toStringTag
     getter downlink

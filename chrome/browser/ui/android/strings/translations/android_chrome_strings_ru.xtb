@@ -387,7 +387,6 @@
 <translation id="4250229828105606438">Скриншот</translation>
 <translation id="4256782883801055595">Лицензии на ПО с открытым кодом</translation>
 <translation id="4269820728363426813">Копировать адрес ссылки</translation>
-<translation id="4278390842282768270">Разрешено</translation>
 <translation id="429312253194641664">На сайте воспроизводятся медиафайлы</translation>
 <translation id="4298388696830689168">Связанные сайты</translation>
 <translation id="4307992518367153382">Основные</translation>
@@ -435,7 +434,6 @@
 <translation id="4663756553811254707">Удалено закладок: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Сайт <ph name="NAME" /> добавлен на главный экран</translation>
 <translation id="4684427112815847243">Синхронизировать все</translation>
-<translation id="4688610874307684559">Запущено в Chrome (первичный запуск)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> способ доставки}one{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> способ доставки}few{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> способа доставки}many{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> способов доставки}other{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> способа доставки}}</translation>
 <translation id="4696983787092045100">Отправить сообщения на свои устройства</translation>
 <translation id="4698034686595694889">Есть контент, доступный для офлайн-просмотра в <ph name="APP_NAME" /></translation>
@@ -560,10 +558,8 @@
 <translation id="5659593005791499971">Электронная почта</translation>
 <translation id="5665379678064389456">Создать мероприятие в приложении "<ph name="APP_NAME" />"</translation>
 <translation id="5668404140385795438">Игнорировать запросы сайтов на запрет масштабирования</translation>
-<translation id="5677928146339483299">Заблокировано</translation>
 <translation id="5684874026226664614">Не удалось перевести страницу</translation>
 <translation id="5686790454216892815">Имя файла слишком длинное.</translation>
-<translation id="5690795753582697420">Камера выключена в настройках Android.</translation>
 <translation id="5694049548840660018">Быстрый переход к стартовой странице</translation>
 <translation id="569536719314091526">Чтобы перевести эту страницу на какой-либо язык, нажмите кнопку "Ещё"</translation>
 <translation id="572328651809341494">Недавние вкладки</translation>
@@ -619,7 +615,6 @@
 <translation id="614940544461990577">Попробуйте сделать следующее:</translation>
 <translation id="6154478581116148741">Чтобы экспортировать пароли с этого устройства, включите блокировку экрана в настройках.</translation>
 <translation id="6159335304067198720">Сэкономлено: <ph name="PERCENT" /></translation>
-<translation id="6177111841848151710">Закрыт доступ для текущей поисковой системы</translation>
 <translation id="6192333916571137726">Скачивание файла</translation>
 <translation id="6201345951596836663">Ссылка скопирована.</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> не ваш аккаунт?</translation>
@@ -706,7 +701,6 @@
 <translation id="6846298663435243399">Загрузка…</translation>
 <translation id="6850409657436465440">Выполняется скачивание</translation>
 <translation id="6850830437481525139">Закрыто вкладок: <ph name="TAB_COUNT" /></translation>
-<translation id="6864395892908308021">Это устройство не поддерживает NFC.</translation>
 <translation id="6864459304226931083">Скачать изображение</translation>
 <translation id="6865313869410766144">Данные для автозаполнения</translation>
 <translation id="6884306546558072722">Доступ к контенту в офлайн-режиме</translation>
@@ -721,9 +715,7 @@
 <translation id="6989267951144302301">Не удалось скачать</translation>
 <translation id="6990079615885386641">Приложение в Google Play Маркете: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Сообщать, если пароли были раскрыты в результате утечки данных</translation>
-<translation id="7000754031042624318">Отключено в настройках Android</translation>
 <translation id="7015203776128479407">Первоначальная настройка синхронизации не завершена. Синхронизация выключена.</translation>
-<translation id="7016516562562142042">Открыт доступ для текущей поисковой системы</translation>
 <translation id="7022756207310403729">Открыть в браузере</translation>
 <translation id="702463548815491781">Рекомендовано при включенных функциях TalkBack и Switch Access</translation>
 <translation id="7029809446516969842">Пароли</translation>
@@ -756,10 +748,10 @@
 <translation id="7328017930301109123">В упрощенном режиме Chrome быстрее загружает страницы и экономит до 60 процентов трафика.</translation>
 <translation id="7333031090786104871">Предыдущий сайт ещё не добавлен</translation>
 <translation id="7340958967809483333">Параметры рекомендаций</translation>
+<translation id="7352651011704765696">Ошибка</translation>
 <translation id="7352939065658542140">ВИДЕО</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Поделиться 1 выбранным объектом}one{Поделиться # выбранным объектом}few{Поделиться # выбранными объектами}many{Поделиться # выбранными объектами}other{Поделиться # выбранного объекта}}</translation>
 <translation id="7359002509206457351">Доступ к способам оплаты</translation>
-<translation id="7362144854749094396">Браузеру Chrome предоставлен доступ к истории. Сайту <ph name="SITE_NAME" /> доступны данные о настройках.</translation>
 <translation id="7375125077091615385">Тип:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" /></translation>
 <translation id="7400418766976504921">URL</translation>
@@ -841,7 +833,6 @@
 <translation id="7986741934819883144">Выберите контакт</translation>
 <translation id="7998918019931843664">Восстановить закрытую вкладку</translation>
 <translation id="8004582292198964060">Браузер</translation>
-<translation id="8007176423574883786">Отключено для этого устройства</translation>
 <translation id="8013372441983637696">Удалить данные Chrome с этого устройства</translation>
 <translation id="8015452622527143194">Восстановить масштаб страницы по умолчанию</translation>
 <translation id="8026334261755873520">Очистить историю</translation>
@@ -931,6 +922,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{Уровень сигнала: # линия}one{Уровень сигнала: # линия}few{Уровень сигнала: # линии}many{Уровень сигнала: # линий}other{Уровень сигнала: # линии}}</translation>
 <translation id="868929229000858085">Поиск контактов</translation>
 <translation id="869891660844655955">Срок действия</translation>
+<translation id="8712637175834984815">Готово</translation>
 <translation id="8748850008226585750">Содержимое скрыто</translation>
 <translation id="8751914237388039244">Выберите фото</translation>
 <translation id="8758557275681689734">Просмотр всех открытых вкладок</translation>

@@ -13,10 +13,15 @@
 #include "components/google/core/common/google_util.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 
-// The URL for when the user clicks "learn more" on the mixed scripting page
+// The URL for when the user clicks "Learn more" on the mixed scripting page
 // icon bubble.
-const char kInsecureScriptHelpUrl[] =
+constexpr char kInsecureScriptHelpUrl[] =
     "https://support.google.com/chrome/?p=unauthenticated";
+
+// The URL for when the user clicks the "Learn more" on the quiet notification
+// permission prompt.
+constexpr char kNotificationsHelpUrl[] =
+    "https://support.google.com/chrome/answer/3220216";
 
 BrowserContentSettingBubbleModelDelegate::
     BrowserContentSettingBubbleModelDelegate(Browser* browser)
@@ -56,6 +61,9 @@ void BrowserContentSettingBubbleModelDelegate::ShowLearnMorePage(
       break;
     case ContentSettingsType::MIXEDSCRIPT:
       learn_more_url = GURL(kInsecureScriptHelpUrl);
+      break;
+    case ContentSettingsType::NOTIFICATIONS:
+      learn_more_url = GURL(kNotificationsHelpUrl);
       break;
     default:
       return;

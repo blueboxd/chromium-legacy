@@ -78,6 +78,7 @@
 #include <algorithm>
 
 #include "base/debug/close_handle_hook_win.h"
+#include "base/files/important_file_writer_cleaner.h"
 #include "base/win/atl.h"
 #include "chrome/child/v8_crashpad_support_win.h"
 #include "chrome/chrome_elf/chrome_elf_main.h"
@@ -523,6 +524,12 @@ ChromeMainDelegate::~ChromeMainDelegate() {
 }
 
 void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
+#if defined(OS_WIN)
+  // Initialize the cleaner of left-behind tmp files now that the main thread
+  // has its SequencedTaskRunner; see https://crbug.com/1075917.
+  base::ImportantFileWriterCleaner::GetInstance().Initialize();
+#endif
+
   // Chrome disallows cookies by default. All code paths that want to use
   // cookies need to go through one of Chrome's URLRequestContexts which have
   // a ChromeNetworkDelegate attached that selectively allows cookies again.
@@ -608,8 +615,7 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
   // memory allocations.
   if (is_browser_process) {
     heap_profiler_controller_ = std::make_unique<HeapProfilerController>();
-    constexpr auto kCollectionInterval = base::TimeDelta::FromHours(24);
-    heap_profiler_controller_->Start(kCollectionInterval);
+    heap_profiler_controller_->Start();
 
 #if defined(OS_CHROMEOS)
     chromeos::ConfigureSwap();

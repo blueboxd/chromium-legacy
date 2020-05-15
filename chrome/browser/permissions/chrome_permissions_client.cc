@@ -19,6 +19,7 @@
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/url_constants.h"
+#include "components/google/core/common/google_util.h"
 #include "components/permissions/features.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "extensions/common/constants.h"
@@ -120,6 +121,20 @@ void ChromePermissionsClient::AreSitesImportant(
                      important_domain_search) != important_domains.end();
   }
 }
+
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+// Some Google-affiliated domains are not allowed to delete cookies for
+// supervised accounts.
+bool ChromePermissionsClient::IsCookieDeletionDisabled(
+    content::BrowserContext* browser_context,
+    const GURL& origin) {
+  if (!Profile::FromBrowserContext(browser_context)->IsChild())
+    return false;
+
+  return google_util::IsYoutubeDomainUrl(origin, google_util::ALLOW_SUBDOMAIN,
+                                         google_util::ALLOW_NON_STANDARD_PORTS);
+}
+#endif
 
 void ChromePermissionsClient::GetUkmSourceId(
     content::BrowserContext* browser_context,

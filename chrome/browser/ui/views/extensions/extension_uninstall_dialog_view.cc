@@ -205,11 +205,11 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
           skia::ImageOperations::ResizeMethod::RESIZE_GOOD,
           gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
                     extension_misc::EXTENSION_ICON_SMALL))) {
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON));
 
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
+  SetAcceptCallback(base::BindOnce(
       [](ExtensionUninstallDialogDelegateView* view) {
         if (view->dialog_) {
           view->dialog_->DialogAccepted(view->checkbox_ &&
@@ -217,7 +217,7 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
         }
       },
       base::Unretained(this)));
-  DialogDelegate::SetCancelCallback(base::BindOnce(
+  SetCancelCallback(base::BindOnce(
       [](ExtensionUninstallDialogDelegateView* view) {
         if (view->dialog_)
           view->dialog_->DialogCanceled();

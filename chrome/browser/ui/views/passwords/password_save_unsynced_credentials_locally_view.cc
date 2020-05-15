@@ -27,14 +27,13 @@ PasswordSaveUnsyncedCredentialsLocallyView::
                              anchor_view,
                              /*easily_dismissable=*/false),
       controller_(PasswordsModelDelegateFromWebContents(web_contents)) {
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
+  SetButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
+  SetAcceptCallback(base::BindOnce(
       &SaveUnsyncedCredentialsLocallyBubbleController::OnSaveClicked,
       base::Unretained(&controller_)));
   // TODO(crbug.com/1062344): Add proper (translated) string.
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
-                                 base::ASCIIToUTF16("Save"));
-  DialogDelegate::SetCancelCallback(base::BindOnce(
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, base::ASCIIToUTF16("Save"));
+  SetCancelCallback(base::BindOnce(
       &SaveUnsyncedCredentialsLocallyBubbleController::OnCancelClicked,
       base::Unretained(&controller_)));
   CreateLayout();

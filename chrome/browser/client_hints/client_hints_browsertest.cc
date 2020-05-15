@@ -52,6 +52,7 @@
 namespace {
 
 const unsigned expected_client_hints_number = 12u;
+const int32_t uma_histogram_max_value = 1471228928;
 
 // An interceptor that records count of fetches and client hint headers for
 // requests to https://foo.com/non-existing-image.jpg.
@@ -873,9 +874,9 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, ClientHintsHttps) {
     histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
                                         expected_client_hints_number, 1);
     // accept_ch_with_lifetime_url() sets client hints persist duration to 3600
-    // seconds.
+    // seconds, but a maximum value is registered instead.
     histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
-                                        3600 * 1000, 1);
+                                        uma_histogram_max_value, 1);
   }
 }
 
@@ -903,9 +904,9 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, PRE_ClientHintsClearSession) {
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
                                       expected_client_hints_number, 1);
   // accept_ch_with_lifetime_url() sets client hints persist duration to 3600
-  // seconds.
+  // seconds, but a maximum value is registered instead.
   histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
-                                      3600 * 1000, 1);
+                                      uma_histogram_max_value, 1);
 
   // Clients hints preferences for one origin should be persisted.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -1246,9 +1247,14 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, OffTheRecordIndependent2) {
 // AllowClientHintsToThirdParty feature is enabled.
 IN_PROC_BROWSER_TEST_P(ClientHintsAllowThirdPartyBrowserTest,
                        ClientHintsThirdPartyAllowed) {
-  const GURL gurl = GetParam()
-                        ? http_equiv_accept_ch_without_lifetime_img_localhost()
-                        : accept_ch_without_lifetime_img_localhost();
+  GURL gurl;
+  unsigned update_event_count = 0;
+  if (GetParam()) {
+    gurl = http_equiv_accept_ch_without_lifetime_img_localhost();
+  } else {
+    gurl = accept_ch_without_lifetime_img_localhost();
+    update_event_count = 1;
+  }
 
   base::HistogramTester histogram_tester;
 
@@ -1257,7 +1263,8 @@ IN_PROC_BROWSER_TEST_P(ClientHintsAllowThirdPartyBrowserTest,
 
   // Add client hints for the embedded test server.
   ui_test_utils::NavigateToURL(browser(), gurl);
-  histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
+  histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount",
+                                    update_event_count);
 
   EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
 
@@ -1273,9 +1280,14 @@ IN_PROC_BROWSER_TEST_P(ClientHintsAllowThirdPartyBrowserTest,
 // AllowClientHintsToThirdParty feature is not enabled.
 IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
                        ClientHintsThirdPartyNotAllowed) {
-  const GURL gurl = GetParam()
-                        ? http_equiv_accept_ch_without_lifetime_img_localhost()
-                        : accept_ch_without_lifetime_img_localhost();
+  GURL gurl;
+  unsigned update_event_count = 0;
+  if (GetParam()) {
+    gurl = http_equiv_accept_ch_without_lifetime_img_localhost();
+  } else {
+    gurl = accept_ch_without_lifetime_img_localhost();
+    update_event_count = 1;
+  }
 
   base::HistogramTester histogram_tester;
 
@@ -1284,7 +1296,8 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
   // Add client hints for the embedded test server.
   ui_test_utils::NavigateToURL(browser(), gurl);
-  histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
+  histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount",
+                                    update_event_count);
 
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
@@ -1454,9 +1467,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
 
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
                                       expected_client_hints_number, 1);
-  // |gurl| sets client hints persist duration to 3600 seconds.
+  // |gurl| sets client hints persist duration to 3600 seconds, but a maximum
+  // value is registered instead.
   histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
-                                      3600 * 1000, 1);
+                                      uma_histogram_max_value, 1);
 
   base::RunLoop().RunUntilIdle();
 
@@ -1530,9 +1544,9 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
     histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
                                         expected_client_hints_number, 1);
     // accept_ch_with_lifetime_url() sets client hints persist duration to 3600
-    // seconds.
+    // seconds, but a maximum value is registered instead.
     histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
-                                        3600 * 1000, 1);
+                                        uma_histogram_max_value, 1);
 
     // Clients hints preferences for one origin should be persisted.
     HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -1554,61 +1568,6 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   // to the main frame request.
   EXPECT_EQ(GetParam() ? 0 : expected_client_hints_number * 2,
             count_client_hints_headers_seen());
-}
-
-// Verify that expired persistent client hint preferences are not used.
-// Verifies this by setting Accept-CH-Lifetime value to 1 second,
-// and loading a page after 1 second to verify that client hints are not
-// attached.
-IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
-                       ShortLifetimeFollowedByNoClientHint) {
-  const GURL gurl = accept_ch_with_short_lifetime();
-
-  base::HistogramTester histogram_tester;
-  ContentSettingsForOneType host_settings;
-
-  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
-                              &host_settings);
-  EXPECT_EQ(0u, host_settings.size());
-
-  // Fetching |gurl| should persist the request for client hints.
-  ui_test_utils::NavigateToURL(browser(), gurl);
-
-  histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
-
-  content::FetchHistogramsFromChildProcesses();
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-
-  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
-                                      expected_client_hints_number, 1);
-  // |gurl| sets client hints persist duration to 1 second.
-  histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration", 1 * 1000,
-                                      1);
-  base::RunLoop().RunUntilIdle();
-
-  // Clients hints preferences for one origin should be persisted.
-  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
-                              &host_settings);
-  EXPECT_EQ(1u, host_settings.size());
-
-  // Sleep for a duration longer than 1 second (duration of persisted client
-  // hints).
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1001));
-
-  SetClientHintExpectationsOnMainFrame(false);
-  SetClientHintExpectationsOnSubresources(false);
-  ui_test_utils::NavigateToURL(browser(),
-                               without_accept_ch_without_lifetime_url());
-
-  // The user agent hint is attached to all three requests:
-  EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
-  EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
-
-  // No client hints are attached to the requests since the persisted hints must
-  // be expired.
-  EXPECT_EQ(0u, count_client_hints_headers_seen());
 }
 
 // The test first fetches a page that sets Accept-CH-Lifetime. Next, it fetches
@@ -1640,9 +1599,9 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
                                       expected_client_hints_number, 1);
   // accept_ch_with_lifetime_url() sets client hints persist duration to 3600
-  // seconds.
+  // seconds, but a maximum value is registered instead.
   histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
-                                      3600 * 1000, 1);
+                                      uma_histogram_max_value, 1);
   base::RunLoop().RunUntilIdle();
 
   // Clients hints preferences for one origin should be persisted.
@@ -1713,9 +1672,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
 
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
                                       expected_client_hints_number, 1);
-  // |gurl_with| tries to set client hints persist duration to 3600 seconds.
+  // |gurl_with| tries to set client hints persist duration to 3600 seconds, but
+  // a maximum value is registered instead.
   histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
-                                      3600 * 1000, 1);
+                                      uma_histogram_max_value, 1);
 
   // Clients hints preferences for one origin should be persisted.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -1817,9 +1777,9 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
                                       expected_client_hints_number, 1);
   // accept_ch_with_lifetime_url() tries to set client hints persist duration to
-  // 3600 seconds.
+  // 3600 seconds, but a maximum value is registered instead.
   histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
-                                      3600 * 1000, 1);
+                                      uma_histogram_max_value, 1);
   base::RunLoop().RunUntilIdle();
 
   // Clients hints preferences for one origin should be persisted.
@@ -1930,6 +1890,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(0u, host_settings.size());
 
   // Block the Javascript: Client hints should not be attached.
+  SetClientHintExpectationsOnMainFrame(false);
   SetClientHintExpectationsOnSubresources(false);
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetContentSettingDefaultScope(
@@ -1951,13 +1912,18 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
           ContentSettingsType::JAVASCRIPT, std::string(),
           CONTENT_SETTING_ALLOW);
 
+  // TODO(yoav): Main frame should not have Client Hints.
+  SetClientHintExpectationsOnMainFrame(true);
   SetClientHintExpectationsOnSubresources(true);
   ui_test_utils::NavigateToURL(browser(),
                                accept_ch_without_lifetime_img_localhost());
 
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
-  EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
+  // TODO(yoav): We're seeing CH on the navigation request, which we should not
+  // be seeing.
+  EXPECT_EQ(expected_client_hints_number * 2,
+            count_client_hints_headers_seen());
   EXPECT_EQ(2u, third_party_request_count_seen());
   EXPECT_EQ(2u, third_party_client_hints_count_seen());
   VerifyContentSettingsNotNotified();
@@ -1967,6 +1933,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
       ->ClearSettingsForOneType(ContentSettingsType::JAVASCRIPT);
 
   // Block the Javascript again: Client hints should not be attached.
+  SetClientHintExpectationsOnMainFrame(false);
   SetClientHintExpectationsOnSubresources(false);
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetContentSettingDefaultScope(
@@ -1977,7 +1944,8 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
                                accept_ch_without_lifetime_img_localhost());
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
-  EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
+  EXPECT_EQ(expected_client_hints_number * 2,
+            count_client_hints_headers_seen());
   EXPECT_EQ(3u, third_party_request_count_seen());
   EXPECT_EQ(2u, third_party_client_hints_count_seen());
 
@@ -2050,9 +2018,9 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
                                       expected_client_hints_number, 1);
   // accept_ch_with_lifetime_url() sets client hints persist duration to 3600
-  // seconds.
+  // seconds, but a maximum value is registered instead.
   histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
-                                      3600 * 1000, 1);
+                                      uma_histogram_max_value, 1);
   base::RunLoop().RunUntilIdle();
 
   // Clients hints preferences for one origin should be persisted.

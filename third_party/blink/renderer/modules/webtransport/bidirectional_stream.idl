@@ -12,10 +12,10 @@ interface BidirectionalStream {
   // inheritance.
   readonly attribute WritableStream writable;
   readonly attribute Promise<StreamAbortInfo> writingAborted;
-  void abortWriting(optional StreamAbortInfo abortInfo);
+  void abortWriting(optional StreamAbortInfo abortInfo = {});
 
   // Attributes from the IncomingStream mixin.
   readonly attribute ReadableStream readable;
   readonly attribute Promise<StreamAbortInfo> readingAborted;
-  void abortReading(optional StreamAbortInfo abortInfo);
+  void abortReading(optional StreamAbortInfo abortInfo = {});
 };

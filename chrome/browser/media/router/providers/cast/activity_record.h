@@ -26,7 +26,19 @@ class CastMessageHandler;
 
 namespace media_router {
 
+class CastActivityRecord;
+class MirroringActivityRecord;
 class CastSessionTracker;
+
+class ActivityRecordFactoryForTest {
+ public:
+  virtual std::unique_ptr<CastActivityRecord> MakeCastActivityRecord(
+      const MediaRoute& route,
+      const std::string& app_id) = 0;
+  virtual std::unique_ptr<MirroringActivityRecord> MakeMirroringActivityRecord(
+      const MediaRoute& route,
+      const std::string& app_id) = 0;
+};
 
 class ActivityRecord {
  public:

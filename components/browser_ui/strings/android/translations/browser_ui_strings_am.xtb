@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">ራስ-ሰር ውርዶች</translation>
 <translation id="5677928146339483299">ታግዷል</translation>
 <translation id="5689516760719285838">አካባቢ</translation>
+<translation id="5690795753582697420">ካሜራ በAndroid ቅንብሮች ውስጥ ጠፍቷል</translation>
 <translation id="5710871682236653961">የNFC መሣሪያዎችን መታ ሲያደርጉ ጣቢያዎች መረጃን እንዲልኩ እና እንዲቀበሉ ከመፍቀድዎ በፊት ይጠይቁ (የሚመከር)</translation>
 <translation id="5719847187258001597">ይህ በ<ph name="ORIGIN" /> ወይም በመነሻ ገጽዎ ላይ በመተግበሪያው የተከማቹ ሁሉንም ውሂብ እና ኩኪዎች ያጸዳል።</translation>
 <translation id="5804241973901381774">ፍቃዶች</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">ተጨማሪ</translation>
 <translation id="6064125863973209585">የተጠናቀቁ ማውረዶች</translation>
 <translation id="6165508094623778733">የበለጠ ለመረዳት</translation>
+<translation id="6177111841848151710">ለአሁኑ የፍለጋ ፕሮግራም ታግዷል</translation>
 <translation id="6181444274883918285">ለየት ያለ ጣቢያን አክል</translation>
 <translation id="6192792657125177640">የተለዩ</translation>
 <translation id="6194112207524046168">የእርስዎን ካሜራ Chrome እንዲደርስበት ለማድረግ፣ በ <ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ካሜራን በተጨማሪ ያብሩ።</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">ይህ ገጽ አደገኛ ነው። የጣቢያ መረጃ</translation>
 <translation id="6965382102122355670">እሺ</translation>
 <translation id="6992289844737586249">ጣቢያዎች ማይክሮፎንዎን እንዲጠቀሙ ከመፍቀድዎ በፊት ይጠይቅ (የሚመከር)</translation>
+<translation id="7000754031042624318">በAndroid ቅንብሮች ውስጥ ጠፍቷል</translation>
+<translation id="7016516562562142042">ለአሁኑ የፍለጋ ፕሮግራም ተፈቅዷል</translation>
 <translation id="7053983685419859001">አግድ</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ተመርጧል}one{# ተመርጠዋል}other{# ተመርጠዋል}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ተመርጠዋል።  አማራጮች ከማያ ገጹ አናት አጠገብ ይገኛሉ</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">ለተወሰነ ጣቢያ ድምጽ ፍቀድ።</translation>
 <translation id="7993619969781047893">በአንዳንድ ጣቢያዎች ላይ ያሉ ባህሪያት ሊሰበሩ ይችላሉ</translation>
 <translation id="7999064672810608036">እርግጠኛ ነዎት ለዚህ ጣቢያ ኩኪዎችንም ጨምሮ ሁሉንም አካባቢያዊ ውሂብ ማጽዳት እና ሁሉም ፍቃዶችን ዳግም ማስጀመር ይፈልጋሉ?</translation>
+<translation id="8007176423574883786">ለዚህ መሣሪያ ጠፍቷል</translation>
 <translation id="802154636333426148">ማውረድ አልተሳካም</translation>
 <translation id="8087000398470557479">ይህ ይዘት ከ<ph name="DOMAIN_NAME" /> የመጣ ነው፣ የተላከው በGoogle ነው።</translation>
 <translation id="8116925261070264013">ድምፀ ከል ተደርጓል</translation>

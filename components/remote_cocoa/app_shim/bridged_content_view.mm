@@ -4,11 +4,12 @@
 
 #import "components/remote_cocoa/app_shim/bridged_content_view.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #import "components/remote_cocoa/app_shim/drag_drop_client.h"
 #import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"

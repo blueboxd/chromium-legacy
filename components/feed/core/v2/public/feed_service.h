@@ -10,11 +10,16 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
+#include "build/build_config.h"
 #include "components/feed/core/v2/public/feed_stream_api.h"
 #include "components/feed/core/v2/public/types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/web_resource/eula_accepted_notifier.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/application_status_listener.h"
+#endif
 
 namespace base {
 class SequencedTaskRunner;
@@ -89,6 +94,9 @@ class FeedService : public KeyedService {
   class StreamDelegateImpl;
   class NetworkDelegateImpl;
   class HistoryObserverImpl;
+#if defined(OS_ANDROID)
+  void OnApplicationStateChange(base::android::ApplicationState state);
+#endif
 
   // These components are owned for construction of |FeedStreamApi|. These will
   // be null if |FeedStreamApi| is created externally.
@@ -100,7 +108,11 @@ class FeedService : public KeyedService {
   std::unique_ptr<FeedStore> store_;
   std::unique_ptr<RefreshTaskScheduler> refresh_task_scheduler_;
   std::unique_ptr<HistoryObserverImpl> history_observer_;
-
+#if defined(OS_ANDROID)
+  bool foregrounded_ = true;
+  std::unique_ptr<base::android::ApplicationStatusListener>
+      application_status_listener_;
+#endif
   std::unique_ptr<FeedStream> stream_;
 };
 

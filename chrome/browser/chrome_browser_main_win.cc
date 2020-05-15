@@ -22,6 +22,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/important_file_writer_cleaner.h"
 #include "base/i18n/rtl.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
@@ -601,6 +602,12 @@ int ChromeBrowserMainPartsWin::PreCreateThreads() {
   return ChromeBrowserMainParts::PreCreateThreads();
 }
 
+void ChromeBrowserMainPartsWin::PostMainMessageLoopRun() {
+  base::ImportantFileWriterCleaner::GetInstance().Stop();
+
+  ChromeBrowserMainParts::PostMainMessageLoopRun();
+}
+
 void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
   ui::MessageBox(NULL, base::ASCIIToUTF16(kMissingLocaleDataMessage),
                  base::ASCIIToUTF16(kMissingLocaleDataTitle),
@@ -700,6 +707,8 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
       FROM_HERE,
       {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(&web_app::RecordPwaLauncherResult));
+
+  base::ImportantFileWriterCleaner::GetInstance().Start();
 }
 
 // static

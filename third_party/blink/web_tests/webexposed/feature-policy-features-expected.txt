@@ -46,6 +46,7 @@ picture-in-picture
 pointer-lock
 popups
 presentation
+publickey-credentials-get
 screen-wake-lock
 scripts
 serial

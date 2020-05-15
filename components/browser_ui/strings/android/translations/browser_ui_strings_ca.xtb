@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Baixades automàtiques</translation>
 <translation id="5677928146339483299">Bloquejat</translation>
 <translation id="5689516760719285838">Ubicació</translation>
+<translation id="5690795753582697420">La càmera està desactivada a la configuració d'Android</translation>
 <translation id="5710871682236653961">Pregunta abans de permetre que els llocs web enviïn i rebin informació quan toquis dispositius amb NFC (opció recomanada)</translation>
 <translation id="5719847187258001597">Amb aquesta acció s'esborraran totes les dades i galetes emmagatzemades per <ph name="ORIGIN" /> o per la seva aplicació de la pantalla d'inici.</translation>
 <translation id="5804241973901381774">Permisos</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Més</translation>
 <translation id="6064125863973209585">Baixades completades</translation>
 <translation id="6165508094623778733">Més informació</translation>
+<translation id="6177111841848151710">S'ha bloquejat per al motor de cerca actual</translation>
 <translation id="6181444274883918285">Afegeix excepció per a un lloc web</translation>
 <translation id="6192792657125177640">Excepcions</translation>
 <translation id="6194112207524046168">Perquè Chrome pugui accedir a la càmera, també has d'activar-la a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Aquesta pàgina és perillosa. Informació del lloc web</translation>
 <translation id="6965382102122355670">D'acord</translation>
 <translation id="6992289844737586249">Pregunta abans de permetre que els llocs web utilitzin el micròfon (opció recomanada)</translation>
+<translation id="7000754031042624318">Desactivat a la configuració d'Android</translation>
+<translation id="7016516562562142042">Es permet al motor de cerca actual</translation>
 <translation id="7053983685419859001">Bloqueja</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 seleccionat}other{# seleccionats}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> elements seleccionats. Hi ha opcions disponibles a prop de la part superior de la pantalla.</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Permet el so d'un lloc web concret.</translation>
 <translation id="7993619969781047893">Pot ser que les funcions d'alguns llocs web no funcionin</translation>
 <translation id="7999064672810608036">Confirmes que vols esborrar d'aquest lloc web totes les dades locals, incloses les galetes, i restablir-ne tots els permisos?</translation>
+<translation id="8007176423574883786">Aquesta ubicació està desactivada per a aquest dispositiu</translation>
 <translation id="802154636333426148">Error de baixada</translation>
 <translation id="8087000398470557479">Aquest contingut és del domini <ph name="DOMAIN_NAME" />, oferit per Google.</translation>
 <translation id="8116925261070264013">Silenciats</translation>

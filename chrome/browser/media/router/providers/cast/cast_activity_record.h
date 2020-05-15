@@ -31,13 +31,6 @@ class CastSession;
 class CastSessionTracker;
 class MediaRoute;
 
-class CastActivityRecordFactoryForTest {
- public:
-  virtual std::unique_ptr<CastActivityRecord> MakeCastActivityRecord(
-      const MediaRoute& route,
-      const std::string& app_id) = 0;
-};
-
 class CastActivityRecord : public ActivityRecord {
  public:
   // Creates a new record owned by |owner|.

@@ -24,7 +24,8 @@
 #import "remoting/ios/facade/remoting_oauth_authentication.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "remoting/base/string_resources.h"
 #include "remoting/ios/app/notification_presenter.h"
 #include "ui/base/l10n/l10n_util.h"

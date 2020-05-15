@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check.h"
 #include "base/format_macros.h"
 #include "base/json/string_escape.h"
-#include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #import "components/autofill/ios/browser/autofill_util.h"

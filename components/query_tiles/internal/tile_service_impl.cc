@@ -18,37 +18,18 @@
 #include "components/query_tiles/switches.h"
 
 namespace query_tiles {
-namespace {
-
-// Default periodic interval of background task.
-constexpr base::TimeDelta kBackgroundTaskInterval =
-    base::TimeDelta::FromHours(16);
-
-// Default length of random window added to the periodic interval.
-constexpr base::TimeDelta kBackgroundTaskRandomWindow =
-    base::TimeDelta::FromHours(6);
-
-// Default flex time of background task.
-constexpr base::TimeDelta kBackgroundTaskFlexTime =
-    base::TimeDelta::FromHours(2);
-
-void OnInstantFetchComplete(bool success) {}
-
-}  // namespace
 
 TileServiceImpl::TileServiceImpl(
     std::unique_ptr<ImagePrefetcher> image_prefetcher,
     std::unique_ptr<TileManager> tile_manager,
-    background_task::BackgroundTaskScheduler* scheduler,
+    std::unique_ptr<TileServiceScheduler> scheduler,
     std::unique_ptr<TileFetcher> tile_fetcher,
     base::Clock* clock)
     : image_prefetcher_(std::move(image_prefetcher)),
       tile_manager_(std::move(tile_manager)),
-      scheduler_(scheduler),
+      scheduler_(std::move(scheduler)),
       tile_fetcher_(std::move(tile_fetcher)),
-      clock_(clock) {
-  ScheduleDailyTask();
-}
+      clock_(clock) {}
 
 TileServiceImpl::~TileServiceImpl() = default;
 
@@ -60,21 +41,11 @@ void TileServiceImpl::Initialize(SuccessCallback callback) {
 
 void TileServiceImpl::OnTileManagerInitialized(SuccessCallback callback,
                                                TileGroupStatus status) {
-  bool success = (status == TileGroupStatus::kSuccess);
+  bool success = (status == TileGroupStatus::kSuccess ||
+                  status == TileGroupStatus::kNoTiles);
   DCHECK(callback);
-  // TODO(xingliu): Handle TileGroupStatus::kInvalidGroup.
+  scheduler_->OnTileManagerInitialized(status);
   std::move(callback).Run(success);
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kQueryTilesInstantBackgroundTask)) {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&TileServiceImpl::StartFetchForTiles,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       false /*is_from_reduced_mode*/,
-                       base::BindOnce(&OnInstantFetchComplete)),
-        base::TimeDelta::FromSeconds(2));
-  }
 }
 
 void TileServiceImpl::GetQueryTiles(GetTilesCallback callback) {
@@ -86,26 +57,6 @@ void TileServiceImpl::GetTile(const std::string& tile_id,
   tile_manager_->GetTile(tile_id, std::move(callback));
 }
 
-void TileServiceImpl::ScheduleDailyTask() {
-  background_task::PeriodicInfo periodic_info;
-  periodic_info.interval_ms =
-      kBackgroundTaskInterval.InMilliseconds() +
-      base::RandGenerator(kBackgroundTaskRandomWindow.InMilliseconds());
-  periodic_info.flex_ms = kBackgroundTaskFlexTime.InMilliseconds();
-
-  background_task::TaskInfo task_info(
-      static_cast<int>(background_task::TaskIds::QUERY_TILE_JOB_ID),
-      periodic_info);
-  task_info.is_persisted = true;
-  task_info.update_current = false;
-  task_info.network_type =
-      TileConfig::GetIsUnMeteredNetworkRequired()
-          ? background_task::TaskInfo::NetworkType::UNMETERED
-          : background_task::TaskInfo::NetworkType::ANY;
-
-  scheduler_->Schedule(task_info);
-}
-
 void TileServiceImpl::StartFetchForTiles(
     bool is_from_reduced_mode,
     BackgroundTaskFinishedCallback task_finished_callback) {
@@ -115,8 +66,11 @@ void TileServiceImpl::StartFetchForTiles(
       is_from_reduced_mode, std::move(task_finished_callback)));
 }
 
-// TODO(crbug.com/1077173): Handle the failures, retry mechanism and
-// related metrics.
+void TileServiceImpl::CancelTask() {
+  scheduler_->CancelTask();
+}
+
+// TODO(crbug.com/1077173): Record metrics.
 void TileServiceImpl::OnFetchFinished(
     bool is_from_reduced_mode,
     BackgroundTaskFinishedCallback task_finished_callback,
@@ -137,10 +91,13 @@ void TileServiceImpl::OnFetchFinished(
                          weak_ptr_factory_.GetWeakPtr(), std::move(group),
                          is_from_reduced_mode,
                          std::move(task_finished_callback)));
+    } else {
+      status = TileInfoRequestStatus::kShouldSuspend;
     }
   } else {
     std::move(task_finished_callback).Run(false /*reschedule*/);
   }
+  scheduler_->OnFetchCompleted(status);
 }
 
 void TileServiceImpl::OnTilesSaved(

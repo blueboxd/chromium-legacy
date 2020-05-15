@@ -387,7 +387,6 @@
 <translation id="4250229828105606438">Знімок екрана</translation>
 <translation id="4256782883801055595">Ліцензії ПЗ з відкритим кодом</translation>
 <translation id="4269820728363426813">Копіювати адресу посилання</translation>
-<translation id="4278390842282768270">Дозволено</translation>
 <translation id="429312253194641664">Сайт відтворює медіа-вміст</translation>
 <translation id="4298388696830689168">Зв’язані сайти</translation>
 <translation id="4307992518367153382">Основні</translation>
@@ -435,7 +434,6 @@
 <translation id="4663756553811254707">Видалено закладок: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Веб-сайт <ph name="NAME" /> додано на головний екран</translation>
 <translation id="4684427112815847243">Синхронізувати все</translation>
-<translation id="4688610874307684559">Запущено в Chrome (первинно)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}many{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Надіслати SMS на пристрої</translation>
 <translation id="4698034686595694889">Переглядайте вміст у <ph name="APP_NAME" /> без інтернет-з’єднання</translation>
@@ -560,10 +558,8 @@
 <translation id="5659593005791499971">Електронна пошта</translation>
 <translation id="5665379678064389456">Створити подію в додатку <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Відхиляти запит веб-сайту, щоб забороняти масштабування</translation>
-<translation id="5677928146339483299">Заблоковано</translation>
 <translation id="5684874026226664614">На жаль, цю сторінку неможливо перекласти.</translation>
 <translation id="5686790454216892815">Назва файлу задовга</translation>
-<translation id="5690795753582697420">Камеру вимкнено в налаштуваннях Android</translation>
 <translation id="5694049548840660018">Легко повертайтеся на головну сторінку</translation>
 <translation id="569536719314091526">Перекладіть цю сторінку будь-якою мовою, натиснувши кнопку "Більше опцій"</translation>
 <translation id="572328651809341494">Останні вкладки</translation>
@@ -619,7 +615,6 @@
 <translation id="614940544461990577">Спробуйте:</translation>
 <translation id="6154478581116148741">Щоб експортувати паролі з цього пристрою, увімкніть блокування екрана</translation>
 <translation id="6159335304067198720">Заощадження даних: <ph name="PERCENT" /></translation>
-<translation id="6177111841848151710">Заблоковано для поточної пошукової системи</translation>
 <translation id="6192333916571137726">Завантажити файл</translation>
 <translation id="6201345951596836663">Посилання скопійовано</translation>
 <translation id="6210748933810148297">Не <ph name="EMAIL" />?</translation>
@@ -706,7 +701,6 @@
 <translation id="6846298663435243399">Завантаження…</translation>
 <translation id="6850409657436465440">Завантаження ще триває</translation>
 <translation id="6850830437481525139">Закрито вкладок: <ph name="TAB_COUNT" /></translation>
-<translation id="6864395892908308021">Цей пристрій не підтримує NFC</translation>
 <translation id="6864459304226931083">Завантажити зображення</translation>
 <translation id="6865313869410766144">Дані автозаповнення форм</translation>
 <translation id="6884306546558072722">Переглядайте контент у режимі офлайн</translation>
@@ -721,9 +715,7 @@
 <translation id="6989267951144302301">Не вдалося завантажити</translation>
 <translation id="6990079615885386641">Завантажити додаток із магазину Google Play: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Попереджати, якщо паролі розкрито через порушення безпеки даних</translation>
-<translation id="7000754031042624318">Вимкнено в налаштуваннях Android</translation>
 <translation id="7015203776128479407">Початкове налаштування синхронізації не завершено. Синхронізацію вимкнено.</translation>
-<translation id="7016516562562142042">Дозволено для поточної пошукової системи</translation>
 <translation id="7022756207310403729">Відкрити у веб-переглядачі</translation>
 <translation id="702463548815491781">Рекомендується, коли ввімкнено TalkBack або кнопковий доступ</translation>
 <translation id="7029809446516969842">Паролі</translation>
@@ -756,10 +748,10 @@
 <translation id="7328017930301109123">У спрощеному режимі Chrome завантажує сторінки швидше та використовує на 60 відсотків менше трафіку.</translation>
 <translation id="7333031090786104871">Попередній сайт ще додається</translation>
 <translation id="7340958967809483333">Налаштування рекомендацій</translation>
+<translation id="7352651011704765696">Виникли проблеми</translation>
 <translation id="7352939065658542140">ВІДЕО</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Поділитись 1 вибраним елементом}one{Поділитися # вибраним елементом}few{Поділитися # вибраними елементами}many{Поділитися # вибраними елементами}other{Поділитися # вибраного елемента}}</translation>
 <translation id="7359002509206457351">Отримати доступ до способів оплати</translation>
-<translation id="7362144854749094396">Історію надіслано в Chrome. Налаштування надіслано на сайт <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Тип:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL-адреса</translation>
@@ -841,7 +833,6 @@
 <translation id="7986741934819883144">Виберіть контакт</translation>
 <translation id="7998918019931843664">Знову відкрити закриту вкладку</translation>
 <translation id="8004582292198964060">Переглядач</translation>
-<translation id="8007176423574883786">Вимкнено для цього пристрою</translation>
 <translation id="8013372441983637696">Також видалити дані Chrome із цього пристрою</translation>
 <translation id="8015452622527143194">Відновити розміри всіх елементів за умовчанням</translation>
 <translation id="8026334261755873520">Очистити історію</translation>
@@ -931,6 +922,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{Рівень сигналу: # поділка}one{Рівень сигналу: # поділка}few{Рівень сигналу: # поділки}many{Рівень сигналу: # поділок}other{Рівень сигналу: # поділки}}</translation>
 <translation id="868929229000858085">Пошук у контактах</translation>
 <translation id="869891660844655955">Діє до</translation>
+<translation id="8712637175834984815">Виконано</translation>
 <translation id="8748850008226585750">Вміст сховано</translation>
 <translation id="8751914237388039244">Виберіть зображення</translation>
 <translation id="8758557275681689734">Як переглянути всі відкриті вкладки</translation>

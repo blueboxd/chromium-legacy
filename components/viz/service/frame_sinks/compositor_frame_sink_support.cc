@@ -668,10 +668,6 @@ void CompositorFrameSinkSupport::UpdateDisplayRootReference(
 }
 
 void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
-  if (last_activated_surface_id_.is_valid())
-    surface_manager_->SurfaceDamageExpected(last_activated_surface_id_, args);
-  last_begin_frame_args_ = args;
-
   if (compositor_frame_callback_) {
     callback_received_begin_frame_ = true;
     UpdateNeedsBeginFramesInternal();
@@ -681,6 +677,10 @@ void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
   CheckPendingSurfaces();
 
   if (client_ && ShouldSendBeginFrame(args.frame_time)) {
+    if (last_activated_surface_id_.is_valid())
+      surface_manager_->SurfaceDamageExpected(last_activated_surface_id_, args);
+    last_begin_frame_args_ = args;
+
     BeginFrameArgs copy_args = args;
     copy_args.trace_id = ComputeTraceId();
     TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",

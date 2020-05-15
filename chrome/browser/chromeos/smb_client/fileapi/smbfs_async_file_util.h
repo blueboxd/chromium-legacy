@@ -31,6 +31,11 @@ class SmbFsAsyncFileUtil : public storage::AsyncFileUtilAdapter {
       const storage::FileSystemURL& url,
       ReadDirectoryCallback callback) override;
 
+  void DeleteRecursively(
+      std::unique_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& url,
+      StatusCallback callback) override;
+
  private:
   // Wrapper that calls storage::AsyncFileUtilAdapter::ReadDirectory(),
   // bypassing virtual dispatch.

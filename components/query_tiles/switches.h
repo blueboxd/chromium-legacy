@@ -25,6 +25,9 @@ extern const base::Feature kQueryTilesEnableQueryEditing;
 
 namespace switches {
 
+// If set, only one level of query tiles will be shown.
+extern const char kQueryTilesSingleTier[];
+
 // If set, this value overrides the default country code to be sent to the
 // server when fetching tiles.
 extern const char kQueryTilesCountryCode[];

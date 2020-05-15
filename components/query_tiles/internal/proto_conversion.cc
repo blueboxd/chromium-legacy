@@ -40,12 +40,13 @@ void ResponseToTile(
   }
 
   for (const auto& id : response.sub_tile_ids()) {
-    DCHECK(sub_tiles_from_response.count(id));
-    auto sub_tile_from_response = sub_tiles_from_response.at(id);
-    auto new_sub_tile = std::make_unique<Tile>();
-    ResponseToTile(sub_tile_from_response, new_sub_tile.get(),
-                   sub_tiles_from_response);
-    tile->sub_tiles.emplace_back(std::move(new_sub_tile));
+    if (sub_tiles_from_response.count(id)) {
+      auto sub_tile_from_response = sub_tiles_from_response.at(id);
+      auto new_sub_tile = std::make_unique<Tile>();
+      ResponseToTile(sub_tile_from_response, new_sub_tile.get(),
+                     sub_tiles_from_response);
+      tile->sub_tiles.emplace_back(std::move(new_sub_tile));
+    }
   }
 }
 

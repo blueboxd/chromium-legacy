@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/guid.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -51,6 +52,29 @@ const char kOtherBookmarksTag[] = "other_bookmarks";
 
 using UpdatesPerParentId =
     std::unordered_map<std::string, syncer::UpdateResponseDataList>;
+
+// Used in metrics: "Sync.ProblematicServerSideBookmarksDuringMerge". These
+// values are persisted to logs. Entries should not be renumbered and numeric
+// values should never be reused.
+enum class RemoteBookmarkUpdateError {
+  // Invalid specifics.
+  kInvalidSpecifics = 1,
+  // Invalid unique position.
+  kInvalidUniquePosition = 2,
+  // Parent entity not found in server.
+  kMissingParentEntity = 4,
+  // The bookmark's GUID did not match the originator client item ID.
+  kUnexpectedGuid = 9,
+  // Parent is not a folder.
+  kParentNotFolder = 10,
+
+  kMaxValue = kParentNotFolder,
+};
+
+void LogProblematicBookmark(RemoteBookmarkUpdateError problem) {
+  base::UmaHistogramEnumeration(
+      "Sync.ProblematicServerSideBookmarksDuringMerge", problem);
+}
 
 // Gets the bookmark node corresponding to a permanent folder identified by
 // |server_defined_unique_tag|. |bookmark_model| must not be null.
@@ -162,12 +186,14 @@ UpdatesPerParentId GroupValidUpdatesByParentId(
       DLOG(ERROR)
           << "Remote update with invalid position: "
           << update_entity.specifics.bookmark().legacy_canonicalized_title();
+      LogProblematicBookmark(RemoteBookmarkUpdateError::kInvalidUniquePosition);
       continue;
     }
     if (!IsValidBookmarkSpecifics(update_entity.specifics.bookmark(),
                                   update_entity.is_folder)) {
       // Ignore updates with invalid specifics.
       DLOG(ERROR) << "Remote update with invalid specifics";
+      LogProblematicBookmark(RemoteBookmarkUpdateError::kInvalidSpecifics);
       continue;
     }
     if (!HasExpectedBookmarkGuid(update_entity.specifics.bookmark(),
@@ -175,6 +201,7 @@ UpdatesPerParentId GroupValidUpdatesByParentId(
                                  update_entity.originator_client_item_id)) {
       // Ignore updates with an unexpected GUID.
       DLOG(ERROR) << "Remote update with unexpected GUID";
+      LogProblematicBookmark(RemoteBookmarkUpdateError::kUnexpectedGuid);
       continue;
     }
 
@@ -235,10 +262,18 @@ BookmarkModelMerger::RemoteTreeNode::BuildTree(
   RemoteTreeNode node;
   node.update_ = std::move(update);
 
+  // Only folders may have descendants (ignore them otherwise). Treat
+  // permanent nodes as folders explicitly.
   if (!node.update_.entity.is_folder &&
       node.update_.entity.server_defined_unique_tag.empty()) {
-    // Only folders may have descendants (ignore them otherwise). Treat
-    // permanent nodes as folders explicitly.
+    // Children of a non-folder are ignored.
+    for (UpdateResponseData& child_update :
+         (*updates_per_parent_id)[node.entity().id]) {
+      LogProblematicBookmark(RemoteBookmarkUpdateError::kParentNotFolder);
+      // To avoid double-counting later for bucket |kMissingParentEntity|,
+      // clear the update from the list as if it would have been moved.
+      child_update.entity = EntityData();
+    }
     return node;
   }
 
@@ -334,7 +369,16 @@ BookmarkModelMerger::RemoteForest BookmarkModelMerger::BuildRemoteForest(
         RemoteTreeNode::BuildTree(std::move(update), &updates_per_parent_id));
   }
 
-  // TODO(crbug.com/978430): Add UMA to record the number of orphan nodes.
+  // All remaining entries in |updates_per_parent_id| must be unreachable from
+  // permanent entities, since otherwise they would have been moved away.
+  for (const auto& parent_id_and_updates : updates_per_parent_id) {
+    for (const UpdateResponseData& update : parent_id_and_updates.second) {
+      if (!update.entity.is_deleted() &&
+          update.entity.specifics.has_bookmark()) {
+        LogProblematicBookmark(RemoteBookmarkUpdateError::kMissingParentEntity);
+      }
+    }
+  }
 
   return update_forest;
 }

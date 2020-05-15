@@ -387,7 +387,6 @@ Samo vam je vidno, kam je usmerjen fotoaparat. Spletno mesto si ne more ogledati
 <translation id="4250229828105606438">Posnetek zaslona</translation>
 <translation id="4256782883801055595">Odprtokodne licence</translation>
 <translation id="4269820728363426813">Kopiraj naslov povezave</translation>
-<translation id="4278390842282768270">Dovoljeno</translation>
 <translation id="429312253194641664">Spletno mesto predvaja predstavnost</translation>
 <translation id="4298388696830689168">Povezana spletna mesta</translation>
 <translation id="4307992518367153382">Osnove</translation>
@@ -435,7 +434,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="4663756553811254707">Št. izbrisanih zaznamkov: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Spletno mesto <ph name="NAME" /> je bilo dodano na začetni zaslon</translation>
 <translation id="4684427112815847243">Sinhroniziraj vse</translation>
-<translation id="4688610874307684559">Izvajanje v Chromu (začetno)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}two{<ph name="SHIPPING_OPTION_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Pošiljanje besedila v vaše naprave</translation>
 <translation id="4698034686595694889">Ogled brez povezave v aplikaciji <ph name="APP_NAME" /></translation>
@@ -560,10 +558,8 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5659593005791499971">E-pošta</translation>
 <translation id="5665379678064389456">Ustvarite dogodek v aplikaciji <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Preglasi zahtevo spletnega mesta za preprečevanje povečave</translation>
-<translation id="5677928146339483299">Blokirano</translation>
 <translation id="5684874026226664614">Ojoj, te strani bi bilo mogoče prevesti.</translation>
 <translation id="5686790454216892815">Ime datoteke je predolgo</translation>
-<translation id="5690795753582697420">Fotoaparat je izklopljen v nastavitvah za Android</translation>
 <translation id="5694049548840660018">Preprosta vrnitev na domačo stran</translation>
 <translation id="569536719314091526">Prevedite to stran v kateri koli jezik z gumbom »Več možnosti«</translation>
 <translation id="572328651809341494">Nedavni zavihki</translation>
@@ -619,7 +615,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="614940544461990577">Poskusite:</translation>
 <translation id="6154478581116148741">Vklopite zaklepanje zaslona v nastavitvah, če želite izvoziti gesla iz te naprave.</translation>
 <translation id="6159335304067198720">Prihranek pri prenosu podatkov: <ph name="PERCENT" /></translation>
-<translation id="6177111841848151710">Blokirano za trenutni iskalnik</translation>
 <translation id="6192333916571137726">Datoteka Odjemanje</translation>
 <translation id="6201345951596836663">Povezava je kopirana</translation>
 <translation id="6210748933810148297">Niste <ph name="EMAIL" />?</translation>
@@ -706,7 +701,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6846298663435243399">Nalaganje ...</translation>
 <translation id="6850409657436465440">Prenos še poteka</translation>
 <translation id="6850830437481525139">Zaprtih je bilo toliko zavihkov: <ph name="TAB_COUNT" /></translation>
-<translation id="6864395892908308021">Ta naprava ne podpira NFC-ja</translation>
 <translation id="6864459304226931083">Prenos slike</translation>
 <translation id="6865313869410766144">Podatki za samodejno izpolnjevanje obrazcev</translation>
 <translation id="6884306546558072722">Nadaljevanje raziskovanja brez povezave</translation>
@@ -721,9 +715,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6989267951144302301">Ni bilo mogoče prenesti</translation>
 <translation id="6990079615885386641">Prenos aplikacije iz Trgovine Google Play: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Posvari, če so gesla razkrita zaradi podatkovne kršitve</translation>
-<translation id="7000754031042624318">Izklopljeno v nastavitvah za Android</translation>
 <translation id="7015203776128479407">Začetna nastavitev sinhronizacije ni bila dokončana. Sinhronizacija je izklopljena.</translation>
-<translation id="7016516562562142042">Dovoljeno za trenutni iskalnik</translation>
 <translation id="7022756207310403729">Odpiranje v brskalniku</translation>
 <translation id="702463548815491781">Priporočljivo, ko je vklopljena aplikacija TalkBack ali funkcija dostopa s stikalom</translation>
 <translation id="7029809446516969842">Gesla</translation>
@@ -756,10 +748,10 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7328017930301109123">Chrome v lahkem načinu naloži strani hitreje in uporabi do 60 odstotkov manj podatkov.</translation>
 <translation id="7333031090786104871">Dodajanje prejšnjega spletnega mesta še vedno poteka</translation>
 <translation id="7340958967809483333">Možnosti za Odkrivanje</translation>
+<translation id="7352651011704765696">Prišlo je do neznane težave</translation>
 <translation id="7352939065658542140">VIDEOPOSNETEK</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Delitev 1 izbranega elementa z drugimi}one{Delitev # izbranega elementa z drugimi}two{Delitev # izbranih elementov z drugimi}few{Delitev # izbranih elementov z drugimi}other{Delitev # izbranih elementov z drugimi}}</translation>
 <translation id="7359002509206457351">Dostop do plačilnih sredstev</translation>
-<translation id="7362144854749094396">Zgodovina je deljena s Chromom. Nastavitve so deljene s spletnim mestom <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Vrsta:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -841,7 +833,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7986741934819883144">Izberite stik</translation>
 <translation id="7998918019931843664">Vnovično odpiranje zaprtega zavihka</translation>
 <translation id="8004582292198964060">Brskalnik</translation>
-<translation id="8007176423574883786">Izklopljeno za to napravo</translation>
 <translation id="8013372441983637696">Prav tako izbriši podatke v Chromu iz te naprave</translation>
 <translation id="8015452622527143194">Vrnitev vsebine strani na privzeto velikost</translation>
 <translation id="8026334261755873520">Izbriši podatke brskanja</translation>
@@ -931,6 +922,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="8687353297350450808">{N_BARS,plural, =1{Moč signala: # črtica}one{Moč signala: # črtica}two{Moč signala: # črtici}few{Moč signala: # črtice}other{Moč signala: # črtic}}</translation>
 <translation id="868929229000858085">Iskanje po stikih</translation>
 <translation id="869891660844655955">Datum izteka</translation>
+<translation id="8712637175834984815">Razumem</translation>
 <translation id="8748850008226585750">Vsebina je skrita</translation>
 <translation id="8751914237388039244">Izberite sliko</translation>
 <translation id="8758557275681689734">Ogled vseh odprtih zavihkov</translation>

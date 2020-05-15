@@ -116,6 +116,14 @@ class CORE_EXPORT ScrollAnchor final {
   bool FindAnchorRecursive(LayoutObject*);
   bool ComputeScrollAnchorDisablingStyleChanged();
 
+  // Find viable anchor among the priority candidates. Returns true if anchor
+  // has been found; returns false if anchor was not found, and we should look
+  // for an anchor in the DOM order traversal.
+  bool FindAnchorInPriorityCandidates();
+  // Returns a closest ancestor layout object from the given node which isn't a
+  // non-atomic inline and is not anonymous.
+  LayoutObject* PriorityCandidateFromNode(const Node*) const;
+
   enum WalkStatus { kSkip = 0, kConstrain, kContinue, kReturn };
   struct ExamineResult {
     ExamineResult(WalkStatus s)
@@ -130,6 +138,11 @@ class CORE_EXPORT ScrollAnchor final {
   };
 
   ExamineResult Examine(const LayoutObject*) const;
+  // Examines a given priority candidate. Note that this is similar to Examine()
+  // but it also checks that the given object is a descendant of the scroller
+  // and that there is no object that has overflow-anchor: none between the
+  // given object and the scroller.
+  ExamineResult ExaminePriorityCandidate(const LayoutObject*) const;
 
   IntSize ComputeAdjustment() const;
 

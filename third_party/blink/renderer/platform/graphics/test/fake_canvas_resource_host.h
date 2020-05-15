@@ -33,23 +33,33 @@ class FakeCanvasResourceHost : public CanvasResourceHost {
     if (ResourceProvider())
       return ResourceProvider();
 
-    CanvasResourceProvider::ResourceUsage usage =
-        hint == kPreferAcceleration ? CanvasResourceProvider::ResourceUsage::
-                                          kAcceleratedCompositedResourceUsage
-                                    : CanvasResourceProvider::ResourceUsage::
-                                          kSoftwareCompositedResourceUsage;
-
-    uint8_t presentation_mode =
-        CanvasResourceProvider::kDefaultPresentationMode;
-    if (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()) {
-      presentation_mode |=
-          CanvasResourceProvider::kAllowImageChromiumPresentationMode;
+    std::unique_ptr<CanvasResourceProvider> provider;
+    if (hint == kPreferAcceleration ||
+        RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()) {
+      uint32_t shared_image_usage_flags =
+          gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
+      provider = CanvasResourceProvider::CreateSharedImageProvider(
+          size_, SharedGpuContext::ContextProviderWrapper(),
+          kMedium_SkFilterQuality, CanvasColorParams(),
+          false /*is_origin_top_left*/,
+          hint == kPreferAcceleration
+              ? CanvasResourceProvider::RasterMode::kGPU
+              : CanvasResourceProvider::RasterMode::kCPU,
+          shared_image_usage_flags);
+    }
+    if (!provider) {
+      provider = CanvasResourceProvider::CreateSharedBitmapProvider(
+          size_, SharedGpuContext::ContextProviderWrapper(),
+          kMedium_SkFilterQuality, CanvasColorParams(),
+          nullptr /* dispatcher_weakptr */);
+    }
+    if (!provider) {
+      provider = CanvasResourceProvider::CreateBitmapProvider(
+          size_, kMedium_SkFilterQuality, CanvasColorParams());
     }
 
-    ReplaceResourceProvider(CanvasResourceProvider::Create(
-        size_, usage, SharedGpuContext::ContextProviderWrapper(), 0,
-        kMedium_SkFilterQuality, CanvasColorParams(), presentation_mode,
-        nullptr));
+    ReplaceResourceProvider(std::move(provider));
+
     return ResourceProvider();
   }
 

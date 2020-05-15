@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">Toggle button</translation>
 <translation id="1299774449519412690">Light Sky Blue</translation>
 <translation id="1303806948938513162">Tap with 4 fingers to enter the ChromeVox menus</translation>
+<translation id="1325363694295259631"><ph name="NAME" />, menu item radio button unselected</translation>
 <translation id="1325946044405407859">Tan</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> of <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">character and word echo</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">Announce current battery status</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, radio button selected</translation>
 <translation id="5011664330025416377">Press Search+Space to activate</translation>
+<translation id="5012724933919010465"><ph name="NAME" />, menu item radio button selected</translation>
 <translation id="5020651427400641814">Enable speech logging</translation>
 <translation id="5041394372352067729">Move braille display to top of page</translation>
 <translation id="5042770794184672516">Increase speech volume</translation>

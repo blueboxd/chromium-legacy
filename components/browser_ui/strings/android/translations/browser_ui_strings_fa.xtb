@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">بارگیری‌های خودکار</translation>
 <translation id="5677928146339483299">مسدود است</translation>
 <translation id="5689516760719285838">مکان</translation>
+<translation id="5690795753582697420">‏«دوربین» در تنظیمات Android خاموش است</translation>
 <translation id="5710871682236653961">‏وقتی روی دستگاه‌های NFC ضربه می‌زنید، قبل از ارسال و دریافت اطلاعات سؤال شود (توصیه می‌شود)</translation>
 <translation id="5719847187258001597">با این کار همه داده‌ها و کوکی‌هایی که <ph name="ORIGIN" /> و برنامه آن در صفحه اصلی ذخیره کرده‌اند پاک می‌شود.</translation>
 <translation id="5804241973901381774">مجوزها</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">بیشتر</translation>
 <translation id="6064125863973209585">بارگیری‌های کامل‌شده</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
+<translation id="6177111841848151710">برای موتور جستجوی فعلی مسدود شده است</translation>
 <translation id="6181444274883918285">افزودن سایتی به استثناها</translation>
 <translation id="6192792657125177640">موارد استثنا</translation>
 <translation id="6194112207524046168">‏برای اینکه به Chrome امکان دهید به دوربین دسترسی یابد، در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> هم دوربین را روشن کنید.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">این صفحه خطرناک است. اطلاعات سایت</translation>
 <translation id="6965382102122355670">قبول</translation>
 <translation id="6992289844737586249">قبل از اجازه به سایت‌ها برای استفاده از میکروفون ابتدا سؤال شود (توصیه می‌شود)</translation>
+<translation id="7000754031042624318">‏در تنظیمات Android غیرفعال شده است</translation>
+<translation id="7016516562562142042">برای موتور جستجوی فعلی مجاز است</translation>
 <translation id="7053983685419859001">مسدود کردن</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{۱ مورد انتخاب شد}one{# مورد انتخاب شد}other{# مورد انتخاب شد}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> مورد انتخاب شد.  گزینه‌ها در نزدیکی بالای صفحه دردسترس است</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">پخش صدا برای سایت خاصی مجاز شود.</translation>
 <translation id="7993619969781047893">ویژگی‌های بعضی از سایت‌ها ممکن است درست کار نکنند</translation>
 <translation id="7999064672810608036">مطمئنید که می‌خواهید تمام داده‌های محلی، شامل کوکی‌ها را حذف کنید و تمام مجوزهای این وب‌سایت را بازنشانی کنید؟</translation>
+<translation id="8007176423574883786">برای این دستگاه غیرفعال شد</translation>
 <translation id="802154636333426148">بارگیری نشد</translation>
 <translation id="8087000398470557479">‏این محتوا از <ph name="DOMAIN_NAME" /> است و توسط Google ارائه می‌شود.</translation>
 <translation id="8116925261070264013">صامت‌شده</translation>

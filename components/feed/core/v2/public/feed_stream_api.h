@@ -26,9 +26,17 @@ class FeedStreamApi {
  public:
   class SurfaceInterface : public base::CheckedObserver {
    public:
+    SurfaceInterface();
+    ~SurfaceInterface() override;
     // Called after registering the observer to provide the full stream state.
     // Also called whenever the stream changes.
     virtual void StreamUpdate(const feedui::StreamUpdate&) = 0;
+    // Returns a unique ID for the surface. The ID will not be reused until
+    // after the Chrome process is closed.
+    SurfaceId GetSurfaceId() const;
+
+   private:
+    SurfaceId surface_id_;
   };
 
   FeedStreamApi();
@@ -49,7 +57,8 @@ class FeedStreamApi {
   // Calls |callback| when complete. If no content could be added, the parameter
   // is false, and the caller should expect |LoadMore| to fail if called
   // further.
-  virtual void LoadMore(base::OnceCallback<void(bool)> callback) = 0;
+  virtual void LoadMore(SurfaceId surface,
+                        base::OnceCallback<void(bool)> callback) = 0;
 
   // Apply |operations| to the stream model. Does nothing if the model is not
   // yet loaded.
@@ -70,9 +79,13 @@ class FeedStreamApi {
 
   // A slice was viewed (2/3rds of it is in the viewport). Should be called
   // once for each viewed slice in the stream.
-  virtual void ReportSliceViewed(const std::string& slice_id) = 0;
+  virtual void ReportSliceViewed(SurfaceId surface_id,
+                                 const std::string& slice_id) = 0;
+  // Navigation was started in response to a link in the Feed. This event
+  // eventually leads to |ReportPageLoaded()| if a page is loaded successfully.
   virtual void ReportNavigationStarted() = 0;
-  virtual void ReportNavigationDone() = 0;
+  // A web page was loaded in response to opening a link from the Feed.
+  virtual void ReportPageLoaded() = 0;
   // The user triggered the default open action, usually by tapping the card.
   virtual void ReportOpenAction(const std::string& slice_id) = 0;
   // The user triggered the 'open in new tab' action.

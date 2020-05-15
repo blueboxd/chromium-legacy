@@ -50,10 +50,10 @@ const char kTestChromeSchema[] =
     "}";
 
 const PolicyDetails kTestPolicyDetails[] = {
-    // is_deprecated  is_device_policy              id  max_external_data_size
-    {false, false, kTestPolicy1Id, 0},
-    {false, false, kTestPolicy2Id, 0},
-    {false, false, kTestPolicy3Id, 0},
+    // is_deprecated is_future is_device_policy id  max_external_data_size
+    {false, false, false, kTestPolicy1Id, 0},
+    {false, false, false, kTestPolicy2Id, 0},
+    {false, false, false, kTestPolicy3Id, 0},
 };
 
 class TestPolicyStatisticsCollector : public PolicyStatisticsCollector {

@@ -73,6 +73,8 @@ class TestClient : public AndroidMetricsServiceClient {
  protected:
   void OnMetricsStart() override {}
 
+  void OnMetricsNotStarted() override {}
+
   int GetSampleBucketValue() override { return sample_bucket_value_; }
 
   int GetSampleRatePerMille() override { return sampled_in_rate_per_mille_; }

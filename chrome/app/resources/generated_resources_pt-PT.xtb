@@ -523,7 +523,6 @@
 <translation id="1650371550981945235">Mostrar opções de introdução</translation>
 <translation id="1651008383952180276">Tem de introduzir a mesma frase de acesso duas vezes</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Adicione a impressora ao Google Cloud Print para poder imprimir em qualquer local.}other{Adicione # impressoras ao Google Cloud Print para poder imprimir em qualquer local.}}</translation>
-<translation id="1655937588105566159">{NUM_EXTENSIONS,plural, =1{Esta extensão pode ser perigosa}other{Estas extensões podem ser perigosas}}</translation>
 <translation id="1656528038316521561">Opacidade do fundo</translation>
 <translation id="1657406563541664238">Ajude a melhorar o <ph name="PRODUCT_NAME" /> enviando automaticamente estatísticas de utilização e relatórios de falhas para a Google</translation>
 <translation id="1657937299377480641">Para voltares a iniciar sessão e teres acesso a recursos educativos, pede ao teu Pai ou Mãe para te darem autorização.</translation>
@@ -713,7 +712,6 @@
 <translation id="1875387611427697908">Só é possível adicioná-la a partir da <ph name="CHROME_WEB_STORE" />.</translation>
 <translation id="1877520246462554164">Falha ao obter o símbolo de autenticação. Termine e inicie sessão novamente para tentar de novo.</translation>
 <translation id="1877860345998737529">Atribuição de ações do acesso por comutador</translation>
-<translation id="1878541307036593717">Configure as autorizações.</translation>
 <translation id="1879000426787380528">Iniciar sessão como</translation>
 <translation id="1880905663253319515">Eliminar o certificado "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1884013283844450420">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, ligar</translation>
@@ -2632,6 +2630,7 @@ Pretende pará-lo?</translation>
 <translation id="4359408040881008151">Instalada devido a extensão(ões) dependente(s).</translation>
 <translation id="4359717112757026264">Paisagens urbanas</translation>
 <translation id="4361142739114356624">A chave privada para este certificado de cliente está em falta ou é inválida</translation>
+<translation id="4361745360460842907">Abrir como separador</translation>
 <translation id="4363771538994847871">Não foi encontrado nenhum destino do Cast. Precisa de ajuda?</translation>
 <translation id="4364327530094270451">Melão</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> está a partilhar uma janela.</translation>
@@ -3093,7 +3092,6 @@ Pretende pará-lo?</translation>
 <translation id="4994474651455208930">Permitir que os Web sites peçam para serem os processadores predefinidos de protocolos</translation>
 <translation id="4994754230098574403">A configurar…</translation>
 <translation id="4997086284911172121">Sem ligação à Internet.</translation>
-<translation id="4997384734315285248">Desinstalar o Plugin VM</translation>
 <translation id="4998430619171209993">Ativado</translation>
 <translation id="5000922062037820727">Bloqueado (recomendado)</translation>
 <translation id="5005498671520578047">Copiar palavra-passe</translation>
@@ -3697,6 +3695,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5785583009707899920">Utilitários de ficheiros do Chrome</translation>
 <translation id="5787146423283493983">Acordo de chaves</translation>
 <translation id="5788367137662787332">Lamentamos, mas não foi possível montar, pelo menos, uma partição no aparelho <ph name="DEVICE_LABEL" />.</translation>
+<translation id="5790085346892983794">Sucesso</translation>
 <translation id="5792728279623964091">Toque no botão ligar/desligar</translation>
 <translation id="5793339252089865437">Transferir a atualização através da sua rede móvel pode resultar em custos adicionais.</translation>
 <translation id="5794414402486823030">Abrir sempre com o visualizador do sistema</translation>
@@ -4629,6 +4628,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7004402701596653846">O site pode utilizar MIDI</translation>
 <translation id="7004499039102548441">Separadores recentes</translation>
 <translation id="7005496624875927304">Autorizações adicionais</translation>
+<translation id="7005812687360380971">Falha</translation>
 <translation id="7005848115657603926">Intervalo de páginas inválido, utilize <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Margem inferior</translation>
 <translation id="7007648447224463482">Abrir tudo numa nova janela</translation>
@@ -4768,7 +4768,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7191159667348037">Impressora desconhecida (USB)</translation>
 <translation id="7193051357671784796">Esta aplicação foi adicionada pela sua organização. Reinicie a aplicação para concluir a instalação da mesma.</translation>
 <translation id="7193374945610105795">Sem palavras-passe guardadas para <ph name="ORIGIN" /></translation>
-<translation id="7194620721202917359">{NUM_APPS,plural, =1{Esta app pode ser perigosa}other{Estas apps podem ser perigosas}}</translation>
 <translation id="7196913789568937443">Faça uma cópia de segurança no Google Drive. Restaure os dados ou mude de dispositivo facilmente em qualquer altura. A cópia de segurança inclui dados de apps. As cópias de segurança são carregadas para a Google e encriptadas com a palavra-passe da sua Conta Google. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" />.</translation>
 <translation id="7197190419934240522">Obtenha a Pesquisa Google e a inteligência da Google sempre que navegar</translation>
 <translation id="7197632491113152433">Encontrámos <ph name="NUMBER_OF_APPS" /> aplicações na sua conta que podem ser utilizadas neste dispositivo.</translation>
@@ -5011,7 +5010,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7506541170099744506">O seu <ph name="DEVICE_TYPE" /> foi inscrito com êxito para gestão empresarial.</translation>
 <translation id="7507207699631365376">Veja a <ph name="BEGIN_LINK" />política de privacidade<ph name="END_LINK" /> deste fornecedor.</translation>
 <translation id="7507930499305566459">Certificado do dispositivo de resposta do estado</translation>
-<translation id="7508054832109420082">Dar acesso a impressoras</translation>
 <translation id="7513029293694390567">Inicie sessão automaticamente nos Sites com as credenciais armazenadas. Se esta funcionalidade estiver desativada, é-lhe pedida sempre uma confirmação antes de iniciar sessão num Website.</translation>
 <translation id="7514239104543605883">Copiar para o dispositivo</translation>
 <translation id="7514365320538308">Transferir</translation>
@@ -5170,7 +5168,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7716781361494605745">URL da política da autoridade de certificação Netscape</translation>
 <translation id="7717014941119698257">A transferir: <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">Verificar atualizações</translation>
-<translation id="7719070594859855691">Conceder acesso à câmara</translation>
 <translation id="7719367874908701697">Zoom da página</translation>
 <translation id="7721179060400456005">Permitir que a área de janela corresponda à dos ecrãs</translation>
 <translation id="7722040605881499779">Necessário para atualizar: <ph name="NECESSARY_SPACE" /></translation>

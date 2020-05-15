@@ -39,12 +39,14 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/bookmarks/bookmarks_ui.h"
 #include "chrome/browser/ui/webui/settings/site_settings_helper.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -496,6 +498,13 @@ void ShowAppManagementPage(Profile* profile,
       {chromeos::settings::mojom::kAppDetailsSubpagePath, "?id=", app_id});
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile,
                                                                sub_page);
+}
+
+void ShowPrintManagementApp(Profile* profile) {
+  DCHECK(
+      base::FeatureList::IsEnabled(chromeos::features::kPrintJobManagementApp));
+  LaunchSystemWebApp(profile, web_app::SystemAppType::PRINT_MANAGEMENT,
+                     GURL(chrome::kChromeUIPrintManagementUrl));
 }
 
 GURL GetOSSettingsUrl(const std::string& sub_page) {

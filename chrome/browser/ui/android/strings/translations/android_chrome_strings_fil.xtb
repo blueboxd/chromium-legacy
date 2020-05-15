@@ -387,7 +387,6 @@ Ikaw lang ang makakakita kung ano ang tinitingnan ng iyong camera. Hindi makikit
 <translation id="4250229828105606438">Screenshot</translation>
 <translation id="4256782883801055595">Mga lisensya ng open source</translation>
 <translation id="4269820728363426813">Kopyahin ang address ng link</translation>
-<translation id="4278390842282768270">Pinapayagan</translation>
 <translation id="429312253194641664">May site na nagpe-play ng media</translation>
 <translation id="4298388696830689168">Mga naka-link na site</translation>
 <translation id="4307992518367153382">Mga Pangunahing Kaalaman</translation>
@@ -435,7 +434,6 @@ Maaaring may ibang uri ng history ng pag-browse ang iyong Google account tulad n
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> (na) bookmark ang na-delete</translation>
 <translation id="4665282149850138822">Idinagdag ang <ph name="NAME" /> sa iyong Home screen</translation>
 <translation id="4684427112815847243">I-sync lahat</translation>
-<translation id="4688610874307684559">Tumatakbo sa Chrome (Inisyal)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 at <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> iba pa}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 at <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> iba pa}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 at <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> na iba pa}}</translation>
 <translation id="4696983787092045100">Ipadala ang text sa Iyong Mga Device</translation>
 <translation id="4698034686595694889">Tingnan offline sa <ph name="APP_NAME" /></translation>
@@ -560,10 +558,8 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5659593005791499971">Email</translation>
 <translation id="5665379678064389456">Gumawa ng event sa <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">I-override ang kahilingan ng isang website upang mapigilan ang pagzu-zoom in</translation>
-<translation id="5677928146339483299">Naka-block</translation>
 <translation id="5684874026226664614">Oops. Hindi maisalin ang pahinang ito.</translation>
 <translation id="5686790454216892815">Masyadong mahaba ang pangalan ng file</translation>
-<translation id="5690795753582697420">Naka-off ang camera sa mga setting ng Android</translation>
 <translation id="5694049548840660018">Bumalik sa home nang walang kahirap-hirap</translation>
 <translation id="569536719314091526">Isalin ang page na ito sa anumang wika mula sa button na Higit pang opsyon</translation>
 <translation id="572328651809341494">Mga kamakailang tab</translation>
@@ -619,7 +615,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="614940544461990577">Subukang:</translation>
 <translation id="6154478581116148741">I-on ang lock ng screen sa Mga Setting upang i-export ang iyong mga password mula sa device na ito</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ang natipid sa data</translation>
-<translation id="6177111841848151710">Naka-block para sa kasalukuyang search engine</translation>
 <translation id="6192333916571137726">File ng download</translation>
 <translation id="6201345951596836663">Nakopya ang Link</translation>
 <translation id="6210748933810148297">Hindi si <ph name="EMAIL" />?</translation>
@@ -706,7 +701,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6846298663435243399">Naglo-load…</translation>
 <translation id="6850409657436465440">Isinasagawa pa rin ang iyong pag-download</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> (na) tab ang isinara</translation>
-<translation id="6864395892908308021">Hindi nababasa ng device na ito ang NFC</translation>
 <translation id="6864459304226931083">I-download ang larawan</translation>
 <translation id="6865313869410766144">Data ng form ng autofill</translation>
 <translation id="6884306546558072722">Patuloy na mag-explore offline</translation>
@@ -721,9 +715,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6989267951144302301">Hindi ma-download</translation>
 <translation id="6990079615885386641">Kunin ang app mula sa Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Balaan ka kung ma-expose ang mga password sa isang paglabag sa data</translation>
-<translation id="7000754031042624318">Naka-off sa mga setting ng Android</translation>
 <translation id="7015203776128479407">Hindi natapos ang pag-set up ng unang pag-sync. Naka-off ang pag-sync.</translation>
-<translation id="7016516562562142042">Pinapayagan para sa kasalukuyang search engine</translation>
 <translation id="7022756207310403729">Buksan sa browser</translation>
 <translation id="702463548815491781">Inirerekomenda kapag naka-on ang TalkBack o Switch Access</translation>
 <translation id="7029809446516969842">Mga Password</translation>
@@ -756,10 +748,10 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7328017930301109123">Sa Lite mode, mas mabilis na nilo-load ng Chrome ang mga page at mas kaunti nang 60 porsyento ang ginagamit nitong data.</translation>
 <translation id="7333031090786104871">Nagdaragdag pa rin ng nakaraang site</translation>
 <translation id="7340958967809483333">Mga opsyon para sa Discover</translation>
+<translation id="7352651011704765696">Nagkaroon ng problema</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Ibahagi ang 1 piniling item}one{Ibahagi ang # piniling item}other{Ibahagi ang # na piniling item}}</translation>
 <translation id="7359002509206457351">I-access ang mga paraan ng pagbabayad</translation>
-<translation id="7362144854749094396">Ibinabahagi sa Chrome ang history. Ibinabahagi sa <ph name="SITE_NAME" /> ang mga kagustuhan.</translation>
 <translation id="7375125077091615385">Uri:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -841,7 +833,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7986741934819883144">Pumili ng contact</translation>
 <translation id="7998918019931843664">Muling buksan ang isinarang tab</translation>
 <translation id="8004582292198964060">Browser</translation>
-<translation id="8007176423574883786">Naka-off para sa device na ito</translation>
 <translation id="8013372441983637696">I-clear din ang iyong data ng Chrome sa device na ito</translation>
 <translation id="8015452622527143194">Ibalik ang lahat ng nasa page sa default na sukat</translation>
 <translation id="8026334261755873520">I-clear ang data sa pag-browse</translation>
@@ -931,6 +922,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8687353297350450808">{N_BARS,plural, =1{Antas ng Lakas ng Signal: # bar}one{Antas ng Lakas ng Signal: # bar}other{Antas ng Lakas ng Signal: # na bar}}</translation>
 <translation id="868929229000858085">Maghanap sa iyong mga contact</translation>
 <translation id="869891660844655955">Expiration date</translation>
+<translation id="8712637175834984815">Nakuha ko</translation>
 <translation id="8748850008226585750">Nakatago ang mga content</translation>
 <translation id="8751914237388039244">Pumili ng larawan</translation>
 <translation id="8758557275681689734">Tingnan ang lahat ng iyong nakabukas na tab</translation>

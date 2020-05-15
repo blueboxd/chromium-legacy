@@ -83,6 +83,7 @@ WebCoalescedInputEvent::WebCoalescedInputEvent(
 WebCoalescedInputEvent::WebCoalescedInputEvent(
     const WebCoalescedInputEvent& event) {
   event_ = event.event_->Clone();
+  latency_ = event.latency_;
   for (const auto& coalesced_event : event.coalesced_events_)
     coalesced_events_.emplace_back(coalesced_event->Clone());
   for (const auto& predicted_event : event.predicted_events_)

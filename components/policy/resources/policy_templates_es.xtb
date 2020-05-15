@@ -115,17 +115,6 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1117535567637097036">Los controladores de protocolo configurados a través de esta política no se utilizan al procesar los intents de Android.</translation>
 <translation id="1118093128235245168">Permitir que los sitios web pidan permiso al usuario para acceder a un dispositivo USB conectado</translation>
-<translation id="1123594119609921068">Define el estado predeterminado de la función de accesibilidad de mensajes de voz en la pantalla de inicio de sesión.
-
-          Si se asigna el valor "true" a esta política, se habilitarán los mensajes de voz cuando se muestre la pantalla de inicio de sesión.
-
-          Si se le asigna el valor "false", se inhabilitarán los mensajes de voz cuando se muestre la pantalla de inicio de sesión.
-
-          Si asignas un valor a esta política, los usuarios podrán anularlo temporalmente habilitando o inhabilitando los mensajes de voz. Sin embargo, la selección del usuario no se mantendrá y se restablecerá el valor predeterminado cuando se vuelva a mostrar la pantalla de inicio de sesión o cuando el usuario permanezca inactivo en la pantalla de inicio durante un minuto.
-
-          Si no se asigna ningún valor a esta política, los mensajes de voz se inhabilitarán cuando la pantalla de inicio de sesión se muestre por primera vez. Los usuarios podrán habilitar o inhabilitar los mensajes de voz en cualquier momento, y su estado en la pantalla de inicio de sesión permanecerá entre usuarios.
-
-          Nota: <ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME" /> anula esta política si se especifica la anterior.</translation>
 <translation id="1128717055763152639">Permite definir una lista de patrones de URL donde se especifica qué sitios web pueden mostrar contenido mixto (es decir, contenido HTTP en sitios web HTTPS) bloqueable (es decir, activo), y para qué contenido mixto opcionalmente bloqueable se inhabilitarán las actualizaciones.
 
           Si no se establece esta política, el contenido mixto bloqueable se bloqueará y el contenido mixto opcionalmente bloqueable se actualizará, y los usuarios podrán establecer excepciones para permitir este contenido en sitios web concretos.
@@ -399,23 +388,9 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 <translation id="1634989431648355062">Permitir el complemento <ph name="FLASH_PLUGIN_NAME" /> en estos sitios web</translation>
 <translation id="1645793986494086629">Esquema:</translation>
 <translation id="1648816843164517573">Lista de nombres que omitirán la comprobación de la política de HSTS</translation>
-<translation id="1653229475925941921">Si se asigna un valor a esta política, permite controlar el tipo de lupa que se habilita. Si se le asigna el valor "None", se inhabilitará la lupa.
-
-          Si asignas un valor a esta política, los usuarios no podrán cambiarla ni anularla.
-
-          Si no se le asigna ningún valor, se inhabilitará la lupa inicialmente, pero los usuarios podrán habilitarla en cualquier momento.</translation>
 <translation id="1654087023995670109">Forzar el modo invitados en el navegador</translation>
 <translation id="1655229863189977773">Establecer tamaño de caché de disco en bytes</translation>
 <translation id="166427968280387991">Servidor proxy</translation>
-<translation id="1667877109169174750">Si se asigna el valor "true" a esta política, las opciones de accesibilidad siempre aparecerán en el menú de la bandeja del sistema.
-
-          Si se le asigna el valor "false", las opciones de accesibilidad nunca aparecerán en el menú de la bandeja del sistema.
-
-          Si asignas un valor a esta política, los usuarios no podrán cambiarlo ni anularlo.
-
-          Si no le asignas ningún valor, las opciones de accesibilidad no aparecerán en el menú de la bandeja del sistema, pero los usuarios podrán hacer que aparezcan a través de la página de configuración.
-
-          Si las funciones de accesibilidad se habilitan de otra forma (por ejemplo, mediante una combinación de teclas), las opciones de accesibilidad siempre se mostrarán en el menú de la bandeja del sistema.</translation>
 <translation id="1668836044817793277">Permitir que la aplicación de kiosco sin retardo con inicio automático controle la versión de <ph name="PRODUCT_OS_NAME" />.
 
       Esta política controla si se permitirá que la aplicación de kiosco sin retardo con inicio automático controle la versión de <ph name="PRODUCT_OS_NAME" /> incluyendo required_platform_version en su archivo de manifiesto y la utilice como el prefijo de la versión de destino de actualización automática.
@@ -1950,15 +1925,6 @@ Si se le asigna el valor "False", <ph name="PRODUCT_NAME" /> no usará notificac
 <translation id="3811562426301733860">Permitir anuncios en todos los sitios web</translation>
 <translation id="3816312845600780067">Habilitar combinación de teclas de rescate para inicio de sesión automático</translation>
 <translation id="3817323252437541502">Permitir que los usuarios registrados en el Programa de Protección Avanzada cuenten con más opciones de protección</translation>
-<translation id="3820526221169548563">Habilita la función de accesibilidad del teclado en pantalla.
-
-Si esta política se establece en True, el teclado en pantalla siempre estará habilitado.
-
-Si esta política se establece en False, el teclado en pantalla siempre estará inhabilitado.
-
-Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
-
-Si no se establece esta política, el teclado en pantalla estará inhabilitado inicialmente, pero el usuario podrá habilitarlo en cualquier momento.</translation>
 <translation id="3821861026311587684">Forzar el cierre de la sesión del usuario si su cuenta deja de estar autorizada</translation>
 <translation id="382476126209906314">Configurar el prefijo TalkGadget para hosts de acceso remoto</translation>
 <translation id="3824972131618513497">Controla los ajustes relacionados con el reinicio y la gestión de la batería.</translation>
@@ -2233,15 +2199,6 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 <translation id="4157003184375321727">Informar de la versión del firmware y del sistema operativo</translation>
 <translation id="4157594634940419685">Permitir el acceso a impresoras CUPS nativas</translation>
 <translation id="4160962198980004898">Fuente de la dirección MAC del dispositivo cuando esté conectado a una base</translation>
-<translation id="4164601239783385546">Habilita la función de accesibilidad de teclas persistentes.
-
-          Si se le asigna el valor "True" a esta política, las teclas persistentes siempre estarán habilitadas.
-
-          Si se le asigna el valor "False", las teclas persistentes siempre estarán inhabilitadas.
-
-          Si se le asigna un valor a esta política, los usuarios no podrán cambiarla ni anularla.
-
-          Si no se le asigna ningún valor, se inhabilitarán las teclas persistentes inicialmente, pero los usuarios podrán habilitarlas en cualquier momento.</translation>
 <translation id="4169692397912242417">Habilita la función de accesibilidad de mensajes de voz en la pantalla de inicio de sesión.
 
           Si se asigna el valor "true" a esta política, siempre se habilitarán los mensajes de voz en la pantalla de inicio de sesión.
@@ -2265,17 +2222,6 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
           Si no se le asigna ningún valor, el resaltado del símbolo de intercalación se inhabilitará inicialmente en la pantalla de inicio de sesión, pero el usuario podrá habilitarlo en cualquier momento.</translation>
 <translation id="4183229833636799228">Configuración predeterminada de <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL para validar el token de autenticación de clientes de acceso remoto</translation>
-<translation id="420007931282384740">Define el estado predeterminado de la función de accesibilidad de teclado en pantalla en la pantalla de inicio de sesión.
-
-          Si se asigna el valor "true" a esta política, se habilitará el teclado en pantalla cuando se muestre la pantalla de inicio de sesión.
-
-          Si se le asigna el valor "false", se inhabilitará el teclado en pantalla cuando se muestre la pantalla de inicio de sesión.
-
-          Si asignas un valor a esta política, los usuarios podrán anularlo temporalmente habilitando o inhabilitando el teclado en pantalla. Sin embargo, la selección del usuario no se mantendrá y se restablecerá el valor predeterminado cuando se vuelva a mostrar la pantalla de inicio de sesión o cuando el usuario permanezca inactivo en la pantalla de inicio durante un minuto.
-
-          Si no se asigna ningún valor a esta política, el teclado en pantalla se inhabilitará la primera vez que se muestre la pantalla de inicio de sesión. Los usuarios podrán habilitar o inhabilitar el teclado en pantalla en cualquier momento, y su estado en la pantalla de inicio de sesión permanecerá entre usuarios.
-
-          Nota: <ph name="DEVICE_LOGIN_SCREEN_VIRTUAL_KEYBOARD_ENABLED_POLICY_NAME" /> anula esta política si se especifica la anterior.</translation>
 <translation id="4203389617541558220">Limita el tiempo de actividad del dispositivo mediante la programación de reinicios automáticos.
 
       Si se establece esta política, especifica el tiempo de actividad del dispositivo que debe transcurrir para que se programe un reinicio automático.
@@ -2523,11 +2469,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="4625915093043961294">Configurar lista de admisión de instalación de extensiones</translation>
 <translation id="4632343302005518762">Permitir que <ph name="PRODUCT_FRAME_NAME" /> procese los tipos de contenido mostrados</translation>
 <translation id="4632566332417930481">No permite el uso de las herramientas para desarrolladores en extensiones instaladas por la política de empresa, pero sí permite su uso en otros contextos</translation>
-<translation id="4633786464238689684">Permite modificar el comportamiento predeterminado de las teclas de la fila superior para convertirlas en teclas de funciones.
-
-          Si esta política se establece en True, las teclas de la fila superior del teclado realizarán comandos de teclas de funciones de forma predeterminada. debes pulsar la tecla de búsqueda para que las teclas multimedia vuelvan a su comportamiento original.
-
-          Si esta política se establece en False o no se establece, el teclado realizará comandos de teclas multimedia de forma predeterminada y comandos de teclas de funciones al pulsar la tecla de búsqueda.</translation>
 <translation id="4639407427807680016">Nombres de hosts de mensajes nativos que se deben excluir de la lista negra</translation>
 <translation id="4649395978608361979">Destinos en impresoras locales</translation>
 <translation id="4650759511838826572">Inhabilitar esquemas de protocolo de URL</translation>
@@ -2619,15 +2560,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si inhabilitas esta opción, la función Autocompletar no hará sugerencias ni rellenará la información de la tarjeta de crédito, y tampoco guardará información adicional de la tarjeta de crédito que el usuario envíe cuando esté navegando por la Web.
 
       Si habilitas esta opción o no estableces ningún valor, el usuario podrá controlar la función Autocompletar para información de la tarjeta de crédito en la UI.</translation>
-<translation id="4791031774429044540">Habilita la función de accesibilidad del cursor grande.
-
-          Si el valor de esta política se establece en True, siempre se habilitará el cursor grande.
-
-          Si el valor de esta política se establece en False, siempre se inhabilitará el cursor grande.
-
-          Si estableces esta política, los usuarios no podrán modificarla o anularla.
-
-          Si no se establece esta política, el cursor grande se inhabilitará de forma inicial, pero el usuario podrá habilitarlo en cualquier momento.</translation>
 <translation id="4802744647065138872">Limita el número de instantáneas de datos de usuario retenidas para usarlas en caso de restauración de emergencia.</translation>
 <translation id="4802905909524200151">Configurar comportamiento de actualización del firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Reiniciar siempre cuando el usuario cierre sesión.</translation>
@@ -2795,15 +2727,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5105313908130842249">Retraso de bloqueo de pantalla cuando el dispositivo funciona con la batería</translation>
 <translation id="5108031557082757679">Impresoras de dispositivos de empresa inhabilitadas</translation>
 <translation id="5109383437323376357">Determinar la disponibilidad de variaciones</translation>
-<translation id="5112121363469561920">Establece el tipo predeterminado de lupa que se habilita en la pantalla de inicio de sesión.
-
-          Si se establece esta política, controla el tipo de lupa que se habilita cuando se muestra la pantalla de inicio de sesión. Si se le asigna el valor Ninguno, se inhabilitará la lupa.
-
-          Si se establece esta política, los usuarios podrán anularla temporalmente habilitando o inhabilitando la lupa. Sin embargo, la selección del usuario no se mantendrá y se restaurará el valor predeterminado cuando se vuelva a mostrar la pantalla de inicio de sesión o cuando el usuario permanezca inactivo en la pantalla de inicio durante 1 minuto.
-
-          Si no se establece esta política, se inhabilitará la lupa la primera vez que se muestre la pantalla de inicio de sesión. Los usuarios podrán habilitar o inhabilitar la lupa en cualquier momento, y este ajuste se quedará en la pantalla de inicio de sesión tal como lo dejen hasta que otro usuario inicie sesión.
-
-          Nota: <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" /> anula esta política si se especifica la anterior.</translation>
 <translation id="5115168755602871392">Proporciona información sobre la CPU (o las CPU) de un dispositivo.
 
       Si se asigna el valor "false" a esta política o no se establece, no se enviará ninguna información.
@@ -3027,17 +2950,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5378985487213287085">Permite establecer si los sitios web pueden mostrar notificaciones de escritorio. Se puede permitir o denegar que se muestren notificaciones de escritorio de forma predeterminada o se puede establecer que los sitios web pidan permiso al usuario cada vez que quieran mostrar notificaciones de escritorio.
 
           Si no se establece esta política, se usará la política AskNotifications y el usuario podrá modificarla.</translation>
-<translation id="5380329473151894945">Define el estado predeterminado de la función de accesibilidad del cursor grande en la pantalla de inicio de sesión.
-
-          Si se asigna el valor "True" a esta política, el cursor grande se habilitará cuando se muestre la pantalla de inicio de sesión.
-
-          Si se le asigna el valor "False", el cursor grande se inhabilitará cuando se muestre la pantalla de inicio de sesión.
-
-          Si asignas un valor a esta política, los usuarios podrán anularlo temporalmente habilitando o inhabilitando el cursor grande. Sin embargo, la selección del usuario no se mantendrá y se restablecerá el valor predeterminado cuando se vuelva a mostrar la pantalla de inicio de sesión o cuando el usuario permanezca inactivo en la pantalla de inicio durante 1 minuto.
-
-          Si no se asigna ningún valor a esta política, el cursor grande se inhabilitará cuando la pantalla de inicio de sesión se muestre por primera vez. Los usuarios podrán habilitar o inhabilitar el cursor grande en cualquier momento, y se quedará como lo dejen hasta que otro usuario inicie sesión.
-
-          Nota: <ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" /> anula esta política si se especifica la anterior.</translation>
 <translation id="538108065117008131">Permitir que <ph name="PRODUCT_FRAME_NAME" /> gestione los tipos de contenido que se indican a continuación.</translation>
 <translation id="538768040137709073">Habilita la función de portapapeles compartido, que permite a los usuarios enviar texto entre versiones de Chrome para ordenador y dispositivos Android cuando la sincronización está habilitada y el usuario ha iniciado sesión.
 
@@ -3380,7 +3292,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si no se establece esta política o se le asigna el valor "false", las funciones v0 de los componentes web se inhabilitarán de forma predeterminada desde M80.
 
       Esta política se eliminará después de la versión 84 de Chrome.</translation>
-<translation id="5763698334786515749">Habilita el botón para mostrar la contraseña en las pantallas de inicio de sesión y bloqueo.</translation>
 <translation id="5765780083710877561">Descripción:</translation>
 <translation id="5770738360657678870">Canal de desarrolladores (puede ser inestable)</translation>
 <translation id="5774856474228476867">URL de búsqueda del proveedor de búsquedas predeterminadas</translation>
@@ -3894,9 +3805,6 @@ Si la política está establecida en False, no se informará sobre los usuarios.
       Si no se asigna ningún valor a esta política, el usuario puede utilizar cualquier complemento que esté instalado en el sistema, excepto complementos incompatibles preprogramados, obsoletos o peligrosos.</translation>
 <translation id="6571871508154591774">Inhabilitar la cámara, la configuración del navegador y los ajustes del sistema operativo</translation>
 <translation id="6573305661369899995">Establecer una fuente externa de restricciones de URL</translation>
-<translation id="6574770600243153999">Permite que este dispositivo ejecute PluginVm.
-
-      Si se asigna el valor "false" a esta política o no se le asigna ninguno, <ph name="PLUGIN_VM_NAME" /> no se activará en el dispositivo. Si se le asigna el valor "true", <ph name="PLUGIN_VM_NAME" /> se activará en el dispositivo (si los demás ajustes lo permiten). Para que se ejecute <ph name="PLUGIN_VM_NAME" />, el valor de <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> debe ser "true" y <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" />, <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> o <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> deben estar configurados.</translation>
 <translation id="6583851521569686409">Configura una lista de impresoras.
 
       Esta política permite que los administradores proporcionen opciones de configuración de impresora
@@ -3955,7 +3863,6 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 <translation id="6665670272107384733">Definir la frecuencia con la que el usuario debe introducir la contraseña para utilizar el desbloqueo rápido</translation>
 <translation id="6672070613706645316">Permite a los usuarios personalizar la imagen de fondo de la página Nueva pestaña</translation>
 <translation id="6672630473862787247">Habilita la autenticación pasiva en sesiones normales, de incógnito y de invitado.</translation>
-<translation id="6677797768774898583">Esta función permite al usuario ver la contraseña en las pantallas de inicio de sesión y bloqueo tras hacer clic en un botón.</translation>
 <translation id="6685903773201985073">Habilita la autenticación pasiva en sesiones normales y de invitado.</translation>
 <translation id="6689792153960219308">Informar sobre el estado del hardware</translation>
 <translation id="6698632841807204978">Habilitar la impresión en monocromo</translation>
@@ -4029,15 +3936,6 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 <translation id="6907778402784621686">Permite bloquear el contenido no seguro en estos sitios web</translation>
 <translation id="6908640907898649429">Permite configurar el proveedor de búsquedas predeterminadas. Puedes especificar el proveedor de búsquedas predeterminadas que utilizarán los usuarios o inhabilitar las búsquedas predeterminadas.</translation>
 <translation id="6913068954484253496">Permitir que <ph name="PRODUCT_NAME" /> se conecte a dispositivos de transmisión de todas las direcciones IP.</translation>
-<translation id="6915442654606973733">Habilita la función de accesibilidad de comentarios por voz.
-
-          Si el valor de esta política se establece en True, siempre se habilitarán los comentarios por voz.
-
-          Si el valor de esta política se establece en False, siempre se inhabilitarán los comentarios por voz.
-
-          Si estableces esta política, los usuarios no podrán modificarla o anularla.
-
-          Si no se establece esta política, los comentarios por voz se inhabilitarán de forma inicial, pero el usuario podrá habilitarlos en cualquier momento.</translation>
 <translation id="6916507170737609563">
       Para conseguir tanto aislamiento como
       un impacto limitado para los usuarios, utiliza la política IsolateOriginsAndroid
@@ -4713,17 +4611,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 
       La actualización dinámica de esta política se admite en M56 y versiones posteriores.</translation>
 <translation id="7841880500990419427">Versión mínima de TLS a la que recurrir</translation>
-<translation id="7842317008224536842">Define el estado predeterminado de la función de accesibilidad de contraste alto en la pantalla de inicio de sesión.
-
-          Si se asigna el valor "true" a esta política, se habilitará el modo de contraste alto cuando se muestre la pantalla de inicio de sesión.
-
-          Si se le asigna el valor "false", se inhabilitará el modo de contraste alto cuando se muestre la pantalla de inicio de sesión.
-
-          Si asignas un valor a esta política, los usuarios podrán anularlo temporalmente habilitando o inhabilitando el modo de contraste alto. Sin embargo, la selección del usuario no se mantendrá y se restablecerá el valor predeterminado cuando se vuelva a mostrar la pantalla de inicio de sesión o cuando el usuario permanezca inactivo en la pantalla de inicio durante un minuto.
-
-          Si no se asigna ningún valor a esta política, el modo de contraste alto se inhabilitará inicialmente cuando se muestre la pantalla de inicio de sesión por primera vez. Los usuarios podrán habilitar o inhabilitar el modo de contraste alto en cualquier momento, y su estado en la pantalla de inicio de sesión permanecerá entre usuarios.
-
-          Nota: <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" /> anula esta política si se especifica la anterior.</translation>
 <translation id="7846952520291088817">URLs cuyas IP locales se exponen en candidatos ICE WebRTC</translation>
 <translation id="7848641140449742406">Ajustes del sistema operativo</translation>
 <translation id="7858404742201086014">Si habilitas esta opción, los complementos obsoletos se utilizarán como complementos normales.
@@ -4930,15 +4817,6 @@ Si se le asigna el valor "False", la pantalla de privacidad se inhabilitará cua
 Si se asigna un valor a esta política, el usuario no podrá anularlo cuando se muestre la pantalla de inicio de sesión.
 
 Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará inicialmente, pero el usuario podrá controlarla cuando se muestre la pantalla de inicio de sesión.</translation>
-<translation id="8148901634826284024">Habilita la función de accesibilidad del modo de contraste alto.
-
-          Si el valor de esta política se establece en True, siempre se habilitará el modo de contraste alto.
-
-          Si el valor de esta política se establece en False, siempre se inhabilitará el modo de contraste alto.
-
-          Si estableces esta política, los usuarios no podrán modificarla o anularla.
-
-          Si no se establece esta política, el modo de contraste alto se inhabilitará de forma inicial, pero el usuario podrá habilitarlo en cualquier momento.</translation>
 <translation id="815061180603915310">Si se habilita, esta política fuerza el cambio del perfil al modo efímero. Si se especifica como política del sistema operativo (p. ej., GPO en Windows), se aplicará a todos los perfiles del sistema; si se establece como política de la nube, solo se aplicará a un perfil en el que se inicie sesión con una cuenta gestionada.
 
       En este modo, los datos de perfil solo se mantienen en el disco mientras dura la sesión del usuario. Una vez que se cierra el navegador, no se conservan ciertas funciones, como las extensiones y sus datos o el historial web, datos de Internet como las cookies ni las bases de datos web. Sin embargo, esto no impide que el usuario pueda descargar datos en el disco manualmente, guardar páginas o imprimirlas.

@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Avtomatik endirmələr</translation>
 <translation id="5677928146339483299">Bloklananlar</translation>
 <translation id="5689516760719285838">Məkan</translation>
+<translation id="5690795753582697420">Kamera Android ayarlarında deaktiv edilib</translation>
 <translation id="5710871682236653961">NFC cihazlarına toxunduqda saytların məlumat göndərməsi və almasına icazə verməzdən əvvəl soruşulsun (tövsiyə edilir)</translation>
 <translation id="5719847187258001597">Bununla Əsas ekranda <ph name="ORIGIN" /> və ya onun tətbiqi tərəfindən saxlanılan bütün data və kukilər silinəcək.</translation>
 <translation id="5804241973901381774">İcazələr</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Daha çox</translation>
 <translation id="6064125863973209585">Tamamlanmış endirmələr</translation>
 <translation id="6165508094623778733">Ətraflı öyrənin</translation>
+<translation id="6177111841848151710">Cari axtarış sistemi üçün blok edildi</translation>
 <translation id="6181444274883918285">Sayt istisnası əlavə edin</translation>
 <translation id="6192792657125177640">İstisnalar</translation>
 <translation id="6194112207524046168">Həmçinin, Chrome'un kameraya daxil olmasına icazə vermək üçün <ph name="BEGIN_LINK" />Android Ayarlarında<ph name="END_LINK" /> kameranı aktiv edin.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Bu səhifə təhlükəlidir. Sayt barədə məlumat</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6992289844737586249">Saytlara mikrofonunuzu istifadə etmək icazəsi verməmişdən əvvəl soruşun (tövsiyə olunur)</translation>
+<translation id="7000754031042624318">Android ayarlarında söndürülüb</translation>
+<translation id="7016516562562142042">Cari axtarış sistemi üçün icazə verildi</translation>
 <translation id="7053983685419859001">Bloklayın</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 element seçildi}other{# element seçildi}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> seçildi. Seçimlər ekranın yuxarısında əlçatandır</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Xüsusi sayt üçün səsə icazə verin.</translation>
 <translation id="7993619969781047893">Bəzi saytlardakı xüsusiyyətlər işləməyə bilər</translation>
 <translation id="7999064672810608036">Bütün lokal datanı silmək və bu sayt üçün bütün icazələri sıfırlamaq istəyirsiniz?</translation>
+<translation id="8007176423574883786">Bu cihaz üçün söndürüldükdə</translation>
 <translation id="802154636333426148">Endirmə alınmadı</translation>
 <translation id="8087000398470557479">Bu məzmun <ph name="DOMAIN_NAME" /> domenindəndir, Google tərəfindən çatdırılıb.</translation>
 <translation id="8116925261070264013">Səssiz</translation>

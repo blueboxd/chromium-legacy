@@ -40,7 +40,6 @@ Commit::ContributionMap CommitProcessor::GatherCommitContributions(
   }
 
   ModelTypeSet contributing_commit_types = commit_types_;
-
   Commit::ContributionMap contributions;
   size_t num_entries = 0;
 
@@ -49,24 +48,27 @@ Commit::ContributionMap CommitProcessor::GatherCommitContributions(
       GatherCommitContributionsForType(NIGORI, max_entries, cookie_jar_mismatch,
                                        cookie_jar_empty, &contributions);
 
-  if (num_entries != 0) {
-    // If the outgoing commit has a NIGORI update, there are some risks if
-    // changes from other datatypes are bundled together in the same commit, as
-    // long as the datatype is encryptable. Hence, restrict to
-    // PriorityUserTypes() which are never encrypted.
-    contributing_commit_types.RetainAll(PriorityUserTypes());
-  }
+  // Next, gather contributions from priority types.
+  const size_t num_priority_entries = GatherCommitContributionsForTypes(
+      Intersection(contributing_commit_types, PriorityUserTypes()),
+      max_entries - num_entries, cookie_jar_mismatch, cookie_jar_empty,
+      &contributions);
+  num_entries += num_priority_entries;
+  DCHECK_LE(num_entries, max_entries);
 
-  for (ModelType type :
-       Difference(contributing_commit_types, ModelTypeSet(NIGORI))) {
-    num_entries += GatherCommitContributionsForType(
-        type, max_entries - num_entries, cookie_jar_mismatch, cookie_jar_empty,
+  // If no commit is needed for NIGORI or priority types, gather commit
+  // contributions for the remaining datatypes. This requirement achieves two
+  // things:
+  // 1. No encrypted data gets committed before the corresponding NIGORI commit,
+  //    which can otherwise leave to data loss if the commit fails partially.
+  // 2. Regular datatypes do not add latency to priority type commits.
+  if (num_entries == 0) {
+    num_entries += GatherCommitContributionsForTypes(
+        Difference(contributing_commit_types,
+                   Union(PriorityUserTypes(), ModelTypeSet(NIGORI))),
+        max_entries - num_entries, cookie_jar_mismatch, cookie_jar_empty,
         &contributions);
-    if (num_entries >= max_entries) {
-      DCHECK_EQ(num_entries, max_entries)
-          << "Number of commit entries exceeds maximum";
-      break;
-    }
+    DCHECK_LE(num_entries, max_entries);
   }
 
   if (contributing_commit_types == commit_types_ && num_entries < max_entries) {
@@ -81,7 +83,7 @@ Commit::ContributionMap CommitProcessor::GatherCommitContributions(
   return contributions;
 }
 
-int CommitProcessor::GatherCommitContributionsForType(
+size_t CommitProcessor::GatherCommitContributionsForType(
     ModelType type,
     size_t max_entries,
     bool cookie_jar_mismatch,
@@ -100,8 +102,8 @@ int CommitProcessor::GatherCommitContributionsForType(
     return 0;
   }
 
-  int num_entries = contribution->GetNumEntries();
-  DCHECK_LE(num_entries, static_cast<int>(max_entries));
+  size_t num_entries = contribution->GetNumEntries();
+  DCHECK_LE(num_entries, max_entries);
   contributions->emplace(type, std::move(contribution));
 
   if (type == SESSIONS) {
@@ -112,6 +114,26 @@ int CommitProcessor::GatherCommitContributionsForType(
     }
   }
 
+  return num_entries;
+}
+
+size_t CommitProcessor::GatherCommitContributionsForTypes(
+    ModelTypeSet types,
+    size_t max_entries,
+    bool cookie_jar_mismatch,
+    bool cookie_jar_empty,
+    Commit::ContributionMap* contributions) {
+  size_t num_entries = 0;
+  for (ModelType type : types) {
+    num_entries += GatherCommitContributionsForType(
+        type, max_entries - num_entries, cookie_jar_mismatch, cookie_jar_empty,
+        contributions);
+    if (num_entries >= max_entries) {
+      DCHECK_EQ(num_entries, max_entries)
+          << "Number of commit entries exceeds maximum";
+      break;
+    }
+  }
   return num_entries;
 }
 

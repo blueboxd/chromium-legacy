@@ -46,14 +46,14 @@ PromptForScanningModalDialog::PromptForScanningModalDialog(
     : web_contents_(web_contents),
       filename_(filename),
       open_now_callback_(std::move(open_now_callback)) {
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_DEEP_SCANNING_INFO_DIALOG_ACCEPT_BUTTON));
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_DEEP_SCANNING_INFO_DIALOG_CANCEL_BUTTON));
-  DialogDelegate::SetAcceptCallback(std::move(accept_callback));
-  open_now_button_ = DialogDelegate::SetExtraView(views::MdTextButton::Create(
+  SetAcceptCallback(std::move(accept_callback));
+  open_now_button_ = SetExtraView(views::MdTextButton::Create(
       this, l10n_util::GetStringUTF16(
                 IDS_DEEP_SCANNING_INFO_DIALOG_OPEN_NOW_BUTTON)));
 

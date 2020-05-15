@@ -2849,6 +2849,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"query-tiles-omnibox", flag_descriptions::kQueryTilesOmniboxName,
      flag_descriptions::kQueryTilesOmniboxDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(query_tiles::features::kQueryTilesInOmnibox)},
+    {"query-tiles-single-tier", flag_descriptions::kQueryTilesSingleTierName,
+     flag_descriptions::kQueryTilesSingleTierDescription, kOsAndroid,
+     SINGLE_VALUE_TYPE(query_tiles::switches::kQueryTilesSingleTier)},
     {"query-tiles-enable-query-editing",
      flag_descriptions::kQueryTilesEnableQueryEditingName,
      flag_descriptions::kQueryTilesEnableQueryEditingDescription, kOsAndroid,
@@ -2856,7 +2859,8 @@ const FeatureEntry kFeatureEntries[] = {
     {"query-tiles-country-code", flag_descriptions::kQueryTilesCountryCode,
      flag_descriptions::kQueryTilesCountryCodeDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kQueryTilesCountryChoices)},
-    {"query-tiles-instant-fetch", flag_descriptions::kQueryTilesInstantFetch,
+    {"query-tiles-instant-fetch",
+     flag_descriptions::kQueryTilesInstantFetchName,
      flag_descriptions::kQueryTilesInstantFetchDescription, kOsAndroid,
      SINGLE_VALUE_TYPE(
          query_tiles::switches::kQueryTilesInstantBackgroundTask)},
@@ -5227,11 +5231,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMixBrowserTypeTabsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kMixBrowserTypeTabs)},
 #endif  // !defined(OS_ANDROID)
-
-    {"enable-media-internals-devtools",
-     flag_descriptions::kMediaInspectorLoggingName,
-     flag_descriptions::kMediaInspectorLoggingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(media::kMediaInspectorLogging)},
 
 #if defined(OS_ANDROID)
     {"enable-games-hub", flag_descriptions::kGamesHubName,

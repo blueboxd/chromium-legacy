@@ -387,7 +387,6 @@
 <translation id="4250229828105606438">Eкранна снимка</translation>
 <translation id="4256782883801055595">Лицензи за отворен код</translation>
 <translation id="4269820728363426813">Копиране на адреса на връзката</translation>
-<translation id="4278390842282768270">Разрешено</translation>
 <translation id="429312253194641664">Сайт възпроизвежда мултимедийно съдържание</translation>
 <translation id="4298388696830689168">Свързани сайтове</translation>
 <translation id="4307992518367153382">Основни положения</translation>
@@ -435,7 +434,6 @@
 <translation id="4663756553811254707">Изтрихте <ph name="NUMBER_OF_BOOKMARKS" /> отметки</translation>
 <translation id="4665282149850138822">Добавихте <ph name="NAME" /> към началния екран</translation>
 <translation id="4684427112815847243">Синхронизиране на всичко</translation>
-<translation id="4688610874307684559">Изпълнение в Chrome (първоначално)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 и още <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 и още <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Изпращане на текст до устройствата ви</translation>
 <translation id="4698034686595694889">Офлайн преглед в <ph name="APP_NAME" /></translation>
@@ -560,10 +558,8 @@
 <translation id="5659593005791499971">Имейл</translation>
 <translation id="5665379678064389456">Създайте събитие в <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Отмяна на искането на уебсайта да не се допуска увеличаване на мащаба</translation>
-<translation id="5677928146339483299">Блокирано</translation>
 <translation id="5684874026226664614">Ами сега! Тази страница не можа да се преведе.</translation>
 <translation id="5686790454216892815">Името на файла е твърде дълго</translation>
-<translation id="5690795753582697420">Камерата е изключена от настройките на Android</translation>
 <translation id="5694049548840660018">Връщайте се лесно към началната си страница</translation>
 <translation id="569536719314091526">Страницата може да бъде преведена на който и да е език чрез бутона за още опции</translation>
 <translation id="572328651809341494">Скорошни раздели</translation>
@@ -619,7 +615,6 @@
 <translation id="614940544461990577">Изпробвайте следното:</translation>
 <translation id="6154478581116148741">Включете функцията за заключване на екрана от настройките, за да експортирате паролите си от това устройство</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> икономия на данни</translation>
-<translation id="6177111841848151710">Блокирано за текущата търсеща машина</translation>
 <translation id="6192333916571137726">Изтегляне на файл</translation>
 <translation id="6201345951596836663">Връзката е копирана</translation>
 <translation id="6210748933810148297">Не сте <ph name="EMAIL" />?</translation>
@@ -706,7 +701,6 @@
 <translation id="6846298663435243399">Зарежда се…</translation>
 <translation id="6850409657436465440">Изтеглянето продължава</translation>
 <translation id="6850830437481525139">Затворихте <ph name="TAB_COUNT" /> раздела</translation>
-<translation id="6864395892908308021">Това устройство не може да чете NFC</translation>
 <translation id="6864459304226931083">Изтегляне на изображението</translation>
 <translation id="6865313869410766144">Данни за автоматично попълване на формуляри</translation>
 <translation id="6884306546558072722">Разглеждайте офлайн</translation>
@@ -721,9 +715,7 @@
 <translation id="6989267951144302301">Неуспешно изтегляне</translation>
 <translation id="6990079615885386641">Изтегляне на приложението от Google Play Магазин: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Предупреждение за разкрити пароли при нарушение на сигурността на данните</translation>
-<translation id="7000754031042624318">Изключено от настройките на Android</translation>
 <translation id="7015203776128479407">Първоначалното настройване на синхронизирането не бе завършено. Синхронизирането е изключено.</translation>
-<translation id="7016516562562142042">Разрешено за текущата търсеща машина</translation>
 <translation id="7022756207310403729">Отваряне в браузъра</translation>
 <translation id="702463548815491781">Препоръчва се, когато TalkBack или достъпът с превключване са задействани</translation>
 <translation id="7029809446516969842">Пароли</translation>
@@ -756,10 +748,10 @@
 <translation id="7328017930301109123">В олекотения режим на Chrome страниците се зареждат по-бързо и се използват до 60 процента по-малко данни.</translation>
 <translation id="7333031090786104871">Още се добавя предишният сайт</translation>
 <translation id="7340958967809483333">Опции за Discover</translation>
+<translation id="7352651011704765696">Нещо се обърка</translation>
 <translation id="7352939065658542140">ВИДЕОКЛИП</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Споделяне на 1 избран елемент}other{Споделяне на # избрани елемента}}</translation>
 <translation id="7359002509206457351">Достъп до начините на плащане</translation>
-<translation id="7362144854749094396">Историята е споделена с Chrome, а предпочитанията – с(ъс) <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Тип:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL адрес</translation>
@@ -841,7 +833,6 @@
 <translation id="7986741934819883144">Изберете контакт</translation>
 <translation id="7998918019931843664">Повторно отваряне на затворения раздел</translation>
 <translation id="8004582292198964060">Браузър</translation>
-<translation id="8007176423574883786">Изключено за това устройство</translation>
 <translation id="8013372441983637696">Изчистване на данните ви в Chrome и от това устройство</translation>
 <translation id="8015452622527143194">Стандартен размер на всички елементи на страницата</translation>
 <translation id="8026334261755873520">Изчистване на данните за сърфирането</translation>
@@ -931,6 +922,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{Сила на сигнала: # чертичка}other{Сила на сигнала: # чертички}}</translation>
 <translation id="868929229000858085">Търсене в контактите ви</translation>
 <translation id="869891660844655955">Дата на валидност</translation>
+<translation id="8712637175834984815">Разбрах</translation>
 <translation id="8748850008226585750">Съдържанието е скрито</translation>
 <translation id="8751914237388039244">Изберете изображение</translation>
 <translation id="8758557275681689734">Преглед на всички отворени раздели</translation>

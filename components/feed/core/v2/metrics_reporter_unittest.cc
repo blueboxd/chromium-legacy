@@ -8,12 +8,13 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
-#include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feed {
 using feed::internal::FeedEngagementType;
 using feed::internal::FeedUserActionType;
+constexpr SurfaceId kSurfaceId = SurfaceId(5);
 const base::TimeDelta kEpsilon = base::TimeDelta::FromMilliseconds(1);
 
 class MetricsReporterTest : public testing::Test {
@@ -27,14 +28,16 @@ class MetricsReporterTest : public testing::Test {
     return result;
   }
 
-  base::SimpleTestTickClock clock_;
-  MetricsReporter reporter_{&clock_};
+ protected:
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  MetricsReporter reporter_{task_environment_.GetMockTickClock()};
   base::HistogramTester histogram_;
   base::UserActionTester user_actions_;
 };
 
 TEST_F(MetricsReporterTest, SliceViewedReportsSuggestionShown) {
-  reporter_.ContentSliceViewed(5);
+  reporter_.ContentSliceViewed(kSurfaceId, 5);
   histogram_.ExpectUniqueSample("NewTabPage.ContentSuggestions.Shown", 5, 1);
 }
 
@@ -105,9 +108,9 @@ TEST_F(MetricsReporterTest, ManageInterestsInIsInteracting) {
 
 TEST_F(MetricsReporterTest, VisitsCanLastMoreThanFiveMinutes) {
   reporter_.StreamScrolled(1);
-  clock_.Advance(base::TimeDelta::FromMinutes(5) - kEpsilon);
+  task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(5) - kEpsilon);
   reporter_.OpenAction(0);
-  clock_.Advance(base::TimeDelta::FromMinutes(5) - kEpsilon);
+  task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(5) - kEpsilon);
   reporter_.StreamScrolled(1);
 
   std::map<FeedEngagementType, int> want({
@@ -122,7 +125,7 @@ TEST_F(MetricsReporterTest, VisitsCanLastMoreThanFiveMinutes) {
 TEST_F(MetricsReporterTest, NewVisitAfterInactivity) {
   reporter_.OpenAction(0);
   reporter_.StreamScrolled(1);
-  clock_.Advance(base::TimeDelta::FromMinutes(5) + kEpsilon);
+  task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(5) + kEpsilon);
   reporter_.OpenAction(0);
   reporter_.StreamScrolled(1);
 
@@ -325,12 +328,90 @@ TEST_F(MetricsReporterTest, ContextMenuOpened) {
 }
 
 TEST_F(MetricsReporterTest, SurfaceOpened) {
-  reporter_.SurfaceOpened();
+  reporter_.SurfaceOpened(kSurfaceId);
 
   std::map<FeedEngagementType, int> want_empty;
   EXPECT_EQ(want_empty, ReportedEngagementType());
   histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserAction",
                                 FeedUserActionType::kOpenedFeedSurface, 1);
+}
+
+TEST_F(MetricsReporterTest, OpenFeedSuccessDuration) {
+  reporter_.SurfaceOpened(kSurfaceId);
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(9));
+  reporter_.ContentSliceViewed(kSurfaceId, 0);
+
+  histogram_.ExpectUniqueTimeSample(
+      "ContentSuggestions.Feed.UserJourney.OpenFeed.SuccessDuration",
+      base::TimeDelta::FromSeconds(9), 1);
+}
+
+TEST_F(MetricsReporterTest, OpenFeedLoadTimeout) {
+  reporter_.SurfaceOpened(kSurfaceId);
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(16));
+
+  histogram_.ExpectUniqueTimeSample(
+      "ContentSuggestions.Feed.UserJourney.OpenFeed.FailureDuration",
+      base::TimeDelta::FromSeconds(15), 1);
+  histogram_.ExpectTotalCount(
+      "ContentSuggestions.Feed.UserJourney.OpenFeed.SuccessDuration", 0);
+}
+
+TEST_F(MetricsReporterTest, OpenFeedCloseBeforeLoad) {
+  reporter_.SurfaceOpened(kSurfaceId);
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(14));
+  reporter_.SurfaceClosed(kSurfaceId);
+
+  histogram_.ExpectUniqueTimeSample(
+      "ContentSuggestions.Feed.UserJourney.OpenFeed.FailureDuration",
+      base::TimeDelta::FromSeconds(14), 1);
+  histogram_.ExpectTotalCount(
+      "ContentSuggestions.Feed.UserJourney.OpenFeed.SuccessDuration", 0);
+}
+
+TEST_F(MetricsReporterTest, OpenCardSuccessDuration) {
+  reporter_.OpenAction(0);
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(19));
+  reporter_.PageLoaded();
+
+  histogram_.ExpectTotalCount(
+      "ContentSuggestions.Feed.UserJourney.OpenCard.SuccessDuration", 1);
+  histogram_.ExpectUniqueTimeSample(
+      "ContentSuggestions.Feed.UserJourney.OpenCard.SuccessDuration",
+      base::TimeDelta::FromSeconds(19), 1);
+}
+
+TEST_F(MetricsReporterTest, OpenCardTimeout) {
+  reporter_.OpenAction(0);
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(21));
+  reporter_.PageLoaded();
+
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.UserJourney.OpenCard.Failure", 1, 1);
+  histogram_.ExpectTotalCount(
+      "ContentSuggestions.Feed.UserJourney.OpenCard.SuccessDuration", 0);
+}
+
+TEST_F(MetricsReporterTest, OpenCardFailureTwiceAndThenSucceed) {
+  reporter_.OpenAction(0);
+  reporter_.OpenAction(1);
+  reporter_.OpenAction(2);
+  reporter_.PageLoaded();
+
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.UserJourney.OpenCard.Failure", 1, 2);
+  histogram_.ExpectTotalCount(
+      "ContentSuggestions.Feed.UserJourney.OpenCard.SuccessDuration", 1);
+}
+
+TEST_F(MetricsReporterTest, OpenCardCloseChromeFailure) {
+  reporter_.OpenAction(0);
+  reporter_.OnEnterBackground();
+
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.UserJourney.OpenCard.Failure", 1, 1);
+  histogram_.ExpectTotalCount(
+      "ContentSuggestions.Feed.UserJourney.OpenCard.SuccessDuration", 0);
 }
 
 }  // namespace feed

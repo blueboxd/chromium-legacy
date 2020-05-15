@@ -58,6 +58,42 @@ TEST(AutofillCountryTest, CountryCodeForLocale) {
   EXPECT_EQ("US", AutofillCountry::CountryCodeForLocale("es-419"));
 }
 
+// Test the address requirement methods for the US.
+TEST(AutofillCountryTest, UsaAddressRequirements) {
+  // The US requires a zip, state, city and line1 entry.
+  AutofillCountry us_autofill_country("US", "en_US");
+
+  EXPECT_FALSE(us_autofill_country.requires_zip_or_state());
+  EXPECT_TRUE(us_autofill_country.requires_zip());
+  EXPECT_TRUE(us_autofill_country.requires_state());
+  EXPECT_TRUE(us_autofill_country.requires_city());
+  EXPECT_TRUE(us_autofill_country.requires_line1());
+}
+
+// Test the address requirement method for Brazil.
+TEST(AutofillCountryTest, BrAddressRequirements) {
+  // Brazil only requires a zip entry.
+  AutofillCountry brazil_autofill_country("BR", "en_US");
+
+  EXPECT_FALSE(brazil_autofill_country.requires_zip_or_state());
+  EXPECT_TRUE(brazil_autofill_country.requires_zip());
+  EXPECT_TRUE(brazil_autofill_country.requires_state());
+  EXPECT_TRUE(brazil_autofill_country.requires_city());
+  EXPECT_TRUE(brazil_autofill_country.requires_line1());
+}
+
+// Test the address requirement method for Turkey.
+TEST(AutofillCountryTest, TrAddressRequirements) {
+  // Brazil only requires a zip entry.
+  AutofillCountry turkey_autofill_country("TR", "en_US");
+
+  EXPECT_TRUE(turkey_autofill_country.requires_zip_or_state());
+  EXPECT_FALSE(turkey_autofill_country.requires_zip());
+  EXPECT_FALSE(turkey_autofill_country.requires_state());
+  EXPECT_TRUE(turkey_autofill_country.requires_city());
+  EXPECT_TRUE(turkey_autofill_country.requires_line1());
+}
+
 // Test mapping all country codes to country names.
 TEST(AutofillCountryTest, AllCountryCodesHaveCountryName) {
   std::set<std::string> expected_failures;

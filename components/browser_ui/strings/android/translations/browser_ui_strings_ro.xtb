@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Descărcări automate</translation>
 <translation id="5677928146339483299">Blocat</translation>
 <translation id="5689516760719285838">Locație</translation>
+<translation id="5690795753582697420">Camera foto este dezactivată în setările Android</translation>
 <translation id="5710871682236653961">Întreabă înainte de a permite site-urilor să trimită și să primească informații când se ating dispozitive NFC (recomandat)</translation>
 <translation id="5719847187258001597">Astfel, se vor șterge toate datele și cookie-urile stocate de <ph name="ORIGIN" /> sau de aplicația asociată de pe ecranul de pornire.</translation>
 <translation id="5804241973901381774">Permisiuni</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Mai multe</translation>
 <translation id="6064125863973209585">Descărcări finalizate</translation>
 <translation id="6165508094623778733">Află mai multe</translation>
+<translation id="6177111841848151710">Blocată pentru motorul de căutare actual</translation>
 <translation id="6181444274883918285">Adaugă o excepție privind site-urile</translation>
 <translation id="6192792657125177640">Excepții</translation>
 <translation id="6194112207524046168">Pentru a permite Chrome să acceseze camera, activează camera și în <ph name="BEGIN_LINK" />Setările Android<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Această pagină este periculoasă. Informații despre site</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6992289844737586249">Întreabă înainte de a permite site-urilor să folosească microfonul (recomandat)</translation>
+<translation id="7000754031042624318">Dezactivată din setările Android</translation>
+<translation id="7016516562562142042">Se permite pentru motorul de căutare actual</translation>
 <translation id="7053983685419859001">Blochează</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 selectat}few{# selectate}other{# selectate}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> selectate.  Opțiunile sunt disponibile în partea de sus a ecranului</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Permite sunetul pentru un anumit site.</translation>
 <translation id="7993619969781047893">Este posibil ca funcțiile de pe anumite site-uri să fie întrerupte</translation>
 <translation id="7999064672810608036">Sigur dorești să ștergi toate datele locale, inclusiv cookie-urile pentru acest site și să îi resetezi permisiunile?</translation>
+<translation id="8007176423574883786">Dezactivată pentru acest dispozitiv</translation>
 <translation id="802154636333426148">Descărcarea nu a reușit</translation>
 <translation id="8087000398470557479">Acest conținut provine de pe <ph name="DOMAIN_NAME" />, oferit de Google.</translation>
 <translation id="8116925261070264013">Cu sunetul dezactivat</translation>

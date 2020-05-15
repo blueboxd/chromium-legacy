@@ -33,8 +33,8 @@ namespace storage {
 
 const base::FilePath::CharType kDatabaseDirectoryName[] =
     FILE_PATH_LITERAL("databases");
-const base::FilePath::CharType kIncognitoDatabaseDirectoryName[] =
-    FILE_PATH_LITERAL("databases-incognito");
+const base::FilePath::CharType kOffTheRecordDatabaseDirectoryName[] =
+    FILE_PATH_LITERAL("databases-off-the-record");
 const base::FilePath::CharType kTrackerDatabaseFileName[] =
     FILE_PATH_LITERAL("Databases.db");
 static const int kDatabaseTrackerCurrentSchemaVersion = 2;
@@ -85,13 +85,13 @@ OriginInfo::OriginInfo(const std::string& origin_identifier, int64_t total_size)
     : origin_identifier_(origin_identifier), total_size_(total_size) {}
 
 DatabaseTracker::DatabaseTracker(const base::FilePath& profile_path,
-                                 bool is_incognito,
+                                 bool is_off_the_record,
                                  SpecialStoragePolicy* special_storage_policy,
                                  QuotaManagerProxy* quota_manager_proxy)
-    : is_incognito_(is_incognito),
+    : is_off_the_record_(is_off_the_record),
       profile_path_(profile_path),
-      db_dir_(is_incognito_
-                  ? profile_path_.Append(kIncognitoDatabaseDirectoryName)
+      db_dir_(is_off_the_record_
+                  ? profile_path_.Append(kOffTheRecordDatabaseDirectoryName)
                   : profile_path_.Append(kDatabaseDirectoryName)),
       db_(new sql::Database()),
       special_storage_policy_(special_storage_policy),
@@ -257,7 +257,7 @@ void DatabaseTracker::CloseTrackerDatabaseAndClearCaches() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   ClearAllCachedOriginInfo();
 
-  if (!is_incognito_) {
+  if (!is_off_the_record_) {
     meta_table_.reset(nullptr);
     databases_table_.reset(nullptr);
     db_->Close();
@@ -271,16 +271,16 @@ base::FilePath DatabaseTracker::GetOriginDirectory(
 
   base::string16 origin_directory;
 
-  if (!is_incognito_) {
+  if (!is_off_the_record_) {
     origin_directory = base::UTF8ToUTF16(origin_identifier);
   } else {
-    auto it = incognito_origin_directories_.find(origin_identifier);
-    if (it != incognito_origin_directories_.end()) {
+    auto it = off_the_record_origin_directories_.find(origin_identifier);
+    if (it != off_the_record_origin_directories_.end()) {
       origin_directory = it->second;
     } else {
-      origin_directory =
-          base::NumberToString16(incognito_origin_directories_generator_++);
-      incognito_origin_directories_[origin_identifier] = origin_directory;
+      origin_directory = base::NumberToString16(
+          off_the_record_origin_directories_generator_++);
+      off_the_record_origin_directories_[origin_identifier] = origin_directory;
     }
   }
 
@@ -425,18 +425,18 @@ bool DatabaseTracker::DeleteOrigin(const std::string& origin_identifier,
   base::DeleteFileRecursively(origin_dir);
   base::DeleteFileRecursively(new_origin_dir);  // Might fail on windows.
 
-  if (is_incognito_) {
-    incognito_origin_directories_.erase(origin_identifier);
+  if (is_off_the_record_) {
+    off_the_record_origin_directories_.erase(origin_identifier);
 
     // TODO(jsbell): Consider alternate data structures to avoid this
     // linear scan.
-    for (auto it = incognito_file_handles_.begin();
-         it != incognito_file_handles_.end();) {
+    for (auto it = off_the_record_file_handles_.begin();
+         it != off_the_record_file_handles_.end();) {
       std::string id;
       if (DatabaseUtil::CrackVfsFileName(it->first, &id, nullptr, nullptr) &&
           id == origin_identifier) {
         delete it->second;
-        it = incognito_file_handles_.erase(it);
+        it = off_the_record_file_handles_.erase(it);
       } else {
         ++it;
       }
@@ -508,8 +508,8 @@ bool DatabaseTracker::LazyInit() {
     is_initialized_ =
         base::CreateDirectory(db_dir_) &&
         (db_->is_open() ||
-         (is_incognito_ ? db_->OpenInMemory() :
-          db_->Open(kTrackerDatabaseFullPath))) &&
+         (is_off_the_record_ ? db_->OpenInMemory()
+                             : db_->Open(kTrackerDatabaseFullPath))) &&
         UpgradeToCurrentVersion();
     if (!is_initialized_) {
       databases_table_.reset(nullptr);
@@ -786,64 +786,64 @@ int DatabaseTracker::DeleteDataForOrigin(const url::Origin& origin,
   return net::OK;
 }
 
-const base::File* DatabaseTracker::GetIncognitoFile(
+const base::File* DatabaseTracker::GetOffTheRecordFile(
     const base::string16& vfs_file_name) const {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(is_incognito_);
-  auto it = incognito_file_handles_.find(vfs_file_name);
-  if (it != incognito_file_handles_.end())
+  DCHECK(is_off_the_record_);
+  auto it = off_the_record_file_handles_.find(vfs_file_name);
+  if (it != off_the_record_file_handles_.end())
     return it->second;
 
   return nullptr;
 }
 
-const base::File* DatabaseTracker::SaveIncognitoFile(
+const base::File* DatabaseTracker::SaveOffTheRecordFile(
     const base::string16& vfs_file_name,
     base::File file) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(is_incognito_);
+  DCHECK(is_off_the_record_);
   if (!file.IsValid())
     return nullptr;
 
   base::File* to_insert = new base::File(std::move(file));
-  auto rv =
-      incognito_file_handles_.insert(std::make_pair(vfs_file_name, to_insert));
+  auto rv = off_the_record_file_handles_.insert(
+      std::make_pair(vfs_file_name, to_insert));
   DCHECK(rv.second);
   return rv.first->second;
 }
 
-void DatabaseTracker::CloseIncognitoFileHandle(
+void DatabaseTracker::CloseOffTheRecordFileHandle(
     const base::string16& vfs_file_name) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(is_incognito_);
-  DCHECK(incognito_file_handles_.find(vfs_file_name) !=
-         incognito_file_handles_.end());
+  DCHECK(is_off_the_record_);
+  DCHECK(off_the_record_file_handles_.find(vfs_file_name) !=
+         off_the_record_file_handles_.end());
 
-  auto it = incognito_file_handles_.find(vfs_file_name);
-  if (it != incognito_file_handles_.end()) {
+  auto it = off_the_record_file_handles_.find(vfs_file_name);
+  if (it != off_the_record_file_handles_.end()) {
     delete it->second;
-    incognito_file_handles_.erase(it);
+    off_the_record_file_handles_.erase(it);
   }
 }
 
-bool DatabaseTracker::HasSavedIncognitoFileHandle(
+bool DatabaseTracker::HasSavedOffTheRecordFileHandle(
     const base::string16& vfs_file_name) const {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  return (incognito_file_handles_.find(vfs_file_name) !=
-          incognito_file_handles_.end());
+  return (off_the_record_file_handles_.find(vfs_file_name) !=
+          off_the_record_file_handles_.end());
 }
 
-void DatabaseTracker::DeleteIncognitoDBDirectory() {
+void DatabaseTracker::DeleteOffTheRecordDBDirectory() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   is_initialized_ = false;
 
-  for (auto& pair : incognito_file_handles_)
+  for (auto& pair : off_the_record_file_handles_)
     delete pair.second;
 
-  base::FilePath incognito_db_dir =
-      profile_path_.Append(kIncognitoDatabaseDirectoryName);
-  if (base::DirectoryExists(incognito_db_dir))
-    base::DeleteFileRecursively(incognito_db_dir);
+  base::FilePath off_the_record_db_dir =
+      profile_path_.Append(kOffTheRecordDatabaseDirectoryName);
+  if (base::DirectoryExists(off_the_record_db_dir))
+    base::DeleteFileRecursively(off_the_record_db_dir);
 }
 
 void DatabaseTracker::ClearSessionOnlyOrigins() {
@@ -891,8 +891,8 @@ void DatabaseTracker::Shutdown() {
     return;
   }
   shutting_down_ = true;
-  if (is_incognito_)
-    DeleteIncognitoDBDirectory();
+  if (is_off_the_record_)
+    DeleteOffTheRecordDBDirectory();
   else if (!force_keep_session_state_)
     ClearSessionOnlyOrigins();
   CloseTrackerDatabaseAndClearCaches();

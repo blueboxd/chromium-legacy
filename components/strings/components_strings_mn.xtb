@@ -269,6 +269,7 @@
 <translation id="2094505752054353250">Домэйн нэр нийцэхгүй байна</translation>
 <translation id="2096368010154057602">Хэлтэс</translation>
 <translation id="2099652385553570808">Зүүн ирмэг дагуу гурван удаа үдэх</translation>
+<translation id="2101225219012730419">Хувилбар:</translation>
 <translation id="2102134110707549001">Хүчтэй нууц үг санал болгох...</translation>
 <translation id="2107021941795971877">Хэвлэлийн дэмжлэг</translation>
 <translation id="2108755909498034140">Компьютероо дахин эхлүүлэх</translation>
@@ -444,6 +445,7 @@
 <translation id="2856444702002559011">Халдагчид <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />-с таны нууц үг, мессеж, кредит карт зэрэг мэдээллийг хулгайлахаар оролдож байж болзошгүй. <ph name="BEGIN_LEARN_MORE_LINK" />Дэлгэрэнгүй үзэх<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">Постерын нугалаа</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2880660355386638022">Цонх байршуулалт</translation>
 <translation id="2881276955470682203">Картыг хадгалах уу?</translation>
 <translation id="2882949212241984732">Давхар хаалган нугалаа</translation>
 <translation id="2903493209154104877">Хаягууд</translation>
@@ -645,6 +647,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Прокси, галт хана болон DNS оновчилгоог шалгаж байна<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">Энэ алдааг антивирус, галт хана, вэб шүүлтүүр эсвэл прокси програм хангамж зэрэг апп үүсгэх боломжтой.</translation>
 <translation id="373042150751172459">B4 (Дугтуй)</translation>
+<translation id="3731873414101415120">Таны зочилдог вэб сайтууд болон аюултай хуудаснуудын контентууд</translation>
 <translation id="3736520371357197498">Аюултай програмуудыг устгахаас өмнө та энэхүү <ph name="BEGIN_LINK" />сайт руу орохдоо<ph name="END_LINK" /> таны аюулгүй байдалд учирч болох эрсдлийг анхаарна уу.</translation>
 <translation id="3744899669254331632">Сайтаас эргэлзээтэй мэдээлэл илгээсэн учраас та <ph name="SITE" /> руу орж болохгүй. Үүнээс болж Chromium нь  сүлжээний алдааг боловсруулж чадахгүй байна.  Иймэрхүү дайралтууд түр зуурын шинжтэй байдаг учраас энэ хуудас хэсэг хугацааны дараа хэвийн ажиллаж магадгүй.</translation>
 <translation id="3745099705178523657">Таныг баталгаажуулсны дараа таны Google бүртгэлээс картын дэлгэрэнгүйг энэ сайтад хуваалцах болно.</translation>
@@ -911,6 +914,7 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{Байхгүй}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" />-н хайлт</translation>
 <translation id="4879491255372875719">Автомат (өгөгдмөл)</translation>
+<translation id="4879725228911483934">Дэлгэц дээрээ цонх нээж, байрлуулах</translation>
 <translation id="4880827082731008257">Түүхийг хайх</translation>
 <translation id="4881695831933465202">Нээх</translation>
 <translation id="4892518386797173871">Ар талын</translation>

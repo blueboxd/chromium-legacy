@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_split.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -22,11 +23,11 @@ class TileManagerImpl : public TileManager {
  public:
   TileManagerImpl(std::unique_ptr<TileStore> store,
                   base::Clock* clock,
-                  const std::string& locale)
+                  const std::string& accept_languages)
       : initialized_(false),
         store_(std::move(store)),
         clock_(clock),
-        locale_(locale) {}
+        accept_languages_(accept_languages) {}
 
   TileManagerImpl(const TileManagerImpl& other) = delete;
   TileManagerImpl& operator=(const TileManagerImpl& other) = delete;
@@ -87,8 +88,9 @@ class TileManagerImpl : public TileManager {
         FROM_HERE, base::BindOnce(std::move(callback), result_tile));
   }
 
-  void SetLocaleForTesting(const std::string& locale) override {
-    locale_ = locale;
+  void SetAcceptLanguagesForTesting(
+      const std::string& accept_languages) override {
+    accept_languages_ = accept_languages;
   }
 
   void OnTileStoreInitialized(
@@ -145,16 +147,21 @@ class TileManagerImpl : public TileManager {
 
   // Check whether |locale_| matches with that of the |group|.
   bool ValidateLocale(const TileGroup* group) const {
-    if (locale_.empty() || group->locale.empty())
+    if (accept_languages_.empty() || group->locale.empty())
       return false;
 
-    // In case the language is en-GB or en-IN, consider
+    // In case the primary language matches (en-GB vs en-IN), consider
     // those are matching.
-    std::string primary = locale_.substr(0, locale_.find("-"));
     std::string group_primary =
         group->locale.substr(0, group->locale.find("-"));
+    for (auto& lang :
+         base::SplitString(accept_languages_, ",", base::TRIM_WHITESPACE,
+                           base::SPLIT_WANT_NONEMPTY)) {
+      if (lang.substr(0, lang.find("-")) == group_primary)
+        return true;
+    }
 
-    return primary == group_primary;
+    return false;
   }
 
   void OnGroupSaved(std::unique_ptr<TileGroup> group,
@@ -194,8 +201,9 @@ class TileManagerImpl : public TileManager {
   // Clock object.
   base::Clock* clock_;
 
-  // Device locale,  used to check if tiles stored are of the same language.
-  std::string locale_;
+  // Accept languages from the PrefService. Used to check if tiles stored are of
+  // the same language.
+  std::string accept_languages_;
 
   base::WeakPtrFactory<TileManagerImpl> weak_ptr_factory_{this};
 };

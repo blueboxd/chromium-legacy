@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Otomatik indirmeler</translation>
 <translation id="5677928146339483299">Engellendi</translation>
 <translation id="5689516760719285838">Konum</translation>
+<translation id="5690795753582697420">Kamera, Android ayarlarında kapatıldı</translation>
 <translation id="5710871682236653961">NFC cihazlarına dokunduğunuzda sitelerin bilgi göndermesine ve almasına izin verilmeden önce size sorulur (önerilen)</translation>
 <translation id="5719847187258001597">Bu işlem, Ana ekranınızdaki <ph name="ORIGIN" /> sitesi ve sitenin uygulaması tarafından depolanan tüm verileri ve çerezleri temizleyecek.</translation>
 <translation id="5804241973901381774">İzinler</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Daha fazla</translation>
 <translation id="6064125863973209585">Tamamlanan indirme işlemleri</translation>
 <translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
+<translation id="6177111841848151710">Geçerli arama motoru için engellendi</translation>
 <translation id="6181444274883918285">Site istisnası ekle</translation>
 <translation id="6192792657125177640">İstisnalar</translation>
 <translation id="6194112207524046168">Chrome'un kameranıza erişebilmesi için <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'ında da kamerayı açın.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Bu sayfa tehlikeli. Site bilgileri</translation>
 <translation id="6965382102122355670">Tamam</translation>
 <translation id="6992289844737586249">Sitelerin, mikrofonunuzu kullanmasına izin verilmeden önce size sorulsun (önerilen)</translation>
+<translation id="7000754031042624318">Android ayarlarından kapatıldı</translation>
+<translation id="7016516562562142042">Geçerli arama motoru için izin verildi</translation>
 <translation id="7053983685419859001">Engelle</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 öğe seçildi}other{# öğe seçildi}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> öğe seçildi. Seçenekler, ekranın üst kısmına yakın bir yerde bulunur</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Belirli bir site için sese izin verin.</translation>
 <translation id="7993619969781047893">Bazı sitelerdeki özellikler bozulabilir</translation>
 <translation id="7999064672810608036">Bu web sitesine ilişkin çerezler dahil tüm yerel verileri temizlemek ve bu sitenin tüm izinlerini sıfırlamak istediğinizden emin misiniz?</translation>
+<translation id="8007176423574883786">Bu cihaz için kapatıldı</translation>
 <translation id="802154636333426148">İndirilemedi</translation>
 <translation id="8087000398470557479">Bu içerik Google tarafından <ph name="DOMAIN_NAME" /> adresinden sağlanmaktadır.</translation>
 <translation id="8116925261070264013">Ses kapatıldı</translation>

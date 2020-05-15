@@ -1867,6 +1867,11 @@ void View::OnPaintLayer(const ui::PaintContext& context) {
   PaintFromPaintRoot(context);
 }
 
+void View::OnLayerTransformed(const gfx::Transform& old_transform,
+                              ui::PropertyChangeReason reason) {
+  NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged, false);
+}
+
 void View::OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                       float new_device_scale_factor) {
   snap_layer_to_pixel_boundary_ =

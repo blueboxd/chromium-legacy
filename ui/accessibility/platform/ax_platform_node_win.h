@@ -1158,7 +1158,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   static void SanitizeStringAttributeForIA2(const std::string& input,
                                             std::string* output);
   FRIEND_TEST_ALL_PREFIXES(AXPlatformNodeWinTest,
-                           TestSanitizeStringAttributeForIA2);
+                           SanitizeStringAttributeForIA2);
 
  private:
   bool IsWebAreaForPresentationalIframe();

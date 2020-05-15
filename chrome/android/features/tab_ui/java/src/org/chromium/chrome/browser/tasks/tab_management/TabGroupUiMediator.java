@@ -258,9 +258,10 @@ public class TabGroupUiMediator implements SnackbarManager.SnackbarController {
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                 mSnackbarManageable.getSnackbarManager().dismissSnackbars(TabGroupUiMediator.this);
-                if (newModel.isIncognito() && newModel.getCount() == 1) {
-                    resetTabStripWithRelatedTabsForId(newModel.getTabAt(0).getId());
+                if (mIsShowingOverViewMode) {
+                    return;
                 }
+                resetTabStripWithRelatedTabsForId(mTabModelSelector.getCurrentTabId());
             }
         };
 

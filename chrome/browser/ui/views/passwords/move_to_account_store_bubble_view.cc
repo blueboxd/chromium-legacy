@@ -81,12 +81,10 @@ MoveToAccountStoreBubbleView::MoveToAccountStoreBubbleView(
   AddChildView(CreateDescription());
   // TODO(crbug.com/1060128): Add images indicating "site"->"account" move.
 
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MOVE_BUTTON));
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_CANCEL,
-      l10n_util::GetStringUTF16(IDS_DECLINE_RECOVERY));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MOVE_BUTTON));
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
+                 l10n_util::GetStringUTF16(IDS_DECLINE_RECOVERY));
   SetAcceptCallback(
       base::BindOnce(&MoveToAccountStoreBubbleController::AcceptMove,
                      base::Unretained(&controller_)));

@@ -218,10 +218,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // in DOM tree.
   PositionWithAffinity PositionForPoint(const PhysicalOffset&) const;
 
-  // Returns true when associated fragment of |layout_object| has line box.
-  static bool TryMarkFirstLineBoxDirtyFor(const LayoutObject& layout_object);
-  static bool TryMarkLastLineBoxDirtyFor(const LayoutObject& layout_object);
-
   // A range of fragments for |FragmentsFor()|.
   class TraverseNextForSameLayoutObject {
     STATIC_ONLY(TraverseNextForSameLayoutObject);
@@ -258,19 +254,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   void LayoutObjectWillBeDestroyed();
 
   void ClearAssociationWithLayoutObject();
-
-  // Called when lines containing |child| is dirty.
-  static void DirtyLinesFromChangedChild(LayoutObject* child);
-
-  // Mark this line box was changed, in order to re-use part of an inline
-  // formatting context.
-  void MarkLineBoxDirty() {
-    DCHECK(PhysicalFragment().IsLineBox());
-    is_dirty_inline_ = true;
-  }
-
-  // Mark the line box that contains this fragment dirty.
-  void MarkContainingLineBoxDirty();
 
   // Computes LocalVisualRect for an inline LayoutObject. Returns nullopt if the
   // LayoutObject is not in LayoutNG inline formatting context.

@@ -387,7 +387,6 @@
 <translation id="4250229828105606438">スクリーンショット</translation>
 <translation id="4256782883801055595">オープンソース ライセンス</translation>
 <translation id="4269820728363426813">リンクアドレスをコピー</translation>
-<translation id="4278390842282768270">許可</translation>
 <translation id="429312253194641664">サイトでメディアが再生されています</translation>
 <translation id="4298388696830689168">リンク済みのサイト</translation>
 <translation id="4307992518367153382">基本設定</translation>
@@ -435,7 +434,6 @@
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> 件のブックマークを削除しました</translation>
 <translation id="4665282149850138822">「<ph name="NAME" />」がホーム画面に追加されました</translation>
 <translation id="4684427112815847243">すべてを同期する</translation>
-<translation id="4688610874307684559">Chrome で実行しています（初回）</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 他 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 件}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 他 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 件}}</translation>
 <translation id="4696983787092045100">デバイスにテキストを送信</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" /> でオフライン表示</translation>
@@ -560,10 +558,8 @@
 <translation id="5659593005791499971">メール</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> で予定を作成</translation>
 <translation id="5668404140385795438">ウェブサイトのズーム防止リクエストを上書きします</translation>
-<translation id="5677928146339483299">ブロック中</translation>
 <translation id="5684874026226664614">このページを翻訳できませんでした。</translation>
 <translation id="5686790454216892815">ファイル名が長すぎます</translation>
-<translation id="5690795753582697420">Android の設定でカメラがオフになっています</translation>
 <translation id="5694049548840660018">ホームに簡単アクセス</translation>
 <translation id="569536719314091526">[その他のオプション] から、このページを任意の言語に翻訳できます</translation>
 <translation id="572328651809341494">最近使ったタブ</translation>
@@ -619,7 +615,6 @@
 <translation id="614940544461990577">次をお試しください</translation>
 <translation id="6154478581116148741">このデバイスからパスワードをエクスポートするには、[設定] で画面ロックをオンにしてください。</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> のデータを削減</translation>
-<translation id="6177111841848151710">現在の検索エンジンに対してはブロック</translation>
 <translation id="6192333916571137726">ダウンロード ファイル</translation>
 <translation id="6201345951596836663">リンクをコピーしました</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ではありませんか？</translation>
@@ -706,7 +701,6 @@
 <translation id="6846298663435243399">読み込み中...</translation>
 <translation id="6850409657436465440">ダウンロードが進行中です</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> 個のタブを閉じました</translation>
-<translation id="6864395892908308021">このデバイスでは NFC を読み込めません</translation>
 <translation id="6864459304226931083">画像をダウンロード</translation>
 <translation id="6865313869410766144">自動入力フォームのデータ</translation>
 <translation id="6884306546558072722">オフラインで閲覧を続ける</translation>
@@ -721,9 +715,7 @@
 <translation id="6989267951144302301">ダウンロードできませんでした</translation>
 <translation id="6990079615885386641">Google Play ストアからアプリを入手: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">データ侵害によりパスワードが漏洩した場合に警告する</translation>
-<translation id="7000754031042624318">Android の設定で無効</translation>
 <translation id="7015203776128479407">最初の同期設定が終了していません。同期は無効です。</translation>
-<translation id="7016516562562142042">現在の検索エンジンに対して許可</translation>
 <translation id="7022756207310403729">ブラウザで開く</translation>
 <translation id="702463548815491781">TalkBack またはスイッチ アクセスを有効にしている場合におすすめです</translation>
 <translation id="7029809446516969842">パスワード</translation>
@@ -756,10 +748,10 @@
 <translation id="7328017930301109123">ライトモードを使用すると、Chrome でページの読み込みが高速化され、データ使用量も最大 60 パーセント抑えることができます。</translation>
 <translation id="7333031090786104871">前のサイトを追加中です</translation>
 <translation id="7340958967809483333">Discover のオプション</translation>
+<translation id="7352651011704765696">問題が発生しました</translation>
 <translation id="7352939065658542140">動画</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 件の選択されたアイテムを共有します}other{# 件の選択されたアイテムを共有します}}</translation>
 <translation id="7359002509206457351">お支払い方法へのアクセス</translation>
-<translation id="7362144854749094396">履歴は Chrome と共有されます。設定は <ph name="SITE_NAME" /> と共有されます。</translation>
 <translation id="7375125077091615385">タイプ:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />。</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -841,7 +833,6 @@
 <translation id="7986741934819883144">連絡先の選択</translation>
 <translation id="7998918019931843664">閉じたタブを開く</translation>
 <translation id="8004582292198964060">ブラウザ</translation>
-<translation id="8007176423574883786">このデバイスに対して無効</translation>
 <translation id="8013372441983637696">Chrome データもこのデバイスから削除する</translation>
 <translation id="8015452622527143194">ページ上のすべての要素をデフォルトのサイズに戻す</translation>
 <translation id="8026334261755873520">閲覧履歴データの削除</translation>
@@ -931,6 +922,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{電波強度: レベル #}other{電波強度: レベル #}}</translation>
 <translation id="868929229000858085">連絡先を検索</translation>
 <translation id="869891660844655955">有効期限</translation>
+<translation id="8712637175834984815">閉じる</translation>
 <translation id="8748850008226585750">メッセージは非表示です</translation>
 <translation id="8751914237388039244">画像を選択</translation>
 <translation id="8758557275681689734">開いているタブをすべて表示</translation>

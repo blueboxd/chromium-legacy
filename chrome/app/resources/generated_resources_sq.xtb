@@ -520,7 +520,6 @@
 <translation id="1650371550981945235">Shfaq opsionet e hyrjes</translation>
 <translation id="1651008383952180276">Duhet të fusësh dy herë të njëjtën frazë kalimi</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Shtoje printerin te "Printimi në renë kompjuterike" të Google që të mund të printosh nga çdo vend.}other{Shto # printerë te "Printimi në renë kompjuterike" të Google që të mund të printosh nga çdo vend.}}</translation>
-<translation id="1655937588105566159">{NUM_EXTENSIONS,plural, =1{Kjo shtesë mund të jetë e rrezikshme}other{Këto shtesa mund të jenë të rrezikshme}}</translation>
 <translation id="1656528038316521561">Niveli i transparencës së sfondit</translation>
 <translation id="1657406563541664238">Ndihmo në përmirësimin e <ph name="PRODUCT_NAME" /> duke dërguar automatikisht te Google statistika të përdorimit dhe raporte të ndërprerjeve aksidentale</translation>
 <translation id="1657937299377480641">Për t'u identifikuar përsëri për qasje në burimet arsimore, kërkoji një prindi të të japë leje</translation>
@@ -710,7 +709,6 @@
 <translation id="1875387611427697908">Kjo mund të shtohet vetëm nga <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Marrja e kodit të shenjës së vërtetimit dështoi. Dil dhe më pas identifikohu përsëri për të provuar përsëri.</translation>
 <translation id="1877860345998737529">Caktimi i veprimit të ndërrimit</translation>
-<translation id="1878541307036593717">Konfiguro lejet</translation>
 <translation id="1879000426787380528">Identifikohu si</translation>
 <translation id="1880905663253319515">Të fshihet certifikata "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1884013283844450420">Rrjeti <ph name="NETWORK_INDEX" /> nga <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, lidhu</translation>
@@ -1258,7 +1256,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2584109212074498965">Nuk mund të merrej bileta e Kerberos. Provo përsëri ose kontakto me administratorin e pajisjes së organizatës. (Kodi i gabimit <ph name="ERROR_CODE" />).</translation>
 <translation id="2585013490795742997">Po shfaq 1 rezultat kërkimi për <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">Kjo skedë po ndan ekranin tënd.</translation>
-<translation id="2586561813241011046"><ph name="APP_NAME" /> nuk mund të instalohej. Provo përsëri ose kontakto me administratorin. Kodi i gabimit <ph name="ERROR_CODE" />.</translation>
+<translation id="2586561813241011046"><ph name="APP_NAME" /> nuk mund të instalohej. Provo përsëri ose kontakto me administratorin. Kodi i gabimit: <ph name="ERROR_CODE" />.</translation>
 <translation id="2586657967955657006">Kujtesa e fragmenteve</translation>
 <translation id="2586672484245266891">Fut një URL më të shkurtër</translation>
 <translation id="2587922766792651800">Skadoi</translation>
@@ -1923,7 +1921,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3454157711543303649">Aktivizimi përfundoi</translation>
 <translation id="3454213325559396544">Ky është përditësimi i fundit automatik i softuerit dhe i sigurisë për këtë pajisje <ph name="DEVICE_TYPE" />. Për të marrë përditësime të ardhshme, përmirësoje në një model më të ri.</translation>
 <translation id="345693547134384690">Hape &amp;imazhin në një skedë të re</translation>
-<translation id="3458451003193188688">Pajisja virtuale nuk mund të instalohej për shkak të një gabimi në rrjet. Provo përsëri ose kontakto me administratorin. Kodi i gabimit <ph name="ERROR_CODE" />.</translation>
+<translation id="3458451003193188688">Pajisja virtuale nuk mund të instalohej për shkak të një gabimi në rrjet. Provo përsëri ose kontakto me administratorin. Kodi i gabimit: <ph name="ERROR_CODE" />.</translation>
 <translation id="3458794975359644386">Anulimi i ndarjes dështoi</translation>
 <translation id="3459509316159669723">Po printon</translation>
 <translation id="3459697287128633276">Për të bërë të mundur që llogaria jote të qaset te "Dyqani i Google Play", kryej vërtetimin me "Ofruesin tënd të identitetit".</translation>
@@ -3090,7 +3088,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4994474651455208930">Lejo faqet të pyesin dhe të bëhen përpunues të parazgjedhur për protokollet</translation>
 <translation id="4994754230098574403">Po konfiguron</translation>
 <translation id="4997086284911172121">Nuk ka lidhje me internetin.</translation>
-<translation id="4997384734315285248">Çinstalo Plugin VM</translation>
 <translation id="4998430619171209993">Aktiv</translation>
 <translation id="5000922062037820727">Bllokuar (rekomandohet)</translation>
 <translation id="5005498671520578047">Kopjo fjalëkalimin</translation>
@@ -3693,6 +3690,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5785583009707899920">Programet ndihmëse të skedarëve të Chrome</translation>
 <translation id="5787146423283493983">Marrëveshja kryesore</translation>
 <translation id="5788367137662787332">Na vjen keq, të paktën një pjesë në pajisjen <ph name="DEVICE_LABEL" /> nuk mund të montohej.</translation>
+<translation id="5790085346892983794">Me sukses</translation>
 <translation id="5792728279623964091">Trokit te butoni i energjisë</translation>
 <translation id="5793339252089865437">Nëse e shkarkon përditësimin nëpërmjet rrjetit celular, kjo mund të shkaktojë tarifa të tepërta.</translation>
 <translation id="5794414402486823030">Gjithmonë hape me shikuesin e sistemit</translation>
@@ -3776,7 +3774,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5900358982890952556">Përmirëso Linux (Beta)</translation>
 <translation id="5901494423252125310">Dera e printerit është e hapur</translation>
 <translation id="5901630391730855834">E verdhë</translation>
-<translation id="5904614460720589786"><ph name="APP_NAME" /> nuk mund të konfigurohej për shkak të një problemi në konfigurim. Kontakto me administratorin tënd. Kodi i gabimit <ph name="ERROR_CODE" />.</translation>
+<translation id="5904614460720589786"><ph name="APP_NAME" /> nuk mund të konfigurohej për shkak të një problemi në konfigurim. Kontakto me administratorin tënd. Kodi i gabimit: <ph name="ERROR_CODE" />.</translation>
 <translation id="5906655207909574370">Pothuajse i përditësuar! Rinise pajisjen për të përfunduar përditësimin.</translation>
 <translation id="5906732635754427568">Të dhënat e lidhura me këtë aplikacion do të hiqen nga kjo pajisje.</translation>
 <translation id="5908695239556627796">Shpejtësia e lëvizjes së miut</translation>
@@ -3908,7 +3906,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6069671174561668781">Cakto imazhin e sfondit</translation>
 <translation id="6071181508177083058">konfirmo fjalëkalimin</translation>
 <translation id="6071576563962215370">Sistemi nuk arriti të vendoste kyçjen e atributeve për kohën e instalimit të pajisjes.</translation>
-<translation id="6072442788591997866"><ph name="APP_NAME" /> nuk lejohet në këtë pajisje. Kontakto me administratorin tënd. Kodi i gabimit <ph name="ERROR_CODE" />.</translation>
+<translation id="6072442788591997866"><ph name="APP_NAME" /> nuk lejohet në këtë pajisje. Kontakto me administratorin tënd. Kodi i gabimit: <ph name="ERROR_CODE" />.</translation>
 <translation id="6073451960410192870">Ndalo regjistrimin</translation>
 <translation id="6073903501322152803">Shto veçori të qasshmërisë</translation>
 <translation id="6075731018162044558">Mos! Sistemi nuk arriti të mbante një kod afatgjatë të qasjes së API-së për këtë pajisje.</translation>
@@ -4764,7 +4762,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7191159667348037">Printer i panjohur (USB)</translation>
 <translation id="7193051357671784796">Ky aplikacion është shtuar nga organizata jote. Rinis aplikacionin për të përfunduar instalimin e tij.</translation>
 <translation id="7193374945610105795">Nuk ka asnjë fjalëkalim të ruajtur për <ph name="ORIGIN" /></translation>
-<translation id="7194620721202917359">{NUM_APPS,plural, =1{Ky aplikacion mund të jetë i rrezikshëm}other{Këto aplikacione mund të jenë të rrezikshme}}</translation>
 <translation id="7196913789568937443">Rezervo në "Diskun e Google". Restauro me lehtësi të dhënat e tua ose ndërro pajisjen në çdo kohë. Rezervimi yt përfshin të dhënat e aplikacioneve. Rezervimet ngarkohen në Google dhe enkriptohen duke përdorur fjalëkalimin e "Llogarisë sate të Google". <ph name="BEGIN_LINK1" />Mëso më shumë<ph name="END_LINK1" /></translation>
 <translation id="7197190419934240522">Merr funksionet inteligjente të Google dhe "Kërko me Google" sa herë që shfleton</translation>
 <translation id="7197632491113152433">Gjetëm <ph name="NUMBER_OF_APPS" /> aplikacione nga llogaria jote që mund të përdoren në këtë pajisje.</translation>
@@ -4823,7 +4820,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7258225044283673131">Aplikacioni nuk përgjigjet. Zgjidh "Ndalo me forcë" për ta mbyllur aplikacionin.</translation>
 <translation id="7258697411818564379">Kodi yt PIN është shtuar</translation>
 <translation id="7262004276116528033">Ky shërbim identifikimi strehohet nga <ph name="SAML_DOMAIN" /></translation>
-<translation id="7267044199012331848">Pajisja virtuale nuk mund të instalohej. Provo përsëri ose kontakto me administratorin. Kodi i gabimit <ph name="ERROR_CODE" />.</translation>
+<translation id="7267044199012331848">Pajisja virtuale nuk mund të instalohej. Provo përsëri ose kontakto me administratorin. Kodi i gabimit: <ph name="ERROR_CODE" />.</translation>
 <translation id="7268127947535186412">Ky cilësim menaxhohet nga zotëruesi i pajisjes.</translation>
 <translation id="7270858098575133036">Pyet kur një faqe kërkon të përdorë mesazhe ekskluzive të sistemit për t'u qasur në pajisjet MIDI</translation>
 <translation id="7272674038937250585">Nuk është dhënë asnjë përshkrim</translation>
@@ -5007,7 +5004,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7506541170099744506">Pajisja jote <ph name="DEVICE_TYPE" /> është regjistruar me sukses për menaxhimin e ndërmarrjes.</translation>
 <translation id="7507207699631365376">Shiko <ph name="BEGIN_LINK" />politikën e privatësisë<ph name="END_LINK" /> së këtij ofruesi</translation>
 <translation id="7507930499305566459">Certifikata e reaguesit të statusit</translation>
-<translation id="7508054832109420082">Jep qasje te printerët</translation>
 <translation id="7513029293694390567">Identifikohu automatikisht në sajtet e uebit duke përdorur kredencialet e ruajtura. Nëse është çaktivizuar, do të të kërkohet gjithmonë konfirmimi përpara se të identifikohesh në një sajt uebi.</translation>
 <translation id="7514239104543605883">Kopjo te pajisja jote</translation>
 <translation id="7514365320538308">Shkarko</translation>
@@ -5166,7 +5162,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7716781361494605745">URL-ja e politikës së autoritetit të certifikimit të Netscape</translation>
 <translation id="7717014941119698257">Po shkarkon: <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">Kontrollo për përditësime</translation>
-<translation id="7719070594859855691">Jep qasje te kamera</translation>
 <translation id="7719367874908701697">Zmadhimi i faqes</translation>
 <translation id="7721179060400456005">Lejo që dritaret t'i zgjerojnë ekranet</translation>
 <translation id="7722040605881499779">Nevojitet për përditësimin: <ph name="NECESSARY_SPACE" /></translation>

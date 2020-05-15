@@ -130,8 +130,6 @@ source_set("common") {
     "input/input_event_mojom_traits.h",
     "input/input_event_stream_validator.cc",
     "input/input_event_stream_validator.h",
-    "input/sync_compositor_messages.cc",
-    "input/sync_compositor_messages.h",
     "input/synthetic_gesture_params.cc",
     "input/synthetic_gesture_params.h",
     "input/synthetic_pinch_gesture_params.cc",
@@ -544,28 +542,6 @@ mojom("mojo_bindings") {
       ]
       traits_headers = [ "//content/common/frame_messages_forward.h" ]
       traits_private_headers = [ "//content/common/frame_messages.h" ]
-    },
-    {
-      types = [
-        {
-          mojom = "content.mojom.SyncCompositorDemandDrawHwParams"
-          cpp = "::content::SyncCompositorDemandDrawHwParams"
-        },
-        {
-          mojom = "content.mojom.SyncCompositorSetSharedMemoryParams"
-          cpp = "::content::SyncCompositorSetSharedMemoryParams"
-        },
-        {
-          mojom = "content.mojom.SyncCompositorDemandDrawSwParams"
-          cpp = "::content::SyncCompositorDemandDrawSwParams"
-        },
-        {
-          mojom = "content.mojom.SyncCompositorCommonRendererParams"
-          cpp = "::content::SyncCompositorCommonRendererParams"
-        },
-      ]
-      traits_headers = [ "//content/common/input/sync_compositor_messages.h" ]
-      traits_public_deps = [ "//ui/gfx/ipc" ]
     },
     {
       types = [

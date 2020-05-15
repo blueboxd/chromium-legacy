@@ -48,12 +48,23 @@ class CommitProcessor {
                                                     bool cookie_jar_empty);
 
  private:
+  // Gathers commit contributions for an individual datatype and populates
+  // |*contributions|. Returns the number of entries added.
+  size_t GatherCommitContributionsForType(
+      ModelType type,
+      size_t max_entries,
+      bool cookie_jar_mismatch,
+      bool cookie_jar_empty,
+      Commit::ContributionMap* contributions);
+
+  // Gathers commit contributions for |types| and populates |*contributions|.
   // Returns the number of entries added.
-  int GatherCommitContributionsForType(ModelType type,
-                                       size_t max_entries,
-                                       bool cookie_jar_mismatch,
-                                       bool cookie_jar_empty,
-                                       Commit::ContributionMap* contributions);
+  size_t GatherCommitContributionsForTypes(
+      ModelTypeSet types,
+      size_t max_entries,
+      bool cookie_jar_mismatch,
+      bool cookie_jar_empty,
+      Commit::ContributionMap* contributions);
 
   const ModelTypeSet commit_types_;
 

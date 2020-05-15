@@ -387,7 +387,6 @@
 <translation id="4250229828105606438">Στιγμιότυπο οθόνης</translation>
 <translation id="4256782883801055595">Άδειες λογισμικού ανοικτού κώδικα</translation>
 <translation id="4269820728363426813">Αντιγρ. διεύθυνσης συνδέσμου</translation>
-<translation id="4278390842282768270">Επιτρέπεται</translation>
 <translation id="429312253194641664">Ένας ιστότοπος κάνει αναπαραγωγή μέσων</translation>
 <translation id="4298388696830689168">Συνδεδεμένοι ιστότοποι</translation>
 <translation id="4307992518367153382">Βασικά στοιχεία</translation>
@@ -435,7 +434,6 @@
 <translation id="4663756553811254707">Διαγράφηκαν <ph name="NUMBER_OF_BOOKMARKS" /> σελιδοδείκτες</translation>
 <translation id="4665282149850138822">Ο ιστότοπος <ph name="NAME" /> προστέθηκε στην αρχική οθόνη σας</translation>
 <translation id="4684427112815847243">Συγχρονισμός όλων</translation>
-<translation id="4688610874307684559">Εκτέλεση σε Chrome (αρχική)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 και <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ακόμη}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 και <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ακόμη}}</translation>
 <translation id="4696983787092045100">Αποστολή μηνύματος κειμένου στις συσκευές σας</translation>
 <translation id="4698034686595694889">Προβολή εκτός σύνδεσης στο <ph name="APP_NAME" /></translation>
@@ -560,10 +558,8 @@
 <translation id="5659593005791499971">Διεύθυνση ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="5665379678064389456">Δημιουργία συμβάντος στην εφαρμογή <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Παράκαμψη του αιτήματος ενός ιστότοπου για παρεμπόδιση εστίασης</translation>
-<translation id="5677928146339483299">Αποκλεισμένο</translation>
 <translation id="5684874026226664614">Ωχ. Δεν ήταν δυνατή η μετάφραση αυτής της σελίδας.</translation>
 <translation id="5686790454216892815">Το όνομα του αρχείου είναι πολύ μεγάλο</translation>
-<translation id="5690795753582697420">Η κάμερα απενεργοποιήθηκε στις ρυθμίσεις Android.</translation>
 <translation id="5694049548840660018">Επιστρέψτε εύκολα στην αρχική σελίδα</translation>
 <translation id="569536719314091526">Μεταφράστε αυτήν τη σελίδα σε οποιαδήποτε γλώσσα από το κουμπί "Περισσότερες επιλογές"</translation>
 <translation id="572328651809341494">Πρόσφατες καρτέλες</translation>
@@ -619,7 +615,6 @@
 <translation id="614940544461990577">Δοκιμάστε να κάνετε τα εξής:</translation>
 <translation id="6154478581116148741">Ενεργοποιήστε το κλείδωμα οθόνης στις Ρυθμίσεις, για να εξαγάγετε τους κωδικούς πρόσβασής σας από αυτήν τη συσκευή</translation>
 <translation id="6159335304067198720">Εξοικονόμηση δεδομένων κατά <ph name="PERCENT" /></translation>
-<translation id="6177111841848151710">Αποκλείστηκε για την τρέχουσα μηχανή αναζήτησης</translation>
 <translation id="6192333916571137726">Αρχείο Λήψη</translation>
 <translation id="6201345951596836663">Ο σύνδεσμος αντιγράφηκε</translation>
 <translation id="6210748933810148297">Δεν είστε ο χρήστης <ph name="EMAIL" />;</translation>
@@ -706,7 +701,6 @@
 <translation id="6846298663435243399">Φόρτωση…</translation>
 <translation id="6850409657436465440">Η λήψη σας βρίσκεται ακόμα σε εξέλιξη</translation>
 <translation id="6850830437481525139">Έκλεισαν <ph name="TAB_COUNT" /> καρτέλες</translation>
-<translation id="6864395892908308021">Αυτή η συσκευή δεν μπορεί να διαβάσει NFC</translation>
 <translation id="6864459304226931083">Λήψη εικόνας</translation>
 <translation id="6865313869410766144">Δεδομένα φόρμας αυτόματης συμπλήρωσης</translation>
 <translation id="6884306546558072722">Συνεχίστε την αναζήτηση εκτός σύνδεσης</translation>
@@ -721,9 +715,7 @@
 <translation id="6989267951144302301">Δεν ήταν δυνατή η λήψη</translation>
 <translation id="6990079615885386641">Λήψη της εφαρμογής από το Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Σας προειδοποιεί σε περίπτωση που οι κωδικοί πρόσβασής σας αποκαλυφθούν στο πλαίσιο μιας παραβίασης δεδομένων.</translation>
-<translation id="7000754031042624318">Έχει απενεργοποιηθεί στις Ρυθμίσεις Android</translation>
 <translation id="7015203776128479407">Η αρχική ρύθμιση του συγχρονισμού δεν τελείωσε. Ο συγχρονισμός είναι απενεργοποιημένος.</translation>
-<translation id="7016516562562142042">Επιτράπηκε για την τρέχουσα μηχανή αναζήτησης</translation>
 <translation id="7022756207310403729">Άνοιγμα σε πρόγρ. περιήγησης</translation>
 <translation id="702463548815491781">Συνιστάται όταν έχει ενεργοποιηθεί το TalkBack ή η πρόσβαση με διακόπτη</translation>
 <translation id="7029809446516969842">Κωδ. πρόσβασης</translation>
@@ -756,10 +748,10 @@
 <translation id="7328017930301109123">Στη λειτουργία Lite, το Chrome φορτώνει σελίδες πιο γρήγορα και χρησιμοποιεί έως και 60 τοις εκατό λιγότερα δεδομένα.</translation>
 <translation id="7333031090786104871">Η προσθήκη του προηγούμενου ιστοτόπου δεν έχει ολοκληρωθεί</translation>
 <translation id="7340958967809483333">Επιλογές για Discover</translation>
+<translation id="7352651011704765696">Παρουσιάστηκε κάποιο πρόβλημα</translation>
 <translation id="7352939065658542140">ΒΙΝΤΕΟ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Κοινοποίηση 1 επιλεγμένου στοιχείου}other{Κοινοποίηση # επιλεγμένων στοιχείων}}</translation>
 <translation id="7359002509206457351">Πρόσβαση σε τρόπους πληρωμής</translation>
-<translation id="7362144854749094396">Το ιστορικό κοινοποιείται στο Chrome. Οι προτιμήσεις κοινοποιούνται στον ιστότοπο <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Τύπος:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -841,7 +833,6 @@
 <translation id="7986741934819883144">Επιλογή επαφής</translation>
 <translation id="7998918019931843664">Εκ νέου άνοιγμα κλειστής καρτέλας</translation>
 <translation id="8004582292198964060">Πρόγραμμα περιήγησης</translation>
-<translation id="8007176423574883786">Έχει απενεργοποιηθεί για αυτήν τη συσκευή</translation>
 <translation id="8013372441983637696">Επίσης, να διαγραφούν τα δεδομένα Chrome από αυτήν τη συσκευή.</translation>
 <translation id="8015452622527143194">Επαναφορά στοιχείων σελίδας σε κανονικό μέγεθος</translation>
 <translation id="8026334261755873520">Διαγραφή δεδομένων περιήγησης</translation>
@@ -931,6 +922,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{Επίπεδο ισχύος σήματος: # γραμμή}other{Επίπεδο ισχύος σήματος: # γραμμές}}</translation>
 <translation id="868929229000858085">Αναζήτηση στις επαφές σας</translation>
 <translation id="869891660844655955">Ημερομηνία λήξης</translation>
+<translation id="8712637175834984815">Κατάλαβα!</translation>
 <translation id="8748850008226585750">Κρυφό περιεχόμενο</translation>
 <translation id="8751914237388039244">Επιλογή εικόνας</translation>
 <translation id="8758557275681689734">Δείτε όλες τις ανοιχτές καρτέλες</translation>

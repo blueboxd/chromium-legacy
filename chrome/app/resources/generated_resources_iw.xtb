@@ -211,7 +211,7 @@
 <translation id="1260451001046713751">אפשר תמיד חלונות קופצים והפניות אוטומטיות מ-<ph name="HOST" /></translation>
 <translation id="126156426083987769">התרחשה בעיה שקשורה להרשאות המכשירים של מצב ההדגמה.</translation>
 <translation id="1263490604593716556">החשבון מנוהל על ידי <ph name="FIRST_PARENT_EMAIL" /> ועל ידי <ph name="SECOND_PARENT_EMAIL" />. כדי לצאת מהחשבון הראשי במכשיר הזה, יש ללחוץ על השעה במסך. בתפריט שיופיע יש ללחוץ על "יציאה".</translation>
-<translation id="126387934568812801">הכלל את צילום המסך הזה וכותרות של כרטיסיות פתוחות</translation>
+<translation id="126387934568812801">יש לכלול את צילום המסך הזה ושמות של כרטיסיות פתוחות</translation>
 <translation id="126710816202626562">שפת תרגום:</translation>
 <translation id="126768002343224824">16x</translation>
 <translation id="1272079795634619415">הפסק</translation>
@@ -520,7 +520,6 @@
 <translation id="1650371550981945235">הצג אפשרויות קלט</translation>
 <translation id="1651008383952180276">עליך להזין אותו ביטוי סיסמה פעמיים</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{‏הוסף את המדפסת אל Google Cloud Print כך שתוכל להדפיס מכל מקום.}two{‏הוסף # מדפסות אל Google Cloud Print כך שתוכל להדפיס מכל מקום.}many{‏הוסף # מדפסות אל Google Cloud Print כך שתוכל להדפיס מכל מקום.}other{‏הוסף # מדפסות אל Google Cloud Print כך שתוכל להדפיס מכל מקום.}}</translation>
-<translation id="1655937588105566159">{NUM_EXTENSIONS,plural, =1{התוסף הזה עשוי להיות מסוכן}two{התוספים האלה עשויים להיות מסוכנים}many{התוספים האלה עשויים להיות מסוכנים}other{התוספים האלה עשויים להיות מסוכנים}}</translation>
 <translation id="1656528038316521561">שקיפות רקע</translation>
 <translation id="1657406563541664238">‏עזור להפוך את <ph name="PRODUCT_NAME" /> לטוב יותר, על ידי שליחה אוטומטית של נתוני שימוש ודוחות קריסה אל Google</translation>
 <translation id="1657937299377480641">כדי להיכנס מחדש לצורך גישה למקורות מידע חינוכיים, יש לבקש הרשאה מהורה</translation>
@@ -710,7 +709,6 @@
 <translation id="1875387611427697908">ניתן להוסיף את הפריט הזה רק מ-<ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">לא ניתן לקבל אסימון אימות. עליך לצאת ולאחר מכן להיכנס מחדש ולנסות שוב.</translation>
 <translation id="1877860345998737529">הקצאת מתגים לפעולות</translation>
-<translation id="1878541307036593717">הרשאות הגדרה</translation>
 <translation id="1879000426787380528">כניסה בתור</translation>
 <translation id="1880905663253319515">למחוק את האישור "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1884013283844450420">רשת <ph name="NETWORK_INDEX" /> מתוך <ph name="NETWORK_COUNT" />,‏ <ph name="NETWORK_NAME" />, התחברות</translation>
@@ -2519,7 +2517,7 @@
 <translation id="4181841719683918333">שפות</translation>
 <translation id="4184885522552335684">גרור כדי להזיז צג</translation>
 <translation id="4187424053537113647">ההגדרה של <ph name="APP_NAME" /> מתבצעת…</translation>
-<translation id="4190828427319282529">הדגשת מוקד המקלדת</translation>
+<translation id="4190828427319282529">הדגשת מיקוד המקלדת</translation>
 <translation id="4194570336751258953">הפעלת האפשרות 'נגיעה קלה'</translation>
 <translation id="4195643157523330669">פתיחה בכרטיסייה חדשה</translation>
 <translation id="4195814663415092787">המשך מהמקום שבו הפסקת</translation>
@@ -2630,6 +2628,7 @@
 <translation id="4359408040881008151">הותקן מפני שיש תוספים התלויים בו.</translation>
 <translation id="4359717112757026264">נוף עירוני</translation>
 <translation id="4361142739114356624">המפתח הפרטי לאישור לקוח זה חסר או אינו חוקי</translation>
+<translation id="4361745360460842907">פתח ככרטיסייה</translation>
 <translation id="4363771538994847871">לא נמצא יעד להעברה. רוצה עזרה?</translation>
 <translation id="4364327530094270451">מלון</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> משתף חלון.</translation>
@@ -3091,7 +3090,6 @@
 <translation id="4994474651455208930">אפשר לאתרים לבקש להפוך למטפלי ברירת המחדל עבור פרוטוקולים</translation>
 <translation id="4994754230098574403">בתהליך הגדרה</translation>
 <translation id="4997086284911172121">אין חיבור לאינטרנט.</translation>
-<translation id="4997384734315285248">‏הסרת Plugin VM</translation>
 <translation id="4998430619171209993">מופעל</translation>
 <translation id="5000922062037820727">חסומה (מומלץ)</translation>
 <translation id="5005498671520578047">העתק סיסמה</translation>
@@ -3694,6 +3692,7 @@
 <translation id="5785583009707899920">‏תוכניות שירות של Chrome לקבצים</translation>
 <translation id="5787146423283493983">הסכם מפתח</translation>
 <translation id="5788367137662787332">מצטערים, לא ניתן להעלות לפחות מחיצה אחת במכשיר <ph name="DEVICE_LABEL" />.</translation>
+<translation id="5790085346892983794">הצלחה</translation>
 <translation id="5792728279623964091">יש להקיש על לחצן ההפעלה</translation>
 <translation id="5793339252089865437">אם הורדת העדכון מתבצעת ברשת סלולרית, ייתכן שהיא תהיה כרוכה בתשלום על חריגה.</translation>
 <translation id="5794414402486823030">פתח תמיד באמצעות מציג המערכת</translation>
@@ -3738,7 +3737,7 @@
 <translation id="5852112051279473187">אופס! משהו השתבש בעת הרשמת התקן זה. נסה שוב או פנה לנציג תמיכה.</translation>
 <translation id="5852137567692933493">‏הפעל מחדש ובצע פעולת Powerwash</translation>
 <translation id="5854912040170951372">משולש</translation>
-<translation id="5855267860608268405">‏רשתות Wi-Fi ידועות</translation>
+<translation id="5855267860608268405">‏רשתות Wi-Fi מוכרות</translation>
 <translation id="5855643921295613558">0.6 שניות</translation>
 <translation id="5856721540245522153">הפעל תכונות לניפוי באגים</translation>
 <translation id="5857090052475505287">תיקייה חדשה</translation>
@@ -4626,6 +4625,7 @@
 <translation id="7004402701596653846">‏האתר יכול להשתמש ב-MIDI</translation>
 <translation id="7004499039102548441">כרטיסיות אחרונות</translation>
 <translation id="7005496624875927304">הרשאות נוספות</translation>
+<translation id="7005812687360380971">כשלון</translation>
 <translation id="7005848115657603926">טווח דפים לא חוקי, השתמש ב-<ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">שוליים תחתונים</translation>
 <translation id="7007648447224463482">פתח הכול בחלון חדש</translation>
@@ -4765,7 +4765,6 @@
 <translation id="7191159667348037">‏מדפסת לא ידועה (USB)</translation>
 <translation id="7193051357671784796">אפליקציה זו נוספה על-ידי הארגון שלך. עליך להפעיל מחדש את האפליקציה כדי לסיים את ההתקנה שלה.</translation>
 <translation id="7193374945610105795">לא נשמרו סיסמאות בשביל <ph name="ORIGIN" /></translation>
-<translation id="7194620721202917359">{NUM_APPS,plural, =1{האפליקציה הזו עשויה להיות מסוכנת}two{האפליקציות האלה עשויות להיות מסוכנות}many{האפליקציות האלה עשויות להיות מסוכנות}other{האפליקציות האלה עשויות להיות מסוכנות}}</translation>
 <translation id="7196913789568937443">‏גיבוי ב-Google Drive. אפשר לשחזר נתונים או להחליף מכשיר בקלות מתי שרוצים. הגיבוי כולל נתוני אפליקציות. הגיבויים נשמרים ב-Google ומוצפנים באמצעות הסיסמה לחשבון Google שלך. <ph name="BEGIN_LINK1" />מידע נוסף<ph name="END_LINK1" /></translation>
 <translation id="7197190419934240522">‏חיפוש Google וכל היכולות של Google עומדים לרשותך בכל גלישה</translation>
 <translation id="7197632491113152433">מצאנו <ph name="NUMBER_OF_APPS" /> אפליקציות מהחשבון שלך שבהן אפשר להשתמש במכשיר הזה.</translation>
@@ -5008,7 +5007,6 @@
 <translation id="7506541170099744506">הרישום של המכשיר שלך <ph name="DEVICE_TYPE" /> לניהול ארגוני הסתיים בהצלחה.</translation>
 <translation id="7507207699631365376">הצגת <ph name="BEGIN_LINK" />מדיניות הפרטיות<ph name="END_LINK" /> של הספק הזה</translation>
 <translation id="7507930499305566459">אישור מגיב סטטוס</translation>
-<translation id="7508054832109420082">הענקת גישה למדפסות</translation>
 <translation id="7513029293694390567">היכנס באופן אוטומטי לאתרים באמצעות פרטי כניסה שמורים. כשהאפשרות הזו מושבתת, תתבקש לאשר לפני כל כניסה לאתר.</translation>
 <translation id="7514239104543605883">העתקה למכשיר שלך</translation>
 <translation id="7514365320538308">הורדה</translation>
@@ -5167,7 +5165,6 @@
 <translation id="7716781361494605745">‏כתובת אתר של מדיניות רשות אישורים של Netscape</translation>
 <translation id="7717014941119698257">מוריד: <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">חפש עדכונים</translation>
-<translation id="7719070594859855691">הענקת גישה למצלמה</translation>
 <translation id="7719367874908701697">מרחק מתצוגה בדף</translation>
 <translation id="7721179060400456005">חלונות יכולים לסובב את התצוגות</translation>
 <translation id="7722040605881499779">השטח שנדרש כדי לעדכן: <ph name="NECESSARY_SPACE" /></translation>

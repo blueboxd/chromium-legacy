@@ -17,7 +17,6 @@ namespace blink {
 
 class NGBlockBreakToken;
 class NGConstraintSpace;
-class NGDirtyLines;
 class NGInlineChildLayoutContext;
 class NGInlineNodeLegacy;
 class NGLayoutResult;
@@ -46,10 +45,6 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
       const NGConstraintSpace&,
       const NGBreakToken*,
       NGInlineChildLayoutContext* context);
-
-  // Find the container of reusable line boxes. Returns nullptr if there are no
-  // reusable line boxes.
-  const NGPaintFragment* ReusableLineBoxContainer(const NGConstraintSpace&);
 
   // Computes the value of min-content and max-content for this anonymous block
   // box. min-content is the inline size when lines wrap at every break
@@ -145,12 +140,10 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // Prepare inline and text content for layout. Must be called before
   // calling the Layout method.
   void PrepareLayoutIfNeeded();
-  void PrepareLayout(std::unique_ptr<NGInlineNodeData> previous_data,
-                     NGDirtyLines* dirty_lines);
+  void PrepareLayout(std::unique_ptr<NGInlineNodeData> previous_data);
 
   void CollectInlines(NGInlineNodeData*,
-                      NGInlineNodeData* previous_data = nullptr,
-                      NGDirtyLines* dirty_lines = nullptr);
+                      NGInlineNodeData* previous_data = nullptr);
   void SegmentText(NGInlineNodeData*);
   void SegmentScriptRuns(NGInlineNodeData*);
   void SegmentFontOrientation(NGInlineNodeData*);
@@ -160,8 +153,6 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
                  const Vector<NGInlineItem>* previous_items = nullptr);
   void ShapeTextForFirstLineIfNeeded(NGInlineNodeData*);
   void AssociateItemsWithInlines(NGInlineNodeData*);
-
-  bool MarkLineBoxesDirty(LayoutBlockFlow*, const NGPaintFragment*);
 
   NGInlineNodeData* MutableData() {
     return To<LayoutBlockFlow>(box_)->GetNGInlineNodeData();

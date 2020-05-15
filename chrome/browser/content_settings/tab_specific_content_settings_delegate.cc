@@ -79,6 +79,12 @@ TabSpecificContentSettingsDelegate::GetAdditionalFileSystemTypes() {
   return browsing_data_file_system_util::GetAdditionalFileSystemTypes();
 }
 
+browsing_data::CookieHelper::IsDeletionDisabledCallback
+TabSpecificContentSettingsDelegate::GetIsDeletionDisabledCallback() {
+  return CookiesTreeModel::GetCookieDeletionDisabledCallback(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+}
+
 bool TabSpecificContentSettingsDelegate::IsMicrophoneCameraStateChanged(
     TabSpecificContentSettings::MicrophoneCameraState microphone_camera_state,
     const std::string& media_stream_selected_audio_device,

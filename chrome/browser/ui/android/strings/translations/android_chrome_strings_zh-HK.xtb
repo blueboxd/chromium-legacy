@@ -325,6 +325,7 @@
 <translation id="3738139272394829648">輕觸搜尋</translation>
 <translation id="3739899004075612870">已在 <ph name="PRODUCT_NAME" /> 中新增書籤</translation>
 <translation id="3749259744154402564">不支援</translation>
+<translation id="3763247130972274048">輕按影片的左或右面兩下即可略過 10 秒</translation>
 <translation id="3771001275138982843">無法下載更新</translation>
 <translation id="3771033907050503522">無痕式分頁</translation>
 <translation id="3771694256347217732">Google 服務條款</translation>
@@ -386,7 +387,6 @@
 <translation id="4250229828105606438">螢幕擷圖</translation>
 <translation id="4256782883801055595">開放原始碼授權</translation>
 <translation id="4269820728363426813">複製連結網址</translation>
-<translation id="4278390842282768270">已允許</translation>
 <translation id="429312253194641664">網站正在播放媒體</translation>
 <translation id="4298388696830689168">已連結的網站</translation>
 <translation id="4307992518367153382">基本</translation>
@@ -434,7 +434,6 @@
 <translation id="4663756553811254707">已刪除 <ph name="NUMBER_OF_BOOKMARKS" /> 個書籤</translation>
 <translation id="4665282149850138822">已將 <ph name="NAME" /> 新增到主畫面</translation>
 <translation id="4684427112815847243">同步處理所有資料</translation>
-<translation id="4688610874307684559">正在 Chrome 中執行 (初始)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 種運送方式}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 種運送方式}}</translation>
 <translation id="4696983787092045100">將文字傳送至您的裝置</translation>
 <translation id="4698034686595694889">在 <ph name="APP_NAME" /> 中離線瀏覽</translation>
@@ -559,10 +558,8 @@
 <translation id="5659593005791499971">電郵</translation>
 <translation id="5665379678064389456">在「<ph name="APP_NAME" />」中建立活動</translation>
 <translation id="5668404140385795438">覆寫網站禁止放大的要求</translation>
-<translation id="5677928146339483299">已封鎖</translation>
 <translation id="5684874026226664614">糟糕！系統無法翻譯這個網頁的內容。</translation>
 <translation id="5686790454216892815">檔案名稱過長</translation>
-<translation id="5690795753582697420">相機已在 Android 設定中關閉</translation>
 <translation id="5694049548840660018">鬆輕返回首頁</translation>
 <translation id="569536719314091526">透過「更多選項」掣，將呢個網頁翻譯成任何語言</translation>
 <translation id="572328651809341494">最近開啟的分頁</translation>
@@ -618,7 +615,6 @@
 <translation id="614940544461990577">建議做法：</translation>
 <translation id="6154478581116148741">在「設定」中開啟螢幕鎖定功能，即可從此裝置匯出您的密碼</translation>
 <translation id="6159335304067198720">節省 <ph name="PERCENT" /> 的數據用量</translation>
-<translation id="6177111841848151710">禁止目前的搜尋引擎使用</translation>
 <translation id="6192333916571137726">下載檔案</translation>
 <translation id="6201345951596836663">已複製連結</translation>
 <translation id="6210748933810148297">不是 <ph name="EMAIL" /> 嗎？</translation>
@@ -705,7 +701,6 @@
 <translation id="6846298663435243399">載入中…</translation>
 <translation id="6850409657436465440">仍在下載</translation>
 <translation id="6850830437481525139">已關閉 <ph name="TAB_COUNT" /> 個分頁</translation>
-<translation id="6864395892908308021">此裝置無法讀取 NFC</translation>
 <translation id="6864459304226931083">下載圖片</translation>
 <translation id="6865313869410766144">自動填入表格數據</translation>
 <translation id="6884306546558072722">離線時繼續探索</translation>
@@ -720,9 +715,7 @@
 <translation id="6989267951144302301">無法下載</translation>
 <translation id="6990079615885386641">從 Google Play 商店取得應用程式：<ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">密碼因資料外洩而被洩露時接收警告</translation>
-<translation id="7000754031042624318">已在「Android 設定」中關閉</translation>
 <translation id="7015203776128479407">尚未完成初始同步處理設定。已關閉同步功能。</translation>
-<translation id="7016516562562142042">允許目前的搜尋引擎使用</translation>
 <translation id="7022756207310403729">在瀏覽器中開啟</translation>
 <translation id="702463548815491781">建議在 TalkBack 或「按鈕控制」開啟時使用</translation>
 <translation id="7029809446516969842">密碼</translation>
@@ -755,10 +748,10 @@
 <translation id="7328017930301109123">「精簡模式」可加快 Chrome 載入網頁的速度，並節省高達百分之 60 的數據用量。</translation>
 <translation id="7333031090786104871">仍在新增先前的網站</translation>
 <translation id="7340958967809483333">「探索」的選項</translation>
+<translation id="7352651011704765696">發生問題</translation>
 <translation id="7352939065658542140">影片</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 個已選取的項目}other{分享 # 個已選取的項目}}</translation>
 <translation id="7359002509206457351">存取付款方法</translation>
-<translation id="7362144854749094396">記錄會與 Chrome 分享。偏好設定會與 <ph name="SITE_NAME" /> 分享。</translation>
 <translation id="7375125077091615385">類型：</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />。</translation>
 <translation id="7400418766976504921">網址</translation>
@@ -840,7 +833,6 @@
 <translation id="7986741934819883144">選取聯絡人</translation>
 <translation id="7998918019931843664">重新開啟先前關閉的分頁</translation>
 <translation id="8004582292198964060">瀏覽器</translation>
-<translation id="8007176423574883786">已為這部裝置關閉</translation>
 <translation id="8013372441983637696">一併清除您在此裝置上的 Chrome 資料</translation>
 <translation id="8015452622527143194">將網頁中的所有內容回復到預設大小</translation>
 <translation id="8026334261755873520">清除瀏覽數據</translation>
@@ -930,6 +922,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{訊號強度等級：# 格}other{訊號強度等級：# 格}}</translation>
 <translation id="868929229000858085">搜尋您的聯絡人</translation>
 <translation id="869891660844655955">到期日</translation>
+<translation id="8712637175834984815">我知道了</translation>
 <translation id="8748850008226585750">內容已隱藏</translation>
 <translation id="8751914237388039244">選取圖片</translation>
 <translation id="8758557275681689734">查看所有開啟的分頁</translation>

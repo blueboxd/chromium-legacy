@@ -10,6 +10,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.NormalizedAddres
 import org.chromium.chrome.browser.autofill.PhoneNumberUtil;
 import org.chromium.components.autofill.EditableOption;
 import org.chromium.components.payments.PayerData;
+import org.chromium.components.payments.PaymentAddressTypeConverter;
 import org.chromium.components.payments.PaymentApp;
 import org.chromium.payments.mojom.PayerDetail;
 import org.chromium.payments.mojom.PaymentOptions;

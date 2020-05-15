@@ -41,21 +41,24 @@ void RecordSAMLProvider(const std::string& x509certificate) {
 
   std::string provider;
 
-  if (!third_party_cert_list.empty() && third_party_cert_list[0] != nullptr &&
-      !third_party_cert_list[0]->subject().organization_names.empty()) {
-    provider = third_party_cert_list[0]->subject().organization_names[0];
+  if (!third_party_cert_list.empty() && third_party_cert_list[0] != nullptr) {
+    if (!third_party_cert_list[0]->subject().organization_names.empty()) {
+      provider = third_party_cert_list[0]->subject().organization_names[0];
+    } else {
+      // Some providers don't include organization name in the certifcate
+      provider = third_party_cert_list[0]->subject().common_name;
+    }
   }
 
   provider = base::ToLowerASCII(provider);
 
   ChromeOSSamlProvider samlProvider;
-
   if (provider.empty()) {
     samlProvider = ChromeOSSamlProvider::kFailure;
     LOG(WARNING) << "Failed to parse SAML provider certificate";
   } else if (provider == "adfs") {
     samlProvider = ChromeOSSamlProvider::kAdfs;
-  } else if (provider == "azure") {
+  } else if (provider == "microsoft azure federated sso certificate") {
     samlProvider = ChromeOSSamlProvider::kAzure;
   } else if (provider == "okta") {
     samlProvider = ChromeOSSamlProvider::kOkta;

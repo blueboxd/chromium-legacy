@@ -146,11 +146,9 @@ void PhishingClassifierDelegate::OnInterfaceRequestForFrame(
 void PhishingClassifierDelegate::StartPhishingDetection(
     const GURL& url,
     StartPhishingDetectionCallback callback) {
-  RecordEvent(SBPhishingClassifierEvent::kPhishingDetectionRequested);
-
   if (!callback_.is_null())
     std::move(callback_).Run(mojom::PhishingDetectorResult::CANCELLED, "");
-  is_phishing_detection_running_ = true;
+
   last_url_received_from_browser_ = StripRef(url);
   callback_ = std::move(callback);
   // Start classifying the current page if all conditions are met.
@@ -180,8 +178,6 @@ void PhishingClassifierDelegate::DidCommitProvisionalLoad(
 
 void PhishingClassifierDelegate::PageCaptured(base::string16* page_text,
                                               bool preliminary_capture) {
-  RecordEvent(SBPhishingClassifierEvent::kPageTextCaptured);
-
   if (preliminary_capture) {
     return;
   }
@@ -227,7 +223,6 @@ void PhishingClassifierDelegate::ClassificationDone(
     const ClientPhishingRequest& verdict) {
   DVLOG(2) << "Phishy verdict = " << verdict.is_phishing()
            << " score = " << verdict.client_score();
-  is_phishing_detection_running_ = false;
   if (callback_.is_null())
     return;
 
@@ -245,18 +240,17 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
   // We can begin phishing classification when the following conditions are
   // met:
   //  1. A Scorer has been created
-  //  2. The browser has sent a StartPhishingDetection message for the
-  //     current toplevel URL.
+  //  2. The browser has sent a StartPhishingDetection message for the current
+  //     toplevel URL.
   //  3. The page has finished loading and the page text has been extracted.
   //  4. The load is a new navigation (not a session history navigation).
   //  5. The toplevel URL has not already been classified.
   //
   // Note that if we determine that this particular navigation should not be
-  // classified at all (as opposed to deferring it until we get an IPC or
-  // the load completes), we discard the page text since it won't be needed.
+  // classified at all (as opposed to deferring it until we get an IPC or the
+  // load completes), we discard the page text since it won't be needed.
   if (!classifier_->is_ready()) {
     DVLOG(2) << "Not starting classification, no Scorer created.";
-    is_phishing_detection_running_ = false;
     // Keep classifier_page_text_, in case a Scorer is set later.
     if (!callback_.is_null())
       std::move(callback_).Run(
@@ -272,7 +266,6 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
     last_url_sent_to_classifier_ = last_finished_load_url_;
     classifier_page_text_.clear();  // we won't need this.
     have_page_text_ = false;
-    is_phishing_detection_running_ = false;
     if (!callback_.is_null())
       std::move(callback_).Run(
           mojom::PhishingDetectorResult::FORWARD_BACK_TRANSITION, "");
@@ -282,12 +275,10 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
   GURL stripped_last_load_url(StripRef(last_finished_load_url_));
   if (!have_page_text_) {
     DVLOG(2) << "Not starting classification, there is no page text ready.";
-    RecordEvent(SBPhishingClassifierEvent::kPageTextNotLoaded);
     return;
   }
 
   if (last_url_received_from_browser_ != stripped_last_load_url) {
-    RecordEvent(SBPhishingClassifierEvent::kUrlShouldNotBeClassified);
     // The browser has not yet confirmed that this URL should be classified,
     // so defer classification for now.  Note: the ref does not affect
     // any of the browser's preclassification checks, so we don't require it
@@ -309,14 +300,7 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
                      base::Unretained(this)));
 }
 
-void PhishingClassifierDelegate::RecordEvent(SBPhishingClassifierEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.Classifier.Event", event);
-}
-
 void PhishingClassifierDelegate::OnDestruct() {
-  if (is_phishing_detection_running_) {
-    RecordEvent(SBPhishingClassifierEvent::kDestructedBeforeClassificationDone);
-  }
   delete this;
 }
 

@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Automatska preuzimanja</translation>
 <translation id="5677928146339483299">Blokirano</translation>
 <translation id="5689516760719285838">Lokacija</translation>
+<translation id="5690795753582697420">Kamera je isključena u Android podešavanjima</translation>
 <translation id="5710871682236653961">Pre nego što dozvolite sajtovima da šalju i dobijaju informacije kada dodirnete NFC uređaje prikazuje se upit (preporučeno)</translation>
 <translation id="5719847187258001597">Ovim brišete sve podatke i kolačiće koje čuva sajt <ph name="ORIGIN" /> ili njegova aplikacija na početnom ekranu.</translation>
 <translation id="5804241973901381774">Dozvole</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Još</translation>
 <translation id="6064125863973209585">Dovršena preuzimanja</translation>
 <translation id="6165508094623778733">Saznajte više</translation>
+<translation id="6177111841848151710">Blokirano je za aktuelni pretraživač</translation>
 <translation id="6181444274883918285">Dodaj izuzetak za sajtove</translation>
 <translation id="6192792657125177640">Izuzeci</translation>
 <translation id="6194112207524046168">Da biste dozvolili da Chrome pristupa kameri, uključite kameru i u <ph name="BEGIN_LINK" />Android podešavanjima<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Ova stranica je opasna. Informacije o sajtu</translation>
 <translation id="6965382102122355670">Potvrdi</translation>
 <translation id="6992289844737586249">Pitaj pre nego što dozvoliš sajtovima da koriste mikrofon (preporučeno)</translation>
+<translation id="7000754031042624318">Isključeno je u Android podešavanjima</translation>
+<translation id="7016516562562142042">Dozvoljeno je za aktuelni pretraživač</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Izabrano: 1}one{Izabrano: #}few{Izabrano: #}other{Izabrano: #}}</translation>
 <translation id="7087918508125750058">Izabrali ste <ph name="ITEM_COUNT" />. Opcije su dostupne pri vrhu ekrana</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Dozvoli zvuk za određeni sajt.</translation>
 <translation id="7993619969781047893">Funkcije na nekim sajtovima mogu da prestanu sa radom</translation>
 <translation id="7999064672810608036">Želite li stvarno da obrišete sve lokalne podatke, uključujući kolačiće, i resetujete sve dozvole za ovaj veb-sajt?</translation>
+<translation id="8007176423574883786">Isključeno je za ovaj uređaj</translation>
 <translation id="802154636333426148">Preuzimanje nije uspelo</translation>
 <translation id="8087000398470557479">Ovaj sadržaj je sa <ph name="DOMAIN_NAME" />, prikazuje Google.</translation>
 <translation id="8116925261070264013">Zvuk je isključen</translation>

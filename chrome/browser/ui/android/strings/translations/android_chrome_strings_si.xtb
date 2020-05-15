@@ -152,6 +152,7 @@
 <translation id="218608176142494674">බෙදා ගැනීම</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> ලෙස දිගටම කර ගෙන යන්න</translation>
 <translation id="2234876718134438132">සමමුහුව සහ Google සේවා</translation>
+<translation id="2239812875700136898">Discover සඳහා විකල්ප බොත්තමෙන් ඔබේ කතා පාලන කරන්න</translation>
 <translation id="2259659629660284697">මුරපද නිර්යාත කරන්න…</translation>
 <translation id="2268044343513325586">පිරිපහදු කරන්න</translation>
 <translation id="2286841657746966508">බිල්පත් ලිපිනය</translation>
@@ -387,7 +388,6 @@
 <translation id="4250229828105606438">තිරරූපය</translation>
 <translation id="4256782883801055595">විවෘත කේත බලපත්</translation>
 <translation id="4269820728363426813">ලින්ක් ලිපිනය පිටපත් කරන්න</translation>
-<translation id="4278390842282768270">ඉඩ දුන්</translation>
 <translation id="429312253194641664">වෙබ් අඩවියක් මාධ්‍ය ධාවන කරයි</translation>
 <translation id="4298388696830689168">සබැඳි කළ වෙබ් අඩවි</translation>
 <translation id="4307992518367153382">මූලික</translation>
@@ -435,7 +435,6 @@
 <translation id="4663756553811254707">පිටුසන් <ph name="NUMBER_OF_BOOKMARKS" /> ක් මකන ලදී</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> ඔබේ මුල් තිරය වෙත එක් කරන ලදී</translation>
 <translation id="4684427112815847243">සියල්ල සම්මුහුර්ත කරන්න</translation>
-<translation id="4688610874307684559">Chrome තුළ ධාවනය (ආරම්භක)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />... සහ තවත් <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" />... සහ තවත් <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />... සහ තවත් <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">ඔබේ උපාංග වෙත පාඨය යවන්න</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" /> තුළ නොබැඳිව බලන්න</translation>
@@ -560,10 +559,8 @@
 <translation id="5659593005791499971">ඊතැපෑල</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> තුළ සිදුවීමක් සාදන්න</translation>
 <translation id="5668404140385795438">විශාලනය වැඩි කිරීම සඳහා වෙබ් අඩවියෙහි ඉල්ලීමක් අතික්‍රමණය කරන්න</translation>
-<translation id="5677928146339483299">බාධාකළ</translation>
 <translation id="5684874026226664614">අපොයි. මෙම පිටුව පැටවිය නොහැකි විය.</translation>
 <translation id="5686790454216892815">ගොනු නාමය දිග වැඩිය</translation>
-<translation id="5690795753582697420">Android සැකසීම් තුළ කැමරාව අක්‍රිය කර ඇත</translation>
 <translation id="5694049548840660018">පහසුවෙන් ආපසු නිවසට යන්න</translation>
 <translation id="569536719314091526">තවත් විකල්ප බොත්තමෙන් මෙම පිටුව ඕනෑම භාෂාවකට පරිවර්තන කරන්න</translation>
 <translation id="572328651809341494">මෑතකාලීන පටිති</translation>
@@ -619,7 +616,6 @@
 <translation id="614940544461990577">උත්සාහ කරන්න:</translation>
 <translation id="6154478581116148741">මෙම උපාංගයෙන් ඔබේ මුරපද නිර්යාත කිරීමට සැකසීම් තුළ තිර අගුල ක්‍රියාත්මක කරන්න</translation>
 <translation id="6159335304067198720">දත්ත සුරැකීම <ph name="PERCENT" /></translation>
-<translation id="6177111841848151710">වත්මන් සෙවුම් යන්ත්‍රය සඳහා අවහිරයි</translation>
 <translation id="6192333916571137726">ගොනුව බාගන්න</translation>
 <translation id="6201345951596836663">සබැඳිය පිටපත් කළා</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> නොවේද?</translation>
@@ -706,7 +702,6 @@
 <translation id="6846298663435243399">පූර්ණය වෙමින්...</translation>
 <translation id="6850409657436465440">ඔබේ බාගැනීම තවමත් සිදු වෙමින් පවතී</translation>
 <translation id="6850830437481525139">පටිති <ph name="TAB_COUNT" /> ක් වසන ලදී</translation>
-<translation id="6864395892908308021">මෙම උපාංගය NFC කියවිය නොහැක</translation>
 <translation id="6864459304226931083">රූපය බාගන්න</translation>
 <translation id="6865313869410766144">ස්වයංපිරවුම් පෝර්ම දත්ත</translation>
 <translation id="6884306546558072722">දිගටම නොබැඳිව ගවේෂණය</translation>
@@ -721,9 +716,7 @@
 <translation id="6989267951144302301">බාගත නොහැකි විය</translation>
 <translation id="6990079615885386641">Google Play ගබඩාව වෙතින් යෙදුම ලබාගන්න: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">දත්ත කඩ කිරීමකින් මුරපද අනාවරණ කෙරෙන්නේ නම් ඔබට අවවාද කරයි</translation>
-<translation id="7000754031042624318">Android සැකසීම් තුළ අක්‍රිය කළා</translation>
 <translation id="7015203776128479407">ආරම්භක සමමුහූර්ත සැකසීම අවසන් නොවිය. සමමුහූර්තය අක්‍රියයි.</translation>
-<translation id="7016516562562142042">වත්මන් සෙවුම් යන්ත්‍රය සඳහා ඉඩ දෙයි</translation>
 <translation id="7022756207310403729">බ්‍රවුසරය තුළ විවෘත කරන්න</translation>
 <translation id="702463548815491781">TalkBack හෝ ප්‍රවේශය ස්විචය ක්‍රියාත්මක විට නිර්දේශ කරනු ලැබේ</translation>
 <translation id="7029809446516969842">මුරපද</translation>
@@ -756,10 +749,10 @@
 <translation id="7328017930301109123">සැහැල්ලු ප්‍රකාරය තුළ, Chrome වේගයෙන් පිටු පූරණ කර ප්‍රතිශතය 60 ක් දක්වා අඩුවෙන් දත්ත භාවිත කරයි.</translation>
 <translation id="7333031090786104871">තවමත් කලින් අඩවියට එක් කරමින්</translation>
 <translation id="7340958967809483333">Discover සඳහා විකල්ප</translation>
+<translation id="7352651011704765696">යමක් වැරදිනි</translation>
 <translation id="7352939065658542140">වීඩියෝ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{තෝරාගත් අයිතම 1ක් බෙදාගන්න}one{තෝරාගත් අයිතම #ක් බෙදාගන්න}other{තෝරාගත් අයිතම #ක් බෙදාගන්න}}</translation>
 <translation id="7359002509206457351">ගෙවීමේ ක්‍රමවලට ප්‍රවේශය</translation>
-<translation id="7362144854749094396">Chrome සමඟ ඉතිහාසය බෙදා ගනු ලැබේ. <ph name="SITE_NAME" /> සමඟ මනාප බෙදා ගනු ලැබේ.</translation>
 <translation id="7375125077091615385">වර්ගය:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -841,7 +834,6 @@
 <translation id="7986741934819883144">සම්බන්ධතාවක් තෝරාගන්න</translation>
 <translation id="7998918019931843664">වැසූ ටැබය යළි විවෘත කරන්න</translation>
 <translation id="8004582292198964060">බ්‍රවුසරය</translation>
-<translation id="8007176423574883786">මෙම උපාංගය සඳහා ක්‍රියාවිරහිත කරන ලදී.</translation>
 <translation id="8013372441983637696">මෙම උපාංගයෙන් ඔබගේ Chrome දත්ත හිස් කරන්නද?</translation>
 <translation id="8015452622527143194">පිටුවේ සැම දෙයක්ම පෙරනිමි තරමට ආපසු ගෙන එන්න</translation>
 <translation id="8026334261755873520">පිරික්සුම් දත්ත හිස් කරන්න</translation>
@@ -931,6 +923,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{සංඥා ප්‍රබලතා මට්ටම: කණු #}one{සංඥා ප්‍රබලතා මට්ටම: කණු #}other{සංඥා ප්‍රබලතා මට්ටම: කණු #}}</translation>
 <translation id="868929229000858085">ඔබේ සම්බන්ධතා සොයන්න</translation>
 <translation id="869891660844655955">කල් ඉකුත් වීමේ දිනය:</translation>
+<translation id="8712637175834984815">එය ලැබුණා</translation>
 <translation id="8748850008226585750">අන්තර්ගත සැඟවිණි</translation>
 <translation id="8751914237388039244">රූපයක් තෝරන්න</translation>
 <translation id="8758557275681689734">ඔබේ සියලුම විවෘත පටිති බලන්න</translation>

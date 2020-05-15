@@ -126,7 +126,7 @@ void FeedStreamSurface::ReportSliceViewed(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& slice_id) {
   feed_stream_api_->ReportSliceViewed(
-      base::android::ConvertJavaStringToUTF8(env, slice_id));
+      GetSurfaceId(), base::android::ConvertJavaStringToUTF8(env, slice_id));
 }
 
 void FeedStreamSurface::ReportSendFeedbackAction(
@@ -154,11 +154,11 @@ void FeedStreamSurface::ReportNavigationStarted(
   feed_stream_api_->ReportNavigationStarted();
 }
 
-void FeedStreamSurface::ReportNavigationDone(JNIEnv* env,
-                                             const JavaParamRef<jobject>& obj,
-                                             const JavaParamRef<jstring>& url,
-                                             jboolean in_new_tab) {
-  feed_stream_api_->ReportNavigationDone();
+void FeedStreamSurface::ReportPageLoaded(JNIEnv* env,
+                                         const JavaParamRef<jobject>& obj,
+                                         const JavaParamRef<jstring>& url,
+                                         jboolean in_new_tab) {
+  feed_stream_api_->ReportPageLoaded();
 }
 
 void FeedStreamSurface::ReportRemoveAction(JNIEnv* env,

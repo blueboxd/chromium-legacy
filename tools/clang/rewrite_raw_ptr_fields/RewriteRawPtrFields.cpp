@@ -83,6 +83,10 @@ AST_MATCHER(clang::ClassTemplateSpecializationDecl, isImplicitSpecialization) {
   return !Node.isExplicitSpecialization();
 }
 
+AST_MATCHER(clang::Type, anyCharType) {
+  return Node.isAnyCharacterType();
+}
+
 class FieldDeclRewriter : public MatchFinder::MatchCallback {
  public:
   explicit FieldDeclRewriter(ReplacementsPrinter* replacements_printer)
@@ -179,15 +183,22 @@ int main(int argc, const char* argv[]) {
   // Supported pointer types =========
   // Given
   //   struct MyStrict {
-  //     int* ptr;
+  //     int* int_ptr;
   //     int i;
+  //     char* char_ptr;
   //     int (*func_ptr)();
   //     int (MyStruct::* member_func_ptr)(char);
+  //     int (*ptr_to_array_of_ints)[123]
+  //     StructOrClassWithDeletedOperatorNew* stack_or_gc_ptr;
   //   };
   // matches |int*|, but not the other types.
+  auto record_with_deleted_allocation_operator_type_matcher =
+      recordType(hasDeclaration(cxxRecordDecl(
+          hasMethod(allOf(hasOverloadedOperatorName("new"), isDeleted())))));
   auto supported_pointer_types_matcher =
-      pointerType(unless(pointee(hasUnqualifiedDesugaredType(
-          anyOf(functionType(), memberPointerType())))));
+      pointerType(unless(pointee(hasUnqualifiedDesugaredType(anyOf(
+          record_with_deleted_allocation_operator_type_matcher, functionType(),
+          memberPointerType(), anyCharType(), arrayType())))));
 
   // Implicit field declarations =========
   // Matches field declarations that do not explicitly appear in the source

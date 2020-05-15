@@ -4,6 +4,7 @@
 
 #include "components/query_tiles/internal/tile_config.h"
 
+#include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
 #include "components/query_tiles/switches.h"
 
@@ -42,6 +43,12 @@ constexpr char kOneoffTaskWindowKey[] =
 
 const char kImagePrefetchModeKey[] = "image_prefetch_mode";
 
+// Finch parameter key for Backoff policy initial delay in ms.
+constexpr char kBackoffInitDelayInMsKey[] = "backoff_policy_init_delay_in_ms";
+
+// Finch parameter key for Backoff policy maximum delay in ms.
+constexpr char kBackoffMaxDelayInMsKey[] = "backoff_policy_max_delay_in_ms";
+
 // Default expire duration.
 constexpr int kDefaultExpireDurationInSeconds = 48 * 60 * 60;  // 2 days.
 
@@ -54,7 +61,17 @@ constexpr int kDefaultRandomWindow = 4 * 3600 * 1000;  // 4 hours.
 // Default length of random window added to the interval.
 constexpr int kDefaultOneoffTaskWindow = 2 * 3600 * 1000;  // 2 hours.
 
+// Default initial delay in backoff policy.
+constexpr int kDefaultBackoffInitDelayInMs = 30 * 1000;  // 30 seconds.
+
+// Default maximum delay in backoff policy, also used for suspend duration.
+constexpr int kDefaultBackoffMaxDelayInMs = 24 * 3600 * 1000;  // 1 day.
+
 namespace {
+
+// For testing. Json string for single tier experiment tag.
+const char kQueryTilesSingleTierExperimentTag[] = "{\"maxLevels\": \"1\"}";
+
 const GURL BuildGetQueryTileURL(const GURL& base_url, const char* path) {
   GURL::Replacements replacements;
   replacements.SetPathStr(path);
@@ -78,6 +95,11 @@ bool TileConfig::GetIsUnMeteredNetworkRequired() {
 
 // static
 std::string TileConfig::GetExperimentTag() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kQueryTilesSingleTier)) {
+    return kQueryTilesSingleTierExperimentTag;
+  }
+
   return base::GetFieldTrialParamValueByFeature(features::kQueryTiles,
                                                 kExperimentTagKey);
 }
@@ -120,6 +142,20 @@ int TileConfig::GetMaxRandomWindowInMs() {
 int TileConfig::GetOneoffTaskWindowInMs() {
   return base::GetFieldTrialParamByFeatureAsInt(
       features::kQueryTiles, kOneoffTaskWindowKey, kDefaultOneoffTaskWindow);
+}
+
+// static
+int TileConfig::GetBackoffPolicyArgsInitDelayInMs() {
+  return base::GetFieldTrialParamByFeatureAsInt(features::kQueryTiles,
+                                                kBackoffInitDelayInMsKey,
+                                                kDefaultBackoffInitDelayInMs);
+}
+
+// static
+int TileConfig::GetBackoffPolicyArgsMaxDelayInMs() {
+  return base::GetFieldTrialParamByFeatureAsInt(features::kQueryTiles,
+                                                kBackoffMaxDelayInMsKey,
+                                                kDefaultBackoffMaxDelayInMs);
 }
 
 }  // namespace query_tiles

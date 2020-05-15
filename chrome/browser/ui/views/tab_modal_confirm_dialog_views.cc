@@ -32,25 +32,20 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
     std::unique_ptr<TabModalConfirmDialogDelegate> delegate,
     content::WebContents* web_contents)
     : delegate_(std::move(delegate)) {
-  DialogDelegate::SetButtons(delegate_->GetDialogButtons());
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
-                                   delegate_->GetAcceptButtonTitle());
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
-                                   delegate_->GetCancelButtonTitle());
+  SetButtons(delegate_->GetDialogButtons());
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, delegate_->GetAcceptButtonTitle());
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, delegate_->GetCancelButtonTitle());
 
-  DialogDelegate::SetAcceptCallback(
-      base::BindOnce(&TabModalConfirmDialogDelegate::Accept,
-                     base::Unretained(delegate_.get())));
-  DialogDelegate::SetCancelCallback(
-      base::BindOnce(&TabModalConfirmDialogDelegate::Cancel,
-                     base::Unretained(delegate_.get())));
-  DialogDelegate::SetCloseCallback(
-      base::BindOnce(&TabModalConfirmDialogDelegate::Close,
-                     base::Unretained(delegate_.get())));
+  SetAcceptCallback(base::BindOnce(&TabModalConfirmDialogDelegate::Accept,
+                                   base::Unretained(delegate_.get())));
+  SetCancelCallback(base::BindOnce(&TabModalConfirmDialogDelegate::Cancel,
+                                   base::Unretained(delegate_.get())));
+  SetCloseCallback(base::BindOnce(&TabModalConfirmDialogDelegate::Close,
+                                  base::Unretained(delegate_.get())));
 
   base::Optional<int> default_button = delegate_->GetDefaultDialogButton();
   if (bool(default_button))
-    DialogDelegate::SetDefaultButton(*default_button);
+    SetDefaultButton(*default_button);
 
   views::MessageBoxView::InitParams init_params(delegate_->GetDialogMessage());
   init_params.inter_row_vertical_spacing =

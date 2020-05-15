@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -49,6 +50,25 @@ const std::vector<SearchConcept>& GetPrintingSearchConcepts() {
   return *tags;
 }
 
+const std::vector<SearchConcept>& GetPrintingManagementSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_PRINT_MANAGEMENT,
+       mojom::kPrintingSectionPath,
+       mojom::SearchResultIcon::kPrinter,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kPrintJobs},
+       {IDS_OS_SETTINGS_TAG_PRINT_MANAGEMENT_ALT1,
+        IDS_OS_SETTINGS_TAG_PRINT_MANAGEMENT_ALT2, SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
+bool IsPrintManagementEnabled() {
+  return base::FeatureList::IsEnabled(
+      chromeos::features::kPrintJobManagementApp);
+}
+
 }  // namespace
 
 PrintingSection::PrintingSection(Profile* profile,
@@ -57,6 +77,8 @@ PrintingSection::PrintingSection(Profile* profile,
     : OsSettingsSection(profile, search_tag_registry),
       printers_manager_(printers_manager) {
   registry()->AddSearchTags(GetPrintingSearchConcepts());
+  if (IsPrintManagementEnabled())
+    registry()->AddSearchTags(GetPrintingManagementSearchConcepts());
 }
 
 PrintingSection::~PrintingSection() = default;
@@ -77,6 +99,10 @@ void PrintingSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"savePrinterAria", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SAVE_BUTTON_ARIA},
       {"searchLabel", IDS_SETTINGS_PRINTING_CUPS_SEARCH_LABEL},
       {"noSearchResults", IDS_SEARCH_NO_RESULTS},
+      {"printJobsTitle",
+       IDS_SETTINGS_PRINTING_PRINT_JOBS_LAUNCH_APP_TITLE_LABEL},
+      {"printJobsSublabel",
+       IDS_SETTINGS_PRINTING_PRINT_JOBS_LAUNCH_APP_SUBLABEL},
       {"printerDetailsTitle", IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_TITLE},
       {"printerName", IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_NAME},
       {"printerModel", IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_MODEL},
@@ -212,6 +238,7 @@ void PrintingSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "consumerPrintServerUiEnabled",
       base::FeatureList::IsEnabled(::features::kPrintServerUi));
+  html_source->AddBoolean("printManagementEnabled", IsPrintManagementEnabled());
 }
 
 void PrintingSection::AddHandlers(content::WebUI* web_ui) {

@@ -11,6 +11,7 @@
 
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
@@ -34,6 +35,16 @@ namespace {
 
 const char kBookmarkBarId[] = "bookmark_bar_id";
 const char kBookmarkBarTag[] = "bookmark_bar";
+
+// Fork of enum RemoteBookmarkUpdateError.
+enum class ExpectedRemoteBookmarkUpdateError {
+  kInvalidSpecifics = 1,
+  kInvalidUniquePosition = 2,
+  kMissingParentEntity = 4,
+  kUnexpectedGuid = 9,
+  kParentNotFolder = 10,
+  kMaxValue = kParentNotFolder,
+};
 
 // |*arg| must be of type std::vector<std::unique_ptr<bookmarks::BookmarkNode>>.
 MATCHER_P(ElementRawPointersAre, expected_raw_ptr, "") {
@@ -1642,6 +1653,102 @@ TEST(BookmarkModelMergerTest,
 
   // Verify positions in tracker.
   EXPECT_TRUE(PositionsInTrackerMatchModel(bookmark_bar_node, *tracker));
+}
+
+TEST(BookmarkModelMergerTest, ShouldLogMetricsForInvalidSpecifics) {
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  // -------- The remote model --------
+  // bookmark_bar
+  //  | - bookmark (<invalid url>)
+
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateBookmarkBarNodeUpdateData());
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/"Id", /*parent_id=*/kBookmarkBarId, "Title",
+      /*url=*/"invalidurl",
+      /*is_folder=*/false,
+      /*unique_position=*/MakeRandomPosition(),
+      /*guid=*/base::GenerateGUID()));
+
+  base::HistogramTester histogram_tester;
+  Merge(std::move(updates), bookmark_model.get());
+  histogram_tester.ExpectUniqueSample(
+      "Sync.ProblematicServerSideBookmarksDuringMerge",
+      /*sample=*/ExpectedRemoteBookmarkUpdateError::kInvalidSpecifics,
+      /*count=*/1);
+}
+
+TEST(BookmarkModelMergerTest, ShouldLogMetricsForChildrenOfNonFolder) {
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  // -------- The remote model --------
+  // bookmark_bar
+  //  | - bookmark (url1/Title1)
+  //    | - bookmark (url2/Title2)
+  //    | - bookmark (url3/Title3)
+  //    | - bookmark (url4/Title4)
+
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateBookmarkBarNodeUpdateData());
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/"Id1", /*parent_id=*/kBookmarkBarId, "Title1",
+      /*url=*/"http://url1",
+      /*is_folder=*/false,
+      /*unique_position=*/MakeRandomPosition(),
+      /*guid=*/base::GenerateGUID()));
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/"Id2", /*parent_id=*/"Id1", "Title2",
+      /*url=*/"http://url2",
+      /*is_folder=*/false,
+      /*unique_position=*/MakeRandomPosition(),
+      /*guid=*/base::GenerateGUID()));
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/"Id3", /*parent_id=*/"Id1", "Title3",
+      /*url=*/"http://url3",
+      /*is_folder=*/false,
+      /*unique_position=*/MakeRandomPosition(),
+      /*guid=*/base::GenerateGUID()));
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/"Id4", /*parent_id=*/"Id1", "Title4",
+      /*url=*/"http://url4",
+      /*is_folder=*/false,
+      /*unique_position=*/MakeRandomPosition(),
+      /*guid=*/base::GenerateGUID()));
+
+  base::HistogramTester histogram_tester;
+  Merge(std::move(updates), bookmark_model.get());
+  histogram_tester.ExpectUniqueSample(
+      "Sync.ProblematicServerSideBookmarksDuringMerge",
+      /*sample=*/ExpectedRemoteBookmarkUpdateError::kParentNotFolder,
+      /*count=*/3);
+}
+
+TEST(BookmarkModelMergerTest, ShouldLogMetricsForChildrenOfOrphanUpdates) {
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  // -------- The remote model --------
+  // bookmark_bar
+  // Orphan node: bookmark(url1/title1)
+
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateBookmarkBarNodeUpdateData());
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/"Id", /*parent_id=*/"UnknownId", "Title1",
+      /*url=*/"http://url1",
+      /*is_folder=*/false,
+      /*unique_position=*/MakeRandomPosition(),
+      /*guid=*/base::GenerateGUID()));
+
+  base::HistogramTester histogram_tester;
+  Merge(std::move(updates), bookmark_model.get());
+  histogram_tester.ExpectUniqueSample(
+      "Sync.ProblematicServerSideBookmarksDuringMerge",
+      /*sample=*/ExpectedRemoteBookmarkUpdateError::kMissingParentEntity,
+      /*count=*/1);
 }
 
 }  // namespace sync_bookmarks

@@ -88,4 +88,6 @@ void FakeTileService::StartFetchForTiles(
     bool is_from_reduced_mode,
     BackgroundTaskFinishedCallback callback) {}
 
+void FakeTileService::CancelTask() {}
+
 }  // namespace query_tiles

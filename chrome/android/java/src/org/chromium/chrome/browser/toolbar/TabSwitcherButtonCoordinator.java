@@ -80,6 +80,8 @@ public class TabSwitcherButtonCoordinator {
             }
         };
         mThemeColorProvider.addTintObserver(mTintObserver);
+        mTabSwitcherButtonModel.set(
+                TabSwitcherButtonProperties.TINT, mThemeColorProvider.getTint());
     }
 
     public void setTabCountProvider(TabCountProvider tabCountProvider) {

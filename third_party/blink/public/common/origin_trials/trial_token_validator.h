@@ -25,6 +25,20 @@ namespace blink {
 class OriginTrialPolicy;
 enum class OriginTrialTokenStatus;
 
+struct BLINK_COMMON_EXPORT TrialTokenResult {
+  TrialTokenResult();
+  explicit TrialTokenResult(OriginTrialTokenStatus);
+  TrialTokenResult(OriginTrialTokenStatus status,
+                   std::string name,
+                   base::Time expiry);
+  ~TrialTokenResult();
+
+  OriginTrialTokenStatus status;
+  std::string feature_name;
+  base::Time expiry_time;
+  bool is_third_party = false;
+};
+
 // TrialTokenValidator checks that a page's OriginTrial token enables a certain
 // feature.
 //
@@ -39,14 +53,12 @@ class BLINK_COMMON_EXPORT TrialTokenValidator {
       base::flat_map<std::string /* feature_name */,
                      std::vector<std::string /* token */>>;
 
-  // If token validates, |*feature_name| is set to the name of the feature the
-  // token enables and |*expiry_time| is set to the expiry time of the token.
-  // This method is thread-safe.
-  virtual OriginTrialTokenStatus ValidateToken(base::StringPiece token,
-                                               const url::Origin& origin,
-                                               base::Time current_time,
-                                               std::string* feature_name,
-                                               base::Time* expiry_time) const;
+  // If the token validates, status is set to OriginTrialTokenStatus::kSuccess,
+  // feature_name is set to name of the feature this token enables, expiry_time
+  // is set to the expiry time of the token. This method is thread-safe.
+  virtual TrialTokenResult ValidateToken(base::StringPiece token,
+                                         const url::Origin& origin,
+                                         base::Time current_time) const;
 
   bool RequestEnablesFeature(const net::URLRequest* request,
                              base::StringPiece feature_name,

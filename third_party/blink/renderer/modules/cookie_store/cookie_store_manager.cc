@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_change_event.h"
+#include "third_party/blink/renderer/modules/cookie_store/cookie_store_metrics.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -50,11 +51,11 @@ mojom::blink::CookieChangeSubscriptionPtr ToBackendSubscription(
     backend_subscription->url = default_cookie_url;
   }
 
-  if (subscription->matchType() == "starts-with") {
+  if (subscription->hasMatchType() &&
+      subscription->matchType() == "starts-with") {
     backend_subscription->match_type =
         network::mojom::blink::CookieMatchType::STARTS_WITH;
   } else {
-    DCHECK_EQ(subscription->matchType(), WTF::String("equals"));
     backend_subscription->match_type =
         network::mojom::blink::CookieMatchType::EQUALS;
   }
@@ -121,6 +122,7 @@ ScriptPromise CookieStoreManager::subscribe(
   Vector<mojom::blink::CookieChangeSubscriptionPtr> backend_subscriptions;
   backend_subscriptions.ReserveInitialCapacity(subscriptions.size());
   for (const CookieStoreGetOptions* subscription : subscriptions) {
+    RecordMatchType(subscription->matchType());
     mojom::blink::CookieChangeSubscriptionPtr backend_subscription =
         ToBackendSubscription(default_cookie_url_, subscription,
                               exception_state);
@@ -146,6 +148,7 @@ ScriptPromise CookieStoreManager::unsubscribe(
   Vector<mojom::blink::CookieChangeSubscriptionPtr> backend_subscriptions;
   backend_subscriptions.ReserveInitialCapacity(subscriptions.size());
   for (const CookieStoreGetOptions* subscription : subscriptions) {
+    RecordMatchType(subscription->matchType());
     mojom::blink::CookieChangeSubscriptionPtr backend_subscription =
         ToBackendSubscription(default_cookie_url_, subscription,
                               exception_state);

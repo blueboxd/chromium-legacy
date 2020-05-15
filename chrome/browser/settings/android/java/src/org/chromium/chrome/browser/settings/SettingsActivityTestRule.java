@@ -14,8 +14,10 @@ import androidx.fragment.app.Fragment;
 
 import org.junit.Assert;
 
-import org.chromium.components.browser_ui.settings.SettingsLauncher;
-
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 /**
  * Activity test rule that launch {@link SettingsActivity} in tests.
  *
@@ -68,6 +70,35 @@ public class SettingsActivityTestRule<T extends Fragment>
         Assert.assertNotNull(activity);
 
         return activity;
+    }
+
+    /**
+     * We need to ensure that SettingsActivity gets destroyed in the TestRule because sometimes
+     * it uses the mock signin environment like fake AccountManagerFacade, if the activity starts
+     * with the stub then it also needs to finish with it. That's why we need to wait till the
+     * activity state becomes destroyed before tearing down the mock signin environment.
+     */
+    @Override
+    protected void afterActivityFinished() {
+        super.afterActivityFinished();
+        waitTillActivityIsDestroyed();
+    }
+
+    /**
+     * Block the execution till the SettingsActivity is destroyed.
+     */
+    public void waitTillActivityIsDestroyed() {
+        SettingsActivity activity = getActivity();
+        if (activity != null) {
+            CriteriaHelper.pollUiThread(new Criteria("Activity should be destroyed, current state: "
+                    + ApplicationStatus.getStateForActivity(activity)) {
+                @Override
+                public boolean isSatisfied() {
+                    return ApplicationStatus.getStateForActivity(activity)
+                            == ActivityState.DESTROYED;
+                }
+            });
+        }
     }
 
     /**

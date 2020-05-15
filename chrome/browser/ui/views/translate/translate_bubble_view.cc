@@ -682,8 +682,8 @@ TranslateBubbleView::TranslateBubbleView(
   if (web_contents)  // web_contents can be null in unit_tests.
     mouse_handler_ =
         std::make_unique<WebContentMouseHandler>(this, web_contents);
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
-  DialogDelegate::SetFootnoteView(CreateWordmarkView(bubble_ui_model_));
+  SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetFootnoteView(CreateWordmarkView(bubble_ui_model_));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::TRANSLATE);
 }
 

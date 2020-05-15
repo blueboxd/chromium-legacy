@@ -47,6 +47,17 @@ UIButtonPointerStyleProvider CreateTransparentButtonPointerStyleProvider()
 // cases.
 UIButtonPointerStyleProvider
 CreateOpaqueOrTransparentButtonPointerStyleProvider() API_AVAILABLE(ios(13.4));
+
+// Pointer interaction that is best for most views that are interactable but not
+// buttons. This includes most TableViewCells if pointer interactions are
+// appropriate. The benefit of using this class over UIPointerInteraction is
+// that the delegate callbacks are configured and handled internally in this
+// class.
+API_AVAILABLE(ios(13.4))
+@interface ViewPointerInteraction
+    : NSObject <UIInteraction, UIPointerInteractionDelegate>
+@end
+
 #endif  // defined(__IPHONE_13_4)
 
 #endif  // IOS_CHROME_COMMON_UI_UTIL_POINTER_INTERACTION_UTIL_H_

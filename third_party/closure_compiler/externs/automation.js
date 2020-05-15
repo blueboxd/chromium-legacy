@@ -438,6 +438,61 @@ chrome.automation.MarkerType = {
 };
 
 /**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/automation#type-EventCommandType
+ */
+chrome.automation.EventCommandType = {
+  CLEAR_SELECTION: 'clearSelection',
+  CUT: 'cut',
+  DELETE: 'delete',
+  DICTATE: 'dictate',
+  EXTEND_SELECTION: 'extendSelection',
+  FORMAT: 'format',
+  INSERT: 'insert',
+  MARKER: 'marker',
+  MOVE_SELECTION: 'moveSelection',
+  PASTE: 'paste',
+  REPLACE: 'replace',
+  SET_SELECTION: 'setSelection',
+  TYPE: 'type',
+};
+
+/**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/automation#type-EventTextBoundaryType
+ */
+chrome.automation.EventTextBoundaryType = {
+  CHARACTER: 'character',
+  FORMAT: 'format',
+  LINE_END: 'lineEnd',
+  LINE_START: 'lineStart',
+  LINE_START_OR_END: 'lineStartOrEnd',
+  OBJECT: 'object',
+  PAGE_END: 'pageEnd',
+  PAGE_START: 'pageStart',
+  PAGE_START_OR_END: 'pageStartOrEnd',
+  PARAGRAPH_END: 'paragraphEnd',
+  PARAGRAPH_START: 'paragraphStart',
+  PARAGRAPH_START_OR_END: 'paragraphStartOrEnd',
+  SENTENCE_END: 'sentenceEnd',
+  SENTENCE_START: 'sentenceStart',
+  SENTENCE_START_OR_END: 'sentenceStartOrEnd',
+  WEB_PAGE: 'webPage',
+  WORD_END: 'wordEnd',
+  WORD_START: 'wordStart',
+  WORD_START_OR_END: 'wordStartOrEnd',
+};
+
+/**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/automation#type-EventMoveDirectionType
+ */
+chrome.automation.EventMoveDirectionType = {
+  FORWARD: 'forward',
+  BACKWARD: 'backward',
+};
+
+/**
  * @typedef {{
  *   left: number,
  *   top: number,
@@ -468,6 +523,16 @@ chrome.automation.FindParams;
  * @see https://developer.chrome.com/extensions/automation#type-SetDocumentSelectionParams
  */
 chrome.automation.SetDocumentSelectionParams;
+
+/**
+ * @typedef {{
+ *   command: !chrome.automation.EventCommandType,
+ *   textBoundary: !chrome.automation.EventTextBoundaryType,
+ *   moveDirection: !chrome.automation.EventMoveDirectionType
+ * }}
+ * @see https://developer.chrome.com/extensions/automation#type-AutomationIntent
+ */
+chrome.automation.AutomationIntent;
 
 /**
  * @constructor
@@ -508,6 +573,13 @@ chrome.automation.AutomationEvent.prototype.mouseX;
  * @see https://developer.chrome.com/extensions/automation#type-mouseY
  */
 chrome.automation.AutomationEvent.prototype.mouseY;
+
+/**
+ * Intents associated with this event.
+ * @type {!Array<!chrome.automation.AutomationIntent>}
+ * @see https://developer.chrome.com/extensions/automation#type-intents
+ */
+chrome.automation.AutomationEvent.prototype.intents;
 
 /**
  * Stops this event from further processing except for any remaining listeners
@@ -1595,8 +1667,7 @@ chrome.automation.AutomationNode.prototype.replaceSelectedText = function(value)
  * the accessibility focus such as location changes.
  * @see https://developer.chrome.com/extensions/automation#method-setAccessibilityFocus
  */
-chrome.automation.AutomationNode.prototype.setAccessibilityFocus =
-    function() {};
+chrome.automation.AutomationNode.prototype.setAccessibilityFocus = function() {};
 
 /**
  * Sets selection within a text field.

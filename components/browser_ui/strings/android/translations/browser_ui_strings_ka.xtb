@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">ავტომატური ჩამოტვირთვები</translation>
 <translation id="5677928146339483299">დაბლოკილი</translation>
 <translation id="5689516760719285838">მდებარეობა</translation>
+<translation id="5690795753582697420">კამერა გამორთულია Android-ის პარამეტრებში</translation>
 <translation id="5710871682236653961">შეკითხვა NFC მოწყობილობაზე შეხებისას საიტებისთვის ინფორმაციის გაგზავნისა და მიღების დაშვებამდე (რეკომენდებული)</translation>
 <translation id="5719847187258001597">ამ მოქმედებით გასუფთავდება <ph name="ORIGIN" />-ის ან მისი აპის მიერ თქვენს მთავარ ეკრანზე შენახული ყველა მონაცემი.</translation>
 <translation id="5804241973901381774">ნებართვები</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">სხვა</translation>
 <translation id="6064125863973209585">დასრულებული ჩამოტვირთვები</translation>
 <translation id="6165508094623778733">შეიტყვეთ მეტი</translation>
+<translation id="6177111841848151710">დაბლოკილია ამჟამინდელი საძიებო სისტემისთვის</translation>
 <translation id="6181444274883918285">გამონაკლისი საიტის დამატება</translation>
 <translation id="6192792657125177640">გამონაკლისები</translation>
 <translation id="6194112207524046168">Chrome-ისთვის თქვენს კამერაზე წვდომის დასაშვებად ჩართეთ კამერაზე წვდომის ნებართვაც <ph name="BEGIN_LINK" />Android-ის პარამეტრებიდან<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">ეს გვერდი სახიფათოა. საიტის ინფორმაცია.</translation>
 <translation id="6965382102122355670">კარგი</translation>
 <translation id="6992289844737586249">შეკითხვა საიტებისთვის თქვენი მიკროფონის გამოყენების დაშვებამდე (რეკომენდებული)</translation>
+<translation id="7000754031042624318">გამორთულია Android-ის პარამეტრებიდან</translation>
+<translation id="7016516562562142042">დაშვებულია ამჟამინდელი საძიებო სისტემისთვის</translation>
 <translation id="7053983685419859001">დაბლოკვა</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{არჩეულია 1}other{არჩეულია #}}</translation>
 <translation id="7087918508125750058">არჩეულია <ph name="ITEM_COUNT" />. ვარიანტები ხელმისაწვდომია ეკრანის ზედა ნაწილთან</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">ხმის დაშვება კონკრეტული საიტისთვის.</translation>
 <translation id="7993619969781047893">ზოგიერთი საიტის ფუნქციებმა შეიძლება არასათანადოდ იმუშაოს</translation>
 <translation id="7999064672810608036">დარწმუნებული ხართ, რომ გსურთ ყველა ადგილობრივი მონაცემების წაშლა, მათ შორის ქუქი ფაილების, და ამ გვერდისათვის ყველა ნებართვების აღდგენა?</translation>
+<translation id="8007176423574883786">გამორთულია ამ მოწყობილობისთვის</translation>
 <translation id="802154636333426148">ჩამოტვირთვა ვერ მოხერხდა</translation>
 <translation id="8087000398470557479">კონტენტის წყაროა: <ph name="DOMAIN_NAME" />. მიღებულია Google-ის მეშვეობით.</translation>
 <translation id="8116925261070264013">დადუმებული</translation>

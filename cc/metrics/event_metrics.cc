@@ -4,13 +4,35 @@
 
 #include "cc/metrics/event_metrics.h"
 
-#include <tuple>
-
 #include "base/check.h"
+#include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
 
 namespace cc {
+
+std::unique_ptr<EventMetrics> EventMetrics::Create(
+    ui::EventType type,
+    base::TimeTicks time_stamp,
+    base::Optional<ui::ScrollInputType> scroll_input_type) {
+  switch (type) {
+    case ui::ET_MOUSE_PRESSED:
+    case ui::ET_MOUSE_RELEASED:
+    case ui::ET_MOUSEWHEEL:
+    case ui::ET_KEY_PRESSED:
+    case ui::ET_KEY_RELEASED:
+    case ui::ET_TOUCH_PRESSED:
+    case ui::ET_TOUCH_RELEASED:
+    case ui::ET_TOUCH_MOVED:
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+    case ui::ET_GESTURE_SCROLL_END:
+      return base::WrapUnique(
+          new EventMetrics(type, time_stamp, scroll_input_type));
+    default:
+      return nullptr;
+  }
+}
 
 EventMetrics::EventMetrics(
     ui::EventType type,
@@ -23,29 +45,7 @@ EventMetrics::EventMetrics(
 EventMetrics::EventMetrics(const EventMetrics&) = default;
 EventMetrics& EventMetrics::operator=(const EventMetrics&) = default;
 
-bool EventMetrics::IsWhitelisted() const {
-  switch (type_) {
-    case ui::ET_MOUSE_PRESSED:
-    case ui::ET_MOUSE_RELEASED:
-    case ui::ET_MOUSEWHEEL:
-    case ui::ET_KEY_PRESSED:
-    case ui::ET_KEY_RELEASED:
-    case ui::ET_TOUCH_PRESSED:
-    case ui::ET_TOUCH_RELEASED:
-    case ui::ET_TOUCH_MOVED:
-    case ui::ET_GESTURE_SCROLL_BEGIN:
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-    case ui::ET_GESTURE_SCROLL_END:
-      return true;
-    default:
-      return false;
-  }
-}
-
 const char* EventMetrics::GetTypeName() const {
-  DCHECK(IsWhitelisted()) << "Event type is not whitelisted for event metrics: "
-                          << type_;
-
   switch (type_) {
     case ui::ET_MOUSE_PRESSED:
       return "MousePressed";
@@ -79,8 +79,6 @@ const char* EventMetrics::GetTypeName() const {
 }
 
 const char* EventMetrics::GetScrollTypeName() const {
-  DCHECK(IsWhitelisted()) << "Event type is not whitelisted for event metrics: "
-                          << type_;
   DCHECK(scroll_input_type_) << "Event is not a scroll event";
 
   switch (*scroll_input_type_) {

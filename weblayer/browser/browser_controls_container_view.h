@@ -40,6 +40,8 @@ class BrowserControlsContainerView : public content::WebContentsObserver {
   // Returns the amount of vertical space to take away from the contents.
   int GetContentHeightDelta();
 
+  bool IsFullyVisible() const;
+
   // Creates |controls_layer_|.
   void CreateControlsLayer(JNIEnv* env,
                            int id);

@@ -18,6 +18,7 @@ namespace feedui {
 class StreamUpdate;
 }  // namespace feedui
 namespace feed {
+class MetricsReporter;
 
 // Keeps the UI up to date by calling |SurfaceInterface::StreamUpdate()|.
 // Updates are triggered when |StreamModel| changes, or when loading state
@@ -26,7 +27,7 @@ class SurfaceUpdater : public StreamModel::Observer {
  public:
   using SurfaceInterface = FeedStreamApi::SurfaceInterface;
 
-  explicit SurfaceUpdater();
+  explicit SurfaceUpdater(MetricsReporter* metrics_reporter);
   ~SurfaceUpdater() override;
   SurfaceUpdater(const SurfaceUpdater&) = delete;
   SurfaceUpdater& operator=(const SurfaceUpdater&) = delete;
@@ -75,6 +76,8 @@ class SurfaceUpdater : public StreamModel::Observer {
   void SendStreamUpdateIfNeeded();
   void SendStreamUpdate(
       const std::vector<std::string>& updated_shared_state_ids);
+  void SendUpdateToSurface(SurfaceInterface* surface,
+                           const feedui::StreamUpdate& update);
 
   // Members that affect what is sent to surfaces. A value change of these may
   // require sending an update to surfaces.
@@ -91,6 +94,8 @@ class SurfaceUpdater : public StreamModel::Observer {
 
   // Owned by |FeedStream|. Null when the model is not loaded.
   StreamModel* model_ = nullptr;
+  // Owned by |FeedStream|.
+  MetricsReporter* metrics_reporter_;
 
   // Attached surfaces.
   base::ObserverList<SurfaceInterface> surfaces_;

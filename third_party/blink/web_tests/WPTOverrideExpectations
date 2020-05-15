@@ -1535,6 +1535,7 @@ external/wpt/webrtc/datachannel-emptystring.html [ Failure Pass ]
 external/wpt/webrtc/historical.html [ Failure Pass ]
 external/wpt/webrtc/idlharness.https.window.html [ Failure Pass ]
 external/wpt/webrtc/protocol/video-codecs.https.html [ Pass ] # wpt_subtest_failure
+external/wpt/webrtc/simulcast/h264.https.html [ Pass ] # wpt_subtest_failure
 external/wpt/websockets/Close-1000-reason.any.html [ Failure Pass ]
 external/wpt/websockets/Close-1000-reason.any.worker.html [ Failure Pass ]
 external/wpt/websockets/Close-1000.any.html [ Failure Pass ]

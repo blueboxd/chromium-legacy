@@ -24,6 +24,7 @@
 <translation id="1966382378801805537">Chromium 無法偵測或設定預設瀏覽器</translation>
 <translation id="2008474315282236005">這會刪除此裝置上的 1 個項目。如果日後想擷取資料，請以 <ph name="USER_EMAIL" /> 的身分登入 Chromium。</translation>
 <translation id="2185166961232948079">Chromium - 網絡登入 - <ph name="PAGE_TITLE" /></translation>
+<translation id="2225696941839557119">Chromium 作業系統無法同步您的密碼。</translation>
 <translation id="2241627712206172106">如果您與親朋好友共用電腦，每個人均可享有獨立的瀏覽空間，依照自己的偏好設定 Chromium。</translation>
 <translation id="2294245788148774212">選用：將診斷和使用情況資料自動傳送給 Google，協助改善 Chromium 作業系統的功能和效能。</translation>
 <translation id="2347108572062610441">擴充功能已變更 Chromium 啟動時所顯示的網頁。</translation>
@@ -136,6 +137,7 @@
 <translation id="6134968993075716475">「安全瀏覽」功能已停用。Chromium 建議啟用此功能。</translation>
 <translation id="6212496753309875659">這部電腦已安裝較新的 Chromium 版本。如果軟件無法工作，請解除安裝 Chromium，然後再試一次。</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium 將立即重新啟動}=1{Chromium 將於 1 秒後重新啟動}other{Chromium 將於 # 秒後重新啟動}}</translation>
+<translation id="623836266260425961">Chromium 作業系統無法同步您的資料。</translation>
 <translation id="6248213926982192922">將 Chromium 設為預設瀏覽器</translation>
 <translation id="6266342355635466082">Chromium 無法檢查更新，請檢查互聯網連線。</translation>
 <translation id="6268381023930128611">要登出 Chromium 嗎？</translation>

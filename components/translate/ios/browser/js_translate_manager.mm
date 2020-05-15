@@ -8,7 +8,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/bundle_locations.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 

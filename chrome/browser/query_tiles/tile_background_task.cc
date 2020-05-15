@@ -4,10 +4,12 @@
 
 #include "chrome/browser/query_tiles/tile_background_task.h"
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/query_tiles/tile_service_factory.h"
+#include "components/query_tiles/switches.h"
 
 namespace query_tiles {
 
@@ -33,7 +35,6 @@ void TileBackgroundTask::OnStartTaskWithFullBrowser(
 
 void TileBackgroundTask::OnFullBrowserLoaded(
     content::BrowserContext* browser_context) {
-  // TODO(hesen): CancelTask and return if feature is disabled.
   auto* profile_key =
       Profile::FromBrowserContext(browser_context)->GetProfileKey();
   StartFetchTask(profile_key, false, std::move(callback_));
@@ -51,7 +52,11 @@ void TileBackgroundTask::StartFetchTask(SimpleFactoryKey* key,
     return;
   auto* tile_service = TileServiceFactory::GetInstance()->GetForKey(key);
   DCHECK(tile_service);
-  tile_service->StartFetchForTiles(is_from_reduced_mode, std::move(callback));
+  if (!base::FeatureList::IsEnabled(query_tiles::features::kQueryTiles)) {
+    tile_service->CancelTask();
+  } else {
+    tile_service->StartFetchForTiles(is_from_reduced_mode, std::move(callback));
+  }
 }
 
 }  // namespace query_tiles

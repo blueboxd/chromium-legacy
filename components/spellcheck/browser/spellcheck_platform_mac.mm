@@ -10,8 +10,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #include "components/spellcheck/common/spellcheck_common.h"

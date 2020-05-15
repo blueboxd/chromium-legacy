@@ -232,6 +232,11 @@ base::Optional<feedstore::DataOperation> TranslateDataOperation(
   if (!converted)
     return base::nullopt;
 
+  // We only support translating StreamSharedStates when they will be attached
+  // to StreamModelUpdateRequests.
+  if (converted->shared_state)
+    return base::nullopt;
+
   *store_operation.mutable_structure() = std::move(converted->stream_structure);
   if (converted->content)
     *store_operation.mutable_content() = std::move(*converted->content);

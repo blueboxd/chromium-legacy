@@ -38,6 +38,26 @@ web::WebStatePolicyDecider::PolicyDecision CreateSafeBrowsingErrorDecision() {
                           code:kUnsafeResourceErrorCode
                       userInfo:nil]);
 }
+
+// Returns a canonicalized version of |url| as used by the SafeBrowsingService.
+GURL GetCanonicalizedUrl(const GURL& url) {
+  std::string hostname;
+  std::string path;
+  std::string query;
+  safe_browsing::V4ProtocolManagerUtil::CanonicalizeUrl(url, &hostname, &path,
+                                                        &query);
+
+  GURL::Replacements replacements;
+  if (hostname.length())
+    replacements.SetHostStr(hostname);
+  if (path.length())
+    replacements.SetPathStr(path);
+  if (query.length())
+    replacements.SetQueryStr(query);
+  replacements.ClearRef();
+
+  return url.ReplaceComponents(replacements);
+}
 }  // namespace
 
 #pragma mark - SafeBrowsingTabHelper
@@ -141,7 +161,7 @@ SafeBrowsingTabHelper::PolicyDecider::ShouldAllowRequest(
     NSURLRequest* request,
     const web::WebStatePolicyDecider::RequestInfo& request_info) {
   // Allow navigations for URLs that cannot be checked by the service.
-  GURL request_url = net::GURLWithNSURL(request.URL);
+  GURL request_url = GetCanonicalizedUrl(net::GURLWithNSURL(request.URL));
   SafeBrowsingService* safe_browsing_service =
       GetApplicationContext()->GetSafeBrowsingService();
   if (!safe_browsing_service->CanCheckUrl(request_url))
@@ -216,7 +236,7 @@ void SafeBrowsingTabHelper::PolicyDecider::ShouldAllowResponse(
   // Allow navigations for URLs that cannot be checked by the service.
   SafeBrowsingService* safe_browsing_service =
       GetApplicationContext()->GetSafeBrowsingService();
-  GURL response_url = net::GURLWithNSURL(response.URL);
+  GURL response_url = GetCanonicalizedUrl(net::GURLWithNSURL(response.URL));
   if (!safe_browsing_service->CanCheckUrl(response_url)) {
     std::move(callback).Run(
         web::WebStatePolicyDecider::PolicyDecision::Allow());

@@ -52,18 +52,17 @@ ProfileSigninConfirmationDialogViews::ProfileSigninConfirmationDialogViews(
       username_(username),
       delegate_(std::move(delegate)),
       prompt_for_new_profile_(prompt_for_new_profile) {
-  DialogDelegate::SetDefaultButton(ui::DIALOG_BUTTON_NONE);
-  DialogDelegate::SetButtonLabel(
+  SetDefaultButton(ui::DIALOG_BUTTON_NONE);
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(prompt_for_new_profile_
                                     ? IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE
                                     : IDS_ENTERPRISE_SIGNIN_CONTINUE));
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_CANCEL,
-      l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_CANCEL));
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
+                 l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_CANCEL));
 
   if (prompt_for_new_profile) {
-    DialogDelegate::SetExtraView(views::MdTextButton::Create(
+    SetExtraView(views::MdTextButton::Create(
         this, l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_CONTINUE)));
   }
 
@@ -76,12 +75,12 @@ ProfileSigninConfirmationDialogViews::ProfileSigninConfirmationDialogViews(
       dialog->delegate_.reset();
     }
   };
-  DialogDelegate::SetAcceptCallback(
-      base::BindOnce(notify_delegate, base::Unretained(this),
-                     prompt_for_new_profile_ ? &Delegate::OnSigninWithNewProfile
-                                             : &Delegate::OnContinueSignin));
-  DialogDelegate::SetCancelCallback(base::BindOnce(
-      notify_delegate, base::Unretained(this), &Delegate::OnCancelSignin));
+  SetAcceptCallback(base::BindOnce(notify_delegate, base::Unretained(this),
+                                   prompt_for_new_profile_
+                                       ? &Delegate::OnSigninWithNewProfile
+                                       : &Delegate::OnContinueSignin));
+  SetCancelCallback(base::BindOnce(notify_delegate, base::Unretained(this),
+                                   &Delegate::OnCancelSignin));
 
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::PROFILE_SIGNIN_CONFIRMATION);

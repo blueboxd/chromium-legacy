@@ -149,6 +149,12 @@ def CheckEnumsMatch(input_api, output_api):
                    'DefaultActionVerb', errs, output_api)
   CheckMatchingEnum(ax_enums, 'MarkerType', automation_enums,
                    'MarkerType', errs, output_api)
+  CheckMatchingEnum(ax_enums, 'Command', automation_enums,
+                   'EventCommandType', errs, output_api)
+  CheckMatchingEnum(ax_enums, 'TextBoundary', automation_enums,
+                   'EventTextBoundaryType', errs, output_api)
+  CheckMatchingEnum(ax_enums, 'MoveDirection', automation_enums,
+                   'EventMoveDirectionType', errs, output_api)
   return errs
 
 # Given a full path to c++ header, return an array of the first static

@@ -450,31 +450,15 @@ ModelTypeSet EncryptableUserTypes() {
                 "If adding an unencryptable type, remove from "
                 "encryptable_user_types below.");
   ModelTypeSet encryptable_user_types = UserTypes();
+  // Priority user types are never encrypted because they may get synced before
+  // encryption is ready.
+  encryptable_user_types.RemoveAll(PriorityUserTypes());
   // Wallet data is not encrypted since it actually originates on the server.
   encryptable_user_types.Remove(AUTOFILL_WALLET_DATA);
   // We never encrypt history delete directives.
   encryptable_user_types.Remove(HISTORY_DELETE_DIRECTIVES);
-  // Device info data is not encrypted because it might be synced before
-  // encryption is ready.
-  encryptable_user_types.Remove(DEVICE_INFO);
-  // Priority preferences are not encrypted because they might be synced before
-  // encryption is ready.
-  encryptable_user_types.Remove(PRIORITY_PREFERENCES);
-  // OS priority preferences are not encrypted because they might be synced
-  // before encryption is ready.
-  encryptable_user_types.Remove(OS_PRIORITY_PREFERENCES);
-  // Supervised user settings are not encrypted since they are set server-side.
-  encryptable_user_types.Remove(SUPERVISED_USER_SETTINGS);
-  // Supervised user whitelists are not encrypted since they are managed
-  // server-side.
-  encryptable_user_types.Remove(SUPERVISED_USER_WHITELISTS);
-  // User events and consents are not encrypted since they are consumed
-  // server-side.
-  encryptable_user_types.Remove(USER_EVENTS);
-  encryptable_user_types.Remove(USER_CONSENTS);
-  encryptable_user_types.Remove(SECURITY_EVENTS);
-  // Sharing message is not encrypted since it is consumed server-side.
-  encryptable_user_types.Remove(SHARING_MESSAGE);
+  // Commit-only types are never encrypted since they are consumed server-side.
+  encryptable_user_types.RemoveAll(CommitOnlyTypes());
   // Proxy types have no sync representation and are therefore not encrypted.
   // Note however that proxy types map to one or more protocol types, which
   // may or may not be encrypted themselves.

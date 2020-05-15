@@ -272,7 +272,7 @@ HungRendererDialogView::HungRendererDialogView() {
 #if defined(OS_WIN)
   // Never use the custom frame when Aero Glass is disabled. See
   // https://crbug.com/323278
-  DialogDelegate::set_use_custom_frame(ui::win::IsAeroGlassEnabled());
+  set_use_custom_frame(ui::win::IsAeroGlassEnabled());
 #endif
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::CONTROL));
@@ -287,20 +287,20 @@ HungRendererDialogView::HungRendererDialogView() {
       hung_pages_table_model_.get(), columns, views::ICON_AND_TEXT, true);
   hung_pages_table_ = hung_pages_table.get();
 
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetPluralStringFUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_END,
                                        hung_pages_table_model_->RowCount()));
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_WAIT));
 
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
-      &HungRendererDialogView::RestartHangTimer, base::Unretained(this)));
-  DialogDelegate::SetCancelCallback(base::BindOnce(
+  SetAcceptCallback(base::BindOnce(&HungRendererDialogView::RestartHangTimer,
+                                   base::Unretained(this)));
+  SetCancelCallback(base::BindOnce(
       &HungRendererDialogView::ForceCrashHungRenderer, base::Unretained(this)));
-  DialogDelegate::SetCloseCallback(base::BindOnce(
-      &HungRendererDialogView::RestartHangTimer, base::Unretained(this)));
+  SetCloseCallback(base::BindOnce(&HungRendererDialogView::RestartHangTimer,
+                                  base::Unretained(this)));
 
   DialogModelChanged();
 

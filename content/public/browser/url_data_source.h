@@ -105,14 +105,16 @@ class CONTENT_EXPORT URLDataSource {
   // It is OK to override the following methods to a custom CSP directive
   // thereby slightly reducing the protection applied to the page.
 
-  // By default, "object-src 'none';" is added to CSP. Override to change this.
-  virtual std::string GetContentSecurityPolicyObjectSrc();
   // By default, "child-src 'none';" is added to CSP. Override to change this.
   virtual std::string GetContentSecurityPolicyChildSrc();
   // By default empty. Override to change this.
-  virtual std::string GetContentSecurityPolicyStyleSrc();
+  virtual std::string GetContentSecurityPolicyDefaultSrc();
   // By default empty. Override to change this.
   virtual std::string GetContentSecurityPolicyImgSrc();
+  // By default, "object-src 'none';" is added to CSP. Override to change this.
+  virtual std::string GetContentSecurityPolicyObjectSrc();
+  // By default empty. Override to change this.
+  virtual std::string GetContentSecurityPolicyStyleSrc();
   // By default empty. Override to change this.
   virtual std::string GetContentSecurityPolicyWorkerSrc();
   // By default, "frame ancestors: 'none'" is added to the CSP unless

@@ -106,14 +106,16 @@ public class ClassPathValidator {
 
     public void validateClassPathsAndOutput(ClassReader classReader,
             ClassLoader directClassPathClassLoader, ClassLoader fullClassPathClassLoader,
-            Collection<String> jarsOnlyInFullClassPath, boolean isPrebuilt, boolean verbose)
-            throws ClassNotLoadedException {
+            Collection<String> jarsOnlyInFullClassPath, boolean isPrebuilt, boolean verbose,
+            Set<String> missingClassAllowlist) throws ClassNotLoadedException {
         if (isPrebuilt) {
             // Prebuilts only need transitive dependencies checked, not direct dependencies.
             try {
                 validateClassPath(classReader, fullClassPathClassLoader);
             } catch (ClassNotLoadedException e) {
-                printAndQuit(e, classReader, verbose);
+                if (!missingClassAllowlist.contains(e.getClassName())) {
+                    printAndQuit(e, classReader, verbose);
+                }
             }
         } else {
             try {
@@ -122,7 +124,9 @@ public class ClassPathValidator {
                 try {
                     validateClass(fullClassPathClassLoader, e.getClassName());
                 } catch (ClassNotLoadedException d) {
-                    printAndQuit(d, classReader, verbose);
+                    if (!missingClassAllowlist.contains(d.getClassName())) {
+                        printAndQuit(d, classReader, verbose);
+                    }
                 }
                 if (verbose) {
                     System.err.println("Class \"" + e.getClassName()

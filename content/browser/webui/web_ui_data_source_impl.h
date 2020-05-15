@@ -45,9 +45,13 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
                             handle_request_callback) override;
   void DisableReplaceExistingSource() override;
   void DisableContentSecurityPolicy() override;
-  void OverrideContentSecurityPolicyScriptSrc(const std::string& data) override;
-  void OverrideContentSecurityPolicyObjectSrc(const std::string& data) override;
   void OverrideContentSecurityPolicyChildSrc(const std::string& data) override;
+  void OverrideContentSecurityPolicyDefaultSrc(
+      const std::string& data) override;
+  void OverrideContentSecurityPolicyImgSrc(const std::string& data) override;
+  void OverrideContentSecurityPolicyObjectSrc(const std::string& data) override;
+  void OverrideContentSecurityPolicyScriptSrc(const std::string& data) override;
+  void OverrideContentSecurityPolicyStyleSrc(const std::string& data) override;
   void OverrideContentSecurityPolicyWorkerSrc(const std::string& data) override;
   void DisableDenyXFrameOptions() override;
   void EnableReplaceI18nInJS() override;
@@ -111,14 +115,14 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   WebUIDataSource::ShouldHandleRequestCallback should_handle_request_callback_;
 
   bool add_csp_ = true;
-  bool script_src_set_ = false;
-  std::string script_src_;
-  bool object_src_set_ = false;
-  std::string object_src_;
-  bool frame_src_set_ = false;
-  std::string frame_src_;
-  bool worker_src_set_ = false;
-  std::string worker_src_;
+
+  base::Optional<std::string> child_src_;
+  base::Optional<std::string> default_src_;
+  base::Optional<std::string> img_src_;
+  base::Optional<std::string> object_src_;
+  base::Optional<std::string> script_src_;
+  base::Optional<std::string> style_src_;
+  base::Optional<std::string> worker_src_;
   bool deny_xframe_options_ = true;
   bool add_load_time_data_defaults_ = true;
   bool replace_existing_source_ = true;

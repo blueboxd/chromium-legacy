@@ -67,10 +67,10 @@ PaymentRequestDialogView::PaymentRequestDialogView(
     : request_(request), observer_for_testing_(observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
 
-  DialogDelegate::SetCloseCallback(base::BindOnce(
-      &PaymentRequestDialogView::OnDialogClosed, base::Unretained(this)));
+  SetCloseCallback(base::BindOnce(&PaymentRequestDialogView::OnDialogClosed,
+                                  base::Unretained(this)));
 
   request->spec()->AddObserver(this);
   SetLayoutManager(std::make_unique<views::FillLayout>());

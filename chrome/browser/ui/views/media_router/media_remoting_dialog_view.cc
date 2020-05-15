@@ -101,21 +101,17 @@ MediaRemotingDialogView::MediaRemotingDialogView(
       dialog_title_(
           l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_REMOTING_DIALOG_TITLE)) {
   DCHECK(pref_service_);
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(
-          IDS_MEDIA_ROUTER_REMOTING_DIALOG_OPTIMIZE_BUTTON));
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_CANCEL,
-      l10n_util::GetStringUTF16(
-          IDS_MEDIA_ROUTER_REMOTING_DIALOG_CANCEL_BUTTON));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(
+                     IDS_MEDIA_ROUTER_REMOTING_DIALOG_OPTIMIZE_BUTTON));
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
+                 l10n_util::GetStringUTF16(
+                     IDS_MEDIA_ROUTER_REMOTING_DIALOG_CANCEL_BUTTON));
 
-  DialogDelegate::SetAcceptCallback(
-      base::BindOnce(&MediaRemotingDialogView::ReportPermission,
-                     base::Unretained(this), true));
-  DialogDelegate::SetCancelCallback(
-      base::BindOnce(&MediaRemotingDialogView::ReportPermission,
-                     base::Unretained(this), false));
+  SetAcceptCallback(base::BindOnce(&MediaRemotingDialogView::ReportPermission,
+                                   base::Unretained(this), true));
+  SetCancelCallback(base::BindOnce(&MediaRemotingDialogView::ReportPermission,
+                                   base::Unretained(this), false));
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));

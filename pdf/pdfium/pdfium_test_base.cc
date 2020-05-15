@@ -28,6 +28,9 @@ bool IsValidLinkForTesting(const std::string& url) {
 void SetSelectedTextForTesting(pp::Instance* instance,
                                const std::string& selected_text) {}
 
+void SetLinkUnderCursorForTesting(pp::Instance* instance,
+                                  const std::string& link_under_cursor) {}
+
 }  // namespace
 
 PDFiumTestBase::PDFiumTestBase() = default;
@@ -47,11 +50,14 @@ void PDFiumTestBase::SetUp() {
   InitializePDFium();
   PDFiumEngine::OverrideSetSelectedTextFunctionForTesting(
       &SetSelectedTextForTesting);
+  PDFiumEngine::OverrideSetLinkUnderCursorFunctionForTesting(
+      &SetLinkUnderCursorForTesting);
   PDFiumPage::SetIsValidLinkFunctionForTesting(&IsValidLinkForTesting);
 }
 
 void PDFiumTestBase::TearDown() {
   PDFiumPage::SetIsValidLinkFunctionForTesting(nullptr);
+  PDFiumEngine::OverrideSetLinkUnderCursorFunctionForTesting(nullptr);
   PDFiumEngine::OverrideSetSelectedTextFunctionForTesting(nullptr);
   FPDF_DestroyLibrary();
 }

@@ -96,14 +96,14 @@ SigninViewControllerFakeReauthDelegateView::
         Browser* browser,
         base::OnceCallback<void(signin::ReauthResult)> reauth_callback)
     : browser_(browser), reauth_callback_(std::move(reauth_callback)) {
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
-  DialogDelegate::SetAcceptCallback(
+  SetButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
+  SetAcceptCallback(
       base::BindOnce(&SigninViewControllerFakeReauthDelegateView::OnAccept,
                      base::Unretained(this)));
-  DialogDelegate::SetCancelCallback(
+  SetCancelCallback(
       base::BindOnce(&SigninViewControllerFakeReauthDelegateView::OnCancel,
                      base::Unretained(this)));
-  DialogDelegate::SetCloseCallback(
+  SetCloseCallback(
       base::BindOnce(&SigninViewControllerFakeReauthDelegateView::OnClose,
                      base::Unretained(this)));
   DisplayModal();
@@ -308,7 +308,7 @@ SigninViewControllerDelegateViews::SigninViewControllerDelegateViews(
   DCHECK(browser_->tab_strip_model()->GetActiveWebContents())
       << "A tab must be active to present the sign-in modal dialog.";
 
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
 
   web_contents_->SetDelegate(this);
 

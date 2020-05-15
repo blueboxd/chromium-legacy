@@ -7356,7 +7356,17 @@ std::unique_ptr<NavigationRequest>
 RenderFrameHostImpl::CreateNavigationRequestForCommit(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     bool is_same_document) {
+  std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter;
+  // We don't switch the COEP reporter on same-document navigations, so create
+  // one only for cross-document navigations.
+  if (!is_same_document) {
+    coep_reporter = std::make_unique<CrossOriginEmbedderPolicyReporter>(
+        process_->GetStoragePartition(), params.url,
+        cross_origin_embedder_policy_.reporting_endpoint,
+        cross_origin_embedder_policy_.report_only_reporting_endpoint);
+  }
   return NavigationRequest::CreateForCommit(frame_tree_node_, this, params,
+                                            std::move(coep_reporter),
                                             is_same_document);
 }
 

@@ -24,6 +24,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
+namespace {
+using QuietUiReason =
+    permissions::NotificationPermissionUiSelector::QuietUiReason;
+}  // namespace
+
 GroupedPermissionInfoBarDelegate::~GroupedPermissionInfoBarDelegate() {
   permissions::PermissionUmaUtil::RecordInfobarDetailsExpanded(
       details_expanded_);
@@ -59,23 +64,43 @@ base::string16 GroupedPermissionInfoBarDelegate::GetCompactLinkText() const {
       IDS_NOTIFICATION_QUIET_PERMISSION_MINI_INFOBAR_DETAILS_LINK);
 }
 
+// TODO(crbug.com/1082737): Many methods of this class switches on the quiet UI
+// reason. Refactor this into separate subclasses instead.
 base::string16 GroupedPermissionInfoBarDelegate::GetDescriptionText() const {
   auto* manager = permissions::PermissionRequestManager::FromWebContents(
       permission_prompt_->web_contents());
 
   switch (manager->ReasonForUsingQuietUi()) {
-    case permissions::NotificationPermissionUiSelector::QuietUiReason::
-        kEnabledInPrefs:
+    case QuietUiReason::kEnabledInPrefs:
       return l10n_util::GetStringUTF16(
           IDS_NOTIFICATION_QUIET_PERMISSION_PROMPT_MESSAGE);
-    case permissions::NotificationPermissionUiSelector::QuietUiReason::
-        kTriggeredByCrowdDeny:
+    case QuietUiReason::kTriggeredByCrowdDeny:
       return l10n_util::GetStringUTF16(
           IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_CROWD_DENY_DESCRIPTION);
+    case QuietUiReason::kTriggeredDueToAbusiveRequests:
+      return l10n_util::GetStringUTF16(
+          IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_ABUSIVE_DESCRIPTION);
   }
 
   NOTREACHED();
   return base::string16();
+}
+
+bool GroupedPermissionInfoBarDelegate::ShouldSecondaryButtonOpenSettings()
+    const {
+  auto* manager = permissions::PermissionRequestManager::FromWebContents(
+      permission_prompt_->web_contents());
+
+  switch (manager->ReasonForUsingQuietUi()) {
+    case QuietUiReason::kEnabledInPrefs:
+    case QuietUiReason::kTriggeredByCrowdDeny:
+      return true;
+    case QuietUiReason::kTriggeredDueToAbusiveRequests:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 int GroupedPermissionInfoBarDelegate::GetIconId() const {
@@ -99,14 +124,40 @@ base::string16 GroupedPermissionInfoBarDelegate::GetMessageText() const {
 }
 
 bool GroupedPermissionInfoBarDelegate::Accept() {
-  if (permission_prompt_)
-    permission_prompt_->Accept();
+  if (!permission_prompt_)
+    return true;
+
+  auto* manager = permissions::PermissionRequestManager::FromWebContents(
+      permission_prompt_->web_contents());
+  switch (manager->ReasonForUsingQuietUi()) {
+    case QuietUiReason::kEnabledInPrefs:
+    case QuietUiReason::kTriggeredByCrowdDeny:
+      permission_prompt_->Accept();
+      break;
+    case QuietUiReason::kTriggeredDueToAbusiveRequests:
+      permission_prompt_->Deny();
+      break;
+  }
   return true;
 }
 
 bool GroupedPermissionInfoBarDelegate::Cancel() {
-  // The infobar needs to be kept open after the "Manage" button is clicked.
-  return false;
+  if (!permission_prompt_)
+    return true;
+
+  auto* manager = permissions::PermissionRequestManager::FromWebContents(
+      permission_prompt_->web_contents());
+  switch (manager->ReasonForUsingQuietUi()) {
+    case QuietUiReason::kEnabledInPrefs:
+    case QuietUiReason::kTriggeredByCrowdDeny:
+      // The infobar needs to be kept open after the "Manage" button is clicked.
+      return false;
+    case QuietUiReason::kTriggeredDueToAbusiveRequests:
+      permission_prompt_->Accept();
+      return true;
+  }
+  NOTREACHED();
+  return true;
 }
 
 // static
@@ -146,10 +197,25 @@ int GroupedPermissionInfoBarDelegate::GetButtons() const {
 
 base::string16 GroupedPermissionInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  return l10n_util::GetStringUTF16(
-      (button == BUTTON_OK)
-          ? IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_ALLOW_BUTTON
-          : IDS_NOTIFICATION_BUTTON_MANAGE);
+  auto* manager = permissions::PermissionRequestManager::FromWebContents(
+      permission_prompt_->web_contents());
+
+  switch (manager->ReasonForUsingQuietUi()) {
+    case QuietUiReason::kEnabledInPrefs:
+    case QuietUiReason::kTriggeredByCrowdDeny:
+      return l10n_util::GetStringUTF16(
+          (button == BUTTON_OK)
+              ? IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_ALLOW_BUTTON
+              : IDS_NOTIFICATION_BUTTON_MANAGE);
+    case QuietUiReason::kTriggeredDueToAbusiveRequests:
+      return l10n_util::GetStringUTF16(
+          (button == BUTTON_OK)
+              ? IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_CONTINUE_BLOCKING_BUTTON
+              : IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_COMPACT_ALLOW_BUTTON);
+  }
+
+  NOTREACHED();
+  return base::string16();
 }
 
 bool GroupedPermissionInfoBarDelegate::EqualsDelegate(

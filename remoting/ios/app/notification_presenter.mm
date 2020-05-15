@@ -15,7 +15,7 @@
 #import "remoting/ios/persistence/remoting_preferences.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "remoting/base/string_resources.h"

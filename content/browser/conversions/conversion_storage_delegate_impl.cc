@@ -37,6 +37,14 @@ int ConversionStorageDelegateImpl::GetMaxConversionsPerImpression() const {
   return 3;
 }
 
+int ConversionStorageDelegateImpl::GetMaxImpressionsPerOrigin() const {
+  return 1024;
+}
+
+int ConversionStorageDelegateImpl::GetMaxConversionsPerOrigin() const {
+  return 1024;
+}
+
 base::Time ConversionStorageDelegateImpl::GetReportTimeForConversion(
     const ConversionReport& report) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

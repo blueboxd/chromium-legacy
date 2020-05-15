@@ -187,8 +187,53 @@ void WaveShaperDSPKernel::WaveShaperCurveValues(float* destination,
       v2[k + 3] = curve_data[clampTo(i2[3], 0, max_index)];
     }
   }
+#elif defined(CPU_ARM_NEON)
+  {
+    int loop_limit = frames_to_process / 4;
+
+    // Neon constants:
+    //   zero = 0
+    //   one  = 1
+    //   max  = max_index
+    int32x4_t zero = vdupq_n_s32(0);
+    int32x4_t one = vdupq_n_s32(1);
+    int32x4_t max = vdupq_n_s32(max_index);
+
+    for (int loop = 0; loop < loop_limit; ++loop, k += 4) {
+      // v = virtual_index
+      float32x4_t v = vld1q_f32(virtual_index + k);
+
+      // index1 = static_cast<int32_t>(v), then clamp to a valid index range for
+      // curve_data
+      int32x4_t index1 = vcvtq_s32_f32(v);
+      index1 = vmaxq_s32(vminq_s32(index1, max), zero);
+
+      // v = static_cast<float>(v) and save it away for later use.
+      v = vcvtq_f32_s32(index1);
+      vst1q_f32(&index[k], v);
+
+      // index2 = index1 + 1, then clamp to a valid range for curve_data.
+      int32x4_t index2 = vaddq_s32(index1, one);
+      index2 = vmaxq_s32(vminq_s32(index2, max), zero);
+
+      // Save index1/2 so we can get the individual parts.
+      int32_t i1[4];
+      int32_t i2[4];
+      vst1q_s32(i1, index1);
+      vst1q_s32(i2, index2);
+
+      // Get curve elements corresponding to the indices.
+      v1[k] = curve_data[i1[0]];
+      v2[k] = curve_data[i2[0]];
+      v1[k + 1] = curve_data[i1[1]];
+      v2[k + 1] = curve_data[i2[1]];
+      v1[k + 2] = curve_data[i1[2]];
+      v2[k + 2] = curve_data[i2[2]];
+      v1[k + 3] = curve_data[i1[3]];
+      v2[k + 3] = curve_data[i2[3]];
+    }
+  }
 #endif
-  // TODO(crbug.com/1013118): Vectorize this loop for ARM as well.
 
   // Compute values for index1 and load the curve_data corresponding to indices.
   for (; k < frames_to_process; ++k) {

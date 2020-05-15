@@ -1683,6 +1683,10 @@ if (enable_java_templates) {
     _is_prebuilt = defined(invoker.is_prebuilt) && invoker.is_prebuilt
     _enable_bytecode_checks = !defined(invoker.enable_bytecode_checks) ||
                               invoker.enable_bytecode_checks
+    _missing_classes_allowlist = []
+    if (defined(invoker.missing_classes_allowlist)) {
+      _missing_classes_allowlist = invoker.missing_classes_allowlist
+    }
 
     # Release builds don't have asserts enabled, so they often will not run the
     # bytecode rewriter. We are okay with having release builds not run the
@@ -1691,6 +1695,7 @@ if (enable_java_templates) {
     not_needed([
                  "_is_prebuilt",
                  "_enable_bytecode_checks",
+                 "_missing_classes_allowlist",
                ])
     if (defined(invoker.enable_bytecode_rewriter)) {
       not_needed([
@@ -1785,7 +1790,7 @@ if (enable_java_templates) {
         if (_is_prebuilt) {
           args += [ "--is-prebuilt" ]
         }
-        if (_enable_custom_resources) {
+        if (defined(_enable_custom_resources) && _enable_custom_resources) {
           args += [ "--enable-custom-resources" ]
         }
         if (_enable_thread_annotations) {
@@ -1795,6 +1800,8 @@ if (enable_java_templates) {
           args += [ "--enable-check-class-path" ]
         }
         args += [
+          "--missing-classes-allowlist",
+          "${_missing_classes_allowlist}",
           "--direct-classpath-jars",
           "@FileArg($_rebased_build_config:javac:classpath)",
           "--sdk-classpath-jars",
@@ -3731,6 +3738,7 @@ if (enable_java_templates) {
                                  [
                                    "enable_bytecode_checks",
                                    "enable_bytecode_rewriter",
+                                   "missing_classes_allowlist",
                                    "jar_excluded_patterns",
                                    "jar_included_patterns",
                                    "skip_jetify",

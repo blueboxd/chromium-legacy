@@ -269,6 +269,7 @@
 <translation id="2094505752054353250">Домен сәйкессіздігі</translation>
 <translation id="2096368010154057602">Департамент</translation>
 <translation id="2099652385553570808">Сол жағын үш рет қапсыру</translation>
+<translation id="2101225219012730419">Нұсқа:</translation>
 <translation id="2102134110707549001">Күрделі құпия сөз жасау…</translation>
 <translation id="2107021941795971877">Баспаны қолдау</translation>
 <translation id="2108755909498034140">Компьютерді қайта іске қосу</translation>
@@ -444,6 +445,7 @@
 <translation id="2856444702002559011"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> сайтындағы шабуылдаушылар ақпаратыңызды (мысалы, құпия сөздер, хабарлар немесе несиелік карталар) ұрлауға әрекет етуі мүмкін.<ph name="BEGIN_LEARN_MORE_LINK" />Толығырақ<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">Постер тәрізді бүктеу</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2880660355386638022">Терезені орналастыру</translation>
 <translation id="2881276955470682203">Карта сақталсын ба?</translation>
 <translation id="2882949212241984732">Қақпа тәрізді қос бүктеу</translation>
 <translation id="2903493209154104877">Мекенжайлар</translation>
@@ -643,6 +645,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Проксиді, брандмауэрді және DNS конфигурациясын тексеру<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">Мұндай қате тудыратын қолданбаларға антивирустар, брандмауэрлер, вебсүзгілер және прокси-сервер бағдарламалық құралдары жатады.</translation>
 <translation id="373042150751172459">B4 (Envelope)</translation>
+<translation id="3731873414101415120">Сіз кіретін веб-сайттар және қорғалмаған беттердің мазмұндары</translation>
 <translation id="3736520371357197498">Қауіпсіздігіңіздің қатерлерін түсінсеңіз, қауіпті бағдарламалар жойылмай жатып, <ph name="BEGIN_LINK" />осы қауіпті сайтқа кіруіңізге<ph name="END_LINK" /> болады.</translation>
 <translation id="3744899669254331632">Қазір <ph name="SITE" /> сайтына кіру мүмкін емес, себебі веб-сайт Chromium өңдей алмайтын шифрланған есептік деректерді жіберді. Желі қателері мен шабуылдары әдетте уақытша болғандықтан, бұл бет кейінірек жұмыс істеуі мүмкін.</translation>
 <translation id="3745099705178523657">Растағаннан кейін, Google есептік жазбасындағы карта мәліметтері осы сайтқа беріледі.</translation>
@@ -909,6 +912,7 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{Жоқ}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> іздеу</translation>
 <translation id="4879491255372875719">Автоматты (әдепкі)</translation>
+<translation id="4879725228911483934">Терезелерді ашу және экрандарда орналастыру</translation>
 <translation id="4880827082731008257">Іздеу тарихы</translation>
 <translation id="4881695831933465202">Ашу</translation>
 <translation id="4892518386797173871">Артқы</translation>

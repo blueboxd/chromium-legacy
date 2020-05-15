@@ -315,12 +315,71 @@ ScrollAnchor::ExamineResult ScrollAnchor::Examine(
 void ScrollAnchor::FindAnchor() {
   TRACE_EVENT0("blink", "ScrollAnchor::findAnchor");
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Layout.ScrollAnchor.TimeToFindAnchor");
-  FindAnchorRecursive(ScrollerLayoutBox(scroller_));
+
+  bool found_priority_anchor = FindAnchorInPriorityCandidates();
+  if (!found_priority_anchor)
+    FindAnchorRecursive(ScrollerLayoutBox(scroller_));
+
   if (anchor_object_) {
     anchor_object_->SetIsScrollAnchorObject();
     saved_relative_offset_ =
         ComputeRelativeOffset(anchor_object_, scroller_, corner_);
   }
+}
+
+bool ScrollAnchor::FindAnchorInPriorityCandidates() {
+  auto* scroller_box = ScrollerLayoutBox(scroller_);
+  if (!scroller_box)
+    return false;
+
+  auto& document = scroller_box->GetDocument();
+
+  // Focused area.
+  LayoutObject* candidate =
+      PriorityCandidateFromNode(document.FocusedElement());
+  auto result = ExaminePriorityCandidate(candidate);
+  if (result.viable) {
+    anchor_object_ = candidate;
+    corner_ = result.corner;
+    return true;
+  }
+
+  // Active find-in-page match.
+  candidate =
+      PriorityCandidateFromNode(document.GetFindInPageActiveMatchNode());
+  result = ExaminePriorityCandidate(candidate);
+  if (result.viable) {
+    anchor_object_ = candidate;
+    corner_ = result.corner;
+    return true;
+  }
+  return false;
+}
+
+LayoutObject* ScrollAnchor::PriorityCandidateFromNode(const Node* node) const {
+  while (node) {
+    if (auto* layout_object = node->GetLayoutObject()) {
+      if (!layout_object->IsAnonymous() &&
+          (!layout_object->IsInline() ||
+           layout_object->IsAtomicInlineLevel())) {
+        return layout_object;
+      }
+    }
+    node = FlatTreeTraversal::Parent(*node);
+  }
+  return nullptr;
+}
+
+ScrollAnchor::ExamineResult ScrollAnchor::ExaminePriorityCandidate(
+    const LayoutObject* candidate) const {
+  auto* ancestor = candidate;
+  auto* scroller_box = ScrollerLayoutBox(scroller_);
+  while (ancestor && ancestor != scroller_box) {
+    if (ancestor->StyleRef().OverflowAnchor() == EOverflowAnchor::kNone)
+      return ExamineResult(kSkip);
+    ancestor = ancestor->Parent();
+  }
+  return ancestor ? Examine(candidate) : ExamineResult(kSkip);
 }
 
 bool ScrollAnchor::FindAnchorRecursive(LayoutObject* candidate) {

@@ -43,10 +43,9 @@ ChooserDialogView::ChooserDialogView(
 
   DCHECK(chooser_controller);
 
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
-                                   chooser_controller->GetOkButtonLabel());
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
-                                   chooser_controller->GetCancelButtonLabel());
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, chooser_controller->GetOkButtonLabel());
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
+                 chooser_controller->GetCancelButtonLabel());
 
   device_chooser_content_view_ =
       new DeviceChooserContentView(this, std::move(chooser_controller));
@@ -54,15 +53,15 @@ ChooserDialogView::ChooserDialogView(
       ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
           views::CONTROL, views::CONTROL)));
 
-  DialogDelegate::SetExtraView(device_chooser_content_view_->CreateExtraView());
+  SetExtraView(device_chooser_content_view_->CreateExtraView());
 
-  DialogDelegate::SetAcceptCallback(
+  SetAcceptCallback(
       base::BindOnce(&DeviceChooserContentView::Accept,
                      base::Unretained(device_chooser_content_view_)));
-  DialogDelegate::SetCancelCallback(
+  SetCancelCallback(
       base::BindOnce(&DeviceChooserContentView::Cancel,
                      base::Unretained(device_chooser_content_view_)));
-  DialogDelegate::SetCloseCallback(
+  SetCloseCallback(
       base::BindOnce(&DeviceChooserContentView::Close,
                      base::Unretained(device_chooser_content_view_)));
 

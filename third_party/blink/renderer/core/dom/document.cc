@@ -351,6 +351,16 @@ bool IsInIndeterminateObjectAncestor(const Element* element) {
   return false;
 }
 
+// Helper function to notify both `first` and `second` that the priority scroll
+// anchor status changed. This is used when, for example, a focused element
+// changes from `first` to `second`.
+void NotifyPriorityScrollAnchorStatusChanged(Node* first, Node* second) {
+  if (first)
+    first->NotifyPriorityScrollAnchorStatusChanged();
+  if (second)
+    second->NotifyPriorityScrollAnchorStatusChanged();
+}
+
 }  // namespace
 
 class DocumentOutliveTimeReporter : public BlinkGCObserver {
@@ -5363,6 +5373,9 @@ void Document::NotifyFocusedElementChanged(Element* old_focused_element,
     if (GetSettings()->GetSpatialNavigationEnabled())
       GetPage()->GetSpatialNavigationController().FocusedNodeChanged(this);
   }
+
+  blink::NotifyPriorityScrollAnchorStatusChanged(old_focused_element,
+                                                 new_focused_element);
 }
 
 void Document::SetSequentialFocusNavigationStartingPoint(Node* node) {
@@ -8263,6 +8276,7 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(has_trust_tokens_answerer_);
   visitor->Trace(pending_has_trust_tokens_resolvers_);
   visitor->Trace(font_preload_manager_);
+  visitor->Trace(find_in_page_active_match_node_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);
@@ -8620,6 +8634,16 @@ void Document::FontPreloadingFinishedOrTimedOut() {
     // done or has timed out.
     BeginLifecycleUpdatesIfRenderingReady();
   }
+}
+
+void Document::SetFindInPageActiveMatchNode(Node* node) {
+  blink::NotifyPriorityScrollAnchorStatusChanged(
+      find_in_page_active_match_node_, node);
+  find_in_page_active_match_node_ = node;
+}
+
+const Node* Document::GetFindInPageActiveMatchNode() const {
+  return find_in_page_active_match_node_;
 }
 
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;

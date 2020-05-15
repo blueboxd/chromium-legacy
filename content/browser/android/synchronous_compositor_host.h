@@ -38,7 +38,6 @@ class RenderProcessHost;
 class RenderWidgetHostViewAndroid;
 class SynchronousCompositorClient;
 class SynchronousCompositorSyncCallBridge;
-struct SyncCompositorCommonRendererParams;
 
 class CONTENT_EXPORT SynchronousCompositorHost
     : public SynchronousCompositor,
@@ -91,7 +90,8 @@ class CONTENT_EXPORT SynchronousCompositorHost
 
   // mojom::SynchronousCompositorHost overrides.
   void LayerTreeFrameSinkCreated() override;
-  void UpdateState(const SyncCompositorCommonRendererParams& params) override;
+  void UpdateState(
+      mojom::SyncCompositorCommonRendererParamsPtr params) override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
 
   // viz::BeginFrameObserver implementation.

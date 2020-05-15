@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Ավտոմատ ներբեռնումներ</translation>
 <translation id="5677928146339483299">Արգելափակված է</translation>
 <translation id="5689516760719285838">Տեղորոշում</translation>
+<translation id="5690795753582697420">Տեսախցիկն անջատված է Android-ի կարգավորումներում</translation>
 <translation id="5710871682236653961">Հարցնել՝ նախքան թույլատրելը կայքերին ուղարկել և ստանալ տեղեկություններ, երբ հպում եք NFC սարքերին (խորհուրդ է տրվում)</translation>
 <translation id="5719847187258001597">Կջնջվեն բոլոր տվյալներն ու քուքիները, որոնք հիմնական էկրանին են պահվել <ph name="ORIGIN" /> կայքի և դրա հավելվածի կողմից։</translation>
 <translation id="5804241973901381774">Թույլտվություններ</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Ավելին</translation>
 <translation id="6064125863973209585">Կատարված ներբեռնումներ</translation>
 <translation id="6165508094623778733">Իմանալ ավելին</translation>
+<translation id="6177111841848151710">Արգելված է ընթացիկ որոնիչին</translation>
 <translation id="6181444274883918285">Ավելացնել բացառություն</translation>
 <translation id="6192792657125177640">Բացառություններ</translation>
 <translation id="6194112207524046168">Որպեսզի տեսախցիկը հասանելի դառնա Chrome-ին, միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Այս կայքը վտանգավոր է: Տեղեկություններ կայքի մասին:</translation>
 <translation id="6965382102122355670">Եղավ</translation>
 <translation id="6992289844737586249">Հարցնել՝ նախքան ձեր խոսափողը կայքերին հասանելի դարձնելը (խորհուրդ է տրվում)</translation>
+<translation id="7000754031042624318">Անջատված է Android-ի կարգավորումներում</translation>
+<translation id="7016516562562142042">Թույլատրված է ընթացիկ որոնիչին</translation>
 <translation id="7053983685419859001">Արգելափակել</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ընտրված տարր}one{# selected}other{# ընտրված տարր}}</translation>
 <translation id="7087918508125750058">Ընտրված է <ph name="ITEM_COUNT" /> տարր։ Ընտրանքները հասանելի են էկրանի վերին հատվածում</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Թույլատրել ձայնը առանձին կայքերում</translation>
 <translation id="7993619969781047893">Որոշ կայքերում գործառույթները կարող են չաշխատել։</translation>
 <translation id="7999064672810608036">Համոզվա՞ծ եք, որ ուզում եք մաքրել բոլոր տեղային տվյալները, այդ թվում նաև քուքիները, և զրոյացնել այս կայքի թույլտվությունները:</translation>
+<translation id="8007176423574883786">Անջատված է այս սարքի համար</translation>
 <translation id="802154636333426148">Ներբեռնումը ձախողվեց</translation>
 <translation id="8087000398470557479">Այս բովանդակությունը <ph name="DOMAIN_NAME" />-ից է, մատուցվում է Google-ի կողմից:</translation>
 <translation id="8116925261070264013">Անջատած ձայնով կայքեր</translation>

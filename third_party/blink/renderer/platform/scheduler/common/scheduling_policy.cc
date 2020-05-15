@@ -53,6 +53,7 @@ bool SchedulingPolicy::IsFeatureSticky(SchedulingPolicy::Feature feature) {
     case Feature::kWebFileSystem:
     case Feature::kAppBanner:
     case Feature::kPrinting:
+    case Feature::kPictureInPicture:
       return true;
   }
 }

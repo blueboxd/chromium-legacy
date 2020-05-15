@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Vipakuliwa vya kiotomatiki</translation>
 <translation id="5677928146339483299">Kumezuiwa</translation>
 <translation id="5689516760719285838">Mahali</translation>
+<translation id="5690795753582697420">Kamera imezimwa katika mipangilio ya Android</translation>
 <translation id="5710871682236653961">Uliza kabla ya kuruhusu tovuti kutuma na kupokea maelezo unapogusa vifaa vya NFC (inapendekezwa)</translation>
 <translation id="5719847187258001597">Hatua hii itafuta data na vidakuzi vyote vilivyohifadhiwa na <ph name="ORIGIN" /> au na programu yake kwenye Skrini yako ya kwanza.</translation>
 <translation id="5804241973901381774">Idhini</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Zaidi</translation>
 <translation id="6064125863973209585">Faili zilizopakuliwa</translation>
 <translation id="6165508094623778733">Pata maelezo zaidi</translation>
+<translation id="6177111841848151710">Haijaruhusiwa kwa mtambo wa sasa wa kutafuta</translation>
 <translation id="6181444274883918285">Ongeza tovuti mpya kwenye orodha ya vighairi</translation>
 <translation id="6192792657125177640">Vighairi</translation>
 <translation id="6194112207524046168">Ili uruhusu Chrome ifikie kamera yako, washa kamera pia katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Ukurasa huu ni hatari. Maelezo ya tovuti</translation>
 <translation id="6965382102122355670">Sawa</translation>
 <translation id="6992289844737586249">Uliza kwanza kabla ya kuruhusu tovuti zitumie maikrofoni yako (inapendekezwa)</translation>
+<translation id="7000754031042624318">Imezimwa katika mipangilio ya Android</translation>
+<translation id="7016516562562142042">Imeruhusiwa kwa mtambo wa sasa wa kutafuta</translation>
 <translation id="7053983685419859001">Zuia</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 imechaguliwa}other{# vimechaguliwa}}</translation>
 <translation id="7087918508125750058">Imechagua <ph name="ITEM_COUNT" />. Chaguo zinapatikana karibu na sehemu ya juu ya skrini</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Ruhusu sauti katika tovuti mahususi.</translation>
 <translation id="7993619969781047893">Huenda vipengele kwenye baadhi ya tovuti vikakosa kufanya kazi</translation>
 <translation id="7999064672810608036">Una uhakika unataka kufuta data zote za ndani, ikiwemo vidakuzi, na kuweka upya ruhusa za tovuti hii?</translation>
+<translation id="8007176423574883786">Imezimwa kwa kifaa hiki</translation>
 <translation id="802154636333426148">Haikuweza kupakua</translation>
 <translation id="8087000398470557479">Maudhui haya yanatoka <ph name="DOMAIN_NAME" />, yamewasilishwa na Google.</translation>
 <translation id="8116925261070264013">Imezimwa</translation>

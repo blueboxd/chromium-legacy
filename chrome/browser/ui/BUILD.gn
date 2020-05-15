@@ -2018,6 +2018,8 @@ static_library("ui") {
       "webui/settings/chromeos/calculator/size_calculator.h",
       "webui/settings/chromeos/change_picture_handler.cc",
       "webui/settings/chromeos/change_picture_handler.h",
+      "webui/settings/chromeos/constants/constants_util.cc",
+      "webui/settings/chromeos/constants/constants_util.h",
       "webui/settings/chromeos/constants/routes_util.cc",
       "webui/settings/chromeos/constants/routes_util.h",
       "webui/settings/chromeos/crostini_handler.cc",

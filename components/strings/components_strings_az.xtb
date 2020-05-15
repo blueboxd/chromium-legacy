@@ -269,6 +269,7 @@
 <translation id="2094505752054353250">Domen uyğunsuzluğu</translation>
 <translation id="2096368010154057602">Departament</translation>
 <translation id="2099652385553570808">Soldan üçlü ştapel vurun</translation>
+<translation id="2101225219012730419">Versiya:</translation>
 <translation id="2102134110707549001">Güclü Parol Təklif Edin...</translation>
 <translation id="2107021941795971877">Çap dəstəyi</translation>
 <translation id="2108755909498034140">Kompüteri yenidən başladın</translation>
@@ -444,6 +445,7 @@
 <translation id="2856444702002559011">Hücumçular <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> saytından məlumat (məsələn, parol, mesaj və ya kredit kartları) oğurlamağa çalışa bilərlər. <ph name="BEGIN_LEARN_MORE_LINK" />Ətraflı məlumat<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">Poster formasında qatlayın</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2880660355386638022">Pəncərənin yerləşdirilməsi</translation>
 <translation id="2881276955470682203">Kart yadda saxlansın?</translation>
 <translation id="2882949212241984732">Cüt qatlayın</translation>
 <translation id="2903493209154104877">Ünvanlar</translation>
@@ -640,6 +642,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Proksi, güvənlik divarı və DNS konfiqurasiyası yoxlanılır<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">Bu xətaya səbəb olan tətbiqlərdə antivirus, həmişəlik proqram təminatı, veb filtrləmə və proksi proqram təminatı ola bilər.</translation>
 <translation id="373042150751172459">B4 (Zərf)</translation>
+<translation id="3731873414101415120">Daxil olduğunuz veb saytlar və güvənli olmayan səhifələrin məzmunu</translation>
 <translation id="3736520371357197498">Güvənliyinizin üzləşdiyi riskləri anlayırsınızsa, təhlükəli proqramlar silinmədən öncə <ph name="BEGIN_LINK" />güvənsiz sayta daxil ola bilərsiniz<ph name="END_LINK" />.</translation>
 <translation id="3744899669254331632">Sayt güvənsiz kredensiallar göndərdiyi üçün <ph name="SITE" /> ünvanına girə bilməzsiniz.</translation>
 <translation id="3745099705178523657">Təsdiqlədikdən sonra Google Hesabındakı kart məlumatları bu saytda paylaşılacaq.</translation>
@@ -906,6 +909,7 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{Heç biri}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> axtarışı</translation>
 <translation id="4879491255372875719">Avtomatik (defolt)</translation>
+<translation id="4879725228911483934">Ekranlarınızda pəncərələri açın və yerləşdirin</translation>
 <translation id="4880827082731008257">Axtarış tarixçəsi</translation>
 <translation id="4881695831933465202">Açın</translation>
 <translation id="4892518386797173871">Arxa</translation>

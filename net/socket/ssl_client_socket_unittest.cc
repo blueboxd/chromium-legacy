@@ -4979,14 +4979,13 @@ TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTEarlyDataLimit) {
   EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
 }
 
-TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTNoZeroRTTOnResume) {
+TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTReject) {
   ASSERT_TRUE(StartServer());
   ASSERT_TRUE(RunInitialConnection());
 
   SSLServerConfig server_config;
   server_config.early_data_enabled = false;
   server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
-
   SetServerConfig(server_config);
 
   // 0-RTT Connection
@@ -5003,6 +5002,50 @@ TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTNoZeroRTTOnResume) {
   EXPECT_EQ(ERR_EARLY_DATA_REJECTED, rv);
   rv = WriteAndWait(kRequest);
   EXPECT_EQ(ERR_EARLY_DATA_REJECTED, rv);
+
+  // Retrying the connection should succeed.
+  socket = MakeClient(true);
+  ASSERT_THAT(Connect(), IsOk());
+  ASSERT_THAT(MakeHTTPRequest(ssl_socket()), IsOk());
+  SSLInfo ssl_info;
+  ASSERT_TRUE(GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
+}
+
+TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTWrongVersion) {
+  ASSERT_TRUE(StartServer());
+  ASSERT_TRUE(RunInitialConnection());
+
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  SetServerConfig(server_config);
+
+  // 0-RTT Connection
+  FakeBlockingStreamSocket* socket = MakeClient(true);
+  socket->BlockReadResult();
+  ASSERT_THAT(Connect(), IsOk());
+  constexpr base::StringPiece kRequest = "GET /zerortt HTTP/1.0\r\n\r\n";
+  EXPECT_EQ(static_cast<int>(kRequest.size()), WriteAndWait(kRequest));
+  socket->UnblockReadResult();
+
+  // Expect early data to be rejected because the TLS version was incorrect.
+  scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(4096);
+  int rv = ReadAndWait(buf.get(), 4096);
+  EXPECT_EQ(ERR_WRONG_VERSION_ON_EARLY_DATA, rv);
+  rv = WriteAndWait(kRequest);
+  // TODO(https://crbug.com/1078515): This should be
+  // ERR_WRONG_VERSION_ON_EARLY_DATA. We assert on the current value so that,
+  // when the bug is fixed (likely in BoringSSL), we remember to fix the test to
+  // set a proper test expectation.
+  EXPECT_EQ(ERR_SSL_PROTOCOL_ERROR, rv);
+
+  // Retrying the connection should succeed.
+  socket = MakeClient(true);
+  ASSERT_THAT(Connect(), IsOk());
+  ASSERT_THAT(MakeHTTPRequest(ssl_socket()), IsOk());
+  SSLInfo ssl_info;
+  ASSERT_TRUE(GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
 }
 
 // Test that the ConfirmHandshake successfully completes the handshake and that

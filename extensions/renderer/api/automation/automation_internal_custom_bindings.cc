@@ -2371,14 +2371,30 @@ void AutomationInternalCustomBindings::SendAutomationEvent(
   if (!fire_event)
     return;
 
-  auto event_params = std::make_unique<base::DictionaryValue>();
-  event_params->SetString("treeID", tree_id.ToString());
-  event_params->SetInteger("targetID", event.id);
-  event_params->SetString("eventType", api::automation::ToString(event_type));
-  event_params->SetString("eventFrom", ui::ToString(event.event_from));
-  event_params->SetInteger("actionRequestID", event.action_request_id);
-  event_params->SetInteger("mouseX", mouse_location.x());
-  event_params->SetInteger("mouseY", mouse_location.y());
+  base::Value event_params(base::Value::Type::DICTIONARY);
+  event_params.SetKey("treeID", base::Value(tree_id.ToString()));
+  event_params.SetKey("targetID", base::Value(event.id));
+  event_params.SetKey("eventType",
+                      base::Value(api::automation::ToString(event_type)));
+  event_params.SetKey("eventFrom", base::Value(ui::ToString(event.event_from)));
+  event_params.SetKey("actionRequestID", base::Value(event.action_request_id));
+  event_params.SetKey("mouseX", base::Value(mouse_location.x()));
+  event_params.SetKey("mouseY", base::Value(mouse_location.y()));
+
+  // Populate intents.
+  base::Value value_intents(base::Value::Type::LIST);
+  for (const auto& intent : event.event_intents) {
+    base::Value dict(base::Value::Type::DICTIONARY);
+    dict.SetKey("command", base::Value(ui::ToString(intent.command)));
+    dict.SetKey("textBoundary",
+                base::Value(ui::ToString(intent.text_boundary)));
+    dict.SetKey("moveDirection",
+                base::Value(ui::ToString(intent.move_direction)));
+    value_intents.Append(std::move(dict));
+  }
+
+  event_params.SetKey("intents", std::move(value_intents));
+
   base::ListValue args;
   args.Append(std::move(event_params));
   bindings_system_->DispatchEventInContext(

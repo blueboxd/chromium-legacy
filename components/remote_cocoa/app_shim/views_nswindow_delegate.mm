@@ -5,7 +5,7 @@
 #import "components/remote_cocoa/app_shim/views_nswindow_delegate.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/mac_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "components/remote_cocoa/app_shim/bridged_content_view.h"

@@ -103,7 +103,7 @@ using base::StartsWith;
 using base::TimeTicks;
 using mojom::SubmissionSource;
 
-const int kCreditCardSigninPromoImpressionLimit = 3;
+constexpr int kCreditCardSigninPromoImpressionLimit = 3;
 
 namespace {
 
@@ -414,6 +414,13 @@ const char* SubmissionSourceToString(SubmissionSource source) {
       return "FORM_SUBMISSION";
   }
   return "Unknown";
+}
+
+// Returns how many fields with type |field_type| may be filled in a form at
+// maximum.
+int TypeValueFormFillingLimit(ServerFieldType field_type) {
+  return field_type == CREDIT_CARD_NUMBER ? kCreditCardTypeValueFormFillingLimit
+                                          : kTypeValueFormFillingLimit;
 }
 
 }  // namespace
@@ -1689,6 +1696,12 @@ void AutofillManager::FillOrPreviewDataModelForm(
   DCHECK(form_structure);
   DCHECK(autofill_field);
 
+  LogBuffer buffer;
+  buffer << "is credit card section: " << is_credit_card << Br{};
+  buffer << "is refill: " << is_refill << Br{};
+  buffer << *form_structure << Br{};
+  buffer << Tag{"table"};
+
   form_structure->RationalizePhoneNumbersInSection(autofill_field->section);
 
   FormData result = form;
@@ -1710,15 +1723,24 @@ void AutofillManager::FillOrPreviewDataModelForm(
                               !filling_context->attempted_refill &&
                               !is_refill && !is_credit_card;
 
+  // Count the number of times the value of a specific type was filled into the
+  // form.
+  std::map<ServerFieldType, int> type_filling_count;
+
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
+    std::string field_number = base::StringPrintf("Field %zu", i);
+
     // On the renderer, the section is used regardless of the autofill status.
     result.fields[i].section = form_structure->field(i)->section;
 
-    if (form_structure->field(i)->section != autofill_field->section)
+    if (form_structure->field(i)->section != autofill_field->section) {
+      buffer << Tr{} << field_number << "Skipped: not part of filled section";
       continue;
+    }
 
     if (form_structure->field(i)->only_fill_when_focused() &&
         !form_structure->field(i)->SameFieldAs(field)) {
+      buffer << Tr{} << field_number << "Skipped: only fill when focused";
       continue;
     }
 
@@ -1734,22 +1756,32 @@ void AutofillManager::FillOrPreviewDataModelForm(
       bool skip = result.fields[i].form_control_type != "select-one";
       form_interactions_ukm_logger_->LogHiddenRepresentationalFieldSkipDecision(
           *form_structure, *cached_field, skip);
-      if (skip)
+      if (skip) {
+        buffer << Tr{} << field_number << "Skipped: invisible field";
         continue;
+      }
     }
 
     // Don't fill previously autofilled fields except the initiating field or
     // when it's a refill.
     if (result.fields[i].is_autofilled && !cached_field->SameFieldAs(field) &&
         !is_refill) {
+      buffer << Tr{} << field_number
+             << "Skipped: don't fill previously filled fields unless during a "
+                "refill";
       continue;
     }
 
-    if (field_group_type == NO_GROUP)
+    if (field_group_type == NO_GROUP) {
+      buffer << Tr{} << field_number
+             << "Skipped: field type has no fillable group";
       continue;
+    }
 
     if (field_group_type == COMPANY &&
         !base::FeatureList::IsEnabled(features::kAutofillEnableCompanyName)) {
+      buffer << Tr{} << field_number
+             << "Skipped: field is a company-name field";
       continue;
     }
 
@@ -1758,6 +1790,9 @@ void AutofillManager::FillOrPreviewDataModelForm(
     if (is_refill &&
         !base::Contains(filling_context->type_groups_originally_filled,
                         field_group_type)) {
+      buffer << Tr{} << field_number
+             << "Skipped: in a refill, only fields from the group that was "
+                "filled in the initial fill may be filled";
       continue;
     }
 
@@ -1766,6 +1801,18 @@ void AutofillManager::FillOrPreviewDataModelForm(
             cached_field->Type().GetStorableType()) &&
         static_cast<const CreditCard*>(&data_model)
             ->IsExpired(AutofillClock::Now())) {
+      buffer << Tr{} << field_number
+             << "Skipped: don't fill expiration date of expired cards";
+      continue;
+    }
+
+    // A field with a specific type is only allowed to be filled a limited
+    // number of times given by |TypeValueFormFillingLimit(field_type)|.
+    const auto field_type = cached_field->Type().GetStorableType();
+    if (++type_filling_count[field_type] >
+        TypeValueFormFillingLimit(field_type)) {
+      buffer << Tr{} << field_number
+             << "Skipped: field-type filling-limit reached";
       continue;
     }
 
@@ -1781,16 +1828,31 @@ void AutofillManager::FillOrPreviewDataModelForm(
                           result.fields[i].form_control_type == "select-one" ||
                           result.fields[i].value.empty());
 
+    bool has_value_before = !result.fields[i].value.empty();
+    bool is_autofilled_before = result.fields[i].is_autofilled;
+
+    std::string failure_to_fill;  // Reason for failing to fill.
+
     // Fill the non-empty value from |data_model| into the result vector, which
     // will be sent to the renderer.
     FillFieldWithValue(
         cached_field, data_model, &result.fields[i], should_notify, cvc,
-        data_util::DetermineGroups(form_structure->GetServerFieldTypes()));
+        data_util::DetermineGroups(form_structure->GetServerFieldTypes()),
+        &failure_to_fill);
 
-    if (!cached_field->IsVisible() && result.fields[i].is_autofilled) {
+    bool has_value_after = !result.fields[i].value.empty();
+    bool is_autofilled_after = result.fields[i].is_autofilled;
+
+    buffer << Tr{} << field_number
+           << base::StringPrintf(
+                  "Fillable - has value: %d->%d; autofilled: %d->%d. %s",
+                  has_value_before, is_autofilled_before, has_value_after,
+                  is_autofilled_after, failure_to_fill.c_str());
+
+    if (!cached_field->IsVisible() && result.fields[i].is_autofilled)
       AutofillMetrics::LogHiddenOrPresentationalSelectFieldsFilled();
-    }
   }
+  buffer << CTag{"table"};
 
   autofilled_form_signatures_.push_front(form_structure->FormSignatureAsStr());
   // Only remember the last few forms that we've seen, both to avoid false
@@ -1802,6 +1864,11 @@ void AutofillManager::FillOrPreviewDataModelForm(
   if (action == AutofillDriver::FORM_DATA_ACTION_FILL && !is_refill)
     personal_data_->RecordUseOf(data_model);
 
+  if (log_manager_) {
+    log_manager_->Log() << LoggingScope::kFilling
+                        << LogMessage::kSendFillingData << Br{}
+                        << std::move(buffer);
+  }
   driver()->SendFormDataToRenderer(query_id, action, result);
 }
 
@@ -2302,9 +2369,12 @@ void AutofillManager::FillFieldWithValue(AutofillField* autofill_field,
                                          FormFieldData* field_data,
                                          bool should_notify,
                                          const base::string16& cvc,
-                                         uint32_t profile_form_bitmask) {
-  if (field_filler_.FillFormField(*autofill_field, data_model, field_data,
-                                  cvc)) {
+                                         uint32_t profile_form_bitmask,
+                                         std::string* failure_to_fill) {
+  if (field_filler_.FillFormField(*autofill_field, data_model, field_data, cvc,
+                                  failure_to_fill)) {
+    if (failure_to_fill)
+      *failure_to_fill = "Decided to fill";
     // Mark the cached field as autofilled, so that we can detect when a
     // user edits an autofilled field (for metrics).
     autofill_field->is_autofilled = true;

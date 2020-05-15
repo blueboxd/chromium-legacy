@@ -608,6 +608,7 @@ base::Optional<SkColor> NativeThemeWin::GetPlatformHighContrastColor(
     case kColorId_TreeBackground:
     case kColorId_TableHeaderBackground:
     case kColorId_TableBackground:
+    case kColorId_TableBackgroundAlternate:
     case kColorId_TooltipBackground:
     case kColorId_ProminentButtonDisabledColor:
       return system_colors_[SystemThemeColor::kWindow];

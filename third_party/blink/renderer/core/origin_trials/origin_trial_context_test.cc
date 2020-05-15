@@ -46,31 +46,25 @@ class MockTokenValidator : public TrialTokenValidator {
   ~MockTokenValidator() override = default;
 
   // blink::WebTrialTokenValidator implementation
-  OriginTrialTokenStatus ValidateToken(base::StringPiece token,
-                                       const url::Origin& origin,
-                                       base::Time current_time,
-                                       std::string* feature_name,
-                                       base::Time* expiry_time) const override {
+  TrialTokenResult ValidateToken(base::StringPiece token,
+                                 const url::Origin& origin,
+                                 base::Time current_time) const override {
     call_count_++;
-    *feature_name = feature_;
-    *expiry_time = expiry_;
     return response_;
   }
 
   // Useful methods for controlling the validator
-  void SetResponse(OriginTrialTokenStatus response,
+  void SetResponse(OriginTrialTokenStatus status,
                    const std::string& feature,
                    base::Time expiry = base::Time()) {
-    response_ = response;
-    feature_ = feature;
-    expiry_ = expiry;
+    response_.status = status;
+    response_.feature_name = feature;
+    response_.expiry_time = expiry;
   }
   int CallCount() { return call_count_; }
 
  private:
-  OriginTrialTokenStatus response_;
-  std::string feature_;
-  base::Time expiry_;
+  TrialTokenResult response_;
 
   mutable int call_count_;
 

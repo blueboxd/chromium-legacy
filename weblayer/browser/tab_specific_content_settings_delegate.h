@@ -33,6 +33,8 @@ class TabSpecificContentSettingsDelegate
   PrefService* GetPrefs() override;
   HostContentSettingsMap* GetSettingsMap() override;
   std::vector<storage::FileSystemType> GetAdditionalFileSystemTypes() override;
+  browsing_data::CookieHelper::IsDeletionDisabledCallback
+  GetIsDeletionDisabledCallback() override;
   bool IsMicrophoneCameraStateChanged(
       content_settings::TabSpecificContentSettings::MicrophoneCameraState
           microphone_camera_state,

@@ -5,6 +5,7 @@ package org.chromium.chrome.browser.signin;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.RootMatchers.isDialog;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -164,6 +165,9 @@ public class SigninFragmentTest {
         });
         onView(withText(defaultAccount.name)).check(matches(isDisplayed())).perform(click());
         onView(withText(nonDefaultAccountName)).inRoot(isDialog()).perform(click());
+        // We should return to the signin promo screen where the previous account is
+        // not shown anymore.
+        onView(withText(defaultAccount.name)).check(doesNotExist());
         onView(withText(nonDefaultAccountName)).check(matches(isDisplayed()));
     }
 

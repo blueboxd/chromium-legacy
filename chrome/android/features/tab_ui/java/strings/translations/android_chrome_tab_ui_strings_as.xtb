@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">গোট সৃষ্টি কৰক</translation>
 <translation id="2671423594960767771">গোট শ্বেয়াৰ কৰক</translation>
 <translation id="2977480621796371840">গোটৰ পৰা আঁতৰাওক</translation>
+<translation id="3328308545011660196">পৰামৰ্শ: <ph name="NUMBER_OF_TABS" />টা টেব জড়িত যেন লাগিছে। সেইকেইটা একগোট কৰিবনে?</translation>
+<translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> টা টেব জড়িত যেন লাগিছে। সেইকেইটা একগোট কৰিবনে?</translation>
 <translation id="4212246570487010370">ব্ৰাউজ কৰা অব্যাহত ৰাখক</translation>
 <translation id="4450893287417543264">পুনৰ নেদেখুৱাব</translation>
 <translation id="4648718555153979859">আপোনাৰ টেবসমূহ ইয়াত একগোট কৰা হৈছে</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">গোটটোৰ পৰা টেবসমূহ আঁতৰাওক</translation>
 <translation id="7559245342362162951">গোটৰ টেব সম্পূৰ্ণ স্ক্রীণৰ গ্রিডত দেখুৱাওক</translation>
 <translation id="7792771145871471484">পৰামৰ্শসমূহ পৰ্যালোচনা কৰক।</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> টা বাছনি কৰা টেবৰ গোট বনাওক}one{<ph name="TABS_COUNT_MANY" /> টা বাছনি কৰা টেবৰ গোট বনাওক}other{<ph name="TABS_COUNT_MANY" /> টা বাছনি কৰা টেবৰ গোট বনাওক}}</translation>
 <translation id="7885132941432959125">টেবটো সোঁফাললৈ নিয়ক</translation>
 <translation id="7966321538264951561">পৰামৰ্শসমূহ বাতিল কৰক।</translation>
 <translation id="814503310257431685">সকলো চাওক</translation>

@@ -716,11 +716,11 @@ TextFinder::TextFinder(WebLocalFrameImpl& owner_frame)
 bool TextFinder::SetMarkerActive(Range* range, bool active) {
   if (!range || range->collapsed())
     return false;
-  return OwnerFrame()
-      .GetFrame()
-      ->GetDocument()
-      ->Markers()
-      .SetTextMatchMarkersActive(EphemeralRange(range), active);
+  Document* document = OwnerFrame().GetFrame()->GetDocument();
+  document->SetFindInPageActiveMatchNode(active ? range->startContainer()
+                                                : nullptr);
+  return document->Markers().SetTextMatchMarkersActive(EphemeralRange(range),
+                                                       active);
 }
 
 void TextFinder::UnmarkAllTextMatches() {

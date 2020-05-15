@@ -7,8 +7,10 @@ import("//build/config/mac/base_rules.gni")
 import("//build/config/mac/symbols.gni")
 import("//build/toolchain/toolchain.gni")
 
-# Constants corresponding to the bundle type identifier for XCTest and XCUITest
-# targets.
+# Constants corresponding to the bundle type identifiers use application,
+# application extension, XCTest and XCUITest targets respectively.
+_ios_xcode_app_bundle_id = "com.apple.product-type.application"
+_ios_xcode_appex_bundle_id = "com.apple.product-type.app-extension"
 _ios_xcode_xctest_bundle_id = "com.apple.product-type.bundle.unit-test"
 _ios_xcode_xcuitest_bundle_id = "com.apple.product-type.bundle.ui-testing"
 
@@ -598,10 +600,7 @@ template("ios_app_bundle") {
   _default_variant = _variants[0]
 
   if (current_toolchain != default_toolchain) {
-    # For use of _variants and _default_variant for secondary toolchain to
-    # avoid the "Assignment had no effect" error from gn.
-    assert(_variants != [])
-    assert(_default_variant.target_name != "")
+    not_needed("*")
   }
 
   source_set(_arch_executable_source) {
@@ -792,8 +791,7 @@ template("ios_app_bundle") {
       }
     }
 
-    _app_product_type = "com.apple.product-type.application"
-    _product_type = _app_product_type
+    _product_type = _ios_xcode_app_bundle_id
     if (defined(invoker.product_type)) {
       _product_type = invoker.product_type
     }
@@ -806,7 +804,7 @@ template("ios_app_bundle") {
 
     # Only write PkgInfo for real application, not application extension (they
     # have the same product type but a different extension).
-    _write_pkg_info = _product_type == _app_product_type &&
+    _write_pkg_info = _product_type == _ios_xcode_app_bundle_id &&
                       _bundle_extension == _app_bundle_extension
 
     if (_write_pkg_info) {
@@ -951,7 +949,7 @@ template("ios_appex_bundle") {
                              "product_type",
                            ])
     bundle_extension = ".appex"
-    product_type = "com.apple.product-type.app-extension"
+    product_type = _ios_xcode_appex_bundle_id
 
     # Add linker flags required for an application extension (determined by
     # inspecting the link command-line when using Xcode 9.0+).
@@ -1376,9 +1374,12 @@ template("ios_framework_bundle") {
       all_dependent_configs += [ ":$_framework_public_config" ]
     }
 
-    if (defined(invoker.bundle_deps)) {
-      assert(invoker.bundle_deps != [], "mark bundle_deps as used")
+    group("$_target_name+bundle") {
+      forward_variables_from(invoker, [ "testonly" ])
+      public_deps = [ ":$_target_name+bundle($default_toolchain)" ]
     }
+
+    not_needed(invoker, "*")
   } else {
     if (_has_public_headers) {
       _public_headers = invoker.public_headers
@@ -1620,9 +1621,9 @@ template("ios_xctest_bundle") {
   # Silence "assignment had no effect" error for non-default toolchains as
   # following variables are only used in the expansion of the template for the
   # default toolchain.
-  assert(invoker.configs != [])
-  assert(invoker.host_target != target_name)
-  assert(invoker.xcode_test_application_name != target_name)
+  if (current_toolchain != default_toolchain) {
+    not_needed(invoker, "*")
+  }
 
   _target_name = target_name
   _output_name = target_name
@@ -1669,12 +1670,7 @@ template("ios_xctest_bundle") {
       public_deps = [ ":$_arch_loadable_module_target" ]
     }
 
-    # Force the use of invoker.xctest_bundle_principal_class if it is
-    # defined to prevent error about unused variable while generating
-    # the targets.
-    assert(!defined(invoker.xctest_bundle_principal_class) ||
-               invoker.xctest_bundle_principal_class != "",
-           "xctest_bundle_principal_class must not be empty if defined")
+    not_needed(invoker, "*")
   } else {
     _info_plist_target = _target_name + "_info_plist"
     _info_plist_bundle = _target_name + "_info_plist_bundle"
@@ -1981,7 +1977,7 @@ template("ios_xcuitest_test_runner_bundle") {
     bundle_binary_target = "//build/config/ios:xctest_runner_without_arm64e"
     bundle_binary_output = "XCTRunner"
     bundle_extension = ".app"
-    product_type = "com.apple.product-type.application"
+    product_type = _ios_xcode_app_bundle_id
 
     output_name = _output_name
 

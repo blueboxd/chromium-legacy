@@ -85,6 +85,8 @@ using content_settings::TabSpecificContentSettings;
 
 namespace {
 
+using QuietUiReason = permissions::PermissionRequestManager::QuietUiReason;
+
 #if defined(OS_MACOSX)
 static constexpr char kCameraSettingsURI[] =
     "x-apple.systempreferences:com.apple.preference.security?Privacy_"
@@ -1622,30 +1624,48 @@ ContentSettingNotificationsBubbleModel::ContentSettingNotificationsBubbleModel(
     : ContentSettingBubbleModel(delegate, web_contents) {
   set_title(l10n_util::GetStringUTF16(
       IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_TITLE));
-  set_done_button_text(l10n_util::GetStringUTF16(
-      IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_ALLOW_BUTTON));
-  set_show_learn_more(false);
 
   // TODO(crbug.com/1030633): This block is more defensive than it needs to be
   // because ContentSettingImageModelBrowserTest exercises it without setting up
   // the correct PermissionRequestManager state. Fix that.
   permissions::PermissionRequestManager* manager =
       permissions::PermissionRequestManager::FromWebContents(web_contents);
-  int message_resource_id =
-      IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_DESCRIPTION;
-  if (manager->ShouldCurrentRequestUseQuietUI() &&
-      manager->ReasonForUsingQuietUi() ==
-          permissions::PermissionRequestManager::QuietUiReason::
-              kTriggeredByCrowdDeny) {
-    message_resource_id =
-        IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_CROWD_DENY_DESCRIPTION;
-    base::RecordAction(
-        base::UserMetricsAction("Notifications.Quiet.StaticIconClicked"));
-  } else {
-    base::RecordAction(
-        base::UserMetricsAction("Notifications.Quiet.AnimatedIconClicked"));
+  if (!manager->ShouldCurrentRequestUseQuietUI())
+    return;
+  switch (manager->ReasonForUsingQuietUi()) {
+    case QuietUiReason::kEnabledInPrefs:
+      set_message(l10n_util::GetStringUTF16(
+          IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_DESCRIPTION));
+      set_done_button_text(l10n_util::GetStringUTF16(
+          IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_ALLOW_BUTTON));
+      set_show_learn_more(false);
+      base::RecordAction(
+          base::UserMetricsAction("Notifications.Quiet.AnimatedIconClicked"));
+      break;
+    case QuietUiReason::kTriggeredByCrowdDeny:
+      set_message(l10n_util::GetStringUTF16(
+          IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_CROWD_DENY_DESCRIPTION));
+      set_done_button_text(l10n_util::GetStringUTF16(
+          IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_ALLOW_BUTTON));
+      set_show_learn_more(false);
+      base::RecordAction(
+          base::UserMetricsAction("Notifications.Quiet.StaticIconClicked"));
+      break;
+    case QuietUiReason::kTriggeredDueToAbusiveRequests:
+      set_message(l10n_util::GetStringUTF16(
+          IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_ABUSIVE_DESCRIPTION));
+      // TODO(crbug.com/1082738): It is rather confusing to have the `Cancel`
+      // button allow the permission, but we want the primary to block.
+      set_cancel_button_text(l10n_util::GetStringUTF16(
+          IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_COMPACT_ALLOW_BUTTON));
+      set_done_button_text(l10n_util::GetStringUTF16(
+          IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_CONTINUE_BLOCKING_BUTTON));
+      set_show_learn_more(true);
+      set_manage_text_style(ManageTextStyle::kNone);
+      base::RecordAction(
+          base::UserMetricsAction("Notifications.Quiet.StaticIconClicked"));
+      break;
   }
-  set_message(l10n_util::GetStringUTF16(message_resource_id));
 }
 
 ContentSettingNotificationsBubbleModel::
@@ -1664,13 +1684,46 @@ void ContentSettingNotificationsBubbleModel::OnManageButtonClicked() {
       base::UserMetricsAction("Notifications.Quiet.ManageClicked"));
 }
 
+void ContentSettingNotificationsBubbleModel::OnLearnMoreClicked() {
+  if (delegate())
+    delegate()->ShowLearnMorePage(ContentSettingsType::NOTIFICATIONS);
+}
+
 void ContentSettingNotificationsBubbleModel::OnDoneButtonClicked() {
   permissions::PermissionRequestManager* manager =
       permissions::PermissionRequestManager::FromWebContents(web_contents());
-  manager->Accept();
 
-  base::RecordAction(
-      base::UserMetricsAction("Notifications.Quiet.ShowForSiteClicked"));
+  DCHECK(manager->ShouldCurrentRequestUseQuietUI());
+  switch (manager->ReasonForUsingQuietUi()) {
+    case QuietUiReason::kEnabledInPrefs:
+    case QuietUiReason::kTriggeredByCrowdDeny:
+      manager->Accept();
+      base::RecordAction(
+          base::UserMetricsAction("Notifications.Quiet.ShowForSiteClicked"));
+      break;
+    case QuietUiReason::kTriggeredDueToAbusiveRequests:
+      manager->Deny();
+      base::RecordAction(base::UserMetricsAction(
+          "Notifications.Quiet.ContinueBlockingClicked"));
+      break;
+  }
+}
+
+void ContentSettingNotificationsBubbleModel::OnCancelButtonClicked() {
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents());
+
+  switch (manager->ReasonForUsingQuietUi()) {
+    case QuietUiReason::kEnabledInPrefs:
+    case QuietUiReason::kTriggeredByCrowdDeny:
+      // No-op.
+      break;
+    case QuietUiReason::kTriggeredDueToAbusiveRequests:
+      manager->Accept();
+      base::RecordAction(
+          base::UserMetricsAction("Notifications.Quiet.ShowForSiteClicked"));
+      break;
+  }
 }
 
 // ContentSettingBubbleModel ---------------------------------------------------

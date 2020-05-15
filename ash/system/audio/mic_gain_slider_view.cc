@@ -80,15 +80,15 @@ void MicGainSliderView::Update(bool by_user) {
 }
 
 void MicGainSliderView::OnInputNodeGainChanged(uint64_t node_id, int gain) {
-  Update(false /* by_user */);
+  Update(true /* by_user */);
 }
 
 void MicGainSliderView::OnInputMuteChanged(bool mute_on) {
-  Update(false /* by_user */);
+  Update(true /* by_user */);
 }
 
 void MicGainSliderView::OnActiveInputNodeChanged() {
-  Update(false /* by_user */);
+  Update(true /* by_user */);
 }
 
 const char* MicGainSliderView::GetClassName() const {

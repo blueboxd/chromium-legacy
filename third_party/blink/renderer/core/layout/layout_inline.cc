@@ -1599,11 +1599,7 @@ void LayoutInline::DirtyLinesFromChangedChild(
       }
       return;
     }
-    // TODO(yosin): We should move |SetAncestorLineBoxDirty()| into
-    // |DirtyLinesFromChangedChild()| like legacy layout.
     SetAncestorLineBoxDirty();
-    if (child->IsInLayoutNGInlineFormattingContext())
-      NGPaintFragment::DirtyLinesFromChangedChild(child);
     return;
   }
   MutableLineBoxes()->DirtyLinesFromChangedChild(

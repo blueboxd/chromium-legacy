@@ -48,15 +48,49 @@ feedwire::Response EmptyWireResponse() {
   return response;
 }
 
-// Helper to add some common params.
+feedwire::DataOperation MakeDataOperation(
+    feedwire::DataOperation::Operation operation) {
+  feedwire::DataOperation result;
+  result.set_operation(operation);
+  result.mutable_metadata()->mutable_content_id()->set_id(42);
+  return result;
+}
+
+feedwire::DataOperation MakeDataOperationWithContent(
+    feedwire::DataOperation::Operation operation,
+    std::string xsurface_content = "content") {
+  feedwire::DataOperation result = MakeDataOperation(operation);
+  result.mutable_feature()->set_renderable_unit(feedwire::Feature::CONTENT);
+  result.mutable_feature()
+      ->mutable_content_extension()
+      ->mutable_xsurface_content()
+      ->set_xsurface_output(std::move(xsurface_content));
+  return result;
+}
+
+feedwire::DataOperation MakeDataOperationWithRenderData(
+    feedwire::DataOperation::Operation operation,
+    std::string xsurface_render_data = "renderdata") {
+  feedwire::DataOperation result = MakeDataOperation(operation);
+  result.mutable_render_data()->set_render_data_type(
+      feedwire::RenderData::XSURFACE);
+  result.mutable_render_data()->mutable_xsurface_container()->set_render_data(
+      std::move(xsurface_render_data));
+  return result;
+}
+
+// Helpers to add some common params.
 RefreshResponseData TranslateWireResponse(feedwire::Response response) {
   return TranslateWireResponse(
       response, StreamModelUpdateRequest::Source::kNetworkUpdate, kCurrentTime);
 }
 
-}  // namespace
+base::Optional<feedstore::DataOperation> TranslateDataOperation(
+    feedwire::DataOperation operation) {
+  return ::feed::TranslateDataOperation(base::Time(), std::move(operation));
+}
 
-// TODO(iwells): Test failure cases.
+}  // namespace
 
 TEST(ProtocolTranslatorTest, NextPageToken) {
   feedwire::Response response = EmptyWireResponse();
@@ -73,6 +107,94 @@ TEST(ProtocolTranslatorTest, NextPageToken) {
   EXPECT_EQ(1ul, translated.model_update_request->stream_structures.size());
   EXPECT_EQ("token",
             translated.model_update_request->stream_data.next_page_token());
+}
+
+TEST(ProtocolTranslatorTest, EmptyResponse) {
+  feedwire::Response response = EmptyWireResponse();
+  EXPECT_TRUE(TranslateWireResponse(response).model_update_request);
+}
+
+TEST(ProtocolTranslatorTest, MissingResponseVersion) {
+  feedwire::Response response = EmptyWireResponse();
+  response.set_response_version(feedwire::Response::UNKNOWN_RESPONSE_VERSION);
+  EXPECT_FALSE(TranslateWireResponse(response).model_update_request);
+}
+
+TEST(ProtocolTranslatorTest, TranslateContent) {
+  feedwire::DataOperation wire_operation =
+      MakeDataOperationWithContent(feedwire::DataOperation::UPDATE_OR_APPEND);
+  base::Optional<feedstore::DataOperation> translated =
+      TranslateDataOperation(wire_operation);
+  EXPECT_TRUE(translated);
+  EXPECT_EQ("content", translated->content().frame());
+}
+
+TEST(ProtocolTranslatorTest, TranslateContentFailsWhenMissingContent) {
+  feedwire::DataOperation wire_operation =
+      MakeDataOperationWithContent(feedwire::DataOperation::UPDATE_OR_APPEND);
+  wire_operation.mutable_feature()->clear_content_extension();
+  EXPECT_FALSE(TranslateDataOperation(wire_operation));
+}
+
+TEST(ProtocolTranslatorTest, TranslateRenderData) {
+  feedwire::Response wire_response = EmptyWireResponse();
+  *wire_response.mutable_feed_response()->add_data_operation() =
+      MakeDataOperationWithRenderData(
+          feedwire::DataOperation::UPDATE_OR_APPEND);
+  RefreshResponseData translated = TranslateWireResponse(wire_response);
+  EXPECT_TRUE(translated.model_update_request);
+  ASSERT_EQ(1ul, translated.model_update_request->shared_states.size());
+  EXPECT_EQ(
+      "renderdata",
+      translated.model_update_request->shared_states[0].shared_state_data());
+}
+
+TEST(ProtocolTranslatorTest, TranslateRenderDataFailsWithUnknownType) {
+  feedwire::Response wire_response = EmptyWireResponse();
+  feedwire::DataOperation wire_operation = MakeDataOperationWithRenderData(
+      feedwire::DataOperation::UPDATE_OR_APPEND);
+  wire_operation.mutable_render_data()->clear_render_data_type();
+  *wire_response.mutable_feed_response()->add_data_operation() =
+      std::move(wire_operation);
+
+  RefreshResponseData translated = TranslateWireResponse(wire_response);
+  EXPECT_TRUE(translated.model_update_request);
+  ASSERT_EQ(0ul, translated.model_update_request->shared_states.size());
+}
+
+TEST(ProtocolTranslatorTest, RenderDataOperationCanOnlyComeFromFullResponse) {
+  EXPECT_FALSE(TranslateDataOperation(MakeDataOperationWithRenderData(
+      feedwire::DataOperation::UPDATE_OR_APPEND)));
+}
+
+TEST(ProtocolTranslatorTest, TranslateOperationFailsWithNoPayload) {
+  feedwire::DataOperation wire_operation =
+      MakeDataOperationWithContent(feedwire::DataOperation::UPDATE_OR_APPEND);
+  wire_operation.clear_feature();
+  EXPECT_FALSE(TranslateDataOperation(wire_operation));
+}
+
+TEST(ProtocolTranslatorTest, TranslateOperationWithoutContentId) {
+  feedwire::DataOperation update_operation =
+      MakeDataOperationWithContent(feedwire::DataOperation::UPDATE_OR_APPEND);
+  update_operation.clear_metadata();
+  EXPECT_FALSE(TranslateDataOperation(update_operation));
+
+  feedwire::DataOperation remove_operation =
+      MakeDataOperationWithContent(feedwire::DataOperation::REMOVE);
+  remove_operation.clear_metadata();
+  EXPECT_FALSE(TranslateDataOperation(remove_operation));
+
+  // CLEAR_ALL doesn't need a content ID.
+  feedwire::DataOperation clear_operation =
+      MakeDataOperation(feedwire::DataOperation::CLEAR_ALL);
+  EXPECT_TRUE(TranslateDataOperation(clear_operation));
+}
+
+TEST(ProtocolTranslatorTest, TranslateOperationFailsWithUnknownOperation) {
+  feedwire::DataOperation wire_operation =
+      MakeDataOperation(feedwire::DataOperation::UNKNOWN_OPERATION);
+  EXPECT_FALSE(TranslateDataOperation(wire_operation));
 }
 
 TEST(ProtocolTranslatorTest, TranslateRealResponse) {

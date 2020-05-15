@@ -695,7 +695,7 @@ TimeDelta SequenceManagerImpl::GetDelayTillNextDelayedTask(
 
 bool SequenceManagerImpl::HasPendingHighResolutionTasks() {
   for (TimeDomain* time_domain : main_thread_only().time_domains) {
-    if (time_domain->HasPendingHighResolutionTasks())
+    if (time_domain->has_pending_high_resolution_tasks())
       return true;
   }
   return false;

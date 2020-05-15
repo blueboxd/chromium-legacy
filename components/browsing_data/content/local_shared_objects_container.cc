@@ -40,13 +40,14 @@ bool SameDomainOrHost(const GURL& gurl1, const GURL& gurl2) {
 
 LocalSharedObjectsContainer::LocalSharedObjectsContainer(
     content::BrowserContext* browser_context,
-    const std::vector<storage::FileSystemType>& additional_file_system_types)
+    const std::vector<storage::FileSystemType>& additional_file_system_types,
+    browsing_data::CookieHelper::IsDeletionDisabledCallback callback)
     : appcaches_(new CannedAppCacheHelper(
           content::BrowserContext::GetDefaultStoragePartition(browser_context)
               ->GetAppCacheService())),
       cookies_(new CannedCookieHelper(
-          content::BrowserContext::GetDefaultStoragePartition(
-              browser_context))),
+          content::BrowserContext::GetDefaultStoragePartition(browser_context),
+          std::move(callback))),
       databases_(new CannedDatabaseHelper(browser_context)),
       file_systems_(new CannedFileSystemHelper(
           content::BrowserContext::GetDefaultStoragePartition(browser_context)

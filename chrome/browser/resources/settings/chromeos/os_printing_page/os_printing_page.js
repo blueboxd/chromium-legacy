@@ -28,10 +28,24 @@ Polymer({
         return map;
       },
     },
+
+    isPrintManagementEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('printManagementEnabled');
+      }
+    },
   },
 
   /** @private */
   onTapCupsPrinters_() {
     settings.Router.getInstance().navigateTo(settings.routes.CUPS_PRINTERS);
   },
+
+  /** @private */
+  onOpenPrintManagement_() {
+    assert(this.isPrintManagementEnabled_);
+    settings.CupsPrintersBrowserProxyImpl.getInstance()
+        .openPrintManagementApp();
+  }
 });

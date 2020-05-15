@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.compositor.layouts.phone.stack;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;
-import android.util.Pair;
+import android.animation.TimeInterpolator;
 
 import androidx.annotation.IntDef;
 
@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -120,6 +121,109 @@ public class StackAnimation {
     }
 
     /**
+     * This is a wrapper for a {@link AnimatorSet} that plays a set of {@link CompositorAnimator}s
+     * at the same time, and it has the ability to cancel some {@link CompositorAnimator} animations
+     * as if it is needed.
+     */
+    class StackAnimatorSet {
+        private final ArrayList<Animator> mAnimationList = new ArrayList<>();
+        private final AnimatorSet mAnimatorSet = new AnimatorSet();
+        private final ArrayList<Animator> mCancelableAnimators = new ArrayList<>();
+        private final CompositorAnimationHandler mHandler;
+
+        StackAnimatorSet(CompositorAnimationHandler handler) {
+            mHandler = handler;
+        }
+
+        <T> boolean isPropertyCancelable(FloatProperty<T> property) {
+            return property == StackTab.SCROLL_OFFSET;
+        }
+
+        /**
+         * Helper method to create and add new {@link CompositorAnimator} to the set.
+         * @param target        Target associated with animated property.
+         * @param property      The property being animated.
+         * @param startValue    The starting value of the animation.
+         * @param endValue      The ending value of the animation.
+         * @param durationMs    The duration of the animation.
+         * @param startTimeMs   The start time.
+         * @param interpolator  The time interpolator for the animation. If it is null, will use the
+         */
+        <T> void addToAnimationWithDelay(final T target, final FloatProperty<T> property,
+                float startValue, float endValue, long durationMs, long startTimeMs,
+                TimeInterpolator interpolator) {
+            CompositorAnimator compositorAnimator;
+
+            if (interpolator == null) {
+                compositorAnimator = CompositorAnimator.ofFloatProperty(
+                        mHandler, target, property, startValue, endValue, durationMs);
+            } else {
+                compositorAnimator = CompositorAnimator.ofFloatProperty(
+                        mHandler, target, property, startValue, endValue, durationMs, interpolator);
+            }
+            compositorAnimator.setStartDelay(startTimeMs);
+
+            mAnimationList.add(compositorAnimator);
+
+            if (isPropertyCancelable(property)) mCancelableAnimators.add(compositorAnimator);
+        }
+
+        <T> void addToAnimation(final T target, final FloatProperty<T> property, float startValue,
+                float endValue, long durationMs, TimeInterpolator interpolator) {
+            addToAnimationWithDelay(
+                    target, property, startValue, endValue, durationMs, 0, interpolator);
+        }
+
+        void addToAnimationWithDelay(final PropertyModel model,
+                PropertyModel.WritableFloatPropertyKey key, float startValue, float endValue,
+                long durationMs, long startTimeMs) {
+            CompositorAnimator compositorAnimator = CompositorAnimator.ofWritableFloatPropertyKey(
+                    mHandler, model, key, startValue, endValue, durationMs);
+            compositorAnimator.setStartDelay(startTimeMs);
+
+            mAnimationList.add(compositorAnimator);
+        }
+
+        void addToAnimation(final PropertyModel model, PropertyModel.WritableFloatPropertyKey key,
+                float startValue, float endValue, long durationMs) {
+            addToAnimationWithDelay(model, key, startValue, endValue, durationMs, 0);
+        }
+
+        /**
+         * Starts the {@link AnimatorSet} animation.
+         */
+        void start() {
+            mAnimatorSet.playTogether(mAnimationList);
+            mAnimatorSet.start();
+        }
+
+        /**
+         * Cancels the cancelable animations.
+         */
+        void cancelCancelableAnimators() {
+            for (int i = 0; i < mCancelableAnimators.size(); i++) {
+                mCancelableAnimators.get(i).cancel();
+            }
+        }
+
+        /**
+         * {@see AnimatorSet#isRunning}.
+         * @return Whether the {@link AnimatorSet} is running.
+         */
+        boolean isRunning() {
+            return mAnimatorSet.isRunning();
+        }
+
+        /**
+         * Ends the {@link AnimatorSet} animations.
+         * {@see AnimatorSet#end}.
+         */
+        void end() {
+            mAnimatorSet.end();
+        }
+    }
+
+    /**
      * The wrapper method responsible for delegating the animations request to the appropriate
      * helper method.  Not all parameters are used for each request.
      *
@@ -132,33 +236,29 @@ public class StackAnimation {
      * @param sourceIndex   The index of the tab that triggered this animation.
      * @param spacing       The default spacing between the tabs.
      * @param discardRange  The range of the discard amount value.
-     * @return              The resulting AnimatorSet that will animate the tabs
-     *                      (with related FloatProperty)
+     * @return              The resulting AnimatorSet that will animate the tabs.
      */
-    public Pair<AnimatorSet, ArrayList<FloatProperty>> createAnimatorSetForType(
-            @OverviewAnimationType int type, Stack stack, StackTab[] tabs, int focusIndex,
-            int sourceIndex, int spacing, float discardRange) {
+    public StackAnimatorSet createAnimatorSetForType(@OverviewAnimationType int type, Stack stack,
+            StackTab[] tabs, int focusIndex, int sourceIndex, int spacing, float discardRange) {
         if (tabs == null) return null;
 
-        ArrayList<Animator> animationList = new ArrayList<>();
-        ArrayList<FloatProperty> propertyList = new ArrayList<>();
-        CompositorAnimationHandler handler = stack.getAnimationHandler();
+        StackAnimatorSet stackAnimatorSet = new StackAnimatorSet(stack.getAnimationHandler());
 
         switch (type) {
             case OverviewAnimationType.DISCARD: // Purposeful fall through
             case OverviewAnimationType.DISCARD_ALL: // Purposeful fall through
             case OverviewAnimationType.UNDISCARD:
                 createLandscapePortraitUpdateDiscardAnimatorSet(
-                        animationList, propertyList, handler, stack, tabs, spacing, discardRange);
+                        stackAnimatorSet, stack, tabs, spacing, discardRange);
                 break;
             case OverviewAnimationType.ENTER_STACK:
                 // Responsible for generating the animations that shows the stack being entered.
                 if (mOrientation == Orientation.LANDSCAPE) {
                     createLandscapeEnterStackAnimatorSet(
-                            animationList, propertyList, handler, tabs, focusIndex, spacing);
+                            stackAnimatorSet, tabs, focusIndex, spacing);
                 } else {
                     createPortraitEnterStackAnimatorSet(
-                            animationList, propertyList, handler, tabs, focusIndex, spacing);
+                            stackAnimatorSet, tabs, focusIndex, spacing);
                 }
                 break;
             case OverviewAnimationType.FULL_ROLL:
@@ -171,8 +271,8 @@ public class StackAnimation {
                     layoutTab.setTiltY(
                             layoutTab.getTiltY(), layoutTab.getScaledContentWidth() / 2.0f);
                     // Create the angle animation
-                    addLandscapePortraitTiltScrollAnimation(animationList, propertyList, handler,
-                            layoutTab, -360.0f, FULL_ROLL_ANIMATION_DURATION_MS);
+                    addLandscapePortraitTiltScrollAnimation(
+                            stackAnimatorSet, layoutTab, -360.0f, FULL_ROLL_ANIMATION_DURATION_MS);
                 }
                 break;
             case OverviewAnimationType.NEW_TAB_OPENED:
@@ -180,9 +280,9 @@ public class StackAnimation {
                 if (mOrientation == Orientation.LANDSCAPE) return null;
 
                 for (int i = 0; i < tabs.length; i++) {
-                    addToAnimation(animationList, propertyList, handler, tabs[i],
-                            StackTab.SCROLL_OFFSET, tabs[i].getScrollOffset(), 0.0f,
-                            TAB_OPENED_ANIMATION_DURATION_MS);
+                    stackAnimatorSet.addToAnimation(tabs[i], StackTab.SCROLL_OFFSET,
+                            tabs[i].getScrollOffset(), 0.0f, TAB_OPENED_ANIMATION_DURATION_MS,
+                            null);
                 }
                 break;
             case OverviewAnimationType.REACH_TOP:
@@ -194,9 +294,9 @@ public class StackAnimation {
                             >= getLandscapePortraitScreenPositionInScrollDirection(tabs[i])) {
                         break;
                     }
-                    addToAnimation(animationList, propertyList, handler, tabs[i],
-                            StackTab.SCROLL_OFFSET, tabs[i].getScrollOffset(),
-                            mStack.screenToScroll(screenTarget), REACH_TOP_ANIMATION_DURATION_MS);
+                    stackAnimatorSet.addToAnimation(tabs[i], StackTab.SCROLL_OFFSET,
+                            tabs[i].getScrollOffset(), mStack.screenToScroll(screenTarget),
+                            REACH_TOP_ANIMATION_DURATION_MS, null);
                     screenTarget += mOrientation == Orientation.LANDSCAPE
                             ? tabs[i].getLayoutTab().getScaledContentWidth()
                             : tabs[i].getLayoutTab().getScaledContentHeight();
@@ -205,13 +305,13 @@ public class StackAnimation {
             case OverviewAnimationType.START_PINCH:
                 // Responsible for generating the animations that flattens tabs when a pinch begins.
                 for (int i = 0; i < tabs.length; ++i) {
-                    addLandscapePortraitTiltScrollAnimation(animationList, propertyList, handler,
+                    addLandscapePortraitTiltScrollAnimation(stackAnimatorSet,
                             tabs[i].getLayoutTab(), 0, START_PINCH_ANIMATION_DURATION_MS);
                 }
                 break;
             case OverviewAnimationType.TAB_FOCUSED:
                 createLandscapePortraitTabFocusedAnimatorSet(
-                        animationList, propertyList, handler, tabs, focusIndex, spacing);
+                        stackAnimatorSet, tabs, focusIndex, spacing);
                 break;
             case OverviewAnimationType.VIEW_MORE:
                 // Responsible for generating the animations that Shows more of the selected tab.
@@ -225,18 +325,16 @@ public class StackAnimation {
                 offset = Math.max(VIEW_MORE_MIN_SIZE, offset);
 
                 for (int i = sourceIndex + 1; i < tabs.length; ++i) {
-                    addToAnimation(animationList, propertyList, handler, tabs[i],
-                            StackTab.SCROLL_OFFSET, tabs[i].getScrollOffset(),
-                            tabs[i].getScrollOffset() + offset, VIEW_MORE_ANIMATION_DURATION_MS);
+                    stackAnimatorSet.addToAnimation(tabs[i], StackTab.SCROLL_OFFSET,
+                            tabs[i].getScrollOffset(), tabs[i].getScrollOffset() + offset,
+                            VIEW_MORE_ANIMATION_DURATION_MS, null);
                 }
                 break;
             default:
                 return null;
         }
 
-        AnimatorSet set = new AnimatorSet();
-        set.playTogether(animationList);
-        return Pair.create(set, propertyList);
+        return stackAnimatorSet;
     }
 
     private float getLandscapePortraitScreenPositionInScrollDirection(StackTab tab) {
@@ -244,15 +342,14 @@ public class StackAnimation {
                                                      : tab.getLayoutTab().getY();
     }
 
-    private void addLandscapePortraitTiltScrollAnimation(ArrayList<Animator> animationList,
-            ArrayList<FloatProperty> propertyList, CompositorAnimationHandler handler,
-            LayoutTab tab, float end, int durationMs) {
+    private void addLandscapePortraitTiltScrollAnimation(
+            StackAnimatorSet stackAnimatorSet, LayoutTab tab, float end, int durationMs) {
         if (mOrientation == Orientation.LANDSCAPE) {
-            addToAnimation(animationList, propertyList, handler, tab, LayoutTab.TILTY,
-                    tab.getTiltY(), end, durationMs);
+            stackAnimatorSet.addToAnimation(
+                    tab, LayoutTab.TILTY, tab.getTiltY(), end, durationMs, null);
         } else {
-            addToAnimation(animationList, propertyList, handler, tab, LayoutTab.TILTX,
-                    tab.getTiltX(), end, durationMs);
+            stackAnimatorSet.addToAnimation(
+                    tab, LayoutTab.TILTX, tab.getTiltX(), end, durationMs, null);
         }
     }
 
@@ -261,9 +358,8 @@ public class StackAnimation {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
     }
 
-    private void createPortraitEnterStackAnimatorSet(ArrayList<Animator> animationList,
-            ArrayList<FloatProperty> propertyList, CompositorAnimationHandler handler,
-            StackTab[] tabs, int focusIndex, int spacing) {
+    private void createPortraitEnterStackAnimatorSet(
+            StackAnimatorSet stackAnimatorSet, StackTab[] tabs, int focusIndex, int spacing) {
         final float initialScrollOffset = mStack.screenToScroll(0);
 
         float trailingScrollOffset = 0.f;
@@ -289,45 +385,42 @@ public class StackAnimation {
 
             if (i < focusIndex) {
                 tab.getLayoutTab().setMaxContentHeight(mStack.getMaxTabHeight());
-                addToAnimation(animationList, propertyList, handler, tab, StackTab.SCROLL_OFFSET,
-                        initialScrollOffset, scrollOffset, ENTER_STACK_ANIMATION_DURATION_MS);
+                stackAnimatorSet.addToAnimation(tab, StackTab.SCROLL_OFFSET, initialScrollOffset,
+                        scrollOffset, ENTER_STACK_ANIMATION_DURATION_MS, null);
             } else if (i > focusIndex) {
                 tab.getLayoutTab().setMaxContentHeight(mStack.getMaxTabHeight());
                 tab.setScrollOffset(scrollOffset + trailingScrollOffset);
-                addToAnimation(animationList, propertyList, handler, tab,
-                        StackTab.Y_IN_STACK_OFFSET, mHeight, 0, ENTER_STACK_ANIMATION_DURATION_MS);
+                stackAnimatorSet.addToAnimation(tab, StackTab.Y_IN_STACK_OFFSET, mHeight, 0,
+                        ENTER_STACK_ANIMATION_DURATION_MS, null);
             } else { // i == focusIndex
                 tab.setScrollOffset(scrollOffset);
 
-                addToAnimationWithDelay(animationList, propertyList, handler, tab.getLayoutTab(),
+                stackAnimatorSet.addToAnimationWithDelay(tab.getLayoutTab(),
                         LayoutTab.MAX_CONTENT_HEIGHT,
                         tab.getLayoutTab().getUnclampedOriginalContentHeight(),
                         mStack.getMaxTabHeight(), ENTER_STACK_ANIMATION_DURATION_MS,
-                        ENTER_STACK_RESIZE_DELAY_MS);
-                addToAnimation(animationList, propertyList, handler, tab,
-                        StackTab.Y_IN_STACK_INFLUENCE, 0.0f, 1.0f,
-                        ENTER_STACK_BORDER_ALPHA_DURATION_MS);
-                addToAnimation(animationList, propertyList, handler, tab, StackTab.SCALE, 1.0f,
-                        mStack.getScaleAmount(), ENTER_STACK_BORDER_ALPHA_DURATION_MS);
-                addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
-                        LayoutTab.TOOLBAR_Y_OFFSET, 0.f, getToolbarOffsetToLineUpWithBorder(),
-                        ENTER_STACK_BORDER_ALPHA_DURATION_MS);
-                addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
-                        LayoutTab.SIDE_BORDER_SCALE, 0.f, 1.f,
-                        ENTER_STACK_BORDER_ALPHA_DURATION_MS);
+                        ENTER_STACK_RESIZE_DELAY_MS, null);
+                stackAnimatorSet.addToAnimation(tab, StackTab.Y_IN_STACK_INFLUENCE, 0.0f, 1.0f,
+                        ENTER_STACK_BORDER_ALPHA_DURATION_MS, null);
+                stackAnimatorSet.addToAnimation(tab, StackTab.SCALE, 1.0f, mStack.getScaleAmount(),
+                        ENTER_STACK_BORDER_ALPHA_DURATION_MS, null);
+                stackAnimatorSet.addToAnimation(tab.getLayoutTab(), LayoutTab.TOOLBAR_Y_OFFSET, 0.f,
+                        getToolbarOffsetToLineUpWithBorder(), ENTER_STACK_BORDER_ALPHA_DURATION_MS,
+                        null);
+                stackAnimatorSet.addToAnimation(tab.getLayoutTab(), LayoutTab.SIDE_BORDER_SCALE,
+                        0.f, 1.f, ENTER_STACK_BORDER_ALPHA_DURATION_MS, null);
 
-                addToAnimationWithDelay(animationList, propertyList, handler, tab.getLayoutTab(),
+                stackAnimatorSet.addToAnimationWithDelay(tab.getLayoutTab(),
                         LayoutTab.TOOLBAR_ALPHA, 1.f, 0.f, ENTER_STACK_BORDER_ALPHA_DURATION_MS,
-                        ENTER_STACK_TOOLBAR_ALPHA_DELAY_MS);
+                        ENTER_STACK_TOOLBAR_ALPHA_DELAY_MS, null);
 
                 tab.setYOutOfStack(getStaticTabPosition());
             }
         }
     }
 
-    private void createLandscapeEnterStackAnimatorSet(ArrayList<Animator> animationList,
-            ArrayList<FloatProperty> propertyList, CompositorAnimationHandler handler,
-            StackTab[] tabs, int focusIndex, int spacing) {
+    private void createLandscapeEnterStackAnimatorSet(
+            StackAnimatorSet stackAnimatorSet, StackTab[] tabs, int focusIndex, int spacing) {
         final float initialScrollOffset = mStack.screenToScroll(0);
 
         for (int i = 0; i < tabs.length; ++i) {
@@ -341,37 +434,33 @@ public class StackAnimation {
 
             final float scrollOffset = mStack.screenToScroll(i * spacing);
 
-            addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
-                    LayoutTab.MAX_CONTENT_HEIGHT,
+            stackAnimatorSet.addToAnimation(tab.getLayoutTab(), LayoutTab.MAX_CONTENT_HEIGHT,
                     tab.getLayoutTab().getUnclampedOriginalContentHeight(),
-                    mStack.getMaxTabHeight(), ENTER_STACK_ANIMATION_DURATION_MS);
+                    mStack.getMaxTabHeight(), ENTER_STACK_ANIMATION_DURATION_MS, null);
             if (i < focusIndex) {
-                addToAnimation(animationList, propertyList, handler, tab, StackTab.SCROLL_OFFSET,
-                        initialScrollOffset, scrollOffset, ENTER_STACK_ANIMATION_DURATION_MS);
+                stackAnimatorSet.addToAnimation(tab, StackTab.SCROLL_OFFSET, initialScrollOffset,
+                        scrollOffset, ENTER_STACK_ANIMATION_DURATION_MS, null);
             } else if (i > focusIndex) {
                 tab.setScrollOffset(scrollOffset);
-                addToAnimation(animationList, propertyList, handler, tab,
-                        StackTab.X_IN_STACK_OFFSET,
+                stackAnimatorSet.addToAnimation(tab, StackTab.X_IN_STACK_OFFSET,
                         (mWidth > mHeight && LocalizationUtils.isLayoutRtl()) ? -mWidth : mWidth,
-                        0.0f, ENTER_STACK_ANIMATION_DURATION_MS);
+                        0.0f, ENTER_STACK_ANIMATION_DURATION_MS, null);
             } else { // i == focusIndex
                 tab.setScrollOffset(scrollOffset);
 
-                addToAnimation(animationList, propertyList, handler, tab,
-                        StackTab.X_IN_STACK_INFLUENCE, 0.0f, 1.0f,
-                        ENTER_STACK_BORDER_ALPHA_DURATION_MS);
-                addToAnimation(animationList, propertyList, handler, tab, StackTab.SCALE, 1.0f,
-                        mStack.getScaleAmount(), ENTER_STACK_BORDER_ALPHA_DURATION_MS);
-                addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
-                        LayoutTab.TOOLBAR_Y_OFFSET, 0.f, getToolbarOffsetToLineUpWithBorder(),
-                        ENTER_STACK_BORDER_ALPHA_DURATION_MS);
-                addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
-                        LayoutTab.SIDE_BORDER_SCALE, 0.f, 1.f,
-                        ENTER_STACK_BORDER_ALPHA_DURATION_MS);
+                stackAnimatorSet.addToAnimation(tab, StackTab.X_IN_STACK_INFLUENCE, 0.0f, 1.0f,
+                        ENTER_STACK_BORDER_ALPHA_DURATION_MS, null);
+                stackAnimatorSet.addToAnimation(tab, StackTab.SCALE, 1.0f, mStack.getScaleAmount(),
+                        ENTER_STACK_BORDER_ALPHA_DURATION_MS, null);
+                stackAnimatorSet.addToAnimation(tab.getLayoutTab(), LayoutTab.TOOLBAR_Y_OFFSET, 0.f,
+                        getToolbarOffsetToLineUpWithBorder(), ENTER_STACK_BORDER_ALPHA_DURATION_MS,
+                        null);
+                stackAnimatorSet.addToAnimation(tab.getLayoutTab(), LayoutTab.SIDE_BORDER_SCALE,
+                        0.f, 1.f, ENTER_STACK_BORDER_ALPHA_DURATION_MS, null);
 
-                addToAnimationWithDelay(animationList, propertyList, handler, tab.getLayoutTab(),
+                stackAnimatorSet.addToAnimationWithDelay(tab.getLayoutTab(),
                         LayoutTab.TOOLBAR_ALPHA, 1.f, 0.f, ENTER_STACK_TOOLBAR_ALPHA_DURATION_MS,
-                        ENTER_STACK_TOOLBAR_ALPHA_DELAY_MS);
+                        ENTER_STACK_TOOLBAR_ALPHA_DELAY_MS, null);
             }
         }
     }
@@ -379,37 +468,32 @@ public class StackAnimation {
     /**
      * Responsible for generating the animations that shows a tab being
      * focused (the stack is being left).
-     *
-     * @param animationList List for created animations.
-     * @param propertyList  List of FloatProperty used for creating animations.
-     * @param handler       Handler for animations.
+     * @param stackAnimatorSet {@link StackAnimatorSet} for created animations.
      * @param tabs          The tabs that make up the stack.  These are the
      *                      tabs that will be affected by the TabSwitcherAnimation.
      * @param focusIndex    The focused index.  In this case, this is the index of
      *                      the tab clicked and is being brought up to view.
      * @param spacing       The default spacing between tabs.
      */
-    private void createLandscapePortraitTabFocusedAnimatorSet(ArrayList<Animator> animationList,
-            ArrayList<FloatProperty> propertyList, CompositorAnimationHandler handler,
-            StackTab[] tabs, int focusIndex, int spacing) {
+    private void createLandscapePortraitTabFocusedAnimatorSet(
+            StackAnimatorSet stackAnimatorSet, StackTab[] tabs, int focusIndex, int spacing) {
         for (int i = 0; i < tabs.length; ++i) {
             StackTab tab = tabs[i];
             LayoutTab layoutTab = tab.getLayoutTab();
 
-            addLandscapePortraitTiltScrollAnimation(animationList, propertyList, handler, layoutTab,
-                    0.0f, TAB_FOCUSED_ANIMATION_DURATION_MS);
-            addToAnimation(animationList, propertyList, handler, tab, StackTab.DISCARD_AMOUNT,
-                    tab.getDiscardAmount(), 0.0f, TAB_FOCUSED_ANIMATION_DURATION_MS);
+            addLandscapePortraitTiltScrollAnimation(
+                    stackAnimatorSet, layoutTab, 0.0f, TAB_FOCUSED_ANIMATION_DURATION_MS);
+            stackAnimatorSet.addToAnimation(tab, StackTab.DISCARD_AMOUNT, tab.getDiscardAmount(),
+                    0.0f, TAB_FOCUSED_ANIMATION_DURATION_MS, null);
 
             if (i < focusIndex) {
                 // Landscape: for tabs left of the focused tab move them left to 0.
                 // Portrait: for tabs above the focused tab move them up to 0.
-                addToAnimation(animationList, propertyList, handler, tab, StackTab.SCROLL_OFFSET,
-                        tab.getScrollOffset(),
+                stackAnimatorSet.addToAnimation(tab, StackTab.SCROLL_OFFSET, tab.getScrollOffset(),
                         mOrientation == Orientation.LANDSCAPE
                                 ? Math.max(0.0f, tab.getScrollOffset() - mWidth - spacing)
                                 : tab.getScrollOffset() - mHeight - spacing,
-                        TAB_FOCUSED_ANIMATION_DURATION_MS);
+                        TAB_FOCUSED_ANIMATION_DURATION_MS, null);
                 continue;
             } else if (i > focusIndex) {
                 if (mOrientation == Orientation.LANDSCAPE) {
@@ -421,11 +505,11 @@ public class StackAnimation {
                             : mWidth - coveringTabPosition;
                     float clampedDistanceToBorder = MathUtils.clamp(distanceToBorder, 0, mWidth);
                     float delay = TAB_FOCUSED_MAX_DELAY_MS * clampedDistanceToBorder / mWidth;
-                    addToAnimationWithDelay(animationList, propertyList, handler, tab,
-                            StackTab.X_IN_STACK_OFFSET, tab.getXInStackOffset(),
+                    stackAnimatorSet.addToAnimationWithDelay(tab, StackTab.X_IN_STACK_OFFSET,
+                            tab.getXInStackOffset(),
                             tab.getXInStackOffset()
                                     + (LocalizationUtils.isLayoutRtl() ? -mWidth : mWidth),
-                            (TAB_FOCUSED_ANIMATION_DURATION_MS - (long) delay), (long) delay);
+                            (TAB_FOCUSED_ANIMATION_DURATION_MS - (long) delay), (long) delay, null);
                 } else { // mOrientation == Orientation.PORTRAIT
                     // We also need to animate the Y Translation to move them down
                     // off the screen.
@@ -433,10 +517,9 @@ public class StackAnimation {
                     float distanceToBorder =
                             MathUtils.clamp(mHeight - coveringTabPosition, 0, mHeight);
                     float delay = TAB_FOCUSED_MAX_DELAY_MS * distanceToBorder / mHeight;
-                    addToAnimationWithDelay(animationList, propertyList, handler, tab,
-                            StackTab.Y_IN_STACK_OFFSET, tab.getYInStackOffset(),
-                            tab.getYInStackOffset() + mHeight,
-                            (TAB_FOCUSED_ANIMATION_DURATION_MS - (long) delay), (long) delay);
+                    stackAnimatorSet.addToAnimationWithDelay(tab, StackTab.Y_IN_STACK_OFFSET,
+                            tab.getYInStackOffset(), tab.getYInStackOffset() + mHeight,
+                            (TAB_FOCUSED_ANIMATION_DURATION_MS - (long) delay), (long) delay, null);
                 }
                 continue;
             }
@@ -453,44 +536,41 @@ public class StackAnimation {
             layoutTab.setBorderScale(1.f);
 
             if (mOrientation == Orientation.LANDSCAPE) {
-                addToAnimation(animationList, propertyList, handler, tab,
-                        StackTab.X_IN_STACK_INFLUENCE, tab.getXInStackInfluence(), 0.0f,
-                        TAB_FOCUSED_ANIMATION_DURATION_MS);
+                stackAnimatorSet.addToAnimation(tab, StackTab.X_IN_STACK_INFLUENCE,
+                        tab.getXInStackInfluence(), 0.0f, TAB_FOCUSED_ANIMATION_DURATION_MS, null);
                 if (!isHorizontalTabSwitcherFlagEnabled()) {
-                    addToAnimation(animationList, propertyList, handler, tab,
-                            StackTab.SCROLL_OFFSET, tab.getScrollOffset(), mStack.screenToScroll(0),
-                            TAB_FOCUSED_ANIMATION_DURATION_MS);
+                    stackAnimatorSet.addToAnimation(tab, StackTab.SCROLL_OFFSET,
+                            tab.getScrollOffset(), mStack.screenToScroll(0),
+                            TAB_FOCUSED_ANIMATION_DURATION_MS, null);
                 }
             } else { // mOrientation == Orientation.PORTRAIT
-                addToAnimation(animationList, propertyList, handler, tab, StackTab.SCROLL_OFFSET,
-                        tab.getScrollOffset(),
+                stackAnimatorSet.addToAnimation(tab, StackTab.SCROLL_OFFSET, tab.getScrollOffset(),
                         Math.max(0.0f, tab.getScrollOffset() - mWidth - spacing),
-                        TAB_FOCUSED_ANIMATION_DURATION_MS);
+                        TAB_FOCUSED_ANIMATION_DURATION_MS, null);
             }
 
-            addToAnimation(animationList, propertyList, handler, tab, StackTab.SCALE,
-                    tab.getScale(), 1.0f, TAB_FOCUSED_ANIMATION_DURATION_MS);
-            addToAnimation(animationList, propertyList, handler, tab, StackTab.Y_IN_STACK_INFLUENCE,
-                    tab.getYInStackInfluence(), 0.0f, TAB_FOCUSED_Y_STACK_DURATION_MS);
-            addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
-                    LayoutTab.MAX_CONTENT_HEIGHT, tab.getLayoutTab().getMaxContentHeight(),
+            stackAnimatorSet.addToAnimation(tab, StackTab.SCALE, tab.getScale(), 1.0f,
+                    TAB_FOCUSED_ANIMATION_DURATION_MS, null);
+            stackAnimatorSet.addToAnimation(tab, StackTab.Y_IN_STACK_INFLUENCE,
+                    tab.getYInStackInfluence(), 0.0f, TAB_FOCUSED_Y_STACK_DURATION_MS, null);
+            stackAnimatorSet.addToAnimation(tab.getLayoutTab(), LayoutTab.MAX_CONTENT_HEIGHT,
+                    tab.getLayoutTab().getMaxContentHeight(),
                     tab.getLayoutTab().getUnclampedOriginalContentHeight(),
-                    TAB_FOCUSED_ANIMATION_DURATION_MS);
+                    TAB_FOCUSED_ANIMATION_DURATION_MS, null);
 
             tab.setYOutOfStack(getStaticTabPosition());
 
             if (layoutTab.shouldStall()) {
-                addToAnimation(animationList, propertyList, handler, layoutTab,
-                        LayoutTab.SATURATION, 1.0f, 0.0f, TAB_FOCUSED_BORDER_ALPHA_DURATION_MS);
+                stackAnimatorSet.addToAnimation(layoutTab, LayoutTab.SATURATION, 1.0f, 0.0f,
+                        TAB_FOCUSED_BORDER_ALPHA_DURATION_MS, null);
             }
-            addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
-                    LayoutTab.TOOLBAR_ALPHA, layoutTab.getToolbarAlpha(), 1.f,
-                    TAB_FOCUSED_TOOLBAR_ALPHA_DURATION_MS);
-            addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
-                    LayoutTab.TOOLBAR_Y_OFFSET, getToolbarOffsetToLineUpWithBorder(), 0.f,
-                    TAB_FOCUSED_TOOLBAR_ALPHA_DURATION_MS);
-            addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
-                    LayoutTab.SIDE_BORDER_SCALE, 1.f, 0.f, TAB_FOCUSED_TOOLBAR_ALPHA_DURATION_MS);
+            stackAnimatorSet.addToAnimation(tab.getLayoutTab(), LayoutTab.TOOLBAR_ALPHA,
+                    layoutTab.getToolbarAlpha(), 1.f, TAB_FOCUSED_TOOLBAR_ALPHA_DURATION_MS, null);
+            stackAnimatorSet.addToAnimation(tab.getLayoutTab(), LayoutTab.TOOLBAR_Y_OFFSET,
+                    getToolbarOffsetToLineUpWithBorder(), 0.f,
+                    TAB_FOCUSED_TOOLBAR_ALPHA_DURATION_MS, null);
+            stackAnimatorSet.addToAnimation(tab.getLayoutTab(), LayoutTab.SIDE_BORDER_SCALE, 1.f,
+                    0.f, TAB_FOCUSED_TOOLBAR_ALPHA_DURATION_MS, null);
         }
     }
 
@@ -498,25 +578,21 @@ public class StackAnimation {
      * Responsible for generating the animations that moves the tabs back in from
      * discard attempt or commit the current discard (if any). It also re-even the tabs
      * if one of then is removed.
-     *
-     * @param animationList List for created animations.
-     * @param propertyList  List of FloatProperty used for creating animations.
-     * @param handler       Handler for animations.
+     * @param stackAnimatorSet {@link StackAnimatorSet} for created animations.
      * @param stack         Stack.
      * @param tabs          The tabs that make up the stack. These are the
      *                      tabs that will be affected by the TabSwitcherAnimation.
      * @param spacing       The default spacing between tabs.
      * @param discardRange  The maximum value the discard amount.
      */
-    private void createLandscapePortraitUpdateDiscardAnimatorSet(ArrayList<Animator> animationList,
-            ArrayList<FloatProperty> propertyList, CompositorAnimationHandler handler, Stack stack,
-            StackTab[] tabs, int spacing, float discardRange) {
+    private void createLandscapePortraitUpdateDiscardAnimatorSet(StackAnimatorSet stackAnimatorSet,
+            Stack stack, StackTab[] tabs, int spacing, float discardRange) {
         int dyingTabsCount = 0;
         int firstDyingTabIndex = -1;
         float firstDyingTabOffset = 0;
         for (int i = 0; i < tabs.length; ++i) {
-            addLandscapePortraitTiltScrollAnimation(animationList, propertyList, handler,
-                    tabs[i].getLayoutTab(), 0.0f, UNDISCARD_ANIMATION_DURATION_MS);
+            addLandscapePortraitTiltScrollAnimation(stackAnimatorSet, tabs[i].getLayoutTab(), 0.0f,
+                    UNDISCARD_ANIMATION_DURATION_MS);
 
             if (tabs[i].isDying()) {
                 dyingTabsCount++;
@@ -557,22 +633,19 @@ public class StackAnimation {
                 long duration = (long) (DISCARD_ANIMATION_DURATION_MS
                         * (1.0f - Math.abs(discard / discardRange)));
 
-                animationList.add(CompositorAnimator.ofFloatProperty(handler, tab,
-                        StackTab.DISCARD_AMOUNT, discard, discardRange * s, duration,
-                        BakedBezierInterpolator.FADE_OUT_CURVE));
-                propertyList.add(StackTab.DISCARD_AMOUNT);
+                stackAnimatorSet.addToAnimation(tab, StackTab.DISCARD_AMOUNT, discard,
+                        discardRange * s, duration, BakedBezierInterpolator.FADE_OUT_CURVE);
             } else {
                 if (tab.getDiscardAmount() != 0.f) {
-                    addToAnimation(animationList, propertyList, handler, tab,
-                            StackTab.DISCARD_AMOUNT, tab.getDiscardAmount(), 0.0f,
-                            UNDISCARD_ANIMATION_DURATION_MS);
+                    stackAnimatorSet.addToAnimation(tab, StackTab.DISCARD_AMOUNT,
+                            tab.getDiscardAmount(), 0.0f, UNDISCARD_ANIMATION_DURATION_MS, null);
                 }
-                addToAnimation(animationList, propertyList, handler, tab, StackTab.SCALE,
-                        tab.getScale(), mStack.getScaleAmount(), DISCARD_ANIMATION_DURATION_MS);
+                stackAnimatorSet.addToAnimation(tab, StackTab.SCALE, tab.getScale(),
+                        mStack.getScaleAmount(), DISCARD_ANIMATION_DURATION_MS, null);
 
-                addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
-                        LayoutTab.MAX_CONTENT_HEIGHT, tab.getLayoutTab().getMaxContentHeight(),
-                        mStack.getMaxTabHeight(), DISCARD_ANIMATION_DURATION_MS);
+                stackAnimatorSet.addToAnimation(tab.getLayoutTab(), LayoutTab.MAX_CONTENT_HEIGHT,
+                        tab.getLayoutTab().getMaxContentHeight(), mStack.getMaxTabHeight(),
+                        DISCARD_ANIMATION_DURATION_MS, null);
 
                 float newScrollOffset = mStack.screenToScroll(spacing * newIndex);
 
@@ -585,9 +658,8 @@ public class StackAnimation {
                 } else {
                     float start = tab.getScrollOffset();
                     if (start != newScrollOffset) {
-                        addToAnimation(animationList, propertyList, handler, tab,
-                                StackTab.SCROLL_OFFSET, start, newScrollOffset,
-                                TAB_REORDER_DURATION_MS);
+                        stackAnimatorSet.addToAnimation(tab, StackTab.SCROLL_OFFSET, start,
+                                newScrollOffset, TAB_REORDER_DURATION_MS, null);
                     }
                 }
                 newIndex++;
@@ -621,9 +693,9 @@ public class StackAnimation {
 
             if (shouldAnimateStackScrollOffset) {
                 nonOverlappingStack.suppressScrollClampingForAnimation();
-                addToAnimation(animationList, propertyList, handler, nonOverlappingStack,
-                        Stack.SCROLL_OFFSET, stack.getScrollOffset(),
-                        -(centeredTabIndex - 1) * stack.getSpacing(), TAB_REORDER_DURATION_MS);
+                stackAnimatorSet.addToAnimation(nonOverlappingStack, Stack.SCROLL_OFFSET,
+                        stack.getScrollOffset(), -(centeredTabIndex - 1) * stack.getSpacing(),
+                        TAB_REORDER_DURATION_MS, null);
             }
         }
     }
@@ -641,40 +713,5 @@ public class StackAnimation {
      */
     private float getStaticTabPosition() {
         return mTopBrowserControlsHeight - mBorderTopHeight;
-    }
-
-    /**
-     * Helper method to create and add new {@link CompositorAnimator}
-     * to a list of {@link Animator} and add associated {@link FloatProperty} info
-     * to a list of {@link FloatProperty}
-     *
-     * @param animationList The list of {@link Animator} to add animation to.
-     * @param propertyList  The list of {@link FloatProperty} to add FloatProperty info to.
-     * @param handler       The associated handler for animations.
-     * @param target        Target associated with animated property.
-     * @param property      The property being animated.
-     * @param startValue    The starting value of the animation.
-     * @param endValue      The ending value of the animation.
-     * @param durationMs    The duration of the animation.
-     * @param startTimeMs   The start time.
-     */
-    private static <T> void addToAnimationWithDelay(ArrayList<Animator> animationList,
-            ArrayList<FloatProperty> propertyList, CompositorAnimationHandler handler,
-            final T target, final FloatProperty<T> property, float startValue, float endValue,
-            long durationMs, long startTimeMs) {
-        CompositorAnimator compositorAnimator = CompositorAnimator.ofFloatProperty(
-                handler, target, property, startValue, endValue, durationMs);
-        compositorAnimator.setStartDelay(startTimeMs);
-
-        animationList.add(compositorAnimator);
-        propertyList.add(property);
-    }
-
-    private static <T> void addToAnimation(ArrayList<Animator> animationList,
-            ArrayList<FloatProperty> propertyList, CompositorAnimationHandler handler,
-            final T target, final FloatProperty<T> property, float startValue, float endValue,
-            long durationMs) {
-        addToAnimationWithDelay(animationList, propertyList, handler, target, property, startValue,
-                endValue, durationMs, 0);
     }
 }

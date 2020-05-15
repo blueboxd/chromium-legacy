@@ -104,4 +104,57 @@ CreateOpaqueOrTransparentButtonPointerStyleProvider() API_AVAILABLE(ios(13.4)) {
   };
 }
 
+API_AVAILABLE(ios(13.4))
+@interface ViewPointerInteraction ()
+@property(nonatomic, strong) UIPointerInteraction* pointerInteraction;
+@end
+
+API_AVAILABLE(ios(13.4))
+@implementation ViewPointerInteraction
+
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    self.pointerInteraction =
+        [[UIPointerInteraction alloc] initWithDelegate:self];
+  }
+  return self;
+}
+
+#pragma mark UIInteraction
+
+- (__kindof UIView*)view {
+  return [self.pointerInteraction view];
+}
+
+- (void)didMoveToView:(UIView*)view {
+  [self.pointerInteraction didMoveToView:view];
+}
+
+- (void)willMoveToView:(UIView*)view {
+  [self.pointerInteraction willMoveToView:view];
+}
+
+#pragma mark UIPointerInteractionDelegate
+
+- (UIPointerRegion*)pointerInteraction:(UIPointerInteraction*)interaction
+                      regionForRequest:(UIPointerRegionRequest*)request
+                         defaultRegion:(UIPointerRegion*)defaultRegion
+    API_AVAILABLE(ios(13.4)) {
+  return defaultRegion;
+}
+
+- (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
+                       styleForRegion:(UIPointerRegion*)region
+    API_AVAILABLE(ios(13.4)) {
+  UIPointerHoverEffect* effect = [UIPointerHoverEffect
+      effectWithPreview:[[UITargetedPreview alloc]
+                            initWithView:interaction.view]];
+  effect.prefersScaledContent = NO;
+  effect.prefersShadow = NO;
+  return [UIPointerStyle styleWithEffect:effect shape:nil];
+}
+
+@end
+
 #endif  // defined(__IPHONE_13_4)

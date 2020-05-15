@@ -1214,11 +1214,6 @@ const char kMediaHistoryDescription[] =
     "Enables Media History which records data around media playbacks on "
     "websites.";
 
-const char kMediaInspectorLoggingName[] = "Enable media log in developer tools";
-const char kMediaInspectorLoggingDescription[] =
-    "Move media logging from chrome://media-internals into the developer tools "
-    "project.";
-
 const char kMediaRouterCastAllowAllIPsName[] =
     "Connect to Cast devices on all IP addresses";
 const char kMediaRouterCastAllowAllIPsDescription[] =
@@ -2672,6 +2667,9 @@ const char kQueryTilesName[] = "Show query tiles";
 const char kQueryTilesDescription[] = "Shows query tiles in Chrome";
 const char kQueryTilesOmniboxName[] = "Show query tiles in omnibox";
 const char kQueryTilesOmniboxDescription[] = "Shows query tiles in omnibox";
+const char kQueryTilesSingleTierName[] = "Show only one level of query tiles";
+const char kQueryTilesSingleTierDescription[] =
+    "Show only one level of query tiles";
 const char kQueryTilesEnableQueryEditingName[] =
     "Query Tiles - Enable query edit mode";
 const char kQueryTilesEnableQueryEditingDescription[] =
@@ -2686,7 +2684,7 @@ const char kQueryTilesCountryCodeIndia[] = "IN";
 const char kQueryTilesCountryCodeBrazil[] = "BR";
 const char kQueryTilesCountryCodeNigeria[] = "NG";
 const char kQueryTilesCountryCodeIndonesia[] = "ID";
-const char kQueryTilesInstantFetch[] = "Query tile instant fetch";
+const char kQueryTilesInstantFetchName[] = "Query tile instant fetch";
 const char kQueryTilesInstantFetchDescription[] =
     "Immediately schedule background task to fetch query tiles";
 

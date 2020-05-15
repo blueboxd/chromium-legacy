@@ -212,6 +212,11 @@ cr.define('settings', function() {
      * @return {!Promise<!CupsPrintersList>}
      */
     queryPrintServer(serverUrl) {}
+
+    /**
+     * Opens the print management app in its own window.
+     */
+    openPrintManagementApp() {}
   }
 
   /**
@@ -296,6 +301,11 @@ cr.define('settings', function() {
     /** @override */
     queryPrintServer(serverUrl) {
       return cr.sendWithPromise('queryPrintServer', serverUrl);
+    }
+
+    /** @override */
+    openPrintManagementApp() {
+      chrome.send('openPrintManagementApp');
     }
   }
 

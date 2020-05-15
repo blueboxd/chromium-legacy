@@ -80,7 +80,7 @@ ImeWarningBubbleView::ImeWarningBubbleView(
       response_callback_(callback) {
   BrowserList::AddObserver(this);
 
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
+  SetAcceptCallback(base::BindOnce(
       [](ImeWarningBubbleView* bubble) {
         const bool never_show = bubble->never_show_checkbox_->GetChecked();
         std::move(bubble->response_callback_)
@@ -89,7 +89,7 @@ ImeWarningBubbleView::ImeWarningBubbleView(
                      : ImeWarningBubblePermissionStatus::GRANTED);
       },
       base::Unretained(this)));
-  DialogDelegate::SetCancelCallback(base::BindOnce(
+  SetCancelCallback(base::BindOnce(
       [](ImeWarningBubbleView* bubble) {
         std::move(bubble->response_callback_)
             .Run(ImeWarningBubblePermissionStatus::DENIED);

@@ -220,9 +220,8 @@ class SSLClientSocketImpl : public SSLClientSocket,
   int user_write_buf_len_;
   bool first_post_handshake_write_ = true;
 
-  // True if we've already recorded the result of our attempt to
-  // use early data.
-  bool recorded_early_data_result_ = false;
+  // True if we've already handled the result of our attempt to use early data.
+  bool handled_early_data_result_ = false;
 
   // Used by DoPayloadRead() when attempting to fill the caller's buffer with
   // as much data as possible without blocking.

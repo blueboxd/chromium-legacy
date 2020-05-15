@@ -325,6 +325,7 @@ Vyhledávání spustíte podržením libovolného slova. Vyhledávání můžete
 <translation id="3738139272394829648">Vyhledání klepnutím</translation>
 <translation id="3739899004075612870">Přidáno do záložek (<ph name="PRODUCT_NAME" />)</translation>
 <translation id="3749259744154402564">Nepodporováno</translation>
+<translation id="3763247130972274048">Dvojitým klepnutím na šipku vlevo nebo vpravo přeskočíte video o 10 s</translation>
 <translation id="3771001275138982843">Aktualizaci nelze stáhnout</translation>
 <translation id="3771033907050503522">Anonymní karty</translation>
 <translation id="3771694256347217732">Smluvní podmínky společnosti Google</translation>
@@ -386,7 +387,6 @@ Pouze vy uvidíte, na co se kamera zaměřuje. Web snímky z kamery neuvidí.</
 <translation id="4250229828105606438">Snímek obrazovky</translation>
 <translation id="4256782883801055595">Licence open source</translation>
 <translation id="4269820728363426813">Zkopírovat adresu odkazu</translation>
-<translation id="4278390842282768270">Povoleno</translation>
 <translation id="429312253194641664">Web přehrává média</translation>
 <translation id="4298388696830689168">Propojené weby</translation>
 <translation id="4307992518367153382">Základy</translation>
@@ -434,7 +434,6 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="4663756553811254707">Smazané záložky: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Na plochu byl přidán web <ph name="NAME" /></translation>
 <translation id="4684427112815847243">Synchronizovat vše</translation>
-<translation id="4688610874307684559">Spuštěno v Chromu (počáteční)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> další}few{<ph name="SHIPPING_OPTION_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> další}many{<ph name="SHIPPING_OPTION_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> další}other{<ph name="SHIPPING_OPTION_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> dalších}}</translation>
 <translation id="4696983787092045100">Odeslat text do vašich zařízení</translation>
 <translation id="4698034686595694889">Zobrazit offline v aplikaci <ph name="APP_NAME" /></translation>
@@ -559,10 +558,8 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5665379678064389456">Vytvořit událost v aplikaci <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Přepsat požadavek webu na zákaz přiblížení</translation>
-<translation id="5677928146339483299">Zablokováno</translation>
 <translation id="5684874026226664614">Jejda. Tuto stránku se nepodařilo přeložit.</translation>
 <translation id="5686790454216892815">Název souboru je příliš dlouhý</translation>
-<translation id="5690795753582697420">Fotoaparát je vypnutý v nastavení zařízení Android</translation>
 <translation id="5694049548840660018">Snadno se vraťte na domovskou stránku</translation>
 <translation id="569536719314091526">Pomocí tlačítka Další možnosti můžete tuto stránku přeložit do libovolného jazyka.</translation>
 <translation id="572328651809341494">Nedávno použité karty</translation>
@@ -618,7 +615,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="614940544461990577">Zkuste:</translation>
 <translation id="6154478581116148741">Chcete-li z tohoto zařízení exportovat svá hesla, zapněte v Nastavení zámek obrazovky</translation>
 <translation id="6159335304067198720">Úspora dat: <ph name="PERCENT" /></translation>
-<translation id="6177111841848151710">Pro aktuální vyhledávač blokováno</translation>
 <translation id="6192333916571137726">Stáhnout soubor</translation>
 <translation id="6201345951596836663">Odkaz byl zkopírován</translation>
 <translation id="6210748933810148297">Nejste <ph name="EMAIL" />?</translation>
@@ -705,7 +701,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6846298663435243399">Načítání…</translation>
 <translation id="6850409657436465440">Stahování stále probíhá</translation>
 <translation id="6850830437481525139">Zavřené karty: <ph name="TAB_COUNT" /></translation>
-<translation id="6864395892908308021">Toto zařízení neumí číst NFC</translation>
 <translation id="6864459304226931083">Stáhnout obrázek</translation>
 <translation id="6865313869410766144">Automatické vyplňování formulářů</translation>
 <translation id="6884306546558072722">Pokračujte v objevování i offline</translation>
@@ -720,9 +715,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6989267951144302301">Stažení se nezdařilo</translation>
 <translation id="6990079615885386641">Získat aplikaci z Obchodu Google Play: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Upozorňovat v případě vyzrazení hesel při porušení zabezpečení</translation>
-<translation id="7000754031042624318">Vypnuto v nastavení systému Android</translation>
 <translation id="7015203776128479407">Počáteční nastavení synchronizace nebylo dokončeno. Synchronizace je vypnutá.</translation>
-<translation id="7016516562562142042">Pro aktuální vyhledávač povoleno</translation>
 <translation id="7022756207310403729">Otevřít v prohlížeči</translation>
 <translation id="702463548815491781">Doporučeno, když je zapnuta funkce TalkBack nebo přístup pomocí přepínačů</translation>
 <translation id="7029809446516969842">Hesla</translation>
@@ -755,10 +748,10 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7328017930301109123">Ve zjednodušeném režimu načítá Chrome stránky rychleji a používá až o 60 procent méně dat.</translation>
 <translation id="7333031090786104871">Předchozí web se stále přidává</translation>
 <translation id="7340958967809483333">Možnosti funkce Objevit</translation>
+<translation id="7352651011704765696">Něco se pokazilo</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Sdílet 1 vybranou položku}few{Sdílet # vybrané položky}many{Sdílet # vybrané položky}other{Sdílet # vybraných položek}}</translation>
 <translation id="7359002509206457351">Poskytnout přístup k platební metodám</translation>
-<translation id="7362144854749094396">Historie je sdílena s prohlížečem Chrome. Předvolby jsou sdíleny s webem <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Typ:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">Adresa URL</translation>
@@ -840,7 +833,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7986741934819883144">Výběr kontaktu</translation>
 <translation id="7998918019931843664">Znovu otevřít zavřenou kartu</translation>
 <translation id="8004582292198964060">Prohlížeč</translation>
-<translation id="8007176423574883786">Vypnuto v tomto zařízení</translation>
 <translation id="8013372441983637696">Vymazat data prohlížeče Chrome také z tohoto zařízení</translation>
 <translation id="8015452622527143194">Vrátit veškerý obsah stránky na původní velikost</translation>
 <translation id="8026334261755873520">Vymazat údaje o prohlížení</translation>
@@ -930,6 +922,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8687353297350450808">{N_BARS,plural, =1{Síla signálu: # čárka}few{Síla signálu: # čárky}many{Síla signálu: # čárky}other{Síla signálu: # čárek}}</translation>
 <translation id="868929229000858085">Vyhledat v kontaktech</translation>
 <translation id="869891660844655955">Datum vypršení platnosti</translation>
+<translation id="8712637175834984815">Hotovo</translation>
 <translation id="8748850008226585750">Skrytý obsah</translation>
 <translation id="8751914237388039244">Vybrat obrázek</translation>
 <translation id="8758557275681689734">Zobrazení všech otevřených karet</translation>

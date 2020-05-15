@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">自動ダウンロード</translation>
 <translation id="5677928146339483299">ブロック中</translation>
 <translation id="5689516760719285838">位置情報</translation>
+<translation id="5690795753582697420">Android の設定でカメラがオフになっています</translation>
 <translation id="5710871682236653961">NFC デバイスをタップしたとき、情報の送受信をサイトに許可するかどうかを確認する（推奨）</translation>
 <translation id="5719847187258001597"><ph name="ORIGIN" /> またはホーム画面の同アプリにより保存されたすべてのデータおよび Cookie が削除されます。</translation>
 <translation id="5804241973901381774">権限</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">もっと見る</translation>
 <translation id="6064125863973209585">完了したダウンロード</translation>
 <translation id="6165508094623778733">詳細</translation>
+<translation id="6177111841848151710">現在の検索エンジンに対してはブロック</translation>
 <translation id="6181444274883918285">サイトの例外を追加</translation>
 <translation id="6192792657125177640">例外</translation>
 <translation id="6194112207524046168">Chrome にカメラへのアクセスを許可するには、<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />でもカメラをオンにしてください。</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">このページは危険です。サイト情報</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6992289844737586249">サイトにマイクの使用を許可する前に確認する（推奨）</translation>
+<translation id="7000754031042624318">Android の設定で無効</translation>
+<translation id="7016516562562142042">現在の検索エンジンに対して許可</translation>
 <translation id="7053983685419859001">ブロック</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 件のアイテムを選択済み}other{# 件のアイテムを選択済み}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> 件選択されています。オプションは画面上部にあります</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">特定のサイトに対して音声の再生を許可します。</translation>
 <translation id="7993619969781047893">一部のサイトで機能を使用できなくなる可能性があります</translation>
 <translation id="7999064672810608036">すべてのローカルデータ（Cookie を含む）を削除して、このウェブサイトに指定したすべての権限をリセットしてもよろしいですか？</translation>
+<translation id="8007176423574883786">このデバイスに対して無効</translation>
 <translation id="802154636333426148">ダウンロード エラー</translation>
 <translation id="8087000398470557479"><ph name="DOMAIN_NAME" /> のコンテンツを Google から配信しています。</translation>
 <translation id="8116925261070264013">ミュート中</translation>

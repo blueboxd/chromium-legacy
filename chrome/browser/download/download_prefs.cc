@@ -37,6 +37,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "components/download/public/common/download_item.h"
+#include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/file_type_policies.h"
@@ -223,6 +224,15 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
                           base::Unretained(this)));
   UpdateAutoOpenByPolicy();
 
+  pref_change_registrar_.Add(
+      prefs::kDownloadAllowedURLsForOpenByPolicy,
+      base::BindRepeating(&DownloadPrefs::UpdateAllowedURLsForOpenByPolicy,
+                          // This unretained is safe since this callback is
+                          // only held while this instance is alive, so this
+                          // will always be valid.
+                          base::Unretained(this)));
+  UpdateAllowedURLsForOpenByPolicy();
+
   // We store any file extension that should be opened automatically at
   // download completion in this pref.
   std::string user_extensions_to_open =
@@ -268,6 +278,7 @@ void DownloadPrefs::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterStringPref(prefs::kDownloadExtensionsToOpen, std::string());
   registry->RegisterListPref(prefs::kDownloadExtensionsToOpenByPolicy, {});
+  registry->RegisterListPref(prefs::kDownloadAllowedURLsForOpenByPolicy, {});
   registry->RegisterBooleanPref(prefs::kDownloadDirUpgraded, false);
   registry->RegisterIntegerPref(prefs::kSaveFileType,
                                 content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML);
@@ -387,8 +398,8 @@ bool DownloadPrefs::IsAutoOpenByUserUsed() const {
   return !auto_open_by_user_.empty();
 }
 
-bool DownloadPrefs::IsAutoOpenEnabledBasedOnExtension(
-    const base::FilePath& path) const {
+bool DownloadPrefs::IsAutoOpenEnabled(const GURL& url,
+                                      const base::FilePath& path) const {
   base::FilePath::StringType extension = path.Extension();
   if (extension.empty())
     return false;
@@ -402,18 +413,19 @@ bool DownloadPrefs::IsAutoOpenEnabledBasedOnExtension(
 #endif
 
   return auto_open_by_user_.find(extension) != auto_open_by_user_.end() ||
-         auto_open_by_policy_.find(extension) != auto_open_by_policy_.end();
+         IsAutoOpenByPolicy(url, path);
 }
 
-bool DownloadPrefs::IsAutoOpenByPolicyBasedOnExtension(
-    const base::FilePath& path) const {
+bool DownloadPrefs::IsAutoOpenByPolicy(const GURL& url,
+                                       const base::FilePath& path) const {
   base::FilePath::StringType extension = path.Extension();
   if (extension.empty())
     return false;
   DCHECK(extension[0] == base::FilePath::kExtensionSeparator);
   extension.erase(0, 1);
 
-  return auto_open_by_policy_.find(extension) != auto_open_by_policy_.end();
+  return auto_open_by_policy_.find(extension) != auto_open_by_policy_.end() &&
+         !auto_open_allowed_by_urls_->IsURLBlocked(url);
 }
 
 bool DownloadPrefs::EnableAutoOpenByUserBasedOnExtension(
@@ -567,6 +579,28 @@ void DownloadPrefs::UpdateAutoOpenByPolicy() {
         StringToFilePathString(extension.GetString());
     auto_open_by_policy_.insert(extension_string);
   }
+}
+
+void DownloadPrefs::UpdateAllowedURLsForOpenByPolicy() {
+  std::unique_ptr<policy::URLBlacklist> allowed_urls =
+      std::make_unique<policy::URLBlacklist>();
+
+  PrefService* prefs = profile_->GetPrefs();
+  const auto* list = prefs->GetList(prefs::kDownloadAllowedURLsForOpenByPolicy);
+
+  // We only need to configure |allowed_urls| if something is set by policy,
+  // otherwise the default object does what we want.
+  if (list->GetList().size() != 0) {
+    allowed_urls->Allow(list);
+
+    // Since we only want to auto-open for the specified urls, block everything
+    // else.
+    auto blocked = std::make_unique<base::ListValue>();
+    blocked->AppendString("*");
+    allowed_urls->Block(blocked.get());
+  }
+
+  auto_open_allowed_by_urls_.swap(allowed_urls);
 }
 
 bool DownloadPrefs::AutoOpenCompareFunctor::operator()(

@@ -94,12 +94,24 @@ void ConversionStorageSql::StoreImpression(
   // the number of active impression.
   DeleteExpiredImpressions();
 
+  // TODO(csharrison): Thread this failure to the caller and report a console
+  // error.
+  const std::string serialized_impression_origin =
+      SerializeOrigin(impression.impression_origin());
+  if (!HasCapacityForStoringImpression(serialized_impression_origin))
+    return;
+
   // Wrap the deactivation and insertion in the same transaction. If the
   // deactivation fails, we do not want to store the new impression as we may
   // return the wrong set of impressions for a conversion.
   sql::Transaction transaction(&db_);
   if (!transaction.Begin())
     return;
+
+  const std::string serialized_conversion_origin =
+      SerializeOrigin(impression.conversion_origin());
+  const std::string serialized_reporting_origin =
+      SerializeOrigin(impression.reporting_origin());
 
   // In the case where we get a new impression for a given <reporting_origin,
   // conversion_origin> we should mark all active, converted impressions with
@@ -110,10 +122,8 @@ void ConversionStorageSql::StoreImpression(
       "active = 1 AND num_conversions > 0";
   sql::Statement deactivate_statement(db_.GetCachedStatement(
       SQL_FROM_HERE, kDeactivateMatchingConvertedImpressionsSql));
-  deactivate_statement.BindString(
-      0, SerializeOrigin(impression.conversion_origin()));
-  deactivate_statement.BindString(
-      1, SerializeOrigin(impression.reporting_origin()));
+  deactivate_statement.BindString(0, serialized_conversion_origin);
+  deactivate_statement.BindString(1, serialized_reporting_origin);
   deactivate_statement.Run();
 
   const char kInsertImpressionSql[] =
@@ -124,9 +134,9 @@ void ConversionStorageSql::StoreImpression(
   sql::Statement statement(
       db_.GetCachedStatement(SQL_FROM_HERE, kInsertImpressionSql));
   statement.BindString(0, impression.impression_data());
-  statement.BindString(1, SerializeOrigin(impression.impression_origin()));
-  statement.BindString(2, SerializeOrigin(impression.conversion_origin()));
-  statement.BindString(3, SerializeOrigin(impression.reporting_origin()));
+  statement.BindString(1, serialized_impression_origin);
+  statement.BindString(2, serialized_conversion_origin);
+  statement.BindString(3, serialized_reporting_origin);
   statement.BindInt64(4, SerializeTime(impression.impression_time()));
   statement.BindInt64(5, SerializeTime(impression.expiry_time()));
   statement.Run();
@@ -139,7 +149,15 @@ int ConversionStorageSql::MaybeCreateAndStoreConversionReports(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const url::Origin& conversion_origin = conversion.conversion_origin();
+  const std::string serialized_conversion_origin =
+      SerializeOrigin(conversion_origin);
+  if (!HasCapacityForStoringConversion(serialized_conversion_origin))
+    return 0;
+
   const url::Origin& reporting_origin = conversion.reporting_origin();
+  DCHECK(!conversion_origin.opaque());
+  DCHECK(!reporting_origin.opaque());
+
   base::Time current_time = clock_->Now();
   int64_t serialized_current_time = SerializeTime(current_time);
 
@@ -154,7 +172,7 @@ int ConversionStorageSql::MaybeCreateAndStoreConversionReports(
 
   sql::Statement statement(
       db_.GetCachedStatement(SQL_FROM_HERE, kGetMatchingImpressionsSql));
-  statement.BindString(0, SerializeOrigin(conversion_origin));
+  statement.BindString(0, serialized_conversion_origin);
   statement.BindString(1, SerializeOrigin(reporting_origin));
   statement.BindInt64(2, serialized_current_time);
 
@@ -165,6 +183,11 @@ int ConversionStorageSql::MaybeCreateAndStoreConversionReports(
     std::string impression_data = statement.ColumnString(1);
     url::Origin impression_origin =
         DeserializeOrigin(statement.ColumnString(2));
+
+    // Skip the report if the impression origin is opaque. This should only
+    // happen if there is some sort of database corruption.
+    if (impression_origin.opaque())
+      continue;
     base::Time impression_time = DeserializeTime(statement.ColumnInt64(3));
     base::Time expiry_time = DeserializeTime(statement.ColumnInt64(4));
 
@@ -276,6 +299,15 @@ std::vector<ConversionReport> ConversionStorageSql::GetConversionsToReport(
     base::Time impression_time = DeserializeTime(statement.ColumnInt64(8));
     base::Time expiry_time = DeserializeTime(statement.ColumnInt64(9));
     int64_t impression_id = statement.ColumnInt64(10);
+
+    // Ensure origins are valid before continuing. This could happen if there is
+    // database corruption.
+    // TODO(csharrison): This should be an extremely rare occurrence but it
+    // would entail that some records will remain in the DB as vestigial if a
+    // conversion is never sent. We should delete these entries from the DB.
+    if (impression_origin.opaque() || conversion_origin.opaque() ||
+        reporting_origin.opaque())
+      continue;
 
     // Create the impression and ConversionReport objects from the retrieved
     // columns.
@@ -527,6 +559,43 @@ void ConversionStorageSql::ClearAllDataAllTime() {
   transaction.Commit();
 }
 
+bool ConversionStorageSql::HasCapacityForStoringImpression(
+    const std::string& serialized_origin) {
+  // Optimized by impression_origin_idx.
+  const char kCountImpressionsSql[] =
+      "SELECT COUNT(impression_origin) FROM impressions WHERE "
+      "impression_origin = ?";
+  sql::Statement statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, kCountImpressionsSql));
+  statement.BindString(0, serialized_origin);
+  if (!statement.Step())
+    return false;
+  int64_t count = statement.ColumnInt64(0);
+  return count < delegate_->GetMaxImpressionsPerOrigin();
+}
+
+bool ConversionStorageSql::HasCapacityForStoringConversion(
+    const std::string& serialized_origin) {
+  // This query should be reasonably optimized via conversion_origin_idx. The
+  // conversion origin is the second column in a multi-column index where the
+  // first column is just a boolean. Therefore the second column in the index
+  // should be very well-sorted.
+  //
+  // Note: to take advantage of this, we need to hint to the query planner that
+  // |active| is a boolean, so include it in the conditional.
+  const char kCountConversionsSql[] =
+      "SELECT COUNT(conversion_id) FROM conversions C JOIN impressions I ON"
+      " I.impression_id = C.impression_id"
+      " WHERE I.conversion_origin = ? AND (active BETWEEN 0 AND 1)";
+  sql::Statement statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, kCountConversionsSql));
+  statement.BindString(0, serialized_origin);
+  if (!statement.Step())
+    return false;
+  int64_t count = statement.ColumnInt64(0);
+  return count < delegate_->GetMaxConversionsPerOrigin();
+}
+
 bool ConversionStorageSql::InitializeSchema() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(johnidel, csharrison): Many impressions will share a target origin and
@@ -582,6 +651,13 @@ bool ConversionStorageSql::InitializeSchema() {
       "CREATE INDEX IF NOT EXISTS impression_expiry_idx "
       "ON impressions(expiry_time)";
   if (!db_.Execute(kImpressionExpiryIndexSql))
+    return false;
+
+  // Optimizes counting impressions by impression origin.
+  const char kImpressionOriginIndexSql[] =
+      "CREATE INDEX IF NOT EXISTS impression_origin_idx "
+      "ON impressions(impression_origin)";
+  if (!db_.Execute(kImpressionOriginIndexSql))
     return false;
 
   // All columns in this table are const. |impression_id| is the primary key of

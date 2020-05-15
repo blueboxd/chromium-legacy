@@ -80,6 +80,11 @@ class TestSmbFsImpl : public smbfs::mojom::SmbFs {
               RemoveSavedCredentials,
               (RemoveSavedCredentialsCallback),
               (override));
+
+  MOCK_METHOD(void,
+              DeleteRecursively,
+              (const base::FilePath&, DeleteRecursivelyCallback),
+              (override));
 };
 
 class SmbFsShareTest : public testing::Test {

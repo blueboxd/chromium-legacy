@@ -118,7 +118,7 @@ CertificateSelector::CertificateSelector(net::ClientCertIdentityList identities,
     : web_contents_(web_contents) {
   CHECK(web_contents_);
 
-  view_cert_button_ = DialogDelegate::SetExtraView(views::MdTextButton::Create(
+  view_cert_button_ = SetExtraView(views::MdTextButton::Create(
       this, l10n_util::GetStringUTF16(IDS_PAGE_INFO_CERT_INFO_BUTTON)));
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(

@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Sjálfvirkt niðurhal</translation>
 <translation id="5677928146339483299">Lokað fyrir aðgang</translation>
 <translation id="5689516760719285838">Staðsetning</translation>
+<translation id="5690795753582697420">Slökkt er á myndavél í stillingum Android</translation>
 <translation id="5710871682236653961">Spyrja áður en vefsvæði fá leyfi til að senda og taka við upplýsingum þegar þú ýtir á NFC-tæki (ráðlagt)</translation>
 <translation id="5719847187258001597">Þetta hreinsar öll gögn og fótspor sem <ph name="ORIGIN" /> eða forrit þess geymir á heimaskjánum</translation>
 <translation id="5804241973901381774">Heimildir</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Meira</translation>
 <translation id="6064125863973209585">Niðurhali lokið</translation>
 <translation id="6165508094623778733">Frekari upplýsingar</translation>
+<translation id="6177111841848151710">Á bannlista á núverandi leitarvél</translation>
 <translation id="6181444274883918285">Bæta við undantekningu</translation>
 <translation id="6192792657125177640">Undantekningar</translation>
 <translation id="6194112207524046168">Til að leyfa Chrome að fá aðgang að myndavélinni þarftu einnig að kveikja á henni í <ph name="BEGIN_LINK" />stillingum Android<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Þessi síða er hættuleg. Upplýsingar um vefsvæði</translation>
 <translation id="6965382102122355670">Í lagi</translation>
 <translation id="6992289844737586249">Spyrja áður en vefsvæðum er veitt heimild til að nota hljóðnemann þinn (ráðlagt)</translation>
+<translation id="7000754031042624318">Slökkt í stillingum Android</translation>
+<translation id="7016516562562142042">Leyft á núverandi leitarvél</translation>
 <translation id="7053983685419859001">Setja á bannlista</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 valið}one{# valið}other{# valin}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> valin.  Valkostir eru ofarlega á skjánum</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Leyfa hljóð á tilteknu vefsvæði.</translation>
 <translation id="7993619969781047893">Ekki er víst að allir eiginleikar á öllum vefsvæðum virki</translation>
 <translation id="7999064672810608036">Ertu viss um að þú viljir hreinsa öll staðbundin gögn fyrir þetta vefsvæði, þar á meðal fótspor, og endurstilla allar heimildir þess?</translation>
+<translation id="8007176423574883786">Slökkt fyrir þetta tæki</translation>
 <translation id="802154636333426148">Niðurhal mistókst</translation>
 <translation id="8087000398470557479">Þetta efni er frá <ph name="DOMAIN_NAME" />, birt af Google.</translation>
 <translation id="8116925261070264013">Þögguð</translation>

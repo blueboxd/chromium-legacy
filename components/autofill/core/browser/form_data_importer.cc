@@ -128,6 +128,17 @@ bool IsMinimumAddress(const AutofillProfile& profile,
   if (import_log_buffer)
     *import_log_buffer << country;
 
+  // Check the |ADDRESS_HOME_LINE1| requirement.
+  bool is_line1_missing = false;
+  if (country.requires_line1() &&
+      profile.GetRawInfo(ADDRESS_HOME_LINE1).empty()) {
+    if (import_log_buffer) {
+      *import_log_buffer << LogMessage::kImportAddressProfileFromFormFailed
+                         << "Missing required ADDRESS_HOME_LINE1." << CTag{};
+    }
+    is_line1_missing = true;
+  }
+
   // Check the |ADDRESS_HOME_CITY| requirement.
   bool is_city_missing = false;
   if (country.requires_city() &&
@@ -160,23 +171,47 @@ bool IsMinimumAddress(const AutofillProfile& profile,
     is_zip_missing = true;
   }
 
+  bool is_zip_or_state_requirement_violated = false;
+  if (country.requires_zip_or_state() &&
+      profile.GetRawInfo(ADDRESS_HOME_ZIP).empty() &&
+      profile.GetRawInfo(ADDRESS_HOME_STATE).empty()) {
+    if (import_log_buffer) {
+      *import_log_buffer
+          << LogMessage::kImportAddressProfileFromFormFailed
+          << "Missing required ADDRESS_HOME_ZIP or ADDRESS_HOME_STATE."
+          << CTag{};
+    }
+    is_zip_or_state_requirement_violated = true;
+  }
+
   // Collect metrics regarding the requirements.
   AutofillMetrics::LogAddressFormImportRequirementMetric(
-      is_city_missing ? AddressImportRequirement::CITY_REQUIREMENT_MISSING
+      is_line1_missing ? AddressImportRequirement::LINE1_REQUIREMENT_VIOLATED
+                       : AddressImportRequirement::LINE1_REQUIREMENT_FULFILLED);
+
+  AutofillMetrics::LogAddressFormImportRequirementMetric(
+      is_city_missing ? AddressImportRequirement::CITY_REQUIREMENT_VIOLATED
                       : AddressImportRequirement::CITY_REQUIREMENT_FULFILLED);
 
   AutofillMetrics::LogAddressFormImportRequirementMetric(
-      is_state_missing ? AddressImportRequirement::STATE_REQUIREMENT_MISSING
+      is_state_missing ? AddressImportRequirement::STATE_REQUIREMENT_VIOLATED
                        : AddressImportRequirement::STATE_REQUIREMENT_FULFILLED);
 
   AutofillMetrics::LogAddressFormImportRequirementMetric(
-      is_zip_missing ? AddressImportRequirement::ZIP_REQUIREMENT_MISSING
+      is_zip_missing ? AddressImportRequirement::ZIP_REQUIREMENT_VIOLATED
                      : AddressImportRequirement::ZIP_REQUIREMENT_FULFILLED);
+
+  AutofillMetrics::LogAddressFormImportRequirementMetric(
+      is_zip_or_state_requirement_violated
+          ? AddressImportRequirement::ZIP_OR_STATE_REQUIREMENT_VIOLATED
+          : AddressImportRequirement::ZIP_OR_STATE_REQUIREMENT_FULFILLED);
 
   AutofillMetrics::LogAddressFormImportCountrySpecificFieldRequirementsMetric(
       is_zip_missing, is_state_missing, is_city_missing);
+
   // Return true if all requirements are fulfilled.
-  return !(is_city_missing || is_state_missing || is_zip_missing);
+  return !(is_line1_missing || is_city_missing || is_state_missing ||
+           is_zip_missing || is_zip_or_state_requirement_violated);
 }
 
 }  // namespace
@@ -340,16 +375,19 @@ bool FormDataImporter::IsValidLearnableProfile(
 
   // Collect metrics.
   AutofillMetrics::LogAddressFormImportRequirementMetric(
-      is_email_invalid ? AddressImportRequirement::EMAIL_VALID_MISSING
-                       : AddressImportRequirement::EMAIL_VALID_FULFILLED);
+      is_email_invalid
+          ? AddressImportRequirement::EMAIL_VALID_REQUIREMENT_VIOLATED
+          : AddressImportRequirement::EMAIL_VALID_REQUIREMENT_FULFILLED);
 
   AutofillMetrics::LogAddressFormImportRequirementMetric(
-      is_state_invalid ? AddressImportRequirement::STATE_VALID_MISSING
-                       : AddressImportRequirement::STATE_VALID_FULFILLED);
+      is_state_invalid
+          ? AddressImportRequirement::STATE_VALID_REQUIREMENT_VIOLATED
+          : AddressImportRequirement::STATE_VALID_REQUIREMENT_FULFILLED);
 
   AutofillMetrics::LogAddressFormImportRequirementMetric(
-      is_zip_invalid ? AddressImportRequirement::ZIP_VALID_MISSING
-                     : AddressImportRequirement::ZIP_VALID_FULFILLED);
+      is_zip_invalid
+          ? AddressImportRequirement::ZIP_VALID_REQUIREMENT_VIOLATED
+          : AddressImportRequirement::ZIP_VALID_REQUIREMENT_FULFILLED);
 
   // Return true if none of the requirements is violated.
   return !(is_not_minimum_address || is_email_invalid || is_state_invalid ||
@@ -544,20 +582,6 @@ bool FormDataImporter::ImportAddressProfileForSection(
     }
   }
 
-  // Use the existence of a non-empty |ADDRESS_HOME_LINE1| entry as a
-  // preselection criteria to perform additional requirement tests and to report
-  // UMA statistics.
-  if (candidate_profile.GetRawInfo(ADDRESS_HOME_LINE1).empty()) {
-    if (import_log_buffer) {
-      *import_log_buffer << LogMessage::kImportAddressProfileFromFormFailed
-                         << "Fullstop due to missing ADDRESS_HOME_LINE1."
-                         << CTag{};
-    }
-    // Immediately return and do not send any statistics regarding the address
-    // profile import requirement statistics to UMA.
-    return false;
-  }
-
   // Construct the phone number. Reject the whole profile if the number is
   // invalid.
   if (!combined_phone.IsEmpty()) {
@@ -591,26 +615,30 @@ bool FormDataImporter::ImportAddressProfileForSection(
   // Collect metrics regarding the requirements for an address profile import.
   AutofillMetrics::LogAddressFormImportRequirementMetric(
       has_multiple_distinct_email_addresses
-          ? AddressImportRequirement::EMAIL_ADDRESS_UNIQUE_MISSING
-          : AddressImportRequirement::EMAIL_ADDRESS_UNIQUE_FULFILLED);
+          ? AddressImportRequirement::EMAIL_ADDRESS_UNIQUE_REQUIREMENT_VIOLATED
+          : AddressImportRequirement::
+                EMAIL_ADDRESS_UNIQUE_REQUIREMENT_FULFILLED);
 
   AutofillMetrics::LogAddressFormImportRequirementMetric(
       has_invalid_field_types
-          ? AddressImportRequirement::NO_INVALID_FIELD_TYPES_MISSING
-          : AddressImportRequirement::NO_INVALID_FIELD_TYPES_FULFILLED);
+          ? AddressImportRequirement::
+                NO_INVALID_FIELD_TYPES_REQUIREMENT_VIOLATED
+          : AddressImportRequirement::
+                NO_INVALID_FIELD_TYPES_REQUIREMENT_FULFILLED);
 
   AutofillMetrics::LogAddressFormImportRequirementMetric(
       has_invalid_phone_number
-          ? AddressImportRequirement::PHONE_VALID_MISSING
-          : AddressImportRequirement::PHONE_VALID_FULFILLED);
+          ? AddressImportRequirement::PHONE_VALID_REQUIREMENT_VIOLATED
+          : AddressImportRequirement::PHONE_VALID_REQUIREMENT_FULFILLED);
 
   AutofillMetrics::LogAddressFormImportRequirementMetric(
-      has_invalid_country ? AddressImportRequirement::COUNTRY_VALID_MISSING
-                          : AddressImportRequirement::COUNTRY_VALID_FULFILLED);
+      has_invalid_country
+          ? AddressImportRequirement::COUNTRY_VALID_REQUIREMENT_VIOLATED
+          : AddressImportRequirement::COUNTRY_VALID_REQUIREMENT_FULFILLED);
 
   AutofillMetrics::LogAddressFormImportRequirementMetric(
-      all_fullfilled ? AddressImportRequirement::OVERALL_FULFILLED
-                     : AddressImportRequirement::OVERALL_MISSING);
+      all_fullfilled ? AddressImportRequirement::OVERALL_REQUIREMENT_FULFILLED
+                     : AddressImportRequirement::OVERALL_REQUIREMENT_VIOLATED);
 
   if (!all_fullfilled)
     return false;

@@ -179,15 +179,17 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
     shortcut_item.url = GURL(base::UTF16ToUTF8(shortcut_data[2]));
 
     blink::Manifest::ImageResource icon;
-    icon.src = GURL(base::UTF16ToUTF8(shortcut_data[3]));
+    GURL icon_src(base::UTF16ToUTF8(shortcut_data[3]));
+    icon.src = icon_src;
     icon.purpose.push_back(blink::Manifest::ImageResource::Purpose::ANY);
+    shortcut_item.icons.push_back(std::move(icon));
 
-    if (icon.src.is_valid()) {
-      icon_url_to_murmur2_hash[icon.src.spec()] = WebApkIconHasher::Icon{
+    if (icon_src.is_valid()) {
+      icon_url_to_murmur2_hash[icon_src.spec()] = WebApkIconHasher::Icon{
           /* data= */ base::UTF16ToUTF8(shortcut_data[5]),
           /* hash= */ base::UTF16ToUTF8(shortcut_data[4])};
     }
-    info.best_shortcut_icon_urls.push_back(icon.src);
+    info.best_shortcut_icon_urls.push_back(std::move(icon_src));
     info.shortcut_items.push_back(std::move(shortcut_item));
   }
 

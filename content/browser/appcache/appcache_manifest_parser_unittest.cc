@@ -815,13 +815,15 @@ TEST_F(AppCacheManifestParserTest, OriginTrial) {
   base::Time expect_token_expires;
   {
     blink::TrialTokenValidator validator;
-    std::string token_feature;
     url::Origin origin = url::Origin::Create(kUrl);
     const char* token = APPCACHE_ORIGIN_TRIAL_TOKEN;
-    ASSERT_EQ(validator.ValidateToken(token, origin, base::Time::Now(),
-                                      &token_feature, &expect_token_expires),
+    blink::TrialTokenResult expect_token_result =
+        validator.ValidateToken(token, origin, base::Time::Now());
+    expect_token_expires = expect_token_result.expiry_time;
+    ASSERT_EQ(expect_token_result.status,
               blink::OriginTrialTokenStatus::kSuccess);
-    EXPECT_EQ(GetAppCacheOriginTrialNameForTesting(), token_feature);
+    EXPECT_EQ(GetAppCacheOriginTrialNameForTesting(),
+              expect_token_result.feature_name);
     EXPECT_NE(base::Time(), expect_token_expires);
   }
 

@@ -80,7 +80,7 @@ class BaseDialogContainer : public views::DialogDelegateView {
                       const base::Closure& close_callback)
       : dialog_body_(AddChildView(std::move(dialog_body))),
         close_callback_(close_callback) {
-    DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
+    SetButtons(ui::DIALOG_BUTTON_NONE);
   }
   ~BaseDialogContainer() override {}
 

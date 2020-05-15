@@ -162,7 +162,7 @@ CrostiniAnsibleSoftwareConfigView::CrostiniAnsibleSoftwareConfigView(
 
   // In the initial state (CONFIGURING), there are no buttons and hence no set
   // labels.
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
 }
 
 CrostiniAnsibleSoftwareConfigView::~CrostiniAnsibleSoftwareConfigView() {
@@ -173,19 +173,17 @@ CrostiniAnsibleSoftwareConfigView::~CrostiniAnsibleSoftwareConfigView() {
 void CrostiniAnsibleSoftwareConfigView::OnStateChanged() {
   progress_bar_->SetVisible(state_ == State::CONFIGURING);
   subtext_label_->SetText(GetSubtextLabel());
-  DialogDelegate::SetButtons(
-      state_ == State::CONFIGURING
-          ? ui::DIALOG_BUTTON_NONE
-          : (state_ == State::ERROR
-                 ? ui::DIALOG_BUTTON_OK
-                 : ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
+  SetButtons(state_ == State::CONFIGURING
+                 ? ui::DIALOG_BUTTON_NONE
+                 : (state_ == State::ERROR
+                        ? ui::DIALOG_BUTTON_OK
+                        : ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
   // The cancel button, even when present, always uses the default text.
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
-      state_ == State::ERROR
-          ? l10n_util::GetStringUTF16(IDS_APP_OK)
-          : l10n_util::GetStringUTF16(
-                IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_RETRY_BUTTON));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 state_ == State::ERROR
+                     ? l10n_util::GetStringUTF16(IDS_APP_OK)
+                     : l10n_util::GetStringUTF16(
+                           IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_RETRY_BUTTON));
   DialogModelChanged();
   GetWidget()->UpdateWindowTitle();
   GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());

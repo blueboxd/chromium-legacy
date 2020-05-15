@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/optional.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
 #include "cc/metrics/event_metrics.h"
@@ -40,9 +40,10 @@ class CC_EXPORT EventsMetricsManager {
   EventsMetricsManager& operator=(const EventsMetricsManager&) = delete;
 
   // Called by clients when they start handling an event. Destruction of the
-  // scoped monitor indicates the end of event handling.
+  // scoped monitor indicates the end of event handling. |event_metrics| is
+  // allowed to be nullptr in which case the return value would also be nullptr.
   std::unique_ptr<ScopedMonitor> GetScopedMonitor(
-      const EventMetrics& event_metrics);
+      std::unique_ptr<EventMetrics> event_metrics);
 
   // Called by clients when a frame needs to be produced. If any scoped monitor
   // is active at this time, its corresponding event metrics would be saved.
@@ -53,11 +54,15 @@ class CC_EXPORT EventsMetricsManager {
   std::vector<EventMetrics> TakeSavedEventsMetrics();
 
  private:
+  void OnScopedMonitorEnded();
+
   // Current active EventMetrics, if any.
-  base::Optional<EventMetrics> active_event_;
+  std::unique_ptr<EventMetrics> active_event_;
 
   // List of saved event metrics.
   std::vector<EventMetrics> saved_events_;
+
+  base::WeakPtrFactory<EventsMetricsManager> weak_factory_{this};
 };
 
 }  // namespace cc

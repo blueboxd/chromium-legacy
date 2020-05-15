@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Pobieranie automatyczne</translation>
 <translation id="5677928146339483299">Zablokowane</translation>
 <translation id="5689516760719285838">Lokalizacja</translation>
+<translation id="5690795753582697420">Kamera jest wyłączona w ustawieniach Androida</translation>
 <translation id="5710871682236653961">Pytaj, zanim zezwolisz stronom na wysyłanie i odbieranie informacji po dotknięciu urządzeń z funkcją NFC (zalecane)</translation>
 <translation id="5719847187258001597">Spowoduje to usunięcie wszystkich danych i plików cookie zapisanych przez stronę <ph name="ORIGIN" /> lub jej aplikację na ekranie głównym.</translation>
 <translation id="5804241973901381774">Uprawnienia</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Więcej</translation>
 <translation id="6064125863973209585">Ukończenie pobierania plików</translation>
 <translation id="6165508094623778733">Więcej informacji</translation>
+<translation id="6177111841848151710">Zablokowano dostęp obecnej wyszukiwarce</translation>
 <translation id="6181444274883918285">Dodaj witrynę do wyjątków</translation>
 <translation id="6192792657125177640">Wyjątki</translation>
 <translation id="6194112207524046168">Aby zezwolić Chrome na dostęp do aparatu, musisz też włączyć aparat w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Ta strona jest niebezpieczna. Informacje o witrynie</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6992289844737586249">Pytaj, zanim zezwolisz stronom na korzystanie z mikrofonu (zalecane)</translation>
+<translation id="7000754031042624318">Wyłączone w ustawieniach Androida</translation>
+<translation id="7016516562562142042">Zezwolono na dostęp obecnej wyszukiwarce</translation>
 <translation id="7053983685419859001">Blokuj</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Wybrano 1}few{Wybrano #}many{Wybrano #}other{Wybrano #}}</translation>
 <translation id="7087918508125750058">Wybrano <ph name="ITEM_COUNT" />. Opcje dostępne na górze ekranu</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Zezwalaj na dźwięk na określonej stronie.</translation>
 <translation id="7993619969781047893">Funkcje niektórych stron mogą nie działać prawidłowo</translation>
 <translation id="7999064672810608036">Na pewno chcesz usunąć wszystkie dane lokalne (w tym pliki cookie) i zresetować uprawnienia tej witryny?</translation>
+<translation id="8007176423574883786">Wyłączona na tym urządzeniu</translation>
 <translation id="802154636333426148">Nie udało się pobrać</translation>
 <translation id="8087000398470557479">Treść z <ph name="DOMAIN_NAME" /> dostarczana przez Google.</translation>
 <translation id="8116925261070264013">Wyciszone</translation>

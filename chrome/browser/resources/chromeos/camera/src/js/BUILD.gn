@@ -40,6 +40,7 @@ js_library("chrome_util") {
 }
 
 js_library("error") {
+  deps = [ ":metrics" ]
 }
 
 js_library("intent") {
@@ -66,7 +67,6 @@ js_library("gallerybutton") {
 
 js_library("metrics") {
   deps = [
-    ":error",
     ":state",
     "externs:universal_analytics_api",
   ]

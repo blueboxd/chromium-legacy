@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Автоматски преземања</translation>
 <translation id="5677928146339483299">Блокирано</translation>
 <translation id="5689516760719285838">Локација</translation>
+<translation id="5690795753582697420">Камерата е исклучена во поставките за Android</translation>
 <translation id="5710871682236653961">Прашај пред да дозволиш сајтовите да испраќаат и примаат информации при допир на NFC-уреди (се препорачува)</translation>
 <translation id="5719847187258001597">Ова ќе ги избрише сите податоци и колачиња складирани од сајтот <ph name="ORIGIN" /> или од неговата апликација на почетниот екран.</translation>
 <translation id="5804241973901381774">Дозволи</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Повеќе</translation>
 <translation id="6064125863973209585">Преземањата завршија</translation>
 <translation id="6165508094623778733">Дознајте повеќе</translation>
+<translation id="6177111841848151710">Блокирано за тековниот пребарувач</translation>
 <translation id="6181444274883918285">Додај исклучок за сајт</translation>
 <translation id="6192792657125177640">Исклучоци</translation>
 <translation id="6194112207524046168">За да може Chrome да пристапува до вашата камера, вклучете ја дозволата за камера и во <ph name="BEGIN_LINK" />Поставките за Android<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Страницава е опасна. Информации за сајтот</translation>
 <translation id="6965382102122355670">Во ред</translation>
 <translation id="6992289844737586249">Прво прашај пред да дозволиш сајтовите да го користат микрофонот (се препорачува)</translation>
+<translation id="7000754031042624318">Исклучена во поставките за Android</translation>
+<translation id="7016516562562142042">Дозволено за тековниот пребарувач</translation>
 <translation id="7053983685419859001">Блокирај</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Избрана е 1}one{Избрана е #}other{Избрани се #}}</translation>
 <translation id="7087918508125750058">Избрани ставки: <ph name="ITEM_COUNT" />. Достапни се опции во горниот дел од екранот</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Дозволете го звукот за одреден сајт.</translation>
 <translation id="7993619969781047893">Функциите на некои сајтови може да не функционираат</translation>
 <translation id="7999064672810608036">Дали сте сигурни дека сакате да ги исчистите сите локални податоци, вклучувајќи ги колачињата, и да ги ресетирате сите дозволи за веб-локацијата?</translation>
+<translation id="8007176423574883786">Исклучена за овој уред</translation>
 <translation id="802154636333426148">Неуспешно преземање</translation>
 <translation id="8087000398470557479">Оваа содржина е од <ph name="DOMAIN_NAME" />, овозможена од Google.</translation>
 <translation id="8116925261070264013">Со исклучен звук</translation>

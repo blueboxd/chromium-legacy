@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Автоматични изтегляния</translation>
 <translation id="5677928146339483299">Блокирано</translation>
 <translation id="5689516760719285838">Местоположение</translation>
+<translation id="5690795753582697420">Камерата е изключена от настройките на Android</translation>
 <translation id="5710871682236653961">Извеждане на запитване преди разрешаване на сайтовете да изпращат и получават информация при допиране на устройства с NFC (препоръчително)</translation>
 <translation id="5719847187258001597">Всички съхранявани от <ph name="ORIGIN" /> или от съответното приложение на началния екран данни и „бисквитки“ ще бъдат изчистени.</translation>
 <translation id="5804241973901381774">Разрешения</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Още</translation>
 <translation id="6064125863973209585">Завършени изтегляния</translation>
 <translation id="6165508094623778733">Научете повече</translation>
+<translation id="6177111841848151710">Блокирано за текущата търсеща машина</translation>
 <translation id="6181444274883918285">Добавяне на изключение за сайт</translation>
 <translation id="6192792657125177640">Изключения</translation>
 <translation id="6194112207524046168">За да разрешите на Chrome да осъществява достъп до камерата ви, тя трябва да бъде включена и от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Тази страница е опасна. Информация за сайта</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6992289844737586249">Извеждане на запитване, преди да се разреши на сайтовете да използват микрофона (препоръчително)</translation>
+<translation id="7000754031042624318">Изключено от настройките на Android</translation>
+<translation id="7016516562562142042">Разрешено за текущата търсеща машина</translation>
 <translation id="7053983685419859001">Блокиране</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Избрана е 1}other{Избрани са #}}</translation>
 <translation id="7087918508125750058">Избрани: <ph name="ITEM_COUNT" />. Налице са опции близо до горната част на екрана</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Разрешаване на звука за конкретен сайт.</translation>
 <translation id="7993619969781047893">Функциите в някои сайтове може да не работят правилно</translation>
 <translation id="7999064672810608036">Наистина ли искате да изчистите всички локални данни, включително „бисквитките“, и да нулирате всички разрешения за този уебсайт?</translation>
+<translation id="8007176423574883786">Изключено за това устройство</translation>
 <translation id="802154636333426148">Изтеглянето не бе успешно</translation>
 <translation id="8087000398470557479">Това съдържание се показва от Google, а източникът му е <ph name="DOMAIN_NAME" />.</translation>
 <translation id="8116925261070264013">Заглушени</translation>

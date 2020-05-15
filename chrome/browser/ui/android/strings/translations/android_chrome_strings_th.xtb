@@ -325,6 +325,7 @@
 <translation id="3738139272394829648">แตะเพื่อค้นหา</translation>
 <translation id="3739899004075612870">บุ๊กมาร์กไว้ใน <ph name="PRODUCT_NAME" /> แล้ว</translation>
 <translation id="3749259744154402564">ไม่รองรับ</translation>
+<translation id="3763247130972274048">แตะสองครั้งที่ด้านซ้ายหรือขวาของวิดีโอเพื่อข้ามทีละ 10 วินาที</translation>
 <translation id="3771001275138982843">ดาวน์โหลดอัปเดตไม่ได้</translation>
 <translation id="3771033907050503522">แท็บที่ไม่ระบุตัวตน</translation>
 <translation id="3771694256347217732">ข้อกำหนดในการให้บริการของ Google</translation>
@@ -386,7 +387,6 @@
 <translation id="4250229828105606438">ภาพหน้าจอ</translation>
 <translation id="4256782883801055595">ใบอนุญาตโอเพนซอร์ส</translation>
 <translation id="4269820728363426813">คัดลอกที่อยู่ลิงก์</translation>
-<translation id="4278390842282768270">อนุญาตแล้ว</translation>
 <translation id="429312253194641664">เว็บไซต์กำลังเล่นสื่อ</translation>
 <translation id="4298388696830689168">เว็บไซต์ที่ลิงก์</translation>
 <translation id="4307992518367153382">พื้นฐาน</translation>
@@ -434,7 +434,6 @@
 <translation id="4663756553811254707">ลบบุ๊กมาร์ก <ph name="NUMBER_OF_BOOKMARKS" /> รายการแล้ว</translation>
 <translation id="4665282149850138822">เพิ่ม <ph name="NAME" /> ลงในหน้าแรกแล้ว</translation>
 <translation id="4684427112815847243">ซิงค์ทุกอย่าง</translation>
-<translation id="4688610874307684559">กำลังทำงานใน Chrome (เริ่มต้น)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ตัวเลือก}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ตัวเลือก}}</translation>
 <translation id="4696983787092045100">ส่งข้อความไปยังอุปกรณ์ของคุณ</translation>
 <translation id="4698034686595694889">ดูแบบออฟไลน์ใน <ph name="APP_NAME" /></translation>
@@ -559,10 +558,8 @@
 <translation id="5659593005791499971">อีเมล</translation>
 <translation id="5665379678064389456">สร้างกิจกรรมใน <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">ลบล้างคำขอของเว็บไซต์เพื่อป้องกันการซูมเข้า</translation>
-<translation id="5677928146339483299">ถูกบล็อก</translation>
 <translation id="5684874026226664614">อ๊ะ หน้านี้ไม่สามารถแปลได้</translation>
 <translation id="5686790454216892815">ชื่อไฟล์ยาวเกินไป</translation>
-<translation id="5690795753582697420">กล้องปิดอยู่ในการตั้งค่า Android</translation>
 <translation id="5694049548840660018">กลับสู่หน้าแรกได้ง่ายๆ</translation>
 <translation id="569536719314091526">แปลหน้านี้เป็นภาษาใดก็ได้จากปุ่มตัวเลือกเพิ่มเติม</translation>
 <translation id="572328651809341494">แท็บล่าสุด</translation>
@@ -618,7 +615,6 @@
 <translation id="614940544461990577">ลอง:</translation>
 <translation id="6154478581116148741">เปิดล็อกหน้าจอใน "การตั้งค่า" เพื่อส่งออกรหัสผ่านจากอุปกรณ์นี้</translation>
 <translation id="6159335304067198720">ประหยัดอินเทอร์เน็ต <ph name="PERCENT" /></translation>
-<translation id="6177111841848151710">ถูกบล็อกสำหรับเครื่องมือค้นหาปัจจุบัน</translation>
 <translation id="6192333916571137726">ดาวน์โหลดไฟล์</translation>
 <translation id="6201345951596836663">คัดลอกลิงก์แล้ว</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ไม่ใช่บัญชีที่ฉันจะใช้</translation>
@@ -705,7 +701,6 @@
 <translation id="6846298663435243399">กำลังโหลด…</translation>
 <translation id="6850409657436465440">ระบบยังดาวน์โหลดอยู่</translation>
 <translation id="6850830437481525139">ปิดแล้ว <ph name="TAB_COUNT" /> แท็บ</translation>
-<translation id="6864395892908308021">อุปกรณ์นี้อ่าน NFC ไม่ได้</translation>
 <translation id="6864459304226931083">ดาวน์โหลดรูปภาพ</translation>
 <translation id="6865313869410766144">ข้อมูลฟอร์มที่ป้อนอัตโนมัติ</translation>
 <translation id="6884306546558072722">สำรวจแบบอออฟไลน์ต่อไป</translation>
@@ -720,9 +715,7 @@
 <translation id="6989267951144302301">ดาวน์โหลดไม่ได้</translation>
 <translation id="6990079615885386641">รับแอปจาก Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">เตือนคุณในกรณีที่รหัสผ่านรั่วไหลจากการละเมิดข้อมูล</translation>
-<translation id="7000754031042624318">ปิดในการตั้งค่า Android</translation>
 <translation id="7015203776128479407">ตั้งค่าการซิงค์เริ่มต้นไม่สำเร็จ การซิงค์ปิดอยู่</translation>
-<translation id="7016516562562142042">อนุญาตสำหรับเครื่องมือค้นหาปัจจุบัน</translation>
 <translation id="7022756207310403729">เปิดในเบราว์เซอร์</translation>
 <translation id="702463548815491781">แนะนำให้ใช้เมื่อ TalkBack หรือการเข้าถึงด้วยสวิตช์เปิดอยู่</translation>
 <translation id="7029809446516969842">รหัสผ่าน</translation>
@@ -755,10 +748,10 @@
 <translation id="7328017930301109123">ในโหมด Lite เบราว์เซอร์ Chrome จะโหลดหน้าเว็บได้เร็วขึ้นและใช้เน็ตน้อยลงสูงสุดถึง 60 เปอร์เซ็นต์</translation>
 <translation id="7333031090786104871">ยังเพิ่มไซต์ก่อนหน้าอยู่</translation>
 <translation id="7340958967809483333">ตัวเลือกสำหรับ Discover</translation>
+<translation id="7352651011704765696">มีข้อผิดพลาดเกิดขึ้น</translation>
 <translation id="7352939065658542140">วิดีโอ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{แชร์ 1 รายการที่เลือก}other{แชร์ # รายการที่เลือก}}</translation>
 <translation id="7359002509206457351">เข้าถึงวิธีการชำระเงิน</translation>
-<translation id="7362144854749094396">ระบบแชร์ประวัติการเข้าชมกับ Chrome และแชร์ค่ากำหนดกับ <ph name="SITE_NAME" /></translation>
 <translation id="7375125077091615385">ประเภท:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" /></translation>
 <translation id="7400418766976504921">URL</translation>
@@ -840,7 +833,6 @@
 <translation id="7986741934819883144">เลือกรายชื่อติดต่อ</translation>
 <translation id="7998918019931843664">เปิดแท็บที่ปิดไปแล้วขึ้นใหม่</translation>
 <translation id="8004582292198964060">เบราว์เซอร์</translation>
-<translation id="8007176423574883786">ปิดสำหรับอุปกรณ์นี้</translation>
 <translation id="8013372441983637696">ล้างข้อมูล Chrome ของคุณออกจากอุปกรณ์นี้ด้วย</translation>
 <translation id="8015452622527143194">เปลี่ยนทุกอย่างบนหน้ากลับไปเป็นขนาดเริ่มต้น</translation>
 <translation id="8026334261755873520">ล้างข้อมูลการท่องเว็บ</translation>
@@ -930,6 +922,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{ระดับความแรงของสัญญาณ: # แถบ}other{ระดับความแรงของสัญญาณ: # แถบ}}</translation>
 <translation id="868929229000858085">ค้นหารายชื่อติดต่อ</translation>
 <translation id="869891660844655955">วันหมดอายุ</translation>
+<translation id="8712637175834984815">สำเร็จ</translation>
 <translation id="8748850008226585750">เนื้อหาถูกซ่อนไว้</translation>
 <translation id="8751914237388039244">เลือกรูปภาพ</translation>
 <translation id="8758557275681689734">ดูแท็บที่เปิดอยู่ทั้งหมด</translation>

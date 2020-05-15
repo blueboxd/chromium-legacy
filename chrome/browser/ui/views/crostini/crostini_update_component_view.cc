@@ -68,7 +68,7 @@ CrostiniUpdateComponentView::GetActiveViewForTesting() {
 }
 
 CrostiniUpdateComponentView::CrostiniUpdateComponentView() {
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
+  SetButtons(ui::DIALOG_BUTTON_OK);
 
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(

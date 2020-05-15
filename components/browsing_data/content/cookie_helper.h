@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/browsing_data/content/canonical_cookie_hash.h"
@@ -36,7 +37,9 @@ namespace browsing_data {
 class CookieHelper : public base::RefCountedThreadSafe<CookieHelper> {
  public:
   using FetchCallback = base::OnceCallback<void(const net::CookieList&)>;
-  explicit CookieHelper(content::StoragePartition* storage_partition);
+  using IsDeletionDisabledCallback = base::RepeatingCallback<bool(const GURL&)>;
+  explicit CookieHelper(content::StoragePartition* storage_partition,
+                        IsDeletionDisabledCallback callback);
 
   // Starts the fetching process, which will notify its completion via
   // callback.
@@ -53,6 +56,7 @@ class CookieHelper : public base::RefCountedThreadSafe<CookieHelper> {
 
  private:
   content::StoragePartition* storage_partition_;
+  IsDeletionDisabledCallback delete_disabled_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieHelper);
 };
@@ -74,7 +78,8 @@ class CannedCookieHelper : public CookieHelper {
   typedef std::map<GURL, std::unique_ptr<canonical_cookie::CookieHashSet>>
       OriginCookieSetMap;
 
-  explicit CannedCookieHelper(content::StoragePartition* storage_partition);
+  explicit CannedCookieHelper(content::StoragePartition* storage_partition,
+                              IsDeletionDisabledCallback callback);
 
   // Adds the cookies from |details.cookie_list|. Current cookies that have the
   // same cookie name, cookie domain, cookie path, host-only-flag tuple as

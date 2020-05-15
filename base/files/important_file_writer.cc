@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+
+#include <algorithm>
 #include <string>
 #include <utility>
 
@@ -17,6 +19,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/important_file_writer_cleaner.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -79,24 +82,6 @@ void LogFailure(const FilePath& path,
                                     histogram_suffix, failure_code,
                                     TEMP_FILE_FAILURE_MAX);
   DPLOG(WARNING) << "temp file failure: " << path.value() << " : " << message;
-}
-
-// Helper function to call WriteFileAtomically() with a
-// std::unique_ptr<std::string>.
-void WriteScopedStringToFileAtomically(
-    const FilePath& path,
-    std::unique_ptr<std::string> data,
-    OnceClosure before_write_callback,
-    OnceCallback<void(bool success)> after_write_callback,
-    const std::string& histogram_suffix) {
-  if (!before_write_callback.is_null())
-    std::move(before_write_callback).Run();
-
-  bool result =
-      ImportantFileWriter::WriteFileAtomically(path, *data, histogram_suffix);
-
-  if (!after_write_callback.is_null())
-    std::move(after_write_callback).Run(result);
 }
 
 // Deletes the file named |tmp_file_path| (which may be open as |tmp_file|),
@@ -165,6 +150,42 @@ void DeleteTmpFileWithRetry(File tmp_file,
 bool ImportantFileWriter::WriteFileAtomically(const FilePath& path,
                                               StringPiece data,
                                               StringPiece histogram_suffix) {
+  // Calling the impl by way of the public WriteFileAtomically, so
+  // |from_instance| is false.
+  return WriteFileAtomicallyImpl(path, data, histogram_suffix,
+                                 /*from_instance=*/false);
+}
+
+// static
+void ImportantFileWriter::WriteScopedStringToFileAtomically(
+    const FilePath& path,
+    std::unique_ptr<std::string> data,
+    OnceClosure before_write_callback,
+    OnceCallback<void(bool success)> after_write_callback,
+    const std::string& histogram_suffix) {
+  if (!before_write_callback.is_null())
+    std::move(before_write_callback).Run();
+
+  // Calling the impl by way of the private WriteScopedStringToFileAtomically,
+  // which originated from an ImportantFileWriter instance, so |from_instance|
+  // is true.
+  const bool result = WriteFileAtomicallyImpl(path, *data, histogram_suffix,
+                                              /*from_instance=*/true);
+
+  if (!after_write_callback.is_null())
+    std::move(after_write_callback).Run(result);
+}
+
+// static
+bool ImportantFileWriter::WriteFileAtomicallyImpl(const FilePath& path,
+                                                  StringPiece data,
+                                                  StringPiece histogram_suffix,
+                                                  bool from_instance) {
+#if defined(OS_WIN)
+  if (!from_instance)
+    ImportantFileWriterCleaner::AddDirectory(path.DirName());
+#endif
+
 #if defined(OS_WIN) && DCHECK_IS_ON()
   // In https://crbug.com/920174, we have cases where CreateTemporaryFileInDir
   // hits a DCHECK because creation fails with no indication why. Pull the path
@@ -273,6 +294,9 @@ ImportantFileWriter::ImportantFileWriter(
       commit_interval_(interval),
       histogram_suffix_(histogram_suffix ? histogram_suffix : "") {
   DCHECK(task_runner_);
+#if defined(OS_WIN)
+  ImportantFileWriterCleaner::AddDirectory(path.DirName());
+#endif
 }
 
 ImportantFileWriter::~ImportantFileWriter() {

@@ -269,6 +269,7 @@
 <translation id="2094505752054353250">โดเมนไม่ตรง</translation>
 <translation id="2096368010154057602">แผนก</translation>
 <translation id="2099652385553570808">เย็บด้วยลวดเย็บกระดาษด้านซ้าย 3 ครั้ง</translation>
+<translation id="2101225219012730419">รุ่น:</translation>
 <translation id="2102134110707549001">แนะนำรหัสผ่านที่รัดกุม…</translation>
 <translation id="2107021941795971877">การรองรับการพิมพ์</translation>
 <translation id="2108755909498034140">รีสตาร์ทคอมพิวเตอร์</translation>
@@ -438,6 +439,7 @@
 <translation id="2856444702002559011">ผู้โจมตีอาจพยายามขโมยข้อมูลจาก <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (ตัวอย่างเช่น รหัสผ่าน ข้อความ หรือบัตรเครดิต) <ph name="BEGIN_LEARN_MORE_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">พับแบบโปสเตอร์</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2880660355386638022">ตำแหน่งหน้าต่าง</translation>
 <translation id="2881276955470682203">บันทึกบัตรไหม</translation>
 <translation id="2882949212241984732">พับทบ 4 ตอน</translation>
 <translation id="2903493209154104877">ที่อยู่</translation>
@@ -637,6 +639,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />ตรวจสอบพร็อกซี ไฟร์วอลล์ และการกำหนดค่า DNS<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">แอปพลิเคชันที่อาจทำให้เกิดข้อผิดพลาดนี้ ได้แก่ ซอฟต์แวร์ป้องกันไวรัส ซอฟต์แวร์ไฟร์วอลล์ รวมถึงซอฟต์แวร์การกรองเว็บหรือซอฟต์แวร์พร็อกซี</translation>
 <translation id="373042150751172459">B4 (ซองจดหมาย)</translation>
+<translation id="3731873414101415120">เว็บไซต์ที่คุณเข้าชมและเนื้อหาของหน้าที่ไม่ปลอดภัย</translation>
 <translation id="3736520371357197498">หากคุณเข้าใจความเสี่ยงต่อความปลอดภัย คุณสามารถ<ph name="BEGIN_LINK" />ไปยังไซต์ที่ไม่ปลอดภัยนี้<ph name="END_LINK" /> ก่อนจะมีการนำโปรแกรมอันตรายออก</translation>
 <translation id="3744899669254331632">คุณไม่สามารถไปที่ <ph name="SITE" /> ได้ในขณะนี้เนื่องจากเว็บไซต์ได้ส่งข้อมูลรับรองที่มีการแปลงข้อมูลซึ่ง Chromium ไม่สามารถดำเนินการได้ ข้อผิดพลาดของเครือข่ายและการโจมตีมักจะเกิดขึ้นชั่วคราว ดังนั้นหน้านี้อาจจะใช้งานได้ในภายหลัง</translation>
 <translation id="3745099705178523657">เมื่อยืนยันแล้ว ระบบจะแชร์รายละเอียดของบัตรจากบัญชี Google กับเว็บไซต์นี้</translation>
@@ -902,6 +905,7 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{ไม่มี}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">การค้นหา <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">อัตโนมัติ (ค่าเริ่มต้น)</translation>
+<translation id="4879725228911483934">เปิดและแสดงหน้าต่างบนหน้าจอของคุณ</translation>
 <translation id="4880827082731008257">ค้นประวัติการเข้าชม</translation>
 <translation id="4881695831933465202">เปิด</translation>
 <translation id="4892518386797173871">หลัง</translation>

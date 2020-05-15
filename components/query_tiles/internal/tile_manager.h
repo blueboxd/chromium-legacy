@@ -31,7 +31,7 @@ class TileManager {
   static std::unique_ptr<TileManager> Create(
       std::unique_ptr<TileStore> tile_store,
       base::Clock* clock,
-      const std::string& locale);
+      const std::string& accept_languages);
 
   // Initializes the query tile store, loading them into memory after
   // validating.
@@ -47,7 +47,8 @@ class TileManager {
   virtual void SaveTiles(std::unique_ptr<TileGroup> tile_group,
                          TileGroupStatusCallback callback) = 0;
 
-  virtual void SetLocaleForTesting(const std::string& locale) = 0;
+  virtual void SetAcceptLanguagesForTesting(
+      const std::string& accept_languages) = 0;
 
   TileManager();
   virtual ~TileManager() = default;

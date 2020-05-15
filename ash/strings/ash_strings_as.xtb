@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="as">
 <translation id="1012876632442809908">USB-C ডিভাইচ (সন্মুখৰ প’র্ট)</translation>
+<translation id="1013598600051641573"><ph name="DISPLAY_NAME" />ক <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz) লৈ সলনি কৰা হৈছে। সালসলনিসমূহ ৰাখিবলৈ নিশ্চিত কৰকত ক্লিক কৰক। পূৰ্বৱৰ্তী ছেটিংসমূহ <ph name="TIMEOUT_SECONDS" />ত পুনঃস্থাপন কৰা হ’ব।</translation>
 <translation id="1013923882670373915">ব্লুটুথ ডিভাইচ "<ph name="DEVICE_NAME" />"এ যোৰা লাগিবলৈ অনুমতি বিচাৰে। অনুগ্ৰহ কৰি সেই ডিভাইচত এই পিন ক'ডটো দিয়ক: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">ষ্টাইলাছৰ বেটাৰি কম আছে</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> যোগ কৰা হ’ল</translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">ভাষাৰ ছেটিংসমূহ দেখুৱাওক</translation>
 <translation id="1460620680449458626">ভলিউম মিউট কৰা আছে।</translation>
 <translation id="1467432559032391204">বাওঁফালে</translation>
+<translation id="1479909375538722835">সাধ্য সুবিধাৰ উপঙি থকা মেনু</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">অন আছে</translation>
 <translation id="1516740043221086139">অসুবিধা নিদিব ম’ড অন হৈ আছে।</translation>
@@ -332,6 +334,7 @@
 <translation id="4961318399572185831">স্ক্রীণ কাষ্ট কৰক</translation>
 <translation id="5030687792513154421">সময় সীমা উকলিল</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" />ক এটা নতুন ডিভাইচত সংযোগ কৰা হ'ল</translation>
+<translation id="5035389544768382859">ডিছপ্লে’ৰ কনফিগাৰেশ্বন নিশ্চিত কৰক</translation>
 <translation id="5083553833479578423">Assistantৰ অন্যান্য সুবিধাসমূহ ব্যৱহাৰ কৰক।</translation>
 <translation id="5136175204352732067">বিভিন্ন কীব’র্ড সংযোগ কৰা হৈছে</translation>
 <translation id="5168181903108465623">কাষ্ট কৰিব পৰা ডিভাইচ উপলব্ধ</translation>
@@ -516,6 +519,7 @@
 <translation id="7497767806359279797">ভাষা আৰু কীব'র্ড বাছনি কৰক</translation>
 <translation id="7536035074519304529">আইপি ঠিকনা: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">শুবৰ সময় হ’ল</translation>
+<translation id="7561982940498449837">মেনু বন্ধ কৰক</translation>
 <translation id="7562368315689366235">ইম’জি পেলেট</translation>
 <translation id="7564874036684306347">ৱিণ্ড’সমূহ অন্য ডেস্কটপলৈ নিয়া কার্যই আচৰণসমূহ অপ্ৰত্যাশিতভাৱে সলনি হ’ব পাৰে। পৰৱর্তী জাননী, ৱিণ্ড’ আৰু ডায়ল’গসমূহ ডেস্কটপৰ মাজত বিভক্ত হৈ পৰিব পাৰে।</translation>
 <translation id="7568294522609223312">স্বয়ংক্ৰিয়ভাৱে ক্লিক কৰা সুবিধাটো অফ কৰক</translation>
@@ -557,6 +561,7 @@
 <translation id="8004512796067398576">বৃদ্ধি</translation>
 <translation id="8029629653277878342">অধিক সুৰক্ষাৰ বাবে পিন অথবা পাছৱর্ডৰ আৱশ্যক</translation>
 <translation id="8030169304546394654">সংযোগ বিচ্ছিন্ন কৰা হ'ল</translation>
+<translation id="8042893070933512245">সাধ্য সুবিধাৰ ছেটিংসমূহৰ মেনু খোলক</translation>
 <translation id="8048123526339889627">ব্লুটুথৰ ছেটিংসমূহ</translation>
 <translation id="8054466585765276473">বেটাৰিৰ বাকী থকা সময় গণনা কৰি থকা হৈছে</translation>
 <translation id="8061464966246066292">ৰঙৰ উচ্চ প্ৰভেদ</translation>
@@ -632,6 +637,7 @@
 <translation id="8877788021141246043">ৰিমাইণ্ডাৰ ছেট কৰক</translation>
 <translation id="8878886163241303700">বিস্তাৰিত স্ক্ৰীণ</translation>
 <translation id="890616557918890486">উৎস সলনি কৰক</translation>
+<translation id="8908312332415978740"><ph name="DISPLAY_NAME" />এ<ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz) সমৰ্থন নকৰে। ৰিজ’লিউশ্বনটো <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />)লৈ সলনি কৰা হৈছে। সালসলনিসমূহ ৰাখিবলৈ নিশ্চিত কৰকত ক্লিক কৰক। পূৰ্বৱৰ্তী ছেটিংসমূহ <ph name="TIMEOUT_SECONDS" />ত পুনঃস্থাপন কৰা হ’ব।</translation>
 <translation id="8909138438987180327">বেটাৰী <ph name="PERCENTAGE" /> শতাংশত আছে।</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistantএ এই ভাষাটো ব্যৱহাৰ নকৰে।</translation>

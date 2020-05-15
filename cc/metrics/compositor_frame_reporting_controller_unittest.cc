@@ -21,10 +21,9 @@
 namespace cc {
 namespace {
 
-MATCHER(IsWhitelisted,
-        base::StrCat({negation ? "isn't" : "is", " whitelisted"})) {
-  return arg.IsWhitelisted();
-}
+using ::testing::Each;
+using ::testing::IsEmpty;
+using ::testing::NotNull;
 
 class TestCompositorFrameReportingController
     : public CompositorFrameReportingController {
@@ -979,12 +978,14 @@ TEST_F(CompositorFrameReportingControllerTest,
   base::HistogramTester histogram_tester;
 
   const base::TimeTicks event_time = AdvanceNowByMs(10);
-  std::vector<EventMetrics> events_metrics = {
-      {ui::ET_TOUCH_PRESSED, event_time, base::nullopt},
-      {ui::ET_TOUCH_MOVED, event_time, base::nullopt},
-      {ui::ET_TOUCH_MOVED, event_time, base::nullopt},
+  std::unique_ptr<EventMetrics> event_metrics_ptrs[] = {
+      EventMetrics::Create(ui::ET_TOUCH_PRESSED, event_time, base::nullopt),
+      EventMetrics::Create(ui::ET_TOUCH_MOVED, event_time, base::nullopt),
+      EventMetrics::Create(ui::ET_TOUCH_MOVED, event_time, base::nullopt),
   };
-  EXPECT_THAT(events_metrics, ::testing::Each(IsWhitelisted()));
+  EXPECT_THAT(event_metrics_ptrs, Each(NotNull()));
+  std::vector<EventMetrics> events_metrics = {
+      *event_metrics_ptrs[0], *event_metrics_ptrs[1], *event_metrics_ptrs[2]};
 
   // Submit a compositor frame and notify CompositorFrameReporter of the events
   // affecting the frame.
@@ -1015,10 +1016,11 @@ TEST_F(CompositorFrameReportingControllerTest,
   base::HistogramTester histogram_tester;
 
   const base::TimeTicks event_time = AdvanceNowByMs(10);
-  std::vector<EventMetrics> events_metrics = {
-      {ui::ET_TOUCH_PRESSED, event_time, base::nullopt},
+  std::unique_ptr<EventMetrics> event_metrics_ptrs[] = {
+      EventMetrics::Create(ui::ET_TOUCH_PRESSED, event_time, base::nullopt),
   };
-  EXPECT_THAT(events_metrics, ::testing::Each(IsWhitelisted()));
+  EXPECT_THAT(event_metrics_ptrs, Each(NotNull()));
+  std::vector<EventMetrics> events_metrics = {*event_metrics_ptrs[0]};
 
   // Do a commit with a breakdown of blink stages.
   std::unique_ptr<BeginMainFrameMetrics> blink_breakdown =
@@ -1124,12 +1126,17 @@ TEST_F(CompositorFrameReportingControllerTest,
   base::HistogramTester histogram_tester;
 
   const base::TimeTicks event_time = AdvanceNowByMs(10);
-  std::vector<EventMetrics> events_metrics = {
-      {ui::ET_GESTURE_SCROLL_BEGIN, event_time, ui::ScrollInputType::kWheel},
-      {ui::ET_GESTURE_SCROLL_UPDATE, event_time, ui::ScrollInputType::kWheel},
-      {ui::ET_GESTURE_SCROLL_UPDATE, event_time, ui::ScrollInputType::kWheel},
+  std::unique_ptr<EventMetrics> event_metrics_ptrs[] = {
+      EventMetrics::Create(ui::ET_GESTURE_SCROLL_BEGIN, event_time,
+                           ui::ScrollInputType::kWheel),
+      EventMetrics::Create(ui::ET_GESTURE_SCROLL_UPDATE, event_time,
+                           ui::ScrollInputType::kWheel),
+      EventMetrics::Create(ui::ET_GESTURE_SCROLL_UPDATE, event_time,
+                           ui::ScrollInputType::kWheel),
   };
-  EXPECT_THAT(events_metrics, ::testing::Each(IsWhitelisted()));
+  EXPECT_THAT(event_metrics_ptrs, Each(NotNull()));
+  std::vector<EventMetrics> events_metrics = {
+      *event_metrics_ptrs[0], *event_metrics_ptrs[1], *event_metrics_ptrs[2]};
 
   // Submit a compositor frame and notify CompositorFrameReporter of the events
   // affecting the frame.
@@ -1179,12 +1186,14 @@ TEST_F(CompositorFrameReportingControllerTest,
   base::HistogramTester histogram_tester;
 
   const base::TimeTicks event_time = AdvanceNowByMs(10);
-  std::vector<EventMetrics> events_metrics = {
-      {ui::ET_TOUCH_PRESSED, event_time, base::nullopt},
-      {ui::ET_TOUCH_MOVED, event_time, base::nullopt},
-      {ui::ET_TOUCH_MOVED, event_time, base::nullopt},
+  std::unique_ptr<EventMetrics> event_metrics_ptrs[] = {
+      EventMetrics::Create(ui::ET_TOUCH_PRESSED, event_time, base::nullopt),
+      EventMetrics::Create(ui::ET_TOUCH_MOVED, event_time, base::nullopt),
+      EventMetrics::Create(ui::ET_TOUCH_MOVED, event_time, base::nullopt),
   };
-  EXPECT_THAT(events_metrics, ::testing::Each(IsWhitelisted()));
+  EXPECT_THAT(event_metrics_ptrs, Each(NotNull()));
+  std::vector<EventMetrics> events_metrics = {
+      *event_metrics_ptrs[0], *event_metrics_ptrs[1], *event_metrics_ptrs[2]};
 
   // Submit a compositor frame and notify CompositorFrameReporter of the events
   // affecting the frame.
@@ -1203,7 +1212,7 @@ TEST_F(CompositorFrameReportingControllerTest,
 
   // Verify that no EventLatency histogram is recorded.
   EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix("EventLatency."),
-              ::testing::IsEmpty());
+              IsEmpty());
 }
 
 }  // namespace

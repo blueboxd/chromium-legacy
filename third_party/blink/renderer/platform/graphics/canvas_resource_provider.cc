@@ -180,10 +180,10 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
       bool is_origin_top_left,
       bool is_accelerated,
-      bool is_webgpu,
+      bool use_webgpu,
       uint32_t shared_image_usage_flags)
       : CanvasResourceProvider(
-            is_webgpu ? kWebGPUSharedImage : kSharedImage,
+            use_webgpu ? kWebGPUSharedImage : kSharedImage,
             size,
             msaa_sample_count,
             filter_quality,
@@ -785,15 +785,10 @@ const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
     case CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage:
     case CanvasResourceProvider::ResourceUsage::
         kSoftwareCompositedDirect2DResourceUsage:
-      NOTREACHED();
-      return kEmptyList;
     case CanvasResourceProvider::ResourceUsage::
         kSoftwareCompositedResourceUsage:
-      if (base::FeatureList::IsEnabled(blink::features::kDawn2dCanvas)) {
-        return kCompositedFallbackListWithDawn;
-      }
-      return kCompositedFallbackList;
-
+      NOTREACHED();
+      return kEmptyList;
     case CanvasResourceProvider::ResourceUsage::
         kAcceleratedCompositedResourceUsage:
       if (base::FeatureList::IsEnabled(blink::features::kDawn2dCanvas)) {
@@ -828,6 +823,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
   DCHECK(usage != ResourceUsage::kSoftwareResourceUsage);
   DCHECK(usage != ResourceUsage::kAcceleratedResourceUsage);
   DCHECK(usage != ResourceUsage::kSoftwareCompositedDirect2DResourceUsage);
+  DCHECK(usage != ResourceUsage::kSoftwareCompositedResourceUsage);
 
   std::unique_ptr<CanvasResourceProvider> provider;
 
@@ -1013,8 +1009,13 @@ CanvasResourceProvider::CreateSharedImageProvider(
 
   const auto& capabilities =
       context_provider_wrapper->ContextProvider()->GetCapabilities();
-  if (size.Width() > capabilities.max_texture_size ||
-      size.Height() > capabilities.max_texture_size) {
+  bool use_webgpu =
+      raster_mode == RasterMode::kGPU &&
+      base::FeatureList::IsEnabled(blink::features::kDawn2dCanvas);
+  // TODO(senorblanco): once Dawn reports maximum texture size, Dawn Canvas
+  // should respect it.  http://crbug.com/1082760
+  if (!use_webgpu && (size.Width() > capabilities.max_texture_size ||
+                      size.Height() > capabilities.max_texture_size)) {
     return nullptr;
   }
 
@@ -1034,9 +1035,7 @@ CanvasResourceProvider::CreateSharedImageProvider(
   auto provider = std::make_unique<CanvasResourceProviderSharedImage>(
       size, msaa_sample_count, filter_quality, color_params,
       context_provider_wrapper, nullptr /* resource_dispatcher */,
-      is_origin_top_left, raster_mode == RasterMode::kGPU,
-      raster_mode == RasterMode::kGPU &&
-          base::FeatureList::IsEnabled(blink::features::kDawn2dCanvas),
+      is_origin_top_left, raster_mode == RasterMode::kGPU, use_webgpu,
       shared_image_usage_flags);
   if (provider->IsValid())
     return provider;

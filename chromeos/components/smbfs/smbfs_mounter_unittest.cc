@@ -80,6 +80,11 @@ class TestSmbFsImpl : public mojom::SmbFs {
               RemoveSavedCredentials,
               (RemoveSavedCredentialsCallback),
               (override));
+
+  MOCK_METHOD(void,
+              DeleteRecursively,
+              (const base::FilePath&, DeleteRecursivelyCallback),
+              (override));
 };
 
 class TestSmbFsMounter : public SmbFsMounter {

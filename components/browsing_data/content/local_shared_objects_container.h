@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "components/browsing_data/content/cookie_helper.h"
 #include "storage/common/file_system/file_system_types.h"
 
 class GURL;
@@ -34,7 +35,8 @@ class LocalSharedObjectsContainer {
  public:
   explicit LocalSharedObjectsContainer(
       content::BrowserContext* browser_context,
-      const std::vector<storage::FileSystemType>& additional_file_system_types);
+      const std::vector<storage::FileSystemType>& additional_file_system_types,
+      browsing_data::CookieHelper::IsDeletionDisabledCallback callback);
   ~LocalSharedObjectsContainer();
 
   // Returns the number of objects stored in the container.

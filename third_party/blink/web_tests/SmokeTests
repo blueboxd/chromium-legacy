@@ -60,7 +60,6 @@ css3/supports-crash.html
 css-parser/color-escape-parsing.html
 css-parser/font-size-adjust.html
 custom-elements/array-squat-crash.html
-custom-elements/imports/upgrade-order.html
 custom-elements/spec/state-failed-create.html
 dom/attr/parent-adopt-node.html
 dom/comment/remove.html
@@ -586,10 +585,6 @@ fast/html/adjacent-html-context-element.html
 fast/html/crash-style-first-letter.html
 fast/html/empty-fragment-id-goto-top.html
 fast/html/font-face-empty-should-not-crash.html
-fast/html/imports/import-insert-domcontentloaded.html
-fast/html/imports/import-link-with-media-query.html
-fast/html/imports/import-same-url.html
-fast/html/imports/no-browsing-context.html
 fast/html/process-end-tag-for-inbody-crash.html
 fast/html/tabindex-removal.html
 fast/inline-block/14498-positionForCoordinates.html
@@ -799,8 +794,6 @@ http/tests/eventsource/existent-eventsource-status-error-iframe-crash.html
 http/tests/eventsource/workers/eventsource-simple.html
 http/tests/fetch/chromium/discarded-window.html
 http/tests/history/cross-origin-replace-history-object.html
-http/tests/htmlimports/csp-block-import.html
-http/tests/htmlimports/csp-not-block-import-in-import.html
 http/tests/linkHeader/link-header-no-crash-space-invalid.php
 http/tests/loading/remove-child-triggers-parser.html
 http/tests/local/formdata/send-form-data-with-null-string.html

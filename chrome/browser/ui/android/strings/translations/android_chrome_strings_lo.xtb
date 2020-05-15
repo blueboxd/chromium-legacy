@@ -325,6 +325,7 @@
 <translation id="3738139272394829648">ສໍາຜັດເພື່ອຄົ້ນຫາ</translation>
 <translation id="3739899004075612870">ເພີ່ມບຸກມາກໃສ່ໃນ <ph name="PRODUCT_NAME" /> ແລ້ວ</translation>
 <translation id="3749259744154402564">ບໍ່ຮອງຮັບ</translation>
+<translation id="3763247130972274048">ແຕະວິດີໂອຊ້າຍ ຫຼື ຂວາສອງເທື່ອເພື່ອຂ້າມ 10 ວິ</translation>
 <translation id="3771001275138982843">ບໍ່ສາມາດດາວໂຫຼດການອັບເດດໄດ້</translation>
 <translation id="3771033907050503522">ແຖບບໍ່ເຜີຍຕົນຕົວ</translation>
 <translation id="3771694256347217732">ຂໍ້ກຳນົດການບໍລິການຂອງ Google</translation>
@@ -386,7 +387,6 @@
 <translation id="4250229828105606438">ຮູບຖ່າຍໜ້າຈໍ</translation>
 <translation id="4256782883801055595">ໃບ​ອະ​ນຸ​ຍາດ Open source</translation>
 <translation id="4269820728363426813">ກັອບປີ້ທີ່ຢູ່ລິ້ງ</translation>
-<translation id="4278390842282768270">ອະນຸຍາດແລ້ວ</translation>
 <translation id="429312253194641664">ເວັບໄຊກຳລັງຫຼິ້ນສື່ຢູ່</translation>
 <translation id="4298388696830689168">ເວັບໄຊທີ່ເຊື່ອມໂຍງແລ້ວ</translation>
 <translation id="4307992518367153382">ພື້ນ​ຖານ</translation>
@@ -434,7 +434,6 @@
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> ບຸກ​ມາກ​ຖືກ​ລຶບ​ໄປ​ແລ້ວ</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> ຖືກເພີ່ມ​ເຂົ້າ​ໃສ່​ໜ້າ​ຈໍ​ຫຼັກ​ຂອງ​ທ່ານ​ແລ້ວ</translation>
 <translation id="4684427112815847243">ຊິງຄ໌​ທຸກ​ຢ່າງ</translation>
-<translation id="4688610874307684559">ກຳລັງເປີດໃຊ້ໃນ Chrome (ເລີ່ມຕົ້ນ)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 ແລະ ອີກ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ທາງເລືອກການຈັດສົ່ງ}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 ແລະ ອີກ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ທາງເລືອກການຈັດສົ່ງ}}</translation>
 <translation id="4696983787092045100">ສົ່ງຂໍ້ຄວາມຫາອຸປະກອນຂອງທ່ານ</translation>
 <translation id="4698034686595694889">ເບິ່ງແບບອອບລາຍຢູ່ໃນ <ph name="APP_NAME" /></translation>
@@ -559,10 +558,8 @@
 <translation id="5659593005791499971">ອີເມວ</translation>
 <translation id="5665379678064389456">ສ້າງເຫດການໃນ <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">ແທນ​ທີ່​ຄຳ​ຂໍ​ຂອງ​ເວັບໄຊທ໌​ເພື່ອ​ປ້ອງ​ກັນ​ການ​ຊູມ​ເຂົ້າ</translation>
-<translation id="5677928146339483299">ບລັອກແລ້ວ</translation>
 <translation id="5684874026226664614">ອຸ້ຍ. ບໍ່ສາມາດແປໜ້ານີ້ໄດ້.</translation>
 <translation id="5686790454216892815">ຊື່ໄຟລ໌ຍາວເກີນໄປ</translation>
-<translation id="5690795753582697420">ກ້ອງປິດຢູ່ໃນການຕັ້ງຄ່າ Android</translation>
 <translation id="5694049548840660018">ກັບຄືນໜ້າຫຼັກໄດ້ຢ່າງງ່າຍດາຍ</translation>
 <translation id="569536719314091526">ແປໜ້ານີ້ເປັນພາສາໃດໆກໍໄດ້ຈາກປຸ່ມຕົວເລືອກເພີ່ມເຕີມ</translation>
 <translation id="572328651809341494">ແຖບບໍ່ດົນມານີ້</translation>
@@ -618,7 +615,6 @@
 <translation id="614940544461990577">ລອງ:</translation>
 <translation id="6154478581116148741">ເປີດການລັອກໜ້າຈໍໃນການຕັ້ງຄ່າເພື່ອສົ່ງອອກລະຫັດຜ່ານຂອງທ່ານຈາກອຸປະກອນນີ້</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ການປະ​ຢັດ​ຂໍ້​ມູນ</translation>
-<translation id="6177111841848151710">ບລັອກໄວ້ສຳລັບໂປຣແກຣມຊອກຫາປັດຈຸບັນແລ້ວ</translation>
 <translation id="6192333916571137726">ດາວໂຫລດໄຟລ໌</translation>
 <translation id="6201345951596836663">ສຳເນົາລິ້ງແລ້ວ</translation>
 <translation id="6210748933810148297">ບໍ່ແມ່ນ <ph name="EMAIL" /> ບໍ?</translation>
@@ -705,7 +701,6 @@
 <translation id="6846298663435243399">ກໍາລັງໂຫຼດ ...</translation>
 <translation id="6850409657436465440">ການດາວໂຫຼດຂອງທ່ານພວມດຳເນີນຢູ່</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> ​ແຖບປິດແລ້ວ</translation>
-<translation id="6864395892908308021">ອຸປະກອນນີ້ບໍ່ສາມາດອ່ານ NFC ໄດ້</translation>
 <translation id="6864459304226931083">ດາວໂຫຼດຮູບພາບ</translation>
 <translation id="6865313869410766144">ຕື່ມຂໍ້ມູນແບບຟອມອັດຕະໂນມັດ</translation>
 <translation id="6884306546558072722">ສືບຕໍ່ສຳຫຼວດແບບອອບລາຍ</translation>
@@ -720,9 +715,7 @@
 <translation id="6989267951144302301">ບໍ່ສາມາດດາວໂຫລດໄດ້</translation>
 <translation id="6990079615885386641">ເອົາ​ແອັບ​ຈາກ Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">ເຕືອນບອກທ່ານຖ້າລະຫັດຜ່ານຮົ່ວໄຫຼໃນການລະເມີດຂໍ້ມູນ</translation>
-<translation id="7000754031042624318">ປິດໃນການຕັ້ງຄ່າ Android</translation>
 <translation id="7015203776128479407">ການຕັ້ງຄ່າການຊິ້ງຂໍ້ມູນເບື້ອງຕົ້ນບໍ່ທັນສຳເລັດ. ການຊິ້ງຂໍ້ມູນປິດຢູ່.</translation>
-<translation id="7016516562562142042">ອະນຸຍາດສຳລັບໂປຣແກຣມຊອກຫາປັດຈຸບັນແລ້ວ</translation>
 <translation id="7022756207310403729">ເປີດໃນໂປຣແກຣມທ່ອງເວັບ</translation>
 <translation id="702463548815491781">ແນະນຳເມື່ອ TalkBack ຫຼື ການເຂົ້າເຖິງດ້ວຍປຸ່ມເປີດຢູ່</translation>
 <translation id="7029809446516969842">ລະ​ຫັດ​ຜ່ານ</translation>
@@ -755,10 +748,10 @@
 <translation id="7328017930301109123">ໃນໂໝດ Lite, Chrome ໂຫຼດໜ້າເວັບໄດ້ໄວກວ່າ ແລະ ປະຢັດອິນເຕີເນັດໄດ້ສູງສຸດ 60 ເປີເຊັນ.</translation>
 <translation id="7333031090786104871">ຍັງກຳລັງເພີ່ມເວັບໄຊກ່ອນໜ້ານີ້ຢູ່</translation>
 <translation id="7340958967809483333">ຕົວເລືອກສຳລັບ Discover</translation>
+<translation id="7352651011704765696">ມີ​ບາງ​ອັນ​ຜິດ​ພາດ</translation>
 <translation id="7352939065658542140">ວິດີໂອ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{ແບ່ງປັນ 1 ລາຍການທີ່ເລືອກ}other{ແບ່ງປັນ # ລາຍການທີ່ເລືອກ}}</translation>
 <translation id="7359002509206457351">ເຂົ້າເຖິງວິທີການຈ່າຍເງິນ</translation>
-<translation id="7362144854749094396">ມີການແບ່ງປັນປະຫວັດກັບ Chrome. ມີການແບ່ງປັນການຕັ້ງຄ່າກັບ <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">ປະ​ເພດ​:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -840,7 +833,6 @@
 <translation id="7986741934819883144">ເລືອກລາຍຊື່ຜູ້ຕິດຕໍ່</translation>
 <translation id="7998918019931843664">ເປີດ​ແຖບ​ປິດຄືນໃໝ່</translation>
 <translation id="8004582292198964060">ບຣາວ​ເຊີ</translation>
-<translation id="8007176423574883786">ປິດ​ສຳ​ລັບ​ອຸ​ປະ​ກອນ​ນີ້</translation>
 <translation id="8013372441983637696">ລຶບຂໍ້ມູນ Chrome ຂອງທ່ານອອກຈາກອຸປະກອນນີ້ນຳ</translation>
 <translation id="8015452622527143194">ປ່ຽນທຸກຢ່າງໃນໜ້າກັບຄືນສູ່ຂະໜາດເລີ່ມຕົ້ນ</translation>
 <translation id="8026334261755873520">ລຶບຂໍ້​ມູນການທ່ອງ​ເນັດ</translation>
@@ -930,6 +922,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{ລະດັບຄວາມແຮງສັນຍານ: # ຂີດ}other{ລະດັບຄວາມແຮງສັນຍານ: # ຂີດ}}</translation>
 <translation id="868929229000858085">ຊອກຫາລາຍຊື່ຜູ້ຕິດຕໍ່ຂອງທ່ານ</translation>
 <translation id="869891660844655955">ວັນ​ຫມົດ​ອາ​ຍຸ</translation>
+<translation id="8712637175834984815">ເຂົ້າໃຈແລ້ວ</translation>
 <translation id="8748850008226585750">ເນື້ອຫາຖືກເຊື່ອງໄວ້</translation>
 <translation id="8751914237388039244">ເລືອກຮູບ</translation>
 <translation id="8758557275681689734">ເບິ່ງແຖບທີ່ເປີດຢູ່ຂອງທ່ານທັງໝົດ</translation>

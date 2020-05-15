@@ -69,13 +69,13 @@ bool SynchronousCompositorSyncCallBridge::ReceiveFrameOnIOThread(
 }
 
 bool SynchronousCompositorSyncCallBridge::BeginFrameResponseOnIOThread(
-    const SyncCompositorCommonRendererParams& render_params) {
+    mojom::SyncCompositorCommonRendererParamsPtr render_params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::AutoLock lock(lock_);
   if (begin_frame_response_valid_)
     return false;
   begin_frame_response_valid_ = true;
-  last_render_params_ = render_params;
+  last_render_params_ = *render_params;
   begin_frame_condition_.Signal();
   return true;
 }
@@ -125,8 +125,7 @@ bool SynchronousCompositorSyncCallBridge::IsRemoteReadyOnUIThread() {
 void SynchronousCompositorSyncCallBridge::BeginFrameCompleteOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  bool update_state = false;
-  SyncCompositorCommonRendererParams render_params;
+  mojom::SyncCompositorCommonRendererParamsPtr render_params;
   {
     base::AutoLock lock(lock_);
     if (remote_state_ != RemoteState::READY)
@@ -141,12 +140,11 @@ void SynchronousCompositorSyncCallBridge::BeginFrameCompleteOnUIThread() {
     DCHECK(begin_frame_response_valid_ || remote_state_ != RemoteState::READY);
     begin_frame_response_valid_ = false;
     if (remote_state_ == RemoteState::READY) {
-      update_state = true;
-      render_params = last_render_params_;
+      render_params = last_render_params_.Clone();
     }
   }
-  if (update_state)
-    host_->UpdateState(render_params);
+  if (render_params)
+    host_->UpdateState(std::move(render_params));
 }
 
 void SynchronousCompositorSyncCallBridge::ProcessFrameMetadataOnUIThread(

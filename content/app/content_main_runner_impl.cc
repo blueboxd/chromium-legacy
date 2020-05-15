@@ -919,7 +919,7 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
     service_manager_environment_ = std::make_unique<ServiceManagerEnvironment>(
         BrowserTaskExecutor::CreateIOThread());
     download::SetIOTaskRunner(
-        service_manager_environment_->ipc_thread()->task_runner());
+        service_manager_environment_->io_thread()->task_runner());
 
     InitializeBrowserMemoryInstrumentationClient();
 

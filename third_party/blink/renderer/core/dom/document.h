@@ -1688,6 +1688,9 @@ class CORE_EXPORT Document : public ContainerNode,
   FontPreloadManager& GetFontPreloadManager() { return font_preload_manager_; }
   void FontPreloadingFinishedOrTimedOut();
 
+  void SetFindInPageActiveMatchNode(Node*);
+  const Node* GetFindInPageActiveMatchNode() const;
+
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
 
@@ -2262,6 +2265,8 @@ class CORE_EXPORT Document : public ContainerNode,
       pending_has_trust_tokens_resolvers_;
 
   FontPreloadManager font_preload_manager_;
+
+  WeakMember<Node> find_in_page_active_match_node_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

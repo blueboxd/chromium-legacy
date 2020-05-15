@@ -91,10 +91,10 @@ BLINK_EXPORT void MemoryPressureNotificationToWorkerThreadIsolates(
 BLINK_EXPORT void LogRuntimeCallStats();
 
 // Allows disabling domain relaxation.
-BLINK_EXPORT void SetDomainRelaxationForbidden(bool forbidden,
-                                               const WebString& scheme);
-// Undos all calls to SetDomainRelaxationForbidden().
-BLINK_EXPORT void ResetDomainRelaxation();
+BLINK_EXPORT void SetDomainRelaxationForbiddenForTest(bool forbidden,
+                                                      const WebString& scheme);
+// Undos all calls to SetDomainRelaxationForbiddenForTest().
+BLINK_EXPORT void ResetDomainRelaxationForTest();
 
 // Force the webgl context to fail so that webglcontextcreationerror
 // event gets generated/tested.

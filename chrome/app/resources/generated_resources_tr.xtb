@@ -523,7 +523,6 @@
 <translation id="1650371550981945235">Giriş seçeneklerini göster</translation>
 <translation id="1651008383952180276">Aynı parolayı iki kez girmelisiniz</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{İstediğiniz yerden yazdırma işlemi yapabilmek için yazıcıyı Google Cloud Print'e ekleyin.}other{İstediğiniz yerden yazdırma işlemi yapabilmek için # yazıcıyı Google Cloud Print'e ekleyin.}}</translation>
-<translation id="1655937588105566159">{NUM_EXTENSIONS,plural, =1{Bu uzantı tehlikeli olabilir}other{Bu uzantılar tehlikeli olabilir}}</translation>
 <translation id="1656528038316521561">Arka plan opaklığı</translation>
 <translation id="1657406563541664238">Google'a otomatik olarak kullanım istatistikleri ve kilitlenme raporları göndererek <ph name="PRODUCT_NAME" /> ürününü iyileştirmemize yardımcı olun.</translation>
 <translation id="1657937299377480641">Eğitim kaynaklarına erişmek üzere tekrar oturum açmak için ebeveyninizden size izin vermesini isteyin</translation>
@@ -713,7 +712,6 @@
 <translation id="1875387611427697908">Bu yalnızca <ph name="CHROME_WEB_STORE" /> kullanılarak eklenebilir</translation>
 <translation id="1877520246462554164">Kimlik doğrulama jetonu alınamadı. Tekrar denemek için lütfen oturumu kapatıp sonra yeniden oturum açın.</translation>
 <translation id="1877860345998737529">Anahtar işlem görevi</translation>
-<translation id="1878541307036593717">İzinleri ayarla</translation>
 <translation id="1879000426787380528">Farklı kullanıcı olarak oturum açın</translation>
 <translation id="1880905663253319515">"<ph name="CERTIFICATE_NAME" />" sertifikası silinsin mi?</translation>
 <translation id="1884013283844450420">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Bağlan</translation>
@@ -2632,6 +2630,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4359408040881008151">Bağımlı uzantılar nedeniyle yüklendi.</translation>
 <translation id="4359717112757026264">Şehir manzaraları</translation>
 <translation id="4361142739114356624">Bu İstemci Sertifikası'nın Özel Anahtarı eksik veya geçersiz</translation>
+<translation id="4361745360460842907">Sekme olarak aç</translation>
 <translation id="4363771538994847871">Hiç Yayınlama hedefi bulunamadı. Yardıma ihtiyacınız var mı?</translation>
 <translation id="4364327530094270451">Kavun</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" />, bir pencereyi paylaşıyor.</translation>
@@ -3093,7 +3092,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4994474651455208930">Sitelerin, protokoller için varsayılan işleyiciler olmasını sormasına izin ver</translation>
 <translation id="4994754230098574403">Ayarlanıyor</translation>
 <translation id="4997086284911172121">İnternet bağlantısı yok.</translation>
-<translation id="4997384734315285248">Plugin VM'yi kaldır</translation>
 <translation id="4998430619171209993">Açık</translation>
 <translation id="5000922062037820727">Engellendi (önerilir)</translation>
 <translation id="5005498671520578047">Şifreyi kopyalayın</translation>
@@ -3697,6 +3695,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5785583009707899920">Chrome Dosya Yardımcı Programları</translation>
 <translation id="5787146423283493983">Anahtar Anlaşması</translation>
 <translation id="5788367137662787332">Maalesef, <ph name="DEVICE_LABEL" /> cihazındaki en az bir bölüm eklenemedi.</translation>
+<translation id="5790085346892983794">Başarılı</translation>
 <translation id="5792728279623964091">Lütfen cihazınızın güç düğmesine dokunun</translation>
 <translation id="5793339252089865437">Güncellemeyi mobil ağ bağlantınız üzerinden indirirseniz limit aşımı ücretleriyle karşılaşabilirsiniz.</translation>
 <translation id="5794414402486823030">Daima sistem görüntüleyici ile açın</translation>
@@ -4629,6 +4628,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7004402701596653846">Sitede MIDI işlevi kullanılabilir</translation>
 <translation id="7004499039102548441">Son Sekmeler</translation>
 <translation id="7005496624875927304">Ek izinler</translation>
+<translation id="7005812687360380971">Hata</translation>
 <translation id="7005848115657603926">Geçersiz sayfa aralığı, şunu kullanın: <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Alt kenar boşluğu</translation>
 <translation id="7007648447224463482">Tümünü yeni pencerede aç</translation>
@@ -4768,7 +4768,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7191159667348037">Bilinmeyen Yazıcı (USB)</translation>
 <translation id="7193051357671784796">Bu uygulama kuruluşunuz tarafından eklendi. Yüklemeyi tamamlamak için uygulamayı yeniden başlatın.</translation>
 <translation id="7193374945610105795"><ph name="ORIGIN" /> için şifre kaydedilmedi</translation>
-<translation id="7194620721202917359">{NUM_APPS,plural, =1{Bu uygulama tehlikeli olabilir}other{Bu uygulamalar tehlikeli olabilir}}</translation>
 <translation id="7196913789568937443">Google Drive'a yedekleyin. Verilerinizi istediğiniz zaman kolayca geri yükleyebilir veya cihazlar arasında geçiş yapabilirsiniz. Yedekleme işleminiz uygulama verilerini içerir. Yedek verileriniz Google'a yüklenir ve Google Hesabınızın şifresi kullanılarak şifrelenir. <ph name="BEGIN_LINK1" />Daha Fazla Bilgi<ph name="END_LINK1" /></translation>
 <translation id="7197190419934240522">Her göz attığınızda Google Arama ve Google zekasından yararlanın</translation>
 <translation id="7197632491113152433">Hesabınızdan bu cihazda kullanılabilecek <ph name="NUMBER_OF_APPS" /> uygulama bulduk.</translation>
@@ -5011,7 +5010,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> cihazınız kurumsal yönetim için başarıyla kaydettirildi.</translation>
 <translation id="7507207699631365376">Bu sağlayıcının <ph name="BEGIN_LINK" />gizlilik politikasına<ph name="END_LINK" /> bakın</translation>
 <translation id="7507930499305566459">Durum Yanıtlayıcı Sertifikası</translation>
-<translation id="7508054832109420082">Yazıcılara erişim izni verme</translation>
 <translation id="7513029293694390567">Depolanmış kimlik bilgileriyle web sitelerinde otomatik olarak oturum açın. Bu özellik devre dışı bırakılırsa, bir web sitesinde oturum açmadan önce her defasında işlemi onaylamanız istenir.</translation>
 <translation id="7514239104543605883">Cihazıma kopyala</translation>
 <translation id="7514365320538308">İndir</translation>
@@ -5170,7 +5168,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7716781361494605745">Netscape Sertifika Yetki Politikası URL'si</translation>
 <translation id="7717014941119698257">İndiriliyor: <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">Güncellemeleri kontrol et</translation>
-<translation id="7719070594859855691">Kameraya erişim izni ver</translation>
 <translation id="7719367874908701697">Sayfa yakınlaştırma</translation>
 <translation id="7721179060400456005">Pencerelerin birden fazla ekrana genişlemesine izin ver</translation>
 <translation id="7722040605881499779">Güncelleme için gereken: <ph name="NECESSARY_SPACE" /></translation>

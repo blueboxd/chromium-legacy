@@ -64,17 +64,10 @@ public class AccountPickerCoordinator {
     }
 
     /**
-     * Starts the coordinator.
+     * Destroys the resources used by the coordinator.
      */
-    public void start() {
-        mMediator.start();
-    }
-
-    /**
-     * Stops the coordinator.
-     */
-    public void stop() {
-        mMediator.stop();
+    public void destroy() {
+        mMediator.destroy();
     }
 
     /**

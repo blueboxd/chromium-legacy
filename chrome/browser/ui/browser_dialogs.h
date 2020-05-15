@@ -103,14 +103,14 @@ void ShowCreateChromeAppShortcutsDialog(
 using AppInstallationAcceptanceCallback =
     base::OnceCallback<void(bool, std::unique_ptr<WebApplicationInfo>)>;
 
-// Shows the Web App bubble.
+// Shows the Web App install bubble.
 //
 // |web_app_info| is the WebApplicationInfo being converted into an app.
 // |web_app_info.app_url| should contain a start url from a web app manifest
 // (for a Desktop PWA), or the current url (when creating a shortcut app).
-void ShowWebAppDialog(content::WebContents* web_contents,
-                      std::unique_ptr<WebApplicationInfo> web_app_info,
-                      AppInstallationAcceptanceCallback callback);
+void ShowWebAppInstallDialog(content::WebContents* web_contents,
+                             std::unique_ptr<WebApplicationInfo> web_app_info,
+                             AppInstallationAcceptanceCallback callback);
 
 // Sets whether |ShowWebAppDialog| should accept immediately without any
 // user interaction. |auto_open_in_window| sets whether the open in window

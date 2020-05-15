@@ -24,6 +24,7 @@ class NotificationPermissionUiSelector {
   enum class QuietUiReason {
     kEnabledInPrefs,
     kTriggeredByCrowdDeny,
+    kTriggeredDueToAbusiveRequests,
   };
 
   using DecisionMadeCallback =

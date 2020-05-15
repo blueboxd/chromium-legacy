@@ -1045,7 +1045,7 @@ AutomationNodeImpl.prototype = {
              attributes: this.attributes };
   },
 
-  dispatchEvent: function(eventType, eventFrom, mouseX, mouseY) {
+  dispatchEvent: function(eventType, eventFrom, mouseX, mouseY, intents) {
     var path = [];
     var parent = this.parent;
     while (parent) {
@@ -1055,6 +1055,7 @@ AutomationNodeImpl.prototype = {
     var event = new AutomationEvent(eventType, this.wrapper, eventFrom);
     event.mouseX = mouseX;
     event.mouseY = mouseY;
+    event.intents = intents;
 
     // Dispatch the event through the propagation path in three phases:
     // - capturing: starting from the root and going down to the target's parent
@@ -1723,7 +1724,7 @@ AutomationRootNodeImpl.prototype = {
       var targetNodeImpl = privates(targetNode).impl;
       targetNodeImpl.dispatchEvent(
           eventParams.eventType, eventParams.eventFrom,
-          eventParams.mouseX, eventParams.mouseY);
+          eventParams.mouseX, eventParams.mouseY, eventParams.intents);
 
       if (eventParams.actionRequestID != -1) {
         this.onActionResult(eventParams.actionRequestID, targetNode);

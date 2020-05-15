@@ -31,6 +31,7 @@ struct DisplayMetrics {
 
 // A unique ID for an ephemeral change.
 using EphemeralChangeId = util::IdTypeU32<class EphemeralChangeIdClass>;
+using SurfaceId = util::IdTypeU32<class SurfaceIdClass>;
 
 struct NetworkResponseInfo {
   // A union of net::Error (if the request failed) and the http

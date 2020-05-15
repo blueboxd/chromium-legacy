@@ -589,7 +589,7 @@ void BrowserMainLoop::Init() {
         static_cast<StartupDataImpl*>(parameters_.startup_data);
     // This is always invoked before |io_thread_| is initialized (i.e. never
     // resets it).
-    io_thread_ = std::move(startup_data->ipc_thread);
+    io_thread_ = std::move(startup_data->io_thread);
     mojo_ipc_support_ = std::move(startup_data->mojo_ipc_support);
     service_manager_shutdown_closure_ =
         std::move(startup_data->service_manager_shutdown_closure);

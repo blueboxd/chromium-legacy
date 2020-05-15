@@ -387,7 +387,6 @@ Tik jūs galite matyti vaizdą iš fotoaparato. Svetainė negali matyti fotoapar
 <translation id="4250229828105606438">Ekrano kopija</translation>
 <translation id="4256782883801055595">Atvirojo šaltinio licencijos</translation>
 <translation id="4269820728363426813">Kopijuoti nuorodos adresą</translation>
-<translation id="4278390842282768270">Leidžiama</translation>
 <translation id="429312253194641664">Svetainėje leidžiama medija</translation>
 <translation id="4298388696830689168">Susietos svetainės</translation>
 <translation id="4307992518367153382">Pagrindai</translation>
@@ -435,7 +434,6 @@ Adresu <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> gali 
 <translation id="4663756553811254707">Ištrinta žymių: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Svetainė „<ph name="NAME" />“ pridėta prie pagrindinio ekrano</translation>
 <translation id="4684427112815847243">Viską sinchronizuoti</translation>
-<translation id="4688610874307684559">Vykdoma naršyklėje „Chrome“ (pradinis)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 ir dar <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 ir dar <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 ir dar <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}many{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 ir dar <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 ir dar <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Siųsti teksto pranešimą savo įrenginiams</translation>
 <translation id="4698034686595694889">Žr. neprisijungus programoje „<ph name="APP_NAME" />“</translation>
@@ -560,10 +558,8 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5659593005791499971">El. paštas</translation>
 <translation id="5665379678064389456">Sukurti įvykį naudojant „<ph name="APP_NAME" />“</translation>
 <translation id="5668404140385795438">Nepaisyti svetainės mastelio keitimo vengimo užklausos</translation>
-<translation id="5677928146339483299">Užblokuoti</translation>
 <translation id="5684874026226664614">Oi, nepavyko išversti šio puslapio.</translation>
 <translation id="5686790454216892815">Failo pavadinimas per ilgas</translation>
-<translation id="5690795753582697420">Fotoaparatas išjungtas „Android“ nustatymuose</translation>
 <translation id="5694049548840660018">Lengvai grįžkite į pagrindinį ekraną</translation>
 <translation id="569536719314091526">Išverskite šį puslapį į bet kokią kalbą spustelėję mygtuką „Daugiau parinkčių“</translation>
 <translation id="572328651809341494">Naujausi skirtukai</translation>
@@ -619,7 +615,6 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="614940544461990577">Pabandykite atlikti toliau nurodytus veiksmus.</translation>
 <translation id="6154478581116148741">Norėdami iš šio įrenginio eksportuoti slaptažodžius, nustatymuose įjunkite ekrano užraktą</translation>
 <translation id="6159335304067198720">Sutaupyta duomenų: <ph name="PERCENT" /></translation>
-<translation id="6177111841848151710">Užblokuota dabartiniam paieškos varikliui</translation>
 <translation id="6192333916571137726">Atsisiųsti failą</translation>
 <translation id="6201345951596836663">Nuoroda nukopijuota</translation>
 <translation id="6210748933810148297">Ne <ph name="EMAIL" />?</translation>
@@ -706,7 +701,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6846298663435243399">Įkeliama…</translation>
 <translation id="6850409657436465440">Atsisiuntimas vis dar vykdomas</translation>
 <translation id="6850830437481525139">Uždaryta skirtukų lapų: <ph name="TAB_COUNT" /></translation>
-<translation id="6864395892908308021">Šis įrenginys negali nuskaityti ALR</translation>
 <translation id="6864459304226931083">Atsisiųsti vaizdą</translation>
 <translation id="6865313869410766144">Automatinio pildymo formos duomenys</translation>
 <translation id="6884306546558072722">Tolesnis naršymas neprisijungus</translation>
@@ -721,9 +715,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6989267951144302301">Nepavyko atsisiųsti</translation>
 <translation id="6990079615885386641">Gauti programą iš „Google Play“ parduotuvės: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Įspėti, jei slaptažodžiai buvo atskleisti įvykus duomenų saugos pažeidimui</translation>
-<translation id="7000754031042624318">Išjungta „Android“ nustatymuose</translation>
 <translation id="7015203776128479407">Pradinis sinchronizavimo nustatymas nebaigtas. Sinchronizavimas išjungtas.</translation>
-<translation id="7016516562562142042">Leidžiama dabartiniam paieškos varikliui</translation>
 <translation id="7022756207310403729">Atidaryti naršyklėje</translation>
 <translation id="702463548815491781">Rekomenduojama, kai įjungta „TalkBack“ arba prieiga jungikliu</translation>
 <translation id="7029809446516969842">Slaptažodžiai</translation>
@@ -756,10 +748,10 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7328017930301109123">Kai įjungtas supaprastintasis režimas, sistemoje „Chrome“ puslapiai įkeliami sparčiau ir naudojama iki 60 proc. mažiau duomenų.</translation>
 <translation id="7333031090786104871">Vis dar pridedama ankstesnė svetainė</translation>
 <translation id="7340958967809483333">„Discover“ parinktys</translation>
+<translation id="7352651011704765696">Kažkas negerai</translation>
 <translation id="7352939065658542140">VAIZDO ĮRAŠAS</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Bendrinti 1 pasirinktą elementą}one{Bendrinti # pasirinktą elementą}few{Bendrinti # pasirinktus elementus}many{Bendrinti # pasirinkto elemento}other{Bendrinti # pasirinktų elementų}}</translation>
 <translation id="7359002509206457351">Prieiga prie mokėjimo metodų</translation>
-<translation id="7362144854749094396">Istorija bendrinama su „Chrome“. Nuostatos bendrinamos su svetaine <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Tipas:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL adresas</translation>
@@ -841,7 +833,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7986741934819883144">Pasirinkite kontaktą</translation>
 <translation id="7998918019931843664">Iš naujo atidarykite uždarytą skirtuko lapą</translation>
 <translation id="8004582292198964060">Naršyklė</translation>
-<translation id="8007176423574883786">Išjungta šiame įrenginyje</translation>
 <translation id="8013372441983637696">Taip pat išvalyti jūsų „Chrome“ duomenis iš šio įrenginio</translation>
 <translation id="8015452622527143194">Grąžinti numatytąjį puslapio turinio dydį</translation>
 <translation id="8026334261755873520">Išvalyti naršymo duomenis</translation>
@@ -931,6 +922,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalo stiprumo lygis: # juosta}one{Signalo stiprumo lygis: # juosta}few{Signalo stiprumo lygis: # juostos}many{Signalo stiprumo lygis: # juostos}other{Signalo stiprumo lygis: # juostų}}</translation>
 <translation id="868929229000858085">Ieškokite savo kontaktuose</translation>
 <translation id="869891660844655955">Galiojimo data</translation>
+<translation id="8712637175834984815">Supratau</translation>
 <translation id="8748850008226585750">Turinys paslėptas</translation>
 <translation id="8751914237388039244">Pasirinkti vaizdą</translation>
 <translation id="8758557275681689734">ŽR. visus atidarytus skirtukus</translation>

@@ -48,6 +48,9 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Returns the secondary string to show in the infobar in the expanded state.
   base::string16 GetDescriptionText() const;
 
+  // Whether the secondary button should open site settings.
+  bool ShouldSecondaryButtonOpenSettings() const;
+
   // ConfirmInfoBarDelegate:
   int GetIconId() const override;
   bool LinkClicked(WindowOpenDisposition disposition) override;

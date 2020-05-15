@@ -103,7 +103,7 @@ FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
   static WireResponseTranslator default_translator;
   wire_response_translator_ = &default_translator;
 
-  surface_updater_ = std::make_unique<SurfaceUpdater>();
+  surface_updater_ = std::make_unique<SurfaceUpdater>(metrics_reporter_);
 
   // Inserting this task first ensures that |store_| is initialized before
   // it is used.
@@ -148,13 +148,18 @@ void FeedStream::InitialStreamLoadComplete(LoadStreamTask::Result result) {
   surface_updater_->LoadStreamComplete(model_ != nullptr, result.final_status);
 }
 
+void FeedStream::OnEnterBackground() {
+  metrics_reporter_->OnEnterBackground();
+}
+
 void FeedStream::AttachSurface(SurfaceInterface* surface) {
-  metrics_reporter_->SurfaceOpened();
+  metrics_reporter_->SurfaceOpened(surface->GetSurfaceId());
   TriggerStreamLoad();
   surface_updater_->SurfaceAdded(surface);
 }
 
 void FeedStream::DetachSurface(SurfaceInterface* surface) {
+  metrics_reporter_->SurfaceClosed(surface->GetSurfaceId());
   surface_updater_->SurfaceRemoved(surface);
 }
 
@@ -166,7 +171,9 @@ bool FeedStream::IsArticlesListVisible() {
   return profile_prefs_->GetBoolean(prefs::kArticlesListVisible);
 }
 
-void FeedStream::LoadMore(base::OnceCallback<void(bool)> callback) {
+void FeedStream::LoadMore(SurfaceId surface_id,
+                          base::OnceCallback<void(bool)> callback) {
+  metrics_reporter_->OnLoadMoreBegin(surface_id);
   if (!model_) {
     DLOG(ERROR) << "Ignoring LoadMore() before the model is loaded";
     return std::move(callback).Run(false);
@@ -380,12 +387,6 @@ void FeedStream::OnSignedOut() {
   ClearAll();
 }
 
-void FeedStream::OnEnterForeground() {
-  // The v1 feed may trigger a refresh on foregrounding,
-  // but I don't think that makes any sense here. We already refresh the feed
-  // if necessary when the stream loads.
-}
-
 void FeedStream::ExecuteRefreshTask() {
   // Schedule the next refresh attempt. If a new refresh schedule is returned
   // through this refresh, it will be overwritten.
@@ -462,10 +463,11 @@ void FeedStream::ReportOpenInNewTabAction(const std::string& slice_id) {
 void FeedStream::ReportOpenInNewIncognitoTabAction() {
   metrics_reporter_->OpenInNewIncognitoTabAction();
 }
-void FeedStream::ReportSliceViewed(const std::string& slice_id) {
+void FeedStream::ReportSliceViewed(SurfaceId surface_id,
+                                   const std::string& slice_id) {
   int index = surface_updater_->GetSliceIndexFromSliceId(slice_id);
   if (index >= 0)
-    metrics_reporter_->ContentSliceViewed(index);
+    metrics_reporter_->ContentSliceViewed(surface_id, index);
 }
 
 void FeedStream::ReportSendFeedbackAction() {
@@ -480,8 +482,8 @@ void FeedStream::ReportDownloadAction() {
 void FeedStream::ReportNavigationStarted() {
   metrics_reporter_->NavigationStarted();
 }
-void FeedStream::ReportNavigationDone() {
-  metrics_reporter_->NavigationDone();
+void FeedStream::ReportPageLoaded() {
+  metrics_reporter_->PageLoaded();
 }
 void FeedStream::ReportRemoveAction() {
   metrics_reporter_->RemoveAction();

@@ -70,14 +70,14 @@ class BlinkPerfTest(legacy_page_test_case.LegacyPageTestCase):
     frame_view_prepaints = measurements[
         'LocalFrameView::RunPrePaintLifecyclePhase']['samples']
 
-    # color-changes-measure-frame-time.html specifies 9 iterationCount.
-    self.assertEquals(len(frame_view_prepaints), 9)
+    # color-changes-measure-frame-time.html specifies 10 iterationCount.
+    self.assertEquals(len(frame_view_prepaints), 10)
     self.assertGreater(_Mean(frame_view_prepaints), 0.001)
 
     frame_view_painttrees = measurements[
         'LocalFrameView::RunPaintLifecyclePhase']['samples']
-    # color-changes-measure-frame-time.html specifies 9 iterationCount.
-    self.assertEquals(len(frame_view_painttrees), 9)
+    # color-changes-measure-frame-time.html specifies 10 iterationCount.
+    self.assertEquals(len(frame_view_painttrees), 10)
     self.assertGreater(_Mean(frame_view_painttrees), 0.001)
 
   def testBlinkPerfTracingMetricsForMeasurePageLoadTime(self):

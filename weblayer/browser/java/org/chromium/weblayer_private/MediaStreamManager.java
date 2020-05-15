@@ -221,15 +221,14 @@ public class MediaStreamManager {
         ChannelsInitializer channelsInitializer = new ChannelsInitializer(notificationManagerProxy,
                 WebLayerNotificationChannels.getInstance(), appContext.getResources());
 
-        // TODO(crbug/1076098): don't hard-code incognito to false.
+        // TODO(crbug/1076098): don't pass a URL in incognito.
         ChromeNotification notification = MediaCaptureNotificationUtil.createNotification(
                 new WebLayerNotificationBuilder(appContext,
                         WebLayerNotificationChannels.ChannelId.WEBRTC_CAM_AND_MIC,
                         channelsInitializer,
                         new NotificationMetadata(0, AV_STREAM_TAG, mNotificationId)),
                 mediaType, mTab.getWebContents().getVisibleUrl().getSpec(),
-                WebLayerImpl.getClientApplicationName(), false /*isIncognito*/, contentIntent,
-                null /*stopIntent*/);
+                WebLayerImpl.getClientApplicationName(), contentIntent, null /*stopIntent*/);
         notificationManagerProxy.notify(notification);
 
         updateActiveNotifications(true);

@@ -325,6 +325,7 @@
 <translation id="3738139272394829648">터치하여 검색</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> 북마크에 추가됨</translation>
 <translation id="3749259744154402564">지원되지 않음</translation>
+<translation id="3763247130972274048">10초를 건너뛰려면 동영상 왼쪽이나 오른쪽을 두 번 탭하세요.</translation>
 <translation id="3771001275138982843">업데이트를 다운로드할 수 없음</translation>
 <translation id="3771033907050503522">시크릿 탭</translation>
 <translation id="3771694256347217732">Google 서비스 약관</translation>
@@ -386,7 +387,6 @@
 <translation id="4250229828105606438">스크린샷</translation>
 <translation id="4256782883801055595">오픈소스 라이선스</translation>
 <translation id="4269820728363426813">링크 주소 복사</translation>
-<translation id="4278390842282768270">허용</translation>
 <translation id="429312253194641664">사이트에서 미디어 재생 중</translation>
 <translation id="4298388696830689168">연결된 사이트</translation>
 <translation id="4307992518367153382">기본설정</translation>
@@ -434,7 +434,6 @@
 <translation id="4663756553811254707">북마크 <ph name="NUMBER_OF_BOOKMARKS" />개 삭제됨</translation>
 <translation id="4665282149850138822"><ph name="NAME" />이(가) 홈 화면에 추가됨</translation>
 <translation id="4684427112815847243">모두 동기화</translation>
-<translation id="4688610874307684559">Chrome에서 실행 중(초기)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />개}other{<ph name="SHIPPING_OPTION_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />개}}</translation>
 <translation id="4696983787092045100">기기로 SMS 전송</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" />에서 오프라인으로 보기</translation>
@@ -559,10 +558,8 @@
 <translation id="5659593005791499971">이메일</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" />에 일정 만들기</translation>
 <translation id="5668404140385795438">웹사이트의 확대 방지 요청 무시</translation>
-<translation id="5677928146339483299">차단</translation>
 <translation id="5684874026226664614">죄송합니다. 이 페이지를 번역할 수 없습니다.</translation>
 <translation id="5686790454216892815">파일 이름이 너무 깁니다.</translation>
-<translation id="5690795753582697420">Android 설정에서 카메라가 사용 중지됩니다.</translation>
 <translation id="5694049548840660018">홈으로 쉽게 돌아가기</translation>
 <translation id="569536719314091526">옵션 더보기 버튼을 눌러 이 페이지를 원하는 언어로 번역하세요</translation>
 <translation id="572328651809341494">최근 탭</translation>
@@ -618,7 +615,6 @@
 <translation id="614940544461990577">다음 방법을 시도해 보세요.</translation>
 <translation id="6154478581116148741">이 기기에서 비밀번호를 내보내려면 설정에서 화면 잠금을 사용 설정하세요</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> 데이터 절약</translation>
-<translation id="6177111841848151710">현재 검색엔진에는 허용되지 않음</translation>
 <translation id="6192333916571137726">다운로드 파일</translation>
 <translation id="6201345951596836663">링크 복사됨</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" />이(가) 아닌가요?</translation>
@@ -705,7 +701,6 @@
 <translation id="6846298663435243399">로드 중...</translation>
 <translation id="6850409657436465440">아직 다운로드 중</translation>
 <translation id="6850830437481525139">탭 <ph name="TAB_COUNT" />개를 닫았습니다.</translation>
-<translation id="6864395892908308021">기기에서 NFC를 읽을 수 없음</translation>
 <translation id="6864459304226931083">이미지 다운로드</translation>
 <translation id="6865313869410766144">양식 데이터 자동 완성</translation>
 <translation id="6884306546558072722">오프라인에서 계속 탐색</translation>
@@ -720,9 +715,7 @@
 <translation id="6989267951144302301">다운로드할 수 없음</translation>
 <translation id="6990079615885386641">Google Play 스토어에서 앱 다운로드: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">데이터 유출로 인해 비밀번호가 노출된 경우 알림</translation>
-<translation id="7000754031042624318">Android 설정에서 사용 중지됨</translation>
 <translation id="7015203776128479407">초기 동기화 설정이 완료되지 않았습니다. 동기화가 사용 중지되었습니다.</translation>
-<translation id="7016516562562142042">현재 검색엔진에 허용됨</translation>
 <translation id="7022756207310403729">브라우저에서 열기</translation>
 <translation id="702463548815491781">음성 안내 지원 또는 스위치 제어를 사용 중일 때 권장됩니다.</translation>
 <translation id="7029809446516969842">비밀번호</translation>
@@ -755,10 +748,10 @@
 <translation id="7328017930301109123">Chrome의 라이트 모드를 사용하면 페이지가 더 빠르게 로드되고 데이터가 최대 60퍼센트 절약됩니다.</translation>
 <translation id="7333031090786104871">아직 이전 사이트 추가 중</translation>
 <translation id="7340958967809483333">디스커버용 옵션</translation>
+<translation id="7352651011704765696">문제가 발생한 경우</translation>
 <translation id="7352939065658542140">동영상</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{선택한 1개 항목 공유}other{선택한 #개 항목 공유}}</translation>
 <translation id="7359002509206457351">결제 수단 액세스</translation>
-<translation id="7362144854749094396">기록이 Chrome과 공유됩니다. 환경설정은 <ph name="SITE_NAME" /> 사이트와 공유됩니다.</translation>
 <translation id="7375125077091615385">유형:</translation>
 <translation id="7396940094317457632">파일(<ph name="FILE_NAME" />)이 다운로드되었습니다.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -840,7 +833,6 @@
 <translation id="7986741934819883144">연락처 선택</translation>
 <translation id="7998918019931843664">닫은 탭 다시 열기</translation>
 <translation id="8004582292198964060">브라우저</translation>
-<translation id="8007176423574883786">기기에 대해 사용 중지됨</translation>
 <translation id="8013372441983637696">이 기기에서 내 Chrome 데이터 삭제</translation>
 <translation id="8015452622527143194">페이지의 모든 항목을 기본 크기로 되돌리기</translation>
 <translation id="8026334261755873520">인터넷 사용 기록 삭제</translation>
@@ -930,6 +922,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{신호 강도: 막대 #개}other{신호 강도: 막대 #개}}</translation>
 <translation id="868929229000858085">연락처 검색</translation>
 <translation id="869891660844655955">유효기간</translation>
+<translation id="8712637175834984815">확인</translation>
 <translation id="8748850008226585750">숨겨진 콘텐츠</translation>
 <translation id="8751914237388039244">이미지 선택</translation>
 <translation id="8758557275681689734">열려 있는 탭 모두 보기</translation>

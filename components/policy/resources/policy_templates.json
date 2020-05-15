@@ -3636,6 +3636,33 @@
       This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management.''',
     },
     {
+      'name': 'AutoOpenAllowedForURLs',
+      'owners': ['csharp@chromium.org', 'qinmin@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'string',
+        },
+      },
+      'example_value': ['example.com', 'https://ssl.server.com', 'hosting.com/good_path', 'https://server:8080/path', '.exact.hostname.com'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'id': 707,
+      'supported_on' : ['chrome.*:84-', 'chrome_os:84-'],
+      'caption': '''URLs where AutoOpenFileTypes can apply''',
+      'tags': [],
+      'desc': '''List of URLs specifying which urls <ph name="AUTO_OPEN_FILE_TYPES_POLICY_NAME">AutoOpenFileTypes</ph> will apply to. This policy has no impact on automatically open values set by users.
+
+      If this policy is set, files will only automatically open by policy if the url is part of this set and the file type is listed in <ph name="AUTO_OPEN_FILE_TYPES_POLICY_NAME">AutoOpenFileTypes</ph>. If either condition is false the download won't automatically open by policy.
+
+      If this policy isn't set, all downloads where the file type is in <ph name="AUTO_OPEN_FILE_TYPES_POLICY_NAME">AutoOpenFileTypes</ph> will automatically open.
+
+      A URL pattern has to be formatted according to https://www.chromium.org/administrators/url-blacklist-filter-format.''',
+    },
+    {
       'name': 'SafeBrowsingForTrustedSourcesEnabled',
       'owners': ['mad@chromium.org', 'zmin@chromium.org'],
       'type': 'main',
@@ -22074,6 +22101,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 706,
+  'highest_id_currently_used': 707,
   'highest_atomic_group_id_currently_used': 38
 }

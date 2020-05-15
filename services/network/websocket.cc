@@ -29,6 +29,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_info.h"
+#include "net/url_request/url_request_context.h"
 #include "net/websockets/websocket_basic_stream.h"
 #include "net/websockets/websocket_channel.h"
 #include "net/websockets/websocket_errors.h"
@@ -405,6 +406,10 @@ WebSocket::WebSocket(
                         mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                         base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(handshake_client_);
+  // If |require_network_isolation_key| is set on the URLRequestContext,
+  // |isolation_info| must not be empty.
+  DCHECK(!factory_->GetURLRequestContext()->require_network_isolation_key() ||
+         !isolation_info.IsEmpty());
   if (auth_handler_) {
     // Make sure the request dies if |auth_handler_| has an error, otherwise
     // requests can hang.

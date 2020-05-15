@@ -34,7 +34,7 @@ TEST_F(HeapProfilerControllerTest, MAYBE_EmptyProfileIsNotEmitted) {
           [](base::TimeTicks time, metrics::SampledProfile profile) {
             ADD_FAILURE();
           }));
-  controller.Start(base::TimeDelta::FromHours(24));
+  controller.Start();
 
   task_environment.FastForwardBy(base::TimeDelta::FromDays(365));
 }
@@ -76,7 +76,7 @@ TEST_F(HeapProfilerControllerTest, ProfileCollectionsScheduler) {
       base::BindLambdaForTesting(check_profile));
   base::SamplingHeapProfiler::Get()->SetSamplingInterval(1024);
 
-  controller->Start(base::TimeDelta::FromHours(24));
+  controller->Start();
 
   auto* sampler = base::PoissonAllocationSampler::Get();
   sampler->SuppressRandomnessForTest(true);

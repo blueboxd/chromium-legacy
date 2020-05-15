@@ -106,7 +106,7 @@ class DlcserviceClientImpl : public DlcserviceClient {
   void Install(const std::string& dlc_id,
                InstallCallback install_callback,
                ProgressCallback progress_callback) override {
-    if (!service_available_ || task_running_) {
+    if (task_running_) {
       EnqueueTask(base::BindOnce(&DlcserviceClientImpl::Install,
                                  weak_ptr_factory_.GetWeakPtr(),
                                  std::move(dlc_id), std::move(install_callback),
@@ -133,7 +133,7 @@ class DlcserviceClientImpl : public DlcserviceClient {
 
   void Uninstall(const std::string& dlc_id,
                  UninstallCallback uninstall_callback) override {
-    if (!service_available_ || task_running_) {
+    if (task_running_) {
       EnqueueTask(base::BindOnce(&DlcserviceClientImpl::Uninstall,
                                  weak_ptr_factory_.GetWeakPtr(), dlc_id,
                                  std::move(uninstall_callback)));
@@ -157,7 +157,7 @@ class DlcserviceClientImpl : public DlcserviceClient {
   }
 
   void Purge(const std::string& dlc_id, PurgeCallback purge_callback) override {
-    if (!service_available_ || task_running_) {
+    if (task_running_) {
       EnqueueTask(base::BindOnce(&DlcserviceClientImpl::Purge,
                                  weak_ptr_factory_.GetWeakPtr(), dlc_id,
                                  std::move(purge_callback)));
@@ -181,14 +181,6 @@ class DlcserviceClientImpl : public DlcserviceClient {
   }
 
   void GetExistingDlcs(GetExistingDlcsCallback callback) override {
-    if (!service_available_ || task_running_) {
-      EnqueueTask(base::BindOnce(&DlcserviceClientImpl::GetExistingDlcs,
-                                 weak_ptr_factory_.GetWeakPtr(),
-                                 std::move(callback)));
-      return;
-    }
-
-    TaskStarted();
     dbus::MethodCall method_call(dlcservice::kDlcServiceInterface,
                                  dlcservice::kGetExistingDlcsMethod);
 
@@ -313,16 +305,7 @@ class DlcserviceClientImpl : public DlcserviceClient {
   void OnInstallStatusConnected(const std::string& interface,
                                 const std::string& signal,
                                 bool success) {
-    // When the connected to dlcservice daemon's |OnInstallStatus| signal we can
-    // go ahead and mark the service as being available and not queue up tasks
-    // that came in before dlcservice daemon was available.
-    if (success) {
-      service_available_ = true;
-      CheckAndRunPendingTask();
-    } else {
-      LOG(ERROR) << "Failed to connect to install status signal.";
-      pending_tasks_.clear();
-    }
+    LOG_IF(ERROR, !success) << "Failed to connect to install status signal.";
   }
 
   void OnInstall(dbus::Response* response, dbus::ErrorResponse* err_response) {
@@ -401,13 +384,9 @@ class DlcserviceClientImpl : public DlcserviceClient {
           DlcserviceErrorResponseHandler(err_response).get_err(),
           dlcservice::DlcsWithContent());
     }
-    CheckAndRunPendingTask();
   }
 
   dbus::ObjectProxy* dlcservice_proxy_;
-
-  // True after dlcservice's D-Bus service has become available.
-  bool service_available_ = false;
 
   // Whether any task is currently in progress. Can be used to decide whether to
   // queue up incoming requests.

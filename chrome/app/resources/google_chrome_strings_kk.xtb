@@ -21,6 +21,7 @@
 <translation id="1587223624401073077">Google Chrome камераңызды пайдалануда.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> қауіпті болғандықтан, Chrome оны бөгеді.</translation>
 <translation id="1619887657840448962">Chrome браузерін қауіпсіз ету үшін, <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> тізімінде жоқ келесі кеңейтім  өшірілді, ол сізге ескертілмей қосылған болуы мүмкін.</translation>
+<translation id="162629503687514352">Chrome OS құпия сөздеріңізді синхрондай алмады.</translation>
 <translation id="1628000112320670027">Chrome жөнінде анықтама алу</translation>
 <translation id="1662639173275167396">Chrome OS <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Бета)<ph name="END_LINK_LINUX_OSS" /> сияқты қосымша <ph name="BEGIN_LINK_CROS_OSS" />ашық бастапқы код бағдарламасы<ph name="END_LINK_CROS_OSS" /> арқылы жасалады.</translation>
 <translation id="1666409074978194368">Дайын болып қалды! Жаңартуды аяқтау үшін Google Chrome-ды қайта іске қосыңыз. Инкогнито терезелері қайта ашылмайды.</translation>
@@ -79,6 +80,7 @@
 <translation id="3065168410429928842">Chrome қойындысы</translation>
 <translation id="3080151273017101988">Google Chrome жабылғанда, фондық қолданбаларды пайдалануды жалғастыру</translation>
 <translation id="3089968997497233615">Жаңа, қауіпсізірек Google Chrome нұсқасы қолжетімді.</translation>
+<translation id="3127818369811890733">Chrome OS деректеріңізді синхрондай алмады.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome браузері қазір қайта іске қосылады}=1{Chrome браузері 1 секундтан кейін қайта іске қосылады}other{Chrome браузері # секундтан кейін қайта іске қосылады}}</translation>

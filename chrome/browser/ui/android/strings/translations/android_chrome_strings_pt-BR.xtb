@@ -152,6 +152,7 @@ Toque em qualquer palavra para pesquisar. Para refinar a pesquisa, toque na tela
 <translation id="218608176142494674">Compartilhamento</translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Serviços do Google e de sincronização</translation>
+<translation id="2239812875700136898">Controle suas matérias com o botão "Opções do Discover"</translation>
 <translation id="2259659629660284697">Exportar senhas…</translation>
 <translation id="2268044343513325586">Refinar</translation>
 <translation id="2286841657746966508">Endereço de faturamento</translation>
@@ -387,7 +388,6 @@ Só você pode ver o que é capturado pela câmera. O site não pode ver essas i
 <translation id="4250229828105606438">Captura de tela</translation>
 <translation id="4256782883801055595">Licenças de código aberto</translation>
 <translation id="4269820728363426813">Copiar endereço do link</translation>
-<translation id="4278390842282768270">Permitido</translation>
 <translation id="429312253194641664">Um site está com mídia aberta</translation>
 <translation id="4298388696830689168">Sites vinculados</translation>
 <translation id="4307992518367153382">Básico</translation>
@@ -436,7 +436,6 @@ Só você pode ver o que é capturado pela câmera. O site não pode ver essas i
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> favoritos excluídos</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> foi adicionado à sua tela inicial</translation>
 <translation id="4684427112815847243">Sincronizar tudo</translation>
-<translation id="4688610874307684559">Executando no Chrome (inicial)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Enviar texto para seus dispositivos</translation>
 <translation id="4698034686595694889">Ver off-line no app <ph name="APP_NAME" /></translation>
@@ -561,10 +560,8 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5665379678064389456">Criar evento no <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Aplicar zoom mesmo que o site tente impedir.</translation>
-<translation id="5677928146339483299">Bloqueado</translation>
 <translation id="5684874026226664614">Não foi possível traduzir esta página.</translation>
 <translation id="5686790454216892815">Nome do arquivo muito longo</translation>
-<translation id="5690795753582697420">A câmera está desativada nas configurações do Android</translation>
 <translation id="5694049548840660018">Volte para o início de forma simples</translation>
 <translation id="569536719314091526">Traduza esta página para qualquer idioma com o botão "Mais opções"</translation>
 <translation id="572328651809341494">Guias recentes</translation>
@@ -620,7 +617,6 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="614940544461990577">Tente:</translation>
 <translation id="6154478581116148741">Ative o bloqueio da tela em Configurações para exportar suas senhas deste dispositivo</translation>
 <translation id="6159335304067198720">Economia de dados de <ph name="PERCENT" /></translation>
-<translation id="6177111841848151710">Bloqueado para o mecanismo de pesquisa atual</translation>
 <translation id="6192333916571137726">Fazer o download do arquivo</translation>
 <translation id="6201345951596836663">Link copiado</translation>
 <translation id="6210748933810148297">Não é <ph name="EMAIL" />?</translation>
@@ -707,7 +703,6 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="6846298663435243399">Carregando…</translation>
 <translation id="6850409657436465440">Seu download ainda está em andamento</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> guias fechadas</translation>
-<translation id="6864395892908308021">O dispositivo não consegue ler a NFC</translation>
 <translation id="6864459304226931083">Fazer o download da imagem</translation>
 <translation id="6865313869410766144">Preenchimento automático de dados de formulário</translation>
 <translation id="6884306546558072722">Continuar explorando off-line</translation>
@@ -722,9 +717,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="6989267951144302301">Falha no download</translation>
 <translation id="6990079615885386641">Comprar aplicativo na Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Avisar se suas senhas forem expostas em uma violação de dados</translation>
-<translation id="7000754031042624318">Desativada nas configurações do Android</translation>
 <translation id="7015203776128479407">A configuração de sincronização inicial não foi concluída. A sincronização está desativada.</translation>
-<translation id="7016516562562142042">Permitido para o mecanismo de pesquisa atual</translation>
 <translation id="7022756207310403729">Abrir no navegador</translation>
 <translation id="702463548815491781">Recomendado quando o TalkBack ou o acesso com interruptor estão ativados</translation>
 <translation id="7029809446516969842">Senhas</translation>
@@ -757,10 +750,10 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="7328017930301109123">Com o Modo Lite, as páginas são carregadas mais rapidamente no Chrome, e há uma economia de dados de até 60 por cento.</translation>
 <translation id="7333031090786104871">Ainda adicionando o site anterior</translation>
 <translation id="7340958967809483333">Opções do Discover</translation>
+<translation id="7352651011704765696">Algo deu errado</translation>
 <translation id="7352939065658542140">VÍDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Compartilhar 1 item selecionado}one{Compartilhar # item selecionado}other{Compartilhar # itens selecionados}}</translation>
 <translation id="7359002509206457351">Acessar formas de pagamento</translation>
-<translation id="7362144854749094396">O histórico é compartilhado com o Chrome. As preferências são compartilhadas com <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Tipo:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -842,7 +835,6 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="7986741934819883144">Selecione um contato</translation>
 <translation id="7998918019931843664">Reabrir guia fechada</translation>
 <translation id="8004582292198964060">Navegador</translation>
-<translation id="8007176423574883786">Desativado neste dispositivo</translation>
 <translation id="8013372441983637696">Limpar também seus dados do Chrome deste dispositivo</translation>
 <translation id="8015452622527143194">Retornar tudo na página para o tamanho padrão</translation>
 <translation id="8026334261755873520">Limpar dados de navegação</translation>
@@ -932,6 +924,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="8687353297350450808">{N_BARS,plural, =1{Nível de intensidade do sinal: de # barra}one{Nível de intensidade do sinal: de # barra}other{Nível de intensidade do sinal: de # barras}}</translation>
 <translation id="868929229000858085">Pesquisar seus contatos</translation>
 <translation id="869891660844655955">Validade</translation>
+<translation id="8712637175834984815">Entendi</translation>
 <translation id="8748850008226585750">Conteúdo oculto</translation>
 <translation id="8751914237388039244">Selecione uma imagem</translation>
 <translation id="8758557275681689734">Veja todas suas guias abertas</translation>

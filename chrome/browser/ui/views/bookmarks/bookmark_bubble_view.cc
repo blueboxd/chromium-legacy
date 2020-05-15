@@ -202,16 +202,15 @@ BookmarkBubbleView::BookmarkBubbleView(
   WidgetDelegate::SetShowCloseButton(true);
 
   SetArrow(views::BubbleBorder::TOP_RIGHT);
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
-                                   l10n_util::GetStringUTF16(IDS_DONE));
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_DONE));
+  SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK));
-  DialogDelegate::SetExtraView(CreateEditButton(this));
-  DialogDelegate::SetFootnoteView(CreateSigninPromoView());
+  SetExtraView(CreateEditButton(this));
+  SetFootnoteView(CreateSigninPromoView());
 
-  DialogDelegate::SetCancelCallback(base::BindOnce(
-      &BookmarkBubbleView::OnDialogCancelled, base::Unretained(this)));
+  SetCancelCallback(base::BindOnce(&BookmarkBubbleView::OnDialogCancelled,
+                                   base::Unretained(this)));
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::BOOKMARK);
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(

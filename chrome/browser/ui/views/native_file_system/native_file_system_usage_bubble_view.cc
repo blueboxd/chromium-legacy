@@ -341,12 +341,11 @@ NativeFileSystemUsageBubbleView::NativeFileSystemUsageBubbleView(
       writable_paths_model_(this,
                             std::move(usage_.writable_files),
                             std::move(usage_.writable_directories)) {
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
-                                 l10n_util::GetStringUTF16(IDS_DONE));
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_DONE));
+  SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_NATIVE_FILE_SYSTEM_USAGE_REMOVE_ACCESS));
-  DialogDelegate::SetCancelCallback(
+  SetCancelCallback(
       base::BindOnce(&NativeFileSystemUsageBubbleView::OnDialogCancelled,
                      base::Unretained(this)));
 }

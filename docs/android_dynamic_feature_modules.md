@@ -801,6 +801,12 @@ installing it as a true split. We therefore recommend that you always test both
 install methods.
 ***
 
+*** note
+To simplify development, the DevUI DFM (dev_ui) is installed by default, i.e.,
+`-m dev_ui` is implied by default. This is overridden by:
+* `--no-module dev_ui`, to test error from missing DevUI,
+* `-f dev_ui`, for fake module install.
+***
 
 #### Deferred install
 

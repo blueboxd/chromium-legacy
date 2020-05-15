@@ -13,15 +13,32 @@ import "services/viz/public/mojom/compositing/frame_timing_details.mojom";
 import "services/viz/public/mojom/compositing/returned_resource.mojom";
 import "services/viz/public/mojom/hit_test/hit_test_region_list.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
+import "ui/gfx/mojom/transform.mojom";
 
-[Native]
-struct SyncCompositorDemandDrawHwParams;
+struct SyncCompositorDemandDrawHwParams {
+  gfx.mojom.Size viewport_size;
+  gfx.mojom.Rect viewport_rect_for_tile_priority;
+  gfx.mojom.Transform transform_for_tile_priority;
+};
 
-[Native]
-struct SyncCompositorDemandDrawSwParams;
+struct SyncCompositorDemandDrawSwParams {
+  gfx.mojom.Size size;
+  gfx.mojom.Rect clip;
+  gfx.mojom.Transform transform;
+};
 
-[Native]
-struct SyncCompositorCommonRendererParams;
+struct SyncCompositorCommonRendererParams {
+  uint32 version = 0;
+  gfx.mojom.ScrollOffset total_scroll_offset;
+  gfx.mojom.ScrollOffset max_scroll_offset;
+  gfx.mojom.SizeF scrollable_size;
+  float page_scale_factor = 0;
+  float min_page_scale_factor = 0;
+  float max_page_scale_factor = 0;
+  uint32 need_invalidate_count = 0;
+  bool invalidate_needs_draw = true;
+  uint32 did_activate_pending_tree_count = 0;
+};
 
 // The SynchronousCompositor is an interface that is used by Android Webview
 // which must control the compositor synchronously. It does this so that

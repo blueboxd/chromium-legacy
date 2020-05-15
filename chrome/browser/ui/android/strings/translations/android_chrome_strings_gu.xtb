@@ -325,6 +325,7 @@
 <translation id="3738139272394829648">શોધવા માટે ટચ કરો</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> માં બુકમાર્ક કર્યું</translation>
 <translation id="3749259744154402564">અનસપોર્ટેડ</translation>
+<translation id="3763247130972274048">10 સેકન્ડ છોડવા માટે ડાબે અથવા જમણે બે વાર ટૅપ કરો</translation>
 <translation id="3771001275138982843">અપડેટ ડાઉનલોડ કરી શકાઈ નથી</translation>
 <translation id="3771033907050503522">છૂપા ટેબ્સ</translation>
 <translation id="3771694256347217732">Googleની સેવાની શરતો</translation>
@@ -386,7 +387,6 @@
 <translation id="4250229828105606438">સ્ક્રીનશૉટ</translation>
 <translation id="4256782883801055595">ઓપન સોર્સ લાઇસન્સ</translation>
 <translation id="4269820728363426813">લિંક સરનામું કૉપિ કરો</translation>
-<translation id="4278390842282768270">મંજૂર</translation>
 <translation id="429312253194641664">સાઇટ મીડિયા ચલાવી રહી છે</translation>
 <translation id="4298388696830689168">લિંક કરેલી સાઇટ</translation>
 <translation id="4307992518367153382">પાયાગત</translation>
@@ -434,7 +434,6 @@
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> બુકમાર્ક્સ કાઢી નાખ્યાં</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> ને તમારા હોમ સ્ક્રીન પર ઉમેરવામાં આવ્યું હતું</translation>
 <translation id="4684427112815847243">દરેક વસ્તુ સમન્વયિત કરો</translation>
-<translation id="4688610874307684559">Chromeમાં ચલાવી રહ્યાં છીએ (પ્રારંભિક)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 અને વધુ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 અને વધુ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 અને વધુ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">તમારા ડિવાઇસ પર ટેક્સ્ટ મોકલો</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" />માં ઑફલાઇન જુઓ</translation>
@@ -503,7 +502,7 @@
 <translation id="5184329579814168207">Chrome માં ખોલો</translation>
 <translation id="5193988420012215838">તમારા ક્લિપબોર્ડ પર કૉપિ કરવામાં આવી</translation>
 <translation id="5197729504361054390">તમે પસંદ કરશો તે સંપર્કોને <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> સાથે શેર કરવામાં આવશે.</translation>
-<translation id="5199929503336119739">કાર્ય પ્રોફાઇલ</translation>
+<translation id="5199929503336119739">ઑફિસની પ્રોફાઇલ</translation>
 <translation id="5210286577605176222">પાછલી ટૅબ પર જાઓ</translation>
 <translation id="5210365745912300556">ટૅબ બંધ કરો</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> નજીકના બ્લૂટૂથ ડિવાઇસ માટે સ્કૅન કરવા માગે છે. નીચે મુજબના ડિવાઇસ મળ્યા છે:</translation>
@@ -559,10 +558,8 @@
 <translation id="5659593005791499971">ઇમેઇલ</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> માં ઇવેન્ટ બનાવો</translation>
 <translation id="5668404140385795438">ઝૂમ વધારવાનું અટકાવવા માટે વેબસાઇટની વિનંતી ઑવરરાઇડ કરો</translation>
-<translation id="5677928146339483299">અવરોધિત</translation>
 <translation id="5684874026226664614">અરેરે. આ પૃષ્ઠનો અનુવાદ કરી શકાયો નથી.</translation>
 <translation id="5686790454216892815">ફાઇલનું નામ ખૂબ લાંબું છે</translation>
-<translation id="5690795753582697420">Android સેટિંગમાંથી કૅમેરા બંધ કરવામાં આવ્યો છે</translation>
 <translation id="5694049548840660018">પાછા સરળતાથી હોમ પર જાઓ</translation>
 <translation id="569536719314091526">વધુ વિકલ્પો બટનમાંથી આ પેજનો અનુવાદ કોઈપણ ભાષામાં કરો</translation>
 <translation id="572328651809341494">તાજેતરના ટેબ્સ</translation>
@@ -618,7 +615,6 @@
 <translation id="614940544461990577">પ્રયાસ કરો:</translation>
 <translation id="6154478581116148741">આ ઉપકરણ પરથી તમારા બધા પાસવર્ડને નિકાસ કરવા માટે સેટિંગમાંથી સ્ક્રીન લૉક ચાલુ કરો</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ડેટા બચત</translation>
-<translation id="6177111841848151710">હાલનાં શોધ એંજિન માટે અવરોધિત</translation>
 <translation id="6192333916571137726">ફાઇલ ડાઉનલોડ કરો</translation>
 <translation id="6201345951596836663">લિંક કૉપિ કરી</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> નથી?</translation>
@@ -705,7 +701,6 @@
 <translation id="6846298663435243399">લોડ કરી રહ્યું છે...</translation>
 <translation id="6850409657436465440">તમારું ડાઉનલોડ હજી પણ પ્રક્રિયામાં છે</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> ટેબ્સ બંધ કર્યા</translation>
-<translation id="6864395892908308021">આ ડિવાઇસ NFC વાંચી શકતું નથી</translation>
 <translation id="6864459304226931083">છબી ડાઉનલોડ કરો</translation>
 <translation id="6865313869410766144">સ્વતઃભરણ ફોર્મ ડેટા</translation>
 <translation id="6884306546558072722">ઑફલાઇન શોધખોળ કરવાનું ચાલુ રાખો</translation>
@@ -720,9 +715,7 @@
 <translation id="6989267951144302301">ડાઉનલોડ ન કરી શક્યા</translation>
 <translation id="6990079615885386641">Google Play Store માંથી ઍપ્લિકેશન મેળવો: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">જો ડેટા ઉલ્લંઘનમાં પાસવર્ડ જાહેર થાય તો તમને ચેતવણી આપવામાં આવે છે</translation>
-<translation id="7000754031042624318">Android સેટિંગમાં પરવાનગી બંધ કરી છે</translation>
 <translation id="7015203776128479407">આરંભિક સિંક સેટઅપ પૂરું થયું નથી. સિંક કરવાનું બંધ છે.</translation>
-<translation id="7016516562562142042">હાલનાં શોધ એંજિન માટે મંજૂર</translation>
 <translation id="7022756207310403729">બ્રાઉઝરમાં ખોલો</translation>
 <translation id="702463548815491781">જ્યારે ટૉકબૅક અથવા સ્વિચ ઍક્સેસ ચાલુ હોય ત્યારે આપેલ સુઝાવ</translation>
 <translation id="7029809446516969842">પાસવર્ડ્સ</translation>
@@ -755,10 +748,10 @@
 <translation id="7328017930301109123">લાઇટ મોડમાં, Chrome પેજને વધુ ઝડપથી લોડ કરે છે અને તે 60 ટકા ઓછા ડેટાનો ઉપયોગ કરે છે.</translation>
 <translation id="7333031090786104871">હજીપણ પાછલી સાઇટ ઉમેરી રહ્યાં છે</translation>
 <translation id="7340958967809483333">Discover માટેના વિકલ્પો</translation>
+<translation id="7352651011704765696">કંઈક ખોટું થયું હતું</translation>
 <translation id="7352939065658542140">વીડિયો</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{પસંદ કરેલ 1 આઇટમ શેર કરો}one{પસંદ કરેલ # આઇટમ શેર કરો}other{પસંદ કરેલ # આઇટમ શેર કરો}}</translation>
 <translation id="7359002509206457351">ચુકવણી પદ્ધતિઓને ઍક્સેસ કરો</translation>
-<translation id="7362144854749094396">ઇતિહાસને Chrome સાથે શેર કરવામાં આવે છે. પસંદગીઓને <ph name="SITE_NAME" /> સાથે શેર કરવામાં આવે છે.</translation>
 <translation id="7375125077091615385">પ્રકાર:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -840,7 +833,6 @@
 <translation id="7986741934819883144">સંપર્ક પસંદ કરો</translation>
 <translation id="7998918019931843664">બંધ કરેલ ટેબ ફરીથી ખોલો</translation>
 <translation id="8004582292198964060">બ્રાઉઝર</translation>
-<translation id="8007176423574883786">આ ઉપકરણ માટે બંધ કર્યું</translation>
 <translation id="8013372441983637696">આ ડિવાઇસમાંથી તમારો Chrome ડેટા પણ સાફ કરો</translation>
 <translation id="8015452622527143194">પેજ પરનું બધું કન્ટેન્ટ પાછું ડિફૉલ્ટ કદમાં બદલો</translation>
 <translation id="8026334261755873520">બ્રાઉઝિંગ ડેટા સાફ કરો</translation>
@@ -930,6 +922,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{સિગ્નલની ક્ષમતાનું સ્તર: # બાર}one{સિગ્નલની ક્ષમતાનું સ્તર: # બાર}other{સિગ્નલની ક્ષમતાનું સ્તર: # બાર}}</translation>
 <translation id="868929229000858085">તમારા સંપર્કો શોધો</translation>
 <translation id="869891660844655955">સમાપ્તિ તારીખ</translation>
+<translation id="8712637175834984815">સમજાઈ ગયું</translation>
 <translation id="8748850008226585750">સામગ્રીઓ છુપાવેલ છે</translation>
 <translation id="8751914237388039244">છબી પસંદ કરો</translation>
 <translation id="8758557275681689734">તમારા બધા ખુલ્લા ટૅબ જુઓ</translation>

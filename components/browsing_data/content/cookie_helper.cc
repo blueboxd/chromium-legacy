@@ -31,8 +31,10 @@ namespace {
 const char kGlobalCookieSetURL[] = "chrome://cookieset";
 }  // namespace
 
-CookieHelper::CookieHelper(content::StoragePartition* storage_partition)
-    : storage_partition_(storage_partition) {
+CookieHelper::CookieHelper(content::StoragePartition* storage_partition,
+                           IsDeletionDisabledCallback callback)
+    : storage_partition_(storage_partition),
+      delete_disabled_callback_(std::move(callback)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -47,13 +49,19 @@ void CookieHelper::StartFetching(FetchCallback callback) {
 
 void CookieHelper::DeleteCookie(const net::CanonicalCookie& cookie) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (delete_disabled_callback_ &&
+      delete_disabled_callback_.Run(net::cookie_util::CookieOriginToURL(
+          cookie.Domain(), cookie.IsSecure()))) {
+    return;
+  }
   storage_partition_->GetCookieManagerForBrowserProcess()
       ->DeleteCanonicalCookie(cookie, base::DoNothing());
 }
 
 CannedCookieHelper::CannedCookieHelper(
-    content::StoragePartition* storage_partition)
-    : CookieHelper(storage_partition) {}
+    content::StoragePartition* storage_partition,
+    IsDeletionDisabledCallback callback)
+    : CookieHelper(storage_partition, callback) {}
 
 CannedCookieHelper::~CannedCookieHelper() {
   Reset();

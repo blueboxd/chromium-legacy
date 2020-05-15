@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Descargas automáticas</translation>
 <translation id="5677928146339483299">Bloqueado</translation>
 <translation id="5689516760719285838">Ubicación</translation>
+<translation id="5690795753582697420">La cámara está desactivada en la configuración de Android</translation>
 <translation id="5710871682236653961">Preguntar antes de permitir que los sitios envíen y reciban información cuando presionas dispositivos NFC (recomendado)</translation>
 <translation id="5719847187258001597">Esta acción borrará todos los datos y cookies almacenados por <ph name="ORIGIN" /> o su app que aparece en la Pantalla principal.</translation>
 <translation id="5804241973901381774">Permisos</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Más</translation>
 <translation id="6064125863973209585">Descargas completadas</translation>
 <translation id="6165508094623778733">Más información</translation>
+<translation id="6177111841848151710">Se bloqueó para el motor de búsqueda actual</translation>
 <translation id="6181444274883918285">Agregar excepción de sitio web</translation>
 <translation id="6192792657125177640">Excepciones</translation>
 <translation id="6194112207524046168">Para permitir que Chrome acceda a tu cámara, actívala también en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Esta página es peligrosa. Consulta la información del sitio.</translation>
 <translation id="6965382102122355670">Aceptar</translation>
 <translation id="6992289844737586249">Preguntar primero antes de permitir que los sitios usen tu micrófono (recomendado)</translation>
+<translation id="7000754031042624318">Desactivado en la configuración de Android</translation>
+<translation id="7016516562562142042">Se habilitó para el motor de búsqueda actual</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 seleccionado}other{# seleccionados}}</translation>
 <translation id="7087918508125750058">Elementos seleccionados: <ph name="ITEM_COUNT" />. Opciones disponibles cerca de la parte superior de la pantalla</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Habilitar el sonido de un sitio específico</translation>
 <translation id="7993619969781047893">Es posible que las características de algunos sitios no funcionen de forma correcta</translation>
 <translation id="7999064672810608036">¿Quieres eliminar todos los datos locales de este sitio web, incluidas las cookies, y restablecer todos los permisos?</translation>
+<translation id="8007176423574883786">Desactivado para este dispositivo</translation>
 <translation id="802154636333426148">Error en la descarga</translation>
 <translation id="8087000398470557479">Este contenido es de <ph name="DOMAIN_NAME" />, publicado por Google.</translation>
 <translation id="8116925261070264013">Silenciados</translation>

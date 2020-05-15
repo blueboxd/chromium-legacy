@@ -269,6 +269,7 @@
 <translation id="2094505752054353250">도메인이 일치하지 않음</translation>
 <translation id="2096368010154057602">부서</translation>
 <translation id="2099652385553570808">왼쪽 트리플 스테이플</translation>
+<translation id="2101225219012730419">버전:</translation>
 <translation id="2102134110707549001">강력한 비밀번호 추천...</translation>
 <translation id="2107021941795971877">인쇄 지지대</translation>
 <translation id="2108755909498034140">컴퓨터 다시 시작</translation>
@@ -442,6 +443,7 @@
 <translation id="2856444702002559011">공격자가 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />에서 정보(예: 비밀번호, 메시지, 신용카드 등)를 도용하려고 시도 중일 수 있습니다. <ph name="BEGIN_LEARN_MORE_LINK" />자세히 알아보기<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">포스터 폴드</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2880660355386638022">창 배치</translation>
 <translation id="2881276955470682203">카드를 저장하시겠습니까?</translation>
 <translation id="2882949212241984732">더블 게이트 폴드</translation>
 <translation id="2903493209154104877">주소</translation>
@@ -642,6 +644,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />프록시, 방화벽, DNS 설정 확인<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">이 오류를 일으키는 애플리케이션에는 바이러스 백신, 방화벽, 웹 필터링 또는 프록시 소프트웨어 등이 있습니다.</translation>
 <translation id="373042150751172459">B4(봉투)</translation>
+<translation id="3731873414101415120">내가 방문한 웹사이트 및 안전하지 않은 페이지의 콘텐츠</translation>
 <translation id="3736520371357197498">보안 관련 위험을 이해한다면 위험한 프로그램이 삭제되기 전에 <ph name="BEGIN_LINK" />안전하지 않은 사이트<ph name="END_LINK" />에 방문해도 됩니다.</translation>
 <translation id="3744899669254331632">웹사이트가 Chromium이 처리할 수 없는 암호화된 사용자 인증 정보를 전송하였으므로 지금은 <ph name="SITE" />에 방문할 수 없습니다. 네트워크 오류와 공격은 대체로 일시적인 문제이기 때문에 이후에는 이 페이지가 제대로 작동할 가능성이 높습니다.</translation>
 <translation id="3745099705178523657">카드를 확인하면 Google 계정의 카드 세부정보가 이 사이트와 공유됩니다.</translation>
@@ -908,6 +911,7 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{없음}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> 검색</translation>
 <translation id="4879491255372875719">자동(기본값)</translation>
+<translation id="4879725228911483934">화면에서 창을 열고 배치합니다.</translation>
 <translation id="4880827082731008257">기록 검색</translation>
 <translation id="4881695831933465202">열기</translation>
 <translation id="4892518386797173871">후면</translation>

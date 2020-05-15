@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/id_map.h"
 #include "base/gtest_prod_util.h"
@@ -137,6 +138,11 @@ class TestTabSpecificContentSettingsDelegate
 
   std::vector<storage::FileSystemType> GetAdditionalFileSystemTypes() override {
     return {};
+  }
+
+  browsing_data::CookieHelper::IsDeletionDisabledCallback
+  GetIsDeletionDisabledCallback() override {
+    return base::NullCallback();
   }
 
   bool IsMicrophoneCameraStateChanged(

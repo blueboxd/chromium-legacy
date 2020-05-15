@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
 <translation id="1012876632442809908">Kifaa cha USB-C (mlango wa mbele)</translation>
+<translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> imebadilika kuwa <ph name="RESOLUTION" /> (Hz <ph name="REFRESH_RATE" />). Bofya 'thibitisha' ili uhifadhi mabadiliko. Mipangilio ya awali itarejeshwa baada ya <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha. Tafadhali weka nambari hii ya PIN kwenye kifaa hicho: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Chaji ya betri ya Stylus imepungua</translation>
 <translation id="1037492556044956303">Imeongeza <ph name="DEVICE_NAME" /></translation>
@@ -47,6 +48,7 @@
 <translation id="1455242230282523554">Onyesha mipangilio ya lugha</translation>
 <translation id="1460620680449458626">Umezima sauti.</translation>
 <translation id="1467432559032391204">Kushoto</translation>
+<translation id="1479909375538722835">Menyu ya ufikivu inayoelea</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1508507608940204251">Imewashwa</translation>
 <translation id="1516740043221086139">Hali ya 'Usinisumbue' imewashwa</translation>
@@ -333,6 +335,7 @@
 <translation id="4961318399572185831">Tuma skrini</translation>
 <translation id="5030687792513154421">Muda wa kutumia kifaa umeisha</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> imeunganishwa kwenye simu mpya</translation>
+<translation id="5035389544768382859">Thibitisha Mipangilio ya Onyesho</translation>
 <translation id="5083553833479578423">Fungua vipengele zaidi vya programu yako ya Mratibu.</translation>
 <translation id="5136175204352732067">Kibodi tofauti imeunganishwa</translation>
 <translation id="5168181903108465623">Vifaa vinavyorusha maudhui vinapatikana</translation>
@@ -519,6 +522,7 @@
 <translation id="7526573455193969409">Huenda mtandao unafuatiliwa</translation>
 <translation id="7536035074519304529">Anwani ya IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Ni wakati wa kulala</translation>
+<translation id="7561982940498449837">Funga menyu</translation>
 <translation id="7562368315689366235">Safu ya emoji</translation>
 <translation id="7564874036684306347">Hatua ya kuhamishia madirisha kwenye eneo-kazi lingine inaweza kusababisha utendaji usiotarajiwa. 
 Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</translation>
@@ -562,6 +566,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8004512796067398576">Ongezeko</translation>
 <translation id="8029629653277878342">PIN au nenosiri linahitajika kwa usalama zaidi</translation>
 <translation id="8030169304546394654">Hujaunganishwa</translation>
+<translation id="8042893070933512245">Fungua menyu ya mipangilio ya ufikivu</translation>
 <translation id="8048123526339889627">Mipangilio ya Bluetooth</translation>
 <translation id="8054466585765276473">Inakokotoa muda wa betri.</translation>
 <translation id="8061464966246066292">Kilinganushi kikubwa</translation>
@@ -637,6 +642,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8877788021141246043">Weka kikumbusho</translation>
 <translation id="8878886163241303700">Kuongeza skrini</translation>
 <translation id="890616557918890486">Badilisha chanzo</translation>
+<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> haitumii <ph name="SPECIFIED_RESOLUTION" /> (Hz <ph name="SPECIFIED_REFRESH_RATE" />). Ubora umebadilishwa kuwa <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Bofya 'thibitisha' ili uhifadhi mabadiliko. Mipangilio ya awali itarejeshwa baada ya <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Chaji ya betri imefika <ph name="PERCENTAGE" />.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Programu ya Mratibu wa Google haina huduma ya lugha hii.</translation>

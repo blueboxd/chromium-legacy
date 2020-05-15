@@ -325,6 +325,7 @@
 <translation id="3738139272394829648">खोजने के लिए छुएं</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> में बुकमार्क किया गया</translation>
 <translation id="3749259744154402564">काम नहीं करता</translation>
+<translation id="3763247130972274048">वीडियो को 10 सेकंड आगे या पीछे करने के लिए, बाएं या दाएं दो बार टैप करें</translation>
 <translation id="3771001275138982843">अपडेट डाउनलोड नहीं किया जा सका</translation>
 <translation id="3771033907050503522">गुप्त टैब</translation>
 <translation id="3771694256347217732">Google की सेवा की शर्तें</translation>
@@ -386,7 +387,6 @@
 <translation id="4250229828105606438">स्क्रीनशॉट</translation>
 <translation id="4256782883801055595">ओपन सोर्स लाइसेंस</translation>
 <translation id="4269820728363426813">लिंक पते को कॉपी करें</translation>
-<translation id="4278390842282768270">अनुमति है</translation>
 <translation id="429312253194641664">किसी साइट पर मीडिया चल रहा है</translation>
 <translation id="4298388696830689168">लिंक की हुई साइटें</translation>
 <translation id="4307992518367153382">बुनियादी चीज़ें</translation>
@@ -434,7 +434,6 @@
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> बुकमार्क का पता लगा</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> को आपकी होम स्क्रीन में जोड़ा गया था</translation>
 <translation id="4684427112815847243">सब कुछ सिंक करें</translation>
-<translation id="4688610874307684559">Chrome में चल रहा है (शुरुआत में)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 और <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> अन्य}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 और <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> अन्य}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 और <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> अन्य}}</translation>
 <translation id="4696983787092045100">अपने डिवाइस पर मैसेज भेजें</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" /> में ऑफ़लाइन देखें</translation>
@@ -559,10 +558,8 @@
 <translation id="5659593005791499971">ईमेल</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> में इवेंट बनाएं</translation>
 <translation id="5668404140385795438">किसी वेबसाइट के वेबपेज ज़ूम इन न करने के नियम को बदल देता है</translation>
-<translation id="5677928146339483299">ब्लॉक किया गया है</translation>
 <translation id="5684874026226664614">ओह. इस पेज का अनुवाद नहीं किया जा सका.</translation>
 <translation id="5686790454216892815">फ़ाइल का नाम बहुत लंबा है</translation>
-<translation id="5690795753582697420">Android की सेटिंग में कैमरा बंद है</translation>
 <translation id="5694049548840660018">होम पेज पर आसानी से वापस जाएं</translation>
 <translation id="569536719314091526">'ज़्यादा विकल्प' बटन से इस पेज का अनुवाद किसी भी भाषा में करें</translation>
 <translation id="572328651809341494">हाल ही के टैब</translation>
@@ -618,7 +615,6 @@
 <translation id="614940544461990577">यह आज़माकर देखें:</translation>
 <translation id="6154478581116148741">इस डिवाइस से अपने पासवर्ड निर्यात करने के लिए सेटिंग में स्क्रीन लॉक चालू करें</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> डेटा बचत</translation>
-<translation id="6177111841848151710">मौजूदा सर्च इंजन के लिए ब्लॉक किया गया है</translation>
 <translation id="6192333916571137726">डाउनलोड फ़ाइल कहां सेव करें</translation>
 <translation id="6201345951596836663">लिंक कॉपी किया गया</translation>
 <translation id="6210748933810148297">क्या <ph name="EMAIL" /> नहीं हैं?</translation>
@@ -705,7 +701,6 @@
 <translation id="6846298663435243399">लोड हो रहा है...</translation>
 <translation id="6850409657436465440">आपका डाउनलोड अब भी जारी है</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> टैब बंद किए गए</translation>
-<translation id="6864395892908308021">इस डिवाइस के साथ NFC काम नहीं कर सकता</translation>
 <translation id="6864459304226931083">इमेज डाउनलोड करें</translation>
 <translation id="6865313869410766144">ऑटोमैटिक भरने वाले फ़ॉर्म का डेटा</translation>
 <translation id="6884306546558072722">ऑफ़लाइन फ़ीड देखते रहें</translation>
@@ -720,9 +715,7 @@
 <translation id="6989267951144302301">डाउनलोड नहीं किया जा सका</translation>
 <translation id="6990079615885386641">Google Play स्‍टोर से ऐप्लिकेशन डाउनलोड करें: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">डेटा का उल्लंघन होने पर अगर आपके पासवर्ड बिना अनुमति के सार्वजनिक हो जाते हैं, तो आपको चेतावनी मिलती है</translation>
-<translation id="7000754031042624318">Android सेटिंग में बंद कर दिया गया है</translation>
 <translation id="7015203776128479407">शुरुआती सिंक सेटअप पूरा नहीं हुआ. सिंक बंद है.</translation>
-<translation id="7016516562562142042">मौजूदा सर्च इंजन के लिए अनुमति दी गई है</translation>
 <translation id="7022756207310403729">ब्राउज़र में खोलें</translation>
 <translation id="702463548815491781">उस समय के लिए सुझाया गया जब 'टॉकबैक' या 'ऐक्सेस करने का तरीका बदलें' चालू हों</translation>
 <translation id="7029809446516969842">पासवर्ड</translation>
@@ -755,10 +748,10 @@
 <translation id="7328017930301109123">'लाइट मोड' में, Chrome पेजों को ज़्यादा तेज़ी से लोड करता है और 60 प्रतिशत तक कम डेटा इस्तेमाल करता है.</translation>
 <translation id="7333031090786104871">पिछली साइट अब भी जोड़ी जा रही है</translation>
 <translation id="7340958967809483333">'डिस्कवर' के लिए विकल्प</translation>
+<translation id="7352651011704765696">कुछ गलत हुआ</translation>
 <translation id="7352939065658542140">वीडियो</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 चयनित आइटम शेयर करें}one{# चयनित आइटम शेयर करें}other{# चयनित आइटम शेयर करें}}</translation>
 <translation id="7359002509206457351">भुगतान के तरीकों को ऐक्सेस करें</translation>
-<translation id="7362144854749094396">मौजूदा गतिविधि Chrome डेटा का इस्तेमाल कर सकती है. <ph name="SITE_NAME" /> के साथ प्राथमिकताएं शेयर की गई हैं.</translation>
 <translation id="7375125077091615385">प्रकार:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -840,7 +833,6 @@
 <translation id="7986741934819883144">कोई संपर्क चुनें</translation>
 <translation id="7998918019931843664">बंद टैब फिर से खोलें</translation>
 <translation id="8004582292198964060">ब्राउज़र</translation>
-<translation id="8007176423574883786">इस डिवाइस के लिए बंद कर दिया गया है</translation>
 <translation id="8013372441983637696">इस डिवाइस से अपना Chrome डेटा भी हटाएं</translation>
 <translation id="8015452622527143194">पेज पर सब कुछ वापस डिफ़ॉल्ट आकार में लाएं</translation>
 <translation id="8026334261755873520">ब्राउज़िंग डेटा साफ़ करें</translation>
@@ -930,6 +922,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{सिग्नल सशक्तता का स्तर: # बार}one{सिग्नल सशक्तता का स्तर: # बार}other{सिग्नल सशक्तता का स्तर: # बार}}</translation>
 <translation id="868929229000858085">अपने संपर्क खोजें</translation>
 <translation id="869891660844655955">समय समाप्ति तारीख</translation>
+<translation id="8712637175834984815">समझ लिया</translation>
 <translation id="8748850008226585750">छिपी हुई सामग्री</translation>
 <translation id="8751914237388039244">इमेज चुनें</translation>
 <translation id="8758557275681689734">सभी खुले हुए टैब देखें</translation>

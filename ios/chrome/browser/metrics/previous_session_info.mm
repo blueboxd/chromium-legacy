@@ -107,7 +107,6 @@ NSString* const kOSStartTime = @"OSStartTime";
 @property(nonatomic, assign) DeviceThermalState deviceThermalState;
 @property(nonatomic, assign) BOOL deviceWasInLowPowerMode;
 @property(nonatomic, assign) BOOL didSeeMemoryWarningShortlyBeforeTerminating;
-@property(nonatomic, assign) BOOL isFirstSessionAfterOSUpgrade;
 @property(nonatomic, assign) BOOL isFirstSessionAfterUpgrade;
 @property(nonatomic, assign) BOOL isFirstSessionAfterLanguageChange;
 @property(nonatomic, assign) BOOL OSRestartedAfterPreviousSession;
@@ -149,14 +148,6 @@ static PreviousSessionInfo* gSharedInstance = nil;
 
     NSString* versionOfOSAtLastRun =
         [defaults stringForKey:kPreviousSessionInfoOSVersion];
-    if (versionOfOSAtLastRun) {
-      NSString* currentOSVersion =
-          base::SysUTF8ToNSString(base::SysInfo::OperatingSystemVersion());
-      gSharedInstance.isFirstSessionAfterOSUpgrade =
-          ![versionOfOSAtLastRun isEqualToString:currentOSVersion];
-    } else {
-      gSharedInstance.isFirstSessionAfterOSUpgrade = NO;
-    }
     gSharedInstance.OSVersion = versionOfOSAtLastRun;
 
     NSString* lastRanVersion = [defaults stringForKey:kLastRanVersion];

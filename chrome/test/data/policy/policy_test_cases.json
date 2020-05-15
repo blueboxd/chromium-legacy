@@ -972,6 +972,18 @@
     ]
   },
 
+  "AutoOpenAllowedForURLs": {
+    "os": ["win", "mac", "linux", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "AutoOpenAllowedForURLs": ["google.com"] },
+        "prefs": {
+          "download.allowed_urls_for_open_by_policy": {"value" : ["google.com"] }
+        }
+      }
+    ]
+  },
+
   "ClearSiteDataOnExit": {
     "note": "This policy is retired, see http://crbug.com/133291."
   },

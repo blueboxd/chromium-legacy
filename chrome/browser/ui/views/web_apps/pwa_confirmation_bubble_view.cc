@@ -93,9 +93,8 @@ PWAConfirmationBubbleView::PWAConfirmationBubbleView(
   WidgetDelegate::SetTitle(
       l10n_util::GetStringUTF16(IDS_INSTALL_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE));
 
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(IDS_INSTALL_PWA_BUTTON_LABEL));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(IDS_INSTALL_PWA_BUTTON_LABEL));
   base::TrimWhitespace(web_app_info_->title, base::TRIM_ALL,
                        &web_app_info_->title);
   // PWAs should always be configured to open in a window.

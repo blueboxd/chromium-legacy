@@ -108,6 +108,7 @@ KeyedService* FeedServiceFactory::BuildServiceInstanceFor(
       identity_manager,
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::IMPLICIT_ACCESS),
+
       storage_partition->GetURLLoaderFactoryForBrowserProcess(),
       background_task_runner, api_key, chrome_info);
 }

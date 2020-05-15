@@ -2282,7 +2282,7 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
                           base::NumberToString(
                               HashFormSignature(form.form_signature()))});
   buffer << Tr{} << "Form name:" << form.form_name();
-  buffer << Tr{} << "Unique renderer Id:" << form.unique_renderer_id().value();
+  buffer << Tr{} << "Unique renderer id:" << form.unique_renderer_id().value();
   buffer << Tr{} << "Target URL:" << form.target_url();
   for (size_t i = 0; i < form.field_count(); ++i) {
     buffer << Tag{"tr"};
@@ -2295,7 +2295,9 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
                   {base::NumberToString(field->GetFieldSignature().value()),
                    " - ",
                    base::NumberToString(
-                       HashFieldSignature(field->GetFieldSignature()))});
+                       HashFieldSignature(field->GetFieldSignature())),
+                   ", unique renderer id: ",
+                   base::NumberToString(field->unique_renderer_id.value())});
     buffer << Tr{} << "Name:" << field->parseable_name();
 
     auto type = field->Type().ToString();

@@ -72,12 +72,12 @@ AppUninstallDialogView::AppUninstallDialogView(
       AppDialogView(app_name, image),
       profile_(profile),
       app_type_(app_type) {
-  DialogDelegate::SetCloseCallback(base::BindOnce(
-      &AppUninstallDialogView::OnDialogCancelled, base::Unretained(this)));
-  DialogDelegate::SetCancelCallback(base::BindOnce(
-      &AppUninstallDialogView::OnDialogCancelled, base::Unretained(this)));
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
-      &AppUninstallDialogView::OnDialogAccepted, base::Unretained(this)));
+  SetCloseCallback(base::BindOnce(&AppUninstallDialogView::OnDialogCancelled,
+                                  base::Unretained(this)));
+  SetCancelCallback(base::BindOnce(&AppUninstallDialogView::OnDialogCancelled,
+                                   base::Unretained(this)));
+  SetAcceptCallback(base::BindOnce(&AppUninstallDialogView::OnDialogAccepted,
+                                   base::Unretained(this)));
 
   InitializeView(profile, app_type, app_id);
 
@@ -136,7 +136,7 @@ base::string16 AppUninstallDialogView::GetWindowTitle() const {
 void AppUninstallDialogView::InitializeView(Profile* profile,
                                             apps::mojom::AppType app_type,
                                             const std::string& app_id) {
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_APP_BUTTON));
 
@@ -314,7 +314,7 @@ void AppUninstallDialogView::InitializeViewForArcApp(
   shortcut_ = app_info->shortcut;
 
   if (shortcut_) {
-    DialogDelegate::SetButtonLabel(
+    SetButtonLabel(
         ui::DIALOG_BUTTON_OK,
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON));
   } else {

@@ -7,7 +7,6 @@
 #include <cmath>
 
 #include "base/auto_reset.h"
-#include "base/feature_list.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
@@ -74,6 +73,7 @@
 #include "ui/android/view_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "weblayer/browser/browser_controls_container_view.h"
+#include "weblayer/browser/browser_controls_navigation_state_handler.h"
 #include "weblayer/browser/controls_visibility_reason.h"
 #include "weblayer/browser/java/jni/TabImpl_jni.h"
 #include "weblayer/browser/javascript_tab_modal_dialog_manager_delegate_android.h"
@@ -98,19 +98,6 @@ namespace weblayer {
 namespace {
 
 #if defined(OS_ANDROID)
-const base::Feature kImmediatelyHideBrowserControlsForTest{
-    "ImmediatelyHideBrowserControlsForTest", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// The time that must elapse after a navigation before the browser controls can
-// be hidden. This value matches what chrome has in
-// TabStateBrowserControlsVisibilityDelegate.
-base::TimeDelta GetBrowserControlsAllowHideDelay() {
-  if (base::FeatureList::IsEnabled(kImmediatelyHideBrowserControlsForTest))
-    return base::TimeDelta();
-
-  return base::TimeDelta::FromSeconds(3);
-}
-
 bool g_system_autofill_disabled_for_testing = false;
 
 #endif
@@ -297,6 +284,10 @@ TabImpl::TabImpl(ProfileImpl* profile,
       web_contents_.get(),
       std::make_unique<JavaScriptTabModalDialogManagerDelegateAndroid>(
           web_contents_.get()));
+
+  browser_controls_navigation_state_handler_ =
+      std::make_unique<BrowserControlsNavigationStateHandler>(
+          web_contents_.get(), this);
 #endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
@@ -314,11 +305,14 @@ TabImpl::~TabImpl() {
 
   GetFindTabHelper()->RemoveObserver(this);
 
-  // Destruct WebContents now to avoid it calling back when this object is
-  // partially destructed. DidFinishNavigation can be called while destroying
-  // WebContents, so stop observing first. Similarly WebContents destructor
-  // can callback to delegate such as NavigationStateChanged, so clear its
-  // Delegate as well.
+  // Delete the WebContents and related objects that may be observing
+  // the WebContents now to avoid calling back when this object is partially
+  // deleted. DidFinishNavigation() may be called while deleting WebContents,
+  // so stop observing first. Similarly WebContents destructor can callback to
+  // delegate such as NavigationStateChanged, so clear its Delegate as well.
+#if defined(OS_ANDROID)
+  browser_controls_navigation_state_handler_.reset();
+#endif
   Observe(nullptr);
   web_contents_->SetDelegate(nullptr);
   web_contents_.reset();
@@ -515,18 +509,11 @@ void TabImpl::OnAutofillProviderChanged(
 }
 
 void TabImpl::UpdateBrowserControlsState(JNIEnv* env,
-                                         jint constraint,
+                                         jint raw_new_state,
                                          jboolean animate) {
-  auto state_constraint =
-      static_cast<content::BrowserControlsState>(constraint);
-  content::BrowserControlsState current_state =
-      content::BROWSER_CONTROLS_STATE_SHOWN;
-
-  if (state_constraint == content::BROWSER_CONTROLS_STATE_HIDDEN)
-    current_state = content::BROWSER_CONTROLS_STATE_BOTH;
-
-  web_contents_->GetMainFrame()->UpdateBrowserControlsState(
-      state_constraint, current_state, animate);
+  UpdateBrowserControlsStateImpl(
+      static_cast<content::BrowserControlsState>(raw_new_state),
+      current_browser_controls_state_, animate);
 }
 
 ScopedJavaLocalRef<jstring> TabImpl::GetGuid(JNIEnv* env) {
@@ -575,6 +562,15 @@ TabImpl::ScreenShotErrors TabImpl::PrepareForCaptureScreenShot(
   if (output_size->IsEmpty())
     return ScreenShotErrors::kScaledToEmpty;
   return ScreenShotErrors::kNone;
+}
+
+void TabImpl::UpdateBrowserControlsStateImpl(
+    content::BrowserControlsState new_state,
+    content::BrowserControlsState old_state,
+    bool animate) {
+  current_browser_controls_state_ = new_state;
+  web_contents_->GetMainFrame()->UpdateBrowserControlsState(new_state,
+                                                            old_state, animate);
 }
 
 void TabImpl::CaptureScreenShot(
@@ -861,25 +857,6 @@ void TabImpl::FindMatchRectsReply(content::WebContents* web_contents,
 }
 #endif
 
-void TabImpl::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-#if defined(OS_ANDROID)
-  if (navigation_handle->IsInMainFrame() &&
-      !navigation_handle->IsSameDocument()) {
-    // Force the browser controls to show initially, then allow hiding after a
-    // short delay.
-    SetBrowserControlsConstraint(ControlsVisibilityReason::kPostNavigation,
-                                 content::BROWSER_CONTROLS_STATE_SHOWN);
-    update_browser_controls_state_timer_.Start(
-        FROM_HERE, GetBrowserControlsAllowHideDelay(),
-        base::BindOnce(&TabImpl::SetBrowserControlsConstraint,
-                       base::Unretained(this),
-                       ControlsVisibilityReason::kPostNavigation,
-                       content::BROWSER_CONTROLS_STATE_BOTH));
-  }
-#endif
-}
-
 void TabImpl::RenderProcessGone(base::TerminationStatus status) {
   for (auto& observer : observers_)
     observer.OnRenderProcessGone();
@@ -896,15 +873,41 @@ void TabImpl::OnFindResultAvailable(content::WebContents* web_contents) {
 #endif
 }
 
+#if defined(OS_ANDROID)
+void TabImpl::OnBrowserControlsStateStateChanged(
+    content::BrowserControlsState state) {
+  SetBrowserControlsConstraint(ControlsVisibilityReason::kPostNavigation,
+                               state);
+}
+
+void TabImpl::OnUpdateBrowserControlsStateBecauseOfProcessSwitch(
+    bool did_commit) {
+  // This matches the logic of updateAfterRendererProcessSwitch() and
+  // updateEnabledState() in Chrome's TabBrowserControlsConstraintsHelper.
+  if (did_commit &&
+      current_browser_controls_state_ ==
+          content::BROWSER_CONTROLS_STATE_SHOWN &&
+      top_controls_container_view_->IsFullyVisible()) {
+    // The top-control is fully visible, don't animate this else the controls
+    // bounce around.
+    UpdateBrowserControlsStateImpl(current_browser_controls_state_,
+                                   current_browser_controls_state_, false);
+  } else {
+    UpdateBrowserControlsStateImpl(current_browser_controls_state_,
+                                   content::BROWSER_CONTROLS_STATE_SHOWN,
+                                   current_browser_controls_state_ !=
+                                       content::BROWSER_CONTROLS_STATE_HIDDEN);
+  }
+}
+#endif
+
 void TabImpl::DidChangeVisibleSecurityState() {
   UpdateBrowserVisibleSecurityStateIfNecessary();
 }
 
 void TabImpl::UpdateBrowserVisibleSecurityStateIfNecessary() {
-  if (browser_) {
-    if (browser_->GetActiveTab() == this)
-      browser_->VisibleSecurityStateOfActiveTabChanged();
-  }
+  if (browser_ && browser_->GetActiveTab() == this)
+    browser_->VisibleSecurityStateOfActiveTabChanged();
 }
 
 void TabImpl::OnExitFullscreen() {

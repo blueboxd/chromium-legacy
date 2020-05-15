@@ -31,6 +31,7 @@ def main(argv):
                       action='append', default=[],
                       help='Extra inputs, passed last to the binary script.')
   parser.add_argument('-v', '--verbose', action='store_true')
+  parser.add_argument('--missing-classes-allowlist')
   _AddSwitch(parser, '--is-prebuilt')
   _AddSwitch(parser, '--enable-thread-annotations')
   _AddSwitch(parser, '--enable-check-class-path')
@@ -45,6 +46,8 @@ def main(argv):
   extra_classpath_jars = []
   for a in args.extra_jars:
     extra_classpath_jars.extend(build_utils.ParseGnList(a))
+  args.missing_classes_allowlist = build_utils.ParseGnList(
+      args.missing_classes_allowlist)
 
   if args.verbose:
     verbose = '--verbose'
@@ -53,9 +56,10 @@ def main(argv):
 
   cmd = ([
       args.script, args.input_jar, args.output_jar, verbose, args.is_prebuilt,
-      args.enable_thread_annotations, args.enable_check_class_path,
-      str(len(sdk_jars))
-  ] + sdk_jars + [str(len(direct_jars))] + direct_jars + extra_classpath_jars)
+      args.enable_thread_annotations, args.enable_check_class_path
+  ] + [str(len(args.missing_classes_allowlist))] +
+         args.missing_classes_allowlist + [str(len(sdk_jars))] + sdk_jars +
+         [str(len(direct_jars))] + direct_jars + extra_classpath_jars)
   subprocess.check_call(cmd)
 
 

@@ -101,20 +101,18 @@ HatsBubbleView::HatsBubbleView(Browser* browser,
       consent_callback_(std::move(consent_callback)) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::HATS_BUBBLE);
 
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(IDS_HATS_BUBBLE_OK_LABEL));
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
-                                   l10n_util::GetStringUTF16(IDS_NO_THANKS));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(IDS_HATS_BUBBLE_OK_LABEL));
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
+                 l10n_util::GetStringUTF16(IDS_NO_THANKS));
   set_close_on_deactivate(false);
   set_parent_window(parent_view);
 
   auto run_callback = [](HatsBubbleView* bubble, bool accept) {
     std::move(bubble->consent_callback_).Run(accept);
   };
-  DialogDelegate::SetAcceptCallback(
-      base::BindOnce(run_callback, base::Unretained(this), true));
-  DialogDelegate::SetCancelCallback(
+  SetAcceptCallback(base::BindOnce(run_callback, base::Unretained(this), true));
+  SetCancelCallback(
       base::BindOnce(run_callback, base::Unretained(this), false));
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();

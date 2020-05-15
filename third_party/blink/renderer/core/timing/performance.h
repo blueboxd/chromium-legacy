@@ -306,21 +306,9 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
   void Trace(Visitor*) override;
 
-  class UnifiedClock {
-   public:
-    UnifiedClock(const base::Clock* clock, const base::TickClock* tick_clock)
-        : clock_(clock), tick_clock_(tick_clock) {}
-    DOMHighResTimeStamp GetUnixAtZeroMonotonic() const;
-    base::TimeTicks NowTicks() const;
-
-   private:
-    const base::Clock* clock_;
-    const base::TickClock* tick_clock_;
-    mutable base::Optional<DOMHighResTimeStamp> unix_at_zero_monotonic_;
-  };
-
   // The caller owns the |clock|.
-  void SetClocksForTesting(const UnifiedClock* clock);
+  void SetClocksForTesting(const base::Clock* clock,
+                           const base::TickClock* tick_clock);
   void ResetTimeOriginForTesting(base::TimeTicks time_origin);
 
  private:
@@ -387,7 +375,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   Member<PerformanceEventTiming> first_input_timing_;
 
   base::TimeTicks time_origin_;
-  const UnifiedClock* unified_clock_;
+  DOMHighResTimeStamp unix_at_zero_monotonic_;
+  const base::TickClock* tick_clock_;
 
   PerformanceEntryTypeMask observer_filter_options_;
   HeapLinkedHashSet<Member<PerformanceObserver>> observers_;

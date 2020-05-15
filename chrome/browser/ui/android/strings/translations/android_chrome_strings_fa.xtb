@@ -387,7 +387,6 @@
 <translation id="4250229828105606438">نماگرفت</translation>
 <translation id="4256782883801055595">مجوزهای متن‌باز</translation>
 <translation id="4269820728363426813">کپی نشانی پیوند</translation>
-<translation id="4278390842282768270">مجاز است</translation>
 <translation id="429312253194641664">سایتی درحال پخش رسانه است</translation>
 <translation id="4298388696830689168">سایت‌های مرتبط</translation>
 <translation id="4307992518367153382">موارد اصلی</translation>
@@ -435,7 +434,6 @@
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> نشانک حذف شد</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> به صفحه اصلی شما اضافه شد</translation>
 <translation id="4684427112815847243">همگام‌سازی همه</translation>
-<translation id="4688610874307684559">‏درحال اجرا در Chrome (اولیه)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}one{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}other{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}}</translation>
 <translation id="4696983787092045100">ارسال نوشتار به دستگاه‌های شما</translation>
 <translation id="4698034686595694889">مشاهده آفلاین در <ph name="APP_NAME" /></translation>
@@ -560,10 +558,8 @@
 <translation id="5659593005791499971">ایمیل</translation>
 <translation id="5665379678064389456">ایجاد رویداد در <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">لغو درخواست وب‌سایت برای جلوگیری از بزرگ‌نمایی</translation>
-<translation id="5677928146339483299">مسدود است</translation>
 <translation id="5684874026226664614">متأسفیم. این صفحه ترجمه نشد.</translation>
 <translation id="5686790454216892815">نام فایل خیلی طولانی است</translation>
-<translation id="5690795753582697420">‏«دوربین» در تنظیمات Android خاموش است</translation>
 <translation id="5694049548840660018">برگشت آسان به صفحه اصلی</translation>
 <translation id="569536719314091526">با استفاده از دکمه «گزینه‌های بیشتر»، این صفحه را به زبان‌های دیگر ترجمه کنید</translation>
 <translation id="572328651809341494">برگه‌های اخیر</translation>
@@ -619,7 +615,6 @@
 <translation id="614940544461990577">این موارد را امتحان کنید:</translation>
 <translation id="6154478581116148741">برای صادر کردن گذرواژه‌ها از این دستگاه، قفل صفحه را در تنظیمات روشن کنید.</translation>
 <translation id="6159335304067198720">ذخیره داده‌ها: <ph name="PERCENT" /></translation>
-<translation id="6177111841848151710">برای موتور جستجوی فعلی مسدود شده است</translation>
 <translation id="6192333916571137726">فایل بارگیری</translation>
 <translation id="6201345951596836663">پیوند کپی شد</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ایمیل شما نیست؟</translation>
@@ -706,7 +701,6 @@
 <translation id="6846298663435243399">در حال بارگیری…</translation>
 <translation id="6850409657436465440">بارگیری هنوز درحال انجام است</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> برگه بسته شد</translation>
-<translation id="6864395892908308021">‏این دستگاه نمی‌تواند NFC را بخواند</translation>
 <translation id="6864459304226931083">بارگیری تصویر</translation>
 <translation id="6865313869410766144">تکمیل خودکار داده‌های فرم</translation>
 <translation id="6884306546558072722">به‌صورت آفلاین به کاوش ادامه دهید</translation>
@@ -721,9 +715,7 @@
 <translation id="6989267951144302301">بارگیری نشد</translation>
 <translation id="6990079615885386641">‏دریافت برنامه از فروشگاه Google Play: ‏<ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">اگر گذرواژه‌ها به دلیل نقض داده لو رفته باشد، هشدار می‌دهد</translation>
-<translation id="7000754031042624318">‏در تنظیمات Android غیرفعال شده است</translation>
 <translation id="7015203776128479407">راه‌اندازی اولیه همگام‌سازی کامل نشد. همگام‌سازی خاموش است.</translation>
-<translation id="7016516562562142042">برای موتور جستجوی فعلی مجاز است</translation>
 <translation id="7022756207310403729">بازکردن در مرورگر</translation>
 <translation id="702463548815491781">‏توصیه در زمانی‌که TalkBack یا «دسترسی کلیدی» روشن است</translation>
 <translation id="7029809446516969842">گذرواژه‌ها</translation>
@@ -756,10 +748,10 @@
 <translation id="7328017930301109123">‏در «حالت ساده»، Chrome صفحه‌ها را سریع‌تر بار می‌کند و تا ۶۰ درصد مصرف داده را کاهش می‌دهد.</translation>
 <translation id="7333031090786104871">همچنان درحال افزودن سایت قبلی</translation>
 <translation id="7340958967809483333">گزینه‌های «یافته‌ها»</translation>
+<translation id="7352651011704765696">مشکلی پیش آمد</translation>
 <translation id="7352939065658542140">ویدیو</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{اشتراک‌گذاری ۱ مورد انتخاب‌شده}one{اشتراک‌گذاری # مورد انتخاب‌شده}other{اشتراک‌گذاری # مورد انتخاب‌شده}}</translation>
 <translation id="7359002509206457351">دسترسی به روش‌های پرداخت</translation>
-<translation id="7362144854749094396">‏سابقه با Chrome هم‌رسانی می‌شود. اولویت‌ها با <ph name="SITE_NAME" /> هم‌رسانی می‌شود.</translation>
 <translation id="7375125077091615385">نوع:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">نشانی وب</translation>
@@ -841,7 +833,6 @@
 <translation id="7986741934819883144">مخاطبی انتخاب کنید</translation>
 <translation id="7998918019931843664">بازکردن مجدد برگه‌های بسته شده</translation>
 <translation id="8004582292198964060">مرورگر</translation>
-<translation id="8007176423574883786">برای این دستگاه غیرفعال شد</translation>
 <translation id="8013372441983637696">‏داده‌های این Chrome هم از این دستگاه پاک شود</translation>
 <translation id="8015452622527143194">برگرداندن همه‌چیز در صفحه به‌اندازه پیش‌فرض</translation>
 <translation id="8026334261755873520">پاک کردن داده‌های مرور</translation>
@@ -931,6 +922,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{سطح قدرت سیگنال: # نوار}one{سطح قدرت سیگنال: # نوار}other{سطح قدرت سیگنال: # نوار}}</translation>
 <translation id="868929229000858085">جستجوی مخاطبین</translation>
 <translation id="869891660844655955">تاریخ انقضا</translation>
+<translation id="8712637175834984815">متوجه شدم</translation>
 <translation id="8748850008226585750">محتوا پنهان است</translation>
 <translation id="8751914237388039244">تصویری انتخاب کنید</translation>
 <translation id="8758557275681689734">دیدن همه برگه‌های باز</translation>

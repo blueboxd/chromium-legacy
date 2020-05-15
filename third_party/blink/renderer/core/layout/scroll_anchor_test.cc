@@ -7,8 +7,12 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
+#include "third_party/blink/renderer/core/editing/finder/text_finder.h"
+#include "third_party/blink/renderer/core/frame/find_in_page.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/page/print_context.h"
@@ -17,6 +21,7 @@
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 
@@ -1065,5 +1070,187 @@ TEST_P(ScrollAnchorTest, ClampAdjustsAnchorAnimation) {
   EXPECT_EQ(IntSize(0, 0), LayoutViewport()
                                ->GetScrollAnimator()
                                .ImplOnlyAnimationAdjustmentForTesting());
+}
+
+class ScrollAnchorTestFindInPageClient : public mojom::blink::FindInPageClient {
+ public:
+  ~ScrollAnchorTestFindInPageClient() override = default;
+
+  void SetFrame(WebLocalFrameImpl* frame) {
+    frame->GetFindInPage()->SetClient(receiver_.BindNewPipeAndPassRemote());
+  }
+
+  void SetNumberOfMatches(
+      int request_id,
+      unsigned int current_number_of_matches,
+      mojom::blink::FindMatchUpdateType final_update) final {
+    count_ = current_number_of_matches;
+  }
+
+  void SetActiveMatch(int request_id,
+                      const gfx::Rect& active_match_rect,
+                      int active_match_ordinal,
+                      mojom::blink::FindMatchUpdateType final_update) final {}
+
+  int Count() const { return count_; }
+  void Reset() { count_ = -1; }
+
+ private:
+  int count_ = -1;
+  mojo::Receiver<mojom::blink::FindInPageClient> receiver_{this};
+};
+
+class ScrollAnchorFindInPageTest : public testing::Test {
+ public:
+  void SetUp() override { web_view_helper_.Initialize(); }
+  void TearDown() override { web_view_helper_.Reset(); }
+
+  Document& GetDocument() {
+    return *static_cast<Document*>(
+        web_view_helper_.LocalMainFrame()->GetDocument());
+  }
+  FindInPage* GetFindInPage() {
+    return web_view_helper_.LocalMainFrame()->GetFindInPage();
+  }
+  WebLocalFrameImpl* LocalMainFrame() {
+    return web_view_helper_.LocalMainFrame();
+  }
+
+  void UpdateAllLifecyclePhasesForTest() {
+    GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+  }
+
+  void SetHtmlInnerHTML(const char* content) {
+    GetDocument().documentElement()->setInnerHTML(String::FromUTF8(content));
+    UpdateAllLifecyclePhasesForTest();
+  }
+
+  void ResizeAndFocus() {
+    web_view_helper_.Resize(WebSize(640, 480));
+    web_view_helper_.GetWebView()->MainFrameWidget()->SetFocus(true);
+    test::RunPendingTasks();
+  }
+
+  mojom::blink::FindOptionsPtr FindOptions(bool find_next = false) {
+    auto find_options = mojom::blink::FindOptions::New();
+    find_options->run_synchronously_for_testing = true;
+    find_options->find_next = find_next;
+    find_options->forward = true;
+    return find_options;
+  }
+
+  void Find(String search_text,
+            ScrollAnchorTestFindInPageClient& client,
+            bool find_next = false) {
+    client.Reset();
+    GetFindInPage()->Find(FAKE_FIND_ID, search_text, FindOptions(find_next));
+    test::RunPendingTasks();
+  }
+
+  ScrollableArea* LayoutViewport() {
+    return GetDocument().View()->LayoutViewport();
+  }
+
+  const int FAKE_FIND_ID = 1;
+
+ private:
+  frame_test_helpers::WebViewHelper web_view_helper_;
+};
+
+TEST_F(ScrollAnchorFindInPageTest, FindInPageResultPrioritized) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    body { height: 4000px }
+    .spacer { height: 100px }
+    #growing { height: 100px }
+    </style>
+
+    <div class=spacer></div>
+    <div class=spacer></div>
+    <div class=spacer></div>
+    <div class=spacer></div>
+    <div id=growing></div>
+    <div class=spacer></div>
+    <div id=target>findme</div>
+    <div class=spacer></div>
+    <div class=spacer></div>
+  )HTML");
+
+  LayoutViewport()->SetScrollOffset(ScrollOffset(0, 150),
+                                    mojom::blink::ScrollType::kUser);
+
+  const String search_text = "findme";
+  ScrollAnchorTestFindInPageClient client;
+  client.SetFrame(LocalMainFrame());
+  Find(search_text, client);
+  ASSERT_EQ(1, client.Count());
+
+  // Save the old bounds for comparison.
+  auto* old_bounds =
+      GetDocument().getElementById("target")->getBoundingClientRect();
+
+  GetDocument().getElementById("growing")->setAttribute(html_names::kStyleAttr,
+                                                        "height: 3000px");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* new_bounds =
+      GetDocument().getElementById("target")->getBoundingClientRect();
+
+  // The y coordinate of the target should not change.
+  EXPECT_EQ(old_bounds->y(), new_bounds->y());
+}
+
+TEST_F(ScrollAnchorFindInPageTest, FocusPrioritizedOverFindInPage) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    body { height: 4000px }
+    .spacer { height: 100px }
+    #growing { height: 100px }
+    #focus_target { height: 10px }
+    </style>
+
+    <div class=spacer></div>
+    <div class=spacer></div>
+    <div class=spacer></div>
+    <div class=spacer></div>
+    <div id=focus_target tabindex=0></div>
+    <div id=growing></div>
+    <div id=find_target>findme</div>
+    <div class=spacer></div>
+    <div class=spacer></div>
+  )HTML");
+
+  LayoutViewport()->SetScrollOffset(ScrollOffset(0, 150),
+                                    mojom::blink::ScrollType::kUser);
+
+  const String search_text = "findme";
+  ScrollAnchorTestFindInPageClient client;
+  client.SetFrame(LocalMainFrame());
+  Find(search_text, client);
+  ASSERT_EQ(1, client.Count());
+
+  GetDocument().getElementById("focus_target")->focus();
+
+  // Save the old bounds for comparison.
+  auto* old_focus_bounds =
+      GetDocument().getElementById("focus_target")->getBoundingClientRect();
+  auto* old_find_bounds =
+      GetDocument().getElementById("find_target")->getBoundingClientRect();
+
+  GetDocument().getElementById("growing")->setAttribute(html_names::kStyleAttr,
+                                                        "height: 3000px");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* new_focus_bounds =
+      GetDocument().getElementById("focus_target")->getBoundingClientRect();
+  auto* new_find_bounds =
+      GetDocument().getElementById("find_target")->getBoundingClientRect();
+
+  // `focus_target` should remain where it is, since it is prioritized.
+  // `find_target`, however, is shifted.
+  EXPECT_EQ(old_focus_bounds->y(), new_focus_bounds->y());
+  EXPECT_NE(old_find_bounds->y(), new_find_bounds->y());
 }
 }

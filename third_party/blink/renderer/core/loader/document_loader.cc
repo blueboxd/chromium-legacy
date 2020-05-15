@@ -1934,6 +1934,8 @@ void DocumentLoader::ParseAndPersistClientHints(
     return;
 
   // Do not persist client hint preferences if the JavaScript is disabled.
+  // TODO(yoav): this seems buggy, and settings doesn't seem notified in
+  // ClientHintBrowserTest.ClientHintsNoLifetimeScriptNotAllowed.
   bool allow_script = frame_->GetSettings()->GetScriptEnabled();
   if (!settings_client->AllowScriptFromSource(allow_script, url))
     return;

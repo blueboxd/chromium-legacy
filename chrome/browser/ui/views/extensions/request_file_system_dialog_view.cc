@@ -63,24 +63,22 @@ RequestFileSystemDialogView::RequestFileSystemDialogView(
     bool writable,
     const base::Callback<void(ui::DialogButton)>& callback)
     : callback_(callback) {
-  DialogDelegate::SetDefaultButton(ui::DIALOG_BUTTON_CANCEL);
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(
-          IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_ALLOW_BUTTON));
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_CANCEL,
-      l10n_util::GetStringUTF16(
-          IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_DENY_BUTTON));
+  SetDefaultButton(ui::DIALOG_BUTTON_CANCEL);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(
+                     IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_ALLOW_BUTTON));
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
+                 l10n_util::GetStringUTF16(
+                     IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_DENY_BUTTON));
 
   auto run_callback = [](RequestFileSystemDialogView* dialog,
                          ui::DialogButton button) {
     dialog->callback_.Run(button);
   };
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
-      run_callback, base::Unretained(this), ui::DIALOG_BUTTON_OK));
-  DialogDelegate::SetCancelCallback(base::BindOnce(
-      run_callback, base::Unretained(this), ui::DIALOG_BUTTON_CANCEL));
+  SetAcceptCallback(base::BindOnce(run_callback, base::Unretained(this),
+                                   ui::DIALOG_BUTTON_OK));
+  SetCancelCallback(base::BindOnce(run_callback, base::Unretained(this),
+                                   ui::DIALOG_BUTTON_CANCEL));
 
   DCHECK(!callback_.is_null());
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(

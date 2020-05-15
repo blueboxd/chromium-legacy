@@ -52,9 +52,8 @@ WebAppConfirmationView::WebAppConfirmationView(
     chrome::AppInstallationAcceptanceCallback callback)
     : web_app_info_(std::move(web_app_info)), callback_(std::move(callback)) {
   DCHECK(web_app_info_);
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_BUTTON_LABEL));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_BUTTON_LABEL));
   const ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
   set_margins(layout_provider->GetDialogInsetsForContentType(views::CONTROL,
                                                              views::TEXT));
@@ -211,9 +210,9 @@ base::string16 WebAppConfirmationView::GetTrimmedTitle() const {
 
 namespace chrome {
 
-void ShowWebAppDialog(content::WebContents* web_contents,
-                      std::unique_ptr<WebApplicationInfo> web_app_info,
-                      AppInstallationAcceptanceCallback callback) {
+void ShowWebAppInstallDialog(content::WebContents* web_contents,
+                             std::unique_ptr<WebApplicationInfo> web_app_info,
+                             AppInstallationAcceptanceCallback callback) {
   auto* dialog =
       new WebAppConfirmationView(std::move(web_app_info), std::move(callback));
   constrained_window::ShowWebModalDialogViews(dialog, web_contents);

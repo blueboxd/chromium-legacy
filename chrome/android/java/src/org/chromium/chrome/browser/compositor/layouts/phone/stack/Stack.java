@@ -6,11 +6,9 @@ package org.chromium.chrome.browser.compositor.layouts.phone.stack;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.RectF;
-import android.util.Pair;
 
 import androidx.annotation.IntDef;
 
@@ -18,7 +16,6 @@ import org.chromium.base.MathUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
-import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.animation.FloatProperty;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
@@ -34,8 +31,6 @@ import org.chromium.ui.base.LocalizationUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * Handles all the drawing and events of a stack of stackTabs.
@@ -213,7 +208,7 @@ public abstract class Stack {
     private StackViewAnimation mViewAnimationFactory;
 
     // Running set of animations applied to tabs.
-    private Pair<AnimatorSet, ArrayList<FloatProperty>> mAnimatorSetTabAnimations;
+    private StackAnimation.StackAnimatorSet mStackAnimatorSet;
     private Animator mViewAnimations;
 
     // The parent Layout
@@ -540,18 +535,17 @@ public abstract class Stack {
                 // Build the AnimatorSet using the TabSwitcherAnimationFactory.
                 // This will give us the appropriate AnimatorSet based on the current
                 // state of the tab switcher and the OverviewAnimationType specified.
-                mAnimatorSetTabAnimations = mAnimationFactory.createAnimatorSetForType(type, this,
+                mStackAnimatorSet = mAnimationFactory.createAnimatorSetForType(type, this,
                         mStackTabs, focusIndex, sourceIndex, mSpacing, getDiscardRange());
             }
 
-            if (mAnimatorSetTabAnimations != null) mAnimatorSetTabAnimations.first.start();
+            if (mStackAnimatorSet != null) mStackAnimatorSet.start();
             if (mViewAnimations != null) mViewAnimations.start();
-            if (mAnimatorSetTabAnimations != null || mViewAnimations != null) {
+            if (mStackAnimatorSet != null || mViewAnimations != null) {
                 mLayout.onStackAnimationStarted();
             }
 
-            if ((mAnimatorSetTabAnimations == null && mViewAnimations == null)
-                    || finishImmediately) {
+            if ((mStackAnimatorSet == null && mViewAnimations == null) || finishImmediately) {
                 finishAnimation(time);
             }
         }
@@ -565,9 +559,9 @@ public abstract class Stack {
      * @param time The current time of the app in ms.
      */
     protected void finishAnimation(long time) {
-        if (mAnimatorSetTabAnimations != null) mAnimatorSetTabAnimations.first.end();
+        if (mStackAnimatorSet != null) mStackAnimatorSet.end();
         if (mViewAnimations != null) mViewAnimations.end();
-        if (mAnimatorSetTabAnimations != null || mViewAnimations != null) {
+        if (mStackAnimatorSet != null || mViewAnimations != null) {
             mLayout.onStackAnimationFinished();
         }
 
@@ -622,7 +616,7 @@ public abstract class Stack {
         }
         mOverviewAnimationType = OverviewAnimationType.NONE;
 
-        mAnimatorSetTabAnimations = null;
+        mStackAnimatorSet = null;
         mViewAnimations = null;
     }
 
@@ -703,16 +697,8 @@ public abstract class Stack {
         if (mOverviewAnimationType == OverviewAnimationType.DISCARD
                 || mOverviewAnimationType == OverviewAnimationType.UNDISCARD
                 || mOverviewAnimationType == OverviewAnimationType.DISCARD_ALL) {
-            if (mAnimatorSetTabAnimations != null) {
-                Iterator<FloatProperty> propertyIterator =
-                        mAnimatorSetTabAnimations.second.iterator();
-                Iterator<Animator> animatorIterator =
-                        mAnimatorSetTabAnimations.first.getChildAnimations().iterator();
-
-                while (animatorIterator.hasNext()) {
-                    CompositorAnimator a = (CompositorAnimator) animatorIterator.next();
-                    if (propertyIterator.next() == StackTab.SCROLL_OFFSET) a.cancel();
-                }
+            if (mStackAnimatorSet != null) {
+                mStackAnimatorSet.cancelCancelableAnimators();
             }
             return true;
         }
@@ -744,11 +730,11 @@ public abstract class Stack {
         if (!jumpToEnd) updateScrollOffset(time);
 
         boolean animatorSetFinished = true;
-        if (mAnimatorSetTabAnimations != null) {
-            animatorSetFinished = jumpToEnd ? true : !mAnimatorSetTabAnimations.first.isRunning();
+        if (mStackAnimatorSet != null) {
+            animatorSetFinished = jumpToEnd ? true : !mStackAnimatorSet.isRunning();
         }
 
-        if (mAnimatorSetTabAnimations != null) finishAnimationsIfDone(time, jumpToEnd);
+        if (mStackAnimatorSet != null) finishAnimationsIfDone(time, jumpToEnd);
         if (jumpToEnd) forceScrollStop();
 
         return animatorSetFinished;
@@ -758,9 +744,9 @@ public abstract class Stack {
         boolean hasViewAnimations = mViewAnimations != null;
         boolean isViewFinished = hasViewAnimations ? !mViewAnimations.isRunning() : true;
 
-        boolean hasAnimatorSetTabAnimations = mAnimatorSetTabAnimations != null;
+        boolean hasAnimatorSetTabAnimations = mStackAnimatorSet != null;
         boolean isAnimatorSetTabFinished =
-                hasAnimatorSetTabAnimations ? !mAnimatorSetTabAnimations.first.isRunning() : true;
+                hasAnimatorSetTabAnimations ? !mStackAnimatorSet.isRunning() : true;
 
         boolean hasAnimations = hasViewAnimations || hasAnimatorSetTabAnimations;
 

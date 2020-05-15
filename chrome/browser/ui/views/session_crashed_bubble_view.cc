@@ -180,23 +180,22 @@ SessionCrashedBubbleView::SessionCrashedBubbleView(views::View* anchor_view,
                : SessionStartupPref{SessionStartupPref::DEFAULT};
   // Offer the option to open the startup pages using the cancel button, but
   // only when the user has selected the URLS option, and set at least one url.
-  DialogDelegate::SetButtons(
-      (session_startup_pref.type == SessionStartupPref::URLS &&
-       !session_startup_pref.urls.empty())
-          ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
-          : ui::DIALOG_BUTTON_OK);
-  DialogDelegate::SetButtonLabel(
+  SetButtons((session_startup_pref.type == SessionStartupPref::URLS &&
+              !session_startup_pref.urls.empty())
+                 ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
+                 : ui::DIALOG_BUTTON_OK);
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON));
-  DialogDelegate::SetButtonLabel(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_STARTUP_PAGES_BUTTON));
 
-  DialogDelegate::SetAcceptCallback(
+  SetAcceptCallback(
       base::BindOnce(&SessionCrashedBubbleView::RestorePreviousSession,
                      base::Unretained(this)));
-  DialogDelegate::SetCancelCallback(base::BindOnce(
-      &SessionCrashedBubbleView::OpenStartupPages, base::Unretained(this)));
+  SetCancelCallback(base::BindOnce(&SessionCrashedBubbleView::OpenStartupPages,
+                                   base::Unretained(this)));
 
   set_close_on_deactivate(false);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SESSION_CRASHED);

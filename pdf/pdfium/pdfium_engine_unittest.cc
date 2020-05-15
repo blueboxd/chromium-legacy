@@ -263,10 +263,52 @@ class PDFiumEngineTabbingTest : public PDFiumTestBase {
     return engine->selection_.size();
   }
 
+  const std::string& GetLinkUnderCursor(PDFiumEngine* engine) {
+    return engine->link_under_cursor_;
+  }
+
  protected:
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 };
+
+TEST_F(PDFiumEngineTabbingTest, LinkUnderCursorTest) {
+  /*
+   * Document structure
+   * Document
+   * ++ Page 1
+   * ++++ Widget annotation
+   * ++++ Widget annotation
+   * ++++ Highlight annotation
+   * ++++ Link annotation
+   */
+  // Enable feature flag.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      chrome_pdf::features::kTabAcrossPDFAnnotations);
+
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("annots.pdf"));
+  ASSERT_TRUE(engine);
+
+  // Initial value of link under cursor.
+  EXPECT_EQ("", GetLinkUnderCursor(engine.get()));
+
+  // Tab through non-link annotations and validate link under cursor.
+  for (int i = 0; i < 4; i++) {
+    ASSERT_TRUE(HandleTabEvent(engine.get(), 0));
+    EXPECT_EQ("", GetLinkUnderCursor(engine.get()));
+  }
+
+  // Tab to Link annotation.
+  ASSERT_TRUE(HandleTabEvent(engine.get(), 0));
+  EXPECT_EQ("https://www.google.com/", GetLinkUnderCursor(engine.get()));
+
+  // Tab to previous annotation.
+  ASSERT_TRUE(HandleTabEvent(engine.get(), PP_INPUTEVENT_MODIFIER_SHIFTKEY));
+  EXPECT_EQ("", GetLinkUnderCursor(engine.get()));
+}
 
 TEST_F(PDFiumEngineTabbingTest, TabbingSupportedAnnots) {
   /*

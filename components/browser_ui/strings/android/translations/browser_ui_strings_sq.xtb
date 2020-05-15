@@ -129,6 +129,7 @@
 <translation id="5649053991847567735">Shkarkimet automatike</translation>
 <translation id="5677928146339483299">Të bllokuara</translation>
 <translation id="5689516760719285838">Vendndodhja</translation>
+<translation id="5690795753582697420">Kamera është çaktivizuar në cilësimet e Android</translation>
 <translation id="5710871682236653961">Pyet përpara se sajtet të lejohen të dërgojnë dhe të marrin informacione kur troket pajisjet me NFC (rekomandohet)</translation>
 <translation id="5719847187258001597">Kjo do të pastrojë të gjitha të dhënat dhe kukit e ruajtura nga <ph name="ORIGIN" /> ose nga aplikacioni i tij në ekranin bazë.</translation>
 <translation id="5804241973901381774">Lejet</translation>
@@ -140,6 +141,7 @@
 <translation id="6042308850641462728">Më shumë</translation>
 <translation id="6064125863973209585">Shkarkimet e përfunduara</translation>
 <translation id="6165508094623778733">Mëso më shumë</translation>
+<translation id="6177111841848151710">Bllokuar për motorin aktual të kërkimit</translation>
 <translation id="6181444274883918285">Shto përjashtim për sajt</translation>
 <translation id="6192792657125177640">Përjashtimet</translation>
 <translation id="6194112207524046168">Që të lejosh që Chrome të ketë qasje te kamera jote, aktivizoje kamerën edhe te <ph name="BEGIN_LINK" />Cilësimet e Android<ph name="END_LINK" />.</translation>
@@ -169,6 +171,8 @@
 <translation id="6963642900430330478">Kjo faqe është e rrezikshme. Informacioni i faqes</translation>
 <translation id="6965382102122355670">Në rregull</translation>
 <translation id="6992289844737586249">Pyet përpara se sajtet të lejohen të përdorin mikrofonin (rekomandohet)</translation>
+<translation id="7000754031042624318">E çaktivizuar te cilësimet e Android</translation>
+<translation id="7016516562562142042">Lejuar për motorin aktual të kërkimit</translation>
 <translation id="7053983685419859001">Bllokoje</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 i zgjedhur}other{# të zgjedhur}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> të zgjedhura. Opsionet ofrohen pranë kreut të ekranit</translation>
@@ -197,6 +201,7 @@
 <translation id="7882806643839505685">Lejo tingullin për një sajt specifik.</translation>
 <translation id="7993619969781047893">Veçoritë në disa sajte mund të ndalojnë së funksionuari</translation>
 <translation id="7999064672810608036">Je i sigurt që dëshiron t'i pastrosh të gjitha të dhënat lokale, duke përfshirë kukit, dhe të rivendosësh të gjitha lejet për këtë sajt uebi?</translation>
+<translation id="8007176423574883786">E çaktivizuar për këtë pajisje</translation>
 <translation id="802154636333426148">Shkarkimi dështoi</translation>
 <translation id="8087000398470557479">Kjo përmbajtje është nga <ph name="DOMAIN_NAME" />, dërguar nga Google.</translation>
 <translation id="8116925261070264013">Zëri i çaktivizuar</translation>

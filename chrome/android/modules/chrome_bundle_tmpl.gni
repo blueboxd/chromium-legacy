@@ -99,6 +99,11 @@ template("chrome_bundle") {
     system_image_locale_allowlist = android_apk_locales
     is_multi_abi = _is_multi_abi
 
+    # List of DFMs that are installed by default by wrapper scripts, to make
+    # testing easier. This removes the need to manually specify, e.g.,
+    # "-m dev_ui" on every install or run.
+    default_modules_for_testing = [ "dev_ui" ]
+
     # NOTE: Only sign bundle for official builds since this is very slow.
     if (enable_chrome_android_internal && use_signing_keys &&
         is_official_build) {

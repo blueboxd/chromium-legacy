@@ -551,6 +551,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
            ShouldApplySizeContainment();
   }
 
+  void NotifyPriorityScrollAnchorStatusChanged();
+
  private:
   //////////////////////////////////////////
   // Helper functions. Dangerous to use!

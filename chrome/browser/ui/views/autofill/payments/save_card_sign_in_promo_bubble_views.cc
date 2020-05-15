@@ -29,7 +29,7 @@ SaveCardSignInPromoBubbleViews::SaveCardSignInPromoBubbleViews(
     SaveCardBubbleController* controller)
     : SaveCardBubbleViews(anchor_view, web_contents, controller) {
   // The BubbleSyncPromoView takes care of buttons.
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
 }
 
 SaveCardSignInPromoBubbleViews::~SaveCardSignInPromoBubbleViews() = default;

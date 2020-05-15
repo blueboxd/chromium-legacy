@@ -51,9 +51,7 @@ class DOMTimerTest : public RenderingTest {
     auto* mock_clock = test_task_runner->GetMockClock();
     auto* mock_tick_clock = test_task_runner->GetMockTickClock();
     auto now_ticks = test_task_runner->NowTicks();
-    unified_clock_ = std::make_unique<Performance::UnifiedClock>(
-        mock_clock, mock_tick_clock);
-    window_performance->SetClocksForTesting(unified_clock_.get());
+    window_performance->SetClocksForTesting(mock_clock, mock_tick_clock);
     window_performance->ResetTimeOriginForTesting(now_ticks);
     GetDocument().GetSettings()->SetScriptEnabled(true);
     auto* loader = GetDocument().Loader();
@@ -88,9 +86,6 @@ class DOMTimerTest : public RenderingTest {
         script, KURL(), SanitizeScriptErrors::kSanitize);
     platform()->RunUntilIdle();
   }
-
- private:
-  std::unique_ptr<Performance::UnifiedClock> unified_clock_;
 };
 
 const char* const kSetTimeout0ScriptText =

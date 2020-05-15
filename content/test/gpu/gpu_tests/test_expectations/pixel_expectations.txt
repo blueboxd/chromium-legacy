@@ -3,6 +3,7 @@
 # tags: [ skia-renderer no-skia-renderer ]
 # tags: [ use-gl no-use-gl ]
 # tags: [ use-vulkan no-use-vulkan ]
+# tags: [ use-skia-dawn no-use-skia-dawn ]
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 intel intel-0xa2e intel-0x5912
 #         intel-0xd26 nvidia qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418
 #         qualcomm-adreno-(tm)-420 qualcomm-adreno-(tm)-430
@@ -100,7 +101,7 @@ crbug.com/744658 [ mac amd-0x6821 ] Pixel_Canvas2DRedBox_NoGpuProcess [ Failure 
 crbug.com/744658 [ mac amd-0x6821 ] Pixel_CSS3DBlueBox_NoGpuProcess [ Failure ]
 
 # TODO(fserb): temporarily suppress this test.
-crbug.com/840394 [ linux ] Pixel_OffscreenCanvas2DResizeOnWorker [ RetryOnFailure ]
+crbug.com/840394 [ linux no-use-skia-dawn ] Pixel_OffscreenCanvas2DResizeOnWorker [ RetryOnFailure ]
 crbug.com/840394 [ mac ] Pixel_OffscreenCanvas2DResizeOnWorker [ RetryOnFailure ]
 
 # TODO(kbr): temporary suppression for new test.
@@ -124,7 +125,7 @@ crbug.com/1029389 [ android qualcomm-adreno-(tm)-330 ] Pixel_PrecisionRoundedCor
 
 # Flakes on Nexus 5X.
 crbug.com/883500 [ android-chromium no-use-gl no-use-vulkan qualcomm-adreno-(tm)-418 ] Pixel_BackgroundImage [ RetryOnFailure ]
-crbug.com/1068620 [ android-chromium no-use-gl no-use-vulkan qualcomm-adreno-(tm)-418 ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ RetryOnFailure ]
+crbug.com/1068620 [ android android-chromium no-use-gl no-use-vulkan qualcomm-adreno-(tm)-418 ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ RetryOnFailure ]
 
 # We do not have software H.264 decoding on Android, so it can't survive a
 # context loss which results in hardware decoder loss.
@@ -141,7 +142,7 @@ crbug.com/927901 [ mac ] Pixel_Video_VP9_DXVA [ Skip ]
 crbug.com/927901 [ chromeos ] Pixel_Video_VP9_DXVA [ Skip ]
 
 # Complex overlays test is flaky on Nvidia probably due to its small size.
-crbug.com/929425 [ win nvidia ] Pixel_DirectComposition_ComplexOverlays [ RetryOnFailure ]
+crbug.com/929425 [ win nvidia no-use-skia-dawn ] Pixel_DirectComposition_ComplexOverlays [ RetryOnFailure ]
 
 # Mark all webview tests as RetryOnFailure due to Nexus 5x driver bug.
 crbug.com/950932 [ android-webview-instrumentation qualcomm-adreno-(tm)-418 ] * [ RetryOnFailure ]
@@ -150,7 +151,7 @@ crbug.com/950932 [ android-webview-instrumentation qualcomm-adreno-(tm)-418 ] * 
 # might have the same Nexus 5x driver bug as crbug.com/950932 but that
 # should have made this test flaky instead of always failing. Need to
 # investigate later. Filed a bug to track the debug.
-crbug.com/984734 [ android-webview-instrumentation qualcomm-adreno-(tm)-418 ] Pixel_Video_Context_Loss_VP9 [ Failure ]
+crbug.com/984734 [ android android-webview-instrumentation qualcomm-adreno-(tm)-418 ] Pixel_Video_Context_Loss_VP9 [ Failure ]
 
 # Failing on Linux and Windows, both Intel HD 630 and NVIDIA Quadro P400
 crbug.com/974380 [ linux ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing [ Skip ]
@@ -173,7 +174,7 @@ crbug.com/1008450 [ android skia-renderer ] Pixel_Video_MP4_Rounded_Corner [ Ski
 crbug.com/1068301 [ win no-skia-renderer ] Pixel_DirectComposition_Video_MP4_Rounded_Corner [ Skip ]
 
 # Produces blank images on Intel HD 630 w/ Mesa 19.0.2
-crbug.com/976861 [ linux intel-0x5912 ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]
+crbug.com/976861 [ linux intel-0x5912 no-use-skia-dawn ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]
 
 # Skip swap chain tests on non-Windows
 [ android ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
@@ -190,7 +191,7 @@ crbug.com/976861 [ linux intel-0x5912 ] Pixel_OffscreenCanvasTransferToImageBitm
 [ mac ] Pixel_CanvasLowLatencyWebGLSwapChainAlphaFalse [ Skip ]
 
 # Producing incorrect image on Win10 Intel HD 630 w/ 26.20.100.6912 drivers.
-crbug.com/997313 [ win intel-0x5912 ] Pixel_WebGL_PremultipliedAlpha_False [ Failure ]
+crbug.com/997313 [ win intel-0x5912 no-use-skia-dawn ] Pixel_WebGL_PremultipliedAlpha_False [ Failure ]
 
 # Flakes on Nexus 9 or NVIDIA Shield TV
 crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ RetryOnFailure ]
@@ -217,9 +218,100 @@ crbug.com/1028975 [ win ] Pixel_PrecisionRoundedCorner [ RetryOnFailure ]
 crbug.com/1069339 [ mac intel-0xd26 ] Pixel_OffscreenCanvasIBRCWebGLHighPerfWorker [ RetryOnFailure ]
 
 # VP9 appears to not recover correctly after GPU process crashes on Windows.
-crbug.com/1033982 [ win nvidia ] Pixel_Video_Context_Loss_VP9 [ RetryOnFailure ]
+crbug.com/1033982 [ win nvidia no-use-skia-dawn ] Pixel_Video_Context_Loss_VP9 [ RetryOnFailure ]
 
 # HDR rendering with PQ color space appears to be broken on Windows RS2.
 # TODO(sunnyps): Revert this temporary suppression after ensuring pixel tests
 # always run on Windows RS3 or above.
 crbug.com/1066979 [ win ] Pixel_Canvas2DRedBoxHdr10 [ Skip ]
+
+# SkiaRenderer Dawn doesn't support accelerated canvas, webgl, video, or
+# direct composition.
+crbug.com/1021566 [ linux use-skia-dawn ] Pixel_Canvas2DTabSwitch [ Skip ]
+crbug.com/1021566 [ linux use-skia-dawn ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Skip ]
+crbug.com/1021566 [ linux use-skia-dawn ] Pixel_CanvasLowLatency2D [ Skip ]
+crbug.com/1021566 [ linux use-skia-dawn ] Pixel_CanvasLowLatencyWebGL [ Skip ]
+crbug.com/1021566 [ linux use-skia-dawn ] Pixel_OffscreenCanvas2DResizeOnWorker [ Skip ]
+crbug.com/1021566 [ linux use-skia-dawn ] Pixel_OffscreenCanvasTransferBeforeStyleResize [ Skip ]
+crbug.com/1021566 [ linux use-skia-dawn ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Skip ]
+crbug.com/1021566 [ linux use-skia-dawn ] Pixel_ScissorTestWithPreserveDrawingBuffer [ Skip ]
+crbug.com/1021566 [ linux use-skia-dawn ] Pixel_Video_BackdropFilter [ Skip ]
+crbug.com/1021566 [ linux use-skia-dawn ] Pixel_Video_Context_Loss_MP4 [ Skip ]
+crbug.com/1021566 [ linux use-skia-dawn ] Pixel_Video_Context_Loss_VP9 [ Skip ]
+crbug.com/1021566 [ linux use-skia-dawn ] Pixel_Video_MP4_Rounded_Corner [ Skip ]
+crbug.com/1021566 [ linux use-skia-dawn ] Pixel_WebGL2_BlitFramebuffer_Result_Displayed [ Skip ]
+crbug.com/1021566 [ linux use-skia-dawn ] Pixel_WebGL2_ClearBufferfv_Result_Displayed [ Skip ]
+crbug.com/1021566 [ linux use-skia-dawn ] Pixel_WebGLReadPixelsTabSwitch [ Skip ]
+crbug.com/1021566 [ linux use-skia-dawn ] Pixel_WebGL_PremultipliedAlpha_False [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_Canvas2DTabSwitch [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_CanvasLowLatency2D [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_CanvasLowLatencyWebGL [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_CanvasLowLatencyWebGLSwapChainAlphaFalse [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_OffscreenCanvas2DResizeOnWorker [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_OffscreenCanvasTransferBeforeStyleResize [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_ScissorTestWithPreserveDrawingBuffer [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_Video_BackdropFilter [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_Video_Context_Loss_MP4 [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_Video_Context_Loss_VP9 [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_Video_MP4_DXVA [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_Video_MP4_Rounded_Corner [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_Video_VP9_DXVA [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_WebGL2_BlitFramebuffer_Result_Displayed [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_WebGL2_ClearBufferfv_Result_Displayed [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_WebGLReadPixelsTabSwitch [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_WebGL_PremultipliedAlpha_False [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_2DCanvasWebGL [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_Canvas2DRedBox [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_Canvas2DRedBoxScrgbLinear [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_Canvas2DUntagged [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_DirectComposition_ComplexOverlays [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_DirectComposition_Nonroot [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_DirectComposition_Underlay [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_DirectComposition_Underlay_DXVA [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_DirectComposition_Underlay_Fullsize [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_DirectComposition_Video_BackdropFilter [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_DirectComposition_Video_Disable_Overlays [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_DirectComposition_Video_MP4 [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_DirectComposition_Video_MP4_DXVA [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_DirectComposition_Video_MP4_FourColors_Aspect_4x3 [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_DirectComposition_Video_MP4_FourColors_Rot_180 [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_DirectComposition_Video_MP4_FourColors_Rot_270 [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_DirectComposition_Video_MP4_FourColors_Rot_90 [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_DirectComposition_Video_MP4_Fullsize [ Skip ]
+crbug.com/1021566 [ use-skia-dawn skia-renderer ] Pixel_DirectComposition_Video_MP4_Rounded_Corner [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_DirectComposition_Video_MP4_YUY2 [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_DirectComposition_Video_VP9 [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_DirectComposition_Video_VP9_DXVA [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_DirectComposition_Video_VP9_Fullsize [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_DirectComposition_Video_VP9_I420A [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_DirectComposition_Video_VP9_YUY2 [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_OffscreenCanvasAccelerated2D [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_OffscreenCanvasAccelerated2DWorker [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_OffscreenCanvasIBRCWebGLMain [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_OffscreenCanvasIBRCWebGLWorker [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_OffscreenCanvasTransferAfterStyleResize [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_OffscreenCanvasTransferToImageBitmapWorker [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_OffscreenCanvasWebGLDefault [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_OffscreenCanvasWebGLDefaultWorker [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_OffscreenCanvasWebglResizeOnWorker [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_RepeatedWebGLTo2D [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_Video_MP4 [ Skip ]
+crbug.com/1021566 [ use-skia-dawn skia-renderer ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ Skip ]
+crbug.com/1021566 [ use-skia-dawn skia-renderer ] Pixel_Video_MP4_FourColors_Rot_180 [ Skip ]
+crbug.com/1021566 [ use-skia-dawn skia-renderer ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
+crbug.com/1021566 [ use-skia-dawn skia-renderer ] Pixel_Video_MP4_FourColors_Rot_90 [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_Video_VP9 [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_WebGLCopyImage [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_WebGLGreenTriangle_AA_Alpha [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_WebGLGreenTriangle_AA_NoAlpha [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_WebGLGreenTriangle_NoAA_Alpha [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_WebGLGreenTriangle_NoAA_NoAlpha [ Skip ]
+crbug.com/1021566 [ use-skia-dawn ] Pixel_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear [ Skip ]
+
+# 3D box is shaded incorrectly using SkiaRenderer Dawn on Windows.
+crbug.com/1082769 [ win use-skia-dawn ] Pixel_CSS3DBlueBox [ Failure ]

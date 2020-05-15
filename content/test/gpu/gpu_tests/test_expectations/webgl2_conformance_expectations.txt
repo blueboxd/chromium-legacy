@@ -61,6 +61,21 @@ crbug.com/891861 [ android no-passthrough ] WebglExtension_WEBGL_multi_draw_inst
 # Conformance expectations
 # ========================
 
+crbug.com/1081973 conformance/buffers/buffer-data-and-buffer-sub-data.html [ Failure ]
+crbug.com/1082455 [ win ] conformance2/renderbuffers/multisampled-depth-renderbuffer-initialization.html [ Failure ]
+crbug.com/1082455 [ linux ] conformance2/renderbuffers/multisampled-depth-renderbuffer-initialization.html [ Failure ]
+crbug.com/1082455 [ android ] conformance2/renderbuffers/multisampled-depth-renderbuffer-initialization.html [ Failure ]
+crbug.com/1082455 [ mac no-passthrough ] conformance2/renderbuffers/multisampled-depth-renderbuffer-initialization.html [ Failure ]
+crbug.com/1082525 [ linux intel ] conformance/textures/misc/origin-clean-conformance-offscreencanvas.html [ Failure ]
+crbug.com/1082525 [ mac intel ] conformance/textures/misc/origin-clean-conformance.html [ Failure ]
+crbug.com/1082525 [ win ] conformance/textures/misc/origin-clean-conformance.html [ Failure ]
+crbug.com/1082525 [ win ] conformance/more/functions/readPixelsBadArgs.html [ Failure ]
+crbug.com/1082533 [ mac intel ] conformance/textures/misc/texture-copying-and-deletion.html [ Failure ]
+crbug.com/1082533 [ win vulkan passthrough ] conformance/textures/misc/texture-copying-and-deletion.html [ Failure ]
+crbug.com/1018028 [ win vulkan ] conformance/rendering/bind-framebuffer-flush-bug.html [ Failure ]
+crbug.com/1082559 conformance/more/functions/texImage2DHTML.html [ RetryOnFailure ]
+crbug.com/1082559 conformance/more/functions/texSubImage2DHTML.html [ RetryOnFailure ]
+
 crbug.com/953120 conformance/programs/program-handling.html [ Failure ]
 
 crbug.com/949249 [ win passthrough opengl nvidia ] conformance2/extensions/ovr_multiview2.html [ Failure ]
@@ -104,6 +119,10 @@ crbug.com/792210 [ nvidia ] conformance/glsl/bugs/in-parameter-passed-as-inout-a
 ####################
 # Win failures     #
 ####################
+
+crbug.com/1081973 [ win ] conformance2/textures/misc/compressed-tex-image.html [ Failure ]
+crbug.com/angleproject/4417 [ win ] conformance2/rendering/framebuffer-render-to-layer.html [ Failure ]
+crbug.com/angleproject/4417 [ win ] conformance2/rendering/framebuffer-render-to-layer-angle-issue.html [ Failure ]
 
 # Intel flaky issues
 crbug.com/912579 [ opengl win passthrough intel ] conformance2/rendering/out-of-bounds-index-buffers-after-copying.html [ RetryOnFailure ]
@@ -225,7 +244,6 @@ crbug.com/828984 [ d3d11 win amd ] conformance/glsl/functions/glsl-function-mod-
 crbug.com/828984 [ d3d11 win amd ] conformance/renderbuffers/depth-renderbuffer-initialization.html [ RetryOnFailure ]
 crbug.com/828984 [ d3d11 win amd ] conformance/renderbuffers/renderbuffer-initialization.html [ RetryOnFailure ]
 crbug.com/828984 [ d3d11 win amd ] conformance2/glsl3/vector-dynamic-indexing.html [ RetryOnFailure ]
-crbug.com/828984 [ d3d11 win amd ] conformance2/renderbuffers/multisampled-depth-renderbuffer-initialization.html [ RetryOnFailure ]
 crbug.com/828984 [ d3d11 win amd ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb9_e5-rgb-half_float.html [ RetryOnFailure ]
 crbug.com/828984 [ d3d11 win amd ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb9_e5-rgb-float.html [ RetryOnFailure ]
 crbug.com/828984 [ d3d11 win amd ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb32f-rgb-float.html [ RetryOnFailure ]
@@ -275,6 +293,9 @@ crbug.com/965648 [ opengl linux passthrough nvidia ] deqp/functional/gles3/shade
 ####################
 # Mac failures     #
 ####################
+
+crbug.com/angleproject/4242 [ mac ] conformance2/glsl3/matrix-row-major-dynamic-indexing.html [ Failure ]
+crbug.com/angleproject/4417 [ mac intel no-passthrough ] conformance2/rendering/framebuffer-render-to-layer.html [ Failure ]
 
 # Flakes heavily on many OpenGL configurations
 crbug.com/832238 [ mac no-angle ] conformance2/transform_feedback/too-small-buffers.html [ Failure ]
@@ -536,9 +557,9 @@ crbug.com/665197 [ mac intel-0xa2e ] conformance2/textures/image_bitmap_from_can
 crbug.com/658930 [ mac intel ] conformance2/textures/misc/integer-cubemap-texture-sampling.html [ Failure ]
 crbug.com/782317 [ mac intel ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
 crbug.com/1039465 [ mac intel ] conformance/textures/canvas/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ RetryOnFailure ]
+crbug.com/1018028 [ mac intel ] conformance/rendering/bind-framebuffer-flush-bug.html [ Failure ]
 
 # Mac Intel No-Passthrough
-crbug.com/731877 [ mac intel-0xa2e no-passthrough ] conformance2/renderbuffers/multisampled-depth-renderbuffer-initialization.html [ Failure ]
 crbug.com/1042011 [ mac intel-0xa2e no-passthrough ] conformance2/textures/canvas_sub_rectangle/tex-3d-r11f_g11f_b10f-rgb-half_float.html [ RetryOnFailure ]
 
 
@@ -603,6 +624,11 @@ crbug.com/1078988 [ catalina no-passthrough intel ] deqp/functional/gles3/frameb
 ####################
 # Linux failures   #
 ####################
+
+crbug.com/1081973 [ linux ] conformance2/textures/misc/compressed-tex-image.html [ Failure ]
+crbug.com/1060012 [ linux ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
+crbug.com/angleproject/4417 [ linux ] conformance2/rendering/framebuffer-render-to-layer.html [ Failure ]
+crbug.com/angleproject/4242 [ linux intel ] conformance2/glsl3/matrix-row-major-dynamic-indexing.html [ Failure ]
 
 # Intel driver issues
 crbug.com/950552 [ linux intel mesa_lt_19.1.2 ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]
@@ -716,6 +742,9 @@ crbug.com/948894 [ android ] conformance/textures/video/* [ RetryOnFailure ]
 crbug.com/948894 [ android ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
 crbug.com/948894 [ android ] conformance2/textures/video/* [ RetryOnFailure ]
 crbug.com/948894 [ android ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
+
+crbug.com/1081973 [ android ] conformance2/textures/misc/compressed-tex-image.html [ Failure ]
+crbug.com/angleproject/4417 [ android ] conformance2/rendering/framebuffer-render-to-layer.html [ Failure ]
 
 # Video uploads to some texture formats new in WebGL 2.0 are
 # failing.

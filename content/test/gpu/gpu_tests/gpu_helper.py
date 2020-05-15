@@ -171,6 +171,17 @@ def GetVulkan(extra_browser_args):
   return 'no-use-vulkan'
 
 
+# Used to parse additional options sent to the browser instance via
+# '--extra-browser-args', looking for '--enable-features=SkiaDawn' which
+# may be merged with additional feature flags.
+def GetSkiaDawn(extra_browser_args):
+  if extra_browser_args:
+    for o in extra_browser_args:
+      if o.startswith('--enable-features') and "SkiaDawn" in o:
+        return 'use-skia-dawn'
+  return 'no-use-skia-dawn'
+
+
 # used by unittests to create a mock arguments object
 def GetMockArgs(is_asan=False, webgl_version='1.0.0'):
   args = mock.MagicMock()

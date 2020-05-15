@@ -85,6 +85,15 @@ crbug.com/867718 [ win d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Failure 
 # ========================
 # Fails on all platforms
 
+crbug.com/1081973 conformance/buffers/buffer-data-and-buffer-sub-data.html [ Failure ]
+crbug.com/1082533 [ mac intel ] conformance/textures/misc/texture-copying-and-deletion.html [ Failure ]
+crbug.com/1082533 [ win vulkan passthrough ] conformance/textures/misc/texture-copying-and-deletion.html [ Failure ]
+crbug.com/1082525 [ win ] conformance/more/functions/readPixelsBadArgs.html [ Failure ]
+crbug.com/1082559 conformance/more/functions/texImage2DHTML.html [ RetryOnFailure ]
+crbug.com/1082559 conformance/more/functions/texSubImage2DHTML.html [ RetryOnFailure ]
+crbug.com/1018028 [ win vulkan ] conformance/rendering/bind-framebuffer-flush-bug.html [ Failure ]
+crbug.com/1082565 [ win intel passthrough ] conformance/canvas/webgl-to-2d-canvas.html [ Failure ]
+
 # Need to implement new error semantics
 # https://github.com/KhronosGroup/WebGL/pull/2607
 crbug.com/849572 [ passthrough ] conformance/extensions/angle-instanced-arrays-out-of-bounds.html [ Failure ]
@@ -135,6 +144,8 @@ crbug.com/1063472 [ intel vulkan passthrough ] conformance/extensions/webgl-comp
 ####################
 # Win failures     #
 ####################
+
+crbug.com/1081973 [ win ] conformance/textures/misc/compressed-tex-image.html [ Failure ]
 
 # Intel flaky issues
 crbug.com/825338 [ win intel d3d11 ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
@@ -270,6 +281,9 @@ crbug.com/angleproject/2915 [ win nvidia vulkan passthrough ] conformance/textur
 crbug.com/angleproject/2930 [ win nvidia vulkan passthrough ] conformance/textures/misc/texture-size-cube-maps.html [ Failure ]
 crbug.com/angleproject/3481 [ win nvidia vulkan passthrough ] conformance/textures/misc/texture-sub-image-cube-maps.html [ Failure ]
 crbug.com/angleproject/2926 [ win nvidia vulkan passthrough ] deqp/data/gles2/shaders/conversions.html [ Failure ]
+crbug.com/angleproject/4569 [ win nvidia vulkan passthrough ] conformance/textures/misc/default-texture.html [ Failure ]
+crbug.com/1082826 [ win nvidia vulkan passthrough ] conformance/buffers/buffer-data-dynamic-delay.html [ Failure ]
+
 # Flaky since crbug.com/1017162
 crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/extensions/angle-instanced-arrays.html [ Failure ]
 crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/* [ Failure ]
@@ -310,6 +324,7 @@ crbug.com/929009 [ mac amd ] conformance/glsl/misc/shader-with-non-reserved-word
 # Mac Intel
 crbug.com/886970 [ mac intel-0xa2e ] conformance/rendering/canvas-alpha-bug.html [ Failure ]
 crbug.com/782317 [ mac intel ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
+crbug.com/1018028 [ mac intel ] conformance/rendering/bind-framebuffer-flush-bug.html [ Failure ]
 
 # Mac Retina NVidia failures
 crbug.com/635081 [ mac nvidia-0xfe9 ] conformance/attribs/gl-disabled-vertex-attrib.html [ Failure ]
@@ -349,6 +364,8 @@ crbug.com/1059760 [ mac asan ] conformance/textures/video/* [ RetryOnFailure ]
 ####################
 # Linux failures   #
 ####################
+
+crbug.com/1081973 [ linux ] conformance/textures/misc/compressed-tex-image.html [ Failure ]
 
 # The following two tests only fail on Linux/Intel with Mesa 18.0.5,
 # not on Mesa 17.1.4 with the same Intel HD 630 GPU.
@@ -394,6 +411,8 @@ crbug.com/1060632 [ linux amd opengl passthrough ] conformance/more/functions/bi
 ####################
 # Android failures #
 ####################
+
+crbug.com/1081973 [ android ] conformance/textures/misc/compressed-tex-image.html [ Failure ]
 
 crbug.com/903903 [ android qualcomm ] conformance/glsl/bugs/sampler-array-struct-function-arg.html [ Failure ]
 crbug.com/478572 [ android qualcomm ] conformance/glsl/bugs/sequence-operator-evaluation-order.html [ Failure ]
@@ -487,6 +506,8 @@ crbug.com/934545 [ android android-chromium qualcomm-adreno-(tm)-418 ] conforman
 crbug.com/610951 [ android qualcomm-adreno-(tm)-418 ] conformance/uniforms/uniform-samplers-test.html [ Skip ]
 crbug.com/914631 [ android qualcomm-adreno-(tm)-418 passthrough ] conformance/limits/gl-max-texture-dimensions.html [ RetryOnFailure ]
 crbug.com/951628 [ android qualcomm-adreno-(tm)-418 no-passthrough ] conformance/rendering/blending.html [ Failure ]
+crbug.com/1082448 [ android qualcomm-adreno-(tm)-418 ] conformance/misc/uninitialized-test.html [ Failure ]
+crbug.com/1056830 [ android qualcomm-adreno-(tm)-418 ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
 
 # Nexus 6 (Adreno 420) and 6P (Adreno 430)
 crbug.com/499555 [ android qualcomm-adreno-(tm)-420 ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
@@ -569,6 +590,8 @@ crbug.com/957807 [ chromeos ] deqp/data/gles2/shaders/swizzles.html [ Skip ]
 # There is a crash, likely in this test, causing the root partition to become
 # read-only.
 crbug.com/1043953 [ chromeos ] conformance/textures/misc/texture-size-limit.html [ RetryOnFailure ]
+
+crbug.com/1081973 [ chromeos ] conformance/textures/misc/compressed-tex-image.html [ Failure ]
 
 # ChromeOS: AMD
 crbug.com/995652 [ chromeos amd ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ Skip ]

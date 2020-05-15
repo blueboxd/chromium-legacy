@@ -455,6 +455,8 @@ class GpuIntegrationTest(
       tags.append(use_gl)
       use_vulkan = gpu_helper.GetVulkan(browser.startup_args)
       tags.append(use_vulkan)
+      use_skia_dawn = gpu_helper.GetSkiaDawn(browser.startup_args)
+      tags.append(use_skia_dawn)
     return tags
 
   @classmethod

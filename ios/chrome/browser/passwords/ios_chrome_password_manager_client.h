@@ -104,7 +104,7 @@ class IOSChromePasswordManagerClient
       autofill::mojom::FocusedFieldType focused_field_type) override;
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-      const GURL& origin,
+      const url::Origin& origin,
       const CredentialsCallback& callback) override;
   void AutomaticPasswordSave(
       std::unique_ptr<password_manager::PasswordFormManagerForUI>
@@ -120,7 +120,7 @@ class IOSChromePasswordManagerClient
   password_manager::PasswordStore* GetAccountPasswordStore() const override;
   void NotifyUserAutoSignin(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-      const GURL& origin) override;
+      const url::Origin& origin) override;
   void NotifyUserCouldBeAutoSignedIn(
       std::unique_ptr<autofill::PasswordForm> form) override;
   void NotifySuccessfulLoginWithExistingPassword(
@@ -133,7 +133,7 @@ class IOSChromePasswordManagerClient
       const base::string16& username) override;
   bool IsSavingAndFillingEnabled(const GURL& url) const override;
   bool IsFillingEnabled(const GURL& url) const override;
-  const GURL& GetLastCommittedEntryURL() const override;
+  url::Origin GetLastCommittedOrigin() const override;
   std::string GetPageLanguage() const override;
   const password_manager::CredentialsFilter* GetStoreResultFilter()
       const override;

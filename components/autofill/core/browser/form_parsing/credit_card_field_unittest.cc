@@ -9,9 +9,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -150,6 +152,72 @@ TEST_F(CreditCardFieldTest, ParseMiniumCreditCard) {
               field_candidates_map_.end());
   EXPECT_EQ(CREDIT_CARD_EXP_4_DIGIT_YEAR,
             field_candidates_map_[ASCIIToUTF16("year3")].BestHeuristicType());
+}
+
+TEST_F(CreditCardFieldTest, ParseMinimumCreditCardWithExpiryDateOptions) {
+  FormFieldData cc_number_field;
+  FormFieldData month_field;
+  FormFieldData year_field;
+
+  cc_number_field.form_control_type = "text";
+  cc_number_field.label = ASCIIToUTF16("Card Number");
+  cc_number_field.name = ASCIIToUTF16("card_number");
+  list_.push_back(
+      std::make_unique<AutofillField>(cc_number_field, ASCIIToUTF16("number")));
+
+  // For month field, set the label and name to something which won't match
+  // any regex, so we can test matching of the options themselves.
+  month_field.form_control_type = "select-one";
+  month_field.label = ASCIIToUTF16("Random label");
+  month_field.name = ASCIIToUTF16("Random name");
+  const std::vector<std::string> kMonths{"MM", "01", "02", "03", "04",
+                                         "05", "06", "07", "08", "09",
+                                         "10", "11", "12"};
+  for (auto month : kMonths) {
+    month_field.option_contents.push_back(base::UTF8ToUTF16(month));
+    month_field.option_values.push_back(base::UTF8ToUTF16(month));
+  }
+  list_.push_back(
+      std::make_unique<AutofillField>(month_field, ASCIIToUTF16("month")));
+
+  // For year, keep the label and name to something which doesn't match regex
+  // so we can test matching of the options themselves.
+  year_field.form_control_type = "select-one";
+  year_field.label = ASCIIToUTF16("Random label");
+  year_field.name = ASCIIToUTF16("Random name");
+  year_field.max_length = 2;
+  year_field.option_contents.push_back(base::ASCIIToUTF16("YY"));
+  year_field.option_values.push_back(base::ASCIIToUTF16("YY"));
+
+  const base::Time time_now = AutofillClock::Now();
+  base::Time::Exploded time_exploded;
+  time_now.UTCExplode(&time_exploded);
+  const int kYearsToAdd = 10;
+
+  for (auto year = time_exploded.year; year < time_exploded.year + kYearsToAdd;
+       year++) {
+    year_field.option_contents.push_back(
+        base::NumberToString16(year).substr(2));
+    year_field.option_values.push_back(base::NumberToString16(year).substr(2));
+  }
+  list_.push_back(
+      std::make_unique<AutofillField>(year_field, ASCIIToUTF16("year")));
+
+  Parse();
+  ASSERT_NE(nullptr, field_.get());
+  AddClassifications();
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("number")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("month")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_EXP_MONTH,
+            field_candidates_map_[ASCIIToUTF16("month")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("year")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_EXP_2_DIGIT_YEAR,
+            field_candidates_map_[ASCIIToUTF16("year")].BestHeuristicType());
 }
 
 TEST_F(CreditCardFieldTest, ParseFullCreditCard) {

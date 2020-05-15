@@ -168,7 +168,19 @@ void InputMethodPersistence::InputMethodChanged(InputMethodManager* manager,
 
 void InputMethodPersistence::OnSessionStateChange(
     InputMethodManager::UISessionState new_ui_session) {
+  InputMethodManager::UISessionState previous_ui_session = ui_session_;
   ui_session_ = new_ui_session;
+
+  // Persist input method when transitioning from Login screen into the session.
+  if (previous_ui_session == InputMethodManager::STATE_LOGIN_SCREEN &&
+      ui_session_ == InputMethodManager::STATE_BROWSER_SCREEN) {
+    const std::string current_input_method =
+        input_method_manager_->GetActiveIMEState()
+            ->GetCurrentInputMethod()
+            .id();
+    SetUserLastInputMethod(current_input_method, input_method_manager_,
+                           ProfileManager::GetActiveUserProfile());
+  }
 }
 
 void SetUserLastInputMethodPreferenceForTesting(

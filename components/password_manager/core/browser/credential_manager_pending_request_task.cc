@@ -105,7 +105,7 @@ CredentialManagerPendingRequestTask::~CredentialManagerPendingRequestTask() =
 void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   // localhost is a secure origin but not https.
-  if (results.empty() && origin_.SchemeIs(url::kHttpsScheme)) {
+  if (results.empty() && origin_.scheme() == url::kHttpsScheme) {
     // Try to migrate the HTTP passwords and process them later.
     http_migrator_ = std::make_unique<HttpPasswordStoreMigrator>(
         origin_, delegate_->client(), this);
@@ -150,7 +150,7 @@ void CredentialManagerPendingRequestTask::ProcessForms(
     // GURL definition: scheme, host, and port.
     // So we can't compare them directly.
     if (form->is_affiliation_based_match ||
-        form->origin.GetOrigin() == origin_.GetOrigin()) {
+        url::Origin::Create(form->origin) == origin_) {
       local_results.push_back(std::move(form));
     } else if (form->is_public_suffix_match) {
       psl_results.push_back(std::move(form));

@@ -85,7 +85,7 @@ SyncState IOSChromePasswordManagerClient::GetPasswordSyncState() const {
 
 bool IOSChromePasswordManagerClient::PromptUserToChooseCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-    const GURL& origin,
+    const url::Origin& origin,
     const CredentialsCallback& callback) {
   NOTIMPLEMENTED();
   return false;
@@ -184,7 +184,7 @@ PasswordStore* IOSChromePasswordManagerClient::GetAccountPasswordStore() const {
 
 void IOSChromePasswordManagerClient::NotifyUserAutoSignin(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-    const GURL& origin) {
+    const url::Origin& origin) {
   DCHECK(!local_forms.empty());
   helper_.NotifyUserAutoSignin();
   [delegate_ showAutosigninNotification:std::move(local_forms[0])];
@@ -225,8 +225,8 @@ bool IOSChromePasswordManagerClient::IsFillingEnabled(const GURL& url) const {
          GURL(password_manager::kPasswordManagerAccountDashboardURL);
 }
 
-const GURL& IOSChromePasswordManagerClient::GetLastCommittedEntryURL() const {
-  return delegate_.lastCommittedURL;
+url::Origin IOSChromePasswordManagerClient::GetLastCommittedOrigin() const {
+  return url::Origin::Create(delegate_.lastCommittedURL);
 }
 
 std::string IOSChromePasswordManagerClient::GetPageLanguage() const {

@@ -38,8 +38,10 @@ class CreditCardField : public FormField {
 
   // Returns true if |scanner| points to a field that looks like a year
   // <select> for a credit card. i.e. it contains the current year and
-  // the next few years.
-  static bool LikelyCardYearSelectField(AutofillScanner* scanner);
+  // the next few years. |log_manager| is used to log any parsing details
+  // to chrome://autofill-internals
+  static bool LikelyCardYearSelectField(AutofillScanner* scanner,
+                                        LogManager* log_manager);
 
   // Returns true if |scanner| points to a <select> field that contains credit
   // card type options.
@@ -54,7 +56,7 @@ class CreditCardField : public FormField {
 
   // Parses the expiration month/year/date fields. Returns true if it finds
   // something new.
-  bool ParseExpirationDate(AutofillScanner* scanner);
+  bool ParseExpirationDate(AutofillScanner* scanner, LogManager* log_manager);
 
   // For the combined expiration field we return |exp_year_type_|; otherwise if
   // |expiration_year_| is having year with |max_length| of 2-digits we return

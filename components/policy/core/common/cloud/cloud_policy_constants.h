@@ -133,6 +133,8 @@ enum DeviceManagementStatus {
   DM_STATUS_SERVICE_ARC_DISABLED = 904,
   // Service error: Non-dasher account with packaged license can't enroll.
   DM_STATUS_SERVICE_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE = 905,
+  // Service error: Not eligible enterprise account can't enroll.
+  DM_STATUS_SERVICE_ENTERPRISE_ACCOUNT_IS_NOT_ELIGIBLE_TO_ENROLL = 906,
 };
 
 // List of modes that the device can be locked into.

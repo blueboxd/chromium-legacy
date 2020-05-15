@@ -258,7 +258,7 @@ void FormFetcherImpl::OnGetPasswordStoreResults(
   if (should_migrate_http_passwords_ && results.empty() &&
       form_digest_.origin.SchemeIs(url::kHttpsScheme)) {
     http_migrator_ = std::make_unique<HttpPasswordStoreMigrator>(
-        form_digest_.origin, client_, this);
+        url::Origin::Create(form_digest_.origin), client_, this);
     return;
   }
 

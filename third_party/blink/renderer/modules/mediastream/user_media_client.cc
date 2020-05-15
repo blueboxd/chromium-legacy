@@ -93,7 +93,8 @@ UserMediaClient::UserMediaClient(
                     return client->GetMediaDevicesDispatcher();
                   },
                   WrapWeakPersistent(this)),
-              std::move(task_runner))) {
+              std::move(task_runner))),
+      media_devices_dispatcher_(frame->DomWindow()) {
   if (frame_) {
     // WrapWeakPersistent is safe because the |frame_| owns UserMediaClient.
     frame_->SetIsCapturingMediaCallback(WTF::BindRepeating(
@@ -293,20 +294,24 @@ void UserMediaClient::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(user_media_processor_);
   visitor->Trace(apply_constraints_processor_);
+  visitor->Trace(media_devices_dispatcher_);
   visitor->Trace(pending_request_infos_);
 }
 
 void UserMediaClient::SetMediaDevicesDispatcherForTesting(
     mojo::PendingRemote<blink::mojom::blink::MediaDevicesDispatcherHost>
         media_devices_dispatcher) {
-  media_devices_dispatcher_.Bind(std::move(media_devices_dispatcher));
+  media_devices_dispatcher_.Bind(
+      std::move(media_devices_dispatcher),
+      frame_->GetTaskRunner(blink::TaskType::kInternalMedia));
 }
 
 blink::mojom::blink::MediaDevicesDispatcherHost*
 UserMediaClient::GetMediaDevicesDispatcher() {
-  if (!media_devices_dispatcher_) {
+  if (!media_devices_dispatcher_.is_bound()) {
     frame_->GetBrowserInterfaceBroker().GetInterface(
-        media_devices_dispatcher_.BindNewPipeAndPassReceiver());
+        media_devices_dispatcher_.BindNewPipeAndPassReceiver(
+            frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
   }
 
   return media_devices_dispatcher_.get();

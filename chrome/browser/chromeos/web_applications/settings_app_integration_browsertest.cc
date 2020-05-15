@@ -9,8 +9,10 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "ui/base/l10n/l10n_util.h"
 
 class SettingsAppIntegrationTest : public SystemWebAppIntegrationTest {};
 
@@ -42,10 +44,11 @@ IN_PROC_BROWSER_TEST_P(SettingsAppIntegrationTest, SettingsAppDisabled) {
 
   content::WebContents* web_contents =
       app_browser->tab_strip_model()->GetActiveWebContents();
-  content::TestNavigationObserver observer(web_contents);
-  observer.WaitForNavigationFinished();
+  content::WaitForLoadStop(web_contents);
   content::WebUI* web_ui = web_contents->GetCommittedWebUI();
-  ASSERT_FALSE(web_ui);
+  ASSERT_TRUE(web_ui);
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_CHROME_URLS_DISABLED_PAGE_HEADER),
+            web_contents->GetTitle());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

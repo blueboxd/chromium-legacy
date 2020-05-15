@@ -16,10 +16,10 @@ import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../settings_shared_css.m.js';
-import './safety_check_extensions_element.js';
-import './safety_check_passwords_element.js';
-import './safety_check_safe_browsing_element.js';
-import './safety_check_updates_element.js';
+import './safety_check_extensions_child.js';
+import './safety_check_passwords_child.js';
+import './safety_check_safe_browsing_child.js';
+import './safety_check_updates_child.js';
 
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
@@ -68,7 +68,7 @@ Polymer({
     parentDisplayString_: String,
   },
 
-  /** @private {SafetyCheckBrowserProxy} */
+  /** @private {?SafetyCheckBrowserProxy} */
   safetyCheckBrowserProxy_: null,
 
   /** @private {?MetricsBrowserProxy} */

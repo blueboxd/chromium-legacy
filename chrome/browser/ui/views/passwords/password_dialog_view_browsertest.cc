@@ -142,7 +142,7 @@ class PasswordDialogViewTest : public DialogBrowserTest {
 
   void SetupChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
-      const GURL& origin);
+      const url::Origin& origin);
 
   content::WebContents* SetupTabWithTestController(Browser* browser);
 
@@ -182,7 +182,7 @@ void PasswordDialogViewTest::SetUpOnMainThread() {
 
 void PasswordDialogViewTest::SetupChooseCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
-    const GURL& origin) {
+    const url::Origin& origin) {
   client()->PromptUserToChooseCredentials(
       std::move(local_credentials), origin,
       base::Bind(&PasswordDialogViewTest::OnChooseCredential,
@@ -240,7 +240,8 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   EXPECT_CALL(*this, OnIconRequestDone());
   embedded_test_server()->StartAcceptingConnections();
 
-  SetupChooseCredentials(std::move(local_credentials), origin);
+  SetupChooseCredentials(std::move(local_credentials),
+                         url::Origin::Create(origin));
   ASSERT_TRUE(controller()->current_account_chooser());
   AccountChooserDialogView* dialog = controller()->current_account_chooser();
   EXPECT_CALL(*this, OnChooseCredential(nullptr));
@@ -269,7 +270,8 @@ IN_PROC_BROWSER_TEST_F(
       url::Origin::Create(GURL("https://google.com/federation"));
   local_credentials.push_back(std::make_unique<autofill::PasswordForm>(form));
 
-  SetupChooseCredentials(std::move(local_credentials), origin);
+  SetupChooseCredentials(std::move(local_credentials),
+                         url::Origin::Create(origin));
   ASSERT_TRUE(controller()->current_account_chooser());
 
   // After picking a credential, we should pass it back to the caller via the
@@ -294,7 +296,8 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   form.username_value = base::ASCIIToUTF16("peter@pan.test");
   local_credentials.push_back(std::make_unique<autofill::PasswordForm>(form));
 
-  SetupChooseCredentials(std::move(local_credentials), origin);
+  SetupChooseCredentials(std::move(local_credentials),
+                         url::Origin::Create(origin));
 
   EXPECT_TRUE(controller()->current_account_chooser());
   AccountChooserDialogView* dialog = controller()->current_account_chooser();
@@ -315,7 +318,8 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   form.username_value = base::ASCIIToUTF16("peter@pan.test");
   local_credentials.push_back(std::make_unique<autofill::PasswordForm>(form));
 
-  SetupChooseCredentials(std::move(local_credentials), origin);
+  SetupChooseCredentials(std::move(local_credentials),
+                         url::Origin::Create(origin));
 
   EXPECT_TRUE(controller()->current_account_chooser());
   views::DialogDelegateView* dialog = controller()->current_account_chooser();
@@ -335,7 +339,8 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   form.username_value = base::ASCIIToUTF16("peter@pan.test");
   local_credentials.push_back(std::make_unique<autofill::PasswordForm>(form));
 
-  SetupChooseCredentials(std::move(local_credentials), origin);
+  SetupChooseCredentials(std::move(local_credentials),
+                         url::Origin::Create(origin));
 
   EXPECT_TRUE(controller()->current_account_chooser());
 
@@ -364,7 +369,8 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   form.username_value = base::ASCIIToUTF16("peter@pan.test");
   local_credentials.push_back(std::make_unique<autofill::PasswordForm>(form));
 
-  SetupChooseCredentials(std::move(local_credentials), origin);
+  SetupChooseCredentials(std::move(local_credentials),
+                         url::Origin::Create(origin));
 
   EXPECT_TRUE(controller()->current_account_chooser());
 
@@ -399,7 +405,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, PopupAccountChooserInIncognito) {
   ChromePasswordManagerClient* client =
       ChromePasswordManagerClient::FromWebContents(tab);
   client->PromptUserToChooseCredentials(
-      std::move(local_credentials), origin,
+      std::move(local_credentials), url::Origin::Create(origin),
       base::Bind(&PasswordDialogViewTest::OnChooseCredential,
                  base::Unretained(this)));
   EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
@@ -519,7 +525,8 @@ void PasswordDialogViewTest::ShowUi(const std::string& name) {
     form.federation_origin =
         url::Origin::Create(GURL("https://google.com/federation"));
     local_credentials.push_back(std::make_unique<autofill::PasswordForm>(form));
-    controller()->OnAutoSignin(std::move(local_credentials), origin);
+    controller()->OnAutoSignin(std::move(local_credentials),
+                               url::Origin::Create(origin));
     EXPECT_EQ(password_manager::ui::AUTO_SIGNIN_STATE,
               controller()->GetState());
   } else if (base::StartsWith(name, "PopupAccountChooserWith",
@@ -546,7 +553,8 @@ void PasswordDialogViewTest::ShowUi(const std::string& name) {
       local_credentials.push_back(
           std::make_unique<autofill::PasswordForm>(form));
     }
-    SetupChooseCredentials(std::move(local_credentials), origin);
+    SetupChooseCredentials(std::move(local_credentials),
+                           url::Origin::Create(origin));
   } else {
     ADD_FAILURE() << "Unknown dialog type";
     return;

@@ -53,18 +53,18 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool initialized_ = false;
 #endif
   // The accessibility role, not taking ARIA into account.
-  ax::mojom::Role native_role_;
+  ax::mojom::blink::Role native_role_;
 
   static base::Optional<String> GetCSSAltText(Node*);
   AXObjectInclusion ShouldIncludeBasedOnSemantics(
       IgnoredReasons* = nullptr) const;
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
   const AXObject* InheritsPresentationalRoleFrom() const override;
-  ax::mojom::Role DetermineTableSectionRole() const;
-  ax::mojom::Role DetermineTableCellRole() const;
-  ax::mojom::Role DetermineTableRowRole() const;
-  ax::mojom::Role DetermineAccessibilityRole() override;
-  virtual ax::mojom::Role NativeRoleIgnoringAria() const;
+  ax::mojom::blink::Role DetermineTableSectionRole() const;
+  ax::mojom::blink::Role DetermineTableCellRole() const;
+  ax::mojom::blink::Role DetermineTableRowRole() const;
+  ax::mojom::blink::Role DetermineAccessibilityRole() override;
+  virtual ax::mojom::blink::Role NativeRoleIgnoringAria() const;
   void AlterSliderOrSpinButtonValue(bool increase);
   AXObject* ActiveDescendant() override;
   String AriaAccessibilityDescription() const;
@@ -139,8 +139,8 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   String GetText() const override;
 
   // Properties of interactive elements.
-  ax::mojom::AriaCurrentState GetAriaCurrentState() const final;
-  ax::mojom::InvalidState GetInvalidState() const final;
+  ax::mojom::blink::AriaCurrentState GetAriaCurrentState() const final;
+  ax::mojom::blink::InvalidState GetInvalidState() const final;
   // Only used when invalidState() returns InvalidStateOther.
   String AriaInvalidValue() const final;
   String ValueDescription() const override;
@@ -155,27 +155,27 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
                              bool recursive) const override;
 
   // ARIA attributes.
-  ax::mojom::Role AriaRoleAttribute() const final;
+  ax::mojom::blink::Role AriaRoleAttribute() const final;
   bool HasAriaAttribute() const override;
 
   // AX name calculation.
-  String GetName(ax::mojom::NameFrom&,
+  String GetName(ax::mojom::blink::NameFrom&,
                  AXObjectVector* name_objects) const override;
   String TextAlternative(bool recursive,
                          bool in_aria_labelled_by_traversal,
                          AXObjectSet& visited,
-                         ax::mojom::NameFrom&,
+                         ax::mojom::blink::NameFrom&,
                          AXRelatedObjectVector*,
                          NameSources*) const override;
-  String Description(ax::mojom::NameFrom,
-                     ax::mojom::DescriptionFrom&,
+  String Description(ax::mojom::blink::NameFrom,
+                     ax::mojom::blink::DescriptionFrom&,
                      AXObjectVector* description_objects) const override;
-  String Description(ax::mojom::NameFrom,
-                     ax::mojom::DescriptionFrom&,
+  String Description(ax::mojom::blink::NameFrom,
+                     ax::mojom::blink::DescriptionFrom&,
                      DescriptionSources*,
                      AXRelatedObjectVector*) const override;
-  String Placeholder(ax::mojom::NameFrom) const override;
-  String Title(ax::mojom::NameFrom) const override;
+  String Placeholder(ax::mojom::blink::NameFrom) const override;
+  String Title(ax::mojom::blink::NameFrom) const override;
   bool NameFromLabelElement() const override;
 
   // Location
@@ -246,7 +246,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
 
   bool IsNativeCheckboxInMixedState() const;
   String NativeTextAlternative(AXObjectSet& visited,
-                               ax::mojom::NameFrom&,
+                               ax::mojom::blink::NameFrom&,
                                AXRelatedObjectVector*,
                                NameSources*,
                                bool* found_text_alternative) const;

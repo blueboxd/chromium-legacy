@@ -22,6 +22,10 @@ namespace password_manager {
 class PasswordFormManagerForUI;
 }
 
+namespace url {
+class Origin;
+}
+
 // An interface for ChromePasswordManagerClient implemented by
 // ManagePasswordsUIController. Allows to push a new state for the tab.
 class PasswordsClientUIDelegate {
@@ -61,14 +65,14 @@ class PasswordsClientUIDelegate {
   // |callback|.
   virtual bool OnChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
-      const GURL& origin,
+      const url::Origin& origin,
       const base::Callback<void(const autofill::PasswordForm*)>& callback) = 0;
 
   // Called when user is auto signed in to the site. |local_forms[0]| contains
   // the credential returned to the site. |origin| is a URL of the site.
   virtual void OnAutoSignin(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-      const GURL& origin) = 0;
+      const url::Origin& origin) = 0;
 
   // Called when it's the right time to enable autosign-in explicitly.
   virtual void OnPromptEnableAutoSignin() = 0;
@@ -86,7 +90,7 @@ class PasswordsClientUIDelegate {
   // federated credentials to display in the UI.
   virtual void OnPasswordAutofilled(
       const std::vector<const autofill::PasswordForm*>& password_forms,
-      const GURL& origin,
+      const url::Origin& origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches) = 0;
 
   // Called when user credentials were leaked. This triggers the UI to prompt

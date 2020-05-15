@@ -53,9 +53,9 @@ namespace {
 using password_manager::ManagePasswordsReferrer;
 
 // Checks whether two URLs are from the same domain or host.
-bool SameDomainOrHost(const GURL& gurl1, const GURL& gurl2) {
+bool SameDomainOrHost(const GURL& gurl, const url::Origin& origin) {
   return net::registry_controlled_domains::SameDomainOrHost(
-      gurl1, gurl2,
+      gurl, origin,
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 }
 
@@ -103,11 +103,11 @@ std::pair<base::string16, base::string16> GetCredentialLabelsForAccountChooser(
       form.username_value + base::ASCIIToUTF16("\n") + federation);
 }
 
-void GetSavePasswordDialogTitleTextAndLinkRange(const GURL& user_visible_url,
-                                                const GURL& form_origin_url,
-                                                PasswordTitleType dialog_type,
-                                                base::string16* title) {
-  DCHECK(!password_manager::IsValidAndroidFacetURI(form_origin_url.spec()));
+void GetSavePasswordDialogTitleTextAndLinkRange(
+    const GURL& user_visible_url,
+    const url::Origin& form_origin_url,
+    PasswordTitleType dialog_type,
+    base::string16* title) {
   std::vector<size_t> offsets;
   std::vector<base::string16> replacements;
   int title_id = 0;
@@ -132,7 +132,7 @@ void GetSavePasswordDialogTitleTextAndLinkRange(const GURL& user_visible_url,
     title_id = dialog_type == PasswordTitleType::UPDATE_PASSWORD
                    ? IDS_UPDATE_PASSWORD_DIFFERENT_DOMAINS_TITLE
                    : IDS_SAVE_PASSWORD_DIFFERENT_DOMAINS_TITLE;
-    replacements.push_back(url_formatter::FormatUrlForSecurityDisplay(
+    replacements.push_back(url_formatter::FormatOriginForSecurityDisplay(
         form_origin_url, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
   }
 
@@ -140,16 +140,16 @@ void GetSavePasswordDialogTitleTextAndLinkRange(const GURL& user_visible_url,
 }
 
 void GetManagePasswordsDialogTitleText(const GURL& user_visible_url,
-                                       const GURL& password_origin_url,
+                                       const url::Origin& password_origin_url,
                                        bool has_credentials,
                                        base::string16* title) {
-  DCHECK(!password_manager::IsValidAndroidFacetURI(password_origin_url.spec()));
+  DCHECK(!password_origin_url.opaque());
   // Check whether the registry controlled domains for user-visible URL
   // (i.e. the one seen in the omnibox) and the managed password origin URL
   // differ or not.
   if (!SameDomainOrHost(user_visible_url, password_origin_url)) {
     base::string16 formatted_url =
-        url_formatter::FormatUrlForSecurityDisplay(password_origin_url);
+        url_formatter::FormatOriginForSecurityDisplay(password_origin_url);
     *title = l10n_util::GetStringFUTF16(
         has_credentials
             ? IDS_MANAGE_PASSWORDS_DIFFERENT_DOMAIN_TITLE

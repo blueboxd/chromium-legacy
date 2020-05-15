@@ -252,6 +252,7 @@ class PasswordStore : protected PasswordStoreSync,
   // Adds or replaces the statistics for the domain |stats.origin_domain|.
   void AddSiteStats(const InteractionsStats& stats);
 
+  // TODO(crbug/1081389): replace GURL with Origin.
   // Removes the statistics for |origin_domain|.
   void RemoveSiteStats(const GURL& origin_domain);
 

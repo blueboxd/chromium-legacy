@@ -50,6 +50,9 @@ public class SingleTabSwitcherMediatorUnitTest {
     private final int mTabId = 1;
     private final String mTitle = "test";
     private final String mUrlString = "chrome://test.com";
+    private final int mTabId2 = 2;
+    private final String mTitle2 = "test2";
+    private final String mUrlString2 = "chrome://test2.com";
     private SingleTabSwitcherMediator mMediator;
     private PropertyModel mPropertyModel;
 
@@ -61,6 +64,8 @@ public class SingleTabSwitcherMediatorUnitTest {
     private TabModel mIncognitoTabModel;
     @Mock
     private Tab mTab;
+    @Mock
+    private Tab mTab2;
     @Mock
     private TabListFaviconProvider mTabListFaviconProvider;
     @Mock
@@ -89,6 +94,9 @@ public class SingleTabSwitcherMediatorUnitTest {
         doReturn(mUrlString).when(mTab).getUrlString();
         doReturn(mTabId).when(mTab).getId();
         doReturn(mTitle).when(mTab).getTitle();
+        doReturn(mUrlString2).when(mTab2).getUrlString();
+        doReturn(mTabId2).when(mTab2).getId();
+        doReturn(mTitle2).when(mTab2).getTitle();
         doReturn(true).when(mIncognitoTabModel).isIncognito();
 
         mPropertyModel = new PropertyModel(SingleTabViewProperties.ALL_KEYS);
@@ -117,6 +125,7 @@ public class SingleTabSwitcherMediatorUnitTest {
         assertTrue(mMediator.overviewVisible());
         verify(mOverviewModeObserver).startedShowing();
         verify(mOverviewModeObserver).finishedShowing();
+        assertEquals(mPropertyModel.get(TITLE), mTitle);
 
         mPropertyModel.get(CLICK_LISTENER).onClick(null);
         verify(mOnTabSelectingListener).onTabSelecting(anyLong(), eq(mTabId));
@@ -145,6 +154,7 @@ public class SingleTabSwitcherMediatorUnitTest {
         assertTrue(mMediator.overviewVisible());
         verify(mOverviewModeObserver).startedShowing();
         verify(mOverviewModeObserver).finishedShowing();
+        assertEquals(mPropertyModel.get(TITLE), mTitle);
 
         mTabModelObserverCaptor.getValue().didSelectTab(mTab, TabSelectionType.FROM_USER, -1);
         verify(mOnTabSelectingListener).onTabSelecting(anyLong(), eq(mTabId));
@@ -169,6 +179,34 @@ public class SingleTabSwitcherMediatorUnitTest {
     }
 
     @Test
+    public void selectNextTabAfterClosingTheSelectedTab() {
+        assertFalse(mMediator.overviewVisible());
+        mMediator.setOnTabSelectingListener(mOnTabSelectingListener);
+        mMediator.addOverviewModeObserver(mOverviewModeObserver);
+
+        mMediator.showOverview(true);
+        verify(mNormalTabModel).addObserver(mTabModelObserverCaptor.capture());
+        verify(mTabModelSelector).addObserver(mTabModelSelectorObserverCaptor.capture());
+        verify(mTabListFaviconProvider)
+                .getFaviconForUrlAsync(eq(mUrlString), eq(false), mFaviconCallbackCaptor.capture());
+        assertTrue(mMediator.overviewVisible());
+        verify(mOverviewModeObserver).startedShowing();
+        verify(mOverviewModeObserver).finishedShowing();
+        assertEquals(mPropertyModel.get(TITLE), mTitle);
+
+        mTabModelObserverCaptor.getValue().didSelectTab(
+                mTab2, TabSelectionType.FROM_CLOSE, mTabId2);
+        verify(mOnTabSelectingListener, times(0)).onTabSelecting(anyLong(), eq(mTabId2));
+        assertEquals(mPropertyModel.get(TITLE), mTitle2);
+
+        mMediator.hideOverview(true);
+        assertFalse(mMediator.overviewVisible());
+        assertEquals(mPropertyModel.get(TITLE), "");
+        verify(mOverviewModeObserver).startedHiding();
+        verify(mOverviewModeObserver).finishedHiding();
+    }
+
+    @Test
     public void selectTabAfterSwitchingTabModelAndReshown() {
         assertFalse(mMediator.overviewVisible());
         mMediator.setOnTabSelectingListener(mOnTabSelectingListener);
@@ -179,6 +217,7 @@ public class SingleTabSwitcherMediatorUnitTest {
         verify(mTabModelSelector).addObserver(mTabModelSelectorObserverCaptor.capture());
         verify(mTabListFaviconProvider)
                 .getFaviconForUrlAsync(eq(mUrlString), eq(false), mFaviconCallbackCaptor.capture());
+        assertEquals(mPropertyModel.get(TITLE), mTitle);
 
         mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(
                 mIncognitoTabModel, mNormalTabModel);

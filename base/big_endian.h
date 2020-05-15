@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <type_traits>
 
 #include "base/base_export.h"
 #include "base/strings/string_piece.h"
@@ -20,6 +21,7 @@ namespace base {
 // This would cause SIGBUS on ARMv5 or earlier and ARMv6-M.
 template<typename T>
 inline void ReadBigEndian(const char buf[], T* out) {
+  static_assert(std::is_integral<T>::value, "T has to be an integral type.");
   *out = buf[0];
   for (size_t i = 1; i < sizeof(T); ++i) {
     *out <<= 8;
@@ -32,6 +34,7 @@ inline void ReadBigEndian(const char buf[], T* out) {
 // Note: this loop is unrolled with -O1 and above.
 template<typename T>
 inline void WriteBigEndian(char buf[], T val) {
+  static_assert(std::is_integral<T>::value, "T has to be an integral type.");
   for (size_t i = 0; i < sizeof(T); ++i) {
     buf[sizeof(T)-i-1] = static_cast<char>(val & 0xFF);
     val >>= 8;

@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_persistence.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/lock_screen_utils.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
@@ -129,6 +131,8 @@ IN_PROC_BROWSER_TEST_F(LoginUIUserAddingKeyboardTest, CheckPODSwitches) {
       lock_screen_utils::GetUserLastInputMethod(test_users_[2].GetUserEmail()),
       std::string());
   LoginUser(test_users_[2]);
+  const std::string logged_user_input_method =
+      lock_screen_utils::GetUserLastInputMethod(test_users_[2].GetUserEmail());
   UserAddingScreen::Get()->Start();
   OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
 
@@ -161,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(LoginUIUserAddingKeyboardTest, CheckPODSwitches) {
   // Check that logged in user settings did not change.
   EXPECT_EQ(
       lock_screen_utils::GetUserLastInputMethod(test_users_[2].GetUserEmail()),
-      std::string());
+      logged_user_input_method);
 }
 
 IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, PRE_CheckPODScreenDefault) {
@@ -423,6 +427,53 @@ IN_PROC_BROWSER_TEST_F(LoginUIDevicePolicyUserAdding, PolicyNotHonored) {
   EXPECT_EQ(user_adding_ime_state->GetAllowedInputMethods().size(), 0u);
   EXPECT_FALSE(base::Contains(user_adding_ime_state->GetActiveInputMethodIds(),
                               allowed_input_method.front()));
+}
+
+class FirstLoginKeyboardTest : public LoginManagerTest {
+ public:
+  FirstLoginKeyboardTest() = default;
+  ~FirstLoginKeyboardTest() override = default;
+
+ protected:
+  AccountId test_user_{
+      AccountId::FromUserEmailGaiaId(kTestUser1, kTestUser1GaiaId)};
+  DeviceStateMixin device_state_{
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED};
+};
+
+// Tests that user input method correctly propagated after session start or
+// session unlock.
+IN_PROC_BROWSER_TEST_F(FirstLoginKeyboardTest,
+                       UsersLastInputMethodPersistsOnLoginOrUnlock) {
+  EXPECT_TRUE(
+      lock_screen_utils::GetUserLastInputMethod(test_user_.GetUserEmail())
+          .empty());
+  WizardController::SkipPostLoginScreensForTesting();
+  LoginUser(test_user_);
+
+  // Last input method should be stored.
+  EXPECT_FALSE(
+      lock_screen_utils::GetUserLastInputMethod(test_user_.GetUserEmail())
+          .empty());
+
+  ScreenLockerTester locker_tester;
+  locker_tester.Lock();
+
+  // Clear user input method.
+  PrefService* local_state = g_browser_process->local_state();
+  input_method::SetUserLastInputMethodPreferenceForTesting(
+      test_user_.GetUserEmail(), std::string(), local_state);
+  EXPECT_TRUE(
+      lock_screen_utils::GetUserLastInputMethod(test_user_.GetUserEmail())
+          .empty());
+
+  locker_tester.UnlockWithPassword(test_user_, "password");
+  locker_tester.WaitForUnlock();
+
+  // Last input method should be stored.
+  EXPECT_FALSE(
+      lock_screen_utils::GetUserLastInputMethod(test_user_.GetUserEmail())
+          .empty());
 }
 
 }  // namespace chromeos

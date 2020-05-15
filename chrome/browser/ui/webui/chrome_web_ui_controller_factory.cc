@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/webui/autofill_and_password_manager_internals/autofill_internals_ui.h"
 #include "chrome/browser/ui/webui/autofill_and_password_manager_internals/password_manager_internals_ui.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals_ui.h"
+#include "chrome/browser/ui/webui/chrome_url_disabled_ui.h"
 #include "chrome/browser/ui/webui/chromeos/account_manager_error_ui.h"
 #include "chrome/browser/ui/webui/chromeos/account_manager_welcome_ui.h"
 #include "chrome/browser/ui/webui/chromeos/account_migration_welcome_ui.h"
@@ -408,6 +409,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<AccessibilityUI>;
   if (url.host_piece() == chrome::kChromeUIAutofillInternalsHost)
     return &NewWebUI<AutofillInternalsUI>;
+
+#if defined(OS_CHROMEOS)
+  if (url.host_piece() == chrome::kChromeUIAppDisabledHost)
+    return &NewWebUI<ChromeURLDisabledUI>;
+#endif  // defined(OS_CHROMEOS)
+
   if (url.host_piece() == chrome::kChromeUIBluetoothInternalsHost)
     return &NewWebUI<BluetoothInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIComponentsHost)

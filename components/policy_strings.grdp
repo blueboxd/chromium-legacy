@@ -61,6 +61,9 @@
   <message name="IDS_POLICY_DM_STATUS_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE" desc="Message to show when the user tries to enroll a device with a packaged license using a consumer account.">
     Can't enroll with consumer account (packaged license available).
   </message>
+  <message name="IDS_POLICY_DM_STATUS_ENTERPRISE_ACCOUNT_IS_NOT_ELIGIBLE_TO_ENROLL" desc="Message to show when the user tries to enroll a device with an ineligible enterprise account.">
+    Can't enroll with enterprise account (enterprise account is not eligible).
+  </message>
   <message name="IDS_POLICY_VALIDATION_OK" desc="Message indicating successful policy validation.">
     Validation successful
   </message>
@@ -548,6 +551,6 @@ Additional details:
     Application blocked by your administrator
   </message>
   <message name="IDS_CHROME_URLS_DISABLED_PAGE_MESSAGE" desc="A paragraph informing the user that the application is blocked.">
-    The application has been blocked by your administrator
+    This application has been blocked by your administrator
   </message>
 </grit-part>

@@ -412,6 +412,12 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
               IDS_ENTERPRISE_ENROLLMENT_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE,
               true);
           break;
+        case policy::
+            DM_STATUS_SERVICE_ENTERPRISE_ACCOUNT_IS_NOT_ELIGIBLE_TO_ENROLL:
+          ShowError(
+              IDS_ENTERPRISE_ENROLLMENT_ENTERPRISE_ACCOUNT_IS_NOT_ELIGIBLE_TO_ENROLL,
+              true);
+          break;
         default:
           ShowErrorMessage(
               l10n_util::GetStringFUTF8(

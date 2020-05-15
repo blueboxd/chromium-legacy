@@ -451,6 +451,11 @@ void EnterpriseEnrollmentHelperImpl::ReportEnrollmentStatus(
           UMA(policy::
                   kMetricEnrollmentRegisterConsumerAccountWithPackagedLicense);
           break;
+        case policy::
+            DM_STATUS_SERVICE_ENTERPRISE_ACCOUNT_IS_NOT_ELIGIBLE_TO_ENROLL:
+          UMA(policy::
+                  kMetricEnrollmentRegisterEnterpriseAccountIsNotEligibleToEnroll);
+          break;
       }
       break;
     case policy::EnrollmentStatus::REGISTRATION_BAD_MODE:

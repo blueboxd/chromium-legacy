@@ -58,10 +58,12 @@
 #include "chrome/installer/setup/brand_behaviors.h"
 #include "chrome/installer/setup/buildflags.h"
 #include "chrome/installer/setup/install.h"
+#include "chrome/installer/setup/install_params.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/installer_crash_reporting.h"
 #include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/setup/launch_chrome.h"
+#include "chrome/installer/setup/modify_params.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_install_details.h"
 #include "chrome/installer/setup/setup_singleton.h"
@@ -575,32 +577,10 @@ bool CreateTemporaryAndUnpackDirectories(
   return true;
 }
 
-installer::InstallStatus UninstallProduct(
-    const InstallationState& original_state,
-    const InstallerState& installer_state,
-    const base::FilePath& setup_exe,
-    const base::CommandLine& cmd_line,
-    bool remove_all,
-    bool force_uninstall) {
-  const ProductState* product_state =
-      original_state.GetProductState(installer_state.system_install());
-  if (product_state != NULL) {
-    VLOG(1) << "version on the system: "
-            << product_state->version().GetString();
-  } else if (!force_uninstall) {
-    LOG(ERROR) << "Chrome not found for uninstall.";
-    return installer::CHROME_NOT_INSTALLED;
-  }
-
-  return installer::UninstallProduct(original_state, installer_state, setup_exe,
-                                     remove_all, force_uninstall, cmd_line);
-}
-
-installer::InstallStatus UninstallProducts(
-    const InstallationState& original_state,
-    const InstallerState& installer_state,
-    const base::FilePath& setup_exe,
-    const base::CommandLine& cmd_line) {
+installer::InstallStatus UninstallProducts(InstallationState& original_state,
+                                           InstallerState& installer_state,
+                                           const base::FilePath& setup_exe,
+                                           const base::CommandLine& cmd_line) {
   // System-level Chrome will be launched via this command if its program gets
   // set below.
   base::CommandLine system_level_cmd(base::CommandLine::NO_PROGRAM);
@@ -617,8 +597,16 @@ installer::InstallStatus UninstallProducts(
   const bool remove_all = !cmd_line.HasSwitch(
       installer::switches::kDoNotRemoveSharedItems);
 
-  install_status = UninstallProduct(original_state, installer_state, setup_exe,
-                                    cmd_line, remove_all, force);
+  std::unique_ptr<base::Version> current_version(
+      installer_state.GetCurrentVersion(original_state));
+  const installer::ModifyParams modify_params = {
+      installer_state,
+      original_state,
+      setup_exe,
+      current_version.get(),
+  };
+
+  install_status = UninstallProduct(modify_params, remove_all, force, cmd_line);
 
   installer::CleanUpInstallationDirectoryAfterUninstall(
       original_state, installer_state, setup_exe, &install_status);
@@ -649,13 +637,12 @@ installer::InstallStatus UninstallProducts(
   return install_status;
 }
 
-installer::InstallStatus InstallProducts(
-    const InstallationState& original_state,
-    const base::FilePath& setup_exe,
-    const base::CommandLine& cmd_line,
-    const MasterPreferences& prefs,
-    InstallerState* installer_state,
-    base::FilePath* installer_directory) {
+installer::InstallStatus InstallProducts(InstallationState& original_state,
+                                         const base::FilePath& setup_exe,
+                                         const base::CommandLine& cmd_line,
+                                         const MasterPreferences& prefs,
+                                         InstallerState* installer_state,
+                                         base::FilePath* installer_directory) {
   DCHECK(installer_state);
   installer::InstallStatus install_status = installer::UNKNOWN_STATUS;
   installer::ArchiveType archive_type = installer::UNKNOWN_ARCHIVE_TYPE;
@@ -735,10 +722,11 @@ bool CreateEulaSentinel() {
 }
 
 installer::InstallStatus RegisterDevChrome(
-    const InstallationState& original_state,
-    const InstallerState& installer_state,
-    const base::FilePath& setup_exe,
+    const installer::ModifyParams& modify_params,
     const base::CommandLine& cmd_line) {
+  const InstallationState& original_state = modify_params.installation_state;
+  const base::FilePath& setup_exe = modify_params.setup_path;
+
   // Only proceed with registering a dev chrome if no real Chrome installation
   // of the same install mode is present on this system.
   const ProductState* existing_chrome = original_state.GetProductState(false);
@@ -794,11 +782,14 @@ installer::InstallStatus RegisterDevChrome(
 // various tasks other than installation (renaming chrome.exe, showing eula
 // among others). This function returns true if any such command line option
 // has been found and processed (so setup.exe should exit at that point).
-bool HandleNonInstallCmdLineOptions(const base::FilePath& setup_exe,
+bool HandleNonInstallCmdLineOptions(installer::ModifyParams& modify_params,
                                     const base::CommandLine& cmd_line,
-                                    InstallationState* original_state,
-                                    InstallerState* installer_state,
                                     int* exit_code) {
+  installer::InstallerState* installer_state = &(modify_params.installer_state);
+  installer::InstallationState* original_state =
+      &(modify_params.installation_state);
+  const base::FilePath& setup_exe = modify_params.setup_path;
+
   // This option is independent of all others so doesn't belong in the if/else
   // block below.
   if (cmd_line.HasSwitch(installer::switches::kDelay)) {
@@ -887,8 +878,8 @@ bool HandleNonInstallCmdLineOptions(const base::FilePath& setup_exe,
     }
     *exit_code = InstallUtil::GetInstallReturnCode(status);
   } else if (cmd_line.HasSwitch(installer::switches::kRegisterDevChrome)) {
-    installer::InstallStatus status = RegisterDevChrome(
-        *original_state, *installer_state, setup_exe, cmd_line);
+    installer::InstallStatus status =
+        RegisterDevChrome(modify_params, cmd_line);
     *exit_code = InstallUtil::GetInstallReturnCode(status);
   } else if (cmd_line.HasSwitch(installer::switches::kRegisterChromeBrowser)) {
     installer::InstallStatus status = installer::UNKNOWN_STATUS;
@@ -1044,11 +1035,11 @@ bool HandleNonInstallCmdLineOptions(const base::FilePath& setup_exe,
 
 namespace installer {
 
-InstallStatus InstallProductsHelper(const InstallationState& original_state,
+InstallStatus InstallProductsHelper(InstallationState& original_state,
                                     const base::FilePath& setup_exe,
                                     const base::CommandLine& cmd_line,
                                     const MasterPreferences& prefs,
-                                    const InstallerState& installer_state,
+                                    InstallerState& installer_state,
                                     base::FilePath* installer_directory,
                                     ArchiveType* archive_type) {
   DCHECK(archive_type);
@@ -1180,10 +1171,17 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
     if (proceed_with_installation) {
       base::FilePath prefs_source_path(cmd_line.GetSwitchValueNative(
           switches::kInstallerData));
-      install_status = InstallOrUpdateProduct(
-          original_state, installer_state, setup_exe, uncompressed_archive,
-          temp_path.path(), src_path, prefs_source_path, prefs,
-          *installer_version);
+
+      std::unique_ptr<base::Version> current_version(
+          installer_state.GetCurrentVersion(original_state));
+      InstallParams install_params = {
+          installer_state,       original_state,       setup_exe,
+          current_version.get(), uncompressed_archive, src_path,
+          temp_path.path(),      *installer_version,
+      };
+
+      install_status =
+          InstallOrUpdateProduct(install_params, prefs_source_path, prefs);
 
       int install_msg_base = IDS_INSTALL_FAILED_BASE;
       base::FilePath chrome_exe;
@@ -1413,9 +1411,17 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   base::FilePath setup_exe;
   base::PathService::Get(base::FILE_EXE, &setup_exe);
 
+  std::unique_ptr<base::Version> current_version(
+      installer_state.GetCurrentVersion(original_state));
+  installer::ModifyParams modify_params = {
+      installer_state,
+      original_state,
+      setup_exe,
+      current_version.get(),
+  };
+
   int exit_code = 0;
-  if (HandleNonInstallCmdLineOptions(setup_exe, cmd_line, &original_state,
-                                     &installer_state, &exit_code)) {
+  if (HandleNonInstallCmdLineOptions(modify_params, cmd_line, &exit_code)) {
     return exit_code;
   }
 

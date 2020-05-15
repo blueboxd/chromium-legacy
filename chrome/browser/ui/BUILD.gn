@@ -207,8 +207,6 @@ static_library("ui") {
     "webui/autofill_and_password_manager_internals/internals_ui_handler.h",
     "webui/autofill_and_password_manager_internals/password_manager_internals_ui.cc",
     "webui/autofill_and_password_manager_internals/password_manager_internals_ui.h",
-    "webui/chrome_url_disabled_ui.cc",
-    "webui/chrome_url_disabled_ui.h",
     "webui/chrome_web_ui_controller_factory.cc",
     "webui/chrome_web_ui_controller_factory.h",
     "webui/components/components_handler.cc",
@@ -1731,6 +1729,8 @@ static_library("ui") {
       "views/platform_keys_certificate_selector_chromeos.h",
       "views/profiles/profile_indicator_icon.cc",
       "views/profiles/profile_indicator_icon.h",
+      "webui/chrome_url_disabled_ui.cc",
+      "webui/chrome_url_disabled_ui.h",
 
       # On chromeos, file manager extension handles the file open/save dialog.
       "views/select_file_dialog_extension.cc",

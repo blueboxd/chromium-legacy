@@ -33,7 +33,8 @@ namespace {
 const CGFloat kFadeOutAnimationDuration = 0.16f;
 }  // namespace
 
-@interface UserSigninCoordinator () <UnifiedConsentCoordinatorDelegate,
+@interface UserSigninCoordinator () <UIAdaptivePresentationControllerDelegate,
+                                     UnifiedConsentCoordinatorDelegate,
                                      UserSigninViewControllerDelegate,
                                      UserSigninMediatorDelegate>
 
@@ -101,6 +102,9 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 - (void)start {
   [super start];
   self.viewController = [[UserSigninViewController alloc] init];
+  if (@available(iOS 13, *)) {
+    self.viewController.presentationController.delegate = self;
+  }
   self.viewController.delegate = self;
   self.viewController.useFirstRunSkipButton =
       self.signinIntent == UserSigninIntentFirstRun;
@@ -254,10 +258,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 }
 
 - (void)userSigninViewControllerDidTapOnSkipSignin {
-  [self.mediator cancelSignin];
-  // TODO(crbug.com/971989): Remove this metric after the architecture
-  // migration.
-  [self.logger logUndoSignin];
+  [self cancelSignin];
 }
 
 - (void)userSigninViewControllerDidTapOnSignin {
@@ -308,8 +309,19 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
     }
     case UserSigninIntentSignin:
     case UserSigninIntentUpgrade: {
-      [self.viewController dismissViewControllerAnimated:YES
-                                              completion:completion];
+      if (self.viewController.presentingViewController) {
+        [self.viewController dismissViewControllerAnimated:YES
+                                                completion:completion];
+      } else {
+        // When the user swipes to dismiss the view controller. The sequence is:
+        //  * The user swipe the view controller
+        //  * The view controller is dismissed
+        //  * [self presentationControllerDidDismiss] is called
+        //  * The mediator is canceled
+        // And then this method is called by the mediator. Therefore the view
+        // controller already dismissed, and should not be dismissed again.
+        completion();
+      }
       break;
     }
   }
@@ -323,6 +335,15 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 }
 
 #pragma mark - Private
+
+// Cancels the sign-in flow if it is in progress, or dismiss the sign-in view
+// if the sign-in is not in progress.
+- (void)cancelSignin {
+  [self.mediator cancelSignin];
+  // TODO(crbug.com/971989): Remove this metric after the architecture
+  // migration.
+  [self.logger logUndoSignin];
+}
 
 // Notifies the observers that the user is attempting sign-in.
 - (void)notifyUserSigninAttempted {
@@ -515,6 +536,33 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   [self runCompletionCallbackWithSigninResult:signinResult
                                      identity:identity
                    showAdvancedSettingsSignin:NO];
+}
+
+#pragma mark - UIAdaptivePresentationControllerDelegate
+
+- (void)presentationControllerDidDismiss:
+    (UIPresentationController*)presentationController {
+  // The view should be dismissible only if there is no sign-in in progress.
+  // See |presentationControllerShouldDismiss:|.
+  DCHECK(!self.mediator.isAuthenticationInProgress);
+  [self cancelSignin];
+}
+
+- (BOOL)presentationControllerShouldDismiss:
+    (UIPresentationController*)presentationController {
+  switch (self.signinIntent) {
+    case UserSigninIntentFirstRun: {
+      return NO;
+    }
+    case UserSigninIntentUpgrade:
+    case UserSigninIntentSignin: {
+      // Don't dismiss the view controller while the sign-in is in progress.
+      // To support this, the sign-in flow needs to be canceled after the view
+      // controller is dimissed, and the UI needs to be blocked until the
+      // sign-in flow is fully cancelled.
+      return !self.mediator.isAuthenticationInProgress;
+    }
+  }
 }
 
 @end

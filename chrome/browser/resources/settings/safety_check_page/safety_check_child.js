@@ -40,29 +40,29 @@ Polymer({
   properties: {
     /**
      * Status of the left hand icon.
-     * {!SafetyCheckParentStatus}
+     * @type {!SafetyCheckIconStatus}
      */
     iconStatus: {
       type: Number,
       value: SafetyCheckIconStatus.RUNNING,
     },
 
-    /**Primary label of the element. */
+    // Primary label of the child.
     label: String,
 
-    /** Secondary label of the element. */
+    // Secondary label of the child.
     subLabel: String,
 
-    /** Text of the right hand button. |null| removes it from the DOM. */
+    // Text of the right hand button. |null| removes it from the DOM.
     buttonLabel: String,
 
-    /** Aria label of the right hand button. */
+    // Aria label of the right hand button.
     buttonAriaLabel: String,
 
-    /** Classes of the right hand button. */
+    // Classes of the right hand button.
     buttonClass: String,
 
-    /** Right hand managed icon. |null| removes it from the DOM. */
+    // Right hand managed icon. |null| removes it from the DOM.
     managedIcon: String,
   },
 

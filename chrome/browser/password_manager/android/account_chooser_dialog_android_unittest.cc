@@ -65,7 +65,8 @@ void AccountChooserDialogAndroidTest::SetUp() {
 AccountChooserDialogAndroid* AccountChooserDialogAndroidTest::CreateDialog(
     std::vector<std::unique_ptr<autofill::PasswordForm>> credentials) {
   return new AccountChooserDialogAndroid(
-      web_contents(), std::move(credentials), GURL("https://example.com"),
+      web_contents(), std::move(credentials),
+      url::Origin::Create(GURL("https://example.com")),
       base::Bind(&AccountChooserDialogAndroidTest::OnChooseCredential,
                  base::Unretained(this)));
 }

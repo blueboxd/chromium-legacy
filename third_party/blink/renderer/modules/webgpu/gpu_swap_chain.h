@@ -19,7 +19,7 @@ class GPUDevice;
 class GPUTexture;
 
 class GPUSwapChain : public ScriptWrappable,
-                     public DawnObjectBase,
+                     public DeviceTreeObject,
                      public WebGPUSwapBufferProvider::Client {
   DEFINE_WRAPPERTYPEINFO();
 

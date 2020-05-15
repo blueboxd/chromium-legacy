@@ -9,6 +9,8 @@ source_set("passwords") {
   sources = [
     "credential_manager.h",
     "credential_manager.mm",
+    "ios_chrome_bulk_leak_check_service_factory.cc",
+    "ios_chrome_bulk_leak_check_service_factory.h",
     "ios_chrome_password_manager_client.h",
     "ios_chrome_password_manager_client.mm",
     "ios_chrome_password_manager_driver.h",

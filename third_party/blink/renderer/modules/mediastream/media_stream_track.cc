@@ -406,7 +406,7 @@ void MediaStreamTrack::SetConstraints(const MediaConstraints& constraints) {
 MediaTrackCapabilities* MediaStreamTrack::getCapabilities() const {
   MediaTrackCapabilities* capabilities = MediaTrackCapabilities::Create();
   if (image_capture_)
-    capabilities = image_capture_->GetMediaTrackCapabilities();
+    image_capture_->GetMediaTrackCapabilities(capabilities);
   auto platform_capabilities = component_->Source()->GetCapabilities();
 
   capabilities->setDeviceId(platform_capabilities.device_id);

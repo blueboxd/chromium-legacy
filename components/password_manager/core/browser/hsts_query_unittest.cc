@@ -81,7 +81,7 @@ class HSTSQueryTest : public testing::Test {
 };
 
 TEST_F(HSTSQueryTest, TestPostHSTSQueryForHostAndRequestContext) {
-  const GURL origin("https://example.org");
+  const url::Origin origin = url::Origin::Create(GURL("https://example.org"));
   for (bool is_hsts : {false, true}) {
     SCOPED_TRACE(testing::Message()
                  << std::boolalpha << "is_hsts: " << is_hsts);
@@ -107,7 +107,7 @@ TEST_F(HSTSQueryTest, TestPostHSTSQueryForHostAndRequestContext) {
 }
 
 TEST_F(HSTSQueryTest, NullNetworkContext) {
-  const GURL origin("https://example.org");
+  const url::Origin origin = url::Origin::Create(GURL("https://example.org"));
   bool callback_ran = false;
   PostHSTSQueryForHostAndNetworkContext(
       origin, nullptr,

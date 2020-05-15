@@ -35,6 +35,7 @@ def override_args(fbb, **kwargs):
 
 class FakeBBGen(generate_buildbot_json.BBJSONGenerator):
   def __init__(self, waterfalls, test_suites, luci_milo_cfg,
+               project_star='is_master = True',
                exceptions=EMPTY_PYL_FILE,
                mixins=EMPTY_PYL_FILE,
                gn_isolate_map=EMPTY_PYL_FILE,
@@ -43,6 +44,7 @@ class FakeBBGen(generate_buildbot_json.BBJSONGenerator):
     infra_config_dir = os.path.abspath(
         os.path.join(os.path.dirname(__file__), '..', '..',
                     'infra', 'config'))
+    project_star_path = os.path.join(infra_config_dir, 'project.star')
     luci_milo_cfg_path = os.path.join(
         infra_config_dir, 'generated', 'luci-milo.cfg')
     luci_milo_dev_cfg_path = os.path.join(
@@ -54,6 +56,7 @@ class FakeBBGen(generate_buildbot_json.BBJSONGenerator):
       'mixins.pyl': mixins,
       'gn_isolate_map.pyl': gn_isolate_map,
       'variants.pyl': variants,
+      project_star_path: project_star,
       luci_milo_cfg_path: luci_milo_cfg,
       luci_milo_dev_cfg_path: '',
     }
@@ -2909,6 +2912,13 @@ class UnitTest(unittest.TestCase):
     with self.assertRaises(generate_buildbot_json.BBGenErr):
       fbb.check_input_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
+
+  def test_nonexistent_bot_does_not_raise_on_branch(self):
+    fbb = FakeBBGen(UNKNOWN_BOT_GTESTS_WATERFALL,
+                    FOO_TEST_SUITE,
+                    LUCI_MILO_CFG,
+                    project_star='is_master = False')
+    fbb.check_input_file_consistency(verbose=True)
 
   def test_waterfalls_must_be_sorted(self):
     fbb = FakeBBGen(TEST_SUITE_SORTED_WATERFALL,

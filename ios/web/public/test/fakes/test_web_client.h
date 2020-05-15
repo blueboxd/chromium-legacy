@@ -45,6 +45,8 @@ class TestWebClient : public web::WebClient {
 
   NSString* GetDocumentStartScriptForMainFrame(
       BrowserState* browser_state) const override;
+  NSString* GetDocumentStartScriptForAllFrames(
+      BrowserState* browser_state) const override;
   void AllowCertificateError(WebState*,
                              int cert_error,
                              const net::SSLInfo&,
@@ -70,6 +72,9 @@ class TestWebClient : public web::WebClient {
   // Changes Early Page Script for testing purposes.
   void SetEarlyPageScript(NSString* page_script);
 
+  // Changes Early AllFrames Script for testing purposes.
+  void SetEarlyAllFramesScript(NSString* page_script);
+
   // Overrides AllowCertificateError response.
   void SetAllowCertificateErrors(bool flag);
 
@@ -88,6 +93,7 @@ class TestWebClient : public web::WebClient {
  private:
   base::string16 plugin_not_supported_text_;
   NSString* early_page_script_ = nil;
+  NSString* early_all_frames_script_ = nil;
   // Last arguments passed to AllowCertificateError.
   int last_cert_error_code_ = 0;
   net::SSLInfo last_cert_error_ssl_info_;

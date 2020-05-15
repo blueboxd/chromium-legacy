@@ -188,7 +188,7 @@ void ManagePasswordsUIController::OnHideManualFallbackForSaving() {
 
 bool ManagePasswordsUIController::OnChooseCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
-    const GURL& origin,
+    const url::Origin& origin,
     const ManagePasswordsState::CredentialsCallback& callback) {
   DCHECK(!local_credentials.empty());
   if (!HasBrowserWindow())
@@ -213,7 +213,7 @@ bool ManagePasswordsUIController::OnChooseCredentials(
 
 void ManagePasswordsUIController::OnAutoSignin(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-    const GURL& origin) {
+    const url::Origin& origin) {
   DCHECK(!local_forms.empty());
   DestroyAccountChooser();
   passwords_data_.OnAutoSignin(std::move(local_forms), origin);
@@ -242,7 +242,7 @@ void ManagePasswordsUIController::OnAutomaticPasswordSave(
 
 void ManagePasswordsUIController::OnPasswordAutofilled(
     const std::vector<const autofill::PasswordForm*>& password_forms,
-    const GURL& origin,
+    const url::Origin& origin,
     const std::vector<const autofill::PasswordForm*>* federated_matches) {
   // To change to managed state only when the managed state is more important
   // for the user that the current state.
@@ -337,7 +337,7 @@ content::WebContents* ManagePasswordsUIController::GetWebContents() const {
   return web_contents();
 }
 
-const GURL& ManagePasswordsUIController::GetOrigin() const {
+url::Origin ManagePasswordsUIController::GetOrigin() const {
   return passwords_data_.origin();
 }
 
@@ -736,7 +736,7 @@ bool ManagePasswordsUIController::ShowAuthenticationDialog() {
 }
 
 void ManagePasswordsUIController::AuthenticateUserForAccountStoreOptInCallback(
-    const GURL& origin,
+    const url::Origin& origin,
     password_manager::PasswordFormManagerForUI* form_manager,
     const base::string16& username,
     const base::string16& password,

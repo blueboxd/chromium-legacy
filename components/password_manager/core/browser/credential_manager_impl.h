@@ -61,7 +61,7 @@ class CredentialManagerImpl
 
  private:
   // CredentialManagerPendingRequestTaskDelegate:
-  GURL GetOrigin() const override;
+  url::Origin GetOrigin() const override;
   void SendCredential(SendCredentialCallback send_callback,
                       const CredentialInfo& info) override;
   void SendPasswordForm(SendCredentialCallback send_callback,
@@ -75,8 +75,6 @@ class CredentialManagerImpl
 
   // CredentialManagerPasswordFormManagerDelegate:
   void OnProvisionalSaveComplete() override;
-
-  GURL GetLastCommittedURL() const;
 
   PasswordManagerClient* client_;
 

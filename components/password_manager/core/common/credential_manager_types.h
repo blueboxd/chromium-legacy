@@ -80,7 +80,7 @@ struct CredentialInfo {
 // CREDENTIAL_TYPE_EMPTY.
 std::unique_ptr<autofill::PasswordForm> CreatePasswordFormFromCredentialInfo(
     const CredentialInfo& info,
-    const GURL& origin);
+    const url::Origin& origin);
 
 }  // namespace password_manager
 

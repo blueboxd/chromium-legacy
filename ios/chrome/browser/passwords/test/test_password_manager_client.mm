@@ -69,8 +69,8 @@ const PasswordManager* TestPasswordManagerClient::GetPasswordManager() const {
   return &password_manager_;
 }
 
-const GURL& TestPasswordManagerClient::GetLastCommittedEntryURL() const {
-  return last_committed_url_;
+url::Origin TestPasswordManagerClient::GetLastCommittedOrigin() const {
+  return url::Origin::Create(last_committed_url_);
 }
 
 bool TestPasswordManagerClient::PromptUserToSaveOrUpdatePassword(
@@ -84,7 +84,7 @@ bool TestPasswordManagerClient::PromptUserToSaveOrUpdatePassword(
 
 bool TestPasswordManagerClient::PromptUserToChooseCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-    const GURL& origin,
+    const url::Origin& origin,
     const CredentialsCallback& callback) {
   EXPECT_FALSE(local_forms.empty());
   const autofill::PasswordForm* form = local_forms[0].get();

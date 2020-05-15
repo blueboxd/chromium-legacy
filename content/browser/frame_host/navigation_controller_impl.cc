@@ -3227,7 +3227,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
 #if defined(OS_ANDROID)
           std::string(), /* data_url_as_string */
 #endif
-          false, /* is_browser_initiated */
+          !params.is_renderer_initiated, /* is_browser_initiated */
           network::mojom::IPAddressSpace::kUnknown,
           GURL() /* web_bundle_physical_url */,
           GURL() /* base_url_override_for_web_bundle */,

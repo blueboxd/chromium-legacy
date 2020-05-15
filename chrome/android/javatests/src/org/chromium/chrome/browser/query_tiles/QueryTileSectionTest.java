@@ -85,6 +85,7 @@ public class QueryTileSectionTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/1083182")
     public void testSearchWithLastLevelTile() throws Exception {
         QueryTile tile = mTileProvider.getTileAt(0);
         QueryTile subtile = mTileProvider.getTileAt(0, 0);
@@ -104,6 +105,7 @@ public class QueryTileSectionTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/1083182")
     public void testSearchWithFirstLevelTile() throws Exception {
         QueryTile tile = mTileProvider.getTileAt(0);
         QueryTile subtile = mTileProvider.getTileAt(0, 0);
@@ -122,6 +124,7 @@ public class QueryTileSectionTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/1083182")
     public void testChipVisibilityOnFakeBox() throws Exception {
         QueryTile tile = mTileProvider.getTileAt(0);
 
@@ -141,6 +144,7 @@ public class QueryTileSectionTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/1083182")
     public void testClearingSelectedTileBringsBackTopLevelTiles() throws Exception {
         QueryTile tile = mTileProvider.getTileAt(0);
         QueryTile subtile = mTileProvider.getTileAt(0, 0);

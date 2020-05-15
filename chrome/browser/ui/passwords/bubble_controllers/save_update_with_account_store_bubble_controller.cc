@@ -57,13 +57,13 @@ password_manager::metrics_util::UIDisplayDisposition ComputeDisplayDisposition(
   }
 }
 
-void CleanStatisticsForSite(Profile* profile, const GURL& origin) {
+void CleanStatisticsForSite(Profile* profile, const url::Origin& origin) {
   DCHECK(profile);
   password_manager::PasswordStore* password_store =
       PasswordStoreFactory::GetForProfile(profile,
                                           ServiceAccessType::IMPLICIT_ACCESS)
           .get();
-  password_store->RemoveSiteStats(origin.GetOrigin());
+  password_store->RemoveSiteStats(origin.GetURL());
 }
 
 std::vector<autofill::PasswordForm> DeepCopyForms(
@@ -105,7 +105,7 @@ SaveUpdateWithAccountStoreBubbleController::
   pending_password_ = delegate_->GetPendingPassword();
   existing_credentials_ = DeepCopyForms(delegate_->GetCurrentForms());
   if (state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
-    interaction_stats_.origin_domain = origin_.GetOrigin();
+    interaction_stats_.origin_domain = origin_.GetURL();
     interaction_stats_.username_value = pending_password_.username_value;
     const password_manager::InteractionsStats* stats =
         delegate_->GetCurrentInteractionStats();

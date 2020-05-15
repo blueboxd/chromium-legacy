@@ -75,18 +75,18 @@ class ManagePasswordsUIController
   void OnHideManualFallbackForSaving() override;
   bool OnChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
-      const GURL& origin,
+      const url::Origin& origin,
       const ManagePasswordsState::CredentialsCallback& callback) override;
   void OnAutoSignin(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-      const GURL& origin) override;
+      const url::Origin& origin) override;
   void OnPromptEnableAutoSignin() override;
   void OnAutomaticPasswordSave(
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager)
       override;
   void OnPasswordAutofilled(
       const std::vector<const autofill::PasswordForm*>& password_forms,
-      const GURL& origin,
+      const url::Origin& origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches)
       override;
   void OnCredentialLeak(password_manager::CredentialLeakType leak_dialog_type,
@@ -116,7 +116,7 @@ class ManagePasswordsUIController
 
   // PasswordsModelDelegate:
   content::WebContents* GetWebContents() const override;
-  const GURL& GetOrigin() const override;
+  url::Origin GetOrigin() const override;
   password_manager::PasswordFormMetricsRecorder*
   GetPasswordFormMetricsRecorder() override;
   password_manager::PasswordFeatureManager* GetPasswordFeatureManager()
@@ -262,7 +262,7 @@ class ManagePasswordsUIController
   // changes the default destination to profle store and reopens the save
   // bubble.
   void AuthenticateUserForAccountStoreOptInCallback(
-      const GURL& origin,
+      const url::Origin& origin,
       password_manager::PasswordFormManagerForUI* form_manager,
       const base::string16& username,
       const base::string16& password,

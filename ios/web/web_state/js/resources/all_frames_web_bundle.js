@@ -8,5 +8,6 @@ goog.provide('__crWeb.allFramesWebBundle');
 goog.require('__crWeb.allFramesContextMenu');
 goog.require('__crWeb.base');
 goog.require('__crWeb.common');
+goog.require('__crWeb.cookie');
 goog.require('__crWeb.findInPage');
 goog.require('__crWeb.message');

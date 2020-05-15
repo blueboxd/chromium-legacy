@@ -34,6 +34,9 @@ mojom::blink::PermissionDescriptorPtr CreateClipboardPermissionDescriptor(
     bool allow_without_gesture,
     bool allow_without_sanitization);
 
+mojom::blink::PermissionDescriptorPtr CreateVideoCapturePermissionDescriptor(
+    bool pan_tilt_zoom);
+
 // Parses the raw permission dictionary and returns the Mojo
 // PermissionDescriptor if parsing was successful. If an exception occurs, it
 // will be stored in |exceptionState| and nullptr will be returned.

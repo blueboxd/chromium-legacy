@@ -85,6 +85,7 @@ class POLICY_EXPORT DeviceManagementService {
   static constexpr int kPolicyNotFound = 902;
   static constexpr int kDeprovisioned = 903;
   static constexpr int kArcDisabled = 904;
+  static constexpr int kInvalidDomainlessCustomer = 905;
 
   // Number of times to retry on ERR_NETWORK_CHANGED errors.
   static const int kMaxRetries = 3;

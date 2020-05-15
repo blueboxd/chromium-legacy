@@ -38,6 +38,7 @@
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/install_util.h"
+#include "chrome/installer/setup/install_params.h"
 #include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
@@ -71,13 +72,16 @@ constexpr wchar_t kLpacChromeInstallFilesCapabilitySid[] =
     L"S-1-15-3-1024-2302894289-466761758-1166120688-1039016420-2430351297-"
     L"4240214049-4028510897-3317428798";
 
-void AddInstallerCopyTasks(const InstallerState& installer_state,
-                           const base::FilePath& setup_path,
-                           const base::FilePath& archive_path,
-                           const base::FilePath& temp_path,
-                           const base::Version& new_version,
+void AddInstallerCopyTasks(const InstallParams& install_params,
                            WorkItemList* install_list) {
   DCHECK(install_list);
+
+  const InstallerState& installer_state = install_params.installer_state;
+  const base::FilePath& setup_path = install_params.setup_path;
+  const base::FilePath& archive_path = install_params.archive_path;
+  const base::FilePath& temp_path = install_params.temp_path;
+  const base::Version& new_version = install_params.new_version;
+
   base::FilePath installer_dir(
       installer_state.GetInstallerDirectory(new_version));
   install_list->AddCreateDirWorkItem(installer_dir);
@@ -213,16 +217,15 @@ void AddDeleteUninstallEntryForMSIWorkItems(
 }
 
 // Adds Chrome specific install work items to |install_list|.
-// |current_version| can be NULL to indicate no Chrome is currently installed.
-void AddChromeWorkItems(const InstallationState& original_state,
-                        const InstallerState& installer_state,
-                        const base::FilePath& setup_path,
-                        const base::FilePath& archive_path,
-                        const base::FilePath& src_path,
-                        const base::FilePath& temp_path,
-                        const base::Version* current_version,
-                        const base::Version& new_version,
+void AddChromeWorkItems(const InstallParams& install_params,
                         WorkItemList* install_list) {
+  const InstallerState& installer_state = install_params.installer_state;
+  const base::FilePath& archive_path = install_params.archive_path;
+  const base::FilePath& src_path = install_params.src_path;
+  const base::FilePath& temp_path = install_params.temp_path;
+  const base::Version* current_version = install_params.current_version;
+  const base::Version& new_version = install_params.new_version;
+
   const base::FilePath& target_path = installer_state.target_path();
 
   if (current_version) {
@@ -451,10 +454,12 @@ void AddEnterpriseEnrollmentWorkItems(const InstallerState& installer_state,
 // This method adds work items to create (or update) Chrome uninstall entry in
 // either the Control Panel->Add/Remove Programs list or in the Omaha client
 // state key if running under an MSI installer.
-void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
-                                   const base::FilePath& setup_path,
-                                   const base::Version& new_version,
+void AddUninstallShortcutWorkItems(const InstallParams& install_params,
                                    WorkItemList* install_list) {
+  const InstallerState& installer_state = install_params.installer_state;
+  const base::FilePath& setup_path = install_params.setup_path;
+  const base::Version& new_version = install_params.new_version;
+
   HKEY reg_root = installer_state.root_key();
 
   // When we are installed via an MSI, we need to store our uninstall strings
@@ -584,10 +589,15 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
 
 // Create Version key for a product (if not already present) and sets the new
 // product version as the last step.
-void AddVersionKeyWorkItems(HKEY root,
-                            const base::Version& new_version,
-                            bool add_language_identifier,
+void AddVersionKeyWorkItems(const InstallParams& install_params,
                             WorkItemList* list) {
+  const InstallerState& installer_state = install_params.installer_state;
+  const HKEY root = installer_state.root_key();
+
+  // Only set "lang" for user-level installs since for system-level, the install
+  // language may not be related to a given user's runtime language.
+  const bool add_language_identifier = !installer_state.system_install();
+
   const base::string16 clients_key = install_static::GetClientsKeyPath();
   list->AddCreateRegKeyWorkItem(root, clients_key, KEY_WOW64_32KEY);
 
@@ -610,10 +620,10 @@ void AddVersionKeyWorkItems(HKEY root,
                                  google_update::kRegLangField, language,
                                  false);  // do not overwrite language
   }
-  list->AddSetRegValueWorkItem(root, clients_key, KEY_WOW64_32KEY,
-                               google_update::kRegVersionField,
-                               ASCIIToUTF16(new_version.GetString()),
-                               true);  // overwrite version
+  list->AddSetRegValueWorkItem(
+      root, clients_key, KEY_WOW64_32KEY, google_update::kRegVersionField,
+      ASCIIToUTF16(install_params.new_version.GetString()),
+      true);  // overwrite version
 }
 
 void AddUpdateBrandCodeWorkItem(const InstallerState& installer_state,
@@ -660,14 +670,16 @@ base::string16 GetUpdatedBrandCode(const base::string16& brand_code) {
   return base::string16();
 }
 
-bool AppendPostInstallTasks(const InstallerState& installer_state,
-                            const base::FilePath& setup_path,
-                            const base::FilePath& src_path,
-                            const base::FilePath& temp_path,
-                            const base::Version* current_version,
-                            const base::Version& new_version,
+bool AppendPostInstallTasks(const InstallParams& install_params,
                             WorkItemList* post_install_task_list) {
   DCHECK(post_install_task_list);
+
+  const InstallerState& installer_state = install_params.installer_state;
+  const base::FilePath& setup_path = install_params.setup_path;
+  const base::FilePath& src_path = install_params.src_path;
+  const base::FilePath& temp_path = install_params.temp_path;
+  const base::Version* current_version = install_params.current_version;
+  const base::Version& new_version = install_params.new_version;
 
   HKEY root = installer_state.root_key();
   const base::FilePath& target_path = installer_state.target_path();
@@ -786,16 +798,15 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
   return true;
 }
 
-void AddInstallWorkItems(const InstallationState& original_state,
-                         const InstallerState& installer_state,
-                         const base::FilePath& setup_path,
-                         const base::FilePath& archive_path,
-                         const base::FilePath& src_path,
-                         const base::FilePath& temp_path,
-                         const base::Version* current_version,
-                         const base::Version& new_version,
+void AddInstallWorkItems(const InstallParams& install_params,
                          WorkItemList* install_list) {
   DCHECK(install_list);
+
+  const InstallerState& installer_state = install_params.installer_state;
+  const base::FilePath& setup_path = install_params.setup_path;
+  const base::FilePath& temp_path = install_params.temp_path;
+  const base::Version* current_version = install_params.current_version;
+  const base::Version& new_version = install_params.new_version;
 
   const base::FilePath& target_path = installer_state.target_path();
 
@@ -851,24 +862,14 @@ void AddInstallWorkItems(const InstallationState& original_state,
     add_acl_to_histogram_storage_dir_work_item->set_rollback_enabled(false);
   }
 
-  AddChromeWorkItems(original_state, installer_state, setup_path, archive_path,
-                     src_path, temp_path, current_version, new_version,
-                     install_list);
+  AddChromeWorkItems(install_params, install_list);
 
   // Copy installer in install directory
-  AddInstallerCopyTasks(installer_state, setup_path, archive_path, temp_path,
-                        new_version, install_list);
+  AddInstallerCopyTasks(install_params, install_list);
 
-  const HKEY root = installer_state.root_key();
-  // Only set "lang" for user-level installs since for system-level, the install
-  // language may not be related to a given user's runtime language.
-  const bool add_language_identifier = !installer_state.system_install();
+  AddUninstallShortcutWorkItems(install_params, install_list);
 
-  AddUninstallShortcutWorkItems(installer_state, setup_path, new_version,
-                                install_list);
-
-  AddVersionKeyWorkItems(root, new_version, add_language_identifier,
-                         install_list);
+  AddVersionKeyWorkItems(install_params, install_list);
 
   AddCleanupDeprecatedPerUserRegistrationsWorkItems(install_list);
 
@@ -901,8 +902,7 @@ void AddInstallWorkItems(const InstallationState& original_state,
   AddUpdateBrandCodeWorkItem(installer_state, install_list);
 
   // Append the tasks that run after the installation.
-  AppendPostInstallTasks(installer_state, setup_path, src_path, temp_path,
-                         current_version, new_version, install_list);
+  AppendPostInstallTasks(install_params, install_list);
 }
 
 void AddNativeNotificationWorkItems(

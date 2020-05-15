@@ -108,7 +108,6 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
   if (name == "geolocation")
     return CreatePermissionDescriptor(PermissionName::GEOLOCATION);
   if (name == "camera") {
-#if !defined(OS_ANDROID)
     CameraDevicePermissionDescriptor* camera_device_permission =
         NativeValueTraits<CameraDevicePermissionDescriptor>::NativeValue(
             script_state->GetIsolate(), raw_descriptor.V8Value(),
@@ -120,7 +119,7 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
       return CreateVideoCapturePermissionDescriptor(
           camera_device_permission->panTiltZoom());
     }
-#endif
+
     return CreateVideoCapturePermissionDescriptor(false /* pan_tilt_zoom */);
   }
   if (name == "microphone")

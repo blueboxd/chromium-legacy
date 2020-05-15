@@ -458,6 +458,31 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
   EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
 }
 
+// Error during enrollment : 905 - Ineligible enterprise account.
+// TODO(https://crbug.com/1031275): Slow on MSAN builds.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_EnrollmentErrorEnterpriseAccountIsNotEligibleToEnroll \
+  DISABLED_EnrollmentErrorEnterpriseAccountIsNotEligibleToEnroll
+#else
+#define MAYBE_EnrollmentErrorEnterpriseAccountIsNotEligibleToEnroll \
+  EnrollmentErrorEnterpriseAccountIsNotEligibleToEnroll
+#endif
+IN_PROC_BROWSER_TEST_F(
+    EnrollmentLocalPolicyServerBase,
+    MAYBE_EnrollmentErrorEnterpriseAccountIsNotEligibleToEnroll) {
+  policy_server_.SetExpectedDeviceEnrollmentError(905);
+
+  TriggerEnrollmentAndSignInSuccessfully();
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
+  enrollment_ui_.ExpectErrorMessage(
+      IDS_ENTERPRISE_ENROLLMENT_ENTERPRISE_ACCOUNT_IS_NOT_ELIGIBLE_TO_ENROLL,
+      /* can retry */ true);
+  enrollment_ui_.RetryAfterError();
+  EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+  EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
+}
+
 // Error during enrollment : Strange HTTP response from server.
 // TODO(https://crbug.com/1031275): Slow on MSAN builds.
 #if defined(MEMORY_SANITIZER)

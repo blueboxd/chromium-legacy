@@ -551,24 +551,24 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/safety_check_page/safety_check_child.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SAFETY_CHECK_PAGE_SAFETY_CHECK_EXTENSIONS_ELEMENT_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/safety_check_page/safety_check_extensions_element.js"
+  <include name="IDR_SETTINGS_SAFETY_CHECK_PAGE_SAFETY_CHECK_EXTENSIONS_CHILD_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/safety_check_page/safety_check_extensions_child.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_SAFETY_CHECK_PAGE_SAFETY_CHECK_PAGE_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/safety_check_page/safety_check_page.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SAFETY_CHECK_PAGE_SAFETY_CHECK_PASSWORDS_ELEMENT_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/safety_check_page/safety_check_passwords_element.js"
+  <include name="IDR_SETTINGS_SAFETY_CHECK_PAGE_SAFETY_CHECK_PASSWORDS_CHILD_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/safety_check_page/safety_check_passwords_child.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SAFETY_CHECK_PAGE_SAFETY_CHECK_SAFE_BROWSING_ELEMENT_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/safety_check_page/safety_check_safe_browsing_element.js"
+  <include name="IDR_SETTINGS_SAFETY_CHECK_PAGE_SAFETY_CHECK_SAFE_BROWSING_CHILD_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/safety_check_page/safety_check_safe_browsing_child.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SAFETY_CHECK_PAGE_SAFETY_CHECK_UPDATES_ELEMENT_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/safety_check_page/safety_check_updates_element.js"
+  <include name="IDR_SETTINGS_SAFETY_CHECK_PAGE_SAFETY_CHECK_UPDATES_CHILD_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/safety_check_page/safety_check_updates_child.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_SEARCH_ENGINES_BROWSER_PROXY_M_JS"

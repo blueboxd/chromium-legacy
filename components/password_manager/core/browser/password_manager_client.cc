@@ -25,7 +25,7 @@ bool PasswordManagerClient::IsFillingFallbackEnabled(const GURL& url) const {
   return true;
 }
 
-void PasswordManagerClient::PostHSTSQueryForHost(const GURL& origin,
+void PasswordManagerClient::PostHSTSQueryForHost(const url::Origin& origin,
                                                  HSTSCallback callback) const {
   std::move(callback).Run(HSTSResult::kError);
 }
@@ -39,13 +39,13 @@ BiometricAuthenticator* PasswordManagerClient::GetBiometricAuthenticator() {
 void PasswordManagerClient::GeneratePassword() {}
 
 void PasswordManagerClient::UpdateCredentialCache(
-    const GURL& origin,
+    const url::Origin& origin,
     const std::vector<const autofill::PasswordForm*>& best_matches,
     bool is_blacklisted) {}
 
 void PasswordManagerClient::PasswordWasAutofilled(
     const std::vector<const autofill::PasswordForm*>& best_matches,
-    const GURL& origin,
+    const url::Origin& origin,
     const std::vector<const autofill::PasswordForm*>* federated_matches) {}
 
 void PasswordManagerClient::AutofillHttpAuth(

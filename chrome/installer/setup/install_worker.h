@@ -21,23 +21,18 @@ class Version;
 
 namespace installer {
 
-class InstallationState;
 class InstallerState;
+struct InstallParams;
 
 // This method adds work items to create (or update) Chrome uninstall entry in
 // either the Control Panel->Add/Remove Programs list or in the Omaha client
 // state key if running under an MSI installer.
-void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
-                                   const base::FilePath& setup_path,
-                                   const base::Version& new_version,
+void AddUninstallShortcutWorkItems(const InstallParams& install_params,
                                    WorkItemList* install_list);
 
 // Creates Chrome's Clients key (if not already present) and sets the new
-// product version as the last step.  If |add_language_identifier| is true, the
-// "lang" value is also set according to the currently selected translation.
-void AddVersionKeyWorkItems(HKEY root,
-                            const base::Version& new_version,
-                            bool add_language_identifier,
+// product version as the last step.  Also set "lang" for user-level installs.
+void AddVersionKeyWorkItems(const InstallParams& install_params,
                             WorkItemList* list);
 
 // Updates the RLZ brand code or distribution tag.  This is called by the
@@ -59,35 +54,14 @@ base::string16 GetUpdatedBrandCode(const base::string16& brand_code);
 //   it if not.
 // If these operations are successful, the function returns true, otherwise
 // false.
-// |current_version| can be NULL to indicate no Chrome is currently installed.
-bool AppendPostInstallTasks(const InstallerState& installer_state,
-                            const base::FilePath& setup_path,
-                            const base::FilePath& src_path,
-                            const base::FilePath& temp_path,
-                            const base::Version* current_version,
-                            const base::Version& new_version,
+bool AppendPostInstallTasks(const InstallParams& install_params,
                             WorkItemList* post_install_task_list);
 
 // Builds the complete WorkItemList used to build the set of installation steps
 // needed to lay down Chrome.
 //
-// setup_path: Path to the executable (setup.exe) as it will be copied
-//           to Chrome install folder after install is complete
-// archive_path: Path to the archive (chrome.7z) as it will be copied
-//               to Chrome install folder after install is complete
-// src_path: the path that contains a complete and unpacked Chrome package
-//           to be installed.
-// temp_path: the path of working directory used during installation. This path
-//            does not need to exist.
-// |current_version| can be NULL to indicate no Chrome is currently installed.
-void AddInstallWorkItems(const InstallationState& original_state,
-                         const InstallerState& installer_state,
-                         const base::FilePath& setup_path,
-                         const base::FilePath& archive_path,
-                         const base::FilePath& src_path,
-                         const base::FilePath& temp_path,
-                         const base::Version* current_version,
-                         const base::Version& new_version,
+// install_params: See install_params.h
+void AddInstallWorkItems(const InstallParams& install_params,
                          WorkItemList* install_list);
 
 // Adds work items to |list| to register a COM server with the OS after deleting

@@ -110,7 +110,8 @@ void Autofill(PasswordManagerClient* client,
       PreferredRealmIsFromAndroid(fill_data));
   driver->FillPasswordForm(fill_data);
 
-  client->PasswordWasAutofilled(best_matches, form_for_autofill.origin,
+  client->PasswordWasAutofilled(best_matches,
+                                url::Origin::Create(form_for_autofill.origin),
                                 &federated_matches);
 }
 

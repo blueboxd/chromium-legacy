@@ -17,6 +17,7 @@
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace autofill {
 struct PasswordForm;
@@ -38,7 +39,7 @@ class CredentialManagerPendingRequestTaskDelegate {
   virtual bool IsZeroClickAllowed() const = 0;
 
   // Retrieves the current page origin.
-  virtual GURL GetOrigin() const = 0;
+  virtual url::Origin GetOrigin() const = 0;
 
   // Returns the PasswordManagerClient.
   virtual PasswordManagerClient* client() const = 0;
@@ -67,7 +68,7 @@ class CredentialManagerPendingRequestTask
       const std::vector<GURL>& request_federations);
   ~CredentialManagerPendingRequestTask() override;
 
-  const GURL& origin() const { return origin_; }
+  const url::Origin& origin() const { return origin_; }
 
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
@@ -84,7 +85,7 @@ class CredentialManagerPendingRequestTask
   CredentialManagerPendingRequestTaskDelegate* delegate_;  // Weak;
   SendCredentialCallback send_callback_;
   const CredentialMediationRequirement mediation_;
-  const GURL origin_;
+  const url::Origin origin_;
   const bool include_passwords_;
   std::set<std::string> federations_;
 

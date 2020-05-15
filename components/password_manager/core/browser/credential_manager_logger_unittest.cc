@@ -15,8 +15,8 @@ using ::testing::AllOf;
 using ::testing::HasSubstr;
 using ::testing::Return;
 
-const char kSiteOrigin[] = "https://example.com";
-const char kFederationOrigin[] = "https://google.com";
+constexpr char kSiteOrigin[] = "https://example.com";
+constexpr char kFederationOrigin[] = "https://google.com";
 
 class MockLogManager : public autofill::StubLogManager {
  public:
@@ -53,26 +53,26 @@ TEST_F(CredentialManagerLoggerTest, LogRequestCredential) {
   EXPECT_CALL(log_manager(),
               LogTextMessage(
                   AllOf(HasSubstr(kSiteOrigin), HasSubstr(kFederationOrigin))));
-  logger().LogRequestCredential(GURL(kSiteOrigin),
+  logger().LogRequestCredential(url::Origin::Create(GURL(kSiteOrigin)),
                                 CredentialMediationRequirement::kSilent,
                                 {GURL(kFederationOrigin)});
 }
 
 TEST_F(CredentialManagerLoggerTest, LogSendCredential) {
   EXPECT_CALL(log_manager(), LogTextMessage(HasSubstr(kSiteOrigin)));
-  logger().LogSendCredential(GURL(kSiteOrigin),
+  logger().LogSendCredential(url::Origin::Create(GURL(kSiteOrigin)),
                              CredentialType::CREDENTIAL_TYPE_PASSWORD);
 }
 
 TEST_F(CredentialManagerLoggerTest, LogStoreCredential) {
   EXPECT_CALL(log_manager(), LogTextMessage(HasSubstr(kSiteOrigin)));
-  logger().LogStoreCredential(GURL(kSiteOrigin),
+  logger().LogStoreCredential(url::Origin::Create(GURL(kSiteOrigin)),
                               CredentialType::CREDENTIAL_TYPE_PASSWORD);
 }
 
 TEST_F(CredentialManagerLoggerTest, LogPreventSilentAccess) {
   EXPECT_CALL(log_manager(), LogTextMessage(HasSubstr(kSiteOrigin)));
-  logger().LogPreventSilentAccess(GURL(kSiteOrigin));
+  logger().LogPreventSilentAccess(url::Origin::Create(GURL(kSiteOrigin)));
 }
 
 }  // namespace

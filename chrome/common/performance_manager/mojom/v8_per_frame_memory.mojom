@@ -1,0 +1,52 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module performance_manager.mojom;
+
+import "mojo/public/mojom/base/unguessable_token.mojom";
+
+// The amount of heap memory used by V8 in the context of a frame.
+struct V8IsolatedWorldMemoryUsage {
+  // The number of v8 heap bytes used by a V8 isolated world.
+  uint64 bytes_used = 0;
+
+  // The isolated world host ID if any, as per
+  /// ScriptInjection::GetHostIdForIsolatedWorld.
+  string host_id;
+};
+
+// Returns the number of bytes used by the v8 heap per frame.
+struct PerFrameV8MemoryUsageData {
+  // The resources used by this frame, mapped on the isolated world ID.
+  // World ID 0 is the main world.
+  map<int64, V8IsolatedWorldMemoryUsage> associated_bytes;
+};
+
+// Returns the number of bytes used by the v8 heap in a process.
+struct PerProcessV8MemoryUsageData {
+  // The number of v8 heap bytes that were not associated with a specific
+  // v8 context, most likely because they're shared objects.
+  uint64 unassociated_bytes_used;
+
+  // The number of v8 contexts not associated with a frame, likely web
+  // application leaks, and their associated byte usage. At the present time
+  // (April 2020), it's expected and normal to see one unassociated context per
+  // renderer process accounting for ~70kB.
+  uint64 num_unassociated_contexts;
+  uint64 unassociated_context_bytes_used;
+
+  // A map from devtools token associated with a frame, to the number
+  // of v8 heap bytes associated with that frame.
+  map<mojo_base.mojom.UnguessableToken, PerFrameV8MemoryUsageData>
+      associated_memory;
+};
+
+// Allows a browser to query the resource usage of sub-processes.
+interface V8PerFrameMemoryReporter {
+  // Requests a per-frame estimate of v8 heap byte usage on the next garbage
+  // collection. Note that this causes extra cost for the next garbage
+  // collection, which can be on the order of 10-20%.
+  GetPerFrameV8MemoryUsageData() => (PerProcessV8MemoryUsageData data);
+};
+

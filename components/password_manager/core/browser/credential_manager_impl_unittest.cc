@@ -67,11 +67,11 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_METHOD1(PromptUserToSavePasswordPtr, void(PasswordFormManagerForUI*));
   MOCK_METHOD3(PromptUserToChooseCredentialsPtr,
                bool(const std::vector<autofill::PasswordForm*>& local_forms,
-                    const GURL& origin,
+                    const url::Origin& origin,
                     const CredentialsCallback& callback));
   MOCK_METHOD3(PasswordWasAutofilled,
                void(const std::vector<const autofill::PasswordForm*>&,
-                    const GURL&,
+                    const url::Origin&,
                     const std::vector<const autofill::PasswordForm*>*));
 
   explicit MockPasswordManagerClient(PasswordStore* store)
@@ -111,13 +111,13 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
     return &password_manager_;
   }
 
-  const GURL& GetLastCommittedEntryURL() const override {
-    return last_committed_url_;
+  url::Origin GetLastCommittedOrigin() const override {
+    return url::Origin::Create(last_committed_url_);
   }
 
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-      const GURL& origin,
+      const url::Origin& origin,
       const CredentialsCallback& callback) override {
     EXPECT_FALSE(local_forms.empty());
     const autofill::PasswordForm* form = local_forms[0].get();
@@ -136,7 +136,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
   void NotifyUserAutoSignin(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-      const GURL& origin) override {
+      const url::Origin& origin) override {
     EXPECT_FALSE(local_forms.empty());
     NotifyUserAutoSigninPtr();
   }
@@ -208,7 +208,7 @@ class CredentialManagerImplTest : public testing::Test {
     form_.display_name = base::ASCIIToUTF16("Display Name");
     form_.icon_url = GURL("https://example.com/icon.png");
     form_.password_value = base::ASCIIToUTF16("Password");
-    form_.origin = client_->GetLastCommittedEntryURL();
+    form_.origin = client_->GetLastCommittedOrigin().GetURL();
     form_.signon_realm = form_.origin.GetOrigin().spec();
     form_.scheme = autofill::PasswordForm::Scheme::kHtml;
     form_.skip_zero_click = false;

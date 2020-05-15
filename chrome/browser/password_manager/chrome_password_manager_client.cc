@@ -236,7 +236,7 @@ bool ChromePasswordManagerClient::IsFillingFallbackEnabled(
 }
 
 void ChromePasswordManagerClient::PostHSTSQueryForHost(
-    const GURL& origin,
+    const url::Origin& origin,
     password_manager::HSTSCallback callback) const {
   password_manager::PostHSTSQueryForHostAndNetworkContext(
       origin,
@@ -366,7 +366,7 @@ void ChromePasswordManagerClient::FocusedInputChanged(
 
 bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-    const GURL& origin,
+    const url::Origin& origin,
     const CredentialsCallback& callback) {
   // Set up an intercept callback if the prompt is zero-clickable (e.g. just one
   // form provided).
@@ -433,7 +433,7 @@ void ChromePasswordManagerClient::GeneratePassword() {
 
 void ChromePasswordManagerClient::NotifyUserAutoSignin(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-    const GURL& origin) {
+    const url::Origin& origin) {
   DCHECK(!local_forms.empty());
   helper_.NotifyUserAutoSignin();
 #if defined(OS_ANDROID)
@@ -462,13 +462,13 @@ void ChromePasswordManagerClient::NotifyStorePasswordCalled() {
 }
 
 void ChromePasswordManagerClient::UpdateCredentialCache(
-    const GURL& origin,
+    const url::Origin& origin,
     const std::vector<const autofill::PasswordForm*>& best_matches,
     bool is_blacklisted) {
 #if defined(OS_ANDROID)
   credential_cache_.SaveCredentialsAndBlacklistedForOrigin(
       best_matches, CredentialCache::IsOriginBlacklisted(is_blacklisted),
-      url::Origin::Create(origin));
+      origin);
 
 #endif
 }
@@ -487,7 +487,7 @@ void ChromePasswordManagerClient::AutomaticPasswordSave(
 
 void ChromePasswordManagerClient::PasswordWasAutofilled(
     const std::vector<const PasswordForm*>& best_matches,
-    const GURL& origin,
+    const url::Origin& origin,
     const std::vector<const PasswordForm*>* federated_matches) {
 #if !defined(OS_ANDROID)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
@@ -503,7 +503,8 @@ void ChromePasswordManagerClient::AutofillHttpAuth(
   httpauth_manager_.Autofill(preferred_match, form_manager);
   DCHECK(!form_manager->GetBestMatches().empty());
   PasswordWasAutofilled(form_manager->GetBestMatches(),
-                        form_manager->GetOrigin(), nullptr);
+                        url::Origin::Create(form_manager->GetOrigin()),
+                        nullptr);
 }
 
 void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
@@ -668,14 +669,9 @@ bool ChromePasswordManagerClient::IsMainFrameSecure() const {
   return content::IsOriginSecure(web_contents()->GetVisibleURL());
 }
 
-const GURL& ChromePasswordManagerClient::GetLastCommittedEntryURL() const {
+url::Origin ChromePasswordManagerClient::GetLastCommittedOrigin() const {
   DCHECK(web_contents());
-  content::NavigationEntry* entry =
-      web_contents()->GetController().GetLastCommittedEntry();
-  if (!entry)
-    return GURL::EmptyGURL();
-
-  return entry->GetURL();
+  return web_contents()->GetMainFrame()->GetLastCommittedOrigin();
 }
 const password_manager::CredentialsFilter*
 ChromePasswordManagerClient::GetStoreResultFilter() const {

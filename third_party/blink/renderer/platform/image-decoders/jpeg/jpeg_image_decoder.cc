@@ -278,11 +278,11 @@ static IntSize ExtractDensityCorrectedSize(const DecodedImageMetaData& metadata,
   CHECK(metadata.resolution.Height());
 
   // Division by zero is not possible since we check for empty resolution earlier.
-  IntSize size_from_resolution(
-    physical_size.Width() * kDefaultResolution / metadata.resolution.Width(),
-    physical_size.Height() * kDefaultResolution / metadata.resolution.Height());
+  FloatSize size_from_resolution(
+      physical_size.Width() * kDefaultResolution / metadata.resolution.Width(),
+      physical_size.Height() * kDefaultResolution / metadata.resolution.Height());
 
-  if (size_from_resolution == metadata.size)
+  if (RoundedIntSize(size_from_resolution) == metadata.size)
     return metadata.size;
 
   return physical_size;

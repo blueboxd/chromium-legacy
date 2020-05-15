@@ -51,8 +51,8 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   // Public, overridden from AXObject.
   LayoutObject* GetLayoutObject() const final { return layout_object_; }
   ScrollableArea* GetScrollableAreaIfScrollable() const final;
-  ax::mojom::Role DetermineAccessibilityRole() override;
-  ax::mojom::Role NativeRoleIgnoringAria() const override;
+  ax::mojom::blink::Role DetermineAccessibilityRole() override;
+  ax::mojom::blink::Role NativeRoleIgnoringAria() const override;
 
   // If this is an anonymous node, returns the node of its containing layout
   // block, otherwise returns the node of this layout object.
@@ -115,16 +115,16 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   float FontSize() const final;
   float FontWeight() const final;
   String ImageDataUrl(const IntSize& max_size) const final;
-  ax::mojom::ListStyle GetListStyle() const final;
+  ax::mojom::blink::ListStyle GetListStyle() const final;
   String GetText() const override;
-  ax::mojom::TextDirection GetTextDirection() const final;
-  ax::mojom::TextPosition GetTextPosition() const final;
+  ax::mojom::blink::TextDirection GetTextDirection() const final;
+  ax::mojom::blink::TextPosition GetTextPosition() const final;
   int TextLength() const override;
   void GetTextStyleAndTextDecorationStyle(
       int32_t* text_style,
-      ax::mojom::TextDecorationStyle* text_overline_style,
-      ax::mojom::TextDecorationStyle* text_strikethrough_style,
-      ax::mojom::TextDecorationStyle* text_underline_style) const final;
+      ax::mojom::blink::TextDecorationStyle* text_overline_style,
+      ax::mojom::blink::TextDecorationStyle* text_strikethrough_style,
+      ax::mojom::blink::TextDecorationStyle* text_underline_style) const final;
 
   // Inline text boxes.
   AXObject* NextOnLine() const override;
@@ -137,9 +137,10 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   void AriaDescribedbyElements(AXObjectVector&) const override;
   void AriaOwnsElements(AXObjectVector&) const override;
 
-  ax::mojom::HasPopup HasPopup() const override;
+  ax::mojom::blink::HasPopup HasPopup() const override;
   bool SupportsARIADragging() const override;
-  void Dropeffects(Vector<ax::mojom::Dropeffect>& dropeffects) const override;
+  void Dropeffects(
+      Vector<ax::mojom::blink::Dropeffect>& dropeffects) const override;
   bool SupportsARIAOwns() const override;
 
   // ARIA live-region features.
@@ -150,7 +151,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   String TextAlternative(bool recursive,
                          bool in_aria_labelled_by_traversal,
                          AXObjectSet& visited,
-                         ax::mojom::NameFrom&,
+                         ax::mojom::blink::NameFrom&,
                          AXRelatedObjectVector*,
                          NameSources*) const override;
 
@@ -195,7 +196,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   unsigned RowIndex() const override;  // Also for a table row.
   unsigned ColumnSpan() const override;
   unsigned RowSpan() const override;
-  ax::mojom::SortDirection GetSortDirection() const override;
+  ax::mojom::blink::SortDirection GetSortDirection() const override;
 
   // For a table row or column.
   AXObject* HeaderObject() const override;
@@ -211,17 +212,17 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   void DetachRemoteSVGRoot();
   AXObject* RemoteSVGElementHitTest(const IntPoint&) const;
   void OffsetBoundingBoxForRemoteSVGElement(LayoutRect&) const;
-  bool FindAllTableCellsWithRole(ax::mojom::Role, AXObjectVector&) const;
+  bool FindAllTableCellsWithRole(ax::mojom::blink::Role, AXObjectVector&) const;
 
   LayoutRect ComputeElementRect() const;
   bool CanIgnoreTextAsEmpty() const;
   bool CanIgnoreSpaceNextTo(LayoutObject*, bool is_after) const;
   bool HasAriaCellRole(Element*) const;
   bool IsPlaceholder() const;
-  ax::mojom::Dropeffect ParseDropeffect(String& dropeffect) const;
+  ax::mojom::blink::Dropeffect ParseDropeffect(String& dropeffect) const;
   bool SelectionShouldFollowFocus() const;
 
-  static ax::mojom::TextDecorationStyle
+  static ax::mojom::blink::TextDecorationStyle
   TextDecorationStyleToAXTextDecorationStyle(
       const ETextDecorationStyle text_decoration_style);
 

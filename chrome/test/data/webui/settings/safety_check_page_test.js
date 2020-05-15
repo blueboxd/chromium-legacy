@@ -79,8 +79,8 @@ function fireSafetyCheckExtensionsEvent(state) {
 }
 
 /**
- * Verify that the safety check child element of the page has been configured
- * as specified.
+ * Verify that the safety check child inside the page has been configured as
+ * specified.
  * @param {!{
  *   page: !PolymerElement,
  *   iconStatus: !SafetyCheckIconStatus,
@@ -345,14 +345,14 @@ suite('SafetyCheckChildTests', function() {
   });
 });
 
-suite('SafetyCheckUpdatesElementUiTests', function() {
+suite('SafetyCheckUpdatesChildUiTests', function() {
   /** @type {?TestLifetimeBrowserProxy} */
   let lifetimeBrowserProxy = null;
 
   /** @type {?TestMetricsBrowserProxy} */
   let metricsBrowserProxy = null;
 
-  /** @type {!SettingsSafetyCheckUpdatesElementElement} */
+  /** @type {!SettingsSafetyCheckUpdatesChildElement} */
   let page;
 
   setup(function() {
@@ -362,8 +362,8 @@ suite('SafetyCheckUpdatesElementUiTests', function() {
     MetricsBrowserProxyImpl.instance_ = metricsBrowserProxy;
 
     document.body.innerHTML = '';
-    page = /** @type {!SettingsSafetyCheckUpdatesElementElement} */ (
-        document.createElement('settings-safety-check-updates-element'));
+    page = /** @type {!SettingsSafetyCheckUpdatesChildElement} */ (
+        document.createElement('settings-safety-check-updates-child'));
     document.body.appendChild(page);
     flush();
   });
@@ -470,11 +470,11 @@ suite('SafetyCheckUpdatesElementUiTests', function() {
   });
 });
 
-suite('SafetyCheckPasswordsElementUiTests', function() {
+suite('SafetyCheckPasswordsChildUiTests', function() {
   /** @type {?TestMetricsBrowserProxy} */
   let metricsBrowserProxy = null;
 
-  /** @type {!SettingsSafetyCheckPasswordsElementElement} */
+  /** @type {!SettingsSafetyCheckPasswordsChildElement} */
   let page;
 
   setup(function() {
@@ -482,8 +482,8 @@ suite('SafetyCheckPasswordsElementUiTests', function() {
     MetricsBrowserProxyImpl.instance_ = metricsBrowserProxy;
 
     document.body.innerHTML = '';
-    page = /** @type {!SettingsSafetyCheckPasswordsElementElement} */ (
-        document.createElement('settings-safety-check-passwords-element'));
+    page = /** @type {!SettingsSafetyCheckPasswordsChildElement} */ (
+        document.createElement('settings-safety-check-passwords-child'));
     document.body.appendChild(page);
     flush();
   });
@@ -576,11 +576,11 @@ suite('SafetyCheckPasswordsElementUiTests', function() {
   });
 });
 
-suite('SafetyCheckSafeBrowsingElementUiTests', function() {
+suite('SafetyCheckSafeBrowsingChildUiTests', function() {
   /** @type {?TestMetricsBrowserProxy} */
   let metricsBrowserProxy = null;
 
-  /** @type {!SettingsSafetyCheckSafeBrowsingElementElement} */
+  /** @type {!SettingsSafetyCheckSafeBrowsingChildElement} */
   let page;
 
   setup(function() {
@@ -588,8 +588,8 @@ suite('SafetyCheckSafeBrowsingElementUiTests', function() {
     MetricsBrowserProxyImpl.instance_ = metricsBrowserProxy;
 
     document.body.innerHTML = '';
-    page = /** @type {!SettingsSafetyCheckSafeBrowsingElementElement} */ (
-        document.createElement('settings-safety-check-safe-browsing-element'));
+    page = /** @type {!SettingsSafetyCheckSafeBrowsingChildElement} */ (
+        document.createElement('settings-safety-check-safe-browsing-child'));
     document.body.appendChild(page);
     flush();
   });
@@ -681,14 +681,14 @@ suite('SafetyCheckSafeBrowsingElementUiTests', function() {
   });
 });
 
-suite('SafetyCheckExtensionsElementUiTests', function() {
+suite('SafetyCheckExtensionsChildUiTests', function() {
   /** @type {?TestMetricsBrowserProxy} */
   let metricsBrowserProxy = null;
 
   /** @type {?TestOpenWindowProxy} */
   let openWindowProxy = null;
 
-  /** @type {!SettingsSafetyCheckExtensionsElementElement} */
+  /** @type {!SettingsSafetyCheckExtensionsChildElement} */
   let page;
 
   setup(function() {
@@ -698,8 +698,8 @@ suite('SafetyCheckExtensionsElementUiTests', function() {
     OpenWindowProxyImpl.instance_ = openWindowProxy;
 
     document.body.innerHTML = '';
-    page = /** @type {!SettingsSafetyCheckExtensionsElementElement} */ (
-        document.createElement('settings-safety-check-extensions-element'));
+    page = /** @type {!SettingsSafetyCheckExtensionsChildElement} */ (
+        document.createElement('settings-safety-check-extensions-child'));
     document.body.appendChild(page);
     flush();
   });
@@ -708,9 +708,7 @@ suite('SafetyCheckExtensionsElementUiTests', function() {
     page.remove();
   });
 
-  /**
-   * @return {!Promise}
-   */
+  /** @return {!Promise} */
   async function expectExtensionsButtonClickActions() {
     // User clicks review extensions button.
     page.$$('#safetyCheckChild').$$('#button').click();

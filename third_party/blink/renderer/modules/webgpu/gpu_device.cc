@@ -48,8 +48,7 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
           GetProcs().deviceGetDefaultQueue(GetHandle()))),
       lost_property_(MakeGarbageCollected<LostProperty>(execution_context)),
       error_callback_(BindRepeatingDawnCallback(&GPUDevice::OnUncapturedError,
-                                                WrapWeakPersistent(this))),
-      client_id_(client_id) {
+                                                WrapWeakPersistent(this))) {
   DCHECK(dawn_control_client->GetInterface()->GetDevice(client_id));
   GetProcs().deviceSetUncapturedErrorCallback(
       GetHandle(), error_callback_->UnboundRepeatingCallback(),
@@ -62,10 +61,6 @@ GPUDevice::~GPUDevice() {
   }
   queue_ = nullptr;
   GetProcs().deviceRelease(GetHandle());
-}
-
-uint64_t GPUDevice::GetClientID() const {
-  return client_id_;
 }
 
 void GPUDevice::AddConsoleWarning(const char* message) {

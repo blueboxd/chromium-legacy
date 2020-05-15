@@ -131,7 +131,8 @@ void ArcKioskAppService::OnIconUpdated(ArcAppIcon* icon) {
   AccountId account_id = multi_user_util::GetAccountIdFromProfile(profile_);
   app_manager_->UpdateNameAndIcon(account_id, app_info_->name,
                                   app_icon_->image_skia());
-  delegate_->OnAppDataUpdated();
+  if (delegate_)
+    delegate_->OnAppDataUpdated();
 }
 
 void ArcKioskAppService::OnArcSessionRestarting() {

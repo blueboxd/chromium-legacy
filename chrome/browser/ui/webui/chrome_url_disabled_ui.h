@@ -11,8 +11,7 @@
 // For chrome:://.* error page when disabled by admin policy.
 class ChromeURLDisabledUI : public content::WebUIController {
  public:
-  explicit ChromeURLDisabledUI(content::WebUI* web_ui,
-                               const std::string& host_name);
+  explicit ChromeURLDisabledUI(content::WebUI* web_ui);
   ~ChromeURLDisabledUI() override;
 
  private:

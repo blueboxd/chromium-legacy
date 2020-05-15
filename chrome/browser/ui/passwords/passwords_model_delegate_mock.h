@@ -25,7 +25,7 @@ class PasswordsModelDelegateMock
                password_manager::PasswordFormMetricsRecorder*());
   MOCK_METHOD0(GetPasswordFeatureManager,
                password_manager::PasswordFeatureManager*());
-  MOCK_CONST_METHOD0(GetOrigin, const GURL&());
+  MOCK_CONST_METHOD0(GetOrigin, url::Origin());
   MOCK_CONST_METHOD0(GetState, password_manager::ui::State());
   MOCK_CONST_METHOD0(GetPendingPassword, const autofill::PasswordForm&());
   MOCK_CONST_METHOD0(GetUnsyncedCredentials,

@@ -4392,7 +4392,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckWATCHLISTS(input_api, output_api))
   results.extend(input_api.RunTests(
     input_api.canned_checks.CheckVPythonSpec(input_api, output_api)))
-  results.extend(_CheckTranslationScreenshots(input_api, output_api))
+  results.extend(_CheckStrings(input_api, output_api))
   results.extend(_CheckTranslationExpectations(input_api, output_api))
   results.extend(_CheckCorrectProductNameInMessages(input_api, output_api))
   results.extend(_CheckBuildtoolsRevisionsAreInSync(input_api, output_api))
@@ -4832,19 +4832,18 @@ def CheckChangeOnCommit(input_api, output_api):
   return results
 
 
-def _CheckTranslationScreenshots(input_api, output_api):
+def _CheckStrings(input_api, output_api):
+  """Check string ICU syntax validity and if translation screenshots exist."""
   # Skip translation screenshots check if a SkipTranslationScreenshotsCheck
   # footer is set to true.
   git_footers = input_api.change.GitFootersFromDescription()
-  skip_check = [
+  skip_screenshot_check_footer = [
       footer.lower()
       for footer in git_footers.get(u'Skip-Translation-Screenshots-Check', [])]
-  if u'true' in skip_check:
-    return [
-        output_api.PresubmitPromptOrNotify(
-            'Skipping translation screenshots check.')]
+  run_screenshot_check = u'true' not in skip_screenshot_check_footer
 
   import os
+  import re
   import sys
   from io import StringIO
 
@@ -4856,8 +4855,7 @@ def _CheckTranslationScreenshots(input_api, output_api):
       if f.Action() == 'D')
 
   affected_grds = [f for f in input_api.AffectedFiles()
-      if (f.LocalPath().endswith('.grd') or
-          f.LocalPath().endswith('.grdp'))]
+      if (f.LocalPath().endswith(('.grd', '.grdp')))]
   if not affected_grds:
     return []
 
@@ -4890,6 +4888,13 @@ def _CheckTranslationScreenshots(input_api, output_api):
   missing_sha1 = []
   unnecessary_sha1_files = []
 
+  # This checks verifies that the ICU syntax of messages this CL touched is
+  # valid, and reports any found syntax errors.
+  # Without this presubmit check, ICU syntax errors in Chromium strings can land
+  # without developers being aware of them. Later on, such ICU syntax errors
+  # break message extraction for translation, hence would block Chromium
+  # translations until they are fixed.
+  icu_syntax_errors = []
 
   def _CheckScreenshotAdded(screenshots_dir, message_id):
     sha1_path = input_api.os_path.join(
@@ -4903,6 +4908,136 @@ def _CheckTranslationScreenshots(input_api, output_api):
         screenshots_dir, message_id + '.png.sha1')
     if input_api.os_path.exists(sha1_path) and sha1_path not in removed_paths:
       unnecessary_sha1_files.append(sha1_path)
+
+
+  def _ValidateIcuSyntax(text, level, signatures):
+      """Validates ICU syntax of a text string.
+
+      Check if text looks similar to ICU and checks for ICU syntax correctness
+      in this case. Reports various issues with ICU syntax and values of
+      variants. Supports checking of nested messages. Accumulate information of
+      each ICU messages found in the text for further checking.
+
+      Args:
+        text: a string to check.
+        level: a number of current nesting level.
+        signatures: an accumulator, a list of tuple of (level, variable,
+          kind, variants).
+
+      Returns:
+        None if a string is not ICU or no issue detected.
+        A tuple of (message, start index, end index) if an issue detected.
+      """
+      valid_types = {
+          'plural': (frozenset(
+              ['=0', '=1', 'zero', 'one', 'two', 'few', 'many', 'other']),
+                     frozenset(['=1', 'other'])),
+          'selectordinal': (frozenset(
+              ['=0', '=1', 'zero', 'one', 'two', 'few', 'many', 'other']),
+                            frozenset(['one', 'other'])),
+          'select': (frozenset(), frozenset(['other'])),
+      }
+
+      # Check if the message looks like an attempt to use ICU
+      # plural. If yes - check if its syntax strictly matches ICU format.
+      like = re.match(r'^[^{]*\{[^{]*\b(plural|selectordinal|select)\b', text)
+      if not like:
+        signatures.append((level, None, None, None))
+        return
+
+      # Check for valid prefix and suffix
+      m = re.match(
+          r'^([^{]*\{)([a-zA-Z0-9_]+),\s*'
+          r'(plural|selectordinal|select),\s*'
+          r'(?:offset:\d+)?\s*(.*)', text, re.DOTALL)
+      if not m:
+        return (('This message looks like an ICU plural, '
+                 'but does not follow ICU syntax.'), like.start(), like.end())
+      starting, variable, kind, variant_pairs = m.groups()
+      variants, depth, last_pos = _ParseIcuVariants(variant_pairs, m.start(4))
+      if depth:
+        return ('Invalid ICU format. Unbalanced opening bracket', last_pos,
+                len(text))
+      first = text[0]
+      ending = text[last_pos:]
+      if not starting:
+        return ('Invalid ICU format. No initial opening bracket', last_pos - 1,
+                last_pos)
+      if not ending or '}' not in ending:
+        return ('Invalid ICU format. No final closing bracket', last_pos - 1,
+                last_pos)
+      elif first != '{':
+        return (
+            ('Invalid ICU format. Extra characters at the start of a complex '
+             'message (go/icu-message-migration): "%s"') %
+            starting, 0, len(starting))
+      elif ending != '}':
+        return (('Invalid ICU format. Extra characters at the end of a complex '
+                 'message (go/icu-message-migration): "%s"')
+                % ending, last_pos - 1, len(text) - 1)
+      if kind not in valid_types:
+        return (('Unknown ICU message type %s. '
+                 'Valid types are: plural, select, selectordinal') % kind, 0, 0)
+      known, required = valid_types[kind]
+      defined_variants = set()
+      for variant, variant_range, value, value_range in variants:
+        start, end = variant_range
+        if variant in defined_variants:
+          return ('Variant "%s" is defined more than once' % variant,
+                  start, end)
+        elif known and variant not in known:
+          return ('Variant "%s" is not valid for %s message' % (variant, kind),
+                  start, end)
+        defined_variants.add(variant)
+        # Check for nested structure
+        res = _ValidateIcuSyntax(value[1:-1], level + 1, signatures)
+        if res:
+          return (res[0], res[1] + value_range[0] + 1,
+                  res[2] + value_range[0] + 1)
+      missing = required - defined_variants
+      if missing:
+        return ('Required variants missing: %s' % ', '.join(missing), 0,
+                len(text))
+      signatures.append((level, variable, kind, defined_variants))
+
+
+  def _ParseIcuVariants(text, offset=0):
+    """Parse variants part of ICU complex message.
+
+    Builds a tuple of variant names and values, as well as
+    their offsets in the input string.
+
+    Args:
+      text: a string to parse
+      offset: additional offset to add to positions in the text to get correct
+        position in the complete ICU string.
+
+    Returns:
+      List of tuples, each tuple consist of four fields: variant name,
+      variant name span (tuple of two integers), variant value, value
+      span (tuple of two integers).
+    """
+    depth, start, end = 0, -1, -1
+    variants = []
+    key = None
+    for idx, char in enumerate(text):
+      if char == '{':
+        if not depth:
+          start = idx
+          chunk = text[end + 1:start]
+          key = chunk.strip()
+          pos = offset + end + 1 + chunk.find(key)
+          span = (pos, pos + len(key))
+        depth += 1
+      elif char == '}':
+        if not depth:
+          return variants, depth, offset + idx
+        depth -= 1
+        if not depth:
+          end = idx
+          variants.append((key, span, text[start:end + 1], (offset + start,
+                                                            offset + end + 1)))
+    return variants, depth, offset + end + 1
 
   try:
     old_sys_path = sys.path
@@ -4955,38 +5090,55 @@ def _CheckTranslationScreenshots(input_api, output_api):
     screenshots_dir = input_api.os_path.join(
         input_api.os_path.dirname(file_path), grd_name + ext.replace('.', '_'))
 
-    # Check the screenshot directory for .png files. Warn if there is any.
-    for png_path in affected_png_paths:
-      if png_path.startswith(screenshots_dir):
-        unnecessary_screenshots.append(png_path)
+    if run_screenshot_check:
+      # Check the screenshot directory for .png files. Warn if there is any.
+      for png_path in affected_png_paths:
+        if png_path.startswith(screenshots_dir):
+          unnecessary_screenshots.append(png_path)
 
-    for added_id in added_ids:
-      _CheckScreenshotAdded(screenshots_dir, added_id)
+      for added_id in added_ids:
+        _CheckScreenshotAdded(screenshots_dir, added_id)
 
-    for modified_id in modified_ids:
-      _CheckScreenshotAdded(screenshots_dir, modified_id)
+      for modified_id in modified_ids:
+        _CheckScreenshotAdded(screenshots_dir, modified_id)
 
-    for removed_id in removed_ids:
-      _CheckScreenshotRemoved(screenshots_dir, removed_id)
+      for removed_id in removed_ids:
+        _CheckScreenshotRemoved(screenshots_dir, removed_id)
+
+    # Check new and changed strings for ICU syntax errors.
+    for key in added_ids.union(modified_ids):
+      msg = new_id_to_msg_map[key].ContentsAsXml('', True)
+      err = _ValidateIcuSyntax(msg, 0, [])
+      if err is not None:
+        icu_syntax_errors.append(str(key) + ': ' + str(err[0]))
 
   results = []
-  if unnecessary_screenshots:
-    results.append(output_api.PresubmitNotifyResult(
-      'Do not include actual screenshots in the changelist. Run '
-      'tools/translate/upload_screenshots.py to upload them instead:',
-      sorted(unnecessary_screenshots)))
+  if run_screenshot_check:
+    if unnecessary_screenshots:
+      results.append(output_api.PresubmitNotifyResult(
+        'Do not include actual screenshots in the changelist. Run '
+        'tools/translate/upload_screenshots.py to upload them instead:',
+        sorted(unnecessary_screenshots)))
 
-  if missing_sha1:
-    results.append(output_api.PresubmitNotifyResult(
-      'You are adding or modifying UI strings.\n'
-      'To ensure the best translations, take screenshots of the relevant UI '
-      '(https://g.co/chrome/translation) and add these files to your '
-      'changelist:', sorted(missing_sha1)))
+    if missing_sha1:
+      results.append(output_api.PresubmitNotifyResult(
+        'You are adding or modifying UI strings.\n'
+        'To ensure the best translations, take screenshots of the relevant UI '
+        '(https://g.co/chrome/translation) and add these files to your '
+        'changelist:', sorted(missing_sha1)))
 
-  if unnecessary_sha1_files:
-    results.append(output_api.PresubmitNotifyResult(
-      'You removed strings associated with these files. Remove:',
-      sorted(unnecessary_sha1_files)))
+    if unnecessary_sha1_files:
+      results.append(output_api.PresubmitNotifyResult(
+        'You removed strings associated with these files. Remove:',
+        sorted(unnecessary_sha1_files)))
+  else:
+    results.append(output_api.PresubmitPromptOrNotify('Skipping translation '
+      'screenshots check.'))
+
+  if icu_syntax_errors:
+    results.append(output_api.PresubmitError(
+      'ICU syntax errors were found in the following strings (problems or '
+      'feedback? Contact rainhard@chromium.org):', items=icu_syntax_errors))
 
   return results
 

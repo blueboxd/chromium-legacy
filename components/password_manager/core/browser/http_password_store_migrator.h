@@ -12,7 +12,7 @@
 #include "base/sequence_checker.h"
 #include "components/password_manager/core/browser/hsts_query.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace autofill {
 struct PasswordForm;
@@ -57,7 +57,7 @@ class HttpPasswordStoreMigrator : public PasswordStoreConsumer {
   };
 
   // |https_origin| should specify a valid HTTPS URL.
-  HttpPasswordStoreMigrator(const GURL& https_origin,
+  HttpPasswordStoreMigrator(const url::Origin& https_origin,
                             const PasswordManagerClient* client,
                             Consumer* consumer);
   ~HttpPasswordStoreMigrator() override;
@@ -87,7 +87,7 @@ class HttpPasswordStoreMigrator : public PasswordStoreConsumer {
   bool got_password_store_results_ = false;
   HttpPasswordMigrationMode mode_ = HttpPasswordMigrationMode::kMove;
   std::vector<std::unique_ptr<autofill::PasswordForm>> results_;
-  GURL http_origin_domain_;
+  url::Origin http_origin_domain_;
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(HttpPasswordStoreMigrator);

@@ -2651,7 +2651,9 @@ class CheckNoDirectIncludesHeadersWhichRedefineStrCat(unittest.TestCase):
     self.assertEquals(0, len(results))
 
 
-class TranslationScreenshotsTest(unittest.TestCase):
+class StringTest(unittest.TestCase):
+  """Tests ICU syntax check and translation screenshots check."""
+
   # An empty grd file.
   OLD_GRD_CONTENTS = """<?xml version="1.0" encoding="UTF-8"?>
            <grit latest_public_release="1" current_release="1">
@@ -2687,6 +2689,48 @@ class TranslationScreenshotsTest(unittest.TestCase):
              </release>
            </grit>
         """.splitlines()
+  # A grd file with one ICU syntax message without syntax errors.
+  NEW_GRD_CONTENTS_ICU_SYNTAX_OK1 = """<?xml version="1.0" encoding="UTF-8"?>
+           <grit latest_public_release="1" current_release="1">
+             <release seq="1">
+               <messages>
+                 <message name="IDS_TEST1">
+                   {NUM, plural,
+                    =1 {Test text for numeric one}
+                    other {Test text for plural with {NUM} as number}}
+                 </message>
+               </messages>
+             </release>
+           </grit>
+        """.splitlines()
+  # A grd file with one ICU syntax message without syntax errors.
+  NEW_GRD_CONTENTS_ICU_SYNTAX_OK2 = """<?xml version="1.0" encoding="UTF-8"?>
+           <grit latest_public_release="1" current_release="1">
+             <release seq="1">
+               <messages>
+                 <message name="IDS_TEST1">
+                   {NUM, plural,
+                    =1 {Different test text for numeric one}
+                    other {Different test text for plural with {NUM} as number}}
+                 </message>
+               </messages>
+             </release>
+           </grit>
+        """.splitlines()
+  # A grd file with one ICU syntax message with syntax errors (misses a comma).
+  NEW_GRD_CONTENTS_ICU_SYNTAX_ERROR = """<?xml version="1.0" encoding="UTF-8"?>
+           <grit latest_public_release="1" current_release="1">
+             <release seq="1">
+               <messages>
+                 <message name="IDS_TEST1">
+                   {NUM, plural
+                    =1 {Test text for numeric one}
+                    other {Test text for plural with {NUM} as number}}
+                 </message>
+               </messages>
+             </release>
+           </grit>
+        """.splitlines()
 
   OLD_GRDP_CONTENTS = (
     '<?xml version="1.0" encoding="utf-8"?>',
@@ -2713,6 +2757,39 @@ class TranslationScreenshotsTest(unittest.TestCase):
       '</message>',
     '</grit-part>')
 
+  # A grdp file with one ICU syntax message without syntax errors.
+  NEW_GRDP_CONTENTS_ICU_SYNTAX_OK1 = (
+    '<?xml version="1.0" encoding="utf-8"?>',
+      '<grit-part>',
+        '<message name="IDS_PART_TEST1">',
+           '{NUM, plural,',
+            '=1 {Test text for numeric one}',
+            'other {Test text for plural with {NUM} as number}}',
+        '</message>',
+    '</grit-part>')
+  # A grdp file with one ICU syntax message without syntax errors.
+  NEW_GRDP_CONTENTS_ICU_SYNTAX_OK2 = (
+    '<?xml version="1.0" encoding="utf-8"?>',
+      '<grit-part>',
+        '<message name="IDS_PART_TEST1">',
+           '{NUM, plural,',
+            '=1 {Different test text for numeric one}',
+            'other {Different test text for plural with {NUM} as number}}',
+        '</message>',
+    '</grit-part>')
+
+  # A grdp file with one ICU syntax message with syntax errors (superfluent
+  # whitespace).
+  NEW_GRDP_CONTENTS_ICU_SYNTAX_ERROR = (
+    '<?xml version="1.0" encoding="utf-8"?>',
+      '<grit-part>',
+        '<message name="IDS_PART_TEST1">',
+           '{NUM, plural,',
+            '= 1 {Test text for numeric one}',
+            'other {Test text for plural with {NUM} as number}}',
+        '</message>',
+    '</grit-part>')
+
   DO_NOT_UPLOAD_PNG_MESSAGE = ('Do not include actual screenshots in the '
                                'changelist. Run '
                                'tools/translate/upload_screenshots.py to '
@@ -2724,6 +2801,9 @@ class TranslationScreenshotsTest(unittest.TestCase):
                                  'these files to your changelist:')
   REMOVE_SIGNATURES_MESSAGE = ('You removed strings associated with these '
                                'files. Remove:')
+  ICU_SYNTAX_ERROR_MESSAGE = ('ICU syntax errors were found in the following '
+                              'strings (problems or feedback? Contact '
+                              'rainhard@chromium.org):')
 
   def makeInputApi(self, files):
     input_api = MockInputApi()
@@ -2742,7 +2822,7 @@ class TranslationScreenshotsTest(unittest.TestCase):
                        self.NEW_GRD_CONTENTS1, action='M'),
       MockAffectedFile('part.grdp', self.NEW_GRDP_CONTENTS1,
                        self.NEW_GRDP_CONTENTS1, action='M')])
-    warnings = PRESUBMIT._CheckTranslationScreenshots(input_api,
+    warnings = PRESUBMIT._CheckStrings(input_api,
                                                       MockOutputApi())
     self.assertEqual(0, len(warnings))
 
@@ -2752,7 +2832,7 @@ class TranslationScreenshotsTest(unittest.TestCase):
                        self.NEW_GRD_CONTENTS1, action='M'),
       MockAffectedFile('part.grdp', self.NEW_GRDP_CONTENTS2,
                        self.NEW_GRDP_CONTENTS1, action='M')])
-    warnings = PRESUBMIT._CheckTranslationScreenshots(input_api,
+    warnings = PRESUBMIT._CheckStrings(input_api,
                                                       MockOutputApi())
     self.assertEqual(1, len(warnings))
     self.assertEqual(self.GENERATE_SIGNATURES_MESSAGE, warnings[0].message)
@@ -2767,7 +2847,7 @@ class TranslationScreenshotsTest(unittest.TestCase):
                        self.OLD_GRD_CONTENTS, action='M'),
       MockAffectedFile('part.grdp', self.NEW_GRDP_CONTENTS2,
                        self.OLD_GRDP_CONTENTS, action='M')])
-    warnings = PRESUBMIT._CheckTranslationScreenshots(input_api,
+    warnings = PRESUBMIT._CheckStrings(input_api,
                                                       MockOutputApi())
     self.assertEqual(1, len(warnings))
     self.assertEqual(self.GENERATE_SIGNATURES_MESSAGE, warnings[0].message)
@@ -2794,7 +2874,7 @@ class TranslationScreenshotsTest(unittest.TestCase):
         MockAffectedFile(
             os.path.join('test_grd', 'IDS_TEST1.png'), 'binary', action='A')
     ])
-    warnings = PRESUBMIT._CheckTranslationScreenshots(input_api,
+    warnings = PRESUBMIT._CheckStrings(input_api,
                                                       MockOutputApi())
     self.assertEqual(2, len(warnings))
     self.assertEqual(self.DO_NOT_UPLOAD_PNG_MESSAGE, warnings[0].message)
@@ -2829,7 +2909,7 @@ class TranslationScreenshotsTest(unittest.TestCase):
             os.path.join('part_grdp', 'IDS_PART_TEST1.png'), 'binary',
             action='A')
     ])
-    warnings = PRESUBMIT._CheckTranslationScreenshots(input_api,
+    warnings = PRESUBMIT._CheckStrings(input_api,
                                                       MockOutputApi())
     self.assertEqual(2, len(warnings))
     self.assertEqual(self.DO_NOT_UPLOAD_PNG_MESSAGE, warnings[0].message)
@@ -2874,7 +2954,7 @@ class TranslationScreenshotsTest(unittest.TestCase):
             'binary',
             action='A'),
     ])
-    warnings = PRESUBMIT._CheckTranslationScreenshots(input_api,
+    warnings = PRESUBMIT._CheckStrings(input_api,
                                                       MockOutputApi())
     self.assertEqual([], warnings)
 
@@ -2902,7 +2982,7 @@ class TranslationScreenshotsTest(unittest.TestCase):
         MockFile(os.path.join('part_grdp', 'IDS_PART_TEST2.png.sha1'),
                  'binary', '')
     ])
-    warnings = PRESUBMIT._CheckTranslationScreenshots(input_api,
+    warnings = PRESUBMIT._CheckStrings(input_api,
                                                       MockOutputApi())
     self.assertEqual(1, len(warnings))
     self.assertEqual(self.REMOVE_SIGNATURES_MESSAGE, warnings[0].message)
@@ -2942,7 +3022,7 @@ class TranslationScreenshotsTest(unittest.TestCase):
             'old_contents',
             action='D')
     ])
-    warnings = PRESUBMIT._CheckTranslationScreenshots(input_api,
+    warnings = PRESUBMIT._CheckStrings(input_api,
                                                       MockOutputApi())
     self.assertEqual(1, len(warnings))
     self.assertEqual(self.REMOVE_SIGNATURES_MESSAGE, warnings[0].message)
@@ -2981,9 +3061,68 @@ class TranslationScreenshotsTest(unittest.TestCase):
             'binary',
             action='D')
     ])
-    warnings = PRESUBMIT._CheckTranslationScreenshots(input_api,
+    warnings = PRESUBMIT._CheckStrings(input_api,
                                                       MockOutputApi())
     self.assertEqual([], warnings)
+
+  def testIcuSyntax(self):
+    # Add valid ICU syntax string. Should not raise an error.
+    input_api = self.makeInputApi([
+      MockAffectedFile('test.grd', self.NEW_GRD_CONTENTS_ICU_SYNTAX_OK2,
+                       self.NEW_GRD_CONTENTS1, action='M'),
+      MockAffectedFile('part.grdp', self.NEW_GRDP_CONTENTS_ICU_SYNTAX_OK2,
+                       self.NEW_GRDP_CONTENTS1, action='M')])
+    results = PRESUBMIT._CheckStrings(input_api, MockOutputApi())
+    # We expect no ICU syntax errors.
+    icu_errors = [e for e in results
+        if e.message == self.ICU_SYNTAX_ERROR_MESSAGE]
+    self.assertEqual(0, len(icu_errors))
+
+    # Valid changes in ICU syntax. Should not raise an error.
+    input_api = self.makeInputApi([
+      MockAffectedFile('test.grd', self.NEW_GRD_CONTENTS_ICU_SYNTAX_OK2,
+                       self.NEW_GRD_CONTENTS_ICU_SYNTAX_OK1, action='M'),
+      MockAffectedFile('part.grdp', self.NEW_GRDP_CONTENTS_ICU_SYNTAX_OK2,
+                       self.NEW_GRDP_CONTENTS_ICU_SYNTAX_OK1, action='M')])
+    results = PRESUBMIT._CheckStrings(input_api, MockOutputApi())
+    # We expect no ICU syntax errors.
+    icu_errors = [e for e in results
+        if e.message == self.ICU_SYNTAX_ERROR_MESSAGE]
+    self.assertEqual(0, len(icu_errors))
+
+    # Add invalid ICU syntax strings. Should raise two errors.
+    input_api = self.makeInputApi([
+      MockAffectedFile('test.grd', self.NEW_GRD_CONTENTS_ICU_SYNTAX_ERROR,
+                       self.NEW_GRD_CONTENTS1, action='M'),
+      MockAffectedFile('part.grdp', self.NEW_GRDP_CONTENTS_ICU_SYNTAX_ERROR,
+                       self.NEW_GRD_CONTENTS1, action='M')])
+    results = PRESUBMIT._CheckStrings(input_api, MockOutputApi())
+    # We expect 2 ICU syntax errors.
+    icu_errors = [e for e in results
+        if e.message == self.ICU_SYNTAX_ERROR_MESSAGE]
+    self.assertEqual(1, len(icu_errors))
+    self.assertEqual([
+        'IDS_TEST1: This message looks like an ICU plural, but does not follow '
+        'ICU syntax.',
+        'IDS_PART_TEST1: Variant "= 1" is not valid for plural message'
+      ], icu_errors[0].items)
+
+    # Change two strings to have ICU syntax errors. Should raise two errors.
+    input_api = self.makeInputApi([
+      MockAffectedFile('test.grd', self.NEW_GRD_CONTENTS_ICU_SYNTAX_ERROR,
+                       self.NEW_GRD_CONTENTS_ICU_SYNTAX_OK1, action='M'),
+      MockAffectedFile('part.grdp', self.NEW_GRDP_CONTENTS_ICU_SYNTAX_ERROR,
+                       self.NEW_GRDP_CONTENTS_ICU_SYNTAX_OK1, action='M')])
+    results = PRESUBMIT._CheckStrings(input_api, MockOutputApi())
+    # We expect 2 ICU syntax errors.
+    icu_errors = [e for e in results
+        if e.message == self.ICU_SYNTAX_ERROR_MESSAGE]
+    self.assertEqual(1, len(icu_errors))
+    self.assertEqual([
+        'IDS_TEST1: This message looks like an ICU plural, but does not follow '
+        'ICU syntax.',
+        'IDS_PART_TEST1: Variant "= 1" is not valid for plural message'
+      ], icu_errors[0].items)
 
 
 class TranslationExpectationsTest(unittest.TestCase):

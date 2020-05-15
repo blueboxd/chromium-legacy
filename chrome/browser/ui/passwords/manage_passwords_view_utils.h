@@ -49,10 +49,11 @@ std::pair<base::string16, base::string16> GetCredentialLabelsForAccountChooser(
 // bubble (depending on |dialog_type|). If the registry controlled domain of
 // |user_visible_url| (i.e. the one seen in the omnibox) differs from the
 // registry controlled domain of |form_origin_url|, it adds the site name.
-void GetSavePasswordDialogTitleTextAndLinkRange(const GURL& user_visible_url,
-                                                const GURL& form_origin_url,
-                                                PasswordTitleType dialog_type,
-                                                base::string16* title);
+void GetSavePasswordDialogTitleTextAndLinkRange(
+    const GURL& user_visible_url,
+    const url::Origin& form_origin_url,
+    PasswordTitleType dialog_type,
+    base::string16* title);
 
 // Sets the formatted |title| in the Manage Passwords bubble. If the registry
 // controlled domain of |user_visible_url| (i.e. the one seen in the omnibox)
@@ -66,7 +67,7 @@ void GetSavePasswordDialogTitleTextAndLinkRange(const GURL& user_visible_url,
 // The *_NO_PASSWORDS_* variants of the title strings are used when no
 // credentials are present.
 void GetManagePasswordsDialogTitleText(const GURL& user_visible_url,
-                                       const GURL& password_origin_url,
+                                       const url::Origin& password_origin_url,
                                        bool has_credentials,
                                        base::string16* title);
 

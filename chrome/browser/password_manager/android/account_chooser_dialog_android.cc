@@ -101,7 +101,7 @@ void FetchAvatar(const base::android::ScopedJavaGlobalRef<jobject>& java_dialog,
 AccountChooserDialogAndroid::AccountChooserDialogAndroid(
     content::WebContents* web_contents,
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
-    const GURL& origin,
+    const url::Origin& origin,
     const ManagePasswordsState::CredentialsCallback& callback)
     : content::WebContentsObserver(web_contents),
       web_contents_(web_contents),

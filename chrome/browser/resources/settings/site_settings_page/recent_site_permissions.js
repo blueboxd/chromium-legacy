@@ -81,9 +81,12 @@ Polymer({
     // only fire once.
     assert(!oldConfig);
 
-    this.focusConfig.set(routes.SITE_SETTINGS_SITE_DETAILS.path, () => {
-      this.shouldFocusAfterPopulation_ = true;
-    });
+    this.focusConfig.set(
+        routes.SITE_SETTINGS_SITE_DETAILS.path + '_' +
+            routes.SITE_SETTINGS.path,
+        () => {
+          this.shouldFocusAfterPopulation_ = true;
+        });
   },
 
   /**

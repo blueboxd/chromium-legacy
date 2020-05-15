@@ -259,6 +259,7 @@ const char kGiftCardRe[] = "gift.?(card|cert)";
 const char kDebitGiftCardRe[] =
     "(?:visa|mastercard|discover|amex|american express).*gift.?card";
 const char kDebitCardRe[] = "debit.*card";
+const char kDayRe[] = "day";
 
 /////////////////////////////////////////////////////////////////////////////
 // email_field.cc

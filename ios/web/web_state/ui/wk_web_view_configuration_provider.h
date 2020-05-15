@@ -63,6 +63,12 @@ class WKWebViewConfigurationProvider : public base::SupportsUserData::Data {
   // (this will be enforced in debug builds).
   CRWWKScriptMessageRouter* GetScriptMessageRouter();
 
+  // Recreates and re-adds all injected Javascript into the current
+  // configuration. This will only affect WebStates that are loaded after a call
+  // to this function. All current WebStates will keep their existing Javascript
+  // until a reload.
+  void UpdateScripts();
+
   // Purges config and router objects if they exist. When this method is called
   // config and config's process pool must not be retained by anyone (this will
   // be enforced in debug builds).

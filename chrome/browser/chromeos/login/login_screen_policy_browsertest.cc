@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenGuestButtonPolicyTest, NoUsers) {
   EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
 }
 
-IN_PROC_BROWSER_TEST_F(LoginScreenGuestButtonPolicyTest, HasUsers) {
+IN_PROC_BROWSER_TEST_F(LoginScreenGuestButtonPolicyTest, DISABLED_HasUsers) {
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
 
   // Default.

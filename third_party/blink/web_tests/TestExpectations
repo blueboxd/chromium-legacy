@@ -4323,12 +4323,6 @@ crbug.com/777222 http/tests/devtools/inspect-iframe-from-different-domain.js [ P
 # Sheriff failures 2017-10-24
 crbug.com/773122 crbug.com/777813 [ Win ] virtual/text-antialias/font-ascent-mac.html [ Failure Pass ]
 
-# Sheriff failures 2017-11-13
-crbug.com/783800 external/wpt/mediacapture-image/MediaStreamTrack-applyConstraints.html [ Pass Failure ]
-crbug.com/783800 external/wpt/mediacapture-image/MediaStreamTrack-applyConstraints-getSettings.html [ Pass Failure ]
-crbug.com/783301 external/wpt/mediacapture-image/MediaStreamTrack-getSettings.html [ Pass Failure ]
-crbug.com/783301 external/wpt/mediacapture-image/MediaStreamTrack-getCapabilities.html [ Pass Failure ]
-
 # Cookie Store API
 crbug.com/827231 [ Win ] external/wpt/cookie-store/change_eventhandler_for_document_cookie.tentative.https.window.html [ Pass Failure Timeout ]
 
@@ -4831,6 +4825,10 @@ crbug.com/840659 external/wpt/webrtc/simulcast/h264.https.html [ Pass Failure ]
 
 # Mac doesn't support lowLatency/desynchronized Canvas Contexts.
 crbug.com/922218 [ Mac ] fast/canvas-api/canvas-lowlatency-getContext.html [ Failure ]
+
+# Awaiting V8 roll.
+crbug.com/v8/5416 http/tests/devtools/sources/debugger-ui/function-generator-details.js [ Pass Failure ]
+crbug.com/v8/5416 http/tests/devtools/console/console-format-es6.js [ Pass Failure ]
 
 # Sheriff 2019-01-14
 crbug.com/921583 http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]

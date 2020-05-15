@@ -140,9 +140,11 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   PasswordRequirementsService* GetPasswordRequirementsService() override {
     return &password_requirements_service_;
   }
-  void SetLastCommittedEntryUrl(const GURL& url) { last_committed_url_ = url; }
-  const GURL& GetLastCommittedEntryURL() const override {
-    return last_committed_url_;
+  void SetLastCommittedEntryUrl(const GURL& url) {
+    last_committed_origin_ = url::Origin::Create(url);
+  }
+  url::Origin GetLastCommittedOrigin() const override {
+    return last_committed_origin_;
   }
 
   TestPasswordManagerDriver* test_driver() { return &driver_; }
@@ -152,7 +154,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   scoped_refptr<TestPasswordStore> store_;
   TestPasswordManagerDriver driver_;
   PasswordRequirementsService password_requirements_service_;
-  GURL last_committed_url_;
+  url::Origin last_committed_origin_;
 };
 
 }  // anonymous namespace

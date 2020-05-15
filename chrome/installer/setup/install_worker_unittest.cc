@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/test/scoped_install_details.h"
+#include "chrome/installer/setup/install_params.h"
 #include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
@@ -316,15 +317,14 @@ TEST_F(InstallWorkerTest, TestInstallChromeSystem) {
   EXPECT_CALL(work_item_list, AddDeleteRegKeyWorkItem(_, _, _))
       .WillRepeatedly(Return(delete_reg_key_work_item.get()));
 
-  AddInstallWorkItems(*installation_state.get(),
-                      *installer_state.get(),
-                      setup_path_,
-                      archive_path_,
-                      src_path_,
-                      temp_dir_,
-                      current_version_.get(),
-                      *new_version_.get(),
-                      &work_item_list);
+  std::unique_ptr<base::Version> current_version(
+      installer_state->GetCurrentVersion(*installation_state));
+  installer::InstallParams install_params = {
+      *installer_state, *installation_state, setup_path_, current_version.get(),
+      archive_path_,    src_path_,           temp_dir_,   *new_version_,
+  };
+
+  AddInstallWorkItems(install_params, &work_item_list);
 }
 
 // Tests for installer::AddUpdateBrandCodeWorkItem().

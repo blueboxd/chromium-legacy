@@ -157,7 +157,6 @@ DumpAccessibilityTestBase::DumpUnfilteredAccessibilityTreeAsString() {
 
 void DumpAccessibilityTestBase::ParseHtmlForExtraDirectives(
     const std::string& test_html,
-    std::vector<std::string>* no_load_expected,
     std::vector<std::string>* wait_for,
     std::vector<std::string>* execute,
     std::vector<std::string>* run_until,
@@ -168,7 +167,6 @@ void DumpAccessibilityTestBase::ParseHtmlForExtraDirectives(
     const std::string& allow_str = formatter_->GetAllowString();
     const std::string& deny_str = formatter_->GetDenyString();
     const std::string& deny_node_str = formatter_->GetDenyNodeString();
-    const std::string& no_load_expected_str = "@NO-LOAD-EXPECTED:";
     const std::string& wait_str = "@WAIT-FOR:";
     const std::string& execute_str = "@EXECUTE-AND-WAIT-FOR:";
     const std::string& until_str = "@RUN-UNTIL-EVENT:";
@@ -196,9 +194,6 @@ void DumpAccessibilityTestBase::ParseHtmlForExtraDirectives(
         node_filters_.push_back(
             NodeFilter(parts[0], base::UTF8ToUTF16(parts[1])));
       }
-    } else if (base::StartsWith(line, no_load_expected_str,
-                                base::CompareCase::SENSITIVE)) {
-      no_load_expected->push_back(line.substr(no_load_expected_str.size()));
     } else if (base::StartsWith(line, wait_str, base::CompareCase::SENSITIVE)) {
       wait_for->push_back(line.substr(wait_str.size()));
     } else if (base::StartsWith(line, execute_str,
@@ -289,7 +284,6 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   }
 
   // Parse filters and other directives in the test file.
-  std::vector<std::string> no_load_expected;
   std::vector<std::string> wait_for;
   std::vector<std::string> execute;
   std::vector<std::string> run_until;
@@ -298,8 +292,8 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   node_filters_.clear();
   formatter_->AddDefaultFilters(&property_filters_);
   AddDefaultFilters(&property_filters_);
-  ParseHtmlForExtraDirectives(html_contents, &no_load_expected, &wait_for,
-                              &execute, &run_until, &default_action_on);
+  ParseHtmlForExtraDirectives(html_contents, &wait_for, &execute, &run_until,
+                              &default_action_on);
 
   // Get the test URL.
   GURL url(embedded_test_server()->GetURL("/" + std::string(file_dir) + "/" +
@@ -349,7 +343,7 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     waiter.WaitForNotification();
   }
 
-  WaitForAXTreeLoaded(web_contents, no_load_expected, wait_for);
+  WaitForAXTreeLoaded(web_contents, wait_for);
 
   // Call the subclass to dump the output.
   std::vector<std::string> actual_lines = Dump(run_until);
@@ -393,7 +387,6 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
 
 void DumpAccessibilityTestBase::WaitForAXTreeLoaded(
     WebContentsImpl* web_contents,
-    const std::vector<std::string>& no_load_expected,
     const std::vector<std::string>& wait_for) {
   // Get the url of every frame in the frame tree.
   FrameTree* frame_tree = web_contents->GetFrameTree();
@@ -408,18 +401,8 @@ void DumpAccessibilityTestBase::WaitForAXTreeLoaded(
     //
     // We also ignore frame tree nodes created for portals in the outer
     // WebContents as the node doesn't have a url set.
-
     std::string url = node->current_url().spec();
-
-    // sometimes we expect a url to never load, in these cases, don't wait.
-    bool skip_url = false;
-    for (std::string no_load_url : no_load_expected) {
-      if (url.find(no_load_url) != std::string::npos) {
-        skip_url = true;
-        break;
-      }
-    }
-    if (!skip_url && url != url::kAboutBlankURL && !url.empty() &&
+    if (url != url::kAboutBlankURL && !url.empty() &&
         node->frame_owner_element_type() !=
             blink::mojom::FrameOwnerElementType::kPortal) {
       all_frame_urls.push_back(url);
@@ -483,7 +466,7 @@ void DumpAccessibilityTestBase::WaitForAXTreeLoaded(
 
   for (WebContents* inner_contents : web_contents->GetInnerWebContents()) {
     WaitForAXTreeLoaded(static_cast<WebContentsImpl*>(inner_contents),
-                        no_load_expected, std::vector<std::string>());
+                        std::vector<std::string>());
   }
 }
 

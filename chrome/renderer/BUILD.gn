@@ -403,6 +403,8 @@ static_library("renderer") {
     sources += [
       "media/chrome_speech_recognition_client.cc",
       "media/chrome_speech_recognition_client.h",
+      "performance_manager/decorators/v8_per_frame_memory_reporter_impl.cc",
+      "performance_manager/decorators/v8_per_frame_memory_reporter_impl.h",
       "searchbox/search_bouncer.cc",
       "searchbox/search_bouncer.h",
       "searchbox/searchbox.cc",
@@ -411,7 +413,10 @@ static_library("renderer") {
       "searchbox/searchbox_extension.h",
     ]
 
-    deps += [ "//chrome/common/search:generate_chrome_colors_info" ]
+    deps += [
+      "//chrome/common/performance_manager/mojom",
+      "//chrome/common/search:generate_chrome_colors_info",
+    ]
   }
 
   if (is_android) {

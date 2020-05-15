@@ -61,9 +61,9 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
       form_to_save_->GetPendingCredentials().federation_origin.opaque()
           ? PasswordTitleType::SAVE_PASSWORD
           : PasswordTitleType::SAVE_ACCOUNT;
-  GetSavePasswordDialogTitleTextAndLinkRange(web_contents->GetVisibleURL(),
-                                             form_to_save_->GetOrigin(), type,
-                                             &message);
+  GetSavePasswordDialogTitleTextAndLinkRange(
+      web_contents->GetVisibleURL(),
+      url::Origin::Create(form_to_save_->GetOrigin()), type, &message);
   SetMessage(message);
 
   if (type == PasswordTitleType::SAVE_PASSWORD &&

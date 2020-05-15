@@ -68,7 +68,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
   MOCK_METHOD3(PasswordWasAutofilled,
                void(const std::vector<const PasswordForm*>&,
-                    const GURL&,
+                    const url::Origin&,
                     const std::vector<const PasswordForm*>*));
 
   MOCK_CONST_METHOD0(IsMainFrameSecure, bool());
@@ -172,7 +172,7 @@ TEST_F(PasswordFormFillingTest, Autofill) {
   PasswordFormFillData fill_data;
   EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
   EXPECT_CALL(driver_, ShowInitialPasswordAccountSuggestions(_)).Times(0);
-  EXPECT_CALL(client_, PasswordWasAutofilled(_, _, _));
+  EXPECT_CALL(client_, PasswordWasAutofilled);
 
   LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
       &client_, &driver_, observed_form_, best_matches, federated_matches_,
@@ -237,7 +237,7 @@ TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {
 
     PasswordFormFillData fill_data;
     EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
-    EXPECT_CALL(client_, PasswordWasAutofilled(_, _, _));
+    EXPECT_CALL(client_, PasswordWasAutofilled);
 
     LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
         &client_, &driver_, observed_form, best_matches, federated_matches_,
@@ -260,7 +260,7 @@ TEST_F(PasswordFormFillingTest, AutofillPSLMatch) {
   PasswordFormFillData fill_data;
   EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
   EXPECT_CALL(driver_, ShowInitialPasswordAccountSuggestions(_)).Times(0);
-  EXPECT_CALL(client_, PasswordWasAutofilled(_, _, _));
+  EXPECT_CALL(client_, PasswordWasAutofilled);
 
   LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
       &client_, &driver_, observed_form_, best_matches, federated_matches_,

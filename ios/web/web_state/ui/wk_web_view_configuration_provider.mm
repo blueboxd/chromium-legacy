@@ -143,16 +143,7 @@ void WKWebViewConfigurationProvider::ResetWithWebViewConfiguration(
   [configuration_ setAllowsInlineMediaPlayback:YES];
   // setJavaScriptCanOpenWindowsAutomatically is required to support popups.
   [[configuration_ preferences] setJavaScriptCanOpenWindowsAutomatically:YES];
-  // Main frame script depends upon scripts injected into all frames, so the
-  // "AllFrames" scripts must be injected first.
-  [[configuration_ userContentController]
-      addUserScript:InternalGetDocumentStartScriptForAllFrames(browser_state_)];
-  [[configuration_ userContentController]
-      addUserScript:InternalGetDocumentStartScriptForMainFrame(browser_state_)];
-  [[configuration_ userContentController]
-      addUserScript:InternalGetDocumentEndScriptForAllFrames(browser_state_)];
-  [[configuration_ userContentController]
-      addUserScript:InternalGetDocumentEndScriptForMainFrame(browser_state_)];
+  UpdateScripts();
 
   if (!scheme_handler_) {
     scoped_refptr<network::SharedURLLoaderFactory> shared_loader_factory =
@@ -203,6 +194,20 @@ WKWebViewConfigurationProvider::GetScriptMessageRouter() {
         initWithUserContentController:userContentController];
   }
   return router_;
+}
+
+void WKWebViewConfigurationProvider::UpdateScripts() {
+  [configuration_.userContentController removeAllUserScripts];
+  // Main frame script depends upon scripts injected into all frames, so the
+  // "AllFrames" scripts must be injected first.
+  [configuration_.userContentController
+      addUserScript:InternalGetDocumentStartScriptForAllFrames(browser_state_)];
+  [configuration_.userContentController
+      addUserScript:InternalGetDocumentStartScriptForMainFrame(browser_state_)];
+  [configuration_.userContentController
+      addUserScript:InternalGetDocumentEndScriptForAllFrames(browser_state_)];
+  [configuration_.userContentController
+      addUserScript:InternalGetDocumentEndScriptForMainFrame(browser_state_)];
 }
 
 void WKWebViewConfigurationProvider::Purge() {

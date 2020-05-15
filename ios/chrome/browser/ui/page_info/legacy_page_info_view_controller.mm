@@ -212,20 +212,20 @@ const CGFloat kButtonXOffset = kTextXPosition;
   NSMutableArray* subviews = [NSMutableArray array];
 
     // Only certain sections have images. This affects the X position.
-  BOOL hasImage = _model.image != nil;
+  BOOL hasImage = _model.legacyImage != nil;
   CGFloat xPosition = (hasImage ? kTextXPosition : kTextXPositionNoImage);
 
   // Insert the image subview for sections that are appropriate.
   CGFloat imageBaseline = offset + kImageSize;
   if (hasImage) {
-    [self addImage:[_model.image imageWithRenderingMode:
-                                     UIImageRenderingModeAlwaysTemplate]
+    [self addImage:[_model.legacyImage imageWithRenderingMode:
+                                           UIImageRenderingModeAlwaysTemplate]
         toSubviews:subviews
           atOffset:offset + PageInfoImageVerticalOffset()];
   }
 
     // Add the title.
-  offset += [self addHeadline:_model.title
+  offset += [self addHeadline:_model.siteURL
                    toSubviews:subviews
                       atPoint:CGPointMake(xPosition, offset)];
   offset += kHeadlineSpacing;

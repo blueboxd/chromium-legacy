@@ -66,12 +66,21 @@ NSString* TestWebClient::GetDocumentStartScriptForMainFrame(
   return early_page_script_ ? early_page_script_ : @"";
 }
 
+NSString* TestWebClient::GetDocumentStartScriptForAllFrames(
+    BrowserState* browser_state) const {
+  return early_all_frames_script_ ? early_all_frames_script_ : @"";
+}
+
 void TestWebClient::SetPluginNotSupportedText(const base::string16& text) {
   plugin_not_supported_text_ = text;
 }
 
 void TestWebClient::SetEarlyPageScript(NSString* page_script) {
   early_page_script_ = [page_script copy];
+}
+
+void TestWebClient::SetEarlyAllFramesScript(NSString* page_script) {
+  early_all_frames_script_ = [page_script copy];
 }
 
 void TestWebClient::AllowCertificateError(

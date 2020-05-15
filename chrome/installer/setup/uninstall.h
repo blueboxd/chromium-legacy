@@ -21,6 +21,7 @@ namespace installer {
 
 class InstallationState;
 class InstallerState;
+struct ModifyParams;
 
 enum DeleteResult {
   DELETE_SUCCEEDED,
@@ -53,23 +54,16 @@ void RemoveChromeLegacyRegistryKeys(const base::FilePath& chrome_exe);
 // This function uninstalls a product.  Hence we came up with this awesome
 // name for it.
 //
-// original_state: The installation state of all products on the system.
-// installer_state: State associated with this operation.
-// setup_exe: The path to the currently running setup.exe. It and its containing
-//     directories are left in-place if it is within the target directory of
-//     the product being uninstalled.
+// modify_params: See modify_params.h
 // remove_all: Remove all shared files, registry entries as well.
 // force_uninstall: Uninstall without prompting for user confirmation or
 //                  any checks for Chrome running.
 // cmd_line: CommandLine that contains information about the command that
 //           was used to launch current uninstaller.
-installer::InstallStatus UninstallProduct(
-    const InstallationState& original_state,
-    const InstallerState& installer_state,
-    const base::FilePath& setup_exe,
-    bool remove_all,
-    bool force_uninstall,
-    const base::CommandLine& cmd_line);
+installer::InstallStatus UninstallProduct(const ModifyParams& modify_params,
+                                          bool remove_all,
+                                          bool force_uninstall,
+                                          const base::CommandLine& cmd_line);
 
 // Cleans up the installation directory after all uninstall operations have
 // completed. Depending on what products are remaining, setup.exe and the

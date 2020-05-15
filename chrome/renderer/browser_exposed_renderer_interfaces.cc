@@ -26,6 +26,10 @@
 #include "components/spellcheck/renderer/spellcheck.h"
 #endif
 
+#if !defined(OS_ANDROID)
+#include "chrome/renderer/performance_manager/decorators/v8_per_frame_memory_reporter_impl.h"
+#endif
+
 #if defined(OS_LINUX)
 #include "base/allocator/buildflags.h"
 #if BUILDFLAG(USE_TCMALLOC)
@@ -71,6 +75,12 @@ void ExposeChromeRendererInterfacesToBrowser(
   binders->Add(
       base::BindRepeating(&safe_browsing::PhishingClassifierFilter::Create),
       base::SequencedTaskRunnerHandle::Get());
+#endif
+
+#if !defined(OS_ANDROID)
+  binders->Add(base::BindRepeating(
+                   &performance_manager::V8PerFrameMemoryReporterImpl::Create),
+               base::SequencedTaskRunnerHandle::Get());
 #endif
 
 #if defined(OS_LINUX)

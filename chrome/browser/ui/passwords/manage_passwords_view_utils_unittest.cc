@@ -141,7 +141,7 @@ TEST(ManagePasswordsViewUtilTest, GetSavePasswordDialogTitleTextAndLinkRange) {
     base::string16 title;
     GetSavePasswordDialogTitleTextAndLinkRange(
         GURL(kDomainsTestCases[i].user_visible_url),
-        GURL(kDomainsTestCases[i].form_origin_url),
+        url::Origin::Create(GURL(kDomainsTestCases[i].form_origin_url)),
         kDomainsTestCases[i].bubble_type, &title);
 
     // Verify against expectations.
@@ -180,7 +180,8 @@ TEST(ManagePasswordsViewUtilTest,
   // * SAVE_PASSWORD dialog type needs to be passed to match the
   //   IDS_SAVE_PASSWORD overridden above.
   GetSavePasswordDialogTitleTextAndLinkRange(
-      kExample, kExample, PasswordTitleType::SAVE_PASSWORD, &title);
+      kExample, url::Origin::Create(kExample), PasswordTitleType::SAVE_PASSWORD,
+      &title);
   // Verify that the test did not pass just because
   // GetSavePasswordDialogTitleTextAndLinkRange changed the resource IDs it uses
   // (and hence did not get the overridden empty string). If the empty localised
@@ -198,7 +199,8 @@ TEST(ManagePasswordsViewUtilTest, GetManagePasswordsDialogTitleText) {
     base::string16 title;
     GetManagePasswordsDialogTitleText(
         GURL(kDomainsTestCases[i].user_visible_url),
-        GURL(kDomainsTestCases[i].form_origin_url), true, &title);
+        url::Origin::Create(GURL(kDomainsTestCases[i].form_origin_url)), true,
+        &title);
 
     // Verify against expectations.
     base::string16 domain =

@@ -88,7 +88,7 @@ class InstallerState {
 
   // Returns the currently installed version in |target_path|, or NULL if no
   // products are installed. Ownership is passed to the caller.
-  base::Version* GetCurrentVersion(
+  std::unique_ptr<base::Version> GetCurrentVersion(
       const InstallationState& machine_state) const;
 
   // Returns the critical update version if all of the following are true:

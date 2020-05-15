@@ -11,6 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/web/common/web_view_creation_util.h"
+#include "ios/web/public/browsing_data/cookie_blocking_mode.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
 #import "ios/web/public/test/js_test_util.h"
@@ -53,6 +54,27 @@ TEST_F(PageScriptUtilTest, WKEmbedderScript) {
       web_view, GetDocumentStartScriptForMainFrame(GetBrowserState()));
   EXPECT_NSEQ(@"object",
               test::ExecuteJavaScript(web_view, @"typeof __gCrEmbedder"));
+}
+
+// Tests that the correct replacement has been made for the cookie blocking
+// state in the DocumentStartScriptForAllFrames.
+TEST_F(PageScriptUtilTest, AllFrameStartCookieReplacement) {
+  web::BrowserState* browser_state = GetBrowserState();
+  browser_state->SetCookieBlockingMode(web::CookieBlockingMode::kAllow);
+  NSString* script = GetDocumentStartScriptForAllFrames(browser_state);
+  EXPECT_EQ(0U, [script rangeOfString:@"$(COOKIE_STATE)"].length);
+  EXPECT_LT(0U, [script rangeOfString:@"(\"allow\")"].length);
+
+  browser_state->SetCookieBlockingMode(
+      web::CookieBlockingMode::kBlockThirdParty);
+  script = GetDocumentStartScriptForAllFrames(browser_state);
+  EXPECT_EQ(0U, [script rangeOfString:@"$(COOKIE_STATE)"].length);
+  EXPECT_LT(0U, [script rangeOfString:@"(\"block-third-party\")"].length);
+
+  browser_state->SetCookieBlockingMode(web::CookieBlockingMode::kBlock);
+  script = GetDocumentStartScriptForAllFrames(browser_state);
+  EXPECT_EQ(0U, [script rangeOfString:@"$(COOKIE_STATE)"].length);
+  EXPECT_LT(0U, [script rangeOfString:@"(\"block\")"].length);
 }
 
 }  // namespace

@@ -53,12 +53,12 @@ class ManagePasswordsState {
   // Move to CREDENTIAL_REQUEST_STATE.
   void OnRequestCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
-      const GURL& origin);
+      const url::Origin& origin);
 
   // Move to AUTO_SIGNIN_STATE. |local_forms| can't be empty.
   void OnAutoSignin(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-      const GURL& origin);
+      const url::Origin& origin);
 
   // Move to CONFIRMATION_STATE.
   void OnAutomaticPasswordSave(
@@ -71,7 +71,7 @@ class ManagePasswordsState {
   // federated credentials to show to the user as well.
   void OnPasswordAutofilled(
       const std::vector<const autofill::PasswordForm*>& password_forms,
-      GURL origin,
+      url::Origin origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches);
 
   // Move to INACTIVE_STATE.
@@ -102,7 +102,7 @@ class ManagePasswordsState {
   const std::vector<autofill::PasswordForm>& unsynced_credentials() const {
     return unsynced_credentials_;
   }
-  const GURL& origin() const { return origin_; }
+  const url::Origin& origin() const { return origin_; }
   password_manager::PasswordFormManagerForUI* form_manager() const {
     return form_manager_.get();
   }
@@ -130,7 +130,7 @@ class ManagePasswordsState {
 
   // The origin of the current page for which the state is stored. It's used to
   // determine which PasswordStore changes are applicable to the internal state.
-  GURL origin_;
+  url::Origin origin_;
 
   // Contains the password that was submitted.
   std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager_;

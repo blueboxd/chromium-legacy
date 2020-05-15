@@ -180,6 +180,8 @@ bool ImageCaptureImpl::HasPanTiltZoomPermissionGranted() {
   // Camera PTZ is desktop only at the moment.
   return true;
 #else
+  // TODO(crbug.com/934063): Remove when MediaCapturePanTilt blink feature is
+  // enabled by default.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures)) {
     return false;

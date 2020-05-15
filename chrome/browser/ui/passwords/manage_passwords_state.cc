@@ -83,7 +83,7 @@ void ManagePasswordsState::OnPendingPassword(
       DeepCopyNonPSLVector(form_manager_->GetBestMatches());
   AppendDeepCopyVector(form_manager_->GetFederatedMatches(),
                        &local_credentials_forms_);
-  origin_ = form_manager_->GetOrigin();
+  origin_ = url::Origin::Create(form_manager_->GetOrigin());
   SetState(password_manager::ui::PENDING_PASSWORD_STATE);
 }
 
@@ -95,13 +95,13 @@ void ManagePasswordsState::OnUpdatePassword(
       DeepCopyNonPSLVector(form_manager_->GetBestMatches());
   AppendDeepCopyVector(form_manager_->GetFederatedMatches(),
                        &local_credentials_forms_);
-  origin_ = form_manager_->GetOrigin();
+  origin_ = url::Origin::Create(form_manager_->GetOrigin());
   SetState(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
 }
 
 void ManagePasswordsState::OnRequestCredentials(
     std::vector<std::unique_ptr<PasswordForm>> local_credentials,
-    const GURL& origin) {
+    const url::Origin& origin) {
   ClearData();
   local_credentials_forms_ = std::move(local_credentials);
   origin_ = origin;
@@ -110,7 +110,7 @@ void ManagePasswordsState::OnRequestCredentials(
 
 void ManagePasswordsState::OnAutoSignin(
     std::vector<std::unique_ptr<PasswordForm>> local_forms,
-    const GURL& origin) {
+    const url::Origin& origin) {
   DCHECK(!local_forms.empty());
   ClearData();
   local_credentials_forms_ = std::move(local_forms);
@@ -129,13 +129,13 @@ void ManagePasswordsState::OnAutomaticPasswordSave(
   }
   AppendDeepCopyVector(form_manager_->GetFederatedMatches(),
                        &local_credentials_forms_);
-  origin_ = form_manager_->GetOrigin();
+  origin_ = url::Origin::Create(form_manager_->GetOrigin());
   SetState(password_manager::ui::CONFIRMATION_STATE);
 }
 
 void ManagePasswordsState::OnPasswordAutofilled(
     const std::vector<const PasswordForm*>& password_forms,
-    GURL origin,
+    url::Origin origin,
     const std::vector<const PasswordForm*>* federated_matches) {
   DCHECK(!password_forms.empty() ||
          (federated_matches && !federated_matches->empty()));
@@ -160,7 +160,7 @@ void ManagePasswordsState::OnPasswordAutofilled(
 
 void ManagePasswordsState::OnInactive() {
   ClearData();
-  origin_ = GURL();
+  origin_ = url::Origin();
   SetState(password_manager::ui::INACTIVE_STATE);
 }
 
@@ -172,7 +172,7 @@ void ManagePasswordsState::OnPasswordMovable(
       DeepCopyNonPSLVector(form_manager_->GetBestMatches());
   AppendDeepCopyVector(form_manager_->GetFederatedMatches(),
                        &local_credentials_forms_);
-  origin_ = form_manager_->GetOrigin();
+  origin_ = url::Origin::Create(form_manager_->GetOrigin());
   SetState(password_manager::ui::CAN_MOVE_PASSWORD_TO_ACCOUNT_STATE);
 }
 
@@ -242,7 +242,7 @@ void ManagePasswordsState::ClearData() {
 }
 
 bool ManagePasswordsState::AddForm(const PasswordForm& form) {
-  if (form.origin.GetOrigin() != origin_.GetOrigin())
+  if (url::Origin::Create(form.origin) != origin_)
     return false;
   if (UpdateFormInVector(form, &local_credentials_forms_))
     return true;

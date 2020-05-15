@@ -44,11 +44,11 @@ class StubPasswordManagerClient : public PasswordManagerClient {
       autofill::mojom::FocusedFieldType focused_field_type) override;
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-      const GURL& origin,
+      const url::Origin& origin,
       const CredentialsCallback& callback) override;
   void NotifyUserAutoSignin(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-      const GURL& origin) override;
+      const url::Origin& origin) override;
   void NotifyUserCouldBeAutoSignedIn(
       std::unique_ptr<autofill::PasswordForm>) override;
   void NotifySuccessfulLoginWithExistingPassword(
@@ -59,7 +59,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   PrefService* GetPrefs() const override;
   PasswordStore* GetProfilePasswordStore() const override;
   PasswordStore* GetAccountPasswordStore() const override;
-  const GURL& GetLastCommittedEntryURL() const override;
+  url::Origin GetLastCommittedOrigin() const override;
   const CredentialsFilter* GetStoreResultFilter() const override;
   const autofill::LogManager* GetLogManager() const override;
   const MockPasswordFeatureManager* GetPasswordFeatureManager() const override;

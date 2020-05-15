@@ -84,7 +84,7 @@ class ChromePasswordManagerClient
   bool IsFillingEnabled(const GURL& url) const override;
   bool IsFillingFallbackEnabled(const GURL& url) const override;
   void PostHSTSQueryForHost(
-      const GURL& origin,
+      const url::Origin& origin,
       password_manager::HSTSCallback callback) const override;
   bool PromptUserToSaveOrUpdatePassword(
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
@@ -105,7 +105,7 @@ class ChromePasswordManagerClient
       autofill::mojom::FocusedFieldType focused_field_type) override;
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-      const GURL& origin,
+      const url::Origin& origin,
       const CredentialsCallback& callback) override;
   void ShowTouchToFill(
       password_manager::PasswordManagerDriver* driver) override;
@@ -117,7 +117,7 @@ class ChromePasswordManagerClient
   void GeneratePassword() override;
   void NotifyUserAutoSignin(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-      const GURL& origin) override;
+      const url::Origin& origin) override;
   void NotifyUserCouldBeAutoSignedIn(
       std::unique_ptr<autofill::PasswordForm> form) override;
   void NotifySuccessfulLoginWithExistingPassword(
@@ -125,7 +125,7 @@ class ChromePasswordManagerClient
           submitted_manager) override;
   void NotifyStorePasswordCalled() override;
   void UpdateCredentialCache(
-      const GURL& origin,
+      const url::Origin& origin,
       const std::vector<const autofill::PasswordForm*>& best_matches,
       bool is_blacklisted) override;
   void AutomaticPasswordSave(
@@ -133,7 +133,7 @@ class ChromePasswordManagerClient
           saved_form_manager) override;
   void PasswordWasAutofilled(
       const std::vector<const autofill::PasswordForm*>& best_matches,
-      const GURL& origin,
+      const url::Origin& origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches)
       override;
   void AutofillHttpAuth(
@@ -167,7 +167,7 @@ class ChromePasswordManagerClient
   autofill::AutofillDownloadManager* GetAutofillDownloadManager() override;
   const GURL& GetMainFrameURL() const override;
   bool IsMainFrameSecure() const override;
-  const GURL& GetLastCommittedEntryURL() const override;
+  url::Origin GetLastCommittedOrigin() const override;
   const password_manager::CredentialsFilter* GetStoreResultFilter()
       const override;
   const autofill::LogManager* GetLogManager() const override;

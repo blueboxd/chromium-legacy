@@ -44,14 +44,14 @@ void StubPasswordManagerClient::FocusedInputChanged(
 
 bool StubPasswordManagerClient::PromptUserToChooseCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-    const GURL& origin,
+    const url::Origin& origin,
     const CredentialsCallback& callback) {
   return false;
 }
 
 void StubPasswordManagerClient::NotifyUserAutoSignin(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-    const GURL& origin) {}
+    const url::Origin& origin) {}
 
 void StubPasswordManagerClient::NotifyUserCouldBeAutoSignedIn(
     std::unique_ptr<autofill::PasswordForm> form) {}
@@ -76,8 +76,8 @@ PasswordStore* StubPasswordManagerClient::GetAccountPasswordStore() const {
   return nullptr;
 }
 
-const GURL& StubPasswordManagerClient::GetLastCommittedEntryURL() const {
-  return GURL::EmptyGURL();
+url::Origin StubPasswordManagerClient::GetLastCommittedOrigin() const {
+  return url::Origin();
 }
 
 const CredentialsFilter* StubPasswordManagerClient::GetStoreResultFilter()

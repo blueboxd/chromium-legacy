@@ -29,7 +29,6 @@ enum class CredentialSourceType;
 }  // namespace password_manager
 
 struct AccountInfo;
-class GURL;
 
 // An interface for ManagePasswordsBubbleModel implemented by
 // ManagePasswordsUIController. Allows to retrieve the current state of the tab
@@ -49,7 +48,7 @@ class PasswordsModelDelegate {
   GetPasswordFeatureManager() = 0;
 
   // Returns the URL of the site the current forms are retrieved for.
-  virtual const GURL& GetOrigin() const = 0;
+  virtual url::Origin GetOrigin() const = 0;
 
   // Returns the current tab state.
   virtual password_manager::ui::State GetState() const = 0;

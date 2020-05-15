@@ -116,7 +116,7 @@ bool InstallerState::system_install() const {
   return level_ == SYSTEM_LEVEL;
 }
 
-base::Version* InstallerState::GetCurrentVersion(
+std::unique_ptr<base::Version> InstallerState::GetCurrentVersion(
     const InstallationState& machine_state) const {
   std::unique_ptr<base::Version> current_version;
   const ProductState* product_state =
@@ -137,7 +137,7 @@ base::Version* InstallerState::GetCurrentVersion(
     current_version.reset(new base::Version(*version));
   }
 
-  return current_version.release();
+  return current_version;
 }
 
 base::Version InstallerState::DetermineCriticalVersion(

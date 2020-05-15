@@ -23,6 +23,7 @@ class GURL;
 
 // Returns a configuration based on the |URL|, the SSL |status| and if the
 // current page is an |offlinePage|.
+// TODO(crbug.com/1038923): This method should take a WebState.
 + (PageInfoSiteSecurityDescription*)configurationForURL:(const GURL&)URL
                                               SSLStatus:(web::SSLStatus&)status
                                             offlinePage:(BOOL)offlinePage;

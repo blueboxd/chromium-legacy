@@ -12,7 +12,7 @@
 
 #include "base/strings/string_piece.h"
 
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace autofill {
 struct PasswordForm;
@@ -41,7 +41,7 @@ std::pair<std::string, GURL> GetShownOriginAndLinkUrl(
 // Returns a string suitable for security display to the user (just like
 // |FormatUrlForSecurityDisplay| with OMIT_HTTP_AND_HTTPS) based on origin of
 // |password_form|) and without prefixes "m.", "mobile." or "www.".
-std::string GetShownOrigin(const GURL& origin);
+std::string GetShownOrigin(const url::Origin& origin);
 
 // Updates the |form_manager| pending credentials with |username| and
 // |password|.

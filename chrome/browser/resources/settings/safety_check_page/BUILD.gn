@@ -12,11 +12,11 @@ js_type_check("closure_compile_module") {
   deps = [
     ":safety_check_browser_proxy",
     ":safety_check_child",
-    ":safety_check_extensions_element",
+    ":safety_check_extensions_child",
     ":safety_check_page",
-    ":safety_check_passwords_element",
-    ":safety_check_safe_browsing_element",
-    ":safety_check_updates_element",
+    ":safety_check_passwords_child",
+    ":safety_check_safe_browsing_child",
+    ":safety_check_updates_child",
   ]
 }
 
@@ -32,7 +32,7 @@ js_library("safety_check_child") {
   ]
 }
 
-js_library("safety_check_extensions_element") {
+js_library("safety_check_extensions_child") {
   deps = [
     ":safety_check_child",
     "..:metrics_browser_proxy",
@@ -46,10 +46,10 @@ js_library("safety_check_extensions_element") {
 js_library("safety_check_page") {
   deps = [
     ":safety_check_browser_proxy",
-    ":safety_check_extensions_element",
-    ":safety_check_passwords_element",
-    ":safety_check_safe_browsing_element",
-    ":safety_check_updates_element",
+    ":safety_check_extensions_child",
+    ":safety_check_passwords_child",
+    ":safety_check_safe_browsing_child",
+    ":safety_check_updates_child",
     "..:hats_browser_proxy",
     "..:metrics_browser_proxy",
     "../autofill_page:password_manager_proxy",
@@ -62,7 +62,7 @@ js_library("safety_check_page") {
   ]
 }
 
-js_library("safety_check_passwords_element") {
+js_library("safety_check_passwords_child") {
   deps = [
     ":safety_check_child",
     "..:metrics_browser_proxy",
@@ -75,7 +75,7 @@ js_library("safety_check_passwords_element") {
   ]
 }
 
-js_library("safety_check_safe_browsing_element") {
+js_library("safety_check_safe_browsing_child") {
   deps = [
     ":safety_check_child",
     "..:metrics_browser_proxy",
@@ -88,7 +88,7 @@ js_library("safety_check_safe_browsing_element") {
   ]
 }
 
-js_library("safety_check_updates_element") {
+js_library("safety_check_updates_child") {
   deps = [
     ":safety_check_child",
     "..:lifetime_browser_proxy.m",
@@ -102,10 +102,10 @@ js_library("safety_check_updates_element") {
 html_to_js("web_components") {
   js_files = [
     "safety_check_child.js",
-    "safety_check_extensions_element.js",
+    "safety_check_extensions_child.js",
     "safety_check_page.js",
-    "safety_check_passwords_element.js",
-    "safety_check_safe_browsing_element.js",
-    "safety_check_updates_element.js",
+    "safety_check_passwords_child.js",
+    "safety_check_safe_browsing_child.js",
+    "safety_check_updates_child.js",
   ]
 }

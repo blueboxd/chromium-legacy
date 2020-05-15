@@ -35,16 +35,16 @@ void CredentialManagerImpl::Store(const CredentialInfo& credential,
                                   StoreCallback callback) {
   DCHECK_NE(CredentialType::CREDENTIAL_TYPE_EMPTY, credential.type);
 
+  const url::Origin origin = GetOrigin();
   if (password_manager_util::IsLoggingActive(client_)) {
     CredentialManagerLogger(client_->GetLogManager())
-        .LogStoreCredential(GetLastCommittedURL(), credential.type);
+        .LogStoreCredential(origin, credential.type);
   }
 
   // Send acknowledge response back.
   std::move(callback).Run();
 
-  const GURL origin = GetLastCommittedURL();
-  if (!client_->IsSavingAndFillingEnabled(origin))
+  if (!client_->IsSavingAndFillingEnabled(origin.GetURL()))
     return;
 
   client_->NotifyStorePasswordCalled();
@@ -56,9 +56,9 @@ void CredentialManagerImpl::Store(const CredentialInfo& credential,
   if (credential.type == CredentialType::CREDENTIAL_TYPE_PASSWORD)
     leak_delegate_.StartLeakCheck(*form);
 
-  std::string signon_realm = origin.GetOrigin().spec();
+  std::string signon_realm = origin.GetURL().spec();
   PasswordStore::FormDigest observed_digest(
-      autofill::PasswordForm::Scheme::kHtml, signon_realm, origin);
+      autofill::PasswordForm::Scheme::kHtml, signon_realm, origin.GetURL());
 
   // Create a custom form fetcher without HTTP->HTTPS migration as the API is
   // only available on HTTPS origins.
@@ -72,13 +72,13 @@ void CredentialManagerImpl::PreventSilentAccess(
     PreventSilentAccessCallback callback) {
   if (password_manager_util::IsLoggingActive(client_)) {
     CredentialManagerLogger(client_->GetLogManager())
-        .LogPreventSilentAccess(GetLastCommittedURL());
+        .LogPreventSilentAccess(GetOrigin());
   }
   // Send acknowledge response back.
   std::move(callback).Run();
 
   PasswordStore* store = GetPasswordStore();
-  if (!store || !client_->IsSavingAndFillingEnabled(GetLastCommittedURL()))
+  if (!store || !client_->IsSavingAndFillingEnabled(GetOrigin().GetURL()))
     return;
 
   if (!pending_require_user_mediation_) {
@@ -97,7 +97,7 @@ void CredentialManagerImpl::Get(CredentialMediationRequirement mediation,
   PasswordStore* store = GetPasswordStore();
   if (password_manager_util::IsLoggingActive(client_)) {
     CredentialManagerLogger(client_->GetLogManager())
-        .LogRequestCredential(GetLastCommittedURL(), mediation, federations);
+        .LogRequestCredential(GetOrigin(), mediation, federations);
   }
   if (pending_request_ || !store) {
     // Callback error.
@@ -112,7 +112,7 @@ void CredentialManagerImpl::Get(CredentialMediationRequirement mediation,
 
   // Return an empty credential if the current page has TLS errors, or if the
   // page is being prerendered.
-  if (!client_->IsFillingEnabled(GetLastCommittedURL())) {
+  if (!client_->IsFillingEnabled(GetOrigin().GetURL())) {
     std::move(callback).Run(CredentialManagerError::SUCCESS, CredentialInfo());
     LogCredentialManagerGetResult(
         metrics_util::CredentialManagerGetResult::kNone, mediation);
@@ -152,14 +152,13 @@ bool CredentialManagerImpl::IsZeroClickAllowed() const {
 PasswordStore::FormDigest CredentialManagerImpl::GetSynthesizedFormForOrigin()
     const {
   PasswordStore::FormDigest digest = {autofill::PasswordForm::Scheme::kHtml,
-                                      std::string(),
-                                      GetLastCommittedURL().GetOrigin()};
+                                      std::string(), GetOrigin().GetURL()};
   digest.signon_realm = digest.origin.spec();
   return digest;
 }
 
-GURL CredentialManagerImpl::GetOrigin() const {
-  return GetLastCommittedURL().GetOrigin();
+url::Origin CredentialManagerImpl::GetOrigin() const {
+  return client_->GetLastCommittedOrigin();
 }
 
 void CredentialManagerImpl::SendCredential(SendCredentialCallback send_callback,
@@ -168,7 +167,7 @@ void CredentialManagerImpl::SendCredential(SendCredentialCallback send_callback,
 
   if (password_manager_util::IsLoggingActive(client_)) {
     CredentialManagerLogger(client_->GetLogManager())
-        .LogSendCredential(GetLastCommittedURL(), info.type);
+        .LogSendCredential(GetOrigin(), info.type);
   }
   std::move(send_callback).Run(info);
   pending_request_.reset();
@@ -254,10 +253,6 @@ void CredentialManagerImpl::OnProvisionalSaveComplete() {
 
   // Otherwise, this is a new form, so as the user if they'd like to save.
   client_->PromptUserToSaveOrUpdatePassword(std::move(form_manager_), false);
-}
-
-GURL CredentialManagerImpl::GetLastCommittedURL() const {
-  return client_->GetLastCommittedEntryURL();
 }
 
 }  // namespace password_manager

@@ -1291,6 +1291,16 @@ class BBJSONGenerator(object):
     # references to configs outside of this directory are added, please change
     # their presubmit to run `generate_buildbot_json.py -c`, so that the tree
     # never ends up in an invalid state.
+    project_star = glob.glob(
+        os.path.join(self.args.infra_config_dir, 'project.star'))
+    if project_star:
+      is_master_pattern = re.compile('is_master\s*=\s*(True|False)')
+      for l in self.read_file(project_star[0]).splitlines():
+        match = is_master_pattern.search(l)
+        if match:
+          if match.group(1) == 'False':
+            return None
+          break
     bot_names = set()
     milo_configs = glob.glob(
         os.path.join(self.args.infra_config_dir, 'generated', 'luci-milo*.cfg'))
@@ -1379,29 +1389,30 @@ class BBJSONGenerator(object):
 
     # All bots should exist.
     bot_names = self.get_valid_bot_names()
-    internal_waterfalls = self.get_internal_waterfalls()
     builders_that_dont_exist = self.get_builders_that_do_not_actually_exist()
-    for waterfall in self.waterfalls:
-      # TODO(crbug.com/991417): Remove the need for this exception.
-      if waterfall['name'] in internal_waterfalls:
-        continue  # pragma: no cover
-      for bot_name in waterfall['machines']:
-        if bot_name in builders_that_dont_exist:
+    if bot_names is not None:
+      internal_waterfalls = self.get_internal_waterfalls()
+      for waterfall in self.waterfalls:
+        # TODO(crbug.com/991417): Remove the need for this exception.
+        if waterfall['name'] in internal_waterfalls:
           continue  # pragma: no cover
-        if bot_name not in bot_names:
-          if waterfall['name'] in ['client.v8.chromium', 'client.v8.fyi']:
-            # TODO(thakis): Remove this once these bots move to luci.
+        for bot_name in waterfall['machines']:
+          if bot_name in builders_that_dont_exist:
             continue  # pragma: no cover
-          if waterfall['name'] in ['tryserver.webrtc',
-                                   'webrtc.chromium.fyi.experimental']:
-            # These waterfalls have their bot configs in a different repo.
-            # so we don't know about their bot names.
-            continue  # pragma: no cover
-          if waterfall['name'] in ['client.devtools-frontend.integration',
-                                   'tryserver.devtools-frontend',
-                                   'chromium.devtools-frontend']:
-            continue  # pragma: no cover
-          raise self.unknown_bot(bot_name, waterfall['name'])
+          if bot_name not in bot_names:
+            if waterfall['name'] in ['client.v8.chromium', 'client.v8.fyi']:
+              # TODO(thakis): Remove this once these bots move to luci.
+              continue  # pragma: no cover
+            if waterfall['name'] in ['tryserver.webrtc',
+                                     'webrtc.chromium.fyi.experimental']:
+              # These waterfalls have their bot configs in a different repo.
+              # so we don't know about their bot names.
+              continue  # pragma: no cover
+            if waterfall['name'] in ['client.devtools-frontend.integration',
+                                     'tryserver.devtools-frontend',
+                                     'chromium.devtools-frontend']:
+              continue  # pragma: no cover
+            raise self.unknown_bot(bot_name, waterfall['name'])
 
     # All test suites must be referenced.
     suites_seen = set()

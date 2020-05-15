@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "media/capture/mojom/image_capture.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_capabilities.h"
@@ -17,6 +18,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
@@ -33,7 +35,8 @@ class ScriptPromiseResolver;
 class MODULES_EXPORT ImageCapture final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<ImageCapture>,
-      public ExecutionContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver,
+      public mojom::blink::PermissionObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ImageCapture);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -69,7 +72,7 @@ class MODULES_EXPORT ImageCapture final
 
   ScriptPromise grabFrame(ScriptState*);
 
-  MediaTrackCapabilities* GetMediaTrackCapabilities() const;
+  void GetMediaTrackCapabilities(MediaTrackCapabilities*) const;
   void SetMediaTrackConstraints(
       ScriptPromiseResolver*,
       const HeapVector<Member<MediaTrackConstraintSet>>&);
@@ -82,6 +85,12 @@ class MODULES_EXPORT ImageCapture final
  private:
   using PromiseResolverFunction =
       base::OnceCallback<void(ScriptPromiseResolver*)>;
+
+  // mojom::blink::PermissionObserver implementation.
+  // Called when we get an updated PTZ permission value from the browser.
+  void OnPermissionStatusChange(mojom::blink::PermissionStatus) override;
+
+  bool HasPanTiltZoomPermissionGranted() const;
 
   void OnMojoGetPhotoState(ScriptPromiseResolver*,
                            PromiseResolverFunction,
@@ -104,6 +113,16 @@ class MODULES_EXPORT ImageCapture final
   HeapMojoRemote<media::mojom::blink::ImageCapture,
                  HeapMojoWrapperMode::kWithoutContextObserver>
       service_;
+
+  // Whether the user has granted permission for the user to control camera PTZ.
+  // TODO(crbug.com/934063): This should be initialized with cached PTZ
+  // permission status.
+  mojom::blink::PermissionStatus pan_tilt_zoom_permission_ =
+      mojom::blink::PermissionStatus::ASK;
+  // The permission service, enabling us to check for the PTZ permission.
+  HeapMojoRemote<mojom::blink::PermissionService> permission_service_;
+  HeapMojoReceiver<mojom::blink::PermissionObserver, ImageCapture>
+      permission_observer_receiver_;
 
   Member<MediaTrackCapabilities> capabilities_;
   Member<MediaTrackSettings> settings_;

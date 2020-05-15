@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/metrics/incognito_observer.h"
 #include "chrome/browser/metrics/metrics_memory_details.h"
-#include "chrome/browser/privacy_budget/identifiability_study_settings.h"
 #include "components/metrics/file_metrics_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_service_client.h"
@@ -162,9 +161,6 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   static bool IsWebstoreExtension(base::StringPiece id);
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  // Chrome's privacy budget identifiability study settings.
-  std::unique_ptr<IdentifiabilityStudySettings> identifiability_study_settings_;
 
   // Weak pointer to the MetricsStateManager.
   metrics::MetricsStateManager* const metrics_state_manager_;

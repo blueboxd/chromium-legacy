@@ -42,7 +42,8 @@ NSString* recordIdentifierForPasswordForm(const autofill::PasswordForm& form) {
       password_manager::IsValidAndroidFacetURI(passwordForm.signon_realm)) {
     return nil;
   }
-  std::string site_name = password_manager::GetShownOrigin(passwordForm.origin);
+  std::string site_name = password_manager::GetShownOrigin(
+      url::Origin::Create(passwordForm.origin));
   NSString* keychainIdentifier =
       SysUTF8ToNSString(passwordForm.encrypted_password);
   return [self initWithFavicon:favicon

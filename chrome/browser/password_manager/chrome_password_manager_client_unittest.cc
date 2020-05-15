@@ -445,7 +445,7 @@ TEST_F(ChromePasswordManagerClientTest, SavingDependsOnAutomation) {
 TEST_F(ChromePasswordManagerClientTest, SavingAndFillingDisabledForAboutBlank) {
   const GURL kUrl(url::kAboutBlankURL);
   NavigateAndCommit(kUrl);
-  EXPECT_EQ(kUrl, GetClient()->GetLastCommittedEntryURL());
+  EXPECT_TRUE(GetClient()->GetLastCommittedOrigin().opaque());
   EXPECT_FALSE(GetClient()->IsSavingAndFillingEnabled(kUrl));
   EXPECT_FALSE(GetClient()->IsFillingEnabled(kUrl));
   EXPECT_FALSE(GetClient()->IsFillingFallbackEnabled(kUrl));
@@ -499,7 +499,8 @@ TEST_P(ChromePasswordManagerClientSchemeTest,
   const GURL url(base::StringPrintf("%s://example.org", GetParam()));
   VLOG(0) << url.possibly_invalid_spec();
   NavigateAndCommit(url);
-  EXPECT_EQ(url, GetClient()->GetLastCommittedEntryURL());
+  EXPECT_EQ(url::Origin::Create(url).GetURL(),
+            GetClient()->GetLastCommittedOrigin().GetURL());
 
   auto* it = std::find_if(
       std::begin(kTestCases), std::end(kTestCases),
@@ -520,7 +521,7 @@ INSTANTIATE_TEST_SUITE_P(
 }  // namespace
 
 TEST_F(ChromePasswordManagerClientTest, GetLastCommittedEntryURL_Empty) {
-  EXPECT_EQ(GURL::EmptyGURL(), GetClient()->GetLastCommittedEntryURL());
+  EXPECT_TRUE(GetClient()->GetLastCommittedOrigin().opaque());
 }
 
 TEST_F(ChromePasswordManagerClientTest, GetLastCommittedEntryURL) {
@@ -528,7 +529,7 @@ TEST_F(ChromePasswordManagerClientTest, GetLastCommittedEntryURL) {
       "https://accounts.google.com/ServiceLogin?continue="
       "https://passwords.google.com/settings");
   NavigateAndCommit(kUrl);
-  EXPECT_EQ(kUrl, GetClient()->GetLastCommittedEntryURL());
+  EXPECT_EQ(url::Origin::Create(kUrl), GetClient()->GetLastCommittedOrigin());
 }
 
 TEST_F(ChromePasswordManagerClientTest, WebUINoLogging) {

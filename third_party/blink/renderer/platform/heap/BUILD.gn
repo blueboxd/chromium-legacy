@@ -27,6 +27,10 @@ jumbo_source_set("heap_unsanitized") {
   configs +=
       [ "//third_party/blink/renderer/platform:blink_platform_implementation" ]
 
+  # std::atomic<>:: functions must be inlined.
+  configs -= [ "//build/config/compiler:default_optimization" ]
+  configs += [ "//build/config/compiler:optimize_max" ]
+
   sources = [
     "unsanitized_atomic.cc",
     "unsanitized_atomic.h",

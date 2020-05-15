@@ -227,6 +227,8 @@ source_set("unittests") {
     "presentation/presentation_service_delegate_impl_unittest.cc",
   ]
 
+  deps = []
+
   if (!is_android) {
     sources += [
       # In-browser discovery is not used by Android for now.
@@ -275,9 +277,9 @@ source_set("unittests") {
       "providers/extension/extension_media_route_provider_proxy_unittest.cc",
       "providers/wired_display/wired_display_media_route_provider_unittest.cc",
     ]
-  }
 
-  deps = []
+    deps += [ "//components/cast_channel" ]
+  }
 
   if (enable_openscreen) {
     include_dirs = [ "//third_party/openscreen/src" ]

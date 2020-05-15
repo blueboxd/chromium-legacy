@@ -68,8 +68,8 @@ class FakePasswordManagerClient : public StubPasswordManagerClient {
   }
 
   // PasswordManagerClient:
-  const GURL& GetLastCommittedEntryURL() const override {
-    return last_committed_entry_url_;
+  url::Origin GetLastCommittedOrigin() const override {
+    return last_committed_origin_;
   }
   MockPasswordStore* GetProfilePasswordStore() const override {
     return password_store_.get();
@@ -78,8 +78,8 @@ class FakePasswordManagerClient : public StubPasswordManagerClient {
     return identity_manager_;
   }
 
-  void set_last_committed_entry_url(const char* url_spec) {
-    last_committed_entry_url_ = GURL(url_spec);
+  void set_last_committed_entry_url(base::StringPiece url_spec) {
+    last_committed_origin_ = url::Origin::Create(GURL(url_spec));
   }
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
@@ -91,7 +91,7 @@ class FakePasswordManagerClient : public StubPasswordManagerClient {
   void SetIsIncognito(bool is_incognito) { is_incognito_ = is_incognito; }
 
  private:
-  GURL last_committed_entry_url_;
+  url::Origin last_committed_origin_;
   scoped_refptr<testing::NiceMock<MockPasswordStore>> password_store_ =
       new testing::NiceMock<MockPasswordStore>;
   bool is_incognito_ = false;

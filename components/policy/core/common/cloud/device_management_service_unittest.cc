@@ -453,6 +453,11 @@ INSTANTIATE_TEST_SUITE_P(
             net::OK,
             417,
             PROTO_STRING(kResponseEmpty)),
+        FailedRequestParams(
+            DM_STATUS_SERVICE_ENTERPRISE_ACCOUNT_IS_NOT_ELIGIBLE_TO_ENROLL,
+            net::OK,
+            905,
+            PROTO_STRING(kResponseEmpty)),
         FailedRequestParams(DM_STATUS_REQUEST_TOO_LARGE,
                             net::OK,
                             413,

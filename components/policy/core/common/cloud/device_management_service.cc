@@ -123,6 +123,7 @@ const int DeviceManagementService::kServiceUnavailable;
 const int DeviceManagementService::kPolicyNotFound;
 const int DeviceManagementService::kDeprovisioned;
 const int DeviceManagementService::kArcDisabled;
+const int DeviceManagementService::kInvalidDomainlessCustomer;
 
 // static
 std::string DeviceManagementService::JobConfiguration::GetJobTypeAsString(

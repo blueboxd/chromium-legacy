@@ -12,26 +12,28 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/policy_constants.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace policy {
 
 class SystemFeaturesPolicyTest : public PolicyTest {
  protected:
-  content::WebUI* GetCommittedWebUI(const GURL& url) {
+  base::string16 GetWebUITitle(const GURL& url) {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     ui_test_utils::NavigateToURL(browser(), url);
 
     content::WaitForLoadStop(web_contents);
-
-    return web_contents->GetCommittedWebUI();
+    return web_contents->GetTitle();
   }
 };
 
@@ -149,14 +151,16 @@ IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, RedirectChromeSettingsURL) {
   UpdateProviderPolicy(policies);
 
   GURL settings_url = GURL(chrome::kChromeUISettingsURL);
-  ASSERT_FALSE(GetCommittedWebUI(settings_url));
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_CHROME_URLS_DISABLED_PAGE_HEADER),
+            GetWebUITitle(settings_url));
 
   policies.Set(key::kSystemFeaturesDisableList, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::make_unique<base::Value>(), nullptr);
   UpdateProviderPolicy(policies);
 
-  ASSERT_TRUE(GetCommittedWebUI(settings_url));
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_SETTINGS_SETTINGS),
+            GetWebUITitle(settings_url));
 }
 
 }  // namespace policy

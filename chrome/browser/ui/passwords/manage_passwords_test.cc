@@ -90,7 +90,8 @@ void ManagePasswordsTest::SetupManagingPasswords() {
   std::vector<const autofill::PasswordForm*> forms;
   for (auto* form : {&password_form_, &federated_form_}) {
     forms.push_back(form);
-    GetController()->OnPasswordAutofilled(forms, form->origin, nullptr);
+    GetController()->OnPasswordAutofilled(
+        forms, url::Origin::Create(form->origin), nullptr);
   }
 }
 
@@ -105,7 +106,7 @@ void ManagePasswordsTest::SetupAutomaticPassword() {
 void ManagePasswordsTest::SetupAutoSignin(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials) {
   ASSERT_FALSE(local_credentials.empty());
-  GURL origin = local_credentials[0]->origin;
+  url::Origin origin = url::Origin::Create(local_credentials[0]->origin);
   GetController()->OnAutoSignin(std::move(local_credentials), origin);
 }
 

@@ -37,6 +37,7 @@ extern const char kCardIgnoredRe[];
 extern const char kGiftCardRe[];
 extern const char kDebitGiftCardRe[];
 extern const char kDebitCardRe[];
+extern const char kDayRe[];
 extern const char kEmailRe[];
 extern const char kNameIgnoredRe[];
 extern const char kNameRe[];

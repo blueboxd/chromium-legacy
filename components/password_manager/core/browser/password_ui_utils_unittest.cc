@@ -33,9 +33,8 @@ TEST(GetShownOriginTest, RemovePrefixes) {
       {"https://WWW.Example.DE", "example.de"}};
 
   for (const auto& test_case : kTestCases) {
-    autofill::PasswordForm password_form;
-    password_form.origin = GURL(test_case.input);
-    EXPECT_EQ(test_case.output, GetShownOrigin(password_form.origin))
+    EXPECT_EQ(test_case.output,
+              GetShownOrigin(url::Origin::Create(GURL(test_case.input))))
         << "for input " << test_case.input;
   }
 }

@@ -43,11 +43,28 @@ DawnDeviceClientSerializerHolder::~DawnDeviceClientSerializerHolder() {
   dawn_control_client_->GetInterface()->RemoveDevice(device_client_id_);
 }
 
+const scoped_refptr<DawnControlClientHolder>&
+DeviceTreeObject::GetDawnControlClient() const {
+  return device_client_serializer_holder_->dawn_control_client_;
+}
+
+bool DeviceTreeObject::IsDawnControlClientDestroyed() const {
+  return GetDawnControlClient()->IsDestroyed();
+}
+gpu::webgpu::WebGPUInterface* DeviceTreeObject::GetInterface() const {
+  return GetDawnControlClient()->GetInterface();
+}
+const DawnProcTable& DeviceTreeObject::GetProcs() const {
+  return GetDawnControlClient()->GetProcs();
+}
+
+uint64_t DeviceTreeObject::GetDeviceClientID() const {
+  return device_client_serializer_holder_->device_client_id_;
+}
+
 DawnObjectImpl::DawnObjectImpl(GPUDevice* device)
-    : DawnObjectBase(device->GetDawnControlClient()),
-      device_(device),
-      device_client_serializer_holder_(
-          device->GetDeviceClientSerializerHolder()) {}
+    : DeviceTreeObject(device->GetDeviceClientSerializerHolder()),
+      device_(device) {}
 
 DawnObjectImpl::~DawnObjectImpl() = default;
 

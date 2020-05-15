@@ -749,8 +749,9 @@ RTCPeerConnection::RTCPeerConnection(
       peer_connection_state_(
           webrtc::PeerConnectionInterface::PeerConnectionState::kNew),
       negotiation_needed_(false),
-      stopped_(false),
-      closed_(false),
+      peer_handler_unregistered_(true),
+      closed_(true),
+      suppress_events_(true),
       has_data_channels_(false),
       sdp_semantics_(configuration.sdp_semantics),
       sdp_semantics_specified_(sdp_semantics_specified),
@@ -769,8 +770,6 @@ RTCPeerConnection::RTCPeerConnection(
   // assert in the destructor.
   if (InstanceCounters::CounterValue(
           InstanceCounters::kRTCPeerConnectionCounter) > kMaxPeerConnections) {
-    closed_ = true;
-    stopped_ = true;
     exception_state.ThrowDOMException(DOMExceptionCode::kUnknownError,
                                       "Cannot create so many PeerConnections");
     return;
@@ -790,8 +789,6 @@ RTCPeerConnection::RTCPeerConnection(
   }
 
   if (!peer_handler_) {
-    closed_ = true;
-    stopped_ = true;
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "No PeerConnection handler can be "
                                       "created, perhaps WebRTC is disabled?");
@@ -801,13 +798,15 @@ RTCPeerConnection::RTCPeerConnection(
   auto* web_frame =
       static_cast<WebLocalFrame*>(WebFrame::FromFrame(window->GetFrame()));
   if (!peer_handler_->Initialize(configuration, constraints, web_frame)) {
-    closed_ = true;
-    stopped_ = true;
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         "Failed to initialize native PeerConnection.");
     return;
   }
+  // The RTCPeerConnection was successfully constructed.
+  closed_ = false;
+  peer_handler_unregistered_ = false;
+  suppress_events_ = false;
 
   feature_handle_for_scheduler_ =
       window->GetFrame()->GetFrameScheduler()->RegisterFeature(
@@ -820,7 +819,7 @@ RTCPeerConnection::~RTCPeerConnection() {
   // This checks that close() or stop() is called before the destructor.
   // We are assuming that a wrapper is always created when RTCPeerConnection is
   // created.
-  DCHECK(closed_ || stopped_);
+  DCHECK(closed_ || peer_handler_unregistered_);
   InstanceCounters::DecrementCounter(
       InstanceCounters::kRTCPeerConnectionCounter);
   DCHECK_GE(InstanceCounters::CounterValue(
@@ -2770,6 +2769,7 @@ RTCDTMFSender* RTCPeerConnection::createDTMFSender(
 }
 
 void RTCPeerConnection::close() {
+  suppress_events_ = true;
   if (signaling_state_ ==
       webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     return;
@@ -2836,7 +2836,7 @@ void RTCPeerConnection::MaybeFireNegotiationNeeded() {
   if (!negotiation_needed_ || closed_)
     return;
   negotiation_needed_ = false;
-  DispatchEvent(*Event::Create(event_type_names::kNegotiationneeded));
+  MaybeDispatchEvent(Event::Create(event_type_names::kNegotiationneeded));
 }
 
 void RTCPeerConnection::DidGenerateICECandidate(
@@ -3123,7 +3123,7 @@ void RTCPeerConnection::DidModifyTransceivers(
     auto* track_event = MakeGarbageCollected<RTCTrackEvent>(
         transceiver->receiver(), transceiver->receiver()->track(),
         transceiver->receiver()->streams(), transceiver);
-    DispatchEvent(*track_event);
+    MaybeDispatchEvent(track_event);
   }
 
   // Unmute "pc.ontrack" tracks. Fires "track.onunmute" synchronously.
@@ -3201,7 +3201,7 @@ void RTCPeerConnection::DidAddRemoteDataChannel(
       GetExecutionContext(), std::move(channel), peer_handler_.get());
   has_data_channels_ = true;
   blink_channel->SetStateToOpenWithoutEvent();
-  DispatchEvent(*MakeGarbageCollected<RTCDataChannelEvent>(
+  MaybeDispatchEvent(MakeGarbageCollected<RTCDataChannelEvent>(
       event_type_names::kDatachannel, blink_channel));
   // The event handler might have closed the channel.
   if (blink_channel->readyState() == "open") {
@@ -3220,14 +3220,14 @@ void RTCPeerConnection::DidNoteInterestingUsage(int usage_pattern) {
 }
 
 void RTCPeerConnection::UnregisterPeerConnectionHandler() {
-  if (stopped_) {
+  if (peer_handler_unregistered_) {
     DCHECK(scheduled_events_.IsEmpty())
         << "Undelivered events can cause memory leaks due to "
         << "WrapPersistent(this) in setup function callbacks";
     return;
   }
 
-  stopped_ = true;
+  peer_handler_unregistered_ = true;
   ice_connection_state_ = webrtc::PeerConnectionInterface::kIceConnectionClosed;
   signaling_state_ = webrtc::PeerConnectionInterface::SignalingState::kClosed;
 
@@ -3252,6 +3252,7 @@ ExecutionContext* RTCPeerConnection::GetExecutionContext() const {
 }
 
 void RTCPeerConnection::ContextDestroyed() {
+  suppress_events_ = true;
   if (!closed_) {
     CloseInternal();
   }
@@ -3268,7 +3269,7 @@ void RTCPeerConnection::ChangeSignalingState(
     signaling_state_ = signaling_state;
     Event* event = Event::Create(event_type_names::kSignalingstatechange);
     if (dispatch_event_immediately)
-      DispatchEvent(*event);
+      MaybeDispatchEvent(event);
     else
       ScheduleDispatchEvent(event);
   }
@@ -3311,7 +3312,8 @@ void RTCPeerConnection::ChangeIceConnectionState(
     return;
   }
   ice_connection_state_ = ice_connection_state;
-  DispatchEvent(*Event::Create(event_type_names::kIceconnectionstatechange));
+  MaybeDispatchEvent(
+      Event::Create(event_type_names::kIceconnectionstatechange));
 }
 
 webrtc::PeerConnectionInterface::IceConnectionState
@@ -3436,16 +3438,27 @@ void RTCPeerConnection::CloseInternal() {
   feature_handle_for_scheduler_.reset();
 }
 
+void RTCPeerConnection::MaybeDispatchEvent(Event* event) {
+  if (suppress_events_)
+    return;
+  DispatchEvent(*event);
+}
+
 void RTCPeerConnection::ScheduleDispatchEvent(Event* event) {
   ScheduleDispatchEvent(event, BoolFunction());
 }
 
 void RTCPeerConnection::ScheduleDispatchEvent(Event* event,
                                               BoolFunction setup_function) {
-  if (stopped_) {
+  if (peer_handler_unregistered_) {
     DCHECK(scheduled_events_.IsEmpty())
         << "Undelivered events can cause memory leaks due to "
         << "WrapPersistent(this) in setup function callbacks";
+    return;
+  }
+  if (suppress_events_) {
+    // If suppressed due to closing we also want to ignore the event, but we
+    // don't need to crash.
     return;
   }
 
@@ -3473,10 +3486,15 @@ void RTCPeerConnection::ScheduleDispatchEvent(Event* event,
 }
 
 void RTCPeerConnection::DispatchScheduledEvents() {
-  if (stopped_) {
+  if (peer_handler_unregistered_) {
     DCHECK(scheduled_events_.IsEmpty())
         << "Undelivered events can cause memory leaks due to "
         << "WrapPersistent(this) in setup function callbacks";
+    return;
+  }
+  if (suppress_events_) {
+    // If suppressed due to closing we also want to ignore the event, but we
+    // don't need to crash.
     return;
   }
 

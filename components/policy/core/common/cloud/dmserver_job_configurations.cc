@@ -192,6 +192,9 @@ DMServerJobConfiguration::MapNetErrorAndResponseCodeToDMStatus(
       case DeviceManagementService::kArcDisabled:
         code = DM_STATUS_SERVICE_ARC_DISABLED;
         break;
+      case DeviceManagementService::kInvalidDomainlessCustomer:
+        code = DM_STATUS_SERVICE_ENTERPRISE_ACCOUNT_IS_NOT_ELIGIBLE_TO_ENROLL;
+        break;
       default:
         // Handle all unknown 5xx HTTP error codes as temporary and any other
         // unknown error as one that needs more time to recover.

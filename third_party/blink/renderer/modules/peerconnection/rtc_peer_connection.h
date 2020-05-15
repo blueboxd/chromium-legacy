@@ -295,8 +295,10 @@ class MODULES_EXPORT RTCPeerConnection final
   void RegisterTrack(MediaStreamTrack*);
 
   // We allow getStats after close, but not other calls or callbacks.
-  bool ShouldFireDefaultCallbacks() { return !closed_ && !stopped_; }
-  bool ShouldFireGetStatsCallback() { return !stopped_; }
+  bool ShouldFireDefaultCallbacks() {
+    return !closed_ && !peer_handler_unregistered_;
+  }
+  bool ShouldFireGetStatsCallback() { return !peer_handler_unregistered_; }
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(negotiationneeded, kNegotiationneeded)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(icecandidate, kIcecandidate)
@@ -365,7 +367,9 @@ class MODULES_EXPORT RTCPeerConnection final
 
   // ScriptWrappable
   // We keep the this object alive until either stopped or closed.
-  bool HasPendingActivity() const final { return !closed_ && !stopped_; }
+  bool HasPendingActivity() const final {
+    return !closed_ && !peer_handler_unregistered_;
+  }
 
   // For testing; exported to testing/InternalWebRTCPeerConnection
   static int PeerConnectionCount();
@@ -449,6 +453,7 @@ class MODULES_EXPORT RTCPeerConnection final
   };
   void Dispose();
 
+  void MaybeDispatchEvent(Event*);
   void ScheduleDispatchEvent(Event*);
   void ScheduleDispatchEvent(Event*, BoolFunction);
   void DispatchScheduledEvents();
@@ -615,8 +620,31 @@ class MODULES_EXPORT RTCPeerConnection final
       feature_handle_for_scheduler_;
 
   bool negotiation_needed_;
-  bool stopped_;
+  // When the |peer_handler_| is unregistered, the native peer connection is
+  // closed and disappears from the chrome://webrtc-internals page. This happens
+  // when page context is destroyed.
+  //
+  // Note that the peer connection can be |closed_| without being unregistered
+  // (in which case it is still visible in chrome://webrtc-internals). If
+  // context is destroyed before the peer connection is closed, the native peer
+  // connection will be closed and stop surfacing states to blink but the blink
+  // peer connection will be unaware of the native layer being closed.
+  bool peer_handler_unregistered_;
+  // Reflects the RTCPeerConnection's [[IsClosed]] internal slot.
+  // https://w3c.github.io/webrtc-pc/#dfn-isclosed
+  // TODO(https://crbug.com/1083204): According to spec, the peer connection can
+  // only be closed through the close() API. However, our implementation can
+  // also be closed asynchronously by the |peer_handler_|, such as in response
+  // to laptop lid close on some system (depending on OS and settings).
   bool closed_;
+  // When true, events on the RTCPeerConnection will not be dispatched to
+  // JavaScript. This happens when close() is called but not if the peer
+  // connection was closed asynchronously. This also happens if the context is
+  // destroyed.
+  // TODO(https://crbug.com/1083204): When we are spec compliant and don't close
+  // the peer connection asynchronously, this can be removed in favor of
+  // |closed_|.
+  bool suppress_events_;
 
   // Internal state [[LastOffer]] and [[LastAnswer]]
   String last_offer_;

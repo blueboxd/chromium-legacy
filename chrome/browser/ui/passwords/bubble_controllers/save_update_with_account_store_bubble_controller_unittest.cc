@@ -144,8 +144,8 @@ class SaveUpdateWithAccountStoreBubbleControllerTest : public ::testing::Test {
 void SaveUpdateWithAccountStoreBubbleControllerTest::SetUpWithState(
     password_manager::ui::State state,
     PasswordBubbleControllerBase::DisplayReason reason) {
-  GURL origin(kSiteOrigin);
-  EXPECT_CALL(*delegate(), GetOrigin()).WillOnce(ReturnRef(origin));
+  url::Origin origin = url::Origin::Create(GURL(kSiteOrigin));
+  EXPECT_CALL(*delegate(), GetOrigin()).WillOnce(Return(origin));
   EXPECT_CALL(*delegate(), GetState()).WillRepeatedly(Return(state));
   EXPECT_CALL(*delegate(), GetWebContents())
       .WillRepeatedly(Return(test_web_contents_.get()));

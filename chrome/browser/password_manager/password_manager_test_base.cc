@@ -82,11 +82,11 @@ class CustomManagePasswordsUIController : public ManagePasswordsUIController {
   void OnHideManualFallbackForSaving() override;
   bool OnChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
-      const GURL& origin,
+      const url::Origin& origin,
       const ManagePasswordsState::CredentialsCallback& callback) override;
   void OnPasswordAutofilled(
       const std::vector<const autofill::PasswordForm*>& password_forms,
-      const GURL& origin,
+      const url::Origin& origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches)
       override;
   void DidFinishNavigation(
@@ -206,7 +206,7 @@ void CustomManagePasswordsUIController::OnHideManualFallbackForSaving() {
 
 bool CustomManagePasswordsUIController::OnChooseCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
-    const GURL& origin,
+    const url::Origin& origin,
     const ManagePasswordsState::CredentialsCallback& callback) {
   ProcessStateExpectations(password_manager::ui::CREDENTIAL_REQUEST_STATE);
   return ManagePasswordsUIController::OnChooseCredentials(
@@ -215,7 +215,7 @@ bool CustomManagePasswordsUIController::OnChooseCredentials(
 
 void CustomManagePasswordsUIController::OnPasswordAutofilled(
     const std::vector<const autofill::PasswordForm*>& password_forms,
-    const GURL& origin,
+    const url::Origin& origin,
     const std::vector<const autofill::PasswordForm*>* federated_matches) {
   ProcessStateExpectations(password_manager::ui::MANAGE_STATE);
   return ManagePasswordsUIController::OnPasswordAutofilled(

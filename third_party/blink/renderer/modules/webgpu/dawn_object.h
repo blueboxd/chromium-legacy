@@ -31,7 +31,8 @@ class Visitor;
 // destroyed, we should not call any Dawn functions.
 class DawnObjectBase {
  public:
-  DawnObjectBase(scoped_refptr<DawnControlClientHolder> dawn_control_client);
+  explicit DawnObjectBase(
+      scoped_refptr<DawnControlClientHolder> dawn_control_client);
 
   const scoped_refptr<DawnControlClientHolder>& GetDawnControlClient() const;
   bool IsDawnControlClientDestroyed() const;
@@ -58,26 +59,49 @@ class DawnDeviceClientSerializerHolder
 
  private:
   friend class RefCounted<DawnDeviceClientSerializerHolder>;
+  friend class DeviceTreeObject;
   ~DawnDeviceClientSerializerHolder();
 
   scoped_refptr<DawnControlClientHolder> dawn_control_client_;
   uint64_t device_client_id_;
 };
 
-// TODO(jiawei.shao@intel.com): Remove the redundant reference of
-// scoped_refptr<DawnControlClientHolder> inherited from DawnObjectBase as now
-// we can access it from device_client_serializer_holder_.
-class DawnObjectImpl : public ScriptWrappable, public DawnObjectBase {
+// This class is the parent of GPUDevice and all the WebGPU objects that are
+// created from a GPUDevice, which holds a
+// scoped_refptr<DawnDeviceClientSerializerHolder> and provides functions to
+// access all the members inside it. When a GPUDevice and all the WebGPU
+// objects created from it are destroyed, the refcount of
+// DawnDeviceClientSerializerHolder will become 0 and the clean-ups to the
+// corresponding WebGPUSerailzer and other data structures in the GPU process
+// will be triggered.
+class DeviceTreeObject {
  public:
-  DawnObjectImpl(GPUDevice* device);
+  explicit DeviceTreeObject(scoped_refptr<DawnDeviceClientSerializerHolder>
+                                device_client_seralizer_holder)
+      : device_client_serializer_holder_(
+            std::move(device_client_seralizer_holder)) {}
+
+  const scoped_refptr<DawnControlClientHolder>& GetDawnControlClient() const;
+  bool IsDawnControlClientDestroyed() const;
+  gpu::webgpu::WebGPUInterface* GetInterface() const;
+  const DawnProcTable& GetProcs() const;
+
+  uint64_t GetDeviceClientID() const;
+
+ protected:
+  scoped_refptr<DawnDeviceClientSerializerHolder>
+      device_client_serializer_holder_;
+};
+
+class DawnObjectImpl : public ScriptWrappable, public DeviceTreeObject {
+ public:
+  explicit DawnObjectImpl(GPUDevice* device);
   ~DawnObjectImpl() override;
 
   void Trace(Visitor* visitor) override;
 
  protected:
   Member<GPUDevice> device_;
-  scoped_refptr<DawnDeviceClientSerializerHolder>
-      device_client_serializer_holder_;
 };
 
 template <typename Handle>
@@ -93,21 +117,16 @@ class DawnObject : public DawnObjectImpl {
   Handle const handle_;
 };
 
-// TODO(jiawei.shao@intel.com): Remove the redundant reference of
-// scoped_refptr<DawnControlClientHolder> inherited from DawnObjectBase as now
-// we can access it from device_client_serializer_holder_.
 template <>
-class DawnObject<WGPUDevice> : public DawnObjectBase {
+class DawnObject<WGPUDevice> : public DeviceTreeObject {
  public:
   DawnObject(scoped_refptr<DawnControlClientHolder> dawn_control_client,
              uint64_t device_client_id,
              WGPUDevice handle)
-      : DawnObjectBase(std::move(dawn_control_client)),
-        handle_(handle),
-        device_client_serializer_holder_(
-            base::MakeRefCounted<DawnDeviceClientSerializerHolder>(
-                GetDawnControlClient(),
-                device_client_id)) {}
+      : DeviceTreeObject(base::MakeRefCounted<DawnDeviceClientSerializerHolder>(
+            std::move(dawn_control_client),
+            device_client_id)),
+        handle_(handle) {}
 
   WGPUDevice GetHandle() const { return handle_; }
 
@@ -118,8 +137,6 @@ class DawnObject<WGPUDevice> : public DawnObjectBase {
 
  private:
   WGPUDevice const handle_;
-  scoped_refptr<DawnDeviceClientSerializerHolder>
-      device_client_serializer_holder_;
 };
 
 }  // namespace blink

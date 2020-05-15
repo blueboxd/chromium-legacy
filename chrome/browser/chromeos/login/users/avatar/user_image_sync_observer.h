@@ -46,9 +46,6 @@ class UserImageSyncObserver
   // Register syncable preference for profile.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Returns |true| if sync was initialized and prefs have actual state.
-  bool is_synced() const { return is_synced_; }
-
  private:
   // sync_preferences::PrefServiceSyncableObserver implementation.
   void OnIsSyncingChanged() override;

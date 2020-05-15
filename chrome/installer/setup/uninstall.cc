@@ -40,6 +40,7 @@
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/setup/launch_chrome.h"
+#include "chrome/installer/setup/modify_params.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/setup/user_hive_visitor.h"
@@ -839,12 +840,24 @@ void UninstallFirewallRules(const base::FilePath& chrome_exe) {
     manager->RemoveFirewallRules();
 }
 
-InstallStatus UninstallProduct(const InstallationState& original_state,
-                               const InstallerState& installer_state,
-                               const base::FilePath& setup_exe,
+InstallStatus UninstallProduct(const ModifyParams& modify_params,
                                bool remove_all,
                                bool force_uninstall,
                                const base::CommandLine& cmd_line) {
+  const InstallationState& original_state = modify_params.installation_state;
+  const InstallerState& installer_state = modify_params.installer_state;
+  const base::FilePath& setup_exe = modify_params.setup_path;
+
+  const ProductState* const product_state =
+      original_state.GetProductState(installer_state.system_install());
+  if (product_state != nullptr) {
+    VLOG(1) << "version on the system: "
+            << product_state->version().GetString();
+  } else if (!force_uninstall) {
+    LOG(ERROR) << "Chrome not found for uninstall.";
+    return installer::CHROME_NOT_INSTALLED;
+  }
+
   InstallStatus status = installer::UNINSTALL_CONFIRMED;
   const base::FilePath chrome_exe(
       installer_state.target_path().Append(installer::kChromeExe));
@@ -1004,10 +1017,6 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   // Notify the shell that associations have changed since Chrome was likely
   // unregistered.
   SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
-
-  // Get the state of the installed product (if any)
-  const ProductState* product_state =
-      original_state.GetProductState(installer_state.system_install());
 
   // Remove the event log provider registration as we are going to delete
   // the file which serves the resources anyways.

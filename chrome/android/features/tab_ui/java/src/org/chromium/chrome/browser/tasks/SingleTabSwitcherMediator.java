@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -59,7 +60,9 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
             @Override
             public void didSelectTab(Tab tab, int type, int lastId) {
                 assert overviewVisible();
-                if (mShouldIgnoreNextSelect) {
+
+                updateSelectedTab(tab);
+                if (type == TabSelectionType.FROM_CLOSE || mShouldIgnoreNextSelect) {
                     mShouldIgnoreNextSelect = false;
                     return;
                 }
@@ -150,11 +153,7 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
             int selectedTabIndex = normalTabModel.index();
             if (selectedTabIndex != TabList.INVALID_TAB_INDEX) {
                 assert normalTabModel.getCount() > 0;
-
-                Tab tab = normalTabModel.getTabAt(selectedTabIndex);
-                mPropertyModel.set(TITLE, tab.getTitle());
-                mTabListFaviconProvider.getFaviconForUrlAsync(tab.getUrlString(), false,
-                        (Drawable favicon) -> { mPropertyModel.set(FAVICON, favicon); });
+                updateSelectedTab(normalTabModel.getTabAt(selectedTabIndex));
             }
         }
         mPropertyModel.set(IS_VISIBLE, true);
@@ -174,4 +173,10 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
 
     @Override
     public void enableRecordingFirstMeaningfulPaint(long activityCreateTimeMs) {}
+
+    private void updateSelectedTab(Tab tab) {
+        mPropertyModel.set(TITLE, tab.getTitle());
+        mTabListFaviconProvider.getFaviconForUrlAsync(tab.getUrlString(), false,
+                (Drawable favicon) -> { mPropertyModel.set(FAVICON, favicon); });
+    }
 }

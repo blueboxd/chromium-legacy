@@ -1219,8 +1219,11 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_PAGE_INFO_COOKIES_TITLE" desc="Title of the button opening the third-party cookies information (in page info)">
         Cookies
       </message>
-      <message name="IDS_IOS_PAGE_INFO_OFFLINE_PAGE" desc="Message to display in the page info bubble when the page you are on is an offline page.">
+      <message name="IDS_IOS_PAGE_INFO_OFFLINE_PAGE" desc="Message to display in the page info when the page you are on is an offline page.">
         This page has been saved to your Reading List.
+      </message>
+      <message name="IDS_IOS_PAGE_INFO_OFFLINE_PAGE_LABEL" desc="Label to display at the top of the site information screen when the page you are on is an offline page.">
+        Offline Page
       </message>
       <message name="IDS_IOS_PAGE_INFO_OFFLINE_TITLE" desc="Title of the message to display in the page info bubble when the page you are on is an offline page.">
         Viewing Offline Version
@@ -1235,7 +1238,13 @@ Handoff must also be enabled in the General section of Settings, and your device
         Site information
       </message>
       <message name="IDS_IOS_PAGE_INFO_SITE_SECURITY" desc="Title of the button opening the site security information (in page info)">
-        Site security
+        Site Security
+      </message>
+      <message name="IDS_IOS_PAGE_INFO_SECURITY_STATUS_SECURE" desc="The label informing that a website is secure">
+        Secure
+      </message>
+      <message name="IDS_IOS_PAGE_INFO_SECURITY_STATUS_NOT_SECURE" desc="The label informing that a website is not secure">
+        Not Secure
       </message>
       <message name="IDS_IOS_PAGE_LOADED_ACCESSIBILITY_ANNOUNCEMENT" desc="The accessibility announcement when a page has loaded. [Length: unlimited] [iOS only]">
         Webpage loaded

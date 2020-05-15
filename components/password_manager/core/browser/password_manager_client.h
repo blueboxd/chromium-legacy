@@ -51,6 +51,10 @@ namespace signin_metrics {
 enum class AccessPoint;
 }
 
+namespace url {
+class Origin;
+}
+
 class GURL;
 
 #if defined(ON_FOCUS_PING_ENABLED)
@@ -114,7 +118,7 @@ class PasswordManagerClient {
   // Checks asynchronously whether HTTP Strict Transport Security (HSTS) is
   // active for the host of the given origin. Notifies |callback| with the
   // result on the calling thread.
-  virtual void PostHSTSQueryForHost(const GURL& origin,
+  virtual void PostHSTSQueryForHost(const url::Origin& origin,
                                     HSTSCallback callback) const;
 
   // Informs the embedder of a password form that can be saved or updated in
@@ -171,7 +175,7 @@ class PasswordManagerClient {
   // |callback| should be invoked with the chosen form.
   virtual bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-      const GURL& origin,
+      const url::Origin& origin,
       const CredentialsCallback& callback) = 0;
 
   // Instructs the client to show the Touch To Fill UI.
@@ -191,7 +195,7 @@ class PasswordManagerClient {
   // auto signed in to.
   virtual void NotifyUserAutoSignin(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-      const GURL& origin) = 0;
+      const url::Origin& origin) = 0;
 
   // Inform the embedder that automatic signin would have happened if the user
   // had been through the first-run experience to ensure their opt-in. |form|
@@ -211,7 +215,7 @@ class PasswordManagerClient {
   // Update the CredentialCache used to display fetched credentials in the UI.
   // Currently only implemented on Android.
   virtual void UpdateCredentialCache(
-      const GURL& origin,
+      const url::Origin& origin,
       const std::vector<const autofill::PasswordForm*>& best_matches,
       bool is_blacklisted);
 
@@ -229,7 +233,7 @@ class PasswordManagerClient {
   // implementation is a noop.
   virtual void PasswordWasAutofilled(
       const std::vector<const autofill::PasswordForm*>& best_matches,
-      const GURL& origin,
+      const url::Origin& origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches);
 
   // Sends username/password from |preferred_match| for filling in the http auth
@@ -304,7 +308,8 @@ class PasswordManagerClient {
   // Returns true if the main frame URL has a secure origin.
   virtual bool IsMainFrameSecure() const;
 
-  virtual const GURL& GetLastCommittedEntryURL() const = 0;
+  // Returns last committed origin of the main frame.
+  virtual url::Origin GetLastCommittedOrigin() const = 0;
 
   // Use this to filter credentials before handling them in password manager.
   virtual const CredentialsFilter* GetStoreResultFilter() const = 0;

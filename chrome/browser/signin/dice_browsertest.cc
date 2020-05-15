@@ -870,7 +870,14 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, EnableSyncAfterToken) {
 
 // Tests that Sync is enabled if the ENABLE_SYNC response is received before the
 // refresh token.
-IN_PROC_BROWSER_TEST_F(DiceBrowserTest, EnableSyncBeforeToken) {
+
+// https://crbug.com/1082858
+#if defined(OS_LINUX) && !defined(NDEBUG)
+#define MAYBE_EnableSyncBeforeToken DISABLED_EnableSyncBeforeToken
+#else
+#define MAYBE_EnableSyncBeforeToken EnableSyncBeforeToken
+#endif
+IN_PROC_BROWSER_TEST_F(DiceBrowserTest, MAYBE_EnableSyncBeforeToken) {
   EXPECT_EQ(0, reconcilor_started_count_);
 
   ui_test_utils::UrlLoadObserver enable_sync_url_observer(

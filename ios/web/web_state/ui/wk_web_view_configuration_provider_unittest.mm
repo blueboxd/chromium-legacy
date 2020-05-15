@@ -10,6 +10,7 @@
 #import "ios/web/js_messaging/crw_wk_script_message_router.h"
 #import "ios/web/js_messaging/page_script_util.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
+#import "ios/web/public/test/fakes/test_web_client.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/test/fakes/fake_wk_configuration_provider_observer.h"
@@ -27,7 +28,7 @@ namespace {
 class WKWebViewConfigurationProviderTest : public PlatformTest {
  public:
   WKWebViewConfigurationProviderTest()
-      : web_client_(base::WrapUnique(new web::WebClient)) {}
+      : web_client_(std::make_unique<TestWebClient>()) {}
 
  protected:
   // Returns WKWebViewConfigurationProvider associated with |browser_state_|.
@@ -39,6 +40,11 @@ class WKWebViewConfigurationProviderTest : public PlatformTest {
       BrowserState* browser_state) const {
     return WKWebViewConfigurationProvider::FromBrowserState(browser_state);
   }
+
+  TestWebClient* GetWebClient() {
+    return static_cast<TestWebClient*>(web_client_.Get());
+  }
+
   // BrowserState required for WKWebViewConfigurationProvider creation.
   web::ScopedTestingWebClient web_client_;
   TestBrowserState browser_state_;
@@ -163,6 +169,41 @@ TEST_F(WKWebViewConfigurationProviderTest, UserScript) {
             [[scripts[2] source] rangeOfString:late_all_frames_script].length);
   EXPECT_LT(0U,
             [[scripts[3] source] rangeOfString:late_main_frame_script].length);
+}
+
+// Tests that configuration's userContentController has different scripts after
+// the scripts are updated.
+TEST_F(WKWebViewConfigurationProviderTest, UpdateScripts) {
+  TestWebClient* client = GetWebClient();
+  client->SetEarlyPageScript(@"var test = 4;");
+
+  WKWebViewConfiguration* config = GetProvider().GetWebViewConfiguration();
+  NSArray* scripts = config.userContentController.userScripts;
+  ASSERT_EQ(4U, scripts.count);
+
+  WKUserScript* initial_main_frame_wkscript = scripts[1];
+  NSString* initial_main_frame_script =
+      GetDocumentStartScriptForMainFrame(&browser_state_);
+  EXPECT_LT(0U, [[initial_main_frame_wkscript source]
+                    rangeOfString:initial_main_frame_script]
+                    .length);
+
+  client->SetEarlyPageScript(@"var test = 3;");
+  GetProvider().UpdateScripts();
+
+  WKUserScript* updated_main_frame_wkscript = scripts[1];
+  NSString* updated_main_frame_script =
+      GetDocumentStartScriptForMainFrame(&browser_state_);
+
+  EXPECT_NE(updated_main_frame_script, initial_main_frame_script);
+  EXPECT_NE([initial_main_frame_wkscript source],
+            [updated_main_frame_wkscript source]);
+  EXPECT_LT(0U, [[updated_main_frame_wkscript source]
+                    rangeOfString:updated_main_frame_script]
+                    .length);
+  EXPECT_EQ(0U, [[initial_main_frame_wkscript source]
+                    rangeOfString:updated_main_frame_script]
+                    .length);
 }
 
 // Tests that observers methods are correctly triggered when observing the

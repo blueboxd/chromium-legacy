@@ -39,18 +39,20 @@ def main(args):
       '--revision',
       help=('Perfetto revision. '
             'If not supplied, will try to infer from DEPS file.'))
+  parser.add_argument('--isolated-script-test-output',
+                      help='Path to the output file.')
 
-  # When this script is invoked on a CI bot, there are some extra arguments
-  # that we have to ignore.
-  args, _ = parser.parse_known_args(args)
+  args = parser.parse_args(args)
+
+  # CI bot expects a valid JSON object as script output.
+  if args.isolated_script_test_output is not None:
+    with open(args.isolated_script_test_output, 'w') as f:
+      f.write('{}')
 
   revision = args.revision or _PerfettoRevision()
 
   binary_deps_manager.UploadHostBinary(trace_processor.TP_BINARY_NAME,
                                        args.path, revision)
-
-  # CI bot expects a valid JSON object as script output.
-  sys.stdout.write('{}\n')
 
 
 if __name__ == '__main__':

@@ -649,9 +649,16 @@ GamepadId GamepadIdList::GetGamepadId(base::StringPiece product_name,
                                       uint16_t vendor_id,
                                       uint16_t product_id) const {
   const auto* entry = GetGamepadInfo(vendor_id, product_id);
-  // The ID value combines the vendor and product IDs.
-  return entry ? static_cast<GamepadId>((vendor_id << 16) | product_id)
-               : GamepadId::kUnknownGamepad;
+  if (entry) {
+    // The ID value combines the vendor and product IDs.
+    return static_cast<GamepadId>((vendor_id << 16) | product_id);
+  }
+  // Special cases for devices which don't report a valid vendor ID.
+  if (vendor_id == 0x0 && product_id == 0x0 &&
+      product_name == "Lic Pro Controller") {
+    return GamepadId::kPowerALicPro;
+  }
+  return GamepadId::kUnknownGamepad;
 }
 
 std::vector<std::tuple<uint16_t, uint16_t, XInputType>>

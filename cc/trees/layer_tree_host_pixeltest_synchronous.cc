@@ -4,7 +4,6 @@
 
 #include "build/build_config.h"
 #include "cc/layers/content_layer_client.h"
-#include "cc/layers/picture_image_layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/test/fake_content_layer_client.h"

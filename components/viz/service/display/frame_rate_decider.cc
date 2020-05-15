@@ -32,12 +32,13 @@ FrameRateDecider::ScopedAggregate::~ScopedAggregate() {
 
 FrameRateDecider::FrameRateDecider(SurfaceManager* surface_manager,
                                    Client* client,
-                                   bool using_synthetic_bfs,
+                                   bool hw_support_for_multiple_refresh_rates,
                                    bool supports_set_frame_rate)
     : supported_intervals_{BeginFrameArgs::DefaultInterval()},
       surface_manager_(surface_manager),
       client_(client),
-      using_synthetic_bfs_(using_synthetic_bfs),
+      hw_support_for_multiple_refresh_rates_(
+          hw_support_for_multiple_refresh_rates),
       supports_set_frame_rate_(supports_set_frame_rate) {
   surface_manager_->AddObserver(this);
 }
@@ -132,7 +133,7 @@ void FrameRateDecider::UpdatePreferredFrameIntervalIfNeeded() {
         DCHECK_EQ(interval, BeginFrameArgs::MinInterval());
         continue;
       case mojom::CompositorFrameSinkType::kVideo:
-        if (!using_synthetic_bfs_)
+        if (hw_support_for_multiple_refresh_rates_)
           num_of_frame_sinks_with_fixed_interval++;
         break;
       case mojom::CompositorFrameSinkType::kMediaStream:
@@ -143,7 +144,8 @@ void FrameRateDecider::UpdatePreferredFrameIntervalIfNeeded() {
     }
   }
 
-  const int min_frame_sinks_to_toggle = using_synthetic_bfs_ ? 2 : 1;
+  const int min_frame_sinks_to_toggle =
+      hw_support_for_multiple_refresh_rates_ ? 1 : 2;
   if (num_of_frame_sinks_with_fixed_interval < min_frame_sinks_to_toggle) {
     TRACE_EVENT_INSTANT0(
         "viz",

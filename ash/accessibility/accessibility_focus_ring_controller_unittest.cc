@@ -43,8 +43,6 @@ TEST_F(AccessibilityFocusRingControllerTest, SetFocusRingCorrectRingGroup) {
   EXPECT_EQ(nullptr, controller->GetFocusRingGroupForTesting("dogsRCool"));
   auto dog_focus_ring = std::make_unique<AccessibilityFocusRingInfo>();
   dog_focus_ring->rects_in_screen.push_back(gfx::Rect(10, 30, 70, 150));
-  // Set a background color to ensure that code path has no surprises.
-  dog_focus_ring->background_color = SK_ColorBLUE;
   controller->SetFocusRing("dogsRCool", std::move(dog_focus_ring));
 
   ASSERT_NE(nullptr, controller->GetFocusRingGroupForTesting("dogsRCool"));

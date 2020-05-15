@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SAFE_BROWSING_CORE_REALTIME_POLICY_ENGINE_H_
 #define COMPONENTS_SAFE_BROWSING_CORE_REALTIME_POLICY_ENGINE_H_
 
+#include <string>
+
 #include "build/build_config.h"
 
 class PrefService;
@@ -15,6 +17,10 @@ class SyncService;
 
 namespace signin {
 class IdentityManager;
+}
+
+namespace variations {
+class VariationsService;
 }
 
 namespace safe_browsing {
@@ -47,8 +53,10 @@ class RealTimePolicyEngine {
   // Return true if the feature to enable full URL lookups is enabled and the
   // allowlist fetch is enabled for the profile represented by
   // |pref_service|.
-  static bool CanPerformFullURLLookup(PrefService* pref_service,
-                                      bool is_off_the_record);
+  static bool CanPerformFullURLLookup(
+      PrefService* pref_service,
+      bool is_off_the_record,
+      variations::VariationsService* variations_service);
 
   // Return true if the OAuth token should be associated with the URL lookup
   // pings.
@@ -56,12 +64,15 @@ class RealTimePolicyEngine {
       PrefService* pref_service,
       bool is_off_the_record,
       syncer::SyncService* sync_service,
-      signin::IdentityManager* identity_manager);
+      signin::IdentityManager* identity_manager,
+      variations::VariationsService* variations_service);
 
   friend class SafeBrowsingService;
   friend class SafeBrowsingUIHandler;
 
  private:
+  static bool IsInExcludedCountry(const std::string& country_code);
+
   // Is the feature to perform real-time URL lookup enabled?
   static bool IsUrlLookupEnabled();
 

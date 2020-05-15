@@ -6,14 +6,29 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/system_proxy_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace chromeos {
+
+namespace {
+
+constexpr char kLocalProxyUrl[] = "localhost:3128";
+
+// Encode the PAC script as a data: URL.
+std::string GetPacUrl(const char* pac_data) {
+  std::string b64_encoded;
+  base::Base64Encode(pac_data, &b64_encoded);
+  return "data:application/x-javascript-config;base64," + b64_encoded;
+}
+}  // namespace
 
 // Helper for calling ProxyResolutionServiceProvider's |ResolveProxyInternal()|
 // method. Unlike the unit-tests which mock the network setup, this uses the
@@ -121,15 +136,8 @@ class ProxyResolutionServiceProviderPacBrowserTest
     : public ProxyResolutionServiceProviderBaseBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(switches::kProxyPacUrl, GetPacUrl());
-  }
-
- private:
-  // Encode the PAC script as a data: URL.
-  static std::string GetPacUrl() {
-    std::string b64_encoded;
-    base::Base64Encode(kPacData, &b64_encoded);
-    return "data:application/x-javascript-config;base64," + b64_encoded;
+    command_line->AppendSwitchASCII(switches::kProxyPacUrl,
+                                    GetPacUrl(kPacData));
   }
 };
 
@@ -140,6 +148,61 @@ IN_PROC_BROWSER_TEST_F(ProxyResolutionServiceProviderPacBrowserTest,
                        ResolveProxy) {
   EXPECT_EQ("PROXY foo1:80;PROXY foo2:80",
             ResolveProxyAndWait("http://www.google.com"));
+}
+
+// PAC script that returns a proxy for all url except for a whitelisted domain.
+const char kPacDataWithWhitelistedDomain[] =
+    "function FindProxyForURL(url, host) {\n"
+    "  if (dnsDomainIs(host, '.direct.com'))\n"
+    "    return 'DIRECT';\n"
+    "  return 'PROXY foo1';\n"
+    "}\n";
+
+// Fixture that launches the browser with --proxy-pac-url="data:..." and
+// System-proxy enabled. With System-proxy enabled and configured, all system
+// service connections going trough an http web proxy will be connected through
+// a local proxy that will perform the proxy authentication and connection
+// setup.
+class ProxyResolutionServiceProviderSystemProxyPolicyTest
+    : public ProxyResolutionServiceProviderBaseBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(switches::kProxyPacUrl,
+                                    GetPacUrl(kPacDataWithWhitelistedDomain));
+  }
+
+ protected:
+  void SetLocalProxyAddress(const std::string& local_proxy_url) {
+    g_browser_process->platform_part()
+        ->browser_policy_connector_chromeos()
+        ->GetSystemProxyManager()
+        ->SetSystemServicesProxyUrlForTest(local_proxy_url);
+  }
+};
+
+// Tests that the proxy resolver returns the address of the local proxy when
+// set.
+IN_PROC_BROWSER_TEST_F(ProxyResolutionServiceProviderSystemProxyPolicyTest,
+                       ResolveProxyLocalProxySet) {
+  SetLocalProxyAddress(kLocalProxyUrl);
+  EXPECT_EQ("PROXY localhost:3128; PROXY foo1:80",
+            ResolveProxyAndWait("http://www.google.com"));
+}
+
+// Tests that the proxy list semicolon separator is not appended if the local
+// proxy is not set.
+IN_PROC_BROWSER_TEST_F(ProxyResolutionServiceProviderSystemProxyPolicyTest,
+                       ResolveProxyNoSeparator) {
+  SetLocalProxyAddress(/* local_proxy_url= */ std::string());
+  EXPECT_EQ("PROXY foo1:80", ResolveProxyAndWait("http://www.google.com"));
+}
+
+// Tests that the proxy resolver doesn't return the local proxy address for
+// DIRECT connections.
+IN_PROC_BROWSER_TEST_F(ProxyResolutionServiceProviderSystemProxyPolicyTest,
+                       ResolveProxyDirect) {
+  SetLocalProxyAddress(kLocalProxyUrl);
+  EXPECT_EQ("DIRECT", ResolveProxyAndWait("http://www.test.direct.com"));
 }
 
 }  // namespace chromeos

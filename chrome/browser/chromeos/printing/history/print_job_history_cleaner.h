@@ -17,8 +17,6 @@ class Clock;
 
 namespace chromeos {
 
-class PrintJobDatabase;
-
 class PrintJobHistoryCleaner {
  public:
   // The default amount of time the metadata of completed print job is stored on

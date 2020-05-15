@@ -45,7 +45,7 @@ import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabSelectionType;
@@ -109,7 +109,7 @@ public class TabSwitcherMediatorUnitTest {
     @Mock
     Resources mResources;
     @Mock
-    ChromeFullscreenManager mFullscreenManager;
+    BrowserControlsStateProvider mBrowserControlsStateProvider;
     @Mock
     PropertyObservable.PropertyObserver<PropertyKey> mPropertyObserver;
     @Mock
@@ -128,7 +128,8 @@ public class TabSwitcherMediatorUnitTest {
     @Captor
     ArgumentCaptor<TabModelSelectorObserver> mTabModelSelectorObserverCaptor;
     @Captor
-    ArgumentCaptor<ChromeFullscreenManager.FullscreenListener> mFullscreenListenerCaptor;
+    private ArgumentCaptor<BrowserControlsStateProvider.Observer>
+            mBrowserControlsStateProviderObserverCaptor;
 
     private TabImpl mTab1;
     private TabImpl mTab2;
@@ -176,14 +177,18 @@ public class TabSwitcherMediatorUnitTest {
         doReturn(mTab2).when(mTabModel).getTabAt(1);
         doReturn(mTab3).when(mTabModel).getTabAt(2);
 
-        doReturn(CONTROL_HEIGHT_DEFAULT).when(mFullscreenManager).getBottomControlsHeight();
-        doReturn(CONTROL_HEIGHT_DEFAULT).when(mFullscreenManager).getTopControlsHeight();
-        doNothing().when(mFullscreenManager).addListener(mFullscreenListenerCaptor.capture());
+        doReturn(CONTROL_HEIGHT_DEFAULT)
+                .when(mBrowserControlsStateProvider)
+                .getBottomControlsHeight();
+        doReturn(CONTROL_HEIGHT_DEFAULT).when(mBrowserControlsStateProvider).getTopControlsHeight();
+        doNothing()
+                .when(mBrowserControlsStateProvider)
+                .addObserver(mBrowserControlsStateProviderObserverCaptor.capture());
 
         mModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
         mModel.addObserver(mPropertyObserver);
         mMediator = new TabSwitcherMediator(mResetHandler, mModel, mTabModelSelector,
-                mFullscreenManager, mCompositorViewHolder, null, mMessageItemsController,
+                mBrowserControlsStateProvider, mCompositorViewHolder, null, mMessageItemsController,
                 TabListCoordinator.TabListMode.GRID);
         mMediator.initWithNative(null);
         mMediator.addOverviewModeObserver(mOverviewModeObserver);
@@ -404,7 +409,7 @@ public class TabSwitcherMediatorUnitTest {
         assertThat(mModel.get(TabListContainerProperties.BOTTOM_CONTROLS_HEIGHT),
                 equalTo(CONTROL_HEIGHT_DEFAULT));
 
-        mFullscreenListenerCaptor.getValue().onBottomControlsHeightChanged(
+        mBrowserControlsStateProviderObserverCaptor.getValue().onBottomControlsHeightChanged(
                 CONTROL_HEIGHT_MODIFIED, 0);
         assertThat(mModel.get(TabListContainerProperties.BOTTOM_CONTROLS_HEIGHT),
                 equalTo(CONTROL_HEIGHT_MODIFIED));
@@ -607,14 +612,15 @@ public class TabSwitcherMediatorUnitTest {
         assertEquals(
                 CONTROL_HEIGHT_DEFAULT, mModel.get(TabListContainerProperties.SHADOW_TOP_MARGIN));
 
-        mFullscreenListenerCaptor.getValue().onTopControlsHeightChanged(
+        mBrowserControlsStateProviderObserverCaptor.getValue().onTopControlsHeightChanged(
                 CONTROL_HEIGHT_INCREASED, 0);
         assertEquals(CONTROL_HEIGHT_INCREASED,
                 mModel.get(TabListContainerProperties.TOP_CONTROLS_HEIGHT));
         assertEquals(
                 CONTROL_HEIGHT_INCREASED, mModel.get(TabListContainerProperties.SHADOW_TOP_MARGIN));
 
-        mFullscreenListenerCaptor.getValue().onTopControlsHeightChanged(CONTROL_HEIGHT_DEFAULT, 0);
+        mBrowserControlsStateProviderObserverCaptor.getValue().onTopControlsHeightChanged(
+                CONTROL_HEIGHT_DEFAULT, 0);
         assertEquals(
                 CONTROL_HEIGHT_DEFAULT, mModel.get(TabListContainerProperties.TOP_CONTROLS_HEIGHT));
         assertEquals(
@@ -627,12 +633,13 @@ public class TabSwitcherMediatorUnitTest {
         assertEquals(0, mModel.get(TabListContainerProperties.TOP_CONTROLS_HEIGHT));
         assertEquals(0, mModel.get(TabListContainerProperties.SHADOW_TOP_MARGIN));
 
-        mFullscreenListenerCaptor.getValue().onTopControlsHeightChanged(
+        mBrowserControlsStateProviderObserverCaptor.getValue().onTopControlsHeightChanged(
                 CONTROL_HEIGHT_INCREASED, 0);
         assertEquals(0, mModel.get(TabListContainerProperties.TOP_CONTROLS_HEIGHT));
         assertEquals(0, mModel.get(TabListContainerProperties.SHADOW_TOP_MARGIN));
 
-        mFullscreenListenerCaptor.getValue().onTopControlsHeightChanged(CONTROL_HEIGHT_DEFAULT, 0);
+        mBrowserControlsStateProviderObserverCaptor.getValue().onTopControlsHeightChanged(
+                CONTROL_HEIGHT_DEFAULT, 0);
         assertEquals(0, mModel.get(TabListContainerProperties.TOP_CONTROLS_HEIGHT));
         assertEquals(0, mModel.get(TabListContainerProperties.SHADOW_TOP_MARGIN));
     }

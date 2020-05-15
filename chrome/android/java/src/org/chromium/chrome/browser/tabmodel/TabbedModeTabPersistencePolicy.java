@@ -61,7 +61,7 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
      */
     private static final Object CLEAN_UP_TASK_LOCK = new Object();
     /** Tracks whether tabs from two TabPersistentStores tabs are being merged together. */
-    // TODO(crbug.com/2139709): Transit AtomicBoolean to an AtomicInteger to keep track the task id
+    // TODO(crbug.com/1082936): Transit AtomicBoolean to an AtomicInteger to keep track the task id
     //        of activity being merged.
     private static final AtomicBoolean MERGE_IN_PROGRESS = new AtomicBoolean();
 

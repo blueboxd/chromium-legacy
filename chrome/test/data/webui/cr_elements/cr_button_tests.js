@@ -5,14 +5,17 @@
 // clang-format off
 // #import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 // #import {eventToPromise} from '../test_util.m.js';
+// #import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../chai_assert.js';
 // clang-format on
 
 suite('cr-button', function() {
+  /** @type {!CrButtonElement} */
   let button;
 
   setup(() => {
-    PolymerTest.clearBody();
-    button = document.createElement('cr-button');
+    document.body.innerHTML = '';
+    button =
+        /** @type {!CrButtonElement} */ (document.createElement('cr-button'));
     document.body.appendChild(button);
   });
 
@@ -25,7 +28,8 @@ suite('cr-button', function() {
   test('label is displayed', async () => {
     const widthWithoutLabel = button.offsetWidth;
     document.body.innerHTML = '<cr-button>Long Label</cr-button>';
-    button = document.body.querySelector('cr-button');
+    button = /** @type {!CrButtonElement} */ (
+        document.body.querySelector('cr-button'));
     assertTrue(widthWithoutLabel < button.offsetWidth);
   });
 
@@ -67,7 +71,8 @@ suite('cr-button', function() {
 
   test('when tabindex is -1, it stays -1', async () => {
     document.body.innerHTML = '<cr-button custom-tab-index="-1"></cr-button>';
-    button = document.body.querySelector('cr-button');
+    button = /** @type {!CrButtonElement} */ (
+        document.body.querySelector('cr-button'));
     assertEquals('-1', button.getAttribute('tabindex'));
     button.disabled = true;
     assertEquals('-1', button.getAttribute('tabindex'));
@@ -77,7 +82,8 @@ suite('cr-button', function() {
 
   test('tabindex update', async () => {
     document.body.innerHTML = '<cr-button></cr-button>';
-    button = document.body.querySelector('cr-button');
+    button = /** @type {!CrButtonElement} */ (
+        document.body.querySelector('cr-button'));
     assertEquals('0', button.getAttribute('tabindex'));
     button.customTabIndex = 1;
     assertEquals('1', button.getAttribute('tabindex'));

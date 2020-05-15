@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
+#include "extensions/buildflags/buildflags.h"
 
 namespace features {
 
@@ -18,6 +19,10 @@ namespace features {
 // alongside the definition of their values in the .cc file.
 
 extern const base::Feature kEvDetailsInPageInfo;
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+extern const base::Feature kExtensionSettingsOverriddenDialogs;
+#endif
 
 extern const base::Feature kExtensionsToolbarMenu;
 

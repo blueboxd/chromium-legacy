@@ -201,10 +201,12 @@ SyncServiceCrypto::State::~State() = default;
 
 SyncServiceCrypto::SyncServiceCrypto(
     const base::RepeatingClosure& notify_observers,
+    const base::RepeatingClosure& notify_required_user_action_changed,
     const base::RepeatingCallback<void(ConfigureReason)>& reconfigure,
     CryptoSyncPrefs* sync_prefs,
     TrustedVaultClient* trusted_vault_client)
     : notify_observers_(notify_observers),
+      notify_required_user_action_changed_(notify_required_user_action_changed),
       reconfigure_(reconfigure),
       sync_prefs_(sync_prefs),
       trusted_vault_client_(ResoveNullClient(trusted_vault_client)) {
@@ -234,6 +236,7 @@ bool SyncServiceCrypto::IsPassphraseRequired() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   switch (state_.required_user_action) {
+    case RequiredUserAction::kUnknownDuringInitialization:
     case RequiredUserAction::kNone:
     case RequiredUserAction::kFetchingTrustedVaultKeys:
     case RequiredUserAction::kTrustedVaultKeyRequired:
@@ -285,6 +288,7 @@ void SyncServiceCrypto::SetEncryptionPassphrase(const std::string& passphrase) {
   DCHECK(!passphrase.empty());
 
   switch (state_.required_user_action) {
+    case RequiredUserAction::kUnknownDuringInitialization:
     case RequiredUserAction::kNone:
       break;
     case RequiredUserAction::kPassphraseRequiredForDecryption:
@@ -302,7 +306,7 @@ void SyncServiceCrypto::SetEncryptionPassphrase(const std::string& passphrase) {
       // implicit), we know this will succeed. If for some reason a new
       // encryption key arrives via sync later, the SyncEncryptionHandler will
       // trigger another OnPassphraseRequired().
-      state_.required_user_action = RequiredUserAction::kNone;
+      UpdateRequiredUserActionAndNotify(RequiredUserAction::kNone);
       notify_observers_.Run();
       break;
   }
@@ -358,6 +362,22 @@ bool SyncServiceCrypto::SetDecryptionPassphrase(const std::string& passphrase) {
   return true;
 }
 
+bool SyncServiceCrypto::IsTrustedVaultKeyRequiredStateKnown() const {
+  switch (state_.required_user_action) {
+    case RequiredUserAction::kUnknownDuringInitialization:
+    case RequiredUserAction::kFetchingTrustedVaultKeys:
+      return false;
+    case RequiredUserAction::kNone:
+    case RequiredUserAction::kPassphraseRequiredForDecryption:
+    case RequiredUserAction::kTrustedVaultKeyRequired:
+    case RequiredUserAction::kTrustedVaultKeyRequiredButFetching:
+    case RequiredUserAction::kPassphraseRequiredForEncryption:
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
 PassphraseType SyncServiceCrypto::GetPassphraseType() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return state_.cached_passphrase_type;
@@ -380,6 +400,7 @@ bool SyncServiceCrypto::HasCryptoError() const {
   // error state or not.
 
   switch (state_.required_user_action) {
+    case RequiredUserAction::kUnknownDuringInitialization:
     case RequiredUserAction::kNone:
       return false;
     case RequiredUserAction::kFetchingTrustedVaultKeys:
@@ -411,12 +432,12 @@ void SyncServiceCrypto::OnPassphraseRequired(
 
   switch (reason) {
     case REASON_ENCRYPTION:
-      state_.required_user_action =
-          RequiredUserAction::kPassphraseRequiredForEncryption;
+      UpdateRequiredUserActionAndNotify(
+          RequiredUserAction::kPassphraseRequiredForEncryption);
       break;
     case REASON_DECRYPTION:
-      state_.required_user_action =
-          RequiredUserAction::kPassphraseRequiredForDecryption;
+      UpdateRequiredUserActionAndNotify(
+          RequiredUserAction::kPassphraseRequiredForDecryption);
       break;
   }
 
@@ -433,7 +454,7 @@ void SyncServiceCrypto::OnPassphraseAccepted() {
 
   // Reset |required_user_action| since we know we no longer require the
   // passphrase.
-  state_.required_user_action = RequiredUserAction::kNone;
+  UpdateRequiredUserActionAndNotify(RequiredUserAction::kNone);
 
   // Make sure the data types that depend on the passphrase are started at
   // this time.
@@ -445,11 +466,14 @@ void SyncServiceCrypto::OnTrustedVaultKeyRequired() {
 
   // To be on the safe since, if a passphrase is required, we avoid overriding
   // |state_.required_user_action|.
-  if (state_.required_user_action != RequiredUserAction::kNone) {
+  if (state_.required_user_action != RequiredUserAction::kNone &&
+      state_.required_user_action !=
+          RequiredUserAction::kUnknownDuringInitialization) {
     return;
   }
 
-  state_.required_user_action = RequiredUserAction::kFetchingTrustedVaultKeys;
+  UpdateRequiredUserActionAndNotify(
+      RequiredUserAction::kFetchingTrustedVaultKeys);
 
   if (!state_.engine) {
     // If SetSyncEngine() hasn't been called yet, it means
@@ -467,6 +491,7 @@ void SyncServiceCrypto::OnTrustedVaultKeyAccepted() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   switch (state_.required_user_action) {
+    case RequiredUserAction::kUnknownDuringInitialization:
     case RequiredUserAction::kNone:
     case RequiredUserAction::kPassphraseRequiredForDecryption:
     case RequiredUserAction::kPassphraseRequiredForEncryption:
@@ -477,7 +502,7 @@ void SyncServiceCrypto::OnTrustedVaultKeyAccepted() {
       break;
   }
 
-  state_.required_user_action = RequiredUserAction::kNone;
+  UpdateRequiredUserActionAndNotify(RequiredUserAction::kNone);
 
   // Make sure the data types that depend on the decryption key are started at
   // this time.
@@ -544,6 +569,13 @@ void SyncServiceCrypto::SetSyncEngine(const CoreAccountInfo& account_info,
   state_.account_info = account_info;
   state_.engine = engine;
 
+  // Since there was no state changes during engine initialization, now the
+  // state is known and no user action required.
+  if (state_.required_user_action ==
+      RequiredUserAction::kUnknownDuringInitialization) {
+    UpdateRequiredUserActionAndNotify(RequiredUserAction::kNone);
+  }
+
   // This indicates OnTrustedVaultKeyRequired() was called as part of the
   // engine's initialization.
   if (state_.required_user_action ==
@@ -561,6 +593,7 @@ SyncServiceCrypto::GetEncryptionObserverProxy() {
 
 void SyncServiceCrypto::OnTrustedVaultClientKeysChanged() {
   switch (state_.required_user_action) {
+    case RequiredUserAction::kUnknownDuringInitialization:
     case RequiredUserAction::kNone:
     case RequiredUserAction::kPassphraseRequiredForDecryption:
     case RequiredUserAction::kPassphraseRequiredForEncryption:
@@ -577,8 +610,8 @@ void SyncServiceCrypto::OnTrustedVaultClientKeysChanged() {
       state_.deferred_trusted_vault_fetch_keys_pending = true;
       return;
     case RequiredUserAction::kTrustedVaultKeyRequired:
-      state_.required_user_action =
-          RequiredUserAction::kTrustedVaultKeyRequiredButFetching;
+      UpdateRequiredUserActionAndNotify(
+          RequiredUserAction::kTrustedVaultKeyRequiredButFetching);
       break;
   }
 
@@ -694,11 +727,20 @@ void SyncServiceCrypto::FetchTrustedVaultKeysCompletedButInsufficient() {
 
   // Reaching this codepath indicates OnTrustedVaultKeyAccepted() was not
   // triggered, so the fetched trusted vault keys were insufficient.
-  state_.required_user_action = RequiredUserAction::kTrustedVaultKeyRequired;
+  UpdateRequiredUserActionAndNotify(
+      RequiredUserAction::kTrustedVaultKeyRequired);
 
   // Reconfigure without the encrypted types (excluded implicitly via the failed
   // datatypes handler).
   reconfigure_.Run(CONFIGURE_REASON_CRYPTO);
+}
+
+void SyncServiceCrypto::UpdateRequiredUserActionAndNotify(
+    RequiredUserAction new_required_user_action) {
+  DCHECK_NE(new_required_user_action,
+            RequiredUserAction::kUnknownDuringInitialization);
+  state_.required_user_action = new_required_user_action;
+  notify_required_user_action_changed_.Run();
 }
 
 }  // namespace syncer

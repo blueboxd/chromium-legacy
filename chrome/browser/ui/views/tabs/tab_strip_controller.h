@@ -98,6 +98,9 @@ class TabStripController {
   virtual void MoveGroup(const tab_groups::TabGroupId& group,
                          int final_index) = 0;
 
+  virtual void ToggleTabGroupCollapsedState(
+      const tab_groups::TabGroupId group) = 0;
+
   // Shows a context menu for the tab at the specified point in screen coords.
   virtual void ShowContextMenuForTab(Tab* tab,
                                      const gfx::Point& p,
@@ -147,6 +150,9 @@ class TabStripController {
 
   // Returns the color ID of the given |group|.
   virtual tab_groups::TabGroupColorId GetGroupColorId(
+      const tab_groups::TabGroupId& group) const = 0;
+
+  virtual bool GetGroupCollapsedState(
       const tab_groups::TabGroupId& group) const = 0;
 
   // Sets the title and color ID of the given |group|.

@@ -131,12 +131,12 @@ public class PageInfoController implements ModalDialogProperties.Controller,
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     public PageInfoController(WebContents webContents, int securityLevel, String publisher,
-            PageInfoControllerDelegate delegate, boolean isV2Enabled,
+            PageInfoControllerDelegate delegate,
             PermissionParamsListBuilderDelegate permissionParamsListBuilderDelegate) {
         mWebContents = webContents;
         mSecurityLevel = securityLevel;
         mDelegate = delegate;
-        mIsV2Enabled = isV2Enabled;
+        mIsV2Enabled = PageInfoFeatureList.isEnabled(PageInfoFeatureList.PAGE_INFO_V2);
         mPermissionParamsListBuilderDelegate = permissionParamsListBuilderDelegate;
         mRunAfterDismissConsumer = new Consumer<Runnable>() {
             @Override
@@ -175,7 +175,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             // Ignore exception since this is for displaying some specific content on page info.
         }
 
-        String displayUrl = UrlFormatter.formatUrlForSecurityDisplay(mFullUrl);
+        String displayUrl = UrlFormatter.formatUrlForDisplayOmitUsernamePassword(mFullUrl);
         if (mDelegate.isShowingOfflinePage()) {
             displayUrl = UrlUtilities.stripScheme(mFullUrl);
         }
@@ -333,7 +333,17 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     @CalledByNative
     private void updatePermissionDisplay() {
         assert (mPermissionParamsListBuilder != null);
-        mView.setPermissions(mPermissionParamsListBuilder.build());
+        PageInfoView.PermissionParams params = mPermissionParamsListBuilder.build();
+        if (mIsV2Enabled) {
+            PageInfoRowView.ViewParams rowParams = new PageInfoRowView.ViewParams();
+            rowParams.visible = true;
+            rowParams.title = mContext.getString(R.string.page_info_permissions_title);
+            // TODO(crbug.com/1077766): Create a permissions subtitle string that represents
+            // the state, potentially using R.plurals.
+            ((PageInfoViewV2) mView).getPermissionsRowView().setParams(rowParams);
+        } else {
+            mView.setPermissions(params);
+        }
     }
 
     /**
@@ -495,8 +505,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
 
         sLastPageInfoControllerForTesting = new WeakReference<>(new PageInfoController(webContents,
                 SecurityStateModel.getSecurityLevelForWebContents(webContents), contentPublisher,
-                delegate, PageInfoFeatureList.isEnabled(PageInfoFeatureList.PAGE_INFO_V2),
-                permissionParamsListBuilderDelegate));
+                delegate, permissionParamsListBuilderDelegate));
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)

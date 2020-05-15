@@ -8,29 +8,26 @@ import android.graphics.Rect;
 
 import org.chromium.base.supplier.DestroyableObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 
 /**
  * An implementation of {@link DestroyableObservableSupplier} that monitors changes to browser
  * controls and updates top/bottom margins as needed.
  */
 class BrowserControlsMarginSupplier extends ObservableSupplierImpl<Rect>
-        implements ChromeFullscreenManager.FullscreenListener, DestroyableObservableSupplier<Rect> {
-    private final ChromeFullscreenManager mFullscreenManager;
+        implements BrowserControlsStateProvider.Observer, DestroyableObservableSupplier<Rect> {
+    private final BrowserControlsStateProvider mBrowserControlsStateProvider;
 
-    BrowserControlsMarginSupplier(ChromeFullscreenManager fullscreenManager) {
-        mFullscreenManager = fullscreenManager;
-        mFullscreenManager.addListener(this);
+    BrowserControlsMarginSupplier(BrowserControlsStateProvider browserControlsStateProvider) {
+        mBrowserControlsStateProvider = browserControlsStateProvider;
+        mBrowserControlsStateProvider.addObserver(this);
         updateMargins();
     }
 
     @Override
     public void destroy() {
-        mFullscreenManager.removeListener(this);
+        mBrowserControlsStateProvider.removeObserver(this);
     }
-
-    @Override
-    public void onContentOffsetChanged(int offset) {}
 
     @Override
     public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
@@ -50,10 +47,10 @@ class BrowserControlsMarginSupplier extends ObservableSupplierImpl<Rect>
     }
 
     private void updateMargins() {
-        int topMargin = mFullscreenManager.getTopControlsHeight()
-                + mFullscreenManager.getTopControlOffset();
-        int bottomMargin = mFullscreenManager.getBottomControlsHeight()
-                - mFullscreenManager.getBottomControlOffset();
+        int topMargin = mBrowserControlsStateProvider.getTopControlsHeight()
+                + mBrowserControlsStateProvider.getTopControlOffset();
+        int bottomMargin = mBrowserControlsStateProvider.getBottomControlsHeight()
+                - mBrowserControlsStateProvider.getBottomControlOffset();
         super.set(new Rect(0, topMargin, 0, bottomMargin));
     }
 }

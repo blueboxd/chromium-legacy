@@ -6,16 +6,17 @@
  * @fileoverview certificate-subentry represents an SSL certificate sub-entry.
  */
 
-import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
-import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
-import 'chrome://resources/cr_elements/policy/cr_policy_indicator.m.js';
-import 'chrome://resources/cr_elements/icons.m.js';
+import '../../cr_elements/cr_action_menu/cr_action_menu.m.js';
+import '../../cr_elements/cr_icon_button/cr_icon_button.m.js';
+import '../../cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import '../../cr_elements/policy/cr_policy_indicator.m.js';
+import '../../cr_elements/icons.m.js';
 import './certificate_shared_css.js';
 
-import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {CrPolicyIndicatorType} from '../../cr_elements/policy/cr_policy_indicator_behavior.m.js';
+import {I18nBehavior} from '../../js/i18n_behavior.m.js';
 
 import {CertificateAction, CertificateActionEvent, CertificateActionEventDetail} from './certificate_manager_types.js';
 import {CertificatesBrowserProxy, CertificatesBrowserProxyImpl, CertificateSubnode, CertificateType} from './certificates_browser_proxy.js';

@@ -260,6 +260,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
 
   static std::unique_ptr<PrivateKey> FreshP256Key();
   static std::unique_ptr<PrivateKey> FreshRSAKey();
+  static std::unique_ptr<PrivateKey> FreshEd25519Key();
   static bool Sign(crypto::ECPrivateKey* private_key,
                    base::span<const uint8_t> sign_buffer,
                    std::vector<uint8_t>* signature);

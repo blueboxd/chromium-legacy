@@ -180,8 +180,12 @@ class WinScreenKeyboardObserver
     // If the software input panel(SIP) is manually raised by the user, the flag
     // should be set so we don't call TryShow API again.
     host_view_->SetVirtualKeyboardRequested(true);
-    host_view_->SetInsets(gfx::Insets(
-        0, 0, keyboard_rect.IsEmpty() ? 0 : keyboard_rect.height(), 0));
+    if (!host_view_->ShouldVirtualKeyboardOverlayContent()) {
+      host_view_->SetInsets(gfx::Insets(
+          0, 0, keyboard_rect.IsEmpty() ? 0 : keyboard_rect.height(), 0));
+    } else {
+      host_view_->NotifyVirtualKeyboardOverlayRect(keyboard_rect);
+    }
   }
 
   void OnKeyboardHidden() override {
@@ -192,8 +196,12 @@ class WinScreenKeyboardObserver
     // called or not. Calling TryShow/TryHide multiple times leads to SIP
     // flickering.
     host_view_->SetVirtualKeyboardRequested(false);
-    // Restore the viewport.
-    host_view_->SetInsets(gfx::Insets());
+    if (!host_view_->ShouldVirtualKeyboardOverlayContent()) {
+      // Restore the viewport.
+      host_view_->SetInsets(gfx::Insets());
+    } else {
+      host_view_->NotifyVirtualKeyboardOverlayRect(gfx::Rect());
+    }
   }
 
  private:
@@ -2175,6 +2183,22 @@ void RenderWidgetHostViewAura::Shutdown() {
     in_shutdown_ = true;
     host()->ShutdownAndDestroyWidget(true);
   }
+}
+
+bool RenderWidgetHostViewAura::ShouldVirtualKeyboardOverlayContent() const {
+  RenderFrameHostImpl* frame = GetFocusedFrame();
+  if (!frame)
+    return false;
+
+  return frame->ShouldVirtualKeyboardOverlayContent();
+}
+
+void RenderWidgetHostViewAura::NotifyVirtualKeyboardOverlayRect(
+    const gfx::Rect& keyboard_rect) {
+  RenderFrameHostImpl* frame = GetFocusedFrame();
+  if (!frame)
+    return;
+  frame->NotifyVirtualKeyboardOverlayRect(keyboard_rect);
 }
 
 TouchSelectionControllerClientManager*

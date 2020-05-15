@@ -13,7 +13,7 @@ export function skColorToRgba(skColor) {
   const r = (skColor.value >> 16) & 0xff;
   const g = (skColor.value >> 8) & 0xff;
   const b = skColor.value & 0xff;
-  return `rgba(${r}, ${g}, ${b}, ${a})`;
+  return `rgba(${r}, ${g}, ${b}, ${(a / 255).toFixed(2)})`;
 }
 
 /**

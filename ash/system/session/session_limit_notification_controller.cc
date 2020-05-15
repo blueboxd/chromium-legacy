@@ -97,8 +97,8 @@ void SessionLimitNotificationController::UpdateNotification() {
               message_center::NotifierType::SYSTEM_COMPONENT,
               kNotifierSessionLengthTimeout),
           data, nullptr /* delegate */, kNotificationTimerIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
-  notification->SetSystemPriority();
+          message_center::SystemNotificationWarningLevel::WARNING);
+  notification->set_pinned(true);
   if (message_center->FindVisibleNotificationById(kNotificationId)) {
     message_center->UpdateNotification(kNotificationId,
                                        std::move(notification));

@@ -19,20 +19,20 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.HashSet;
 
 class StatusIndicatorMediator
-        implements ChromeFullscreenManager.FullscreenListener, View.OnLayoutChangeListener {
+        implements BrowserControlsStateProvider.Observer, View.OnLayoutChangeListener {
     private static final int STATUS_BAR_COLOR_TRANSITION_DURATION_MS = 200;
     private static final int FADE_TEXT_DURATION_MS = 150;
     private static final int UPDATE_COLOR_TRANSITION_DURATION_MS = 400;
 
     private PropertyModel mModel;
-    private ChromeFullscreenManager mFullscreenManager;
+    private BrowserControlsStateProvider mBrowserControlsStateProvider;
     private HashSet<StatusIndicatorCoordinator.StatusIndicatorObserver> mObservers =
             new HashSet<>();
     private Supplier<Integer> mStatusBarWithoutIndicatorColorSupplier;
@@ -47,8 +47,8 @@ class StatusIndicatorMediator
     /**
      * Constructs the status indicator mediator.
      * @param model The {@link PropertyModel} for the status indicator.
-     * @param fullscreenManager The {@link ChromeFullscreenManager} to listen to for the changes in
-     *                          controls offsets.
+     * @param browserControlsStateProvider The {@link BrowserControlsStateProvider} to listen to
+     *                                     for the changes in controls offsets.
      * @param statusBarWithoutIndicatorColorSupplier A supplier that will get the status bar color
      *                                               without taking the status indicator into
      *                                               account.
@@ -58,12 +58,13 @@ class StatusIndicatorMediator
      *                                        tab switcher.
      * @param invalidateCompositorView Callback to invalidate the compositor texture.
      */
-    StatusIndicatorMediator(PropertyModel model, ChromeFullscreenManager fullscreenManager,
+    StatusIndicatorMediator(PropertyModel model,
+            BrowserControlsStateProvider browserControlsStateProvider,
             Supplier<Integer> statusBarWithoutIndicatorColorSupplier,
             Supplier<Boolean> canAnimateNativeBrowserControls,
             Callback<Runnable> invalidateCompositorView) {
         mModel = model;
-        mFullscreenManager = fullscreenManager;
+        mBrowserControlsStateProvider = browserControlsStateProvider;
         mStatusBarWithoutIndicatorColorSupplier = statusBarWithoutIndicatorColorSupplier;
         mCanAnimateNativeBrowserControls = canAnimateNativeBrowserControls;
         mInvalidateCompositorView = invalidateCompositorView;
@@ -338,7 +339,7 @@ class StatusIndicatorMediator
         mIndicatorHeight = hiding ? 0 : mJavaLayoutHeight;
 
         if (!mIsHiding) {
-            mFullscreenManager.addListener(this);
+            mBrowserControlsStateProvider.addObserver(this);
         }
 
         // If the browser controls won't be animating, we can pretend that the animation ended.
@@ -367,7 +368,7 @@ class StatusIndicatorMediator
 
         final boolean doneHiding = !compositedVisible && mIsHiding;
         if (doneHiding) {
-            mFullscreenManager.removeListener(this);
+            mBrowserControlsStateProvider.removeObserver(this);
             mIsHiding = false;
             mJavaLayoutHeight = 0;
         }

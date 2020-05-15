@@ -19,6 +19,8 @@ import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecord.R
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
 import org.chromium.android_webview.test.OnlyRunIn;
 import org.chromium.android_webview.test.services.MockMetricsBridgeService;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.UmaRecorderHolder;
 
 /**
  * Test AwNonembeddedUmaRecorder.
@@ -28,9 +30,11 @@ import org.chromium.android_webview.test.services.MockMetricsBridgeService;
 public class AwNonembeddedUmaRecorderTest {
     private static final long BINDER_TIMEOUT_MILLIS = 10000;
 
+    private AwNonembeddedUmaRecorder mUmaRecorder;
+
     @Before
     public void setUp() {
-        AwNonembeddedUmaRecorder.setServiceName(MockMetricsBridgeService.class.getName());
+        mUmaRecorder = new AwNonembeddedUmaRecorder(MockMetricsBridgeService.class.getName());
     }
 
     @Test
@@ -42,7 +46,7 @@ public class AwNonembeddedUmaRecorderTest {
                                               .setHistogramName(histogramName)
                                               .setSample(1)
                                               .build();
-        AwNonembeddedUmaRecorder.recordBooleanHistogram(histogramName, true);
+        mUmaRecorder.recordBooleanHistogram(histogramName, true);
         byte[] recordedData = MockMetricsBridgeService.getRecordedData();
         Assert.assertArrayEquals(recordProto.toByteArray(), recordedData);
     }
@@ -56,7 +60,7 @@ public class AwNonembeddedUmaRecorderTest {
                                               .setHistogramName(histogramName)
                                               .setSample(0)
                                               .build();
-        AwNonembeddedUmaRecorder.recordBooleanHistogram(histogramName, false);
+        mUmaRecorder.recordBooleanHistogram(histogramName, false);
         byte[] recordedData = MockMetricsBridgeService.getRecordedData();
         Assert.assertArrayEquals(recordProto.toByteArray(), recordedData);
     }
@@ -77,8 +81,7 @@ public class AwNonembeddedUmaRecorderTest {
                                               .setMax(max)
                                               .setNumBuckets(numBuckets)
                                               .build();
-        AwNonembeddedUmaRecorder.recordExponentialHistogram(
-                histogramName, sample, min, max, numBuckets);
+        mUmaRecorder.recordExponentialHistogram(histogramName, sample, min, max, numBuckets);
         byte[] recordedData = MockMetricsBridgeService.getRecordedData();
         Assert.assertArrayEquals(recordProto.toByteArray(), recordedData);
     }
@@ -99,7 +102,7 @@ public class AwNonembeddedUmaRecorderTest {
                                               .setMax(max)
                                               .setNumBuckets(numBuckets)
                                               .build();
-        AwNonembeddedUmaRecorder.recordLinearHistogram(histogramName, sample, min, max, numBuckets);
+        mUmaRecorder.recordLinearHistogram(histogramName, sample, min, max, numBuckets);
         byte[] recordedData = MockMetricsBridgeService.getRecordedData();
         Assert.assertArrayEquals(recordProto.toByteArray(), recordedData);
     }
@@ -114,7 +117,24 @@ public class AwNonembeddedUmaRecorderTest {
                                               .setHistogramName(histogramName)
                                               .setSample(sample)
                                               .build();
-        AwNonembeddedUmaRecorder.recordSparseHistogram(histogramName, sample);
+        mUmaRecorder.recordSparseHistogram(histogramName, sample);
+        byte[] recordedData = MockMetricsBridgeService.getRecordedData();
+        Assert.assertArrayEquals(recordProto.toByteArray(), recordedData);
+    }
+
+    @Test
+    @MediumTest
+    // Test calling RecordHistogram class methods to make sure a record is delegated as expected.
+    public void testRecordHistogram() {
+        String histogramName = "testRecordHistogram.testRecordSparseHistogram";
+        int sample = 10;
+        HistogramRecord recordProto = HistogramRecord.newBuilder()
+                                              .setRecordType(RecordType.HISTOGRAM_SPARSE)
+                                              .setHistogramName(histogramName)
+                                              .setSample(sample)
+                                              .build();
+        UmaRecorderHolder.setNonNativeDelegate(mUmaRecorder);
+        RecordHistogram.recordSparseHistogram(histogramName, sample);
         byte[] recordedData = MockMetricsBridgeService.getRecordedData();
         Assert.assertArrayEquals(recordProto.toByteArray(), recordedData);
     }

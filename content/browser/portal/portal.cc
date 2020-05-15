@@ -458,9 +458,19 @@ void Portal::Activate(blink::TransferableMessage data,
   // be a portal at that time.
   portal_contents_.Clear();
 
-  successor_contents_raw->GetMainFrame()->OnPortalActivated(
-      std::move(predecessor_web_contents), std::move(data),
-      std::move(callback));
+  mojo::PendingAssociatedRemote<blink::mojom::Portal> pending_portal;
+  auto portal_receiver = pending_portal.InitWithNewEndpointAndPassReceiver();
+  mojo::PendingAssociatedRemote<blink::mojom::PortalClient> pending_client;
+  auto client_receiver = pending_client.InitWithNewEndpointAndPassReceiver();
+
+  RenderFrameHostImpl* successor_main_frame =
+      successor_contents_raw->GetMainFrame();
+  auto predecessor = std::make_unique<Portal>(
+      successor_main_frame, std::move(predecessor_web_contents));
+  predecessor->Bind(std::move(portal_receiver), std::move(pending_client));
+  successor_main_frame->OnPortalActivated(
+      std::move(predecessor), std::move(pending_portal),
+      std::move(client_receiver), std::move(data), std::move(callback));
   // Notifying of activation happens later than ActivatePortalWebContents so
   // that it is observed after predecessor_web_contents has been moved into a
   // portal.

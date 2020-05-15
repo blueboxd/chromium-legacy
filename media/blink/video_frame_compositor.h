@@ -131,8 +131,8 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   virtual void SetOnFramePresentedCallback(OnNewFramePresentedCB present_cb);
 
   // Gets the metadata for the last frame that was presented to the compositor.
-  // Used to populate the VideoFrameMetadata of video.requestAnimationFrame()
-  // callbacks. See https://wicg.github.io/video-raf/.
+  // Used to populate the VideoFrameMetadata of video.requestVideoFrameCallback
+  // callbacks. See https://wicg.github.io/video-rvfc/.
   // Can be called on any thread.
   virtual std::unique_ptr<blink::WebMediaPlayer::VideoFramePresentationMetadata>
   GetLastPresentedFrameMetadata();
@@ -255,8 +255,8 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   base::Lock current_frame_lock_;
   scoped_refptr<VideoFrame> current_frame_;
 
-  // Used to fulfill video.requestAnimationFrame() calls.
-  // See https://wicg.github.io/video-raf/.
+  // Used to fulfill video.requestVideoFrameCallback() calls.
+  // See https://wicg.github.io/video-rvfc/.
   base::TimeTicks last_presentation_time_ GUARDED_BY(current_frame_lock_);
   base::TimeTicks last_expected_display_time_ GUARDED_BY(current_frame_lock_);
   uint32_t presentation_counter_ GUARDED_BY(current_frame_lock_) = 0u;

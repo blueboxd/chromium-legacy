@@ -17,6 +17,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.tab.Tab;
@@ -37,7 +38,7 @@ import org.chromium.ui.util.TokenHolder;
  * dialog is visible.
  */
 public class ChromeTabModalPresenter
-        extends TabModalPresenter implements ChromeFullscreenManager.FullscreenListener {
+        extends TabModalPresenter implements BrowserControlsStateProvider.Observer {
     /** The activity displaying the dialogs. */
     private final ChromeActivity mChromeActivity;
     private final Supplier<TabObscuringHandler> mTabObscuringHandlerSupplier;
@@ -83,13 +84,13 @@ public class ChromeTabModalPresenter
         mChromeActivity = chromeActivity;
         mTabObscuringHandlerSupplier = tabObscuringHandler;
         mChromeFullscreenManager = mChromeActivity.getFullscreenManager();
-        mChromeFullscreenManager.addListener(this);
+        mChromeFullscreenManager.addObserver(this);
         mVisibilityDelegate = new TabModalBrowserControlsVisibilityDelegate();
         mTabObscuringToken = TokenHolder.INVALID_TOKEN;
     }
 
     public void destroy() {
-        mChromeFullscreenManager.removeListener(this);
+        mChromeFullscreenManager.removeObserver(this);
     }
 
     /**
@@ -258,22 +259,23 @@ public class ChromeTabModalPresenter
      * Calculate the top margin of the dialog container and the dialog scrim so that the scrim
      * doesn't overlap the toolbar.
      * @param resources {@link Resources} to use to get the scrim vertical margin.
-     * @param manager {@link ChromeFullscreenManager} for browser controls heights.
+     * @param provider {@link BrowserControlsStateProvider} for browser controls heights.
      * @return The container top margin.
      */
-    public static int getContainerTopMargin(Resources resources, ChromeFullscreenManager manager) {
+    public static int getContainerTopMargin(
+            Resources resources, BrowserControlsStateProvider provider) {
         int scrimVerticalMargin =
                 resources.getDimensionPixelSize(R.dimen.tab_modal_scrim_vertical_margin);
-        return manager.getTopControlsHeight() - scrimVerticalMargin;
+        return provider.getTopControlsHeight() - scrimVerticalMargin;
     }
 
     /**
      * Calculate the bottom margin of the dialog container.
-     * @param manager {@link ChromeFullscreenManager} for browser controls heights.
+     * @param provider {@link BrowserControlsStateProvider} for browser controls heights.
      * @return The container bottom margin.
      */
-    public static int getContainerBottomMargin(ChromeFullscreenManager manager) {
-        return manager.getBottomControlsHeight();
+    public static int getContainerBottomMargin(BrowserControlsStateProvider provider) {
+        return provider.getBottomControlsHeight();
     }
 
     public static boolean isDialogShowing(Tab tab) {

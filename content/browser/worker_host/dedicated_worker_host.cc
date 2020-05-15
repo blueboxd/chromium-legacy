@@ -323,7 +323,11 @@ DedicatedWorkerHost::CreateNetworkFactoryForSubresources(
           ancestor_render_frame_host, worker_origin_,
           mojo::Clone(ancestor_render_frame_host
                           ->last_committed_client_security_state()),
-          std::move(coep_reporter), worker_process_host_);
+          std::move(coep_reporter), worker_process_host_,
+          ancestor_render_frame_host->IsFeatureEnabled(
+              blink::mojom::FeaturePolicyFeature::kTrustTokenRedemption)
+              ? network::mojom::TrustTokenRedemptionPolicy::kPotentiallyPermit
+              : network::mojom::TrustTokenRedemptionPolicy::kForbid);
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       worker_process_host_->GetBrowserContext(),
       /*frame=*/nullptr, worker_process_host_->GetID(),

@@ -24,6 +24,10 @@ class ExtensionInstallPromptTestHelper {
 
   bool has_result() const { return result_ != nullptr; }
 
+  // Clears the result to re-use this test helper.
+  // Note: This ADD_FAILURE()s if the result_ has not been set.
+  void ClearResultForTesting();
+
  private:
   void HandleResult(ExtensionInstallPrompt::Result result);
 

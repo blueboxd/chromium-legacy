@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 304 tests; 295 PASS, 9 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 305 tests; 295 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS Origin parsing: <http://example	.
 org> against <http://example.org/foo/bar>
@@ -256,13 +256,14 @@ PASS Origin parsing: <data:/../> against <about:blank>
 PASS Origin parsing: <javascript:/../> against <about:blank>
 PASS Origin parsing: <mailto:/../> against <about:blank>
 PASS Origin parsing: <sc://ñ.test/> against <about:blank>
-PASS Origin parsing: <sc://!"$&'()*+,-.;<=>^_`{|}~/> against <about:blank>
 FAIL Origin parsing: <x> against <sc://ñ> Failed to construct 'URL': Invalid URL
 PASS Origin parsing: <sc:\../> against <about:blank>
 PASS Origin parsing: <sc::a@example.net> against <about:blank>
 PASS Origin parsing: <wow:%NBD> against <about:blank>
 PASS Origin parsing: <wow:%1G> against <about:blank>
 PASS Origin parsing: <wow:￿> against <about:blank>
+FAIL Origin parsing: <http://!"$&'()*+,-.;=_`{|}~/> against <about:blank> Failed to construct 'URL': Invalid URL
+PASS Origin parsing: <sc://!"$&'()*+,-.;=_`{|}~/> against <about:blank>
 PASS Origin parsing: <ftp://%e2%98%83> against <about:blank>
 PASS Origin parsing: <https://%e2%98%83> against <about:blank>
 PASS Origin parsing: <http://127.0.0.1:10100/relative_import.html> against <about:blank>

@@ -8,7 +8,7 @@ import android.os.Bundle;
 import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecord;
 import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecord.RecordType;
 import org.chromium.base.Log;
-import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.UmaRecorderHolder;
 
 /**
  * Replay the recorded method calls recorded by {@link AwProcessUmaRecorder}.
@@ -20,7 +20,7 @@ public class AwNonembeddedUmaReplayer {
 
     /**
      * Extract method arguments from the given {@link HistogramRecord} and call
-     * {@link org.chromium.base.metrics.RecordHistogram#recordBooleanHistogram}.
+     * {@link org.chromium.base.metrics.UmaRecorder#recordBooleanHistogram}.
      */
     private static void replayBooleanHistogram(HistogramRecord proto) {
         assert proto.getRecordType() == RecordType.HISTOGRAM_BOOLEAN;
@@ -31,39 +31,40 @@ public class AwNonembeddedUmaReplayer {
             return;
         }
 
-        RecordHistogram.recordBooleanHistogram(proto.getHistogramName(), proto.getSample() != 0);
+        UmaRecorderHolder.get().recordBooleanHistogram(
+                proto.getHistogramName(), proto.getSample() != 0);
     }
 
     /**
      * Extract method arguments from the given {@link HistogramRecord} and call
-     * {@link org.chromium.base.metrics.RecordHistogram#recordCustomCountHistogram}.
+     * {@link org.chromium.base.metrics.UmaRecorder#recordExponentialHistogram}.
      */
     private static void replayExponentialHistogram(HistogramRecord proto) {
         assert proto.getRecordType() == RecordType.HISTOGRAM_EXPONENTIAL;
 
-        RecordHistogram.recordCustomCountHistogram(proto.getHistogramName(), proto.getSample(),
-                proto.getMin(), proto.getMax(), proto.getNumBuckets());
+        UmaRecorderHolder.get().recordExponentialHistogram(proto.getHistogramName(),
+                proto.getSample(), proto.getMin(), proto.getMax(), proto.getNumBuckets());
     }
 
     /**
      * Extract method arguments from the given {@link HistogramRecord} and call
-     * {@link org.chromium.base.metrics.RecordHistogram#recordLinearCountHistogram}.
+     * {@link org.chromium.base.metrics.UmaRecorder#recordLinearHistogram}.
      */
     private static void replayLinearHistogram(HistogramRecord proto) {
         assert proto.getRecordType() == RecordType.HISTOGRAM_LINEAR;
 
-        RecordHistogram.recordLinearCountHistogram(proto.getHistogramName(), proto.getSample(),
+        UmaRecorderHolder.get().recordLinearHistogram(proto.getHistogramName(), proto.getSample(),
                 proto.getMin(), proto.getMax(), proto.getNumBuckets());
     }
 
     /**
      * Extract method arguments from the given {@link HistogramRecord} and call
-     * {@link org.chromium.base.metrics.RecordHistogram#recordSparseHistogram}.
+     * {@link org.chromium.base.metrics.UmaRecorder#recordSparseHistogram}.
      */
     private static void replaySparseHistogram(HistogramRecord proto) {
         assert proto.getRecordType() == RecordType.HISTOGRAM_SPARSE;
 
-        RecordHistogram.recordSparseHistogram(proto.getHistogramName(), proto.getSample());
+        UmaRecorderHolder.get().recordSparseHistogram(proto.getHistogramName(), proto.getSample());
     }
 
     /**

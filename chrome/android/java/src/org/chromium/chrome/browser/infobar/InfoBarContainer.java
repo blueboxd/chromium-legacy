@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
@@ -245,7 +244,7 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener, I
     }
 
     private static ChromeActivity getActivity(Tab tab) {
-        Activity activity = TabUtils.getActivity(tab);
+        Activity activity = tab.getWindowAndroid().getActivity().get();
         return activity instanceof ChromeActivity ? (ChromeActivity) activity : null;
     }
 

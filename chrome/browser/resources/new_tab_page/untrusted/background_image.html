@@ -4,13 +4,13 @@
     <style>
       html,
       body,
-      img,
+      #image,
       #gradient {
         height: 100%;
         width: 100%;
       }
 
-      img,
+      #image,
       #gradient {
         position: fixed;
         top: 0;
@@ -26,8 +26,11 @@
         opacity: 1;
       }
 
-      img {
-        object-fit: cover;
+      #image {
+        background-image: $i18nRaw{backgroundUrl};
+        background-position: $i18nRaw{positionX} $i18nRaw{positionY};
+        background-repeat: $i18nRaw{repeatX} $i18nRaw{repeatY};
+        background-size: $i18nRaw{size};
       }
 
       #gradient {
@@ -39,7 +42,9 @@
   </head>
   <body>
     <script src="background_image.js"></script>
-    <img src="$i18nRaw{url}" onload="onImageLoad()"></img>
+    <!-- The img tag purely exists to capture the load event. -->
+    <img src="$i18nRaw{url}" onload="onImageLoad()" hidden></img>
+    <div id="image"></div>
     <div id="gradient"></div>
   </body>
 </html>

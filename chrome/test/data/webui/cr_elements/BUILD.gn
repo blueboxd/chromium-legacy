@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//third_party/closure_compiler/compile_js.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
 import("../namespace_rewrites.gni")
 
@@ -44,4 +45,67 @@ js_modulizer("modulize") {
   if (is_chromeos) {
     input_files += [ "cr_searchable_drop_down_tests.js" ]
   }
+}
+
+js_type_check("closure_compile") {
+  is_polymer3 = true
+
+  # TODO(crbug.com/1000989): Add JS type checking for all commented out targets.
+  deps = [
+    #":cr_action_menu_test",
+    ":cr_button_tests.m",
+    #":cr_checkbox_test",
+    #":cr_container_shadow_behavior_test",
+    #":cr_dialog_test",
+    #":cr_drawer_tests",
+    #":cr_expand_button_focus_tests",
+    #":cr_expand_button_tests",
+    #":cr_fingerprint_progress_arc_tests",
+    #":cr_icon_button_focus_tests",
+    #":cr_icon_button_tests",
+    #":cr_input_test",
+    #":cr_lazy_render_tests",
+    #":cr_link_row_tests",
+    #":cr_lottie_tests",
+    #":cr_policy_indicator_behavior_tests",
+    #":cr_policy_indicator_tests",
+    #":cr_policy_network_indicator_tests",
+    #":cr_policy_pref_indicator_tests",
+    #":cr_policy_strings",
+    #":cr_profile_avatar_selector_tests",
+    #":cr_radio_button_test",
+    #":cr_radio_group_test",
+    #":cr_scrollable_behavior_tests",
+    #":cr_search_field_tests",
+    #":cr_slider_test",
+    #":cr_splitter_test",
+    #":cr_tabs_test",
+    #":cr_toast_manager_test",
+    #":cr_toast_test",
+    #":cr_toggle_test",
+    #":cr_toolbar_search_field_tests",
+    #":cr_view_manager_test",
+    #":iron_list_focus_test",
+    #":settings_private_test_constants",
+  ]
+
+  if (is_chromeos) {
+    deps += [
+      #":cr_policy_network_behavior_mojo_tests",
+      #":cr_policy_network_indicator_mojo_tests",
+      #":cr_searchable_drop_down_tests",
+    ]
+  }
+}
+
+js_library("cr_button_tests.m") {
+  sources = [
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_button_tests.m.js",
+  ]
+  deps = [
+    "..:chai_assert",
+    "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+  extra_deps = [ ":modulize" ]
 }

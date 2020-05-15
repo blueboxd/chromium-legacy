@@ -248,6 +248,7 @@ class SyncServiceCryptoTest : public testing::Test {
   SyncServiceCryptoTest()
       : trusted_vault_client_(&trusted_vault_server_),
         crypto_(notify_observers_cb_.Get(),
+                /*notify_required_user_action_changed=*/base::DoNothing(),
                 reconfigure_cb_.Get(),
                 &prefs_,
                 &trusted_vault_client_) {

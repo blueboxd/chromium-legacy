@@ -149,6 +149,25 @@ class OtherUsersSizeTestAPI {
   OtherUsersSizeCalculator* other_users_size_calculator_;
 };
 
+class DlcsSizeTestAPI {
+ public:
+  explicit DlcsSizeTestAPI(StorageHandler* handler,
+                           DlcsSizeCalculator* dlcs_size_calculator) {
+    dlcs_size_calculator_ = dlcs_size_calculator;
+    dlcs_size_calculator_->AddObserver(handler);
+  }
+
+  void StartCalculation() { dlcs_size_calculator_->StartCalculation(); }
+
+  void SimulateOnGetExistingDlcs(
+      const std::string& err,
+      const dlcservice::DlcsWithContent& dlcs_with_content) {
+    dlcs_size_calculator_->OnGetExistingDlcs(err, dlcs_with_content);
+  }
+
+ private:
+  DlcsSizeCalculator* dlcs_size_calculator_;
+};
 }  // namespace calculator
 }  // namespace settings
 }  // namespace chromeos

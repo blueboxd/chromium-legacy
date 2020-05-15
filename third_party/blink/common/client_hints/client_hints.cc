@@ -126,14 +126,10 @@ base::Optional<std::vector<network::mojom::WebClientHintsType>> FilterAcceptCH(
   return base::make_optional(std::move(result));
 }
 
-namespace {
-
 bool IsClientHintSentByDefault(network::mojom::WebClientHintsType type) {
   return (type == network::mojom::WebClientHintsType::kUA ||
           type == network::mojom::WebClientHintsType::kUAMobile);
 }
-
-}  // namespace
 
 // Add a list of Client Hints headers to be removed to the output vector, based
 // on FeaturePolicy and the url's origin.

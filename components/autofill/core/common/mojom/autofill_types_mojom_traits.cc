@@ -104,6 +104,11 @@ bool StructTraits<
   if (!data.ReadBounds(&out->bounds))
     return false;
 
+  if (!data.ReadDatalistValues(&out->datalist_values))
+    return false;
+  if (!data.ReadDatalistLabels(&out->datalist_labels))
+    return false;
+
   return true;
 }
 

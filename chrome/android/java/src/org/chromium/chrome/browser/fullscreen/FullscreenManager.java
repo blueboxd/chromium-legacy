@@ -46,68 +46,6 @@ public abstract class FullscreenManager {
     }
 
     /**
-     * @return The height of the top controls in pixels.
-     */
-    public abstract int getTopControlsHeight();
-
-    /**
-     * @return The minimum visible height top controls can have in pixels.
-     */
-    public abstract int getTopControlsMinHeight();
-
-    /**
-     * @return The offset of the controls from the top of the screen.
-     */
-    public abstract int getTopControlOffset();
-
-    /**
-     * @return The current top controls min-height. If the min-height is changing with an animation,
-     * this will return a value between the old min-height and the new min-height, which is equal to
-     * the current visible min-height. Otherwise, this will return the same value as
-     * {@link #getTopControlsMinHeight()}.
-     */
-    public abstract int getTopControlsMinHeightOffset();
-
-    /**
-     * @return The height of the bottom controls in pixels.
-     */
-    public abstract int getBottomControlsHeight();
-
-    /**
-     * @return The minimum visible height bottom controls can have in pixels.
-     */
-    public abstract int getBottomControlsMinHeight();
-
-    /**
-     * @return The current bottom controls min-height. If the min-height is changing with an
-     * animation, this will return a value between the old min-height and the new min-height, which
-     * is equal to the current visible min-height. Otherwise, this will return the same value as
-     * {@link #getBottomControlsMinHeight()}.
-     */
-    public abstract int getBottomControlsMinHeightOffset();
-
-    /**
-     * @return Whether or not the browser controls height changes should be animated.
-     */
-    public abstract boolean shouldAnimateBrowserControlsHeightChanges();
-
-    /**
-     * @return The offset of the controls from the bottom of the screen.
-     */
-    public abstract int getBottomControlOffset();
-
-    /**
-     * @return The ratio that the browser controls are off screen; this will be a number [0,1]
-     *         where 1 is completely hidden and 0 is completely shown.
-     */
-    public abstract float getBrowserControlHiddenRatio();
-
-    /**
-     * @return The offset of the content from the top of the screen in px.
-     */
-    public abstract int getContentOffset();
-
-    /**
      * Updates the positions of the browser controls and content to the default non fullscreen
      * values.
      */

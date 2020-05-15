@@ -6,13 +6,19 @@
 
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/virtualkeyboard/virtual_keyboard_overlay_geometry_change_event.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace blink {
 
 VirtualKeyboard::VirtualKeyboard(LocalFrame* frame)
     : ExecutionContextClient(frame ? frame->DomWindow()->GetExecutionContext()
-                                   : nullptr) {}
+                                   : nullptr),
+      VirtualKeyboardOverlayChangedObserver(frame) {}
 
 ExecutionContext* VirtualKeyboard::GetExecutionContext() const {
   return ExecutionContextClient::GetExecutionContext();
@@ -29,12 +35,29 @@ bool VirtualKeyboard::overlaysContent() const {
 }
 
 void VirtualKeyboard::setOverlaysContent(bool overlays_content) {
-  // TODO(snianu): Fill this function.
+  LocalFrame* frame = GetFrame();
+  if (frame && frame->IsMainFrame()) {
+    if (overlays_content != overlays_content_) {
+      auto& local_frame_host = frame->GetLocalFrameHostRemote();
+      local_frame_host.SetVirtualKeyboardOverlayPolicy(overlays_content);
+      overlays_content_ = overlays_content;
+    }
+  } else {
+    GetExecutionContext()->AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kJavaScript,
+            mojom::blink::ConsoleMessageLevel::kWarning,
+            "Setting overlaysContent is only supported from "
+            "the top level browsing context"));
+  }
 }
 
 void VirtualKeyboard::VirtualKeyboardOverlayChanged(
     const gfx::Rect& keyboard_rect) {
-  // TODO(snianu): Fill this function.
+  DispatchEvent(
+      *(MakeGarbageCollected<VirtualKeyboardOverlayGeometryChangeEvent>(
+          event_type_names::kOverlaygeometrychange,
+          DOMRect::FromFloatRect(FloatRect(gfx::RectF(keyboard_rect))))));
 }
 
 void VirtualKeyboard::show() {

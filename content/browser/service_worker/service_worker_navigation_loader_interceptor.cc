@@ -129,13 +129,15 @@ void MaybeCreateLoaderOnCoreThread(
     } else {
       DCHECK(resource_type == blink::mojom::ResourceType::kWorker ||
              resource_type == blink::mojom::ResourceType::kSharedWorker);
-      auto client_type =
+
+      ServiceWorkerClientInfo client_info =
           resource_type == blink::mojom::ResourceType::kWorker
-              ? blink::mojom::ServiceWorkerClientType::kDedicatedWorker
-              : blink::mojom::ServiceWorkerClientType::kSharedWorker;
+              ? ServiceWorkerClientInfo(dedicated_worker_id)
+              : ServiceWorkerClientInfo(shared_worker_id);
+
       container_host = context_core->CreateContainerHostForWorker(
           std::move(host_receiver), process_id, std::move(client_remote),
-          client_type, dedicated_worker_id, shared_worker_id);
+          client_info);
     }
     DCHECK(container_host);
     handle_core->set_container_host(container_host);

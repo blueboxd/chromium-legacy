@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/loader/base_fetch_context.h"
 
+#include "base/optional.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
@@ -167,11 +168,11 @@ TEST_F(BaseFetchContextTest, CanRequest) {
 
   ResourceLoaderOptions options;
 
-  EXPECT_EQ(ResourceRequestBlockedReason::kCSP,
-            fetch_context_->CanRequest(
-                ResourceType::kScript, resource_request, url, options,
-                ReportingDisposition::kReport,
-                ResourceRequest::RedirectStatus::kFollowedRedirect));
+  EXPECT_EQ(
+      ResourceRequestBlockedReason::kCSP,
+      fetch_context_->CanRequest(ResourceType::kScript, resource_request, url,
+                                 options, ReportingDisposition::kReport,
+                                 ResourceRequest::RedirectInfo()));
   EXPECT_EQ(1u, policy->violation_reports_sent_.size());
 }
 
@@ -210,55 +211,50 @@ TEST_F(BaseFetchContextTest, CanRequestWhenDetached) {
   EXPECT_EQ(base::nullopt,
             fetch_context_->CanRequest(
                 ResourceType::kRaw, request, url, ResourceLoaderOptions(),
-                ReportingDisposition::kSuppressReporting,
-                ResourceRequest::RedirectStatus::kNoRedirect));
-
-  EXPECT_EQ(base::nullopt, fetch_context_->CanRequest(
-                               ResourceType::kRaw, keepalive_request, url,
-                               ResourceLoaderOptions(),
-                               ReportingDisposition::kSuppressReporting,
-                               ResourceRequest::RedirectStatus::kNoRedirect));
+                ReportingDisposition::kSuppressReporting, base::nullopt));
 
   EXPECT_EQ(base::nullopt,
-            fetch_context_->CanRequest(
-                ResourceType::kRaw, request, url, ResourceLoaderOptions(),
-                ReportingDisposition::kSuppressReporting,
-                ResourceRequest::RedirectStatus::kFollowedRedirect));
+            fetch_context_->CanRequest(ResourceType::kRaw, keepalive_request,
+                                       url, ResourceLoaderOptions(),
+                                       ReportingDisposition::kSuppressReporting,
+                                       base::nullopt));
 
-  EXPECT_EQ(
-      base::nullopt,
-      fetch_context_->CanRequest(
-          ResourceType::kRaw, keepalive_request, url, ResourceLoaderOptions(),
-          ReportingDisposition::kSuppressReporting,
-          ResourceRequest::RedirectStatus::kFollowedRedirect));
+  EXPECT_EQ(base::nullopt,
+            fetch_context_->CanRequest(ResourceType::kRaw, request, url,
+                                       ResourceLoaderOptions(),
+                                       ReportingDisposition::kSuppressReporting,
+                                       ResourceRequest::RedirectInfo()));
+
+  EXPECT_EQ(base::nullopt,
+            fetch_context_->CanRequest(ResourceType::kRaw, keepalive_request,
+                                       url, ResourceLoaderOptions(),
+                                       ReportingDisposition::kSuppressReporting,
+                                       ResourceRequest::RedirectInfo()));
 
   resource_fetcher_->ClearContext();
 
   EXPECT_EQ(ResourceRequestBlockedReason::kOther,
             fetch_context_->CanRequest(
                 ResourceType::kRaw, request, url, ResourceLoaderOptions(),
-                ReportingDisposition::kSuppressReporting,
-                ResourceRequest::RedirectStatus::kNoRedirect));
-
-  EXPECT_EQ(
-      ResourceRequestBlockedReason::kOther,
-      fetch_context_->CanRequest(ResourceType::kRaw, keepalive_request, url,
-                                 ResourceLoaderOptions(),
-                                 ReportingDisposition::kSuppressReporting,
-                                 ResourceRequest::RedirectStatus::kNoRedirect));
+                ReportingDisposition::kSuppressReporting, base::nullopt));
 
   EXPECT_EQ(ResourceRequestBlockedReason::kOther,
-            fetch_context_->CanRequest(
-                ResourceType::kRaw, request, url, ResourceLoaderOptions(),
-                ReportingDisposition::kSuppressReporting,
-                ResourceRequest::RedirectStatus::kFollowedRedirect));
+            fetch_context_->CanRequest(ResourceType::kRaw, keepalive_request,
+                                       url, ResourceLoaderOptions(),
+                                       ReportingDisposition::kSuppressReporting,
+                                       base::nullopt));
 
-  EXPECT_EQ(
-      base::nullopt,
-      fetch_context_->CanRequest(
-          ResourceType::kRaw, keepalive_request, url, ResourceLoaderOptions(),
-          ReportingDisposition::kSuppressReporting,
-          ResourceRequest::RedirectStatus::kFollowedRedirect));
+  EXPECT_EQ(ResourceRequestBlockedReason::kOther,
+            fetch_context_->CanRequest(ResourceType::kRaw, request, url,
+                                       ResourceLoaderOptions(),
+                                       ReportingDisposition::kSuppressReporting,
+                                       ResourceRequest::RedirectInfo()));
+
+  EXPECT_EQ(base::nullopt,
+            fetch_context_->CanRequest(ResourceType::kRaw, keepalive_request,
+                                       url, ResourceLoaderOptions(),
+                                       ReportingDisposition::kSuppressReporting,
+                                       ResourceRequest::RedirectInfo()));
 }
 
 // Test that User Agent CSS can only load images with data urls.
@@ -272,22 +268,21 @@ TEST_F(BaseFetchContextTest, UACSSTest) {
   options.initiator_info.name = fetch_initiator_type_names::kUacss;
 
   EXPECT_EQ(ResourceRequestBlockedReason::kOther,
-            fetch_context_->CanRequest(
-                ResourceType::kScript, resource_request, test_url, options,
-                ReportingDisposition::kReport,
-                ResourceRequest::RedirectStatus::kFollowedRedirect));
+            fetch_context_->CanRequest(ResourceType::kScript, resource_request,
+                                       test_url, options,
+                                       ReportingDisposition::kReport,
+                                       ResourceRequest::RedirectInfo()));
 
   EXPECT_EQ(ResourceRequestBlockedReason::kOther,
-            fetch_context_->CanRequest(
-                ResourceType::kImage, resource_request, test_url, options,
-                ReportingDisposition::kReport,
-                ResourceRequest::RedirectStatus::kFollowedRedirect));
+            fetch_context_->CanRequest(ResourceType::kImage, resource_request,
+                                       test_url, options,
+                                       ReportingDisposition::kReport,
+                                       ResourceRequest::RedirectInfo()));
 
-  EXPECT_EQ(base::nullopt,
-            fetch_context_->CanRequest(
-                ResourceType::kImage, resource_request, data_url, options,
-                ReportingDisposition::kReport,
-                ResourceRequest::RedirectStatus::kFollowedRedirect));
+  EXPECT_EQ(base::nullopt, fetch_context_->CanRequest(
+                               ResourceType::kImage, resource_request, data_url,
+                               options, ReportingDisposition::kReport,
+                               ResourceRequest::RedirectInfo()));
 }
 
 // Test that User Agent CSS can bypass CSP to load embedded images.
@@ -305,11 +300,10 @@ TEST_F(BaseFetchContextTest, UACSSTest_BypassCSP) {
   ResourceLoaderOptions options;
   options.initiator_info.name = fetch_initiator_type_names::kUacss;
 
-  EXPECT_EQ(base::nullopt,
-            fetch_context_->CanRequest(
-                ResourceType::kImage, resource_request, data_url, options,
-                ReportingDisposition::kReport,
-                ResourceRequest::RedirectStatus::kFollowedRedirect));
+  EXPECT_EQ(base::nullopt, fetch_context_->CanRequest(
+                               ResourceType::kImage, resource_request, data_url,
+                               options, ReportingDisposition::kReport,
+                               ResourceRequest::RedirectInfo()));
 }
 
 }  // namespace blink

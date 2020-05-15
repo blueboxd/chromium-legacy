@@ -35,6 +35,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
   // outlive this object.
   SyncServiceCrypto(
       const base::RepeatingClosure& notify_observers,
+      const base::RepeatingClosure& notify_required_user_action_changed,
       const base::RepeatingCallback<void(ConfigureReason)>& reconfigure,
       CryptoSyncPrefs* sync_prefs,
       TrustedVaultClient* trusted_vault_client);
@@ -51,6 +52,11 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
   bool IsEncryptEverythingEnabled() const;
   void SetEncryptionPassphrase(const std::string& passphrase);
   bool SetDecryptionPassphrase(const std::string& passphrase);
+
+  // Returns whether it's already possible to determine whether trusted vault
+  // key required (e.g. engine didn't start yet or silent fetch attempt is in
+  // progress).
+  bool IsTrustedVaultKeyRequiredStateKnown() const;
 
   // Returns the actual passphrase type being used for encryption.
   PassphraseType GetPassphraseType() const;
@@ -87,6 +93,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
 
  private:
   enum class RequiredUserAction {
+    kUnknownDuringInitialization,
     kNone,
     kPassphraseRequiredForDecryption,
     kPassphraseRequiredForEncryption,
@@ -119,8 +126,15 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
   void TrustedVaultKeysMarkedAsStale(bool is_second_fetch_attempt, bool result);
   void FetchTrustedVaultKeysCompletedButInsufficient();
 
+  // Updates required user action and notifies observers via
+  // |notify_required_user_action_changed_|.
+  void UpdateRequiredUserActionAndNotify(
+      RequiredUserAction new_required_user_action);
+
   // Calls SyncServiceBase::NotifyObservers(). Never null.
   const base::RepeatingClosure notify_observers_;
+
+  const base::RepeatingClosure notify_required_user_action_changed_;
 
   const base::RepeatingCallback<void(ConfigureReason)> reconfigure_;
 
@@ -149,7 +163,10 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
     // Populated when the engine is initialized.
     CoreAccountInfo account_info;
 
-    RequiredUserAction required_user_action = RequiredUserAction::kNone;
+    // This field must be updated via UpdateRequiredUserAction() to ensure
+    // observers are notified.
+    RequiredUserAction required_user_action =
+        RequiredUserAction::kUnknownDuringInitialization;
 
     // The current set of encrypted types. Always a superset of
     // AlwaysEncryptedUserTypes().

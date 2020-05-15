@@ -111,11 +111,13 @@ class FrameNodeImpl
   const base::flat_set<WorkerNodeImpl*>& child_worker_nodes() const;
   const PriorityAndReason& priority_and_reason() const;
   bool had_form_interaction() const;
+  bool is_audible() const;
 
   // Setters are not thread safe.
   void SetIsCurrent(bool is_current);
   void SetIsHoldingWebLock(bool is_holding_weblock);
   void SetIsHoldingIndexedDBLock(bool is_holding_indexeddb_lock);
+  void SetIsAudible(bool is_audible);
 
   // Invoked when a navigation is committed in the frame.
   void OnNavigationCommitted(const GURL& url, bool same_document);
@@ -160,6 +162,7 @@ class FrameNodeImpl
   const base::flat_set<const WorkerNode*> GetChildWorkerNodes() const override;
   const PriorityAndReason& GetPriorityAndReason() const override;
   bool HadFormInteraction() const override;
+  bool IsAudible() const override;
 
   // Properties associated with a Document, which are reset when a
   // different-document navigation is committed in the frame.
@@ -282,6 +285,13 @@ class FrameNodeImpl
       &FrameNodeObserver::OnPriorityAndReasonChanged>
       priority_and_reason_{PriorityAndReason(base::TaskPriority::LOWEST,
                                              kDefaultPriorityReason)};
+
+  // Indicates if the frame is audible. This is tracked independently of a
+  // document, and if a document swap occurs the audio stream monitor machinery
+  // will keep this up to date.
+  ObservedProperty::
+      NotifiesOnlyOnChanges<bool, &FrameNodeObserver::OnIsAudibleChanged>
+          is_audible_{false};
 
   // Inline storage for FramePriorityDecorator data.
   frame_priority::AcceptedVote accepted_vote_;

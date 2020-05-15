@@ -369,6 +369,9 @@ class ProfileSyncService : public SyncService,
   // Called by SyncServiceCrypto when a passphrase is required or accepted.
   void ReconfigureDueToPassphrase(ConfigureReason reason);
 
+  // Called by SyncServiceCrypto when its required user action changes.
+  void OnRequiredUserActionChanged();
+
   std::string GetExperimentalAuthenticationSecret() const;
 
   // This profile's SyncClient, which abstracts away non-Sync dependencies and
@@ -502,6 +505,11 @@ class ProfileSyncService : public SyncService,
   // Used by StopAndClear() to remember that clearing of data is needed (as
   // sync is stopped after a callback from |user_settings_|).
   bool is_stopping_and_clearing_;
+
+  // Used for UMA to determine whether TrustedVaultErrorShownOnStartup
+  // histogram needs to recorded. Set to false iff histogram was already
+  // recorded or trusted vault passphrase type wasn't used on startup.
+  bool should_record_trusted_vault_error_shown_on_startup_;
 
   // This weak factory invalidates its issued pointers when Sync is disabled.
   base::WeakPtrFactory<ProfileSyncService> sync_enabled_weak_factory_{this};

@@ -14,15 +14,15 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Manager for one-off snackbar showing at the top of activity.
  */
-public class TopSnackbarManager
-        implements OnClickListener, ApplicationStatus.ActivityStateListener, FullscreenListener {
+public class TopSnackbarManager implements OnClickListener, ApplicationStatus.ActivityStateListener,
+                                           BrowserControlsStateProvider.Observer {
     private final Handler mDismissSnackbarHandler;
     private final Runnable mDismissSnackbarRunnable = new Runnable() {
         @Override
@@ -91,7 +91,7 @@ public class TopSnackbarManager
 
         if (activity instanceof ChromeActivity) {
             ChromeActivity chromeActivity = (ChromeActivity) activity;
-            chromeActivity.getFullscreenManager().addListener(this);
+            chromeActivity.getFullscreenManager().addObserver(this);
         }
 
         ApplicationStatus.registerStateListenerForActivity(this, activity);
@@ -117,7 +117,7 @@ public class TopSnackbarManager
 
         if (mActivity instanceof ChromeActivity) {
             ChromeActivity chromeActivity = (ChromeActivity) mActivity;
-            chromeActivity.getFullscreenManager().removeListener(this);
+            chromeActivity.getFullscreenManager().removeObserver(this);
         }
 
         mDismissSnackbarHandler.removeCallbacks(mDismissSnackbarRunnable);

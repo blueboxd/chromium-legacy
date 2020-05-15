@@ -40,6 +40,15 @@ const char* DeserializeProto(dbus::Response* response,
   return nullptr;
 }
 
+void OnSignalConnected(const std::string& interface_name,
+                       const std::string& signal_name,
+                       bool success) {
+  DCHECK_EQ(interface_name, system_proxy::kSystemProxyInterface);
+  if (!success) {
+    LOG(ERROR) << "Failed to connect to the System-proxy d-bus interface.";
+  }
+}
+
 // "Real" implementation of SystemProxyClient talking to the SystemProxy daemon
 // on the Chrome OS side.
 class SystemProxyClientImpl : public SystemProxyClient {
@@ -59,6 +68,16 @@ class SystemProxyClientImpl : public SystemProxyClient {
 
   void ShutDownDaemon(ShutDownDaemonCallback callback) override {
     CallProtoMethod(system_proxy::kShutDownMethod, std::move(callback));
+  }
+
+  void ConnectToWorkerActiveSignal(WorkerActiveCallback callback) override {
+    DCHECK(callback);
+    DCHECK(!worker_active_callback_);
+    worker_active_callback_ = callback;
+
+    proxy_->WaitForServiceToBeAvailable(
+        base::BindOnce(&SystemProxyClientImpl::OnSystemProxyServiceAvailable,
+                       weak_factory_.GetWeakPtr()));
   }
 
   void Init(dbus::Bus* bus) {
@@ -123,6 +142,37 @@ class SystemProxyClientImpl : public SystemProxyClient {
     }
     std::move(callback).Run(response_proto);
   }
+
+  void OnWorkerActive(dbus::Signal* signal) {
+    DCHECK_EQ(signal->GetInterface(), system_proxy::kSystemProxyInterface);
+    DCHECK_EQ(signal->GetMember(), system_proxy::kWorkerActiveSignal);
+
+    dbus::MessageReader signal_reader(signal);
+    system_proxy::WorkerActiveSignalDetails details;
+    if (!signal_reader.PopArrayOfBytesAsProto(&details)) {
+      LOG(ERROR) << "Failed to read connection details for active proxy "
+                    "worker process.";
+      return;
+    }
+    DCHECK(worker_active_callback_);
+    worker_active_callback_.Run(details);
+  }
+
+  void OnSystemProxyServiceAvailable(bool is_available) {
+    if (!is_available) {
+      LOG(ERROR) << "System-proxy service not available";
+      return;
+    }
+
+    proxy_->ConnectToSignal(
+        system_proxy::kSystemProxyInterface, system_proxy::kWorkerActiveSignal,
+        base::BindRepeating(&SystemProxyClientImpl::OnWorkerActive,
+                            weak_factory_.GetWeakPtr()),
+        base::BindOnce(&OnSignalConnected));
+  }
+
+  // Signal callback.
+  WorkerActiveCallback worker_active_callback_;
 
   // D-Bus proxy for the SystemProxy daemon, not owned.
   dbus::ObjectProxy* proxy_ = nullptr;

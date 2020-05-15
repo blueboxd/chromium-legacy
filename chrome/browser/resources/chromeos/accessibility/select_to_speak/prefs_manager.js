@@ -33,10 +33,6 @@ class PrefsManager {
 
     /** @private {boolean} */
     this.migrationInProgress_ = false;
-
-    /** @private {string} */
-    // TODO(crbug.com/1079424): Add this to Select-to-Speak settings UI.
-    this.focusRingBackgroundColor_ = '#0000';
   }
 
   /**
@@ -314,16 +310,6 @@ class PrefsManager {
    */
   focusRingColor() {
     return this.color_;
-  }
-
-  /**
-   * Gets the user's focus ring background color. If the user disabled greying
-   * out the background, alpha will be set to fully transparent.
-   * @return {string} hex code for the background of the focus rings.
-   * @public
-   */
-  focusRingBackgroundColor() {
-    return this.focusRingBackgroundColor_;
   }
 }
 

@@ -245,7 +245,7 @@ void ScriptedAnimationController::ServiceScriptedAnimations(
 
   if (RuntimeEnabledFeatures::RequestVideoFrameCallbackEnabled()) {
     // Run the fulfilled HTMLVideoELement.requestVideoFrameCallback() callbacks.
-    // See https://wicg.github.io/video-raf/.
+    // See https://wicg.github.io/video-rvfc/.
     ExecuteVideoFrameCallbacks();
   }
 

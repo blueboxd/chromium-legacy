@@ -41,6 +41,7 @@ const CGFloat kHeaderHeight = 70;
   return self;
 }
 
+@end
 #endif  // defined(__IPHONE_13_4)
 
 @interface CredentialListViewController () <UITableViewDataSource,

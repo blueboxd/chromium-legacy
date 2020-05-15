@@ -1588,19 +1588,21 @@ gfx::Insets ShelfLayoutManager::CalculateTargetBounds(
 
   if (drag_status_ == kDragInProgress)
     UpdateTargetBoundsForGesture(hotseat_target_state);
-  const gfx::Rect shelf_bounds = shelf_->shelf_widget()->GetTargetBounds();
 
+  const int default_shelf_inset =
+      GetShelfInset(state.visibility_state, ShelfConfig::Get()->shelf_size());
+  // When hotseat is enabled, keep horizontal shelf inset at in-app shelf size
+  // to avoid work area updates when the shelf size changes when going to and
+  // from home screen (shelf size rules differ on home screen).
+  const int horizontal_inset =
+      IsHotseatEnabled()
+          ? GetShelfInset(state.visibility_state,
+                          ShelfConfig::Get()->in_app_shelf_size())
+          : default_shelf_inset;
   return shelf_->SelectValueForShelfAlignment(
-      gfx::Insets(0, 0,
-                  GetShelfInset(state.visibility_state,
-                                IsHotseatEnabled()
-                                    ? ShelfConfig::Get()->in_app_shelf_size()
-                                    : shelf_bounds.height()),
-                  0),
-      gfx::Insets(
-          0, GetShelfInset(state.visibility_state, shelf_bounds.width()), 0, 0),
-      gfx::Insets(0, 0, 0,
-                  GetShelfInset(state.visibility_state, shelf_bounds.width())));
+      gfx::Insets(0, 0, horizontal_inset, 0),
+      gfx::Insets(0, default_shelf_inset, 0, 0),
+      gfx::Insets(0, 0, 0, default_shelf_inset));
 }
 
 void ShelfLayoutManager::CalculateTargetBoundsAndUpdateWorkArea() {

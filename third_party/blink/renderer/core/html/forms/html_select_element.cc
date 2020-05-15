@@ -520,16 +520,6 @@ void HTMLSelectElement::SetActiveSelectionEnd(HTMLOptionElement* option) {
   active_selection_end_ = option;
 }
 
-void HTMLSelectElement::ScrollToSelection() {
-  if (!IsFinishedParsingChildren())
-    return;
-  if (UsesMenuList())
-    return;
-  select_type_->ScrollToOption(ActiveSelectionEnd());
-  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
-    cache->ListboxActiveIndexChanged(this);
-}
-
 const HTMLSelectElement::ListItems& HTMLSelectElement::GetListItems() const {
   if (should_recalc_list_items_) {
     RecalcListItems();
@@ -1163,10 +1153,8 @@ void HTMLSelectElement::SelectOptionByAccessKey(HTMLOptionElement* option) {
     SelectOption(option, flags);
   }
   option->SetDirty(true);
-  if (UsesMenuList())
-    return;
   select_type_->ListBoxOnChange();
-  ScrollToSelection();
+  select_type_->ScrollToSelection();
 }
 
 unsigned HTMLSelectElement::length() const {

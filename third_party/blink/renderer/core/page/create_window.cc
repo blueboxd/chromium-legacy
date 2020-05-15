@@ -330,7 +330,7 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
     if (!opener_frame.CanNavigate(*frame))
       return nullptr;
     if (!features.noopener)
-      frame->Client()->SetOpener(&opener_frame);
+      frame->SetOpener(&opener_frame);
     return frame;
   }
 

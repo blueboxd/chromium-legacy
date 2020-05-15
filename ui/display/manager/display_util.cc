@@ -62,10 +62,6 @@ constexpr std::array<ZoomListBucketDsf, 6> kZoomListBucketsForDsf{{
      {1.f / kDsf_2_666, 0.5f, 0.6f, 0.8f, 0.9f, 1.f, 1.2f, 1.35f, 1.5f}},
 }};
 
-bool WithinEpsilon(float a, float b) {
-  return std::abs(a - b) < std::numeric_limits<float>::epsilon();
-}
-
 }  // namespace
 
 #if defined(OS_CHROMEOS)
@@ -107,6 +103,10 @@ int GetDisplayPower(const std::vector<DisplaySnapshot*>& displays,
 }
 
 #endif  // defined(OS_CHROMEOS)
+
+bool WithinEpsilon(float a, float b) {
+  return std::abs(a - b) < std::numeric_limits<float>::epsilon();
+}
 
 std::string MultipleDisplayStateToString(MultipleDisplayState state) {
   switch (state) {

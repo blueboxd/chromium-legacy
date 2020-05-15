@@ -33,6 +33,9 @@ void FakeRemoteFrameHost::CapturePaintPreviewOfCrossProcessSubframe(
 
 void FakeRemoteFrameHost::SetIsInert(bool inert) {}
 
+void FakeRemoteFrameHost::DidChangeOpener(
+    const base::Optional<base::UnguessableToken>& opener_frame_token) {}
+
 void FakeRemoteFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::RemoteFrameHost>(

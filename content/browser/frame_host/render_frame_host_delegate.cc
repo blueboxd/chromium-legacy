@@ -137,7 +137,6 @@ RenderFrameHostDelegate* RenderFrameHostDelegate::CreateNewWindow(
 }
 
 bool RenderFrameHostDelegate::ShouldAllowRunningInsecureContent(
-    WebContents* web_contents,
     bool allowed_per_prefs,
     const url::Origin& origin,
     const GURL& resource_url) {

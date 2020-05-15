@@ -33,6 +33,7 @@
 #include "ui/display/display_observer.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_layout_store.h"
+#include "ui/display/manager/display_util.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_snapshot.h"
@@ -47,7 +48,6 @@
 #include "chromeos/system/devicemode.h"
 #include "ui/display/manager/display_change_observer.h"
 #include "ui/display/manager/display_configurator.h"
-#include "ui/display/manager/display_util.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/events/devices/touchscreen_device.h"
 #endif
@@ -984,6 +984,11 @@ void DisplayManager::UpdateDisplaysWith(
 
       if (current_display.rotation() != new_display.rotation())
         metrics |= DisplayObserver::DISPLAY_METRIC_ROTATION;
+
+      if (!WithinEpsilon(current_display.display_frequency(),
+                         new_display.display_frequency())) {
+        metrics |= DisplayObserver::DISPLAY_METRIC_REFRESH_RATE;
+      }
 
       if (metrics != DisplayObserver::DISPLAY_METRIC_NONE) {
         display_changes.insert(

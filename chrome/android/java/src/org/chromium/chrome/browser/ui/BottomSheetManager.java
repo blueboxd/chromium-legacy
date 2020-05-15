@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.ui;
 
 import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
@@ -21,8 +20,7 @@ import org.chromium.ui.util.TokenHolder;
  * A class that manages activity-specific interactions with the BottomSheet component that it
  * otherwise shouldn't know about.
  */
-class BottomSheetManager extends EmptyBottomSheetObserver
-        implements Destroyable, ChromeFullscreenManager.FullscreenListener {
+class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable {
     /** A token for suppressing app modal dialogs. */
     private int mAppModalToken = TokenHolder.INVALID_TOKEN;
 
@@ -34,9 +32,6 @@ class BottomSheetManager extends EmptyBottomSheetObserver
 
     /** A mechanism for accessing the currently active tab. */
     private Supplier<Tab> mTabSupplier;
-
-    /** A supplier of the {@link ChromeFullscreenManager}. */
-    private Supplier<ChromeFullscreenManager> mFullscreenManager;
 
     /** A supplier of the activity's dialog manager. */
     private Supplier<ModalDialogManager> mDialogManager;
@@ -55,19 +50,16 @@ class BottomSheetManager extends EmptyBottomSheetObserver
     private boolean mContentHasCustomScrimLifecycle;
 
     public BottomSheetManager(BottomSheetController controller, Supplier<Tab> tabSupplier,
-            Supplier<ChromeFullscreenManager> fullscreenManager,
             Supplier<ModalDialogManager> dialogManager,
             Supplier<SnackbarManager> snackbarManagerSupplier,
             TabObscuringHandler obscuringDelegate) {
         mSheetController = controller;
         mTabSupplier = tabSupplier;
-        mFullscreenManager = fullscreenManager;
         mDialogManager = dialogManager;
         mSnackbarManager = snackbarManagerSupplier;
         mTabObscuringHandler = obscuringDelegate;
 
         mSheetController.addObserver(this);
-        mFullscreenManager.get().addListener(BottomSheetManager.this);
     }
 
     @Override
@@ -132,19 +124,7 @@ class BottomSheetManager extends EmptyBottomSheetObserver
     }
 
     @Override
-    public void onContentOffsetChanged(int offset) {}
-
-    @Override
-    public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
-            int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {}
-
-    @Override
-    public void onBottomControlsHeightChanged(
-            int bottomControlsHeight, int bottomControlsMinHeight) {}
-
-    @Override
     public void destroy() {
         mSheetController.removeObserver(this);
-        mFullscreenManager.get().removeListener(this);
     }
 }

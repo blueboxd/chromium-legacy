@@ -32,9 +32,9 @@ content::WebUIDataSource* CreateHostDataSource() {
   source->AddResourcePath("browser_proxy.js", IDR_HELP_APP_BROWSER_PROXY_JS);
   source->AddResourcePath("help_app.mojom-lite.js",
                           IDR_HELP_APP_HELP_APP_MOJOM_JS);
-  source->AddLocalizedString("appTitle", IDS_HELP_APP_DISCOVER);
+  source->AddLocalizedString("appTitle", IDS_HELP_APP_EXPLORE);
   web_app::SetManifestRequestFilter(source, IDR_HELP_APP_MANIFEST,
-                                    IDS_HELP_APP_DISCOVER);
+                                    IDS_HELP_APP_EXPLORE);
   return source;
 }
 }  // namespace

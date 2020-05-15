@@ -95,6 +95,7 @@ base::Value FrameNodeImplDescriber::DescribeFrameNodeData(
   ret.SetBoolKey("is_current", impl->is_current_.value());
   ret.SetKey("priority",
              PriorityAndReasonToValue(impl->priority_and_reason_.value()));
+  ret.SetBoolKey("is_audible", impl->is_audible_.value());
 
   return ret;
 }

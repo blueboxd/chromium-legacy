@@ -29,6 +29,7 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
                         public crostini::CrostiniDialogStatusObserver,
                         public crostini::CrostiniExportImport::Observer,
                         public crostini::CrostiniContainerPropertiesObserver,
+                        public crostini::CrostiniMicSharingEnabledObserver,
                         public crostini::CrostiniPortForwarder::Observer,
                         public crostini::ContainerStartedObserver,
                         public crostini::ContainerShutdownObserver,
@@ -133,6 +134,14 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
   void OnContainerStarted(const crostini::ContainerId& container_id) override;
   // crostini::ContainerShutdownObserver
   void OnContainerShutdown(const crostini::ContainerId& container_id) override;
+  // Handles a request to shut down Crostini.
+  void HandleShutdownCrostini(const base::ListValue* args);
+  // crostini::CrostiniMicSharingEnabledObserver
+  void OnCrostiniMicSharingEnabledChanged(bool enabled) override;
+  // Handles a request for setting the permissions for Crostini Mic access.
+  void HandleSetCrostiniMicSharingEnabled(const base::ListValue* args);
+  // Handles a request for getting the permissions for Crostini Mic access.
+  void HandleGetCrostiniMicSharingEnabled(const base::ListValue* args);
 
   Profile* profile_;
   // weak_ptr_factory_ should always be last member.

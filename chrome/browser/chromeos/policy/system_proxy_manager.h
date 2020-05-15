@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chromeos/dbus/system_proxy/system_proxy_service.pb.h"
 
 namespace system_proxy {
 class SetSystemTrafficCredentialsResponse;
@@ -32,6 +33,14 @@ class SystemProxyManager {
 
   ~SystemProxyManager();
 
+  // If System-proxy is enabled by policy, it returns the URL of the local proxy
+  // instance that authenticates system services, in PAC format, e.g.
+  //     PROXY localhost:3128
+  // otherwise it returns an empty string.
+  std::string SystemServicesProxyPacString() const;
+
+  void SetSystemServicesProxyUrlForTest(const std::string& local_proxy_url);
+
  private:
   void OnSetSystemTrafficCredentials(
       const system_proxy::SetSystemTrafficCredentialsResponse& response);
@@ -42,9 +51,17 @@ class SystemProxyManager {
   // necessary, to configure the web proxy credentials for system services.
   void OnSystemProxySettingsPolicyChanged();
 
+  // This function is called when the |WorkerActive| dbus signal is received.
+  void OnWorkerActive(const system_proxy::WorkerActiveSignalDetails& details);
+
   chromeos::CrosSettings* cros_settings_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       system_proxy_subscription_;
+
+  bool system_proxy_enabled_ = false;
+  // The authority URI in the format host:port of the local proxy worker for
+  // system services.
+  std::string system_services_address_;
 
   base::WeakPtrFactory<SystemProxyManager> weak_factory_{this};
 };

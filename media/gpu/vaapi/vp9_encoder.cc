@@ -74,10 +74,13 @@ bool VP9Encoder::Initialize(const VideoEncodeAccelerator::Config& config,
     return false;
   }
 
+  // TODO(crbug.com/10607750): Support kConstantQuantizationParameter.
+  DCHECK_NE(ave_config.bitrate_control,
+            BitrateControl::kConstantQuantizationParameter);
+  accelerator_->set_bitrate_control(ave_config.bitrate_control);
   visible_size_ = config.input_visible_size;
   coded_size_ = gfx::Size(base::bits::Align(visible_size_.width(), 16),
                           base::bits::Align(visible_size_.height(), 16));
-
   Reset();
 
   VideoBitrateAllocation initial_bitrate_allocation;

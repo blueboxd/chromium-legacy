@@ -409,6 +409,7 @@
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
+#include "base/feature_list.h"
 #include "chrome/android/features/dev_ui/buildflags.h"
 #include "chrome/android/modules/extra_icu/provider/module_provider.h"
 #include "chrome/browser/android/app_hooks.h"
@@ -421,6 +422,7 @@
 #include "chrome/browser/chrome_browser_main_android.h"
 #include "chrome/browser/download/android/available_offline_content_provider.h"
 #include "chrome/browser/download/android/intercept_oma_download_navigation_throttle.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/common/chrome_descriptors.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
@@ -4298,7 +4300,8 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
         // |safe_browsing_service_| may be unavailable in tests.
         safe_browsing_service_ &&
                 safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup(
-                    profile->GetPrefs(), profile->IsOffTheRecord())
+                    profile->GetPrefs(), profile->IsOffTheRecord(),
+                    g_browser_process->variations_service())
             ? safe_browsing::RealTimeUrlLookupServiceFactory::GetForProfile(
                   profile)
             : nullptr;
@@ -4329,6 +4332,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
 
 #if defined(OS_ANDROID)
   std::string client_data_header;
+  bool night_mode_enabled = false;
   if (frame_tree_node_id != content::RenderFrameHost::kNoFrameTreeNodeId) {
     auto* web_contents = WebContents::FromFrameTreeNodeId(frame_tree_node_id);
     // Could be null if the FrameTreeNode's RenderFrameHost is shutting down.
@@ -4339,6 +4343,14 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
       if (client_data_header_observer)
         client_data_header = client_data_header_observer->header();
     }
+
+    auto* delegate = TabAndroid::FromWebContents(web_contents)
+                         ? static_cast<android::TabWebContentsDelegateAndroid*>(
+                               web_contents->GetDelegate())
+                         : nullptr;
+    if (delegate) {
+      night_mode_enabled = delegate->IsNightModeEnabled();
+    }
   }
 #endif
 
@@ -4348,7 +4360,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
       profile->GetPrefs()->GetString(prefs::kAllowedDomainsForApps)};
   result.push_back(std::make_unique<GoogleURLLoaderThrottle>(
 #if defined(OS_ANDROID)
-      client_data_header,
+      client_data_header, night_mode_enabled,
 #endif
       std::move(dynamic_params)));
 

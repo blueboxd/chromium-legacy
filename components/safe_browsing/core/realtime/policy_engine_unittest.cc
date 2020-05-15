@@ -40,8 +40,8 @@ class RealTimePolicyEngineTest : public PlatformTest {
   }
 
   bool CanPerformFullURLLookup(bool is_off_the_record) {
-    return RealTimePolicyEngine::CanPerformFullURLLookup(&pref_service_,
-                                                         is_off_the_record);
+    return RealTimePolicyEngine::CanPerformFullURLLookup(
+        &pref_service_, is_off_the_record, /*variations_service=*/nullptr);
   }
 
   bool CanPerformFullURLLookupWithToken(
@@ -49,7 +49,12 @@ class RealTimePolicyEngineTest : public PlatformTest {
       syncer::SyncService* sync_service,
       signin::IdentityManager* identity_manager) {
     return RealTimePolicyEngine::CanPerformFullURLLookupWithToken(
-        &pref_service_, is_off_the_record, sync_service, identity_manager);
+        &pref_service_, is_off_the_record, sync_service, identity_manager,
+        /*variations_service=*/nullptr);
+  }
+
+  bool IsInExcludedCountry(const std::string& country_code) {
+    return RealTimePolicyEngine::IsInExcludedCountry(country_code);
   }
 
   std::unique_ptr<base::test::TaskEnvironment> task_environment_;
@@ -355,6 +360,20 @@ TEST_F(RealTimePolicyEngineTest,
         EXPECT_FALSE(enabled);
         break;
     }
+  }
+}
+
+TEST_F(RealTimePolicyEngineTest, TestIsInExcludedCountry) {
+  const std::string non_excluded_countries[] = {"be", "br", "ca", "de", "es",
+                                                "fr", "ie", "in", "jp", "nl",
+                                                "ru", "se", "us"};
+  for (auto country : non_excluded_countries) {
+    EXPECT_FALSE(IsInExcludedCountry(country));
+  }
+
+  const std::string excluded_countries[] = {"cn"};
+  for (auto country : excluded_countries) {
+    EXPECT_TRUE(IsInExcludedCountry(country));
   }
 }
 

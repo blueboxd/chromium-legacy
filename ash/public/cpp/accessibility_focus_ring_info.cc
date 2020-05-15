@@ -13,8 +13,7 @@ bool AccessibilityFocusRingInfo::operator==(
     const AccessibilityFocusRingInfo& other) const {
   return rects_in_screen == other.rects_in_screen &&
          behavior == other.behavior && type == other.type &&
-         color == other.color && secondary_color == other.secondary_color &&
-         background_color == other.background_color;
+         color == other.color && secondary_color == other.secondary_color;
 }
 
 }  // namespace ash

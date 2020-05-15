@@ -18,7 +18,7 @@ std::string GenerateValidVerificationKey() {
       signing(TRUST_TOKEN_MAX_PRIVATE_KEY_SIZE, 'a');
   size_t verification_len, signing_len;
   CHECK(TRUST_TOKEN_generate_key(
-      TRUST_TOKEN_experiment_v0(),
+      TRUST_TOKEN_experiment_v1(),
       base::as_writable_bytes(base::make_span(signing)).data(), &signing_len,
       signing.size(),
       base::as_writable_bytes(base::make_span(verification)).data(),

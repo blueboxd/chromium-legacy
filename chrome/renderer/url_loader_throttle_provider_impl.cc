@@ -200,6 +200,7 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
   throttles.push_back(std::make_unique<GoogleURLLoaderThrottle>(
 #if defined(OS_ANDROID)
       client_data_header,
+      /* night_mode_enabled= */ false,
 #endif
       ChromeRenderThreadObserver::GetDynamicParams()));
 

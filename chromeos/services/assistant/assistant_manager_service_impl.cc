@@ -1488,7 +1488,7 @@ AssistantManagerServiceImpl::assistant_notification_controller() {
   return context_->assistant_notification_controller();
 }
 
-ash::mojom::AssistantScreenContextController*
+ash::AssistantScreenContextController*
 AssistantManagerServiceImpl::assistant_screen_context_controller() {
   return context_->assistant_screen_context_controller();
 }

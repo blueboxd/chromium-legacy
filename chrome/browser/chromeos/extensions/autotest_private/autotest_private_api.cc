@@ -1946,9 +1946,11 @@ AutotestPrivateInstallPluginVMFunction::Run() {
                                    params->image_hash, params->license_key);
 
   plugin_vm::ShowPluginVmInstallerView(profile);
-  PluginVmInstallerView::GetActiveViewForTesting()
-      ->SetFinishedCallbackForTesting(base::BindOnce(
-          &AutotestPrivateInstallPluginVMFunction::OnInstallFinished, this));
+  auto* view = PluginVmInstallerView::GetActiveViewForTesting();
+  view->SetFinishedCallbackForTesting(base::BindOnce(
+      &AutotestPrivateInstallPluginVMFunction::OnInstallFinished, this));
+  // Start the installation.
+  view->AcceptDialog();
 
   return RespondLater();
 }
@@ -1963,6 +1965,48 @@ void AutotestPrivateInstallPluginVMFunction::OnInstallFinished(bool success) {
   PluginVmInstallerView::GetActiveViewForTesting()->AcceptDialog();
 
   Respond(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSetPluginVMPolicyFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateSetPluginVMPolicyFunction::
+    ~AutotestPrivateSetPluginVMPolicyFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSetPluginVMPolicyFunction::Run() {
+  std::unique_ptr<api::autotest_private::SetPluginVMPolicy::Params> params(
+      api::autotest_private::SetPluginVMPolicy::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateSetPluginVMPolicyFunction " << params->image_url
+           << ", " << params->image_hash << ", " << params->license_key;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  plugin_vm::SetFakePluginVmPolicy(profile, params->image_url,
+                                   params->image_hash, params->license_key);
+
+  return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateShowPluginVMInstallerFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateShowPluginVMInstallerFunction::
+    ~AutotestPrivateShowPluginVMInstallerFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateShowPluginVMInstallerFunction::Run() {
+  DVLOG(1) << "AutotestPrivateShowPluginVMInstallerFunction";
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  plugin_vm::PluginVmInstallerFactory::GetForProfile(profile)
+      ->SetFreeDiskSpaceForTesting(
+          plugin_vm::PluginVmInstaller::kRecommendedFreeDiskSpace);
+  plugin_vm::ShowPluginVmInstallerView(profile);
+
+  return RespondNow(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3538,9 +3582,11 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWABannerObserver
     switch (installable) {
       case Installable::kNo:
         FALLTHROUGH;
+      case Installable::kNoAlreadyInstalled:
+        FALLTHROUGH;
       case Installable::kUnknown:
         DCHECK(false) << "Unexpected AppBannerManager::Installable value (kNo "
-                         "or kUnknown)";
+                         "or kNoAlreadyInstalled or kUnknown)";
         break;
 
       case Installable::kPromotable:

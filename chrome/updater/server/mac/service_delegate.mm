@@ -77,24 +77,28 @@
           reply(static_cast<int>(error));
       }));
 
-  auto sccb = base::BindRepeating(
-      base::RetainBlock(^(updater::UpdateService::UpdateState state) {
-        base::scoped_nsobject<CRUUpdateStateWrapper> updateStateWrapper(
-            [[CRUUpdateStateWrapper alloc]
-                  initWithAppId:base::SysUTF8ToNSString(state.app_id)
-                          state:[[CRUUpdateStateStateWrapper alloc]
-                                    initWithUpdateStateState:state.state]
-                        version:base::SysUTF8ToNSString(
-                                    state.next_version.GetString())
-                downloadedBytes:state.downloaded_bytes
-                     totalBytes:state.total_bytes
-                installProgress:state.install_progress
-                  errorCategory:[[CRUErrorCategoryWrapper alloc]
-                                    initWithErrorCategory:state.error_category]
-                      errorCode:state.error_code
-                      extraCode:state.extra_code1]);
-        [updateState observeUpdateState:updateStateWrapper.get()];
-      }));
+  auto sccb = base::BindRepeating(base::RetainBlock(^(
+      updater::UpdateService::UpdateState state) {
+    base::scoped_nsobject<NSString> version(@"");
+    if (state.next_version.IsValid()) {
+      version.reset(base::SysUTF8ToNSString(state.next_version.GetString()));
+    }
+
+    base::scoped_nsobject<CRUUpdateStateWrapper> updateStateWrapper(
+        [[CRUUpdateStateWrapper alloc]
+              initWithAppId:base::SysUTF8ToNSString(state.app_id)
+                      state:[[CRUUpdateStateStateWrapper alloc]
+                                initWithUpdateStateState:state.state]
+                    version:version.get()
+            downloadedBytes:state.downloaded_bytes
+                 totalBytes:state.total_bytes
+            installProgress:state.install_progress
+              errorCategory:[[CRUErrorCategoryWrapper alloc]
+                                initWithErrorCategory:state.error_category]
+                  errorCode:state.error_code
+                  extraCode:state.extra_code1]);
+    [updateState observeUpdateState:updateStateWrapper.get()];
+  }));
 
   _callbackRunner->PostTask(
       FROM_HERE, base::BindOnce(&updater::UpdateService::UpdateAll, _service,
@@ -112,24 +116,28 @@
           reply(static_cast<int>(error));
       }));
 
-  auto sccb = base::BindRepeating(
-      base::RetainBlock(^(updater::UpdateService::UpdateState state) {
-        base::scoped_nsobject<CRUUpdateStateWrapper> updateStateWrapper(
-            [[CRUUpdateStateWrapper alloc]
-                  initWithAppId:base::SysUTF8ToNSString(state.app_id)
-                          state:[[CRUUpdateStateStateWrapper alloc]
-                                    initWithUpdateStateState:state.state]
-                        version:base::SysUTF8ToNSString(
-                                    state.next_version.GetString())
-                downloadedBytes:state.downloaded_bytes
-                     totalBytes:state.total_bytes
-                installProgress:state.install_progress
-                  errorCategory:[[CRUErrorCategoryWrapper alloc]
-                                    initWithErrorCategory:state.error_category]
-                      errorCode:state.error_code
-                      extraCode:state.extra_code1]);
-        [updateState observeUpdateState:updateStateWrapper.get()];
-      }));
+  auto sccb = base::BindRepeating(base::RetainBlock(^(
+      updater::UpdateService::UpdateState state) {
+    base::scoped_nsobject<NSString> version(@"");
+    if (state.next_version.IsValid()) {
+      version.reset(base::SysUTF8ToNSString(state.next_version.GetString()));
+    }
+
+    base::scoped_nsobject<CRUUpdateStateWrapper> updateStateWrapper(
+        [[CRUUpdateStateWrapper alloc]
+              initWithAppId:base::SysUTF8ToNSString(state.app_id)
+                      state:[[CRUUpdateStateStateWrapper alloc]
+                                initWithUpdateStateState:state.state]
+                    version:version.get()
+            downloadedBytes:state.downloaded_bytes
+                 totalBytes:state.total_bytes
+            installProgress:state.install_progress
+              errorCategory:[[CRUErrorCategoryWrapper alloc]
+                                initWithErrorCategory:state.error_category]
+                  errorCode:state.error_code
+                  extraCode:state.extra_code1]);
+    [updateState observeUpdateState:updateStateWrapper.get()];
+  }));
 
   _callbackRunner->PostTask(
       FROM_HERE,

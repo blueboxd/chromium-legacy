@@ -11,19 +11,16 @@ import androidx.annotation.NonNull;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.feed.FeedLoggingBridge;
-import org.chromium.chrome.browser.feed.FeedOfflineIndicator;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.NavigationRecorder;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.network.mojom.ReferrerPolicy;
@@ -38,8 +35,6 @@ import java.util.HashMap;
 public class FeedActionHandler implements ActionApi {
     private final NativePageNavigationDelegate mDelegate;
     private final Runnable mSuggestionConsumedObserver;
-    private final FeedOfflineIndicator mOfflineIndicator;
-    private final OfflinePageBridge mOfflinePageBridge;
     private final FeedLoggingBridge mLoggingBridge;
     private final Activity mActivity;
     private final Profile mProfile;
@@ -64,21 +59,15 @@ public class FeedActionHandler implements ActionApi {
      * handling some of the actions.
      * @param suggestionConsumedObserver An observer that is interested in any time a suggestion is
      * consumed by the user.
-     * @param offlineIndicator Tracks offline pages and can supply this handler with offline ids.
-     * @param offlinePageBridge Capable of updating {@link LoadUrlParams} to include offline ids.
      * @param loggingBridge Reports pages visiting time.
      */
     public FeedActionHandler(@NonNull NativePageNavigationDelegate delegate,
             @NonNull Runnable suggestionConsumedObserver,
-            @NonNull FeedOfflineIndicator offlineIndicator,
-            @NonNull OfflinePageBridge offlinePageBridge,
             @NonNull FeedLoggingBridge loggingBridge,
             Activity activity,
             Profile profile) {
         mDelegate = delegate;
         mSuggestionConsumedObserver = suggestionConsumedObserver;
-        mOfflineIndicator = offlineIndicator;
-        mOfflinePageBridge = offlinePageBridge;
         mLoggingBridge = loggingBridge;
         mActivity = activity;
         mProfile = profile;
@@ -86,7 +75,7 @@ public class FeedActionHandler implements ActionApi {
 
     @Override
     public void openUrl(String url) {
-        openOfflineIfPossible(WindowOpenDisposition.CURRENT_TAB, url);
+        openAndRecord(WindowOpenDisposition.CURRENT_TAB, createLoadUrlParams(url));
         mLoggingBridge.reportFeedInteraction();
     }
 
@@ -109,7 +98,7 @@ public class FeedActionHandler implements ActionApi {
 
     @Override
     public void openUrlInNewTab(String url) {
-        openOfflineIfPossible(WindowOpenDisposition.NEW_BACKGROUND_TAB, url);
+        openAndRecord(WindowOpenDisposition.NEW_BACKGROUND_TAB, createLoadUrlParams(url));
         mLoggingBridge.reportFeedInteraction();
     }
 
@@ -120,7 +109,7 @@ public class FeedActionHandler implements ActionApi {
 
     @Override
     public void openUrlInNewWindow(String url) {
-        openOfflineIfPossible(WindowOpenDisposition.NEW_WINDOW, url);
+        openAndRecord(WindowOpenDisposition.NEW_WINDOW, createLoadUrlParams(url));
     }
 
     @Override
@@ -195,43 +184,13 @@ public class FeedActionHandler implements ActionApi {
     }
 
     /**
-     * Opens the given url in offline mode if possible by setting load params so the offline
-     * interceptor will handle the request. If there is no offline id, fall back to just opening the
-     * |url| through the |mDelegate|.
-     *
-     * @param disposition How to open the article. Should not be OFF_THE_RECORD, as offline pages
-     * does not support opening articles while incognito.
-     * @param url The url of the article. Should match what was previously requested by Feed to
-     * OfflineIndicatorApi implementation exactly.
-     */
-    private void openOfflineIfPossible(int disposition, String url) {
-        Long maybeOfflineId = mOfflineIndicator.getOfflineIdIfPageIsOfflined(url);
-        if (maybeOfflineId == null) {
-            openAndRecord(disposition, createLoadUrlParams(url), /*isOffline*/ false);
-        } else {
-            mOfflinePageBridge.getLoadUrlParamsByOfflineId(
-                    maybeOfflineId, LaunchLocation.SUGGESTION, (loadUrlParams) -> {
-                        if (loadUrlParams == null) {
-                            // Fall back to opening online if the lookup failed.
-                            openAndRecord(
-                                    disposition, createLoadUrlParams(url), /*isOffline*/ false);
-                        } else {
-                            // Offline headers need to be moved to be read correctly.
-                            loadUrlParams.setVerbatimHeaders(loadUrlParams.getExtraHeadersString());
-                            openAndRecord(disposition, loadUrlParams, /*isOffline*/ true);
-                        }
-                    });
-        }
-    }
-    /**
      * Opens the given resource, specified by params, and records how much time the user spends on
      * the suggested page.
      *
      * @param disposition How to open the article.
      * @param loadUrlParams Parameters specifying the URL to load and other navigation details.
-     * @param isOffline If the page should open in offline mode or not, for metrics reporting.
      */
-    private void openAndRecord(int disposition, LoadUrlParams loadUrlParams, boolean isOffline) {
+    private void openAndRecord(int disposition, LoadUrlParams loadUrlParams) {
         Tab loadingTab = mDelegate.openUrl(disposition, loadUrlParams);
         if (loadingTab != null) {
             // Records how long the user spending on the suggested page, and whether the user got
@@ -239,7 +198,7 @@ public class FeedActionHandler implements ActionApi {
             NavigationRecorder.record(loadingTab,
                     visitData
                     -> mLoggingBridge.onContentTargetVisited(
-                            visitData.duration, isOffline, NewTabPage.isNTPUrl(visitData.endUrl)));
+                            visitData.duration, NewTabPage.isNTPUrl(visitData.endUrl)));
         }
         mSuggestionConsumedObserver.run();
     }

@@ -9,7 +9,6 @@ import android.content.Context;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfMetrics.SendTabToSelfShareClickResult;
 import org.chromium.chrome.browser.share.ShareActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -38,8 +37,6 @@ public class SendTabToSelfShareActivity extends ShareActivity {
             return;
         }
 
-        SendTabToSelfShareClickResult.recordClickResult(
-                SendTabToSelfShareClickResult.ClickType.SHOW_DEVICE_LIST);
         controller.requestShowContent(
                 createBottomSheetContent(context, entry, controller, webContents), true);
         // TODO(crbug.com/968246): Remove the need to call this explicitly and instead have it
@@ -56,13 +53,7 @@ public class SendTabToSelfShareActivity extends ShareActivity {
     }
 
     public static boolean featureIsAvailable(Tab currentTab) {
-        boolean shouldShow =
-                SendTabToSelfAndroidBridge.isFeatureAvailable(currentTab.getWebContents());
-        if (shouldShow) {
-            SendTabToSelfShareClickResult.recordClickResult(
-                    SendTabToSelfShareClickResult.ClickType.SHOW_ITEM);
-        }
-        return shouldShow;
+        return SendTabToSelfAndroidBridge.isFeatureAvailable(currentTab.getWebContents());
     }
 
     @VisibleForTesting

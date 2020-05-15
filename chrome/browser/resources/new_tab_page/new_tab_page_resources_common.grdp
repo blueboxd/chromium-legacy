@@ -15,6 +15,8 @@
       file="icons/brush.svg" type="BINDATA" compress="gzip" />
   <include name="IDR_NEW_TAB_PAGE_CHECK_CIRCLE_SVG"
       file="icons/check_circle.svg" type="BINDATA" compress="gzip" />
+  <include name="IDR_NEW_TAB_PAGE_CHEVRON_SVG"
+      file="icons/chevron.svg" type="BINDATA" compress="gzip" />
   <include name="IDR_NEW_TAB_PAGE_GENERIC_GLOBE_SVG"
       file="icons/generic_globe.svg" type="BINDATA" compress="gzip" />
   <include name="IDR_NEW_TAB_PAGE_PENCIL_ICON_SVG"

@@ -43,13 +43,12 @@ import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.shared.FeedSurfaceDelegate;
 import org.chromium.chrome.browser.feed.shared.FeedSurfaceProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.LifecycleObserver;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.omnibox.LocationBar.OmniboxFocusReason;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -91,7 +90,7 @@ import java.util.List;
  */
 public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvider,
                                    TemplateUrlServiceObserver,
-                                   ChromeFullscreenManager.FullscreenListener, FeedSurfaceDelegate {
+                                   BrowserControlsStateProvider.Observer, FeedSurfaceDelegate {
     private static final String TAG = "NewTabPage";
 
     // Key for the scroll position data that may be stored in a navigation entry.
@@ -107,7 +106,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     protected final NewTabPageManagerImpl mNewTabPageManager;
     protected final TileGroup.Delegate mTileGroupDelegate;
     private final boolean mIsTablet;
-    private final ChromeFullscreenManager mFullscreenManager;
+    private final BrowserControlsStateProvider mBrowserControlsStateProvider;
     private final NewTabPageUma mNewTabPageUma;
     private final ContextMenuManager mContextMenuManager;
     private FeedSurfaceProvider mFeedSurfaceProvider;
@@ -287,7 +286,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     /**
      * Constructs a NewTabPage.
      * @param activity The activity used for context to create the new tab page's View.
-     * @param fullscreenManager {@link ChromeFullscreenManager} to observe for offset changes.
+     * @param browserControlsStateProvider {@link BrowserControlsStateProvider} to observe for
+     *         offset changes.
      * @param activityTabProvider Provides the current active tab.
      * @param overviewModeBehavior Overview mode to observe for mode changes.
      * @param snackbarManager {@link SnackBarManager} object.
@@ -299,7 +299,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
      * @param nativePageHost The host that is showing this new tab page.
      * @param tab The {@link Tab} that contains this new tab page.
      */
-    public NewTabPage(Activity activity, ChromeFullscreenManager fullscreenManager,
+    public NewTabPage(Activity activity, BrowserControlsStateProvider browserControlsStateProvider,
             Supplier<Tab> activityTabProvider, @Nullable OverviewModeBehavior overviewModeBehavior,
             SnackbarManager snackbarManager, ActivityLifecycleDispatcher lifecycleDispatcher,
             TabModelSelector tabModelSelector, boolean isTablet, NewTabPageUma uma,
@@ -368,7 +368,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         initializeMainView(activity, activityTabProvider, snackbarManager, tabModelSelector, uma,
                 isInNightMode);
 
-        mFullscreenManager = fullscreenManager;
+        mBrowserControlsStateProvider = browserControlsStateProvider;
         getView().addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(View view) {
@@ -379,7 +379,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
             @Override
             public void onViewDetachedFromWindow(View view) {}
         });
-        mFullscreenManager.addListener(this);
+        mBrowserControlsStateProvider.addObserver(this);
 
         eventReporter.onSurfaceOpened();
 
@@ -424,8 +424,6 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         Profile profile = Profile.fromWebContents(mTab.getWebContents());
         ActionApi actionApi = new FeedActionHandler(mNewTabPageManager.getNavigationDelegate(),
                 FeedProcessScopeFactory.getFeedConsumptionObserver(),
-                FeedProcessScopeFactory.getFeedOfflineIndicator(),
-                OfflinePageBridge.getForProfile(profile),
                 FeedProcessScopeFactory.getFeedLoggingBridge(), activity, profile);
         LayoutInflater inflater = LayoutInflater.from(activity);
         mNewTabPageLayout = (NewTabPageLayout) inflater.inflate(R.layout.new_tab_page_layout, null);
@@ -490,8 +488,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 ((ViewGroup.MarginLayoutParams) view.getLayoutParams());
         if (layoutParams == null) return;
 
-        layoutParams.bottomMargin = mFullscreenManager.getBottomControlsHeight()
-                - mFullscreenManager.getBottomControlOffset();
+        layoutParams.bottomMargin = mBrowserControlsStateProvider.getBottomControlsHeight()
+                - mBrowserControlsStateProvider.getBottomControlOffset();
         layoutParams.topMargin = getToolbarExtraYOffset();
 
         view.setLayoutParams(layoutParams);
@@ -511,7 +509,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
      *         strip.
      */
     private int getToolbarExtraYOffset() {
-        return mFullscreenManager.getTopControlsHeight() - mTabStripAndToolbarHeight;
+        return mBrowserControlsStateProvider.getTopControlsHeight() - mTabStripAndToolbarHeight;
     }
 
     /** @return The view container for the new tab layout. */
@@ -749,7 +747,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         mTabObserver = null;
         mActivityLifecycleDispatcher.unregister(mLifecycleObserver);
         mLifecycleObserver = null;
-        mFullscreenManager.removeListener(this);
+        mBrowserControlsStateProvider.removeObserver(this);
         mFeedSurfaceProvider.destroy();
         mTab.getWindowAndroid().removeContextMenuCloseListener(mContextMenuManager);
         mIsDestroyed = true;

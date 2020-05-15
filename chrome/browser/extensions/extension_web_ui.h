@@ -19,6 +19,10 @@ namespace content {
 class BrowserContext;
 }
 
+namespace extensions {
+class Extension;
+}
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -34,6 +38,11 @@ class ExtensionWebUI {
                                       content::BrowserContext* browser_context);
   static bool HandleChromeURLOverrideReverse(
       GURL* url, content::BrowserContext* browser_context);
+
+  // Returns the extension that currently controls the specified |url|, if any.
+  static const extensions::Extension* GetExtensionControllingURL(
+      const GURL& url,
+      content::BrowserContext* browser_context);
 
   // Initialize the Chrome URL overrides. This must happen *before* any further
   // calls for URL overrides!

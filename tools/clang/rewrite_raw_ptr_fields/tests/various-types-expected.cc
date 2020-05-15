@@ -129,6 +129,37 @@ struct MyStruct {
   // replacement is tricky, because the |replacement_range| needs to cover
   // "[123]" that comes *after* the field name).
   const SomeClass (*ptr_to_array)[123];
+
+  // Definition of the non-freestanding struct should not disappear - i.e.
+  // we do not want the rewrite to be: CheckedPtr<struct NonFreestandingStruct>.
+  //
+  // Expected rewrite: ??? (as long as the struct definition doesn't disappear).
+  struct NonFreeStandingStruct {
+    int non_ptr;
+  } * ptr_to_non_free_standing_struct;
+
+  // Pointer to an inline definition of a struct.  There is a risk of generating
+  // an overlapping replacement (wrt the pointer field within the inline
+  // struct).
+  //
+  // Note that before a fix, the rewriter would generate an overlapping
+  // replacement under
+  // //sandbox/linux/integration_tests/bpf_dsl_seccomp_unittest.cc
+  // (see the ArgValue struct and the non-free-standing Tests struct inside).
+  //
+  // Expected rewrite: ??? (as long as there are no overlapping replacements).
+  struct NonFreeStandingStruct2 {
+    CheckedPtr<SomeClass> inner_ptr;
+  } * ptr_to_non_free_standing_struct2;
+
+  // Despite avoiding the problems in NonFreeStandingStruct and
+  // NonFreeStandingStruct2 above, we should still rewrite the example below.
+  struct FreeStandingStruct {
+    // Expected rewrite: CheckedPtr<SomeClass> inner_ptr;
+    CheckedPtr<SomeClass> inner_ptr;
+  };
+  // Expected rewrite: CheckedPtr<InnerStruct2> ...
+  CheckedPtr<FreeStandingStruct> ptr_to_free_standing_struct;
 };
 
 }  // namespace my_namespace

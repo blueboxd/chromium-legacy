@@ -6,12 +6,13 @@
 
 #include "base/stl_util.h"
 #include "build/build_config.h"
-#include "cc/layers/picture_image_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/paint/paint_image.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/paint/render_surface_filters.h"
 #include "cc/paint/skia_paint_canvas.h"
+#include "cc/test/fake_content_layer_client.h"
+#include "cc/test/fake_picture_layer.h"
 #include "cc/test/layer_tree_pixel_resource_test.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/test_layer_tree_frame_sink.h"
@@ -118,23 +119,19 @@ class LayerTreeHostBlendingPixelTest
 
   scoped_refptr<Layer> CreateColorfulBackdropLayer(int width, int height) {
     sk_sp<SkSurface> backing_store = CreateColorfulSurface(width, height);
-    scoped_refptr<PictureImageLayer> layer = PictureImageLayer::Create();
+    gfx::Size bounds(width, height);
+    backdrop_client_.set_bounds(bounds);
+    backdrop_client_.add_draw_image(backing_store->makeImageSnapshot(),
+                                    gfx::Point(), PaintFlags());
+    scoped_refptr<FakePictureLayer> layer =
+        FakePictureLayer::Create(&backdrop_client_);
     layer->SetIsDrawable(true);
-    layer->SetBounds(gfx::Size(width, height));
-    layer->SetImage(PaintImageBuilder::WithDefault()
-                        .set_id(PaintImage::GetNextId())
-                        .set_image(backing_store->makeImageSnapshot(),
-                                   PaintImage::GetNextContentId())
-                        .TakePaintImage(),
-                    SkMatrix::I(), false);
+    layer->SetBounds(bounds);
     return layer;
   }
 
   void SetupMaskLayer(scoped_refptr<Layer> layer) {
     gfx::Size bounds = layer->bounds();
-    scoped_refptr<PictureImageLayer> mask = PictureImageLayer::Create();
-    mask->SetIsDrawable(true);
-    mask->SetBounds(bounds);
 
     sk_sp<SkSurface> surface =
         SkSurface::MakeRasterN32Premul(bounds.width(), bounds.height());
@@ -146,12 +143,15 @@ class LayerTreeHostBlendingPixelTest
     // cover the right half of it
     canvas->drawRect(
         SkRect::MakeXYWH(1, 0, bounds.width() - 1, bounds.height()), paint);
-    mask->SetImage(PaintImageBuilder::WithDefault()
-                       .set_id(PaintImage::GetNextId())
-                       .set_image(surface->makeImageSnapshot(),
-                                  PaintImage::GetNextContentId())
-                       .TakePaintImage(),
-                   SkMatrix::I(), false);
+
+    mask_client_.set_bounds(bounds);
+    mask_client_.add_draw_image(surface->makeImageSnapshot(), gfx::Point(),
+                                PaintFlags());
+
+    scoped_refptr<FakePictureLayer> mask =
+        FakePictureLayer::Create(&mask_client_);
+    mask->SetIsDrawable(true);
+    mask->SetBounds(bounds);
     layer->SetMaskLayer(mask);
   }
 
@@ -254,6 +254,8 @@ class LayerTreeHostBlendingPixelTest
 
   bool force_antialiasing_;
   bool force_blending_with_shaders_;
+  FakeContentLayerClient mask_client_;
+  FakeContentLayerClient backdrop_client_;
   SkColor misc_opaque_color_ = 0xffc86464;
 };
 

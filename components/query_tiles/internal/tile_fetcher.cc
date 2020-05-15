@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "components/query_tiles/internal/stats.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
@@ -99,6 +100,7 @@ class TileFetcherImpl : public TileFetcher {
 
   bool ShouldSuspendDueToNetError() {
     auto error_code = url_loader_->NetError();
+    stats::RecordTileFetcherNetErrorCode(error_code);
     switch (error_code) {
       case net::ERR_BLOCKED_BY_ADMINISTRATOR:
         return true;
@@ -132,7 +134,7 @@ class TileFetcherImpl : public TileFetcher {
                                       ? TileInfoRequestStatus::kShouldSuspend
                                       : TileInfoRequestStatus::kFailure;
     }
-    // TODO(crbug.com/1068683): Record response code UMA.
+    stats::RecordTileFetcherResponseCode(response_code);
     std::move(callback).Run(tile_info_request_status_,
                             std::move(response_body));
     tile_info_request_status_ = TileInfoRequestStatus::kInit;

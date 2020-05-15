@@ -1,3 +1,7 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 def _ensure_ci_jobs_can_be_bucketed_or_not(ctx):
   cfg = ctx.output['luci-scheduler.cfg']
 

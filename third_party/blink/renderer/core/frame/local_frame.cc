@@ -61,6 +61,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_content_capture_client.h"
+#include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
@@ -107,6 +108,7 @@
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/user_activation.h"
+#include "third_party/blink/renderer/core/frame/virtual_keyboard_overlay_changed_observer.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -390,6 +392,7 @@ void LocalFrame::Trace(Visitor* visitor) {
   visitor->Trace(content_capture_manager_);
   visitor->Trace(system_clipboard_);
   visitor->Trace(raw_system_clipboard_);
+  visitor->Trace(virtual_keyboard_overlay_changed_observers_);
   Frame::Trace(visitor);
   Supplementable<LocalFrame>::Trace(visitor);
 }
@@ -1570,6 +1573,21 @@ IntPoint LocalFrame::GetMainFrameScrollOffset() const {
                    local_root.intersection_state_.main_frame_scroll_offset);
 }
 
+void LocalFrame::SetOpener(Frame* opener_frame) {
+  // Only a local frame should be able to update another frame's opener.
+  DCHECK(!opener_frame || opener_frame->IsLocalFrame());
+
+  auto* opener_web_frame = WebFrame::FromFrame(opener_frame);
+  auto* web_frame = WebFrame::FromFrame(this);
+  if (web_frame && web_frame->Opener() != opener_web_frame) {
+    GetLocalFrameHostRemote().DidChangeOpener(
+        opener_frame ? base::Optional<base::UnguessableToken>(
+                           opener_frame->GetFrameToken())
+                     : base::nullopt);
+    web_frame->SetOpener(opener_web_frame);
+  }
+}
+
 FrameOcclusionState LocalFrame::GetOcclusionState() const {
   // TODO(dcheng): Get rid of this branch for the main frame.
   if (IsMainFrame())
@@ -2276,6 +2294,44 @@ void LocalFrame::SetFrameOwnerProperties(
 
 void LocalFrame::NotifyUserActivation() {
   NotifyUserActivation(false);
+}
+
+void LocalFrame::RegisterVirtualKeyboardOverlayChangedObserver(
+    VirtualKeyboardOverlayChangedObserver* observer) {
+  virtual_keyboard_overlay_changed_observers_.insert(observer);
+}
+
+void LocalFrame::NotifyVirtualKeyboardOverlayRectObservers(
+    const gfx::Rect& rect) const {
+  HeapVector<Member<VirtualKeyboardOverlayChangedObserver>, 32> observers;
+  CopyToVector(virtual_keyboard_overlay_changed_observers_, observers);
+  for (VirtualKeyboardOverlayChangedObserver* observer : observers)
+    observer->VirtualKeyboardOverlayChanged(rect);
+}
+
+void LocalFrame::NotifyVirtualKeyboardOverlayRect(
+    const gfx::Rect& keyboard_rect) {
+  Page* page = this->GetPage();
+  if (!page)
+    return;
+
+  // The rect passed to us from content is in DIP, relative to the main frame.
+  // This doesn't take the page's zoom factor into account so we must scale by
+  // the inverse of the page zoom in order to get correct client coordinates.
+  // Note that when use-zoom-for-dsf is enabled, WindowToViewportScalar will
+  // be the true device scale factor, and PageZoomFactor will be the combination
+  // of the device scale factor and the zoom percent of the page.
+  LocalFrame& local_frame_root = LocalFrameRoot();
+  const float window_to_viewport_factor =
+      page->GetChromeClient().WindowToViewportScalar(&local_frame_root, 1.0f);
+  const float zoom_factor = local_frame_root.PageZoomFactor();
+  const float scale_factor = zoom_factor / window_to_viewport_factor;
+  gfx::Rect scaled_rect(keyboard_rect.x() / scale_factor,
+                        keyboard_rect.y() / scale_factor,
+                        keyboard_rect.width() / scale_factor,
+                        keyboard_rect.height() / scale_factor);
+
+  NotifyVirtualKeyboardOverlayRectObservers(scaled_rect);
 }
 
 void LocalFrame::AddMessageToConsole(mojom::blink::ConsoleMessageLevel level,

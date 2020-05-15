@@ -10,11 +10,15 @@
 #include "chrome/browser/extensions/ntp_overridden_bubble_delegate.h"
 #include "chrome/browser/extensions/settings_api_bubble_delegate.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_bridge.h"
+#include "chrome/browser/ui/extensions/extension_settings_overridden_dialog.h"
+#include "chrome/browser/ui/extensions/settings_overridden_params_providers.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_url_handler.h"
@@ -25,12 +29,12 @@ namespace extensions {
 
 namespace {
 
-// Whether the NTP bubble is enabled. By default, this is limited to Windows,
-// Mac, and ChromeOS, but can be overridden for testing.
+// Whether the NTP post-install UI is enabled. By default, this is limited to
+// Windows, Mac, and ChromeOS, but can be overridden for testing.
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-bool g_ntp_bubble_enabled = true;
+bool g_ntp_post_install_ui_enabled = true;
 #else
-bool g_ntp_bubble_enabled = false;
+bool g_ntp_post_install_ui_enabled = false;
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -56,8 +60,8 @@ void ShowSettingsApiBubble(SettingsApiOverrideType type,
 
 }  // namespace
 
-void SetNtpBubbleEnabledForTesting(bool enabled) {
-  g_ntp_bubble_enabled = enabled;
+void SetNtpPostInstallUiEnabledForTesting(bool enabled) {
+  g_ntp_post_install_ui_enabled = enabled;
 }
 
 void MaybeShowExtensionControlledHomeNotification(Browser* browser) {
@@ -81,13 +85,18 @@ void MaybeShowExtensionControlledSearchNotification(
 
 void MaybeShowExtensionControlledNewTabPage(
     Browser* browser, content::WebContents* web_contents) {
-  if (!g_ntp_bubble_enabled)
+  if (!g_ntp_post_install_ui_enabled)
     return;
 
   // Acknowledge existing extensions if necessary.
   NtpOverriddenBubbleDelegate::MaybeAcknowledgeExistingNtpExtensions(
       browser->profile());
 
+  // Jump through a series of hoops to see if the web contents is pointing to
+  // an extension-controlled NTP.
+  // TODO(devlin): Some of this is redundant with the checks in the bubble/
+  // dialog. We should consolidate, but that'll be simpler once we only have
+  // one UI option. In the meantime, extra checks don't hurt.
   content::NavigationEntry* entry =
       web_contents->GetController().GetVisibleEntry();
   if (!entry)
@@ -103,13 +112,30 @@ void MaybeShowExtensionControlledNewTabPage(
   if (ntp_url != active_url)
     return;  // Not being overridden by an extension.
 
-  ToolbarActionsModel* model = ToolbarActionsModel::Get(browser->profile());
+  Profile* const profile = browser->profile();
+  ToolbarActionsModel* model = ToolbarActionsModel::Get(profile);
   if (model->has_active_bubble())
     return;
 
+  if (base::FeatureList::IsEnabled(
+          features::kExtensionSettingsOverriddenDialogs)) {
+    base::Optional<ExtensionSettingsOverriddenDialog::Params> params =
+        settings_overridden_params::GetNtpOverriddenParams(profile);
+    if (!params)
+      return;
+
+    auto dialog = std::make_unique<ExtensionSettingsOverriddenDialog>(
+        std::move(*params), profile);
+    if (!dialog->ShouldShow())
+      return;
+
+    chrome::ShowExtensionSettingsOverriddenDialog(std::move(dialog), browser);
+    return;
+  }
+
   std::unique_ptr<ExtensionMessageBubbleController> ntp_overridden_bubble(
       new ExtensionMessageBubbleController(
-          new NtpOverriddenBubbleDelegate(browser->profile()), browser));
+          new NtpOverriddenBubbleDelegate(profile), browser));
   if (!ntp_overridden_bubble->ShouldShow())
     return;
 

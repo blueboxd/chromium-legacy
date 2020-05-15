@@ -148,6 +148,8 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   IntSize GetMainFrameViewportSize() const override;
   IntPoint GetMainFrameScrollOffset() const override;
 
+  void SetOpener(Frame* opener) override;
+
  private:
   // Frame protected overrides:
   void DetachImpl(FrameDetachType) override;

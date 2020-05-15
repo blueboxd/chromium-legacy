@@ -89,7 +89,7 @@ export function createTheme() {
     shortcutTextColor: {value: 0xff0000ff},
     isDark: false,
     logoColor: null,
-    backgroundImageUrl: null,
+    backgroundImage: null,
     backgroundImageAttribution1: '',
     backgroundImageAttribution2: '',
     backgroundImageAttributionUrl: null,

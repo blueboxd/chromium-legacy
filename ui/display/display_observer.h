@@ -25,6 +25,7 @@ class DISPLAY_EXPORT DisplayObserver : public base::CheckedObserver {
     DISPLAY_METRIC_PRIMARY = 1 << 4,
     DISPLAY_METRIC_MIRROR_STATE = 1 << 5,
     DISPLAY_METRIC_COLOR_SPACE = 1 << 6,
+    DISPLAY_METRIC_REFRESH_RATE = 1 << 7,
   };
 
   // This may be called before other methods to signal changes are about to

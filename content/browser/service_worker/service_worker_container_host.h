@@ -15,11 +15,9 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/back_forward_cache_metrics.h"
-#include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/service_worker/service_worker_client_info.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/dedicated_worker_id.h"
-#include "content/public/browser/shared_worker_id.h"
 #include "content/public/common/child_process_host.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -111,9 +109,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
       int process_id,
       mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
           container_remote,
-      blink::mojom::ServiceWorkerClientType client_type,
-      DedicatedWorkerId dedicated_worker_id,
-      SharedWorkerId shared_worker_id);
+      ServiceWorkerClientInfo client_info);
 
   ~ServiceWorkerContainerHost() override;
 
@@ -407,7 +403,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   base::TimeTicks create_time() const { return create_time_; }
   int process_id() const { return process_id_; }
   int frame_id() const { return frame_id_; }
-  int frame_tree_node_id() const { return frame_tree_node_id_; }
+  int frame_tree_node_id() const { return client_info_->GetFrameTreeNodeId(); }
 
   // For service worker clients.
   const std::string& client_uuid() const;
@@ -644,12 +640,9 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   mojo::AssociatedRemote<blink::mojom::ServiceWorkerContainer> container_;
 
   // The type of client.
-  const base::Optional<blink::mojom::ServiceWorkerClientType> client_type_;
+  const base::Optional<ServiceWorkerClientInfo> client_info_;
 
   // For window clients only ---------------------------------------------------
-
-  // The ID of the frame tree node where the navigation occurs.
-  const int frame_tree_node_id_ = FrameTreeNode::kFrameTreeNodeInvalidId;
 
   // A token used internally to identify this context in requests. Corresponds
   // to the Fetch specification's concept of a request's associated window:
@@ -679,14 +672,6 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // TODO(yuzus): This bit will be unnecessary once ServiceWorkerContainerHost
   // and RenderFrameHost have the same lifetime.
   bool is_in_back_forward_cache_ = false;
-
-  // For worker clients only ---------------------------------------------------
-
-  // The ID of the client, if the client is a dedicated worker.
-  DedicatedWorkerId dedicated_worker_id_;
-
-  // The ID of the client, if the client is a shared worker.
-  SharedWorkerId shared_worker_id_;
 
   // For service worker execution contexts -------------------------------------
 

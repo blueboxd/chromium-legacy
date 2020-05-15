@@ -32,7 +32,7 @@ export const BackgroundSelectionType = {
  * object of this type.
  * @typedef {{
  *   type: !BackgroundSelectionType,
- *   image: (!newTabPage.mojom.BackgroundImage|undefined),
+ *   image: (!newTabPage.mojom.CollectionImage|undefined),
  *   dailyRefreshCollectionId: (string|undefined),
  * }}
  */

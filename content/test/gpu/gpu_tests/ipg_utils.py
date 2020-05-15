@@ -65,7 +65,13 @@ def RunIPG(duration_in_s=60, resolution_in_ms=100, logfile=None):
     logfile = GenerateIPGLogFilename()
   command = command + (' -file %s' % logfile)
   logging.debug("Running: " + command)
-  output = subprocess.check_output(command, shell=True)
+  try:
+    output = subprocess.check_output(command,
+                                     shell=True,
+                                     stderr=subprocess.STDOUT)
+  except subprocess.CalledProcessError as e:
+    logging.error('Running Intel Power Gadget failed. Output: %s', e.output)
+    raise
   logging.debug("Running: DONE")
   logging.debug(output)
 

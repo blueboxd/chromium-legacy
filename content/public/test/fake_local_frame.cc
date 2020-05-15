@@ -34,6 +34,8 @@ void FakeLocalFrame::SetFrameOwnerProperties(
 
 void FakeLocalFrame::NotifyUserActivation() {}
 
+void FakeLocalFrame::NotifyVirtualKeyboardOverlayRect(const gfx::Rect&) {}
+
 void FakeLocalFrame::AddMessageToConsole(
     blink::mojom::ConsoleMessageLevel level,
     const std::string& message,

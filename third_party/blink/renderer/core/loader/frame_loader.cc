@@ -440,8 +440,7 @@ Frame* FrameLoader::Opener() {
 
 void FrameLoader::SetOpener(LocalFrame* opener) {
   // If the frame is already detached, the opener has already been cleared.
-  if (Client())
-    Client()->SetOpener(opener);
+  frame_->SetOpener(opener);
 }
 
 bool FrameLoader::AllowPlugins(ReasonForCallingAllowPlugins reason) {

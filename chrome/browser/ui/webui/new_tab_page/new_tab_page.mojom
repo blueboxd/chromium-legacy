@@ -59,7 +59,7 @@ struct BackgroundCollection {
 };
 
 // A background image in a collection.
-struct BackgroundImage {
+struct CollectionImage {
   // Human readable attributions of the background image.
   string attribution_1;
   string attribution_2;
@@ -123,6 +123,20 @@ struct SearchBoxTheme {
   skia.mojom.SkColor text;
 };
 
+// The background image URL and styling.
+struct BackgroundImage {
+  // URL to the background image. Can point to untrusted content.
+  url.mojom.Url url;
+  // URL to a higher res background image. Can point to untrusted content.
+  url.mojom.Url? url_2x;
+  // CSS styling properties set on the background image.
+  string? size;
+  string? repeat_x;
+  string? repeat_y;
+  string? position_x;
+  string? position_y;
+};
+
 // A generic theme.
 struct Theme {
   // The theme's type (e.g. default or third-party).
@@ -140,8 +154,8 @@ struct Theme {
   skia.mojom.SkColor? logo_color;
   // Selected collection for daily refresh.
   string? daily_refresh_collection_id;
-  // URL to the background image. Can point to untrusted content.
-  url.mojom.Url? background_image_url;
+  // The background image.
+  BackgroundImage? background_image;
   // Human readable attributions of the background image.
   string? background_image_attribution_1;
   string? background_image_attribution_2;
@@ -190,6 +204,9 @@ struct ImageDoodleContent {
   DoodleShareButton share_button;
   // URL displayed to users, which they can use to share the doodle.
   url.mojom.Url share_url;
+  // URLs to be pinged when an image has been shown.
+  url.mojom.Url image_impression_log_url;
+  url.mojom.Url? animation_impression_log_url;
 };
 
 // The contents of interactive doodles.
@@ -215,6 +232,14 @@ struct Doodle {
   DoodleContent content;
   // Localized description of the doodle.
   string description;
+};
+
+// A channel through which a doodle can be shared.
+enum DoodleShareChannel {
+  FACEBOOK,
+  TWITTER,
+  EMAIL,
+  LINK_COPY,
 };
 
 // Action the user performed while using the customize dialog. Used for metrics
@@ -286,7 +311,7 @@ interface PageHandler {
   // Returns the collections of background images.
   GetBackgroundCollections() => (array<BackgroundCollection> collections);
   // Returns the images of a collection identified by |collection_id|.
-  GetBackgroundImages(string collection_id) => (array<BackgroundImage> images);
+  GetBackgroundImages(string collection_id) => (array<CollectionImage> images);
   // Invisibly focuses the omnibox.
   FocusOmnibox();
   // Pastes |text| into the omnibox.
@@ -314,10 +339,24 @@ interface PageHandler {
   OnMostVisitedTileNavigation(MostVisitedTile tile, uint32 index);
   // Logs an action performed in the customize dialog.
   OnCustomizeDialogAction(CustomizeDialogAction action);
-  // Logs that the |type| image of an image doodle has been clicked.
-  OnDoodleImageClicked(DoodleImageType type);
+  // Logs that the |type| image of an image doodle has been clicked. If set, the
+  // |log_url| should be pinged for metrics logging.
+  OnDoodleImageClicked(DoodleImageType type, url.mojom.Url? log_url);
   // Logs that the |type| image of an image doodle has been shown at |time|.
-  OnDoodleImageRendered(DoodleImageType type, double time);
+  // Returns additional params, which are fetched from |image_url|, we use to
+  // perform more doodle logging later. We can't fetch the params in JS because
+  // the NTP renderer process does not have network access.
+  OnDoodleImageRendered(DoodleImageType type,
+                        double time,
+                        url.mojom.Url log_url)
+      => (string? image_click_params,
+          url.mojom.Url? interaction_log_url,
+          string? share_id);
+  // Logs that the doodle with |doodle_id| has been shared through |channel|.
+  // |share_id| comes from a previous call to |OnDoodleImageRendered|.
+  OnDoodleShared(DoodleShareChannel channel,
+                 string doodle_id,
+                 string? share_id);
   // Logs that a link on a promo has been clicked.
   OnPromoLinkClicked();
 

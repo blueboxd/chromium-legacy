@@ -94,6 +94,7 @@ class OneShotNavigationObserver : public NavigationObserver {
 
   bool completed() { return completed_; }
   bool is_error_page() { return is_error_page_; }
+  bool is_download() { return is_download_; }
   Navigation::LoadError load_error() { return load_error_; }
   int http_status_code() { return http_status_code_; }
   NavigationState navigation_state() { return navigation_state_; }
@@ -109,6 +110,7 @@ class OneShotNavigationObserver : public NavigationObserver {
 
   void Finish(Navigation* navigation) {
     is_error_page_ = navigation->IsErrorPage();
+    is_download_ = navigation->IsDownload();
     load_error_ = navigation->GetLoadError();
     http_status_code_ = navigation->GetHttpStatusCode();
     navigation_state_ = navigation->GetState();
@@ -119,6 +121,7 @@ class OneShotNavigationObserver : public NavigationObserver {
   Tab* tab_;
   bool completed_ = false;
   bool is_error_page_ = false;
+  bool is_download_ = false;
   Navigation::LoadError load_error_ = Navigation::kNoError;
   int http_status_code_ = 0;
   NavigationState navigation_state_ = NavigationState::kWaitingResponse;
@@ -211,6 +214,21 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, HttpConnectivityError) {
   EXPECT_FALSE(observer.completed());
   EXPECT_TRUE(observer.is_error_page());
   EXPECT_EQ(observer.load_error(), Navigation::kConnectivityError);
+  EXPECT_EQ(observer.navigation_state(), NavigationState::kFailed);
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, Download) {
+  EXPECT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/content-disposition.html"));
+
+  OneShotNavigationObserver observer(shell());
+  GetNavigationController()->Navigate(url);
+
+  observer.WaitForNavigation();
+  EXPECT_FALSE(observer.completed());
+  EXPECT_FALSE(observer.is_error_page());
+  EXPECT_TRUE(observer.is_download());
+  EXPECT_EQ(observer.load_error(), Navigation::kOtherError);
   EXPECT_EQ(observer.navigation_state(), NavigationState::kFailed);
 }
 

@@ -1008,6 +1008,7 @@ test("content_browsertests") {
     "../browser/renderer_host/render_view_host_browsertest.cc",
     "../browser/renderer_host/render_widget_host_browsertest.cc",
     "../browser/renderer_host/render_widget_host_view_aura_browsertest.cc",
+    "../browser/renderer_host/render_widget_host_view_aura_vk_browsertest.cc",
     "../browser/renderer_host/render_widget_host_view_browsertest.cc",
     "../browser/renderer_host/render_widget_host_view_child_frame_browsertest.cc",
     "../browser/renderer_host/render_widget_host_view_mac_browsertest.mm",
@@ -1216,6 +1217,7 @@ test("content_browsertests") {
     "//ui/base:test_support",
     "//ui/base/clipboard",
     "//ui/base/ime",
+    "//ui/base/ime/init",
     "//ui/compositor",
     "//ui/display",
     "//ui/events:test_support",
@@ -1495,6 +1497,7 @@ test("content_browsertests") {
       "../browser/renderer_host/input/event_latency_aura_browsertest.cc",
       "../browser/renderer_host/input/touch_selection_controller_client_aura_browsertest.cc",
       "../browser/renderer_host/render_widget_host_view_aura_browsertest.cc",
+      "../browser/renderer_host/render_widget_host_view_aura_vk_browsertest.cc",
       "../browser/web_contents/web_contents_view_aura_browsertest.cc",
     ]
   }

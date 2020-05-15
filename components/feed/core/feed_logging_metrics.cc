@@ -603,14 +603,6 @@ void FeedLoggingMetrics::OnSuggestionArticleVisited(base::TimeDelta visit_time,
   RecordSuggestionPageVisited(return_to_ntp);
 }
 
-void FeedLoggingMetrics::OnSuggestionOfflinePageVisited(
-    base::TimeDelta visit_time,
-    bool return_to_ntp) {
-  base::UmaHistogramLongTimes(
-      "NewTabPage.ContentSuggestions.VisitDuration.Downloads", visit_time);
-  RecordSuggestionPageVisited(return_to_ntp);
-}
-
 void FeedLoggingMetrics::OnMoreButtonShown(int position) {
   // The "more" card can appear in addition to the actual suggestions, so add
   // one extra bucket to this histogram.

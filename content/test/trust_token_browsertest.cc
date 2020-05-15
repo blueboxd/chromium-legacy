@@ -257,4 +257,41 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
   EXPECT_EQ(request_handler_.LastVerificationError(), base::nullopt);
 }
 
+IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, FetchEndToEndInIsolatedWorld) {
+  // Ensure an isolated world can execute Trust Tokens operations when its
+  // window's main world can. In particular, this ensures that the
+  // redemtion-and-signing feature policy is appropriately propagated by the
+  // browser process.
+  base::RunLoop run_loop;
+  GetNetworkService()->SetTrustTokenKeyCommitments(
+      network::WrapKeyCommitmentForIssuer(
+          url::Origin::Create(server_.base_url()),
+          request_handler_.GetKeyCommitmentRecord()),
+      run_loop.QuitClosure());
+  run_loop.Run();
+
+  GURL start_url(server_.GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  std::string cmd = R"(
+  (async () => {
+    await fetch("/issue", {trustToken: {type: 'token-request'}});
+    await fetch("/redeem", {trustToken: {type: 'srr-token-redemption'}});
+    await fetch("/sign", {trustToken: {type: 'send-srr',
+                                  signRequestData: 'include',
+                                  issuer: $1}}); })(); )";
+
+  // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
+  // resolve.
+  EXPECT_EQ(
+      EvalJs(
+          shell(),
+          JsReplace(cmd, url::Origin::Create(server_.base_url()).Serialize()),
+          EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+          /*world_id=*/30)
+          .error,
+      "");
+  EXPECT_EQ(request_handler_.LastVerificationError(), base::nullopt);
+}
+
 }  // namespace content

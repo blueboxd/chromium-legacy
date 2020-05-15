@@ -419,13 +419,13 @@ struct ClientHintsExtendedData {
   url::Origin resource_origin;
   bool is_main_frame = false;
   GURL main_frame_url;
-  blink::FeaturePolicy* feature_policy = nullptr;
+  const blink::FeaturePolicy* feature_policy = nullptr;
   bool is_1p_origin = false;
 };
 
 bool ShouldAddClientHint(const ClientHintsExtendedData& data,
                          network::mojom::WebClientHintsType type) {
-  if (!data.hints.IsEnabled(type))
+  if (!blink::IsClientHintSentByDefault(type) && !data.hints.IsEnabled(type))
     return false;
   if (!IsFeaturePolicyForClientHintsEnabled() || data.is_main_frame)
     return data.is_1p_origin;
@@ -494,18 +494,26 @@ void UpdateNavigationRequestClientUaHeadersImpl(
     if (!ua_metadata.has_value())
       ua_metadata = delegate->GetUserAgentMetadata();
 
+    ClientHintsExtendedData data(url, frame_tree_node, delegate);
+
     // The `Sec-CH-UA` client hint is attached to all outgoing requests. This is
     // (intentionally) different than other client hints.
+    // It's barred behind ShouldAddClientHints to make sure it's controlled by
+    // FeaturePolicy.
     //
     // https://wicg.github.io/client-hints-infrastructure/#abstract-opdef-append-client-hints-to-request
-    AddUAHeader(headers, network::mojom::WebClientHintsType::kUA,
-                ua_metadata->SerializeBrandVersionList());
+    if (ShouldAddClientHint(data, network::mojom::WebClientHintsType::kUA)) {
+      AddUAHeader(headers, network::mojom::WebClientHintsType::kUA,
+                  ua_metadata->SerializeBrandVersionList());
+    }
     // The `Sec-CH-UA-Mobile client hint was also deemed "low entropy" and can
-    // safely be sent with every request.
-    AddUAHeader(headers, network::mojom::WebClientHintsType::kUAMobile,
-                ua_metadata->mobile ? "?1" : "?0");
-
-    ClientHintsExtendedData data(url, frame_tree_node, delegate);
+    // safely be sent with every request. Similarly to UA, ShouldAddClientHints
+    // makes sure it's controlled by FeaturePolicy.
+    if (ShouldAddClientHint(data,
+                            network::mojom::WebClientHintsType::kUAMobile)) {
+      AddUAHeader(headers, network::mojom::WebClientHintsType::kUAMobile,
+                  ua_metadata->mobile ? "?1" : "?0");
+    }
 
     if (ShouldAddClientHint(
             data, network::mojom::WebClientHintsType::kUAFullVersion)) {

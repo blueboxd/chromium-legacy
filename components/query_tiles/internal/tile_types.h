@@ -7,6 +7,8 @@
 
 #include "base/callback.h"
 
+// Please keep the same order as QueryTilesRequestStatus enum in
+// tools/metrics/histograms/enums.xml.
 enum class TileInfoRequestStatus {
   // Initial status, request is not sent.
   kInit = 0,
@@ -20,6 +22,8 @@ enum class TileInfoRequestStatus {
   kMaxValue = kShouldSuspend,
 };
 
+// Please keep the same order as QueryTilesGroupStatus enum in
+// tools/metrics/histograms/enums.xml.
 enum class TileGroupStatus {
   // No errors happen in tile group manager.
   kSuccess = 0,

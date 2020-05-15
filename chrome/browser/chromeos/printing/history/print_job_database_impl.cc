@@ -53,7 +53,7 @@ PrintJobDatabaseImpl::PrintJobDatabaseImpl(
       database_task_runner);
 }
 
-PrintJobDatabaseImpl::~PrintJobDatabaseImpl() {}
+PrintJobDatabaseImpl::~PrintJobDatabaseImpl() = default;
 
 void PrintJobDatabaseImpl::Initialize(InitializeCallback callback) {
   if (init_status_ == InitStatus::PENDING)

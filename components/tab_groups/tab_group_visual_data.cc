@@ -12,14 +12,19 @@
 namespace tab_groups {
 
 TabGroupVisualData::TabGroupVisualData()
-    : TabGroupVisualData(base::string16(), TabGroupColorId::kGrey) {}
+    : TabGroupVisualData(base::string16(), TabGroupColorId::kGrey, false) {}
 
 TabGroupVisualData::TabGroupVisualData(base::string16 title,
-                                       tab_groups::TabGroupColorId color)
-    : title_(std::move(title)), color_(color) {}
+                                       tab_groups::TabGroupColorId color,
+                                       bool is_collapsed)
+    : title_(std::move(title)), color_(color), is_collapsed_(is_collapsed) {}
 
-TabGroupVisualData::TabGroupVisualData(base::string16 title, uint32_t color_int)
-    : title_(std::move(title)), color_(TabGroupColorId::kGrey) {
+TabGroupVisualData::TabGroupVisualData(base::string16 title,
+                                       uint32_t color_int,
+                                       bool is_collapsed)
+    : title_(std::move(title)),
+      color_(TabGroupColorId::kGrey),
+      is_collapsed_(is_collapsed) {
   auto color_id = static_cast<tab_groups::TabGroupColorId>(color_int);
   if (base::Contains(tab_groups::GetTabGroupColorLabelMap(), color_id))
     color_ = color_id;

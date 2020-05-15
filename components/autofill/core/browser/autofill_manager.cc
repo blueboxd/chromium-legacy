@@ -892,6 +892,7 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
     const FormFieldData& field,
     const gfx::RectF& transformed_box,
     bool autoselect_first_suggestion) {
+  SetDataList(field.datalist_values, field.datalist_labels);
   external_delegate_->OnQuery(query_id, form, field, transformed_box);
 
   std::vector<Suggestion> suggestions;
@@ -1354,8 +1355,8 @@ void AutofillManager::SetTestDelegate(AutofillManagerTestDelegate* delegate) {
   test_delegate_ = delegate;
 }
 
-void AutofillManager::OnSetDataList(const std::vector<base::string16>& values,
-                                    const std::vector<base::string16>& labels) {
+void AutofillManager::SetDataList(const std::vector<base::string16>& values,
+                                  const std::vector<base::string16>& labels) {
   if (!IsValidString16Vector(values) || !IsValidString16Vector(labels) ||
       values.size() != labels.size())
     return;

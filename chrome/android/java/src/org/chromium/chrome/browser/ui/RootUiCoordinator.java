@@ -218,6 +218,7 @@ public class RootUiCoordinator
             mActivity.getModalDialogManager().removeObserver(mModalDialogManagerObserver);
         }
 
+        if (mBottomSheetManager != null) mBottomSheetManager.destroy();
         if (mBottomSheetController != null) mBottomSheetController.destroy();
 
         if (mButtonDataProviders != null) {
@@ -610,8 +611,8 @@ public class RootUiCoordinator
                         mOmniboxFocusStateSupplier);
 
         mBottomSheetManager = new BottomSheetManager(mBottomSheetController, mActivityTabProvider,
-                mActivity::getFullscreenManager, mActivity::getModalDialogManager,
-                this::getBottomSheetSnackbarManager, mTabObscuringHandler);
+                mActivity::getModalDialogManager, this::getBottomSheetSnackbarManager,
+                mTabObscuringHandler);
     }
 
     /**

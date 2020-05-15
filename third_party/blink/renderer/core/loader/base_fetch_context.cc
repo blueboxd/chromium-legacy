@@ -33,10 +33,10 @@ base::Optional<ResourceRequestBlockedReason> BaseFetchContext::CanRequest(
     const KURL& url,
     const ResourceLoaderOptions& options,
     ReportingDisposition reporting_disposition,
-    ResourceRequest::RedirectStatus redirect_status) const {
+    const base::Optional<ResourceRequest::RedirectInfo>& redirect_info) const {
   base::Optional<ResourceRequestBlockedReason> blocked_reason =
       CanRequestInternal(type, resource_request, url, options,
-                         reporting_disposition, redirect_status);
+                         reporting_disposition, redirect_info);
   if (blocked_reason &&
       reporting_disposition == ReportingDisposition::kReport) {
     DispatchDidBlockRequest(resource_request, options.initiator_info,
@@ -60,7 +60,7 @@ bool BaseFetchContext::CalculateIfAdSubresource(
 
 bool BaseFetchContext::SendConversionRequestInsteadOfRedirecting(
     const KURL& url,
-    ResourceRequest::RedirectStatus redirect_status,
+    const base::Optional<ResourceRequest::RedirectInfo>& redirect_info,
     ReportingDisposition reporting_disposition) const {
   return false;
 }
@@ -134,10 +134,9 @@ BaseFetchContext::CanRequestInternal(
     const KURL& url,
     const ResourceLoaderOptions& options,
     ReportingDisposition reporting_disposition,
-    ResourceRequest::RedirectStatus redirect_status) const {
+    const base::Optional<ResourceRequest::RedirectInfo>& redirect_info) const {
   if (GetResourceFetcherProperties().IsDetached()) {
-    if (!resource_request.GetKeepalive() ||
-        redirect_status == ResourceRequest::RedirectStatus::kNoRedirect) {
+    if (!resource_request.GetKeepalive() || !redirect_info) {
       return ResourceRequestBlockedReason::kOther;
     }
   }
@@ -188,6 +187,10 @@ BaseFetchContext::CanRequestInternal(
   network::mojom::RequestDestination request_destination =
       resource_request.GetRequestDestination();
 
+  ResourceRequest::RedirectStatus redirect_status =
+      redirect_info ? ResourceRequest::RedirectStatus::kFollowedRedirect
+                    : ResourceRequest::RedirectStatus::kNoRedirect;
+
   // We check the 'report-only' headers before upgrading the request (in
   // populateResourceRequest). We check the enforced headers here to ensure we
   // block things we ought to block.
@@ -234,9 +237,9 @@ BaseFetchContext::CanRequestInternal(
   // Check for mixed content. We do this second-to-last so that when folks block
   // mixed content via CSP, they don't get a mixed content warning, but a CSP
   // warning instead.
-  if (ShouldBlockFetchByMixedContentCheck(
-          request_context, resource_request.GetRedirectStatus(), url,
-          reporting_disposition, resource_request.GetDevToolsId())) {
+  if (ShouldBlockFetchByMixedContentCheck(request_context, redirect_status, url,
+                                          reporting_disposition,
+                                          resource_request.GetDevToolsId())) {
     return ResourceRequestBlockedReason::kMixedContent;
   }
 
@@ -252,7 +255,7 @@ BaseFetchContext::CanRequestInternal(
     return ResourceRequestBlockedReason::kOther;
   }
 
-  if (SendConversionRequestInsteadOfRedirecting(url, redirect_status,
+  if (SendConversionRequestInsteadOfRedirecting(url, redirect_info,
                                                 reporting_disposition)) {
     return ResourceRequestBlockedReason::kOther;
   }

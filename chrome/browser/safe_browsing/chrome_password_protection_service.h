@@ -226,8 +226,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // If |url| matches Safe Browsing whitelist domains, password protection
   // change password URL, or password protection login URLs in the enterprise
   // policy.
-  bool IsURLWhitelistedForPasswordEntry(const GURL& url,
-                                        RequestOutcome* reason) const override;
+  bool IsURLWhitelistedForPasswordEntry(const GURL& url) const override;
 
   // Persist the phished saved password credential in the "compromised
   // credentials" table. Calls the password store to add a row for each
@@ -300,11 +299,12 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   bool IsIncognito() override;
 
+  bool IsInPasswordAlertMode(ReusedPasswordAccountType password_type) override;
+
   // Checks if pinging should be enabled based on the |trigger_type|,
-  // |password_type|, updates |reason| accordingly.
+  // |password_type|.
   bool IsPingingEnabled(LoginReputationClientRequest::TriggerType trigger_type,
-                        ReusedPasswordAccountType password_type,
-                        RequestOutcome* reason) override;
+                        ReusedPasswordAccountType password_type) override;
 
   // If current profile has enabled history syncing.
   bool IsHistorySyncEnabled() override;
@@ -359,10 +359,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
                                          WarningAction action);
 
   // Determines if we should show chrome://reset-password interstitial based on
-  // previous request outcome, the reused |password_type| and the
-  // |main_frame_url|.
-  bool CanShowInterstitial(RequestOutcome reason,
-                           ReusedPasswordAccountType password_type,
+  // the reused |password_type| and the |main_frame_url|.
+  bool CanShowInterstitial(ReusedPasswordAccountType password_type,
                            const GURL& main_frame_url) override;
 
   // Updates security state for the current |web_contents| based on
@@ -383,6 +381,11 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   void SetGaiaPasswordHashForTesting(const std::string& new_password_hash) {
     sync_password_hash_ = new_password_hash;
   }
+
+  RequestOutcome GetPingNotSentReason(
+      LoginReputationClientRequest::TriggerType trigger_type,
+      const GURL& url,
+      ReusedPasswordAccountType password_type) override;
 
   // Unit tests
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
@@ -429,6 +432,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
                            VerifyPasswordReuseDetectedSecurityEventRecorded);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifyPersistPhishedSavedPasswordCredential);
+  FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
+                           VerifyGetPingNotSentReason);
   // Browser tests
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceBrowserTest,
                            VerifyCheckGaiaPasswordChange);

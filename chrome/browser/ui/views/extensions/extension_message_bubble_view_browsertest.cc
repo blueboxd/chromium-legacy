@@ -257,13 +257,13 @@ class NtpExtensionBubbleViewBrowserTest
     ExtensionMessageBubbleViewBrowserTest::SetUpCommandLine(command_line);
 // The NTP bubble is only enabled by default on Mac, Windows, and CrOS.
 #if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
-    extensions::SetNtpBubbleEnabledForTesting(true);
+    extensions::SetNtpPostInstallUiEnabledForTesting(true);
 #endif
   }
 
   void TearDownOnMainThread() override {
 #if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
-    extensions::SetNtpBubbleEnabledForTesting(false);
+    extensions::SetNtpPostInstallUiEnabledForTesting(false);
 #endif
     ExtensionMessageBubbleViewBrowserTest::TearDownOnMainThread();
   }

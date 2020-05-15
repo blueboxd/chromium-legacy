@@ -327,14 +327,6 @@ void AssistantControllerImpl::BindNotificationController(
       std::move(receiver));
 }
 
-void AssistantControllerImpl::BindScreenContextController(
-    mojo::PendingReceiver<mojom::AssistantScreenContextController> receiver) {
-  Shell::Get()
-      ->assistant_controller()
-      ->screen_context_controller()
-      ->BindReceiver(std::move(receiver));
-}
-
 void AssistantControllerImpl::BindVolumeControl(
     mojo::PendingReceiver<mojom::AssistantVolumeControl> receiver) {
   Shell::Get()->assistant_controller()->BindReceiver(std::move(receiver));

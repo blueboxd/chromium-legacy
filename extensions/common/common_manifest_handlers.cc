@@ -33,6 +33,8 @@
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "extensions/common/manifest_handlers/web_app_file_handler.h"
+#include "extensions/common/manifest_handlers/web_app_linked_shortcut_icons.h"
+#include "extensions/common/manifest_handlers/web_app_shortcut_icons_handler.h"
 #include "extensions/common/manifest_handlers/webview_info.h"
 #include "extensions/common/manifest_url_handlers.h"
 
@@ -79,6 +81,9 @@ void RegisterCommonManifestHandlers() {
   registry->RegisterHandler(std::make_unique<UsbPrinterManifestHandler>());
   registry->RegisterHandler(std::make_unique<WebAccessibleResourcesHandler>());
   registry->RegisterHandler(std::make_unique<WebAppFileHandlersParser>());
+  registry->RegisterHandler(
+      std::make_unique<WebAppLinkedShortcutIconsHandler>());
+  registry->RegisterHandler(std::make_unique<WebAppShortcutIconsHandler>());
   registry->RegisterHandler(std::make_unique<WebviewHandler>());
 }
 

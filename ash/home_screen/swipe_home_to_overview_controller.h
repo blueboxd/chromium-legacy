@@ -64,6 +64,10 @@ class ASH_EXPORT SwipeHomeToOverviewController {
   // moving the pointer - those events will be ignored.
   void FinalizeDragAndShowOverview();
 
+  // Finalizes the drag sequence by staying on the home screen.
+  // |go_back| - if the gesture should invoke home screen back action.
+  void FinalizeDragAndStayOnHomeScreen(bool go_back);
+
   const int64_t display_id_;
 
   State state_ = State::kInitial;

@@ -18,6 +18,7 @@
 #include "components/version_info/android/channel_getter.h"
 #include "components/version_info/version_info.h"
 #include "components/version_info/version_info_values.h"
+#include "weblayer/common/crash_reporter/crash_keys.h"
 #include "weblayer/common/weblayer_paths.h"
 
 namespace weblayer {
@@ -44,17 +45,17 @@ class CrashReporterClientImpl : public crash_reporter::CrashReporterClient {
     return base::PathService::Get(DIR_CRASH_DUMPS, crash_dir);
   }
 
-  void GetSanitizationInformation(const char* const** annotations_whitelist,
+  void GetSanitizationInformation(const char* const** crash_key_allowlist,
                                   void** target_module,
                                   bool* sanitize_stacks) override {
-    *annotations_whitelist = nullptr;
+    *crash_key_allowlist = crash_keys::kWebLayerCrashKeyAllowList;
 #if defined(COMPONENT_BUILD)
     *target_module = nullptr;
 #else
     // The supplied address is used to identify the .so containing WebLayer.
     *target_module = reinterpret_cast<void*>(&EnableCrashReporter);
 #endif
-    *sanitize_stacks = false;
+    *sanitize_stacks = true;
   }
 
   static CrashReporterClientImpl* Get() {

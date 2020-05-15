@@ -172,9 +172,12 @@ void ServiceWorkerNavigationLoader::StartRequest(
       base::BindOnce(&ServiceWorkerNavigationLoader::DidDispatchFetchEvent,
                      weak_factory_.GetWeakPtr()),
       /*is_offline_capability_check=*/false);
-  did_navigation_preload_ = fetch_dispatcher_->MaybeStartNavigationPreload(
-      resource_request_, url_loader_factory_getter_.get(), std::move(context),
-      container_host_->frame_tree_node_id());
+
+  if (container_host_->IsContainerForWindowClient()) {
+    did_navigation_preload_ = fetch_dispatcher_->MaybeStartNavigationPreload(
+        resource_request_, url_loader_factory_getter_.get(), std::move(context),
+        container_host_->frame_tree_node_id());
+  }
 
   // Record worker start time here as |fetch_dispatcher_| will start a service
   // worker if there is no running service worker.

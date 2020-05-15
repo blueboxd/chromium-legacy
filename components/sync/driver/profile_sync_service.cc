@@ -234,6 +234,8 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       crypto_(
           base::BindRepeating(&ProfileSyncService::NotifyObservers,
                               base::Unretained(this)),
+          base::BindRepeating(&ProfileSyncService::OnRequiredUserActionChanged,
+                              base::Unretained(this)),
           base::BindRepeating(&ProfileSyncService::ReconfigureDueToPassphrase,
                               base::Unretained(this)),
           &sync_prefs_,
@@ -252,7 +254,8 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
           base::BindRepeating(&CreateHttpBridgeFactory)),
       start_behavior_(init_params.start_behavior),
       passphrase_prompt_triggered_by_version_(false),
-      is_stopping_and_clearing_(false) {
+      is_stopping_and_clearing_(false),
+      should_record_trusted_vault_error_shown_on_startup_(true) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sync_client_);
   DCHECK(IsLocalSyncEnabled() || identity_manager_ != nullptr);
@@ -2088,6 +2091,19 @@ void ProfileSyncService::ReconfigureDueToPassphrase(ConfigureReason reason) {
   // IsSetupInProgress() case where the UI needs to be updated to reflect that
   // the passphrase was accepted (https://crbug.com/870256).
   NotifyObservers();
+}
+
+void ProfileSyncService::OnRequiredUserActionChanged() {
+  if (should_record_trusted_vault_error_shown_on_startup_ &&
+      crypto_.IsTrustedVaultKeyRequiredStateKnown() && IsSyncFeatureEnabled()) {
+    should_record_trusted_vault_error_shown_on_startup_ = false;
+    if (crypto_.GetPassphraseType() ==
+        PassphraseType::kTrustedVaultPassphrase) {
+      base::UmaHistogramBoolean(
+          "Sync.TrustedVaultErrorShownOnStartup",
+          user_settings_->IsTrustedVaultKeyRequiredForPreferredDataTypes());
+    }
+  }
 }
 
 }  // namespace syncer

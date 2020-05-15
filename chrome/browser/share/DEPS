@@ -9,6 +9,7 @@ include_rules = [
   "+chrome/android/java/src/org/chromium/chrome/browser/modules/ModuleInstallUi.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/screenshot/EditorScreenshotTask.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/tab/Tab.java",
+  "+chrome/services/qrcode_generator",
   "+content/public/android/java/src/org/chromium/content_public/browser/RenderWidgetHostView.java",
   "+content/public/android/java/src/org/chromium/content_public/browser/WebContents.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/media/MediaViewerUtils.java",

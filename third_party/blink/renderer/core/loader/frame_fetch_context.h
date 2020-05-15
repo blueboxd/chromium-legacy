@@ -75,7 +75,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
       const KURL& url,
       const ResourceLoaderOptions& options,
       ReportingDisposition reporting_disposition,
-      ResourceRequest::RedirectStatus redirect_status) const override;
+      const base::Optional<ResourceRequest::RedirectInfo>& redirect_info)
+      const override;
   mojom::FetchCacheMode ResourceRequestCachePolicy(
       const ResourceRequest&,
       ResourceType,
@@ -110,7 +111,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   bool SendConversionRequestInsteadOfRedirecting(
       const KURL& url,
-      ResourceRequest::RedirectStatus redirect_status,
+      const base::Optional<ResourceRequest::RedirectInfo>& redirect_info,
       ReportingDisposition reporting_disposition) const override;
 
   mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>

@@ -58,10 +58,11 @@ void DescribeNodesWithAnnotations(const ui::AXNode& node,
 
 std::vector<std::string> DescribeNodesWithAnnotations(
     const ui::AXTreeUpdate& tree_update) {
-  ui::AXTree tree(tree_update);
   std::vector<std::string> descriptions;
-  DCHECK(tree.root());
-  DescribeNodesWithAnnotations(*tree.root(), &descriptions);
+  if (tree_update.root_id) {
+    ui::AXTree tree(tree_update);
+    DescribeNodesWithAnnotations(*tree.root(), &descriptions);
+  }
   return descriptions;
 }
 
@@ -359,8 +360,9 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, NoAnnotationsAvailable) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ui::AXTreeUpdate snapshot =
       content::GetAccessibilityTreeSnapshot(web_contents);
-  while (snapshot.nodes[0].GetImageAnnotationStatus() !=
-         ax::mojom::ImageAnnotationStatus::kAnnotationEmpty) {
+  while (snapshot.nodes.empty() ||
+         snapshot.nodes[0].GetImageAnnotationStatus() !=
+             ax::mojom::ImageAnnotationStatus::kAnnotationEmpty) {
     content::WaitForAccessibilityTreeToChange(web_contents);
     snapshot = content::GetAccessibilityTreeSnapshot(web_contents);
   }
@@ -380,8 +382,9 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, AnnotationError) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ui::AXTreeUpdate snapshot =
       content::GetAccessibilityTreeSnapshot(web_contents);
-  while (snapshot.nodes[0].GetImageAnnotationStatus() !=
-         ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed) {
+  while (snapshot.nodes.empty() ||
+         snapshot.nodes[0].GetImageAnnotationStatus() !=
+             ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed) {
     content::WaitForAccessibilityTreeToChange(web_contents);
     snapshot = content::GetAccessibilityTreeSnapshot(web_contents);
   }

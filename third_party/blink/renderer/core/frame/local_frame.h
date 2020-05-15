@@ -65,6 +65,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #if defined(OS_MACOSX)
 #include "third_party/blink/public/mojom/input/text_input_host.mojom-blink.h"
 #endif
@@ -120,6 +121,7 @@ class ScriptController;
 class SmoothScrollSequencer;
 class SpellChecker;
 class TextSuggestionController;
+class VirtualKeyboardOverlayChangedObserver;
 class WebContentSettingsClient;
 class WebPluginContainerImpl;
 class WebPrescientNetworking;
@@ -238,6 +240,16 @@ class CORE_EXPORT LocalFrame final : public Frame,
       LocalFrame*,
       UserActivationUpdateSource update_source =
           UserActivationUpdateSource::kRenderer);
+
+  // Registers an observer that will be notified if a VK occludes
+  // the content when it raises/dismisses. The observer is a HeapHashSet
+  // data structure that doesn't allow duplicates.
+  void RegisterVirtualKeyboardOverlayChangedObserver(
+      VirtualKeyboardOverlayChangedObserver*);
+
+  // Notify |virtual_keyboard_overlay_changed_observers_| that keyboard overlay
+  // rect has changed.
+  void NotifyVirtualKeyboardOverlayRectObservers(const gfx::Rect&) const;
 
   // =========================================================================
   // All public functions below this point are candidates to move out of
@@ -369,6 +381,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   IntSize GetMainFrameViewportSize() const override;
   IntPoint GetMainFrameScrollOffset() const override;
+
+  void SetOpener(Frame* opener) override;
 
   // See viewport_intersection_state.h for more info on these methods.
   gfx::Point RemoteViewportOffset() const {
@@ -521,6 +535,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void SetFrameOwnerProperties(
       mojom::blink::FrameOwnerPropertiesPtr properties) final;
   void NotifyUserActivation() final;
+  void NotifyVirtualKeyboardOverlayRect(const gfx::Rect& keyboard_rect) final;
   void AddMessageToConsole(mojom::blink::ConsoleMessageLevel level,
                            const WTF::String& message,
                            bool discard_duplicates) final;
@@ -663,6 +678,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // them explicitly or the pipe closing to delete them.
   mojo::UniqueReceiverSet<blink::mojom::blink::PauseSubresourceLoadingHandle>
       pause_handle_receivers_;
+
+  // Keeps track of all the registered VK observers.
+  HeapHashSet<WeakMember<VirtualKeyboardOverlayChangedObserver>>
+      virtual_keyboard_overlay_changed_observers_;
 
   mutable FrameLoader loader_;
 

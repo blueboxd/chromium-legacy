@@ -466,6 +466,9 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
       // to configure the install prompt to indicate that this is a child
       // asking a parent for installation permission.
       prompt->set_requires_parent_permission(profile->IsChild());
+      if (profile->IsChild()) {
+        prompt->AddObserver(&supervised_user_extensions_metrics_recorder_);
+      }
     }
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 

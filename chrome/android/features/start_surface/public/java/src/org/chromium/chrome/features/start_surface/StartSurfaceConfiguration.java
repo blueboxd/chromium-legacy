@@ -35,6 +35,9 @@ public class StartSurfaceConfiguration {
     public static final BooleanCachedFieldTrialParameter START_SURFACE_OPEN_NTP_INSTEAD_OF_START =
             new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.START_SURFACE_ANDROID, "open_ntp_instead_of_start", false);
+    public static final StringCachedFieldTrialParameter START_SURFACE_OMNIBOX_SCROLL_MODE =
+            new StringCachedFieldTrialParameter(
+                    ChromeFeatureList.START_SURFACE_ANDROID, "omnibox_scroll_mode", "");
     /**
      * @return Whether the Start Surface is enabled.
      */

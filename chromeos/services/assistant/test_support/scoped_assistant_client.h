@@ -30,9 +30,6 @@ class ScopedAssistantClient : AssistantClient {
   void RequestAssistantNotificationController(
       mojo::PendingReceiver<ash::mojom::AssistantNotificationController>
           receiver) override {}
-  void RequestAssistantScreenContextController(
-      mojo::PendingReceiver<ash::mojom::AssistantScreenContextController>
-          receiver) override {}
   void RequestAssistantVolumeControl(
       mojo::PendingReceiver<ash::mojom::AssistantVolumeControl> receiver)
       override {}

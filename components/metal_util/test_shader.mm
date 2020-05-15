@@ -710,43 +710,16 @@ void TestRenderPipelineStateNow(base::scoped_nsprotocol<id<MTLDevice>> device,
   state->OnMethodCompleted();
 }
 
-class API_AVAILABLE(macos(10.11)) TestShaderThread
-    : public base::PlatformThread::Delegate {
- public:
-  static void Create(base::scoped_nsprotocol<id<MTLDevice>> device,
-                     const base::TimeDelta& timeout,
-                     TestShaderCallback callback) {
-    // |instance| will be destroyed when its shader compilation completes.
-    auto* instance = new TestShaderThread;
-    instance->device_ = device;
-    instance->timeout_ = timeout;
-    instance->callback_ = std::move(callback);
-    base::PlatformThreadHandle thread_handle;
-    base::PlatformThread::CreateWithPriority(0, instance, &thread_handle,
-                                             base::ThreadPriority::DISPLAY);
-    base::PlatformThread::Detach(thread_handle);
-  }
-
- private:
-  TestShaderThread() = default;
-  ~TestShaderThread() override = default;
-
-  // base::PlatformThread::Delegate:
-  void ThreadMain() final;
-
-  base::scoped_nsprotocol<id<MTLDevice>> device_;
-  base::TimeDelta timeout_;
-  TestShaderCallback callback_;
-};
-
-void TestShaderThread::ThreadMain() {
+void TestShaderNow(base::scoped_nsprotocol<id<MTLDevice>> device,
+                   const base::TimeDelta& timeout,
+                   TestShaderCallback callback) API_AVAILABLE(macos(10.11)) {
   // Initialize the TestShaderState and post the timeout callback, before
   // calling into the Metal API.
   auto state =
-      base::MakeRefCounted<TestShaderState>(std::move(callback_), timeout_);
+      base::MakeRefCounted<TestShaderState>(std::move(callback), timeout);
   base::ThreadPool::PostDelayedTask(
       FROM_HERE, {}, base::BindOnce(&TestShaderState::OnTimeout, state),
-      timeout_);
+      timeout);
 
   const std::string shader_source =
       base::StringPrintf(kTestShaderSource, base::RandDouble());
@@ -766,18 +739,11 @@ void TestShaderThread::ThreadMain() {
         }
         state->OnCompletionHandlerCalled(library ? TestShaderResult::kSucceeded
                                                  : TestShaderResult::kFailed);
-        delete this;
       };
-  [device_ newLibraryWithSource:source
-                        options:options
-              completionHandler:completion_handler];
+  [device newLibraryWithSource:source
+                       options:options
+             completionHandler:completion_handler];
   state->OnMethodCompleted();
-}
-
-void TestShaderNow(base::scoped_nsprotocol<id<MTLDevice>> device,
-                   const base::TimeDelta& timeout,
-                   TestShaderCallback callback) API_AVAILABLE(macos(10.11)) {
-  TestShaderThread::Create(device, timeout, std::move(callback));
 }
 
 }  // namespace

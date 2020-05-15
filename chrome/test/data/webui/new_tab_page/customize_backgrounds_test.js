@@ -176,8 +176,8 @@ suite('NewTabPageCustomizeBackgroundsTest', () => {
       previewImageUrl: {url: 'https://example.com/image.png'},
     };
     const customizeBackgrounds = await createCustomizeBackgrounds();
-    customizeBackgrounds.theme.backgroundImageUrl = {
-      url: 'https://example.com/image.png'
+    customizeBackgrounds.theme.backgroundImage = {
+      url: {url: 'https://example.com/image.png'}
     };
     handler.setResultFor('getBackgroundImages', Promise.resolve({
       images: [image],
@@ -243,7 +243,7 @@ suite('NewTabPageCustomizeBackgroundsTest', () => {
     });
 
     test('no background selected when clicked', () => {
-      customizeBackgrounds.theme = {backgroundImageUrl: {url: 'http://a'}};
+      customizeBackgrounds.theme = {backgroundImage: {url: {url: 'http://a'}}};
       customizeBackgrounds.backgroundSelection = {
         type: BackgroundSelectionType.NO_SELECTION
       };
@@ -268,7 +268,7 @@ suite('NewTabPageCustomizeBackgroundsTest', () => {
       };
       customizeBackgrounds.theme = {};
       assertSelected();
-      customizeBackgrounds.theme = {backgroundImageUrl: {url: 'http://a'}};
+      customizeBackgrounds.theme = {backgroundImage: {url: {url: 'http://a'}}};
       assertNotSelected();
     });
 

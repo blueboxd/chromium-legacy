@@ -115,7 +115,6 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
 
         TabGroupUtils.startObservingForCreationIPH();
 
-        // TODO(yuezhanggg@): Add UMA for conditional tab strip.
         if (TabUiFeatureUtilities.isConditionalTabStripEnabled()) return;
 
         mActivityLifecycleDispatcher = activity.getLifecycleDispatcher();

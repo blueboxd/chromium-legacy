@@ -6,6 +6,14 @@ source_set("share") {
   sources = [
     "features.cc",
     "features.h",
+    "qr_code_generation_request.cc",
+    "qr_code_generation_request.h",
   ]
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//chrome/browser/share/android:jni_headers",
+    "//chrome/services/qrcode_generator/public/cpp",
+    "//chrome/services/qrcode_generator/public/mojom",
+    "//skia",
+  ]
 }

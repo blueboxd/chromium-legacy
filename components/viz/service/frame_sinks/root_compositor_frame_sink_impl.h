@@ -105,7 +105,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
       std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
       std::unique_ptr<ExternalBeginFrameSource> external_begin_frame_source,
       std::unique_ptr<Display> display,
-      bool use_preferred_interval_for_video);
+      bool use_preferred_interval_for_video,
+      bool hw_support_for_multiple_refresh_rates);
 
   // DisplayClient:
   void DisplayOutputSurfaceLost() override;
@@ -120,8 +121,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
       const FrameSinkId& id,
       mojom::CompositorFrameSinkType* type) override;
-  void UpdateVSyncParameters();
 
+  void UpdateVSyncParameters();
   BeginFrameSource* begin_frame_source();
 
   mojo::Remote<mojom::CompositorFrameSinkClient> compositor_frame_sink_client_;

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_NEW_TAB_PAGE_NEW_TAB_PAGE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_NEW_TAB_PAGE_NEW_TAB_PAGE_HANDLER_H_
 
+#include <unordered_map>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
@@ -107,9 +109,15 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
                                    uint32_t index) override;
   void OnCustomizeDialogAction(
       new_tab_page::mojom::CustomizeDialogAction action) override;
-  void OnDoodleImageClicked(new_tab_page::mojom::DoodleImageType type) override;
+  void OnDoodleImageClicked(new_tab_page::mojom::DoodleImageType type,
+                            const base::Optional<GURL>& log_url) override;
   void OnDoodleImageRendered(new_tab_page::mojom::DoodleImageType type,
-                             double time) override;
+                             double time,
+                             const GURL& log_url,
+                             OnDoodleImageRenderedCallback callback) override;
+  void OnDoodleShared(new_tab_page::mojom::DoodleShareChannel channel,
+                      const std::string& doodle_id,
+                      const base::Optional<std::string>& share_id) override;
   void OnPromoLinkClicked() override;
   void QueryAutocomplete(const base::string16& input,
                          bool prevent_inline_autocomplete) override;
@@ -171,6 +179,17 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
 
   void LogEvent(NTPLoggingEventType event);
 
+  typedef base::OnceCallback<void(bool success,
+                                  std::unique_ptr<std::string> body)>
+      OnFetchResultCallback;
+  void Fetch(const GURL& url, OnFetchResultCallback on_result);
+  void OnFetchResult(const network::SimpleURLLoader* loader,
+                     OnFetchResultCallback on_result,
+                     std::unique_ptr<std::string> body);
+  void OnLogFetchResult(OnDoodleImageRenderedCallback callback,
+                        bool success,
+                        std::unique_ptr<std::string> body);
+
   ChooseLocalCustomBackgroundCallback choose_local_custom_background_callback_;
   chrome_colors::ChromeColorsService* chrome_colors_service_;
   InstantService* instant_service_;
@@ -197,6 +216,10 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   content::WebContents* web_contents_;
   base::Time ntp_navigation_start_time_;
   NTPUserDataLogger* logger_;
+  std::unordered_map<const network::SimpleURLLoader*,
+                     std::unique_ptr<network::SimpleURLLoader>>
+      loader_map_;
+
   base::WeakPtrFactory<NewTabPageHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NewTabPageHandler);

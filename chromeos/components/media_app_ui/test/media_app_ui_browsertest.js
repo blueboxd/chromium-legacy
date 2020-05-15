@@ -313,6 +313,19 @@ TEST_F('MediaAppUIBrowserTest', 'DeleteOriginalIPC', async () => {
       testResponse.testQueryResult, 'deleteOriginalFile resolved file moved');
   // New file not removed from `DirectoryHandle` internal state.
   assertEquals(directory.files.length, 1);
+
+  // Prevent the trusted context throwing errors resulting JS errors.
+  guestMessagePipe.logClientError = error => console.log(JSON.stringify(error));
+  guestMessagePipe.rethrowErrors = false;
+  // Test UNKNOWN_ERROR case by not having a directory handle.
+  currentDirectoryHandle = undefined;
+
+  const messageDeleteNoOp = {deleteLastFile: true};
+  testResponse = await guestMessagePipe.sendMessage('test', messageDeleteNoOp);
+
+  assertEquals(
+      testResponse.testQueryResult,
+      'deleteOriginalFile resolved UNKNOWN_ERROR');
   testDone();
 });
 
@@ -383,6 +396,19 @@ TEST_F('MediaAppUIBrowserTest', 'RenameOriginalIPC', async () => {
   // No change to the existing file.
   assertEquals(directory.files.length, 1);
   assertEquals(directory.files[0].name, 'new_file_name.png');
+
+  // Prevent the trusted context throwing errors resulting JS errors.
+  guestMessagePipe.logClientError = error => console.log(JSON.stringify(error));
+  guestMessagePipe.rethrowErrors = false;
+  // Test UNKNOWN_ERROR case by making files out of sync.
+  fileToken = -1;
+
+  const messageRenameNoOp = {renameLastFile: 'new_file_name_2.png'};
+  testResponse = await guestMessagePipe.sendMessage('test', messageRenameNoOp);
+
+  assertEquals(
+      testResponse.testQueryResult,
+      'renameOriginalFile resolved UNKNOWN_ERROR');
   testDone();
 });
 

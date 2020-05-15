@@ -56,6 +56,8 @@ async function runTestQuery(data) {
           await lastReceivedFileList.item(0).deleteOriginalFile();
       if (deleteResult === DeleteResult.FILE_MOVED) {
         result = 'deleteOriginalFile resolved file moved';
+      } else if (deleteResult === DeleteResult.UNKNOWN_ERROR) {
+        result = 'deleteOriginalFile resolved UNKNOWN_ERROR';
       } else {
         result = 'deleteOriginalFile resolved success';
       }
@@ -69,6 +71,8 @@ async function runTestQuery(data) {
               data.renameLastFile);
       if (renameResult === RenameResult.FILE_EXISTS) {
         result = 'renameOriginalFile resolved file exists';
+      } else if (renameResult === RenameResult.UNKNOWN_ERROR) {
+        result = 'renameOriginalFile resolved UNKNOWN_ERROR';
       } else {
         result = 'renameOriginalFile resolved success';
       }

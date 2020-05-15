@@ -587,6 +587,13 @@ struct ClientSecurityState {
   IPAddressSpace ip_address_space = IPAddressSpace.kUnknown;
 };
 
+// Whether to forbid all Trust Tokens redemption and signing operations
+// (https://github.com/wicg/trust-token-api).
+enum TrustTokenRedemptionPolicy {
+  kForbid,
+  kPotentiallyPermit,
+};
+
 struct URLLoaderFactoryParams {
   // Process requesting the URLLoaderFactory.
   // Set to kBrowserProcessId to indicate the browser process.
@@ -671,6 +678,29 @@ struct URLLoaderFactoryParams {
 
   // Used to notify clients about cookie reads or writes.
   CookieAccessObserver? cookie_observer;
+
+  // If this equals kForbid, the context to which this loader is bound does not
+  // allow any Trust Tokens (https://github.com/wicg/trust-token-api)
+  // redemption or signing operations.
+  //
+  // This is set to kForbid for requests from subframes with the
+  // `trust-token-redemption` Feature Policy feature disabled by (1) policies
+  // inherited from their parents, or (2) the frames' iframe tag attributes.
+  //
+  // Note: Response headers can also disable this Feature Policy feature.
+  // This will not necessarily be reflected in the the enum's value. The
+  // response headers' value is only available from an untrusted source.
+  // - If the renderer behaves correctly, renderer-side checks guarantee that
+  // these operations will not be executed in frames with the policy disabled
+  // via response headers.
+  // - If the renderer doesn't behave correctly, there's no point in
+  // propagating the renderer's untrusted report about the response headers'
+  // value.
+  //
+  // TODO(crbug.com/1071848): Once Feature Policy headers are available from a
+  // trusted source, it would be good to set this depending on the headers'
+  // values, too.
+  TrustTokenRedemptionPolicy trust_token_redemption_policy = kPotentiallyPermit;
 };
 
 // The |credentials| output parameter is given to URLRequest::SetAuth()

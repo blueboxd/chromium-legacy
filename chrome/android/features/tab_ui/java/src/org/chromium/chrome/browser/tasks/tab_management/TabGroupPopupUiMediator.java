@@ -10,7 +10,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -46,8 +46,8 @@ public class TabGroupPopupUiMediator {
     private final TabModelSelector mTabModelSelector;
     private final OverviewModeBehavior mOverviewModeBehavior;
     private final OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
-    private final ChromeFullscreenManager mFullscreenManager;
-    private final ChromeFullscreenManager.FullscreenListener mFullscreenListener;
+    private final BrowserControlsStateProvider mBrowserControlsStateProvider;
+    private final BrowserControlsStateProvider.Observer mBrowserControlsObserver;
     private final KeyboardVisibilityDelegate.KeyboardVisibilityListener mKeyboardVisibilityListener;
     private final TabGroupPopUiUpdater mUiUpdater;
     private final TabGroupUiMediator.TabGroupUiController mTabGroupUiController;
@@ -57,28 +57,29 @@ public class TabGroupPopupUiMediator {
     private boolean mIsOverviewModeVisible;
 
     TabGroupPopupUiMediator(PropertyModel model, TabModelSelector tabModelSelector,
-            OverviewModeBehavior overviewModeBehavior, ChromeFullscreenManager fullscreenManager,
-            TabGroupPopUiUpdater updater, TabGroupUiMediator.TabGroupUiController controller,
+            OverviewModeBehavior overviewModeBehavior,
+            BrowserControlsStateProvider browserControlsStateProvider, TabGroupPopUiUpdater updater,
+            TabGroupUiMediator.TabGroupUiController controller,
             BottomSheetController bottomSheetController) {
         mModel = model;
         mTabModelSelector = tabModelSelector;
         mOverviewModeBehavior = overviewModeBehavior;
-        mFullscreenManager = fullscreenManager;
+        mBrowserControlsStateProvider = browserControlsStateProvider;
         mUiUpdater = updater;
         mTabGroupUiController = controller;
         mBottomSheetController = bottomSheetController;
 
-        mFullscreenListener = new ChromeFullscreenManager.FullscreenListener() {
+        mBrowserControlsObserver = new BrowserControlsStateProvider.Observer() {
             @Override
             public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
                     int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
                 // Modify the alpha the strip container view base on bottomOffset. The range of
                 // bottomOffset is within 0 to mIconSize.
                 mModel.set(TabGroupPopupUiProperties.CONTENT_VIEW_ALPHA,
-                        1 - mFullscreenManager.getBrowserControlHiddenRatio());
+                        1 - mBrowserControlsStateProvider.getBrowserControlHiddenRatio());
             }
         };
-        mFullscreenManager.addListener(mFullscreenListener);
+        mBrowserControlsStateProvider.addObserver(mBrowserControlsObserver);
 
         mTabModelObserver = new TabModelObserver() {
             @Override
@@ -240,7 +241,7 @@ public class TabGroupPopupUiMediator {
         mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
         mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
                 mTabModelObserver);
-        mFullscreenManager.removeListener(mFullscreenListener);
+        mBrowserControlsStateProvider.removeObserver(mBrowserControlsObserver);
         mBottomSheetController.removeObserver(mBottomSheetObserver);
     }
 

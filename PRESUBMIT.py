@@ -4833,6 +4833,17 @@ def CheckChangeOnCommit(input_api, output_api):
 
 
 def _CheckTranslationScreenshots(input_api, output_api):
+  # Skip translation screenshots check if a SkipTranslationScreenshotsCheck
+  # footer is set to true.
+  git_footers = input_api.change.GitFootersFromDescription()
+  skip_check = [
+      footer.lower()
+      for footer in git_footers.get(u'Skip-Translation-Screenshots-Check', [])]
+  if u'true' in skip_check:
+    return [
+        output_api.PresubmitPromptOrNotify(
+            'Skipping translation screenshots check.')]
+
   import os
   import sys
   from io import StringIO

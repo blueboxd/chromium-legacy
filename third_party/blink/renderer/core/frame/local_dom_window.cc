@@ -1929,7 +1929,7 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   if (window_features.noopener)
     return nullptr;
   if (!result.new_window)
-    result.frame->Client()->SetOpener(GetFrame());
+    result.frame->SetOpener(GetFrame());
   return result.frame->DomWindow();
 }
 

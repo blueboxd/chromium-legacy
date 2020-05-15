@@ -103,15 +103,6 @@ class TestRunnerForSpecificView {
     PointerLockWillFailSync,
   } pointer_lock_planned_result_;
 
-  v8::Local<v8::Value> EvaluateScriptInIsolatedWorldAndReturnValue(
-      int32_t world_id,
-      const std::string& script);
-  void EvaluateScriptInIsolatedWorld(int32_t world_id,
-                                     const std::string& script);
-  void SetIsolatedWorldInfo(int32_t world_id,
-                            v8::Local<v8::Value> security_origin,
-                            v8::Local<v8::Value> content_security_policy);
-
   // Many parts of the web test harness assume that the main frame is local.
   // Having all of them go through the helper below makes it easier to catch
   // scenarios that require breaking this assumption.

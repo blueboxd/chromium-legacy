@@ -436,8 +436,14 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   virtual void DidUpdateFaviconURL(
       const std::vector<blink::mojom::FaviconURLPtr>& candidates) {}
 
-  // Called when an audio change occurs.
+  // Called when an audio change occurs to this WebContents. If |audible| is
+  // true then one or more frames or child contents are emitting audio; if
+  // false, then no frames or child contents are emitting audio. See
+  // OnFrameAudioStateChanged for per-frame information.
   virtual void OnAudioStateChanged(bool audible) {}
+
+  // Called when the audio state of an individual frame changes.
+  virtual void OnFrameAudioStateChanged(RenderFrameHost* rfh, bool audible) {}
 
   // Called when the connected to Bluetooth device state changes.
   virtual void OnIsConnectedToBluetoothDeviceChanged(

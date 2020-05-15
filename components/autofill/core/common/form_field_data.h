@@ -188,6 +188,14 @@ struct FormFieldData {
   // is valid if not empty, will not be synced to the server side or be used for
   // field comparison and isn't in serialize methods.
   gfx::RectF bounds;
+
+  // The datalist is associated with this field, if any. The following two
+  // vectors valid if not empty, will not be synced to the server side or be
+  // used for field comparison and aren't in serialize methods.
+  // The datalist option is intentionally separated from option_values and
+  // option_contents because they are handled very differently in autofill.
+  std::vector<base::string16> datalist_values;
+  std::vector<base::string16> datalist_labels;
 };
 
 // Serialize and deserialize FormFieldData. These are used when FormData objects

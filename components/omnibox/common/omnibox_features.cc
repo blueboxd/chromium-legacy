@@ -217,25 +217,27 @@ const base::Feature kNewSearchFeatures{"OmniboxNewSearchFeatures",
 const base::Feature kMaxZeroSuggestMatches{"OmniboxMaxZeroSuggestMatches",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to cap the number of URL-type matches shown within the
-// Omnibox. If enabled, the number of URL-type matches is limited (unless
-// there are no more non-URL matches available.) If enabled, there is a
-// companion parameter - OmniboxMaxURLMatches - which specifies the maximum
-// desired number of URL-type matches.
-const base::Feature kOmniboxMaxURLMatches {
-  "OmniboxMaxURLMatches",
-#if defined(OS_IOS) || defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
-
 // Feature used to cap max suggestions shown according to the params
 // UIMaxAutocompleteMatches and UIMaxAutocompleteMatchesByProvider.
 const base::Feature kUIExperimentMaxAutocompleteMatches{
     "OmniboxUIExperimentMaxAutocompleteMatches",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature used to cap the number of URL-type matches shown within the
+// Omnibox. If enabled, the number of URL-type matches is limited (unless
+// there are no more non-URL matches available.) If enabled, there is a
+// companion parameter - OmniboxMaxURLMatches - which specifies the maximum
+// desired number of URL-type matches.
+const bool kOmniboxMaxURLMatchesEnabledByDefault =
+#if defined(OS_IOS) || defined(OS_ANDROID)
+    false;
+#else
+    true;
+#endif
+const base::Feature kOmniboxMaxURLMatches{
+    "OmniboxMaxURLMatches", kOmniboxMaxURLMatchesEnabledByDefault
+                                ? base::FEATURE_ENABLED_BY_DEFAULT
+                                : base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature that configures ZeroSuggestProvider using the "ZeroSuggestVariant"
 // per-page-classification parameter.

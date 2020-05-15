@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 304 tests; 298 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 305 tests; 298 PASS, 7 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS Parsing origin: <http://example	.
 org> against <http://example.org/foo/bar>
@@ -256,13 +256,14 @@ PASS Parsing origin: <data:/../> against <about:blank>
 PASS Parsing origin: <javascript:/../> against <about:blank>
 PASS Parsing origin: <mailto:/../> against <about:blank>
 PASS Parsing origin: <sc://ñ.test/> against <about:blank>
-PASS Parsing origin: <sc://!"$&'()*+,-.;<=>^_`{|}~/> against <about:blank>
 PASS Parsing origin: <x> against <sc://ñ>
 PASS Parsing origin: <sc:\../> against <about:blank>
 PASS Parsing origin: <sc::a@example.net> against <about:blank>
 PASS Parsing origin: <wow:%NBD> against <about:blank>
 PASS Parsing origin: <wow:%1G> against <about:blank>
 PASS Parsing origin: <wow:￿> against <about:blank>
+FAIL Parsing origin: <http://!"$&'()*+,-.;=_`{|}~/> against <about:blank> assert_equals: origin expected "http://\x1f!\"$&'()*+,-.;=_`{|}~" but got "null"
+PASS Parsing origin: <sc://!"$&'()*+,-.;=_`{|}~/> against <about:blank>
 PASS Parsing origin: <ftp://%e2%98%83> against <about:blank>
 PASS Parsing origin: <https://%e2%98%83> against <about:blank>
 PASS Parsing origin: <http://127.0.0.1:10100/relative_import.html> against <about:blank>

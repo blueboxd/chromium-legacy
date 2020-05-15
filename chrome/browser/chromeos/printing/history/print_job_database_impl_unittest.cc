@@ -37,7 +37,7 @@ PrintJobInfo ConstructPrintJobInfo(const std::string& id,
 
 class PrintJobDatabaseImplTest : public ::testing::Test {
  public:
-  PrintJobDatabaseImplTest() {}
+  PrintJobDatabaseImplTest() = default;
 
   void SetUp() override {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());

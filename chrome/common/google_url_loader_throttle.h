@@ -20,6 +20,7 @@ class GoogleURLLoaderThrottle
  public:
 #if defined(OS_ANDROID)
   GoogleURLLoaderThrottle(const std::string& client_data_header,
+                          bool night_mode_enabled,
                           chrome::mojom::DynamicParams dynamic_params);
 #else
   explicit GoogleURLLoaderThrottle(chrome::mojom::DynamicParams dynamic_params);
@@ -30,7 +31,6 @@ class GoogleURLLoaderThrottle
   static void UpdateCorsExemptHeader(
       network::mojom::NetworkContextParams* params);
 
- private:
   // blink::URLLoaderThrottle:
   void DetachFromCurrentSequence() override;
   void WillStartRequest(network::ResourceRequest* request,
@@ -48,8 +48,10 @@ class GoogleURLLoaderThrottle
                            bool* defer) override;
 #endif
 
+ private:
 #if defined(OS_ANDROID)
   std::string client_data_header_;
+  bool night_mode_enabled_;
 #endif
   const chrome::mojom::DynamicParams dynamic_params_;
 };

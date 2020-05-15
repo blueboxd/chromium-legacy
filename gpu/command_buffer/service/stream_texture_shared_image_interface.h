@@ -17,6 +17,20 @@ class TextureBase;
 class GPU_GLES2_EXPORT StreamTextureSharedImageInterface
     : public gles2::GLStreamTextureImage {
  public:
+  enum class BindingsMode {
+    // Ensures that the TextureOwner's texture is bound to the latest image, if
+    // it requires explicit binding.
+    kEnsureTexImageBound,
+
+    // Updates the current image but does not bind it. If updating the image
+    // implicitly binds the texture, the current bindings will be restored.
+    kRestoreIfBound,
+
+    // Updates the current image but does not bind it. If updating the image
+    // implicitly binds the texture, the current bindings will not be restored.
+    kDontRestoreIfBound
+  };
+
   // Release the underlying resources. This should be called when the image is
   // not longer valid or the context is lost.
   virtual void ReleaseResources() = 0;
@@ -41,20 +55,6 @@ class GPU_GLES2_EXPORT StreamTextureSharedImageInterface
 
  protected:
   ~StreamTextureSharedImageInterface() override = default;
-
-  enum class BindingsMode {
-    // Ensures that the TextureOwner's texture is bound to the latest image, if
-    // it requires explicit binding.
-    kEnsureTexImageBound,
-
-    // Updates the current image but does not bind it. If updating the image
-    // implicitly binds the texture, the current bindings will be restored.
-    kRestoreIfBound,
-
-    // Updates the current image but does not bind it. If updating the image
-    // implicitly binds the texture, the current bindings will not be restored.
-    kDontRestoreIfBound
-  };
 };
 
 }  // namespace gpu

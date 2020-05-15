@@ -8,7 +8,6 @@
 
 #include "base/strings/stringprintf.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
-#include "chromeos/components/quick_answers/understanding/intent_generator.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_metrics.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "third_party/icu/source/common/unicode/locid.h"
@@ -20,30 +19,38 @@ namespace {
 using network::mojom::URLLoaderFactory;
 
 constexpr char kDictionaryQueryRewriteTemplate[] = "Define:%s";
+constexpr char kTranslationQueryRewriteTemplate[] = "Translate:%s";
 
 QuickAnswersClient::ResultLoaderFactoryCallback*
     g_testing_result_factory_callback = nullptr;
 
-const QuickAnswersRequest PreprocessRequest(const QuickAnswersRequest& request,
-                                            const std::string& intent_text,
-                                            IntentType intent_type) {
-  QuickAnswersRequest processed_request = request;
+QuickAnswersClient::IntentGeneratorFactoryCallback*
+    g_testing_intent_generator_factory_callback = nullptr;
+
+const PreprocessedOutput PreprocessRequest(const QuickAnswersRequest& request,
+                                           const std::string& intent_text,
+                                           IntentType intent_type) {
+  PreprocessedOutput processed_output;
+  processed_output.intent_text = intent_text;
+  processed_output.query = intent_text;
+  processed_output.intent_type = intent_type;
 
   switch (intent_type) {
     case IntentType::kUnit:
-      processed_request.selected_text = intent_text;
       break;
     case IntentType::kDictionary:
-      processed_request.selected_text = base::StringPrintf(
+      processed_output.query = base::StringPrintf(
           kDictionaryQueryRewriteTemplate, intent_text.c_str());
       break;
     case IntentType::kTranslation:
+      processed_output.query = base::StringPrintf(
+          kTranslationQueryRewriteTemplate, intent_text.c_str());
       break;
     case IntentType::kUnknown:
       // TODO(llin): Update to NOTREACHED after integrating with TCLib.
       break;
   }
-  return processed_request;
+  return processed_output;
 }
 
 }  // namespace
@@ -52,6 +59,11 @@ const QuickAnswersRequest PreprocessRequest(const QuickAnswersRequest& request,
 void QuickAnswersClient::SetResultLoaderFactoryForTesting(
     ResultLoaderFactoryCallback* factory) {
   g_testing_result_factory_callback = factory;
+}
+
+void QuickAnswersClient::SetIntentGeneratorFactoryForTesting(
+    IntentGeneratorFactoryCallback* factory) {
+  g_testing_intent_generator_factory_callback = factory;
 }
 
 QuickAnswersClient::QuickAnswersClient(URLLoaderFactory* url_loader_factory,
@@ -115,10 +127,8 @@ void QuickAnswersClient::SendRequest(
   RecordSelectedTextLength(quick_answers_request.selected_text.length());
 
   // Generate intent from |quick_answers_request|.
-  IntentGenerator(base::BindOnce(&QuickAnswersClient::IntentGeneratorCallback,
-                                 weak_factory_.GetWeakPtr(),
-                                 quick_answers_request))
-      .GenerateIntent(quick_answers_request);
+  intent_generator_ = CreateIntentGenerator(quick_answers_request);
+  intent_generator_->GenerateIntent(quick_answers_request);
 }
 
 void QuickAnswersClient::OnQuickAnswerClick(ResultType result_type) {
@@ -154,6 +164,15 @@ std::unique_ptr<ResultLoader> QuickAnswersClient::CreateResultLoader(
   return ResultLoader::Create(intent_type, url_loader_factory_, this);
 }
 
+std::unique_ptr<IntentGenerator> QuickAnswersClient::CreateIntentGenerator(
+    const QuickAnswersRequest& request) {
+  if (g_testing_intent_generator_factory_callback)
+    return g_testing_intent_generator_factory_callback->Run();
+  return std::make_unique<IntentGenerator>(
+      base::BindOnce(&QuickAnswersClient::IntentGeneratorCallback,
+                     weak_factory_.GetWeakPtr(), request));
+}
+
 void QuickAnswersClient::OnNetworkError() {
   DCHECK(delegate_);
   delegate_->OnNetworkError();
@@ -170,17 +189,25 @@ void QuickAnswersClient::IntentGeneratorCallback(
     const QuickAnswersRequest& quick_answers_request,
     const std::string& intent_text,
     IntentType intent_type) {
+  DCHECK(delegate_);
+
   // Preprocess the request.
-  auto& processed_request =
+  QuickAnswersRequest processed_request = quick_answers_request;
+  processed_request.preprocessed_output =
       PreprocessRequest(quick_answers_request, intent_text, intent_type);
 
   delegate_->OnRequestPreprocessFinish(processed_request);
 
-  // TODO(llin): Only fetch answer if there is a intent generated after
-  // integrating with TCLib.
+  if (features::IsQuickAnswersTextAnnotatorEnabled() &&
+      processed_request.preprocessed_output.intent_type ==
+          IntentType::kUnknown) {
+    // Don't fetch answer if no intent is generated.
+    return;
+  }
+
   result_loader_ = CreateResultLoader(intent_type);
   // Load and parse search result.
-  result_loader_->Fetch(processed_request.selected_text);
+  result_loader_->Fetch(processed_request.preprocessed_output.query);
 }
 
 base::TimeDelta QuickAnswersClient::GetImpressionDuration() const {

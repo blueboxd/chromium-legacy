@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/extensions/settings_overridden_dialog_view.h"
 
 #include "base/bind.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/settings_overridden_dialog_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -19,17 +19,12 @@
 SettingsOverriddenDialogView::SettingsOverriddenDialogView(
     std::unique_ptr<SettingsOverriddenDialogController> controller)
     : controller_(std::move(controller)) {
-  // TODO(devlin): Because of https://crbug.com/1080732, using the real strings
-  // here results in bot failures (they are greedily optimized out). Use fake
-  // strings for now, and switch these over when this is reached in a production
-  // codepath.
-  //
-  // This should be IDS_EXTENSION_SETTINGS_OVERRIDDEN_DIALOG_CHANGE_IT_BACK.
-  base::string16 ok_button_label = base::ASCIIToUTF16("Change it back");
-  // This should be IDS_EXTENSION_SETTINGS_OVERRIDDEN_DIALOG_IGNORE.
-  base::string16 cancel_button_label = base::ASCIIToUTF16("Ignore");
-  SetButtonLabel(ui::DIALOG_BUTTON_OK, ok_button_label);
-  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, cancel_button_label);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(
+                     IDS_EXTENSION_SETTINGS_OVERRIDDEN_DIALOG_CHANGE_IT_BACK));
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
+                 l10n_util::GetStringUTF16(
+                     IDS_EXTENSION_SETTINGS_OVERRIDDEN_DIALOG_IGNORE));
   SetLayoutManager(std::make_unique<views::FillLayout>());
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
@@ -76,3 +71,15 @@ gfx::Size SettingsOverriddenDialogView::CalculatePreferredSize() const {
                     margins().width();
   return gfx::Size(width, GetHeightForWidth(width));
 }
+
+namespace chrome {
+
+void ShowExtensionSettingsOverriddenDialog(
+    std::unique_ptr<SettingsOverriddenDialogController> controller,
+    Browser* browser) {
+  // Note: ownership is taken by the view hierarchy.
+  auto* dialog_view = new SettingsOverriddenDialogView(std::move(controller));
+  dialog_view->Show(browser->window()->GetNativeWindow());
+}
+
+}  // namespace chrome

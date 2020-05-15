@@ -24,7 +24,9 @@ enum class NavigationState {
   // The navigation succeeded. Any NavigationObservers would have had
   // NavigationCompleted() called.
   kComplete = 2,
-  // The navigation failed. IsErrorPage() will return true, and any
+  // The navigation failed. This could be because of an error (in which case
+  // IsErrorPage() will return true) or the navigation got turned into a
+  // download (in which case IsDownload() will return true).
   // NavigationObservers would have had NavigationFailed() called.
   kFailed = 3,
 };
@@ -59,6 +61,14 @@ class Navigation {
   // that if an error page reloads, this will return true even though
   // GetNetErrorCode will be kNoError.
   virtual bool IsErrorPage() = 0;
+
+  // Returns true if this navigation resulted in a download. Returns false if
+  // this navigation did not result in a download, or if download status is not
+  // yet known for this navigation.  Download status is determined for a
+  // navigation when processing final (post redirect) HTTP response headers.
+  // This means the only time the embedder can know if it's a download is in
+  // NavigationObserver::NavigationFailed.
+  virtual bool IsDownload() = 0;
 
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.weblayer_private
   // GENERATED_JAVA_CLASS_NAME_OVERRIDE: ImplLoadError

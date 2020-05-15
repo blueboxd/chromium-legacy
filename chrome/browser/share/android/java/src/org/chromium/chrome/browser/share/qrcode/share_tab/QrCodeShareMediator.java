@@ -12,10 +12,13 @@ import android.view.View;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.share.SaveImageNotificationManager;
 import org.chromium.chrome.browser.share.ShareImageFileUtils;
+import org.chromium.chrome.browser.share.qrcode.QRCodeGenerationRequest;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.widget.Toast;
+import org.chromium.url.GURL;
 
 /**
  * QrCodeShareMediator is in charge of calculating and setting values for QrCodeShareViewProperties.
@@ -29,6 +32,7 @@ class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
 
     private long mDownloadStartTime;
     private boolean mIsDownloadInProgress;
+
     /**
      * The QrCodeScanMediator constructor.
      * @param context The context to use.
@@ -38,8 +42,28 @@ class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
         mContext = context;
         mPropertyModel = propertyModel;
 
-        // TODO(gayane): Request generated QR code bitmap with a callback that sets QRCODE_BITMAP
-        // property.
+        if (context instanceof ChromeActivity) {
+            GURL url = ((ChromeActivity) context).getActivityTabProvider().get().getUrl();
+            refreshQrCode(url.getSpec());
+        }
+    }
+
+    /**
+     * Refreshes the QR Code bitmap for given data.
+     * @param data The data to encode.
+     */
+    protected void refreshQrCode(String data) {
+        QRCodeGenerationRequest.QRCodeServiceCallback callback =
+                new QRCodeGenerationRequest.QRCodeServiceCallback() {
+                    @Override
+                    public void onQRCodeAvailable(Bitmap bitmap) {
+                        // TODO(skare): If bitmap is null, surface an error.
+                        if (bitmap != null) {
+                            mPropertyModel.set(QrCodeShareViewProperties.QRCODE_BITMAP, bitmap);
+                        }
+                    }
+                };
+        new QRCodeGenerationRequest(data, callback);
     }
 
     /** Triggers download for the generated QR code bitmap if available. */

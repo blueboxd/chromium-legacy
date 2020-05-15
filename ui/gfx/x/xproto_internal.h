@@ -143,17 +143,41 @@ bool CaseEq(T t, S s) {
   return t == static_cast<decltype(t)>(s);
 }
 
-// Helper function for xcbproto bitcase and & expressions.  Checks if the
-// bitmasks |t| and |s| have any intersection.
+// Helper function for xcbproto bitcase expressions.  Checks if the bitmasks |t|
+// and |s| have any intersection.
 template <typename T, typename S>
-bool BitAnd(T t, S s) {
+bool CaseAnd(T t, S s) {
   return static_cast<EnumBaseType<T>>(t) & static_cast<EnumBaseType<T>>(s);
 }
 
-// Helper function for ~ expressions.
+// Helper function for xcbproto & expressions.  Computes |t| & |s|.
+template <typename T, typename S>
+auto BitAnd(T t, S s) {
+  return static_cast<EnumBaseType<T>>(t) & static_cast<EnumBaseType<T>>(s);
+}
+
+// Helper function for xcbproto ~ expressions.
 template <typename T>
-bool BitNot(T t) {
+auto BitNot(T t) {
   return ~static_cast<EnumBaseType<T>>(t);
+}
+
+// Helper function for generating switch values.  |switch_var| is the value to
+// modify.  |enum_val| is the value to set |switch_var| to if this is a regular
+// case, or the bit to be set in |switch_var| if this is a bit case.  This
+// function is a no-op when |condition| is false.
+template <typename T>
+auto SwitchVar(T enum_val, bool condition, bool is_bitcase, T* switch_var) {
+  using EnumInt = EnumBaseType<T>;
+  if (!condition)
+    return;
+  EnumInt switch_int = static_cast<EnumInt>(*switch_var);
+  if (is_bitcase) {
+    *switch_var = static_cast<T>(switch_int | static_cast<EnumInt>(enum_val));
+  } else {
+    DCHECK(!switch_int);
+    *switch_var = enum_val;
+  }
 }
 
 }  // namespace x11

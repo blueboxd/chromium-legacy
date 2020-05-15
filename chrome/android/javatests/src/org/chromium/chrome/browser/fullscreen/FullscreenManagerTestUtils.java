@@ -10,7 +10,6 @@ import org.junit.Assert;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content_public.browser.GestureListenerManager;
@@ -38,8 +37,9 @@ public class FullscreenManagerTestUtils {
      * @param show Whether the browser controls should be shown.
      */
     public static void scrollBrowserControls(ChromeActivityTestRule testRule, boolean show) {
-        ChromeFullscreenManager fullscreenManager = testRule.getActivity().getFullscreenManager();
-        int browserControlsHeight = fullscreenManager.getTopControlsHeight();
+        BrowserControlsStateProvider browserControlsStateProvider =
+                testRule.getActivity().getFullscreenManager();
+        int browserControlsHeight = browserControlsStateProvider.getTopControlsHeight();
 
         waitForPageToBeScrollable(testRule.getActivity().getActivityTab());
 
@@ -70,12 +70,12 @@ public class FullscreenManagerTestUtils {
      */
     public static void waitForBrowserControlsPosition(
             ChromeActivityTestRule testRule, int position) {
-        final ChromeFullscreenManager fullscreenManager =
+        final BrowserControlsStateProvider browserControlsStateProvider =
                 testRule.getActivity().getFullscreenManager();
         CriteriaHelper.pollUiThread(Criteria.equals(position, new Callable<Integer>() {
             @Override
             public Integer call() {
-                return fullscreenManager.getTopControlOffset();
+                return browserControlsStateProvider.getTopControlOffset();
             }
         }));
     }
@@ -110,26 +110,21 @@ public class FullscreenManagerTestUtils {
         waitForBrowserControlsPosition(testRule, 0);
 
         final CallbackHelper contentMovedCallback = new CallbackHelper();
-        final ChromeFullscreenManager fullscreenManager =
+        final BrowserControlsStateProvider browserControlsStateProvider =
                 testRule.getActivity().getFullscreenManager();
-        final float initialVisibleContentOffset = fullscreenManager.getTopVisibleContentOffset();
+        final float initialVisibleContentOffset =
+                browserControlsStateProvider.getTopVisibleContentOffset();
 
-        fullscreenManager.addListener(new FullscreenListener() {
+        browserControlsStateProvider.addObserver(new BrowserControlsStateProvider.Observer() {
             @Override
             public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
                     int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
-                if (fullscreenManager.getTopVisibleContentOffset() != initialVisibleContentOffset) {
+                if (browserControlsStateProvider.getTopVisibleContentOffset()
+                        != initialVisibleContentOffset) {
                     contentMovedCallback.notifyCalled();
-                    fullscreenManager.removeListener(this);
+                    browserControlsStateProvider.removeObserver(this);
                 }
             }
-
-            @Override
-            public void onContentOffsetChanged(int offset) {}
-
-            @Override
-            public void onBottomControlsHeightChanged(
-                    int bottomControlsHeight, int bottomControlsMinHeight) {}
         });
 
         float dragX = 50f;
@@ -158,7 +153,7 @@ public class FullscreenManagerTestUtils {
         for (int i = 0; i < 10; i++) {
             int numScrollEndCalled = scrollEndCallback.getCallCount();
             int numFlingEndCalled = flingEndCallback.getCallCount();
-            float dragEndY = dragStartY - fullscreenManager.getTopControlsHeight();
+            float dragEndY = dragStartY - browserControlsStateProvider.getTopControlsHeight();
 
             long downTime = SystemClock.uptimeMillis();
             TouchCommon.dragStart(testRule.getActivity(), dragX, dragStartY, downTime);

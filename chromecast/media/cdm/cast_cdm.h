@@ -20,7 +20,6 @@
 #include "chromecast/media/base/media_resource_tracker.h"
 #include "chromecast/media/cdm/cast_cdm_context.h"
 #include "chromecast/public/media/cast_key_status.h"
-#include "media/base/cdm_context.h"
 #include "media/base/content_decryption_module.h"
 #include "media/base/player_tracker.h"
 #include "media/cdm/json_web_key.h"

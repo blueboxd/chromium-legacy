@@ -190,8 +190,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
       assistant_alarm_timer_controller_;
   mojo::Remote<ash::mojom::AssistantNotificationController>
       assistant_notification_controller_;
-  mojo::Remote<ash::mojom::AssistantScreenContextController>
-      assistant_screen_context_controller_;
 
   // |ServiceContext| object passed to child classes so they can access some of
   // our functionality without depending on us.

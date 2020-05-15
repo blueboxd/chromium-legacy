@@ -71,17 +71,17 @@ class ShillManagerClientTest : public ShillClientUnittestBase {
 
 TEST_F(ShillManagerClientTest, PropertyChanged) {
   // Create a signal.
-  base::Value kOfflineMode(true);
+  base::Value kArpGateway(true);
   dbus::Signal signal(shill::kFlimflamManagerInterface,
                       shill::kMonitorPropertyChanged);
   dbus::MessageWriter writer(&signal);
-  writer.AppendString(shill::kOfflineModeProperty);
-  dbus::AppendBasicTypeValueData(&writer, kOfflineMode);
+  writer.AppendString(shill::kArpGatewayProperty);
+  dbus::AppendBasicTypeValueData(&writer, kArpGateway);
 
   // Set expectations.
   MockPropertyChangeObserver observer;
-  EXPECT_CALL(observer, OnPropertyChanged(shill::kOfflineModeProperty,
-                                          ValueEq(ByRef(kOfflineMode))))
+  EXPECT_CALL(observer, OnPropertyChanged(shill::kArpGatewayProperty,
+                                          ValueEq(ByRef(kArpGateway))))
       .Times(1);
 
   // Add the observer
@@ -108,14 +108,14 @@ TEST_F(ShillManagerClientTest, GetProperties) {
   writer.OpenArray("{sv}", &array_writer);
   dbus::MessageWriter entry_writer(NULL);
   array_writer.OpenDictEntry(&entry_writer);
-  entry_writer.AppendString(shill::kOfflineModeProperty);
+  entry_writer.AppendString(shill::kArpGatewayProperty);
   entry_writer.AppendVariantOfBool(true);
   array_writer.CloseContainer(&entry_writer);
   writer.CloseContainer(&array_writer);
 
   // Create the expected value.
   base::DictionaryValue value;
-  value.SetKey(shill::kOfflineModeProperty, base::Value(true));
+  value.SetKey(shill::kArpGatewayProperty, base::Value(true));
   // Set expectations.
   PrepareForMethodCall(shill::kGetPropertiesFunction,
                        base::BindRepeating(&ExpectNoArgument), response.get());

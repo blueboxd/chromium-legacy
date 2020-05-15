@@ -49,9 +49,14 @@ extern const base::Feature kNewSearchFeatures;
 
 // Num suggestions - these affect how many suggestions are shown based on e.g.
 // focus, page context, provider, or URL v non-URL.
+// Note that all of these are overriden and default values used instead if
+// kNewSearchFeatures is disabled.
 extern const base::Feature kMaxZeroSuggestMatches;
-extern const base::Feature kOmniboxMaxURLMatches;
 extern const base::Feature kUIExperimentMaxAutocompleteMatches;
+// The default value is established here as a bool so it can be referred to in
+// OmniboxFieldTrial.
+extern const bool kOmniboxMaxURLMatchesEnabledByDefault;
+extern const base::Feature kOmniboxMaxURLMatches;
 
 // On-Focus Suggestions a.k.a. ZeroSuggest.
 extern const base::Feature kOnFocusSuggestions;

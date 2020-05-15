@@ -6,25 +6,22 @@ import {$$, BrowserProxy} from 'chrome://new-tab-page/new_tab_page.js';
 import {assertNotStyle, assertStyle, createTestProxy, keydown} from 'chrome://test/new_tab_page/test_support.js';
 import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
 
-function createImageDoodle(config = {}) {
-  const doodle = {
+function createImageDoodle() {
+  return {
     content: {
       imageDoodle: {
-        imageUrl: {url: config.imageUrl || 'data:foo'},
-        onClickUrl: {url: config.onClickUrl || 'https://foo.com'},
+        imageUrl: {url: 'data:foo'},
+        onClickUrl: {url: 'https://foo.com'},
         shareButton: {
-          backgroundColor: {value: config.backgroundColor || 0xFFFF0000},
-          x: config.x || 0,
-          y: config.y || 0,
-          iconUrl: {url: config.iconUrl || 'data:bar'},
+          backgroundColor: {value: 0xFFFF0000},
+          x: 0,
+          y: 0,
+          iconUrl: {url: 'data:bar'},
         },
+        imageImpressionLogUrl: {url: 'https://log.com'},
       }
     }
   };
-  if (config.animationUrl) {
-    doodle.content.imageDoodle.animationUrl = {url: config.animationUrl};
-  }
-  return doodle;
 }
 
 suite('NewTabPageLogoTest', () => {
@@ -48,18 +45,27 @@ suite('NewTabPageLogoTest', () => {
     PolymerTest.clearBody();
 
     testProxy = createTestProxy();
+    testProxy.handler.setResultFor('onDoodleImageRendered', Promise.resolve({
+      imageClickParams: '',
+      interactionLogUrl: null,
+      shareId: '',
+    }));
     BrowserProxy.instance_ = testProxy;
   });
 
   test('setting simple doodle shows image', async () => {
-    // Act.
-    const logo = await createLogo(createImageDoodle({
-      imageUrl: 'data:foo',
-      backgroundColor: 0xFFFF0000,
+    // Arrange.
+    const doodle = createImageDoodle();
+    doodle.content.imageDoodle.imageUrl = {url: 'data:foo'};
+    doodle.content.imageDoodle.shareButton = {
+      backgroundColor: {value: 0xFFFF0000},
       x: 11,
       y: 12,
-      iconUrl: 'data:bar',
-    }));
+      iconUrl: {url: 'data:bar'},
+    };
+
+    // Act.
+    const logo = await createLogo(doodle);
 
     // Assert.
     assertNotStyle($$(logo, '#doodle'), 'display', 'none');
@@ -76,11 +82,13 @@ suite('NewTabPageLogoTest', () => {
   });
 
   test('setting animated doodle shows image', async () => {
+    // Arrange.
+    const doodle = createImageDoodle();
+    doodle.content.imageDoodle.imageUrl = {url: 'data:foo'};
+    doodle.content.imageDoodle.animationUrl = {url: 'https://foo.com'};
+
     // Act.
-    const logo = await createLogo(createImageDoodle({
-      imageUrl: 'data:foo',
-      animationUrl: 'https://foo.com',
-    }));
+    const logo = await createLogo(doodle);
 
     // Assert.
     assertNotStyle($$(logo, '#doodle'), 'display', 'none');
@@ -226,46 +234,39 @@ suite('NewTabPageLogoTest', () => {
 
   test('clicking simple doodle opens link', async () => {
     // Arrange.
-    const logo = await createLogo(createImageDoodle({
-      imageUrl: 'data:foo',
-      onClickUrl: 'https://foo.com',
-    }));
+    const doodle = createImageDoodle();
+    doodle.content.imageDoodle.onClickUrl = {url: 'https://foo.com'};
+    const logo = await createLogo(doodle);
 
     // Act.
     $$(logo, '#image').click();
     const url = await testProxy.whenCalled('open');
 
     // Assert.
-    assertEquals(url, 'https://foo.com');
+    assertEquals(url, 'https://foo.com/');
   });
 
   [' ', 'Enter'].forEach(key => {
     test(`pressing ${key} on simple doodle opens link`, async () => {
       // Arrange.
-      const logo = await createLogo({
-        content: {
-          imageDoodle: {
-            imageUrl: {url: 'data:foo'},
-            onClickUrl: {url: 'https://foo.com'},
-          }
-        }
-      });
+      const doodle = createImageDoodle();
+      doodle.content.imageDoodle.onClickUrl = {url: 'https://foo.com'};
+      const logo = await createLogo(doodle);
 
       // Act.
       keydown($$(logo, '#image'), key);
       const url = await testProxy.whenCalled('open');
 
       // Assert.
-      assertEquals(url, 'https://foo.com');
+      assertEquals(url, 'https://foo.com/');
     });
   });
 
   test('clicking image of animated doodle starts animation', async () => {
     // Arrange.
-    const logo = await createLogo(createImageDoodle({
-      imageUrl: 'data:foo',
-      animationUrl: 'https://foo.com',
-    }));
+    const doodle = createImageDoodle();
+    doodle.content.imageDoodle.animationUrl = {url: 'https://foo.com'};
+    const logo = await createLogo(doodle);
 
     // Act.
     $$(logo, '#image').click();
@@ -279,11 +280,10 @@ suite('NewTabPageLogoTest', () => {
 
   test('clicking animation of animated doodle opens link', async () => {
     // Arrange.
-    const logo = await createLogo(createImageDoodle({
-      imageUrl: 'data:foo',
-      animationUrl: 'https://foo.com',
-      onClickUrl: 'https://bar.com',
-    }));
+    const doodle = createImageDoodle();
+    doodle.content.imageDoodle.animationUrl = {url: 'https://foo.com'};
+    doodle.content.imageDoodle.onClickUrl = {url: 'https://bar.com'};
+    const logo = await createLogo(doodle);
     $$(logo, '#image').click();
 
     // Act.
@@ -291,7 +291,7 @@ suite('NewTabPageLogoTest', () => {
     const url = await testProxy.whenCalled('open');
 
     // Assert.
-    assertEquals(url, 'https://bar.com');
+    assertEquals(url, 'https://bar.com/');
   });
 
   test('share dialog removed on start', async () => {
@@ -327,5 +327,122 @@ suite('NewTabPageLogoTest', () => {
 
     // Assert.
     assertFalse(!!logo.shadowRoot.querySelector('ntp-doodle-share-dialog'));
+  });
+
+  test('simple doodle logging flow', async () => {
+    // Arrange.
+    const doodle = createImageDoodle();
+    doodle.content.imageDoodle.onClickUrl = {url: 'https://click.com?ct=supi'};
+    doodle.content.imageDoodle.imageImpressionLogUrl = {url: 'https://log.com'};
+    const logo = await createLogo(doodle);
+    testProxy.handler.setResultFor('onDoodleImageRendered', Promise.resolve({
+      imageClickParams: 'foo=bar&hello=world',
+      interactionLogUrl: null,
+      shareId: '123',
+    }));
+
+    // Act (load).
+    $$(logo, '#image').dispatchEvent(new Event('load'));
+
+    // Assert (load).
+    const [type, _, logUrl] =
+        await testProxy.handler.whenCalled('onDoodleImageRendered');
+    assertEquals(newTabPage.mojom.DoodleImageType.STATIC, type);
+    assertEquals('https://log.com', logUrl.url);
+
+    // Act (click).
+    $$(logo, '#image').click();
+
+    // Assert (click).
+    const [type2] = await testProxy.handler.whenCalled('onDoodleImageClicked');
+    const onClickUrl = await testProxy.whenCalled('open');
+    assertEquals(newTabPage.mojom.DoodleImageType.STATIC, type2);
+    assertEquals('https://click.com/?ct=supi&foo=bar&hello=world', onClickUrl);
+
+    // Act (share).
+    $$(logo, '#shareButton').click();
+    await flushTasks();
+    $$(logo, 'ntp-doodle-share-dialog').dispatchEvent(new CustomEvent('share', {
+      detail: newTabPage.mojom.DoodleShareChannel.FACEBOOK
+    }));
+
+    // Assert (share).
+    const [channel, doodleId, shareId] =
+        await testProxy.handler.whenCalled('onDoodleShared');
+    assertEquals(newTabPage.mojom.DoodleShareChannel.FACEBOOK, channel);
+    assertEquals('supi', doodleId);
+    assertEquals('123', shareId);
+  });
+
+  test('animated doodle logging flow', async () => {
+    // Arrange.
+    const doodle = createImageDoodle();
+    doodle.content.imageDoodle.onClickUrl = {url: 'https://click.com?ct=supi'};
+    doodle.content.imageDoodle.imageImpressionLogUrl = {url: 'https://log.com'};
+    doodle.content.imageDoodle.animationUrl = {url: 'https://animation.com'};
+    doodle.content.imageDoodle.animationImpressionLogUrl = {
+      url: 'https://animation_log.com'
+    };
+    const logo = await createLogo(doodle);
+    testProxy.handler.setResultFor('onDoodleImageRendered', Promise.resolve({
+      imageClickParams: '',
+      interactionLogUrl: {url: 'https://interaction.com'},
+      shareId: '',
+    }));
+
+    // Act (CTA load).
+    $$(logo, '#image').dispatchEvent(new Event('load'));
+
+    // Assert (CTA load).
+    const [type, _, logUrl] =
+        await testProxy.handler.whenCalled('onDoodleImageRendered');
+    assertEquals(newTabPage.mojom.DoodleImageType.CTA, type);
+    assertEquals('https://log.com', logUrl.url);
+
+    // Act (CTA click).
+    testProxy.handler.resetResolver('onDoodleImageRendered');
+    testProxy.handler.setResultFor('onDoodleImageRendered', Promise.resolve({
+      imageClickParams: 'foo=bar&hello=world',
+      interactionLogUrl: null,
+      shareId: '123',
+    }));
+    $$(logo, '#image').click();
+
+    // Assert (CTA click).
+    const [type2, interactionLogUrl] =
+        await testProxy.handler.whenCalled('onDoodleImageClicked');
+    assertEquals(newTabPage.mojom.DoodleImageType.CTA, type2);
+    assertEquals('https://interaction.com', interactionLogUrl.url);
+
+    // Assert (animation load). Also triggered by clicking #image.
+    const [type3, __, logUrl2] =
+        await testProxy.handler.whenCalled('onDoodleImageRendered');
+    assertEquals(newTabPage.mojom.DoodleImageType.ANIMATION, type3);
+    assertEquals('https://animation_log.com', logUrl2.url);
+
+    // Act (animation click).
+    testProxy.handler.resetResolver('onDoodleImageClicked');
+    $$(logo, '#animation').click();
+
+    // Assert (animation click).
+    const [type4, ___] =
+        await testProxy.handler.whenCalled('onDoodleImageClicked');
+    const onClickUrl = await testProxy.whenCalled('open');
+    assertEquals(newTabPage.mojom.DoodleImageType.ANIMATION, type4);
+    assertEquals('https://click.com/?ct=supi&foo=bar&hello=world', onClickUrl);
+
+    // Act (share).
+    $$(logo, '#shareButton').click();
+    await flushTasks();
+    $$(logo, 'ntp-doodle-share-dialog').dispatchEvent(new CustomEvent('share', {
+      detail: newTabPage.mojom.DoodleShareChannel.TWITTER
+    }));
+
+    // Assert (share).
+    const [channel, doodleId, shareId] =
+        await testProxy.handler.whenCalled('onDoodleShared');
+    assertEquals(newTabPage.mojom.DoodleShareChannel.TWITTER, channel);
+    assertEquals('supi', doodleId);
+    assertEquals('123', shareId);
   });
 });

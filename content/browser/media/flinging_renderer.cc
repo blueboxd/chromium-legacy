@@ -73,7 +73,7 @@ void FlingingRenderer::Initialize(media::MediaResource* media_resource,
 }
 
 void FlingingRenderer::SetCdm(media::CdmContext* cdm_context,
-                              media::CdmAttachedCB cdm_attached_cb) {
+                              CdmAttachedCB cdm_attached_cb) {
   // The flinging renderer does not support playing encrypted content.
   NOTREACHED();
 }

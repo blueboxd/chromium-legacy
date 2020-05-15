@@ -47,8 +47,8 @@ import org.chromium.chrome.browser.compositor.layouts.content.ContentOffsetProvi
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
@@ -87,7 +87,7 @@ import java.util.Set;
  */
 public class CompositorViewHolder extends FrameLayout
         implements ContentOffsetProvider, LayoutManagerHost, LayoutRenderHost, Invalidator.Host,
-                   FullscreenListener, InsetObserverView.WindowInsetObserver,
+                   BrowserControlsStateProvider.Observer, InsetObserverView.WindowInsetObserver,
                    AccessibilityUtil.Observer, TabObscuringHandler.Observer {
     private static final long SYSTEM_UI_VIEWPORT_UPDATE_DELAY_MS = 500;
 
@@ -756,7 +756,7 @@ public class CompositorViewHolder extends FrameLayout
      */
     public void onStart() {
         if (mFullscreenManager != null) {
-            mFullscreenManager.addListener(this);
+            mFullscreenManager.addObserver(this);
             mFullscreenManager.setViewportSizeDelegate(this::onUpdateViewportSize);
         }
         requestRender();
@@ -767,14 +767,9 @@ public class CompositorViewHolder extends FrameLayout
      */
     public void onStop() {
         if (mFullscreenManager != null) {
-            mFullscreenManager.removeListener(this);
+            mFullscreenManager.removeObserver(this);
             mFullscreenManager.setViewportSizeDelegate(null);
         }
-    }
-
-    @Override
-    public void onContentOffsetChanged(int offset) {
-        onViewportChanged();
     }
 
     @Override
@@ -1000,7 +995,7 @@ public class CompositorViewHolder extends FrameLayout
      */
     public void setFullscreenHandler(ChromeFullscreenManager fullscreen) {
         mFullscreenManager = fullscreen;
-        mFullscreenManager.addListener(this);
+        mFullscreenManager.addObserver(this);
         mFullscreenManager.setViewportSizeDelegate(this::onUpdateViewportSize);
         onViewportChanged();
     }

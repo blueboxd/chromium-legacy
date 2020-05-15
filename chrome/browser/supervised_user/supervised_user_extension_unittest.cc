@@ -227,11 +227,13 @@ TEST_F(SupervisedUserExtensionTest,
 
   supervised_user_service()->AddExtensionApproval(*extension);
 
-  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 0);
+  histogram_tester.ExpectTotalCount(
+      SupervisedUserExtensionsMetricsRecorder::kExtensionsHistogramName, 0);
 
   supervised_user_service()->RemoveExtensionApproval(*extension);
 
-  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 0);
+  histogram_tester.ExpectTotalCount(
+      SupervisedUserExtensionsMetricsRecorder::kExtensionsHistogramName, 0);
 }
 
 // Tests that simulating custodian approval for regular users doesn't cause any
@@ -331,12 +333,17 @@ TEST_F(SupervisedUserExtensionTest, UpdateWithPermissionsIncrease) {
 
   // Preconditions.
   base::HistogramTester histogram_tester;
-  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 0);
+  histogram_tester.ExpectTotalCount(
+      SupervisedUserExtensionsMetricsRecorder::kExtensionsHistogramName, 0);
   base::UserActionTester user_action_tester;
-  EXPECT_EQ(0, user_action_tester.GetActionCount(
-                   "SupervisedUsers_Extensions_ApprovalGranted"));
-  EXPECT_EQ(0, user_action_tester.GetActionCount(
-                   "SupervisedUsers_Extensions_ApprovalRemoved"));
+  EXPECT_EQ(
+      0,
+      user_action_tester.GetActionCount(
+          SupervisedUserExtensionsMetricsRecorder::kApprovalGrantedActionName));
+  EXPECT_EQ(
+      0,
+      user_action_tester.GetActionCount(
+          SupervisedUserExtensionsMetricsRecorder::kApprovalRemovedActionName));
 
   std::string id = InstallPermissionsTestExtension();
   // Simulate parent approval.
@@ -346,13 +353,17 @@ TEST_F(SupervisedUserExtensionTest, UpdateWithPermissionsIncrease) {
   CheckEnabled(id);
 
   // Should see 1 kApprovalGranted metric count.
-  histogram_tester.ExpectUniqueSample("SupervisedUsers.Extensions2",
-                                      SupervisedUserExtensionsMetricsRecorder::
-                                          UmaExtensionState::kApprovalGranted,
-                                      1);
-  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 1);
-  EXPECT_EQ(1, user_action_tester.GetActionCount(
-                   "SupervisedUsers_Extensions_ApprovalGranted"));
+  histogram_tester.ExpectUniqueSample(
+      SupervisedUserExtensionsMetricsRecorder::kExtensionsHistogramName,
+      SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::
+          kApprovalGranted,
+      1);
+  histogram_tester.ExpectTotalCount(
+      SupervisedUserExtensionsMetricsRecorder::kExtensionsHistogramName, 1);
+  EXPECT_EQ(
+      1,
+      user_action_tester.GetActionCount(
+          SupervisedUserExtensionsMetricsRecorder::kApprovalGrantedActionName));
 
   // Update to a new version with increased permissions.
   UpdatePermissionsTestExtension(id, "2", DISABLED);
@@ -371,13 +382,17 @@ TEST_F(SupervisedUserExtensionTest, UpdateWithPermissionsIncrease) {
       id, SupervisedUserService::ApprovedExtensionChange::kRemove);
 
   // Should see 1 kApprovalRemoved metric count.
-  histogram_tester.ExpectBucketCount("SupervisedUsers.Extensions2",
-                                     SupervisedUserExtensionsMetricsRecorder::
-                                         UmaExtensionState::kApprovalRemoved,
-                                     1);
-  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 2);
-  EXPECT_EQ(1, user_action_tester.GetActionCount(
-                   "SupervisedUsers_Extensions_ApprovalRemoved"));
+  histogram_tester.ExpectBucketCount(
+      SupervisedUserExtensionsMetricsRecorder::kExtensionsHistogramName,
+      SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::
+          kApprovalRemoved,
+      1);
+  histogram_tester.ExpectTotalCount(
+      SupervisedUserExtensionsMetricsRecorder::kExtensionsHistogramName, 2);
+  EXPECT_EQ(
+      1,
+      user_action_tester.GetActionCount(
+          SupervisedUserExtensionsMetricsRecorder::kApprovalRemovedActionName));
 
   // The extension should be disabled now.
   CheckDisabledForCustodianApproval(id);
@@ -405,11 +420,13 @@ TEST_F(SupervisedUserExtensionTest,
   CheckEnabled(id);
 
   // Should see 1 kApprovalGranted metric count.
-  histogram_tester.ExpectUniqueSample("SupervisedUsers.Extensions2",
-                                      SupervisedUserExtensionsMetricsRecorder::
-                                          UmaExtensionState::kApprovalGranted,
-                                      1);
-  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 1);
+  histogram_tester.ExpectUniqueSample(
+      SupervisedUserExtensionsMetricsRecorder::kExtensionsHistogramName,
+      SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::
+          kApprovalGranted,
+      1);
+  histogram_tester.ExpectTotalCount(
+      SupervisedUserExtensionsMetricsRecorder::kExtensionsHistogramName, 1);
 
   // Update to a new version with increased permissions.
   UpdatePermissionsTestExtension(id, "2", DISABLED);
@@ -432,11 +449,13 @@ TEST_F(SupervisedUserExtensionTest,
   UninstallExtension(id);
 
   // Should see 1 kApprovalRemoved metric count.
-  histogram_tester.ExpectBucketCount("SupervisedUsers.Extensions2",
-                                     SupervisedUserExtensionsMetricsRecorder::
-                                         UmaExtensionState::kApprovalRemoved,
-                                     1);
-  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 2);
+  histogram_tester.ExpectBucketCount(
+      SupervisedUserExtensionsMetricsRecorder::kExtensionsHistogramName,
+      SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::
+          kApprovalRemoved,
+      1);
+  histogram_tester.ExpectTotalCount(
+      SupervisedUserExtensionsMetricsRecorder::kExtensionsHistogramName, 2);
 }
 
 // Tests that if an approved extension is updated to a newer version that
@@ -506,11 +525,13 @@ TEST_F(SupervisedUserExtensionTest, DontTriggerMetricsIfAlreadyApproved) {
   CheckEnabled(extension->id());
 
   // Should see 1 kApprovalGranted metric count recorded.
-  histogram_tester.ExpectUniqueSample("SupervisedUsers.Extensions2",
-                                      SupervisedUserExtensionsMetricsRecorder::
-                                          UmaExtensionState::kApprovalGranted,
-                                      1);
-  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 1);
+  histogram_tester.ExpectUniqueSample(
+      SupervisedUserExtensionsMetricsRecorder::kExtensionsHistogramName,
+      SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::
+          kApprovalGranted,
+      1);
+  histogram_tester.ExpectTotalCount(
+      SupervisedUserExtensionsMetricsRecorder::kExtensionsHistogramName, 1);
 
   // Simulate the supervised user disabling and re-enabling the extension
   // without changing anything else.
@@ -518,21 +539,25 @@ TEST_F(SupervisedUserExtensionTest, DontTriggerMetricsIfAlreadyApproved) {
 
   // Should not see another kApprovalGranted metric count recorded because it
   // was already approved. The previous step should be a no-op.
-  histogram_tester.ExpectBucketCount("SupervisedUsers.Extensions2",
-                                     SupervisedUserExtensionsMetricsRecorder::
-                                         UmaExtensionState::kApprovalGranted,
-                                     1);
-  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 1);
+  histogram_tester.ExpectBucketCount(
+      SupervisedUserExtensionsMetricsRecorder::kExtensionsHistogramName,
+      SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::
+          kApprovalGranted,
+      1);
+  histogram_tester.ExpectTotalCount(
+      SupervisedUserExtensionsMetricsRecorder::kExtensionsHistogramName, 1);
 
   // Now remove approval.
   supervised_user_service()->RemoveExtensionApproval(*extension);
 
   // There should be a kApprovalRemoved metric count.
-  histogram_tester.ExpectBucketCount("SupervisedUsers.Extensions2",
-                                     SupervisedUserExtensionsMetricsRecorder::
-                                         UmaExtensionState::kApprovalRemoved,
-                                     1);
-  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 2);
+  histogram_tester.ExpectBucketCount(
+      SupervisedUserExtensionsMetricsRecorder::kExtensionsHistogramName,
+      SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::
+          kApprovalRemoved,
+      1);
+  histogram_tester.ExpectTotalCount(
+      SupervisedUserExtensionsMetricsRecorder::kExtensionsHistogramName, 2);
 }
 
 // Tests that if "Permissions for sites, apps and extensions" toggle is

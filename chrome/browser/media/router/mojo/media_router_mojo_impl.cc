@@ -140,11 +140,16 @@ MediaRouteProviderId FixProviderId(MediaRouteProviderId provider_id) {
 
 DesktopMediaPickerController::Params MakeDesktopPickerParams(
     content::WebContents* web_contents) {
+#ifndef OS_CHROMEOS
+  DCHECK(web_contents);
+#endif
+
   DesktopMediaPickerController::Params params;
   // Value of |web_contents| comes from the UI, and typically corresponds to
   // the active tab.
   params.web_contents = web_contents;
-  params.context = web_contents->GetTopLevelNativeWindow();
+  if (web_contents)
+    params.context = web_contents->GetTopLevelNativeWindow();
   params.app_name = l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
   params.target_name = params.app_name;
   params.select_only_screen = true;
@@ -1107,7 +1112,6 @@ void MediaRouterMojoImpl::CreateRouteWithSelectedDesktop(
              RouteRequestResult::CANCELLED);
     return;
   }
-  content::RenderFrameHost* const main_frame = web_contents->GetMainFrame();
 
   // TODO(jrw): This is kind of ridiculous.  The PendingStreamRequest struct
   // only exists to store the arguments given to
@@ -1122,9 +1126,13 @@ void MediaRouterMojoImpl::CreateRouteWithSelectedDesktop(
   DCHECK(!pending_stream_request_);
   pending_stream_request_.emplace();
   PendingStreamRequest& request = *pending_stream_request_;
+#ifndef OS_CHROMEOS
+  DCHECK(web_contents);
+  content::RenderFrameHost* const main_frame = web_contents->GetMainFrame();
   request.render_process_id = main_frame->GetProcess()->GetID();
   request.render_frame_id = main_frame->GetRoutingID();
   request.origin = url::Origin::Create(web_contents->GetVisibleURL());
+#endif
   request.stream_id =
       content::DesktopStreamsRegistry::GetInstance()->RegisterStream(
           request.render_process_id, request.render_frame_id, request.origin,

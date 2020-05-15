@@ -5,7 +5,7 @@
 package org.chromium.base.metrics;
 
 /** Common interface for code recording UMA metrics. */
-/* package */ interface UmaRecorder {
+public interface UmaRecorder {
     /** Records a single sample of a boolean histogram. */
     void recordBooleanHistogram(String name, boolean sample);
 

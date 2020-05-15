@@ -3836,7 +3836,7 @@
   {
     "name": "shelf-hide-buttons-in-tablet",
     "owners": [ "tbarzic", "//ash/shelf/OWNERS" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 85
   },
   {
     "name": "shelf-hotseat",

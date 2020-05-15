@@ -2,6 +2,27 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+static_library("policy_engine") {
+  sources = [
+    "policy_engine.cc",
+    "policy_engine.h",
+  ]
+
+  deps = [
+    "//base:base",
+    "//components/prefs",
+    "//components/safe_browsing/core:features",
+    "//components/safe_browsing/core:realtimeapi_proto",
+    "//components/safe_browsing/core/common",
+    "//components/safe_browsing/core/common:safe_browsing_prefs",
+    "//components/signin/public/identity_manager",
+    "//components/sync",
+    "//components/unified_consent",
+    "//components/user_prefs",
+    "//components/variations/service",
+  ]
+}
+
 static_library("url_lookup_service") {
   sources = [
     "url_lookup_service.cc",
@@ -22,28 +43,9 @@ static_library("url_lookup_service") {
     "//components/safe_browsing/core/db:v4_protocol_manager_util",
     "//components/signin/public/identity_manager",
     "//components/sync",
+    "//components/variations/service:service",
     "//services/network/public/cpp:cpp",
     "//url:url",
-  ]
-}
-
-static_library("policy_engine") {
-  sources = [
-    "policy_engine.cc",
-    "policy_engine.h",
-  ]
-
-  deps = [
-    "//base:base",
-    "//components/prefs",
-    "//components/safe_browsing/core:features",
-    "//components/safe_browsing/core:realtimeapi_proto",
-    "//components/safe_browsing/core/common",
-    "//components/safe_browsing/core/common:safe_browsing_prefs",
-    "//components/signin/public/identity_manager",
-    "//components/sync",
-    "//components/unified_consent",
-    "//components/user_prefs",
   ]
 }
 
@@ -69,8 +71,10 @@ source_set("unit_tests") {
     "//components/sync_preferences:test_support",
     "//components/unified_consent",
     "//components/user_prefs",
+    "//components/variations/service:service",
     "//services/network:test_support",
     "//services/network/public/cpp:cpp",
     "//testing/gtest",
+    "//third_party/googletest:gmock",
   ]
 }

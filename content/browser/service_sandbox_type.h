@@ -63,4 +63,16 @@ content::GetServiceSandboxType<device::mojom::XRDeviceService>() {
 }
 #endif  // OS_WIN
 
+// video_capture::mojom::VideoCaptureService
+namespace video_capture {
+namespace mojom {
+class VideoCaptureService;
+}
+}  // namespace video_capture
+template <>
+inline content::SandboxType
+content::GetServiceSandboxType<video_capture::mojom::VideoCaptureService>() {
+  return content::SandboxType::kVideoCapture;
+}
+
 #endif  // CONTENT_BROWSER_SERVICE_SANDBOX_TYPE_H_

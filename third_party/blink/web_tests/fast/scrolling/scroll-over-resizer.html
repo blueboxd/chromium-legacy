@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<script src='../../resources/gesture-util.js'></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<textarea id="textarea" style="width: 150px; height: 100px;"></textarea>
+<div id="resizablediv" style="resize:both; overflow:scroll; width: 100px; height: 100px;"></div>
+<script>
+  async function resize(target, scrollDeltaY, device) {
+    var rect = target.getBoundingClientRect();
+    // Scrolling within the normal resizer area (15 x 15)
+    await smoothScrollWithXY(0, -scrollDeltaY, rect.right - 5, rect.bottom - 5, device, SPEED_INSTANT);
+  }
+
+  promise_test(async () => {
+    var target = document.getElementById("textarea");
+    var old_height = target.offsetHeight;
+    await resize(target, 20, GestureSourceType.TOUCH_INPUT);
+    // The resize expectation includes the touch slop region and is one frame
+    // in the future based on the addition of the values of position and delta.
+    assert_equals(target.offsetHeight - old_height, 55);
+  }, 'Touchscreen drag resizes textarea');
+
+  promise_test(async () => {
+    var target = document.getElementById("textarea");
+    var old_height = target.offsetHeight;
+    await resize(target, 20, GestureSourceType.TOUCHPAD_INPUT);
+    assert_equals(target.offsetHeight - old_height, 0);
+  }, 'Touchpad scroll should not resize textarea');
+
+  promise_test(async () => {
+    var target = document.getElementById("resizablediv");
+    var old_height = target.offsetHeight;
+    await resize(target, 20, GestureSourceType.TOUCH_INPUT);
+    // The resize expectation includes the touch slop region and is one frame
+    // in the future based on the addition of the values of position and delta.
+    assert_equals(target.offsetHeight - old_height, 55);
+  }, 'Touchscreen drag resizes resizable div');
+
+  promise_test(async () => {
+    var target = document.getElementById("resizablediv");
+    var old_height = target.offsetHeight;
+    await resize(target, 20, GestureSourceType.TOUCHPAD_INPUT);
+    assert_equals(target.offsetHeight - old_height, 0);
+  }, 'Touchpad scroll should not resize resizable div');
+</script>

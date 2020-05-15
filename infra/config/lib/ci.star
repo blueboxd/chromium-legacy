@@ -1,3 +1,7 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 """Library for defining CI builders.
 
 The `ci_builder` function defined in this module enables defining a CI builder.
@@ -269,12 +273,16 @@ def _get_main_console_view_key_fn(console_name):
 
 def _sort_consoles(ctx):
   milo = ctx.output['luci-milo.cfg']
+  consoles = []
   for console in milo.consoles:
+    if not console.builders:
+      continue
     key_fn = (_get_console_view_key_fn(console.id)
               or _get_main_console_view_key_fn(console.id))
     if key_fn:
       console.builders = sorted(console.builders, key_fn)
-  milo.consoles = sorted(milo.consoles, lambda c: c.id)
+    consoles.append(console)
+  milo.consoles = sorted(consoles, lambda c: c.id)
 
 lucicfg.generator(_sort_consoles)
 

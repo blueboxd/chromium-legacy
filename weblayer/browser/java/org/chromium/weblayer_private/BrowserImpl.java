@@ -102,6 +102,8 @@ public class BrowserImpl extends IBrowser.Stub {
                 ? savedInstanceState.getByteArray(SAVED_STATE_MINIMAL_PERSISTENCE_STATE_KEY)
                 : null;
 
+        windowAndroid.restoreInstanceState(savedInstanceState);
+
         createAttachmentState(embedderAppContext, windowAndroid);
         mNativeBrowser = BrowserImplJni.get().createBrowser(profile.getNativeProfile(), this);
         mUrlBarController = new UrlBarControllerImpl(this, mNativeBrowser);
@@ -151,6 +153,10 @@ public class BrowserImpl extends IBrowser.Stub {
         } else if (!hasPersistenceId) {
             outState.putByteArray(SAVED_STATE_MINIMAL_PERSISTENCE_STATE_KEY,
                     BrowserImplJni.get().getMinimalPersistenceState(mNativeBrowser));
+        }
+
+        if (mWindowAndroid != null) {
+            mWindowAndroid.saveInstanceState(outState);
         }
     }
 

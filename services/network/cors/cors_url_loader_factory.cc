@@ -23,8 +23,10 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/request_mode.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/trust_token_operation_authorization.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/url_loader.h"
@@ -34,6 +36,58 @@
 namespace network {
 
 namespace cors {
+
+namespace {
+
+// Verifies state that should hold for Trust Tokens parameters provided by a
+// functioning renderer:
+// - Trust Tokens should be enabled
+// - the request should come from a trustworthy context
+// - if the request is for redemption or signing, it should be from a context
+// where these operations are permitted (as specified by
+// URLLoaderFactoryParams::trust_token_redemption_policy).
+bool VerifyTrustTokenParamsIntegrityIfPresent(
+    const ResourceRequest& url_request,
+    const NetworkContext* context,
+    mojom::TrustTokenRedemptionPolicy trust_token_redemption_policy) {
+  if (!url_request.trust_token_params)
+    return true;
+
+  if (!context->trust_token_store()) {
+    // Got a request with Trust Tokens parameters with Trust tokens
+    // disabled.
+    //
+    // Here and below, we use concise error messages to make them easier to
+    // search search.
+    mojo::ReportBadMessage(
+        "TrustTokenParamsIntegrity: TrustTokensRequestWithTrustTokensDisabled");
+    return false;
+  }
+
+  if (url_request.request_initiator &&
+      !IsOriginPotentiallyTrustworthy(*url_request.request_initiator)) {
+    // Got a request with Trust Tokens parameters from an insecure context,
+    // but Trust Tokens operations may only be executed from secure
+    // contexts.
+    mojo::ReportBadMessage("TrustTokenParamsIntegrity: NotFromSecureContext");
+    return false;
+  }
+
+  if (trust_token_redemption_policy ==
+          mojom::TrustTokenRedemptionPolicy::kForbid &&
+      DoesTrustTokenOperationRequireFeaturePolicy(
+          url_request.trust_token_params->type)) {
+    // Got a request configured for Trust Tokens redemption or signing from
+    // a context in which this operation is prohibited.
+    mojo::ReportBadMessage(
+        "TrustTokenParamsIntegrity: MissingRequiredFeaturePolicy");
+    return false;
+  }
+
+  return true;
+}
+
+}  // namespace
 
 class CorsURLLoaderFactory::FactoryOverride final {
  public:
@@ -114,6 +168,7 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
       process_id_(params->process_id),
       request_initiator_site_lock_(params->request_initiator_site_lock),
       ignore_isolated_world_origin_(params->ignore_isolated_world_origin),
+      trust_token_redemption_policy_(params->trust_token_redemption_policy),
       origin_access_list_(origin_access_list) {
   DCHECK(context_);
   DCHECK(origin_access_list_);
@@ -398,6 +453,13 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
           "CorsURLLoaderFactory: kURLLoadOptionAsCorsPreflight is set");
       return false;
     }
+  }
+
+  if (!VerifyTrustTokenParamsIntegrityIfPresent(
+          request, context_, trust_token_redemption_policy_)) {
+    // VerifyTrustTokenParamsIntegrityIfPresent will report an appropriate bad
+    // message.
+    return false;
   }
 
   // TODO(yhirano): If the request mode is "no-cors", the redirect mode should

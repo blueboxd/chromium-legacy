@@ -178,15 +178,19 @@ IN_PROC_BROWSER_TEST_F(ScrollbarTest, DISABLED_ScrollbarRegression) {
 
 class ExtensionInstallDialogViewTest
     : public ExtensionInstallDialogViewTestBase {
- protected:
-  ExtensionInstallDialogViewTest() {}
+ public:
+  ExtensionInstallDialogViewTest() = default;
+  ExtensionInstallDialogViewTest(const ExtensionInstallDialogViewTest&) =
+      delete;
+  ExtensionInstallDialogViewTest& operator=(
+      const ExtensionInstallDialogViewTest&) = delete;
 
+ protected:
   views::DialogDelegateView* CreateAndShowPrompt(
       ExtensionInstallPromptTestHelper* helper) {
-    std::unique_ptr<ExtensionInstallDialogView> dialog(
-        new ExtensionInstallDialogView(
-            profile(), web_contents(), helper->GetCallback(),
-            CreatePrompt(ExtensionInstallPrompt::INSTALL_PROMPT)));
+    auto dialog = std::make_unique<ExtensionInstallDialogView>(
+        profile(), web_contents(), helper->GetCallback(),
+        CreatePrompt(ExtensionInstallPrompt::INSTALL_PROMPT));
     views::DialogDelegateView* delegate_view = dialog.get();
 
     views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
@@ -197,9 +201,6 @@ class ExtensionInstallDialogViewTest
 
     return delegate_view;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogViewTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {

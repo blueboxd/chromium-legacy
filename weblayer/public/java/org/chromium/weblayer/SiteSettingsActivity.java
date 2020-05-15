@@ -1,0 +1,81 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.weblayer;
+
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.Bundle;
+import android.view.MenuItem;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import org.chromium.weblayer_private.interfaces.SiteSettingsIntentHelper;
+
+/**
+ * An Activity that displays various Site Settings UIs.
+ */
+public class SiteSettingsActivity extends AppCompatActivity {
+    private static final String FRAGMENT_TAG = "siteSettingsFragment";
+
+    private static boolean sActivityNotExportedChecked;
+
+    /**
+     * Creates an Intent that will launch the root/full Site Settings UI, which displays a list of
+     * settings categories.
+     */
+    public static Intent createIntentForCategoryList(Context context, String profileName) {
+        if (WebLayer.getSupportedMajorVersion(context) < 84) {
+            throw new UnsupportedOperationException();
+        }
+        return SiteSettingsIntentHelper.createIntentForCategoryList(context, profileName);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        ensureActivityNotExported();
+
+        super.onCreate(savedInstanceState);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setElevation(0);
+
+        if (getSupportFragmentManager().findFragmentByTag(FRAGMENT_TAG) == null) {
+            SiteSettingsFragment siteSettingsFragment = new SiteSettingsFragment();
+            siteSettingsFragment.setArguments(getIntent().getExtras());
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(android.R.id.content, siteSettingsFragment)
+                    .commitNow();
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void ensureActivityNotExported() {
+        if (sActivityNotExportedChecked) return;
+        sActivityNotExportedChecked = true;
+        try {
+            ActivityInfo activityInfo = getPackageManager().getActivityInfo(getComponentName(), 0);
+            // If SiteSettingsActivity is exported, then it's vulnerable to a fragment injection
+            // exploit:
+            // http://securityintelligence.com/new-vulnerability-android-framework-fragment-injection
+            if (activityInfo.exported) {
+                throw new IllegalStateException("SiteSettingsActivity must not be exported.");
+            }
+        } catch (NameNotFoundException ex) {
+            // Something terribly wrong has happened.
+            throw new RuntimeException(ex);
+        }
+    }
+}

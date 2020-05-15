@@ -128,7 +128,7 @@ class WebMediaPlayer {
   };
 
   // TODO(crbug.com/639174): Attempt to merge this with VideoFrameUploadMetadata
-  // For video.requestVideoFrameCallback(). https://wicg.github.io/video-raf/
+  // For video.requestVideoFrameCallback(). https://wicg.github.io/video-rvfc/
   struct VideoFramePresentationMetadata {
     uint32_t presented_frames;
     base::TimeTicks presentation_time;
@@ -455,7 +455,7 @@ class WebMediaPlayer {
   // to the compositor. The request will be completed via
   // WebMediaPlayerClient::OnRequestVideoFrameCallback(). The frame info can be
   // retrieved via GetVideoFramePresentationMetadata().
-  // See https://wicg.github.io/video-raf/.
+  // See https://wicg.github.io/video-rvfc/.
   virtual void RequestVideoFrameCallback() {}
   virtual std::unique_ptr<VideoFramePresentationMetadata>
   GetVideoFramePresentationMetadata() {

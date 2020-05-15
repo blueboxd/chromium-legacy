@@ -61,6 +61,18 @@ JNI_UrlFormatter_FormatUrlForDisplayOmitHTTPScheme(
                nullptr, nullptr, nullptr));
 }
 
+static ScopedJavaLocalRef<jstring>
+JNI_UrlFormatter_FormatUrlForDisplayOmitUsernamePassword(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& url) {
+  return base::android::ConvertUTF16ToJavaString(
+      env, url_formatter::FormatUrl(
+               JNI_UrlFormatter_ConvertJavaStringToGURL(env, url),
+               url_formatter::kFormatUrlOmitUsernamePassword |
+                   kFormatUrlOmitTrailingSlashOnBareHostname,
+               net::UnescapeRule::NONE, nullptr, nullptr, nullptr));
+}
+
 static ScopedJavaLocalRef<jstring> JNI_UrlFormatter_FormatUrlForCopy(
     JNIEnv* env,
     const JavaParamRef<jstring>& url) {

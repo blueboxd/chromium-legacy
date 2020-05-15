@@ -120,7 +120,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SendRendererInitiatedNavigationRequest(const GURL& url,
                                               bool has_user_gesture);
 
-  void DidChangeOpener(int opener_routing_id);
+  void SimulateDidChangeOpener(
+      const base::UnguessableToken& opener_frame_token);
 
   void DidEnforceInsecureRequestPolicy(
       blink::mojom::InsecureRequestPolicy policy);

@@ -127,6 +127,27 @@ public class Navigation extends IClientNavigation.Stub {
     }
 
     /**
+     * Whether this navigation resulted in a download. Returns false if this navigation did not
+     * result in a download, or if download status is not yet known for this navigation.  Download
+     * status is determined for a navigation when processing final (post redirect) HTTP response
+     * headers. This means the only time the embedder can know if it's a download is in
+     * NavigationCallback.onNavigationFailed.
+     *
+     * @since 84
+     */
+    public boolean isDownload() {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 84) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            return mNavigationImpl.isDownload();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
      * Sets a header for a network request. If a header with the specified name exists it is
      * overwritten. This method can only be called at two times, from
      * {@link NavigationCallback.onNavigationStarted} and {@link

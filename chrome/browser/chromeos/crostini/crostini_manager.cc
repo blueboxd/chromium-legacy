@@ -120,11 +120,11 @@ void InvokeAndErasePendingContainerCallbacks(
   container_callbacks->erase(range.first, range.second);
 }
 
-bool IsMicSharingEnabled(Profile* profile) {
+bool IsMicSharingEnabled(Profile* profile, bool crostini_mic_sharing_enabled) {
   if (base::FeatureList::IsEnabled(
           chromeos::features::kCrostiniShowMicSetting) &&
       profile->GetPrefs()->GetBoolean(::prefs::kAudioCaptureAllowed) &&
-      profile->GetPrefs()->GetBoolean(crostini::prefs::kCrostiniMicSharing)) {
+      crostini_mic_sharing_enabled) {
     return true;
   }
   return false;
@@ -1299,12 +1299,11 @@ void CrostiniManager::StartTerminaVm(std::string name,
   request.set_owner_id(owner_id_);
   if (base::FeatureList::IsEnabled(chromeos::features::kCrostiniGpuSupport))
     request.set_enable_gpu(true);
-  bool is_mic_sharing_enabled = IsMicSharingEnabled(profile_);
+  bool is_mic_sharing_enabled =
+      IsMicSharingEnabled(profile_, crostini_mic_sharing_enabled_);
   if (is_mic_sharing_enabled) {
     request.set_enable_audio_capture(true);
   }
-  profile_->GetPrefs()->SetBoolean(
-      crostini::prefs::kCrostiniMicSharingAtLastLaunch, is_mic_sharing_enabled);
   const int32_t cpus = base::SysInfo::NumberOfProcessors() - num_cores_disabled;
   DCHECK_LT(0, cpus);
   request.set_cpus(cpus);
@@ -3597,6 +3596,25 @@ void CrostiniManager::DeallocateForwardedPortsCallback(
     const ContainerId& container_id) {
   crostini::CrostiniPortForwarder::GetForProfile(profile)
       ->DeactivateAllActivePorts(container_id);
+}
+
+void CrostiniManager::AddCrostiniMicSharingEnabledObserver(
+    CrostiniMicSharingEnabledObserver* observer) {
+  crostini_mic_sharing_enabled_observers_.AddObserver(observer);
+}
+
+void CrostiniManager::RemoveCrostiniMicSharingEnabledObserver(
+    CrostiniMicSharingEnabledObserver* observer) {
+  crostini_mic_sharing_enabled_observers_.RemoveObserver(observer);
+}
+
+void CrostiniManager::SetCrostiniMicSharingEnabled(bool enabled) {
+  if (crostini_mic_sharing_enabled_ == enabled)
+    return;
+  crostini_mic_sharing_enabled_ = enabled;
+  for (auto& observer : crostini_mic_sharing_enabled_observers_) {
+    observer.OnCrostiniMicSharingEnabledChanged(crostini_mic_sharing_enabled_);
+  }
 }
 
 }  // namespace crostini

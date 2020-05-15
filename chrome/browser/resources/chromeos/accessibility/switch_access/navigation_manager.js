@@ -61,8 +61,8 @@ class NavigationManager {
   static enterKeyboard() {
     const navigator = NavigationManager.instance;
     const keyboard = KeyboardRootNode.buildTree();
-    navigator.jumpTo_(keyboard);
     navigator.node_.automationNode.focus();
+    navigator.jumpTo_(keyboard);
   }
 
   /**
@@ -200,12 +200,9 @@ class NavigationManager {
     navigator.restoreFromHistory_();
   }
 
-  /**
-   * Updates the focus ring locations in response to an automation event.
-   */
+  /** Updates the focus ring locations in response to an automation event. */
   static refreshFocusRings() {
     const navigator = NavigationManager.instance;
-
     navigator.focusRingManager_.setFocusNodes(
         navigator.node_, navigator.group_);
   }
@@ -296,10 +293,7 @@ class NavigationManager {
 
   // =============== Private Methods ==============
 
-  /**
-   * Exits the current group.
-   * @private
-   */
+  /** @private */
   exitGroup_() {
     this.group_.onExit();
     this.restoreFromHistory_();
@@ -365,28 +359,24 @@ class NavigationManager {
     const data = this.history_.retrieve();
     // retrieve() guarantees that the group is valid, but not the focus.
     if (data.focus.isValidAndVisible()) {
-      this.setGroup_(data.group, false /* shouldSetNode */);
-      this.setNode_(data.focus);
+      this.setGroup_(data.group, data.focus);
     } else {
-      this.setGroup_(data.group, true /* shouldSetNode */);
+      this.setGroup_(data.group);
     }
   }
 
   /**
-   * Set |this.group_| to |group|, and optionally sets |this.node_| to the
-   * group's first child.
+   * Set |this.group_| to |group|, and sets |this.node_| to either |opt_focus|
+   * or |group.firstChild|.
    * @param {!SARootNode} group
-   * @param {boolean} shouldSetNode
+   * @param {SAChildNode=} opt_focus
    * @private
    */
-  setGroup_(group, shouldSetNode = true) {
+  setGroup_(group, opt_focus) {
     this.group_.onUnfocus();
     this.group_ = group;
     this.group_.onFocus();
-
-    if (shouldSetNode) {
-      this.setNode_(this.group_.firstChild);
-    }
+    this.setNode_(opt_focus || this.group_.firstChild);
   }
 
   /**

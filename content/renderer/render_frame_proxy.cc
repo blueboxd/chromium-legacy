@@ -716,22 +716,6 @@ void RenderFrameProxy::UpdateRemoteViewportIntersection(
                                                    intersection_state));
 }
 
-void RenderFrameProxy::DidChangeOpener(blink::WebFrame* opener) {
-  // A proxy shouldn't normally be disowning its opener.  It is possible to get
-  // here when a proxy that is being detached clears its opener, in which case
-  // there is no need to notify the browser process.
-  if (!opener)
-    return;
-
-  // Only a LocalFrame (i.e., the caller of window.open) should be able to
-  // update another frame's opener.
-  DCHECK(opener->IsWebLocalFrame());
-
-  int opener_routing_id =
-      RenderFrameImpl::FromWebFrame(opener->ToWebLocalFrame())->GetRoutingID();
-  Send(new FrameHostMsg_DidChangeOpener(routing_id_, opener_routing_id));
-}
-
 void RenderFrameProxy::AdvanceFocus(blink::mojom::FocusType type,
                                     blink::WebLocalFrame* source) {
   int source_routing_id = RenderFrameImpl::FromWebFrame(source)->GetRoutingID();

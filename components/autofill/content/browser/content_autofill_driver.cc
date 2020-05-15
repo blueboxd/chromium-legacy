@@ -288,12 +288,6 @@ void ContentAutofillDriver::DidEndTextFieldEditing() {
   autofill_handler_->OnDidEndTextFieldEditing();
 }
 
-void ContentAutofillDriver::SetDataList(
-    const std::vector<base::string16>& values,
-    const std::vector<base::string16>& labels) {
-  autofill_handler_->OnSetDataList(values, labels);
-}
-
 void ContentAutofillDriver::SelectFieldOptionsDidChange(const FormData& form) {
   autofill_handler_->SelectFieldOptionsDidChange(form);
 }

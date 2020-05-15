@@ -4,26 +4,38 @@
 
 package org.chromium.android_webview.robolectric.common.metrics;
 
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import android.support.test.filters.SmallTest;
 
-import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import org.chromium.android_webview.common.metrics.AwNonembeddedUmaReplayer;
 import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecord;
 import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecord.RecordType;
-import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.test.ShadowRecordHistogram;
+import org.chromium.base.metrics.UmaRecorder;
+import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
 /**
  * Test AwNonembeddedUmaReplayer.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
 public class AwNonembeddedUmaReplayerTest {
+    @Mock
+    private UmaRecorder mUmaRecorder;
+
+    @Before
+    public void initMocks() {
+        MockitoAnnotations.initMocks(this);
+        UmaRecorderHolder.setNonNativeDelegate(mUmaRecorder);
+    }
+
     @Test
     @SmallTest
     public void testReplayBooleanHistogram() {
@@ -40,9 +52,8 @@ public class AwNonembeddedUmaReplayerTest {
         AwNonembeddedUmaReplayer.replayMethodCall(trueHistogramProto);
         AwNonembeddedUmaReplayer.replayMethodCall(falseHistogramProto);
         AwNonembeddedUmaReplayer.replayMethodCall(inValidHistogramProto);
-        Assert.assertEquals(3, RecordHistogram.getHistogramTotalCountForTesting(histogramName));
-        Assert.assertEquals(2, RecordHistogram.getHistogramValueCountForTesting(histogramName, 1));
-        Assert.assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(histogramName, 0));
+        verify(mUmaRecorder, times(2)).recordBooleanHistogram(histogramName, true);
+        verify(mUmaRecorder, times(1)).recordBooleanHistogram(histogramName, false);
     }
 
     @Test
@@ -62,9 +73,8 @@ public class AwNonembeddedUmaReplayerTest {
                                               .setNumBuckets(numBuckets)
                                               .build();
         AwNonembeddedUmaReplayer.replayMethodCall(recordProto);
-        Assert.assertEquals(1, RecordHistogram.getHistogramTotalCountForTesting(histogramName));
-        Assert.assertEquals(
-                1, RecordHistogram.getHistogramValueCountForTesting(histogramName, sample));
+        verify(mUmaRecorder)
+                .recordExponentialHistogram(histogramName, sample, min, max, numBuckets);
     }
 
     @Test
@@ -84,9 +94,7 @@ public class AwNonembeddedUmaReplayerTest {
                                               .setNumBuckets(numBuckets)
                                               .build();
         AwNonembeddedUmaReplayer.replayMethodCall(recordProto);
-        Assert.assertEquals(1, RecordHistogram.getHistogramTotalCountForTesting(histogramName));
-        Assert.assertEquals(
-                1, RecordHistogram.getHistogramValueCountForTesting(histogramName, sample));
+        verify(mUmaRecorder).recordLinearHistogram(histogramName, sample, min, max, numBuckets);
     }
 
     @Test
@@ -100,8 +108,6 @@ public class AwNonembeddedUmaReplayerTest {
                                               .setSample(sample)
                                               .build();
         AwNonembeddedUmaReplayer.replayMethodCall(recordProto);
-        Assert.assertEquals(1, RecordHistogram.getHistogramTotalCountForTesting(histogramName));
-        Assert.assertEquals(
-                1, RecordHistogram.getHistogramValueCountForTesting(histogramName, sample));
+        verify(mUmaRecorder).recordSparseHistogram(histogramName, sample);
     }
 }

@@ -20,7 +20,6 @@
 
 namespace media {
 
-class CdmContextRef;
 class MojoCdmServiceContext;
 class MojoDecoderBufferReader;
 

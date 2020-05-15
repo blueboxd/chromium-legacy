@@ -13,9 +13,10 @@ class Profile;
 
 namespace plugin_vm {
 
-// Ensure default shared dirs exists. Invokes |callback| with the root shared
-// dir and true if the root dir is successfully created or already exists.
-void EnsureDefaultSharedDirsExist(
+// Ensure default shared dir <cryptohome>/MyFiles/PluginVm exists. Invokes
+// |callback| with dir and true if dir is successfully created or already
+// exists.
+void EnsureDefaultSharedDirExists(
     Profile* profile,
     base::OnceCallback<void(const base::FilePath&, bool)> callback);
 

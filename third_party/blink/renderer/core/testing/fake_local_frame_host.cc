@@ -46,6 +46,8 @@ void FakeLocalFrameHost::DocumentAvailableInMainFrame(
     bool uses_temporary_zoom_level) {}
 
 void FakeLocalFrameHost::SetNeedsOcclusionTracking(bool needs_tracking) {}
+void FakeLocalFrameHost::SetVirtualKeyboardOverlayPolicy(
+    bool vk_overlays_content) {}
 
 void FakeLocalFrameHost::LifecycleStateChanged(
     mojom::blink::FrameLifecycleState state) {}
@@ -182,6 +184,9 @@ void FakeLocalFrameHost::DidLoadResourceFromMemoryCache(
 void FakeLocalFrameHost::DidChangeFrameOwnerProperties(
     const base::UnguessableToken& child_frame_token,
     mojom::blink::FrameOwnerPropertiesPtr frame_owner_properties) {}
+
+void FakeLocalFrameHost::DidChangeOpener(
+    const base::Optional<base::UnguessableToken>& opener_frame) {}
 
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {

@@ -158,6 +158,8 @@ if (_build_custom_webkit) {
     ]
     outputs = [ "$root_out_dir/WebKitMacOS" ]
 
+    _clang_asan_lib = rebase_path(sources[0], root_build_dir) + "/WebKitTestRunnerApp.app/Contents/Frameworks/libclang_rt.asan_osx_dynamic.dylib"
+
     args = [
       "--output",
       rebase_path(outputs[0], root_build_dir),
@@ -165,6 +167,8 @@ if (_build_custom_webkit) {
       rebase_path(sources[0], root_build_dir),
       "--clusterfuzz_script",
       rebase_path(sources[1], root_build_dir),
+      "--clang_asan_library",
+      "$_clang_asan_lib",
     ]
 
     public_deps = [ ":compile_webkit_mac_minibrowser" ]

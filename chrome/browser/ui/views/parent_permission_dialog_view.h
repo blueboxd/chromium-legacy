@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chrome/browser/extensions/install_prompt_permissions.h"
+#include "chrome/browser/supervised_user/supervised_user_extensions_metrics_recorder.h"
 #include "chrome/browser/ui/supervised_user/parent_permission_dialog.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -184,6 +185,8 @@ class ParentPermissionDialogView : public views::BubbleDialogDelegateView,
   std::unique_ptr<signin::AccessTokenFetcher> oauth2_access_token_fetcher_;
 
   Observer* observer_;
+
+  SupervisedUserExtensionsMetricsRecorder supervised_user_metrics_recorder_;
 
   base::WeakPtrFactory<ParentPermissionDialogView> weak_factory_{this};
 };

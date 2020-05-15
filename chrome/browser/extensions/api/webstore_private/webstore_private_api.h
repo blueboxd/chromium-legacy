@@ -24,6 +24,7 @@
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 // TODO(https://crbug.com/1060801): Here and elsewhere, possibly switch build
 // flag to #if defined(OS_CHROMEOS)
+#include "chrome/browser/supervised_user/supervised_user_extensions_metrics_recorder.h"
 #include "chrome/browser/ui/supervised_user/parent_permission_dialog.h"
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
@@ -128,7 +129,9 @@ class WebstorePrivateBeginInstallWithManifest3Function
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   std::unique_ptr<ParentPermissionDialog> parent_permission_dialog_;
-#endif
+  SupervisedUserExtensionsMetricsRecorder
+      supervised_user_extensions_metrics_recorder_;
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
   std::unique_ptr<ExtensionInstallPrompt> install_prompt_;
 };

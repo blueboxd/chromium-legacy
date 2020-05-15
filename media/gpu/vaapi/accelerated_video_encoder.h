@@ -40,12 +40,23 @@ class AcceleratedVideoEncoder {
   AcceleratedVideoEncoder() = default;
   virtual ~AcceleratedVideoEncoder() = default;
 
+  enum class BitrateControl {
+    kConstantBitrate,  // Constant Bitrate mode. This class relies on other
+                       // parts (e.g. driver) to achieve the specified bitrate.
+    kConstantQuantizationParameter  // Constant Quantization Parameter mode.
+                                    // This class needs to compute a proper
+                                    // quantization parameter and give other
+                                    // parts (e.g. the driver) the value.
+  };
+
   struct Config {
     // Maxium number of reference frames.
     // For H.264 encoding, the value represents the maximum number of reference
     // frames for both the reference picture list 0 (bottom 16 bits) and the
     // reference picture list 1 (top 16 bits).
     size_t max_num_ref_frames;
+
+    BitrateControl bitrate_control = BitrateControl::kConstantBitrate;
   };
 
   // An abstraction of an encode job for one frame. Parameters required for an

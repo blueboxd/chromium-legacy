@@ -7,13 +7,13 @@
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "cc/layers/content_layer_client.h"
-#include "cc/layers/picture_image_layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_image.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_op_buffer.h"
+#include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/layer_tree_pixel_resource_test.h"
 #include "cc/test/pixel_comparator.h"
@@ -318,22 +318,20 @@ TEST_P(LayerTreeHostMaskPixelTestWithLayerList, MaskWithEffectDifferentSize) {
 }
 
 TEST_P(LayerTreeHostMaskPixelTestWithLayerList, ImageMaskWithEffect) {
-  MaskContentLayerClient client(mask_bounds_);
-  scoped_refptr<PictureImageLayer> mask_layer = PictureImageLayer::Create();
+  MaskContentLayerClient mask_client(mask_bounds_);
 
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(50, 50);
   SkCanvas* canvas = surface->getCanvas();
   scoped_refptr<DisplayItemList> mask_display_list =
-      client.PaintContentsToDisplayList(
+      mask_client.PaintContentsToDisplayList(
           ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
   mask_display_list->Raster(canvas);
-  mask_layer->SetImage(PaintImageBuilder::WithDefault()
-                           .set_id(PaintImage::GetNextId())
-                           .set_image(surface->makeImageSnapshot(),
-                                      PaintImage::GetNextContentId())
-                           .TakePaintImage(),
-                       SkMatrix::I(), false);
-  mask_layer_ = mask_layer;
+
+  FakeContentLayerClient layer_client;
+  layer_client.set_bounds(mask_bounds_);
+  layer_client.add_draw_image(surface->makeImageSnapshot(), gfx::Point(),
+                              PaintFlags());
+  mask_layer_ = FakePictureLayer::Create(&layer_client);
 
   pixel_comparator_ =
       std::make_unique<FuzzyPixelOffByOneComparator>(true /* discard_alpha */);
@@ -350,10 +348,6 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
 
   gfx::Size mask_bounds(50, 50);
 
-  scoped_refptr<PictureImageLayer> mask = PictureImageLayer::Create();
-  mask->SetIsDrawable(true);
-  mask->SetBounds(mask_bounds);
-
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(50, 50);
   SkCanvas* canvas = surface->getCanvas();
   MaskContentLayerClient client(mask_bounds);
@@ -361,12 +355,14 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
       client.PaintContentsToDisplayList(
           ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
   mask_display_list->Raster(canvas);
-  mask->SetImage(PaintImageBuilder::WithDefault()
-                     .set_id(PaintImage::GetNextId())
-                     .set_image(surface->makeImageSnapshot(),
-                                PaintImage::GetNextContentId())
-                     .TakePaintImage(),
-                 SkMatrix::I(), false);
+
+  FakeContentLayerClient mask_client;
+  mask_client.set_bounds(mask_bounds);
+  mask_client.add_draw_image(surface->makeImageSnapshot(), gfx::Point(),
+                             PaintFlags());
+  scoped_refptr<FakePictureLayer> mask = FakePictureLayer::Create(&mask_client);
+  mask->SetIsDrawable(true);
+  mask->SetBounds(mask_bounds);
 
   scoped_refptr<SolidColorLayer> green = CreateSolidColorLayerWithBorder(
       gfx::Rect(25, 25, 50, 50), kCSSGreen, 1, SK_ColorBLACK);

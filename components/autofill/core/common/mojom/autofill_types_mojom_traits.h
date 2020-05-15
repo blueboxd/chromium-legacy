@@ -177,6 +177,16 @@ struct StructTraits<autofill::mojom::FormFieldDataDataView,
     return r.bounds;
   }
 
+  static const std::vector<base::string16>& datalist_values(
+      const autofill::FormFieldData& r) {
+    return r.datalist_values;
+  }
+
+  static const std::vector<base::string16>& datalist_labels(
+      const autofill::FormFieldData& r) {
+    return r.datalist_labels;
+  }
+
   static bool Read(autofill::mojom::FormFieldDataDataView data,
                    autofill::FormFieldData* out);
 };

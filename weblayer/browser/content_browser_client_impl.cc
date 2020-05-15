@@ -33,6 +33,7 @@
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/browser/generated_code_cache_settings.h"
 #include "content/public/browser/navigation_handle.h"
@@ -332,6 +333,7 @@ void ContentBrowserClientImpl::ConfigureNetworkContextParams(
         proxy_config,
         net::DefineNetworkTrafficAnnotation("undefined", "Nothing here yet."));
   }
+  content::UpdateCorsExemptHeader(context_params);
   variations::UpdateCorsExemptHeaderForVariations(context_params);
 }
 

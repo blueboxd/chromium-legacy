@@ -90,7 +90,6 @@ void ScreenSecurityNotificationController::CreateNotification(
           is_capture ? kNotifierScreenCapture : kNotifierScreenShare),
       data, std::move(delegate), kNotificationScreenshareIcon,
       message_center::SystemNotificationWarningLevel::NORMAL);
-  notification->SetSystemPriority();
   notification->set_pinned(true);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));

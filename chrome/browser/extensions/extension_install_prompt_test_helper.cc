@@ -31,6 +31,14 @@ ExtensionInstallPromptTestHelper::result() const {
   return *result_;
 }
 
+void ExtensionInstallPromptTestHelper::ClearResultForTesting() {
+  if (!result_.get()) {
+    ADD_FAILURE() << "Result was never set!";
+    return;
+  }
+  result_.reset();
+}
+
 void ExtensionInstallPromptTestHelper::HandleResult(
     ExtensionInstallPrompt::Result result) {
   if (result_.get())

@@ -180,6 +180,60 @@ IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
   EXPECT_EQ(0u, host->num_conversions());
 }
 
+IN_PROC_BROWSER_TEST_F(
+    ConversionRegistrationBrowserTest,
+    ConversionRegistrationNotSameOriginRedirect_NotReceived) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      https_server()->GetURL("c.test", "/page_with_conversion_redirect.html")));
+  std::unique_ptr<TestConversionHost> host =
+      TestConversionHost::ReplaceAndGetConversionHost(web_contents());
+
+  // Create a url that does the following redirect chain b.test ->
+  // a.test/.well-known/...; this conversion registration should not be allowed,
+  // a.test did not initiate the redirect to the reporting endpoint.
+  GURL redirect_url = https_server()->GetURL(
+      "a.test", "/" + kWellKnownUrl + "?conversion-data=200");
+  GURL registration_url = https_server()->GetURL(
+      "b.test", "/server-redirect?" + redirect_url.spec());
+
+  // Create a load observer that will wait for the redirect to complete. If a
+  // conversion was registered, this redirect would never complete.
+  ResourceLoadObserver load_observer(shell());
+  EXPECT_TRUE(ExecJs(web_contents(),
+                     JsReplace("createTrackingPixel($1);", registration_url)));
+  load_observer.WaitForResourceCompletion(registration_url);
+
+  // Conversion mojo messages are sent on the same message pipe as navigation
+  // messages. Because the conversion would have been sequenced prior to the
+  // navigation message, it would be observed before the NavigateToURL() call
+  // finishes.
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
+  EXPECT_EQ(0u, host->num_conversions());
+}
+
+IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
+                       ConversionRegistrationIsSameOriginRedirect_Received) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      https_server()->GetURL("c.test", "/page_with_conversion_redirect.html")));
+  std::unique_ptr<TestConversionHost> host =
+      TestConversionHost::ReplaceAndGetConversionHost(web_contents());
+
+  // Create a url that does the following redirect chain b.test -> a.test ->
+  // a.test/.well-known/...; this conversion registration should be allowed.
+  GURL well_known_url = https_server()->GetURL(
+      "a.test", "/" + kWellKnownUrl + "?conversion-data=200");
+  GURL redirect_url = https_server()->GetURL(
+      "a.test", "/server-redirect?" + well_known_url.spec());
+  GURL registration_url = https_server()->GetURL(
+      "b.test", "/server-redirect?" + redirect_url.spec());
+
+  EXPECT_TRUE(ExecJs(web_contents(),
+                     JsReplace("createTrackingPixel($1);", registration_url)));
+  EXPECT_EQ(200UL, host->WaitForNumConversions(1));
+}
+
 IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
                        ConversionRegistrationInPreload_NotReceived) {
   std::unique_ptr<TestConversionHost> host =

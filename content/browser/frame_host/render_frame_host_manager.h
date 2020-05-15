@@ -259,12 +259,12 @@ class CONTENT_EXPORT RenderFrameHostManager
                         const blink::FramePolicy& frame_policy);
 
   // Called when this frame's opener is changed to the frame specified by
-  // |opener_routing_id| in |source_site_instance|'s process.  This change
+  // |opener_frame_token| in |source_site_instance|'s process.  This change
   // could come from either the current RenderFrameHost or one of the
   // proxies (e.g., window.open that targets a RemoteFrame by name).  The
   // updated opener will be forwarded to any other RenderFrameProxies and
   // RenderFrames for this FrameTreeNode.
-  void DidChangeOpener(int opener_routing_id,
+  void DidChangeOpener(const base::UnguessableToken& opener_frame_token,
                        SiteInstance* source_site_instance);
 
   // Creates and initializes a RenderFrameHost.

@@ -58,6 +58,7 @@ class NavigationImpl : public Navigation {
   int GetHttpStatusCode(JNIEnv* env) { return GetHttpStatusCode(); }
   bool IsSameDocument(JNIEnv* env) { return IsSameDocument(); }
   bool IsErrorPage(JNIEnv* env) { return IsErrorPage(); }
+  bool IsDownload(JNIEnv* env) { return IsDownload(); }
   int GetLoadError(JNIEnv* env) { return static_cast<int>(GetLoadError()); }
   jboolean SetRequestHeader(JNIEnv* env,
                             const base::android::JavaParamRef<jstring>& name,
@@ -79,6 +80,7 @@ class NavigationImpl : public Navigation {
   int GetHttpStatusCode() override;
   bool IsSameDocument() override;
   bool IsErrorPage() override;
+  bool IsDownload() override;
   LoadError GetLoadError() override;
   void SetRequestHeader(const std::string& name,
                         const std::string& value) override;

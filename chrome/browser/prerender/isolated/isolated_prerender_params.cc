@@ -17,6 +17,13 @@ bool IsolatedPrerenderIsEnabled() {
   return base::FeatureList::IsEnabled(features::kIsolatePrerenders);
 }
 
+bool IsolatedPrerenderNoStatePrefetchSubresources() {
+  // This is just a command line flag during development.
+  // TODO(robertogden): Move this to a experiment param when code complete.
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      "isolated-prerender-nsp-enabled");
+}
+
 base::Optional<size_t> IsolatedPrerenderMaximumNumberOfPrefetches() {
   if (!IsolatedPrerenderIsEnabled()) {
     return 0;
@@ -29,6 +36,26 @@ base::Optional<size_t> IsolatedPrerenderMaximumNumberOfPrefetches() {
 
   int max = base::GetFieldTrialParamByFeatureAsInt(features::kIsolatePrerenders,
                                                    "max_srp_prefetches", 1);
+  if (max < 0) {
+    return base::nullopt;
+  }
+  return max;
+}
+
+base::Optional<size_t>
+IsolatedPrerenderMaximumNumberOfNoStatePrefetchAttempts() {
+  if (!IsolatedPrerenderIsEnabled() ||
+      !IsolatedPrerenderNoStatePrefetchSubresources()) {
+    return 0;
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          "isolated-prerender-unlimited-nsp")) {
+    return base::nullopt;
+  }
+
+  int max = base::GetFieldTrialParamByFeatureAsInt(features::kIsolatePrerenders,
+                                                   "max_nsp", 1);
   if (max < 0) {
     return base::nullopt;
   }

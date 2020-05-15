@@ -389,6 +389,7 @@ VirtualCtap2Device::VirtualCtap2Device() : VirtualFidoDevice() {
       AuthenticatorGetInfoResponse({ProtocolVersion::kCtap2}, kDeviceAaguid);
   device_info_->algorithms = {
       static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256),
+      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEdDSA),
       static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseRs256),
   };
 }
@@ -761,6 +762,9 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
         break;
       case static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseRs256):
         private_key = FreshRSAKey();
+        break;
+      case static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEdDSA):
+        private_key = FreshEd25519Key();
         break;
     }
     break;

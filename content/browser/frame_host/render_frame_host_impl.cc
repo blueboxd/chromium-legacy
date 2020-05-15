@@ -192,10 +192,12 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "services/network/public/cpp/trust_token_operation_authorization.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom-shared.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -489,8 +491,7 @@ void LogCanCommitOriginAndUrlFailureReason(const std::string& failure_reason) {
 
 url::Origin GetOriginForURLLoaderFactoryUnchecked(
     NavigationRequest* navigation_request) {
-  // Return a safe opaque origin when there is no |navigation_request| (e.g.
-  // when RFHI::CommitNavigation is called via RFHI::NavigateToInterstitialURL).
+  // Return a safe opaque origin when there is no |navigation_request|
   if (!navigation_request)
     return url::Origin();
 
@@ -648,15 +649,59 @@ bool ParentNeedsTrustTokenFeaturePolicy(
   if (!begin_params.trust_token_params)
     return false;
 
-  switch (begin_params.trust_token_params->type) {
-    case network::mojom::TrustTokenOperationType::kRedemption:
-    case network::mojom::TrustTokenOperationType::kSigning:
-      return true;
-    case network::mojom::TrustTokenOperationType::kIssuance:
-      return false;
+  return network::DoesTrustTokenOperationRequireFeaturePolicy(
+      begin_params.trust_token_params->type);
+}
+
+// Analyzes trusted sources of a frame's trust-token-redemption Feature Policy
+// feature to see if the feature is definitely disabled or potentially enabled.
+//
+// This information will be bound to a URLLoaderFactory; if the answer is
+// "definitely disabled," the network service will report a bad message if it
+// receives a request from the renderer to execute a Trust Tokens redemption or
+// signing operation in the frame.
+//
+// A return value of kForbid denotes that the feature is disabled for the
+// frame. A return value of kPotentiallyPermit means that all trusted
+// information sources say that the policy is enabled.
+network::mojom::TrustTokenRedemptionPolicy
+DetermineWhetherToForbidTrustTokenRedemption(
+    const RenderFrameHostImpl* parent,
+    const mojom::CommitNavigationParams& commit_params,
+    const url::Origin& subframe_origin) {
+  // For main frame loads, the frame's feature policy is determined entirely by
+  // response headers, which are provided by the renderer.
+  if (!parent || !commit_params.frame_policy)
+    return network::mojom::TrustTokenRedemptionPolicy::kPotentiallyPermit;
+
+  const blink::FeaturePolicy* parent_policy = parent->feature_policy();
+  blink::ParsedFeaturePolicy container_policy =
+      commit_params.frame_policy->container_policy;
+
+  auto subframe_policy = blink::FeaturePolicy::CreateFromParentPolicy(
+      parent_policy, container_policy, subframe_origin);
+
+  if (subframe_policy->IsFeatureEnabled(
+          blink::mojom::FeaturePolicyFeature::kTrustTokenRedemption)) {
+    return network::mojom::TrustTokenRedemptionPolicy::kPotentiallyPermit;
   }
-  NOTREACHED();
-  return false;
+  return network::mojom::TrustTokenRedemptionPolicy::kForbid;
+}
+
+// When a frame creates its initial subresource loaders, it needs to know
+// whether the trust-token-redemption Feature Policy feature will be enabled
+// after the commit finishes, which is a little involved (see
+// DetermineWhetherToForbidTrustTokenRedemption). In contrast, if it needs to
+// make this decision once the frame has committted---for instance, to create
+// more loaders after the network service crashes---it can directly consult the
+// current Feature Policy state to determine whether the feature is enabled.
+network::mojom::TrustTokenRedemptionPolicy
+DetermineAfterCommitWhetherToForbidTrustTokenRedemption(
+    RenderFrameHostImpl* impl) {
+  return impl->IsFeatureEnabled(
+             blink::mojom::FeaturePolicyFeature::kTrustTokenRedemption)
+             ? network::mojom::TrustTokenRedemptionPolicy::kPotentiallyPermit
+             : network::mojom::TrustTokenRedemptionPolicy::kForbid;
 }
 
 }  // namespace
@@ -757,6 +802,23 @@ RenderFrameHostImpl* RenderFrameHostImpl::FromID(int render_process_id,
   return RenderFrameHostImpl::FromID(
       GlobalFrameRoutingId(render_process_id, render_frame_id));
 }
+
+// static
+RenderFrameHostImpl* RenderFrameHostImpl::FromFrameToken(
+    int process_id,
+    const base::UnguessableToken& frame_token) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto it = g_token_frame_map.Get().find(frame_token);
+  if (it == g_token_frame_map.Get().end())
+    return nullptr;
+
+  // TODO(tonikitoo): Consider killing the renderer when this happens
+  if (it->second->GetProcess()->GetID() != process_id)
+    return nullptr;
+
+  return it->second;
+}
+
 // static
 RenderFrameHost* RenderFrameHost::FromAXTreeID(ui::AXTreeID ax_tree_id) {
   return RenderFrameHostImpl::FromAXTreeID(ax_tree_id);
@@ -822,6 +884,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       web_ui_type_(WebUI::kNoWebUI),
       has_selection_(false),
       is_audible_(false),
+      should_virtual_keyboard_overlay_content_(false),
       last_navigation_previews_state_(PREVIEWS_UNSPECIFIED),
       waiting_for_init_(renderer_initiated_creation),
       has_focused_editable_element_(false),
@@ -968,7 +1031,8 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // streams from this frame have terminated. This is required to ensure the
   // process host has the correct media stream count, which affects its
   // background priority.
-  OnAudibleStateChanged(false);
+  if (is_audible_)
+    OnAudibleStateChanged(false);
 
   // If this was the last active frame in the SiteInstance, the
   // DecrementActiveFrameCount call will trigger the deletion of the
@@ -1184,17 +1248,11 @@ void RenderFrameHostImpl::OnGrantedMediaStreamAccess() {
 }
 
 void RenderFrameHostImpl::OnPortalActivated(
-    std::unique_ptr<WebContents> predecessor_web_contents,
+    std::unique_ptr<Portal> predecessor,
+    mojo::PendingAssociatedRemote<blink::mojom::Portal> pending_portal,
+    mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> client_receiver,
     blink::TransferableMessage data,
     base::OnceCallback<void(blink::mojom::PortalActivateResult)> callback) {
-  mojo::PendingAssociatedRemote<blink::mojom::Portal> pending_portal;
-  auto portal_receiver = pending_portal.InitWithNewEndpointAndPassReceiver();
-  mojo::PendingAssociatedRemote<blink::mojom::PortalClient> pending_client;
-  auto client_receiver = pending_client.InitWithNewEndpointAndPassReceiver();
-
-  auto predecessor =
-      std::make_unique<Portal>(this, std::move(predecessor_web_contents));
-  predecessor->Bind(std::move(portal_receiver), std::move(pending_client));
   auto it = portals_.insert(std::move(predecessor)).first;
 
   GetNavigationControl()->OnPortalActivated(
@@ -1403,7 +1461,8 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
       CreateURLLoaderFactoryParamsForMainWorld(
           last_committed_origin_,
           mojo::Clone(last_committed_client_security_state_),
-          std::move(coep_reporter_remote)),
+          std::move(coep_reporter_remote),
+          DetermineAfterCommitWhetherToForbidTrustTokenRedemption(this)),
       std::move(default_factory_receiver));
 }
 
@@ -1436,7 +1495,8 @@ void RenderFrameHostImpl::MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
         CreateURLLoaderFactoriesForIsolatedWorlds(
             GetExpectedMainWorldOriginForUrlLoaderFactory(),
             isolated_world_origins,
-            mojo::Clone(last_committed_client_security_state_));
+            mojo::Clone(last_committed_client_security_state_),
+            DetermineAfterCommitWhetherToForbidTrustTokenRedemption(this));
     GetNavigationControl()->UpdateSubresourceLoaderFactories(
         std::move(subresource_loader_factories));
   }
@@ -1456,7 +1516,8 @@ blink::PendingURLLoaderFactoryBundle::OriginMap
 RenderFrameHostImpl::CreateURLLoaderFactoriesForIsolatedWorlds(
     const url::Origin& main_world_origin,
     const base::flat_set<url::Origin>& isolated_world_origins,
-    network::mojom::ClientSecurityStatePtr client_security_state) {
+    network::mojom::ClientSecurityStatePtr client_security_state,
+    network::mojom::TrustTokenRedemptionPolicy trust_token_redemption_policy) {
   WebPreferences preferences = GetRenderViewHost()->GetWebkitPreferences();
 
   blink::PendingURLLoaderFactoryBundle::OriginMap result;
@@ -1464,7 +1525,7 @@ RenderFrameHostImpl::CreateURLLoaderFactoriesForIsolatedWorlds(
     network::mojom::URLLoaderFactoryParamsPtr factory_params =
         URLLoaderFactoryParamsHelper::CreateForIsolatedWorld(
             this, isolated_world_origin, main_world_origin,
-            mojo::Clone(client_security_state));
+            mojo::Clone(client_security_state), trust_token_redemption_policy);
 
     mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
     CreateNetworkServiceDefaultFactoryAndObserve(
@@ -1642,7 +1703,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_Unload_ACK, OnUnloadACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ContextMenu, OnContextMenu)
     IPC_MESSAGE_HANDLER(FrameHostMsg_VisualStateResponse, OnVisualStateResponse)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeOpener, OnDidChangeOpener)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeFramePolicy,
                         OnDidChangeFramePolicy)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
@@ -1886,7 +1946,8 @@ void RenderFrameHostImpl::RenderProcessGone(
   // process should be ignored until the next commit.
   set_nav_entry_id(0);
 
-  OnAudibleStateChanged(false);
+  if (is_audible_)
+    OnAudibleStateChanged(false);
 }
 
 void RenderFrameHostImpl::ReportContentSecurityPolicyViolation(
@@ -2192,13 +2253,14 @@ void RenderFrameHostImpl::Init() {
 }
 
 void RenderFrameHostImpl::OnAudibleStateChanged(bool is_audible) {
-  if (is_audible_ == is_audible)
-    return;
-  if (is_audible)
+  DCHECK_NE(is_audible_, is_audible);
+  if (is_audible) {
     GetProcess()->OnMediaStreamAdded();
-  else
+  } else {
     GetProcess()->OnMediaStreamRemoved();
+  }
   is_audible_ = is_audible;
+  delegate_->OnFrameAudioStateChanged(this, is_audible_);
 }
 
 void RenderFrameHostImpl::DidAddMessageToConsole(
@@ -3553,7 +3615,8 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
         CreateURLLoaderFactoryParamsForMainWorld(
             last_committed_origin_,
             mojo::Clone(last_committed_client_security_state_),
-            std::move(coep_reporter_remote)),
+            std::move(coep_reporter_remote),
+            DetermineAfterCommitWhetherToForbidTrustTokenRedemption(this)),
         default_factory_remote.InitWithNewPipeAndPassReceiver());
   }
 
@@ -3565,7 +3628,9 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
               CreateURLLoaderFactoriesForIsolatedWorlds(
                   GetExpectedMainWorldOriginForUrlLoaderFactory(),
                   isolated_worlds_requiring_separate_url_loader_factory_,
-                  mojo::Clone(last_committed_client_security_state_)),
+                  mojo::Clone(last_committed_client_security_state_),
+                  DetermineAfterCommitWhetherToForbidTrustTokenRedemption(
+                      this)),
               bypass_redirect_checks);
   GetNavigationControl()->UpdateSubresourceLoaderFactories(
       std::move(subresource_loader_factories));
@@ -3582,11 +3647,6 @@ bool RenderFrameHostImpl::HasTransientUserActivation() {
 
 void RenderFrameHostImpl::DidAccessInitialDocument() {
   delegate_->DidAccessInitialDocument();
-}
-
-void RenderFrameHostImpl::OnDidChangeOpener(int32_t opener_routing_id) {
-  frame_tree_node_->render_manager()->DidChangeOpener(opener_routing_id,
-                                                      GetSiteInstance());
 }
 
 void RenderFrameHostImpl::DidChangeName(const std::string& name,
@@ -3827,6 +3887,65 @@ void RenderFrameHostImpl::SetNeedsOcclusionTracking(bool needs_tracking) {
   }
 
   proxy->GetAssociatedRemoteFrame()->SetNeedsOcclusionTracking(needs_tracking);
+}
+
+void RenderFrameHostImpl::SetVirtualKeyboardOverlayPolicy(
+    bool vk_overlays_content) {
+  should_virtual_keyboard_overlay_content_ = vk_overlays_content;
+}
+
+bool RenderFrameHostImpl::ShouldVirtualKeyboardOverlayContent() const {
+  RenderFrameHostImpl* root_frame_host =
+      frame_tree_->root()->current_frame_host();
+  return root_frame_host->should_virtual_keyboard_overlay_content_;
+}
+
+void RenderFrameHostImpl::NotifyVirtualKeyboardOverlayRect(
+    const gfx::Rect& keyboard_rect) {
+  DCHECK(ShouldVirtualKeyboardOverlayContent());
+
+  RenderFrameHostImpl* root_frame_host =
+      frame_tree_->root()->current_frame_host();
+  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
+      root_frame_host->render_view_host_->GetWidget()->GetView());
+  if (!view)
+    return;
+
+  gfx::PointF root_widget_origin(0.f, 0.f);
+  view->TransformPointToRootSurface(&root_widget_origin);
+
+  gfx::Rect root_widget_rect;
+  if (!keyboard_rect.IsEmpty()) {
+    // If the rect is non-empty, we need to transform it to be widget-relative
+    // window (DIP coordinates). The input is client coordinates for the root
+    // window.
+    // Transform the widget rect origin to root relative coords.
+    root_widget_rect = gfx::Rect(root_widget_origin.x(), root_widget_origin.y(),
+                                 view->GetViewBounds().width(),
+                                 view->GetViewBounds().height());
+
+    // Intersect with the keyboard rect and transform back to widget-relative
+    // coordinates, which will be sent to the renderer.
+    root_widget_rect.Intersect(keyboard_rect);
+    root_widget_rect.Offset(-root_widget_origin.x(), -root_widget_origin.y());
+  }
+
+  // Notify each SiteInstance a single time. Renderer will take care of ensuring
+  // the event is dispatched to all relevant listeners in the grouping of frames
+  // for the SiteInstance.
+  // TODO(snianu): Transform from the main frame's coordinates to each
+  // individual frame client coordinates so that these are more usable from
+  // within iframes.
+  std::set<SiteInstance*> notified_instances;
+  for (RenderFrameHostImpl* node = this; node; node = node->GetParent()) {
+    SiteInstance* site_instance = node->GetSiteInstance();
+    if (base::Contains(notified_instances, site_instance))
+      continue;
+
+    node->GetAssociatedLocalFrame()->NotifyVirtualKeyboardOverlayRect(
+        root_widget_rect);
+    notified_instances.insert(site_instance);
+  }
 }
 
 void RenderFrameHostImpl::LifecycleStateChanged(
@@ -4408,6 +4527,12 @@ void RenderFrameHostImpl::DidChangeFrameOwnerProperties(
   }
 }
 
+void RenderFrameHostImpl::DidChangeOpener(
+    const base::Optional<base::UnguessableToken>& opener_frame_token) {
+  frame_tree_node_->render_manager()->DidChangeOpener(
+      opener_frame_token.value_or(base::UnguessableToken()), GetSiteInstance());
+}
+
 void RenderFrameHostImpl::BindInterfaceProviderReceiver(
     mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
         interface_provider_receiver) {
@@ -4481,7 +4606,8 @@ RenderFrameHostImpl::CreateCrossOriginPrefetchLoaderFactoryBundle() {
       CreateURLLoaderFactoriesForIsolatedWorlds(
           GetExpectedMainWorldOriginForUrlLoaderFactory(),
           isolated_worlds_requiring_separate_url_loader_factory_,
-          mojo::Clone(last_committed_client_security_state_)),
+          mojo::Clone(last_committed_client_security_state_),
+          DetermineAfterCommitWhetherToForbidTrustTokenRedemption(this)),
       bypass_redirect_checks);
 }
 
@@ -5152,32 +5278,6 @@ CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
   return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
 }
 
-void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
-  TRACE_EVENT1("navigation", "RenderFrameHostImpl::NavigateToInterstitialURL",
-               "frame_tree_node", frame_tree_node_->frame_tree_node_id());
-  DCHECK(data_url.SchemeIs(url::kDataScheme));
-  NavigationDownloadPolicy download_policy;
-  download_policy.SetDisallowed(NavigationDownloadType::kInterstitial);
-
-  auto common_params = mojom::CommonNavigationParams::New(
-      data_url, base::nullopt, blink::mojom::Referrer::New(),
-      ui::PAGE_TRANSITION_LINK, mojom::NavigationType::DIFFERENT_DOCUMENT,
-      download_policy, false, GURL(), GURL(), PREVIEWS_OFF,
-      base::TimeTicks::Now(), "GET", nullptr,
-      network::mojom::SourceLocation::New(),
-      false /* started_from_context_menu */, false /* has_user_gesture */,
-      CreateInitiatorCSPInfo(), std::vector<int>(), std::string(),
-      false /* is_history_navigation_in_new_child_frame */, base::TimeTicks());
-  CommitNavigation(nullptr /* navigation_request */, std::move(common_params),
-                   CreateCommitNavigationParams(), nullptr /* response_head */,
-                   mojo::ScopedDataPipeConsumerHandle(),
-                   network::mojom::URLLoaderClientEndpointsPtr(), false,
-                   base::nullopt, base::nullopt /* subresource_overrides */,
-                   nullptr /* provider_info */,
-                   base::UnguessableToken::Create() /* not traced */,
-                   nullptr /* web_bundle_factory */);
-}
-
 void RenderFrameHostImpl::Stop() {
   TRACE_EVENT1("navigation", "RenderFrameHostImpl::Stop", "frame_tree_node",
                frame_tree_node_->frame_tree_node_id());
@@ -5741,6 +5841,7 @@ void RenderFrameHostImpl::CommitNavigation(
         coep_reporter->Clone(
             coep_reporter_remote.InitWithNewPipeAndPassReceiver());
       }
+
       bool bypass_redirect_checks =
           CreateNetworkServiceDefaultFactoryAndObserve(
               CreateURLLoaderFactoryParamsForMainWorld(
@@ -5748,7 +5849,10 @@ void RenderFrameHostImpl::CommitNavigation(
                   navigation_request
                       ? mojo::Clone(navigation_request->client_security_state())
                       : network::mojom::ClientSecurityState::New(),
-                  std::move(coep_reporter_remote)),
+                  std::move(coep_reporter_remote),
+                  DetermineWhetherToForbidTrustTokenRedemption(
+                      GetParent(), *commit_params,
+                      main_world_origin_for_url_loader_factory)),
               pending_default_factory.InitWithNewPipeAndPassReceiver());
       subresource_loader_factories->set_bypass_redirect_checks(
           bypass_redirect_checks);
@@ -5870,7 +5974,10 @@ void RenderFrameHostImpl::CommitNavigation(
             isolated_worlds_requiring_separate_url_loader_factory_,
             navigation_request
                 ? mojo::Clone(navigation_request->client_security_state())
-                : network::mojom::ClientSecurityState::New());
+                : network::mojom::ClientSecurityState::New(),
+            DetermineWhetherToForbidTrustTokenRedemption(
+                GetParent(), *commit_params,
+                main_world_origin_for_url_loader_factory));
   }
 
   // It is imperative that cross-document navigations always provide a set of
@@ -6055,7 +6162,8 @@ void RenderFrameHostImpl::FailedNavigation(
   bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
       CreateURLLoaderFactoryParamsForMainWorld(
           origin, mojo::Clone(navigation_request->client_security_state()),
-          /*coep_reporter=*/mojo::NullRemote()),
+          /*coep_reporter=*/mojo::NullRemote(),
+          network::mojom::TrustTokenRedemptionPolicy::kForbid),
       default_factory_remote.InitWithNewPipeAndPassReceiver());
   subresource_loader_factories =
       std::make_unique<blink::PendingURLLoaderFactoryBundle>(
@@ -6619,10 +6727,11 @@ RenderFrameHostImpl::CreateURLLoaderFactoryParamsForMainWorld(
     const url::Origin& main_world_origin,
     network::mojom::ClientSecurityStatePtr client_security_state,
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
-        coep_reporter) {
+        coep_reporter,
+    network::mojom::TrustTokenRedemptionPolicy trust_token_redemption_policy) {
   return URLLoaderFactoryParamsHelper::CreateForFrame(
       this, main_world_origin, std::move(client_security_state),
-      std::move(coep_reporter), GetProcess());
+      std::move(coep_reporter), GetProcess(), trust_token_redemption_policy);
 }
 
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(

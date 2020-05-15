@@ -236,7 +236,6 @@ void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
                                  kNotifierAccelerator),
       message_center::RichNotificationData(), std::move(delegate),
       kNotificationKeyboardIcon, SystemNotificationWarningLevel::NORMAL);
-  notification->set_priority(message_center::SYSTEM_PRIORITY);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 }

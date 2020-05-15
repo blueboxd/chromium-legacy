@@ -41,7 +41,7 @@ class HelpAppIntegrationTest : public SystemWebAppIntegrationTest {
 IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2) {
   const GURL url(chromeos::kChromeUIHelpAppURL);
   EXPECT_NO_FATAL_FAILURE(
-      ExpectSystemWebAppValid(web_app::SystemAppType::HELP, url, "Discover"));
+      ExpectSystemWebAppValid(web_app::SystemAppType::HELP, url, "Explore"));
 }
 
 // Test that the Help App is searchable by additional strings.

@@ -517,7 +517,7 @@ public class TabModelMergingTest {
     @Test
     @LargeTest
     @EnableFeatures(ChromeFeatureList.ANDROID_MULTIPLE_DISPLAY)
-    @DisableIf.Build(sdk_is_less_than = VERSION_CODES.O)
+    @DisableIf.Build(sdk_is_less_than = VERSION_CODES.P)
     public void testMergeOnMultiDisplay_CTA_Resumed_CTA2_Not_Resumed() throws TimeoutException {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mActivity1.saveState();

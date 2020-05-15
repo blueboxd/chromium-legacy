@@ -61,15 +61,14 @@ enum Subpage {
   kKerberos = 307,
 
   // Device section.
-  kDevice = 400,
-  kPointers = 401,
-  kKeyboard = 402,
-  kStylus = 403,
-  kDisplay = 404,
-  kStorage = 405,
-  kExternalStorage = 406,
-  kDlc = 407,
-  kPower = 408,
+  kPointers = 400,
+  kKeyboard = 401,
+  kStylus = 402,
+  kDisplay = 403,
+  kStorage = 404,
+  kExternalStorage = 405,
+  kDlc = 406,
+  kPower = 407,
 
   // Personalization section.
   kChangePicture = 500,

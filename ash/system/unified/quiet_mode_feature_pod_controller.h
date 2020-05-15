@@ -9,6 +9,7 @@
 #include "ash/public/cpp/notifier_settings_observer.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "ui/message_center/message_center_observer.h"
 
@@ -44,9 +45,13 @@ class ASH_EXPORT QuietModeFeaturePodController
  private:
   base::string16 GetQuietModeStateTooltip();
 
+  void RecordDisabledNotifierCount(int disabled_count);
+
   UnifiedSystemTrayController* const tray_controller_;
 
   FeaturePodButton* button_ = nullptr;
+
+  base::Optional<int> last_disabled_count_;
 
   DISALLOW_COPY_AND_ASSIGN(QuietModeFeaturePodController);
 };

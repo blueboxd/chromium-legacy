@@ -408,8 +408,8 @@
       'Android FYI 64 dEQP Vk Release (Pixel 2)': 'angle_deqp_android_vulkan_ndk_release_trybot_arm64',
       'Android FYI SkiaRenderer GL (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
       'Android FYI SkiaRenderer Vulkan (Pixel 2)': 'gpu_tests_android_release_trybot',
-      'ChromeOS FYI Release (amd64-generic)': 'gpu_fyi_tests_chromeos_amd64_release_trybot_dcheck_off',
-      'ChromeOS FYI Release (kevin)': 'gpu_fyi_tests_chromeos_kevin_release_trybot_dcheck_off',
+      'ChromeOS FYI Release (amd64-generic)': 'gpu_tests_chromeos_amd64_release_trybot_dcheck_off',
+      'ChromeOS FYI Release (kevin)': 'gpu_tests_chromeos_kevin_release_trybot_dcheck_off',
       'GPU FYI Linux Builder': 'gpu_fyi_tests_release_trybot',
       'GPU FYI Linux Ozone Builder': 'angle_ozone_linux_system_gbm_libdrm_release_trybot',
       'GPU FYI Linux Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
@@ -650,6 +650,10 @@
       'gn-builder-win': 'release_bot_x86_minimal_symbols',
     },
 
+    'official.chrome.continuous': {
+      'chromeos-amd64-generic-lacros-internal': 'chromeos_amd64-generic_lacros',
+    },
+
     'tryserver.blink': {
       # Most tryservers should have '_trybot' in their config names, but
       # 'release_trybot' includes 'dcheck_always_on', and the blink
@@ -779,8 +783,8 @@
       'chromeos-arm-generic-rel': 'chromeos_arm-generic_dcheck_always_on',
       'chromeos-kevin-compile-rel': 'chromeos_kevin',
       'chromeos-kevin-rel': 'chromeos_kevin',
-      'gpu-fyi-try-chromeos-amd64-generic': 'gpu_fyi_tests_chromeos_amd64_release_trybot_dcheck_off',
-      'gpu-fyi-try-chromeos-kevin': 'gpu_fyi_tests_chromeos_kevin_release_trybot_dcheck_off',
+      'gpu-fyi-try-chromeos-amd64-generic': 'gpu_tests_chromeos_amd64_release_trybot_dcheck_off',
+      'gpu-fyi-try-chromeos-kevin': 'gpu_tests_chromeos_kevin_release_trybot_dcheck_off',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_trybot_code_coverage',
       'linux-chromeos-compile-dbg': 'chromeos_with_codecs_debug_bot',
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
@@ -1421,6 +1425,10 @@
       'chromeos_amd64-generic', 'dcheck_always_on',
     ],
 
+    'chromeos_amd64-generic_lacros': [
+      'amd64-generic', 'amd64-lacros', 'goma', 'official',
+    ],
+
     'chromeos_amd64-generic_lacros_rel': [
       'amd64-generic', 'amd64-lacros', 'goma',
     ],
@@ -1677,14 +1685,6 @@
       'arm64', 'static_angle',
     ],
 
-    'gpu_fyi_tests_chromeos_amd64_release_trybot_dcheck_off': [
-      'gpu_fyi_tests', 'chromeos_amd64-generic', 'release_trybot_dcheck_off',
-    ],
-
-    'gpu_fyi_tests_chromeos_kevin_release_trybot_dcheck_off': [
-      'gpu_fyi_tests', 'chromeos_kevin', 'release_trybot_dcheck_off',
-    ],
-
     'gpu_fyi_tests_debug_trybot': [
       'gpu_fyi_tests', 'debug_bot',
     ],
@@ -1758,6 +1758,14 @@
       'resource_whitelisting', 'android_fastbuild', 'webview_google',
       'android_no_proguard',
       'use_java_coverage', 'partial_code_coverage_instrumentation',
+    ],
+
+    'gpu_tests_chromeos_amd64_release_trybot_dcheck_off': [
+      'gpu_tests', 'chromeos_amd64-generic', 'release_trybot_dcheck_off',
+    ],
+
+    'gpu_tests_chromeos_kevin_release_trybot_dcheck_off': [
+      'gpu_tests', 'chromeos_kevin', 'release_trybot_dcheck_off',
     ],
 
     'gpu_tests_debug_bot': [

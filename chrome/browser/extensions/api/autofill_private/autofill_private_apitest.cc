@@ -44,8 +44,7 @@ class AutofillPrivateApiTest : public ExtensionApiTest {
 
 // TODO(hcarmona): Investigate converting these tests to unittests.
 
-// TODO(crbug.com/643097) Disabled for flakiness.
-IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, DISABLED_GetCountryList) {
+IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, GetCountryList) {
   EXPECT_TRUE(RunAutofillSubtest("getCountryList")) << message_;
 }
 

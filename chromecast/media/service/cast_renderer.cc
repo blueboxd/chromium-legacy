@@ -319,7 +319,7 @@ void CastRenderer::OnVideoInitializationFinished(
 }
 
 void CastRenderer::SetCdm(::media::CdmContext* cdm_context,
-                          ::media::CdmAttachedCB cdm_attached_cb) {
+                          CdmAttachedCB cdm_attached_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(cdm_context);
 

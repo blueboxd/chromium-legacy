@@ -277,8 +277,8 @@ Try tapping the mic to ask me anything.
       </message>
 
       <!-- Help App -->
-      <message name="IDS_HELP_APP_DISCOVER" desc="Name of the discover app in the app shelf. This app is to help users 'discover' new content and ways to use their device." meaning="App name.">
-        Discover
+      <message name="IDS_HELP_APP_EXPLORE" desc="Name of the Explore app in the app shelf. Explore is an app for users to find helpful information about their Chromebooks. Should be translated into other languages into a similar verb." meaning="App name.">
+        Explore
       </message>
       <message name="IDS_HELP_APP_OFFERS" desc="Name of a tab in the Help app that offers users discounts or freebies, 'offers'.">
         Offers

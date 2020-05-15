@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
+#include "components/policy/core/browser/url_util.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/reload_type.h"
@@ -87,10 +88,14 @@ bool WebTimeLimitEnforcer::IsURLWhitelisted(const GURL& url) const {
   if (!url_matcher_)
     return false;
 
-  if (web_app::IsValidExtensionUrl(url))
-    return app_time_controller_->IsExtensionWhitelisted(url.host());
+  GURL effective_url = policy::url_util::Normalize(url);
+  if (!effective_url.is_valid())
+    effective_url = url;
 
-  auto matching_set_size = url_matcher_->MatchURL(url).size();
+  if (web_app::IsValidExtensionUrl(effective_url))
+    return app_time_controller_->IsExtensionWhitelisted(effective_url.host());
+
+  auto matching_set_size = url_matcher_->MatchURL(effective_url).size();
   return matching_set_size > 0;
 }
 

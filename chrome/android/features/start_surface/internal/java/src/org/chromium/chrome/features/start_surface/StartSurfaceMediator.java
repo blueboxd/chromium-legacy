@@ -38,7 +38,7 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
@@ -125,8 +125,8 @@ class StartSurfaceMediator
     private TabModelObserver mNormalTabModelObserver;
     @Nullable
     private TabModelSelectorObserver mTabModelSelectorObserver;
-    private ChromeFullscreenManager mFullScreenManager;
-    private ChromeFullscreenManager.FullscreenListener mFullScreenListener;
+    private BrowserControlsStateProvider mBrowserControlsStateProvider;
+    private BrowserControlsStateProvider.Observer mBrowserControlsObserver;
     private ActivityStateChecker mActivityStateChecker;
     private boolean mExcludeMVTiles;
     private boolean mShowStackTabSwitcher;
@@ -135,15 +135,16 @@ class StartSurfaceMediator
             @Nullable PropertyModel propertyModel,
             @Nullable SecondaryTasksSurfaceInitializer secondaryTasksSurfaceInitializer,
             @SurfaceMode int surfaceMode, NightModeStateProvider nightModeStateProvider,
-            ChromeFullscreenManager fullscreenManager, ActivityStateChecker activityStateChecker,
-            boolean excludeMVTiles, boolean showStackTabSwitcher) {
+            BrowserControlsStateProvider browserControlsStateProvider,
+            ActivityStateChecker activityStateChecker, boolean excludeMVTiles,
+            boolean showStackTabSwitcher) {
         mController = controller;
         mTabModelSelector = tabModelSelector;
         mPropertyModel = propertyModel;
         mSecondaryTasksSurfaceInitializer = secondaryTasksSurfaceInitializer;
         mSurfaceMode = surfaceMode;
         mNightModeStateProvider = nightModeStateProvider;
-        mFullScreenManager = fullscreenManager;
+        mBrowserControlsStateProvider = browserControlsStateProvider;
         mActivityStateChecker = activityStateChecker;
         mExcludeMVTiles = excludeMVTiles;
         mShowStackTabSwitcher = showStackTabSwitcher;
@@ -222,7 +223,7 @@ class StartSurfaceMediator
                 };
             }
 
-            mFullScreenListener = new ChromeFullscreenManager.FullscreenListener() {
+            mBrowserControlsObserver = new BrowserControlsStateProvider.Observer() {
                 @Override
                 public void onTopControlsHeightChanged(
                         int topControlsHeight, int topControlsMinHeight) {
@@ -381,7 +382,8 @@ class StartSurfaceMediator
 
             // Only pad single pane home page since tabs grid has already been padding for the
             // bottom bar.
-            mPropertyModel.set(BOTTOM_BAR_HEIGHT, mFullScreenManager.getBottomControlsHeight());
+            mPropertyModel.set(
+                    BOTTOM_BAR_HEIGHT, mBrowserControlsStateProvider.getBottomControlsHeight());
             mNormalTabModel.addObserver(mNormalTabModelObserver);
 
         } else if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER) {
@@ -480,11 +482,12 @@ class StartSurfaceMediator
             }
             mTabModelSelector.addObserver(mTabModelSelectorObserver);
 
-            if (mFullScreenListener != null) {
-                mFullScreenManager.addListener(mFullScreenListener);
+            if (mBrowserControlsObserver != null) {
+                mBrowserControlsStateProvider.addObserver(mBrowserControlsObserver);
             }
 
-            mPropertyModel.set(TOP_BAR_HEIGHT, mFullScreenManager.getTopControlsHeight());
+            mPropertyModel.set(
+                    TOP_BAR_HEIGHT, mBrowserControlsStateProvider.getTopControlsHeight());
 
             mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
             if (mFakeboxDelegate != null) {
@@ -552,8 +555,8 @@ class StartSurfaceMediator
             if (mTabModelSelectorObserver != null) {
                 mTabModelSelector.removeObserver(mTabModelSelectorObserver);
             }
-            if (mFullScreenListener != null) {
-                mFullScreenManager.removeListener(mFullScreenListener);
+            if (mBrowserControlsObserver != null) {
+                mBrowserControlsStateProvider.removeObserver(mBrowserControlsObserver);
             }
             setOverviewState(OverviewModeState.NOT_SHOWN);
             RecordUserAction.record("StartSurface.Hidden");

@@ -371,7 +371,6 @@ void FileSequenceHelper::LoadRulesets(
     LoadRequestData load_data,
     LoadRulesetsUICallback ui_callback) const {
   DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
-  DCHECK(!load_data.rulesets.empty());
 
   bool success = true;
   for (auto& ruleset : load_data.rulesets) {

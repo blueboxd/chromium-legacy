@@ -29,6 +29,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -364,6 +365,20 @@ const std::vector<SearchConcept>& GetDisplayTouchCalibrationSearchConcepts() {
 const std::vector<SearchConcept>& GetDisplayNightLightOnSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       // TODO(khorimoto): Add "Display Night Light on" search concepts.
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetDlcSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_DOWNLOADED_CONTENT,
+       mojom::kDlcSubpagePath,
+       mojom::SearchResultIcon::kHardDrive,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kDlc},
+       {IDS_OS_SETTINGS_TAG_DOWNLOADED_CONTENT_ALT1,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -739,6 +754,24 @@ DeviceSection::DeviceSection(Profile* profile,
     OnNightLightEnabledChanged(
         ash::NightLightController::GetInstance()->GetEnabled());
   }
+
+  // DLC settings search tags are added/removed dynamically.
+  // TODO(crbug/1070712): Observe DLC list changes to make add/remove dynamic.
+  if (features::ShouldShowDlcSettings()) {
+    DlcserviceClient::Get()->GetExistingDlcs(base::BindOnce(
+        &DeviceSection::OnGetExistingDlcs, weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void DeviceSection::OnGetExistingDlcs(
+    const std::string& err,
+    const dlcservice::DlcsWithContent& dlcs_with_content) {
+  if (err != dlcservice::kErrorNone ||
+      dlcs_with_content.dlc_infos_size() == 0) {
+    registry()->RemoveSearchTags(GetDlcSearchConcepts());
+    return;
+  }
+  registry()->AddSearchTags(GetDlcSearchConcepts());
 }
 
 DeviceSection::~DeviceSection() {

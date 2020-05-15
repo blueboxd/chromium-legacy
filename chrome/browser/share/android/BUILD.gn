@@ -20,3 +20,7 @@ android_resources("java_resources") {
   ]
   custom_package = "org.chromium.chrome.browser.share"
 }
+
+generate_jni("jni_headers") {
+  sources = [ "java/src/org/chromium/chrome/browser/share/qrcode/QRCodeGenerationRequest.java" ]
+}

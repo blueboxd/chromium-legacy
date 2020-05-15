@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
+#include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
@@ -41,6 +43,7 @@
 #include "content/public/browser/service_worker_context_observer.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -54,6 +57,8 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "services/network/cross_origin_read_blocking.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_context.mojom-shared.h"
+#include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -101,6 +106,7 @@ const char kExpectedHashedExtensionId[] =
 }  // namespace
 
 using CORBAction = network::CrossOriginReadBlocking::Action;
+using ::testing::HasSubstr;
 
 class CorbAndCorsExtensionTestBase : public ExtensionBrowserTest {
  public:
@@ -113,14 +119,21 @@ class CorbAndCorsExtensionTestBase : public ExtensionBrowserTest {
     content::SetupCrossSiteRedirector(embedded_test_server());
   }
 
-  std::string CreateFetchScript(const GURL& resource) {
+  std::string CreateFetchScript(
+      const GURL& resource,
+      base::Optional<base::Value> request_init = base::nullopt) {
+    CHECK(request_init == base::nullopt || request_init->is_dict());
+
     const char kFetchScriptTemplate[] = R"(
-      fetch($1)
+      fetch($1, $2)
         .then(response => response.text())
         .then(text => domAutomationController.send(text))
         .catch(err => domAutomationController.send('error: ' + err));
     )";
-    return content::JsReplace(kFetchScriptTemplate, resource);
+    return content::JsReplace(kFetchScriptTemplate, resource,
+                              request_init
+                                  ? std::move(*request_init)
+                                  : base::Value(base::Value::Type::DICTIONARY));
   }
 
   std::string PopString(content::DOMMessageQueue* message_queue) {
@@ -1348,6 +1361,92 @@ IN_PROC_BROWSER_TEST_P(CorbAndCorsExtensionBrowserTest,
   VerifyNonCorbElligibleFetchFromContentScript(
       histograms, console_observer, fetch_result,
       "text-object.txt: ae52dd09-9746-4b7e-86a6-6ada5e2680c2");
+}
+
+// The trust-token-redemption Feature Policy feature, which is enabled by
+// default, is required in order to execute a Trust Tokens
+// (https://github.com/wicg/trust-token-api) redemption operation alongside a
+// subresource request. To enforce this requirement, the browser binds the
+// feature's value to a frame's subresource loader.
+//
+// Ensure that it is being propagated correctly for by verifying that a content
+// script can execute a redemption operation.
+//
+// (Specifically, this makes sure RFHI is passing the correct factory
+// parameter to URLLoaderFactoryParamsHelper::CreateForIsolatedWorld.)
+class TrustTokenExtensionBrowserTest : public CorbAndCorsExtensionBrowserTest {
+ public:
+  TrustTokenExtensionBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(network::features::kTrustTokens);
+  }
+
+ protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+INSTANTIATE_TEST_SUITE_P(Allowlisted_AllowlistForCors,
+                         TrustTokenExtensionBrowserTest,
+                         ::testing::Values(TestParam::kAllowlisted |
+                                           TestParam::kOutOfBlinkCors |
+                                           TestParam::kAllowlistForCors));
+IN_PROC_BROWSER_TEST_P(
+    TrustTokenExtensionBrowserTest,
+    FromProgrammaticContentScript_TrustTokenRedemptionAllowed) {
+  // Trust Tokens operations only work on secure origins - set up a https test
+  // server to help with this. One alternative would be using a localhost URL
+  // from |embedded_test_server|, but this would require modifying the extension
+  // manifest in InstallExtension.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(GetChromeTestDataDir());
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  ASSERT_TRUE(https_server.Start());
+
+  // Load the test extension.
+  ASSERT_TRUE(InstallExtension());
+
+  GURL page_url = https_server.GetURL("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+
+  // This doesn't need to exist; we expect the fetch to fail during precondition
+  // checking.
+  GURL resource("/fake-trust-token-page");
+
+  {
+    content::DOMMessageQueue message_queue;
+
+    base::Value request_init(base::Value::Type::DICTIONARY);
+    request_init.SetStringPath("trustToken.type", "srr-token-redemption");
+
+    EXPECT_TRUE(ExecuteContentScript(
+        active_web_contents(),
+        CreateFetchScript(resource, std::move(request_init))));
+    // The operation should fail because the Trust Tokens operation failed (we
+    // didn't set up enough Trust Tokens state for it to execute), not because
+    // the operation was forbidden (which would trigger a TypeError).
+    EXPECT_THAT(PopString(&message_queue), HasSubstr("InvalidStateError"));
+  }
+
+  // Make sure the permission propagates correctly after a network service
+  // crash.
+  if (!content::IsOutOfProcessNetworkService())
+    return;
+  SimulateNetworkServiceCrash();
+  active_web_contents()
+      ->GetMainFrame()
+      ->FlushNetworkAndNavigationInterfacesForTesting();
+  {
+    content::DOMMessageQueue message_queue;
+
+    base::Value request_init(base::Value::Type::DICTIONARY);
+    request_init.SetStringPath("trustToken.type", "srr-token-redemption");
+
+    EXPECT_TRUE(ExecuteContentScript(
+        active_web_contents(),
+        CreateFetchScript(resource, std::move(request_init))));
+    // The operation should fail because the Trust Tokens operation failed (we
+    // didn't set up enough Trust Tokens state for it to execute), not because
+    // the operation was forbidden (which would trigger a TypeError).
+    EXPECT_THAT(PopString(&message_queue), HasSubstr("InvalidStateError"));
+  }
 }
 
 // Coverage of *.subdomain.com extension permissions for non-CORB eligible

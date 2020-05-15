@@ -36,6 +36,7 @@
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/web_feature_forward.h"
 #include "third_party/blink/renderer/core/page/page_popup.h"
 #include "third_party/blink/renderer/core/page/page_widget_delegate.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -158,6 +159,9 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   Element* FocusedElement() const;
 
   bool IsViewportPointInWindow(int x, int y);
+  void CheckScreenPointInOwnerWindowAndCount(const gfx::PointF& point_in_screen,
+                                             WebFeature feature) const;
+  IntRect OwnerWindowRectInScreen() const;
 
   // PagePopup function
   AXObject* RootAXObject() override;

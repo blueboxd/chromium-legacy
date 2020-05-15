@@ -1919,6 +1919,43 @@ Unknown properties are collapsed to zero. -->
   </int>
 </enum>
 
+<enum name="AndroidWebViewCrashCollectionState">
+  <int value="0" label="ENABLED_BY_COMMANDLINE">
+    Enabled by commandline. This doesn't check later cases (ex. user consent).
+  </int>
+  <int value="1" label="ENABLED_BY_FLAG_UI">
+    Enabled by the Flag UI, but not by CommandLine file. This doesn't check
+    later cases (ex. user consent).
+  </int>
+  <int value="2" label="ENABLED_BY_USER_CONSENT">
+    Enabled by user consent (not by commandline flags).
+  </int>
+  <int value="3" label="DISABLED_BY_USER_CONSENT">
+    Disabled because we're missing user consent. We were able to present the
+    user with an Intent to the settings app.
+  </int>
+  <int value="4" label="DISABLED_BY_USER_CONSENT_CANNOT_FIND_SETTINGS">
+    Disabled because we're missing user consent. We could not direct the user to
+    the settings app.
+  </int>
+  <int value="5" label="DISABLED_CANNOT_USE_GMS">
+    Disabled because we cannot use GMS APIs.
+  </int>
+</enum>
+
+<enum name="AndroidWebViewDevUiFragments">
+  <int value="0" label="HOME_FRAGMENT"/>
+  <int value="1" label="CRASHES_LIST_FRAGMENT"/>
+  <int value="2" label="FLAGS_FRAGMENT"/>
+</enum>
+
+<enum name="AndroidWebViewDevUiMenu">
+  <int value="0" label="Switch WebView provider"/>
+  <int value="1" label="Report a bug"/>
+  <int value="2" label="Check for updates"/>
+  <int value="3" label="Refresh the crash list"/>
+</enum>
+
 <enum name="AndroidWebViewProxySchemeFilterType">
   <int value="0" label="HTTP"/>
   <int value="1" label="HTTPS"/>
@@ -13054,6 +13091,11 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="2" label="The system clock is known to be inaccurate"/>
 </enum>
 
+<enum name="CrosSystemTrayFirstInteraction">
+  <int value="0" label="Quick Settings"/>
+  <int value="1" label="Message Center"/>
+</enum>
+
 <enum name="CrosSystemTrayInteraction">
   <int value="0" label="Tap"/>
   <int value="1" label="Click"/>
@@ -22940,6 +22982,8 @@ Called by update_extension_histograms.py.-->
   <int value="1471" label="DECLARATIVENETREQUEST_UPDATEENABLEDRULESETS"/>
   <int value="1472" label="DECLARATIVENETREQUEST_GETENABLEDRULESETS"/>
   <int value="1473" label="TERMINALPRIVATE_OPENWINDOW"/>
+  <int value="1474" label="AUTOTESTPRIVATE_SETPLUGINVMPOLICY"/>
+  <int value="1475" label="AUTOTESTPRIVATE_SHOWPLUGINVMINSTALLER"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -27338,6 +27382,12 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3295" label="ForceEncodedVideoInsertableStreams"/>
   <int value="3296" label="TransformStyleContainingBlockComputedUsedMismatch"/>
   <int value="3297" label="AdditionalGroupingPropertiesForCompat"/>
+  <int value="3298" label="PopupDoesNotExceedOwnerWindowBounds"/>
+  <int value="3299" label="PopupExceedsOwnerWindowBounds"/>
+  <int value="3300" label="PopupExceedsOwnerWindowBoundsForIframe"/>
+  <int value="3301" label="PopupGestureTapExceedsOwnerWindowBounds"/>
+  <int value="3302" label="PopupMouseDownExceedsOwnerWindowBounds"/>
+  <int value="3303" label="PopupMouseWheelExceedsOwnerWindowBounds"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -56021,6 +56071,20 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="Required but not shown - grace exceeded"/>
 </enum>
 
+<enum name="QueryTilesGroupStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="Uninitialized"/>
+  <int value="2" label="FailureDbOperation"/>
+  <int value="3" label="NoTiles"/>
+</enum>
+
+<enum name="QueryTilesRequestStatus">
+  <int value="0" label="Init"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Failure"/>
+  <int value="3" label="Suspend"/>
+</enum>
+
 <enum name="QueryWebAndAppActivityState">
   <obsolete>
     Removed March 2020.
@@ -59840,6 +59904,14 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="8" label="SKIPPED_VERSION_CHECK_EQUAL"/>
 </enum>
 
+<enum name="SBPhishingClassifierEvent">
+  <int value="0" label="Phishing detection was requested to start"/>
+  <int value="1" label="Page text was captured"/>
+  <int value="2" label="Page text not loaded"/>
+  <int value="3" label="Url should not be classified"/>
+  <int value="4" label="Phishing classifier was destructed"/>
+</enum>
+
 <enum name="ScheduledNavigationType">
   <obsolete>
     Deprecated August 2018
@@ -60333,12 +60405,18 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="SendTabToSelfAddEntryStatus">
+  <obsolete>
+    Removed 05/2020.
+  </obsolete>
   <int value="0" label="Success"/>
   <int value="1" label="Failure"/>
   <int value="2" label="Duplicate"/>
 </enum>
 
 <enum name="SendTabToSelfApplySyncChanges">
+  <obsolete>
+    Removed 05/2020.
+  </obsolete>
   <int value="0" label="Total number of EntityChanges."/>
   <int value="1" label="Number of EntityChanges that are deletions."/>
   <int value="2" label="Number of EntityChanges that are invaled."/>
@@ -60349,12 +60427,15 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="SendTabToSelfClickResult">
-  <int value="0" label="SendTabToSelf entry point is shown."/>
+  <int value="0" label="SendTabToSelf entry point is shown. (Obsolete)"/>
   <int value="1" label="SendTabToSelf target device is clicked."/>
-  <int value="2" label="SendTabToSelf device list is shown."/>
+  <int value="2" label="SendTabToSelf device list is shown. (Obsolete)"/>
 </enum>
 
 <enum name="SendTabToSelfNotification">
+  <obsolete>
+    Removed 05/2020.
+  </obsolete>
   <int value="0" label="Opened"/>
   <int value="1" label="Dismissed"/>
   <int value="2" label="Shown"/>
@@ -60367,6 +60448,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="SendTabToSelfNotifyLocalDevice">
+  <obsolete>
+    Removed 05/2020.
+  </obsolete>
   <int value="0" label="Local"/>
   <int value="1" label="Remote"/>
 </enum>
@@ -60903,6 +60987,12 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="From TWA manage space activity"/>
 </enum>
 
+<enum name="SettingsOverriddenDialogResult">
+  <int value="0" label="Change settings back"/>
+  <int value="1" label="Keep new settings"/>
+  <int value="2" label="Dialog dismissed"/>
+</enum>
+
 <enum name="SettingsPageInteractions">
   <obsolete>
     Removed 03/2020 because the only associated histogram was deprecated due to
@@ -61382,6 +61472,25 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   </summary>
   <int value="0" label="Success"/>
   <int value="1" label="Failure"/>
+</enum>
+
+<enum name="ShortcutsMenuRegistrationWinResult">
+  <summary>
+    Result of registering app icon shortcuts menu for PWA on Windows
+  </summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Failed to write ico files to disk"/>
+  <int value="2" label="Failed to BeginUpdate"/>
+  <int value="3" label="Failed to AddTasks"/>
+  <int value="4" label="Failed to CommitUpdate"/>
+</enum>
+
+<enum name="ShortcutsMenuUnregistrationWinResult">
+  <summary>
+    Result of registering app icon shortcuts menu for PWA on Windows
+  </summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Failed to DeleteJumpList"/>
 </enum>
 
 <enum name="ShortReportReason">
@@ -64782,6 +64891,26 @@ would be helpful to identify which type is being sent.
   <int value="1" label="Extensions allowlist hit"/>
 </enum>
 
+<enum name="SupervisedUserExtensionInstallDialog">
+  <summary>
+    Tracks the actions of a supervised user on the Extension Install Dialog.
+  </summary>
+  <int value="0" label="Opened"/>
+  <int value="1" label="Asked Parent"/>
+  <int value="2" label="Child Canceled"/>
+</enum>
+
+<enum name="SupervisedUserParentPermissionDialog">
+  <summary>
+    Tracks the actions of a parent on the Parent Permission Dialog.
+  </summary>
+  <int value="0" label="Opened"/>
+  <int value="1" label="Parent Approved"/>
+  <int value="2" label="Parent Canceled"/>
+  <int value="3" label="Failed"/>
+  <int value="4" label="No Parent Error"/>
+</enum>
+
 <enum name="SupervisedUserSafetyFilterResult">
   <int value="100" label="LINK_ALLOWED">Link; Allowed as safe</int>
   <int value="101" label="TYPED_ALLOWED">Typed URL; Allowed as safe</int>
@@ -65128,6 +65257,7 @@ would be helpful to identify which type is being sent.
 <enum name="SwipeHomeToOverviewResult">
   <int value="0" label="Remained on the home screen"/>
   <int value="1" label="Transitioned to overview"/>
+  <int value="2" label="Went back on the home screen"/>
 </enum>
 
 <enum name="SwReporterRunningTimeRegistryError">
@@ -65924,12 +66054,29 @@ would be helpful to identify which type is being sent.
   <int value="11" label="Evicted due to OS terminating the renderer."/>
 </enum>
 
+<enum name="TabStripReasonToShow">
+  <summary>The reason why conditional tab strip is showing.</summary>
+  <int value="0" label="TabSwitched"/>
+  <int value="1" label="NewTab"/>
+  <int value="2" label="LongPress"/>
+</enum>
+
 <enum name="TabStripState">
   <int value="0" label="Initial state"/>
   <int value="1" label="Tab is active, shown foreground."/>
   <int value="2" label="Tab is inactive, in background."/>
   <int value="3" label="Tab is detached from tab-strip."/>
   <int value="4" label="Tab is closed."/>
+</enum>
+
+<enum name="TabStripUserStatus">
+  <summary>
+    The user status of conditional tab strip in a feature-specific session.
+  </summary>
+  <int value="0" label="NonUser"/>
+  <int value="1" label="TabStripNotShown"/>
+  <int value="2" label="TabStripShown"/>
+  <int value="3" label="TabStripShownAndDismissed"/>
 </enum>
 
 <enum name="TabSwitchedToForegroundLaunchedWithURL">

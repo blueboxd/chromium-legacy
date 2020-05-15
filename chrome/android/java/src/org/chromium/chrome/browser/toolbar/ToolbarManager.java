@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.findinpage.FindToolbarObserver;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
@@ -148,6 +149,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     private final AppThemeColorProvider mAppThemeColorProvider;
     private final TopToolbarCoordinator mToolbar;
     private final ToolbarControlContainer mControlContainer;
+    private final BrowserControlsStateProvider.Observer mBrowserControlsObserver;
     private final FullscreenListener mFullscreenListener;
 
     private BottomControlsCoordinator mBottomControlsCoordinator;
@@ -181,6 +183,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     private final Callback<Boolean> mUrlFocusChangedCallback;
     private final Handler mHandler = new Handler();
     private final ChromeActivity mActivity;
+    private final BrowserControlsStateProvider mBrowserControlsStateProvider;
     private final ChromeFullscreenManager mFullscreenManager;
     private LocationBarFocusScrimHandler mLocationBarFocusHandler;
     private ComponentCallbacks mComponentCallbacks;
@@ -254,6 +257,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier,
             @Nullable Supplier<Boolean> canAnimateNativeBrowserControls) {
         mActivity = activity;
+        mBrowserControlsStateProvider = fullscreenManager;
         mFullscreenManager = fullscreenManager;
         mActionBarDelegate = new ViewShiftingActionBarDelegate(activity, controlContainer);
         mShareDelegateSupplier = shareDelegateSupplier;
@@ -514,12 +518,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             }
         };
 
-        mFullscreenListener = new FullscreenListener() {
-            @Override
-            public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
-                if (mFindToolbarManager != null) mFindToolbarManager.hideToolbar();
-            }
-
+        mBrowserControlsObserver = new BrowserControlsStateProvider.Observer() {
             @Override
             public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
                     int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
@@ -549,6 +548,14 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 // Controls need to be offset to match the composited layer, which is
                 // anchored at the bottom of the controls container.
                 setControlContainerTopMargin(getToolbarExtraYOffset());
+            }
+        };
+        mBrowserControlsStateProvider.addObserver(mBrowserControlsObserver);
+
+        mFullscreenListener = new FullscreenListener() {
+            @Override
+            public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
+                if (mFindToolbarManager != null) mFindToolbarManager.hideToolbar();
             }
         };
         mFullscreenManager.addListener(mFullscreenListener);
@@ -988,6 +995,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
         mLocationBarModel.destroy();
         mHandler.removeCallbacksAndMessages(null); // Cancel delayed tasks.
+        mBrowserControlsStateProvider.removeObserver(mBrowserControlsObserver);
         mFullscreenManager.removeListener(mFullscreenListener);
         if (mLocationBar != null) {
             mLocationBar.removeUrlFocusChangeListener(mLocationBarFocusHandler);
@@ -1270,7 +1278,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     private int getToolbarExtraYOffset() {
         final int stripAndToolbarHeight = mActivity.getResources().getDimensionPixelSize(
                 R.dimen.tab_strip_and_toolbar_height);
-        return mFullscreenManager.getTopControlsHeight() - stripAndToolbarHeight;
+        return mBrowserControlsStateProvider.getTopControlsHeight() - stripAndToolbarHeight;
     }
 
     /**

@@ -119,7 +119,8 @@ VideoFrameMetadata* WebGLVideoTexture::shareVideoImageWEBGL(
       frame_metadata_ptr->timestamp.InSecondsF());
 
   // This is a required field. It is supposed to be monotonically increasing for
-  // video.requestAnimationFrame, but it isn't used yet for WebGLVideoTexture.
+  // video.requestVideoFrameCallback, but it isn't used yet for
+  // WebGLVideoTexture.
   current_frame_metadata_->setPresentedFrames(0);
   return current_frame_metadata_;
 #endif  // defined OS_ANDROID

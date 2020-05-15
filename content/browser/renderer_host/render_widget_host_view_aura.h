@@ -336,6 +336,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void ShowContextMenu(const ContextMenuParams& params) override;
   void Shutdown() override;
 
+  bool ShouldVirtualKeyboardOverlayContent() const;
+  void NotifyVirtualKeyboardOverlayRect(const gfx::Rect& keyboard_rect);
+
   RenderWidgetHostViewEventHandler* event_handler() {
     return event_handler_.get();
   }

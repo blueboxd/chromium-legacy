@@ -17,7 +17,6 @@ import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.feed.shared.FeedSurfaceDelegate;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -87,8 +86,6 @@ class ExploreSurfaceCoordinator implements FeedSurfaceDelegate {
         ExploreSurfaceActionHandler exploreSurfaceActionHandler =
                 new ExploreSurfaceActionHandler(mExploreSurfaceNavigationDelegate,
                         FeedProcessScopeFactory.getFeedConsumptionObserver(),
-                        FeedProcessScopeFactory.getFeedOfflineIndicator(),
-                        OfflinePageBridge.getForProfile(profile),
                         FeedProcessScopeFactory.getFeedLoggingBridge(), mActivity, profile);
 
         SectionHeaderView sectionHeaderView = null;

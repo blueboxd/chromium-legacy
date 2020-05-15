@@ -1,3 +1,7 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 settings = struct(
     # Switch this to False for branches
     is_master = True,
@@ -14,3 +18,7 @@ settings = struct(
     # Switch this to None for branches
     tree_status_host = 'chromium-status.appspot.com/',
 )
+
+def master_only_exec(f):
+  if settings.is_master:
+    exec(f)

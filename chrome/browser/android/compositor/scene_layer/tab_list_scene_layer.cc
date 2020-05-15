@@ -8,7 +8,6 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "cc/layers/picture_image_layer.h"
 #include "chrome/android/chrome_jni_headers/TabListSceneLayer_jni.h"
 #include "chrome/browser/android/compositor/layer/content_layer.h"
 #include "chrome/browser/android/compositor/layer/tab_layer.h"

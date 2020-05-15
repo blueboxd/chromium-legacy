@@ -155,6 +155,19 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
     ax::mojom::EventFrom event_from;
   };
 
+  enum class EventScheduleMode { kDeferEvents, kProcessEventsImmediately };
+
+  enum class EventScheduleStatus {
+    // Events have been scheduled with a delay, but have not been sent.
+    kScheduledDeferred,
+    // Events have been scheduled without a delay, but have not been sent.
+    kScheduledImmediate,
+    // Events have been sent, waiting for callback.
+    kWaitingForAck,
+    // Events are not scheduled and we are not waiting for an ack.
+    kNotWaiting
+  };
+
   // Callback that will be called from the browser upon handling the message
   // previously sent to it via SendPendingAccessibilityEvents().
   void OnAccessibilityEventsHandled();
@@ -183,13 +196,19 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
 
   void Scroll(const ui::AXActionTarget* target,
               ax::mojom::Action scroll_action);
-  void ScheduleSendAccessibilityEventsIfNeeded();
+  // If we are calling this from a task, scheduling is allowed even if there is
+  // a running task
+  void ScheduleSendPendingAccessibilityEvents(
+      bool scheduling_from_task = false);
   void RecordImageMetrics(AXContentTreeUpdate* update);
   void AddImageAnnotationDebuggingAttributes(
       const std::vector<AXContentTreeUpdate>& updates);
 
   // Returns the document for the active popup if any.
   blink::WebDocument GetPopupDocument();
+
+  // Cancels scheduled events that are not yet in flight
+  void CancelScheduledEvents();
 
   // The RenderAccessibilityManager that owns us.
   RenderAccessibilityManager* render_accessibility_manager_;
@@ -233,8 +252,8 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   // is fixed.
   gfx::Size last_scroll_offset_;
 
-  // Set if we are waiting for an accessibility event ack.
-  bool ack_pending_;
+  // Current event scheduling status
+  EventScheduleStatus event_schedule_status_;
 
   // Nonzero if the browser requested we reset the accessibility state.
   // We need to return this token in the next IPC.
@@ -244,6 +263,9 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   // (only when debugging flags are enabled, never under normal circumstances).
   bool has_injected_stylesheet_ = false;
 
+  // We defer events to improve performance durung the initial page load.
+  EventScheduleMode event_schedule_mode_ = EventScheduleMode::kDeferEvents;
+
   // Whether we should highlight annotation results visually on the page
   // for debugging.
   bool image_annotation_debugging_ = false;
@@ -252,7 +274,8 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   std::string page_language_;
 
   // So we can queue up tasks to be executed later.
-  base::WeakPtrFactory<RenderAccessibilityImpl> weak_factory_{this};
+  base::WeakPtrFactory<RenderAccessibilityImpl>
+      weak_factory_for_pending_events_{this};
 
   friend class AXImageAnnotatorTest;
   friend class PluginActionHandlingTest;

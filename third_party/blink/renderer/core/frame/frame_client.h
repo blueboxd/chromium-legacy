@@ -23,8 +23,8 @@ class CORE_EXPORT FrameClient : public GarbageCollected<FrameClient> {
 
   virtual void Detached(FrameDetachType) = 0;
 
+  // TODO(https://crbug.com/1051144): Move this getter to the Frame class.
   virtual Frame* Opener() const = 0;
-  virtual void SetOpener(Frame*) = 0;
 
   virtual Frame* Parent() const = 0;
   virtual Frame* Top() const = 0;

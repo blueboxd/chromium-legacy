@@ -9,6 +9,7 @@
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
+#include "base/json/json_reader.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -59,11 +60,15 @@
 #include "components/search_provider_logos/logo_service.h"
 #include "components/search_provider_logos/switches.h"
 #include "components/sessions/content/session_tab_helper.h"
+#include "content/public/browser/storage_partition.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/color_utils.h"
 
 namespace {
+
+const int64_t kMaxDownloadBytes = 1024 * 1024;
 
 new_tab_page::mojom::ThemePtr MakeTheme(const NtpTheme& ntp_theme) {
   auto theme = new_tab_page::mojom::Theme::New();
@@ -104,21 +109,77 @@ new_tab_page::mojom::ThemePtr MakeTheme(const NtpTheme& ntp_theme) {
   if (ntp_theme.logo_alternate) {
     theme->logo_color = ntp_theme.logo_color;
   }
+  auto background_image = new_tab_page::mojom::BackgroundImage::New();
   if (!ntp_theme.custom_background_url.is_empty()) {
     base::StringPiece url = ntp_theme.custom_background_url.spec();
     // TODO(crbug.com/1041125): Clean up when chrome-search://local-ntp removed.
     if (url.starts_with("chrome-search://local-ntp/")) {
-      theme->background_image_url =
+      background_image->url =
           GURL("chrome-untrusted://new-tab-page/" +
                url.substr(strlen("chrome-search://local-ntp/")).as_string());
     } else {
-      theme->background_image_url = ntp_theme.custom_background_url;
+      background_image->url = ntp_theme.custom_background_url;
     }
   } else if (ntp_theme.has_theme_image) {
-    theme->background_image_url =
+    background_image->url =
         GURL(base::StrCat({"chrome-untrusted://theme/IDR_THEME_NTP_BACKGROUND?",
                            ntp_theme.theme_id}));
+    background_image->url_2x = GURL(
+        base::StrCat({"chrome-untrusted://theme/IDR_THEME_NTP_BACKGROUND@2x?",
+                      ntp_theme.theme_id}));
+    background_image->size = "initial";
+    switch (ntp_theme.image_tiling) {
+      case THEME_BKGRND_IMAGE_NO_REPEAT:
+        background_image->repeat_x = "no-repeat";
+        background_image->repeat_y = "no-repeat";
+        break;
+      case THEME_BKGRND_IMAGE_REPEAT_X:
+        background_image->repeat_x = "repeat";
+        background_image->repeat_y = "no-repeat";
+        break;
+      case THEME_BKGRND_IMAGE_REPEAT_Y:
+        background_image->repeat_x = "no-repeat";
+        background_image->repeat_y = "repeat";
+        break;
+      case THEME_BKGRND_IMAGE_REPEAT:
+        background_image->repeat_x = "repeat";
+        background_image->repeat_y = "repeat";
+        break;
+    }
+    switch (ntp_theme.image_horizontal_alignment) {
+      case THEME_BKGRND_IMAGE_ALIGN_CENTER:
+        background_image->position_x = "center";
+        break;
+      case THEME_BKGRND_IMAGE_ALIGN_LEFT:
+        background_image->position_x = "left";
+        break;
+      case THEME_BKGRND_IMAGE_ALIGN_RIGHT:
+        background_image->position_x = "right";
+        break;
+      case THEME_BKGRND_IMAGE_ALIGN_TOP:
+      case THEME_BKGRND_IMAGE_ALIGN_BOTTOM:
+        // Inconsistent. Ignore.
+        break;
+    }
+    switch (ntp_theme.image_vertical_alignment) {
+      case THEME_BKGRND_IMAGE_ALIGN_CENTER:
+        background_image->position_y = "center";
+        break;
+      case THEME_BKGRND_IMAGE_ALIGN_TOP:
+        background_image->position_y = "top";
+        break;
+      case THEME_BKGRND_IMAGE_ALIGN_BOTTOM:
+        background_image->position_y = "bottom";
+        break;
+      case THEME_BKGRND_IMAGE_ALIGN_LEFT:
+      case THEME_BKGRND_IMAGE_ALIGN_RIGHT:
+        // Inconsistent. Ignore.
+        break;
+    }
+  } else {
+    background_image = nullptr;
   }
+  theme->background_image = std::move(background_image);
   if (!ntp_theme.custom_background_attribution_line_1.empty()) {
     theme->background_image_attribution_1 =
         ntp_theme.custom_background_attribution_line_1;
@@ -407,11 +468,11 @@ void NewTabPageHandler::GetBackgroundImages(
     GetBackgroundImagesCallback callback) {
   if (background_images_callback_) {
     std::move(background_images_callback_)
-        .Run(std::vector<new_tab_page::mojom::BackgroundImagePtr>());
+        .Run(std::vector<new_tab_page::mojom::CollectionImagePtr>());
   }
   if (!ntp_background_service_) {
     std::move(callback).Run(
-        std::vector<new_tab_page::mojom::BackgroundImagePtr>());
+        std::vector<new_tab_page::mojom::CollectionImagePtr>());
     return;
   }
   images_request_collection_id_ = collection_id;
@@ -568,7 +629,8 @@ void NewTabPageHandler::OnCustomizeDialogAction(
 }
 
 void NewTabPageHandler::OnDoodleImageClicked(
-    new_tab_page::mojom::DoodleImageType type) {
+    new_tab_page::mojom::DoodleImageType type,
+    const base::Optional<::GURL>& log_url) {
   NTPLoggingEventType event;
   switch (type) {
     case new_tab_page::mojom::DoodleImageType::ANIMATION:
@@ -585,25 +647,66 @@ void NewTabPageHandler::OnDoodleImageClicked(
       return;
   }
   LogEvent(event);
+
+  if (type == new_tab_page::mojom::DoodleImageType::CTA &&
+      log_url.has_value()) {
+    // We just ping the server to indicate a CTA image has been clicked.
+    Fetch(*log_url, base::BindOnce([](bool, std::unique_ptr<std::string>) {}));
+  }
 }
 
 void NewTabPageHandler::OnDoodleImageRendered(
     new_tab_page::mojom::DoodleImageType type,
-    double time) {
-  NTPLoggingEventType event;
-  switch (type) {
-    case new_tab_page::mojom::DoodleImageType::CTA:
-      event = NTP_CTA_LOGO_SHOWN_FROM_CACHE;
+    double time,
+    const GURL& log_url,
+    OnDoodleImageRenderedCallback callback) {
+  if (type == new_tab_page::mojom::DoodleImageType::CTA ||
+      type == new_tab_page::mojom::DoodleImageType::STATIC) {
+    logger_->LogEvent(
+        type == new_tab_page::mojom::DoodleImageType::CTA
+            ? NTP_CTA_LOGO_SHOWN_FROM_CACHE
+            : NTP_STATIC_LOGO_SHOWN_FROM_CACHE,
+        base::Time::FromJsTime(time) - ntp_navigation_start_time_);
+  }
+  Fetch(log_url,
+        base::BindOnce(&NewTabPageHandler::OnLogFetchResult,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void NewTabPageHandler::OnDoodleShared(
+    new_tab_page::mojom::DoodleShareChannel channel,
+    const std::string& doodle_id,
+    const base::Optional<std::string>& share_id) {
+  int channel_id;
+  switch (channel) {
+    case new_tab_page::mojom::DoodleShareChannel::FACEBOOK:
+      channel_id = 2;
       break;
-    case new_tab_page::mojom::DoodleImageType::STATIC:
-      event = NTP_STATIC_LOGO_SHOWN_FROM_CACHE;
+    case new_tab_page::mojom::DoodleShareChannel::TWITTER:
+      channel_id = 3;
+      break;
+    case new_tab_page::mojom::DoodleShareChannel::EMAIL:
+      channel_id = 5;
+      break;
+    case new_tab_page::mojom::DoodleShareChannel::LINK_COPY:
+      channel_id = 6;
       break;
     default:
       NOTREACHED();
-      return;
+      break;
   }
-  logger_->LogEvent(event,
-                    base::Time::FromJsTime(time) - ntp_navigation_start_time_);
+  std::string query =
+      base::StringPrintf("gen_204?atype=i&ct=doodle&ntp=2&cad=sh,%d,ct:%s",
+                         channel_id, doodle_id.c_str());
+  if (share_id.has_value()) {
+    query += "&ei=" + *share_id;
+  }
+  auto url = GURL(TemplateURLServiceFactory::GetForProfile(profile_)
+                      ->search_terms_data()
+                      .GoogleBaseURLValue())
+                 .Resolve(query);
+  // We just ping the server to indicate a doodle has been shared.
+  Fetch(url, base::BindOnce([](bool s, std::unique_ptr<std::string>) {}));
 }
 
 void NewTabPageHandler::OnPromoLinkClicked() {
@@ -867,7 +970,7 @@ void NewTabPageHandler::OnCollectionImagesAvailable() {
         "NewTabPage.BackgroundService.Images.RequestLatency.Success", duration);
   }
 
-  std::vector<new_tab_page::mojom::BackgroundImagePtr> images;
+  std::vector<new_tab_page::mojom::CollectionImagePtr> images;
   if (ntp_background_service_->collection_images().empty()) {
     std::move(background_images_callback_).Run(std::move(images));
   }
@@ -875,7 +978,7 @@ void NewTabPageHandler::OnCollectionImagesAvailable() {
       ntp_background_service_->collection_images()[0].collection_id;
   for (const auto& info : ntp_background_service_->collection_images()) {
     DCHECK(info.collection_id == collection_id);
-    auto image = new_tab_page::mojom::BackgroundImage::New();
+    auto image = new_tab_page::mojom::CollectionImage::New();
     image->attribution_1 = !info.attribution.empty() ? info.attribution[0] : "";
     image->attribution_2 =
         info.attribution.size() > 1 ? info.attribution[1] : "";
@@ -1049,6 +1152,14 @@ void NewTabPageHandler::OnLogoAvailable(
     image_doodle_content->share_button->background_color =
         SkColorSetA(doodle_share_button_background_color, 255);
     image_doodle_content->share_url = logo->metadata.short_link;
+    if (logo->metadata.type == search_provider_logos::LogoType::ANIMATED) {
+      image_doodle_content->image_impression_log_url =
+          logo->metadata.cta_log_url;
+      image_doodle_content->animation_impression_log_url =
+          logo->metadata.log_url;
+    } else {
+      image_doodle_content->image_impression_log_url = logo->metadata.log_url;
+    }
     doodle->content = new_tab_page::mojom::DoodleContent::NewImageDoodle(
         std::move(image_doodle_content));
   } else if (logo->metadata.type ==
@@ -1091,4 +1202,93 @@ void NewTabPageHandler::OnRealboxFaviconFetched(int match_index,
 
 void NewTabPageHandler::LogEvent(NTPLoggingEventType event) {
   logger_->LogEvent(event, base::TimeDelta() /* unused */);
+}
+
+void NewTabPageHandler::Fetch(const GURL& url,
+                              OnFetchResultCallback on_result) {
+  auto traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("new_tab_page_handler", R"(
+        semantics {
+          sender: "New Tab Page"
+          description: "Logs impression and interaction with the doodle."
+          trigger:
+            "Showing or clicking on the doodle on the New Tab Page. Desktop "
+            "only."
+          data:
+            "String identifiying todays doodle and token identifying a single "
+            "doodle interaction session. Data does not contain PII."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "Users can control this feature via selecting a non-Google default "
+            "search engine in Chrome settings under 'Search Engine'."
+          chrome_policy {
+            DefaultSearchProviderEnabled {
+              policy_options {mode: MANDATORY}
+              DefaultSearchProviderEnabled: false
+            }
+          }
+        })");
+  auto url_loader_factory =
+      content::BrowserContext::GetDefaultStoragePartition(profile_)
+          ->GetURLLoaderFactoryForBrowserProcess();
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = url;
+  auto loader =
+      network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
+  loader->DownloadToString(url_loader_factory.get(),
+                           base::BindOnce(&NewTabPageHandler::OnFetchResult,
+                                          weak_ptr_factory_.GetWeakPtr(),
+                                          loader.get(), std::move(on_result)),
+                           kMaxDownloadBytes);
+  loader_map_.insert({loader.get(), std::move(loader)});
+}
+
+void NewTabPageHandler::OnFetchResult(const network::SimpleURLLoader* loader,
+                                      OnFetchResultCallback on_result,
+                                      std::unique_ptr<std::string> body) {
+  bool success = loader->NetError() == net::OK && loader->ResponseInfo() &&
+                 loader->ResponseInfo()->headers &&
+                 loader->ResponseInfo()->headers->response_code() >= 200 &&
+                 loader->ResponseInfo()->headers->response_code() <= 299 &&
+                 body;
+  std::move(on_result).Run(success, std::move(body));
+  loader_map_.erase(loader);
+}
+
+void NewTabPageHandler::OnLogFetchResult(OnDoodleImageRenderedCallback callback,
+                                         bool success,
+                                         std::unique_ptr<std::string> body) {
+  if (!success || body->size() < 4 || body->substr(0, 4) != ")]}'") {
+    std::move(callback).Run("", base::nullopt, "");
+    return;
+  }
+  auto value = base::JSONReader::Read(body->substr(4));
+  if (!value.has_value()) {
+    std::move(callback).Run("", base::nullopt, "");
+    return;
+  }
+
+  auto* target_url_params_value = value->FindPath("ddllog.target_url_params");
+  auto target_url_params =
+      target_url_params_value && target_url_params_value->is_string()
+          ? target_url_params_value->GetString()
+          : "";
+  auto* interaction_log_url_value =
+      value->FindPath("ddllog.interaction_log_url");
+  auto interaction_log_url =
+      interaction_log_url_value && interaction_log_url_value->is_string()
+          ? base::Optional<GURL>(
+                GURL(TemplateURLServiceFactory::GetForProfile(profile_)
+                         ->search_terms_data()
+                         .GoogleBaseURLValue())
+                    .Resolve(interaction_log_url_value->GetString()))
+          : base::nullopt;
+  auto* encoded_ei_value = value->FindPath("ddllog.encoded_ei");
+  auto encoded_ei = encoded_ei_value && encoded_ei_value->is_string()
+                        ? encoded_ei_value->GetString()
+                        : "";
+  std::move(callback).Run(target_url_params, interaction_log_url, encoded_ei);
 }

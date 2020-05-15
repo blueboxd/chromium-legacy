@@ -3,25 +3,95 @@
     display: block;
   }
 
-  a {
+  #link {
+    align-items: center;
     color: inherit;
-    display: block;
+    display: flex;
     font-size: 16px;
     line-height: 1;
     outline: none;
     overflow: hidden;
-    padding-bottom: 8px;
+    padding-bottom: 6px;
     padding-inline-end: 16px;
-    padding-inline-start: 52px;
-    padding-top: 8px;
+    padding-inline-start: 12px;
+    padding-top: 6px;
     position: relative;
     text-decoration: none;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
+  #container {
+    align-items: center;
+    display: flex;
+    flex-grow: 1;
+    overflow: hidden;
+    padding-inline-end: 8px;
+    padding-inline-start: 8px;
+  }
+
+  #contents,
+  #description {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #separator {
+    white-space: pre;
+  }
+
+  :host([has-image]) #container {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  :host([has-image]) #separator {
+    display: none;
+  }
+
+  :host([has-image]) #contents {
+    width: 100%;
+  }
+
+  :host([has-image]) #description {
+    font-size: 14px;
+    margin-top: 2px;
+    width: 100%;
+  }
+
+  .match {
+    font-weight: 500;
+  }
+
+  :host([has-image]) #description,
+  .dim {
+    color: var(--search-box-results-dim, var(--google-grey-600));
+  }
+
+  :host-context(ntp-realbox-match:-webkit-any(:focus-within, .selected)):host([has-image]) #description,
+  :host-context(ntp-realbox-match:-webkit-any(:focus-within, .selected)) .dim {
+    color: var(--search-box-results-dim-selected, var(--google-grey-600));
+  }
+
+  .url {
+    color: var(--search-box-results-url, var(--google-grey-600));
+  }
+
+  :host-context(ntp-realbox-match:-webkit-any(:focus-within, .selected)) .url {
+    color: var(--search-box-results-url-selected, var(--google-grey-600));
+  }
+
 </style>
 <a id="link" href$="[[match.destinationUrl.url]]">
-  <span id="contents">[[decodeString16_(match.contents)]]</span>
-  [[separatorText_]]
-  <span id="description">[[decodeString16_(match.description)]]</span>
+  <ntp-realbox-icon match="[[match]]"
+      favicon-data-url="[[faviconDataUrl]]" image-data-url="[[imageDataUrl]]">
+  </ntp-realbox-icon>
+  <div id="container">
+    <span id="contents" inner-h-t-m-l="[[contentsHtml_]]"></span>
+    <span id="separator">[[separatorText_]]</span>
+    <span id="description" inner-h-t-m-l="[[descriptionHtml_]]"></span>
+  </div>
+  <ntp-realbox-button id="remove" on-click="onRemoveButtonClick_"
+      title$="[[removeButtonTitle_]]" hidden$="[[!removeButtonIsVisible_]]">
+  </ntp-realbox-button>
 </a>

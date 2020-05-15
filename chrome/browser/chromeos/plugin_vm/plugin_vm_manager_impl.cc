@@ -86,8 +86,7 @@ void ShowStartVmFailedNotification(Profile* profile,
               kStartVmFailedNotifierId),
           {}, new message_center::NotificationDelegate(),
           kNotificationPluginVmIcon,
-          message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
-  notification->SetSystemPriority();
+          message_center::SystemNotificationWarningLevel::WARNING);
   NotificationDisplayServiceFactory::GetForProfile(profile)->Display(
       NotificationHandler::Type::TRANSIENT, *notification,
       /*metadata=*/nullptr);
@@ -470,14 +469,14 @@ void PluginVmManagerImpl::OnGetVmInfoForSharing(
   seneschal_server_handle_ = reply->vm_info().seneschal_server_handle();
 
   // Create and share default folder, and other persisted shares.
-  EnsureDefaultSharedDirsExist(
-      profile_, base::BindOnce(&PluginVmManagerImpl::OnDefaultSharedDirsExist,
+  EnsureDefaultSharedDirExists(
+      profile_, base::BindOnce(&PluginVmManagerImpl::OnDefaultSharedDirExists,
                                weak_ptr_factory_.GetWeakPtr()));
   guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePersistedPaths(
       kPluginVmName, base::DoNothing());
 }
 
-void PluginVmManagerImpl::OnDefaultSharedDirsExist(const base::FilePath& dir,
+void PluginVmManagerImpl::OnDefaultSharedDirExists(const base::FilePath& dir,
                                                    bool exists) {
   if (exists) {
     guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePath(

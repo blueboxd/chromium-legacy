@@ -80,20 +80,39 @@ export class BackgroundManager {
   }
 
   /**
-   * Sets the URL of the background image.
-   * @param {string} url The URL.
+   * Sets the background image.
+   * @param {!newTabPage.mojom.BackgroundImage} image The background image.
    */
-  setBackgroundImageUrl(url) {
-    const untrustedUrl =
-        `chrome-untrusted://new-tab-page/background_image?${url}`;
-    if (untrustedUrl === this.backgroundImage_.src) {
+  setBackgroundImage(image) {
+    const url =
+        new URL('chrome-untrusted://new-tab-page/custom_background_image');
+    url.searchParams.append('url', image.url.url);
+    if (image.url2x) {
+      url.searchParams.append('url2x', image.url2x.url);
+    }
+    if (image.size) {
+      url.searchParams.append('size', image.size);
+    }
+    if (image.repeatX) {
+      url.searchParams.append('repeatX', image.repeatX);
+    }
+    if (image.repeatY) {
+      url.searchParams.append('repeatY', image.repeatY);
+    }
+    if (image.positionX) {
+      url.searchParams.append('positionX', image.positionX);
+    }
+    if (image.positionY) {
+      url.searchParams.append('positionY', image.positionY);
+    }
+    if (url.href === this.backgroundImage_.src) {
       return;
     }
     if (this.loadTimeResolver_) {
       this.loadTimeResolver_.reject();
       this.loadTimeResolver_ = null;
     }
-    this.backgroundImage_.src = untrustedUrl;
+    this.backgroundImage_.src = url.href;
   }
 
   /**

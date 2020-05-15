@@ -97,20 +97,31 @@ suite('NewTabPageRealboxTest', () => {
     realbox.theme = createTheme().searchBox;
 
     // Assert.
-    assertStyle(realbox, '--search-box-bg', 'rgba(0, 0, 0, 255)');
-    assertStyle(realbox, '--search-box-placeholder', 'rgba(0, 0, 3, 255)');
-    assertStyle(realbox, '--search-box-results-bg', 'rgba(0, 0, 4, 255)');
-    assertStyle(realbox, '--search-box-text', 'rgba(0, 0, 13, 255)');
-    assertStyle(realbox, '--search-box-icon', 'rgba(0, 0, 1, 255)');
+    assertStyle(realbox, '--search-box-bg', 'rgba(0, 0, 0, 1)');
+    assertStyle(realbox, '--search-box-placeholder', 'rgba(0, 0, 3, 1)');
+    assertStyle(realbox, '--search-box-results-bg', 'rgba(0, 0, 4, 1)');
+    assertStyle(realbox, '--search-box-text', 'rgba(0, 0, 13, 1)');
+    assertStyle(realbox, '--search-box-icon', 'rgba(0, 0, 1, 1)');
   });
 
-  test('realbox default icon', async () => {
-    // Assert.
-    assertStyle(
-        realbox.$.realboxIcon, '-webkit-mask-image',
-        'url("chrome://new-tab-page/search.svg")');
-    assertStyle(realbox.$.realboxIcon, 'background-image', 'none');
+  test('realbox default loupe icon', async () => {
+    // Arrange.
+    loadTimeData.overrideValues({
+      realboxDefaultIcon: 'search.svg',
+    });
+    PolymerTest.clearBody();
+    realbox = document.createElement('ntp-realbox');
+    document.body.appendChild(realbox);
 
+    // Assert.
+    const realboxIconEl = realbox.shadowRoot.querySelector('ntp-realbox-icon');
+    assertStyle(
+        realboxIconEl.$.icon, '-webkit-mask-image',
+        'url("chrome://new-tab-page/search.svg")');
+    assertStyle(realboxIconEl.$.icon, 'background-image', 'none');
+  });
+
+  test('realbox default Google G icon', async () => {
     // Arrange.
     loadTimeData.overrideValues({
       realboxDefaultIcon: 'google_g.png',
@@ -120,9 +131,10 @@ suite('NewTabPageRealboxTest', () => {
     document.body.appendChild(realbox);
 
     // Assert.
-    assertStyle(realbox.$.realboxIcon, '-webkit-mask-image', 'none');
+    const realboxIconEl = realbox.shadowRoot.querySelector('ntp-realbox-icon');
+    assertStyle(realboxIconEl.$.icon, '-webkit-mask-image', 'none');
     assertStyle(
-        realbox.$.realboxIcon, 'background-image',
+        realboxIconEl.$.icon, 'background-image',
         'url("chrome://new-tab-page/google_g.png")');
   });
 

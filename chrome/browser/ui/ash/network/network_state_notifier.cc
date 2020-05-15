@@ -89,8 +89,7 @@ void ShowErrorNotification(const std::string& identifier,
           message_center::RichNotificationData(),
           new message_center::HandleNotificationClickDelegate(callback),
           GetErrorNotificationVectorIcon(network_type),
-          message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
-  notification->set_priority(message_center::SYSTEM_PRIORITY);
+          message_center::SystemNotificationWarningLevel::WARNING);
   SystemNotificationHelper::GetInstance()->Display(*notification);
 }
 
@@ -341,8 +340,7 @@ void NetworkStateNotifier::UpdateCellularActivating(
               base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
                          weak_ptr_factory_.GetWeakPtr(), cellular_guid)),
           kNotificationMobileDataIcon,
-          message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
-  notification->set_priority(message_center::SYSTEM_PRIORITY);
+          message_center::SystemNotificationWarningLevel::WARNING);
   SystemNotificationHelper::GetInstance()->Display(*notification);
 }
 
@@ -388,8 +386,7 @@ void NetworkStateNotifier::ShowMobileActivationErrorForGuid(
               base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
                          weak_ptr_factory_.GetWeakPtr(), cellular->guid())),
           kNotificationMobileDataOffIcon,
-          message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
-  notification->set_priority(message_center::SYSTEM_PRIORITY);
+          message_center::SystemNotificationWarningLevel::WARNING);
   SystemNotificationHelper::GetInstance()->Display(*notification);
 }
 

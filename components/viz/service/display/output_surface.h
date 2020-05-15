@@ -84,9 +84,10 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     // the unified display on Chrome OS. All drawing is handled by the physical
     // displays so the unified display should skip that work.
     bool skips_draw = false;
-    // Whether OutputSurface::GetTargetDamageBoundingRect is implemented and
-    // will return a bounding rectangle of the target buffer invalidated area.
-    bool supports_target_damage = false;
+    // Indicates whether this surface will invalidate only the damage rect.
+    // When this is false contents outside the damaged area might need to be
+    // recomposited to the surface.
+    bool only_invalidates_damage_rect = true;
     // Whether the gpu supports surfaceless surface (equivalent of using buffer
     // queue).
     bool supports_surfaceless = false;

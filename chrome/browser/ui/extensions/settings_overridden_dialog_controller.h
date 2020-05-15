@@ -21,6 +21,7 @@ class SettingsOverriddenDialogController {
   };
 
   // The result (i.e., user input) from the dialog being shown.
+  // Do not reorder this enum; it's used in histograms.
   enum class DialogResult {
     // The user wants to change their settings back to the previous value.
     kChangeSettingsBack = 0,

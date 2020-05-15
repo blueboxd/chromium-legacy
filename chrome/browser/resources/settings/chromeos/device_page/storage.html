@@ -227,11 +227,10 @@
           role-description="$i18n{subpageArrowRoleDescription}">
       </cr-link-row>
     </template>
-    <template is="dom-if" if="[[allowDlcSubpage_]]">
+    <template is="dom-if" if="[[shouldShowDlcSubpage_(dlcsExist_)]]">
       <cr-link-row id="downloadedContentSize" class="hr"
           on-click="onDownloadedContentClick_"
           label="$i18n{storageManageDownloadedContentRowTitle}"
-          sub-label="$i18n{storageSizeComputing}"
           role-description="$i18n{subpageArrowRoleDescription}">
       </cr-link-row>
     </template>

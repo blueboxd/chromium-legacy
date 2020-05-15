@@ -33,8 +33,6 @@ import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfMetrics.SendTabToSelfShareNotificationInteraction;
-import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfMetrics.SendTabToSelfShareNotificationInteraction.InteractionType;
 import org.chromium.components.browser_ui.notifications.ChromeNotification;
 import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
@@ -70,11 +68,11 @@ public class NotificationManager {
                     switch (action) {
                         case NOTIFICATION_ACTION_TAP:
                             openUrl(intent.getData());
-                            hideNotification(guid, InteractionType.OPENED);
+                            hideNotification(guid);
                             SendTabToSelfAndroidBridge.deleteEntry(profile, guid);
                             break;
                         case NOTIFICATION_ACTION_DISMISS:
-                            hideNotification(guid, InteractionType.DISMISSED);
+                            hideNotification(guid);
                             SendTabToSelfAndroidBridge.dismissEntry(profile, guid);
                             break;
                         case NOTIFICATION_ACTION_TIMEOUT:
@@ -106,20 +104,6 @@ public class NotificationManager {
                                 .putExtra(ShortcutHelper.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
         IntentHandler.addTrustedIntentExtras(intent);
         context.startActivity(intent);
-    }
-
-    /**
-     * Hides a notification and records an action to the Actions histogram.
-     * <p>
-     * If the notification is not actually visible, then no action will be taken, and the action
-     * will not be recorded.
-     *
-     * @param guid The GUID of the notification to hide.
-     */
-    private static void hideNotification(@Nullable String guid, @InteractionType int type) {
-        if (hideNotification(guid)) {
-            SendTabToSelfShareNotificationInteraction.recordClickResult(type);
-        }
     }
 
     /**
@@ -161,8 +145,6 @@ public class NotificationManager {
         }
 
         // Post notification.
-        SendTabToSelfShareNotificationInteraction.recordClickResult(
-                SendTabToSelfShareNotificationInteraction.InteractionType.SHOWN);
         Context context = ContextUtils.getApplicationContext();
         NotificationManagerProxy manager = new NotificationManagerProxyImpl(context);
 

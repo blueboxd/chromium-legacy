@@ -503,6 +503,10 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   int first_tappable_app_index_ = -1;
   int last_tappable_app_index_ = -1;
 
+  // The number of activated buttons that need to have an ink drop clipping at
+  // the edges.
+  int activated_corner_buttons_ = 0;
+
   // Whether this view should focus its last focusable child (instead of its
   // first) when focused.
   bool default_last_focusable_child_ = false;

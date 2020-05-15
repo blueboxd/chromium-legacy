@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "ash/public/cpp/assistant/controller/assistant_screen_context_controller.h"
 #include "base/memory/scoped_refptr.h"
 
 namespace ash {
@@ -16,7 +17,6 @@ class AssistantStateBase;
 namespace mojom {
 class AssistantAlarmTimerController;
 class AssistantNotificationController;
-class AssistantScreenContextController;
 }  // namespace mojom
 }  // namespace ash
 
@@ -48,7 +48,7 @@ class ServiceContext {
   virtual ash::mojom::AssistantNotificationController*
   assistant_notification_controller() = 0;
 
-  virtual ash::mojom::AssistantScreenContextController*
+  virtual ash::AssistantScreenContextController*
   assistant_screen_context_controller() = 0;
 
   virtual ash::AssistantStateBase* assistant_state() = 0;

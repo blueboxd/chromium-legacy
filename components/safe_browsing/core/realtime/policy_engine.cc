@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -20,6 +21,7 @@
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/user_prefs/user_prefs.h"
+#include "components/variations/service/variations_service.h"
 
 #if defined(OS_ANDROID)
 #include "base/metrics/field_trial_params.h"
@@ -28,9 +30,25 @@
 
 namespace safe_browsing {
 
+namespace {
+
+// This is a list of countries where real-time checks need to be disabled.
+static const std::vector<std::string> GetExcludedCountries() {
+  // The endpoint isn't available
+  return {"cn"};
+}
+
+}  // namespace
+
 #if defined(OS_ANDROID)
 const int kDefaultMemoryThresholdMb = 4096;
 #endif
+
+// static
+bool RealTimePolicyEngine::IsInExcludedCountry(
+    const std::string& country_code) {
+  return base::Contains(GetExcludedCountries(), country_code);
+}
 
 // static
 bool RealTimePolicyEngine::IsUrlLookupEnabled() {
@@ -85,9 +103,16 @@ bool RealTimePolicyEngine::IsPrimaryAccountSignedIn(
 }
 
 // static
-bool RealTimePolicyEngine::CanPerformFullURLLookup(PrefService* pref_service,
-                                                   bool is_off_the_record) {
+bool RealTimePolicyEngine::CanPerformFullURLLookup(
+    PrefService* pref_service,
+    bool is_off_the_record,
+    variations::VariationsService* variations_service) {
   if (is_off_the_record)
+    return false;
+
+  // |variations_service| can be nullptr in tests.
+  if (variations_service &&
+      IsInExcludedCountry(variations_service->GetStoredPermanentCountry()))
     return false;
 
   if (IsUrlLookupEnabledForEp() && IsUserEpOptedIn(pref_service))
@@ -101,8 +126,10 @@ bool RealTimePolicyEngine::CanPerformFullURLLookupWithToken(
     PrefService* pref_service,
     bool is_off_the_record,
     syncer::SyncService* sync_service,
-    signin::IdentityManager* identity_manager) {
-  if (!CanPerformFullURLLookup(pref_service, is_off_the_record)) {
+    signin::IdentityManager* identity_manager,
+    variations::VariationsService* variations_service) {
+  if (!CanPerformFullURLLookup(pref_service, is_off_the_record,
+                               variations_service)) {
     return false;
   }
 

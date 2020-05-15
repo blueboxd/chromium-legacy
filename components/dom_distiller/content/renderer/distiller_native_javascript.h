@@ -36,11 +36,6 @@ class DistillerNativeJavaScript {
   // Make sure the mojo service is connected.
   void EnsureServiceConnected();
 
-  // Wrappers to convert integer representations of the pref enums, then send
-  // the enum values to the browser process.
-  void StoreIntTheme(int theme);
-  void StoreIntFontFamily(int font_family);
-
   content::RenderFrame* render_frame_;
   mojo::Remote<mojom::DistillerJavaScriptService> distiller_js_service_;
 };

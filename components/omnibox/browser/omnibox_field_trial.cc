@@ -363,6 +363,11 @@ size_t OmniboxFieldTrial::GetProviderMaxMatches(
     AutocompleteProvider::Type provider) {
   size_t default_max_matches_per_provider = 3;
 
+  // If new search features are disabled, ignore the parameter and use the
+  // default value.
+  if (!base::FeatureList::IsEnabled(omnibox::kNewSearchFeatures))
+    return default_max_matches_per_provider;
+
   std::string param_value = base::GetFieldTrialParamValueByFeature(
       omnibox::kUIExperimentMaxAutocompleteMatches,
       OmniboxFieldTrial::kUIMaxAutocompleteMatchesByProviderParam);
@@ -658,6 +663,12 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
 
 size_t OmniboxFieldTrial::GetMaxURLMatches() {
   constexpr size_t kDefaultMaxURLMatches = 7;
+
+  // If new search features are disabled, ignore the parameter and use the
+  // default value.
+  if (!base::FeatureList::IsEnabled(omnibox::kNewSearchFeatures))
+    return kDefaultMaxURLMatches;
+
   return base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kOmniboxMaxURLMatches,
       OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, kDefaultMaxURLMatches);
@@ -710,6 +721,11 @@ bool OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() {
 }
 
 bool OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() {
+  // If new search features are disabled, return the default/launched value for
+  // the respective platforms, independent of the state of the Feature.
+  if (!base::FeatureList::IsEnabled(omnibox::kNewSearchFeatures))
+    return omnibox::kOmniboxMaxURLMatchesEnabledByDefault;
+
   return base::FeatureList::IsEnabled(omnibox::kOmniboxMaxURLMatches);
 }
 

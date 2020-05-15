@@ -26,11 +26,18 @@ struct CrostiniDiskInfo {
   ~CrostiniDiskInfo();
   bool can_resize{};
   bool is_user_chosen_size{};
+  bool is_low_space_available{};
   int default_index{};
   std::vector<crostini::mojom::DiskSliderTickPtr> ticks;
 };
 
 namespace disk {
+
+constexpr int64_t kGiB = 1024 * 1024 * 1024;
+constexpr int64_t kDiskHeadroomBytes = 1 * kGiB;
+constexpr int64_t kMinimumDiskSizeBytes = 2 * kGiB;
+constexpr int64_t kRecommendedDiskSizeBytes = 5 * kGiB;
+
 using OnceDiskInfoCallback =
     base::OnceCallback<void(std::unique_ptr<CrostiniDiskInfo> info)>;
 

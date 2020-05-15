@@ -113,6 +113,7 @@ class StorageHandler : public ::settings::SettingsPageUIHandler,
   calculator::AppsSizeCalculator apps_size_calculator_;
   calculator::CrostiniSizeCalculator crostini_size_calculator_;
   calculator::OtherUsersSizeCalculator other_users_size_calculator_;
+  calculator::DlcsSizeCalculator dlcs_size_calculator_;
 
   // Controls if the size of each storage item has been calculated.
   std::bitset<calculator::SizeCalculator::kCalculationTypeCount>

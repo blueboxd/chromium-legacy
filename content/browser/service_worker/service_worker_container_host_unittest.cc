@@ -303,12 +303,10 @@ class ServiceWorkerContainerHostTest : public testing::Test {
     return !container_host->versions_to_update_.empty();
   }
 
-  void TestReservedClientsAreNotExposed(
-      blink::mojom::ServiceWorkerClientType client_type,
-      const GURL& url);
-  void TestClientPhaseTransition(
-      blink::mojom::ServiceWorkerClientType client_type,
-      const GURL& url);
+  void TestReservedClientsAreNotExposed(ServiceWorkerClientInfo client_info,
+                                        const GURL& url);
+  void TestClientPhaseTransition(ServiceWorkerClientInfo client_info,
+                                 const GURL& url);
 
   void TestBackForwardCachedClientsAreNotExposed(const GURL& url);
 
@@ -978,7 +976,7 @@ TEST_F(ServiceWorkerContainerHostTest,
 // when iterating over client container hosts. If it were, it'd be undesirably
 // exposed via the Clients API.
 void ServiceWorkerContainerHostTest::TestReservedClientsAreNotExposed(
-    blink::mojom::ServiceWorkerClientType client_type,
+    ServiceWorkerClientInfo client_info,
     const GURL& url) {
   {
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
@@ -995,8 +993,7 @@ void ServiceWorkerContainerHostTest::TestReservedClientsAreNotExposed(
     base::WeakPtr<ServiceWorkerContainerHost> container_host =
         context_->CreateContainerHostForWorker(
             std::move(host_receiver), helper_->mock_render_process_id(),
-            std::move(client_remote), client_type, DedicatedWorkerId(),
-            SharedWorkerId());
+            std::move(client_remote), client_info);
     container_host->UpdateUrls(url, net::SiteForCookies::FromUrl(url),
                                url::Origin::Create(url));
     EXPECT_FALSE(CanFindClientContainerHost(container_host.get()));
@@ -1030,14 +1027,14 @@ TEST_F(ServiceWorkerContainerHostTestWithPlzDedicatedWorker,
   ASSERT_TRUE(
       base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
   TestReservedClientsAreNotExposed(
-      blink::mojom::ServiceWorkerClientType::kDedicatedWorker,
+      ServiceWorkerClientInfo(DedicatedWorkerId()),
       GURL("https://www.example.com/dedicated_worker.js"));
 }
 
 TEST_F(ServiceWorkerContainerHostTest,
        ReservedClientsAreNotExposedToClientsApiForSharedWorker) {
   TestReservedClientsAreNotExposed(
-      blink::mojom::ServiceWorkerClientType::kSharedWorker,
+      ServiceWorkerClientInfo(SharedWorkerId()),
       GURL("https://www.example.com/shared_worker.js"));
 }
 
@@ -1067,7 +1064,7 @@ TEST_F(ServiceWorkerContainerHostTest, ClientPhaseForWindow) {
 
 // Tests the client phase transitions for workers.
 void ServiceWorkerContainerHostTest::TestClientPhaseTransition(
-    blink::mojom::ServiceWorkerClientType client_type,
+    ServiceWorkerClientInfo client_info,
     const GURL& url) {
   mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
       client_remote;
@@ -1082,8 +1079,7 @@ void ServiceWorkerContainerHostTest::TestClientPhaseTransition(
   base::WeakPtr<ServiceWorkerContainerHost> container_host =
       helper_->context()->CreateContainerHostForWorker(
           std::move(host_receiver), helper_->mock_render_process_id(),
-          std::move(client_remote), client_type, DedicatedWorkerId(),
-          SharedWorkerId());
+          std::move(client_remote), client_info);
   EXPECT_FALSE(container_host->is_response_committed());
   EXPECT_FALSE(container_host->is_execution_ready());
 
@@ -1101,14 +1097,13 @@ TEST_F(ServiceWorkerContainerHostTestWithPlzDedicatedWorker,
   ASSERT_TRUE(
       base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
   TestClientPhaseTransition(
-      blink::mojom::ServiceWorkerClientType::kDedicatedWorker,
+      ServiceWorkerClientInfo(DedicatedWorkerId()),
       GURL("https://www.example.com/dedicated_worker.js"));
 }
 
 TEST_F(ServiceWorkerContainerHostTest, ClientPhaseForSharedWorker) {
-  TestClientPhaseTransition(
-      blink::mojom::ServiceWorkerClientType::kSharedWorker,
-      GURL("https://www.example.com/shared_worker.js"));
+  TestClientPhaseTransition(ServiceWorkerClientInfo(SharedWorkerId()),
+                            GURL("https://www.example.com/shared_worker.js"));
 }
 
 // Run tests with BackForwardCache.

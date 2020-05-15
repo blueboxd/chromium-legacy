@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,8 +30,11 @@
 #include "net/base/url_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
+#include "url/url_util.h"
 
 namespace {
+
+constexpr int kMaxUriDecodeLen = 2048;
 
 std::string FormatTemplate(int resource_id,
                            const ui::TemplateReplacements& replacements) {
@@ -131,20 +135,47 @@ void UntrustedSource::StartDataRequest(
         bundle.LoadDataResourceBytes(IDR_NEW_TAB_PAGE_UNTRUSTED_PROMO_JS));
     return;
   }
-  if ((path == "image" || path == "background_image" || path == "iframe") &&
-      url_param.is_valid() &&
+  if ((path == "image" || path == "iframe") && url_param.is_valid() &&
       (url_param.SchemeIs(url::kHttpsScheme) ||
        url_param.SchemeIs(content::kChromeUIUntrustedScheme))) {
     ui::TemplateReplacements replacements;
     replacements["url"] = url_param.spec();
-    int resource_id =
-        (path == "image")
-            ? IDR_NEW_TAB_PAGE_UNTRUSTED_IMAGE_HTML
-            : (path == "background_image")
-                  ? IDR_NEW_TAB_PAGE_UNTRUSTED_BACKGROUND_IMAGE_HTML
-                  : IDR_NEW_TAB_PAGE_UNTRUSTED_IFRAME_HTML;
+    int resource_id = path == "image" ? IDR_NEW_TAB_PAGE_UNTRUSTED_IMAGE_HTML
+                                      : IDR_NEW_TAB_PAGE_UNTRUSTED_IFRAME_HTML;
     std::string html = FormatTemplate(resource_id, replacements);
     std::move(callback).Run(base::RefCountedString::TakeString(&html));
+    return;
+  }
+  if (path == "background_image") {
+    ServeBackgroundImage(url_param, GURL(), "cover", "no-repeat", "no-repeat",
+                         "center", "center", std::move(callback));
+    return;
+  }
+  if (path == "custom_background_image") {
+    // Parse all query parameters to hash map and decode values.
+    std::unordered_map<std::string, std::string> params;
+    url::Component query(0, url.query().length());
+    url::Component key, value;
+    while (
+        url::ExtractQueryKeyValue(url.query().c_str(), &query, &key, &value)) {
+      url::RawCanonOutputW<kMaxUriDecodeLen> output;
+      url::DecodeURLEscapeSequences(
+          url.query().c_str() + value.begin, value.len,
+          url::DecodeURLMode::kUTF8OrIsomorphic, &output);
+      params.insert(
+          {url.query().substr(key.begin, key.len),
+           base::UTF16ToUTF8(base::string16(output.data(), output.length()))});
+    }
+    // Extract desired values.
+    ServeBackgroundImage(
+        params.count("url") == 1 ? GURL(params["url"]) : GURL(),
+        params.count("url2x") == 1 ? GURL(params["url2x"]) : GURL(),
+        params.count("size") == 1 ? params["size"] : "cover",
+        params.count("repeatX") == 1 ? params["repeatX"] : "no-repeat",
+        params.count("repeatY") == 1 ? params["repeatY"] : "no-repeat",
+        params.count("positionX") == 1 ? params["positionX"] : "center",
+        params.count("positionY") == 1 ? params["positionY"] : "center",
+        std::move(callback));
     return;
   }
   if (path == "background_image.js") {
@@ -198,8 +229,9 @@ bool UntrustedSource::ShouldServiceRequest(
   const std::string path = url.path().substr(1);
   return path == "one-google-bar" || path == "one_google_bar.js" ||
          path == "promo" || path == "promo.js" || path == "image" ||
-         path == "background_image" || path == "background_image.js" ||
-         path == "iframe" || path == "background.jpg";
+         path == "background_image" || path == "custom_background_image" ||
+         path == "background_image.js" || path == "iframe" ||
+         path == "background.jpg";
 }
 
 void UntrustedSource::OnOneGoogleBarDataUpdated() {
@@ -276,4 +308,38 @@ void UntrustedSource::OnPromoDataUpdated() {
 void UntrustedSource::OnPromoServiceShuttingDown() {
   promo_service_observer_.RemoveAll();
   promo_service_ = nullptr;
+}
+
+void UntrustedSource::ServeBackgroundImage(
+    const GURL& url,
+    const GURL& url_2x,
+    const std::string& size,
+    const std::string& repeat_x,
+    const std::string& repeat_y,
+    const std::string& position_x,
+    const std::string& position_y,
+    content::URLDataSource::GotDataCallback callback) {
+  if (!url.is_valid() || !(url.SchemeIs(url::kHttpsScheme) ||
+                           url.SchemeIs(content::kChromeUIUntrustedScheme))) {
+    std::move(callback).Run(base::MakeRefCounted<base::RefCountedString>());
+    return;
+  }
+  ui::TemplateReplacements replacements;
+  replacements["url"] = url.spec();
+  if (url_2x.is_valid()) {
+    replacements["backgroundUrl"] =
+        base::StringPrintf("-webkit-image-set(url(%s) 1x, url(%s) 2x)",
+                           url.spec().c_str(), url_2x.spec().c_str());
+  } else {
+    replacements["backgroundUrl"] =
+        base::StringPrintf("url(%s)", url.spec().c_str());
+  }
+  replacements["size"] = size;
+  replacements["repeatX"] = repeat_x;
+  replacements["repeatY"] = repeat_y;
+  replacements["positionX"] = position_x;
+  replacements["positionY"] = position_y;
+  std::string html = FormatTemplate(
+      IDR_NEW_TAB_PAGE_UNTRUSTED_BACKGROUND_IMAGE_HTML, replacements);
+  std::move(callback).Run(base::RefCountedString::TakeString(&html));
 }

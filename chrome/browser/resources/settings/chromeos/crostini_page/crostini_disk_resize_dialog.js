@@ -55,6 +55,12 @@ Polymer({
       type: Number,
     },
 
+    /** @private */
+    isLowSpaceAvailable_: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private {!DisplayState} */
     displayState_: {
       type: String,
@@ -117,6 +123,7 @@ Polymer({
                 this.minDiskSize_ = diskInfo.ticks[0].label;
                 this.maxDiskSize_ =
                     diskInfo.ticks[diskInfo.ticks.length - 1].label;
+                this.isLowSpaceAvailable_ = diskInfo.isLowSpaceAvailable;
               }
             },
             reason => {

@@ -67,13 +67,3 @@ interface AssistantNotificationController {
   // Changes the quiet mode state in the message center.
   SetQuietMode(bool enabled);
 };
-
-// Interface to the AssistantScreenContextController which is owned by the
-// AssistantController. Currently used by the Assistant service to request
-// screenshots.
-interface AssistantScreenContextController {
-  // Requests a screenshot of the region enclosed by |rect| and returns the
-  // screenshot encoded in JPEG format. If |rect| is empty, it returns a
-  // fullscreen screenshot.
-  RequestScreenshot(gfx.mojom.Rect rect) => (array<uint8> screenshot);
-};

@@ -335,16 +335,15 @@ public class FeedLoggingBridge implements BasicLoggingApi {
      * Reports how long a user spends on the page.
      *
      * @param visitTimeMs Time spent reading the page.
-     * @param isOffline If the page is viewed in offline mode or not.
      * @param returnToNtp User backed to NTP after visit the page.
      */
-    public void onContentTargetVisited(long visitTimeMs, boolean isOffline, boolean returnToNtp) {
+    public void onContentTargetVisited(long visitTimeMs, boolean returnToNtp) {
         // We cannot assume that the|mNativeFeedLoggingBridge| is always available like other
         // methods. This method is called by objects not controlled by Feed lifetimes, and destroy()
         // may have already been called if Feed is disabled by policy.
         if (mNativeFeedLoggingBridge != 0) {
-            FeedLoggingBridgeJni.get().onContentTargetVisited(mNativeFeedLoggingBridge,
-                    FeedLoggingBridge.this, visitTimeMs, isOffline, returnToNtp);
+            FeedLoggingBridgeJni.get().onContentTargetVisited(
+                    mNativeFeedLoggingBridge, FeedLoggingBridge.this, visitTimeMs, returnToNtp);
         }
     }
 
@@ -546,7 +545,7 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         void onTaskFinished(long nativeFeedLoggingBridge, FeedLoggingBridge caller, int task,
                 int delayTimeMs, int taskTimeMs);
         void onContentTargetVisited(long nativeFeedLoggingBridge, FeedLoggingBridge caller,
-                long visitTimeMs, boolean isOffline, boolean returnToNtp);
+                long visitTimeMs, boolean returnToNtp);
         void reportScrolledAfterOpen(long nativeFeedLoggingBridge, FeedLoggingBridge caller);
     }
 }

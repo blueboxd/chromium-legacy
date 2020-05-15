@@ -262,6 +262,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   static RenderFrameHostImpl* FromID(GlobalFrameRoutingId id);
   static RenderFrameHostImpl* FromID(int process_id, int routing_id);
+  static RenderFrameHostImpl* FromFrameToken(
+      int process_id,
+      const base::UnguessableToken& frame_token);
   static RenderFrameHostImpl* FromAXTreeID(ui::AXTreeID ax_tree_id);
   static RenderFrameHostImpl* FromOverlayRoutingToken(
       const base::UnguessableToken& token);
@@ -463,6 +466,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Returns true if the frame recently plays an audio.
   bool is_audible() const { return is_audible_; }
+
+  // Toggles the audible state of this render frame. This should only be called
+  // from AudioStreamMonitor, and should not be invoked with the same value
+  // successively.
   void OnAudibleStateChanged(bool is_audible);
 
   int routing_id() const { return routing_id_; }
@@ -689,9 +696,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return lifecycle_state_ == LifecycleState::kActive ||
            lifecycle_state_ == LifecycleState::kSpeculative;
   }
-
-  // Navigates to an interstitial page represented by the provided data URL.
-  void NavigateToInterstitialURL(const GURL& data_url);
 
   // Stop the load in progress.
   void Stop();
@@ -937,7 +941,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ResetLoadingState();
 
   // Returns the feature policy which should be enforced on this RenderFrame.
-  blink::FeaturePolicy* feature_policy() { return feature_policy_.get(); }
+  const blink::FeaturePolicy* feature_policy() const {
+    return feature_policy_.get();
+  }
 
   void ClearFocusedElement();
 
@@ -1123,12 +1129,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void NavigationRequestCancelled(NavigationRequest* navigation_request);
 
   // Called on the main frame of a page embedded in a Portal when it is
-  // activated. The frame has the option to adopt the previous page as a portal
-  // containing the contents |predecessor_web_contents|. The activation
-  // can optionally include a message |data| dispatched with the
-  // PortalActivateEvent.
+  // activated. The frame has the option to adopt the previous page,
+  // |predecessor|, as a portal. The activation can optionally include a message
+  // |data| dispatched with the PortalActivateEvent.
   void OnPortalActivated(
-      std::unique_ptr<WebContents> predecessor_web_contents,
+      std::unique_ptr<Portal> predecessor,
+      mojo::PendingAssociatedRemote<blink::mojom::Portal> pending_portal,
+      mojo::PendingAssociatedReceiver<blink::mojom::PortalClient>
+          client_receiver,
       blink::TransferableMessage data,
       base::OnceCallback<void(blink::mojom::PortalActivateResult)> callback);
 
@@ -1150,6 +1158,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Returns true if the frame is embedded in a Portal.
   bool InsidePortal();
+
+  bool ShouldVirtualKeyboardOverlayContent() const;
+  void NotifyVirtualKeyboardOverlayRect(const gfx::Rect& keyboard_rect);
 
   blink::mojom::FrameVisibility visibility() const { return visibility_; }
 
@@ -1479,6 +1490,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidContainInsecureFormAction() override;
   void DocumentAvailableInMainFrame(bool uses_temporary_zoom_level) override;
   void SetNeedsOcclusionTracking(bool needs_tracking) override;
+  void SetVirtualKeyboardOverlayPolicy(bool vk_overlays_content) override;
   void LifecycleStateChanged(blink::mojom::FrameLifecycleState state) override;
   void EvictFromBackForwardCache() override;
   void VisibilityChanged(blink::mojom::FrameVisibility) override;
@@ -1554,6 +1566,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidChangeFrameOwnerProperties(
       const base::UnguessableToken& child_frame_token,
       blink::mojom::FrameOwnerPropertiesPtr frame_owner_properties) override;
+  void DidChangeOpener(
+      const base::Optional<base::UnguessableToken>& opener_frame) override;
 
   // blink::LocalMainFrameHost overrides:
   void ScaleFactorChanged(float scale) override;
@@ -1786,7 +1800,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnUnloadACK();
   void OnContextMenu(const UntrustworthyContextMenuParams& params);
   void OnVisualStateResponse(uint64_t id);
-  void OnDidChangeOpener(int32_t opener_routing_id);
 
   void OnDidChangeFramePolicy(int32_t frame_routing_id,
                               const blink::FramePolicy& frame_policy);
@@ -1962,7 +1975,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const url::Origin& main_world_origin,
       network::mojom::ClientSecurityStatePtr client_security_state,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
-          coep_reporter);
+          coep_reporter,
+      network::mojom::TrustTokenRedemptionPolicy trust_token_redemption_policy);
 
   // Creates a Network Service-backed factory from appropriate |NetworkContext|
   // and sets a connection error handler to trigger
@@ -2203,7 +2217,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   CreateURLLoaderFactoriesForIsolatedWorlds(
       const url::Origin& main_world_origin,
       const base::flat_set<url::Origin>& isolated_world_origins,
-      network::mojom::ClientSecurityStatePtr client_security_state);
+      network::mojom::ClientSecurityStatePtr client_security_state,
+      network::mojom::TrustTokenRedemptionPolicy trust_token_redemption_policy);
 
   // Based on the termination |status| and |exit_code|, may generate a crash
   // report to be routed to the Reporting API.
@@ -2586,6 +2601,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // signal. If false, all audio streams are currently silent (or there are no
   // audio streams).
   bool is_audible_;
+
+  // If true, then the Virtual keyboard rectangle that occludes the content is
+  // sent to the VirtualKeyboard API where it fires overlaygeometrychange JS
+  // event notifying the web authors that Virtual keyboard has occluded the
+  // content.
+  bool should_virtual_keyboard_overlay_content_;
 
   // Used for tracking the latest size of the RenderFrame.
   base::Optional<gfx::Size> frame_size_;

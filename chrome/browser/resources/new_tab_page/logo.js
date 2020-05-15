@@ -131,6 +131,12 @@ class LogoElement extends PolymerElement {
         this.height_ = `${this.doodle_.content.interactiveDoodle.height}px`;
       }
     });
+    /** @private {?string} */
+    this.imageClickParams_;
+    /** @private {url.mojom.Url} */
+    this.interactionLogUrl_;
+    /** @private {?string} */
+    this.shareId_;
   }
 
   /** @override */
@@ -195,22 +201,53 @@ class LogoElement extends PolymerElement {
     if (this.isCtaImageShown_()) {
       this.showAnimation_ = true;
       this.pageHandler_.onDoodleImageClicked(
-          newTabPage.mojom.DoodleImageType.CTA);
+          newTabPage.mojom.DoodleImageType.CTA, this.interactionLogUrl_);
+
+      // TODO(tiborg): This is technically not correct since we don't know if
+      // the animation has loaded yet. However, since the animation is loaded
+      // inside an iframe retrieving the proper load signal is not trivial. In
+      // practice this should be good enough but we could improve that in the
+      // future.
+      this.logImageRendered_(
+          newTabPage.mojom.DoodleImageType.ANIMATION,
+          /** @type {!url.mojom.Url} */
+          (this.doodle_.content.imageDoodle.animationImpressionLogUrl));
+
       return;
     }
     this.pageHandler_.onDoodleImageClicked(
         this.showAnimation_ ? newTabPage.mojom.DoodleImageType.ANIMATION :
-                              newTabPage.mojom.DoodleImageType.STATIC);
-    BrowserProxy.getInstance().open(
-        this.doodle_.content.imageDoodle.onClickUrl.url);
+                              newTabPage.mojom.DoodleImageType.STATIC,
+        null);
+    const onClickUrl = new URL(this.doodle_.content.imageDoodle.onClickUrl.url);
+    if (this.imageClickParams_) {
+      for (const param of new URLSearchParams(this.imageClickParams_)) {
+        onClickUrl.searchParams.append(param[0], param[1]);
+      }
+    }
+    BrowserProxy.getInstance().open(onClickUrl.toString());
   }
 
   /** @private */
   onImageLoad_() {
-    this.pageHandler_.onDoodleImageRendered(
+    this.logImageRendered_(
         this.isCtaImageShown_() ? newTabPage.mojom.DoodleImageType.CTA :
                                   newTabPage.mojom.DoodleImageType.STATIC,
-        BrowserProxy.getInstance().now());
+        this.doodle_.content.imageDoodle.imageImpressionLogUrl);
+  }
+
+  /**
+   * @param {newTabPage.mojom.DoodleImageType} type
+   * @param {!url.mojom.Url} logUrl
+   * @private
+   */
+  async logImageRendered_(type, logUrl) {
+    const {imageClickParams, interactionLogUrl, shareId} =
+        await this.pageHandler_.onDoodleImageRendered(
+            type, BrowserProxy.getInstance().now(), logUrl);
+    this.imageClickParams_ = imageClickParams;
+    this.interactionLogUrl_ = interactionLogUrl;
+    this.shareId_ = shareId;
   }
 
   /**
@@ -221,6 +258,19 @@ class LogoElement extends PolymerElement {
     if ([' ', 'Enter'].includes(e.key)) {
       this.onImageClick_();
     }
+  }
+
+  /**
+   * @param {!CustomEvent} e
+   * @private
+   */
+  onShare_(e) {
+    const doodleId = new URL(this.doodle_.content.imageDoodle.onClickUrl.url)
+                         .searchParams.get('ct');
+    if (!doodleId) {
+      return;
+    }
+    this.pageHandler_.onDoodleShared(e.detail, doodleId, this.shareId_);
   }
 
   /**

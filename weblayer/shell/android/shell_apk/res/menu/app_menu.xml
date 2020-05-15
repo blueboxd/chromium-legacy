@@ -15,4 +15,6 @@
     <item android:id="@+id/toggle_bottom_view_id"
           android:checkable="true"
         android:title="Bottom view" />
+    <item android:id="@+id/site_settings_menu_id"
+        android:title="Site Settings" />
 </menu>

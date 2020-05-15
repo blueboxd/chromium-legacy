@@ -628,9 +628,11 @@ using base::UserMetricsAction;
 - (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
                        styleForRegion:(UIPointerRegion*)region
     API_AVAILABLE(ios(13.4)) {
-  UIBezierPath* path = [UIBezierPath
-      bezierPathWithRoundedRect:interaction.view.bounds
-                   cornerRadius:interaction.view.bounds.size.height];
+  // Without this, the hover effect looks slightly oversized.
+  CGRect rect = CGRectInset(interaction.view.bounds, 1, 1);
+  UIBezierPath* path =
+      [UIBezierPath bezierPathWithRoundedRect:rect
+                                 cornerRadius:rect.size.height];
   UIPreviewParameters* parameters = [[UIPreviewParameters alloc] init];
   parameters.visiblePath = path;
   UITargetedPreview* preview =

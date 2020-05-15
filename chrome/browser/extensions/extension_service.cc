@@ -1297,10 +1297,6 @@ void ExtensionService::SetReadyAndNotifyListeners() {
       "Extensions.ExtensionServiceNotifyReadyListenersTime");
 
   ready_->Signal();
-  content::NotificationService::current()->Notify(
-      NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
-      content::Source<Profile>(profile_),
-      content::NotificationService::NoDetails());
 }
 
 void ExtensionService::AddExtension(const Extension* extension) {

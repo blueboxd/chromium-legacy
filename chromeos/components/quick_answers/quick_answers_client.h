@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "chromeos/components/quick_answers/result_loader.h"
+#include "chromeos/components/quick_answers/understanding/intent_generator.h"
 
 namespace network {
 namespace mojom {
@@ -60,6 +61,11 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
   using ResultLoaderFactoryCallback =
       base::RepeatingCallback<std::unique_ptr<ResultLoader>()>;
 
+  // Method that can be used in tests to change the intent generator returned by
+  // |CreateResultLoader| in tests.
+  using IntentGeneratorFactoryCallback =
+      base::RepeatingCallback<std::unique_ptr<IntentGenerator>()>;
+
   QuickAnswersClient(network::mojom::URLLoaderFactory* url_loader_factory,
                      ash::AssistantState* assistant_state,
                      QuickAnswersDelegate* delegate);
@@ -95,9 +101,22 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
   static void SetResultLoaderFactoryForTesting(
       ResultLoaderFactoryCallback* factory);
 
+  static void SetIntentGeneratorFactoryForTesting(
+      IntentGeneratorFactoryCallback* factory);
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(QuickAnswersClientTest, SendRequest);
+  FRIEND_TEST_ALL_PREFIXES(QuickAnswersClientTest,
+                           NotSendRequestForUnknownIntent);
+  FRIEND_TEST_ALL_PREFIXES(QuickAnswersClientTest, PreprocessDefinitionIntent);
+  FRIEND_TEST_ALL_PREFIXES(QuickAnswersClientTest, PreprocessTranslationIntent);
+
   // Creates a |ResultLoader| instance.
   std::unique_ptr<ResultLoader> CreateResultLoader(IntentType intent_type);
+
+  // Creates an |IntentGenerator| instance.
+  std::unique_ptr<IntentGenerator> CreateIntentGenerator(
+      const QuickAnswersRequest& request);
 
   void NotifyEligibilityChanged();
   void IntentGeneratorCallback(const QuickAnswersRequest& quick_answers_request,
@@ -109,6 +128,7 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
   ash::AssistantState* assistant_state_ = nullptr;
   QuickAnswersDelegate* delegate_ = nullptr;
   std::unique_ptr<ResultLoader> result_loader_;
+  std::unique_ptr<IntentGenerator> intent_generator_;
   bool assistant_enabled_ = false;
   bool assistant_context_enabled_ = false;
   bool quick_answers_settings_enabled_ = false;

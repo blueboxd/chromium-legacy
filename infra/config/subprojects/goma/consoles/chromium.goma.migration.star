@@ -1,3 +1,7 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 # These are used for monitoring builders that have recently been migrated to
 # Goma RBE (See crbug.com/950413).
 luci.console_view(

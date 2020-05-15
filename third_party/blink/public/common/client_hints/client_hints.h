@@ -60,6 +60,10 @@ base::Optional<std::vector<network::mojom::WebClientHintsType>> FilterAcceptCH(
     bool permit_lang_hints,
     bool permit_ua_hints);
 
+// Indicates that a hint is sent by default, regardless of an opt-in.
+BLINK_COMMON_EXPORT
+bool IsClientHintSentByDefault(network::mojom::WebClientHintsType type);
+
 // Add a list of Client Hints headers to be removed to the output vector, based
 // on FeaturePolicy and the url's origin.
 BLINK_COMMON_EXPORT void FindClientHintsToRemove(

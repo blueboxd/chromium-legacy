@@ -27,4 +27,15 @@ public class UrlFormatterUnitTest {
                 UrlFormatter.fixupUrl("//mail.google.com:/").getSpec());
         Assert.assertFalse(UrlFormatter.fixupUrl("0x100.0").isValid());
     }
+
+    @CalledByNativeJavaTest
+    public void testFormatUrlForDisplayOmitUsernamePassword() {
+        Assert.assertEquals("http://google.com/path",
+                UrlFormatter.formatUrlForDisplayOmitUsernamePassword("http://google.com/path"));
+        Assert.assertEquals("http://google.com",
+                UrlFormatter.formatUrlForDisplayOmitUsernamePassword(
+                        "http://user:pass@google.com"));
+        Assert.assertEquals("http://google.com",
+                UrlFormatter.formatUrlForDisplayOmitUsernamePassword("http://user@google.com"));
+    }
 }

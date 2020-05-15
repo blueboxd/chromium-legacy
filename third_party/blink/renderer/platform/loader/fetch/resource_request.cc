@@ -77,7 +77,7 @@ ResourceRequestHead::ResourceRequestHead(const KURL& url)
       is_external_request_(false),
       cors_preflight_policy_(
           network::mojom::CorsPreflightPolicy::kConsiderPreflight),
-      redirect_status_(RedirectStatus::kNoRedirect) {}
+      redirect_info_(base::nullopt) {}
 
 ResourceRequestHead::ResourceRequestHead(const ResourceRequestHead&) = default;
 
@@ -155,7 +155,7 @@ std::unique_ptr<ResourceRequest> ResourceRequestHead::CreateRedirectRequest(
   request->SetReferrerString(referrer);
   request->SetReferrerPolicy(new_referrer_policy);
   request->SetSkipServiceWorker(skip_service_worker);
-  request->SetRedirectStatus(RedirectStatus::kFollowedRedirect);
+  request->SetRedirectInfo(RedirectInfo(Url()));
 
   // Copy from parameters for |this|.
   request->SetDownloadToBlob(DownloadToBlob());

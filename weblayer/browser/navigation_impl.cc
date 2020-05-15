@@ -96,7 +96,7 @@ const std::vector<GURL>& NavigationImpl::GetRedirectChain() {
 }
 
 NavigationState NavigationImpl::GetState() {
-  if (navigation_handle_->IsErrorPage())
+  if (navigation_handle_->IsErrorPage() || navigation_handle_->IsDownload())
     return NavigationState::kFailed;
   if (navigation_handle_->HasCommitted())
     return NavigationState::kComplete;
@@ -116,6 +116,10 @@ bool NavigationImpl::IsSameDocument() {
 
 bool NavigationImpl::IsErrorPage() {
   return navigation_handle_->IsErrorPage();
+}
+
+bool NavigationImpl::IsDownload() {
+  return navigation_handle_->IsDownload();
 }
 
 Navigation::LoadError NavigationImpl::GetLoadError() {

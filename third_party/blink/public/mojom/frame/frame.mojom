@@ -159,6 +159,11 @@ interface LocalFrameHost {
   // in order to service IntersectionObserver's that track visibility.
   SetNeedsOcclusionTracking(bool needs_tracking);
 
+  // Indication that the associated frame would like to change the policy on
+  // whether or not the virtual keyboard should overlay content (vs. default
+  // behavior of 'shifting' the content via insets and a scrollIntoView).
+  SetVirtualKeyboardOverlayPolicy(bool vk_overlays_content);
+
   // Notifies the browser that the current frame has changed its lifecycle
   // state.
   LifecycleStateChanged(blink.mojom.FrameLifecycleState state);
@@ -371,6 +376,11 @@ interface LocalFrameHost {
   DidChangeFrameOwnerProperties(
     mojo_base.mojom.UnguessableToken child_frame_token,
     blink.mojom.FrameOwnerProperties frame_owner_properties);
+
+  // Sent when a remote renderer frame either updates its opener to another
+  // frame identified by |opener_frame|, or, if |opener_frame| // is "empty",
+  // the frame disowns its opener for the lifetime of the window.
+  DidChangeOpener(mojo_base.mojom.UnguessableToken? opener_frame);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will
@@ -404,6 +414,10 @@ interface LocalFrame {
   // Notifies the RenderFrame about a user activation detected in the browser
   // side (e.g. during Android voice search).
   NotifyUserActivation();
+
+  // Notifies the |LocalFrame| about the Virtual keyboard rectangle that is occluding the web
+  // content.
+  NotifyVirtualKeyboardOverlayRect(gfx.mojom.Rect keyboard_rect);
 
   // Add message to the frame console.
   AddMessageToConsole(ConsoleMessageLevel level, string message,
@@ -579,6 +593,11 @@ interface RemoteFrameHost {
   //
   // https://html.spec.whatwg.org/multipage/interaction.html#inert
   SetIsInert(bool inert);
+
+  // Sent when a renderer local frame either updates its opener to another
+  // frame identified by |opener_frame|, or, if |opener_frame| is "empty",
+  // the frame disowns its opener for the lifetime of the window.
+  DidChangeOpener(mojo_base.mojom.UnguessableToken? opener_frame);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

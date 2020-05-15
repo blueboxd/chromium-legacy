@@ -66,8 +66,8 @@ void ClientHints::GetAllowedClientHintsFromSource(
 
 bool ClientHints::IsJavaScriptAllowed(const GURL& url) {
   return settings_map_->GetContentSetting(
-             url, url, ContentSettingsType::JAVASCRIPT, std::string()) ==
-         CONTENT_SETTING_ALLOW;
+             url, url, ContentSettingsType::JAVASCRIPT, std::string()) !=
+         CONTENT_SETTING_BLOCK;
 }
 
 blink::UserAgentMetadata ClientHints::GetUserAgentMetadata() {
@@ -99,6 +99,9 @@ void ClientHints::PersistClientHints(
   // TODO(tbansal): crbug.com/735518. Consider killing the renderer that sent
   // the malformed IPC.
   if (!primary_url.is_valid() || !content::IsOriginSecure(primary_url))
+    return;
+
+  if (!IsJavaScriptAllowed(primary_url))
     return;
 
   DCHECK_LE(

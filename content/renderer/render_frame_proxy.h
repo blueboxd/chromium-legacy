@@ -195,7 +195,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
                          const blink::WebRect& screen_space_rect) override;
   void UpdateRemoteViewportIntersection(
       const blink::ViewportIntersectionState& intersection_state) override;
-  void DidChangeOpener(blink::WebFrame* opener) override;
   void AdvanceFocus(blink::mojom::FocusType type,
                     blink::WebLocalFrame* source) override;
   base::UnguessableToken GetDevToolsFrameToken() override;

@@ -50,16 +50,11 @@ ScopedJavaLocalRef<jobject> CreateJavaTargetDeviceInfo(
       device_info.device_type, device_info.last_updated_timestamp.ToJavaTime());
 }
 
-void LogModelLoadedInTime(bool status) {
-  UMA_HISTOGRAM_BOOLEAN("SendTabToSelf.Sync.ModelLoadedInTime", status);
-}
-
 SendTabToSelfModel* GetModel(const JavaParamRef<jobject>& j_profile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   SendTabToSelfModel* model = SendTabToSelfSyncServiceFactory::GetInstance()
                                   ->GetForProfile(profile)
                                   ->GetSendTabToSelfModel();
-  LogModelLoadedInTime(model->IsReady());
   return model;
 }
 

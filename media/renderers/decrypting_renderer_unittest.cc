@@ -87,7 +87,7 @@ class DecryptingRendererTest : public testing::Test {
 
   bool use_aes_decryptor_ = false;
   base::test::TaskEnvironment task_environment_;
-  base::MockCallback<CdmAttachedCB> set_cdm_cb_;
+  base::MockCallback<Renderer::CdmAttachedCB> set_cdm_cb_;
   base::MockOnceCallback<void(PipelineStatus)> renderer_init_cb_;
   NullMediaLog null_media_log_;
   StrictMock<MockCdmContext> cdm_context_;

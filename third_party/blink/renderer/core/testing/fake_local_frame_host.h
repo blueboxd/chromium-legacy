@@ -40,6 +40,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void DidContainInsecureFormAction() override;
   void DocumentAvailableInMainFrame(bool uses_temporary_zoom_level) override;
   void SetNeedsOcclusionTracking(bool needs_tracking) override;
+  void SetVirtualKeyboardOverlayPolicy(bool vk_overlays_content) override;
   void LifecycleStateChanged(mojom::blink::FrameLifecycleState state) override;
   void EvictFromBackForwardCache() override;
   void VisibilityChanged(mojom::blink::FrameVisibility visibility) override;
@@ -115,6 +116,8 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void DidChangeFrameOwnerProperties(
       const base::UnguessableToken& child_frame_token,
       mojom::blink::FrameOwnerPropertiesPtr frame_owner_properties) override;
+  void DidChangeOpener(
+      const base::Optional<base::UnguessableToken>& opener_frame) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

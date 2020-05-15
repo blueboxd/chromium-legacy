@@ -46,6 +46,16 @@
       <div slot="title">$i18n{crostiniDiskResizeTitle}</div>
       <div slot="body">
         <template is="dom-if" if="[[eq_(displayState_, DisplayState.RESIZE)]]">
+          <div>
+            <div hidden="[[isLowSpaceAvailable_]]" id="recommended-size">
+              $i18n{crostiniDiskResizeRecommended}
+            </div>
+            <div hidden="[[!isLowSpaceAvailable_]]" 
+                id="recommended-size-warning">
+              <iron-icon id="warningIcon" icon="cr:warning"></iron-icon>
+              $i18n{crostiniDiskResizeRecommendedWarning}
+            </div>
+          </div>
           <div id="resize-block">
             <cr-slider id="diskSlider" pin="true"
                 value="[[defaultDiskSizeTick_]]" ticks="[[diskSizeTicks_]]"

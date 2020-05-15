@@ -1438,6 +1438,16 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_OmniboxOnly[] = {
     {"start_surface_variation", "omniboxonly"},
     {"hide_switch_when_no_incognito_tabs", "true"}};
 
+const FeatureEntry::FeatureParam kStartSurfaceAndroid_OmniboxOnly_Quick[] = {
+    {"start_surface_variation", "omniboxonly"},
+    {"omnibox_scroll_mode", "quick"},
+    {"hide_switch_when_no_incognito_tabs", "true"}};
+
+const FeatureEntry::FeatureParam kStartSurfaceAndroid_OmniboxOnly_Pinned[] = {
+    {"start_surface_variation", "omniboxonly"},
+    {"omnibox_scroll_mode", "pinned"},
+    {"hide_switch_when_no_incognito_tabs", "true"}};
+
 const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
     {"Single Surface", kStartSurfaceAndroid_SingleSurface,
      base::size(kStartSurfaceAndroid_SingleSurface), nullptr},
@@ -1456,7 +1466,11 @@ const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
     {"Tasks Only", kStartSurfaceAndroid_TasksOnly,
      base::size(kStartSurfaceAndroid_TasksOnly), nullptr},
     {"Omnibox Only", kStartSurfaceAndroid_OmniboxOnly,
-     base::size(kStartSurfaceAndroid_OmniboxOnly), nullptr}};
+     base::size(kStartSurfaceAndroid_OmniboxOnly), nullptr},
+    {"Omnibox Only, Quick", kStartSurfaceAndroid_OmniboxOnly_Quick,
+     base::size(kStartSurfaceAndroid_OmniboxOnly_Quick), nullptr},
+    {"Omnibox Only, Pinned", kStartSurfaceAndroid_OmniboxOnly_Pinned,
+     base::size(kStartSurfaceAndroid_OmniboxOnly_Pinned), nullptr}};
 
 const FeatureEntry::FeatureParam kConditionalTabStripAndroid_Immediate[] = {
     {"conditional_tab_strip_session_time_ms", "0"}};

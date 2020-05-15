@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 537 tests; 346 PASS, 191 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 544 tests; 346 PASS, 198 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS Parsing: <http://example	.
 org> against <http://example.org/foo/bar>
@@ -344,7 +344,6 @@ FAIL Parsing: <data:/../> against <about:blank> assert_equals: href expected "da
 FAIL Parsing: <javascript:/../> against <about:blank> assert_equals: href expected "javascript:/" but got "javascript:/../"
 FAIL Parsing: <mailto:/../> against <about:blank> assert_equals: href expected "mailto:/" but got "mailto:/../"
 FAIL Parsing: <sc://ñ.test/> against <about:blank> assert_equals: host expected "%C3%B1.test" but got ""
-FAIL Parsing: <sc://!"$&'()*+,-.;<=>^_`{|}~/> against <about:blank> assert_equals: host expected "%1F!\"$&'()*+,-.;<=>^_`{|}~" but got ""
 FAIL Parsing: <sc://\0/> against <about:blank> assert_unreached: Expected URL to fail parsing Reached unreachable code
 FAIL Parsing: <sc:// /> against <about:blank> assert_unreached: Expected URL to fail parsing Reached unreachable code
 FAIL Parsing: <sc://%/> against <about:blank> assert_equals: host expected "%" but got ""
@@ -361,6 +360,14 @@ PASS Parsing: <sc::a@example.net> against <about:blank>
 PASS Parsing: <wow:%NBD> against <about:blank>
 PASS Parsing: <wow:%1G> against <about:blank>
 FAIL Parsing: <wow:￿> against <about:blank> assert_equals: href expected "wow:%EF%BF%BF" but got "wow:%EF%BF%BD"
+FAIL Parsing: <http://a<b> against <about:blank> assert_unreached: Expected URL to fail parsing Reached unreachable code
+FAIL Parsing: <http://a>b> against <about:blank> assert_unreached: Expected URL to fail parsing Reached unreachable code
+FAIL Parsing: <http://a^b> against <about:blank> assert_equals: failure should set href to input expected "http://a^b" but got "http://a%5Eb/"
+FAIL Parsing: <non-special://a<b> against <about:blank> assert_unreached: Expected URL to fail parsing Reached unreachable code
+FAIL Parsing: <non-special://a>b> against <about:blank> assert_unreached: Expected URL to fail parsing Reached unreachable code
+FAIL Parsing: <non-special://a^b> against <about:blank> assert_unreached: Expected URL to fail parsing Reached unreachable code
+FAIL Parsing: <http://!"$&'()*+,-.;=_`{|}~/> against <about:blank> assert_equals: href expected "http://\x1f!\"$&'()*+,-.;=_`{|}~/" but got "http://%1F%21%22%24%26%27%28%29%2A+%2C-.%3B%3D_%60%7B%7C%7D%7E/"
+FAIL Parsing: <sc://!"$&'()*+,-.;=_`{|}~/> against <about:blank> assert_equals: host expected "%1F!\"$&'()*+,-.;=_`{|}~" but got ""
 FAIL Parsing: <ftp://example.com%80/> against <about:blank> assert_equals: failure should set href to input expected "ftp://example.com%80/" but got "ftp://example.com%EF%BF%BD/"
 FAIL Parsing: <ftp://example.com%A0/> against <about:blank> assert_equals: failure should set href to input expected "ftp://example.com%A0/" but got "ftp://example.com%EF%BF%BD/"
 FAIL Parsing: <https://example.com%80/> against <about:blank> assert_equals: failure should set href to input expected "https://example.com%80/" but got "https://example.com%EF%BF%BD/"

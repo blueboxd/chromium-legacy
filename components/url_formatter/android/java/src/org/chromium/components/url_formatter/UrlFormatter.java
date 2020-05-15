@@ -92,6 +92,24 @@ public final class UrlFormatter {
     public static String formatUrlForDisplayOmitSchemeOmitTrivialSubdomains(String uri) {
         return UrlFormatterJni.get().formatUrlForDisplayOmitSchemeOmitTrivialSubdomains(uri);
     }
+    /**
+     * Builds a String representation of <code>uri</code> suitable for display to the user,
+     * omitting the username and password and trailing slash on a bare hostname.
+     *
+     * The IDN hostname is turned to Unicode if the Unicode representation is deemed safe.
+     * For more information, see <code>url_formatter::FormatUrl(const GURL&)</code>.
+     *
+     * Example:
+     *  - "http://user:password@example.com/%20test" -> "http://example.com/%20test"
+     *  - "http://user:password@example.com/" -> "http://example.com"
+     *  - "http://www.xn--frgbolaget-q5a.se" -> "http://www.färgbolaget.se"
+     *
+     * @param uri URI to format.
+     * @return Formatted URL.
+     */
+    public static String formatUrlForDisplayOmitUsernamePassword(String uri) {
+        return UrlFormatterJni.get().formatUrlForDisplayOmitUsernamePassword(uri);
+    }
 
     /**
      * Builds a String representation of <code>uri</code> suitable for copying to the clipboard.
@@ -145,6 +163,7 @@ public final class UrlFormatter {
         String formatUrlForDisplayOmitScheme(String url);
         String formatUrlForDisplayOmitHTTPScheme(String url);
         String formatUrlForDisplayOmitSchemeOmitTrivialSubdomains(String url);
+        String formatUrlForDisplayOmitUsernamePassword(String url);
         String formatUrlForCopy(String url);
         String formatUrlForSecurityDisplay(GURL url, @SchemeDisplay int schemeDisplay);
         String formatStringUrlForSecurityDisplay(String url, @SchemeDisplay int schemeDisplay);

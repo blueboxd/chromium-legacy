@@ -37,11 +37,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantClient {
       mojo::PendingReceiver<ash::mojom::AssistantNotificationController>
           receiver) = 0;
 
-  // Requests Ash's AssistantScreenContextController interface from the browser.
-  virtual void RequestAssistantScreenContextController(
-      mojo::PendingReceiver<ash::mojom::AssistantScreenContextController>
-          receiver) = 0;
-
   // Requests Ash's AssistantVolumeControl interface from the browser.
   virtual void RequestAssistantVolumeControl(
       mojo::PendingReceiver<ash::mojom::AssistantVolumeControl> receiver) = 0;

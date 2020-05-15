@@ -59,7 +59,7 @@ public class FullscreenManagerUnitTest {
     @Mock
     private android.content.res.Resources mResources;
     @Mock
-    private ChromeFullscreenManager.FullscreenListener mFullscreenListener;
+    private BrowserControlsStateProvider.Observer mBrowserControlsStateProviderObserver;
     @Mock
     private Tab mTab;
     @Mock
@@ -92,7 +92,7 @@ public class FullscreenManagerUnitTest {
         mFullscreenManager = spy(fullscreenManager);
         mFullscreenManager.initialize(
                 mControlContainer, mTabModelSelector, R.dimen.control_container_height);
-        mFullscreenManager.addListener(mFullscreenListener);
+        mFullscreenManager.addObserver(mBrowserControlsStateProviderObserver);
         when(mFullscreenManager.getTab()).thenReturn(mTab);
     }
 
@@ -107,7 +107,7 @@ public class FullscreenManagerUnitTest {
         final int topControlsHeight = TOOLBAR_HEIGHT + EXTRA_TOP_CONTROL_HEIGHT;
         final int topControlsMinHeight = EXTRA_TOP_CONTROL_HEIGHT;
         mFullscreenManager.setTopControlsHeight(topControlsHeight, topControlsMinHeight);
-        verify(mFullscreenListener)
+        verify(mBrowserControlsStateProviderObserver)
                 .onTopControlsHeightChanged(topControlsHeight, topControlsMinHeight);
     }
 

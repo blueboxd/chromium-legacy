@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.omnibox.suggestions.header;
 
 import androidx.core.view.ViewCompat;
+import androidx.core.widget.TextViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -21,8 +22,8 @@ public class HeaderViewBinder {
             view.getTextView().setText(model.get(HeaderViewProperties.TITLE));
         } else if (propertyKey == SuggestionCommonProperties.USE_DARK_COLORS) {
             final boolean useDarkColors = model.get(SuggestionCommonProperties.USE_DARK_COLORS);
-            view.getTextView().setTextAppearance(
-                    ChromeColors.getMediumTextSecondaryStyle(!useDarkColors));
+            TextViewCompat.setTextAppearance(
+                    view.getTextView(), ChromeColors.getMediumTextSecondaryStyle(!useDarkColors));
             ApiCompatibilityUtils.setImageTintList(view.getIconView(),
                     ChromeColors.getPrimaryIconTint(view.getContext(), !useDarkColors));
         } else if (propertyKey == SuggestionCommonProperties.LAYOUT_DIRECTION) {

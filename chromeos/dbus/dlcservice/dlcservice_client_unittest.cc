@@ -190,15 +190,13 @@ TEST_F(DlcserviceClientTest, UninstallBusyStatusTest) {
   method_call.SetSerial(123);
   err_responses_.push_back(dbus::ErrorResponse::FromMethodCall(
       &method_call, dlcservice::kErrorBusy, ""));
-  err_responses_.push_back(dbus::ErrorResponse::FromMethodCall(
-      &method_call, dlcservice::kErrorNone, ""));
 
   EXPECT_CALL(*mock_proxy_.get(), DoCallMethodWithErrorResponse(_, _, _))
       .WillRepeatedly(
           Invoke(this, &DlcserviceClientTest::CallMethodWithErrorResponse));
 
   DlcserviceClient::UninstallCallback callback = base::BindOnce(
-      [](const std::string& err) { EXPECT_EQ(dlcservice::kErrorNone, err); });
+      [](const std::string& err) { EXPECT_EQ(dlcservice::kErrorBusy, err); });
   client_->Uninstall("some-dlc-id", std::move(callback));
   base::RunLoop().RunUntilIdle();
 }
@@ -241,15 +239,13 @@ TEST_F(DlcserviceClientTest, PurgeBusyStatusTest) {
   method_call.SetSerial(123);
   err_responses_.push_back(dbus::ErrorResponse::FromMethodCall(
       &method_call, dlcservice::kErrorBusy, ""));
-  err_responses_.push_back(dbus::ErrorResponse::FromMethodCall(
-      &method_call, dlcservice::kErrorNone, ""));
 
   EXPECT_CALL(*mock_proxy_.get(), DoCallMethodWithErrorResponse(_, _, _))
       .WillRepeatedly(
           Invoke(this, &DlcserviceClientTest::CallMethodWithErrorResponse));
 
   DlcserviceClient::PurgeCallback callback = base::BindOnce(
-      [](const std::string& err) { EXPECT_EQ(dlcservice::kErrorNone, err); });
+      [](const std::string& err) { EXPECT_EQ(dlcservice::kErrorBusy, err); });
   client_->Purge("some-dlc-id", std::move(callback));
   base::RunLoop().RunUntilIdle();
 }

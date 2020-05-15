@@ -29,12 +29,19 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import static org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS;
+import static org.chromium.chrome.features.start_surface.InstantStartTest.createThumbnailBitmapAndWriteToFile;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
 import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.ViewAction;
+import android.support.test.espresso.action.GeneralLocation;
+import android.support.test.espresso.action.GeneralSwipeAction;
+import android.support.test.espresso.action.Press;
+import android.support.test.espresso.action.Swipe;
+import android.support.test.espresso.action.ViewActions;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.filters.MediumTest;
 import android.view.KeyEvent;
@@ -100,6 +107,14 @@ public class StartSurfaceTest {
     private static final String BASE_PARAMS =
             "force-fieldtrial-params=Study.Group:start_surface_variation";
 
+    /** Somehow {@link ViewActions#swipeUp} couldn't be performed */
+    private static final ViewAction SWIPE_UP_FROM_CENTER = new GeneralSwipeAction(
+            Swipe.FAST, GeneralLocation.CENTER, GeneralLocation.TOP_CENTER, Press.FINGER);
+
+    /** {@link ViewActions#swipeDown} can wrongly touch the omnibox. */
+    private static final ViewAction SWIPE_DOWN_FROM_CENTER = new GeneralSwipeAction(
+            Swipe.FAST, GeneralLocation.CENTER, GeneralLocation.BOTTOM_CENTER, Press.FINGER);
+
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
@@ -137,6 +152,19 @@ public class StartSurfaceTest {
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
 
         mUrl = testServer.getURL("/chrome/test/data/android/navigate/simple.html");
+
+        // Scrolling tests need more tabs.
+        String scrollMode = StartSurfaceConfiguration.START_SURFACE_OMNIBOX_SCROLL_MODE.getValue();
+        int expectedTabs = scrollMode.isEmpty() ? 1 : 16;
+        int additionalTabs = expectedTabs - (mImmediateReturn ? 0 : 1);
+        if (additionalTabs > 0) {
+            int[] tabIDs = new int[additionalTabs];
+            for (int i = 0; i < additionalTabs; i++) {
+                tabIDs[i] = i;
+                createThumbnailBitmapAndWriteToFile(i);
+            }
+            InstantStartTest.createTabStateFile(tabIDs);
+        }
         if (mImmediateReturn) {
             TAB_SWITCHER_ON_RETURN_MS.setForTesting(0);
             assertEquals(0, ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS.getValue());
@@ -148,7 +176,6 @@ public class StartSurfaceTest {
             // Creating tabs and restart the activity would do the trick, but we cannot do that for
             // Instant start because we cannot unload native library.
             // Create fake TabState files to emulate having one tab in previous session.
-            InstantStartTest.createTabStateFile(new int[] {0});
             TabAttributeCache.setTitleForTesting(0, "tab title");
             startMainActivityFromLauncher();
         } else {
@@ -737,6 +764,75 @@ public class StartSurfaceTest {
         CriteriaHelper.pollUiThread(
                 () -> NewTabPage.isNTPUrl(cta.getTabModelSelector().getCurrentTab().getUrl()));
         assertFalse(cta.getOverviewModeBehavior().overviewVisible());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @DisableIf.Build(hardware_is = "bullhead", message = "crbug.com/1081657")
+    @CommandLineFlags.Add({BASE_PARAMS + "/omniboxonly" +
+        "/hide_switch_when_no_incognito_tabs/true/omnibox_scroll_mode/top"})
+    public void testScroll_OmniboxOnly_Top() {
+        // clang-format on
+        if (!mImmediateReturn) {
+            // TODO(crbug.com/1082664): Make it work with NoReturn.
+            return;
+        }
+        onViewWaiting(allOf(withId(R.id.primary_tasks_surface_view), isDisplayed()));
+
+        onView(withId(R.id.search_box)).check(matches(isDisplayed()));
+        onView(withId(org.chromium.chrome.tab_ui.R.id.tasks_surface_body))
+                .perform(SWIPE_UP_FROM_CENTER, SWIPE_UP_FROM_CENTER, SWIPE_UP_FROM_CENTER);
+        onView(withId(R.id.search_box)).check(matches(not(isDisplayed())));
+        onView(withId(org.chromium.chrome.tab_ui.R.id.tasks_surface_body))
+                .perform(SWIPE_DOWN_FROM_CENTER);
+        onView(withId(R.id.search_box)).check(matches(not(isDisplayed())));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @DisableIf.Build(hardware_is = "bullhead", message = "crbug.com/1081657")
+    @CommandLineFlags.Add({BASE_PARAMS + "/omniboxonly" +
+        "/hide_switch_when_no_incognito_tabs/true/omnibox_scroll_mode/quick"})
+    public void testScroll_OmniboxOnly_Quick() {
+        // clang-format on
+        if (!mImmediateReturn) {
+            // TODO(crbug.com/1082664): Make it work with NoReturn.
+            return;
+        }
+        onViewWaiting(allOf(withId(R.id.primary_tasks_surface_view), isDisplayed()));
+
+        onView(withId(R.id.search_box)).check(matches(isDisplayed()));
+        onView(withId(org.chromium.chrome.tab_ui.R.id.tasks_surface_body))
+                .perform(SWIPE_UP_FROM_CENTER, SWIPE_UP_FROM_CENTER, SWIPE_UP_FROM_CENTER);
+        onView(withId(R.id.search_box)).check(matches(not(isDisplayed())));
+        onView(withId(org.chromium.chrome.tab_ui.R.id.tasks_surface_body))
+                .perform(SWIPE_DOWN_FROM_CENTER);
+        onView(withId(R.id.search_box)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @DisableIf.Build(hardware_is = "bullhead", message = "crbug.com/1081657")
+    @CommandLineFlags.Add({BASE_PARAMS + "/omniboxonly" +
+        "/hide_switch_when_no_incognito_tabs/true/omnibox_scroll_mode/pinned"})
+    public void testScroll_OmniboxOnly_Pinned() {
+        // clang-format on
+        if (!mImmediateReturn) {
+            // TODO(crbug.com/1082664): Make it work with NoReturn.
+            return;
+        }
+        onViewWaiting(allOf(withId(R.id.primary_tasks_surface_view), isDisplayed()));
+
+        onView(withId(R.id.search_box)).check(matches(isDisplayed()));
+        onView(withId(org.chromium.chrome.tab_ui.R.id.tasks_surface_body))
+                .perform(SWIPE_UP_FROM_CENTER, SWIPE_UP_FROM_CENTER, SWIPE_UP_FROM_CENTER);
+        onView(withId(R.id.search_box)).check(matches(isDisplayed()));
     }
 
     private void waitForTabModel() {

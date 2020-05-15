@@ -25,6 +25,8 @@ class COMPONENT_EXPORT(SYSTEM_PROXY) SystemProxyClient {
       const system_proxy::SetSystemTrafficCredentialsResponse& response)>;
   using ShutDownDaemonCallback =
       base::OnceCallback<void(const system_proxy::ShutDownResponse& response)>;
+  using WorkerActiveCallback = base::RepeatingCallback<void(
+      const system_proxy::WorkerActiveSignalDetails& details)>;
 
   // Interface with testing functionality. Accessed through GetTestInterface(),
   // only implemented in the fake implementation.
@@ -67,6 +69,10 @@ class COMPONENT_EXPORT(SYSTEM_PROXY) SystemProxyClient {
 
   // Returns an interface for testing (fake only), or returns nullptr.
   virtual TestInterface* GetTestInterface() = 0;
+
+  // Waits for the System-proxy d-bus service to be available and then connects
+  // to the WorkerActvie signal.
+  virtual void ConnectToWorkerActiveSignal(WorkerActiveCallback callback) = 0;
 
  protected:
   // Initialize/Shutdown should be used instead.

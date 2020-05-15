@@ -486,6 +486,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   PendingTrustTokenStore* trust_token_store() {
     return trust_token_store_.get();
   }
+  const PendingTrustTokenStore* trust_token_store() const {
+    return trust_token_store_.get();
+  }
 
  private:
   URLRequestContextOwner MakeURLRequestContext();

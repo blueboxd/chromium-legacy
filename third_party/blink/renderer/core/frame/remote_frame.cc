@@ -644,6 +644,27 @@ IntPoint RemoteFrame::GetMainFrameScrollOffset() const {
   return owner->GetDocument().GetFrame()->GetMainFrameScrollOffset();
 }
 
+void RemoteFrame::SetOpener(Frame* opener_frame) {
+  auto* opener_web_frame = WebFrame::FromFrame(opener_frame);
+  auto* web_frame = WebFrame::FromFrame(this);
+
+  if (web_frame && web_frame->Opener() != opener_web_frame) {
+    // A proxy shouldn't normally be disowning its opener.  It is possible to
+    // get here when a proxy that is being detached clears its opener, in which
+    // case there is no need to notify the browser process.
+    if (opener_frame) {
+      // Only a LocalFrame (i.e., the caller of window.open) should be able to
+      // update another frame's opener.
+      DCHECK(opener_frame->IsLocalFrame());
+      GetRemoteFrameHostRemote().DidChangeOpener(
+          opener_frame ? base::Optional<base::UnguessableToken>(
+                             opener_frame->GetFrameToken())
+                       : base::nullopt);
+    }
+    web_frame->SetOpener(opener_web_frame);
+  }
+}
+
 bool RemoteFrame::IsIgnoredForHitTest() const {
   HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
   if (!owner || !owner->GetLayoutObject())

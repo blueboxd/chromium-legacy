@@ -678,7 +678,9 @@ void Pointer::UpdateCursor() {
     if (cursor_client->GetCursorSize() == ui::CursorSize::kLarge)
       scale *= kLargeCursorScale;
 
-    ui::ScaleAndRotateCursorBitmapAndHotpoint(scale, display.rotation(),
+    // Use panel_rotation() rather than "natural" rotation, as it actually
+    // relates to the hardware you're about to draw the cursor bitmap on.
+    ui::ScaleAndRotateCursorBitmapAndHotpoint(scale, display.panel_rotation(),
                                               &bitmap, &hotspot);
 
     ui::PlatformCursor platform_cursor;

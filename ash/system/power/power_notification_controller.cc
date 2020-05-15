@@ -142,7 +142,7 @@ bool PowerNotificationController::MaybeShowUsbChargerNotification() {
         message_center::RichNotificationData(),
         new UsbNotificationDelegate(this), kNotificationLowPowerChargerIcon,
         message_center::SystemNotificationWarningLevel::WARNING);
-    notification->set_priority(message_center::SYSTEM_PRIORITY);
+    notification->set_pinned(true);
     message_center_->AddNotification(std::move(notification));
     return true;
   }

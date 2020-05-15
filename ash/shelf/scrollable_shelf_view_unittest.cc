@@ -24,7 +24,10 @@
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/events/event_utils.h"
+#include "ui/views/animation/ink_drop.h"
 
 namespace ash {
 
@@ -53,6 +56,35 @@ class PageFlipWaiter : public ScrollableShelfView::TestObserver {
   std::unique_ptr<base::RunLoop> run_loop_;
 };
 
+class InkDropAnimationWaiter : public views::InkDropObserver {
+ public:
+  explicit InkDropAnimationWaiter(views::Button* button) : button_(button) {
+    button->GetInkDrop()->AddObserver(this);
+  }
+  ~InkDropAnimationWaiter() override {
+    button_->GetInkDrop()->RemoveObserver(this);
+  }
+
+  void Wait() {
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
+  }
+
+ private:
+  void InkDropAnimationStarted() override {}
+  void InkDropRippleAnimationEnded(
+      views::InkDropState ink_drop_state) override {
+    if (ink_drop_state != views::InkDropState::ACTIVATED &&
+        ink_drop_state != views::InkDropState::HIDDEN)
+      return;
+    if (run_loop_.get())
+      run_loop_->Quit();
+  }
+
+  views::Button* button_ = nullptr;
+  std::unique_ptr<base::RunLoop> run_loop_;
+};
+
 class TestShelfItemDelegate : public ShelfItemDelegate {
  public:
   explicit TestShelfItemDelegate(const ShelfID& shelf_id)
@@ -78,7 +110,6 @@ class ScrollableShelfViewTest : public AshTestBase {
   ~ScrollableShelfViewTest() override = default;
 
   void SetUp() override {
-
     AshTestBase::SetUp();
     scrollable_shelf_view_ = GetPrimaryShelf()
                                  ->shelf_widget()
@@ -90,9 +121,7 @@ class ScrollableShelfViewTest : public AshTestBase {
     test_api_->SetAnimationDuration(base::TimeDelta::FromMilliseconds(1));
   }
 
-  void TearDown() override {
-    AshTestBase::TearDown();
-  }
+  void TearDown() override { AshTestBase::TearDown(); }
 
  protected:
   void PopulateAppShortcut(int number) {
@@ -653,6 +682,61 @@ TEST_F(HotseatScrollableShelfViewTest, CheckRoundedCornersSetForInkDrop) {
   // When the left arrow is showing, check rounded corners are not set if the
   // ink drop is visible for the first visible app
   EXPECT_FALSE(HasRoundedCornersOnAppButtonAfterMouseRightClick(first_icon));
+}
+
+// Verifies that when two shelf app buttons are animating at the same time,
+// rounded corners are being kept if needed. (see https://crbug.com/1079330)
+TEST_F(ScrollableShelfViewTest, CheckRoundedCornersAfterLongPress) {
+  // Enable animations so that we can make sure that they occur.
+  ui::ScopedAnimationDurationScaleMode regular_animations(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  PopulateAppShortcut(3);
+  ASSERT_EQ(ScrollableShelfView::kNotShowArrowButtons,
+            scrollable_shelf_view_->layout_strategy_for_test());
+  ASSERT_TRUE(scrollable_shelf_view_->shelf_container_view()
+                  ->layer()
+                  ->rounded_corner_radii()
+                  .IsEmpty());
+  ui::Layer* layer = scrollable_shelf_view_->shelf_container_view()->layer();
+  ShelfAppButton* first_icon = test_api_->GetButton(0);
+  ShelfAppButton* last_icon = test_api_->GetButton(2);
+
+  // Trigger the ripple animation over the leftmost icon and wait for it to
+  // finish. Rounded corners should be set.
+  GetEventGenerator()->MoveMouseTo(
+      first_icon->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->ClickRightButton();
+  {
+    InkDropAnimationWaiter waiter(first_icon);
+    waiter.Wait();
+  }
+
+  ASSERT_EQ(first_icon->GetInkDropForTesting()->GetTargetInkDropState(),
+            views::InkDropState::ACTIVATED);
+  // The gfx::RoundedCornersF object is considered empty when all of the
+  // corners are squared (no effective radius).
+  EXPECT_FALSE(layer->rounded_corner_radii().IsEmpty());
+
+  // While ripple is showing on the leftmost icon, trigger the ripple animation
+  // over the rightmost icon and wait for it to finish. Rounded corners should
+  // be set.
+  GetEventGenerator()->MoveMouseTo(
+      last_icon->GetBoundsInScreen().CenterPoint());
+  // Click once so the ripple on the leftmost icon will animate to hide.
+  // Immediately click again to trigger the rightmost icon animation to show.
+  GetEventGenerator()->ClickRightButton();
+  GetEventGenerator()->ClickRightButton();
+  {
+    InkDropAnimationWaiter waiter(last_icon);
+    waiter.Wait();
+  }
+
+  ASSERT_EQ(first_icon->GetInkDropForTesting()->GetTargetInkDropState(),
+            views::InkDropState::HIDDEN);
+  ASSERT_EQ(last_icon->GetInkDropForTesting()->GetTargetInkDropState(),
+            views::InkDropState::ACTIVATED);
+  EXPECT_FALSE(layer->rounded_corner_radii().IsEmpty());
 }
 
 // Verifies that doing a mousewheel scroll on the scrollable shelf does scroll

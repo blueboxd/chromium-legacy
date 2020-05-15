@@ -257,9 +257,7 @@ void BindDistillerJavaScriptService(
       distiller_ui_handle)
       ->set_render_frame_host(frame_host);
 #endif
-  auto* distilled_page_prefs = dom_distiller_service->GetDistilledPagePrefs();
-  CreateDistillerJavaScriptService(distiller_ui_handle, distilled_page_prefs,
-                                   std::move(receiver));
+  CreateDistillerJavaScriptService(distiller_ui_handle, std::move(receiver));
 }
 
 void BindPrerenderCanceler(

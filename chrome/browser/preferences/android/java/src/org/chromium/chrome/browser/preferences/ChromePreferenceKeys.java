@@ -83,6 +83,12 @@ public final class ChromePreferenceKeys {
             "Chrome.ConditionalTabStrip.FeatureStatus";
 
     /**
+     * Saves the timestamp of the last time that conditional tab strip shows.
+     */
+    public static final String CONDITIONAL_TAB_STRIP_LAST_SHOWN_TIMESTAMP =
+            "Chrome.ConditionalTabStrip.LastShownTimeStamp";
+
+    /**
      * Marks that the content suggestions surface has been shown.
      * Default value is false.
      */
@@ -492,6 +498,7 @@ public final class ChromePreferenceKeys {
      */
     public static final KeyPrefix PROMO_IS_DISMISSED =
             new KeyPrefix("Chrome.PromoCard.IsDismissed.*");
+    public static final KeyPrefix PROMO_TIMES_SEEN = new KeyPrefix("Chrome.PromoCard.TimesSeen.*");
 
     /**
      * Key to cache the enabled bottom toolbar parameter.
@@ -721,6 +728,7 @@ public final class ChromePreferenceKeys {
         // clang-format off
         return Arrays.asList(
                 CONDITIONAL_TAB_STRIP_FEATURE_STATUS,
+                CONDITIONAL_TAB_STRIP_LAST_SHOWN_TIMESTAMP,
                 CONTEXT_MENU_OPEN_IMAGE_IN_EPHEMERAL_TAB_CLICKED,
                 CONTEXT_MENU_OPEN_IN_EPHEMERAL_TAB_CLICKED,
                 CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS_CLICKED,
@@ -732,6 +740,7 @@ public final class ChromePreferenceKeys {
                 HOMEPAGE_LOCATION_POLICY,
                 HOMEPAGE_USE_CHROME_NTP,
                 PROMO_IS_DISMISSED.pattern(),
+                PROMO_TIMES_SEEN.pattern(),
                 TWA_DISCLOSURE_SEEN_PACKAGES
         );
         // clang-format on

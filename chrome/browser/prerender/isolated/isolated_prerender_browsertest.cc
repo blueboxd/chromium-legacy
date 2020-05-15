@@ -70,6 +70,7 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -172,6 +173,10 @@ class TestTabHelperObserver : public IsolatedPrerenderTabHelper::Observer {
     expected_prefetch_errors_ = expected_prefetch_errors;
   }
 
+  void SetOnNSPFinishedClosure(base::OnceClosure closure) {
+    on_nsp_finished_closure_ = std::move(closure);
+  }
+
   // IsolatedPrerenderTabHelper::Observer:
   void OnPrefetchCompletedSuccessfully(const GURL& url) override {
     auto it = expected_successful_prefetch_urls_.find(url);
@@ -204,6 +209,12 @@ class TestTabHelperObserver : public IsolatedPrerenderTabHelper::Observer {
     std::move(on_prefetch_error_closure_).Run();
   }
 
+  void OnNoStatePrefetchFinished() override {
+    if (on_nsp_finished_closure_) {
+      std::move(on_nsp_finished_closure_).Run();
+    }
+  }
+
  private:
   IsolatedPrerenderTabHelper* tab_helper_;
 
@@ -212,6 +223,8 @@ class TestTabHelperObserver : public IsolatedPrerenderTabHelper::Observer {
 
   base::OnceClosure on_prefetch_error_closure_;
   std::set<std::pair<GURL, int>> expected_prefetch_errors_;
+
+  base::OnceClosure on_nsp_finished_closure_;
 };
 
 }  // namespace
@@ -418,6 +431,10 @@ class IsolatedPrerenderBrowserTest
     return origin_server_request_count_;
   }
 
+  const std::vector<GURL>& origin_server_requests() const {
+    return origin_server_requests_;
+  }
+
   GURL GetProxyURL() const { return proxy_server_->GetURL("proxy.com", "/"); }
 
   GURL GetInsecureURL(const std::string& path) {
@@ -559,6 +576,7 @@ class IsolatedPrerenderBrowserTest
       const net::test_server::HttpRequest& request) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     origin_server_request_count_++;
+    origin_server_requests_.push_back(request.GetURL());
   }
 
   // Called when |config_server_| receives a request for config fetch.
@@ -616,6 +634,8 @@ class IsolatedPrerenderBrowserTest
   std::unique_ptr<net::EmbeddedTestServer> origin_server_;
   std::unique_ptr<net::EmbeddedTestServer> config_server_;
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
+
+  std::vector<GURL> origin_server_requests_;
 
   // Lives on |proxy_server_|'s IO Thread.
   std::unique_ptr<TestProxyTunnelConnection> proxy_tunnel_;
@@ -1384,4 +1404,62 @@ IN_PROC_BROWSER_TEST_F(ProbingDisabledIsolatedPrerenderBrowserTest,
       eligible_link, ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
       ukm::builders::PrefetchProxy_AfterSRPClick::kProbeLatencyMsName);
   EXPECT_EQ(base::nullopt, probe_latency_ms);
+}
+
+class IsolatedPrerenderWithNSPBrowserTest
+    : public IsolatedPrerenderBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    IsolatedPrerenderBrowserTest::SetUpCommandLine(cmd);
+    cmd->AppendSwitch("isolated-prerender-nsp-enabled");
+  }
+
+  void SetFeatures() override {
+    IsolatedPrerenderBrowserTest::SetFeatures();
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kLightweightNoStatePrefetch);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(StartsNSP)) {
+  SetDataSaverEnabled(true);
+  GURL starting_page = GetOriginServerURL("/simple.html");
+  ui_test_utils::NavigateToURL(browser(), starting_page);
+  WaitForUpdatedCustomProxyConfig();
+
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
+
+  GURL eligible_link = GetOriginServerURL("/prerender/prefetch_page.html");
+
+  TestTabHelperObserver tab_helper_observer(tab_helper);
+  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link});
+
+  base::RunLoop prefetch_run_loop;
+  base::RunLoop nsp_run_loop;
+  tab_helper_observer.SetOnPrefetchSuccessfulClosure(
+      prefetch_run_loop.QuitClosure());
+
+  tab_helper_observer.SetOnNSPFinishedClosure(nsp_run_loop.QuitClosure());
+
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {eligible_link});
+
+  // This run loop will quit when all the prefetch responses have been
+  // successfully done and processed.
+  prefetch_run_loop.Run();
+
+  // This run loop will quit when a NSP finishes.
+  nsp_run_loop.Run();
+
+  // Check that a resource was NSP'd.
+  bool found_nsp_javascript = false;
+  for (const GURL& url : origin_server_requests()) {
+    found_nsp_javascript |= url.path() == "/prerender/prefetch.js";
+  }
+  EXPECT_TRUE(found_nsp_javascript);
 }

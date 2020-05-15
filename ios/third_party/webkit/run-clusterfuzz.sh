@@ -6,5 +6,4 @@
 # This script is used to launch WebKitTestRunner on ClusterFuzz bots.
 
 BASEDIR=$(dirname "$0")
-LIBDIR=$(xcode-select --print-path)/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/10.0.1/lib/darwin
-DYLD_FRAMEWORK_PATH=$BASEDIR DYLD_LIBRARY_PATH=$LIBDIR ./WebKitTestRunner $@
+DYLD_FRAMEWORK_PATH=$BASEDIR DYLD_LIBRARY_PATH=$BASEDIR ./WebKitTestRunner $@

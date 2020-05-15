@@ -803,20 +803,16 @@ void AutofillAgent::QueryAutofillSuggestions(
     return;
   }
 
-  std::vector<base::string16> data_list_values;
-  std::vector<base::string16> data_list_labels;
   const WebInputElement* input_element = ToWebInputElement(&element);
   if (input_element) {
     // Find the datalist values and send them to the browser process.
-    GetDataListSuggestions(*input_element, &data_list_values,
-                           &data_list_labels);
-    TrimStringVectorForIPC(&data_list_values);
-    TrimStringVectorForIPC(&data_list_labels);
+    GetDataListSuggestions(*input_element, &field.datalist_values,
+                           &field.datalist_labels);
+    TrimStringVectorForIPC(&field.datalist_values);
+    TrimStringVectorForIPC(&field.datalist_labels);
   }
 
   is_popup_possibly_visible_ = true;
-
-  GetAutofillDriver()->SetDataList(data_list_values, data_list_labels);
   GetAutofillDriver()->QueryFormFieldAutofill(autofill_query_id_, form, field,
                                               field.bounds,
                                               autoselect_first_suggestion);

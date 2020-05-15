@@ -78,6 +78,10 @@ public class HomepagePromoTest {
     public static final String CUSTOM_TEST_URL = "http://127.0.0.1:8000/bar.html";
 
     private static final String METRICS_HOMEPAGE_PROMO = "NewTabPage.Promo.HomepagePromo";
+    private static final String METRICS_HOMEPAGE_PROMO_IMPRESSION_ACTION =
+            "NewTabPage.Promo.HomepagePromo.ImpressionUntilAction";
+    private static final String METRICS_HOMEPAGE_PROMO_IMPRESSION_DISMISSAL =
+            "NewTabPage.Promo.HomepagePromo.ImpressionUntilDismissal";
     private static final int NTP_HEADER_POSITION = 0;
 
     private boolean mHasHomepagePromoDismissed; // Test value before the test.
@@ -234,6 +238,9 @@ public class HomepagePromoTest {
         Assert.assertEquals("Promo dismissed should be recorded once. ", 1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         METRICS_HOMEPAGE_PROMO, HomepagePromoAction.DISMISSED));
+        Assert.assertEquals("Promo impression until dismissed should be recorded once.", 1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        METRICS_HOMEPAGE_PROMO_IMPRESSION_DISMISSAL));
 
         Mockito.verify(mTracker, times(1)).dismissed(FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE);
 
@@ -278,6 +285,9 @@ public class HomepagePromoTest {
         Assert.assertEquals("Promo accepted should be recorded once. ", 1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         METRICS_HOMEPAGE_PROMO, HomepagePromoAction.ACCEPTED));
+        Assert.assertEquals("Promo impression until action should be recorded once.", 1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        METRICS_HOMEPAGE_PROMO_IMPRESSION_ACTION));
         Mockito.verify(mTracker, times(1)).notifyEvent(EventConstants.HOMEPAGE_PROMO_ACCEPTED);
 
         // The promo should be dismissed for feature engagement after homepage changed.
@@ -332,6 +342,9 @@ public class HomepagePromoTest {
         Assert.assertEquals("Promo created should be seen.", 1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         METRICS_HOMEPAGE_PROMO, HomepagePromoAction.SEEN));
+        Assert.assertEquals("Impression should be tracked in shared preference.", 1,
+                SharedPreferencesManager.getInstance().readInt(
+                        HomepagePromoUtils.getTimesSeenKey()));
         Mockito.verify(mTracker).notifyEvent(EventConstants.HOMEPAGE_PROMO_SEEN);
     }
 

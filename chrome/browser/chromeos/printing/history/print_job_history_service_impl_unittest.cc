@@ -31,14 +31,13 @@ const int kPagesNumber = 3;
 
 class PrintJobHistoryServiceImplTest : public ::testing::Test {
  public:
-  PrintJobHistoryServiceImplTest() {}
+  PrintJobHistoryServiceImplTest() = default;
 
   void SetUp() override {
     test_prefs_.SetInitializationCompleted();
     PrintJobHistoryService::RegisterProfilePrefs(test_prefs_.registry());
 
-    std::unique_ptr<PrintJobDatabase> print_job_database =
-        std::make_unique<TestPrintJobDatabase>();
+    auto print_job_database = std::make_unique<TestPrintJobDatabase>();
     print_job_manager_ = std::make_unique<TestCupsPrintJobManager>(&profile_);
     print_job_history_service_ = std::make_unique<PrintJobHistoryServiceImpl>(
         std::move(print_job_database), print_job_manager_.get(), &test_prefs_);

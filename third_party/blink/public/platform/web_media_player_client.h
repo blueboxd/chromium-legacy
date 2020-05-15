@@ -181,7 +181,7 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
 
   // Called when a video frame has been presented to the compositor, after a
   // request was initiated via WebMediaPlayer::RequestVideoFrameCallback().
-  // See https://wicg.github.io/video-raf/.
+  // See https://wicg.github.io/video-rvfc/.
   virtual void OnRequestVideoFrameCallback() {}
 
   struct Features {

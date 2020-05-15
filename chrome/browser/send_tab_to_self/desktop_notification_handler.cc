@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "components/send_tab_to_self/send_tab_to_self_entry.h"
-#include "components/send_tab_to_self/send_tab_to_self_metrics.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -58,7 +57,6 @@ void DesktopNotificationHandler::DisplayNewEntries(
     NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
         NotificationHandler::Type::SEND_TAB_TO_SELF, notification,
         /*metadata=*/nullptr);
-    RecordNotificationHistogram(SendTabToSelfNotification::kShown);
   }
 }
 
@@ -79,7 +77,6 @@ void DesktopNotificationHandler::OnClose(Profile* profile,
     SendTabToSelfSyncServiceFactory::GetForProfile(profile)
         ->GetSendTabToSelfModel()
         ->DismissEntry(notification_id);
-    RecordNotificationHistogram(SendTabToSelfNotification::kDismissed);
   }
   std::move(completed_closure).Run();
 }
@@ -104,7 +101,6 @@ void DesktopNotificationHandler::OnClick(
     SendTabToSelfSyncServiceFactory::GetForProfile(profile)
         ->GetSendTabToSelfModel()
         ->MarkEntryOpened(notification_id);
-    RecordNotificationHistogram(SendTabToSelfNotification::kOpened);
   }
   std::move(completed_closure).Run();
 }

@@ -14,10 +14,19 @@
 // Returns true if the Isolated Prerender feature is enabled.
 bool IsolatedPrerenderIsEnabled();
 
+// Returns true when prefetched pages should run no state prefetch.
+bool IsolatedPrerenderNoStatePrefetchSubresources();
+
 // The maximum number of prefetches that should be done from predictions on a
 // Google SRP. nullopt is returned for unlimited. Negative values given by the
 // field trial return nullopt.
 base::Optional<size_t> IsolatedPrerenderMaximumNumberOfPrefetches();
+
+// The maximum number of no state prefetches to attempt, in order to prefetch
+// the pages' subresources, while the user is on the SRP. nullopt is returned
+// for unlimited. Negative values given by the field trial return nullopt.
+base::Optional<size_t>
+IsolatedPrerenderMaximumNumberOfNoStatePrefetchAttempts();
 
 // Whether idle sockets should be closed after every prefetch.
 bool IsolatedPrerenderCloseIdleSockets();

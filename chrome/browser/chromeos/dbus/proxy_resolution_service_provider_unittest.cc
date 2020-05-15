@@ -7,7 +7,9 @@
 #include <memory>
 
 #include "base/test/task_environment.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/dbus/services/service_provider_test_helper.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -78,6 +80,10 @@ class MockNetworkContext : public network::TestNetworkContext {
   net::NetworkIsolationKey last_network_isolation_key_;
 
   LookupProxyForURLMockResult lookup_proxy_result_;
+
+  chromeos::ScopedStubInstallAttributes test_install_attributes_{
+      chromeos::StubInstallAttributes::CreateCloudManaged("fake-domain",
+                                                          "fake-id")};
 
   DISALLOW_COPY_AND_ASSIGN(MockNetworkContext);
 };

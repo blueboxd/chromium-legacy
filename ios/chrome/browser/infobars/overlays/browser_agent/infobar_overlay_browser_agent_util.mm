@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/infobar_overlay_browser_agent.h"
+#import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/confirm/confirm_infobar_interaction_handler.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/passwords/password_infobar_interaction_handler.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 
@@ -21,6 +22,8 @@ void AttachInfobarOverlayBrowserAgent(Browser* browser) {
       InfobarOverlayBrowserAgent::FromBrowser(browser);
   browser_agent->AddInfobarInteractionHandler(
       std::make_unique<PasswordInfobarInteractionHandler>(browser));
+  browser_agent->AddInfobarInteractionHandler(
+      std::make_unique<ConfirmInfobarInteractionHandler>());
   // TODO(crbug.com/1030357): Add InfobarInteractionHandlers for each
   // InfobarType when implemented.
 }

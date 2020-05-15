@@ -364,6 +364,8 @@ void AppsContainerView::OnShown() {
   // for the app list (where search box gets focus by default).
   if (keyboard::KeyboardUIController::HasInstance())
     keyboard::KeyboardUIController::Get()->HideKeyboardExplicitlyBySystem();
+
+  GetViewAccessibility().OverrideIsLeaf(false);
 }
 
 void AppsContainerView::OnWillBeHidden() {
@@ -371,6 +373,13 @@ void AppsContainerView::OnWillBeHidden() {
     apps_grid_view_->EndDrag(true);
   else if (show_state_ == SHOW_ACTIVE_FOLDER)
     app_list_folder_view_->CloseFolderPage();
+}
+
+void AppsContainerView::OnHidden() {
+  // Apps container view is shown faded behind the search results UI - hide its
+  // contents from the screen reader as the apps grid is not normally
+  // actionable in this state.
+  GetViewAccessibility().OverrideIsLeaf(true);
 }
 
 void AppsContainerView::OnAnimationStarted(AppListState from_state,

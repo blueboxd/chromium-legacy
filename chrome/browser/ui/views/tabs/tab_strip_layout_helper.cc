@@ -341,8 +341,18 @@ std::vector<gfx::Rect> TabStripLayoutHelper::CalculateIdealBounds(
     TabAnimationState ideal_animation_state =
         TabAnimationState::ForIdealTabState(open, pinned, active, 0);
     TabSizeInfo size_info = slots_[i].view->GetTabSizeInfo();
+    base::Optional<tab_groups::TabGroupId> id = slots_[i].view->group();
+
+    // The slot can only be collapsed if it is a tab and in a collapsed group.
+    // If the slot is indeed a tab and in a group, check the collapsed state of
+    // the group to determine if it is collapsed.
+    bool slot_is_collapsed_tab =
+        (slots_[i].type == ViewType::kTab && id.has_value())
+            ? controller_->GetGroupCollapsedState(id.value())
+            : false;
     tab_widths.push_back(TabWidthConstraints(ideal_animation_state,
-                                             layout_constants, size_info));
+                                             layout_constants, size_info,
+                                             slot_is_collapsed_tab));
   }
 
   return CalculateTabBounds(layout_constants, tab_widths, tabstrip_width,

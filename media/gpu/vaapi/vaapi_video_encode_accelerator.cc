@@ -168,6 +168,8 @@ struct VaapiVideoEncodeAccelerator::BitstreamBufferRef {
 
 VideoEncodeAccelerator::SupportedProfiles
 VaapiVideoEncodeAccelerator::GetSupportedProfiles() {
+  if (IsConfiguredForTesting())
+    return supported_profiles_for_testing_;
   return VaapiWrapper::GetSupportedEncodeProfiles();
 }
 
@@ -341,13 +343,17 @@ bool VaapiVideoEncodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  vaapi_wrapper_ = VaapiWrapper::CreateForVideoCodec(
-      VaapiWrapper::kEncode, config.output_profile,
-      base::Bind(&ReportToUMA, VAAPI_ERROR));
-  if (!vaapi_wrapper_) {
-    VLOGF(1) << "Failed initializing VAAPI for profile "
-             << GetProfileName(config.output_profile);
-    return false;
+  DCHECK_EQ(IsConfiguredForTesting(), !!vaapi_wrapper_);
+  if (!IsConfiguredForTesting()) {
+    // TODO(crbug.com/10607750): Support kConstantQuantizationParameter on vp9.
+    vaapi_wrapper_ = VaapiWrapper::CreateForVideoCodec(
+        VaapiWrapper::kEncode, config.output_profile,
+        base::Bind(&ReportToUMA, VAAPI_ERROR));
+    if (!vaapi_wrapper_) {
+      VLOGF(1) << "Failed initializing VAAPI for profile "
+               << GetProfileName(config.output_profile);
+      return false;
+    }
   }
 
   // Finish remaining initialization on the encoder thread.
@@ -363,33 +369,43 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
   VLOGF(2);
 
   VideoCodec codec = VideoCodecProfileToVideoCodec(config.output_profile);
-  switch (codec) {
-    case kCodecH264:
-      encoder_ = std::make_unique<H264Encoder>(
-          std::make_unique<H264Accelerator>(this));
-      break;
-
-    case kCodecVP8:
-      encoder_ =
-          std::make_unique<VP8Encoder>(std::make_unique<VP8Accelerator>(this));
-      break;
-
-    case kCodecVP9:
-      encoder_ =
-          std::make_unique<VP9Encoder>(std::make_unique<VP9Accelerator>(this));
-      break;
-
-    default:
-      NOTREACHED() << "Unsupported codec type " << GetCodecName(codec);
-      return;
+  AcceleratedVideoEncoder::Config ave_config{};
+  DCHECK_EQ(IsConfiguredForTesting(), !!encoder_);
+  if (!IsConfiguredForTesting()) {
+    switch (codec) {
+      case kCodecH264:
+        encoder_ = std::make_unique<H264Encoder>(
+            std::make_unique<H264Accelerator>(this));
+        DCHECK_EQ(ave_config.bitrate_control,
+                  AcceleratedVideoEncoder::BitrateControl::kConstantBitrate);
+        break;
+      case kCodecVP8:
+        encoder_ = std::make_unique<VP8Encoder>(
+            std::make_unique<VP8Accelerator>(this));
+        DCHECK_EQ(ave_config.bitrate_control,
+                  AcceleratedVideoEncoder::BitrateControl::kConstantBitrate);
+        break;
+      case kCodecVP9:
+        encoder_ = std::make_unique<VP9Encoder>(
+            std::make_unique<VP9Accelerator>(this));
+        // TODO(crbug.com/10607750): Support kConstantQuantizationParameter.
+        DCHECK_EQ(ave_config.bitrate_control,
+                  AcceleratedVideoEncoder::BitrateControl::kConstantBitrate);
+        break;
+      default:
+        NOTREACHED() << "Unsupported codec type " << GetCodecName(codec);
+        return;
+    }
   }
 
-  AcceleratedVideoEncoder::Config ave_config;
   if (!vaapi_wrapper_->GetVAEncMaxNumOfRefFrames(
-          config.output_profile, &ave_config.max_num_ref_frames))
+          config.output_profile, &ave_config.max_num_ref_frames)) {
+    NOTIFY_ERROR(kPlatformFailureError,
+                 "Failed getting max number of reference frames"
+                 "supported by the driver");
     return;
+  }
   DCHECK_GT(ave_config.max_num_ref_frames, 0u);
-
   if (!encoder_->Initialize(config, ave_config)) {
     NOTIFY_ERROR(kInvalidArgumentError, "Failed initializing encoder");
     return;
@@ -409,13 +425,16 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
       expected_input_coded_size_.width() <= encoder_->GetCodedSize().width() &&
       expected_input_coded_size_.height() <= encoder_->GetCodedSize().height());
 
-  // The aligned surface size must be the same as a size of a native graphic
-  // buffer.
-  aligned_va_surface_size_ =
-      GetInputFrameSize(config.input_format, config.input_visible_size);
-  if (aligned_va_surface_size_.IsEmpty()) {
-    NOTIFY_ERROR(kPlatformFailureError, "Failed to get frame size");
-    return;
+  DCHECK_EQ(IsConfiguredForTesting(), !aligned_va_surface_size_.IsEmpty());
+  if (!IsConfiguredForTesting()) {
+    // The aligned surface size must be the same as a size of a native graphic
+    // buffer.
+    aligned_va_surface_size_ =
+        GetInputFrameSize(config.input_format, config.input_visible_size);
+    if (aligned_va_surface_size_.IsEmpty()) {
+      NOTIFY_ERROR(kPlatformFailureError, "Failed to get frame size");
+      return;
+    }
   }
 
   va_surfaces_per_video_frame_ =

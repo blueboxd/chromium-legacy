@@ -161,9 +161,9 @@ class Service::Context : public ServiceContext {
     return parent_->assistant_notification_controller_.get();
   }
 
-  ash::mojom::AssistantScreenContextController*
-  assistant_screen_context_controller() override {
-    return parent_->assistant_screen_context_controller_.get();
+  ash::AssistantScreenContextController* assistant_screen_context_controller()
+      override {
+    return ash::AssistantScreenContextController::Get();
   }
 
   ash::AssistantStateBase* assistant_state() override {
@@ -570,10 +570,6 @@ void Service::FinalizeAssistantManagerService() {
   // Bind to the AssistantNotificationController in ash.
   AssistantClient::Get()->RequestAssistantNotificationController(
       assistant_notification_controller_.BindNewPipeAndPassReceiver());
-
-  // Bind to the AssistantScreenContextController in ash.
-  AssistantClient::Get()->RequestAssistantScreenContextController(
-      assistant_screen_context_controller_.BindNewPipeAndPassReceiver());
 
   AddAshSessionObserver();
 }

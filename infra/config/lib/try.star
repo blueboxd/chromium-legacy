@@ -1,3 +1,7 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 """Library for defining try builders.
 
 The `try_builder` function defined in this module enables defining a builder and
@@ -128,12 +132,16 @@ _sorted_list_view = lucicfg.rule(impl=_sorted_list_view_impl)
 
 def _sort_consoles(ctx):
   milo = ctx.output['luci-milo.cfg']
+  consoles = []
   for console in milo.consoles:
+    if not console.builders:
+      continue
     graph_key = _sorted_list_view_graph_key(console.id)
     node = graph.node(graph_key)
     if node:
       console.builders = sorted(console.builders, lambda b: b.name)
-  milo.consoles = sorted(milo.consoles, lambda c: c.id)
+    consoles.append(console)
+  milo.consoles = sorted(consoles, lambda c: c.id)
 
 lucicfg.generator(_sort_consoles)
 

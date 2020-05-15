@@ -1,5 +1,20 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 # Don't make a habit of this - it isn't public API
 load('@stdlib//internal/luci/proto.star', 'scheduler_pb')
+load('//project.star', 'settings')
+
+
+_BRANCH_NOOP_CONFIG = struct(
+    buckets = ['ci-m81', 'ci-m83'],
+    fmt = '{bucket}-{builder}',
+) if settings.is_master else struct(
+    buckets = ['ci'],
+    fmt = '{builder}',
+)
+
 
 # Android testers which are triggered by Android arm Builder (dbg)
 # on master, but not on branches.
@@ -9,8 +24,10 @@ _ANDROID_NON_BRANCHED_TESTERS = (
     'Lollipop Tablet Tester',
     'Marshmallow Tablet Tester',
 )
+
+
 _ANDROID_TEST_NOOP_JOBS = [scheduler_pb.Job(
-    id = bucket + '-' + builder,
+    id = _BRANCH_NOOP_CONFIG.fmt.format(bucket=bucket, builder=builder),
     schedule = 'triggered',
     acl_sets = [bucket],
     acls = [scheduler_pb.Acl(
@@ -18,10 +35,7 @@ _ANDROID_TEST_NOOP_JOBS = [scheduler_pb.Job(
         granted_to = 'chromium-ci-builder@chops-service-accounts.iam.gserviceaccount.com',
     )],
     noop = scheduler_pb.NoopTask(),
-) for builder in _ANDROID_NON_BRANCHED_TESTERS for bucket in (
-    'ci-m81',
-    'ci-m83',
-)]
+) for builder in _ANDROID_NON_BRANCHED_TESTERS for bucket in _BRANCH_NOOP_CONFIG.buckets]
 
 
 def _add_noop_jobs(ctx):

@@ -52,7 +52,7 @@ const base::Feature kWebUI{"NtpWebUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If disabled, the realbox will not show on the WebUI new tab page.
 const base::Feature kWebUIRealbox{"WebUIRealbox",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsRealboxEnabled() {
   if (!base::FeatureList::IsEnabled(omnibox::kNewSearchFeatures))

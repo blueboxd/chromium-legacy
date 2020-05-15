@@ -102,9 +102,9 @@ suite('NewTabPageAppTest', () => {
         (await backgroundManager.whenCalled('setBackgroundColor')).value);
     assertStyle(
         $$(app, '#content'), '--ntp-theme-shortcut-background-color',
-        'rgba(0, 255, 0, 255)');
+        'rgba(0, 255, 0, 1)');
     assertStyle(
-        $$(app, '#content'), '--ntp-theme-text-color', 'rgba(0, 0, 255, 255)');
+        $$(app, '#content'), '--ntp-theme-text-color', 'rgba(0, 0, 255, 1)');
     assertEquals(1, backgroundManager.getCallCount('setShowBackgroundImage'));
     assertFalse(await backgroundManager.whenCalled('setShowBackgroundImage'));
     assertStyle($$(app, '#backgroundImageAttribution'), 'display', 'none');
@@ -139,7 +139,7 @@ suite('NewTabPageAppTest', () => {
   test('setting background image shows image, disallows doodle', async () => {
     // Arrange.
     const theme = createTheme();
-    theme.backgroundImageUrl = {url: 'https://img.png'};
+    theme.backgroundImage = {url: {url: 'https://img.png'}};
 
     // Act.
     backgroundManager.resetResolver('setShowBackgroundImage');
@@ -151,10 +151,10 @@ suite('NewTabPageAppTest', () => {
     assertTrue(await backgroundManager.whenCalled('setShowBackgroundImage'));
     assertNotStyle(
         $$(app, '#backgroundImageAttribution'), 'text-shadow', 'none');
-    assertEquals(1, backgroundManager.getCallCount('setBackgroundImageUrl'));
+    assertEquals(1, backgroundManager.getCallCount('setBackgroundImage'));
     assertEquals(
         'https://img.png',
-        await backgroundManager.whenCalled('setBackgroundImageUrl'));
+        (await backgroundManager.whenCalled('setBackgroundImage')).url.url);
     assertFalse($$(app, '#logo').doodleAllowed);
   });
 
@@ -205,21 +205,21 @@ suite('NewTabPageAppTest', () => {
 
     // Assert.
     assertTrue($$(app, '#logo').singleColored);
-    assertStyle($$(app, '#logo'), '--ntp-logo-color', 'rgba(255, 0, 0, 255)');
+    assertStyle($$(app, '#logo'), '--ntp-logo-color', 'rgba(255, 0, 0, 1)');
   });
 
   test('preview background image', async () => {
     const theme = createTheme();
-    theme.backgroundImageUrl = {url: 'https://example.com/image.png'};
+    theme.backgroundImage = {url: {url: 'https://example.com/image.png'}};
     theme.backgroundImageAttribution1 = 'foo';
     theme.backgroundImageAttribution2 = 'bar';
     theme.backgroundImageAttributionUrl = {url: 'https://info.com'};
     testProxy.callbackRouterRemote.setTheme(theme);
     await testProxy.callbackRouterRemote.$.flushForTesting();
-    assertEquals(backgroundManager.getCallCount('setBackgroundImageUrl'), 1);
+    assertEquals(backgroundManager.getCallCount('setBackgroundImage'), 1);
     assertEquals(
         'https://example.com/image.png',
-        await backgroundManager.whenCalled('setBackgroundImageUrl'));
+        (await backgroundManager.whenCalled('setBackgroundImage')).url.url);
     assertEquals(
         'https://info.com/', $$(app, '#backgroundImageAttribution').href);
     assertEquals('foo', $$(app, '#backgroundImageAttribution1').innerText);
@@ -227,7 +227,7 @@ suite('NewTabPageAppTest', () => {
     $$(app, '#customizeButton').click();
     await flushTasks();
     const dialog = app.shadowRoot.querySelector('ntp-customize-dialog');
-    backgroundManager.resetResolver('setBackgroundImageUrl');
+    backgroundManager.resetResolver('setBackgroundImage');
     dialog.backgroundSelection = {
       type: BackgroundSelectionType.IMAGE,
       image: {
@@ -237,37 +237,37 @@ suite('NewTabPageAppTest', () => {
         imageUrl: {url: 'https://example.com/other.png'},
       },
     };
-    assertEquals(1, backgroundManager.getCallCount('setBackgroundImageUrl'));
+    assertEquals(1, backgroundManager.getCallCount('setBackgroundImage'));
     assertEquals(
         'https://example.com/other.png',
-        await backgroundManager.whenCalled('setBackgroundImageUrl'));
+        (await backgroundManager.whenCalled('setBackgroundImage')).url.url);
     assertEquals(
         'https://example.com/', $$(app, '#backgroundImageAttribution').href);
     assertEquals('1', $$(app, '#backgroundImageAttribution1').innerText);
     assertEquals('2', $$(app, '#backgroundImageAttribution2').innerText);
     assertFalse($$(app, '#backgroundImageAttribution2').hidden);
 
-    backgroundManager.resetResolver('setBackgroundImageUrl');
+    backgroundManager.resetResolver('setBackgroundImage');
     dialog.backgroundSelection = {type: BackgroundSelectionType.NO_SELECTION};
-    assertEquals(1, backgroundManager.getCallCount('setBackgroundImageUrl'));
+    assertEquals(1, backgroundManager.getCallCount('setBackgroundImage'));
     assertEquals(
         'https://example.com/image.png',
-        await backgroundManager.whenCalled('setBackgroundImageUrl'));
+        (await backgroundManager.whenCalled('setBackgroundImage')).url.url);
   });
 
   test('theme update when dialog closed clears selection', async () => {
     const theme = createTheme();
-    theme.backgroundImageUrl = {url: 'https://example.com/image.png'};
+    theme.backgroundImage = {url: {url: 'https://example.com/image.png'}};
     testProxy.callbackRouterRemote.setTheme(theme);
     await testProxy.callbackRouterRemote.$.flushForTesting();
-    assertEquals(1, backgroundManager.getCallCount('setBackgroundImageUrl'));
+    assertEquals(1, backgroundManager.getCallCount('setBackgroundImage'));
     assertEquals(
         'https://example.com/image.png',
-        await backgroundManager.whenCalled('setBackgroundImageUrl'));
+        (await backgroundManager.whenCalled('setBackgroundImage')).url.url);
     $$(app, '#customizeButton').click();
     await flushTasks();
     const dialog = app.shadowRoot.querySelector('ntp-customize-dialog');
-    backgroundManager.resetResolver('setBackgroundImageUrl');
+    backgroundManager.resetResolver('setBackgroundImage');
     dialog.backgroundSelection = {
       type: BackgroundSelectionType.IMAGE,
       image: {
@@ -277,20 +277,20 @@ suite('NewTabPageAppTest', () => {
         imageUrl: {url: 'https://example.com/other.png'},
       },
     };
-    assertEquals(1, backgroundManager.getCallCount('setBackgroundImageUrl'));
+    assertEquals(1, backgroundManager.getCallCount('setBackgroundImage'));
     assertEquals(
         'https://example.com/other.png',
-        await backgroundManager.whenCalled('setBackgroundImageUrl'));
-    backgroundManager.resetResolver('setBackgroundImageUrl');
+        (await backgroundManager.whenCalled('setBackgroundImage')).url.url);
+    backgroundManager.resetResolver('setBackgroundImage');
     dialog.dispatchEvent(new Event('close'));
-    assertEquals(0, backgroundManager.getCallCount('setBackgroundImageUrl'));
-    backgroundManager.resetResolver('setBackgroundImageUrl');
+    assertEquals(0, backgroundManager.getCallCount('setBackgroundImage'));
+    backgroundManager.resetResolver('setBackgroundImage');
     testProxy.callbackRouterRemote.setTheme(theme);
     await testProxy.callbackRouterRemote.$.flushForTesting();
-    assertEquals(2, backgroundManager.getCallCount('setBackgroundImageUrl'));
+    assertEquals(2, backgroundManager.getCallCount('setBackgroundImage'));
     assertEquals(
         'https://example.com/image.png',
-        await backgroundManager.whenCalled('setBackgroundImageUrl'));
+        (await backgroundManager.whenCalled('setBackgroundImage')).url.url);
   });
 
   test('theme updates add shortcut color', async () => {

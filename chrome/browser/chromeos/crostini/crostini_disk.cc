@@ -46,6 +46,7 @@ CrostiniDiskInfo& CrostiniDiskInfo::operator=(CrostiniDiskInfo&&) = default;
 CrostiniDiskInfo::~CrostiniDiskInfo() = default;
 
 namespace disk {
+
 void GetDiskInfo(OnceDiskInfoCallback callback,
                  Profile* profile,
                  std::string vm_name,
@@ -62,7 +63,8 @@ void GetDiskInfo(OnceDiskInfoCallback callback,
     // Since we only care about the disk's current size and whether it's a
     // sparse disk, we claim there's plenty of free space available to prevent
     // error conditions in |OnCrostiniSufficientlyRunning|.
-    constexpr int64_t kFakeAvailableDiskBytes = 500l * 1024 * 1024;
+    constexpr int64_t kFakeAvailableDiskBytes =
+        kDiskHeadroomBytes + kRecommendedDiskSizeBytes;
     CrostiniManager::GetForProfile(profile)->EnsureConciergeRunning(
         base::BindOnce(&OnCrostiniSufficientlyRunning, std::move(callback),
                        profile, std::move(vm_name), kFakeAvailableDiskBytes));
@@ -122,8 +124,8 @@ void OnListVmDisks(
     std::move(callback).Run(nullptr);
     return;
   }
-  // User has to leave at least 100MiB for the host system.
-  int64_t max_size = free_space - 100l * 1024 * 1024;
+  // User has to leave at least kDiskHeadroomBytes for the host system.
+  int64_t max_size = free_space - kDiskHeadroomBytes;
   auto disk_info = std::make_unique<CrostiniDiskInfo>();
   auto image =
       std::find_if(response->images().begin(), response->images().end(),
@@ -153,13 +155,16 @@ void OnListVmDisks(
   disk_info->is_user_chosen_size = image->user_chosen_size();
   disk_info->can_resize =
       image->image_type() == vm_tools::concierge::DiskImageType::DISK_IMAGE_RAW;
+  disk_info->is_low_space_available = max_size < kRecommendedDiskSizeBytes;
 
+  const int64_t min_size =
+      std::max(static_cast<int64_t>(image->min_size()), kMinimumDiskSizeBytes);
   std::vector<crostini::mojom::DiskSliderTickPtr> ticks =
-      GetTicks(image->min_size(), image->size(), max_size + image->size(),
+      GetTicks(min_size, image->size(), max_size + image->size(),
                &(disk_info->default_index));
   if (ticks.size() == 0) {
     LOG(ERROR) << "Unable to calculate the number of ticks for min: "
-               << image->min_size() << " current: " << image->size()
+               << min_size << " current: " << image->size()
                << " max: " << max_size + image->size();
     std::move(callback).Run(nullptr);
     return;

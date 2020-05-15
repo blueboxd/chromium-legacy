@@ -18,6 +18,7 @@
 
 namespace gfx {
 class Point;
+class Rect;
 }
 
 namespace content {
@@ -42,6 +43,7 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
   void SetFrameOwnerProperties(
       blink::mojom::FrameOwnerPropertiesPtr properties) override;
   void NotifyUserActivation() override;
+  void NotifyVirtualKeyboardOverlayRect(const gfx::Rect&) override;
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message,
                            bool discard_duplicates) override;

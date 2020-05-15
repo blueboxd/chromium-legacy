@@ -259,15 +259,9 @@ void FeedLoggingBridge::OnTaskFinished(
 void FeedLoggingBridge::OnContentTargetVisited(JNIEnv* j_env,
                                                const JavaRef<jobject>& j_this,
                                                const jlong visit_time_ms,
-                                               const jboolean j_is_offline,
                                                const jboolean j_return_to_ntp) {
-  if (j_is_offline) {
-    feed_logging_metrics_->OnSuggestionOfflinePageVisited(
-        base::TimeDelta::FromMilliseconds(visit_time_ms), j_return_to_ntp);
-  } else {
-    feed_logging_metrics_->OnSuggestionArticleVisited(
-        base::TimeDelta::FromMilliseconds(visit_time_ms), j_return_to_ntp);
-  }
+  feed_logging_metrics_->OnSuggestionArticleVisited(
+      base::TimeDelta::FromMilliseconds(visit_time_ms), j_return_to_ntp);
 }
 
 void FeedLoggingBridge::ReportScrolledAfterOpen(

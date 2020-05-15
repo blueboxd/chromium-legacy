@@ -84,6 +84,9 @@ UnifiedMessageCenterBubble::UnifiedMessageCenterBubble(UnifiedSystemTray* tray)
       bubble_view_->AddChildView(std::make_unique<UnifiedMessageCenterView>(
           nullptr /* parent */, tray->model(), this));
 
+  time_to_click_recorder_ =
+      std::make_unique<TimeToClickRecorder>(this, message_center_view_);
+
   message_center_view_->AddObserver(this);
 }
 
@@ -252,6 +255,15 @@ void UnifiedMessageCenterBubble::OnWidgetActivationChanged(
     bool active) {
   if (active)
     tray_->bubble()->OnMessageCenterActivated();
+}
+
+void UnifiedMessageCenterBubble::RecordTimeToClick() {
+  // TODO(tengs): We are currently only using this handler to record the first
+  // interaction (i.e. whether the message center or quick settings was clicked
+  // first). Maybe log the time to click if it is useful in the future.
+
+  tray_->MaybeRecordFirstInteraction(
+      UnifiedSystemTray::FirstInteractionType::kMessageCenter);
 }
 
 }  // namespace ash

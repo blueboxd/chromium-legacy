@@ -398,7 +398,6 @@ API:
 mojo::Remote<math::mojom::MathService> math_service =
     content::ServiceProcessHost::Launch<math::mojom::MathService>(
         content::ServiceProcessHost::LaunchOptions()
-            .WithSandboxType(content::SandboxType::kUtility)
             .WithDisplayName("Math!")
             .Pass());
 ```
@@ -422,6 +421,19 @@ NOTE: To ensure the execution of the response callback, the
 [this section](/mojo/public/cpp/bindings/README.md#A-Note-About-Endpoint-Lifetime-and-Callbacks)
 and [this note from an earlier section](#sending-a-message)).
 ***
+
+### Using a non-standard sandbox
+
+Ideally services will run inside the utility process sandbox, in which
+case there is nothing else to do. For services that need a custom
+sandbox, a new sandbox type must be defined in consultation with
+security-dev@chromium.org.  To launch with a custom sandbox a
+specialization of `GetServiceSandboxType()` must be supplied in an
+appropriate `service_sandbox_type.h` such as
+[`//chrome/browser/service_sandbox_type.h`](https://cs.chromium.org/chromium/src/chrome/browser/service_sandbox_type.h)
+or
+[`//content/browser/service_sandbox_type.h`](https://cs.chromium.org/chromium/src/content/browser/service_sandbox_type.h)
+and included where `ServiceProcessHost::Launch()` is called.
 
 ## Content-Layer Services Overview
 

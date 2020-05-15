@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "content/public/browser/content_browser_client.h"
+#include "extensions/buildflags/buildflags.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -24,6 +25,10 @@ class ChooserController;
 class LoginHandler;
 class Profile;
 struct WebApplicationInfo;
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+class SettingsOverriddenDialogController;
+#endif
 
 namespace base {
 class FilePath;
@@ -318,6 +323,15 @@ void ShowExtensionInstallBlockedDialog(
     const gfx::ImageSkia& icon,
     content::WebContents* web_contents,
     base::OnceClosure done_callback);
+
+// TODO(devlin): Put more extension-y bits in this block - currently they're
+// unguarded.
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+// Shows the dialog indicating that an extension has overridden a setting.
+void ShowExtensionSettingsOverriddenDialog(
+    std::unique_ptr<SettingsOverriddenDialogController> controller,
+    Browser* browser);
+#endif
 
 // Returns a OnceClosure that client code can call to close the device chooser.
 // This OnceClosure references the actual dialog as a WeakPtr, so it's safe to

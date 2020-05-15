@@ -65,6 +65,16 @@ class PLATFORM_EXPORT ResourceRequestHead {
 
  public:
   enum class RedirectStatus : uint8_t { kFollowedRedirect, kNoRedirect };
+
+  struct RedirectInfo {
+    // Previous url in the redirect chain.
+    KURL previous_url;
+
+    RedirectInfo() = default;
+    explicit RedirectInfo(const KURL& previous_url)
+        : previous_url(previous_url) {}
+  };
+
   ResourceRequestHead();
   explicit ResourceRequestHead(const KURL&);
 
@@ -334,8 +344,10 @@ class PLATFORM_EXPORT ResourceRequestHead {
     cors_preflight_policy_ = policy;
   }
 
-  void SetRedirectStatus(RedirectStatus status) { redirect_status_ = status; }
-  RedirectStatus GetRedirectStatus() const { return redirect_status_; }
+  void SetRedirectInfo(const RedirectInfo& info) { redirect_info_ = info; }
+  const base::Optional<RedirectInfo>& GetRedirectInfo() const {
+    return redirect_info_;
+  }
 
   void SetSuggestedFilename(const base::Optional<String>& suggested_filename) {
     suggested_filename_ = suggested_filename;
@@ -503,7 +515,7 @@ class PLATFORM_EXPORT ResourceRequestHead {
   network::mojom::ReferrerPolicy referrer_policy_;
   bool is_external_request_;
   network::mojom::CorsPreflightPolicy cors_preflight_policy_;
-  RedirectStatus redirect_status_;
+  base::Optional<RedirectInfo> redirect_info_;
   base::Optional<network::mojom::blink::TrustTokenParams> trust_token_params_;
 
   base::Optional<String> suggested_filename_;

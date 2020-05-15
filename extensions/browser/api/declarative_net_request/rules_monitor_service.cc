@@ -356,14 +356,9 @@ void RulesMonitorService::UpdateEnabledStaticRulesetsInternal(
 
   LoadRequestData load_data(extension_id);
 
-  // Don't hop to the file sequence if there are no rulesets to load.
-  // TODO(karandeepb): Hop to the file sequence in this case as well to ensure
-  // that subsequent updateEnabledRulesets calls complete in FIFO order.
-  if (ids_to_enable.empty()) {
-    OnNewStaticRulesetsLoaded(std::move(callback), std::move(ids_to_disable),
-                              std::move(ids_to_enable), std::move(load_data));
-    return;
-  }
+  // Don't short-circuit the case of |ids_to_enable| being empty by calling
+  // OnNewStaticRulesetsLoaded directly. This can interfere with the expected
+  // FIFO ordering of updateEnabledRulesets calls.
 
   int expected_ruleset_checksum = -1;
   for (const RulesetID& id_to_enable : ids_to_enable) {

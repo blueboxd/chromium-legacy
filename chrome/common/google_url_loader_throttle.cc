@@ -4,9 +4,13 @@
 
 #include "chrome/common/google_url_loader_throttle.h"
 
+#include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/net/safe_search_util.h"
 #include "components/google/core/common/google_util.h"
+#include "net/base/url_util.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -31,11 +35,13 @@ void GoogleURLLoaderThrottle::UpdateCorsExemptHeader(
 GoogleURLLoaderThrottle::GoogleURLLoaderThrottle(
 #if defined(OS_ANDROID)
     const std::string& client_data_header,
+    bool night_mode_enabled,
 #endif
     chrome::mojom::DynamicParams dynamic_params)
     :
 #if defined(OS_ANDROID)
       client_data_header_(client_data_header),
+      night_mode_enabled_(night_mode_enabled),
 #endif
       dynamic_params_(std::move(dynamic_params)) {
 }
@@ -77,6 +83,20 @@ void GoogleURLLoaderThrottle::WillStartRequest(
   if (!client_data_header_.empty() &&
       google_util::IsGoogleAssociatedDomainUrl(request->url)) {
     request->headers.SetHeader(kClientDataHeader, client_data_header_);
+  }
+
+  bool is_google_homepage_or_search =
+      google_util::IsGoogleHomePageUrl(request->url) ||
+      google_util::IsGoogleSearchUrl(request->url);
+  if (is_google_homepage_or_search) {
+    // TODO (crbug.com/1081510): Remove this experimental code once a final
+    // solution is agreed upon.
+    if (base::FeatureList::IsEnabled(features::kAndroidDarkSearch)) {
+      request->url = net::AppendOrReplaceQueryParameter(
+          request->url, "cs", night_mode_enabled_ ? "1" : "0");
+    }
+    base::UmaHistogramBoolean("Android.DarkTheme.DarkSearchRequested",
+                              night_mode_enabled_);
   }
 #endif
 }

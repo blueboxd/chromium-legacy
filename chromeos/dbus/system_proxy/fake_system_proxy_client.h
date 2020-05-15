@@ -25,6 +25,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSystemProxyClient
       const system_proxy::SetSystemTrafficCredentialsRequest& request,
       SetSystemTrafficCredentialsCallback callback) override;
   void ShutDownDaemon(ShutDownDaemonCallback callback) override;
+  void ConnectToWorkerActiveSignal(WorkerActiveCallback callback) override;
+
   SystemProxyClient::TestInterface* GetTestInterface() override;
 
   // SystemProxyClient::TestInterface implementation.

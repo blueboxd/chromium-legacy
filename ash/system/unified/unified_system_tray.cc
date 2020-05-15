@@ -33,6 +33,7 @@
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -305,6 +306,15 @@ gfx::Rect UnifiedSystemTray::GetBubbleBoundsInScreen() const {
   return bubble_ ? bubble_->GetBoundsInScreen() : gfx::Rect();
 }
 
+void UnifiedSystemTray::MaybeRecordFirstInteraction(FirstInteractionType type) {
+  if (first_interaction_recorded_)
+    return;
+  first_interaction_recorded_ = true;
+
+  UMA_HISTOGRAM_ENUMERATION("ChromeOS.SystemTray.FirstInteraction", type,
+                            FirstInteractionType::kMaxValue);
+}
+
 void UnifiedSystemTray::UpdateAfterLoginStatusChange() {
   SetVisiblePreferred(true);
   PreferredSizeChanged();
@@ -435,6 +445,8 @@ void UnifiedSystemTray::ShowBubbleInternal(bool show_by_click) {
     message_center_bubble_ = std::make_unique<UnifiedMessageCenterBubble>(this);
     message_center_bubble_->ShowBubble();
   }
+
+  first_interaction_recorded_ = false;
 
   SetIsActive(true);
 }

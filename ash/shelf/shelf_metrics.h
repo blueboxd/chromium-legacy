@@ -50,10 +50,13 @@ enum class EnterOverviewFromHomeLauncher {
   kCanceled = 0,
 
   // Succeed to enter overview mode from home launcher.
-  kSuccess = 1,
+  kOverview = 1,
+
+  // The gesture was detected as a swipe to the home screen initial state.
+  kBack = 2,
 
   // New items should be added before to keep this one always the last.
-  kMaxState = 2,
+  kMaxState = 3,
 
   kMaxValue = kMaxState
 };

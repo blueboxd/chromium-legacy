@@ -70,6 +70,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
@@ -413,6 +414,21 @@ AXObject* WebPagePopupImpl::RootAXObject() {
 }
 
 void WebPagePopupImpl::SetWindowRect(const IntRect& rect_in_screen) {
+  if (!closing_) {
+    IntRect owner_window_rect_in_screen = OwnerWindowRectInScreen();
+    Document& document = popup_client_->OwnerElement().GetDocument();
+    if (owner_window_rect_in_screen.Contains(rect_in_screen)) {
+      UseCounter::Count(document,
+                        WebFeature::kPopupDoesNotExceedOwnerWindowBounds);
+    } else {
+      WebFeature feature =
+          document.GetFrame()->IsMainFrame()
+              ? WebFeature::kPopupExceedsOwnerWindowBounds
+              : WebFeature::kPopupExceedsOwnerWindowBoundsForIframe;
+      UseCounter::Count(document, feature);
+    }
+  }
+
   WidgetClient()->SetWindowRect(rect_in_screen);
 }
 
@@ -509,12 +525,16 @@ WebInputEventResult WebPagePopupImpl::HandleGestureEvent(
     const WebGestureEvent& event) {
   if (closing_)
     return WebInputEventResult::kNotHandled;
-  if ((event.GetType() == WebInputEvent::Type::kGestureTap ||
-       event.GetType() == WebInputEvent::Type::kGestureTapDown) &&
-      !IsViewportPointInWindow(event.PositionInWidget().x(),
-                               event.PositionInWidget().y())) {
-    Cancel();
-    return WebInputEventResult::kNotHandled;
+  if (event.GetType() == WebInputEvent::Type::kGestureTap ||
+      event.GetType() == WebInputEvent::Type::kGestureTapDown) {
+    if (!IsViewportPointInWindow(event.PositionInWidget().x(),
+                                 event.PositionInWidget().y())) {
+      Cancel();
+      return WebInputEventResult::kNotHandled;
+    }
+    CheckScreenPointInOwnerWindowAndCount(
+        event.PositionInScreen(),
+        WebFeature::kPopupGestureTapExceedsOwnerWindowBounds);
   }
   WebGestureEvent scaled_event =
       TransformWebGestureEvent(MainFrame().View(), event);
@@ -524,18 +544,26 @@ WebInputEventResult WebPagePopupImpl::HandleGestureEvent(
 void WebPagePopupImpl::HandleMouseDown(LocalFrame& main_frame,
                                        const WebMouseEvent& event) {
   if (IsViewportPointInWindow(event.PositionInWidget().x(),
-                              event.PositionInWidget().y()))
+                              event.PositionInWidget().y())) {
+    CheckScreenPointInOwnerWindowAndCount(
+        event.PositionInScreen(),
+        WebFeature::kPopupMouseDownExceedsOwnerWindowBounds);
     PageWidgetEventHandler::HandleMouseDown(main_frame, event);
-  else
+  } else {
     Cancel();
+  }
 }
 
 WebInputEventResult WebPagePopupImpl::HandleMouseWheel(
     LocalFrame& main_frame,
     const WebMouseWheelEvent& event) {
   if (IsViewportPointInWindow(event.PositionInWidget().x(),
-                              event.PositionInWidget().y()))
+                              event.PositionInWidget().y())) {
+    CheckScreenPointInOwnerWindowAndCount(
+        event.PositionInScreen(),
+        WebFeature::kPopupMouseWheelExceedsOwnerWindowBounds);
     return PageWidgetEventHandler::HandleMouseWheel(main_frame, event);
+  }
   Cancel();
   return WebInputEventResult::kNotHandled;
 }
@@ -567,6 +595,23 @@ bool WebPagePopupImpl::IsViewportPointInWindow(int x, int y) {
   WebRect window_rect = WindowRectInScreen();
   return IntRect(0, 0, window_rect.width, window_rect.height)
       .Contains(IntPoint(point_in_window.x, point_in_window.y));
+}
+
+void WebPagePopupImpl::CheckScreenPointInOwnerWindowAndCount(
+    const gfx::PointF& point_in_screen,
+    WebFeature feature) const {
+  if (closing_)
+    return;
+
+  IntRect owner_window_rect = OwnerWindowRectInScreen();
+  if (!owner_window_rect.Contains(point_in_screen.x(), point_in_screen.y()))
+    UseCounter::Count(popup_client_->OwnerElement().GetDocument(), feature);
+}
+
+IntRect WebPagePopupImpl::OwnerWindowRectInScreen() const {
+  LocalFrameView* view = popup_client_->OwnerElement().GetDocument().View();
+  IntRect frame_rect = view->FrameRect();
+  return view->FrameToScreen(frame_rect);
 }
 
 WebInputEventResult WebPagePopupImpl::DispatchBufferedTouchEvents() {

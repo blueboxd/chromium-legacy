@@ -213,6 +213,7 @@ void V4UpdateProtocolManager::ScheduleNextUpdateAfterInterval(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(interval >= base::TimeDelta());
 
+  next_update_time_ = Time::Now() + interval;
   // Unschedule any current timer.
   update_timer_.Stop();
   update_timer_.Start(FROM_HERE, interval, this,
@@ -441,11 +442,10 @@ void V4UpdateProtocolManager::CollectUpdateInfo(
 
   if (last_response_time_.ToJavaTime()) {
     update_info->set_last_update_time_millis(last_response_time_.ToJavaTime());
+  }
 
-    // We should only find the next update if the last_response is valid.
-    base::Time next_update = last_response_time_ + next_update_interval_;
-    if (next_update.ToJavaTime())
-      update_info->set_next_update_time_millis(next_update.ToJavaTime());
+  if (update_timer_.IsRunning()) {
+    update_info->set_next_update_time_millis(next_update_time_.ToJavaTime());
   }
 }
 

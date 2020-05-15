@@ -81,13 +81,15 @@ void WaylandDisplayObserver::SendDisplayMetrics() {
   // has raw information before overscan, rotation applied.
   gfx::Size size_in_pixel = display.GetSizeInPixel();
 
+  // Use panel_rotation otherwise some X apps will refuse to take events from
+  // outside the "visible" region.
   wl_output_send_geometry(
       output_resource_, origin.x(), origin.y(),
       static_cast<int>(kInchInMm * size_in_pixel.width() / info.device_dpi()),
       static_cast<int>(kInchInMm * size_in_pixel.height() / info.device_dpi()),
       WL_OUTPUT_SUBPIXEL_UNKNOWN, make.empty() ? kUnknown : make.c_str(),
       model.empty() ? kUnknown : model.c_str(),
-      OutputTransform(display.rotation()));
+      OutputTransform(display.panel_rotation()));
 
   if (wl_resource_get_version(output_resource_) >=
       WL_OUTPUT_SCALE_SINCE_VERSION) {

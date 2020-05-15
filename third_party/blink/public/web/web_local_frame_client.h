@@ -229,10 +229,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // from outside of the browsing instance.
   virtual WebFrame* FindFrame(const WebString& name) { return nullptr; }
 
-  // This frame has set its opener to another frame, or disowned the opener
-  // if opener is null. See http://html.spec.whatwg.org/#dom-opener.
-  virtual void DidChangeOpener(WebFrame*) {}
-
   // Specifies the reason for the detachment.
   enum class DetachType { kRemove, kSwap };
 

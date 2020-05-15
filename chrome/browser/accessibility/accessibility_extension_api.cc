@@ -127,11 +127,12 @@ AccessibilityPrivateSetFocusRingsFunction::Run() {
       return RespondNow(Error("Could not parse hex color"));
     }
 
-    if (focus_ring_info.secondary_color &&
-        !extensions::image_util::ParseHexColorString(
-            *(focus_ring_info.secondary_color),
-            &(focus_ring->secondary_color))) {
-      return RespondNow(Error("Could not parse secondary hex color"));
+    if (focus_ring_info.secondary_color) {
+      if (!extensions::image_util::ParseHexColorString(
+              *(focus_ring_info.secondary_color),
+              &(focus_ring->secondary_color))) {
+        return RespondNow(Error("Could not parse secondary hex color"));
+      }
     }
 
     switch (focus_ring_info.type) {
@@ -146,13 +147,6 @@ AccessibilityPrivateSetFocusRingsFunction::Run() {
         break;
       default:
         NOTREACHED();
-    }
-
-    if (focus_ring_info.background_color &&
-        !extensions::image_util::ParseHexColorString(
-            *(focus_ring_info.background_color),
-            &(focus_ring->background_color))) {
-      return RespondNow(Error("Could not parse background hex color"));
     }
 
     // Update the touch exploration controller so that synthesized touch events

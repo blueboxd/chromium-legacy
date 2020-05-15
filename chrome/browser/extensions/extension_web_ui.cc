@@ -462,6 +462,26 @@ bool ExtensionWebUI::HandleChromeURLOverrideReverse(
 }
 
 // static
+const extensions::Extension* ExtensionWebUI::GetExtensionControllingURL(
+    const GURL& url,
+    content::BrowserContext* browser_context) {
+  GURL mutable_url(url);
+  if (!HandleChromeURLOverride(&mutable_url, browser_context))
+    return nullptr;
+
+  DCHECK_NE(url, mutable_url);
+  DCHECK(mutable_url.SchemeIs(extensions::kExtensionScheme));
+
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(browser_context)
+          ->enabled_extensions()
+          .GetByID(mutable_url.host());
+  DCHECK(extension);
+
+  return extension;
+}
+
+// static
 void ExtensionWebUI::InitializeChromeURLOverrides(Profile* profile) {
   ForEachOverrideList(profile, base::Bind(&InitializeOverridesList));
 }

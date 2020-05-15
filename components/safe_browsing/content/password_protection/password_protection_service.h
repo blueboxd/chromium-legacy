@@ -208,9 +208,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // If |url| matches Safe Browsing whitelist domains, password protection
   // change password URL, or password protection login URLs in the enterprise
   // policy.
-  virtual bool IsURLWhitelistedForPasswordEntry(
-      const GURL& url,
-      RequestOutcome* reason) const = 0;
+  virtual bool IsURLWhitelistedForPasswordEntry(const GURL& url) const = 0;
 
   // Persist the phished saved password credential in the "compromised
   // credentials" table. Calls the password store to add a row for each
@@ -300,14 +298,12 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   friend class PasswordProtectionRequest;
 
   // Chrome can send password protection ping if it is allowed by for the
-  // |trigger_type| and if Safe Browsing can compute reputation of
-  // |main_frame_url| (e.g. Safe Browsing is not able to compute reputation of a
-  // private IP or a local host). Update |reason| if sending ping is not
-  // allowed. |password_type| is used for UMA metric recording.
+  // |trigger_type| and |password_type| and if Safe Browsing can compute
+  // reputation of |main_frame_url| (e.g. Safe Browsing is not able to compute
+  // reputation of a private IP or a local host).
   bool CanSendPing(LoginReputationClientRequest::TriggerType trigger_type,
                    const GURL& main_frame_url,
-                   ReusedPasswordAccountType password_type,
-                   RequestOutcome* reason);
+                   ReusedPasswordAccountType password_type);
 
   // Called by a PasswordProtectionRequest instance when it finishes to remove
   // itself from |requests_|.
@@ -364,10 +360,12 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
   virtual bool IsIncognito() = 0;
 
+  virtual bool IsInPasswordAlertMode(
+      ReusedPasswordAccountType password_type) = 0;
+
   virtual bool IsPingingEnabled(
       LoginReputationClientRequest::TriggerType trigger_type,
-      ReusedPasswordAccountType password_type,
-      RequestOutcome* reason) = 0;
+      ReusedPasswordAccountType password_type) = 0;
 
   virtual bool IsHistorySyncEnabled() = 0;
 
@@ -408,10 +406,8 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   bool IsModalWarningShowingInWebContents(content::WebContents* web_contents);
 
   // Determines if we should show chrome://reset-password interstitial based on
-  // previous request outcome, the reused |password_type| and the
-  // |main_frame_url|.
-  virtual bool CanShowInterstitial(RequestOutcome reason,
-                                   ReusedPasswordAccountType password_type,
+  // the reused |password_type| and the |main_frame_url|.
+  virtual bool CanShowInterstitial(ReusedPasswordAccountType password_type,
                                    const GURL& main_frame_url) = 0;
 #endif
 
@@ -421,6 +417,13 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // |NOT_SIGNED_IN|.
   virtual LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
   GetSyncAccountType() const = 0;
+
+  // Returns the reason why a ping is not sent based on the |trigger_type|,
+  // |url| and |password_type|. Crash if |CanSendPing| is true.
+  virtual RequestOutcome GetPingNotSentReason(
+      LoginReputationClientRequest::TriggerType trigger_type,
+      const GURL& url,
+      ReusedPasswordAccountType password_type) = 0;
 
   const std::list<std::string>& common_spoofed_domains() const {
     return common_spoofed_domains_;

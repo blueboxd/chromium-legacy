@@ -338,8 +338,7 @@ NetworkPortalNotificationController::CreateDefaultCaptivePortalNotification(
               base::UTF8ToUTF16(network->name())),
           base::string16(), GURL(), notifier_id, data, std::move(delegate),
           kNotificationCaptivePortalIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
-  notification->SetSystemPriority();
+          message_center::SystemNotificationWarningLevel::WARNING);
   return notification;
 }
 
@@ -392,8 +391,7 @@ NetworkPortalNotificationController::
           notification_text, base::string16() /* display_source */, GURL(),
           notifier_id, data, std::move(delegate),
           kNotificationCaptivePortalIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
-  notification->SetSystemPriority();
+          message_center::SystemNotificationWarningLevel::WARNING);
   return notification;
 }
 

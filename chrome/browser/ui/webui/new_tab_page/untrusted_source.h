@@ -29,6 +29,16 @@ class Profile;
 //   * chrome-untrusted://new-tab-page/background_image?<url>: Behaves like an
 //       element that has <url> set as the background image, such that the image
 //       will cover the entire element.
+//   * chrome-untrusted://new-tab-page/custom_background_image?<params>: Similar
+//       to background_image but allows for custom styling. <params> are of the
+//       form <key>=<value>. The following keys are supported:
+//         * url:       background image URL.
+//         * url2x:     (optional) URL to a higher res background image.
+//         * size:      (optional) CSS background-size property.
+//         * repeatX:   (optional) CSS background-repeat-x property.
+//         * repeatY:   (optional) CSS background-repeat-y property.
+//         * positionX: (optional) CSS background-position-x property.
+//         * positionY: (optional) CSS background-position-y property.
 //   * chrome-untrusted://new-tab-page/iframe?<url>: Behaves like an iframe with
 //       src set to <url>.
 //   Each of those helpers only accept URLs with HTTPS or chrome-untrusted:.
@@ -65,6 +75,15 @@ class UntrustedSource : public content::URLDataSource,
   // PromoServiceObserver:
   void OnPromoDataUpdated() override;
   void OnPromoServiceShuttingDown() override;
+
+  void ServeBackgroundImage(const GURL& url,
+                            const GURL& url_2x,
+                            const std::string& size,
+                            const std::string& repeat_x,
+                            const std::string& repeat_y,
+                            const std::string& position_x,
+                            const std::string& position_y,
+                            content::URLDataSource::GotDataCallback callback);
 
   std::vector<content::URLDataSource::GotDataCallback>
       one_google_bar_callbacks_;

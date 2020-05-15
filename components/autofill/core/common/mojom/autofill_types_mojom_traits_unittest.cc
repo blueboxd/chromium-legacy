@@ -326,6 +326,36 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
   loop.Run();
 }
 
+TEST_F(AutofillTypeTraitsTestImpl, PassDataListFormFieldData) {
+  // Basically copied from PassFormFieldData and replaced Select with Datalist.
+  FormFieldData input;
+  test::CreateTestDatalistField("DatalistLabel", "DatalistName",
+                                "DatalistValue", kOptions, kOptions, &input);
+  // Set other attributes to check if they are passed correctly.
+  input.id_attribute = base::ASCIIToUTF16("id");
+  input.name_attribute = base::ASCIIToUTF16("name");
+  input.autocomplete_attribute = "on";
+  input.placeholder = base::ASCIIToUTF16("placeholder");
+  input.css_classes = base::ASCIIToUTF16("class1");
+  input.aria_label = base::ASCIIToUTF16("aria label");
+  input.aria_description = base::ASCIIToUTF16("aria description");
+  input.max_length = 12345;
+  input.is_autofilled = true;
+  input.check_status = FormFieldData::CheckStatus::kChecked;
+  input.should_autocomplete = true;
+  input.role = FormFieldData::RoleAttribute::kPresentation;
+  input.text_direction = base::i18n::RIGHT_TO_LEFT;
+  input.properties_mask = FieldPropertiesFlags::kHadFocus;
+  input.typed_value = base::ASCIIToUTF16("TestTypedValue");
+  input.bounds = gfx::RectF(1, 2, 10, 100);
+
+  base::RunLoop loop;
+  mojo::Remote<mojom::TypeTraitsTest> remote(GetTypeTraitsTestRemote());
+  remote->PassFormFieldData(
+      input, base::BindOnce(&ExpectFormFieldData, input, loop.QuitClosure()));
+  loop.Run();
+}
+
 TEST_F(AutofillTypeTraitsTestImpl, PassFormData) {
   FormData input;
   test::CreateTestAddressFormData(&input);

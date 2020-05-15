@@ -131,7 +131,7 @@ void MediaPlayerRenderer::CreateMediaPlayer(
 }
 
 void MediaPlayerRenderer::SetCdm(media::CdmContext* cdm_context,
-                                 media::CdmAttachedCB cdm_attached_cb) {
+                                 CdmAttachedCB cdm_attached_cb) {
   NOTREACHED();
 }
 

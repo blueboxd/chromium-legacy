@@ -620,6 +620,7 @@ class ListBoxSelectType final : public SelectType {
   void DidBlur() override;
   void DidSetSuggestedOption(HTMLOptionElement* option) override;
   void SaveLastSelection() override;
+  void ScrollToSelection() override;
   void ScrollToOption(HTMLOptionElement* option) override;
   void SelectAll() override;
   void SaveListboxActiveSelection() override;
@@ -872,7 +873,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
         }
         UpdateMultiSelectFocus();
       } else {
-        select_->ScrollToSelection();
+        ScrollToSelection();
       }
 
       return true;
@@ -943,7 +944,15 @@ void ListBoxSelectType::UpdateMultiSelectFocus() {
                       is_in_non_contiguous_selection_;
     option->SetMultiSelectFocusedState(is_focused);
   }
-  select_->ScrollToSelection();
+  ScrollToSelection();
+}
+
+void ListBoxSelectType::ScrollToSelection() {
+  if (!select_->IsFinishedParsingChildren())
+    return;
+  ScrollToOption(select_->ActiveSelectionEnd());
+  if (AXObjectCache* cache = select_->GetDocument().ExistingAXObjectCache())
+    cache->ListboxActiveIndexChanged(select_);
 }
 
 void ListBoxSelectType::ScrollToOption(HTMLOptionElement* option) {
@@ -1113,7 +1122,7 @@ void ListBoxSelectType::UpdateListBoxSelection(bool deselect_other_options,
   UpdateMultiSelectFocus();
   select_->SetNeedsValidityCheck();
   if (scroll)
-    select_->ScrollToSelection();
+    ScrollToSelection();
   select_->NotifyFormStateChanged();
 }
 
@@ -1198,7 +1207,7 @@ void SelectType::Trace(Visitor* visitor) {
 void SelectType::DidSelectOption(HTMLOptionElement*,
                                  HTMLSelectElement::SelectOptionFlags,
                                  bool) {
-  select_->ScrollToSelection();
+  ScrollToSelection();
   select_->SetNeedsValidityCheck();
 }
 
@@ -1223,6 +1232,8 @@ const ComputedStyle* SelectType::OptionStyle() const {
 }
 
 void SelectType::MaximumOptionWidthMightBeChanged() const {}
+
+void SelectType::ScrollToSelection() {}
 
 void SelectType::ScrollToOption(HTMLOptionElement* option) {}
 

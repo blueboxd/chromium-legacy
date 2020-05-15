@@ -86,6 +86,11 @@ size_t AutocompleteResult::GetMaxMatches(bool input_from_omnibox_focus) {
                 "kMaxAutocompletePositionValue must be larger than the largest "
                 "possible autocomplete result size.");
 
+  // If new search features are disabled, ignore the other parameters and use
+  // the default value.
+  if (!base::FeatureList::IsEnabled(omnibox::kNewSearchFeatures))
+    return kDefaultMaxAutocompleteMatches;
+
   // If we're interested in the zero suggest match limit, and one has been
   // specified, return it.
   if (input_from_omnibox_focus) {

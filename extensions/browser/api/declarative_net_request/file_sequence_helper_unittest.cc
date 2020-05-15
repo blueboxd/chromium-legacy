@@ -58,6 +58,10 @@ struct TestCase {
   LoadRulesetResult expected_result;
 };
 
+ExtensionId GenerateDummyExtensionID() {
+  return crx_file::id_util::GenerateId("dummy_extension");
+}
+
 class FileSequenceHelperTest : public ExtensionsTest {
  public:
   FileSequenceHelperTest() = default;
@@ -115,9 +119,7 @@ class FileSequenceHelperTest : public ExtensionsTest {
   }
 
   void TestLoadRulesets(const std::vector<TestCase>& test_cases) {
-    ExtensionId extension_id = crx_file::id_util::GenerateId("dummy_extension");
-
-    LoadRequestData data(extension_id);
+    LoadRequestData data(GenerateDummyExtensionID());
     for (const auto& test_case : test_cases) {
       data.rulesets.emplace_back(test_case.source.Clone());
       data.rulesets.back().set_expected_checksum(test_case.checksum);
@@ -158,6 +160,22 @@ class FileSequenceHelperTest : public ExtensionsTest {
     run_loop.Run();
   }
 
+  void TestNoRulesetsToLoad() {
+    LoadRequestData data(GenerateDummyExtensionID());
+
+    base::RunLoop run_loop;
+    auto load_ruleset_callback = base::BindOnce(
+        [](base::RunLoop* run_loop, LoadRequestData data) { run_loop->Quit(); },
+        &run_loop);
+
+    auto load_ruleset_task = base::BindOnce(
+        &FileSequenceHelper::LoadRulesets, base::Unretained(helper_.get()),
+        std::move(data), std::move(load_ruleset_callback));
+    GetExtensionFileTaskRunner()->PostTask(FROM_HERE,
+                                           std::move(load_ruleset_task));
+    run_loop.Run();
+  }
+
   // Initialize |num_rulesets| rulesets and returns the corresponding test
   // cases.
   std::vector<TestCase> InitializeRulesets(size_t num_rulesets) const {
@@ -187,6 +205,10 @@ class FileSequenceHelperTest : public ExtensionsTest {
 
   DISALLOW_COPY_AND_ASSIGN(FileSequenceHelperTest);
 };
+
+TEST_F(FileSequenceHelperTest, NoRulesetsToLoad) {
+  TestNoRulesetsToLoad();
+}
 
 TEST_F(FileSequenceHelperTest, IndexedRulesetDeleted) {
   const size_t kNumRulesets = 3;

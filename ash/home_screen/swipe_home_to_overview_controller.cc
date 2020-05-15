@@ -4,8 +4,11 @@
 
 #include "ash/home_screen/swipe_home_to_overview_controller.h"
 
+#include "ash/app_list/app_list_controller_impl.h"
+#include "ash/home_screen/drag_window_from_shelf_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/session/session_controller_impl.h"
@@ -50,8 +53,11 @@ constexpr base::TimeDelta kGestureCancelationDuration =
     base::TimeDelta::FromMilliseconds(350);
 
 void UpdateHomeAnimationForGestureCancel(
+    bool going_back,
     ui::ScopedLayerAnimationSettings* settings) {
-  settings->SetTransitionDuration(kGestureCancelationDuration);
+  settings->SetTransitionDuration(
+      going_back ? AppListConfig::instance().page_transition_duration()
+                 : kGestureCancelationDuration);
   settings->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
   settings->SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
@@ -139,9 +145,21 @@ void SwipeHomeToOverviewController::Drag(const gfx::PointF& location_in_screen,
 void SwipeHomeToOverviewController::EndDrag(
     const gfx::PointF& location_in_screen,
     base::Optional<float> velocity_y) {
+  if (state_ != State::kTrackingDrag) {
+    state_ = State::kFinished;
+    return;
+  }
+
+  // Upward swipe should return to the home screen's initial state.
+  const bool go_back =
+      velocity_y &&
+      *velocity_y <
+          -DragWindowFromShelfController::kVelocityToHomeScreenThreshold;
+
   // Overview is triggered by |overview_transition_timer_|. If EndDrag()
-  // is called before the timer fires, the gesture is canceled.
-  CancelDrag();
+  // is called before the timer fires, the result of the gesture should be
+  // staying on the home screen.
+  FinalizeDragAndStayOnHomeScreen(go_back);
 }
 
 void SwipeHomeToOverviewController::CancelDrag() {
@@ -150,22 +168,7 @@ void SwipeHomeToOverviewController::CancelDrag() {
     return;
   }
 
-  overview_transition_timer_.Stop();
-  overview_transition_threshold_y_ = 0;
-  state_ = State::kFinished;
-
-  UMA_HISTOGRAM_ENUMERATION(kEnterOverviewHistogramName,
-                            EnterOverviewFromHomeLauncher::kCanceled);
-  Shell::Get()
-      ->home_screen_controller()
-      ->delegate()
-      ->UpdateScaleAndOpacityForHomeLauncher(
-          1.0f /*scale*/, 1.0f /*opacity*/, base::nullopt /*animation_info*/,
-          base::BindRepeating(&UpdateHomeAnimationForGestureCancel));
-
-  // No need to keep blur disabled for the drag - note that blur might remain
-  // disabled at this point due to the started home screen scale animation.
-  home_screen_blur_disabler_.reset();
+  FinalizeDragAndStayOnHomeScreen(/*go_back=*/false);
 }
 
 void SwipeHomeToOverviewController::ScheduleFinalizeDragAndShowOverview() {
@@ -190,12 +193,46 @@ void SwipeHomeToOverviewController::FinalizeDragAndShowOverview() {
   }
 
   UMA_HISTOGRAM_ENUMERATION(kEnterOverviewHistogramName,
-                            EnterOverviewFromHomeLauncher::kSuccess);
+                            EnterOverviewFromHomeLauncher::kOverview);
+
+  // NOTE: No need to update the home launcher opacity and scale here - the
+  // HomeScreenController will update the home launcher state when it detects
+  // that the overview is starting.
   Shell::Get()->overview_controller()->StartOverview();
 
   // No need to keep blur disabled for the drag - note that blur might remain
   // disabled at this point due to the started overview transition (which
   // triggers home screen scale animation).
+  home_screen_blur_disabler_.reset();
+}
+
+void SwipeHomeToOverviewController::FinalizeDragAndStayOnHomeScreen(
+    bool go_back) {
+  overview_transition_timer_.Stop();
+  overview_transition_threshold_y_ = 0;
+  state_ = State::kFinished;
+
+  if (go_back) {
+    Shell::Get()->app_list_controller()->Back();
+    UMA_HISTOGRAM_ENUMERATION(kEnterOverviewHistogramName,
+                              EnterOverviewFromHomeLauncher::kBack);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(kEnterOverviewHistogramName,
+                              EnterOverviewFromHomeLauncher::kCanceled);
+  }
+
+  // Make sure the home launcher scale and opacity return to the initial state.
+  // Note that this is needed even if the gesture ended up in a fling, as early
+  // gesture handling might have updated the launcher scale.
+  Shell::Get()
+      ->home_screen_controller()
+      ->delegate()
+      ->UpdateScaleAndOpacityForHomeLauncher(
+          1.0f /*scale*/, 1.0f /*opacity*/, base::nullopt /*animation_info*/,
+          base::BindRepeating(&UpdateHomeAnimationForGestureCancel, go_back));
+
+  // No need to keep blur disabled for the drag - note that blur might remain
+  // disabled at this point due to the started home screen scale animation.
   home_screen_blur_disabler_.reset();
 }
 

@@ -54,9 +54,11 @@ class VIZ_SERVICE_EXPORT FrameRateDecider : public SurfaceObserver {
     FrameRateDecider* const decider_;
   };
 
+  // |hw_support_for_multiple_refresh_rates| indicates whether multiple refresh
+  // rates are supported by the hardware or simulated by the BeginFrameSource.
   FrameRateDecider(SurfaceManager* surface_manager,
                    Client* client,
-                   bool using_synthetic_bfs,
+                   bool hw_support_for_multiple_refresh_rates,
                    bool supports_set_frame_rate);
   ~FrameRateDecider() override;
 
@@ -96,7 +98,7 @@ class VIZ_SERVICE_EXPORT FrameRateDecider : public SurfaceObserver {
   size_t min_num_of_frames_to_toggle_interval_ = 60u;
   SurfaceManager* const surface_manager_;
   Client* const client_;
-  const bool using_synthetic_bfs_;
+  const bool hw_support_for_multiple_refresh_rates_;
   const bool supports_set_frame_rate_;
 };
 

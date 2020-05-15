@@ -27,7 +27,7 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -40,7 +40,7 @@ public class StatusIndicatorMediatorTest {
     public TestRule mProcessor = new Features.JUnitProcessor();
 
     @Mock
-    ChromeFullscreenManager mFullscreenManager;
+    BrowserControlsStateProvider mBrowserControlsStateProvider;
 
     @Mock
     View mStatusIndicatorView;
@@ -66,7 +66,7 @@ public class StatusIndicatorMediatorTest {
                          .with(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.GONE)
                          .with(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, false)
                          .build();
-        mMediator = new StatusIndicatorMediator(mModel, mFullscreenManager,
+        mMediator = new StatusIndicatorMediator(mModel, mBrowserControlsStateProvider,
                 () -> Color.WHITE, mCanAnimateNativeBrowserControls, mInvalidateCompositorView);
     }
 
@@ -75,7 +75,7 @@ public class StatusIndicatorMediatorTest {
         // After layout
         setViewHeight(70);
         mMediator.onLayoutChange(mStatusIndicatorView, 0, 0, 0, 0, 0, 0, 0, 0);
-        verify(mFullscreenManager).addListener(mMediator);
+        verify(mBrowserControlsStateProvider).addObserver(mMediator);
     }
 
     @Test
@@ -98,12 +98,12 @@ public class StatusIndicatorMediatorTest {
 
         // Now, hide it. Listener shouldn't be removed.
         mMediator.updateVisibilityForTesting(true);
-        verify(mFullscreenManager, never()).removeListener(mMediator);
+        verify(mBrowserControlsStateProvider, never()).removeObserver(mMediator);
 
         // Once the hiding animation is done...
         mMediator.onControlsOffsetChanged(0, 0, 0, 0, false);
         // The listener should be removed.
-        verify(mFullscreenManager).removeListener(mMediator);
+        verify(mBrowserControlsStateProvider).removeObserver(mMediator);
     }
 
     @Test

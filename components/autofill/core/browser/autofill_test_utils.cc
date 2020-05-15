@@ -105,6 +105,27 @@ void CreateTestSelectField(const std::vector<const char*>& values,
   CreateTestSelectField("", "", "", values, values, values.size(), field);
 }
 
+void CreateTestDatalistField(const char* label,
+                             const char* name,
+                             const char* value,
+                             const std::vector<const char*>& values,
+                             const std::vector<const char*>& labels,
+                             FormFieldData* field) {
+  // Fill the base attributes.
+  CreateTestFormField(label, name, value, "text", field);
+
+  std::vector<base::string16> values16(values.size());
+  for (size_t i = 0; i < values.size(); ++i)
+    values16[i] = base::UTF8ToUTF16(values[i]);
+
+  std::vector<base::string16> label16(labels.size());
+  for (size_t i = 0; i < labels.size(); ++i)
+    label16[i] = base::UTF8ToUTF16(labels[i]);
+
+  field->datalist_values = values16;
+  field->datalist_labels = label16;
+}
+
 void CreateTestAddressFormData(FormData* form, const char* unique_id) {
   std::vector<ServerFieldTypeSet> types;
   CreateTestAddressFormData(form, &types, unique_id);

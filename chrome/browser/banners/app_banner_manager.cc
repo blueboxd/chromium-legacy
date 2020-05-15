@@ -358,7 +358,8 @@ void AppBannerManager::OnDidPerformInstallableWebAppCheck(
 
   if (IsWebAppConsideredInstalled() && !ShouldAllowWebAppReplacementInstall()) {
     banners::TrackDisplayEvent(banners::DISPLAY_EVENT_INSTALLED_PREVIOUSLY);
-    SetInstallableWebAppCheckResult(InstallableWebAppCheckResult::kNo);
+    SetInstallableWebAppCheckResult(
+        InstallableWebAppCheckResult::kNoAlreadyInstalled);
     Stop(ALREADY_INSTALLED);
     return;
   }
@@ -471,13 +472,21 @@ void AppBannerManager::SetInstallableWebAppCheckResult(
     case InstallableWebAppCheckResult::kPromotable:
       last_promotable_web_app_scope_ = manifest_.scope;
       DCHECK(!last_promotable_web_app_scope_.is_empty());
+      last_already_installed_web_app_scope_ = GURL();
       install_animation_pending_ =
           AppBannerSettingsHelper::CanShowInstallTextAnimation(
               web_contents(), last_promotable_web_app_scope_);
       break;
+    case InstallableWebAppCheckResult::kNoAlreadyInstalled:
+      last_already_installed_web_app_scope_ = manifest_.scope;
+      DCHECK(!last_already_installed_web_app_scope_.is_empty());
+      last_promotable_web_app_scope_ = GURL();
+      install_animation_pending_ = false;
+      break;
     case InstallableWebAppCheckResult::kByUserRequest:
     case InstallableWebAppCheckResult::kNo:
       last_promotable_web_app_scope_ = GURL();
+      last_already_installed_web_app_scope_ = GURL();
       install_animation_pending_ = false;
       break;
   }
@@ -643,6 +652,7 @@ base::string16 AppBannerManager::GetInstallableWebAppName(
   switch (manager->installable_web_app_check_result_) {
     case InstallableWebAppCheckResult::kUnknown:
     case InstallableWebAppCheckResult::kNo:
+    case InstallableWebAppCheckResult::kNoAlreadyInstalled:
       return base::string16();
     case InstallableWebAppCheckResult::kByUserRequest:
     case InstallableWebAppCheckResult::kPromotable:
@@ -650,19 +660,38 @@ base::string16 AppBannerManager::GetInstallableWebAppName(
   }
 }
 
-bool AppBannerManager::IsProbablyPromotableWebApp() const {
+bool AppBannerManager::IsProbablyPromotableWebApp(
+    bool ignore_existing_installations) const {
+  bool in_promotable_scope =
+      last_promotable_web_app_scope_.is_valid() &&
+      base::StartsWith(web_contents()->GetLastCommittedURL().spec(),
+                       last_promotable_web_app_scope_.spec(),
+                       base::CompareCase::SENSITIVE);
+  bool in_already_installed_scope =
+      last_already_installed_web_app_scope_.is_valid() &&
+      base::StartsWith(web_contents()->GetLastCommittedURL().spec(),
+                       last_already_installed_web_app_scope_.spec(),
+                       base::CompareCase::SENSITIVE);
   switch (installable_web_app_check_result_) {
     case InstallableWebAppCheckResult::kUnknown:
-      return last_promotable_web_app_scope_.is_valid() &&
-             base::StartsWith(web_contents()->GetLastCommittedURL().spec(),
-                              last_promotable_web_app_scope_.spec(),
-                              base::CompareCase::SENSITIVE);
+      return in_promotable_scope ||
+             (ignore_existing_installations && in_already_installed_scope);
     case InstallableWebAppCheckResult::kNo:
+    case InstallableWebAppCheckResult::kNoAlreadyInstalled:
+      return ignore_existing_installations;
     case InstallableWebAppCheckResult::kByUserRequest:
       return false;
     case InstallableWebAppCheckResult::kPromotable:
       return true;
   }
+}
+
+const GURL& AppBannerManager::GetManifestStartUrl() {
+  return manifest_.start_url;
+}
+
+blink::mojom::DisplayMode AppBannerManager::GetManifestDisplayMode() {
+  return manifest_.display;
 }
 
 bool AppBannerManager::MaybeConsumeInstallAnimation() {

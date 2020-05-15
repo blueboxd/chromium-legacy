@@ -30,8 +30,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 import java.lang.annotation.Retention;
@@ -50,7 +49,7 @@ import java.util.List;
  * <p>While scrolling, it keeps track of the current scrolling offset and avoids drawing on top of
  * the top bar which is can be, during animations, just drawn on top of the compositor.
  */
-class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
+class AssistantOverlayDrawable extends Drawable implements BrowserControlsStateProvider.Observer {
     private static final int FADE_DURATION_MS = 250;
 
     /** '…' in UTF-8. */
@@ -69,7 +68,7 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
     private static final int BOX_CORNER_DP = 8;
 
     private final Context mContext;
-    private final ChromeFullscreenManager mFullscreenManager;
+    private final BrowserControlsStateProvider mBrowserControlsStateProvider;
 
     private final Paint mBackground;
     private int mBackgroundAlpha;
@@ -108,9 +107,10 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
     /** The image to draw on top of full overlays, if set. */
     private AssistantOverlayImage mOverlayImage;
 
-    AssistantOverlayDrawable(Context context, ChromeFullscreenManager fullscreenManager) {
+    AssistantOverlayDrawable(
+            Context context, BrowserControlsStateProvider browserControlsStateProvider) {
         mContext = context;
-        mFullscreenManager = fullscreenManager;
+        mBrowserControlsStateProvider = browserControlsStateProvider;
 
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
 
@@ -136,7 +136,7 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
         mCornerPx = TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, BOX_CORNER_DP, displayMetrics);
 
-        mFullscreenManager.addListener(this);
+        mBrowserControlsStateProvider.addObserver(this);
 
         // Inherit font from AssistantBlackBody style. This is done by letting a temporary text view
         // resolve the target typeface, because resolving it manually with ResourcesCompat.getFont()
@@ -176,7 +176,7 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
     }
 
     void destroy() {
-        mFullscreenManager.removeListener(this);
+        mBrowserControlsStateProvider.removeObserver(this);
     }
 
     /**
@@ -280,12 +280,13 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
     public void draw(Canvas canvas) {
         Rect bounds = getBounds();
         int width = bounds.width();
-        int yTop = mFullscreenManager.getContentOffset();
-        int yBottom = bounds.height() - mFullscreenManager.getBottomControlsHeight()
-                - mFullscreenManager.getBottomControlOffset();
+        int yTop = mBrowserControlsStateProvider.getContentOffset();
+        int yBottom = bounds.height() - mBrowserControlsStateProvider.getBottomControlsHeight()
+                - mBrowserControlsStateProvider.getBottomControlOffset();
 
         // Don't draw over the top or bottom bars.
-        canvas.clipRect(0, mFullscreenManager.getTopVisibleContentOffset(), width, yBottom);
+        canvas.clipRect(
+                0, mBrowserControlsStateProvider.getTopVisibleContentOffset(), width, yBottom);
 
         canvas.drawPaint(mBackground);
 

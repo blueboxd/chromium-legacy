@@ -52,9 +52,6 @@ class WebRemoteFrameClient {
   virtual void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) {}
 
-  // This frame updated its opener to another frame.
-  virtual void DidChangeOpener(WebFrame* opener) {}
-
   // Continue sequential focus navigation in this frame.  This is called when
   // the |source| frame is searching for the next focusable element (e.g., in
   // response to <tab>) and encounters a remote frame.

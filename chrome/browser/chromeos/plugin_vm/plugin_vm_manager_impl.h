@@ -89,7 +89,7 @@ class PluginVmManagerImpl
       base::Optional<vm_tools::plugin_dispatcher::ShowVmResponse> reply);
   void OnGetVmInfoForSharing(
       base::Optional<vm_tools::concierge::GetVmInfoResponse> reply);
-  void OnDefaultSharedDirsExist(const base::FilePath& dir, bool exists);
+  void OnDefaultSharedDirExists(const base::FilePath& dir, bool exists);
   void UninstallSucceeded();
 
   // Called when LaunchPluginVm() is successful.

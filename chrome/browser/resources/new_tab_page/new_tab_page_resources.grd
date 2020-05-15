@@ -59,8 +59,14 @@
       <include name="IDR_NEW_TAB_PAGE_REALBOX_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/realbox.js"
           use_base_dir="false" type="BINDATA" compress="false" />
+      <include name="IDR_NEW_TAB_PAGE_REALBOX_BUTTON_JS"
+          file="${root_gen_dir}/chrome/browser/resources/new_tab_page/realbox_button.js"
+          use_base_dir="false" type="BINDATA" compress="false" />
       <include name="IDR_NEW_TAB_PAGE_REALBOX_DROPDOWN_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/realbox_dropdown.js"
+          use_base_dir="false" type="BINDATA" compress="false" />
+      <include name="IDR_NEW_TAB_PAGE_REALBOX_ICON_JS"
+          file="${root_gen_dir}/chrome/browser/resources/new_tab_page/realbox_icon.js"
           use_base_dir="false" type="BINDATA" compress="false" />
       <include name="IDR_NEW_TAB_PAGE_REALBOX_MATCH_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/realbox_match.js"

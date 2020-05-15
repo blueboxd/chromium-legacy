@@ -83,6 +83,8 @@ component("cpp") {
     "assistant/controller/assistant_controller_observer.h",
     "assistant/controller/assistant_interaction_controller.cc",
     "assistant/controller/assistant_interaction_controller.h",
+    "assistant/controller/assistant_screen_context_controller.cc",
+    "assistant/controller/assistant_screen_context_controller.h",
     "assistant/controller/assistant_suggestions_controller.cc",
     "assistant/controller/assistant_suggestions_controller.h",
     "assistant/controller/assistant_ui_controller.cc",

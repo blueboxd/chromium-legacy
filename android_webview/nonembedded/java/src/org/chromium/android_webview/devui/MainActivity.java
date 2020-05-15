@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.IntDef;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
@@ -44,6 +45,39 @@ public class MainActivity extends FragmentActivity {
     private static final int FRAGMENT_ID_HOME = 0;
     private static final int FRAGMENT_ID_CRASHES = 1;
     private static final int FRAGMENT_ID_FLAGS = 2;
+
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
+    @IntDef({MenuChoice.SWITCH_PROVIDER, MenuChoice.REPORT_BUG, MenuChoice.CHECK_UPDATES,
+            MenuChoice.CRASHES_REFRESH})
+    public @interface MenuChoice {
+        int SWITCH_PROVIDER = 0;
+        int REPORT_BUG = 1;
+        int CHECK_UPDATES = 2;
+        int CRASHES_REFRESH = 3;
+        int COUNT = 4;
+    }
+
+    public static void logMenuSelection(@MenuChoice int selectedMenuItem) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.WebView.DevUi.MenuSelection", selectedMenuItem, MenuChoice.COUNT);
+    }
+
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
+    @IntDef({FragmentNavigation.HOME_FRAGMENT, FragmentNavigation.CRASHES_LIST_FRAGMENT,
+            FragmentNavigation.FLAGS_FRAGMENT})
+    private @interface FragmentNavigation {
+        int HOME_FRAGMENT = 0;
+        int CRASHES_LIST_FRAGMENT = 1;
+        int FLAGS_FRAGMENT = 2;
+        int COUNT = 3;
+    }
+
+    private static void logFragmentNavigation(@FragmentNavigation int selectedFragment) {
+        RecordHistogram.recordEnumeratedHistogram("Android.WebView.DevUi.FragmentNavigation",
+                selectedFragment, FragmentNavigation.COUNT);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,12 +132,15 @@ public class MainActivity extends FragmentActivity {
                 chosenFragmentId = FRAGMENT_ID_HOME;
                 // Fall through.
             case FRAGMENT_ID_HOME:
+                logFragmentNavigation(FragmentNavigation.HOME_FRAGMENT);
                 fragment = new HomeFragment();
                 break;
             case FRAGMENT_ID_CRASHES:
+                logFragmentNavigation(FragmentNavigation.CRASHES_LIST_FRAGMENT);
                 fragment = new CrashesListFragment();
                 break;
             case FRAGMENT_ID_FLAGS:
+                logFragmentNavigation(FragmentNavigation.FLAGS_FRAGMENT);
                 fragment = new FlagsFragment();
                 break;
         }
@@ -192,9 +229,11 @@ public class MainActivity extends FragmentActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.options_menu_switch_provider
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            logMenuSelection(MenuChoice.SWITCH_PROVIDER);
             startActivity(new Intent(Settings.ACTION_WEBVIEW_SETTINGS));
             return true;
         } else if (item.getItemId() == R.id.options_menu_report_bug) {
+            logMenuSelection(MenuChoice.REPORT_BUG);
             Uri reportUri = new Uri.Builder()
                                     .scheme("https")
                                     .authority("bugs.chromium.org")
@@ -206,6 +245,7 @@ public class MainActivity extends FragmentActivity {
             startActivity(new Intent(Intent.ACTION_VIEW, reportUri));
             return true;
         } else if (item.getItemId() == R.id.options_menu_check_updates) {
+            logMenuSelection(MenuChoice.CHECK_UPDATES);
             try {
                 Uri marketUri = new Uri.Builder()
                                         .scheme("market")

@@ -34,6 +34,9 @@ GetDisplayPower(const std::vector<DisplaySnapshot*>& displays,
 
 #endif  // defined(OS_CHROMEOS)
 
+// Determines whether |a| is within an epsilon of |b|.
+bool WithinEpsilon(float a, float b);
+
 // Returns a string describing |state|.
 std::string MultipleDisplayStateToString(MultipleDisplayState state);
 

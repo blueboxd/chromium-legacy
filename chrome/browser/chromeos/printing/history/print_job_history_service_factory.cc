@@ -53,9 +53,8 @@ KeyedService* PrintJobHistoryServiceFactory::BuildServiceInstanceFor(
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetProtoDatabaseProvider();
 
-  std::unique_ptr<PrintJobDatabase> print_job_database =
-      std::make_unique<PrintJobDatabaseImpl>(database_provider,
-                                             profile->GetPath());
+  auto print_job_database = std::make_unique<PrintJobDatabaseImpl>(
+      database_provider, profile->GetPath());
   CupsPrintJobManager* print_job_manager =
       chromeos::CupsPrintJobManagerFactory::GetForBrowserContext(profile);
 

@@ -209,7 +209,7 @@ bool ConfirmSrrBodyIntegrity(base::StringPiece srr_body,
 
   const cbor::Value::MapValue& map = maybe_map->GetMap();
 
-  if (map.size() != 3) {
+  if (map.size() != 4) {
     error = "SRR body is a map of unexpected size";
     return false;
   }
@@ -248,6 +248,7 @@ bool ConfirmSrrBodyIntegrity(base::StringPiece srr_body,
            std::make_tuple("metadata.public", &cbor::Value::is_unsigned),
            std::make_tuple("metadata.private", &cbor::Value::is_unsigned),
            std::make_tuple("expiry-timestamp", &cbor::Value::is_unsigned),
+           std::make_tuple("token-hash", &cbor::Value::is_bytestring),
        }) {
     if (!check_field(std::get<0>(tup), std::get<1>(tup))) {
       error = "Missing or type-unsafe " + std::string(std::get<0>(tup));

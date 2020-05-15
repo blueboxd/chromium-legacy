@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.tasks;
 
+import static com.google.android.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS;
+import static com.google.android.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.util.AttributeSet;
@@ -23,12 +26,16 @@ import org.chromium.chrome.browser.coordinator.CoordinatorLayoutForPointer;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.ntp.IncognitoDescriptionView;
 import org.chromium.chrome.browser.ntp.search.SearchBoxCoordinator;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
+import org.chromium.ui.base.ViewUtils;
 
 // The view of the tasks surface.
 class TasksView extends CoordinatorLayoutForPointer {
+    private static final int OMNIBOX_BOTTOM_PADDING_DP = 4;
+
     private final Context mContext;
     private FrameLayout mBodyViewContainer;
     private FrameLayout mCarouselTabSwitcherContainer;
@@ -66,7 +73,29 @@ class TasksView extends CoordinatorLayoutForPointer {
         mHeaderView = (AppBarLayout) findViewById(R.id.task_surface_header);
         AppBarLayout.LayoutParams layoutParams =
                 (AppBarLayout.LayoutParams) mSearchBoxCoordinator.getView().getLayoutParams();
-        layoutParams.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL);
+        layoutParams.setScrollFlags(SCROLL_FLAG_SCROLL);
+        adjustOmniboxScrollMode(layoutParams);
+    }
+
+    private void adjustOmniboxScrollMode(AppBarLayout.LayoutParams layoutParams) {
+        if (!StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue().equals("omniboxonly")) {
+            // Omnibox scroll mode is only relevant in omnibox-only variation.
+            return;
+        }
+        String scrollMode = StartSurfaceConfiguration.START_SURFACE_OMNIBOX_SCROLL_MODE.getValue();
+        switch (scrollMode) {
+            case "quick":
+                layoutParams.setScrollFlags(SCROLL_FLAG_SCROLL | SCROLL_FLAG_ENTER_ALWAYS);
+                break;
+            case "pinned":
+                layoutParams.setScrollFlags(0 /* SCROLL_FLAG_NO_SCROLL */);
+                break;
+            case "top":
+            default:
+                return;
+        }
+        // This is only needed when the scroll mode is not "top".
+        layoutParams.bottomMargin = ViewUtils.dpToPx(getContext(), OMNIBOX_BOTTOM_PADDING_DP);
     }
 
     ViewGroup getCarouselTabSwitcherContainer() {

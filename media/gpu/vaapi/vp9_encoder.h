@@ -71,6 +71,11 @@ class VP9Encoder : public AcceleratedVideoEncoder {
         const Vp9ReferenceFrameVector& ref_frames,
         const std::array<bool, kVp9NumRefsPerFrame>& ref_frames_used) = 0;
 
+    void set_bitrate_control(BitrateControl bc) { bitrate_control_ = bc; }
+
+   protected:
+    BitrateControl bitrate_control_ = BitrateControl::kConstantBitrate;
+
     DISALLOW_COPY_AND_ASSIGN(Accelerator);
   };
 

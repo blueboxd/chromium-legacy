@@ -463,7 +463,7 @@ class AppElement extends PolymerElement {
   computeShowBackgroundImage_() {
     switch (this.backgroundSelection_.type) {
       case BackgroundSelectionType.NO_SELECTION:
-        return !!this.theme_ && !!this.theme_.backgroundImageUrl;
+        return !!this.theme_ && !!this.theme_.backgroundImage;
       case BackgroundSelectionType.IMAGE:
         return true;
       case BackgroundSelectionType.NO_BACKGROUND:
@@ -525,18 +525,20 @@ class AppElement extends PolymerElement {
         };
       }
     }
-    let url = '';
+    /** @type {newTabPage.mojom.BackgroundImage|undefined} */
+    let backgroundImage;
     switch (this.backgroundSelection_.type) {
       case BackgroundSelectionType.NO_SELECTION:
-        url = this.theme_ && this.theme_.backgroundImageUrl &&
-            this.theme_.backgroundImageUrl.url;
+        backgroundImage = this.theme_ && this.theme_.backgroundImage;
         break;
       case BackgroundSelectionType.IMAGE:
-        url = this.backgroundSelection_.image.imageUrl.url;
+        backgroundImage = {
+          url: {url: this.backgroundSelection_.image.imageUrl.url}
+        };
         break;
     }
-    if (url) {
-      this.backgroundManager_.setBackgroundImageUrl(url);
+    if (backgroundImage) {
+      this.backgroundManager_.setBackgroundImage(backgroundImage);
     }
   }
 

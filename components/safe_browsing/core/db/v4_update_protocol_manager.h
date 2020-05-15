@@ -178,6 +178,10 @@ class V4UpdateProtocolManager {
   // The server can set it by setting the minimum_wait_duration.
   base::TimeDelta next_update_interval_;
 
+  // The time when the next update is scheduled to be requested. This is valid
+  // only when |update_timer_| is running.
+  base::Time next_update_time_;
+
   // The config of the client making Pver4 requests.
   const V4ProtocolConfig config_;
 

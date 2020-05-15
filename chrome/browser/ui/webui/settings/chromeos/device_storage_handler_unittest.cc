@@ -23,6 +23,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/dbus/dlcservice/fake_dlcservice_client.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -96,6 +97,8 @@ class StorageHandlerTest : public testing::Test {
     other_users_size_test_api_ =
         std::make_unique<calculator::OtherUsersSizeTestAPI>(
             handler_.get(), new calculator::OtherUsersSizeCalculator());
+    dlcs_size_test_api_ = std::make_unique<calculator::DlcsSizeTestAPI>(
+        handler_.get(), new calculator::DlcsSizeCalculator());
 
     // Create and register My files directory.
     // By emulating chromeos running, GetMyFilesFolderForProfile will return the
@@ -109,6 +112,10 @@ class StorageHandlerTest : public testing::Test {
         file_manager::util::GetDownloadsMountPointName(profile_),
         storage::kFileSystemTypeNativeLocal, storage::FileSystemMountOption(),
         my_files_path));
+
+    chromeos::DlcserviceClient::InitializeFake();
+    fake_dlcservice_client_ = static_cast<chromeos::FakeDlcserviceClient*>(
+        chromeos::DlcserviceClient::Get());
   }
 
   void TearDown() override {
@@ -119,7 +126,9 @@ class StorageHandlerTest : public testing::Test {
     apps_size_test_api_.reset();
     crostini_size_test_api_.reset();
     other_users_size_test_api_.reset();
+    dlcs_size_test_api_.reset();
     chromeos::disks::DiskMountManager::Shutdown();
+    chromeos::DlcserviceClient::Shutdown();
     storage::ExternalMountPoints::GetSystemInstance()->RevokeAllFileSystems();
   }
 
@@ -148,8 +157,11 @@ class StorageHandlerTest : public testing::Test {
           !data->arg1()->GetAsString(&name)) {
         continue;
       }
-      if (name == event_name)
+      if (name == event_name) {
+        if (name == "storage-dlcs-size-changed")
+          return data->arg3();
         return data->arg2();
+      }
     }
     return nullptr;
   }
@@ -191,6 +203,7 @@ class StorageHandlerTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   Profile* profile_;
+  chromeos::FakeDlcserviceClient* fake_dlcservice_client_;
   std::unique_ptr<calculator::SizeStatTestAPI> size_stat_test_api_;
   std::unique_ptr<calculator::MyFilesSizeTestAPI> my_files_size_test_api_;
   std::unique_ptr<calculator::BrowsingDataSizeTestAPI>
@@ -198,6 +211,7 @@ class StorageHandlerTest : public testing::Test {
   std::unique_ptr<calculator::AppsSizeTestAPI> apps_size_test_api_;
   std::unique_ptr<calculator::CrostiniSizeTestAPI> crostini_size_test_api_;
   std::unique_ptr<calculator::OtherUsersSizeTestAPI> other_users_size_test_api_;
+  std::unique_ptr<calculator::DlcsSizeTestAPI> dlcs_size_test_api_;
 
  private:
   std::unique_ptr<arc::ArcServiceManager> arc_service_manager_;
@@ -341,6 +355,26 @@ TEST_F(StorageHandlerTest, MyFilesSize) {
   EXPECT_EQ("81.4 KB", callback->GetString());
 }
 
+TEST_F(StorageHandlerTest, DlcsSize) {
+  dlcservice::DlcsWithContent dlcs_with_content;
+  auto* dlc_info = dlcs_with_content.add_dlc_infos();
+  dlc_info->set_used_bytes_on_disk(1);
+  dlc_info = dlcs_with_content.add_dlc_infos();
+  dlc_info->set_used_bytes_on_disk(2);
+  fake_dlcservice_client_->set_dlcs_with_content(dlcs_with_content);
+
+  // Calculate DLC size.
+  dlcs_size_test_api_->StartCalculation();
+  task_environment_.RunUntilIdle();
+
+  const base::Value* callback =
+      GetWebUICallbackMessage("storage-dlcs-size-changed");
+  ASSERT_TRUE(callback) << "No 'storage-dlcs-size-changed' callback";
+
+  // Check return value.
+  EXPECT_EQ("3 B", callback->GetString());
+}
+
 TEST_F(StorageHandlerTest, AppsExtensionsSize) {
   // The data for apps and extensions apps_size_test_api_installed from the
   // webstore is stored in the Extensions folder. Add data at a random location
@@ -449,10 +483,22 @@ TEST_F(StorageHandlerTest, SystemSize) {
   ASSERT_FALSE(GetWebUICallbackMessage("storage-system-size-changed"));
 
   // Simulate crostini size callback.
-  crostini_size_test_api_->SimulateOnGetCrostiniSize(70 * GB);
+  crostini_size_test_api_->SimulateOnGetCrostiniSize(50 * GB);
   callback = GetWebUICallbackMessage("storage-crostini-size-changed");
   ASSERT_TRUE(callback) << "No 'storage-crostini-size-changed' callback";
-  EXPECT_EQ("70.0 GB", callback->GetString());
+  EXPECT_EQ("50.0 GB", callback->GetString());
+  ASSERT_FALSE(GetWebUICallbackMessage("storage-system-size-changed"));
+
+  // Simulate DLC size callback
+  dlcservice::DlcsWithContent dlcs_with_content;
+  auto* dlc_info = dlcs_with_content.add_dlc_infos();
+  dlc_info->set_used_bytes_on_disk(20 * GB);
+  dlc_info = dlcs_with_content.add_dlc_infos();
+  dlcs_size_test_api_->SimulateOnGetExistingDlcs(dlcservice::kErrorNone,
+                                                 dlcs_with_content);
+  callback = GetWebUICallbackMessage("storage-dlcs-size-changed");
+  ASSERT_TRUE(callback) << "No 'storage-dlcs-size-changed' callback";
+  EXPECT_EQ("20.0 GB", callback->GetString());
   ASSERT_FALSE(GetWebUICallbackMessage("storage-system-size-changed"));
 
   // Simulate other users size callback. No callback message until the sizes of

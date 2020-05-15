@@ -96,35 +96,26 @@ void AccessibilityFocusRingLayer::Set(const AccessibilityFocusRing& ring) {
   ring_ = ring;
 
   gfx::Rect bounds = ring.GetBounds();
+  int inset = kGradientWidth;
+  bounds.Inset(-inset, -inset, -inset, -inset);
+
   display::Display display =
       display::Screen::GetScreen()->GetDisplayMatching(bounds);
-
-  if (SkColorGetA(background_color_) > 0) {
-    bounds = display.bounds();
-  } else {
-    int inset = kGradientWidth;
-    bounds.Inset(-inset, -inset, -inset, -inset);
-  }
   aura::Window* root_window = Shell::GetRootWindowForDisplayId(display.id());
   CreateOrUpdateLayer(root_window, "AccessibilityFocusRing", bounds);
 }
 
 void AccessibilityFocusRingLayer::SetAppearance(FocusRingType type,
                                                 SkColor color,
-                                                SkColor secondary_color,
-                                                SkColor background_color) {
+                                                SkColor secondary_color) {
   SetColor(color);
   type_ = type;
   secondary_color_ = secondary_color;
-  background_color_ = background_color;
 }
 
 void AccessibilityFocusRingLayer::OnPaintLayer(
     const ui::PaintContext& context) {
   ui::PaintRecorder recorder(context, layer()->size());
-
-  if (SkColorGetA(background_color_) > 0)
-    DrawFocusBackground(recorder);
 
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
@@ -206,19 +197,6 @@ void AccessibilityFocusRingLayer::DrawGlowFocusRing(ui::PaintRecorder& recorder,
     path = MakePath(ring_, i, offset);
     recorder.canvas()->DrawPath(path, flags);
   }
-}
-
-void AccessibilityFocusRingLayer::DrawFocusBackground(
-    ui::PaintRecorder& recorder) {
-  recorder.canvas()->DrawColor(background_color_);
-
-  gfx::Vector2d offset = layer()->bounds().OffsetFromOrigin();
-  SkPath path = MakePath(ring_, 0, offset);
-  cc::PaintFlags flags;
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-  flags.setBlendMode(SkBlendMode::kClear);
-  flags.setColor(SkColorSetARGB(0, 0, 0, 0));
-  recorder.canvas()->DrawPath(path, flags);
 }
 
 }  // namespace ash

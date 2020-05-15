@@ -12,6 +12,7 @@ include_rules = [
   "+components/sync_preferences/testing_pref_service_syncable.h",
   "+components/unified_consent",
   "+components/user_prefs/user_prefs.h",
+  "+components/variations",
   "+content/public/browser",
   "+content/public/common",
   "+content/public/test",

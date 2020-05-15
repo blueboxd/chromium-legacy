@@ -34,7 +34,7 @@ bool BoringsslTrustTokenIssuanceCryptographer::Initialize(
     return false;
 
   ctx_ = bssl::UniquePtr<TRUST_TOKEN_CLIENT>(TRUST_TOKEN_CLIENT_new(
-      TRUST_TOKEN_experiment_v0(),
+      TRUST_TOKEN_experiment_v1(),
       static_cast<size_t>(issuer_configured_batch_size)));
   return !!ctx_;
 }

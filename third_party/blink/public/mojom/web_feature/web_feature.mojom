@@ -2632,6 +2632,12 @@ enum WebFeature {
   kForceEncodedVideoInsertableStreams = 3295,
   kTransformStyleContainingBlockComputedUsedMismatch = 3296,
   kAdditionalGroupingPropertiesForCompat = 3297,
+  kPopupDoesNotExceedOwnerWindowBounds = 3298,
+  kPopupExceedsOwnerWindowBounds = 3299,
+  kPopupExceedsOwnerWindowBoundsForIframe = 3300,
+  kPopupGestureTapExceedsOwnerWindowBounds = 3301,
+  kPopupMouseDownExceedsOwnerWindowBounds = 3302,
+  kPopupMouseWheelExceedsOwnerWindowBounds = 3303,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

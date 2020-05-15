@@ -104,6 +104,7 @@ class AppBannerManager : public content::WebContentsObserver,
   enum class InstallableWebAppCheckResult {
     kUnknown,
     kNo,
+    kNoAlreadyInstalled,
     kByUserRequest,
     kPromotable,
   };
@@ -137,8 +138,18 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Returns whether installability checks satisfy promotion requirements
   // (e.g. having a service worker fetch event) or have passed previously within
-  // the current manifest scope.
-  bool IsProbablyPromotableWebApp() const;
+  // the current manifest scope. Already-installed apps are non-promotable by
+  // default but can be checked with |ignore_existing_installations|.
+  bool IsProbablyPromotableWebApp(
+      bool ignore_existing_installations = false) const;
+
+  // Returns the page's web app start URL if available, otherwise return an
+  // empty or invalid GURL.
+  const GURL& GetManifestStartUrl();
+
+  // Returns the page's web app |DisplayMode| if available, otherwise it will be
+  // DisplayMode::kUndefined.
+  blink::mojom::DisplayMode GetManifestDisplayMode();
 
   // Each successful installability check gets to show one animation prompt,
   // this returns and consumes the animation prompt if it is available.
@@ -377,6 +388,9 @@ class AppBannerManager : public content::WebContentsObserver,
   // The scope of the most recent installability check that passes promotability
   // requirements, otherwise invalid.
   GURL last_promotable_web_app_scope_;
+  // The scope of the most recent installability check that was non-promotable
+  // due to being already installed, otherwise invalid.
+  GURL last_already_installed_web_app_scope_;
 
   base::ObserverList<Observer, true> observer_list_;
 

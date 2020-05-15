@@ -15,7 +15,7 @@
 #include "ash/assistant/assistant_alarm_timer_controller.h"
 #include "ash/assistant/assistant_interaction_controller_impl.h"
 #include "ash/assistant/assistant_notification_controller.h"
-#include "ash/assistant/assistant_screen_context_controller.h"
+#include "ash/assistant/assistant_screen_context_controller_impl.h"
 #include "ash/assistant/assistant_setup_controller.h"
 #include "ash/assistant/assistant_state_controller.h"
 #include "ash/assistant/assistant_suggestions_controller_impl.h"
@@ -107,7 +107,7 @@ class ASH_EXPORT AssistantControllerImpl
     return &assistant_notification_controller_;
   }
 
-  AssistantScreenContextController* screen_context_controller() {
+  AssistantScreenContextControllerImpl* screen_context_controller() {
     return &assistant_screen_context_controller_;
   }
 
@@ -142,9 +142,6 @@ class ASH_EXPORT AssistantControllerImpl
   void BindNotificationController(
       mojo::PendingReceiver<mojom::AssistantNotificationController> receiver)
       override;
-  void BindScreenContextController(
-      mojo::PendingReceiver<mojom::AssistantScreenContextController> receiver)
-      override;
   void BindVolumeControl(
       mojo::PendingReceiver<mojom::AssistantVolumeControl> receiver) override;
 
@@ -163,7 +160,8 @@ class ASH_EXPORT AssistantControllerImpl
   AssistantInteractionControllerImpl assistant_interaction_controller_{this};
   AssistantNotificationController assistant_notification_controller_;
   AssistantStateController assistant_state_controller_;
-  AssistantScreenContextController assistant_screen_context_controller_{this};
+  AssistantScreenContextControllerImpl assistant_screen_context_controller_{
+      this};
   AssistantSetupController assistant_setup_controller_{this};
   AssistantSuggestionsControllerImpl assistant_suggestions_controller_{this};
   AssistantUiControllerImpl assistant_ui_controller_;

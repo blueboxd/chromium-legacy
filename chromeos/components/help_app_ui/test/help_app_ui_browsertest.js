@@ -77,7 +77,7 @@ TEST_F('HelpAppUIBrowserTest', 'HasChromeSchemeURL', () => {
 // Tests that we have localised information in the HTML like title and lang.
 TEST_F('HelpAppUIBrowserTest', 'HasTitleAndLang', () => {
   assertEquals(document.documentElement.lang, 'en');
-  assertEquals(document.title, 'Discover');
+  assertEquals(document.title, 'Explore');
   testDone();
 });
 

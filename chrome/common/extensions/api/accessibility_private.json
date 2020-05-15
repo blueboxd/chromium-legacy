@@ -143,16 +143,11 @@
           },
           "color": {
             "type": "string",
-            "description": "A RGB hex-value color string (e.g. #3F8213) that describes the primary color of the focus ring."
+            "description": "A CSS-style color string (e.g. #3F8213) that describes the primary color of the focus ring."
           },
           "secondaryColor": {
             "type": "string",
-            "description": "A RGB hex-value color string (e.g. #3F82E4) that describes the secondary color of the focus ring, if there is one.",
-            "optional": true
-          },
-          "backgroundColor": {
-            "type": "string",
-            "description": "A RGB hex-value color string (e.g. #803F82E4) that describes the color drawn outside of the focus ring and over the rest of the display.",
+            "description": "A CSS-style color string (e.g. #3F82E4) that describes the secondary color of the focus ring, if there is one.",
             "optional": true
           },
           "id": {

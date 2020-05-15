@@ -5,45 +5,60 @@
 
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
+
 <dom-module id="files-toast">
   <template>
     <style>
-      .container {
-        background: rgb(50, 50, 50);
-        bottom: 16px;
-        display: flex;
-        min-width: 360px;
-        padding: 20px 24px;
-        position: absolute;
-      }
-
       .container[hidden] {
         display: none;
       }
 
+      .container {
+        align-items: center;
+        background: var(--google-grey-900-white-4-percent);
+        border-radius: 4px;
+        bottom: 24px;
+        display: flex;
+        /*
+         * TODO(files-ng): apply max-width when long button labels like "Manage
+         * Linux Files" are i18n translated to "Manage".  Use max-width: 336px;
+         */
+        min-height: 48px;
+        min-width: 256px;
+        position: absolute;
+      }
+
       :host-context(html[dir='ltr']) .container {
-        right: 16px;
+        right: 24px;
       }
 
       :host-context(html[dir='rtl']) .container {
-        left: 16px;
+        left: 24px;
       }
 
       .text {
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
         color: white;
-        flex-grow: 1;
+        display: -webkit-box;
+        line-height: 20px;
+        overflow: hidden;
+        padding-inline-end: 16px;
+        padding-inline-start: 16px;
+        white-space: normal;
       }
 
       .action {
-        -webkit-margin-start: 8px;
-        color: rgb(97, 203, 255);
-        cursor: pointer;
-        font-weight: bold;
+        border: none;
+        color: var(--google-blue-300);
+        margin: 0 8px;
       }
     </style>
     <div class="container" id="container" hidden>
       <div class="text" id="text"></div>
-      <div class="action" id="action" on-tap="onActionTapped_"></div>
+      <cr-button class="action" id="action" on-tap="onActionTapped_"></cr-button>
     </div>
   </template>
 </dom-module>

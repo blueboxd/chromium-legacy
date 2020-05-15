@@ -13,6 +13,7 @@
 #include "weblayer/browser/java/jni/WebLayerImpl_jni.h"
 #include "weblayer/browser/url_bar/page_info_client_impl.h"
 #include "weblayer/browser/user_agent.h"
+#include "weblayer/common/crash_reporter/crash_keys.h"
 
 using base::android::JavaParamRef;
 
@@ -30,7 +31,7 @@ static jboolean JNI_WebLayerImpl_IsRemoteDebuggingEnabled(JNIEnv* env) {
 static void JNI_WebLayerImpl_SetIsWebViewCompatMode(JNIEnv* env,
                                                     jboolean value) {
   static crash_reporter::CrashKeyString<1> crash_key(
-      "WEBLAYER_WEB_VIEW_COMPAT_MODE");
+      crash_keys::kWeblayerWebViewCompatMode);
   crash_key.Set(value ? "1" : "0");
 }
 

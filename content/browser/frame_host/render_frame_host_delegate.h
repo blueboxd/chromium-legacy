@@ -431,10 +431,8 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Reports that passive mixed content was found at the specified url.
   virtual void PassiveInsecureContentFound(const GURL& resource_url) {}
 
-  // Checks if running of active mixed content is allowed for the specified
-  // WebContents/tab.
-  virtual bool ShouldAllowRunningInsecureContent(WebContents* web_contents,
-                                                 bool allowed_per_prefs,
+  // Checks if running of active mixed content is allowed in the current tab.
+  virtual bool ShouldAllowRunningInsecureContent(bool allowed_per_prefs,
                                                  const url::Origin& origin,
                                                  const GURL& resource_url);
 
@@ -496,6 +494,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                                            int context_id) {}
   virtual void AudioContextPlaybackStopped(RenderFrameHost* host,
                                            int context_id) {}
+
+  // Notifies observers if the frame has changed audible state.
+  virtual void OnFrameAudioStateChanged(RenderFrameHost* host,
+                                        bool is_audible) {}
 
   // Returns the main frame of the inner delegate that is attached to this
   // delegate using |frame_tree_node|. Returns nullptr if no such inner delegate

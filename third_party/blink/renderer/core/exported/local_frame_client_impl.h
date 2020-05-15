@@ -87,7 +87,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   bool HasWebView() const override;
   bool InShadowTree() const override;
   Frame* Opener() const override;
-  void SetOpener(Frame*) override;
   Frame* Parent() const override;
   Frame* Top() const override;
   Frame* NextSibling() const override;

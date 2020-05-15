@@ -14,6 +14,7 @@
 #include "base/rand_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/query_tiles/internal/proto_conversion.h"
+#include "components/query_tiles/internal/stats.h"
 #include "components/query_tiles/internal/tile_config.h"
 #include "components/query_tiles/switches.h"
 
@@ -45,6 +46,7 @@ void TileServiceImpl::OnTileManagerInitialized(SuccessCallback callback,
                   status == TileGroupStatus::kNoTiles);
   DCHECK(callback);
   scheduler_->OnTileManagerInitialized(status);
+  stats::RecordTileGroupStatus(status);
   std::move(callback).Run(success);
 }
 
@@ -70,7 +72,6 @@ void TileServiceImpl::CancelTask() {
   scheduler_->CancelTask();
 }
 
-// TODO(crbug.com/1077173): Record metrics.
 void TileServiceImpl::OnFetchFinished(
     bool is_from_reduced_mode,
     BackgroundTaskFinishedCallback task_finished_callback,
@@ -98,6 +99,7 @@ void TileServiceImpl::OnFetchFinished(
     std::move(task_finished_callback).Run(false /*reschedule*/);
   }
   scheduler_->OnFetchCompleted(status);
+  stats::RecordTileRequestStatus(status);
 }
 
 void TileServiceImpl::OnTilesSaved(

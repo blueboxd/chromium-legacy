@@ -228,8 +228,6 @@ class AutofillManager : public AutofillHandler,
   void OnDidPreviewAutofillFormData() override;
   void OnDidEndTextFieldEditing() override;
   void OnHidePopup() override;
-  void OnSetDataList(const std::vector<base::string16>& values,
-                     const std::vector<base::string16>& labels) override;
   void SelectFieldOptionsDidChange(const FormData& form) override;
   void Reset() override;
 
@@ -596,6 +594,8 @@ class AutofillManager : public AutofillHandler,
   FormEventLoggerBase* GetEventFormLogger(
       FieldTypeGroup field_type_group) const;
 
+  void SetDataList(const std::vector<base::string16>& values,
+                   const std::vector<base::string16>& labels);
   AutofillClient* const client_;
 
   LogManager* log_manager_;

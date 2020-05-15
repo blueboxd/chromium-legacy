@@ -13,8 +13,8 @@
 namespace media {
 
 // Simple wrapper around a MojoRenderer.
-// Provides a default behavior for forwarding all media::Renderer calls to a
-// media::Renderer instance in a different process, through |mojo_renderer_|.
+// Provides a default behavior for forwarding all Renderer calls to a
+// Renderer instance in a different process, through |mojo_renderer_|.
 // Used as a base class to reduce boiler plate code for derived types, which can
 // override only the methods they need to specialize.
 class MojoRendererWrapper : public Renderer {
@@ -24,7 +24,7 @@ class MojoRendererWrapper : public Renderer {
 
   // Renderer implementation.
   void Initialize(MediaResource* media_resource,
-                  media::RendererClient* client,
+                  RendererClient* client,
                   PipelineStatusCallback init_cb) override;
   void SetCdm(CdmContext* cdm_context, CdmAttachedCB cdm_attached_cb) override;
   void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) override;

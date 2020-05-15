@@ -22,6 +22,8 @@
 #include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service_factory.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service_workers_observer.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/google/core/common/google_util.h"
@@ -104,7 +106,11 @@ IsolatedPrerenderTabHelper::CurrentPageLoad::CurrentPageLoad(
       srp_metrics_(
           base::MakeRefCounted<IsolatedPrerenderTabHelper::PrefetchMetrics>()) {
 }
-IsolatedPrerenderTabHelper::CurrentPageLoad::~CurrentPageLoad() = default;
+IsolatedPrerenderTabHelper::CurrentPageLoad::~CurrentPageLoad() {
+  if (no_state_prefetch_handle_) {
+    no_state_prefetch_handle_->OnNavigateAway();
+  }
+}
 
 // static
 const void* IsolatedPrerenderTabHelper::PrefetchingLikelyEventKey() {
@@ -160,6 +166,15 @@ void IsolatedPrerenderTabHelper::DidStartNavigation(
     return;
   }
 
+  // Don't take any actions during a prerender since it was probably triggered
+  // by another instance of this class and we don't want to interfere.
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForBrowserContext(profile_);
+  if (prerender_manager &&
+      prerender_manager->IsWebContentsPrerendering(web_contents(), nullptr)) {
+    return;
+  }
+
   // User is navigating, don't bother prefetching further.
   page_->url_loader_.reset();
 
@@ -187,6 +202,15 @@ void IsolatedPrerenderTabHelper::DidFinishNavigation(
     return;
   }
   if (!navigation_handle->HasCommitted()) {
+    return;
+  }
+
+  // Don't take any actions during a prerender since it was probably triggered
+  // by another instance of this class and we don't want to interfere.
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForBrowserContext(profile_);
+  if (prerender_manager &&
+      prerender_manager->IsWebContentsPrerendering(web_contents(), nullptr)) {
     return;
   }
 
@@ -467,9 +491,94 @@ void IsolatedPrerenderTabHelper::HandlePrefetchResponse(
 
   OnPrefetchStatusUpdate(url, PrefetchStatus::kPrefetchSuccessful);
 
+  MaybeDoNoStatePrefetch(url);
+
   for (auto& observer : observer_list_) {
     observer.OnPrefetchCompletedSuccessfully(url);
   }
+}
+
+void IsolatedPrerenderTabHelper::MaybeDoNoStatePrefetch(const GURL& url) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!IsolatedPrerenderNoStatePrefetchSubresources()) {
+    return;
+  }
+
+  page_->urls_to_no_state_prefetch_.push_back(url);
+  DoNoStatePrefetch();
+}
+
+void IsolatedPrerenderTabHelper::DoNoStatePrefetch() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Don't start another NSP until the previous one finishes.
+  if (page_->no_state_prefetch_handle_) {
+    return;
+  }
+
+  if (page_->urls_to_no_state_prefetch_.empty()) {
+    return;
+  }
+
+  // Ensure there is not an active navigation.
+  if (web_contents()->GetController().GetPendingEntry()) {
+    return;
+  }
+
+  base::Optional<size_t> max_attempts =
+      IsolatedPrerenderMaximumNumberOfNoStatePrefetchAttempts();
+  if (max_attempts.has_value() &&
+      page_->number_of_no_state_prefetch_attempts_ >= max_attempts.value()) {
+    return;
+  }
+
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForBrowserContext(profile_);
+  if (!prerender_manager) {
+    return;
+  }
+
+  GURL url = page_->urls_to_no_state_prefetch_[0];
+
+  content::SessionStorageNamespace* session_storage_namespace =
+      web_contents()->GetController().GetDefaultSessionStorageNamespace();
+  gfx::Size size = web_contents()->GetContainerBounds().size();
+
+  page_->no_state_prefetch_handle_ =
+      prerender_manager->AddPrerenderFromNavigationPredictor(
+          url, session_storage_namespace, size);
+
+  if (!page_->no_state_prefetch_handle_) {
+    // Try the next URL.
+    page_->urls_to_no_state_prefetch_.erase(
+        page_->urls_to_no_state_prefetch_.begin());
+    DoNoStatePrefetch();
+    return;
+  }
+
+  page_->no_state_prefetch_handle_->SetObserver(this);
+  page_->number_of_no_state_prefetch_attempts_++;
+}
+void IsolatedPrerenderTabHelper::OnPrerenderStop(
+    prerender::PrerenderHandle* handle) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!page_->urls_to_no_state_prefetch_.empty());
+
+  page_->no_state_prefetched_urls_.push_back(
+      page_->urls_to_no_state_prefetch_[0]);
+
+  for (auto& observer : observer_list_) {
+    observer.OnNoStatePrefetchFinished();
+  }
+
+  page_->no_state_prefetch_handle_.reset();
+  // |handle| is now invalid!
+
+  page_->urls_to_no_state_prefetch_.erase(
+      page_->urls_to_no_state_prefetch_.begin());
+
+  DoNoStatePrefetch();
 }
 
 void IsolatedPrerenderTabHelper::OnPredictionUpdated(

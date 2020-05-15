@@ -765,10 +765,9 @@ bool ResourceLoader::WillFollowRedirect(
         ResourceRequest::RedirectStatus::kFollowedRedirect);
 
     base::Optional<ResourceRequestBlockedReason> blocked_reason =
-        Context().CanRequest(
-            resource_type, *new_request, new_url, options,
-            reporting_disposition,
-            ResourceRequest::RedirectStatus::kFollowedRedirect);
+        Context().CanRequest(resource_type, *new_request, new_url, options,
+                             reporting_disposition,
+                             new_request->GetRedirectInfo());
 
     if (Context().CalculateIfAdSubresource(*new_request, resource_type,
                                            options.initiator_info))
@@ -1051,10 +1050,10 @@ void ResourceLoader::DidReceiveResponseInternal(
         ResourceRequest::RedirectStatus::kFollowedRedirect);
 
     base::Optional<ResourceRequestBlockedReason> blocked_reason =
-        Context().CanRequest(
-            resource_type, ResourceRequest(initial_request), response_url,
-            options, ReportingDisposition::kReport,
-            ResourceRequest::RedirectStatus::kFollowedRedirect);
+        Context().CanRequest(resource_type, ResourceRequest(initial_request),
+                             response_url, options,
+                             ReportingDisposition::kReport,
+                             ResourceRequest::RedirectInfo());
     if (blocked_reason) {
       HandleError(ResourceError::CancelledDueToAccessCheckError(
           response_url, blocked_reason.value()));

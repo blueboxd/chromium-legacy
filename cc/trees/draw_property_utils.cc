@@ -445,9 +445,15 @@ bool LayerNeedsUpdate(LayerType* layer,
     // backface is not visible.
     if (TransformToScreenIsKnown(layer, backface_transform_id, tree) &&
         !HasSingularTransform(backface_transform_id, tree) &&
-        IsLayerBackFaceVisible(layer, backface_transform_id, property_trees))
+        IsLayerBackFaceVisible(layer, backface_transform_id, property_trees)) {
+      UMA_HISTOGRAM_BOOLEAN(
+          "Compositing.Renderer.LayerUpdateSkippedDueToBackface", true);
       return false;
+    }
   }
+
+  UMA_HISTOGRAM_BOOLEAN("Compositing.Renderer.LayerUpdateSkippedDueToBackface",
+                        false);
 
   return true;
 }
@@ -485,8 +491,16 @@ inline bool LayerShouldBeSkippedForDrawPropertiesComputation(
   // transform is animating and singular, we should not skip it.
   const TransformNode* transform_node =
       transform_tree.Node(layer->transform_tree_index());
-  return !transform_node->node_and_ancestors_are_animated_or_invertible ||
-         effect_node->hidden_by_backface_visibility || !effect_node->is_drawn;
+
+  if (!transform_node->node_and_ancestors_are_animated_or_invertible ||
+      !effect_node->is_drawn)
+    return true;
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "Compositing.Renderer.LayerSkippedForDrawPropertiesDueToBackface",
+      effect_node->hidden_by_backface_visibility);
+
+  return effect_node->hidden_by_backface_visibility;
 }
 
 gfx::Rect LayerDrawableContentRect(

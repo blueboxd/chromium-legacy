@@ -79,6 +79,11 @@ class ReplacementsPrinter {
   std::set<std::string> files_with_already_added_includes_;
 };
 
+AST_MATCHER(clang::TagDecl, isNotFreeStandingTagDecl) {
+  const clang::TagDecl* tag_decl = Node.getCanonicalDecl();
+  return !tag_decl->isFreeStanding();
+}
+
 AST_MATCHER(clang::ClassTemplateSpecializationDecl, isImplicitSpecialization) {
   return !Node.isExplicitSpecialization();
 }
@@ -190,15 +195,19 @@ int main(int argc, const char* argv[]) {
   //     int (MyStruct::* member_func_ptr)(char);
   //     int (*ptr_to_array_of_ints)[123]
   //     StructOrClassWithDeletedOperatorNew* stack_or_gc_ptr;
+  //     struct { int i }* ptr_to_non_free_standing_record_or_union_or_class;
   //   };
   // matches |int*|, but not the other types.
   auto record_with_deleted_allocation_operator_type_matcher =
       recordType(hasDeclaration(cxxRecordDecl(
           hasMethod(allOf(hasOverloadedOperatorName("new"), isDeleted())))));
+  auto non_free_standing_tag_type =
+      tagType(hasDeclaration(tagDecl(isNotFreeStandingTagDecl())));
   auto supported_pointer_types_matcher =
-      pointerType(unless(pointee(hasUnqualifiedDesugaredType(anyOf(
-          record_with_deleted_allocation_operator_type_matcher, functionType(),
-          memberPointerType(), anyCharType(), arrayType())))));
+      pointerType(unless(pointee(hasUnqualifiedDesugaredType(
+          anyOf(record_with_deleted_allocation_operator_type_matcher,
+                non_free_standing_tag_type, functionType(), memberPointerType(),
+                anyCharType(), arrayType())))));
 
   // Implicit field declarations =========
   // Matches field declarations that do not explicitly appear in the source

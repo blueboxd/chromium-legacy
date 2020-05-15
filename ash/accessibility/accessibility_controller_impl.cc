@@ -330,7 +330,7 @@ void ShowAccessibilityNotification(A11yNotificationType type) {
               kNotifierAccessibility),
           options, nullptr, GetNotificationIcon(type),
           message_center::SystemNotificationWarningLevel::NORMAL);
-  notification->set_priority(message_center::SYSTEM_PRIORITY);
+  notification->set_pinned(true);
   message_center->AddNotification(std::move(notification));
 }
 

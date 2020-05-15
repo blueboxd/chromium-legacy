@@ -41,8 +41,6 @@
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_data.h"
-#include "third_party/blink/public/platform/web_isolated_world_ids.h"
-#include "third_party/blink/public/platform/web_isolated_world_info.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/blink.h"
@@ -328,68 +326,6 @@ void TestRunnerForSpecificView::DidLosePointerLockInternal() {
   pointer_locked_ = false;
   if (was_locked)
     web_view()->MainFrameWidget()->DidLosePointerLock();
-}
-
-v8::Local<v8::Value>
-TestRunnerForSpecificView::EvaluateScriptInIsolatedWorldAndReturnValue(
-    int32_t world_id,
-    const std::string& script) {
-  blink::WebScriptSource source(blink::WebString::FromUTF8(script));
-  // This relies on the iframe focusing itself when it loads. This is a bit
-  // sketchy, but it seems to be what other tests do.
-  v8::Local<v8::Value> value =
-      web_view()->FocusedFrame()->ExecuteScriptInIsolatedWorldAndReturnValue(
-          world_id, source);
-  if (!value.IsEmpty())
-    return value;
-  return v8::Local<v8::Value>();
-}
-
-void TestRunnerForSpecificView::EvaluateScriptInIsolatedWorld(
-    int32_t world_id,
-    const std::string& script) {
-  blink::WebScriptSource source(blink::WebString::FromUTF8(script));
-  web_view()->FocusedFrame()->ExecuteScriptInIsolatedWorld(world_id, source);
-}
-
-void TestRunnerForSpecificView::SetIsolatedWorldInfo(
-    int32_t world_id,
-    v8::Local<v8::Value> security_origin,
-    v8::Local<v8::Value> content_security_policy) {
-  if (world_id <= content::ISOLATED_WORLD_ID_GLOBAL ||
-      world_id >= blink::IsolatedWorldId::kEmbedderWorldIdLimit) {
-    return;
-  }
-
-  if (!security_origin->IsString() && !security_origin->IsNull())
-    return;
-
-  if (!content_security_policy->IsString() &&
-      !content_security_policy->IsNull()) {
-    return;
-  }
-
-  // If |content_security_policy| is specified, |security_origin| must also be
-  // specified.
-  if (content_security_policy->IsString() && security_origin->IsNull())
-    return;
-
-  blink::WebIsolatedWorldInfo info;
-  if (security_origin->IsString()) {
-    info.security_origin = blink::WebSecurityOrigin::CreateFromString(
-        web_test_string_util::V8StringToWebString(
-            blink::MainThreadIsolate(), security_origin.As<v8::String>()));
-  }
-
-  if (content_security_policy->IsString()) {
-    info.content_security_policy = web_test_string_util::V8StringToWebString(
-        blink::MainThreadIsolate(), content_security_policy.As<v8::String>());
-  }
-
-  // Clear the document->isolated world CSP mapping.
-  web_view()->FocusedFrame()->ClearIsolatedWorldCSPForTesting(world_id);
-
-  web_view()->FocusedFrame()->SetIsolatedWorldInfo(world_id, info);
 }
 
 blink::WebLocalFrame* TestRunnerForSpecificView::GetLocalMainFrame() {

@@ -43,6 +43,7 @@ let CrostiniPortSetting;
  * @typedef {{succeeded: boolean,
  *            canResize: boolean,
  *            isUserChosenSize: boolean,
+ *            isLowSpaceAvailable: boolean,
  *            defaultIndex: number,
  *            ticks: !Array}}
  */
@@ -229,6 +230,21 @@ cr.define('settings', function() {
      * @return {!Promise<boolean>}
      */
     checkCrostiniIsRunning() {}
+
+    /**
+     * Shuts Crostini (Termina VM) down.
+     */
+    shutdownCrostini() {}
+
+    /**
+     * @param {boolean} enabled Set Crostini's access to the mic.
+     */
+    setCrostiniMicSharingEnabled(enabled) {}
+
+    /**
+     * @return {!Promise<boolean>} Return Crostini's access to the mic.
+     */
+    getCrostiniMicSharingEnabled() {}
   }
 
   /** @implements {settings.CrostiniBrowserProxy} */
@@ -369,6 +385,21 @@ cr.define('settings', function() {
     /** @override */
     checkCrostiniIsRunning() {
       return cr.sendWithPromise('checkCrostiniIsRunning');
+    }
+
+    /** @override */
+    shutdownCrostini() {
+      chrome.send('shutdownCrostini');
+    }
+
+    /** @override */
+    setCrostiniMicSharingEnabled(enabled) {
+      chrome.send('setCrostiniMicSharingEnabled', [enabled]);
+    }
+
+    /** @override */
+    getCrostiniMicSharingEnabled() {
+      return cr.sendWithPromise('getCrostiniMicSharingEnabled');
     }
   }
 

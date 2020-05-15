@@ -4,6 +4,7 @@
 
 import './strings.m.js';
 import './realbox_dropdown.js';
+import './realbox_icon.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -138,7 +139,10 @@ class RealboxElement extends PolymerElement {
         value: false,
       },
 
-      /** @private */
+      /**
+       * Realbox default icon (i.e., Google G icon or the search loupe).
+       * @private
+       */
       realboxIcon_: {
         type: String,
         value: () => loadTimeData.getString('realboxDefaultIcon'),
@@ -184,6 +188,8 @@ class RealboxElement extends PolymerElement {
     this.callbackRouter_ = BrowserProxy.getInstance().callbackRouter;
     /** @private {?number} */
     this.autocompleteResultChangedListenerId_ = null;
+    /** @private {?number} */
+    this.autocompleteMatchImageAvailableListenerId_ = null;
   }
 
   /** @override */
@@ -192,6 +198,9 @@ class RealboxElement extends PolymerElement {
     this.autocompleteResultChangedListenerId_ =
         this.callbackRouter_.autocompleteResultChanged.addListener(
             this.onAutocompleteResultChanged_.bind(this));
+    this.autocompleteMatchImageAvailableListenerId_ =
+        this.callbackRouter_.autocompleteMatchImageAvailable.addListener(
+            this.onAutocompleteMatchImageAvailable_.bind(this));
   }
 
   /** @override */
@@ -199,6 +208,8 @@ class RealboxElement extends PolymerElement {
     super.disconnectedCallback();
     this.callbackRouter_.removeListener(
         assert(this.autocompleteResultChangedListenerId_));
+    this.callbackRouter_.removeListener(
+        assert(this.autocompleteMatchImageAvailableListenerId_));
   }
 
   /** @override */
@@ -210,6 +221,34 @@ class RealboxElement extends PolymerElement {
   //============================================================================
   // Callbacks
   //============================================================================
+
+  /**
+   * @param {number} matchIndex match index
+   * @param {!url.mojom.Url} url match imageUrl or destinationUrl.
+   * @param {string} dataUrl match image or favicon content in in base64 encoded
+   *     Data URL format.
+   * @private
+   */
+  onAutocompleteMatchImageAvailable_(matchIndex, url, dataUrl) {
+    if (!this.result_) {
+      return;
+    }
+
+    const match = this.result_.matches[matchIndex];
+    if (!match) {
+      return;
+    }
+
+    // Set the favicon content on the match. It may become the default match.
+    if (match.destinationUrl.url === url.url) {
+      /** @suppress {checkTypes} */
+      match.faviconDataUrl = dataUrl;
+      // If the match is currently the default match, update its favicon.
+      if (match === this.selectedMatch_) {
+        this.notifyPath('selectedMatch_.faviconDataUrl');
+      }
+    }
+  }
 
   /**
    * @private
@@ -236,7 +275,7 @@ class RealboxElement extends PolymerElement {
       // Navigate to the default up-to-date match if the user typed and pressed
       // 'Enter' too fast.
       if (this.lastIgnoredEnterEvent_) {
-        this.navigateToMatch_(firstMatch, this.lastIgnoredEnterEvent_);
+        this.navigateToMatch_(0, this.lastIgnoredEnterEvent_);
         this.lastIgnoredEnterEvent_ = null;
       }
     } else {
@@ -260,7 +299,7 @@ class RealboxElement extends PolymerElement {
       '--search-box-placeholder': skColorToRgba(assert(this.theme.placeholder)),
       '--search-box-results-bg': skColorToRgba(assert(this.theme.resultsBg)),
       '--search-box-text': skColorToRgba(assert(this.theme.text)),
-      '--search-box-icon': skColorToRgba(assert(this.theme.icon))
+      '--search-box-icon': skColorToRgba(assert(this.theme.icon)),
     });
   }
 
@@ -462,7 +501,7 @@ class RealboxElement extends PolymerElement {
       if ([this.$.matches, this.$.input].includes(e.target)) {
         if (this.lastQueriedInput_ === decodeString16(this.result_.input)) {
           if (this.selectedMatch_) {
-            this.navigateToMatch_(this.selectedMatch_, e);
+            this.navigateToMatch_(this.selectedMatchIndex_, e);
           }
         } else {
           // User typed and pressed 'Enter' too quickly. Ignore this for now
@@ -528,6 +567,15 @@ class RealboxElement extends PolymerElement {
   }
 
   /**
+   * @param {!CustomEvent<{index: number, event:!MouseEvent}>} e Event
+   *     containing index of the match that was clicked.
+   * @private
+   */
+  onMatchClick_(e) {
+    this.navigateToMatch_(e.detail.index, e.detail.event);
+  }
+
+  /**
    * @param {!CustomEvent<number>} e Event containing index of the match that
    *     received focus.
    * @private
@@ -542,6 +590,15 @@ class RealboxElement extends PolymerElement {
       inline: '',
       moveCursorToEnd: true
     });
+  }
+
+  /**
+   * @param {!CustomEvent<number>} e Event containing index of the match that
+   *     was removed.
+   * @private
+   */
+  onMatchRemove_(e) {
+    this.pageHandler_.deleteAutocompleteMatch(e.detail);
   }
 
   /**
@@ -589,18 +646,18 @@ class RealboxElement extends PolymerElement {
   }
 
   /**
-   * @param {!search.mojom.AutocompleteMatch} match
+   * @param {number} matchIndex
    * @param {!Event} e
    * @private
    */
-  navigateToMatch_(match, e) {
-    const line = this.result_.matches.indexOf(match);
-    assert(line >= 0);
+  navigateToMatch_(matchIndex, e) {
+    assert(matchIndex >= 0);
+    const match = assert(this.result_.matches[matchIndex]);
     assert(this.lastInputFocusTime_);
     const delta =
         mojoTimeDelta(window.performance.now() - this.lastInputFocusTime_);
     this.pageHandler_.openAutocompleteMatch(
-        line, match.destinationUrl, this.matchesAreVisible, delta,
+        matchIndex, match.destinationUrl, this.matchesAreVisible, delta,
         e.button || 0, e.altKey, e.ctrlKey, e.metaKey, e.shiftKey);
     e.preventDefault();
   }

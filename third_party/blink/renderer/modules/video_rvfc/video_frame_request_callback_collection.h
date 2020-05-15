@@ -17,7 +17,7 @@ namespace blink {
 class ExecutionContext;
 
 // Class that allows the registration and unregistration of generic
-// VideoFrameCallbacks. Used to store to pending video.requestAnimationFrame
+// VideoFrameCallbacks. Used to store to pending video.requestVideoFrameCallback
 // requests, and to propagate the results of the request once it completes.
 class MODULES_EXPORT VideoFrameRequestCallbackCollection final
     : public GarbageCollected<VideoFrameRequestCallbackCollection>,

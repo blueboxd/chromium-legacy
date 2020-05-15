@@ -245,16 +245,21 @@ enum class CoseKeyKey : int {
 // Enumerates COSE key types. See
 // https://tools.ietf.org/html/rfc8152#section-13
 enum class CoseKeyTypes : int {
+  kOKP = 1,
   kEC2 = 2,
   kRSA = 3,
 };
 
 // Enumerates COSE elliptic curves. See
 // https://tools.ietf.org/html/rfc8152#section-13.1
-enum class CoseCurves : int { kP256 = 1 };
+enum class CoseCurves : int {
+  kP256 = 1,
+  kEd25519 = 6,
+};
 
 enum class CoseAlgorithmIdentifier : int {
   kCoseEs256 = -7,
+  kCoseEdDSA = -8,
   kCoseRs256 = -257,
 };
 

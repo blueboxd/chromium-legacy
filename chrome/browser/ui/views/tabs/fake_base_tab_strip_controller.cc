@@ -52,6 +52,13 @@ void FakeBaseTabStripController::MoveTab(int from_index, int to_index) {
 void FakeBaseTabStripController::MoveGroup(const tab_groups::TabGroupId& group,
                                            int to_index) {}
 
+void FakeBaseTabStripController::ToggleTabGroupCollapsedState(
+    const tab_groups::TabGroupId group) {
+  fake_group_data_ = tab_groups::TabGroupVisualData(
+      fake_group_data_.title(), fake_group_data_.color(),
+      !fake_group_data_.is_collapsed());
+}
+
 void FakeBaseTabStripController::RemoveTab(int index) {
   num_tabs_--;
   // RemoveTabAt() expects the controller state to have been updated already.
@@ -80,6 +87,11 @@ base::string16 FakeBaseTabStripController::GetGroupContentString(
 tab_groups::TabGroupColorId FakeBaseTabStripController::GetGroupColorId(
     const tab_groups::TabGroupId& group_id) const {
   return fake_group_data_.color();
+}
+
+bool FakeBaseTabStripController::GetGroupCollapsedState(
+    const tab_groups::TabGroupId& group) const {
+  return fake_group_data_.is_collapsed();
 }
 
 void FakeBaseTabStripController::SetVisualDataForGroup(

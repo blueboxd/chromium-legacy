@@ -99,6 +99,7 @@ class APP_LIST_EXPORT AppsContainerView : public AppListPage {
   // AppListPage overrides:
   void OnShown() override;
   void OnWillBeHidden() override;
+  void OnHidden() override;
   void OnAnimationStarted(AppListState from_state,
                           AppListState to_state) override;
   void UpdatePageOpacityForState(AppListState state,

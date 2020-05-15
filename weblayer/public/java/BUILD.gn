@@ -18,7 +18,10 @@ jinja_template("weblayer_client_manifest") {
 }
 
 android_resources("client_resources") {
-  sources = [ "res/xml/weblayer_file_paths.xml" ]
+  sources = [
+    "res/values/styles.xml",
+    "res/xml/weblayer_file_paths.xml",
+  ]
   android_manifest = weblayer_client_manifest
   android_manifest_dep = ":weblayer_client_manifest"
 }
@@ -59,6 +62,8 @@ android_library("java") {
     "org/chromium/weblayer/ObserverList.java",
     "org/chromium/weblayer/Profile.java",
     "org/chromium/weblayer/RemoteFragment.java",
+    "org/chromium/weblayer/SiteSettingsActivity.java",
+    "org/chromium/weblayer/SiteSettingsFragment.java",
     "org/chromium/weblayer/Tab.java",
     "org/chromium/weblayer/TabCallback.java",
     "org/chromium/weblayer/TabListCallback.java",
@@ -77,6 +82,7 @@ android_library("java") {
     ":client_version",
     ":weblayer_client_manifest",
     "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:androidx_appcompat_appcompat_java",
     "//third_party/android_deps:androidx_core_core_java",
     "//third_party/android_deps:androidx_fragment_fragment_java",
     "//third_party/android_deps:androidx_lifecycle_lifecycle_common_java",

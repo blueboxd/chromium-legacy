@@ -106,7 +106,7 @@ class DlcserviceClientImpl : public DlcserviceClient {
   void Install(const std::string& dlc_id,
                InstallCallback install_callback,
                ProgressCallback progress_callback) override {
-    if (task_running_) {
+    if (installing_) {
       EnqueueTask(base::BindOnce(&DlcserviceClientImpl::Install,
                                  weak_ptr_factory_.GetWeakPtr(),
                                  std::move(dlc_id), std::move(install_callback),
@@ -133,51 +133,31 @@ class DlcserviceClientImpl : public DlcserviceClient {
 
   void Uninstall(const std::string& dlc_id,
                  UninstallCallback uninstall_callback) override {
-    if (task_running_) {
-      EnqueueTask(base::BindOnce(&DlcserviceClientImpl::Uninstall,
-                                 weak_ptr_factory_.GetWeakPtr(), dlc_id,
-                                 std::move(uninstall_callback)));
-      return;
-    }
-
-    TaskStarted();
     dbus::MethodCall method_call(dlcservice::kDlcServiceInterface,
                                  dlcservice::kUninstallMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(dlc_id);
 
-    uninstall_callback_holder_ = std::move(uninstall_callback);
-    uninstall_field_holder_ = dlc_id;
-
     VLOG(1) << "Requesting to uninstall DLC=" << dlc_id;
     dlcservice_proxy_->CallMethodWithErrorResponse(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DlcserviceClientImpl::OnUninstall,
-                       weak_ptr_factory_.GetWeakPtr()));
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(uninstall_callback)));
   }
 
   void Purge(const std::string& dlc_id, PurgeCallback purge_callback) override {
-    if (task_running_) {
-      EnqueueTask(base::BindOnce(&DlcserviceClientImpl::Purge,
-                                 weak_ptr_factory_.GetWeakPtr(), dlc_id,
-                                 std::move(purge_callback)));
-      return;
-    }
-
-    TaskStarted();
     dbus::MethodCall method_call(dlcservice::kDlcServiceInterface,
                                  dlcservice::kPurgeMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(dlc_id);
 
-    purge_callback_holder_ = std::move(purge_callback);
-    purge_field_holder_ = dlc_id;
-
     VLOG(1) << "Requesting to purge DLC=" << dlc_id;
     dlcservice_proxy_->CallMethodWithErrorResponse(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DlcserviceClientImpl::OnPurge,
-                       weak_ptr_factory_.GetWeakPtr()));
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(purge_callback)));
   }
 
   void GetExistingDlcs(GetExistingDlcsCallback callback) override {
@@ -208,25 +188,17 @@ class DlcserviceClientImpl : public DlcserviceClient {
   }
 
  private:
-  // Set the indication that an operation is being performed, which consists of
-  // either |Install()| or |Uninstall()|. Should always be
-  // called after calling dlcservice in platform.
-  void TaskStarted() { task_running_ = true; }
+  // Set the indication that an install is being performed which was requested
+  // from this client (Chrome specifically).
+  void TaskStarted() { installing_ = true; }
 
-  // Clears any indication that an operation had setup while being performed,
-  // which consists of either |Install()| or |Uninstall()|.
+  // Clears any state an installation had setup while being performed.
   void TaskEnded() {
-    task_running_ = false;
+    installing_ = false;
     // |Install()|
     install_callback_holder_.reset();
     progress_callback_holder_.reset();
     install_field_holder_.reset();
-    // |Uninstall()|
-    uninstall_callback_holder_.reset();
-    uninstall_field_holder_.reset();
-    // |Purge()|
-    purge_callback_holder_.reset();
-    purge_field_holder_.reset();
   }
 
   void EnqueueTask(base::OnceClosure task) {
@@ -333,43 +305,20 @@ class DlcserviceClientImpl : public DlcserviceClient {
     CheckAndRunPendingTask();
   }
 
-  void OnUninstall(dbus::Response* response,
+  void OnUninstall(UninstallCallback uninstall_callback,
+                   dbus::Response* response,
                    dbus::ErrorResponse* err_response) {
-    DCHECK(uninstall_field_holder_.has_value());
-    DCHECK(uninstall_callback_holder_.has_value());
-    if (response) {
-      std::move(uninstall_callback_holder_.value()).Run(dlcservice::kErrorNone);
-    } else {
-      const auto err = DlcserviceErrorResponseHandler(err_response).get_err();
-      if (err == dlcservice::kErrorBusy) {
-        EnqueueTask(base::BindOnce(
-            &DlcserviceClientImpl::Uninstall, weak_ptr_factory_.GetWeakPtr(),
-            std::move(uninstall_field_holder_.value()),
-            std::move(uninstall_callback_holder_.value())));
-      } else {
-        std::move(uninstall_callback_holder_.value()).Run(err);
-      }
-    }
-    CheckAndRunPendingTask();
+    std::move(uninstall_callback)
+        .Run(response ? dlcservice::kErrorNone
+                      : DlcserviceErrorResponseHandler(err_response).get_err());
   }
 
-  void OnPurge(dbus::Response* response, dbus::ErrorResponse* err_response) {
-    DCHECK(purge_field_holder_.has_value());
-    DCHECK(purge_callback_holder_.has_value());
-    if (response) {
-      std::move(purge_callback_holder_.value()).Run(dlcservice::kErrorNone);
-    } else {
-      const auto err = DlcserviceErrorResponseHandler(err_response).get_err();
-      if (err == dlcservice::kErrorBusy) {
-        EnqueueTask(base::BindOnce(&DlcserviceClientImpl::Purge,
-                                   weak_ptr_factory_.GetWeakPtr(),
-                                   std::move(purge_field_holder_.value()),
-                                   std::move(purge_callback_holder_.value())));
-      } else {
-        std::move(purge_callback_holder_.value()).Run(err);
-      }
-    }
-    CheckAndRunPendingTask();
+  void OnPurge(PurgeCallback purge_callback,
+               dbus::Response* response,
+               dbus::ErrorResponse* err_response) {
+    std::move(purge_callback)
+        .Run(response ? dlcservice::kErrorNone
+                      : DlcserviceErrorResponseHandler(err_response).get_err());
   }
 
   void OnGetExistingDlcs(GetExistingDlcsCallback callback,
@@ -388,9 +337,9 @@ class DlcserviceClientImpl : public DlcserviceClient {
 
   dbus::ObjectProxy* dlcservice_proxy_;
 
-  // Whether any task is currently in progress. Can be used to decide whether to
-  // queue up incoming requests.
-  bool task_running_ = false;
+  // Whether an install is currently in progress. Can be used to decide whether
+  // to queue up incoming install requests.
+  bool installing_ = false;
 
   // The cached callback to call on a finished |Install()|.
   base::Optional<InstallCallback> install_callback_holder_;
@@ -398,23 +347,10 @@ class DlcserviceClientImpl : public DlcserviceClient {
   // The cached callback to call on during progress of |Install()|.
   base::Optional<ProgressCallback> progress_callback_holder_;
 
-  // The cached callback to call on a finished |Uninstall()|.
-  base::Optional<UninstallCallback> uninstall_callback_holder_;
-
-  // The cached callback to call on a finished |Uninstall()|.
-  base::Optional<PurgeCallback> purge_callback_holder_;
-
   // The cached field of string (DLC ID) for retrying call to install.
   base::Optional<std::string> install_field_holder_;
 
-  // The cached field of string (DLC ID) for retrying call to uninstall.
-  base::Optional<std::string> uninstall_field_holder_;
-
-  // The cached field of string (DLC ID) for retrying call to purge.
-  base::Optional<std::string> purge_field_holder_;
-
-  // A list of postponed calls to dlcservice to be called after it becomes
-  // available or after the currently running task completes.
+  // A list of postponed installs to dlcservice.
   std::deque<base::OnceClosure> pending_tasks_;
 
   // Note: This should remain the last member so it'll be destroyed and

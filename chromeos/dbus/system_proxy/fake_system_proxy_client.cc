@@ -30,6 +30,13 @@ void FakeSystemProxyClient::ShutDownDaemon(ShutDownDaemonCallback callback) {
       FROM_HERE, base::BindOnce(std::move(callback), response));
 }
 
+void FakeSystemProxyClient::ConnectToWorkerActiveSignal(
+    WorkerActiveCallback callback) {
+  system_proxy::WorkerActiveSignalDetails details;
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), details));
+}
+
 SystemProxyClient::TestInterface* FakeSystemProxyClient::GetTestInterface() {
   return this;
 }

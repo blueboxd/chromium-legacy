@@ -2237,6 +2237,26 @@ cr.define('device_page_tests', function() {
         assertEquals('59.5 KB', getStorageItemSubLabelFromId('appsSize'));
       });
 
+      test('dlc size', async function() {
+        // The dlc row is hidden by default.
+        assertTrue(isHidden(storagePage.$$('#downloadedContentSize')));
+
+        // Send dlc callback with a size that is not null.
+        cr.webUIListenerCallback('storage-dlcs-size-changed', true, '59.5 KB');
+        Polymer.dom.flush();
+        assertFalse(isHidden(storagePage.$$('#downloadedContentSize')));
+        assertEquals(
+            'Manage downloaded content',
+            getStorageItemLabelFromId('downloadedContentSize'));
+        assertEquals(
+            '59.5 KB', getStorageItemSubLabelFromId('downloadedContentSize'));
+
+        // Simulate absence of dlc.
+        cr.webUIListenerCallback('storage-dlcs-size-changed', false, '0 B');
+        Polymer.dom.flush();
+        assertTrue(isHidden(storagePage.$$('#downloadedContentSize')));
+      });
+
       test('other users size', async function() {
         // The other users row is visible by default, displaying
         // "calculating...".

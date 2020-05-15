@@ -238,7 +238,13 @@ void OmniboxPopupContentsView::InvalidateLine(size_t line) {
     webui_view_->GetWebUIHandler()->InvalidateLine(line);
     return;
   }
-  result_view_at(line)->OnSelectionStateChanged();
+
+  // TODO(tommycli): This is weird, but https://crbug.com/1063071 shows that
+  // crashes like this have happened, so we add this to avoid it for now.
+  if (line >= children().size())
+    return;
+
+  static_cast<OmniboxRowView*>(children()[line])->OnSelectionStateChanged();
 }
 
 void OmniboxPopupContentsView::OnSelectionChanged(
@@ -321,7 +327,8 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
       // memory during browser startup. https://crbug.com/1021323
       if (children().size() == i) {
         AddChildView(std::make_unique<OmniboxRowView>(
-            std::make_unique<OmniboxResultView>(this, i), pref_service));
+            i, model(), std::make_unique<OmniboxResultView>(this, i),
+            pref_service));
       }
 
       OmniboxRowView* const row_view =

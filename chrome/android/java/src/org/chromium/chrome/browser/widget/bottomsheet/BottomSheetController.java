@@ -17,6 +17,8 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider.Observer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -109,6 +111,9 @@ public class BottomSheetController implements Destroyable {
     private final VrModeObserver mVrModeObserver;
 
     /** A listener for browser controls offset changes. */
+    private final BrowserControlsStateProvider.Observer mBrowserControlsObserver;
+
+    /** A listener for fullscreen events. */
     private final ChromeFullscreenManager.FullscreenListener mFullscreenListener;
 
     /** A means of accessing the focus state of the omibox. */
@@ -141,7 +146,10 @@ public class BottomSheetController implements Destroyable {
     /** A means for getting the activity's current tab and observing change events. */
     private ActivityTabProvider mTabProvider;
 
-    /** A fullscreen manager for polling browser controls offsets. */
+    /** A browser controls manager for polling browser controls offsets. */
+    private BrowserControlsStateProvider mBrowserControlsStateProvider;
+
+    /** A fullscreen manager for listening to fullscreen events. */
     private ChromeFullscreenManager mFullscreenManager;
 
     /** The last known activity tab, if available. */
@@ -185,6 +193,7 @@ public class BottomSheetController implements Destroyable {
             ObservableSupplier<Boolean> omniboxFocusStateSupplier) {
         mTabProvider = activityTabProvider;
         mOverlayPanelManager = overlayManager;
+        mBrowserControlsStateProvider = fullscreenManager;
         mFullscreenManager = fullscreenManager;
         mPendingSheetObservers = new ArrayList<>();
         mTabObscuringToken = TokenHolder.INVALID_TOKEN;
@@ -225,16 +234,19 @@ public class BottomSheetController implements Destroyable {
             }
         };
 
-        mFullscreenListener = new ChromeFullscreenManager.FullscreenListener() {
+        mBrowserControlsObserver = new Observer() {
             @Override
             public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
                     int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
                 if (mBottomSheet != null) {
                     mBottomSheet.setBrowserControlsHiddenRatio(
-                            mFullscreenManager.getBrowserControlHiddenRatio());
+                            mBrowserControlsStateProvider.getBrowserControlHiddenRatio());
                 }
             }
+        };
+        mBrowserControlsStateProvider.addObserver(mBrowserControlsObserver);
 
+        mFullscreenListener = new ChromeFullscreenManager.FullscreenListener() {
             @Override
             public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
                 if (mBottomSheet == null || mTabProvider.get() != tab) return;
@@ -432,6 +444,7 @@ public class BottomSheetController implements Destroyable {
     public void destroy() {
         VrModuleProvider.unregisterVrModeObserver(mVrModeObserver);
         mFullscreenManager.removeListener(mFullscreenListener);
+        mBrowserControlsStateProvider.removeObserver(mBrowserControlsObserver);
         mOmniboxFocusStateSupplier.removeObserver(mOmniboxFocusObserver);
         if (mBottomSheet != null) mBottomSheet.destroy();
     }

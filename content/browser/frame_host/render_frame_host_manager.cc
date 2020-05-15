@@ -489,12 +489,12 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
 }
 
 void RenderFrameHostManager::DidChangeOpener(
-    int opener_routing_id,
+    const base::UnguessableToken& opener_frame_token,
     SiteInstance* source_site_instance) {
   FrameTreeNode* opener = nullptr;
-  if (opener_routing_id != MSG_ROUTING_NONE) {
-    RenderFrameHostImpl* opener_rfhi = RenderFrameHostImpl::FromID(
-        source_site_instance->GetProcess()->GetID(), opener_routing_id);
+  if (opener_frame_token) {
+    RenderFrameHostImpl* opener_rfhi = RenderFrameHostImpl::FromFrameToken(
+        source_site_instance->GetProcess()->GetID(), opener_frame_token);
     // If |opener_rfhi| is null, the opener RFH has already disappeared.  In
     // this case, clear the opener rather than keeping the old opener around.
     if (opener_rfhi)

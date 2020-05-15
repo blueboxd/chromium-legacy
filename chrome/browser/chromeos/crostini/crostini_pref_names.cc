@@ -75,12 +75,6 @@ const char kCrostiniLastDiskSize[] = "crostini.last_disk_size";
 // A dictionary preference representing a user's settings of forwarded ports
 // to Crostini.
 const char kCrostiniPortForwarding[] = "crostini.port_forwarding.ports";
-// A boolean preference indicating whether Crostini is able to access the mic.
-const char kCrostiniMicSharing[] = "crostini.mic_sharing";
-// A boolean preference indicating whether Crostini was given access to the mic
-// the last time it launched.
-const char kCrostiniMicSharingAtLastLaunch[] =
-    "crostini.mic_sharing_at_last_launch";
 
 // An integer preference indicating the allowance policy for ADB sideloading,
 // with 0 meaning disallowed and 1 meaning allowed
@@ -89,8 +83,6 @@ const char kCrostiniArcAdbSideloadingUserPref[] =
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kCrostiniEnabled, false);
-  registry->RegisterBooleanPref(kCrostiniMicSharing, false);
-  registry->RegisterBooleanPref(kCrostiniMicSharingAtLastLaunch, false);
   registry->RegisterDictionaryPref(kCrostiniMimeTypes);
   registry->RegisterListPref(kCrostiniPortForwarding);
   registry->RegisterListPref(kCrostiniSharedUsbDevices);

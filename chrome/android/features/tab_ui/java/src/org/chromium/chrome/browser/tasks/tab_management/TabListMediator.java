@@ -279,7 +279,7 @@ class TabListMediator {
 
             mNextTabId = tabId;
 
-            if (!mActionsOnAllRelatedTabs) {
+            if (!mActionsOnAllRelatedTabs || TabUiFeatureUtilities.isConditionalTabStripEnabled()) {
                 Tab currentTab = mTabModelSelector.getCurrentTab();
                 Tab newlySelectedTab =
                         TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId);
@@ -322,6 +322,12 @@ class TabListMediator {
                                         .indexOf(toTab);
 
             RecordUserAction.record("MobileTabSwitched." + mComponentName);
+            if (TabUiFeatureUtilities.isConditionalTabStripEnabled()) {
+                assert fromFilterIndex != toFilterIndex;
+                RecordHistogram.recordSparseHistogram("Tabs.TabOffsetOfSwitch." + mComponentName,
+                        fromFilterIndex - toFilterIndex);
+                return;
+            }
 
             if (fromFilterIndex != toFilterIndex) return;
 

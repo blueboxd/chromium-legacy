@@ -12,6 +12,7 @@ import org.chromium.weblayer_private.interfaces.ICrashReporterController;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IProfile;
 import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
+import org.chromium.weblayer_private.interfaces.ISiteSettingsFragment;
 import org.chromium.weblayer_private.interfaces.IWebLayerClient;
 
 interface IWebLayer {
@@ -84,4 +85,15 @@ interface IWebLayer {
 
   // Added in Version 84.
   void registerExternalExperimentIDs(in String trialName, in int[] experimentIds) = 15;
+
+  // Creates the WebLayer counterpart to a SiteSettingsFragment - a SiteSettingsFragmentImpl
+  //
+  // @param fragmentClient Representative of the Fragment on the client side through which
+  // WebLayer can call methods on Fragment.
+  // @param fragmentArgs Bundle of arguments with which the Fragment was created on the client side
+  // (see Fragment#setArguments).
+  // Added in Version 84.
+  ISiteSettingsFragment createSiteSettingsFragmentImpl(
+      in IRemoteFragmentClient remoteFragmentClient,
+      in IObjectWrapper fragmentArgs) = 16;
 }

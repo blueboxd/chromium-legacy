@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chromeos/dbus/system_proxy/system_proxy_client.h"
-#include "chromeos/dbus/system_proxy/system_proxy_service.pb.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
@@ -25,11 +24,22 @@ SystemProxyManager::SystemProxyManager(chromeos::CrosSettings* cros_settings)
           base::BindRepeating(
               &SystemProxyManager::OnSystemProxySettingsPolicyChanged,
               base::Unretained(this)))) {
+  // Connect to a signal that indicates when a worker process is active.
+  chromeos::SystemProxyClient::Get()->ConnectToWorkerActiveSignal(
+      base::BindRepeating(&SystemProxyManager::OnWorkerActive,
+                          weak_factory_.GetWeakPtr()));
+
   // Fire it once so we're sure we get an invocation on startup.
   OnSystemProxySettingsPolicyChanged();
 }
 
 SystemProxyManager::~SystemProxyManager() {}
+
+std::string SystemProxyManager::SystemServicesProxyPacString() const {
+  return system_proxy_enabled_ && !system_services_address_.empty()
+             ? "PROXY " + system_services_address_
+             : std::string();
+}
 
 void SystemProxyManager::OnSystemProxySettingsPolicyChanged() {
   chromeos::CrosSettingsProvider::TrustedStatus status =
@@ -45,11 +55,11 @@ void SystemProxyManager::OnSystemProxySettingsPolicyChanged() {
   if (!proxy_settings)
     return;
 
-  bool enabled =
+  system_proxy_enabled_ =
       proxy_settings->FindBoolKey(chromeos::kSystemProxySettingsKeyEnabled)
           .value_or(false);
   // System-proxy is inactive by default.
-  if (!enabled) {
+  if (!system_proxy_enabled_) {
     // Send a shut-down command to the daemon. Since System-proxy is started via
     // dbus activation, if the daemon is inactive, this command will start the
     // daemon and tell it to exit.
@@ -57,6 +67,7 @@ void SystemProxyManager::OnSystemProxySettingsPolicyChanged() {
     // System-proxy is inactive.
     chromeos::SystemProxyClient::Get()->ShutDownDaemon(base::BindOnce(
         &SystemProxyManager::OnDaemonShutDown, weak_factory_.GetWeakPtr()));
+    system_services_address_.clear();
     return;
   }
 
@@ -82,6 +93,12 @@ void SystemProxyManager::OnSystemProxySettingsPolicyChanged() {
                      weak_factory_.GetWeakPtr()));
 }
 
+void SystemProxyManager::SetSystemServicesProxyUrlForTest(
+    const std::string& local_proxy_url) {
+  system_proxy_enabled_ = true;
+  system_services_address_ = local_proxy_url;
+}
+
 void SystemProxyManager::OnSetSystemTrafficCredentials(
     const system_proxy::SetSystemTrafficCredentialsResponse& response) {
   if (response.has_error_message()) {
@@ -96,6 +113,13 @@ void SystemProxyManager::OnDaemonShutDown(
   if (response.has_error_message() && !response.error_message().empty()) {
     NET_LOG(ERROR) << "Failed to shutdown system proxy: " << kSystemProxyService
                    << ", error: " << response.error_message();
+  }
+}
+
+void SystemProxyManager::OnWorkerActive(
+    const system_proxy::WorkerActiveSignalDetails& details) {
+  if (details.traffic_origin() == system_proxy::TrafficOrigin::SYSTEM) {
+    system_services_address_ = details.local_proxy_url();
   }
 }
 

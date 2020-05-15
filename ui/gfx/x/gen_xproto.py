@@ -251,17 +251,6 @@ class Indent:
         self.xproto.write(self.closing_line)
 
 
-class NullContext:
-    def __init__(self):
-        pass
-
-    def __enter__(self):
-        pass
-
-    def __exit__(self, exc_type, exc_value, exc_traceback):
-        pass
-
-
 # Make all members of |obj|, given by |fields|, visible in
 # the local scope while this class is alive.
 class ScopedFields:
@@ -393,25 +382,32 @@ class GenXproto:
         return '::'.join(name[chop:])
 
     def fieldtype(self, field):
-        return self.qualtype(field.type, field.field_type)
+        return self.qualtype(field.type,
+                             field.enum if field.enum else field.field_type)
+
+    def switch_fields(self, switch):
+        fields = []
+        for case in switch.bitcases:
+            if case.field_name:
+                fields.append(case)
+            else:
+                fields.extend(case.type.fields)
+        return fields
 
     def add_field_to_scope(self, field, obj):
-        if not field.visible or not field.wire:
+        if not field.visible or (not field.wire and not field.isfd):
+            return 0
+
+        field_name = safe_name(field.field_name)
+
+        if field.type.is_switch:
+            self.write('auto& %s = %s;' % (field_name, obj))
             return 0
 
         self.scope.append(field)
 
-        field_name = safe_name(field.field_name)
-        # There's one case where we would have generated:
-        #   auto& enable = enable.enable;
-        # To prevent a compiler error from trying to use the variable
-        # in its own definition, save to a temporary variable first.
-        if field_name == obj:
-            tmp_id = self.new_uid()
-            self.write('auto& tmp%d = %s.%s;' % (tmp_id, obj, field_name))
-            self.write('auto& %s = tmp%d;' % (field_name, tmp_id))
-        elif field.for_list:
-            self.write('%s %s;' % (self.fieldtype(field), field_name))
+        if field.for_list or field.for_switch:
+            self.write('%s %s{};' % (self.fieldtype(field), field_name))
         else:
             self.write('auto& %s = %s.%s;' % (field_name, obj, field_name))
 
@@ -527,48 +523,52 @@ class GenXproto:
     def declare_case(self, case):
         assert case.type.is_case != case.type.is_bitcase
 
-        with (Indent(self, 'struct {', '} %s;' % safe_name(case.field_name))
-              if case.field_name else NullContext()):
-            for case_field in case.type.fields:
-                self.declare_field(case_field)
+        fields = [
+            field for case_field in case.type.fields
+            for field in self.declare_field(case_field)
+        ]
+        if not case.field_name:
+            return fields
+        name = safe_name(case.field_name)
+        with Indent(self, 'struct %s_t {' % name, '};'):
+            for field in fields:
+                self.write('%s %s{};' % field)
+        return [(name + '_t', name)]
 
-    def copy_case(self, case, switch_var):
-        op = 'CaseEq' if case.type.is_case else 'BitAnd'
+    def copy_case(self, case, switch_name):
+        op = 'CaseEq' if case.type.is_case else 'CaseAnd'
         condition = ' || '.join([
-            '%s(%s, %s)' % (op, switch_var, self.expr(expr))
+            '%s(%s_expr, %s)' % (op, switch_name, self.expr(expr))
             for expr in case.type.expr
         ])
 
         with Indent(self, 'if (%s) {' % condition, '}'):
-            with (ScopedFields(self, case.field_name, case.type.fields)
-                  if case.field_name else NullContext()):
+            if case.field_name:
+                fields = [case]
+                obj = '(*%s.%s)' % (switch_name, safe_name(case.field_name))
+            else:
+                fields = case.type.fields
+                obj = '*' + switch_name
+            for case_field in fields:
+                name = safe_name(case_field.field_name)
+                if case_field.visible and self.is_read:
+                    self.write('%s.%s.emplace();' % (switch_name, name))
+            with ScopedFields(self, obj, case.type.fields):
                 for case_field in case.type.fields:
-                    assert case_field.wire
                     self.copy_field(case_field)
 
     def declare_switch(self, field):
-        t = field.type
-        name = safe_name(field.field_name)
-
-        with Indent(self, 'struct {', '} %s;' % name):
-            for case in t.bitcases:
-                self.declare_case(case)
+        return [('base::Optional<%s>' % field_type, field_name)
+                for case in field.type.bitcases
+                for field_type, field_name in self.declare_case(case)]
 
     def copy_switch(self, field):
         t = field.type
         name = safe_name(field.field_name)
 
-        scope_fields = []
+        self.write('auto %s_expr = %s;' % (name, self.expr(t.expr)))
         for case in t.bitcases:
-            if case.field_name:
-                scope_fields.append(case)
-            else:
-                scope_fields.extend(case.type.fields)
-        with Indent(self, '{', '}'), ScopedFields(self, name, scope_fields):
-            switch_var = name + '_expr'
-            self.write('auto %s = %s;' % (switch_var, self.expr(t.expr)))
-            for case in t.bitcases:
-                self.copy_case(case, switch_var)
+            self.copy_case(case, name)
 
     def declare_list(self, field):
         t = field.type
@@ -588,7 +588,7 @@ class GenXproto:
                 type_name = 'std::string'
             else:
                 type_name = 'std::vector<%s>' % type_name
-        self.write('%s %s{};' % (type_name, name))
+        return [(type_name, name)]
 
     def copy_list(self, field):
         t = field.type
@@ -604,35 +604,55 @@ class GenXproto:
         with Indent(self, 'for (auto& %s_elem : %s) {' % (name, name), '}'):
             elem_name = name + '_elem'
             elem_type = t.member
-            if elem_type.is_simple or elem_type.is_union:
-                assert (not isinstance(elem_type, self.xcbgen.xtypes.Enum))
-                self.copy_primitive(elem_name)
-            else:
-                assert elem_type.is_container
-                self.copy_container(elem_type, elem_name)
+            elem_field = self.xcbgen.expr.Field(elem_type, field.field_type,
+                                                elem_name, field.visible,
+                                                field.wire, field.auto,
+                                                field.enum, field.isfd)
+            elem_field.for_list = None
+            elem_field.for_switch = None
+            self.copy_field(elem_field)
+
+    def generate_switch_var(self, field):
+        name = safe_name(field.field_name)
+        for case in field.for_switch.type.bitcases:
+            case_field = case if case.field_name else case.type.fields[0]
+            self.write('SwitchVar(%s, %s.%s.has_value(), %s, &%s);' %
+                       (self.expr(case.type.expr[0]),
+                        safe_name(field.for_switch.field_name),
+                        safe_name(case_field.field_name),
+                        'true' if case.type.is_bitcase else 'false', name))
 
     def declare_field(self, field):
         t = field.type
         name = safe_name(field.field_name)
 
-        if not field.wire or not field.visible or field.for_list:
-            return
+        if not field.visible or field.for_list or field.for_switch:
+            return []
 
         if t.is_switch:
-            self.declare_switch(field)
-        elif t.is_list:
-            self.declare_list(field)
-        else:
-            self.write(
-                '%s %s{};' %
-                (self.qualtype(field.type, field.enum
-                               if field.enum else field.field_type), name))
+            return self.declare_switch(field)
+        if t.is_list:
+            return self.declare_list(field)
+        return [(self.fieldtype(field), name)]
 
     def copy_field(self, field):
+        if not field.wire and not field.isfd:
+            return
+
         t = field.type
         name = safe_name(field.field_name)
 
         self.write('// ' + name)
+
+        # If this is a generated field, initialize the value of the field
+        # variable from the given context.
+        if not self.is_read:
+            if field.for_list:
+                self.write('%s = %s.size();' %
+                           (name, safe_name(field.for_list.field_name)))
+            if field.for_switch:
+                self.generate_switch_var(field)
+
         if t.is_pad:
             if t.align > 1:
                 assert t.nmemb == 1
@@ -642,11 +662,6 @@ class GenXproto:
                 self.write('Pad(&buf, %d);' % t.nmemb)
         elif not field.visible:
             self.copy_special_field(field)
-        elif field.for_list:
-            if not self.is_read:
-                self.write('%s = %s.size();' %
-                           (name, safe_name(field.for_list.field_name)))
-            self.copy_primitive(name)
         elif t.is_switch:
             self.copy_switch(field)
         elif t.is_list:
@@ -656,12 +671,17 @@ class GenXproto:
         elif t.is_container:
             with Indent(self, '{', '}'):
                 self.copy_container(t, name)
+        elif t.is_fd:
+            # TODO(https://crbug.com/1066670): Copy FDs out of band.
+            self.write('NOTIMPLEMENTED();')
         else:
             assert t.is_simple
             if field.enum:
                 self.copy_enum(field)
             else:
                 self.copy_primitive(name)
+
+        self.write()
 
     def declare_enum(self, enum):
         def declare_enum_entry(name, value):
@@ -704,16 +724,15 @@ class GenXproto:
         self.undef(name)
         with Indent(self, 'struct %s {' % adjust_type_case(name), '};'):
             for field in struct.fields:
-                self.declare_field(field)
+                for field_type_name in self.declare_field(field):
+                    self.write('%s %s{};' % field_type_name)
         self.write()
 
     def copy_container(self, struct, name):
         assert not struct.is_union
         with ScopedFields(self, name, struct.fields):
             for field in struct.fields:
-                if field.wire:
-                    self.copy_field(field)
-                    self.write()
+                self.copy_field(field)
 
     def declare_union(self, union):
         name = union.name[-1]
@@ -823,8 +842,10 @@ class GenXproto:
             if enums:
                 assert len(enums) == 1
                 enum = enums[0]
-                field.enum = self.module.get_type(enum).name if enums else None
+                field.enum = self.module.get_type(enum).name
                 self.enum_types[enum].add(field.type.name)
+            else:
+                field.enum = None
 
     def resolve_type(self, t, name):
         renamed = tuple(self.rename_type(t, name))
@@ -835,31 +856,30 @@ class GenXproto:
         if not t.is_container:
             return
 
-        if t.is_switch:
-            fields = {}
-            for case in t.bitcases:
-                if case.field_name:
-                    fields[case.field_name] = case
-                else:
-                    for field in case.type.fields:
-                        fields[field.field_name] = field
-        else:
-            fields = {field.field_name: field for field in t.fields}
+        fields = {
+            field.field_name: field
+            for field in (self.switch_fields(t) if t.is_switch else t.fields)
+        }
 
         self.resolve_element(t.elt, fields)
 
         for field in fields.values():
             field.parent = t
-            field.for_list = None
-            if field.type.is_switch or field.type.is_case_or_bitcase:
-                self.resolve_type(field.type, field.field_type)
-            elif field.type.is_list:
-                self.resolve_type(field.type.member, field.type.member.name)
+            field.for_list = getattr(field, 'for_list', None)
+            field.for_switch = getattr(field, 'for_switch', None)
+
+            for is_type, for_type in ((field.type.is_list, 'for_list'),
+                                      (field.type.is_switch, 'for_switch')):
+                if not is_type:
+                    continue
                 expr = field.type.expr
-                if not expr.op and expr.lenfield_name in fields:
-                    fields[expr.lenfield_name].for_list = field
-            else:
-                self.resolve_type(field.type, field.type.name)
+                field_name = expr.lenfield_name
+                if (expr.op in (None, 'calculate_len')
+                        and field_name in fields):
+                    setattr(fields[field_name], for_type, field)
+
+            field_type = field.type.member if field.type.is_list else field.type
+            self.resolve_type(field_type, field_type.name)
 
         if isinstance(t, self.xcbgen.xtypes.Request) and t.reply:
             self.resolve_type(t.reply, t.reply.name)
@@ -939,6 +959,7 @@ class GenXproto:
         self.write('#include <vector>')
         self.write()
         self.write('#include "base/component_export.h"')
+        self.write('#include "base/optional.h"')
         self.write('#include "ui/gfx/x/xproto_types.h"')
         for direct_import in self.module.direct_imports:
             self.write('#include "%s.h"' % direct_import[-1])

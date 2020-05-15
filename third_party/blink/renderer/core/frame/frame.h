@@ -282,6 +282,10 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   virtual IntSize GetMainFrameViewportSize() const = 0;
   virtual IntPoint GetMainFrameScrollOffset() const = 0;
 
+  // Sets this frame's opener to another frame, or disowned the opener
+  // if opener is null. See http://html.spec.whatwg.org/#dom-opener.
+  virtual void SetOpener(Frame* opener) = 0;
+
  protected:
   // |inheriting_agent_factory| should basically be set to the parent frame or
   // opener's WindowAgentFactory. Pass nullptr if the frame is isolated from

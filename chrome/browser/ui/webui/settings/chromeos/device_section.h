@@ -24,6 +24,10 @@ namespace content {
 class WebUIDataSource;
 }  // namespace content
 
+namespace dlcservice {
+class DlcsWithContent;
+}  // namespace dlcservice
+
 namespace chromeos {
 namespace settings {
 
@@ -73,6 +77,9 @@ class DeviceSection : public OsSettingsSection,
   void OnGetDisplayLayoutInfo(
       std::vector<ash::mojom::DisplayUnitInfoPtr> display_unit_info_list,
       ash::mojom::DisplayLayoutInfoPtr display_layout_info);
+
+  void OnGetExistingDlcs(const std::string& err,
+                         const dlcservice::DlcsWithContent& dlcs_with_content);
 
   void AddDevicePointersStrings(content::WebUIDataSource* html_source);
 

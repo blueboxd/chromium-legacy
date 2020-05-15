@@ -111,9 +111,7 @@ class SharedWorkerHostTest : public testing::Test {
 
     helper_->context()->CreateContainerHostForWorker(
         std::move(host_receiver), mock_render_process_host_.GetID(),
-        std::move(client_remote),
-        blink::mojom::ServiceWorkerClientType::kSharedWorker,
-        DedicatedWorkerId(), host->id());
+        std::move(client_remote), ServiceWorkerClientInfo(host->id()));
     service_worker_handle->OnCreatedProviderHost(std::move(provider_info));
     host->SetServiceWorkerHandle(std::move(service_worker_handle));
 

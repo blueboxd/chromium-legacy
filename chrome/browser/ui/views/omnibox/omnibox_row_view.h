@@ -9,6 +9,7 @@
 #include "base/strings/string16.h"
 #include "ui/views/view.h"
 
+class OmniboxPopupModel;
 class OmniboxResultView;
 class PrefService;
 
@@ -21,7 +22,9 @@ class PrefService;
 //  - It's the header for multiple matches, it's just painted above this row.
 class OmniboxRowView : public views::View {
  public:
-  OmniboxRowView(std::unique_ptr<OmniboxResultView> result_view,
+  OmniboxRowView(size_t line,
+                 OmniboxPopupModel* popup_model,
+                 std::unique_ptr<OmniboxResultView> result_view,
                  PrefService* pref_service);
 
   // Sets the header that appears above this row. Also shows the header.
@@ -33,11 +36,20 @@ class OmniboxRowView : public views::View {
   // The result view associated with this row.
   OmniboxResultView* result_view() const { return result_view_; }
 
+  // Invoked when the model's selection state has changed.
+  void OnSelectionStateChanged();
+
   // views::View:
   gfx::Insets GetInsets() const override;
 
  private:
   class HeaderView;
+
+  // Line number of this row.
+  const size_t line_;
+
+  // Non-owning pointer to the backing popup model.
+  OmniboxPopupModel* const popup_model_;
 
   // Non-owning pointer to the header view for this row. This is initially
   // nullptr, and lazily created when a header is first set for this row.

@@ -296,7 +296,8 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
       media::VideoFrameMetadata::DECODE_END_TIME, current_time);
 
   // RTP_TIMESTAMP, PROCESSING_TIME, and CAPTURE_BEGIN_TIME are all exposed
-  // through the JavaScript callback mechanism video.requestAnimationFrame().
+  // through the JavaScript callback mechanism
+  // video.requestVideoFrameCallback().
   video_frame->metadata()->SetDouble(
       media::VideoFrameMetadata::RTP_TIMESTAMP,
       static_cast<double>(incoming_frame.timestamp()));

@@ -53,6 +53,7 @@ import org.chromium.weblayer_private.interfaces.ICrashReporterController;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IProfile;
 import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
+import org.chromium.weblayer_private.interfaces.ISiteSettingsFragment;
 import org.chromium.weblayer_private.interfaces.IWebLayer;
 import org.chromium.weblayer_private.interfaces.IWebLayerClient;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
@@ -271,6 +272,16 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         BrowserFragmentImpl fragment =
                 new BrowserFragmentImpl(mProfileManager, fragmentClient, unwrappedArgs);
         return fragment.asIBrowserFragment();
+    }
+
+    @Override
+    public ISiteSettingsFragment createSiteSettingsFragmentImpl(
+            IRemoteFragmentClient remoteFragmentClient, IObjectWrapper fragmentArgs) {
+        StrictModeWorkaround.apply();
+        Bundle unwrappedArgs = ObjectWrapper.unwrap(fragmentArgs, Bundle.class);
+        SiteSettingsFragmentImpl fragment =
+                new SiteSettingsFragmentImpl(mProfileManager, remoteFragmentClient, unwrappedArgs);
+        return fragment.asISiteSettingsFragment();
     }
 
     @Override

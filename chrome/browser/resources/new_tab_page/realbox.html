@@ -32,7 +32,7 @@
     background-color: var(--search-box-bg, white);
     border-radius: calc(0.5 * var(--ntp-realbox-height));
     border: none;
-    color: var(--search-box-text, var(--ntp-primary-text-color));
+    color: var(--search-box-text);
     font-size: 16px;
     height: 100%;
     outline: none;
@@ -50,62 +50,40 @@
   }
 
   input::placeholder {
-    color: var(--search-box-placeholder, var(--ntp-secondary-text-color));
+    color: var(--search-box-placeholder, var(--google-grey-refresh-700));
   }
 
   input:focus::placeholder {
     color: transparent;
   }
 
-  input:focus {
+  input:focus,
+  :host([matches-are-visible]) input {
     background-color: var(--search-box-results-bg, white);
   }
 
-  /* The realbox has a "search" icon by default. When a match with a different
-   * icon ("clock" for historical searches or "page" for URLs) or a favicon is
-   * selected, the realbox also gets that icon/favicon. Icons are rendered via
-   * webkit-mask-image + background-color and favicons are rendered via
-   * background-image set on #realboxIcon's style property in JS. */
-  #realboxIcon {
-    -webkit-mask-position: center;
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-size: 16px;
-    background-color: var(--search-box-icon, var(--ntp-secondary-text-color));
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: 16px;
+  ntp-realbox-icon {
     height: 100%;
-    left: 16px;
+    left: 12px;
     position: absolute;
     top: 0;
-    width: 24px;
   }
 
-  :host-context([dir='rtl']) #realboxIcon {
+  :host-context([dir='rtl']) ntp-realbox-icon {
     left: unset;
-    right: 16px;
-  }
-
-  #realboxIcon[data-icon='search.svg'] {
-    -webkit-mask-image: url(search.svg);
-    -webkit-mask-size: 20px; /* "Search" icon is larger than the other icons. */
-  }
-
-  #realboxIcon[data-icon='google_g.png'] {
-    background-color: transparent;
-    background-image: url(google_g.png);
-    background-size: 12px;
+    right: 12px;
   }
 
   #voiceSearchButton {
     background: url(icons/googlemic_clr_24px.svg) no-repeat center;
-    background-size: 21px;
+    background-size: 21px 21px;
     border: none;
     border-radius: 2px;
     cursor: pointer;
     height: 100%;
     outline: none;
     padding: 0;
+    pointer-events: auto;
     position: absolute;
     right: 16px;
     width: 26px;
@@ -120,12 +98,12 @@
     box-shadow: var(--ntp-focus-shadow);
   }
 
-  :-webkit-any(input, #realboxIcon, #voiceSearchButton) {
+  :-webkit-any(input, ntp-realbox-icon, #voiceSearchButton) {
    z-index: 2;
   }
 
   ntp-realbox-dropdown {
-    border-radius: calc(0.5 * var(--ntp-realbox-height));
+    border-radius: calc(0.25 * var(--ntp-realbox-height));
     box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .28);
     left: 0;
     padding-bottom: 8px;
@@ -144,13 +122,17 @@
       on-focus="onInputFocus_" on-input="onInputInput_"
       on-keydown="onInputKeydown_" on-keyup="onInputKeyup_"
       on-mousedown="onInputMouseDown_" on-paste="onInputPaste_">
-  <div id="realboxIcon" data-icon$="[[realboxIcon_]]"></div>
+  <ntp-realbox-icon match="[[selectedMatch_]]"
+      favicon-data-url="[[selectedMatch_.faviconDataUrl]]"
+      default-icon="[[realboxIcon_]]" in-searchbox>
+  </ntp-realbox-icon>
   <button id="voiceSearchButton" on-click="onVoiceSearchClick_"
       title="$i18n{voiceSearchButtonLabel}">
   </button>
   <ntp-realbox-dropdown id="matches" role="listbox" theme="[[theme]]"
       result="[[result_]]" selected-match-index="{{selectedMatchIndex_}}"
-      on-result-repaint="onResultRepaint_"
-      on-match-focusin="onMatchFocusin_" hidden$="[[!matchesAreVisible]]">
+      on-result-repaint="onResultRepaint_" on-match-focusin="onMatchFocusin_"
+      on-match-click="onMatchClick_" on-match-remove="onMatchRemove_"
+      hidden$="[[!matchesAreVisible]]">
   </ntp-realbox-dropdown>
 </div>

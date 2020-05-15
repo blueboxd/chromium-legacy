@@ -102,8 +102,7 @@ ServiceWorkerContainerHost::ServiceWorkerContainerHost(
       client_uuid_(base::GenerateGUID()),
       is_parent_frame_secure_(is_parent_frame_secure),
       container_(std::move(container_remote)),
-      client_type_(blink::mojom::ServiceWorkerClientType::kWindow),
-      frame_tree_node_id_(frame_tree_node_id) {
+      client_info_(frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(IsContainerForWindowClient());
   DCHECK(context_);
@@ -115,17 +114,13 @@ ServiceWorkerContainerHost::ServiceWorkerContainerHost(
     int process_id,
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
         container_remote,
-    blink::mojom::ServiceWorkerClientType client_type,
-    DedicatedWorkerId dedicated_worker_id,
-    SharedWorkerId shared_worker_id)
+    ServiceWorkerClientInfo client_info)
     : context_(std::move(context)),
       create_time_(base::TimeTicks::Now()),
       client_uuid_(base::GenerateGUID()),
       process_id_(process_id),
       container_(std::move(container_remote)),
-      client_type_(client_type),
-      dedicated_worker_id_(dedicated_worker_id),
-      shared_worker_id_(shared_worker_id) {
+      client_info_(client_info) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(IsContainerForWorkerClient());
   DCHECK(context_);
@@ -685,35 +680,35 @@ void ServiceWorkerContainerHost::RemoveServiceWorkerObjectHost(
 
 bool ServiceWorkerContainerHost::IsContainerForServiceWorker() const {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  return client_type_ == base::nullopt;
+  return client_info_ == base::nullopt;
 }
 
 bool ServiceWorkerContainerHost::IsContainerForClient() const {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  return client_type_ != base::nullopt;
+  return client_info_ != base::nullopt;
 }
 
 blink::mojom::ServiceWorkerClientType
 ServiceWorkerContainerHost::GetClientType() const {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  DCHECK(client_type_);
-  return *client_type_;
+  DCHECK(client_info_);
+  return client_info_->type();
 }
 
 bool ServiceWorkerContainerHost::IsContainerForWindowClient() const {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  return client_type_ &&
-         *client_type_ == blink::mojom::ServiceWorkerClientType::kWindow;
+  return client_info_ &&
+         client_info_->type() == blink::mojom::ServiceWorkerClientType::kWindow;
 }
 
 bool ServiceWorkerContainerHost::IsContainerForWorkerClient() const {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   using blink::mojom::ServiceWorkerClientType;
-  if (!client_type_)
+  if (!client_info_)
     return false;
 
-  return *client_type_ == ServiceWorkerClientType::kDedicatedWorker ||
-         *client_type_ == ServiceWorkerClientType::kSharedWorker;
+  return client_info_->type() == ServiceWorkerClientType::kDedicatedWorker ||
+         client_info_->type() == ServiceWorkerClientType::kSharedWorker;
 }
 
 ServiceWorkerClientInfo ServiceWorkerContainerHost::GetServiceWorkerClientInfo()
@@ -721,7 +716,7 @@ ServiceWorkerClientInfo ServiceWorkerContainerHost::GetServiceWorkerClientInfo()
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(IsContainerForClient());
 
-  return ServiceWorkerClientInfo(*client_type_, frame_tree_node_id_);
+  return *client_info_;
 }
 
 void ServiceWorkerContainerHost::OnBeginNavigationCommit(
@@ -823,7 +818,8 @@ void ServiceWorkerContainerHost::UpdateUrls(
       auto* registry = FrameTreeNodeIdRegistry::GetInstance();
       registry->Remove(fetch_request_window_id_);
       fetch_request_window_id_ = base::UnguessableToken::Create();
-      registry->Add(fetch_request_window_id_, frame_tree_node_id_);
+      registry->Add(fetch_request_window_id_,
+                    client_info_->GetFrameTreeNodeId());
     }
   }
 

@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/infobars/core/infobar.h"
 #include "components/send_tab_to_self/send_tab_to_self_entry.h"
-#include "components/send_tab_to_self/send_tab_to_self_metrics.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -33,7 +32,6 @@ IOSSendTabToSelfInfoBarDelegate::IOSSendTabToSelfInfoBarDelegate(
     : entry_(entry), model_(model) {
   DCHECK(entry);
   DCHECK(model);
-  RecordNotificationHistogram(SendTabToSelfNotification::kShown);
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier
@@ -64,7 +62,6 @@ base::string16 IOSSendTabToSelfInfoBarDelegate::GetMessageText() const {
 
 bool IOSSendTabToSelfInfoBarDelegate::Accept() {
   model_->MarkEntryOpened(entry_->GetGUID());
-  RecordNotificationHistogram(SendTabToSelfNotification::kOpened);
   infobar()->owner()->OpenURL(entry_->GetURL(),
                               WindowOpenDisposition::NEW_FOREGROUND_TAB);
   return true;
@@ -72,7 +69,6 @@ bool IOSSendTabToSelfInfoBarDelegate::Accept() {
 
 bool IOSSendTabToSelfInfoBarDelegate::Cancel() {
   model_->DismissEntry(entry_->GetGUID());
-  RecordNotificationHistogram(SendTabToSelfNotification::kDismissed);
   return true;
 }
 

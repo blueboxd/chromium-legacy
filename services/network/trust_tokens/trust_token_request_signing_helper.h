@@ -177,8 +177,7 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
   // 1. The caller specified headers for signing other than those in
   // kSignableRequestHeaders (or if the request has a malformed or otherwise
   // invalid signed issuers list in its Signed-Headers header); or
-  // 2. |token_store_| contains no SRR for this issuer-toplevel pair,
-  // returns kOk and attaches an empty Sec-Signed-Redemption-Record header; or
+  // 2. |token_store_| contains no SRR for this issuer-toplevel pair; or
   // 3. an internal error occurs during signing or header serialization.
   //
   // POSTCONDITIONS:

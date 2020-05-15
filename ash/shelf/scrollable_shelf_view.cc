@@ -1127,7 +1127,18 @@ void ScrollableShelfView::NotifyInkDropActivity(bool activated,
   if (during_scroll_animation_)
     return;
 
-  EnableShelfRoundedCorners(activated && InkDropNeedsClipping(sender));
+  // When long pressing icons, sometimes there are more ripple animations
+  // pending over others buttons. Only activate rounded corners when at least
+  // one button needs them.
+  if (InkDropNeedsClipping(sender)) {
+    if (activated)
+      ++activated_corner_buttons_;
+    else
+      --activated_corner_buttons_;
+  }
+  DCHECK_GE(activated_corner_buttons_, 0);
+  DCHECK_LE(activated_corner_buttons_, 2);
+  EnableShelfRoundedCorners(activated_corner_buttons_ > 0);
 }
 
 void ScrollableShelfView::ShowContextMenuForViewImpl(

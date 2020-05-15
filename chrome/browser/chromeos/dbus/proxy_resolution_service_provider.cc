@@ -11,6 +11,10 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/system_proxy_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/storage_partition.h"
@@ -73,14 +77,38 @@ class ProxyLookupRequest : public network::mojom::ProxyLookupClient {
       result = kProxyInfoOnFailure;
     } else {
       result = proxy_info->ToPacString();
+      if (proxy_info->is_http()) {
+        AppendSystemProxyIfActive(&result);
+      }
     }
-
     receiver_.reset();
     std::move(notify_callback_).Run(error, result);
     delete this;
   }
 
  private:
+  // Appends the System-proxy address, if active, to the list of existing
+  // proxies, which can still be used by system services as a fallback if the
+  // local proxy connection fails. System-proxy itself does proxy resolution
+  // trough the same Chrome proxy resolution service to connect to the
+  // remote proxy server. The availability of this feature is controlled by the
+  // |SystemProxySettings| policy.
+  void AppendSystemProxyIfActive(std::string* pac_proxy_list) {
+    policy::SystemProxyManager* system_proxy_manager =
+        g_browser_process->platform_part()
+            ->browser_policy_connector_chromeos()
+            ->GetSystemProxyManager();
+
+    // |system_proxy_manager| may be missing in tests.
+    if (!system_proxy_manager ||
+        system_proxy_manager->SystemServicesProxyPacString().empty()) {
+      return;
+    }
+    *pac_proxy_list = base::StringPrintf(
+        "%s; %s", system_proxy_manager->SystemServicesProxyPacString().c_str(),
+        pac_proxy_list->c_str());
+  }
+
   mojo::Receiver<network::mojom::ProxyLookupClient> receiver_{this};
   ProxyResolutionServiceProvider::NotifyCallback notify_callback_;
 

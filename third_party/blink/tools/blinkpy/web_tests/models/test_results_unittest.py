@@ -62,3 +62,18 @@ class TestResultsTest(unittest.TestCase):
         failures = [test_failures.FailureTextMismatch(driver_output, None)]
         result = TestResult('foo', failures=failures)
         self.assertTrue(result.has_repaint_overlay)
+
+    def test_results_multiple(self):
+        driver_output = DriverOutput(None, None, None, None)
+        failure_crash = [test_failures.FailureCrash(driver_output, None),
+                    test_failures.TestFailure(driver_output, None)]
+        failure_timeout = [test_failures.FailureTimeout(driver_output, None),
+                    test_failures.TestFailure(driver_output, None)]
+        failure_early_exit = [test_failures.FailureEarlyExit(driver_output, None),
+                    test_failures.TestFailure(driver_output, None)]
+        # Should not raise an exception for CRASH and FAIL.
+        TestResult('foo', failures=failure_crash)
+        # Should not raise an exception for TIMEOUT and FAIL.
+        TestResult('foo', failures=failure_timeout)
+        with self.assertRaises(AssertionError):
+            TestResult('foo', failures=failure_early_exit)

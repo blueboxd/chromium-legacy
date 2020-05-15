@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
+#include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/shell/common/web_test/web_test_constants.h"
@@ -47,6 +48,8 @@
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_data.h"
+#include "third_party/blink/public/platform/web_isolated_world_ids.h"
+#include "third_party/blink/public/platform/web_isolated_world_info.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/blink.h"
@@ -933,23 +936,60 @@ TestRunnerBindings::EvaluateScriptInIsolatedWorldAndReturnValue(
     const std::string& script) {
   if (world_id <= 0 || world_id >= (1 << 29))
     return v8::Local<v8::Value>();
-  return view_runner_->EvaluateScriptInIsolatedWorldAndReturnValue(world_id,
-                                                                   script);
+
+  blink::WebScriptSource source = blink::WebString::FromUTF8(script);
+  return GetWebFrame()->ExecuteScriptInIsolatedWorldAndReturnValue(world_id,
+                                                                   source);
 }
 
 void TestRunnerBindings::EvaluateScriptInIsolatedWorld(
     int world_id,
     const std::string& script) {
-  if (world_id > 0 && world_id < (1 << 29))
-    view_runner_->EvaluateScriptInIsolatedWorld(world_id, script);
+  if (world_id <= 0 || world_id >= (1 << 29))
+    return;
+
+  blink::WebScriptSource source = blink::WebString::FromUTF8(script);
+  GetWebFrame()->ExecuteScriptInIsolatedWorld(world_id, source);
 }
 
 void TestRunnerBindings::SetIsolatedWorldInfo(
     int world_id,
     v8::Local<v8::Value> security_origin,
     v8::Local<v8::Value> content_security_policy) {
-  view_runner_->SetIsolatedWorldInfo(world_id, security_origin,
-                                     content_security_policy);
+  if (world_id <= content::ISOLATED_WORLD_ID_GLOBAL ||
+      world_id >= blink::IsolatedWorldId::kEmbedderWorldIdLimit) {
+    return;
+  }
+
+  if (!security_origin->IsString() && !security_origin->IsNull())
+    return;
+
+  if (!content_security_policy->IsString() &&
+      !content_security_policy->IsNull()) {
+    return;
+  }
+
+  // If |content_security_policy| is specified, |security_origin| must also be
+  // specified.
+  if (content_security_policy->IsString() && security_origin->IsNull())
+    return;
+
+  blink::WebIsolatedWorldInfo info;
+  if (security_origin->IsString()) {
+    info.security_origin = blink::WebSecurityOrigin::CreateFromString(
+        web_test_string_util::V8StringToWebString(
+            blink::MainThreadIsolate(), security_origin.As<v8::String>()));
+  }
+
+  if (content_security_policy->IsString()) {
+    info.content_security_policy = web_test_string_util::V8StringToWebString(
+        blink::MainThreadIsolate(), content_security_policy.As<v8::String>());
+  }
+
+  // Clear the document->isolated world CSP mapping.
+  GetWebFrame()->ClearIsolatedWorldCSPForTesting(world_id);
+
+  GetWebFrame()->SetIsolatedWorldInfo(world_id, info);
 }
 
 void TestRunnerBindings::AddOriginAccessAllowListEntry(

@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/crostini/crostini_disk.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/text/bytes_formatting.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 
@@ -370,8 +372,9 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_CROSTINI_DISK_RESIZE_CONFIRMATION_DIALOG_BUTTON},
       {"crostiniDiskResizeDone", IDS_SETTINGS_CROSTINI_DISK_RESIZE_DONE},
       {"crostiniMicTitle", IDS_SETTINGS_CROSTINI_MIC_TITLE},
-      {"crostiniMicDialogTitle", IDS_SETTINGS_CROSTINI_MIC_DIALOG_TITLE},
       {"crostiniMicDialogLabel", IDS_SETTINGS_CROSTINI_MIC_DIALOG_LABEL},
+      {"crostiniMicDialogShutdownButton",
+       IDS_SETTINGS_CROSTINI_MIC_DIALOG_SHUTDOWN_BUTTON},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
@@ -409,6 +412,17 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
           IDS_SETTINGS_CROSTINI_SHARED_PATHS_INSTRUCTIONS_LOCATE,
           base::ASCIIToUTF16(
               crostini::ContainerChromeOSBaseDirectory().value())));
+  html_source->AddString(
+      "crostiniDiskResizeRecommended",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_CROSTINI_DISK_RESIZE_RECOMMENDED,
+          ui::FormatBytes(crostini::disk::kRecommendedDiskSizeBytes)));
+  html_source->AddString(
+      "crostiniDiskResizeRecommendedWarning",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_CROSTINI_DISK_RESIZE_RECOMMENDED_WARNING,
+          ui::FormatBytes(crostini::disk::kRecommendedDiskSizeBytes)));
+
   html_source->AddBoolean("showCrostiniExportImport", IsExportImportAllowed());
   html_source->AddBoolean("arcAdbSideloadingSupported",
                           IsAdbSideloadingAllowed());

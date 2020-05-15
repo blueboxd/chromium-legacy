@@ -34,6 +34,10 @@ namespace syncer {
 class SyncService;
 }
 
+namespace variations {
+class VariationsService;
+}
+
 class PrefService;
 
 namespace safe_browsing {
@@ -64,7 +68,8 @@ class RealTimeUrlLookupService : public KeyedService {
       const ChromeUserPopulation::ProfileManagementStatus&
           profile_management_status,
       bool is_under_advanced_protection,
-      bool is_off_the_record);
+      bool is_off_the_record,
+      variations::VariationsService* variations_service);
   ~RealTimeUrlLookupService() override;
 
   // Returns true if |url|'s scheme can be checked.
@@ -222,6 +227,10 @@ class RealTimeUrlLookupService : public KeyedService {
   // A boolean indicates whether the profile associated with this
   // |url_lookup_service| is an off the record profile.
   bool is_off_the_record_;
+
+  // Unowned. For checking whether real-time checks can be enabled in a given
+  // location.
+  variations::VariationsService* variations_;
 
   friend class RealTimeUrlLookupServiceTest;
 

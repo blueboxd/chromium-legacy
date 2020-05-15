@@ -208,12 +208,18 @@ const base::flat_set<WorkerNodeImpl*>& FrameNodeImpl::child_worker_nodes()
 }
 
 const PriorityAndReason& FrameNodeImpl::priority_and_reason() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return priority_and_reason_.value();
 }
 
 bool FrameNodeImpl::had_form_interaction() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return document_.had_form_interaction.value();
+}
+
+bool FrameNodeImpl::is_audible() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_audible_.value();
 }
 
 void FrameNodeImpl::SetIsCurrent(bool is_current) {
@@ -253,6 +259,12 @@ void FrameNodeImpl::SetIsHoldingIndexedDBLock(bool is_holding_indexeddb_lock) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(is_holding_indexeddb_lock, is_holding_indexeddb_lock_.value());
   is_holding_indexeddb_lock_.SetAndMaybeNotify(this, is_holding_indexeddb_lock);
+}
+
+void FrameNodeImpl::SetIsAudible(bool is_audible) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(is_audible, is_audible_.value());
+  is_audible_.SetAndMaybeNotify(this, is_audible);
 }
 
 void FrameNodeImpl::OnNavigationCommitted(const GURL& url, bool same_document) {
@@ -429,6 +441,11 @@ const PriorityAndReason& FrameNodeImpl::GetPriorityAndReason() const {
 bool FrameNodeImpl::HadFormInteraction() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return had_form_interaction();
+}
+
+bool FrameNodeImpl::IsAudible() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_audible();
 }
 
 void FrameNodeImpl::AddChildFrame(FrameNodeImpl* child_frame_node) {

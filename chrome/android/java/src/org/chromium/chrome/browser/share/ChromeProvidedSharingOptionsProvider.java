@@ -160,7 +160,7 @@ class ChromeProvidedSharingOptionsProvider {
 
     PropertyModel createPrintingPropertyModel() {
         return ShareSheetPropertyModelBuilder.createPropertyModel(
-                AppCompatResources.getDrawable(mActivity, R.drawable.print),
+                AppCompatResources.getDrawable(mActivity, R.drawable.sharing_print),
                 mActivity.getResources().getString(R.string.print_share_activity_title),
                 (currentActivity)
                         -> {

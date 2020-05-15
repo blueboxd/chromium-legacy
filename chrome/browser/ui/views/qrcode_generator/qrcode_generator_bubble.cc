@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/qrcode_generator/qrcode_generator_bubble.h"
 
 #include "base/base64.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -88,6 +89,8 @@ QRCodeGeneratorBubble::QRCodeGeneratorBubble(
   DCHECK(controller);
 
   SetButtons(ui::DIALOG_BUTTON_NONE);
+
+  base::RecordAction(base::UserMetricsAction("SharingQRCode.DialogLaunched"));
 }
 
 QRCodeGeneratorBubble::~QRCodeGeneratorBubble() = default;
@@ -283,6 +286,13 @@ void QRCodeGeneratorBubble::ContentsChanged(
   if (sender == textfield_url_) {
     url_ = GURL(base::UTF16ToUTF8(new_contents));
     UpdateQRContent();
+
+    static bool first_edit = true;
+    if (first_edit) {
+      base::RecordAction(
+          base::UserMetricsAction("SharingQRCode.EditTextField"));
+      first_edit = false;
+    }
   }
 }
 
@@ -351,6 +361,7 @@ void QRCodeGeneratorBubble::ButtonPressed(views::Button* sender,
     // not taken into consideration. Duplicate names get automatic suffixes.
     params->set_suggested_name(GetQRCodeFilenameForURL(url_));
     download_manager->DownloadUrl(std::move(params));
+    base::RecordAction(base::UserMetricsAction("SharingQRCode.DownloadQRCode"));
   }
 }
 

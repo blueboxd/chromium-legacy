@@ -15,8 +15,9 @@ class WebContents;
 
 namespace extensions {
 
-// Sets whether the NTP bubble is enabled for testing purposes.
-void SetNtpBubbleEnabledForTesting(bool enabled);
+// Sets whether the NTP post-install UI is enabled for testing purposes.
+// TODO(devlin): This would be cooler as a base::AutoReset<>.
+void SetNtpPostInstallUiEnabledForTesting(bool enabled);
 
 // Shows a bubble notifying the user that the homepage is controlled by an
 // extension. This bubble is shown only on the first use of the Home button

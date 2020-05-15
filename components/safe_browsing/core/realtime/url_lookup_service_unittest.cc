@@ -67,7 +67,7 @@ class RealTimeUrlLookupServiceTest : public PlatformTest {
         identity_test_env_->identity_manager(), &test_sync_service_,
         &test_pref_service_, ChromeUserPopulation::NOT_MANAGED,
         /*is_under_advanced_protection=*/true,
-        /*is_off_the_record=*/false);
+        /*is_off_the_record=*/false, /*variations_service=*/nullptr);
   }
 
   void TearDown() override {

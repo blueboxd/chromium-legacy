@@ -39,13 +39,6 @@ enum NotificationType {
   // DEPRECATED: Use extensions::InstallObserver::OnFinishCrxInstall()
   NOTIFICATION_CRX_INSTALLER_DONE = NOTIFICATION_EXTENSIONS_START,
 
-  // Sent when the known installed extensions have all been loaded.  In
-  // testing scenarios this can happen multiple times if extensions are
-  // unloaded and reloaded. The source is a BrowserContext*.
-  //
-  // DEPRECATED: Use ExtensionSystem::Get(browser_context)->ready().Post().
-  NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
-
   // An error occurred while attempting to load an extension. The details are a
   // string with details about why the load failed.
   // DEPRECATED: Use extensions::LoadErrorReporter::OnLoadFailure()

@@ -411,6 +411,32 @@ base::string16 ExtensionInstallPrompt::Prompt::GetRetainedDeviceMessageString(
   return retained_device_messages_[index];
 }
 
+void ExtensionInstallPrompt::Prompt::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ExtensionInstallPrompt::Prompt::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void ExtensionInstallPrompt::Prompt::OnDialogOpened() {
+  for (Observer& observer : observers_) {
+    observer.OnDialogOpened();
+  }
+}
+
+void ExtensionInstallPrompt::Prompt::OnDialogAccepted() {
+  for (Observer& observer : observers_) {
+    observer.OnDialogAccepted();
+  }
+}
+
+void ExtensionInstallPrompt::Prompt::OnDialogCanceled() {
+  for (Observer& observer : observers_) {
+    observer.OnDialogCanceled();
+  }
+}
+
 bool ExtensionInstallPrompt::Prompt::ShouldDisplayRevokeButton() const {
   return !retained_files_.empty() || !retained_device_messages_.empty();
 }
@@ -546,6 +572,11 @@ void ExtensionInstallPrompt::OnInstallFailure(
   install_ui_->OnInstallFailure(error);
 }
 
+std::unique_ptr<ExtensionInstallPrompt::Prompt>
+ExtensionInstallPrompt::GetPromptForTesting() {
+  return std::move(prompt_);
+}
+
 void ExtensionInstallPrompt::SetIcon(const SkBitmap* image) {
   if (image)
     icon_ = *image;
@@ -620,6 +651,9 @@ void ExtensionInstallPrompt::ShowConfirmation() {
 
   g_last_prompt_type_for_tests = prompt_->type();
   did_call_show_dialog_ = true;
+
+  // Notify observers.
+  prompt_->OnDialogOpened();
 
   // If true, auto confirm is enabled and already handled the result.
   if (AutoConfirmPromptIfEnabled())

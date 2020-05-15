@@ -127,6 +127,8 @@ using chrome_test_util::SettingsDoneButton;
   [[self elementInteractionWithGreyMatcher:dataFromChromeSyncMatcher
                          scrollViewMatcher:manageSyncScrollViewMatcher]
       performAction:grey_tap()];
+  // Needs to wait until the sign-in dialog is fully dismissed to continue.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   [self openGoogleServicesSettings];
   // Verify the sync is not confirmed yet.
   [self assertCellWithTitleID:IDS_IOS_SYNC_SETUP_NOT_CONFIRMED_TITLE

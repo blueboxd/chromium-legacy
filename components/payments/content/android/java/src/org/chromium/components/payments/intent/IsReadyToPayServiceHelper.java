@@ -31,6 +31,7 @@ public class IsReadyToPayServiceHelper
     private boolean mIsServiceBindingInitiated;
     private boolean mIsReadyToPayQueried;
     private Handler mHandler;
+    private Intent mIsReadyToPayIntent;
 
     /** The callback that returns the result (success or error) to the helper's caller. */
     public interface ResultHandler {
@@ -45,8 +46,7 @@ public class IsReadyToPayServiceHelper
     }
 
     /**
-     * The constructor starts the IsReadyToPay service. The result would be returned asynchronously
-     * with one callback.
+     * Initiate the helper.
      * @param context The application context. Should not be null.
      * @param isReadyToPayIntent The IsReaddyToPay intent created by {@link
      *         WebPaymentIntentHelper#createIsReadyToPayIntent}. Should not be null.
@@ -60,6 +60,14 @@ public class IsReadyToPayServiceHelper
         mContext = context;
         mResultHandler = resultHandler;
         mHandler = new Handler();
+        mIsReadyToPayIntent = isReadyToPayIntent;
+    }
+
+    /**
+     * Query the IsReadyToPay service. The result would be returned in the resultHandler callback
+     * asynchronously. Note that resultHandler would be invoked only once.
+     */
+    public void query() {
         try {
             // This method returns "true if the system is in the process of bringing up a
             // service that your client has permission to bind to; false if the system couldn't
@@ -68,7 +76,7 @@ public class IsReadyToPayServiceHelper
             // the connection."
             // https://developer.android.com/reference/android/content/Context.html#bindService(android.content.Intent,%20android.content.ServiceConnection,%20int)
             mIsServiceBindingInitiated = mContext.bindService(
-                    isReadyToPayIntent, /*serviceConnection=*/this, Context.BIND_AUTO_CREATE);
+                    mIsReadyToPayIntent, /*serviceConnection=*/this, Context.BIND_AUTO_CREATE);
         } catch (SecurityException e) {
             // Intentionally blank, so mIsServiceBindingInitiated is false.
         }

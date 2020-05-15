@@ -184,6 +184,47 @@ class RSAPrivateKey : public EVPBackedPrivateKey {
   }
 };
 
+class Ed25519PrivateKey : public EVPBackedPrivateKey {
+ public:
+  Ed25519PrivateKey()
+      : EVPBackedPrivateKey(EVP_PKEY_ED25519, ConfigureKeyGen) {}
+
+  explicit Ed25519PrivateKey(bssl::UniquePtr<EVP_PKEY> pkey)
+      : EVPBackedPrivateKey(std::move(pkey)) {}
+
+  std::unique_ptr<PublicKey> GetPublicKey() const override {
+    uint8_t public_key[32];
+    size_t public_key_len = sizeof(public_key);
+    CHECK(
+        EVP_PKEY_get_raw_public_key(pkey_.get(), public_key, &public_key_len) &&
+        public_key_len == sizeof(public_key));
+
+    cbor::Value::MapValue map;
+    map.emplace(static_cast<int64_t>(CoseKeyKey::kAlg),
+                static_cast<int64_t>(CoseAlgorithmIdentifier::kCoseEdDSA));
+    map.emplace(static_cast<int64_t>(CoseKeyKey::kKty),
+                static_cast<int64_t>(CoseKeyTypes::kOKP));
+    map.emplace(static_cast<int64_t>(CoseKeyKey::kEllipticCurve),
+                static_cast<int64_t>(CoseCurves::kEd25519));
+    map.emplace(static_cast<int64_t>(CoseKeyKey::kEllipticX),
+                base::span<const uint8_t>(public_key, sizeof(public_key)));
+
+    base::Optional<std::vector<uint8_t>> cbor_bytes(
+        cbor::Writer::Write(cbor::Value(std::move(map))));
+
+    std::vector<uint8_t> der_bytes(
+        CBBFunctionToVector<decltype(EVP_marshal_public_key),
+                            EVP_marshal_public_key>(pkey_.get()));
+
+    return std::make_unique<PublicKey>(
+        static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseRs256), *cbor_bytes,
+        std::move(der_bytes));
+  }
+
+ private:
+  static int ConfigureKeyGen(EVP_PKEY_CTX* ctx) { return 1; }
+};
+
 }  // namespace
 
 // VirtualFidoDevice::PrivateKey ----------------------------------------------
@@ -220,6 +261,10 @@ VirtualFidoDevice::PrivateKey::FromPKCS8(
 
     case EVP_PKEY_RSA:
       return std::unique_ptr<PrivateKey>(new RSAPrivateKey(std::move(pkey)));
+
+    case EVP_PKEY_ED25519:
+      return std::unique_ptr<PrivateKey>(
+          new Ed25519PrivateKey(std::move(pkey)));
 
     default:
       return base::nullopt;
@@ -344,6 +389,12 @@ VirtualFidoDevice::FreshP256Key() {
 std::unique_ptr<VirtualFidoDevice::PrivateKey>
 VirtualFidoDevice::FreshRSAKey() {
   return std::unique_ptr<PrivateKey>(new RSAPrivateKey);
+}
+
+// static
+std::unique_ptr<VirtualFidoDevice::PrivateKey>
+VirtualFidoDevice::FreshEd25519Key() {
+  return std::unique_ptr<PrivateKey>(new Ed25519PrivateKey);
 }
 
 bool VirtualFidoDevice::Sign(crypto::ECPrivateKey* private_key,

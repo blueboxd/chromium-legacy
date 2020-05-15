@@ -498,6 +498,10 @@ void ParentPermissionDialogView::ShowDialog() {
   is_showing_ = true;
   LoadParentEmailAddresses();
 
+  supervised_user_metrics_recorder_.RecordParentPermissionDialogUmaMetrics(
+      SupervisedUserExtensionsMetricsRecorder::ParentPermissionDialogState::
+          kOpened);
+
   if (params_->extension)
     InitializeExtensionData(params_->extension);
   else
@@ -543,8 +547,9 @@ void ParentPermissionDialogView::LoadParentEmailAddresses() {
     parent_permission_email_addresses_.push_back(secondary_parent_email);
 
   if (parent_permission_email_addresses_.empty()) {
-    // TODO(danan):  Add UMA stat for this failure.
-    // https://crbug.com/1049418
+    supervised_user_metrics_recorder_.RecordParentPermissionDialogUmaMetrics(
+        SupervisedUserExtensionsMetricsRecorder::ParentPermissionDialogState::
+            kNoParentError);
     SendResult(ParentPermissionDialog::Result::kParentPermissionFailed);
   }
 }
@@ -670,6 +675,24 @@ void ParentPermissionDialogView::SendResult(
     ParentPermissionDialog::Result result) {
   if (!params_->done_callback)
     return;
+  // Record UMA metrics.
+  switch (result) {
+    case ParentPermissionDialog::Result::kParentPermissionReceived:
+      supervised_user_metrics_recorder_.RecordParentPermissionDialogUmaMetrics(
+          SupervisedUserExtensionsMetricsRecorder::ParentPermissionDialogState::
+              kParentApproved);
+      break;
+    case ParentPermissionDialog::Result::kParentPermissionCanceled:
+      supervised_user_metrics_recorder_.RecordParentPermissionDialogUmaMetrics(
+          SupervisedUserExtensionsMetricsRecorder::ParentPermissionDialogState::
+              kParentCanceled);
+      break;
+    case ParentPermissionDialog::Result::kParentPermissionFailed:
+      supervised_user_metrics_recorder_.RecordParentPermissionDialogUmaMetrics(
+          SupervisedUserExtensionsMetricsRecorder::ParentPermissionDialogState::
+              kFailed);
+      break;
+  }
   std::move(params_->done_callback).Run(result);
 }
 

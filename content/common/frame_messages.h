@@ -559,12 +559,6 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateState, content::PageState /* state */)
 // Requests that the given URL be opened in the specified manner.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_OpenURL, FrameHostMsg_OpenURL_Params)
 
-// Sent when the RenderFrame or RenderFrameProxy either updates its opener to
-// another frame identified by |opener_routing_id|, or, if |opener_routing_id|
-// is MSG_ROUTING_NONE, the frame disowns its opener for the lifetime of the
-// window.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeOpener, int /* opener_routing_id */)
-
 // Notifies the browser that sandbox flags or container policy have changed for
 // a subframe of this frame.
 IPC_MESSAGE_ROUTED2(

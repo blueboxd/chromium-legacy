@@ -109,6 +109,7 @@ void QuietModeFeaturePodController::OnNotifiersUpdated(
     if (!notifier.enabled)
       ++disabled_count;
   }
+  RecordDisabledNotifierCount(disabled_count);
 
   if (disabled_count > 0) {
     button_->SetSubLabel(l10n_util::GetPluralStringFUTF16(
@@ -130,6 +131,23 @@ base::string16 QuietModeFeaturePodController::GetQuietModeStateTooltip() {
       MessageCenter::Get()->IsQuietMode()
           ? IDS_ASH_STATUS_TRAY_NOTIFICATIONS_DO_NOT_DISTURB_ON_STATE
           : IDS_ASH_STATUS_TRAY_NOTIFICATIONS_DO_NOT_DISTURB_OFF_STATE);
+}
+
+void QuietModeFeaturePodController::RecordDisabledNotifierCount(
+    int disabled_count) {
+  if (!last_disabled_count_.has_value()) {
+    last_disabled_count_ = disabled_count;
+    UMA_HISTOGRAM_COUNTS_100("ChromeOS.SystemTray.BlockedNotifiersOnOpen",
+                             disabled_count);
+    return;
+  }
+
+  if (*last_disabled_count_ == disabled_count)
+    return;
+
+  last_disabled_count_ = disabled_count;
+  UMA_HISTOGRAM_COUNTS_100("ChromeOS.SystemTray.BlockedNotifiersAfterUpdate",
+                           disabled_count);
 }
 
 }  // namespace ash

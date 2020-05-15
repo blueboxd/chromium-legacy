@@ -68,7 +68,8 @@ RealTimeUrlLookupService::RealTimeUrlLookupService(
     const ChromeUserPopulation::ProfileManagementStatus&
         profile_management_status,
     bool is_under_advanced_protection,
-    bool is_off_the_record)
+    bool is_off_the_record,
+    variations::VariationsService* variations_service)
     : url_loader_factory_(url_loader_factory),
       cache_manager_(cache_manager),
       identity_manager_(identity_manager),
@@ -76,7 +77,8 @@ RealTimeUrlLookupService::RealTimeUrlLookupService(
       pref_service_(pref_service),
       profile_management_status_(profile_management_status),
       is_under_advanced_protection_(is_under_advanced_protection),
-      is_off_the_record_(is_off_the_record) {
+      is_off_the_record_(is_off_the_record),
+      variations_(variations_service) {
   token_fetcher_ =
       std::make_unique<SafeBrowsingTokenFetcher>(identity_manager_);
 }
@@ -421,13 +423,14 @@ void RealTimeUrlLookupService::ResetFailures() {
 }
 
 bool RealTimeUrlLookupService::CanPerformFullURLLookup() const {
-  return RealTimePolicyEngine::CanPerformFullURLLookup(pref_service_,
-                                                       is_off_the_record_);
+  return RealTimePolicyEngine::CanPerformFullURLLookup(
+      pref_service_, is_off_the_record_, variations_);
 }
 
 bool RealTimeUrlLookupService::CanPerformFullURLLookupWithToken() const {
   return RealTimePolicyEngine::CanPerformFullURLLookupWithToken(
-      pref_service_, is_off_the_record_, sync_service_, identity_manager_);
+      pref_service_, is_off_the_record_, sync_service_, identity_manager_,
+      variations_);
 }
 
 bool RealTimeUrlLookupService::IsUserEpOptedIn() const {

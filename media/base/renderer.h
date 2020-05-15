@@ -11,13 +11,13 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "media/base/buffering_state.h"
-#include "media/base/cdm_context.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 
 namespace media {
 
+class CdmContext;
 class MediaResource;
 class RendererClient;
 
@@ -38,7 +38,9 @@ class MEDIA_EXPORT Renderer {
                           PipelineStatusCallback init_cb) = 0;
 
   // Associates the |cdm_context| with this Renderer for decryption (and
-  // decoding) of media data, then fires |cdm_attached_cb| with the result.
+  // decoding) of media data, then fires |cdm_attached_cb| with whether the
+  // operation succeeded.
+  using CdmAttachedCB = base::OnceCallback<void(bool)>;
   virtual void SetCdm(CdmContext* cdm_context,
                       CdmAttachedCB cdm_attached_cb) = 0;
 

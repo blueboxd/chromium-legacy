@@ -9,9 +9,11 @@
 
 namespace chromeos {
 
-TestPrintJobDatabase::TestPrintJobDatabase() {}
+using printing::proto::PrintJobInfo;
 
-TestPrintJobDatabase::~TestPrintJobDatabase() {}
+TestPrintJobDatabase::TestPrintJobDatabase() = default;
+
+TestPrintJobDatabase::~TestPrintJobDatabase() = default;
 
 void TestPrintJobDatabase::Initialize(InitializeCallback callback) {
   std::move(callback).Run(true);
@@ -21,9 +23,8 @@ bool TestPrintJobDatabase::IsInitialized() {
   return true;
 }
 
-void TestPrintJobDatabase::SavePrintJob(
-    const printing::proto::PrintJobInfo& print_job_info,
-    SavePrintJobCallback callback) {
+void TestPrintJobDatabase::SavePrintJob(const PrintJobInfo& print_job_info,
+                                        SavePrintJobCallback callback) {
   database_[print_job_info.id()] = print_job_info;
   std::move(callback).Run(true);
 }
@@ -41,7 +42,7 @@ void TestPrintJobDatabase::Clear(DeletePrintJobsCallback callback) {
 }
 
 void TestPrintJobDatabase::GetPrintJobs(GetPrintJobsCallback callback) {
-  std::vector<printing::proto::PrintJobInfo> entries;
+  std::vector<PrintJobInfo> entries;
   entries.reserve(database_.size());
   for (const auto& pair : database_)
     entries.push_back(pair.second);

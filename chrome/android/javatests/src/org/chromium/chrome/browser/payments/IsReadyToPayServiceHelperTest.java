@@ -187,6 +187,7 @@ public class IsReadyToPayServiceHelperTest {
                         mErrorReceived = true;
                     }
                 });
+        helper.query();
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -215,6 +216,7 @@ public class IsReadyToPayServiceHelperTest {
                             Assert.fail();
                         }
                     });
+            helper.query();
         });
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
@@ -244,6 +246,7 @@ public class IsReadyToPayServiceHelperTest {
                             mErrorReceived = true;
                         }
                     });
+            helper.query();
         });
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
@@ -273,6 +276,7 @@ public class IsReadyToPayServiceHelperTest {
                             mErrorReceived = true;
                         }
                     });
+            helper.query();
         });
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
@@ -302,6 +306,7 @@ public class IsReadyToPayServiceHelperTest {
                             mErrorReceived = true;
                         }
                     });
+            helper.query();
         });
         // Assuming CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL >
         // IsReadyToPayServiceHelper.SERVICE_CONNECTION_TIMEOUT_MS.

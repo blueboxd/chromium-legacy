@@ -241,8 +241,8 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
       // ignored.  If we can tell that here, then VideoFrameFactory can use it
       // as a signal about whether it's supposed to get YCbCrInfo rather than
       // requiring the provider to set |is_vulkan| in the ImageRecord.
-      auto ycbcr_helper =
-          YCbCrHelper::Create(gpu_task_runner_, std::move(get_stub_cb));
+      auto frame_info_helper =
+          FrameInfoHelper::Create(gpu_task_runner_, std::move(get_stub_cb));
       video_decoder = std::make_unique<MediaCodecVideoDecoder>(
           gpu_preferences_, gpu_feature_info_, media_log->Clone(),
           DeviceInfo::GetInstance(),
@@ -253,7 +253,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
           std::make_unique<VideoFrameFactoryImpl>(
               gpu_task_runner_, gpu_preferences_, std::move(image_provider),
               MaybeRenderEarlyManager::Create(gpu_task_runner_),
-              std::move(ycbcr_helper)));
+              std::move(frame_info_helper)));
 
 #elif BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
       if (IsNewAcceleratedVideoDecoderUsed(gpu_preferences_)) {

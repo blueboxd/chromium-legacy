@@ -32,7 +32,7 @@ content::WebUIDataSource* CreateHelpAppUntrustedDataSource(
 
   // Add device and feature flags.
   delegate->PopulateLoadTimeData(source);
-  source->AddLocalizedString("appName", IDS_HELP_APP_DISCOVER);
+  source->AddLocalizedString("appName", IDS_HELP_APP_EXPLORE);
 
   source->UseStringsJs();
   source->AddFrameAncestor(GURL(kChromeUIHelpAppURL));

@@ -23,6 +23,19 @@ GpuVSyncBeginFrameSource::~GpuVSyncBeginFrameSource() = default;
 
 void GpuVSyncBeginFrameSource::OnGpuVSync(base::TimeTicks vsync_time,
                                           base::TimeDelta vsync_interval) {
+  vsync_interval_ = vsync_interval;
+  if (skip_next_vsync_) {
+    TRACE_EVENT_INSTANT0("gpu",
+                         "GpuVSyncBeginFrameSource::OnGpuVSync - skip_vsync",
+                         TRACE_EVENT_SCOPE_THREAD);
+    skip_next_vsync_ = false;
+    return;
+  }
+
+  if (run_at_half_refresh_rate_) {
+    skip_next_vsync_ = true;
+    vsync_interval *= 2;
+  }
   auto begin_frame_args = begin_frame_args_generator_.GenerateBeginFrameArgs(
       source_id(), vsync_time, vsync_time + vsync_interval, vsync_interval);
   ExternalBeginFrameSource::OnBeginFrame(begin_frame_args);
@@ -52,7 +65,22 @@ BeginFrameArgs GpuVSyncBeginFrameSource::GetMissedBeginFrameArgs(
   return ExternalBeginFrameSource::GetMissedBeginFrameArgs(obs);
 }
 
+void GpuVSyncBeginFrameSource::SetPreferredInterval(base::TimeDelta interval) {
+  auto interval_for_half_refresh_rate = vsync_interval_ * 2;
+  constexpr auto kMaxDelta = base::TimeDelta::FromMillisecondsD(0.5);
+  bool run_at_half_refresh_rate =
+      interval > (interval_for_half_refresh_rate - kMaxDelta);
+  if (run_at_half_refresh_rate_ == run_at_half_refresh_rate)
+    return;
+
+  TRACE_EVENT1("gpu", "GpuVSyncBeginFrameSource::SetPreferredInterval",
+               "run_at_half_refresh_rate", run_at_half_refresh_rate);
+  run_at_half_refresh_rate_ = run_at_half_refresh_rate;
+  skip_next_vsync_ = false;
+}
+
 void GpuVSyncBeginFrameSource::OnNeedsBeginFrames(bool needs_begin_frames) {
+  skip_next_vsync_ = false;
   output_surface_->SetGpuVSyncEnabled(needs_begin_frames);
 }
 

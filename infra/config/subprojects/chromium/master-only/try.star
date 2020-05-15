@@ -1,3 +1,7 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 load('//lib/builders.star', 'cpu', 'goma', 'os', 'xcode_cache')
 load('//lib/try.star', 'try_')
 load('//project.star', 'settings')
@@ -15,20 +19,6 @@ try_.set_defaults(
 
 
 # *** After this point everything is trunk only ***
-
-[try_.list_view(
-    name = name,
-) for name in (
-    'tryserver.blink',
-    'tryserver.chromium.android',
-    'tryserver.chromium.angle',
-    'tryserver.chromium.chromiumos',
-    'tryserver.chromium.dawn',
-    'tryserver.chromium.linux',
-    'tryserver.chromium.mac',
-    'tryserver.chromium.swangle',
-    'tryserver.chromium.win',
-)]
 
 
 # Builders are sorted first lexicographically by the function used to define

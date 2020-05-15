@@ -33,7 +33,8 @@ enum XInputType {
 enum class GamepadId : uint32_t {
   // ID value representing an unknown gamepad or non-gamepad.
   kUnknownGamepad = 0,
-
+  // Fake IDs for devices which report as 0x0000 0x0000
+  kPowerALicPro = 0x0000ff00,
   // ID values for supported devices.
   kAsusTekProduct4500 = 0x0b054500,
   kBroadcomProduct8502 = 0x0a5c8502,

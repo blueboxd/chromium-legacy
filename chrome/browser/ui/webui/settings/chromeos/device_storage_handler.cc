@@ -48,6 +48,8 @@ const char* CalculationTypeToEventName(
       return "storage-crostini-size-changed";
     case calculator::SizeCalculator::CalculationType::kOtherUsers:
       return "storage-other-users-size-changed";
+    case calculator::SizeCalculator::CalculationType::kDlcs:
+      return "storage-dlcs-size-changed";
   }
   NOTREACHED();
   return "";
@@ -63,6 +65,7 @@ StorageHandler::StorageHandler(Profile* profile,
       apps_size_calculator_(profile),
       crostini_size_calculator_(profile),
       other_users_size_calculator_(),
+      dlcs_size_calculator_(),
       profile_(profile),
       source_name_(html_source->GetSource()),
       arc_observer_(this),
@@ -115,6 +118,7 @@ void StorageHandler::OnJavascriptAllowed() {
   apps_size_calculator_.AddObserver(this);
   crostini_size_calculator_.AddObserver(this);
   other_users_size_calculator_.AddObserver(this);
+  dlcs_size_calculator_.AddObserver(this);
 }
 
 void StorageHandler::OnJavascriptDisallowed() {
@@ -164,6 +168,7 @@ void StorageHandler::HandleUpdateStorageInfo(const base::ListValue* args) {
   apps_size_calculator_.StartCalculation();
   crostini_size_calculator_.StartCalculation();
   other_users_size_calculator_.StartCalculation();
+  dlcs_size_calculator_.StartCalculation();
 }
 
 void StorageHandler::HandleOpenMyFiles(const base::ListValue* unused_args) {
@@ -259,6 +264,7 @@ void StorageHandler::StopObservingEvents() {
   apps_size_calculator_.RemoveObserver(this);
   crostini_size_calculator_.RemoveObserver(this);
   other_users_size_calculator_.RemoveObserver(this);
+  dlcs_size_calculator_.RemoveObserver(this);
 }
 
 void StorageHandler::UpdateStorageItem(
@@ -282,6 +288,12 @@ void StorageHandler::UpdateStorageItem(
     bool no_other_users = (total_bytes == 0);
     FireWebUIListener(CalculationTypeToEventName(calculation_type),
                       base::Value(message), base::Value(no_other_users));
+  } else if (calculation_type ==
+             calculator::SizeCalculator::CalculationType::kDlcs) {
+    bool dlcs_exist = (total_bytes > 0);
+    FireWebUIListener(CalculationTypeToEventName(calculation_type),
+                      base::Value(dlcs_exist), base::Value(message));
+
   } else {
     FireWebUIListener(CalculationTypeToEventName(calculation_type),
                       base::Value(message));

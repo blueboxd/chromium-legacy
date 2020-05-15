@@ -124,6 +124,18 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   // Returns true if the user manually expanded the quick settings.
   bool IsQuickSettingsExplicitlyExpanded() const;
 
+  // This enum is for the ChromeOS.SystemTray.FirstInteraction UMA histogram and
+  // should be kept in sync.
+  enum class FirstInteractionType {
+    kQuickSettings = 0,
+    kMessageCenter = 1,
+    kMaxValue = kMessageCenter,
+  };
+
+  // Records a metric of the first interaction with the tray bubble, i.e.
+  // whether it was a click/tap on the message center or quick settings.
+  void MaybeRecordFirstInteraction(FirstInteractionType type);
+
   // TrayBackgroundView:
   bool PerformAction(const ui::Event& event) override;
   void ShowBubble(bool show_by_click) override;
@@ -194,6 +206,8 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   tray::NetworkTrayView* network_tray_view_ = nullptr;
 
   base::OneShotTimer timer_;
+
+  bool first_interaction_recorded_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTray);
 };

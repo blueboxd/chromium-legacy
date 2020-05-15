@@ -72,7 +72,7 @@ void MediaPlayerRendererClient::Initialize(
 }
 
 void MediaPlayerRendererClient::SetCdm(media::CdmContext* cdm_context,
-                                       media::CdmAttachedCB cdm_attached_cb) {
+                                       CdmAttachedCB cdm_attached_cb) {
   // MediaPlayerRenderer does not support encrypted media.
   NOTREACHED();
 }

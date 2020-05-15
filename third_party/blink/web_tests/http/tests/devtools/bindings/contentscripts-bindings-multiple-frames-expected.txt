@@ -21,7 +21,8 @@ Workspace: 8 uiSourceCodes.
 
 Running: attachFrame2
 Removed: 0 uiSourceCodes
-Workspace: 12 uiSourceCodes.
+Workspace: 13 uiSourceCodes.
+[+] content-script-42.js
     content-script-42.js
     debugger:///VM[XXX]
     debugger:///VM[XXX] content-script-42.js
@@ -36,7 +37,8 @@ Workspace: 12 uiSourceCodes.
 [+] _test_attachFrame2.js
 
 Running: detachFrame1
-Removed: 0 uiSourceCodes
+Removed: 1 uiSourceCodes
+[-] content-script-42.js
 Workspace: 14 uiSourceCodes.
     content-script-42.js
     debugger:///VM[XXX]
@@ -54,10 +56,10 @@ Workspace: 14 uiSourceCodes.
 [+] _test_detachFrame1.js
 
 Running: detachFrame2
-Removed: 1 uiSourceCodes
+Removed: 2 uiSourceCodes
+[-] content-script-42.js
 [-] http://127.0.0.1:8000/devtools/bindings/resources/contentscript-frame.html
-Workspace: 15 uiSourceCodes.
-    content-script-42.js
+Workspace: 14 uiSourceCodes.
     debugger:///VM[XXX]
     debugger:///VM[XXX] content-script-42.js
     debugger:///VM[XXX] content-script-42.js

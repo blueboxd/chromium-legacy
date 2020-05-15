@@ -5,11 +5,13 @@
 /**
  * @typedef {{text:string, callback:(function()|undefined)}}
  */
+// eslint-disable-next-line no-var
 var FilesToastAction;
 
 /**
  * @typedef {{text:string, action:(FilesToastAction|undefined)}}
  */
+// eslint-disable-next-line no-var
 var FilesToastData;
 
 /**
@@ -22,6 +24,7 @@ var FilesToastData;
  * toast.show('Toast with action', {text: 'ACTION', callback:function() {}});
  * toast.hide();
  */
+// eslint-disable-next-line no-var
 var FilesToast = Polymer({
   is: 'files-toast',
 
@@ -78,21 +81,31 @@ var FilesToast = Polymer({
     this._setVisible(true);
 
     // Update UI.
+    this.$.container.removeAttribute('style');
     this.$.container.hidden = false;
-    this.$.text.innerText = text;
-    this.action_ = opt_action || null;
 
+    this.$.text.removeAttribute('style');
+    this.$.text.innerText = text;
+
+    this.action_ = opt_action || null;
     if (this.action_) {
+      this.$.text.setAttribute('style', 'padding-inline-end: 0');
       this.$.action.hidden = false;
       this.$.action.innerText = this.action_.text;
     } else {
       this.$.action.hidden = true;
     }
 
+    // Make container min-height 68px if the text needs two lines.
+    const style = window.getComputedStyle(this.$.text);
+    if (parseFloat(style.height) > 1.2 * parseFloat(style.lineHeight)) {
+      this.$.container.setAttribute('style', 'min-height: 68px');
+    }
+
     // Perform animation.
     this.enterAnimationPlayer_ = this.$.container.animate([
       {bottom: '-100px', opacity: 0, offset: 0},
-      {bottom: '16px', opacity: 1, offset: 1}
+      {bottom: '24px', opacity: 1, offset: 1}
     ], 100 /* ms */);
 
     this.enterAnimationPlayer_.addEventListener('finish', () => {
@@ -142,7 +155,7 @@ var FilesToast = Polymer({
     // Start hide animation if it's not performing now.
     if (!this.hideAnimationPlayer_) {
       this.hideAnimationPlayer_ = this.$.container.animate([
-        {bottom: '16px', opacity: 1, offset: 0},
+        {bottom: '24px', opacity: 1, offset: 0},
         {bottom: '-100px', opacity: 0, offset: 1}
       ], 100 /* ms */);
     }

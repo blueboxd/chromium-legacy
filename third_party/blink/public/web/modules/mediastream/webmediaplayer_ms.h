@@ -277,7 +277,7 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
   void SetGpuMemoryBufferVideoForTesting(
       media::GpuMemoryBufferVideoFramePool* gpu_memory_buffer_pool);
 
-  // Callback used to fulfill video.requestAnimationFrame() requests.
+  // Callback used to fulfill video.requestVideoFrameCallback() requests.
   void OnNewFramePresentedCallback();
 
   // Callback used to detect and propagate a render error.

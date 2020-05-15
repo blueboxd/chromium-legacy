@@ -93,7 +93,7 @@ void Frame::Detach(FrameDetachType type) {
   if (!client_)
     return;
 
-  client_->SetOpener(nullptr);
+  SetOpener(nullptr);
   // After this, we must no longer talk to the client since this clears
   // its owning reference back to our owning LocalFrame.
   client_->Detached(type);

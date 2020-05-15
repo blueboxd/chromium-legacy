@@ -29,7 +29,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabImpl;
@@ -75,7 +75,7 @@ public class TabGroupPopupUiMediatorUnitTest {
     @Mock
     OverviewModeBehavior mOverviewModeBehavior;
     @Mock
-    ChromeFullscreenManager mChromeFullscreenManager;
+    BrowserControlsStateProvider mBrowserControlsStateProvider;
     @Mock
     TabGroupPopupUiMediator.TabGroupPopUiUpdater mUpdater;
     @Mock
@@ -95,7 +95,8 @@ public class TabGroupPopupUiMediatorUnitTest {
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
     @Captor
-    ArgumentCaptor<ChromeFullscreenManager.FullscreenListener> mFullScreenListenerCaptor;
+    private ArgumentCaptor<BrowserControlsStateProvider.Observer>
+            mBrowserControlsStateProviderObserverCaptor;
     @Captor
     ArgumentCaptor<OverviewModeBehavior.OverviewModeObserver> mOverviewModeObserverCaptor;
     @Captor
@@ -125,7 +126,9 @@ public class TabGroupPopupUiMediatorUnitTest {
         doNothing()
                 .when(mTabModelFilterProvider)
                 .addTabModelFilterObserver(mTabModelObserverCaptor.capture());
-        doNothing().when(mChromeFullscreenManager).addListener(mFullScreenListenerCaptor.capture());
+        doNothing()
+                .when(mBrowserControlsStateProvider)
+                .addObserver(mBrowserControlsStateProviderObserverCaptor.capture());
         doNothing()
                 .when(mOverviewModeBehavior)
                 .addOverviewModeObserver(mOverviewModeObserverCaptor.capture());
@@ -137,7 +140,8 @@ public class TabGroupPopupUiMediatorUnitTest {
         KeyboardVisibilityDelegate.setInstance(mKeyboardVisibilityDelegate);
         mModel = new PropertyModel(TabGroupPopupUiProperties.ALL_KEYS);
         mMediator = new TabGroupPopupUiMediator(mModel, mTabModelSelector, mOverviewModeBehavior,
-                mChromeFullscreenManager, mUpdater, mTabGroupUiController, mBottomSheetController);
+                mBrowserControlsStateProvider, mUpdater, mTabGroupUiController,
+                mBottomSheetController);
     }
 
     @Test
@@ -146,16 +150,18 @@ public class TabGroupPopupUiMediatorUnitTest {
 
         // Mock that the hidden ratio of browser control is 0.8765.
         float hiddenRatio = 0.8765f;
-        doReturn(hiddenRatio).when(mChromeFullscreenManager).getBrowserControlHiddenRatio();
-        mFullScreenListenerCaptor.getValue().onControlsOffsetChanged(0, 0, 0, 0, false);
+        doReturn(hiddenRatio).when(mBrowserControlsStateProvider).getBrowserControlHiddenRatio();
+        mBrowserControlsStateProviderObserverCaptor.getValue().onControlsOffsetChanged(
+                0, 0, 0, 0, false);
 
         assertThat(
                 mModel.get(TabGroupPopupUiProperties.CONTENT_VIEW_ALPHA), equalTo(1 - hiddenRatio));
 
         // Mock that the hidden ratio of browser control is 0.12345.
         hiddenRatio = 0.1234f;
-        doReturn(hiddenRatio).when(mChromeFullscreenManager).getBrowserControlHiddenRatio();
-        mFullScreenListenerCaptor.getValue().onControlsOffsetChanged(0, 0, 0, 0, false);
+        doReturn(hiddenRatio).when(mBrowserControlsStateProvider).getBrowserControlHiddenRatio();
+        mBrowserControlsStateProviderObserverCaptor.getValue().onControlsOffsetChanged(
+                0, 0, 0, 0, false);
 
         assertThat(
                 mModel.get(TabGroupPopupUiProperties.CONTENT_VIEW_ALPHA), equalTo(1 - hiddenRatio));
@@ -571,7 +577,8 @@ public class TabGroupPopupUiMediatorUnitTest {
                 .removeOverviewModeObserver(mOverviewModeObserverCaptor.capture());
         verify(mTabModelFilterProvider)
                 .removeTabModelFilterObserver(mTabModelObserverCaptor.capture());
-        verify(mChromeFullscreenManager).removeListener(mFullScreenListenerCaptor.capture());
+        verify(mBrowserControlsStateProvider)
+                .removeObserver(mBrowserControlsStateProviderObserverCaptor.capture());
     }
 
     // TODO(yuezhanggg): Pull methods below to a utility class.

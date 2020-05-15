@@ -207,7 +207,6 @@ bool MixedContentNavigationThrottle::ShouldBlockNavigation(bool for_redirect) {
       allowed =
           should_ask_delegate &&
           frame_host_delegate->ShouldAllowRunningInsecureContent(
-              navigation_handle()->GetWebContents(),
               prefs.allow_running_insecure_content,
               mixed_content_frame->GetLastCommittedOrigin(), request->GetURL());
       if (allowed) {

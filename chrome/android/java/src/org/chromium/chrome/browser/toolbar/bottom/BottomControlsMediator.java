@@ -9,6 +9,7 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.compositor.layouts.ToolbarSwipeLayout;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.WindowAndroid;
@@ -20,7 +21,7 @@ import org.chromium.ui.resources.ResourceManager;
  * coordinators, running most of the business logic associated with the bottom controls component,
  * and updating the model accordingly.
  */
-class BottomControlsMediator implements ChromeFullscreenManager.FullscreenListener,
+class BottomControlsMediator implements BrowserControlsStateProvider.Observer,
                                         KeyboardVisibilityDelegate.KeyboardVisibilityListener,
                                         SceneChangeObserver,
                                         OverlayPanelManager.OverlayPanelManagerObserver {
@@ -63,7 +64,7 @@ class BottomControlsMediator implements ChromeFullscreenManager.FullscreenListen
         mModel = model;
 
         mFullscreenManager = fullscreenManager;
-        mFullscreenManager.addListener(this);
+        mFullscreenManager.addObserver(this);
 
         mBottomControlsHeight = bottomControlsHeight;
     }
@@ -95,7 +96,7 @@ class BottomControlsMediator implements ChromeFullscreenManager.FullscreenListen
      * Clean up anything that needs to be when the bottom controls component is destroyed.
      */
     void destroy() {
-        mFullscreenManager.removeListener(this);
+        mFullscreenManager.removeObserver(this);
         if (mWindowAndroid != null) {
             mWindowAndroid.getKeyboardDelegate().removeKeyboardVisibilityListener(this);
             mWindowAndroid = null;
@@ -108,18 +109,11 @@ class BottomControlsMediator implements ChromeFullscreenManager.FullscreenListen
     }
 
     @Override
-    public void onContentOffsetChanged(int offset) {}
-
-    @Override
     public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
             int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
         mModel.set(BottomControlsProperties.Y_OFFSET, bottomOffset);
         updateAndroidViewVisibility();
     }
-
-    @Override
-    public void onBottomControlsHeightChanged(
-            int bottomControlsHeight, int bottomControlsMinHeight) {}
 
     @Override
     public void onOverlayPanelShown() {

@@ -23,7 +23,9 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.components.page_info.PageInfoController;
+import org.chromium.components.page_info.PageInfoFeatureList;
 import org.chromium.components.page_info.PageInfoView;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -83,6 +85,7 @@ public class PageInfoControllerTest {
     @MediumTest
     @Feature({"PageInfoController"})
     @RetryOnFailure
+    @DisableFeatures(PageInfoFeatureList.PAGE_INFO_V2)
     public void testPageInfoUrl() {
         String testUrl = mTestServer.getURLWithHostName("xn--allestrungen-9ib.ch", "/");
         mActivityTestRule.loadUrlInTab(
@@ -102,7 +105,7 @@ public class PageInfoControllerTest {
             PageInfoController pageInfo =
                     new PageInfoController(tab.getWebContents(), ConnectionSecurityLevel.NONE,
                             /*publisher=*/null, chromePageInfoControllerDelegate,
-                            /*isV2Enabled=*/false, chromePermissionParamsListBuilderDelegate);
+                            chromePermissionParamsListBuilderDelegate);
             PageInfoView pageInfoView = pageInfo.getPageInfoViewForTesting();
             // Test that the title contains the Unicode hostname rather than strict equality, as
             // the test server will be bound to a random port.

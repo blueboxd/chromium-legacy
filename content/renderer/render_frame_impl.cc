@@ -3952,17 +3952,6 @@ blink::WebFrame* RenderFrameImpl::FindFrame(const blink::WebString& name) {
                                                    name.Utf8());
 }
 
-void RenderFrameImpl::DidChangeOpener(blink::WebFrame* opener) {
-  // Only a local frame should be able to update another frame's opener.
-  DCHECK(!opener || opener->IsWebLocalFrame());
-
-  int opener_routing_id =
-      opener ? RenderFrameImpl::FromWebFrame(opener->ToWebLocalFrame())
-                   ->GetRoutingID()
-             : MSG_ROUTING_NONE;
-  Send(new FrameHostMsg_DidChangeOpener(routing_id_, opener_routing_id));
-}
-
 void RenderFrameImpl::FrameDetached(DetachType type) {
   for (auto& observer : observers_)
     observer.FrameDetached();

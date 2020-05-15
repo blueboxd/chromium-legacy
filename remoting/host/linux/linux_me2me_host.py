@@ -1025,7 +1025,10 @@ class ParentProcessLogger(object):
           # for the host to start).
           # Trapping the error here means the host can continue running.
           logging.info("Caught IOError writing READY message.")
-      self._write_file.close()
+      try:
+        self._write_file.close()
+      except IOError:
+        pass
 
   @staticmethod
   def try_start_logging(write_fd):
@@ -1051,6 +1054,7 @@ class ParentProcessLogger(object):
     """
     instance = ParentProcessLogger.__instance
     if instance is not None:
+      ParentProcessLogger.__instance = None
       instance._release_parent(success)
 
 

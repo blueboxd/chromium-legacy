@@ -44,6 +44,8 @@ final class HomepagePromoUtils {
         int TOTAL = 5;
     }
 
+    private static final int MAX_IMPRESSION_SEEN = 20;
+
     // Do not instantiate.
     private HomepagePromoUtils() {}
 
@@ -80,6 +82,11 @@ final class HomepagePromoUtils {
                 FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE);
     }
 
+    static String getTimesSeenKey() {
+        return ChromePreferenceKeys.PROMO_TIMES_SEEN.createKey(
+                FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE);
+    }
+
     // TODO(wenyufu): check finch param controlling whether the homepage needs to be enabled.
     private static boolean isHomepageEnabled() {
         return !sBypassHomepageEnabledForTests && HomepageManager.isHomepageEnabled();
@@ -92,6 +99,22 @@ final class HomepagePromoUtils {
     static void recordHomepagePromoEvent(@HomepagePromoAction int action) {
         RecordHistogram.recordEnumeratedHistogram(
                 "NewTabPage.Promo.HomepagePromo", action, HomepagePromoAction.TOTAL);
+
+        if (action == HomepagePromoAction.CREATED || action == HomepagePromoAction.UNDO) return;
+
+        String timesSeenKey = getTimesSeenKey();
+        int timesSeen = SharedPreferencesManager.getInstance().readInt(timesSeenKey, 0);
+
+        if (action == HomepagePromoAction.SEEN) {
+            SharedPreferencesManager.getInstance().writeInt(timesSeenKey, timesSeen + 1);
+        } else if (action == HomepagePromoAction.ACCEPTED) {
+            RecordHistogram.recordCountHistogram(
+                    "NewTabPage.Promo.HomepagePromo.ImpressionUntilAction", timesSeen);
+        } else if (action == HomepagePromoAction.DISMISSED) {
+            RecordHistogram.recordLinearCountHistogram(
+                    "NewTabPage.Promo.HomepagePromo.ImpressionUntilDismissal", timesSeen, 1,
+                    MAX_IMPRESSION_SEEN, MAX_IMPRESSION_SEEN);
+        }
     }
 
     @VisibleForTesting

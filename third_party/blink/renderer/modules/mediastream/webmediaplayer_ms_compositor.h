@@ -120,8 +120,8 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
   void SetOnFramePresentedCallback(OnNewFramePresentedCB presented_cb);
 
   // Gets the metadata for the last frame that was presented to the compositor.
-  // Used to populate the VideoFrameMetadata of video.requestAnimationFrame()
-  // callbacks. See https://wicg.github.io/video-raf/.
+  // Used to populate the VideoFrameMetadata of video.requestVideoFrameCallback
+  // callbacks. See https://wicg.github.io/video-rvfc/.
   // Can be called on any thread.
   std::unique_ptr<WebMediaPlayer::VideoFramePresentationMetadata>
   GetLastPresentedFrameMetadata();

@@ -20,8 +20,8 @@
 
 namespace content {
 
+class ServiceWorkerClientInfo;
 enum class EmbeddedWorkerStatus;
-struct ServiceWorkerClientInfo;
 
 struct CONTENT_EXPORT ServiceWorkerVersionInfo {
  public:

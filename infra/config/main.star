@@ -1,6 +1,12 @@
 #!/usr/bin/env lucicfg
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 # See https://chromium.googlesource.com/infra/luci/luci-go/+/HEAD/lucicfg/doc/README.md
 # for information on starlark/lucicfg
+
+load('//project.star', 'master_only_exec')
 
 lucicfg.check_version(
     min = '1.13.1',
@@ -64,28 +70,6 @@ luci.cq(
     status_host = 'chromium-cq-status.appspot.com',
 )
 
-# Declare a CQ group that watches all branch heads
-# We won't add any builders, but SUBMIT TO CQ fails on Gerrit if there is no CQ
-# group
-luci.cq_group(
-    name = 'fallback-empty-cq',
-    retry_config = cq.RETRY_ALL_FAILURES,
-    watch = cq.refset(
-        repo = 'https://chromium.googlesource.com/chromium/src',
-        refs = ['refs/branch-heads/.+'],
-    ),
-    acls = [
-        acl.entry(
-            acl.CQ_COMMITTER,
-            groups = 'project-chromium-committers',
-        ),
-        acl.entry(
-            acl.CQ_DRY_RUNNER,
-            groups = 'project-chromium-tryjob-access',
-        ),
-    ],
-)
-
 luci.logdog(
     gs_bucket = 'chromium-luci-logdog',
 )
@@ -99,11 +83,11 @@ exec('//recipes.star')
 exec('//notifiers.star')
 
 exec('//subprojects/chromium/main.star')
-exec('//subprojects/findit/main.star')
-exec('//subprojects/goma/main.star')
-exec('//subprojects/webrtc/main.star')
+master_only_exec('//subprojects/findit/main.star')
+master_only_exec('//subprojects/goma/main.star')
+master_only_exec('//subprojects/webrtc/main.star')
 
-exec('//generators/cq-builders-md.star')
+master_only_exec('//generators/cq-builders-md.star')
 # This should be exec'ed before exec'ing scheduler-noop-jobs.star because
 # attempting to read the buildbucket field that is not set for the noop jobs
 # actually causes an empty buildbucket message to be set
@@ -111,11 +95,7 @@ exec('//generators/cq-builders-md.star')
 # problems when the number of builders with the same name goes from 1 to >1 or
 # vice-versa. This generator makes sure both the bucketed and non-bucketed IDs
 # work so that there aren't transient failures when the configuration changes
-exec('//generators/scheduler-bucketed-jobs.star')
-# TODO(https://crbug.com/966115) Run the generator to set the fallback field for
-# the empty CQ group until it's exposed in lucicfg or there is a better way to
-# create a CQ group for all of the canary branches
-exec('//generators/cq-fallback.star')
+master_only_exec('//generators/scheduler-bucketed-jobs.star')
 # TODO(https://crbug.com/819899) There are a number of noop jobs for dummy
 # builders defined due to legacy requirements that trybots mirror CI bots
 # no-op scheduler jobs are not supported by the lucicfg libraries, so this

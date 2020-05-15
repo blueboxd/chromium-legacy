@@ -306,7 +306,8 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
 
   // Add shortcut icons and linked shortcut icon information.
   if (base::FeatureList::IsEnabled(
-          features::kDesktopPWAsAppIconShortcutsMenu)) {
+          features::kDesktopPWAsAppIconShortcutsMenu) &&
+      !web_app.shortcut_infos.empty()) {
     // linked_shortcut_icons is a list of all shortcut icons included in the
     // WebAppManifest. It includes the name and the index of the icon's
     // corresponding shortcut, the icon's url, and its stated SquareSizePx in
@@ -344,9 +345,14 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
       }
       shortcuts->SetDictionary(curr_icon, std::move(shortcut_icons));
     }
-    root->Set(keys::kWebAppShortcutIcons, std::move(shortcuts));
-    root->Set(keys::kWebAppLinkedShortcutIcons,
-              std::move(linked_shortcut_icons));
+
+    if (!shortcuts->empty())
+      root->Set(keys::kWebAppShortcutIcons, std::move(shortcuts));
+
+    if (!linked_shortcut_icons->empty()) {
+      root->Set(keys::kWebAppLinkedShortcutIcons,
+                std::move(linked_shortcut_icons));
+    }
   }
 
   // Write the manifest.
@@ -385,7 +391,8 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
 
   // Write the shortcut icon files.
   if (base::FeatureList::IsEnabled(
-          features::kDesktopPWAsAppIconShortcutsMenu)) {
+          features::kDesktopPWAsAppIconShortcutsMenu) &&
+      !web_app.shortcut_infos.empty()) {
     base::FilePath shortcut_icons_dir =
         temp_dir.GetPath().AppendASCII(kShortcutIconsDirName);
     int shortcut_index = -1;

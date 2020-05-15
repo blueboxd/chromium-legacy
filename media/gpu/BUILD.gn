@@ -109,6 +109,8 @@ component("gpu") {
       "android/codec_image.h",
       "android/codec_image_group.cc",
       "android/codec_image_group.h",
+      "android/codec_output_buffer_renderer.cc",
+      "android/codec_output_buffer_renderer.h",
       "android/codec_surface_bundle.cc",
       "android/codec_surface_bundle.h",
       "android/codec_wrapper.cc",
@@ -117,6 +119,8 @@ component("gpu") {
       "android/device_info.h",
       "android/direct_shared_image_video_provider.cc",
       "android/direct_shared_image_video_provider.h",
+      "android/frame_info_helper.cc",
+      "android/frame_info_helper.h",
       "android/maybe_render_early_manager.cc",
       "android/maybe_render_early_manager.h",
       "android/media_codec_video_decoder.cc",
@@ -133,8 +137,6 @@ component("gpu") {
       "android/video_frame_factory.h",
       "android/video_frame_factory_impl.cc",
       "android/video_frame_factory_impl.h",
-      "android/ycbcr_helper.cc",
-      "android/ycbcr_helper.h",
     ]
     libs += [ "android" ]
     deps += [

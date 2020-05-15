@@ -15,7 +15,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -60,13 +59,6 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
 
         createToolbarView();
         createContentView();
-        recordNumberOfDevicesDisplayed();
-    }
-
-    private void recordNumberOfDevicesDisplayed() {
-        // This histogram is used across multiple platforms and should be
-        // kept consistent.
-        RecordHistogram.recordCount100Histogram("SendTabToSelf.DeviceCount", mAdapter.getCount());
     }
 
     private void createToolbarView() {
@@ -77,6 +69,8 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
     }
 
     private void createContentView() {
+        SendTabToSelfShareClickResult.recordClickResult(
+                SendTabToSelfShareClickResult.ClickType.CLICK_ITEM);
         List<TargetDeviceInfo> targetDeviceList = new ArrayList<TargetDeviceInfo>();
         SendTabToSelfAndroidBridgeJni.get().getAllTargetDeviceInfos(mProfile, targetDeviceList);
 

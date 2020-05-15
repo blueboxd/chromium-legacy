@@ -66,7 +66,7 @@ config("pgo_optimization_flags") {
       # and at least some profile data always ends up being considered
       # out of date, so make sure we don't error for those cases.
       "-Wno-profile-instr-unprofiled",
-      "-Wno-error=profile-instr-out-of-date",
+      "-Wno-profile-instr-out-of-date",
     ]
   }
 }

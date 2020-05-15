@@ -25,9 +25,6 @@ class ASH_PUBLIC_EXPORT AssistantInterfaceBinder {
   virtual void BindNotificationController(
       mojo::PendingReceiver<mojom::AssistantNotificationController>
           receiver) = 0;
-  virtual void BindScreenContextController(
-      mojo::PendingReceiver<mojom::AssistantScreenContextController>
-          receiver) = 0;
   virtual void BindVolumeControl(
       mojo::PendingReceiver<mojom::AssistantVolumeControl> receiver) = 0;
 

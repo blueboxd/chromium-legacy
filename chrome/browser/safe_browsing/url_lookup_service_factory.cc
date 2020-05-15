@@ -71,7 +71,8 @@ KeyedService* RealTimeUrlLookupServiceFactory::BuildServiceInstanceFor(
       IdentityManagerFactory::GetForProfile(profile),
       ProfileSyncServiceFactory::GetForProfile(profile), profile->GetPrefs(),
       GetProfileManagementStatus(browser_policy_connector),
-      is_under_advanced_protection, profile->IsOffTheRecord());
+      is_under_advanced_protection, profile->IsOffTheRecord(),
+      g_browser_process->variations_service());
 }
 
 }  // namespace safe_browsing

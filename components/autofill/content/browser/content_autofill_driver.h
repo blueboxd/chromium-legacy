@@ -115,8 +115,6 @@ class ContentAutofillDriver : public AutofillDriver,
                                base::TimeTicks timestamp) override;
   void DidPreviewAutofillFormData() override;
   void DidEndTextFieldEditing() override;
-  void SetDataList(const std::vector<base::string16>& values,
-                   const std::vector<base::string16>& labels) override;
   void SelectFieldOptionsDidChange(const FormData& form) override;
 
   // Called when the main frame has navigated. Explicitely will not trigger for

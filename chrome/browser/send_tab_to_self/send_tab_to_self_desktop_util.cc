@@ -53,8 +53,6 @@ void CreateNewEntry(content::WebContents* tab,
           ->GetSendTabToSelfModel();
   DCHECK(model);
 
-  UMA_HISTOGRAM_BOOLEAN("SendTabToSelf.Sync.ModelLoadedInTime",
-                        model->IsReady());
   if (!model->IsReady()) {
     DesktopNotificationHandler(profile).DisplayFailureMessage(shared_url);
     return;

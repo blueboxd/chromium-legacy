@@ -108,10 +108,6 @@ class AutofillHandler {
   // Invoked when popup window should be hidden.
   virtual void OnHidePopup() = 0;
 
-  // Invoked when data list need to be set.
-  virtual void OnSetDataList(const std::vector<base::string16>& values,
-                             const std::vector<base::string16>& labels) = 0;
-
   // Invoked when the options of a select element in the |form| changed.
   virtual void SelectFieldOptionsDidChange(const FormData& form) = 0;
 

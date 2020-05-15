@@ -48,7 +48,7 @@ IssuanceKeyPair GenerateIssuanceKeyPair(int id) {
   keys.verification.resize(TRUST_TOKEN_MAX_PUBLIC_KEY_SIZE);
   size_t signing_key_len, verification_key_len;
   CHECK(TRUST_TOKEN_generate_key(
-      TRUST_TOKEN_experiment_v0(), keys.signing.data(), &signing_key_len,
+      TRUST_TOKEN_experiment_v1(), keys.signing.data(), &signing_key_len,
       keys.signing.size(), keys.verification.data(), &verification_key_len,
       keys.verification.size(), id));
   keys.signing.resize(signing_key_len);
@@ -111,7 +111,7 @@ struct TrustTokenRequestHandler::Rep {
 bssl::UniquePtr<TRUST_TOKEN_ISSUER>
 TrustTokenRequestHandler::Rep::CreateIssuerContextFromUnexpiredKeys() const {
   bssl::UniquePtr<TRUST_TOKEN_ISSUER> ret(
-      TRUST_TOKEN_ISSUER_new(TRUST_TOKEN_experiment_v0(), batch_size));
+      TRUST_TOKEN_ISSUER_new(TRUST_TOKEN_experiment_v1(), batch_size));
   if (!ret)
     return nullptr;
 

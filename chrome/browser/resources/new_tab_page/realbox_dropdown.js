@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 import './strings.m.js';
+import './realbox_button.js';
 import './realbox_match.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {BrowserProxy} from './browser_proxy.js';
 import {decodeString16, skColorToRgba} from './utils.js';
 
 /**
@@ -76,6 +78,16 @@ class RealboxDropdownElement extends PolymerElement {
       },
 
       /**
+       * The list of suggestion group IDs whose matches should be hidden.
+       * @type {!Array<string>}
+       * @private
+       */
+      hiddenGroupIds_: {
+        type: Array,
+        computed: `computeHiddenGroupIds_(result)`,
+      },
+
+      /**
        * The list of selectable match elements.
        * @type {!Array<!Element>}
        * @private
@@ -85,6 +97,12 @@ class RealboxDropdownElement extends PolymerElement {
         value: () => [],
       },
     };
+  }
+
+  constructor() {
+    super();
+    /** @private {newTabPage.mojom.PageHandlerRemote} */
+    this.pageHandler_ = BrowserProxy.getInstance().handler;
   }
 
   //============================================================================
@@ -175,14 +193,36 @@ class RealboxDropdownElement extends PolymerElement {
       return;
     }
 
+    const icon = assert(this.theme.icon);
+    // Icon's background color in a hovered context (0x29 == .16).
+    // TODO(crbug.com/1041129): Share this with the Omnibox.
+    const iconBgHovered = {value: icon.value & 0x29ffffff};
+
+    const iconSelected = assert(this.theme.iconSelected);
+    // Icon's background color in a focused context (0x52 == .32).
+    // TODO(crbug.com/1041129): Share this with the Omnibox.
+    const iconBgFocused = {value: iconSelected.value & 0x52ffffff};
+
     this.updateStyles({
-      '--search-box-results-bg': skColorToRgba(assert(this.theme.resultsBg)),
+      '--search-box-icon-bg-focused': skColorToRgba(iconBgFocused),
+      '--search-box-icon-bg-hovered': skColorToRgba(iconBgHovered),
+      '--search-box-icon-selected': skColorToRgba(iconSelected),
+      '--search-box-icon': skColorToRgba(icon),
+      '--search-box-results-bg-hovered':
+          skColorToRgba(assert(this.theme.resultsBgHovered)),
       '--search-box-results-bg-selected':
           skColorToRgba(assert(this.theme.resultsBgSelected)),
-      '--search-box-results-text':
-          skColorToRgba(assert(this.theme.resultsText)),
+      '--search-box-results-bg': skColorToRgba(assert(this.theme.resultsBg)),
+      '--search-box-results-dim-selected':
+          skColorToRgba(assert(this.theme.resultsDimSelected)),
+      '--search-box-results-dim': skColorToRgba(assert(this.theme.resultsDim)),
       '--search-box-results-text-selected':
           skColorToRgba(assert(this.theme.resultsTextSelected)),
+      '--search-box-results-text':
+          skColorToRgba(assert(this.theme.resultsText)),
+      '--search-box-results-url-selected':
+          skColorToRgba(assert(this.theme.resultsUrlSelected)),
+      '--search-box-results-url': skColorToRgba(assert(this.theme.resultsUrl)),
     });
   }
 
@@ -191,18 +231,30 @@ class RealboxDropdownElement extends PolymerElement {
   //============================================================================
 
   /**
-   * @param {!CustomEvent} e
    * @private
    */
-  onMatchFocusin_(e) {
-    e.stopPropagation();
+  onHeaderFocusin_() {
+    // The header got focus. Unselect the selected match, if any.
+    this.unselect();
+  }
 
-    this.dispatchEvent(new CustomEvent('match-focusin', {
-      bubbles: true,
-      composed: true,
-      detail: this.selectableMatchElements_.indexOf(
-          /** @type {!Element} */ (e.target)),
-    }));
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onToggleButtonClick_(e) {
+    const groupId = e.target.dataset.id;
+
+    // Tell the backend to toggle visibility of the given suggestion group ID.
+    this.pageHandler_.toggleSuggestionGroupIdVisibility(groupId);
+
+    // Hide/Show matches with the given suggestion group ID.
+    const index = this.hiddenGroupIds_.indexOf(groupId);
+    if (index === -1) {
+      this.push('hiddenGroupIds_', groupId);
+    } else {
+      this.splice('hiddenGroupIds_', index, 1);
+    }
   }
 
   //============================================================================
@@ -210,14 +262,45 @@ class RealboxDropdownElement extends PolymerElement {
   //============================================================================
 
   /**
+   * @returns {number} Index of the match in the autocomplete result. Passed to
+   *     the match so it knows abut its position in the list of matches.
+   * @private
+   */
+  matchIndex_(match) {
+    if (!this.result || !this.result.matches) {
+      return -1;
+    }
+
+    return this.result.matches.indexOf(match);
+  }
+
+  /**
    * @returns {!Array<string>}
    * @private
    */
   computeGroupIds_() {
+    if (!this.result) {
+      return [];
+    }
+
     // Add |NO_SUGGESTION_GROUP_ID| to the list of suggestion group IDs.
-    return this.result ? [NO_SUGGESTION_GROUP_ID].concat(
-                             Object.keys(this.result.suggestionGroupsMap)) :
-                         [];
+    return [NO_SUGGESTION_GROUP_ID].concat(
+        Object.keys(this.result.suggestionGroupsMap));
+  }
+
+  /**
+   * @returns {!Array<string>}
+   * @private
+   */
+  computeHiddenGroupIds_() {
+    if (!this.result) {
+      return [];
+    }
+
+    return Object.keys(this.result.suggestionGroupsMap)
+        .filter((groupId => {
+                  return this.result.suggestionGroupsMap[groupId].hidden;
+                }).bind(this));
   }
 
   /**
@@ -232,6 +315,7 @@ class RealboxDropdownElement extends PolymerElement {
       return match.suggestionGroupId === Number(groupId);
     };
   }
+
   /**
    * @param {string} groupId
    * @returns {boolean} Whether the given suggestion group ID has a header.
@@ -239,6 +323,17 @@ class RealboxDropdownElement extends PolymerElement {
    */
   groupHasHeader_(groupId) {
     return groupId !== NO_SUGGESTION_GROUP_ID;
+  }
+
+  /**
+   * @param {!Object} hiddenGroupIdsChange
+   * @param {string} groupId
+   * @returns {boolean} Whether matches with the given suggestion group ID
+   *     should be hidden.
+   * @private
+   */
+  groupIsHidden_(hiddenGroupIdsChange, groupId) {
+    return this.hiddenGroupIds_.indexOf(groupId) !== -1;
   }
 
   /**

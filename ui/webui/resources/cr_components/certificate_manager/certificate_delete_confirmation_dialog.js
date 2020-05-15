@@ -6,14 +6,15 @@
  * @fileoverview A confirmation dialog allowing the user to delete various types
  * of certificates.
  */
-import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import '../../cr_elements/cr_button/cr_button.m.js';
+import '../../cr_elements/cr_dialog/cr_dialog.m.js';
 import './certificate_shared_css.js';
 
-import {assertNotReached} from 'chrome://resources/js/assert.m.js';
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {assertNotReached} from '../../js/assert.m.js';
+import {I18nBehavior} from '../../js/i18n_behavior.m.js';
+import {loadTimeData} from '../../js/load_time_data.m.js';
 
 import {CertificatesBrowserProxy, CertificatesBrowserProxyImpl, CertificateSubnode, CertificateType} from './certificates_browser_proxy.js';
 

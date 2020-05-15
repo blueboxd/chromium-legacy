@@ -1232,9 +1232,7 @@ util.isNonModifiable = (volumeManager, entry) => {
     if (entry.fullPath === '/Downloads') {
       return true;
     }
-    if (util.isPluginVmEnabled() &&
-        /^\/PvmDefault(\/(Desktop|Documents|Downloads|Movies|Music|Pictures))?$/
-            .test(entry.fullPath)) {
+    if (util.isPluginVmEnabled() && entry.fullPath === '/PvmDefault') {
       return true;
     }
   }

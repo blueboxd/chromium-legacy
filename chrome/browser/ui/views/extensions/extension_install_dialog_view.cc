@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/extensions/expandable_container_view.h"
 #include "chrome/browser/ui/views/extensions/extension_permissions_view.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -370,6 +371,7 @@ void ExtensionInstallDialogView::OnDialogCanceled() {
   DCHECK(done_callback_);
 
   UpdateInstallResultHistogram(false);
+  prompt_->OnDialogCanceled();
   std::move(done_callback_).Run(ExtensionInstallPrompt::Result::USER_CANCELED);
 }
 
@@ -377,6 +379,7 @@ void ExtensionInstallDialogView::OnDialogAccepted() {
   DCHECK(done_callback_);
 
   UpdateInstallResultHistogram(true);
+  prompt_->OnDialogAccepted();
   // If the prompt had a checkbox element and it was checked we send that along
   // as the result, otherwise we just send a normal accepted result.
   auto result =

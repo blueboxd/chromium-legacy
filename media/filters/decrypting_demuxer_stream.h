@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/cdm_context.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/pipeline_status.h"
@@ -23,6 +22,7 @@ class SingleThreadTaskRunner;
 
 namespace media {
 
+class CdmContext;
 class DecoderBuffer;
 class MediaLog;
 

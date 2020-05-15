@@ -66,6 +66,12 @@ cr.define('settings', function() {
         readOnly: true,
       },
 
+      /** @private */
+      dlcsExist_: {
+        type: Boolean,
+        value: false,
+      },
+
       /** @private {settings.StorageSizeStat} */
       sizeStat_: Object,
     },
@@ -100,6 +106,9 @@ cr.define('settings', function() {
         this.addWebUIListener(
             'storage-other-users-size-changed',
             this.handleOtherUsersSizeChanged_.bind(this));
+        this.addWebUIListener(
+            'storage-dlcs-size-changed',
+            this.handleDlcsSizeChanged_.bind(this));
         this.addWebUIListener(
             'storage-system-size-changed',
             this.handleSystemSizeChanged_.bind(this));
@@ -204,6 +213,14 @@ cr.define('settings', function() {
     },
 
     /**
+     * @return {boolean} Shows the "Manage downloaded content" item if true.
+     * @private
+     */
+    shouldShowDlcSubpage_() {
+      return this.dlcsExist_ && this.allowDlcSubpage_;
+    },
+
+    /**
      * @param {!settings.StorageSizeStat} sizeStat
      * @private
      */
@@ -265,6 +282,20 @@ cr.define('settings', function() {
       }
       this.showOtherUsers_ = true;
       this.$$('#otherUsersSize').subLabel = size;
+    },
+
+    /**
+     * @param {boolean} dlcsExist True if there are DLCs.
+     * @param {string=} opt_size Formatted string representing the size of all
+     *     DLCs.
+     * @private
+     */
+    handleDlcsSizeChanged_(dlcsExist, opt_size) {
+      this.dlcsExist_ = dlcsExist;
+      if (this.shouldShowDlcSubpage_()) {
+        Polymer.dom.flush();
+        this.$$('#downloadedContentSize').subLabel = opt_size;
+      }
     },
 
     /**

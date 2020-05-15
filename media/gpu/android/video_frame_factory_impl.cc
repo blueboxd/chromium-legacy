@@ -81,13 +81,13 @@ VideoFrameFactoryImpl::VideoFrameFactoryImpl(
     const gpu::GpuPreferences& gpu_preferences,
     std::unique_ptr<SharedImageVideoProvider> image_provider,
     std::unique_ptr<MaybeRenderEarlyManager> mre_manager,
-    base::SequenceBound<YCbCrHelper> ycbcr_helper)
+    base::SequenceBound<FrameInfoHelper> frame_info_helper)
     : image_provider_(std::move(image_provider)),
       gpu_task_runner_(std::move(gpu_task_runner)),
       enable_threaded_texture_mailboxes_(
           gpu_preferences.enable_threaded_texture_mailboxes),
       mre_manager_(std::move(mre_manager)),
-      ycbcr_helper_(std::move(ycbcr_helper)) {}
+      frame_info_helper_(std::move(frame_info_helper)) {}
 
 VideoFrameFactoryImpl::~VideoFrameFactoryImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -147,6 +147,9 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
   gfx::Size coded_size = output_buffer->size();
   gfx::Rect visible_rect(coded_size);
 
+  auto output_buffer_renderer = std::make_unique<CodecOutputBufferRenderer>(
+      std::move(output_buffer), codec_buffer_wait_coordinator_);
+
   // The pixel format doesn't matter here as long as it's valid for texture
   // frames. But SkiaRenderer wants to ensure that the format of the resource
   // used here which will eventually create a promise image must match the
@@ -165,21 +168,76 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
     return;
   }
 
-  // Update the current spec to match the size.
-  image_spec_.size = coded_size;
+  auto image_ready_cb =
+      base::BindOnce(&VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady,
+                     weak_factory_.GetWeakPtr(), std::move(output_cb),
+                     timestamp, natural_size, codec_buffer_wait_coordinator_,
+                     std::move(promotion_hint_cb), pixel_format, overlay_mode_,
+                     enable_threaded_texture_mailboxes_, gpu_task_runner_);
 
-  auto image_ready_cb = base::BindOnce(
-      &VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady,
-      weak_factory_.GetWeakPtr(), std::move(output_cb), timestamp, coded_size,
-      natural_size, std::move(output_buffer), codec_buffer_wait_coordinator_,
-      std::move(promotion_hint_cb), pixel_format, overlay_mode_,
-      enable_threaded_texture_mailboxes_, gpu_task_runner_);
+  RequestImage(std::move(output_buffer_renderer), std::move(image_ready_cb));
+}
 
-  image_provider_->RequestImage(
-      std::move(image_ready_cb), image_spec_,
-      codec_buffer_wait_coordinator_
-          ? codec_buffer_wait_coordinator_->texture_owner()
-          : nullptr);
+void VideoFrameFactoryImpl::RequestImage(
+    std::unique_ptr<CodecOutputBufferRenderer> buffer_renderer,
+    ImageWithInfoReadyCB image_ready_cb) {
+  if (buffer_renderer && visible_size_ == buffer_renderer->size()) {
+    auto cb = base::BindOnce(std::move(image_ready_cb),
+                             std::move(buffer_renderer), frame_info_);
+
+    image_provider_->RequestImage(
+        std::move(cb), image_spec_,
+        codec_buffer_wait_coordinator_
+            ? codec_buffer_wait_coordinator_->texture_owner()
+            : nullptr);
+    return;
+  }
+
+  // We need to reset size to make sure VFFI pipeline is still ordered.
+  // e.g: CreateVideoFrame is called with new size. We post task to GPU thread
+  // to get new frame info. While we wait CreateVideoFrame might be called with
+  // old size again and if we don't reset size here we will skip GPU hop and new
+  // frame will be created earlier than first one.
+  visible_size_ = gfx::Size();
+
+  auto info_cb = BindToCurrentLoop(
+      base::BindOnce(&VideoFrameFactoryImpl::CreateVideoFrame_OnFrameInfoReady,
+                     weak_factory_.GetWeakPtr(), std::move(image_ready_cb),
+                     codec_buffer_wait_coordinator_));
+
+  frame_info_helper_.Post(FROM_HERE, &FrameInfoHelper::GetFrameInfo,
+                          std::move(buffer_renderer), std::move(info_cb));
+}
+
+void VideoFrameFactoryImpl::CreateVideoFrame_OnFrameInfoReady(
+    ImageWithInfoReadyCB image_ready_cb,
+    scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator,
+    std::unique_ptr<CodecOutputBufferRenderer> output_buffer_renderer,
+    FrameInfoHelper::FrameInfo frame_info,
+    bool success) {
+  // To get frame info we need to render frame which might fail for variety of
+  // reason. FrameInfoHelper will provide best values we can proceed with, but
+  // we should not cache it and attempt to get info for next frame.
+  if (success) {
+    frame_info_ = frame_info;
+    visible_size_ = output_buffer_renderer->size();
+  }
+
+  // If we don't have output buffer here we can't rely on reply from
+  // FrameInfoHelper as there might be not cached value and we can't render
+  // nothing. But in this case call comes from RunAfterPendingVideoFrames and we
+  // just want to ask for the same image spec as before to order callback after
+  // all RequestImage, so skip updating image_spec_ in this case.
+  if (output_buffer_renderer)
+    image_spec_.size = frame_info.coded_size;
+
+  auto cb = base::BindOnce(std::move(image_ready_cb),
+                           std::move(output_buffer_renderer), frame_info);
+
+  auto texture_owner = codec_buffer_wait_coordinator
+                           ? codec_buffer_wait_coordinator->texture_owner()
+                           : nullptr;
+  image_provider_->RequestImage(std::move(cb), image_spec_, texture_owner);
 }
 
 // static
@@ -187,15 +245,15 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady(
     base::WeakPtr<VideoFrameFactoryImpl> thiz,
     OnceOutputCB output_cb,
     base::TimeDelta timestamp,
-    gfx::Size coded_size,
     gfx::Size natural_size,
-    std::unique_ptr<CodecOutputBuffer> output_buffer,
     scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator,
     PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
     VideoPixelFormat pixel_format,
     OverlayMode overlay_mode,
     bool enable_threaded_texture_mailboxes,
     scoped_refptr<base::SequencedTaskRunner> gpu_task_runner,
+    std::unique_ptr<CodecOutputBufferRenderer> output_buffer_renderer,
+    FrameInfoHelper::FrameInfo frame_info,
     SharedImageVideoProvider::ImageRecord record) {
   TRACE_EVENT0("media", "VideoVideoFrameFactoryImpl::OnVideoFrameImageReady");
 
@@ -210,7 +268,7 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady(
   // When we remove the output buffer management from CodecImage, then that's
   // what we'd have a reference to here rather than CodecImage.
   record.codec_image_holder->codec_image_raw()->Initialize(
-      std::move(output_buffer), codec_buffer_wait_coordinator,
+      std::move(output_buffer_renderer), codec_buffer_wait_coordinator,
       std::move(promotion_hint_cb));
 
   // Send the CodecImage (via holder, since we can't touch the refcount here) to
@@ -221,75 +279,16 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady(
   // record before we move it into |completion_cb|.
   auto codec_image_holder = std::move(record.codec_image_holder);
 
-  // Doesn't need to be weak-ptr'd, since we're either calling it inline, or
-  // calling it from the YCbCr callback which is, itself weak-ptr'd.
-  auto completion_cb = base::BindOnce(
-      &VideoFrameFactoryImpl::CreateVideoFrame_Finish, thiz,
-      std::move(output_cb), timestamp, coded_size, natural_size,
-      std::move(codec_buffer_wait_coordinator), pixel_format, overlay_mode,
-      enable_threaded_texture_mailboxes, std::move(record));
-
-  // TODO(liberato): Use |ycbcr_helper_| as a signal about whether we're
-  // supposed to get YCbCr info or not, rather than requiring the provider to
-  // tell us.  Note that right now, we do have the helper even if we don't
-  // need it.  See GpuMojoMediaClient.
-  if (!thiz->ycbcr_info_ && record.is_vulkan) {
-    // We need YCbCr info to create the frame.  Post back to the gpu thread to
-    // do it.  Note that we might post multiple times before succeeding once,
-    // both because of failures and because we might get multiple requests to
-    // create frames on the mcvd thread, before the gpu thread returns one ycbcr
-    // info to us.  Either way, it's fine, since the helper also caches the
-    // info locally.  It won't render more frames than needed.
-    auto ycbcr_cb = BindToCurrentLoop(base::BindOnce(
-        &VideoFrameFactoryImpl::CreateVideoFrame_OnYCbCrInfo,
-        thiz->weak_factory_.GetWeakPtr(), std::move(completion_cb)));
-    thiz->ycbcr_helper_.Post(FROM_HERE, &YCbCrHelper::GetYCbCrInfo,
-                             std::move(codec_image_holder),
-                             std::move(ycbcr_cb));
-    return;
-  }
-
-  std::move(completion_cb).Run();
-}
-
-void VideoFrameFactoryImpl::CreateVideoFrame_OnYCbCrInfo(
-    base::OnceClosure completion_cb,
-    YCbCrHelper::OptionalInfo ycbcr_info) {
-  ycbcr_info_ = std::move(ycbcr_info);
-  if (ycbcr_info_) {
-    // Clear the helper just to free it up, though we might continue to get
-    // callbacks from it if we've posted multiple requests.
-    //
-    // We only do this if we actually get the info; we should continue to ask
-    // if we don't.  This can happen if, for example, the frame failed to render
-    // due to a timeout.
-    ycbcr_helper_.Reset();
-  }
-  std::move(completion_cb).Run();
-}
-
-void VideoFrameFactoryImpl::CreateVideoFrame_Finish(
-    OnceOutputCB output_cb,
-    base::TimeDelta timestamp,
-    gfx::Size coded_size,
-    gfx::Size natural_size,
-    scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator,
-    VideoPixelFormat pixel_format,
-    OverlayMode overlay_mode,
-    bool enable_threaded_texture_mailboxes,
-    SharedImageVideoProvider::ImageRecord record) {
   gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
   mailbox_holders[0] = gpu::MailboxHolder(record.mailbox, gpu::SyncToken(),
                                           GL_TEXTURE_EXTERNAL_OES);
 
-  gfx::Rect visible_rect(coded_size);
-
   auto frame = VideoFrame::WrapNativeTextures(
-      pixel_format, mailbox_holders, VideoFrame::ReleaseMailboxCB(), coded_size,
-      visible_rect, natural_size, timestamp);
+      pixel_format, mailbox_holders, VideoFrame::ReleaseMailboxCB(),
+      frame_info.coded_size, frame_info.visible_rect, natural_size, timestamp);
 
   // For Vulkan.
-  frame->set_ycbcr_info(ycbcr_info_);
+  frame->set_ycbcr_info(frame_info.ycbcr_info);
 
   // If, for some reason, we failed to create a frame, then fail.  Note that we
   // don't need to call |release_cb|; dropping it is okay since the api says so.
@@ -370,17 +369,15 @@ void VideoFrameFactoryImpl::RunAfterPendingVideoFrames(
 
   auto image_ready_cb = base::BindOnce(
       [](base::OnceClosure closure,
+         std::unique_ptr<CodecOutputBufferRenderer> output_buffer_renderer,
+         FrameInfoHelper::FrameInfo frame_info,
          SharedImageVideoProvider::ImageRecord record) {
         // Ignore |record| since we don't actually need an image.
         std::move(closure).Run();
       },
       std::move(closure));
 
-  image_provider_->RequestImage(
-      std::move(image_ready_cb), image_spec_,
-      codec_buffer_wait_coordinator_
-          ? codec_buffer_wait_coordinator_->texture_owner()
-          : nullptr);
+  RequestImage(nullptr, std::move(image_ready_cb));
 }
 
 }  // namespace media

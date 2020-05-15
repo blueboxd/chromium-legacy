@@ -70,7 +70,7 @@ FakeServiceContext::assistant_notification_controller() {
   return assistant_notification_controller_;
 }
 
-ash::mojom::AssistantScreenContextController*
+ash::AssistantScreenContextController*
 FakeServiceContext::assistant_screen_context_controller() {
   NOTIMPLEMENTED();
   return nullptr;

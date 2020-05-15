@@ -32,6 +32,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import org.chromium.base.IntentUtils;
 import org.chromium.weblayer.Browser;
 import org.chromium.weblayer.ContextMenuParams;
 import org.chromium.weblayer.ErrorPageCallback;
@@ -42,6 +43,7 @@ import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.NewTabCallback;
 import org.chromium.weblayer.NewTabType;
 import org.chromium.weblayer.Profile;
+import org.chromium.weblayer.SiteSettingsActivity;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.TabCallback;
 import org.chromium.weblayer.TabListCallback;
@@ -56,6 +58,8 @@ import java.util.List;
  * Activity for managing the Demo Shell.
  */
 public class WebLayerShellActivity extends FragmentActivity {
+    private static final String PROFILE_NAME = "DefaultProfile";
+
     private static class ContextMenuCreator
             implements View.OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener {
         private static final int MENU_ID_COPY_LINK_URI = 1;
@@ -197,6 +201,13 @@ public class WebLayerShellActivity extends FragmentActivity {
                         mBottomView = null;
                     }
                     mBrowser.setBottomView(mBottomView);
+                    return true;
+                }
+
+                if (item.getItemId() == R.id.site_settings_menu_id) {
+                    Intent intent =
+                            SiteSettingsActivity.createIntentForCategoryList(this, PROFILE_NAME);
+                    IntentUtils.safeStartActivity(this, intent);
                     return true;
                 }
 
@@ -416,8 +427,7 @@ public class WebLayerShellActivity extends FragmentActivity {
             }
         }
 
-        String profileName = "DefaultProfile";
-        Fragment fragment = WebLayer.createBrowserFragment(profileName);
+        Fragment fragment = WebLayer.createBrowserFragment(PROFILE_NAME);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.add(mMainViewId, fragment);
 

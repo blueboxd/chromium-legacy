@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/switches.h"
@@ -30,6 +29,7 @@ GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
     std::unique_ptr<BufferQueue> buffer_queue)
     : GLOutputSurface(context_provider, surface_handle),
       buffer_queue_(std::move(buffer_queue)) {
+  capabilities_.only_invalidates_damage_rect = false;
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.output_surface_origin = gfx::SurfaceOrigin::kTopLeft;
   // Set |max_frames_pending| to 2 for buffer_queue, which aligns scheduling
@@ -40,13 +40,7 @@ GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
   // shifts the start of the new frame forward relative to the old
   // implementation.
   capabilities_.max_frames_pending = 2;
-  // GetCurrentFramebufferDamage will return an upper bound of the part of the
-  // buffer that needs to be recomposited.
-#if defined(OS_MACOSX)
-  capabilities_.supports_target_damage = false;
-#else
-  capabilities_.supports_target_damage = true;
-#endif
+
   // Force the number of max pending frames to one when the switch
   // "double-buffer-compositing" is passed.
   // This will keep compositing in double buffered mode assuming |buffer_queue_|

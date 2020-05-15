@@ -587,6 +587,8 @@ constexpr struct MappingData {
   GamepadId gamepad_id;
   GamepadStandardMappingFunction function;
 } AvailableMappings[] = {
+    // PowerA Wireless Controller - Nintendo GameCube style
+    {GamepadId::kPowerALicPro, MapperSwitchPro},
     // DragonRise Generic USB
     {GamepadId::kDragonRiseProduct0006, MapperDragonRiseGeneric},
     // Xbox 360 Wired

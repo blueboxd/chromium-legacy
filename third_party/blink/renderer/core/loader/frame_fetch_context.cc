@@ -364,9 +364,7 @@ void FrameFetchContext::PrepareRequest(
     ResourceType resource_type) {
   // TODO(yhirano): Clarify which statements are actually needed when
   // this is called during redirect.
-  const bool for_redirect =
-      (request.GetRedirectStatus() ==
-       ResourceRequest::RedirectStatus::kFollowedRedirect);
+  const bool for_redirect = request.GetRedirectInfo().has_value();
 
   SetFirstPartyCookie(request);
   if (request.GetRequestContext() ==
@@ -470,6 +468,10 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   const FeaturePolicy* policy =
       document_ ? document_->GetSecurityContext().GetFeaturePolicy() : nullptr;
 
+  url::Origin resource_origin =
+      SecurityOrigin::Create(request.Url())->ToUrlOrigin();
+  bool is_1p_origin = IsFirstPartyOrigin(request.Url());
+
   // Sec-CH-UA is special: we always send the header to all origins that are
   // eligible for client hints (e.g. secure transport, JavaScript enabled).
   //
@@ -480,28 +482,39 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   // them.
   base::Optional<UserAgentMetadata> ua = GetUserAgentMetadata();
   if (RuntimeEnabledFeatures::UserAgentClientHintEnabled() && ua.has_value()) {
-    request.SetHttpHeaderField(
-        blink::kClientHintsHeaderMapping[static_cast<size_t>(
-            network::mojom::blink::WebClientHintsType::kUA)],
-        ua->SerializeBrandVersionList().c_str());
+    // ShouldSendClientHint is called to make sure UA is controlled by
+    // FeaturePolicy.
+    if (ShouldSendClientHint(ClientHintsMode::kStandard, policy,
+                             resource_origin, is_1p_origin,
+                             network::mojom::blink::WebClientHintsType::kUA,
+                             hints_preferences, enabled_hints)) {
+      request.SetHttpHeaderField(
+          blink::kClientHintsHeaderMapping[static_cast<size_t>(
+              network::mojom::blink::WebClientHintsType::kUA)],
+          ua->SerializeBrandVersionList().c_str());
+    }
 
     // We also send Sec-CH-UA-Mobile to all hints. It is a one-bit header
     // identifying if the browser has opted for a "mobile" experience
     // Formatted using the "sh-boolean" format from:
     // https://httpwg.org/http-extensions/draft-ietf-httpbis-header-structure.html#boolean
-    request.SetHttpHeaderField(
-        blink::kClientHintsHeaderMapping[static_cast<size_t>(
-            network::mojom::blink::WebClientHintsType::kUAMobile)],
-        ua->mobile ? "?1" : "?0");
+    // ShouldSendClientHint is called to make sure it's controlled by
+    // FeaturePolicy.
+    if (ShouldSendClientHint(
+            ClientHintsMode::kStandard, policy, resource_origin, is_1p_origin,
+            network::mojom::blink::WebClientHintsType::kUAMobile,
+            hints_preferences, enabled_hints)) {
+      request.SetHttpHeaderField(
+          blink::kClientHintsHeaderMapping[static_cast<size_t>(
+              network::mojom::blink::WebClientHintsType::kUAMobile)],
+          ua->mobile ? "?1" : "?0");
+    }
   }
 
   // If the frame is detached, then don't send any hints other than UA.
   if (!policy)
     return;
 
-  url::Origin resource_origin =
-      SecurityOrigin::Create(request.Url())->ToUrlOrigin();
-  bool is_1p_origin = IsFirstPartyOrigin(request.Url());
 
   if (!RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
       !base::FeatureList::IsEnabled(features::kAllowClientHintsToThirdParty) &&
@@ -962,7 +975,8 @@ bool FrameFetchContext::ShouldSendClientHint(
   // normally (whether via headers of http-equiv), and |enabled_hints| are
   // previously persistent settings (which may include those from current
   // document if IPCs got through already).
-  return GetClientHintsPreferences().ShouldSend(type) ||
+  return IsClientHintSentByDefault(type) ||
+         GetClientHintsPreferences().ShouldSend(type) ||
          hints_preferences.ShouldSend(type) || enabled_hints.IsEnabled(type);
 }
 
@@ -1007,7 +1021,7 @@ bool FrameFetchContext::CalculateIfAdSubresource(
 
 bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
     const KURL& url,
-    ResourceRequest::RedirectStatus redirect_status,
+    const base::Optional<ResourceRequest::RedirectInfo>& redirect_info,
     ReportingDisposition reporting_disposition) const {
   if (!RuntimeEnabledFeatures::ConversionMeasurementEnabled())
     return false;
@@ -1018,11 +1032,8 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
   LocalFrame* frame = document_->GetFrame();
   DCHECK(frame);
   // Only register conversions pings that are redirects in the main frame.
-  // TODO(https://crbug.com/1042919): This should also validate that the
-  // redirect is same origin to ensure that the reporting domain has consented
-  // to the registration event.
-  if (!frame->IsMainFrame() ||
-      redirect_status != ResourceRequest::RedirectStatus::kFollowedRedirect) {
+  if (!frame->IsMainFrame() || !redirect_info ||
+      !SecurityOrigin::AreSameOrigin(url, redirect_info->previous_url)) {
     return false;
   }
 
@@ -1092,7 +1103,7 @@ base::Optional<ResourceRequestBlockedReason> FrameFetchContext::CanRequest(
     const KURL& url,
     const ResourceLoaderOptions& options,
     ReportingDisposition reporting_disposition,
-    ResourceRequest::RedirectStatus redirect_status) const {
+    const base::Optional<ResourceRequest::RedirectInfo>& redirect_info) const {
   if (!GetResourceFetcherProperties().IsDetached() &&
       document_->IsFreezingInProgress() && !resource_request.GetKeepalive()) {
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
@@ -1102,7 +1113,7 @@ base::Optional<ResourceRequestBlockedReason> FrameFetchContext::CanRequest(
     return ResourceRequestBlockedReason::kOther;
   }
   return BaseFetchContext::CanRequest(type, resource_request, url, options,
-                                      reporting_disposition, redirect_status);
+                                      reporting_disposition, redirect_info);
 }
 
 CoreProbeSink* FrameFetchContext::Probe() const {

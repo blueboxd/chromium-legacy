@@ -4626,6 +4626,9 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillDisabled) {
                               autocomplete_history_manager_.get()));
   autofill_manager_->SetAutofillProfileEnabled(false);
   autofill_manager_->SetAutofillCreditCardEnabled(false);
+  external_delegate_ = std::make_unique<TestAutofillExternalDelegate>(
+      autofill_manager_.get(), autofill_driver_.get(),
+      /*call_parent_methods=*/false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   // Set up our form data.
@@ -4652,6 +4655,9 @@ TEST_F(AutofillManagerTest,
                               autocomplete_history_manager_.get()));
   autofill_manager_->SetAutofillProfileEnabled(false);
   autofill_manager_->SetAutofillCreditCardEnabled(false);
+  external_delegate_ = std::make_unique<TestAutofillExternalDelegate>(
+      autofill_manager_.get(), autofill_driver_.get(),
+      /*call_parent_methods=*/false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   // Set up our form data.
@@ -4722,6 +4728,9 @@ TEST_F(AutofillManagerTest,
                               autocomplete_history_manager_.get()));
   autofill_manager_->SetAutofillProfileEnabled(false);
   autofill_manager_->SetAutofillCreditCardEnabled(false);
+  external_delegate_ = std::make_unique<TestAutofillExternalDelegate>(
+      autofill_manager_.get(), autofill_driver_.get(),
+      /*call_parent_methods=*/false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   // Set up our form data.
@@ -4750,6 +4759,9 @@ TEST_F(AutofillManagerTest,
                               autocomplete_history_manager_.get()));
   autofill_manager_->SetAutofillProfileEnabled(false);
   autofill_manager_->SetAutofillCreditCardEnabled(false);
+  external_delegate_ = std::make_unique<TestAutofillExternalDelegate>(
+      autofill_manager_.get(), autofill_driver_.get(),
+      /*call_parent_methods=*/false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   // Set up our form data.
@@ -4800,6 +4812,9 @@ TEST_F(AutofillManagerTest, AutocompleteOffRespectedForAutocomplete) {
                               autocomplete_history_manager_.get()));
   autofill_manager_->SetAutofillProfileEnabled(false);
   autofill_manager_->SetAutofillCreditCardEnabled(false);
+  external_delegate_ = std::make_unique<TestAutofillExternalDelegate>(
+      autofill_manager_.get(), autofill_driver_.get(),
+      /*call_parent_methods=*/false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   EXPECT_CALL(*(autocomplete_history_manager_.get()),

@@ -13,6 +13,7 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/p256_public_key.h"
+#include "device/fido/ed25519_public_key.h"
 #include "device/fido/public_key.h"
 #include "device/fido/rsa_public_key.h"
 
@@ -95,15 +96,17 @@ AttestedCredentialData::ConsumeFromCtapResponse(
 
   if (public_key_type->second.is_unsigned()) {
     const int64_t key_type = public_key_type->second.GetUnsigned();
-    if (key_type == static_cast<int64_t>(CoseKeyTypes::kEC2)) {
+    if (key_type == static_cast<int64_t>(CoseKeyTypes::kEC2) ||
+        key_type == static_cast<int64_t>(CoseKeyTypes::kOKP)) {
       auto curve = public_key_map.find(
           cbor::Value(static_cast<int64_t>(CoseKeyKey::kEllipticCurve)));
       if (curve == public_key_map.end() || !curve->second.is_integer()) {
         return base::nullopt;
       }
+      const int64_t curve_id = curve->second.GetInteger();
 
-      if (curve->second.GetInteger() ==
-          static_cast<int64_t>(CoseCurves::kP256)) {
+      if (key_type == static_cast<int64_t>(CoseKeyTypes::kEC2) &&
+          curve_id == static_cast<int64_t>(CoseCurves::kP256)) {
         auto p256_key = P256PublicKey::ExtractFromCOSEKey(
             algorithm, public_key_cbor_bytes, public_key_map);
         if (!p256_key) {
@@ -111,6 +114,15 @@ AttestedCredentialData::ConsumeFromCtapResponse(
           return base::nullopt;
         }
         public_key = std::move(p256_key);
+      } else if (key_type == static_cast<int64_t>(CoseKeyTypes::kOKP) &&
+                 curve_id == static_cast<int64_t>(CoseCurves::kEd25519)) {
+        auto ed25519_key = Ed25519PublicKey::ExtractFromCOSEKey(
+            algorithm, public_key_cbor_bytes, public_key_map);
+        if (!ed25519_key) {
+          FIDO_LOG(ERROR) << "Invalid Ed25519 public key";
+          return base::nullopt;
+        }
+        public_key = std::move(ed25519_key);
       }
     } else if (key_type == static_cast<int64_t>(CoseKeyTypes::kRSA)) {
       auto rsa_key = RSAPublicKey::ExtractFromCOSEKey(

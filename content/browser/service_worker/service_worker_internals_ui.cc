@@ -159,9 +159,9 @@ void UpdateVersionInfo(const ServiceWorkerVersionInfo& version,
   for (auto& it : version.clients) {
     auto client = DictionaryValue();
     client.SetStringPath("client_id", it.first);
-    if (it.second.type == blink::mojom::ServiceWorkerClientType::kWindow) {
+    if (it.second.type() == blink::mojom::ServiceWorkerClientType::kWindow) {
       WebContents* web_contents =
-          WebContents::FromFrameTreeNodeId(it.second.frame_tree_node_id);
+          WebContents::FromFrameTreeNodeId(it.second.GetFrameTreeNodeId());
       if (web_contents)
         client.SetStringPath("url", web_contents->GetURL().spec());
     }

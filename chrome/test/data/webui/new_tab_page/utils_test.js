@@ -10,19 +10,20 @@ import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageUtilsTest', () => {
   test('Can convert simple SkColors to rgba strings', () => {
-    assertEquals(skColorToRgba({value: 0xffff0000}), 'rgba(255, 0, 0, 255)');
-    assertEquals(skColorToRgba({value: 0xff00ff00}), 'rgba(0, 255, 0, 255)');
-    assertEquals(skColorToRgba({value: 0xff0000ff}), 'rgba(0, 0, 255, 255)');
+    assertEquals(skColorToRgba({value: 0xffff0000}), 'rgba(255, 0, 0, 1.00)');
+    assertEquals(skColorToRgba({value: 0xff00ff00}), 'rgba(0, 255, 0, 1.00)');
+    assertEquals(skColorToRgba({value: 0xff0000ff}), 'rgba(0, 0, 255, 1.00)');
     assertEquals(
-        skColorToRgba({value: 0xffffffff}), 'rgba(255, 255, 255, 255)');
-    assertEquals(skColorToRgba({value: 0xff000000}), 'rgba(0, 0, 0, 255)');
+        skColorToRgba({value: 0xffffffff}), 'rgba(255, 255, 255, 1.00)');
+    assertEquals(skColorToRgba({value: 0xff000000}), 'rgba(0, 0, 0, 1.00)');
   });
 
   test('Can convert complex SkColors to rgba strings', () => {
-    assertEquals(skColorToRgba({value: 0xc2a11f8f}), 'rgba(161, 31, 143, 194)');
-    assertEquals(skColorToRgba({value: 0xf02b6335}), 'rgba(43, 99, 53, 240)');
     assertEquals(
-        skColorToRgba({value: 0x8ae3d2c1}), 'rgba(227, 210, 193, 138)');
+        skColorToRgba({value: 0xC0a11f8f}), 'rgba(161, 31, 143, 0.75)');
+    assertEquals(skColorToRgba({value: 0x802b6335}), 'rgba(43, 99, 53, 0.50)');
+    assertEquals(
+        skColorToRgba({value: 0x40e3d2c1}), 'rgba(227, 210, 193, 0.25)');
   });
 
   test('Can convert simple hex strings to SkColors', () => {

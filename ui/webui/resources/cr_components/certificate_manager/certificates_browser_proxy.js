@@ -8,7 +8,7 @@
  */
 
 // clang-format off
-import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {addSingletonGetter, sendWithPromise} from '../../js/cr.m.js';
 // clang-format on
 
 /**

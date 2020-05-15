@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/assistant/controller/assistant_screen_context_controller.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
@@ -307,8 +308,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   ash::mojom::AssistantAlarmTimerController* assistant_alarm_timer_controller();
   ash::mojom::AssistantNotificationController*
   assistant_notification_controller();
-  ash::mojom::AssistantScreenContextController*
-  assistant_screen_context_controller();
+  ash::AssistantScreenContextController* assistant_screen_context_controller();
   ash::AssistantStateBase* assistant_state();
   DeviceActions* device_actions();
   scoped_refptr<base::SequencedTaskRunner> main_task_runner();

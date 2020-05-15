@@ -1264,7 +1264,7 @@ TEST_P(RenderFrameHostManagerTest, DisownOpener) {
   EXPECT_NE(site_instance1, rfh2->GetSiteInstance());
 
   // Disown the opener from rfh2.
-  rfh2->DidChangeOpener(MSG_ROUTING_NONE);
+  rfh2->SimulateDidChangeOpener(base::UnguessableToken());
 
   // Ensure the opener is cleared.
   EXPECT_FALSE(contents()->HasOpener());
@@ -1285,7 +1285,7 @@ TEST_P(RenderFrameHostManagerTest, DisownSameSiteOpener) {
   EXPECT_TRUE(contents()->HasOpener());
 
   // Disown the opener from rfh1.
-  rfh1->DidChangeOpener(MSG_ROUTING_NONE);
+  rfh1->SimulateDidChangeOpener(base::UnguessableToken());
 
   // Ensure the opener is cleared even if it is in the same process.
   EXPECT_FALSE(contents()->HasOpener());
@@ -1321,7 +1321,7 @@ TEST_P(RenderFrameHostManagerTest, DisownOpenerDuringNavigation) {
   contents()->GetMainFrame()->PrepareForCommit();
 
   // Disown the opener from rfh2.
-  rfh2->DidChangeOpener(MSG_ROUTING_NONE);
+  rfh2->SimulateDidChangeOpener(base::UnguessableToken());
 
   // Ensure the opener is cleared.
   EXPECT_FALSE(contents()->HasOpener());
@@ -1370,7 +1370,7 @@ TEST_P(RenderFrameHostManagerTest, DisownOpenerAfterNavigation) {
       entry1->GetTransitionType());
 
   // Disown the opener from rfh2.
-  rfh2->DidChangeOpener(MSG_ROUTING_NONE);
+  rfh2->SimulateDidChangeOpener(base::UnguessableToken());
   EXPECT_FALSE(contents()->HasOpener());
 }
 

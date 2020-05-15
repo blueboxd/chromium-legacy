@@ -19886,6 +19886,13 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SharingQRCode.DialogLaunched">
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    User launched the QR Generator dialog (desktop platforms).
+  </description>
+</action>
+
 <action name="SharingQRCode.DownloadQRCode">
   <owner>tgupta@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>
@@ -19916,6 +19923,13 @@ should be able to be added at any place in this file.
   <description>
     User attempted to download a QR code from the share hub generator two or
     more times.
+  </description>
+</action>
+
+<action name="SharingQRCode.EditTextField">
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    User edited the text field for a QR code URL (desktop platforms).
   </description>
 </action>
 
@@ -23152,6 +23166,39 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SupervisedUsers_Extensions_ExtensionInstallDialog_AskedParent">
+  <owner>tobyhuang@chromium.org</owner>
+  <owner>agawronska@chromium.org</owner>
+  <owner>danan@chromium.org</owner>
+  <owner>cros-families@google.com</owner>
+  <description>
+    Emitted when a supervised user clicks &quot;Ask a parent&quot; on the
+    Extension Install Dialog.
+  </description>
+</action>
+
+<action name="SupervisedUsers_Extensions_ExtensionInstallDialog_ChildCanceled">
+  <owner>tobyhuang@chromium.org</owner>
+  <owner>agawronska@chromium.org</owner>
+  <owner>danan@chromium.org</owner>
+  <owner>cros-families@google.com</owner>
+  <description>
+    Emitted when a supervised user clicks &quot;Cancel&quot; on the Extension
+    Install Dialog.
+  </description>
+</action>
+
+<action name="SupervisedUsers_Extensions_ExtensionInstallDialog_Opened">
+  <owner>tobyhuang@chromium.org</owner>
+  <owner>agawronska@chromium.org</owner>
+  <owner>danan@chromium.org</owner>
+  <owner>cros-families@google.com</owner>
+  <description>
+    Emitted when a supervised user tries to install an extension from the Chrome
+    Web Store and opens the Extension Install Dialog.
+  </description>
+</action>
+
 <action name="SupervisedUsers_Extensions_NewExtensionApprovalGranted">
   <obsolete>Renamed to SupervisedUsers_Extensions_ApprovalGranted.</obsolete>
   <owner>tobyhuang@chromium.org</owner>
@@ -23175,6 +23222,39 @@ should be able to be added at any place in this file.
   <description>
     Emitted when the supervised user approves a new version of an existing
     extension.
+  </description>
+</action>
+
+<action name="SupervisedUsers_Extensions_ParentPermissionDialog_Opened">
+  <owner>tobyhuang@chromium.org</owner>
+  <owner>agawronska@chromium.org</owner>
+  <owner>danan@chromium.org</owner>
+  <owner>cros-families@google.com</owner>
+  <description>
+    Emitted when a supervised user tries to enable an extension that requires
+    parent approval, and opens the Parent Permission Dialog.
+  </description>
+</action>
+
+<action name="SupervisedUsers_Extensions_ParentPermissionDialog_ParentApproved">
+  <owner>tobyhuang@chromium.org</owner>
+  <owner>agawronska@chromium.org</owner>
+  <owner>danan@chromium.org</owner>
+  <owner>cros-families@google.com</owner>
+  <description>
+    Emitted when a parent successfully types their password and approves the
+    extension on the Parent Permission Dialog.
+  </description>
+</action>
+
+<action name="SupervisedUsers_Extensions_ParentPermissionDialog_ParentCanceled">
+  <owner>tobyhuang@chromium.org</owner>
+  <owner>agawronska@chromium.org</owner>
+  <owner>danan@chromium.org</owner>
+  <owner>cros-families@google.com</owner>
+  <description>
+    Emitted when a parent cancels the Parent Permission Dialog, denying the
+    supervised user's attempt to enable an extension.
   </description>
 </action>
 
@@ -23844,6 +23924,21 @@ should be able to be added at any place in this file.
   <description>
     The tab close suggestions were not considered at all by the user by
     dismissing the snackbar indicating tab suggestions are available.
+  </description>
+</action>
+
+<action name="TabStrip">
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>User actions about conditional tab strip.</description>
+</action>
+
+<action name="TabStrip.SessionVisibility">
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>
+    Records the visibility of conditional tab strip when Chrome on Android shows
+    in the foreground.
   </description>
 </action>
 
@@ -25331,6 +25426,16 @@ should be able to be added at any place in this file.
 </action-suffix>
 
 <action-suffix separator="." ordering="suffix">
+  <suffix name="Hidden"
+      label="The conditional tab strip is hidden when Chrome is brought to
+             foreground."/>
+  <suffix name="Visible"
+      label="The conditional tab strip is visible when Chrome is brought to
+             foreground."/>
+  <affected-action name="TabStrip.SessionVisibility"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
   <suffix name="NewTabTile"
       label="Users tapped the new tab tile in GridTabSwitcher, causing a new
              tab to be created."/>
@@ -25430,6 +25535,19 @@ should be able to be added at any place in this file.
       label="Users long tap on a tab to trigger dragging in tab group bottom
              sheet."/>
   <affected-action name="TabGrid.Drag"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="ShownOnTabUse"
+      label="The conditional tab strip shows when user did some intentional
+             tab-related interaction."/>
+  <suffix name="UndoDismiss"
+      label="After the tab strip is dismissed, users clicked on the undo
+             button in the snackbar to undo the dismissal."/>
+  <suffix name="UserDismissed"
+      label="Users clicked on the left button in conditional tab strip to
+             dismiss the strip in current session"/>
+  <affected-action name="TabStrip"/>
 </action-suffix>
 
 <action-suffix separator="." ordering="suffix">

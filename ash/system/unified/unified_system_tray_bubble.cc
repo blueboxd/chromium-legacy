@@ -338,6 +338,9 @@ void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
 }
 
 void UnifiedSystemTrayBubble::RecordTimeToClick() {
+  tray_->MaybeRecordFirstInteraction(
+      UnifiedSystemTray::FirstInteractionType::kQuickSettings);
+
   // Ignore if the tray bubble is not opened by click.
   if (!time_shown_by_click_)
     return;

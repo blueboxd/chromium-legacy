@@ -1,3 +1,7 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 load('//lib/builders.star', 'builder_name', 'cpu', 'goma', 'os')
 load('//lib/ci.star', 'ci')
 load('//project.star', 'settings')
@@ -5,12 +9,253 @@ load('//project.star', 'settings')
 
 ci.set_defaults(
     settings,
-    bucketed_triggers = True,
+    add_to_console_view = True,
+    bucketed_triggers = settings.is_master,
     main_console_view = settings.main_console_name,
 )
 
 ci.declare_bucket(settings)
 
+
+# Automatically maintained consoles
+
+ci.console_view(
+    name = 'chromium',
+    include_experimental_builds = True,
+    ordering = {},
+)
+
+ci.console_view(
+    name = 'chromium.android',
+    ordering = {
+        None: ['cronet', 'builder', 'tester'],
+        '*cpu*': ['arm', 'arm64', 'x86'],
+        'cronet': '*cpu*',
+        'builder': '*cpu*',
+        'builder|det': ci.ordering(short_names=['rel', 'dbg']),
+        'tester': ['phone', 'tablet'],
+        'builder_tester|arm64': ci.ordering(short_names=['M proguard']),
+    },
+)
+
+ci.console_view(
+    name = 'chromium.android.fyi',
+    ordering = {
+        None: ['android', 'memory', 'weblayer', 'webview'],
+    },
+)
+
+ci.console_view(
+    name = 'chromium.chromiumos',
+    ordering = {
+        None: ['default'],
+        'default': ci.ordering(short_names=['ful', 'rel']),
+        'simple': ['release', 'debug'],
+    },
+)
+
+ci.console_view(
+    name = 'chromium.clang',
+    ordering = {
+        None: [
+            'ToT Linux',
+            'ToT Android',
+            'ToT Mac',
+            'ToT Windows',
+            'ToT Code Coverage',
+        ],
+        'ToT Linux': ci.ordering(
+            short_names=['rel', 'ofi', 'dbg', 'asn', 'fuz', 'msn', 'tsn'],
+        ),
+        'ToT Android': ci.ordering(short_names=['rel', 'dbg', 'x64']),
+        'ToT Mac': ci.ordering(short_names=['rel', 'ofi', 'dbg']),
+        'ToT Windows': ci.ordering(
+            short_names=['rel', 'ofi'],
+            categories=['x64'],
+        ),
+        'ToT Windows|x64': ci.ordering(short_names=['rel']),
+        'CFI|Win': ci.ordering(short_names=['x86', 'x64']),
+        'iOS': ['public'],
+        'iOS|public': ci.ordering(short_names=['sim', 'dev']),
+    },
+)
+
+ci.console_view(
+    name = 'chromium.dawn',
+    ordering = {
+        None: ['ToT'],
+        '*builder*': ['Builder'],
+        '*cpu*': ci.ordering(short_names=['x86']),
+        'ToT|Mac': '*builder*',
+        'ToT|Windows|Builder': '*cpu*',
+        'ToT|Windows|Intel': '*cpu*',
+        'ToT|Windows|Nvidia': '*cpu*',
+        'DEPS|Mac': '*builder*',
+        'DEPS|Windows|Builder': '*cpu*',
+        'DEPS|Windows|Intel': '*cpu*',
+        'DEPS|Windows|Nvidia': '*cpu*',
+    },
+)
+
+ci.console_view(
+    name = 'chromium.fyi',
+    ordering = {
+        None: [
+            'closure_compilation',
+            'code_coverage',
+            'cronet',
+            'mac',
+            'deterministic',
+            'fuchsia',
+            'chromeos',
+            'iOS',
+            'linux',
+            'mojo',
+            'recipe',
+            'remote_run',
+            'site_isolation',
+            'network',
+            'viz',
+            'win10',
+            'win32',
+        ],
+        'code_coverage': ci.ordering(
+            short_names=['and', 'ann', 'lnx', 'lcr', 'mac']
+        ),
+        'mac': ci.ordering(short_names=['bld', '15', 'herm']),
+        'deterministic|mac': ci.ordering(short_names=['rel', 'dbg']),
+        'iOS|iOS13': ci.ordering(short_names=['dev', 'sim']),
+        'linux|blink': ci.ordering(short_names=['TD']),
+    },
+)
+
+ci.console_view(
+    name ='chromium.fuzz',
+    ordering = {
+        None: [
+            'afl',
+            'win asan',
+            'mac asan',
+            'cros asan',
+            'linux asan',
+            'libfuzz',
+            'linux msan',
+            'linux tsan',
+        ],
+        '*config*': ci.ordering(short_names=['dbg', 'rel']),
+        'win asan': '*config*',
+        'mac asan': '*config*',
+        'linux asan': '*config*',
+        'linux asan|x64 v8-ARM': '*config*',
+        'libfuzz': ci.ordering(short_names=[
+            'chromeos-asan',
+            'linux32',
+            'linux32-dbg',
+            'linux',
+            'linux-dbg',
+            'linux-msan',
+            'linux-ubsan',
+            'mac-asan',
+            'win-asan',
+        ]),
+    },
+)
+
+ci.console_view(
+    name = 'chromium.gpu',
+    ordering = {
+        None: ['Windows', 'Mac', 'Linux'],
+    },
+)
+
+ci.console_view(
+    name = 'chromium.gpu.fyi',
+    ordering = {
+        None: ['Windows', 'Mac', 'Linux'],
+        '*builder*': ['Builder'],
+        '*type*': ci.ordering(short_names=['rel', 'dbg', 'exp']),
+        '*cpu*': ci.ordering(short_names=['x86']),
+        'Windows': '*builder*',
+        'Windows|Builder': ['Release', 'dEQP', 'dx12vk', 'Debug'],
+        'Windows|Builder|Release': '*cpu*',
+        'Windows|Builder|dEQP': '*cpu*',
+        'Windows|Builder|dx12vk': '*type*',
+        'Windows|Builder|Debug': '*cpu*',
+        'Windows|10|x64|Intel': '*type*',
+        'Windows|10|x64|Nvidia': '*type*',
+        'Windows|10|x86|Nvidia': '*type*',
+        'Windows|7|x64|Nvidia': '*type*',
+        'Mac': '*builder*',
+        'Mac|Builder': '*type*',
+        'Mac|AMD|Retina': '*type*',
+        'Mac|Intel': '*type*',
+        'Mac|Nvidia': '*type*',
+        'Linux': '*builder*',
+        'Linux|Builder': '*type*',
+        'Linux|Intel': '*type*',
+        'Linux|Nvidia': '*type*',
+        'Android': ['L32', 'M64', 'N64', 'P32', 'vk', 'dqp', 'skgl', 'skv'],
+        'Android|M64': ['QCOM'],
+    },
+)
+
+ci.console_view(
+    name = 'chromium.linux',
+    ordering = {
+        None: ['release', 'debug'],
+        'release': ci.ordering(short_names=['bld', 'tst', 'nsl', 'gcc']),
+        'cast': ci.ordering(short_names=['vid', 'aud']),
+    },
+)
+
+ci.console_view(
+    name = 'chromium.mac',
+    ordering = {
+        None: ['release'],
+        'release': ci.ordering(short_names=['bld']),
+        'debug': ci.ordering(short_names=['bld']),
+        'ios|default': ci.ordering(short_names=['dev', 'sim']),
+    },
+)
+
+ci.console_view(
+    name = 'chromium.memory',
+    ordering = {
+        None: ['win', 'mac', 'linux', 'cros'],
+        '*build-or-test*': ci.ordering(short_names=['bld', 'tst']),
+        'linux|TSan v2': '*build-or-test*',
+        'linux|asan lsan': '*build-or-test*',
+        'linux|webkit': ci.ordering(short_names=['asn', 'msn']),
+    },
+)
+
+ci.console_view(
+    name = 'chromium.swangle',
+    ordering = {
+        None: ['DEPS', 'ToT ANGLE', 'ToT SwiftShader'],
+        '*os*': ['Windows', 'Mac'],
+        '*cpu*': ci.ordering(short_names=['x86', 'x64']),
+        'DEPS': '*os*',
+        'DEPS|Windows': '*cpu*',
+        'DEPS|Linux': '*cpu*',
+        'ToT ANGLE': '*os*',
+        'ToT ANGLE|Windows': '*cpu*',
+        'ToT ANGLE|Linux': '*cpu*',
+        'ToT SwiftShader': '*os*',
+        'ToT SwiftShader|Windows': '*cpu*',
+        'ToT SwiftShader|Linux': '*cpu*',
+        'Chromium': '*os*',
+    },
+)
+
+ci.console_view(
+    name = 'chromium.win',
+    ordering = {
+        None: ['release', 'debug'],
+        'debug|builder': ci.ordering(short_names=['64', '32']),
+        'debug|tester': ci.ordering(short_names=['7', '10']),
+    },
+)
 
 # Builders are sorted first lexicographically by the function used to define
 # them, then lexicographically by their name

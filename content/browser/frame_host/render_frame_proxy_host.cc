@@ -200,7 +200,6 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(FrameHostMsg_RouteMessageEvent, OnRouteMessageEvent)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeOpener, OnDidChangeOpener)
     IPC_MESSAGE_HANDLER(FrameHostMsg_AdvanceFocus, OnAdvanceFocus)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PrintCrossProcessSubframe,
                         OnPrintCrossProcessSubframe)
@@ -627,11 +626,6 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
                                target_origin, std::move(message));
 }
 
-void RenderFrameProxyHost::OnDidChangeOpener(int32_t opener_routing_id) {
-  frame_tree_node_->render_manager()->DidChangeOpener(opener_routing_id,
-                                                      GetSiteInstance());
-}
-
 void RenderFrameProxyHost::OnAdvanceFocus(blink::mojom::FocusType type,
                                           int32_t source_routing_id) {
   RenderFrameHostImpl* target_rfh =
@@ -684,6 +678,12 @@ void RenderFrameProxyHost::CapturePaintPreviewOfCrossProcessSubframe(
 
 void RenderFrameProxyHost::SetIsInert(bool inert) {
   cross_process_frame_connector_->SetIsInert(inert);
+}
+
+void RenderFrameProxyHost::DidChangeOpener(
+    const base::Optional<base::UnguessableToken>& opener_frame_token) {
+  frame_tree_node_->render_manager()->DidChangeOpener(
+      opener_frame_token.value_or(base::UnguessableToken()), GetSiteInstance());
 }
 
 bool RenderFrameProxyHost::IsInertForTesting() {

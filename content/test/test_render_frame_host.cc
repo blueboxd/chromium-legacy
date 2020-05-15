@@ -357,8 +357,9 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
                   mojo::NullRemote());
 }
 
-void TestRenderFrameHost::DidChangeOpener(int opener_routing_id) {
-  OnDidChangeOpener(opener_routing_id);
+void TestRenderFrameHost::SimulateDidChangeOpener(
+    const base::UnguessableToken& opener_frame_token) {
+  DidChangeOpener(opener_frame_token);
 }
 
 void TestRenderFrameHost::DidEnforceInsecureRequestPolicy(

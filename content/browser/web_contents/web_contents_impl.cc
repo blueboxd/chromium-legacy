@@ -4642,13 +4642,12 @@ void WebContentsImpl::PassiveInsecureContentFound(const GURL& resource_url) {
 }
 
 bool WebContentsImpl::ShouldAllowRunningInsecureContent(
-    WebContents* web_contents,
     bool allowed_per_prefs,
     const url::Origin& origin,
     const GURL& resource_url) {
   if (delegate_) {
-    return delegate_->ShouldAllowRunningInsecureContent(
-        web_contents, allowed_per_prefs, origin, resource_url);
+    return delegate_->ShouldAllowRunningInsecureContent(this, allowed_per_prefs,
+                                                        origin, resource_url);
   }
 
   return allowed_per_prefs;
@@ -7202,6 +7201,12 @@ void WebContentsImpl::AudioContextPlaybackStopped(RenderFrameHost* host,
   WebContentsObserver::AudioContextId audio_context_id(host, context_id);
   for (auto& observer : observers_)
     observer.AudioContextPlaybackStopped(audio_context_id);
+}
+
+void WebContentsImpl::OnFrameAudioStateChanged(RenderFrameHost* host,
+                                               bool is_audible) {
+  for (auto& observer : observers_)
+    observer.OnFrameAudioStateChanged(host, is_audible);
 }
 
 media::MediaMetricsProvider::RecordAggregateWatchTimeCallback

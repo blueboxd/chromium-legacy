@@ -59,7 +59,7 @@ class CustomizeBackgroundsElement extends PolymerElement {
       /** @private {!Array<!newTabPage.mojom.BackgroundCollection>} */
       collections_: Array,
 
-      /** @private {!Array<!newTabPage.mojom.BackgroundImage>} */
+      /** @private {!Array<!newTabPage.mojom.CollectionImage>} */
       images_: Array,
     };
   }
@@ -91,8 +91,8 @@ class CustomizeBackgroundsElement extends PolymerElement {
   getCustomBackgroundClass_() {
     switch (this.backgroundSelection.type) {
       case BackgroundSelectionType.NO_SELECTION:
-        return this.theme && this.theme.backgroundImageUrl &&
-                this.theme.backgroundImageUrl.url.startsWith(
+        return this.theme && this.theme.backgroundImage &&
+                this.theme.backgroundImage.url.url.startsWith(
                     'chrome-untrusted://new-tab-page/background.jpg') ?
             'selected' :
             '';
@@ -110,7 +110,7 @@ class CustomizeBackgroundsElement extends PolymerElement {
       case BackgroundSelectionType.NO_BACKGROUND:
         return 'selected';
       case BackgroundSelectionType.NO_SELECTION:
-        return this.theme && !this.theme.backgroundImageUrl &&
+        return this.theme && !this.theme.backgroundImage &&
                 !this.theme.dailyRefreshCollectionId ?
             'selected' :
             '';
@@ -134,8 +134,8 @@ class CustomizeBackgroundsElement extends PolymerElement {
             'selected' :
             '';
       case BackgroundSelectionType.NO_SELECTION:
-        return this.theme && this.theme.backgroundImageUrl &&
-                this.theme.backgroundImageUrl.url === url &&
+        return this.theme && this.theme.backgroundImage &&
+                this.theme.backgroundImage.url.url === url &&
                 !this.theme.dailyRefreshCollectionId ?
             'selected' :
             '';

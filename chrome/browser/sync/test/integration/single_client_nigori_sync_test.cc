@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -782,6 +783,80 @@ IN_PROC_BROWSER_TEST_F(
       kTrustedVaultKeyParams.derivation_params, GetFakeServer());
 
   EXPECT_TRUE(PasswordFormsChecker(0, {password_form1, password_form2}).Wait());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SingleClientNigoriWithWebApiTest,
+    ShoudRecordTrustedVaultErrorShownOnStartupWhenErrorShown) {
+  const std::vector<uint8_t> kTestEncryptionKey = {1, 2, 3, 4};
+
+  // Mimic the account being already using a trusted vault passphrase.
+  SetNigoriInFakeServer(BuildTrustedVaultNigoriSpecifics({kTestEncryptionKey}),
+                        GetFakeServer());
+
+  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(GetSyncService(0)
+                  ->GetUserSettings()
+                  ->IsTrustedVaultKeyRequiredForPreferredDataTypes());
+  ASSERT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
+  ASSERT_TRUE(sync_ui_util::ShouldShowSyncKeysMissingError(GetSyncService(0)));
+
+  histogram_tester.ExpectUniqueSample("Sync.TrustedVaultErrorShownOnStartup",
+                                      /*sample=*/1, /*expected_count=*/1);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SingleClientNigoriWithWebApiTest,
+    PRE_ShoudRecordTrustedVaultErrorShownOnStartupWhenErrorNotShown) {
+  const std::vector<uint8_t> kTestEncryptionKey = {1, 2, 3, 4};
+  const GURL retrieval_url =
+      GetTrustedVaultRetrievalURL(*embedded_test_server(), kTestEncryptionKey);
+
+  ASSERT_TRUE(SetupClients());
+
+  // There needs to be an existing tab for the second tab (the retrieval flow)
+  // to be closeable via javascript.
+  chrome::AddTabAt(GetBrowser(0), GURL(url::kAboutBlankURL), /*index=*/0,
+                   /*foreground=*/true);
+
+  TrustedVaultKeysChangedStateChecker keys_fetched_checker(GetSyncService(0));
+  // Mimic opening a web page where the user can interact with the retrieval
+  // flow, while the user is signed out.
+  sync_ui_util::OpenTabForSyncKeyRetrievalWithURLForTesting(GetBrowser(0),
+                                                            retrieval_url);
+  ASSERT_THAT(GetBrowser(0)->tab_strip_model()->GetActiveWebContents(),
+              NotNull());
+
+  // Wait until the page closes, which indicates successful completion.
+  ASSERT_TRUE(
+      TabClosedChecker(GetBrowser(0)->tab_strip_model()->GetActiveWebContents())
+          .Wait());
+  ASSERT_TRUE(keys_fetched_checker.Wait());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SingleClientNigoriWithWebApiTest,
+    ShoudRecordTrustedVaultErrorShownOnStartupWhenErrorNotShown) {
+  const std::vector<uint8_t> kTestEncryptionKey = {1, 2, 3, 4};
+
+  const GURL retrieval_url =
+      GetTrustedVaultRetrievalURL(*embedded_test_server(), kTestEncryptionKey);
+
+  // Mimic the account being already using a trusted vault passphrase.
+  SetNigoriInFakeServer(BuildTrustedVaultNigoriSpecifics({kTestEncryptionKey}),
+                        GetFakeServer());
+
+  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(SetupSync());
+  ASSERT_FALSE(GetSyncService(0)
+                   ->GetUserSettings()
+                   ->IsTrustedVaultKeyRequiredForPreferredDataTypes());
+  ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
+  ASSERT_FALSE(sync_ui_util::ShouldShowSyncKeysMissingError(GetSyncService(0)));
+
+  histogram_tester.ExpectUniqueSample("Sync.TrustedVaultErrorShownOnStartup",
+                                      /*sample=*/0, /*expected_count=*/1);
 }
 
 // Same as SingleClientNigoriWithWebApiTest but does NOT override

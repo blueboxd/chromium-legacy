@@ -5,7 +5,6 @@
 #ifndef MEDIA_BASE_MEDIA_OBSERVER_H_
 #define MEDIA_BASE_MEDIA_OBSERVER_H_
 
-#include "media/base/cdm_context.h"
 #include "media/base/pipeline_metadata.h"
 #include "url/gurl.h"
 

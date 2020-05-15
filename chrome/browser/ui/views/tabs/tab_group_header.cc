@@ -7,10 +7,12 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_group_editor_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/tab_group_underline.h"
@@ -152,10 +154,19 @@ bool TabGroupHeader::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 void TabGroupHeader::OnMouseReleased(const ui::MouseEvent& event) {
-  if (!dragging() && !editor_bubble_tracker_.is_open()) {
+  if (base::FeatureList::IsEnabled(features::kTabGroupsCollapse)) {
+    // The collapse feature changes the left click behavior from showing the
+    // editor bubble to toggling the collapsed state of the group.
+    if (event.IsLeftMouseButton() && !dragging())
+      tab_strip_->controller()->ToggleTabGroupCollapsedState(group().value());
+  } else if (!dragging() && !editor_bubble_tracker_.is_open()) {
+    // (TODO): Delete this else statement once collapse launches since
+    // ShowContextMenuForViewImpl() will handle spawning the bubble on right
+    // clicks.
     editor_bubble_tracker_.Opened(TabGroupEditorBubbleView::Show(
         tab_strip_->controller()->GetBrowser(), group().value(), this));
   }
+
   tab_strip_->EndDrag(END_DRAG_COMPLETE);
 }
 

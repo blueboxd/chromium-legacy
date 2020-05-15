@@ -349,7 +349,6 @@ crbug.com/1047818 [ Linux ] external/wpt/input-events/idlharness.window.html [ S
 crbug.com/1047818 [ Linux ] external/wpt/permissions-request/idlharness.any.worker.html [ Skip ]
 crbug.com/1047818 [ Linux ] external/wpt/permissions-revoke/idlharness.any.html [ Skip ]
 crbug.com/1047818 [ Linux ] external/wpt/shape-detection/idlharness.https.any.html [ Skip ]
-crbug.com/1047818 [ Linux ] external/wpt/video-raf/idlharness.window.html [ Skip ]
 crbug.com/1047818 [ Linux ] external/wpt/web-locks/idlharness.tentative.https.any.html [ Skip ]
 crbug.com/1047818 [ Linux ] external/wpt/web-share/idlharness.https.window.html [ Skip ]
 

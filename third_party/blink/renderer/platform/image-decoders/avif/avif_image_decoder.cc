@@ -95,24 +95,37 @@ media::VideoPixelFormat AvifToVideoPixelFormat(avifPixelFormat fmt, int depth) {
 
 inline void WritePixel(float max_channel,
                        const gfx::Point3F& pixel,
-                       int alpha,
+                       float alpha,
+                       bool premultiply_alpha,
                        uint32_t* rgba_dest) {
-  *rgba_dest = SkPackARGB32NoCheck(
-      alpha,
-      gfx::ToRoundedInt(base::ClampToRange(pixel.x(), 0.0f, 1.0f) * 255.0f),
-      gfx::ToRoundedInt(base::ClampToRange(pixel.y(), 0.0f, 1.0f) * 255.0f),
-      gfx::ToRoundedInt(base::ClampToRange(pixel.z(), 0.0f, 1.0f) * 255.0f));
+  unsigned r =
+      gfx::ToRoundedInt(base::ClampToRange(pixel.x(), 0.0f, 1.0f) * 255.0f);
+  unsigned g =
+      gfx::ToRoundedInt(base::ClampToRange(pixel.y(), 0.0f, 1.0f) * 255.0f);
+  unsigned b =
+      gfx::ToRoundedInt(base::ClampToRange(pixel.z(), 0.0f, 1.0f) * 255.0f);
+  unsigned a = gfx::ToRoundedInt(alpha * 255.0f);
+  if (premultiply_alpha)
+    blink::ImageFrame::SetRGBAPremultiply(rgba_dest, r, g, b, a);
+  else
+    *rgba_dest = SkPackARGB32NoCheck(a, r, g, b);
 }
 
 inline void WritePixel(float max_channel,
                        const gfx::Point3F& pixel,
-                       int alpha,
+                       float alpha,
+                       bool premultiply_alpha,
                        uint64_t* rgba_dest) {
   float rgba_pixels[4];
   rgba_pixels[0] = pixel.x();
   rgba_pixels[1] = pixel.y();
   rgba_pixels[2] = pixel.z();
-  rgba_pixels[3] = alpha / max_channel;
+  rgba_pixels[3] = alpha;
+  if (premultiply_alpha && alpha != 1.0f) {
+    rgba_pixels[0] *= alpha;
+    rgba_pixels[1] *= alpha;
+    rgba_pixels[2] *= alpha;
+  }
 
   gfx::FloatToHalfFloat(rgba_pixels, reinterpret_cast<uint16_t*>(rgba_dest),
                         base::size(rgba_pixels));
@@ -123,6 +136,7 @@ enum class ColorType { kMono, kColor };
 template <ColorType color_type, typename InputType, typename OutputType>
 void YUVAToRGBA(const avifImage* image,
                 const gfx::ColorTransform* transform,
+                bool premultiply_alpha,
                 OutputType* rgba_dest) {
   avifPixelFormatInfo format_info;
   avifGetPixelFormatInfo(image->yuvFormat, &format_info);
@@ -177,7 +191,8 @@ void YUVAToRGBA(const avifImage* image,
           alpha = avifLimitedToFullY(image->depth, alpha);
       }
 
-      WritePixel(max_channel, pixel, alpha, rgba_dest);
+      WritePixel(max_channel, pixel, alpha / max_channel, premultiply_alpha,
+                 rgba_dest);
       rgba_dest++;
     }
   }
@@ -410,6 +425,7 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image,
   const gfx::ColorSpace dest_rgb_cs(*buffer->Bitmap().colorSpace());
 
   const bool is_mono = !image->yuvPlanes[AVIF_CHAN_U];
+  const bool premultiply_alpha = buffer->PremultiplyAlpha();
 
   // TODO(dalecurtis): We should decode to YUV when possible. Currently the
   // YUV path seems to only support still-image YUV8.
@@ -424,21 +440,32 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image,
     // Color and format convert from YUV HBD -> RGBA half float.
     if (is_mono) {
       YUVAToRGBA<ColorType::kMono, uint16_t>(image, color_transform_.get(),
-                                             rgba_hhhh);
+                                             premultiply_alpha, rgba_hhhh);
     } else {
       // TODO: Add fast path for 10bit 4:2:0 using libyuv.
       YUVAToRGBA<ColorType::kColor, uint16_t>(image, color_transform_.get(),
-                                              rgba_hhhh);
+                                              premultiply_alpha, rgba_hhhh);
     }
     return true;
   }
 
   uint32_t* rgba_8888 = buffer->GetAddr(0, 0);
+  // libyuv supports the alpha channel only with the I420 pixel format. libavif
+  // reports monochrome 4:0:0 as AVIF_PIXEL_FORMAT_YUV420 with null U and V
+  // planes, so we need to check for genuine YUV 4:2:0, not monochrome 4:0:0.
+  bool is_i420 = image->depth == 8 &&
+                 image->yuvFormat == AVIF_PIXEL_FORMAT_YUV420 &&
+                 image->yuvPlanes[1] && image->yuvPlanes[2];
+  // Call media::PaintCanvasVideoRenderer if the color space is supported by
+  // libyuv. Since media::PaintCanvasVideoRenderer calls
+  // libyuv::I420AlphaToARGB() with attenuate=1 to enable RGB premultiplication
+  // by alpha, we need to check both is_i420 and premultiply_alpha.
   // TODO(wtc): Figure out a way to check frame_cs == ~BT.2020 too since
   // ConvertVideoFrameToRGBPixels() can handle that too.
-  if (frame_cs == gfx::ColorSpace::CreateREC709() ||
-      frame_cs == gfx::ColorSpace::CreateREC601() ||
-      frame_cs == gfx::ColorSpace::CreateJpeg()) {
+  if ((frame_cs == gfx::ColorSpace::CreateREC709() ||
+       frame_cs == gfx::ColorSpace::CreateREC601() ||
+       frame_cs == gfx::ColorSpace::CreateJpeg()) &&
+      (!image->alphaPlane || (is_i420 && premultiply_alpha))) {
     // Create temporary frame wrapping the YUVA planes.
     scoped_refptr<media::VideoFrame> frame;
     auto pixel_format = AvifToVideoPixelFormat(image->yuvFormat, image->depth);
@@ -446,13 +473,9 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image,
       return false;
     auto size = gfx::Size(image->width, image->height);
     if (image->alphaPlane) {
-      if (pixel_format == media::PIXEL_FORMAT_I420 && image->yuvPlanes[1] &&
-          image->yuvPlanes[2]) {
-        // Genuine YUV 4:2:0, not monochrome 4:0:0.
+      if (is_i420) {
+        DCHECK_EQ(pixel_format, media::PIXEL_FORMAT_I420);
         pixel_format = media::PIXEL_FORMAT_I420A;
-      } else {
-        NOTIMPLEMENTED();
-        return false;
       }
       frame = media::VideoFrame::WrapExternalYuvaData(
           pixel_format, size, gfx::Rect(size), size, image->yuvRowBytes[0],
@@ -487,18 +510,18 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image,
   if (ImageIsHighBitDepth()) {
     if (is_mono) {
       YUVAToRGBA<ColorType::kMono, uint16_t>(image, color_transform_.get(),
-                                             rgba_8888);
+                                             premultiply_alpha, rgba_8888);
     } else {
       YUVAToRGBA<ColorType::kColor, uint16_t>(image, color_transform_.get(),
-                                              rgba_8888);
+                                              premultiply_alpha, rgba_8888);
     }
   } else {
     if (is_mono) {
       YUVAToRGBA<ColorType::kMono, uint8_t>(image, color_transform_.get(),
-                                            rgba_8888);
+                                            premultiply_alpha, rgba_8888);
     } else {
       YUVAToRGBA<ColorType::kColor, uint8_t>(image, color_transform_.get(),
-                                             rgba_8888);
+                                             premultiply_alpha, rgba_8888);
     }
   }
   return true;

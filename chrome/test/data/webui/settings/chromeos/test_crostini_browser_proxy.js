@@ -28,9 +28,14 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
       'deactivateCrostiniPortForward',
       'getCrostiniActivePorts',
       'checkCrostiniIsRunning',
+      'shutdownCrostini',
+      'setCrostiniMicSharingEnabled',
+      'getCrostiniMicSharingEnabled',
     ]);
     this.sharedUsbDevices = [];
     this.removeSharedPathResult = true;
+    this.crostiniMicSharingEnabled = false;
+    this.crostiniIsRunning = true;
     this.methodCalls_ = {};
   }
 
@@ -164,7 +169,9 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
   /** @override */
   checkCrostiniMicSharingStatus(proposedValue) {
     this.methodCalled('checkCrostiniMicSharingStatus', proposedValue);
-    return Promise.resolve(!proposedValue);
+    return Promise.resolve(
+        proposedValue !== this.crostiniMicSharingEnabled &&
+        this.crostiniIsRunning);
   }
 
   /** @override */
@@ -186,5 +193,23 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
   checkCrostiniIsRunning() {
     this.methodCalled('checkCrostiniIsRunning');
     return Promise.resolve(true);
+  }
+
+  /** @override */
+  shutdownCrostini() {
+    this.methodCalled('shutdownCrostini');
+    this.crostiniIsRunning = false;
+  }
+
+  /** @override */
+  setCrostiniMicSharingEnabled(enabled) {
+    this.methodCalled('setCrostiniMicSharingEnabled');
+    this.crostiniMicSharingEnabled = enabled;
+  }
+
+  /** @override */
+  getCrostiniMicSharingEnabled() {
+    this.methodCalled('getCrostiniMicSharingEnabled');
+    return Promise.resolve(this.CrostiniMicSharingEnabled);
   }
 }

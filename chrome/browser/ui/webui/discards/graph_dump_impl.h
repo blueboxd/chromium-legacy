@@ -99,6 +99,9 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   void OnHadFormInteractionChanged(
       const performance_manager::FrameNode* frame_node) override {}
   // Ignored.
+  void OnIsAudibleChanged(
+      const performance_manager::FrameNode* frame_node) override {}
+  // Ignored.
   void OnFirstContentfulPaint(
       const performance_manager::FrameNode* frame_node,
       base::TimeDelta time_since_navigation_start) override {}

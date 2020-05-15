@@ -34,6 +34,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/resources/grit/webui_resources.h"
+#include "url/url_util.h"
 
 using content::BrowserContext;
 using content::WebContents;
@@ -298,7 +299,12 @@ void NewTabPageUI::UpdateBackgroundColor(const NtpTheme& theme) {
       base::StringPrintf("#%02X%02X%02X", SkColorGetR(background_color),
                          SkColorGetG(background_color),
                          SkColorGetB(background_color)));
-  update->SetString("backgroundImageUrl", theme.custom_background_url.spec());
+  url::RawCanonOutputT<char> encoded_url;
+  url::EncodeURIComponent(theme.custom_background_url.spec().c_str(),
+                          theme.custom_background_url.spec().size(),
+                          &encoded_url);
+  update->SetString("backgroundImageUrl",
+                    std::string(encoded_url.data(), encoded_url.length()));
   content::WebUIDataSource::Update(profile_, chrome::kChromeUINewTabPageHost,
                                    std::move(update));
 }

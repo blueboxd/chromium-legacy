@@ -10,11 +10,15 @@
   <template>
     <style include="settings-shared"></style>
     <cr-dialog id="dialog" close-text="$i18n{close}">
-      <div slot="title">$i18n{crostiniMicDialogTitle}</div>
       <div slot="body">$i18n{crostiniMicDialogLabel}</div>
       <div slot="button-container">
-        <cr-button class="action-button" on-click="onOkTap_">
-          $i18n{ok}
+        <cr-button id="cancel" class="cancel-button"
+            on-click="onCancelTap_">
+            $i18n{cancel}
+        </cr-button>
+        <cr-button id="shutdown" class="action-button"
+            on-click="onShutdownTap_">
+            $i18n{crostiniMicDialogShutdownButton}
         </cr-button>
       </div>
     </cr-dialog>

@@ -229,7 +229,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   bool InShadowTree() const override { return false; }
 
   Frame* Opener() const override { return nullptr; }
-  void SetOpener(Frame*) override {}
 
   Frame* Parent() const override { return nullptr; }
   Frame* Top() const override { return nullptr; }
@@ -431,7 +430,6 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
   bool InShadowTree() const override { return false; }
   void Detached(FrameDetachType) override {}
   Frame* Opener() const override { return nullptr; }
-  void SetOpener(Frame*) override {}
   Frame* Parent() const override { return nullptr; }
   Frame* Top() const override { return nullptr; }
   Frame* NextSibling() const override { return nullptr; }

@@ -12,7 +12,7 @@ import android.widget.LinearLayout;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 
 /**
@@ -20,9 +20,9 @@ import org.chromium.chrome.browser.util.AccessibilityUtil;
  * bar.
  */
 public class AssistantRootViewContainer
-        extends LinearLayout implements ChromeFullscreenManager.FullscreenListener {
+        extends LinearLayout implements BrowserControlsStateProvider.Observer {
     private final ChromeActivity mActivity;
-    private final ChromeFullscreenManager mFullscreenManager;
+    private final BrowserControlsStateProvider mBrowserControlsStateProvider;
     private Rect mVisibleViewportRect = new Rect();
     private float mTalkbackSheetSizeFraction;
 
@@ -30,8 +30,8 @@ public class AssistantRootViewContainer
         super(context, attrs);
         assert context instanceof ChromeActivity;
         mActivity = (ChromeActivity) context;
-        mFullscreenManager = mActivity.getFullscreenManager();
-        mFullscreenManager.addListener(this);
+        mBrowserControlsStateProvider = mActivity.getFullscreenManager();
+        mBrowserControlsStateProvider.addObserver(this);
     }
 
     public void setTalkbackViewSizeFraction(float fraction) {
@@ -56,15 +56,16 @@ public class AssistantRootViewContainer
     }
 
     void destroy() {
-        mFullscreenManager.removeListener(this);
+        mBrowserControlsStateProvider.removeObserver(this);
     }
 
     @Override
     public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         mActivity.getWindow().getDecorView().getWindowVisibleDisplayFrame(mVisibleViewportRect);
-        int availableHeight = mVisibleViewportRect.height() - mFullscreenManager.getContentOffset()
-                - mFullscreenManager.getBottomControlsHeight()
-                - mFullscreenManager.getBottomControlOffset();
+        int availableHeight = mVisibleViewportRect.height()
+                - mBrowserControlsStateProvider.getContentOffset()
+                - mBrowserControlsStateProvider.getBottomControlsHeight()
+                - mBrowserControlsStateProvider.getBottomControlOffset();
 
         int targetHeight;
         int mode;

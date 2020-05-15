@@ -413,26 +413,21 @@ class SelectToSpeak {
    * @private
    */
   clearFocusRing_() {
-    this.setFocusRings_([], false /* do not draw background */);
+    this.setFocusRings_([]);
     chrome.accessibilityPrivate.setHighlights(
         [], this.prefsManager_.highlightColor());
   }
 
   /**
-   * Sets the focus ring to |rects|. If |drawBackground|, draws the grey focus
-   * background with the alpha set in prefs.
+   * Sets the focus ring to |rects|.
    * @param {!Array<!chrome.accessibilityPrivate.ScreenRect>} rects
-   * @param {boolean} drawBackground
    * @private
    */
-  setFocusRings_(rects, drawBackground) {
+  setFocusRings_(rects) {
     chrome.accessibilityPrivate.setFocusRings([{
       rects,
       type: chrome.accessibilityPrivate.FocusType.GLOW,
-      color: this.prefsManager_.focusRingColor(),
-      backgroundColor: drawBackground ?
-          this.prefsManager_.focusRingBackgroundColor() :
-          '#0000'
+      color: this.prefsManager_.focusRingColor()
     }]);
   }
 
@@ -491,7 +486,7 @@ class SelectToSpeak {
       },
       // onSelectionChanged: Mouse selection rect changed.
       onSelectionChanged: rect => {
-        this.setFocusRings_([rect], false /* don't draw background */);
+        this.setFocusRings_([rect]);
       },
       // onKeystrokeSelection: Keys pressed for reading highlighted text.
       onKeystrokeSelection: () => {
@@ -910,10 +905,9 @@ class SelectToSpeak {
     // the one node. if it has siblings, highlight the parent.
     if (this.currentBlockParent_ != null &&
         node.role == RoleType.INLINE_TEXT_BOX) {
-      this.setFocusRings_(
-          [this.currentBlockParent_.location], true /* draw background */);
+      this.setFocusRings_([this.currentBlockParent_.location]);
     } else {
-      this.setFocusRings_([node.location], true /* draw background */);
+      this.setFocusRings_([node.location]);
     }
   }
 

@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/frame/virtual_keyboard_overlay_changed_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace gfx {
@@ -22,7 +23,8 @@ class ExecutionContext;
 // to JS authors. The VirtualKeyboard object lives in the Navigator.
 // It is exposed to JS via a new attribute virtualKeyboard in the Navigator.
 class VirtualKeyboard final : public EventTargetWithInlineData,
-                              public ExecutionContextClient {
+                              public ExecutionContextClient,
+                              public VirtualKeyboardOverlayChangedObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(VirtualKeyboard);
 
@@ -41,7 +43,7 @@ class VirtualKeyboard final : public EventTargetWithInlineData,
   bool overlaysContent() const;
   void setOverlaysContent(bool overlays_content);
 
-  void VirtualKeyboardOverlayChanged(const gfx::Rect&);
+  void VirtualKeyboardOverlayChanged(const gfx::Rect&) final;
 
   // Public APIs for controlling the visibility of VirtualKeyboard.
   void show();

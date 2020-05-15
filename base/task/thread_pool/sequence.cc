@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/critical_closure.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/task_features.h"
@@ -51,14 +50,6 @@ void Sequence::Transaction::PushTask(Task task) {
                   : std::move(task.task);
 
   sequence()->queue_.push(std::move(task));
-
-  // The queue should not grow above 10000 tasks. When that happens, it probably
-  // means that there is code that posts tasks faster than they can be executed
-  // by the ThreadPool, leading to unbounded memory usage growth. These cases
-  // should be identified and fixed.
-  constexpr size_t kMaxTasksInQueue = 10000;
-  if (sequence()->queue_.size() == kMaxTasksInQueue)
-    debug::DumpWithoutCrashing();
 
   // AddRef() matched by manual Release() when the sequence has no more tasks
   // to run (in DidProcessTask() or Clear()).

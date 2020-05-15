@@ -916,37 +916,43 @@ TEST_F(AuthenticatorImplTest, TestMakeCredentialTimeout) {
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
 }
 
-TEST_F(AuthenticatorImplTest, TestMakeCredentialRSA) {
+TEST_F(AuthenticatorImplTest, TestMakeCredentialOtherAlgorithms) {
   virtual_device_factory_->SetSupportedProtocol(
       device::ProtocolVersion::kCtap2);
   SimulateNavigation(GURL(kTestOrigin1));
 
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
-  PublicKeyCredentialCreationOptionsPtr options =
-      GetTestPublicKeyCredentialCreationOptions();
-  options->public_key_parameters = GetTestPublicKeyCredentialParameters(
-      static_cast<int32_t>(device::CoseAlgorithmIdentifier::kCoseRs256));
-  TestMakeCredentialCallback callback;
-  authenticator->MakeCredential(std::move(options), callback.callback());
-  base::RunLoop().RunUntilIdle();
-  callback.WaitForCallback();
 
-  ASSERT_EQ(callback.status(), AuthenticatorStatus::SUCCESS);
+  for (auto algorithm : {device::CoseAlgorithmIdentifier::kCoseRs256,
+                         device::CoseAlgorithmIdentifier::kCoseEdDSA}) {
+    SCOPED_TRACE(static_cast<int>(algorithm));
 
-  base::Optional<Value> attestation_value =
-      Reader::Read(callback.value()->attestation_object);
-  ASSERT_TRUE(attestation_value);
-  ASSERT_TRUE(attestation_value->is_map());
-  const auto& attestation = attestation_value->GetMap();
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->public_key_parameters =
+        GetTestPublicKeyCredentialParameters(static_cast<int32_t>(algorithm));
+    TestMakeCredentialCallback callback;
+    authenticator->MakeCredential(std::move(options), callback.callback());
+    base::RunLoop().RunUntilIdle();
+    callback.WaitForCallback();
 
-  const auto auth_data_it = attestation.find(Value("authData"));
-  ASSERT_TRUE(auth_data_it != attestation.end());
-  ASSERT_TRUE(auth_data_it->second.is_bytestring());
-  auto auth_data = device::AuthenticatorData::DecodeAuthenticatorData(
-      auth_data_it->second.GetBytestring());
-  EXPECT_EQ(static_cast<int32_t>(device::CoseAlgorithmIdentifier::kCoseRs256),
-            auth_data->attested_data()->public_key()->algorithm());
+    ASSERT_EQ(callback.status(), AuthenticatorStatus::SUCCESS);
+
+    base::Optional<Value> attestation_value =
+        Reader::Read(callback.value()->attestation_object);
+    ASSERT_TRUE(attestation_value);
+    ASSERT_TRUE(attestation_value->is_map());
+    const auto& attestation = attestation_value->GetMap();
+
+    const auto auth_data_it = attestation.find(Value("authData"));
+    ASSERT_TRUE(auth_data_it != attestation.end());
+    ASSERT_TRUE(auth_data_it->second.is_bytestring());
+    auto auth_data = device::AuthenticatorData::DecodeAuthenticatorData(
+        auth_data_it->second.GetBytestring());
+    EXPECT_EQ(static_cast<int32_t>(algorithm),
+              auth_data->attested_data()->public_key()->algorithm());
+  }
 }
 
 // Verify behavior for various combinations of origins and RP IDs.

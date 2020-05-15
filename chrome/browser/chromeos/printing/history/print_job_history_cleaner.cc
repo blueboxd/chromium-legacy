@@ -10,7 +10,6 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/printing/history/print_job_database.h"
 #include "chrome/browser/chromeos/printing/history/print_job_info.pb.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"

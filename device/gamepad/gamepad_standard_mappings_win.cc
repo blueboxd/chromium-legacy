@@ -420,6 +420,8 @@ constexpr struct MappingData {
   GamepadId gamepad_id;
   GamepadStandardMappingFunction function;
 } AvailableMappings[] = {
+    // PowerA Wireless Controller - Nintendo GameCube style
+    {GamepadId::kPowerALicPro, MapperSwitchPro},
     // 2Axes 8Keys Game Pad
     {GamepadId::kDragonRiseProduct0011, Mapper2Axes8Keys},
     // Logitech F310, D-mode

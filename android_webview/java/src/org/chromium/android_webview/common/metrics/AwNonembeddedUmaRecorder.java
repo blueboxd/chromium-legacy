@@ -18,23 +18,30 @@ import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecord;
 import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecord.RecordType;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.metrics.UmaRecorder;
 
 /**
- * Partial Implementation of {@link org.chromium.base.metrics.UmaRecorder}.
- *
- * Can be used directly to record histograms similar to {@link
- * org.chromium.base.metrics.RecordHistogram}. This may only be called from non-embedded WebView
- * processes, such as developer UI or Services.
+ * {@link oUmaRecorder} for nonembedded WebView processes.
+ * Can be used as a delegate in {@link org.chromium.base.metrics.UmaRecorderHolder}. This may only
+ * be called from non-embedded WebView processes, such as developer UI or Services.
  */
-// TODO(https://crbug.com/1001185) make this class extends UmaRecorder and use it as a delegate
-// in UmaRecorderHolder and RecordHistogram classes.
-public class AwNonembeddedUmaRecorder {
+public class AwNonembeddedUmaRecorder implements UmaRecorder {
     private static final String TAG = "AwNonembedUmaRecord";
 
-    private static String sServiceName = ServiceNames.METRICS_BRIDGE_SERVICE;
+    private final String mServiceName;
+
+    @VisibleForTesting
+    public AwNonembeddedUmaRecorder(String serviceName) {
+        mServiceName = serviceName;
+    }
+
+    public AwNonembeddedUmaRecorder() {
+        this(ServiceNames.METRICS_BRIDGE_SERVICE);
+    }
 
     /** Records a single sample of a boolean histogram. */
-    public static void recordBooleanHistogram(String name, boolean sample) {
+    @Override
+    public void recordBooleanHistogram(String name, boolean sample) {
         HistogramRecord.Builder builder = HistogramRecord.newBuilder();
         builder.setRecordType(RecordType.HISTOGRAM_BOOLEAN);
         builder.setHistogramName(name);
@@ -57,7 +64,8 @@ public class AwNonembeddedUmaRecorder {
      *         overflow, and the remaining buckets cover the range {@code [min, max)}; {@code
      *         numBuckets} should be {@code 100} or less.
      */
-    public static void recordExponentialHistogram(
+    @Override
+    public void recordExponentialHistogram(
             String name, int sample, int min, int max, int numBuckets) {
         HistogramRecord.Builder builder = HistogramRecord.newBuilder();
         builder.setRecordType(RecordType.HISTOGRAM_EXPONENTIAL);
@@ -84,8 +92,8 @@ public class AwNonembeddedUmaRecorder {
      *         overflow, and the remaining buckets evenly cover the range {@code [min, max)}; {@code
      *         numBuckets} should be {@code 100} or less.
      */
-    public static void recordLinearHistogram(
-            String name, int sample, int min, int max, int numBuckets) {
+    @Override
+    public void recordLinearHistogram(String name, int sample, int min, int max, int numBuckets) {
         HistogramRecord.Builder builder = HistogramRecord.newBuilder();
         builder.setRecordType(RecordType.HISTOGRAM_LINEAR);
         builder.setHistogramName(name);
@@ -102,7 +110,8 @@ public class AwNonembeddedUmaRecorder {
      * {@link
      * https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md#when-to-use-sparse-histograms}
      */
-    public static void recordSparseHistogram(String name, int sample) {
+    @Override
+    public void recordSparseHistogram(String name, int sample) {
         HistogramRecord.Builder builder = HistogramRecord.newBuilder();
         builder.setRecordType(RecordType.HISTOGRAM_SPARSE);
         builder.setHistogramName(name);
@@ -111,11 +120,26 @@ public class AwNonembeddedUmaRecorder {
         recordHistogram(builder.build());
     }
 
+    /**
+     * Records a user action. Action names must be documented in {@code actions.xml}. See {@link
+     * https://source.chromium.org/chromium/chromium/src/+/master:tools/metrics/actions/README.md}
+     *
+     * @param name Name of the user action.
+     * @param elapsedRealtimeMillis Value of {@link android.os.SystemClock.elapsedRealtime()} when
+     *         the action was observed.
+     */
+    @Override
+    public void recordUserAction(String name, long elapsedRealtimeMillis) {
+        // Assertion is disabled in release
+        // TODO(https://crbug.com/1082475) support recording user actions.
+        assert false : "Recording UserAction in non-embedded WebView processes isn't supported yet";
+    }
+
     // Connects to the MetricsBridgeService to record the histogram call.
-    private static void recordHistogram(HistogramRecord methodCall) {
+    private void recordHistogram(HistogramRecord methodCall) {
         final Context appContext = ContextUtils.getApplicationContext();
         final Intent intent = new Intent();
-        intent.setClassName(appContext, sServiceName);
+        intent.setClassName(appContext, mServiceName);
 
         ServiceConnection connection = new ServiceConnection() {
             @Override
@@ -142,12 +166,4 @@ public class AwNonembeddedUmaRecorder {
             Log.w(TAG, "Could not bind to MetricsBridgeService " + intent);
         }
     }
-
-    @VisibleForTesting
-    public static void setServiceName(String serviceName) {
-        sServiceName = serviceName;
-    }
-
-    // Don't instantiate this class.
-    private AwNonembeddedUmaRecorder() {}
 }

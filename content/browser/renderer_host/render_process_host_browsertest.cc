@@ -820,21 +820,47 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessOnBadMojoMessage) {
     rph->RemoveObserver(this);
 }
 
+// Observes a WebContents and a specific frame within it, and waits until they
+// both indicate that they are audible.
 class AudioStartObserver : public WebContentsObserver {
  public:
   AudioStartObserver(WebContents* web_contents,
+                     RenderFrameHost* render_frame_host,
                      base::OnceClosure audible_closure)
       : WebContentsObserver(web_contents),
-        audible_closure_(std::move(audible_closure)) {}
-  ~AudioStartObserver() override {}
+        render_frame_host_(
+            static_cast<RenderFrameHostImpl*>(render_frame_host)),
+        contents_audible_(web_contents->IsCurrentlyAudible()),
+        frame_audible_(render_frame_host_->is_audible()),
+        audible_closure_(std::move(audible_closure)) {
+    MaybeFireClosure();
+  }
+  ~AudioStartObserver() override = default;
 
   // WebContentsObserver:
   void OnAudioStateChanged(bool audible) override {
-    if (audible && audible_closure_)
-      std::move(audible_closure_).Run();
+    DCHECK_NE(audible, contents_audible_);
+    contents_audible_ = audible;
+    MaybeFireClosure();
+  }
+  void OnFrameAudioStateChanged(RenderFrameHost* render_frame_host,
+                                bool audible) override {
+    if (render_frame_host_ != render_frame_host)
+      return;
+    DCHECK_NE(frame_audible_, audible);
+    frame_audible_ = audible;
+    MaybeFireClosure();
   }
 
  private:
+  void MaybeFireClosure() {
+    if (contents_audible_ && frame_audible_)
+      std::move(audible_closure_).Run();
+  }
+
+  RenderFrameHostImpl* render_frame_host_ = nullptr;
+  bool contents_audible_ = false;
+  bool frame_audible_ = false;
   base::OnceClosure audible_closure_;
 };
 
@@ -861,9 +887,11 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessZerosAudioStreams) {
       shell()->web_contents()->GetMainFrame()->GetProcess());
 
   {
-    // Start audio and wait for it to become audible.
+    // Start audio and wait for it to become audible, in both the frame *and*
+    // the page.
     base::RunLoop run_loop;
     AudioStartObserver observer(shell()->web_contents(),
+                                shell()->web_contents()->GetMainFrame(),
                                 run_loop.QuitClosure());
 
     std::string result;

@@ -862,10 +862,6 @@ security/set-form-autocomplete-attribute.html
 shadow-dom/crashes/slots-nested-in-document-tree-crash.html
 shadow-dom/css-cascade-outer-scope2.html
 shadow-dom/slotted-pseudo-element-in-v0-tree-crash.html
-shadow-dom/v0/event-composed-path-closed-shadowroot2.html
-shadow-dom/v0/get-destination-insertion-points.html
-shadow-dom/v0/pointer-lock-in-shadow3.html
-shadow-dom/v0/slots-api-in-v0.html
 storage/domstorage/localstorage/delete-removal.html
 storage/domstorage/localstorage/simple-usage.html
 storage/domstorage/localstorage/string-conversion.html

@@ -437,5 +437,32 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest, WebContentTitleSet) {
   EXPECT_EQ(web_contents->GetTitle(), title);
 }
 
+IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest, EnsureQueryIsCleared) {
+  GURL whitelsited_url = embedded_test_server()->GetURL(
+      kExampleHost, "/supervised_user/simple.html");
+  WhitelistUrlRegx(kExampleHost);
+  BlockWeb();
+
+  GURL url = embedded_test_server()->GetURL(kExampleHost2,
+                                            "/supervised_user/simple.html");
+  NavigateParams params1(browser(), url,
+                         ui::PageTransition::PAGE_TRANSITION_LINK);
+  // Navigates and waits for loading to finish.
+  ui_test_utils::NavigateToURL(&params1);
+  auto* web_contents = params1.navigated_or_inserted_contents;
+  EXPECT_TRUE(IsErrorPageBeingShownInWebContents(web_contents));
+
+  GURL sneaky_url = embedded_test_server()->GetURL(
+      kExampleHost2, "/supervised_user/simple.html");
+  GURL::Replacements replacements;
+  replacements.SetQueryStr("var=chrome://settings");
+  sneaky_url = sneaky_url.ReplaceComponents(replacements);
+  NavigateParams params2(browser(), sneaky_url,
+                         ui::PageTransition::PAGE_TRANSITION_LINK);
+  ui_test_utils::NavigateToURL(&params2);
+  web_contents = params2.navigated_or_inserted_contents;
+  EXPECT_TRUE(IsErrorPageBeingShownInWebContents(web_contents));
+}
+
 // TODO(yilkal): Add WhitelistedSchemeNotBlocked test for  chrome://settings
 // TODO(yilkal): Add test for blocked web contents without browser window.

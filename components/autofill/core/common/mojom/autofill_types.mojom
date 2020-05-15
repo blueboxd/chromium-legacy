@@ -150,6 +150,9 @@ struct FormFieldData {
   LabelSource label_source;
 
   gfx.mojom.RectF bounds;
+
+  array<mojo_base.mojom.String16> datalist_values;
+  array<mojo_base.mojom.String16> datalist_labels;
 };
 
 struct ButtonTitleInfo {

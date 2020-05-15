@@ -113,12 +113,16 @@
       </template>
     </template>
     <template is="dom-if" if="[[showCrostiniMic_]]">
-      <settings-toggle-button id="crostini-mic-sharing"
-          class="hr"
-          on-change="onMicSharingChange_"
-          pref="{{prefs.crostini.mic_sharing}}"
-          label="$i18n{crostiniMicTitle}">
-      </settings-toggle-button>
+      <div class="settings-box">
+        <div id="crostini-mic-sharing-label" class="start" aria-hidden="true">
+          $i18n{crostiniMicTitle}
+        </div>
+        <cr-toggle id="crostini-mic-sharing-toggle"
+            checked="[[crostiniMicSharingEnabled_]]"
+            on-change="onMicSharingChange_"
+            aria-label="$i18n{crostiniMicTitle}">
+        </cr-toggle>
+      </div>
     </template>
     <template is="dom-if" if="[[!hideCrostiniUninstall_]]">
       <div id="remove" class="settings-box">
@@ -134,7 +138,8 @@
 
     <template is="dom-if" if="[[showCrostiniMicSharingDialog_]]" restamp>
       <settings-crostini-mic-sharing-dialog
-          on-close="onCrostiniMicSharingDialogClose_">
+          on-close="onCrostiniMicSharingDialogClose_"
+          pending-mic-sharing-state="[[!crostiniMicSharingEnabled_]]">
       </settings-crostini-mic-sharing-dialog>
     </template>
   </template>

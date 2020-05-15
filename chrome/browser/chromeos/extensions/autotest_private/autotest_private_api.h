@@ -410,6 +410,26 @@ class AutotestPrivateInstallPluginVMFunction : public ExtensionFunction {
   void OnInstallFinished(bool success);
 };
 
+class AutotestPrivateSetPluginVMPolicyFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setPluginVMPolicy",
+                             AUTOTESTPRIVATE_SETPLUGINVMPOLICY)
+
+ private:
+  ~AutotestPrivateSetPluginVMPolicyFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateShowPluginVMInstallerFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.showPluginVMInstaller",
+                             AUTOTESTPRIVATE_SHOWPLUGINVMINSTALLER)
+
+ private:
+  ~AutotestPrivateShowPluginVMInstallerFunction() override;
+  ResponseAction Run() override;
+};
+
 class AutotestPrivateRegisterComponentFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.registerComponent",

@@ -25,4 +25,6 @@ interface INavigation {
   void setRequestHeader(in String name, in String value) = 7;
 
   void setUserAgentString(in String value) = 8;
+
+  boolean isDownload() = 9;
 }

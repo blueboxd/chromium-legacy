@@ -163,7 +163,8 @@ class MockRealTimeUrlLookupService : public RealTimeUrlLookupService {
                                  /*pref_service=*/nullptr,
                                  ChromeUserPopulation::NOT_MANAGED,
                                  /*is_under_advanced_protection=*/false,
-                                 /*is_off_the_record=*/false) {}
+                                 /*is_off_the_record=*/false,
+                                 /*variations_service=*/nullptr) {}
   // Returns the threat type previously set by |SetThreatTypeForUrl|. It crashes
   // if the threat type for the |gurl| is not set in advance.
   void StartLookup(const GURL& gurl,

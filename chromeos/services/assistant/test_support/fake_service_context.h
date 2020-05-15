@@ -42,8 +42,8 @@ class FakeServiceContext : public ServiceContext {
   ash::AssistantController* assistant_controller() override;
   ash::mojom::AssistantNotificationController*
   assistant_notification_controller() override;
-  ash::mojom::AssistantScreenContextController*
-  assistant_screen_context_controller() override;
+  ash::AssistantScreenContextController* assistant_screen_context_controller()
+      override;
   ash::AssistantStateBase* assistant_state() override;
   CrasAudioHandler* cras_audio_handler() override;
   DeviceActions* device_actions() override;

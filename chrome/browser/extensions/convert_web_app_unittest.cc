@@ -6,8 +6,10 @@
 
 #include <stddef.h>
 
+#include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -16,12 +18,15 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/linked_app_icons.h"
@@ -35,6 +40,8 @@
 #include "extensions/common/manifest_handlers/file_handler_info.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/web_app_file_handler.h"
+#include "extensions/common/manifest_handlers/web_app_linked_shortcut_icons.h"
+#include "extensions/common/manifest_handlers/web_app_shortcut_icons_handler.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
@@ -94,6 +101,36 @@ base::Time GetTestTime(int year, int month, int day, int hour, int minute,
   return out_time;
 }
 
+size_t NumberOfShortcutIconsWithIndex(
+    const std::vector<WebAppLinkedShortcutIcons::ShortcutIconInfo>&
+        shortcut_icon_infos,
+    int index) {
+  size_t count = 0;
+  for (const auto& icon_info : shortcut_icon_infos) {
+    if (icon_info.shortcut_item_index == index)
+      ++count;
+  }
+  return count;
+}
+
+bool ExtensionContainsLinkedShortcutIcon(
+    const std::vector<WebAppLinkedShortcutIcons::ShortcutIconInfo>&
+        shortcut_icon_infos,
+    int shortcut_index,
+    base::string16 shortcut_name,
+    GURL icon_url,
+    int icon_size) {
+  for (const auto& icon_info : shortcut_icon_infos) {
+    if (icon_info.shortcut_item_index == shortcut_index &&
+        icon_info.shortcut_item_name == shortcut_name &&
+        icon_info.url == icon_url && icon_info.size == icon_size) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 }  // namespace
 
 class ExtensionFromWebApp : public extensions::ExtensionServiceTestBase {
@@ -116,6 +153,17 @@ class ExtensionFromWebApp : public extensions::ExtensionServiceTestBase {
 
  private:
   base::ScopedTempDir extensions_dir_;
+};
+
+class ExtensionFromWebAppWithShortcutsMenu : public ExtensionFromWebApp {
+ public:
+  ExtensionFromWebAppWithShortcutsMenu() {
+    scoped_feature_list.InitAndEnableFeature(
+        features::kDesktopPWAsAppIconShortcutsMenu);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list;
 };
 
 TEST_F(ExtensionFromWebApp, GetScopeURLFromBookmarkApp) {
@@ -547,6 +595,90 @@ TEST_F(ExtensionFromWebApp, WebAppFileHandlersAreCorrectlyConverted) {
     EXPECT_EQ("text/csv", file_handler.accept[0].mime_type);
     EXPECT_THAT(file_handler.accept[0].file_extensions,
                 testing::UnorderedElementsAre(".csv"));
+  }
+}
+
+// Tests that |shortcut_infos| on the WebAppManifest is correctly converted
+// to |web_app_shortcut_icons| and |web_app_linked_shortcut_icons| on an
+// extension manifest.
+TEST_F(ExtensionFromWebAppWithShortcutsMenu,
+       WebAppShortcutIconsAreCorrectlyConverted) {
+  StartExtensionService();
+  WebApplicationInfo web_app;
+  WebApplicationShortcutInfo shortcut_item;
+  web_app.title = base::ASCIIToUTF16("Shortcut App");
+  web_app.description = base::ASCIIToUTF16("We have shortcuts.");
+  web_app.app_url = GURL("https://shortcut-app.io/");
+  web_app.scope = GURL("https://shortcut-app.io");
+
+  shortcut_item.name = base::ASCIIToUTF16("Shortcut 1");
+  shortcut_item.url = GURL("https://shortcut-app.io/shortcuts/shortcut1");
+  {
+    const int sizes[] = {16, 128};
+    for (const auto& size : sizes) {
+      WebApplicationIconInfo icon_info;
+      icon_info.url =
+          web_app.app_url.Resolve(base::StringPrintf("shortcut1/%i.png", size));
+      icon_info.square_size_px = size;
+      shortcut_item.shortcut_icon_infos.push_back(std::move(icon_info));
+      shortcut_item.shortcut_icon_bitmaps[size] = GetIconBitmap(size);
+    }
+  }
+  web_app.shortcut_infos.push_back(std::move(shortcut_item));
+
+  shortcut_item.name = base::ASCIIToUTF16("Shortcut 2");
+  shortcut_item.url = GURL("https://shortcut-app.io/shortcuts/shortcut2");
+  {
+    const int sizes[] = {16, 48};
+    for (const auto& size : sizes) {
+      WebApplicationIconInfo icon_info;
+      icon_info.url =
+          web_app.app_url.Resolve(base::StringPrintf("0/%i.png", size));
+      icon_info.square_size_px = size;
+      shortcut_item.shortcut_icon_infos.push_back(std::move(icon_info));
+      shortcut_item.shortcut_icon_bitmaps[size] = GetIconBitmap(size);
+    }
+  }
+  web_app.shortcut_infos.push_back(std::move(shortcut_item));
+
+  scoped_refptr<Extension> extension = ConvertWebAppToExtension(
+      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), ExtensionPath(),
+      Extension::FROM_BOOKMARK, Manifest::INTERNAL);
+
+  ASSERT_TRUE(extension.get());
+
+  const WebAppLinkedShortcutIcons& linked_shortcut_icons =
+      WebAppLinkedShortcutIcons::GetWebAppLinkedShortcutIcons(extension.get());
+  const std::map<int, ExtensionIconSet>& shortcut_icons =
+      WebAppShortcutIconsInfo::GetShortcutIcons(extension.get());
+  for (size_t i = 0; i < web_app.shortcut_infos.size(); ++i) {
+    const std::vector<WebApplicationIconInfo>& icon_infos =
+        web_app.shortcut_infos[i].shortcut_icon_infos;
+    EXPECT_EQ(icon_infos.size(),
+              NumberOfShortcutIconsWithIndex(
+                  linked_shortcut_icons.shortcut_icon_infos, i));
+    for (const auto& icon_info : icon_infos) {
+      ASSERT_TRUE(ExtensionContainsLinkedShortcutIcon(
+          linked_shortcut_icons.shortcut_icon_infos, i,
+          web_app.shortcut_infos[i].name, icon_info.url,
+          icon_info.square_size_px));
+    }
+
+    const std::map<SquareSizePx, SkBitmap>& icon_bitmaps =
+        web_app.shortcut_infos[i].shortcut_icon_bitmaps;
+    EXPECT_EQ(icon_bitmaps.size(), shortcut_icons.at(i).map().size());
+    for (const std::pair<const SquareSizePx, SkBitmap>& icon : icon_bitmaps) {
+      int size = icon.first;
+      EXPECT_EQ(
+          base::StringPrintf("shortcut_icons/%i/%i.png", static_cast<int>(i),
+                             size),
+          shortcut_icons.at(i).Get(size, ExtensionIconSet::MATCH_EXACTLY));
+
+      ExtensionResource resource = WebAppShortcutIconsInfo::GetIconResource(
+          extension.get(), i, size, ExtensionIconSet::MATCH_EXACTLY);
+      EXPECT_TRUE(base::PathExists(resource.GetFilePath()));
+      ASSERT_TRUE(!resource.empty());
+    }
   }
 }
 

@@ -24,6 +24,25 @@ void AmbientBackendModel::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+void AmbientBackendModel::SetTopics(
+    const std::vector<AmbientModeTopic>& topics) {
+  topics_ = topics;
+  topic_index_ = 0;
+
+  NotifyTopicsChanged();
+}
+
+const AmbientModeTopic& AmbientBackendModel::GetNextTopic() {
+  DCHECK(!topics_.empty());
+
+  const auto& topic = topics_[topic_index_];
+  ++topic_index_;
+  if (topic_index_ == topics_.size())
+    topic_index_ = 0;
+
+  return topic;
+}
+
 bool AmbientBackendModel::ShouldFetchImmediately() const {
   // If currently shown image is close to the end of images cache, we prefetch
   // more image.
@@ -70,6 +89,7 @@ void AmbientBackendModel::SetPhotoRefreshInterval(base::TimeDelta interval) {
 }
 
 void AmbientBackendModel::Clear() {
+  topics_.clear();
   images_.clear();
   current_image_index_ = 0;
 }
@@ -105,6 +125,11 @@ void AmbientBackendModel::UpdateWeatherInfo(
 
   if (!weather_condition_icon.isNull())
     NotifyWeatherInfoUpdated();
+}
+
+void AmbientBackendModel::NotifyTopicsChanged() {
+  for (auto& observer : observers_)
+    observer.OnTopicsChanged();
 }
 
 void AmbientBackendModel::NotifyImagesChanged() {

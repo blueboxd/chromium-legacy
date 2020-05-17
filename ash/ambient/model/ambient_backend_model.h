@@ -6,6 +6,7 @@
 #define ASH_AMBIENT_MODEL_AMBIENT_BACKEND_MODEL_H_
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -28,6 +29,12 @@ class ASH_EXPORT AmbientBackendModel {
 
   void AddObserver(AmbientBackendModelObserver* observer);
   void RemoveObserver(AmbientBackendModelObserver* observer);
+
+  void SetTopics(const std::vector<AmbientModeTopic>& topics);
+  const std::vector<AmbientModeTopic>& topics() { return topics_; }
+
+  // Return a topic to download the image.
+  const AmbientModeTopic& GetNextTopic();
 
   // Prefetch one more image for ShowNextImage animations.
   bool ShouldFetchImmediately() const;
@@ -69,14 +76,20 @@ class ASH_EXPORT AmbientBackendModel {
   }
 
  private:
+  void NotifyTopicsChanged();
   void NotifyImagesChanged();
   void NotifyWeatherInfoUpdated();
 
   int GetImageBufferLength() const;
 
+  std::vector<AmbientModeTopic> topics_;
+
   // A local cache for downloaded images. This buffer is split into two equal
   // length of kImageBufferLength / 2 for previous seen and next unseen images.
   base::circular_deque<gfx::ImageSkia> images_;
+
+  // The index of a topic to download.
+  size_t topic_index_ = 0;
 
   // The index of currently shown image.
   int current_image_index_ = 0;

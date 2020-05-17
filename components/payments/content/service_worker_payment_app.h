@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/web_app_manifest.h"
@@ -29,8 +29,6 @@ class Origin;
 
 namespace payments {
 
-class PaymentRequestDelegate;
-
 // Represents a service worker based payment app.
 class ServiceWorkerPaymentApp : public PaymentApp {
  public:
@@ -45,7 +43,8 @@ class ServiceWorkerPaymentApp : public PaymentApp {
       const GURL& frame_origin,
       const PaymentRequestSpec* spec,
       std::unique_ptr<content::StoredPaymentApp> stored_payment_app_info,
-      PaymentRequestDelegate* payment_request_delegate,
+      bool is_incognito,
+      const base::RepeatingClosure& show_processing_spinner,
       const IdentityCallback& identity_callback);
 
   // This constructor is used for a payment app that has not been installed in
@@ -56,8 +55,9 @@ class ServiceWorkerPaymentApp : public PaymentApp {
       const GURL& frame_origin,
       const PaymentRequestSpec* spec,
       std::unique_ptr<WebAppInstallationInfo> installable_payment_app_info,
-      const std::string& enabled_methods,
-      PaymentRequestDelegate* payment_request_delegate,
+      const std::string& enabled_method,
+      bool is_incognito,
+      const base::RepeatingClosure& show_processing_spinner,
       const IdentityCallback& identity_callback);
   ~ServiceWorkerPaymentApp() override;
 
@@ -134,8 +134,11 @@ class ServiceWorkerPaymentApp : public PaymentApp {
   // PaymentRequestState which also owns PaymentResponseHelper.
   Delegate* delegate_;
 
-  // Weak pointer that must outlive this object.
-  PaymentRequestDelegate* payment_request_delegate_;
+  bool is_incognito_;
+
+  // Disables user interaction by showing a spinner. Used when the app is
+  // invoked.
+  base::RepeatingClosure show_processing_spinner_;
 
   // The callback that is notified of service worker registration identifier
   // after the service worker is installed.

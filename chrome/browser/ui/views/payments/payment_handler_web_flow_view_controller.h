@@ -13,11 +13,13 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/views/controls/progress_bar.h"
-#include "ui/views/controls/separator.h"
 #include "url/gurl.h"
 
 class Profile;
+
+namespace views {
+class ProgressBar;
+}
 
 namespace payments {
 
@@ -61,7 +63,6 @@ class PaymentHandlerWebFlowViewController
   bool ShouldShowSecondaryButton() override;
   std::unique_ptr<views::View> CreateHeaderContentView(
       views::View* header_view) override;
-  views::View* CreateHeaderContentSeparatorView() override;
   std::unique_ptr<views::Background> GetHeaderBackground(
       views::View* header_view) override;
   bool GetSheetId(DialogViewID* sheet_id) override;
@@ -90,11 +91,9 @@ class PaymentHandlerWebFlowViewController
   DeveloperConsoleLogger log_;
   Profile* profile_;
   GURL target_;
-  bool show_progress_bar_;
-  std::unique_ptr<views::ProgressBar> progress_bar_;
-  std::unique_ptr<views::Separator> separator_;
+  views::ProgressBar* progress_bar_ = nullptr;
+  views::View* separator_ = nullptr;
   PaymentHandlerOpenWindowCallback first_navigation_complete_callback_;
-  base::string16 https_prefix_;
   // Used to present modal dialog triggered from the payment handler web view,
   // e.g. an authenticator dialog.
   PaymentHandlerModalDialogManagerDelegate dialog_manager_delegate_;

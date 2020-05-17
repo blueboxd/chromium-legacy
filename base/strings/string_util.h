@@ -14,6 +14,7 @@
 
 #include <initializer_list>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "base/base_export.h"
@@ -84,19 +85,17 @@ BASE_EXPORT bool IsWprintfFormatPortable(const wchar_t* format);
 
 // ASCII-specific tolower.  The standard library's tolower is locale sensitive,
 // so we don't want to use it here.
-inline char ToLowerASCII(char c) {
-  return (c >= 'A' && c <= 'Z') ? (c + ('a' - 'A')) : c;
-}
-inline char16 ToLowerASCII(char16 c) {
+template <typename CharT,
+          typename = std::enable_if_t<std::is_integral<CharT>::value>>
+CharT ToLowerASCII(CharT c) {
   return (c >= 'A' && c <= 'Z') ? (c + ('a' - 'A')) : c;
 }
 
 // ASCII-specific toupper.  The standard library's toupper is locale sensitive,
 // so we don't want to use it here.
-inline char ToUpperASCII(char c) {
-  return (c >= 'a' && c <= 'z') ? (c + ('A' - 'a')) : c;
-}
-inline char16 ToUpperASCII(char16 c) {
+template <typename CharT,
+          typename = std::enable_if_t<std::is_integral<CharT>::value>>
+CharT ToUpperASCII(CharT c) {
   return (c >= 'a' && c <= 'z') ? (c + ('A' - 'a')) : c;
 }
 
@@ -347,7 +346,8 @@ BASE_EXPORT bool IsStringUTF8AllowingNoncharacters(StringPiece str);
 // does not leave early if it is not the case.
 BASE_EXPORT bool IsStringASCII(StringPiece str);
 BASE_EXPORT bool IsStringASCII(StringPiece16 str);
-#if defined(WCHAR_T_IS_UTF32)
+
+#if defined(BASE_STRING16_IS_STD_U16STRING) || defined(WCHAR_T_IS_UTF32)
 BASE_EXPORT bool IsStringASCII(WStringPiece str);
 #endif
 
@@ -544,6 +544,9 @@ BASE_EXPORT TrimPositions TrimWhitespace(WStringPiece input,
 BASE_EXPORT WStringPiece TrimWhitespace(WStringPiece input,
                                         TrimPositions positions);
 
+BASE_EXPORT bool LowerCaseEqualsASCII(WStringPiece str,
+                                      StringPiece lowecase_ascii);
+
 BASE_EXPORT bool TrimString(WStringPiece input,
                             WStringPiece trim_chars,
                             std::wstring* output);
@@ -551,6 +554,10 @@ BASE_EXPORT bool TrimString(WStringPiece input,
 BASE_EXPORT WStringPiece TrimString(WStringPiece input,
                                     WStringPiece trim_chars,
                                     TrimPositions positions);
+
+BASE_EXPORT bool StartsWith(WStringPiece str,
+                            WStringPiece search_for,
+                            CompareCase case_sensitivity);
 
 BASE_EXPORT wchar_t* WriteInto(std::wstring* str, size_t length_with_null);
 #endif

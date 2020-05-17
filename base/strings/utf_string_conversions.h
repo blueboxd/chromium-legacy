@@ -12,6 +12,7 @@
 #include "base/base_export.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -48,6 +49,16 @@ BASE_EXPORT string16 ASCIIToUTF16(StringPiece ascii) WARN_UNUSED_RESULT;
 // Converts to 7-bit ASCII by truncating. The result must be known to be ASCII
 // beforehand.
 BASE_EXPORT std::string UTF16ToASCII(StringPiece16 utf16) WARN_UNUSED_RESULT;
+
+#if defined(WCHAR_T_IS_UTF16)
+// This converts an ASCII string, typically a hardcoded constant, to a wide
+// string.
+BASE_EXPORT std::wstring ASCIIToWide(StringPiece ascii) WARN_UNUSED_RESULT;
+
+// Converts to 7-bit ASCII by truncating. The result must be known to be ASCII
+// beforehand.
+BASE_EXPORT std::string WideToASCII(WStringPiece wide) WARN_UNUSED_RESULT;
+#endif  // defined(WCHAR_T_IS_UTF16)
 
 }  // namespace base
 

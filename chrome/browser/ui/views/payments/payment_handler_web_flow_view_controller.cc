@@ -33,6 +33,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/progress_bar.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -41,13 +42,17 @@ namespace payments {
 namespace {
 
 base::string16 GetPaymentHandlerDialogTitle(
-    content::WebContents* web_contents,
-    const base::string16& https_prefix) {
-  return web_contents == nullptr ||
-                 base::StartsWith(web_contents->GetTitle(), https_prefix,
-                                  base::CompareCase::SENSITIVE)
+    content::WebContents* web_contents) {
+  if (!web_contents)
+    return base::string16();
+
+  const base::string16 title = web_contents->GetTitle();
+  const base::string16 https_prefix =
+      base::ASCIIToUTF16(url::kHttpsScheme) +
+      base::ASCIIToUTF16(url::kStandardSchemeSeparator);
+  return base::StartsWith(title, https_prefix, base::CompareCase::SENSITIVE)
              ? base::string16()
-             : web_contents->GetTitle();
+             : title;
 }
 
 }  // namespace
@@ -59,8 +64,7 @@ class ReadOnlyOriginView : public views::View {
                      gfx::ImageSkia icon_image_skia,
                      SkColor background_color,
                      views::ButtonListener* site_settings_listener) {
-    std::unique_ptr<views::View> title_origin_container =
-        std::make_unique<views::View>();
+    auto title_origin_container = std::make_unique<views::View>();
     SkColor foreground = color_utils::GetColorWithMaxContrast(background_color);
     views::GridLayout* title_origin_layout =
         title_origin_container->SetLayoutManager(
@@ -73,9 +77,9 @@ class ReadOnlyOriginView : public views::View {
     bool title_is_valid = !page_title.empty();
     if (title_is_valid) {
       title_origin_layout->StartRow(views::GridLayout::kFixedSize, 0);
-      std::unique_ptr<views::Label> title_label =
-          std::make_unique<views::Label>(page_title,
-                                         views::style::CONTEXT_DIALOG_TITLE);
+      auto* title_label =
+          title_origin_layout->AddView(std::make_unique<views::Label>(
+              page_title, views::style::CONTEXT_DIALOG_TITLE));
       title_label->SetID(static_cast<int>(DialogViewID::SHEET_TITLE));
       title_label->SetFocusBehavior(
           views::View::FocusBehavior::ACCESSIBLE_ONLY);
@@ -83,12 +87,11 @@ class ReadOnlyOriginView : public views::View {
       // contrast into account.
       title_label->SetAutoColorReadabilityEnabled(false);
       title_label->SetEnabledColor(foreground);
-      title_origin_layout->AddView(std::move(title_label));
     }
 
     title_origin_layout->StartRow(views::GridLayout::kFixedSize, 0);
-    auto origin_label =
-        std::make_unique<views::Label>(base::UTF8ToUTF16(origin.host()));
+    auto* origin_label = title_origin_layout->AddView(
+        std::make_unique<views::Label>(base::UTF8ToUTF16(origin.host())));
     origin_label->SetElideBehavior(gfx::ELIDE_HEAD);
     if (!title_is_valid) {
       // Set the origin as title when the page title is invalid.
@@ -103,9 +106,7 @@ class ReadOnlyOriginView : public views::View {
     // contrast into account.
     origin_label->SetAutoColorReadabilityEnabled(false);
     origin_label->SetEnabledColor(foreground);
-
     origin_label->SetBackgroundColor(background_color);
-    title_origin_layout->AddView(std::move(origin_label));
 
     views::GridLayout* top_level_layout =
         SetLayoutManager(std::make_unique<views::GridLayout>());
@@ -132,21 +133,19 @@ class ReadOnlyOriginView : public views::View {
     top_level_layout->StartRow(views::GridLayout::kFixedSize, 0);
     top_level_layout->AddView(std::move(title_origin_container));
     if (has_icon) {
-      std::unique_ptr<views::ImageView> app_icon_view =
+      views::ImageView* app_icon_view = top_level_layout->AddView(
           CreateAppIconView(/*icon_id=*/0, icon_image_skia,
-                            /*label=*/page_title);
+                            /*label=*/page_title));
       // We should set image size in density independent pixels here, since
       // views::ImageView objects are rastered at the device scale factor.
       app_icon_view->SetImageSize(gfx::Size(
           adjusted_width,
           IconSizeCalculator::kPaymentAppDeviceIndependentIdealIconHeight));
-      top_level_layout->AddView(std::move(app_icon_view));
     }
   }
-  ~ReadOnlyOriginView() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ReadOnlyOriginView);
+  ReadOnlyOriginView(const ReadOnlyOriginView&) = delete;
+  ReadOnlyOriginView& operator=(const ReadOnlyOriginView&) = delete;
+  ~ReadOnlyOriginView() override = default;
 };
 
 PaymentHandlerWebFlowViewController::PaymentHandlerWebFlowViewController(
@@ -161,14 +160,8 @@ PaymentHandlerWebFlowViewController::PaymentHandlerWebFlowViewController(
       log_(payment_request_web_contents),
       profile_(profile),
       target_(target),
-      show_progress_bar_(false),
-      progress_bar_(
-          std::make_unique<views::ProgressBar>(/*preferred_height=*/2)),
-      separator_(std::make_unique<views::Separator>()),
       first_navigation_complete_callback_(
           std::move(first_navigation_complete_callback)),
-      https_prefix_(base::UTF8ToUTF16(url::kHttpsScheme) +
-                    base::UTF8ToUTF16(url::kStandardSchemeSeparator)),
       // Borrow the browser's WebContentModalDialogHost to display modal dialogs
       // triggered by the payment handler's web view (e.g. WebAuthn dialogs).
       // The browser's WebContentModalDialogHost is valid throughout the
@@ -178,12 +171,6 @@ PaymentHandlerWebFlowViewController::PaymentHandlerWebFlowViewController(
           static_cast<web_modal::WebContentsModalDialogManagerDelegate*>(
               chrome::FindBrowserWithWebContents(payment_request_web_contents))
               ->GetWebContentsModalDialogHost()) {
-  progress_bar_->set_owned_by_client();
-  progress_bar_->SetForegroundColor(gfx::kGoogleBlue500);
-  progress_bar_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  separator_->set_owned_by_client();
-  separator_->SetColor(separator_->GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_SeparatorColor));
 }
 
 PaymentHandlerWebFlowViewController::~PaymentHandlerWebFlowViewController() {
@@ -191,14 +178,31 @@ PaymentHandlerWebFlowViewController::~PaymentHandlerWebFlowViewController() {
 }
 
 base::string16 PaymentHandlerWebFlowViewController::GetSheetTitle() {
-  return GetPaymentHandlerDialogTitle(web_contents(), https_prefix_);
+  return GetPaymentHandlerDialogTitle(web_contents());
 }
 
 void PaymentHandlerWebFlowViewController::FillContentView(
     views::View* content_view) {
+  // The first time this is called, also create and add the header/content
+  // separator container children.  This must be done before calling
+  // LoadInitialURL() below so these will be set up before that calls back to
+  // LoadProgressChanged(), and it can't be done in the constructor since the
+  // container doesn't exist yet.
+  if (!progress_bar_) {
+    // Add both progress bar and separator to the container, and set the
+    // separator as the initially-visible one.
+    progress_bar_ = header_content_separator_container()->AddChildView(
+        std::make_unique<views::ProgressBar>(/*preferred_height=*/2));
+    progress_bar_->SetForegroundColor(gfx::kGoogleBlue500);
+    progress_bar_->SetBackgroundColor(SK_ColorTRANSPARENT);
+    progress_bar_->SetVisible(false);
+    separator_ = header_content_separator_container()->AddChildView(
+        std::make_unique<views::Separator>());
+  }
+
   content_view->SetLayoutManager(std::make_unique<views::FillLayout>());
-  std::unique_ptr<views::WebView> web_view =
-      std::make_unique<views::WebView>(profile_);
+  auto* web_view =
+      content_view->AddChildView(std::make_unique<views::WebView>(profile_));
   Observe(web_view->GetWebContents());
   web_contents()->SetDelegate(this);
   web_view->LoadInitialURL(target_);
@@ -217,7 +221,6 @@ void PaymentHandlerWebFlowViewController::FillContentView(
   // properly set so it can be 0 here.
   web_view->SetPreferredSize(
       gfx::Size(0, dialog()->GetActualPaymentHandlerDialogHeight() - 75));
-  content_view->AddChildView(web_view.release());
 }
 
 bool PaymentHandlerWebFlowViewController::ShouldShowSecondaryButton() {
@@ -233,16 +236,9 @@ PaymentHandlerWebFlowViewController::CreateHeaderContentView(
   std::unique_ptr<views::Background> background =
       GetHeaderBackground(header_view);
   return std::make_unique<ReadOnlyOriginView>(
-      GetPaymentHandlerDialogTitle(web_contents(), https_prefix_), origin,
+      GetPaymentHandlerDialogTitle(web_contents()), origin,
       state()->selected_app()->icon_image_skia(), background->get_color(),
       this);
-}
-
-views::View*
-PaymentHandlerWebFlowViewController::CreateHeaderContentSeparatorView() {
-  if (show_progress_bar_)
-    return progress_bar_.get();
-  return separator_.get();
 }
 
 std::unique_ptr<views::Background>
@@ -270,18 +266,15 @@ bool PaymentHandlerWebFlowViewController::
 
 void PaymentHandlerWebFlowViewController::VisibleSecurityStateChanged(
     content::WebContents* source) {
-  DCHECK(source == web_contents());
-  if (!SslValidityChecker::IsValidPageInPaymentHandlerWindow(source)) {
+  DCHECK_EQ(source, web_contents());
+  if (!SslValidityChecker::IsValidPageInPaymentHandlerWindow(source))
     AbortPayment();
-  }
 }
 
 void PaymentHandlerWebFlowViewController::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsSameDocument())
-    return;
-
-  UpdateHeaderView();
+  if (!navigation_handle->IsSameDocument())
+    UpdateHeaderView();
 }
 
 void PaymentHandlerWebFlowViewController::AddNewContents(
@@ -325,7 +318,6 @@ void PaymentHandlerWebFlowViewController::DidFinishNavigation(
     std::move(first_navigation_complete_callback_)
         .Run(true, web_contents()->GetMainFrame()->GetProcess()->GetID(),
              web_contents()->GetMainFrame()->GetRoutingID());
-    first_navigation_complete_callback_ = PaymentHandlerOpenWindowCallback();
   }
 
   UpdateHeaderView();
@@ -333,18 +325,9 @@ void PaymentHandlerWebFlowViewController::DidFinishNavigation(
 
 void PaymentHandlerWebFlowViewController::LoadProgressChanged(double progress) {
   progress_bar_->SetValue(progress);
-
-  if (progress == 1.0 && show_progress_bar_) {
-    show_progress_bar_ = false;
-    UpdateHeaderContentSeparatorView();
-    return;
-  }
-
-  if (progress < 1.0 && !show_progress_bar_) {
-    show_progress_bar_ = true;
-    UpdateHeaderContentSeparatorView();
-    return;
-  }
+  const bool show_progress = progress < 1.0;
+  progress_bar_->SetVisible(show_progress);
+  separator_->SetVisible(!show_progress);
 }
 
 void PaymentHandlerWebFlowViewController::TitleWasSet(

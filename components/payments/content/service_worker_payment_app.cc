@@ -17,7 +17,6 @@
 #include "components/payments/content/payment_request_converter.h"
 #include "components/payments/core/features.h"
 #include "components/payments/core/method_strings.h"
-#include "components/payments/core/payment_request_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/web_contents.h"
@@ -35,7 +34,8 @@ ServiceWorkerPaymentApp::ServiceWorkerPaymentApp(
     const GURL& frame_origin,
     const PaymentRequestSpec* spec,
     std::unique_ptr<content::StoredPaymentApp> stored_payment_app_info,
-    PaymentRequestDelegate* payment_request_delegate,
+    bool is_incognito,
+    const base::RepeatingClosure& show_processing_spinner,
     const IdentityCallback& identity_callback)
     : PaymentApp(0, PaymentApp::Type::SERVICE_WORKER_APP),
       browser_context_(browser_context),
@@ -44,7 +44,8 @@ ServiceWorkerPaymentApp::ServiceWorkerPaymentApp(
       spec_(spec),
       stored_payment_app_info_(std::move(stored_payment_app_info)),
       delegate_(nullptr),
-      payment_request_delegate_(payment_request_delegate),
+      is_incognito_(is_incognito),
+      show_processing_spinner_(show_processing_spinner),
       identity_callback_(identity_callback),
       can_make_payment_result_(false),
       has_enrolled_instrument_result_(false),
@@ -76,14 +77,16 @@ ServiceWorkerPaymentApp::ServiceWorkerPaymentApp(
     const PaymentRequestSpec* spec,
     std::unique_ptr<WebAppInstallationInfo> installable_payment_app_info,
     const std::string& enabled_method,
-    PaymentRequestDelegate* payment_request_delegate,
+    bool is_incognito,
+    const base::RepeatingClosure& show_processing_spinner,
     const IdentityCallback& identity_callback)
     : PaymentApp(0, PaymentApp::Type::SERVICE_WORKER_APP),
       top_origin_(top_origin),
       frame_origin_(frame_origin),
       spec_(spec),
       delegate_(nullptr),
-      payment_request_delegate_(payment_request_delegate),
+      is_incognito_(is_incognito),
+      show_processing_spinner_(show_processing_spinner),
       identity_callback_(identity_callback),
       can_make_payment_result_(false),
       has_enrolled_instrument_result_(false),
@@ -130,7 +133,7 @@ void ServiceWorkerPaymentApp::ValidateCanMakePayment(
 
   // Returns true if we are in incognito (avoiding sending the event to the
   // payment handler).
-  if (payment_request_delegate_->IsIncognito()) {
+  if (is_incognito_) {
     OnCanMakePaymentEventSkipped(std::move(callback));
     return;
   }
@@ -254,7 +257,7 @@ void ServiceWorkerPaymentApp::InvokePaymentApp(Delegate* delegate) {
                        weak_ptr_factory_.GetWeakPtr()));
   }
 
-  payment_request_delegate_->ShowProcessingSpinner();
+  show_processing_spinner_.Run();
 }
 
 void ServiceWorkerPaymentApp::OnPaymentAppWindowClosed() {

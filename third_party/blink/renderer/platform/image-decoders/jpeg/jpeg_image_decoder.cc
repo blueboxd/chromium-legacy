@@ -224,6 +224,18 @@ static unsigned ReadUint32(JOCTET* data, bool is_big_endian) {
          (GETJOCTET(data[1]) << 8) | GETJOCTET(data[0]);
 }
 
+static JOCTET* ReadPointerOffset(JOCTET* data,
+                                 JOCTET* start,
+                                 JOCTET* end,
+                                 bool is_big_endian) {
+  unsigned max_offset = end - start;
+  unsigned offset = ReadUint32(data, is_big_endian);
+  if (offset > max_offset)
+    return nullptr;
+
+  return start + offset;
+}
+
 static float ReadUnsignedRational(JOCTET* data, bool is_big_endian) {
   unsigned nom = ReadUint32(data, is_big_endian);
   unsigned denom = ReadUint32(data + 4, is_big_endian);
@@ -288,7 +300,13 @@ static IntSize ExtractDensityCorrectedSize(const DecodedImageMetaData& metadata,
   return physical_size;
 }
 
-static void ReadExifDirectory(JOCTET* dir_start, JOCTET* tiff_start, JOCTET* root_dir_start, JOCTET* data_end, bool is_big_endian, DecodedImageMetaData& metadata) {
+static void ReadExifDirectory(JOCTET* dir_start,
+                              JOCTET* tiff_start,
+                              JOCTET* root_dir_start,
+                              JOCTET* data_end,
+                              bool is_big_endian,
+                              DecodedImageMetaData& metadata,
+                              bool is_root = true) {
   const unsigned kUnsignedShortType = 3;
   const unsigned kUnsignedLongType = 4;
   const unsigned kUnsignedRationalType = 5;
@@ -322,9 +340,10 @@ static void ReadExifDirectory(JOCTET* dir_start, JOCTET* tiff_start, JOCTET* roo
 
     // EXIF stores the value with an offset if it's bigger than 4 bytes, e.g. for rational values.
     if (type == kUnsignedRationalType) {
-      value_ptr = tiff_start + ReadUint32(value_ptr, is_big_endian);
+      value_ptr =
+          ReadPointerOffset(value_ptr, tiff_start, data_end, is_big_endian);
       // Make sure offset points to a valid location.
-      if (value_ptr < ifd || value_ptr > data_end - 16)
+      if (!value_ptr || value_ptr < ifd || value_ptr > data_end - 16)
         continue;
     }
 
@@ -360,9 +379,14 @@ static void ReadExifDirectory(JOCTET* dir_start, JOCTET* tiff_start, JOCTET* roo
         break;
 
       case ExifTags::kExifOffsetTag:
-        if (type == kUnsignedLongType && count == 1) {
-          auto subdir_offset = ReadUint32(value_ptr, is_big_endian);
-          ReadExifDirectory(root_dir_start + subdir_offset, tiff_start, root_dir_start, data_end, is_big_endian, metadata);
+        if (type == kUnsignedLongType && count == 1 && is_root) {
+          JOCTET* subdir = ReadPointerOffset(value_ptr, root_dir_start,
+                                             data_end, is_big_endian);
+
+          if (subdir) {
+            ReadExifDirectory(subdir, tiff_start, root_dir_start, data_end,
+                              is_big_endian, metadata, false);
+          }
         }
         break;
     }

@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <type_traits>
 #include <vector>
 
 #include "base/logging.h"
@@ -58,29 +59,6 @@ using MachineWord = uintptr_t;
 inline bool IsMachineWordAligned(const void* pointer) {
   return !(reinterpret_cast<MachineWord>(pointer) & (sizeof(MachineWord) - 1));
 }
-
-template <typename CharacterType>
-struct NonASCIIMask;
-template <>
-struct NonASCIIMask<char> {
-  static constexpr MachineWord value() {
-    return static_cast<MachineWord>(0x8080808080808080ULL);
-  }
-};
-template <>
-struct NonASCIIMask<char16> {
-  static constexpr MachineWord value() {
-    return static_cast<MachineWord>(0xFF80FF80FF80FF80ULL);
-  }
-};
-#if defined(WCHAR_T_IS_UTF32)
-template <>
-struct NonASCIIMask<wchar_t> {
-  static constexpr MachineWord value() {
-    return static_cast<MachineWord>(0xFFFFFF80FFFFFF80ULL);
-  }
-};
-#endif  // WCHAR_T_IS_UTF32
 
 }  // namespace
 
@@ -437,9 +415,17 @@ bool ContainsOnlyChars(StringPiece16 input, StringPiece16 characters) {
 
 template <class Char>
 inline bool DoIsStringASCII(const Char* characters, size_t length) {
+  // Bitmasks to detect non ASCII characters for character sizes of 8, 16 and 32
+  // bits.
+  constexpr MachineWord NonASCIIMasks[] = {
+      0, MachineWord(0x8080808080808080ULL), MachineWord(0xFF80FF80FF80FF80ULL),
+      0, MachineWord(0xFFFFFF80FFFFFF80ULL),
+  };
+
   if (!length)
     return true;
-  constexpr MachineWord non_ascii_bit_mask = NonASCIIMask<Char>::value();
+  constexpr MachineWord non_ascii_bit_mask = NonASCIIMasks[sizeof(Char)];
+  static_assert(non_ascii_bit_mask, "Error: Invalid Mask");
   MachineWord all_char_bits = 0;
   const Char* end = characters + length;
 
@@ -484,7 +470,7 @@ bool IsStringASCII(StringPiece16 str) {
   return DoIsStringASCII(str.data(), str.length());
 }
 
-#if defined(WCHAR_T_IS_UTF32)
+#if defined(BASE_STRING16_IS_STD_U16STRING) || defined(WCHAR_T_IS_UTF32)
 bool IsStringASCII(WStringPiece str) {
   return DoIsStringASCII(str.data(), str.length());
 }
@@ -531,21 +517,17 @@ bool IsStringUTF8AllowingNoncharacters(StringPiece str) {
 template<typename Str>
 static inline bool DoLowerCaseEqualsASCII(BasicStringPiece<Str> str,
                                           StringPiece lowercase_ascii) {
-  if (str.size() != lowercase_ascii.size())
-    return false;
-  for (size_t i = 0; i < str.size(); i++) {
-    if (ToLowerASCII(str[i]) != lowercase_ascii[i])
-      return false;
-  }
-  return true;
+  return std::equal(
+      str.begin(), str.end(), lowercase_ascii.begin(), lowercase_ascii.end(),
+      [](auto lhs, auto rhs) { return ToLowerASCII(lhs) == rhs; });
 }
 
 bool LowerCaseEqualsASCII(StringPiece str, StringPiece lowercase_ascii) {
-  return DoLowerCaseEqualsASCII<std::string>(str, lowercase_ascii);
+  return DoLowerCaseEqualsASCII(str, lowercase_ascii);
 }
 
 bool LowerCaseEqualsASCII(StringPiece16 str, StringPiece lowercase_ascii) {
-  return DoLowerCaseEqualsASCII<string16>(str, lowercase_ascii);
+  return DoLowerCaseEqualsASCII(str, lowercase_ascii);
 }
 
 bool EqualsASCII(StringPiece16 str, StringPiece ascii) {
@@ -582,13 +564,13 @@ bool StartsWithT(BasicStringPiece<Str> str,
 bool StartsWith(StringPiece str,
                 StringPiece search_for,
                 CompareCase case_sensitivity) {
-  return StartsWithT<std::string>(str, search_for, case_sensitivity);
+  return StartsWithT(str, search_for, case_sensitivity);
 }
 
 bool StartsWith(StringPiece16 str,
                 StringPiece16 search_for,
                 CompareCase case_sensitivity) {
-  return StartsWithT<string16>(str, search_for, case_sensitivity);
+  return StartsWithT(str, search_for, case_sensitivity);
 }
 
 template <typename Str>
@@ -1077,6 +1059,10 @@ WStringPiece TrimWhitespace(WStringPiece input, TrimPositions positions) {
   return TrimStringPieceT(input, WStringPiece(kWhitespaceWide), positions);
 }
 
+bool LowerCaseEqualsASCII(WStringPiece str, StringPiece lowercase_ascii) {
+  return DoLowerCaseEqualsASCII(str, lowercase_ascii);
+}
+
 bool TrimString(WStringPiece input,
                 WStringPiece trim_chars,
                 std::wstring* output) {
@@ -1087,6 +1073,12 @@ WStringPiece TrimString(WStringPiece input,
                         WStringPiece trim_chars,
                         TrimPositions positions) {
   return TrimStringPieceT(input, trim_chars, positions);
+}
+
+bool StartsWith(WStringPiece str,
+                WStringPiece search_for,
+                CompareCase case_sensitivity) {
+  return StartsWithT(str, search_for, case_sensitivity);
 }
 
 wchar_t* WriteInto(std::wstring* str, size_t length_with_null) {

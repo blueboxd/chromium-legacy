@@ -148,6 +148,7 @@ template <typename STRING_TYPE> class BasicStringPiece {
  public:
   // Standard STL container boilerplate.
   typedef size_t size_type;
+  typedef typename STRING_TYPE::traits_type traits_type;
   typedef typename STRING_TYPE::value_type value_type;
   typedef const value_type* pointer;
   typedef const value_type& reference;

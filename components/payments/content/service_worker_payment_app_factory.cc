@@ -64,12 +64,17 @@ class ServiceWorkerPaymentAppCreator {
       return;
     }
 
+    base::RepeatingClosure show_processing_spinner = base::BindRepeating(
+        &PaymentRequestDelegate::ShowProcessingSpinner,
+        delegate_->GetPaymentRequestDelegate()->GetWeakPtr());
+
     for (auto& installed_app : apps) {
       auto app = std::make_unique<ServiceWorkerPaymentApp>(
           delegate_->GetWebContents()->GetBrowserContext(),
           delegate_->GetTopOrigin(), delegate_->GetFrameOrigin(),
           delegate_->GetSpec(), std::move(installed_app.second),
-          delegate_->GetPaymentRequestDelegate(),
+          delegate_->GetPaymentRequestDelegate()->IsIncognito(),
+          show_processing_spinner,
           base::BindRepeating(
               &PaymentAppFactory::Delegate::OnPaymentAppInstalled, delegate_));
       app->ValidateCanMakePayment(base::BindOnce(
@@ -84,7 +89,8 @@ class ServiceWorkerPaymentAppCreator {
           delegate_->GetWebContents(), delegate_->GetTopOrigin(),
           delegate_->GetFrameOrigin(), delegate_->GetSpec(),
           std::move(installable_app.second), installable_app.first.spec(),
-          delegate_->GetPaymentRequestDelegate(),
+          delegate_->GetPaymentRequestDelegate()->IsIncognito(),
+          show_processing_spinner,
           base::BindRepeating(
               &PaymentAppFactory::Delegate::OnPaymentAppInstalled, delegate_));
       app->ValidateCanMakePayment(base::BindOnce(

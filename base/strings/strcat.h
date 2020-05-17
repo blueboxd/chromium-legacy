@@ -69,11 +69,23 @@ BASE_EXPORT string16 StrCat(span<const string16> pieces) WARN_UNUSED_RESULT;
 
 // Initializer list forwards to the array version.
 inline std::string StrCat(std::initializer_list<StringPiece> pieces) {
-  return StrCat(make_span(pieces.begin(), pieces.size()));
+  return StrCat(make_span(pieces));
 }
+
 inline string16 StrCat(std::initializer_list<StringPiece16> pieces) {
-  return StrCat(make_span(pieces.begin(), pieces.size()));
+  return StrCat(make_span(pieces));
 }
+
+#if defined(OS_WIN) && defined(BASE_STRING16_IS_STD_U16STRING)
+BASE_EXPORT std::wstring StrCat(span<const WStringPiece> pieces)
+    WARN_UNUSED_RESULT;
+BASE_EXPORT std::wstring StrCat(span<const std::wstring> pieces)
+    WARN_UNUSED_RESULT;
+
+inline std::wstring StrCat(std::initializer_list<WStringPiece> pieces) {
+  return StrCat(make_span(pieces));
+}
+#endif  // defined(OS_WIN) && defined(BASE_STRING16_IS_STD_U16STRING)
 
 // StrAppend -------------------------------------------------------------------
 //
@@ -91,12 +103,23 @@ BASE_EXPORT void StrAppend(string16* dest, span<const string16> pieces);
 // Initializer list forwards to the array version.
 inline void StrAppend(std::string* dest,
                       std::initializer_list<StringPiece> pieces) {
-  return StrAppend(dest, make_span(pieces.begin(), pieces.size()));
+  StrAppend(dest, make_span(pieces));
 }
+
 inline void StrAppend(string16* dest,
                       std::initializer_list<StringPiece16> pieces) {
-  return StrAppend(dest, make_span(pieces.begin(), pieces.size()));
+  StrAppend(dest, make_span(pieces));
 }
+
+#if defined(OS_WIN) && defined(BASE_STRING16_IS_STD_U16STRING)
+BASE_EXPORT void StrAppend(std::wstring* dest, span<const WStringPiece> pieces);
+BASE_EXPORT void StrAppend(std::wstring* dest, span<const std::wstring> pieces);
+
+inline void StrAppend(std::wstring* dest,
+                      std::initializer_list<WStringPiece> pieces) {
+  StrAppend(dest, make_span(pieces));
+}
+#endif  // defined(OS_WIN) && defined(BASE_STRING16_IS_STD_U16STRING)
 
 }  // namespace base
 

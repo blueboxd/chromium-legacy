@@ -33,12 +33,19 @@ void DownloadImageFromUrl(const std::string& url, DownloadCallback callback) {
 
 }  // namespace
 
-AmbientPhotoController::AmbientPhotoController() = default;
+AmbientPhotoController::AmbientPhotoController() {
+  ambient_backedn_model_observer_.Add(&ambient_backend_model_);
+}
 
 AmbientPhotoController::~AmbientPhotoController() = default;
 
 void AmbientPhotoController::StartScreenUpdate() {
-  RefreshImage();
+  Shell::Get()
+      ->ambient_controller()
+      ->ambient_backend_controller()
+      ->FetchScreenUpdateInfo(
+          base::BindOnce(&AmbientPhotoController::OnScreenUpdateInfoFetched,
+                         weak_factory_.GetWeakPtr()));
 }
 
 void AmbientPhotoController::StopScreenUpdate() {
@@ -47,12 +54,15 @@ void AmbientPhotoController::StopScreenUpdate() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
+void AmbientPhotoController::OnTopicsChanged() {
+  RefreshImage();
+}
+
 void AmbientPhotoController::RefreshImage() {
   if (ambient_backend_model_.ShouldFetchImmediately()) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&AmbientPhotoController::GetNextScreenUpdateInfo,
-                       weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&AmbientPhotoController::GetNextImage,
+                                  weak_factory_.GetWeakPtr()));
   } else {
     ambient_backend_model_.ShowNextImage();
     ScheduleRefreshImage();
@@ -74,16 +84,15 @@ void AmbientPhotoController::ScheduleRefreshImage() {
                      weak_factory_.GetWeakPtr()));
 }
 
-void AmbientPhotoController::GetNextScreenUpdateInfo() {
-  Shell::Get()
-      ->ambient_controller()
-      ->ambient_backend_controller()
-      ->FetchScreenUpdateInfo(
-          base::BindOnce(&AmbientPhotoController::OnNextScreenUpdateInfoFetched,
-                         weak_factory_.GetWeakPtr()));
+void AmbientPhotoController::GetNextImage() {
+  const AmbientModeTopic& topic = ambient_backend_model_.GetNextTopic();
+  const std::string& image_url = topic.portrait_image_url.value_or(topic.url);
+  DownloadImageFromUrl(
+      image_url, base::BindOnce(&AmbientPhotoController::OnPhotoDownloaded,
+                                weak_factory_.GetWeakPtr()));
 }
 
-void AmbientPhotoController::OnNextScreenUpdateInfoFetched(
+void AmbientPhotoController::OnScreenUpdateInfoFetched(
     const ash::ScreenUpdate& screen_update) {
   // It is possible that |screen_update| is an empty instance if fatal errors
   // happened during the fetch.
@@ -94,26 +103,8 @@ void AmbientPhotoController::OnNextScreenUpdateInfoFetched(
     return;
   }
 
-  StartDownloadingPhotoImage(screen_update);
+  ambient_backend_model_.SetTopics(screen_update.next_topics);
   StartDownloadingWeatherConditionIcon(screen_update);
-}
-
-void AmbientPhotoController::StartDownloadingPhotoImage(
-    const ash::ScreenUpdate& screen_update) {
-  // We specified the size of |next_topics| in the request. So if nothing goes
-  // wrong, we should get that amount of |Topic| in the response.
-  if (screen_update.next_topics.size() == 0) {
-    LOG(ERROR) << "No topics included in the response.";
-    OnPhotoDownloaded(gfx::ImageSkia());
-    return;
-  }
-
-  // TODO(b/148462257): Handle a batch of topics.
-  ash::AmbientModeTopic topic = screen_update.next_topics[0];
-  const std::string& image_url = topic.portrait_image_url.value_or(topic.url);
-  DownloadImageFromUrl(
-      image_url, base::BindOnce(&AmbientPhotoController::OnPhotoDownloaded,
-                                weak_factory_.GetWeakPtr()));
 }
 
 void AmbientPhotoController::StartDownloadingWeatherConditionIcon(

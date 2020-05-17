@@ -38,7 +38,6 @@ class ASH_EXPORT PhotoView : public views::View,
 
   // AmbientBackendModelObserver:
   void OnImagesChanged() override;
-  void OnWeatherInfoUpdated() override {}
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PAYMENTS_CORE_PAYMENT_REQUEST_DELEGATE_H_
 #define COMPONENTS_PAYMENTS_CORE_PAYMENT_REQUEST_DELEGATE_H_
 
+#include "base/memory/weak_ptr.h"
 #include "components/payments/core/payment_request_base_delegate.h"
 
 namespace payments {
@@ -13,7 +14,8 @@ class PaymentRequest;
 
 class PaymentRequestDelegate : public PaymentRequestBaseDelegate {
  public:
-  ~PaymentRequestDelegate() override {}
+  PaymentRequestDelegate();
+  ~PaymentRequestDelegate() override;
 
   // Shows the Payment Request dialog for the given |request|.
   virtual void ShowDialog(PaymentRequest* request) = 0;
@@ -33,6 +35,12 @@ class PaymentRequestDelegate : public PaymentRequestBaseDelegate {
 
   // Returns whether the browser window is active.
   virtual bool IsBrowserWindowActive() const = 0;
+
+  // Returns a weak pointer to this delegate.
+  base::WeakPtr<PaymentRequestDelegate> GetWeakPtr();
+
+ private:
+  base::WeakPtrFactory<PaymentRequestDelegate> weak_ptr_factory_{this};
 };
 
 }  // namespace payments

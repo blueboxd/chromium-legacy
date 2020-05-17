@@ -8,12 +8,14 @@
 #include <vector>
 
 #include "ash/ambient/model/ambient_backend_model.h"
+#include "ash/ambient/model/ambient_backend_model_observer.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 
 namespace gfx {
@@ -23,7 +25,7 @@ class ImageSkia;
 namespace ash {
 
 // Class to handle photos in ambient mode.
-class ASH_EXPORT AmbientPhotoController {
+class ASH_EXPORT AmbientPhotoController : public AmbientBackendModelObserver {
  public:
   // Start fetching next |ScreenUpdate| from the backdrop server. The specified
   // download callback will be run upon completion and returns a null image
@@ -38,7 +40,7 @@ class ASH_EXPORT AmbientPhotoController {
   using PhotoDownloadCallback = base::OnceCallback<void(const gfx::ImageSkia&)>;
 
   AmbientPhotoController();
-  ~AmbientPhotoController();
+  ~AmbientPhotoController() override;
 
   // Start/stop updating the screen contents.
   // We need different logics to update photos and weather info because they
@@ -56,16 +58,19 @@ class ASH_EXPORT AmbientPhotoController {
     return photo_refresh_timer_;
   }
 
+  // AmbientBackendModelObserver:
+  void OnTopicsChanged() override;
+
  private:
   friend class AmbientAshTestBase;
 
   void RefreshImage();
   void ScheduleRefreshImage();
-  void GetNextScreenUpdateInfo();
+  void GetScreenUpdateInfo();
 
-  void OnNextScreenUpdateInfoFetched(const ash::ScreenUpdate& screen_update);
+  void GetNextImage();
 
-  void StartDownloadingPhotoImage(const ash::ScreenUpdate& screen_update);
+  void OnScreenUpdateInfoFetched(const ash::ScreenUpdate& screen_update);
 
   void StartDownloadingWeatherConditionIcon(
       const ash::ScreenUpdate& screen_update);
@@ -80,6 +85,9 @@ class ASH_EXPORT AmbientPhotoController {
   AmbientBackendModel ambient_backend_model_;
 
   base::OneShotTimer photo_refresh_timer_;
+
+  ScopedObserver<AmbientBackendModel, AmbientBackendModelObserver>
+      ambient_backedn_model_observer_{this};
 
   base::WeakPtrFactory<AmbientPhotoController> weak_factory_{this};
 

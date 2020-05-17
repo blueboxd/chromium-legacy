@@ -25,7 +25,7 @@ class CORE_EXPORT ElementInternals : public ScriptWrappable,
 
  public:
   ElementInternals(HTMLElement& target);
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   HTMLElement& Target() const { return *target_; }
   void DidUpgrade();

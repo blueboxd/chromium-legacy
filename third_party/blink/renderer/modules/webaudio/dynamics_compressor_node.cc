@@ -273,7 +273,7 @@ DynamicsCompressorNode* DynamicsCompressorNode::Create(
   return node;
 }
 
-void DynamicsCompressorNode::Trace(Visitor* visitor) {
+void DynamicsCompressorNode::Trace(Visitor* visitor) const {
   visitor->Trace(threshold_);
   visitor->Trace(knee_);
   visitor->Trace(ratio_);

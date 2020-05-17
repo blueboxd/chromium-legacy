@@ -148,7 +148,7 @@ bool ContentDecryptionModuleResultPromise::IsValidToFulfillPromise() {
   return GetExecutionContext() && !GetExecutionContext()->IsContextDestroyed();
 }
 
-void ContentDecryptionModuleResultPromise::Trace(Visitor* visitor) {
+void ContentDecryptionModuleResultPromise::Trace(Visitor* visitor) const {
   visitor->Trace(resolver_);
   ContentDecryptionModuleResult::Trace(visitor);
 }

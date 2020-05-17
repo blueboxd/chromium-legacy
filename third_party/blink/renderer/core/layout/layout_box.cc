@@ -248,7 +248,7 @@ LayoutBoxRareData::LayoutBoxRareData()
       snap_container_(nullptr),
       snap_areas_(nullptr) {}
 
-void LayoutBoxRareData::Trace(Visitor* visitor) {
+void LayoutBoxRareData::Trace(Visitor* visitor) const {
   visitor->Trace(layout_child_);
 }
 

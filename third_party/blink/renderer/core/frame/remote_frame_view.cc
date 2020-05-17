@@ -321,7 +321,7 @@ uint32_t RemoteFrameView::CapturePaintPreview(const IntRect& rect,
   return content_id;
 }
 
-void RemoteFrameView::Trace(Visitor* visitor) {
+void RemoteFrameView::Trace(Visitor* visitor) const {
   visitor->Trace(remote_frame_);
 }
 

@@ -734,7 +734,7 @@ bool FilterData::Invalidate(SVGFilterPrimitiveStandardAttributes& primitive,
   return true;
 }
 
-void FilterData::Trace(Visitor* visitor) {
+void FilterData::Trace(Visitor* visitor) const {
   visitor->Trace(last_effect_);
   visitor->Trace(node_map_);
 }
@@ -836,7 +836,7 @@ bool SVGElementResourceClient::ClearFilterData() {
   return !!filter_data;
 }
 
-void SVGElementResourceClient::Trace(Visitor* visitor) {
+void SVGElementResourceClient::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   visitor->Trace(filter_data_);
   SVGResourceClient::Trace(visitor);

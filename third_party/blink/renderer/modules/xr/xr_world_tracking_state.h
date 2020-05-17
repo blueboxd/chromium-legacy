@@ -25,7 +25,7 @@ class XRWorldTrackingState : public ScriptWrappable {
     return plane_detection_state_;
   }
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   Member<XRPlaneDetectionState> plane_detection_state_;

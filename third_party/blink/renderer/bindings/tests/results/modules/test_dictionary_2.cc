@@ -29,7 +29,7 @@ void TestDictionary2::setDefaultEmptyDictionaryForUnion(const TestDictionaryOrLo
   default_empty_dictionary_for_union_ = value;
 }
 
-void TestDictionary2::Trace(Visitor* visitor) {
+void TestDictionary2::Trace(Visitor* visitor) const {
   visitor->Trace(default_empty_dictionary_);
   visitor->Trace(default_empty_dictionary_for_union_);
   IDLDictionaryBase::Trace(visitor);

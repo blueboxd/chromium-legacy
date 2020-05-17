@@ -38,7 +38,7 @@ AbsoluteOrientationSensor::AbsoluteOrientationSensor(
                          mojom::blink::FeaturePolicyFeature::kGyroscope,
                          mojom::blink::FeaturePolicyFeature::kMagnetometer}) {}
 
-void AbsoluteOrientationSensor::Trace(Visitor* visitor) {
+void AbsoluteOrientationSensor::Trace(Visitor* visitor) const {
   OrientationSensor::Trace(visitor);
 }
 

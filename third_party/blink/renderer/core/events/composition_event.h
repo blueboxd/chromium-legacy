@@ -63,7 +63,7 @@ class CompositionEvent final : public UIEvent {
 
   bool IsCompositionEvent() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   String data_;

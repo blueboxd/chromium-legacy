@@ -122,7 +122,7 @@ class ContinueCloseFunction : public ScriptFunction {
     return port_->ContinueClose(GetScriptState()).GetScriptValue();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(port_);
     ScriptFunction::Trace(visitor);
   }
@@ -148,7 +148,7 @@ class AbortCloseFunction : public ScriptFunction {
     return ScriptValue();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(port_);
     ScriptFunction::Trace(visitor);
   }
@@ -449,7 +449,7 @@ void SerialPort::ContextDestroyed() {
   port_.reset();
 }
 
-void SerialPort::Trace(Visitor* visitor) {
+void SerialPort::Trace(Visitor* visitor) const {
   visitor->Trace(parent_);
   visitor->Trace(port_);
   visitor->Trace(client_receiver_);

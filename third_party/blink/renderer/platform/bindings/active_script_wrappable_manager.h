@@ -51,7 +51,7 @@ class PLATFORM_EXPORT ActiveScriptWrappableManager final
   // Does not allocate.
   void IterateActiveScriptWrappables(Visitor*);
 
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
  private:
   // Called during weakness processing. Not allowed to allocate. The next Add()

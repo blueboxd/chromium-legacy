@@ -31,7 +31,7 @@ class NDEFReadingEvent final : public Event {
 
   const AtomicString& InterfaceName() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   const String& serialNumber() const;
   NDEFMessage* message() const;

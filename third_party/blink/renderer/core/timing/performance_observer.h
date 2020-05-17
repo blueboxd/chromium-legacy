@@ -56,7 +56,7 @@ class CORE_EXPORT PerformanceObserver final
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) final;
   void ContextDestroyed() final {}
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // This describes the types of parameters that an observer can have in its

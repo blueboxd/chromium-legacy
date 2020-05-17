@@ -601,7 +601,7 @@ void USBDevice::ContextDestroyed() {
   device_requests_.clear();
 }
 
-void USBDevice::Trace(Visitor* visitor) {
+void USBDevice::Trace(Visitor* visitor) const {
   visitor->Trace(device_);
   visitor->Trace(device_requests_);
   ScriptWrappable::Trace(visitor);

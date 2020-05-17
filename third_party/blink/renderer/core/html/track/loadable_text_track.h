@@ -49,7 +49,7 @@ class LoadableTextTrack final : public TextTrack {
 
   bool IsDefault() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<HTMLTrackElement> track_element_;

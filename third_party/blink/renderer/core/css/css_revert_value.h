@@ -27,7 +27,7 @@ class CORE_EXPORT CSSRevertValue : public CSSValue {
 
   bool Equals(const CSSRevertValue&) const { return true; }
 
-  void TraceAfterDispatch(blink::Visitor* visitor) {
+  void TraceAfterDispatch(blink::Visitor* visitor) const {
     CSSValue::TraceAfterDispatch(visitor);
   }
 };

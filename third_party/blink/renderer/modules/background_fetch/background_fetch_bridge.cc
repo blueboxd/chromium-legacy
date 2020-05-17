@@ -42,7 +42,7 @@ BackgroundFetchBridge::BackgroundFetchBridge(
 
 BackgroundFetchBridge::~BackgroundFetchBridge() = default;
 
-void BackgroundFetchBridge::Trace(Visitor* visitor) {
+void BackgroundFetchBridge::Trace(Visitor* visitor) const {
   visitor->Trace(background_fetch_service_);
   Supplement::Trace(visitor);
 }

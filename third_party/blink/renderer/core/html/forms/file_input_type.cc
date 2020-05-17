@@ -75,7 +75,7 @@ FileInputType::FileInputType(HTMLInputElement& element)
       KeyboardClickableInputTypeView(element),
       file_list_(MakeGarbageCollected<FileList>()) {}
 
-void FileInputType::Trace(Visitor* visitor) {
+void FileInputType::Trace(Visitor* visitor) const {
   visitor->Trace(file_list_);
   KeyboardClickableInputTypeView::Trace(visitor);
   InputType::Trace(visitor);

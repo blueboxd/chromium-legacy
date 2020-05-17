@@ -80,7 +80,7 @@ class CORE_EXPORT TextAutosizer final : public GarbageCollected<TextAutosizer> {
 
   bool PageNeedsAutosizing() const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   class LayoutScope {
     STACK_ALLOCATED();

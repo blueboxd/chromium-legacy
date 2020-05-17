@@ -69,7 +69,7 @@ class USB final : public EventTargetWithInlineData,
 
   void OnServiceConnectionError();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   // EventTarget protected overrides.

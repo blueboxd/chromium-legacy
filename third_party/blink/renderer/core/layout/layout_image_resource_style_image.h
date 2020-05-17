@@ -55,7 +55,7 @@ class LayoutImageResourceStyleImage final : public LayoutImageResource {
                                      const LayoutSize&) const override;
   WrappedImagePtr ImagePtr() const override { return style_image_->Data(); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<StyleImage> style_image_;

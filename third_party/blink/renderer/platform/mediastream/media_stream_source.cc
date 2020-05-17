@@ -242,7 +242,7 @@ void MediaStreamSource::ConsumeAudio(AudioBus* bus, size_t number_of_frames) {
     consumer->ConsumeAudio(bus, number_of_frames);
 }
 
-void MediaStreamSource::Trace(Visitor* visitor) {
+void MediaStreamSource::Trace(Visitor* visitor) const {
   visitor->Trace(observers_);
 }
 

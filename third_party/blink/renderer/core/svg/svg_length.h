@@ -61,7 +61,7 @@ class CORE_EXPORT SVGLength final : public SVGPropertyBase {
 
   void SetInitial(unsigned);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   SVGLength* Clone() const;
   SVGPropertyBase* CloneForAnimation(const String&) const override;

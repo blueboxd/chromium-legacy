@@ -140,7 +140,7 @@ class MODULES_EXPORT Notification final
   // ScriptWrappable interface.
   bool HasPendingActivity() const final;
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  protected:
   // EventTarget interface.

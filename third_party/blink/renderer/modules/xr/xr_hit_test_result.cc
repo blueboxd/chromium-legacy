@@ -105,7 +105,7 @@ ScriptPromise XRHitTestResult::createAnchor(ScriptState* script_state,
   }
 }
 
-void XRHitTestResult::Trace(Visitor* visitor) {
+void XRHitTestResult::Trace(Visitor* visitor) const {
   visitor->Trace(session_);
   ScriptWrappable::Trace(visitor);
 }

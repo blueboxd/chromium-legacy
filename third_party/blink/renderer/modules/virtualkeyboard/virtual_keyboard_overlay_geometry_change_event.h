@@ -28,7 +28,7 @@ class VirtualKeyboardOverlayGeometryChangeEvent final : public Event {
 
   DOMRect* boundingRect() const { return bounding_rect_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<DOMRect> bounding_rect_;

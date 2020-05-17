@@ -114,7 +114,7 @@ String Navigator::GetAcceptLanguages() {
   return accept_languages;
 }
 
-void Navigator::Trace(Visitor* visitor) {
+void Navigator::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   NavigatorLanguage::Trace(visitor);
   ExecutionContextClient::Trace(visitor);

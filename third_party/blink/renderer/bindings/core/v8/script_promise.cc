@@ -64,7 +64,7 @@ class PromiseAllHandler final : public GarbageCollected<PromiseAllHandler> {
     }
   }
 
-  virtual void Trace(Visitor* visitor) {
+  virtual void Trace(Visitor* visitor) const {
     visitor->Trace(resolver_);
     visitor->Trace(values_);
   }
@@ -95,7 +95,7 @@ class PromiseAllHandler final : public GarbageCollected<PromiseAllHandler> {
           index_(index),
           handler_(handler) {}
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(handler_);
       ScriptFunction::Trace(visitor);
     }

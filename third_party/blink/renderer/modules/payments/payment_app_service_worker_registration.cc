@@ -46,7 +46,7 @@ PaymentManager* PaymentAppServiceWorkerRegistration::paymentManager(
   return payment_manager_.Get();
 }
 
-void PaymentAppServiceWorkerRegistration::Trace(Visitor* visitor) {
+void PaymentAppServiceWorkerRegistration::Trace(Visitor* visitor) const {
   visitor->Trace(registration_);
   visitor->Trace(payment_manager_);
   Supplement<ServiceWorkerRegistration>::Trace(visitor);

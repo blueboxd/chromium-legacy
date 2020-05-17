@@ -58,7 +58,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
   }
 
   // GarbageCollected overrides:
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   virtual bool IsLocalDOMWindow() const = 0;
   virtual bool IsRemoteDOMWindow() const = 0;

@@ -24,7 +24,7 @@ class MODULES_EXPORT VideoTrackReader final : public ScriptWrappable {
   explicit VideoTrackReader(ReadableStream* readable);
   ReadableStream* readable() const;
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   VideoTrackReader(const VideoTrackReader&) = delete;

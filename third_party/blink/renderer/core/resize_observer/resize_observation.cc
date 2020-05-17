@@ -108,7 +108,7 @@ LayoutSize ResizeObservation::ComputeTargetSize() const {
   return LayoutSize();
 }
 
-void ResizeObservation::Trace(Visitor* visitor) {
+void ResizeObservation::Trace(Visitor* visitor) const {
   visitor->Trace(target_);
   visitor->Trace(observer_);
 }

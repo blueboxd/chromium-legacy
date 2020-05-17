@@ -202,7 +202,7 @@ void ProgrammaticScrollAnimator::AnimationFinished() {
   }
 }
 
-void ProgrammaticScrollAnimator::Trace(Visitor* visitor) {
+void ProgrammaticScrollAnimator::Trace(Visitor* visitor) const {
   visitor->Trace(scrollable_area_);
   ScrollAnimatorCompositorCoordinator::Trace(visitor);
 }

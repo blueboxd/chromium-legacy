@@ -56,7 +56,7 @@ class MODULES_EXPORT AudioWorkletProcessorDefinition final
   bool IsSynchronized() const { return is_synchronized_; }
   void MarkAsSynchronized() { is_synchronized_ = true; }
 
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
   const char* NameInHeapSnapshot() const override {
     return "AudioWorkletProcessorDefinition";

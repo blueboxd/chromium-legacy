@@ -40,7 +40,7 @@ CustomElementDefinition::CustomElementDefinition(
 
 CustomElementDefinition::~CustomElementDefinition() = default;
 
-void CustomElementDefinition::Trace(Visitor* visitor) {
+void CustomElementDefinition::Trace(Visitor* visitor) const {
   visitor->Trace(construction_stack_);
   visitor->Trace(default_style_sheets_);
 }

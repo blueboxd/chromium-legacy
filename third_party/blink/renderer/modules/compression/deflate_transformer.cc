@@ -132,7 +132,7 @@ void DeflateTransformer::Deflate(const uint8_t* start,
   } while (stream_.avail_out == 0);
 }
 
-void DeflateTransformer::Trace(Visitor* visitor) {
+void DeflateTransformer::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   TransformStreamTransformer::Trace(visitor);
 }

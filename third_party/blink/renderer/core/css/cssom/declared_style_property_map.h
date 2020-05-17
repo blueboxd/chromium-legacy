@@ -24,7 +24,7 @@ class CORE_EXPORT DeclaredStylePropertyMap final : public StylePropertyMap {
  public:
   explicit DeclaredStylePropertyMap(CSSStyleRule* owner_rule);
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(owner_rule_);
     StylePropertyMap::Trace(visitor);
   }

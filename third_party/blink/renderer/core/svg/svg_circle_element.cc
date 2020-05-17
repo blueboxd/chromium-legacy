@@ -51,7 +51,7 @@ SVGCircleElement::SVGCircleElement(Document& document)
   AddToPropertyMap(r_);
 }
 
-void SVGCircleElement::Trace(Visitor* visitor) {
+void SVGCircleElement::Trace(Visitor* visitor) const {
   visitor->Trace(cx_);
   visitor->Trace(cy_);
   visitor->Trace(r_);

@@ -42,7 +42,7 @@ class CORE_EXPORT CSSPositionValue final : public CSSStyleValue {
 
   const CSSValue* ToCSSValue() const final;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(x_);
     visitor->Trace(y_);
     CSSStyleValue::Trace(visitor);

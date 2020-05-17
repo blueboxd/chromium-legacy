@@ -60,7 +60,7 @@ MessagePort* AudioWorkletProcessor::port() const {
   return processor_port_.Get();
 }
 
-void AudioWorkletProcessor::Trace(Visitor* visitor) {
+void AudioWorkletProcessor::Trace(Visitor* visitor) const {
   visitor->Trace(global_scope_);
   visitor->Trace(processor_port_);
   ScriptWrappable::Trace(visitor);

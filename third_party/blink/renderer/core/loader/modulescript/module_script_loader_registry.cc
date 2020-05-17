@@ -8,7 +8,7 @@
 
 namespace blink {
 
-void ModuleScriptLoaderRegistry::Trace(Visitor* visitor) {
+void ModuleScriptLoaderRegistry::Trace(Visitor* visitor) const {
   visitor->Trace(active_loaders_);
 }
 

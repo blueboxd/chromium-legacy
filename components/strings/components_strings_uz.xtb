@@ -239,7 +239,6 @@
 <translation id="1962204205936693436"><ph name="DOMAIN" /> xatcho‘plari</translation>
 <translation id="1973335181906896915">Seriyalashtirish amali bajarilmadi</translation>
 <translation id="1974060860693918893">Qo‘shimcha</translation>
-<translation id="1974883374937189061"><ph name="BEGIN_WHITEPAPER_LINK" />Ochilgan sahifalar manzillari, tizim va sahifalar<ph name="END_WHITEPAPER_LINK" /> haqidagi ayrim maʼlumotlarni Google serverlariga yuborish orqali xavfsiz brauzerning yanada yaxshilanishiga yordam berasiz. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1975584088563498795">Pochta qutisi 10</translation>
 <translation id="1978555033938440688">Mikrodastur versiyasi</translation>
 <translation id="1981206234434200693">Chrome brauzeri tarixini tozalash</translation>
@@ -1596,7 +1595,6 @@ Batafsil axborot:
 <translation id="7763386264682878361">To‘lov manifesti tahlilchisi</translation>
 <translation id="7764225426217299476">Manzil qo‘shish</translation>
 <translation id="7766518757692125295">Yubka</translation>
-<translation id="7767271804335921384">Ilova administrator tomonidan bloklangan</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Bir xil tartibda old tomonida</translation>
 <translation id="777702478322588152">Prefektura</translation>
@@ -1750,6 +1748,7 @@ Batafsil axborot:
 <translation id="8425213833346101688">O‘zgartirish</translation>
 <translation id="8428213095426709021">Sozlamalar</translation>
 <translation id="8433057134996913067">Bu amal sizni ko‘p saytlardagi hisoblaringizdan chiqarib yuboradi.</translation>
+<translation id="8433678324664858900">Takliflar ko‘rsatilsin</translation>
 <translation id="8437238597147034694">&amp;Ko‘chirib o‘tishni bekor qilish</translation>
 <translation id="8457125768502047971">Noaniq</translation>
 <translation id="8461694314515752532">Sinxronlangan ma’lumotlarni kodli ibora bilan shifrlash</translation>

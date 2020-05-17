@@ -61,7 +61,7 @@ class CachedMatchedProperties final
   // cached parent style vs. the incoming parent style.
   bool DependenciesEqual(const StyleResolverState&);
 
-  void Trace(Visitor*) {}
+  void Trace(Visitor*) const {}
 
   bool operator==(const MatchedPropertiesVector& properties);
   bool operator!=(const MatchedPropertiesVector& properties);
@@ -103,7 +103,7 @@ class CORE_EXPORT MatchedPropertiesCache {
   static bool IsCacheable(const StyleResolverState&);
   static bool IsStyleCacheable(const ComputedStyle&);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   // The cache is mapping a hash to a cached entry where the entry is kept as

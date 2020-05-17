@@ -147,7 +147,7 @@ bool HTMLProgressElement::ShouldAppearIndeterminate() const {
   return !IsDeterminate();
 }
 
-void HTMLProgressElement::Trace(Visitor* visitor) {
+void HTMLProgressElement::Trace(Visitor* visitor) const {
   visitor->Trace(value_);
   HTMLElement::Trace(visitor);
 }

@@ -553,7 +553,7 @@ void ScriptStreamer::Prefinalize() {
   prefinalizer_called_ = true;
 }
 
-void ScriptStreamer::Trace(Visitor* visitor) {
+void ScriptStreamer::Trace(Visitor* visitor) const {
   visitor->Trace(script_resource_);
 }
 

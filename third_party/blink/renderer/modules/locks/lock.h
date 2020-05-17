@@ -36,7 +36,7 @@ class Lock final : public ScriptWrappable,
        LockManager*);
   ~Lock() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Lock.idl
   String name() const { return name_; }

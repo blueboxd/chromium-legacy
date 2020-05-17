@@ -65,7 +65,7 @@ class CORE_EXPORT StyleSheetCollection
   void AppendSheetForList(StyleSheet*);
   void MarkSheetListDirty() { sheet_list_dirty_ = true; }
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
   const char* NameInHeapSnapshot() const override {
     return "StyleSheetCollection";
   }

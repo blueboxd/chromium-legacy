@@ -28,7 +28,7 @@ class SensorProxyImpl final : public SensorProxy,
                   Page*);
   ~SensorProxyImpl() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // SensorProxy overrides.

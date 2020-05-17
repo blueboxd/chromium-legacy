@@ -563,7 +563,7 @@ OscillatorNode* OscillatorNode::Create(BaseAudioContext* context,
   return node;
 }
 
-void OscillatorNode::Trace(Visitor* visitor) {
+void OscillatorNode::Trace(Visitor* visitor) const {
   visitor->Trace(frequency_);
   visitor->Trace(detune_);
   visitor->Trace(periodic_wave_);

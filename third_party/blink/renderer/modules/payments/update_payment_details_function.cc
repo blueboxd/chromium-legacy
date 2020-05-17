@@ -30,7 +30,7 @@ UpdatePaymentDetailsFunction::UpdatePaymentDetailsFunction(
   DCHECK(delegate_);
 }
 
-void UpdatePaymentDetailsFunction::Trace(Visitor* visitor) {
+void UpdatePaymentDetailsFunction::Trace(Visitor* visitor) const {
   visitor->Trace(delegate_);
   ScriptFunction::Trace(visitor);
 }

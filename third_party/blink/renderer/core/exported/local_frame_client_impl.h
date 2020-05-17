@@ -59,7 +59,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   explicit LocalFrameClientImpl(WebLocalFrameImpl*);
   ~LocalFrameClientImpl() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   WebLocalFrameImpl* GetWebFrame() const override;
 

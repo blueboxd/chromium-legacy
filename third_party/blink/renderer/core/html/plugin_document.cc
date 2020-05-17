@@ -57,7 +57,7 @@ class PluginDocumentParser : public RawDataDocumentParser {
         embed_element_(nullptr),
         background_color_(background_color) {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(embed_element_);
     RawDataDocumentParser::Trace(visitor);
   }
@@ -206,7 +206,7 @@ void PluginDocument::Shutdown() {
   HTMLDocument::Shutdown();
 }
 
-void PluginDocument::Trace(Visitor* visitor) {
+void PluginDocument::Trace(Visitor* visitor) const {
   visitor->Trace(plugin_node_);
   HTMLDocument::Trace(visitor);
 }

@@ -61,7 +61,7 @@ class WebGLExtension : public ScriptWrappable {
 
   bool IsLost() { return !context_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   explicit WebGLExtension(WebGLRenderingContextBase*);

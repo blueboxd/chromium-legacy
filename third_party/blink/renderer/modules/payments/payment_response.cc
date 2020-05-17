@@ -142,7 +142,7 @@ ExecutionContext* PaymentResponse::GetExecutionContext() const {
   return ExecutionContextClient::GetExecutionContext();
 }
 
-void PaymentResponse::Trace(Visitor* visitor) {
+void PaymentResponse::Trace(Visitor* visitor) const {
   visitor->Trace(details_);
   visitor->Trace(shipping_address_);
   visitor->Trace(payment_state_resolver_);

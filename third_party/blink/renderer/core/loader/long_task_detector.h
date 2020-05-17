@@ -37,7 +37,7 @@ class CORE_EXPORT LongTaskDetector final
   void RegisterObserver(LongTaskObserver*);
   void UnregisterObserver(LongTaskObserver*);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   static constexpr base::TimeDelta kLongTaskThreshold =
       base::TimeDelta::FromMilliseconds(50);

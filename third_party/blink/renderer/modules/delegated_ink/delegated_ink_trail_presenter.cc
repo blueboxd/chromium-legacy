@@ -21,7 +21,7 @@ void DelegatedInkTrailPresenter::updateInkTrailStartPoint(
   return;
 }
 
-void DelegatedInkTrailPresenter::Trace(Visitor* visitor) {
+void DelegatedInkTrailPresenter::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   visitor->Trace(presentation_area_);
 }

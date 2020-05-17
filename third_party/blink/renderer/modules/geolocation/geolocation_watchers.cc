@@ -9,7 +9,7 @@
 
 namespace blink {
 
-void GeolocationWatchers::Trace(Visitor* visitor) {
+void GeolocationWatchers::Trace(Visitor* visitor) const {
   visitor->Trace(id_to_notifier_map_);
   visitor->Trace(notifier_to_id_map_);
 }

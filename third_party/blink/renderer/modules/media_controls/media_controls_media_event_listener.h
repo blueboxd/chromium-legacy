@@ -26,7 +26,7 @@ class MediaControlsMediaEventListener final : public NativeEventListener {
   // object to be garbage collected.
   void Detach();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void Invoke(ExecutionContext*, Event*) override;
 

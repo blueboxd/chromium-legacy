@@ -1000,7 +1000,7 @@ void DisplayLockContext::NotifyRenderAffectingStateChanged() {
     Unlock();
 }
 
-void DisplayLockContext::Trace(Visitor* visitor) {
+void DisplayLockContext::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   visitor->Trace(document_);
   visitor->Trace(whitespace_reattach_set_);

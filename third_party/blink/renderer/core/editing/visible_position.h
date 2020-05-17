@@ -100,7 +100,7 @@ class VisiblePositionTemplate final {
   static VisiblePositionTemplate<Strategy> InParentBeforeNode(const Node&);
   static VisiblePositionTemplate<Strategy> LastPositionInNode(const Node&);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
 #if DCHECK_IS_ON()
   void ShowTreeForThis() const;

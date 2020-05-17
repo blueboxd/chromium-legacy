@@ -204,7 +204,7 @@ bool InspectTool::HideOnHideHighlight() {
   return false;
 }
 
-void InspectTool::Trace(Visitor* visitor) {
+void InspectTool::Trace(Visitor* visitor) const {
   visitor->Trace(overlay_);
 }
 
@@ -226,7 +226,7 @@ int Hinge::GetDataResourceId() {
   return IDR_INSPECT_TOOL_HIGHLIGHT_HTML;
 }
 
-void Hinge::Trace(Visitor* visitor) {
+void Hinge::Trace(Visitor* visitor) const {
   visitor->Trace(overlay_);
 }
 
@@ -321,7 +321,7 @@ class InspectorOverlayAgent::InspectorOverlayChromeClient final
                                InspectorOverlayAgent& overlay)
       : client_(&client), overlay_(&overlay) {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(client_);
     visitor->Trace(overlay_);
     EmptyChromeClient::Trace(visitor);
@@ -379,7 +379,7 @@ InspectorOverlayAgent::~InspectorOverlayAgent() {
   DCHECK(!overlay_page_);
 }
 
-void InspectorOverlayAgent::Trace(Visitor* visitor) {
+void InspectorOverlayAgent::Trace(Visitor* visitor) const {
   visitor->Trace(frame_impl_);
   visitor->Trace(inspected_frames_);
   visitor->Trace(overlay_page_);

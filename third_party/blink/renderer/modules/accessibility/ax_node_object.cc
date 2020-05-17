@@ -4176,7 +4176,7 @@ String AXNodeObject::PlaceholderFromNativeAttribute() const {
   return ToTextControl(node)->StrippedPlaceholder();
 }
 
-void AXNodeObject::Trace(Visitor* visitor) {
+void AXNodeObject::Trace(Visitor* visitor) const {
   visitor->Trace(node_);
   AXObject::Trace(visitor);
 }

@@ -31,7 +31,7 @@ class MODULES_EXPORT DeviceMotionController final
   void DidAddEventListener(LocalDOMWindow*,
                            const AtomicString& event_type) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Inherited from PlatformEventController.

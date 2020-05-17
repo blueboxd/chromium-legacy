@@ -11,7 +11,8 @@ namespace blink {
 
 class Mixin : public GarbageCollectedMixin {
 public:
-    virtual void Trace(Visitor*) override;
+ virtual void Trace(Visitor*) const override;
+
 private:
     Member<Mixin> m_self;
 };
@@ -19,7 +20,8 @@ private:
 class HeapObject : public GarbageCollected<HeapObject>, public Mixin {
     USING_GARBAGE_COLLECTED_MIXIN(HeapObject);
 public:
-    virtual void Trace(Visitor*) override;
+ virtual void Trace(Visitor*) const override;
+
 private:
     Member<Mixin> m_mix;
 };

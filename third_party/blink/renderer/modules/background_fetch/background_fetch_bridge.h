@@ -44,7 +44,7 @@ class BackgroundFetchBridge final
 
   explicit BackgroundFetchBridge(ServiceWorkerRegistration& registration);
   virtual ~BackgroundFetchBridge();
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   // Creates a new Background Fetch registration identified by |developer_id|
   // for the sequence of |requests|. The |callback| will be invoked when the

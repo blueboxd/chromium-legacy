@@ -97,7 +97,7 @@ class WebSocketChannelImpl::BlobLoader final
   void DidFinishLoading() override;
   void DidFail(FileErrorCode) override;
 
-  void Trace(Visitor* visitor) { visitor->Trace(channel_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(channel_); }
 
  private:
   Member<WebSocketChannelImpl> channel_;
@@ -113,7 +113,7 @@ class WebSocketChannelImpl::Message final
   // Close message
   Message(uint16_t code, const String& reason);
 
-  void Trace(Visitor* visitor) { visitor->Trace(array_buffer); }
+  void Trace(Visitor* visitor) const { visitor->Trace(array_buffer); }
 
   MessageType type;
 
@@ -554,7 +554,7 @@ void WebSocketChannelImpl::OnClosingHandshake() {
   client_->DidStartClosingHandshake();
 }
 
-void WebSocketChannelImpl::Trace(Visitor* visitor) {
+void WebSocketChannelImpl::Trace(Visitor* visitor) const {
   visitor->Trace(blob_loader_);
   visitor->Trace(messages_);
   visitor->Trace(client_);

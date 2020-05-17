@@ -22,7 +22,7 @@ class GPUUncapturedErrorEvent : public Event {
   GPUUncapturedErrorEvent(const AtomicString& type,
                           const GPUUncapturedErrorEventInit*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // gpu_uncaptured_error_event.idl
   void error(GPUOutOfMemoryErrorOrGPUValidationError&) const;

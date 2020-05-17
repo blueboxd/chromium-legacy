@@ -240,7 +240,6 @@
 <translation id="1962204205936693436">Dấu trang của <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Lỗi nối tiếp hóa</translation>
 <translation id="1974060860693918893">Nâng cao</translation>
-<translation id="1974883374937189061">Giúp tăng cường khả năng bảo mật của Chrome bằng cách gửi <ph name="BEGIN_WHITEPAPER_LINK" />URL của một số trang mà bạn truy cập, thông tin hệ thống giới hạn và một số nội dung trang<ph name="END_WHITEPAPER_LINK" /> cho Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1975584088563498795">Hộp thư 10</translation>
 <translation id="1978555033938440688">Phiên bản chương trình cơ sở</translation>
 <translation id="1981206234434200693">Xóa dữ liệu lịch sử duyệt web của Chrome</translation>
@@ -1602,7 +1601,6 @@ Thông tin chi tiết bổ sung:
 <translation id="7763386264682878361">Trình phân tích cú pháp tệp kê khai thanh toán</translation>
 <translation id="7764225426217299476">Thêm địa chỉ</translation>
 <translation id="7766518757692125295">Viền</translation>
-<translation id="7767271804335921384">Quản trị viên đã chặn ứng dụng này</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Cùng thứ tự hướng lên</translation>
 <translation id="777702478322588152">Quận</translation>
@@ -1756,6 +1754,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8425213833346101688">Thay đổi</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8433057134996913067">Thao tác này sẽ đăng xuất bạn khỏi hầu hết các trang web.</translation>
+<translation id="8433678324664858900">Hiển thị đề xuất</translation>
 <translation id="8437238597147034694">&amp;Hoàn tác di chuyển</translation>
 <translation id="8457125768502047971">Vô thời hạn</translation>
 <translation id="8461694314515752532">Mã hóa dữ liệu đã đồng bộ hóa bằng cụm mật khẩu đồng bộ hóa của riêng bạn</translation>

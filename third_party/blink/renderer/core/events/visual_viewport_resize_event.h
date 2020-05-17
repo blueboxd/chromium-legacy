@@ -16,7 +16,7 @@ class VisualViewportResizeEvent final : public Event {
 
   void DoneDispatchingEventAtCurrentTarget() override;
 
-  void Trace(Visitor* visitor) override { Event::Trace(visitor); }
+  void Trace(Visitor* visitor) const override { Event::Trace(visitor); }
 };
 
 }  // namespace blink

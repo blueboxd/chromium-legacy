@@ -49,7 +49,7 @@ class LazyLoadImageObserver final
 
   bool IsFullyLoadableFirstKImageAndDecrementCount();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   void LoadIfNearViewport(const HeapVector<Member<IntersectionObserverEntry>>&);

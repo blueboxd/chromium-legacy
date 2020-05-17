@@ -28,7 +28,7 @@ class CORE_EXPORT PortalHost : public EventTargetWithInlineData,
  public:
   explicit PortalHost(LocalDOMWindow& window);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   static const char kSupplementName[];
   static PortalHost& From(LocalDOMWindow& window);

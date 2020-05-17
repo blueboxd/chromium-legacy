@@ -41,7 +41,7 @@ NFCProxy::NFCProxy(LocalDOMWindow& window)
 
 NFCProxy::~NFCProxy() = default;
 
-void NFCProxy::Trace(Visitor* visitor) {
+void NFCProxy::Trace(Visitor* visitor) const {
   visitor->Trace(client_receiver_);
   visitor->Trace(writers_);
   visitor->Trace(readers_);

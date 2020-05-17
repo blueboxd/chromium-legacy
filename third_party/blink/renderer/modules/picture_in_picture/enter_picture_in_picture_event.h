@@ -30,7 +30,7 @@ class MODULES_EXPORT EnterPictureInPictureEvent final : public Event {
 
   PictureInPictureWindow* pictureInPictureWindow() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<PictureInPictureWindow> picture_in_picture_window_;

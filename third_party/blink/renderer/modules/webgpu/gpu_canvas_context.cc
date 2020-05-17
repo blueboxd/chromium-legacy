@@ -32,7 +32,7 @@ GPUCanvasContext::GPUCanvasContext(
 
 GPUCanvasContext::~GPUCanvasContext() {}
 
-void GPUCanvasContext::Trace(Visitor* visitor) {
+void GPUCanvasContext::Trace(Visitor* visitor) const {
   visitor->Trace(swapchain_);
   CanvasRenderingContext::Trace(visitor);
 }

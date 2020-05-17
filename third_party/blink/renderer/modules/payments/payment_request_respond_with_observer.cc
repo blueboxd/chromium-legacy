@@ -172,7 +172,7 @@ PaymentRequestRespondWithObserver::PaymentRequestRespondWithObserver(
     WaitUntilObserver* observer)
     : RespondWithObserver(context, event_id, observer) {}
 
-void PaymentRequestRespondWithObserver::Trace(Visitor* visitor) {
+void PaymentRequestRespondWithObserver::Trace(Visitor* visitor) const {
   RespondWithObserver::Trace(visitor);
 }
 

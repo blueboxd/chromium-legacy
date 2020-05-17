@@ -102,7 +102,7 @@ class TestTransformer : public TransformStreamTransformer {
 
   ScriptState* GetScriptState() override { return script_state_; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(script_state_);
     TransformStreamTransformer::Trace(visitor);
   }
@@ -140,7 +140,7 @@ class MockTransformStreamTransformer : public TransformStreamTransformer {
 
   ScriptState* GetScriptState() override { return script_state_; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(script_state_);
     TransformStreamTransformer::Trace(visitor);
   }
@@ -418,7 +418,7 @@ TEST_F(TransformStreamTest, WaitInTransform) {
     void ResolvePromise() { transform_promise_resolver_->Resolve(); }
     bool FlushCalled() const { return flush_called_; }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(transform_promise_resolver_);
       TestTransformer::Trace(visitor);
     }
@@ -478,7 +478,7 @@ TEST_F(TransformStreamTest, WaitInFlush) {
 
     void ResolvePromise() { flush_promise_resolver_->Resolve(); }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(flush_promise_resolver_);
       TestTransformer::Trace(visitor);
     }

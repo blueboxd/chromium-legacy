@@ -25,7 +25,7 @@ class CORE_EXPORT NthIndexData final : public GarbageCollected<NthIndexData> {
   unsigned NthOfTypeIndex(Element&) const;
   unsigned NthLastOfTypeIndex(Element&) const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   HeapHashMap<Member<Element>, unsigned> element_index_map_;

@@ -95,7 +95,7 @@ void NavigatorLanguage::EnsureUpdatedLanguage() {
   }
 }
 
-void NavigatorLanguage::Trace(Visitor* visitor) {
+void NavigatorLanguage::Trace(Visitor* visitor) const {
   visitor->Trace(execution_context_);
 }
 

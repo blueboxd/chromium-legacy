@@ -58,7 +58,7 @@ class SVGAnimatedAngle final : public ScriptWrappable,
   void SetAnimatedValue(SVGPropertyBase*) override;
   void AnimationEnded() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<SVGAnimatedEnumeration<SVGMarkerOrientType>> orient_type_;

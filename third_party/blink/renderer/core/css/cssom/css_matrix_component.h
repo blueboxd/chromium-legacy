@@ -41,7 +41,7 @@ class CORE_EXPORT CSSMatrixComponent final : public CSSTransformComponent {
   TransformComponentType GetType() const final { return kMatrixType; }
   const CSSFunctionValue* ToCSSValue() const final;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(matrix_);
     CSSTransformComponent::Trace(visitor);
   }

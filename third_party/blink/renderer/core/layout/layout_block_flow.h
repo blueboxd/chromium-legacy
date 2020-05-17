@@ -753,7 +753,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
       return (-block->MarginAfter()).ClampNegativeToZero();
     }
 
-    void Trace(Visitor*) {}
+    void Trace(Visitor*) const {}
 
     MarginValues margins_;
     LayoutUnit pagination_strut_propagated_from_child_;

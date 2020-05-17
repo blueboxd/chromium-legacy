@@ -296,7 +296,7 @@ HTMLMediaElement* TextTrackList::Owner() const {
   return owner_;
 }
 
-void TextTrackList::Trace(Visitor* visitor) {
+void TextTrackList::Trace(Visitor* visitor) const {
   visitor->Trace(owner_);
   visitor->Trace(add_track_tracks_);
   visitor->Trace(element_tracks_);

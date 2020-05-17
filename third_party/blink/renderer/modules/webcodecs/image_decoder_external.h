@@ -49,7 +49,7 @@ class MODULES_EXPORT ImageDecoderExternal final : public ScriptWrappable,
   String DebugName() const override;
 
   // GarbageCollected override.
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void MaybeSatisfyPendingDecodes();
@@ -78,7 +78,7 @@ class MODULES_EXPORT ImageDecoderExternal final : public ScriptWrappable,
     DecodeRequest(ScriptPromiseResolver* resolver,
                   uint32_t frame_index,
                   bool complete_frames_only);
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
     Member<ScriptPromiseResolver> resolver;
     uint32_t frame_index;

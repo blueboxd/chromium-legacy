@@ -85,7 +85,7 @@ V0CustomElementUpgradeCandidateMap::TakeUpgradeCandidatesFor(
   return candidates;
 }
 
-void V0CustomElementUpgradeCandidateMap::Trace(Visitor* visitor) {
+void V0CustomElementUpgradeCandidateMap::Trace(Visitor* visitor) const {
   visitor->Trace(upgrade_candidates_);
   visitor->Trace(unresolved_definitions_);
   V0CustomElementObserver::Trace(visitor);

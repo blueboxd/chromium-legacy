@@ -34,7 +34,7 @@ class CORE_EXPORT MediaCustomControlsFullscreenDetector final
   // EventListener implementation.
   void Invoke(ExecutionContext*, Event*) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   void TriggerObservation();
 
  private:

@@ -57,7 +57,7 @@ class XRSetlike : public SetlikeIterable<Member<ElementType>> {
       return true;
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(elements_);
       SetlikeIterable<Member<ElementType>>::IterationSource::Trace(visitor);
     }

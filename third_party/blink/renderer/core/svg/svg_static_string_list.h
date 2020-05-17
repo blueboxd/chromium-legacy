@@ -73,7 +73,7 @@ class SVGStaticStringList final : public GarbageCollected<SVGStaticStringList>,
   SVGStringListBase* Value() { return value_.Get(); }
   SVGStringListTearOff* TearOff();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<SVGStringListBase> value_;

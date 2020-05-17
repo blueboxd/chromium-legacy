@@ -84,7 +84,7 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
                           wtf_size_t length,
                           base::TimeTicks time_stamp) override {}
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   ExecutionContext* GetExecutionContext() const;

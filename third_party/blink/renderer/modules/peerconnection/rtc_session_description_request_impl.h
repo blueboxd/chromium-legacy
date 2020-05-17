@@ -73,7 +73,7 @@ class RTCSessionDescriptionRequestImpl final
   // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void Clear();

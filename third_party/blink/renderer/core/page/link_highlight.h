@@ -28,7 +28,7 @@ class CORE_EXPORT LinkHighlight final : public GarbageCollected<LinkHighlight> {
   explicit LinkHighlight(Page&);
   virtual ~LinkHighlight();
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
   void ResetForPageNavigation();
 

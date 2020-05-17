@@ -25,7 +25,7 @@ class EmptyMutationCallback : public MutationObserver::Delegate {
 
   void Deliver(const MutationRecordVector&, MutationObserver&) override {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(document_);
     MutationObserver::Delegate::Trace(visitor);
   }

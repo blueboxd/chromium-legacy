@@ -2028,7 +2028,7 @@ bool CompositeEditCommand::IsNodeVisiblyContainedWithin(
   return start_is_visually_same && end_is_visually_same;
 }
 
-void CompositeEditCommand::Trace(Visitor* visitor) {
+void CompositeEditCommand::Trace(Visitor* visitor) const {
   visitor->Trace(commands_);
   visitor->Trace(starting_selection_);
   visitor->Trace(ending_selection_);

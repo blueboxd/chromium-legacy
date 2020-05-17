@@ -102,7 +102,7 @@ class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
   explicit VisualViewport(Page&);
   ~VisualViewport() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void InitializeScrollbars();
 

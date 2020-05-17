@@ -62,7 +62,7 @@ base::SingleThreadTaskRunner* DOMTaskSignal::GetTaskRunner() {
   return DOMScheduler::From(*window)->GetTaskRunnerFor(priority_);
 }
 
-void DOMTaskSignal::Trace(Visitor* visitor) {
+void DOMTaskSignal::Trace(Visitor* visitor) const {
   AbortSignal::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
 }

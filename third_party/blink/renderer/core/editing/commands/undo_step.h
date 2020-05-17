@@ -73,7 +73,7 @@ class UndoStep final : public GarbageCollected<UndoStep> {
 
   uint64_t SequenceNumber() const { return sequence_number_; }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   Member<Document> document_;

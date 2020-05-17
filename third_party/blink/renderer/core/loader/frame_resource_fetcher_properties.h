@@ -24,7 +24,7 @@ class CORE_EXPORT FrameResourceFetcherProperties final
                                  Document& document);
   ~FrameResourceFetcherProperties() override = default;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // ResourceFetcherProperties implementation
   const FetchClientSettingsObject& GetFetchClientSettingsObject()

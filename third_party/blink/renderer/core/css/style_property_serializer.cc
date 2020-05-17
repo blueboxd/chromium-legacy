@@ -71,7 +71,7 @@ StylePropertySerializer::CSSPropertyValueSetForSerializer::
 }
 
 void StylePropertySerializer::CSSPropertyValueSetForSerializer::Trace(
-    blink::Visitor* visitor) {
+    blink::Visitor* visitor) const {
   visitor->Trace(property_set_);
 }
 

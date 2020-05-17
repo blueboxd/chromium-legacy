@@ -84,7 +84,7 @@ void CSSImportRule::Reattach(StyleRuleBase*) {
   NOTREACHED();
 }
 
-void CSSImportRule::Trace(Visitor* visitor) {
+void CSSImportRule::Trace(Visitor* visitor) const {
   visitor->Trace(import_rule_);
   visitor->Trace(media_cssom_wrapper_);
   visitor->Trace(style_sheet_cssom_wrapper_);

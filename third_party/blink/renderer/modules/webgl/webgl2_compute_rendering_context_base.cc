@@ -484,7 +484,7 @@ ScriptValue WebGL2ComputeRenderingContextBase::getIndexedParameter(
   }
 }
 
-void WebGL2ComputeRenderingContextBase::Trace(Visitor* visitor) {
+void WebGL2ComputeRenderingContextBase::Trace(Visitor* visitor) const {
   visitor->Trace(bound_dispatch_indirect_buffer_);
   visitor->Trace(bound_draw_indirect_buffer_);
   visitor->Trace(bound_atomic_counter_buffer_);

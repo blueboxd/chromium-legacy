@@ -193,7 +193,7 @@ class CORE_EXPORT MessageEvent final : public Event {
 
   void EntangleMessagePorts(ExecutionContext*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void LockToAgentCluster();
 

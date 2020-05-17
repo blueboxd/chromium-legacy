@@ -68,7 +68,7 @@ void WorkerNavigator::NotifyUpdate() {
       *Event::Create(event_type_names::kLanguagechange));
 }
 
-void WorkerNavigator::Trace(Visitor* visitor) {
+void WorkerNavigator::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
   NavigatorLanguage::Trace(visitor);

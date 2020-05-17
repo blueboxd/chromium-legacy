@@ -29,7 +29,7 @@ class CORE_EXPORT WebFormElementObserverImpl final
   // WebFormElementObserver implementation.
   void Disconnect() override;
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
  private:
   class ObserverCallback;

@@ -31,7 +31,7 @@ class MODULES_EXPORT WakeLockManager final
 
   void UnregisterSentinel(WakeLockSentinel*);
 
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
  private:
   // Handle connection errors from |wake_lock_|.

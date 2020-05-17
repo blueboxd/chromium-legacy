@@ -17,7 +17,7 @@ TestPermissiveDictionary::TestPermissiveDictionary() {
 
 TestPermissiveDictionary::~TestPermissiveDictionary() = default;
 
-void TestPermissiveDictionary::Trace(Visitor* visitor) {
+void TestPermissiveDictionary::Trace(Visitor* visitor) const {
   IDLDictionaryBase::Trace(visitor);
 }
 

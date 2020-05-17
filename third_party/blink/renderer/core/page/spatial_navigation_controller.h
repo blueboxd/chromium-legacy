@@ -49,7 +49,7 @@ class CORE_EXPORT SpatialNavigationController final
   void FocusedNodeChanged(Document*);
   void FullscreenStateChanged(Element* element);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   // Entry-point into SpatialNavigation advancement. Will return true if an

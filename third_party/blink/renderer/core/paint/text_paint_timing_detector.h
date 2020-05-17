@@ -80,7 +80,7 @@ class CORE_EXPORT LargestTextPaintManager {
     SetCachedResultInvalidated(true);
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   friend class LargestContentfulPaintCalculatorTest;
@@ -148,7 +148,7 @@ class CORE_EXPORT TextRecordsManager {
     return ltp_manager_.has_value();
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   friend class LargestContentfulPaintCalculatorTest;
@@ -216,7 +216,7 @@ class CORE_EXPORT TextPaintTimingDetector final
     return records_manager_.UpdateCandidate();
   }
   void ReportSwapTime(base::TimeTicks timestamp);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   friend class LargestContentfulPaintCalculatorTest;

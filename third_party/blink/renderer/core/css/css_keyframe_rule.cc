@@ -69,7 +69,7 @@ void CSSKeyframeRule::Reattach(StyleRuleBase*) {
   NOTREACHED();
 }
 
-void CSSKeyframeRule::Trace(Visitor* visitor) {
+void CSSKeyframeRule::Trace(Visitor* visitor) const {
   visitor->Trace(keyframe_);
   visitor->Trace(properties_cssom_wrapper_);
   CSSRule::Trace(visitor);

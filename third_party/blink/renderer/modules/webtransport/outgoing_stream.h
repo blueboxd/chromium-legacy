@@ -79,7 +79,7 @@ class MODULES_EXPORT OutgoingStream final
   // Does not execute JavaScript.
   void ContextDestroyed();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   class UnderlyingSink;

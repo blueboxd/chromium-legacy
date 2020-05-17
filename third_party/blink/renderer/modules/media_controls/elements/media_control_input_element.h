@@ -31,7 +31,7 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
   void SetOverflowElementIsWanted(bool) final;
   void MaybeRecordDisplayed() final;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   MediaControlInputElement* OverflowElementForTests() const {
     return overflow_element_;

@@ -49,7 +49,7 @@ Location::Location(DOMWindow* dom_window)
     : dom_window_(dom_window),
       fragment_directive_(MakeGarbageCollected<FragmentDirective>()) {}
 
-void Location::Trace(Visitor* visitor) {
+void Location::Trace(Visitor* visitor) const {
   visitor->Trace(dom_window_);
   visitor->Trace(fragment_directive_);
   ScriptWrappable::Trace(visitor);

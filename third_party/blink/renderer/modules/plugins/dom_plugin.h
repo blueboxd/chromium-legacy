@@ -49,7 +49,7 @@ class DOMPlugin final : public ScriptWrappable, public ExecutionContextClient {
   void NamedPropertyEnumerator(Vector<String>&, ExceptionState&) const;
   bool NamedPropertyQuery(const AtomicString&, ExceptionState&) const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<const PluginInfo> plugin_info_;

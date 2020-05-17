@@ -33,7 +33,7 @@ class GC_PLUGIN_IGNORE("crbug.com/841830")
   void Concat(v8::Isolate*, const String&);
   String Flatten(v8::Isolate*) const;
 
-  virtual void Trace(Visitor* visitor) { visitor->Trace(string_); }
+  virtual void Trace(Visitor* visitor) const { visitor->Trace(string_); }
 
   const char* NameInHeapSnapshot() const override {
     return "TraceWrapperV8String";

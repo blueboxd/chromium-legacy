@@ -53,7 +53,7 @@ class HTMLTrackElement final : public HTMLElement,
 
   TextTrack* track();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   ~HTMLTrackElement() override;

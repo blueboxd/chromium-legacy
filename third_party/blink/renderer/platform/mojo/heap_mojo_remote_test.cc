@@ -39,7 +39,7 @@ class MockContext final : public GarbageCollected<MockContext>,
     });
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(observers_);
     ContextLifecycleNotifier::Trace(visitor);
   }
@@ -74,7 +74,7 @@ class RemoteOwner : public GarbageCollected<RemoteOwner<Mode>> {
 
   HeapMojoRemote<sample::blink::Service, Mode>& remote() { return remote_; }
 
-  void Trace(Visitor* visitor) { visitor->Trace(remote_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(remote_); }
 
   HeapMojoRemote<sample::blink::Service, Mode> remote_;
 };

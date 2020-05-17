@@ -226,7 +226,7 @@ class CORE_EXPORT FrameLoader final {
   // the navigation.
   void CancelClientNavigation();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   void DidDropNavigation();
   void MarkAsLoading();

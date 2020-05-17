@@ -36,7 +36,7 @@ class LinkStyle final : public LinkResource, ResourceClient {
   void Process() override;
   void OwnerRemoved() override;
   bool HasLoaded() const override { return loaded_sheet_; }
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void StartLoadingDynamicSheet();
   void NotifyLoadedSheetAndAllCriticalSubresources(

@@ -47,7 +47,7 @@ class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable,
  public:
   ~CSSStyleDeclaration() override = default;
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   virtual CSSRule* parentRule() const = 0;
   String cssFloat() { return GetPropertyValueInternal(CSSPropertyID::kFloat); }

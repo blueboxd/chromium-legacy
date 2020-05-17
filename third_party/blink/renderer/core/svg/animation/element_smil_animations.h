@@ -27,7 +27,7 @@ class ElementSMILAnimations : public GarbageCollected<ElementSMILAnimations> {
 
   bool Apply(SMILTime elapsed);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   HeapHashMap<QualifiedName, Member<SMILAnimationSandwich>> sandwiches_;

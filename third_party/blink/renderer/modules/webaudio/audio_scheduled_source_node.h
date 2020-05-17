@@ -192,7 +192,7 @@ class AudioScheduledSourceNode
   // ScriptWrappable:
   bool HasPendingActivity() const final;
 
-  void Trace(Visitor* visitor) override { AudioNode::Trace(visitor); }
+  void Trace(Visitor* visitor) const override { AudioNode::Trace(visitor); }
 
   AudioScheduledSourceHandler& GetAudioScheduledSourceHandler() const;
 

@@ -620,7 +620,7 @@ void HTMLFrameOwnerElement::SetEmbeddingToken(
   embedding_token_ = embedding_token;
 }
 
-void HTMLFrameOwnerElement::Trace(Visitor* visitor) {
+void HTMLFrameOwnerElement::Trace(Visitor* visitor) const {
   visitor->Trace(content_frame_);
   visitor->Trace(embedded_content_view_);
   visitor->Trace(lazy_load_frame_observer_);

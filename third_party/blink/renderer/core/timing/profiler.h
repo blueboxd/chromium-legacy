@@ -43,7 +43,7 @@ class CORE_EXPORT Profiler final : public ScriptWrappable {
 
   ~Profiler() override = default;
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   void DisposeAsync();
 

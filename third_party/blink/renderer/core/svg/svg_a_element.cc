@@ -58,7 +58,7 @@ SVGAElement::SVGAElement(Document& document)
   AddToPropertyMap(svg_target_);
 }
 
-void SVGAElement::Trace(Visitor* visitor) {
+void SVGAElement::Trace(Visitor* visitor) const {
   visitor->Trace(svg_target_);
   SVGGraphicsElement::Trace(visitor);
   SVGURIReference::Trace(visitor);

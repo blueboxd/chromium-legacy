@@ -93,7 +93,7 @@ class MODULES_EXPORT UserMediaProcessor
     dispatcher_host_.Bind(std::move(dispatcher_host));
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  protected:
   // These methods are virtual for test purposes. A test can override them to

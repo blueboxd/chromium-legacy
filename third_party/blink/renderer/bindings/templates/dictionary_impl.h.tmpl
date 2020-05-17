@@ -41,7 +41,7 @@ class {{exported}}{{cpp_class}} : public {{parent_cpp_class}} {
 
   {% endfor %}
   v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   {% for member in members if member.nullable_indicator_name %}

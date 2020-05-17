@@ -67,7 +67,7 @@ class CORE_EXPORT InspectorDOMDebuggerAgent final
                             InspectorDOMAgent*,
                             v8_inspector::V8InspectorSession*);
   ~InspectorDOMDebuggerAgent() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // DOMDebugger API for frontend
   protocol::Response setDOMBreakpoint(int node_id, const String& type) override;

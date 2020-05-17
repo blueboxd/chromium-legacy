@@ -22,7 +22,7 @@ XRWorldTrackingState::XRWorldTrackingState(
   }
 }
 
-void XRWorldTrackingState::Trace(Visitor* visitor) {
+void XRWorldTrackingState::Trace(Visitor* visitor) const {
   visitor->Trace(plane_detection_state_);
   ScriptWrappable::Trace(visitor);
 }

@@ -48,7 +48,7 @@ BluetoothAdvertisingEvent::BluetoothAdvertisingEvent(
 
 BluetoothAdvertisingEvent::~BluetoothAdvertisingEvent() {}
 
-void BluetoothAdvertisingEvent::Trace(Visitor* visitor) {
+void BluetoothAdvertisingEvent::Trace(Visitor* visitor) const {
   visitor->Trace(device_);
   visitor->Trace(uuids_);
   visitor->Trace(manufacturer_data_map_);

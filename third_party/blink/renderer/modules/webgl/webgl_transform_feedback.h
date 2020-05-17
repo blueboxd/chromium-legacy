@@ -49,7 +49,7 @@ class WebGLTransformFeedback : public WebGLContextObject {
   bool UsesBuffer(WebGLBuffer*);
   void UnbindBuffer(WebGLBuffer*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool active() const { return active_; }
   bool paused() const { return paused_; }

@@ -53,7 +53,7 @@ class ServiceWorkerRegistrationNotifications final
   // ExecutionContextLifecycleObserver interface.
   void ContextDestroyed() override;
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   static ServiceWorkerRegistrationNotifications& From(

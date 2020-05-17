@@ -22,7 +22,7 @@ class OnRequestCanvasDrawListener : public AutoCanvasDrawListener {
   void SendNewFrame(scoped_refptr<StaticBitmapImage>,
                     base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 };
 
 }  // namespace blink

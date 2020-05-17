@@ -53,7 +53,7 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tag_name,
 
 HTMLFormControlElement::~HTMLFormControlElement() = default;
 
-void HTMLFormControlElement::Trace(Visitor* visitor) {
+void HTMLFormControlElement::Trace(Visitor* visitor) const {
   ListedElement::Trace(visitor);
   HTMLElement::Trace(visitor);
 }

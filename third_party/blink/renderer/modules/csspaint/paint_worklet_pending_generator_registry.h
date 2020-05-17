@@ -25,7 +25,7 @@ class PaintWorkletPendingGeneratorRegistry
   void NotifyGeneratorReady(const String& name);
   void AddPendingGenerator(const String& name, CSSPaintImageGeneratorImpl*);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   // The map of CSSPaintImageGeneratorImpl which are waiting for a

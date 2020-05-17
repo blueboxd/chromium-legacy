@@ -36,7 +36,7 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
   // be run.
   void Stop();
 
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
  private:
   friend class BackgroundFetchIconLoaderTest;

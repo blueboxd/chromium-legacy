@@ -71,7 +71,7 @@ class MODULES_EXPORT SensorProxy : public GarbageCollected<SensorProxy>,
   // Detach from the local frame's SensorProviderProxy.
   void Detach();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   static const char kDefaultErrorDescription[];
 

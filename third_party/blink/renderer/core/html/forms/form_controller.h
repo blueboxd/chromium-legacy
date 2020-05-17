@@ -82,7 +82,7 @@ using SavedFormStateMap =
 class CORE_EXPORT DocumentState final : public GarbageCollected<DocumentState> {
  public:
   DocumentState(Document& document);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   using ControlList = HeapVector<Member<ListedElement>, 64>;
   void InvalidateControlList();
@@ -100,7 +100,7 @@ class CORE_EXPORT FormController final
  public:
   FormController(Document& document);
   ~FormController();
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   void InvalidateStatefulFormControlList();
   // This should be called only by Document::FormElementsState().

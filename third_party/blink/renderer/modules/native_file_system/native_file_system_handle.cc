@@ -112,7 +112,7 @@ ScriptPromise NativeFileSystemHandle::isSameEntry(
   return result;
 }
 
-void NativeFileSystemHandle::Trace(Visitor* visitor) {
+void NativeFileSystemHandle::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
 }

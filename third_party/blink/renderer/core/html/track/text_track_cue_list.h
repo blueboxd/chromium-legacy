@@ -55,7 +55,7 @@ class TextTrackCueList final : public ScriptWrappable {
   }
   void ValidateCueIndexes();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   wtf_size_t FindInsertionIndex(const TextTrackCue*) const;

@@ -57,7 +57,7 @@ class CORE_EXPORT CSSAnimation : public Animation {
   // https://drafts.csswg.org/css-animations-2/#interaction-between-animation-play-state-and-web-animations-API
   bool getIgnoreCSSPlayState() { return ignore_css_play_state_; }
   void resetIgnoreCSSPlayState() { ignore_css_play_state_ = false; }
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(blink::Visitor* visitor) const override {
     Animation::Trace(visitor);
     visitor->Trace(owning_element_);
   }

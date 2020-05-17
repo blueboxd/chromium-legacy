@@ -78,7 +78,7 @@ ScriptPromise PaymentManager::enableDelegations(
   return enable_delegations_resolver_->Promise();
 }
 
-void PaymentManager::Trace(Visitor* visitor) {
+void PaymentManager::Trace(Visitor* visitor) const {
   visitor->Trace(registration_);
   visitor->Trace(manager_);
   visitor->Trace(instruments_);

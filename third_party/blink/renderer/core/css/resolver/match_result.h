@@ -45,7 +45,7 @@ struct CORE_EXPORT MatchedProperties {
  public:
   MatchedProperties();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   Member<CSSPropertyValueSet> properties;
 

@@ -795,7 +795,7 @@ void WebPluginContainerImpl::SetFrameRect(const IntRect& rect) {
     PropagateFrameRects();
 }
 
-void WebPluginContainerImpl::Trace(Visitor* visitor) {
+void WebPluginContainerImpl::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   ExecutionContextClient::Trace(visitor);
 }

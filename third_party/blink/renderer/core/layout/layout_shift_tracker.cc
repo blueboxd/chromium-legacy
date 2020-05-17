@@ -563,7 +563,7 @@ void LayoutShiftTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects) {
   }
 }
 
-void LayoutShiftTracker::Trace(Visitor* visitor) {
+void LayoutShiftTracker::Trace(Visitor* visitor) const {
   visitor->Trace(frame_view_);
 }
 
@@ -620,7 +620,7 @@ void ReattachHook::NotifyAttach(const Node& node) {
   fragment.SetVisualRect(visual_rect);
 }
 
-void ReattachHook::Trace(Visitor* visitor) {
+void ReattachHook::Trace(Visitor* visitor) const {
   visitor->Trace(visual_rects_);
 }
 

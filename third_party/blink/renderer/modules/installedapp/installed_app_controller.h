@@ -46,7 +46,7 @@ class MODULES_EXPORT InstalledAppController final
 
   static InstalledAppController* From(LocalDOMWindow&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Callback for the result of GetInstalledRelatedApps.

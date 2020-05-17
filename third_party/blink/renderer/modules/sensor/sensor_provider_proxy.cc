@@ -47,7 +47,7 @@ SensorProviderProxy* SensorProviderProxy::From(LocalDOMWindow* window) {
 
 SensorProviderProxy::~SensorProviderProxy() = default;
 
-void SensorProviderProxy::Trace(Visitor* visitor) {
+void SensorProviderProxy::Trace(Visitor* visitor) const {
   visitor->Trace(sensor_proxies_);
   visitor->Trace(sensor_provider_);
   Supplement<LocalDOMWindow>::Trace(visitor);

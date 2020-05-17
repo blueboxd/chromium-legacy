@@ -78,7 +78,7 @@ class GainNode final : public AudioNode {
 
   GainNode(BaseAudioContext&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   AudioParam* gain() const;
 

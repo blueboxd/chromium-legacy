@@ -140,7 +140,7 @@ void SharedWorkerClientHolder::Connect(
           blob_url_token.PassPipe(), mojom::blink::BlobURLToken::Version_));
 }
 
-void SharedWorkerClientHolder::Trace(Visitor* visitor) {
+void SharedWorkerClientHolder::Trace(Visitor* visitor) const {
   visitor->Trace(connector_);
   visitor->Trace(client_receivers_);
   Supplement<LocalDOMWindow>::Trace(visitor);

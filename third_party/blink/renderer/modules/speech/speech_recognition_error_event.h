@@ -54,7 +54,7 @@ class MODULES_EXPORT SpeechRecognitionErrorEvent final : public Event {
 
   const AtomicString& InterfaceName() const override;
 
-  void Trace(Visitor* visitor) override { Event::Trace(visitor); }
+  void Trace(Visitor* visitor) const override { Event::Trace(visitor); }
 
  private:
   String error_;

@@ -68,7 +68,7 @@ class CORE_EXPORT FrameConsole final : public GarbageCollected<FrameConsole> {
                       uint64_t request_identifier,
                       const ResourceError&);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   Member<LocalFrame> frame_;

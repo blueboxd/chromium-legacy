@@ -13,7 +13,8 @@ class HeapObject : public GarbageCollected<HeapObject> { };
 
 class OffHeapObject {
 public:
-    void Trace(Visitor*);
+ void Trace(Visitor*) const;
+
 private:
     Member<HeapObject> m_obj; // Must not contain Member.
     WeakMember<HeapObject> m_weak;  // Must not contain WeakMember.
@@ -30,7 +31,8 @@ private:
 class PartObject {
     DISALLOW_NEW();
 public:
-    void Trace(Visitor*);
+ void Trace(Visitor*) const;
+
 private:
     Member<HeapObject> m_obj; // OK
 };
@@ -38,7 +40,8 @@ private:
 class InlineObject {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
-    void Trace(Visitor*);
+ void Trace(Visitor*) const;
+
 private:
     Member<HeapObject> m_obj; // OK
 };

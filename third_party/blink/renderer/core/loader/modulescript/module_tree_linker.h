@@ -60,7 +60,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
                    ModuleTreeLinkerRegistry*,
                    ModuleTreeClient*);
   ~ModuleTreeLinker() override = default;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool IsFetching() const {
     return State::kFetchingSelf <= state_ && state_ < State::kFinished;

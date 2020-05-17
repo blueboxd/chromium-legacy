@@ -161,7 +161,7 @@ void InspectorMediaAgent::PlayersCreated(const Vector<WebString>& player_ids) {
   GetFrontend()->playersCreated(std::move(protocol_players));
 }
 
-void InspectorMediaAgent::Trace(Visitor* visitor) {
+void InspectorMediaAgent::Trace(Visitor* visitor) const {
   visitor->Trace(local_frame_);
   InspectorBaseAgent::Trace(visitor);
 }

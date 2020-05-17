@@ -53,7 +53,7 @@ class CORE_EXPORT HTMLTemplateElement final : public HTMLElement {
 
   bool HasNonInBodyInsertionMode() const override { return true; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   DocumentFragment* content() const;
 

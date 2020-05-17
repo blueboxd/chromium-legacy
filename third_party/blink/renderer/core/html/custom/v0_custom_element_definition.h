@@ -47,7 +47,7 @@ class V0CustomElementDefinition final
     return callbacks_.Get();
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   V0CustomElementDescriptor descriptor_;

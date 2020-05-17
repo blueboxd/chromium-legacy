@@ -1094,7 +1094,7 @@ void ImageCapture::ResolveWithPhotoCapabilities(
   resolver->Resolve(photo_capabilities_);
 }
 
-void ImageCapture::Trace(Visitor* visitor) {
+void ImageCapture::Trace(Visitor* visitor) const {
   visitor->Trace(stream_track_);
   visitor->Trace(service_);
   visitor->Trace(permission_service_);

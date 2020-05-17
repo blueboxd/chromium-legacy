@@ -46,7 +46,7 @@ class PresentationConnection : public EventTargetWithInlineData,
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   const String& id() const { return id_; }
   const String& url() const { return url_; }
@@ -186,7 +186,7 @@ class ControllerPresentationConnection final : public PresentationConnection {
                                    const KURL&);
   ~ControllerPresentationConnection() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Initializes Mojo message pipes and registers with the PresentationService.
   void Init(mojo::PendingRemote<mojom::blink::PresentationConnection>
@@ -222,7 +222,7 @@ class ReceiverPresentationConnection final : public PresentationConnection {
                                  const KURL&);
   ~ReceiverPresentationConnection() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void Init(mojo::PendingRemote<mojom::blink::PresentationConnection>
                 controller_connection_remote,

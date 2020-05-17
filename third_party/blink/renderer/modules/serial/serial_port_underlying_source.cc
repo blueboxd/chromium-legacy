@@ -71,7 +71,7 @@ void SerialPortUnderlyingSource::SignalErrorOnClose(DOMException* exception) {
   serial_port_->UnderlyingSourceClosed();
 }
 
-void SerialPortUnderlyingSource::Trace(Visitor* visitor) {
+void SerialPortUnderlyingSource::Trace(Visitor* visitor) const {
   visitor->Trace(pending_exception_);
   visitor->Trace(serial_port_);
   UnderlyingSourceBase::Trace(visitor);

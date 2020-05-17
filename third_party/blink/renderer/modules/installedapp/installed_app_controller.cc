@@ -105,7 +105,7 @@ void InstalledAppController::OnFilterInstalledApps(
   callbacks->OnSuccess(applications);
 }
 
-void InstalledAppController::Trace(Visitor* visitor) {
+void InstalledAppController::Trace(Visitor* visitor) const {
   visitor->Trace(provider_);
   Supplement<LocalDOMWindow>::Trace(visitor);
   ExecutionContextClient::Trace(visitor);

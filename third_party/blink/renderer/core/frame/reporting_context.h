@@ -50,7 +50,7 @@ class CORE_EXPORT ReportingContext final
   // mojom::blink::ReportingObserver implementation.
   void Notify(mojom::blink::ReportPtr report) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Counts the use of a report type via UseCounter.

@@ -29,7 +29,7 @@ class MODULES_EXPORT MediaControlDivElement : public HTMLDivElement,
 
   bool IsDisabled() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   MediaControlDivElement(MediaControlsImpl&);

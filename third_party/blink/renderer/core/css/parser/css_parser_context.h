@@ -156,7 +156,7 @@ class CORE_EXPORT CSSParserContext final
     base::AutoReset<CSSParserMode> mode_reset_;
   };
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   friend class ParserModeOverridingScope;

@@ -40,7 +40,7 @@ class MODULES_EXPORT SensorProviderProxy final
   void set_inspector_mode(bool flag) { inspector_mode_ = flag; }
   bool inspector_mode() const { return inspector_mode_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class SensorProxy;

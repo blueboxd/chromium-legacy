@@ -15,7 +15,7 @@ CookieJar::CookieJar(blink::Document* document)
 
 CookieJar::~CookieJar() = default;
 
-void CookieJar::Trace(Visitor* visitor) {
+void CookieJar::Trace(Visitor* visitor) const {
   visitor->Trace(backend_);
   visitor->Trace(document_);
 }

@@ -39,7 +39,7 @@ PageAnimator::PageAnimator(Page& page)
       servicing_animations_(false),
       updating_layout_and_style_for_painting_(false) {}
 
-void PageAnimator::Trace(Visitor* visitor) {
+void PageAnimator::Trace(Visitor* visitor) const {
   visitor->Trace(page_);
 }
 

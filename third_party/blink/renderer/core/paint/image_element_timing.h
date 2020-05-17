@@ -63,7 +63,7 @@ class CORE_EXPORT ImageElementTiming final
   void NotifyImageRemoved(const LayoutObject*,
                           const ImageResourceContent* image);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class ImageElementTimingTest;
@@ -98,7 +98,7 @@ class CORE_EXPORT ImageElementTiming final
           element(element) {}
     ~ElementTimingInfo() = default;
 
-    void Trace(Visitor* visitor) { visitor->Trace(element); }
+    void Trace(Visitor* visitor) const { visitor->Trace(element); }
 
     String url;
     FloatRect rect;

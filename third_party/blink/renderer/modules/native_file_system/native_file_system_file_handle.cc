@@ -137,7 +137,7 @@ NativeFileSystemFileHandle::Transfer() {
   return result;
 }
 
-void NativeFileSystemFileHandle::Trace(Visitor* visitor) {
+void NativeFileSystemFileHandle::Trace(Visitor* visitor) const {
   visitor->Trace(mojo_ptr_);
   NativeFileSystemHandle::Trace(visitor);
 }

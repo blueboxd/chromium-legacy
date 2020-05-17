@@ -52,7 +52,7 @@ AnimationWorkletGlobalScope::AnimationWorkletGlobalScope(
 
 AnimationWorkletGlobalScope::~AnimationWorkletGlobalScope() = default;
 
-void AnimationWorkletGlobalScope::Trace(Visitor* visitor) {
+void AnimationWorkletGlobalScope::Trace(Visitor* visitor) const {
   visitor->Trace(animator_definitions_);
   visitor->Trace(animators_);
   WorkletGlobalScope::Trace(visitor);

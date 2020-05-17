@@ -144,7 +144,7 @@ void SubresourceFilter::ReportLoad(
   }
 }
 
-void SubresourceFilter::Trace(Visitor* visitor) {
+void SubresourceFilter::Trace(Visitor* visitor) const {
   visitor->Trace(execution_context_);
 }
 

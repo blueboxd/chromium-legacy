@@ -918,7 +918,7 @@ HeapVector<Member<CSPSource>> SourceListDirective::GetIntersectCSPSources(
   return normalized;
 }
 
-void SourceListDirective::Trace(Visitor* visitor) {
+void SourceListDirective::Trace(Visitor* visitor) const {
   visitor->Trace(policy_);
   visitor->Trace(list_);
   CSPDirective::Trace(visitor);

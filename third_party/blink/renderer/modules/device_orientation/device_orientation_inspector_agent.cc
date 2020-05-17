@@ -27,7 +27,7 @@ DeviceOrientationInspectorAgent::DeviceOrientationInspectorAgent(
       beta_(&agent_state_, /*default_value=*/0.0),
       gamma_(&agent_state_, /*default_value=*/0.0) {}
 
-void DeviceOrientationInspectorAgent::Trace(Visitor* visitor) {
+void DeviceOrientationInspectorAgent::Trace(Visitor* visitor) const {
   visitor->Trace(inspected_frames_);
   visitor->Trace(sensor_agent_);
   InspectorBaseAgent::Trace(visitor);

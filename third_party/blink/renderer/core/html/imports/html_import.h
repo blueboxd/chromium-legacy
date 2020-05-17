@@ -66,7 +66,7 @@ class HTMLImport : public GarbageCollected<HTMLImport>,
   virtual void StateWillChange() {}
   virtual void StateDidChange();
 
-  virtual void Trace(Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) const {}
 
  protected:
   // Stating from most conservative state.

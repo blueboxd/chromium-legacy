@@ -87,7 +87,7 @@ void ScrollAnimatorBase::NotifyOffsetChanged() {
   ScrollOffsetChanged(current_offset_, mojom::blink::ScrollType::kUser);
 }
 
-void ScrollAnimatorBase::Trace(Visitor* visitor) {
+void ScrollAnimatorBase::Trace(Visitor* visitor) const {
   visitor->Trace(scrollable_area_);
   ScrollAnimatorCompositorCoordinator::Trace(visitor);
 }

@@ -62,7 +62,7 @@ Crypto* WorkerGlobalScopeCrypto::crypto() const {
   return crypto_.Get();
 }
 
-void WorkerGlobalScopeCrypto::Trace(Visitor* visitor) {
+void WorkerGlobalScopeCrypto::Trace(Visitor* visitor) const {
   visitor->Trace(crypto_);
   Supplement<WorkerGlobalScope>::Trace(visitor);
 }

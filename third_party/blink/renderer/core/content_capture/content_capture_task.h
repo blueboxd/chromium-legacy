@@ -68,7 +68,7 @@ class CORE_EXPORT ContentCaptureTask
   base::TimeDelta GetTaskNextFireIntervalForTesting() const;
   void CancelTaskForTesting();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  protected:
   // All protected data and methods are for testing purpose.

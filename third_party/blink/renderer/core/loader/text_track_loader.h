@@ -62,7 +62,7 @@ class TextTrackLoader final : public GarbageCollected<TextTrackLoader>,
   void GetNewCues(HeapVector<Member<TextTrackCue>>& output_cues);
   void GetNewStyleSheets(HeapVector<Member<CSSStyleSheet>>& output_sheets);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // RawResourceClient

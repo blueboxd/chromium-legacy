@@ -93,7 +93,7 @@ class CORE_EXPORT InspectTool : public GarbageCollected<InspectTool> {
   virtual bool ForwardEventsToOverlay();
   virtual void Draw(float scale) {}
   virtual void Dispatch(const String& message) {}
-  virtual void Trace(Visitor* visitor);
+  virtual void Trace(Visitor* visitor) const;
   virtual void Dispose() {}
   virtual bool HideOnHideHighlight();
   virtual bool HideOnMouseMove();
@@ -114,7 +114,7 @@ class CORE_EXPORT Hinge final : public GarbageCollected<Hinge> {
   ~Hinge() = default;
   static int GetDataResourceId();
   void Draw(float scale);
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
  private:
   FloatQuad quad_;
@@ -139,7 +139,7 @@ class CORE_EXPORT InspectorOverlayAgent final
                         v8_inspector::V8InspectorSession*,
                         InspectorDOMAgent*);
   ~InspectorOverlayAgent() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // protocol::Dispatcher::OverlayCommandHandler implementation.
   protocol::Response enable() override;

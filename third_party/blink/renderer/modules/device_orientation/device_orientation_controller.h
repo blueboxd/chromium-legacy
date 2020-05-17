@@ -36,7 +36,7 @@ class MODULES_EXPORT DeviceOrientationController
   void SetOverride(DeviceOrientationData*);
   void ClearOverride();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   static void LogToConsolePolicyFeaturesDisabled(
       LocalFrame*,

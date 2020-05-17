@@ -126,7 +126,7 @@ bool AXImageMapLink::IsImageMapLink() const {
   return true;
 }
 
-void AXImageMapLink::Trace(Visitor* visitor) {
+void AXImageMapLink::Trace(Visitor* visitor) const {
   AXNodeObject::Trace(visitor);
 }
 

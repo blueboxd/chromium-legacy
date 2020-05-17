@@ -68,7 +68,7 @@ class CORE_EXPORT TrustedTypePolicyFactory final
   //  relate it to the total number of TT enabled documents.)
   void CountTrustedTypeAssignmentError();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   const WrapperTypeInfo* GetWrapperTypeInfoFromScriptValue(ScriptState*,

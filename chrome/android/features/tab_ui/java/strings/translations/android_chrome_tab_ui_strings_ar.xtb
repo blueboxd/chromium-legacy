@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">إنشاء مجموعة</translation>
 <translation id="2671423594960767771">مشاركة المجموعة</translation>
 <translation id="2977480621796371840">الإزالة من مجموعة</translation>
+<translation id="3328308545011660196">اقتراح: يبدو أن هناك <ph name="NUMBER_OF_TABS" /> نافذة متشابهة. هل تريد تجميعها؟</translation>
+<translation id="4133493477912226187">يبدو أن هناك <ph name="NUMBER_OF_TABS" /> نافذة متشابهة. هل تريد تجميعها؟</translation>
 <translation id="4212246570487010370">التصفح المستمر</translation>
 <translation id="4450893287417543264">عدم الإظهار مرة أخرى</translation>
 <translation id="4648718555153979859">يتم جمع علامات التبويب معًا هنا</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">إزالة علامات التبويب من المجموعة</translation>
 <translation id="7559245342362162951">عرض علامات تبويب المجموعة في شبكة ملء الشاشة</translation>
 <translation id="7792771145871471484">مراجعة الاقتراحات</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{إضافة علامة تبويب محدّدة واحدة (<ph name="TABS_COUNT_ONE" />) إلى مجموعة جديدة}zero{إضافة <ph name="TABS_COUNT_MANY" /> علامة تبويب محدّدة إلى مجموعة جديدة}two{إضافة علامتَي تبويب محدّدتَين (<ph name="TABS_COUNT_MANY" />) إلى مجموعة جديدة}few{إضافة <ph name="TABS_COUNT_MANY" /> علامات تبويب محدّدة إلى مجموعة جديدة}many{إضافة <ph name="TABS_COUNT_MANY" /> علامة تبويب محدّدة إلى مجموعة جديدة}other{إضافة <ph name="TABS_COUNT_MANY" /> علامة تبويب محدّدة إلى مجموعة جديدة}}</translation>
 <translation id="7885132941432959125">نقل علامة التبويب إلى اليسار</translation>
 <translation id="7966321538264951561">رفض الاقتراحات</translation>
 <translation id="814503310257431685">عرض الكل</translation>

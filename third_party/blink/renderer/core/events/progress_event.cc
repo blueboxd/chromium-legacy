@@ -53,7 +53,7 @@ const AtomicString& ProgressEvent::InterfaceName() const {
   return event_interface_names::kProgressEvent;
 }
 
-void ProgressEvent::Trace(Visitor* visitor) {
+void ProgressEvent::Trace(Visitor* visitor) const {
   Event::Trace(visitor);
 }
 

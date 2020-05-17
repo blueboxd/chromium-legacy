@@ -676,7 +676,7 @@ void StyleSheetContents::FindFontFaceRules(
   FindFontFaceRulesFromRules(ChildRules(), font_face_rules);
 }
 
-void StyleSheetContents::Trace(Visitor* visitor) {
+void StyleSheetContents::Trace(Visitor* visitor) const {
   visitor->Trace(owner_rule_);
   visitor->Trace(import_rules_);
   visitor->Trace(namespace_rules_);

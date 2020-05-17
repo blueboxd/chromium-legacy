@@ -472,7 +472,7 @@ void WritableStreamDefaultWriter::SetReadyPromise(
   ready_promise_ = ready_promise;
 }
 
-void WritableStreamDefaultWriter::Trace(Visitor* visitor) {
+void WritableStreamDefaultWriter::Trace(Visitor* visitor) const {
   visitor->Trace(closed_promise_);
   visitor->Trace(owner_writable_stream_);
   visitor->Trace(ready_promise_);

@@ -1562,7 +1562,7 @@ bool CSPDirectiveList::IsScriptRestrictionReasonable() const {
          (script_src->AllowDynamic() || !script_src->AllowsURLBasedMatching());
 }
 
-void CSPDirectiveList::Trace(Visitor* visitor) {
+void CSPDirectiveList::Trace(Visitor* visitor) const {
   visitor->Trace(policy_);
   visitor->Trace(plugin_types_);
   visitor->Trace(base_uri_);

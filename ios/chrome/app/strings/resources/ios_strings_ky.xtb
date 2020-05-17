@@ -569,6 +569,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="8428045167754449968">Шаар/Шаарча</translation>
 <translation id="8428213095426709021">Жөндөөлөр</translation>
 <translation id="8458397775385147834">1 нерсе өчүрүлдү</translation>
+<translation id="8459333855531264009">Коопсуз эмес</translation>
 <translation id="8487667956631253959">Күйүк</translation>
 <translation id="8487700953926739672">Оффлайнда жеткиликтүү</translation>
 <translation id="8490978609246021741">Өзгөртүүлөрдү сактоо</translation>
@@ -595,6 +596,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="8741995161408053644">Google аккаунтуңуздун серептөө таржымалынын башка түрлөрү <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> дарегинде болушу мүмкүн.</translation>
 <translation id="8756969031206844760">Сырсөз жаңыртылсынбы?</translation>
 <translation id="8775144690796719618">Жараксыз URL</translation>
+<translation id="8803639129939845298">Корголгон</translation>
 <translation id="8820817407110198400">Кыстармалар</translation>
 <translation id="8840513115188359703">Google Каттоо эсебиңизден чыгарылбайсыз.</translation>
 <translation id="8870413625673593573">Жакында жабылган</translation>
@@ -625,7 +627,6 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="9223358826628549784">Ката тууралуу кабар жөнөтүлдү.</translation>
 <translation id="952704832371081537">Жокко чыгаруу</translation>
 <translation id="988141524645182168">Бшк түзмкт</translation>
-<translation id="989697783705943787">Сайттын коопсуздугу</translation>
 <translation id="989988560359834682">Даректи түзөтүү</translation>
 <translation id="994757059139821576">Макалаларды сунуштоо</translation>
 </translationbundle>

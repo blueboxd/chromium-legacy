@@ -83,7 +83,7 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
   ExecutionContext* GetExecutionContext() const override;
 
   // For garbage collection.
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   class PendingReadBufferedAmountPromise;

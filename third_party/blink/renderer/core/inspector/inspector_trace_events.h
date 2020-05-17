@@ -127,7 +127,7 @@ class CORE_EXPORT InspectorTraceEvents
 
   void FrameStartedLoading(LocalFrame*);
 
-  void Trace(Visitor*) {}
+  void Trace(Visitor*) const {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InspectorTraceEvents);

@@ -341,11 +341,11 @@ ImageRecord* ImageRecordsManager::FindLargestPaintCandidate() const {
   return size_ordered_set_.begin()->get();
 }
 
-void ImageRecordsManager::Trace(Visitor* visitor) {
+void ImageRecordsManager::Trace(Visitor* visitor) const {
   visitor->Trace(frame_view_);
 }
 
-void ImagePaintTimingDetector::Trace(Visitor* visitor) {
+void ImagePaintTimingDetector::Trace(Visitor* visitor) const {
   visitor->Trace(records_manager_);
   visitor->Trace(frame_view_);
   visitor->Trace(callback_manager_);

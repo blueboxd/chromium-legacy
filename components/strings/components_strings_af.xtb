@@ -240,7 +240,6 @@
 <translation id="1962204205936693436"><ph name="DOMAIN" />-boekmerke</translation>
 <translation id="1973335181906896915">Reeksfout</translation>
 <translation id="1974060860693918893">Gevorderd</translation>
-<translation id="1974883374937189061">Help om Chrome-sekuriteit beter te maak deur <ph name="BEGIN_WHITEPAPER_LINK" />URL'e van sommige bladsye wat jy besoek, beperkte stelselinligting en sommige bladsyinhoud<ph name="END_WHITEPAPER_LINK" /> aan Google te stuur. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1975584088563498795">Posbus 10</translation>
 <translation id="1978555033938440688">Fermwareweergawe</translation>
 <translation id="1981206234434200693">Vee Chrome se blaaigeskiedenisdata uit</translation>
@@ -1602,7 +1601,6 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="7763386264682878361">Betalingmanifesontleder</translation>
 <translation id="7764225426217299476">Voeg adres by</translation>
 <translation id="7766518757692125295">Buitelyn</translation>
-<translation id="7767271804335921384">Jou administrateur het die program geblokkeer</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Dieselfde volgorde, voorkant na bo</translation>
 <translation id="777702478322588152">Prefektuur</translation>
@@ -1756,6 +1754,7 @@ Bykomende besonderhede:
 <translation id="8425213833346101688">Verander</translation>
 <translation id="8428213095426709021">Instellings</translation>
 <translation id="8433057134996913067">Dit sal jou by die meeste webwerwe afmeld.</translation>
+<translation id="8433678324664858900">Wys voorstelle</translation>
 <translation id="8437238597147034694">Ontdoen skuif</translation>
 <translation id="8457125768502047971">Onbepaald</translation>
 <translation id="8461694314515752532">Enkripteer gesinkroniseerde data met jou eie sinkroniseringwagfrase</translation>

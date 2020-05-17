@@ -109,7 +109,7 @@ bool FontFaceSet::hasForBinding(ScriptState*,
          IsCSSConnectedFontFace(font_face);
 }
 
-void FontFaceSet::Trace(Visitor* visitor) {
+void FontFaceSet::Trace(Visitor* visitor) const {
   visitor->Trace(non_css_connected_faces_);
   visitor->Trace(loading_fonts_);
   visitor->Trace(loaded_fonts_);
@@ -278,7 +278,7 @@ void FontFaceSet::LoadFontPromiseResolver::NotifyError(FontFace* font_face) {
   }
 }
 
-void FontFaceSet::LoadFontPromiseResolver::Trace(Visitor* visitor) {
+void FontFaceSet::LoadFontPromiseResolver::Trace(Visitor* visitor) const {
   visitor->Trace(font_faces_);
   visitor->Trace(resolver_);
   LoadFontCallback::Trace(visitor);

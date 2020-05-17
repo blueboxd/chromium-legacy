@@ -68,7 +68,7 @@ void BidirectionalStream::OnOutgoingStreamAbort() {
   incoming_stream_->Reset();
 }
 
-void BidirectionalStream::Trace(Visitor* visitor) {
+void BidirectionalStream::Trace(Visitor* visitor) const {
   visitor->Trace(outgoing_stream_);
   visitor->Trace(incoming_stream_);
   visitor->Trace(quic_transport_);

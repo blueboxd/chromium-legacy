@@ -23,7 +23,7 @@ class CORE_EXPORT CustomElementReactionStack final
  public:
   CustomElementReactionStack();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
   const char* NameInHeapSnapshot() const override {
     return "CustomElementReactionStack";
   }

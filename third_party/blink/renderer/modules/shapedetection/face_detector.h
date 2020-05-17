@@ -27,7 +27,7 @@ class MODULES_EXPORT FaceDetector final : public ShapeDetector {
 
   FaceDetector(ExecutionContext*, const FaceDetectorOptions*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   ~FaceDetector() override = default;

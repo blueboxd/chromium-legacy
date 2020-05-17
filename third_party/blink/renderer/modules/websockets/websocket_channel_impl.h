@@ -133,7 +133,7 @@ class MODULES_EXPORT WebSocketChannelImpl final
                      const String& reason) override;
   void OnClosingHandshake() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   struct DataFrame final {

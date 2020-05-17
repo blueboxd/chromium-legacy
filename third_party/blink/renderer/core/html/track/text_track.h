@@ -127,7 +127,7 @@ class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   const HeapVector<Member<CSSStyleSheet>>& GetCSSStyleSheets() const {
     return style_sheets_;

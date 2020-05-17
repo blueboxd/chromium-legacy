@@ -59,7 +59,7 @@ class DraggedIsolatedFileSystemImpl final
 
   DraggedIsolatedFileSystemImpl() = default;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   static void PrepareForDataObject(DataObject*);
 

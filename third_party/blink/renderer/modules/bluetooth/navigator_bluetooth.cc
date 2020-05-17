@@ -37,7 +37,7 @@ Bluetooth* NavigatorBluetooth::bluetooth() {
   return bluetooth_.Get();
 }
 
-void NavigatorBluetooth::Trace(Visitor* visitor) {
+void NavigatorBluetooth::Trace(Visitor* visitor) const {
   visitor->Trace(bluetooth_);
   Supplement<Navigator>::Trace(visitor);
 }

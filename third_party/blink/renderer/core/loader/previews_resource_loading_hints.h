@@ -51,7 +51,7 @@ class CORE_EXPORT PreviewsResourceLoadingHints final
                  const KURL& resource_url,
                  ResourceLoadPriority resource_load_priority) const;
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
   // Records UKM on the utilization of patterns to block during the document
   // load. This is expected to be called once after the document finishes

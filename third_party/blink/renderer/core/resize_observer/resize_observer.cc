@@ -199,7 +199,7 @@ bool ResizeObserver::HasPendingActivity() const {
   return !observations_.IsEmpty();
 }
 
-void ResizeObserver::Trace(Visitor* visitor) {
+void ResizeObserver::Trace(Visitor* visitor) const {
   visitor->Trace(callback_);
   visitor->Trace(delegate_);
   visitor->Trace(observations_);

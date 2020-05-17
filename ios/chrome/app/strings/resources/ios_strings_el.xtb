@@ -570,6 +570,7 @@
 <translation id="8428045167754449968">Πόλη / Κωμόπολη</translation>
 <translation id="8428213095426709021">Ρυθμίσεις</translation>
 <translation id="8458397775385147834">Διαγράφηκε 1 στοιχείο</translation>
+<translation id="8459333855531264009">Μη ασφαλές</translation>
 <translation id="8487667956631253959">Ενεργοποίηση</translation>
 <translation id="8487700953926739672">Διαθέσιμο εκτός σύνδεσης</translation>
 <translation id="8490978609246021741">Αποθήκευση αλλαγών</translation>
@@ -596,6 +597,7 @@
 <translation id="8741995161408053644">Ο Λογαριασμός σας Google ενδέχεται να διαθέτει άλλες μορφές ιστορικού περιήγησης στη διεύθυνση <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8756969031206844760">Ενημέρωση κωδικού πρόσβασης;</translation>
 <translation id="8775144690796719618">Μη έγκυρη διεύθ. URL</translation>
+<translation id="8803639129939845298">Ασφαλές</translation>
 <translation id="8820817407110198400">Σελιδοδείκτες</translation>
 <translation id="8840513115188359703">Δεν θα αποσυνδεθείτε από το Λογαριασμό σας Google.</translation>
 <translation id="8870413625673593573">Έκλεισαν πρόσφατα</translation>
@@ -626,7 +628,6 @@
 <translation id="9223358826628549784">Η αναφορά σφάλματος εστάλη.</translation>
 <translation id="952704832371081537">Ακύρωση</translation>
 <translation id="988141524645182168">Άλλες συσκευές</translation>
-<translation id="989697783705943787">Ασφάλεια ιστοτόπου</translation>
 <translation id="989988560359834682">Επεξεργασία διεύθυνσης</translation>
 <translation id="994757059139821576">Προτάσεις για άρθρα</translation>
 </translationbundle>

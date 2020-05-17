@@ -88,7 +88,7 @@ ClipboardReader::ClipboardReader(SystemClipboard* system_clipboard)
 
 ClipboardReader::~ClipboardReader() = default;
 
-void ClipboardReader::Trace(Visitor* visitor) {
+void ClipboardReader::Trace(Visitor* visitor) const {
   visitor->Trace(system_clipboard_);
 }
 

@@ -64,7 +64,7 @@ SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
   UseCounter::Count(document, WebFeature::kSVGForeignObjectElement);
 }
 
-void SVGForeignObjectElement::Trace(Visitor* visitor) {
+void SVGForeignObjectElement::Trace(Visitor* visitor) const {
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(width_);

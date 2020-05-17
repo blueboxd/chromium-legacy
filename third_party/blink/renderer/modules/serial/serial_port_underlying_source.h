@@ -28,7 +28,7 @@ class SerialPortUnderlyingSource : public UnderlyingSourceBase {
   void SignalErrorImmediately(DOMException*);
   void SignalErrorOnClose(DOMException*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Reads data from |data_pipe_|. Returns true if data was enqueued to

@@ -40,7 +40,7 @@ class CORE_EXPORT SubresourceFilter final
   // Reports the resource request id as an ad to the |subresource_filter_|.
   void ReportAdRequestId(int request_id);
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
  private:
   void ReportLoad(const KURL& resource_url,

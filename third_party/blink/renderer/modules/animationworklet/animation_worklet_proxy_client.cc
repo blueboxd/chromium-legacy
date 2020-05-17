@@ -57,7 +57,7 @@ AnimationWorkletProxyClient::AnimationWorkletProxyClient(
   }
 }
 
-void AnimationWorkletProxyClient::Trace(Visitor* visitor) {
+void AnimationWorkletProxyClient::Trace(Visitor* visitor) const {
   Supplement<WorkerClients>::Trace(visitor);
   AnimationWorkletMutator::Trace(visitor);
 }

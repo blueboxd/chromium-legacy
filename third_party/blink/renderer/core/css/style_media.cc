@@ -62,7 +62,7 @@ bool StyleMedia::matchMedium(const String& query) const {
   return screen_eval.Eval(*media);
 }
 
-void StyleMedia::Trace(Visitor* visitor) {
+void StyleMedia::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
 }

@@ -63,7 +63,7 @@ void CSSRule::SetParentRule(CSSRule* rule) {
   parent_ = rule;
 }
 
-void CSSRule::Trace(Visitor* visitor) {
+void CSSRule::Trace(Visitor* visitor) const {
   visitor->Trace(parent_);
   ScriptWrappable::Trace(visitor);
 }

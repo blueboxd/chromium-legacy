@@ -69,7 +69,7 @@ class MediaControlSliderElement::MediaControlSliderElementResizeObserverDelegate
     element_->NotifyElementSizeChanged();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(element_);
     ResizeObserver::Delegate::Trace(visitor);
   }
@@ -163,7 +163,7 @@ void MediaControlSliderElement::NotifyElementSizeChanged() {
                         TrackWidth(), ZoomFactor());
 }
 
-void MediaControlSliderElement::Trace(Visitor* visitor) {
+void MediaControlSliderElement::Trace(Visitor* visitor) const {
   visitor->Trace(segment_highlight_before_);
   visitor->Trace(segment_highlight_after_);
   visitor->Trace(resize_observer_);

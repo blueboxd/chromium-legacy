@@ -40,7 +40,7 @@ WakeLock* NavigatorWakeLock::wakeLock(Navigator& navigator) {
   return NavigatorWakeLock::From(navigator).GetWakeLock();
 }
 
-void NavigatorWakeLock::Trace(Visitor* visitor) {
+void NavigatorWakeLock::Trace(Visitor* visitor) const {
   visitor->Trace(wake_lock_);
   Supplement<Navigator>::Trace(visitor);
 }

@@ -61,7 +61,7 @@ Node* TaskSession::DocumentSession::GetNextChangedNode() {
   return nullptr;
 }
 
-void TaskSession::DocumentSession::Trace(Visitor* visitor) {
+void TaskSession::DocumentSession::Trace(Visitor* visitor) const {
   visitor->Trace(captured_content_);
   visitor->Trace(sent_nodes_);
   visitor->Trace(document_);
@@ -145,7 +145,7 @@ TaskSession::DocumentSession* TaskSession::GetDocumentSession(
   return it->value;
 }
 
-void TaskSession::Trace(Visitor* visitor) {
+void TaskSession::Trace(Visitor* visitor) const {
   visitor->Trace(sent_nodes_);
   visitor->Trace(changed_nodes_);
   visitor->Trace(to_document_session_);

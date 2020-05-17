@@ -94,7 +94,7 @@ RTCIceCandidatePlatform* RTCIceCandidate::PlatformCandidate() const {
   return platform_candidate_;
 }
 
-void RTCIceCandidate::Trace(Visitor* visitor) {
+void RTCIceCandidate::Trace(Visitor* visitor) const {
   visitor->Trace(platform_candidate_);
   ScriptWrappable::Trace(visitor);
 }

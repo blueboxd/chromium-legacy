@@ -46,7 +46,7 @@ Filter::Filter(Expression* expr, HeapVector<Member<Predicate>>& predicates)
 
 Filter::~Filter() = default;
 
-void Filter::Trace(Visitor* visitor) {
+void Filter::Trace(Visitor* visitor) const {
   visitor->Trace(expr_);
   visitor->Trace(predicates_);
   Expression::Trace(visitor);
@@ -82,7 +82,7 @@ LocationPath::LocationPath() : absolute_(false) {
 
 LocationPath::~LocationPath() = default;
 
-void LocationPath::Trace(Visitor* visitor) {
+void LocationPath::Trace(Visitor* visitor) const {
   visitor->Trace(steps_);
   Expression::Trace(visitor);
 }
@@ -183,7 +183,7 @@ Path::Path(Expression* filter, LocationPath* path)
 
 Path::~Path() = default;
 
-void Path::Trace(Visitor* visitor) {
+void Path::Trace(Visitor* visitor) const {
   visitor->Trace(filter_);
   visitor->Trace(path_);
   Expression::Trace(visitor);

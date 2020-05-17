@@ -38,7 +38,7 @@ class TestResizeObserverDelegate : public ResizeObserver::Delegate {
   ExecutionContext* GetExecutionContext() const { return window_.Get(); }
   int CallCount() const { return call_count_; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     ResizeObserver::Delegate::Trace(visitor);
     visitor->Trace(window_);
   }

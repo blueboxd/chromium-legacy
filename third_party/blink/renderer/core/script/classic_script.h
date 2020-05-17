@@ -24,7 +24,7 @@ class CORE_EXPORT ClassicScript final : public Script {
         script_source_code_(script_source_code),
         sanitize_script_errors_(sanitize_script_errors) {}
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   const ScriptSourceCode& GetScriptSourceCode() const {
     return script_source_code_;

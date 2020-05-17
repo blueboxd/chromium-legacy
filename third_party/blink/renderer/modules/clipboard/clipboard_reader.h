@@ -28,7 +28,7 @@ class ClipboardReader : public GarbageCollected<ClipboardReader> {
   // Returns nullptr if the data is empty or invalid.
   virtual Blob* ReadFromSystem() = 0;
 
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
  protected:
   explicit ClipboardReader(SystemClipboard* system_clipboard);

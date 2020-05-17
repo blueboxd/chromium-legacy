@@ -42,7 +42,7 @@ class CORE_EXPORT InspectorApplicationCacheAgent final
  public:
   explicit InspectorApplicationCacheAgent(InspectedFrames*);
   ~InspectorApplicationCacheAgent() override = default;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // InspectorBaseAgent
   void Restore() override;

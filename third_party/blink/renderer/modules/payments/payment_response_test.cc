@@ -46,7 +46,9 @@ class MockPaymentStateResolver final
                              const PaymentValidationErrors* errorFields,
                              ExceptionState&));
 
-  void Trace(Visitor* visitor) override { visitor->Trace(dummy_promise_); }
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(dummy_promise_);
+  }
 
  private:
   ScriptPromise dummy_promise_;

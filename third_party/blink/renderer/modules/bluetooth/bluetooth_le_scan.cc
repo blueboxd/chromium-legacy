@@ -64,7 +64,7 @@ bool BluetoothLEScan::stop() {
   return true;
 }
 
-void BluetoothLEScan::Trace(Visitor* visitor) {
+void BluetoothLEScan::Trace(Visitor* visitor) const {
   visitor->Trace(filters_);
   visitor->Trace(bluetooth_);
   ScriptWrappable::Trace(visitor);

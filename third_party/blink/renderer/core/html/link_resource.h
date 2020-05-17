@@ -59,7 +59,7 @@ class CORE_EXPORT LinkResource : public GarbageCollected<LinkResource> {
   virtual void OwnerInserted() {}
   virtual bool HasLoaded() const = 0;
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
  protected:
   void Load();

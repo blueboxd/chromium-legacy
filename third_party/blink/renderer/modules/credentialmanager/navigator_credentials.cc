@@ -37,7 +37,7 @@ CredentialsContainer* NavigatorCredentials::credentials() {
   return credentials_container_.Get();
 }
 
-void NavigatorCredentials::Trace(Visitor* visitor) {
+void NavigatorCredentials::Trace(Visitor* visitor) const {
   visitor->Trace(credentials_container_);
   Supplement<Navigator>::Trace(visitor);
 }

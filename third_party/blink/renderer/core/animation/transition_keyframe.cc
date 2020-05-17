@@ -62,7 +62,7 @@ void TransitionKeyframe::AddKeyframePropertiesToV8Object(
   object_builder.Add(property_name, property_value);
 }
 
-void TransitionKeyframe::Trace(Visitor* visitor) {
+void TransitionKeyframe::Trace(Visitor* visitor) const {
   visitor->Trace(compositor_value_);
   Keyframe::Trace(visitor);
 }
@@ -93,7 +93,8 @@ TransitionKeyframe::PropertySpecificKeyframe::CreateInterpolation(
       other.compositor_value_);
 }
 
-void TransitionKeyframe::PropertySpecificKeyframe::Trace(Visitor* visitor) {
+void TransitionKeyframe::PropertySpecificKeyframe::Trace(
+    Visitor* visitor) const {
   visitor->Trace(compositor_value_);
   Keyframe::PropertySpecificKeyframe::Trace(visitor);
 }

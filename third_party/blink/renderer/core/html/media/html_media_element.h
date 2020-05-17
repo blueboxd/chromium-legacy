@@ -108,7 +108,7 @@ class CORE_EXPORT HTMLMediaElement
   // for the given document.
   static void OnMediaControlsEnabledChange(Document*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   WebMediaPlayer* GetWebMediaPlayer() const { return web_media_player_.get(); }
 
@@ -693,7 +693,7 @@ class CORE_EXPORT HTMLMediaElement
     // WebAudioSourceProviderClient
     void SetFormat(uint32_t number_of_channels, float sample_rate) override;
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
    private:
     Member<AudioSourceProviderClient> client_;
@@ -715,7 +715,7 @@ class CORE_EXPORT HTMLMediaElement
     void SetClient(AudioSourceProviderClient*) override;
     void ProvideInput(AudioBus*, uint32_t frames_to_process) override;
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
    private:
     scoped_refptr<WebAudioSourceProviderImpl> web_audio_source_provider_;

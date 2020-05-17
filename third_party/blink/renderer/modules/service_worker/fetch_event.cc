@@ -225,7 +225,7 @@ void FetchEvent::addPerformanceEntry(PerformanceMeasure* performance_measure) {
   }
 }
 
-void FetchEvent::Trace(Visitor* visitor) {
+void FetchEvent::Trace(Visitor* visitor) const {
   visitor->Trace(observer_);
   visitor->Trace(request_);
   visitor->Trace(preload_response_property_);

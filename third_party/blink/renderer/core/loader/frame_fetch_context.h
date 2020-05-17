@@ -102,7 +102,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   FetchContext* Detach() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool CalculateIfAdSubresource(
       const ResourceRequest& resource_request,

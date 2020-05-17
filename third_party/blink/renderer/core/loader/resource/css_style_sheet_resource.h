@@ -55,7 +55,7 @@ class CORE_EXPORT CSSStyleSheetResource final : public TextResource {
                         const TextResourceDecoderOptions&);
 
   ~CSSStyleSheetResource() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   void OnMemoryDump(WebMemoryDumpLevelOfDetail,
                     WebProcessMemoryDump*) const override;
 

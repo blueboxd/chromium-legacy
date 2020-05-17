@@ -224,7 +224,9 @@ struct FrameFetchContext::FrozenState final : GarbageCollected<FrozenState> {
   const base::Optional<UserAgentMetadata> user_agent_metadata;
   const bool is_svg_image_chrome_client;
 
-  void Trace(Visitor* visitor) { visitor->Trace(content_security_policy); }
+  void Trace(Visitor* visitor) const {
+    visitor->Trace(content_security_policy);
+  }
 };
 
 ResourceFetcher* FrameFetchContext::CreateFetcherForCommittedDocument(
@@ -994,7 +996,7 @@ FetchContext* FrameFetchContext::Detach() {
   return this;
 }
 
-void FrameFetchContext::Trace(Visitor* visitor) {
+void FrameFetchContext::Trace(Visitor* visitor) const {
   visitor->Trace(document_loader_);
   visitor->Trace(document_);
   visitor->Trace(frozen_state_);

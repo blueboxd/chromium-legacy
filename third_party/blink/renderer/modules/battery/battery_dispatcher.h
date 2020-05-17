@@ -29,7 +29,7 @@ class MODULES_EXPORT BatteryDispatcher final
     return has_latest_data_ ? &battery_status_ : nullptr;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void QueryNextStatus();

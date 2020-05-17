@@ -23,7 +23,7 @@ class DecompressionStream final : public ScriptWrappable {
   ReadableStream* readable() const;
   WritableStream* writable() const;
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   Member<TransformStream> transform_;

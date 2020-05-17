@@ -73,7 +73,7 @@ class CORE_EXPORT HTMLTableElement final : public HTMLElement {
 
   bool HasNonInBodyInsertionMode() const override { return true; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   ~HTMLTableElement() override;

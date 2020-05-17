@@ -284,7 +284,7 @@ void ImageLoader::RejectPendingDecodes(UpdateType update_type) {
   }
 }
 
-void ImageLoader::Trace(Visitor* visitor) {
+void ImageLoader::Trace(Visitor* visitor) const {
   visitor->Trace(image_content_);
   visitor->Trace(image_content_for_image_document_);
   visitor->Trace(element_);
@@ -1015,7 +1015,7 @@ void ImageLoader::DecodeRequest::NotifyDecodeDispatched() {
   state_ = kDispatched;
 }
 
-void ImageLoader::DecodeRequest::Trace(Visitor* visitor) {
+void ImageLoader::DecodeRequest::Trace(Visitor* visitor) const {
   visitor->Trace(resolver_);
   visitor->Trace(loader_);
 }

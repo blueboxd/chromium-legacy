@@ -65,7 +65,7 @@ class MODULES_EXPORT DirectoryEntry final : public Entry {
   void removeRecursively(V8VoidCallback* success_callback = nullptr,
                          V8ErrorCallback* = nullptr) const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 };
 
 }  // namespace blink

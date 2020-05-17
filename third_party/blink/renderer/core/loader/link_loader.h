@@ -73,7 +73,7 @@ class CORE_EXPORT LinkLoader final : public SingleModuleClient,
 
   Resource* GetResourceForTesting();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   class FinishObserver;

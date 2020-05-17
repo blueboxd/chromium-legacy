@@ -256,7 +256,7 @@ const AtomicString& GPUDevice::InterfaceName() const {
   return event_target_names::kGPUDevice;
 }
 
-void GPUDevice::Trace(Visitor* visitor) {
+void GPUDevice::Trace(Visitor* visitor) const {
   visitor->Trace(adapter_);
   visitor->Trace(queue_);
   visitor->Trace(lost_property_);

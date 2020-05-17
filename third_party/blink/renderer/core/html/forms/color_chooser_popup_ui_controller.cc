@@ -63,7 +63,7 @@ ColorChooserPopupUIController::~ColorChooserPopupUIController() {
   DCHECK(!popup_);
 }
 
-void ColorChooserPopupUIController::Trace(Visitor* visitor) {
+void ColorChooserPopupUIController::Trace(Visitor* visitor) const {
   visitor->Trace(chrome_client_);
   visitor->Trace(eye_dropper_chooser_);
   ColorChooserUIController::Trace(visitor);

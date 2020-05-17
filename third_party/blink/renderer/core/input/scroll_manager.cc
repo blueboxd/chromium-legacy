@@ -78,7 +78,7 @@ void ScrollManager::Clear() {
   ClearGestureScrollState();
 }
 
-void ScrollManager::Trace(Visitor* visitor) {
+void ScrollManager::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(scroll_gesture_handling_node_);
   visitor->Trace(previous_gesture_scrolled_node_);

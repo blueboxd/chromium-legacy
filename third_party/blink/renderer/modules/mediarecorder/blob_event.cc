@@ -20,7 +20,7 @@ const AtomicString& BlobEvent::InterfaceName() const {
   return event_interface_names::kBlobEvent;
 }
 
-void BlobEvent::Trace(Visitor* visitor) {
+void BlobEvent::Trace(Visitor* visitor) const {
   visitor->Trace(blob_);
   Event::Trace(visitor);
 }

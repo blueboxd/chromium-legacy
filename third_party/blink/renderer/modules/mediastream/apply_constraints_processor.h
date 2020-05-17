@@ -44,7 +44,7 @@ class MODULES_EXPORT ApplyConstraintsProcessor final
   void ProcessRequest(blink::ApplyConstraintsRequest* request,
                       base::OnceClosure callback);
 
-  void Trace(Visitor* visitor) { visitor->Trace(current_request_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(current_request_); }
 
  private:
   // Helpers for video device-capture requests.

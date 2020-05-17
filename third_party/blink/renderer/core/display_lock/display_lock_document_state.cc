@@ -16,7 +16,7 @@ namespace blink {
 DisplayLockDocumentState::DisplayLockDocumentState(Document* document)
     : document_(document) {}
 
-void DisplayLockDocumentState::Trace(Visitor* visitor) {
+void DisplayLockDocumentState::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(intersection_observer_);
   visitor->Trace(display_lock_contexts_);

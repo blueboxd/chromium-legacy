@@ -359,7 +359,7 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   DEFINE_ATTRIBUTE_EVENT_LISTENER(accessiblescrollintoview,
                                   kAccessiblescrollintoview)
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   friend class AccessibleNodeList;

@@ -35,7 +35,7 @@ class DtlsTransportProxy : public webrtc::DtlsTransportObserverInterface {
     virtual void OnStartCompleted(webrtc::DtlsTransportInformation info) = 0;
     // Called when a state change is signalled from transport.
     virtual void OnStateChange(webrtc::DtlsTransportInformation info) = 0;
-    void Trace(Visitor* visitor) override {}
+    void Trace(Visitor* visitor) const override {}
   };
   // Constructs a DtlsTransportProxy.
   // The caller is responsible for keeping |dtls_transport| and |delegate|

@@ -54,7 +54,7 @@ class WorkerGlobalScopeCrypto final
 
   WorkerGlobalScopeCrypto();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   mutable Member<Crypto> crypto_;

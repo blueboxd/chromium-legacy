@@ -21,7 +21,7 @@ class Receiver : public GarbageCollected<Receiver> {
  public:
   void Increment(int* counter) { ++*counter; }
 
-  void Trace(Visitor* visitor) {}
+  void Trace(Visitor* visitor) const {}
 };
 
 TEST_F(PersistentTest, BindCancellation) {

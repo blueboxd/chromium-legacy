@@ -67,7 +67,7 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   explicit AXObjectCacheImpl(Document&);
   ~AXObjectCacheImpl() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   Document& GetDocument() { return *document_; }
   AXObject* FocusedObject();
@@ -307,7 +307,7 @@ class MODULES_EXPORT AXObjectCacheImpl
     ax::mojom::blink::EventFrom event_from;
     BlinkAXEventIntentsSet event_intents;
 
-    void Trace(Visitor* visitor) { visitor->Trace(target); }
+    void Trace(Visitor* visitor) const { visitor->Trace(target); }
   };
 
   struct TreeUpdateParams final : public GarbageCollected<TreeUpdateParams> {
@@ -325,7 +325,7 @@ class MODULES_EXPORT AXObjectCacheImpl
     BlinkAXEventIntentsSet event_intents;
     base::OnceClosure callback;
 
-    void Trace(Visitor* visitor) { visitor->Trace(node); }
+    void Trace(Visitor* visitor) const { visitor->Trace(node); }
   };
 
   ax::mojom::blink::EventFrom ComputeEventFrom();

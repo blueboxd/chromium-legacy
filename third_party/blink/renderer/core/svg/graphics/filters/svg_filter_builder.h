@@ -60,7 +60,7 @@ class SVGFilterGraphNodeMap final
 
   void InvalidateDependentEffects(FilterEffect*);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   FilterEffectSet& EffectReferences(FilterEffect* effect) {

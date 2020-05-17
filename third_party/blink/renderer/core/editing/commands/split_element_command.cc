@@ -102,7 +102,7 @@ void SplitElementCommand::DoReapply() {
   ExecuteApply();
 }
 
-void SplitElementCommand::Trace(Visitor* visitor) {
+void SplitElementCommand::Trace(Visitor* visitor) const {
   visitor->Trace(element1_);
   visitor->Trace(element2_);
   visitor->Trace(at_child_);

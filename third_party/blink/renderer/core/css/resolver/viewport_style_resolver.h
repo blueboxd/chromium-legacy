@@ -57,7 +57,7 @@ class CORE_EXPORT ViewportStyleResolver final
 
   void CollectViewportRulesFromAuthorSheet(const CSSStyleSheet&);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   void Reset();

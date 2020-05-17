@@ -40,7 +40,7 @@ class NavigatorUAData : public ScriptWrappable, ExecutionContextClient {
   bool mobile() const;
   ScriptPromise getHighEntropyValues(ScriptState*, Vector<String>&) const;
 
-  void Trace(Visitor* visitor) final;
+  void Trace(Visitor* visitor) const final;
 
  private:
   HeapVector<Member<NavigatorUABrandVersion>> brand_set_;

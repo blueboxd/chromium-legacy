@@ -69,7 +69,7 @@ class CORE_EXPORT Navigator final : public ScriptWrappable,
   UserAgentMetadata GetUserAgentMetadata() const override;
   void SetUserAgentMetadataForTesting(UserAgentMetadata);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   ExecutionContext* GetUAExecutionContext() const override;

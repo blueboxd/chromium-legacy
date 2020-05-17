@@ -21,7 +21,7 @@ class MODULES_EXPORT DeviceOrientationInspectorAgent final
  public:
   explicit DeviceOrientationInspectorAgent(InspectedFrames*);
   ~DeviceOrientationInspectorAgent() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Protocol methods.
   protocol::Response setDeviceOrientationOverride(double,

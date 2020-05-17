@@ -362,7 +362,7 @@ void CueTimeline::EndIgnoringUpdateRequests() {
     UpdateActiveCues(MediaElement().currentTime());
 }
 
-void CueTimeline::Trace(Visitor* visitor) {
+void CueTimeline::Trace(Visitor* visitor) const {
   visitor->Trace(media_element_);
 }
 

@@ -17,7 +17,7 @@ class TestNode : public GarbageCollected<TestNode> {
 
   wtf_size_t& PriorityQueueHandle() { return handle_; }
 
-  void Trace(Visitor*) {}
+  void Trace(Visitor*) const {}
 
  private:
   wtf_size_t handle_;

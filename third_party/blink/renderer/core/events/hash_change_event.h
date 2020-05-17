@@ -65,7 +65,7 @@ class HashChangeEvent final : public Event {
     return event_interface_names::kHashChangeEvent;
   }
 
-  void Trace(Visitor* visitor) override { Event::Trace(visitor); }
+  void Trace(Visitor* visitor) const override { Event::Trace(visitor); }
 
  private:
   String old_url_;

@@ -23,7 +23,7 @@ class XRWorldInformation : public ScriptWrappable {
   // disabled.
   XRPlaneSet* detectedPlanes() const;
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   // Applies changes to the stored plane information based on the contents of
   // the received frame data. This will update the contents of

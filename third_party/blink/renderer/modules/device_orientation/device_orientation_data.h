@@ -50,7 +50,7 @@ class MODULES_EXPORT DeviceOrientationData final
                         const base::Optional<double>& gamma,
                         bool absolute);
 
-  void Trace(Visitor* visitor) {}
+  void Trace(Visitor* visitor) const {}
 
   double Alpha() const;
   double Beta() const;

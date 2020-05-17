@@ -42,7 +42,7 @@ class CORE_EXPORT TestInterfaceOrLong final {
   TestInterfaceOrLong(const TestInterfaceOrLong&);
   ~TestInterfaceOrLong();
   TestInterfaceOrLong& operator=(const TestInterfaceOrLong&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   enum class SpecificType {

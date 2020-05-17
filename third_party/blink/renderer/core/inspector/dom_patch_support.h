@@ -58,7 +58,7 @@ class DOMPatchSupport final {
   class Digest final : public GarbageCollected<Digest> {
    public:
     explicit Digest(Node* node) : node_(node) {}
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
     String sha1_;
     String attrs_sha1_;

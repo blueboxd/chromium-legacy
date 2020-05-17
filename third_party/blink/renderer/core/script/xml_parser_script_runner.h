@@ -32,7 +32,7 @@ class XMLParserScriptRunner final
   void ProcessScriptElement(Document&, Element*, TextPosition);
   void Detach();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // from PendingScriptClient

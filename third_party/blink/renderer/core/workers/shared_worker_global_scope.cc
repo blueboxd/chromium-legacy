@@ -264,7 +264,7 @@ void SharedWorkerGlobalScope::ExceptionThrown(ErrorEvent* event) {
     debugger->ExceptionThrown(GetThread(), event);
 }
 
-void SharedWorkerGlobalScope::Trace(Visitor* visitor) {
+void SharedWorkerGlobalScope::Trace(Visitor* visitor) const {
   visitor->Trace(appcache_host_);
   WorkerGlobalScope::Trace(visitor);
 }

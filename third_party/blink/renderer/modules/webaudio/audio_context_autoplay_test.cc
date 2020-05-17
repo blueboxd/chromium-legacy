@@ -37,7 +37,7 @@ class MockCrossOriginLocalFrameClient final : public EmptyLocalFrameClient {
  public:
   explicit MockCrossOriginLocalFrameClient(Frame* parent) : parent_(parent) {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(parent_);
     EmptyLocalFrameClient::Trace(visitor);
   }

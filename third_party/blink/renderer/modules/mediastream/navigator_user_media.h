@@ -25,7 +25,7 @@ class NavigatorUserMedia final : public GarbageCollected<NavigatorUserMedia>,
 
   explicit NavigatorUserMedia(Navigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   MediaDevices* GetMediaDevices();

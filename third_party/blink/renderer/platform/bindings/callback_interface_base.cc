@@ -32,7 +32,7 @@ CallbackInterfaceBase::CallbackInterfaceBase(
   }
 }
 
-void CallbackInterfaceBase::Trace(Visitor* visitor) {
+void CallbackInterfaceBase::Trace(Visitor* visitor) const {
   visitor->Trace(callback_object_);
   visitor->Trace(callback_relevant_script_state_);
   visitor->Trace(incumbent_script_state_);

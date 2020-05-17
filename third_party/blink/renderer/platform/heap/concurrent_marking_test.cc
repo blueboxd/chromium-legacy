@@ -24,7 +24,7 @@ class CollectionWrapper : public GarbageCollected<CollectionWrapper<T>> {
  public:
   CollectionWrapper() : collection_(MakeGarbageCollected<T>()) {}
 
-  void Trace(Visitor* visitor) { visitor->Trace(collection_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(collection_); }
 
   T* GetCollection() { return collection_.Get(); }
 

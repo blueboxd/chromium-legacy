@@ -1621,7 +1621,7 @@ void InputMethodController::WillChangeFocus() {
   FinishComposingText(kKeepSelection);
 }
 
-void InputMethodController::Trace(Visitor* visitor) {
+void InputMethodController::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(composition_range_);
   visitor->Trace(active_edit_context_);

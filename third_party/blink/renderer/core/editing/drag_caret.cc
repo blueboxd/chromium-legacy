@@ -92,7 +92,7 @@ void DragCaret::NodeWillBeRemoved(Node& node) {
   Clear();
 }
 
-void DragCaret::Trace(Visitor* visitor) {
+void DragCaret::Trace(Visitor* visitor) const {
   visitor->Trace(position_);
   SynchronousMutationObserver::Trace(visitor);
 }

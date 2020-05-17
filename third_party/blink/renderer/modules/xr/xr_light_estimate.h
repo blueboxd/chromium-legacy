@@ -31,7 +31,7 @@ class XRLightEstimate : public ScriptWrappable {
     return primary_light_intensity_.Get();
   }
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   Member<DOMFloat32Array> sh_coefficients_;

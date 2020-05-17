@@ -55,7 +55,7 @@ class LinkImport final : public LinkResource, public HTMLImportChildClient {
   void Process() final;
   LinkResourceType GetType() const final { return kImport; }
   bool HasLoaded() const final;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   void OwnerInserted() final;
   void OwnerRemoved() final;
 

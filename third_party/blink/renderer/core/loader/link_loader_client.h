@@ -41,7 +41,7 @@ namespace blink {
 class CORE_EXPORT LinkLoaderClient : public GarbageCollectedMixin {
  public:
   virtual ~LinkLoaderClient() = default;
-  void Trace(Visitor* visitor) override {}
+  void Trace(Visitor* visitor) const override {}
 
   virtual bool ShouldLoadLink() = 0;
 

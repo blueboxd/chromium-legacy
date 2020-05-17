@@ -1191,7 +1191,7 @@ bool HTMLSelectElement::IsInteractiveContent() const {
   return true;
 }
 
-void HTMLSelectElement::Trace(Visitor* visitor) {
+void HTMLSelectElement::Trace(Visitor* visitor) const {
   visitor->Trace(list_items_);
   visitor->Trace(last_on_change_option_);
   visitor->Trace(active_selection_anchor_);

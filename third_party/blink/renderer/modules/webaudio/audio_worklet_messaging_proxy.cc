@@ -95,10 +95,9 @@ std::unique_ptr<WorkerThread> AudioWorkletMessagingProxy::CreateWorkerThread() {
   return AudioWorkletThread::Create(WorkletObjectProxy());
 }
 
-void AudioWorkletMessagingProxy::Trace(Visitor* visitor) {
+void AudioWorkletMessagingProxy::Trace(Visitor* visitor) const {
   visitor->Trace(worklet_);
   ThreadedWorkletMessagingProxy::Trace(visitor);
 }
-
 
 }  // namespace blink

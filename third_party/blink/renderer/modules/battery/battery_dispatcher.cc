@@ -22,7 +22,7 @@ BatteryDispatcher& BatteryDispatcher::Instance() {
 BatteryDispatcher::BatteryDispatcher()
     : monitor_(nullptr), has_latest_data_(false) {}
 
-void BatteryDispatcher::Trace(Visitor* visitor) {
+void BatteryDispatcher::Trace(Visitor* visitor) const {
   visitor->Trace(monitor_);
   PlatformEventDispatcher::Trace(visitor);
 }

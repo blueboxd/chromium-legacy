@@ -44,7 +44,7 @@ class MODULES_EXPORT AnimationWorkletProxyClient
       scoped_refptr<base::SingleThreadTaskRunner> compositor_mutatee_runner,
       base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> main_thread_mutatee,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_mutatee_runner);
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   virtual void SynchronizeAnimatorName(const String& animator_name);
   virtual void AddGlobalScope(WorkletGlobalScope*);

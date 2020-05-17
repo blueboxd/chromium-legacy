@@ -42,7 +42,7 @@ MIDIConnectionEvent::MIDIConnectionEvent(
     port_ = initializer->port();
 }
 
-void MIDIConnectionEvent::Trace(Visitor* visitor) {
+void MIDIConnectionEvent::Trace(Visitor* visitor) const {
   visitor->Trace(port_);
   Event::Trace(visitor);
 }

@@ -73,7 +73,7 @@ const AtomicString& TransitionEvent::InterfaceName() const {
   return event_interface_names::kTransitionEvent;
 }
 
-void TransitionEvent::Trace(Visitor* visitor) {
+void TransitionEvent::Trace(Visitor* visitor) const {
   Event::Trace(visitor);
 }
 

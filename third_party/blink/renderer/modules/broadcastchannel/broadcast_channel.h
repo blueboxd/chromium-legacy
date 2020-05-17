@@ -55,7 +55,7 @@ class BroadcastChannel final : public EventTargetWithInlineData,
   // ExecutionContextLifecycleObserver:
   void ContextDestroyed() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // mojom::blink::BroadcastChannelClient:

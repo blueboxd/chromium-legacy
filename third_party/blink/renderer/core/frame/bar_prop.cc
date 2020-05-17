@@ -37,7 +37,7 @@ namespace blink {
 BarProp::BarProp(LocalFrame* frame, Type type)
     : ExecutionContextClient(frame), type_(type) {}
 
-void BarProp::Trace(Visitor* visitor) {
+void BarProp::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
 }

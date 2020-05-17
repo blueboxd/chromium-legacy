@@ -31,7 +31,7 @@ class AudioParamMap final : public ScriptWrappable,
 
   const MapType& GetHashMap() const { return parameter_map_; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(parameter_map_);
     ScriptWrappable::Trace(visitor);
   }

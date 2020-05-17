@@ -66,7 +66,7 @@ class HTMLParserScheduler final : public GarbageCollected<HTMLParserScheduler> {
 
   void Detach();  // Clear active tasks if any.
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   bool ShouldYield(const SpeculationsPumpSession&, bool starting_script) const;

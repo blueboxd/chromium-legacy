@@ -43,7 +43,7 @@ class NavigatorLocksImpl final : public GarbageCollected<NavigatorLocksImpl<T>>,
     return lock_manager_.Get();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(lock_manager_);
     Supplement<T>::Trace(visitor);
   }

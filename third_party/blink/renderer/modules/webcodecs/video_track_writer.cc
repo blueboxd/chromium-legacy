@@ -185,7 +185,7 @@ MediaStreamTrack* VideoTrackWriter::track() {
   return track_;
 }
 
-void VideoTrackWriter::Trace(Visitor* visitor) {
+void VideoTrackWriter::Trace(Visitor* visitor) const {
   visitor->Trace(track_);
   visitor->Trace(writable_);
   ScriptWrappable::Trace(visitor);

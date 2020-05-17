@@ -141,7 +141,7 @@ void NavigatorVibration::ContextDestroyed() {
   }
 }
 
-void NavigatorVibration::Trace(Visitor* visitor) {
+void NavigatorVibration::Trace(Visitor* visitor) const {
   visitor->Trace(controller_);
   Supplement<Navigator>::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);

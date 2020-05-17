@@ -47,7 +47,7 @@ class CueTimeline final : public GarbageCollected<CueTimeline> {
 
   const CueList& CurrentlyActiveCues() const { return currently_active_cues_; }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   HTMLMediaElement& MediaElement() const { return *media_element_; }

@@ -42,7 +42,7 @@ class MODULES_EXPORT AbortPaymentEvent final : public ExtendableEvent {
 
   void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<RespondWithObserver> observer_;

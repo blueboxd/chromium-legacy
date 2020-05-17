@@ -216,7 +216,7 @@ const Vector<KURL>& PresentationRequest::Urls() const {
   return urls_;
 }
 
-void PresentationRequest::Trace(Visitor* visitor) {
+void PresentationRequest::Trace(Visitor* visitor) const {
   visitor->Trace(availability_property_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextClient::Trace(visitor);

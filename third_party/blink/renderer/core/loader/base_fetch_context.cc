@@ -272,7 +272,7 @@ BaseFetchContext::CanRequestInternal(
   return base::nullopt;
 }
 
-void BaseFetchContext::Trace(Visitor* visitor) {
+void BaseFetchContext::Trace(Visitor* visitor) const {
   visitor->Trace(fetcher_properties_);
   FetchContext::Trace(visitor);
 }

@@ -43,7 +43,7 @@
 
 namespace blink {
 
-void ChromeClient::Trace(Visitor* visitor) {
+void ChromeClient::Trace(Visitor* visitor) const {
   visitor->Trace(last_mouse_over_node_);
 }
 

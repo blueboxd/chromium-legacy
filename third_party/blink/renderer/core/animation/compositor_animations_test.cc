@@ -332,7 +332,7 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
       return property_specific_;  // We know a shortcut.
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(property_specific_);
       StringKeyframe::Trace(visitor);
     }
@@ -371,7 +371,7 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
         return nullptr;
       }
 
-      void Trace(Visitor* visitor) override {
+      void Trace(Visitor* visitor) const override {
         visitor->Trace(compositor_keyframe_value_);
         PropertySpecificKeyframe::Trace(visitor);
       }

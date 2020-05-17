@@ -101,7 +101,7 @@ void SimpleEditCommand::DoReapply() {
   DoApply(&editing_state);
 }
 
-void EditCommand::Trace(Visitor* visitor) {
+void EditCommand::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(parent_);
 }

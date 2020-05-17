@@ -243,7 +243,7 @@ Document* DOMImplementation::createDocument(const DocumentInit& init) {
   return nullptr;
 }
 
-void DOMImplementation::Trace(Visitor* visitor) {
+void DOMImplementation::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   ScriptWrappable::Trace(visitor);
 }

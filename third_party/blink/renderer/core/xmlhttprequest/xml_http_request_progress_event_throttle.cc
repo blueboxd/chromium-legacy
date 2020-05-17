@@ -175,7 +175,7 @@ void XMLHttpRequestProgressEventThrottle::Fired() {
   StartOneShot(kMinimumProgressEventDispatchingInterval, FROM_HERE);
 }
 
-void XMLHttpRequestProgressEventThrottle::Trace(Visitor* visitor) {
+void XMLHttpRequestProgressEventThrottle::Trace(Visitor* visitor) const {
   visitor->Trace(target_);
 }
 

@@ -31,7 +31,7 @@ class WorkerResourceTimingNotifier
       mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
           worker_timing_receiver) = 0;
 
-  virtual void Trace(Visitor*) {}
+  virtual void Trace(Visitor*) const {}
 };
 
 }  // namespace blink

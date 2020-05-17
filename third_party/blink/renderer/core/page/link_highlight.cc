@@ -25,7 +25,7 @@ LinkHighlight::~LinkHighlight() {
   RemoveHighlight();
 }
 
-void LinkHighlight::Trace(Visitor* visitor) {
+void LinkHighlight::Trace(Visitor* visitor) const {
   visitor->Trace(page_);
 }
 

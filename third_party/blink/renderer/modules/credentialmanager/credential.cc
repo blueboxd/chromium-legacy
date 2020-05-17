@@ -32,7 +32,7 @@ KURL Credential::ParseStringAsURLOrThrow(const String& url,
   return parsed_url;
 }
 
-void Credential::Trace(Visitor* visitor) {
+void Credential::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
 }
 

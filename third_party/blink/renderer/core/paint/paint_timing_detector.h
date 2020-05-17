@@ -90,7 +90,7 @@ class PaintTimingCallbackManagerImpl final
       WebSwapResult,
       base::TimeTicks paint_time);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   Member<LocalFrameView> frame_view_;
@@ -180,7 +180,7 @@ class CORE_EXPORT PaintTimingDetector
   void UpdateLargestContentfulPaintCandidate();
 
   base::Optional<PaintTimingVisualizer>& Visualizer() { return visualizer_; }
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
  private:
   // Method called to stop recording the Largest Contentful Paint.

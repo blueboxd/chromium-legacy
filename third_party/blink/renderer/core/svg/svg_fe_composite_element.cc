@@ -74,7 +74,7 @@ SVGFECompositeElement::SVGFECompositeElement(Document& document)
   AddToPropertyMap(svg_operator_);
 }
 
-void SVGFECompositeElement::Trace(Visitor* visitor) {
+void SVGFECompositeElement::Trace(Visitor* visitor) const {
   visitor->Trace(k1_);
   visitor->Trace(k2_);
   visitor->Trace(k3_);

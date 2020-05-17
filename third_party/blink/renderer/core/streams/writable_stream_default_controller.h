@@ -107,7 +107,7 @@ class CORE_EXPORT WritableStreamDefaultController final
                             WritableStreamDefaultController*,
                             v8::Local<v8::Value> error);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // https://streams.spec.whatwg.org/#writable-stream-default-controller-clear-algorithms

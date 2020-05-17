@@ -82,7 +82,7 @@ class PrerenderHandle final : public GarbageCollected<PrerenderHandle>,
   void OnPrerenderDomContentLoaded() override;
   void OnPrerenderStop() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void Detach();

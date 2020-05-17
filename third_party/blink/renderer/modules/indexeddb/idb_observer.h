@@ -36,7 +36,7 @@ class MODULES_EXPORT IDBObserver final : public ScriptWrappable {
                ExceptionState&);
   void unobserve(IDBDatabase*, ExceptionState&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<V8IDBObserverCallback> callback_;

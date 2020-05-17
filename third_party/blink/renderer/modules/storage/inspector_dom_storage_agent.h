@@ -45,7 +45,7 @@ class MODULES_EXPORT InspectorDOMStorageAgent final
  public:
   explicit InspectorDOMStorageAgent(InspectedFrames*);
   ~InspectorDOMStorageAgent() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void DidDispatchDOMStorageEvent(const String& key,
                                   const String& old_value,

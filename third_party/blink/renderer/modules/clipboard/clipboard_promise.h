@@ -50,7 +50,7 @@ class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
   // For rejections originating from ClipboardWriter.
   void RejectFromReadOrDecodeFailure();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Called to begin writing a type.

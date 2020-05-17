@@ -187,7 +187,7 @@ class MODULES_EXPORT RTCQuicTransport final
   ExecutionContext* GetExecutionContext() const override;
 
   // For garbage collection.
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   enum class StartReason {

@@ -234,7 +234,7 @@ void ApplicationCacheHost::ErrorEventRaised(
   }
 }
 
-void ApplicationCacheHost::Trace(Visitor* visitor) {
+void ApplicationCacheHost::Trace(Visitor* visitor) const {
   visitor->Trace(backend_host_);
   visitor->Trace(receiver_);
   visitor->Trace(backend_remote_);

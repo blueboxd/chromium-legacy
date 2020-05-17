@@ -132,7 +132,7 @@ void DeviceOrientationController::ClearOverride() {
     DidUpdateData();
 }
 
-void DeviceOrientationController::Trace(Visitor* visitor) {
+void DeviceOrientationController::Trace(Visitor* visitor) const {
   visitor->Trace(override_orientation_data_);
   visitor->Trace(orientation_event_pump_);
   DeviceSingleWindowEventController::Trace(visitor);

@@ -52,7 +52,7 @@ class DocumentPortals final : public GarbageCollected<DocumentPortals>,
 
   explicit DocumentPortals(Document&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   HeapVector<Member<PortalContents>> portals_;

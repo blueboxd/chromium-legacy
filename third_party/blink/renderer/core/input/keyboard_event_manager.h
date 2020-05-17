@@ -35,7 +35,7 @@ class CORE_EXPORT KeyboardEventManager final
 #endif
 
   KeyboardEventManager(LocalFrame&, ScrollManager&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   bool HandleAccessKey(const WebKeyboardEvent&);
   WebInputEventResult KeyEvent(const WebKeyboardEvent&);

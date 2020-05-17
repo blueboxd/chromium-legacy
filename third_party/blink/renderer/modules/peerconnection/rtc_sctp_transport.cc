@@ -157,7 +157,7 @@ ExecutionContext* RTCSctpTransport::GetExecutionContext() const {
   return ExecutionContextClient::GetExecutionContext();
 }
 
-void RTCSctpTransport::Trace(Visitor* visitor) {
+void RTCSctpTransport::Trace(Visitor* visitor) const {
   visitor->Trace(dtls_transport_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextClient::Trace(visitor);

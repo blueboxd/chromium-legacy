@@ -42,7 +42,7 @@ void V0CustomElementMicrotaskRunQueue::RequestDispatchIfNeeded() {
   dispatch_is_pending_ = true;
 }
 
-void V0CustomElementMicrotaskRunQueue::Trace(Visitor* visitor) {
+void V0CustomElementMicrotaskRunQueue::Trace(Visitor* visitor) const {
   visitor->Trace(sync_queue_);
   visitor->Trace(async_queue_);
 }

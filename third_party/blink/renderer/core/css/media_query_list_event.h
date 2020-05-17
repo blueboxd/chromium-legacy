@@ -65,7 +65,7 @@ class MediaQueryListEvent final : public Event {
     return true;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     Event::Trace(visitor);
     visitor->Trace(media_query_list_);
   }

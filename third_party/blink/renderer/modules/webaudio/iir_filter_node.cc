@@ -231,7 +231,7 @@ IIRFilterNode* IIRFilterNode::Create(BaseAudioContext* context,
   return node;
 }
 
-void IIRFilterNode::Trace(Visitor* visitor) {
+void IIRFilterNode::Trace(Visitor* visitor) const {
   AudioNode::Trace(visitor);
 }
 

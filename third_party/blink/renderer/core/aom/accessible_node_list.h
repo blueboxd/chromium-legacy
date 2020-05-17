@@ -39,7 +39,7 @@ class CORE_EXPORT AccessibleNodeList : public ScriptWrappable {
   unsigned length() const;
   void setLength(unsigned);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void NotifyChanged();

@@ -57,7 +57,7 @@ const AtomicString& PageTransitionEvent::InterfaceName() const {
   return event_interface_names::kPageTransitionEvent;
 }
 
-void PageTransitionEvent::Trace(Visitor* visitor) {
+void PageTransitionEvent::Trace(Visitor* visitor) const {
   Event::Trace(visitor);
 }
 

@@ -29,7 +29,7 @@ bool RequireTrustedTypesForDirective::require() const {
   return require_trusted_types_for_script_;
 }
 
-void RequireTrustedTypesForDirective::Trace(Visitor* visitor) {
+void RequireTrustedTypesForDirective::Trace(Visitor* visitor) const {
   CSPDirective::Trace(visitor);
 }
 

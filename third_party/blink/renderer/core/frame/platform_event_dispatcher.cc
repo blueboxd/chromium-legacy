@@ -62,7 +62,7 @@ void PlatformEventDispatcher::NotifyControllers() {
   }
 }
 
-void PlatformEventDispatcher::Trace(Visitor* visitor) {
+void PlatformEventDispatcher::Trace(Visitor* visitor) const {
   visitor->Trace(controllers_);
 }
 

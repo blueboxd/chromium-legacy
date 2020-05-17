@@ -62,7 +62,7 @@ class PLATFORM_EXPORT XRFrameTransport final
                           gpu::gles2::GLES2Interface*,
                           int16_t vr_frame_id);
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
  private:
   void WaitForPreviousTransfer();

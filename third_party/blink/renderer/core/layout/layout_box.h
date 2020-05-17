@@ -69,7 +69,7 @@ struct LayoutBoxRareData final : public GarbageCollected<LayoutBoxRareData> {
  public:
   LayoutBoxRareData();
 
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
   // For spanners, the spanner placeholder that lays us out within the multicol
   // container.

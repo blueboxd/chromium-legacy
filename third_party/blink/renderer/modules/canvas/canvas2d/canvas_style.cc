@@ -133,7 +133,7 @@ RGBA32 CanvasStyle::PaintColor() const {
   return Color::kBlack;
 }
 
-void CanvasStyle::Trace(Visitor* visitor) {
+void CanvasStyle::Trace(Visitor* visitor) const {
   visitor->Trace(gradient_);
   visitor->Trace(pattern_);
 }

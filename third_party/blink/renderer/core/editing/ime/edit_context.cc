@@ -581,7 +581,7 @@ WebRange EditContext::GetSelectionOffsets() const {
   return WebRange(selection_start_, selection_end_);
 }
 
-void EditContext::Trace(Visitor* visitor) {
+void EditContext::Trace(Visitor* visitor) const {
   ActiveScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);

@@ -98,7 +98,7 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
 
   DispatchEventResult DispatchEvent(EventDispatcher&) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   bool IsTouchStartOrFirstTouchMove() const;

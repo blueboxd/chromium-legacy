@@ -66,7 +66,7 @@ class SpeechRecognitionEvent final : public Event {
   // Event
   const AtomicString& InterfaceName() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   uint32_t result_index_;

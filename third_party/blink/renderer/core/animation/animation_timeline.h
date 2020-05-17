@@ -90,7 +90,7 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
 
   void MarkAnimationsCompositorPending(bool source_changed = false);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   virtual PhaseAndTime CurrentPhaseAndTime() = 0;

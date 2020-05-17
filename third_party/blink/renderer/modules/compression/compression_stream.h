@@ -23,7 +23,7 @@ class CompressionStream final : public ScriptWrappable {
   ReadableStream* readable() const;
   WritableStream* writable() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<TransformStream> transform_;

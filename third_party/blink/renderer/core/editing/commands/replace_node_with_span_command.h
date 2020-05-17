@@ -46,7 +46,7 @@ class ReplaceNodeWithSpanCommand final : public SimpleEditCommand {
 
   HTMLSpanElement* SpanElement() { return span_element_.Get(); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void DoApply(EditingState*) override;

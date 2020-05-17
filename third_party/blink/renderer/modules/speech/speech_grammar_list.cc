@@ -57,7 +57,7 @@ void SpeechGrammarList::addFromString(const String& string, double weight) {
 
 SpeechGrammarList::SpeechGrammarList() = default;
 
-void SpeechGrammarList::Trace(Visitor* visitor) {
+void SpeechGrammarList::Trace(Visitor* visitor) const {
   visitor->Trace(grammars_);
   ScriptWrappable::Trace(visitor);
 }

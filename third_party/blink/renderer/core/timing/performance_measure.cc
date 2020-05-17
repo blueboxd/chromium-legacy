@@ -76,7 +76,7 @@ PerformanceMeasure::ToMojoPerformanceMarkOrMeasure() {
   return mojo_performance_mark_or_measure;
 }
 
-void PerformanceMeasure::Trace(Visitor* visitor) {
+void PerformanceMeasure::Trace(Visitor* visitor) const {
   visitor->Trace(deserialized_detail_map_);
   PerformanceEntry::Trace(visitor);
 }

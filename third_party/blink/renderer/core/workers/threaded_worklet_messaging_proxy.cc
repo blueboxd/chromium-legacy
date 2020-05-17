@@ -81,7 +81,7 @@ void ThreadedWorkletMessagingProxy::Initialize(
                          thread_startup_data);
 }
 
-void ThreadedWorkletMessagingProxy::Trace(Visitor* visitor) {
+void ThreadedWorkletMessagingProxy::Trace(Visitor* visitor) const {
   ThreadedMessagingProxyBase::Trace(visitor);
 }
 

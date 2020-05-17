@@ -80,7 +80,7 @@ class MutationEvent final : public Event {
 
   const AtomicString& InterfaceName() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<Node> related_node_;

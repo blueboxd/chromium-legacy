@@ -140,7 +140,7 @@ class MediaElementEventListener final : public NativeEventListener {
   MediaElementEventListener(HTMLMediaElement*, MediaStream*);
   void UpdateSources(ExecutionContext*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // EventListener implementation.
   void Invoke(ExecutionContext*, Event*) override;
@@ -249,7 +249,7 @@ void MediaElementEventListener::UpdateSources(ExecutionContext* context) {
   }
 }
 
-void MediaElementEventListener::Trace(Visitor* visitor) {
+void MediaElementEventListener::Trace(Visitor* visitor) const {
   visitor->Trace(media_element_);
   visitor->Trace(media_stream_);
   visitor->Trace(sources_);

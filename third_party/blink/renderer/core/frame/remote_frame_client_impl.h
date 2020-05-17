@@ -19,7 +19,7 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
  public:
   explicit RemoteFrameClientImpl(WebRemoteFrameImpl*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // FrameClient overrides:
   bool InShadowTree() const override;

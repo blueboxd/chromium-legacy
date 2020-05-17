@@ -27,7 +27,7 @@ Vector<String> AuthenticatorAttestationResponse::getTransports() const {
   return ret;
 }
 
-void AuthenticatorAttestationResponse::Trace(Visitor* visitor) {
+void AuthenticatorAttestationResponse::Trace(Visitor* visitor) const {
   visitor->Trace(attestation_object_);
   AuthenticatorResponse::Trace(visitor);
 }

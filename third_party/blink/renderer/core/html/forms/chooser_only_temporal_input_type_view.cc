@@ -47,7 +47,7 @@ ChooserOnlyTemporalInputTypeView::~ChooserOnlyTemporalInputTypeView() {
   DCHECK(!date_time_chooser_);
 }
 
-void ChooserOnlyTemporalInputTypeView::Trace(Visitor* visitor) {
+void ChooserOnlyTemporalInputTypeView::Trace(Visitor* visitor) const {
   visitor->Trace(input_type_);
   visitor->Trace(date_time_chooser_);
   InputTypeView::Trace(visitor);

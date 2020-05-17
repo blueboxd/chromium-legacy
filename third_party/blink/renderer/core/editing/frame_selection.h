@@ -287,7 +287,7 @@ class CORE_EXPORT FrameSelection final
   LayoutSelectionStatus ComputeLayoutSelectionStatus(
       const NGInlineCursor& cursor) const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class CaretDisplayItemClientTest;

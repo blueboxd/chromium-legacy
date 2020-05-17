@@ -295,7 +295,7 @@ bool MediaControlInputElement::IsDisabled() const {
   return FastHasAttribute(html_names::kDisabledAttr);
 }
 
-void MediaControlInputElement::Trace(Visitor* visitor) {
+void MediaControlInputElement::Trace(Visitor* visitor) const {
   HTMLInputElement::Trace(visitor);
   MediaControlElementBase::Trace(visitor);
   visitor->Trace(overflow_element_);

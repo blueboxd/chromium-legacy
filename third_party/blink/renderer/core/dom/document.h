@@ -1417,7 +1417,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void UpdateActiveStyle();
   void InvalidateStyleAndLayoutForFontUpdates();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   AtomicString ConvertLocalName(const AtomicString&);
 

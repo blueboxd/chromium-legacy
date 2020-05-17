@@ -51,7 +51,7 @@ USB* WorkerNavigatorUSB::usb(ScriptState* script_state) {
   return usb_;
 }
 
-void WorkerNavigatorUSB::Trace(Visitor* visitor) {
+void WorkerNavigatorUSB::Trace(Visitor* visitor) const {
   visitor->Trace(usb_);
   Supplement<WorkerNavigator>::Trace(visitor);
 }

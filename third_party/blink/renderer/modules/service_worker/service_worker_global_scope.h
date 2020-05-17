@@ -292,7 +292,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(messageerror, kMessageerror)
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Returns true if a FetchEvent exists with the given request URL and
   // is still waiting for a Response.

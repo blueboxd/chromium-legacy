@@ -58,7 +58,7 @@ DoubleOrDoubleOrNullSequence::DoubleOrDoubleOrNullSequence(const DoubleOrDoubleO
 DoubleOrDoubleOrNullSequence::~DoubleOrDoubleOrNullSequence() = default;
 DoubleOrDoubleOrNullSequence& DoubleOrDoubleOrNullSequence::operator=(const DoubleOrDoubleOrNullSequence&) = default;
 
-void DoubleOrDoubleOrNullSequence::Trace(Visitor* visitor) {
+void DoubleOrDoubleOrNullSequence::Trace(Visitor* visitor) const {
 }
 
 void V8DoubleOrDoubleOrNullSequence::ToImpl(

@@ -339,7 +339,7 @@ void VideoEncoder::MediaEncoderOutputCallback(
   CallOutputCallback(chunk);
 }
 
-void VideoEncoder::Trace(Visitor* visitor) {
+void VideoEncoder::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(output_callback_);
   visitor->Trace(error_callback_);
@@ -347,7 +347,7 @@ void VideoEncoder::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
-void VideoEncoder::Request::Trace(Visitor* visitor) {
+void VideoEncoder::Request::Trace(Visitor* visitor) const {
   visitor->Trace(config);
   visitor->Trace(frame);
   visitor->Trace(encodeOpts);

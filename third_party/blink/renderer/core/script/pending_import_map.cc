@@ -97,7 +97,7 @@ void PendingImportMap::RegisterImportMap() const {
   // TODO(hiroshige): Implement this when external import maps are implemented.
 }
 
-void PendingImportMap::Trace(Visitor* visitor) {
+void PendingImportMap::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   visitor->Trace(import_map_);
   visitor->Trace(error_to_rethrow_);

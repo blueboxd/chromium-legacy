@@ -170,7 +170,7 @@ void StorageNamespace::RemoveInspectorStorageAgent(
   inspector_agents_.erase(agent);
 }
 
-void StorageNamespace::Trace(Visitor* visitor) {
+void StorageNamespace::Trace(Visitor* visitor) const {
   visitor->Trace(inspector_agents_);
   visitor->Trace(namespace_);
   Supplement<Page>::Trace(visitor);

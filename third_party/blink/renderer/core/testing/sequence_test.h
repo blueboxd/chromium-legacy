@@ -35,7 +35,7 @@ class SequenceTest final : public ScriptWrappable {
 
   bool unionReceivedSequence(const DoubleOrDoubleSequence& arg);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   HeapVector<Member<Element>> element_sequence_;

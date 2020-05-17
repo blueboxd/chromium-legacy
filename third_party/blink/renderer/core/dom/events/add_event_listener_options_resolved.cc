@@ -25,7 +25,7 @@ AddEventListenerOptionsResolved::AddEventListenerOptionsResolved(
 
 AddEventListenerOptionsResolved::~AddEventListenerOptionsResolved() = default;
 
-void AddEventListenerOptionsResolved::Trace(Visitor* visitor) {
+void AddEventListenerOptionsResolved::Trace(Visitor* visitor) const {
   AddEventListenerOptions::Trace(visitor);
 }
 

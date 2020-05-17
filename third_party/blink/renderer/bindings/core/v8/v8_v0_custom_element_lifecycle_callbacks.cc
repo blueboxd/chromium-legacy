@@ -235,7 +235,7 @@ void V8V0CustomElementLifecycleCallbacks::Call(
                                receiver, 0, nullptr, isolate);
 }
 
-void V8V0CustomElementLifecycleCallbacks::Trace(Visitor* visitor) {
+void V8V0CustomElementLifecycleCallbacks::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(prototype_);
   visitor->Trace(created_);

@@ -32,7 +32,7 @@ class DOMWindowStorage final : public GarbageCollected<DOMWindowStorage>,
   StorageArea* OptionalSessionStorage() const { return session_storage_.Get(); }
   StorageArea* OptionalLocalStorage() const { return local_storage_.Get(); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   mutable Member<StorageArea> session_storage_;

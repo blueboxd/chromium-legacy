@@ -47,7 +47,7 @@ class MODULES_EXPORT FileWriterBase : public GarbageCollectedMixin {
   int64_t position() const { return position_; }
   int64_t length() const { return length_; }
 
-  void Trace(Visitor* visitor) override {}
+  void Trace(Visitor* visitor) const override {}
 
   virtual void Truncate(int64_t length);
   virtual void Write(int64_t position, const String& id);

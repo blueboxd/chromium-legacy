@@ -196,7 +196,7 @@ bool WebDocumentLoaderImpl::IsListingFtpDirectory() const {
   return DocumentLoader::IsListingFtpDirectory();
 }
 
-void WebDocumentLoaderImpl::Trace(Visitor* visitor) {
+void WebDocumentLoaderImpl::Trace(Visitor* visitor) const {
   DocumentLoader::Trace(visitor);
 }
 

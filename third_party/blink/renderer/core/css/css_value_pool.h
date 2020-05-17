@@ -130,7 +130,7 @@ class CORE_EXPORT CSSValuePool final : public GarbageCollected<CSSValuePool> {
     return font_face_value_cache_.insert(string, nullptr);
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   // Cached individual values.

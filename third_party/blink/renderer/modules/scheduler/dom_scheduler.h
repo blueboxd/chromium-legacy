@@ -67,7 +67,7 @@ class MODULES_EXPORT DOMScheduler : public ScriptWrappable,
 
   void ContextDestroyed() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   static constexpr size_t kWebSchedulingPriorityCount =

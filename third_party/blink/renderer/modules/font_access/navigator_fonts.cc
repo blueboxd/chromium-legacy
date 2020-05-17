@@ -45,7 +45,7 @@ class NavigatorFontsImpl final : public GarbageCollected<NavigatorFontsImpl<T>>,
     return font_manager_.Get();
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(blink::Visitor* visitor) const override {
     visitor->Trace(font_manager_);
     Supplement<T>::Trace(visitor);
   }

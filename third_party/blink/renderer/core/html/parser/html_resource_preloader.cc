@@ -45,7 +45,7 @@ namespace blink {
 HTMLResourcePreloader::HTMLResourcePreloader(Document& document)
     : document_(document) {}
 
-void HTMLResourcePreloader::Trace(Visitor* visitor) {
+void HTMLResourcePreloader::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
 }
 

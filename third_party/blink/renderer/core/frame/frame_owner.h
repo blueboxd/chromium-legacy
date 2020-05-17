@@ -26,7 +26,7 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
  public:
   virtual ~FrameOwner() = default;
 
-  void Trace(Visitor* visitor) override {}
+  void Trace(Visitor* visitor) const override {}
 
   virtual bool IsLocal() const = 0;
   virtual bool IsRemote() const = 0;
@@ -123,7 +123,7 @@ class CORE_EXPORT DummyFrameOwner final
   USING_GARBAGE_COLLECTED_MIXIN(DummyFrameOwner);
 
  public:
-  void Trace(Visitor* visitor) override { FrameOwner::Trace(visitor); }
+  void Trace(Visitor* visitor) const override { FrameOwner::Trace(visitor); }
 
   // FrameOwner overrides:
   Frame* ContentFrame() const override { return nullptr; }

@@ -43,7 +43,7 @@ class CORE_EXPORT LiveNodeListRegistry {
     return mask_ & MaskForInvalidationType(type);
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   static inline unsigned MaskForInvalidationType(

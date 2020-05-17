@@ -21,7 +21,7 @@ class CORE_EXPORT InspectorAuditsAgent final
   explicit InspectorAuditsAgent(InspectorNetworkAgent*, InspectorIssueStorage*);
   ~InspectorAuditsAgent() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void InspectorIssueAdded(InspectorIssue*);
 

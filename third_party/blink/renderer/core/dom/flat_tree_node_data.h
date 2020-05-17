@@ -22,7 +22,7 @@ class FlatTreeNodeData final : public GarbageCollected<FlatTreeNodeData> {
     next_in_assigned_nodes_ = nullptr;
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
 #if DCHECK_IS_ON()
   bool IsCleared() const {

@@ -93,7 +93,7 @@ class CORE_EXPORT ScriptSourceCode final {
                    const KURL&);
 
   ~ScriptSourceCode();
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   const ParkableString& Source() const { return source_; }
   SingleCachedMetadataHandler* CacheHandler() const { return cache_handler_; }

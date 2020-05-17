@@ -62,7 +62,7 @@ class CORE_EXPORT CustomElementRegistry final : public ScriptWrappable {
 
   void Entangle(V0CustomElementRegistrationContext*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   CustomElementDefinition* DefineInternal(ScriptState*,

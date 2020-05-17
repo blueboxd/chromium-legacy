@@ -79,7 +79,7 @@ class CORE_EXPORT EventHandlerRegistry final
   // references to handlers that are no longer related to it.
   void DocumentDetached(Document&);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   enum ChangeOperation {

@@ -172,7 +172,7 @@ ScreenOrientationController* ScreenOrientation::Controller() {
       *To<LocalDOMWindow>(GetExecutionContext()));
 }
 
-void ScreenOrientation::Trace(Visitor* visitor) {
+void ScreenOrientation::Trace(Visitor* visitor) const {
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
 }

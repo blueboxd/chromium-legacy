@@ -43,7 +43,7 @@ void XRInputSourceArray::SetWithSourceId(uint32_t source_id,
   input_sources_.Set(source_id, input_source);
 }
 
-void XRInputSourceArray::Trace(Visitor* visitor) {
+void XRInputSourceArray::Trace(Visitor* visitor) const {
   visitor->Trace(input_sources_);
   ScriptWrappable::Trace(visitor);
 }

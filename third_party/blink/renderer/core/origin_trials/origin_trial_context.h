@@ -120,7 +120,7 @@ class CORE_EXPORT OriginTrialContext final
   // enabled.
   void InitializePendingFeatures();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   // If this returns false, the trial cannot be enabled (e.g. due to it is

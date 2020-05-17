@@ -55,7 +55,7 @@ bool PromiseRejectionEvent::CanBeDispatchedInWorld(
   return world_->GetWorldId() == world.GetWorldId();
 }
 
-void PromiseRejectionEvent::Trace(Visitor* visitor) {
+void PromiseRejectionEvent::Trace(Visitor* visitor) const {
   visitor->Trace(promise_);
   visitor->Trace(reason_);
   Event::Trace(visitor);

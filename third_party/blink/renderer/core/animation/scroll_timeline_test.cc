@@ -70,7 +70,9 @@ class TestScrollTimeline : public ScrollTimeline {
     ScrollTimeline::ScheduleServiceOnNextFrame();
     next_service_scheduled_ = true;
   }
-  void Trace(Visitor* visitor) override { ScrollTimeline::Trace(visitor); }
+  void Trace(Visitor* visitor) const override {
+    ScrollTimeline::Trace(visitor);
+  }
   bool NextServiceScheduled() const { return next_service_scheduled_; }
   void ResetNextServiceScheduled() { next_service_scheduled_ = false; }
 

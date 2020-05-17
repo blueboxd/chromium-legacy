@@ -569,6 +569,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="8428045167754449968">Քաղաք</translation>
 <translation id="8428213095426709021">Կարգավորումներ</translation>
 <translation id="8458397775385147834">Ջնջվել է 1 տարր</translation>
+<translation id="8459333855531264009">Անվտանգ չէ</translation>
 <translation id="8487667956631253959">Միացված է</translation>
 <translation id="8487700953926739672">Մատչելի է անցանց ռեժիմում</translation>
 <translation id="8490978609246021741">Պահել փոփոխությունները</translation>
@@ -595,6 +596,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="8741995161408053644">Ձեր Google հաշվում կարող են լինել այցելությունների պատմության այլ ձևեր ևս: Դրանք կարող եք գտնել <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> էջում:</translation>
 <translation id="8756969031206844760">Թարմացնե՞լ գաղտնաբառը</translation>
 <translation id="8775144690796719618">URL-ն անվավեր է</translation>
+<translation id="8803639129939845298">Անվտանգ է</translation>
 <translation id="8820817407110198400">Էջանիշներ</translation>
 <translation id="8840513115188359703">Դուք դուրս չեք գա ձեր Google հաշվից:</translation>
 <translation id="8870413625673593573">Վերջին փակվածները</translation>
@@ -625,7 +627,6 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="9223358826628549784">Խափանման հաշվետվությունն ուղարկվեց:</translation>
 <translation id="952704832371081537">Չեղարկել</translation>
 <translation id="988141524645182168">Այլ սարքեր</translation>
-<translation id="989697783705943787">Կայքի անվտանգություն</translation>
 <translation id="989988560359834682">Փոխել հասցեն</translation>
 <translation id="994757059139821576">Առաջարկվող հոդվածներ</translation>
 </translationbundle>

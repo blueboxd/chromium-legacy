@@ -53,7 +53,7 @@ class MODULES_EXPORT PaintWorkletGlobalScope final : public WorkletGlobalScope {
   CSSPaintDefinition* FindDefinition(const String& name);
   double devicePixelRatio() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Registers the global scope with a proxy client, if not already done. Only

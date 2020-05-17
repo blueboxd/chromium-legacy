@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">Bouton Activer/désactiver</translation>
 <translation id="1299774449519412690">Bleu ciel clair</translation>
 <translation id="1303806948938513162">Touchez avec quatre doigts pour accéder aux menus de ChromeVox</translation>
+<translation id="1325363694295259631"><ph name="NAME" />, l'élément de menu bouton radio est désélectionné</translation>
 <translation id="1325946044405407859">Fauve</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> de <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">écho de caractères et de mots</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">Annoncer l'état actuel de la pile</translation>
 <translation id="4997282455736854877">Case d'option de <ph name="NAME" /> sélectionnée</translation>
 <translation id="5011664330025416377">Appuyez sur Recherche+Espace pour activer la commande</translation>
+<translation id="5012724933919010465"><ph name="NAME" />, l'élément de menu bouton radio est sélectionné</translation>
 <translation id="5020651427400641814">Activer la journalisation vocale</translation>
 <translation id="5041394372352067729">Déplacer l'écran de braille dans le haut de la page</translation>
 <translation id="5042770794184672516">Augmenter le volume de la voix</translation>

@@ -35,7 +35,7 @@ const char* WebGLVideoTexture::ExtensionName() {
   return "WEBGL_video_texture";
 }
 
-void WebGLVideoTexture::Trace(Visitor* visitor) {
+void WebGLVideoTexture::Trace(Visitor* visitor) const {
   visitor->Trace(current_frame_metadata_);
   WebGLExtension::Trace(visitor);
 }

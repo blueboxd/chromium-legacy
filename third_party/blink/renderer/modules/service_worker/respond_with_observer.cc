@@ -106,7 +106,7 @@ RespondWithObserver::RespondWithObserver(ExecutionContext* context,
       state_(kInitial),
       observer_(observer) {}
 
-void RespondWithObserver::Trace(Visitor* visitor) {
+void RespondWithObserver::Trace(Visitor* visitor) const {
   visitor->Trace(observer_);
   ExecutionContextClient::Trace(visitor);
 }

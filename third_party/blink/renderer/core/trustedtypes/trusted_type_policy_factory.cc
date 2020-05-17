@@ -308,7 +308,7 @@ void TrustedTypePolicyFactory::CountTrustedTypeAssignmentError() {
   }
 }
 
-void TrustedTypePolicyFactory::Trace(Visitor* visitor) {
+void TrustedTypePolicyFactory::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
   visitor->Trace(empty_html_);

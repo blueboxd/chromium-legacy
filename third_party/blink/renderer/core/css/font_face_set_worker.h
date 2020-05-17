@@ -45,7 +45,7 @@ class CORE_EXPORT FontFaceSetWorker final
 
   static FontFaceSetWorker* From(WorkerGlobalScope&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   bool InActiveContext() const override { return true; }

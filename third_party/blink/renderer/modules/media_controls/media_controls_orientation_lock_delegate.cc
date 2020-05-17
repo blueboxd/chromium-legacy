@@ -435,7 +435,7 @@ void MediaControlsOrientationLockDelegate::
       kLockToAnyDelay);
 }
 
-void MediaControlsOrientationLockDelegate::Trace(Visitor* visitor) {
+void MediaControlsOrientationLockDelegate::Trace(Visitor* visitor) const {
   NativeEventListener::Trace(visitor);
   visitor->Trace(monitor_);
   visitor->Trace(video_element_);

@@ -242,7 +242,6 @@
 <translation id="1962204205936693436"><ph name="DOMAIN" /> စာညှပ်များ</translation>
 <translation id="1973335181906896915">နံပါတ်စဉ်စီမှု အမှား</translation>
 <translation id="1974060860693918893">အဆင့်မြင့်</translation>
-<translation id="1974883374937189061"><ph name="BEGIN_WHITEPAPER_LINK" />သင်ကြည့်ရှုသည့် URL များ၏ အချို့စာမျက်နှာများ၊ ကန့်သတ်ထားသည့် စနစ်အချက်အလက်များနှင့် အချို့သော မျက်နှာပြင်ပါ အကြောင်းအရာများ<ph name="END_WHITEPAPER_LINK" /> ကို Google သို့ ပို့ပေးခြင်းဖြင့် Chrome လုံခြုံရေး ကောင်းမွန်လာအောင် ကူညီပါ။ <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1975584088563498795">စာတိုက်ပုံး ၁၀</translation>
 <translation id="1978555033938440688">Firmware ဗားရှင်း</translation>
 <translation id="1981206234434200693">Chrome ၏ ဖွင့်ကြည့်ထားသည့်မှတ်တမ်းဒေတာများ ဖယ်ရှားပါ</translation>
@@ -1602,7 +1601,6 @@
 <translation id="7763386264682878361">ငွေပေးချေမှု မန်နီးဖက်စ်ပါဆာ</translation>
 <translation id="7764225426217299476">လိပ်စာများ ထည့်သွင်းပါ</translation>
 <translation id="7766518757692125295">အနားသတ်</translation>
-<translation id="7767271804335921384">အပလီကေးရှင်းကို သင့်စီမံခန့်ခွဲသူက ပိတ်ထားသည်</translation>
 <translation id="7770259615151589601">သတ်မှတ်ထားသော အရှည်</translation>
 <translation id="7773005668374414287">တူညီသည့်အစဉ်ဖြင့် အပေါ်လှန်ထားရန်</translation>
 <translation id="777702478322588152">နယ်​မြေ</translation>
@@ -1756,6 +1754,7 @@
 <translation id="8425213833346101688">ပြောင်းရန်</translation>
 <translation id="8428213095426709021">ဆက်တင်များ</translation>
 <translation id="8433057134996913067">၎င်းသည် သင့်ကို ဝဘ်ဆိုက်အများစုမှ ထွက်စေပါမည်။</translation>
+<translation id="8433678324664858900">အကြံပြုချက်များ ပြပါ</translation>
 <translation id="8437238597147034694">&amp;ရွေ့ရှားမှုကို ပြန်ဖျက်ရန်</translation>
 <translation id="8457125768502047971">အဆုံးမရှိ</translation>
 <translation id="8461694314515752532">စင့်ခ်လုပ်ထားသော ဒေတာများကို သင့်ကိုယ်ပိုင် စင့်ခ်စကားဝှက်ဖြင့် အသွင်ဝှက်ရန်</translation>

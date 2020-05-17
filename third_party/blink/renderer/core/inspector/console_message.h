@@ -57,7 +57,7 @@ class CORE_EXPORT ConsoleMessage final
   Vector<DOMNodeId>& Nodes();
   void SetNodes(LocalFrame*, Vector<DOMNodeId> nodes);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   mojom::ConsoleMessageSource source_;

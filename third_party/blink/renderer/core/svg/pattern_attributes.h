@@ -133,7 +133,7 @@ class PatternAttributes final {
   bool HasPatternTransform() const { return pattern_transform_set_; }
   bool HasPatternContentElement() const { return pattern_content_element_set_; }
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(x_);
     visitor->Trace(y_);
     visitor->Trace(width_);
@@ -176,7 +176,7 @@ class PatternAttributesWrapper
 
   PatternAttributes& Attributes() { return attributes_; }
   void Set(const PatternAttributes& attributes) { attributes_ = attributes; }
-  void Trace(Visitor* visitor) { visitor->Trace(attributes_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(attributes_); }
 
  private:
   PatternAttributes attributes_;

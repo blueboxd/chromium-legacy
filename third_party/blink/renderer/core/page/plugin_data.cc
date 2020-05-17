@@ -33,7 +33,7 @@
 
 namespace blink {
 
-void MimeClassInfo::Trace(Visitor* visitor) {
+void MimeClassInfo::Trace(Visitor* visitor) const {
   visitor->Trace(plugin_);
 }
 
@@ -42,7 +42,7 @@ MimeClassInfo::MimeClassInfo(const String& type,
                              PluginInfo& plugin)
     : type_(type), description_(description), plugin_(&plugin) {}
 
-void PluginInfo::Trace(Visitor* visitor) {
+void PluginInfo::Trace(Visitor* visitor) const {
   visitor->Trace(mimes_);
 }
 
@@ -80,7 +80,7 @@ wtf_size_t PluginInfo::GetMimeClassInfoSize() const {
   return mimes_.size();
 }
 
-void PluginData::Trace(Visitor* visitor) {
+void PluginData::Trace(Visitor* visitor) const {
   visitor->Trace(plugins_);
   visitor->Trace(mimes_);
 }

@@ -87,7 +87,7 @@ class CORE_EXPORT FilterOperation : public GarbageCollected<FilterOperation> {
   }
 
   virtual ~FilterOperation() = default;
-  virtual void Trace(Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) const {}
 
   static FilterOperation* Blend(const FilterOperation* from,
                                 const FilterOperation* to,
@@ -140,7 +140,7 @@ class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
   void AddClient(SVGResourceClient&);
   void RemoveClient(SVGResourceClient&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   FilterOperation* Blend(const FilterOperation* from,

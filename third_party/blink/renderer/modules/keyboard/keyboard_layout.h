@@ -29,7 +29,7 @@ class KeyboardLayout final : public GarbageCollected<KeyboardLayout>,
 
   ScriptPromise GetKeyboardLayoutMap(ScriptState*, ExceptionState&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Returns true if the local frame is attached to the renderer.

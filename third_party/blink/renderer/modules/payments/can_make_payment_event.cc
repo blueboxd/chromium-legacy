@@ -73,7 +73,7 @@ void CanMakePaymentEvent::respondWithMinimalUI(
                                /*is_minimal_ui=*/true);
 }
 
-void CanMakePaymentEvent::Trace(Visitor* visitor) {
+void CanMakePaymentEvent::Trace(Visitor* visitor) const {
   visitor->Trace(method_data_);
   visitor->Trace(modifiers_);
   visitor->Trace(observer_);

@@ -114,7 +114,7 @@ ScriptValue PerformanceMark::detail(ScriptState* script_state) {
   return ScriptValue(isolate, value);
 }
 
-void PerformanceMark::Trace(Visitor* visitor) {
+void PerformanceMark::Trace(Visitor* visitor) const {
   visitor->Trace(deserialized_detail_map_);
   PerformanceEntry::Trace(visitor);
 }

@@ -40,7 +40,7 @@ class RTCPeerConnectionController
 
   explicit RTCPeerConnectionController(Document&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   bool has_reported_ukm_ = false;

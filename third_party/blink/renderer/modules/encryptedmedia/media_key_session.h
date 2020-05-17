@@ -107,7 +107,7 @@ class MediaKeySession final
   // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   class PendingAction;

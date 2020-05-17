@@ -78,7 +78,7 @@ class CSSLayoutDefinition final : public GarbageCollected<CSSLayoutDefinition>,
         IntrinsicSizesResultOptions**,
         bool* child_depends_on_percentage_block_size);
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
    private:
     void ReportException(ExceptionState*);
@@ -106,7 +106,7 @@ class CSSLayoutDefinition final : public GarbageCollected<CSSLayoutDefinition>,
 
   ScriptState* GetScriptState() const { return script_state_; }
 
-  virtual void Trace(Visitor* visitor);
+  virtual void Trace(Visitor* visitor) const;
 
   const char* NameInHeapSnapshot() const override {
     return "CSSLayoutDefinition";

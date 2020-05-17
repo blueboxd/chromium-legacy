@@ -220,7 +220,7 @@ void ShadowRoot::SetNeedsDistributionRecalc() {
   host().MarkAncestorsWithChildNeedsDistributionRecalc();
 }
 
-void ShadowRoot::Trace(Visitor* visitor) {
+void ShadowRoot::Trace(Visitor* visitor) const {
   visitor->Trace(style_sheet_list_);
   visitor->Trace(slot_assignment_);
   visitor->Trace(shadow_root_v0_);

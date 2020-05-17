@@ -76,7 +76,7 @@ class BluetoothDevice final : public EventTargetWithInlineData,
   Bluetooth* GetBluetooth() { return bluetooth_; }
 
   // Interface required by Garbage Collection:
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // IDL exposed interface:
   String id() { return device_->id; }

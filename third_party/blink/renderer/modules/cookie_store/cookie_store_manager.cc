@@ -184,7 +184,7 @@ ScriptPromise CookieStoreManager::getSubscriptions(
   return resolver->Promise();
 }
 
-void CookieStoreManager::Trace(Visitor* visitor) {
+void CookieStoreManager::Trace(Visitor* visitor) const {
   visitor->Trace(registration_);
   ScriptWrappable::Trace(visitor);
 }

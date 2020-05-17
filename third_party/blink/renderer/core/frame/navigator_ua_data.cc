@@ -104,7 +104,7 @@ ScriptPromise NavigatorUAData::getHighEntropyValues(
   return promise;
 }
 
-void NavigatorUAData::Trace(Visitor* visitor) {
+void NavigatorUAData::Trace(Visitor* visitor) const {
   visitor->Trace(brand_set_);
   visitor->Trace(empty_brand_set_);
   ScriptWrappable::Trace(visitor);

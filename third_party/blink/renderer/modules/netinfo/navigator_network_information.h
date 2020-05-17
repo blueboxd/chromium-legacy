@@ -29,7 +29,7 @@ class NavigatorNetworkInformation final
 
   explicit NavigatorNetworkInformation(Navigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   NetworkInformation* connection();

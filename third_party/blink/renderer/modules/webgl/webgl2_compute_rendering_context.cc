@@ -137,7 +137,7 @@ void WebGL2ComputeRenderingContext::RegisterContextExtensions() {
   RegisterExtension(webgl_video_texture_, kDraftExtension);
 }
 
-void WebGL2ComputeRenderingContext::Trace(Visitor* visitor) {
+void WebGL2ComputeRenderingContext::Trace(Visitor* visitor) const {
   visitor->Trace(ext_color_buffer_float_);
   visitor->Trace(ext_disjoint_timer_query_web_gl2_);
   visitor->Trace(ext_float_blend_);

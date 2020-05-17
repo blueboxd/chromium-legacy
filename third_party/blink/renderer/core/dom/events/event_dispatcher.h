@@ -43,7 +43,7 @@ class Node;
 class EventDispatchHandlingState
     : public GarbageCollected<EventDispatchHandlingState> {
  public:
-  virtual void Trace(Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) const {}
 };
 
 enum EventDispatchContinuation { kContinueDispatching, kDoneDispatching };

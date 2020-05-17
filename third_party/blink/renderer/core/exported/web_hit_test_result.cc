@@ -42,7 +42,7 @@ class WebHitTestResultPrivate final
   WebHitTestResultPrivate(const HitTestResult&);
   WebHitTestResultPrivate(const WebHitTestResultPrivate&);
 
-  void Trace(Visitor* visitor) { visitor->Trace(result_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(result_); }
   const HitTestResult& Result() const { return result_; }
 
  private:

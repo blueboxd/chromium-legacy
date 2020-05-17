@@ -148,7 +148,7 @@ void HTMLStyleElement::setDisabled(bool set_disabled) {
     style_sheet->setDisabled(set_disabled);
 }
 
-void HTMLStyleElement::Trace(Visitor* visitor) {
+void HTMLStyleElement::Trace(Visitor* visitor) const {
   StyleElement::Trace(visitor);
   HTMLElement::Trace(visitor);
 }

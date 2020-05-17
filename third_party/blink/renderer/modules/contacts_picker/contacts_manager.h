@@ -35,7 +35,7 @@ class ContactsManager final : public ScriptWrappable {
                        ExceptionState& exception_state);
   ScriptPromise getProperties(ScriptState* script_state);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   mojom::blink::ContactsManager* GetContactsManager(ScriptState* script_state);

@@ -385,7 +385,7 @@ class CORE_EXPORT ContainerNode : public Node {
 
   virtual bool ChildrenCanHaveStyle() const { return true; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   ContainerNode(TreeScope*, ConstructionType = kCreateContainer);

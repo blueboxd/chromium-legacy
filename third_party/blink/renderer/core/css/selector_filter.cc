@@ -198,11 +198,11 @@ void SelectorFilter::CollectIdentifierHashes(
   *hash = 0;
 }
 
-void SelectorFilter::ParentStackFrame::Trace(Visitor* visitor) {
+void SelectorFilter::ParentStackFrame::Trace(Visitor* visitor) const {
   visitor->Trace(element);
 }
 
-void SelectorFilter::Trace(Visitor* visitor) {
+void SelectorFilter::Trace(Visitor* visitor) const {
   visitor->Trace(parent_stack_);
 }
 

@@ -125,7 +125,7 @@ class CORE_EXPORT FetchResponseData final
       FetchRequestData::Tainting tainting,
       const ResourceResponse& response);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   network::mojom::FetchResponseType type_;

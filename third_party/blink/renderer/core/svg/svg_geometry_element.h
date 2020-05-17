@@ -59,7 +59,7 @@ class SVGGeometryElement : public SVGGraphicsElement {
   static float PathLengthScaleFactor(float computed_path_length,
                                      float author_path_length);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   SVGGeometryElement(const QualifiedName&,

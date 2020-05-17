@@ -201,7 +201,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
     return creation_attributes_;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   virtual void Stop() = 0;
 
   virtual uint64_t IdentifiabilityTextDigest() { return 0; }

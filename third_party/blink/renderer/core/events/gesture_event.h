@@ -47,7 +47,7 @@ class CORE_EXPORT GestureEvent final : public UIEventWithKeyState {
 
   const WebGestureEvent& NativeEvent() const { return native_event_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   WebGestureEvent native_event_;

@@ -113,7 +113,7 @@ ReadableStream* VideoTrackReader::readable() const {
   return readable_;
 }
 
-void VideoTrackReader::Trace(Visitor* visitor) {
+void VideoTrackReader::Trace(Visitor* visitor) const {
   visitor->Trace(readable_);
   ScriptWrappable::Trace(visitor);
 }

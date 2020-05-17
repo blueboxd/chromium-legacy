@@ -66,7 +66,7 @@ class CORE_EXPORT FormData final
   // doesn't clone entries in it because they are immutable.
   FormData(const FormData& form_data);
   FormData();
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // FormData IDL interface.
   void append(const String& name, const String& value);
@@ -123,7 +123,7 @@ class FormData::Entry final : public GarbageCollected<FormData::Entry> {
  public:
   Entry(const String& name, const String& value);
   Entry(const String& name, Blob* blob, const String& filename);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   bool IsString() const { return !blob_; }
   bool isFile() const { return blob_; }

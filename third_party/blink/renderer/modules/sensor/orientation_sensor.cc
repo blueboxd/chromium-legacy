@@ -129,7 +129,7 @@ void OrientationSensor::OnSensorReadingChanged() {
   Sensor::OnSensorReadingChanged();
 }
 
-void OrientationSensor::Trace(Visitor* visitor) {
+void OrientationSensor::Trace(Visitor* visitor) const {
   Sensor::Trace(visitor);
 }
 

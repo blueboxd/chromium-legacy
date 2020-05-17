@@ -50,7 +50,7 @@ void SetNodeAttributeCommand::DoUnapply() {
   old_value_ = g_null_atom;
 }
 
-void SetNodeAttributeCommand::Trace(Visitor* visitor) {
+void SetNodeAttributeCommand::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   SimpleEditCommand::Trace(visitor);
 }

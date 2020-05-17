@@ -155,7 +155,7 @@ void XRRigidTransform::EnsureInverse() {
   }
 }
 
-void XRRigidTransform::Trace(Visitor* visitor) {
+void XRRigidTransform::Trace(Visitor* visitor) const {
   visitor->Trace(position_);
   visitor->Trace(orientation_);
   visitor->Trace(inverse_);

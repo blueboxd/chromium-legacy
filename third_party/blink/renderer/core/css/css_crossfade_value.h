@@ -84,7 +84,7 @@ class CORE_EXPORT CSSCrossfadeValue final : public CSSImageGeneratorValue {
         : owner_value_(owner_value), ready_(false) {}
 
     ~CrossfadeSubimageObserverProxy() override = default;
-    void Trace(Visitor* visitor) { visitor->Trace(owner_value_); }
+    void Trace(Visitor* visitor) const { visitor->Trace(owner_value_); }
 
     void ImageChanged(ImageResourceContent*, CanDeferInvalidation) override;
     bool WillRenderImage() override;

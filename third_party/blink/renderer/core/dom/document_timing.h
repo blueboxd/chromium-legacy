@@ -56,7 +56,7 @@ class DocumentTiming final {
   }
   base::TimeTicks DomComplete() const { return dom_complete_; }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   LocalFrame* GetFrame() const;

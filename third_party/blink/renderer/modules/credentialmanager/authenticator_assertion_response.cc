@@ -18,7 +18,7 @@ AuthenticatorAssertionResponse::AuthenticatorAssertionResponse(
 
 AuthenticatorAssertionResponse::~AuthenticatorAssertionResponse() = default;
 
-void AuthenticatorAssertionResponse::Trace(Visitor* visitor) {
+void AuthenticatorAssertionResponse::Trace(Visitor* visitor) const {
   visitor->Trace(authenticator_data_);
   visitor->Trace(signature_);
   visitor->Trace(user_handle_);

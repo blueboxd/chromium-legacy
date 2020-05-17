@@ -70,7 +70,7 @@ HTMLPortalElement::HTMLPortalElement(
 
 HTMLPortalElement::~HTMLPortalElement() {}
 
-void HTMLPortalElement::Trace(Visitor* visitor) {
+void HTMLPortalElement::Trace(Visitor* visitor) const {
   HTMLFrameOwnerElement::Trace(visitor);
   visitor->Trace(portal_);
 }

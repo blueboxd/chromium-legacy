@@ -61,7 +61,7 @@ class HTMLTreeBuilder final : public GarbageCollected<HTMLTreeBuilder> {
                   ParserContentPolicy,
                   const HTMLParserOptions&);
   ~HTMLTreeBuilder();
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   const HTMLElementStack* OpenElements() const { return tree_.OpenElements(); }
 
@@ -216,7 +216,7 @@ class HTMLTreeBuilder final : public GarbageCollected<HTMLTreeBuilder> {
       return context_element_stack_item_.Get();
     }
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
    private:
     Member<DocumentFragment> fragment_;

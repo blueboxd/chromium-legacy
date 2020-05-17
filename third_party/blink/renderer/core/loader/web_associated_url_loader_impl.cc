@@ -339,7 +339,7 @@ class WebAssociatedURLLoaderImpl::Observer final
       parent_->ContextDestroyed();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     ExecutionContextLifecycleObserver::Trace(visitor);
   }
 

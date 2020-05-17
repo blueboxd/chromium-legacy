@@ -55,7 +55,7 @@ class CORE_EXPORT ResizeObserverController final
     loop_limit_error_dispatched = is_dispatched;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // For testing only.
   const HeapLinkedHashSet<WeakMember<ResizeObserver>>& Observers() {

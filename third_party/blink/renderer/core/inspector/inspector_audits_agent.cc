@@ -66,7 +66,7 @@ bool EncodeAsImage(char* body,
 
 }  // namespace
 
-void InspectorAuditsAgent::Trace(Visitor* visitor) {
+void InspectorAuditsAgent::Trace(Visitor* visitor) const {
   visitor->Trace(network_agent_);
   visitor->Trace(inspector_issue_storage_);
   InspectorBaseAgent::Trace(visitor);

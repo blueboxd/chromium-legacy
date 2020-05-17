@@ -240,7 +240,6 @@
 <translation id="1962204205936693436">Favoritos de <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Erro de serialização</translation>
 <translation id="1974060860693918893">Avançado</translation>
-<translation id="1974883374937189061">Ajude a melhorar a segurança do Chrome, enviando para o Google <ph name="BEGIN_WHITEPAPER_LINK" />URLs de algumas das páginas que você visitou, informações limitadas do sistema e parte do conteúdo da página<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1975584088563498795">Caixa de e-mails 10</translation>
 <translation id="1978555033938440688">Versão do firmware</translation>
 <translation id="1981206234434200693">Limpe os dados do histórico de navegação do Chrome</translation>
@@ -1591,7 +1590,6 @@ Mais detalhes:
 <translation id="7763386264682878361">Analisador de manifesto de pagamento</translation>
 <translation id="7764225426217299476">Adicionar endereço</translation>
 <translation id="7766518757692125295">Skirt</translation>
-<translation id="7767271804335921384">O aplicativo foi bloqueado pelo seu administrador</translation>
 <translation id="7770259615151589601">Envelope DL</translation>
 <translation id="7773005668374414287">Mesma ordem virada para cima</translation>
 <translation id="777702478322588152">Município</translation>
@@ -1745,6 +1743,7 @@ Mais detalhes:
 <translation id="8425213833346101688">Alterar</translation>
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="8433057134996913067">Essa opção desconecta você da maioria dos websites.</translation>
+<translation id="8433678324664858900">Mostrar sugestões</translation>
 <translation id="8437238597147034694">&amp;Desfazer mover</translation>
 <translation id="8457125768502047971">Indefinida</translation>
 <translation id="8461694314515752532">Criptografar dados sincronizados com sua senha de sincronização</translation>

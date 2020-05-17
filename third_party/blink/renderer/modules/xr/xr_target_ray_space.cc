@@ -65,7 +65,7 @@ bool XRTargetRaySpace::IsStationary() const {
   return false;
 }
 
-void XRTargetRaySpace::Trace(Visitor* visitor) {
+void XRTargetRaySpace::Trace(Visitor* visitor) const {
   visitor->Trace(input_source_);
   XRSpace::Trace(visitor);
 }

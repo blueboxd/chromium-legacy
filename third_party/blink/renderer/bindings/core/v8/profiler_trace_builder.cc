@@ -43,7 +43,7 @@ ProfilerTraceBuilder::ProfilerTraceBuilder(ScriptState* script_state,
       allowed_origin_(allowed_origin),
       time_origin_(time_origin) {}
 
-void ProfilerTraceBuilder::Trace(Visitor* visitor) {
+void ProfilerTraceBuilder::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(frames_);
   visitor->Trace(stacks_);

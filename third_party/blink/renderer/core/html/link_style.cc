@@ -364,7 +364,7 @@ void LinkStyle::OwnerRemoved() {
     ClearSheet();
 }
 
-void LinkStyle::Trace(Visitor* visitor) {
+void LinkStyle::Trace(Visitor* visitor) const {
   visitor->Trace(sheet_);
   LinkResource::Trace(visitor);
   ResourceClient::Trace(visitor);

@@ -17,7 +17,7 @@ class MODULES_EXPORT AXVirtualObject : public AXObject {
  public:
   AXVirtualObject(AXObjectCacheImpl&, AccessibleNode*);
   ~AXVirtualObject() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // AXObject overrides.
   void Detach() override;

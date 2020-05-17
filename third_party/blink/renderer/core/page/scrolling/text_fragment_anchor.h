@@ -56,7 +56,7 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
   // Removes text match highlights if any highlight is in view.
   bool Dismiss() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // TextFragmentFinder::Client interface
   void DidFindMatch(

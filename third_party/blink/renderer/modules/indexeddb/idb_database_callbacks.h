@@ -41,7 +41,7 @@ class MODULES_EXPORT IDBDatabaseCallbacks
  public:
   IDBDatabaseCallbacks();
   virtual ~IDBDatabaseCallbacks();
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   // IDBDatabaseCallbacks
   virtual void OnForcedClose();

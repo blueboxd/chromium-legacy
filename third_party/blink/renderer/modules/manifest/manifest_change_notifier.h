@@ -22,7 +22,7 @@ class MODULES_EXPORT ManifestChangeNotifier
   explicit ManifestChangeNotifier(LocalDOMWindow& window);
   virtual ~ManifestChangeNotifier();
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
   virtual void DidChangeManifest();
 

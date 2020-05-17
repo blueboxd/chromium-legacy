@@ -70,7 +70,7 @@ class HeapMojoRemote {
   mojo::PendingFlush FlushAsync() { return wrapper_->remote().FlushAsync(); }
   void FlushForTesting() { return wrapper_->remote().FlushForTesting(); }
 
-  void Trace(Visitor* visitor) { visitor->Trace(wrapper_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(wrapper_); }
 
  private:
   // Garbage collected wrapper class to add a prefinalizer.
@@ -88,7 +88,7 @@ class HeapMojoRemote {
     Wrapper(Wrapper&&) = default;
     Wrapper& operator=(Wrapper&&) = default;
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       ContextLifecycleObserver::Trace(visitor);
     }
 

@@ -67,7 +67,7 @@ class CORE_EXPORT AutoscrollController final
  public:
   explicit AutoscrollController(Page&);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   // Selection and drag-and-drop autoscroll.
   void Animate();

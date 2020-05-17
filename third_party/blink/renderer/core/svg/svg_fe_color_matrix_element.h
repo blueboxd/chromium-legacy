@@ -42,7 +42,7 @@ class SVGFEColorMatrixElement final
   SVGAnimatedString* in1() { return in1_.Get(); }
   SVGAnimatedEnumeration<ColorMatrixType>* type() { return type_.Get(); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   bool SetFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;

@@ -65,7 +65,7 @@ class CORE_EXPORT ScriptStreamer final
                  v8::ScriptCompiler::CompileOptions,
                  scoped_refptr<base::SingleThreadTaskRunner>);
   ~ScriptStreamer();
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   // Create a script streamer which will stream the given ScriptResource into V8
   // as it loads.

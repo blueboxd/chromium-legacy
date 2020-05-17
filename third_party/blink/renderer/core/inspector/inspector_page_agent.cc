@@ -1428,7 +1428,7 @@ Response InspectorPageAgent::generateTestReport(const String& message,
   return Response::Success();
 }
 
-void InspectorPageAgent::Trace(Visitor* visitor) {
+void InspectorPageAgent::Trace(Visitor* visitor) const {
   visitor->Trace(inspected_frames_);
   visitor->Trace(inspector_resource_content_loader_);
   visitor->Trace(isolated_worlds_);

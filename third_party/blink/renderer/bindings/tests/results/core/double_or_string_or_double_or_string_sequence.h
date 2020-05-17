@@ -47,7 +47,7 @@ class CORE_EXPORT DoubleOrStringOrDoubleOrStringSequence final {
   DoubleOrStringOrDoubleOrStringSequence(const DoubleOrStringOrDoubleOrStringSequence&);
   ~DoubleOrStringOrDoubleOrStringSequence();
   DoubleOrStringOrDoubleOrStringSequence& operator=(const DoubleOrStringOrDoubleOrStringSequence&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   enum class SpecificType {

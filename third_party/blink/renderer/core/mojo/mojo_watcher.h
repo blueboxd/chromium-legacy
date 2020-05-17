@@ -34,7 +34,7 @@ class MojoWatcher final : public ScriptWrappable,
 
   MojoResult cancel();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // ActiveScriptWrappable
   bool HasPendingActivity() const final;

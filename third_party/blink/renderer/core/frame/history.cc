@@ -67,7 +67,7 @@ bool EqualIgnoringQueryAndFragment(const KURL& a, const KURL& b) {
 History::History(LocalFrame* frame)
     : ExecutionContextClient(frame), last_state_object_requested_(nullptr) {}
 
-void History::Trace(Visitor* visitor) {
+void History::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
 }

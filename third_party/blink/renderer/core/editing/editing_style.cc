@@ -192,7 +192,9 @@ class HTMLElementEquivalent : public GarbageCollected<HTMLElementEquivalent> {
   virtual bool ValueIsPresentInStyle(HTMLElement*, CSSPropertyValueSet*) const;
   virtual void AddToStyle(Element*, EditingStyle*) const;
 
-  virtual void Trace(Visitor* visitor) { visitor->Trace(identifier_value_); }
+  virtual void Trace(Visitor* visitor) const {
+    visitor->Trace(identifier_value_);
+  }
 
  protected:
   const CSSPropertyID property_id_;
@@ -266,7 +268,7 @@ class HTMLTextDecorationEquivalent final : public HTMLElementEquivalent {
   bool PropertyExistsInStyle(const CSSPropertyValueSet*) const override;
   bool ValueIsPresentInStyle(HTMLElement*, CSSPropertyValueSet*) const override;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     HTMLElementEquivalent::Trace(visitor);
   }
 };
@@ -320,7 +322,7 @@ class HTMLAttributeEquivalent : public HTMLElementEquivalent {
   virtual const CSSValue* AttributeValueAsCSSValue(Element*) const;
   inline const QualifiedName& AttributeName() const { return attr_name_; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     HTMLElementEquivalent::Trace(visitor);
   }
 
@@ -380,7 +382,7 @@ class HTMLFontSizeEquivalent final : public HTMLAttributeEquivalent {
 
   const CSSValue* AttributeValueAsCSSValue(Element*) const override;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     HTMLAttributeEquivalent::Trace(visitor);
   }
 };
@@ -1591,7 +1593,7 @@ int EditingStyle::LegacyFontSize(Document* document) const {
                                     kAlwaysUseLegacyFontSize);
 }
 
-void EditingStyle::Trace(Visitor* visitor) {
+void EditingStyle::Trace(Visitor* visitor) const {
   visitor->Trace(mutable_style_);
 }
 

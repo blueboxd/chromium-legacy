@@ -27,7 +27,7 @@ class CORE_EXPORT DisplayLockDocumentState final
   explicit DisplayLockDocumentState(Document* document);
 
   // GC.
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   // Registers a display lock context with the state. This is used to force all
   // activatable locks.
@@ -116,7 +116,7 @@ class CORE_EXPORT DisplayLockDocumentState final
                    DisplayLockUtilities::ScopedForcedUpdate::Impl* chain)
         : node(node), self_forced(self_forced), chain(chain) {}
 
-    void Trace(Visitor* visitor) {
+    void Trace(Visitor* visitor) const {
       visitor->Trace(node);
       visitor->Trace(chain);
     }

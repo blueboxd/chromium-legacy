@@ -98,7 +98,7 @@ bool GestureEvent::IsGestureEvent() const {
   return true;
 }
 
-void GestureEvent::Trace(Visitor* visitor) {
+void GestureEvent::Trace(Visitor* visitor) const {
   UIEvent::Trace(visitor);
 }
 

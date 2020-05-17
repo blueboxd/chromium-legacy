@@ -59,7 +59,7 @@ class RangeBoundaryPoint {
   void InvalidateOffset();
   void MarkValid() const;
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(container_node_);
     visitor->Trace(child_before_boundary_);
   }

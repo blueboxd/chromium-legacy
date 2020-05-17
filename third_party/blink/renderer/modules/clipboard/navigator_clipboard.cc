@@ -28,7 +28,7 @@ Clipboard* NavigatorClipboard::clipboard(ScriptState* script_state,
   return supplement->clipboard_;
 }
 
-void NavigatorClipboard::Trace(Visitor* visitor) {
+void NavigatorClipboard::Trace(Visitor* visitor) const {
   visitor->Trace(clipboard_);
   Supplement<Navigator>::Trace(visitor);
 }

@@ -30,7 +30,7 @@ class CORE_EXPORT EventTargetImpl final : public EventTargetWithInlineData,
 
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 };
 
 }  // namespace blink

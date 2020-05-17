@@ -72,7 +72,7 @@ class CORE_EXPORT DisplayLockUtilities {
 
       void Destroy();
 
-      void Trace(Visitor* visitor) {
+      void Trace(Visitor* visitor) const {
         visitor->Trace(node_);
         visitor->Trace(forced_context_set_);
         visitor->Trace(parent_frame_impl_);

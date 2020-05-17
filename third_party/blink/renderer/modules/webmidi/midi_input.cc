@@ -97,7 +97,7 @@ void MIDIInput::DidReceiveMIDIData(unsigned port_index,
   UseCounter::Count(GetExecutionContext(), WebFeature::kMIDIMessageEvent);
 }
 
-void MIDIInput::Trace(Visitor* visitor) {
+void MIDIInput::Trace(Visitor* visitor) const {
   MIDIPort::Trace(visitor);
 }
 

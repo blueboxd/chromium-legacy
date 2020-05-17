@@ -123,7 +123,7 @@ bool HTMLElementStack::ElementRecord::IsAbove(ElementRecord* other) const {
   return false;
 }
 
-void HTMLElementStack::ElementRecord::Trace(Visitor* visitor) {
+void HTMLElementStack::ElementRecord::Trace(Visitor* visitor) const {
   visitor->Trace(item_);
   visitor->Trace(next_);
 }
@@ -541,7 +541,7 @@ HTMLElementStack::FurthestBlockForFormattingElement(
   return nullptr;
 }
 
-void HTMLElementStack::Trace(Visitor* visitor) {
+void HTMLElementStack::Trace(Visitor* visitor) const {
   visitor->Trace(top_);
   visitor->Trace(root_node_);
   visitor->Trace(head_element_);

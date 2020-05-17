@@ -29,7 +29,7 @@ class CORE_EXPORT ScrollTimelineOffset final
   // Create an element based offset.
   explicit ScrollTimelineOffset(ScrollTimelineElementBasedOffset*);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) const;
 
   // Resolves this offset against the scroll source and in the given orientation
   // returning eqiuvalent concrete scroll offset.

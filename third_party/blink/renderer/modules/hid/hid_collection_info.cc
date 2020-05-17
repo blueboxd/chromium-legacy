@@ -58,7 +58,7 @@ uint32_t HIDCollectionInfo::collectionType() const {
   return collection_type_;
 }
 
-void HIDCollectionInfo::Trace(Visitor* visitor) {
+void HIDCollectionInfo::Trace(Visitor* visitor) const {
   visitor->Trace(children_);
   visitor->Trace(input_reports_);
   visitor->Trace(output_reports_);

@@ -109,7 +109,7 @@ void PresentationReceiver::RegisterConnection(
   connection_list_->AddConnection(connection);
 }
 
-void PresentationReceiver::Trace(Visitor* visitor) {
+void PresentationReceiver::Trace(Visitor* visitor) const {
   visitor->Trace(connection_list_);
   visitor->Trace(connection_list_property_);
   visitor->Trace(presentation_receiver_receiver_);

@@ -100,7 +100,7 @@ class MediaList final : public ScriptWrappable {
 
   void Reattach(scoped_refptr<MediaQuerySet>);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   scoped_refptr<MediaQuerySet> media_queries_;

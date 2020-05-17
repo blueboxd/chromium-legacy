@@ -69,7 +69,7 @@ class CORE_EXPORT DocumentAnimations final
 
   HeapVector<Member<Animation>> getAnimations(const TreeScope&);
   uint64_t current_transition_generation_;
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   Member<Document> document_;

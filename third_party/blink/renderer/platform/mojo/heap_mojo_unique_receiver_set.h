@@ -57,7 +57,7 @@ class HeapMojoUniqueReceiverSet {
     return wrapper_->receiver_set().HasReceiver(id);
   }
 
-  void Trace(Visitor* visitor) { visitor->Trace(wrapper_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(wrapper_); }
 
  private:
   // Garbage collected wrapper class to add a prefinalizer.
@@ -71,7 +71,7 @@ class HeapMojoUniqueReceiverSet {
       SetContextLifecycleNotifier(notifier);
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       ContextLifecycleObserver::Trace(visitor);
     }
 

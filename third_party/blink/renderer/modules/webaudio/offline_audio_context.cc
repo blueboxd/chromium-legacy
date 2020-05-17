@@ -157,7 +157,7 @@ OfflineAudioContext::~OfflineAudioContext() {
 #endif
 }
 
-void OfflineAudioContext::Trace(Visitor* visitor) {
+void OfflineAudioContext::Trace(Visitor* visitor) const {
   visitor->Trace(complete_resolver_);
   visitor->Trace(scheduled_suspends_);
   BaseAudioContext::Trace(visitor);

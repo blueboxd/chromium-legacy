@@ -70,7 +70,7 @@ class DeprecatedStorageQuota final : public ScriptWrappable {
                     V8StorageQuotaCallback* = nullptr,
                     V8StorageErrorCallback* = nullptr);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Binds the interface (if not already bound) with the given interface

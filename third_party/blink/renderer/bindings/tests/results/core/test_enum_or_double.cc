@@ -68,7 +68,7 @@ TestEnumOrDouble::TestEnumOrDouble(const TestEnumOrDouble&) = default;
 TestEnumOrDouble::~TestEnumOrDouble() = default;
 TestEnumOrDouble& TestEnumOrDouble::operator=(const TestEnumOrDouble&) = default;
 
-void TestEnumOrDouble::Trace(Visitor* visitor) {
+void TestEnumOrDouble::Trace(Visitor* visitor) const {
 }
 
 void V8TestEnumOrDouble::ToImpl(

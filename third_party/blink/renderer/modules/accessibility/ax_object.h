@@ -103,7 +103,7 @@ class IgnoredReason {
   IgnoredReason(AXIgnoredReason r, const AXObject* obj)
       : reason(r), related_object(obj) {}
 
-  void Trace(Visitor* visitor) { visitor->Trace(related_object); }
+  void Trace(Visitor* visitor) const { visitor->Trace(related_object); }
 };
 
 class NameSourceRelatedObject final
@@ -115,7 +115,7 @@ class NameSourceRelatedObject final
   NameSourceRelatedObject(AXObject* object, String text)
       : object(object), text(text) {}
 
-  void Trace(Visitor* visitor) { visitor->Trace(object); }
+  void Trace(Visitor* visitor) const { visitor->Trace(object); }
 
   DISALLOW_COPY_AND_ASSIGN(NameSourceRelatedObject);
 };
@@ -140,7 +140,7 @@ class NameSource {
   explicit NameSource(bool superseded)
       : superseded(superseded), attribute(QualifiedName::Null()) {}
 
-  void Trace(Visitor* visitor) { visitor->Trace(related_objects); }
+  void Trace(Visitor* visitor) const { visitor->Trace(related_objects); }
 };
 
 class DescriptionSource {
@@ -163,7 +163,7 @@ class DescriptionSource {
   explicit DescriptionSource(bool superseded)
       : superseded(superseded), attribute(QualifiedName::Null()) {}
 
-  void Trace(Visitor* visitor) { visitor->Trace(related_objects); }
+  void Trace(Visitor* visitor) const { visitor->Trace(related_objects); }
 };
 
 }  // namespace blink
@@ -232,7 +232,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
       return static_cast<AXObject*>(current_);
     }
 
-    void Trace(Visitor* visitor) {
+    void Trace(Visitor* visitor) const {
       visitor->Trace(current_);
       visitor->Trace(previous_);
     }
@@ -307,7 +307,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
       return static_cast<AXObject*>(current_);
     }
 
-    void Trace(Visitor* visitor) { visitor->Trace(current_); }
+    void Trace(Visitor* visitor) const { visitor->Trace(current_); }
 
     MODULES_EXPORT friend void swap(AncestorsIterator& left,
                                     AncestorsIterator& right) {
@@ -340,7 +340,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
  public:
   virtual ~AXObject();
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
   static unsigned NumberOfLiveAXObjects() { return number_of_live_ax_objects_; }
 

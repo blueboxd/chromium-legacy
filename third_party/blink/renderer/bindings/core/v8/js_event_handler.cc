@@ -193,7 +193,7 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target,
   }
 }
 
-void JSEventHandler::Trace(Visitor* visitor) {
+void JSEventHandler::Trace(Visitor* visitor) const {
   visitor->Trace(event_handler_);
   JSBasedEventListener::Trace(visitor);
 }

@@ -76,7 +76,7 @@ class ResponseBodyLoaderTest : public testing::Test {
     }
 
     void SetLoader(ResponseBodyLoader& loader) { loader_ = loader; }
-    void Trace(Visitor* visitor) override { visitor->Trace(loader_); }
+    void Trace(Visitor* visitor) const override { visitor->Trace(loader_); }
 
    private:
     const Option option_;
@@ -122,7 +122,7 @@ class ResponseBodyLoaderTest : public testing::Test {
       EXPECT_FALSE(test_response_body_loader_client_->LoadingIsFailed());
     }
     String DebugName() const override { return "ReadingClient"; }
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(bytes_consumer_);
       visitor->Trace(test_response_body_loader_client_);
       BytesConsumer::Client::Trace(visitor);

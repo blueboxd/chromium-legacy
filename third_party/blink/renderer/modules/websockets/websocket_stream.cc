@@ -53,7 +53,7 @@ class WebSocketStream::UnderlyingSource final : public UnderlyingSourceBase {
   void DidStartClosingHandshake();
   void DidClose(bool was_clean, uint16_t code, const String& reason);
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(creator_);
     UnderlyingSourceBase::Trace(visitor);
   }
@@ -85,7 +85,7 @@ class WebSocketStream::UnderlyingSink final : public UnderlyingSinkBase {
   void DidClose(bool was_clean, uint16_t code, const String& reason);
   bool AllDataHasBeenConsumed() { return !is_writing_; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(creator_);
     visitor->Trace(close_resolver_);
     UnderlyingSinkBase::Trace(visitor);
@@ -587,7 +587,7 @@ bool WebSocketStream::HasPendingActivity() const {
   return channel_;
 }
 
-void WebSocketStream::Trace(Visitor* visitor) {
+void WebSocketStream::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(connection_resolver_);
   visitor->Trace(closed_resolver_);

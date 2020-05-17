@@ -8,24 +8,26 @@ namespace blink {
 
 class Mixin : public GarbageCollectedMixin {
  public:
-  virtual void Trace(Visitor*) {}
+  virtual void Trace(Visitor*) const {}
 };
 
 // Class derived from a mixin needs USING_GARBAGE_COLLECTED_MIXIN.
 class Derived : public GarbageCollected<Derived>, public Mixin {
-  virtual void Trace(Visitor* visitor) override { Mixin::Trace(visitor); }
+  virtual void Trace(Visitor* visitor) const override { Mixin::Trace(visitor); }
 };
 
 template <typename T>
 class Supplement : public GarbageCollectedMixin {
  public:
-  virtual void Trace(Visitor*) {}
+  virtual void Trace(Visitor*) const {}
 };
 
 // Class derived from a mixin template needs USING_GARBAGE_COLLECTED_MIXIN.
 class MySupplement : public GarbageCollected<MySupplement>,
                      public Supplement<Derived> {
-  virtual void Trace(Visitor* visitor) override { Supplement::Trace(visitor); }
+  virtual void Trace(Visitor* visitor) const override {
+    Supplement::Trace(visitor);
+  }
 };
 
 // This is the right way to do it.

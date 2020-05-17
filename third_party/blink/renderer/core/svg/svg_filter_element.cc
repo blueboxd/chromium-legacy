@@ -77,7 +77,7 @@ SVGFilterElement::SVGFilterElement(Document& document)
 
 SVGFilterElement::~SVGFilterElement() = default;
 
-void SVGFilterElement::Trace(Visitor* visitor) {
+void SVGFilterElement::Trace(Visitor* visitor) const {
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(width_);

@@ -89,7 +89,7 @@ class CORE_EXPORT FrameCaret final : public GarbageCollected<FrameCaret> {
   void RecreateCaretBlinkTimerForTesting(
       scoped_refptr<base::SingleThreadTaskRunner>);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   friend class FrameCaretTest;

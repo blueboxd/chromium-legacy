@@ -59,7 +59,7 @@ class MouseEvent;
 
 class ClickHandlingState final : public EventDispatchHandlingState {
  public:
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool checked;
   bool indeterminate;
@@ -72,7 +72,7 @@ class ClickHandlingState final : public EventDispatchHandlingState {
 class CORE_EXPORT InputTypeView : public GarbageCollectedMixin {
  public:
   virtual ~InputTypeView();
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   virtual bool SizeShouldIncludeDecoration(int default_size,
                                            int& preferred_size) const;

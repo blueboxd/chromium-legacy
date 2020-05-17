@@ -47,7 +47,7 @@ class InspectorHistory final : public GarbageCollected<InspectorHistory> {
    public:
     explicit Action(const String& name);
     virtual ~Action();
-    virtual void Trace(Visitor*);
+    virtual void Trace(Visitor*) const;
     virtual String ToString();
 
     virtual String MergeId();
@@ -67,7 +67,7 @@ class InspectorHistory final : public GarbageCollected<InspectorHistory> {
   };
 
   InspectorHistory();
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   bool Perform(Action*, ExceptionState&);
   void AppendPerformedAction(Action*);

@@ -79,7 +79,7 @@ class CORE_EXPORT FindTaskController final
   // DidFinishTask.
   class FindTask;
 
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
   void ResetLastFindRequestCompletedWithNoMatches();
 

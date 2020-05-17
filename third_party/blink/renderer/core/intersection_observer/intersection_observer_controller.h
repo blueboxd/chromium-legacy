@@ -50,7 +50,7 @@ class IntersectionObserverController
 
   bool NeedsOcclusionTracking() const { return needs_occlusion_tracking_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "IntersectionObserverController";
   }

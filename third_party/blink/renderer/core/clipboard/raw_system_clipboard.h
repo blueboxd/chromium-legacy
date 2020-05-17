@@ -39,7 +39,7 @@ class CORE_EXPORT RawSystemClipboard final
   void Write(const String& type, mojo_base::BigBuffer data);
 
   void CommitWrite();
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   HeapMojoRemote<mojom::blink::RawClipboardHost,

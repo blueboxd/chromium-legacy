@@ -120,7 +120,7 @@ base::Optional<XRNativeOriginInformation> XRSpace::NativeOrigin() const {
   return base::nullopt;
 }
 
-void XRSpace::Trace(Visitor* visitor) {
+void XRSpace::Trace(Visitor* visitor) const {
   visitor->Trace(session_);
   ScriptWrappable::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);

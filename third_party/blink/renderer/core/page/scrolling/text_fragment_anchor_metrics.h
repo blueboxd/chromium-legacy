@@ -57,7 +57,7 @@ class CORE_EXPORT TextFragmentAnchorMetrics final
 
   void Dismissed();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   TextFragmentAnchorParameters GetParametersForMatch(const Match& match);

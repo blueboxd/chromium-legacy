@@ -249,7 +249,7 @@ base::TimeDelta XRFrameTransport::WaitForGpuFenceReceived() {
   return base::TimeTicks::Now() - start;
 }
 
-void XRFrameTransport::Trace(Visitor* visitor) {
+void XRFrameTransport::Trace(Visitor* visitor) const {
   visitor->Trace(submit_frame_client_receiver_);
 }
 

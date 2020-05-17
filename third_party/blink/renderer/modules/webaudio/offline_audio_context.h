@@ -57,7 +57,7 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
                       ExceptionState&);
   ~OfflineAudioContext() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   uint32_t length() const { return total_render_frames_; }
 

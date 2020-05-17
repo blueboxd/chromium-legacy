@@ -209,7 +209,7 @@ int Screen::availWidth() const {
   return result;
 }
 
-void Screen::Trace(Visitor* visitor) {
+void Screen::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
   Supplementable<Screen>::Trace(visitor);

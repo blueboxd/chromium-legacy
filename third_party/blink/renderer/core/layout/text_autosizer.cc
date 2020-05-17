@@ -1548,7 +1548,7 @@ void TextAutosizer::CheckSuperclusterConsistency() {
   potentially_inconsistent_superclusters.clear();
 }
 
-void TextAutosizer::Trace(Visitor* visitor) {
+void TextAutosizer::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
 }
 

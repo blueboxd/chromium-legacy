@@ -58,7 +58,7 @@ class CORE_EXPORT ResourceLoadObserverForFrame final
                       const ResourceError&,
                       int64_t encoded_data_length,
                       IsInternalRequest) override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   CoreProbeSink* GetProbe();

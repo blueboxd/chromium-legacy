@@ -77,7 +77,7 @@ DeviceOrientationEventPump::LatestDeviceOrientationData() {
   return data_.Get();
 }
 
-void DeviceOrientationEventPump::Trace(Visitor* visitor) {
+void DeviceOrientationEventPump::Trace(Visitor* visitor) const {
   visitor->Trace(relative_orientation_sensor_);
   visitor->Trace(absolute_orientation_sensor_);
   visitor->Trace(data_);

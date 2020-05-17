@@ -62,7 +62,7 @@ IDBObjectStore::IDBObjectStore(scoped_refptr<IDBObjectStoreMetadata> metadata,
   DCHECK(metadata_.get());
 }
 
-void IDBObjectStore::Trace(Visitor* visitor) {
+void IDBObjectStore::Trace(Visitor* visitor) const {
   visitor->Trace(transaction_);
   visitor->Trace(index_map_);
   ScriptWrappable::Trace(visitor);
@@ -725,7 +725,7 @@ class IndexPopulator final : public NativeEventListener {
     DCHECK(index_metadata_.get());
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(script_state_);
     visitor->Trace(database_);
     NativeEventListener::Trace(visitor);

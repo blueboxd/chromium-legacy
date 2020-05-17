@@ -48,7 +48,7 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
   bool HadBlankText() override { return histograms_.HadBlankText(); }
   void PaintRequested() override { histograms_.FallbackFontPainted(period_); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   scoped_refptr<SimpleFontData> CreateFontData(

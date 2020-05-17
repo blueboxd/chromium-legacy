@@ -40,7 +40,7 @@ class ModuleScriptTestModulator final : public DummyModulator {
     return Vector<ModuleRequest>();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(script_state_);
     DummyModulator::Trace(visitor);
   }

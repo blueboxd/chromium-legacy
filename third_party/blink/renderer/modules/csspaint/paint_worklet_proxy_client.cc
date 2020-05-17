@@ -158,7 +158,7 @@ void PaintWorkletProxyClient::Dispose() {
   global_scopes_.clear();
 }
 
-void PaintWorkletProxyClient::Trace(Visitor* visitor) {
+void PaintWorkletProxyClient::Trace(Visitor* visitor) const {
   Supplement<WorkerClients>::Trace(visitor);
   PaintWorkletPainter::Trace(visitor);
 }

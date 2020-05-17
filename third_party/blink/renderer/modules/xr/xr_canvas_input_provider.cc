@@ -40,7 +40,7 @@ class XRCanvasInputEventListener : public NativeEventListener {
     }
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(input_provider_);
     EventListener::Trace(visitor);
   }
@@ -128,7 +128,7 @@ void XRCanvasInputProvider::ClearInputSource() {
   input_source_ = nullptr;
 }
 
-void XRCanvasInputProvider::Trace(Visitor* visitor) {
+void XRCanvasInputProvider::Trace(Visitor* visitor) const {
   visitor->Trace(session_);
   visitor->Trace(canvas_);
   visitor->Trace(listener_);

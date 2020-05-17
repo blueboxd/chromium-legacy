@@ -305,7 +305,7 @@ class UserMediaRequest::V8Callbacks final : public UserMediaRequest::Callbacks {
       : success_callback_(success_callback), error_callback_(error_callback) {}
   ~V8Callbacks() override = default;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(success_callback_);
     visitor->Trace(error_callback_);
     UserMediaRequest::Callbacks::Trace(visitor);
@@ -612,7 +612,7 @@ void UserMediaRequest::ContextDestroyed() {
   }
 }
 
-void UserMediaRequest::Trace(Visitor* visitor) {
+void UserMediaRequest::Trace(Visitor* visitor) const {
   visitor->Trace(controller_);
   visitor->Trace(callbacks_);
   ExecutionContextLifecycleObserver::Trace(visitor);

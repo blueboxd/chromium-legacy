@@ -106,7 +106,7 @@ ScriptCustomElementDefinition::ScriptCustomElementDefinition(
             .ToChecked());
 }
 
-void ScriptCustomElementDefinition::Trace(Visitor* visitor) {
+void ScriptCustomElementDefinition::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(constructor_);
   visitor->Trace(connected_callback_);

@@ -132,7 +132,7 @@ ScriptPromise ServiceWorkerWindowClient::navigate(ScriptState* script_state,
   return promise;
 }
 
-void ServiceWorkerWindowClient::Trace(Visitor* visitor) {
+void ServiceWorkerWindowClient::Trace(Visitor* visitor) const {
   ServiceWorkerClient::Trace(visitor);
 }
 

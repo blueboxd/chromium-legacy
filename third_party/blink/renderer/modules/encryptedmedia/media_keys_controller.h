@@ -30,7 +30,9 @@ class MODULES_EXPORT MediaKeysController final
 
   MediaKeysController();
 
-  void Trace(Visitor* visitor) override { Supplement<Page>::Trace(visitor); }
+  void Trace(Visitor* visitor) const override {
+    Supplement<Page>::Trace(visitor);
+  }
 };
 
 }  // namespace blink

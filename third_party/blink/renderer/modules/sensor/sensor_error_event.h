@@ -31,7 +31,7 @@ class SensorErrorEvent : public Event {
                    const SensorErrorEventInit* initializer);
   ~SensorErrorEvent() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   const AtomicString& InterfaceName() const override;
 

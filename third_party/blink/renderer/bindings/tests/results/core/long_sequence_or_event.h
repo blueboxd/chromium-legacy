@@ -42,7 +42,7 @@ class CORE_EXPORT LongSequenceOrEvent final {
   LongSequenceOrEvent(const LongSequenceOrEvent&);
   ~LongSequenceOrEvent();
   LongSequenceOrEvent& operator=(const LongSequenceOrEvent&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   enum class SpecificType {

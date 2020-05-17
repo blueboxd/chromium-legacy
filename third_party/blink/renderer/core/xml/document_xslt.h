@@ -45,7 +45,7 @@ class DocumentXSLT final : public GarbageCollected<DocumentXSLT>,
   static bool HasTransformSourceDocument(Document&);
 
   explicit DocumentXSLT(Document&);
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<Document> transform_source_document_;

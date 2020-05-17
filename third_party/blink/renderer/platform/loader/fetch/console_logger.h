@@ -51,7 +51,7 @@ class PLATFORM_EXPORT DetachableConsoleLogger final
   // be no-op.
   void Detach() { logger_ = nullptr; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(logger_);
     ConsoleLogger::Trace(visitor);
   }

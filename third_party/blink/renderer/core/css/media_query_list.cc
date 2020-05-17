@@ -102,7 +102,7 @@ bool MediaQueryList::matches() {
   return matches_;
 }
 
-void MediaQueryList::Trace(Visitor* visitor) {
+void MediaQueryList::Trace(Visitor* visitor) const {
   visitor->Trace(matcher_);
   visitor->Trace(listeners_);
   EventTargetWithInlineData::Trace(visitor);

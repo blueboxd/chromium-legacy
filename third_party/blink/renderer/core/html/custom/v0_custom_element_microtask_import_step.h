@@ -55,7 +55,7 @@ class V0CustomElementMicrotaskImportStep final
   void Invalidate();
   void ImportDidFinishLoading();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void DidUpgradeAllCustomElements();

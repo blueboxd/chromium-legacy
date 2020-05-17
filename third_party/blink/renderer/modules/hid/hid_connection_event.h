@@ -26,7 +26,7 @@ class HIDConnectionEvent final : public Event {
 
   HIDDevice* device() const { return nullptr; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 };
 
 }  // namespace blink

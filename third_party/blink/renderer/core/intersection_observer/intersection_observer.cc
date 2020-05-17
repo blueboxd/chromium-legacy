@@ -60,7 +60,7 @@ class IntersectionObserverDelegateImpl final
 
   ExecutionContext* GetExecutionContext() const override { return context_; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     IntersectionObserverDelegate::Trace(visitor);
     visitor->Trace(context_);
   }
@@ -466,7 +466,7 @@ bool IntersectionObserver::HasPendingActivity() const {
   return !observations_.IsEmpty();
 }
 
-void IntersectionObserver::Trace(Visitor* visitor) {
+void IntersectionObserver::Trace(Visitor* visitor) const {
   visitor->template RegisterWeakCallbackMethod<
       IntersectionObserver, &IntersectionObserver::ProcessCustomWeakness>(this);
   visitor->Trace(delegate_);

@@ -956,7 +956,7 @@ class InlineRunToApplyStyle {
     return start && end && start->isConnected() && end->isConnected();
   }
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(start);
     visitor->Trace(end);
     visitor->Trace(past_end_node);
@@ -2094,7 +2094,7 @@ void ApplyStyleCommand::JoinChildTextNodes(ContainerNode* node,
   UpdateStartEnd(EphemeralRange(new_start, new_end));
 }
 
-void ApplyStyleCommand::Trace(Visitor* visitor) {
+void ApplyStyleCommand::Trace(Visitor* visitor) const {
   visitor->Trace(style_);
   visitor->Trace(start_);
   visitor->Trace(end_);

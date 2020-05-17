@@ -26,7 +26,7 @@ class CORE_EXPORT NavigatorScheduling final
 
   explicit NavigatorScheduling(Navigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   static NavigatorScheduling& From(Navigator&);

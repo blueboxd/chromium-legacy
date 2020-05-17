@@ -86,7 +86,7 @@ ScriptPromise CustomLayoutChild::layoutNextFragment(
   return resolver->Promise();
 }
 
-void CustomLayoutChild::Trace(Visitor* visitor) {
+void CustomLayoutChild::Trace(Visitor* visitor) const {
   visitor->Trace(style_map_);
   visitor->Trace(token_);
   ScriptWrappable::Trace(visitor);

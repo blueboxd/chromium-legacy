@@ -45,7 +45,7 @@ SVGFEDropShadowElement::SVGFEDropShadowElement(Document& document)
   AddToPropertyMap(in1_);
 }
 
-void SVGFEDropShadowElement::Trace(Visitor* visitor) {
+void SVGFEDropShadowElement::Trace(Visitor* visitor) const {
   visitor->Trace(dx_);
   visitor->Trace(dy_);
   visitor->Trace(std_deviation_);

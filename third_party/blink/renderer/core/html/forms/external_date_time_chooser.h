@@ -40,7 +40,7 @@ class CORE_EXPORT ExternalDateTimeChooser final : public DateTimeChooser {
  public:
   explicit ExternalDateTimeChooser(DateTimeChooserClient*);
   ~ExternalDateTimeChooser() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // |frame| must not be null.
   void OpenDateTimeChooser(LocalFrame* frame, const DateTimeChooserParameters&);

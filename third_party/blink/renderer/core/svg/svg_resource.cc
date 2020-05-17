@@ -19,7 +19,7 @@ SVGResource::SVGResource() = default;
 
 SVGResource::~SVGResource() = default;
 
-void SVGResource::Trace(Visitor* visitor) {
+void SVGResource::Trace(Visitor* visitor) const {
   visitor->Trace(target_);
   visitor->Trace(clients_);
 }
@@ -121,7 +121,7 @@ void LocalSVGResource::TargetChanged(const AtomicString& id) {
   NotifyElementChanged();
 }
 
-void LocalSVGResource::Trace(Visitor* visitor) {
+void LocalSVGResource::Trace(Visitor* visitor) const {
   visitor->Trace(tree_scope_);
   visitor->Trace(id_observer_);
   SVGResource::Trace(visitor);
@@ -167,7 +167,7 @@ Element* ExternalSVGResource::ResolveTarget() {
   return external_document->getElementById(decoded_fragment);
 }
 
-void ExternalSVGResource::Trace(Visitor* visitor) {
+void ExternalSVGResource::Trace(Visitor* visitor) const {
   visitor->Trace(cache_entry_);
   SVGResource::Trace(visitor);
   SVGExternalDocumentCache::Client::Trace(visitor);

@@ -111,7 +111,7 @@ class InputEvent final : public UIEvent {
 
   DispatchEventResult DispatchEvent(EventDispatcher&) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   InputType input_type_;

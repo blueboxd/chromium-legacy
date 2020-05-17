@@ -29,7 +29,9 @@ class EventCounts final : public ScriptWrappable,
 
   void Add(const AtomicString& event_type);
 
-  void Trace(Visitor* visitor) override { ScriptWrappable::Trace(visitor); }
+  void Trace(Visitor* visitor) const override {
+    ScriptWrappable::Trace(visitor);
+  }
 
  private:
   // Maplike implementation.

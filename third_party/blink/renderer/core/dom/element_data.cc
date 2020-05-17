@@ -110,11 +110,11 @@ bool ElementData::IsEquivalent(const ElementData* other) const {
   return true;
 }
 
-void ElementData::Trace(Visitor* visitor) {
+void ElementData::Trace(Visitor* visitor) const {
   if (bit_field_.get_concurrently<IsUniqueFlag>()) {
-    static_cast<UniqueElementData*>(this)->TraceAfterDispatch(visitor);
+    static_cast<const UniqueElementData*>(this)->TraceAfterDispatch(visitor);
   } else {
-    static_cast<ShareableElementData*>(this)->TraceAfterDispatch(visitor);
+    static_cast<const ShareableElementData*>(this)->TraceAfterDispatch(visitor);
   }
 }
 

@@ -52,7 +52,7 @@ class XRPlane : public ScriptWrappable {
   void Update(const device::mojom::blink::XRPlaneData& plane_data,
               double timestamp);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   XRPlane(uint64_t id,

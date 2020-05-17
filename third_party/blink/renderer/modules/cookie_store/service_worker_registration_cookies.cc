@@ -64,7 +64,7 @@ class ServiceWorkerRegistrationCookiesImpl final
     return cookie_store_manager_.Get();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(registration_);
     visitor->Trace(cookie_store_manager_);
     Supplement<ServiceWorkerRegistration>::Trace(visitor);

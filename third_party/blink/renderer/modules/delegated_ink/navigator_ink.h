@@ -23,7 +23,7 @@ class NavigatorInk : public GarbageCollected<NavigatorInk>,
 
   explicit NavigatorInk(Navigator& navigator);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(blink::Visitor*) const override;
 
  private:
   Member<Ink> ink_;

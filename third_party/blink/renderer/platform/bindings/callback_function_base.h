@@ -28,7 +28,7 @@ class PLATFORM_EXPORT CallbackFunctionBase
  public:
   virtual ~CallbackFunctionBase() = default;
 
-  virtual void Trace(Visitor* visitor);
+  virtual void Trace(Visitor* visitor) const;
 
   v8::Local<v8::Object> CallbackObject() {
     return callback_function_.NewLocal(GetIsolate());

@@ -278,7 +278,7 @@ Database::~Database() {
   DCHECK(!Opened());
 }
 
-void Database::Trace(Visitor* visitor) {
+void Database::Trace(Visitor* visitor) const {
   visitor->Trace(database_context_);
   ScriptWrappable::Trace(visitor);
 }

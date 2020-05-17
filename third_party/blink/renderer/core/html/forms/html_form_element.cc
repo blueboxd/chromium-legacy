@@ -87,7 +87,7 @@ HTMLFormElement::HTMLFormElement(Document& document)
 
 HTMLFormElement::~HTMLFormElement() = default;
 
-void HTMLFormElement::Trace(Visitor* visitor) {
+void HTMLFormElement::Trace(Visitor* visitor) const {
   visitor->Trace(past_names_map_);
   visitor->Trace(radio_button_group_scope_);
   visitor->Trace(listed_elements_);

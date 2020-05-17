@@ -45,7 +45,7 @@ class V0CustomElementProcessingStep
   virtual void Dispatch(Element*) = 0;
   virtual bool IsCreatedCallback() const { return false; }
 
-  virtual void Trace(Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) const {}
 
   DISALLOW_COPY_AND_ASSIGN(V0CustomElementProcessingStep);
 };

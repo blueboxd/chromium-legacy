@@ -82,7 +82,7 @@ class CORE_EXPORT SecurityContext {
   SecurityContext(const SecurityContextInit&, SecurityContextType context_type);
   virtual ~SecurityContext() = default;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   using InsecureNavigationsSet = HashSet<unsigned, WTF::AlreadyHashed>;
   static WTF::Vector<unsigned> SerializeInsecureNavigationSet(

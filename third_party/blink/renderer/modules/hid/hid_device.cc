@@ -274,7 +274,7 @@ void HIDDevice::ContextDestroyed() {
   device_requests_.clear();
 }
 
-void HIDDevice::Trace(Visitor* visitor) {
+void HIDDevice::Trace(Visitor* visitor) const {
   visitor->Trace(parent_);
   visitor->Trace(connection_);
   visitor->Trace(receiver_);

@@ -250,7 +250,7 @@ void TextSuggestionController::HandlePotentialSuggestionTap(
   text_suggestion_host_->StartSuggestionMenuTimer();
 }
 
-void TextSuggestionController::Trace(Visitor* visitor) {
+void TextSuggestionController::Trace(Visitor* visitor) const {
   visitor->Trace(window_);
   visitor->Trace(text_suggestion_host_);
 }

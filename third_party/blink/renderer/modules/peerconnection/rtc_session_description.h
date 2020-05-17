@@ -62,7 +62,7 @@ class RTCSessionDescription final : public ScriptWrappable {
 
   RTCSessionDescriptionPlatform* WebSessionDescription();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<RTCSessionDescriptionPlatform> platform_session_description_;

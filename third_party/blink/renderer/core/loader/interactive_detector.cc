@@ -588,7 +588,7 @@ void InteractiveDetector::ContextDestroyed() {
   LongTaskDetector::Instance().UnregisterObserver(this);
 }
 
-void InteractiveDetector::Trace(Visitor* visitor) {
+void InteractiveDetector::Trace(Visitor* visitor) const {
   Supplement<Document>::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
 }

@@ -36,7 +36,7 @@ class GamepadSharedMemoryReader
  public:
   explicit GamepadSharedMemoryReader(LocalFrame& frame);
   ~GamepadSharedMemoryReader() override;
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   void SampleGamepads(device::Gamepads* gamepads);
   void Start(blink::GamepadListener* listener);

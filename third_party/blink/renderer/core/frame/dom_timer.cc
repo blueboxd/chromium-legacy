@@ -174,7 +174,7 @@ void DOMTimer::Fired() {
   SetExecutionContext(nullptr);
 }
 
-void DOMTimer::Trace(Visitor* visitor) {
+void DOMTimer::Trace(Visitor* visitor) const {
   visitor->Trace(action_);
   ExecutionContextLifecycleObserver::Trace(visitor);
 }

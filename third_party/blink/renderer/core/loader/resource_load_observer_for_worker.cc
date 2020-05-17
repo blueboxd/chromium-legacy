@@ -102,7 +102,7 @@ void ResourceLoadObserverForWorker::DidFailLoading(const KURL&,
   probe::DidFailLoading(probe_, identifier, nullptr, error);
 }
 
-void ResourceLoadObserverForWorker::Trace(Visitor* visitor) {
+void ResourceLoadObserverForWorker::Trace(Visitor* visitor) const {
   visitor->Trace(probe_);
   visitor->Trace(fetcher_properties_);
   ResourceLoadObserver::Trace(visitor);

@@ -49,7 +49,7 @@ class DOMTimerCoordinator {
   // deeper timer nesting level, see DOMTimer::DOMTimer.
   void SetTimerNestingLevel(int level) { timer_nesting_level_ = level; }
 
-  void Trace(Visitor*);  // Oilpan.
+  void Trace(Visitor*) const;  // Oilpan.
 
  private:
   int NextID();

@@ -49,7 +49,7 @@ class CORE_EXPORT DOMFeaturePolicy : public ScriptWrappable {
       const ParsedFeaturePolicy& container_policy = {},
       scoped_refptr<const SecurityOrigin> src_origin = nullptr);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   virtual const FeaturePolicy* GetPolicy() const = 0;

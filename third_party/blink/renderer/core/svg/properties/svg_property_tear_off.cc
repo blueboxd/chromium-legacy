@@ -49,7 +49,7 @@ SVGPropertyTearOffBase::SVGPropertyTearOffBase(SVGElement* context_element)
       binding_(nullptr),
       property_is_anim_val_(kPropertyIsNotAnimVal) {}
 
-void SVGPropertyTearOffBase::Trace(Visitor* visitor) {
+void SVGPropertyTearOffBase::Trace(Visitor* visitor) const {
   visitor->Trace(context_element_);
   visitor->Trace(binding_);
   ScriptWrappable::Trace(visitor);

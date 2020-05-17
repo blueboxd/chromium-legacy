@@ -81,7 +81,7 @@ SubtleCrypto* Crypto::subtle() {
   return subtle_crypto_.Get();
 }
 
-void Crypto::Trace(Visitor* visitor) {
+void Crypto::Trace(Visitor* visitor) const {
   visitor->Trace(subtle_crypto_);
   ScriptWrappable::Trace(visitor);
 }

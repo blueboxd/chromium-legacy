@@ -61,7 +61,7 @@ class SVGPropertyTearOffBase : public ScriptWrappable {
 
   void Bind(SVGAnimatedPropertyBase* binding);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   static void ThrowReadOnly(ExceptionState&);
 
@@ -90,7 +90,7 @@ class SVGPropertyTearOff : public SVGPropertyTearOffBase {
 
   void SetTarget(Property* target) { target_ = target; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(target_);
     SVGPropertyTearOffBase::Trace(visitor);
   }

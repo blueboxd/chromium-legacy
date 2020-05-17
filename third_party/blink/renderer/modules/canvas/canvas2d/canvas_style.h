@@ -59,7 +59,7 @@ class CanvasStyle final : public GarbageCollected<CanvasStyle> {
     return type_ == kColorRGBA && rgba_ == rgba;
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   enum Type { kColorRGBA, kGradient, kImagePattern };

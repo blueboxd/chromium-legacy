@@ -31,7 +31,7 @@ class MODULES_EXPORT InspectorAccessibilityAgent
   void CreateAXContext();
 
   // Base agent methods.
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   void Restore() override;
 
   // Protocol methods.

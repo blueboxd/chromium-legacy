@@ -213,7 +213,7 @@ FetchRequestData::FetchRequestData(ExecutionContext* execution_context)
       url_loader_factory_(execution_context),
       execution_context_(execution_context) {}
 
-void FetchRequestData::Trace(Visitor* visitor) {
+void FetchRequestData::Trace(Visitor* visitor) const {
   visitor->Trace(buffer_);
   visitor->Trace(header_list_);
   visitor->Trace(url_loader_factory_);

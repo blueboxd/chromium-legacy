@@ -60,7 +60,7 @@ SVGFitToViewBox::SVGFitToViewBox(SVGElement* element)
   element->AddToPropertyMap(preserve_aspect_ratio_);
 }
 
-void SVGFitToViewBox::Trace(Visitor* visitor) {
+void SVGFitToViewBox::Trace(Visitor* visitor) const {
   visitor->Trace(view_box_);
   visitor->Trace(preserve_aspect_ratio_);
 }

@@ -33,7 +33,7 @@ class GPU final : public ScriptWrappable,
   ~GPU() override;
 
   // ScriptWrappable overrides
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   // ExecutionContextLifecycleObserver overrides
   void ContextDestroyed() override;

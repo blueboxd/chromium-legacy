@@ -92,7 +92,7 @@ static const ui::Cursor& MiddleClickAutoscrollCursor(
 
 AutoscrollController::AutoscrollController(Page& page) : page_(&page) {}
 
-void AutoscrollController::Trace(Visitor* visitor) {
+void AutoscrollController::Trace(Visitor* visitor) const {
   visitor->Trace(page_);
 }
 

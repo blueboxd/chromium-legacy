@@ -69,7 +69,7 @@ class CORE_EXPORT ScriptController final
   ScriptController(LocalFrame& frame,
                    LocalWindowProxyManager& window_proxy_manager)
       : frame_(&frame), window_proxy_manager_(&window_proxy_manager) {}
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   // This returns an initialized window proxy. (If the window proxy is not
   // yet initialized, it's implicitly initialized at the first access.)

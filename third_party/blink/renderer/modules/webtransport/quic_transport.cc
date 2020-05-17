@@ -122,7 +122,7 @@ class QuicTransport::DatagramUnderlyingSink final : public UnderlyingSinkBase {
     return ScriptPromise::CastUndefined(script_state);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(quic_transport_);
     UnderlyingSinkBase::Trace(visitor);
   }
@@ -180,7 +180,7 @@ class QuicTransport::DatagramUnderlyingSource final
     return ScriptPromise::CastUndefined(script_state);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(quic_transport_);
     UnderlyingSourceBase::Trace(visitor);
   }
@@ -196,7 +196,7 @@ class QuicTransport::StreamVendingUnderlyingSource final
    public:
     using EnqueueCallback = base::OnceCallback<void(ScriptWrappable*)>;
     virtual void RequestStream(EnqueueCallback) = 0;
-    virtual void Trace(Visitor*) {}
+    virtual void Trace(Visitor*) const {}
   };
 
   template <class VendorType>
@@ -244,7 +244,7 @@ class QuicTransport::StreamVendingUnderlyingSource final
     }
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(script_state_);
     visitor->Trace(vendor_);
     UnderlyingSourceBase::Trace(visitor);
@@ -271,7 +271,7 @@ class QuicTransport::ReceiveStreamVendor final
                   WrapWeakPersistent(this), std::move(enqueue)));
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(script_state_);
     visitor->Trace(quic_transport_);
     StreamVendor::Trace(visitor);
@@ -310,7 +310,7 @@ class QuicTransport::BidirectionalStreamVendor final
         WrapWeakPersistent(this), std::move(enqueue)));
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(script_state_);
     visitor->Trace(quic_transport_);
     StreamVendor::Trace(visitor);
@@ -570,7 +570,7 @@ void QuicTransport::ForgetStream(uint32_t stream_id) {
   stream_map_.erase(stream_id);
 }
 
-void QuicTransport::Trace(Visitor* visitor) {
+void QuicTransport::Trace(Visitor* visitor) const {
   visitor->Trace(received_datagrams_);
   visitor->Trace(received_datagrams_controller_);
   visitor->Trace(outgoing_datagrams_);

@@ -509,7 +509,7 @@ bool ScriptProcessorNode::HasPendingActivity() const {
   return false;
 }
 
-void ScriptProcessorNode::Trace(Visitor* visitor) {
+void ScriptProcessorNode::Trace(Visitor* visitor) const {
   visitor->Trace(input_buffers_);
   visitor->Trace(output_buffers_);
   AudioNode::Trace(visitor);

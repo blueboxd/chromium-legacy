@@ -335,7 +335,7 @@ VisualViewport::~VisualViewport() {
   SendUMAMetrics();
 }
 
-void VisualViewport::Trace(Visitor* visitor) {
+void VisualViewport::Trace(Visitor* visitor) const {
   visitor->Trace(page_);
   ScrollableArea::Trace(visitor);
 }

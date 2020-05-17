@@ -80,7 +80,7 @@ SpeechRecognitionEvent::SpeechRecognitionEvent(
 
 SpeechRecognitionEvent::~SpeechRecognitionEvent() = default;
 
-void SpeechRecognitionEvent::Trace(Visitor* visitor) {
+void SpeechRecognitionEvent::Trace(Visitor* visitor) const {
   visitor->Trace(results_);
   Event::Trace(visitor);
 }

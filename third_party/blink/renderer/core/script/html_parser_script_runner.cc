@@ -699,7 +699,7 @@ void HTMLParserScriptRunner::RecordMetricsAtParseEnd() const {
   }
 }
 
-void HTMLParserScriptRunner::Trace(Visitor* visitor) {
+void HTMLParserScriptRunner::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(host_);
   visitor->Trace(parser_blocking_script_);

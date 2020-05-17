@@ -1030,7 +1030,7 @@ bool PaymentRequest::IsInteractive() const {
   return !!GetPendingAcceptPromiseResolver();
 }
 
-void PaymentRequest::Trace(Visitor* visitor) {
+void PaymentRequest::Trace(Visitor* visitor) const {
   visitor->Trace(options_);
   visitor->Trace(shipping_address_);
   visitor->Trace(payment_response_);

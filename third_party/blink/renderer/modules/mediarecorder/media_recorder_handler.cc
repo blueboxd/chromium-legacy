@@ -679,7 +679,7 @@ void MediaRecorderHandler::SetAudioFormatForTesting(
     recorder->OnSetFormat(params);
 }
 
-void MediaRecorderHandler::Trace(Visitor* visitor) {
+void MediaRecorderHandler::Trace(Visitor* visitor) const {
   visitor->Trace(media_stream_);
   visitor->Trace(video_tracks_);
   visitor->Trace(audio_tracks_);

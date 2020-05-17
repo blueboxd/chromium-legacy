@@ -106,7 +106,7 @@ class CORE_EXPORT Fullscreen final : public GarbageCollected<Fullscreen>,
   // ExecutionContextLifecycleObserver:
   void ContextDestroyed() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   static Fullscreen& From(LocalDOMWindow&);
@@ -133,7 +133,7 @@ class CORE_EXPORT Fullscreen final : public GarbageCollected<Fullscreen>,
                    RequestType type,
                    ScriptPromiseResolver* resolver);
     virtual ~PendingRequest();
-    virtual void Trace(Visitor* visitor);
+    virtual void Trace(Visitor* visitor) const;
 
     Element* element() { return element_; }
     RequestType type() { return type_; }

@@ -61,7 +61,7 @@ class WebGLRenderbuffer final : public WebGLSharedPlatform3DObject {
   bool HasEverBeenBound() const { return Object() && has_ever_been_bound_; }
   void SetHasEverBeenBound() { has_ever_been_bound_ = true; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;

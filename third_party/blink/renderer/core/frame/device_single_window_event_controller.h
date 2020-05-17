@@ -23,7 +23,7 @@ class CORE_EXPORT DeviceSingleWindowEventController
 
   // Inherited from PlatformEventController.
   void DidUpdateData() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Inherited from LocalDOMWindow::EventListenerObserver.
   void DidAddEventListener(LocalDOMWindow*, const AtomicString&) override;

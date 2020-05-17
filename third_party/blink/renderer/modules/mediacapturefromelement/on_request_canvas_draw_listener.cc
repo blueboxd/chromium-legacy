@@ -21,7 +21,7 @@ void OnRequestCanvasDrawListener::SendNewFrame(
   AutoCanvasDrawListener::SendNewFrame(image, context_provider);
 }
 
-void OnRequestCanvasDrawListener::Trace(Visitor* visitor) {
+void OnRequestCanvasDrawListener::Trace(Visitor* visitor) const {
   AutoCanvasDrawListener::Trace(visitor);
 }
 

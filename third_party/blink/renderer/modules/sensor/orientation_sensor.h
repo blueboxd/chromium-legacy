@@ -21,7 +21,7 @@ class OrientationSensor : public Sensor {
 
   bool isReadingDirty() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   OrientationSensor(ExecutionContext*,

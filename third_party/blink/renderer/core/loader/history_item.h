@@ -119,7 +119,7 @@ class CORE_EXPORT HistoryItem final : public GarbageCollected<HistoryItem> {
 
   ResourceRequest GenerateResourceRequest(mojom::FetchCacheMode);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   String url_string_;

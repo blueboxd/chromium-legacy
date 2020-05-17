@@ -178,7 +178,7 @@ void V0CustomElementRegistrationContext::SetV1(
   registry_.SetV1(v1);
 }
 
-void V0CustomElementRegistrationContext::Trace(Visitor* visitor) {
+void V0CustomElementRegistrationContext::Trace(Visitor* visitor) const {
   visitor->Trace(candidates_);
   visitor->Trace(registry_);
 }

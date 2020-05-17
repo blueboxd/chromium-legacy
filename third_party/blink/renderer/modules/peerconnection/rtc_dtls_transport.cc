@@ -177,7 +177,7 @@ ExecutionContext* RTCDtlsTransport::GetExecutionContext() const {
   return ExecutionContextClient::GetExecutionContext();
 }
 
-void RTCDtlsTransport::Trace(Visitor* visitor) {
+void RTCDtlsTransport::Trace(Visitor* visitor) const {
   visitor->Trace(remote_certificates_);
   visitor->Trace(ice_transport_);
   DtlsTransportProxy::Delegate::Trace(visitor);

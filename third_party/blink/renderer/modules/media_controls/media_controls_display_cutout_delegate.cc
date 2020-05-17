@@ -57,7 +57,7 @@ void MediaControlsDisplayCutoutDelegate::Detach() {
                                     this, true);
 }
 
-void MediaControlsDisplayCutoutDelegate::Trace(Visitor* visitor) {
+void MediaControlsDisplayCutoutDelegate::Trace(Visitor* visitor) const {
   NativeEventListener::Trace(visitor);
   visitor->Trace(video_element_);
 }

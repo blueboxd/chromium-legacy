@@ -48,7 +48,7 @@ class CORE_EXPORT ContextMenuController final
  public:
   explicit ContextMenuController(Page*);
   ~ContextMenuController();
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   void ClearContextMenu();
 

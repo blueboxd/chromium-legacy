@@ -65,7 +65,7 @@ class ReplayingBytesConsumer final : public BytesConsumer {
 
   bool IsCancelled() const { return is_cancelled_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void NotifyAsReadable(int notification_token);

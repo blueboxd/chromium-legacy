@@ -342,7 +342,7 @@ void PerformanceMonitor::InnerReportGenericViolation(
   }
 }
 
-void PerformanceMonitor::Trace(Visitor* visitor) {
+void PerformanceMonitor::Trace(Visitor* visitor) const {
   visitor->Trace(local_root_);
   visitor->Trace(task_execution_context_);
   visitor->Trace(subscriptions_);

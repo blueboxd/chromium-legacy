@@ -107,7 +107,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void BeginCommitCompositorFrame() override;
   void EndCommitCompositorFrame(base::TimeTicks commit_start_time) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   PageWidgetEventHandler* GetPageWidgetEventHandler() override;

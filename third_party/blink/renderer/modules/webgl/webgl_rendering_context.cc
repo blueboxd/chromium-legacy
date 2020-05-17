@@ -197,7 +197,7 @@ void WebGLRenderingContext::RegisterContextExtensions() {
   RegisterExtension(webgl_video_texture_, kDraftExtension);
 }
 
-void WebGLRenderingContext::Trace(Visitor* visitor) {
+void WebGLRenderingContext::Trace(Visitor* visitor) const {
   visitor->Trace(angle_instanced_arrays_);
   visitor->Trace(ext_blend_min_max_);
   visitor->Trace(ext_color_buffer_half_float_);

@@ -29,7 +29,7 @@ class NavigatorContacts final : public GarbageCollected<NavigatorContacts>,
 
   explicit NavigatorContacts(Navigator& navigator);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   Member<ContactsManager> contacts_manager_;

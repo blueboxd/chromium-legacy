@@ -114,7 +114,7 @@ void MediaControlOverlayPlayButtonElement::SetIsDisplayed(bool displayed) {
   displayed_ = displayed;
 }
 
-void MediaControlOverlayPlayButtonElement::Trace(Visitor* visitor) {
+void MediaControlOverlayPlayButtonElement::Trace(Visitor* visitor) const {
   MediaControlInputElement::Trace(visitor);
   visitor->Trace(internal_button_);
 }

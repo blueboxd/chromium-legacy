@@ -48,7 +48,7 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
     resolver_->Reject(error);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(resolver_);
     UserMediaRequest::Callbacks::Trace(visitor);
   }
@@ -363,7 +363,7 @@ void MediaDevices::SetDispatcherHostForTesting(
                 WrapWeakPersistent(this)));
 }
 
-void MediaDevices::Trace(Visitor* visitor) {
+void MediaDevices::Trace(Visitor* visitor) const {
   visitor->Trace(receiver_);
   visitor->Trace(scheduled_events_);
   visitor->Trace(requests_);

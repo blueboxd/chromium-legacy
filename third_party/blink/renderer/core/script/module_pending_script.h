@@ -29,7 +29,7 @@ class ModulePendingScriptTreeClient final : public ModuleTreeClient {
 
   ModuleScript* GetModuleScript() const { return module_script_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Implements ModuleTreeClient
@@ -55,7 +55,7 @@ class CORE_EXPORT ModulePendingScript : public PendingScript {
     return module_tree_client_->GetModuleScript();
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // PendingScript

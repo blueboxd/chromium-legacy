@@ -43,7 +43,7 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
   bool IsHTMLPortalElement() const final { return true; }
 
   // ScriptWrappable overrides.
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   // idl implementation.
   ScriptPromise activate(ScriptState*, PortalActivateOptions*, ExceptionState&);

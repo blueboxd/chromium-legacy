@@ -26,7 +26,7 @@ class BeforeUnloadEventListener : public NativeEventListener {
     show_dialog_ = show_dialog;
   }
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   void Invoke(ExecutionContext*, Event* event) override;

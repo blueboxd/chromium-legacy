@@ -67,7 +67,7 @@ const AtomicString& XRLightProbe::InterfaceName() const {
   return event_target_names::kXRLightProbe;
 }
 
-void XRLightProbe::Trace(Visitor* visitor) {
+void XRLightProbe::Trace(Visitor* visitor) const {
   visitor->Trace(session_);
   visitor->Trace(light_estimate_);
   ScriptWrappable::Trace(visitor);

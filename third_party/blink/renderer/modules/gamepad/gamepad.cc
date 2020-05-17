@@ -166,7 +166,7 @@ void Gamepad::SetTimestamp(const device::Gamepad& device_gamepad) {
   }
 }
 
-void Gamepad::Trace(Visitor* visitor) {
+void Gamepad::Trace(Visitor* visitor) const {
   visitor->Trace(client_);
   visitor->Trace(buttons_);
   ScriptWrappable::Trace(visitor);

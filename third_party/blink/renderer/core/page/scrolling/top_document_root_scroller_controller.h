@@ -31,7 +31,7 @@ class CORE_EXPORT TopDocumentRootScrollerController
  public:
   explicit TopDocumentRootScrollerController(Page&);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   // PaintLayerScrollableAreas need to notify this class when they're being
   // disposed so that we can remove them as the root scroller.

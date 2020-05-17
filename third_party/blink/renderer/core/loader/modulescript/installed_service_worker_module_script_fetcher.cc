@@ -110,7 +110,7 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
   client->NotifyFetchFinished(params, HeapVector<Member<ConsoleMessage>>());
 }
 
-void InstalledServiceWorkerModuleScriptFetcher::Trace(Visitor* visitor) {
+void InstalledServiceWorkerModuleScriptFetcher::Trace(Visitor* visitor) const {
   ModuleScriptFetcher::Trace(visitor);
   visitor->Trace(global_scope_);
 }

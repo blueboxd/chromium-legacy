@@ -43,7 +43,7 @@ class GamepadHapticActuator final : public ScriptWrappable,
 
   ScriptPromise reset(ScriptState*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void OnPlayEffectCompleted(ScriptPromiseResolver*,

@@ -201,7 +201,7 @@ void DeprecatedStorageQuota::requestQuota(
               0, 0));
 }
 
-void DeprecatedStorageQuota::Trace(Visitor* visitor) {
+void DeprecatedStorageQuota::Trace(Visitor* visitor) const {
   visitor->Trace(quota_host_);
   ScriptWrappable::Trace(visitor);
 }

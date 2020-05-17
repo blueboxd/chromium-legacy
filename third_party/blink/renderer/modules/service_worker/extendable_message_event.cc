@@ -102,7 +102,7 @@ const AtomicString& ExtendableMessageEvent::InterfaceName() const {
   return event_interface_names::kExtendableMessageEvent;
 }
 
-void ExtendableMessageEvent::Trace(Visitor* visitor) {
+void ExtendableMessageEvent::Trace(Visitor* visitor) const {
   visitor->Trace(data_);
   visitor->Trace(source_as_client_);
   visitor->Trace(source_as_service_worker_);

@@ -63,7 +63,7 @@ WorkletAnimationId AnimationWorklet::NextWorkletAnimationId() {
   return WorkletAnimationId(worklet_id_, ++last_animation_id_);
 }
 
-void AnimationWorklet::Trace(Visitor* visitor) {
+void AnimationWorklet::Trace(Visitor* visitor) const {
   Worklet::Trace(visitor);
   visitor->Trace(proxy_client_);
 }

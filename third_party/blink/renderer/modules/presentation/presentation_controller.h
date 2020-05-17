@@ -43,7 +43,7 @@ class MODULES_EXPORT PresentationController
   static PresentationController* FromContext(ExecutionContext*);
 
   // Implementation of Supplement.
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Called by the Presentation object to advertize itself to the controller.
   // The Presentation object is kept as a WeakMember in order to avoid keeping

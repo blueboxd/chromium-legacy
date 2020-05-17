@@ -34,7 +34,7 @@ class IntWrapper : public blink::GarbageCollected<IntWrapper> {
 
   virtual ~IntWrapper() = default;
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) const {
     // Verify if compaction is indeed activated.
 
     // There may be multiple passes over objects during a GC, even after

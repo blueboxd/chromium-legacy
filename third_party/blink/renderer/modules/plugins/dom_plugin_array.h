@@ -56,7 +56,7 @@ class DOMPluginArray final : public ScriptWrappable,
   // PluginsChangedObserver implementation.
   void PluginsChanged() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   PluginData* GetPluginData() const;

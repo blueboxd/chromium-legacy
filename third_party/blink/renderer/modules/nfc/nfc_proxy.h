@@ -35,7 +35,7 @@ class MODULES_EXPORT NFCProxy final : public GarbageCollected<NFCProxy>,
   explicit NFCProxy(LocalDOMWindow&);
   ~NFCProxy() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // There is no matching RemoveWriter() method because writers are
   // automatically removed from the weak hash set when they are garbage

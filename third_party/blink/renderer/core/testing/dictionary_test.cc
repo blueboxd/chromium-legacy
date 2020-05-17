@@ -246,7 +246,7 @@ void DictionaryTest::GetDerivedDerivedInternals(
     dict->setDerivedDerivedStringMember(derived_derived_string_member_.value());
 }
 
-void DictionaryTest::Trace(Visitor* visitor) {
+void DictionaryTest::Trace(Visitor* visitor) const {
   visitor->Trace(element_member_);
   visitor->Trace(element_or_null_member_);
   visitor->Trace(object_member_);

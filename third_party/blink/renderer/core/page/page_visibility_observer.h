@@ -44,7 +44,7 @@ class CORE_EXPORT PageVisibilityObserver : public GarbageCollectedMixin {
   Page* GetPage() const { return page_; }
   void SetPage(Page*);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  protected:
   explicit PageVisibilityObserver(Page*);

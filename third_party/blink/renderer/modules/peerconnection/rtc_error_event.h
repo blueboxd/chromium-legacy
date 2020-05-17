@@ -30,7 +30,7 @@ class RTCErrorEvent final : public Event {
 
   RTCError* error() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<RTCError> error_;

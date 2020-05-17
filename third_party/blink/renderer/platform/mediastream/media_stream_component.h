@@ -102,7 +102,7 @@ class PLATFORM_EXPORT MediaStreamComponent final
   }
   void GetSettings(WebMediaStreamTrack::Settings&);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   // AudioSourceProviderImpl wraps a WebAudioSourceProvider::provideInput()

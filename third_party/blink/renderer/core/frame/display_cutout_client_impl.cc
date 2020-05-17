@@ -47,7 +47,7 @@ void DisplayCutoutClientImpl::SetSafeArea(
   vars.SetVariable(kSafeAreaInsetRightName, GetPx(safe_area->right));
 }
 
-void DisplayCutoutClientImpl::Trace(Visitor* visitor) {
+void DisplayCutoutClientImpl::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
 }
 

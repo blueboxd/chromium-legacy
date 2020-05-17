@@ -20,7 +20,7 @@ class MODULES_EXPORT Credential : public ScriptWrappable {
 
  public:
   ~Credential() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   virtual bool IsPasswordCredential() const { return false; }
   virtual bool IsFederatedCredential() const { return false; }

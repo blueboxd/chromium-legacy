@@ -27,7 +27,7 @@ class ScriptState;
 class ModulatorImplBase : public Modulator {
  public:
   ~ModulatorImplBase() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   explicit ModulatorImplBase(ScriptState*);

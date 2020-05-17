@@ -49,7 +49,7 @@ WakeLock* WorkerNavigatorWakeLock::GetWakeLock(ScriptState* script_state) {
   return wake_lock_;
 }
 
-void WorkerNavigatorWakeLock::Trace(Visitor* visitor) {
+void WorkerNavigatorWakeLock::Trace(Visitor* visitor) const {
   visitor->Trace(wake_lock_);
   Supplement<WorkerNavigator>::Trace(visitor);
 }

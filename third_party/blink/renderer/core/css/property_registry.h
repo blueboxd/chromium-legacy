@@ -80,7 +80,7 @@ class CORE_EXPORT PropertyRegistry : public GarbageCollected<PropertyRegistry> {
   Iterator begin() const;
   Iterator end() const;
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(registered_properties_);
     visitor->Trace(declared_properties_);
   }

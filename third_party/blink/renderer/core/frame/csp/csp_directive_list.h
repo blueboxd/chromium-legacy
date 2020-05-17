@@ -180,7 +180,7 @@ class CORE_EXPORT CSPDirectiveList final
     return trusted_types_ && trusted_types_->IsAllowDuplicates();
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CSPDirectiveListTest, IsMatchingNoncePresent);

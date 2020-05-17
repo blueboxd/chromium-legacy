@@ -441,7 +441,7 @@ bool OriginTrialContext::EnableTrialFromToken(
   return valid;
 }
 
-void OriginTrialContext::Trace(Visitor* visitor) {
+void OriginTrialContext::Trace(Visitor* visitor) const {
   visitor->Trace(context_);
 }
 

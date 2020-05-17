@@ -43,7 +43,7 @@ MouseWheelEventManager::MouseWheelEventManager(LocalFrame& frame,
                                                ScrollManager& scroll_manager)
     : frame_(frame), wheel_target_(nullptr), scroll_manager_(scroll_manager) {}
 
-void MouseWheelEventManager::Trace(Visitor* visitor) {
+void MouseWheelEventManager::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(wheel_target_);
   visitor->Trace(scroll_manager_);

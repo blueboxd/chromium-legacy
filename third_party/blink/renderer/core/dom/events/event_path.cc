@@ -425,7 +425,7 @@ void EventPath::CheckReachability(TreeScope& tree_scope,
 }
 #endif
 
-void EventPath::Trace(Visitor* visitor) {
+void EventPath::Trace(Visitor* visitor) const {
   visitor->Trace(node_event_contexts_);
   visitor->Trace(node_);
   visitor->Trace(event_);

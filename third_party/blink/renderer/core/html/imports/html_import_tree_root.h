@@ -33,7 +33,7 @@ class HTMLImportTreeRoot final : public HTMLImport, public NameClient {
   HTMLImportChild* Add(HTMLImportChild*);
   HTMLImportChild* Find(const KURL&) const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "HTMLImportTreeRoot";
   }

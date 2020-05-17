@@ -38,7 +38,7 @@ class MockClient final : public GarbageCollected<MockClient>,
       return client_order_;
     }
 
-    void Trace(Visitor* visitor) { visitor->Trace(client_order_); }
+    void Trace(Visitor* visitor) const { visitor->Trace(client_order_); }
 
    private:
     HeapVector<Member<MockClient>> client_order_;
@@ -56,7 +56,7 @@ class MockClient final : public GarbageCollected<MockClient>,
   }
   bool WasRun() { return was_run_; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     ResourceLoadSchedulerClient::Trace(visitor);
     visitor->Trace(console_logger_);
   }

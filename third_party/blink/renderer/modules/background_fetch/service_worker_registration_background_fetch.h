@@ -34,7 +34,7 @@ class ServiceWorkerRegistrationBackgroundFetch final
       ServiceWorkerRegistration& registration);
   BackgroundFetchManager* backgroundFetch();
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   Member<ServiceWorkerRegistration> registration_;

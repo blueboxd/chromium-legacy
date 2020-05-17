@@ -240,7 +240,6 @@
 <translation id="1962204205936693436">Отметки от <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Грешка при сериализирането</translation>
 <translation id="1974060860693918893">Разширени</translation>
-<translation id="1974883374937189061">Помогнете за подобряването на сигурността на Chrome, като изпращате до Google <ph name="BEGIN_WHITEPAPER_LINK" />URL адресите на някои от страниците, които посещавате, ограничена системна информация и част от съдържанието на страниците<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1975584088563498795">Пощенска кутия 10</translation>
 <translation id="1978555033938440688">Версия на фърмуера</translation>
 <translation id="1981206234434200693">Изчистване на данните за историята на сърфиране в Chrome</translation>
@@ -1598,7 +1597,6 @@
 <translation id="7763386264682878361">Инструмент за синтактичен анализ на манифести за плащания</translation>
 <translation id="7764225426217299476">Добавяне на адрес</translation>
 <translation id="7766518757692125295">Пола</translation>
-<translation id="7767271804335921384">Приложението е блокирано от администратора ви</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">В същия ред с отпечатаната страна нагоре</translation>
 <translation id="777702478322588152">Префектура</translation>
@@ -1752,6 +1750,7 @@
 <translation id="8425213833346101688">Промяна</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433057134996913067">Ще излезете от повечето уебсайтове.</translation>
+<translation id="8433678324664858900">Предложения</translation>
 <translation id="8437238597147034694">&amp;Отмяна на преместването</translation>
 <translation id="8457125768502047971">Неограничено</translation>
 <translation id="8461694314515752532">Шифроване на синхронизираните данни със собствения ви пропуск за синхронизиране</translation>

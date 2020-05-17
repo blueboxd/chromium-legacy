@@ -114,7 +114,7 @@ FontFaceSetWorker* FontFaceSetWorker::From(WorkerGlobalScope& worker) {
   return fonts;
 }
 
-void FontFaceSetWorker::Trace(Visitor* visitor) {
+void FontFaceSetWorker::Trace(Visitor* visitor) const {
   Supplement<WorkerGlobalScope>::Trace(visitor);
   FontFaceSet::Trace(visitor);
 }

@@ -52,7 +52,7 @@ class MODULES_EXPORT BackgroundFetchManager final
                     ExceptionState& exception_state);
   ScriptPromise getIds(ScriptState* script_state);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   // ExecutionContextLifecycleObserver interface
   void ContextDestroyed() override;

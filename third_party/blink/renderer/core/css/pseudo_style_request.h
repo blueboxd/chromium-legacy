@@ -51,7 +51,7 @@ class PseudoElementStyleRequest {
         scrollbar_part(kNoPart),
         scrollbar(nullptr) {}
 
-  void Trace(Visitor* visitor) { visitor->Trace(scrollbar); }
+  void Trace(Visitor* visitor) const { visitor->Trace(scrollbar); }
 
   // The spec disallows inheritance for ::backdrop.
   bool AllowsInheritance(const ComputedStyle* parent_style) const {

@@ -95,7 +95,7 @@ RTCSessionDescriptionPlatform* RTCSessionDescription::WebSessionDescription() {
   return platform_session_description_;
 }
 
-void RTCSessionDescription::Trace(Visitor* visitor) {
+void RTCSessionDescription::Trace(Visitor* visitor) const {
   visitor->Trace(platform_session_description_);
   ScriptWrappable::Trace(visitor);
 }

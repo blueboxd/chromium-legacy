@@ -52,7 +52,7 @@ class SVGAnimatedLengthList final : public ScriptWrappable,
                                            attribute_name,
                                            initial_value) {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     SVGAnimatedProperty<SVGLengthList>::Trace(visitor);
     ScriptWrappable::Trace(visitor);
   }

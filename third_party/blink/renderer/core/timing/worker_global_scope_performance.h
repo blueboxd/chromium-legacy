@@ -55,7 +55,7 @@ class CORE_EXPORT WorkerGlobalScopePerformance final
 
   explicit WorkerGlobalScopePerformance(WorkerGlobalScope&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   WorkerPerformance* performance(WorkerGlobalScope*);

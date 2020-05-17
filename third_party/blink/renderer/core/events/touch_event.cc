@@ -173,7 +173,7 @@ bool TouchEvent::IsTouchStartOrFirstTouchMove() const {
   return GetWebTouchEvent(*native_event_)->touch_start_or_first_touch_move;
 }
 
-void TouchEvent::Trace(Visitor* visitor) {
+void TouchEvent::Trace(Visitor* visitor) const {
   visitor->Trace(touches_);
   visitor->Trace(target_touches_);
   visitor->Trace(changed_touches_);

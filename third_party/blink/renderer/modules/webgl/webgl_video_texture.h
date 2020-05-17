@@ -23,7 +23,7 @@ class WebGLVideoTexture final : public WebGLExtension {
 
   WebGLExtensionName GetName() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Get video frame from video frame compositor and bind it to platform
   // texture.

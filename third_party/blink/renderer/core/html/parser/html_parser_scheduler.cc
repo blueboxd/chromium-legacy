@@ -51,7 +51,7 @@ HTMLParserScheduler::HTMLParserScheduler(
 
 HTMLParserScheduler::~HTMLParserScheduler() = default;
 
-void HTMLParserScheduler::Trace(Visitor* visitor) {
+void HTMLParserScheduler::Trace(Visitor* visitor) const {
   visitor->Trace(parser_);
 }
 

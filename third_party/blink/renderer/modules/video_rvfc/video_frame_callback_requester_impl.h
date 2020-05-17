@@ -33,7 +33,7 @@ class MODULES_EXPORT VideoFrameCallbackRequesterImpl final
   explicit VideoFrameCallbackRequesterImpl(HTMLVideoElement&);
   ~VideoFrameCallbackRequesterImpl() override = default;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   int requestVideoFrameCallback(V8VideoFrameRequestCallback*);
   void cancelVideoFrameCallback(int);

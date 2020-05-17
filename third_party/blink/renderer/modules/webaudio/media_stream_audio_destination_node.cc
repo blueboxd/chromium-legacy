@@ -243,7 +243,7 @@ MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::Create(
   return node;
 }
 
-void MediaStreamAudioDestinationNode::Trace(Visitor* visitor) {
+void MediaStreamAudioDestinationNode::Trace(Visitor* visitor) const {
   visitor->Trace(stream_);
   visitor->Trace(source_);
   AudioBasicInspectorNode::Trace(visitor);

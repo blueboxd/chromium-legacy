@@ -36,7 +36,7 @@ void DocumentPortals::DeregisterPortalContents(PortalContents* portal) {
     portals_.EraseAt(index);
 }
 
-void DocumentPortals::Trace(Visitor* visitor) {
+void DocumentPortals::Trace(Visitor* visitor) const {
   Supplement<Document>::Trace(visitor);
   visitor->Trace(portals_);
   visitor->Trace(activating_portal_);

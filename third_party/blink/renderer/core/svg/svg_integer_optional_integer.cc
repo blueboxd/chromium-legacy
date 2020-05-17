@@ -39,7 +39,7 @@ SVGIntegerOptionalInteger::SVGIntegerOptionalInteger(SVGInteger* first_integer,
                                                      SVGInteger* second_integer)
     : first_integer_(first_integer), second_integer_(second_integer) {}
 
-void SVGIntegerOptionalInteger::Trace(Visitor* visitor) {
+void SVGIntegerOptionalInteger::Trace(Visitor* visitor) const {
   visitor->Trace(first_integer_);
   visitor->Trace(second_integer_);
   SVGPropertyBase::Trace(visitor);

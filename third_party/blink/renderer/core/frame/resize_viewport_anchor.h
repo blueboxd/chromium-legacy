@@ -41,7 +41,7 @@ class CORE_EXPORT ResizeViewportAnchor final
 
   void ResizeFrameView(const IntSize&);
 
-  void Trace(Visitor* visitor) { visitor->Trace(page_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(page_); }
 
  private:
   void BeginScope() { scope_count_++; }

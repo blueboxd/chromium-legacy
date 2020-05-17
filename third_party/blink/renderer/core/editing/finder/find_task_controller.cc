@@ -49,7 +49,7 @@ class FindTaskController::FindTask final : public GarbageCollected<FindTask> {
     }
   }
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(controller_);
     visitor->Trace(document_);
   }
@@ -320,7 +320,7 @@ void FindTaskController::DidFindMatch(int identifier, Range* result_range) {
   text_finder_->DidFindMatch(identifier, current_match_count_, result_range);
 }
 
-void FindTaskController::Trace(Visitor* visitor) {
+void FindTaskController::Trace(Visitor* visitor) const {
   visitor->Trace(owner_frame_);
   visitor->Trace(text_finder_);
   visitor->Trace(find_task_);

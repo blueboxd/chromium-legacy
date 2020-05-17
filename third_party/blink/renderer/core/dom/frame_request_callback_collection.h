@@ -30,7 +30,7 @@ class GC_PLUGIN_IGNORE("crbug.com/841830")
   class CORE_EXPORT FrameCallback : public GarbageCollected<FrameCallback>,
                                     public NameClient {
    public:
-    virtual void Trace(Visitor* visitor) {}
+    virtual void Trace(Visitor* visitor) const {}
     const char* NameInHeapSnapshot() const override { return "FrameCallback"; }
     virtual ~FrameCallback() = default;
     virtual void Invoke(double) = 0;
@@ -60,7 +60,7 @@ class GC_PLUGIN_IGNORE("crbug.com/841830")
   // |V8FrameRequestCallback| to |Framecallback|.
   class CORE_EXPORT V8FrameCallback : public FrameCallback {
    public:
-    void Trace(Visitor*) override;
+    void Trace(Visitor*) const override;
     const char* NameInHeapSnapshot() const override {
       return "V8FrameCallback";
     }
@@ -90,7 +90,7 @@ class GC_PLUGIN_IGNORE("crbug.com/841830")
     return !HasFrameCallback() && !HasPostFrameCallback();
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
   const char* NameInHeapSnapshot() const override {
     return "FrameRequestCallbackCollection";
   }

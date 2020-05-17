@@ -65,7 +65,7 @@ void MediaControlsSharedHelpers::TransitionEventListener::Invoke(
 }
 
 void MediaControlsSharedHelpers::TransitionEventListener::Trace(
-    blink::Visitor* visitor) {
+    blink::Visitor* visitor) const {
   NativeEventListener::Trace(visitor);
   visitor->Trace(element_);
 }

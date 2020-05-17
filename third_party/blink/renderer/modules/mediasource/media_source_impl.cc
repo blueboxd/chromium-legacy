@@ -391,7 +391,7 @@ ExecutionContext* MediaSourceImpl::GetExecutionContext() const {
   return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
-void MediaSourceImpl::Trace(Visitor* visitor) {
+void MediaSourceImpl::Trace(Visitor* visitor) const {
   visitor->Trace(async_event_queue_);
   visitor->Trace(attached_element_);
   visitor->Trace(source_buffers_);

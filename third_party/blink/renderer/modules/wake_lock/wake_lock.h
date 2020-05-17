@@ -46,7 +46,7 @@ class MODULES_EXPORT WakeLock final : public ScriptWrappable,
                         const WTF::String& type,
                         ExceptionState& exception_state);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // While this could be part of request() itself, having it as a separate

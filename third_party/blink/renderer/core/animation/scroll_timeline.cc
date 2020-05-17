@@ -379,7 +379,7 @@ void ScrollTimeline::WorkletAnimationDetached() {
   GetActiveScrollTimelineSet().erase(resolved_scroll_source_);
 }
 
-void ScrollTimeline::Trace(Visitor* visitor) {
+void ScrollTimeline::Trace(Visitor* visitor) const {
   visitor->Trace(scroll_source_);
   visitor->Trace(resolved_scroll_source_);
   visitor->Trace(start_scroll_offset_);

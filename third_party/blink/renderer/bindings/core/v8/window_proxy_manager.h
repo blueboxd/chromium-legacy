@@ -22,7 +22,7 @@ class SecurityOrigin;
 
 class WindowProxyManager : public GarbageCollected<WindowProxyManager> {
  public:
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   v8::Isolate* GetIsolate() const { return isolate_; }
 

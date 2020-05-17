@@ -349,7 +349,7 @@ Frame* FrameTree::TraverseNext(const Frame* stay_within) const {
   return nullptr;
 }
 
-void FrameTree::Trace(Visitor* visitor) {
+void FrameTree::Trace(Visitor* visitor) const {
   visitor->Trace(this_frame_);
 }
 

@@ -30,7 +30,7 @@ class DeflateTransformer final : public TransformStreamTransformer {
 
   ScriptState* GetScriptState() override { return script_state_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   using IsFinished = util::StrongAlias<class IsFinishedTag, bool>;

@@ -75,7 +75,7 @@ StringOrArrayBufferOrArrayBufferView::StringOrArrayBufferOrArrayBufferView(const
 StringOrArrayBufferOrArrayBufferView::~StringOrArrayBufferOrArrayBufferView() = default;
 StringOrArrayBufferOrArrayBufferView& StringOrArrayBufferOrArrayBufferView::operator=(const StringOrArrayBufferOrArrayBufferView&) = default;
 
-void StringOrArrayBufferOrArrayBufferView::Trace(Visitor* visitor) {
+void StringOrArrayBufferOrArrayBufferView::Trace(Visitor* visitor) const {
   visitor->Trace(array_buffer_);
   visitor->Trace(array_buffer_view_);
 }

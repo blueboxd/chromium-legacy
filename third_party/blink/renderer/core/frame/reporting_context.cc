@@ -114,7 +114,7 @@ void ReportingContext::Notify(mojom::blink::ReportPtr report) {
                                               report->url.GetString(), body));
 }
 
-void ReportingContext::Trace(Visitor* visitor) {
+void ReportingContext::Trace(Visitor* visitor) const {
   visitor->Trace(observers_);
   visitor->Trace(report_buffer_);
   visitor->Trace(execution_context_);

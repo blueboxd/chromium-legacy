@@ -288,7 +288,7 @@ void ApplicationCacheHostForFrame::DidReceiveResponseForMainResource(
     is_new_master_entry_ = OLD_ENTRY;
 }
 
-void ApplicationCacheHostForFrame::Trace(Visitor* visitor) {
+void ApplicationCacheHostForFrame::Trace(Visitor* visitor) const {
   visitor->Trace(dom_application_cache_);
   visitor->Trace(local_frame_);
   visitor->Trace(document_loader_);

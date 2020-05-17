@@ -75,7 +75,7 @@ void AbortSignal::Follow(AbortSignal* parentSignal) {
   parentSignal->AddSignalAbortAlgorithm(this);
 }
 
-void AbortSignal::Trace(Visitor* visitor) {
+void AbortSignal::Trace(Visitor* visitor) const {
   visitor->Trace(execution_context_);
   visitor->Trace(dependent_signals_);
   EventTargetWithInlineData::Trace(visitor);

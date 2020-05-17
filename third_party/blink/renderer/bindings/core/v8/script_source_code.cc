@@ -114,7 +114,7 @@ ScriptSourceCode::ScriptSourceCode(const String& source,
 
 ScriptSourceCode::~ScriptSourceCode() = default;
 
-void ScriptSourceCode::Trace(Visitor* visitor) {
+void ScriptSourceCode::Trace(Visitor* visitor) const {
   visitor->Trace(cache_handler_);
   visitor->Trace(streamer_);
 }

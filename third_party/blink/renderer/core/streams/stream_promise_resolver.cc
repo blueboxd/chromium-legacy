@@ -93,7 +93,7 @@ v8::Promise::PromiseState StreamPromiseResolver::State(
   return V8Promise(isolate)->State();
 }
 
-void StreamPromiseResolver::Trace(Visitor* visitor) {
+void StreamPromiseResolver::Trace(Visitor* visitor) const {
   visitor->Trace(resolver_);
 }
 

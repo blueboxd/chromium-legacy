@@ -17,7 +17,7 @@ namespace blink {
 SensorInspectorAgent::SensorInspectorAgent(LocalDOMWindow* window)
     : provider_(SensorProviderProxy::From(window)) {}
 
-void SensorInspectorAgent::Trace(Visitor* visitor) {
+void SensorInspectorAgent::Trace(Visitor* visitor) const {
   visitor->Trace(provider_);
 }
 

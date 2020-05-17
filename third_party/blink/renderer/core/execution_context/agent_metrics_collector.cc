@@ -172,7 +172,7 @@ AgentMetricsCollector::GetAgentMetricsCollectorHost() {
   return agent_metrics_collector_host_.get();
 }
 
-void AgentMetricsCollector::Trace(Visitor* visitor) {
+void AgentMetricsCollector::Trace(Visitor* visitor) const {
   visitor->Trace(agent_to_documents_map_);
   visitor->Trace(agent_metrics_collector_host_);
 }

@@ -99,7 +99,7 @@ class USBDevice : public ScriptWrappable,
   // ExecutionContextLifecycleObserver interface.
   void ContextDestroyed() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   static const size_t kEndpointsBitsNumber = 16;

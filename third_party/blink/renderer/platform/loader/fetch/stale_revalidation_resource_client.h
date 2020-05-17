@@ -24,7 +24,7 @@ class StaleRevalidationResourceClient
 
   // RawResourceClient overloads.
   void NotifyFinished(Resource* resource) override;
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
   String DebugName() const override;
 
  private:

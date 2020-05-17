@@ -39,7 +39,7 @@ class TestingNotifier final : public GarbageCollected<TestingNotifier> {
 
   HeapObserverList<TestingObserver>& ObserverList() { return observer_list_; }
 
-  void Trace(Visitor* visitor) { visitor->Trace(observer_list_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(observer_list_); }
 
  private:
   HeapObserverList<TestingObserver> observer_list_;
@@ -50,7 +50,7 @@ class TestingObserver final : public GarbageCollected<TestingObserver> {
   TestingObserver() = default;
   void OnNotification() { count_++; }
   int Count() { return count_; }
-  void Trace(Visitor* visitor) {}
+  void Trace(Visitor* visitor) const {}
 
  private:
   int count_ = 0;

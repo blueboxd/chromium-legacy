@@ -68,7 +68,7 @@ class BluetoothAttributeInstanceMap final
   // TODO(crbug.com/654950): Remove descriptors when implemented.
   void Clear();
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
  private:
   // BluetoothDevice that owns this map.

@@ -52,7 +52,7 @@ class USBIsochronousInTransferResult final : public ScriptWrappable {
     return packets_;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(data_);
     visitor->Trace(packets_);
     ScriptWrappable::Trace(visitor);

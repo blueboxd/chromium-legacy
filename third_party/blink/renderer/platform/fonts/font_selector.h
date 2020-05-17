@@ -97,7 +97,7 @@ class PLATFORM_EXPORT FontSelector : public FontCacheClient {
 
   FontFallbackMap& GetFontFallbackMap();
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  protected:
   static AtomicString FamilyNameFromSettings(

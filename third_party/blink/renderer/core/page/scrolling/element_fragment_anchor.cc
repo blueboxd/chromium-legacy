@@ -171,7 +171,7 @@ void ElementFragmentAnchor::DidScroll(mojom::blink::ScrollType type) {
   needs_invoke_ = false;
 }
 
-void ElementFragmentAnchor::Trace(Visitor* visitor) {
+void ElementFragmentAnchor::Trace(Visitor* visitor) const {
   visitor->Trace(anchor_node_);
   visitor->Trace(frame_);
   FragmentAnchor::Trace(visitor);

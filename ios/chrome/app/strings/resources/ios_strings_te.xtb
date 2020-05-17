@@ -569,6 +569,7 @@
 <translation id="8428045167754449968">నగరం / పట్టణం</translation>
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>
 <translation id="8458397775385147834">1 అంశం తొలగించబడింది</translation>
+<translation id="8459333855531264009">సురక్షితం కాదు</translation>
 <translation id="8487667956631253959">ఆన్‌లో ఉంది</translation>
 <translation id="8487700953926739672">ఆఫ్‌లైన్‌లో అందుబాటు</translation>
 <translation id="8490978609246021741">మార్పులను సేవ్ చేయి</translation>
@@ -595,6 +596,7 @@
 <translation id="8741995161408053644"><ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />వద్ద మీ Google ఖాతాలో ఇతర బ్రౌజింగ్ చరిత్ర రకాలు ఉండవచ్చు.</translation>
 <translation id="8756969031206844760">పాస్‌వర్డ్‌ను అప్‌డేట్ చేయాలా?</translation>
 <translation id="8775144690796719618">URL చెల్లదు</translation>
+<translation id="8803639129939845298">సురక్షితం</translation>
 <translation id="8820817407110198400">బుక్‌మార్క్‌లు</translation>
 <translation id="8840513115188359703">మీరు మీ Google ఖాతా నుండి సైన్ అవుట్ చేయబడరు.</translation>
 <translation id="8870413625673593573">ఇటీవల మూసివేసినవి</translation>
@@ -625,7 +627,6 @@
 <translation id="9223358826628549784">క్రాష్ నివేదిక పంపబడింది.</translation>
 <translation id="952704832371081537">రద్దు చేయి</translation>
 <translation id="988141524645182168">ఇతర పరికరాలు</translation>
-<translation id="989697783705943787">సైట్ భద్రత</translation>
 <translation id="989988560359834682">చిరునామాను సవరించు</translation>
 <translation id="994757059139821576">కథనం సూచనలు</translation>
 </translationbundle>

@@ -157,7 +157,7 @@ void TextTrackLoader::GetNewStyleSheets(
     cue_parser_->GetNewStyleSheets(output_sheets);
 }
 
-void TextTrackLoader::Trace(Visitor* visitor) {
+void TextTrackLoader::Trace(Visitor* visitor) const {
   visitor->Trace(client_);
   visitor->Trace(cue_parser_);
   visitor->Trace(document_);

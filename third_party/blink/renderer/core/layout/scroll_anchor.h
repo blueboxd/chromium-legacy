@@ -108,7 +108,7 @@ class CORE_EXPORT ScrollAnchor final {
   // Notifies us that an object will be removed from the layout tree.
   void NotifyRemoved(LayoutObject*);
 
-  void Trace(Visitor* visitor) { visitor->Trace(scroller_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(scroller_); }
 
  private:
   void FindAnchor();

@@ -44,7 +44,7 @@ WorkerPerformance::WorkerPerformance(WorkerGlobalScope* context)
                   context->GetTaskRunner(TaskType::kPerformanceTimeline)),
       execution_context_(context) {}
 
-void WorkerPerformance::Trace(Visitor* visitor) {
+void WorkerPerformance::Trace(Visitor* visitor) const {
   visitor->Trace(execution_context_);
   Performance::Trace(visitor);
 }

@@ -84,7 +84,7 @@ void SpeechRecognitionController::Start(
   GetSpeechRecognizer()->Start(std::move(msg_params));
 }
 
-void SpeechRecognitionController::Trace(Visitor* visitor) {
+void SpeechRecognitionController::Trace(Visitor* visitor) const {
   Supplement::Trace(visitor);
   visitor->Trace(speech_recognizer_);
 }

@@ -110,7 +110,7 @@ class MODULES_EXPORT RTCDataChannel final
   // ScriptWrappable
   bool HasPendingActivity() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class Observer;

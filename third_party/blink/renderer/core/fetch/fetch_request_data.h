@@ -138,7 +138,7 @@ class CORE_EXPORT FetchRequestData final
     trust_token_params_ = std::move(trust_token_params);
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   FetchRequestData* CloneExceptBody();

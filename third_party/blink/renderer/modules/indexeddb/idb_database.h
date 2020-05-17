@@ -74,7 +74,7 @@ class MODULES_EXPORT IDBDatabase final
       mojo::PendingRemote<mojom::blink::ObservedFeature> connection_lifetime);
   ~IDBDatabase() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Overwrites the database metadata, including object store and index
   // metadata. Used to pass metadata to the database when it is opened.

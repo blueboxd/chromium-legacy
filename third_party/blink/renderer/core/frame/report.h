@@ -36,7 +36,7 @@ class CORE_EXPORT Report : public ScriptWrappable {
   String url() const { return url_; }
   ReportBody* body() const { return body_; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(body_);
     ScriptWrappable::Trace(visitor);
   }

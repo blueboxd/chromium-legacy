@@ -38,7 +38,7 @@ void LaunchQueue::setConsumer(V8LaunchConsumer* consumer) {
   }
 }
 
-void LaunchQueue::Trace(Visitor* visitor) {
+void LaunchQueue::Trace(Visitor* visitor) const {
   visitor->Trace(unconsumed_launch_params_);
   visitor->Trace(consumer_);
   ScriptWrappable::Trace(visitor);

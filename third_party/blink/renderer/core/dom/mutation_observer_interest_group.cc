@@ -89,7 +89,7 @@ void MutationObserverInterestGroup::EnqueueMutationRecord(
   }
 }
 
-void MutationObserverInterestGroup::Trace(Visitor* visitor) {
+void MutationObserverInterestGroup::Trace(Visitor* visitor) const {
   visitor->Trace(observers_);
 }
 

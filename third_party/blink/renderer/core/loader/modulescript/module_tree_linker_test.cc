@@ -34,7 +34,7 @@ class TestModuleTreeClient final : public ModuleTreeClient {
  public:
   TestModuleTreeClient() = default;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(module_script_);
     ModuleTreeClient::Trace(visitor);
   }
@@ -60,7 +60,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
       : script_state_(script_state) {}
   ~ModuleTreeLinkerTestModulator() override = default;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   enum class ResolveResult { kFailure, kSuccess };
 
@@ -182,7 +182,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
   bool instantiate_should_fail_ = false;
 };
 
-void ModuleTreeLinkerTestModulator::Trace(Visitor* visitor) {
+void ModuleTreeLinkerTestModulator::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(pending_clients_);
   visitor->Trace(module_map_);

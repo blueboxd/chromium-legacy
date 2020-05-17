@@ -94,7 +94,7 @@ class FetchDataLoaderTest : public testing::Test {
 
     BytesConsumer* GetDestination() { return destination_; }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(destination_);
       visitor->Trace(completion_notifier_);
       FetchDataLoader::Client::Trace(visitor);

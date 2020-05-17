@@ -105,7 +105,7 @@ ScriptValue PortalActivateEvent::data(ScriptState* script_state) {
   return ScriptValue(isolate, value);
 }
 
-void PortalActivateEvent::Trace(Visitor* visitor) {
+void PortalActivateEvent::Trace(Visitor* visitor) const {
   Event::Trace(visitor);
   visitor->Trace(document_);
   visitor->Trace(adopted_portal_);

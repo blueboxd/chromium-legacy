@@ -41,7 +41,7 @@ class DictionaryTest : public ScriptWrappable {
   void setDerivedDerived(const InternalDictionaryDerivedDerived*);
   InternalDictionaryDerivedDerived* getDerivedDerived(v8::Isolate* isolate);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void Reset();

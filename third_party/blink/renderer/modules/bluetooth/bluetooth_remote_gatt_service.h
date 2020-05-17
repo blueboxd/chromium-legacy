@@ -38,7 +38,7 @@ class BluetoothRemoteGATTService final : public ScriptWrappable {
                              BluetoothDevice*);
 
   // Interface required by garbage collection.
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // IDL exposed interface:
   String uuid() { return service_->uuid; }

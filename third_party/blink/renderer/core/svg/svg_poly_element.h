@@ -35,7 +35,7 @@ class SVGPolyElement : public SVGGeometryElement {
   SVGPointListTearOff* pointsFromJavascript() { return points_->baseVal(); }
   SVGPointListTearOff* animatedPoints() { return points_->animVal(); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   SVGPolyElement(const QualifiedName&, Document&);

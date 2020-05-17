@@ -23,7 +23,7 @@ class CORE_EXPORT AudioTrack final : public ScriptWrappable, public TrackBase {
              const AtomicString& language,
              bool enabled);
   ~AudioTrack() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool enabled() const { return enabled_; }
   void setEnabled(bool);

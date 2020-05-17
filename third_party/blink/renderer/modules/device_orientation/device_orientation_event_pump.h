@@ -37,7 +37,7 @@ class MODULES_EXPORT DeviceOrientationEventPump
   // Note that the returned object is owned by this class.
   DeviceOrientationData* LatestDeviceOrientationData();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // DeviceSensorEventPump:
   void SendStartMessage(LocalFrame* frame) override;

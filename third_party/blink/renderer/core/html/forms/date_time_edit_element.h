@@ -85,7 +85,7 @@ class DateTimeEditElement final : public HTMLDivElement,
 
   DateTimeEditElement(Document&, EditControlOwner&);
   ~DateTimeEditElement() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void AddField(DateTimeFieldElement*);
   bool AnyEditableFieldsHaveValues() const;

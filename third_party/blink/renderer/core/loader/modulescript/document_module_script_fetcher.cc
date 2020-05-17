@@ -48,7 +48,7 @@ void DocumentModuleScriptFetcher::NotifyFinished(Resource* resource) {
   client_->NotifyFetchFinished(params, error_messages);
 }
 
-void DocumentModuleScriptFetcher::Trace(Visitor* visitor) {
+void DocumentModuleScriptFetcher::Trace(Visitor* visitor) const {
   ModuleScriptFetcher::Trace(visitor);
   visitor->Trace(client_);
   ResourceClient::Trace(visitor);

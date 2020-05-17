@@ -61,7 +61,7 @@ class GlobalCookieStoreImpl final
     return cookie_store_;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(cookie_store_);
     Supplement<T>::Trace(visitor);
   }

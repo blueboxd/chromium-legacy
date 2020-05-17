@@ -33,7 +33,7 @@ class MODULES_EXPORT AudioGraphTracer final
 
   AudioGraphTracer();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void SetInspectorAgent(InspectorWebAudioAgent*);
 

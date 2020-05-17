@@ -12,42 +12,90 @@
 #include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/model/assistant_notification_model.h"
 #include "ash/assistant/model/assistant_notification_model_observer.h"
+#include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/test/icu_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
 
 namespace {
 
+using chromeos::assistant::mojom::AssistantNotification;
+using chromeos::assistant::mojom::AssistantNotificationButton;
+using chromeos::assistant::mojom::AssistantNotificationButtonPtr;
+using chromeos::assistant::mojom::AssistantNotificationPtr;
+
 // Helpers ---------------------------------------------------------------------
 
-// Creates a timer with the specified |id| which is firing now.
-AssistantTimerPtr CreateFiringTimer(const std::string& id) {
+// Creates a timer with the specified |id|, |state|, and |remaining_time|.
+AssistantTimerPtr CreateTimer(const std::string& id,
+                              AssistantTimerState state,
+                              base::TimeDelta remaining_time) {
   auto timer = std::make_unique<AssistantTimer>();
   timer->id = id;
-  timer->state = AssistantTimerState::kFired;
-  timer->fire_time = base::Time::Now();
-  timer->remaining_time = base::TimeDelta();
+  timer->state = state;
+  timer->fire_time = base::Time::Now() + remaining_time;
+  timer->remaining_time = remaining_time;
   return timer;
 }
+
+// Creates a scheduled timer with the specified |id| and |remaining_time|.
+AssistantTimerPtr CreateScheduledTimer(const std::string& id,
+                                       base::TimeDelta remaining_time) {
+  return CreateTimer(id, AssistantTimerState::kScheduled, remaining_time);
+}
+
+// Creates a paused timer with the specified |id| and |remaining_time|.
+AssistantTimerPtr CreatePausedTimer(const std::string& id,
+                                    base::TimeDelta remaining_time) {
+  return CreateTimer(id, AssistantTimerState::kPaused, remaining_time);
+}
+
+// Creates a timer with the specified |id| which is firing now.
+AssistantTimerPtr CreateFiredTimer(const std::string& id) {
+  return CreateTimer(id, AssistantTimerState::kFired,
+                     /*remaining_time=*/base::TimeDelta());
+}
+
+// Expectations ----------------------------------------------------------------
+
+class ExpectButton {
+ public:
+  explicit ExpectButton(const AssistantNotificationButtonPtr& button)
+      : button_(button.get()) {}
+
+  ExpectButton(const ExpectButton&) = delete;
+  ExpectButton& operator=(const ExpectButton&) = delete;
+  ~ExpectButton() = default;
+
+  const ExpectButton& HasLabel(int message_id) const {
+    EXPECT_EQ(l10n_util::GetStringUTF8(message_id), button_->label);
+    return *this;
+  }
+
+  const ExpectButton& HasActionUrl(const GURL& url) const {
+    EXPECT_EQ(url, button_->action_url);
+    return *this;
+  }
+
+ private:
+  const AssistantNotificationButton* button_;
+};
 
 // ScopedNotificationModelObserver ---------------------------------------------
 
 class ScopedNotificationModelObserver
     : public AssistantNotificationModelObserver {
  public:
-  using AssistantNotification =
-      chromeos::assistant::mojom::AssistantNotification;
-  using AssistantNotificationPtr =
-      chromeos::assistant::mojom::AssistantNotificationPtr;
-
   ScopedNotificationModelObserver() {
     Shell::Get()
         ->assistant_controller()
@@ -97,6 +145,9 @@ class AssistantAlarmTimerControllerTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
+    feature_list_.InitAndDisableFeature(
+        chromeos::assistant::features::kAssistantTimersV2);
+
     controller_ =
         Shell::Get()->assistant_controller()->alarm_timer_controller();
     DCHECK(controller_);
@@ -114,6 +165,7 @@ class AssistantAlarmTimerControllerTest : public AshTestBase {
   AssistantAlarmTimerController* controller() { return controller_; }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   AssistantAlarmTimerController* controller_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantAlarmTimerControllerTest);
@@ -160,7 +212,7 @@ TEST_F(AssistantAlarmTimerControllerTest, AddsAndUpdatesTimerNotification) {
 
     // Fire a timer.
     std::vector<AssistantTimerPtr> timers;
-    timers.push_back(CreateFiringTimer(/*id=*/"1"));
+    timers.push_back(CreateFiredTimer(/*id=*/"1"));
     controller()->OnTimerStateChanged(std::move(timers));
 
     // We expect our title to be internationalized.
@@ -204,6 +256,134 @@ TEST_F(AssistantAlarmTimerControllerTest, AddsAndUpdatesTimerNotification) {
     EXPECT_EQ(i18n_test_case.expected_message_at_01_01_01,
               last_notification->message);
   }
+}
+
+// Tests that a notification is added when a timer is fired and has the expected
+// buttons. This test is only applicable to timers v1.
+TEST_F(AssistantAlarmTimerControllerTest, TimerNotificationHasExpectedButtons) {
+  ASSERT_FALSE(chromeos::assistant::features::IsTimersV2Enabled());
+
+  // Observe notifications.
+  ScopedNotificationModelObserver notification_model_observer;
+
+  constexpr char kTimerId[] = "1";
+
+  // Fire a timer.
+  std::vector<AssistantTimerPtr> timers;
+  timers.push_back(CreateFiredTimer(kTimerId));
+  controller()->OnTimerStateChanged(std::move(timers));
+
+  // We expect the timer notification to have two buttons.
+  auto* last_notification = notification_model_observer.last_notification();
+  ASSERT_EQ(2u, last_notification->buttons.size());
+
+  // We expect a "STOP" button which will remove the timer.
+  ExpectButton(last_notification->buttons.at(0))
+      .HasLabel(IDS_ASSISTANT_TIMER_NOTIFICATION_STOP_BUTTON)
+      .HasActionUrl(
+          assistant::util::CreateAlarmTimerDeepLink(
+              assistant::util::AlarmTimerAction::kRemoveAlarmOrTimer, kTimerId)
+              .value());
+
+  // We expect an "ADD 1 MIN" button which will add time to the timer.
+  ExpectButton(last_notification->buttons.at(1))
+      .HasLabel(IDS_ASSISTANT_TIMER_NOTIFICATION_ADD_1_MIN_BUTTON)
+      .HasActionUrl(assistant::util::CreateAlarmTimerDeepLink(
+                        assistant::util::AlarmTimerAction::kAddTimeToTimer,
+                        kTimerId, base::TimeDelta::FromMinutes(1))
+                        .value());
+}
+
+// Tests that a notification is added for a timer and has the expected buttons
+// at each state in its lifecycle. This test is only applicable to timers v2.
+TEST_F(AssistantAlarmTimerControllerTest,
+       TimerNotificationHasExpectedButtonsV2) {
+  // Enable timers v2.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      chromeos::assistant::features::kAssistantTimersV2);
+  ASSERT_TRUE(chromeos::assistant::features::IsTimersV2Enabled());
+
+  // Observe notifications.
+  ScopedNotificationModelObserver notification_model_observer;
+
+  constexpr char kTimerId[] = "1";
+  constexpr base::TimeDelta kTimeRemaining = base::TimeDelta::FromMinutes(1);
+
+  // Schedule a timer.
+  std::vector<AssistantTimerPtr> timers;
+  timers.push_back(CreateScheduledTimer(kTimerId, kTimeRemaining));
+  controller()->OnTimerStateChanged(std::move(timers));
+
+  // We expect the timer notification to have two buttons.
+  auto* last_notification = notification_model_observer.last_notification();
+  ASSERT_EQ(2u, last_notification->buttons.size());
+
+  // We expect a "PAUSE" button which will pause the timer.
+  ExpectButton(last_notification->buttons.at(0))
+      .HasLabel(IDS_ASSISTANT_TIMER_NOTIFICATION_PAUSE_BUTTON)
+      .HasActionUrl(
+          assistant::util::CreateAlarmTimerDeepLink(
+              assistant::util::AlarmTimerAction::kPauseTimer, kTimerId)
+              .value());
+
+  // We expect a "CANCEL" button which will remove the timer.
+  ExpectButton(last_notification->buttons.at(1))
+      .HasLabel(IDS_ASSISTANT_TIMER_NOTIFICATION_CANCEL_BUTTON)
+      .HasActionUrl(
+          assistant::util::CreateAlarmTimerDeepLink(
+              assistant::util::AlarmTimerAction::kRemoveAlarmOrTimer, kTimerId)
+              .value());
+
+  // Pause the timer.
+  timers.clear();
+  timers.push_back(CreatePausedTimer(kTimerId, kTimeRemaining));
+  controller()->OnTimerStateChanged(std::move(timers));
+
+  // We expect the timer notification to have two buttons.
+  last_notification = notification_model_observer.last_notification();
+  ASSERT_EQ(2u, last_notification->buttons.size());
+
+  // We expect a "RESUME" button which will resume the timer.
+  ExpectButton(last_notification->buttons.at(0))
+      .HasLabel(IDS_ASSISTANT_TIMER_NOTIFICATION_RESUME_BUTTON)
+      .HasActionUrl(
+          assistant::util::CreateAlarmTimerDeepLink(
+              assistant::util::AlarmTimerAction::kResumeTimer, kTimerId)
+              .value());
+
+  // We expect a "CANCEL" button which will remove the timer.
+  ExpectButton(last_notification->buttons.at(1))
+      .HasLabel(IDS_ASSISTANT_TIMER_NOTIFICATION_CANCEL_BUTTON)
+      .HasActionUrl(
+          assistant::util::CreateAlarmTimerDeepLink(
+              assistant::util::AlarmTimerAction::kRemoveAlarmOrTimer, kTimerId)
+              .value());
+
+  // Fire the timer.
+  timers.clear();
+  timers.push_back(CreateFiredTimer(kTimerId));
+  controller()->OnTimerStateChanged(std::move(timers));
+
+  // We expect the timer notification to have two buttons.
+  last_notification = notification_model_observer.last_notification();
+  ASSERT_EQ(2u, last_notification->buttons.size());
+
+  // We expect a "CANCEL" button which will remove the timer.
+  ExpectButton(last_notification->buttons.at(0))
+      .HasLabel(IDS_ASSISTANT_TIMER_NOTIFICATION_CANCEL_BUTTON)
+      .HasActionUrl(
+          assistant::util::CreateAlarmTimerDeepLink(
+              assistant::util::AlarmTimerAction::kRemoveAlarmOrTimer, kTimerId)
+              .value());
+
+  // We expect an "ADD 1 MIN" button which will add time to the timer.
+  ExpectButton(last_notification->buttons.at(1))
+      .HasLabel(IDS_ASSISTANT_TIMER_NOTIFICATION_ADD_1_MIN_BUTTON)
+      .HasActionUrl(assistant::util::CreateAlarmTimerDeepLink(
+                        assistant::util::AlarmTimerAction::kAddTimeToTimer,
+                        kTimerId, base::TimeDelta::FromMinutes(1))
+                        .value());
 }
 
 }  // namespace ash

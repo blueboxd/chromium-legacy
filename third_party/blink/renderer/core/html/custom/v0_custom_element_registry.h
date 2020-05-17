@@ -51,7 +51,7 @@ class V0CustomElementRegistry final {
   DISALLOW_NEW();
 
  public:
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
   void DocumentWasDetached() { document_was_detached_ = true; }
 
  protected:

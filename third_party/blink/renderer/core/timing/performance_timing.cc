@@ -653,7 +653,7 @@ uint64_t PerformanceTiming::MonotonicTimeToIntegerMilliseconds(
   return ToIntegerMilliseconds(timing->MonotonicTimeToPseudoWallTime(time));
 }
 
-void PerformanceTiming::Trace(Visitor* visitor) {
+void PerformanceTiming::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
 }

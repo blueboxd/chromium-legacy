@@ -232,7 +232,7 @@ void DedicatedWorkerMessagingProxy::DispatchErrorEvent(
   GetExecutionContext()->DispatchErrorEvent(event, mute_script_errors);
 }
 
-void DedicatedWorkerMessagingProxy::Trace(Visitor* visitor) {
+void DedicatedWorkerMessagingProxy::Trace(Visitor* visitor) const {
   visitor->Trace(worker_object_);
   ThreadedMessagingProxyBase::Trace(visitor);
 }

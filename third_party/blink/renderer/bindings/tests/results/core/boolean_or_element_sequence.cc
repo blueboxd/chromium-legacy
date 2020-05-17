@@ -64,7 +64,7 @@ BooleanOrElementSequence::BooleanOrElementSequence(const BooleanOrElementSequenc
 BooleanOrElementSequence::~BooleanOrElementSequence() = default;
 BooleanOrElementSequence& BooleanOrElementSequence::operator=(const BooleanOrElementSequence&) = default;
 
-void BooleanOrElementSequence::Trace(Visitor* visitor) {
+void BooleanOrElementSequence::Trace(Visitor* visitor) const {
   visitor->Trace(element_sequence_);
 }
 

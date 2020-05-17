@@ -49,7 +49,7 @@ class CORE_EXPORT CSSPageRule final : public CSSRule {
   String selectorText() const;
   void setSelectorText(const ExecutionContext*, const String&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   CSSRule::Type type() const override { return kPageRule; }

@@ -94,7 +94,7 @@ class PLATFORM_EXPORT RawResource final : public Resource {
 
   scoped_refptr<BlobDataHandle> DownloadedBlob() const;
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  protected:
   CachedMetadataHandler* CreateCachedMetadataHandler(

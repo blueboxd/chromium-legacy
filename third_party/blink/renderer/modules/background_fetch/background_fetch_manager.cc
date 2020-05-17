@@ -559,7 +559,7 @@ void BackgroundFetchManager::DidGetDeveloperIds(
   NOTREACHED();
 }
 
-void BackgroundFetchManager::Trace(Visitor* visitor) {
+void BackgroundFetchManager::Trace(Visitor* visitor) const {
   visitor->Trace(registration_);
   visitor->Trace(bridge_);
   visitor->Trace(loaders_);

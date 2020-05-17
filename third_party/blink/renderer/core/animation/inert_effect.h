@@ -53,7 +53,7 @@ class CORE_EXPORT InertEffect final : public AnimationEffect {
 
   bool IsInertEffect() const final { return true; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   void UpdateChildrenAndEffects() const override {}

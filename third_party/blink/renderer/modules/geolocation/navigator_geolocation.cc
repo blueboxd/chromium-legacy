@@ -56,7 +56,7 @@ Geolocation* NavigatorGeolocation::geolocation() {
   return geolocation_;
 }
 
-void NavigatorGeolocation::Trace(Visitor* visitor) {
+void NavigatorGeolocation::Trace(Visitor* visitor) const {
   visitor->Trace(geolocation_);
   Supplement<Navigator>::Trace(visitor);
 }

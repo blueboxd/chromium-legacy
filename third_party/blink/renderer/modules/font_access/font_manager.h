@@ -23,7 +23,7 @@ class FontManager final : public ScriptWrappable {
   ScriptValue query(ScriptState*);
 
   DISALLOW_COPY_AND_ASSIGN(FontManager);
-  void Trace(blink::Visitor*) override;
+  void Trace(blink::Visitor*) const override;
 };
 
 }  // namespace blink

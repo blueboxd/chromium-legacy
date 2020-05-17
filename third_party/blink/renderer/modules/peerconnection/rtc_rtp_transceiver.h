@@ -65,7 +65,7 @@ class RTCRtpTransceiver final : public ScriptWrappable {
   bool DirectionHasRecv() const;
   bool FiredDirectionHasRecv() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<RTCPeerConnection> pc_;

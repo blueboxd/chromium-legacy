@@ -223,7 +223,7 @@ InspectorApplicationCacheAgent::BuildObjectForApplicationCacheResource(
   return value;
 }
 
-void InspectorApplicationCacheAgent::Trace(Visitor* visitor) {
+void InspectorApplicationCacheAgent::Trace(Visitor* visitor) const {
   visitor->Trace(inspected_frames_);
   InspectorBaseAgent::Trace(visitor);
 }

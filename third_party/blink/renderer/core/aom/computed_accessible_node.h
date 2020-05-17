@@ -30,7 +30,7 @@ class ComputedAccessibleNodePromiseResolver final
   ScriptPromise Promise();
   void ComputeAccessibleNode();
   void EnsureUpToDate();
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   void UpdateTreeAndResolve();
@@ -50,7 +50,7 @@ class ComputedAccessibleNode : public ScriptWrappable {
   ComputedAccessibleNode(AXID, WebComputedAXTree*, Document*);
   ~ComputedAccessibleNode() override = default;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // TODO(meredithl): add accessors for state properties.
   base::Optional<bool> atomic() const;

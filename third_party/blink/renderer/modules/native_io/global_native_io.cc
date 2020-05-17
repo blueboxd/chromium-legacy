@@ -61,7 +61,7 @@ class GlobalNativeIOImpl final : public GarbageCollected<GlobalNativeIOImpl<T>>,
     return native_io_manager_;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(native_io_manager_);
     Supplement<T>::Trace(visitor);
   }

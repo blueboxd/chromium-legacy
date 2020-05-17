@@ -91,7 +91,7 @@ void XRAnchor::SetMojoFromAnchor(const TransformationMatrix& mojo_from_anchor) {
   }
 }
 
-void XRAnchor::Trace(Visitor* visitor) {
+void XRAnchor::Trace(Visitor* visitor) const {
   visitor->Trace(session_);
   visitor->Trace(anchor_space_);
   ScriptWrappable::Trace(visitor);

@@ -66,7 +66,7 @@ const AtomicString& IDBVersionChangeEvent::InterfaceName() const {
   return event_interface_names::kIDBVersionChangeEvent;
 }
 
-void IDBVersionChangeEvent::Trace(Visitor* visitor) {
+void IDBVersionChangeEvent::Trace(Visitor* visitor) const {
   Event::Trace(visitor);
 }
 

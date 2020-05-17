@@ -41,7 +41,7 @@ static Vector<T> Iter2Vector(const Iterable& iterable) {
 }
 
 // Garbage collection method.
-void MediaInspectorContextImpl::Trace(Visitor* visitor) {
+void MediaInspectorContextImpl::Trace(Visitor* visitor) const {
   Supplement<LocalDOMWindow>::Trace(visitor);
   visitor->Trace(players_);
 }

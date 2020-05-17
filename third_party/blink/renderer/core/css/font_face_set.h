@@ -68,7 +68,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
   wtf_size_t size() const;
   virtual AtomicString status() const = 0;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   static const int kDefaultFontSize;
@@ -112,7 +112,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
               Member<FontFace>&,
               ExceptionState&) override;
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(font_faces_);
       FontFaceSetIterable::IterationSource::Trace(visitor);
     }
@@ -141,7 +141,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
     void NotifyLoaded(FontFace*) override;
     void NotifyError(FontFace*) override;
 
-    void Trace(Visitor*) override;
+    void Trace(Visitor*) const override;
 
    private:
     HeapVector<Member<FontFace>> font_faces_;

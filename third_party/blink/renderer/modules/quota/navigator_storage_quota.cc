@@ -90,7 +90,7 @@ StorageManager* NavigatorStorageQuota::storage() const {
   return storage_manager_.Get();
 }
 
-void NavigatorStorageQuota::Trace(Visitor* visitor) {
+void NavigatorStorageQuota::Trace(Visitor* visitor) const {
   visitor->Trace(temporary_storage_);
   visitor->Trace(persistent_storage_);
   visitor->Trace(storage_manager_);

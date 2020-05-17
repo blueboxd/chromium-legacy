@@ -52,7 +52,7 @@ class MODULES_EXPORT CanMakePaymentEvent final : public ExtendableEvent {
   const String& currency() const;
   void respondWithMinimalUI(ScriptState*, ScriptPromise, ExceptionState&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void RespondToCanMakePaymentEvent(ScriptState*,

@@ -77,7 +77,7 @@ WebGLTexture* XRWebGLBinding::getReflectionCubeMap(
   return texture;
 }
 
-void XRWebGLBinding::Trace(Visitor* visitor) {
+void XRWebGLBinding::Trace(Visitor* visitor) const {
   visitor->Trace(session_);
   visitor->Trace(webgl_context_);
   ScriptWrappable::Trace(visitor);

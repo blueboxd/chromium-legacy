@@ -116,7 +116,7 @@ void HTMLOutputElement::setDefaultValue(const String& value) {
     setTextContent(value);
 }
 
-void HTMLOutputElement::Trace(Visitor* visitor) {
+void HTMLOutputElement::Trace(Visitor* visitor) const {
   visitor->Trace(tokens_);
   HTMLFormControlElement::Trace(visitor);
 }

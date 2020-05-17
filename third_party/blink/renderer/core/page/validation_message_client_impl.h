@@ -57,7 +57,7 @@ class CORE_EXPORT ValidationMessageClientImpl final
                              const String& sub_message,
                              TextDirection sub_message_dir) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   ValidationMessageOverlayDelegate* GetDelegateForTesting() const {
     return overlay_delegate_;

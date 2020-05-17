@@ -87,7 +87,7 @@ class MODULES_EXPORT MediaRecorder
   // be sent, unless recording isn't active in which case nothing happens.
   void OnAllTracksEnded();
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   void CreateBlobEvent(Blob* blob, double timecode);

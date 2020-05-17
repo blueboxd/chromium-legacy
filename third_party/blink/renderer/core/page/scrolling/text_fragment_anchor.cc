@@ -237,7 +237,7 @@ void TextFragmentAnchor::PerformPreRafActions() {
   }
 }
 
-void TextFragmentAnchor::Trace(Visitor* visitor) {
+void TextFragmentAnchor::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(element_fragment_anchor_);
   visitor->Trace(metrics_);

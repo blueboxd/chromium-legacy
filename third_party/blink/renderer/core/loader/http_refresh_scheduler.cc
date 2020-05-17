@@ -141,7 +141,7 @@ void HttpRefreshScheduler::Cancel() {
   refresh_.reset();
 }
 
-void HttpRefreshScheduler::Trace(Visitor* visitor) {
+void HttpRefreshScheduler::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
 }
 

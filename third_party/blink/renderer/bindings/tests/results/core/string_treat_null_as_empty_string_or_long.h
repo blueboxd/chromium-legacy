@@ -40,7 +40,7 @@ class CORE_EXPORT StringTreatNullAsEmptyStringOrLong final {
   StringTreatNullAsEmptyStringOrLong(const StringTreatNullAsEmptyStringOrLong&);
   ~StringTreatNullAsEmptyStringOrLong();
   StringTreatNullAsEmptyStringOrLong& operator=(const StringTreatNullAsEmptyStringOrLong&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   enum class SpecificType {

@@ -151,7 +151,7 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   virtual void SetSuggestedValue(const String& value);
   const String& SuggestedValue() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   ETextOverflow ValueForTextOverflow() const;
 

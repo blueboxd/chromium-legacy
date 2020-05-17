@@ -27,7 +27,7 @@ class MODULES_EXPORT AnimationWorklet final : public Worklet {
   ~AnimationWorklet() override;
 
   WorkletAnimationId NextWorkletAnimationId();
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Unique id associated with this worklet that is used by cc to identify all

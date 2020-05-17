@@ -28,7 +28,7 @@ class ResurrectingPreFinalizer
 
   class GlobalStorage : public GarbageCollected<GlobalStorage> {
    public:
-    void Trace(Visitor* visitor) {
+    void Trace(Visitor* visitor) const {
       visitor->Trace(strong);
       visitor->Trace(weak);
     }
@@ -44,7 +44,7 @@ class ResurrectingPreFinalizer
         storage_(storage),
         object_that_dies_(object_that_dies) {}
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(storage_);
     visitor->Trace(object_that_dies_);
   }

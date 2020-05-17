@@ -42,7 +42,7 @@ class SVGLinearGradientElement final : public SVGGradientElement {
   SVGAnimatedLength* x2() const { return x2_.Get(); }
   SVGAnimatedLength* y2() const { return y2_.Get(); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void SvgAttributeChanged(const QualifiedName&) override;

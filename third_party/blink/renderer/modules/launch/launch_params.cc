@@ -14,7 +14,7 @@ LaunchParams::LaunchParams(HeapVector<Member<NativeFileSystemHandle>> files)
 
 LaunchParams::~LaunchParams() = default;
 
-void LaunchParams::Trace(Visitor* visitor) {
+void LaunchParams::Trace(Visitor* visitor) const {
   visitor->Trace(files_);
   ScriptWrappable::Trace(visitor);
 }

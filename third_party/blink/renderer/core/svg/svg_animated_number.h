@@ -73,7 +73,7 @@ class SVGAnimatedNumber : public ScriptWrappable,
     parent_number_optional_number_ = number_optional_number;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   Member<SVGAnimatedNumberOptionalNumber> parent_number_optional_number_;

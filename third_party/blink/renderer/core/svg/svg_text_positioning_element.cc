@@ -58,7 +58,7 @@ SVGTextPositioningElement::SVGTextPositioningElement(
   AddToPropertyMap(rotate_);
 }
 
-void SVGTextPositioningElement::Trace(Visitor* visitor) {
+void SVGTextPositioningElement::Trace(Visitor* visitor) const {
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(dx_);

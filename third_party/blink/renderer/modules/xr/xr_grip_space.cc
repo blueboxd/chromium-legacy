@@ -45,7 +45,7 @@ bool XRGripSpace::IsStationary() const {
   return false;
 }
 
-void XRGripSpace::Trace(Visitor* visitor) {
+void XRGripSpace::Trace(Visitor* visitor) const {
   visitor->Trace(input_source_);
   XRSpace::Trace(visitor);
 }

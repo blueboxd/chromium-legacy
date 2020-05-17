@@ -24,7 +24,7 @@ class TaskAttributionTiming final : public PerformanceEntry {
   String containerId() const;
   String containerName() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   TaskAttributionTiming(const AtomicString& type,
                         const AtomicString& container_type,

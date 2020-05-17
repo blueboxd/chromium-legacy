@@ -29,7 +29,7 @@ class NavigatorBattery final : public GarbageCollected<NavigatorBattery>,
 
   explicit NavigatorBattery(Navigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<BatteryManager> battery_manager_;

@@ -53,7 +53,7 @@ class SVGAnimatedNumberList final : public ScriptWrappable,
             attribute_name,
             MakeGarbageCollected<SVGNumberList>()) {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     SVGAnimatedProperty<SVGNumberList>::Trace(visitor);
     ScriptWrappable::Trace(visitor);
   }

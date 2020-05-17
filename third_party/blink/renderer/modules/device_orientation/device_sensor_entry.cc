@@ -84,7 +84,7 @@ bool DeviceSensorEntry::GetReading(device::SensorReading* reading) {
   return true;
 }
 
-void DeviceSensorEntry::Trace(Visitor* visitor) {
+void DeviceSensorEntry::Trace(Visitor* visitor) const {
   visitor->Trace(event_pump_);
 }
 

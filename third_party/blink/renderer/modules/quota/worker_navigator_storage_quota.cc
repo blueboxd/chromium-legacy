@@ -65,7 +65,7 @@ StorageManager* WorkerNavigatorStorageQuota::storage() const {
   return storage_manager_.Get();
 }
 
-void WorkerNavigatorStorageQuota::Trace(Visitor* visitor) {
+void WorkerNavigatorStorageQuota::Trace(Visitor* visitor) const {
   visitor->Trace(storage_manager_);
   Supplement<WorkerNavigator>::Trace(visitor);
 }

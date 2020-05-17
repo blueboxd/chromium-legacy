@@ -224,7 +224,7 @@ void EventListenerMap::CopyEventListenersNotCreatedFromMarkupToTarget(
   }
 }
 
-void EventListenerMap::Trace(Visitor* visitor) {
+void EventListenerMap::Trace(Visitor* visitor) const {
   visitor->Trace(entries_);
 }
 

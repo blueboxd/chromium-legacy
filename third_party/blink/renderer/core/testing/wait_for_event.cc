@@ -21,7 +21,7 @@ void WaitForEvent::Invoke(ExecutionContext*, Event*) {
   element_->removeEventListener(event_name_, this);
 }
 
-void WaitForEvent::Trace(Visitor* visitor) {
+void WaitForEvent::Trace(Visitor* visitor) const {
   NativeEventListener::Trace(visitor);
   visitor->Trace(element_);
 }

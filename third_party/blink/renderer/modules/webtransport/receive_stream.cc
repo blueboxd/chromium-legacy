@@ -37,7 +37,7 @@ void ReceiveStream::ContextDestroyed() {
   incoming_stream_->ContextDestroyed();
 }
 
-void ReceiveStream::Trace(Visitor* visitor) {
+void ReceiveStream::Trace(Visitor* visitor) const {
   visitor->Trace(incoming_stream_);
   visitor->Trace(quic_transport_);
   ScriptWrappable::Trace(visitor);

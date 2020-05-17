@@ -40,7 +40,7 @@ class CORE_EXPORT ByteStringSequenceSequenceOrByteStringByteStringRecord final {
   ByteStringSequenceSequenceOrByteStringByteStringRecord(const ByteStringSequenceSequenceOrByteStringByteStringRecord&);
   ~ByteStringSequenceSequenceOrByteStringByteStringRecord();
   ByteStringSequenceSequenceOrByteStringByteStringRecord& operator=(const ByteStringSequenceSequenceOrByteStringByteStringRecord&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   enum class SpecificType {

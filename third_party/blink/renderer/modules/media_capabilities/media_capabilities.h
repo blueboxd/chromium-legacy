@@ -37,7 +37,7 @@ class MODULES_EXPORT MediaCapabilities final : public ScriptWrappable {
 
   explicit MediaCapabilities(ExecutionContext* context);
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(blink::Visitor* visitor) const override;
 
   ScriptPromise decodingInfo(ScriptState*,
                              const MediaDecodingConfiguration*,
@@ -51,7 +51,7 @@ class MODULES_EXPORT MediaCapabilities final : public ScriptWrappable {
    public:
     PendingCallbackState(ScriptPromiseResolver* resolver,
                          MediaKeySystemAccess* access);
-    virtual void Trace(blink::Visitor* visitor);
+    virtual void Trace(blink::Visitor* visitor) const;
 
     Member<ScriptPromiseResolver> resolver;
     Member<MediaKeySystemAccess> key_system_access;

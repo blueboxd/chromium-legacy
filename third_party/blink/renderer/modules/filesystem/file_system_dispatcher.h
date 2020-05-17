@@ -145,7 +145,7 @@ class FileSystemDispatcher : public GarbageCollected<FileSystemDispatcher>,
       const KURL& file_path,
       std::unique_ptr<SnapshotFileCallbackBase> callbacks);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   class WriteListener;

@@ -85,7 +85,7 @@ class SVGPropertyBase : public GarbageCollected<SVGPropertyBase> {
     owner_list_ = owner_list;
   }
 
-  virtual void Trace(Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) const {}
 
  protected:
   SVGPropertyBase() : owner_list_(nullptr) {}

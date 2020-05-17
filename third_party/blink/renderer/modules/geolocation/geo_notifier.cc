@@ -37,7 +37,7 @@ GeoNotifier::GeoNotifier(Geolocation* geolocation,
       /* buckets = */ 20);
 }
 
-void GeoNotifier::Trace(Visitor* visitor) {
+void GeoNotifier::Trace(Visitor* visitor) const {
   visitor->Trace(geolocation_);
   visitor->Trace(options_);
   visitor->Trace(success_callback_);
@@ -86,7 +86,7 @@ bool GeoNotifier::IsTimerActive() const {
   return timer_->IsActive();
 }
 
-void GeoNotifier::Timer::Trace(Visitor* visitor) {
+void GeoNotifier::Timer::Trace(Visitor* visitor) const {
   visitor->Trace(notifier_);
 }
 

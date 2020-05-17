@@ -390,7 +390,7 @@ void ViewportStyleResolver::UpdateViewport(
   needs_update_ = kNoUpdate;
 }
 
-void ViewportStyleResolver::Trace(Visitor* visitor) {
+void ViewportStyleResolver::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(property_set_);
   visitor->Trace(initial_viewport_medium_);

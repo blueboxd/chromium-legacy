@@ -36,7 +36,7 @@ class CORE_EXPORT SnapCoordinator final
  public:
   explicit SnapCoordinator();
   ~SnapCoordinator();
-  void Trace(Visitor* visitor) {}
+  void Trace(Visitor* visitor) const {}
 
   void AddSnapContainer(LayoutBox& snap_container);
   void RemoveSnapContainer(LayoutBox& snap_container);

@@ -67,7 +67,7 @@ ScriptPromise ClipboardItem::getType(ScriptState* script_state,
   return promise;
 }
 
-void ClipboardItem::Trace(Visitor* visitor) {
+void ClipboardItem::Trace(Visitor* visitor) const {
   visitor->Trace(items_);
   ScriptWrappable::Trace(visitor);
 }

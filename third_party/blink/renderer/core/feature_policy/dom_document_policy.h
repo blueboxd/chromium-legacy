@@ -19,7 +19,7 @@ class CORE_EXPORT DOMDocumentPolicy final : public DOMFeaturePolicy {
   // Create a new DOMDocumentPolicy, which is associated with |document|.
   explicit DOMDocumentPolicy(Document* document) : document_(document) {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(document_);
     ScriptWrappable::Trace(visitor);
   }

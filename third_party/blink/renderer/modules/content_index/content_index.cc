@@ -272,7 +272,7 @@ void ContentIndex::DidGetDescriptions(
   }
 }
 
-void ContentIndex::Trace(Visitor* visitor) {
+void ContentIndex::Trace(Visitor* visitor) const {
   visitor->Trace(registration_);
   visitor->Trace(content_index_service_);
   ScriptWrappable::Trace(visitor);

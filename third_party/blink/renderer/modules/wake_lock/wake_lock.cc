@@ -279,7 +279,7 @@ PermissionService* WakeLock::GetPermissionService() {
   return permission_service_.get();
 }
 
-void WakeLock::Trace(Visitor* visitor) {
+void WakeLock::Trace(Visitor* visitor) const {
   for (const WakeLockManager* manager : managers_)
     visitor->Trace(manager);
   visitor->Trace(permission_service_);

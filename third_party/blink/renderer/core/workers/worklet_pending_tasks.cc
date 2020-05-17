@@ -71,7 +71,7 @@ void WorkletPendingTasks::DecrementCounter() {
   }
 }
 
-void WorkletPendingTasks::Trace(Visitor* visitor) {
+void WorkletPendingTasks::Trace(Visitor* visitor) const {
   visitor->Trace(resolver_);
   visitor->Trace(worklet_);
 }

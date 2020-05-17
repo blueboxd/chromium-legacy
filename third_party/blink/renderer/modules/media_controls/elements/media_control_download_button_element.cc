@@ -59,7 +59,7 @@ bool MediaControlDownloadButtonElement::IsControlPanelButton() const {
   return true;
 }
 
-void MediaControlDownloadButtonElement::Trace(Visitor* visitor) {
+void MediaControlDownloadButtonElement::Trace(Visitor* visitor) const {
   MediaControlInputElement::Trace(visitor);
 }
 

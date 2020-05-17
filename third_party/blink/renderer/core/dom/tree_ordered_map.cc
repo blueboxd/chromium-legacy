@@ -201,11 +201,11 @@ Element* TreeOrderedMap::GetCachedFirstElementWithoutAccessingNodeTree(
   return entry->element;
 }
 
-void TreeOrderedMap::Trace(Visitor* visitor) {
+void TreeOrderedMap::Trace(Visitor* visitor) const {
   visitor->Trace(map_);
 }
 
-void TreeOrderedMap::MapEntry::Trace(Visitor* visitor) {
+void TreeOrderedMap::MapEntry::Trace(Visitor* visitor) const {
   visitor->Trace(element);
   visitor->Trace(ordered_list);
 }

@@ -132,6 +132,19 @@ class Visitor;
 
 namespace WTF {
 
+namespace internal {
+// IsTraceMethodConst is used to verify that all Trace methods are marked as
+// const. It is equivalent to IsTraceable but for a non-const object.
+template <typename T, typename = void>
+struct IsTraceMethodConst : std::false_type {};
+
+template <typename T>
+struct IsTraceMethodConst<T,
+                          base::void_t<decltype(std::declval<const T>().Trace(
+                              std::declval<blink::Visitor*>()))>>
+    : std::true_type {};
+}  // namespace internal
+
 template <typename T, typename = void>
 struct IsTraceable : std::false_type {
   // Fail on incomplete types.
@@ -142,7 +155,13 @@ struct IsTraceable : std::false_type {
 template <typename T>
 struct IsTraceable<T,
                    base::void_t<decltype(std::declval<T>().Trace(
-                       std::declval<blink::Visitor*>()))>> : std::true_type {};
+                       std::declval<blink::Visitor*>()))>> : std::true_type {
+  // All Trace methods should be marked as const. If an object of type
+  // 'T' is traceable then any object of type 'const T' should also
+  // be traceable.
+  static_assert(internal::IsTraceMethodConst<T>(),
+                "Trace methods should be marked as const.");
+};
 
 template <typename T, typename U>
 struct IsTraceable<std::pair<T, U>>

@@ -28,7 +28,7 @@ class LaunchQueue final : public ScriptWrappable {
   void setConsumer(V8LaunchConsumer*);
 
   // ScriptWrappable:
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   HeapVector<Member<LaunchParams>> unconsumed_launch_params_;

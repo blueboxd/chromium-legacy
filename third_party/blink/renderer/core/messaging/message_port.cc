@@ -261,7 +261,7 @@ MessagePortArray* MessagePort::EntanglePorts(
   return connector_->handle().value();
 }
 
-void MessagePort::Trace(Visitor* visitor) {
+void MessagePort::Trace(Visitor* visitor) const {
   ExecutionContextLifecycleObserver::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }

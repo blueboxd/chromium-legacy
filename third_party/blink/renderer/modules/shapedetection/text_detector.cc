@@ -88,7 +88,7 @@ void TextDetector::OnTextServiceConnectionError() {
   text_service_.reset();
 }
 
-void TextDetector::Trace(Visitor* visitor) {
+void TextDetector::Trace(Visitor* visitor) const {
   ShapeDetector::Trace(visitor);
   visitor->Trace(text_service_);
   visitor->Trace(text_service_requests_);

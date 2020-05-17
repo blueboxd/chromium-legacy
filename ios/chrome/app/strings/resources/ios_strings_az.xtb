@@ -569,6 +569,7 @@ Hesabınız <ph name="HOSTED_DOMAIN" /> tərəfindən idarə edildiyinə görə,
 <translation id="8428045167754449968">Şəhər / Kənd</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8458397775385147834">1 element silindi</translation>
+<translation id="8459333855531264009">Təhlükəsiz deyil</translation>
 <translation id="8487667956631253959">Aktiv</translation>
 <translation id="8487700953926739672">Oflayn olaraq əlçatan</translation>
 <translation id="8490978609246021741">Dəyişiklikləri yadda saxlayın</translation>
@@ -595,6 +596,7 @@ Hesabınız <ph name="HOSTED_DOMAIN" /> tərəfindən idarə edildiyinə görə,
 <translation id="8741995161408053644"><ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> bölməsində Google Hesabının axtarış tarixçəsinin digər formaları ola bilər.</translation>
 <translation id="8756969031206844760">Parol yenilənsin?</translation>
 <translation id="8775144690796719618">Yanlış URL</translation>
+<translation id="8803639129939845298">Güvənli</translation>
 <translation id="8820817407110198400">Əlfəcinlər</translation>
 <translation id="8840513115188359703">Google Hesabınızdan çıxmayacaqsınız.</translation>
 <translation id="8870413625673593573">Son Qapadılan</translation>
@@ -625,7 +627,6 @@ Hesabınız <ph name="HOSTED_DOMAIN" /> tərəfindən idarə edildiyinə görə,
 <translation id="9223358826628549784">Xəta hesabatı göndərildi.</translation>
 <translation id="952704832371081537">Ləğv edin</translation>
 <translation id="988141524645182168">Digər Cihazlar</translation>
-<translation id="989697783705943787">Sayt təhlükəsizliyi</translation>
 <translation id="989988560359834682">Ünvana Düzəliş edin</translation>
 <translation id="994757059139821576">Məqalə Təklifləri</translation>
 </translationbundle>

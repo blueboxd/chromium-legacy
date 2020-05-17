@@ -53,7 +53,7 @@ class CORE_EXPORT PageScaleConstraintsSet
  public:
   explicit PageScaleConstraintsSet(Page* page);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   void SetDefaultConstraints(const PageScaleConstraints&);
   const PageScaleConstraints& DefaultConstraints() const;

@@ -52,7 +52,7 @@ class CORE_EXPORT ProgressTracker final
  public:
   explicit ProgressTracker(LocalFrame*);
   ~ProgressTracker();
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
   void Dispose();
 
   double EstimatedProgress() const;

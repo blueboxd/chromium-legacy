@@ -117,7 +117,7 @@ class FormSubmission final : public GarbageCollected<FormSubmission> {
   // FormSubmission for DialogMethod
   explicit FormSubmission(const String& result);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   void Navigate();
 

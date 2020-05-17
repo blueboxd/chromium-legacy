@@ -34,7 +34,7 @@ IDBDatabaseCallbacks::IDBDatabaseCallbacks() : database_(nullptr) {}
 
 IDBDatabaseCallbacks::~IDBDatabaseCallbacks() = default;
 
-void IDBDatabaseCallbacks::Trace(Visitor* visitor) {
+void IDBDatabaseCallbacks::Trace(Visitor* visitor) const {
   visitor->Trace(database_);
 }
 

@@ -54,7 +54,7 @@ void LayoutShift::BuildJSONValue(V8ObjectBuilder& builder) const {
   }
 }
 
-void LayoutShift::Trace(Visitor* visitor) {
+void LayoutShift::Trace(Visitor* visitor) const {
   PerformanceEntry::Trace(visitor);
   visitor->Trace(sources_);
 }

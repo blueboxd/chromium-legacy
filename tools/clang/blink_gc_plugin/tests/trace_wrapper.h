@@ -15,7 +15,7 @@ namespace blink {
 
 class A : public GarbageCollected<A> {
  public:
-  void Trace(Visitor*) {
+  void Trace(Visitor*) const {
     // Missing visitor->Trace(str_);
   }
 
@@ -25,7 +25,7 @@ class A : public GarbageCollected<A> {
 
 class B : public GarbageCollected<B> {
  public:
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
   void TraceAfterDispatch(Visitor*) const {}
 };
 

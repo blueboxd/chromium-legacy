@@ -37,7 +37,7 @@ class MockContext final : public GarbageCollected<MockContext>,
     });
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(observers_);
     ContextLifecycleNotifier::Trace(visitor);
   }
@@ -76,7 +76,7 @@ class AssociatedReceiverOwner
     return associated_receiver_;
   }
 
-  void Trace(Visitor* visitor) { visitor->Trace(associated_receiver_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(associated_receiver_); }
 
  private:
   // sample::blink::Service implementation

@@ -118,7 +118,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   void ClearAssignedNodesCandidates();
   void RemoveAssignedNodeCandidate(Node&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   InsertionNotificationRequest InsertedInto(ContainerNode&) final;

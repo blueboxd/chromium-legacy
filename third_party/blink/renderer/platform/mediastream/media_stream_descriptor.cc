@@ -170,7 +170,7 @@ MediaStreamDescriptor::MediaStreamDescriptor(
     video_components_.push_back((*iter));
 }
 
-void MediaStreamDescriptor::Trace(Visitor* visitor) {
+void MediaStreamDescriptor::Trace(Visitor* visitor) const {
   visitor->Trace(audio_components_);
   visitor->Trace(video_components_);
   visitor->Trace(client_);

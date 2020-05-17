@@ -20,7 +20,7 @@ class CORE_EXPORT ModuleTreeLinkerRegistry final
  public:
   ModuleTreeLinkerRegistry() = default;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
   const char* NameInHeapSnapshot() const override {
     return "ModuleTreeLinkerRegistry";
   }

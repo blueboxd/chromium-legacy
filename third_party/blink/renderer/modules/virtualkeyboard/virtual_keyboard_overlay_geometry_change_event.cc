@@ -28,7 +28,7 @@ VirtualKeyboardOverlayGeometryChangeEvent::
                                               DOMRect* rect)
     : Event(type, Bubbles::kNo, Cancelable::kNo), bounding_rect_(rect) {}
 
-void VirtualKeyboardOverlayGeometryChangeEvent::Trace(Visitor* visitor) {
+void VirtualKeyboardOverlayGeometryChangeEvent::Trace(Visitor* visitor) const {
   visitor->Trace(bounding_rect_);
   Event::Trace(visitor);
 }

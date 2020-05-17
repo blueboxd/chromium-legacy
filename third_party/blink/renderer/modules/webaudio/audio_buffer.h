@@ -107,7 +107,7 @@ class MODULES_EXPORT AudioBuffer final : public ScriptWrappable {
 
   void Zero();
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(channels_);
     ScriptWrappable::Trace(visitor);
   }

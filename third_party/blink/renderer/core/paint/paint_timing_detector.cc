@@ -399,7 +399,7 @@ ScopedPaintTimingDetectorBlockPaintHook::
                                          data_->property_tree_state_);
 }
 
-void PaintTimingDetector::Trace(Visitor* visitor) {
+void PaintTimingDetector::Trace(Visitor* visitor) const {
   visitor->Trace(text_paint_timing_detector_);
   visitor->Trace(image_paint_timing_detector_);
   visitor->Trace(frame_view_);
@@ -439,7 +439,7 @@ void PaintTimingCallbackManagerImpl::ReportPaintTime(
   frame_view_->GetPaintTimingDetector().UpdateLargestContentfulPaintCandidate();
 }
 
-void PaintTimingCallbackManagerImpl::Trace(Visitor* visitor) {
+void PaintTimingCallbackManagerImpl::Trace(Visitor* visitor) const {
   visitor->Trace(frame_view_);
   PaintTimingCallbackManager::Trace(visitor);
 }

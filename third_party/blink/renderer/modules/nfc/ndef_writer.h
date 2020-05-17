@@ -34,7 +34,7 @@ class NDEFWriter : public ScriptWrappable, public ExecutionContextClient {
   explicit NDEFWriter(ExecutionContext*);
   ~NDEFWriter() override = default;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Write NDEFMessageSource asynchronously to NFC tag.
   ScriptPromise write(ScriptState*,

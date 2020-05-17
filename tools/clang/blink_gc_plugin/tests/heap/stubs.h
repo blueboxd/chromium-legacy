@@ -22,21 +22,21 @@ template<typename T> class RefCounted { };
 template<typename T> class RawPtr {
 public:
     operator T*() const { return 0; }
-    T* operator->() { return 0; }
+    T* operator->() const { return 0; }
 };
 
 template<typename T> class scoped_refptr {
 public:
     ~scoped_refptr() { }
     operator T*() const { return 0; }
-    T* operator->() { return 0; }
+    T* operator->() const { return 0; }
 };
 
 template<typename T> class WeakPtr {
 public:
     ~WeakPtr() { }
     operator T*() const { return 0; }
-    T* operator->() { return 0; }
+    T* operator->() const { return 0; }
 };
 
 class DefaultAllocator {
@@ -153,7 +153,7 @@ template<typename T> class unique_ptr {
 public:
     ~unique_ptr() { }
     operator T*() const { return 0; }
-    T* operator->() { return 0; }
+    T* operator->() const { return 0; }
 };
 
 template <typename T, typename... Args>
@@ -219,42 +219,42 @@ class RefCountedGarbageCollected : public GarbageCollected<T> {};
 template<typename T> class Member {
 public:
     operator T*() const { return 0; }
-    T* operator->() { return 0; }
+    T* operator->() const { return 0; }
     bool operator!() const { return false; }
 };
 
 template<typename T> class WeakMember {
 public:
     operator T*() const { return 0; }
-    T* operator->() { return 0; }
+    T* operator->() const { return 0; }
     bool operator!() const { return false; }
 };
 
 template<typename T> class Persistent {
 public:
     operator T*() const { return 0; }
-    T* operator->() { return 0; }
+    T* operator->() const { return 0; }
     bool operator!() const { return false; }
 };
 
 template<typename T> class WeakPersistent {
 public:
     operator T*() const { return 0; }
-    T* operator->() { return 0; }
+    T* operator->() const { return 0; }
     bool operator!() const { return false; }
 };
 
 template<typename T> class CrossThreadPersistent {
 public:
     operator T*() const { return 0; }
-    T* operator->() { return 0; }
+    T* operator->() const { return 0; }
     bool operator!() const { return false; }
 };
 
 template<typename T> class CrossThreadWeakPersistent {
 public:
     operator T*() const { return 0; }
-    T* operator->() { return 0; }
+    T* operator->() const { return 0; }
     bool operator!() const { return false; }
 };
 
@@ -262,7 +262,7 @@ template <typename T>
 class TraceWrapperV8Reference {
  public:
   operator T*() const { return 0; }
-  T* operator->() { return 0; }
+  T* operator->() const { return 0; }
   bool operator!() const { return false; }
 };
 
@@ -307,12 +307,12 @@ class GarbageCollectedMixin {
 public:
     virtual void AdjustAndMark(Visitor*) const = 0;
     virtual bool IsHeapObjectAlive(Visitor*) const = 0;
-    virtual void Trace(Visitor*) { }
+    virtual void Trace(Visitor*) const {}
 };
 
 template<typename T>
 struct TraceIfNeeded {
-  static void Trace(Visitor*, T&);
+  static void Trace(Visitor*, const T&);
 };
 
 }

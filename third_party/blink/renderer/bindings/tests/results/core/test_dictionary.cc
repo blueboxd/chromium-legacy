@@ -204,7 +204,7 @@ void TestDictionary::setUnionWithTypedefs(const FloatOrBoolean& value) {
   union_with_typedefs_ = value;
 }
 
-void TestDictionary::Trace(Visitor* visitor) {
+void TestDictionary::Trace(Visitor* visitor) const {
   visitor->Trace(any_in_record_member_);
   visitor->Trace(any_member_);
   visitor->Trace(callback_function_member_);

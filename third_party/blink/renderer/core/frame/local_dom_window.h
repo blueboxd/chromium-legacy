@@ -104,7 +104,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   LocalFrame* GetFrame() const { return To<LocalFrame>(DOMWindow::GetFrame()); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // ExecutionContext overrides:
   // TODO(crbug.com/1029822): Most of these just call in to Document, but should

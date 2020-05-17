@@ -249,7 +249,7 @@ void ScriptRunner::ExecuteTask() {
     return;
 }
 
-void ScriptRunner::Trace(Visitor* visitor) {
+void ScriptRunner::Trace(Visitor* visitor) const {
   ExecutionContextLifecycleStateObserver::Trace(visitor);
   visitor->Trace(document_);
   visitor->Trace(pending_in_order_scripts_);

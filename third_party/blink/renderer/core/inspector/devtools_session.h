@@ -53,7 +53,7 @@ class CORE_EXPORT DevToolsSession : public GarbageCollected<DevToolsSession>,
 
   void Append(InspectorAgent*);
   void Detach();
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   // protocol::FrontendChannel implementation.
   void FlushProtocolNotifications() override;

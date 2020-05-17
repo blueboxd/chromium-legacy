@@ -93,7 +93,7 @@ class BiquadFilterNode final : public AudioNode {
 
   BiquadFilterNode(BaseAudioContext&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   String type() const;
   void setType(const String&);

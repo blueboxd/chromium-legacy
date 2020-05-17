@@ -154,7 +154,7 @@ void WebGL2RenderingContext::RegisterContextExtensions() {
   RegisterExtension(ovr_multiview2_);
 }
 
-void WebGL2RenderingContext::Trace(Visitor* visitor) {
+void WebGL2RenderingContext::Trace(Visitor* visitor) const {
   visitor->Trace(ext_color_buffer_float_);
   visitor->Trace(ext_disjoint_timer_query_web_gl2_);
   visitor->Trace(ext_float_blend_);

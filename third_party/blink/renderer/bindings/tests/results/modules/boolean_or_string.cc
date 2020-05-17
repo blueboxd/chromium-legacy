@@ -57,7 +57,7 @@ BooleanOrString::BooleanOrString(const BooleanOrString&) = default;
 BooleanOrString::~BooleanOrString() = default;
 BooleanOrString& BooleanOrString::operator=(const BooleanOrString&) = default;
 
-void BooleanOrString::Trace(Visitor* visitor) {
+void BooleanOrString::Trace(Visitor* visitor) const {
 }
 
 void V8BooleanOrString::ToImpl(

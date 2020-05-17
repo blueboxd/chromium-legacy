@@ -28,7 +28,7 @@ class MODULES_EXPORT ImageBitmapRenderingContextBase
                                   const CanvasContextCreationAttributesCore&);
   ~ImageBitmapRenderingContextBase() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // TODO(juanmihd): Remove this method crbug.com/941579
   HTMLCanvasElement* canvas() const {

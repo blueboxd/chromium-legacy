@@ -168,7 +168,7 @@ bool StorageArea::NamedPropertyQuery(const AtomicString& name,
   return found && !exception_state.HadException();
 }
 
-void StorageArea::Trace(Visitor* visitor) {
+void StorageArea::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
 }

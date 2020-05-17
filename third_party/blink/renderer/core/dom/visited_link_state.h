@@ -53,7 +53,7 @@ class VisitedLinkState final : public GarbageCollected<VisitedLinkState> {
     return EInsideLink::kNotInsideLink;
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   const Document& GetDocument() const { return *document_; }

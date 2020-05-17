@@ -410,7 +410,9 @@ class RequestSameResourceOnComplete
   }
   bool NotifyFinishedCalled() const { return notify_finished_called_; }
 
-  void Trace(Visitor* visitor) override { RawResourceClient::Trace(visitor); }
+  void Trace(Visitor* visitor) const override {
+    RawResourceClient::Trace(visitor);
+  }
 
   String DebugName() const override { return "RequestSameResourceOnComplete"; }
 
@@ -494,7 +496,9 @@ class ServeRequestsOnCompleteClient final
   }
   void DataDownloaded(Resource*, uint64_t) override { ASSERT_TRUE(false); }
 
-  void Trace(Visitor* visitor) override { RawResourceClient::Trace(visitor); }
+  void Trace(Visitor* visitor) const override {
+    RawResourceClient::Trace(visitor);
+  }
 
   String DebugName() const override { return "ServeRequestsOnCompleteClient"; }
 };

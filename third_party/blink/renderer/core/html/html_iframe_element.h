@@ -43,7 +43,7 @@ class CORE_EXPORT HTMLIFrameElement final
   USING_GARBAGE_COLLECTED_MIXIN(HTMLIFrameElement);
 
  public:
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   explicit HTMLIFrameElement(Document&);
   ~HTMLIFrameElement() override;

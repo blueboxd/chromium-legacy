@@ -58,7 +58,7 @@ class SVGTextLayoutAttributesBuilder {
                  unsigned new_length = 0)
         : element(new_element), start(new_start), length(new_length) {}
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
     Member<SVGTextPositioningElement> element;
     unsigned start;

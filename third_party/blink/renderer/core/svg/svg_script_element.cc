@@ -197,7 +197,7 @@ const AttrNameToTrustedType& SVGScriptElement::GetCheckedAttributeTypes()
   return attribute_map;
 }
 
-void SVGScriptElement::Trace(Visitor* visitor) {
+void SVGScriptElement::Trace(Visitor* visitor) const {
   visitor->Trace(loader_);
   SVGElement::Trace(visitor);
   SVGURIReference::Trace(visitor);

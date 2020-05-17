@@ -87,7 +87,7 @@ class OutgoingStream::UnderlyingSink final : public UnderlyingSinkBase {
     return close(script_state, exception_state);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(outgoing_stream_);
     UnderlyingSinkBase::Trace(visitor);
   }
@@ -167,7 +167,7 @@ void OutgoingStream::ContextDestroyed() {
   ResetPipe();
 }
 
-void OutgoingStream::Trace(Visitor* visitor) {
+void OutgoingStream::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(client_);
   visitor->Trace(writable_);

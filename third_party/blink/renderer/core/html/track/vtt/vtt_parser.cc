@@ -669,7 +669,7 @@ void VTTTreeBuilder::ConstructTreeFromToken(Document& document) {
   }
 }
 
-void VTTParser::Trace(Visitor* visitor) {
+void VTTParser::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(current_region_);
   visitor->Trace(client_);

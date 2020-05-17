@@ -49,7 +49,7 @@ void PresentationAvailabilityCallbacks::RejectAvailabilityNotSupported() {
   resolver_->Reject(CreateAvailabilityNotSupportedError());
 }
 
-void PresentationAvailabilityCallbacks::Trace(Visitor* visitor) {
+void PresentationAvailabilityCallbacks::Trace(Visitor* visitor) const {
   visitor->Trace(resolver_);
 }
 

@@ -14,7 +14,7 @@ CustomElementReactionQueue::CustomElementReactionQueue() : index_(0u) {}
 
 CustomElementReactionQueue::~CustomElementReactionQueue() = default;
 
-void CustomElementReactionQueue::Trace(Visitor* visitor) {
+void CustomElementReactionQueue::Trace(Visitor* visitor) const {
   visitor->Trace(reactions_);
 }
 

@@ -76,7 +76,7 @@ class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
   const WTF::Vector<uint8_t>& payloadData() const { return payload_data_; }
   const NDEFMessage* payload_message() const { return payload_message_.Get(); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   const device::mojom::NDEFRecordTypeCategory category_;

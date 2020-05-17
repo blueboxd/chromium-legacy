@@ -102,7 +102,7 @@ void NotificationResourcesLoader::Stop() {
     icon_loader->Stop();
 }
 
-void NotificationResourcesLoader::Trace(Visitor* visitor) {
+void NotificationResourcesLoader::Trace(Visitor* visitor) const {
   visitor->Trace(icon_loaders_);
 }
 

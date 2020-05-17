@@ -96,7 +96,7 @@ void WorkerResourceTimingNotifierImpl::AddCrossThreadResourceTiming(
                           std::move(worker_timing_receiver));
 }
 
-void WorkerResourceTimingNotifierImpl::Trace(Visitor* visitor) {
+void WorkerResourceTimingNotifierImpl::Trace(Visitor* visitor) const {
   visitor->Trace(inside_execution_context_);
   WorkerResourceTimingNotifier::Trace(visitor);
 }

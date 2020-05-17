@@ -51,7 +51,7 @@ class PLATFORM_EXPORT MediaStreamDescriptorClient
   virtual void StreamEnded() = 0;
   virtual void AddTrackByComponentAndFireEvents(MediaStreamComponent*) = 0;
   virtual void RemoveTrackByComponentAndFireEvents(MediaStreamComponent*) = 0;
-  void Trace(Visitor* visitor) override {}
+  void Trace(Visitor* visitor) const override {}
 };
 
 class PLATFORM_EXPORT MediaStreamDescriptor final
@@ -111,7 +111,7 @@ class PLATFORM_EXPORT MediaStreamDescriptor final
   void AddObserver(WebMediaStreamObserver*);
   void RemoveObserver(WebMediaStreamObserver*);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   Member<MediaStreamDescriptorClient> client_;

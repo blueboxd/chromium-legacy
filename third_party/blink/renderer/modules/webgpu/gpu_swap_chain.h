@@ -31,7 +31,7 @@ class GPUSwapChain : public ScriptWrappable,
                         SkFilterQuality);
   ~GPUSwapChain() override;
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   void Neuter();
   cc::Layer* CcLayer();

@@ -57,7 +57,7 @@ RTCRtpTransceiver* RTCTrackEvent::transceiver() const {
   return transceiver_;
 }
 
-void RTCTrackEvent::Trace(Visitor* visitor) {
+void RTCTrackEvent::Trace(Visitor* visitor) const {
   visitor->Trace(receiver_);
   visitor->Trace(track_);
   visitor->Trace(streams_);

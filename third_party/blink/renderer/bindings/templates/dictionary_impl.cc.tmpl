@@ -27,7 +27,7 @@ namespace blink {
 {{dictionary_setter_impl(member)}}
 {% endfor %}
 
-void {{cpp_class}}::Trace(Visitor* visitor) {
+void {{cpp_class}}::Trace(Visitor* visitor) const {
   {% for member in members if member.is_traceable %}
   visitor->Trace({{member.cpp_name}}_);
   {% endfor %}

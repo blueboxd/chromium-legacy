@@ -42,7 +42,7 @@ class SVGFEDropShadowElement final
   SVGAnimatedNumber* stdDeviationY() { return std_deviation_->SecondNumber(); }
   SVGAnimatedString* in1() { return in1_.Get(); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void SvgAttributeChanged(const QualifiedName&) override;

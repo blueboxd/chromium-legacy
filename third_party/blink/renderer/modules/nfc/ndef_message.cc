@@ -194,7 +194,7 @@ const HeapVector<Member<NDEFRecord>>& NDEFMessage::records() const {
   return records_;
 }
 
-void NDEFMessage::Trace(Visitor* visitor) {
+void NDEFMessage::Trace(Visitor* visitor) const {
   visitor->Trace(records_);
   ScriptWrappable::Trace(visitor);
 }

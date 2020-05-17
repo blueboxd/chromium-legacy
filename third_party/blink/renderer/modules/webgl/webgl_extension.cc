@@ -34,7 +34,7 @@ WebGLExtensionScopedContext::WebGLExtensionScopedContext(
 WebGLExtension::WebGLExtension(WebGLRenderingContextBase* context)
     : context_(context) {}
 
-void WebGLExtension::Trace(Visitor* visitor) {
+void WebGLExtension::Trace(Visitor* visitor) const {
   visitor->Trace(context_);
   ScriptWrappable::Trace(visitor);
 }

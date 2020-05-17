@@ -27,7 +27,7 @@ class NativeFileSystemWritableFileStream final : public WritableStream {
       ScriptState*,
       mojo::PendingRemote<mojom::blink::NativeFileSystemFileWriter>);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   // IDL defined functions specific to NativeFileSystemWritableFileStream.
   ScriptPromise write(

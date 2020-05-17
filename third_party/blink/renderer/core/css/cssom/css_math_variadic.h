@@ -21,7 +21,7 @@ class CORE_EXPORT CSSMathVariadic : public CSSMathValue {
     return values_->Values();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(values_);
     CSSMathValue::Trace(visitor);
   }

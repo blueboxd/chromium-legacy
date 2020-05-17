@@ -214,7 +214,7 @@ void StringKeyframe::AddKeyframePropertiesToV8Object(
   }
 }
 
-void StringKeyframe::Trace(Visitor* visitor) {
+void StringKeyframe::Trace(Visitor* visitor) const {
   visitor->Trace(input_properties_);
   visitor->Trace(css_property_map_);
   visitor->Trace(presentation_attribute_map_);
@@ -272,7 +272,8 @@ StringKeyframe::CSSPropertySpecificKeyframe::NeutralKeyframe(
       offset, std::move(easing), nullptr, EffectModel::kCompositeAdd);
 }
 
-void StringKeyframe::CSSPropertySpecificKeyframe::Trace(Visitor* visitor) {
+void StringKeyframe::CSSPropertySpecificKeyframe::Trace(
+    Visitor* visitor) const {
   visitor->Trace(value_);
   visitor->Trace(compositor_keyframe_value_cache_);
   Keyframe::PropertySpecificKeyframe::Trace(visitor);

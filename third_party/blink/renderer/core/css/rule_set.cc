@@ -429,22 +429,22 @@ bool RuleSet::DidMediaQueryResultsChange(
   return false;
 }
 
-void MinimalRuleData::Trace(Visitor* visitor) {
+void MinimalRuleData::Trace(Visitor* visitor) const {
   visitor->Trace(rule_);
 }
 
-void RuleData::Trace(Visitor* visitor) {
+void RuleData::Trace(Visitor* visitor) const {
   visitor->Trace(rule_);
 }
 
-void RuleSet::PendingRuleMaps::Trace(Visitor* visitor) {
+void RuleSet::PendingRuleMaps::Trace(Visitor* visitor) const {
   visitor->Trace(id_rules);
   visitor->Trace(class_rules);
   visitor->Trace(tag_rules);
   visitor->Trace(shadow_pseudo_element_rules);
 }
 
-void RuleSet::Trace(Visitor* visitor) {
+void RuleSet::Trace(Visitor* visitor) const {
   visitor->Trace(id_rules_);
   visitor->Trace(class_rules_);
   visitor->Trace(tag_rules_);

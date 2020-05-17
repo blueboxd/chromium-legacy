@@ -18,7 +18,7 @@
 
 namespace blink {
 
-void LoaderFactoryForWorker::Trace(Visitor* visitor) {
+void LoaderFactoryForWorker::Trace(Visitor* visitor) const {
   visitor->Trace(global_scope_);
   LoaderFactory::Trace(visitor);
 }

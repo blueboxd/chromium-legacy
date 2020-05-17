@@ -240,7 +240,6 @@
 <translation id="1962204205936693436"><ph name="DOMAIN" /> žymės</translation>
 <translation id="1973335181906896915">Serijinio rengimo klaida</translation>
 <translation id="1974060860693918893">Išplėstiniai</translation>
-<translation id="1974883374937189061">Padėkite tobulinti „Chrome“ saugą – atsiųskite <ph name="BEGIN_WHITEPAPER_LINK" />lankomų puslapių URL, ribotos sistemos informacijos ir puslapių turinio<ph name="END_WHITEPAPER_LINK" /> sistemai „Google“. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1975584088563498795">10 pašto dėžutė</translation>
 <translation id="1978555033938440688">Programinės aparatinės įrangos versija</translation>
 <translation id="1981206234434200693">Išvalyti „Chrome“ naršymo istorijos duomenis</translation>
@@ -1603,7 +1602,6 @@ Papildoma išsami informacija:
 <translation id="7763386264682878361">Mokėjimo aprašo analizavimo įrankis</translation>
 <translation id="7764225426217299476">Pridėti adresą</translation>
 <translation id="7766518757692125295">Pakraštys</translation>
-<translation id="7767271804335921384">Programą užblokavo administratorius</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Ta pačia tvarka, gerąja puse į viršų</translation>
 <translation id="777702478322588152">Prefektūra</translation>
@@ -1757,6 +1755,7 @@ Papildoma išsami informacija:
 <translation id="8425213833346101688">Keisti</translation>
 <translation id="8428213095426709021">Nustatymai</translation>
 <translation id="8433057134996913067">Tai atlikę atsijungsite nuo daugumos svetainių.</translation>
+<translation id="8433678324664858900">Rodyti pasiūlymus</translation>
 <translation id="8437238597147034694">&amp;Anuliuoti perkėlimą</translation>
 <translation id="8457125768502047971">Neribota</translation>
 <translation id="8461694314515752532">Šifruokite sinchronizuojamus duomenis taikydami savo sinchronizavimo slaptafrazę</translation>

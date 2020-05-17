@@ -81,7 +81,7 @@ class ImageBitmapFactories final
 
   virtual ~ImageBitmapFactories() = default;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "ImageBitmapLoader";
   }
@@ -109,7 +109,7 @@ class ImageBitmapFactories final
     void LoadBlobAsync(Blob*);
     ScriptPromise Promise() { return resolver_->Promise(); }
 
-    void Trace(Visitor*) override;
+    void Trace(Visitor*) const override;
 
     ~ImageBitmapLoader() override;
 

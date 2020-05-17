@@ -335,7 +335,7 @@ int HTMLViewSourceDocument::AddSrcset(const String& source,
   return end;
 }
 
-void HTMLViewSourceDocument::Trace(Visitor* visitor) {
+void HTMLViewSourceDocument::Trace(Visitor* visitor) const {
   visitor->Trace(current_);
   visitor->Trace(tbody_);
   visitor->Trace(td_);

@@ -214,7 +214,7 @@ class UseCounterHelperObserverImpl final : public UseCounterHelper::Observer {
     return true;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     UseCounterHelper::Observer::Trace(visitor);
     visitor->Trace(resolver_);
   }
@@ -3142,7 +3142,7 @@ ScriptPromise Internals::promiseCheckOverload(ScriptState* script_state,
                              V8String(script_state->GetIsolate(), "done"));
 }
 
-void Internals::Trace(Visitor* visitor) {
+void Internals::Trace(Visitor* visitor) const {
   visitor->Trace(runtime_flags_);
   visitor->Trace(document_);
   ScriptWrappable::Trace(visitor);

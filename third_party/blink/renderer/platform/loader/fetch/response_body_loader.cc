@@ -220,7 +220,7 @@ class ResponseBodyLoader::DelegatingBytesConsumer final
     }
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(bytes_consumer_);
     visitor->Trace(loader_);
     visitor->Trace(bytes_consumer_client_);
@@ -480,7 +480,7 @@ void ResponseBodyLoader::OnStateChange() {
   }
 }
 
-void ResponseBodyLoader::Trace(Visitor* visitor) {
+void ResponseBodyLoader::Trace(Visitor* visitor) const {
   visitor->Trace(bytes_consumer_);
   visitor->Trace(delegating_bytes_consumer_);
   visitor->Trace(client_);

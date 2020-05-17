@@ -57,7 +57,7 @@ StringTreatNullAsEmptyStringOrLong::StringTreatNullAsEmptyStringOrLong(const Str
 StringTreatNullAsEmptyStringOrLong::~StringTreatNullAsEmptyStringOrLong() = default;
 StringTreatNullAsEmptyStringOrLong& StringTreatNullAsEmptyStringOrLong::operator=(const StringTreatNullAsEmptyStringOrLong&) = default;
 
-void StringTreatNullAsEmptyStringOrLong::Trace(Visitor* visitor) {
+void StringTreatNullAsEmptyStringOrLong::Trace(Visitor* visitor) const {
 }
 
 void V8StringTreatNullAsEmptyStringOrLong::ToImpl(

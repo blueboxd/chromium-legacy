@@ -103,7 +103,7 @@ class CORE_EXPORT Request final : public ScriptWrappable,
   mojom::RequestContextType GetRequestContextType() const;
   network::mojom::RequestDestination GetRequestDestination() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   const FetchRequestData* GetRequest() const { return request_; }

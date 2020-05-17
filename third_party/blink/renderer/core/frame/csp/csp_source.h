@@ -67,7 +67,7 @@ class CORE_EXPORT CSPSource final : public GarbageCollected<CSPSource> {
 
   network::mojom::blink::CSPSourcePtr ExposeForNavigationalChecks() const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CSPSourceTest, IsSimilar);

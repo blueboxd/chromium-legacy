@@ -67,7 +67,7 @@ ProgressTracker::ProgressTracker(LocalFrame* frame)
 
 ProgressTracker::~ProgressTracker() = default;
 
-void ProgressTracker::Trace(Visitor* visitor) {
+void ProgressTracker::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
 }
 

@@ -27,7 +27,7 @@ class CORE_EXPORT ScrollCustomizationCallbacks
   bool InScrollPhase(Node*) const;
   void SetInScrollPhase(Node*, bool);
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(apply_scroll_callbacks_);
     visitor->Trace(distribute_scroll_callbacks_);
     visitor->Trace(in_scrolling_phase_);

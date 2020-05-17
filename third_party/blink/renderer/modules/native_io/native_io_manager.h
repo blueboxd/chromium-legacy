@@ -46,7 +46,7 @@ class NativeIOManager final : public ScriptWrappable,
   Vector<String> getAllSync(ExceptionState&);
 
   // GarbageCollected
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   // Called when the mojo backend disconnects.

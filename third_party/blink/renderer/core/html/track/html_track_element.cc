@@ -338,7 +338,7 @@ HTMLMediaElement* HTMLTrackElement::MediaElement() const {
   return DynamicTo<HTMLMediaElement>(parentElement());
 }
 
-void HTMLTrackElement::Trace(Visitor* visitor) {
+void HTMLTrackElement::Trace(Visitor* visitor) const {
   visitor->Trace(track_);
   visitor->Trace(loader_);
   HTMLElement::Trace(visitor);

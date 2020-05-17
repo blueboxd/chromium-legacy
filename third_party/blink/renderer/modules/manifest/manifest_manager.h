@@ -62,7 +62,7 @@ class MODULES_EXPORT ManifestManager
   void RequestManifestDebugInfo(
       RequestManifestDebugInfoCallback callback) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   enum ResolveState { ResolveStateSuccess, ResolveStateFailure };

@@ -385,7 +385,7 @@ bool AutoplayPolicy::ShouldAutoplay() {
   return element_->can_autoplay_ && element_->paused_ && element_->Autoplay();
 }
 
-void AutoplayPolicy::Trace(Visitor* visitor) {
+void AutoplayPolicy::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   visitor->Trace(autoplay_intersection_observer_);
   visitor->Trace(autoplay_uma_helper_);

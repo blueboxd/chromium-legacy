@@ -78,7 +78,7 @@ class StorageArea final : public ScriptWrappable,
 
   bool CanAccessStorage() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // CachedStorageArea::Source:
   KURL GetPageUrl() const override;

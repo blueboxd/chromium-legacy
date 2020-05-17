@@ -187,7 +187,7 @@ void MIDIPort::ContextDestroyed() {
   connection_ = kConnectionStateClosed;
 }
 
-void MIDIPort::Trace(Visitor* visitor) {
+void MIDIPort::Trace(Visitor* visitor) const {
   visitor->Trace(access_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);

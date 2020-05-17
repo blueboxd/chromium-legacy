@@ -51,7 +51,7 @@ Step::Step(Axis axis,
 
 Step::~Step() = default;
 
-void Step::Trace(Visitor* visitor) {
+void Step::Trace(Visitor* visitor) const {
   visitor->Trace(node_test_);
   visitor->Trace(predicates_);
   ParseNode::Trace(visitor);

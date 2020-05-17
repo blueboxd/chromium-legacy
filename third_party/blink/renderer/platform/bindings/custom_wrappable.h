@@ -17,7 +17,7 @@ class PLATFORM_EXPORT CustomWrappable
       public NameClient {
  public:
   virtual ~CustomWrappable() = default;
-  virtual void Trace(Visitor*) {}
+  virtual void Trace(Visitor*) const {}
   const char* NameInHeapSnapshot() const override { return "CustomWrappable"; }
 
  protected:

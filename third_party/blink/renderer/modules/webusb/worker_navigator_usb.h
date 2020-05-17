@@ -31,7 +31,7 @@ class WorkerNavigatorUSB final : public GarbageCollected<WorkerNavigatorUSB>,
 
   explicit WorkerNavigatorUSB(WorkerNavigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<USB> usb_;

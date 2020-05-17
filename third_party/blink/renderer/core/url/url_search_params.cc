@@ -36,7 +36,7 @@ class URLSearchParamsIterationSource final
     return true;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(params_);
     PairIterable<String, String>::IterationSource::Trace(visitor);
   }
@@ -111,7 +111,7 @@ URLSearchParams* URLSearchParams::Create(
 
 URLSearchParams::~URLSearchParams() = default;
 
-void URLSearchParams::Trace(Visitor* visitor) {
+void URLSearchParams::Trace(Visitor* visitor) const {
   visitor->Trace(url_object_);
   ScriptWrappable::Trace(visitor);
 }

@@ -29,7 +29,7 @@ void StaleRevalidationResourceClient::NotifyFinished(Resource* resource) {
   }
 }
 
-void StaleRevalidationResourceClient::Trace(Visitor* visitor) {
+void StaleRevalidationResourceClient::Trace(Visitor* visitor) const {
   visitor->Trace(stale_resource_);
   RawResourceClient::Trace(visitor);
 }

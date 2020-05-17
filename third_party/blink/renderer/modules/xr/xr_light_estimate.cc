@@ -31,7 +31,7 @@ XRLightEstimate::XRLightEstimate(
                                light_probe.main_light_intensity.blue(), 1);
 }
 
-void XRLightEstimate::Trace(Visitor* visitor) {
+void XRLightEstimate::Trace(Visitor* visitor) const {
   visitor->Trace(sh_coefficients_);
   visitor->Trace(primary_light_direction_);
   visitor->Trace(primary_light_intensity_);

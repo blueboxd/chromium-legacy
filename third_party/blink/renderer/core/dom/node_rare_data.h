@@ -56,7 +56,7 @@ class NodeMutationObserverData final
   void AddRegistration(MutationObserverRegistration* registration);
   void RemoveRegistration(MutationObserverRegistration* registration);
 
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
  private:
   HeapVector<Member<MutationObserverRegistration>> registry_;
@@ -78,7 +78,7 @@ class GC_PLUGIN_IGNORE(
                    IsRareData::encode(is_rare_data)) {
     DCHECK(!is_element_rare_data || is_rare_data);
   }
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
   void TraceAfterDispatch(blink::Visitor*) const {}
 
   enum {

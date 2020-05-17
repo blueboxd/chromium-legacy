@@ -32,7 +32,7 @@ SensorProxy::SensorProxy(device::mojom::blink::SensorType sensor_type,
 
 SensorProxy::~SensorProxy() {}
 
-void SensorProxy::Trace(Visitor* visitor) {
+void SensorProxy::Trace(Visitor* visitor) const {
   visitor->Trace(observers_);
   visitor->Trace(provider_);
   PageVisibilityObserver::Trace(visitor);

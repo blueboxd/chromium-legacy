@@ -162,7 +162,7 @@ BytesConsumer::Error BufferingBytesConsumer::GetError() const {
   return bytes_consumer_->GetError();
 }
 
-void BufferingBytesConsumer::Trace(Visitor* visitor) {
+void BufferingBytesConsumer::Trace(Visitor* visitor) const {
   visitor->Trace(bytes_consumer_);
   visitor->Trace(client_);
   BytesConsumer::Trace(visitor);

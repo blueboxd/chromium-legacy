@@ -167,7 +167,7 @@ struct TraceTrait<const T> : public TraceTrait<T> {};
 template <typename T>
 void TraceTrait<T>::Trace(Visitor* visitor, const void* self) {
   static_assert(WTF::IsTraceable<T>::value, "T should be traceable");
-  static_cast<T*>(const_cast<void*>(self))->Trace(visitor);
+  static_cast<const T*>(self)->Trace(visitor);
 }
 
 // This trace trait for std::pair will null weak members if their referent is

@@ -36,7 +36,7 @@ Presentation* NavigatorPresentation::presentation(Navigator& navigator) {
   return self.presentation_;
 }
 
-void NavigatorPresentation::Trace(Visitor* visitor) {
+void NavigatorPresentation::Trace(Visitor* visitor) const {
   visitor->Trace(presentation_);
   Supplement<Navigator>::Trace(visitor);
 }

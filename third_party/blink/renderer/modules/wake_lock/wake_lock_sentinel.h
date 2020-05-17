@@ -42,7 +42,7 @@ class MODULES_EXPORT WakeLockSentinel final
   // EventTarget overrides.
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // ActiveScriptWrappable overrides.
   bool HasPendingActivity() const override;

@@ -328,7 +328,7 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
       frame_request.OriginDocument());
 }
 
-void FormSubmission::Trace(Visitor* visitor) {
+void FormSubmission::Trace(Visitor* visitor) const {
   visitor->Trace(form_);
   visitor->Trace(target_frame_);
   visitor->Trace(origin_document_);

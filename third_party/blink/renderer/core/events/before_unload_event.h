@@ -60,7 +60,7 @@ class BeforeUnloadEvent final : public Event {
     return true;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   String return_value_;

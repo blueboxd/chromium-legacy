@@ -26,7 +26,7 @@ class CORE_EXPORT ModuleRecordResolver
     : public GarbageCollected<ModuleRecordResolver> {
  public:
   virtual ~ModuleRecordResolver() = default;
-  virtual void Trace(Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) const {}
 
   // Notifies the ModuleRecordResolver that a ModuleScript exists.
   // This hook gives a chance for the resolver impl to populate module record

@@ -113,7 +113,9 @@ class SVGImageTest : public testing::Test, private ScopedMockOverlayScrollbars {
 
     void AsyncLoadCompleted(const blink::Image*) override {}
 
-    void Trace(Visitor* visitor) override { ImageObserver::Trace(visitor); }
+    void Trace(Visitor* visitor) const override {
+      ImageObserver::Trace(visitor);
+    }
 
    private:
     bool should_pause_;

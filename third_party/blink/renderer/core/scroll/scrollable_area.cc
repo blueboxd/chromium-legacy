@@ -929,7 +929,7 @@ bool ScrollableArea::PerformSnapping(
   return true;
 }
 
-void ScrollableArea::Trace(Visitor* visitor) {
+void ScrollableArea::Trace(Visitor* visitor) const {
   visitor->Trace(scroll_animator_);
   visitor->Trace(programmatic_scroll_animator_);
 }

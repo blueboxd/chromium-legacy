@@ -97,7 +97,7 @@ void SVGFilterGraphNodeMap::InvalidateDependentEffects(FilterEffect* effect) {
     InvalidateDependentEffects(effect_reference);
 }
 
-void SVGFilterGraphNodeMap::Trace(Visitor* visitor) {
+void SVGFilterGraphNodeMap::Trace(Visitor* visitor) const {
   visitor->Trace(effect_element_);
   visitor->Trace(effect_references_);
 }

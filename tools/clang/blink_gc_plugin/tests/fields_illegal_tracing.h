@@ -19,9 +19,7 @@ public:
     operator T*() const { return 0; }
     T* operator->() { return 0; }
 
-    void Trace(Visitor* visitor)
-    {
-    }
+    void Trace(Visitor* visitor) const {}
 };
 
 }
@@ -32,7 +30,8 @@ class PartObject;
 class PartObject {
     DISALLOW_NEW();
 public:
-    void Trace(Visitor*);
+ void Trace(Visitor*) const;
+
 private:
     scoped_refptr<HeapObject> m_obj2;
     bar::unique_ptr<HeapObject> m_obj3;
@@ -44,7 +43,7 @@ private:
 
 class HeapObject : public GarbageCollected<HeapObject> {
  public:
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   PartObject m_part;

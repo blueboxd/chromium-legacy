@@ -71,7 +71,7 @@ class CORE_EXPORT SVGDocumentExtensions final
   static SVGSVGElement* rootElement(const Document&);
   SVGSVGElement* rootElement() const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   Member<Document> document_;

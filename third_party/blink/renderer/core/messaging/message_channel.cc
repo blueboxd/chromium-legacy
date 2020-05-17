@@ -40,7 +40,7 @@ MessageChannel::MessageChannel(ExecutionContext* context)
   port2_->Entangle(pipe.TakePort1());
 }
 
-void MessageChannel::Trace(Visitor* visitor) {
+void MessageChannel::Trace(Visitor* visitor) const {
   visitor->Trace(port1_);
   visitor->Trace(port2_);
   ScriptWrappable::Trace(visitor);

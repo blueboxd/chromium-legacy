@@ -23,7 +23,7 @@ class CompositorKeyframeFilterOperations final
     return operation_wrapper_->Operations();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(operation_wrapper_);
     CompositorKeyframeValue::Trace(visitor);
   }

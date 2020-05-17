@@ -57,7 +57,7 @@ LongOrBoolean::LongOrBoolean(const LongOrBoolean&) = default;
 LongOrBoolean::~LongOrBoolean() = default;
 LongOrBoolean& LongOrBoolean::operator=(const LongOrBoolean&) = default;
 
-void LongOrBoolean::Trace(Visitor* visitor) {
+void LongOrBoolean::Trace(Visitor* visitor) const {
 }
 
 void V8LongOrBoolean::ToImpl(

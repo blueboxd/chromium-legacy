@@ -225,7 +225,7 @@ SpeechRecognition::SpeechRecognition(LocalDOMWindow* window)
 
 SpeechRecognition::~SpeechRecognition() = default;
 
-void SpeechRecognition::Trace(Visitor* visitor) {
+void SpeechRecognition::Trace(Visitor* visitor) const {
   visitor->Trace(grammars_);
   visitor->Trace(controller_);
   visitor->Trace(final_results_);

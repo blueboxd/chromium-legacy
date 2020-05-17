@@ -28,7 +28,7 @@ class CORE_EXPORT PlatformEventController : public PageVisibilityObserver {
   // This is called when new data becomes available.
   virtual void DidUpdateData() = 0;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   LocalDOMWindow& GetWindow() const { return *window_; }
 
  protected:

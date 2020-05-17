@@ -56,7 +56,7 @@ class CORE_EXPORT HttpRefreshScheduler final
   void MaybeStartTimer();
   void Cancel();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   void NavigateTask();

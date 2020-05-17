@@ -633,7 +633,7 @@ const AtomicString& HTMLTableElement::Summary() const {
   return FastGetAttribute(html_names::kSummaryAttr);
 }
 
-void HTMLTableElement::Trace(Visitor* visitor) {
+void HTMLTableElement::Trace(Visitor* visitor) const {
   visitor->Trace(shared_cell_style_);
   HTMLElement::Trace(visitor);
 }

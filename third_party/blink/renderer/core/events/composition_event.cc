@@ -78,7 +78,7 @@ bool CompositionEvent::IsCompositionEvent() const {
   return true;
 }
 
-void CompositionEvent::Trace(Visitor* visitor) {
+void CompositionEvent::Trace(Visitor* visitor) const {
   UIEvent::Trace(visitor);
 }
 

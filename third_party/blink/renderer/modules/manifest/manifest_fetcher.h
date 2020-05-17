@@ -50,7 +50,7 @@ class ManifestFetcher final : public GarbageCollected<ManifestFetcher>,
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   KURL url_;

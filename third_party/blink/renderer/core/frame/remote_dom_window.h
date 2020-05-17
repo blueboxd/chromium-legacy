@@ -23,7 +23,7 @@ class RemoteDOMWindow final : public DOMWindow {
   ExecutionContext* GetExecutionContext() const override;
 
   // DOMWindow overrides:
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   void blur() override;
 
   void FrameDetached();

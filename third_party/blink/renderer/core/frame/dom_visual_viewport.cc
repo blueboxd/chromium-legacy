@@ -43,7 +43,7 @@ DOMVisualViewport::DOMVisualViewport(LocalDOMWindow* window)
 
 DOMVisualViewport::~DOMVisualViewport() = default;
 
-void DOMVisualViewport::Trace(Visitor* visitor) {
+void DOMVisualViewport::Trace(Visitor* visitor) const {
   visitor->Trace(window_);
   EventTargetWithInlineData::Trace(visitor);
 }

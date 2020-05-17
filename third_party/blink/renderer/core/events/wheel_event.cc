@@ -182,7 +182,7 @@ DispatchEventResult WheelEvent::DispatchEvent(EventDispatcher& dispatcher) {
   return dispatcher.Dispatch();
 }
 
-void WheelEvent::Trace(Visitor* visitor) {
+void WheelEvent::Trace(Visitor* visitor) const {
   MouseEvent::Trace(visitor);
 }
 

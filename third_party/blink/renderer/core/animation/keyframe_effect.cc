@@ -423,7 +423,7 @@ bool KeyframeEffect::HasPlayingAnimation() const {
   return owner_ && owner_->Playing();
 }
 
-void KeyframeEffect::Trace(Visitor* visitor) {
+void KeyframeEffect::Trace(Visitor* visitor) const {
   visitor->Trace(effect_target_);
   visitor->Trace(target_element_);
   visitor->Trace(model_);

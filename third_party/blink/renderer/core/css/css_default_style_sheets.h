@@ -90,7 +90,7 @@ class CSSDefaultStyleSheets final
     return media_controls_style_sheet_loader_.get();
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   void InitializeDefaultStyles();

@@ -48,7 +48,7 @@ void PerformanceLongTaskTiming::BuildJSONValue(V8ObjectBuilder& builder) const {
                                             script_state->GetIsolate()));
 }
 
-void PerformanceLongTaskTiming::Trace(Visitor* visitor) {
+void PerformanceLongTaskTiming::Trace(Visitor* visitor) const {
   visitor->Trace(attribution_);
   PerformanceEntry::Trace(visitor);
 }

@@ -59,7 +59,7 @@ void ContentCaptureManager::OnNodeTextChanged(Node& node) {
   ScheduleTask(ContentCaptureTask::ScheduleReason::kContentChange);
 }
 
-void ContentCaptureManager::Trace(Visitor* visitor) {
+void ContentCaptureManager::Trace(Visitor* visitor) const {
   visitor->Trace(content_capture_idle_task_);
   visitor->Trace(local_frame_root_);
   visitor->Trace(task_session_);

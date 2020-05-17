@@ -52,7 +52,7 @@ class WritableStream::PendingAbortRequest final
 
   bool WasAlreadyErroring() { return was_already_erroring_; }
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(promise_);
     visitor->Trace(reason_);
   }
@@ -537,7 +537,7 @@ void WritableStream::FinishErroring(ScriptState* script_state,
       RejectCloseAndClosedPromiseIfNeeded(GetScriptState(), stream_);
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(stream_);
       visitor->Trace(promise_);
       PromiseHandler::Trace(visitor);
@@ -565,7 +565,7 @@ void WritableStream::FinishErroring(ScriptState* script_state,
       RejectCloseAndClosedPromiseIfNeeded(GetScriptState(), stream_);
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(stream_);
       visitor->Trace(promise_);
       PromiseHandler::Trace(visitor);
@@ -819,7 +819,7 @@ v8::Local<v8::Value> WritableStream::CreateCannotActionOnStateStreamException(
       CreateCannotActionOnStateStreamMessage(isolate, action, state_name));
 }
 
-void WritableStream::Trace(Visitor* visitor) {
+void WritableStream::Trace(Visitor* visitor) const {
   visitor->Trace(close_request_);
   visitor->Trace(in_flight_write_request_);
   visitor->Trace(in_flight_close_request_);

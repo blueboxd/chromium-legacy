@@ -80,7 +80,7 @@ class WebMouseWheelEvent;
 class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
  public:
   explicit EventHandler(LocalFrame&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   void Clear();
 

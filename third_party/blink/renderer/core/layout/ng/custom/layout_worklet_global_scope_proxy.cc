@@ -92,7 +92,7 @@ CSSLayoutDefinition* LayoutWorkletGlobalScopeProxy::FindDefinition(
   return global_scope_->FindDefinition(name);
 }
 
-void LayoutWorkletGlobalScopeProxy::Trace(Visitor* visitor) {
+void LayoutWorkletGlobalScopeProxy::Trace(Visitor* visitor) const {
   visitor->Trace(global_scope_);
 }
 

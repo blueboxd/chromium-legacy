@@ -49,7 +49,7 @@ class CustomStatesTokenList : public DOMTokenList {
 ElementInternals::ElementInternals(HTMLElement& target) : target_(target) {
 }
 
-void ElementInternals::Trace(Visitor* visitor) {
+void ElementInternals::Trace(Visitor* visitor) const {
   visitor->Trace(target_);
   visitor->Trace(value_);
   visitor->Trace(state_);

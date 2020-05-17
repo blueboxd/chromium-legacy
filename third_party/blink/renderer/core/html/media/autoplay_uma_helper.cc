@@ -297,7 +297,7 @@ bool AutoplayUmaHelper::ShouldListenToContextDestroyed() const {
          muted_video_offscreen_duration_intersection_observer_;
 }
 
-void AutoplayUmaHelper::Trace(Visitor* visitor) {
+void AutoplayUmaHelper::Trace(Visitor* visitor) const {
   NativeEventListener::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
   visitor->Trace(element_);

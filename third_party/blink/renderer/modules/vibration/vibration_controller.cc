@@ -188,7 +188,7 @@ void VibrationController::PageVisibilityChanged() {
     Cancel();
 }
 
-void VibrationController::Trace(Visitor* visitor) {
+void VibrationController::Trace(Visitor* visitor) const {
   ExecutionContextLifecycleObserver::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
   visitor->Trace(vibration_manager_);

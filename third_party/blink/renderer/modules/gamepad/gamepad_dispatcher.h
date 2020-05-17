@@ -44,7 +44,7 @@ class GamepadDispatcher final : public GarbageCollected<GamepadDispatcher>,
                               device::mojom::blink::GamepadHapticsManager::
                                   ResetVibrationActuatorCallback);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void InitializeHaptics();

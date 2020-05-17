@@ -43,7 +43,7 @@ class CORE_EXPORT TestInterfaceOrTestInterfaceEmpty final {
   TestInterfaceOrTestInterfaceEmpty(const TestInterfaceOrTestInterfaceEmpty&);
   ~TestInterfaceOrTestInterfaceEmpty();
   TestInterfaceOrTestInterfaceEmpty& operator=(const TestInterfaceOrTestInterfaceEmpty&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   enum class SpecificType {

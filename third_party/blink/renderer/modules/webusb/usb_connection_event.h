@@ -26,7 +26,7 @@ class USBConnectionEvent final : public Event {
 
   USBDevice* device() const { return device_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<USBDevice> device_;

@@ -76,7 +76,7 @@ class SelectionPaintRange : public GarbageCollected<SelectionPaintRange> {
         start_offset(passed_start_offset),
         end_node(passed_end_node),
         end_offset(passed_end_offset) {}
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(start_node);
     visitor->Trace(end_node);
   }
@@ -872,7 +872,7 @@ void LayoutSelection::InvalidatePaintForSelection() {
                                       &visitor);
 }
 
-void LayoutSelection::Trace(Visitor* visitor) {
+void LayoutSelection::Trace(Visitor* visitor) const {
   visitor->Trace(frame_selection_);
   visitor->Trace(paint_range_);
 }

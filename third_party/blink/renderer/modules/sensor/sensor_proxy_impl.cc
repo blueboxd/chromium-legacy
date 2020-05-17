@@ -31,7 +31,7 @@ SensorProxyImpl::SensorProxyImpl(device::mojom::blink::SensorType sensor_type,
 
 SensorProxyImpl::~SensorProxyImpl() {}
 
-void SensorProxyImpl::Trace(Visitor* visitor) {
+void SensorProxyImpl::Trace(Visitor* visitor) const {
   visitor->Trace(sensor_remote_);
   visitor->Trace(client_receiver_);
   SensorProxy::Trace(visitor);

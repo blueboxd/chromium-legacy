@@ -61,7 +61,7 @@ class CORE_EXPORT AbortSignal : public EventTargetWithInlineData {
 
   virtual bool IsTaskSignal() const { return false; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void AddSignalAbortAlgorithm(AbortSignal*);

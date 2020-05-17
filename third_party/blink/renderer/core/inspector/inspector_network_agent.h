@@ -81,7 +81,7 @@ class CORE_EXPORT InspectorNetworkAgent final
                         WorkerGlobalScope*,
                         v8_inspector::V8InspectorSession*);
   ~InspectorNetworkAgent() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void Restore() override;
 

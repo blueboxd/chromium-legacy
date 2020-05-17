@@ -51,7 +51,7 @@ void SVGFEImageElement::Dispose() {
   ClearImageResource();
 }
 
-void SVGFEImageElement::Trace(Visitor* visitor) {
+void SVGFEImageElement::Trace(Visitor* visitor) const {
   visitor->Trace(preserve_aspect_ratio_);
   visitor->Trace(cached_image_);
   visitor->Trace(target_id_observer_);

@@ -29,7 +29,7 @@ class MODULES_EXPORT CSSAnimationWorklet final
 
   void ContextDestroyed() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   static CSSAnimationWorklet& From(LocalDOMWindow&);

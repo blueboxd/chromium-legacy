@@ -26,7 +26,7 @@ void HitRegion::RemovePixels(const Path& clear_area) {
   path_.SubtractPath(clear_area);
 }
 
-void HitRegion::Trace(Visitor* visitor) {
+void HitRegion::Trace(Visitor* visitor) const {
   visitor->Trace(control_);
 }
 
@@ -118,7 +118,7 @@ unsigned HitRegionManager::GetHitRegionsCount() const {
   return hit_region_list_.size();
 }
 
-void HitRegionManager::Trace(Visitor* visitor) {
+void HitRegionManager::Trace(Visitor* visitor) const {
   visitor->Trace(hit_region_list_);
   visitor->Trace(hit_region_id_map_);
   visitor->Trace(hit_region_control_map_);

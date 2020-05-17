@@ -37,7 +37,7 @@ ScriptPromise Ink::requestPresenter(ScriptState* state,
   return promise;
 }
 
-void Ink::Trace(Visitor* visitor) {
+void Ink::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
 }
 

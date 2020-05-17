@@ -28,7 +28,7 @@ class MODULES_EXPORT ApplyConstraintsRequest final
   void RequestSucceeded();
   void RequestFailed(const String& constraint, const String& message);
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
  private:
   WebMediaStreamTrack track_;

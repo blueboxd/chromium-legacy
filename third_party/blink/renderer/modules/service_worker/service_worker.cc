@@ -203,7 +203,7 @@ ServiceWorker::ServiceWorker(ExecutionContext* execution_context,
 
 ServiceWorker::~ServiceWorker() = default;
 
-void ServiceWorker::Trace(Visitor* visitor) {
+void ServiceWorker::Trace(Visitor* visitor) const {
   visitor->Trace(host_);
   visitor->Trace(receiver_);
   AbstractWorker::Trace(visitor);

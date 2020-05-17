@@ -350,7 +350,7 @@ void ConvolverNode::setNormalize(bool normalize) {
   GetConvolverHandler().SetNormalize(normalize);
 }
 
-void ConvolverNode::Trace(Visitor* visitor) {
+void ConvolverNode::Trace(Visitor* visitor) const {
   visitor->Trace(buffer_);
   AudioNode::Trace(visitor);
 }

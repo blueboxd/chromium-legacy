@@ -74,7 +74,7 @@ class RTCRtpReceiver final : public ScriptWrappable {
   void set_transport(RTCDtlsTransport*);
   void UpdateSourcesIfNeeded();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void SetContributingSourcesNeedsUpdating();

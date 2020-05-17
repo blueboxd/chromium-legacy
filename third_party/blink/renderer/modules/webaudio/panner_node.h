@@ -232,7 +232,7 @@ class PannerNode final : public AudioNode {
 
   PannerNode(BaseAudioContext&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Uses a 3D cartesian coordinate system
   AudioParam* positionX() const { return position_x_; }

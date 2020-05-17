@@ -44,7 +44,7 @@ class MODULES_EXPORT PaymentRequestUpdateEvent : public Event,
   void start_waiting_for_update(bool value) { wait_for_update_ = value; }
   bool is_waiting_for_update() const { return wait_for_update_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // True after event.updateWith() was called.

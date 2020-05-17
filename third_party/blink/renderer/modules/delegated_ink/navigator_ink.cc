@@ -27,7 +27,7 @@ Ink* NavigatorInk::ink(Navigator& navigator) {
   return supplement->ink_;
 }
 
-void NavigatorInk::Trace(Visitor* visitor) {
+void NavigatorInk::Trace(Visitor* visitor) const {
   visitor->Trace(ink_);
   Supplement<Navigator>::Trace(visitor);
 }

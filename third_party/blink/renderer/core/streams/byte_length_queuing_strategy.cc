@@ -93,7 +93,7 @@ ScriptValue ByteLengthQueuingStrategy::size(ScriptState* script_state) const {
       ByteLengthQueuingStrategySizeFunction::CreateFunction(script_state));
 }
 
-void ByteLengthQueuingStrategy::Trace(Visitor* visitor) {
+void ByteLengthQueuingStrategy::Trace(Visitor* visitor) const {
   visitor->Trace(high_water_mark_);
   ScriptWrappable::Trace(visitor);
 }

@@ -62,7 +62,7 @@ class CORE_EXPORT ImportMap final : public GarbageCollected<ImportMap> {
 
   String ToString() const;
 
-  void Trace(Visitor*) {}
+  void Trace(Visitor*) const {}
 
  private:
   using MatchResult = SpecifierMap::const_iterator;

@@ -64,7 +64,7 @@ void StyleRuleCSSStyleDeclaration::Reattach(
   property_set_ = &property_set;
 }
 
-void StyleRuleCSSStyleDeclaration::Trace(Visitor* visitor) {
+void StyleRuleCSSStyleDeclaration::Trace(Visitor* visitor) const {
   visitor->Trace(parent_rule_);
   PropertySetCSSStyleDeclaration::Trace(visitor);
 }

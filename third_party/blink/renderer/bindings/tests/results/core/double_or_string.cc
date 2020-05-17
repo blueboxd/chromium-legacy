@@ -57,7 +57,7 @@ DoubleOrString::DoubleOrString(const DoubleOrString&) = default;
 DoubleOrString::~DoubleOrString() = default;
 DoubleOrString& DoubleOrString::operator=(const DoubleOrString&) = default;
 
-void DoubleOrString::Trace(Visitor* visitor) {
+void DoubleOrString::Trace(Visitor* visitor) const {
 }
 
 void V8DoubleOrString::ToImpl(

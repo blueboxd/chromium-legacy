@@ -316,7 +316,7 @@ void CSSDefaultStyleSheets::EnsureDefaultStyleSheetForFullscreen() {
                                            ScreenEval());
 }
 
-void CSSDefaultStyleSheets::Trace(Visitor* visitor) {
+void CSSDefaultStyleSheets::Trace(Visitor* visitor) const {
   visitor->Trace(default_style_);
   visitor->Trace(default_mathml_style_);
   visitor->Trace(default_svg_style_);

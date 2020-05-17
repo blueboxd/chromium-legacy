@@ -45,7 +45,7 @@ class AbstractPropertySetCSSStyleDeclaration : public CSSStyleDeclaration {
   AbstractPropertySetCSSStyleDeclaration(ExecutionContext* context)
       : CSSStyleDeclaration(context) {}
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   CSSRule* parentRule() const override { return nullptr; }

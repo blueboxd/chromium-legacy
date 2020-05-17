@@ -266,7 +266,7 @@ void FontFaceSetDocument::LCPLimitReached(TimerBase*) {
   font_display_auto_align_histogram_.Record();
 }
 
-void FontFaceSetDocument::Trace(Visitor* visitor) {
+void FontFaceSetDocument::Trace(Visitor* visitor) const {
   Supplement<Document>::Trace(visitor);
   FontFaceSet::Trace(visitor);
 }

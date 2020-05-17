@@ -62,7 +62,7 @@ class XRReferenceSpace : public XRSpace {
 
   base::Optional<XRNativeOriginInformation> NativeOrigin() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   virtual void OnReset();
 

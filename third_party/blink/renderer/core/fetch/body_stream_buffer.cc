@@ -84,7 +84,7 @@ class BodyStreamBuffer::LoaderClient final
 
   void Abort() override { NOTREACHED(); }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(buffer_);
     visitor->Trace(client_);
     ExecutionContextLifecycleObserver::Trace(visitor);
@@ -417,7 +417,7 @@ scoped_refptr<BlobDataHandle> BodyStreamBuffer::TakeSideDataBlob() {
   return std::move(side_data_blob_);
 }
 
-void BodyStreamBuffer::Trace(Visitor* visitor) {
+void BodyStreamBuffer::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(stream_);
   visitor->Trace(consumer_);

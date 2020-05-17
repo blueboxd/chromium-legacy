@@ -287,7 +287,7 @@ bool KeyframeEffectModelBase::IsTransformRelatedEffect() const {
          Affects(PropertyHandle(GetCSSPropertyTranslate()));
 }
 
-void KeyframeEffectModelBase::Trace(Visitor* visitor) {
+void KeyframeEffectModelBase::Trace(Visitor* visitor) const {
   visitor->Trace(keyframes_);
   visitor->Trace(keyframe_groups_);
   visitor->Trace(interpolation_effect_);

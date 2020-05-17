@@ -59,7 +59,7 @@ class CORE_EXPORT CSSTranslate final : public CSSTransformComponent {
   TransformComponentType GetType() const final { return kTranslationType; }
   const CSSFunctionValue* ToCSSValue() const final;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(x_);
     visitor->Trace(y_);
     visitor->Trace(z_);

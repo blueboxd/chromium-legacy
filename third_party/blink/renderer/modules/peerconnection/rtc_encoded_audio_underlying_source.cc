@@ -45,7 +45,7 @@ ScriptPromise RTCEncodedAudioUnderlyingSource::Cancel(ScriptState* script_state,
   return ScriptPromise::CastUndefined(script_state);
 }
 
-void RTCEncodedAudioUnderlyingSource::Trace(Visitor* visitor) {
+void RTCEncodedAudioUnderlyingSource::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   UnderlyingSourceBase::Trace(visitor);
 }

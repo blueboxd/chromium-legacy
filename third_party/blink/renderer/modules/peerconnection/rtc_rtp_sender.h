@@ -85,7 +85,7 @@ class RTCRtpSender final : public ScriptWrappable {
   void set_transceiver(RTCRtpTransceiver*);
   void set_transport(RTCDtlsTransport*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void RegisterEncodedAudioStreamCallback();

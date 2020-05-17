@@ -23,7 +23,7 @@ class MIDIPortMap : public ScriptWrappable, public Maplike<String, T*> {
   // IDL attributes / methods
   uint32_t size() const { return entries_.size(); }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(entries_);
     ScriptWrappable::Trace(visitor);
   }
@@ -77,7 +77,7 @@ class MIDIPortMap : public ScriptWrappable, public Maplike<String, T*> {
       return true;
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(map_);
       PairIterable<String, T*>::IterationSource::Trace(visitor);
     }

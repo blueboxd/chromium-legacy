@@ -57,7 +57,7 @@ FloatOrBoolean::FloatOrBoolean(const FloatOrBoolean&) = default;
 FloatOrBoolean::~FloatOrBoolean() = default;
 FloatOrBoolean& FloatOrBoolean::operator=(const FloatOrBoolean&) = default;
 
-void FloatOrBoolean::Trace(Visitor* visitor) {
+void FloatOrBoolean::Trace(Visitor* visitor) const {
 }
 
 void V8FloatOrBoolean::ToImpl(

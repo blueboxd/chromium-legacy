@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">গ্রুপ তৈরি করুন</translation>
 <translation id="2671423594960767771">গ্রুপ শেয়ার করুন</translation>
 <translation id="2977480621796371840">গ্রুপ থেকে সরান</translation>
+<translation id="3328308545011660196">সাজেশন: মনে হচ্ছে <ph name="NUMBER_OF_TABS" />টি ট্যাব সম্পর্কযুক্ত। সেগুলি গ্রুপ করতে চান?</translation>
+<translation id="4133493477912226187">মনে হচ্ছে <ph name="NUMBER_OF_TABS" />টি ট্যাব সম্পর্কযুক্ত। সেগুলি গ্রুপ করতে চান?</translation>
 <translation id="4212246570487010370">ব্রাউজ করা চালিয়ে যান</translation>
 <translation id="4450893287417543264">আর দেখতে চাই না</translation>
 <translation id="4648718555153979859">আপনার ট্যাবগুলিকে এখানে একসাথে গ্রুপ করা আছে</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">গ্রুপ থেকে ট্যাব সরান</translation>
 <translation id="7559245342362162951">ফুলস্ক্রিন গ্রিডে গ্রুপের ট্যাব দেখুন</translation>
 <translation id="7792771145871471484">সাজেশন পর্যালোচনা করুন।</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{বেছে নেওয়া <ph name="TABS_COUNT_ONE" />টি ট্যাব গ্রুপ করুন}one{বেছে নেওয়া <ph name="TABS_COUNT_MANY" />টি ট্যাব গ্রুপ করুন}other{বেছে নেওয়া <ph name="TABS_COUNT_MANY" />টি ট্যাব গ্রুপ করুন}}</translation>
 <translation id="7885132941432959125">ডানদিকে ট্যাব সরান</translation>
 <translation id="7966321538264951561">সাজেশন বাতিল করুন।</translation>
 <translation id="814503310257431685">সব দেখুন</translation>

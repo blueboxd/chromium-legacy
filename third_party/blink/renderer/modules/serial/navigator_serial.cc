@@ -25,7 +25,7 @@ Serial* NavigatorSerial::serial(Navigator& navigator) {
   return NavigatorSerial::From(navigator).serial();
 }
 
-void NavigatorSerial::Trace(Visitor* visitor) {
+void NavigatorSerial::Trace(Visitor* visitor) const {
   visitor->Trace(serial_);
   Supplement<Navigator>::Trace(visitor);
 }

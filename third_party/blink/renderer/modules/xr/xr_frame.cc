@@ -333,7 +333,7 @@ ScriptPromise XRFrame::CreateAnchorFromNonStationarySpace(
       *stationary_space_native_origin, exception_state);
 }
 
-void XRFrame::Trace(Visitor* visitor) {
+void XRFrame::Trace(Visitor* visitor) const {
   visitor->Trace(session_);
   visitor->Trace(world_information_);
   ScriptWrappable::Trace(visitor);

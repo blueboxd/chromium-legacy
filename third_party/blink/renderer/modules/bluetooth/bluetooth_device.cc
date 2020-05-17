@@ -84,7 +84,7 @@ ExecutionContext* BluetoothDevice::GetExecutionContext() const {
   return ExecutionContextClient::GetExecutionContext();
 }
 
-void BluetoothDevice::Trace(Visitor* visitor) {
+void BluetoothDevice::Trace(Visitor* visitor) const {
   visitor->Trace(attribute_instance_map_);
   visitor->Trace(gatt_);
   visitor->Trace(bluetooth_);

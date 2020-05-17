@@ -28,7 +28,7 @@ class WorkerNavigatorWakeLock final
 
   explicit WorkerNavigatorWakeLock(WorkerNavigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   WakeLock* GetWakeLock(ScriptState*);

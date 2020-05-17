@@ -193,7 +193,7 @@ void BarcodeDetector::OnConnectionError() {
   }
 }
 
-void BarcodeDetector::Trace(Visitor* visitor) {
+void BarcodeDetector::Trace(Visitor* visitor) const {
   ShapeDetector::Trace(visitor);
   visitor->Trace(service_);
   visitor->Trace(detect_requests_);

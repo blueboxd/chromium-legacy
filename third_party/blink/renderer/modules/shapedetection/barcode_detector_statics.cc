@@ -53,7 +53,7 @@ ScriptPromise BarcodeDetectorStatics::EnumerateSupportedFormats(
   return promise;
 }
 
-void BarcodeDetectorStatics::Trace(Visitor* visitor) {
+void BarcodeDetectorStatics::Trace(Visitor* visitor) const {
   Supplement<ExecutionContext>::Trace(visitor);
   visitor->Trace(service_);
   visitor->Trace(get_supported_format_requests_);

@@ -33,7 +33,7 @@ class SVGSymbolElement final : public SVGElement, public SVGFitToViewBox {
  public:
   explicit SVGSymbolElement(Document&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void SvgAttributeChanged(const QualifiedName&) override;

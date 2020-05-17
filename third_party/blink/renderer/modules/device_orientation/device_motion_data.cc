@@ -70,7 +70,7 @@ DeviceMotionData::DeviceMotionData(
       rotation_rate_(rotation_rate),
       interval_(interval) {}
 
-void DeviceMotionData::Trace(Visitor* visitor) {
+void DeviceMotionData::Trace(Visitor* visitor) const {
   visitor->Trace(acceleration_);
   visitor->Trace(acceleration_including_gravity_);
   visitor->Trace(rotation_rate_);

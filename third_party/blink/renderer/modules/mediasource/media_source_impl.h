@@ -129,7 +129,7 @@ class MediaSourceImpl final : public EventTargetWithInlineData,
   void AddedToRegistry();
   void RemovedFromRegistry();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void SetReadyState(const AtomicString&);

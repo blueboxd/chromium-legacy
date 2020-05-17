@@ -25,7 +25,7 @@ class IDBObserverChanges final : public ScriptWrappable {
                      const Vector<Persistent<IDBObservation>>& observations,
                      const Vector<int32_t>& observation_indices);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Implement IDL
   IDBTransaction* transaction() const { return transaction_.Get(); }

@@ -60,7 +60,7 @@ class UserTiming final : public GarbageCollected<UserTiming> {
   PerformanceEntryVector GetMarks(const AtomicString& name) const;
   PerformanceEntryVector GetMeasures(const AtomicString& name) const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   double FindExistingMarkStartTime(const AtomicString& mark_name,

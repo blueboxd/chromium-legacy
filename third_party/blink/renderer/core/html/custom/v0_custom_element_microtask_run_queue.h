@@ -25,7 +25,7 @@ class V0CustomElementMicrotaskRunQueue
   void RequestDispatchIfNeeded();
   bool IsEmpty() const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   void Dispatch();

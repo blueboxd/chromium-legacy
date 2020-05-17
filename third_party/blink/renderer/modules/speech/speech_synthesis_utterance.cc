@@ -75,7 +75,7 @@ void SpeechSynthesisUtterance::setVoice(SpeechSynthesisVoice* voice) {
   mojom_utterance_->voice = voice_ ? voice_->name() : String();
 }
 
-void SpeechSynthesisUtterance::Trace(Visitor* visitor) {
+void SpeechSynthesisUtterance::Trace(Visitor* visitor) const {
   visitor->Trace(receiver_);
   visitor->Trace(synthesis_);
   visitor->Trace(voice_);

@@ -24,7 +24,7 @@ class FontIterator final : public ScriptWrappable {
 
   ScriptPromise next(ScriptState*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   HeapDeque<Member<FontMetadata>> entries_;

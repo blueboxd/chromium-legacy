@@ -86,7 +86,7 @@ struct RadialGradientAttributes final : GradientAttributes {
   bool HasFy() const { return fy_set_; }
   bool HasFr() const { return fr_set_; }
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(cx_);
     visitor->Trace(cy_);
     visitor->Trace(r_);
@@ -123,7 +123,7 @@ class RadialGradientAttributesWrapper final
   void Set(const RadialGradientAttributes& attributes) {
     attributes_ = attributes;
   }
-  void Trace(Visitor* visitor) { visitor->Trace(attributes_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(attributes_); }
 
  private:
   RadialGradientAttributes attributes_;

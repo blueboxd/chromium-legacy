@@ -39,7 +39,7 @@ class CORE_EXPORT CompositionMarkerListImpl final : public DocumentMarkerList {
                     unsigned old_length,
                     unsigned new_length) final;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   HeapVector<Member<DocumentMarker>> markers_;

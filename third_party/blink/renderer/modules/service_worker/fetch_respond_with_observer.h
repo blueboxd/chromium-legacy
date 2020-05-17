@@ -46,7 +46,7 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
                            const char* property_name) override;
   void OnNoResponse() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   const KURL request_url_;

@@ -128,7 +128,7 @@ class PaymentInstrumentParameter final
   bool has_name() const { return has_name_; }
   const String& name() const { return name_; }
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(icons_);
     visitor->Trace(capabilities_);
   }
@@ -289,7 +289,7 @@ ScriptPromise PaymentInstruments::clear(ScriptState* script_state,
   return promise;
 }
 
-void PaymentInstruments::Trace(Visitor* visitor) {
+void PaymentInstruments::Trace(Visitor* visitor) const {
   visitor->Trace(permission_service_);
   ScriptWrappable::Trace(visitor);
 }

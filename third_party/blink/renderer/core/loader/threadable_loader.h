@@ -131,7 +131,7 @@ class CORE_EXPORT ThreadableLoader final
 
   void SetDefersLoading(bool);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   class AssignOnScopeExit;

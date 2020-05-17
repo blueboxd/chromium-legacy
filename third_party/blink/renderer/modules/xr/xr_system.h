@@ -97,7 +97,7 @@ class XRSystem final : public EventTargetWithInlineData,
 
   // ExecutionContextLifecycleObserver overrides.
   void ContextDestroyed() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // FocusChangedObserver overrides.
   void FocusedFrameChanged() override;
@@ -205,7 +205,7 @@ class XRSystem final : public EventTargetWithInlineData,
     }
     Element* DOMOverlayElement() { return dom_overlay_element_; }
 
-    virtual void Trace(Visitor*);
+    virtual void Trace(Visitor*) const;
 
    private:
     void ParseSensorRequirement();
@@ -273,7 +273,7 @@ class XRSystem final : public EventTargetWithInlineData,
 
     device::mojom::blink::XRSessionMode mode() const;
 
-    virtual void Trace(Visitor*);
+    virtual void Trace(Visitor*) const;
 
    private:
     Member<ScriptPromiseResolver> resolver_;
@@ -302,7 +302,7 @@ class XRSystem final : public EventTargetWithInlineData,
     void RequestFullscreen();
     void OnSessionStarting();
 
-    void Trace(Visitor*) override;
+    void Trace(Visitor*) const override;
 
    private:
     Member<XRSystem> xr_;
@@ -323,7 +323,7 @@ class XRSystem final : public EventTargetWithInlineData,
 
     void ExitFullscreen(Element* element, base::OnceClosure on_exited);
 
-    void Trace(Visitor*) override;
+    void Trace(Visitor*) const override;
 
    private:
     Member<XRSystem> xr_;

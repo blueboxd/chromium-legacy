@@ -47,7 +47,7 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
 
  public:
   ~HTMLFormControlElement() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   String formAction() const;
   void setFormAction(const AtomicString&);

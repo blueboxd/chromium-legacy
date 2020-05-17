@@ -40,7 +40,7 @@ class TestPerformance : public Performance {
     return HasObserverFor(entry_type);
   }
 
-  void Trace(Visitor* visitor) override { Performance::Trace(visitor); }
+  void Trace(Visitor* visitor) const override { Performance::Trace(visitor); }
 };
 
 class PerformanceTest : public PageTestBase {

@@ -188,7 +188,7 @@ void LargestContentfulPaintCalculator::UpdateLargestContentfulPaint(
   }
 }
 
-void LargestContentfulPaintCalculator::Trace(Visitor* visitor) {
+void LargestContentfulPaintCalculator::Trace(Visitor* visitor) const {
   visitor->Trace(window_performance_);
 }
 

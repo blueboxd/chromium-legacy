@@ -54,7 +54,7 @@ SVGFEMorphologyElement::SVGFEMorphologyElement(Document& document)
   AddToPropertyMap(svg_operator_);
 }
 
-void SVGFEMorphologyElement::Trace(Visitor* visitor) {
+void SVGFEMorphologyElement::Trace(Visitor* visitor) const {
   visitor->Trace(radius_);
   visitor->Trace(in1_);
   visitor->Trace(svg_operator_);

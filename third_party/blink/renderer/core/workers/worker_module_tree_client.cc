@@ -51,7 +51,7 @@ void WorkerModuleTreeClient::NotifyModuleTreeLoadFinished(
       *module_script, base::nullopt /* v8_inspector::V8StackTraceId */);
 }
 
-void WorkerModuleTreeClient::Trace(Visitor* visitor) {
+void WorkerModuleTreeClient::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   ModuleTreeClient::Trace(visitor);
 }

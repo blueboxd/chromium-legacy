@@ -45,7 +45,7 @@ class RangeInputType final : public InputType, public InputTypeView {
  public:
   explicit RangeInputType(HTMLInputElement&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   using InputType::GetElement;
 
  private:

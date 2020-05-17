@@ -61,7 +61,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
  public:
   explicit ChromeClientImpl(WebViewImpl*);
   ~ChromeClientImpl() override;
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   // ChromeClient methods:
   WebViewImpl* GetWebView() const override;

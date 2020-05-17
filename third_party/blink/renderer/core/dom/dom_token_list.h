@@ -46,7 +46,7 @@ class CORE_EXPORT DOMTokenList : public ScriptWrappable {
   DOMTokenList(Element& element, const QualifiedName& attr)
       : element_(element), attribute_name_(attr) {}
   ~DOMTokenList() override = default;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   unsigned length() const { return token_set_.size(); }
   const AtomicString item(unsigned index) const;

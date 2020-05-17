@@ -223,7 +223,7 @@ bool MatchedPropertiesCache::IsCacheable(const StyleResolverState& state) {
   return true;
 }
 
-void MatchedPropertiesCache::Trace(Visitor* visitor) {
+void MatchedPropertiesCache::Trace(Visitor* visitor) const {
   visitor->Trace(cache_);
   visitor->RegisterWeakCallbackMethod<
       MatchedPropertiesCache,

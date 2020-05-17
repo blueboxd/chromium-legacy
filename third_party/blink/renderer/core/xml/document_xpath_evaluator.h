@@ -60,7 +60,7 @@ class CORE_EXPORT DocumentXPathEvaluator final
                                ExceptionState&);
 
   explicit DocumentXPathEvaluator(Document&);
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<XPathEvaluator> xpath_evaluator_;

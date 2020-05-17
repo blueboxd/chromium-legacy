@@ -82,7 +82,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
                      Element* context_element,
                      ParserContentPolicy);
   ~HTMLDocumentParser() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // TODO(alexclarke): Remove when background parser goes away.
   void Dispose();

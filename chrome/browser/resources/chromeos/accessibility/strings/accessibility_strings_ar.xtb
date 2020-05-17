@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">زر التبديل</translation>
 <translation id="1299774449519412690">أزرق سماوي فاتح</translation>
 <translation id="1303806948938513162">‏النقر بأربعة أصابع للدخول إلى قوائم ChromeVox</translation>
+<translation id="1325363694295259631">تم إلغاء اختيار الزر الخاص باختيار عنصر القائمة <ph name="NAME" />.</translation>
 <translation id="1325946044405407859">أسمر مصفر</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> من <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">صدى الحرف والكلمة</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">الإعلان عن حالة البطارية الحالية</translation>
 <translation id="4997282455736854877">تم اختيار زر الاختيار <ph name="NAME" /></translation>
 <translation id="5011664330025416377">‏اضغط على "Search" + "مسافة" للتفعيل.</translation>
+<translation id="5012724933919010465">تم اختيار الزر الخاص باختيار عنصر القائمة <ph name="NAME" />.</translation>
 <translation id="5020651427400641814">تفعيل تسجيل الكلام</translation>
 <translation id="5041394372352067729">نقل عرض برايل إلى أعلى الصفحة</translation>
 <translation id="5042770794184672516">زيادة مستوى صوت النطق</translation>

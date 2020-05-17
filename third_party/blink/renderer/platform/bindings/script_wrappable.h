@@ -68,7 +68,7 @@ class PLATFORM_EXPORT ScriptWrappable
 
   const char* NameInHeapSnapshot() const override;
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
   template <typename T>
   T* ToImpl() {

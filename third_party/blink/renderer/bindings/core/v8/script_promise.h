@@ -124,7 +124,7 @@ class CORE_EXPORT ScriptPromise final {
   static ScriptPromise All(ScriptState*,
                            const HeapVector<ScriptPromise>& promises);
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(promise_);
     visitor->Trace(script_state_);
   }
@@ -142,7 +142,7 @@ class CORE_EXPORT ScriptPromise final {
     void Reject(v8::Local<v8::Value>);
     void Clear() { resolver_.Clear(); }
     ScriptState* GetScriptState() const { return script_state_; }
-    void Trace(Visitor* visitor) {
+    void Trace(Visitor* visitor) const {
       visitor->Trace(script_state_);
       visitor->Trace(resolver_);
     }

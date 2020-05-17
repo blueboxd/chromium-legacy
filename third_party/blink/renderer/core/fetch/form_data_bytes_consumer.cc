@@ -313,7 +313,7 @@ class DataPipeAndDataBytesConsumer final : public BytesConsumer {
 
   String DebugName() const override { return "DataPipeAndDataBytesConsumer"; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(execution_context_);
     visitor->Trace(client_);
     visitor->Trace(simple_consumer_);
@@ -479,7 +479,7 @@ class ComplexFormDataBytesConsumer final : public BytesConsumer {
   Error GetError() const override { return blob_bytes_consumer_->GetError(); }
   String DebugName() const override { return "ComplexFormDataBytesConsumer"; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(blob_bytes_consumer_);
     BytesConsumer::Trace(visitor);
   }

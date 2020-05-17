@@ -202,7 +202,7 @@ v8::MaybeLocal<v8::Value> ValueWrapperSyntheticModuleScript::EvaluationSteps(
   return v8::Undefined(reinterpret_cast<v8::Isolate*>(isolate));
 }
 
-void ValueWrapperSyntheticModuleScript::Trace(Visitor* visitor) {
+void ValueWrapperSyntheticModuleScript::Trace(Visitor* visitor) const {
   visitor->Trace(export_value_);
   ModuleScript::Trace(visitor);
 }

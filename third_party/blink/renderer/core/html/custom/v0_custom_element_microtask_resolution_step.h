@@ -48,7 +48,7 @@ class V0CustomElementMicrotaskResolutionStep final
                                          const V0CustomElementDescriptor&);
   ~V0CustomElementMicrotaskResolutionStep() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Result Process() override;

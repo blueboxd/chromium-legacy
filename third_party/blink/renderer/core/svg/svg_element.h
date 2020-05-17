@@ -209,7 +209,7 @@ class CORE_EXPORT SVGElement : public Element {
   void SetNeedsStyleRecalcForInstances(StyleChangeType,
                                        const StyleChangeReasonForTracing&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   static const AtomicString& EventParameterName();
 

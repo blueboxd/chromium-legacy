@@ -78,7 +78,7 @@ ScriptedIdleTaskController::V8IdleTask::V8IdleTask(
     V8IdleRequestCallback* callback)
     : callback_(callback) {}
 
-void ScriptedIdleTaskController::V8IdleTask::Trace(Visitor* visitor) {
+void ScriptedIdleTaskController::V8IdleTask::Trace(Visitor* visitor) const {
   visitor->Trace(callback_);
   ScriptedIdleTaskController::IdleTask::Trace(visitor);
 }
@@ -96,7 +96,7 @@ ScriptedIdleTaskController::ScriptedIdleTaskController(
 
 ScriptedIdleTaskController::~ScriptedIdleTaskController() = default;
 
-void ScriptedIdleTaskController::Trace(Visitor* visitor) {
+void ScriptedIdleTaskController::Trace(Visitor* visitor) const {
   visitor->Trace(idle_tasks_);
   ExecutionContextLifecycleStateObserver::Trace(visitor);
 }

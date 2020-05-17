@@ -137,7 +137,7 @@ class MockScrollableAreaForAnimatorTest
     return ScrollbarTheme::GetTheme();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(animator);
     ScrollableArea::Trace(visitor);
   }

@@ -86,7 +86,7 @@ const AtomicString& RTCPeerConnectionIceErrorEvent::InterfaceName() const {
   return event_interface_names::kRTCPeerConnectionIceErrorEvent;
 }
 
-void RTCPeerConnectionIceErrorEvent::Trace(Visitor* visitor) {
+void RTCPeerConnectionIceErrorEvent::Trace(Visitor* visitor) const {
   Event::Trace(visitor);
 }
 

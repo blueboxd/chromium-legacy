@@ -32,6 +32,7 @@ namespace ash {
 namespace {
 
 using assistant::util::AlarmTimerAction;
+using chromeos::assistant::features::IsTimersV2Enabled;
 using chromeos::assistant::mojom::AssistantNotification;
 using chromeos::assistant::mojom::AssistantNotificationButton;
 using chromeos::assistant::mojom::AssistantNotificationButtonPtr;
@@ -125,21 +126,65 @@ std::vector<AssistantNotificationButtonPtr> CreateTimerNotificationButtons(
     const AssistantTimer& timer) {
   std::vector<AssistantNotificationButtonPtr> buttons;
 
-  // "STOP" button.
+  if (!IsTimersV2Enabled()) {
+    // "STOP" button.
+    buttons.push_back(AssistantNotificationButton::New(
+        l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_STOP_BUTTON),
+        assistant::util::CreateAlarmTimerDeepLink(
+            AlarmTimerAction::kRemoveAlarmOrTimer, timer.id)
+            .value()));
+
+    // "ADD 1 MIN" button.
+    buttons.push_back(AssistantNotificationButton::New(
+        l10n_util::GetStringUTF8(
+            IDS_ASSISTANT_TIMER_NOTIFICATION_ADD_1_MIN_BUTTON),
+        assistant::util::CreateAlarmTimerDeepLink(
+            AlarmTimerAction::kAddTimeToTimer, timer.id,
+            base::TimeDelta::FromMinutes(1))
+            .value()));
+
+    return buttons;
+  }
+
+  DCHECK(IsTimersV2Enabled());
+
+  if (timer.state != AssistantTimerState::kFired) {
+    if (timer.state == AssistantTimerState::kPaused) {
+      // "RESUME" button.
+      buttons.push_back(AssistantNotificationButton::New(
+          l10n_util::GetStringUTF8(
+              IDS_ASSISTANT_TIMER_NOTIFICATION_RESUME_BUTTON),
+          assistant::util::CreateAlarmTimerDeepLink(
+              AlarmTimerAction::kResumeTimer, timer.id)
+              .value()));
+    } else {
+      // "PAUSE" button.
+      buttons.push_back(AssistantNotificationButton::New(
+          l10n_util::GetStringUTF8(
+              IDS_ASSISTANT_TIMER_NOTIFICATION_PAUSE_BUTTON),
+          assistant::util::CreateAlarmTimerDeepLink(
+              AlarmTimerAction::kPauseTimer, timer.id)
+              .value()));
+    }
+  }
+
+  // "CANCEL" button.
   buttons.push_back(AssistantNotificationButton::New(
-      l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_STOP_BUTTON),
+      l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_CANCEL_BUTTON),
       assistant::util::CreateAlarmTimerDeepLink(
           AlarmTimerAction::kRemoveAlarmOrTimer, timer.id)
           .value()));
 
-  // "ADD 1 MIN" button.
-  buttons.push_back(AssistantNotificationButton::New(
-      l10n_util::GetStringUTF8(
-          IDS_ASSISTANT_TIMER_NOTIFICATION_ADD_1_MIN_BUTTON),
-      assistant::util::CreateAlarmTimerDeepLink(
-          AlarmTimerAction::kAddTimeToTimer, timer.id,
-          base::TimeDelta::FromMinutes(1))
-          .value()));
+  if (timer.state == AssistantTimerState::kFired) {
+    // "ADD 1 MIN" button.
+    buttons.push_back(AssistantNotificationButton::New(
+        l10n_util::GetStringUTF8(
+            IDS_ASSISTANT_TIMER_NOTIFICATION_ADD_1_MIN_BUTTON),
+        assistant::util::CreateAlarmTimerDeepLink(
+            AlarmTimerAction::kAddTimeToTimer, timer.id,
+            base::TimeDelta::FromMinutes(1))
+            .value()));
+  }
 
   return buttons;
 }

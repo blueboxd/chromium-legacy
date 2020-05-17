@@ -93,7 +93,7 @@ class CORE_EXPORT ScriptResource final : public TextResource {
       ResponseBodyLoaderDrainableInterface& body_loader,
       scoped_refptr<base::SingleThreadTaskRunner> loader_task_runner) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void OnMemoryDump(WebMemoryDumpLevelOfDetail,
                     WebProcessMemoryDump*) const override;

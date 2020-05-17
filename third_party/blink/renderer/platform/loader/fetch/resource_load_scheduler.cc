@@ -105,7 +105,7 @@ ResourceLoadScheduler::ResourceLoadScheduler(
 
 ResourceLoadScheduler::~ResourceLoadScheduler() = default;
 
-void ResourceLoadScheduler::Trace(Visitor* visitor) {
+void ResourceLoadScheduler::Trace(Visitor* visitor) const {
   visitor->Trace(pending_request_map_);
   visitor->Trace(resource_fetcher_properties_);
   visitor->Trace(console_logger_);

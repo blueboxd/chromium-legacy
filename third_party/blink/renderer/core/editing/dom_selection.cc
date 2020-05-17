@@ -853,7 +853,7 @@ void DOMSelection::AddConsoleWarning(const String& message) {
   }
 }
 
-void DOMSelection::Trace(Visitor* visitor) {
+void DOMSelection::Trace(Visitor* visitor) const {
   visitor->Trace(tree_scope_);
   ScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);

@@ -60,7 +60,7 @@ class CORE_EXPORT CSSRotate final : public CSSTransformComponent {
   TransformComponentType GetType() const final { return kRotationType; }
   const CSSFunctionValue* ToCSSValue() const final;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(angle_);
     visitor->Trace(x_);
     visitor->Trace(y_);

@@ -82,7 +82,7 @@ class ElementData : public GarbageCollected<ElementData> {
   bool IsUnique() const { return bit_field_.get<IsUniqueFlag>(); }
 
   void TraceAfterDispatch(blink::Visitor*) const;
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  protected:
   using BitField = WTF::ConcurrentlyReadBitField<uint32_t>;

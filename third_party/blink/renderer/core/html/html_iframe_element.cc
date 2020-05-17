@@ -57,7 +57,7 @@ HTMLIFrameElement::HTMLIFrameElement(Document& document)
       sandbox_(MakeGarbageCollected<HTMLIFrameElementSandbox>(this)),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault) {}
 
-void HTMLIFrameElement::Trace(Visitor* visitor) {
+void HTMLIFrameElement::Trace(Visitor* visitor) const {
   visitor->Trace(sandbox_);
   visitor->Trace(policy_);
   HTMLFrameElementBase::Trace(visitor);

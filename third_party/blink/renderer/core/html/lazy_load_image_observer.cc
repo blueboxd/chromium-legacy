@@ -335,7 +335,7 @@ bool LazyLoadImageObserver::IsFullyLoadableFirstKImageAndDecrementCount() {
   return false;
 }
 
-void LazyLoadImageObserver::Trace(Visitor* visitor) {
+void LazyLoadImageObserver::Trace(Visitor* visitor) const {
   visitor->Trace(lazy_load_intersection_observer_);
   visitor->Trace(visibility_metrics_observer_);
 }

@@ -31,7 +31,7 @@ class Permissions final : public ScriptWrappable {
                            const HeapVector<ScriptValue>&,
                            ExceptionState&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   mojom::blink::PermissionService* GetService(ExecutionContext*);

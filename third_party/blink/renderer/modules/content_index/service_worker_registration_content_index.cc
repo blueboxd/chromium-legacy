@@ -48,7 +48,7 @@ ContentIndex* ServiceWorkerRegistrationContentIndex::index() {
   return content_index_.Get();
 }
 
-void ServiceWorkerRegistrationContentIndex::Trace(Visitor* visitor) {
+void ServiceWorkerRegistrationContentIndex::Trace(Visitor* visitor) const {
   visitor->Trace(registration_);
   visitor->Trace(content_index_);
   Supplement<ServiceWorkerRegistration>::Trace(visitor);

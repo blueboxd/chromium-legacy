@@ -57,7 +57,7 @@ class IncomingStream::UnderlyingSource final : public UnderlyingSourceBase {
     return ScriptPromise::CastUndefined(script_state);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(incoming_stream_);
     UnderlyingSourceBase::Trace(visitor);
   }
@@ -140,7 +140,7 @@ void IncomingStream::ContextDestroyed() {
   ResetPipe();
 }
 
-void IncomingStream::Trace(Visitor* visitor) {
+void IncomingStream::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(readable_);
   visitor->Trace(controller_);

@@ -46,7 +46,7 @@ class RegisteredEventListener final {
                           const AddEventListenerOptionsResolved* options);
   RegisteredEventListener& operator=(const RegisteredEventListener& that);
 
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
   AddEventListenerOptionsResolved* Options() const;
 

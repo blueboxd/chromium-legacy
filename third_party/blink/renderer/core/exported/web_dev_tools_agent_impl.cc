@@ -338,7 +338,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl() {}
 
-void WebDevToolsAgentImpl::Trace(Visitor* visitor) {
+void WebDevToolsAgentImpl::Trace(Visitor* visitor) const {
   visitor->Trace(agent_);
   visitor->Trace(network_agents_);
   visitor->Trace(page_agents_);

@@ -107,7 +107,7 @@ class MockBaseFetchContext final : public BaseFetchContext {
   }
   void AddConsoleMessage(ConsoleMessage*) const override {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(execution_context_);
     visitor->Trace(fetch_client_settings_object_);
     BaseFetchContext::Trace(visitor);

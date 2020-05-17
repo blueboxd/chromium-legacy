@@ -74,7 +74,7 @@ template <typename T, void (T::*method)(Visitor*) const>
 struct TraceMethodDelegate {
   STATIC_ONLY(TraceMethodDelegate);
   static void Trampoline(Visitor* visitor, const void* self) {
-    (reinterpret_cast<T*>(const_cast<void*>(self))->*method)(visitor);
+    (reinterpret_cast<const T*>(self)->*method)(visitor);
   }
 };
 

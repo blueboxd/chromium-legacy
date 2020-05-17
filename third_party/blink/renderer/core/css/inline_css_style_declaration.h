@@ -40,7 +40,7 @@ class InlineCSSStyleDeclaration final
             parent_element ? parent_element->GetExecutionContext() : nullptr),
         parent_element_(parent_element) {}
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   MutableCSSPropertyValueSet& PropertySet() const override;

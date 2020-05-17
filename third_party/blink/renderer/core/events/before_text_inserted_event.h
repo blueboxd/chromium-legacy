@@ -41,7 +41,7 @@ class BeforeTextInsertedEvent final : public Event {
   const String& GetText() const { return text_; }
   void SetText(const String& s) { text_ = s; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   String text_;

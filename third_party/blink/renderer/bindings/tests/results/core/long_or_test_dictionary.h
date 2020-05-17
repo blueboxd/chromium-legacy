@@ -41,7 +41,7 @@ class CORE_EXPORT LongOrTestDictionary final {
   LongOrTestDictionary(const LongOrTestDictionary&);
   ~LongOrTestDictionary();
   LongOrTestDictionary& operator=(const LongOrTestDictionary&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   enum class SpecificType {

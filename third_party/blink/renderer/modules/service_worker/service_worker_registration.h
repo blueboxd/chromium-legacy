@@ -92,7 +92,7 @@ class ServiceWorkerRegistration final
 
   void Dispose();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // ExecutionContextLifecycleObserver overrides.

@@ -35,7 +35,7 @@ class MediaControlInputElementImpl final : public MediaControlInputElement {
     SetIsWanted(false);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     MediaControlInputElement::Trace(visitor);
   }
 

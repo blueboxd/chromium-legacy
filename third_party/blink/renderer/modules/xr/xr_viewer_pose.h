@@ -23,7 +23,7 @@ class XRViewerPose final : public XRPose {
 
   const HeapVector<Member<XRView>>& views() const { return views_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   HeapVector<Member<XRView>> views_;

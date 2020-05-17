@@ -48,7 +48,7 @@ class MODULES_EXPORT PresentationAvailabilityState final
   // callbacks and observers.
   void UpdateAvailability(const KURL&, mojom::blink::ScreenAvailability);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   enum class ListeningState {
@@ -71,7 +71,7 @@ class MODULES_EXPORT PresentationAvailabilityState final
         availability_callbacks;
     HeapVector<Member<PresentationAvailabilityObserver>> availability_observers;
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(AvailabilityListener);

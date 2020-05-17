@@ -34,7 +34,7 @@ class XRWebGLBinding final : public ScriptWrappable {
 
   WebGLTexture* getReflectionCubeMap(XRLightProbe*, ExceptionState&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   const Member<XRSession> session_;

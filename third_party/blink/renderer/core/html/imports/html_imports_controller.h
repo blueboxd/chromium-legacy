@@ -66,7 +66,7 @@ class HTMLImportsController final
   HTMLImportLoader* LoaderAt(wtf_size_t i) const { return loaders_[i]; }
   HTMLImportLoader* LoaderFor(const Document&) const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   void Dispose();
 

@@ -41,7 +41,7 @@ class PropertySetCSSStyleDeclaration
       : AbstractPropertySetCSSStyleDeclaration(execution_context),
         property_set_(&property_set) {}
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   MutableCSSPropertyValueSet& PropertySet() const final {

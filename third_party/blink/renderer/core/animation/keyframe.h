@@ -114,7 +114,7 @@ class CORE_EXPORT Keyframe : public GarbageCollected<Keyframe> {
   virtual bool IsStringKeyframe() const { return false; }
   virtual bool IsTransitionKeyframe() const { return false; }
 
-  virtual void Trace(Visitor*) {}
+  virtual void Trace(Visitor*) const {}
 
   // Represents a property-specific keyframe as defined in the spec. Refer to
   // the Keyframe class-level documentation for more details.
@@ -159,7 +159,7 @@ class CORE_EXPORT Keyframe : public GarbageCollected<Keyframe> {
         const PropertyHandle&,
         const Keyframe::PropertySpecificKeyframe& end) const;
 
-    virtual void Trace(Visitor*) {}
+    virtual void Trace(Visitor*) const {}
 
    protected:
     double offset_;

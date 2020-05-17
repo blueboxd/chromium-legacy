@@ -205,7 +205,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
 
   bool IsConstructed() { return is_constructed_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   bool IsAlternate() const;

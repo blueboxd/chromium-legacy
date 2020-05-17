@@ -29,7 +29,7 @@ Scheduling* NavigatorScheduling::scheduling() {
   return scheduling_;
 }
 
-void NavigatorScheduling::Trace(Visitor* visitor) {
+void NavigatorScheduling::Trace(Visitor* visitor) const {
   visitor->Trace(scheduling_);
   Supplement<Navigator>::Trace(visitor);
 }

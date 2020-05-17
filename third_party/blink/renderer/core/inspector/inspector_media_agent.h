@@ -40,7 +40,7 @@ class CORE_EXPORT InspectorMediaAgent final
   void PlayersCreated(const Vector<WebString>&);
 
   // blink-gc methods.
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void RegisterAgent();

@@ -43,7 +43,7 @@ class MockDeviceOrientationController final
         orientation_pump_(orientation_pump) {}
   ~MockDeviceOrientationController() override {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     PlatformEventController::Trace(visitor);
     visitor->Trace(orientation_pump_);
   }

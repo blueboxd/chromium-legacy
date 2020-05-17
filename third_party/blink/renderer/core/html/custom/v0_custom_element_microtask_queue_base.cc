@@ -15,7 +15,7 @@ void V0CustomElementMicrotaskQueueBase::Dispatch() {
   in_dispatch_ = false;
 }
 
-void V0CustomElementMicrotaskQueueBase::Trace(Visitor* visitor) {
+void V0CustomElementMicrotaskQueueBase::Trace(Visitor* visitor) const {
   visitor->Trace(queue_);
 }
 

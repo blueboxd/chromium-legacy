@@ -42,7 +42,7 @@ void PendingLayoutRegistry::AddPendingLayout(const AtomicString& name,
   set->insert(node);
 }
 
-void PendingLayoutRegistry::Trace(Visitor* visitor) {
+void PendingLayoutRegistry::Trace(Visitor* visitor) const {
   visitor->Trace(pending_layouts_);
 }
 

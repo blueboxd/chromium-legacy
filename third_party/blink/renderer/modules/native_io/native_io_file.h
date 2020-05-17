@@ -57,7 +57,7 @@ class NativeIOFile final : public ScriptWrappable {
                       ExceptionState&);
 
   // GarbageCollected
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   // Data accessed on the threads that do file I/O.

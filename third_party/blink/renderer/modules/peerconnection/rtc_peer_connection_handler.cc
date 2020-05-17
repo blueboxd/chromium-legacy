@@ -897,7 +897,7 @@ class RTCPeerConnectionHandler::Observer
     }
   }
 
-  void Trace(Visitor* visitor) override {}
+  void Trace(Visitor* visitor) const override {}
 
  protected:
   // TODO(hbos): Remove once no longer mandatory to implement.

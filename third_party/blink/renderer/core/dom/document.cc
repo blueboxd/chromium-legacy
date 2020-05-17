@@ -617,7 +617,7 @@ class Document::NetworkStateObserver final
     online_observer_handle_ = nullptr;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     ExecutionContextLifecycleObserver::Trace(visitor);
   }
 
@@ -8206,7 +8206,7 @@ StylePropertyMapReadOnly* Document::RemoveComputedStyleMapItem(
   return element_computed_style_map_.Take(element);
 }
 
-void Document::Trace(Visitor* visitor) {
+void Document::Trace(Visitor* visitor) const {
   visitor->Trace(security_context_);
   visitor->Trace(imports_controller_);
   visitor->Trace(use_counter_during_construction_);

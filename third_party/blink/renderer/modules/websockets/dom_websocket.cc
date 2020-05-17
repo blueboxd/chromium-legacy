@@ -165,7 +165,7 @@ void DOMWebSocket::EventQueue::UnpauseTask() {
   DispatchQueuedEvents();
 }
 
-void DOMWebSocket::EventQueue::Trace(Visitor* visitor) {
+void DOMWebSocket::EventQueue::Trace(Visitor* visitor) const {
   visitor->Trace(target_);
   visitor->Trace(events_);
 }
@@ -690,7 +690,7 @@ void DOMWebSocket::RecordReceiveMessageSizeHistogram(WebSocketReceiveType type,
   NOTREACHED();
 }
 
-void DOMWebSocket::Trace(Visitor* visitor) {
+void DOMWebSocket::Trace(Visitor* visitor) const {
   visitor->Trace(channel_);
   visitor->Trace(event_queue_);
   WebSocketChannelClient::Trace(visitor);

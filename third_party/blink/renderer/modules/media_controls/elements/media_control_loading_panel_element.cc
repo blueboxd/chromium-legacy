@@ -226,7 +226,7 @@ Element& MediaControlLoadingPanelElement::WatchedAnimationElement() const {
   return *mask1_background_;
 }
 
-void MediaControlLoadingPanelElement::Trace(Visitor* visitor) {
+void MediaControlLoadingPanelElement::Trace(Visitor* visitor) const {
   MediaControlAnimationEventListener::Observer::Trace(visitor);
   MediaControlDivElement::Trace(visitor);
   visitor->Trace(event_listener_);

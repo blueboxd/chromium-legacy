@@ -188,7 +188,7 @@ float SVGPath::CalculateDistance(SVGPropertyBase* to, SVGElement*) {
   return -1;
 }
 
-void SVGPath::Trace(Visitor* visitor) {
+void SVGPath::Trace(Visitor* visitor) const {
   visitor->Trace(path_value_);
   SVGPropertyBase::Trace(visitor);
 }

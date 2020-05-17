@@ -30,7 +30,7 @@ class MODULES_EXPORT NavigatorXR final : public GarbageCollected<NavigatorXR>,
   static XRSystem* xr(Navigator&);
   XRSystem* xr();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Document* GetDocument();

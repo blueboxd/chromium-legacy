@@ -109,7 +109,7 @@ class FakeColorChooserClient : public GarbageCollected<FakeColorChooserClient>,
       : owner_element_(owner_element) {}
   ~FakeColorChooserClient() override = default;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(owner_element_);
     ColorChooserClient::Trace(visitor);
   }
@@ -139,7 +139,7 @@ class FakeDateTimeChooserClient
       : owner_element_(owner_element) {}
   ~FakeDateTimeChooserClient() override = default;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(owner_element_);
     DateTimeChooserClient::Trace(visitor);
   }
@@ -240,7 +240,7 @@ class MockFileChooserClient : public GarbageCollected<MockFileChooserClient>,
 
  public:
   explicit MockFileChooserClient(LocalFrame* frame) : frame_(frame) {}
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(frame_);
     FileChooserClient::Trace(visitor);
   }

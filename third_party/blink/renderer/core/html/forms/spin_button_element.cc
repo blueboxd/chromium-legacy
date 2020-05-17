@@ -221,7 +221,7 @@ bool SpinButtonElement::ShouldRespondToMouseEvents() {
          spin_button_owner_->ShouldSpinButtonRespondToMouseEvents();
 }
 
-void SpinButtonElement::Trace(Visitor* visitor) {
+void SpinButtonElement::Trace(Visitor* visitor) const {
   visitor->Trace(spin_button_owner_);
   HTMLDivElement::Trace(visitor);
 }

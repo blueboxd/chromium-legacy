@@ -30,7 +30,7 @@ class BytesConsumerTestReader final
   std::pair<BytesConsumer::Result, Vector<char>> Run(
       scheduler::FakeTaskRunner*);
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(consumer_);
     BytesConsumer::Client::Trace(visitor);
   }

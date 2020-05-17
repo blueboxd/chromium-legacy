@@ -38,7 +38,7 @@ class PhotoCapabilities final : public ScriptWrappable {
   }
   bool IsRedEyeReductionControllable() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<MediaSettingsRange> image_height_;

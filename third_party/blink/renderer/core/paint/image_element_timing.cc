@@ -260,7 +260,7 @@ void ImageElementTiming::NotifyImageRemoved(const LayoutObject* layout_object,
   images_notified_.erase(std::make_pair(layout_object, image));
 }
 
-void ImageElementTiming::Trace(Visitor* visitor) {
+void ImageElementTiming::Trace(Visitor* visitor) const {
   visitor->Trace(element_timings_);
   visitor->Trace(background_image_timestamps_);
   Supplement<LocalDOMWindow>::Trace(visitor);

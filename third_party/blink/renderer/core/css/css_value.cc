@@ -574,7 +574,7 @@ void CSSValue::FinalizeGarbageCollectedObject() {
   NOTREACHED();
 }
 
-void CSSValue::Trace(Visitor* visitor) {
+void CSSValue::Trace(Visitor* visitor) const {
   switch (GetClassType()) {
     case kAxisClass:
       To<cssvalue::CSSAxisValue>(this)->TraceAfterDispatch(visitor);

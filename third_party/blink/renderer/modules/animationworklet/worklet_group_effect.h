@@ -23,7 +23,7 @@ class MODULES_EXPORT WorkletGroupEffect : public ScriptWrappable {
   const HeapVector<Member<WorkletAnimationEffect>>& getChildren() {
     return effects_;
   }
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   HeapVector<Member<WorkletAnimationEffect>> effects_;

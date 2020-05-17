@@ -96,7 +96,7 @@ class MODULES_EXPORT QuicTransport final
   void ForgetStream(uint32_t stream_id);
 
   // ScriptWrappable implementation
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   class DatagramUnderlyingSink;

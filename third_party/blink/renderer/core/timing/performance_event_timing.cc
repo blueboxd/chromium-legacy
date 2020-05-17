@@ -88,7 +88,7 @@ void PerformanceEventTiming::BuildJSONValue(V8ObjectBuilder& builder) const {
   builder.Add("target", target());
 }
 
-void PerformanceEventTiming::Trace(Visitor* visitor) {
+void PerformanceEventTiming::Trace(Visitor* visitor) const {
   PerformanceEntry::Trace(visitor);
   visitor->Trace(target_);
 }

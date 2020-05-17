@@ -43,7 +43,7 @@ ScriptValue FontManager::query(ScriptState* script_state) {
   return ScriptValue(script_state->GetIsolate(), result);
 }
 
-void FontManager::Trace(blink::Visitor* visitor) {
+void FontManager::Trace(blink::Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
 }
 

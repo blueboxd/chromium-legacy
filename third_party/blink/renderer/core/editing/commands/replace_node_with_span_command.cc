@@ -82,7 +82,7 @@ void ReplaceNodeWithSpanCommand::DoUnapply() {
                                             *span_element_);
 }
 
-void ReplaceNodeWithSpanCommand::Trace(Visitor* visitor) {
+void ReplaceNodeWithSpanCommand::Trace(Visitor* visitor) const {
   visitor->Trace(element_to_replace_);
   visitor->Trace(span_element_);
   SimpleEditCommand::Trace(visitor);

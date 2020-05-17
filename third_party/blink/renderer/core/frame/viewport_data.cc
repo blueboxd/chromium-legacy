@@ -16,7 +16,7 @@ namespace blink {
 
 ViewportData::ViewportData(Document& document) : document_(document) {}
 
-void ViewportData::Trace(Visitor* visitor) {
+void ViewportData::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
 }
 

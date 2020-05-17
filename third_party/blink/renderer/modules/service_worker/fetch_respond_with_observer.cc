@@ -177,7 +177,7 @@ class FetchLoaderClient final : public GarbageCollected<FetchLoaderClient>,
         std::move(body_stream_), std::move(callback_receiver_));
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     FetchDataLoader::Client::Trace(visitor);
   }
 
@@ -406,7 +406,7 @@ FetchRespondWithObserver::FetchRespondWithObserver(
       corp_checker_(std::move(corp_checker)),
       task_runner_(context->GetTaskRunner(TaskType::kNetworking)) {}
 
-void FetchRespondWithObserver::Trace(Visitor* visitor) {
+void FetchRespondWithObserver::Trace(Visitor* visitor) const {
   RespondWithObserver::Trace(visitor);
 }
 

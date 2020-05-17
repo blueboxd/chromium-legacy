@@ -42,7 +42,7 @@ class MODULES_EXPORT PaymentMethodChangeEvent final
                            const AtomicString& type,
                            const PaymentMethodChangeEventInit*);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   String method_name_;

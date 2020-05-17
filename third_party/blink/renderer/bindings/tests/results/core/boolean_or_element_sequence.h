@@ -42,7 +42,7 @@ class CORE_EXPORT BooleanOrElementSequence final {
   BooleanOrElementSequence(const BooleanOrElementSequence&);
   ~BooleanOrElementSequence();
   BooleanOrElementSequence& operator=(const BooleanOrElementSequence&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   enum class SpecificType {

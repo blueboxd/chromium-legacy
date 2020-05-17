@@ -353,12 +353,12 @@ CSSLayoutDefinition::Instance* CSSLayoutDefinition::CreateInstance() {
   return MakeGarbageCollected<Instance>(this, instance.V8Value());
 }
 
-void CSSLayoutDefinition::Instance::Trace(Visitor* visitor) {
+void CSSLayoutDefinition::Instance::Trace(Visitor* visitor) const {
   visitor->Trace(definition_);
   visitor->Trace(instance_);
 }
 
-void CSSLayoutDefinition::Trace(Visitor* visitor) {
+void CSSLayoutDefinition::Trace(Visitor* visitor) const {
   visitor->Trace(constructor_);
   visitor->Trace(intrinsic_sizes_);
   visitor->Trace(layout_);

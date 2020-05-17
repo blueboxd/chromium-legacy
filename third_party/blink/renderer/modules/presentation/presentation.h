@@ -30,7 +30,7 @@ class Presentation final : public ScriptWrappable,
 
   explicit Presentation(LocalDOMWindow*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   PresentationRequest* defaultRequest() const;
   void setDefaultRequest(PresentationRequest*);

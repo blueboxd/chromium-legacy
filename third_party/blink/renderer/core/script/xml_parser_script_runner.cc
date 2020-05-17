@@ -26,7 +26,7 @@ XMLParserScriptRunner::~XMLParserScriptRunner() {
   DCHECK(!parser_blocking_script_);
 }
 
-void XMLParserScriptRunner::Trace(Visitor* visitor) {
+void XMLParserScriptRunner::Trace(Visitor* visitor) const {
   visitor->Trace(parser_blocking_script_);
   visitor->Trace(host_);
   PendingScriptClient::Trace(visitor);

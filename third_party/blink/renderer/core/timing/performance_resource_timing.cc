@@ -439,7 +439,7 @@ void PerformanceResourceTiming::AddPerformanceEntry(
   }
 }
 
-void PerformanceResourceTiming::Trace(Visitor* visitor) {
+void PerformanceResourceTiming::Trace(Visitor* visitor) const {
   visitor->Trace(server_timing_);
   visitor->Trace(worker_timing_);
   PerformanceEntry::Trace(visitor);

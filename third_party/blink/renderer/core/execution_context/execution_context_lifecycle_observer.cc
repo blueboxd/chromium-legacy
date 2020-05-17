@@ -32,7 +32,7 @@ LocalFrame* ExecutionContextClient::GetFrame() const {
   return window ? window->GetFrame() : nullptr;
 }
 
-void ExecutionContextClient::Trace(Visitor* visitor) {
+void ExecutionContextClient::Trace(Visitor* visitor) const {
   visitor->Trace(execution_context_);
 }
 
@@ -58,7 +58,7 @@ LocalFrame* ExecutionContextLifecycleObserver::GetFrame() const {
   return window ? window->GetFrame() : nullptr;
 }
 
-void ExecutionContextLifecycleObserver::Trace(Visitor* visitor) {
+void ExecutionContextLifecycleObserver::Trace(Visitor* visitor) const {
   ContextLifecycleObserver::Trace(visitor);
 }
 

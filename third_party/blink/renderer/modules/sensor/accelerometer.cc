@@ -57,7 +57,7 @@ base::Optional<double> Accelerometer::z() const {
   return base::nullopt;
 }
 
-void Accelerometer::Trace(Visitor* visitor) {
+void Accelerometer::Trace(Visitor* visitor) const {
   Sensor::Trace(visitor);
 }
 

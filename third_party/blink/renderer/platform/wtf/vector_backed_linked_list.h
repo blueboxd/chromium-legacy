@@ -52,7 +52,8 @@ class VectorBackedLinkedListNode {
       default;
 
   template <typename VisitorDispathcer, typename A = Allocator>
-  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispathcer visitor) {
+  std::enable_if_t<A::kIsGarbageCollected> Trace(
+      VisitorDispathcer visitor) const {
     visitor->Trace(value_);
   }
 
@@ -183,7 +184,8 @@ class VectorBackedLinkedList {
   }
 
   template <typename VisitorDispatcher, typename A = Allocator>
-  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher visitor) {
+  std::enable_if_t<A::kIsGarbageCollected> Trace(
+      VisitorDispatcher visitor) const {
     nodes_.Trace(visitor);
   }
 

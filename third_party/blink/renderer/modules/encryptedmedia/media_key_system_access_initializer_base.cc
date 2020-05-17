@@ -149,7 +149,7 @@ ScriptPromise MediaKeySystemAccessInitializerBase::Promise() {
   return resolver_->Promise();
 }
 
-void MediaKeySystemAccessInitializerBase::Trace(Visitor* visitor) {
+void MediaKeySystemAccessInitializerBase::Trace(Visitor* visitor) const {
   visitor->Trace(resolver_);
   EncryptedMediaRequest::Trace(visitor);
   ExecutionContextClient::Trace(visitor);

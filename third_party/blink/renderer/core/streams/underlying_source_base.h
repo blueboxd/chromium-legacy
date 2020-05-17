@@ -27,7 +27,7 @@ class CORE_EXPORT UnderlyingSourceBase
   USING_GARBAGE_COLLECTED_MIXIN(UnderlyingSourceBase);
 
  public:
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   ~UnderlyingSourceBase() override = default;
 
   ScriptPromise startWrapper(ScriptState*, ScriptValue stream);

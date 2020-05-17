@@ -210,7 +210,7 @@ void EffectStack::RemoveRedundantSampledEffects() {
   sampled_effects_.Shrink(new_size);
 }
 
-void EffectStack::Trace(Visitor* visitor) {
+void EffectStack::Trace(Visitor* visitor) const {
   visitor->Trace(sampled_effects_);
 }
 

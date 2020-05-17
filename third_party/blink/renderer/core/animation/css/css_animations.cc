@@ -1478,7 +1478,7 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
   previous_phase_ = current_phase;
 }
 
-void CSSAnimations::AnimationEventDelegate::Trace(Visitor* visitor) {
+void CSSAnimations::AnimationEventDelegate::Trace(Visitor* visitor) const {
   visitor->Trace(animation_target_);
   AnimationEffect::EventDelegate::Trace(visitor);
 }
@@ -1584,7 +1584,7 @@ void CSSAnimations::TransitionEventDelegate::EnqueueEvent(
   GetDocument().EnqueueAnimationFrameEvent(event);
 }
 
-void CSSAnimations::TransitionEventDelegate::Trace(Visitor* visitor) {
+void CSSAnimations::TransitionEventDelegate::Trace(Visitor* visitor) const {
   visitor->Trace(transition_target_);
   AnimationEffect::EventDelegate::Trace(visitor);
 }
@@ -1687,7 +1687,7 @@ bool CSSAnimations::IsAnimatingRevert(
   return element_animations && element_animations->GetEffectStack().HasRevert();
 }
 
-void CSSAnimations::Trace(Visitor* visitor) {
+void CSSAnimations::Trace(Visitor* visitor) const {
   visitor->Trace(transitions_);
   visitor->Trace(pending_update_);
   visitor->Trace(running_animations_);

@@ -145,7 +145,7 @@ VTTCueBackgroundBox::VTTCueBackgroundBox(Document& document)
   SetShadowPseudoId(TextTrackCue::CueShadowPseudoId());
 }
 
-void VTTCueBackgroundBox::Trace(Visitor* visitor) {
+void VTTCueBackgroundBox::Trace(Visitor* visitor) const {
   visitor->Trace(track_);
   HTMLDivElement::Trace(visitor);
 }
@@ -1114,7 +1114,7 @@ Document& VTTCue::GetDocument() const {
   return cue_background_box_->GetDocument();
 }
 
-void VTTCue::Trace(Visitor* visitor) {
+void VTTCue::Trace(Visitor* visitor) const {
   visitor->Trace(region_);
   visitor->Trace(vtt_node_tree_);
   visitor->Trace(cue_background_box_);

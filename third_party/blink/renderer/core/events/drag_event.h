@@ -49,7 +49,7 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
 
   DispatchEventResult DispatchEvent(EventDispatcher&) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<DataTransfer> data_transfer_;

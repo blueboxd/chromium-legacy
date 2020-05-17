@@ -166,7 +166,7 @@ void XSLTProcessor::reset() {
   parameters_.clear();
 }
 
-void XSLTProcessor::Trace(Visitor* visitor) {
+void XSLTProcessor::Trace(Visitor* visitor) const {
   visitor->Trace(stylesheet_);
   visitor->Trace(stylesheet_root_node_);
   visitor->Trace(document_);

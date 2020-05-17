@@ -31,7 +31,7 @@ namespace blink {
 
 SVGViewSpec::SVGViewSpec() : zoom_and_pan_(kSVGZoomAndPanUnknown) {}
 
-void SVGViewSpec::Trace(Visitor* visitor) {
+void SVGViewSpec::Trace(Visitor* visitor) const {
   visitor->Trace(view_box_);
   visitor->Trace(preserve_aspect_ratio_);
   visitor->Trace(transform_);

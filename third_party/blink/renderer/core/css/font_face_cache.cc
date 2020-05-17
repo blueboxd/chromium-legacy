@@ -214,7 +214,7 @@ size_t FontFaceCache::GetNumSegmentedFacesForTesting() {
   return count;
 }
 
-void FontFaceCache::Trace(Visitor* visitor) {
+void FontFaceCache::Trace(Visitor* visitor) const {
   visitor->Trace(segmented_faces_);
   visitor->Trace(font_selection_query_cache_);
   visitor->Trace(style_rule_to_font_face_);

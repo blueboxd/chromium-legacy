@@ -100,7 +100,7 @@ void RTCSessionDescriptionRequestImpl::Clear() {
   requester_.Clear();
 }
 
-void RTCSessionDescriptionRequestImpl::Trace(Visitor* visitor) {
+void RTCSessionDescriptionRequestImpl::Trace(Visitor* visitor) const {
   visitor->Trace(success_callback_);
   visitor->Trace(error_callback_);
   visitor->Trace(requester_);

@@ -150,7 +150,7 @@ void DocumentTimeline::DocumentTimelineTiming::WakeAfter(
   timer_.StartOneShot(duration, FROM_HERE);
 }
 
-void DocumentTimeline::DocumentTimelineTiming::Trace(Visitor* visitor) {
+void DocumentTimeline::DocumentTimelineTiming::Trace(Visitor* visitor) const {
   visitor->Trace(timeline_);
   DocumentTimeline::PlatformTiming::Trace(visitor);
 }
@@ -225,7 +225,7 @@ CompositorAnimationTimeline* DocumentTimeline::EnsureCompositorTimeline() {
   return compositor_timeline_.get();
 }
 
-void DocumentTimeline::Trace(Visitor* visitor) {
+void DocumentTimeline::Trace(Visitor* visitor) const {
   visitor->Trace(timing_);
   AnimationTimeline::Trace(visitor);
 }

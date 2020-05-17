@@ -41,7 +41,7 @@ class CORE_EXPORT StringOrTestDictionary final {
   StringOrTestDictionary(const StringOrTestDictionary&);
   ~StringOrTestDictionary();
   StringOrTestDictionary& operator=(const StringOrTestDictionary&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   enum class SpecificType {

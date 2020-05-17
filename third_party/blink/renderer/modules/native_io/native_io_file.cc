@@ -202,7 +202,7 @@ ScriptPromise NativeIOFile::write(ScriptState* script_state,
   return resolver->Promise();
 }
 
-void NativeIOFile::Trace(Visitor* visitor) {
+void NativeIOFile::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   visitor->Trace(queued_close_resolver_);
   visitor->Trace(backend_file_);

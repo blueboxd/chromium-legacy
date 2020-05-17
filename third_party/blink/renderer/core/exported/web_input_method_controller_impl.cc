@@ -33,7 +33,7 @@ WebInputMethodControllerImpl::WebInputMethodControllerImpl(
 
 WebInputMethodControllerImpl::~WebInputMethodControllerImpl() = default;
 
-void WebInputMethodControllerImpl::Trace(Visitor* visitor) {
+void WebInputMethodControllerImpl::Trace(Visitor* visitor) const {
   visitor->Trace(web_frame_);
 }
 

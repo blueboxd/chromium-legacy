@@ -45,7 +45,7 @@ class NavigatorGeolocation final
 
   explicit NavigatorGeolocation(Navigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "NavigatorGeolocation";
   }

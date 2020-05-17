@@ -45,7 +45,7 @@ class CORE_EXPORT ApplicationCacheHostForFrame : public ApplicationCacheHost {
   void SelectCacheWithManifest(const KURL& manifest_url);
   void DidReceiveResponseForMainResource(const ResourceResponse&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   enum IsNewMasterEntry { MAYBE_NEW_ENTRY, NEW_ENTRY, OLD_ENTRY };

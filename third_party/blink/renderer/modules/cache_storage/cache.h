@@ -84,7 +84,7 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
                      const CacheQueryOptions*,
                      ExceptionState&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   class BarrierCallbackForPut;

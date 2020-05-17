@@ -137,7 +137,7 @@ void ReplayingBytesConsumer::MakeErrored(const Error& e) {
   ++notification_token_;
 }
 
-void ReplayingBytesConsumer::Trace(Visitor* visitor) {
+void ReplayingBytesConsumer::Trace(Visitor* visitor) const {
   visitor->Trace(client_);
   BytesConsumer::Trace(visitor);
 }

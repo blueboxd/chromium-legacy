@@ -37,7 +37,7 @@ class MODULES_EXPORT MediaControlsDisplayCutoutDelegate final
   // EventListener implementation.
   void Invoke(ExecutionContext*, Event*) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class MediaControlsDisplayCutoutDelegateTest;

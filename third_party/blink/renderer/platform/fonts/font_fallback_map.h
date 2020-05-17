@@ -30,7 +30,7 @@ class PLATFORM_EXPORT FontFallbackMap : public FontCacheClient,
   scoped_refptr<FontFallbackList> Get(const FontDescription& font_description);
   void Remove(const FontDescription& font_description);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   // FontSelectorClient

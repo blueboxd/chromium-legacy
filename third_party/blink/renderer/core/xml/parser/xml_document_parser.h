@@ -77,7 +77,7 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
   explicit XMLDocumentParser(Document&, LocalFrameView* = nullptr);
   XMLDocumentParser(DocumentFragment*, Element*, ParserContentPolicy);
   ~XMLDocumentParser() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Exposed for callbacks:
   void HandleError(XMLErrors::ErrorType, const char* message, TextPosition);

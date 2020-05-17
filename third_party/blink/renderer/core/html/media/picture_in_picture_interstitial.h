@@ -40,7 +40,7 @@ class PictureInPictureInterstitial final : public HTMLDivElement {
   void RemovedFrom(ContainerNode&) override;
 
   // Element:
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   class VideoElementResizeObserverDelegate;

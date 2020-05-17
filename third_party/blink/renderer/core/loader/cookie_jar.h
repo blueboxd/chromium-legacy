@@ -18,7 +18,7 @@ class CookieJar : public GarbageCollected<CookieJar> {
  public:
   explicit CookieJar(blink::Document* document);
   virtual ~CookieJar();
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
   void SetCookie(const String& value);
   String Cookies();

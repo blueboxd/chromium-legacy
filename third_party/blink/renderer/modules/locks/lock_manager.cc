@@ -88,7 +88,7 @@ class LockManager::LockRequestImpl final
 
   ~LockRequestImpl() override = default;
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(resolver_);
     visitor->Trace(manager_);
     visitor->Trace(callback_);
@@ -414,7 +414,7 @@ bool LockManager::IsPendingRequest(LockRequestImpl* request) {
   return pending_requests_.Contains(request);
 }
 
-void LockManager::Trace(Visitor* visitor) {
+void LockManager::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
   visitor->Trace(pending_requests_);

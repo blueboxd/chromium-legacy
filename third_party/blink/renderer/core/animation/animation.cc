@@ -2391,7 +2391,7 @@ void Animation::commitStyles(ExceptionState& exception_state) {
           WrapWeakPersistent(inline_style), WrapWeakPersistent(target)));
 }
 
-void Animation::Trace(Visitor* visitor) {
+void Animation::Trace(Visitor* visitor) const {
   visitor->Trace(content_);
   visitor->Trace(document_);
   visitor->Trace(timeline_);

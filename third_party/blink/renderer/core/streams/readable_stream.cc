@@ -99,7 +99,7 @@ ReadableStream::PipeOptions::PipeOptions(ScriptState* script_state,
   }
 }
 
-void ReadableStream::PipeOptions::Trace(Visitor* visitor) {
+void ReadableStream::PipeOptions::Trace(Visitor* visitor) const {
   visitor->Trace(signal_);
 }
 
@@ -228,7 +228,7 @@ class ReadableStream::PipeToEngine final
     return promise_->GetScriptPromise(script_state_);
   }
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(script_state_);
     visitor->Trace(pipe_options_);
     visitor->Trace(reader_);
@@ -270,7 +270,7 @@ class ReadableStream::PipeToEngine final
       return (instance_->*method_)(value);
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(instance_);
       ScriptFunction::Trace(visitor);
     }
@@ -756,7 +756,7 @@ class ReadableStream::TeeEngine final : public GarbageCollected<TeeEngine> {
   ReadableStream* Branch1() const { return branch_[0]; }
   ReadableStream* Branch2() const { return branch_[1]; }
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(stream_);
     visitor->Trace(reader_);
     visitor->Trace(reason_[0]);
@@ -808,7 +808,7 @@ class ReadableStream::TeeEngine::PullAlgorithm final : public StreamAlgorithm {
         MakeGarbageCollected<ResolveFunction>(script_state, engine_));
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(engine_);
     StreamAlgorithm::Trace(visitor);
   }
@@ -901,7 +901,7 @@ class ReadableStream::TeeEngine::PullAlgorithm final : public StreamAlgorithm {
       }
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(engine_);
       PromiseHandler::Trace(visitor);
     }
@@ -960,7 +960,7 @@ class ReadableStream::TeeEngine::CancelAlgorithm final
     return engine_->cancel_promise_->V8Promise(isolate);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(engine_);
     StreamAlgorithm::Trace(visitor);
   }
@@ -1070,7 +1070,7 @@ void ReadableStream::TeeEngine::Start(ScriptState* script_state,
                                              engine_->controller_[1], r);
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(engine_);
       PromiseHandler::Trace(visitor);
     }
@@ -1652,7 +1652,7 @@ v8::Local<v8::Value> ReadableStream::GetStoredError(
   return stored_error_.NewLocal(isolate);
 }
 
-void ReadableStream::Trace(Visitor* visitor) {
+void ReadableStream::Trace(Visitor* visitor) const {
   visitor->Trace(readable_stream_controller_);
   visitor->Trace(reader_);
   visitor->Trace(stored_error_);

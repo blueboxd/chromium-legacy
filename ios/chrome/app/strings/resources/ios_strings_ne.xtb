@@ -569,6 +569,7 @@
 <translation id="8428045167754449968">गाउँ / टोल</translation>
 <translation id="8428213095426709021">सेटिङहरू</translation>
 <translation id="8458397775385147834">1 वस्तु मेटाइयो</translation>
+<translation id="8459333855531264009">सुरक्षित छैन</translation>
 <translation id="8487667956631253959">सक्रिय</translation>
 <translation id="8487700953926739672">अफलाईन उपलब्ध</translation>
 <translation id="8490978609246021741">परिवर्तनहरू सुरक्षित गर्नुहोस्</translation>
@@ -595,6 +596,7 @@
 <translation id="8741995161408053644"><ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> मा तपाईँको Google खातामा अझै पनि ब्राउजिङको इतिहासका अन्य ढाँचाहरू उपलब्ध हुन सक्छन्।</translation>
 <translation id="8756969031206844760">पासवर्ड अद्यावधिक गर्ने हो?</translation>
 <translation id="8775144690796719618">अमान्य URL</translation>
+<translation id="8803639129939845298">सुरक्षित छ</translation>
 <translation id="8820817407110198400">बुकमार्कहरू</translation>
 <translation id="8840513115188359703">तपाईं आफ्नो Google खाताबाट साइन आउट हुनु हुने छैन।</translation>
 <translation id="8870413625673593573">हालै बन्द गरिएको</translation>
@@ -625,7 +627,6 @@
 <translation id="9223358826628549784">क्र्याश रिपोर्ट पठाइयो।</translation>
 <translation id="952704832371081537">रद्द गर्नुहोस्</translation>
 <translation id="988141524645182168">अन्य यन्त्रहरू</translation>
-<translation id="989697783705943787">साइटको सुरक्षा</translation>
 <translation id="989988560359834682">इमेल ठेगाना</translation>
 <translation id="994757059139821576">लेखका सुझावहरू</translation>
 </translationbundle>

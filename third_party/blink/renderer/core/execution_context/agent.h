@@ -43,7 +43,7 @@ class CORE_EXPORT Agent : public GarbageCollected<Agent> {
     return event_loop_;
   }
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
   void AttachDocument(Document*);
   void DetachDocument(Document*);

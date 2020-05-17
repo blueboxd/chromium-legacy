@@ -164,7 +164,7 @@ void Serial::GetPort(
   service_->GetPort(token, std::move(receiver));
 }
 
-void Serial::Trace(Visitor* visitor) {
+void Serial::Trace(Visitor* visitor) const {
   visitor->Trace(service_);
   visitor->Trace(receiver_);
   visitor->Trace(get_ports_promises_);

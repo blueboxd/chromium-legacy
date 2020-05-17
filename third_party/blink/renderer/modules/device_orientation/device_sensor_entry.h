@@ -55,7 +55,7 @@ class DeviceSensorEntry : public GarbageCollected<DeviceSensorEntry>,
 
   State state() const { return state_; }
 
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
  private:
   // device::mojom::SensorClient:

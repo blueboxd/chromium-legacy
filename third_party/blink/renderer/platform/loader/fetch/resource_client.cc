@@ -29,7 +29,7 @@
 
 namespace blink {
 
-void ResourceClient::Trace(Visitor* visitor) {
+void ResourceClient::Trace(Visitor* visitor) const {
   visitor->Trace(resource_);
 }
 

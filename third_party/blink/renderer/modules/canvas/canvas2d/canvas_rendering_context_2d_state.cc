@@ -136,7 +136,7 @@ void CanvasRenderingContext2DState::FontsNeedUpdate(FontSelector* font_selector,
   resolved_filter_.reset();
 }
 
-void CanvasRenderingContext2DState::Trace(Visitor* visitor) {
+void CanvasRenderingContext2DState::Trace(Visitor* visitor) const {
   visitor->Trace(stroke_style_);
   visitor->Trace(fill_style_);
   visitor->Trace(filter_value_);

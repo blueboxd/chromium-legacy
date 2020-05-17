@@ -152,7 +152,7 @@ void PublicURLManager::ContextDestroyed() {
   mojo_urls_.clear();
 }
 
-void PublicURLManager::Trace(Visitor* visitor) {
+void PublicURLManager::Trace(Visitor* visitor) const {
   visitor->Trace(url_store_);
   ExecutionContextLifecycleObserver::Trace(visitor);
 }

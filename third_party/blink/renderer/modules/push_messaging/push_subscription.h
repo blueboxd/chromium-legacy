@@ -52,7 +52,7 @@ class MODULES_EXPORT PushSubscription final : public ScriptWrappable {
 
   ScriptValue toJSONForBinding(ScriptState* script_state);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PushSubscriptionTest,

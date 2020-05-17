@@ -56,7 +56,7 @@ void PlatformEventController::PageVisibilityChanged() {
     StopUpdating();
 }
 
-void PlatformEventController::Trace(Visitor* visitor) {
+void PlatformEventController::Trace(Visitor* visitor) const {
   visitor->Trace(window_);
   PageVisibilityObserver::Trace(visitor);
 }

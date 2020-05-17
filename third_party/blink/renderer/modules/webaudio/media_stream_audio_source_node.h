@@ -96,7 +96,7 @@ class MediaStreamAudioSourceNode final
                              MediaStreamTrack*,
                              std::unique_ptr<AudioSourceProvider>);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   MediaStream* getMediaStream() const;
 

@@ -68,7 +68,7 @@ void VirtualKeyboard::hide() {
   // TODO(snianu): Fill this function.
 }
 
-void VirtualKeyboard::Trace(Visitor* visitor) {
+void VirtualKeyboard::Trace(Visitor* visitor) const {
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
 }

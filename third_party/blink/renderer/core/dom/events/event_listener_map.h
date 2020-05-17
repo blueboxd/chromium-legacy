@@ -71,7 +71,7 @@ class CORE_EXPORT EventListenerMap final {
 
   void CopyEventListenersNotCreatedFromMarkupToTarget(EventTarget*);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   friend class EventListenerIterator;

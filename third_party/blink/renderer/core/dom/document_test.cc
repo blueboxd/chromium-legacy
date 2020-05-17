@@ -127,7 +127,7 @@ class TestSynchronousMutationObserver
           node_to_be_removed_(node_with_index.GetNode()),
           offset_(offset) {}
 
-    void Trace(Visitor* visitor) {
+    void Trace(Visitor* visitor) const {
       visitor->Trace(node_);
       visitor->Trace(node_to_be_removed_);
     }
@@ -149,7 +149,7 @@ class TestSynchronousMutationObserver
           old_length_(old_length),
           new_length_(new_length) {}
 
-    void Trace(Visitor* visitor) { visitor->Trace(node_); }
+    void Trace(Visitor* visitor) const { visitor->Trace(node_); }
   };
 
   explicit TestSynchronousMutationObserver(Document&);
@@ -189,7 +189,7 @@ class TestSynchronousMutationObserver
     return updated_character_data_records_;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Implement |SynchronousMutationObserver| member functions.
@@ -268,7 +268,7 @@ void TestSynchronousMutationObserver::NodeWillBeRemoved(Node& node) {
   removed_nodes_.push_back(&node);
 }
 
-void TestSynchronousMutationObserver::Trace(Visitor* visitor) {
+void TestSynchronousMutationObserver::Trace(Visitor* visitor) const {
   visitor->Trace(children_changed_nodes_);
   visitor->Trace(merge_text_nodes_records_);
   visitor->Trace(move_tree_to_new_document_nodes_);
@@ -311,7 +311,7 @@ class MockDocumentValidationMessageClient
   void DidChangeFocusTo(const Element*) override {}
   void WillBeDestroyed() override {}
 
-  // virtual void Trace(Visitor* visitor) {
+  // virtual void Trace(Visitor* visitor) const {
   // ValidationMessageClient::trace(visitor); }
 };
 

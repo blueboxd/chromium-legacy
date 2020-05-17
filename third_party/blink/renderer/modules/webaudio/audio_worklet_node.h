@@ -122,7 +122,7 @@ class AudioWorkletNode final : public AudioNode,
 
   void FireProcessorError(AudioWorkletProcessorErrorState);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // InspectorHelperMixin
   void ReportDidCreate() final;

@@ -30,7 +30,7 @@ void LiveNodeListRegistry::Remove(const LiveNodeListBase* list,
   RecomputeMask();
 }
 
-void LiveNodeListRegistry::Trace(Visitor* visitor) {
+void LiveNodeListRegistry::Trace(Visitor* visitor) const {
   visitor->RegisterWeakCallbackMethod<
       LiveNodeListRegistry, &LiveNodeListRegistry::ProcessCustomWeakness>(this);
 }

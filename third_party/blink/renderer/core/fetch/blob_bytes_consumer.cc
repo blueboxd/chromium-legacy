@@ -99,7 +99,7 @@ BytesConsumer::PublicState BlobBytesConsumer::GetPublicState() const {
   return nested_consumer_->GetPublicState();
 }
 
-void BlobBytesConsumer::Trace(Visitor* visitor) {
+void BlobBytesConsumer::Trace(Visitor* visitor) const {
   visitor->Trace(execution_context_);
   visitor->Trace(nested_consumer_);
   visitor->Trace(client_);

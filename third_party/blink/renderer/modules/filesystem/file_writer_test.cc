@@ -55,7 +55,9 @@ class TestableFileWriter : public GarbageCollected<TestableFileWriter>,
     fail_error_received_ = static_cast<base::File::Error>(0);
   }
 
-  void Trace(Visitor* visitor) override { FileWriterBase::Trace(visitor); }
+  void Trace(Visitor* visitor) const override {
+    FileWriterBase::Trace(visitor);
+  }
 
   bool received_truncate_;
   KURL received_truncate_path_;

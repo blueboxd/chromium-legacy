@@ -131,7 +131,7 @@ void FrameConsole::DidFailLoading(DocumentLoader* loader,
       message.ToString(), error.FailingURL(), loader, request_identifier));
 }
 
-void FrameConsole::Trace(Visitor* visitor) {
+void FrameConsole::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
 }
 

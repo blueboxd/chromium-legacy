@@ -88,7 +88,7 @@ class CORE_EXPORT EffectStack {
       PropertyHandleFilter property_handle_filter = nullptr,
       KeyframeEffect* partial_effect_stack_cutoff = nullptr);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   void RemoveRedundantSampledEffects();

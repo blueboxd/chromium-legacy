@@ -38,7 +38,7 @@ Permissions* WorkerNavigatorPermissions::permissions(
   return self.permissions_;
 }
 
-void WorkerNavigatorPermissions::Trace(Visitor* visitor) {
+void WorkerNavigatorPermissions::Trace(Visitor* visitor) const {
   visitor->Trace(permissions_);
   Supplement<WorkerNavigator>::Trace(visitor);
 }

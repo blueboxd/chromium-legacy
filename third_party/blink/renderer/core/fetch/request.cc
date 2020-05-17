@@ -976,7 +976,7 @@ network::mojom::RequestDestination Request::GetRequestDestination() const {
   return request_->Destination();
 }
 
-void Request::Trace(Visitor* visitor) {
+void Request::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   ActiveScriptWrappable<Request>::Trace(visitor);
   Body::Trace(visitor);

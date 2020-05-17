@@ -261,7 +261,7 @@ void RTCRtpReceiver::SetContributingSourcesNeedsUpdating() {
   web_sources_needs_updating_ = true;
 }
 
-void RTCRtpReceiver::Trace(Visitor* visitor) {
+void RTCRtpReceiver::Trace(Visitor* visitor) const {
   visitor->Trace(pc_);
   visitor->Trace(track_);
   visitor->Trace(transport_);

@@ -66,7 +66,7 @@ class DragCaret final : public GarbageCollected<DragCaret>,
   void SetCaretPosition(const PositionWithAffinity&);
   void Clear() { SetCaretPosition(PositionWithAffinity()); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Implementations of |SynchronousMutationObserver|

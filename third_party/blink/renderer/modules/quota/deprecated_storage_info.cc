@@ -106,7 +106,7 @@ DeprecatedStorageQuota* DeprecatedStorageInfo::GetStorageQuota(
   return nullptr;
 }
 
-void DeprecatedStorageInfo::Trace(Visitor* visitor) {
+void DeprecatedStorageInfo::Trace(Visitor* visitor) const {
   visitor->Trace(temporary_storage_);
   visitor->Trace(persistent_storage_);
   ScriptWrappable::Trace(visitor);

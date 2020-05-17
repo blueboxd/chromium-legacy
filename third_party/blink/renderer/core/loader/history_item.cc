@@ -163,7 +163,7 @@ ResourceRequest HistoryItem::GenerateResourceRequest(
   return request;
 }
 
-void HistoryItem::Trace(Visitor* visitor) {
+void HistoryItem::Trace(Visitor* visitor) const {
   visitor->Trace(document_state_);
 }
 

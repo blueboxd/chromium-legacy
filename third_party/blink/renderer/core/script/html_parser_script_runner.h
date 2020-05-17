@@ -106,7 +106,7 @@ class HTMLParserScriptRunner final
   // is preparing to stop but before |ExecuteScriptsWaitingForParsing|.
   void RecordMetricsAtParseEnd() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "HTMLParserScriptRunner";
   }

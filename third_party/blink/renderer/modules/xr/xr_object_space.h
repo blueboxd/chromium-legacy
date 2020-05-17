@@ -45,7 +45,7 @@ class XRObjectSpace : public XRSpace {
     return true;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(object_);
     XRSpace::Trace(visitor);
   }

@@ -47,7 +47,7 @@ class CORE_EXPORT DeleteSelectionCommand final : public CompositeEditCommand {
       const DeleteSelectionOptions&,
       InputEvent::InputType input_type = InputEvent::InputType::kNone);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void DoApply(EditingState*) override;

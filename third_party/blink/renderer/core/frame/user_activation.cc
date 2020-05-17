@@ -22,7 +22,7 @@ UserActivation::UserActivation(LocalDOMWindow* window) : window_(window) {}
 
 UserActivation::~UserActivation() = default;
 
-void UserActivation::Trace(Visitor* visitor) {
+void UserActivation::Trace(Visitor* visitor) const {
   visitor->Trace(window_);
   ScriptWrappable::Trace(visitor);
 }

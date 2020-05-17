@@ -29,7 +29,7 @@ class BluetoothLEScan final : public ScriptWrappable {
   bool stop();
 
   // Interface required by garbage collection.
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   mojo::ReceiverId id_;

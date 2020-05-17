@@ -37,7 +37,7 @@ class CORE_EXPORT BlobBytesConsumer final : public BytesConsumer {
   Error GetError() const override;
   String DebugName() const override { return "BlobBytesConsumer"; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<ExecutionContext> execution_context_;

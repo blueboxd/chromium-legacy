@@ -55,7 +55,7 @@ class BarProp final : public ScriptWrappable, public ExecutionContextClient {
 
   bool visible() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Type type_;

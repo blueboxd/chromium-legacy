@@ -39,7 +39,7 @@ class BarcodeDetectorStatics final
       shape_detection::mojom::blink::BarcodeDetectorOptionsPtr);
   ScriptPromise EnumerateSupportedFormats(ScriptState*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void EnsureServiceConnection();

@@ -81,7 +81,7 @@ void PushMessagingClient::Subscribe(
   }
 }
 
-void PushMessagingClient::Trace(Visitor* visitor) {
+void PushMessagingClient::Trace(Visitor* visitor) const {
   Supplement<LocalDOMWindow>::Trace(visitor);
   visitor->Trace(push_messaging_manager_);
 }

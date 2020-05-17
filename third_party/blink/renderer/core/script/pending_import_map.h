@@ -48,7 +48,7 @@ class CORE_EXPORT PendingImportMap final
 
   void RegisterImportMap() const;
 
-  virtual void Trace(Visitor* visitor);
+  virtual void Trace(Visitor* visitor) const;
 
  private:
   Member<ScriptElementBase> element_;

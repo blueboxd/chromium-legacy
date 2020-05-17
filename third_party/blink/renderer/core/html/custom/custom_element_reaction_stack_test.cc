@@ -192,7 +192,7 @@ class EnqueueToStack : public Command {
                  CustomElementReaction* reaction)
       : stack_(stack), element_(element), reaction_(reaction) {}
   ~EnqueueToStack() override = default;
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     Command::Trace(visitor);
     visitor->Trace(stack_);
     visitor->Trace(element_);

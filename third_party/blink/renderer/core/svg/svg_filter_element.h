@@ -42,7 +42,7 @@ class CORE_EXPORT SVGFilterElement final : public SVGElement,
   USING_GARBAGE_COLLECTED_MIXIN(SVGFilterElement);
 
  public:
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   explicit SVGFilterElement(Document&);
   ~SVGFilterElement() override;

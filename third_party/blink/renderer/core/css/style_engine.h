@@ -384,7 +384,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   ForcedColors GetForcedColors() const { return forced_colors_; }
   void UpdateColorSchemeBackground();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override { return "StyleEngine"; }
 
  private:

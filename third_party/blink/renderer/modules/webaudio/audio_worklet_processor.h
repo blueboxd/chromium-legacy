@@ -58,7 +58,7 @@ class MODULES_EXPORT AudioWorkletProcessor : public ScriptWrappable {
   // IDL
   MessagePort* port() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<AudioWorkletGlobalScope> global_scope_;

@@ -58,7 +58,7 @@ class CORE_EXPORT IntersectionObservation final
   void Disconnect();
   void InvalidateCachedRects();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   bool CanUseCachedRectsForTesting() const { return CanUseCachedRects(); }
 

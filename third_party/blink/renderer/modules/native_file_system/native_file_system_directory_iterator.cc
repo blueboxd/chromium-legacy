@@ -53,7 +53,7 @@ ScriptPromise NativeFileSystemDirectoryIterator::next(
   return ScriptPromise::Cast(script_state, ToV8(result, script_state));
 }
 
-void NativeFileSystemDirectoryIterator::Trace(Visitor* visitor) {
+void NativeFileSystemDirectoryIterator::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
   visitor->Trace(receiver_);

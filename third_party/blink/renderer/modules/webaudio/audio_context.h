@@ -44,7 +44,7 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
                const WebAudioLatencyHint&,
                base::Optional<float> sample_rate);
   ~AudioContext() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // For ContextLifeCycleObserver
   void ContextDestroyed() final;

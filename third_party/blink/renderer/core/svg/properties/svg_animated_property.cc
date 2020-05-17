@@ -58,7 +58,7 @@ SVGAnimatedPropertyBase::SVGAnimatedPropertyBase(
 
 SVGAnimatedPropertyBase::~SVGAnimatedPropertyBase() = default;
 
-void SVGAnimatedPropertyBase::Trace(Visitor* visitor) {
+void SVGAnimatedPropertyBase::Trace(Visitor* visitor) const {
   visitor->Trace(context_element_);
 }
 

@@ -83,7 +83,7 @@ void ElementIntersectionObserverData::InvalidateCachedRects() {
     entry.value->InvalidateCachedRects();
 }
 
-void ElementIntersectionObserverData::Trace(Visitor* visitor) {
+void ElementIntersectionObserverData::Trace(Visitor* visitor) const {
   visitor->Trace(observations_);
   visitor->Trace(observers_);
 }

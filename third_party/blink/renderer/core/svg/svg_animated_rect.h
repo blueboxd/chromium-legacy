@@ -49,7 +49,7 @@ class SVGAnimatedRect : public ScriptWrappable,
                                      attribute_name,
                                      SVGRect::CreateInvalid()) {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     SVGAnimatedProperty<SVGRect>::Trace(visitor);
     ScriptWrappable::Trace(visitor);
   }

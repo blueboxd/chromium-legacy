@@ -137,7 +137,7 @@ class AudioListener : public ScriptWrappable, public InspectorHelperMixin {
   void ReportDidCreate() final;
   void ReportWillBeDestroyed() final;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void setPosition(const FloatPoint3D&, ExceptionState&);

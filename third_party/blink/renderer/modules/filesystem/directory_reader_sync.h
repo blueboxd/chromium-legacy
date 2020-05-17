@@ -52,7 +52,7 @@ class DirectoryReaderSync : public DirectoryReaderBase {
 
   EntrySyncHeapVector readEntries(ExceptionState&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   bool has_called_read_directory_ = false;

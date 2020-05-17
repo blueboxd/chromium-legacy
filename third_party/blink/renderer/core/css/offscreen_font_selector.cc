@@ -107,7 +107,7 @@ void OffscreenFontSelector::FontFaceInvalidated(FontInvalidationReason) {
   FontCacheInvalidated();
 }
 
-void OffscreenFontSelector::Trace(Visitor* visitor) {
+void OffscreenFontSelector::Trace(Visitor* visitor) const {
   visitor->Trace(execution_context_);
   visitor->Trace(font_face_cache_);
   FontSelector::Trace(visitor);

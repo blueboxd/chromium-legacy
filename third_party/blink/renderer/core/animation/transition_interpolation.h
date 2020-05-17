@@ -75,7 +75,7 @@ class CORE_EXPORT TransitionInterpolation : public Interpolation {
 
   void Interpolate(int iteration, double fraction) final;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(compositor_start_);
     visitor->Trace(compositor_end_);
     Interpolation::Trace(visitor);

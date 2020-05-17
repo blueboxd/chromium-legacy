@@ -65,7 +65,7 @@ class CORE_EXPORT DataTransferItem final : public ScriptWrappable {
   DataTransfer* GetDataTransfer() { return data_transfer_.Get(); }
   DataObjectItem* GetDataObjectItem() { return item_.Get(); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void RunGetAsStringTask(ExecutionContext*,

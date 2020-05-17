@@ -733,7 +733,7 @@ void InsertListCommand::MoveParagraphOverPositionIntoEmptyListItem(
           .Build()));
 }
 
-void InsertListCommand::Trace(Visitor* visitor) {
+void InsertListCommand::Trace(Visitor* visitor) const {
   CompositeEditCommand::Trace(visitor);
 }
 

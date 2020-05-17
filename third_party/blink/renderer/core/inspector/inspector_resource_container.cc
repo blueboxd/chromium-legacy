@@ -14,7 +14,7 @@ InspectorResourceContainer::InspectorResourceContainer(
 
 InspectorResourceContainer::~InspectorResourceContainer() = default;
 
-void InspectorResourceContainer::Trace(Visitor* visitor) {
+void InspectorResourceContainer::Trace(Visitor* visitor) const {
   visitor->Trace(inspected_frames_);
 }
 

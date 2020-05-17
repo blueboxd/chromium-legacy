@@ -63,7 +63,7 @@ class CORE_EXPORT CSSUnparsedValue final : public CSSStyleValue {
 
   wtf_size_t length() const { return tokens_.size(); }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(tokens_);
     CSSStyleValue::Trace(visitor);
   }

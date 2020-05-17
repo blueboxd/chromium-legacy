@@ -86,7 +86,7 @@ int NativeIOFileSync::write(MaybeShared<DOMArrayBufferView> buffer,
   return written_bytes;
 }
 
-void NativeIOFileSync::Trace(Visitor* visitor) {
+void NativeIOFileSync::Trace(Visitor* visitor) const {
   visitor->Trace(backend_file_);
   ScriptWrappable::Trace(visitor);
 }

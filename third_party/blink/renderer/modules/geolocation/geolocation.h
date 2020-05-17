@@ -68,7 +68,7 @@ class MODULES_EXPORT Geolocation final
 
   explicit Geolocation(ExecutionContext*);
   ~Geolocation() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Inherited from ExecutionContextLifecycleObserver and
   // PageVisibilityObserver.

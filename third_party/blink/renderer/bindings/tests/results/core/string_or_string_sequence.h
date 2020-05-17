@@ -40,7 +40,7 @@ class CORE_EXPORT StringOrStringSequence final {
   StringOrStringSequence(const StringOrStringSequence&);
   ~StringOrStringSequence();
   StringOrStringSequence& operator=(const StringOrStringSequence&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   enum class SpecificType {

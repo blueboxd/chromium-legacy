@@ -47,7 +47,7 @@ bool SequenceTest::unionReceivedSequence(const DoubleOrDoubleSequence& arg) {
   return arg.IsDoubleSequence();
 }
 
-void SequenceTest::Trace(Visitor* visitor) {
+void SequenceTest::Trace(Visitor* visitor) const {
   visitor->Trace(element_sequence_);
   ScriptWrappable::Trace(visitor);
 }

@@ -32,7 +32,7 @@ Animator::Animator(v8::Isolate* isolate,
 
 Animator::~Animator() = default;
 
-void Animator::Trace(Visitor* visitor) {
+void Animator::Trace(Visitor* visitor) const {
   visitor->Trace(definition_);
   visitor->Trace(instance_);
   visitor->Trace(group_effect_);

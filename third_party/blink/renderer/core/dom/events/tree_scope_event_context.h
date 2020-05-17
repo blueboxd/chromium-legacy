@@ -48,7 +48,7 @@ class CORE_EXPORT TreeScopeEventContext final
     : public GarbageCollected<TreeScopeEventContext> {
  public:
   explicit TreeScopeEventContext(TreeScope&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   TreeScope& GetTreeScope() const { return *tree_scope_; }
   ContainerNode& RootNode() const { return tree_scope_->RootNode(); }

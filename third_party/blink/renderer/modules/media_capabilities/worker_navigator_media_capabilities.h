@@ -27,7 +27,7 @@ class WorkerNavigatorMediaCapabilities final
 
   explicit WorkerNavigatorMediaCapabilities(WorkerNavigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   static WorkerNavigatorMediaCapabilities& From(WorkerNavigator&);

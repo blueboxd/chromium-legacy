@@ -27,7 +27,7 @@ class MODULES_EXPORT MediaControlAnimatedArrowContainerElement final
 
   void ShowArrowAnimation(ArrowDirection);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class MediaControlAnimatedArrowContainerElementTest;
@@ -52,7 +52,7 @@ class MODULES_EXPORT MediaControlAnimatedArrowContainerElement final
     // iteration.
     void Show();
 
-    void Trace(Visitor*) override;
+    void Trace(Visitor*) const override;
 
    private:
     void HideInternal();

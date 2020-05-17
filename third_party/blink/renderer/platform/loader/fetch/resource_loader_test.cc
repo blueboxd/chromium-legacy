@@ -326,7 +326,7 @@ class TestRawResourceClient final
   }
   String DebugName() const override { return "TestRawResourceClient"; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(body_);
     RawResourceClient::Trace(visitor);
   }

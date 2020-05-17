@@ -45,7 +45,7 @@ class RevealSelectionScope {
   explicit RevealSelectionScope(LocalFrame&);
   ~RevealSelectionScope();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   Editor& GetEditor();

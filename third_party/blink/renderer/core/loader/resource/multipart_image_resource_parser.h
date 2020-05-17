@@ -58,7 +58,7 @@ class CORE_EXPORT MultipartImageResourceParser final
     virtual ~Client() = default;
     virtual void OnePartInMultipartReceived(const ResourceResponse&) = 0;
     virtual void MultipartDataReceived(const char* bytes, size_t) = 0;
-    void Trace(Visitor* visitor) override {}
+    void Trace(Visitor* visitor) const override {}
   };
 
   MultipartImageResourceParser(const ResourceResponse&,
@@ -68,7 +68,7 @@ class CORE_EXPORT MultipartImageResourceParser final
   void Finish();
   void Cancel() { is_cancelled_ = true; }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   static wtf_size_t SkippableLengthForTest(const Vector<char>& data,
                                            wtf_size_t size) {

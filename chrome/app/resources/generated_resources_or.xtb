@@ -52,6 +52,7 @@
 <translation id="1056775291175587022">କୌଣସି ନେଟ୍‌ୱର୍କ ନାହିଁ</translation>
 <translation id="1056898198331236512">ଚେତାବନୀ</translation>
 <translation id="1058262162121953039">ବ୍ୟକ୍ତିଗତ ଅନ୍‌ଲକ୍ କୀ'</translation>
+<translation id="1060292118287751956">ସ୍କ୍ରିନ୍ ଅପଡେଟ୍ କରୁଥିବା ଫ୍ରିକ୍ୟୁଏନ୍ସି ନିର୍ଦ୍ଧାରଣ କରେ</translation>
 <translation id="1061904396131502319">ବିରତି ପାଇଁ ପ୍ରାୟ ସମୟ ହୋଇଗଲାଣି</translation>
 <translation id="1067048845568873861">ସୃଷ୍ଟିହେଲା:</translation>
 <translation id="1067291318998134776">Linux (ବେଟା)</translation>
@@ -150,6 +151,7 @@
 <translation id="11901918071949011">{NUM_FILES,plural, =1{ଆପଣଙ୍କର କମ୍ପ୍ୟୁଟର୍‌‍ରେ ଷ୍ଟୋର୍‌ ହୋ‍ଇଥିବା ଏକ ଫାଇଲ୍‌ ଆକ୍ସେସ୍‌ କରନ୍ତୁ}other{ଆପଣଙ୍କର କମ୍ପ୍ୟୁଟର୍‌‍ରେ ଷ୍ଟୋର୍‌ ହୋ‍ଇଥିବା #ଟି ଫାଇଲ୍‌ ଆକ୍ସେସ୍‌ କରନ୍ତୁ}}</translation>
 <translation id="119092896208640858">ଆପଣଙ୍କର Google ଆକାଉଣ୍ଟରେ ବ୍ରାଉଜିଂ ଡାଟା ରଖି କେବଳ ଏହି ଡିଭାଇସ୍‌ରୁ ସେହି ଡାଟା ଖାଲି କରିବାକୁ <ph name="BEGIN_LINK" />ସାଇନ୍ ଆଉଟ୍<ph name="END_LINK" /> କରନ୍ତୁ।</translation>
 <translation id="1193273168751563528">ପରିଚାଳିତ ଅବଧି ଲେଖନ୍ତୁ</translation>
+<translation id="1193927020065025187">ଅନାଧିକୃତ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ପାଇଁ ଆପଣ ଅନୁମତି ଦେବାକୁ କୌଶଳରେ ଏହି ସାଇଟ୍ ଚେଷ୍ଟା କରିପାରେ</translation>
 <translation id="1195447618553298278">ଅଜ୍ଞାତ ତୃଟି ।</translation>
 <translation id="1195558154361252544">ଆପଣ ଅନୁମତି ଦେଇଥିବା ସାଇଟ୍‍ଗୁଡ଼ିକ ବ୍ୟତୀତ ସମସ୍ତ ସାଇଟ୍‌ରେ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରାଯାଇଛି</translation>
 <translation id="1197088940767939838">କମଳା</translation>
@@ -397,6 +399,7 @@
 <translation id="1510785804673676069">ଯଦି ଆପଣ ଏକ ପ୍ରକ୍ସି ସର୍ଭର୍ ବ୍ୟବହାର କରୁଛନ୍ତି, ତେବେ ନିଜର ପ୍ରକ୍ସି ସେଟିଂସ୍ ଯାଞ୍ଚ କରନ୍ତୁ କିମ୍ବା ପ୍ରକ୍ସି ସର୍ଭର କାର୍ଯ୍ୟକ୍ଷମ ଅଛି କି ନାହିଁ ତାହା ଯାଞ୍ଚ କରିବାକୁ ନିଜର ନେଟ୍‌ୱାର୍କ ବ୍ୟବସ୍ଥାପକଙ୍କ ସହିତ ଯୋଗାଯୋଗ କରନ୍ତୁ। ଯଦି ଏକ ପ୍ରକ୍ସି ସର୍ଭର ବ୍ୟବହାର କରିବାକୁ ଆପଣ ଉଚିତ ମନେକରୁନାହାନ୍ତି, ତେବେ ନିଜର <ph name="LINK_START" />ପ୍ରକ୍ସି ସେଟିଂସ୍<ph name="LINK_END" />କୁ ଆଡ୍‌ଜଷ୍ଟ କରନ୍ତୁ।</translation>
 <translation id="1511997356770098059">କୌଣସି ସାଇନ୍-ଇନ୍ ଡାଟା ଏହି ସୁରକ୍ଷା କୀ ଷ୍ଟୋର୍ କରିପାରିବ ନାହିଁ</translation>
 <translation id="1512210426710821809">ଏହାକୁ ପୂର୍ବବତ୍ କରିବାର ଏକମାତ୍ର ଉପାୟ ହେଉଛି <ph name="IDS_SHORT_PRODUCT_OS_NAME" />କୁ ରିଇନ୍‌ଷ୍ଟଲ୍ କରିବା</translation>
+<translation id="1512642802859169995"><ph name="FILE_NAME" /> ଏନକ୍ରିପ୍ଟ କରାଯାଇଛି। ଏହାର ମାଲିକଙ୍କୁ ଡିକ୍ରିପ୍ଟ କରିବାକୁ କୁହନ୍ତୁ।</translation>
 <translation id="151501797353681931">ସଫାରୀରୁ ଇମ୍ପୋର୍ଟ କରାଯାଇଛି</translation>
 <translation id="1515163294334130951">ଲଞ୍ଚ କରନ୍ତୁ</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> - ହୋଷ୍ଟ</translation>
@@ -410,6 +413,7 @@
 <translation id="152629053603783244">Linux ରିଷ୍ଟାର୍ଟ କରନ୍ତୁ</translation>
 <translation id="1526335046150927198">ଟଚପ୍ୟାଡ୍ ସ୍କ୍ରଲ୍ ଆକ୍ସିଲିରେସନ୍ ସକ୍ଷମ କରନ୍ତୁ</translation>
 <translation id="1526560967942511387">ଆଖ୍ୟାବିହୀନ ଡକ୍ୟୁମେଣ୍ଟ</translation>
+<translation id="1527336312600375509">ମନିଟର୍ ରିଫ୍ରେସ୍ ରେଟ୍</translation>
 <translation id="1529891865407786369">ପାୱର୍‍ ଉତ୍ସ</translation>
 <translation id="1530838837447122178">ମାଉସ୍‌ ଏବଂ ଟଚ୍‍ପ୍ୟାଡ୍‌ ଡିଭାଇସ୍‌ ସେଟିଂସ୍‌ ଖୋଲନ୍ତୁ</translation>
 <translation id="1531004739673299060">ଆପ୍ଲିକେସନ୍‍ ୱିଣ୍ଡୋ</translation>
@@ -483,6 +487,7 @@
 <translation id="161460670679785907">ଆପଣଙ୍କର ଫୋନ୍‌କୁ ଚିହ୍ନଟ କରିପାରୁନାହିଁ</translation>
 <translation id="1616206807336925449">ଏହି ଏକ୍ସଟେନ୍‍ସନ୍‍ ପାଇଁ କୌଣସି ବିଶେଷ ଅନୁମତିର ଆବଶ୍ୟକତା ନାହିଁ।</translation>
 <translation id="1616298854599875024">ଏକ୍ସଟେନ୍‌ସନ୍ <ph name="IMPORT_NAME" /> ଇମ୍ପୋର୍ଟ କରାଯାଇପାରିଲା ନାହିଁଁ କାରଣ ଏହା ଏକ ସେୟାର୍ କରାଯାଇଥିବା ମଡ୍ୟୁଲ୍ ନୁହେଁ</translation>
+<translation id="1617765145568323981">{NUM_FILES,plural, =0{ଆପଣଙ୍କ ସଂସ୍ଥାର ସୁରକ୍ଷା ନୀତିଗୁଡ଼ିକ ସହ ଏହି ଡାଟା ଯାଞ୍ଚ କରାଯାଉଛି...}=1{ଆପଣଙ୍କ ସଂସ୍ଥାର ସୁରକ୍ଷା ନୀତିଗୁଡ଼ିକ ସହ ଏହି ଫାଇଲ୍ ଯାଞ୍ଚ କରାଯାଉଛି...}other{ଆପଣଙ୍କ ସଂସ୍ଥାର ସୁରକ୍ଷା ନୀତିଗୁଡ଼ିକ ସହ ଏହି ଫାଇଲଗୁଡ଼ିକ ଯାଞ୍ଚ କରାଯାଉଛି...}}</translation>
 <translation id="1618268899808219593">&amp;ସହାୟତା କେନ୍ଦ୍ର</translation>
 <translation id="1620307519959413822">ପାସୱାର୍ଡ ଭୁଲ ଅଛି। ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ କିମ୍ବା ଏହାକୁ ରିସେଟ୍ କରିବା ପାଇଁ 'ପାସୱାର୍ଡ ଭୁଲି ଯାଇଛି'କୁ କ୍ଲିକ୍ କରନ୍ତୁ।</translation>
 <translation id="1620510694547887537">କ୍ୟାମେରା</translation>
@@ -995,6 +1000,7 @@
 <translation id="2262332168014443534">ବର୍ତ୍ତମାନ ଲାଇଟ୍‍ ମୋଡ୍‌ HTTPS‍ ସହିତ ସମସ୍ତ ପୃଷ୍ଠାରେ ଦ୍ରୁତତର ବ୍ରାଉଜିଂ କରିଥାଏ।</translation>
 <translation id="2262477216570151239">ପୁନରାବୃତ୍ତିର ପୂର୍ବରୁ ବିଳମ୍ବ</translation>
 <translation id="2263189956353037928">ସାଇନ୍ ଆଉଟ୍ କରି ପୁଣି ସାଇନ୍ ଇନ୍ କରନ୍ତୁ</translation>
+<translation id="2263371730707937087">ସ୍କ୍ରିନ୍ ରିଫ୍ରେସ୍ ରେଟ୍</translation>
 <translation id="2263497240924215535">(ଅକ୍ଷମ କରାଯାଇଛି)</translation>
 <translation id="22665427234727190">କୌଣସି ସାଇଟ୍ ବ୍ଲୁଟୁଥ୍ ଡିଭାଇସଗୁଡ଼ିକୁ ଆକ୍ସେସ୍ କରିବାକୁ ଚାହିଁଲେ, ପଚାରନ୍ତୁ (ସୁପାରିଶ କରାଯାଇଛି)</translation>
 <translation id="2266957463645820432">USBରେ IPP (IPPUSB)</translation>
@@ -1096,6 +1102,7 @@
 <translation id="2391419135980381625">ସାଧାରଣ ଫଣ୍ଟ</translation>
 <translation id="2392163307141705938"><ph name="IDS_SHORT_PRODUCT_NAME" /> ପାଇଁ ଆପଣଙ୍କ ବାପାମା ସେଟ୍ କରିଥିବା ସମୟ ସୀମାରେ ଆପଣ ପହଞ୍ଚି ଯାଇଛନ୍ତି।</translation>
 <translation id="2392369802118427583">ସକ୍ରିୟ କରନ୍ତୁ</translation>
+<translation id="2393136602862631930">ଆପଣଙ୍କ Chromebookରେ <ph name="APP_NAME" /> ସେଟ୍ ଅପ୍ କରନ୍ତୁ</translation>
 <translation id="2394566832561516196">ପରବର୍ତ୍ତୀ ରିଲୋଡ୍ ସମୟରେ ସେଟିଂସ୍ ଖାଲି ହୋଇଯିବ।</translation>
 <translation id="2395616325548404795">ଆପଣଙ୍କର <ph name="DEVICE_TYPE" /> ସଫଳତାପୂର୍ବକ ଏଣ୍ଟର୍‌ପ୍ରାଇଜ୍ ପରିଚାଳନା ପାଇଁ ନାମାଙ୍କିତ କରାଯାଇଛି, କିନ୍ତୁ ଏହାର ଆସେଟ୍‍ ଏବଂ ଲୋକେସନ୍‌ ସୂଚନା ପଠାଇବାରେ ବିଫଳ ହୋ‍ଇଛି। ଦୟାକରି ଏହି ଡିଭାଇସ୍‌ ପାଇଁ ଆପଣଙ୍କର ବ୍ୟବସ୍ଥାପକ କନସୋଲ୍‌ରୁ ଏହି ସୂଚନା ମାନୁଆଲ୍‌ ଭାବେ ଲେଖନ୍ତୁ।</translation>
 <translation id="2396387085693598316">ଆପଣଙ୍କ ଆଡମିନ୍ "<ph name="EXTENSION_NAME" />" ବ୍ଲକ୍ କରିଛନ୍ତି</translation>
@@ -1202,6 +1209,7 @@
 <translation id="2517472476991765520">ସ୍କାନ୍ କରନ୍ତୁ</translation>
 <translation id="2518024842978892609">ଆପଣଙ୍କ କ୍ଲାଏଣ୍ଟର ସାର୍ଟିଫିକେଟ୍‍ଗୁଡ଼ିକ ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="2520644704042891903">ଉପଲବ୍ଧ ଥିବା ସକେଟ୍‍ ପାଇଁ ଅପେକ୍ଷାରତ...</translation>
+<translation id="2521854691574443804"><ph name="FILE_NAME" />କୁ ଆପଣଙ୍କ ସଂସ୍ଥାର ସୁରକ୍ଷା ନୀତିଗୁଡ଼ିକ ସହ ଯାଞ୍ଚ କରାଯାଉଛି...</translation>
 <translation id="252219247728877310">କମ୍ପୋନେଣ୍ଟ ଅପ୍‌ଡେଟ୍ କରାଯାଇନାହିଁ</translation>
 <translation id="2523184218357549926">Googleକୁ ଆପଣ ଭିଜିଟ୍ କରିଥିବା ପୃଷ୍ଠାର URL ପଠାଏ</translation>
 <translation id="2526277209479171883">ଇନ୍‌ଷ୍ଟଲ୍‌ କରନ୍ତୁ ଏବଂ ଜାରି ରଖନ୍ତୁ</translation>
@@ -1381,6 +1389,7 @@
 <translation id="274290345632688601">Linux ଆପ୍‌ଗୁଡ଼ିକ ଓ ଫାଇଲ୍‌ଗୁଡ଼ିକ ରିଷ୍ଟୋର୍ ହେଉଛି</translation>
 <translation id="2743387203779672305">କ୍ଲିପ୍‌ବୋର୍ଡକୁ କପି କରନ୍ତୁ</translation>
 <translation id="2745080116229976798">Microsoft Qualified Subordination</translation>
+<translation id="2747266560080989517">ଏହି ଫାଇଲରେ ସମ୍ବେଦନଶୀଳ କିମ୍ବା ବିପଦଜନକ ବିଷୟବସ୍ତୁ ଅଛି। ଏହାକୁ ସମାଧାନ କରିବା ପାଇଁ ଏହାର ମାଲିକଙ୍କୁ କୁହନ୍ତୁ।</translation>
 <translation id="2748061034695037846"><ph name="DOMAIN" />କୁ ବିରତ କରାଯାଇଛି</translation>
 <translation id="2749756011735116528"><ph name="PRODUCT_NAME" />ରେ ସାଇନ୍‍ ଇନ୍‍ କରନ୍ତୁ</translation>
 <translation id="2749881179542288782">ବନାନ ସହିତ ବ୍ୟାକରଣର ଯାଞ୍ଚ କରନ୍ତୁ</translation>
@@ -1399,6 +1408,7 @@
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" /> ଭାବରେ ସାଇନ୍-ଇନ୍ କରିଛନ୍ତି।</translation>
 <translation id="2770465223704140727">ତାଲିକାରୁ ବାହାର କରନ୍ତୁ</translation>
 <translation id="2770690685823456775">ଆପଣଙ୍କର ପାସ୍‌ୱର୍ଡ୍ ଅନ୍ୟ ଏକ ଫୋଲ୍ଡର୍‌କୁ ଏକ୍ସପୋର୍ଟ୍ କରନ୍ତୁ</translation>
+<translation id="2770929488047004208">ମନିଟର୍ ରିଜୋଲ୍ୟୁସନ୍</translation>
 <translation id="2771268254788431918">ମୋବାଇଲ୍‌ ଡାଟା ସକ୍ରିୟ କରାଯାଇଛି</translation>
 <translation id="2771816809568414714">ଚିଜ୍</translation>
 <translation id="2772936498786524345">ସ୍ନିକୀ</translation>
@@ -1646,6 +1656,7 @@
 <translation id="3088052000289932193">ସାଇଟ୍ MIDI ବ୍ୟବହାର କରୁଛି</translation>
 <translation id="3088128611727407543">ଆପ୍ ପ୍ରୋଫାଇଲ୍ ପ୍ରସ୍ତୁତ କରାଯାଉଛି...</translation>
 <translation id="3088325635286126843">&amp;ରିନେମ୍‌ କରନ୍ତୁ...</translation>
+<translation id="3089064280130434511">ସାଇଟଗୁଡ଼ିକୁ ଆପଣଙ୍କ ସ୍କ୍ରିନରେ ୱିଣ୍ଡୋଗୁଡ଼ିକ ଖୋଲିବା ଏବଂ ରଖିବାରୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="3089137131053189723">ସନ୍ଧାନ ଖାଲି ହୋ‍ଇଯାଇଛି</translation>
 <translation id="3090819949319990166"><ph name="TEMP_CRX_FILE" />କୁ crx ଏକ୍ସଟର୍ନଲ୍‌ ଫାଇଲ୍‌ କପି କରିପାରିବ ନାହିଁ।</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" ପେୟାର୍‌ ହୋ‍ଇଛି</translation>
@@ -1817,6 +1828,7 @@
 <translation id="3317678681329786349">କ୍ୟାମେରା ଏବଂ ମାଇକ୍ରୋଫୋନ୍ ବ୍ଲକ୍ ଅଛି</translation>
 <translation id="3319048459796106952">&amp;ନୂତନ ଗୁପ୍ତ ୱିଣ୍ଡୋ</translation>
 <translation id="3320630259304269485">ସେଫ୍ ବ୍ରାଉଜିଂ (ବିପଦଜନକ ସାଇଟଗୁଡ଼ିକରୁ ସୁରକ୍ଷା) ଏବଂ ଅନ୍ୟ ସୁରକ୍ଷା ସେଟିଂସ୍</translation>
+<translation id="3323295311852517824">{NUM_FILES,plural, =0{ଏହି ଡାଟାରେ ସମ୍ବେଦନଶୀଳ କିମ୍ବା ବିପଦଜନକ ବିଷୟବସ୍ତୁ ଅଛି। ଏହି ବିଷୟବସ୍ତୁ କାଢ଼ି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।}=1{ଏହି ଫାଇଲରେ ସମ୍ବେଦନଶୀଳ କିମ୍ବା ବିପଦଜନକ ବିଷୟବସ୍ତୁ ଅଛି। ଏହି ବିଷୟବସ୍ତୁ କାଢ଼ି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।}other{ଏହି ଫାଇଲଗୁଡ଼ିକରେ ସମ୍ବେଦନଶୀଳ କିମ୍ବା ବିପଦଜନକ ବିଷୟବସ୍ତୁ ଅଛି। ଏହି ବିଷୟବସ୍ତୁ କାଢ଼ି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।}}</translation>
 <translation id="3323521181261657960">ବୋନସ୍! ଆପଣ ଅଧିକ ସ୍କ୍ରିନ୍ ସମୟ ପାଇଛନ୍ତି</translation>
 <translation id="3325910708063135066">Mac ସିଷ୍ଟମ୍ ଅଗ୍ରାଧିକାରଗୁଡ଼ିକରେ କ୍ୟାମେରା ଏବଂ ମାଇକ୍ରୋଫୋନ୍ ବନ୍ଦ କରାଯାଇଛି</translation>
 <translation id="3328489342742826322">କୌଣସି ବ୍ୟାକ୍‍ଅପ୍‍ରୁ ରିଷ୍ଟୋର୍ କରିବା ଦ୍ୱାରା ଆପଣଙ୍କର Linux ଫାଇଲ୍ସ ଫୋଲ୍ଡର୍‍‍ରେ ପୂର୍ବରୁ ଥିବା Linux ଆପ୍ଲିକେସନ୍ସ ଏବଂ ଡାଟା ଡିଲିଟ୍ ହୋଇଯିବ।</translation>
@@ -1857,6 +1869,7 @@
 <translation id="338583716107319301">ବିଭାଜନକାରୀ</translation>
 <translation id="338691029516748599"><ph name="NETWORK_COUNT" />ଟିର <ph name="NETWORK_INDEX" /> ନେଟ୍‌ୱାର୍କ, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, ସିଗ୍‍ନାଲ୍‍ର କ୍ଷମତା <ph name="SIGNAL_STRENGTH" />%, ଆପଣଙ୍କର ଆଡ୍‍ମିନିଷ୍ଟ୍ରେଟର୍‍ଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ, ସଂଯୋଗ କରନ୍ତୁ</translation>
 <translation id="3387614642886316601">ଉନ୍ନତ ବନାନ ଯାଞ୍ଚ ବ୍ୟବହାର କରନ୍ତୁ</translation>
+<translation id="3388788256054548012">ଏହି ଫାଇଲଟି ଏନକ୍ରିପ୍ଟ କରାଯାଇଛି। ଏହାର ମାଲିକଙ୍କୁ ଡିକ୍ରିପ୍ଟ କରିବାକୁ କୁହନ୍ତୁ।</translation>
 <translation id="3390741581549395454">Linux ଆପ୍ ଏବଂ ଫାଇଲ୍‍ଗୁଡ଼ିକର ସଫଳତାପୂର୍ବକ ବ୍ୟାକ୍ ଅପ୍ ନିଆଯାଇଛି। ଅପଗ୍ରେଡ୍ ଶୀଘ୍ର ଆରମ୍ଭ ହେବ।</translation>
 <translation id="3396800784455899911">"ରାଜି ଅଛି ଏବଂ ଜାରି ରଖନ୍ତୁ" ବଟନ୍‌ରେ କ୍ଲିକ୍‌ କରିବା ଦ୍ୱାରା, ଆପଣ Googleର ଏହି ସେବାଗୁଡ଼ିକ ପାଇଁ ଉପରେ ବର୍ଣ୍ଣନା କରାଯାଇଥିବା ପ୍ରକ୍ରିୟାରେ ସମ୍ମତ ହେଉଛନ୍ତି।</translation>
 <translation id="3399432415385675819">ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ଅକ୍ଷମ କରାଯିବ</translation>
@@ -1905,6 +1918,7 @@
 <translation id="3445047461171030979">Google Assistant ଦ୍ରୁତ ଉତ୍ତରଗୁଡ଼ିକ</translation>
 <translation id="3445925074670675829">USB-C ଡିଭାଇସ୍</translation>
 <translation id="344630545793878684">ଅନେକଗୁଡ଼ିଏ ୱେବ୍‌ସାଇଟ୍‌ରେ ଆପଣଙ୍କର ଡାଟା ପଢ଼ନ୍ତୁ</translation>
+<translation id="3446650212859500694">ଏହ ଫାଇଲରେ ସମ୍ବେଦନଶୀଳ ବିଷୟବସ୍ତୁ ଅଛି</translation>
 <translation id="3448086340637592206">Google Chrome ଏବଂ Chrome OS ଅତିରିକ୍ତ ସର୍ତ୍ତାବଳୀ</translation>
 <translation id="3448492834076427715">ଆକାଉଣ୍ଟ ଅପ୍‌ଡେଟ୍ କରନ୍ତୁ</translation>
 <translation id="3449393517661170867">ନୂଆ ଟାବ୍ କରାଯାଇଥିବା ୱିଣ୍ଡୋ</translation>
@@ -2108,6 +2122,7 @@
 <translation id="3693415264595406141">ପାସୱାର୍ଡ୍:</translation>
 <translation id="3694027410380121301">ପୂର୍ବ ଟାବ୍ ବାଛନ୍ତୁ</translation>
 <translation id="369489984217678710">ପାସ୍‍ୱର୍ଡ ଓ ଅନ୍ୟ ସାଇନ୍-ଇନ୍ ଡାଟା</translation>
+<translation id="369522892592566391">{NUM_FILES,plural, =0{ସୁରକ୍ଷା ଯାଞ୍ଚଗୁଡ଼ିକ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି। ଆପଣଙ୍କ ଡାଟା ଅପଲୋଡ୍ ହୋଇଯିବ।}=1{ସୁରକ୍ଷା ଯାଞ୍ଚଗୁଡ଼ିକ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି। ଆପଣଙ୍କ ଫାଇଲ୍ ଅପଲୋଡ୍ ହୋଇଯିବ।}other{ସୁରକ୍ଷା ଯାଞ୍ଚଗୁଡ଼ିକ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି। ଆପଣଙ୍କ ଫାଇଲଗୁଡ଼ିକ ଅପଲୋଡ୍ ହୋଇଯିବ।}}</translation>
 <translation id="3699624789011381381">ଇମେଲ୍ ଠିକଣା</translation>
 <translation id="3699920817649120894">ସିଙ୍କ୍ ଏବଂ ବ୍ୟକ୍ତିଗତକରଣ ବନ୍ଦ କରିବେ?</translation>
 <translation id="3700888195348409686">(<ph name="PAGE_ORIGIN" />)କୁ ଉପସ୍ଥାପନା କରାଯାଉଛି</translation>
@@ -2171,6 +2186,7 @@
 <translation id="3764314093345384080">ବିବରଣୀ ସହ ତିଆରି କରାଯାଇଥିବା ସୂଚନା</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{ଏକ USB ଡିଭାଇସ୍ ସହିତ ଯୋଗାଯୋଗ କରନ୍ତୁ}other{#ଟି USB ଡିଭାଇସ୍ ସହିତ ଯୋଗାଯୋଗ କରନ୍ତୁ}}</translation>
 <translation id="3765246971671567135">ଅଫ୍‌ଲାଇନ୍‌ ଡେମୋ ମୋଡ୍‌ ନୀତି ପଢାଯାଇପାରିଲା ନାହିଁ।</translation>
+<translation id="3766811143887729231"><ph name="REFRESH_RATE" />Hz</translation>
 <translation id="3768037234834996183">ଆପଣଙ୍କ ଅଗ୍ରାଧିକାରଗୁଡ଼ିକ ସିଙ୍କ୍ ହେଉଛି...</translation>
 <translation id="377050016711188788">ଆଇସ୍‌କ୍ରିମ୍</translation>
 <translation id="3771290962915251154">ବାପାମା ନିୟନ୍ତ୍ରଣଗୁଡ଼ିକ ଚାଲୁ ଥିବା ଯୋଗୁଁ ଏହି ସେଟିଂସକୁ ଅକ୍ଷମ କରାଯାଇଛି</translation>
@@ -2301,6 +2317,7 @@
 <translation id="3909791450649380159">&amp;ଛେଦନ କରନ୍ତୁ</translation>
 <translation id="3911824782900911339">ନୂଆ ଟାବ୍ ପୃଷ୍ଠା</translation>
 <translation id="3915280005470252504">ସ୍ୱର ମାଧ୍ୟମରେ ଖୋଜନ୍ତୁ</translation>
+<translation id="3916233823027929090">ସୁରକ୍ଷା ଯାଞ୍ଚଗୁଡ଼ିକ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି</translation>
 <translation id="3916445069167113093">ଏହି ପ୍ରକାର ଫାଇଲ୍ ଆପଣଙ୍କର କମ୍ପ୍ୟୁଟରକୁ କ୍ଷତି କରିପାରେ। ଯେକୌଣସି ମତେ ଆପଣ <ph name="FILE_NAME" /> ରଖିବାକୁ ଚାହୁଁଛନ୍ତି କି?</translation>
 <translation id="3918972485393593704">Googleକୁ ବିବରଣୀ ରିପୋର୍ଟ କରନ୍ତୁ</translation>
 <translation id="3919145445993746351">ଆପଣଙ୍କର ସମସ୍ତ କମ୍ପ୍ୟୁଟର୍‌ରେ ଆପଣଙ୍କର ଏକ୍ସଟେନ୍‌ସନ୍ ପାଇବା ପାଇଁ, ସିଙ୍କ୍ ଚାଲୁ କରନ୍ତୁ</translation>
@@ -2799,6 +2816,7 @@
 <translation id="4606551464649945562">ଆପଣଙ୍କ ପରିପାର୍ଶ୍ୱର ଏକ 3D ମ୍ୟାପ୍ ତିଆରି କରିବା ଏବଂ କ୍ୟାମେରା ସ୍ଥିତି ଟ୍ରାକ୍ କରିବାକୁ ସାଇଟଗୁଡ଼ିକୁ ଅନୁମତି ଦିଅନ୍ତୁ ନାହିଁ</translation>
 <translation id="4608500690299898628">&amp;ଖୋଜନ୍ତୁ...</translation>
 <translation id="4608520674724523647">ସଫଳ ନାମାଙ୍କନ ଉଦାହରଣ</translation>
+<translation id="4608703838363792434"><ph name="FILE_NAME" />ରେ ସମ୍ବେଦନଶୀଳ ବିଷୟବସ୍ତୁ ଅଛି</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" />ରେ କିଛି ତ୍ରୁଟି ଦେଖାଦେ‍ଇଛି</translation>
 <translation id="4610637590575890427"><ph name="SITE" /> କୁ ଯିବା ଲାଗି ଆପଣ ବୁଝନ୍ତି କି?</translation>
 <translation id="4611114513649582138">ଡାଟା ସଂଯୋଗ ଉପଲବ୍ଧ ଅଛି</translation>
@@ -2945,6 +2963,7 @@
 <translation id="4824958205181053313">ସିଙ୍କ୍‌ ବାତିଲ୍‌ କରିବେ?</translation>
 <translation id="4827675678516992122">ସଂଯୋଗ କରିହେଲା ନାହିଁ</translation>
 <translation id="4829768588131278040">PIN ସେଟ୍‍ ଅପ୍‍ କରନ୍ତୁ</translation>
+<translation id="4830121310592638841">କୌଣସି ସାଇଟ୍ ଆପଣଙ୍କ ସ୍କ୍ରିନରେ ୱିଣ୍ଡୋଗୁଡ଼ିକୁ ଖୋଲିବା ଏବଂ ରଖିବାକୁ ଚାହିଁଲେ, ପଚାରନ୍ତୁ</translation>
 <translation id="4830502475412647084">OS ଅପ୍‌ଡେଟ୍ ଇନ୍‌ଷ୍ଟଲ୍ ହେଉଛି</translation>
 <translation id="4830573902900904548">ଆପଣଙ୍କ <ph name="DEVICE_TYPE" />ର <ph name="NETWORK_NAME" /> ବ୍ୟବହାର କରି ଇଣ୍ଟର୍ନେଟ୍‌ ସହ ସଂଯୁକ୍ତ କରିବାକୁ ଅକ୍ଷମ ଅଟେ। ଦୟାକରି ଅନ୍ୟ ଏକ ନେଟ୍‌ୱର୍କ ବାଛନ୍ତୁ। <ph name="LEARN_MORE_LINK_START" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="LEARN_MORE_LINK_END" /></translation>
 <translation id="4833236810053292670">Chromebookରେ ନୂଆ କ’ଣ ଅଛି, ଦେଖନ୍ତୁ</translation>
@@ -3012,6 +3031,7 @@
 <translation id="4898011734382862273">ସାର୍ଟିଫିକେଟ୍‍ "<ph name="CERTIFICATE_NAME" />" ଏକ ସାର୍ଟିଫିକେସନ୍ ଅଧିକାରୀଙ୍କର ପ୍ରରତିନିଧିତ୍ୱ କରେ</translation>
 <translation id="489985760463306091">କ୍ଷତିକାରକ ସଫ୍ଟୱେର୍ କାଢ଼ିବାର ପ୍ରକ୍ରିୟାକୁ ସମ୍ପୂର୍ଣ୍ଣ କରିବା ପାଇଁ, ଆପଣଙ୍କ କମ୍ପ୍ୟୁଟର୍‍କୁ ରିଷ୍ଟାର୍ଟ କରନ୍ତୁ</translation>
 <translation id="4900392736118574277">ଆପଣଙ୍କର ଆରମ୍ଭ ପୃଷ୍ଠା <ph name="URL" />କୁ ପରିବର୍ତ୍ତନ ହୋଇଥିଲା।</translation>
+<translation id="490051679772058907"><ph name="REFRESH_RATE" /> Hz - ଇଣ୍ଟରଲେସ୍ ହୋଇଛି</translation>
 <translation id="4902546322522096650"><ph name="NETWORK_COUNT" />ଟିର <ph name="NETWORK_INDEX" /> ନେଟ୍‌ୱାର୍କ, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, ସିଗ୍‌ନାଲ୍‌ର କ୍ଷମତା <ph name="SIGNAL_STRENGTH" />%, ସଂଯୋଗ କରନ୍ତୁ</translation>
 <translation id="49027928311173603">ସର୍ଭର୍‌ରୁ ଡାଉନ୍‌ଲୋଡ୍ ହୋଇଥିବା ନୀତି ଅବୈଧ ଅଟେ: <ph name="VALIDATION_ERROR" />।</translation>
 <translation id="4906490889887219338">ନେଟ୍‍ୱାର୍କ ଫାଇଲ୍ ସେୟାର୍ ସେଟ୍ ଅପ୍ କରନ୍ତୁ କିମ୍ବା ପରିଚାଳନା କରନ୍ତୁ। <ph name="LINK_BEGIN" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="LINK_END" /></translation>
@@ -3184,6 +3204,7 @@
 <translation id="5142793792982256885">ଟଚପ୍ୟାଡ୍ ସ୍କ୍ରଲ୍ ବେଗ</translation>
 <translation id="5142961317498132443">ପ୍ରମାଣିକରଣ</translation>
 <translation id="5143374789336132547">ଏକ୍ସଟେନ୍‌ସନ୍ "<ph name="EXTENSION_NAME" />" ଏହା ପରିବର୍ତ୍ତନ କରିଛି ଯେ ଯେତେବେଳେ ଆପଣ ହୋମ୍‌ ବଟନ୍‌ରେ କ୍ଲିକ୍‌ କରନ୍ତି ସେତେବେଳେ କେଉଁ ପୃଷ୍ଠା ଦେଖାଇବ।</translation>
+<translation id="5143612243342258355">ଏହି ଫାଇଲ୍ ବିପଦଜନକ ଅଟେ</translation>
 <translation id="5143712164865402236">ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନ୍‌ରେ ପ୍ରବେଶ କରନ୍ତୁ</translation>
 <translation id="514575469079499857">ଲୋକେସନ୍ ନିର୍ଦ୍ଧାରଣ କରିବା ପାଇଁ ଆପଣଙ୍କର IP ଠିକଣା ବ୍ୟବହାର କରନ୍ତୁ (ଡିଫଲ୍ଟ)</translation>
 <translation id="5147103632304200977">କୌଣସି ସାଇଟ୍ HID ଡିଭାଇସଗୁଡ଼ିକୁ ଆକ୍ସେସ୍ କରିବାକୁ ଚାହିଁଲେ, ତାହାକୁ ପଚାରନ୍ତୁ (ସୁପାରିଶ କରାଯାଇଛି)</translation>
@@ -3884,6 +3905,7 @@
 <translation id="6055392876709372977">RSA ଏନକ୍ରିପ୍ସନ୍ ସହିତ PKCS #1 SHA-256</translation>
 <translation id="6055907707645252013"><ph name="NETWORK_TYPE" /> ନେଟ୍‍ୱାର୍କ, ସଂଯୁକ୍ତ ହୋଇନାହିଁ</translation>
 <translation id="6056710589053485679">ସାଧାରଣ ପୁଣି ଲୋଡ୍ ହେଉଛି</translation>
+<translation id="6057312498756061228">ସୁରକ୍ଷା ଯାଞ୍ଚ ପାଇଁ ଏହି ଫାଇଲଟି ବହୁତ ବଡ଼ ଅଟେ। ଆପଣ 50 MB ପର୍ଯ୍ୟନ୍ତ ଫାଇଲଗୁଡ଼ିକୁ ଖୋଲି ପାରିବେ।</translation>
 <translation id="6057381398996433816">ମୋସନ୍ ଏବଂ ଲାଇଟ୍ ସେନ୍ସର୍ ବ୍ୟବହାର କରିବା ପାଇଁ ଏହି ସାଇଟ୍‍କୁ ବ୍ଲକ୍ କରାଯାଇଛି।</translation>
 <translation id="6058567592298841668">ଭର୍ଚୁଆଲ୍ ମେସିନ୍‍ର ପ୍ଲଗ୍-ଇନ୍: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">ସାର୍ଟିଫିକେଟ୍ ଅନୁକ୍ରମ</translation>
@@ -4224,6 +4246,7 @@
 <translation id="6494974875566443634">କଷ୍ଟମାଇଜେସନ୍</translation>
 <translation id="6495925982925244349"><ph name="NETWORK_COUNT" />ଟିର <ph name="NETWORK_INDEX" /> ନେଟ୍‌ୱାର୍କ, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ସିଗ୍‍ନାଲ୍‍ର କ୍ଷମତା <ph name="SIGNAL_STRENGTH" />%, ଆପଣଙ୍କର ଆଡ୍‍ମିନିଷ୍ଟ୍ରେଟର୍‍ଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ, ବିବରଣୀ</translation>
 <translation id="6496965928959882519">ଆପଣଙ୍କ ଡିଭାଇସରେ ଷ୍ଟୋରେଜ୍ କମ୍ ଅଛି। <ph name="APP_NAME" /> ବ୍ୟବହାର କରିବାକୁ ଅତିକମରେ <ph name="RECOMMENDED_SPACE" /> ଖାଲି ସ୍ଥାନର ସୁପାରିଶ କରାଯାଇଛି। ଖାଲି ସ୍ଥାନ ବଢ଼ାଇବାକୁ, ଆପଣଙ୍କ ଡିଭାଇସରୁ ଫାଇଲଗୁଡ଼ିକ ଡିଲିଟ୍ କରନ୍ତୁ।</translation>
+<translation id="6497457470714179223">{NUM_FILES,plural, =0{ଏହି ଡାଟାରେ ସମ୍ବେଦନଶୀଳ କିମ୍ବା ବିପଦଜନକ ବିଷୟବସ୍ତୁ ଅଛି}=1{ଏହି ଫାଇଲରେ ସମ୍ବେଦନଶୀଳ କିମ୍ବା ବିପଦଜନକ ବିଷୟବସ୍ତୁ ଅଛି}other{ଏହି ଫାଇଲଗୁଡ଼ିକରେ ସମ୍ବେଦନଶୀଳ କିମ୍ବା ବିପଦଜନକ ବିଷୟବସ୍ତୁ ଅଛି}}</translation>
 <translation id="6497789971060331894">ମାଉସ୍ ରିଭର୍ସ ସ୍କ୍ରୋଲିଂ</translation>
 <translation id="6498249116389603658">&amp;ଆପଣଙ୍କର ସମସ୍ତ ଭାଷା</translation>
 <translation id="6499143127267478107">ପ୍ରକ୍ସି ସ୍କ୍ରିପ୍ଟରେ ହୋଷ୍ଟର ସମାଧାନ କରଯାଉଛି...</translation>
@@ -4316,6 +4339,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="662080504995468778">ରୁହନ୍ତୁ</translation>
 <translation id="6621715389962683284">ନେଟ୍‍ୱାର୍କ ସଂଯୋଗ ସ୍ଥାପନ କରାଯାଇପାରିବ ନାହିଁ।</translation>
 <translation id="6622980291894852883">ଛବି ବ୍ଲକ୍ କରିବା ଜାରି ରଖନ୍ତୁ</translation>
+<translation id="6624535038674360844"><ph name="FILE_NAME" />ରେ ସମ୍ବେଦନଶୀଳ କିମ୍ବା ବିପଦଜନକ ବିଷୟବସ୍ତୁ ଅଛି। ଏହାକୁ ସମାଧାନ କରିବା ପାଇଁ ଏହାର ମାଲିକଙ୍କୁ କୁହନ୍ତୁ।</translation>
 <translation id="6624687053722465643">ମଧୁରତା</translation>
 <translation id="6628328486509726751"><ph name="WEBRTC_LOG_UPLOAD_TIME" />ରେ ଅପ୍‌ଲୋଡ୍ ହୋଇଛି</translation>
 <translation id="6630752851777525409">ଆପଣଙ୍କ ତରଫରୁ ଏକ ସାର୍ଟିଫିକେଟ୍ ପ୍ରମାଣିକିକରଣ କରିବାକୁ
@@ -4975,6 +4999,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="7487067081878637334">ଟେକ୍ନୋଲୋଜି</translation>
 <translation id="7487141338393529395">ଉନ୍ନତ ବନାନ ଯାଞ୍ଚ ଚାଲୁ କରନ୍ତୁ</translation>
 <translation id="7487969577036436319">କୌଣସି ଉପାଦାନ ଇନ୍‍ଷ୍ଟଲ୍ କରାଯାଇନାହିଁ</translation>
+<translation id="7488682689406685343">ଅନାଧିକୃତ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ପାଇଁ ଆପଣ ଅନୁମତି ଦେବାକୁ କୌଶଳରେ ଏହି ସାଇଟ୍ ଚେଷ୍ଟା କରିପାରେ।</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;ସମସ୍ତ ଖୋଲନ୍ତୁ}=1{&amp;ବୁକ୍‍ମାର୍କ ଖୋଲନ୍ତୁ}other{&amp;ସମସ୍ତ (#) ଖୋଲନ୍ତୁ}}</translation>
 <translation id="7489761397368794366">ଆପଣଙ୍କର ଡିଭାଇସ୍‍ରୁ କଲ୍ କରନ୍ତୁ</translation>
 <translation id="749028671485790643">ବ୍ୟକ୍ତି <ph name="VALUE" /></translation>
@@ -5011,6 +5036,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="7537451260744431038">ଆପଣଙ୍କୁ ସାଇନ୍ ଇନ୍ ରଖିବା କିମ୍ବା ଆପଣଙ୍କ ସପିଂ କାର୍ଟରେ ଥିବା ଆଇଟମଗୁଡ଼ିକୁ ମନେରଖିବା ପରି ଆପଣଙ୍କ ବ୍ରାଉଜିଂ ଅନୁଭୂତିକୁ ଉନ୍ନତ କରିବା ନିମନ୍ତେ ସାଇଟଗୁଡ଼ିକ କୁକୀଗୁଡ଼ିକୁ ବ୍ୟବହାର କରିପାରିବ ନାହିଁ</translation>
 <translation id="7540972813190816353">ଅପ୍‌ଡେଟ୍ ଖୋଜିବା ସମୟରେ ଏକ ସମସ୍ୟା ଦେଖାଗଲା: <ph name="ERROR" /></translation>
 <translation id="7541773865713908457"><ph name="APP_NAME" /> ଆପ୍‌ ସହ<ph name="ACTION_NAME" /></translation>
+<translation id="754207240458482646">ଆପଣଙ୍କ ଆକାଉଣ୍ଟରେ ଥିବା ଅନ୍ୟ ଡିଭାଇସଗୁଡ଼ିକ ସହ ସିଙ୍କ୍ ହୋଇଛି। <ph name="LINK_BEGIN" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="LINK_END" /></translation>
 <translation id="7543104066686362383">ଏହି <ph name="IDS_SHORT_PRODUCT_NAME" /> ଡିଭାଇସ୍‌ରେ ଡିବଗିଂ ବୈଶିଷ୍ଟ୍ୟଗୁଡିକ ସକ୍ଷମ କରନ୍ତୁ</translation>
 <translation id="7543525346216957623">ନିଜର ଅଭିଭାବକଙ୍କୁ ପଚାରନ୍ତୁ</translation>
 <translation id="7547317915858803630">ଚେତାବନୀ: ଆପଣଙ୍କର <ph name="PRODUCT_NAME" /> ସେଟିଂଗୁଡ଼ିକ ଏକ ନେଟ୍‌ୱର୍କ ଡ୍ରାଇଭ୍‌ରେ ଷ୍ଟୋର୍ କରାଯାଇଛି। ଏହି କାରଣରୁ ମନ୍ଥରତା ଦେଖାଦେଇପାରେ, ନଷ୍ଟ ହୋଇଯାଇପାରେ କିମ୍ୱା ଡାଟା ହାନି ମଧ୍ୟ ହୋଇପାରେ।</translation>
@@ -5070,6 +5096,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="7622114377921274169">ଚାର୍ଜ ହେଉଛି।</translation>
 <translation id="7624337243375417909">କ୍ୟାପ୍ସ ଲକ୍ ବନ୍ଦ ଅଛି।</translation>
 <translation id="7625568159987162309">ସମସ୍ତ ସାଇଟ୍‌ଗୁଡ଼ିକରେ ଅନୁମତି ଏବଂ ଷ୍ଟୋର କରାଯାଇଥିବା ଡାଟା ଦେଖନ୍ତୁ</translation>
+<translation id="7628201176665550262">ରିଫ୍ରେସ୍ ରେଟ୍</translation>
 <translation id="7629827748548208700">ଟ୍ୟାବ୍: <ph name="TAB_NAME" /></translation>
 <translation id="7631014249255418691">Linux ଆପ୍ସ ଏବଂ ଫାଇଲ୍ସର ସଫଳତାପୂର୍ବକ ବ୍ୟାକ୍ ଅପ୍ ନିଆଯାଇଛି</translation>
 <translation id="7631205654593498032">ଯେତେବେଳେ ଆପଣ ଆପଣଙ୍କର ଡିଭାଇସ୍‌ଗୁଡ଼ିକୁ ସଂଯୋଗ କରନ୍ତି, ସେତେବେଳେ ଆପଣଙ୍କର <ph name="DEVICE_TYPE" /> ଏହା କରିପାରିବ ବୋଲି ଆପଣ ସମ୍ମତ ହୁଅନ୍ତି:</translation>
@@ -5457,6 +5484,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="8084114998886531721">ସେଭ୍‌ ହୋ‍ଇଥିବା ପାସ୍‌ୱର୍ଡ</translation>
 <translation id="8086015605808120405"><ph name="PRINTER_NAME" /> କନ୍‍ଫିଗର୍ କରାଯାଉଛି ...</translation>
 <translation id="8086442853986205778"><ph name="PRINTER_NAME" /> ସେଟ୍ ଅପ୍ କରନ୍ତୁ</translation>
+<translation id="80866457114322936">{NUM_FILES,plural, =1{ଏହି ଫାଇଲଟି ଏନକ୍ରିପ୍ଟ କରାଯାଇଛି। ଏହାର ମାଲିକଙ୍କୁ ଡିକ୍ରିପ୍ଟ କରିବାକୁ କୁହନ୍ତୁ।}other{ଏହି ଫାଇଲଗୁଡ଼ିକ ମଧ୍ୟରୁ କିଛି ଫାଇଲ୍ ଏନକ୍ରିପ୍ଟ କରାଯାଇଛି। ସେଗୁଡ଼ିକର ମାଲିକଙ୍କୁ ଡିକ୍ରିପ୍ଟ କରିବାକୁ କୁହନ୍ତୁ।}}</translation>
 <translation id="808894953321890993">ପାସ୍‌ୱାର୍ଡ ବଦଳାନ୍ତୁ</translation>
 <translation id="8090234456044969073">ଆପଣ ସବୁଠାରୁ ଅଧିକ ଥର ଯାଉଥିବା ୱେବ୍‌ସାଇଟ୍‍ଗୁଡ଼ିକର ଗୋଟିଏ ତାଲିକା ପଢ଼ନ୍ତୁ</translation>
 <translation id="8093359998839330381"><ph name="PLUGIN_NAME" /> ପ୍ରତିକ୍ରିୟା ଦେଉନାହିଁ</translation>
@@ -5471,6 +5499,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="8102159139658438129">ସଂଯୁକ୍ତ ଥିବା ଆପଣଙ୍କ ଫୋନ୍ ପାଇଁ ବିକଳ୍ପ ଦେଖିବାକୁ <ph name="LINK_BEGIN" />ସେଟିଂସ୍<ph name="LINK_END" />କୁ ଯାଆନ୍ତୁ</translation>
 <translation id="8104696615244072556">ଆପଣଙ୍କର <ph name="IDS_SHORT_PRODUCT_NAME" /> ଡିଭାଇସ୍‌କୁ ପାୱାର୍‍ୱାସ୍ କରନ୍ତୁ ଏବଂ ପୂର୍ବବର୍ତ୍ତୀ ସଂସ୍କରଣକୁ ଫେରନ୍ତୁ।</translation>
 <translation id="8107015733319732394">ଆପଣଙ୍କର <ph name="DEVICE_TYPE" />ରେ Google Play Store ଇନ୍‌ଷ୍ଟଲ୍‌ ହେଉଛି। ଏଥିରେ କିଛି ସମୟ ଲାଗିପାରେ।</translation>
+<translation id="810728361871746125">ଡିସପ୍ଲେ ରିଜୋଲ୍ୟୁସନ୍</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{କୌଣସି ତୃତୀୟ-ପକ୍ଷ କୁକୀ ନାହିଁ}=1{1ଟି ତୃତୀୟ-ପକ୍ଷ କୁକୀ ବ୍ଲକ୍ କରାଯାଇଛି}other{#ଟି ତୃତୀୟ-ପକ୍ଷ କୁକୀ ବ୍ଲକ୍ କରାଯାଇଛି}}</translation>
 <translation id="810875025413331850">ନିକଟରେ କୌଣସି ଡିଭାଇସ୍ ମିଳି ନାହିଁ।</translation>
 <translation id="8114199541033039755">ଟାବଲେଟ୍ ମୋଡରେ ବଟନଗୁଡ଼ିକ ସାହାଯ୍ୟରେ ମୂଳ ପୃଷ୍ଠାକୁ ନାଭିଗେଟ୍ କରନ୍ତୁ, ପଛକୁ ଫେରନ୍ତୁ ଏବଂ ଆପଗୁଡ଼ିକ ସ୍ୱିଚ୍ କରନ୍ତୁ। ChromeVox କିମ୍ବା ସ୍ୱଚାଳିତ କ୍ଲିକ୍ ସକ୍ଷମ କରାଗଲେ ଚାଲୁ ହୋଇଥାଏ।</translation>
@@ -5480,6 +5509,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="8117752106453549166">ଆପଣଙ୍କ ଆଡମିନିଷ୍ଟ୍ରେଟରଙ୍କ ଦ୍ୱାରା Linux କନଫିଗର୍ କରାଯାଉଛି। କନଫିଗରେସନ୍ କରିବା ପାଇଁ କିଛି ସମୟ ଲାଗିବ।</translation>
 <translation id="8118362518458010043">Chrome ଦ୍ୱାରା ଅକ୍ଷମ କରାଯାଇଛି। ଏହି ଏକ୍ସଟେନ୍‌ସନ୍ ହୁଏତ ଅସୁରକ୍ଷିତ ହୋଇପାରେ।</translation>
 <translation id="8118488170956489476">ଆପଣଙ୍କ ସଂସ୍ଥା ଦ୍ୱାରା ଆପଣଙ୍କର <ph name="BEGIN_LINK" />ବ୍ରାଉଜର୍ ପରିଚାଳିତ ହୋଇଥାଏ<ph name="END_LINK" />।</translation>
+<translation id="8118515372935001629">ଡିସପ୍ଲେ ରିଫ୍ରେସ୍ ରେଟ୍</translation>
 <translation id="8118860139461251237">ଆପଣଙ୍କର ଡାଉନ୍‍‍ଲୋଡ୍‍ଗୁଡ଼ିକ ପରିଚାଳନା କରନ୍ତୁ</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" />, ଏବଂ ଆହୁରି ଅନେକ କିଛି</translation>
 <translation id="8123590694679414600">ଆପଣଙ୍କର ସିଙ୍କ୍‌ ପାସ୍‌ଫ୍ରେଜ୍‌ରେ <ph name="TIME" />ଟାରେ ଡାଟା ଏନ୍‌କ୍ରିପ୍ଟ କରାଯାଇଥିଲା। ଏଥିରେ Google Payରୁ ପେମେଣ୍ଟ କରିବାର ପଦ୍ଧତି ଏବଂ ଠିକଣା ସାମିଲ୍‌ ନାହିଁ।</translation>
@@ -5763,6 +5793,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="8500234928660943538">ଭୁଲ PUK. ପୁଣି ଚେଷ୍ଟା କରିବାକୁ ବାକି ଅଛି: <ph name="RETRIES" /> ଥର।</translation>
 <translation id="8502536196501630039">Google Playରୁ ଆପ୍ସ ବ୍ୟବହାର କରିବା ପାଇଁ, ଆପଣ ପ୍ରଥମେ ଆପଣଙ୍କର ଆପ୍‌ଗୁଡ଼ିକୁ ରିଷ୍ଟୋର୍ କରନ୍ତୁ। କିଛି ଡାଟା ହୁଏତ ହରାଇବାକୁ ପଡ଼ିବ।</translation>
 <translation id="8503813439785031346">ଉପଯୋଗକର୍ତ୍ତାନାମ</translation>
+<translation id="8507227974644337342">ସ୍କ୍ରିନ୍ ରିଜୋଲ୍ୟୁସନ୍</translation>
 <translation id="850875081535031620">କୌଣସି ହାନିକାରକ ସଫ୍ଟୱେର୍ ମିଳିଲା ନାହିଁ</translation>
 <translation id="8509177919508253835">ସୁରକ୍ଷା କୀଗୁଡ଼ିକ ରିସେଟ୍ କରନ୍ତୁ ଏବଂ ପିନ୍‌ଗୁଡ଼ିକ ତିଆରି କରନ୍ତୁ</translation>
 <translation id="8509646642152301857">ବନାନ ଯାଞ୍ଚ ଅଭିଧାନ ଡାଉନ୍‌ଲୋଡ୍ ବିଫଳ ହୋଇଛି।</translation>
@@ -5814,6 +5845,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="8573403125070227391">ଏହି ଆପ୍ ଅନେକ ଉତ୍ସ ବ୍ୟବହାର କରିଥାଏ, ତେଣୁ Chrome ଏହାକୁ କାଢ଼ି ଦେଇଛି।</translation>
 <translation id="8574990355410201600">ସର୍ବଦା <ph name="HOST" />ରେ ସାଉଣ୍ଡକୁ ଅନୁମତି ଦିଅନ୍ତୁ</translation>
 <translation id="8575286410928791436">ବାହାରିବାକୁ <ph name="KEY_EQUIVALENT" />କୁ ଧରି ରଖନ୍ତୁ</translation>
+<translation id="8576984108917644670">ଆପଣଙ୍କ ଆକାଉଣ୍ଟରେ ଥିବା ଅନ୍ୟ ଡିଭାଇସଗୁଡ଼ିକ ସହ ସିଙ୍କ୍ ହୋଇଛି। ଏହି ଡିଭାଇସର ଅନ୍ୟ ଉପଯୋଗକର୍ତ୍ତାମାନେ ଏହି ନେଟୱାର୍କ ବ୍ୟବହାର କରିପାରିବେ। ଅନ୍ୟ ଉପଯୋଗକର୍ତ୍ତାଙ୍କ ଦ୍ୱାରା ପରିବର୍ତ୍ତନ କରାଯାଇଥିବା ସେଟିଂସ୍ ସିଙ୍କ୍ ହେବ ନାହିଁ। <ph name="LINK_BEGIN" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">99ଟି ଅକ୍ଷରରୁ ଅଧିକ ହୋଇପାରିବ ନାହିଁ</translation>
 <translation id="857943718398505171">ଅନୁମୋଦିତ (ସୁପାରିଶ କରାଯାଇଛି)</translation>
 <translation id="8581809080475256101">ଆଗକୁ ଯିବାକୁ ଏହାକୁ ଦବାନ୍ତୁ, ଇତିବୃତ୍ତି ଦେଖିବାକୁ ପ୍ରସଙ୍ଗ ମେନୁକୁ ଯାଆନ୍ତୁ</translation>
@@ -5836,6 +5868,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="8609465669617005112">ଉପରକୁ ଚଳନ କରନ୍ତୁ</translation>
 <translation id="8610103157987623234">ଭୁଲ ଫର୍ମାଟ୍, ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ</translation>
 <translation id="8613164732773110792">କେବଳ ସାନ ଅକ୍ଷର, ଅଙ୍କ, ଅଣ୍ଡରସ୍କୋର୍ କିମ୍ବା ଡ୍ୟାସଗୁଡ଼ିକ</translation>
+<translation id="8613786722548417558">ସୁରକ୍ଷା ଯାଞ୍ଚ ପାଇଁ <ph name="FILE_NAME" /> ବହୁତ ବଡ଼ ଅଟେ। ଆପଣ 50 MB ପର୍ଯ୍ୟନ୍ତ ଫାଇଲଗୁଡ଼ିକୁ ଖୋଲି ପାରିବେ।</translation>
 <translation id="8615618338313291042">ଇନ୍‌କଗ୍ନିଟୋ ଆପ୍: <ph name="APP_NAME" /></translation>
 <translation id="8619803522055190423">ଡ୍ରପ୍ ଶାଡୋ</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
@@ -6194,6 +6227,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="9030515284705930323">ଆପଣଙ୍କର ସଂସ୍ଥା ଆପଣଙ୍କ ଆକାଉଣ୍ଟ ପାଇଁ Google Play ଷ୍ଟୋର୍ ସକ୍ଷମ କରିନାହାନ୍ତି। ଅଧିକ ସୂଚନା ପାଇଁ ଆପଣଙ୍କ ବ୍ୟବସ୍ଥାପକଙ୍କ ସହ ଯୋଗାଯୋଗ କରନ୍ତୁ।</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9031549947500880805">Google Driveରେ ବ୍ୟାକଅପ୍ ନିଅନ୍ତୁ। ସହଜରେ ଆପଣଙ୍କ ଡାଟା ରିଷ୍ଟୋର୍ କରନ୍ତୁ କିମ୍ୱା ଯେ କୌଣସି ସମୟରେ ଡିଭାଇସ୍ ସ୍ୱିଚ୍ କରନ୍ତୁ। ଆପଣଙ୍କ ବ୍ୟାକଅପ୍ ଆପ୍ ଡାଟା ଅନ୍ତର୍ଭୁକ୍ତ କରେ।</translation>
+<translation id="9033765790910064284">ଯେ କୌଣସି ମତେ ଜାରି ରଖନ୍ତୁ</translation>
 <translation id="9033857511263905942">&amp;ପେଷ୍ଟ କରନ୍ତୁ</translation>
 <translation id="9037965129289936994">ମୂଳ ଲେଖା ଦେଖାନ୍ତୁ</translation>
 <translation id="903797871439633902">ଏହି <ph name="DEVICE_TYPE" /> ପାଇଁ ଏହା ଶେଷ ସ୍ୱଚାଳିତ ସଫ୍ଟୱେୟାର ଏବଂ ସୁରକ୍ଷା ଅପ୍‍‍ଡେଟ୍ ଅଟେ। ଭବିଷ୍ୟତରେ ଅପ୍‌ଡେଟ୍‍ଗୁଡ଼ିକ ପାଇବା ପାଇଁ, ଏକ ନୂଆ ମଡେଲ୍‍କୁ ଅପଗ୍ରେଡ୍ କରନ୍ତୁ। &lt;a target="_blank" href="<ph name="URL" />"&gt;ଅଧିକ ଜାଣନ୍ତୁ&lt;/a&gt;</translation>
@@ -6325,6 +6359,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="930268624053534560">ବିବରଣୀ ସହିତ ଟାଇମ୍‌ଷ୍ଟାମ୍ପସ୍‍</translation>
 <translation id="932327136139879170">Home</translation>
 <translation id="932508678520956232">ପ୍ରିଣ୍ଟିଂ ଆରମ୍ଭ କରିହେଲା ନାହିଁ।</translation>
+<translation id="933427034780221291">{NUM_FILES,plural, =1{ସୁରକ୍ଷା ଯାଞ୍ଚ ପାଇଁ ଏହି ଫାଇଲଟି ବହୁତ ବଡ଼ ଅଟେ। ଆପଣ 50 MB ପର୍ଯ୍ୟନ୍ତ ଫାଇଲଗୁଡ଼ିକୁ ଅପଲୋଡ୍ କରିପାରିବେ।}other{ସୁରକ୍ଷା ଯାଞ୍ଚ କରିବା ପାଇଁ ଏହି ଫାଇଲଗୁଡ଼ିକ ମଧ୍ୟରୁ କିଛି ଫାଇଲ୍ ବହୁତ ବଡ଼ ଅଟେ। ଆପଣ 50 MB ପର୍ଯ୍ୟନ୍ତ ଫାଇଲଗୁଡ଼ିକୁ ଅପଲୋଡ୍ କରିପାରିବେ।}}</translation>
 <translation id="93343527085570547">ଆଇନଗତ କାରଣ ପାଇଁ ବିଷୟବସ୍ତୁ ପରିବର୍ତ୍ତନର ଅନୁରୋଧ କରିବାକୁ <ph name="BEGIN_LINK1" />ଆଇନ ସମ୍ବନ୍ଧୀୟ ସହାୟତା ପୃଷ୍ଠା<ph name="END_LINK1" />କୁ ଯାଆନ୍ତୁ।  କିଛି ଆକାଉଣ୍ଟ ଓ ସିଷ୍ଟମ୍ ସୂଚନା Googleକୁ ପଠାଇଦିଆଯାଇପାରେ।  ବୈଷୟିକ ସମସ୍ୟାର ସମାଧାନ କରିବାକୁ ଏବଂ ଆମର ସେବାଗୁଡ଼ିକୁ ଉନ୍ନତ କରିବାକୁ, ଆମେ ଆମର <ph name="BEGIN_LINK2" />ଗୋପନୀୟତା ନୀତି<ph name="END_LINK2" />ଏବଂ <ph name="BEGIN_LINK3" />ସେବାର ସର୍ତ୍ତାବଳୀ<ph name="END_LINK3" /> ଅଧୀନରେ ଆପଣ ଆମକୁ ପ୍ରଦାନ କରିଥିବା ସୂଚନାକୁ ବ୍ୟବହାର କରିବୁ।</translation>
 <translation id="93393615658292258">କେବଳ ପାସ୍‌ୱର୍ଡ</translation>
 <translation id="934244546219308557">ଏହି ଗୋଷ୍ଠୀର ନାମ ଦିଅନ୍ତୁ</translation>

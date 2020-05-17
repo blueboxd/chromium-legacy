@@ -72,7 +72,7 @@ class CORE_EXPORT PublicURLManager final
   // ExecutionContextLifecycleObserver interface.
   void ContextDestroyed() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void SetURLStoreForTesting(
       HeapMojoAssociatedRemote<mojom::blink::BlobURLStore> url_store) {

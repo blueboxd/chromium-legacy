@@ -15,7 +15,7 @@ namespace {
 class BaseObject : public GarbageCollected<BaseObject> {
  public:
   size_t CardNumber() const;
-  void Trace(Visitor*) {}
+  void Trace(Visitor*) const {}
 };
 
 }  // namespace

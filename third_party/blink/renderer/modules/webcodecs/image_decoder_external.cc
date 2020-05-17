@@ -41,7 +41,7 @@ ImageDecoderExternal::DecodeRequest::DecodeRequest(
       frame_index(frame_index),
       complete_frames_only(complete_frames_only) {}
 
-void ImageDecoderExternal::DecodeRequest::Trace(Visitor* visitor) {
+void ImageDecoderExternal::DecodeRequest::Trace(Visitor* visitor) const {
   visitor->Trace(resolver);
 }
 
@@ -178,7 +178,7 @@ String ImageDecoderExternal::DebugName() const {
   return "ImageDecoderExternal";
 }
 
-void ImageDecoderExternal::Trace(Visitor* visitor) {
+void ImageDecoderExternal::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(consumer_);
   visitor->Trace(pending_decodes_);

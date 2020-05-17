@@ -40,7 +40,7 @@ class CORE_EXPORT HTMLViewSourceDocument final : public HTMLDocument {
 
   void AddSource(const String&, HTMLToken&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   DocumentParser* CreateParser() override;

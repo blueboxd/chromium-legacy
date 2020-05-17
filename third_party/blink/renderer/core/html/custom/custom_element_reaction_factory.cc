@@ -79,7 +79,7 @@ class CustomElementAdoptedCallbackReaction final
     DCHECK(definition.HasAdoptedCallback());
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(old_owner_);
     visitor->Trace(new_owner_);
     CustomElementReaction::Trace(visitor);
@@ -138,7 +138,7 @@ class CustomElementFormAssociatedCallbackReaction final
     DCHECK(definition.HasFormAssociatedCallback());
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(form_);
     CustomElementReaction::Trace(visitor);
   }
@@ -206,7 +206,7 @@ class CustomElementFormStateRestoreCallbackReaction final
     DCHECK(mode == "restore" || mode == "autocomplete");
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(value_);
     CustomElementReaction::Trace(visitor);
   }

@@ -157,7 +157,7 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
                    bool important,
                    SecureContextMode);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
   static EditingTriState SelectionHasStyle(const LocalFrame&,
                                            CSSPropertyID,
                                            const String& value);

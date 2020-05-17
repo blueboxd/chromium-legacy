@@ -132,7 +132,7 @@ void DevToolsFrontendImpl::DestroyOnHostGone() {
   GetSupplementable()->RemoveSupplement<DevToolsFrontendImpl>();
 }
 
-void DevToolsFrontendImpl::Trace(Visitor* visitor) {
+void DevToolsFrontendImpl::Trace(Visitor* visitor) const {
   visitor->Trace(devtools_host_);
   visitor->Trace(host_);
   visitor->Trace(receiver_);

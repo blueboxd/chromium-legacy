@@ -28,7 +28,7 @@ class CSSPropertyRule final : public CSSRule {
   bool inherits() const;
   String initialValue() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   CSSRule::Type type() const override { return kPropertyRule; }

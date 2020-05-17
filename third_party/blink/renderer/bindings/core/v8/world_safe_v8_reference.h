@@ -126,7 +126,7 @@ class WorldSafeV8Reference final {
 
   bool IsEmpty() const { return v8_reference_.IsEmpty(); }
 
-  void Trace(Visitor* visitor) { visitor->Trace(v8_reference_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(v8_reference_); }
 
   WorldSafeV8Reference& operator=(const WorldSafeV8Reference<V8Type>& other) =
       default;

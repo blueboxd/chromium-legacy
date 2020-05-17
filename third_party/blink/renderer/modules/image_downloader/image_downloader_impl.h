@@ -40,7 +40,7 @@ class ImageDownloaderImpl final : public GarbageCollected<ImageDownloaderImpl>,
 
   static void ProvideTo(LocalFrame&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // OverExecutionContextLifecycleObserver overrides.
   void ContextDestroyed() override;

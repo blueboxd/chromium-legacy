@@ -49,7 +49,7 @@ class DOMEditor final : public GarbageCollected<DOMEditor> {
  public:
   explicit DOMEditor(InspectorHistory*);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   bool InsertBefore(ContainerNode* parent_node,
                     Node*,

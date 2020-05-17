@@ -59,7 +59,7 @@ class WebGLFramebuffer final : public WebGLContextObject {
                           GLenum target,
                           GLenum attachment) = 0;
 
-    virtual void Trace(Visitor* visitor) {}
+    virtual void Trace(Visitor* visitor) const {}
 
    protected:
     WebGLAttachment();
@@ -122,7 +122,7 @@ class WebGLFramebuffer final : public WebGLContextObject {
 
   GLenum GetReadBuffer() const { return read_buffer_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override { return "WebGLFramebuffer"; }
 
  protected:

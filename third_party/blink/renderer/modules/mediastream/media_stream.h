@@ -49,7 +49,7 @@ class MODULES_EXPORT MediaStreamObserver : public GarbageCollectedMixin {
   // Invoked when |MediaStream::removeTrack| is called.
   virtual void OnStreamRemoveTrack(MediaStream*, MediaStreamTrack*) = 0;
 
-  void Trace(Visitor* visitor) override {}
+  void Trace(Visitor* visitor) const override {}
 };
 
 class MODULES_EXPORT MediaStream final
@@ -141,7 +141,7 @@ class MODULES_EXPORT MediaStream final
   // ActiveScriptWrappable
   bool HasPendingActivity() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   bool AddEventListenerInternal(

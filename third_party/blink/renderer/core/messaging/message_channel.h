@@ -49,7 +49,7 @@ class CORE_EXPORT MessageChannel final : public ScriptWrappable {
   MessagePort* port1() const { return port1_; }
   MessagePort* port2() const { return port2_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<MessagePort> port1_;

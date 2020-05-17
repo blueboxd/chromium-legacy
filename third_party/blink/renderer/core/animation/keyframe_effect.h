@@ -130,7 +130,7 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
   bool HasAnimation() const;
   bool HasPlayingAnimation() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool AnimationsPreserveAxisAlignment() const;
 

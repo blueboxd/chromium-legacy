@@ -52,7 +52,7 @@ class CSSGroupingRule : public CSSRule {
   unsigned length() const;
   CSSRule* Item(unsigned index) const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   CSSGroupingRule(StyleRuleGroup* group_rule, CSSStyleSheet* parent);

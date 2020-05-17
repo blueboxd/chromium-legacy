@@ -63,7 +63,7 @@ TestInterfaceOrTestInterfaceEmpty::TestInterfaceOrTestInterfaceEmpty(const TestI
 TestInterfaceOrTestInterfaceEmpty::~TestInterfaceOrTestInterfaceEmpty() = default;
 TestInterfaceOrTestInterfaceEmpty& TestInterfaceOrTestInterfaceEmpty::operator=(const TestInterfaceOrTestInterfaceEmpty&) = default;
 
-void TestInterfaceOrTestInterfaceEmpty::Trace(Visitor* visitor) {
+void TestInterfaceOrTestInterfaceEmpty::Trace(Visitor* visitor) const {
   visitor->Trace(test_interface_);
   visitor->Trace(test_interface_empty_);
 }

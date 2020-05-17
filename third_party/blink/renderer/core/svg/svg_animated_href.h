@@ -35,7 +35,7 @@ class SVGAnimatedHref final : public SVGAnimatedString {
   static bool IsKnownAttribute(const QualifiedName&);
   void AddToPropertyMap(SVGElement*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   SVGAnimatedString* BackingString();

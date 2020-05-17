@@ -569,6 +569,7 @@
 <translation id="8428045167754449968">Град/селище</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8458397775385147834">Изтрихте 1 елемент</translation>
+<translation id="8459333855531264009">Не е сигурно</translation>
 <translation id="8487667956631253959">Включено</translation>
 <translation id="8487700953926739672">Налице офлайн</translation>
 <translation id="8490978609246021741">Запазване на промените</translation>
@@ -595,6 +596,7 @@
 <translation id="8741995161408053644">Възможно е в профила ви в Google да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8756969031206844760">Да се актуализира ли паролата?</translation>
 <translation id="8775144690796719618">Невалиден URL адрес</translation>
+<translation id="8803639129939845298">Сигурно</translation>
 <translation id="8820817407110198400">Отметки</translation>
 <translation id="8840513115188359703">Няма да излезете от профила си в Google.</translation>
 <translation id="8870413625673593573">Наскоро затворени</translation>
@@ -625,7 +627,6 @@
 <translation id="9223358826628549784">Сигналите за сривове са изпратени.</translation>
 <translation id="952704832371081537">Отказ</translation>
 <translation id="988141524645182168">Други устройства</translation>
-<translation id="989697783705943787">Сигурност на сайта</translation>
 <translation id="989988560359834682">Редактиране на адреса</translation>
 <translation id="994757059139821576">Предложения за статии</translation>
 </translationbundle>

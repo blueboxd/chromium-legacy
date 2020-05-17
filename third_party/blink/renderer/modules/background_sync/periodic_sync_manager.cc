@@ -186,7 +186,7 @@ void PeriodicSyncManager::UnregisterCallback(
   }
 }
 
-void PeriodicSyncManager::Trace(Visitor* visitor) {
+void PeriodicSyncManager::Trace(Visitor* visitor) const {
   visitor->Trace(registration_);
   visitor->Trace(background_sync_service_);
   ScriptWrappable::Trace(visitor);

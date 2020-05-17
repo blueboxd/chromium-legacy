@@ -6,7 +6,7 @@
 
 namespace blink {
 
-void HeapObject::Trace(Visitor* visitor) {
+void HeapObject::Trace(Visitor* visitor) const {
   // Using TraceIfNeeded with a non-template type should count as tracing a
   // field.
   TraceIfNeeded<Member<HeapObject>>::Trace(visitor, m_one);

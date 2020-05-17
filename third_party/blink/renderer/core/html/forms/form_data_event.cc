@@ -32,7 +32,7 @@ FormDataEvent* FormDataEvent::Create(const AtomicString& type,
   return MakeGarbageCollected<FormDataEvent>(type, event_init);
 }
 
-void FormDataEvent::Trace(Visitor* visitor) {
+void FormDataEvent::Trace(Visitor* visitor) const {
   visitor->Trace(form_data_);
   Event::Trace(visitor);
 }

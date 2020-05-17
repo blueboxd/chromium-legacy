@@ -26,7 +26,7 @@ class TimedCanvasDrawListener final : public OnRequestCanvasDrawListener {
   static TimedCanvasDrawListener* Create(std::unique_ptr<CanvasCaptureHandler>,
                                          double frame_rate,
                                          ExecutionContext*);
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Implementation of TimerFiredFunction.

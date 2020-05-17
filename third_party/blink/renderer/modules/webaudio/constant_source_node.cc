@@ -156,7 +156,7 @@ ConstantSourceNode* ConstantSourceNode::Create(
   return node;
 }
 
-void ConstantSourceNode::Trace(Visitor* visitor) {
+void ConstantSourceNode::Trace(Visitor* visitor) const {
   visitor->Trace(offset_);
   AudioScheduledSourceNode::Trace(visitor);
 }

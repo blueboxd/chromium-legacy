@@ -63,7 +63,7 @@ bool PresentationConnectionList::IsEmpty() {
   return connections_.IsEmpty();
 }
 
-void PresentationConnectionList::Trace(Visitor* visitor) {
+void PresentationConnectionList::Trace(Visitor* visitor) const {
   visitor->Trace(connections_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextClient::Trace(visitor);

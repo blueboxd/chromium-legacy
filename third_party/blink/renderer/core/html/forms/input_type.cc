@@ -198,7 +198,7 @@ const AtomicString& InputType::NormalizeTypeName(
 
 InputType::~InputType() = default;
 
-void InputType::Trace(Visitor* visitor) {
+void InputType::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
 }
 

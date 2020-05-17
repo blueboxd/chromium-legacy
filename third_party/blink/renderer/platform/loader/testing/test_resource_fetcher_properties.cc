@@ -37,7 +37,7 @@ TestResourceFetcherProperties::TestResourceFetcherProperties(
     const FetchClientSettingsObject& fetch_client_settings_object)
     : fetch_client_settings_object_(fetch_client_settings_object) {}
 
-void TestResourceFetcherProperties::Trace(Visitor* visitor) {
+void TestResourceFetcherProperties::Trace(Visitor* visitor) const {
   visitor->Trace(fetch_client_settings_object_);
   ResourceFetcherProperties::Trace(visitor);
 }

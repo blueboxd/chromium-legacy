@@ -61,7 +61,7 @@ class MODULES_EXPORT InspectorWebAudioAgent final
                               AudioParam* destination_param,
                               int32_t source_output_index = 0);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   std::unique_ptr<protocol::WebAudio::BaseAudioContext>

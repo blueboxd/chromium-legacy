@@ -50,7 +50,7 @@ DOMURL::DOMURL(const String& url,
 
 DOMURL::~DOMURL() = default;
 
-void DOMURL::Trace(Visitor* visitor) {
+void DOMURL::Trace(Visitor* visitor) const {
   visitor->Trace(search_params_);
   ScriptWrappable::Trace(visitor);
 }

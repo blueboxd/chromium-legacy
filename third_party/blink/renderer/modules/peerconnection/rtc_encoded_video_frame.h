@@ -51,7 +51,7 @@ class MODULES_EXPORT RTCEncodedVideoFrame final : public ScriptWrappable {
   // backed by that internal WebRTC frame.
   std::unique_ptr<webrtc::TransformableVideoFrameInterface> PassWebRtcFrame();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   const scoped_refptr<RTCEncodedVideoFrameDelegate> delegate_;

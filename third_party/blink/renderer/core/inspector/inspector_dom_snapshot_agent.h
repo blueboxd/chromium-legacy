@@ -29,7 +29,7 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
  public:
   InspectorDOMSnapshotAgent(InspectedFrames*, InspectorDOMDebuggerAgent*);
   ~InspectorDOMSnapshotAgent() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void Restore() override;
 

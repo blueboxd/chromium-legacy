@@ -63,7 +63,7 @@ class SerialPort final : public ScriptWrappable,
   void AbortClose();
 
   void ContextDestroyed();
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // ActiveScriptWrappable
   ExecutionContext* GetExecutionContext() const;

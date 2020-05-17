@@ -206,7 +206,7 @@ void MIDIAccess::ContextDestroyed() {
   dispatcher_.reset();
 }
 
-void MIDIAccess::Trace(Visitor* visitor) {
+void MIDIAccess::Trace(Visitor* visitor) const {
   visitor->Trace(inputs_);
   visitor->Trace(outputs_);
   EventTargetWithInlineData::Trace(visitor);

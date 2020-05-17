@@ -29,7 +29,7 @@ void DOMWindowLaunchQueue::UpdateLaunchFiles(
       MakeGarbageCollected<LaunchParams>(std::move(files)));
 }
 
-void DOMWindowLaunchQueue::Trace(Visitor* visitor) {
+void DOMWindowLaunchQueue::Trace(Visitor* visitor) const {
   visitor->Trace(launch_queue_);
   Supplement<LocalDOMWindow>::Trace(visitor);
 }

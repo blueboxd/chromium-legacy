@@ -33,7 +33,7 @@ class ComputedAccessibleNodePromiseResolver::RequestAnimationFrameCallback final
     resolver_->UpdateTreeAndResolve();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(resolver_);
     FrameRequestCallbackCollection::FrameCallback::Trace(visitor);
   }
@@ -56,7 +56,7 @@ ScriptPromise ComputedAccessibleNodePromiseResolver::Promise() {
   return resolver_->Promise();
 }
 
-void ComputedAccessibleNodePromiseResolver::Trace(Visitor* visitor) {
+void ComputedAccessibleNodePromiseResolver::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   visitor->Trace(resolver_);
 }
@@ -325,7 +325,7 @@ const String ComputedAccessibleNode::GetStringAttribute(
   return String();
 }
 
-void ComputedAccessibleNode::Trace(Visitor* visitor) {
+void ComputedAccessibleNode::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   ScriptWrappable::Trace(visitor);
 }

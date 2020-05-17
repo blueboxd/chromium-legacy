@@ -170,7 +170,7 @@ class CORE_EXPORT Range final : public ScriptWrappable {
 
   static Node* CheckNodeWOffset(Node*, unsigned offset, ExceptionState&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void SetDocument(Document&);

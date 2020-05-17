@@ -76,7 +76,7 @@ DoubleOrStringOrDoubleOrStringSequence::DoubleOrStringOrDoubleOrStringSequence(c
 DoubleOrStringOrDoubleOrStringSequence::~DoubleOrStringOrDoubleOrStringSequence() = default;
 DoubleOrStringOrDoubleOrStringSequence& DoubleOrStringOrDoubleOrStringSequence::operator=(const DoubleOrStringOrDoubleOrStringSequence&) = default;
 
-void DoubleOrStringOrDoubleOrStringSequence::Trace(Visitor* visitor) {
+void DoubleOrStringOrDoubleOrStringSequence::Trace(Visitor* visitor) const {
   visitor->Trace(double_or_string_sequence_);
 }
 

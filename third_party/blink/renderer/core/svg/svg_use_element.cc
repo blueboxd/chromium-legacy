@@ -91,7 +91,7 @@ SVGUseElement::SVGUseElement(Document& document)
 
 SVGUseElement::~SVGUseElement() = default;
 
-void SVGUseElement::Trace(Visitor* visitor) {
+void SVGUseElement::Trace(Visitor* visitor) const {
   visitor->Trace(cache_entry_);
   visitor->Trace(x_);
   visitor->Trace(y_);

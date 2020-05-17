@@ -172,7 +172,7 @@ ChromeClientImpl::~ChromeClientImpl() {
   DCHECK(file_chooser_queue_.IsEmpty());
 }
 
-void ChromeClientImpl::Trace(Visitor* visitor) {
+void ChromeClientImpl::Trace(Visitor* visitor) const {
   visitor->Trace(popup_opening_observers_);
   visitor->Trace(external_date_time_chooser_);
   ChromeClient::Trace(visitor);

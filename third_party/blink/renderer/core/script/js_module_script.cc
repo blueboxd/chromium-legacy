@@ -174,7 +174,7 @@ void JSModuleScript::ProduceCache() {
   produce_cache_data_ = nullptr;
 }
 
-void JSModuleScript::Trace(Visitor* visitor) {
+void JSModuleScript::Trace(Visitor* visitor) const {
   visitor->Trace(produce_cache_data_);
   ModuleScript::Trace(visitor);
 }

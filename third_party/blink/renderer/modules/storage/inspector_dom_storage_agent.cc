@@ -67,7 +67,7 @@ InspectorDOMStorageAgent::InspectorDOMStorageAgent(
 
 InspectorDOMStorageAgent::~InspectorDOMStorageAgent() = default;
 
-void InspectorDOMStorageAgent::Trace(Visitor* visitor) {
+void InspectorDOMStorageAgent::Trace(Visitor* visitor) const {
   visitor->Trace(inspected_frames_);
   InspectorBaseAgent::Trace(visitor);
 }

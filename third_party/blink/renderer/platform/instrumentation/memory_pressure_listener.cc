@@ -133,7 +133,7 @@ void MemoryPressureListenerRegistry::ClearThreadSpecificMemory() {
   FontGlobalContext::ClearMemory();
 }
 
-void MemoryPressureListenerRegistry::Trace(Visitor* visitor) {
+void MemoryPressureListenerRegistry::Trace(Visitor* visitor) const {
   visitor->Trace(clients_);
 }
 

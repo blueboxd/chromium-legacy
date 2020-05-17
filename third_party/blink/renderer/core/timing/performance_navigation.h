@@ -63,7 +63,7 @@ class CORE_EXPORT PerformanceNavigation final : public ScriptWrappable,
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 };
 
 }  // namespace blink

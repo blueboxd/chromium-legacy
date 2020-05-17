@@ -153,7 +153,7 @@ void PrerenderHandle::OnPrerenderStop() {
     client_->DidStopPrerender();
 }
 
-void PrerenderHandle::Trace(Visitor* visitor) {
+void PrerenderHandle::Trace(Visitor* visitor) const {
   visitor->Trace(client_);
   visitor->Trace(remote_handle_);
   visitor->Trace(receiver_);

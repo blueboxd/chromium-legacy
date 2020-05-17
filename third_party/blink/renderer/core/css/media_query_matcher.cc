@@ -128,7 +128,7 @@ void MediaQueryMatcher::ViewportChanged() {
   document_->EnqueueMediaQueryChangeListeners(listeners_to_notify);
 }
 
-void MediaQueryMatcher::Trace(Visitor* visitor) {
+void MediaQueryMatcher::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(evaluator_);
   visitor->Trace(media_lists_);

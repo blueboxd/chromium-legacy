@@ -70,7 +70,7 @@ class CORE_EXPORT SharedWorker final
   bool HasPendingActivity() const final;
 
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState state) override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<MessagePort> port_;

@@ -82,7 +82,8 @@ void ReadableStreamDefaultControllerWithScriptScope::Error(
   controller_ = nullptr;
 }
 
-void ReadableStreamDefaultControllerWithScriptScope::Trace(Visitor* visitor) {
+void ReadableStreamDefaultControllerWithScriptScope::Trace(
+    Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(controller_);
 }

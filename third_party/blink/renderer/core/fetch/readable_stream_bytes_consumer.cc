@@ -58,7 +58,7 @@ class ReadableStreamBytesConsumer::OnFulfilled final : public ScriptFunction {
     return v;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(consumer_);
     ScriptFunction::Trace(visitor);
   }
@@ -84,7 +84,7 @@ class ReadableStreamBytesConsumer::OnRejected final : public ScriptFunction {
     return v;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(consumer_);
     ScriptFunction::Trace(visitor);
   }
@@ -177,7 +177,7 @@ BytesConsumer::Error ReadableStreamBytesConsumer::GetError() const {
   return Error("Failed to read from a ReadableStream.");
 }
 
-void ReadableStreamBytesConsumer::Trace(Visitor* visitor) {
+void ReadableStreamBytesConsumer::Trace(Visitor* visitor) const {
   visitor->Trace(reader_);
   visitor->Trace(client_);
   visitor->Trace(pending_buffer_);

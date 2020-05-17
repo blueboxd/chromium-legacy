@@ -80,7 +80,7 @@ class CORE_EXPORT SharedWorkerClientHolder final
                mojo::PendingRemote<mojom::blink::BlobURLToken>,
                mojom::blink::WorkerOptionsPtr options);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   HeapMojoRemote<mojom::blink::SharedWorkerConnector> connector_;

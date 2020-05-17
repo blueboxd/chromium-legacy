@@ -143,7 +143,7 @@ bool StyleFetchedImageSet::KnownToBeOpaque(const Document&,
   return best_fit_image_->GetImage()->CurrentFrameKnownToBeOpaque();
 }
 
-void StyleFetchedImageSet::Trace(Visitor* visitor) {
+void StyleFetchedImageSet::Trace(Visitor* visitor) const {
   visitor->Trace(best_fit_image_);
   visitor->Trace(image_set_value_);
   StyleImage::Trace(visitor);

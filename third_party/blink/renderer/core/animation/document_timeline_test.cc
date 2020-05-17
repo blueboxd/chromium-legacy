@@ -61,7 +61,7 @@ class MockPlatformTiming : public DocumentTimeline::PlatformTiming {
  public:
   MOCK_METHOD1(WakeAfter, void(base::TimeDelta));
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     DocumentTimeline::PlatformTiming::Trace(visitor);
   }
 };
@@ -75,7 +75,9 @@ class TestDocumentTimeline : public DocumentTimeline {
     DocumentTimeline::ScheduleServiceOnNextFrame();
     schedule_next_service_called_ = true;
   }
-  void Trace(Visitor* visitor) override { DocumentTimeline::Trace(visitor); }
+  void Trace(Visitor* visitor) const override {
+    DocumentTimeline::Trace(visitor);
+  }
   bool ScheduleNextServiceCalled() const {
     return schedule_next_service_called_;
   }

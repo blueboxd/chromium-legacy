@@ -94,7 +94,7 @@ class JavaScriptSizeAlgorithm final : public StrategySizeAlgorithm {
     return number->Value();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(function_);
     StrategySizeAlgorithm::Trace(visitor);
   }
@@ -138,7 +138,7 @@ class JavaScriptStreamAlgorithmWithoutExtraArg final : public StreamAlgorithm {
                        recv_.NewLocal(isolate), argc, argv);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(recv_);
     visitor->Trace(method_);
     StreamAlgorithm::Trace(visitor);
@@ -183,7 +183,7 @@ class JavaScriptStreamAlgorithmWithExtraArg final : public StreamAlgorithm {
                        recv_.NewLocal(isolate), full_argc, full_argv);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(recv_);
     visitor->Trace(method_);
     visitor->Trace(extra_arg_);
@@ -226,7 +226,7 @@ class JavaScriptStreamStartAlgorithm : public StreamStartAlgorithm {
     return PromiseResolve(script_state, value);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(recv_);
     visitor->Trace(controller_);
     StreamStartAlgorithm::Trace(visitor);

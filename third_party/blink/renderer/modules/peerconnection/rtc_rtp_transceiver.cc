@@ -248,7 +248,7 @@ void RTCRtpTransceiver::setCodecPreferences(
   }
 }
 
-void RTCRtpTransceiver::Trace(Visitor* visitor) {
+void RTCRtpTransceiver::Trace(Visitor* visitor) const {
   visitor->Trace(pc_);
   visitor->Trace(sender_);
   visitor->Trace(receiver_);

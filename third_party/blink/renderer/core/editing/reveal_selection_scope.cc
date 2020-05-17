@@ -55,7 +55,7 @@ Editor& RevealSelectionScope::GetEditor() {
   return frame_->GetEditor();
 }
 
-void RevealSelectionScope::Trace(Visitor* visitor) {
+void RevealSelectionScope::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
 }
 

@@ -100,7 +100,7 @@ void MojoInterfaceInterceptor::stop() {
   context->GetBrowserInterfaceBroker().SetBinderForTesting(interface_name, {});
 }
 
-void MojoInterfaceInterceptor::Trace(Visitor* visitor) {
+void MojoInterfaceInterceptor::Trace(Visitor* visitor) const {
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
 }

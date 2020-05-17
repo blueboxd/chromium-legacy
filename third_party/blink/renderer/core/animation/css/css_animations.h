@@ -115,7 +115,7 @@ class CORE_EXPORT CSSAnimations final {
   }
   void Cancel();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   class RunningAnimation final : public GarbageCollected<RunningAnimation> {
@@ -137,7 +137,7 @@ class CORE_EXPORT CSSAnimations final {
       specified_timing = update.specified_timing;
     }
 
-    void Trace(Visitor* visitor) {
+    void Trace(Visitor* visitor) const {
       visitor->Trace(animation);
       visitor->Trace(style_rule);
     }
@@ -155,7 +155,7 @@ class CORE_EXPORT CSSAnimations final {
     DISALLOW_NEW();
 
    public:
-    void Trace(Visitor* visitor) { visitor->Trace(animation); }
+    void Trace(Visitor* visitor) const { visitor->Trace(animation); }
 
     Member<Animation> animation;
     scoped_refptr<const ComputedStyle> from;
@@ -232,7 +232,7 @@ class CORE_EXPORT CSSAnimations final {
       return previous_iteration_;
     }
 
-    void Trace(Visitor*) override;
+    void Trace(Visitor*) const override;
 
    private:
     const Element& AnimationTarget() const { return *animation_target_; }
@@ -263,7 +263,7 @@ class CORE_EXPORT CSSAnimations final {
     bool IsTransitionEventDelegate() const override { return true; }
     Timing::Phase getPreviousPhase() const { return previous_phase_; }
 
-    void Trace(Visitor*) override;
+    void Trace(Visitor*) const override;
 
    private:
     void EnqueueEvent(const WTF::AtomicString& type,

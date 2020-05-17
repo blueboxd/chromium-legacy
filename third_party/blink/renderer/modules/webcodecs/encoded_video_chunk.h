@@ -34,7 +34,7 @@ class MODULES_EXPORT EncodedVideoChunk final : public ScriptWrappable {
   base::Optional<uint64_t> duration() const;
   DOMArrayBuffer* data() const;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(buffer_);
     ScriptWrappable::Trace(visitor);
   }

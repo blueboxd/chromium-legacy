@@ -47,7 +47,7 @@ class PrefetchedSignedExchangeManager final
           prefetched_exchanges_map);
   ~PrefetchedSignedExchangeManager();
 
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
   // Returns a loader if there is a matching resource in
   // |alternative_resources_|, otherwise returns null. This only checks the

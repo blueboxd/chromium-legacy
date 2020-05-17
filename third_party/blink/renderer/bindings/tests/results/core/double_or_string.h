@@ -40,7 +40,7 @@ class CORE_EXPORT DoubleOrString final {
   DoubleOrString(const DoubleOrString&);
   ~DoubleOrString();
   DoubleOrString& operator=(const DoubleOrString&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   enum class SpecificType {

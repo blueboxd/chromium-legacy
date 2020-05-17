@@ -191,7 +191,7 @@ class CORE_EXPORT StyleSheetContents final
 
   String SourceMapURL() const { return source_map_url_; }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   StyleSheetContents& operator=(const StyleSheetContents&) = delete;

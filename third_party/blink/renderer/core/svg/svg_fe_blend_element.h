@@ -57,7 +57,7 @@ class SVGFEBlendElement final : public SVGFilterPrimitiveStandardAttributes {
   SVGAnimatedString* in2() { return in2_.Get(); }
   SVGAnimatedEnumeration<Mode>* mode() { return mode_.Get(); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   bool SetFilterEffectAttribute(FilterEffect*,

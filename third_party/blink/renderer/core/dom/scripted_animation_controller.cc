@@ -64,7 +64,7 @@ ScriptedAnimationController::ScriptedAnimationController(LocalDOMWindow* window)
   UpdateStateIfNeeded();
 }
 
-void ScriptedAnimationController::Trace(Visitor* visitor) {
+void ScriptedAnimationController::Trace(Visitor* visitor) const {
   ExecutionContextLifecycleStateObserver::Trace(visitor);
   visitor->Trace(callback_collection_);
   visitor->Trace(event_queue_);

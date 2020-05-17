@@ -23,7 +23,7 @@ GPUUncapturedErrorEvent::GPUUncapturedErrorEvent(
   error_ = gpuUncapturedErrorEventInitDict->error();
 }
 
-void GPUUncapturedErrorEvent::Trace(Visitor* visitor) {
+void GPUUncapturedErrorEvent::Trace(Visitor* visitor) const {
   visitor->Trace(error_);
   Event::Trace(visitor);
 }

@@ -87,7 +87,7 @@ ModuleTreeLinker::ModuleTreeLinker(
   CHECK(client);
 }
 
-void ModuleTreeLinker::Trace(Visitor* visitor) {
+void ModuleTreeLinker::Trace(Visitor* visitor) const {
   visitor->Trace(fetch_client_settings_object_fetcher_);
   visitor->Trace(modulator_);
   visitor->Trace(registry_);

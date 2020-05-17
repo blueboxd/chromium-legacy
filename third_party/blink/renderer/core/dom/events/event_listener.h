@@ -76,7 +76,7 @@ class CORE_EXPORT EventListener : public GarbageCollected<EventListener>,
   // produce the same result as b.Matches(a).
   virtual bool Matches(const EventListener&) const = 0;
 
-  virtual void Trace(Visitor*) {}
+  virtual void Trace(Visitor*) const {}
 
   const char* NameInHeapSnapshot() const override { return "EventListener"; }
 

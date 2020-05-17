@@ -81,7 +81,7 @@ class CORE_EXPORT HTMLImageElement final
   HTMLImageElement(Document&, const CreateElementFlags);
   explicit HTMLImageElement(Document&, bool created_by_parser = false);
   ~HTMLImageElement() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   unsigned width();
   unsigned height();

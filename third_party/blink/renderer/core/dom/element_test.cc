@@ -493,7 +493,7 @@ class ScriptOnDestroyPlugin : public GarbageCollected<ScriptOnDestroyPlugin>,
   void DidFinishLoading() override {}
   void DidFailLoading(const WebURLError&) override {}
 
-  void Trace(Visitor*) {}
+  void Trace(Visitor*) const {}
 
   bool DestroyCalled() const { return destroy_called_; }
 

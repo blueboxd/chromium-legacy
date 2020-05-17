@@ -28,7 +28,7 @@ class BLINK_EXPORT FontTableMap final : public ScriptWrappable,
   // IDL attributes / methods
   uint32_t size() const { return table_map_.size(); }
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   PairIterable<String, Member<Blob>>::IterationSource* StartIteration(

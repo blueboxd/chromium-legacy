@@ -30,7 +30,7 @@ class CORE_EXPORT InspectorLogAgent
                     PerformanceMonitor*,
                     v8_inspector::V8InspectorSession*);
   ~InspectorLogAgent() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void Restore() override;
 

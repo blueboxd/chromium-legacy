@@ -38,7 +38,7 @@ class NativeFileSystemFileHandle final : public NativeFileSystemHandle {
     return mojo_ptr_.get();
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void QueryPermissionImpl(

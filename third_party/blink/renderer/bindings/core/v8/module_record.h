@@ -76,7 +76,7 @@ class CORE_EXPORT ModuleRecordProduceCacheData final
                                V8CodeCache::ProduceCacheOptions,
                                v8::Local<v8::Module>);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   SingleCachedMetadataHandler* CacheHandler() const { return cache_handler_; }
   V8CodeCache::ProduceCacheOptions GetProduceCacheOptions() const {

@@ -46,7 +46,7 @@ class MODULES_EXPORT RTCPeerConnectionIceErrorEvent final : public Event {
   String errorText() const;
   const AtomicString& InterfaceName() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   String address_;

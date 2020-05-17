@@ -22,7 +22,7 @@ class XRGripSpace : public XRSpace {
 
   bool IsStationary() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<XRInputSource> input_source_;

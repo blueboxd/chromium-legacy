@@ -40,7 +40,7 @@ class CORE_EXPORT UnrestrictedDoubleOrString final {
   UnrestrictedDoubleOrString(const UnrestrictedDoubleOrString&);
   ~UnrestrictedDoubleOrString();
   UnrestrictedDoubleOrString& operator=(const UnrestrictedDoubleOrString&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   enum class SpecificType {

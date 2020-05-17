@@ -53,7 +53,7 @@ class MODULES_EXPORT RemoteObjectGatewayImpl
 
   void OnClearWindowObjectInMainWorld();
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(receiver_);
     visitor->Trace(object_host_);
     Supplement<LocalFrame>::Trace(visitor);

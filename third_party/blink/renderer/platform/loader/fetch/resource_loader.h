@@ -78,7 +78,7 @@ class PLATFORM_EXPORT ResourceLoader final
                  ResourceRequestBody request_body = ResourceRequestBody(),
                  uint32_t inflight_keepalive_bytes = 0);
   ~ResourceLoader() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void Start();
 

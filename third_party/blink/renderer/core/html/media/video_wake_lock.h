@@ -39,7 +39,7 @@ class CORE_EXPORT VideoWakeLock final
 
   void ElementDidMoveToNewDocument();
 
-  void Trace(Visitor*) final;
+  void Trace(Visitor*) const final;
 
   // EventListener implementation.
   void Invoke(ExecutionContext*, Event*) final;

@@ -56,7 +56,7 @@ FEImage::FEImage(Filter* filter,
   FilterEffect::SetOperatingInterpolationSpace(kInterpolationSpaceSRGB);
 }
 
-void FEImage::Trace(Visitor* visitor) {
+void FEImage::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   visitor->Trace(preserve_aspect_ratio_);
   FilterEffect::Trace(visitor);

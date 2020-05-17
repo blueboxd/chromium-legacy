@@ -21,7 +21,7 @@ class NavigationInitiatorImpl
       public mojom::blink::NavigationInitiator {
  public:
   explicit NavigationInitiatorImpl(Document& document);
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
   // mojom::blink::NavigationInitiator override:
   void SendViolationReport(

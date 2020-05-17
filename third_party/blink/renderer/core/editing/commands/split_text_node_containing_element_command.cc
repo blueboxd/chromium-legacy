@@ -64,7 +64,7 @@ void SplitTextNodeContainingElementCommand::DoApply(EditingState*) {
   SplitElement(parent, text_.Get());
 }
 
-void SplitTextNodeContainingElementCommand::Trace(Visitor* visitor) {
+void SplitTextNodeContainingElementCommand::Trace(Visitor* visitor) const {
   visitor->Trace(text_);
   CompositeEditCommand::Trace(visitor);
 }

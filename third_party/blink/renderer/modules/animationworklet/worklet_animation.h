@@ -140,7 +140,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
     running_on_main_thread_ = running_on_main_thread;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   void Dispose();
 
  private:

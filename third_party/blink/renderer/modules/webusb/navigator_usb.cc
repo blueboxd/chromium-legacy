@@ -29,7 +29,7 @@ USB* NavigatorUSB::usb() {
   return usb_;
 }
 
-void NavigatorUSB::Trace(Visitor* visitor) {
+void NavigatorUSB::Trace(Visitor* visitor) const {
   visitor->Trace(usb_);
   Supplement<Navigator>::Trace(visitor);
 }

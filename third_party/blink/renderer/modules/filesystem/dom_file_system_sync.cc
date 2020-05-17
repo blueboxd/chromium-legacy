@@ -90,7 +90,7 @@ class CreateFileHelper final : public SnapshotFileCallbackBase {
     base::File::Error error_;
     Member<File> file_;
 
-    void Trace(Visitor* visitor) { visitor->Trace(file_); }
+    void Trace(Visitor* visitor) const { visitor->Trace(file_); }
   };
 
   static std::unique_ptr<SnapshotFileCallbackBase> Create(
@@ -173,7 +173,7 @@ FileWriterSync* DOMFileSystemSync::CreateWriter(
   return success ? file_writer : nullptr;
 }
 
-void DOMFileSystemSync::Trace(Visitor* visitor) {
+void DOMFileSystemSync::Trace(Visitor* visitor) const {
   visitor->Trace(root_entry_);
   DOMFileSystemBase::Trace(visitor);
 }

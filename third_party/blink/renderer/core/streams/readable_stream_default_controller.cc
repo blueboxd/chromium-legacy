@@ -256,7 +256,7 @@ const char* ReadableStreamDefaultController::EnqueueExceptionMessage(
   return "Cannot enqueue a chunk into a closed readable stream";
 }
 
-void ReadableStreamDefaultController::Trace(Visitor* visitor) {
+void ReadableStreamDefaultController::Trace(Visitor* visitor) const {
   visitor->Trace(cancel_algorithm_);
   visitor->Trace(controlled_readable_stream_);
   visitor->Trace(pull_algorithm_);
@@ -390,7 +390,7 @@ void ReadableStreamDefaultController::CallPullIfNeeded(
       }
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(controller_);
       PromiseHandler::Trace(visitor);
     }
@@ -411,7 +411,7 @@ void ReadableStreamDefaultController::CallPullIfNeeded(
       Error(GetScriptState(), controller_, e);
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(controller_);
       PromiseHandler::Trace(visitor);
     }
@@ -553,7 +553,7 @@ void ReadableStreamDefaultController::SetUp(
       CallPullIfNeeded(GetScriptState(), controller_);
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(controller_);
       PromiseHandler::Trace(visitor);
     }
@@ -574,7 +574,7 @@ void ReadableStreamDefaultController::SetUp(
       Error(GetScriptState(), controller_, r);
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(controller_);
       PromiseHandler::Trace(visitor);
     }

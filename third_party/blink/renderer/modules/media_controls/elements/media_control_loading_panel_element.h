@@ -34,7 +34,7 @@ class MODULES_EXPORT MediaControlLoadingPanelElement final
   // Inform the loading panel that the Media Controls have been shown.
   void OnControlsShown();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class MediaControlLoadingPanelElementTest;

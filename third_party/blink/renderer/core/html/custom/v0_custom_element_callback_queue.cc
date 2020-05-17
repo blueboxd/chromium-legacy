@@ -68,7 +68,7 @@ bool V0CustomElementCallbackQueue::ProcessInElementQueue(
   return did_work;
 }
 
-void V0CustomElementCallbackQueue::Trace(Visitor* visitor) {
+void V0CustomElementCallbackQueue::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   visitor->Trace(queue_);
 }

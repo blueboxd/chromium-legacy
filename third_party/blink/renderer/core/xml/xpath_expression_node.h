@@ -58,14 +58,14 @@ struct CORE_EXPORT EvaluationContext {
 class CORE_EXPORT ParseNode : public GarbageCollected<ParseNode> {
  public:
   virtual ~ParseNode() = default;
-  virtual void Trace(Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) const {}
 };
 
 class CORE_EXPORT Expression : public ParseNode {
  public:
   Expression();
   ~Expression() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   virtual Value Evaluate(EvaluationContext&) const = 0;
 

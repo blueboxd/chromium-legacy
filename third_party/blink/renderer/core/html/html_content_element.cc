@@ -48,7 +48,7 @@ HTMLContentElement::HTMLContentElement(Document& document)
 
 HTMLContentElement::~HTMLContentElement() = default;
 
-void HTMLContentElement::Trace(Visitor* visitor) {
+void HTMLContentElement::Trace(Visitor* visitor) const {
   V0InsertionPoint::Trace(visitor);
 }
 

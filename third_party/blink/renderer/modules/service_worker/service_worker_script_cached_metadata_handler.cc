@@ -30,7 +30,7 @@ ServiceWorkerScriptCachedMetadataHandler::
 ServiceWorkerScriptCachedMetadataHandler::
     ~ServiceWorkerScriptCachedMetadataHandler() = default;
 
-void ServiceWorkerScriptCachedMetadataHandler::Trace(Visitor* visitor) {
+void ServiceWorkerScriptCachedMetadataHandler::Trace(Visitor* visitor) const {
   visitor->Trace(global_scope_);
   CachedMetadataHandler::Trace(visitor);
 }

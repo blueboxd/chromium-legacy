@@ -82,7 +82,7 @@ class CORE_EXPORT EventPath final : public GarbageCollected<EventPath> {
 
   static EventTarget& EventTargetRespectingTargetRules(Node&);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
   void Clear() {
     node_event_contexts_.clear();
     tree_scope_event_contexts_.clear();

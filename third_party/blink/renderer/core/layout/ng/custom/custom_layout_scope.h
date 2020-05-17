@@ -22,7 +22,7 @@ typedef Vector<CustomLayoutWorkTask, 4> CustomLayoutWorkQueue;
 class CustomLayoutToken : public GarbageCollected<CustomLayoutToken> {
  public:
   CustomLayoutToken() : is_detached_(false) {}
-  void Trace(Visitor* visitor) {}
+  void Trace(Visitor* visitor) const {}
   bool IsValid() const;
 
  private:

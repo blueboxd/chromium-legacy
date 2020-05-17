@@ -25,7 +25,7 @@ void SynchronousMutationObserver::SetDocument(Document* document) {
     document_->SynchronousMutationObserverList().AddObserver(this);
 }
 
-void SynchronousMutationObserver::Trace(Visitor* visitor) {
+void SynchronousMutationObserver::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
 }
 

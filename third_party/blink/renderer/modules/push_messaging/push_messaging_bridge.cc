@@ -80,7 +80,7 @@ ScriptPromise PushMessagingBridge::GetPermissionState(
   return promise;
 }
 
-void PushMessagingBridge::Trace(Visitor* visitor) {
+void PushMessagingBridge::Trace(Visitor* visitor) const {
   visitor->Trace(permission_service_);
   Supplement<ServiceWorkerRegistration>::Trace(visitor);
 }

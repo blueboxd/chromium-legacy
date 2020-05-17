@@ -30,7 +30,7 @@ class DynamicImportTreeClient final : public ModuleTreeClient {
                           ScriptPromiseResolver* promise_resolver)
       : url_(url), modulator_(modulator), promise_resolver_(promise_resolver) {}
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Implements ModuleTreeClient:
@@ -48,7 +48,7 @@ class ModuleResolutionCallback : public ScriptFunction {
                            ScriptPromiseResolver* promise_resolver)
       : ScriptFunction(script_state), promise_resolver_(promise_resolver) {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(promise_resolver_);
     ScriptFunction::Trace(visitor);
   }
@@ -77,7 +77,7 @@ class ModuleResolutionSuccessCallback final : public ModuleResolutionCallback {
     return self->BindToV8Function();
   }
 
-  void Trace(Visitor* visitor) final {
+  void Trace(Visitor* visitor) const final {
     visitor->Trace(module_script_);
     ModuleResolutionCallback::Trace(visitor);
   }
@@ -234,7 +234,7 @@ void DynamicImportTreeClient::NotifyModuleTreeLoadFinished(
   promise_resolver_->Resolve(module_namespace);
 }
 
-void DynamicImportTreeClient::Trace(Visitor* visitor) {
+void DynamicImportTreeClient::Trace(Visitor* visitor) const {
   visitor->Trace(modulator_);
   visitor->Trace(promise_resolver_);
   ModuleTreeClient::Trace(visitor);
@@ -242,7 +242,7 @@ void DynamicImportTreeClient::Trace(Visitor* visitor) {
 
 }  // namespace
 
-void DynamicModuleResolver::Trace(Visitor* visitor) {
+void DynamicModuleResolver::Trace(Visitor* visitor) const {
   visitor->Trace(modulator_);
 }
 

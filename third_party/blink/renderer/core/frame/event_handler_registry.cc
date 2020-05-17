@@ -335,7 +335,7 @@ void EventHandlerRegistry::NotifyDidAddOrRemoveEventHandlerTarget(
   }
 }
 
-void EventHandlerRegistry::Trace(Visitor* visitor) {
+void EventHandlerRegistry::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->template RegisterWeakCallbackMethod<
       EventHandlerRegistry, &EventHandlerRegistry::ProcessCustomWeakness>(this);

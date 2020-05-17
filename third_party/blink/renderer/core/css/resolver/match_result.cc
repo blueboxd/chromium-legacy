@@ -43,7 +43,7 @@ MatchedProperties::MatchedProperties() {
   memset(&types_, 0, sizeof(types_));
 }
 
-void MatchedProperties::Trace(Visitor* visitor) {
+void MatchedProperties::Trace(Visitor* visitor) const {
   visitor->Trace(properties);
 }
 

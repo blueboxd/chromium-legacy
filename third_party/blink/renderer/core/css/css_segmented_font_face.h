@@ -77,7 +77,7 @@ class FontFaceList : public GarbageCollected<FontFaceList> {
   void ForEachReverse(
       const base::RepeatingCallback<void(Member<FontFace>)>& callback) const;
 
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
  private:
   FontFaceListPart css_connected_face_;
@@ -112,7 +112,7 @@ class CSSSegmentedFontFace final
     return approximate_character_count_;
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   void PruneTable();

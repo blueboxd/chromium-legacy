@@ -162,7 +162,7 @@ SVGSVGElement* SVGDocumentExtensions::rootElement() const {
   return rootElement(*document_);
 }
 
-void SVGDocumentExtensions::Trace(Visitor* visitor) {
+void SVGDocumentExtensions::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(time_containers_);
   visitor->Trace(web_animations_pending_svg_elements_);

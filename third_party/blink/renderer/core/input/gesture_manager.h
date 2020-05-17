@@ -30,7 +30,7 @@ class CORE_EXPORT GestureManager final
                  MouseEventManager&,
                  PointerEventManager&,
                  SelectionController&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   void Clear();
 

@@ -88,7 +88,7 @@ FetchClientSettingsObjectImpl::GetUpgradeInsecureNavigationsSet() const {
       .InsecureNavigationsToUpgrade();
 }
 
-void FetchClientSettingsObjectImpl::Trace(Visitor* visitor) {
+void FetchClientSettingsObjectImpl::Trace(Visitor* visitor) const {
   visitor->Trace(execution_context_);
   FetchClientSettingsObject::Trace(visitor);
 }

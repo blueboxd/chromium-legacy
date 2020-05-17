@@ -29,7 +29,7 @@ class MediaControlsSharedHelpers final {
     void Detach();
     bool IsAttached() const;
     void Invoke(ExecutionContext* context, Event* event) override;
-    void Trace(Visitor* visitor) override;
+    void Trace(Visitor* visitor) const override;
 
    private:
     bool attached_ = false;

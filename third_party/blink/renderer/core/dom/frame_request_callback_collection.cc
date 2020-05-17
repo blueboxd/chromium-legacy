@@ -153,7 +153,7 @@ FrameRequestCallbackCollection::RegisterPostFrameCallback(
   return id;
 }
 
-void FrameRequestCallbackCollection::Trace(Visitor* visitor) {
+void FrameRequestCallbackCollection::Trace(Visitor* visitor) const {
   visitor->Trace(frame_callbacks_);
   visitor->Trace(post_frame_callbacks_);
   visitor->Trace(callbacks_to_invoke_);
@@ -165,7 +165,7 @@ FrameRequestCallbackCollection::V8FrameCallback::V8FrameCallback(
     : callback_(callback) {}
 
 void FrameRequestCallbackCollection::V8FrameCallback::Trace(
-    blink::Visitor* visitor) {
+    blink::Visitor* visitor) const {
   visitor->Trace(callback_);
   FrameRequestCallbackCollection::FrameCallback::Trace(visitor);
 }

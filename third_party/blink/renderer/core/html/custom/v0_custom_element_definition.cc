@@ -37,7 +37,7 @@ V0CustomElementDefinition::V0CustomElementDefinition(
     V0CustomElementLifecycleCallbacks* callbacks)
     : descriptor_(descriptor), callbacks_(callbacks) {}
 
-void V0CustomElementDefinition::Trace(Visitor* visitor) {
+void V0CustomElementDefinition::Trace(Visitor* visitor) const {
   visitor->Trace(callbacks_);
 }
 

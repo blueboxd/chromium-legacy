@@ -36,7 +36,7 @@ class PLATFORM_EXPORT DictionaryBase : public GarbageCollected<DictionaryBase> {
     return v8_object;
   }
 
-  virtual void Trace(Visitor*) {}
+  virtual void Trace(Visitor*) const {}
 
  protected:
   DictionaryBase() = default;

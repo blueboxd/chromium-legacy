@@ -59,7 +59,7 @@ class CORE_EXPORT HTMLInputElement
  public:
   HTMLInputElement(Document&, const CreateElementFlags);
   ~HTMLInputElement() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool HasPendingActivity() const final;
 

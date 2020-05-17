@@ -80,7 +80,7 @@ class VTTCueBackgroundBox final : public HTMLDivElement {
   explicit VTTCueBackgroundBox(Document&);
   bool IsVTTCueBackgroundBox() const override { return true; }
   void SetTrack(TextTrack*);
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   const TextTrack* GetTrack() const { return track_; }
 
@@ -172,7 +172,7 @@ class VTTCue final : public TextTrackCue {
   String ToString() const override;
 #endif
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Document& GetDocument() const;

@@ -152,7 +152,7 @@ class MODULES_EXPORT RTCIceTransport final
   bool HasPendingActivity() const final;
 
   // For garbage collection.
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   // IceTransportProxy::Delegate overrides.

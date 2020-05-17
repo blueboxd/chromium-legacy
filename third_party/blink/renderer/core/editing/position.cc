@@ -50,7 +50,7 @@ bool CanBeAnchorNode<EditingInFlatTreeStrategy>(Node* node) {
 #endif
 
 template <typename Strategy>
-void PositionTemplate<Strategy>::Trace(Visitor* visitor) {
+void PositionTemplate<Strategy>::Trace(Visitor* visitor) const {
   visitor->Trace(anchor_node_);
 }
 

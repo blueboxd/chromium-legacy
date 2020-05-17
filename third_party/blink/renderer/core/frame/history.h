@@ -76,7 +76,7 @@ class CORE_EXPORT History final : public ScriptWrappable,
 
   bool IsSameAsCurrentState(SerializedScriptValue*) const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HistoryTest, CanChangeToURL);

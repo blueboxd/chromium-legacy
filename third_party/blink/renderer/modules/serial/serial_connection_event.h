@@ -27,7 +27,7 @@ class SerialConnectionEvent final : public Event {
 
   SerialPort* port() const { return port_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<SerialPort> port_;

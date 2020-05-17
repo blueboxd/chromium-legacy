@@ -69,7 +69,7 @@ DateTimeChooserImpl::DateTimeChooserImpl(
 
 DateTimeChooserImpl::~DateTimeChooserImpl() = default;
 
-void DateTimeChooserImpl::Trace(Visitor* visitor) {
+void DateTimeChooserImpl::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(client_);
   DateTimeChooser::Trace(visitor);

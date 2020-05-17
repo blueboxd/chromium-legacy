@@ -140,7 +140,7 @@ base::Optional<DOMHighResTimeStamp> Sensor::timestamp(
       base::TimeDelta::FromSecondsD(sensor_proxy_->GetReading().timestamp()));
 }
 
-void Sensor::Trace(Visitor* visitor) {
+void Sensor::Trace(Visitor* visitor) const {
   visitor->Trace(sensor_proxy_);
   ActiveScriptWrappable::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);

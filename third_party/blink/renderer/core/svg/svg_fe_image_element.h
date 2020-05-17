@@ -52,7 +52,7 @@ class SVGFEImageElement final : public SVGFilterPrimitiveStandardAttributes,
 
   void Dispose();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void SvgAttributeChanged(const QualifiedName&) override;

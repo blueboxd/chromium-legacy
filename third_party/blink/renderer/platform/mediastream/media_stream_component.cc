@@ -132,7 +132,7 @@ void MediaStreamComponent::AudioSourceProviderImpl::ProvideInput(
   web_audio_source_provider_->ProvideInput(web_audio_data, frames_to_process);
 }
 
-void MediaStreamComponent::Trace(Visitor* visitor) {
+void MediaStreamComponent::Trace(Visitor* visitor) const {
   visitor->Trace(source_);
 }
 

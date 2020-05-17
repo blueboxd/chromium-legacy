@@ -22,7 +22,7 @@ class DelegatedInkTrailPresenter : public ScriptWrappable {
   uint32_t expectedImprovement() const { return expected_improvement_; }
   Element* presentationArea() const { return presentation_area_; }
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   Member<Element> presentation_area_;

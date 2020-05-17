@@ -62,7 +62,7 @@ ByteStringOrNodeList::ByteStringOrNodeList(const ByteStringOrNodeList&) = defaul
 ByteStringOrNodeList::~ByteStringOrNodeList() = default;
 ByteStringOrNodeList& ByteStringOrNodeList::operator=(const ByteStringOrNodeList&) = default;
 
-void ByteStringOrNodeList::Trace(Visitor* visitor) {
+void ByteStringOrNodeList::Trace(Visitor* visitor) const {
   visitor->Trace(node_list_);
 }
 

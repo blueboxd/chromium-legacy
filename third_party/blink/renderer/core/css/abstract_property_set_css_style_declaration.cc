@@ -235,7 +235,7 @@ bool AbstractPropertySetCSSStyleDeclaration::CssPropertyMatches(
   return PropertySet().PropertyMatches(property_id, property_value);
 }
 
-void AbstractPropertySetCSSStyleDeclaration::Trace(Visitor* visitor) {
+void AbstractPropertySetCSSStyleDeclaration::Trace(Visitor* visitor) const {
   CSSStyleDeclaration::Trace(visitor);
 }
 

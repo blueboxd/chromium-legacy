@@ -158,7 +158,7 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
                                   const ImageBitmapOptions*,
                                   ExceptionState&) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   WARN_UNUSED_RESULT v8::Local<v8::Object> AssociateWithWrapper(
       v8::Isolate*,

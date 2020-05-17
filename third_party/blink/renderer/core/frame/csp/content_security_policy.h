@@ -213,7 +213,7 @@ class CORE_EXPORT ContentSecurityPolicy final
 
   ContentSecurityPolicy();
   ~ContentSecurityPolicy();
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   bool IsBound();
   void BindToDelegate(ContentSecurityPolicyDelegate&);

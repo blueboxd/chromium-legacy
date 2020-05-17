@@ -52,7 +52,7 @@ ExecutionContext* Clipboard::GetExecutionContext() const {
   return ExecutionContextClient::GetExecutionContext();
 }
 
-void Clipboard::Trace(Visitor* visitor) {
+void Clipboard::Trace(Visitor* visitor) const {
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
 }

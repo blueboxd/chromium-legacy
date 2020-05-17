@@ -56,7 +56,7 @@ class Serial final : public EventTargetWithInlineData,
   void GetPort(
       const base::UnguessableToken& token,
       mojo::PendingReceiver<device::mojom::blink::SerialPort> receiver);
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   // EventTarget

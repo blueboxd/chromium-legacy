@@ -55,7 +55,7 @@ void GamepadDispatcher::InitializeHaptics() {
   }
 }
 
-void GamepadDispatcher::Trace(Visitor* visitor) {
+void GamepadDispatcher::Trace(Visitor* visitor) const {
   visitor->Trace(reader_);
   visitor->Trace(gamepad_haptics_manager_remote_);
   PlatformEventDispatcher::Trace(visitor);

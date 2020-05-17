@@ -84,7 +84,7 @@ bool ImageBitmapRenderingContextBase::IsPaintable() const {
   return !!image_layer_bridge_->GetImage();
 }
 
-void ImageBitmapRenderingContextBase::Trace(Visitor* visitor) {
+void ImageBitmapRenderingContextBase::Trace(Visitor* visitor) const {
   visitor->Trace(image_layer_bridge_);
   CanvasRenderingContext::Trace(visitor);
 }

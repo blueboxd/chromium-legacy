@@ -38,7 +38,7 @@ void RawSystemClipboard::CommitWrite() {
   clipboard_->CommitWrite();
 }
 
-void RawSystemClipboard::Trace(Visitor* visitor) {
+void RawSystemClipboard::Trace(Visitor* visitor) const {
   visitor->Trace(clipboard_);
 }
 

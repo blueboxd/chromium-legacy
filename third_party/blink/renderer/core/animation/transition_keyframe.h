@@ -45,7 +45,7 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
   void AddKeyframePropertiesToV8Object(V8ObjectBuilder&,
                                        Element*) const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   class PropertySpecificKeyframe : public Keyframe::PropertySpecificKeyframe {
    public:
@@ -78,7 +78,7 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
 
     bool IsTransitionPropertySpecificKeyframe() const final { return true; }
 
-    void Trace(Visitor*) override;
+    void Trace(Visitor*) const override;
 
    private:
     Keyframe::PropertySpecificKeyframe* CloneWithOffset(

@@ -29,7 +29,7 @@ HIDConnectionEvent::HIDConnectionEvent(const AtomicString& type,
                                        HIDDevice* device)
     : Event(type, Bubbles::kNo, Cancelable::kNo) {}
 
-void HIDConnectionEvent::Trace(Visitor* visitor) {
+void HIDConnectionEvent::Trace(Visitor* visitor) const {
   Event::Trace(visitor);
 }
 

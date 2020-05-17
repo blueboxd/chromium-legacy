@@ -24,7 +24,7 @@ namespace util {
 //   public:
 //    using PassKey = util::PassKey<Manager>;
 //    Manager() : foo_(blink::MakeGarbageCollected<Foo>(PassKey())) {}
-//    void Trace(blink::Visitor* visitor) { visitor->Trace(foo_); }
+//    void Trace(blink::Visitor* visitor) const { visitor->Trace(foo_); }
 //    Foo* GetFooSingleton() { foo_; }
 //
 //   private:

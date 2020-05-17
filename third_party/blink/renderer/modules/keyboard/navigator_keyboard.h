@@ -26,7 +26,7 @@ class NavigatorKeyboard final : public GarbageCollected<NavigatorKeyboard>,
 
   explicit NavigatorKeyboard(Navigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<Keyboard> keyboard_;

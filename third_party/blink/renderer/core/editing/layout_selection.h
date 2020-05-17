@@ -54,7 +54,7 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
 
   void ContextDestroyed();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   void AssertIsValid() const;

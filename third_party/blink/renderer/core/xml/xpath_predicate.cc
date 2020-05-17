@@ -38,7 +38,7 @@ namespace xpath {
 
 Number::Number(double value) : value_(value) {}
 
-void Number::Trace(Visitor* visitor) {
+void Number::Trace(Visitor* visitor) const {
   visitor->Trace(value_);
   Expression::Trace(visitor);
 }
@@ -49,7 +49,7 @@ Value Number::Evaluate(EvaluationContext&) const {
 
 StringExpression::StringExpression(const String& value) : value_(value) {}
 
-void StringExpression::Trace(Visitor* visitor) {
+void StringExpression::Trace(Visitor* visitor) const {
   visitor->Trace(value_);
   Expression::Trace(visitor);
 }
@@ -262,7 +262,7 @@ Value Union::Evaluate(EvaluationContext& context) const {
 
 Predicate::Predicate(Expression* expr) : expr_(expr) {}
 
-void Predicate::Trace(Visitor* visitor) {
+void Predicate::Trace(Visitor* visitor) const {
   visitor->Trace(expr_);
 }
 

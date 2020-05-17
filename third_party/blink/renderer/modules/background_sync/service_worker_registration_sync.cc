@@ -65,7 +65,7 @@ PeriodicSyncManager* ServiceWorkerRegistrationSync::periodicSync() {
   return periodic_sync_manager_.Get();
 }
 
-void ServiceWorkerRegistrationSync::Trace(Visitor* visitor) {
+void ServiceWorkerRegistrationSync::Trace(Visitor* visitor) const {
   visitor->Trace(registration_);
   visitor->Trace(sync_manager_);
   visitor->Trace(periodic_sync_manager_);

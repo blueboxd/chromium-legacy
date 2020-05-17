@@ -1119,7 +1119,7 @@ void FrameSelection::ShowTreeForThis() const {
 
 #endif
 
-void FrameSelection::Trace(Visitor* visitor) {
+void FrameSelection::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(layout_selection_);
   visitor->Trace(selection_editor_);

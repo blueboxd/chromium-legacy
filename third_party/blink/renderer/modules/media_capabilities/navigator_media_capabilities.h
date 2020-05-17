@@ -26,7 +26,7 @@ class NavigatorMediaCapabilities final
 
   explicit NavigatorMediaCapabilities(Navigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   static NavigatorMediaCapabilities& From(Navigator&);

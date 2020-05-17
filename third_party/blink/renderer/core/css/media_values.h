@@ -29,7 +29,7 @@ PreferredColorScheme CSSValueIDToPreferredColorScheme(CSSValueID id);
 class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues> {
  public:
   virtual ~MediaValues() = default;
-  virtual void Trace(Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) const {}
 
   static MediaValues* CreateDynamicIfFrameExists(LocalFrame*);
   virtual MediaValues* Copy() const = 0;

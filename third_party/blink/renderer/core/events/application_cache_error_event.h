@@ -42,7 +42,7 @@ class ApplicationCacheErrorEvent final : public Event {
     return event_interface_names::kApplicationCacheErrorEvent;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   String reason_;

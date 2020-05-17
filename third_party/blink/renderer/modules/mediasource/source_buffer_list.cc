@@ -78,7 +78,7 @@ const AtomicString& SourceBufferList::InterfaceName() const {
   return event_target_names::kSourceBufferList;
 }
 
-void SourceBufferList::Trace(Visitor* visitor) {
+void SourceBufferList::Trace(Visitor* visitor) const {
   visitor->Trace(async_event_queue_);
   visitor->Trace(list_);
   EventTargetWithInlineData::Trace(visitor);

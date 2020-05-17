@@ -25,7 +25,7 @@ class Gyroscope final : public Sensor {
   base::Optional<double> y() const;
   base::Optional<double> z() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 };
 
 }  // namespace blink

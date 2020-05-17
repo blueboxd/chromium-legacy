@@ -195,7 +195,7 @@ void StyleElement::StartLoadingDynamicSheet(Document& document) {
   document.GetStyleEngine().AddPendingSheet(style_engine_context_);
 }
 
-void StyleElement::Trace(Visitor* visitor) {
+void StyleElement::Trace(Visitor* visitor) const {
   visitor->Trace(sheet_);
 }
 

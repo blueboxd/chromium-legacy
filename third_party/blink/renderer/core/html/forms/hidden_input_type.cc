@@ -46,7 +46,7 @@ void HiddenInputType::CountUsage() {
   UseCounter::Count(GetElement().GetDocument(), WebFeature::kInputTypeHidden);
 }
 
-void HiddenInputType::Trace(Visitor* visitor) {
+void HiddenInputType::Trace(Visitor* visitor) const {
   InputTypeView::Trace(visitor);
   InputType::Trace(visitor);
 }

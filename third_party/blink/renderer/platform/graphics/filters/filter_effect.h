@@ -51,7 +51,7 @@ enum FilterEffectType {
 class PLATFORM_EXPORT FilterEffect : public GarbageCollected<FilterEffect> {
  public:
   virtual ~FilterEffect();
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
   void DisposeImageFilters();
   void DisposeImageFiltersRecursive();

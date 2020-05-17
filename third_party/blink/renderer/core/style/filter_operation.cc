@@ -44,7 +44,7 @@ FilterOperation* FilterOperation::Blend(const FilterOperation* from,
   return from->Blend(nullptr, 1 - progress);
 }
 
-void ReferenceFilterOperation::Trace(Visitor* visitor) {
+void ReferenceFilterOperation::Trace(Visitor* visitor) const {
   visitor->Trace(resource_);
   visitor->Trace(filter_);
   FilterOperation::Trace(visitor);

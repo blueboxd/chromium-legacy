@@ -28,7 +28,7 @@ class MODULES_EXPORT VideoTrackWriter final : public ScriptWrappable {
   WritableStream* writable();
 
   // GarbageCollected override
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   Member<MediaStreamTrack> track_;

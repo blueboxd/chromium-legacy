@@ -160,7 +160,7 @@ void TextFragmentAnchorMetrics::Dismissed() {
                        TRACE_EVENT_SCOPE_THREAD);
 }
 
-void TextFragmentAnchorMetrics::Trace(Visitor* visitor) {
+void TextFragmentAnchorMetrics::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
 }
 

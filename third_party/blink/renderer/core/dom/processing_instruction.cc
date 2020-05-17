@@ -292,7 +292,7 @@ void ProcessingInstruction::RemovePendingSheet() {
                                                     style_engine_context_);
 }
 
-void ProcessingInstruction::Trace(Visitor* visitor) {
+void ProcessingInstruction::Trace(Visitor* visitor) const {
   visitor->Trace(sheet_);
   visitor->Trace(listener_for_xslt_);
   CharacterData::Trace(visitor);

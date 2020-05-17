@@ -8,7 +8,7 @@
 
 namespace blink {
 
-void FontFallbackMap::Trace(Visitor* visitor) {
+void FontFallbackMap::Trace(Visitor* visitor) const {
   visitor->Trace(font_selector_);
   FontCacheClient::Trace(visitor);
   FontSelectorClient::Trace(visitor);

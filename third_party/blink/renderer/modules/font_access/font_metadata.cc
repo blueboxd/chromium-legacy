@@ -238,7 +238,7 @@ void FontMetadata::getTablesImpl(ScriptPromiseResolver* resolver,
   resolver->Resolve(map);
 }
 
-void FontMetadata::Trace(blink::Visitor* visitor) {
+void FontMetadata::Trace(blink::Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
 }
 

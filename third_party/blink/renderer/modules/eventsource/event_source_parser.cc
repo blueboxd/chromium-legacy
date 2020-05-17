@@ -132,7 +132,7 @@ String EventSourceParser::FromUTF8(const char* bytes, uint32_t size) {
   return codec_->Decode(bytes, size, WTF::FlushBehavior::kDataEOF);
 }
 
-void EventSourceParser::Trace(Visitor* visitor) {
+void EventSourceParser::Trace(Visitor* visitor) const {
   visitor->Trace(client_);
 }
 

@@ -56,7 +56,7 @@ class ObjectWithCallbackBeforeInitializer
       base::OnceCallback<void(ObjectWithCallbackBeforeInitializer<T>*)>&& cb)
       : bool_(ExecuteCallbackReturnTrue(this, std::move(cb))) {}
 
-  virtual void Trace(Visitor* visitor) { visitor->Trace(value_); }
+  virtual void Trace(Visitor* visitor) const { visitor->Trace(value_); }
 
   T* value() const { return value_.Get(); }
 
@@ -84,7 +84,7 @@ class MixinWithCallbackBeforeInitializer : public GarbageCollectedMixin {
       base::OnceCallback<void(MixinWithCallbackBeforeInitializer<T>*)>&& cb)
       : bool_(ExecuteCallbackReturnTrue(this, std::move(cb))) {}
 
-  void Trace(Visitor* visitor) override { visitor->Trace(value_); }
+  void Trace(Visitor* visitor) const override { visitor->Trace(value_); }
 
   T* value() const { return value_.Get(); }
 
@@ -124,7 +124,7 @@ class ObjectWithMixinWithCallbackBeforeInitializer
       base::OnceCallback<void(Mixin*)>&& cb)
       : Mixin(std::move(cb)) {}
 
-  void Trace(Visitor* visitor) override { Mixin::Trace(visitor); }
+  void Trace(Visitor* visitor) const override { Mixin::Trace(visitor); }
 };
 
 // Simple linked object to be used in tests.
@@ -137,7 +137,7 @@ class LinkedObject : public GarbageCollected<LinkedObject> {
   LinkedObject* next() const { return next_; }
   Member<LinkedObject>& next_ref() { return next_; }
 
-  void Trace(Visitor* visitor) { visitor->Trace(next_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(next_); }
 
  private:
   Member<LinkedObject> next_;
@@ -181,7 +181,7 @@ class IntegerObject : public GarbageCollected<IntegerObject> {
     destructor_calls.fetch_add(1, std::memory_order_relaxed);
   }
 
-  virtual void Trace(Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) const {}
 
   int Value() const { return x_; }
 

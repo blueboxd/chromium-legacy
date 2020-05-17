@@ -35,7 +35,7 @@ class ColdModeSpellCheckRequester
   void ClearProgress();
   bool FullyChecked() const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   SpellCheckRequester& GetSpellCheckRequester() const;

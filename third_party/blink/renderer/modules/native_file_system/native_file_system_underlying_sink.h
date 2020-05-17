@@ -37,7 +37,7 @@ class NativeFileSystemUnderlyingSink final : public UnderlyingSinkBase {
                       ScriptValue reason,
                       ExceptionState&) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   ScriptPromise HandleParams(ScriptState*, const WriteParams&, ExceptionState&);

@@ -72,7 +72,7 @@ void CanMakePaymentRespondWithObserver::OnNoResponse() {
   RespondWithoutMinimalUI(ResponseType::NO_RESPONSE, true);
 }
 
-void CanMakePaymentRespondWithObserver::Trace(Visitor* visitor) {
+void CanMakePaymentRespondWithObserver::Trace(Visitor* visitor) const {
   RespondWithObserver::Trace(visitor);
 }
 

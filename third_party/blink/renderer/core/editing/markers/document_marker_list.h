@@ -61,7 +61,7 @@ class CORE_EXPORT DocumentMarkerList
                             unsigned old_length,
                             unsigned new_length) = 0;
 
-  virtual void Trace(Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) const {}
 
  protected:
   DocumentMarkerList();

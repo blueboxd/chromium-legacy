@@ -40,7 +40,7 @@ class CORE_EXPORT TestEnumOrDouble final {
   TestEnumOrDouble(const TestEnumOrDouble&);
   ~TestEnumOrDouble();
   TestEnumOrDouble& operator=(const TestEnumOrDouble&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   enum class SpecificType {

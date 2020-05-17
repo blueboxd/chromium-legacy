@@ -76,7 +76,7 @@ bool RecordTest::unionReceivedARecord(
   return arg.IsByteStringByteStringRecord();
 }
 
-void RecordTest::Trace(Visitor* visitor) {
+void RecordTest::Trace(Visitor* visitor) const {
   visitor->Trace(string_element_record_);
   ScriptWrappable::Trace(visitor);
 }

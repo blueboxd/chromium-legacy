@@ -27,7 +27,7 @@ class MediaControlDownloadButtonElement final
   bool HasOverflowButton() const final;
   bool IsControlPanelButton() const final;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   const char* GetNameForHistograms() const final;

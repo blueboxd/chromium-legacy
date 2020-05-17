@@ -43,7 +43,7 @@ class FontFaceCacheTest : public PageTestBase {
 
   FontFaceCache cache_;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  protected:
   const AtomicString kFontNameForTesting{"Arial"};
@@ -494,7 +494,7 @@ TEST_F(FontFaceCacheTest, ObliqueRangeMatching) {
       FontSelectionRange({FontSelectionValue(30), FontSelectionValue(35)}));
 }
 
-void FontFaceCacheTest::Trace(Visitor* visitor) {
+void FontFaceCacheTest::Trace(Visitor* visitor) const {
   visitor->Trace(cache_);
 }
 

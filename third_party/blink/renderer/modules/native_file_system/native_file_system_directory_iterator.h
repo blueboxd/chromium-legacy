@@ -33,7 +33,7 @@ class NativeFileSystemDirectoryIterator final
 
   ScriptPromise next(ScriptState*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void DidReadDirectory(mojom::blink::NativeFileSystemErrorPtr result,

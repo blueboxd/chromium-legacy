@@ -31,7 +31,7 @@ GPUSwapChain::~GPUSwapChain() {
   Neuter();
 }
 
-void GPUSwapChain::Trace(Visitor* visitor) {
+void GPUSwapChain::Trace(Visitor* visitor) const {
   visitor->Trace(device_);
   visitor->Trace(context_);
   visitor->Trace(texture_);

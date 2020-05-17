@@ -49,7 +49,7 @@ class NativeFileSystemHandle : public ScriptWrappable,
   virtual mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken>
   Transfer() = 0;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   virtual void QueryPermissionImpl(

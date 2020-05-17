@@ -74,7 +74,7 @@ void RemoveNodeCommand::DoUnapply() {
   parent->InsertBefore(node_.Get(), ref_child, IGNORE_EXCEPTION_FOR_TESTING);
 }
 
-void RemoveNodeCommand::Trace(Visitor* visitor) {
+void RemoveNodeCommand::Trace(Visitor* visitor) const {
   visitor->Trace(node_);
   visitor->Trace(parent_);
   visitor->Trace(ref_child_);

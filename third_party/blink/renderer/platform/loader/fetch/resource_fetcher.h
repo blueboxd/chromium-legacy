@@ -87,7 +87,7 @@ class PLATFORM_EXPORT ResourceFetcher
    public:
     virtual ~LoaderFactory() = default;
 
-    virtual void Trace(Visitor*) {}
+    virtual void Trace(Visitor*) const {}
 
     // Create a WebURLLoader for given the request information and task runner.
     virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
@@ -103,7 +103,7 @@ class PLATFORM_EXPORT ResourceFetcher
   // in ResourceFetcherInit to ensure correctness of this ResourceFetcher.
   explicit ResourceFetcher(const ResourceFetcherInit&);
   virtual ~ResourceFetcher();
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
   // - This function returns the same object throughout this fetcher's
   //   entire life.

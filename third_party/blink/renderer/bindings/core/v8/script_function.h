@@ -54,7 +54,7 @@ class CORE_EXPORT ScriptFunction : public CustomWrappableAdapter {
  public:
   ~ScriptFunction() override = default;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   const char* NameInHeapSnapshot() const override { return "ScriptFunction"; }
 

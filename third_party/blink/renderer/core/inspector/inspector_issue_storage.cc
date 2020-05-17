@@ -41,7 +41,7 @@ InspectorIssue* InspectorIssueStorage::at(wtf_size_t index) const {
   return issues_[index].Get();
 }
 
-void InspectorIssueStorage::Trace(Visitor* visitor) {
+void InspectorIssueStorage::Trace(Visitor* visitor) const {
   visitor->Trace(issues_);
 }
 

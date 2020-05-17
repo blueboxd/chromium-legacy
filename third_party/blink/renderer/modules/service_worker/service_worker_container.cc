@@ -201,7 +201,7 @@ void ServiceWorkerContainer::ContextDestroyed() {
   controller_ = nullptr;
 }
 
-void ServiceWorkerContainer::Trace(Visitor* visitor) {
+void ServiceWorkerContainer::Trace(Visitor* visitor) const {
   visitor->Trace(controller_);
   visitor->Trace(ready_);
   visitor->Trace(dom_content_loaded_observer_);

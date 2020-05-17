@@ -108,7 +108,7 @@ class MODULES_EXPORT BaseAudioContext
 
   ~BaseAudioContext() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Is the destination node initialized and ready to handle audio?
   bool IsDestinationInitialized() const {

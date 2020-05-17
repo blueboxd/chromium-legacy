@@ -27,7 +27,7 @@ class CORE_EXPORT VideoFrameCallbackRequester
 
   virtual ~VideoFrameCallbackRequester() = default;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   virtual void OnWebMediaPlayerCreated() = 0;
   virtual void OnRequestVideoFrameCallback() = 0;

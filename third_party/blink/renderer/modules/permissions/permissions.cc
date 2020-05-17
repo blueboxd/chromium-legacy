@@ -153,7 +153,7 @@ ScriptPromise Permissions::requestAll(
   return promise;
 }
 
-void Permissions::Trace(Visitor* visitor) {
+void Permissions::Trace(Visitor* visitor) const {
   visitor->Trace(service_);
   ScriptWrappable::Trace(visitor);
 }

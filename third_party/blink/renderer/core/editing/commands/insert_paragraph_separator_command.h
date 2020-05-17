@@ -40,7 +40,7 @@ class CORE_EXPORT InsertParagraphSeparatorCommand final
       bool use_default_paragraph_element = false,
       bool paste_blockquote_into_unquoted_area = false);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void DoApply(EditingState*) override;

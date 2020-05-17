@@ -66,7 +66,7 @@ VisiblePositionTemplate<Strategy>::VisiblePositionTemplate(
 }
 
 template <typename Strategy>
-void VisiblePositionTemplate<Strategy>::Trace(Visitor* visitor) {
+void VisiblePositionTemplate<Strategy>::Trace(Visitor* visitor) const {
   visitor->Trace(position_with_affinity_);
 }
 

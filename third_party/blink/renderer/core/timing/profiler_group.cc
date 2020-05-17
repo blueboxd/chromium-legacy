@@ -136,7 +136,7 @@ void ProfilerGroup::WillBeDestroyed() {
     TeardownV8Profiler();
 }
 
-void ProfilerGroup::Trace(Visitor* visitor) {
+void ProfilerGroup::Trace(Visitor* visitor) const {
   visitor->Trace(profilers_);
   V8PerIsolateData::GarbageCollectedData::Trace(visitor);
 }

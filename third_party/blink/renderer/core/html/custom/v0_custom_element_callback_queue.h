@@ -63,7 +63,7 @@ class V0CustomElementCallbackQueue
   }
   bool InCreatedCallback() const { return in_created_callback_; }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   Member<Element> element_;

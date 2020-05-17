@@ -29,7 +29,7 @@ class TraceWrapperV8ReferenceHolder final
   TraceWrapperV8ReferenceHolder(const TraceWrapperV8ReferenceHolder& other)
       : value_(other.value_) {}
 
-  virtual void Trace(Visitor* visitor) { visitor->Trace(value_); }
+  virtual void Trace(Visitor* visitor) const { visitor->Trace(value_); }
 
   TraceWrapperV8Reference<v8::Value>* ref() { return &value_; }
 

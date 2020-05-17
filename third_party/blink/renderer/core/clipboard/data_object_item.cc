@@ -222,7 +222,7 @@ String DataObjectItem::FileSystemId() const {
   return file_system_id_;
 }
 
-void DataObjectItem::Trace(Visitor* visitor) {
+void DataObjectItem::Trace(Visitor* visitor) const {
   visitor->Trace(file_);
   visitor->Trace(system_clipboard_);
 }

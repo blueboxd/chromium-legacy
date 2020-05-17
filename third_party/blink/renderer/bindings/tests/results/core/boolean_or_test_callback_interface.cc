@@ -58,7 +58,7 @@ BooleanOrTestCallbackInterface::BooleanOrTestCallbackInterface(const BooleanOrTe
 BooleanOrTestCallbackInterface::~BooleanOrTestCallbackInterface() = default;
 BooleanOrTestCallbackInterface& BooleanOrTestCallbackInterface::operator=(const BooleanOrTestCallbackInterface&) = default;
 
-void BooleanOrTestCallbackInterface::Trace(Visitor* visitor) {
+void BooleanOrTestCallbackInterface::Trace(Visitor* visitor) const {
   visitor->Trace(test_callback_interface_);
 }
 

@@ -279,7 +279,7 @@ void ModuleScriptLoader::NotifyFetchFinished(
   AdvanceState(State::kFinished);
 }
 
-void ModuleScriptLoader::Trace(Visitor* visitor) {
+void ModuleScriptLoader::Trace(Visitor* visitor) const {
   visitor->Trace(modulator_);
   visitor->Trace(module_script_);
   visitor->Trace(registry_);

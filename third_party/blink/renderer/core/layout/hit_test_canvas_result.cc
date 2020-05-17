@@ -17,7 +17,7 @@ Element* HitTestCanvasResult::GetControl() const {
   return control_.Get();
 }
 
-void HitTestCanvasResult::Trace(Visitor* visitor) {
+void HitTestCanvasResult::Trace(Visitor* visitor) const {
   visitor->Trace(control_);
 }
 

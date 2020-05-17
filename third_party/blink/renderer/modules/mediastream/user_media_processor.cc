@@ -408,7 +408,7 @@ class UserMediaProcessor::RequestInfo final
     return request_->has_transient_user_activation();
   }
 
-  void Trace(Visitor* visitor) { visitor->Trace(request_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(request_); }
 
  private:
   void OnTrackStarted(blink::WebPlatformMediaStreamSource* source,
@@ -1182,7 +1182,7 @@ void UserMediaProcessor::OnDeviceChanged(const MediaStreamDevice& old_device,
   source_impl->ChangeSource(new_device);
 }
 
-void UserMediaProcessor::Trace(Visitor* visitor) {
+void UserMediaProcessor::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(current_request_info_);
 }

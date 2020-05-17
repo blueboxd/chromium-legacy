@@ -176,7 +176,7 @@ class DOMDataStore final : public GarbageCollected<DOMDataStore> {
     return wrapper_map_.find(object) != wrapper_map_.end();
   }
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
  private:
   // We can use a wrapper stored in a ScriptWrappable when we're in the main

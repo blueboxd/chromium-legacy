@@ -67,7 +67,7 @@ DOMFileSystemBase::DOMFileSystemBase(ExecutionContext* context,
 
 DOMFileSystemBase::~DOMFileSystemBase() = default;
 
-void DOMFileSystemBase::Trace(Visitor* visitor) {
+void DOMFileSystemBase::Trace(Visitor* visitor) const {
   visitor->Trace(context_);
   ScriptWrappable::Trace(visitor);
 }

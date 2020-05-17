@@ -57,7 +57,7 @@ static ui::mojom::TextInputType ToTextInputType(const AtomicString& source) {
 
 ExternalDateTimeChooser::~ExternalDateTimeChooser() = default;
 
-void ExternalDateTimeChooser::Trace(Visitor* visitor) {
+void ExternalDateTimeChooser::Trace(Visitor* visitor) const {
   visitor->Trace(date_time_chooser_);
   visitor->Trace(client_);
   DateTimeChooser::Trace(visitor);

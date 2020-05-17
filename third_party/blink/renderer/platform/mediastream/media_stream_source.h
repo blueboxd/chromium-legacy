@@ -121,7 +121,7 @@ class PLATFORM_EXPORT MediaStreamSource final
     return audio_consumers_;
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   void Dispose();
 

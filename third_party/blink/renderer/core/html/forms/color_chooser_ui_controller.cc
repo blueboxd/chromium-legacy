@@ -44,7 +44,7 @@ ColorChooserUIController::ColorChooserUIController(
 
 ColorChooserUIController::~ColorChooserUIController() = default;
 
-void ColorChooserUIController::Trace(Visitor* visitor) {
+void ColorChooserUIController::Trace(Visitor* visitor) const {
   visitor->Trace(receiver_);
   visitor->Trace(frame_);
   visitor->Trace(client_);

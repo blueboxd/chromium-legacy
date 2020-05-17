@@ -29,7 +29,7 @@ NullResourceFetcherProperties::NullResourceFetcherProperties()
               mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone,
               FetchClientSettingsObject::InsecureNavigationsSet())) {}
 
-void NullResourceFetcherProperties::Trace(Visitor* visitor) {
+void NullResourceFetcherProperties::Trace(Visitor* visitor) const {
   visitor->Trace(fetch_client_settings_object_);
   ResourceFetcherProperties::Trace(visitor);
 }

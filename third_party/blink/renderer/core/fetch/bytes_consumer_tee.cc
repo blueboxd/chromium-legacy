@@ -113,7 +113,7 @@ class TeeHelper final : public GarbageCollected<TeeHelper>,
   BytesConsumer* Destination1() const { return destination1_; }
   BytesConsumer* Destination2() const { return destination2_; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(src_);
     visitor->Trace(destination1_);
     visitor->Trace(destination2_);
@@ -138,7 +138,7 @@ class TeeHelper final : public GarbageCollected<TeeHelper>,
     const char* data() const { return buffer_.data(); }
     wtf_size_t size() const { return buffer_.size(); }
 
-    void Trace(Visitor* visitor) {}
+    void Trace(Visitor* visitor) const {}
 
    private:
     Vector<char> buffer_;
@@ -268,7 +268,7 @@ class TeeHelper final : public GarbageCollected<TeeHelper>,
 
     bool IsCancelled() const { return is_cancelled_; }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(execution_context_);
       visitor->Trace(tee_);
       visitor->Trace(client_);

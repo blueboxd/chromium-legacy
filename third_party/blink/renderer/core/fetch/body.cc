@@ -64,7 +64,7 @@ class BodyConsumerBase : public GarbageCollected<BodyConsumerBase>,
                                      WrapPersistent(this), object));
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(resolver_);
     FetchDataLoader::Client::Trace(visitor);
   }

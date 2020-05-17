@@ -321,7 +321,7 @@ void PaymentRequestEvent::respondWith(ScriptState* script_state,
   }
 }
 
-void PaymentRequestEvent::Trace(Visitor* visitor) {
+void PaymentRequestEvent::Trace(Visitor* visitor) const {
   visitor->Trace(method_data_);
   visitor->Trace(total_);
   visitor->Trace(modifiers_);

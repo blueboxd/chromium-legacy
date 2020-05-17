@@ -63,7 +63,7 @@ class CORE_EXPORT AnchorElementMetricsSender final
   // Returns the stored |anchor_elements_|.
   const HeapHashSet<Member<HTMLAnchorElement>>& GetAnchorElements() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Associates |metrics_host_| with the IPC interface if not already, so it can

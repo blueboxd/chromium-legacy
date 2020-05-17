@@ -390,7 +390,7 @@ void MessageEvent::EntangleMessagePorts(ExecutionContext* context) {
   is_ports_dirty_ = true;
 }
 
-void MessageEvent::Trace(Visitor* visitor) {
+void MessageEvent::Trace(Visitor* visitor) const {
   visitor->Trace(data_as_v8_value_);
   visitor->Trace(data_as_serialized_script_value_);
   visitor->Trace(data_as_blob_);

@@ -46,7 +46,7 @@ class InspectorDatabaseResource final
                             const String& domain,
                             const String& name,
                             const String& version);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   void Bind(protocol::Database::Frontend*);
   Database* GetDatabase() { return database_.Get(); }

@@ -23,7 +23,7 @@ OverscrollEvent::OverscrollEvent(const AtomicString& type,
       delta_x_(initializer->deltaX()),
       delta_y_(initializer->deltaY()) {}
 
-void OverscrollEvent::Trace(Visitor* visitor) {
+void OverscrollEvent::Trace(Visitor* visitor) const {
   Event::Trace(visitor);
 }
 

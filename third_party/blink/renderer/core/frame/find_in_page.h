@@ -93,7 +93,7 @@ class CORE_EXPORT FindInPage final : public GarbageCollected<FindInPage>,
 
   void Dispose();
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(text_finder_);
     visitor->Trace(frame_);
   }

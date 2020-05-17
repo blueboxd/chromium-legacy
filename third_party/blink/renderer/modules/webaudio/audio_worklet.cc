@@ -90,7 +90,7 @@ AudioWorkletMessagingProxy* AudioWorklet::GetMessagingProxy() {
                    FindAvailableGlobalScope());
 }
 
-void AudioWorklet::Trace(Visitor* visitor) {
+void AudioWorklet::Trace(Visitor* visitor) const {
   visitor->Trace(context_);
   Worklet::Trace(visitor);
 }

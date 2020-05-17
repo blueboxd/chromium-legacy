@@ -122,7 +122,7 @@ class MIDIAccess final : public EventTargetWithInlineData,
   // Eager finalization needed to promptly release m_accessor. Otherwise
   // its client back reference could end up being unsafely used during
   // the lazy sweeping phase.
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void Dispose();

@@ -74,7 +74,7 @@ void InsertIntoTextNodeCommand::DoUnapply() {
   node_->deleteData(offset_, text_.length(), IGNORE_EXCEPTION_FOR_TESTING);
 }
 
-void InsertIntoTextNodeCommand::Trace(Visitor* visitor) {
+void InsertIntoTextNodeCommand::Trace(Visitor* visitor) const {
   visitor->Trace(node_);
   SimpleEditCommand::Trace(visitor);
 }

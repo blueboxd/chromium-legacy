@@ -16,7 +16,7 @@ class CORE_EXPORT RequireTrustedTypesForDirective final : public CSPDirective {
   RequireTrustedTypesForDirective(const String& name,
                                   const String& value,
                                   ContentSecurityPolicy*);
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   bool require() const;
 
  private:

@@ -48,7 +48,7 @@ class SQLTransactionCoordinator final
     : public GarbageCollected<SQLTransactionCoordinator> {
  public:
   SQLTransactionCoordinator();
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
   void AcquireLock(SQLTransactionBackend*);
   void ReleaseLock(SQLTransactionBackend*);
   void Shutdown();

@@ -93,7 +93,7 @@ TreeScopeEventContext::TreeScopeEventContext(TreeScope& tree_scope)
       pre_order_(-1),
       post_order_(-1) {}
 
-void TreeScopeEventContext::Trace(Visitor* visitor) {
+void TreeScopeEventContext::Trace(Visitor* visitor) const {
   visitor->Trace(tree_scope_);
   visitor->Trace(target_);
   visitor->Trace(related_target_);

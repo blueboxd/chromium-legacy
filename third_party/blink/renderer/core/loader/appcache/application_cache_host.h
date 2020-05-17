@@ -111,7 +111,7 @@ class CORE_EXPORT ApplicationCacheHost
       mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
           url_loader_factory) override {}
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
  protected:
   HeapMojoRemote<mojom::blink::AppCacheHost,

@@ -60,7 +60,7 @@ DOMMimeTypeArray* NavigatorPlugins::mimeTypes(LocalFrame* frame) const {
   return mime_types_.Get();
 }
 
-void NavigatorPlugins::Trace(Visitor* visitor) {
+void NavigatorPlugins::Trace(Visitor* visitor) const {
   visitor->Trace(plugins_);
   visitor->Trace(mime_types_);
   Supplement<Navigator>::Trace(visitor);

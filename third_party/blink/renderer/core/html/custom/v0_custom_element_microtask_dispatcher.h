@@ -24,7 +24,7 @@ class V0CustomElementMicrotaskDispatcher final
 
   bool ElementQueueIsEmpty() { return elements_.IsEmpty(); }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   void EnsureMicrotaskScheduledForElementQueue();

@@ -49,7 +49,7 @@ class MockExecutionContextLifecycleStateObserver final
   explicit MockExecutionContextLifecycleStateObserver(ExecutionContext* context)
       : ExecutionContextLifecycleStateObserver(context) {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     ExecutionContextLifecycleStateObserver::Trace(visitor);
   }
 

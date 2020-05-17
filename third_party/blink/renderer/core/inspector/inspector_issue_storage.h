@@ -28,7 +28,7 @@ class CORE_EXPORT InspectorIssueStorage
   wtf_size_t size() const;
   InspectorIssue* at(wtf_size_t index) const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   HeapDeque<Member<InspectorIssue>> issues_;

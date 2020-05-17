@@ -223,7 +223,7 @@ void CanvasRenderingContext2D::DidSetSurfaceSize() {
   }
 }
 
-void CanvasRenderingContext2D::Trace(Visitor* visitor) {
+void CanvasRenderingContext2D::Trace(Visitor* visitor) const {
   visitor->Trace(hit_region_manager_);
   visitor->Trace(filter_operations_);
   CanvasRenderingContext::Trace(visitor);

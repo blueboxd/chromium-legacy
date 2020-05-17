@@ -35,7 +35,7 @@ class SVGFEMergeNodeElement final : public SVGElement {
 
   SVGAnimatedString* in1() { return in1_.Get(); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void SvgAttributeChanged(const QualifiedName&) override;

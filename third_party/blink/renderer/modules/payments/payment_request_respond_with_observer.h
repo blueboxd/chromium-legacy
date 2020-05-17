@@ -39,7 +39,7 @@ class MODULES_EXPORT PaymentRequestRespondWithObserver final
                            const char* property_name) override;
   void OnNoResponse() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void set_should_have_payer_name(bool should_have_payer_name) {
     should_have_payer_name_ = should_have_payer_name;

@@ -57,7 +57,7 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   static AXObjectCache* Create(Document&);
 
   virtual ~AXObjectCache() = default;
-  virtual void Trace(Visitor*) {}
+  virtual void Trace(Visitor*) const {}
 
   virtual void Dispose() = 0;
 

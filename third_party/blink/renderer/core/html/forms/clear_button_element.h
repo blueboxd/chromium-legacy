@@ -45,7 +45,7 @@ class ClearButtonElement final : public HTMLDivElement {
 
   void RemoveClearButtonOwner() { clear_button_owner_ = nullptr; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void DetachLayoutTree(bool performing_reattach) override;

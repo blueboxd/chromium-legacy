@@ -74,7 +74,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
     virtual void OnEventCondition(const AnimationEffect&, Timing::Phase) = 0;
     virtual bool IsAnimationEventDelegate() const { return false; }
     virtual bool IsTransitionEventDelegate() const { return false; }
-    virtual void Trace(Visitor* visitor) {}
+    virtual void Trace(Visitor* visitor) const {}
   };
 
   ~AnimationEffect() override = default;
@@ -125,7 +125,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
 
   const Animation* GetAnimationForTesting() const { return GetAnimation(); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   explicit AnimationEffect(const Timing&, EventDelegate* = nullptr);

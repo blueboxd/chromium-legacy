@@ -221,7 +221,7 @@ class PositionTemplate {
   void ShowTreeForThisInFlatTree() const;
 #endif
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   bool IsAfterAnchorOrAfterChildren() const {

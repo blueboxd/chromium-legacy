@@ -30,7 +30,7 @@ class NavigatorVirtualKeyboard final
   NavigatorVirtualKeyboard(const NavigatorVirtualKeyboard&) = delete;
   NavigatorVirtualKeyboard operator=(const NavigatorVirtualKeyboard&) = delete;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<VirtualKeyboard> virtual_keyboard_;

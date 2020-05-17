@@ -261,7 +261,7 @@ void NativeFileSystemUnderlyingSink::CloseComplete(
   writer_remote_.reset();
 }
 
-void NativeFileSystemUnderlyingSink::Trace(Visitor* visitor) {
+void NativeFileSystemUnderlyingSink::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   UnderlyingSinkBase::Trace(visitor);
   visitor->Trace(writer_remote_);

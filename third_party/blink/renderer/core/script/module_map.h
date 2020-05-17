@@ -33,7 +33,7 @@ class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
  public:
   explicit ModuleMap(Modulator*);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
   const char* NameInHeapSnapshot() const override { return "ModuleMap"; }
 
   // https://html.spec.whatwg.org/C/#fetch-a-single-module-script

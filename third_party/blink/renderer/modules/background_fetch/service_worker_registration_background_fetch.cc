@@ -53,7 +53,7 @@ ServiceWorkerRegistrationBackgroundFetch::backgroundFetch() {
   return background_fetch_manager_.Get();
 }
 
-void ServiceWorkerRegistrationBackgroundFetch::Trace(Visitor* visitor) {
+void ServiceWorkerRegistrationBackgroundFetch::Trace(Visitor* visitor) const {
   visitor->Trace(registration_);
   visitor->Trace(background_fetch_manager_);
   Supplement<ServiceWorkerRegistration>::Trace(visitor);

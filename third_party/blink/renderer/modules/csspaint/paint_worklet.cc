@@ -144,7 +144,7 @@ scoped_refptr<Image> PaintWorklet::Paint(const String& name,
 // static
 const char PaintWorklet::kSupplementName[] = "PaintWorklet";
 
-void PaintWorklet::Trace(Visitor* visitor) {
+void PaintWorklet::Trace(Visitor* visitor) const {
   visitor->Trace(pending_generator_registry_);
   visitor->Trace(proxy_client_);
   Worklet::Trace(visitor);

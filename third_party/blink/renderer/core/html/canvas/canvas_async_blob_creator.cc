@@ -604,7 +604,7 @@ void CanvasAsyncBlobCreator::PostDelayedTaskToCurrentThread(
                         base::TimeDelta::FromMillisecondsD(delay_ms));
 }
 
-void CanvasAsyncBlobCreator::Trace(Visitor* visitor) {
+void CanvasAsyncBlobCreator::Trace(Visitor* visitor) const {
   visitor->Trace(context_);
   visitor->Trace(encode_options_);
   visitor->Trace(callback_);

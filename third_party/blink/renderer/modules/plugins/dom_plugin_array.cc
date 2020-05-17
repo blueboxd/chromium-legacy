@@ -39,7 +39,7 @@ DOMPluginArray::DOMPluginArray(LocalFrame* frame)
   UpdatePluginData();
 }
 
-void DOMPluginArray::Trace(Visitor* visitor) {
+void DOMPluginArray::Trace(Visitor* visitor) const {
   visitor->Trace(dom_plugins_);
   ScriptWrappable::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);

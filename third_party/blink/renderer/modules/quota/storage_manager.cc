@@ -157,7 +157,7 @@ ScriptPromise StorageManager::estimate(ScriptState* script_state) {
   return promise;
 }
 
-void StorageManager::Trace(Visitor* visitor) {
+void StorageManager::Trace(Visitor* visitor) const {
   visitor->Trace(permission_service_);
   visitor->Trace(quota_host_);
   ScriptWrappable::Trace(visitor);

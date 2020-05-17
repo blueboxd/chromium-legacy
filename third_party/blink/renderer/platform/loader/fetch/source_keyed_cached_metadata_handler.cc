@@ -18,7 +18,7 @@ const size_t SourceKeyedCachedMetadataHandler::kKeySize;
 class SourceKeyedCachedMetadataHandler::SingleKeyHandler final
     : public SingleCachedMetadataHandler {
  public:
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(parent_);
     SingleCachedMetadataHandler::Trace(visitor);
   }

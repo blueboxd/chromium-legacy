@@ -28,7 +28,7 @@ void ModuleScriptFetcher::Client::OnFailed() {
   NotifyFetchFinished(base::nullopt, HeapVector<Member<ConsoleMessage>>());
 }
 
-void ModuleScriptFetcher::Trace(Visitor* visitor) {
+void ModuleScriptFetcher::Trace(Visitor* visitor) const {
   ResourceClient::Trace(visitor);
 }
 

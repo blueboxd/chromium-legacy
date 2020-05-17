@@ -776,7 +776,7 @@ void DocumentMarkerController::DidProcessMarkerMap(const LivenessBroker&) {
     Clear();
 }
 
-void DocumentMarkerController::Trace(Visitor* visitor) {
+void DocumentMarkerController::Trace(Visitor* visitor) const {
   // Note: To make |DidProcessMarkerMap()| called after weak members callback
   // of |markers_|, we should register it before tracing |markers_|.
   visitor->template RegisterWeakCallbackMethod<

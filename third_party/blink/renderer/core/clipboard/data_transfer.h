@@ -156,7 +156,7 @@ class CORE_EXPORT DataTransfer final : public ScriptWrappable,
       const PropertyTreeState&);
   static std::unique_ptr<DragImage> NodeImage(LocalFrame&, Node&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void setDragImage(ImageResourceContent*, Node*, const IntPoint&);

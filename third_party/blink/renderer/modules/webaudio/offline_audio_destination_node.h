@@ -168,7 +168,7 @@ class OfflineAudioDestinationNode final : public AudioDestinationNode {
     destination_buffer_ = buffer;
   }
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   Member<AudioBuffer> destination_buffer_;

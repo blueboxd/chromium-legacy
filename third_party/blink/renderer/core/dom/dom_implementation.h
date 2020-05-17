@@ -61,7 +61,7 @@ class CORE_EXPORT DOMImplementation final : public ScriptWrappable {
   static bool IsXMLMIMEType(const String&);
   static bool IsTextMIMEType(const String&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<Document> document_;

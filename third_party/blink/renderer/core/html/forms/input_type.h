@@ -57,7 +57,7 @@ class CORE_EXPORT InputType : public GarbageCollected<InputType> {
   static InputType* Create(HTMLInputElement&, const AtomicString&);
   static const AtomicString& NormalizeTypeName(const AtomicString&);
   virtual ~InputType();
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
   virtual InputTypeView* CreateView() = 0;
   virtual const AtomicString& FormControlType() const = 0;

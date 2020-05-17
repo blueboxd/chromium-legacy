@@ -38,7 +38,7 @@ class CORE_EXPORT CSSMathNegate : public CSSMathValue {
   // From CSSStyleValue.
   StyleValueType GetType() const final { return CSSStyleValue::kNegateType; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(value_);
     CSSMathValue::Trace(visitor);
   }

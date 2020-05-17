@@ -74,7 +74,7 @@ ScriptValue ScriptPromiseTester::Value() const {
   return value_;
 }
 
-void ScriptPromiseTester::Trace(Visitor* visitor) {
+void ScriptPromiseTester::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(value_);
 }

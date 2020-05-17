@@ -49,7 +49,7 @@ class GarbageCollectedHolderForToV8Test
       GarbageCollectedScriptWrappable* script_wrappable)
       : script_wrappable_(script_wrappable) {}
 
-  void Trace(Visitor* visitor) { visitor->Trace(script_wrappable_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(script_wrappable_); }
 
   // This should be public in order to access a Member<X> object.
   Member<GarbageCollectedScriptWrappable> script_wrappable_;

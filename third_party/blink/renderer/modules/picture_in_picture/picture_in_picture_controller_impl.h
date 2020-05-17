@@ -90,7 +90,7 @@ class MODULES_EXPORT PictureInPictureControllerImpl
   // Implementation of PageVisibilityObserver.
   void PageVisibilityChanged() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool IsSessionObserverReceiverBoundForTesting() {
     return session_observer_receiver_.is_bound();

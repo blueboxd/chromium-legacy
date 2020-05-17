@@ -54,7 +54,7 @@ RegisteredEventListener::RegisteredEventListener(
 RegisteredEventListener& RegisteredEventListener::operator=(
     const RegisteredEventListener& that) = default;
 
-void RegisteredEventListener::Trace(Visitor* visitor) {
+void RegisteredEventListener::Trace(Visitor* visitor) const {
   visitor->Trace(callback_);
 }
 

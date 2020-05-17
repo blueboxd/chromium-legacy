@@ -90,7 +90,7 @@ class CORE_EXPORT ElementAnimations final
 
   bool AnimationsPreserveAxisAlignment() const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   EffectStack effect_stack_;

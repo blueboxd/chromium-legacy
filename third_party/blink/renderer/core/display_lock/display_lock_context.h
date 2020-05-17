@@ -195,7 +195,7 @@ class CORE_EXPORT DisplayLockContext final
   }
 
   // GC functions.
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Give access to |NotifyForcedUpdateScopeStarted()| and

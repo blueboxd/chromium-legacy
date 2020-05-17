@@ -43,7 +43,7 @@ class CORE_EXPORT ScrollManager : public GarbageCollected<ScrollManager>,
  public:
   explicit ScrollManager(LocalFrame&);
   virtual ~ScrollManager() = default;
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   void Clear();
 

@@ -137,7 +137,7 @@ void VTTElement::SetTrack(TextTrack* track) {
   track_ = track;
 }
 
-void VTTElement::Trace(Visitor* visitor) {
+void VTTElement::Trace(Visitor* visitor) const {
   visitor->Trace(track_);
   Element::Trace(visitor);
 }

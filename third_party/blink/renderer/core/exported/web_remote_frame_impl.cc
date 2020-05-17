@@ -128,7 +128,7 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::CreateForPortal(
 
 WebRemoteFrameImpl::~WebRemoteFrameImpl() = default;
 
-void WebRemoteFrameImpl::Trace(Visitor* visitor) {
+void WebRemoteFrameImpl::Trace(Visitor* visitor) const {
   visitor->Trace(frame_client_);
   visitor->Trace(frame_);
   WebFrame::TraceFrames(visitor, this);

@@ -41,7 +41,7 @@ class XRReferenceSpaceEvent final : public Event {
 
   const AtomicString& InterfaceName() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<XRReferenceSpace> reference_space_;

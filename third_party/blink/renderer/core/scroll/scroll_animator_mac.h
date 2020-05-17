@@ -114,7 +114,9 @@ class CORE_EXPORT ScrollAnimatorMac : public ScrollAnimatorBase {
 
   void SendContentAreaScrolledSoon(const ScrollOffset& scroll_delta);
 
-  void Trace(Visitor* visitor) override { ScrollAnimatorBase::Trace(visitor); }
+  void Trace(Visitor* visitor) const override {
+    ScrollAnimatorBase::Trace(visitor);
+  }
 
  private:
   base::scoped_nsobject<id> scroll_animation_helper_;

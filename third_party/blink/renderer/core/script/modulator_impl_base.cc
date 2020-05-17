@@ -403,7 +403,7 @@ ModuleEvaluationResult ModulatorImplBase::ExecuteModule(
     return ModuleEvaluationResult::Empty();
 }
 
-void ModulatorImplBase::Trace(Visitor* visitor) {
+void ModulatorImplBase::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(map_);
   visitor->Trace(tree_linker_registry_);

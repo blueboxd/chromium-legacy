@@ -16,7 +16,7 @@ class CORE_EXPORT InlineStylePropertyMap final : public StylePropertyMap {
   explicit InlineStylePropertyMap(Element* owner_element)
       : owner_element_(owner_element) {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(owner_element_);
     StylePropertyMap::Trace(visitor);
   }

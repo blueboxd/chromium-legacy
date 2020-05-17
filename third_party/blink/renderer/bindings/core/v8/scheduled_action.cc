@@ -138,7 +138,7 @@ void ScheduledAction::Execute(ExecutionContext* context) {
   }
 }
 
-void ScheduledAction::Trace(Visitor* visitor) {
+void ScheduledAction::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(function_);
   visitor->Trace(arguments_);

@@ -61,7 +61,7 @@ const char kFeaturePolicyConsoleWarning[] =
 NavigatorWebMIDI::NavigatorWebMIDI(Navigator& navigator)
     : Supplement<Navigator>(navigator) {}
 
-void NavigatorWebMIDI::Trace(Visitor* visitor) {
+void NavigatorWebMIDI::Trace(Visitor* visitor) const {
   Supplement<Navigator>::Trace(visitor);
 }
 

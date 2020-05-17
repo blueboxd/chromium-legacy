@@ -214,7 +214,7 @@ class FilterData final : public GarbageCollected<FilterData> {
 
   void Dispose();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   Member<FilterEffect> last_effect_;
@@ -256,7 +256,7 @@ class SVGElementResourceClient final
   FilterData* UpdateFilterData();
   bool ClearFilterData();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<SVGElement> element_;

@@ -54,7 +54,7 @@ void XRHitTestSource::Update(
   }
 }
 
-void XRHitTestSource::Trace(Visitor* visitor) {
+void XRHitTestSource::Trace(Visitor* visitor) const {
   visitor->Trace(xr_session_);
   ScriptWrappable::Trace(visitor);
 }

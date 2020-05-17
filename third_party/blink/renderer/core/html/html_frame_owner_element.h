@@ -135,7 +135,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
     return embedding_token_;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   HTMLFrameOwnerElement(const QualifiedName& tag_name, Document&);

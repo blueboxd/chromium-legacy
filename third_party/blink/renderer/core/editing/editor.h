@@ -221,7 +221,7 @@ class CORE_EXPORT Editor final : public GarbageCollected<Editor> {
   void SetTypingStyle(EditingStyle*);
   void ClearTypingStyle();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   void RevealSelectionAfterEditingOperation(
       const mojom::blink::ScrollAlignment& = ScrollAlignment::ToEdgeIfNeeded());

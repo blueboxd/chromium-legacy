@@ -43,7 +43,7 @@ class AXMenuListOption final : public AXNodeObject {
   int SetSize() const override;
 
  private:
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool IsMenuListOption() const override { return true; }
 

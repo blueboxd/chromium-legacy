@@ -42,7 +42,7 @@ ScriptPromise RTCEncodedVideoUnderlyingSource::Cancel(ScriptState* script_state,
   return ScriptPromise::CastUndefined(script_state);
 }
 
-void RTCEncodedVideoUnderlyingSource::Trace(Visitor* visitor) {
+void RTCEncodedVideoUnderlyingSource::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   UnderlyingSourceBase::Trace(visitor);
 }

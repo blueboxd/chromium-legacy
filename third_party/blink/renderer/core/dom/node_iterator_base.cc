@@ -89,7 +89,7 @@ unsigned NodeIteratorBase::AcceptNode(Node* node,
   return result;
 }
 
-void NodeIteratorBase::Trace(Visitor* visitor) {
+void NodeIteratorBase::Trace(Visitor* visitor) const {
   visitor->Trace(root_);
   visitor->Trace(filter_);
 }

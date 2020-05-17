@@ -25,7 +25,7 @@ MediaCapabilities* NavigatorMediaCapabilities::mediaCapabilities(
   return self.capabilities_.Get();
 }
 
-void NavigatorMediaCapabilities::Trace(Visitor* visitor) {
+void NavigatorMediaCapabilities::Trace(Visitor* visitor) const {
   visitor->Trace(capabilities_);
   Supplement<Navigator>::Trace(visitor);
 }

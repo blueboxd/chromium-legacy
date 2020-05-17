@@ -72,7 +72,7 @@ class CORE_EXPORT DOMTimer final : public GarbageCollected<DOMTimer>,
   // already have been finalized & must not be accessed.
   void Dispose();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override { return "DOMTimer"; }
 
   void Stop() override;

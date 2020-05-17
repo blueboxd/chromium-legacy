@@ -23,7 +23,7 @@ class PendingLayoutRegistry : public GarbageCollected<PendingLayoutRegistry> {
   void NotifyLayoutReady(const AtomicString& name);
   void AddPendingLayout(const AtomicString& name, Node*);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   // This is a map of Nodes which are waiting for a CSSLayoutDefinition to be

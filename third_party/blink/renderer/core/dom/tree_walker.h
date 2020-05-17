@@ -51,7 +51,7 @@ class TreeWalker final : public ScriptWrappable, public NodeIteratorBase {
   Node* previousNode(ExceptionState&);
   Node* nextNode(ExceptionState&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Node* SetCurrent(Node*);

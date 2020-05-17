@@ -78,7 +78,7 @@ class ImageResource::ImageResourceInfoImpl final
       : resource_(resource) {
     DCHECK(resource_);
   }
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(resource_);
     ImageResourceInfo::Trace(visitor);
   }
@@ -230,7 +230,7 @@ void ImageResource::OnMemoryDump(WebMemoryDumpLevelOfDetail level_of_detail,
     dump->AddScalar("size", "bytes", content_->GetImage()->Data()->size());
 }
 
-void ImageResource::Trace(Visitor* visitor) {
+void ImageResource::Trace(Visitor* visitor) const {
   visitor->Trace(multipart_parser_);
   visitor->Trace(content_);
   Resource::Trace(visitor);

@@ -42,7 +42,7 @@ void StyleRuleUsageTracker::Track(const CSSStyleSheet* parent_sheet,
   }
 }
 
-void StyleRuleUsageTracker::Trace(Visitor* visitor) {
+void StyleRuleUsageTracker::Trace(Visitor* visitor) const {
   visitor->Trace(used_rules_);
   visitor->Trace(used_rules_delta_);
 }

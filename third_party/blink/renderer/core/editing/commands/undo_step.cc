@@ -139,7 +139,7 @@ void UndoStep::SetEndingSelection(const SelectionForUndoStep& selection) {
   ending_root_editable_element_ = RootEditableElementOf(selection.Base());
 }
 
-void UndoStep::Trace(Visitor* visitor) {
+void UndoStep::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(starting_selection_);
   visitor->Trace(ending_selection_);

@@ -60,14 +60,14 @@ class CORE_EXPORT LayoutShiftTracker final
   base::TimeTicks MostRecentInputTimestamp() {
     return most_recent_input_timestamp_;
   }
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
   // Saves and restores visual rects on layout objects when a layout tree is
   // rebuilt by Node::ReattachLayoutTree.
   class ReattachHook : public GarbageCollected<ReattachHook> {
    public:
     ReattachHook() : scope_(nullptr) {}
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
     class Scope {
      public:

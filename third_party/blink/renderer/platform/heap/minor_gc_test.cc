@@ -19,7 +19,7 @@ class SimpleGCedBase : public GarbageCollected<SimpleGCedBase> {
 
   virtual ~SimpleGCedBase() { ++destructed_objects; }
 
-  void Trace(Visitor* v) { v->Trace(next); }
+  void Trace(Visitor* v) const { v->Trace(next); }
 
   Member<SimpleGCedBase> next;
 };

@@ -97,7 +97,7 @@ void ServiceWorkerRegistrationNotifications::ContextDestroyed() {
     loader->Stop();
 }
 
-void ServiceWorkerRegistrationNotifications::Trace(Visitor* visitor) {
+void ServiceWorkerRegistrationNotifications::Trace(Visitor* visitor) const {
   visitor->Trace(registration_);
   visitor->Trace(loaders_);
   Supplement<ServiceWorkerRegistration>::Trace(visitor);

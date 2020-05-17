@@ -55,7 +55,7 @@ class DOMContentLoadedListener final
 
   EventListener* ToEventListener() override { return this; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(processing_instruction_);
     NativeEventListener::Trace(visitor);
     ProcessingInstruction::DetachableEventListener::Trace(visitor);
@@ -165,7 +165,7 @@ DocumentXSLT& DocumentXSLT::From(Document& document) {
   return *supplement;
 }
 
-void DocumentXSLT::Trace(Visitor* visitor) {
+void DocumentXSLT::Trace(Visitor* visitor) const {
   visitor->Trace(transform_source_document_);
   Supplement<Document>::Trace(visitor);
 }

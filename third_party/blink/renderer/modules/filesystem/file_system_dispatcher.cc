@@ -446,7 +446,7 @@ void FileSystemDispatcher::CreateSnapshotFileSync(
                         std::move(listener));
 }
 
-void FileSystemDispatcher::Trace(Visitor* visitor) {
+void FileSystemDispatcher::Trace(Visitor* visitor) const {
   visitor->Trace(file_system_manager_);
   visitor->Trace(op_listeners_);
   Supplement<ExecutionContext>::Trace(visitor);

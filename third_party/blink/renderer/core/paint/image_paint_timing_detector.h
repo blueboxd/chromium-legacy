@@ -142,7 +142,7 @@ class CORE_EXPORT ImageRecordsManager {
     return images_queued_for_paint_time_.back()->frame_index;
   }
 
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
  private:
   // Find the image record of an visible image.
@@ -239,7 +239,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
   // Return the candidate.
   ImageRecord* UpdateCandidate();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   friend class LargestContentfulPaintCalculatorTest;

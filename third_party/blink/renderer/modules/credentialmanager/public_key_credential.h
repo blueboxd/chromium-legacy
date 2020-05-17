@@ -35,7 +35,7 @@ class MODULES_EXPORT PublicKeyCredential final : public Credential {
   AuthenticationExtensionsClientOutputs* getClientExtensionResults() const;
 
   // Credential:
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   bool IsPublicKeyCredential() const override;
 
  private:

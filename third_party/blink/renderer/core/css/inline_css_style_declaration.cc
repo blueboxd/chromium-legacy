@@ -50,7 +50,7 @@ CSSStyleSheet* InlineCSSStyleDeclaration::ParentStyleSheet() const {
                          : nullptr;
 }
 
-void InlineCSSStyleDeclaration::Trace(Visitor* visitor) {
+void InlineCSSStyleDeclaration::Trace(Visitor* visitor) const {
   visitor->Trace(parent_element_);
   AbstractPropertySetCSSStyleDeclaration::Trace(visitor);
 }

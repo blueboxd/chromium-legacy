@@ -153,7 +153,7 @@ class CORE_EXPORT ScriptValue final {
 
   static ScriptValue CreateNull(v8::Isolate*);
 
-  void Trace(Visitor* visitor) { visitor->Trace(value_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(value_); }
 
  private:
   v8::Isolate* isolate_ = nullptr;

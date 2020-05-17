@@ -46,7 +46,7 @@ InspectorDatabaseResource::InspectorDatabaseResource(Database* database,
       name_(name),
       version_(version) {}
 
-void InspectorDatabaseResource::Trace(Visitor* visitor) {
+void InspectorDatabaseResource::Trace(Visitor* visitor) const {
   visitor->Trace(database_);
 }
 

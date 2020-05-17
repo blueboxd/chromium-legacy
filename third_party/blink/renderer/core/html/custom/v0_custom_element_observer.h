@@ -46,7 +46,7 @@ class V0CustomElementObserver
   // API for CustomElement to kick off notifications
   static void NotifyElementWasDestroyed(Element*);
 
-  virtual void Trace(Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) const {}
 
  protected:
   V0CustomElementObserver() = default;

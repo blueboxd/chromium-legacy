@@ -155,7 +155,7 @@ void KeyboardLock::LockRequestFinished(
   request_keylock_resolver_ = nullptr;
 }
 
-void KeyboardLock::Trace(Visitor* visitor) {
+void KeyboardLock::Trace(Visitor* visitor) const {
   visitor->Trace(service_);
   visitor->Trace(request_keylock_resolver_);
   ExecutionContextClient::Trace(visitor);

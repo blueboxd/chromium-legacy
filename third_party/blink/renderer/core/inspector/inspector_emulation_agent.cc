@@ -664,7 +664,7 @@ Response InspectorEmulationAgent::AssertPage() {
   return Response::Success();
 }
 
-void InspectorEmulationAgent::Trace(Visitor* visitor) {
+void InspectorEmulationAgent::Trace(Visitor* visitor) const {
   visitor->Trace(web_local_frame_);
   InspectorBaseAgent::Trace(visitor);
 }

@@ -60,7 +60,7 @@ class WebGL2ComputeRenderingContext : public WebGL2ComputeRenderingContextBase {
   void SetCanvasGetContextResult(RenderingContext&) final;
   void SetOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   Member<EXTColorBufferFloat> ext_color_buffer_float_;

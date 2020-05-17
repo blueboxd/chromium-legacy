@@ -224,7 +224,7 @@ void NavigatorContentUtils::unregisterProtocolHandler(
       ->UnregisterProtocolHandler(scheme, document->CompleteURL(url));
 }
 
-void NavigatorContentUtils::Trace(Visitor* visitor) {
+void NavigatorContentUtils::Trace(Visitor* visitor) const {
   visitor->Trace(client_);
   Supplement<Navigator>::Trace(visitor);
 }

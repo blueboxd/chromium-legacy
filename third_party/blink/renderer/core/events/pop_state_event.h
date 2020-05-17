@@ -62,7 +62,7 @@ class CORE_EXPORT PopStateEvent final : public Event {
 
   const AtomicString& InterfaceName() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   WorldSafeV8Reference<v8::Value> state_;

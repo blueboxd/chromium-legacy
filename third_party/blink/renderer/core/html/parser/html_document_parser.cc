@@ -231,7 +231,7 @@ void HTMLDocumentParser::Dispose() {
     StopBackgroundParser();
 }
 
-void HTMLDocumentParser::Trace(Visitor* visitor) {
+void HTMLDocumentParser::Trace(Visitor* visitor) const {
   visitor->Trace(tree_builder_);
   visitor->Trace(parser_scheduler_);
   visitor->Trace(script_runner_);

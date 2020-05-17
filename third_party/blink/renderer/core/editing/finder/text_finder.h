@@ -122,7 +122,7 @@ class CORE_EXPORT TextFinder final : public GarbageCollected<TextFinder> {
    public:
     FindMatch(Range*, int ordinal);
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
     Member<Range> range_;
 
@@ -134,7 +134,7 @@ class CORE_EXPORT TextFinder final : public GarbageCollected<TextFinder> {
     FloatRect rect_;
   };
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   // Notifies the delegate about a new selection rect.

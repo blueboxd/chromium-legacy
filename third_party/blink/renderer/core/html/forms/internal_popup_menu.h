@@ -27,7 +27,7 @@ class CORE_EXPORT InternalPopupMenu final : public PopupMenu,
  public:
   InternalPopupMenu(ChromeClient*, HTMLSelectElement&);
   ~InternalPopupMenu() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void Update(bool force_update) override;
 

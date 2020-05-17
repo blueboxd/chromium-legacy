@@ -64,7 +64,7 @@ IDBCursor::IDBCursor(std::unique_ptr<WebIDBCursor> backend,
 
 IDBCursor::~IDBCursor() = default;
 
-void IDBCursor::Trace(Visitor* visitor) {
+void IDBCursor::Trace(Visitor* visitor) const {
   visitor->Trace(request_);
   visitor->Trace(source_);
   visitor->Trace(transaction_);

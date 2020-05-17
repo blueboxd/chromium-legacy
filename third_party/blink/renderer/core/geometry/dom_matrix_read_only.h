@@ -130,7 +130,9 @@ class CORE_EXPORT DOMMatrixReadOnly : public ScriptWrappable {
 
   AffineTransform GetAffineTransform() const;
 
-  void Trace(Visitor* visitor) override { ScriptWrappable::Trace(visitor); }
+  void Trace(Visitor* visitor) const override {
+    ScriptWrappable::Trace(visitor);
+  }
 
  protected:
   void SetMatrixValueFromString(const ExecutionContext*,

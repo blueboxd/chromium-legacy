@@ -120,7 +120,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   MERGE_GARBAGE_COLLECTED_MIXINS();
 
  public:
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   static ExecutionContext* From(const ScriptState*);
   static ExecutionContext* From(v8::Local<v8::Context>);

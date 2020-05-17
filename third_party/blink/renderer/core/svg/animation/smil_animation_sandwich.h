@@ -106,7 +106,7 @@ class SMILAnimationSandwich : public GarbageCollected<SMILAnimationSandwich> {
 
   bool IsEmpty() { return sandwich_.IsEmpty(); }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   // Results are accumulated to the first animation element that animates and

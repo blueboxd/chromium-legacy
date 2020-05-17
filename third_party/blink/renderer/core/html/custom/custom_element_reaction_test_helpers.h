@@ -26,7 +26,7 @@ class Command : public GarbageCollected<Command> {
  public:
   Command() = default;
   virtual ~Command() = default;
-  virtual void Trace(Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) const {}
   virtual void Run(Element&) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(Command);
@@ -74,7 +74,7 @@ class Recurse : public Command {
  public:
   Recurse(CustomElementReactionQueue* queue) : queue_(queue) {}
   ~Recurse() override = default;
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     Command::Trace(visitor);
     visitor->Trace(queue_);
   }
@@ -91,7 +91,7 @@ class Enqueue : public Command {
   Enqueue(CustomElementReactionQueue* queue, CustomElementReaction* reaction)
       : queue_(queue), reaction_(reaction) {}
   ~Enqueue() override = default;
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     Command::Trace(visitor);
     visitor->Trace(queue_);
     visitor->Trace(reaction_);
@@ -113,7 +113,7 @@ class TestReaction : public CustomElementReaction {
                 CustomElementDescriptor("mock-element", "mock-element"))),
         commands_(commands) {}
   ~TestReaction() override = default;
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     CustomElementReaction::Trace(visitor);
     visitor->Trace(commands_);
   }

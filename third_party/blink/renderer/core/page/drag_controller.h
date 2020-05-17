@@ -93,7 +93,7 @@ class CORE_EXPORT DragController final
   // ExecutionContextLifecycleObserver.
   void ContextDestroyed() final;
 
-  void Trace(Visitor*) final;
+  void Trace(Visitor*) const final;
 
  private:
   DispatchEventResult DispatchTextInputEventFor(LocalFrame*, DragData*);

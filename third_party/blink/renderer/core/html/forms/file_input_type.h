@@ -53,7 +53,7 @@ class CORE_EXPORT FileInputType final : public InputType,
  public:
   FileInputType(HTMLInputElement&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   using InputType::GetElement;
   static Vector<String> FilesFromFormControlState(const FormControlState&);
   static FileList* CreateFileList(const FileChooserFileInfoList& files,

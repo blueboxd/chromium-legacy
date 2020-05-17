@@ -63,7 +63,7 @@ class TreeOrderedList final {
   const_reverse_iterator rbegin() const { return nodes_.rbegin(); }
   const_reverse_iterator rend() const { return nodes_.rend(); }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   HeapListHashSet<Member<Node>, 32> nodes_;

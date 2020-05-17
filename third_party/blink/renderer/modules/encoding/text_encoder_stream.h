@@ -37,7 +37,7 @@ class TextEncoderStream final : public ScriptWrappable {
   ReadableStream* readable() const;
   WritableStream* writable() const;
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   class Transformer;

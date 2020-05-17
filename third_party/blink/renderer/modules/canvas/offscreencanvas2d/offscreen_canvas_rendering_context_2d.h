@@ -124,7 +124,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   ImageBitmap* TransferToImageBitmap(ScriptState*) final;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool PushFrame() override;
 

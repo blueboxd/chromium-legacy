@@ -29,7 +29,7 @@ class WorkerNavigatorSerial final
 
   explicit WorkerNavigatorSerial(WorkerNavigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<Serial> serial_;

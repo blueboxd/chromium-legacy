@@ -37,7 +37,7 @@ class PushSubscriptionOptions final : public ScriptWrappable {
     return application_server_key_;
   }
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   bool user_visible_only_;

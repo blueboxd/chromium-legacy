@@ -34,7 +34,7 @@ class TestDateTimeChooserClient final
   explicit TestDateTimeChooserClient(Element* element) : element_(element) {}
   ~TestDateTimeChooserClient() override {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(element_);
     visitor->Trace(date_time_chooser_);
     DateTimeChooserClient::Trace(visitor);

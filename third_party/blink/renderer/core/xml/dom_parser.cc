@@ -44,7 +44,7 @@ Document* DOMParser::parseFromString(const String& str, const String& type) {
 DOMParser::DOMParser(ScriptState* script_state)
     : window_(LocalDOMWindow::From(script_state)) {}
 
-void DOMParser::Trace(Visitor* visitor) {
+void DOMParser::Trace(Visitor* visitor) const {
   visitor->Trace(window_);
   ScriptWrappable::Trace(visitor);
 }

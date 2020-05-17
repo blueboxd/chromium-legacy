@@ -49,7 +49,7 @@ class VirtualKeyboard final : public EventTargetWithInlineData,
   void show();
   void hide();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   bool overlays_content_ = false;

@@ -70,7 +70,7 @@ V0CustomElementMicrotaskImportStep::Process() {
   return kFinishedProcessing;
 }
 
-void V0CustomElementMicrotaskImportStep::Trace(Visitor* visitor) {
+void V0CustomElementMicrotaskImportStep::Trace(Visitor* visitor) const {
   visitor->Trace(import_);
   visitor->Trace(queue_);
   V0CustomElementMicrotaskStep::Trace(visitor);

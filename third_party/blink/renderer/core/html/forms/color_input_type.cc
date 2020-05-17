@@ -80,7 +80,7 @@ ColorInputType::ColorInputType(HTMLInputElement& element)
 
 ColorInputType::~ColorInputType() = default;
 
-void ColorInputType::Trace(Visitor* visitor) {
+void ColorInputType::Trace(Visitor* visitor) const {
   visitor->Trace(chooser_);
   KeyboardClickableInputTypeView::Trace(visitor);
   ColorChooserClient::Trace(visitor);

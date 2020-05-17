@@ -85,7 +85,7 @@ SVGLength::SVGLength(const CSSPrimitiveValue& value, SVGLengthMode mode)
   DCHECK_EQ(UnitMode(), mode);
 }
 
-void SVGLength::Trace(Visitor* visitor) {
+void SVGLength::Trace(Visitor* visitor) const {
   visitor->Trace(value_);
   SVGPropertyBase::Trace(visitor);
 }

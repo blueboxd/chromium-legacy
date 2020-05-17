@@ -48,7 +48,7 @@ WindowProxy::~WindowProxy() {
   DCHECK(lifecycle_ != Lifecycle::kContextIsInitialized);
 }
 
-void WindowProxy::Trace(Visitor* visitor) {
+void WindowProxy::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
 }
 

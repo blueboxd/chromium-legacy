@@ -250,7 +250,7 @@ NativeFileSystemDirectoryHandle::Transfer() {
   return result;
 }
 
-void NativeFileSystemDirectoryHandle::Trace(Visitor* visitor) {
+void NativeFileSystemDirectoryHandle::Trace(Visitor* visitor) const {
   visitor->Trace(mojo_ptr_);
   NativeFileSystemHandle::Trace(visitor);
 }

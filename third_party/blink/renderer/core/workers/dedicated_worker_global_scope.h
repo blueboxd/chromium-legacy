@@ -123,7 +123,7 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   }
 
   // Called by the Oilpan.
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void DidReceiveResponseForClassicScript(

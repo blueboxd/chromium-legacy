@@ -124,7 +124,7 @@ void BeginFrameProvider::FinishBeginFrame(const viz::BeginFrameArgs& args) {
   compositor_frame_sink_->DidNotProduceFrame(viz::BeginFrameAck(args, false));
 }
 
-void BeginFrameProvider::Trace(Visitor* visitor) {
+void BeginFrameProvider::Trace(Visitor* visitor) const {
   visitor->Trace(cfs_receiver_);
   visitor->Trace(efs_receiver_);
   visitor->Trace(compositor_frame_sink_);

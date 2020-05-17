@@ -35,7 +35,7 @@ class ClipboardItem final : public ScriptWrappable {
     return items_;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   HeapVector<std::pair<String, Member<Blob>>> items_;

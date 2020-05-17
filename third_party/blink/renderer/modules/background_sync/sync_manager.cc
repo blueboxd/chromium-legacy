@@ -144,7 +144,7 @@ void SyncManager::GetRegistrationsCallback(
   }
 }
 
-void SyncManager::Trace(Visitor* visitor) {
+void SyncManager::Trace(Visitor* visitor) const {
   visitor->Trace(registration_);
   visitor->Trace(background_sync_service_);
   ScriptWrappable::Trace(visitor);

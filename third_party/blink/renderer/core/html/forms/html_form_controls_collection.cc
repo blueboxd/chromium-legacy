@@ -221,7 +221,7 @@ void HTMLFormControlsCollection::SupportedPropertyNames(Vector<String>& names) {
   }
 }
 
-void HTMLFormControlsCollection::Trace(Visitor* visitor) {
+void HTMLFormControlsCollection::Trace(Visitor* visitor) const {
   visitor->Trace(cached_element_);
   HTMLCollection::Trace(visitor);
 }

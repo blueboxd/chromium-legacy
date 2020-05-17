@@ -58,7 +58,9 @@ class MockScriptElementBase : public GarbageCollected<MockScriptElementBase>,
   ScriptElementBase::Type GetScriptElementType() override {
     return ScriptElementBase::Type::kHTMLScriptElement;
   }
-  void Trace(Visitor* visitor) override { ScriptElementBase::Trace(visitor); }
+  void Trace(Visitor* visitor) const override {
+    ScriptElementBase::Trace(visitor);
+  }
 };
 
 }  // namespace blink

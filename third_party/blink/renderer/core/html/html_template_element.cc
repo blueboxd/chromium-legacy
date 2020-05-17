@@ -81,7 +81,7 @@ void HTMLTemplateElement::DidMoveToNewDocument(Document& old_document) {
   GetDocument().EnsureTemplateDocument().AdoptIfNeeded(*content_);
 }
 
-void HTMLTemplateElement::Trace(Visitor* visitor) {
+void HTMLTemplateElement::Trace(Visitor* visitor) const {
   visitor->Trace(content_);
   HTMLElement::Trace(visitor);
 }

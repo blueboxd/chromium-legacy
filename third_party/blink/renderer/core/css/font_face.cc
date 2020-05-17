@@ -784,7 +784,7 @@ void FontFace::InitCSSFontFace(const unsigned char* data, size_t size) {
   css_font_face_->AddSource(source);
 }
 
-void FontFace::Trace(Visitor* visitor) {
+void FontFace::Trace(Visitor* visitor) const {
   visitor->Trace(style_);
   visitor->Trace(weight_);
   visitor->Trace(stretch_);

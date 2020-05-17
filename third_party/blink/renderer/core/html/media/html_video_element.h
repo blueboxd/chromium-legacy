@@ -58,7 +58,7 @@ class CORE_EXPORT HTMLVideoElement final
   static const int kNoAlreadyUploadedFrame = -1;
 
   HTMLVideoElement(Document&);
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool HasPendingActivity() const final;
 

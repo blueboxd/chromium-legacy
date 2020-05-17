@@ -102,7 +102,7 @@ class CORE_EXPORT FocusController final
 
   void RegisterFocusChangedObserver(FocusChangedObserver*);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   Element* FindFocusableElement(mojom::blink::FocusType, Element&, OwnerMap&);

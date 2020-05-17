@@ -56,7 +56,7 @@ class MultipleFieldsTemporalInputTypeView final
   MultipleFieldsTemporalInputTypeView(HTMLInputElement&,
                                       BaseTemporalInputType&);
   ~MultipleFieldsTemporalInputTypeView() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   String RawValue() const override;
 

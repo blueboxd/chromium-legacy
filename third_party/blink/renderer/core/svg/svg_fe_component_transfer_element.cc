@@ -39,7 +39,7 @@ SVGFEComponentTransferElement::SVGFEComponentTransferElement(Document& document)
   AddToPropertyMap(in1_);
 }
 
-void SVGFEComponentTransferElement::Trace(Visitor* visitor) {
+void SVGFEComponentTransferElement::Trace(Visitor* visitor) const {
   visitor->Trace(in1_);
   SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }

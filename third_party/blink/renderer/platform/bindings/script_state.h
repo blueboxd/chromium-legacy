@@ -53,7 +53,7 @@ class V8PerContextData;
 //     ToV8(...);
 //   }
 //
-//   virtual void Trace(Visitor* visitor) {
+//   virtual void Trace(Visitor* visitor) const {
 //     visitor->Trace(script_state_);  // ScriptState also needs to be traced.
 //   }
 //
@@ -124,7 +124,7 @@ class PLATFORM_EXPORT ScriptState final : public GarbageCollected<ScriptState> {
   ScriptState(v8::Local<v8::Context>, scoped_refptr<DOMWrapperWorld>);
   ~ScriptState();
 
-  void Trace(Visitor*) {}
+  void Trace(Visitor*) const {}
 
   static ScriptState* Current(v8::Isolate* isolate) {  // DEPRECATED
     return From(isolate->GetCurrentContext());
@@ -241,7 +241,7 @@ class ScriptStateProtectingContext final
     }
   }
 
-  void Trace(Visitor* visitor) { visitor->Trace(script_state_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(script_state_); }
 
   ScriptState* Get() const { return script_state_; }
   void Reset() {

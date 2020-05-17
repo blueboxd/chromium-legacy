@@ -111,7 +111,7 @@ IDBAny::IDBAny(std::unique_ptr<IDBKey> key)
 
 IDBAny::IDBAny(int64_t value) : type_(kIntegerType), integer_(value) {}
 
-void IDBAny::Trace(Visitor* visitor) {
+void IDBAny::Trace(Visitor* visitor) const {
   visitor->Trace(dom_string_list_);
   visitor->Trace(idb_cursor_);
   visitor->Trace(idb_database_);

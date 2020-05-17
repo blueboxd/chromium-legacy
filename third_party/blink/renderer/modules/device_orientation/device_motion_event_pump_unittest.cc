@@ -39,7 +39,7 @@ class MockDeviceMotionController final
         motion_pump_(motion_pump) {}
   ~MockDeviceMotionController() override {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     PlatformEventController::Trace(visitor);
     visitor->Trace(motion_pump_);
   }

@@ -465,7 +465,7 @@ ExecutionContext* Bluetooth::GetExecutionContext() const {
   return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
-void Bluetooth::Trace(Visitor* visitor) {
+void Bluetooth::Trace(Visitor* visitor) const {
   visitor->Trace(device_instance_map_);
   visitor->Trace(client_receivers_);
   visitor->Trace(service_);

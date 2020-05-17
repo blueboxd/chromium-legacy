@@ -219,7 +219,7 @@ void KeyboardEvent::InitLocationModifiers(unsigned location) {
   }
 }
 
-void KeyboardEvent::Trace(Visitor* visitor) {
+void KeyboardEvent::Trace(Visitor* visitor) const {
   UIEventWithKeyState::Trace(visitor);
 }
 

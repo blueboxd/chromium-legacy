@@ -43,7 +43,7 @@ class CORE_EXPORT DOMQuad : public ScriptWrappable {
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(p1_);
     visitor->Trace(p2_);
     visitor->Trace(p3_);

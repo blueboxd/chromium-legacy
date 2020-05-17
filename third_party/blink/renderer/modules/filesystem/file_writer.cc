@@ -335,7 +335,7 @@ void FileWriter::Dispose() {
   queued_operation_ = kOperationNone;
 }
 
-void FileWriter::Trace(Visitor* visitor) {
+void FileWriter::Trace(Visitor* visitor) const {
   visitor->Trace(error_);
   visitor->Trace(blob_being_written_);
   EventTargetWithInlineData::Trace(visitor);

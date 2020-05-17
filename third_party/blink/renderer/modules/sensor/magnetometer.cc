@@ -52,7 +52,7 @@ base::Optional<double> Magnetometer::z() const {
   return base::nullopt;
 }
 
-void Magnetometer::Trace(Visitor* visitor) {
+void Magnetometer::Trace(Visitor* visitor) const {
   Sensor::Trace(visitor);
 }
 

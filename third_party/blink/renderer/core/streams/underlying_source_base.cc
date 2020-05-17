@@ -63,7 +63,7 @@ void UnderlyingSourceBase::ContextDestroyed() {
   }
 }
 
-void UnderlyingSourceBase::Trace(Visitor* visitor) {
+void UnderlyingSourceBase::Trace(Visitor* visitor) const {
   visitor->Trace(controller_);
   ScriptWrappable::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);

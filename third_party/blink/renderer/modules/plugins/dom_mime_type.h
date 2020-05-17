@@ -45,7 +45,7 @@ class DOMMimeType final : public ScriptWrappable,
   const String& description() const;
   DOMPlugin* enabledPlugin() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<const MimeClassInfo> mime_class_info_;

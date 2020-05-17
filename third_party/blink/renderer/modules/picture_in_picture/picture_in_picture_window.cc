@@ -48,7 +48,7 @@ bool PictureInPictureWindow::HasPendingActivity() const {
   return GetExecutionContext() && HasEventListeners();
 }
 
-void PictureInPictureWindow::Trace(Visitor* visitor) {
+void PictureInPictureWindow::Trace(Visitor* visitor) const {
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
 }

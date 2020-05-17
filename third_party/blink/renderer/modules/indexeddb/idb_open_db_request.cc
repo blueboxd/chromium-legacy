@@ -64,7 +64,7 @@ IDBOpenDBRequest::IDBOpenDBRequest(
 
 IDBOpenDBRequest::~IDBOpenDBRequest() = default;
 
-void IDBOpenDBRequest::Trace(Visitor* visitor) {
+void IDBOpenDBRequest::Trace(Visitor* visitor) const {
   visitor->Trace(database_callbacks_);
   IDBRequest::Trace(visitor);
 }

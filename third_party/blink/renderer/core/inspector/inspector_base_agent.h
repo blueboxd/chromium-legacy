@@ -47,7 +47,7 @@ class CORE_EXPORT InspectorAgent : public GarbageCollected<InspectorAgent> {
  public:
   InspectorAgent() = default;
   virtual ~InspectorAgent() = default;
-  virtual void Trace(Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) const {}
 
   virtual void Restore() {}
   virtual void DidCommitLoadForLocalFrame(LocalFrame*) {}
@@ -86,7 +86,7 @@ class InspectorBaseAgent : public InspectorAgent,
     instrumenting_agents_ = nullptr;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(instrumenting_agents_);
     InspectorAgent::Trace(visitor);
   }

@@ -148,7 +148,7 @@ class RawResource::PreloadBytesConsumerClient final
 
   String DebugName() const override { return "PreloadBytesConsumerClient"; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(bytes_consumer_);
     visitor->Trace(resource_);
     visitor->Trace(client_);
@@ -242,7 +242,7 @@ scoped_refptr<BlobDataHandle> RawResource::DownloadedBlob() const {
   return downloaded_blob_;
 }
 
-void RawResource::Trace(Visitor* visitor) {
+void RawResource::Trace(Visitor* visitor) const {
   visitor->Trace(bytes_consumer_for_preload_);
   Resource::Trace(visitor);
 }

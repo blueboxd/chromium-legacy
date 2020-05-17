@@ -49,7 +49,7 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
   void CallSlotChangeAfterRemoved(HTMLSlotElement& slot);
   void CallSlotChangeIfNeeded(HTMLSlotElement& slot, Node& child);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   bool NeedsAssignmentRecalc() const { return needs_assignment_recalc_; }
   void SetNeedsAssignmentRecalc();

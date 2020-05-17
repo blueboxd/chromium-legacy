@@ -30,7 +30,7 @@ class DisallowNewWrapper final
   const T& Value() const { return value_; }
   T&& TakeValue() { return std::move(value_); }
 
-  void Trace(Visitor* visitor) { visitor->Trace(value_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(value_); }
 
  private:
   T value_;

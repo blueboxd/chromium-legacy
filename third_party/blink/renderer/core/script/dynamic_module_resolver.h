@@ -23,7 +23,7 @@ class ScriptPromiseResolver;
 class CORE_EXPORT DynamicModuleResolver final
     : public GarbageCollected<DynamicModuleResolver> {
  public:
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   explicit DynamicModuleResolver(Modulator* modulator)
       : modulator_(modulator) {}

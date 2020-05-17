@@ -64,7 +64,7 @@ class MIDIMessageEvent final : public Event {
     return event_interface_names::kMIDIMessageEvent;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(data_);
     Event::Trace(visitor);
   }

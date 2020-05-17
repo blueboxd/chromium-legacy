@@ -28,7 +28,7 @@ const int kInvalidChunkIndex = -1;
 
 }  // namespace
 
-void ColdModeSpellCheckRequester::Trace(Visitor* visitor) {
+void ColdModeSpellCheckRequester::Trace(Visitor* visitor) const {
   visitor->Trace(window_);
   visitor->Trace(root_editable_);
   visitor->Trace(remaining_check_range_);

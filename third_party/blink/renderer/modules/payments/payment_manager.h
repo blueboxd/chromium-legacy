@@ -32,7 +32,7 @@ class MODULES_EXPORT PaymentManager final : public ScriptWrappable {
   const String& userHint();
   void setUserHint(const String&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   ScriptPromise enableDelegations(ScriptState*,
                                   const Vector<String>& stringified_delegations,

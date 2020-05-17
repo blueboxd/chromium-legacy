@@ -111,7 +111,7 @@ class CORE_EXPORT AutoplayPolicy final
   // avoid false positives.
   void EnsureAutoplayInitiatedSet();
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
  private:
   friend class AutoplayUmaHelper;

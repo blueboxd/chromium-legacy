@@ -334,7 +334,7 @@ void PointerLockController::EnqueueEvent(const AtomicString& type,
   }
 }
 
-void PointerLockController::Trace(Visitor* visitor) {
+void PointerLockController::Trace(Visitor* visitor) const {
   visitor->Trace(page_);
   visitor->Trace(element_);
   visitor->Trace(document_of_removed_element_while_waiting_for_unlock_);

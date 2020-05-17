@@ -114,7 +114,7 @@ void FaceDetector::OnFaceServiceConnectionError() {
   face_service_.reset();
 }
 
-void FaceDetector::Trace(Visitor* visitor) {
+void FaceDetector::Trace(Visitor* visitor) const {
   ShapeDetector::Trace(visitor);
   visitor->Trace(face_service_);
   visitor->Trace(face_service_requests_);

@@ -17,7 +17,7 @@ class XRPlaneSet : public ScriptWrappable, public XRSetlike<XRPlane> {
  public:
   explicit XRPlaneSet(HeapHashSet<Member<XRPlane>> planes);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  protected:
   const HeapHashSet<Member<XRPlane>>& elements() const override;

@@ -293,7 +293,7 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
   AdvanceReadyState(error_occurred ? kErrorOccurred : kReady);
 }
 
-void ClassicPendingScript::Trace(Visitor* visitor) {
+void ClassicPendingScript::Trace(Visitor* visitor) const {
   ResourceClient::Trace(visitor);
   MemoryPressureListener::Trace(visitor);
   PendingScript::Trace(visitor);

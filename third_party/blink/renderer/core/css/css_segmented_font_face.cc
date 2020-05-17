@@ -228,7 +228,7 @@ void CSSSegmentedFontFace::Match(const String& text,
       text, WrapPersistent(faces)));
 }
 
-void CSSSegmentedFontFace::Trace(Visitor* visitor) {
+void CSSSegmentedFontFace::Trace(Visitor* visitor) const {
   visitor->Trace(font_faces_);
 }
 
@@ -338,7 +338,7 @@ void FontFaceList::ForEachReverse(
   ForEachReverseUntilTrue(false_returning_callback);
 }
 
-void FontFaceList::Trace(Visitor* visitor) {
+void FontFaceList::Trace(Visitor* visitor) const {
   visitor->Trace(css_connected_face_);
   visitor->Trace(non_css_connected_face_);
 }

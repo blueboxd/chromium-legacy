@@ -44,7 +44,7 @@ class Geoposition final : public ScriptWrappable {
     DCHECK(coordinates_);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(coordinates_);
     ScriptWrappable::Trace(visitor);
   }

@@ -50,7 +50,7 @@ V0CustomElementMicrotaskResolutionStep::Process() {
   return V0CustomElementMicrotaskStep::kFinishedProcessing;
 }
 
-void V0CustomElementMicrotaskResolutionStep::Trace(Visitor* visitor) {
+void V0CustomElementMicrotaskResolutionStep::Trace(Visitor* visitor) const {
   visitor->Trace(context_);
   visitor->Trace(element_);
   V0CustomElementMicrotaskStep::Trace(visitor);

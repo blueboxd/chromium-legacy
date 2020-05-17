@@ -90,7 +90,7 @@ void UndoStack::Clear() {
   redo_stack_.clear();
 }
 
-void UndoStack::Trace(Visitor* visitor) {
+void UndoStack::Trace(Visitor* visitor) const {
   visitor->Trace(undo_stack_);
   visitor->Trace(redo_stack_);
 }

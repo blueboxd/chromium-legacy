@@ -50,7 +50,7 @@ SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(Document& document)
   AddToPropertyMap(in1_);
 }
 
-void SVGFEDiffuseLightingElement::Trace(Visitor* visitor) {
+void SVGFEDiffuseLightingElement::Trace(Visitor* visitor) const {
   visitor->Trace(diffuse_constant_);
   visitor->Trace(surface_scale_);
   visitor->Trace(kernel_unit_length_);

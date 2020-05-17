@@ -37,7 +37,7 @@ class CORE_EXPORT SpellCheckMarkerListImpl : public DocumentMarkerList {
                     unsigned old_length,
                     unsigned new_length) final;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // SpellCheckMarkerListImpl-specific
   // Returns true if a marker was removed, false otherwise.

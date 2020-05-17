@@ -48,7 +48,7 @@ DateTimeFieldElement::DateTimeFieldElement(Document& document,
                                            DateTimeField type)
     : HTMLSpanElement(document), field_owner_(&field_owner), type_(type) {}
 
-void DateTimeFieldElement::Trace(Visitor* visitor) {
+void DateTimeFieldElement::Trace(Visitor* visitor) const {
   visitor->Trace(field_owner_);
   HTMLSpanElement::Trace(visitor);
 }

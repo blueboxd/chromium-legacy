@@ -157,7 +157,7 @@ class NativeFileSystemWriter::StreamWriterClient
     Reset();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     Client::Trace(visitor);
     visitor->Trace(writer_);
   }
@@ -206,7 +206,7 @@ ScriptPromise NativeFileSystemWriter::close(ScriptState* script_state,
   return result;
 }
 
-void NativeFileSystemWriter::Trace(Visitor* visitor) {
+void NativeFileSystemWriter::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   visitor->Trace(writer_remote_);
   visitor->Trace(file_);

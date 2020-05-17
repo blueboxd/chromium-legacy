@@ -319,7 +319,7 @@ blink::Database* InspectorDatabaseAgent::DatabaseForId(
   return it->value->GetDatabase();
 }
 
-void InspectorDatabaseAgent::Trace(Visitor* visitor) {
+void InspectorDatabaseAgent::Trace(Visitor* visitor) const {
   visitor->Trace(page_);
   visitor->Trace(resources_);
   InspectorBaseAgent::Trace(visitor);

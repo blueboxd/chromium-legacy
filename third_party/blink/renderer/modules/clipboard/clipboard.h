@@ -38,7 +38,7 @@ class Clipboard : public EventTargetWithInlineData,
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Clipboard);

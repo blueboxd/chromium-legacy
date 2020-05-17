@@ -62,7 +62,7 @@ class SVGAnimatedLength : public ScriptWrappable,
     return CurrentValue()->AsCSSPrimitiveValue();
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 };
 
 }  // namespace blink

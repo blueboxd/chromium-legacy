@@ -27,7 +27,7 @@ class NavigatorPermissions final
 
   NavigatorPermissions();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<Permissions> permissions_;

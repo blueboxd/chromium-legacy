@@ -26,7 +26,7 @@ class NavigationRateLimiter final {
   // is allowed to proceed.
   bool CanProceed();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   Member<Frame> frame_;

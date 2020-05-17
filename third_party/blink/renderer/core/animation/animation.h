@@ -266,7 +266,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
   void InvalidateKeyframeEffect(const TreeScope&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool CompositorPendingForTesting() const { return compositor_pending_; }
 
@@ -470,7 +470,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
     void Detach();
 
-    void Trace(Visitor* visitor) { visitor->Trace(animation_); }
+    void Trace(Visitor* visitor) const { visitor->Trace(animation_); }
 
     CompositorAnimation* GetAnimation() const {
       return compositor_animation_.get();

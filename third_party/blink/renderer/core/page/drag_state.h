@@ -45,7 +45,7 @@ class DragState final : public GarbageCollected<DragState> {
   // Used on only the source side of dragging.
   Member<DataTransfer> drag_data_transfer_;
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(drag_src_);
     visitor->Trace(drag_data_transfer_);
   }

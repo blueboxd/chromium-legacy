@@ -38,7 +38,7 @@ float TextMetrics::GetFontBaseline(const TextBaseline& text_baseline,
   return 0;
 }
 
-void TextMetrics::Trace(Visitor* visitor) {
+void TextMetrics::Trace(Visitor* visitor) const {
   visitor->Trace(baselines_);
   ScriptWrappable::Trace(visitor);
 }

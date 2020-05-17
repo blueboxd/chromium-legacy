@@ -19,7 +19,7 @@ const AtomicString& XRLayer::InterfaceName() const {
   return event_target_names::kXRLayer;
 }
 
-void XRLayer::Trace(Visitor* visitor) {
+void XRLayer::Trace(Visitor* visitor) const {
   visitor->Trace(session_);
   ScriptWrappable::Trace(visitor);
 }

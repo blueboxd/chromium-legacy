@@ -25,7 +25,7 @@ class MODULES_EXPORT HIDReportInfo : public ScriptWrappable {
   uint8_t reportId() const;
   const HeapVector<Member<HIDReportItem>>& items() const;
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   uint8_t report_id_;

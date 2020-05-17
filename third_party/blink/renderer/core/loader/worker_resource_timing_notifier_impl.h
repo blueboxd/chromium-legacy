@@ -45,7 +45,7 @@ class CORE_EXPORT WorkerResourceTimingNotifierImpl final
       mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
           worker_timing_receiver) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void AddCrossThreadResourceTiming(

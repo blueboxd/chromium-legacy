@@ -30,7 +30,7 @@ class ByteLengthQueuingStrategy final : public ScriptWrappable {
   ScriptValue highWaterMark(ScriptState*) const;
   ScriptValue size(ScriptState*) const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   const TraceWrapperV8Reference<v8::Value> high_water_mark_;

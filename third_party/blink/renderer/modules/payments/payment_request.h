@@ -106,7 +106,7 @@ class MODULES_EXPORT PaymentRequest final
   void OnUpdatePaymentDetailsFailure(const String& error) override;
   bool IsInteractive() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void OnCompleteTimeoutForTesting();
   void OnUpdatePaymentDetailsTimeoutForTesting();

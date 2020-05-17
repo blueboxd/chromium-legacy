@@ -66,7 +66,7 @@ class PointerEventTarget {
   DISALLOW_NEW();
 
  public:
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(target_element);
     visitor->Trace(target_frame);
   }

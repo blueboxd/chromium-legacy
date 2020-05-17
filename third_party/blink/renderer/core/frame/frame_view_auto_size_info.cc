@@ -19,7 +19,7 @@ FrameViewAutoSizeInfo::FrameViewAutoSizeInfo(LocalFrameView* view)
   DCHECK(frame_view_);
 }
 
-void FrameViewAutoSizeInfo::Trace(Visitor* visitor) {
+void FrameViewAutoSizeInfo::Trace(Visitor* visitor) const {
   visitor->Trace(frame_view_);
 }
 

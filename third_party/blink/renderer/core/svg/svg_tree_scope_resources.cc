@@ -42,7 +42,7 @@ void SVGTreeScopeResources::ProcessCustomWeakness(const LivenessBroker& info) {
   resources_.RemoveAll(to_remove);
 }
 
-void SVGTreeScopeResources::Trace(Visitor* visitor) {
+void SVGTreeScopeResources::Trace(Visitor* visitor) const {
   visitor->template RegisterWeakCallbackMethod<
       SVGTreeScopeResources, &SVGTreeScopeResources::ProcessCustomWeakness>(
       this);

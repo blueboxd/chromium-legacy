@@ -222,7 +222,7 @@ void AnimationTimeline::MarkAnimationsCompositorPending(bool source_changed) {
   }
 }
 
-void AnimationTimeline::Trace(Visitor* visitor) {
+void AnimationTimeline::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(animations_needing_update_);
   visitor->Trace(animations_);

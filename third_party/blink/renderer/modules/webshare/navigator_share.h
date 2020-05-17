@@ -49,7 +49,7 @@ class MODULES_EXPORT NavigatorShare final
                              const ShareData*,
                              ExceptionState&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   class ShareClientImpl;

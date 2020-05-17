@@ -225,7 +225,9 @@ class DummyRTCVoidRequest final : public RTCVoidRequest {
 
   void RequestSucceeded() override { was_called_ = true; }
   void RequestFailed(const webrtc::RTCError&) override { was_called_ = true; }
-  void Trace(Visitor* visitor) override { RTCVoidRequest::Trace(visitor); }
+  void Trace(Visitor* visitor) const override {
+    RTCVoidRequest::Trace(visitor);
+  }
 
  private:
   bool was_called_ = false;

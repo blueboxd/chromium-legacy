@@ -69,7 +69,7 @@ ApplicationCacheErrorEvent::ApplicationCacheErrorEvent(
 
 ApplicationCacheErrorEvent::~ApplicationCacheErrorEvent() = default;
 
-void ApplicationCacheErrorEvent::Trace(Visitor* visitor) {
+void ApplicationCacheErrorEvent::Trace(Visitor* visitor) const {
   Event::Trace(visitor);
 }
 

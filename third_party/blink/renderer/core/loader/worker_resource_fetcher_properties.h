@@ -23,7 +23,7 @@ class WorkerResourceFetcherProperties final : public ResourceFetcherProperties {
       scoped_refptr<WebWorkerFetchContext> web_context);
   ~WorkerResourceFetcherProperties() override = default;
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   // ResourceFetcherProperties implementation
   const FetchClientSettingsObject& GetFetchClientSettingsObject()

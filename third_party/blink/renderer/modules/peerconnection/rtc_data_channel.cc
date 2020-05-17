@@ -482,7 +482,7 @@ bool RTCDataChannel::HasPendingActivity() const {
          bufferedAmount() > 0;
 }
 
-void RTCDataChannel::Trace(Visitor* visitor) {
+void RTCDataChannel::Trace(Visitor* visitor) const {
   visitor->Trace(scheduled_events_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);

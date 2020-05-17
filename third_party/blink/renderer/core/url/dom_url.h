@@ -73,7 +73,7 @@ class CORE_EXPORT DOMURL final : public ScriptWrappable, public DOMURLUtils {
 
   String toJSON() { return href(); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class URLSearchParams;

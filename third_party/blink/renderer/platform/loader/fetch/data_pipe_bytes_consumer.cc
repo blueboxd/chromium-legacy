@@ -26,7 +26,7 @@ void DataPipeBytesConsumer::CompletionNotifier::SignalError(
     bytes_consumer_->SignalError(error);
 }
 
-void DataPipeBytesConsumer::CompletionNotifier::Trace(Visitor* visitor) {
+void DataPipeBytesConsumer::CompletionNotifier::Trace(Visitor* visitor) const {
   visitor->Trace(bytes_consumer_);
 }
 
@@ -153,7 +153,7 @@ BytesConsumer::PublicState DataPipeBytesConsumer::GetPublicState() const {
   return GetPublicStateFromInternalState(state_);
 }
 
-void DataPipeBytesConsumer::Trace(Visitor* visitor) {
+void DataPipeBytesConsumer::Trace(Visitor* visitor) const {
   visitor->Trace(client_);
   BytesConsumer::Trace(visitor);
 }

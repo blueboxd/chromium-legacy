@@ -124,7 +124,9 @@ class DummyClient final : public GarbageCollected<DummyClient>,
     return number_of_redirects_received_;
   }
   const Vector<char>& Data() { return data_; }
-  void Trace(Visitor* visitor) override { RawResourceClient::Trace(visitor); }
+  void Trace(Visitor* visitor) const override {
+    RawResourceClient::Trace(visitor);
+  }
 
  private:
   bool called_;
@@ -160,7 +162,7 @@ class AddingClient final : public GarbageCollected<AddingClient>,
 
   void RemoveClient() { resource_->RemoveClient(dummy_client_); }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(dummy_client_);
     visitor->Trace(resource_);
     RawResourceClient::Trace(visitor);
@@ -205,7 +207,7 @@ class RemovingClient : public GarbageCollected<RemovingClient>,
     resource->RemoveClient(this);
   }
   String DebugName() const override { return "RemovingClient"; }
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(dummy_client_);
     RawResourceClient::Trace(visitor);
   }

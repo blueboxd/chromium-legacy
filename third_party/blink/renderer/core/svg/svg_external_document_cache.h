@@ -41,7 +41,7 @@ class SVGExternalDocumentCache
   static const char kSupplementName[];
   static SVGExternalDocumentCache* From(Document&);
   explicit SVGExternalDocumentCache(Document&);
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   class Client : public GarbageCollectedMixin {
    public:
@@ -55,7 +55,7 @@ class SVGExternalDocumentCache
     explicit Entry(Document* context_document)
         : context_document_(context_document) {}
     ~Entry() override = default;
-    void Trace(Visitor*) override;
+    void Trace(Visitor*) const override;
     Document* GetDocument();
     const KURL& Url() const { return GetResource()->Url(); }
 

@@ -39,7 +39,7 @@ class XRFrameProviderRequestCallback
     frame_provider_->OnNonImmersiveVSync(high_res_time_ms);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(frame_provider_);
 
     FrameRequestCallbackCollection::FrameCallback::Trace(visitor);
@@ -607,7 +607,7 @@ void XRFrameProvider::Dispose() {
   // TODO(bajones): Do something for outstanding frame requests?
 }
 
-void XRFrameProvider::Trace(Visitor* visitor) {
+void XRFrameProvider::Trace(Visitor* visitor) const {
   visitor->Trace(xr_);
   visitor->Trace(frame_transport_);
   visitor->Trace(immersive_session_);

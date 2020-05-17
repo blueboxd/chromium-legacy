@@ -44,7 +44,7 @@ void SourceBufferTrackBaseSupplement::SetSourceBuffer(
   From(track).source_buffer_ = source_buffer;
 }
 
-void SourceBufferTrackBaseSupplement::Trace(Visitor* visitor) {
+void SourceBufferTrackBaseSupplement::Trace(Visitor* visitor) const {
   visitor->Trace(source_buffer_);
   Supplement<TrackBase>::Trace(visitor);
 }

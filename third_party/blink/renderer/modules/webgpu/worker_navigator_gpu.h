@@ -30,7 +30,7 @@ class WorkerNavigatorGPU final : public GarbageCollected<WorkerNavigatorGPU>,
 
   explicit WorkerNavigatorGPU(WorkerNavigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<GPU> gpu_;

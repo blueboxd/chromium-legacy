@@ -105,7 +105,7 @@ void DOMFeaturePolicy::AddWarningForUnrecognizedFeature(
       "Unrecognized feature: '" + feature + "'."));
 }
 
-void DOMFeaturePolicy::Trace(Visitor* visitor) {
+void DOMFeaturePolicy::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
 }
 

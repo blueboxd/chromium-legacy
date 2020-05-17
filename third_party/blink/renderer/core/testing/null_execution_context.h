@@ -62,7 +62,7 @@ class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
     return security_context_;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   KURL url_;

@@ -620,7 +620,7 @@ void CSSComputedStyleDeclaration::SetPropertyInternal(
           "' property is read-only.");
 }
 
-void CSSComputedStyleDeclaration::Trace(Visitor* visitor) {
+void CSSComputedStyleDeclaration::Trace(Visitor* visitor) const {
   visitor->Trace(node_);
   CSSStyleDeclaration::Trace(visitor);
 }

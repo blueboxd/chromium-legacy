@@ -41,7 +41,7 @@ class CSSGlobalRuleSet final : public GarbageCollected<CSSGlobalRuleSet> {
   }
   bool HasFullscreenUAStyle() const { return has_fullscreen_ua_style_; }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   // Constructed from rules in all TreeScopes including UA style and style

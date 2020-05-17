@@ -98,7 +98,7 @@ void PermissionStatus::OnPermissionStatusChange(MojoPermissionStatus status) {
   DispatchEvent(*Event::Create(event_type_names::kChange));
 }
 
-void PermissionStatus::Trace(Visitor* visitor) {
+void PermissionStatus::Trace(Visitor* visitor) const {
   visitor->Trace(receiver_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextLifecycleStateObserver::Trace(visitor);

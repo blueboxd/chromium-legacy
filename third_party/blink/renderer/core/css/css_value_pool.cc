@@ -59,7 +59,7 @@ CSSValuePool::CSSValuePool()
   number_value_cache_.resize(kMaximumCacheableIntegerValue + 1);
 }
 
-void CSSValuePool::Trace(Visitor* visitor) {
+void CSSValuePool::Trace(Visitor* visitor) const {
   visitor->Trace(inherited_value_);
   visitor->Trace(initial_value_);
   visitor->Trace(unset_value_);

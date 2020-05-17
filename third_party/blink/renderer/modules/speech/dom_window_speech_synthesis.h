@@ -49,7 +49,7 @@ class MODULES_EXPORT DOMWindowSpeechSynthesis final
 
   static SpeechSynthesis* speechSynthesis(ScriptState*, LocalDOMWindow&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void SetSpeechSynthesisForTesting(SpeechSynthesis*);
 

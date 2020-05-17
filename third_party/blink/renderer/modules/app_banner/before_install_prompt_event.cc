@@ -128,7 +128,7 @@ void BeforeInstallPromptEvent::BannerDismissed() {
   user_choice_->Resolve(result);
 }
 
-void BeforeInstallPromptEvent::Trace(Visitor* visitor) {
+void BeforeInstallPromptEvent::Trace(Visitor* visitor) const {
   visitor->Trace(banner_service_remote_);
   visitor->Trace(receiver_);
   visitor->Trace(user_choice_);

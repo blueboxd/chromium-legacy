@@ -100,7 +100,7 @@ class CORE_EXPORT UseCounterHelper final {
     // remove a reference to the observer and stop notifications.
     virtual bool OnCountFeature(WebFeature) = 0;
 
-    virtual void Trace(Visitor* visitor) {}
+    virtual void Trace(Visitor* visitor) const {}
   };
 
   // Repeated calls are ignored.
@@ -133,7 +133,7 @@ class CORE_EXPORT UseCounterHelper final {
 
   void ClearMeasurementForTesting(WebFeature);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   friend class UseCounterHelperTest;

@@ -99,7 +99,7 @@ void WakeLockManager::OnWakeLockConnectionError() {
   ClearWakeLocks();
 }
 
-void WakeLockManager::Trace(Visitor* visitor) {
+void WakeLockManager::Trace(Visitor* visitor) const {
   visitor->Trace(execution_context_);
   visitor->Trace(wake_lock_sentinels_);
   visitor->Trace(wake_lock_);

@@ -108,7 +108,7 @@ TextFieldInputType::TextFieldInputType(HTMLInputElement& element)
 
 TextFieldInputType::~TextFieldInputType() = default;
 
-void TextFieldInputType::Trace(Visitor* visitor) {
+void TextFieldInputType::Trace(Visitor* visitor) const {
   InputTypeView::Trace(visitor);
   InputType::Trace(visitor);
 }

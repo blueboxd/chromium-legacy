@@ -35,7 +35,7 @@ class CORE_EXPORT RootFrameViewport final
   RootFrameViewport(ScrollableArea& visual_viewport,
                     ScrollableArea& layout_viewport);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void SetLayoutViewport(ScrollableArea&);
   ScrollableArea& LayoutViewport() const;

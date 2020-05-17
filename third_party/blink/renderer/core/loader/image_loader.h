@@ -53,7 +53,7 @@ class CORE_EXPORT ImageLoader : public GarbageCollected<ImageLoader>,
   explicit ImageLoader(Element*);
   ~ImageLoader() override;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   enum UpdateFromElementBehavior {
     // This should be the update behavior when the element is attached to a
@@ -282,7 +282,7 @@ class CORE_EXPORT ImageLoader : public GarbageCollected<ImageLoader>,
     DecodeRequest(ImageLoader*, ScriptPromiseResolver*);
     ~DecodeRequest() = default;
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
     uint64_t request_id() const { return request_id_; }
     State state() const { return state_; }

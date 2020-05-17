@@ -55,7 +55,7 @@ void GestureManager::Clear() {
   long_tap_should_invoke_context_menu_ = false;
 }
 
-void GestureManager::Trace(Visitor* visitor) {
+void GestureManager::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(scroll_manager_);
   visitor->Trace(mouse_event_manager_);

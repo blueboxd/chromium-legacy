@@ -288,7 +288,7 @@ void ScopedStyleResolver::MatchPageRules(PageRuleCollector& collector) {
     collector.MatchPageRules(&sheet->Contents()->GetRuleSet());
 }
 
-void ScopedStyleResolver::Trace(Visitor* visitor) {
+void ScopedStyleResolver::Trace(Visitor* visitor) const {
   visitor->Trace(scope_);
   visitor->Trace(author_style_sheets_);
   visitor->Trace(keyframes_rule_map_);
@@ -386,7 +386,7 @@ void ScopedStyleResolver::AddSlottedRules(const RuleSet& author_rules,
       parent_style_sheet, sheet_index, slotted_rule_set));
 }
 
-void ScopedStyleResolver::RuleSubSet::Trace(Visitor* visitor) {
+void ScopedStyleResolver::RuleSubSet::Trace(Visitor* visitor) const {
   visitor->Trace(parent_style_sheet_);
   visitor->Trace(rule_set_);
 }

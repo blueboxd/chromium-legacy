@@ -32,7 +32,7 @@ class MODULES_EXPORT VideoFrameRequestCallbackCollection final
       : public GarbageCollected<VideoFrameCallback>,
         public NameClient {
    public:
-    virtual void Trace(Visitor*) {}
+    virtual void Trace(Visitor*) const {}
     const char* NameInHeapSnapshot() const override {
       return "VideoFrameCallback";
     }
@@ -57,7 +57,7 @@ class MODULES_EXPORT VideoFrameRequestCallbackCollection final
   // VideoFrameCallback that can be stored and executed by this collection.
   class MODULES_EXPORT V8VideoFrameCallback : public VideoFrameCallback {
    public:
-    void Trace(Visitor*) override;
+    void Trace(Visitor*) const override;
     const char* NameInHeapSnapshot() const override {
       return "V8VideoFrameCallback";
     }
@@ -85,7 +85,7 @@ class MODULES_EXPORT VideoFrameRequestCallbackCollection final
 
   bool IsEmpty() const { return !frame_callbacks_.size(); }
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
   const char* NameInHeapSnapshot() const override {
     return "VideoFrameRequestCallbackCollection";
   }

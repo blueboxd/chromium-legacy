@@ -95,7 +95,7 @@ class CORE_EXPORT WindowPerformance final : public Performance,
                                        const String& url,
                                        Element*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   PerformanceNavigationTiming* CreateNavigationTimingInstance() override;

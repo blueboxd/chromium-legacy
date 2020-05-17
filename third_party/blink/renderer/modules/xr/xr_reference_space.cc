@@ -218,7 +218,7 @@ base::Optional<XRNativeOriginInformation> XRReferenceSpace::NativeOrigin()
   return XRNativeOriginInformation::Create(this);
 }
 
-void XRReferenceSpace::Trace(Visitor* visitor) {
+void XRReferenceSpace::Trace(Visitor* visitor) const {
   visitor->Trace(origin_offset_);
   XRSpace::Trace(visitor);
 }

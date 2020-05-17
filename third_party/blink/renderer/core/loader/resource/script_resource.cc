@@ -137,7 +137,7 @@ void ScriptResource::Prefinalize() {
   watcher_.reset();
 }
 
-void ScriptResource::Trace(Visitor* visitor) {
+void ScriptResource::Trace(Visitor* visitor) const {
   visitor->Trace(streamer_);
   visitor->Trace(response_body_loader_client_);
   TextResource::Trace(visitor);

@@ -51,7 +51,7 @@ class Crypto final : public ScriptWrappable {
 
   SubtleCrypto* subtle();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<SubtleCrypto> subtle_crypto_;

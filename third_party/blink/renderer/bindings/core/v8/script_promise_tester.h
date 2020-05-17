@@ -40,7 +40,7 @@ class ScriptPromiseTester final {
   // The value the promise fulfilled or rejected with.
   ScriptValue Value() const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   class ThenFunction;

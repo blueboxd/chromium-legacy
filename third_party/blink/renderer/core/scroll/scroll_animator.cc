@@ -407,7 +407,7 @@ bool ScrollAnimator::RegisterAndScheduleAnimation() {
   return true;
 }
 
-void ScrollAnimator::Trace(Visitor* visitor) {
+void ScrollAnimator::Trace(Visitor* visitor) const {
   ScrollAnimatorBase::Trace(visitor);
 }
 

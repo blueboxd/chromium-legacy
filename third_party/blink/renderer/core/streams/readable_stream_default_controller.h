@@ -70,7 +70,7 @@ class ReadableStreamDefaultController : public ScriptWrappable {
   static const char* EnqueueExceptionMessage(
       const ReadableStreamDefaultController*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class ReadableStream;

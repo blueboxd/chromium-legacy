@@ -67,7 +67,7 @@ DraggedIsolatedFileSystemImpl* DraggedIsolatedFileSystemImpl::From(
       data_object);
 }
 
-void DraggedIsolatedFileSystemImpl::Trace(Visitor* visitor) {
+void DraggedIsolatedFileSystemImpl::Trace(Visitor* visitor) const {
   visitor->Trace(filesystems_);
   Supplement<DataObject>::Trace(visitor);
 }

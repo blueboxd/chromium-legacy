@@ -39,7 +39,7 @@ class CORE_EXPORT WorkerAnimationFrameProvider
   int RegisterCallback(FrameRequestCallbackCollection::FrameCallback* callback);
   void CancelCallback(int id);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   // BeginFrameProviderClient
   void BeginFrame(const viz::BeginFrameArgs&) override;

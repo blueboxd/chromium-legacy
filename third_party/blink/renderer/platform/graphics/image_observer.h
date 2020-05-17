@@ -51,7 +51,7 @@ class PLATFORM_EXPORT ImageObserver : public GarbageCollectedMixin {
   // See the comment of Image::SetData().
   virtual void AsyncLoadCompleted(const Image*) = 0;
 
-  void Trace(Visitor* visitor) override {}
+  void Trace(Visitor* visitor) const override {}
 };
 
 }  // namespace blink

@@ -115,7 +115,7 @@ class MODULES_EXPORT WebSocketChannel
   // to indicate that they are ready to receive new messages.
   virtual void RemoveBackpressure() = 0;
 
-  virtual void Trace(Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) const {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebSocketChannel);

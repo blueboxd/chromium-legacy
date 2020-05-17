@@ -45,7 +45,7 @@ class CORE_EXPORT CSSPerspective final : public CSSTransformComponent {
   TransformComponentType GetType() const final { return kPerspectiveType; }
   const CSSFunctionValue* ToCSSValue() const final;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(length_);
     CSSTransformComponent::Trace(visitor);
   }

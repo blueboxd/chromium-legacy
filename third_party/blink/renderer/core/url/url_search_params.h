@@ -61,7 +61,7 @@ class CORE_EXPORT URLSearchParams final : public ScriptWrappable,
   DOMURL* UrlObject() const;
 #endif
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(URLSearchParamsTest, EncodedFormData);

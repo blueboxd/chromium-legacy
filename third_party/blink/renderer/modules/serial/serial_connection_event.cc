@@ -29,7 +29,7 @@ SerialConnectionEvent::SerialConnectionEvent(const AtomicString& type,
                                              SerialPort* port)
     : Event(type, Bubbles::kNo, Cancelable::kNo), port_(port) {}
 
-void SerialConnectionEvent::Trace(Visitor* visitor) {
+void SerialConnectionEvent::Trace(Visitor* visitor) const {
   visitor->Trace(port_);
   Event::Trace(visitor);
 }

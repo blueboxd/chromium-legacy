@@ -22,12 +22,12 @@ struct Empty {};
 // Similar to an IDL union or dictionary, which have Trace() methods but are
 // not garbage-collected types themselves.
 struct StructWithTraceMethod {
-  void Trace(Visitor*) {}
+  void Trace(Visitor*) const {}
 };
 
 struct GarbageCollectedStruct
     : public GarbageCollected<GarbageCollectedStruct> {
-  void Trace(Visitor*) {}
+  void Trace(Visitor*) const {}
 };
 
 // AddMemberIfNeeded<T>

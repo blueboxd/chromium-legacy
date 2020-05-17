@@ -44,7 +44,7 @@ void VideoWakeLock::PageVisibilityChanged() {
   Update();
 }
 
-void VideoWakeLock::Trace(Visitor* visitor) {
+void VideoWakeLock::Trace(Visitor* visitor) const {
   NativeEventListener::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
   ExecutionContextLifecycleStateObserver::Trace(visitor);

@@ -212,7 +212,7 @@ class CORE_EXPORT WritableStream : public ScriptWrappable {
       const char* action,
       State);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   // Used when creating a stream from JavaScript. Called from Create().

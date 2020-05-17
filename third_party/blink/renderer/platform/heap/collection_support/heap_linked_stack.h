@@ -61,14 +61,14 @@ class HeapLinkedStack final : public GarbageCollected<HeapLinkedStack<T>> {
   inline const T& Peek() const;
   inline void Pop();
 
-  void Trace(Visitor* visitor) { visitor->Trace(head_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(head_); }
 
  private:
   class Node final : public GarbageCollected<Node> {
    public:
     Node(const T&, Node*);
 
-    void Trace(Visitor* visitor) {
+    void Trace(Visitor* visitor) const {
       visitor->Trace(data_);
       visitor->Trace(next_);
     }

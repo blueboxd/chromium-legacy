@@ -79,7 +79,7 @@ class MODULES_EXPORT ServiceWorkerContainer final
   explicit ServiceWorkerContainer(LocalDOMWindow&);
   ~ServiceWorkerContainer() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   ServiceWorker* controller() { return controller_; }
   ScriptPromise ready(ScriptState*, ExceptionState&);

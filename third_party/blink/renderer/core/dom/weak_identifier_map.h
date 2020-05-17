@@ -22,7 +22,7 @@ class WeakIdentifierMap final
  public:
   WeakIdentifierMap() = default;
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(object_to_identifier_);
     visitor->Trace(identifier_to_object_);
   }

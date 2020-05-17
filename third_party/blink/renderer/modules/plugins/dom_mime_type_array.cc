@@ -35,7 +35,7 @@ DOMMimeTypeArray::DOMMimeTypeArray(LocalFrame* frame)
   UpdatePluginData();
 }
 
-void DOMMimeTypeArray::Trace(Visitor* visitor) {
+void DOMMimeTypeArray::Trace(Visitor* visitor) const {
   visitor->Trace(dom_mime_types_);
   ScriptWrappable::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);

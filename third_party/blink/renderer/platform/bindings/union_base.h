@@ -28,7 +28,7 @@ class PLATFORM_EXPORT UnionBase {
       v8::Isolate* isolate,
       v8::Local<v8::Object> creation_context) const = 0;
 
-  void Trace(Visitor*) {}
+  void Trace(Visitor*) const {}
 
  protected:
   UnionBase() = default;

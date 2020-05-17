@@ -376,7 +376,7 @@ void BackgroundFetchRegistration::UpdateUI(
   registration_service_->UpdateUI(in_title, in_icon, std::move(callback));
 }
 
-void BackgroundFetchRegistration::Trace(Visitor* visitor) {
+void BackgroundFetchRegistration::Trace(Visitor* visitor) const {
   visitor->Trace(registration_);
   visitor->Trace(observers_);
   visitor->Trace(observer_receiver_);

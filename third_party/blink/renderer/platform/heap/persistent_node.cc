@@ -15,7 +15,7 @@ namespace {
 
 class DummyGCBase final : public GarbageCollected<DummyGCBase> {
  public:
-  void Trace(Visitor* visitor) {}
+  void Trace(Visitor* visitor) const {}
 };
 }
 

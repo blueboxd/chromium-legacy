@@ -382,7 +382,7 @@ void LazyLoadFrameObserver::RecordInitialDeferralAction(
   }
 }
 
-void LazyLoadFrameObserver::Trace(Visitor* visitor) {
+void LazyLoadFrameObserver::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   visitor->Trace(lazy_load_intersection_observer_);
   visitor->Trace(visibility_metrics_observer_);

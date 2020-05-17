@@ -18,7 +18,7 @@ ManifestChangeNotifier::ManifestChangeNotifier(LocalDOMWindow& window)
 
 ManifestChangeNotifier::~ManifestChangeNotifier() = default;
 
-void ManifestChangeNotifier::Trace(Visitor* visitor) {
+void ManifestChangeNotifier::Trace(Visitor* visitor) const {
   visitor->Trace(window_);
   visitor->Trace(manifest_change_observer_);
 }

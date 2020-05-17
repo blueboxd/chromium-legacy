@@ -47,7 +47,7 @@ class CORE_EXPORT UnsignedLongLongOrBooleanOrTestCallbackInterface final {
   UnsignedLongLongOrBooleanOrTestCallbackInterface(const UnsignedLongLongOrBooleanOrTestCallbackInterface&);
   ~UnsignedLongLongOrBooleanOrTestCallbackInterface();
   UnsignedLongLongOrBooleanOrTestCallbackInterface& operator=(const UnsignedLongLongOrBooleanOrTestCallbackInterface&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   enum class SpecificType {

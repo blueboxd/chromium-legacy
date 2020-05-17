@@ -106,7 +106,7 @@ class CORE_EXPORT WritableStreamDefaultWriter final : public ScriptWrappable {
 
   void SetReadyPromise(StreamPromiseResolver*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // https://streams.spec.whatwg.org/#writable-stream-default-writer-abort

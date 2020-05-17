@@ -115,7 +115,7 @@ RemoteFrame::~RemoteFrame() {
   DCHECK(!view_);
 }
 
-void RemoteFrame::Trace(Visitor* visitor) {
+void RemoteFrame::Trace(Visitor* visitor) const {
   visitor->Trace(view_);
   visitor->Trace(security_context_);
   Frame::Trace(visitor);

@@ -33,7 +33,7 @@ class PLATFORM_EXPORT ScriptCachedMetadataHandler final
   ScriptCachedMetadataHandler(const WTF::TextEncoding&,
                               std::unique_ptr<CachedMetadataSender>);
   ~ScriptCachedMetadataHandler() override = default;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   void SetCachedMetadata(uint32_t, const uint8_t*, size_t) override;
   void ClearCachedMetadata(ClearCacheType) override;
   scoped_refptr<CachedMetadata> GetCachedMetadata(uint32_t) const override;

@@ -227,7 +227,7 @@ void FirstMeaningfulPaintDetector::SetTickClockForTesting(
   g_clock = clock;
 }
 
-void FirstMeaningfulPaintDetector::Trace(Visitor* visitor) {
+void FirstMeaningfulPaintDetector::Trace(Visitor* visitor) const {
   visitor->Trace(paint_timing_);
 }
 

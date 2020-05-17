@@ -17,7 +17,7 @@ TestInterfaceEventInit::TestInterfaceEventInit() {
 
 TestInterfaceEventInit::~TestInterfaceEventInit() = default;
 
-void TestInterfaceEventInit::Trace(Visitor* visitor) {
+void TestInterfaceEventInit::Trace(Visitor* visitor) const {
   EventInit::Trace(visitor);
 }
 

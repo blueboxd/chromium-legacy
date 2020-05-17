@@ -98,7 +98,7 @@ AnchorElementMetricsSender::GetAnchorElements() const {
   return anchor_elements_;
 }
 
-void AnchorElementMetricsSender::Trace(Visitor* visitor) {
+void AnchorElementMetricsSender::Trace(Visitor* visitor) const {
   visitor->Trace(anchor_elements_);
   visitor->Trace(metrics_host_);
   Supplement<Document>::Trace(visitor);

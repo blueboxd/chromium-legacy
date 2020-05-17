@@ -116,7 +116,7 @@ DatabaseContext::~DatabaseContext() {
   DatabaseManager::Manager().DidDestructDatabaseContext();
 }
 
-void DatabaseContext::Trace(Visitor* visitor) {
+void DatabaseContext::Trace(Visitor* visitor) const {
   visitor->Trace(database_thread_);
   ExecutionContextLifecycleObserver::Trace(visitor);
 }

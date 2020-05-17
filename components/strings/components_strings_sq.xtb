@@ -240,7 +240,6 @@
 <translation id="1962204205936693436">Faqeshënuesit e <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Gabim serializimi</translation>
 <translation id="1974060860693918893">I përparuar</translation>
-<translation id="1974883374937189061">Ndihmo me përmirësimin e sigurisë së Chrome duke dërguar <ph name="BEGIN_WHITEPAPER_LINK" />URL-të e disa faqeve që viziton, informacione të kufizuara të sistemit, si dhe disa përmbajtje faqeje<ph name="END_WHITEPAPER_LINK" /> te Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1975584088563498795">Kutia postare 10</translation>
 <translation id="1978555033938440688">Versioni i firmuerit</translation>
 <translation id="1981206234434200693">Pastro të dhënat e historikut të shfletimit të Chrome</translation>
@@ -1593,7 +1592,6 @@ Detaje shtesë:
 <translation id="7763386264682878361">Analizuesi i manifestit të pagesës</translation>
 <translation id="7764225426217299476">Shto adresë</translation>
 <translation id="7766518757692125295">Bordura</translation>
-<translation id="7767271804335921384">Aplikacioni është bllokuar nga administratori yt</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">E njëjta renditje e kthyer lart</translation>
 <translation id="777702478322588152">Prefektura</translation>
@@ -1747,6 +1745,7 @@ Detaje shtesë:
 <translation id="8425213833346101688">Ndrysho</translation>
 <translation id="8428213095426709021">Cilësimet</translation>
 <translation id="8433057134996913067">Kjo do të bëjë të dalësh nga shumica e sajteve të uebit.</translation>
+<translation id="8433678324664858900">Shfaq sugjerimet</translation>
 <translation id="8437238597147034694">&amp;Zhbëj zhvendosjen</translation>
 <translation id="8457125768502047971">E papërcaktuar</translation>
 <translation id="8461694314515752532">Enkripto të dhënat e sinkronizuara me frazën tënde të kalimit për sinkronizimin</translation>

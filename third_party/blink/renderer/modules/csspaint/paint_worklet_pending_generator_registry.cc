@@ -30,7 +30,7 @@ void PaintWorkletPendingGeneratorRegistry::AddPendingGenerator(
   set->insert(generator);
 }
 
-void PaintWorkletPendingGeneratorRegistry::Trace(Visitor* visitor) {
+void PaintWorkletPendingGeneratorRegistry::Trace(Visitor* visitor) const {
   visitor->Trace(pending_generators_);
 }
 

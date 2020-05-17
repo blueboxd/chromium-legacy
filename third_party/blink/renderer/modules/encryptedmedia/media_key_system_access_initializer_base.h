@@ -41,7 +41,7 @@ class MediaKeySystemAccessInitializerBase : public EncryptedMediaRequest,
   // Promise() in script_promise_resolver.h
   ScriptPromise Promise();
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  protected:
   // Returns true if the ExecutionContext is valid, false otherwise.

@@ -73,7 +73,7 @@
 
 namespace blink {
 
-void ScriptController::Trace(Visitor* visitor) {
+void ScriptController::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(window_proxy_manager_);
 }

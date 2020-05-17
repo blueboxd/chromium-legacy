@@ -22,7 +22,7 @@ class ExecutionContextCSPDelegate final
  public:
   explicit ExecutionContextCSPDelegate(ExecutionContext&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // ContentSecurityPolicyDelegate overrides:
   const SecurityOrigin* GetSecurityOrigin() override;

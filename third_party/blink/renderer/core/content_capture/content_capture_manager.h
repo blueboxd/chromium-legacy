@@ -39,7 +39,7 @@ class CORE_EXPORT ContentCaptureManager
   // Invokes when the local_frame_root shutdown.
   void Shutdown();
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
   ContentCaptureTask* GetContentCaptureTaskForTesting() const {
     return content_capture_idle_task_;

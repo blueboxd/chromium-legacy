@@ -715,7 +715,7 @@ AudioBufferSourceNode* AudioBufferSourceNode::Create(
   return node;
 }
 
-void AudioBufferSourceNode::Trace(Visitor* visitor) {
+void AudioBufferSourceNode::Trace(Visitor* visitor) const {
   visitor->Trace(playback_rate_);
   visitor->Trace(detune_);
   visitor->Trace(buffer_);

@@ -53,7 +53,7 @@ class LazyLoadFrameObserver final
 
   void LoadImmediately();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   struct LazyLoadRequestInfo;

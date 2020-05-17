@@ -300,7 +300,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 
   void AcceptLanguagesChanged();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void AnimationHostInitialized(cc::AnimationHost&, LocalFrameView*);
   void WillCloseAnimationHost(LocalFrameView*);

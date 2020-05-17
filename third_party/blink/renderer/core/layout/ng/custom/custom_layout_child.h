@@ -46,7 +46,7 @@ class CustomLayoutChild : public ScriptWrappable {
 
   void SetCustomLayoutToken(CustomLayoutToken* token) { token_ = token; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   NGLayoutInputNode node_;

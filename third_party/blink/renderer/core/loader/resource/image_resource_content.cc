@@ -36,7 +36,9 @@ class NullImageResourceInfo final
  public:
   NullImageResourceInfo() = default;
 
-  void Trace(Visitor* visitor) override { ImageResourceInfo::Trace(visitor); }
+  void Trace(Visitor* visitor) const override {
+    ImageResourceInfo::Trace(visitor);
+  }
 
  private:
   const KURL& Url() const override { return url_; }
@@ -103,7 +105,7 @@ void ImageResourceContent::SetImageResourceInfo(ImageResourceInfo* info) {
   info_ = info;
 }
 
-void ImageResourceContent::Trace(Visitor* visitor) {
+void ImageResourceContent::Trace(Visitor* visitor) const {
   visitor->Trace(info_);
   ImageObserver::Trace(visitor);
 }

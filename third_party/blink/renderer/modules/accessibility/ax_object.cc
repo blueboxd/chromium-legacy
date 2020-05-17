@@ -4220,7 +4220,7 @@ std::ostream& operator<<(std::ostream& stream, const AXObject& obj) {
   return stream << obj.ToString(true).Utf8();
 }
 
-void AXObject::Trace(Visitor* visitor) {
+void AXObject::Trace(Visitor* visitor) const {
   visitor->Trace(children_);
   visitor->Trace(parent_);
   visitor->Trace(cached_live_region_root_);

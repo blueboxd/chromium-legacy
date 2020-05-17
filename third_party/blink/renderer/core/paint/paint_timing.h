@@ -105,7 +105,7 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
   // The caller owns the |clock| which must outlive the PaintTiming.
   void SetTickClockForTesting(const base::TickClock* clock);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   LocalFrame* GetFrame() const;

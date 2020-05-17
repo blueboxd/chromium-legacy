@@ -108,7 +108,7 @@ void SerialPortUnderlyingSink::SignalErrorOnClose(DOMException* exception) {
   }
 }
 
-void SerialPortUnderlyingSink::Trace(Visitor* visitor) {
+void SerialPortUnderlyingSink::Trace(Visitor* visitor) const {
   visitor->Trace(serial_port_);
   visitor->Trace(pending_exception_);
   visitor->Trace(buffer_source_);

@@ -22,7 +22,7 @@ RenderSubtreeActivationEvent::RenderSubtreeActivationEvent(
             ComposedMode::kScoped),
       activated_element_(activated_element) {}
 
-void RenderSubtreeActivationEvent::Trace(Visitor* visitor) {
+void RenderSubtreeActivationEvent::Trace(Visitor* visitor) const {
   visitor->Trace(activated_element_);
   Event::Trace(visitor);
 }

@@ -387,7 +387,7 @@ OfflineAudioDestinationNode* OfflineAudioDestinationNode::Create(
       *context, number_of_channels, frames_to_process, sample_rate);
 }
 
-void OfflineAudioDestinationNode::Trace(Visitor* visitor) {
+void OfflineAudioDestinationNode::Trace(Visitor* visitor) const {
   visitor->Trace(destination_buffer_);
   AudioDestinationNode::Trace(visitor);
 }

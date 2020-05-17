@@ -64,7 +64,7 @@ ScriptValue CountQueuingStrategy::size(ScriptState* script_state) const {
       CountQueuingStrategySizeFunction::CreateFunction(script_state));
 }
 
-void CountQueuingStrategy::Trace(Visitor* visitor) {
+void CountQueuingStrategy::Trace(Visitor* visitor) const {
   visitor->Trace(high_water_mark_);
   ScriptWrappable::Trace(visitor);
 }

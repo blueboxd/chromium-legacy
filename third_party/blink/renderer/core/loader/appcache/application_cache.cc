@@ -48,7 +48,7 @@ ApplicationCache::ApplicationCache(LocalFrame* frame)
     cache_host->SetApplicationCache(this);
 }
 
-void ApplicationCache::Trace(Visitor* visitor) {
+void ApplicationCache::Trace(Visitor* visitor) const {
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
 }

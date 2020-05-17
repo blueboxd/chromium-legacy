@@ -29,7 +29,7 @@ USBConnectionEvent::USBConnectionEvent(const AtomicString& type,
                                        USBDevice* device)
     : Event(type, Bubbles::kNo, Cancelable::kNo), device_(device) {}
 
-void USBConnectionEvent::Trace(Visitor* visitor) {
+void USBConnectionEvent::Trace(Visitor* visitor) const {
   visitor->Trace(device_);
   Event::Trace(visitor);
 }

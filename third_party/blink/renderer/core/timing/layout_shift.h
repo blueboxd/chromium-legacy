@@ -47,7 +47,7 @@ class CORE_EXPORT LayoutShift final : public PerformanceEntry {
 
   AttributionList sources() const { return sources_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void BuildJSONValue(V8ObjectBuilder&) const override;

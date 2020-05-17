@@ -49,7 +49,7 @@ class DatabaseContext final : public GarbageCollected<DatabaseContext>,
 
   explicit DatabaseContext(ExecutionContext*);
   ~DatabaseContext();
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // For life-cycle management (inherited from
   // ExecutionContextLifecycleObserver):

@@ -42,7 +42,7 @@ class NewCSSAnimation {
         style_rule_version(this->style_rule->Version()),
         play_state_list(play_state_list) {}
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(effect);
     visitor->Trace(style_rule);
   }
@@ -75,7 +75,7 @@ class UpdatedCSSAnimation {
         style_rule_version(this->style_rule->Version()),
         play_state_list(play_state_list) {}
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(animation);
     visitor->Trace(effect);
     visitor->Trace(style_rule);
@@ -183,7 +183,7 @@ class CORE_EXPORT CSSAnimationUpdate final {
    public:
     NewTransition();
     ~NewTransition();
-    void Trace(Visitor* visitor) { visitor->Trace(effect); }
+    void Trace(Visitor* visitor) const { visitor->Trace(effect); }
 
     PropertyHandle property = HashTraits<blink::PropertyHandle>::EmptyValue();
     scoped_refptr<const ComputedStyle> from;
@@ -255,7 +255,7 @@ class CORE_EXPORT CSSAnimationUpdate final {
            updated_compositor_keyframes_.IsEmpty();
   }
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(new_transitions_);
     visitor->Trace(new_animations_);
     visitor->Trace(suppressed_animations_);

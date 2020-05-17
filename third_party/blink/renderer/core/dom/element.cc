@@ -6362,7 +6362,7 @@ void Element::LogUpdateAttributeIfIsolatedWorldAndInDocument(
   activity_logger->LogEvent("blinkSetAttribute", argv.size(), argv.data());
 }
 
-void Element::Trace(Visitor* visitor) {
+void Element::Trace(Visitor* visitor) const {
   visitor->Trace(element_data_);
   ContainerNode::Trace(visitor);
 }

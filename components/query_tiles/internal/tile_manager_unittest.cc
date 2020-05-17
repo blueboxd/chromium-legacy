@@ -17,10 +17,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
-using ::testing::Invoke;
+using testing::Invoke;
+using testing::StrictMock;
 
 namespace query_tiles {
 namespace {
+
+const char kGuid[] = "awesome_guid";
 
 class MockTileStore : public Store<TileGroup> {
  public:
@@ -40,7 +43,7 @@ class TileManagerTest : public testing::Test {
   TileManagerTest& operator=(const TileManagerTest& other) = delete;
 
   void SetUp() override {
-    auto tile_store = std::make_unique<MockTileStore>();
+    auto tile_store = std::make_unique<StrictMock<MockTileStore>>();
     tile_store_ = tile_store.get();
     base::Time fake_now;
     EXPECT_TRUE(base::Time::FromString("03/18/20 01:00:00 AM", &fake_now));
@@ -88,17 +91,31 @@ class TileManagerTest : public testing::Test {
     std::move(closure).Run();
   }
 
+  TileGroup CreateValidGroup(const std::string& group_id,
+                             const std::string& tile_id) {
+    TileGroup group;
+    group.last_updated_ts = clock()->Now();
+    group.id = group_id;
+    group.locale = "en-US";
+    Tile tile;
+    tile.id = tile_id;
+    group.tiles.emplace_back(std::make_unique<Tile>(tile));
+    return group;
+  }
+
   // Run SaveTiles call from manager_, compare the |expected_status| to the
   // actual returned status.
   void SaveTiles(std::vector<std::unique_ptr<Tile>> tiles,
                  TileGroupStatus expected_status) {
+    auto group = CreateValidGroup(kGuid, "");
+    group.tiles = std::move(tiles);
+    SaveTiles(group, expected_status);
+  }
+
+  void SaveTiles(const TileGroup& group, TileGroupStatus expected_status) {
     base::RunLoop loop;
-    auto group = std::make_unique<TileGroup>();
-    group->locale = "en-US";
-    group->last_updated_ts = clock_.Now();
-    group->tiles = std::move(tiles);
     manager()->SaveTiles(
-        std::move(group),
+        std::unique_ptr<TileGroup>(new TileGroup(group)),
         base::BindOnce(&TileManagerTest::OnTilesSaved, base::Unretained(this),
                        loop.QuitClosure(), expected_status));
     loop.Run();
@@ -157,9 +174,6 @@ class TileManagerTest : public testing::Test {
   base::SimpleTestClock clock_;
 };
 
-// TODO(hesen): Add a test where we request tiles before the initialize
-// callback from the DB.
-
 TEST_F(TileManagerTest, InitAndLoadWithDbOperationFailed) {
   EXPECT_CALL(*tile_store(), InitAndLoad(_))
       .WillOnce(Invoke([](base::OnceCallback<void(
@@ -172,58 +186,37 @@ TEST_F(TileManagerTest, InitAndLoadWithDbOperationFailed) {
 }
 
 TEST_F(TileManagerTest, InitWithEmptyDb) {
-  EXPECT_CALL(*tile_store(), InitAndLoad(_))
-      .WillOnce(Invoke([](base::OnceCallback<void(
-                              bool, MockTileStore::KeysAndEntries)> callback) {
-        std::move(callback).Run(true, MockTileStore::KeysAndEntries());
-      }));
-
-  Init(TileGroupStatus::kNoTiles);
+  InitWithData(TileGroupStatus::kNoTiles, std::vector<TileGroup>());
   GetTiles(std::vector<Tile>() /*expect an empty result*/);
 }
 
-TEST_F(TileManagerTest, InitAndLoadWithExpiredGroup) {
-  auto invalid_group = std::make_unique<TileGroup>();
-  test::ResetTestGroup(invalid_group.get());
-  invalid_group->last_updated_ts =
-      clock()->Now() - base::TimeDelta::FromDays(3);
-  MockTileStore::KeysAndEntries input;
-  input[invalid_group->id] = std::move(invalid_group);
-  EXPECT_CALL(*tile_store(), InitAndLoad(_))
-      .WillOnce(Invoke(
-          [&input](base::OnceCallback<void(bool, MockTileStore::KeysAndEntries)>
-                       callback) {
-            std::move(callback).Run(true, std::move(input));
-          }));
+// Expired group will be deleted during initialization.
+TEST_F(TileManagerTest, InitAndLoadWithInvalidGroup) {
+  // Create an expired group.
+  auto expired_group = CreateValidGroup("expired_group_id", "tile_id");
+  expired_group.last_updated_ts = clock()->Now() - base::TimeDelta::FromDays(3);
 
-  EXPECT_CALL(*tile_store(), Delete(_, _));
+  // Locale mismatch group.
+  auto locale_mismatch_group =
+      CreateValidGroup("locale_group_id", "locale_tile_id");
+  locale_mismatch_group.locale = "";
 
-  Init(TileGroupStatus::kNoTiles);
-  GetTiles(std::vector<Tile>() /*expect an empty result*/);
+  EXPECT_CALL(*tile_store(), Delete("expired_group_id", _));
+  InitWithData(TileGroupStatus::kNoTiles, {expired_group});
+  GetTiles(std::vector<Tile>());
 }
 
+// The most recent valid group will be selected during initialization.
 TEST_F(TileManagerTest, InitAndLoadSuccess) {
-  auto input_group = std::make_unique<TileGroup>();
-  test::ResetTestGroup(input_group.get());
-  std::vector<Tile> expected;
-  input_group->last_updated_ts =
-      clock()->Now() - base::TimeDelta::FromMinutes(5);
-  for (const auto& tile : input_group->tiles)
-    expected.emplace_back(*tile.get());
+  // Two valid groups are loaded, the most recent one will be selected.
+  auto group1 = CreateValidGroup("group_id_1", "tile_id_1");
+  group1.last_updated_ts -= base::TimeDelta::FromMinutes(5);
+  auto group2 = CreateValidGroup("group_id_2", "tile_id_2");
+  const Tile expected = *group2.tiles[0];
 
-  MockTileStore::KeysAndEntries input;
-  input[input_group->id] = std::move(input_group);
-  EXPECT_CALL(*tile_store(), InitAndLoad(_))
-      .WillOnce(Invoke(
-          [&input](base::OnceCallback<void(bool, MockTileStore::KeysAndEntries)>
-                       callback) {
-            std::move(callback).Run(true, std::move(input));
-          }));
-
-  EXPECT_CALL(*tile_store(), Delete(_, _)).Times(0);
-
-  Init(TileGroupStatus::kSuccess);
-  GetTiles(expected);
+  EXPECT_CALL(*tile_store(), Delete("group_id_1", _));
+  InitWithData(TileGroupStatus::kSuccess, {group1, group2});
+  GetTiles({expected});
 }
 
 // Failed to init an empty db, and save tiles call failed because of db is
@@ -305,46 +298,22 @@ TEST_F(TileManagerTest, SaveTilesSuccess) {
 }
 
 // Init with store successfully. The store originally has entries loaded into
-// memory. Save new tiles successfully. GetTiles should return the recent saved
-// tiles, and Delete() call is executed in store, also replace the old group in
-// memory.
-TEST_F(TileManagerTest, SaveTilesAndReplaceOldGroupSuccess) {
-  auto input_group = std::make_unique<TileGroup>();
-  test::ResetTestGroup(input_group.get());
-  input_group->last_updated_ts =
-      clock()->Now() - base::TimeDelta::FromMinutes(5);
+// memory. Save new tiles successfully. GetTiles should return original saved
+// tiles.
+TEST_F(TileManagerTest, SaveTilesStillReturnOldTiles) {
+  TileGroup old_group = CreateValidGroup("old_group_id", "old_tile_id");
+  const Tile old_tile = *old_group.tiles[0].get();
+  InitWithData(TileGroupStatus::kSuccess, {old_group});
 
-  MockTileStore::KeysAndEntries input;
-  input[input_group->id] = std::move(input_group);
-  EXPECT_CALL(*tile_store(), InitAndLoad(_))
-      .WillOnce(Invoke(
-          [&input](base::OnceCallback<void(bool, MockTileStore::KeysAndEntries)>
-                       callback) {
-            std::move(callback).Run(true, std::move(input));
-          }));
-
-  EXPECT_CALL(*tile_store(), Update(_, _, _))
+  EXPECT_CALL(*tile_store(), Update("new_group_id", _, _))
       .WillOnce(Invoke([](const std::string& id, const TileGroup& group,
                           MockTileStore::UpdateCallback callback) {
         std::move(callback).Run(true);
       }));
 
-  EXPECT_CALL(*tile_store(), Delete("group_guid", _));
-
-  Init(TileGroupStatus::kSuccess);
-
-  auto tile_to_save = std::make_unique<Tile>();
-  test::ResetTestEntry(tile_to_save.get());
-  std::vector<std::unique_ptr<Tile>> tiles_to_save;
-  tiles_to_save.emplace_back(std::move(tile_to_save));
-
-  auto expected_tile = std::make_unique<Tile>();
-  test::ResetTestEntry(expected_tile.get());
-  std::vector<Tile> expected;
-  expected.emplace_back(std::move(*expected_tile.get()));
-
-  SaveTiles(std::move(tiles_to_save), TileGroupStatus::kSuccess);
-  GetTiles(std::move(expected));
+  TileGroup new_group = CreateValidGroup("new_group_id", "new_tile_id");
+  SaveTiles(new_group, TileGroupStatus::kSuccess);
+  GetTiles({old_tile});
 }
 
 // Verifies GetTile(tile_id) API can return the right thing.
@@ -362,8 +331,9 @@ TEST_F(TileManagerTest, GetTilesWithoutMatchingAcceptLanguages) {
   manager()->SetAcceptLanguagesForTesting("zh");
   TileGroup group;
   test::ResetTestGroup(&group);
-  InitWithData(TileGroupStatus::kSuccess, {group});
 
+  EXPECT_CALL(*tile_store(), Delete("group_guid", _));
+  InitWithData(TileGroupStatus::kNoTiles, {group});
   GetTiles(std::vector<Tile>());
 }
 
@@ -371,20 +341,11 @@ TEST_F(TileManagerTest, GetTilesWithoutMatchingAcceptLanguages) {
 // is found.
 TEST_F(TileManagerTest, GetTilesWithMatchingAcceptLanguages) {
   manager()->SetAcceptLanguagesForTesting("zh, en");
-  TileGroup group;
-  group.id = "gid";
-  group.locale = "en-US";
-  group.last_updated_ts = clock()->Now();
-  auto tile = std::make_unique<Tile>();
-  test::ResetTestEntry(tile.get());
-  group.tiles.emplace_back(std::move(tile));
-  InitWithData(TileGroupStatus::kSuccess, {group});
+  TileGroup group = CreateValidGroup("group_id", "tile_id");
+  const Tile tile = *group.tiles[0];
 
-  auto expected_tile = std::make_unique<Tile>();
-  test::ResetTestEntry(expected_tile.get());
-  std::vector<Tile> expected;
-  expected.emplace_back(std::move(*expected_tile.get()));
-  GetTiles(std::move(expected));
+  InitWithData(TileGroupStatus::kSuccess, {group});
+  GetTiles({tile});
 }
 
 }  // namespace

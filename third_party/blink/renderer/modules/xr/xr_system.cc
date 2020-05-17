@@ -278,7 +278,7 @@ XRSystem::PendingSupportsSessionQuery::PendingSupportsSessionQuery(
       mode_(session_mode),
       throw_on_unsupported_(throw_on_unsupported) {}
 
-void XRSystem::PendingSupportsSessionQuery::Trace(Visitor* visitor) {
+void XRSystem::PendingSupportsSessionQuery::Trace(Visitor* visitor) const {
   visitor->Trace(resolver_);
 }
 
@@ -549,7 +549,7 @@ void XRSystem::PendingRequestSessionQuery::ParseSensorRequirement() {
   sensor_requirement_ = kNone;
 }
 
-void XRSystem::PendingRequestSessionQuery::Trace(Visitor* visitor) {
+void XRSystem::PendingRequestSessionQuery::Trace(Visitor* visitor) const {
   visitor->Trace(resolver_);
   visitor->Trace(dom_overlay_element_);
 }
@@ -634,7 +634,7 @@ void XRSystem::OverlayFullscreenEventManager::RequestFullscreen() {
                                 Fullscreen::RequestType::kUnprefixed);
 }
 
-void XRSystem::OverlayFullscreenEventManager::Trace(Visitor* visitor) {
+void XRSystem::OverlayFullscreenEventManager::Trace(Visitor* visitor) const {
   visitor->Trace(xr_);
   visitor->Trace(query_);
   EventListener::Trace(visitor);
@@ -687,7 +687,7 @@ void XRSystem::OverlayFullscreenExitObserver::ExitFullscreen(
   Fullscreen::FullyExitFullscreen(element_->GetDocument(), kUaOriginated);
 }
 
-void XRSystem::OverlayFullscreenExitObserver::Trace(Visitor* visitor) {
+void XRSystem::OverlayFullscreenExitObserver::Trace(Visitor* visitor) const {
   visitor->Trace(xr_);
   visitor->Trace(element_);
   EventListener::Trace(visitor);
@@ -1494,7 +1494,7 @@ void XRSystem::TryEnsureService() {
                                             DisposeType::kDisconnected));
 }
 
-void XRSystem::Trace(Visitor* visitor) {
+void XRSystem::Trace(Visitor* visitor) const {
   visitor->Trace(frame_provider_);
   visitor->Trace(sessions_);
   visitor->Trace(service_);

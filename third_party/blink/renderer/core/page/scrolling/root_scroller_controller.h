@@ -39,7 +39,7 @@ class CORE_EXPORT RootScrollerController
  public:
   explicit RootScrollerController(Document&);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   // Sets the element that will be used as the root scroller. This can be
   // nullptr, in which case we'll use the default element (documentElement) as

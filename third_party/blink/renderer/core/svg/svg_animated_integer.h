@@ -72,7 +72,7 @@ class SVGAnimatedInteger : public ScriptWrappable,
     parent_integer_optional_integer_ = number_optional_integer;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   Member<SVGAnimatedIntegerOptionalInteger> parent_integer_optional_integer_;

@@ -50,7 +50,7 @@ struct SameSizeAsNodeRareData {
 static_assert(sizeof(NodeRareData) == sizeof(SameSizeAsNodeRareData),
               "NodeRareData should stay small");
 
-void NodeMutationObserverData::Trace(Visitor* visitor) {
+void NodeMutationObserverData::Trace(Visitor* visitor) const {
   visitor->Trace(registry_);
   visitor->Trace(transient_registry_);
 }
@@ -77,14 +77,14 @@ void NodeMutationObserverData::RemoveRegistration(
   registry_.EraseAt(registry_.Find(registration));
 }
 
-void NodeData::Trace(Visitor* visitor) {
+void NodeData::Trace(Visitor* visitor) const {
   if (bit_field_.get_concurrently<IsRareData>()) {
     if (bit_field_.get_concurrently<IsElementRareData>())
-      static_cast<ElementRareData*>(this)->TraceAfterDispatch(visitor);
+      static_cast<const ElementRareData*>(this)->TraceAfterDispatch(visitor);
     else
-      static_cast<NodeRareData*>(this)->TraceAfterDispatch(visitor);
+      static_cast<const NodeRareData*>(this)->TraceAfterDispatch(visitor);
   } else {
-    static_cast<NodeRenderingData*>(this)->TraceAfterDispatch(visitor);
+    static_cast<const NodeRenderingData*>(this)->TraceAfterDispatch(visitor);
   }
 }
 

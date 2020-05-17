@@ -48,7 +48,7 @@ class SVGFECompositeElement final
     return svg_operator_.Get();
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   bool SetFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;

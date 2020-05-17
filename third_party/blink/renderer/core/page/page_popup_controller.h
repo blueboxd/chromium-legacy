@@ -68,7 +68,7 @@ class PagePopupController : public ScriptWrappable, public Supplement<Page> {
 
   static CSSFontSelector* CreateCSSFontSelector(Document& popup_document);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   PagePopup& popup_;

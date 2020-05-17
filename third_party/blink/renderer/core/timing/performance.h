@@ -304,7 +304,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // The caller owns the |clock|.
   void SetClocksForTesting(const base::Clock* clock,

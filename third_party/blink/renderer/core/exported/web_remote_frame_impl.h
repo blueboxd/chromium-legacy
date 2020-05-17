@@ -120,7 +120,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
 
   static WebRemoteFrameImpl* FromFrame(RemoteFrame&);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   friend class RemoteFrameClientImpl;

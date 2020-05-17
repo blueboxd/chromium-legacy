@@ -43,6 +43,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="6058625436358447366">To finish, enter your old and new passwords</translation>
 <translation id="6106186594183574873">To finish, enter your old password</translation>
 <translation id="6146993107019042706">To finish, enter your new password</translation>
+<translation id="6517239166834772319">Explore</translation>
 <translation id="6643016212128521049">Clear</translation>
 <translation id="7162487448488904999">Gallery</translation>
 <translation id="7658239707568436148">Cancel</translation>
@@ -50,6 +51,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Change password</translation>
 <translation id="8208861521865154048">Perks</translation>
+<translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> manages this user. It may remotely manage settings and monitor user activity.</translation>
 <translation id="8747900814994928677">Confirm change</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> attempts left</translation>
 <translation id="910415269708673980">Refresh ticket for <ph name="PRINCIPAL_NAME" /></translation>

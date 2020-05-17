@@ -194,7 +194,7 @@ AudioContext::~AudioContext() {
 #endif
 }
 
-void AudioContext::Trace(Visitor* visitor) {
+void AudioContext::Trace(Visitor* visitor) const {
   visitor->Trace(close_resolver_);
   visitor->Trace(audio_context_manager_);
   BaseAudioContext::Trace(visitor);

@@ -99,7 +99,7 @@ class CORE_EXPORT DocumentLoadTiming final {
     return reference_monotonic_time_;
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   void SetTickClockForTesting(const base::TickClock* tick_clock);
   void SetClockForTesting(const base::Clock* clock);

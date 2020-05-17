@@ -32,7 +32,7 @@ class CORE_EXPORT DisplayCutoutClientImpl final
   // Notify the renderer that the safe areas have changed.
   void SetSafeArea(mojom::blink::DisplayCutoutSafeAreaPtr safe_area) override;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   Member<LocalFrame> frame_;

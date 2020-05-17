@@ -155,7 +155,7 @@ class EphemeronCallbacksCounter
   EphemeronCallbacksCounter(size_t* count_holder)
       : count_holder_(count_holder) {}
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->RegisterWeakCallbackMethod<EphemeronCallbacksCounter,
                                         &EphemeronCallbacksCounter::Callback>(
         this);

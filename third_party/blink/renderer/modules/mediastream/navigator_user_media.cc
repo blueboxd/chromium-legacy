@@ -37,7 +37,7 @@ MediaDevices* NavigatorUserMedia::mediaDevices(Navigator& navigator) {
   return NavigatorUserMedia::From(navigator).GetMediaDevices();
 }
 
-void NavigatorUserMedia::Trace(Visitor* visitor) {
+void NavigatorUserMedia::Trace(Visitor* visitor) const {
   visitor->Trace(media_devices_);
   Supplement<Navigator>::Trace(visitor);
 }

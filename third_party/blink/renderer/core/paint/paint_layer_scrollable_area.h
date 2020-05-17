@@ -165,7 +165,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
     void DestroyDetachedScrollbars();
     void Dispose();
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
    private:
     Scrollbar* CreateScrollbar(ScrollbarOrientation);
@@ -566,7 +566,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   bool HasHorizontalOverflow() const;
   bool HasVerticalOverflow() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   const DisplayItemClient& GetScrollingBackgroundDisplayItemClient() const {
     return scrolling_background_display_item_client_;
@@ -777,7 +777,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
         const PaintLayerScrollableArea& scrollable_area)
         : scrollable_area_(&scrollable_area) {}
 
-    void Trace(Visitor* visitor) { visitor->Trace(scrollable_area_); }
+    void Trace(Visitor* visitor) const { visitor->Trace(scrollable_area_); }
 
    private:
     IntRect VisualRect() const final;
@@ -795,7 +795,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
         const PaintLayerScrollableArea& scrollable_area)
         : scrollable_area_(&scrollable_area) {}
 
-    void Trace(Visitor* visitor) { visitor->Trace(scrollable_area_); }
+    void Trace(Visitor* visitor) const { visitor->Trace(scrollable_area_); }
 
    private:
     IntRect VisualRect() const final;

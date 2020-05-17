@@ -36,7 +36,7 @@ class SampledEffect final : public GarbageCollected<SampledEffect> {
   void RemoveReplacedInterpolations(const HashSet<PropertyHandle>&);
   void UpdateReplacedProperties(HashSet<PropertyHandle>&);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   WeakMember<KeyframeEffect> effect_;

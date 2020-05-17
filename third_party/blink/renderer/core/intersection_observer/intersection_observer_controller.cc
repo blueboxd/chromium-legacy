@@ -141,7 +141,7 @@ void IntersectionObserverController::RemoveTrackedObservation(
   tracked_implicit_root_observations_.erase(&observation);
 }
 
-void IntersectionObserverController::Trace(Visitor* visitor) {
+void IntersectionObserverController::Trace(Visitor* visitor) const {
   visitor->Trace(tracked_explicit_root_observers_);
   visitor->Trace(tracked_implicit_root_observations_);
   visitor->Trace(pending_intersection_observers_);

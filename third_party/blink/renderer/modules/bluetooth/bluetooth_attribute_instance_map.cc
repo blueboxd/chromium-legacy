@@ -91,7 +91,7 @@ void BluetoothAttributeInstanceMap::Clear() {
   descriptor_id_to_object_.clear();
 }
 
-void BluetoothAttributeInstanceMap::Trace(Visitor* visitor) {
+void BluetoothAttributeInstanceMap::Trace(Visitor* visitor) const {
   visitor->Trace(device_);
   visitor->Trace(service_id_to_object_);
   visitor->Trace(characteristic_id_to_object_);

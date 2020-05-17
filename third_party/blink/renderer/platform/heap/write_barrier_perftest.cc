@@ -32,7 +32,7 @@ perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
 class PerfDummyObject : public GarbageCollected<PerfDummyObject> {
  public:
   PerfDummyObject() = default;
-  virtual void Trace(Visitor*) {}
+  virtual void Trace(Visitor*) const {}
 };
 
 base::TimeDelta TimedRun(base::RepeatingCallback<void()> callback) {

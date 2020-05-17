@@ -1,8 +1,8 @@
 trace_after_dispatch_impl_error.cpp:9:1: warning: [blink-gc] Missing dispatch to class 'TraceAfterDispatchInlinedDerived' in manual trace dispatch.
-inline void TraceAfterDispatchInlinedBase::Trace(Visitor* visitor) {
+inline void TraceAfterDispatchInlinedBase::Trace(Visitor* visitor) const {
 ^
 trace_after_dispatch_impl_error.cpp:24:1: warning: [blink-gc] Missing dispatch to class 'TraceAfterDispatchExternDerived' in manual trace dispatch.
-void TraceAfterDispatchExternBase::Trace(Visitor* visitor) {
+void TraceAfterDispatchExternBase::Trace(Visitor* visitor) const {
 ^
 In file included from trace_after_dispatch_impl_error.cpp:5:
 ./trace_after_dispatch_impl_error.h:28:3: warning: [blink-gc] Class 'TraceAfterDispatchInlinedBase' has untraced fields that require tracing.

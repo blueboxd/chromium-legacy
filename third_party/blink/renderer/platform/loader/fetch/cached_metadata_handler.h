@@ -71,7 +71,7 @@ class CachedMetadataHandler : public GarbageCollected<CachedMetadataHandler> {
   };
 
   virtual ~CachedMetadataHandler() = default;
-  virtual void Trace(Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) const {}
 
   // Reset existing metadata. Subclasses can ignore setting new metadata after
   // clearing with |kDiscardLocally| to save memory.

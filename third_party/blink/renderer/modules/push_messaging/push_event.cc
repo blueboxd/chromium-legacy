@@ -48,7 +48,7 @@ PushMessageData* PushEvent::data() {
   return data_.Get();
 }
 
-void PushEvent::Trace(Visitor* visitor) {
+void PushEvent::Trace(Visitor* visitor) const {
   visitor->Trace(data_);
   ExtendableEvent::Trace(visitor);
 }

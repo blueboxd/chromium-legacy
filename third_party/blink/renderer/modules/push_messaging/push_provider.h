@@ -47,7 +47,7 @@ class PushProvider final : public GarbageCollected<PushProvider>,
   void Unsubscribe(std::unique_ptr<PushUnsubscribeCallbacks> callbacks);
   void GetSubscription(std::unique_ptr<PushSubscriptionCallbacks> callbacks);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Returns an initialized PushMessaging service. A connection will be

@@ -128,7 +128,7 @@ void HitTestResult::PopulateFromCachedResult(const HitTestResult& other) {
           : nullptr;
 }
 
-void HitTestResult::Trace(Visitor* visitor) {
+void HitTestResult::Trace(Visitor* visitor) const {
   visitor->Trace(inner_node_);
   visitor->Trace(inert_node_);
   visitor->Trace(inner_element_);

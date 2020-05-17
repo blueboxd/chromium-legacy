@@ -84,7 +84,7 @@ class CORE_EXPORT DateTimeChooser : public GarbageCollected<DateTimeChooser> {
   // Returns a root AXObject in the DateTimeChooser if it's available.
   virtual AXObject* RootAXObject() = 0;
 
-  virtual void Trace(Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) const {}
 };
 
 }  // namespace blink

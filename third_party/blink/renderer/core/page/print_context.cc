@@ -325,7 +325,7 @@ bool PrintContext::IsFrameValid() const {
          frame_->GetDocument()->GetLayoutView();
 }
 
-void PrintContext::Trace(Visitor* visitor) {
+void PrintContext::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(linked_destinations_);
 }

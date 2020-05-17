@@ -31,7 +31,7 @@ class NavigatorPlugins final : public GarbageCollected<NavigatorPlugins>,
 
   explicit NavigatorPlugins(Navigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   DOMPluginArray* plugins(LocalFrame*) const;

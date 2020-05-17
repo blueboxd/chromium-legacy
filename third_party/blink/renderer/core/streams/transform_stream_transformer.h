@@ -38,7 +38,7 @@ class CORE_EXPORT TransformStreamTransformer
   // Returns the ScriptState associated with this Transformer.
   virtual ScriptState* GetScriptState() = 0;
 
-  virtual void Trace(Visitor*) {}
+  virtual void Trace(Visitor*) const {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TransformStreamTransformer);

@@ -126,7 +126,7 @@ void PushProvider::GetSubscription(
                 WTF::Passed(std::move(callbacks))));
 }
 
-void PushProvider::Trace(Visitor* visitor) {
+void PushProvider::Trace(Visitor* visitor) const {
   visitor->Trace(push_messaging_manager_);
   Supplement::Trace(visitor);
 }

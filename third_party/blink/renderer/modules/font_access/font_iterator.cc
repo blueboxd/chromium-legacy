@@ -34,7 +34,7 @@ ScriptPromise FontIterator::next(ScriptState* script_state) {
   return ScriptPromise::Cast(script_state, ToV8(result, script_state));
 }
 
-void FontIterator::Trace(Visitor* visitor) {
+void FontIterator::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   visitor->Trace(entries_);
 }

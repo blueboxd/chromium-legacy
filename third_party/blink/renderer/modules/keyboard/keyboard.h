@@ -31,7 +31,7 @@ class Keyboard final : public ScriptWrappable {
   ScriptPromise getLayoutMap(ScriptState*, ExceptionState&);
 
   // ScriptWrappable override.
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<KeyboardLock> keyboard_lock_;

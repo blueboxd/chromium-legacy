@@ -54,7 +54,7 @@ class MODULES_EXPORT DatabaseClient : public GarbageCollected<DatabaseClient>,
 
   DatabaseClient();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool AllowDatabase(ExecutionContext*);
 

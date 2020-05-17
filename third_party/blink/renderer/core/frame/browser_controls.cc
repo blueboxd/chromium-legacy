@@ -23,7 +23,7 @@ BrowserControls::BrowserControls(const Page& page)
       accumulated_scroll_delta_(0),
       permitted_state_(cc::BrowserControlsState::kBoth) {}
 
-void BrowserControls::Trace(Visitor* visitor) {
+void BrowserControls::Trace(Visitor* visitor) const {
   visitor->Trace(page_);
 }
 

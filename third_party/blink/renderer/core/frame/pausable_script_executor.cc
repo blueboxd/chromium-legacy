@@ -36,7 +36,7 @@ class WebScriptExecutor : public PausableScriptExecutor::Executor {
 
   Vector<v8::Local<v8::Value>> Execute(LocalFrame*) override;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(sources_);
     PausableScriptExecutor::Executor::Trace(visitor);
   }
@@ -85,7 +85,7 @@ class V8FunctionExecutor : public PausableScriptExecutor::Executor {
 
   Vector<v8::Local<v8::Value>> Execute(LocalFrame*) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   TraceWrapperV8Reference<v8::Function> function_;
@@ -125,7 +125,7 @@ Vector<v8::Local<v8::Value>> V8FunctionExecutor::Execute(LocalFrame* frame) {
   return results;
 }
 
-void V8FunctionExecutor::Trace(Visitor* visitor) {
+void V8FunctionExecutor::Trace(Visitor* visitor) const {
   visitor->Trace(function_);
   visitor->Trace(receiver_);
   visitor->Trace(args_);
@@ -261,7 +261,7 @@ void PausableScriptExecutor::Dispose() {
   task_handle_.Cancel();
 }
 
-void PausableScriptExecutor::Trace(Visitor* visitor) {
+void PausableScriptExecutor::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(executor_);
   ExecutionContextLifecycleObserver::Trace(visitor);

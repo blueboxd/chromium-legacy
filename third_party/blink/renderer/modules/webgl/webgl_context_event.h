@@ -56,7 +56,7 @@ class WebGLContextEvent final : public Event {
 
   const AtomicString& InterfaceName() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   String status_message_;

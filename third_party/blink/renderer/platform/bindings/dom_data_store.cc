@@ -20,7 +20,7 @@ void DOMDataStore::Dispose() {
   }
 }
 
-void DOMDataStore::Trace(Visitor* visitor) {
+void DOMDataStore::Trace(Visitor* visitor) const {
   visitor->Trace(wrapper_map_);
 }
 

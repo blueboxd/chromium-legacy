@@ -88,7 +88,7 @@ void CSSStyleSheetResource::SetParsedStyleSheetCache(
   UpdateDecodedSize();
 }
 
-void CSSStyleSheetResource::Trace(Visitor* visitor) {
+void CSSStyleSheetResource::Trace(Visitor* visitor) const {
   visitor->Trace(parsed_style_sheet_cache_);
   TextResource::Trace(visitor);
 }

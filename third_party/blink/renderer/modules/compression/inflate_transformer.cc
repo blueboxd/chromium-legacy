@@ -159,7 +159,7 @@ void InflateTransformer::Inflate(const uint8_t* start,
   } while (stream_.avail_out == 0);
 }
 
-void InflateTransformer::Trace(Visitor* visitor) {
+void InflateTransformer::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   TransformStreamTransformer::Trace(visitor);
 }

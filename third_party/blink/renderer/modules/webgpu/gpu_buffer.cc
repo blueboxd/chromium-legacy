@@ -121,7 +121,7 @@ GPUBuffer::~GPUBuffer() {
   GetProcs().bufferRelease(GetHandle());
 }
 
-void GPUBuffer::Trace(Visitor* visitor) {
+void GPUBuffer::Trace(Visitor* visitor) const {
   visitor->Trace(mapped_buffer_);
   DawnObject<WGPUBuffer>::Trace(visitor);
 }

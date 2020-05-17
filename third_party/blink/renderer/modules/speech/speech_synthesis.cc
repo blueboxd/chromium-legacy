@@ -289,7 +289,7 @@ SpeechSynthesisUtterance* SpeechSynthesis::CurrentSpeechUtterance() const {
   return utterance_queue_.front();
 }
 
-void SpeechSynthesis::Trace(Visitor* visitor) {
+void SpeechSynthesis::Trace(Visitor* visitor) const {
   visitor->Trace(receiver_);
   visitor->Trace(mojom_synthesis_);
   visitor->Trace(voice_list_);

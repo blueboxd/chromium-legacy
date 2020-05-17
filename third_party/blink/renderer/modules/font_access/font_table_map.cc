@@ -8,7 +8,7 @@
 
 namespace blink {
 
-void FontTableMap::Trace(Visitor* visitor) {
+void FontTableMap::Trace(Visitor* visitor) const {
   visitor->Trace(table_map_);
   ScriptWrappable::Trace(visitor);
 }
@@ -37,7 +37,7 @@ class FontTableMapIterationSource final
     return true;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(table_data_);
     PairIterable<String, Member<Blob>>::IterationSource::Trace(visitor);
   }

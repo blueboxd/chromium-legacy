@@ -58,7 +58,7 @@ HTMLObjectElement::HTMLObjectElement(Document& document,
 
 inline HTMLObjectElement::~HTMLObjectElement() = default;
 
-void HTMLObjectElement::Trace(Visitor* visitor) {
+void HTMLObjectElement::Trace(Visitor* visitor) const {
   ListedElement::Trace(visitor);
   HTMLPlugInElement::Trace(visitor);
 }

@@ -89,7 +89,7 @@ class CORE_EXPORT DataObjectItem final
   bool HasFileSystemId() const;
   String FileSystemId() const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   enum DataSource {

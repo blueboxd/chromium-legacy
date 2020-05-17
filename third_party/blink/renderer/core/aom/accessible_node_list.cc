@@ -106,7 +106,7 @@ void AccessibleNodeList::NotifyChanged() {
     owner.second->OnRelationListChanged(owner.first);
 }
 
-void AccessibleNodeList::Trace(Visitor* visitor) {
+void AccessibleNodeList::Trace(Visitor* visitor) const {
   visitor->Trace(nodes_);
   visitor->Trace(owners_);
   ScriptWrappable::Trace(visitor);

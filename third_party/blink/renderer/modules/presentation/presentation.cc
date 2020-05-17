@@ -29,7 +29,7 @@ Presentation* Presentation::Create(LocalDOMWindow* window) {
   return presentation;
 }
 
-void Presentation::Trace(Visitor* visitor) {
+void Presentation::Trace(Visitor* visitor) const {
   visitor->Trace(default_request_);
   visitor->Trace(receiver_);
   ScriptWrappable::Trace(visitor);

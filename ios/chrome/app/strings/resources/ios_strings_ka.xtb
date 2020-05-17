@@ -569,6 +569,7 @@ Handoff ასევე უნდა იყოს ჩართული პა�
 <translation id="8428045167754449968">ქალაქი/დაბა</translation>
 <translation id="8428213095426709021">პარამეტრები</translation>
 <translation id="8458397775385147834">1 ელემენტი წაშლილია</translation>
+<translation id="8459333855531264009">დაუცველი</translation>
 <translation id="8487667956631253959">ჩართულია</translation>
 <translation id="8487700953926739672">ოფლაინში ხელმისაწვდომი</translation>
 <translation id="8490978609246021741">ცვლილებების შენახვა</translation>
@@ -595,6 +596,7 @@ Handoff ასევე უნდა იყოს ჩართული პა�
 <translation id="8741995161408053644">თქვენს Google ანგარიშში შეიძლება სხვა ტიპის დათვალიერების ისტორია იყოს შენახული, რომელიც ხელმისაწვდომია მისამართზე: <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8756969031206844760">გსურთ პაროლის განახლება?</translation>
 <translation id="8775144690796719618">URL არასწორია</translation>
+<translation id="8803639129939845298">დაცული</translation>
 <translation id="8820817407110198400">სანიშნეები</translation>
 <translation id="8840513115188359703">თქვენ არ გამოხვალთ თქვენი Google ანგარიშიდან.</translation>
 <translation id="8870413625673593573">ბოლოს დახურული</translation>
@@ -625,7 +627,6 @@ Handoff ასევე უნდა იყოს ჩართული პა�
 <translation id="9223358826628549784">მოხსენება შეცდომების შესახებ გაიგზავნა.</translation>
 <translation id="952704832371081537">გაუქმება</translation>
 <translation id="988141524645182168">სხვა მოწყობილობები</translation>
-<translation id="989697783705943787">საიტის უსაფრთხოება</translation>
 <translation id="989988560359834682">მისამართის რედაქტირება</translation>
 <translation id="994757059139821576">სტატიების შემოთავაზება</translation>
 </translationbundle>

@@ -234,7 +234,7 @@ HTMLSelectElement* AXMenuListOption::ParentSelectNode() const {
   return nullptr;
 }
 
-void AXMenuListOption::Trace(Visitor* visitor) {
+void AXMenuListOption::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   AXNodeObject::Trace(visitor);
 }

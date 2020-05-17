@@ -17,7 +17,7 @@ ExecutionContext* RemoteDOMWindow::GetExecutionContext() const {
   return nullptr;
 }
 
-void RemoteDOMWindow::Trace(Visitor* visitor) {
+void RemoteDOMWindow::Trace(Visitor* visitor) const {
   DOMWindow::Trace(visitor);
 }
 

@@ -11,8 +11,8 @@
 <translation id="2613747923081026172">建立群組</translation>
 <translation id="2671423594960767771">分享群組項目</translation>
 <translation id="2977480621796371840">從群組中移除</translation>
-<translation id="3328308545011660196">建議：似乎有 <ph name="NUMBER_OF_TABS" /> 個相關的分頁。要將這些分頁加入群組嗎？</translation>
-<translation id="4133493477912226187">似乎有 <ph name="NUMBER_OF_TABS" /> 個相關的分頁。要將這些分頁加入群組嗎？</translation>
+<translation id="3328308545011660196">建議：似乎有 <ph name="NUMBER_OF_TABS" /> 個相關嘅分頁。要唔要將佢哋分組？</translation>
+<translation id="4133493477912226187">似乎有 <ph name="NUMBER_OF_TABS" /> 個相關的分頁。要唔要將佢哋分組？</translation>
 <translation id="4212246570487010370">繼續瀏覽</translation>
 <translation id="4450893287417543264">不要再顯示</translation>
 <translation id="4648718555153979859">您的分頁都集中在這裡顯示</translation>
@@ -30,7 +30,7 @@
 <translation id="7151209024774799310">從群組中移除標籤</translation>
 <translation id="7559245342362162951">用全螢幕網格顯示群組嘅分頁</translation>
 <translation id="7792771145871471484">睇下建議。</translation>
-<translation id="7838146321400849846">{TABS_COUNT,plural, =1{將 <ph name="TABS_COUNT_ONE" />個所選分頁加入群組}other{將 <ph name="TABS_COUNT_MANY" />個所選分頁加入群組}}</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{將 <ph name="TABS_COUNT_ONE" /> 個揀咗嘅分頁分組}other{將 <ph name="TABS_COUNT_MANY" /> 個揀咗嘅分頁分組}}</translation>
 <translation id="7885132941432959125">移去右邊</translation>
 <translation id="7966321538264951561">閂建議。</translation>
 <translation id="814503310257431685">查看全部</translation>

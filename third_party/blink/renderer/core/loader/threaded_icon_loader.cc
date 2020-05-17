@@ -178,7 +178,7 @@ void ThreadedIconLoader::DidFailRedirectCheck() {
   std::move(icon_callback_).Run(SkBitmap(), -1);
 }
 
-void ThreadedIconLoader::Trace(Visitor* visitor) {
+void ThreadedIconLoader::Trace(Visitor* visitor) const {
   visitor->Trace(threadable_loader_);
   ThreadableLoaderClient::Trace(visitor);
 }

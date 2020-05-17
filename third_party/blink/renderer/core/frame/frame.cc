@@ -64,7 +64,7 @@ Frame::~Frame() {
   DCHECK(IsDetached());
 }
 
-void Frame::Trace(Visitor* visitor) {
+void Frame::Trace(Visitor* visitor) const {
   visitor->Trace(tree_node_);
   visitor->Trace(page_);
   visitor->Trace(owner_);

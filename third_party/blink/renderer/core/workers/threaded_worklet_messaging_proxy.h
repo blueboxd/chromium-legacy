@@ -38,7 +38,7 @@ class CORE_EXPORT ThreadedWorkletMessagingProxy
       WorkletModuleResponsesMap*,
       const base::Optional<WorkerBackingThreadStartupData>& = base::nullopt);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   explicit ThreadedWorkletMessagingProxy(ExecutionContext*);

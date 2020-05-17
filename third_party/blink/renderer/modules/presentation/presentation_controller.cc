@@ -47,7 +47,7 @@ PresentationController* PresentationController::FromContext(
   return From(*To<LocalDOMWindow>(execution_context));
 }
 
-void PresentationController::Trace(Visitor* visitor) {
+void PresentationController::Trace(Visitor* visitor) const {
   visitor->Trace(presentation_controller_receiver_);
   visitor->Trace(presentation_);
   visitor->Trace(connections_);

@@ -37,7 +37,7 @@ class NativeFileSystemWriter final : public ScriptWrappable {
   ScriptPromise truncate(ScriptState*, uint64_t size, ExceptionState&);
   ScriptPromise close(ScriptState*, ExceptionState&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   class StreamWriterClient;

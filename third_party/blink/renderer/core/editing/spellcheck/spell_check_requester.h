@@ -68,7 +68,7 @@ class CORE_EXPORT SpellCheckRequest final
 
   int RequestNumber() const { return request_number_; }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   Member<SpellCheckRequester> requester_;
@@ -84,7 +84,7 @@ class CORE_EXPORT SpellCheckRequester final
  public:
   explicit SpellCheckRequester(LocalDOMWindow&);
   ~SpellCheckRequester();
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   // Returns true if a request is initiated. Returns false otherwise.
   bool RequestCheckingFor(const EphemeralRange&);

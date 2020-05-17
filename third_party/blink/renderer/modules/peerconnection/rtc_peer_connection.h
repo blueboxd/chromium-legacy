@@ -415,7 +415,7 @@ class MODULES_EXPORT RTCPeerConnection final
     return force_encoded_video_insertable_streams_;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   base::TimeTicks WebRtcTimestampToBlinkTimestamp(
       base::TimeTicks webrtc_monotonic_time) const;
@@ -444,7 +444,7 @@ class MODULES_EXPORT RTCPeerConnection final
     // |m_event| will only be fired if setup() returns true;
     bool Setup();
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
     Member<Event> event_;
 

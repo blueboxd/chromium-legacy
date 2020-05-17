@@ -478,7 +478,7 @@ scoped_refptr<base::SingleThreadTaskRunner> ClipboardPromise::GetTaskRunner() {
   return GetExecutionContext()->GetTaskRunner(TaskType::kUserInteraction);
 }
 
-void ClipboardPromise::Trace(Visitor* visitor) {
+void ClipboardPromise::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(script_promise_resolver_);
   visitor->Trace(clipboard_writer_);

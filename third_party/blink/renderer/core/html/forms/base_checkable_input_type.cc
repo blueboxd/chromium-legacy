@@ -42,7 +42,7 @@
 
 namespace blink {
 
-void BaseCheckableInputType::Trace(Visitor* visitor) {
+void BaseCheckableInputType::Trace(Visitor* visitor) const {
   InputTypeView::Trace(visitor);
   InputType::Trace(visitor);
 }

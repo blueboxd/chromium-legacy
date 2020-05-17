@@ -30,7 +30,7 @@ class StorageManager final : public ScriptWrappable {
 
   ScriptPromise estimate(ScriptState*);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   mojom::blink::PermissionService* GetPermissionService(ExecutionContext*);

@@ -37,7 +37,7 @@ class CORE_EXPORT ResizeObserverEntry final : public ScriptWrappable {
     return device_pixel_content_box_size_;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<Element> target_;

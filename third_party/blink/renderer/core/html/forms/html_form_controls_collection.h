@@ -54,7 +54,7 @@ class HTMLFormControlsCollection final : public HTMLCollection {
   HTMLElement* namedItem(const AtomicString& name) const override;
   void namedGetter(const AtomicString& name, RadioNodeListOrElement&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void UpdateIdNameCache() const override;

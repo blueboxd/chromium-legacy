@@ -9,7 +9,7 @@
 
 namespace blink {
 
-void ScriptFunction::Trace(Visitor* visitor) {
+void ScriptFunction::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   CustomWrappableAdapter::Trace(visitor);
 }

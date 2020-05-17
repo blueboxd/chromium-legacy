@@ -109,7 +109,7 @@ void CSSPaintDefinition::MaybeCreatePaintInstance() {
   instance_.Set(constructor_->GetIsolate(), paint_instance.V8Value());
 }
 
-void CSSPaintDefinition::Trace(Visitor* visitor) {
+void CSSPaintDefinition::Trace(Visitor* visitor) const {
   visitor->Trace(constructor_);
   visitor->Trace(paint_);
   visitor->Trace(instance_);

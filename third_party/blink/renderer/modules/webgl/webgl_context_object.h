@@ -41,7 +41,7 @@ class WebGLContextObject : public WebGLObject {
   bool Validate(const WebGLContextGroup*,
                 const WebGLRenderingContextBase*) const final;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   explicit WebGLContextObject(WebGLRenderingContextBase*);

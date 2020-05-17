@@ -252,13 +252,13 @@ class Object : public LinkedObject {
     return HeapObjectHeader::FromPayload(this)->IsMarked();
   }
 
-  void Trace(Visitor* visitor) { LinkedObject::Trace(visitor); }
+  void Trace(Visitor* visitor) const { LinkedObject::Trace(visitor); }
 };
 
 class RawPtrObjectWithManualWriteBarrier
     : public GarbageCollected<RawPtrObjectWithManualWriteBarrier> {
  public:
-  void Trace(Visitor* v) { v->Trace(object_); }
+  void Trace(Visitor* v) const { v->Trace(object_); }
 
   void Set(Object* object) {
     object_ = object;
@@ -400,7 +400,7 @@ class Mixin : public GarbageCollectedMixin {
   Mixin() : next_(nullptr) {}
   virtual ~Mixin() {}
 
-  void Trace(Visitor* visitor) override { visitor->Trace(next_); }
+  void Trace(Visitor* visitor) const override { visitor->Trace(next_); }
 
   virtual void Bar() {}
 
@@ -422,7 +422,7 @@ class Child : public GarbageCollected<Child>,
   Child() : ClassWithVirtual(), Mixin() {}
   ~Child() override {}
 
-  void Trace(Visitor* visitor) override { Mixin::Trace(visitor); }
+  void Trace(Visitor* visitor) const override { Mixin::Trace(visitor); }
 
   void Foo() override {}
   void Bar() override {}
@@ -434,7 +434,7 @@ class ParentWithMixinPointer : public GarbageCollected<ParentWithMixinPointer> {
 
   void set_mixin(Mixin* mixin) { mixin_ = mixin; }
 
-  virtual void Trace(Visitor* visitor) { visitor->Trace(mixin_); }
+  virtual void Trace(Visitor* visitor) const { visitor->Trace(mixin_); }
 
  protected:
   Member<Mixin> mixin_;
@@ -482,7 +482,7 @@ class NonGarbageCollectedContainer {
   NonGarbageCollectedContainer(Object* obj, int y) : obj_(obj), y_(y) {}
 
   virtual ~NonGarbageCollectedContainer() {}
-  virtual void Trace(Visitor* visitor) { visitor->Trace(obj_); }
+  virtual void Trace(Visitor* visitor) const { visitor->Trace(obj_); }
 
  private:
   Member<Object> obj_;
@@ -497,7 +497,7 @@ class NonGarbageCollectedContainerRoot {
       : next_(obj1, y), obj_(obj2) {}
   virtual ~NonGarbageCollectedContainerRoot() {}
 
-  virtual void Trace(Visitor* visitor) {
+  virtual void Trace(Visitor* visitor) const {
     visitor->Trace(next_);
     visitor->Trace(obj_);
   }
@@ -1551,7 +1551,7 @@ class ObjectWithWeakMember : public GarbageCollected<ObjectWithWeakMember> {
 
   void set_object(Object* object) { object_ = object; }
 
-  void Trace(Visitor* visitor) { visitor->Trace(object_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(object_); }
 
  private:
   WeakMember<Object> object_ = nullptr;
@@ -1599,7 +1599,7 @@ class ObjectHolder : public GarbageCollected<ObjectHolder<T>> {
  public:
   ObjectHolder() = default;
 
-  virtual void Trace(Visitor* visitor) { visitor->Trace(holder_); }
+  virtual void Trace(Visitor* visitor) const { visitor->Trace(holder_); }
 
   void set_value(T* value) { holder_ = value; }
   T* value() const { return holder_.Get(); }
@@ -1784,7 +1784,7 @@ class Destructed final : public GarbageCollected<Destructed> {
  public:
   ~Destructed() { n_destructed++; }
 
-  void Trace(Visitor*) {}
+  void Trace(Visitor*) const {}
 
   static size_t n_destructed;
 };
@@ -1802,7 +1802,7 @@ class LinkedHashSetWrapper final
     }
   }
 
-  void Trace(Visitor* v) { v->Trace(hash_set_); }
+  void Trace(Visitor* v) const { v->Trace(hash_set_); }
 
   void Swap() {
     HashType hash_set;
@@ -1849,7 +1849,7 @@ class NewLinkedHashSetWrapper final
     }
   }
 
-  void Trace(Visitor* v) { v->Trace(hash_set_); }
+  void Trace(Visitor* v) const { v->Trace(hash_set_); }
 
   void Swap() {
     HashType hash_set;

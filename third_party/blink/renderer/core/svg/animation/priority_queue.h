@@ -55,7 +55,7 @@ class PriorityQueue {
 
   const EntryType& operator[](wtf_size_t index) const { return heap_[index]; }
 
-  void Trace(Visitor* visitor) { visitor->Trace(heap_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(heap_); }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PriorityQueueTest, Updates);

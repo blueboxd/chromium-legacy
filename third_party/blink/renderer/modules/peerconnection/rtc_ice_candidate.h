@@ -74,7 +74,7 @@ class MODULES_EXPORT RTCIceCandidate final : public ScriptWrappable {
 
   RTCIceCandidatePlatform* PlatformCandidate() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<RTCIceCandidatePlatform> platform_candidate_;

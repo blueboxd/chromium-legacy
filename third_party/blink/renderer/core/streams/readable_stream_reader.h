@@ -63,7 +63,7 @@ class CORE_EXPORT ReadableStreamReader : public ScriptWrappable {
 
   StreamPromiseResolver* ClosedPromise() { return closed_promise_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class ReadableStreamDefaultController;

@@ -37,7 +37,7 @@ class {{export_symbol}} {{sink_class}} final : public GarbageCollected<{{sink_cl
   {{sink_class}} (const {{sink_class}}&) = delete;
   {{sink_class}}& operator=(const {{sink_class}}&) = delete;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
 {% for agent in agents %}
 {% set class_name = agent | agent_name_to_class %}

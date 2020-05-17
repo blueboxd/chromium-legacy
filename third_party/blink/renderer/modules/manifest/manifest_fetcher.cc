@@ -88,7 +88,7 @@ void ManifestFetcher::DidFailRedirectCheck() {
   DidFail(ResourceError::Failure(NullURL()));
 }
 
-void ManifestFetcher::Trace(Visitor* visitor) {
+void ManifestFetcher::Trace(Visitor* visitor) const {
   visitor->Trace(loader_);
   ThreadableLoaderClient::Trace(visitor);
 }

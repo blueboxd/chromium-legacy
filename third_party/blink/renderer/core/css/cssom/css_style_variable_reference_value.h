@@ -42,7 +42,7 @@ class CORE_EXPORT CSSStyleVariableReferenceValue final
   CSSUnparsedValue* fallback() { return fallback_.Get(); }
   const CSSUnparsedValue* fallback() const { return fallback_.Get(); }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(fallback_);
     ScriptWrappable::Trace(visitor);
   }

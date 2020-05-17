@@ -138,7 +138,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
       Element& target,
       ActiveInterpolationsMap& animations);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   void InitStyleAndApplyInheritance(Element& element,

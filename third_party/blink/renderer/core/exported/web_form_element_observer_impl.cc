@@ -27,7 +27,7 @@ class WebFormElementObserverImpl::ObserverCallback
 
   void Disconnect();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<HTMLElement> element_;
@@ -98,7 +98,7 @@ void WebFormElementObserverImpl::ObserverCallback::Disconnect() {
 }
 
 void WebFormElementObserverImpl::ObserverCallback::Trace(
-    blink::Visitor* visitor) {
+    blink::Visitor* visitor) const {
   visitor->Trace(element_);
   visitor->Trace(parents_);
   visitor->Trace(mutation_observer_);
@@ -138,7 +138,7 @@ void WebFormElementObserverImpl::Disconnect() {
   self_keep_alive_.Clear();
 }
 
-void WebFormElementObserverImpl::Trace(Visitor* visitor) {
+void WebFormElementObserverImpl::Trace(Visitor* visitor) const {
   visitor->Trace(mutation_callback_);
 }
 

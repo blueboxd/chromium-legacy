@@ -240,7 +240,6 @@
 <translation id="1962204205936693436"><ph name="DOMAIN" /> ബുക്ക്‌മാർക്കുകൾ</translation>
 <translation id="1973335181906896915">സീരിയലൈസേഷൻ പിശക്</translation>
 <translation id="1974060860693918893">നൂതനം</translation>
-<translation id="1974883374937189061">നിങ്ങൾ സന്ദർശിക്കുന്ന ചില പേജുകളുടെ <ph name="BEGIN_WHITEPAPER_LINK" />URL, പരിമിത സിസ്‌റ്റം വിവരങ്ങൾ, ചില പേജുകളുടെ ഉള്ളടക്കം<ph name="END_WHITEPAPER_LINK" /> എന്നിവ Google-ലേക്ക് അയച്ച് Chrome സുരക്ഷ മെച്ചപ്പെടുത്താൻ സഹായിക്കുക. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1975584088563498795">മെയിൽബോക്സ് 10</translation>
 <translation id="1978555033938440688">ഫേംവെയർ പതിപ്പ്</translation>
 <translation id="1981206234434200693">Chrome-ന്‍റെ ബ്രൗസിംഗ് ചരിത്ര ഡാറ്റ മായ്‌ക്കുക</translation>
@@ -1590,7 +1589,6 @@
 <translation id="7763386264682878361">പേയ്‌മെന്റ് മാനിഫെസ്‌റ്റ് പാർസർ</translation>
 <translation id="7764225426217299476">വിലാസം ചേർക്കുക</translation>
 <translation id="7766518757692125295">സ്കേർട്ട്</translation>
-<translation id="7767271804335921384">ആപ്പ് നിങ്ങളുടെ അഡ്‌മിൻ ബ്ലോക്ക് ചെയ്‌തിരിക്കുന്നു</translation>
 <translation id="7770259615151589601">ഡെസിഗ്‌നേറ്റ് ചെയ്‌തത്-വലുത്</translation>
 <translation id="7773005668374414287">അതേ ക്രമത്തിൽ ഫേസ് അപ്പ്</translation>
 <translation id="777702478322588152">പ്രിഫെക്ച്വര്‍</translation>
@@ -1744,6 +1742,7 @@
 <translation id="8425213833346101688">മാറ്റുക</translation>
 <translation id="8428213095426709021">ക്രമീകരണങ്ങള്‍</translation>
 <translation id="8433057134996913067">ഇത് നിങ്ങളെ മിക്ക വെബ്‌സൈറ്റുകളിൽ നിന്നും സൈൻ ഔട്ട് ചെയ്യിക്കും.</translation>
+<translation id="8433678324664858900">നിർദ്ദേശങ്ങൾ കാണിക്കുക</translation>
 <translation id="8437238597147034694">&amp;നീക്കുന്നത് പഴയപടിയാക്കുക</translation>
 <translation id="8457125768502047971">അനിശ്ചിതം</translation>
 <translation id="8461694314515752532">നിങ്ങളുടെ സമന്വയ പാസ്‌ഫ്രെയ്‌സ് ഉപയോഗിച്ച്, സമന്വയിപ്പിച്ച ഡാറ്റ എൻക്രി‌പ്‌റ്റ് ചെയ്യുക</translation>

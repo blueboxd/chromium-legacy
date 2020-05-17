@@ -77,7 +77,7 @@ class MODULES_EXPORT MediaRecorderHandler final
                     OnMediaCapabilitiesEncodingInfoCallback cb);
   String ActualMimeType();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   friend class MediaRecorderHandlerTest;

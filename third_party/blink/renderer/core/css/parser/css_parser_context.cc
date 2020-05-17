@@ -290,7 +290,7 @@ bool CSSParserContext::IsForMarkupSanitization() const {
   return document_ && document_->IsForMarkupSanitization();
 }
 
-void CSSParserContext::Trace(Visitor* visitor) {
+void CSSParserContext::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
 }
 

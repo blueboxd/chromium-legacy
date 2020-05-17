@@ -65,7 +65,7 @@ class V0CustomElementRegistrationContext final
   bool NameIsDefined(const AtomicString& name) const;
   void SetV1(const CustomElementRegistry*);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   // Instance creation
   void DidGiveTypeExtension(Element*, const AtomicString& type);

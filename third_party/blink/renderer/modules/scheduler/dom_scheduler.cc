@@ -56,7 +56,7 @@ void DOMScheduler::ContextDestroyed() {
   global_task_queues_.clear();
 }
 
-void DOMScheduler::Trace(Visitor* visitor) {
+void DOMScheduler::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
   Supplement<LocalDOMWindow>::Trace(visitor);

@@ -95,7 +95,7 @@ class TextEncoderStream::Transformer final : public TransformStreamTransformer {
 
   ScriptState* GetScriptState() override { return script_state_; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(script_state_);
     TransformStreamTransformer::Trace(visitor);
   }
@@ -186,7 +186,7 @@ WritableStream* TextEncoderStream::writable() const {
   return transform_->Writable();
 }
 
-void TextEncoderStream::Trace(Visitor* visitor) {
+void TextEncoderStream::Trace(Visitor* visitor) const {
   visitor->Trace(transform_);
   ScriptWrappable::Trace(visitor);
 }

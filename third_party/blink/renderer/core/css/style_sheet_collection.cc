@@ -62,7 +62,7 @@ void StyleSheetCollection::AppendSheetForList(StyleSheet* sheet) {
   style_sheets_for_style_sheet_list_.push_back(sheet);
 }
 
-void StyleSheetCollection::Trace(Visitor* visitor) {
+void StyleSheetCollection::Trace(Visitor* visitor) const {
   visitor->Trace(active_author_style_sheets_);
   visitor->Trace(style_sheets_for_style_sheet_list_);
 }

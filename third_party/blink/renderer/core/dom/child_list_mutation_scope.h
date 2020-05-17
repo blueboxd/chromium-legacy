@@ -66,7 +66,7 @@ class ChildListMutationAccumulator final
   void EnterMutationScope() { mutation_scopes_++; }
   void LeaveMutationScope();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   void EnqueueMutationRecord();

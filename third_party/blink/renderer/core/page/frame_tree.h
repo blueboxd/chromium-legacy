@@ -87,7 +87,7 @@ class CORE_EXPORT FrameTree final {
   unsigned ScopedChildCount() const;
   void InvalidateScopedChildCount();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   Frame* FindFrameForNavigationInternal(const AtomicString& name,

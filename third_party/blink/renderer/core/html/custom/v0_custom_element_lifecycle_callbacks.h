@@ -61,7 +61,7 @@ class V0CustomElementLifecycleCallbacks
                                 const AtomicString& old_value,
                                 const AtomicString& new_value) = 0;
 
-  virtual void Trace(Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) const {}
 
  protected:
   explicit V0CustomElementLifecycleCallbacks(CallbackType type)

@@ -124,7 +124,7 @@ void PaintTiming::SetTickClockForTesting(const base::TickClock* clock) {
   clock_ = clock;
 }
 
-void PaintTiming::Trace(Visitor* visitor) {
+void PaintTiming::Trace(Visitor* visitor) const {
   visitor->Trace(fmp_detector_);
   Supplement<Document>::Trace(visitor);
 }

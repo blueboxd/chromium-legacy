@@ -240,7 +240,6 @@
 <translation id="1962204205936693436"><ph name="DOMAIN" /> बुकमार्कहरू</translation>
 <translation id="1973335181906896915">अनुक्रमण त्रुटि</translation>
 <translation id="1974060860693918893">उन्नत</translation>
-<translation id="1974883374937189061"><ph name="BEGIN_WHITEPAPER_LINK" />आफूले भ्रमण गर्ने केही पृष्ठका URL, प्रणालीसम्बन्धी सीमित जानकारी र पृष्ठका केही सामग्री<ph name="END_WHITEPAPER_LINK" /> Google मा पठाएर Chrome को सुरक्षा व्यवस्था सुधार गर्न मद्दत गर्नुहोस्। <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1975584088563498795">मेलबक्स १०</translation>
 <translation id="1978555033938440688">फर्मवेयरको संस्करण</translation>
 <translation id="1981206234434200693">Chrome को ब्राउजिङ इतिहाससम्बन्धी डेटा खाली गर्नुहोस्</translation>
@@ -1590,7 +1589,6 @@
 <translation id="7763386264682878361">भुक्तानी म्यानिफेस्ट पार्सर</translation>
 <translation id="7764225426217299476">ठेगाना थप्नुहोस्</translation>
 <translation id="7766518757692125295">स्कर्ट</translation>
-<translation id="7767271804335921384">तपाईंका प्रशासकले यो अनुप्रयोगमाथि रोक लगाउनुभएको छ</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">उही क्रम तर माथितिर फर्काएर</translation>
 <translation id="777702478322588152">प्रशासकिय क्षेत्र</translation>
@@ -1744,6 +1742,7 @@
 <translation id="8425213833346101688">परिवर्तन गर्नुहोस्</translation>
 <translation id="8428213095426709021">सेटिङहरू</translation>
 <translation id="8433057134996913067">यसले तपाईँलाई अधिकांश साइटहरूबाट साइन आउट गराउनेछ।</translation>
+<translation id="8433678324664858900">सुझावहरू देखाउनुहोस्</translation>
 <translation id="8437238597147034694">सार्ने कार्यलाई &amp;पूर्ववत गर्नुहोस्</translation>
 <translation id="8457125768502047971">अनिश्चितकालीन</translation>
 <translation id="8461694314515752532">सिंक गरिएको डेटालाई तपाईंको आफ्नै सिंक पासफ्रेजमार्फत इन्क्रिप्ट गर्नुहोस्</translation>

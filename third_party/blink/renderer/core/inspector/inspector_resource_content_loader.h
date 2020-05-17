@@ -25,7 +25,7 @@ class CORE_EXPORT InspectorResourceContentLoader final
   explicit InspectorResourceContentLoader(LocalFrame*);
   ~InspectorResourceContentLoader();
   void Dispose();
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   int CreateClientId();
   void EnsureResourcesContentLoaded(int client_id, base::OnceClosure callback);

@@ -26,7 +26,7 @@ class MODULES_EXPORT MediaControlsTextTrackManager
   void ShowTextTrackAtIndex(unsigned);
   void DisableShowingTextTracks();
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
  private:
   Member<HTMLMediaElement> media_element_;

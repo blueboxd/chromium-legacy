@@ -48,7 +48,7 @@ class MODULES_EXPORT BackgroundFetchRecord final : public ScriptWrappable {
   void SetResponseAndUpdateState(mojom::blink::FetchAPIResponsePtr& response);
 
   bool IsRecordPending();
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   void OnRequestCompleted(mojom::blink::FetchAPIResponsePtr response);
   const KURL& ObservedUrl() const;

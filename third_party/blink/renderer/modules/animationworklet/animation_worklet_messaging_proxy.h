@@ -24,7 +24,7 @@ class AnimationWorkletMessagingProxy final
  public:
   explicit AnimationWorkletMessagingProxy(ExecutionContext*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   ~AnimationWorkletMessagingProxy() override;

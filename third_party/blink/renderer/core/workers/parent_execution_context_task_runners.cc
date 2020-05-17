@@ -45,7 +45,7 @@ ParentExecutionContextTaskRunners::Get(TaskType type) {
   return task_runners_.at(type);
 }
 
-void ParentExecutionContextTaskRunners::Trace(Visitor* visitor) {
+void ParentExecutionContextTaskRunners::Trace(Visitor* visitor) const {
   ExecutionContextLifecycleObserver::Trace(visitor);
 }
 

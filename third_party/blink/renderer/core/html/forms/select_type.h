@@ -19,7 +19,7 @@ class SelectType : public GarbageCollected<SelectType> {
   // of |select|.
   static SelectType* Create(HTMLSelectElement& select);
   void WillBeDestroyed();
-  virtual void Trace(Visitor* visitor);
+  virtual void Trace(Visitor* visitor) const;
 
   // Returns true if the event is handled.
   virtual bool DefaultEventHandler(const Event& event) = 0;

@@ -38,7 +38,7 @@ class ServiceWorkerRegistrationSync final
   PeriodicSyncManager* periodicSync();
   SyncManager* sync();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<ServiceWorkerRegistration> registration_;

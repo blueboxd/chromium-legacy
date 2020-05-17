@@ -75,7 +75,7 @@ class XRWebGLLayer final : public XRLayer {
 
   scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<XRViewport> left_viewport_;

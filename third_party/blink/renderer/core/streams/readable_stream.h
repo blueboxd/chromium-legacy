@@ -49,7 +49,7 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
     bool PreventCancel() const { return prevent_cancel_; }
     AbortSignal* Signal() const { return signal_; }
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
    private:
     bool GetBoolean(ScriptState* script_state,
@@ -220,7 +220,7 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
 
   v8::Local<v8::Value> GetStoredError(v8::Isolate*) const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class ReadableStreamDefaultController;

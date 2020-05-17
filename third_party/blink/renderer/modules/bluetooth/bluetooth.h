@@ -55,7 +55,7 @@ class Bluetooth final : public EventTargetWithInlineData,
   ExecutionContext* GetExecutionContext() const override;
 
   // GC
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // ExecutionContextLifecycleObserver
   void ContextDestroyed() override {}

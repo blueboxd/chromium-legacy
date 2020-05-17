@@ -64,7 +64,7 @@ class SpeechRecognitionController final
 
   static SpeechRecognitionController* From(LocalDOMWindow&);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   mojom::blink::SpeechRecognizer* GetSpeechRecognizer();

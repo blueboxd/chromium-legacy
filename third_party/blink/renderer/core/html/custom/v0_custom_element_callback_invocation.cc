@@ -145,7 +145,7 @@ V0CustomElementCallbackInvocation::CreateAttributeChangedInvocation(
                                                           old_value, new_value);
 }
 
-void V0CustomElementCallbackInvocation::Trace(Visitor* visitor) {
+void V0CustomElementCallbackInvocation::Trace(Visitor* visitor) const {
   visitor->Trace(callbacks_);
   V0CustomElementProcessingStep::Trace(visitor);
 }

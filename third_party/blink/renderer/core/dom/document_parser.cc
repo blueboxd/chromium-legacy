@@ -42,7 +42,7 @@ DocumentParser::DocumentParser(Document* document)
 
 DocumentParser::~DocumentParser() = default;
 
-void DocumentParser::Trace(Visitor* visitor) {
+void DocumentParser::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(clients_);
 }

@@ -234,7 +234,7 @@ ScriptPromise ContactsManager::getProperties(ScriptState* script_state) {
                              ToV8(GetProperties(script_state), script_state));
 }
 
-void ContactsManager::Trace(Visitor* visitor) {
+void ContactsManager::Trace(Visitor* visitor) const {
   visitor->Trace(contacts_manager_);
   ScriptWrappable::Trace(visitor);
 }

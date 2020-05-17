@@ -97,7 +97,7 @@ void CSSPageRule::Reattach(StyleRuleBase* rule) {
     properties_cssom_wrapper_->Reattach(page_rule_->MutableProperties());
 }
 
-void CSSPageRule::Trace(Visitor* visitor) {
+void CSSPageRule::Trace(Visitor* visitor) const {
   visitor->Trace(page_rule_);
   visitor->Trace(properties_cssom_wrapper_);
   CSSRule::Trace(visitor);

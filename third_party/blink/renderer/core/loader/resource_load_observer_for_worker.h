@@ -54,7 +54,7 @@ class ResourceLoadObserverForWorker final : public ResourceLoadObserver {
                       const ResourceError&,
                       int64_t encoded_data_length,
                       IsInternalRequest) override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   const Member<CoreProbeSink> probe_;

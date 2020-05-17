@@ -55,7 +55,7 @@ class CORE_EXPORT PropertyRegistration final
     return interpolation_types_;
   }
 
-  void Trace(Visitor* visitor) { visitor->Trace(initial_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(initial_); }
 
  private:
   friend class ::blink::PropertyRegistry;

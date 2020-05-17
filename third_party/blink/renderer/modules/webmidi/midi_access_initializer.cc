@@ -124,7 +124,7 @@ void MIDIAccessInitializer::DidStartSession(Result result) {
                                          "Unknown internal error occurred."));
 }
 
-void MIDIAccessInitializer::Trace(Visitor* visitor) {
+void MIDIAccessInitializer::Trace(Visitor* visitor) const {
   visitor->Trace(options_);
   visitor->Trace(permission_service_);
   ScriptPromiseResolver::Trace(visitor);

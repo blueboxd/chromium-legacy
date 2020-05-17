@@ -24,7 +24,7 @@ namespace blink {
 PortalHost::PortalHost(LocalDOMWindow& window)
     : Supplement<LocalDOMWindow>(window) {}
 
-void PortalHost::Trace(Visitor* visitor) {
+void PortalHost::Trace(Visitor* visitor) const {
   EventTargetWithInlineData::Trace(visitor);
   Supplement<LocalDOMWindow>::Trace(visitor);
 }

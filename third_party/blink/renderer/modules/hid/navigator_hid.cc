@@ -29,7 +29,7 @@ HID* NavigatorHID::hid() {
   return hid_;
 }
 
-void NavigatorHID::Trace(Visitor* visitor) {
+void NavigatorHID::Trace(Visitor* visitor) const {
   visitor->Trace(hid_);
   Supplement<Navigator>::Trace(visitor);
 }

@@ -57,7 +57,7 @@ StringOrDouble::StringOrDouble(const StringOrDouble&) = default;
 StringOrDouble::~StringOrDouble() = default;
 StringOrDouble& StringOrDouble::operator=(const StringOrDouble&) = default;
 
-void StringOrDouble::Trace(Visitor* visitor) {
+void StringOrDouble::Trace(Visitor* visitor) const {
 }
 
 void V8StringOrDouble::ToImpl(

@@ -125,7 +125,7 @@ class MIMEHeader final : public GarbageCollected<MIMEHeader> {
   String EndOfPartBoundary() const { return end_of_part_boundary_; }
   String EndOfDocumentBoundary() const { return end_of_document_boundary_; }
 
-  void Trace(Visitor* visitor) {}
+  void Trace(Visitor* visitor) const {}
 
  private:
   static Encoding ParseContentTransferEncoding(const String&);

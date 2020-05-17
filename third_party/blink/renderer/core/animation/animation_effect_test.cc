@@ -117,7 +117,7 @@ class TestAnimationEffect : public AnimationEffect {
     return result;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(event_delegate_);
     AnimationEffect::Trace(visitor);
   }

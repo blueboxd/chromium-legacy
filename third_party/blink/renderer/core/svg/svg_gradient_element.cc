@@ -67,7 +67,7 @@ SVGGradientElement::SVGGradientElement(const QualifiedName& tag_name,
   AddToPropertyMap(gradient_units_);
 }
 
-void SVGGradientElement::Trace(Visitor* visitor) {
+void SVGGradientElement::Trace(Visitor* visitor) const {
   visitor->Trace(gradient_transform_);
   visitor->Trace(spread_method_);
   visitor->Trace(gradient_units_);

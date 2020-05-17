@@ -348,7 +348,7 @@ void DevToolsSession::FlushProtocolNotifications() {
   notification_queue_.clear();
 }
 
-void DevToolsSession::Trace(Visitor* visitor) {
+void DevToolsSession::Trace(Visitor* visitor) const {
   visitor->Trace(agent_);
   visitor->Trace(agents_);
 }

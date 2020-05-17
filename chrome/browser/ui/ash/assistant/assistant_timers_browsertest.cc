@@ -207,9 +207,9 @@ IN_PROC_BROWSER_TEST_F(AssistantTimersBrowserTest,
   auto action_buttons = FindActionButtonsForNotification(notifications.at(0));
   EXPECT_EQ(2u, action_buttons.size());
 
-  // Tap the "STOP" action button in the notification.
-  EXPECT_EQ(base::UTF8ToUTF16("STOP"), action_buttons.at(0)->GetText());
-  TapOnAndWait(action_buttons.at(0));
+  // Tap the "CANCEL" action button in the notification.
+  EXPECT_EQ(base::UTF8ToUTF16("CANCEL"), action_buttons.at(1)->GetText());
+  TapOnAndWait(action_buttons.at(1));
 
   ShowAssistantUi();
   EXPECT_TRUE(tester()->IsVisible());

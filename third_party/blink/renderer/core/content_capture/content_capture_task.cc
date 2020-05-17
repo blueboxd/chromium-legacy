@@ -267,7 +267,7 @@ void ContentCaptureTask::CancelTaskForTesting() {
     delay_task_->Stop();
 }
 
-void ContentCaptureTask::Trace(Visitor* visitor) {
+void ContentCaptureTask::Trace(Visitor* visitor) const {
   visitor->Trace(local_frame_root_);
   visitor->Trace(task_session_);
 }

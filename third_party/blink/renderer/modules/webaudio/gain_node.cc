@@ -179,7 +179,7 @@ AudioParam* GainNode::gain() const {
   return gain_;
 }
 
-void GainNode::Trace(Visitor* visitor) {
+void GainNode::Trace(Visitor* visitor) const {
   visitor->Trace(gain_);
   AudioNode::Trace(visitor);
 }

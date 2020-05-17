@@ -90,7 +90,7 @@ class PortalContents : public GarbageCollected<PortalContents>,
       const scoped_refptr<const SecurityOrigin>& target_origin) override;
   void DispatchLoadEvent() override;
 
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
  private:
   // Returns the document which controls the lifetime of this portal (usually,

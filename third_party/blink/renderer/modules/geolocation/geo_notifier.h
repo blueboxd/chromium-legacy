@@ -27,7 +27,7 @@ class GeoNotifier final : public GarbageCollected<GeoNotifier>,
               V8PositionErrorCallback*,
               const PositionOptions*);
   ~GeoNotifier() = default;
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
   const char* NameInHeapSnapshot() const override { return "GeoNotifier"; }
 
   const PositionOptions* Options() const { return options_; }
@@ -61,7 +61,7 @@ class GeoNotifier final : public GarbageCollected<GeoNotifier>,
                    void (GeoNotifier::*member_func)(TimerBase*))
         : timer_(web_task_runner, notifier, member_func), notifier_(notifier) {}
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
     // TimerBase-compatible API
     void StartOneShot(base::TimeDelta interval, const base::Location& caller);

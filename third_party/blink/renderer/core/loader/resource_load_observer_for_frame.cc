@@ -268,7 +268,7 @@ void ResourceLoadObserverForFrame::DidFailLoading(
   document_->CheckCompleted();
 }
 
-void ResourceLoadObserverForFrame::Trace(Visitor* visitor) {
+void ResourceLoadObserverForFrame::Trace(Visitor* visitor) const {
   visitor->Trace(document_loader_);
   visitor->Trace(document_);
   visitor->Trace(fetcher_properties_);

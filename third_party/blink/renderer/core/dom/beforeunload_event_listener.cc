@@ -21,7 +21,7 @@ void BeforeUnloadEventListener::Invoke(ExecutionContext* execution_context,
     To<BeforeUnloadEvent>(event)->setReturnValue(g_empty_string);
 }
 
-void BeforeUnloadEventListener::Trace(Visitor* visitor) {
+void BeforeUnloadEventListener::Trace(Visitor* visitor) const {
   visitor->Trace(doc_);
   NativeEventListener::Trace(visitor);
 }

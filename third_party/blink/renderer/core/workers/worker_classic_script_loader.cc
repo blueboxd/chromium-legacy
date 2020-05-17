@@ -277,7 +277,7 @@ void WorkerClassicScriptLoader::DidFailRedirectCheck() {
   NotifyError();
 }
 
-void WorkerClassicScriptLoader::Trace(Visitor* visitor) {
+void WorkerClassicScriptLoader::Trace(Visitor* visitor) const {
   visitor->Trace(threadable_loader_);
   visitor->Trace(content_security_policy_);
   visitor->Trace(fetch_client_settings_object_fetcher_);

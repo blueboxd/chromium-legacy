@@ -37,7 +37,7 @@ class MODULES_EXPORT BarcodeDetector final : public ShapeDetector {
                            const BarcodeDetectorOptions*,
                            ExceptionState& exception_state);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   ~BarcodeDetector() override = default;

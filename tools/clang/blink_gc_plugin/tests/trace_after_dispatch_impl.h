@@ -11,7 +11,7 @@ namespace blink {
 
 class X : public GarbageCollected<X> {
  public:
-  void Trace(Visitor*) {}
+  void Trace(Visitor*) const {}
 };
 
 enum ClassTag {
@@ -23,7 +23,7 @@ class TraceAfterDispatchInlinedBase
  public:
   explicit TraceAfterDispatchInlinedBase(ClassTag tag) : tag_(tag) {}
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   void TraceAfterDispatch(Visitor* visitor) const { visitor->Trace(x_base_); }
 
@@ -50,7 +50,7 @@ class TraceAfterDispatchExternBase
  public:
   explicit TraceAfterDispatchExternBase(ClassTag tag) : tag_(tag) {}
 
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
   void TraceAfterDispatch(Visitor* visitor) const;
 

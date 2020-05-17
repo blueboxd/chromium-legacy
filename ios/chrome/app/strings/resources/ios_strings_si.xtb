@@ -569,6 +569,7 @@
 <translation id="8428045167754449968">නගරය / පුරවරය</translation>
 <translation id="8428213095426709021">සැකසුම්</translation>
 <translation id="8458397775385147834">1 අයිතමයක් මකන ලදි</translation>
+<translation id="8459333855531264009">ආරක්ෂිත නැත</translation>
 <translation id="8487667956631253959">ක්‍රියාත්මකයි</translation>
 <translation id="8487700953926739672">නොබැඳිව ලද  හැක</translation>
 <translation id="8490978609246021741">වෙනස්කම් සුරකින්න</translation>
@@ -595,6 +596,7 @@
 <translation id="8741995161408053644">ඔබගේ Google ගිණුමට <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> දී බ්‍රවුස් කිරීමේ ඉතිහාසයේ වෙනත් ආකාරයන් තිබිය හැක.</translation>
 <translation id="8756969031206844760">මුරපදය යාවත්කාලීන කරන්න ද?</translation>
 <translation id="8775144690796719618">අවලංගු URL</translation>
+<translation id="8803639129939845298">ආරක්ෂිතයි</translation>
 <translation id="8820817407110198400">පිටුසන්</translation>
 <translation id="8840513115188359703">ඔබව ඔබගේ Google ගිණුමෙන් වරනය නොවනු ඇත</translation>
 <translation id="8870413625673593573">මෑතකදී වසන ලද</translation>
@@ -625,7 +627,6 @@
 <translation id="9223358826628549784">බිඳ වැටීම් වාර්තාව යවන ලදි.</translation>
 <translation id="952704832371081537">අවලංගු කරන්න</translation>
 <translation id="988141524645182168">වෙනත් උපාංග</translation>
-<translation id="989697783705943787">වෙබ් අඩවි ආරක්‍ෂාව</translation>
 <translation id="989988560359834682">ලිපිනය සංස්කරණය කරන්න</translation>
 <translation id="994757059139821576">ලිපි යෝජනා</translation>
 </translationbundle>

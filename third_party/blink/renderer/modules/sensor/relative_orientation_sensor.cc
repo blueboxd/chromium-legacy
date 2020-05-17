@@ -37,7 +37,7 @@ RelativeOrientationSensor::RelativeOrientationSensor(
                         {mojom::blink::FeaturePolicyFeature::kAccelerometer,
                          mojom::blink::FeaturePolicyFeature::kGyroscope}) {}
 
-void RelativeOrientationSensor::Trace(Visitor* visitor) {
+void RelativeOrientationSensor::Trace(Visitor* visitor) const {
   OrientationSensor::Trace(visitor);
 }
 

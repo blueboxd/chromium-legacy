@@ -166,7 +166,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
     }
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   // Can be a ChildNodeList or an EmptyNodeList.

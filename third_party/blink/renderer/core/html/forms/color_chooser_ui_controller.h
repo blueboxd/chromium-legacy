@@ -50,7 +50,7 @@ class CORE_EXPORT ColorChooserUIController
  public:
   ColorChooserUIController(LocalFrame*, blink::ColorChooserClient*);
   ~ColorChooserUIController() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void Dispose();
 

@@ -44,7 +44,7 @@ class LocalFontFaceSource final : public CSSFontFaceSource,
 
   void BeginLoadIfNeeded() override;
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   void NotifyFontUniqueNameLookupReady();
 

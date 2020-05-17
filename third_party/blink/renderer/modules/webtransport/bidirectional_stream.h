@@ -69,7 +69,7 @@ class MODULES_EXPORT BidirectionalStream final : public ScriptWrappable,
   void SendFin() override;
   void OnOutgoingStreamAbort() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void OnIncomingStreamAbort();

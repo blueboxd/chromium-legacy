@@ -45,7 +45,7 @@ UnpackedSerializedScriptValue::UnpackedSerializedScriptValue(
 
 UnpackedSerializedScriptValue::~UnpackedSerializedScriptValue() = default;
 
-void UnpackedSerializedScriptValue::Trace(Visitor* visitor) {
+void UnpackedSerializedScriptValue::Trace(Visitor* visitor) const {
   visitor->Trace(array_buffers_);
   visitor->Trace(image_bitmaps_);
 }

@@ -12,7 +12,7 @@ const HeapHashSet<Member<XRPlane>>& XRPlaneSet::elements() const {
   return planes_;
 }
 
-void XRPlaneSet::Trace(Visitor* visitor) {
+void XRPlaneSet::Trace(Visitor* visitor) const {
   visitor->Trace(planes_);
   ScriptWrappable::Trace(visitor);
 }

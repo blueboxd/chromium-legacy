@@ -46,7 +46,7 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
  public:
   explicit HTMLFormElement(Document&);
   ~HTMLFormElement() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   HTMLFormControlsCollection* elements();
   void GetNamedElements(const AtomicString&, HeapVector<Member<Element>>&);

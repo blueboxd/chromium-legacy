@@ -85,7 +85,7 @@ class CORE_EXPORT AdTracker : public GarbageCollected<AdTracker> {
   // frequently then consider just the bottom of the stack for performance sake.
   bool IsAdScriptInStack(StackType stack_type);
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
   void Shutdown();
   explicit AdTracker(LocalFrame*);

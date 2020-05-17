@@ -91,7 +91,7 @@ class CORE_EXPORT WheelEvent final : public MouseEvent {
   // So we need to override its parent's DispatchEvent.
   DispatchEventResult DispatchEvent(EventDispatcher&) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   IntPoint wheel_delta_;

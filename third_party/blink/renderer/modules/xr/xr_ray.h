@@ -46,7 +46,7 @@ class XRRay final : public ScriptWrappable {
   static XRRay* Create(XRRigidTransform* transform,
                        ExceptionState& exception_state);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void Set(const TransformationMatrix& matrix, ExceptionState& exception_state);

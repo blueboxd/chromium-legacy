@@ -56,7 +56,7 @@ class CORE_EXPORT WorkletModuleResponsesMap final
   // Called on main thread.
   void Dispose() LOCKS_EXCLUDED(mutex_);
 
-  void Trace(Visitor*) {}
+  void Trace(Visitor*) const {}
 
  private:
   class Entry final {

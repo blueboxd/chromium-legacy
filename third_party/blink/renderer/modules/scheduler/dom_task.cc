@@ -62,7 +62,7 @@ DOMTask::DOMTask(DOMScheduler* scheduler,
                             &async_task_id_);
 }
 
-void DOMTask::Trace(Visitor* visitor) {
+void DOMTask::Trace(Visitor* visitor) const {
   visitor->Trace(scheduler_);
   visitor->Trace(callback_);
   visitor->Trace(arguments_);

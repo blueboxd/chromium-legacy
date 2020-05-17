@@ -39,7 +39,7 @@ class CORE_EXPORT TransformStreamDefaultController : public ScriptWrappable {
   // https://streams.spec.whatwg.org/#ts-default-controller-terminate
   void terminate(ScriptState*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class TransformStream;

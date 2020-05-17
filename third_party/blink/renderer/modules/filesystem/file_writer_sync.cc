@@ -136,7 +136,7 @@ void FileWriterSync::PrepareForWrite() {
 
 FileWriterSync::~FileWriterSync() = default;
 
-void FileWriterSync::Trace(Visitor* visitor) {
+void FileWriterSync::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   FileWriterBase::Trace(visitor);
   ExecutionContextClient::Trace(visitor);

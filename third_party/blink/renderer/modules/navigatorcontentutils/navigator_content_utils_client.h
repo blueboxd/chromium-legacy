@@ -26,7 +26,7 @@ class MODULES_EXPORT NavigatorContentUtilsClient
 
   virtual void UnregisterProtocolHandler(const String& scheme, const KURL&);
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
  private:
   Member<LocalFrame> frame_;

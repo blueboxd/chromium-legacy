@@ -5737,7 +5737,7 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
   return ScriptValue::CreateNull(script_state->GetIsolate());
 }
 
-void WebGL2RenderingContextBase::Trace(Visitor* visitor) {
+void WebGL2RenderingContextBase::Trace(Visitor* visitor) const {
   visitor->Trace(read_framebuffer_binding_);
   visitor->Trace(transform_feedback_binding_);
   visitor->Trace(default_transform_feedback_);

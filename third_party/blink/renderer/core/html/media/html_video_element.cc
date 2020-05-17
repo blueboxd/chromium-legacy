@@ -105,7 +105,7 @@ HTMLVideoElement::HTMLVideoElement(Document& document)
   UpdateStateIfNeeded();
 }
 
-void HTMLVideoElement::Trace(Visitor* visitor) {
+void HTMLVideoElement::Trace(Visitor* visitor) const {
   visitor->Trace(image_loader_);
   visitor->Trace(custom_controls_fullscreen_detector_);
   visitor->Trace(wake_lock_);

@@ -106,7 +106,7 @@ void ElementAnimations::RestartAnimationOnCompositor() {
     entry.key->RestartAnimationOnCompositor();
 }
 
-void ElementAnimations::Trace(Visitor* visitor) {
+void ElementAnimations::Trace(Visitor* visitor) const {
   visitor->Trace(css_animations_);
   visitor->Trace(effect_stack_);
   visitor->Trace(animations_);

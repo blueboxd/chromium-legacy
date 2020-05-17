@@ -98,7 +98,7 @@ class CORE_EXPORT MediaQueryEvaluator final
   // evaluation.
   bool DidResultsChange(const MediaQueryResultList& results) const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   const String MediaType() const;

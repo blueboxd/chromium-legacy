@@ -58,7 +58,7 @@ void LargestContentfulPaint::BuildJSONValue(V8ObjectBuilder& builder) const {
   builder.Add("element", element());
 }
 
-void LargestContentfulPaint::Trace(Visitor* visitor) {
+void LargestContentfulPaint::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   PerformanceEntry::Trace(visitor);
 }

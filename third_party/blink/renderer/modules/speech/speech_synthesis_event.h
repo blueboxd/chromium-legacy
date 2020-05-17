@@ -56,7 +56,7 @@ class SpeechSynthesisEvent : public Event {
     return event_interface_names::kSpeechSynthesisEvent;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<SpeechSynthesisUtterance> utterance_;

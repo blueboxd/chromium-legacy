@@ -19,7 +19,7 @@ class CORE_EXPORT ModuleScriptLoaderRegistry final
  public:
   ModuleScriptLoaderRegistry() = default;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   friend class ModuleScriptLoader;

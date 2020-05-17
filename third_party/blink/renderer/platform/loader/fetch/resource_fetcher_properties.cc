@@ -29,7 +29,7 @@ void DetachableResourceFetcherProperties::Detach() {
   properties_ = nullptr;
 }
 
-void DetachableResourceFetcherProperties::Trace(Visitor* visitor) {
+void DetachableResourceFetcherProperties::Trace(Visitor* visitor) const {
   visitor->Trace(properties_);
   visitor->Trace(fetch_client_settings_object_);
   ResourceFetcherProperties::Trace(visitor);

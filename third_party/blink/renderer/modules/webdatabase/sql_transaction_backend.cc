@@ -391,7 +391,7 @@ SQLTransactionBackend::~SQLTransactionBackend() {
   DCHECK(!sqlite_transaction_);
 }
 
-void SQLTransactionBackend::Trace(Visitor* visitor) {
+void SQLTransactionBackend::Trace(Visitor* visitor) const {
   visitor->Trace(wrapper_);
 }
 

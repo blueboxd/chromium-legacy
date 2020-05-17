@@ -48,7 +48,7 @@ class CORE_EXPORT ReadableStreamDefaultControllerWithScriptScope
     Error(js_error);
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   const Member<ScriptState> script_state_;

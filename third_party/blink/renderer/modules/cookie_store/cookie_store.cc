@@ -335,7 +335,7 @@ ScriptPromise CookieStore::Delete(ScriptState* script_state,
   return DoWrite(script_state, set_options, exception_state);
 }
 
-void CookieStore::Trace(Visitor* visitor) {
+void CookieStore::Trace(Visitor* visitor) const {
   visitor->Trace(change_listener_receiver_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);

@@ -107,7 +107,7 @@ class PLATFORM_EXPORT V8PerIsolateData {
    public:
     virtual ~GarbageCollectedData() = default;
     virtual void WillBeDestroyed() {}
-    virtual void Trace(Visitor*) {}
+    virtual void Trace(Visitor*) const {}
   };
 
   static v8::Isolate* Initialize(scoped_refptr<base::SingleThreadTaskRunner>,

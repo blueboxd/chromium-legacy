@@ -93,7 +93,7 @@ void IntersectionObservation::InvalidateCachedRects() {
     cached_rects_->valid = false;
 }
 
-void IntersectionObservation::Trace(Visitor* visitor) {
+void IntersectionObservation::Trace(Visitor* visitor) const {
   visitor->Trace(observer_);
   visitor->Trace(entries_);
   visitor->Trace(target_);

@@ -1048,7 +1048,7 @@ const String& TextControlElement::SuggestedValue() const {
   return suggested_value_;
 }
 
-void TextControlElement::Trace(Visitor* visitor) {
+void TextControlElement::Trace(Visitor* visitor) const {
   visitor->Trace(inner_editor_);
   HTMLFormControlElementWithState::Trace(visitor);
 }

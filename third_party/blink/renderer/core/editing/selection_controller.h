@@ -49,7 +49,7 @@ class CORE_EXPORT SelectionController final
  public:
   explicit SelectionController(LocalFrame&);
   virtual ~SelectionController();
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool HandleMousePressEvent(const MouseEventWithHitTestResults&);
   void HandleMouseDraggedEvent(const MouseEventWithHitTestResults&,

@@ -49,7 +49,7 @@ class CORE_EXPORT PerformanceEventTiming final : public PerformanceEntry {
 
   void BuildJSONValue(V8ObjectBuilder&) const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   AtomicString entry_type_;

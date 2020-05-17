@@ -62,7 +62,7 @@ NodeOrNodeList::NodeOrNodeList(const NodeOrNodeList&) = default;
 NodeOrNodeList::~NodeOrNodeList() = default;
 NodeOrNodeList& NodeOrNodeList::operator=(const NodeOrNodeList&) = default;
 
-void NodeOrNodeList::Trace(Visitor* visitor) {
+void NodeOrNodeList::Trace(Visitor* visitor) const {
   visitor->Trace(node_);
   visitor->Trace(node_list_);
 }

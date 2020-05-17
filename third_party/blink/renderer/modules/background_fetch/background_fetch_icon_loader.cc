@@ -126,7 +126,7 @@ void BackgroundFetchIconLoader::DidGetIcon(SkBitmap icon, double resize_scale) {
   std::move(icon_callback_).Run(icon, ideal_to_chosen_icon_size_times_hundred);
 }
 
-void BackgroundFetchIconLoader::Trace(Visitor* visitor) {
+void BackgroundFetchIconLoader::Trace(Visitor* visitor) const {
   visitor->Trace(icons_);
   visitor->Trace(threaded_icon_loader_);
 }

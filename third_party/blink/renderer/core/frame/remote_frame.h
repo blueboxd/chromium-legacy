@@ -49,7 +49,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   ~RemoteFrame() override;
 
   // Frame overrides:
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   void Navigate(FrameLoadRequest&, WebFrameLoadType) override;
   const RemoteSecurityContext* GetSecurityContext() const override;
   bool DetachDocument() override;

@@ -333,7 +333,7 @@ void MultipartParser::ParseTransportPadding(const char** bytes_pointer,
     ++(*bytes_pointer);
 }
 
-void MultipartParser::Trace(Visitor* visitor) {
+void MultipartParser::Trace(Visitor* visitor) const {
   visitor->Trace(client_);
 }
 

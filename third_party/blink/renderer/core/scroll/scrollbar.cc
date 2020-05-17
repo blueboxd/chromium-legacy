@@ -93,7 +93,7 @@ Scrollbar::Scrollbar(ScrollableArea* scrollable_area,
 
 Scrollbar::~Scrollbar() = default;
 
-void Scrollbar::Trace(Visitor* visitor) {
+void Scrollbar::Trace(Visitor* visitor) const {
   visitor->Trace(scrollable_area_);
   visitor->Trace(chrome_client_);
   visitor->Trace(style_source_);

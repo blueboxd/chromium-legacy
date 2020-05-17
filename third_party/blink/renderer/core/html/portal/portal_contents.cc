@@ -214,7 +214,7 @@ void PortalContents::DispatchLoadEvent() {
   GetDocument().CheckCompleted();
 }
 
-void PortalContents::Trace(Visitor* visitor) {
+void PortalContents::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(portal_element_);
   visitor->Trace(activate_resolver_);

@@ -541,7 +541,7 @@ base::Optional<HeapVector<Member<NDEFRecord>>> NDEFRecord::toRecords(
   return payload_message_->records();
 }
 
-void NDEFRecord::Trace(Visitor* visitor) {
+void NDEFRecord::Trace(Visitor* visitor) const {
   visitor->Trace(payload_message_);
   ScriptWrappable::Trace(visitor);
 }

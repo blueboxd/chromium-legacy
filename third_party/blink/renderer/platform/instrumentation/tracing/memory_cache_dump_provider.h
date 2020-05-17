@@ -22,7 +22,7 @@ class PLATFORM_EXPORT MemoryCacheDumpClient : public GarbageCollectedMixin {
   virtual bool OnMemoryDump(WebMemoryDumpLevelOfDetail,
                             WebProcessMemoryDump*) = 0;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 };
 
 // This class is wrapper around MemoryCache to take memory snapshots. It dumps

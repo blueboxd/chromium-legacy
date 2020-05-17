@@ -39,7 +39,7 @@ class GPUCanvasContext : public CanvasRenderingContext {
                    const CanvasContextCreationAttributesCore&);
   ~GPUCanvasContext() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const IntSize& CanvasSize() const;
 
   // CanvasRenderingContext implementation

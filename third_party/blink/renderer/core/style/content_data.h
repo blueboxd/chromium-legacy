@@ -67,7 +67,7 @@ class ContentData : public GarbageCollected<ContentData> {
 
   virtual bool Equals(const ContentData&) const = 0;
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
  private:
   virtual ContentData* CloneInternal() const = 0;
@@ -102,7 +102,7 @@ class ImageContentData final : public ContentData {
            *GetImage();
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   ContentData* CloneInternal() const override {

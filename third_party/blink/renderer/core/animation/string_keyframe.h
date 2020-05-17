@@ -86,7 +86,7 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
 
   Keyframe* Clone() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   class CSSPropertySpecificKeyframe
       : public Keyframe::PropertySpecificKeyframe {
@@ -117,7 +117,7 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
         double offset,
         scoped_refptr<TimingFunction> easing) const final;
 
-    void Trace(Visitor*) override;
+    void Trace(Visitor*) const override;
 
    private:
     Keyframe::PropertySpecificKeyframe* CloneWithOffset(

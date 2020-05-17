@@ -59,7 +59,7 @@ class CORE_EXPORT MediaQueryMatcher final
   void ViewportChanged();
   bool Evaluate(const MediaQuerySet*);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   MediaQueryEvaluator* CreateEvaluator() const;

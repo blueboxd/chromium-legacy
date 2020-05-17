@@ -18,7 +18,7 @@ class CORE_EXPORT StringListDirective final : public CSPDirective {
   StringListDirective(const String& name,
                       const String& value,
                       ContentSecurityPolicy*);
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   bool Allows(const String& string_piece, bool is_duplicate);
   bool IsAllowDuplicates() const { return allow_duplicates_; }
 

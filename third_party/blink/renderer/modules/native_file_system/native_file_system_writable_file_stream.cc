@@ -123,7 +123,7 @@ ScriptPromise NativeFileSystemWritableFileStream::seek(
   return promise;
 }
 
-void NativeFileSystemWritableFileStream::Trace(Visitor* visitor) {
+void NativeFileSystemWritableFileStream::Trace(Visitor* visitor) const {
   WritableStream::Trace(visitor);
   visitor->Trace(underlying_sink_);
 }

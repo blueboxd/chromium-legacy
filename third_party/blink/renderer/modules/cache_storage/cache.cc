@@ -213,7 +213,7 @@ class Cache::FetchResolvedForAdd final : public ScriptFunction {
     return ScriptValue(GetScriptState()->GetIsolate(), put_promise.V8Value());
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(cache_);
     visitor->Trace(requests_);
     ScriptFunction::Trace(visitor);
@@ -326,7 +326,7 @@ class Cache::BarrierCallbackForPut final
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
   }
 
-  virtual void Trace(Visitor* visitor) {
+  virtual void Trace(Visitor* visitor) const {
     visitor->Trace(cache_);
     visitor->Trace(resolver_);
   }
@@ -412,7 +412,7 @@ class Cache::BlobHandleCallbackForPut final
 
   void Abort() override { barrier_callback_->Abort(); }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(barrier_callback_);
     FetchDataLoader::Client::Trace(visitor);
   }
@@ -495,7 +495,7 @@ class Cache::CodeCacheHandleCallbackForPut final
 
   void Abort() override { barrier_callback_->Abort(); }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(script_state_);
     visitor->Trace(barrier_callback_);
     FetchDataLoader::Client::Trace(visitor);
@@ -678,7 +678,7 @@ Cache::Cache(GlobalFetch::ScopedFetcher* fetcher,
   cache_remote_.Bind(std::move(cache_pending_remote), std::move(task_runner));
 }
 
-void Cache::Trace(Visitor* visitor) {
+void Cache::Trace(Visitor* visitor) const {
   visitor->Trace(scoped_fetcher_);
   visitor->Trace(blob_client_list_);
   ScriptWrappable::Trace(visitor);

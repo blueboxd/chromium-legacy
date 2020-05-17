@@ -37,7 +37,7 @@ const AtomicString& RTCQuicStreamEvent::InterfaceName() const {
   return event_interface_names::kRTCQuicStreamEvent;
 }
 
-void RTCQuicStreamEvent::Trace(Visitor* visitor) {
+void RTCQuicStreamEvent::Trace(Visitor* visitor) const {
   visitor->Trace(stream_);
   Event::Trace(visitor);
 }

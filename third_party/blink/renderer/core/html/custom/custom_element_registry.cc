@@ -87,7 +87,7 @@ CustomElementRegistry::CustomElementRegistry(const LocalDOMWindow* owner)
     Entangle(v0);
 }
 
-void CustomElementRegistry::Trace(Visitor* visitor) {
+void CustomElementRegistry::Trace(Visitor* visitor) const {
   visitor->Trace(definitions_);
   visitor->Trace(owner_);
   visitor->Trace(v0_);

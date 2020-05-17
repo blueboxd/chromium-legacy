@@ -74,7 +74,7 @@ class CORE_EXPORT Interpolation : public GarbageCollected<Interpolation> {
   // optimise away computing underlying values.
   virtual bool DependsOnUnderlyingValue() const { return false; }
 
-  virtual void Trace(Visitor*) {}
+  virtual void Trace(Visitor*) const {}
 
  protected:
   Interpolation() = default;

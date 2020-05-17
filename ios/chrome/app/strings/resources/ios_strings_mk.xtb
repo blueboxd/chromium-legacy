@@ -569,6 +569,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="8428045167754449968">Град</translation>
 <translation id="8428213095426709021">Поставки</translation>
 <translation id="8458397775385147834">1 ставка е избришана</translation>
+<translation id="8459333855531264009">Не е безбедно</translation>
 <translation id="8487667956631253959">Вклучено</translation>
 <translation id="8487700953926739672">Достапно е исклучено од линија</translation>
 <translation id="8490978609246021741">Зачувај ги промените</translation>
@@ -595,6 +596,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="8741995161408053644">Вашата сметка на Google можеби има други форми од историјата на прелистување на <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8756969031206844760">Дали да се ажурира лозинката?</translation>
 <translation id="8775144690796719618">Неважечка URL-адреса</translation>
+<translation id="8803639129939845298">Безбедно</translation>
 <translation id="8820817407110198400">Обележувачи</translation>
 <translation id="8840513115188359703">Нема да ве одјавиме од сметката на Google.</translation>
 <translation id="8870413625673593573">Неодамна затворено</translation>
@@ -625,7 +627,6 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="9223358826628549784">Извештајот за пад се испрати.</translation>
 <translation id="952704832371081537">Откажи</translation>
 <translation id="988141524645182168">Други уреди</translation>
-<translation id="989697783705943787">Безбедност на сајтот</translation>
 <translation id="989988560359834682">Измени адреса</translation>
 <translation id="994757059139821576">Предлози за статии</translation>
 </translationbundle>

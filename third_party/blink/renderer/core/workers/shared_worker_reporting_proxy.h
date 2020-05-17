@@ -43,7 +43,7 @@ class SharedWorkerReportingProxy final
   void WillDestroyWorkerGlobalScope() override {}
   void DidTerminateWorkerThread() override;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   // Not owned because this outlives the reporting proxy.

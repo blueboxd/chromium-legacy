@@ -39,7 +39,7 @@ namespace xpath {
 class CORE_EXPORT Number final : public Expression {
  public:
   explicit Number(double);
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Value Evaluate(EvaluationContext&) const override;
@@ -51,7 +51,7 @@ class CORE_EXPORT Number final : public Expression {
 class CORE_EXPORT StringExpression final : public Expression {
  public:
   explicit StringExpression(const String&);
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Value Evaluate(EvaluationContext&) const override;
@@ -120,7 +120,7 @@ class Union final : public Expression {
 class Predicate final : public GarbageCollected<Predicate> {
  public:
   explicit Predicate(Expression*);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   bool Evaluate(EvaluationContext&) const;
   bool IsContextPositionSensitive() const {

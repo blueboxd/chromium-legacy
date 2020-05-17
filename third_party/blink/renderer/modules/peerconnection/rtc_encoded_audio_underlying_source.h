@@ -30,7 +30,7 @@ class MODULES_EXPORT RTCEncodedAudioUnderlyingSource
   void OnFrameFromSource(std::unique_ptr<webrtc::TransformableFrameInterface>);
   void Close();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RTCEncodedAudioUnderlyingSourceTest,

@@ -153,7 +153,7 @@ class CORE_EXPORT DocumentMarkerController final
   void InvalidateRectsForAllTextMatchMarkers();
   void InvalidateRectsForTextMatchMarkersInNode(const Text&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
 #if DCHECK_IS_ON()
   void ShowMarkers() const;

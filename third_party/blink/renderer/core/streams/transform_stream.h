@@ -79,7 +79,7 @@ class CORE_EXPORT TransformStream final : public ScriptWrappable {
   ReadableStream* Readable() const { return readable_; }
   WritableStream* Writable() const { return writable_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class TransformStreamDefaultController;

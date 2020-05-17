@@ -201,7 +201,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   void WillDrawImage(CanvasImageSource*) const final;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   CanvasColorParams ColorParamsForTest() const { return ColorParams(); }
 

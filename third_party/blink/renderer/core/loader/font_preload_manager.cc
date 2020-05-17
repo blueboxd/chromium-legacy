@@ -24,7 +24,7 @@ class FontPreloadFinishObserver final : public ResourceFinishObserver {
 
   ~FontPreloadFinishObserver() final = default;
 
-  void Trace(blink::Visitor* visitor) final {
+  void Trace(blink::Visitor* visitor) const final {
     visitor->Trace(font_resource_);
     visitor->Trace(document_);
     ResourceFinishObserver::Trace(visitor);
@@ -52,7 +52,7 @@ class ImperativeFontLoadFinishedCallback final
       : document_(document) {}
   ~ImperativeFontLoadFinishedCallback() final = default;
 
-  void Trace(Visitor* visitor) final {
+  void Trace(Visitor* visitor) const final {
     visitor->Trace(document_);
     FontFace::LoadFontCallback::Trace(visitor);
   }
@@ -207,7 +207,7 @@ void FontPreloadManager::DisableTimeoutForTest() {
     render_delay_timer_.Stop();
 }
 
-void FontPreloadManager::Trace(Visitor* visitor) {
+void FontPreloadManager::Trace(Visitor* visitor) const {
   visitor->Trace(finish_observers_);
   visitor->Trace(document_);
 }

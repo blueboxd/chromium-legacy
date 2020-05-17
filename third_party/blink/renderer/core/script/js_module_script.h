@@ -57,7 +57,7 @@ class CORE_EXPORT JSModuleScript final : public ModuleScript,
 
   void ProduceCache() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override { return "JSModuleScript"; }
 
  private:

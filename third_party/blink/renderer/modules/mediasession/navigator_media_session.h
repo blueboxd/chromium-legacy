@@ -28,7 +28,7 @@ class NavigatorMediaSession final
 
   explicit NavigatorMediaSession(Navigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // The MediaSession instance of this Navigator.

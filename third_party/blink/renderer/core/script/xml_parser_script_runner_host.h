@@ -13,7 +13,7 @@ namespace blink {
 class CORE_EXPORT XMLParserScriptRunnerHost : public GarbageCollectedMixin {
  public:
   virtual ~XMLParserScriptRunnerHost() = default;
-  void Trace(Visitor*) override {}
+  void Trace(Visitor*) const override {}
 
   virtual void NotifyScriptExecuted() = 0;
 };

@@ -90,7 +90,7 @@ RTCEncodedVideoFrame::PassWebRtcFrame() {
   return delegate_->PassWebRtcFrame();
 }
 
-void RTCEncodedVideoFrame::Trace(Visitor* visitor) {
+void RTCEncodedVideoFrame::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   visitor->Trace(frame_data_);
   visitor->Trace(additional_data_);

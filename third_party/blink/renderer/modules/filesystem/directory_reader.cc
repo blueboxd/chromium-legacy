@@ -118,7 +118,7 @@ void DirectoryReader::OnError(base::File::Error error) {
   }
 }
 
-void DirectoryReader::Trace(Visitor* visitor) {
+void DirectoryReader::Trace(Visitor* visitor) const {
   visitor->Trace(entries_);
   visitor->Trace(entries_callback_);
   visitor->Trace(error_callback_);

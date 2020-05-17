@@ -170,7 +170,7 @@ void NDEFReader::OnScanRequestCompleted(
   resolver_.Clear();
 }
 
-void NDEFReader::Trace(Visitor* visitor) {
+void NDEFReader::Trace(Visitor* visitor) const {
   visitor->Trace(permission_service_);
   visitor->Trace(resolver_);
   visitor->Trace(signal_);

@@ -48,7 +48,7 @@ NetworkInformation* NavigatorNetworkInformation::connection() {
   return connection_.Get();
 }
 
-void NavigatorNetworkInformation::Trace(Visitor* visitor) {
+void NavigatorNetworkInformation::Trace(Visitor* visitor) const {
   visitor->Trace(connection_);
   Supplement<Navigator>::Trace(visitor);
   ExecutionContextClient::Trace(visitor);

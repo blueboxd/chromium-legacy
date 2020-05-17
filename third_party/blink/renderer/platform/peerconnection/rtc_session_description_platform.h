@@ -23,7 +23,7 @@ class PLATFORM_EXPORT RTCSessionDescriptionPlatform final
   String Sdp() { return sdp_; }
   void SetSdp(const String& sdp) { sdp_ = sdp; }
 
-  void Trace(Visitor* visitor) {}
+  void Trace(Visitor* visitor) const {}
 
  private:
   String type_;

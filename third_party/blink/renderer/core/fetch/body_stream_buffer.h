@@ -97,7 +97,7 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
     return side_data_blob_;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   class LoaderClient;

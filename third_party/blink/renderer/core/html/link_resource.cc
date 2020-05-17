@@ -69,7 +69,7 @@ ExecutionContext* LinkResource::GetExecutionContext() {
   return owner_->GetExecutionContext();
 }
 
-void LinkResource::Trace(Visitor* visitor) {
+void LinkResource::Trace(Visitor* visitor) const {
   visitor->Trace(owner_);
 }
 

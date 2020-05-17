@@ -19,7 +19,7 @@ VideoFrameCallbackRequester* VideoFrameCallbackRequester::From(
       element);
 }
 
-void VideoFrameCallbackRequester::Trace(Visitor* visitor) {
+void VideoFrameCallbackRequester::Trace(Visitor* visitor) const {
   Supplement<HTMLVideoElement>::Trace(visitor);
 }
 

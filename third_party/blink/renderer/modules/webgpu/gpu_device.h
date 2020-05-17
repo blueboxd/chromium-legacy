@@ -61,7 +61,7 @@ class GPUDevice final : public EventTargetWithInlineData,
                      const GPUDeviceDescriptor* descriptor);
   ~GPUDevice() override;
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   // gpu_device.idl
   GPUAdapter* adapter() const;

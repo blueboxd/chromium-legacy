@@ -81,7 +81,7 @@ ScriptPromise RTCEncodedVideoUnderlyingSink::abort(
   return close(script_state, exception_state);
 }
 
-void RTCEncodedVideoUnderlyingSink::Trace(Visitor* visitor) {
+void RTCEncodedVideoUnderlyingSink::Trace(Visitor* visitor) const {
   UnderlyingSinkBase::Trace(visitor);
 }
 

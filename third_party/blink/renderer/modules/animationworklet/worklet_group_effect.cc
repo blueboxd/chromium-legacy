@@ -19,7 +19,7 @@ WorkletGroupEffect::WorkletGroupEffect(
   }
 }
 
-void WorkletGroupEffect::Trace(Visitor* visitor) {
+void WorkletGroupEffect::Trace(Visitor* visitor) const {
   visitor->Trace(effects_);
   ScriptWrappable::Trace(visitor);
 }

@@ -26,7 +26,7 @@ NavigatorBeacon::NavigatorBeacon(Navigator& navigator)
 
 NavigatorBeacon::~NavigatorBeacon() = default;
 
-void NavigatorBeacon::Trace(Visitor* visitor) {
+void NavigatorBeacon::Trace(Visitor* visitor) const {
   Supplement<Navigator>::Trace(visitor);
 }
 

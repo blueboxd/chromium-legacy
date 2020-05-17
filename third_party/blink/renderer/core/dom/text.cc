@@ -470,7 +470,7 @@ Text* Text::CloneWithData(Document& factory, const String& data) const {
   return Create(factory, data);
 }
 
-void Text::Trace(Visitor* visitor) {
+void Text::Trace(Visitor* visitor) const {
   CharacterData::Trace(visitor);
 }
 

@@ -26,7 +26,7 @@ class MockPaintTimingCallbackManager final
 
   size_t CountCallbacks() { return callback_queue_.size(); }
 
-  void Trace(Visitor* visitor) override {}
+  void Trace(Visitor* visitor) const override {}
 
  private:
   PaintTimingCallbackManager::CallbackQueue callback_queue_;

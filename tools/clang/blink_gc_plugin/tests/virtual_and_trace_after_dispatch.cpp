@@ -6,15 +6,16 @@
 
 namespace blink {
 
-static B* toB(A* a) { return static_cast<B*>(a); }
+static const B* toB(const A* a) {
+  return static_cast<const B*>(a);
+}
 
-void A::Trace(Visitor* visitor)
-{
-    switch (m_type) {
+void A::Trace(Visitor* visitor) const {
+  switch (m_type) {
     case TB:
         toB(this)->TraceAfterDispatch(visitor);
         break;
-    }
+  }
 }
 
 void A::TraceAfterDispatch(Visitor* visitor) const {}

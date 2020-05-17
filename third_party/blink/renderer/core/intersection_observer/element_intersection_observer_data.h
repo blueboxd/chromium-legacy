@@ -46,7 +46,7 @@ class CORE_EXPORT ElementIntersectionObserverData final
   // algorithm is invalid and must be recomputed.
   void InvalidateCachedRects();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
   const char* NameInHeapSnapshot() const override {
     return "ElementIntersectionObserverData";
   }

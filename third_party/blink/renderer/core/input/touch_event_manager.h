@@ -31,7 +31,7 @@ class CORE_EXPORT TouchEventManager final
  public:
 
   explicit TouchEventManager(LocalFrame&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   void HandleTouchPoint(const WebPointerEvent&,
                         const Vector<WebPointerEvent>&,
@@ -51,7 +51,7 @@ class CORE_EXPORT TouchEventManager final
   class TouchPointAttributes final
       : public GarbageCollected<TouchPointAttributes> {
    public:
-    void Trace(Visitor* visitor) { visitor->Trace(target_); }
+    void Trace(Visitor* visitor) const { visitor->Trace(target_); }
 
     TouchPointAttributes() = default;
     explicit TouchPointAttributes(WebPointerEvent event)

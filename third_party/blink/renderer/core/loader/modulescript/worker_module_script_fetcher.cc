@@ -51,7 +51,7 @@ void WorkerModuleScriptFetcher::Fetch(
                         this, ScriptResource::kNoStreaming);
 }
 
-void WorkerModuleScriptFetcher::Trace(Visitor* visitor) {
+void WorkerModuleScriptFetcher::Trace(Visitor* visitor) const {
   ModuleScriptFetcher::Trace(visitor);
   visitor->Trace(client_);
   visitor->Trace(global_scope_);

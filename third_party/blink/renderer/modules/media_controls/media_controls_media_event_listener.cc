@@ -252,7 +252,7 @@ void MediaControlsMediaEventListener::OnRemotePlaybackAvailabilityChanged() {
   media_controls_->RefreshCastButtonVisibility();
 }
 
-void MediaControlsMediaEventListener::Trace(Visitor* visitor) {
+void MediaControlsMediaEventListener::Trace(Visitor* visitor) const {
   NativeEventListener::Trace(visitor);
   visitor->Trace(media_controls_);
 }

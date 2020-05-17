@@ -71,7 +71,7 @@ class CORE_EXPORT WorkerNavigator final
   // AcceptLanguagesWatcher override
   void NotifyUpdate() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   UserAgentMetadata GetUserAgentMetadata() const override {

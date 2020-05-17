@@ -70,7 +70,7 @@ void XRFrameRequestCallbackCollection::ExecuteCallbacks(XRSession* session,
   current_callbacks_.clear();
 }
 
-void XRFrameRequestCallbackCollection::Trace(Visitor* visitor) {
+void XRFrameRequestCallbackCollection::Trace(Visitor* visitor) const {
   visitor->Trace(callbacks_);
   visitor->Trace(current_callbacks_);
   visitor->Trace(context_);

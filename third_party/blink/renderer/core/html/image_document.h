@@ -52,7 +52,7 @@ class CORE_EXPORT ImageDocument final : public HTMLDocument {
   void UpdateTitle();
   bool ShouldShrinkToFit() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   DocumentParser* CreateParser() override;

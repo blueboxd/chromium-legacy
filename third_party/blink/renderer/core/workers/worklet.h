@@ -51,7 +51,7 @@ class CORE_EXPORT Worklet : public ScriptWrappable,
   // Called by WorkletPendingTasks to notify the Worklet.
   void FinishPendingTasks(WorkletPendingTasks*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   explicit Worklet(LocalDOMWindow&);

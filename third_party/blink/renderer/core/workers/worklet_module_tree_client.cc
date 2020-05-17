@@ -89,7 +89,7 @@ void WorkletModuleTreeClient::NotifyModuleTreeLoadFinished(
                           WrapCrossThreadPersistent(pending_tasks_.Get())));
 }
 
-void WorkletModuleTreeClient::Trace(Visitor* visitor) {
+void WorkletModuleTreeClient::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   ModuleTreeClient::Trace(visitor);
 }

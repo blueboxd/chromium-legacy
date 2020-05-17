@@ -114,7 +114,7 @@ class CORE_EXPORT HTMLCollection : public ScriptWrappable,
   Iterator begin() const { return Iterator(this); }
   Iterator end() const { return Iterator::CreateEnd(this); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   class NamedItemCache final : public GarbageCollected<NamedItemCache> {
@@ -142,7 +142,7 @@ class CORE_EXPORT HTMLCollection : public ScriptWrappable,
       AddElementToMap(name_cache_, name, element);
     }
 
-    void Trace(Visitor* visitor) {
+    void Trace(Visitor* visitor) const {
       visitor->Trace(id_cache_);
       visitor->Trace(name_cache_);
     }

@@ -41,7 +41,7 @@ void ApplyConstraintsRequest::RequestFailed(const String& constraint,
   track_.Reset();
 }
 
-void ApplyConstraintsRequest::Trace(Visitor* visitor) {
+void ApplyConstraintsRequest::Trace(Visitor* visitor) const {
   visitor->Trace(resolver_);
 }
 

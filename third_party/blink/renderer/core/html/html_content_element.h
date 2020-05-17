@@ -53,7 +53,7 @@ class CORE_EXPORT HTMLContentElement final : public V0InsertionPoint {
   const CSSSelectorList& SelectorList() const;
   bool IsSelectValid() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void ParseAttribute(const AttributeModificationParams&) override;

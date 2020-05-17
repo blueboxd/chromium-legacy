@@ -35,7 +35,7 @@ class PluginInfo;
 
 class CORE_EXPORT MimeClassInfo final : public GarbageCollected<MimeClassInfo> {
  public:
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   MimeClassInfo(const String& type, const String& desc, PluginInfo&);
 
@@ -55,7 +55,7 @@ class CORE_EXPORT MimeClassInfo final : public GarbageCollected<MimeClassInfo> {
 
 class CORE_EXPORT PluginInfo final : public GarbageCollected<PluginInfo> {
  public:
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   PluginInfo(const String& name,
              const String& filename,
@@ -90,7 +90,7 @@ class CORE_EXPORT PluginInfo final : public GarbageCollected<PluginInfo> {
 
 class CORE_EXPORT PluginData final : public GarbageCollected<PluginData> {
  public:
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   PluginData() = default;
 

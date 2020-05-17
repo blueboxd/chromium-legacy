@@ -45,7 +45,7 @@ Expression::Expression()
 
 Expression::~Expression() = default;
 
-void Expression::Trace(Visitor* visitor) {
+void Expression::Trace(Visitor* visitor) const {
   visitor->Trace(sub_expressions_);
   ParseNode::Trace(visitor);
 }

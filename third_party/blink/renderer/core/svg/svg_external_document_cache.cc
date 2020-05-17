@@ -76,7 +76,7 @@ Document* SVGExternalDocumentCache::Entry::GetDocument() {
   return document_.Get();
 }
 
-void SVGExternalDocumentCache::Entry::Trace(Visitor* visitor) {
+void SVGExternalDocumentCache::Entry::Trace(Visitor* visitor) const {
   ResourceClient::Trace(visitor);
   visitor->Trace(document_);
   visitor->Trace(context_document_);
@@ -126,7 +126,7 @@ SVGExternalDocumentCache::Entry* SVGExternalDocumentCache::Get(
   return entry;
 }
 
-void SVGExternalDocumentCache::Trace(Visitor* visitor) {
+void SVGExternalDocumentCache::Trace(Visitor* visitor) const {
   Supplement<Document>::Trace(visitor);
   visitor->Trace(entries_);
 }

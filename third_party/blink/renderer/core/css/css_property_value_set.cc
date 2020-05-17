@@ -247,7 +247,7 @@ template CORE_EXPORT const CSSValue* CSSPropertyValueSet::GetPropertyCSSValue<
 template CORE_EXPORT const CSSValue*
     CSSPropertyValueSet::GetPropertyCSSValue<AtomicString>(AtomicString) const;
 
-void CSSPropertyValueSet::Trace(Visitor* visitor) {
+void CSSPropertyValueSet::Trace(Visitor* visitor) const {
   if (is_mutable_)
     To<MutableCSSPropertyValueSet>(this)->TraceAfterDispatch(visitor);
   else
@@ -667,6 +667,6 @@ void CSSPropertyValueSet::ShowStyle() {
 }
 #endif
 
-void CSSLazyPropertyParser::Trace(Visitor* visitor) {}
+void CSSLazyPropertyParser::Trace(Visitor* visitor) const {}
 
 }  // namespace blink

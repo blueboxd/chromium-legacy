@@ -44,7 +44,7 @@ class ElementDataCache final : public GarbageCollected<ElementDataCache> {
   ShareableElementData* CachedShareableElementDataWithAttributes(
       const Vector<Attribute>&);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   typedef HeapHashMap<unsigned, Member<ShareableElementData>, AlreadyHashed>

@@ -102,7 +102,7 @@ class MODULES_EXPORT IDBTransaction final
                  const IDBDatabaseMetadata&);
   ~IDBTransaction() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   static mojom::IDBTransactionMode StringToMode(const String&);
 

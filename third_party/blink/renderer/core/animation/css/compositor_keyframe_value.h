@@ -23,7 +23,7 @@ class CORE_EXPORT CompositorKeyframeValue
   bool IsTransform() const { return GetType() == Type::kTransform; }
   bool IsColor() const { return GetType() == Type::kColor; }
 
-  virtual void Trace(Visitor*) {}
+  virtual void Trace(Visitor*) const {}
 
   enum class Type {
     kDouble,

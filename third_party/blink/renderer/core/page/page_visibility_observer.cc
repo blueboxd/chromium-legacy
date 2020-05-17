@@ -29,7 +29,7 @@ void PageVisibilityObserver::SetPage(Page* page) {
     page_->PageVisibilityObserverList().AddObserver(this);
 }
 
-void PageVisibilityObserver::Trace(Visitor* visitor) {
+void PageVisibilityObserver::Trace(Visitor* visitor) const {
   visitor->Trace(page_);
 }
 

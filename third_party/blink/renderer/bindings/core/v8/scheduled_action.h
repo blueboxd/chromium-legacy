@@ -66,7 +66,7 @@ class ScheduledAction final : public GarbageCollected<ScheduledAction>,
 
   void Execute(ExecutionContext*);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   const char* NameInHeapSnapshot() const override { return "ScheduledAction"; }
 

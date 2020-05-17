@@ -60,7 +60,7 @@ void CSSGlobalRuleSet::Dispose() {
   is_dirty_ = true;
 }
 
-void CSSGlobalRuleSet::Trace(Visitor* visitor) {
+void CSSGlobalRuleSet::Trace(Visitor* visitor) const {
   visitor->Trace(watched_selectors_rule_set_);
 }
 

@@ -67,7 +67,7 @@ void VideoFrameRequestCallbackCollection::ExecuteFrameCallbacks(
   callbacks_to_invoke_.clear();
 }
 
-void VideoFrameRequestCallbackCollection::Trace(Visitor* visitor) {
+void VideoFrameRequestCallbackCollection::Trace(Visitor* visitor) const {
   visitor->Trace(frame_callbacks_);
   visitor->Trace(callbacks_to_invoke_);
   visitor->Trace(context_);
@@ -78,7 +78,7 @@ VideoFrameRequestCallbackCollection::V8VideoFrameCallback::V8VideoFrameCallback(
     : callback_(callback) {}
 
 void VideoFrameRequestCallbackCollection::V8VideoFrameCallback::Trace(
-    blink::Visitor* visitor) {
+    blink::Visitor* visitor) const {
   visitor->Trace(callback_);
   VideoFrameRequestCallbackCollection::VideoFrameCallback::Trace(visitor);
 }

@@ -63,7 +63,7 @@ WindowAgent* WindowAgentFactory::GetAgentForOrigin(
   return inserted.stored_value->value;
 }
 
-void WindowAgentFactory::Trace(Visitor* visitor) {
+void WindowAgentFactory::Trace(Visitor* visitor) const {
   visitor->Trace(universal_access_agent_);
   visitor->Trace(file_url_agent_);
   visitor->Trace(opaque_origin_agents_);

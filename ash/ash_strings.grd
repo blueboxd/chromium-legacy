@@ -2361,6 +2361,15 @@ This file contains the strings for ash.
       <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_ADD_1_MIN_BUTTON" desc="Label for button to add 1 minute to timer in Assistant timer notification.">
         Add 1 min
       </message>
+      <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_CANCEL_BUTTON" desc="Label for cancel button in Assistant timer notification.">
+        Cancel
+      </message>
+      <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_PAUSE_BUTTON" desc="Label for pause button in Assistant timer notification.">
+        Pause
+      </message>
+      <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_RESUME_BUTTON" desc="Label for resume button in Assistant timer notification.">
+        Resume
+      </message>
       <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_STOP_BUTTON" desc="Label for stop button in Assistant timer notification.">
         Stop
       </message>

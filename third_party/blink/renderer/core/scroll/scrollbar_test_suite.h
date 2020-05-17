@@ -125,7 +125,7 @@ class MockScrollableArea : public GarbageCollected<MockScrollableArea>,
   using ScrollableArea::ShowNonMacOverlayScrollbars;
   using ScrollableArea::VerticalScrollbarNeedsPaintInvalidation;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(chrome_client_);
     ScrollableArea::Trace(visitor);
   }

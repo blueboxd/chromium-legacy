@@ -59,7 +59,7 @@ class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
 
   void Invoke(ExecutionContext*, Event*) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class MockAutoplayUmaHelper;

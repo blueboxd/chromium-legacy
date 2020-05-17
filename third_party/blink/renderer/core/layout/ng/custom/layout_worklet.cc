@@ -45,7 +45,7 @@ LayoutWorkletGlobalScopeProxy* LayoutWorklet::Proxy() {
   return LayoutWorkletGlobalScopeProxy::From(FindAvailableGlobalScope());
 }
 
-void LayoutWorklet::Trace(Visitor* visitor) {
+void LayoutWorklet::Trace(Visitor* visitor) const {
   visitor->Trace(document_definition_map_);
   visitor->Trace(pending_layout_registry_);
   Worklet::Trace(visitor);

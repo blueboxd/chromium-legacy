@@ -43,7 +43,7 @@ class HiddenInputType final : public InputType, private InputTypeView {
   HiddenInputType(HTMLInputElement& element)
       : InputType(element), InputTypeView(element) {}
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   using InputType::GetElement;
 
  private:

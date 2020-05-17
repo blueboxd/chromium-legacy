@@ -35,7 +35,7 @@ class MODULES_EXPORT XRView final : public ScriptWrappable {
   DOMFloat32Array* projectionMatrix() const;
   XRRigidTransform* transform() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   XREye eye_;

@@ -30,7 +30,7 @@ class NavigatorUSB final : public GarbageCollected<NavigatorUSB>,
 
   explicit NavigatorUSB(Navigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<USB> usb_;

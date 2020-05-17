@@ -457,7 +457,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   inline void setUsvStringOrNullMemberToNull();
 
   v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   bool has_any_in_record_member_ = false;

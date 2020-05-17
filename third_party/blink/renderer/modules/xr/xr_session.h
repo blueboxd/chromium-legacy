@@ -285,7 +285,7 @@ class XRSession final
   bool UsesInputEventing() { return uses_input_eventing_; }
   bool LightEstimationEnabled() { return !!world_light_probe_; }
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   // ScriptWrappable
   bool HasPendingActivity() const override;

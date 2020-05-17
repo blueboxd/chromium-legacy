@@ -23,7 +23,7 @@ class Ink : public ScriptWrappable {
                                  String type,
                                  Element* presentationArea = nullptr);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(blink::Visitor*) const override;
 };
 
 }  // namespace blink

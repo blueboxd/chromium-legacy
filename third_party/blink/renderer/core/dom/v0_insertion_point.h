@@ -83,7 +83,7 @@ class CORE_EXPORT V0InsertionPoint : public HTMLElement {
 
   void RecalcStyleForInsertionPointChildren(const StyleRecalcChange);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   V0InsertionPoint(const QualifiedName&, Document&);

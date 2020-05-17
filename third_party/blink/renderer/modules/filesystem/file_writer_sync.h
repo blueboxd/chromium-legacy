@@ -51,7 +51,7 @@ class FileWriterSync final : public ScriptWrappable,
  public:
   explicit FileWriterSync(ExecutionContext* context);
   ~FileWriterSync() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void write(Blob*, ExceptionState&);
   void seek(int64_t position, ExceptionState&);

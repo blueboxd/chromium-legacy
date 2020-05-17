@@ -97,7 +97,7 @@ class Iterable {
     // false.  Otherwise: set |key| and |value| and return true.
     virtual bool Next(ScriptState*, KeyType&, ValueType&, ExceptionState&) = 0;
 
-    virtual void Trace(Visitor* visitor) {}
+    virtual void Trace(Visitor* visitor) const {}
   };
 
  private:
@@ -160,7 +160,7 @@ class Iterable {
       return next(script_state, exception_state);
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(source_);
       Iterator::Trace(visitor);
     }

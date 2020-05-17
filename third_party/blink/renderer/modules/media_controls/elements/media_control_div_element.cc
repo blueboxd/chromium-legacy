@@ -36,7 +36,7 @@ bool MediaControlDivElement::IsDisabled() const {
   return false;
 }
 
-void MediaControlDivElement::Trace(Visitor* visitor) {
+void MediaControlDivElement::Trace(Visitor* visitor) const {
   HTMLDivElement::Trace(visitor);
   MediaControlElementBase::Trace(visitor);
 }

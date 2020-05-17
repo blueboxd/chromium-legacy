@@ -123,7 +123,7 @@ AudioParam* DelayNode::delayTime() {
   return delay_time_;
 }
 
-void DelayNode::Trace(Visitor* visitor) {
+void DelayNode::Trace(Visitor* visitor) const {
   visitor->Trace(delay_time_);
   AudioNode::Trace(visitor);
 }

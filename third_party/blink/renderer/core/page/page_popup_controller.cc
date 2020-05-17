@@ -114,7 +114,7 @@ void PagePopupController::setWindowRect(int x, int y, int width, int height) {
   popup_.SetWindowRect(IntRect(x, y, width, height));
 }
 
-void PagePopupController::Trace(Visitor* visitor) {
+void PagePopupController::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   Supplement<Page>::Trace(visitor);
 }

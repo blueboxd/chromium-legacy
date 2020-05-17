@@ -322,7 +322,7 @@ void MIDIOutput::DidOpen(bool opened) {
   DCHECK(pending_data_.IsEmpty());
 }
 
-void MIDIOutput::Trace(Visitor* visitor) {
+void MIDIOutput::Trace(Visitor* visitor) const {
   MIDIPort::Trace(visitor);
   visitor->Trace(pending_data_);
 }

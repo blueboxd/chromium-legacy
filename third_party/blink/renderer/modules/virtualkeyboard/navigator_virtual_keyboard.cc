@@ -29,7 +29,7 @@ VirtualKeyboard* NavigatorVirtualKeyboard::virtualKeyboard(
   return supplement->virtual_keyboard_;
 }
 
-void NavigatorVirtualKeyboard::Trace(Visitor* visitor) {
+void NavigatorVirtualKeyboard::Trace(Visitor* visitor) const {
   visitor->Trace(virtual_keyboard_);
   Supplement<Navigator>::Trace(visitor);
 }

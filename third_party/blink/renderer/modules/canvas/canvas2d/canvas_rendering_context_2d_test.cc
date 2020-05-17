@@ -168,7 +168,7 @@ class CanvasRenderingContext2DTest : public ::testing::Test {
 
   class WrapGradients final : public GarbageCollected<WrapGradients> {
    public:
-    void Trace(Visitor* visitor) {
+    void Trace(Visitor* visitor) const {
       visitor->Trace(opaque_gradient_);
       visitor->Trace(alpha_gradient_);
     }

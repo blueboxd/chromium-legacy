@@ -37,7 +37,7 @@ class SerialPortUnderlyingSink final : public UnderlyingSinkBase {
   // rejected with this DOMException.
   void SignalErrorOnClose(DOMException*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void OnHandleReady(MojoResult, const mojo::HandleSignalsState&);

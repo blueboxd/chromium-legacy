@@ -42,7 +42,9 @@ class MockLinkLoaderClient final
  public:
   explicit MockLinkLoaderClient(bool should_load) : should_load_(should_load) {}
 
-  void Trace(Visitor* visitor) override { LinkLoaderClient::Trace(visitor); }
+  void Trace(Visitor* visitor) const override {
+    LinkLoaderClient::Trace(visitor);
+  }
 
   bool ShouldLoadLink() override { return should_load_; }
   bool IsLinkCreatedByParser() override { return true; }

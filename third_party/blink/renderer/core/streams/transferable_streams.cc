@@ -337,7 +337,7 @@ class CrossRealmTransformStream
   // event is fired on the message port. It should error the stream.
   virtual void HandleError(v8::Local<v8::Value> error) = 0;
 
-  virtual void Trace(Visitor*) {}
+  virtual void Trace(Visitor*) const {}
 };
 
 // Handles MessageEvents from the MessagePort.
@@ -377,7 +377,7 @@ class CrossRealmTransformMessageListener final : public NativeEventListener {
     target_->HandleMessage(static_cast<MessageType>(type_value), value);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(target_);
     NativeEventListener::Trace(visitor);
   }
@@ -412,7 +412,7 @@ class CrossRealmTransformErrorListener final : public NativeEventListener {
     target_->HandleError(error_value);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(target_);
     NativeEventListener::Trace(visitor);
   }
@@ -438,7 +438,7 @@ class CrossRealmTransformWritable final : public CrossRealmTransformStream {
   void HandleMessage(MessageType type, v8::Local<v8::Value> value) override;
   void HandleError(v8::Local<v8::Value> error) override;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(script_state_);
     visitor->Trace(message_port_);
     visitor->Trace(backpressure_promise_);
@@ -482,7 +482,7 @@ class CrossRealmTransformWritable::WriteAlgorithm final
         MakeGarbageCollected<DoWriteOnResolve>(script_state, chunk, this));
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(writable_);
     StreamAlgorithm::Trace(visitor);
   }
@@ -504,7 +504,7 @@ class CrossRealmTransformWritable::WriteAlgorithm final
                               chunk_.NewLocal(script_state->GetIsolate()));
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(chunk_);
       visitor->Trace(target_);
       PromiseHandlerWithValue::Trace(visitor);
@@ -571,7 +571,7 @@ class CrossRealmTransformWritable::CloseAlgorithm final
     return PromiseResolveWithUndefined(script_state);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(writable_);
     StreamAlgorithm::Trace(visitor);
   }
@@ -605,7 +605,7 @@ class CrossRealmTransformWritable::AbortAlgorithm final
     return PromiseResolveWithUndefined(script_state);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(writable_);
     StreamAlgorithm::Trace(visitor);
   }
@@ -693,7 +693,7 @@ class CrossRealmTransformReadable final : public CrossRealmTransformStream {
   void HandleMessage(MessageType type, v8::Local<v8::Value> value) override;
   void HandleError(v8::Local<v8::Value> error) override;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(script_state_);
     visitor->Trace(message_port_);
     visitor->Trace(backpressure_promise_);
@@ -739,7 +739,7 @@ class CrossRealmTransformReadable::PullAlgorithm final
     return readable_->backpressure_promise_->V8Promise(isolate);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(readable_);
     StreamAlgorithm::Trace(visitor);
   }
@@ -776,7 +776,7 @@ class CrossRealmTransformReadable::CancelAlgorithm final
     return PromiseResolveWithUndefined(script_state);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(readable_);
     StreamAlgorithm::Trace(visitor);
   }

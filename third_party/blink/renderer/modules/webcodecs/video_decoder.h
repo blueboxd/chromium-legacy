@@ -50,7 +50,7 @@ class MODULES_EXPORT VideoDecoder final : public ScriptWrappable {
   ScriptPromise reset(ExceptionState&);
 
   // GarbageCollected override.
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   struct Request : public GarbageCollected<Request> {
@@ -61,7 +61,7 @@ class MODULES_EXPORT VideoDecoder final : public ScriptWrappable {
       kReset,
     };
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
     Type type;
     Member<const EncodedVideoConfig> config;

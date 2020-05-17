@@ -94,7 +94,7 @@ class WorkerFetchContext final : public BaseFetchContext {
   bool AllowRunningInsecureContent(bool enabled_per_settings,
                                    const KURL& url) const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void SetFirstPartyCookie(ResourceRequest&);

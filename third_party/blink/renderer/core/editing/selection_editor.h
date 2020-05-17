@@ -64,7 +64,7 @@ class SelectionEditor final : public GarbageCollected<SelectionEditor>,
 
   void MarkCacheDirty();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Document& GetDocument() const;

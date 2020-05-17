@@ -44,7 +44,7 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
   SVGAnimateElement(const QualifiedName&, Document&);
   ~SVGAnimateElement() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool IsSVGAnimationAttributeSettingJavaScriptURL(
       const Attribute&) const override;

@@ -40,7 +40,7 @@ class ContentIndex final : public ScriptWrappable {
   ScriptPromise getDescriptions(ScriptState* script_state,
                                 ExceptionState& exception_state);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   mojom::blink::ContentIndexService* GetService();

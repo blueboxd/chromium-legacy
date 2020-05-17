@@ -39,7 +39,7 @@ class CORE_EXPORT ScriptCustomElementDefinition final
                                 CustomElementDefinition::Id);
   ~ScriptCustomElementDefinition() override = default;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   v8::Local<v8::Object> Constructor() const;
 

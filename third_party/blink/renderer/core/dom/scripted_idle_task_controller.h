@@ -40,7 +40,7 @@ class CORE_EXPORT ScriptedIdleTaskController
   explicit ScriptedIdleTaskController(ExecutionContext*);
   ~ScriptedIdleTaskController() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "ScriptedIdleTaskController";
   }
@@ -51,7 +51,7 @@ class CORE_EXPORT ScriptedIdleTaskController
   // on idle. The tasks need to define what to do on idle in |invoke|.
   class IdleTask : public GarbageCollected<IdleTask>, public NameClient {
    public:
-    virtual void Trace(Visitor* visitor) {}
+    virtual void Trace(Visitor* visitor) const {}
     const char* NameInHeapSnapshot() const override { return "IdleTask"; }
     virtual ~IdleTask() = default;
     virtual void invoke(IdleDeadline*) = 0;
@@ -73,7 +73,7 @@ class CORE_EXPORT ScriptedIdleTaskController
     ~V8IdleTask() override = default;
 
     void invoke(IdleDeadline*) override;
-    void Trace(Visitor*) override;
+    void Trace(Visitor*) const override;
 
    private:
     Member<V8IdleRequestCallback> callback_;

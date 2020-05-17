@@ -240,7 +240,6 @@
 <translation id="1962204205936693436">Segnalibri di <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Errore di serializzazione</translation>
 <translation id="1974060860693918893">Avanzate</translation>
-<translation id="1974883374937189061">Contribuisci a migliorare la sicurezza di Chrome inviando a Google <ph name="BEGIN_WHITEPAPER_LINK" />gli URL di alcune pagine visitate, informazioni limitate sul sistema e alcuni contenuti delle pagine<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1975584088563498795">Mailbox 10</translation>
 <translation id="1978555033938440688">Versione firmware</translation>
 <translation id="1981206234434200693">Cancella i dati della cronologia di navigazione di Chrome</translation>
@@ -1598,7 +1597,6 @@ Ulteriori dettagli:
 <translation id="7763386264682878361">Analizzatore sintattico dei file manifest dei pagamenti</translation>
 <translation id="7764225426217299476">Aggiungi indirizzo</translation>
 <translation id="7766518757692125295">Skirt</translation>
-<translation id="7767271804335921384">L'applicazione è stata bloccata dal tuo amministratore</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Stesso ordine a faccia in su</translation>
 <translation id="777702478322588152">Prefettura</translation>
@@ -1752,6 +1750,7 @@ Ulteriori dettagli:
 <translation id="8425213833346101688">Cambia</translation>
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8433057134996913067">In questo modo uscirai dalla maggior parte dei siti web.</translation>
+<translation id="8433678324664858900">Mostra suggerimenti</translation>
 <translation id="8437238597147034694">&amp;Annulla spostamento</translation>
 <translation id="8457125768502047971">Indeterminato</translation>
 <translation id="8461694314515752532">Cripta i dati sincronizzati con la tua passphrase di sincronizzazione</translation>

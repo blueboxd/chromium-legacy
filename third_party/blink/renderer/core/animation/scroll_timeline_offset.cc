@@ -200,7 +200,7 @@ ScrollTimelineOffset::ScrollTimelineOffset(
     ScrollTimelineElementBasedOffset* offset)
     : length_based_offset_(nullptr), element_based_offset_(offset) {}
 
-void ScrollTimelineOffset::Trace(blink::Visitor* visitor) {
+void ScrollTimelineOffset::Trace(blink::Visitor* visitor) const {
   visitor->Trace(length_based_offset_);
   visitor->Trace(element_based_offset_);
 }

@@ -62,7 +62,7 @@ SVGLinearGradientElement::SVGLinearGradientElement(Document& document)
   AddToPropertyMap(y2_);
 }
 
-void SVGLinearGradientElement::Trace(Visitor* visitor) {
+void SVGLinearGradientElement::Trace(Visitor* visitor) const {
   visitor->Trace(x1_);
   visitor->Trace(y1_);
   visitor->Trace(x2_);

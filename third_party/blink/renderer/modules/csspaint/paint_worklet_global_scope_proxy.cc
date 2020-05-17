@@ -90,7 +90,7 @@ CSSPaintDefinition* PaintWorkletGlobalScopeProxy::FindDefinition(
   return global_scope_->FindDefinition(name);
 }
 
-void PaintWorkletGlobalScopeProxy::Trace(Visitor* visitor) {
+void PaintWorkletGlobalScopeProxy::Trace(Visitor* visitor) const {
   visitor->Trace(global_scope_);
 }
 

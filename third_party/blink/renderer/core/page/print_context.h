@@ -103,7 +103,7 @@ class CORE_EXPORT PrintContext : public GarbageCollected<PrintContext> {
                                            int margin_left);
   static int NumberOfPages(LocalFrame*, const FloatSize& page_size_in_pixels);
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
   bool use_printing_layout() const;
 

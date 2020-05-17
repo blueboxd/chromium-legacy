@@ -173,7 +173,7 @@ class LogUpgradeDefinition : public TestCustomElementDefinition {
             },
             {}) {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     TestCustomElementDefinition::Trace(visitor);
     visitor->Trace(element_);
     visitor->Trace(adopted_);
@@ -205,7 +205,7 @@ class LogUpgradeDefinition : public TestCustomElementDefinition {
     Member<Document> old_owner_;
     Member<Document> new_owner_;
 
-    void Trace(Visitor* visitor) {
+    void Trace(Visitor* visitor) const {
       visitor->Trace(old_owner_);
       visitor->Trace(new_owner_);
     }

@@ -37,6 +37,6 @@ const mojom::blink::InspectorIssueDetailsPtr& InspectorIssue::Details() const {
   return details_;
 }
 
-void InspectorIssue::Trace(blink::Visitor* visitor) {}
+void InspectorIssue::Trace(blink::Visitor* visitor) const {}
 
 }  // namespace blink

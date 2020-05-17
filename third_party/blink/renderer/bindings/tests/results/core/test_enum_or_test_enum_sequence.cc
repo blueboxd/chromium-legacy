@@ -80,7 +80,7 @@ TestEnumOrTestEnumSequence::TestEnumOrTestEnumSequence(const TestEnumOrTestEnumS
 TestEnumOrTestEnumSequence::~TestEnumOrTestEnumSequence() = default;
 TestEnumOrTestEnumSequence& TestEnumOrTestEnumSequence::operator=(const TestEnumOrTestEnumSequence&) = default;
 
-void TestEnumOrTestEnumSequence::Trace(Visitor* visitor) {
+void TestEnumOrTestEnumSequence::Trace(Visitor* visitor) const {
 }
 
 void V8TestEnumOrTestEnumSequence::ToImpl(

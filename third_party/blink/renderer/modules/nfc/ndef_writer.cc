@@ -41,7 +41,7 @@ NDEFWriter* NDEFWriter::Create(ExecutionContext* context) {
 NDEFWriter::NDEFWriter(ExecutionContext* context)
     : ExecutionContextClient(context), permission_service_(context) {}
 
-void NDEFWriter::Trace(Visitor* visitor) {
+void NDEFWriter::Trace(Visitor* visitor) const {
   visitor->Trace(permission_service_);
   visitor->Trace(requests_);
   visitor->Trace(nfc_proxy_);

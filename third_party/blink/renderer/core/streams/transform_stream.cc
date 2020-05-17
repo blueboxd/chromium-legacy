@@ -63,7 +63,7 @@ class TransformStream::FlushAlgorithm final : public StreamAlgorithm {
     controller_ = controller;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(transformer_);
     visitor->Trace(controller_);
     StreamAlgorithm::Trace(visitor);
@@ -109,7 +109,7 @@ class TransformStream::TransformAlgorithm final : public StreamAlgorithm {
     controller_ = controller;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(transformer_);
     visitor->Trace(controller_);
     StreamAlgorithm::Trace(visitor);
@@ -262,7 +262,7 @@ TransformStream::TransformStream(ReadableStream* readable,
                                  WritableStream* writable)
     : readable_(readable), writable_(writable) {}
 
-void TransformStream::Trace(Visitor* visitor) {
+void TransformStream::Trace(Visitor* visitor) const {
   visitor->Trace(backpressure_change_promise_);
   visitor->Trace(readable_);
   visitor->Trace(transform_stream_controller_);
@@ -284,7 +284,7 @@ class TransformStream::ReturnStartPromiseAlgorithm final
     return start_promise_->V8Promise(script_state->GetIsolate());
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(start_promise_);
     StreamStartAlgorithm::Trace(visitor);
   }
@@ -363,7 +363,7 @@ class TransformStream::DefaultSinkWriteAlgorithm final
               chunk_.NewLocal(isolate));
         }
 
-        void Trace(Visitor* visitor) override {
+        void Trace(Visitor* visitor) const override {
           visitor->Trace(stream_);
           visitor->Trace(chunk_);
           ScriptFunction::Trace(visitor);
@@ -387,7 +387,7 @@ class TransformStream::DefaultSinkWriteAlgorithm final
         script_state, controller, chunk);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(stream_);
     StreamAlgorithm::Trace(visitor);
   }
@@ -416,7 +416,7 @@ class TransformStream::DefaultSinkAbortAlgorithm final
     return PromiseResolveWithUndefined(script_state);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(stream_);
     StreamAlgorithm::Trace(visitor);
   }
@@ -484,7 +484,7 @@ class TransformStream::DefaultSinkCloseAlgorithm final
         return v8::Undefined(GetScriptState()->GetIsolate());
       }
 
-      void Trace(Visitor* visitor) override {
+      void Trace(Visitor* visitor) const override {
         visitor->Trace(readable_);
         PromiseHandlerWithValue::Trace(visitor);
       }
@@ -510,7 +510,7 @@ class TransformStream::DefaultSinkCloseAlgorithm final
             stream_->readable_->GetStoredError(GetScriptState()->GetIsolate()));
       }
 
-      void Trace(Visitor* visitor) override {
+      void Trace(Visitor* visitor) const override {
         visitor->Trace(stream_);
         PromiseHandlerWithValue::Trace(visitor);
       }
@@ -526,7 +526,7 @@ class TransformStream::DefaultSinkCloseAlgorithm final
         MakeGarbageCollected<RejectFunction>(script_state, stream_));
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(stream_);
     StreamAlgorithm::Trace(visitor);
   }
@@ -561,7 +561,7 @@ class TransformStream::DefaultSourcePullAlgorithm final
         script_state->GetIsolate());
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(stream_);
     StreamAlgorithm::Trace(visitor);
   }
@@ -593,7 +593,7 @@ class TransformStream::DefaultSourceCancelAlgorithm final
     return PromiseResolveWithUndefined(script_state);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(stream_);
     StreamAlgorithm::Trace(visitor);
   }

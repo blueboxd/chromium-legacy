@@ -40,7 +40,7 @@ void SampledEffect::UpdateReplacedProperties(
   }
 }
 
-void SampledEffect::Trace(Visitor* visitor) {
+void SampledEffect::Trace(Visitor* visitor) const {
   visitor->Trace(effect_);
   visitor->Trace(interpolations_);
 }

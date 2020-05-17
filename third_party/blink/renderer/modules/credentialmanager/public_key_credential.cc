@@ -70,7 +70,7 @@ PublicKeyCredential::getClientExtensionResults() const {
       extension_outputs_.Get());
 }
 
-void PublicKeyCredential::Trace(Visitor* visitor) {
+void PublicKeyCredential::Trace(Visitor* visitor) const {
   visitor->Trace(raw_id_);
   visitor->Trace(response_);
   visitor->Trace(extension_outputs_);

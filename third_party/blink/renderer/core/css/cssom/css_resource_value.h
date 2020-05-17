@@ -32,7 +32,7 @@ class CORE_EXPORT CSSResourceValue : public CSSStyleValue {
     }
   }
 
-  void Trace(Visitor* visitor) override { CSSStyleValue::Trace(visitor); }
+  void Trace(Visitor* visitor) const override { CSSStyleValue::Trace(visitor); }
 
  protected:
   CSSResourceValue() = default;

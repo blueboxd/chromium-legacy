@@ -55,7 +55,7 @@ class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
     return cached_value_.get();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(start_keyframe_);
     visitor->Trace(end_keyframe_);
     Interpolation::Trace(visitor);

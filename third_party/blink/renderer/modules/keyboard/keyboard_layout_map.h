@@ -25,7 +25,9 @@ class KeyboardLayoutMap final : public ScriptWrappable,
   // IDL attributes / methods
   uint32_t size() const { return layout_map_.size(); }
 
-  void Trace(Visitor* visitor) override { ScriptWrappable::Trace(visitor); }
+  void Trace(Visitor* visitor) const override {
+    ScriptWrappable::Trace(visitor);
+  }
 
  private:
   // Maplike implementation.

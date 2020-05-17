@@ -83,7 +83,7 @@ class CORE_EXPORT RemoteFrameOwner final
     required_csp_ = required_csp;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Intentionally private to prevent redundant checks when the type is

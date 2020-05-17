@@ -99,7 +99,7 @@ int ConsoleMessageStorage::ExpiredCount() const {
   return expired_count_;
 }
 
-void ConsoleMessageStorage::Trace(Visitor* visitor) {
+void ConsoleMessageStorage::Trace(Visitor* visitor) const {
   visitor->Trace(messages_);
 }
 

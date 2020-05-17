@@ -412,7 +412,7 @@ void SlotAssignment::ClearCandidateNodes(
   candidate_assigned_slot_map_.RemoveAll(candidates);
 }
 
-void SlotAssignment::Trace(Visitor* visitor) {
+void SlotAssignment::Trace(Visitor* visitor) const {
   visitor->Trace(slots_);
   visitor->Trace(slot_map_);
   visitor->Trace(owner_);

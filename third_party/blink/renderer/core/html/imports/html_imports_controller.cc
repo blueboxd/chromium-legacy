@@ -159,7 +159,7 @@ HTMLImportLoader* HTMLImportsController::LoaderFor(
   return nullptr;
 }
 
-void HTMLImportsController::Trace(Visitor* visitor) {
+void HTMLImportsController::Trace(Visitor* visitor) const {
   visitor->Trace(root_);
   visitor->Trace(loaders_);
 }

@@ -42,7 +42,7 @@ class CORE_EXPORT XMLHttpRequestOrString final {
   XMLHttpRequestOrString(const XMLHttpRequestOrString&);
   ~XMLHttpRequestOrString();
   XMLHttpRequestOrString& operator=(const XMLHttpRequestOrString&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   enum class SpecificType {

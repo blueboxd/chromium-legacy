@@ -36,7 +36,7 @@ class RadioButtonGroupScope {
 
  public:
   RadioButtonGroupScope();
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
   void AddButton(HTMLInputElement*);
   void UpdateCheckedState(HTMLInputElement*);
   void RequiredAttributeChanged(HTMLInputElement*);

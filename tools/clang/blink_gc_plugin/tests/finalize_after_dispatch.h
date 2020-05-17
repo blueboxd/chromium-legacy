@@ -11,21 +11,21 @@ namespace blink {
 
 class NeedsDispatch : public GarbageCollected<NeedsDispatch> {
  public:
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
   // Needs a TraceAfterDispatch method.
   void FinalizeGarbageCollectedObject(){};
 };
 
 class NeedsFinalizedBase : public GarbageCollected<NeedsFinalizedBase> {
 public:
-    void Trace(Visitor*) { };
-    void TraceAfterDispatch(Visitor*) const {};
-    void FinalizeGarbageCollectedObject() { };
+ void Trace(Visitor*) const {};
+ void TraceAfterDispatch(Visitor*) const {};
+ void FinalizeGarbageCollectedObject(){};
 };
 
 class A : GarbageCollected<A> {
  public:
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
   void TraceAfterDispatch(Visitor*) const;
   void FinalizeGarbageCollectedObject();
 

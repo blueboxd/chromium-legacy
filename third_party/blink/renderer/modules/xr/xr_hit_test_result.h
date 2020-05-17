@@ -33,7 +33,7 @@ class XRHitTestResult : public ScriptWrappable {
                              XRRigidTransform* initial_pose,
                              ExceptionState& exception_state);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   Member<XRSession> session_;

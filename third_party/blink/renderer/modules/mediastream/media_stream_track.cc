@@ -803,7 +803,7 @@ ExecutionContext* MediaStreamTrack::GetExecutionContext() const {
   return execution_context_.Get();
 }
 
-void MediaStreamTrack::Trace(Visitor* visitor) {
+void MediaStreamTrack::Trace(Visitor* visitor) const {
   visitor->Trace(registered_media_streams_);
   visitor->Trace(component_);
   visitor->Trace(image_capture_);

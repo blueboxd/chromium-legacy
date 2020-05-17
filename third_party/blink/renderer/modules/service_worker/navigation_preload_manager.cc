@@ -58,7 +58,7 @@ ScriptPromise NavigationPreloadManager::SetEnabled(bool enable,
   return promise;
 }
 
-void NavigationPreloadManager::Trace(Visitor* visitor) {
+void NavigationPreloadManager::Trace(Visitor* visitor) const {
   visitor->Trace(registration_);
   ScriptWrappable::Trace(visitor);
 }

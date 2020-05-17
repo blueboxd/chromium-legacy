@@ -41,7 +41,7 @@ class MODULES_EXPORT XRRigidTransform : public ScriptWrappable {
   TransformationMatrix InverseTransformMatrix();
   TransformationMatrix TransformMatrix();  // copies matrix_
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void DecomposeMatrix();

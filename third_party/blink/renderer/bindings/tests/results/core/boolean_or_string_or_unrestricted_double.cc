@@ -74,7 +74,7 @@ BooleanOrStringOrUnrestrictedDouble::BooleanOrStringOrUnrestrictedDouble(const B
 BooleanOrStringOrUnrestrictedDouble::~BooleanOrStringOrUnrestrictedDouble() = default;
 BooleanOrStringOrUnrestrictedDouble& BooleanOrStringOrUnrestrictedDouble::operator=(const BooleanOrStringOrUnrestrictedDouble&) = default;
 
-void BooleanOrStringOrUnrestrictedDouble::Trace(Visitor* visitor) {
+void BooleanOrStringOrUnrestrictedDouble::Trace(Visitor* visitor) const {
 }
 
 void V8BooleanOrStringOrUnrestrictedDouble::ToImpl(

@@ -22,7 +22,7 @@ class LinearAccelerationSensor final : public Accelerometer {
                            const SpatialSensorOptions*,
                            ExceptionState&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 };
 
 }  // namespace blink

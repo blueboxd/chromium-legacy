@@ -241,7 +241,7 @@ void SystemClipboard::CommitWrite() {
   clipboard_->CommitWrite();
 }
 
-void SystemClipboard::Trace(Visitor* visitor) {
+void SystemClipboard::Trace(Visitor* visitor) const {
   visitor->Trace(clipboard_);
 }
 

@@ -182,7 +182,7 @@ StereoPannerNode* StereoPannerNode::Create(BaseAudioContext* context,
   return node;
 }
 
-void StereoPannerNode::Trace(Visitor* visitor) {
+void StereoPannerNode::Trace(Visitor* visitor) const {
   visitor->Trace(pan_);
   AudioNode::Trace(visitor);
 }

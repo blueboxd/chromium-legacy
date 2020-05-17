@@ -20,7 +20,7 @@ class LoaderFactoryForFrame final : public ResourceFetcher::LoaderFactory {
  public:
   LoaderFactoryForFrame(DocumentLoader& loader, Document& document);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // LoaderFactory implementations
   std::unique_ptr<WebURLLoader> CreateURLLoader(

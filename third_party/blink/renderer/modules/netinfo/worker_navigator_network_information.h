@@ -33,7 +33,7 @@ class WorkerNavigatorNetworkInformation final
 
   WorkerNavigatorNetworkInformation(WorkerNavigator&, ExecutionContext*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   NetworkInformation* connection(ExecutionContext*);

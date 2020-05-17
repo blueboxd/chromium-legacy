@@ -146,7 +146,7 @@ class CORE_EXPORT StyleImage : public GarbageCollected<StyleImage> {
     return is_lazyload_possibly_deferred_;
   }
 
-  virtual void Trace(Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) const {}
 
  protected:
   StyleImage()

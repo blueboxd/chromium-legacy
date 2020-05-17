@@ -282,7 +282,7 @@ void AdTracker::AppendToKnownAdScripts(ExecutionContext& execution_context,
   add_result.stored_value->value.insert(url);
 }
 
-void AdTracker::Trace(Visitor* visitor) {
+void AdTracker::Trace(Visitor* visitor) const {
   visitor->Trace(local_root_);
   visitor->Trace(known_ad_scripts_);
 }

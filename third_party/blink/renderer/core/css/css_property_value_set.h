@@ -138,7 +138,7 @@ class CORE_EXPORT CSSPropertyValueSet
 
   bool PropertyMatches(CSSPropertyID, const CSSValue&) const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
   void TraceAfterDispatch(blink::Visitor* visitor) const {}
 
  protected:
@@ -171,7 +171,7 @@ class CSSLazyPropertyParser : public GarbageCollected<CSSLazyPropertyParser> {
   CSSLazyPropertyParser() = default;
   virtual ~CSSLazyPropertyParser() = default;
   virtual CSSPropertyValueSet* ParseProperties() = 0;
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
   DISALLOW_COPY_AND_ASSIGN(CSSLazyPropertyParser);
 };
 

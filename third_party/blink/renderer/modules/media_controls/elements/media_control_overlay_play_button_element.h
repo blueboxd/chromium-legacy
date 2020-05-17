@@ -28,7 +28,7 @@ class MODULES_EXPORT MediaControlOverlayPlayButtonElement final
 
   void SetIsDisplayed(bool);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   const char* GetNameForHistograms() const override;

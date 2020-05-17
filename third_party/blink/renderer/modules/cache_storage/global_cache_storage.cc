@@ -76,7 +76,7 @@ class GlobalCacheStorageImpl final
     return caches_;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(caches_);
     Supplement<T>::Trace(visitor);
   }

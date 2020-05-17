@@ -258,7 +258,7 @@ Vector<String> NativeIOManager::getAllSync(ExceptionState& exception_state) {
   return result;
 }
 
-void NativeIOManager::Trace(Visitor* visitor) {
+void NativeIOManager::Trace(Visitor* visitor) const {
   visitor->Trace(backend_);
   ScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);

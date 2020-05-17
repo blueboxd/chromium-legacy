@@ -44,7 +44,7 @@ class CORE_EXPORT EventQueue final : public GarbageCollected<EventQueue>,
   EventQueue(ExecutionContext*, TaskType);
   ~EventQueue();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   bool EnqueueEvent(const base::Location&, Event&);
   void CancelAllEvents();
   bool HasPendingEvents() const;

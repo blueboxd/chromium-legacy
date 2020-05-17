@@ -236,7 +236,7 @@ void MediaControlTimelineElement::RenderBarSegments() {
   SetAfterSegmentPosition(after_segment);
 }
 
-void MediaControlTimelineElement::Trace(Visitor* visitor) {
+void MediaControlTimelineElement::Trace(Visitor* visitor) const {
   MediaControlSliderElement::Trace(visitor);
 }
 

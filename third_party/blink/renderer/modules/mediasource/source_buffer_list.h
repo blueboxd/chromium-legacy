@@ -73,7 +73,7 @@ class SourceBufferList final : public EventTargetWithInlineData,
     return ExecutionContextClient::GetExecutionContext();
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void ScheduleEvent(const AtomicString&);

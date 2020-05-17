@@ -51,7 +51,7 @@ base::Optional<double> Gyroscope::z() const {
   return base::nullopt;
 }
 
-void Gyroscope::Trace(Visitor* visitor) {
+void Gyroscope::Trace(Visitor* visitor) const {
   Sensor::Trace(visitor);
 }
 

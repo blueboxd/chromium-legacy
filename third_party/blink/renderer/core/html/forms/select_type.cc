@@ -72,7 +72,7 @@ HTMLOptionElement* EventTargetOption(const Event& event) {
 class MenuListSelectType final : public SelectType {
  public:
   explicit MenuListSelectType(HTMLSelectElement& select) : SelectType(select) {}
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   bool DefaultEventHandler(const Event& event) override;
   void DidSelectOption(HTMLOptionElement* element,
@@ -121,7 +121,7 @@ class MenuListSelectType final : public SelectType {
   bool snav_arrow_key_selection_ = false;
 };
 
-void MenuListSelectType::Trace(Visitor* visitor) {
+void MenuListSelectType::Trace(Visitor* visitor) const {
   visitor->Trace(popup_);
   visitor->Trace(popup_updater_);
   SelectType::Trace(visitor);
@@ -577,7 +577,7 @@ class PopupUpdater : public MutationObserver::Delegate {
 
   void Dispose() { observer_->disconnect(); }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(select_type_);
     visitor->Trace(select_);
     visitor->Trace(observer_);
@@ -613,7 +613,7 @@ void MenuListSelectType::DidMutateSubtree() {
 class ListBoxSelectType final : public SelectType {
  public:
   explicit ListBoxSelectType(HTMLSelectElement& select) : SelectType(select) {}
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   bool DefaultEventHandler(const Event& event) override;
   void OptionRemoved(HTMLOptionElement& option) override;
@@ -651,7 +651,7 @@ class ListBoxSelectType final : public SelectType {
   bool active_selection_state_ = false;
 };
 
-void ListBoxSelectType::Trace(Visitor* visitor) {
+void ListBoxSelectType::Trace(Visitor* visitor) const {
   visitor->Trace(option_to_scroll_to_);
   SelectType::Trace(visitor);
 }
@@ -1200,7 +1200,7 @@ void SelectType::WillBeDestroyed() {
   will_be_destroyed_ = true;
 }
 
-void SelectType::Trace(Visitor* visitor) {
+void SelectType::Trace(Visitor* visitor) const {
   visitor->Trace(select_);
 }
 

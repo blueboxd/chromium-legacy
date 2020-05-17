@@ -35,7 +35,7 @@ class CORE_EXPORT StyleElement : public GarbageCollectedMixin {
  public:
   StyleElement(Document*, bool created_by_parser);
   virtual ~StyleElement();
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   enum ProcessingResult { kProcessingSuccessful, kProcessingFatalError };

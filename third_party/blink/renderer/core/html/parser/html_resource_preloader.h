@@ -46,7 +46,7 @@ class CORE_EXPORT HTMLResourcePreloader
  public:
   explicit HTMLResourcePreloader(Document&);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  protected:
   void Preload(std::unique_ptr<PreloadRequest>) override;

@@ -52,7 +52,7 @@ class MODULES_EXPORT VideoEncoder final : public ScriptWrappable {
   ScriptPromise flush();
 
   // GarbageCollected override.
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   struct Request : public GarbageCollected<Request> {
@@ -63,7 +63,7 @@ class MODULES_EXPORT VideoEncoder final : public ScriptWrappable {
       kClose,
     };
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
     DOMException* Reject(DOMExceptionCode code, const String& message);
     void Resolve();
 

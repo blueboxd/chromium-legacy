@@ -49,7 +49,7 @@ class HID : public EventTargetWithInlineData, public ExecutionContextClient {
                    connection_client,
                device::mojom::blink::HidManager::ConnectCallback callback);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   // EventTarget:

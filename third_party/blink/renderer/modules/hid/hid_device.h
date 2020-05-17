@@ -71,7 +71,7 @@ class MODULES_EXPORT HIDDevice
   // ExecutionContextLifecycleObserver:
   void ContextDestroyed() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   bool EnsureNoDeviceChangeInProgress(ScriptPromiseResolver* resolver) const;

@@ -20,7 +20,7 @@ private:
 
 class HeapObject : public GarbageCollected<HeapObject> {
  public:
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   PartObject m_part;

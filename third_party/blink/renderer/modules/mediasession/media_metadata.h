@@ -54,7 +54,7 @@ class MODULES_EXPORT MediaMetadata final : public ScriptWrappable {
   // Called by MediaSession to associate or de-associate itself.
   void SetSession(MediaSession*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Called when one of the metadata fields is updated from script. It will

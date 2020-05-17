@@ -2104,7 +2104,7 @@ EphemeralRange ReplaceSelectionCommand::InsertedRange() const {
   return EphemeralRange(start_of_inserted_range_, end_of_inserted_range_);
 }
 
-void ReplaceSelectionCommand::Trace(Visitor* visitor) {
+void ReplaceSelectionCommand::Trace(Visitor* visitor) const {
   visitor->Trace(start_of_inserted_content_);
   visitor->Trace(end_of_inserted_content_);
   visitor->Trace(insertion_style_);

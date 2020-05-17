@@ -48,7 +48,7 @@ class CORE_EXPORT QueueWithSizes final
   // https://streams.spec.whatwg.org/#reset-queue
   void ResetQueue();
 
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
  private:
   class ValueSizePair;

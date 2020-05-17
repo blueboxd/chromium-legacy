@@ -32,7 +32,7 @@ class SyncManager final : public ScriptWrappable {
                                  ExceptionState& exception_state);
   ScriptPromise getTags(ScriptState*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   enum { kUnregisteredSyncID = -1 };
 

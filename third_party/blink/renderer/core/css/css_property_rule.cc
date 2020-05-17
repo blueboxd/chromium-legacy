@@ -84,7 +84,7 @@ String CSSPropertyRule::initialValue() const {
   return g_null_atom;
 }
 
-void CSSPropertyRule::Trace(Visitor* visitor) {
+void CSSPropertyRule::Trace(Visitor* visitor) const {
   visitor->Trace(property_rule_);
   CSSRule::Trace(visitor);
 }

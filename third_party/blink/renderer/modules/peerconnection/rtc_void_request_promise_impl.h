@@ -31,7 +31,7 @@ class RTCVoidRequestPromiseImpl final : public RTCVoidRequest {
   void RequestSucceeded() override;
   void RequestFailed(const webrtc::RTCError&) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void Clear();

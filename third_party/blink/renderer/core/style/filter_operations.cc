@@ -31,7 +31,7 @@ namespace blink {
 
 FilterOperations::FilterOperations() = default;
 
-void FilterOperations::Trace(Visitor* visitor) {
+void FilterOperations::Trace(Visitor* visitor) const {
   visitor->Trace(operations_);
 }
 

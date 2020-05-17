@@ -167,7 +167,7 @@ CSSLayoutDefinition* LayoutWorkletGlobalScope::FindDefinition(
   return layout_definitions_.at(name);
 }
 
-void LayoutWorkletGlobalScope::Trace(Visitor* visitor) {
+void LayoutWorkletGlobalScope::Trace(Visitor* visitor) const {
   visitor->Trace(layout_definitions_);
   visitor->Trace(pending_layout_registry_);
   WorkletGlobalScope::Trace(visitor);

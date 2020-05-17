@@ -50,7 +50,7 @@ const AtomicString& FontFaceSetLoadEvent::InterfaceName() const {
   return event_interface_names::kFontFaceSetLoadEvent;
 }
 
-void FontFaceSetLoadEvent::Trace(Visitor* visitor) {
+void FontFaceSetLoadEvent::Trace(Visitor* visitor) const {
   visitor->Trace(fontfaces_);
   Event::Trace(visitor);
 }

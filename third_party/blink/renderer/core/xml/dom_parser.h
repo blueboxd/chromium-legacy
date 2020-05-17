@@ -42,7 +42,7 @@ class DOMParser final : public ScriptWrappable {
 
   Document* parseFromString(const String&, const String& type);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   Document* GetDocument() const;
 

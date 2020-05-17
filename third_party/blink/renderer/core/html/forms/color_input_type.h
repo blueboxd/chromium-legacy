@@ -47,7 +47,7 @@ class ColorInputType final : public InputType,
  public:
   explicit ColorInputType(HTMLInputElement&);
   ~ColorInputType() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   using InputType::GetElement;
 
   // ColorChooserClient implementation.

@@ -74,7 +74,7 @@ XRTransientInputHitTestSource::Results() {
   return current_frame_results_;
 }
 
-void XRTransientInputHitTestSource::Trace(Visitor* visitor) {
+void XRTransientInputHitTestSource::Trace(Visitor* visitor) const {
   visitor->Trace(current_frame_results_);
   visitor->Trace(xr_session_);
   ScriptWrappable::Trace(visitor);

@@ -19,7 +19,7 @@ NavigationInitiatorImpl::NavigationInitiatorImpl(Document& document)
   DCHECK(document.GetExecutionContext());
 }
 
-void NavigationInitiatorImpl::Trace(Visitor* visitor) {
+void NavigationInitiatorImpl::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(navigation_initiator_receivers_);
 }

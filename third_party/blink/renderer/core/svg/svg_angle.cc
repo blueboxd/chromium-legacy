@@ -47,7 +47,7 @@ SVGMarkerOrientEnumeration::SVGMarkerOrientEnumeration(SVGAngle* angle)
 
 SVGMarkerOrientEnumeration::~SVGMarkerOrientEnumeration() = default;
 
-void SVGMarkerOrientEnumeration::Trace(Visitor* visitor) {
+void SVGMarkerOrientEnumeration::Trace(Visitor* visitor) const {
   visitor->Trace(angle_);
   SVGEnumeration<SVGMarkerOrientType>::Trace(visitor);
 }
@@ -98,7 +98,7 @@ SVGAngle::SVGAngle(SVGAngleType unit_type,
 
 SVGAngle::~SVGAngle() = default;
 
-void SVGAngle::Trace(Visitor* visitor) {
+void SVGAngle::Trace(Visitor* visitor) const {
   visitor->Trace(orient_type_);
   SVGPropertyHelper<SVGAngle>::Trace(visitor);
 }

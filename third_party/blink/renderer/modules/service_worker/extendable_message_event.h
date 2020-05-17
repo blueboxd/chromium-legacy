@@ -71,7 +71,7 @@ class MODULES_EXPORT ExtendableMessageEvent final : public ExtendableEvent {
 
   const AtomicString& InterfaceName() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   scoped_refptr<SerializedScriptValue> serialized_data_;

@@ -56,7 +56,7 @@ class CursorData {
   // Hot spot in the image in logical pixels.
   const IntPoint& HotSpot() const { return hot_spot_; }
 
-  void Trace(Visitor* visitor) { visitor->Trace(image_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(image_); }
 
  private:
   Member<StyleImage> image_;

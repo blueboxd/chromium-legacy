@@ -106,7 +106,7 @@ class CORE_EXPORT ErrorEvent final : public Event {
 
   void SetUnsanitizedMessage(const String&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   String unsanitized_message_;

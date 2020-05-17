@@ -2274,7 +2274,7 @@ void StyleResolver::UpdateMediaType() {
   }
 }
 
-void StyleResolver::Trace(Visitor* visitor) {
+void StyleResolver::Trace(Visitor* visitor) const {
   visitor->Trace(matched_properties_cache_);
   visitor->Trace(selector_filter_);
   visitor->Trace(document_);

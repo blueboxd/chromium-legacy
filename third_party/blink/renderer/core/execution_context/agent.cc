@@ -19,7 +19,7 @@ Agent::Agent(v8::Isolate* isolate,
 
 Agent::~Agent() = default;
 
-void Agent::Trace(Visitor* visitor) {}
+void Agent::Trace(Visitor* visitor) const {}
 
 void Agent::AttachDocument(Document* document) {
   event_loop_->AttachScheduler(document->GetScheduler());

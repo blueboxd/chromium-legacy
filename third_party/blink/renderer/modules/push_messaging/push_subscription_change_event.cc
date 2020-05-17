@@ -37,7 +37,7 @@ PushSubscription* PushSubscriptionChangeEvent::oldSubscription() const {
   return old_subscription_;
 }
 
-void PushSubscriptionChangeEvent::Trace(Visitor* visitor) {
+void PushSubscriptionChangeEvent::Trace(Visitor* visitor) const {
   visitor->Trace(new_subscription_);
   visitor->Trace(old_subscription_);
   ExtendableEvent::Trace(visitor);

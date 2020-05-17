@@ -30,7 +30,7 @@ class MODULES_EXPORT RTCEncodedVideoUnderlyingSource
       std::unique_ptr<webrtc::TransformableVideoFrameInterface>);
   void Close();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RTCEncodedVideoUnderlyingSourceTest, QueuedFramesAreDroppedWhenOverflow);

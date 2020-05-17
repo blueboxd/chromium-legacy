@@ -54,7 +54,7 @@ class IdleDetector final : public EventTargetWithInlineData,
   ScriptPromise start(ScriptState*, const IdleOptions*, ExceptionState&);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // mojom::blink::IdleMonitor implementation. Invoked on a state change, and

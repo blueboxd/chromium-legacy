@@ -69,7 +69,7 @@ class PLATFORM_EXPORT BeginFrameProvider
 
   bool IsValidFrameProvider();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   ~BeginFrameProvider() override = default;
 

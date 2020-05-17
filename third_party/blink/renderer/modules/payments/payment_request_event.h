@@ -80,7 +80,7 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
                                      ExceptionState&);
   void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void OnChangePaymentRequestDetailsResponse(

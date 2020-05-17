@@ -49,7 +49,7 @@ Filter::Filter(const FloatRect& reference_box,
       unit_scaling_(unit_scaling),
       source_graphic_(MakeGarbageCollected<SourceGraphic>(this)) {}
 
-void Filter::Trace(Visitor* visitor) {
+void Filter::Trace(Visitor* visitor) const {
   visitor->Trace(source_graphic_);
   visitor->Trace(last_effect_);
 }

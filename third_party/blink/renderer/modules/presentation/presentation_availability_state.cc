@@ -136,7 +136,7 @@ void PresentationAvailabilityState::UpdateAvailability(
   }
 }
 
-void PresentationAvailabilityState::Trace(Visitor* visitor) {
+void PresentationAvailabilityState::Trace(Visitor* visitor) const {
   visitor->Trace(availability_listeners_);
 }
 
@@ -261,7 +261,7 @@ PresentationAvailabilityState::AvailabilityListener::~AvailabilityListener() =
     default;
 
 void PresentationAvailabilityState::AvailabilityListener::Trace(
-    blink::Visitor* visitor) {
+    blink::Visitor* visitor) const {
   visitor->Trace(availability_callbacks);
   visitor->Trace(availability_observers);
 }

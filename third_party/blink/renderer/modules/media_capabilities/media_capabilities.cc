@@ -167,7 +167,7 @@ class MediaCapabilitiesKeySystemAccessInitializer final
     resolver_->Resolve(info);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     MediaKeySystemAccessInitializerBase::Trace(visitor);
   }
 
@@ -578,7 +578,7 @@ MediaCapabilities::MediaCapabilities(ExecutionContext* context)
       bad_window_predictor_(context),
       nnr_predictor_(context) {}
 
-void MediaCapabilities::Trace(blink::Visitor* visitor) {
+void MediaCapabilities::Trace(blink::Visitor* visitor) const {
   visitor->Trace(decode_history_service_);
   visitor->Trace(bad_window_predictor_);
   visitor->Trace(nnr_predictor_);
@@ -591,7 +591,8 @@ MediaCapabilities::PendingCallbackState::PendingCallbackState(
     MediaKeySystemAccess* access)
     : resolver(resolver), key_system_access(access) {}
 
-void MediaCapabilities::PendingCallbackState::Trace(blink::Visitor* visitor) {
+void MediaCapabilities::PendingCallbackState::Trace(
+    blink::Visitor* visitor) const {
   visitor->Trace(key_system_access);
   visitor->Trace(resolver);
 }

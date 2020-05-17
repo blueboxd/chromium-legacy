@@ -186,7 +186,7 @@ PrefetchedSignedExchangeManager::PrefetchedSignedExchangeManager(
 
 PrefetchedSignedExchangeManager::~PrefetchedSignedExchangeManager() {}
 
-void PrefetchedSignedExchangeManager::Trace(Visitor* visitor) {
+void PrefetchedSignedExchangeManager::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
 }
 

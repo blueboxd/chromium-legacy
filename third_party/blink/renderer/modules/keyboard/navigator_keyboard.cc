@@ -30,7 +30,7 @@ Keyboard* NavigatorKeyboard::keyboard(Navigator& navigator) {
   return supplement->keyboard_;
 }
 
-void NavigatorKeyboard::Trace(Visitor* visitor) {
+void NavigatorKeyboard::Trace(Visitor* visitor) const {
   visitor->Trace(keyboard_);
   Supplement<Navigator>::Trace(visitor);
 }

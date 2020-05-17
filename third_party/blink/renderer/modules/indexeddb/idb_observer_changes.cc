@@ -49,7 +49,7 @@ void IDBObserverChanges::ExtractChanges(
   }
 }
 
-void IDBObserverChanges::Trace(Visitor* visitor) {
+void IDBObserverChanges::Trace(Visitor* visitor) const {
   visitor->Trace(database_);
   visitor->Trace(transaction_);
   visitor->Trace(records_);

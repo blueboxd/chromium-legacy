@@ -24,7 +24,7 @@ class CORE_EXPORT CSSNumericArray final : public ScriptWrappable {
   explicit CSSNumericArray(CSSNumericValueVector values)
       : values_(std::move(values)) {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(values_);
     ScriptWrappable::Trace(visitor);
   }

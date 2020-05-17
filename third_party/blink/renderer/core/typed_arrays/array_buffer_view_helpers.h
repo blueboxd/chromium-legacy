@@ -64,7 +64,7 @@ class NotShared {
   T* operator->() const { return GetRaw(); }
   T& operator*() const { return *GetRaw(); }
 
-  void Trace(Visitor* visitor) { visitor->Trace(typed_array_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(typed_array_); }
 
  private:
   T* GetRaw() const { return typed_array_; }
@@ -122,7 +122,7 @@ class MaybeShared {
   T* operator->() const { return GetRaw(); }
   T& operator*() const { return *GetRaw(); }
 
-  void Trace(Visitor* visitor) { visitor->Trace(typed_array_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(typed_array_); }
 
  private:
   T* GetRaw() const { return typed_array_; }

@@ -97,7 +97,7 @@ class CORE_EXPORT WorkerOrWorkletScriptController final
     return rejected_promises_.get();
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   bool IsContextInitialized() const {
     return script_state_ && !!script_state_->PerContextData();

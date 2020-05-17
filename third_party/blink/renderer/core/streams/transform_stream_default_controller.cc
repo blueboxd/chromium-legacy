@@ -78,7 +78,7 @@ void TransformStreamDefaultController::terminate(ScriptState* script_state) {
   Terminate(script_state, this);
 }
 
-void TransformStreamDefaultController::Trace(Visitor* visitor) {
+void TransformStreamDefaultController::Trace(Visitor* visitor) const {
   visitor->Trace(controlled_transform_stream_);
   visitor->Trace(flush_algorithm_);
   visitor->Trace(transform_algorithm_);
@@ -121,7 +121,7 @@ class TransformStreamDefaultController::DefaultTransformAlgorithm final
     return PromiseResolveWithUndefined(script_state);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(controller_);
     StreamAlgorithm::Trace(visitor);
   }
@@ -334,7 +334,7 @@ v8::Local<v8::Promise> TransformStreamDefaultController::PerformTransform(
       return PromiseReject(GetScriptState(), r);
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(stream_);
       PromiseHandlerWithValue::Trace(visitor);
     }

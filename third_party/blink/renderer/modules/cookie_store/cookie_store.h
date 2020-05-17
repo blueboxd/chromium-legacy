@@ -67,7 +67,7 @@ class CookieStore final : public EventTargetWithInlineData,
                        ExceptionState&);
 
   // GarbageCollected
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;

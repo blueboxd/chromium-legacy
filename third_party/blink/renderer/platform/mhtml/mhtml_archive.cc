@@ -440,7 +440,7 @@ ArchiveResource* MHTMLArchive::SubresourceForURL(const KURL& url) const {
   return subresources_.at(url.GetString());
 }
 
-void MHTMLArchive::Trace(Visitor* visitor) {
+void MHTMLArchive::Trace(Visitor* visitor) const {
   visitor->Trace(main_resource_);
   visitor->Trace(subresources_);
 }

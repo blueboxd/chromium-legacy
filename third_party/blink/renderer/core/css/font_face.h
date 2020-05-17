@@ -115,7 +115,7 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
   size_t ApproximateBlankCharacterCount() const;
   FontDisplay GetFontDisplay() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool HadBlankText() const;
 
@@ -124,7 +124,7 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
     virtual ~LoadFontCallback() = default;
     virtual void NotifyLoaded(FontFace*) = 0;
     virtual void NotifyError(FontFace*) = 0;
-    void Trace(Visitor* visitor) override {}
+    void Trace(Visitor* visitor) const override {}
   };
   void LoadWithCallback(LoadFontCallback*);
   void AddCallback(LoadFontCallback*);

@@ -27,7 +27,7 @@ class NavigatorPresentation final
 
   NavigatorPresentation();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Presentation* presentation();

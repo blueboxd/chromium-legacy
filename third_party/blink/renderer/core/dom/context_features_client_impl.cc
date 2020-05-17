@@ -87,7 +87,7 @@ class ContextFeaturesCache final
 
   void ValidateAgainst(Document*);
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     Supplement<Document>::Trace(visitor);
   }
 

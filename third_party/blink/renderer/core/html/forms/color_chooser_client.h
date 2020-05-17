@@ -46,7 +46,7 @@ class Element;
 class CORE_EXPORT ColorChooserClient : public GarbageCollectedMixin {
  public:
   virtual ~ColorChooserClient();
-  void Trace(Visitor* visitor) override {}
+  void Trace(Visitor* visitor) const override {}
 
   // Called when a color is chosen by the user in the ColorChooser UI.
   virtual void DidChooseColor(const Color&) = 0;

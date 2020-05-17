@@ -190,7 +190,7 @@ void PickerIndicatorElement::DidNotifySubtreeInsertionsToDocument() {
           this->picker_indicator_owner_->AriaRoleForPickerIndicator()));
 }
 
-void PickerIndicatorElement::Trace(Visitor* visitor) {
+void PickerIndicatorElement::Trace(Visitor* visitor) const {
   visitor->Trace(picker_indicator_owner_);
   visitor->Trace(chooser_);
   HTMLDivElement::Trace(visitor);

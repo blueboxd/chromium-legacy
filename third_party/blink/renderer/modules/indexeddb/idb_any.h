@@ -78,7 +78,7 @@ class MODULES_EXPORT IDBAny final : public GarbageCollected<IDBAny> {
   explicit IDBAny(int64_t);
   ~IDBAny();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
   void ContextWillBeDestroyed();
 
   Type GetType() const { return type_; }

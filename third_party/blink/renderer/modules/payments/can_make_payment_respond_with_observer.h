@@ -35,7 +35,7 @@ class MODULES_EXPORT CanMakePaymentRespondWithObserver final
                            const char* property_name) override;
   void OnNoResponse() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Observes the given promise and calls OnResponseRejected() or
   // OnResponseFulfilled().

@@ -35,7 +35,7 @@ ContactsManager* NavigatorContacts::contacts() {
   return contacts_manager_;
 }
 
-void NavigatorContacts::Trace(Visitor* visitor) {
+void NavigatorContacts::Trace(Visitor* visitor) const {
   visitor->Trace(contacts_manager_);
   Supplement<Navigator>::Trace(visitor);
 }

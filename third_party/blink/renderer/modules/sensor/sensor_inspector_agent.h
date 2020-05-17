@@ -16,7 +16,7 @@ class SensorProviderProxy;
 class SensorInspectorAgent : public GarbageCollected<SensorInspectorAgent> {
  public:
   explicit SensorInspectorAgent(LocalDOMWindow* window);
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
   void DidCommitLoadForLocalFrame(LocalFrame* frame);
 

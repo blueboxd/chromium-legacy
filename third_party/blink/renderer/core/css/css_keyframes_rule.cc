@@ -200,7 +200,7 @@ void CSSKeyframesRule::Reattach(StyleRuleBase* rule) {
   keyframes_rule_ = To<StyleRuleKeyframes>(rule);
 }
 
-void CSSKeyframesRule::Trace(Visitor* visitor) {
+void CSSKeyframesRule::Trace(Visitor* visitor) const {
   CSSRule::Trace(visitor);
   visitor->Trace(child_rule_cssom_wrappers_);
   visitor->Trace(keyframes_rule_);

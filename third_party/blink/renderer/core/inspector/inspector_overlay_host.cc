@@ -42,7 +42,7 @@ void InspectorOverlayHost::ClearDelegate() {
   delegate_.Clear();
 }
 
-void InspectorOverlayHost::Trace(Visitor* visitor) {
+void InspectorOverlayHost::Trace(Visitor* visitor) const {
   visitor->Trace(delegate_);
   ScriptWrappable::Trace(visitor);
 }

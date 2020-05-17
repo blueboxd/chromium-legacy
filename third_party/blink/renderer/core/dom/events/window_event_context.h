@@ -46,7 +46,7 @@ class WindowEventContext : public GarbageCollected<WindowEventContext> {
   EventTarget* RelatedTarget() const;
   bool HandleLocalEvents(Event&);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   Member<LocalDOMWindow> window_;

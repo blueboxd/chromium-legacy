@@ -38,7 +38,7 @@ class IFramePolicy final : public DOMFeaturePolicy {
         container_policy, src_origin->ToUrlOrigin());
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(parent_document_);
     DOMFeaturePolicy::Trace(visitor);
   }

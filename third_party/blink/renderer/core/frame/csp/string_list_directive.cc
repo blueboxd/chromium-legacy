@@ -72,7 +72,7 @@ bool StringListDirective::Allows(const String& string_piece,
   return allow_any_ || list_.Contains(string_piece);
 }
 
-void StringListDirective::Trace(Visitor* visitor) {
+void StringListDirective::Trace(Visitor* visitor) const {
   CSPDirective::Trace(visitor);
 }
 

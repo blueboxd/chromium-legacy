@@ -51,6 +51,7 @@ Chrome arakatzaileko menua irekitzeko, sakatu Alt tekla eta F.</translation>
 <translation id="1291286136605998134">Etengailua</translation>
 <translation id="1299774449519412690">Zeru-urdin argia</translation>
 <translation id="1303806948938513162">Sakatu lau hatzekin ChromeVox menuetan sartzeko</translation>
+<translation id="1325363694295259631">Desautatuta dago <ph name="NAME" />, menuko aukeraren aukera-botoia</translation>
 <translation id="1325946044405407859">Brontze-kolorekoa</translation>
 <translation id="1331702245475014624"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">karaktereen eta hitzen oihartzuna</translation>
@@ -514,6 +515,7 @@ Chrome arakatzaileko menua irekitzeko, sakatu Alt tekla eta F.</translation>
 <translation id="4994420463726586413">Iragarri uneko bateria-maila</translation>
 <translation id="4997282455736854877"><ph name="NAME" /> aukera-botoia hautatu da</translation>
 <translation id="5011664330025416377">Aktibatzeko, sakatu Bilaketa + Zuriune-barra</translation>
+<translation id="5012724933919010465">Menuko <ph name="NAME" /> elementuaren aukera-botoia hautatuta dago</translation>
 <translation id="5020651427400641814">Gaitu hizketa erregistratzeko aukera</translation>
 <translation id="5041394372352067729">Eraman braille-pantaila orriaren goiko aldera</translation>
 <translation id="5042770794184672516">Handitu hizketaren bolumena</translation>

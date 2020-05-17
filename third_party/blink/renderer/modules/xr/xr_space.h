@@ -96,7 +96,7 @@ class XRSpace : public EventTargetWithInlineData {
 
   virtual base::Optional<XRNativeOriginInformation> NativeOrigin() const = 0;
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  protected:
   static base::Optional<TransformationMatrix> TryInvert(

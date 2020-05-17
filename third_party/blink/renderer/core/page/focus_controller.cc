@@ -113,7 +113,7 @@ class FocusNavigation : public GarbageCollected<FocusNavigation> {
     return FindOwner(*root_);
   }
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(root_);
     visitor->Trace(slot_);
   }
@@ -1355,7 +1355,7 @@ void FocusController::NotifyFocusChangedObservers() const {
     it->FocusedFrameChanged();
 }
 
-void FocusController::Trace(Visitor* visitor) {
+void FocusController::Trace(Visitor* visitor) const {
   visitor->Trace(page_);
   visitor->Trace(focused_frame_);
   visitor->Trace(focus_changed_observers_);

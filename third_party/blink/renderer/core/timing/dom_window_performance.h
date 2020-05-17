@@ -28,7 +28,7 @@ class CORE_EXPORT DOMWindowPerformance final
 
   explicit DOMWindowPerformance(LocalDOMWindow&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   WindowPerformance* performance();

@@ -36,7 +36,7 @@ class ValidityState final : public ScriptWrappable {
  public:
   explicit ValidityState(ListedElement* control) : control_(control) {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(control_);
     ScriptWrappable::Trace(visitor);
   }

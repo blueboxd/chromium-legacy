@@ -96,7 +96,7 @@ class PLATFORM_EXPORT ResourceLoadObserver
                               int64_t encoded_data_length,
                               IsInternalRequest) = 0;
 
-  virtual void Trace(Visitor*) {}
+  virtual void Trace(Visitor*) const {}
 };
 
 }  // namespace blink

@@ -49,7 +49,7 @@ class MODULES_EXPORT PaymentInstruments final : public ScriptWrappable {
                     ExceptionState&);
   ScriptPromise clear(ScriptState*, ExceptionState&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   mojom::blink::PermissionService* GetPermissionService(ScriptState*);

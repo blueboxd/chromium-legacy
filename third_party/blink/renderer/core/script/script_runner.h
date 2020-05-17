@@ -68,7 +68,7 @@ class CORE_EXPORT ScriptRunner final
     task_runner_ = task_runner;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override { return "ScriptRunner"; }
 
  private:

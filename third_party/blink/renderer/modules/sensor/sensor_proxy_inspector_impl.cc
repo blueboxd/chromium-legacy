@@ -22,7 +22,7 @@ SensorProxyInspectorImpl::SensorProxyInspectorImpl(
 
 SensorProxyInspectorImpl::~SensorProxyInspectorImpl() {}
 
-void SensorProxyInspectorImpl::Trace(Visitor* visitor) {
+void SensorProxyInspectorImpl::Trace(Visitor* visitor) const {
   SensorProxy::Trace(visitor);
 }
 

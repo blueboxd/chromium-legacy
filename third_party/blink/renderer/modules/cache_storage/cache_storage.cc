@@ -498,7 +498,7 @@ bool CacheStorage::HasPendingActivity() const {
   return ever_used_;
 }
 
-void CacheStorage::Trace(Visitor* visitor) {
+void CacheStorage::Trace(Visitor* visitor) const {
   visitor->Trace(scoped_fetcher_);
   visitor->Trace(blob_client_list_);
   visitor->Trace(cache_storage_remote_);

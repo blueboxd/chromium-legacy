@@ -33,7 +33,7 @@ class CORE_EXPORT GlobalFetch {
     static ScopedFetcher* From(LocalDOMWindow&);
     static ScopedFetcher* From(WorkerGlobalScope&);
 
-    void Trace(Visitor*) override;
+    void Trace(Visitor*) const override;
   };
 
   static ScriptPromise fetch(ScriptState*,

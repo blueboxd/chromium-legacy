@@ -291,7 +291,7 @@ void PendingScript::ExecuteScriptBlockInternal(
     element->DispatchLoadEvent();
 }
 
-void PendingScript::Trace(Visitor* visitor) {
+void PendingScript::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   visitor->Trace(client_);
   visitor->Trace(original_execution_context_);

@@ -20,7 +20,7 @@ class SubmitEvent : public Event {
                              const SubmitEventInit* event_init);
   SubmitEvent(const AtomicString& type, const SubmitEventInit* event_init);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
   HTMLElement* submitter() const { return submitter_.Get(); }
   const AtomicString& InterfaceName() const override;
 

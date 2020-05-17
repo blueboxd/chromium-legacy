@@ -361,7 +361,7 @@ VisibleSelectionTemplate<Strategy>::VisibleExtent() const {
 }
 
 template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::Trace(Visitor* visitor) {
+void VisibleSelectionTemplate<Strategy>::Trace(Visitor* visitor) const {
   visitor->Trace(base_);
   visitor->Trace(extent_);
 }

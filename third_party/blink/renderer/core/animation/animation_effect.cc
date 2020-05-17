@@ -179,7 +179,7 @@ const Animation* AnimationEffect::GetAnimation() const {
   return owner_ ? owner_->GetAnimation() : nullptr;
 }
 
-void AnimationEffect::Trace(Visitor* visitor) {
+void AnimationEffect::Trace(Visitor* visitor) const {
   visitor->Trace(owner_);
   visitor->Trace(event_delegate_);
   ScriptWrappable::Trace(visitor);

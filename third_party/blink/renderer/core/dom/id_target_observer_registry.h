@@ -44,7 +44,7 @@ class IdTargetObserverRegistry final
  public:
   IdTargetObserverRegistry() : notifying_observers_in_set_(nullptr) {}
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
   void NotifyObservers(const AtomicString& id);
   bool HasObservers(const AtomicString& id) const;
 

@@ -226,7 +226,7 @@ void ScreenOrientationController::ContextDestroyed() {
   active_lock_ = false;
 }
 
-void ScreenOrientationController::Trace(Visitor* visitor) {
+void ScreenOrientationController::Trace(Visitor* visitor) const {
   visitor->Trace(orientation_);
   visitor->Trace(screen_orientation_service_);
   ExecutionContextLifecycleObserver::Trace(visitor);

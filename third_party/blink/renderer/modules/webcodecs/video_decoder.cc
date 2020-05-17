@@ -404,7 +404,7 @@ void VideoDecoder::OnOutput(scoped_refptr<media::VideoFrame> frame) {
                                        MakeGarbageCollected<VideoFrame>(frame));
 }
 
-void VideoDecoder::Trace(Visitor* visitor) {
+void VideoDecoder::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(output_cb_);
   visitor->Trace(error_cb_);
@@ -414,7 +414,7 @@ void VideoDecoder::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
-void VideoDecoder::Request::Trace(Visitor* visitor) {
+void VideoDecoder::Request::Trace(Visitor* visitor) const {
   visitor->Trace(config);
   visitor->Trace(chunk);
   visitor->Trace(resolver);

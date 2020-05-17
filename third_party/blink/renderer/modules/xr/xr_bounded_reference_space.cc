@@ -107,7 +107,7 @@ XRBoundedReferenceSpace::NativeOrigin() const {
   return XRNativeOriginInformation::Create(this);
 }
 
-void XRBoundedReferenceSpace::Trace(Visitor* visitor) {
+void XRBoundedReferenceSpace::Trace(Visitor* visitor) const {
   visitor->Trace(offset_bounds_geometry_);
   XRReferenceSpace::Trace(visitor);
 }

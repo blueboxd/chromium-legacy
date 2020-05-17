@@ -198,7 +198,7 @@ void ReadableStreamReader::GenericRelease(ScriptState* script_state,
   reader->owner_readable_stream_ = nullptr;
 }
 
-void ReadableStreamReader::Trace(Visitor* visitor) {
+void ReadableStreamReader::Trace(Visitor* visitor) const {
   visitor->Trace(closed_promise_);
   visitor->Trace(owner_readable_stream_);
   visitor->Trace(read_requests_);

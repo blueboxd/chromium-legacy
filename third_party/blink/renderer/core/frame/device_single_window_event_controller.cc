@@ -95,7 +95,7 @@ bool DeviceSingleWindowEventController::CheckPolicyFeatures(
                      });
 }
 
-void DeviceSingleWindowEventController::Trace(Visitor* visitor) {
+void DeviceSingleWindowEventController::Trace(Visitor* visitor) const {
   PlatformEventController::Trace(visitor);
 }
 

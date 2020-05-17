@@ -73,7 +73,7 @@ class CORE_EXPORT DevToolsAgent : public GarbageCollected<DevToolsAgent>,
       mojo::PendingAssociatedRemote<mojom::blink::DevToolsAgentHost>,
       mojo::PendingAssociatedReceiver<mojom::blink::DevToolsAgent>,
       scoped_refptr<base::SingleThreadTaskRunner>);
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
  private:
   friend class DevToolsSession;

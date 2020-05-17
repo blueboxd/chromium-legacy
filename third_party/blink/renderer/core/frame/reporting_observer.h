@@ -58,7 +58,7 @@ class CORE_EXPORT ReportingObserver final
   void disconnect();
   HeapVector<Member<Report>> takeRecords();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<ExecutionContext> execution_context_;

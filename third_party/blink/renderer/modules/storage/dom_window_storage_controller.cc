@@ -16,7 +16,7 @@ DOMWindowStorageController::DOMWindowStorageController(Document& document)
   document.domWindow()->RegisterEventListenerObserver(this);
 }
 
-void DOMWindowStorageController::Trace(Visitor* visitor) {
+void DOMWindowStorageController::Trace(Visitor* visitor) const {
   Supplement<Document>::Trace(visitor);
 }
 

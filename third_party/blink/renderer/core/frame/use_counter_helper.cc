@@ -116,7 +116,7 @@ void UseCounterHelper::ClearMeasurementForTesting(WebFeature feature) {
   features_recorded_.reset(static_cast<size_t>(feature));
 }
 
-void UseCounterHelper::Trace(Visitor* visitor) {
+void UseCounterHelper::Trace(Visitor* visitor) const {
   visitor->Trace(observers_);
 }
 

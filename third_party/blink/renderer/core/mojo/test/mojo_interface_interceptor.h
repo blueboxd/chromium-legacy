@@ -48,7 +48,7 @@ class MojoInterfaceInterceptor final
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(interfacerequest, kInterfacerequest)
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // EventTargetWithInlineData
   const AtomicString& InterfaceName() const override;

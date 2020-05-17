@@ -41,7 +41,7 @@ class PushMessagingBridge final : public GarbageCollected<PushMessagingBridge>,
   ScriptPromise GetPermissionState(ScriptState* script_state,
                                    const PushSubscriptionOptionsInit* options);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Method to be invoked when the permission status has been retrieved from the

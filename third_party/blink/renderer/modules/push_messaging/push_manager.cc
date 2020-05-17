@@ -138,7 +138,7 @@ ScriptPromise PushManager::permissionState(
       ->GetPermissionState(script_state, options);
 }
 
-void PushManager::Trace(Visitor* visitor) {
+void PushManager::Trace(Visitor* visitor) const {
   visitor->Trace(registration_);
   ScriptWrappable::Trace(visitor);
 }

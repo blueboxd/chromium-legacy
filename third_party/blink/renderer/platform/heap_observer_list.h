@@ -66,7 +66,7 @@ class PLATFORM_EXPORT HeapObserverList {
     }
   }
 
-  void Trace(Visitor* visitor) { visitor->Trace(observers_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(observers_); }
 
  private:
   using ObserverSet = HeapLinkedHashSet<WeakMember<ObserverType>>;

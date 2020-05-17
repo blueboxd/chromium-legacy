@@ -65,7 +65,7 @@ class CORE_EXPORT ScrollingCoordinator final
  public:
   explicit ScrollingCoordinator(Page*);
   ~ScrollingCoordinator() override;
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   // The LocalFrameView argument is optional, nullptr causes the the scrolling
   // animation host and timeline to be owned by the ScrollingCoordinator. When

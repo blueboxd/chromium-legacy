@@ -52,7 +52,7 @@ SVGURIReference::SVGURIReference(SVGElement* element)
   href_->AddToPropertyMap(element);
 }
 
-void SVGURIReference::Trace(Visitor* visitor) {
+void SVGURIReference::Trace(Visitor* visitor) const {
   visitor->Trace(href_);
 }
 

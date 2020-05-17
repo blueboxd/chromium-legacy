@@ -25,7 +25,7 @@ class CacheStorageBlobClientList
           client_pending_receiver,
       DataPipeBytesConsumer::CompletionNotifier* completion_notifier);
 
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
  private:
   class Client;

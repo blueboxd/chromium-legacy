@@ -33,7 +33,7 @@ class Animator final : public GarbageCollected<Animator>, public NameClient {
            const Vector<base::Optional<base::TimeDelta>>& local_times,
            const Vector<Timing>& timings);
   ~Animator();
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
   const char* NameInHeapSnapshot() const override { return "Animator"; }
 
   // Returns true if it successfully invoked animate callback in JS. It receives

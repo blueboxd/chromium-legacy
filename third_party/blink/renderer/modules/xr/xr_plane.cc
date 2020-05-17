@@ -138,7 +138,7 @@ void XRPlane::SetMojoFromPlane(const TransformationMatrix& mojo_from_plane) {
   }
 }
 
-void XRPlane::Trace(Visitor* visitor) {
+void XRPlane::Trace(Visitor* visitor) const {
   visitor->Trace(polygon_);
   visitor->Trace(session_);
   visitor->Trace(plane_space_);

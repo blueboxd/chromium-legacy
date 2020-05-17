@@ -64,7 +64,7 @@ class TestIntersectionObserverDelegate : public IntersectionObserverDelegate {
     return geometry.IntersectionRect();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     IntersectionObserverDelegate::Trace(visitor);
     visitor->Trace(document_);
     visitor->Trace(entries_);

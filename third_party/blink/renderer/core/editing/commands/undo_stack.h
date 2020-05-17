@@ -73,7 +73,7 @@ class UndoStack final : public GarbageCollected<UndoStack> {
 
   UndoStepRange UndoSteps() const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   bool in_redo_;

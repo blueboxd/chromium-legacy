@@ -105,7 +105,7 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   void WorkletAnimationAttached();
   void WorkletAnimationDetached();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   static bool HasActiveScrollTimeline(Node* node);
   // Invalidates scroll timelines with a given scroller node.

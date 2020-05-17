@@ -46,7 +46,7 @@ class CORE_EXPORT StyleTraversalRoot {
     root_type_ = RootType::kSingleRoot;
   }
 
-  void Trace(Visitor* visitor) { visitor->Trace(root_node_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(root_node_); }
 
  protected:
   virtual ~StyleTraversalRoot() = default;

@@ -101,7 +101,7 @@ RTCEncodedAudioFrame::PassWebRtcFrame() {
   return delegate_->PassWebRtcFrame();
 }
 
-void RTCEncodedAudioFrame::Trace(Visitor* visitor) {
+void RTCEncodedAudioFrame::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   visitor->Trace(frame_data_);
 }

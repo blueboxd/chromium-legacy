@@ -64,7 +64,7 @@ class DistributedNodes final {
 
   void Swap(DistributedNodes& other);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   HeapVector<Member<Node>> nodes_;

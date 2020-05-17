@@ -40,7 +40,7 @@ const AtomicString& AnimationPlaybackEvent::InterfaceName() const {
   return event_interface_names::kAnimationPlaybackEvent;
 }
 
-void AnimationPlaybackEvent::Trace(Visitor* visitor) {
+void AnimationPlaybackEvent::Trace(Visitor* visitor) const {
   Event::Trace(visitor);
 }
 

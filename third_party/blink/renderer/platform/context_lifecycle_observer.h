@@ -27,7 +27,7 @@ class PLATFORM_EXPORT ContextLifecycleObserver : public GarbageCollectedMixin {
 
   virtual bool IsExecutionContextLifecycleObserver() const { return false; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   ContextLifecycleObserver() = default;

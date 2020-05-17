@@ -56,7 +56,7 @@ class WorkerNavigatorStorageQuota final
 
   explicit WorkerNavigatorStorageQuota();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   mutable Member<StorageManager> storage_manager_;

@@ -71,7 +71,7 @@ void InsertNodeBeforeCommand::DoUnapply() {
   insert_child_->remove(IGNORE_EXCEPTION_FOR_TESTING);
 }
 
-void InsertNodeBeforeCommand::Trace(Visitor* visitor) {
+void InsertNodeBeforeCommand::Trace(Visitor* visitor) const {
   visitor->Trace(insert_child_);
   visitor->Trace(ref_child_);
   SimpleEditCommand::Trace(visitor);

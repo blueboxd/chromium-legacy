@@ -34,7 +34,7 @@ RemoteFrameOwner::RemoteFrameOwner(
       required_csp_(frame_owner_properties.required_csp),
       frame_owner_element_type_(frame_owner_element_type) {}
 
-void RemoteFrameOwner::Trace(Visitor* visitor) {
+void RemoteFrameOwner::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   FrameOwner::Trace(visitor);
 }

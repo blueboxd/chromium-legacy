@@ -30,7 +30,7 @@ CallbackFunctionBase::CallbackFunctionBase(
   }
 }
 
-void CallbackFunctionBase::Trace(Visitor* visitor) {
+void CallbackFunctionBase::Trace(Visitor* visitor) const {
   visitor->Trace(callback_function_);
   visitor->Trace(callback_relevant_script_state_);
   visitor->Trace(incumbent_script_state_);

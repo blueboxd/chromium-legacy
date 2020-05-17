@@ -79,7 +79,7 @@ class TaskSession final : public GarbageCollected<TaskSession> {
     // WebContentCaptureClient for this document.
     void Reset();
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
    private:
     // The captured content that belongs to this document.
@@ -120,7 +120,7 @@ class TaskSession final : public GarbageCollected<TaskSession> {
     callback_ = std::move(call_back);
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   void ClearDocumentSessionsForTesting();
 

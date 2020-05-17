@@ -67,7 +67,7 @@ class CORE_EXPORT HitTestResult {
   HitTestResult(const HitTestResult&);
   ~HitTestResult();
   HitTestResult& operator=(const HitTestResult&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   bool EqualForCacheability(const HitTestResult&) const;
   void CacheValues(const HitTestResult& other);

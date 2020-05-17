@@ -46,7 +46,7 @@ class CORE_EXPORT TestInterface2OrUint8Array final {
   TestInterface2OrUint8Array(const TestInterface2OrUint8Array&);
   ~TestInterface2OrUint8Array();
   TestInterface2OrUint8Array& operator=(const TestInterface2OrUint8Array&);
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   enum class SpecificType {

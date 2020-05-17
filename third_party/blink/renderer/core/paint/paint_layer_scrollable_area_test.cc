@@ -1586,7 +1586,9 @@ class ScrollTimelineForTest : public ScrollTimeline {
   }
   bool Invalidated() const { return invalidated_; }
   void ResetInvalidated() { invalidated_ = false; }
-  void Trace(Visitor* visitor) override { ScrollTimeline::Trace(visitor); }
+  void Trace(Visitor* visitor) const override {
+    ScrollTimeline::Trace(visitor);
+  }
 
  private:
   bool invalidated_;

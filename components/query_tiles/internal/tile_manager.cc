@@ -4,6 +4,7 @@
 
 #include <map>
 #include <string>
+#include <unordered_set>
 #include <utility>
 
 #include "base/bind.h"
@@ -29,9 +30,6 @@ class TileManagerImpl : public TileManager {
         clock_(clock),
         accept_languages_(accept_languages) {}
 
-  TileManagerImpl(const TileManagerImpl& other) = delete;
-  TileManagerImpl& operator=(const TileManagerImpl& other) = delete;
-
  private:
   // TileManager implementation.
   void Init(TileGroupStatusCallback callback) override {
@@ -47,31 +45,30 @@ class TileManagerImpl : public TileManager {
       return;
     }
 
-    store_->Update(group->id, *group.get(),
+    auto group_copy = *group;
+    store_->Update(group_copy.id, group_copy,
                    base::BindOnce(&TileManagerImpl::OnGroupSaved,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   std::move(group), std::move(callback)));
   }
 
   void GetTiles(GetTilesCallback callback) override {
-    if (!tile_group_ || !ValidateLocale(tile_group_.get())) {
+    if (!tile_group_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(std::move(callback), std::vector<Tile>()));
       return;
     }
 
     std::vector<Tile> tiles;
-    if (tile_group_ && ValidateGroup(tile_group_.get())) {
-      for (const auto& tile : tile_group_->tiles)
-        tiles.emplace_back(*tile.get());
-    }
+    for (const auto& tile : tile_group_->tiles)
+      tiles.emplace_back(*tile.get());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), std::move(tiles)));
   }
 
   void GetTile(const std::string& tile_id, TileCallback callback) override {
     const Tile* result = nullptr;
-    if (tile_group_ && ValidateGroup(tile_group_.get())) {
+    if (tile_group_) {
       TileIterator it(*tile_group_, TileIterator::kAllTiles);
       while (it.HasNext()) {
         const auto* tile = it.Next();
@@ -106,43 +103,50 @@ class TileManagerImpl : public TileManager {
 
     initialized_ = true;
 
-    PruneInvalidGroup(std::move(callback), std::move(loaded_groups));
+    PruneAndSelectGroup(std::move(callback), std::move(loaded_groups));
   }
 
-  // Filters out and deletes invalid groups from db and memory.
-  void PruneInvalidGroup(
+  // Select the most recent unexpired group from |loaded_groups| with the
+  // correct locale, and delete other groups.
+  void PruneAndSelectGroup(
       TileGroupStatusCallback callback,
       std::map<std::string, std::unique_ptr<TileGroup>> loaded_groups) {
-    DCHECK_LE(loaded_groups.size(), 1u);
-
     TileGroupStatus status = TileGroupStatus::kSuccess;
-    std::vector<std::string> to_deprecated_in_db;
+    base::Time last_updated_time;
+    std::string selected_group_id;
     for (const auto& pair : loaded_groups) {
-      auto group_id = pair.first;
+      DCHECK(!pair.first.empty()) << "Should not have empty tile group key.";
       auto* group = pair.second.get();
-      if (!ValidateGroup(group)) {
-        to_deprecated_in_db.emplace_back(group_id);
+      if (!group)
+        continue;
+
+      if (ValidateLocale(group) && !IsGroupExpired(group) &&
+          (group->last_updated_ts > last_updated_time)) {
+        last_updated_time = group->last_updated_ts;
+        selected_group_id = pair.first;
       }
     }
 
-    for (const auto& key : to_deprecated_in_db) {
-      DeleteGroup(key);
-      loaded_groups.erase(key);
+    // Moves the selected group into in memory holder.
+    if (!selected_group_id.empty()) {
+      tile_group_ = std::move(loaded_groups[selected_group_id]);
+      loaded_groups.erase(selected_group_id);
+    } else {
+      status = TileGroupStatus::kNoTiles;
     }
 
-    // Moves the valid group into in memory holder.
-    if (!loaded_groups.empty())
-      std::swap(tile_group_, loaded_groups.begin()->second);
-    else
-      status = TileGroupStatus::kNoTiles;
+    // Deletes other groups.
+    for (const auto& group_to_delete : loaded_groups)
+      DeleteGroup(group_to_delete.first);
+
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), status));
   }
 
-  // Returns true if the group is not expired.
-  bool ValidateGroup(const TileGroup* group) const {
-    return clock_->Now() - group->last_updated_ts <
-           TileConfig::GetExpireDuration();
+  // Returns true if the group is expired.
+  bool IsGroupExpired(const TileGroup* group) const {
+    return clock_->Now() >=
+           group->last_updated_ts + TileConfig::GetExpireDuration();
   }
 
   // Check whether |locale_| matches with that of the |group|.
@@ -172,10 +176,10 @@ class TileManagerImpl : public TileManager {
       return;
     }
 
-    if (tile_group_)
-      DeleteGroup(tile_group_->id);
+    // Only swap the in memory tile group when there is no existing tile group.
+    if (!tile_group_)
+      tile_group_ = std::move(group);
 
-    std::swap(tile_group_, group);
     std::move(callback).Run(TileGroupStatus::kSuccess);
   }
 

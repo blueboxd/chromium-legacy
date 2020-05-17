@@ -246,7 +246,7 @@ NotificationManager::GetNotificationService() {
   return notification_service_.get();
 }
 
-void NotificationManager::Trace(Visitor* visitor) {
+void NotificationManager::Trace(Visitor* visitor) const {
   visitor->Trace(notification_service_);
   visitor->Trace(permission_service_);
   Supplement<ExecutionContext>::Trace(visitor);

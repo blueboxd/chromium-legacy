@@ -259,7 +259,7 @@ void ManifestManager::ContextDestroyed() {
   ResolveCallbacks(ResolveStateFailure);
 }
 
-void ManifestManager::Trace(Visitor* visitor) {
+void ManifestManager::Trace(Visitor* visitor) const {
   visitor->Trace(fetcher_);
   visitor->Trace(manifest_change_notifier_);
   visitor->Trace(receivers_);

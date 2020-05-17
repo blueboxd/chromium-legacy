@@ -302,7 +302,7 @@ void SpatialNavigationController::DidDetachFrameView(
   }
 }
 
-void SpatialNavigationController::Trace(Visitor* visitor) {
+void SpatialNavigationController::Trace(Visitor* visitor) const {
   visitor->Trace(interest_element_);
   visitor->Trace(page_);
   visitor->Trace(spatial_navigation_host_);

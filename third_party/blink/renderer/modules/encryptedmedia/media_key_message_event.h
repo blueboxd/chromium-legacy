@@ -58,7 +58,7 @@ class MediaKeyMessageEvent final : public Event {
   String messageType() const { return message_type_; }
   DOMArrayBuffer* message() const { return message_.Get(); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   String message_type_;

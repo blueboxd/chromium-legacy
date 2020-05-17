@@ -26,7 +26,7 @@ class NavigatorClipboard final : public GarbageCollected<NavigatorClipboard>,
 
   explicit NavigatorClipboard(Navigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<Clipboard> clipboard_;

@@ -50,7 +50,7 @@ class CORE_EXPORT FetchClientSettingsObjectImpl final
   const InsecureNavigationsSet& GetUpgradeInsecureNavigationsSet()
       const override;
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   Member<ExecutionContext> execution_context_;

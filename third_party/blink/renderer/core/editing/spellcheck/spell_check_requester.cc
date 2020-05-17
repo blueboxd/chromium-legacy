@@ -94,7 +94,7 @@ SpellCheckRequest::SpellCheckRequest(Range* checking_range,
 
 SpellCheckRequest::~SpellCheckRequest() = default;
 
-void SpellCheckRequest::Trace(Visitor* visitor) {
+void SpellCheckRequest::Trace(Visitor* visitor) const {
   visitor->Trace(requester_);
   visitor->Trace(checking_range_);
   visitor->Trace(root_editable_element_);
@@ -314,7 +314,7 @@ void SpellCheckRequester::DidCheckCancel(int sequence) {
   DidCheck(sequence);
 }
 
-void SpellCheckRequester::Trace(Visitor* visitor) {
+void SpellCheckRequester::Trace(Visitor* visitor) const {
   visitor->Trace(window_);
   visitor->Trace(processing_request_);
   visitor->Trace(request_queue_);

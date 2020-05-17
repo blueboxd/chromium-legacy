@@ -20,7 +20,7 @@ class V0CustomElementMicrotaskQueueBase
   bool IsEmpty() const { return queue_.IsEmpty(); }
   void Dispatch();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
 #if !defined(NDEBUG)
   void Show(unsigned indent);

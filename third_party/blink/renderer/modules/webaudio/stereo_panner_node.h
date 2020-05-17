@@ -59,7 +59,7 @@ class StereoPannerNode final : public AudioNode {
 
   StereoPannerNode(BaseAudioContext&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   AudioParam* pan() const;
 

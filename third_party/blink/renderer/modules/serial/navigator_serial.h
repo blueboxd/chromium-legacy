@@ -27,7 +27,7 @@ class NavigatorSerial final : public GarbageCollected<NavigatorSerial>,
 
   explicit NavigatorSerial(Navigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<Serial> serial_;

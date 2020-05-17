@@ -29,7 +29,7 @@ class CORE_EXPORT InstalledServiceWorkerModuleScriptFetcher final
              ModuleGraphLevel,
              ModuleScriptFetcher::Client*) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   String DebugName() const override {

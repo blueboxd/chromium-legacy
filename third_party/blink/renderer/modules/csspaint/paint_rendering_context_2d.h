@@ -37,7 +37,7 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
                           float zoom,
                           float device_scale_factor);
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(context_settings_);
     ScriptWrappable::Trace(visitor);
     BaseRenderingContext2D::Trace(visitor);

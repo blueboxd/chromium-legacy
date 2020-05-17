@@ -128,7 +128,7 @@ class ContentCaptureManagerTestHelper : public ContentCaptureManager {
     return content_capture_task_;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(content_capture_task_);
     ContentCaptureManager::Trace(visitor);
   }

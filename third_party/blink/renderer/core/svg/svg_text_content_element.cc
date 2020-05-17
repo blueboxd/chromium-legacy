@@ -85,7 +85,7 @@ SVGTextContentElement::SVGTextContentElement(const QualifiedName& tag_name,
   AddToPropertyMap(length_adjust_);
 }
 
-void SVGTextContentElement::Trace(Visitor* visitor) {
+void SVGTextContentElement::Trace(Visitor* visitor) const {
   visitor->Trace(text_length_);
   visitor->Trace(length_adjust_);
   SVGGraphicsElement::Trace(visitor);

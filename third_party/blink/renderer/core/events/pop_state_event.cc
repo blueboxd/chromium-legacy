@@ -96,7 +96,7 @@ const AtomicString& PopStateEvent::InterfaceName() const {
   return event_interface_names::kPopStateEvent;
 }
 
-void PopStateEvent::Trace(Visitor* visitor) {
+void PopStateEvent::Trace(Visitor* visitor) const {
   visitor->Trace(state_);
   visitor->Trace(history_);
   Event::Trace(visitor);

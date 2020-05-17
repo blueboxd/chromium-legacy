@@ -50,7 +50,7 @@ const AudioParamDescriptor*
   return nullptr;
 }
 
-void AudioWorkletProcessorDefinition::Trace(Visitor* visitor) {
+void AudioWorkletProcessorDefinition::Trace(Visitor* visitor) const {
   visitor->Trace(constructor_);
   visitor->Trace(process_);
   visitor->Trace(audio_param_descriptors_);

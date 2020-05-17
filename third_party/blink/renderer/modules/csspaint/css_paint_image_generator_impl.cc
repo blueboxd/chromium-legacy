@@ -138,7 +138,7 @@ int CSSPaintImageGeneratorImpl::WorkletId() const {
   return paint_worklet_->WorkletId();
 }
 
-void CSSPaintImageGeneratorImpl::Trace(Visitor* visitor) {
+void CSSPaintImageGeneratorImpl::Trace(Visitor* visitor) const {
   visitor->Trace(observer_);
   visitor->Trace(paint_worklet_);
   CSSPaintImageGenerator::Trace(visitor);

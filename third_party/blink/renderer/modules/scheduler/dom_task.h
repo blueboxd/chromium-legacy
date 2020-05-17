@@ -30,7 +30,7 @@ class DOMTask final : public GarbageCollected<DOMTask> {
           DOMTaskSignal*,
           base::TimeDelta delay);
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
  private:
   // Entry point for running this DOMTask's |callback_|.

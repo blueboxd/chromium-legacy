@@ -91,7 +91,7 @@ class ListAttributeTargetObserver : public IdTargetObserver {
  public:
   ListAttributeTargetObserver(const AtomicString& id, HTMLInputElement*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   void IdTargetChanged() override;
 
  private:
@@ -135,7 +135,7 @@ HTMLInputElement::HTMLInputElement(Document& document,
   }
 }
 
-void HTMLInputElement::Trace(Visitor* visitor) {
+void HTMLInputElement::Trace(Visitor* visitor) const {
   visitor->Trace(input_type_);
   visitor->Trace(input_type_view_);
   visitor->Trace(list_attribute_target_observer_);
@@ -1833,7 +1833,7 @@ ListAttributeTargetObserver::ListAttributeTargetObserver(
                        id),
       element_(element) {}
 
-void ListAttributeTargetObserver::Trace(Visitor* visitor) {
+void ListAttributeTargetObserver::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   IdTargetObserver::Trace(visitor);
 }

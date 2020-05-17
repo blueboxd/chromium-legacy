@@ -33,7 +33,7 @@ Permissions* NavigatorPermissions::permissions(Navigator& navigator) {
   return self.permissions_.Get();
 }
 
-void NavigatorPermissions::Trace(Visitor* visitor) {
+void NavigatorPermissions::Trace(Visitor* visitor) const {
   visitor->Trace(permissions_);
   Supplement<Navigator>::Trace(visitor);
 }

@@ -77,7 +77,7 @@ class StoppingClient : public GarbageCollected<StoppingClient>,
     events_.push_back(EventOrReconnectionTimeSetting(reconnection_time));
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(parser_);
     EventSourceParser::Client::Trace(visitor);
   }

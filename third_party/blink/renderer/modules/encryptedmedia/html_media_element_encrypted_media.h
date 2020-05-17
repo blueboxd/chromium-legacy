@@ -57,7 +57,7 @@ class MODULES_EXPORT HTMLMediaElementEncryptedMedia final
   HTMLMediaElementEncryptedMedia(HTMLMediaElement&);
   ~HTMLMediaElementEncryptedMedia();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class SetMediaKeysHandler;

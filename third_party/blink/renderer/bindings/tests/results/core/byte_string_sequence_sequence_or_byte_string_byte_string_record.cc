@@ -58,7 +58,7 @@ ByteStringSequenceSequenceOrByteStringByteStringRecord::ByteStringSequenceSequen
 ByteStringSequenceSequenceOrByteStringByteStringRecord::~ByteStringSequenceSequenceOrByteStringByteStringRecord() = default;
 ByteStringSequenceSequenceOrByteStringByteStringRecord& ByteStringSequenceSequenceOrByteStringByteStringRecord::operator=(const ByteStringSequenceSequenceOrByteStringByteStringRecord&) = default;
 
-void ByteStringSequenceSequenceOrByteStringByteStringRecord::Trace(Visitor* visitor) {
+void ByteStringSequenceSequenceOrByteStringByteStringRecord::Trace(Visitor* visitor) const {
 }
 
 void V8ByteStringSequenceSequenceOrByteStringByteStringRecord::ToImpl(

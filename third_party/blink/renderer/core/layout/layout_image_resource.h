@@ -70,7 +70,7 @@ class CORE_EXPORT LayoutImageResource
                                              const LayoutSize&) const;
   virtual WrappedImagePtr ImagePtr() const { return cached_image_.Get(); }
 
-  virtual void Trace(Visitor* visitor) { visitor->Trace(cached_image_); }
+  virtual void Trace(Visitor* visitor) const { visitor->Trace(cached_image_); }
 
  protected:
   // Device scale factor for the associated LayoutObject.

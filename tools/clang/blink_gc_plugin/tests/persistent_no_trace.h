@@ -11,7 +11,8 @@ namespace blink {
 
 class HeapObject : public GarbageCollected<HeapObject> {
 public:
-    void Trace(Visitor*);
+ void Trace(Visitor*) const;
+
 private:
     CrossThreadPersistent<HeapObject> m_crossThreadPersistent;
     CrossThreadWeakPersistent<HeapObject> m_crossThreadWeakPersistent;

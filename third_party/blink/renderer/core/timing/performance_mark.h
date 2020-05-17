@@ -66,7 +66,7 @@ class CORE_EXPORT PerformanceMark final : public PerformanceEntry {
 
   ScriptValue detail(ScriptState*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   ~PerformanceMark() override = default;

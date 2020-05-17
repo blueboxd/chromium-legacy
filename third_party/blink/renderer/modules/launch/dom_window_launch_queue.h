@@ -36,7 +36,7 @@ class DOMWindowLaunchQueue final
   static void UpdateLaunchFiles(LocalDOMWindow*,
                                 HeapVector<Member<NativeFileSystemHandle>>);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   static DOMWindowLaunchQueue* FromState(LocalDOMWindow* window);

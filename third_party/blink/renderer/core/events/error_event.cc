@@ -123,7 +123,7 @@ ScriptValue ErrorEvent::error(ScriptState* script_state) const {
   return ScriptValue(script_state->GetIsolate(), error_.Get(script_state));
 }
 
-void ErrorEvent::Trace(Visitor* visitor) {
+void ErrorEvent::Trace(Visitor* visitor) const {
   visitor->Trace(error_);
   Event::Trace(visitor);
 }

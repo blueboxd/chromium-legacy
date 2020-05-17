@@ -81,7 +81,7 @@ ScriptPromise RTCEncodedAudioUnderlyingSink::abort(
   return close(script_state, exception_state);
 }
 
-void RTCEncodedAudioUnderlyingSink::Trace(Visitor* visitor) {
+void RTCEncodedAudioUnderlyingSink::Trace(Visitor* visitor) const {
   UnderlyingSinkBase::Trace(visitor);
 }
 

@@ -34,7 +34,7 @@ class PLATFORM_EXPORT CallbackInterfaceBase
 
   virtual ~CallbackInterfaceBase() = default;
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
   // Check the identity of |callback_object_|. There can be multiple
   // CallbackInterfaceBase objects that have the same |callback_object_| but

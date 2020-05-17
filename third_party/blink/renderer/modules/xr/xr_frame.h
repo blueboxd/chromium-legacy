@@ -48,7 +48,7 @@ class XRFrame final : public ScriptWrappable {
   XRAnchorSet* trackedAnchors() const;
   XRLightEstimate* getLightEstimate(XRLightProbe*, ExceptionState&) const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void Deactivate();
 

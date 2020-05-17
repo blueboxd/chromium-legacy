@@ -28,7 +28,7 @@ GamepadSharedMemoryReader::GamepadSharedMemoryReader(LocalFrame& frame)
       receiver_.BindNewPipeAndPassRemote(task_runner));
 }
 
-void GamepadSharedMemoryReader::Trace(Visitor* visitor) {
+void GamepadSharedMemoryReader::Trace(Visitor* visitor) const {
   visitor->Trace(receiver_);
   visitor->Trace(gamepad_monitor_remote_);
 }

@@ -44,7 +44,7 @@ class CORE_EXPORT FontPreloadManager final {
   // Exposed to web tests via internals.
   void SetRenderDelayTimeoutForTest(base::TimeDelta timeout);
 
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
  private:
   friend class FontPreloadManagerTest;

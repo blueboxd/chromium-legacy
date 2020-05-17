@@ -69,7 +69,7 @@ class HeapMojoReceiver {
     return wrapper_->receiver().WaitForIncomingCall();
   }
 
-  void Trace(Visitor* visitor) { visitor->Trace(wrapper_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(wrapper_); }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HeapMojoReceiverGCWithContextObserverTest,
@@ -87,7 +87,7 @@ class HeapMojoReceiver {
       SetContextLifecycleNotifier(notifier);
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(owner_);
       ContextLifecycleObserver::Trace(visitor);
     }

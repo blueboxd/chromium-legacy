@@ -38,7 +38,7 @@ BackgroundFetchUpdateUIEvent::BackgroundFetchUpdateUIEvent(
 
 BackgroundFetchUpdateUIEvent::~BackgroundFetchUpdateUIEvent() = default;
 
-void BackgroundFetchUpdateUIEvent::Trace(Visitor* visitor) {
+void BackgroundFetchUpdateUIEvent::Trace(Visitor* visitor) const {
   visitor->Trace(service_worker_registration_);
   visitor->Trace(loader_);
   BackgroundFetchEvent::Trace(visitor);

@@ -20,7 +20,7 @@ class PLATFORM_EXPORT NullResourceFetcherProperties final
   NullResourceFetcherProperties();
   ~NullResourceFetcherProperties() override = default;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // ResourceFetcherProperties implementation
   const FetchClientSettingsObject& GetFetchClientSettingsObject()

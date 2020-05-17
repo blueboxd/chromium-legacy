@@ -27,7 +27,7 @@ class MODULES_EXPORT HTMLMediaElementAudioOutputDevice final
 
   HTMLMediaElementAudioOutputDevice();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   static String sinkId(HTMLMediaElement&);
   static ScriptPromise setSinkId(ScriptState*,
                                  HTMLMediaElement&,

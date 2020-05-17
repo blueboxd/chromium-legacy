@@ -29,7 +29,7 @@ LoaderFactoryForFrame::LoaderFactoryForFrame(DocumentLoader& document_loader,
       prefetched_signed_exchange_manager_(
           document_loader.GetPrefetchedSignedExchangeManager()) {}
 
-void LoaderFactoryForFrame::Trace(Visitor* visitor) {
+void LoaderFactoryForFrame::Trace(Visitor* visitor) const {
   visitor->Trace(document_loader_);
   visitor->Trace(document_);
   visitor->Trace(prefetched_signed_exchange_manager_);

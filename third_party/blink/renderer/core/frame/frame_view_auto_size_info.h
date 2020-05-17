@@ -23,7 +23,7 @@ class FrameViewAutoSizeInfo final
   void ConfigureAutoSizeMode(const IntSize& min_size, const IntSize& max_size);
   void AutoSizeIfNeeded();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   Member<LocalFrameView> frame_view_;

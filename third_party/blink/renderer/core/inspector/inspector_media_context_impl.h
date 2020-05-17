@@ -16,7 +16,7 @@ namespace blink {
 class LocalDOMWindow;
 
 struct MediaPlayer final : public GarbageCollected<MediaPlayer> {
-  void Trace(Visitor*) {}
+  void Trace(Visitor*) const {}
 
   WebString player_id;
   Vector<InspectorPlayerError> errors;
@@ -50,7 +50,7 @@ class CORE_EXPORT MediaInspectorContextImpl final
                            const InspectorPlayerProperties&) override;
 
   // GarbageCollected methods.
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   Vector<WebString> AllPlayerIds();
   const MediaPlayer& MediaPlayerFromId(const WebString&);

@@ -58,7 +58,7 @@ class MODULES_EXPORT SendStream final : public ScriptWrappable,
   void SendFin() override;
   void OnOutgoingStreamAbort() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   const Member<OutgoingStream> outgoing_stream_;

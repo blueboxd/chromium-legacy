@@ -58,7 +58,7 @@ class CORE_EXPORT InspectorLayerTreeAgent final
 
   InspectorLayerTreeAgent(InspectedFrames*, Client*);
   ~InspectorLayerTreeAgent() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void Restore() override;
 

@@ -71,7 +71,7 @@ void ActiveScriptWrappableManager::
   recomputed_cnt_ = 0;
 }
 
-void ActiveScriptWrappableManager::Trace(Visitor* visitor) {
+void ActiveScriptWrappableManager::Trace(Visitor* visitor) const {
   visitor->Trace(active_script_wrappables_);
   visitor->RegisterWeakCallbackMethod<
       ActiveScriptWrappableManager,

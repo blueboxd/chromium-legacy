@@ -55,7 +55,7 @@ NavigatorBattery& NavigatorBattery::From(Navigator& navigator) {
   return *supplement;
 }
 
-void NavigatorBattery::Trace(Visitor* visitor) {
+void NavigatorBattery::Trace(Visitor* visitor) const {
   visitor->Trace(battery_manager_);
   Supplement<Navigator>::Trace(visitor);
 }

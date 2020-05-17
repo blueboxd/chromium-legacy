@@ -49,7 +49,7 @@ AtomicString FontSelector::FamilyNameFromSettings(
   return g_empty_atom;
 }
 
-void FontSelector::Trace(Visitor* visitor) {
+void FontSelector::Trace(Visitor* visitor) const {
   visitor->Trace(font_fallback_map_);
   FontCacheClient::Trace(visitor);
 }

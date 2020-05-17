@@ -52,7 +52,7 @@ class CORE_EXPORT UnderlyingSinkBase : public ScriptWrappable {
     return write(script_state, chunk, controller_, exception_state);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(controller_);
     ScriptWrappable::Trace(visitor);
   }

@@ -48,7 +48,7 @@ class ClipboardWriter : public GarbageCollected<ClipboardWriter>,
   void DidFinishLoading() override;
   void DidFail(FileErrorCode) override;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  protected:
   ClipboardWriter(SystemClipboard* system_clipboard, ClipboardPromise* promise);

@@ -32,7 +32,7 @@ class CORE_EXPORT MediaQueryListListener
  public:
   virtual void NotifyMediaQueryChanged() = 0;
 
-  virtual void Trace(Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) const {}
 
  protected:
   MediaQueryListListener();

@@ -31,7 +31,7 @@ class CORE_EXPORT LayoutShiftAttribution : public ScriptWrappable {
   DOMRectReadOnly* currentRect() const;
 
   ScriptValue toJSONForBinding(ScriptState*) const;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   WeakMember<Node> node_;
   Member<DOMRectReadOnly> previous_rect_;

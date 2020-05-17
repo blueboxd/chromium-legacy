@@ -141,7 +141,7 @@ class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
   // ActiveScriptWrappable overrides.
   bool HasPendingActivity() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // WebInputMethodController overrides.
   bool SetComposition(const WebString& text,

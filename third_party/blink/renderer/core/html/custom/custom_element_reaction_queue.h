@@ -20,7 +20,7 @@ class CORE_EXPORT CustomElementReactionQueue final
   CustomElementReactionQueue();
   ~CustomElementReactionQueue();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   void Add(CustomElementReaction&);
   void InvokeReactions(Element&);

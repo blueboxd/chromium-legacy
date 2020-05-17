@@ -334,7 +334,7 @@ class MODULES_EXPORT AudioNode : public EventTargetWithInlineData,
  public:
   ~AudioNode() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   AudioHandler& Handler() const;
 
   void HandleChannelOptions(const AudioNodeOptions*, ExceptionState&);

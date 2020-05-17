@@ -290,7 +290,7 @@ void UserMediaClient::ContextDestroyed() {
   DeleteAllUserMediaRequests();
 }
 
-void UserMediaClient::Trace(Visitor* visitor) {
+void UserMediaClient::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(user_media_processor_);
   visitor->Trace(apply_constraints_processor_);

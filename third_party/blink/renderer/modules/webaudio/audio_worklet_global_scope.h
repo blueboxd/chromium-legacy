@@ -104,7 +104,7 @@ class MODULES_EXPORT AudioWorkletGlobalScope final : public WorkletGlobalScope {
   double currentTime() const;
   float sampleRate() const { return sample_rate_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   bool is_closing_ = false;

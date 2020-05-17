@@ -82,7 +82,7 @@ class XSLStyleSheet final : public StyleSheet {
   KURL BaseURL() const override { return final_url_; }
   bool IsLoading() const override { return false; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void LoadChildSheets();

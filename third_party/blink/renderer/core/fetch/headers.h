@@ -60,7 +60,7 @@ class CORE_EXPORT Headers final : public ScriptWrappable,
   void FillWith(const HeadersInit&, ExceptionState&);
 
   FetchHeaderList* HeaderList() const { return header_list_; }
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // These methods should only be called when size() would return 0.

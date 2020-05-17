@@ -70,7 +70,7 @@ class HTMLImportChild final : public HTMLImport {
   HTMLImportLoader* Loader() const final;
   void StateWillChange() final;
   void StateDidChange() final;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void DidFinishLoading();
   void DidFinishUpgradingCustomElements();

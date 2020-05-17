@@ -63,7 +63,7 @@ class MODULES_EXPORT NavigatorContentUtils final
                                         const String& url,
                                         ExceptionState&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void SetClientForTest(NavigatorContentUtilsClient* client) {
     client_ = client;

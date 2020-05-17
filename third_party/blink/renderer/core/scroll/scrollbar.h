@@ -204,7 +204,7 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
 
   WebColorScheme UsedColorScheme() const;
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
  protected:
   void AutoscrollTimerFired(TimerBase*);

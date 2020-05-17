@@ -56,7 +56,7 @@ class MODULES_EXPORT UserMediaClient
 
   bool IsCapturing();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   void SetMediaDevicesDispatcherForTesting(
       mojo::PendingRemote<blink::mojom::blink::MediaDevicesDispatcherHost>
@@ -84,7 +84,7 @@ class MODULES_EXPORT UserMediaClient
     bool IsApplyConstraints() const { return apply_constraints_request_; }
     bool IsStopTrack() const { return !web_track_to_stop_.IsNull(); }
 
-    void Trace(Visitor* visitor) {
+    void Trace(Visitor* visitor) const {
       visitor->Trace(user_media_request_);
       visitor->Trace(apply_constraints_request_);
     }

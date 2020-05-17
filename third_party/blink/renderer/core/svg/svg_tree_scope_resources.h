@@ -26,7 +26,7 @@ class SVGTreeScopeResources final
   LocalSVGResource* ResourceForId(const AtomicString& id);
   LocalSVGResource* ExistingResourceForId(const AtomicString& id) const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   void ProcessCustomWeakness(const LivenessBroker&);

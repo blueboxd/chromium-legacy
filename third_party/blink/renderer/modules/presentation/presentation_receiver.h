@@ -58,7 +58,7 @@ class MODULES_EXPORT PresentationReceiver final
 
   LocalDOMWindow* GetWindow() const { return window_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class PresentationReceiverTest;

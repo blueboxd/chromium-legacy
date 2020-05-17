@@ -250,7 +250,7 @@ void V0InsertionPoint::RemovedFrom(ContainerNode& insertion_point) {
   HTMLElement::RemovedFrom(insertion_point);
 }
 
-void V0InsertionPoint::Trace(Visitor* visitor) {
+void V0InsertionPoint::Trace(Visitor* visitor) const {
   visitor->Trace(distributed_nodes_);
   HTMLElement::Trace(visitor);
 }

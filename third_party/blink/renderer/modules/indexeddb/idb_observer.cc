@@ -98,7 +98,7 @@ void IDBObserver::unobserve(IDBDatabase* database,
     database->RemoveObservers(observer_ids_to_remove);
 }
 
-void IDBObserver::Trace(Visitor* visitor) {
+void IDBObserver::Trace(Visitor* visitor) const {
   visitor->Trace(callback_);
   visitor->Trace(observer_ids_);
   ScriptWrappable::Trace(visitor);

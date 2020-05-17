@@ -30,7 +30,7 @@ namespace blink {
 SVGMPathElement::SVGMPathElement(Document& document)
     : SVGElement(svg_names::kMPathTag, document), SVGURIReference(this) {}
 
-void SVGMPathElement::Trace(Visitor* visitor) {
+void SVGMPathElement::Trace(Visitor* visitor) const {
   visitor->Trace(target_id_observer_);
   SVGElement::Trace(visitor);
   SVGURIReference::Trace(visitor);

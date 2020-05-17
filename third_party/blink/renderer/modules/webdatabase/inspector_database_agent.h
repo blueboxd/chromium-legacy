@@ -48,7 +48,7 @@ class MODULES_EXPORT InspectorDatabaseAgent final
  public:
   explicit InspectorDatabaseAgent(Page*);
   ~InspectorDatabaseAgent() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   protocol::Response disable() override;
   void Restore() override;

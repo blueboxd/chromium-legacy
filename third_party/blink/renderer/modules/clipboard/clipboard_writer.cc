@@ -233,7 +233,7 @@ void ClipboardWriter::DidFail(FileErrorCode error_code) {
   promise_->RejectFromReadOrDecodeFailure();
 }
 
-void ClipboardWriter::Trace(Visitor* visitor) {
+void ClipboardWriter::Trace(Visitor* visitor) const {
   visitor->Trace(promise_);
   visitor->Trace(system_clipboard_);
   visitor->Trace(raw_system_clipboard_);

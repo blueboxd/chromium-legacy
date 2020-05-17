@@ -39,7 +39,7 @@ class CORE_EXPORT PrepopulatedComputedStylePropertyMap
   void UpdateStyle(const Document&, const ComputedStyle&);
 
   unsigned size() const override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   const CSSValue* GetProperty(CSSPropertyID) const override;

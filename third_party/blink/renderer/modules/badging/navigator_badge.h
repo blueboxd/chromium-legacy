@@ -38,7 +38,7 @@ class NavigatorBadge final : public GarbageCollected<NavigatorBadge>,
   static ScriptPromise clearAppBadge(ScriptState*, Navigator&);
   static ScriptPromise clearAppBadge(ScriptState*, WorkerNavigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   static ScriptPromise SetAppBadgeHelper(

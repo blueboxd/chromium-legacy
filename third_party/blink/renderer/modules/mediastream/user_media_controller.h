@@ -46,7 +46,7 @@ class UserMediaController final : public GarbageCollected<UserMediaController>,
   static const char kSupplementName[];
 
   explicit UserMediaController(LocalDOMWindow*);
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   UserMediaClient* Client();
 

@@ -17,7 +17,7 @@ DocumentTiming::DocumentTiming(Document& document) : document_(document) {
     MarkDomLoading();
 }
 
-void DocumentTiming::Trace(Visitor* visitor) {
+void DocumentTiming::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
 }
 

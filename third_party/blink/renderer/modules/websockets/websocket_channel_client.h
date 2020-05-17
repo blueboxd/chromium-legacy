@@ -59,7 +59,7 @@ class MODULES_EXPORT WebSocketChannelClient : public GarbageCollectedMixin {
   virtual void DidClose(ClosingHandshakeCompletionStatus,
                         uint16_t /* code */,
                         const String& /* reason */) {}
-  void Trace(Visitor* visitor) override {}
+  void Trace(Visitor* visitor) const override {}
 
  protected:
   WebSocketChannelClient() = default;

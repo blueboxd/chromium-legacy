@@ -36,7 +36,7 @@ class OverscrollController : public GarbageCollected<OverscrollController> {
                         const FloatPoint& position_in_root_frame,
                         const FloatSize& velocity_in_root_frame);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   WeakMember<const VisualViewport> visual_viewport_;

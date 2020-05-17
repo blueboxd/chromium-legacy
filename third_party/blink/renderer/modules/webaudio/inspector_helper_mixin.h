@@ -37,7 +37,7 @@ class InspectorHelperMixin : public GarbageCollectedMixin {
   // to be the last in this call.
   virtual void ReportWillBeDestroyed() = 0;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<AudioGraphTracer> graph_tracer_;

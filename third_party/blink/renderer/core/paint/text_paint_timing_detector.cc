@@ -197,7 +197,7 @@ void TextPaintTimingDetector::StopRecordingLargestTextPaint() {
   records_manager_.CleanUpLargestTextPaint();
 }
 
-void TextPaintTimingDetector::Trace(Visitor* visitor) {
+void TextPaintTimingDetector::Trace(Visitor* visitor) const {
   visitor->Trace(records_manager_);
   visitor->Trace(frame_view_);
   visitor->Trace(callback_manager_);
@@ -210,7 +210,7 @@ LargestTextPaintManager::LargestTextPaintManager(
       frame_view_(frame_view),
       paint_timing_detector_(paint_timing_detector) {}
 
-void LargestTextPaintManager::Trace(Visitor* visitor) {
+void LargestTextPaintManager::Trace(Visitor* visitor) const {
   visitor->Trace(frame_view_);
   visitor->Trace(paint_timing_detector_);
 }
@@ -327,7 +327,7 @@ TextRecordsManager::TextRecordsManager(
   ltp_manager_.emplace(frame_view, paint_timing_detector);
 }
 
-void TextRecordsManager::Trace(Visitor* visitor) {
+void TextRecordsManager::Trace(Visitor* visitor) const {
   visitor->Trace(text_element_timing_);
   visitor->Trace(ltp_manager_);
 }

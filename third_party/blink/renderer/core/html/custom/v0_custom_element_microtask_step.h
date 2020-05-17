@@ -46,7 +46,7 @@ class V0CustomElementMicrotaskStep
 
   virtual Result Process() = 0;
 
-  virtual void Trace(Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) const {}
 
 #if !defined(NDEBUG)
   virtual void Show(unsigned indent) = 0;

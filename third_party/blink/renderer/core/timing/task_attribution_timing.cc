@@ -55,7 +55,7 @@ void TaskAttributionTiming::BuildJSONValue(V8ObjectBuilder& builder) const {
   builder.AddString("containerName", containerName());
 }
 
-void TaskAttributionTiming::Trace(Visitor* visitor) {
+void TaskAttributionTiming::Trace(Visitor* visitor) const {
   PerformanceEntry::Trace(visitor);
 }
 

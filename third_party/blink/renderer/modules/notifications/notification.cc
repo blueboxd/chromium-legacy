@@ -498,7 +498,7 @@ bool Notification::HasPendingActivity() const {
   return false;
 }
 
-void Notification::Trace(Visitor* visitor) {
+void Notification::Trace(Visitor* visitor) const {
   visitor->Trace(show_trigger_);
   visitor->Trace(loader_);
   visitor->Trace(listener_receiver_);

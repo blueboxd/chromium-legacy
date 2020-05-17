@@ -242,7 +242,6 @@
 <translation id="1962204205936693436"><ph name="DOMAIN" /> ចំណាំ</translation>
 <translation id="1973335181906896915">កំហុសឆ្គងប្រតិបត្តិការជាសេរ៊ី</translation>
 <translation id="1974060860693918893">កម្រិតខ្ពស់</translation>
-<translation id="1974883374937189061">ជួយ​កែលម្អ​សុវត្ថិភាព Chrome តាមរយៈការផ្ញើ<ph name="BEGIN_WHITEPAPER_LINK" />URL របស់ទំព័រ​មួយចំនួន​ដែលអ្នកចូលមើល ព្រមទាំង​ខ្លឹមសារទំព័រ និងព័ត៌មាន​ប្រព័ន្ធមួយចំនួន<ph name="END_WHITEPAPER_LINK" />ទៅ Google ។ <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1975584088563498795">ប្រអប់​សំបុត្រទី 10</translation>
 <translation id="1978555033938440688">កំណែកម្មវិធី​បង្កប់</translation>
 <translation id="1981206234434200693">សម្អាត​ទិន្នន័យ​ប្រវត្តិ​រុករក​របស់ Chrome</translation>
@@ -1607,7 +1606,6 @@
 <translation id="7763386264682878361">ការបង់ប្រាក់​សម្រាប់​កម្មវិធី​ញែក​ជាក់លាក់</translation>
 <translation id="7764225426217299476">បន្ថែមអាសយដ្ឋាន</translation>
 <translation id="7766518757692125295">ស្រទាប់ខាងក្រៅ</translation>
-<translation id="7767271804335921384">កម្មវិធី​ត្រូវបាន​ទប់ស្កាត់​ដោយ​អ្នកគ្រប់គ្រង​របស់អ្នក</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">ផ្ងារឡើង​តាមលំដាប់​លំដោយដូចគ្នា</translation>
 <translation id="777702478322588152">អាណាខេត្ត</translation>
@@ -1761,6 +1759,7 @@
 <translation id="8425213833346101688">ប្តូរ</translation>
 <translation id="8428213095426709021">ការកំណត់</translation>
 <translation id="8433057134996913067">វានឹងយកអ្នកចេញពីគេហទំព័រភាគច្រើន</translation>
+<translation id="8433678324664858900">បង្ហាញការផ្តល់យោបល់</translation>
 <translation id="8437238597147034694">បកក្រោយការផ្លាស់ទី</translation>
 <translation id="8457125768502047971">មិនច្បាស់</translation>
 <translation id="8461694314515752532">អ៊ីនគ្រីប​ទិន្នន័យ​ដែលបាន​ធ្វើ​សមកាលកម្ម​ ដោយប្រើឃ្លា​សម្ងាត់​សមកាលកម្មផ្ទាល់​ខ្លួន​របស់​អ្នក</translation>

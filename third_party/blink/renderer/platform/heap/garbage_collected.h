@@ -84,7 +84,7 @@ struct TraceDescriptor {
 class PLATFORM_EXPORT GarbageCollectedMixin {
  public:
   typedef int IsGarbageCollectedMixinMarker;
-  virtual void Trace(Visitor*) {}
+  virtual void Trace(Visitor*) const {}
   // Provide default implementations that indicate that the vtable is not yet
   // set up properly. This way it is possible to get infos about mixins so that
   // these objects can processed later on. This is necessary as
@@ -118,8 +118,7 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
         WTF::IsSubclassOfTemplate<typename std::remove_const<TYPE>::type,    \
                                   blink::GarbageCollected>::value,           \
         "only garbage collected objects can have garbage collected mixins"); \
-    return {const_cast<TYPE*>(static_cast<const TYPE*>(this)),               \
-            TraceTrait<TYPE>::Trace};                                        \
+    return {static_cast<const TYPE*>(this), TraceTrait<TYPE>::Trace};        \
   }                                                                          \
                                                                              \
  private:

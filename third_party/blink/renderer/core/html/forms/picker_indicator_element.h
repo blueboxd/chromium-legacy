@@ -59,7 +59,7 @@ class PickerIndicatorElement final : public HTMLDivElement,
 
   PickerIndicatorElement(Document&, PickerIndicatorOwner&);
   ~PickerIndicatorElement() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void OpenPopup();
   void ClosePopup();

@@ -81,7 +81,7 @@ SVGFELightElement::SVGFELightElement(const QualifiedName& tag_name,
   AddToPropertyMap(limiting_cone_angle_);
 }
 
-void SVGFELightElement::Trace(Visitor* visitor) {
+void SVGFELightElement::Trace(Visitor* visitor) const {
   visitor->Trace(azimuth_);
   visitor->Trace(elevation_);
   visitor->Trace(x_);

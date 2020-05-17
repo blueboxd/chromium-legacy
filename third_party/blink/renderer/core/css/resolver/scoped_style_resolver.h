@@ -88,7 +88,7 @@ class CORE_EXPORT ScopedStyleResolver final
   static Element& InvalidationRootForTreeScope(const TreeScope&);
   void V0ShadowAddedOnV1Document();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   void AddTreeBoundaryCrossingRules(const RuleSet&,
@@ -118,7 +118,7 @@ class CORE_EXPORT ScopedStyleResolver final
     unsigned parent_index_;
     Member<RuleSet> rule_set_;
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
   };
   using CSSStyleSheetRuleSubSet = HeapVector<Member<RuleSubSet>>;
 

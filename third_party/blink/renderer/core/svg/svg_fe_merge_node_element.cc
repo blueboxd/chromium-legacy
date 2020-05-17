@@ -31,7 +31,7 @@ SVGFEMergeNodeElement::SVGFEMergeNodeElement(Document& document)
   AddToPropertyMap(in1_);
 }
 
-void SVGFEMergeNodeElement::Trace(Visitor* visitor) {
+void SVGFEMergeNodeElement::Trace(Visitor* visitor) const {
   visitor->Trace(in1_);
   SVGElement::Trace(visitor);
 }

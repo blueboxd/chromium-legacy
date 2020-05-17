@@ -40,7 +40,7 @@ class SctpTransportProxy : public webrtc::SctpTransportObserverInterface {
     virtual void OnStartCompleted(webrtc::SctpTransportInformation info) = 0;
     // Called when a state change is signalled from transport.
     virtual void OnStateChange(webrtc::SctpTransportInformation info) = 0;
-    void Trace(Visitor* visitor) override {}
+    void Trace(Visitor* visitor) const override {}
   };
 
   // Constructs a SctpTransportProxy.  The caller is responsible for keeping

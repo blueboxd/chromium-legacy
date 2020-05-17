@@ -73,7 +73,7 @@ class PLATFORM_EXPORT RTCIceCandidatePlatform final
   const base::Optional<uint16_t>& RelatedPort() const { return related_port_; }
   const String& UsernameFragment() const { return username_fragment_; }
 
-  void Trace(Visitor*) {}
+  void Trace(Visitor*) const {}
 
  private:
   void PopulateFields(bool use_username_from_candidate);

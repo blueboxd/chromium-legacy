@@ -41,7 +41,7 @@ class WebGLVertexArrayObjectBase : public WebGLContextObject {
   }
   void UnbindBuffer(WebGLBuffer*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   WebGLVertexArrayObjectBase(WebGLRenderingContextBase*, VaoType);

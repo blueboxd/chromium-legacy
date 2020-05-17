@@ -39,7 +39,7 @@ class FakeContextNotifier final : public GarbageCollected<FakeContextNotifier>,
     });
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(observers_);
     ContextLifecycleNotifier::Trace(visitor);
   }
@@ -52,7 +52,7 @@ template <HeapMojoWrapperMode Mode>
 class GCOwner : public GarbageCollected<GCOwner<Mode>> {
  public:
   explicit GCOwner(FakeContextNotifier* context) : receiver_set_(context) {}
-  void Trace(Visitor* visitor) { visitor->Trace(receiver_set_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(receiver_set_); }
 
   HeapMojoUniqueReceiverSet<sample::blink::Service,
                             std::default_delete<sample::blink::Service>,

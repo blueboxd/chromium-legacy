@@ -47,7 +47,7 @@ PageScaleConstraintsSet::PageScaleConstraintsSet(Page* page)
       needs_reset_(false),
       constraints_dirty_(false) {}
 
-void PageScaleConstraintsSet::Trace(Visitor* visitor) {
+void PageScaleConstraintsSet::Trace(Visitor* visitor) const {
   visitor->Trace(page_);
 }
 

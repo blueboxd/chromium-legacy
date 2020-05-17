@@ -32,7 +32,7 @@ class PerformanceLongTaskTiming final : public PerformanceEntry {
 
   TaskAttributionVector attribution() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   ~PerformanceLongTaskTiming() override;

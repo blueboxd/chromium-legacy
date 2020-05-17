@@ -70,7 +70,7 @@ class ReplaceTrackRequest : public RTCVoidRequest {
     resolver_->Reject(exception_state);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(sender_);
     visitor->Trace(with_track_);
     visitor->Trace(resolver_);
@@ -101,7 +101,7 @@ class SetParametersRequest : public RTCVoidRequestScriptPromiseResolverImpl {
     RTCVoidRequestScriptPromiseResolverImpl::RequestFailed(error);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(sender_);
     RTCVoidRequestScriptPromiseResolverImpl::Trace(visitor);
   }
@@ -690,7 +690,7 @@ RTCInsertableStreams* RTCRtpSender::createEncodedVideoStreams(
   return encoded_video_streams_;
 }
 
-void RTCRtpSender::Trace(Visitor* visitor) {
+void RTCRtpSender::Trace(Visitor* visitor) const {
   visitor->Trace(pc_);
   visitor->Trace(track_);
   visitor->Trace(transport_);

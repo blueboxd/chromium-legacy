@@ -83,7 +83,7 @@ InspectorLogAgent::InspectorLogAgent(
 
 InspectorLogAgent::~InspectorLogAgent() = default;
 
-void InspectorLogAgent::Trace(Visitor* visitor) {
+void InspectorLogAgent::Trace(Visitor* visitor) const {
   visitor->Trace(storage_);
   visitor->Trace(performance_monitor_);
   InspectorBaseAgent::Trace(visitor);

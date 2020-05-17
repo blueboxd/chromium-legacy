@@ -55,7 +55,7 @@ class CORE_EXPORT ScriptLoader final : public GarbageCollected<ScriptLoader>,
  public:
   ScriptLoader(ScriptElementBase*, bool created_by_parser, bool is_evaluated);
   ~ScriptLoader() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override { return "ScriptLoader"; }
 
   enum LegacyTypeSupport {

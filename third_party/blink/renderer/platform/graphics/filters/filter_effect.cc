@@ -39,7 +39,7 @@ FilterEffect::FilterEffect(Filter* filter)
 
 FilterEffect::~FilterEffect() = default;
 
-void FilterEffect::Trace(Visitor* visitor) {
+void FilterEffect::Trace(Visitor* visitor) const {
   visitor->Trace(input_effects_);
   visitor->Trace(filter_);
 }

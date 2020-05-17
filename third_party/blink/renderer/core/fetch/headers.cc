@@ -292,7 +292,7 @@ Headers::Headers()
 Headers::Headers(FetchHeaderList* header_list)
     : header_list_(header_list), guard_(kNoneGuard) {}
 
-void Headers::Trace(Visitor* visitor) {
+void Headers::Trace(Visitor* visitor) const {
   visitor->Trace(header_list_);
   ScriptWrappable::Trace(visitor);
 }

@@ -238,7 +238,7 @@ LocalFrameClientImpl::LocalFrameClientImpl(WebLocalFrameImpl* frame)
 
 LocalFrameClientImpl::~LocalFrameClientImpl() = default;
 
-void LocalFrameClientImpl::Trace(Visitor* visitor) {
+void LocalFrameClientImpl::Trace(Visitor* visitor) const {
   visitor->Trace(web_frame_);
   LocalFrameClient::Trace(visitor);
 }

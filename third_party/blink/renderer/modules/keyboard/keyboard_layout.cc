@@ -116,7 +116,7 @@ void KeyboardLayout::GotKeyboardLayoutMap(
   script_promise_resolver_ = nullptr;
 }
 
-void KeyboardLayout::Trace(Visitor* visitor) {
+void KeyboardLayout::Trace(Visitor* visitor) const {
   visitor->Trace(script_promise_resolver_);
   visitor->Trace(service_);
   ExecutionContextClient::Trace(visitor);

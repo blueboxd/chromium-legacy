@@ -26,7 +26,7 @@ class MODULES_EXPORT TextDetector final : public ShapeDetector {
 
   explicit TextDetector(ExecutionContext*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   ~TextDetector() override = default;

@@ -79,7 +79,7 @@ void TrackEvent::track(VideoTrackOrAudioTrackOrTextTrack& return_value) {
   }
 }
 
-void TrackEvent::Trace(Visitor* visitor) {
+void TrackEvent::Trace(Visitor* visitor) const {
   visitor->Trace(track_);
   Event::Trace(visitor);
 }

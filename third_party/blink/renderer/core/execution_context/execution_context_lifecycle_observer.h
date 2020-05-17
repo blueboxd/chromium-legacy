@@ -77,7 +77,7 @@ class CORE_EXPORT ExecutionContextClient : public GarbageCollectedMixin {
   // Returns null otherwise.
   LocalFrame* GetFrame() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   explicit ExecutionContextClient(ExecutionContext*);
@@ -124,7 +124,7 @@ class CORE_EXPORT ExecutionContextLifecycleObserver
 
   bool IsExecutionContextLifecycleObserver() const override { return true; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   explicit ExecutionContextLifecycleObserver(

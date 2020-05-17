@@ -27,7 +27,7 @@ class WorkerNavigatorPermissions final
 
   WorkerNavigatorPermissions();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<Permissions> permissions_;

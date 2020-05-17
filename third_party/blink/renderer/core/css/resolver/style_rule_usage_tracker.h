@@ -19,7 +19,7 @@ class StyleRuleUsageTracker : public GarbageCollected<StyleRuleUsageTracker> {
   void Track(const CSSStyleSheet*, const StyleRule*);
   RuleListByStyleSheet TakeDelta();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   bool InsertToUsedRulesMap(const CSSStyleSheet*, const StyleRule*);

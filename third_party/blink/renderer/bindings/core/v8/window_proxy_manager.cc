@@ -9,7 +9,7 @@
 
 namespace blink {
 
-void WindowProxyManager::Trace(Visitor* visitor) {
+void WindowProxyManager::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(window_proxy_);
   visitor->Trace(isolated_worlds_);

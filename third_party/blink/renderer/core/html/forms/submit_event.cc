@@ -20,7 +20,7 @@ SubmitEvent* SubmitEvent::Create(const AtomicString& type,
   return MakeGarbageCollected<SubmitEvent>(type, event_init);
 }
 
-void SubmitEvent::Trace(Visitor* visitor) {
+void SubmitEvent::Trace(Visitor* visitor) const {
   visitor->Trace(submitter_);
   Event::Trace(visitor);
 }

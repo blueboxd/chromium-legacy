@@ -113,7 +113,7 @@ const AtomicString& DeviceMotionController::EventTypeName() const {
   return event_type_names::kDevicemotion;
 }
 
-void DeviceMotionController::Trace(Visitor* visitor) {
+void DeviceMotionController::Trace(Visitor* visitor) const {
   DeviceSingleWindowEventController::Trace(visitor);
   visitor->Trace(motion_event_pump_);
   Supplement<LocalDOMWindow>::Trace(visitor);

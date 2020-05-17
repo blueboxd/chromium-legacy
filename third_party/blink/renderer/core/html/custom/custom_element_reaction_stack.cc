@@ -28,7 +28,7 @@ Persistent<CustomElementReactionStack>& GetCustomElementReactionStack() {
 
 CustomElementReactionStack::CustomElementReactionStack() = default;
 
-void CustomElementReactionStack::Trace(Visitor* visitor) {
+void CustomElementReactionStack::Trace(Visitor* visitor) const {
   visitor->Trace(map_);
   visitor->Trace(stack_);
   visitor->Trace(backup_queue_);

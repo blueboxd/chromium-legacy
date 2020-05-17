@@ -82,7 +82,7 @@ void BluetoothRemoteGATTServer::Dispose() {
   DisconnectIfConnected();
 }
 
-void BluetoothRemoteGATTServer::Trace(Visitor* visitor) {
+void BluetoothRemoteGATTServer::Trace(Visitor* visitor) const {
   visitor->Trace(client_receivers_);
   visitor->Trace(active_algorithms_);
   visitor->Trace(device_);

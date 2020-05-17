@@ -64,7 +64,7 @@ void RTCVoidRequestPromiseImpl::Clear() {
   requester_.Clear();
 }
 
-void RTCVoidRequestPromiseImpl::Trace(Visitor* visitor) {
+void RTCVoidRequestPromiseImpl::Trace(Visitor* visitor) const {
   visitor->Trace(resolver_);
   visitor->Trace(requester_);
   RTCVoidRequest::Trace(visitor);

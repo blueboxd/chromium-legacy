@@ -20,7 +20,7 @@ class CORE_EXPORT CSPDirective : public GarbageCollected<CSPDirective> {
                ContentSecurityPolicy* policy)
       : name_(name), text_(name + ' ' + value), policy_(policy) {}
   virtual ~CSPDirective() = default;
-  virtual void Trace(Visitor* visitor) { visitor->Trace(policy_); }
+  virtual void Trace(Visitor* visitor) const { visitor->Trace(policy_); }
 
   const String& GetName() const { return name_; }
   const String& GetText() const { return text_; }

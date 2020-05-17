@@ -113,7 +113,7 @@ class TestAdTracker : public AdTracker {
   void SetAdSuffix(const String& ad_suffix) { ad_suffix_ = ad_suffix; }
   ~TestAdTracker() override {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(execution_context_);
     AdTracker::Trace(visitor);
   }

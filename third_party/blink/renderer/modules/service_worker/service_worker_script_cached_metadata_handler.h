@@ -24,7 +24,7 @@ class ServiceWorkerScriptCachedMetadataHandler
       const KURL& script_url,
       std::unique_ptr<Vector<uint8_t>> meta_data);
   ~ServiceWorkerScriptCachedMetadataHandler() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   void SetCachedMetadata(uint32_t data_type_id,
                          const uint8_t*,
                          size_t) override;

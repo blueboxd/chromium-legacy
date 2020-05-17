@@ -47,7 +47,7 @@ class PictureInPictureInterstitial::VideoElementResizeObserverDelegate final
     interstitial_->NotifyElementSizeChanged(*entries[0]->contentRect());
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(interstitial_);
     ResizeObserver::Delegate::Trace(visitor);
   }
@@ -173,7 +173,7 @@ void PictureInPictureInterstitial::OnPosterImageChanged() {
       GetVideoElement().FastGetAttribute(html_names::kPosterAttr));
 }
 
-void PictureInPictureInterstitial::Trace(Visitor* visitor) {
+void PictureInPictureInterstitial::Trace(Visitor* visitor) const {
   visitor->Trace(resize_observer_);
   visitor->Trace(video_element_);
   visitor->Trace(background_image_);

@@ -49,7 +49,7 @@ class SVGFEDisplacementMapElement final
     return y_channel_selector_.Get();
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   bool SetFilterEffectAttribute(FilterEffect*,

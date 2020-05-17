@@ -33,7 +33,7 @@ class CORE_EXPORT ResizeObservation final
 
   LayoutSize ComputeTargetSize() const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   WeakMember<Element> target_;

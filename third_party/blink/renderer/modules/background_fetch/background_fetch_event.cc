@@ -27,7 +27,7 @@ const AtomicString& BackgroundFetchEvent::InterfaceName() const {
   return event_interface_names::kBackgroundFetchEvent;
 }
 
-void BackgroundFetchEvent::Trace(Visitor* visitor) {
+void BackgroundFetchEvent::Trace(Visitor* visitor) const {
   visitor->Trace(registration_);
   ExtendableEvent::Trace(visitor);
 }

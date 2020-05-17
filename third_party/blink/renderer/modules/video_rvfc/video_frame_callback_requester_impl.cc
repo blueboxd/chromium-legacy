@@ -261,7 +261,7 @@ void VideoFrameCallbackRequesterImpl::cancelVideoFrameCallback(int id) {
   callback_collection_->CancelFrameCallback(id);
 }
 
-void VideoFrameCallbackRequesterImpl::Trace(Visitor* visitor) {
+void VideoFrameCallbackRequesterImpl::Trace(Visitor* visitor) const {
   visitor->Trace(callback_collection_);
   Supplement<HTMLVideoElement>::Trace(visitor);
 }

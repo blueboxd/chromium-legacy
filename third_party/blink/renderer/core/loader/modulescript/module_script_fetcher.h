@@ -49,7 +49,7 @@ class CORE_EXPORT ModuleScriptFetcher : public ResourceClient {
                      ModuleGraphLevel,
                      Client*) = 0;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   static bool WasModuleLoadSuccessful(

@@ -64,7 +64,7 @@ class CORE_EXPORT WorkletAnimationController
   // AnimationWorkletGlobalScope.
   bool IsAnimatorRegistered(const String& animator_name) const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   void MutateAnimations();

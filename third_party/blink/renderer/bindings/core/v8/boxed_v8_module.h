@@ -24,7 +24,7 @@ class CORE_EXPORT BoxedV8Module final : public GarbageCollected<BoxedV8Module> {
       : record_(isolate, module),
         identity_hash_(static_cast<unsigned>(module->GetIdentityHash())) {}
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     // TODO(keishi): Remove UnsafeCast.
     visitor->Trace(record_.UnsafeCast<v8::Value>());
   }

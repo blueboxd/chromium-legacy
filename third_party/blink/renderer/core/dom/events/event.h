@@ -307,7 +307,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
 
   probe::AsyncTaskId* async_task_id() { return &async_task_id_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   virtual void ReceivedTarget();

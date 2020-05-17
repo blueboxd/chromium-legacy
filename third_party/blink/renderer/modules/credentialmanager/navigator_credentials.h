@@ -28,7 +28,7 @@ class NavigatorCredentials final
 
   explicit NavigatorCredentials(Navigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   CredentialsContainer* credentials();

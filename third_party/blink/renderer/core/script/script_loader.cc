@@ -106,7 +106,7 @@ ScriptLoader::ScriptLoader(ScriptElementBase* element,
 
 ScriptLoader::~ScriptLoader() {}
 
-void ScriptLoader::Trace(Visitor* visitor) {
+void ScriptLoader::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   visitor->Trace(pending_script_);
   visitor->Trace(prepared_pending_script_);

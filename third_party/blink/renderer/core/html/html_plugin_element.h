@@ -66,7 +66,7 @@ class CORE_EXPORT HTMLPlugInElement
 
  public:
   ~HTMLPlugInElement() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool IsPlugin() const final { return true; }
 

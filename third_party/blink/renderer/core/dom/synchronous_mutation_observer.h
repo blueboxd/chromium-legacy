@@ -81,7 +81,7 @@ class CORE_EXPORT SynchronousMutationObserver : public GarbageCollectedMixin {
   Document* GetDocument() const { return document_; }
   void SetDocument(Document*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   SynchronousMutationObserver() = default;

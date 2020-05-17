@@ -63,7 +63,7 @@ void TreeOrderedList::Remove(const Node* node) {
   nodes_.erase(const_cast<Node*>(node));
 }
 
-void TreeOrderedList::Trace(Visitor* visitor) {
+void TreeOrderedList::Trace(Visitor* visitor) const {
   visitor->Trace(nodes_);
 }
 

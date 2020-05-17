@@ -222,7 +222,7 @@ class CORE_EXPORT WebFrameWidgetBase
   // focused frame has a different local root.
   LocalFrame* FocusedLocalFrameInWidget() const;
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
   // For when the embedder itself change scales on the page (e.g. devtools)
   // and wants all of the content at the new scale to be crisp

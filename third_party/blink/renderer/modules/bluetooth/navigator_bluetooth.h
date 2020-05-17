@@ -32,7 +32,7 @@ class NavigatorBluetooth final : public GarbageCollected<NavigatorBluetooth>,
 
   explicit NavigatorBluetooth(Navigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<Bluetooth> bluetooth_;

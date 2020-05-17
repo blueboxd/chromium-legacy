@@ -45,7 +45,7 @@ EventQueue::EventQueue(ExecutionContext* context, TaskType task_type)
 
 EventQueue::~EventQueue() = default;
 
-void EventQueue::Trace(Visitor* visitor) {
+void EventQueue::Trace(Visitor* visitor) const {
   visitor->Trace(queued_events_);
   ExecutionContextLifecycleObserver::Trace(visitor);
 }

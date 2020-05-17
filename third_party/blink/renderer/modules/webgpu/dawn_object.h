@@ -98,7 +98,7 @@ class DawnObjectImpl : public ScriptWrappable, public DeviceTreeObject {
   explicit DawnObjectImpl(GPUDevice* device);
   ~DawnObjectImpl() override;
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  protected:
   Member<GPUDevice> device_;

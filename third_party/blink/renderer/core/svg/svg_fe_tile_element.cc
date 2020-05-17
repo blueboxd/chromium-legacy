@@ -33,7 +33,7 @@ SVGFETileElement::SVGFETileElement(Document& document)
   AddToPropertyMap(in1_);
 }
 
-void SVGFETileElement::Trace(Visitor* visitor) {
+void SVGFETileElement::Trace(Visitor* visitor) const {
   visitor->Trace(in1_);
   SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }

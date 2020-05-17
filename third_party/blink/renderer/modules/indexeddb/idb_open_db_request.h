@@ -51,7 +51,7 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
       mojo::PendingRemote<mojom::blink::ObservedFeature> connection_lifetime);
   ~IDBOpenDBRequest() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void EnqueueBlocked(int64_t existing_version) override;
   void EnqueueUpgradeNeeded(int64_t old_version,

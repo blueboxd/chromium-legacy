@@ -124,7 +124,7 @@ class CORE_EXPORT Response final : public ScriptWrappable,
 
   FetchHeaderList* InternalHeaderList() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   // A version of IsBodyUsed() which catches exceptions and returns

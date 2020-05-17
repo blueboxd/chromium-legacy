@@ -123,7 +123,7 @@ void ConsoleMessage::SetNodes(LocalFrame* frame, Vector<DOMNodeId> nodes) {
   nodes_ = std::move(nodes);
 }
 
-void ConsoleMessage::Trace(Visitor* visitor) {
+void ConsoleMessage::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
 }
 

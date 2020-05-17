@@ -36,7 +36,7 @@ class XRAnchor : public ScriptWrappable {
 
   void Update(const device::mojom::blink::XRAnchorData& anchor_data);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   void SetMojoFromAnchor(const TransformationMatrix& mojo_from_anchor);

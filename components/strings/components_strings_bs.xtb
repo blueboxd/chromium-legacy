@@ -240,7 +240,6 @@
 <translation id="1962204205936693436">Oznake domene <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Greška u serijalizaciji</translation>
 <translation id="1974060860693918893">Napredno</translation>
-<translation id="1974883374937189061">Pomozite nam da poboljšamo sigurnost na Chromeu tako što ćete Googleu poslati <ph name="BEGIN_WHITEPAPER_LINK" />URL-ove nekih stranica koje posjećujete, ograničene sistemske informacije i sadržaj nekih stranica<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1975584088563498795">Poštansko sanduče 10</translation>
 <translation id="1978555033938440688">Verzija firmvera</translation>
 <translation id="1981206234434200693">Obrišite Chromeove podatke o historiji pregledanja</translation>
@@ -1602,7 +1601,6 @@ Dodatni detalji:
 <translation id="7763386264682878361">Raščlanjivač deklaracije o plaćanju</translation>
 <translation id="7764225426217299476">Dodaj adresu</translation>
 <translation id="7766518757692125295">Kontura</translation>
-<translation id="7767271804335921384">Vaš administrator je blokirao aplikaciju</translation>
 <translation id="7770259615151589601">Zadano duga</translation>
 <translation id="7773005668374414287">Isti redoslijed s odštampanom stranom prema gore</translation>
 <translation id="777702478322588152">Prefektura</translation>
@@ -1756,6 +1754,7 @@ Dodatni detalji:
 <translation id="8425213833346101688">Izmijeni</translation>
 <translation id="8428213095426709021">Postavke</translation>
 <translation id="8433057134996913067">Time ćete se odjaviti s većine web-lokacija.</translation>
+<translation id="8433678324664858900">Pokaži prijedloge</translation>
 <translation id="8437238597147034694">&amp;Poništi premještanje</translation>
 <translation id="8457125768502047971">Neodređeno</translation>
 <translation id="8461694314515752532">Šifrirajte sinhronizirane podatke svojim pristupnim izrazom</translation>

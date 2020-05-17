@@ -43,7 +43,7 @@ class WebGLRenderbufferAttachment final
  public:
   explicit WebGLRenderbufferAttachment(WebGLRenderbuffer*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override { return "WebGLAttachment"; }
 
  private:
@@ -61,7 +61,7 @@ class WebGLRenderbufferAttachment final
   Member<WebGLRenderbuffer> renderbuffer_;
 };
 
-void WebGLRenderbufferAttachment::Trace(Visitor* visitor) {
+void WebGLRenderbufferAttachment::Trace(Visitor* visitor) const {
   visitor->Trace(renderbuffer_);
   WebGLFramebuffer::WebGLAttachment::Trace(visitor);
 }
@@ -107,7 +107,7 @@ class WebGLTextureAttachment final : public WebGLFramebuffer::WebGLAttachment {
                          GLint level,
                          GLint layer);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "WebGLTextureAttachment";
   }
@@ -130,7 +130,7 @@ class WebGLTextureAttachment final : public WebGLFramebuffer::WebGLAttachment {
   GLint layer_;
 };
 
-void WebGLTextureAttachment::Trace(Visitor* visitor) {
+void WebGLTextureAttachment::Trace(Visitor* visitor) const {
   visitor->Trace(texture_);
   WebGLFramebuffer::WebGLAttachment::Trace(visitor);
 }
@@ -547,7 +547,7 @@ GLenum WebGLFramebuffer::GetDrawBuffer(GLenum draw_buffer) {
   return GL_NONE;
 }
 
-void WebGLFramebuffer::Trace(Visitor* visitor) {
+void WebGLFramebuffer::Trace(Visitor* visitor) const {
   visitor->Trace(attachments_);
   WebGLContextObject::Trace(visitor);
 }

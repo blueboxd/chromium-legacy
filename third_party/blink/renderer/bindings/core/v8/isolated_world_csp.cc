@@ -42,7 +42,7 @@ class IsolatedWorldCSPDelegate final
     DCHECK(security_origin_);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(document_);
     ContentSecurityPolicyDelegate::Trace(visitor);
   }

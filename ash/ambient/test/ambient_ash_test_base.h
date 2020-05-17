@@ -16,6 +16,8 @@
 
 namespace ash {
 
+class AmbientContainerView;
+
 // The base class to test the ambient mode in Ash.
 class AmbientAshTestBase : public AshTestBase {
  public:
@@ -35,6 +37,8 @@ class AmbientAshTestBase : public AshTestBase {
 
   // Toggle ambient mode.
   void Toggle();
+
+  AmbientContainerView* GetView();
 
   // Simulate to issue an |access_token|.
   // If |with_error| is true, will return an empty access token.

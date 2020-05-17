@@ -31,6 +31,7 @@ The Port classes encapsulate Port-specific (platform-specific) behavior
 in the web test infrastructure.
 """
 
+import time
 import collections
 import itertools
 import json
@@ -1195,7 +1196,20 @@ class Port(object):
 
     @memoized
     def args_for_test(self, test_name):
-        return self._lookup_virtual_test_args(test_name)
+        args = self._lookup_virtual_test_args(test_name)
+        tracing_categories = self.get_option('enable_tracing')
+        if tracing_categories:
+            args.append('--trace-startup=' + tracing_categories)
+            # Do not finish the trace until the test is finished.
+            args.append('--trace-startup-duration=0')
+            # Append the current time to the output file name to ensure that
+            # the subsequent repetitions of the test do not overwrite older
+            # trace files.
+            current_time = time.strftime("%Y-%m-%d-%H-%M-%S")
+            file_name = 'trace_layout_test_' + test_name.replace(
+                '/', '_').replace('.', '_') + '_' + current_time + '.json'
+            args.append('--trace-startup-file=' + file_name)
+        return args
 
     @memoized
     def name_for_test(self, test_name):

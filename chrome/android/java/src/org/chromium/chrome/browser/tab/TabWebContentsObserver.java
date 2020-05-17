@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.tab;
 
 import android.os.Handler;
-import android.view.View;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
@@ -22,11 +21,9 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.SwipeRefreshHandler;
 import org.chromium.chrome.browser.display_cutout.DisplayCutoutController;
-import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
-import org.chromium.chrome.browser.policy.PolicyAuditorJni;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
@@ -336,38 +333,6 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
         @Override
         public void didChangeThemeColor() {
             TabThemeColorHelper.get(mTab).updateIfNeeded(true);
-        }
-
-        @Override
-        public void didAttachInterstitialPage() {
-            // TODO(huayinz): Observe #didAttachInterstitialPage and #didDetachInterstitialPage
-            // in InfoBarContainer.
-            InfoBarContainer.get(mTab).setVisibility(View.INVISIBLE);
-            mTab.showRenderedPage();
-
-            RewindableIterator<TabObserver> observers = mTab.getTabObservers();
-            while (observers.hasNext()) {
-                observers.next().onDidAttachInterstitialPage(mTab);
-            }
-            mTab.notifyLoadProgress(mTab.getProgress());
-            PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
-            auditor.notifyCertificateFailure(
-                    PolicyAuditorJni.get().getCertificateFailure(mTab.getWebContents()),
-                    ContextUtils.getApplicationContext());
-        }
-
-        @Override
-        public void didDetachInterstitialPage() {
-            InfoBarContainer.get(mTab).setVisibility(View.VISIBLE);
-
-            RewindableIterator<TabObserver> observers = mTab.getTabObservers();
-            while (observers.hasNext()) {
-                observers.next().onDidDetachInterstitialPage(mTab);
-            }
-            mTab.notifyLoadProgress(mTab.getProgress());
-            if (!mTab.maybeShowNativePage(mTab.getUrlString(), false)) {
-                mTab.showRenderedPage();
-            }
         }
 
         @Override

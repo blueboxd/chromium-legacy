@@ -490,6 +490,7 @@ void IndexedDBContextImpl::HasV2SchemaCorruptionForTesting(
   if (is_incognito() || !HasOrigin(origin)) {
     std::move(callback).Run(
         storage::mojom::V2SchemaCorruptionStatus::CORRUPTION_UNKNOWN);
+    return;
   }
 
   if (indexeddb_factory_.get()) {

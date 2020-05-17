@@ -458,9 +458,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
             return R.color.google_red_600;
         }
 
-        if (getDisplaySearchTerms() == null
-                && (securityLevel == ConnectionSecurityLevel.SECURE
-                        || securityLevel == ConnectionSecurityLevel.EV_SECURE)) {
+        if (getDisplaySearchTerms() == null && securityLevel == ConnectionSecurityLevel.SECURE) {
             return R.color.google_green_600;
         }
 

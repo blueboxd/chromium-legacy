@@ -12,6 +12,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 namespace ash {
 
@@ -25,8 +26,7 @@ SwitchAccessMenuBubbleController::~SwitchAccessMenuBubbleController() {
 }
 
 void SwitchAccessMenuBubbleController::ShowBackButton(const gfx::Rect& anchor) {
-  HideMenuBubble();
-  back_button_controller_->ShowBackButton(anchor);
+  back_button_controller_->ShowBackButton(anchor, /*showFocusRing=*/true);
 }
 
 void SwitchAccessMenuBubbleController::ShowMenu(
@@ -80,17 +80,26 @@ void SwitchAccessMenuBubbleController::ShowMenu(
 
   widget_->SetBounds(resting_bounds);
   widget_->Show();
-  back_button_controller_->ShowBackButton(resting_bounds);
+  bubble_view_->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged,
+                                         true);
+  back_button_controller_->ShowBackButton(resting_bounds,
+                                          /*showFocusRing=*/false);
 }
 
 void SwitchAccessMenuBubbleController::HideBackButton() {
-  back_button_controller_->Hide();
+  if (widget_ && widget_->IsVisible())
+    back_button_controller_->HideFocusRing();
+  else
+    back_button_controller_->Hide();
 }
 
 void SwitchAccessMenuBubbleController::HideMenuBubble() {
   back_button_controller_->Hide();
   if (widget_)
     widget_->Hide();
+  if (bubble_view_)
+    bubble_view_->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged,
+                                           true);
 }
 
 void SwitchAccessMenuBubbleController::BubbleViewDestroyed() {

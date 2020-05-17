@@ -26,6 +26,7 @@ class DateTimeSection : public OsSettingsSection {
   // OsSettingsSection:
   void AddLoadTimeData(content::WebUIDataSource* html_source) override;
   void AddHandlers(content::WebUI* web_ui) override;
+  void RegisterHierarchy(HierarchyGenerator* generator) const override;
 };
 
 }  // namespace settings

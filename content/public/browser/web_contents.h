@@ -291,10 +291,7 @@ class WebContents : public PageNavigator,
 
   // Gets the virtual URL currently being displayed in the URL bar, if there is
   // one. This URL might be a pending navigation that hasn't committed yet, so
-  // it is not guaranteed to match the current page in this WebContents. A
-  // typical example of this is interstitials, which show the URL of the
-  // new/loading page (active) but the security context is of the old page (last
-  // committed).
+  // it is not guaranteed to match the current page in this WebContents.
   virtual const GURL& GetVisibleURL() = 0;
 
   // Gets the virtual URL of the last committed page in this WebContents.
@@ -768,11 +765,6 @@ class WebContents : public PageNavigator,
   // Invoked when this tab is getting the focus through tab traversal (|reverse|
   // is true when using Shift-Tab).
   virtual void FocusThroughTabTraversal(bool reverse) = 0;
-
-  // Interstitials -------------------------------------------------------------
-
-  // Various other systems need to know about our interstitials.
-  virtual bool ShowingInterstitialPage() = 0;
 
   // Misc state & callbacks ----------------------------------------------------
 

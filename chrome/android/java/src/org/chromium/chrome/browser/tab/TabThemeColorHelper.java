@@ -162,8 +162,7 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
                 && (mTab.getActivity() == null || !mTab.getActivity().isTablet())
                 && (mTab.getActivity() == null
                         || !mTab.getActivity().getNightModeStateProvider().isInNightMode())
-                && !mTab.isNativePage() && !mTab.isShowingInterstitialPage() && !mTab.isIncognito()
-                && !Previews.isPreview(mTab);
+                && !mTab.isNativePage() && !mTab.isIncognito() && !Previews.isPreview(mTab);
     }
 
     /**
@@ -242,16 +241,6 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
     @Override
     public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
         if (navigation.errorCode() != 0) updateIfNeeded(true);
-    }
-
-    @Override
-    public void onDidAttachInterstitialPage(Tab tab) {
-        updateIfNeeded(false);
-    }
-
-    @Override
-    public void onDidDetachInterstitialPage(Tab tab) {
-        updateIfNeeded(false);
     }
 
     @Override

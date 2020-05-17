@@ -441,13 +441,13 @@ class PaintOpHelper {
   }
 
   static std::string EnumToString(
-      const PaintCanvas::SrcRectConstraint& constraint) {
+      const SkCanvas::SrcRectConstraint& constraint) {
     switch (constraint) {
       default:
         break;
-      case PaintCanvas::kStrict_SrcRectConstraint:
+      case SkCanvas::kStrict_SrcRectConstraint:
         return "kStrict_SrcRectConstraint";
-      case PaintCanvas::kFast_SrcRectConstraint:
+      case SkCanvas::kFast_SrcRectConstraint:
         return "kFast_SrcRectConstraint";
     }
     return "<unknown SrcRectConstraint>";

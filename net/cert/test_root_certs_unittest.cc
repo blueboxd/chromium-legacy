@@ -21,12 +21,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_NSS_CERTS)
-#include <nss.h>
-
-#include "net/cert/x509_util_nss.h"
-#endif
-
 using net::test::IsOk;
 
 namespace net {
@@ -146,45 +140,6 @@ TEST(TestRootCertsTest, OverrideTrust) {
   EXPECT_EQ(bad_status, restored_status);
   EXPECT_EQ(bad_verify_result.cert_status, restored_verify_result.cert_status);
 }
-
-#if defined(USE_NSS_CERTS)
-TEST(TestRootCertsTest, Contains) {
-  // Another test root certificate.
-  const char kRootCertificateFile2[] = "2048-rsa-root.pem";
-
-  TestRootCerts* test_roots = TestRootCerts::GetInstance();
-  ASSERT_TRUE(test_roots);
-
-  scoped_refptr<X509Certificate> root_cert_1 =
-      ImportCertFromFile(GetTestCertsDirectory(), kRootCertificateFile);
-  ASSERT_TRUE(root_cert_1);
-  ScopedCERTCertificate nss_root_cert_1 =
-      x509_util::CreateCERTCertificateFromX509Certificate(root_cert_1.get());
-  ASSERT_TRUE(nss_root_cert_1);
-
-  scoped_refptr<X509Certificate> root_cert_2 =
-      ImportCertFromFile(GetTestCertsDirectory(), kRootCertificateFile2);
-  ASSERT_TRUE(root_cert_2);
-  ScopedCERTCertificate nss_root_cert_2 =
-      x509_util::CreateCERTCertificateFromX509Certificate(root_cert_2.get());
-  ASSERT_TRUE(nss_root_cert_2);
-
-  EXPECT_FALSE(test_roots->Contains(nss_root_cert_1.get()));
-  EXPECT_FALSE(test_roots->Contains(nss_root_cert_2.get()));
-
-  EXPECT_TRUE(test_roots->Add(root_cert_1.get()));
-  EXPECT_TRUE(test_roots->Contains(nss_root_cert_1.get()));
-  EXPECT_FALSE(test_roots->Contains(nss_root_cert_2.get()));
-
-  EXPECT_TRUE(test_roots->Add(root_cert_2.get()));
-  EXPECT_TRUE(test_roots->Contains(nss_root_cert_1.get()));
-  EXPECT_TRUE(test_roots->Contains(nss_root_cert_2.get()));
-
-  test_roots->Clear();
-  EXPECT_FALSE(test_roots->Contains(nss_root_cert_1.get()));
-  EXPECT_FALSE(test_roots->Contains(nss_root_cert_2.get()));
-}
-#endif
 
 // TODO(rsleevi): Add tests for revocation checking via CRLs, ensuring that
 // TestRootCerts properly injects itself into the validation process. See

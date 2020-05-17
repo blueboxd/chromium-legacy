@@ -315,7 +315,10 @@ size_t SimpleSerialize(const PaintOp* op, void* memory, size_t size) {
 }
 
 PlaybackParams::PlaybackParams(ImageProvider* image_provider)
-    : PlaybackParams(image_provider, SkMatrix::I()) {}
+    : image_provider(image_provider),
+      original_ctm(SkMatrix::I()),
+      custom_callback(CustomDataRasterCallback()),
+      did_draw_op_callback(DidDrawOpCallback()) {}
 
 PlaybackParams::PlaybackParams(ImageProvider* image_provider,
                                const SkMatrix& original_ctm,
@@ -1339,16 +1342,11 @@ void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
     return;
   }
 
-  // TODO(enne): Probably PaintCanvas should just use the skia enum directly.
-  SkCanvas::SrcRectConstraint skconstraint =
-      static_cast<SkCanvas::SrcRectConstraint>(op->constraint);
-
   if (!params.image_provider) {
     SkRect adjusted_src = AdjustSrcRectForScale(op->src, op->scale_adjustment);
-    flags->DrawToSk(canvas, [op, adjusted_src, skconstraint](SkCanvas* c,
-                                                             const SkPaint& p) {
+    flags->DrawToSk(canvas, [op, adjusted_src](SkCanvas* c, const SkPaint& p) {
       c->drawImageRect(op->image.GetSkImage().get(), adjusted_src, op->dst, &p,
-                       skconstraint);
+                       op->constraint);
     });
     return;
   }
@@ -1378,12 +1376,12 @@ void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
       op->src.makeOffset(decoded_image.src_rect_offset().width(),
                          decoded_image.src_rect_offset().height());
   adjusted_src = AdjustSrcRectForScale(adjusted_src, scale_adjustment);
-  flags->DrawToSk(canvas, [op, &decoded_image, adjusted_src, skconstraint](
-                              SkCanvas* c, const SkPaint& p) {
+  flags->DrawToSk(canvas, [op, &decoded_image, adjusted_src](SkCanvas* c,
+                                                             const SkPaint& p) {
     SkPaint paint_with_filter_quality(p);
     paint_with_filter_quality.setFilterQuality(decoded_image.filter_quality());
     c->drawImageRect(decoded_image.image().get(), adjusted_src, op->dst,
-                     &paint_with_filter_quality, skconstraint);
+                     &paint_with_filter_quality, op->constraint);
   });
 }
 
@@ -1503,19 +1501,7 @@ void SaveLayerAlphaOp::Raster(const SaveLayerAlphaOp* op,
                               const PlaybackParams& params) {
   // See PaintOp::kUnsetRect
   bool unset = op->bounds.left() == SK_ScalarInfinity;
-  base::Optional<SkPaint> paint;
-  if (op->alpha != 0xFF) {
-    paint.emplace();
-    paint->setAlpha(op->alpha);
-  }
-  SkCanvas::SaveLayerRec rec(unset ? nullptr : &op->bounds,
-                             base::OptionalOrNullptr(paint));
-  if (params.save_layer_alpha_should_preserve_lcd_text.has_value() &&
-      *params.save_layer_alpha_should_preserve_lcd_text) {
-    rec.fSaveLayerFlags = SkCanvas::kPreserveLCDText_SaveLayerFlag |
-                          SkCanvas::kInitWithPrevious_SaveLayerFlag;
-  }
-  canvas->saveLayer(rec);
+  canvas->saveLayerAlpha(unset ? nullptr : &op->bounds, op->alpha);
 }
 
 void ScaleOp::Raster(const ScaleOp* op,
@@ -2287,14 +2273,6 @@ bool DrawRecordOp::HasNonAAPaint() const {
   return record->HasNonAAPaint();
 }
 
-bool DrawRecordOp::HasDrawTextOps() const {
-  return record->has_draw_text_ops();
-}
-
-bool DrawRecordOp::HasEffectsPreventingLCDTextForSaveLayerAlpha() const {
-  return record->has_effects_preventing_lcd_text_for_save_layer_alpha();
-}
-
 AnnotateOp::AnnotateOp() : PaintOp(kType) {}
 
 AnnotateOp::AnnotateOp(PaintCanvas::AnnotationType annotation_type,
@@ -2330,7 +2308,7 @@ DrawImageRectOp::DrawImageRectOp(const PaintImage& image,
                                  const SkRect& src,
                                  const SkRect& dst,
                                  const PaintFlags* flags,
-                                 PaintCanvas::SrcRectConstraint constraint)
+                                 SkCanvas::SrcRectConstraint constraint)
     : PaintOpWithFlags(kType, flags ? *flags : PaintFlags()),
       image(image),
       src(src),
@@ -2406,11 +2384,7 @@ PaintOpBuffer::CompositeIterator::CompositeIterator(CompositeIterator&& other) =
     default;
 
 PaintOpBuffer::PaintOpBuffer()
-    : has_non_aa_paint_(false),
-      has_discardable_images_(false),
-      has_draw_ops_(false),
-      has_draw_text_ops_(false),
-      has_effects_preventing_lcd_text_for_save_layer_alpha_(false) {}
+    : has_non_aa_paint_(false), has_discardable_images_(false) {}
 
 PaintOpBuffer::PaintOpBuffer(PaintOpBuffer&& other) {
   *this = std::move(other);
@@ -2430,10 +2404,6 @@ PaintOpBuffer& PaintOpBuffer::operator=(PaintOpBuffer&& other) {
   subrecord_op_count_ = other.subrecord_op_count_;
   has_non_aa_paint_ = other.has_non_aa_paint_;
   has_discardable_images_ = other.has_discardable_images_;
-  has_draw_ops_ = other.has_draw_ops_;
-  has_draw_text_ops_ = other.has_draw_text_ops_;
-  has_effects_preventing_lcd_text_for_save_layer_alpha_ =
-      other.has_effects_preventing_lcd_text_for_save_layer_alpha_;
 
   // Make sure the other pob can destruct safely.
   other.used_ = 0;
@@ -2455,9 +2425,6 @@ void PaintOpBuffer::Reset() {
   subrecord_bytes_used_ = 0;
   subrecord_op_count_ = 0;
   has_discardable_images_ = false;
-  has_draw_ops_ = false;
-  has_draw_text_ops_ = false;
-  has_effects_preventing_lcd_text_for_save_layer_alpha_ = false;
 }
 
 // When |op| is a nested PaintOpBuffer, this returns the PaintOp inside
@@ -2584,21 +2551,9 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
     return;
   if (offsets && offsets->empty())
     return;
+
   // Prevent PaintOpBuffers from having side effects back into the canvas.
   SkAutoCanvasRestore save_restore(canvas, true);
-
-  bool save_layer_alpha_should_preserve_lcd_text =
-      (!params.save_layer_alpha_should_preserve_lcd_text.has_value() ||
-       *params.save_layer_alpha_should_preserve_lcd_text) &&
-      has_draw_text_ops_ &&
-      !has_effects_preventing_lcd_text_for_save_layer_alpha_;
-  if (save_layer_alpha_should_preserve_lcd_text) {
-    // Check if the canvas supports LCD text.
-    SkSurfaceProps props(SkSurfaceProps::kLegacyFontHost_InitType);
-    canvas->getProps(&props);
-    if (props.pixelGeometry() == kUnknown_SkPixelGeometry)
-      save_layer_alpha_should_preserve_lcd_text = false;
-  }
 
   // TODO(enne): a PaintRecord that contains a SetMatrix assumes that the
   // SetMatrix is local to that PaintRecord itself.  Said differently, if you
@@ -2608,8 +2563,6 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
   PlaybackParams new_params(params.image_provider, canvas->getTotalMatrix(),
                             params.custom_callback,
                             params.did_draw_op_callback);
-  new_params.save_layer_alpha_should_preserve_lcd_text =
-      save_layer_alpha_should_preserve_lcd_text;
   for (PlaybackFoldingIterator iter(this, offsets); iter; ++iter) {
     const PaintOp* op = *iter;
 
@@ -2633,6 +2586,10 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
       if (const auto* raster_flags = scoped_flags.flags())
         flags_op->RasterWithFlags(canvas, raster_flags, new_params);
     } else {
+      // TODO(enne): skip SaveLayer followed by restore with nothing in
+      // between, however SaveLayer with image filters on it (or maybe
+      // other PaintFlags options) are not a noop.  Figure out what these
+      // are so we can skip them correctly.
       DCHECK_EQ(iter.alpha(), 255);
       op->Raster(canvas, new_params);
     }

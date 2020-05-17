@@ -278,8 +278,7 @@ public class ContextualSearchTabHelper
                 // Svelte and Accessibility devices are incompatible with the first-run flow and
                 // Talkback has poor interaction with Contextual Search (see http://crbug.com/399708
                 // and http://crbug.com/396934).
-                && !manager.isRunningInCompatibilityMode()
-                && !(mTab.isShowingErrorPage() || webContents.isShowingInterstitialPage())
+                && !manager.isRunningInCompatibilityMode() && !(mTab.isShowingErrorPage())
                 && isDeviceOnline(manager);
     }
 

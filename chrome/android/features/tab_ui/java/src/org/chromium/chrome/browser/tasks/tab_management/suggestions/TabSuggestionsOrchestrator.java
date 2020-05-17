@@ -68,6 +68,7 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
         mTabModelSelector = selector;
         mTabSuggestionsFetchers = new LinkedList<>();
         mTabSuggestionsFetchers.add(new TabSuggestionsClientFetcher());
+        mTabSuggestionsFetchers.add(new TabSuggestionsServerFetcher());
         mTabSuggestionsObservers = new ObserverList<>();
         mTabContextObserver = new TabContextObserver(selector) {
             @Override

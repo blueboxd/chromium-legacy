@@ -1576,20 +1576,10 @@ ExtensionFunction::ResponseAction TabsReloadFunction::Run() {
     }
   }
 
-  if (web_contents->ShowingInterstitialPage()) {
-    // This does as same as Browser::ReloadInternal.
-    NavigationEntry* entry = web_contents->GetController().GetVisibleEntry();
-    GURL reload_url = entry ? entry->GetURL() : GURL(url::kAboutBlankURL);
-    OpenURLParams params(reload_url, Referrer(),
-                         WindowOpenDisposition::CURRENT_TAB,
-                         ui::PAGE_TRANSITION_RELOAD, false);
-    current_browser->OpenURL(params);
-  } else {
-    web_contents->GetController().Reload(
-        bypass_cache ? content::ReloadType::BYPASSING_CACHE
-                     : content::ReloadType::NORMAL,
-        true);
-  }
+  web_contents->GetController().Reload(
+      bypass_cache ? content::ReloadType::BYPASSING_CACHE
+                   : content::ReloadType::NORMAL,
+      true);
 
   return RespondNow(NoArguments());
 }

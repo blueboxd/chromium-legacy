@@ -161,15 +161,6 @@ void DropCompletionCallback(
   return screenPoint;
 }
 
-// Return YES if the drop site only allows drops that would navigate.  If this
-// is the case, we don't want to pass messages to the renderer because there's
-// really no point (i.e., there's nothing that cares about the mouse position or
-// entering and exiting).  One example is an interstitial page (e.g., safe
-// browsing warning).
-- (BOOL)onlyAllowsNavigation {
-  return _webContents->ShowingInterstitialPage();
-}
-
 // Messages to send during the tracking of a drag, usually upon receiving
 // calls from the view system. Communicates the drag messages to WebCore.
 
@@ -218,12 +209,6 @@ void DropCompletionCallback(
   if (_canceled)
     return NSDragOperationNone;
 
-  if ([self onlyAllowsNavigation]) {
-    if (info->url)
-      return NSDragOperationCopy;
-    return NSDragOperationNone;
-  }
-
   if (_delegate) {
     _delegate->DragInitialize(_webContents);
     _delegate->OnDragEnter();
@@ -253,9 +238,6 @@ void DropCompletionCallback(
     return;
 
   if (_canceled)
-    return;
-
-  if ([self onlyAllowsNavigation])
     return;
 
   if (_delegate)
@@ -315,12 +297,6 @@ void DropCompletionCallback(
   if (_canceled)
     return NSDragOperationNone;
 
-  if ([self onlyAllowsNavigation]) {
-    if (info->url)
-      return NSDragOperationCopy;
-    return NSDragOperationNone;
-  }
-
   NSDragOperation mask = info->operation_mask;
   targetRWH->DragTargetDragOver(transformedPt, info->location_in_screen,
                                 static_cast<WebDragOperationsMask>(mask),
@@ -351,18 +327,6 @@ void DropCompletionCallback(
       _currentRWHForDrag->DragTargetDragLeave(transformedPt,
                                               info->location_in_screen);
     [self draggingEntered:info];
-  }
-
-  // Check if we only allow navigation and navigate to a url on the pasteboard.
-  if ([self onlyAllowsNavigation]) {
-    if (info->url) {
-      _webContents->OpenURL(OpenURLParams(
-          *info->url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
-          ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
-      return YES;
-    } else {
-      return NO;
-    }
   }
 
   _currentRVH = NULL;

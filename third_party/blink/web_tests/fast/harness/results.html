@@ -182,6 +182,18 @@ p, h2, h3, h4 {
 #flag-toolbar.hidden {
   display: none;
 }
+
+.actual-result {
+  font-weight: bold;
+}
+
+.unexpected-failure {
+  color: red;
+}
+
+.unexpected-pass {
+  color: green;
+}
 </style>
 <body>
 <h3>Test run summary <span id="builder_name"></span> <span class="flag_name"></span></h3>
@@ -232,14 +244,15 @@ p, h2, h3, h4 {
   <p>The interesting part here is [ Status ]. Inside TestExpectations file, [ Status ]
   can have multiple values, representing all expected results. For example:</p>
 
-<pre>[ Failure Slow Timeout Crash Pass ]</pre>
+<pre>[ Failure Timeout Crash Pass ]</pre>
 
   <p>Result lines include existing expected values, and make a guess about what the new
   test expectation line should look like by merging together expected and actual
-  results. The actual result will be shown in bold. For example:</p>
+  results. The actual result will be shown in bold, and unexpected actual result will be
+  shown in red (unexpected failure) or green (unexpected pass). For example:</p>
 
-  <pre>TestResult(PASS) + TestExpectation(Failure) => [ Pass ]
-TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
+  <pre>TestResult(PASS) + TestExpectation(Failure) => [ Failure <span class="actual-result unexpected-pass">Pass</span> ]
+TestResult(TIMEOUT CRASH) + TextExpectation(Timeout Failure) => [ Failure <span class="actual-result">Timeout</span> <span class="actual-result unexpected-failure">Crash</span> ]</pre>
 
   <p>If you are doing a lot of TestExpectation edits, the hope is that this will make
   your job as easy as copy and paste.</p>
@@ -343,7 +356,6 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
     <label id="AUDIO"><input type="checkbox">Audio failure <span></span></label>
     <label id="SKIP"><input type="checkbox">Skipped <span></span></label>
     <label id="PASS"><input type="checkbox">Pass <span></span></label>
-    <label id="MISSING"><input type="checkbox">Missing <span></span></label>
     <label id="LEAK"><input type="checkbox">Leak <span></span></label>
   </div>
 </div>
@@ -388,11 +400,9 @@ const TestResultInformation = {
   "AUDIO":      { index: 6, text: "Failure", isFailure: true, isSuccess: false },
   "TIMEOUT":    { index: 7, text: "Timeout", isFailure: true, isSuccess: false },
   "LEAK":       { index: 8, text: "LEAK", isFailure: true, isSuccess: false },
-  "SLOW":       { index: 9, text: "Slow", isFailure: false, isSuccess: true },
-  "SKIP":       { index: 10, text: "Skip", isFailure: false, isSuccess: false },
-  "MISSING":    { index: 11, text: "Missing", isFailure: false, isSuccess: false },
-  "PASS":       { index: 12, text: "Pass", isFailure: false, isSuccess: true },
-  "NOTRUN":     { index: 13, text: "NOTRUN", isFailure: false, isSuccess: true }
+  "SKIP":       { index: 9, text: "Skip", isFailure: false, isSuccess: false },
+  "PASS":       { index: 10, text: "Pass", isFailure: false, isSuccess: true },
+  "NOTRUN":     { index: 11, text: "NOTRUN", isFailure: false, isSuccess: true }
 };
 
 // Sorted from worst to best.
@@ -558,29 +568,29 @@ const Report = {
     let statusMap = new Map(test.expectedMap);
     if (statusMap.has("PASS") && statusMap.size == 1)
        statusMap.delete("PASS");
-    for (let s of test.actualMap.keys()) {
-      let result = s;
-      if (result == "TEXT" || result == "IMAGE" || result == "IMAGE+TEXT")
-        result = "FAIL";
-      statusMap.set(result, "bold");
-    }
+    test.actualMap.forEach((value, key) => {
+      if (key == "TEXT" || key == "IMAGE" || key == "IMAGE+TEXT" || key == "AUDIO")
+        key = "FAIL";
+      let statusClass = 'actual-result';
+      if (!test.expectedMap.has(key))
+        statusClass += key == "PASS" ? " unexpected-pass" : " unexpected-failure";
+      statusMap.set(key, statusClass);
+    });
     let status = "";
-    for (let key of statusMap.keys()) {
-      if (statusMap.get(key) == "bold")
-        status += ` <b>${TestResultInformation[key].text}</b>`;
-      else
-        status += ` ${TestResultInformation[key].text}`;
-    }
-    let bug = test.actualMap.has("PASS") ? "" : "<span class='warn'>NEEDBUG</span>";
+    statusMap.forEach((value, key) => {
+      status += ` <span class="${value}">${TestResultInformation[key].text}</span>`;
+    });
+    let bug = "";
     if (test.bugs && test.bugs.length > 0) {
-      bug = "";
       for (let b of test.bugs) {
         bug += `<a target='crbug' tabindex='-1' href='https://${b}'>${b}</a> `;
       }
     }
+    if (!bug && !Filters.isPass(test.actualMap))
+      bug = "<span class='warn'>NEEDBUG</span>";
     let html = `
       <div class='expect' tabindex='0' data-id='${test.expectId}'><div class='details'></div>${Report.printFlag(test)}${bug}
-        ${pathParser.dir}<a target='test' tabindex='-1' href='${pathParser.testHref}'>${pathParser.file}</a>
+        ${pathParser.dir}<a target='test' tabindex='-1' href='${pathParser.testHref}'>${pathParser.file}${pathParser.query}</a>
         [ ${status} ]
     </div>
     `;
@@ -594,7 +604,7 @@ const Report = {
       + `${Report.printFlag(test)}`
       + pathParser.dir
       + "<a target='test' tabindex='-1' href='" + pathParser.testHref + "'>"
-      + pathParser.file + "</a>";
+      + pathParser.file + pathParser.query + "</a>";
     html = "<div class='expect' tabindex='0' data-id='"+ test.expectId +"'><div class='details'></div>" + html + "</div>";
     traversal.html.push({key: key, html: html});
   },
@@ -744,7 +754,6 @@ const Report = {
     for (let result of test.actualMap.keys()) {
       switch(result) {
         case "PASS":
-        case "SLOW":
           if (Filters.unexpectedPass(test))
             toolbars.push(new PlainHtmlToolbar().createDom("Expected: " + test.expected));
           if (!test.has_stderr)
@@ -775,11 +784,6 @@ const Report = {
           break;
         case "AUDIO":
           toolbars.push(new AudioResultsToolbar().createDom(test));
-          break;
-        case "MISSING":
-          toolbars.push(new PlainHtmlToolbar().createDom("Expectations are missing."));
-          toolbars.push(new TextResultsToolbar().createDom(test));
-          toolbars.push(new ImageResultsToolbar().createDom(test));
           break;
         case "LEAK":
           toolbars.push(new SimpleLinkToolbar().createDom(
@@ -888,15 +892,14 @@ const Query = {
     return test => {
       if (!queryFilter(test) || !textFilter(test))
         return false;
-      let resultKey = test.is_testharness_test ? "HARNESS" : test.actualFinal;
       // Ignore all results except final one, or not?
+      let resultKey = test.actualFinal;
+      if (resultKey == "TEXT" && test.is_testharness_test)
+        resultKey = "HARNESS";
       if (!(resultKey in this.resultCounts))
         this.resultCounts[resultKey] = 0;
       this.resultCounts[resultKey]++;
-      if (test.actualFinal == "TEXT" && test.is_testharness_test) {
-        return filterMap.has("HARNESS");
-      }
-      return filterMap.has(test.actualFinal);
+      return filterMap.has(resultKey);
     };
   },
 
@@ -960,14 +963,9 @@ const Query = {
 
 // Test filters for queries.
 const Filters = {
-  containsPass: function (map) {
-    return map.has("PASS") || map.has("SLOW");
-  },
-  containsNoPass: function(map) {
-    return map.has("FAIL")
-        || map.has("SKIP")
-        || map.has("CRASH");
-  },
+  containsPass: map => map.has("PASS"),
+  isPass: map => map.has("PASS") && map.size == 1,
+  containsAll: (map1, map2) => Array.from(map2.keys()).every(k => map1.has(k)),
   unexpectedPass: test => {
     return !Filters.containsPass(test.expectedMap) && Filters.containsPass(test.actualMap);
   },
@@ -988,8 +986,6 @@ const Filters = {
         if (expectedMap && expectedMap.has("FAIL"))
           return false;
         break;
-      case "MISSING":
-        break;
       default:
         console.error("Unexpected test result", finalResult);
       }
@@ -1008,7 +1004,9 @@ const Filters = {
   },
   all: _ => true,
   flaky: test => test.actualMap.size > 1,
-  unexpectedFlaky: test => test.actualMap.size > 1 && test.expectedMap.size <= 1,
+  unexpectedFlaky: test => {
+    return test.actualMap.size > 1 && !Filters.containsAll(test.expectedMap, test.actualMap);
+  },
   flagged: test => test.flagged,
   flagFailure: test => { // Tests that are failing, but expected to pass in base.
     if (Filters.containsPass(test.actualMap))
@@ -1064,33 +1062,26 @@ const GUI = {
   },
 
   translateArtifactsIntoResult: function(artifacts, result, test){
-    let artifact_names = Object.keys(artifacts);
-    if(result == 'FAIL'){
-      if(artifact_names.some(name => name.startsWith('expected'))){
-        // The test is a mismatch between baseline output and actual
-        // output or a reftest failure.
-        if(artifacts.hasOwnProperty('expected_image') &&
-           artifacts.hasOwnProperty('expected_text')){
-          result = 'IMAGE+TEXT';
-        }else if(artifacts.hasOwnProperty('expected_image')){
-          result = 'IMAGE';
-        }else if(artifacts.hasOwnProperty('expected_text')){
-          result = 'TEXT';
-        }else{
-          result = 'AUDIO';
-        }
-      }else if(test.is_testharness_test){
-        result = 'TEXT';
-      }else if(artifact_names.includes('reference_file_match')){
-        result = 'IMAGE';
-      }else if(artifact_names.includes('leak_log')){
-        result = 'LEAK';
-      }else{
-        // if there are no baselines in the artifacts then by default,
-        // the result is missing
-        result = 'MISSING';
-      }
-    }
+    if (result != 'FAIL')
+      return result;
+    // Check detailed failure type based on artifacts.
+    let is_image = artifacts.hasOwnProperty('actual_image') ||
+                   artifacts.hasOwnProperty('expected_image');
+    let is_text = artifacts.hasOwnProperty('actual_text') ||
+                  artifacts.hasOwnProperty('expected_text');
+    if (is_image && is_text)
+      return 'IMAGE+TEXT';
+    if (is_image)
+      return 'IMAGE';
+    if (is_text)
+      return 'TEXT';
+    let is_audio = artifacts.hasOwnProperty('actual_audio') ||
+                   artifacts.hasOwnProperty('expected_audio');
+    if (is_audio)
+      return 'AUDIO';
+    if (artifacts.hasOwnProperty('leak_log'))
+      return 'LEAK';
+    console.error("Unknown failure type");
     return result;
   },
 
@@ -1687,12 +1678,9 @@ class ImageResultsToolbar extends TXToolbar {
     this.toolbar.showDefault = _ => this.viewOptionsChangeHandler({target: this.toolbar.querySelector(".view-options")});
     this.toolbar.classList.add("image-toolbar");
     this.toolbar.classList.add("tx-toolbar");
-    let missing = test.actual == "MISSING";
     let html = `
       image:
-      <a class="actual" href="${pathParser.resultLink("-actual.png")}" title="Actual result">actual</a>`;
-    if (!missing)
-      html += `
+      <a class="actual" href="${pathParser.resultLink("-actual.png")}" title="Actual result">actual</a>
       <a class="expected" href="${pathParser.resultLink("-expected.png")}" title="Expected result">expected</a>
       <a class="diff" href="${pathParser.resultLink("-diff.png")}" title="Difference">diff</a>
       `;
@@ -2232,15 +2220,11 @@ class TextResultsToolbar extends TXToolbar {
     }).bind(this);
     this.toolbar.classList.add("text-results-toolbar");
     this.toolbar.classList.add("tx-toolbar");
-    let missing = test.actual == "MISSING";
     let html = "text:";
-    if (!test.is_testharness_test && !missing)
-      html += `<a class="pretty" href="${pathParser.resultLink("-pretty-diff.html")}" title="Pretty difference">pretty</a>`;
+    html += `<a class="pretty" href="${pathParser.resultLink("-pretty-diff.html")}" title="Pretty difference">pretty</a>`;
     html += `<a class="actual" href="${pathParser.resultLink("-actual.txt")}" title="Actual text">actual</a>`;
-    if (!test.is_testharness_test && !missing) {
-      html += `<a class="expected" href="${pathParser.resultLink("-expected.txt")}" title="Expected result">expected</a><a
-        class="diff" href="${pathParser.resultLink("-diff.txt")}" title="Difference">diff</a>`;
-    }
+    html += `<a class="expected" href="${pathParser.resultLink("-expected.txt")}" title="Expected result">expected</a>`;
+    html += `<a class="diff" href="${pathParser.resultLink("-diff.txt")}" title="Difference">diff</a>`;
     if (test.has_repaint_overlay)
       html += ` <a class="repaint" href="${pathParser.repaintOverlayLink()}" title="Repaint overlay">repaint</a>`;
     this.toolbar.innerHTML = html + "\n";

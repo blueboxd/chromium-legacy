@@ -246,5 +246,18 @@ void PrintingSection::AddHandlers(content::WebUI* web_ui) {
       std::make_unique<CupsPrintersHandler>(profile(), printers_manager_));
 }
 
+void PrintingSection::RegisterHierarchy(HierarchyGenerator* generator) const {
+  generator->RegisterTopLevelSetting(mojom::Setting::kPrintJobs);
+
+  // Printing details.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kPrintingDetails);
+  static constexpr mojom::Setting kPrintingDetailsSettings[] = {
+      mojom::Setting::kAddPrinter,
+      mojom::Setting::kSavedPrinters,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kPrintingDetails,
+                            kPrintingDetailsSettings, generator);
+}
+
 }  // namespace settings
 }  // namespace chromeos

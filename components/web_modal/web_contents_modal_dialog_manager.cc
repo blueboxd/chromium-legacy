@@ -170,10 +170,6 @@ void WebContentsModalDialogManager::WebContentsDestroyed() {
   CloseAllDialogs();
 }
 
-void WebContentsModalDialogManager::DidAttachInterstitialPage() {
-  CloseAllDialogs();
-}
-
 WEB_CONTENTS_USER_DATA_KEY_IMPL(WebContentsModalDialogManager)
 
 }  // namespace web_modal

@@ -600,7 +600,9 @@ void ChromeManagementAPIDelegate::EnableExtension(
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForBrowserContext(context);
   supervised_user_service->AddExtensionApproval(*extension);
-#endif
+  supervised_user_service->RecordExtensionEnablementUmaMetrics(
+      /*enabled=*/true);
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
   // If the extension was disabled for a permissions increase, the Management
   // API will have displayed a re-enable prompt to the user, so we know it's
@@ -615,6 +617,12 @@ void ChromeManagementAPIDelegate::DisableExtension(
     const extensions::Extension* source_extension,
     const std::string& extension_id,
     extensions::disable_reason::DisableReason disable_reason) const {
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForBrowserContext(context);
+  supervised_user_service->RecordExtensionEnablementUmaMetrics(
+      /*enabled=*/false);
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
   extensions::ExtensionSystem::Get(context)
       ->extension_service()
       ->DisableExtensionWithSource(source_extension, extension_id,

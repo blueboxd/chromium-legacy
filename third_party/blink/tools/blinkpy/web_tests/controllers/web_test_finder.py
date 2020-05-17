@@ -34,7 +34,7 @@ import math
 import re
 
 from blinkpy.web_tests.layout_package.json_results_generator import convert_times_trie_to_flat_paths
-from blinkpy.web_tests.models import test_expectations
+from blinkpy.web_tests.models import test_expectations, typ_types
 from blinkpy.web_tests.models.typ_types import ResultType
 from blinkpy.web_tests.port.base import Port
 
@@ -181,7 +181,9 @@ class WebTestFinder(object):
         A test may be skipped for many reasons, depending on the expectation
         files and options selected. The most obvious is SKIP entries in
         TestExpectations, but we also e.g. skip idlharness tests on MSAN/ASAN
-        due to https://crbug.com/856601.
+        due to https://crbug.com/856601. Note that for programmatically added
+        SKIPs, this function will modify the input expectations to include the
+        SKIP expectation (but not write it to disk)
 
         Args:
             paths: the paths passed on the command-line to run_web_tests.py
@@ -192,6 +194,7 @@ class WebTestFinder(object):
         """
         all_tests = set(all_tests_list)
         tests_to_skip = set()
+        idlharness_skips = set()
         for test in all_tests:
             # We always skip idlharness tests for MSAN/ASAN, even when running
             # with --no-expectations (https://crbug.com/856601). Note we will
@@ -200,6 +203,7 @@ class WebTestFinder(object):
             if self._options.enable_sanitizer and Port.is_wpt_idlharness_test(
                     test):
                 tests_to_skip.update({test})
+                idlharness_skips.update({test})
                 continue
 
             if self._options.no_expectations:
@@ -213,6 +217,17 @@ class WebTestFinder(object):
                 tests_to_skip.update({test})
             if self._options.skip_failing_tests and ResultType.Failure in expected_results:
                 tests_to_skip.update({test})
+
+        # Idlharness tests are skipped programmatically on MSAN/ASAN, so we have
+        # to add them to the expectations to avoid reporting unexpected skips.
+        if idlharness_skips and expectations is not None:
+            raw_expectations = '# results: [ Skip ]\n'
+            for test in idlharness_skips:
+                raw_expectations += typ_types.Expectation(
+                    reason="crbug.com/856601",
+                    test=test,
+                    results=[ResultType.Skip]).to_string() + '\n'
+            expectations.merge_raw_expectations(raw_expectations)
 
         if self._options.skipped == 'only':
             tests_to_skip = all_tests - tests_to_skip

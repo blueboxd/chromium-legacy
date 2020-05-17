@@ -17,7 +17,6 @@ FAIL GeolocationSensor: sensor.stop() returns undefined. assert_true: expected t
 FAIL GeolocationSensor: no exception is thrown when calling stop() on already stopped sensor. assert_true: expected true got false
 FAIL GeolocationSensor: Test that fresh reading is fetched on start(). assert_true: expected true got false
 FAIL GeolocationSensor: frequency hint works. assert_true: expected true got false
-FAIL GeolocationSensor: sensor receives suspend / resume notifications when cross-origin subframe is focused. assert_true: expected true got false
 FAIL GeolocationSensor: throw 'TypeError' if frequency is invalid. assert_true: expected true got false
 Harness: the test ran to completion.
 

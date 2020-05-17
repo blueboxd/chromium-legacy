@@ -8,7 +8,7 @@ load('//project.star', 'settings')
 
 
 _BRANCH_NOOP_CONFIG = struct(
-    buckets = ['ci-m81', 'ci-m83'],
+    buckets = ['ci-m81', 'ci-m83', 'ci-m84'],
     fmt = '{bucket}-{builder}',
 ) if settings.is_master else struct(
     buckets = ['ci'],

@@ -157,7 +157,7 @@ bool PdfAXActionTarget::SetValue(const std::string& value) const {
 }
 
 bool PdfAXActionTarget::ShowContextMenu() const {
-  return pdf_accessibility_tree_source_->ShowContextMenu();
+  return false;
 }
 
 bool PdfAXActionTarget::ScrollToMakeVisible() const {

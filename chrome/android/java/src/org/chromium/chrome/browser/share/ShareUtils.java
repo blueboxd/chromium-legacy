@@ -27,9 +27,7 @@ public class ShareUtils {
         boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_URL_PREFIX)
                 || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
         boolean isDataScheme = url.startsWith(UrlConstants.DATA_SCHEME);
-        boolean isShowingInterstitialPage =
-                tab.getWebContents() != null && tab.getWebContents().isShowingInterstitialPage();
 
-        return !isChromeScheme && !isDataScheme && !isShowingInterstitialPage;
+        return !isChromeScheme && !isDataScheme;
     }
 }

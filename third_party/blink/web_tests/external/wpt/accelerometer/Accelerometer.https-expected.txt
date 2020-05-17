@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 66 tests; 44 PASS, 22 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 63 tests; 42 PASS, 21 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Accelerometer: Test that onerror is sent when sensor is not supported.
 PASS Accelerometer: Test that onerror is sent when permissions are not granted.
 PASS Accelerometer: Test that onerror is send when start() call has failed.
@@ -18,7 +18,6 @@ PASS Accelerometer: sensor.stop() returns undefined.
 PASS Accelerometer: no exception is thrown when calling stop() on already stopped sensor.
 PASS Accelerometer: Test that fresh reading is fetched on start().
 PASS Accelerometer: frequency hint works.
-PASS Accelerometer: sensor receives suspend / resume notifications when cross-origin subframe is focused.
 PASS Accelerometer: throw 'TypeError' if frequency is invalid.
 PASS Accelerometer: sensor reading is correct when options.referenceFrame is 'screen'.
 PASS Accelerometer: throw 'TypeError' if referenceFrame is not one of enumeration values.
@@ -40,7 +39,6 @@ FAIL GravitySensor: sensor.stop() returns undefined. assert_true: expected true 
 FAIL GravitySensor: no exception is thrown when calling stop() on already stopped sensor. assert_true: expected true got false
 FAIL GravitySensor: Test that fresh reading is fetched on start(). assert_true: expected true got false
 FAIL GravitySensor: frequency hint works. assert_true: expected true got false
-FAIL GravitySensor: sensor receives suspend / resume notifications when cross-origin subframe is focused. assert_true: expected true got false
 FAIL GravitySensor: throw 'TypeError' if frequency is invalid. assert_true: expected true got false
 FAIL GravitySensor: sensor reading is correct when options.referenceFrame is 'screen'. assert_true: expected true got false
 FAIL GravitySensor: throw 'TypeError' if referenceFrame is not one of enumeration values. assert_true: expected true got false
@@ -62,7 +60,6 @@ PASS LinearAccelerationSensor: sensor.stop() returns undefined.
 PASS LinearAccelerationSensor: no exception is thrown when calling stop() on already stopped sensor.
 PASS LinearAccelerationSensor: Test that fresh reading is fetched on start().
 PASS LinearAccelerationSensor: frequency hint works.
-PASS LinearAccelerationSensor: sensor receives suspend / resume notifications when cross-origin subframe is focused.
 PASS LinearAccelerationSensor: throw 'TypeError' if frequency is invalid.
 PASS LinearAccelerationSensor: sensor reading is correct when options.referenceFrame is 'screen'.
 PASS LinearAccelerationSensor: throw 'TypeError' if referenceFrame is not one of enumeration values.

@@ -12,6 +12,8 @@
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_from_string_url_loader.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_params.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_service_factory.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_url_loader.h"
 #include "chrome/browser/prerender/isolated/prefetched_mainframe_response_container.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -55,6 +57,36 @@ IsolatedPrerenderURLLoaderInterceptor::IsolatedPrerenderURLLoaderInterceptor(
 IsolatedPrerenderURLLoaderInterceptor::
     ~IsolatedPrerenderURLLoaderInterceptor() = default;
 
+bool IsolatedPrerenderURLLoaderInterceptor::
+    MaybeInterceptNoStatePrefetchNavigation(
+        const network::ResourceRequest& tentative_resource_request) {
+  Profile* profile = ProfileFromFrameTreeNodeID(frame_tree_node_id_);
+  content::WebContents* web_contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id_);
+
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForBrowserContext(profile);
+  if (!prerender_manager)
+    return false;
+
+  if (!prerender_manager->IsWebContentsPrerendering(web_contents, nullptr))
+    return false;
+
+  IsolatedPrerenderService* service =
+      IsolatedPrerenderServiceFactory::GetForProfile(profile);
+  if (!service)
+    return false;
+
+  std::unique_ptr<PrefetchedMainframeResponseContainer> prefetch =
+      service->TakeResponseForNoStatePrefetch(url_);
+  if (!prefetch)
+    return false;
+
+  InterceptPrefetchedNavigation(tentative_resource_request,
+                                std::move(prefetch));
+  return true;
+}
+
 void IsolatedPrerenderURLLoaderInterceptor::MaybeCreateLoader(
     const network::ResourceRequest& tentative_resource_request,
     content::BrowserContext* browser_context,
@@ -64,6 +96,10 @@ void IsolatedPrerenderURLLoaderInterceptor::MaybeCreateLoader(
   DCHECK(!loader_callback_);
   loader_callback_ = std::move(callback);
   url_ = tentative_resource_request.url;
+
+  // If this method returns true, the navigation has already been intercepted.
+  if (MaybeInterceptNoStatePrefetchNavigation(tentative_resource_request))
+    return;
 
   std::unique_ptr<PrefetchedMainframeResponseContainer> prefetch =
       GetPrefetchedResponse(url_);

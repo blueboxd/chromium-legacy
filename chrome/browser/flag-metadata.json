@@ -4362,11 +4362,6 @@
     "expiry_milestone": 86
   },
   {
-    "name": "webui-a11y-enhancements",
-    "owners": [ "aee" ],
-    "expiry_milestone": 82
-  },
-  {
     "name": "webui-tab-strip",
     "owners": [ "collinbaker", "johntlee" ],
     "expiry_milestone": 85

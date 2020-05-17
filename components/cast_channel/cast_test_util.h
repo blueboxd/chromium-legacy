@@ -79,7 +79,7 @@ class MockCastSocketObserver : public CastSocket::Observer {
                void(const CastSocket& socket, const CastMessage& message));
 };
 
-class MockCastSocketService : public CastSocketServiceImpl {
+class MockCastSocketService : public CastSocketService {
  public:
   explicit MockCastSocketService(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);

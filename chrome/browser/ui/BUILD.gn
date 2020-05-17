@@ -2823,6 +2823,8 @@ static_library("ui") {
       # This test header is included because it contains forward declarations
       # needed for "friend" statements for use in tests.
       "translate/translate_bubble_test_utils.h",
+      "views/accessibility/accessibility_focus_highlight.cc",
+      "views/accessibility/accessibility_focus_highlight.h",
       "views/accessibility/caption_bubble.cc",
       "views/accessibility/caption_bubble.h",
       "views/accessibility/caption_bubble_controller_views.cc",

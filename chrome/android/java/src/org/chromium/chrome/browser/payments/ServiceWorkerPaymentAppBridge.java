@@ -270,11 +270,6 @@ public class ServiceWorkerPaymentAppBridge {
                     onClosingPaymentAppWindowForInsecureNavigation(webContents);
                 }
             }
-
-            @Override
-            public void onDidAttachInterstitialPage(Tab tab) {
-                onClosingPaymentAppWindowForInsecureNavigation(tab.getWebContents());
-            }
         });
     }
 

@@ -88,9 +88,16 @@ bool ShouldSuppressWarning(const GURL& url) {
 }  // namespace
 
 ReputationService::ReputationService(Profile* profile)
-    : profile_(profile),
-      sensitive_keywords_(top500_domains::kTop500Keywords),
-      num_sensitive_keywords_(base::size(top500_domains::kTop500Keywords)) {}
+    : profile_(profile), sensitive_keywords_(top500_domains::kTop500Keywords) {
+  // kTop500Keywords can be padded at the end with blank entries.
+  for (num_sensitive_keywords_ = 0;
+       num_sensitive_keywords_ < base::size(top500_domains::kTop500Keywords);
+       ++num_sensitive_keywords_) {
+    if (strlen(top500_domains::kTop500Keywords[num_sensitive_keywords_]) == 0) {
+      break;
+    }
+  }
+}
 
 ReputationService::~ReputationService() = default;
 

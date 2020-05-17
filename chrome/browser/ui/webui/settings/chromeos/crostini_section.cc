@@ -448,6 +448,49 @@ void CrostiniSection::AddHandlers(content::WebUI* web_ui) {
   }
 }
 
+void CrostiniSection::RegisterHierarchy(HierarchyGenerator* generator) const {
+  generator->RegisterTopLevelSetting(mojom::Setting::kSetUpCrostini);
+
+  // Crostini details.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kCrostiniDetails);
+  static constexpr mojom::Setting kCrostiniDetailsSettings[] = {
+      mojom::Setting::kCrostiniContainerUpgrade,
+      mojom::Setting::kCrostiniDiskResize,
+      mojom::Setting::kCrostiniMicAccess,
+      mojom::Setting::kUninstallCrostini,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kCrostiniDetails,
+                            kCrostiniDetailsSettings, generator);
+
+  // Manage shared folders.
+  generator->RegisterNestedSubpage(mojom::Subpage::kCrostiniManageSharedFolders,
+                                   mojom::Subpage::kCrostiniDetails);
+
+  // USB preferences.
+  generator->RegisterNestedSubpage(mojom::Subpage::kCrostiniUsbPreferences,
+                                   mojom::Subpage::kCrostiniDetails);
+
+  // Backup and restore.
+  generator->RegisterNestedSubpage(mojom::Subpage::kCrostiniBackupAndRestore,
+                                   mojom::Subpage::kCrostiniDetails);
+  static constexpr mojom::Setting kCrostiniBackupAndRestoreSettings[] = {
+      mojom::Setting::kBackupLinuxAppsAndFiles,
+      mojom::Setting::kRestoreLinuxAppsAndFiles,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kCrostiniBackupAndRestore,
+                            kCrostiniBackupAndRestoreSettings, generator);
+
+  // Develop Android apps.
+  generator->RegisterNestedSubpage(mojom::Subpage::kCrostiniDevelopAndroidApps,
+                                   mojom::Subpage::kCrostiniDetails);
+  generator->RegisterNestedSetting(mojom::Setting::kCrostiniAdbDebugging,
+                                   mojom::Subpage::kCrostiniDevelopAndroidApps);
+
+  // Port forwarding.
+  generator->RegisterNestedSubpage(mojom::Subpage::kCrostiniPortForwarding,
+                                   mojom::Subpage::kCrostiniDetails);
+}
+
 bool CrostiniSection::IsCrostiniAllowed() {
   return crostini::CrostiniFeatures::Get()->IsUIAllowed(profile(),
                                                         /*check_policy=*/false);

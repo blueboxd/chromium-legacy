@@ -71,6 +71,11 @@ const std::vector<SearchConcept>& GetNoFineGrainedTimeZoneSearchConcepts() {
   return *tags;
 }
 
+bool IsFineGrainedTimeZoneEnabled() {
+  SystemSettingsProvider provider;
+  return provider.Get(chromeos::kFineGrainedTimeZoneResolveEnabled)->GetBool();
+}
+
 }  // namespace
 
 DateTimeSection::DateTimeSection(Profile* profile,
@@ -78,8 +83,7 @@ DateTimeSection::DateTimeSection(Profile* profile,
     : OsSettingsSection(profile, search_tag_registry) {
   registry()->AddSearchTags(GetDateTimeSearchConcepts());
 
-  SystemSettingsProvider provider;
-  if (provider.Get(chromeos::kFineGrainedTimeZoneResolveEnabled)->GetBool())
+  if (IsFineGrainedTimeZoneEnabled())
     registry()->AddSearchTags(GetFineGrainedTimeZoneSearchConcepts());
   else
     registry()->AddSearchTags(GetNoFineGrainedTimeZoneSearchConcepts());
@@ -131,6 +135,22 @@ void DateTimeSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
 void DateTimeSection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(std::make_unique<DateTimeHandler>());
+}
+
+void DateTimeSection::RegisterHierarchy(HierarchyGenerator* generator) const {
+  generator->RegisterTopLevelSetting(mojom::Setting::k24HourClock);
+
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kTimeZone);
+
+  // When fine-grained time zone is enabled, users change the time zone on the
+  // time zone subpage; otherwise, the setting is directly embedded in the
+  // section.
+  if (IsFineGrainedTimeZoneEnabled()) {
+    generator->RegisterNestedSetting(mojom::Setting::kChangeTimeZone,
+                                     mojom::Subpage::kTimeZone);
+  } else {
+    generator->RegisterTopLevelSetting(mojom::Setting::kChangeTimeZone);
+  }
 }
 
 }  // namespace settings

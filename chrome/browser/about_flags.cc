@@ -3681,10 +3681,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"ntp-webui", flag_descriptions::kNtpWebUIName,
      flag_descriptions::kNtpWebUIDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kWebUI)},
-
-    {"webui-a11y-enhancements", flag_descriptions::kWebUIA11yEnhancementsName,
-     flag_descriptions::kWebUIA11yEnhancementsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kWebUIA11yEnhancements)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(DCHECK_IS_CONFIGURABLE)

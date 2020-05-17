@@ -1430,18 +1430,15 @@ component("net") {
         "cert/known_roots_nss.h",
         "cert/nss_cert_database.cc",
         "cert/nss_cert_database.h",
+        "cert/test_root_certs_builtin.cc",
+        "cert/x509_util_nss.cc",
+        "cert/x509_util_nss.h",
         "third_party/mozilla_security_manager/nsNSSCertificateDB.cpp",
         "third_party/mozilla_security_manager/nsNSSCertificateDB.h",
         "third_party/mozilla_security_manager/nsPKCS12Blob.cpp",
         "third_party/mozilla_security_manager/nsPKCS12Blob.h",
         "third_party/nss/ssl/cmpcert.cc",
         "third_party/nss/ssl/cmpcert.h",
-
-        # These files are part of the partial implementation of NSS for
-        # cert verification, so keep them in that case.
-        "cert/test_root_certs_nss.cc",
-        "cert/x509_util_nss.cc",
-        "cert/x509_util_nss.h",
       ]
       if (!is_chromecast) {
         sources += [
@@ -1461,7 +1458,7 @@ component("net") {
         "base/network_interfaces_fuchsia.cc",
         "base/network_interfaces_fuchsia.h",
         "base/platform_mime_util_fuchsia.cc",
-        "cert/test_root_certs_fuchsia.cc",
+        "cert/test_root_certs_builtin.cc",
       ]
     }
 

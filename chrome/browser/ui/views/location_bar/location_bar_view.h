@@ -154,7 +154,10 @@ class LocationBarView : public LocationBar,
   }
 
   OmniboxViewViews* omnibox_view() { return omnibox_view_; }
-  const OmniboxViewViews* omnibox_view() const { return omnibox_view_; }
+
+  // Sets the additional omnibox text. E.g. the title corresponding to the URL
+  // displayed in the OmniboxView.
+  void SetOmniboxAdditionalText(const base::string16& text);
 
   // Updates the controller, and, if |contents| is non-null, restores saved
   // state that the tab holds.
@@ -298,6 +301,13 @@ class LocationBarView : public LocationBar,
   void OnVisibleBoundsChanged() override;
   void OnFocus() override;
   void OnPaintBorder(gfx::Canvas* canvas) override;
+  // LocationBarView directs mouse button events from OmniboxAdditionalTextView
+  // to OmniboxView so that e.g., clicking the former will focus the latter.
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseMoved(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
 
   // views::DragController:
   void WriteDragDataForView(View* sender,
@@ -341,7 +351,14 @@ class LocationBarView : public LocationBar,
   // May be nullptr in tests.
   Profile* const profile_;
 
+  // The omnibox view where the user types and the current page URL is displayed
+  // when user input is not in progress.
   OmniboxViewViews* omnibox_view_ = nullptr;
+  // The complementary omnibox label displaying the selected suggestion's title
+  // or URL when the omnibox view is displaying the other and when user input is
+  // in progress. Will remain a nullptr if the rich autocompletion
+  // feature flag is disabled.
+  views::Label* omnibox_additional_text_view_ = nullptr;
 
   // Our delegate.
   Delegate* delegate_;

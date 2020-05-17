@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
@@ -87,6 +88,17 @@ class CastMediaRouteProviderTest : public testing::Test {
     EXPECT_FALSE(error);
     EXPECT_EQ(RouteRequestResult::ResultCode::OK, result);
     route_ = std::make_unique<MediaRoute>(*route);
+  }
+
+  void ExpectCreateRouteSuccessWithoutConnections(
+      const base::Optional<MediaRoute>& route,
+      mojom::RoutePresentationConnectionPtr presentation_connections,
+      const base::Optional<std::string>& error,
+      RouteRequestResult::ResultCode result) {
+    EXPECT_TRUE(route);
+    EXPECT_FALSE(presentation_connections);
+    EXPECT_FALSE(error);
+    EXPECT_EQ(RouteRequestResult::ResultCode::OK, result);
   }
 
   void ExpectCreateRouteFailure(
@@ -181,6 +193,66 @@ TEST_F(CastMediaRouteProviderTest, CreateRouteFailsInvalidSource) {
       base::BindOnce(&CastMediaRouteProviderTest::ExpectCreateRouteFailure,
                      base::Unretained(this),
                      RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER));
+}
+
+TEST_F(CastMediaRouteProviderTest, CreateRouteForStreamingFailsInvalidOrigin) {
+  MediaSinkInternal sink = CreateCastSink(1);
+  media_sink_service_.AddOrUpdateSink(sink);
+
+  const auto streaming_source = CastMediaSource::FromAppId(kCastStreamingAppId);
+
+  // origin_ == https://www.youtube.com is not allowed to launch streaming apps.
+  provider_->CreateRoute(
+      streaming_source->source_id(), sink.sink().id(), kPresentationId, origin_,
+      kTabId, kRouteTimeout, /* incognito */ false,
+      base::BindOnce(&CastMediaRouteProviderTest::ExpectCreateRouteFailure,
+                     base::Unretained(this),
+                     RouteRequestResult::ResultCode::INVALID_ORIGIN));
+}
+
+TEST_F(CastMediaRouteProviderTest,
+       CreateRouteForStreamingSucceedsForWhitelistedOrigin) {
+  MediaSinkInternal sink = CreateCastSink(1);
+  media_sink_service_.AddOrUpdateSink(sink);
+
+  const auto streaming_source = CastMediaSource::FromMediaSourceId(
+      base::StrCat({"cast:", kCastStreamingAppId, "?clientId=12345"}));
+
+  EXPECT_CALL(message_handler_, LaunchSession(sink.cast_data().cast_channel_id,
+                                              kCastStreamingAppId,
+                                              kDefaultLaunchTimeout, _, _, _));
+  // Whitelisted origins are allowed to launch streaming apps.
+  provider_->CreateRoute(
+      streaming_source->source_id(), sink.sink().id(), kPresentationId,
+      url::Origin::Create(GURL("https://meet.google.com")), kTabId,
+      kRouteTimeout, /* incognito */ false,
+      base::BindOnce(
+          &CastMediaRouteProviderTest::ExpectCreateRouteSuccessAndSetRoute,
+          base::Unretained(this)));
+}
+
+TEST_F(CastMediaRouteProviderTest,
+       CreateRouteForTabMirroringSucceedsForEmptyOrigin) {
+  MediaSinkInternal sink = CreateCastSink(1);
+  media_sink_service_.AddOrUpdateSink(sink);
+
+  const auto tab_mirroring_source =
+      CastMediaSource::FromMediaSource(MediaSource::ForTab(kTabId));
+
+  EXPECT_CALL(message_handler_, LaunchSession(sink.cast_data().cast_channel_id,
+                                              kCastStreamingAppId,
+                                              kDefaultLaunchTimeout, _, _, _));
+
+  // Empty origins, passed by the browser UI, are allowed to initiate tab
+  // mirroring.
+  // TODO(crbug.com/1047834): Check a specific origin for browser requested
+  // mirroring.
+  provider_->CreateRoute(
+      tab_mirroring_source->source_id(), sink.sink().id(), kPresentationId,
+      url::Origin::Create(GURL()), kTabId, kRouteTimeout, /* incognito */ false,
+      base::BindOnce(&CastMediaRouteProviderTest::
+                         ExpectCreateRouteSuccessWithoutConnections,
+                     base::Unretained(this)));
 }
 
 TEST_F(CastMediaRouteProviderTest, CreateRoute) {

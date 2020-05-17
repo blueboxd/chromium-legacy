@@ -146,31 +146,6 @@
 namespace content {
 namespace {
 
-class InterstitialObserver : public content::WebContentsObserver {
- public:
-  InterstitialObserver(content::WebContents* web_contents,
-                       base::OnceClosure attach_callback,
-                       base::OnceClosure detach_callback)
-      : WebContentsObserver(web_contents),
-        attach_callback_(std::move(attach_callback)),
-        detach_callback_(std::move(detach_callback)) {}
-  ~InterstitialObserver() override {}
-
-  // WebContentsObserver methods:
-  void DidAttachInterstitialPage() override {
-    std::move(attach_callback_).Run();
-  }
-  void DidDetachInterstitialPage() override {
-    std::move(detach_callback_).Run();
-  }
-
- private:
-  base::OnceClosure attach_callback_;
-  base::OnceClosure detach_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(InterstitialObserver);
-};
-
 // Specifying a prototype so that we can add the WARN_UNUSED_RESULT attribute.
 bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
                          const std::string& script,
@@ -1955,32 +1930,6 @@ void FetchHistogramsFromChildProcesses() {
 void SetupCrossSiteRedirector(net::EmbeddedTestServer* embedded_test_server) {
   embedded_test_server->RegisterRequestHandler(base::BindRepeating(
       &CrossSiteRedirectResponseHandler, embedded_test_server));
-}
-
-void WaitForInterstitialAttach(content::WebContents* web_contents) {
-  if (web_contents->ShowingInterstitialPage())
-    return;
-  base::RunLoop run_loop{base::RunLoop::Type::kNestableTasksAllowed};
-  InterstitialObserver observer(web_contents, run_loop.QuitClosure(),
-                                base::OnceClosure());
-  run_loop.Run();
-}
-
-void WaitForInterstitialDetach(content::WebContents* web_contents) {
-  RunTaskAndWaitForInterstitialDetach(web_contents, base::OnceClosure());
-}
-
-void RunTaskAndWaitForInterstitialDetach(content::WebContents* web_contents,
-                                         base::OnceClosure task) {
-  if (!web_contents || !web_contents->ShowingInterstitialPage())
-    return;
-  base::RunLoop run_loop;
-  InterstitialObserver observer(web_contents, base::OnceClosure(),
-                                run_loop.QuitClosure());
-  if (!task.is_null())
-    std::move(task).Run();
-  // At this point, web_contents may have been deleted.
-  run_loop.Run();
 }
 
 bool WaitForRenderFrameReady(RenderFrameHost* rfh) {

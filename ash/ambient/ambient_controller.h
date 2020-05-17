@@ -15,16 +15,10 @@
 #include "ash/public/cpp/ambient/ambient_mode_state.h"
 #include "ash/session/session_observer.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/timer/timer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
 class PrefRegistrySimple;
-
-namespace gfx {
-class ImageSkia;
-}  // namespace gfx
 
 namespace ash {
 
@@ -62,9 +56,7 @@ class ASH_EXPORT AmbientController : public views::WidgetObserver,
   void RequestAccessToken(
       AmbientAccessTokenController::AccessTokenCallback callback);
 
-  AmbientBackendModel* ambient_backend_model() {
-    return &ambient_backend_model_;
-  }
+  AmbientBackendModel* ambient_backend_model();
 
   bool is_showing() const { return !!container_view_; }
 
@@ -79,19 +71,9 @@ class ASH_EXPORT AmbientController : public views::WidgetObserver,
 
  private:
   friend class AmbientAshTestBase;
-  friend class AmbientContainerViewTest;
 
   void CreateContainerView();
   void DestroyContainerView();
-  void RefreshImage();
-  void ScheduleRefreshImage();
-  void GetNextImage();
-  void OnPhotoDownloaded(const gfx::ImageSkia& image);
-
-  // Invoked upon completion of the weather icon download, |icon| can be a null
-  // image if the download attempt from the url failed.
-  void OnWeatherConditionIconDownloaded(base::Optional<float> temp_f,
-                                        const gfx::ImageSkia& icon);
 
   void StartFadeOutAnimation();
 
@@ -103,22 +85,20 @@ class ASH_EXPORT AmbientController : public views::WidgetObserver,
     return container_view_;
   }
 
-  const base::OneShotTimer& get_timer_for_testing() const {
-    return refresh_timer_;
-  }
-
   void set_backend_controller_for_testing(
       std::unique_ptr<AmbientBackendController> photo_client);
 
   AmbientViewDelegateImpl delegate_{this};
+
   AmbientContainerView* container_view_ = nullptr;   // Owned by view hierarchy.
-  AmbientBackendModel ambient_backend_model_;
+
   AmbientModeState ambient_state_;
+
   AmbientAccessTokenController access_token_controller_;
+
   std::unique_ptr<AmbientBackendController> ambient_backend_controller_;
+
   AmbientPhotoController ambient_photo_controller_;
-  base::OneShotTimer refresh_timer_;
-  base::WeakPtrFactory<AmbientController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AmbientController);
 };

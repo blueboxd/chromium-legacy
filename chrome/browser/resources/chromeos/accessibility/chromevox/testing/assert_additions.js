@@ -13,6 +13,19 @@ function assertUndefined(a) {
 }
 
 /**
+ * Asserts that a given argument's value is null or undefined.
+ * @param {object} obj The argument to check.
+ * @param {string=} opt_message Error message if the condition is not met.
+ */
+function assertNullOrUndefined(obj, opt_message) {
+  if (obj !== undefined && obj !== null) {
+    throw new Error(
+        'Must be null or undefined: ' + (opt_message || '') + '\n' +
+        'Actual: ' + obj);
+  }
+}
+
+/**
  * Asserts that the argument is neither null nor undefined.
  * @param {object} obj The argument to check.
  * @param {string=} opt_message Error message if the condition is not met.

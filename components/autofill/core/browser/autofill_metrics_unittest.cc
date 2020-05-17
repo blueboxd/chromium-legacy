@@ -9333,10 +9333,10 @@ TEST_F(AutofillMetricsTest, LogUserHappinessBySecurityLevel) {
     base::HistogramTester histogram_tester;
     AutofillMetrics::LogUserHappinessBySecurityLevel(
         AutofillMetrics::USER_DID_AUTOFILL_ONCE, UNKNOWN_FORM_TYPE,
-        security_state::SecurityLevel::EV_SECURE);
-    histogram_tester.ExpectBucketCount(
-        "Autofill.UserHappiness.Unknown.EV_SECURE",
-        AutofillMetrics::USER_DID_AUTOFILL_ONCE, 1);
+        security_state::SecurityLevel::SECURE);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Unknown.SECURE",
+                                       AutofillMetrics::USER_DID_AUTOFILL_ONCE,
+                                       1);
   }
 
   {
@@ -9648,9 +9648,9 @@ TEST_F(AutofillMetricsTest, LogSaveCardPromptMetricBySecurityLevel) {
     base::HistogramTester histogram_tester;
     AutofillMetrics::LogSaveCardPromptMetricBySecurityLevel(
         AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING,
-        /*is_uploading=*/false, security_state::SecurityLevel::EV_SECURE);
+        /*is_uploading=*/false, security_state::SecurityLevel::SECURE);
     histogram_tester.ExpectBucketCount(
-        "Autofill.SaveCreditCardPrompt.Local.EV_SECURE",
+        "Autofill.SaveCreditCardPrompt.Local.SECURE",
         AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING, 1);
   }
 
@@ -9678,9 +9678,9 @@ TEST_F(AutofillMetricsTest,
         /*is_uploading=*/true, /*is_reshow=*/false,
         AutofillClient::SaveCreditCardOptions(),
         /*previous_save_credit_card_prompt_user_decision=*/1,
-        security_state::SecurityLevel::EV_SECURE, SyncSigninState::kSignedOut);
+        security_state::SecurityLevel::SECURE, SyncSigninState::kSignedOut);
     histogram_tester.ExpectBucketCount(
-        "Autofill.SaveCreditCardPrompt.Upload.EV_SECURE",
+        "Autofill.SaveCreditCardPrompt.Upload.SECURE",
         AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING, 1);
   }
 
@@ -9862,11 +9862,12 @@ TEST_F(AutofillMetricsTest, LogSaveCardPromptMetric_BySyncState) {
         /*is_uploading=*/true, /*is_reshow=*/false,
         AutofillClient::SaveCreditCardOptions(),
         /*previous_save_credit_card_prompt_user_decision=*/1,
-        security_state::SecurityLevel::EV_SECURE, SyncSigninState::kSignedIn);
+        security_state::SecurityLevel::SECURE, SyncSigninState::kSignedIn);
     histogram_tester.ExpectBucketCount(
         "Autofill.SaveCreditCardPrompt.Upload.FirstShow.SignedIn",
         AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING, 1);
   }
+
   {
     base::HistogramTester histogram_tester;
     AutofillMetrics::LogSaveCardPromptMetric(

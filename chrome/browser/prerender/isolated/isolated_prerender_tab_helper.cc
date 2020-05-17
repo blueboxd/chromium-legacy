@@ -285,6 +285,16 @@ IsolatedPrerenderTabHelper::TakePrefetchResponse(const GURL& url) {
   return response;
 }
 
+std::unique_ptr<PrefetchedMainframeResponseContainer>
+IsolatedPrerenderTabHelper::CopyPrefetchResponseForNSP(const GURL& url) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto it = page_->prefetched_responses_.find(url);
+  if (it == page_->prefetched_responses_.end())
+    return nullptr;
+
+  return it->second->Clone();
+}
+
 bool IsolatedPrerenderTabHelper::PrefetchingActive() const {
   return page_ && page_->url_loader_;
 }
@@ -541,6 +551,17 @@ void IsolatedPrerenderTabHelper::DoNoStatePrefetch() {
 
   GURL url = page_->urls_to_no_state_prefetch_[0];
 
+  // Forward a copy of the mainframe response to the browser-level service. This
+  // way the IsolatedPrerenderURLLoaderInterceptor in the PrerenderContents can
+  // use the cached response without having to geta reference to |this|.
+  IsolatedPrerenderService* service =
+      IsolatedPrerenderServiceFactory::GetForProfile(profile_);
+  if (!service) {
+    return;
+  }
+
+  service->OnAboutToNoStatePrefetch(url, CopyPrefetchResponseForNSP(url));
+
   content::SessionStorageNamespace* session_storage_namespace =
       web_contents()->GetController().GetDefaultSessionStorageNamespace();
   gfx::Size size = web_contents()->GetContainerBounds().size();
@@ -550,6 +571,9 @@ void IsolatedPrerenderTabHelper::DoNoStatePrefetch() {
           url, session_storage_namespace, size);
 
   if (!page_->no_state_prefetch_handle_) {
+    // Clean up the prefetch response in |service| since it wasn't used.
+    service->TakeResponseForNoStatePrefetch(url);
+
     // Try the next URL.
     page_->urls_to_no_state_prefetch_.erase(
         page_->urls_to_no_state_prefetch_.begin());

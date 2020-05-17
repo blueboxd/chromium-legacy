@@ -109,7 +109,7 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
                      const SkRect& src,
                      const SkRect& dst,
                      const PaintFlags* flags,
-                     SrcRectConstraint constraint) override;
+                     SkCanvas::SrcRectConstraint constraint) override;
   void drawSkottie(scoped_refptr<SkottieWrapper> skottie,
                    const SkRect& dst,
                    float t) override;

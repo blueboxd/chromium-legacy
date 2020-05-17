@@ -10,18 +10,23 @@ Renderer::Renderer() = default;
 
 Renderer::~Renderer() = default;
 
+void Renderer::SetCdm(CdmContext* cdm_context, CdmAttachedCB cdm_attached_cb) {
+  DLOG(WARNING) << "CdmContext is not supported.";
+  std::move(cdm_attached_cb).Run(false);
+}
+
 void Renderer::OnSelectedVideoTracksChanged(
     const std::vector<DemuxerStream*>& enabled_tracks,
     base::OnceClosure change_completed_cb) {
-  std::move(change_completed_cb).Run();
   DLOG(WARNING) << "Track changes are not supported.";
+  std::move(change_completed_cb).Run();
 }
 
 void Renderer::OnEnabledAudioTracksChanged(
     const std::vector<DemuxerStream*>& enabled_tracks,
     base::OnceClosure change_completed_cb) {
-  std::move(change_completed_cb).Run();
   DLOG(WARNING) << "Track changes are not supported.";
+  std::move(change_completed_cb).Run();
 }
 
 }  // namespace media

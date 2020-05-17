@@ -248,6 +248,23 @@ void SearchSection::AddHandlers(content::WebUI* web_ui) {
       std::make_unique<chromeos::settings::GoogleAssistantHandler>());
 }
 
+void SearchSection::RegisterHierarchy(HierarchyGenerator* generator) const {
+  generator->RegisterTopLevelSetting(mojom::Setting::kPreferredSearchEngine);
+
+  // Assistant.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kAssistant);
+  static constexpr mojom::Setting kAssistantSettings[] = {
+      mojom::Setting::kAssistantOnOff,
+      mojom::Setting::kAssistantRelatedInfo,
+      mojom::Setting::kAssistantQuickAnswers,
+      mojom::Setting::kAssistantOkGoogle,
+      mojom::Setting::kAssistantNotifications,
+      mojom::Setting::kAssistantVoiceInput,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kAssistant, kAssistantSettings,
+                            generator);
+}
+
 void SearchSection::OnAssistantConsentStatusChanged(int consent_status) {
   UpdateAssistantSearchTags();
 }

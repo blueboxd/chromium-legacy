@@ -49,6 +49,11 @@ class IsolatedPrerenderURLLoaderInterceptor
       std::unique_ptr<PrefetchedMainframeResponseContainer>);
   void DoNotInterceptNavigation();
 
+  // Check if this navigation is a NoStatePrefetch and should try to use a
+  // prefetched response. Returns true if the navigation is intercepted.
+  bool MaybeInterceptNoStatePrefetchNavigation(
+      const network::ResourceRequest& tentative_resource_request);
+
   // AvailabilityProber::Delegate:
   bool ShouldSendNextProbe() override;
   bool IsResponseSuccess(net::Error net_error,

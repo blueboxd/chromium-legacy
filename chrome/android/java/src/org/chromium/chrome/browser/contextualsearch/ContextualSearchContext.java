@@ -10,10 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.content_public.browser.WebContents;
 
 /**
  * Provides a context in which to search, and links to the native ContextualSearchContext.
@@ -84,40 +82,16 @@ public abstract class ContextualSearchContext {
     @NonNull
     private String mTargetLanguage = "";
 
+    /**
+     * Support for Related Searches.  When {@code true} this allows the context to resolve even
+     * when the selection is a simple insertion-point.
+     */
+    private boolean mCanResolveInsertionPoint;
+
     /** A {@link ContextualSearchContext} that ignores changes to the selection. */
     static class ChangeIgnoringContext extends ContextualSearchContext {
         @Override
         void onSelectionChanged() {}
-    }
-
-    /**
-     * Returns a {@link ContextualSearchContext} given an insertion point in text.
-     * @param surroundingText The text to use for our context.
-     * @param insertionPointOffset The offset of the insertion point in characters from the start of
-     *        the surrounding text.
-     * @return A {@link ContextualSearchContext} or {@code null} if the insertion point happens to
-     *         miss a word (e.g. it has non-word characters on both sides).
-     */
-    public static @Nullable ContextualSearchContext getContextForInsertionPoint(
-            String surroundingText, int insertionPointOffset) {
-        ContextualSearchContext context = new ChangeIgnoringContext();
-        context.setSurroundingText(
-                "UTF-8", surroundingText, insertionPointOffset, insertionPointOffset);
-        int start = context.findWordStartOffset(insertionPointOffset);
-        int end = context.findWordEndOffset(insertionPointOffset);
-        context.setSurroundingText("UTF-8", surroundingText, start, end, true);
-        if (start < end && start >= 0 && end <= surroundingText.length()) {
-            context.setInitialSelectedWord(surroundingText.substring(start, end));
-        }
-        if (context.hasValidSelection() && !TextUtils.isEmpty(context.getInitialSelectedWord())) {
-            Log.i(TAG, "identified default query: " + context.getWordTapped());
-            // TODO(donnd): figure out which of these parameters should be passed in.
-            context.setResolveProperties("US", true, 0, 0, "");
-            return context;
-        }
-
-        // TODO(donnd): Consider hunting around for a valid word instead of just giving up.
-        return null;
     }
 
     /**
@@ -170,10 +144,25 @@ public abstract class ContextualSearchContext {
      * @param surroundingText The text from the base page surrounding the selection.
      * @param startOffset The offset of start the selection.
      * @param endOffset The offset of the end of the selection
+     * @param canResolveInsertionPoint Whether an insertion-point selection is considered a valid
+     *        selection to pass to the server Resolve request.
      */
-    void setSurroundingText(
-            String encoding, String surroundingText, int startOffset, int endOffset) {
-        setSurroundingText(encoding, surroundingText, startOffset, endOffset, false);
+    void setSurroundingText(String encoding, String surroundingText, int startOffset, int endOffset,
+            boolean canResolveInsertionPoint) {
+        setSurroundingText(
+                encoding, surroundingText, startOffset, endOffset, canResolveInsertionPoint, false);
+    }
+
+    /**
+     * Sets the surrounding text and selection offsets assuming UTF-8 and no insertion-point
+     * support.
+     * @param surroundingText The text from the base page surrounding the selection.
+     * @param startOffset The offset of start the selection.
+     * @param endOffset The offset of the end of the selection
+     */
+    @VisibleForTesting
+    void setSurroundingText(String surroundingText, int startOffset, int endOffset) {
+        setSurroundingText("UTF-8", surroundingText, startOffset, endOffset, false);
     }
 
     /**
@@ -182,15 +171,19 @@ public abstract class ContextualSearchContext {
      * @param surroundingText The text from the base page surrounding the selection.
      * @param startOffset The offset of start the selection.
      * @param endOffset The offset of the end of the selection.
+     * @param canResolveInsertionPoint Whether an insertion-point selection is considered a valid
+     *        selection to pass to the server Resolve request.
      * @param setNative Whether to set the native context too by passing it through JNI.
      */
+    @VisibleForTesting
     void setSurroundingText(String encoding, String surroundingText, int startOffset, int endOffset,
-            boolean setNative) {
+            boolean canResolveInsertionPoint, boolean setNative) {
         assert startOffset <= endOffset;
         mEncoding = encoding;
         mSurroundingText = surroundingText;
         mSelectionStartOffset = startOffset;
         mSelectionEndOffset = endOffset;
+        mCanResolveInsertionPoint = canResolveInsertionPoint;
         if (startOffset == endOffset && startOffset <= surroundingText.length()
                 && !hasAnalyzedTap()) {
             analyzeTap(startOffset);
@@ -206,15 +199,6 @@ public abstract class ContextualSearchContext {
         }
         // Detect the language of the surroundings or the selection.
         setTranslationLanguages(getDetectedLanguage(), mTargetLanguage);
-    }
-
-    /**
-     * Sets the surrounding text to just identify the current selection.
-     * @param selection The current selection on the base page.
-     */
-    void setSurroundingText(WebContents basePageWebContents, String selection) {
-        String encoding = basePageWebContents != null ? basePageWebContents.getEncoding() : null;
-        setSurroundingText(encoding, selection, 0, selection.length());
     }
 
     /**
@@ -380,14 +364,16 @@ public abstract class ContextualSearchContext {
     }
 
     /**
-     * @return Whether this context has a valid selection.
+     * @return Whether this context has a valid selection, which may be an insertion point.
      */
     @VisibleForTesting
     boolean hasValidSelection() {
-        return !TextUtils.isEmpty(mSurroundingText) && mSelectionStartOffset != INVALID_OFFSET
-                && mSelectionEndOffset != INVALID_OFFSET
-                && mSelectionStartOffset < mSelectionEndOffset
-                && mSelectionEndOffset < mSurroundingText.length();
+        boolean validSelectionAllowingInsertionPoint = !TextUtils.isEmpty(mSurroundingText)
+                && mSelectionStartOffset != INVALID_OFFSET && mSelectionEndOffset != INVALID_OFFSET
+                && mSelectionStartOffset <= mSelectionEndOffset
+                && mSelectionEndOffset <= mSurroundingText.length();
+        return validSelectionAllowingInsertionPoint
+                && (mCanResolveInsertionPoint || mSelectionStartOffset < mSelectionEndOffset);
     }
 
     /**

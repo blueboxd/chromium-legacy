@@ -560,6 +560,86 @@ void InternetSection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(std::make_unique<InternetHandler>(profile()));
 }
 
+void InternetSection::RegisterHierarchy(HierarchyGenerator* generator) const {
+  // Ethernet details.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kEthernetDetails);
+  static constexpr mojom::Setting kEthernetDetailsSettings[] = {
+      mojom::Setting::kConfigureEthernet,
+      mojom::Setting::kEthernetAutoConfigureIp,
+      mojom::Setting::kEthernetDns,
+      mojom::Setting::kEthernetProxy,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kEthernetDetails,
+                            kEthernetDetailsSettings, generator);
+
+  // Wi-Fi networks.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kWifiNetworks);
+  generator->RegisterNestedSetting(mojom::Setting::kWifiOnOff,
+                                   mojom::Subpage::kWifiNetworks);
+  generator->RegisterTopLevelAltSetting(mojom::Setting::kWifiOnOff);
+
+  // Wi-Fi details.
+  generator->RegisterNestedSubpage(mojom::Subpage::kWifiDetails,
+                                   mojom::Subpage::kWifiNetworks);
+  static constexpr mojom::Setting kWifiDetailsSettings[] = {
+      mojom::Setting::kDisconnectWifiNetwork,
+      mojom::Setting::kPreferWifiNetwork,
+      mojom::Setting::kForgetWifiNetwork,
+      mojom::Setting::kConfigureWifi,
+      mojom::Setting::kWifiAutoConfigureIp,
+      mojom::Setting::kWifiDns,
+      mojom::Setting::kWifiProxy,
+      mojom::Setting::kWifiAutoConnectToNetwork,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kWifiDetails, kWifiDetailsSettings,
+                            generator);
+
+  // Known networks.
+  generator->RegisterNestedSubpage(mojom::Subpage::kKnownNetworks,
+                                   mojom::Subpage::kWifiNetworks);
+  generator->RegisterNestedAltSetting(mojom::Setting::kPreferWifiNetwork,
+                                      mojom::Subpage::kKnownNetworks);
+  generator->RegisterNestedAltSetting(mojom::Setting::kForgetWifiNetwork,
+                                      mojom::Subpage::kKnownNetworks);
+
+  // Mobile data. If Instant Tethering is available, a mobile data subpage is
+  // available which lists both Cellular and Instant Tethering networks. If
+  // Instant Tethering is not available, there is no mobile data subpage.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kMobileDataNetworks);
+  generator->RegisterNestedSetting(mojom::Setting::kMobileOnOff,
+                                   mojom::Subpage::kMobileDataNetworks);
+  generator->RegisterTopLevelAltSetting(mojom::Setting::kMobileOnOff);
+
+  // Cellular details. Cellular details are considered a child of the mobile
+  // data subpage. However, note that if Instant Tethering is not available,
+  // clicking on "Mobile data" at the Network section navigates users directly
+  // to the cellular details page and skips over the mobile data subpage.
+  generator->RegisterNestedSubpage(mojom::Subpage::kCellularDetails,
+                                   mojom::Subpage::kMobileDataNetworks);
+  static constexpr mojom::Setting kCellularDetailsSettings[] = {
+      mojom::Setting::kCellularSimLock,
+      mojom::Setting::kCellularRoaming,
+      mojom::Setting::kCellularApn,
+      mojom::Setting::kDisconnectCellularNetwork,
+      mojom::Setting::kCellularAutoConfigureIp,
+      mojom::Setting::kCellularDns,
+      mojom::Setting::kCellularProxy,
+      mojom::Setting::kCellularAutoConnectToNetwork,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kCellularDetails,
+                            kCellularDetailsSettings, generator);
+
+  // Instant Tethering. Although this is a multi-device feature, its UI resides
+  // in the network section.
+  generator->RegisterNestedSubpage(mojom::Subpage::kTetherDetails,
+                                   mojom::Subpage::kMobileDataNetworks);
+  generator->RegisterNestedSetting(mojom::Setting::kInstantTetheringOnOff,
+                                   mojom::Subpage::kMobileDataNetworks);
+
+  // VPN.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kVpnDetails);
+}
+
 void InternetSection::OnDeviceStateListChanged() {
   FetchDeviceList();
 }

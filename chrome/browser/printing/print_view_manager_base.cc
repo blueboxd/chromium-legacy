@@ -132,8 +132,8 @@ PrintViewManagerBase::~PrintViewManagerBase() {
 bool PrintViewManagerBase::PrintNow(content::RenderFrameHost* rfh) {
   DisconnectFromCurrentPrintJob();
 
-  // Don't print / print preview interstitials or crashed tabs.
-  if (IsInterstitialOrCrashed())
+  // Don't print / print preview crashed tabs.
+  if (IsCrashed())
     return false;
 
   SetPrintingRFH(rfh);
@@ -703,16 +703,15 @@ bool PrintViewManagerBase::OpportunisticallyCreatePrintJob(int cookie) {
   return true;
 }
 
-bool PrintViewManagerBase::IsInterstitialOrCrashed() {
-  return web_contents()->ShowingInterstitialPage() ||
-         web_contents()->IsCrashed();
+bool PrintViewManagerBase::IsCrashed() {
+  return web_contents()->IsCrashed();
 }
 
 bool PrintViewManagerBase::PrintNowInternal(
     content::RenderFrameHost* rfh,
     std::unique_ptr<IPC::Message> message) {
-  // Don't print / print preview interstitials or crashed tabs.
-  if (IsInterstitialOrCrashed())
+  // Don't print / print preview crashed tabs.
+  if (IsCrashed())
     return false;
   return rfh->Send(message.release());
 }

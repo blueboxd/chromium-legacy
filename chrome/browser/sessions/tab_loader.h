@@ -19,7 +19,6 @@
 #include "chrome/browser/sessions/session_restore_delegate.h"
 #include "chrome/browser/sessions/tab_loader_delegate.h"
 
-class SessionRestoreStatsCollector;
 class TabLoaderTester;
 
 // TabLoader is responsible for loading tabs after session restore has finished
@@ -93,7 +92,7 @@ class TabLoader : public base::RefCounted<TabLoader>,
   using TabSet = base::flat_set<content::WebContents*>;
   using TabVector = std::vector<std::pair<float, content::WebContents*>>;
 
-  explicit TabLoader(base::TimeTicks restore_started);
+  TabLoader();
   ~TabLoader() override;
 
   // TabLoaderCallback:
@@ -291,11 +290,6 @@ class TabLoader : public base::RefCounted<TabLoader>,
   // For keeping TabLoader alive while it's loading even if no
   // SessionRestoreImpls reference it.
   scoped_refptr<TabLoader> this_retainer_;
-
-  // The SessionRestoreStatsCollector associated with this TabLoader. This is
-  // explicitly referenced so that it can be notified of deferred tab loads due
-  // to memory pressure.
-  scoped_refptr<SessionRestoreStatsCollector> stats_collector_;
 
   // The tick clock used by this class. This is used as a testing seam. If not
   // overridden it defaults to a base::DefaultTickClock.

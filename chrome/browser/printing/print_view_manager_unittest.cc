@@ -42,8 +42,8 @@ class TestPrintViewManager : public PrintViewManagerBase {
   // Mostly copied from PrintViewManager::PrintPreviewNow(). We can't override
   // PrintViewManager since it is a user data class.
   bool PrintPreviewNow(content::RenderFrameHost* rfh, bool has_selection) {
-    // Don't print / print preview interstitials or crashed tabs.
-    if (IsInterstitialOrCrashed())
+    // Don't print / print preview crashed tabs.
+    if (IsCrashed())
       return false;
 
     mojo::AssociatedRemote<mojom::PrintRenderFrame> print_render_frame;

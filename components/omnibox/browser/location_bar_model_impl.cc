@@ -156,8 +156,7 @@ bool LocationBarModelImpl::GetDisplaySearchTerms(base::string16* search_terms) {
       delegate_->GetVisibleSecurityState();
   security_state::SecurityLevel security_level = delegate_->GetSecurityLevel();
   if (visible_security_state->connection_info_initialized &&
-      security_level != security_state::SecurityLevel::SECURE &&
-      security_level != security_state::SecurityLevel::EV_SECURE) {
+      security_level != security_state::SecurityLevel::SECURE) {
     return false;
   }
 
@@ -231,7 +230,6 @@ const gfx::VectorIcon& LocationBarModelImpl::GetVectorIcon() const {
         return omnibox::kNotSecureWarningIcon;
       }
       return omnibox::kHttpIcon;
-    case security_state::EV_SECURE:
     case security_state::SECURE:
       return omnibox::kHttpsValidIcon;
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
@@ -253,7 +251,8 @@ const gfx::VectorIcon& LocationBarModelImpl::GetVectorIcon() const {
 
 base::string16 LocationBarModelImpl::GetSecureDisplayText() const {
   // Note that display text will be implicitly used as the accessibility text.
-  // GetSecureAccessibilityText() handles special cases when no display text is set.
+  // GetSecureAccessibilityText() handles special cases when no display text is
+  // set.
 
   if (IsOfflinePage())
     return l10n_util::GetStringUTF16(IDS_OFFLINE_VERBOSE_STATE);
@@ -261,7 +260,6 @@ base::string16 LocationBarModelImpl::GetSecureDisplayText() const {
   switch (GetSecurityLevel()) {
     case security_state::WARNING:
       return l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE);
-    case security_state::EV_SECURE:
     case security_state::SECURE:
       return base::string16();
     case security_state::DANGEROUS: {
@@ -298,7 +296,6 @@ base::string16 LocationBarModelImpl::GetSecureAccessibilityText() const {
     return display_text;
 
   switch (GetSecurityLevel()) {
-    case security_state::EV_SECURE:
     case security_state::SECURE:
       return l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE);
     default:

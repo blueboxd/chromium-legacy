@@ -304,12 +304,9 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
       owner_->SendNodesRemovedEvent(&tree_, deleted_node_ids_);
 
       if (update.nodes.size() && did_send_tree_change_during_unserialization_) {
-        ui::AXNode* target = tree_.GetFromId(update.nodes[0].id);
-        if (target) {
-          owner_->SendTreeChangeEvent(
-              api::automation::TREE_CHANGE_TYPE_SUBTREEUPDATEEND, &tree_,
-              target);
-        }
+        owner_->SendTreeChangeEvent(
+            api::automation::TREE_CHANGE_TYPE_SUBTREEUPDATEEND, &tree_,
+            tree_.root());
       }
     }
   }

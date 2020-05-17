@@ -270,5 +270,19 @@ void AboutSection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(std::make_unique<::settings::AboutHandler>());
 }
 
+void AboutSection::RegisterHierarchy(HierarchyGenerator* generator) const {
+  // About Chrome OS.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kAboutChromeOsDetails);
+
+  // Detailed build info.
+  generator->RegisterNestedSubpage(mojom::Subpage::kDetailedBuildInfo,
+                                   mojom::Subpage::kAboutChromeOsDetails);
+  static constexpr mojom::Setting kDetailedBuildInfoSettings[] = {
+      mojom::Setting::kChangeChromeChannel,
+      mojom::Setting::kCopyDetailedBuildInfo};
+  RegisterNestedSettingBulk(mojom::Subpage::kDetailedBuildInfo,
+                            kDetailedBuildInfoSettings, generator);
+}
+
 }  // namespace settings
 }  // namespace chromeos

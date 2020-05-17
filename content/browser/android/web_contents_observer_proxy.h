@@ -58,8 +58,6 @@ class WebContentsObserverProxy : public WebContentsObserver {
   void NavigationEntryChanged(
       const EntryChangedDetails& change_details) override;
   void WebContentsDestroyed() override;
-  void DidAttachInterstitialPage() override;
-  void DidDetachInterstitialPage() override;
   void DidChangeThemeColor() override;
   void MediaEffectivelyFullscreenChanged(bool is_fullscreen) override;
   void SetToBaseURLForDataURLIfNeeded(std::string* url);

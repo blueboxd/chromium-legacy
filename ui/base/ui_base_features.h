@@ -94,9 +94,6 @@ COMPONENT_EXPORT(UI_BASE_FEATURES)
 bool IsNewShortcutMappingEnabled();
 #endif
 
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const base::Feature kWebUIA11yEnhancements;
-
 // Indicates whether DrmOverlayManager should used the synchronous API to
 // perform pageflip tests.
 COMPONENT_EXPORT(UI_BASE_FEATURES)

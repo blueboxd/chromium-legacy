@@ -963,7 +963,7 @@ TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUse) {
   bridge->GetPaintCanvas()->drawImage(images[0].paint_image(), 0u, 0u, nullptr);
   bridge->GetPaintCanvas()->drawImageRect(
       images[1].paint_image(), SkRect::MakeWH(5u, 5u), SkRect::MakeWH(5u, 5u),
-      nullptr, cc::PaintCanvas::kFast_SrcRectConstraint);
+      nullptr, SkCanvas::kFast_SrcRectConstraint);
   bridge->NewImageSnapshot(kPreferAcceleration);
 
   EXPECT_EQ(image_decode_cache_.decoded_images(), images);
@@ -987,7 +987,7 @@ TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUseWithColorConversion) {
   bridge->GetPaintCanvas()->drawImage(images[0].paint_image(), 0u, 0u, nullptr);
   bridge->GetPaintCanvas()->drawImageRect(
       images[1].paint_image(), SkRect::MakeWH(5u, 5u), SkRect::MakeWH(5u, 5u),
-      nullptr, cc::PaintCanvas::kFast_SrcRectConstraint);
+      nullptr, SkCanvas::kFast_SrcRectConstraint);
   bridge->NewImageSnapshot(kPreferAcceleration);
 
   EXPECT_EQ(image_decode_cache_.decoded_images(), images);

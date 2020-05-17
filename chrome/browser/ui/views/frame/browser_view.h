@@ -54,6 +54,7 @@
 // NOTE: For more information about the objects and files in this directory,
 // view: http://dev.chromium.org/developers/design-documents/browser-window
 
+class AccessibilityFocusHighlight;
 class BookmarkBarView;
 class Browser;
 class ContentsLayoutManager;
@@ -877,6 +878,8 @@ class BrowserView : public BrowserWindow,
   ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
 
   bool interactive_resize_in_progress_ = false;
+
+  std::unique_ptr<AccessibilityFocusHighlight> accessibility_focus_highlight_;
 
   mutable base::WeakPtrFactory<BrowserView> activate_modal_dialog_factory_{
       this};

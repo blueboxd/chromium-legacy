@@ -479,7 +479,6 @@ class SSLUITestBase : public InProcessBrowserTest,
 
   virtual void DontProceedThroughInterstitial(WebContents* tab) {
     SendInterstitialCommand(tab, security_interstitials::CMD_DONT_PROCEED);
-    WaitForInterstitialDetach(tab);
   }
 
   void SendInterstitialCommand(
@@ -4565,7 +4564,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   content::SSLStatus interstitial_ssl_status = entry->GetSSL();
 
   ProceedThroughInterstitial(tab);
-  EXPECT_FALSE(tab->ShowingInterstitialPage());
+  EXPECT_FALSE(chrome_browser_interstitials::IsShowingInterstitial(tab));
   entry = tab->GetController().GetLastCommittedEntry();
   ASSERT_TRUE(entry);
 
@@ -4856,7 +4855,7 @@ IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest, ReloadBeforeTimeoutExpires) {
 
   // Make sure that the |SSLErrorHandler| is deleted.
   EXPECT_FALSE(SSLErrorHandler::FromWebContents(contents));
-  EXPECT_FALSE(contents->ShowingInterstitialPage());
+  EXPECT_FALSE(chrome_browser_interstitials::IsShowingInterstitial(contents));
   EXPECT_FALSE(contents->IsLoading());
 
   // Navigate away, and then trigger the network time response and wait
@@ -4895,7 +4894,7 @@ IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest,
 
   // Make sure that the |SSLErrorHandler| is deleted.
   EXPECT_FALSE(SSLErrorHandler::FromWebContents(contents));
-  EXPECT_FALSE(contents->ShowingInterstitialPage());
+  EXPECT_FALSE(chrome_browser_interstitials::IsShowingInterstitial(contents));
   EXPECT_FALSE(contents->IsLoading());
 
   // Navigate away, and then trigger the network time response and wait

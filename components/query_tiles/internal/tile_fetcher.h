@@ -36,6 +36,7 @@ class TileFetcher {
       const std::string& accept_languages,
       const std::string& api_key,
       const std::string& experiment_tag,
+      const std::string& client_version,
       const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   // Start the fetch to download tiles.

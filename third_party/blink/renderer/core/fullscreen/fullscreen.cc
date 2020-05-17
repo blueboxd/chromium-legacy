@@ -650,6 +650,9 @@ ScriptPromise Fullscreen::RequestFullscreen(Element& pending,
 
 void Fullscreen::DidResolveEnterFullscreenRequest(Document& document,
                                                   bool granted) {
+  if (!document.domWindow())
+    return;
+
   // We may be called synchronously from within
   // |FullscreenController::EnterFullscreen()| if we were already fullscreen,
   // but must still not synchronously change the fullscreen element. Instead

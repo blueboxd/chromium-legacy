@@ -7,10 +7,6 @@
 
 #include "build/build_config.h"
 
-#if defined(USE_NSS_CERTS)
-#include <secoidt.h>
-#endif
-
 #include <map>
 #include <set>
 #include <string>
@@ -42,9 +38,7 @@ class Input;
 // extended-validation (EV) certificates.
 class NET_EXPORT_PRIVATE EVRootCAMetadata {
  public:
-#if defined(USE_NSS_CERTS)
-  typedef SECOidTag PolicyOID;
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   typedef const char* PolicyOID;
 #else
   // DER-encoded OID value (no tag or length).
@@ -90,16 +84,7 @@ class NET_EXPORT_PRIVATE EVRootCAMetadata {
   EVRootCAMetadata();
   ~EVRootCAMetadata();
 
-#if defined(USE_NSS_CERTS)
-  using PolicyOIDMap = std::map<SHA256HashValue, std::vector<PolicyOID>>;
-
-  // RegisterOID registers |policy|, a policy OID in dotted string form, and
-  // writes the memoized form to |*out|. It returns true on success.
-  static bool RegisterOID(const char* policy, PolicyOID* out);
-
-  PolicyOIDMap ev_policy_;
-  std::set<PolicyOID> policy_oids_;
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   using ExtraEVCAMap = std::map<SHA256HashValue, std::string>;
 
   // extra_cas_ contains any EV CA metadata that was added at runtime.

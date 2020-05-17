@@ -3814,6 +3814,93 @@ TEST_F(AXPlatformNodeWinTest, UIAGetPropertyValueIsDialog) {
                      UIA_IsDialogPropertyId, true);
 }
 
+TEST_F(AXPlatformNodeWinTest,
+       UIAGetPropertyValueIsControlElementIgnoredInvisible) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids = {2, 3, 4, 5, 6, 7, 8};
+
+  AXNodeData normal_button;
+  normal_button.id = 2;
+  normal_button.role = ax::mojom::Role::kButton;
+
+  AXNodeData ignored_button;
+  ignored_button.id = 3;
+  ignored_button.role = ax::mojom::Role::kButton;
+  ignored_button.AddState(ax::mojom::State::kIgnored);
+
+  AXNodeData invisible_button;
+  invisible_button.id = 4;
+  invisible_button.role = ax::mojom::Role::kButton;
+  invisible_button.AddState(ax::mojom::State::kInvisible);
+
+  AXNodeData invisible_focusable_button;
+  invisible_focusable_button.id = 5;
+  invisible_focusable_button.role = ax::mojom::Role::kButton;
+  invisible_focusable_button.AddState(ax::mojom::State::kInvisible);
+  invisible_focusable_button.AddState(ax::mojom::State::kFocusable);
+
+  AXNodeData focusable_generic_container;
+  focusable_generic_container.id = 6;
+  focusable_generic_container.role = ax::mojom::Role::kGenericContainer;
+  focusable_generic_container.AddState(ax::mojom::State::kFocusable);
+
+  AXNodeData ignored_focusable_generic_container;
+  ignored_focusable_generic_container.id = 7;
+  ignored_focusable_generic_container.role = ax::mojom::Role::kGenericContainer;
+  ignored_focusable_generic_container.AddState(ax::mojom::State::kIgnored);
+  focusable_generic_container.AddState(ax::mojom::State::kFocusable);
+
+  AXNodeData invisible_focusable_generic_container;
+  invisible_focusable_generic_container.id = 8;
+  invisible_focusable_generic_container.role =
+      ax::mojom::Role::kGenericContainer;
+  invisible_focusable_generic_container.AddState(ax::mojom::State::kInvisible);
+  invisible_focusable_generic_container.AddState(ax::mojom::State::kFocusable);
+
+  Init(root, normal_button, ignored_button, invisible_button,
+       invisible_focusable_button, focusable_generic_container,
+       ignored_focusable_generic_container,
+       invisible_focusable_generic_container);
+
+  // Turn on web content mode for the AXTree.
+  TestAXNodeWrapper::SetGlobalIsWebContent(true);
+
+  // Normal button (id=2), no invisible or ignored state set. Should be a
+  // control element.
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromChildIndex(0),
+                     UIA_IsControlElementPropertyId, true);
+
+  // Button with ignored state (id=3). Should not be a control element.
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromChildIndex(1),
+                     UIA_IsControlElementPropertyId, false);
+
+  // Button with invisible state (id=4). Should not be a control element.
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromChildIndex(2),
+                     UIA_IsControlElementPropertyId, false);
+
+  // Button with invisible state, but focusable (id=5). Should not be a control
+  // element.
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromChildIndex(3),
+                     UIA_IsControlElementPropertyId, false);
+
+  // Generic container, focusable (id=6). Should be a control
+  // element.
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromChildIndex(4),
+                     UIA_IsControlElementPropertyId, true);
+
+  // Generic container, ignored but focusable (id=7). Should not be a control
+  // element.
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromChildIndex(5),
+                     UIA_IsControlElementPropertyId, false);
+
+  // Generic container, invisible and ignored, but focusable (id=8). Should not
+  // be a control element.
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromChildIndex(6),
+                     UIA_IsControlElementPropertyId, false);
+}
+
 TEST_F(AXPlatformNodeWinTest, UIAGetControllerForPropertyId) {
   AXNodeData root;
   root.id = 1;

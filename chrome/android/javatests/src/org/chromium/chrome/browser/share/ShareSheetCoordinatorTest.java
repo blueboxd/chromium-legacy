@@ -154,6 +154,21 @@ public final class ShareSheetCoordinatorTest {
 
     @Test
     @MediumTest
+    public void disableFirstPartyFeatures() {
+        ShareSheetCoordinator coordinator =
+                new ShareSheetCoordinator(null, null, mPropertyModelBuilder, mPrefServiceBridge);
+        coordinator.disableFirstPartyFeaturesForTesting();
+        Activity activity = mActivityTestRule.getActivity();
+
+        ShareSheetBottomSheetContent bottomSheet = new ShareSheetBottomSheetContent(activity);
+
+        ArrayList<PropertyModel> propertyModels =
+                coordinator.createTopRowPropertyModels(bottomSheet, activity);
+        Assert.assertEquals("Property model list should be empty.", 0, propertyModels.size());
+    }
+
+    @Test
+    @MediumTest
     public void testCreateBottomRowPropertyModels() {
         ShareSheetCoordinator coordinator =
                 new ShareSheetCoordinator(null, null, mPropertyModelBuilder, mPrefServiceBridge);

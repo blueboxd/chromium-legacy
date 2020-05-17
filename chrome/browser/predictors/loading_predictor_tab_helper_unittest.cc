@@ -380,9 +380,7 @@ TEST_F(LoadingPredictorTabHelperOptimizationGuideDeciderTest,
   url::Origin main_frame_origin = url::Origin::Create(GURL("http://test.org"));
   PreconnectPrediction preconnect_prediction = CreatePreconnectPrediction(
       "", false,
-      {{url::Origin::Create(GURL("http://test.org")), 1,
-        net::NetworkIsolationKey(main_frame_origin, main_frame_origin)},
-       {url::Origin::Create(GURL("http://other.org")), 1,
+      {{url::Origin::Create(GURL("http://other.org")), 1,
         net::NetworkIsolationKey(main_frame_origin, main_frame_origin)}});
   prediction->preconnect_prediction = preconnect_prediction;
   prediction->predicted_subresources = {GURL("http://test.org/resource1"),
@@ -440,9 +438,7 @@ TEST_F(LoadingPredictorTabHelperOptimizationGuideDeciderTest,
   url::Origin main_frame_origin = url::Origin::Create(GURL("http://test.org"));
   PreconnectPrediction preconnect_prediction = CreatePreconnectPrediction(
       "", false,
-      {{url::Origin::Create(GURL("http://test.org")), 1,
-        net::NetworkIsolationKey(main_frame_origin, main_frame_origin)},
-       {url::Origin::Create(GURL("http://other.org")), 1,
+      {{url::Origin::Create(GURL("http://other.org")), 1,
         net::NetworkIsolationKey(main_frame_origin, main_frame_origin)}});
   prediction->preconnect_prediction = preconnect_prediction;
   prediction->predicted_subresources = {GURL("http://test.org/resource1"),

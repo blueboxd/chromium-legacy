@@ -165,7 +165,6 @@ function sendMessageToOther() {
     chrome.runtime.sendMessage('ocacnieaapoflmkebkeaidpgfngocapl',
         'knock knock',
         function response() {
-          console.log("who's there?");
           appendCompleted('sendMessageToOther');
         });
   } catch (err) {
@@ -452,7 +451,6 @@ function appendCompleted(str) {
     }
   }
   completed += 1;
-  console.log('Completed ' + str);
 }
 
 function appendError(str) {

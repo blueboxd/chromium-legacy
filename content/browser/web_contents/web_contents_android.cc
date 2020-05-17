@@ -445,12 +445,6 @@ void WebContentsAndroid::SetAudioMuted(JNIEnv* env,
   web_contents_->SetAudioMuted(mute);
 }
 
-jboolean WebContentsAndroid::IsShowingInterstitialPage(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return web_contents_->ShowingInterstitialPage();
-}
-
 jboolean WebContentsAndroid::FocusLocationBarByDefault(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {

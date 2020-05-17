@@ -161,8 +161,6 @@ class ChromeAutofillClient
   // content::WebContentsObserver implementation.
   void MainFrameWasResized(bool width_changed) override;
   void WebContentsDestroyed() override;
-  // Hide autofill popup if an interstitial is shown.
-  void DidAttachInterstitialPage() override;
 
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_for_testing() {
     return popup_controller_;

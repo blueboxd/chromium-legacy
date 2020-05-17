@@ -11,6 +11,9 @@
 #include "base/hash/hash.h"
 #include "url/gurl.h"
 
+// TODO(takumif): Move all Chromecast-specific constants out of this file, since
+// they are not directly related to MediaSource.
+
 namespace media_router {
 
 // URL schemes used by Presentation URLs for Cast and DIAL.
@@ -28,9 +31,6 @@ constexpr char kLegacyCastPresentationUrlPrefix[] =
 constexpr char kMirroringAppUri[] = "cast:0F5096E8";
 
 // Strings used in presentation IDs by the Cast SDK implementation.
-// TODO(takumif): Move them out of this file, since they are not directly
-// related to MediaSource.
-//
 // This value must be the same as |chrome.cast.AUTO_JOIN_PRESENTATION_ID| in the
 // component extension.
 constexpr char kAutoJoinPresentationId[] = "auto-join";

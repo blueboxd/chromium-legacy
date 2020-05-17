@@ -30,6 +30,7 @@ class ShareSheetCoordinator {
     private final ShareSheetPropertyModelBuilder mPropertyModelBuilder;
     private final PrefServiceBridge mPrefServiceBridge;
     private long mShareStartTime;
+    private boolean mExcludeFirstParty;
 
     /**
      * Constructs a new ShareSheetCoordinator.
@@ -43,6 +44,7 @@ class ShareSheetCoordinator {
         mActivityTabProvider = provider;
         mPropertyModelBuilder = modelBuilder;
         mPrefServiceBridge = prefServiceBridge;
+        mExcludeFirstParty = false;
     }
 
     void showShareSheet(ShareParams params, long shareStartTime) {
@@ -68,6 +70,12 @@ class ShareSheetCoordinator {
         }
     }
 
+    // Used by first party features to share with only non-chrome apps.
+    protected void showThirdPartyShareSheet(ShareParams params) {
+        mExcludeFirstParty = true;
+        showShareSheet(params, System.currentTimeMillis());
+    }
+
     @VisibleForTesting
     ArrayList<PropertyModel> createTopRowPropertyModels(
             ShareSheetBottomSheetContent bottomSheet, Activity activity) {
@@ -75,7 +83,9 @@ class ShareSheetCoordinator {
                 new ChromeProvidedSharingOptionsProvider(activity, mActivityTabProvider,
                         mBottomSheetController, bottomSheet, mShareStartTime);
         ArrayList<PropertyModel> models = new ArrayList<>();
-
+        if (mExcludeFirstParty) {
+            return models;
+        }
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_SCREENSHOT)) {
             models.add(chromeProvidedSharingOptionsProvider.createScreenshotPropertyModel());
         }
@@ -108,5 +118,10 @@ class ShareSheetCoordinator {
         models.add(morePropertyModel);
 
         return models;
+    }
+
+    @VisibleForTesting
+    protected void disableFirstPartyFeaturesForTesting() {
+        mExcludeFirstParty = true;
     }
 }

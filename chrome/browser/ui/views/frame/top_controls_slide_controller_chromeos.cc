@@ -56,8 +56,7 @@ content::BrowserControlsState GetBrowserControlsStateConstraints(
   DCHECK(contents);
 
   if (!IsTabletModeEnabled() || contents->IsFullscreen() ||
-      contents->IsFocusedElementEditable() ||
-      contents->ShowingInterstitialPage() || contents->IsBeingDestroyed() ||
+      contents->IsFocusedElementEditable() || contents->IsBeingDestroyed() ||
       contents->IsCrashed() || IsSpokenFeedbackEnabled()) {
     return content::BROWSER_CONTROLS_STATE_SHOWN;
   }
@@ -86,7 +85,6 @@ content::BrowserControlsState GetBrowserControlsStateConstraints(
     // Force compiler failure if new security level types were added without
     // this being updated.
     case security_state::NONE:
-    case security_state::EV_SECURE:
     case security_state::SECURE:
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
     case security_state::SECURITY_LEVEL_COUNT:
@@ -202,14 +200,6 @@ class TopControlsSlideTabObserver
   }
 
   void DidChangeVisibleSecurityState() override {
-    UpdateBrowserControlsStateShown(/*animate=*/true);
-  }
-
-  void DidAttachInterstitialPage() override {
-    UpdateBrowserControlsStateShown(/*animate=*/true);
-  }
-
-  void DidDetachInterstitialPage() override {
     UpdateBrowserControlsStateShown(/*animate=*/true);
   }
 

@@ -63,7 +63,6 @@ import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.KeyboardNavigationListener;
@@ -2422,8 +2421,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
     private boolean hideShadowForInterstitial() {
         return getToolbarDataProvider() != null && getToolbarDataProvider().getTab() != null
-                && (((TabImpl) getToolbarDataProvider().getTab()).isShowingInterstitialPage()
-                        || getToolbarDataProvider().getTab().isShowingErrorPage());
+                && (getToolbarDataProvider().getTab().isShowingErrorPage());
     }
 
     private @VisualState int computeVisualState() {

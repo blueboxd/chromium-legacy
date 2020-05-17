@@ -45,7 +45,7 @@ class ExtensionMessagePort::FrameTracker : public content::WebContentsObserver,
                                            public ProcessManagerObserver {
  public:
   explicit FrameTracker(ExtensionMessagePort* port)
-      : pm_observer_(this), port_(port), interstitial_frame_(nullptr) {}
+      : pm_observer_(this), port_(port) {}
   ~FrameTracker() override {}
 
   void TrackExtensionProcessFrames() {
@@ -53,17 +53,6 @@ class ExtensionMessagePort::FrameTracker : public content::WebContentsObserver,
   }
 
   void TrackTabFrames(content::WebContents* tab) {
-    Observe(tab);
-  }
-
-  void TrackInterstitialFrame(content::WebContents* tab,
-                              content::RenderFrameHost* interstitial_frame) {
-    // |tab| should never be nullptr, because an interstitial's lifetime is
-    // tied to a tab. This is a CHECK, not a DCHECK because we really need an
-    // observer subject to detect frame removal (via DidDetachInterstitialPage).
-    CHECK(tab);
-    DCHECK(interstitial_frame);
-    interstitial_frame_ = interstitial_frame;
     Observe(tab);
   }
 
@@ -82,11 +71,6 @@ class ExtensionMessagePort::FrameTracker : public content::WebContentsObserver,
     }
   }
 
-  void DidDetachInterstitialPage() override {
-    if (interstitial_frame_)
-      port_->UnregisterFrame(interstitial_frame_);
-  }
-
   // extensions::ProcessManagerObserver overrides:
   void OnExtensionFrameUnregistered(
       const std::string& extension_id,
@@ -101,11 +85,6 @@ class ExtensionMessagePort::FrameTracker : public content::WebContentsObserver,
 
   ScopedObserver<ProcessManager, ProcessManagerObserver> pm_observer_;
   ExtensionMessagePort* port_;  // Owns this FrameTracker.
-
-  // Set to the main frame of an interstitial if we are tracking an interstitial
-  // page, because RenderFrameDeleted is never triggered for frames in an
-  // interstitial (and we only support tracking the interstitial's main frame).
-  content::RenderFrameHost* interstitial_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTracker);
 };

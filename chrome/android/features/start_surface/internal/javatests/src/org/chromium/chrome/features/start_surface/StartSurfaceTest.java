@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.features.start_surface;
 
+import static android.os.Build.VERSION_CODES.P;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.Espresso.pressBack;
 import static android.support.test.espresso.action.ViewActions.click;
@@ -59,7 +60,6 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -210,7 +210,6 @@ public class StartSurfaceTest {
     @MediumTest
     @Feature({"StartSurface"})
     @DisableIf.Build(hardware_is = "bullhead", message = "crbug.com/1081657")
-    @DisabledTest(message = "crbug.com/1083174")
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/omniboxonly" +
             "/hide_switch_when_no_incognito_tabs/true"})
@@ -796,7 +795,7 @@ public class StartSurfaceTest {
     @MediumTest
     @Feature({"StartSurface"})
     // clang-format off
-    @DisableIf.Build(hardware_is = "bullhead", message = "crbug.com/1081657")
+    @DisableIf.Build(sdk_is_less_than = P, message = "crbug.com/1083174")
     @CommandLineFlags.Add({BASE_PARAMS + "/omniboxonly" +
         "/hide_switch_when_no_incognito_tabs/true/omnibox_scroll_mode/quick"})
     public void testScroll_OmniboxOnly_Quick() {

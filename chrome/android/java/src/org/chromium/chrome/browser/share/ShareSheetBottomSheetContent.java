@@ -63,8 +63,14 @@ public class ShareSheetBottomSheetContent implements BottomSheetContent, OnItemC
     public void createRecyclerViews(
             ArrayList<PropertyModel> topRowModels, ArrayList<PropertyModel> bottomRowModels) {
         RecyclerView topRow = this.getContentView().findViewById(R.id.share_sheet_chrome_apps);
-        populateView(topRowModels, topRow);
-        topRow.addOnScrollListener(new ScrollEventReporter("SharingHubAndroid.TopRowScrolled"));
+        if (topRowModels != null && topRowModels.size() > 0) {
+            View divider = this.getContentView().findViewById(R.id.share_sheet_divider);
+            divider.setVisibility(View.VISIBLE);
+            topRow.setVisibility(View.VISIBLE);
+            populateView(topRowModels, topRow);
+            topRow.addOnScrollListener(new ScrollEventReporter("SharingHubAndroid.TopRowScrolled"));
+        }
+
         RecyclerView bottomRow = this.getContentView().findViewById(R.id.share_sheet_other_apps);
         populateView(
                 bottomRowModels, this.getContentView().findViewById(R.id.share_sheet_other_apps));

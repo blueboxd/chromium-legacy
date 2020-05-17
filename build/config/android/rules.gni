@@ -1634,6 +1634,7 @@ if (enable_java_templates) {
   #
   # Variables:
   #   output: Path to the output dex.
+  #   proguard_enabled: Whether to enable R8.
   #   proguard_configs: List of proguard configs.
   #   proguard_jar_path: The path to proguard.jar you wish to use. If undefined,
   #     the proguard used will be the checked in one in //third_party/proguard.
@@ -1643,12 +1644,7 @@ if (enable_java_templates) {
   #     deps = [ ":my_java_lib" ]
   #     output = "$root_build_dir/MyLibrary.jar"
   #   }
-  #   dist_jar("sideloaded_dex") {
-  #     deps = [ ":my_java_lib" ]
-  #     output = "$root_build_dir/MyLibrary.jar"
-  #     dex_path = "$root_build_dir/MyLibrary.dex"
-  #   }
-  template("proguarded_dist_dex") {
+  template("dist_dex") {
     _deps = [ "//third_party/android_sdk:android_sdk_java" ]
     if (defined(invoker.deps)) {
       _deps += invoker.deps
@@ -1659,10 +1655,13 @@ if (enable_java_templates) {
 
     write_build_config(_build_config_target_name) {
       type = "dist_jar"
-      forward_variables_from(invoker, [ "proguard_configs" ])
+      forward_variables_from(invoker,
+                             [
+                               "proguard_configs",
+                               "proguard_enabled",
+                             ])
       supports_android = true
       requires_android = true
-      proguard_enabled = true
       possible_config_deps = _deps
       build_config = _build_config
     }
@@ -1672,13 +1671,19 @@ if (enable_java_templates) {
     dex(target_name) {
       deps = _deps
       build_config = _build_config
-      proguard_enabled = true
       forward_variables_from(invoker,
                              [
                                "proguard_configs",
+                               "proguard_enabled",
                                "min_sdk_version",
                              ])
+      enable_multidex = false
       output = invoker.output
+      if (!defined(proguard_enabled) || !proguard_enabled) {
+        _rebased_build_config = rebase_path(_build_config, root_build_dir)
+        input_dex_filearg =
+            "@FileArg(${_rebased_build_config}:final_dex:all_dex_files)"
+      }
     }
   }
 
@@ -1880,7 +1885,6 @@ if (enable_java_templates) {
     java_library_impl(target_name) {
       forward_variables_from(invoker, "*")
       supports_android = true
-      no_desugar_dep = true
       type = "system_java_library"
     }
   }
@@ -3171,16 +3175,14 @@ if (enable_java_templates) {
         }
 
         if (_incremental_apk) {
-          _dex_target =
-              "//build/android/incremental_install:bootstrap_java__dex"
+          _dex_target = "//build/android/incremental_install:apk_dex"
 
           deps += [
             ":${_incremental_compile_resources_target_name}",
             _dex_target,
           ]
 
-          dex_path =
-              get_label_info(_dex_target, "target_out_dir") + "/bootstrap.dex"
+          dex_path = get_label_info(_dex_target, "target_out_dir") + "/apk.dex"
 
           # All native libraries are side-loaded, so use a placeholder to force
           # the proper bitness for the app.

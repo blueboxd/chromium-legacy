@@ -231,6 +231,40 @@ void MultiDeviceSection::AddHandlers(content::WebUI* web_ui) {
                                : nullptr));
 }
 
+void MultiDeviceSection::RegisterHierarchy(
+    HierarchyGenerator* generator) const {
+  generator->RegisterTopLevelSetting(mojom::Setting::kSetUpMultiDevice);
+  generator->RegisterTopLevelSetting(mojom::Setting::kVerifyMultiDeviceSetup);
+
+  // MultiDevice features.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kMultiDeviceFeatures);
+  static constexpr mojom::Setting kMultiDeviceFeaturesSettings[] = {
+      mojom::Setting::kMultiDeviceOnOff,
+      mojom::Setting::kMessagesSetUp,
+      mojom::Setting::kMessagesOnOff,
+      mojom::Setting::kForgetPhone,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kMultiDeviceFeatures,
+                            kMultiDeviceFeaturesSettings, generator);
+  generator->RegisterTopLevelAltSetting(mojom::Setting::kMultiDeviceOnOff);
+  // Note: Instant Tethering is part of the Network section, but it has an
+  // alternate setting within the MultiDevice section.
+  generator->RegisterNestedAltSetting(mojom::Setting::kInstantTetheringOnOff,
+                                      mojom::Subpage::kMultiDeviceFeatures);
+
+  // Smart Lock.
+  generator->RegisterNestedSubpage(mojom::Subpage::kSmartLock,
+                                   mojom::Subpage::kMultiDeviceFeatures);
+  static constexpr mojom::Setting kSmartLockSettings[] = {
+      mojom::Setting::kSmartLockOnOff,
+      mojom::Setting::kSmartLockUnlockOrSignIn,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kSmartLock, kSmartLockSettings,
+                            generator);
+  generator->RegisterNestedAltSetting(mojom::Setting::kSmartLockOnOff,
+                                      mojom::Subpage::kMultiDeviceFeatures);
+}
+
 void MultiDeviceSection::OnHostStatusChanged(
     const multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice&
         host_status_with_device) {

@@ -78,7 +78,7 @@ class TileServiceImplTest : public testing::Test {
 
     auto tile_fetcher =
         TileFetcher::Create(GURL("https://www.test.com"), "US", "en", "apikey",
-                            "", test_shared_url_loader_factory_);
+                            "", "", test_shared_url_loader_factory_);
     test_url_loader_factory_.SetInterceptor(base::BindLambdaForTesting(
         [&](const network::ResourceRequest& request) {
           EXPECT_TRUE(request.url.is_valid() && !request.url.is_empty());

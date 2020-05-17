@@ -18,6 +18,15 @@ base::string16 OsSettingsSection::GetHelpUrlWithBoard(
                             "&b=" + base::SysInfo::GetLsbReleaseBoard());
 }
 
+// static
+void OsSettingsSection::RegisterNestedSettingBulk(
+    mojom::Subpage subpage,
+    const base::span<const mojom::Setting>& settings,
+    HierarchyGenerator* generator) {
+  for (const auto& setting : settings)
+    generator->RegisterNestedSetting(setting, subpage);
+}
+
 OsSettingsSection::~OsSettingsSection() = default;
 
 OsSettingsSection::OsSettingsSection(Profile* profile,

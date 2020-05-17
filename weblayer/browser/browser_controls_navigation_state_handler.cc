@@ -81,14 +81,6 @@ void BrowserControlsNavigationStateHandler::DidChangeVisibleSecurityState() {
   UpdateState();
 }
 
-void BrowserControlsNavigationStateHandler::DidAttachInterstitialPage() {
-  UpdateState();
-}
-
-void BrowserControlsNavigationStateHandler::DidDetachInterstitialPage() {
-  UpdateState();
-}
-
 void BrowserControlsNavigationStateHandler::RenderProcessGone(
     base::TerminationStatus status) {
   UpdateState();
@@ -134,7 +126,6 @@ BrowserControlsNavigationStateHandler::CalculateCurrentState() {
   // AccessibilityUtil.isAccessibilityEnabled().
   if (force_show_during_load_ || web_contents()->IsFullscreen() ||
       web_contents()->IsFocusedElementEditable() ||
-      web_contents()->ShowingInterstitialPage() ||
       web_contents()->IsBeingDestroyed() || web_contents()->IsCrashed()) {
     return content::BROWSER_CONTROLS_STATE_SHOWN;
   }
@@ -157,7 +148,6 @@ BrowserControlsNavigationStateHandler::CalculateCurrentState() {
       return content::BROWSER_CONTROLS_STATE_SHOWN;
 
     case security_state::NONE:
-    case security_state::EV_SECURE:
     case security_state::SECURE:
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
     case security_state::SECURITY_LEVEL_COUNT:

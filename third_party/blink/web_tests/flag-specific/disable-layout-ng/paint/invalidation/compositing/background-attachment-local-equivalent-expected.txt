@@ -9,7 +9,6 @@
     {
       "name": "LayoutBlockFlow DIV id='container'",
       "bounds": [400, 400],
-      "backgroundColor": "#0000FF",
       "transform": 1
     },
     {

@@ -16,6 +16,7 @@
 #include "chrome/common/media_router/media_source.h"
 #include "components/cast_channel/cast_message_util.h"
 #include "components/cast_channel/cast_socket.h"
+#include "url/origin.h"
 
 using cast_channel::ReceiverAppType;
 
@@ -145,6 +146,14 @@ class CastMediaSource {
 
   // Returns a list of App IDs in this CastMediaSource.
   std::vector<std::string> GetAppIds() const;
+
+  // Returns a list of origins that are allowed to use this source.  An empty
+  // list means any origin is allowed.  For now, non-empty origins are websites
+  // allowed to use this source via the Presentation API.
+  std::vector<url::Origin> GetAllowedOrigins() const;
+
+  // Returns true if |origin| is allowed according to GetAllowedOrigins().
+  bool IsAllowedOrigin(const url::Origin& origin) const;
 
   const MediaSource::Id& source_id() const { return source_id_; }
   const std::vector<CastAppInfo>& app_infos() const { return app_infos_; }

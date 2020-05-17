@@ -1167,15 +1167,6 @@ std::unique_ptr<ui::AXActionTarget> PdfAccessibilityTree::CreateActionTarget(
   return std::make_unique<PdfAXActionTarget>(target_node, this);
 }
 
-bool PdfAccessibilityTree::ShowContextMenu() {
-  content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
-  if (!render_accessibility)
-    return false;
-
-  render_accessibility->ShowPluginContextMenu();
-  return true;
-}
-
 void PdfAccessibilityTree::HandleAction(
     const PP_PdfAccessibilityActionData& action_data) {
   content::PepperPluginInstance* plugin_instance =

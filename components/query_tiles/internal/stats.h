@@ -11,16 +11,24 @@ namespace query_tiles {
 namespace stats {
 
 // Event to track image loading metrics.
-enum class ImageLoadingEvent {
-  // Starts to fetch image in reduced mode background task.
-  kStartPrefetch = 0,
-  kPrefetchSuccess = 1,
-  kPrefetchFailure = 2,
-  kMaxValue = kPrefetchFailure,
+enum class ImagePreloadingEvent {
+  // Start to fetch image in full browser mode.
+  kStart = 0,
+  // Fetch success in full browser mode.
+  kSuccess = 1,
+  // Fetch failure in full browser mode.
+  kFailure = 2,
+  // Start to fetch image in reduced mode.
+  kStartReducedMode = 3,
+  // Fetch success in reduced mode.
+  kSuccessReducedMode = 4,
+  // Fetch failure in reduced mode.
+  kFailureReducedMode = 5,
+  kMaxValue = kFailureReducedMode,
 };
 
-// Records an image loading event.
-void RecordImageLoading(ImageLoadingEvent event);
+// Records an image preloading event.
+void RecordImageLoading(ImagePreloadingEvent event);
 
 // Records HTTP response code.
 void RecordTileFetcherResponseCode(int response_code);

@@ -288,6 +288,9 @@ class ConnectionTest : public testing::Test,
 
     // Create Connection objects.
     if (is_using_webrtc()) {
+      // Set the polling interval to zero to prevent hangs from PostDelayedTask.
+      WebrtcTransport::SetDataChannelPollingIntervalForTests(base::TimeDelta());
+
       host_connection_.reset(new WebrtcConnectionToClient(
           base::WrapUnique(host_session_),
           TransportContext::ForTests(protocol::TransportRole::SERVER),

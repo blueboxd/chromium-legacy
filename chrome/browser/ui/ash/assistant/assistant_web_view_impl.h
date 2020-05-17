@@ -65,8 +65,6 @@ class AssistantWebViewImpl : public ash::AssistantWebView,
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
   void NavigationEntriesDeleted() override;
-  void DidAttachInterstitialPage() override;
-  void DidDetachInterstitialPage() override;
 
  private:
   void InitWebContents(Profile* profile);

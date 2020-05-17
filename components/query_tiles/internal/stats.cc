@@ -6,13 +6,12 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/notreached.h"
 
 namespace query_tiles {
 namespace stats {
 
-void RecordImageLoading(ImageLoadingEvent event) {
-  NOTIMPLEMENTED();
+void RecordImageLoading(ImagePreloadingEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("Search.QueryTiles.ImagePreloadingEvent", event);
 }
 
 void RecordTileFetcherResponseCode(int response_code) {

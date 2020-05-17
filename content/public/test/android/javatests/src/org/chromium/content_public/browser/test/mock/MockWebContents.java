@@ -158,11 +158,6 @@ public class MockWebContents implements WebContents {
     public void setAudioMuted(boolean mute) {}
 
     @Override
-    public boolean isShowingInterstitialPage() {
-        return false;
-    }
-
-    @Override
     public boolean focusLocationBarByDefault() {
         return false;
     }

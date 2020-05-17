@@ -50,7 +50,7 @@ class TurnSyncOnHelperTest : public BrowserWithTestWindowTest {
  public:
   TurnSyncOnHelperTest() {
     feature_list_.InitWithFeatures({chromeos::features::kSplitSettingsSync,
-                                    chromeos::features::kSplitSyncConsent},
+                                    chromeos::features::kUseBrowserSyncConsent},
                                    {});
   }
   ~TurnSyncOnHelperTest() override = default;

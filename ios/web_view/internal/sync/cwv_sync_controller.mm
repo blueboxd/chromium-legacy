@@ -138,6 +138,11 @@ __weak id<CWVSyncControllerDataSource> gSyncDataSource;
            selector:@selector(reloadAccounts)
                name:UIApplicationWillEnterForegroundNotification
              object:nil];
+
+    // This allows internals of |_identityManager| to fetch and store the user's
+    // info and profile image. This must be called manually *after* all services
+    // have been started to avoid issues in https://crbug.com/441399.
+    _identityManager->OnNetworkInitialized();
   }
   return self;
 }

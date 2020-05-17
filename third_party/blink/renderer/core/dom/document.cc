@@ -3378,6 +3378,7 @@ void Document::Shutdown() {
   // it's never possible to re-attach. Eventually Document::detachLayoutTree()
   // should be renamed, or this setting of the frame to 0 could be made
   // explicit in each of the callers of Document::detachLayoutTree().
+  dom_window_ = nullptr;
   frame_ = nullptr;
 
   document_outlive_time_reporter_ =
@@ -3580,9 +3581,9 @@ void Document::open(Document* entered_document,
   if (ignore_opens_and_writes_for_abort_)
     return;
 
-  // Change |document|'s URL to the URL of the responsible document specified
-  // by the entry settings object.
-  if (entered_document && this != entered_document) {
+  // If this document is fully active, change |document|'s URL to the URL of the
+  // responsible document specified by the entry settings object.
+  if (dom_window_ && entered_document && this != entered_document) {
     auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
     csp->CopyStateFrom(entered_document->GetContentSecurityPolicy());
     // We inherit the sandbox flags of the entered document, so mask on
@@ -6772,10 +6773,7 @@ HTMLCollection* Document::DocumentAllNamedItems(const AtomicString& name) {
 }
 
 DOMWindow* Document::defaultView() const {
-  // The HTML spec requires to return null if the document is detached from the
-  // DOM.  However, |dom_window_| is not cleared on the detachment.  So, we need
-  // to check |frame_| to tell whether the document is attached or not.
-  return frame_ ? dom_window_ : nullptr;
+  return dom_window_;
 }
 
 namespace {

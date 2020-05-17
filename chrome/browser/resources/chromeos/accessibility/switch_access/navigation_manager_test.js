@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-GEN_INCLUDE([
-  'switch_access_e2e_test_base.js', '../chromevox/testing/assert_additions.js'
-]);
+GEN_INCLUDE(['switch_access_e2e_test_base.js']);
 
 /**
  * @constructor
@@ -23,27 +21,6 @@ SwitchAccessNavigationManagerTest.prototype = {
   /** @override */
   setUp() {
     MenuManager.initialize();
-  },
-
-  runAndSaveDesktop(website, callback) {
-    this.runWithLoadedTree(website, (desktop) => {
-      this.desktop = desktop;
-      callback(desktop);
-    });
-  },
-
-  findNodeById(id) {
-    const treeWalker = new AutomationTreeWalker(
-        this.desktop, constants.Dir.FORWARD,
-        {visit: (node) => node.htmlAttributes['id'] === id});
-    const result = treeWalker.next().node;
-    assertTrue(
-        result && id === result.htmlAttributes['id'],
-        'Could not find "' + id + '".');
-    assertTrue(
-        treeWalker.next().node == undefined,
-        'More than one node found with id "' + id + '".');
-    return result;
   }
 };
 
@@ -81,7 +58,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'MoveTo', function() {
                      </div>
                      <button></button>
                    </div>`;
-  this.runAndSaveDesktop(website, (desktop) => {
+  this.runWithLoadedTree(website, (desktop) => {
     const textFields =
         desktop.findAll({role: chrome.automation.RoleType.TEXT_FIELD});
     assertEquals(2, textFields.length, 'Should be exactly 2 text fields.');
@@ -129,8 +106,8 @@ TEST_F('SwitchAccessNavigationManagerTest', 'MoveTo', function() {
 
     this.navigator.moveTo_(group);
     assertTrue(this.navigator.node_.isGroup(), 'Current node is not a group');
-    assertEquals(
-        this.navigator.node_.automationNode.htmlAttributes['id'], 'group',
+    assertTrue(
+        this.navigator.node_.isEquivalentTo(group),
         'Did not find the right group');
   });
 });
@@ -144,7 +121,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'JumpTo', function() {
                      <button></button>
                      <button></button>
                    </div>`;
-  this.runAndSaveDesktop(website, (desktop) => {
+  this.runWithLoadedTree(website, (desktop) => {
     const textInput =
         desktop.findAll({role: chrome.automation.RoleType.TEXT_FIELD})[1];
     assertNotNullNorUndefined(textInput, 'Text field is undefined');
@@ -211,7 +188,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'EnterGroup', function() {
                      <button></button>
                    </div>
                    <input type="range">`;
-  this.runAndSaveDesktop(website, (desktop) => {
+  this.runWithLoadedTree(website, (desktop) => {
     const targetGroup = this.findNodeById('group');
     this.navigator.moveTo_(targetGroup);
 
@@ -242,7 +219,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'DISABLED_MoveForward', function() {
                      <button id="button2"></button>
                      <button id="button3"></button>
                    </div>`;
-  this.runAndSaveDesktop(website, (desktop) => {
+  this.runWithLoadedTree(website, (desktop) => {
     this.navigator.moveTo_(this.findNodeById('button1'));
     const button1 = this.navigator.node_;
     assertFalse(
@@ -297,7 +274,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'MoveBackward', function() {
                      <button id="button2"></button>
                      <button id="button3"></button>
                    </div>`;
-  this.runAndSaveDesktop(website, (desktop) => {
+  this.runWithLoadedTree(website, (desktop) => {
     this.navigator.moveTo_(this.findNodeById('button1'));
     const button1 = this.navigator.node_;
     assertFalse(

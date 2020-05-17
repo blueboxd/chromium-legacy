@@ -238,8 +238,11 @@ size_t MaxHostModelFeaturesCacheSize() {
 }
 
 size_t MaxURLKeyedHintCacheSize() {
-  return GetFieldTrialParamByFeatureAsInt(kOptimizationHints,
-                                          "max_url_keyed_hint_cache_size", 20);
+  size_t max_url_keyed_hint_cache_size = GetFieldTrialParamByFeatureAsInt(
+      kOptimizationHints, "max_url_keyed_hint_cache_size", 30);
+  DCHECK_GE(max_url_keyed_hint_cache_size,
+            MaxUrlsForOptimizationGuideServiceHintsFetch());
+  return max_url_keyed_hint_cache_size;
 }
 
 bool IsOptimizationTargetPredictionEnabled() {

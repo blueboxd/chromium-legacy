@@ -530,8 +530,8 @@ void AddSyncControlsStrings(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("splitSettingsSyncEnabled",
                           chromeos::features::IsSplitSettingsSyncEnabled());
-  html_source->AddBoolean("splitSyncConsent",
-                          chromeos::features::IsSplitSyncConsentEnabled());
+  html_source->AddBoolean("useBrowserSyncConsent",
+                          chromeos::features::ShouldUseBrowserSyncConsent());
   html_source->AddBoolean(
       "syncSetupFriendlySettings",
       base::FeatureList::IsEnabled(::features::kSyncSetupFriendlySettings));
@@ -677,7 +677,7 @@ void PeopleSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("isAccountManagerEnabled",
                           chromeos::IsAccountManagerAvailable(profile()));
 
-  if (chromeos::features::IsSplitSyncConsentEnabled()) {
+  if (chromeos::features::ShouldUseBrowserSyncConsent()) {
     static constexpr webui::LocalizedString kTurnOffStrings[] = {
         {"syncDisconnect", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
         {"syncDisconnectTitle",
@@ -778,6 +778,71 @@ void PeopleSection::AddHandlers(content::WebUI* web_ui) {
     // Note that the UI is enabled only if Kerberos is enabled.
     web_ui->AddMessageHandler(std::move(kerberos_accounts_handler));
   }
+}
+
+void PeopleSection::RegisterHierarchy(HierarchyGenerator* generator) const {
+  generator->RegisterTopLevelSetting(mojom::Setting::kSetUpParentalControls);
+
+  // My accounts.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kMyAccounts);
+  static constexpr mojom::Setting kMyAccountsSettings[] = {
+      mojom::Setting::kAddAccount,
+      mojom::Setting::kRemoveAccount,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kMyAccounts, kMyAccountsSettings,
+                            generator);
+
+  // Combined browser/OS sync (deprecated). Note that settings are not
+  // registered for these subpages since they'll be removed shortly.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kSyncDeprecated);
+  generator->RegisterNestedSubpage(mojom::Subpage::kSyncDeprecatedAdvanced,
+                                   mojom::Subpage::kSyncDeprecated);
+
+  // OS sync.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kSync);
+  generator->RegisterNestedSetting(mojom::Setting::kSyncOnOff,
+                                   mojom::Subpage::kSync);
+
+  // Security and sign-in.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kSecurityAndSignIn);
+  static constexpr mojom::Setting kSecurityAndSignInSettings[] = {
+      mojom::Setting::kLockScreen,
+      mojom::Setting::kChangeAuthPin,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kSecurityAndSignIn,
+                            kSecurityAndSignInSettings, generator);
+
+  // Fingerprint.
+  generator->RegisterNestedSubpage(mojom::Subpage::kFingerprint,
+                                   mojom::Subpage::kSecurityAndSignIn);
+  static constexpr mojom::Setting kFingerprintSettings[] = {
+      mojom::Setting::kAddFingerprint,
+      mojom::Setting::kRemoveFingerprint,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kFingerprint, kFingerprintSettings,
+                            generator);
+
+  // Manage other people.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kManageOtherPeople);
+  static constexpr mojom::Setting kManageOtherPeopleSettings[] = {
+      mojom::Setting::kGuestBrowsing,
+      mojom::Setting::kShowUsernamesAndPhotosAtSignIn,
+      mojom::Setting::kRestrictSignIn,
+      mojom::Setting::kAddToUserWhitelist,
+      mojom::Setting::kRemoveFromUserWhitelist,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kManageOtherPeople,
+                            kManageOtherPeopleSettings, generator);
+
+  // Kerberos.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kKerberos);
+  static constexpr mojom::Setting kKerberosSettings[] = {
+      mojom::Setting::kAddKerberosTicket,
+      mojom::Setting::kRemoveKerberosTicket,
+      mojom::Setting::kSetActiveKerberosTicket,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kKerberos, kKerberosSettings,
+                            generator);
 }
 
 void PeopleSection::OnStateChanged(syncer::SyncService* sync_service) {

@@ -69,7 +69,7 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void Write(PaintCanvas::AnnotationType type) {
     Write(static_cast<uint8_t>(type));
   }
-  void Write(PaintCanvas::SrcRectConstraint constraint) {
+  void Write(SkCanvas::SrcRectConstraint constraint) {
     Write(static_cast<uint8_t>(constraint));
   }
   void Write(SkFilterQuality filter_quality) {

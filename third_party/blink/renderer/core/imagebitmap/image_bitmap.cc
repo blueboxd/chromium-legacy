@@ -389,7 +389,7 @@ scoped_refptr<StaticBitmapImage> ScaleImage(
           SkRect::MakeWH(sk_image->width(), sk_image->height()),
           SkRect::MakeWH(parsed_options.resize_width,
                          parsed_options.resize_height),
-          &paint, cc::PaintCanvas::kStrict_SrcRectConstraint);
+          &paint, SkCanvas::kStrict_SrcRectConstraint);
       return resource_provider->Snapshot(image->CurrentFrameOrientation());
     }
   }
@@ -508,7 +508,7 @@ static scoped_refptr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
           SkRect::MakeXYWH(src_rect.X(), src_rect.Y(), src_rect.Width(),
                            src_rect.Height()),
           SkRect::MakeWH(src_rect.Width(), src_rect.Height()), &paint,
-          cc::PaintCanvas::kStrict_SrcRectConstraint);
+          SkCanvas::kStrict_SrcRectConstraint);
       result = resource_provider->Snapshot(image->CurrentFrameOrientation());
     } else {
       result = UnacceleratedStaticBitmapImage::Create(

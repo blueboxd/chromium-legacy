@@ -510,6 +510,59 @@ void AccessibilitySection::AddHandlers(content::WebUI* web_ui) {
       std::make_unique<::settings::FontHandler>(profile()));
 }
 
+void AccessibilitySection::RegisterHierarchy(
+    HierarchyGenerator* generator) const {
+  generator->RegisterTopLevelSetting(mojom::Setting::kA11yQuickSettings);
+
+  // Manage accessibility.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kManageAccessibility);
+  static constexpr mojom::Setting kManageAccessibilitySettings[] = {
+      mojom::Setting::kChromeVox,
+      mojom::Setting::kSelectToSpeak,
+      mojom::Setting::kHighContrastMode,
+      mojom::Setting::kFullscreenMagnifier,
+      mojom::Setting::kDockedMagnifier,
+      mojom::Setting::kStickyKeys,
+      mojom::Setting::kOnScreenKeyboard,
+      mojom::Setting::kDictation,
+      mojom::Setting::kSpeakToType,
+      mojom::Setting::kEnableSwitchAccess,
+      mojom::Setting::kHighlightTextCaret,
+      mojom::Setting::kAutoClickWhenCursorStops,
+      mojom::Setting::kLargeCursor,
+      mojom::Setting::kHighlightCursorWhileMoving,
+      mojom::Setting::kTabletNavigationButtons,
+      mojom::Setting::kMonoAudio,
+      mojom::Setting::kStartupSound,
+      mojom::Setting::kGetImageDescriptionsFromGoogle,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kManageAccessibility,
+                            kManageAccessibilitySettings, generator);
+
+  // Text-to-Speech.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kTextToSpeech);
+  static constexpr mojom::Setting kTextToSpeechSettings[] = {
+      mojom::Setting::kTextToSpeechRate,    mojom::Setting::kTextToSpeechPitch,
+      mojom::Setting::kTextToSpeechVolume,  mojom::Setting::kTextToSpeechVoice,
+      mojom::Setting::kTextToSpeechEngines,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kTextToSpeech,
+                            kTextToSpeechSettings, generator);
+
+  // Switch access.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kSwitchAccessOptions);
+  static constexpr mojom::Setting kSwitchAccessSettings[] = {
+      mojom::Setting::kSwitchActionAssignment,
+      mojom::Setting::kSwitchActionAutoScan,
+      mojom::Setting::kSwitchActionAutoScanKeyboard,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kSwitchAccessOptions,
+                            kSwitchAccessSettings, generator);
+
+  // Captions.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kCaptions);
+}
+
 void AccessibilitySection::UpdateSearchTags() {
   if (accessibility_state_utils::IsScreenReaderEnabled() &&
       AreExperimentalA11yLabelsAllowed()) {

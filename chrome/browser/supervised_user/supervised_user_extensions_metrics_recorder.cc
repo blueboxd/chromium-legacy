@@ -63,6 +63,13 @@ const char SupervisedUserExtensionsMetricsRecorder::
 const char SupervisedUserExtensionsMetricsRecorder::
     kParentPermissionDialogParentCanceledActionName[] =
         "SupervisedUsers_Extensions_ParentPermissionDialog_ParentCanceled";
+// Enabling and disabling extensions.
+const char SupervisedUserExtensionsMetricsRecorder::kEnablementHistogramName[] =
+    "SupervisedUsers.ExtensionEnablement";
+const char SupervisedUserExtensionsMetricsRecorder::kEnabledActionName[] =
+    "SupervisedUsers_Extensions_Enabled";
+const char SupervisedUserExtensionsMetricsRecorder::kDisabledActionName[] =
+    "SupervisedUsers_Extensions_Disabled";
 
 SupervisedUserExtensionsMetricsRecorder::
     SupervisedUserExtensionsMetricsRecorder()
@@ -150,6 +157,20 @@ void SupervisedUserExtensionsMetricsRecorder::
       break;
     case ParentPermissionDialogState::kNoParentError:
       // Nothing to do here.
+      break;
+  }
+}
+
+// static
+void SupervisedUserExtensionsMetricsRecorder::RecordEnablementUmaMetrics(
+    EnablementState state) {
+  base::UmaHistogramEnumeration(kEnablementHistogramName, state);
+  switch (state) {
+    case EnablementState::kEnabled:
+      base::RecordAction(base::UserMetricsAction(kEnabledActionName));
+      break;
+    case EnablementState::kDisabled:
+      base::RecordAction(base::UserMetricsAction(kDisabledActionName));
       break;
   }
 }

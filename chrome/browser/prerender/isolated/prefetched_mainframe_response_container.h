@@ -21,6 +21,8 @@ class PrefetchedMainframeResponseContainer {
                                        std::unique_ptr<std::string> body);
   ~PrefetchedMainframeResponseContainer();
 
+  std::unique_ptr<PrefetchedMainframeResponseContainer> Clone() const;
+
   const net::IsolationInfo& isolation_info() const { return isolation_info_; }
 
   // Takes ownership of the response head.

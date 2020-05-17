@@ -23,8 +23,6 @@ class RenderWidgetHostConnector::Observer
   void RenderViewReady() override;
   void RenderViewHostChanged(RenderViewHost* old_host,
                              RenderViewHost* new_host) override;
-  void DidAttachInterstitialPage() override;
-  void DidDetachInterstitialPage() override;
 
   // WebContentsAndroid::DestructionObserver implementation.
   void WebContentsAndroidDestroyed(
@@ -44,8 +42,7 @@ class RenderWidgetHostConnector::Observer
 
   RenderWidgetHostConnector* const connector_;
 
-  // Active RenderWidgetHostView connected to this instance. Can also point to
-  // an interstitial while it is showing.
+  // Active RenderWidgetHostView connected to this instance.
   RenderWidgetHostViewAndroid* active_rwhva_;
 
   DISALLOW_COPY_AND_ASSIGN(Observer);
@@ -80,14 +77,6 @@ void RenderWidgetHostConnector::Observer::RenderViewHostChanged(
   DCHECK(!new_view || !new_view->IsRenderWidgetHostViewChildFrame());
   auto* new_view_android = static_cast<RenderWidgetHostViewAndroid*>(new_view);
   UpdateRenderWidgetHostView(new_view_android);
-}
-
-void RenderWidgetHostConnector::Observer::DidAttachInterstitialPage() {
-  UpdateRenderWidgetHostView(GetRenderWidgetHostViewAndroid());
-}
-
-void RenderWidgetHostConnector::Observer::DidDetachInterstitialPage() {
-  UpdateRenderWidgetHostView(GetRenderWidgetHostViewAndroid());
 }
 
 void RenderWidgetHostConnector::Observer::WebContentsAndroidDestroyed(

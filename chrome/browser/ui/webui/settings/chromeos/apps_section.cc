@@ -220,6 +220,25 @@ void AppsSection::AddHandlers(content::WebUI* web_ui) {
   }
 }
 
+void AppsSection::RegisterHierarchy(HierarchyGenerator* generator) const {
+  // Manage apps.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kAppManagement);
+  generator->RegisterNestedSubpage(mojom::Subpage::kAppDetails,
+                                   mojom::Subpage::kAppManagement);
+  generator->RegisterNestedSubpage(mojom::Subpage::kPluginVmSharedPaths,
+                                   mojom::Subpage::kAppManagement);
+
+  // Google Play Store.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kGooglePlayStore);
+  static constexpr mojom::Setting kGooglePlayStoreSettings[] = {
+      mojom::Setting::kManageAndroidPreferences,
+      mojom::Setting::kRemovePlayStore,
+      mojom::Setting::kTurnOnPlayStore,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kGooglePlayStore,
+                            kGooglePlayStoreSettings, generator);
+}
+
 void AppsSection::OnAppRegistered(const std::string& app_id,
                                   const ArcAppListPrefs::AppInfo& app_info) {
   UpdateAndroidSearchTags();

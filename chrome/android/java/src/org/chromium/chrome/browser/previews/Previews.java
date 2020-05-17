@@ -19,7 +19,7 @@ public final class Previews {
     public static boolean isPreview(Tab tab) {
         if (tab == null || tab.isNativePage()) return false;
         WebContents webContents = tab.getWebContents();
-        boolean isPreview = webContents != null && !webContents.isShowingInterstitialPage()
+        boolean isPreview = webContents != null
                 && !SecurityStateModel.isContentDangerous(webContents)
                 && PreviewsAndroidBridge.getInstance().shouldShowPreviewUI(webContents);
         return isPreview;

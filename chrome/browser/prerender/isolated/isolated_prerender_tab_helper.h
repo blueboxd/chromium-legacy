@@ -342,6 +342,11 @@ class IsolatedPrerenderTabHelper
   // Starts a new no state prefetch for the next eligible url.
   void DoNoStatePrefetch();
 
+  // Makes a clone of |this|'s prefetch response so that it can be used for
+  // NoStatePrefetch now and later reused if the user navigates to that page.
+  std::unique_ptr<PrefetchedMainframeResponseContainer>
+  CopyPrefetchResponseForNSP(const GURL& url);
+
   // NavigationPredictorKeyedService::Observer:
   void OnPredictionUpdated(
       const base::Optional<NavigationPredictorKeyedService::Prediction>

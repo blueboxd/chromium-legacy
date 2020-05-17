@@ -38,6 +38,13 @@ AX_EXPORT extern const base::Feature kEnableAccessibilityTreeForViews;
 // directly.
 AX_EXPORT bool IsAccessibilityTreeForViewsEnabled();
 
+AX_EXPORT extern const base::Feature kAccessibilityFocusHighlight;
+
+// Returns true if the accessibility focus highlight feature is enabled,
+// which draws a visual highlight around the focused element on the page
+// briefly whenever focus changes.
+AX_EXPORT bool IsAccessibilityFocusHighlightEnabled();
+
 }  // namespace features
 
 #endif  // UI_ACCESSIBILITY_ACCESSIBILITY_FEATURES_H_

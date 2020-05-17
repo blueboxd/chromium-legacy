@@ -25,7 +25,7 @@ namespace {
 const char kContentType[] = "mock_content_type";
 const char kEmail[] = "mock_email@gmail.com";
 const char kEndpoint[] = "https://my-endpoint.com";
-const char kExpectedResponse[] = "mock_response";
+const char kExpectedResponse[] = "{}";
 const char kExpectedAuthError[] = "There was an authentication error";
 const char kExpectedResponseError[] = "There was a response error";
 const char kHttpMethod[] = "POST";
@@ -115,7 +115,8 @@ TEST_F(EndpointFetcherTest, FetchResponse) {
 }
 
 TEST_F(EndpointFetcherTest, FetchEndpointResponseError) {
-  SetMockResponse(GURL(kEndpoint), "", net::HTTP_BAD_REQUEST, net::ERR_FAILED);
+  SetMockResponse(GURL(kEndpoint), kExpectedResponse, net::HTTP_BAD_REQUEST,
+                  net::ERR_FAILED);
   EXPECT_CALL(
       endpoint_fetcher_callback(),
       Run(Pointee(Field(&EndpointResponse::response, kExpectedResponseError))));

@@ -111,9 +111,6 @@ class CONTENT_EXPORT WebContentsAndroid {
                      const base::android::JavaParamRef<jobject>& jobj,
                      jboolean mute);
 
-  jboolean IsShowingInterstitialPage(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
   jboolean FocusLocationBarByDefault(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);

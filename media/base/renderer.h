@@ -41,8 +41,7 @@ class MEDIA_EXPORT Renderer {
   // decoding) of media data, then fires |cdm_attached_cb| with whether the
   // operation succeeded.
   using CdmAttachedCB = base::OnceCallback<void(bool)>;
-  virtual void SetCdm(CdmContext* cdm_context,
-                      CdmAttachedCB cdm_attached_cb) = 0;
+  virtual void SetCdm(CdmContext* cdm_context, CdmAttachedCB cdm_attached_cb);
 
   // Specifies a latency hint from the site. Renderers should clamp the hint
   // value to reasonable min and max and use the resulting value as a target

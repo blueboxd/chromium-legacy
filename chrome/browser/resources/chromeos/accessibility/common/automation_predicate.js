@@ -220,7 +220,7 @@ AutomationPredicate = class {
           onlyStaticText = false;
           break;
         }
-        textLength += child.name ? child.name.length + textLength : textLength;
+        textLength += child.name ? child.name.length : 0;
       }
 
       if (onlyStaticText && textLength > 0 &&

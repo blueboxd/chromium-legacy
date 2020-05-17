@@ -150,16 +150,6 @@ public abstract class WebContentsObserver {
     public void navigationEntriesChanged() {}
 
     /**
-     * Called when an interstitial page gets attached to the tab content.
-     */
-    public void didAttachInterstitialPage() {}
-
-    /**
-     * Called when an interstitial page gets detached from the tab content.
-     */
-    public void didDetachInterstitialPage() {}
-
-    /**
      * Called when the theme color was changed.
      */
     public void didChangeThemeColor() {}

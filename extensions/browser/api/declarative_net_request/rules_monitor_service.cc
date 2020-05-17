@@ -559,26 +559,8 @@ void RulesMonitorService::OnNewStaticRulesetsLoaded(
 
   bool had_extra_headers_matcher = ruleset_manager_.HasAnyExtraHeadersMatcher();
 
-  // Do another pass over the existing matchers for the extension to compute the
-  // final set of matchers.
-  {
-    CompositeMatcher::MatcherList old_matchers = matcher->GetAndResetMatchers();
-    base::EraseIf(old_matchers,
-                  [&ids_to_disable, &ids_to_enable](
-                      const std::unique_ptr<RulesetMatcher>& matcher) {
-                    // We also check |ids_to_enable| to omit duplicate matchers.
-                    // |new_matchers| already contains RulesetMatchers
-                    // corresponding to |ids_to_enable|.
-                    return base::Contains(ids_to_disable, matcher->id()) ||
-                           base::Contains(ids_to_enable, matcher->id());
-                  });
-
-    new_matchers.insert(new_matchers.end(),
-                        std::make_move_iterator(old_matchers.begin()),
-                        std::make_move_iterator(old_matchers.end()));
-  }
-
-  matcher->SetMatchers(std::move(new_matchers));
+  matcher->RemoveRulesetsWithIDs(ids_to_disable);
+  matcher->AddOrUpdateRulesets(std::move(new_matchers));
 
   prefs_->SetDNREnabledStaticRulesets(load_data.extension_id,
                                       matcher->ComputeStaticRulesetIDs());

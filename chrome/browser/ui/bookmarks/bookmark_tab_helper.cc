@@ -49,9 +49,6 @@ BookmarkTabHelper::~BookmarkTabHelper() {
 }
 
 bool BookmarkTabHelper::ShouldShowBookmarkBar() const {
-  if (web_contents()->ShowingInterstitialPage())
-    return false;
-
   if (SadTab::ShouldShow(web_contents()->GetCrashedStatus()))
     return false;
 
@@ -158,17 +155,6 @@ void BookmarkTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
     return;
-  UpdateStarredStateForCurrentURL();
-}
-
-void BookmarkTabHelper::DidAttachInterstitialPage() {
-  // Interstitials are not necessarily starred just because the page that
-  // created them is, so star state has to track interstitial attach/detach if
-  // necessary.
-  UpdateStarredStateForCurrentURL();
-}
-
-void BookmarkTabHelper::DidDetachInterstitialPage() {
   UpdateStarredStateForCurrentURL();
 }
 

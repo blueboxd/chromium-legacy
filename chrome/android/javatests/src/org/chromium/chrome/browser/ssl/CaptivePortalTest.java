@@ -29,9 +29,6 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.components.security_interstitials.CaptivePortalHelper;
-import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.net.X509Util;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
@@ -39,7 +36,6 @@ import org.chromium.net.test.util.CertTestUtil;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.Callable;
 
 /** Tests for the Captive portal interstitial. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -100,15 +96,6 @@ public class CaptivePortalTest {
     @After
     public void tearDown() {
         mServer.stopAndDestroyServer();
-    }
-
-    private void waitForInterstitial(final WebContents webContents, final boolean shouldBeShown) {
-        CriteriaHelper.pollUiThread(Criteria.equals(shouldBeShown, new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return webContents.isShowingInterstitialPage();
-            }
-        }));
     }
 
     /** Navigate the tab to an interstitial with a name mismatch error and check if this

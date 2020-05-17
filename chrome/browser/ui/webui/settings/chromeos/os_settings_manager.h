@@ -106,7 +106,7 @@ class OsSettingsManager : public KeyedService {
   SearchHandler* search_handler() { return search_handler_.get(); }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(OsSettingsManagerTest, Sections);
+  FRIEND_TEST_ALL_PREFIXES(OsSettingsManagerTest, Initialization);
 
   // KeyedService:
   void Shutdown() override;

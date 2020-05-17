@@ -393,11 +393,8 @@ int GetContentRestrictions(const Browser* browser) {
     NavigationEntry* last_committed_entry =
         current_tab->GetController().GetLastCommittedEntry();
     if (!content::IsSavableURL(
-            last_committed_entry ? last_committed_entry->GetURL() : GURL()) ||
-        current_tab->ShowingInterstitialPage())
+            last_committed_entry ? last_committed_entry->GetURL() : GURL()))
       content_restrictions |= CONTENT_RESTRICTION_SAVE;
-    if (current_tab->ShowingInterstitialPage())
-      content_restrictions |= CONTENT_RESTRICTION_PRINT;
   }
   return content_restrictions;
 }
@@ -463,13 +460,8 @@ void GoBack(Browser* browser, WindowOpenDisposition disposition) {
   base::RecordAction(UserMetricsAction("Back"));
 
   if (CanGoBack(browser)) {
-    WebContents* current_tab =
-        browser->tab_strip_model()->GetActiveWebContents();
     WebContents* new_tab = GetTabAndRevertIfNecessary(browser, disposition);
-    // If we are on an interstitial page and clone the tab, it won't be copied
-    // to the new tab, so we don't need to go back.
-    if ((new_tab == current_tab) || !current_tab->ShowingInterstitialPage())
-      new_tab->GetController().GoBack();
+    new_tab->GetController().GoBack();
   }
 }
 
@@ -855,11 +847,7 @@ WebContents* DuplicateTabAt(Browser* browser, int index) {
 
 bool CanDuplicateTabAt(const Browser* browser, int index) {
   WebContents* contents = browser->tab_strip_model()->GetWebContentsAt(index);
-  // If an interstitial is showing, do not allow tab duplication, since
-  // the last committed entry is what would get duplicated and is not
-  // what the user expects to duplicate.
-  return contents && !contents->ShowingInterstitialPage() &&
-         contents->GetController().GetLastCommittedEntry();
+  return contents && contents->GetController().GetLastCommittedEntry();
 }
 
 void MoveTabsToExistingWindow(Browser* source,

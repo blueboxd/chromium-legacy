@@ -25,8 +25,7 @@ namespace declarative_net_request {
 
 struct RequestAction;
 
-// Per extension instance which manages the different rulesets for an extension
-// while respecting their priorities.
+// Per extension instance which manages the different rulesets for an extension.
 class CompositeMatcher {
  public:
   struct ActionInfo {
@@ -48,21 +47,21 @@ class CompositeMatcher {
 
   using MatcherList = std::vector<std::unique_ptr<RulesetMatcher>>;
 
-  // Each RulesetMatcher should have a distinct ID and priority.
+  // Each RulesetMatcher should have a distinct RulesetID.
   explicit CompositeMatcher(MatcherList matchers);
   ~CompositeMatcher();
 
   const MatcherList& matchers() const { return matchers_; }
 
-  // Returns the set of matchers and resets |matchers_| to an empty vector.
-  MatcherList GetAndResetMatchers();
+  // Inserts |matcher|, overwriting any existing RulesetMatcher with the same
+  // RulesetID.
+  void AddOrUpdateRuleset(std::unique_ptr<RulesetMatcher> matcher);
 
-  // Updates the set of matchers. IDs for all the |matchers| must be unique.
-  void SetMatchers(MatcherList matchers);
+  // Inserts |matchers| overwriting any matchers with the same RulesetID.
+  void AddOrUpdateRulesets(CompositeMatcher::MatcherList matchers);
 
-  // Adds the |new_matcher| to the list of matchers. If a matcher with the
-  // corresponding ID is already present, updates the matcher.
-  void AddOrUpdateRuleset(std::unique_ptr<RulesetMatcher> new_matcher);
+  // Erases RulesetMatchers with the given RulesetIDs.
+  void RemoveRulesetsWithIDs(const std::set<RulesetID>& ids);
 
   // Computes and returns the set of static RulesetIDs corresponding to
   // |matchers_|.

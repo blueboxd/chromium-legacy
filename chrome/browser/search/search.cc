@@ -270,9 +270,6 @@ bool IsInstantNTP(content::WebContents* contents) {
   if (!contents)
     return false;
 
-  if (contents->ShowingInterstitialPage())
-    return false;
-
   content::NavigationEntry* entry =
       contents->GetController().GetLastCommittedEntry();
   if (!entry)

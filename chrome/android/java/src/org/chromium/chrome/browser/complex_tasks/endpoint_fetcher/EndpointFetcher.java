@@ -24,7 +24,7 @@ public final class EndpointFetcher {
     private EndpointFetcher() {}
 
     /**
-     * Calls an endpoint and returns the response via a callback
+     * Calls an endpoint using OAuth and returns the response via a callback
      * @param callback callback function response is returned in
      * @param profile profile via which the endpoint is called
      * @param oathConsumerName consumer name for OAuth
@@ -37,19 +37,41 @@ public final class EndpointFetcher {
      *         been received
      */
     @MainThread
-    public static void fetch(Callback<EndpointResponse> callback, Profile profile,
+    public static void fetchUsingOAuth(Callback<EndpointResponse> callback, Profile profile,
             String oathConsumerName, String url, String httpsMethod, String contentType,
             String[] scopes, String postData, long timeout) {
         // EndpointFetcher currently does not support incognito mode
         assert !profile.isOffTheRecord();
-        EndpointFetcherJni.get().nativeFetch(profile, oathConsumerName, url, httpsMethod,
+        EndpointFetcherJni.get().nativeFetchOAuth(profile, oathConsumerName, url, httpsMethod,
                 contentType, scopes, postData, timeout, callback);
     }
 
+    /**
+     * Calls an endpoint using Chrome API Key returns the response via a callback
+     * @param callback to pass the response back in
+     * @param profile via which the endpoint is called
+     * @param url endpoint URL called
+     * @param httpsMethod the HTTPS method used e.g. "GET" or "POST"
+     * @param contentType the content type e.g. "application/json"
+     * @param postData data for a "POST" request
+     * @param timeout time after which the request will terminate in the event a response hasn't
+     *         been received
+     */
+    @MainThread
+    public static void fetchUsingChromeAPIKey(Callback<EndpointResponse> callback, Profile profile,
+            String url, String httpsMethod, String contentType, String postData, long timeout) {
+        // EndpointFetcher currently does not support incognito mode
+        // assert !profile.isOffTheRecord();
+        EndpointFetcherJni.get().nativeFetchChromeAPIKey(
+                profile, url, httpsMethod, contentType, postData, timeout, callback);
+    }
+
     @NativeMethods
-    interface Natives {
-        void nativeFetch(Profile profile, String oathConsumerName, String url, String httpsMethod,
-                String contentType, String[] scopes, String postData, long timeout,
-                Callback callback);
+    public interface Natives {
+        void nativeFetchOAuth(Profile profile, String oathConsumerName, String url,
+                String httpsMethod, String contentType, String[] scopes, String postData,
+                long timeout, Callback callback);
+        void nativeFetchChromeAPIKey(Profile profile, String url, String httpsMethod,
+                String contentType, String postData, long timeout, Callback callback);
     }
 }

@@ -92,9 +92,9 @@ void CheckSecurityState(content::WebContents* tab,
                         security_state::SecurityLevel expected_security_level,
                         int expected_authentication_state) {
   ASSERT_FALSE(tab->IsCrashed());
-  content::NavigationEntry* entry =
-      tab->ShowingInterstitialPage() ? tab->GetController().GetTransientEntry()
-                                     : tab->GetController().GetVisibleEntry();
+  // TODO(crbug.com/1077074): Check if this can be replaced with
+  // GetLastCommittedEntry.
+  content::NavigationEntry* entry = tab->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
   CertError::Check(entry, expected_error);
   SecurityStyle::Check(tab, expected_security_level);

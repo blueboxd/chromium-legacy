@@ -229,9 +229,6 @@ TEST_F(LocationBarModelImplTest, QueryInOmniboxSecurityLevel) {
   delegate()->SetSecurityLevel(security_state::SecurityLevel::SECURE);
   EXPECT_TRUE(model()->GetDisplaySearchTerms(nullptr));
 
-  delegate()->SetSecurityLevel(security_state::SecurityLevel::EV_SECURE);
-  EXPECT_TRUE(model()->GetDisplaySearchTerms(nullptr));
-
   // Insecure levels should not be allowed to display search terms.
   delegate()->SetSecurityLevel(security_state::SecurityLevel::NONE);
   EXPECT_FALSE(model()->GetDisplaySearchTerms(nullptr));

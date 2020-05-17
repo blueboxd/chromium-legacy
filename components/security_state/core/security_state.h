@@ -55,7 +55,9 @@ enum SecurityLevel {
   // HTTP_SHOW_WARNING = 1,
 
   // HTTPS with valid EV cert.
-  EV_SECURE = 2,
+  // DEPRECATED: EV certs no longer receive special UI treatment.
+  // See https://crbug.com/1006943.
+  // EV_SECURE = 2,
 
   // HTTPS (non-EV) with valid cert.
   SECURE = 3,
@@ -241,8 +243,8 @@ bool IsSchemeCryptographic(const GURL& url);
 // Returns true for a valid |url| with localhost or file:// scheme origin.
 bool IsOriginLocalhostOrFile(const GURL& url);
 
-// Returns true if the page has a valid SSL certificate. Only EV_SECURE,
-// SECURE, and SECURE_WITH_POLICY_INSTALLED_CERT are considered valid.
+// Returns true if the page has a valid SSL certificate. Only SECURE and
+// SECURE_WITH_POLICY_INSTALLED_CERT are considered valid.
 bool IsSslCertificateValid(security_state::SecurityLevel security_level);
 
 // Returns the given prefix suffixed with a dot and the current security level.

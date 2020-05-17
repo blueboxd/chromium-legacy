@@ -1513,17 +1513,16 @@ TEST_F(SaveCardBubbleControllerImplTest,
 TEST_F(SaveCardBubbleControllerImplTest,
        LogSaveCardPromptMetricBySecurityLevel_Upload) {
   base::HistogramTester histogram_tester;
-  controller()->set_security_level(security_state::SecurityLevel::EV_SECURE);
+  controller()->set_security_level(security_state::SecurityLevel::SECURE);
   ShowUploadBubble();
   EXPECT_THAT(
       histogram_tester.GetAllSamples(
-          "Autofill.SaveCreditCardPrompt.Upload.EV_SECURE"),
+          "Autofill.SaveCreditCardPrompt.Upload.SECURE"),
       ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
                   Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1)));
-  EXPECT_TRUE(
-      histogram_tester
-          .GetAllSamples("Autofill.SaveCreditCardPrompt.Local.EV_SECURE")
-          .empty());
+  EXPECT_TRUE(histogram_tester
+                  .GetAllSamples("Autofill.SaveCreditCardPrompt.Local.SECURE")
+                  .empty());
 }
 
 TEST_F(SaveCardBubbleControllerImplTest,

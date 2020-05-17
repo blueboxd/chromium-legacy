@@ -458,6 +458,14 @@ int OmniboxViewViews::GetTextWidth() const {
   return GetRenderText()->GetContentWidth() + GetInsets().width();
 }
 
+int OmniboxViewViews::GetUnelidedTextWidth() const {
+  auto elide_behavior = GetRenderText()->elide_behavior();
+  GetRenderText()->SetElideBehavior(gfx::NO_ELIDE);
+  auto width = GetTextWidth();
+  GetRenderText()->SetElideBehavior(elide_behavior);
+  return width;
+}
+
 bool OmniboxViewViews::IsImeComposing() const {
   return IsIMEComposing();
 }
@@ -1082,6 +1090,8 @@ const char* OmniboxViewViews::GetClassName() const {
   return kViewClassName;
 }
 
+// TODO (manukh) These OnMouse* functions should be reordered to match the
+// header.
 bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
   if (model()->popup_model()) {  // Can be null in tests.
     model()->popup_model()->ClearSelectionState();

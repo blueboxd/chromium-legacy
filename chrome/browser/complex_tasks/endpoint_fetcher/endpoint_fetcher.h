@@ -50,6 +50,7 @@ using EndpointFetcherCallback =
 class EndpointFetcher {
  public:
   // Preferred constructor - forms identity_manager and url_loader_factory.
+  // OAUTH authentication is used for this constructor.
   EndpointFetcher(Profile* const profile,
                   const std::string& oauth_consumer_name,
                   const GURL& url,
@@ -59,6 +60,16 @@ class EndpointFetcher {
                   int64_t timeout_ms,
                   const std::string& post_data,
                   const net::NetworkTrafficAnnotationTag& annotation_tag);
+
+  // Constructor if Chrome API Key is used for authentication
+  EndpointFetcher(Profile* const profile,
+                  const GURL& url,
+                  const std::string& http_method,
+                  const std::string& content_type,
+                  int64_t timeout_ms,
+                  const std::string& post_data,
+                  const net::NetworkTrafficAnnotationTag& annotation_tag);
+
   // Used for tests. Can be used if caller constructs their own
   // url_loader_factory and identity_manager.
   EndpointFetcher(
@@ -81,6 +92,8 @@ class EndpointFetcher {
 
   // TODO(crbug.com/999256) enable cancellation support
   void Fetch(EndpointFetcherCallback callback);
+  void PerformRequest(EndpointFetcherCallback endpoint_fetcher_callback,
+                      const char* key);
 
  private:
   void OnAuthTokenFetched(EndpointFetcherCallback callback,
@@ -88,6 +101,9 @@ class EndpointFetcher {
                           signin::AccessTokenInfo access_token_info);
   void OnResponseFetched(EndpointFetcherCallback callback,
                          std::unique_ptr<std::string> response_body);
+
+  enum AuthType { CHROME_API_KEY, OAUTH };
+  AuthType auth_type_;
 
   // Members set in constructor to be passed to network::ResourceRequest or
   // network::SimpleURLLoader.

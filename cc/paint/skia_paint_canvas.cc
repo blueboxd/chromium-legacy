@@ -274,7 +274,7 @@ void SkiaPaintCanvas::drawImageRect(const PaintImage& image,
                                     const SkRect& src,
                                     const SkRect& dst,
                                     const PaintFlags* flags,
-                                    SrcRectConstraint constraint) {
+                                    SkCanvas::SrcRectConstraint constraint) {
   base::Optional<ScopedRasterFlags> scoped_flags;
   if (flags) {
     scoped_flags.emplace(flags, image_provider_, canvas_->getTotalMatrix(),

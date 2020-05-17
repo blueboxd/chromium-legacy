@@ -352,10 +352,6 @@ void PaymentHandlerWebFlowViewController::TitleWasSet(
   UpdateHeaderView();
 }
 
-void PaymentHandlerWebFlowViewController::DidAttachInterstitialPage() {
-  AbortPayment();
-}
-
 void PaymentHandlerWebFlowViewController::AbortPayment() {
   if (web_contents())
     web_contents()->Close();

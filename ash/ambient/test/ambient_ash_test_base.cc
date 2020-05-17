@@ -6,6 +6,7 @@
 
 #include "ash/ambient/ambient_photo_controller.h"
 #include "ash/ambient/fake_ambient_backend_controller_impl.h"
+#include "ash/ambient/ui/ambient_container_view.h"
 #include "ash/shell.h"
 #include "chromeos/constants/chromeos_features.h"
 
@@ -57,6 +58,10 @@ void AmbientAshTestBase::UnlockScreen() {
 
 void AmbientAshTestBase::Toggle() {
   ambient_controller()->Toggle();
+}
+
+AmbientContainerView* AmbientAshTestBase::GetView() {
+  return ambient_controller()->get_container_view_for_testing();
 }
 
 void AmbientAshTestBase::IssueAccessToken(const std::string& token,

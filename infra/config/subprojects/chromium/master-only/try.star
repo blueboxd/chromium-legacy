@@ -10,6 +10,7 @@ load('//project.star', 'settings')
 # (bucket, builders, console, cq_group, etc.)
 exec('../versioned/m81/buckets/try.star')
 exec('../versioned/m83/buckets/try.star')
+exec('../versioned/m84/buckets/try.star')
 
 
 try_.set_defaults(

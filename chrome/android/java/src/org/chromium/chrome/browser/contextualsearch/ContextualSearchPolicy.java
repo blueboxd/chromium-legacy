@@ -114,6 +114,8 @@ class ContextualSearchPolicy {
      * @return Whether a Tap gesture is currently supported as a trigger for the feature.
      */
     boolean isTapSupported() {
+        if (isRelatedSearchesEnabled()) return true;
+
         if (isTapDisabledDueToLongpress()) return false;
 
         return (!isUserUndecided()
@@ -137,7 +139,8 @@ class ContextualSearchPolicy {
         // We never preload on a regular long-press so users can cut & paste without hitting the
         // servers.
         return mSelectionController.getSelectionType() == SelectionType.TAP
-                || mSelectionController.getSelectionType() == SelectionType.RESOLVING_LONG_PRESS;
+                || mSelectionController.getSelectionType() == SelectionType.RESOLVING_LONG_PRESS
+                || isRelatedSearchesEnabled();
     }
 
     /**
@@ -328,6 +331,9 @@ class ContextualSearchPolicy {
      *         to see if all privacy-related conditions are met to send the base page URL.
      */
     boolean maySendBasePageUrl() {
+        // TODO(donnd): revisit for related searches privacy review. https://crbug.com/1064141.
+        if (isRelatedSearchesEnabled()) return true;
+
         return !isUserUndecided();
     }
 
@@ -495,6 +501,52 @@ class ContextualSearchPolicy {
      */
     boolean isBasePageHTTP(@Nullable URL url) {
         return url != null && UrlConstants.HTTP_SCHEME.equals(url.getProtocol());
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // Related Searches Support.
+    // --------------------------------------------------------------------------------------------
+
+    /**
+     * @return Whether the experimental Feature for Related Searches is enabled.
+     */
+    boolean isRelatedSearchesEnabled() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.RELATED_SEARCHES);
+    }
+
+    /**
+     * @return Whether we're currently processing a Related Search gesture.
+     */
+    boolean isProcessingRelatedSearch() {
+        return isRelatedSearchesEnabled()
+                && mSelectionController.getSelectionType() == SelectionType.TAP;
+    }
+
+    /**
+     * @return The number of times a navigation in the panel can be done without promoting the
+     *         panel into a separate tab.
+     */
+    int navigateWithoutPromotionLimitForRelatedSearches() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.RELATED_SEARCHES)
+                && mSelectionController.getSelectionType() == SelectionType.TAP) {
+            // For Related Searches the returned page has a list of search-result pages
+            // that the user can choose from, so initial navigation should be done
+            // without promotion.  We want normal behavior for Longpress.
+            return 2;
+        }
+        return 1;
+    }
+
+    /**
+     * Overrides the selection if we're processing a Related Searches gesture.
+    * @param selection The original selection.  This is returned if not processing Related
+             Searches.
+    * @param relatedSearchesWord The word to show if we are processing Related Searches.
+    * @return the input or an override of the selection appropriate for experiments.
+    */
+    String overrideSelectionIfProcessingRelatedSearches(
+            String selection, String relatedSearchesWord) {
+        return isProcessingRelatedSearch() ? relatedSearchesWord : selection;
     }
 
     // --------------------------------------------------------------------------------------------

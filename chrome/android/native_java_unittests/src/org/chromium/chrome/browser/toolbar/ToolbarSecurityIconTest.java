@@ -29,9 +29,9 @@ public final class ToolbarSecurityIconTest {
     private static final boolean IS_SMALL_DEVICE = true;
     private static final boolean IS_OFFLINE_PAGE = true;
     private static final boolean IS_PREVIEW = true;
-    private static final int[] SECURITY_LEVELS = new int[] {ConnectionSecurityLevel.NONE,
-            ConnectionSecurityLevel.WARNING, ConnectionSecurityLevel.DANGEROUS,
-            ConnectionSecurityLevel.SECURE, ConnectionSecurityLevel.EV_SECURE};
+    private static final int[] SECURITY_LEVELS =
+            new int[] {ConnectionSecurityLevel.NONE, ConnectionSecurityLevel.WARNING,
+                    ConnectionSecurityLevel.DANGEROUS, ConnectionSecurityLevel.SECURE};
 
     @Mock
     private TabImpl mTab;
@@ -147,13 +147,6 @@ public final class ToolbarSecurityIconTest {
                         IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
         assertEquals(R.drawable.omnibox_https_valid,
                 mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.SECURE,
-                        !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
-
-        assertEquals(R.drawable.omnibox_https_valid,
-                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.EV_SECURE,
-                        IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
-        assertEquals(R.drawable.omnibox_https_valid,
-                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.EV_SECURE,
                         !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
     }
 

@@ -59,8 +59,6 @@ class CONTENT_EXPORT MediaPlayerRenderer
   void Initialize(media::MediaResource* media_resource,
                   media::RendererClient* client,
                   media::PipelineStatusCallback init_cb) override;
-  void SetCdm(media::CdmContext* cdm_context,
-              CdmAttachedCB cdm_attached_cb) override;
   void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) override;
   void Flush(base::OnceClosure flush_cb) override;
   void StartPlayingFrom(base::TimeDelta time) override;

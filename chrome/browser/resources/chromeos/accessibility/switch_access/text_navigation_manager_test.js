@@ -55,7 +55,7 @@ function runTextNavigationTest(testHelper, textParams) {
       textId, textContent, initialTextIndex, textCols, textWrap);
 
   testHelper.runWithLoadedTree(website, function(desktop) {
-    const inputNode = findNodeById(desktop, textId);
+    const inputNode = this.findNodeById(textId);
     assertNotEquals(inputNode, null);
 
     setUpCursorChangeListener(
@@ -114,7 +114,7 @@ function runTextSelectionTest(testHelper, textParams) {
   }
 
   testHelper.runWithLoadedTree(website, function(desktop) {
-    const inputNode = findNodeById(desktop, textId, testHelper);
+    const inputNode = this.findNodeById(textId);
     assertNotEquals(inputNode, null);
     checkNodeIsFocused(inputNode);
     const callback = testHelper.newCallback(function() {
@@ -154,26 +154,6 @@ function generateWebsiteWithTextArea(id, contents, textIndex, cols, wrap) {
       input.focus();
     </script>`;
   return website;
-}
-
-/**
- * Given the desktop node, returns the node with the given
- * id.
- * @param {!chrome.automation.AutomationNode} desktop
- * @param {string} id
- * @return {!chrome.automation.AutomationNode}
- */
-function findNodeById(desktop, id) {
-  // The loop ensures that the page has loaded before trying to find the node.
-  let inputNode;
-  while (inputNode == null) {
-    inputNode = new AutomationTreeWalker(
-                    desktop, constants.Dir.FORWARD,
-                    {visit: (node) => node.htmlAttributes.id === id})
-                    .next()
-                    .node;
-  }
-  return inputNode;
 }
 
 /**
@@ -344,7 +324,7 @@ TEST_F(
           generateWebsiteWithTextArea('test', 'test123', 3, 20, 'hard');
 
       this.runWithLoadedTree(website, function(desktop) {
-        const inputNode = findNodeById(desktop, 'test', this);
+        const inputNode = this.findNodeById('test');
         assertNotEquals(inputNode, null);
         checkNodeIsFocused(inputNode);
 
@@ -365,7 +345,7 @@ TEST_F(
           generateWebsiteWithTextArea('test', 'test 123', 6, 20, 'hard');
 
       this.runWithLoadedTree(website, function(desktop) {
-        const inputNode = findNodeById(desktop, 'test', this);
+        const inputNode = this.findNodeById('test');
         assertNotEquals(inputNode, null);
         checkNodeIsFocused(inputNode);
 

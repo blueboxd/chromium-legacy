@@ -1425,7 +1425,7 @@ class IsolatedPrerenderWithNSPBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMEOS(StartsNSP)) {
+                       DISABLE_ON_WIN_MAC_CHROMEOS(StartsAndInterceptsNSP)) {
   SetDataSaverEnabled(true);
   GURL starting_page = GetOriginServerURL("/simple.html");
   ui_test_utils::NavigateToURL(browser(), starting_page);
@@ -1453,13 +1453,22 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,
   // successfully done and processed.
   prefetch_run_loop.Run();
 
+  std::vector<GURL> origin_requests_before_prerender = origin_server_requests();
+
   // This run loop will quit when a NSP finishes.
   nsp_run_loop.Run();
 
-  // Check that a resource was NSP'd.
+  std::vector<GURL> origin_requests_after_prerender = origin_server_requests();
+
+  // Check that the page's Javascript was NSP'd, but not the mainframe.
   bool found_nsp_javascript = false;
-  for (const GURL& url : origin_server_requests()) {
-    found_nsp_javascript |= url.path() == "/prerender/prefetch.js";
+  bool found_nsp_mainframe = false;
+  for (size_t i = origin_requests_before_prerender.size();
+       i < origin_requests_after_prerender.size(); ++i) {
+    GURL nsp_url = origin_requests_after_prerender[i];
+    found_nsp_javascript |= nsp_url.path() == "/prerender/prefetch.js";
+    found_nsp_mainframe |= nsp_url.path() == eligible_link.path();
   }
   EXPECT_TRUE(found_nsp_javascript);
+  EXPECT_FALSE(found_nsp_mainframe);
 }

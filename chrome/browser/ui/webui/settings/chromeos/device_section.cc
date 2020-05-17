@@ -830,6 +830,73 @@ void DeviceSection::AddHandlers(content::WebUI* web_ui) {
       std::make_unique<chromeos::settings::StylusHandler>());
 }
 
+void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
+  // Pointers.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kPointers);
+  static constexpr mojom::Setting kPointersSettings[] = {
+      mojom::Setting::kTouchpadTapToClick,
+      mojom::Setting::kTouchpadTapDragging,
+      mojom::Setting::kTouchpadReverseScrolling,
+      mojom::Setting::kTouchpadAcceleration,
+      mojom::Setting::kTouchpadScrollAcceleration,
+      mojom::Setting::kTouchpadSpeed,
+      mojom::Setting::kMouseSwapPrimaryButtons,
+      mojom::Setting::kMouseReverseScrolling,
+      mojom::Setting::kMouseAcceleration,
+      mojom::Setting::kMouseScrollAcceleration,
+      mojom::Setting::kMouseSpeed,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kPointers, kPointersSettings,
+                            generator);
+
+  // Keyboard.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kKeyboard);
+  static constexpr mojom::Setting kKeyboardSettings[] = {
+      mojom::Setting::kKeyboardFunctionKeys,
+      mojom::Setting::kKeyboardAutoRepeat,
+      mojom::Setting::kKeyboardShortcuts,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kKeyboard, kKeyboardSettings,
+                            generator);
+
+  // Stylus.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kStylus);
+  static constexpr mojom::Setting kStylusSettings[] = {
+      mojom::Setting::kStylusToolsInShelf,
+      mojom::Setting::kStylusNoteTakingApp,
+      mojom::Setting::kStylusNoteTakingFromLockScreen,
+      mojom::Setting::kStylusLatestNoteOnLockScreen,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kStylus, kStylusSettings,
+                            generator);
+
+  // Display.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kDisplay);
+  static constexpr mojom::Setting kDisplaySettings[] = {
+      mojom::Setting::kDisplaySize,        mojom::Setting::kNightLight,
+      mojom::Setting::kDisplayOrientation, mojom::Setting::kDisplayArrangement,
+      mojom::Setting::kDisplayResolution,  mojom::Setting::kDisplayRefreshRate,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kDisplay, kDisplaySettings,
+                            generator);
+
+  // Storage.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kStorage);
+  generator->RegisterNestedSubpage(mojom::Subpage::kExternalStorage,
+                                   mojom::Subpage::kStorage);
+  generator->RegisterNestedSubpage(mojom::Subpage::kDlc,
+                                   mojom::Subpage::kStorage);
+
+  // Power.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kPower);
+  static constexpr mojom::Setting kPowerSettings[] = {
+      mojom::Setting::kPowerIdleBehavior,
+      mojom::Setting::kPowerSource,
+      mojom::Setting::kSleepWhenLaptopLidClosed,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kPower, kPowerSettings, generator);
+}
+
 void DeviceSection::TouchpadExists(bool exists) {
   if (exists)
     registry()->AddSearchTags(GetTouchpadSearchConcepts());

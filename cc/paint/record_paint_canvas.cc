@@ -261,7 +261,7 @@ void RecordPaintCanvas::drawImageRect(const PaintImage& image,
                                       const SkRect& src,
                                       const SkRect& dst,
                                       const PaintFlags* flags,
-                                      SrcRectConstraint constraint) {
+                                      SkCanvas::SrcRectConstraint constraint) {
   list_->push<DrawImageRectOp>(image, src, dst, flags, constraint);
 }
 

@@ -102,7 +102,6 @@ class PasswordGenerationPopupControllerImpl
   void GeneratedPasswordRejected();
 
   // content::WebContentsObserver overrides
-  void DidAttachInterstitialPage() override;
   void WebContentsDestroyed() override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;

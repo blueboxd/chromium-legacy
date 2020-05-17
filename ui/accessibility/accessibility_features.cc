@@ -47,4 +47,11 @@ bool IsAccessibilityTreeForViewsEnabled() {
       ::features::kEnableAccessibilityTreeForViews);
 }
 
+const base::Feature kAccessibilityFocusHighlight{
+    "AccessibilityFocusHighlight", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsAccessibilityFocusHighlightEnabled() {
+  return base::FeatureList::IsEnabled(::features::kAccessibilityFocusHighlight);
+}
+
 }  // namespace features

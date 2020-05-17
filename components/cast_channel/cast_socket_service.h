@@ -24,18 +24,20 @@ class CastSocketService {
  public:
   static CastSocketService* GetInstance();
 
-  CastSocketService();
-  virtual ~CastSocketService() = 0;
+  virtual ~CastSocketService();
+
+  // Returns a pointer to the Logger member variable.
+  scoped_refptr<cast_channel::Logger> GetLogger();
 
   // Removes the CastSocket corresponding to |channel_id| from the
   // CastSocketRegistry. Returns nullptr if no such CastSocket exists.
-  virtual std::unique_ptr<CastSocket> RemoveSocket(int channel_id) = 0;
+  std::unique_ptr<CastSocket> RemoveSocket(int channel_id);
 
   // Returns the socket corresponding to |channel_id| if one exists, or nullptr
   // otherwise.
-  virtual CastSocket* GetSocket(int channel_id) const = 0;
+  virtual CastSocket* GetSocket(int channel_id) const;
 
-  virtual CastSocket* GetSocket(const net::IPEndPoint& ip_endpoint) const = 0;
+  CastSocket* GetSocket(const net::IPEndPoint& ip_endpoint) const;
 
   using NetworkContextGetter =
       base::RepeatingCallback<network::mojom::NetworkContext*()>;
@@ -50,18 +52,15 @@ class CastSocketService {
   // |network_context_getter| is called on UI thread only.
   virtual void OpenSocket(NetworkContextGetter network_context_getter,
                           const CastSocketOpenParams& open_params,
-                          CastSocket::OnOpenCallback open_cb) = 0;
+                          CastSocket::OnOpenCallback open_cb);
 
   // Adds |observer| to socket service. When socket service opens cast socket,
   // it passes |observer| to opened socket.
   // Does not take ownership of |observer|.
-  virtual void AddObserver(CastSocket::Observer* observer) = 0;
+  void AddObserver(CastSocket::Observer* observer);
 
   // Remove |observer| from each socket in |sockets_|
-  virtual void RemoveObserver(CastSocket::Observer* observer) = 0;
-
-  // Returns a pointer to the Logger member variable.
-  scoped_refptr<cast_channel::Logger> GetLogger() { return logger_; }
+  void RemoveObserver(CastSocket::Observer* observer);
 
   // Gets the TaskRunner for accessing this instance. Can be called from any
   // thread.
@@ -75,41 +74,13 @@ class CastSocketService {
   }
 
   // Allow test to inject a mock cast socket.
-  void SetSocketForTest(std::unique_ptr<CastSocket> socket_for_test) {
-    socket_for_test_ = std::move(socket_for_test);
-  }
-
- protected:
-  scoped_refptr<Logger> logger_;
-
-  // The task runner on which |this| runs.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  std::unique_ptr<CastSocket> socket_for_test_;
-};
-
-class CastSocketServiceImpl : public CastSocketService {
- public:
-  using CastSocketService::NetworkContextGetter;
-
-  ~CastSocketServiceImpl() override;
-
-  // CastSocketService overrides.
-  std::unique_ptr<CastSocket> RemoveSocket(int channel_id) override;
-  CastSocket* GetSocket(int channel_id) const override;
-  CastSocket* GetSocket(const net::IPEndPoint& ip_endpoint) const override;
-  void OpenSocket(NetworkContextGetter network_context_getter,
-                  const CastSocketOpenParams& open_params,
-                  CastSocket::OnOpenCallback open_cb) override;
-  void AddObserver(CastSocket::Observer* observer) override;
-  void RemoveObserver(CastSocket::Observer* observer) override;
+  void SetSocketForTest(std::unique_ptr<CastSocket> socket_for_test);
 
  private:
-  friend class CastSocketServiceFactory;
   friend class CastSocketServiceTest;
   friend class MockCastSocketService;
 
-  CastSocketServiceImpl();
+  CastSocketService();
 
   // Adds |socket| to |sockets_| and returns raw pointer of |socket|. Takes
   // ownership of |socket|.
@@ -124,7 +95,14 @@ class CastSocketServiceImpl : public CastSocketService {
   // List of socket observers.
   base::ObserverList<CastSocket::Observer>::Unchecked observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(CastSocketServiceImpl);
+  scoped_refptr<Logger> logger_;
+
+  std::unique_ptr<CastSocket> socket_for_test_;
+
+  // The task runner on which |this| runs.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(CastSocketService);
 };
 
 }  // namespace cast_channel

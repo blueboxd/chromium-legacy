@@ -561,13 +561,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
-    public boolean isShowingInterstitialPage() {
-        checkNotDestroyed();
-        return WebContentsImplJni.get().isShowingInterstitialPage(
-                mNativeWebContentsAndroid, WebContentsImpl.this);
-    }
-
-    @Override
     public boolean focusLocationBarByDefault() {
         checkNotDestroyed();
         return WebContentsImplJni.get().focusLocationBarByDefault(
@@ -1084,7 +1077,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         void setImportance(long nativeWebContentsAndroid, WebContentsImpl caller, int importance);
         void suspendAllMediaPlayers(long nativeWebContentsAndroid, WebContentsImpl caller);
         void setAudioMuted(long nativeWebContentsAndroid, WebContentsImpl caller, boolean mute);
-        boolean isShowingInterstitialPage(long nativeWebContentsAndroid, WebContentsImpl caller);
         boolean focusLocationBarByDefault(long nativeWebContentsAndroid, WebContentsImpl caller);
         boolean isFullscreenForCurrentTab(long nativeWebContentsAndroid, WebContentsImpl caller);
         void exitFullscreen(long nativeWebContentsAndroid, WebContentsImpl caller);

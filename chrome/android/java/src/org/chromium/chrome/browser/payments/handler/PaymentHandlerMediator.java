@@ -147,11 +147,6 @@ import org.chromium.ui.modelutil.PropertyModel;
         }
     }
 
-    @Override
-    public void didAttachInterstitialPage() {
-        closeUIForInsecureNavigation();
-    }
-
     private void closeUIForInsecureNavigation() {
         mHandler.post(() -> {
             ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindowForInsecureNavigation(

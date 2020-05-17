@@ -878,11 +878,6 @@ void BrowserCommandController::OnTabStripModelChanged(
     default:
       break;
   }
-
-  for (auto* contents : old_contents)
-    RemoveInterstitialObservers(contents);
-  for (auto* contents : new_contents)
-    AddInterstitialObservers(contents);
 }
 
 void BrowserCommandController::TabBlockedStateChanged(
@@ -914,27 +909,6 @@ void BrowserCommandController::TabRestoreServiceLoaded(
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserCommandController, private:
-
-class BrowserCommandController::InterstitialObserver
-    : public content::WebContentsObserver {
- public:
-  InterstitialObserver(BrowserCommandController* controller,
-                       content::WebContents* web_contents)
-      : WebContentsObserver(web_contents), controller_(controller) {}
-
-  void DidAttachInterstitialPage() override {
-    controller_->UpdateCommandsForTabState();
-  }
-
-  void DidDetachInterstitialPage() override {
-    controller_->UpdateCommandsForTabState();
-  }
-
- private:
-  BrowserCommandController* controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(InterstitialObserver);
-};
 
 bool BrowserCommandController::IsShowingMainUI() {
   return browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP);
@@ -1523,22 +1497,6 @@ void BrowserCommandController::UpdateCommandsForTabKeyboardFocus(
       IDC_PIN_TARGET_TAB, normal_window && target_index.has_value());
   command_updater_.UpdateCommandEnabled(
       IDC_GROUP_TARGET_TAB, normal_window && target_index.has_value());
-}
-
-void BrowserCommandController::AddInterstitialObservers(WebContents* contents) {
-  interstitial_observers_.push_back(new InterstitialObserver(this, contents));
-}
-
-void BrowserCommandController::RemoveInterstitialObservers(
-    WebContents* contents) {
-  for (size_t i = 0; i < interstitial_observers_.size(); i++) {
-    if (interstitial_observers_[i]->web_contents() != contents)
-      continue;
-
-    delete interstitial_observers_[i];
-    interstitial_observers_.erase(interstitial_observers_.begin() + i);
-    return;
-  }
 }
 
 BrowserWindow* BrowserCommandController::window() {

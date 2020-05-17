@@ -166,16 +166,6 @@ public class CustomTabTaskDescriptionHelper implements NativeInitObserver, Destr
                     if (hasSecurityWarningOrError(tab)) resetIcon();
                 }
 
-                @Override
-                public void onDidAttachInterstitialPage(Tab tab) {
-                    resetIcon();
-                }
-
-                @Override
-                public void onDidDetachInterstitialPage(Tab tab) {
-                    resetIcon();
-                }
-
                 private boolean hasSecurityWarningOrError(Tab tab) {
                     boolean isContentDangerous =
                             SecurityStateModel.isContentDangerous(tab.getWebContents());

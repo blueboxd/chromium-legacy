@@ -1220,7 +1220,7 @@ static_library("extensions") {
       "api/braille_display_private/brlapi_keycode_map.cc",
       "api/braille_display_private/brlapi_keycode_map.h",
     ]
-    deps += [ "//build/linux/libbrlapi" ]
+    deps += [ "//third_party/libbrlapi" ]
   } else {
     sources += [ "api/braille_display_private/braille_controller_stub.cc" ]
   }

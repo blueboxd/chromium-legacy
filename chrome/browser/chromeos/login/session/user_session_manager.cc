@@ -1680,7 +1680,7 @@ void UserSessionManager::InitializeBrowser(Profile* profile) {
   // Only allow Quirks downloads after login is finished.
   quirks::QuirksManager::Get()->OnLoginCompleted();
 
-  if (chromeos::features::IsSplitSyncConsentEnabled() &&
+  if (chromeos::features::ShouldUseBrowserSyncConsent() &&
       ProfileSyncServiceFactory::IsSyncAllowed(profile)) {
     turn_sync_on_helper_ = std::make_unique<TurnSyncOnHelper>(profile);
   }

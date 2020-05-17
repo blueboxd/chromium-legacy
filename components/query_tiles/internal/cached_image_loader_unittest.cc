@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/memory/weak_ptr.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "components/image_fetcher/core/mock_image_fetcher.h"
@@ -26,6 +27,9 @@ using ::testing::Invoke;
 
 namespace query_tiles {
 namespace {
+
+const char kImagePreloadingHistogram[] =
+    "Search.QueryTiles.ImagePreloadingEvent";
 
 class CachedImageLoaderTest : public testing::Test {
  public:
@@ -68,6 +72,7 @@ class CachedImageLoaderTest : public testing::Test {
   }
 
   const SkBitmap& result() const { return result_; }
+  base::HistogramTester* histogram_tester() { return &histogram_tester_; }
 
  private:
   void OnBitmapFetched(SkBitmap bitmap) { result_ = bitmap; }
@@ -78,6 +83,7 @@ class CachedImageLoaderTest : public testing::Test {
 
   std::unique_ptr<ImageLoader> image_loader_;
   SkBitmap result_;
+  base::HistogramTester histogram_tester_;
 
   base::WeakPtrFactory<CachedImageLoaderTest> weak_ptr_factory_{this};
 };
@@ -94,16 +100,25 @@ TEST_F(CachedImageLoaderTest, FetchImage) {
       .WillRepeatedly(Invoke([&image](const GURL&, ImageDataFetcherCallback*,
                                       ImageFetcherCallback* fetch_callback,
                                       ImageFetcherParams) {
-        std::move(*fetch_callback).Run(image, image_fetcher::RequestMetadata());
+        image_fetcher::RequestMetadata request_metadata;
+        request_metadata.http_response_code = net::OK;
+        std::move(*fetch_callback).Run(image, request_metadata);
       }));
   FetchImage();
   EXPECT_FALSE(result().empty());
   EXPECT_EQ(result().width(), 32);
+  histogram_tester()->ExpectBucketCount(kImagePreloadingHistogram, 0, 1);
+  histogram_tester()->ExpectBucketCount(kImagePreloadingHistogram, 1, 1);
 }
 
 TEST_F(CachedImageLoaderTest, PrefetchImage) {
   PrefetchImage(net::OK, true /*expected_succes*/);
+  histogram_tester()->ExpectBucketCount(kImagePreloadingHistogram, 3, 1);
+  histogram_tester()->ExpectBucketCount(kImagePreloadingHistogram, 4, 1);
+
   PrefetchImage(net::HTTP_NOT_FOUND, false /*expected_succes*/);
+  histogram_tester()->ExpectBucketCount(kImagePreloadingHistogram, 3, 2);
+  histogram_tester()->ExpectBucketCount(kImagePreloadingHistogram, 5, 1);
 }
 
 }  // namespace

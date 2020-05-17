@@ -259,18 +259,6 @@ public interface TabObserver {
     void onDidChangeThemeColor(Tab tab, int color);
 
     /**
-     * Called when an interstitial page gets attached to the tab content.
-     * @param tab The notifying {@link Tab}.
-     */
-    void onDidAttachInterstitialPage(Tab tab);
-
-    /**
-     * Called when an interstitial page gets detached from the tab content.
-     * @param tab The notifying {@link Tab}.
-     */
-    void onDidDetachInterstitialPage(Tab tab);
-
-    /**
      * Called when the background color for the tab has changed.
      * @param tab The notifying {@link Tab}.
      * @param color The current background color.

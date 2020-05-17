@@ -85,10 +85,10 @@ class CC_PAINT_EXPORT PaintOpReader {
     Read(&value);
     *type = static_cast<PaintCanvas::AnnotationType>(value);
   }
-  void Read(PaintCanvas::SrcRectConstraint* constraint) {
+  void Read(SkCanvas::SrcRectConstraint* constraint) {
     uint8_t value = 0u;
     Read(&value);
-    *constraint = static_cast<PaintCanvas::SrcRectConstraint>(value);
+    *constraint = static_cast<SkCanvas::SrcRectConstraint>(value);
   }
   void Read(SkFilterQuality* quality) {
     uint8_t value = 0u;

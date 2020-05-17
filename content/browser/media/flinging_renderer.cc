@@ -72,12 +72,6 @@ void FlingingRenderer::Initialize(media::MediaResource* media_resource,
   std::move(init_cb).Run(media::PIPELINE_OK);
 }
 
-void FlingingRenderer::SetCdm(media::CdmContext* cdm_context,
-                              CdmAttachedCB cdm_attached_cb) {
-  // The flinging renderer does not support playing encrypted content.
-  NOTREACHED();
-}
-
 void FlingingRenderer::SetLatencyHint(
     base::Optional<base::TimeDelta> latency_hint) {}
 

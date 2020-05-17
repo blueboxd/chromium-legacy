@@ -4,12 +4,7 @@
 
 #include "net/cert/ev_root_ca_metadata.h"
 
-#if defined(USE_NSS_CERTS)
-#include <cert.h>
-#include <pkcs11n.h>
-#include <secerr.h>
-#include <secoid.h>
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 #include <stdlib.h>
 #endif
 
@@ -19,9 +14,7 @@
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "net/der/input.h"
-#if defined(USE_NSS_CERTS)
-#include "crypto/nss_util.h"
-#elif defined(PLATFORM_USES_CHROMIUM_EV_METADATA) || defined(OS_WIN)
+#if defined(PLATFORM_USES_CHROMIUM_EV_METADATA)
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
 #endif
@@ -610,113 +603,7 @@ EVRootCAMetadata* EVRootCAMetadata::GetInstance() {
   return g_ev_root_ca_metadata.Pointer();
 }
 
-#if defined(USE_NSS_CERTS)
-
-namespace {
-// Converts a DER-encoded OID (without leading tag and length) to a SECOidTag.
-//
-// Returns true if it was able to find an *existing* SECOidTag (it will not
-// register one if missing).
-//
-// Since all the EV OIDs are registered during EVRootCAMetadata's constructor,
-// doing a lookup only needs to consider existing OID tags.
-bool ConvertBytesToSecOidTag(const der::Input& oid, SECOidTag* out) {
-  SECItem item;
-  item.data = const_cast<uint8_t*>(oid.UnsafeData());
-  item.len = oid.Length();
-  *out = SECOID_FindOIDTag(&item);
-  return *out != SEC_OID_UNKNOWN;
-}
-
-}  // namespace
-
-bool EVRootCAMetadata::IsEVPolicyOID(PolicyOID policy_oid) const {
-  return policy_oids_.find(policy_oid) != policy_oids_.end();
-}
-
-bool EVRootCAMetadata::IsEVPolicyOIDGivenBytes(
-    const der::Input& policy_oid) const {
-  SECOidTag oid_tag;
-  return ConvertBytesToSecOidTag(policy_oid, &oid_tag) &&
-         IsEVPolicyOID(oid_tag);
-}
-
-bool EVRootCAMetadata::HasEVPolicyOID(const SHA256HashValue& fingerprint,
-                                      PolicyOID policy_oid) const {
-  auto iter = ev_policy_.find(fingerprint);
-  if (iter == ev_policy_.end())
-    return false;
-  return std::find(iter->second.begin(), iter->second.end(), policy_oid) !=
-         iter->second.end();
-}
-
-bool EVRootCAMetadata::HasEVPolicyOIDGivenBytes(
-    const SHA256HashValue& fingerprint,
-    const der::Input& policy_oid) const {
-  SECOidTag oid_tag;
-  return ConvertBytesToSecOidTag(policy_oid, &oid_tag) &&
-         HasEVPolicyOID(fingerprint, oid_tag);
-}
-
-// static
-bool EVRootCAMetadata::IsCaBrowserForumEvOid(PolicyOID policy_oid) {
-  // OID: 2.23.140.1.1
-  const uint8_t kCabEvOid[] = {0x67, 0x81, 0x0c, 0x01, 0x01};
-  SECItem item;
-  item.data = const_cast<uint8_t*>(&kCabEvOid[0]);
-  item.len = sizeof(kCabEvOid);
-  return policy_oid == SECOID_FindOIDTag(&item);
-}
-
-bool EVRootCAMetadata::AddEVCA(const SHA256HashValue& fingerprint,
-                               const char* policy) {
-  if (ev_policy_.find(fingerprint) != ev_policy_.end())
-    return false;
-
-  PolicyOID oid;
-  if (!RegisterOID(policy, &oid))
-    return false;
-
-  ev_policy_[fingerprint].push_back(oid);
-  policy_oids_.insert(oid);
-
-  return true;
-}
-
-bool EVRootCAMetadata::RemoveEVCA(const SHA256HashValue& fingerprint) {
-  auto it = ev_policy_.find(fingerprint);
-  if (it == ev_policy_.end())
-    return false;
-  PolicyOID oid = it->second[0];
-  ev_policy_.erase(it);
-  policy_oids_.erase(oid);
-  return true;
-}
-
-// static
-bool EVRootCAMetadata::RegisterOID(const char* policy,
-                                   PolicyOID* out) {
-  PRUint8 buf[64];
-  SECItem oid_item;
-  oid_item.data = buf;
-  oid_item.len = sizeof(buf);
-  SECStatus status = SEC_StringToOID(NULL, &oid_item, policy, 0);
-  if (status != SECSuccess)
-    return false;
-
-  // Register the OID.
-  SECOidData od;
-  od.oid.len = oid_item.len;
-  od.oid.data = oid_item.data;
-  od.offset = SEC_OID_UNKNOWN;
-  od.desc = policy;
-  od.mechanism = CKM_INVALID_MECHANISM;
-  od.supportedExtension = INVALID_CERT_EXTENSION;
-  *out = SECOID_AddEntry(&od);
-  return *out != SEC_OID_UNKNOWN;
-}
-
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 
 namespace {
 
@@ -931,24 +818,7 @@ bool EVRootCAMetadata::RemoveEVCA(const SHA256HashValue& fingerprint) {
 
 EVRootCAMetadata::EVRootCAMetadata() {
 // Constructs the object from the raw metadata in kEvRootCaMetadata.
-#if defined(USE_NSS_CERTS)
-  crypto::EnsureNSSInit();
-
-  for (const auto& ev_root : kEvRootCaMetadata) {
-    for (const auto& policy : ev_root.policy_oids) {
-      if (policy.empty())
-        break;
-      PolicyOID policy_oid;
-      if (!RegisterOID(policy.data(), &policy_oid)) {
-        LOG(ERROR) << "Failed to register OID: " << policy;
-        continue;
-      }
-
-      ev_policy_[ev_root.fingerprint].push_back(policy_oid);
-      policy_oids_.insert(policy_oid);
-    }
-  }
-#elif defined(PLATFORM_USES_CHROMIUM_EV_METADATA) && !defined(OS_WIN)
+#if defined(PLATFORM_USES_CHROMIUM_EV_METADATA) && !defined(OS_WIN)
   for (const auto& ev_root : kEvRootCaMetadata) {
     for (const auto& policy : ev_root.policy_oids) {
       if (policy.empty())

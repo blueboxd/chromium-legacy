@@ -15,11 +15,6 @@ namespace {
 
 // Returns true if the prefs were migrated.
 bool MaybeMigratePreferences(PrefService* prefs) {
-  // SplitSyncConsent has its own OOBE flow to enable OS sync, so it doesn't
-  // need this migration.
-  if (chromeos::features::IsSplitSyncConsentEnabled())
-    return false;
-
   // Migration code can be removed when SplitSettingsSync has been fully
   // deployed to stable channel, likely in July 2020. When doing this, change
   // the pref kOsSyncFeatureEnabled to default to true and delete the pref

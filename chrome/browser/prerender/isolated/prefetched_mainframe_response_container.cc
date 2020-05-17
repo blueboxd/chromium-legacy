@@ -15,6 +15,12 @@ PrefetchedMainframeResponseContainer::PrefetchedMainframeResponseContainer(
 PrefetchedMainframeResponseContainer::~PrefetchedMainframeResponseContainer() =
     default;
 
+std::unique_ptr<PrefetchedMainframeResponseContainer>
+PrefetchedMainframeResponseContainer::Clone() const {
+  return std::make_unique<PrefetchedMainframeResponseContainer>(
+      isolation_info_, head_->Clone(), std::make_unique<std::string>(*body_));
+}
+
 network::mojom::URLResponseHeadPtr
 PrefetchedMainframeResponseContainer::TakeHead() {
   DCHECK(head_);

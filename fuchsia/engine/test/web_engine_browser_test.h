@@ -47,6 +47,7 @@ class WebEngineBrowserTest : public content::BrowserTestBase {
   }
 
   // content::BrowserTestBase implementation.
+  void SetUp() override;
   void PreRunTestOnMainThread() override;
   void PostRunTestOnMainThread() override;
   void TearDownOnMainThread() override;

@@ -169,6 +169,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabSuggestionsFetcherResults.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabSuggestionsOrchestrator.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabSuggestionsRanker.java",
+    "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabSuggestionsServerFetcher.java",
   ]
 
   deps = [

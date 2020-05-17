@@ -10,7 +10,6 @@
       "name": "LayoutNGBlockFlow DIV id='target'",
       "position": [-10, -10],
       "bounds": [220, 220],
-      "backgroundColor": "#0000FF",
       "invalidations": [
         [0, 0, 220, 220]
       ],

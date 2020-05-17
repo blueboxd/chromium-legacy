@@ -10,24 +10,19 @@
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_NSS_CERTS)
-#include "crypto/nss_util.h"
-#include "crypto/scoped_nss_types.h"
-#endif
-
 namespace net {
 
 namespace {
 
-#if defined(USE_NSS_CERTS) || defined(OS_WIN)
+#if defined(OS_WIN)
 const char kFakePolicyStr[] = "2.16.840.1.42";
 const char kCabEvPolicyStr[] = "2.23.140.1.1";
 const char kStarfieldPolicyStr[] = "2.16.840.1.114414.1.7.23.3";
-#elif defined(OS_MACOSX)
+#elif defined(PLATFORM_USES_CHROMIUM_EV_METADATA)
 const char kFakePolicyStr[] = "2.16.840.1.42";
 #endif
 
-#if defined(USE_NSS_CERTS) || defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(PLATFORM_USES_CHROMIUM_EV_METADATA)
 // DER OID values (no tag or length).
 const uint8_t kFakePolicyBytes[] = {0x60, 0x86, 0x48, 0x01, 0x2a};
 const uint8_t kCabEvPolicyBytes[] = {0x67, 0x81, 0x0c, 0x01, 0x01};
@@ -58,48 +53,9 @@ class EVOidData {
   der::Input starfield_policy_bytes;
 };
 
-#endif  // defined(USE_NSS_CERTS) || defined(OS_WIN) || defined(OS_MACOSX)
+#endif  // defined(PLATFORM_USES_CHROMIUM_EV_METADATA)
 
-#if defined(USE_NSS_CERTS)
-
-SECOidTag RegisterOID(PLArenaPool* arena, const char* oid_string) {
-  SECOidData oid_data;
-  memset(&oid_data, 0, sizeof(oid_data));
-  oid_data.offset = SEC_OID_UNKNOWN;
-  oid_data.desc = oid_string;
-  oid_data.mechanism = CKM_INVALID_MECHANISM;
-  oid_data.supportedExtension = INVALID_CERT_EXTENSION;
-
-  SECStatus rv = SEC_StringToOID(arena, &oid_data.oid, oid_string, 0);
-  if (rv != SECSuccess)
-    return SEC_OID_UNKNOWN;
-
-  return SECOID_AddEntry(&oid_data);
-}
-
-EVOidData::EVOidData()
-    : fake_policy(SEC_OID_UNKNOWN),
-      fake_policy_bytes(kFakePolicyBytes),
-      cab_ev_policy(SEC_OID_UNKNOWN),
-      cab_ev_policy_bytes(kCabEvPolicyBytes),
-      starfield_policy(SEC_OID_UNKNOWN),
-      starfield_policy_bytes(kStarfieldPolicyBytes) {}
-
-bool EVOidData::Init() {
-  crypto::EnsureNSSInit();
-  crypto::ScopedPLArenaPool pool(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
-  if (!pool.get())
-    return false;
-
-  fake_policy = RegisterOID(pool.get(), kFakePolicyStr);
-  cab_ev_policy = RegisterOID(pool.get(), kCabEvPolicyStr);
-  starfield_policy = RegisterOID(pool.get(), kStarfieldPolicyStr);
-
-  return fake_policy != SEC_OID_UNKNOWN && cab_ev_policy != SEC_OID_UNKNOWN &&
-         starfield_policy != SEC_OID_UNKNOWN;
-}
-
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 
 EVOidData::EVOidData()
     : fake_policy(kFakePolicyStr),
@@ -113,7 +69,7 @@ bool EVOidData::Init() {
   return true;
 }
 
-#elif defined(OS_MACOSX)
+#elif defined(PLATFORM_USES_CHROMIUM_EV_METADATA)
 
 EVOidData::EVOidData()
     : fake_policy(kFakePolicyBytes),
@@ -129,7 +85,7 @@ bool EVOidData::Init() {
 
 #endif
 
-#if defined(USE_NSS_CERTS) || defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(PLATFORM_USES_CHROMIUM_EV_METADATA)
 
 class EVRootCAMetadataTest : public testing::Test {
  protected:
@@ -232,7 +188,7 @@ TEST_F(EVRootCAMetadataTest, IsCaBrowserForumEvOid) {
       EVRootCAMetadata::IsCaBrowserForumEvOid(ev_oid_data.starfield_policy));
 }
 
-#endif  // defined(USE_NSS_CERTS) || defined(OS_WIN) || defined(OS_MACOSX)
+#endif  // defined(PLATFORM_USES_CHROMIUM_EV_METADATA)
 
 }  // namespace
 

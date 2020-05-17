@@ -183,10 +183,6 @@ class NavigableContentsDelegateImpl : public content::NavigableContentsDelegate,
 
   void NavigationEntriesDeleted() override { MaybeNotifyCanGoBack(); }
 
-  void DidAttachInterstitialPage() override { MaybeNotifyCanGoBack(); }
-
-  void DidDetachInterstitialPage() override { MaybeNotifyCanGoBack(); }
-
   // Notifies the client whether the web contents can navigate back in its
   // history stack.
   void MaybeNotifyCanGoBack() {

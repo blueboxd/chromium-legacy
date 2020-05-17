@@ -53,11 +53,13 @@ class TileFetcherImpl : public TileFetcher {
       const std::string& accept_languages,
       const std::string& api_key,
       const std::string& experiment_tag,
+      const std::string& client_version,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       : url_loader_factory_(url_loader_factory) {
     tile_info_request_status_ = TileInfoRequestStatus::kInit;
-    auto resource_request = BuildGetRequest(url, country_code, accept_languages,
-                                            api_key, experiment_tag);
+    auto resource_request =
+        BuildGetRequest(url, country_code, accept_languages, api_key,
+                        experiment_tag, client_version);
     url_loader_ = network::SimpleURLLoader::Create(
         std::move(resource_request), kQueryTilesFetcherTrafficAnnotation);
   }
@@ -79,10 +81,12 @@ class TileFetcherImpl : public TileFetcher {
       const std::string& country_code,
       const std::string& accept_languages,
       const std::string& api_key,
-      const std::string& experiment_tag) {
+      const std::string& experiment_tag,
+      const std::string& client_version) {
     auto request = std::make_unique<network::ResourceRequest>();
     request->method = net::HttpRequestHeaders::kGetMethod;
     request->headers.SetHeader("x-goog-api-key", api_key);
+    request->headers.SetHeader("X-Client-Version", client_version);
     request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
                                kRequestContentType);
     request->url =
@@ -160,10 +164,11 @@ std::unique_ptr<TileFetcher> TileFetcher::Create(
     const std::string& accept_languages,
     const std::string& api_key,
     const std::string& experiment_tag,
+    const std::string& client_version,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   return std::make_unique<TileFetcherImpl>(url, country_code, accept_languages,
                                            api_key, experiment_tag,
-                                           url_loader_factory);
+                                           client_version, url_loader_factory);
 }
 
 TileFetcher::TileFetcher() = default;

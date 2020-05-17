@@ -817,14 +817,15 @@ TEST_F(DocumentTest, SynchronousMutationNotifierUpdateCharacterData) {
 }
 
 TEST_F(DocumentTest, AttachExecutionContext) {
+  auto* scheduler = GetDocument().GetScheduler();
   EXPECT_TRUE(
       GetDocument().GetAgent()->event_loop()->IsSchedulerAttachedForTest(
-          GetDocument().GetScheduler()));
+          scheduler));
   Document* doc = GetDocument().implementation().createHTMLDocument("foo");
   EXPECT_EQ(GetDocument().GetAgent(), doc->GetAgent());
   GetDocument().Shutdown();
-  EXPECT_FALSE(doc->GetAgent()->event_loop()->IsSchedulerAttachedForTest(
-      doc->GetScheduler()));
+  EXPECT_FALSE(
+      doc->GetAgent()->event_loop()->IsSchedulerAttachedForTest(scheduler));
   doc->Shutdown();
 }
 

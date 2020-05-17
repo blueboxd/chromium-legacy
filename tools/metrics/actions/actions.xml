@@ -23166,6 +23166,26 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SupervisedUsers_Extensions_Disabled">
+  <owner>tobyhuang@chromium.org</owner>
+  <owner>agawronska@chromium.org</owner>
+  <owner>danan@chromium.org</owner>
+  <owner>cros-families@google.com</owner>
+  <description>
+    Emitted when a supervised user successfully disables an extension.
+  </description>
+</action>
+
+<action name="SupervisedUsers_Extensions_Enabled">
+  <owner>tobyhuang@chromium.org</owner>
+  <owner>agawronska@chromium.org</owner>
+  <owner>danan@chromium.org</owner>
+  <owner>cros-families@google.com</owner>
+  <description>
+    Emitted when a supervised user successfully enables an extension.
+  </description>
+</action>
+
 <action name="SupervisedUsers_Extensions_ExtensionInstallDialog_AskedParent">
   <owner>tobyhuang@chromium.org</owner>
   <owner>agawronska@chromium.org</owner>

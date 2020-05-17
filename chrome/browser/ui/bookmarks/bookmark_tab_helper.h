@@ -88,8 +88,6 @@ class BookmarkTabHelper
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void DidAttachInterstitialPage() override;
-  void DidDetachInterstitialPage() override;
 
   // Whether the current URL is starred.
   bool is_starred_;

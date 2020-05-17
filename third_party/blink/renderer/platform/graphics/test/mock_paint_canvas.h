@@ -76,7 +76,7 @@ class MockPaintCanvas : public cc::PaintCanvas {
                     const SkRect& src,
                     const SkRect& dst,
                     const PaintFlags* flags,
-                    SrcRectConstraint constraint));
+                    SkCanvas::SrcRectConstraint constraint));
   MOCK_METHOD3(drawSkottie,
                void(scoped_refptr<cc::SkottieWrapper> skottie,
                     const SkRect& dst,

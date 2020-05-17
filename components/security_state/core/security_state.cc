@@ -57,8 +57,6 @@ SecurityLevel GetSecurityLevelForDisplayedMixedContent(bool suppress_warning) {
 std::string GetHistogramSuffixForSecurityLevel(
     security_state::SecurityLevel level) {
   switch (level) {
-    case EV_SECURE:
-      return "EV_SECURE";
     case SECURE:
       return "SECURE";
     case NONE:
@@ -247,10 +245,6 @@ SecurityLevel GetSecurityLevel(
     return SECURE_WITH_POLICY_INSTALLED_CERT;
   }
 
-  if ((visible_security_state.cert_status & net::CERT_STATUS_IS_EV) &&
-      visible_security_state.certificate) {
-    return EV_SECURE;
-  }
   return SECURE;
 }
 
@@ -311,7 +305,7 @@ bool IsOriginLocalhostOrFile(const GURL& url) {
 }
 
 bool IsSslCertificateValid(SecurityLevel security_level) {
-  return security_level == SECURE || security_level == EV_SECURE ||
+  return security_level == SECURE ||
          security_level == SECURE_WITH_POLICY_INSTALLED_CERT;
 }
 

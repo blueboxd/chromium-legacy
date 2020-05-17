@@ -94,5 +94,9 @@ void ResetSection::AddHandlers(content::WebUI* web_ui) {
       std::make_unique<::settings::ResetSettingsHandler>(profile()));
 }
 
+void ResetSection::RegisterHierarchy(HierarchyGenerator* generator) const {
+  generator->RegisterTopLevelSetting(mojom::Setting::kPowerwash);
+}
+
 }  // namespace settings
 }  // namespace chromeos

@@ -351,14 +351,6 @@ const base::Feature kSmartDimModelV3{"SmartDimModelV3",
 const base::Feature kSplitSettingsSync{"SplitSettingsSync",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Introduces a new OOBE dialog for the OS sync feature. Uses the same browser
-// sync consent dialog as Windows/Mac/Linux. Allows the user to fully opt-out of
-// browser sync, including marking the signin primary account as unconsented.
-// Requires SplitSettingsSync.
-// NOTE: Use IsSplitSyncConsentEnabled() to test the flag, see implementation.
-const base::Feature kSplitSyncConsent{"SplitSyncConsent",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables a settings UI toggle that controls Suggested Content status. Also
 // enables a corresponding notice in the Launcher about Suggested Content.
 const base::Feature kSuggestedContentToggle{"SuggestedContentToggle",
@@ -372,6 +364,13 @@ const base::Feature kUnifiedMediaView{"UnifiedMediaView",
 // Enables the updated cellular activation UI; see go/cros-cellular-design.
 const base::Feature kUpdatedCellularActivationUi{
     "UpdatedCellularActivationUi", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Uses the same browser sync consent dialog as Windows/Mac/Linux. Allows the
+// user to fully opt-out of browser sync, including marking the IdentityManager
+// primary account as unconsented. Requires SplitSettingsSync.
+// NOTE: Call UseBrowserSyncConsent() to test the flag, see implementation.
+const base::Feature kUseBrowserSyncConsent{"UseBrowserSyncConsent",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Use the staging URL as part of the "Messages" feature under "Connected
 // Devices" settings.
@@ -461,14 +460,14 @@ bool IsSplitSettingsSyncEnabled() {
   return base::FeatureList::IsEnabled(kSplitSettingsSync);
 }
 
-bool IsSplitSyncConsentEnabled() {
-  // SplitSyncConsent requires SplitSettingsSync.
-  return base::FeatureList::IsEnabled(kSplitSettingsSync) &&
-         base::FeatureList::IsEnabled(kSplitSyncConsent);
-}
-
 bool ShouldShowPlayStoreInDemoMode() {
   return base::FeatureList::IsEnabled(kShowPlayInDemoMode);
+}
+
+bool ShouldUseBrowserSyncConsent() {
+  // UseBrowserSyncConsent requires SplitSettingsSync.
+  return base::FeatureList::IsEnabled(kSplitSettingsSync) &&
+         base::FeatureList::IsEnabled(kUseBrowserSyncConsent);
 }
 
 bool ShouldUseV1DeviceSync() {

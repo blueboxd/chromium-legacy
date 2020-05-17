@@ -10,7 +10,6 @@
     {
       "name": "LayoutTextControl TEXTAREA",
       "bounds": [206, 126],
-      "backgroundColor": "#CCCCCC",
       "transform": 1
     },
     {
@@ -36,7 +35,6 @@
     {
       "name": "LayoutTextControl TEXTAREA",
       "bounds": [206, 126],
-      "backgroundColor": "#CCCCCC",
       "transform": 3
     },
     {

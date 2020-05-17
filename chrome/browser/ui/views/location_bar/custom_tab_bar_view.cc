@@ -93,7 +93,6 @@ ui::NativeTheme::ColorId GetSecurityChipColorId(
   switch (security_level) {
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
       return ui::NativeTheme::kColorId_CustomTabBarSecurityChipWithCertColor;
-    case security_state::EV_SECURE:
     case security_state::SECURE:
       return ui::NativeTheme::kColorId_CustomTabBarSecurityChipSecureColor;
     case security_state::DANGEROUS:

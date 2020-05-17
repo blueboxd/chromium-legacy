@@ -162,6 +162,12 @@ void MainSection::AddHandlers(content::WebUI* web_ui) {
       std::make_unique<::settings::BrowserLifetimeHandler>());
 }
 
+void MainSection::RegisterHierarchy(HierarchyGenerator* generator) const {
+  // MainSection is a container for common resources/functionality shared
+  // between sections and does not have its own subpages/settings.
+  NOTIMPLEMENTED();
+}
+
 void MainSection::AddChromeOSUserStrings(
     content::WebUIDataSource* html_source) {
   const user_manager::User* user =

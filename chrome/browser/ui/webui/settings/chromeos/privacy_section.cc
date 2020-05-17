@@ -96,5 +96,12 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   ::settings::AddPersonalizationOptionsStrings(html_source);
 }
 
+void PrivacySection::RegisterHierarchy(HierarchyGenerator* generator) const {
+  generator->RegisterTopLevelSetting(mojom::Setting::kVerifiedAccess);
+  generator->RegisterTopLevelSetting(mojom::Setting::kKeepWifiOnDuringSleep);
+  generator->RegisterTopLevelSetting(
+      mojom::Setting::kUsageStatsAndCrashReports);
+}
+
 }  // namespace settings
 }  // namespace chromeos

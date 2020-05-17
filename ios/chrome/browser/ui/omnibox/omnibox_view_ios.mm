@@ -527,8 +527,7 @@ void OmniboxViewIOS::WillPaste() {
 UIColor* OmniboxViewIOS::GetSecureTextColor(
     security_state::SecurityLevel security_level,
     bool in_dark_mode) {
-  if (security_level == security_state::EV_SECURE ||
-      security_level == security_state::SECURE) {
+  if (security_level == security_state::SECURE) {
     return in_dark_mode ? IncognitoSecureTextColor() : SecureTextColor();
   }
 

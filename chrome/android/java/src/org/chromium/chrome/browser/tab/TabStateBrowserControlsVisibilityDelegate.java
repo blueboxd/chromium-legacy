@@ -137,16 +137,6 @@ public class TabStateBrowserControlsVisibilityDelegate
             }
 
             @Override
-            public void onDidAttachInterstitialPage(Tab tab) {
-                updateVisibilityConstraints();
-            }
-
-            @Override
-            public void onDidDetachInterstitialPage(Tab tab) {
-                updateVisibilityConstraints();
-            }
-
-            @Override
             public void onShown(Tab tab, int type) {
                 updateVisibilityConstraints();
             }
@@ -200,7 +190,6 @@ public class TabStateBrowserControlsVisibilityDelegate
         enableHidingBrowserControls &=
                 !SelectionPopupController.fromWebContents(webContents).isFocusedNodeEditable();
         enableHidingBrowserControls &= !mTab.isShowingErrorPage();
-        enableHidingBrowserControls &= !webContents.isShowingInterstitialPage();
         enableHidingBrowserControls &= !mTab.isRendererUnresponsive();
         enableHidingBrowserControls &= !mTab.isHidden();
         enableHidingBrowserControls &= !mIsFullscreenWaitingForLoad;

@@ -23,6 +23,8 @@
 #include "third_party/icu/source/common/unicode/utypes.h"
 #include "third_party/icu/source/i18n/unicode/uspoof.h"
 
+const char* kTop500Separator = "###END_TOP_500###";
+
 base::FilePath GetPath(base::StringPiece basename) {
   base::FilePath path;
   base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
@@ -74,6 +76,13 @@ int GenerateSkeletons(const char* input_file_name,
   size_t max_labels = 0;
   std::string domain_with_max_labels;
   while (std::getline(input, domain)) {
+    base::TrimWhitespaceASCII(domain, base::TRIM_ALL, &domain);
+
+    if (domain == kTop500Separator) {
+      output += std::string(kTop500Separator) + "\n";
+      continue;
+    }
+
     if (domain[0] == '#')
       continue;
 

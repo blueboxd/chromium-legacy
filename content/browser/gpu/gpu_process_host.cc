@@ -1138,8 +1138,13 @@ bool GpuProcessHost::LaunchGpuProcess() {
     cmd_line->AppendSwitchASCII(switches::kGpuRevision,
                                 base::StringPrintf("%u", device_info.revision));
 #endif
-    cmd_line->AppendSwitchASCII(switches::kGpuDriverVersion,
-                                device_info.driver_version.c_str());
+    if (device_info.driver_version.length()) {
+      std::string version_str = device_info.driver_version;
+      base::debug::Alias(&version_str);
+
+      cmd_line->AppendSwitchASCII(switches::kGpuDriverVersion,
+                                  device_info.driver_version);
+    }
   }
 
   // TODO(penghuang): Replace all GPU related switches with GpuPreferences.

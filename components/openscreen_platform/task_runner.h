@@ -20,10 +20,6 @@ class TaskRunner final : public openscreen::TaskRunner {
   TaskRunner& operator=(const TaskRunner&) = delete;
   TaskRunner& operator=(TaskRunner&&) = delete;
 
-  scoped_refptr<base::SequencedTaskRunner> task_runner() {
-    return task_runner_;
-  }
-
   // TaskRunner overrides
   ~TaskRunner() final;
   void PostPackagedTask(openscreen::TaskRunner::Task task) final;

@@ -942,6 +942,9 @@ base::Optional<int> AXNode::GetSetSize() {
   if (tree()->GetTreeUpdateInProgressState())
     return base::nullopt;
 
+  if (IsEmbeddedGroup())
+    return base::nullopt;
+
   // See AXTree::GetSetSize
   int32_t set_size = tree_->GetSetSize(*this, ordered_set);
   if (set_size < 0)
@@ -1020,17 +1023,18 @@ int AXNode::UpdateUnignoredCachedValuesRecursive(int startIndex) {
   return count;
 }
 
-// Finds ordered set that immediately contains node.
+// Finds ordered set that contains node.
 // Is not required for set's role to match node's role.
 AXNode* AXNode::GetOrderedSet() const {
   AXNode* result = parent();
   // Continue walking up while parent is invalid, ignored, a generic container,
-  // or unknown.
-  while (result && (result->IsIgnored() ||
+  // unknown, or embedded group.
+  while (result && (result->IsEmbeddedGroup() || result->IsIgnored() ||
                     result->data().role == ax::mojom::Role::kGenericContainer ||
                     result->data().role == ax::mojom::Role::kUnknown)) {
     result = result->parent();
   }
+
   return result;
 }
 
@@ -1123,6 +1127,13 @@ AXNode* AXNode::GetCollapsedMenuListPopUpButtonAncestor() const {
   }
 
   return node->IsCollapsedMenuListPopUpButton() ? node : nullptr;
+}
+
+bool AXNode::IsEmbeddedGroup() const {
+  if (data().role != ax::mojom::Role::kGroup || !parent())
+    return false;
+
+  return ui::IsSetLike(parent()->data().role);
 }
 
 }  // namespace ui

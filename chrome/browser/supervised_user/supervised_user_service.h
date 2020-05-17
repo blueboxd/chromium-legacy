@@ -221,6 +221,8 @@ class SupervisedUserService : public KeyedService,
   bool CanInstallExtensions() const;
 
   bool IsExtensionAllowed(const extensions::Extension& extension) const;
+
+  void RecordExtensionEnablementUmaMetrics(bool enabled) const;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
  private:

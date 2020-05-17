@@ -46,7 +46,6 @@ class WebAppUninstallDialogDelegateView : public views::DialogDelegateView {
   WebAppUninstallDialogDelegateView& operator=(
       const WebAppUninstallDialogDelegateView&) = delete;
   ~WebAppUninstallDialogDelegateView() override;
-  void ProcessAutoConfirmValue();
 
  private:
   // views::DialogDelegateView:
@@ -60,6 +59,7 @@ class WebAppUninstallDialogDelegateView : public views::DialogDelegateView {
   // Uninstalls the web app. Returns true on success.
   bool Uninstall();
   void ClearWebAppSiteData();
+  void ProcessAutoConfirmValue();
 
   void OnDialogAccepted();
   void OnDialogCanceled();

@@ -83,6 +83,24 @@ class SupervisedUserExtensionsMetricsRecorder
     kMaxValue = kNoParentError
   };
 
+  // These enum values represent supervised user actions to enable or disable an
+  // extension.
+  // These values are logged to UMA. Entries should not be renumbered and
+  // numeric values should never be reused. Please keep in sync with
+  // "SupervisedUserExtensionEnablement" in
+  // src/tools/metrics/histograms/enums.xml.
+  enum class EnablementState {
+    // Recorded when the child enables an approved extension.
+    kEnabled = 0,
+    // Recorded when the child disables an approved extension.
+    kDisabled = 1,
+    // Add future entries above this comment, in sync with
+    // "SupervisedUserExtensionEnablement" in
+    // src/tools/metrics/histograms/enums.xml.
+    // Update kMaxValue to the last value.
+    kMaxValue = kDisabled
+  };
+
   // UMA metrics for adding to or removing from the set of approved extension
   // ids in the kSupervisedUserApprovedExtensions synced pref.
   static const char kExtensionsHistogramName[];
@@ -107,6 +125,11 @@ class SupervisedUserExtensionsMetricsRecorder
   static const char kParentPermissionDialogParentApprovedActionName[];
   static const char kParentPermissionDialogParentCanceledActionName[];
 
+  // UMA metrics for enabling or disabling extensions.
+  static const char kEnablementHistogramName[];
+  static const char kEnabledActionName[];
+  static const char kDisabledActionName[];
+
   SupervisedUserExtensionsMetricsRecorder();
   ~SupervisedUserExtensionsMetricsRecorder() override = default;
   SupervisedUserExtensionsMetricsRecorder(
@@ -129,6 +152,9 @@ class SupervisedUserExtensionsMetricsRecorder
   // Record UMA metrics related to the Parent Permission Dialog.
   void RecordParentPermissionDialogUmaMetrics(
       ParentPermissionDialogState state);
+
+  // Records when the supervised user enables or disables an approved extension.
+  static void RecordEnablementUmaMetrics(EnablementState state);
 
   // Set clock used for timing for manipulation during tests.
   void SetClockForTesting(const base::TickClock* tick_clock);

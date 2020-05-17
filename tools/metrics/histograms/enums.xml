@@ -56089,6 +56089,15 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="NoTiles"/>
 </enum>
 
+<enum name="QueryTilesImageLoadingEvent">
+  <int value="0" label="Start in full browser mode"/>
+  <int value="1" label="Success in full browser mode"/>
+  <int value="2" label="Failure in full browser mode"/>
+  <int value="3" label="Start in reduced mode"/>
+  <int value="4" label="Success in reduced mode"/>
+  <int value="5" label="Failure in reduced mode"/>
+</enum>
+
 <enum name="QueryTilesRequestStatus">
   <int value="0" label="Init"/>
   <int value="1" label="Success"/>
@@ -60378,7 +60387,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 <enum name="SecurityLevel">
   <int value="0" label="None"/>
   <int value="1" label="HTTP with warning (deprecated)"/>
-  <int value="2" label="Secure with EV certificate"/>
+  <int value="2" label="Secure with EV certificate (deprecated)"/>
   <int value="3" label="Secure"/>
   <int value="4" label="Secure with policy-installed certificate"/>
   <int value="5" label="Dangerous"/>
@@ -64900,6 +64909,14 @@ would be helpful to identify which type is being sent.
   </summary>
   <int value="0" label="Extensions allowlist miss"/>
   <int value="1" label="Extensions allowlist hit"/>
+</enum>
+
+<enum name="SupervisedUserExtensionEnablement">
+  <summary>
+    Tracks supervised user actions to enable or disable approved extensions.
+  </summary>
+  <int value="0" label="Enabled"/>
+  <int value="1" label="Disabled"/>
 </enum>
 
 <enum name="SupervisedUserExtensionInstallDialog">

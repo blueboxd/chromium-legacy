@@ -10,7 +10,6 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.share.ShareActivity;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.printing.PrintingController;
 import org.chromium.printing.PrintingControllerImpl;
 
@@ -25,8 +24,7 @@ public class PrintShareActivity extends ShareActivity {
 
     public static boolean featureIsAvailable(Tab currentTab) {
         PrintingController printingController = PrintingControllerImpl.getInstance();
-        return !currentTab.isNativePage() && !((TabImpl) currentTab).isShowingInterstitialPage()
-                && !printingController.isBusy()
+        return !currentTab.isNativePage() && !printingController.isBusy()
                 && PrefServiceBridge.getInstance().getBoolean(Pref.PRINTING_ENABLED);
     }
 }

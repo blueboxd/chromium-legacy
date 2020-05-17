@@ -107,6 +107,8 @@ class OmniboxViewViews : public OmniboxView,
   // Returns the width in pixels needed to display the current text. The
   // returned value includes margins.
   int GetTextWidth() const;
+  // Returns the width in pixels needed to display the current text unelided.
+  int GetUnelidedTextWidth() const;
 
   // Returns the omnibox's width in pixels.
   int GetWidth() const;
@@ -135,6 +137,9 @@ class OmniboxViewViews : public OmniboxView,
 
   // views::Textfield:
   gfx::Size GetMinimumSize() const override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnPaint(gfx::Canvas* canvas) override;
   void ExecuteCommand(int command_id, int event_flags) override;
   ui::TextInputType GetTextInputType() const override;
@@ -239,9 +244,6 @@ class OmniboxViewViews : public OmniboxView,
   // views::Textfield:
   bool IsItemForCommandIdDynamic(int command_id) const override;
   const char* GetClassName() const override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  bool OnMouseDragged(const ui::MouseEvent& event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
   bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;

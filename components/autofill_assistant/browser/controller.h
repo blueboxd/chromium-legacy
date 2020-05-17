@@ -279,7 +279,6 @@ class Controller : public ScriptExecutorDelegate,
       const std::vector<ScriptHandle>& runnable_scripts) override;
 
   // Overrides content::WebContentsObserver:
-  void DidAttachInterstitialPage() override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
   void DidStartNavigation(

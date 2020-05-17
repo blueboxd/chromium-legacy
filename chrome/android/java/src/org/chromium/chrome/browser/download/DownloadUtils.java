@@ -43,7 +43,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
@@ -278,8 +277,6 @@ public class DownloadUtils {
                     OfflinePageBridge.getForProfile(Profile.fromWebContents(tab.getWebContents()));
             return bridge.isShowingDownloadButtonInErrorPage(tab.getWebContents());
         }
-
-        if (((TabImpl) tab).isShowingInterstitialPage()) return false;
 
         // Don't allow re-downloading the currently displayed offline page.
         if (OfflinePageUtils.isOfflinePage(tab)) return false;

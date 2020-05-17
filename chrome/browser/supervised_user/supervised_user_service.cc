@@ -401,6 +401,17 @@ bool SupervisedUserService::IsExtensionAllowed(
   return GetExtensionState(extension) ==
          SupervisedUserService::ExtensionState::ALLOWED;
 }
+
+void SupervisedUserService::RecordExtensionEnablementUmaMetrics(
+    bool enabled) const {
+  if (!active_)
+    return;
+  auto state =
+      enabled
+          ? SupervisedUserExtensionsMetricsRecorder::EnablementState::kEnabled
+          : SupervisedUserExtensionsMetricsRecorder::EnablementState::kDisabled;
+  SupervisedUserExtensionsMetricsRecorder::RecordEnablementUmaMetrics(state);
+}
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 void SupervisedUserService::SetActive(bool active) {

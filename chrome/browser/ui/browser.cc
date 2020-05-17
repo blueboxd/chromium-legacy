@@ -411,28 +411,6 @@ Browser::CreateParams Browser::CreateParams::CreateForDevTools(
   return params;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Browser, InterstitialObserver:
-
-class Browser::InterstitialObserver : public content::WebContentsObserver {
- public:
-  InterstitialObserver(Browser* browser, content::WebContents* web_contents)
-      : WebContentsObserver(web_contents), browser_(browser) {}
-
-  void DidAttachInterstitialPage() override {
-    browser_->UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
-  }
-
-  void DidDetachInterstitialPage() override {
-    browser_->UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
-  }
-
- private:
-  Browser* browser_;
-
-  DISALLOW_COPY_AND_ASSIGN(InterstitialObserver);
-};
-
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Constructors, Creation, Showing:
 
@@ -2337,8 +2315,6 @@ void Browser::OnTabInsertedAt(WebContents* contents, int index) {
   // yet if this function is called before TabStripModel::TabInsertedAt().
   UpdateWindowForLoadingStateChanged(contents, true);
 
-  interstitial_observers_.push_back(new InterstitialObserver(this, contents));
-
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile_);
   if (session_service) {
@@ -2831,15 +2807,6 @@ void Browser::TabDetachedAtImpl(content::WebContents* contents,
 
   if (HasFindBarController() && was_active)
     find_bar_controller_->ChangeWebContents(NULL);
-
-  for (size_t i = 0; i < interstitial_observers_.size(); i++) {
-    if (interstitial_observers_[i]->web_contents() != contents)
-      continue;
-
-    delete interstitial_observers_[i];
-    interstitial_observers_.erase(interstitial_observers_.begin() + i);
-    return;
-  }
 }
 
 void Browser::UpdateWindowForLoadingStateChanged(content::WebContents* source,

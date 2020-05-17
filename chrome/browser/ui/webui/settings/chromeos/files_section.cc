@@ -102,5 +102,12 @@ void FilesSection::AddHandlers(content::WebUI* web_ui) {
       profile(), base::DoNothing()));
 }
 
+void FilesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
+  generator->RegisterTopLevelSetting(mojom::Setting::kGoogleDriveConnection);
+
+  // Network file shares.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kNetworkFileShares);
+}
+
 }  // namespace settings
 }  // namespace chromeos

@@ -50,7 +50,7 @@ namespace ukm {
 using TestEvent1 = ukm::builders::PageLoad;
 const char* kTestEvent1Metric1 =
     TestEvent1::kPaintTiming_NavigationToFirstContentfulPaintName;
-const char* kTestEvent1Metric2 = TestEvent1::kNet_CacheBytesName;
+const char* kTestEvent1Metric2 = TestEvent1::kNet_CacheBytes2Name;
 using TestEvent2 = ukm::builders::Memory_Experimental;
 const char* kTestEvent2Metric1 = TestEvent2::kArrayBufferName;
 const char* kTestEvent2Metric2 = TestEvent2::kBlinkGCName;

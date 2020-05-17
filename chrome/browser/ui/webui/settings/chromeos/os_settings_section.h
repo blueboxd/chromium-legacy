@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom.h"
@@ -95,10 +96,14 @@ class OsSettingsSection {
   virtual void AddHandlers(content::WebUI* web_ui) {}
 
   // Registers the subpages and/or settings which reside in this section.
-  virtual void RegisterHierarchy(HierarchyGenerator* generator) const {}
+  virtual void RegisterHierarchy(HierarchyGenerator* generator) const = 0;
 
  protected:
   static base::string16 GetHelpUrlWithBoard(const std::string& original_url);
+  static void RegisterNestedSettingBulk(
+      mojom::Subpage,
+      const base::span<const mojom::Setting>& settings,
+      HierarchyGenerator* generator);
 
   OsSettingsSection(Profile* profile, SearchTagRegistry* search_tag_registry);
 

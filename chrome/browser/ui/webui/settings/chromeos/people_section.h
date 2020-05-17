@@ -54,6 +54,7 @@ class PeopleSection : public OsSettingsSection,
   // OsSettingsSection:
   void AddLoadTimeData(content::WebUIDataSource* html_source) override;
   void AddHandlers(content::WebUI* web_ui) override;
+  void RegisterHierarchy(HierarchyGenerator* generator) const override;
 
   // syncer::SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync_service) override;

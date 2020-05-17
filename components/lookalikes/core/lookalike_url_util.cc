@@ -75,6 +75,11 @@ std::string GetSimilarDomainFromTop500(
   for (const std::string& navigated_skeleton : navigated_domain.skeletons) {
     for (const char* const top_domain_skeleton :
          top500_domains::kTop500EditDistanceSkeletons) {
+      // kTop500EditDistanceSkeletons may include blank entries.
+      if (strlen(top_domain_skeleton) == 0) {
+        continue;
+      }
+
       if (!IsEditDistanceAtMostOne(base::UTF8ToUTF16(navigated_skeleton),
                                    base::UTF8ToUTF16(top_domain_skeleton))) {
         continue;

@@ -415,3 +415,21 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_ignore_msg_too_big_from_buffered_packets,
     true)
+
+// If true, check ShouldGeneratePacket for every crypto packet.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_fix_checking_should_generate_packet,
+          false)
+
+// If true, notify stream ID manager even connection disconnects.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_notify_stream_id_manager_when_disconnected,
+    true)
+
+// If true, return from QuicCryptoStream::WritePendingCryptoRetransmission after
+// partial writes.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_fix_write_pending_crypto_retransmission,
+    false)

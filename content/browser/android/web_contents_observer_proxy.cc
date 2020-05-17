@@ -197,16 +197,6 @@ void WebContentsObserverProxy::NavigationEntryChanged(
   Java_WebContentsObserverProxy_navigationEntriesChanged(env, java_observer_);
 }
 
-void WebContentsObserverProxy::DidAttachInterstitialPage() {
-  JNIEnv* env = AttachCurrentThread();
-  Java_WebContentsObserverProxy_didAttachInterstitialPage(env, java_observer_);
-}
-
-void WebContentsObserverProxy::DidDetachInterstitialPage() {
-  JNIEnv* env = AttachCurrentThread();
-  Java_WebContentsObserverProxy_didDetachInterstitialPage(env, java_observer_);
-}
-
 void WebContentsObserverProxy::DidChangeThemeColor() {
   JNIEnv* env = AttachCurrentThread();
   Java_WebContentsObserverProxy_didChangeThemeColor(env, java_observer_);

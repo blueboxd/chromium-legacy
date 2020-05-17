@@ -23,6 +23,7 @@
 #include "components/query_tiles/switches.h"
 #include "components/query_tiles/tile_service_factory_helper.h"
 #include "components/variations/service/variations_service.h"
+#include "components/version_info/version_info.h"
 #include "google_apis/google_api_keys.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -104,9 +105,18 @@ std::unique_ptr<KeyedService> TileServiceFactory::BuildServiceInstanceFor(
   auto url_loader_factory =
       SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory();
 
+  base::Version version = version_info::GetVersion();
+  std::string channel_name = chrome::GetChannelName();
+  std::string client_version =
+      base::StringPrintf("%d.%d.%d.%s.chrome",
+                         version.components()[0],  // Major
+                         version.components()[2],  // Build
+                         version.components()[3],  // Patch
+                         channel_name.c_str());
+
   return CreateTileService(image_fetcher_service, db_provider, storage_dir,
                            background_task_scheduler, accept_languanges,
-                           GetCountryCode(), GetGoogleAPIKey(),
+                           GetCountryCode(), GetGoogleAPIKey(), client_version,
                            url_loader_factory,
                            ProfileKey::FromSimpleFactoryKey(key)->GetPrefs());
 }

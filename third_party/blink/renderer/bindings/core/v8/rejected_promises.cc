@@ -208,8 +208,10 @@ void RejectedPromises::HandlerAdded(v8::PromiseRejectMessage data) {
     std::unique_ptr<Message>& message = reported_as_errors_.at(i);
     if (!message->IsCollected() && message->HasPromise(data.GetPromise())) {
       message->MakePromiseStrong();
-      message->GetContext()
-          ->GetTaskRunner(TaskType::kDOMManipulation)
+      // Since we move out of `message` below, we need to pull `context` out in
+      // a separate statement.
+      ExecutionContext* context = message->GetContext();
+      context->GetTaskRunner(TaskType::kDOMManipulation)
           ->PostTask(FROM_HERE, WTF::Bind(&RejectedPromises::RevokeNow,
                                           scoped_refptr<RejectedPromises>(this),
                                           WTF::Passed(std::move(message))));

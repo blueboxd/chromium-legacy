@@ -130,11 +130,6 @@ void MediaPlayerRenderer::CreateMediaPlayer(
   std::move(init_cb).Run(media::PIPELINE_OK);
 }
 
-void MediaPlayerRenderer::SetCdm(media::CdmContext* cdm_context,
-                                 CdmAttachedCB cdm_attached_cb) {
-  NOTREACHED();
-}
-
 void MediaPlayerRenderer::SetLatencyHint(
     base::Optional<base::TimeDelta> latency_hint) {}
 

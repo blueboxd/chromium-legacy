@@ -101,6 +101,7 @@ enum Setting {
   kOpenWallpaper = 500,
   kAmbientModeOnOff = 501,
   kAmbientModeSource = 502,
+  kChangeDeviceAccountImage = 503,
 
   // Search and Assistant section.
   kPreferredSearchEngine = 600,

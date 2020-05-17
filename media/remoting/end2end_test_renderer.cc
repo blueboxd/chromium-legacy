@@ -175,13 +175,6 @@ void End2EndTestRenderer::Initialize(MediaResource* media_resource,
   courier_renderer_->Initialize(media_resource, client, std::move(init_cb));
 }
 
-void End2EndTestRenderer::SetCdm(CdmContext* cdm_context,
-                                 CdmAttachedCB cdc_attached_cb) {
-  // TODO(xjz): Add the implementation when media remoting starts supporting
-  // encrypted contents.
-  NOTIMPLEMENTED() << "Media Remoting doesn't support EME for now.";
-}
-
 void End2EndTestRenderer::SetLatencyHint(
     base::Optional<base::TimeDelta> latency_hint) {
   courier_renderer_->SetLatencyHint(latency_hint);

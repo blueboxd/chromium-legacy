@@ -21,6 +21,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "jingle/glue/thread_wrapper.h"
+#include "remoting/base/constants.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/port_allocator_factory.h"
 #include "remoting/protocol/sdp_message.h"
@@ -53,6 +54,8 @@ class ScopedAllowThreadJoinForWebRtcTransport
 
 namespace {
 
+using DataChannelState = webrtc::DataChannelInterface::DataState;
+
 // Delay after candidate creation before sending transport-info message to
 // accumulate multiple candidates. This is an optimization to reduce number of
 // transport-info messages.
@@ -70,6 +73,19 @@ const int kMaxBitrateBps = 1e8;  // 100 Mbps.
 // TODO(lambroslambrou): Remove polling when a native API is provided.
 constexpr base::TimeDelta kRtcStatsPollingInterval =
     base::TimeDelta::FromSeconds(2);
+
+// Frequency of polling the event and control data channels for their current
+// state while waiting for them to close.
+constexpr base::TimeDelta kDefaultDataChannelStatePollingInterval =
+    base::TimeDelta::FromMilliseconds(50);
+
+// The maximum amount of time we will wait for the data channels to close before
+// closing the PeerConnection.
+constexpr base::TimeDelta kWaitForDataChannelsClosedTimeout =
+    base::TimeDelta::FromSeconds(5);
+
+base::TimeDelta data_channel_state_polling_interval =
+    kDefaultDataChannelStatePollingInterval;
 
 #if !defined(NDEBUG)
 // Command line switch used to disable signature verification.
@@ -442,8 +458,15 @@ std::unique_ptr<MessagePipe> WebrtcTransport::CreateOutgoingChannel(
     const std::string& name) {
   webrtc::DataChannelInit config;
   config.reliable = true;
-  return std::make_unique<WebrtcDataStreamAdapter>(
-      peer_connection()->CreateDataChannel(name, &config));
+  auto data_channel = peer_connection()->CreateDataChannel(name, &config);
+  if (name == kControlChannelName) {
+    DCHECK(!control_data_channel_);
+    control_data_channel_ = data_channel;
+  } else if (name == kEventChannelName) {
+    DCHECK(!event_data_channel_);
+    event_data_channel_ = data_channel;
+  }
+  return std::make_unique<WebrtcDataStreamAdapter>(data_channel);
 }
 
 void WebrtcTransport::Start(
@@ -587,6 +610,59 @@ const SessionOptions& WebrtcTransport::session_options() const {
   return session_options_;
 }
 
+// static
+void WebrtcTransport::SetDataChannelPollingIntervalForTests(
+    base::TimeDelta new_polling_interval) {
+  data_channel_state_polling_interval = new_polling_interval;
+}
+
+// static
+void WebrtcTransport::ClosePeerConnection(
+    rtc::scoped_refptr<webrtc::DataChannelInterface> control_data_channel,
+    rtc::scoped_refptr<webrtc::DataChannelInterface> event_data_channel,
+    std::unique_ptr<PeerConnectionWrapper> peer_connection_wrapper,
+    base::Time start_time = base::Time::Now()) {
+  DCHECK(peer_connection_wrapper);
+
+  if (!control_data_channel || !event_data_channel) {
+    LOG(WARNING) << "One or more data channels were not initialized, "
+                 << "destroying PeerConnection.";
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+        FROM_HERE, peer_connection_wrapper.release());
+    return;
+  }
+
+  if ((base::Time::Now() - start_time) > kWaitForDataChannelsClosedTimeout) {
+    LOG(ERROR) << "Timed out waiting for data channels to close, "
+               << "destroying PeerConnection.";
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+        FROM_HERE, peer_connection_wrapper.release());
+    return;
+  }
+
+  // The data channels should have started the closing process before this
+  // function was called.
+  DCHECK(control_data_channel->state() == DataChannelState::kClosed ||
+         control_data_channel->state() == DataChannelState::kClosing);
+  DCHECK(event_data_channel->state() == DataChannelState::kClosed ||
+         event_data_channel->state() == DataChannelState::kClosing);
+
+  if (event_data_channel->state() == DataChannelState::kClosed &&
+      control_data_channel->state() == DataChannelState::kClosed) {
+    VLOG(0) << "Data channels closed, destroying PeerConnection.";
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+        FROM_HERE, peer_connection_wrapper.release());
+    return;
+  }
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&ClosePeerConnection, std::move(control_data_channel),
+                     std::move(event_data_channel),
+                     std::move(peer_connection_wrapper), start_time),
+      data_channel_state_polling_interval);
+}
+
 void WebrtcTransport::Close(ErrorCode error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!peer_connection_wrapper_)
@@ -594,10 +670,9 @@ void WebrtcTransport::Close(ErrorCode error) {
 
   weak_factory_.InvalidateWeakPtrs();
 
-  // Close and delete PeerConnection asynchronously. PeerConnection may be on
-  // the stack and so it must be destroyed later.
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
-      FROM_HERE, peer_connection_wrapper_.release());
+  ClosePeerConnection(std::move(control_data_channel_),
+                      std::move(event_data_channel_),
+                      std::move(peer_connection_wrapper_));
 
   if (error != OK)
     event_handler_->OnWebrtcTransportError(error);
@@ -749,8 +824,16 @@ void WebrtcTransport::OnRemoveStream(
 void WebrtcTransport::OnDataChannel(
     rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  std::string data_channel_name = data_channel->label();
+  if (data_channel_name == kControlChannelName) {
+    DCHECK(!control_data_channel_);
+    control_data_channel_ = data_channel;
+  } else if (data_channel_name == kEventChannelName) {
+    DCHECK(!event_data_channel_);
+    event_data_channel_ = data_channel;
+  }
   event_handler_->OnWebrtcTransportIncomingDataChannel(
-      data_channel->label(),
+      data_channel_name,
       std::make_unique<WebrtcDataStreamAdapter>(data_channel));
 }
 

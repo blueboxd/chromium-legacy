@@ -39,17 +39,19 @@ using bookmarks::BookmarkNode;
 
 namespace {
 
-class BookmarkBarViewTest : public ChromeViewsTestBase {
+class BookmarkBarViewBaseTest : public ChromeViewsTestBase {
  public:
-  BookmarkBarViewTest() {
+  BookmarkBarViewBaseTest() {
     Browser::CreateParams params(profile(), true);
     params.window = &browser_window_;
     browser_ = std::make_unique<Browser>(params);
 
     TemplateURLServiceFactory::GetInstance()->SetTestingFactory(
-        &profile_,
-        base::BindRepeating(&BookmarkBarViewTest::CreateTemplateURLService));
+        &profile_, base::BindRepeating(
+                       &BookmarkBarViewBaseTest::CreateTemplateURLService));
   }
+
+  virtual BookmarkBarView* bookmark_bar_view() = 0;
 
   TestingProfile* profile() { return &profile_; }
   Browser* browser() { return browser_.get(); }
@@ -75,14 +77,14 @@ class BookmarkBarViewTest : public ChromeViewsTestBase {
   // NOTE: if the model has more than |count| buttons this results in
   // |count| + 1 buttons.
   void SizeUntilButtonsVisible(size_t count) {
-    const int start_width = bookmark_bar_view_->width();
-    const int height = bookmark_bar_view_->GetPreferredSize().height();
+    const int start_width = bookmark_bar_view()->width();
+    const int height = bookmark_bar_view()->GetPreferredSize().height();
     for (size_t i = 0;
          i < 100 && (test_helper_->GetBookmarkButtonCount() < count ||
                      !test_helper_->GetBookmarkButton(count - 1)->GetVisible());
          ++i) {
-      bookmark_bar_view_->SetBounds(0, 0, start_width + i * 10, height);
-      bookmark_bar_view_->Layout();
+      bookmark_bar_view()->SetBounds(0, 0, start_width + i * 10, height);
+      bookmark_bar_view()->Layout();
     }
   }
 
@@ -99,30 +101,24 @@ class BookmarkBarViewTest : public ChromeViewsTestBase {
     bookmarks::test::AddNodesFromModelString(model, model->bookmark_bar_node(),
                                              string);
   }
-  // Creates the BookmarkBarView and BookmarkBarViewTestHelper. Generally you'll
-  // want to use CreateBookmarkModelAndBookmarkBarView(), but use this if
-  // need to create the BookmarkBarView after the model has populated.
-  void CreateBookmarkBarView() {
-    bookmark_bar_view_ = std::make_unique<BookmarkBarView>(browser(), nullptr);
-    bookmark_bar_view_->set_owned_by_client();
-    test_helper_ =
-        std::make_unique<BookmarkBarViewTestHelper>(bookmark_bar_view_.get());
-  }
 
   // Creates the model, blocking until it loads, then creates the
   // BookmarkBarView.
-  void CreateBookmarkModelAndBookmarkBarView() {
+  std::unique_ptr<BookmarkBarView> CreateBookmarkModelAndBookmarkBarView() {
     profile_.CreateBookmarkModel(true);
     WaitForBookmarkModelToLoad();
-    CreateBookmarkBarView();
+
+    auto bookmark_bar_view =
+        std::make_unique<BookmarkBarView>(browser(), nullptr);
+    test_helper_ =
+        std::make_unique<BookmarkBarViewTestHelper>(bookmark_bar_view.get());
+    return bookmark_bar_view;
   }
 
   TestingProfile profile_;
   TestBrowserWindow browser_window_;
   std::unique_ptr<Browser> browser_;
   std::unique_ptr<BookmarkBarViewTestHelper> test_helper_;
-  // Must be after |profile_| so it is deleted before the bookmark model.
-  std::unique_ptr<BookmarkBarView> bookmark_bar_view_;
 
  private:
   static std::unique_ptr<KeyedService> CreateTemplateURLService(
@@ -133,14 +129,72 @@ class BookmarkBarViewTest : public ChromeViewsTestBase {
         nullptr /* KeywordWebDataService */,
         nullptr /* TemplateURLServiceClient */, base::Closure());
   }
+};
 
-  DISALLOW_COPY_AND_ASSIGN(BookmarkBarViewTest);
+class BookmarkBarViewTest : public BookmarkBarViewBaseTest {
+ public:
+  BookmarkBarViewTest() = default;
+  BookmarkBarViewTest(const BookmarkBarViewTest&) = delete;
+  BookmarkBarViewTest& operator=(const BookmarkBarViewTest&) = delete;
+  ~BookmarkBarViewTest() override = default;
+
+  // BookmarkBarViewBaseTest
+  void SetUp() override {
+    BookmarkBarViewBaseTest::SetUp();
+
+    bookmark_bar_view_ = CreateBookmarkModelAndBookmarkBarView();
+  }
+
+  void TearDown() override {
+    BookmarkBarViewBaseTest::TearDown();
+
+    bookmark_bar_view_.reset();
+  }
+
+  BookmarkBarView* bookmark_bar_view() override {
+    return bookmark_bar_view_.get();
+  }
+
+ private:
+  std::unique_ptr<BookmarkBarView> bookmark_bar_view_;
+};
+
+class BookmarkBarViewInWidgetTest : public BookmarkBarViewBaseTest {
+ public:
+  BookmarkBarViewInWidgetTest() = default;
+  BookmarkBarViewInWidgetTest(const BookmarkBarViewInWidgetTest&) = delete;
+  BookmarkBarViewInWidgetTest& operator=(const BookmarkBarViewInWidgetTest&) =
+      delete;
+  ~BookmarkBarViewInWidgetTest() override = default;
+
+  // BookmarkBarViewBaseTest
+  void SetUp() override {
+    set_native_widget_type(NativeWidgetType::kDesktop);
+    BookmarkBarViewBaseTest::SetUp();
+
+    widget_ = CreateTestWidget();
+    bookmark_bar_view_ =
+        widget_->SetContentsView(CreateBookmarkModelAndBookmarkBarView());
+  }
+
+  void TearDown() override {
+    widget_.reset();
+
+    BookmarkBarViewBaseTest::TearDown();
+  }
+
+  BookmarkBarView* bookmark_bar_view() override { return bookmark_bar_view_; }
+
+  views::Widget* widget() { return widget_.get(); }
+
+ private:
+  std::unique_ptr<views::Widget> widget_;
+  BookmarkBarView* bookmark_bar_view_ = nullptr;
 };
 
 // Verify that in instant extended mode the visibility of the apps shortcut
 // button properly follows the pref value.
 TEST_F(BookmarkBarViewTest, AppsShortcutVisibility) {
-  CreateBookmarkModelAndBookmarkBarView();
   browser()->profile()->GetPrefs()->SetBoolean(
       bookmarks::prefs::kShowAppsShortcutInBookmarkBar, false);
   EXPECT_FALSE(test_helper_->apps_page_shortcut()->GetVisible());
@@ -163,7 +217,6 @@ TEST_F(BookmarkBarViewTest, AppsShortcutVisibility) {
 
 // Various assertions around visibility of the overflow_button.
 TEST_F(BookmarkBarViewTest, OverflowVisibility) {
-  CreateBookmarkModelAndBookmarkBarView();
   EXPECT_FALSE(test_helper_->overflow_button()->GetVisible());
 
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
@@ -171,26 +224,25 @@ TEST_F(BookmarkBarViewTest, OverflowVisibility) {
 
   SizeUntilButtonsVisible(1);
   EXPECT_EQ(2u, test_helper_->GetBookmarkButtonCount());
-  const int width_for_one = bookmark_bar_view_->bounds().width();
+  const int width_for_one = bookmark_bar_view()->bounds().width();
   EXPECT_TRUE(test_helper_->overflow_button()->GetVisible());
 
   // Go really big, which should force all buttons to be added.
-  bookmark_bar_view_->SetBounds(
-      0, 0, 5000, bookmark_bar_view_->bounds().height());
-  bookmark_bar_view_->Layout();
+  bookmark_bar_view()->SetBounds(0, 0, 5000,
+                                 bookmark_bar_view()->bounds().height());
+  bookmark_bar_view()->Layout();
   EXPECT_EQ(6u, test_helper_->GetBookmarkButtonCount());
   EXPECT_FALSE(test_helper_->overflow_button()->GetVisible());
 
-  bookmark_bar_view_->SetBounds(
-      0, 0, width_for_one, bookmark_bar_view_->bounds().height());
-  bookmark_bar_view_->Layout();
+  bookmark_bar_view()->SetBounds(0, 0, width_for_one,
+                                 bookmark_bar_view()->bounds().height());
+  bookmark_bar_view()->Layout();
   EXPECT_TRUE(test_helper_->overflow_button()->GetVisible());
 }
 
 // Verifies buttons get added correctly when BookmarkBarView is created after
 // the model and the model has nodes.
 TEST_F(BookmarkBarViewTest, ButtonsDynamicallyAddedAfterModelHasNodes) {
-  CreateBookmarkModelAndBookmarkBarView();
   EXPECT_TRUE(BookmarkModelFactory::GetForBrowserContext(profile())->loaded());
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
   EXPECT_EQ(0u, test_helper_->GetBookmarkButtonCount());
@@ -199,24 +251,23 @@ TEST_F(BookmarkBarViewTest, ButtonsDynamicallyAddedAfterModelHasNodes) {
   EXPECT_EQ(2u, test_helper_->GetBookmarkButtonCount());
 
   // Go really big, which should force all buttons to be added.
-  bookmark_bar_view_->SetBounds(
-      0, 0, 5000, bookmark_bar_view_->bounds().height());
-  bookmark_bar_view_->Layout();
+  bookmark_bar_view()->SetBounds(0, 0, 5000,
+                                 bookmark_bar_view()->bounds().height());
+  bookmark_bar_view()->Layout();
   EXPECT_EQ(6u, test_helper_->GetBookmarkButtonCount());
 
   // Ensure buttons were added in the correct place.
   auto button_iter =
-      bookmark_bar_view_->FindChild(test_helper_->managed_bookmarks_button());
+      bookmark_bar_view()->FindChild(test_helper_->managed_bookmarks_button());
   for (size_t i = 0; i < test_helper_->GetBookmarkButtonCount(); ++i) {
     ++button_iter;
-    ASSERT_NE(bookmark_bar_view_->children().cend(), button_iter);
+    ASSERT_NE(bookmark_bar_view()->children().cend(), button_iter);
     EXPECT_EQ(test_helper_->GetBookmarkButton(i), *button_iter);
   }
 }
 
 // Verifies buttons are added as the model and size change.
 TEST_F(BookmarkBarViewTest, ButtonsDynamicallyAdded) {
-  CreateBookmarkModelAndBookmarkBarView();
   EXPECT_TRUE(BookmarkModelFactory::GetForBrowserContext(profile())->loaded());
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
   EXPECT_EQ(0u, test_helper_->GetBookmarkButtonCount());
@@ -224,32 +275,30 @@ TEST_F(BookmarkBarViewTest, ButtonsDynamicallyAdded) {
   EXPECT_EQ(2u, test_helper_->GetBookmarkButtonCount());
 
   // Go really big, which should force all buttons to be added.
-  bookmark_bar_view_->SetBounds(
-      0, 0, 5000, bookmark_bar_view_->bounds().height());
-  bookmark_bar_view_->Layout();
+  bookmark_bar_view()->SetBounds(0, 0, 5000,
+                                 bookmark_bar_view()->bounds().height());
+  bookmark_bar_view()->Layout();
   EXPECT_EQ(6u, test_helper_->GetBookmarkButtonCount());
   // Ensure buttons were added in the correct place.
   auto button_iter =
-      bookmark_bar_view_->FindChild(test_helper_->managed_bookmarks_button());
+      bookmark_bar_view()->FindChild(test_helper_->managed_bookmarks_button());
   for (size_t i = 0; i < test_helper_->GetBookmarkButtonCount(); ++i) {
     ++button_iter;
-    ASSERT_NE(bookmark_bar_view_->children().cend(), button_iter);
+    ASSERT_NE(bookmark_bar_view()->children().cend(), button_iter);
     EXPECT_EQ(test_helper_->GetBookmarkButton(i), *button_iter);
   }
 }
 
 TEST_F(BookmarkBarViewTest, AddNodesWhenBarAlreadySized) {
-  CreateBookmarkModelAndBookmarkBarView();
-  bookmark_bar_view_->SetBounds(
-      0, 0, 5000, bookmark_bar_view_->bounds().height());
+  bookmark_bar_view()->SetBounds(0, 0, 5000,
+                                 bookmark_bar_view()->bounds().height());
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
-  bookmark_bar_view_->Layout();
+  bookmark_bar_view()->Layout();
   EXPECT_EQ("a b c d e f", GetStringForVisibleButtons());
 }
 
 // Various assertions for removing nodes.
 TEST_F(BookmarkBarViewTest, RemoveNode) {
-  CreateBookmarkModelAndBookmarkBarView();
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   const BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
@@ -268,7 +317,6 @@ TEST_F(BookmarkBarViewTest, RemoveNode) {
 
 // Assertions for moving a node on the bookmark bar.
 TEST_F(BookmarkBarViewTest, MoveNode) {
-  CreateBookmarkModelAndBookmarkBarView();
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   const BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
@@ -300,7 +348,6 @@ TEST_F(BookmarkBarViewTest, MoveNode) {
 
 // Assertions for changing the title of a node.
 TEST_F(BookmarkBarViewTest, ChangeTitle) {
-  CreateBookmarkModelAndBookmarkBarView();
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   const BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
@@ -342,9 +389,9 @@ TEST_F(BookmarkBarViewTest, ChangeTitle) {
   EXPECT_TRUE(test_helper_->GetBookmarkButton(0)->GetVisible());
   EXPECT_TRUE(test_helper_->GetBookmarkButton(1)->GetVisible());
 
-  bookmark_bar_view_->SetBounds(
-      0, 0, 5000, bookmark_bar_view_->bounds().height());
-  bookmark_bar_view_->Layout();
+  bookmark_bar_view()->SetBounds(0, 0, 5000,
+                                 bookmark_bar_view()->bounds().height());
+  bookmark_bar_view()->Layout();
   EXPECT_EQ("a1 b1 c d1 e f1", GetStringForVisibleButtons());
 }
 
@@ -352,7 +399,6 @@ TEST_F(BookmarkBarViewTest, ChangeTitle) {
 // Verifies that the apps shortcut is shown or hidden following the policy
 // value. This policy (and the apps shortcut) isn't present on ChromeOS.
 TEST_F(BookmarkBarViewTest, ManagedShowAppsShortcutInBookmarksBar) {
-  CreateBookmarkModelAndBookmarkBarView();
   // By default, the pref is not managed and the apps shortcut is shown.
   sync_preferences::TestingPrefServiceSyncable* prefs =
       profile()->GetTestingPrefService();
@@ -372,20 +418,8 @@ TEST_F(BookmarkBarViewTest, ManagedShowAppsShortcutInBookmarksBar) {
 }
 #endif
 
-class BookmarkBarViewTooltipTest : public BookmarkBarViewTest {
- public:
-  void SetUp() override {
-    set_native_widget_type(NativeWidgetType::kDesktop);
-    BookmarkBarViewTest::SetUp();
-  }
-};
-
-TEST_F(BookmarkBarViewTooltipTest, UpdateTooltipText) {
-  CreateBookmarkModelAndBookmarkBarView();
-  // Create a widget who creates and owns a views::ToolipManager.
-  std::unique_ptr<views::Widget> widget = CreateTestWidget();
-  widget->Show();
-  widget->SetContentsView(bookmark_bar_view_.get());
+TEST_F(BookmarkBarViewInWidgetTest, UpdateTooltipText) {
+  widget()->Show();
 
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   bookmarks::test::AddNodesFromModelString(model, model->bookmark_bar_node(),

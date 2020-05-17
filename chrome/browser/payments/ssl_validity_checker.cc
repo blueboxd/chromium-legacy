@@ -42,7 +42,6 @@ std::string SslValidityChecker::GetInvalidSslCertificateErrorMessage(
   switch (security_level) {
     // Indicate valid SSL with an empty string.
     case security_state::SECURE:
-    case security_state::EV_SECURE:
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
       return "";
 
@@ -88,7 +87,6 @@ bool SslValidityChecker::IsValidPageInPaymentHandlerWindow(
     security_state::SecurityLevel security_level =
         GetSecurityLevel(web_contents);
     return security_level == security_state::SECURE ||
-           security_level == security_state::EV_SECURE ||
            security_level ==
                security_state::SECURE_WITH_POLICY_INSTALLED_CERT ||
            // No early return, so the other code is exercised in tests, too.

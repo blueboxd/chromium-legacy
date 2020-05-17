@@ -331,14 +331,6 @@ void WebView::DidToggleFullscreenModeForTab(bool entered_fullscreen,
     ReattachForFullscreenChange(entered_fullscreen);
 }
 
-void WebView::DidAttachInterstitialPage() {
-  NotifyAccessibilityWebContentsChanged();
-}
-
-void WebView::DidDetachInterstitialPage() {
-  NotifyAccessibilityWebContentsChanged();
-}
-
 void WebView::OnWebContentsFocused(
     content::RenderWidgetHost* render_widget_host) {
   RequestFocus();

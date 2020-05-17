@@ -345,6 +345,11 @@ void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
       continue;
     predicted_subresources.push_back(subresource_url);
     url::Origin subresource_origin = url::Origin::Create(subresource_url);
+    if (subresource_origin == main_frame_origin) {
+      // We are already connecting to the main frame origin by default, so don't
+      // include this in the prediction.
+      continue;
+    }
     if (predicted_origins.find(subresource_origin) != predicted_origins.end())
       continue;
     predicted_origins.insert(subresource_origin);

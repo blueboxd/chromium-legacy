@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-GEN_INCLUDE(['../chromevox/testing/callback_helper.js']);
+GEN_INCLUDE([
+  '../chromevox/testing/callback_helper.js',
+  '../chromevox/testing/assert_additions.js'
+]);
 
 /**
  * Base class for browser tests for Switch Access.
@@ -68,6 +71,46 @@ SwitchAccessE2ETest.prototype = {
    */
   newCallback(opt_callback) {
     return this.callbackHelper_.wrap(opt_callback);
+  },
+
+  /**
+   * @param {function(chrome.automation.AutomationNode): boolean} predicate A
+   *        predicate that uniquely specifies one automation node.
+   * @param {string=} opt_nodeString A string specifying what node was being
+   *        looked for.
+   * @return {!chrome.automation.AutomationNode}
+   */
+  findNodeMatchingPredicate(predicate, opt_nodeString) {
+    const nodeString = opt_nodeString || 'node matching the predicate';
+    const treeWalker = new AutomationTreeWalker(
+        NavigationManager.desktopNode, constants.Dir.FORWARD,
+        {visit: predicate});
+    const node = treeWalker.next().node;
+    assertNotNullNorUndefined(node, 'Could not find ' + nodeString + '.');
+    assertNullOrUndefined(
+        treeWalker.next().node, 'Found more than one ' + nodeString + '.');
+    return node;
+  },
+
+  /**
+   * @param {string} id The HTML id of an element.
+   * @return {!chrome.automation.AutomationNode}
+   */
+  findNodeById(id) {
+    const predicate = (node) => node.htmlAttributes.id === id;
+    const nodeString = 'node with id "' + id + '"';
+    return this.findNodeMatchingPredicate(predicate, nodeString);
+  },
+
+  /**
+   * @param {string} name The name of the node within the automation tree.
+   * @param {string} role The node's role.
+   * @return {!chrome.automation.AutomationNode}
+   */
+  findNodeByNameAndRole(name, role) {
+    const predicate = (node) => node.name === name && node.role === role;
+    const nodeString = 'node with name "' + name + '" and role ' + role;
+    return this.findNodeMatchingPredicate(predicate, nodeString);
   },
 
   /**

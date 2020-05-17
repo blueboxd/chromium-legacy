@@ -10,21 +10,24 @@
     android:minHeight="@dimen/min_touch_target_size"
     android:orientation="vertical">
   <androidx.recyclerview.widget.RecyclerView
-      android:layout_width="wrap_content"
-      android:layout_height="113dp"
-      android:minHeight="@dimen/min_touch_target_size"
-      android:id="@+id/share_sheet_chrome_apps" />
+    android:id="@+id/share_sheet_chrome_apps"
+    android:layout_width="wrap_content"
+    android:layout_height="113dp"
+    android:minHeight="@dimen/min_touch_target_size"
+    android:visibility="gone" />
   <View
+    android:id="@+id/share_sheet_divider"
     android:background="@color/divider_line_bg_color"
     android:layout_height="1dp"
     android:layout_marginLeft="16dp"
     android:layout_marginRight="16dp"
-    android:layout_width="match_parent" />
+    android:layout_width="match_parent"
+    android:visibility="gone" />
   <androidx.recyclerview.widget.RecyclerView
-      android:layout_width="wrap_content"
-      android:layout_height="113dp"
-      android:minHeight="@dimen/min_touch_target_size"
-      android:orientation="horizontal"
-      android:paddingEnd="16dp"
-      android:id="@+id/share_sheet_other_apps" />
+    android:id="@+id/share_sheet_other_apps"
+    android:layout_width="wrap_content"
+    android:layout_height="113dp"
+    android:minHeight="@dimen/min_touch_target_size"
+    android:orientation="horizontal"
+    android:paddingEnd="16dp" />
 </LinearLayout>

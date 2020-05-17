@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 
@@ -175,14 +174,6 @@ public class CustomTabObserver extends EmptyTabObserver {
         }
         resetPageLoadTracking();
         mNavigationInfoCaptureTrigger.onLoadFinished(tab);
-    }
-
-    @Override
-    public void onDidAttachInterstitialPage(Tab tab) {
-        if (SecurityStateModel.isContentDangerous(tab.getWebContents())) {
-            return;
-        }
-        resetPageLoadTracking();
     }
 
     @Override

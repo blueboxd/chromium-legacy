@@ -587,31 +587,37 @@ void RenderAccessibilityImpl::SetPluginTreeSource(
 }
 
 void RenderAccessibilityImpl::OnPluginRootNodeUpdated() {
-  // Search the accessibility tree for plugin's root object and post a
+  // Search the accessibility tree for an EMBED element and post a
   // children changed notification on it to force it to update the
   // plugin accessibility tree.
-  WebAXObject obj = GetPluginRoot();
-  if (obj.IsNull())
+
+  ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
+  WebAXObject root = tree_source_.GetRoot();
+  if (!root.UpdateLayoutAndCheckValidity())
     return;
 
-  HandleAXEvent(ui::AXEvent(obj.AxID(), ax::mojom::Event::kChildrenChanged));
-}
+  base::queue<WebAXObject> objs_to_explore;
+  objs_to_explore.push(root);
+  while (objs_to_explore.size()) {
+    WebAXObject obj = objs_to_explore.front();
+    objs_to_explore.pop();
 
-void RenderAccessibilityImpl::ShowPluginContextMenu() {
-  // Search the accessibility tree for plugin's root object and invoke
-  // ShowContextMenu() on it to show context menu for plugin.
-  WebAXObject obj = GetPluginRoot();
-  if (obj.IsNull())
-    return;
+    WebNode node = obj.GetNode();
+    if (!node.IsNull() && node.IsElementNode()) {
+      WebElement element = node.To<WebElement>();
+      if (element.HasHTMLTagName("embed")) {
+        HandleAXEvent(
+            ui::AXEvent(obj.AxID(), ax::mojom::Event::kChildrenChanged));
+        break;
+      }
+    }
 
-  const WebDocument& document = GetMainDocument();
-  if (document.IsNull())
-    return;
-
-  std::unique_ptr<ui::AXActionTarget> target =
-      AXActionTargetFactory::CreateFromNodeId(document, plugin_tree_source_,
-                                              obj.AxID());
-  target->ShowContextMenu();
+    // Explore children of this object.
+    std::vector<WebAXObject> children;
+    tree_source_.GetChildren(obj, &children);
+    for (size_t i = 0; i < children.size(); ++i)
+      objs_to_explore.push(children[i]);
+  }
 }
 
 WebDocument RenderAccessibilityImpl::GetMainDocument() {
@@ -1200,36 +1206,6 @@ blink::WebDocument RenderAccessibilityImpl::GetPopupDocument() {
   if (popup)
     return popup->GetDocument();
   return WebDocument();
-}
-
-WebAXObject RenderAccessibilityImpl::GetPluginRoot() {
-  ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
-  WebAXObject root = tree_source_.GetRoot();
-  if (!root.UpdateLayoutAndCheckValidity())
-    return WebAXObject();
-
-  base::queue<WebAXObject> objs_to_explore;
-  objs_to_explore.push(root);
-  while (objs_to_explore.size()) {
-    WebAXObject obj = objs_to_explore.front();
-    objs_to_explore.pop();
-
-    WebNode node = obj.GetNode();
-    if (!node.IsNull() && node.IsElementNode()) {
-      WebElement element = node.To<WebElement>();
-      if (element.HasHTMLTagName("embed")) {
-        return obj;
-      }
-    }
-
-    // Explore children of this object.
-    std::vector<WebAXObject> children;
-    tree_source_.GetChildren(obj, &children);
-    for (const auto& child : children)
-      objs_to_explore.push(child);
-  }
-
-  return WebAXObject();
 }
 
 }  // namespace content

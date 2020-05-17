@@ -165,6 +165,20 @@ void BluetoothSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   chromeos::bluetooth_dialog::AddLocalizedStrings(html_source);
 }
 
+void BluetoothSection::RegisterHierarchy(HierarchyGenerator* generator) const {
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kBluetoothDevices);
+  static constexpr mojom::Setting kBluetoothDevicesSettings[] = {
+      mojom::Setting::kBluetoothOnOff,
+      mojom::Setting::kBluetoothConnectToDevice,
+      mojom::Setting::kBluetoothDisconnectFromDevice,
+      mojom::Setting::kBluetoothPairDevice,
+      mojom::Setting::kBluetoothUnpairDevice,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kBluetoothDevices,
+                            kBluetoothDevicesSettings, generator);
+  generator->RegisterTopLevelAltSetting(mojom::Setting::kBluetoothOnOff);
+}
+
 void BluetoothSection::AdapterPresentChanged(device::BluetoothAdapter* adapter,
                                              bool present) {
   UpdateSearchTags();

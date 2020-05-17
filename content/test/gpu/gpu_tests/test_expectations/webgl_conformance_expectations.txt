@@ -92,7 +92,7 @@ crbug.com/1082525 [ win ] conformance/more/functions/readPixelsBadArgs.html [ Fa
 crbug.com/1082559 conformance/more/functions/texImage2DHTML.html [ RetryOnFailure ]
 crbug.com/1082559 conformance/more/functions/texSubImage2DHTML.html [ RetryOnFailure ]
 crbug.com/1018028 [ win vulkan ] conformance/rendering/bind-framebuffer-flush-bug.html [ Failure ]
-crbug.com/1082565 [ win intel passthrough ] conformance/canvas/webgl-to-2d-canvas.html [ Failure ]
+crbug.com/1082565 [ win intel opengl passthrough ] conformance/canvas/webgl-to-2d-canvas.html [ Failure ]
 
 # Need to implement new error semantics
 # https://github.com/KhronosGroup/WebGL/pull/2607
@@ -396,6 +396,7 @@ crbug.com/918995 [ linux debug nvidia-0x1cb3 ] conformance/rendering/polygon-off
 # AMD
 crbug.com/550989 [ linux amd ] conformance/more/functions/uniformi.html [ RetryOnFailure ]
 crbug.com/642822 [ linux amd ] conformance/rendering/clipping-wide-points.html [ Failure ]
+crbug.com/1018028 [ linux amd-0x6613 ] conformance/rendering/bind-framebuffer-flush-bug.html [ Failure ]
 
 # Linux passthrough AMD
 crbug.com/960808 [ linux amd passthrough ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Failure ]

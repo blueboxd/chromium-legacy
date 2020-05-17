@@ -35,7 +35,6 @@
         --cr-icon-button-fill-color: var(--paper-grey-700);
         --cr-icon-button-icon-size: 20px;
         --cr-icon-button-size: 36px;
-        --cr-icon-button-fill-color-focus: rgb(242, 242, 242);
         background-color: rgb(242, 242, 242);
         border-radius: 50%;
         overflow: visible;
@@ -48,7 +47,6 @@
 
       :host-context([is-print-preview]) cr-icon-button {
         --cr-icon-button-fill-color: white;
-        --cr-icon-button-fill-color-focus: var(--google-grey-600);
         --cr-icon-button-size: 32px;
         background-color: var(--google-grey-600);
       }
@@ -62,7 +60,6 @@
       @media (prefers-color-scheme: dark) {
         :host-context([is-print-preview]) cr-icon-button {
           --cr-icon-button-fill-color: var(--google-grey-200);
-          --cr-icon-button-fill-color-focus: var(--google-grey-900);
           background-color: var(--google-grey-900);
         }
       }

@@ -1039,24 +1039,26 @@ TEST_F(PageInfoTest, SecurityLevelMetrics) {
   struct TestCase {
     const std::string url;
     const security_state::SecurityLevel security_level;
+    const net::CertStatus cert_status;
     const std::string histogram_name;
   };
   const char kGenericHistogram[] = "WebsiteSettings.Action";
 
+  const uint32_t kCertStatusNone = 0;
   const TestCase kTestCases[] = {
-      {"https://example.test", security_state::SECURE,
+      {"https://example.test", security_state::SECURE, kCertStatusNone,
        "Security.PageInfo.Action.HttpsUrl.ValidNonEV"},
-      {"https://example.test", security_state::EV_SECURE,
+      {"https://example.test", security_state::SECURE, net::CERT_STATUS_IS_EV,
        "Security.PageInfo.Action.HttpsUrl.ValidEV"},
-      {"https://example2.test", security_state::NONE,
+      {"https://example2.test", security_state::NONE, kCertStatusNone,
        "Security.PageInfo.Action.HttpsUrl.Downgraded"},
-      {"https://example.test", security_state::DANGEROUS,
+      {"https://example.test", security_state::DANGEROUS, kCertStatusNone,
        "Security.PageInfo.Action.HttpsUrl.Dangerous"},
-      {"http://example.test", security_state::WARNING,
+      {"http://example.test", security_state::WARNING, kCertStatusNone,
        "Security.PageInfo.Action.HttpUrl.Warning"},
-      {"http://example.test", security_state::DANGEROUS,
+      {"http://example.test", security_state::DANGEROUS, kCertStatusNone,
        "Security.PageInfo.Action.HttpUrl.Dangerous"},
-      {"http://example.test", security_state::NONE,
+      {"http://example.test", security_state::NONE, kCertStatusNone,
        "Security.PageInfo.Action.HttpUrl.Neutral"},
   };
 
@@ -1064,6 +1066,7 @@ TEST_F(PageInfoTest, SecurityLevelMetrics) {
     base::HistogramTester histograms;
     SetURL(test.url);
     security_level_ = test.security_level;
+    visible_security_state_.cert_status = test.cert_status;
     ResetMockUI();
     ClearPageInfo();
     SetDefaultUIExpectations(mock_ui());
@@ -1102,13 +1105,9 @@ TEST_F(PageInfoTest, TimeOpenMetrics) {
       // PAGE_INFO_COUNT used as shorthand for "take no action".
       {"https://example.test", security_state::SECURE, "SECURE",
        PageInfo::PAGE_INFO_COUNT},
-      {"https://example.test", security_state::EV_SECURE, "EV_SECURE",
-       PageInfo::PAGE_INFO_COUNT},
       {"http://example.test", security_state::NONE, "NONE",
        PageInfo::PAGE_INFO_COUNT},
       {"https://example.test", security_state::SECURE, "SECURE",
-       PageInfo::PAGE_INFO_SITE_SETTINGS_OPENED},
-      {"https://example.test", security_state::EV_SECURE, "EV_SECURE",
        PageInfo::PAGE_INFO_SITE_SETTINGS_OPENED},
       {"http://example.test", security_state::NONE, "NONE",
        PageInfo::PAGE_INFO_SITE_SETTINGS_OPENED},

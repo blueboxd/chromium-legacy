@@ -882,19 +882,6 @@ void FetchHistogramsFromChildProcesses();
 // because adding the request handler won't be thread safe.
 void SetupCrossSiteRedirector(net::EmbeddedTestServer* embedded_test_server);
 
-// Waits for an interstitial page to attach to given web contents.
-void WaitForInterstitialAttach(content::WebContents* web_contents);
-
-// Waits for an interstitial page to detach from given web contents.
-void WaitForInterstitialDetach(content::WebContents* web_contents);
-
-// Runs task and waits for an interstitial page to detach from given web
-// contents. Prefer this over WaitForInterstitialDetach if web_contents may be
-// destroyed by the time WaitForInterstitialDetach is called (e.g. when waiting
-// for an interstitial detach after closing a tab).
-void RunTaskAndWaitForInterstitialDetach(content::WebContents* web_contents,
-                                         base::OnceClosure task);
-
 // Waits until all resources have loaded in the given RenderFrameHost.
 // When the load completes, this function sends a "pageLoadComplete" message
 // via domAutomationController. The caller should make sure this extra

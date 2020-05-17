@@ -237,10 +237,9 @@ WebInputEventResult GestureManager::HandleGestureTap(
     selection_controller_->InitializeSelectionState();
     if (mouse_down_event_result == WebInputEventResult::kNotHandled) {
       mouse_down_event_result = mouse_event_manager_->HandleMouseFocus(
-          current_hit_test, frame_->GetDocument()
-                                ->domWindow()
-                                ->GetInputDeviceCapabilities()
-                                ->FiresTouchEvents(true));
+          current_hit_test,
+          frame_->DomWindow()->GetInputDeviceCapabilities()->FiresTouchEvents(
+              true));
     }
     if (mouse_down_event_result == WebInputEventResult::kNotHandled) {
       mouse_down_event_result = mouse_event_manager_->HandleMousePressEvent(

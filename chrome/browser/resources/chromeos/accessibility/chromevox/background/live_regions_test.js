@@ -372,3 +372,29 @@ TEST_F('ChromeVoxLiveRegionsTest', 'DISABLED_LiveStatusOff', function() {
             .replay();
       });
 });
+
+TEST_F('ChromeVoxLiveRegionsTest', 'TreeChangeOnIgnoredNode', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+      `
+    <button></button>
+    <script>
+      const button = document.body.children[0];
+      button.addEventListener('click', () => {
+        const ignored = document.createElement('div');
+        ignored.setAttribute('role', 'presentation');
+        const alert = document.createElement('div');
+        alert.setAttribute('role', 'alert');
+        alert.textContent = 'hi';
+        ignored.appendChild(alert);
+        document.body.appendChild(ignored);
+      });
+    </script>
+  `,
+      function(root) {
+        const button = root.find({role: chrome.automation.RoleType.BUTTON});
+        mockFeedback.call(button.doDefault.bind(button))
+            .expectSpeech('Alert', 'hi')
+            .replay();
+      });
+});

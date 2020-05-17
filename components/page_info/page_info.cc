@@ -456,11 +456,15 @@ void PageInfo::RecordPageInfoAction(PageInfoAction action) {
   std::string histogram_name;
   if (site_url_.SchemeIsCryptographic()) {
     if (security_level_ == security_state::SECURE) {
-      UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpsUrl.ValidNonEV",
-                                action, PAGE_INFO_COUNT);
-    } else if (security_level_ == security_state::EV_SECURE) {
-      UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpsUrl.ValidEV",
-                                action, PAGE_INFO_COUNT);
+      if (visible_security_state_for_metrics_.cert_status &
+          net::CERT_STATUS_IS_EV) {
+        UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpsUrl.ValidEV",
+                                  action, PAGE_INFO_COUNT);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Security.PageInfo.Action.HttpsUrl.ValidNonEV", action,
+            PAGE_INFO_COUNT);
+      }
     } else if (security_level_ == security_state::NONE) {
       UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpsUrl.Downgraded",
                                 action, PAGE_INFO_COUNT);

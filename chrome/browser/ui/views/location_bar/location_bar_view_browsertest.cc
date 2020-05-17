@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
@@ -29,10 +30,11 @@
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test.h"
-#include "content/public/test/url_loader_interceptor.h"
 #include "net/cert/ct_policy_status.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -184,31 +186,13 @@ IN_PROC_BROWSER_TEST_F(TouchLocationBarViewBrowserTest,
             ime_inline_autocomplete_view->x());
 }
 
-// After SetUpInterceptor() is called, requests to this hostname will be mocked
-// and use specified certificate validation results. This allows tests to mock
-// Extended Validation (EV) certificate connections.
-const char kMockSecureHostname[] = "example-secure.test";
-
-struct SecurityIndicatorTestParams {
-  bool use_secure_url;
-  net::CertStatus cert_status;
-  security_state::SecurityLevel security_level;
-  bool should_show_text;
-  base::string16 indicator_text;
-};
-
-class SecurityIndicatorTest
-    : public InProcessBrowserTest,
-      public ::testing::WithParamInterface<SecurityIndicatorTestParams> {
+class SecurityIndicatorTest : public InProcessBrowserTest {
  public:
-  SecurityIndicatorTest() : cert_(nullptr) {}
-
-  void SetUpInProcessBrowserTestFixture() override {
-    cert_ =
-        net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
-    ASSERT_TRUE(cert_);
-    ASSERT_TRUE(embedded_test_server()->Start());
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
   }
+
+  SecurityIndicatorTest() = default;
 
   LocationBarView* GetLocationBarView() {
     BrowserView* browser_view =
@@ -216,52 +200,23 @@ class SecurityIndicatorTest
     return browser_view->GetLocationBarView();
   }
 
-  void SetUpInterceptor(net::CertStatus cert_status) {
-    url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
-        base::BindRepeating(&SecurityIndicatorTest::InterceptURLLoad,
-                            base::Unretained(this), cert_status));
-  }
-
-  void ResetInterceptor() { url_loader_interceptor_.reset(); }
-
-  bool InterceptURLLoad(net::CertStatus cert_status,
-                        content::URLLoaderInterceptor::RequestParams* params) {
-    if (params->url_request.url.host() != kMockSecureHostname)
-      return false;
-    net::SSLInfo ssl_info;
-    ssl_info.cert = cert_;
-    ssl_info.cert_status = cert_status;
-    ssl_info.ct_policy_compliance =
-        net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
-    auto resource_response = network::mojom::URLResponseHead::New();
-    resource_response->mime_type = "text/html";
-    resource_response->ssl_info = ssl_info;
-    params->client->OnReceiveResponse(std::move(resource_response));
-    // Send an empty response's body. This pipe is not filled with data.
-    mojo::DataPipe pipe;
-    params->client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
-    network::URLLoaderCompletionStatus completion_status;
-    completion_status.ssl_info = ssl_info;
-    params->client->OnComplete(completion_status);
-    return true;
-  }
-
  private:
-  base::test::ScopedFeatureList feature_list_;
-
-  scoped_refptr<net::X509Certificate> cert_;
-
-  std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
-
   DISALLOW_COPY_AND_ASSIGN(SecurityIndicatorTest);
 };
 
-// Check that the security indicator text is not shown for HTTPS certs
-// (including EV certs).
-IN_PROC_BROWSER_TEST_P(SecurityIndicatorTest, CheckIndicatorText) {
-  const GURL kMockSecureURL = GURL("https://example-secure.test");
+// Check that the security indicator text is not shown for HTTPS and "Not
+// secure" is shown for HTTP.
+IN_PROC_BROWSER_TEST_F(SecurityIndicatorTest, CheckIndicatorText) {
+  net::EmbeddedTestServer secure_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  secure_server.SetSSLConfig(
+      net::test_server::EmbeddedTestServer::CERT_TEST_NAMES);
+  secure_server.AddDefaultHandlers(GetChromeTestDataDir());
+  ASSERT_TRUE(secure_server.Start());
+  const GURL kMockSecureURL = secure_server.GetURL("a.test", "/empty.html");
+
+  ASSERT_TRUE(embedded_test_server()->Start());
   const GURL kMockNonsecureURL =
-      embedded_test_server()->GetURL("example.test", "/");
+      embedded_test_server()->GetURL("example.test", "/empty.html");
 
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -270,28 +225,14 @@ IN_PROC_BROWSER_TEST_P(SecurityIndicatorTest, CheckIndicatorText) {
   ASSERT_TRUE(helper);
   LocationBarView* location_bar_view = GetLocationBarView();
 
-  auto c = GetParam();
-  SetUpInterceptor(c.cert_status);
-  ui_test_utils::NavigateToURL(
-      browser(), c.use_secure_url ? kMockSecureURL : kMockNonsecureURL);
-  EXPECT_EQ(c.security_level, helper->GetSecurityLevel());
-  EXPECT_EQ(c.should_show_text,
-            location_bar_view->location_icon_view()->ShouldShowLabel());
-  EXPECT_EQ(c.indicator_text,
-            location_bar_view->location_icon_view()->GetText());
-  ResetInterceptor();
-}
+  ui_test_utils::NavigateToURL(browser(), kMockSecureURL);
+  EXPECT_EQ(security_state::SECURE, helper->GetSecurityLevel());
+  EXPECT_FALSE(location_bar_view->location_icon_view()->ShouldShowLabel());
+  EXPECT_TRUE(location_bar_view->location_icon_view()->GetText().empty());
 
-const base::string16 kEvString = base::ASCIIToUTF16("Test CA [US]");
-const base::string16 kEmptyString = base::string16();
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    SecurityIndicatorTest,
-    ::testing::Values(SecurityIndicatorTestParams{true, net::CERT_STATUS_IS_EV,
-                                                  security_state::EV_SECURE,
-                                                  false, kEmptyString},
-                      SecurityIndicatorTestParams{
-                          true, 0, security_state::SECURE, false, kEmptyString},
-                      SecurityIndicatorTestParams{false, 0,
-                                                  security_state::NONE, false,
-                                                  kEmptyString}));
+  ui_test_utils::NavigateToURL(browser(), kMockNonsecureURL);
+  EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
+  EXPECT_TRUE(location_bar_view->location_icon_view()->ShouldShowLabel());
+  EXPECT_TRUE(base::LowerCaseEqualsASCII(
+      location_bar_view->location_icon_view()->GetText(), "not secure"));
+}

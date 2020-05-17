@@ -188,10 +188,6 @@ bool IsUseCommonSelectPopupEnabled() {
   return base::FeatureList::IsEnabled(features::kUseCommonSelectPopup);
 }
 
-// Enable WebUI accessibility enhancements for review and testing.
-const base::Feature kWebUIA11yEnhancements{"WebUIA11yEnhancements",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 #if defined(OS_CHROMEOS)
 const base::Feature kHandwritingGesture = {"HandwritingGesture",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

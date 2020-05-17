@@ -99,6 +99,10 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
   // history navigations and reloads, where we want to restore the highlight but
   // not scroll into view again.
   bool should_scroll_ = false;
+  // Whether the page has been made visible. Used to ensure we wait until the
+  // page has been made visible to start matching, to help prevent brute force
+  // search attacks.
+  bool page_has_been_visible_ = false;
 
   enum BeforematchState {
     kNoMatchFound,  // DidFindMatch has not been called.

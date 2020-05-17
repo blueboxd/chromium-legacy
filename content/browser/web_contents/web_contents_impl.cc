@@ -1754,10 +1754,6 @@ Visibility WebContentsImpl::GetVisibility() {
 }
 
 bool WebContentsImpl::NeedToFireBeforeUnloadOrUnload() {
-  // TODO(creis): Should we fire even for interstitial pages?
-  if (ShowingInterstitialPage())
-    return false;
-
   if (!WillNotifyDisconnection())
     return false;
 
@@ -2208,17 +2204,12 @@ void WebContentsImpl::RemoveObserver(WebContentsObserver* observer) {
 std::set<RenderWidgetHostView*>
 WebContentsImpl::GetRenderWidgetHostViewsInTree() {
   std::set<RenderWidgetHostView*> set;
-  if (ShowingInterstitialPage()) {
-    if (RenderWidgetHostView* rwhv = GetRenderWidgetHostView())
+  for (RenderFrameHost* rfh : GetAllFrames()) {
+    if (RenderWidgetHostView* rwhv = static_cast<RenderFrameHostImpl*>(rfh)
+                                         ->frame_tree_node()
+                                         ->render_manager()
+                                         ->GetRenderWidgetHostView()) {
       set.insert(rwhv);
-  } else {
-    for (RenderFrameHost* rfh : GetAllFrames()) {
-      if (RenderWidgetHostView* rwhv = static_cast<RenderFrameHostImpl*>(rfh)
-                                           ->frame_tree_node()
-                                           ->render_manager()
-                                           ->GetRenderWidgetHostView()) {
-        set.insert(rwhv);
-      }
     }
   }
   return set;
@@ -2649,8 +2640,7 @@ void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
     }
   }
 
-  if (!ShowingInterstitialPage())
-    SetVisibilityForChildViews(view_is_visible);
+  SetVisibilityForChildViews(view_is_visible);
 
   // Make sure to call SetVisibilityAndNotifyObservers(VISIBLE) before notifying
   // the CrossProcessFrameConnector.
@@ -3778,10 +3768,6 @@ void WebContentsImpl::RestoreFocus() {
 
 void WebContentsImpl::FocusThroughTabTraversal(bool reverse) {
   view_->FocusThroughTabTraversal(reverse);
-}
-
-bool WebContentsImpl::ShowingInterstitialPage() {
-  return false;
 }
 
 bool WebContentsImpl::IsSavable() {
@@ -5200,7 +5186,6 @@ void WebContentsImpl::ResetLoadProgressState() {
 // Notifies the RenderWidgetHost instance about the fact that the page is
 // loading, or done loading.
 void WebContentsImpl::LoadingStateChanged(bool to_different_document,
-                                          bool due_to_interstitial,
                                           LoadNotificationDetails* details) {
   if (is_being_destroyed_)
     return;
@@ -5483,11 +5468,8 @@ void WebContentsImpl::RunJavaScriptDialog(
   javascript_dialog_navigation_deferrer_ =
       std::make_unique<JavaScriptDialogNavigationDeferrer>();
 
-  // Suppress JavaScript dialogs when requested. Also suppress messages when
-  // showing an interstitial as it's shown over the previous page and we don't
-  // want the hidden page's dialogs to interfere with the interstitial.
-  bool should_suppress = ShowingInterstitialPage() ||
-                         (delegate_ && delegate_->ShouldSuppressDialogs(this));
+  // Suppress JavaScript dialogs when requested.
+  bool should_suppress = delegate_ && delegate_->ShouldSuppressDialogs(this);
   bool has_non_devtools_handlers = delegate_ && dialog_manager_;
   bool has_handlers = page_handlers.size() || has_non_devtools_handlers;
   bool suppress_this_message = should_suppress || !has_handlers;
@@ -5566,7 +5548,7 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
   javascript_dialog_navigation_deferrer_ =
       std::make_unique<JavaScriptDialogNavigationDeferrer>();
 
-  bool should_suppress = ShowingInterstitialPage() || !rfhi->is_active() ||
+  bool should_suppress = !rfhi->is_active() ||
                          (delegate_ && delegate_->ShouldSuppressDialogs(this));
   bool has_non_devtools_handlers = delegate_ && dialog_manager_;
   bool has_handlers = page_handlers.size() || has_non_devtools_handlers;
@@ -5917,7 +5899,7 @@ void WebContentsImpl::RequestSetBounds(const gfx::Rect& new_bounds) {
 void WebContentsImpl::DidStartLoading(FrameTreeNode* frame_tree_node,
                                       bool to_different_document) {
   LoadingStateChanged(frame_tree_node->IsMainFrame() && to_different_document,
-                      false, nullptr);
+                      nullptr);
 
   // Reset the focus state from DidStartNavigation to false if a new load starts
   // afterward, in case loading logic triggers a FocusLocationBarByDefault call.
@@ -5949,7 +5931,7 @@ void WebContentsImpl::DidStopLoading() {
         controller_.GetCurrentEntryIndex()));
   }
 
-  LoadingStateChanged(true, false, details.get());
+  LoadingStateChanged(true, details.get());
 }
 
 void WebContentsImpl::DidChangeLoadProgress() {

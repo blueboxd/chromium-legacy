@@ -299,7 +299,8 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
   }
 
   int mainFunctionVersion = kContextualSearchRequestVersion;
-  if (base::FeatureList::IsEnabled(chrome::android::kRelatedSearches)) {
+  if (base::FeatureList::IsEnabled(chrome::android::kRelatedSearches) &&
+      context_->GetStartOffset() == context_->GetEndOffset()) {
     mainFunctionVersion = kRelatedSearchesVersion;
   }
 
@@ -405,6 +406,12 @@ bool ContextualSearchDelegate::CanSendPageURL(
   // page URL.
   if (field_trial_->IsSendBasePageURLDisabled())
     return false;
+
+  // TODO(donnd): privacy review needed before launch.
+  // See https://crbug.com/1064141.
+  if (base::FeatureList::IsEnabled(chrome::android::kRelatedSearches)) {
+    return true;
+  }
 
   // Ensure that the default search provider is Google.
   const TemplateURL* default_search_provider =

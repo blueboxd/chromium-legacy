@@ -39,6 +39,8 @@ if (is_win || is_mac) {
       "crash_client.h",
       "crash_reporter.cc",
       "crash_reporter.h",
+      "dm_policy_manager.cc",
+      "dm_policy_manager.h",
       "external_constants.cc",
       "external_constants.h",
       "external_constants_impl.h",
@@ -63,6 +65,7 @@ if (is_win || is_mac) {
     deps = [
       ":version_header",
       "//base",
+      "//chrome/updater/protos:omaha_proto",
       "//components/crash/core/common:crash_key_lib",
       "//components/prefs",
       "//components/update_client",
@@ -207,6 +210,7 @@ if (is_win || is_mac) {
     testonly = true
 
     sources = [
+      "dm_policy_manager_unittest.cc",
       "external_constants_unittest.cc",
       "external_constants_unittest.h",
       "lib_util_unittest.cc",
@@ -237,6 +241,8 @@ if (is_win || is_mac) {
       "//testing/gtest",
       "//url",
     ]
+
+    public_deps = [ "//components/policy/proto" ]
 
     if (is_win) {
       sources += [

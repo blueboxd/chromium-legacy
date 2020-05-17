@@ -1484,7 +1484,7 @@ TEST_F(CompositedLayerMappingTest, ScrollingLayerBackgroundColor) {
 
   target->setAttribute(html_names::kClassAttr, "color");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(Color(0, 0, 255), graphics_layer->BackgroundColor());
+  EXPECT_EQ(Color::kTransparent, graphics_layer->BackgroundColor());
   EXPECT_EQ(Color(0, 0, 255), scrolling_contents_layer->BackgroundColor());
 }
 

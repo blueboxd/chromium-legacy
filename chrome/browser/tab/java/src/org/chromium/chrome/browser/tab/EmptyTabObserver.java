@@ -115,12 +115,6 @@ public class EmptyTabObserver implements TabObserver {
     public void onDidChangeThemeColor(Tab tab, int color) {}
 
     @Override
-    public void onDidAttachInterstitialPage(Tab tab) {}
-
-    @Override
-    public void onDidDetachInterstitialPage(Tab tab) {}
-
-    @Override
     public void onBackgroundColorChanged(Tab tab, int color) {}
 
     @Override

@@ -115,7 +115,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   int GenerateAXID() override;
   void SetPluginTreeSource(PluginAXTreeSource* source) override;
   void OnPluginRootNodeUpdated() override;
-  void ShowPluginContextMenu() override;
 
   // RenderFrameObserver implementation.
   void DidCreateNewDocument() override;
@@ -191,10 +190,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
 
   // Returns the document for the active popup if any.
   blink::WebDocument GetPopupDocument();
-
-  // Searches the accessibility tree for plugin's root object and returns it.
-  // Returns an empty WebAXObject if no root object is present.
-  blink::WebAXObject GetPluginRoot();
 
   // The RenderAccessibilityManager that owns us.
   RenderAccessibilityManager* render_accessibility_manager_;

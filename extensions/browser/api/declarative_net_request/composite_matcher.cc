@@ -73,29 +73,32 @@ CompositeMatcher::CompositeMatcher(MatcherList matchers)
 
 CompositeMatcher::~CompositeMatcher() = default;
 
-CompositeMatcher::MatcherList CompositeMatcher::GetAndResetMatchers() {
-  MatcherList result;
-  std::swap(result, matchers_);
-  OnMatchersModified();
-  return result;
-}
-
-void CompositeMatcher::SetMatchers(MatcherList matchers) {
-  matchers_ = std::move(matchers);
-  OnMatchersModified();
-}
-
 void CompositeMatcher::AddOrUpdateRuleset(
-    std::unique_ptr<RulesetMatcher> new_matcher) {
-  // A linear search is ok since the number of rulesets per extension is
-  // expected to be quite small.
-  base::EraseIf(matchers_,
-                [&new_matcher](const std::unique_ptr<RulesetMatcher>& matcher) {
-                  return matcher->id() == new_matcher->id();
-                });
-  matchers_.push_back(std::move(new_matcher));
+    std::unique_ptr<RulesetMatcher> matcher) {
+  MatcherList matchers;
+  matchers.push_back(std::move(matcher));
+  AddOrUpdateRulesets(std::move(matchers));
+}
 
+void CompositeMatcher::AddOrUpdateRulesets(MatcherList matchers) {
+  std::set<RulesetID> ids_to_remove;
+  for (const auto& matcher : matchers)
+    ids_to_remove.insert(matcher->id());
+
+  RemoveRulesetsWithIDs(ids_to_remove);
+  matchers_.insert(matchers_.end(), std::make_move_iterator(matchers.begin()),
+                   std::make_move_iterator(matchers.end()));
   OnMatchersModified();
+}
+
+void CompositeMatcher::RemoveRulesetsWithIDs(const std::set<RulesetID>& ids) {
+  size_t erased_count = base::EraseIf(
+      matchers_, [&ids](const std::unique_ptr<RulesetMatcher>& matcher) {
+        return base::Contains(ids, matcher->id());
+      });
+
+  if (erased_count > 0)
+    OnMatchersModified();
 }
 
 std::set<RulesetID> CompositeMatcher::ComputeStaticRulesetIDs() const {

@@ -146,16 +146,11 @@ class CC_PAINT_EXPORT PaintCanvas {
     drawImage(image, left, top, nullptr);
   }
 
-  enum SrcRectConstraint {
-    kStrict_SrcRectConstraint = SkCanvas::kStrict_SrcRectConstraint,
-    kFast_SrcRectConstraint = SkCanvas::kFast_SrcRectConstraint,
-  };
-
   virtual void drawImageRect(const PaintImage& image,
                              const SkRect& src,
                              const SkRect& dst,
                              const PaintFlags* flags,
-                             SrcRectConstraint constraint) = 0;
+                             SkCanvas::SrcRectConstraint constraint) = 0;
 
   // Draws the frame of the |skottie| animation specified by the normalized time
   // t [0->first frame..1->last frame] at the destination bounds given by |dst|

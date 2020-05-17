@@ -445,7 +445,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void StoreFocus() override;
   void RestoreFocus() override;
   void FocusThroughTabTraversal(bool reverse) override;
-  bool ShowingInterstitialPage() override;
   bool IsSavable() override;
   void OnSavePage() override;
   bool SavePage(const base::FilePath& main_file,
@@ -1538,10 +1537,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Notifies the delegate of a change in loading state.
   // |details| is used to provide details on the load that just finished
   // (but can be null if not applicable).
-  // |due_to_interstitial| is true if the change in load state occurred because
-  // an interstitial page started showing/proceeded.
   void LoadingStateChanged(bool to_different_document,
-                           bool due_to_interstitial,
                            LoadNotificationDetails* details);
 
   // Misc non-view stuff -------------------------------------------------------

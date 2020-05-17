@@ -4819,7 +4819,6 @@ crbug.com/921151 [ Linux ] http/tests/security/mixedContent/insecure-iframe-with
 # cases it seems like a problem around test expectation timing rather than real bugs affecting
 # production code. Because such timing bugs are relatively common in tests and it would thus be very
 # difficult to land the dispatch change without some temporary breakage, these tests are disabled
-crbug.com/922951 external/wpt/pointerevents/pointerevent_setpointercapture_disconnected.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 fast/css/pseudo-hover-active-display-none.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 fast/forms/number/number-input-event-composed.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 http/tests/cache/subresource-fragment-identifier.html [ Failure Pass Timeout Crash ]
@@ -5910,6 +5909,4 @@ crbug.com/1078863 [ Mac ] fast/speech/scripted/speechrecognition-restart-onend.h
 crbug.com/1071915 fast/hidpi/image-srcset-png-canvas.html [ Pass Failure ]
 
 # Sheriff 2020-05-14
-crbug.com/1082804 [ Win7 ] fast/forms/select/listbox-appearance-basic.html [ Pass Failure ]
-crbug.com/1082804 [ Win7 ] fast/forms/select/select-disabled-appearance.html [ Pass Failure ]
 crbug.com/1082820 [ Win ] media/video-layer-crash.html [ Pass Failure ]

@@ -29,6 +29,7 @@
 import json
 import optparse
 import unittest
+import mock
 
 from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
 from blinkpy.common.system.executive_mock import MockExecutive
@@ -1662,6 +1663,18 @@ class PortTest(LoggingTestCase):
             options=optparse.Values({'nocheck_sys_deps': True}))
         self.assertIn('--disable-system-font-check',
                       port.additional_driver_flags())
+
+
+    def test_enable_tracing(self):
+        options, _ = optparse.OptionParser().parse_args([])
+        options.enable_tracing = '*,-blink'
+        port = self.make_port(with_tests=True, options=options)
+        with mock.patch('time.strftime', return_value='TIME'):
+            self.assertEqual([
+                '--trace-startup=*,-blink',
+                '--trace-startup-duration=0',
+                '--trace-startup-file=trace_layout_test_non_virtual_TIME.json',
+            ], port.args_for_test('non/virtual'))
 
 
 class NaturalCompareTest(unittest.TestCase):

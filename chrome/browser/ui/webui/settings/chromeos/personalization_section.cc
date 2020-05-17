@@ -197,6 +197,25 @@ void PersonalizationSection::AddHandlers(content::WebUI* web_ui) {
   }
 }
 
+void PersonalizationSection::RegisterHierarchy(
+    HierarchyGenerator* generator) const {
+  generator->RegisterTopLevelSetting(mojom::Setting::kOpenWallpaper);
+
+  // Change picture.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kChangePicture);
+  generator->RegisterNestedSetting(mojom::Setting::kChangeDeviceAccountImage,
+                                   mojom::Subpage::kChangePicture);
+
+  // Ambient mode.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kAmbientMode);
+  static constexpr mojom::Setting kAmbientModeSettings[] = {
+      mojom::Setting::kAmbientModeOnOff,
+      mojom::Setting::kAmbientModeSource,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kAmbientMode, kAmbientModeSettings,
+                            generator);
+}
+
 void PersonalizationSection::OnAmbientModeEnabledStateChanged() {
   if (pref_service_->GetBoolean(ash::ambient::prefs::kAmbientModeEnabled)) {
     registry()->AddSearchTags(GetAmbientModeOnSearchConcepts());

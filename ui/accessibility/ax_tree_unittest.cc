@@ -3138,7 +3138,7 @@ TEST(AXTreeTest, ChildTreeIds) {
 }
 
 // Tests GetPosInSet and GetSetSize return the assigned int attribute values.
-TEST(AXTreeTest, TestSetSizePosInSetAssigned) {
+TEST(AXTreeTest, SetSizePosInSetAssigned) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(4);
@@ -3170,8 +3170,8 @@ TEST(AXTreeTest, TestSetSizePosInSetAssigned) {
   EXPECT_OPTIONAL_EQ(12, item3->GetSetSize());
 }
 
-// Tests that pos_in_set and set_size can be calculated if not assigned.
-TEST(AXTreeTest, TestSetSizePosInSetUnassigned) {
+// Tests that PosInSet and SetSize can be calculated if not assigned.
+TEST(AXTreeTest, SetSizePosInSetUnassigned) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(4);
@@ -3197,9 +3197,9 @@ TEST(AXTreeTest, TestSetSizePosInSetUnassigned) {
   EXPECT_OPTIONAL_EQ(3, item3->GetSetSize());
 }
 
-// Tests pos_in_set can be calculated if unassigned, and set_size can be
+// Tests PosInSet can be calculated if unassigned, and SetSize can be
 // assigned on the outerlying ordered set.
-TEST(AXTreeTest, TestSetSizeAssignedInContainer) {
+TEST(AXTreeTest, SetSizeAssignedOnContainer) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(4);
@@ -3215,7 +3215,7 @@ TEST(AXTreeTest, TestSetSizeAssignedInContainer) {
   tree_update.nodes[3].role = ax::mojom::Role::kListItem;
   AXTree tree(tree_update);
 
-  // Items should inherit set_size from ordered set if not specified.
+  // Items should inherit SetSize from ordered set if not specified.
   AXNode* item1 = tree.GetFromId(2);
   EXPECT_OPTIONAL_EQ(7, item1->GetSetSize());
   AXNode* item2 = tree.GetFromId(3);
@@ -3226,7 +3226,7 @@ TEST(AXTreeTest, TestSetSizeAssignedInContainer) {
 
 // Tests GetPosInSet and GetSetSize on a list containing various roles.
 // Roles for items and associated ordered set should match up.
-TEST(AXTreeTest, TestSetSizePosInSetDiverseList) {
+TEST(AXTreeTest, SetSizePosInSetDiverseList) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(6);
@@ -3266,7 +3266,7 @@ TEST(AXTreeTest, TestSetSizePosInSetDiverseList) {
 }
 
 // Tests GetPosInSet and GetSetSize on a nested list.
-TEST(AXTreeTest, TestSetSizePosInSetNestedList) {
+TEST(AXTreeTest, SetSizePosInSetNestedList) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(7);
@@ -3307,9 +3307,9 @@ TEST(AXTreeTest, TestSetSizePosInSetNestedList) {
   EXPECT_OPTIONAL_EQ(3, outer_item3->GetSetSize());
 }
 
-// Tests pos_in_set can be calculated if one item specifies pos_in_set, but
+// Tests PosInSet can be calculated if one item specifies PosInSet, but
 // other assignments are missing.
-TEST(AXTreeTest, TestPosInSetMissing) {
+TEST(AXTreeTest, PosInSetMissing) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(4);
@@ -3339,8 +3339,8 @@ TEST(AXTreeTest, TestPosInSetMissing) {
   EXPECT_OPTIONAL_EQ(20, item3->GetSetSize());
 }
 
-// A more difficult test that involves missing pos_in_set and set_size values.
-TEST(AXTreeTest, TestSetSizePosInSetMissingDifficult) {
+// A more difficult test that involves missing PosInSet and SetSize values.
+TEST(AXTreeTest, SetSizePosInSetMissingDifficult) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(6);
@@ -3380,9 +3380,9 @@ TEST(AXTreeTest, TestSetSizePosInSetMissingDifficult) {
   EXPECT_OPTIONAL_EQ(11, item5->GetSetSize());
 }
 
-// Tests that code overwrites decreasing set_size assignments to largest of
+// Tests that code overwrites decreasing SetSize assignments to largest of
 // assigned values.
-TEST(AXTreeTest, TestSetSizeDecreasing) {
+TEST(AXTreeTest, SetSizeDecreasing) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(4);
@@ -3410,8 +3410,8 @@ TEST(AXTreeTest, TestSetSizeDecreasing) {
   EXPECT_OPTIONAL_EQ(5, item3->GetSetSize());
 }
 
-// Tests that code overwrites decreasing pos_in_set values.
-TEST(AXTreeTest, TestPosInSetDecreasing) {
+// Tests that code overwrites decreasing PosInSet values.
+TEST(AXTreeTest, PosInSetDecreasing) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(4);
@@ -3439,10 +3439,10 @@ TEST(AXTreeTest, TestPosInSetDecreasing) {
   EXPECT_OPTIONAL_EQ(8, item3->GetSetSize());
 }
 
-// Tests that code overwrites duplicate pos_in_set values. Note this case is
+// Tests that code overwrites duplicate PosInSet values. Note this case is
 // tricky; an update to the second element causes an update to the third
 // element.
-TEST(AXTreeTest, TestPosInSetDuplicates) {
+TEST(AXTreeTest, PosInSetDuplicates) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(4);
@@ -3473,7 +3473,7 @@ TEST(AXTreeTest, TestPosInSetDuplicates) {
 
 // Tests GetPosInSet and GetSetSize when some list items are nested in a generic
 // container.
-TEST(AXTreeTest, TestSetSizePosInSetNestedContainer) {
+TEST(AXTreeTest, SetSizePosInSetNestedContainer) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(7);
@@ -3517,10 +3517,8 @@ TEST(AXTreeTest, TestSetSizePosInSetNestedContainer) {
 }
 
 // Tests GetSetSize and GetPosInSet are correct, even when list items change.
-// This test is directed at the caching functionality of pos_in_set and
-// set_size. Tests that previously calculated values are not used after
-// tree is updated.
-TEST(AXTreeTest, TestSetSizePosInSetDeleteItem) {
+// Tests that previously calculated values are not used after tree is updated.
+TEST(AXTreeTest, SetSizePosInSetDeleteItem) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
   initial_state.nodes.resize(4);
@@ -3561,9 +3559,9 @@ TEST(AXTreeTest, TestSetSizePosInSetDeleteItem) {
 
 // Tests GetSetSize and GetPosInSet are correct, even when list items change.
 // This test adds an item to the front of a list, which invalidates previously
-// calculated pos_in_set and set_size values. Tests that old values are not
+// calculated PosInSet and SetSize values. Tests that old values are not
 // used after tree is updated.
-TEST(AXTreeTest, TestSetSizePosInSetAddItem) {
+TEST(AXTreeTest, SetSizePosInSetAddItem) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
   initial_state.nodes.resize(4);
@@ -3611,22 +3609,22 @@ TEST(AXTreeTest, TestSetSizePosInSetAddItem) {
   EXPECT_OPTIONAL_EQ(4, new_item4->GetSetSize());
 }
 
-// Tests that the outerlying ordered set reports a set_size. Ordered sets
-// should not report a pos_in_set value other than 0, since they are not
+// Tests that the outerlying ordered set reports a SetSize. Ordered sets
+// should not report a PosInSet value other than 0, since they are not
 // considered to be items within a set (even when nested).
-TEST(AXTreeTest, TestOrderedSetReportsSetSize) {
+TEST(AXTreeTest, OrderedSetReportsSetSize) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(12);
   tree_update.nodes[0].id = 1;
-  tree_update.nodes[0].role = ax::mojom::Role::kList;  // set_size = 3
+  tree_update.nodes[0].role = ax::mojom::Role::kList;  // SetSize = 3
   tree_update.nodes[0].child_ids = {2, 3, 4, 7, 8, 9, 12};
   tree_update.nodes[1].id = 2;
   tree_update.nodes[1].role = ax::mojom::Role::kListItem;  // 1 of 3
   tree_update.nodes[2].id = 3;
   tree_update.nodes[2].role = ax::mojom::Role::kListItem;  // 2 of 3
   tree_update.nodes[3].id = 4;
-  tree_update.nodes[3].role = ax::mojom::Role::kList;  // set_size = 2
+  tree_update.nodes[3].role = ax::mojom::Role::kList;  // SetSize = 2
   tree_update.nodes[3].child_ids = {5, 6};
   tree_update.nodes[4].id = 5;
   tree_update.nodes[4].role = ax::mojom::Role::kListItem;  // 1 of 2
@@ -3635,10 +3633,10 @@ TEST(AXTreeTest, TestOrderedSetReportsSetSize) {
   tree_update.nodes[6].id = 7;
   tree_update.nodes[6].role = ax::mojom::Role::kListItem;  // 3 of 3
   tree_update.nodes[7].id = 8;
-  tree_update.nodes[7].role = ax::mojom::Role::kList;  // set_size = 0
+  tree_update.nodes[7].role = ax::mojom::Role::kList;  // SetSize = 0
   tree_update.nodes[8].id = 9;
   tree_update.nodes[8].role =
-      ax::mojom::Role::kList;  // set_size = 1 because only 1 item whose role
+      ax::mojom::Role::kList;  // SetSize = 1 because only 1 item whose role
                                // matches
   tree_update.nodes[8].child_ids = {10, 11};
   tree_update.nodes[9].id = 10;
@@ -3696,7 +3694,7 @@ TEST(AXTreeTest, TestOrderedSetReportsSetSize) {
 }
 
 // Tests GetPosInSet and GetSetSize code on invalid input.
-TEST(AXTreeTest, TestSetSizePosInSetInvalid) {
+TEST(AXTreeTest, SetSizePosInSetInvalid) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(3);
@@ -3725,7 +3723,7 @@ TEST(AXTreeTest, TestSetSizePosInSetInvalid) {
 // Tests GetPosInSet and GetSetSize code on kRadioButtons. Radio buttons
 // behave differently than other item-like elements; most notably, they do not
 // need to be contained within an ordered set to report a PosInSet or SetSize.
-TEST(AXTreeTest, TestSetSizePosInSetRadioButtons) {
+TEST(AXTreeTest, SetSizePosInSetRadioButtons) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(13);
@@ -3837,13 +3835,13 @@ TEST(AXTreeTest, TestSetSizePosInSetRadioButtons) {
 // Tests GetPosInSet and GetSetSize on a list that includes radio buttons.
 // Note that radio buttons do not contribute to the SetSize of the outerlying
 // list.
-TEST(AXTreeTest, TestSetSizePosInSetRadioButtonsInList) {
+TEST(AXTreeTest, SetSizePosInSetRadioButtonsInList) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(6);
   tree_update.nodes[0].id = 1;
   tree_update.nodes[0].role =
-      ax::mojom::Role::kList;  // set_size = 2, since only contains 2 ListItems
+      ax::mojom::Role::kList;  // SetSize = 2, since only contains 2 ListItems
   tree_update.nodes[0].child_ids = {2, 3, 4, 5, 6};
 
   tree_update.nodes[1].id = 2;
@@ -3888,7 +3886,7 @@ TEST(AXTreeTest, TestSetSizePosInSetRadioButtonsInList) {
 // to the tree representation, the three elements are siblings. However,
 // due to the presence of the kHierarchicalLevel attribute, they all belong
 // to different sets.
-TEST(AXTreeTest, TestSetSizePosInSetFlatTree) {
+TEST(AXTreeTest, SetSizePosInSetFlatTree) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(4);
@@ -3922,7 +3920,7 @@ TEST(AXTreeTest, TestSetSizePosInSetFlatTree) {
 
 // Tests GetPosInSet and GetSetSize on a flat tree representation, where only
 // the level is specified.
-TEST(AXTreeTest, TestSetSizePosInSetFlatTreeLevelsOnly) {
+TEST(AXTreeTest, SetSizePosInSetFlatTreeLevelsOnly) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(9);
@@ -3994,7 +3992,7 @@ TEST(AXTreeTest, TestSetSizePosInSetFlatTreeLevelsOnly) {
 
 // Tests that GetPosInSet and GetSetSize work while a tree is being
 // unserialized.
-TEST(AXTreeTest, TestSetSizePosInSetSubtreeDeleted) {
+TEST(AXTreeTest, SetSizePosInSetSubtreeDeleted) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
   initial_state.nodes.resize(3);
@@ -4035,7 +4033,7 @@ TEST(AXTreeTest, TestSetSizePosInSetSubtreeDeleted) {
 }
 
 // Tests that GetPosInSet and GetSetSize work when there are ignored nodes.
-TEST(AXTreeTest, TestSetSizePosInSetIgnoredItem) {
+TEST(AXTreeTest, SetSizePosInSetIgnoredItem) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
   initial_state.nodes.resize(3);
@@ -4083,7 +4081,7 @@ TEST(AXTreeTest, TestSetSizePosInSetIgnoredItem) {
 
 // Tests that kPopUpButtons are assigned the SetSize of the wrapped
 // kMenuListPopup, if one is present.
-TEST(AXTreeTest, TestSetSizePosInSetPopUpButton) {
+TEST(AXTreeTest, SetSizePosInSetPopUpButton) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
   initial_state.nodes.resize(6);
@@ -4114,7 +4112,7 @@ TEST(AXTreeTest, TestSetSizePosInSetPopUpButton) {
 
 // Tests that PosInSet and SetSize are still correctly calculated when there
 // are nodes with role of kUnknown layered between items and ordered set.
-TEST(AXTreeTest, TestSetSizePosInSetUnkown) {
+TEST(AXTreeTest, SetSizePosInSetUnkown) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
   initial_state.nodes.resize(5);
@@ -4143,7 +4141,7 @@ TEST(AXTreeTest, TestSetSizePosInSetUnkown) {
   EXPECT_OPTIONAL_EQ(2, item2->GetSetSize());
 }
 
-TEST(AXTreeTest, TestSetSizePosInSetMenuItemValidChildOfMenuListPopup) {
+TEST(AXTreeTest, SetSizePosInSetMenuItemValidChildOfMenuListPopup) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
   initial_state.nodes.resize(3);
@@ -4166,7 +4164,7 @@ TEST(AXTreeTest, TestSetSizePosInSetMenuItemValidChildOfMenuListPopup) {
   EXPECT_OPTIONAL_EQ(2, item2->GetSetSize());
 }
 
-TEST(AXTreeTest, TestSetSizePostInSetListBoxOptionWithGroup) {
+TEST(AXTreeTest, SetSizePostInSetListBoxOptionWithGroup) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
   initial_state.nodes.resize(7);
@@ -4191,16 +4189,173 @@ TEST(AXTreeTest, TestSetSizePostInSetListBoxOptionWithGroup) {
 
   AXNode* listbox_option1 = tree.GetFromId(4);
   EXPECT_OPTIONAL_EQ(1, listbox_option1->GetPosInSet());
-  EXPECT_OPTIONAL_EQ(2, listbox_option1->GetSetSize());
+  EXPECT_OPTIONAL_EQ(4, listbox_option1->GetSetSize());
   AXNode* listbox_option2 = tree.GetFromId(5);
   EXPECT_OPTIONAL_EQ(2, listbox_option2->GetPosInSet());
-  EXPECT_OPTIONAL_EQ(2, listbox_option2->GetSetSize());
+  EXPECT_OPTIONAL_EQ(4, listbox_option2->GetSetSize());
   AXNode* listbox_option3 = tree.GetFromId(6);
-  EXPECT_OPTIONAL_EQ(1, listbox_option3->GetPosInSet());
-  EXPECT_OPTIONAL_EQ(2, listbox_option3->GetSetSize());
+  EXPECT_OPTIONAL_EQ(3, listbox_option3->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(4, listbox_option3->GetSetSize());
   AXNode* listbox_option4 = tree.GetFromId(7);
-  EXPECT_OPTIONAL_EQ(2, listbox_option4->GetPosInSet());
-  EXPECT_OPTIONAL_EQ(2, listbox_option4->GetSetSize());
+  EXPECT_OPTIONAL_EQ(4, listbox_option4->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(4, listbox_option4->GetSetSize());
+}
+
+TEST(AXTreeTest, SetSizePosInSetGroup) {
+  // The behavior of a group changes depending on the context it appears in
+  // i.e. if it appears alone vs. if it is contained within another set-like
+  // element. The below example shows a group standing alone:
+  //
+  // <ul role="group"> <!-- SetSize = 3 -->
+  //   <li role="menuitemradio" aria-checked="true">Small</li>
+  //   <li role="menuitemradio" aria-checked="false">Medium</li>
+  //   <li role="menuitemradio" aria-checked="false">Large</li>
+  // </ul>
+  //
+  // However, when it is contained within another set-like element, like a
+  // listbox, it should simply act like a generic container:
+  //
+  // <div role="listbox"> <!-- SetSize = 3 -->
+  //   <div role="option">Red</div> <!-- 1 of 3 -->
+  //   <div role="option">Yellow</div> <!-- 2 of 3 -->
+  //   <div role="group"> <!-- SetSize = 0 -->
+  //       <div role="option">Blue</div> <!-- 3 of 3 -->
+  //   </div>
+  // </div>
+  //
+  // Please note: the GetPosInSet and GetSetSize functions take slightly
+  // different code paths when initially run on items vs. the container.
+  // Exercise both code paths in this test.
+
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(6);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].role = ax::mojom::Role::kMenu;  // SetSize = 4
+  tree_update.nodes[0].child_ids = {2, 6};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].role = ax::mojom::Role::kGroup;  // SetSize = 0
+  tree_update.nodes[1].child_ids = {3, 4, 5};
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].role = ax::mojom::Role::kMenuItemRadio;  // 1 of 4
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].role = ax::mojom::Role::kMenuItemRadio;  // 2 of 4
+  tree_update.nodes[4].id = 5;
+  tree_update.nodes[4].role = ax::mojom::Role::kMenuItemRadio;  // 3 of 4
+  tree_update.nodes[5].id = 6;
+  tree_update.nodes[5].role = ax::mojom::Role::kMenuItemRadio;  // 4 of 4
+  AXTree tree(tree_update);
+
+  // Get data on kMenu first.
+  AXNode* menu = tree.GetFromId(1);
+  EXPECT_OPTIONAL_EQ(4, menu->GetSetSize());
+  AXNode* group = tree.GetFromId(2);
+  EXPECT_FALSE(group->GetSetSize());
+  // The below values should have already been computed and cached.
+  AXNode* item1 = tree.GetFromId(3);
+  EXPECT_OPTIONAL_EQ(1, item1->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(4, item1->GetSetSize());
+  AXNode* item4 = tree.GetFromId(6);
+  EXPECT_OPTIONAL_EQ(4, item4->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(4, item4->GetSetSize());
+
+  AXTreeUpdate next_tree_update;
+  next_tree_update.root_id = 1;
+  next_tree_update.nodes.resize(6);
+  next_tree_update.nodes[0].id = 1;
+  next_tree_update.nodes[0].role = ax::mojom::Role::kListBox;  // SetSize = 4
+  next_tree_update.nodes[0].child_ids = {2, 6};
+  next_tree_update.nodes[1].id = 2;
+  next_tree_update.nodes[1].role = ax::mojom::Role::kGroup;  // SetSize = 0
+  next_tree_update.nodes[1].child_ids = {3, 4, 5};
+  next_tree_update.nodes[2].id = 3;
+  next_tree_update.nodes[2].role = ax::mojom::Role::kListBoxOption;  // 1 of 4
+  next_tree_update.nodes[3].id = 4;
+  next_tree_update.nodes[3].role = ax::mojom::Role::kListBoxOption;  // 2 of 4
+  next_tree_update.nodes[4].id = 5;
+  next_tree_update.nodes[4].role = ax::mojom::Role::kListBoxOption;  // 3 of 4
+  next_tree_update.nodes[5].id = 6;
+  next_tree_update.nodes[5].role = ax::mojom::Role::kListBoxOption;  // 4 of 4
+  AXTree next_tree(next_tree_update);
+
+  // Get data on kListBoxOption first.
+  AXNode* option1 = next_tree.GetFromId(3);
+  EXPECT_OPTIONAL_EQ(1, option1->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(4, option1->GetSetSize());
+  AXNode* option2 = next_tree.GetFromId(4);
+  EXPECT_OPTIONAL_EQ(2, option2->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(4, option2->GetSetSize());
+  AXNode* option3 = next_tree.GetFromId(5);
+  EXPECT_OPTIONAL_EQ(3, option3->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(4, option3->GetSetSize());
+  AXNode* option4 = next_tree.GetFromId(6);
+  EXPECT_OPTIONAL_EQ(4, option4->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(4, option4->GetSetSize());
+  AXNode* next_group = next_tree.GetFromId(2);
+  EXPECT_FALSE(next_group->GetSetSize());
+  // The below value should have already been computed and cached.
+  AXNode* listbox = next_tree.GetFromId(1);
+  EXPECT_OPTIONAL_EQ(4, listbox->GetSetSize());
+
+  // Standalone groups are allowed.
+  AXTreeUpdate third_tree_update;
+  third_tree_update.root_id = 1;
+  third_tree_update.nodes.resize(3);
+  third_tree_update.nodes[0].id = 1;
+  third_tree_update.nodes[0].role = ax::mojom::Role::kGroup;
+  third_tree_update.nodes[0].child_ids = {2, 3};
+  third_tree_update.nodes[1].id = 2;
+  third_tree_update.nodes[1].role = ax::mojom::Role::kListItem;
+  third_tree_update.nodes[2].id = 3;
+  third_tree_update.nodes[2].role = ax::mojom::Role::kListItem;
+  AXTree third_tree(third_tree_update);
+
+  // Ensure that groups can't also stand alone.
+  AXNode* last_group = third_tree.GetFromId(1);
+  EXPECT_OPTIONAL_EQ(2, last_group->GetSetSize());
+  AXNode* list_item1 = third_tree.GetFromId(2);
+  EXPECT_OPTIONAL_EQ(1, list_item1->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(2, list_item1->GetSetSize());
+  AXNode* list_item2 = third_tree.GetFromId(3);
+  EXPECT_OPTIONAL_EQ(2, list_item2->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(2, list_item2->GetSetSize());
+
+  // Test nested groups.
+  AXTreeUpdate last_tree_update;
+  last_tree_update.root_id = 1;
+  last_tree_update.nodes.resize(6);
+  last_tree_update.nodes[0].id = 1;
+  last_tree_update.nodes[0].role = ax::mojom::Role::kMenuBar;
+  last_tree_update.nodes[0].child_ids = {2};
+  last_tree_update.nodes[1].id = 2;
+  last_tree_update.nodes[1].role = ax::mojom::Role::kGroup;
+  last_tree_update.nodes[1].child_ids = {3, 4};
+  last_tree_update.nodes[2].id = 3;
+  last_tree_update.nodes[2].role = ax::mojom::Role::kMenuItemCheckBox;
+  last_tree_update.nodes[3].id = 4;
+  last_tree_update.nodes[3].role = ax::mojom::Role::kGroup;
+  last_tree_update.nodes[3].child_ids = {5, 6};
+  last_tree_update.nodes[4].id = 5;
+  last_tree_update.nodes[4].role = ax::mojom::Role::kMenuItemCheckBox;
+  last_tree_update.nodes[5].id = 6;
+  last_tree_update.nodes[5].role = ax::mojom::Role::kMenuItemCheckBox;
+  AXTree last_tree(last_tree_update);
+
+  AXNode* checkbox1 = last_tree.GetFromId(3);
+  EXPECT_OPTIONAL_EQ(1, checkbox1->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(3, checkbox1->GetSetSize());
+  AXNode* checkbox2 = last_tree.GetFromId(5);
+  EXPECT_OPTIONAL_EQ(2, checkbox2->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(3, checkbox2->GetSetSize());
+  AXNode* checkbox3 = last_tree.GetFromId(6);
+  EXPECT_OPTIONAL_EQ(3, checkbox3->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(3, checkbox3->GetSetSize());
+  AXNode* menu_bar = last_tree.GetFromId(1);
+  EXPECT_OPTIONAL_EQ(3, menu_bar->GetSetSize());
+  AXNode* outer_group = last_tree.GetFromId(2);
+  EXPECT_FALSE(outer_group->GetSetSize());
+  AXNode* inner_group = last_tree.GetFromId(4);
+  EXPECT_FALSE(inner_group->GetSetSize());
 }
 
 TEST(AXTreeTest, OnNodeWillBeDeletedHasValidUnignoredParent) {

@@ -26,6 +26,7 @@ class PrivacySection : public OsSettingsSection {
  private:
   // OsSettingsSection:
   void AddLoadTimeData(content::WebUIDataSource* html_source) override;
+  void RegisterHierarchy(HierarchyGenerator* generator) const override;
 };
 
 }  // namespace settings

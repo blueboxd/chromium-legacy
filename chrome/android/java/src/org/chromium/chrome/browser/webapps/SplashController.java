@@ -203,13 +203,6 @@ public class SplashController
     }
 
     @Override
-    public void onDidAttachInterstitialPage(Tab tab) {
-        if (canHideSplashScreen()) {
-            hideSplash(tab, true /* loadFailed */);
-        }
-    }
-
-    @Override
     public void onPageLoadFinished(Tab tab, String url) {
         if (canHideSplashScreen()) {
             hideSplash(tab, false /* loadFailed */);

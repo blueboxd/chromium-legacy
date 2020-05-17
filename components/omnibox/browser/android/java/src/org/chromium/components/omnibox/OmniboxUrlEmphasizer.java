@@ -196,8 +196,6 @@ public class OmniboxUrlEmphasizer {
                         }
                         strikeThroughScheme = true;
                         break;
-                    case ConnectionSecurityLevel.EV_SECURE:
-                    // Intentional fall-through:
                     case ConnectionSecurityLevel.SECURE:
                         if (emphasizeScheme) {
                             colorId = useDarkColors ? R.color.default_green_dark

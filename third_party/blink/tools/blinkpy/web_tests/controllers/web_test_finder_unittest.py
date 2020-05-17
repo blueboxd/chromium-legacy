@@ -99,7 +99,7 @@ class WebTestFinderTests(unittest.TestCase):
 
         # Disable expectations entirely; nothing should be skipped by default.
         finder._options.no_expectations = True
-        tests = finder.skip_tests([], all_tests, expectations)
+        tests = finder.skip_tests([], all_tests, None)
         self.assertEqual(tests, set())
 
     def test_skip_tests_idlharness(self):
@@ -110,43 +110,68 @@ class WebTestFinderTests(unittest.TestCase):
         host = MockHost()
         port = host.port_factory.get('test-win-win7', None)
 
+        non_idlharness_test = 'external/wpt/dir1/dir2/foo.html'
+        idlharness_test_1 = 'external/wpt/dir1/dir2/idlharness.any.html'
+        idlharness_test_2 = 'external/wpt/dir1/dir2/idlharness.any.worker.html'
         all_tests = [
-            'external/wpt/dir1/dir2/foo.html',
-            'external/wpt/dir1/dir2/idlharness.any.html',
-            'external/wpt/dir1/dir2/idlharness.any.worker.html',
+            non_idlharness_test,
+            idlharness_test_1,
+            idlharness_test_2,
         ]
 
         # Patch port.tests() to return our tests
         port.tests = lambda paths: paths or all_tests
 
         options = optparse.Values({
-            'no_expectations': True,
+            'no_expectations': False,
             'enable_sanitizer': False,
             'skipped': 'default',
+            'skip_timeouts': False,
+            'skip_failing_tests': False,
         })
         finder = web_test_finder.WebTestFinder(port, options)
 
         # Default case; not MSAN/ASAN so should not skip anything.
-        tests = finder.skip_tests([], all_tests, None)
+        expectations = test_expectations.TestExpectations(port)
+        tests = finder.skip_tests([], all_tests, expectations)
         self.assertEqual(tests, set())
+        for test in all_tests:
+            self.assertTrue(
+                expectations.get_expectations(test).is_default_pass)
 
         # MSAN/ASAN, with no paths specified explicitly, so should skip both
         # idlharness tests.
+        expectations = test_expectations.TestExpectations(port)
         finder._options.enable_sanitizer = True
+        tests = finder.skip_tests([], all_tests, expectations)
+        self.assertEqual(tests, set([idlharness_test_1, idlharness_test_2]))
+        self.assertTrue(
+            expectations.get_expectations(non_idlharness_test).is_default_pass)
+        self.assertEquals(
+            expectations.get_expectations(idlharness_test_1).results, {'SKIP'})
+        self.assertEquals(
+            expectations.get_expectations(idlharness_test_2).results, {'SKIP'})
+
+        # Disable expectations entirely; we should still skip the idlharness
+        # tests but shouldn't touch the expectations parameter.
+        finder._options.no_expectations = True
         tests = finder.skip_tests([], all_tests, None)
-        self.assertEqual(
-            tests,
-            set([
-                'external/wpt/dir1/dir2/idlharness.any.html',
-                'external/wpt/dir1/dir2/idlharness.any.worker.html'
-            ]))
+        self.assertEqual(tests, set([idlharness_test_1, idlharness_test_2]))
 
         # MSAN/ASAN, with one of the tests specified explicitly (and
         # --skipped=default), so should skip only the unspecified test.
-        tests = finder.skip_tests(
-            ['external/wpt/dir1/dir2/idlharness.any.html'], all_tests, None)
-        self.assertEqual(
-            tests, set(['external/wpt/dir1/dir2/idlharness.any.worker.html']))
+        expectations = test_expectations.TestExpectations(port)
+        tests = finder.skip_tests([idlharness_test_1], all_tests, expectations)
+        self.assertEqual(tests, set([idlharness_test_2]))
+        # Although we will run the test because it was specified explicitly, it
+        # is still *expected* to Skip. This is consistent with how entries in
+        # TestExpectations work.
+        self.assertTrue(
+            expectations.get_expectations(non_idlharness_test).is_default_pass)
+        self.assertEquals(
+            expectations.get_expectations(idlharness_test_1).results, {'SKIP'})
+        self.assertEquals(
+            expectations.get_expectations(idlharness_test_2).results, {'SKIP'})
 
     def test_find_fastest_tests(self):
         host = MockHost()

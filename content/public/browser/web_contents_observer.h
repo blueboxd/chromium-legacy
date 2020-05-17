@@ -469,10 +469,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   //     this frame own the current fullscreen element again.
   virtual void DidAcquireFullscreen(RenderFrameHost* rfh) {}
 
-  // Invoked when an interstitial page is attached or detached.
-  virtual void DidAttachInterstitialPage() {}
-  virtual void DidDetachInterstitialPage() {}
-
   // Invoked when the vertical scroll direction of the root layer is changed.
   // Note that if a scroll in a given direction occurs, the scroll is completed,
   // and then another scroll in the *same* direction occurs, we will not

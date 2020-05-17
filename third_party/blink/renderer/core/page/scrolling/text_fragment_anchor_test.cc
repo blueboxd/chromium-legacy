@@ -1819,6 +1819,48 @@ TEST_F(TextFragmentAnchorTest, CssTarget) {
   EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
 }
 
+// Ensure the text fragment anchor matching only occurs after the page becomes
+// visible.
+TEST_F(TextFragmentAnchorTest, PageVisibility) {
+  WebView().SetVisibilityState(mojom::blink::PageVisibilityState::kHidden,
+                               /*initial_state=*/true);
+  SimRequest request("https://example.com/test.html#:~:text=test", "text/html");
+  LoadURL("https://example.com/test.html#:~:text=test");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+  )HTML");
+  RunAsyncMatchingTasks();
+
+  // Render two frames and ensure matching and scrolling does not occur.
+  BeginEmptyFrame();
+  BeginEmptyFrame();
+
+  Element& p = *GetDocument().getElementById("text");
+  EXPECT_FALSE(ViewportRect().Contains(BoundingRectInFrame(p)));
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
+  EXPECT_EQ(nullptr, GetDocument().CssTarget());
+
+  // Set the page visible and verify the match.
+  WebView().SetVisibilityState(mojom::blink::PageVisibilityState::kVisible,
+                               /*initial_state=*/false);
+  BeginEmptyFrame();
+  BeginEmptyFrame();
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)));
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+  EXPECT_EQ(p, *GetDocument().CssTarget());
+}
+
 }  // namespace
 
 }  // namespace blink

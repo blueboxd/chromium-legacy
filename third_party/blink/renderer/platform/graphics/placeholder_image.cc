@@ -67,7 +67,7 @@ void DrawIcon(cc::PaintCanvas* canvas,
       icon_image->PaintImageForCurrentFrame(),
       IntRect(IntPoint::Zero(), icon_image->Size()),
       FloatRect(x, y, scale_factor * kIconWidth, scale_factor * kIconHeight),
-      &flags, cc::PaintCanvas::kFast_SrcRectConstraint);
+      &flags, SkCanvas::kFast_SrcRectConstraint);
 }
 
 void DrawCenteredIcon(cc::PaintCanvas* canvas,

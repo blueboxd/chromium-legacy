@@ -150,14 +150,6 @@ void CourierRenderer::Initialize(MediaResource* media_resource,
                          rpc_broker_)));
 }
 
-void CourierRenderer::SetCdm(CdmContext* cdm_context,
-                             CdmAttachedCB cdm_attached_cb) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-
-  // Media remoting doesn't support encrypted content.
-  NOTIMPLEMENTED();
-}
-
 void CourierRenderer::SetLatencyHint(
     base::Optional<base::TimeDelta> latency_hint) {}
 

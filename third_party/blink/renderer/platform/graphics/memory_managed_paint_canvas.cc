@@ -29,7 +29,7 @@ void MemoryManagedPaintCanvas::drawImageRect(
     const SkRect& src,
     const SkRect& dst,
     const cc::PaintFlags* flags,
-    PaintCanvas::SrcRectConstraint constraint) {
+    SkCanvas::SrcRectConstraint constraint) {
   RecordPaintCanvas::drawImageRect(image, src, dst, flags, constraint);
   UpdateMemoryUsage(image);
 }

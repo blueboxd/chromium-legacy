@@ -110,6 +110,14 @@ class WebrtcTransport : public Transport, public SessionOptionsProvider {
   // yet, "api-error" if failed to get the current protocol.
   const std::string& transport_protocol() const { return transport_protocol_; }
 
+  // Since WebRTC uses its own threads, it is difficult to control its behavior
+  // using the standard Chromium threading test classes.  For higher-level tests
+  // which do not want to mock out WebRTC, we provide this mechanism to allow
+  // for polling faster (which should mean the teardown work completing faster)
+  // or to zero out the interval and prevent hangs due to PostDelayedTask.
+  static void SetDataChannelPollingIntervalForTests(
+      base::TimeDelta data_channel_state_polling_interval);
+
  private:
   // PeerConnectionWrapper is responsible for PeerConnection creation,
   // ownership. It passes all events to the corresponding methods below. This is
@@ -165,6 +173,15 @@ class WebrtcTransport : public Transport, public SessionOptionsProvider {
   void SendTransportInfo();
   void AddPendingCandidatesIfPossible();
 
+  // Closes the PeerConnection after |control_data_channel| and
+  // |event_data_channel| have closed.  Note that |peer_connection_wrapper| is
+  // always destroyed asynchronously to allow the callstack to unwind first.
+  static void ClosePeerConnection(
+      rtc::scoped_refptr<webrtc::DataChannelInterface> control_data_channel,
+      rtc::scoped_refptr<webrtc::DataChannelInterface> event_data_channel,
+      std::unique_ptr<PeerConnectionWrapper> peer_connection_wrapper,
+      base::Time start_time);
+
   // Returns the VideoSender for this connection, or nullptr if it hasn't
   // been created yet.
   rtc::scoped_refptr<webrtc::RtpSenderInterface> GetVideoSender();
@@ -202,6 +219,12 @@ class WebrtcTransport : public Transport, public SessionOptionsProvider {
   SessionOptions session_options_;
 
   rtc::scoped_refptr<webrtc::RtpTransceiverInterface> video_transceiver_;
+
+  // Track the data channels so we can make sure they are closed before we
+  // close the peer connection.  This prevents RTCErrors being thrown on the
+  // other side of the WebRTC connection.
+  rtc::scoped_refptr<webrtc::DataChannelInterface> control_data_channel_;
+  rtc::scoped_refptr<webrtc::DataChannelInterface> event_data_channel_;
 
   base::WeakPtrFactory<WebrtcTransport> weak_factory_{this};
 

@@ -7,6 +7,7 @@
 #include "base/no_destructor.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/constants_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
+#include "chrome/browser/ui/webui/settings/chromeos/hierarchy.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_sections.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -40,13 +41,25 @@ class OsSettingsManagerTest : public testing::Test {
   OsSettingsManager* manager_;
 };
 
-TEST_F(OsSettingsManagerTest, Sections) {
+TEST_F(OsSettingsManagerTest, Initialization) {
   // For each mojom::Section value, there should be an associated
   // OsSettingsSection class registered.
   for (const auto& section : constants::AllSections()) {
     EXPECT_TRUE(manager_->sections_->GetSection(section))
         << "No OsSettingsSection instance created for " << section << ".";
   }
+
+  // Each mojom::Subpage should be registered in the hierarchy. Note that
+  // GetSubpageMetadata() internally CHECK()s that the metadata exists before
+  // returning it.
+  for (const auto& subpage : constants::AllSubpages())
+    manager_->hierarchy_->GetSubpageMetadata(subpage);
+
+  // Each mojom::Setting should be registered in the hierarchy. Note that
+  // GetSettingMetadata() internally CHECK()s that the metadata exists before
+  // returning it.
+  for (const auto& setting : constants::AllSettings())
+    manager_->hierarchy_->GetSettingMetadata(setting);
 }
 
 }  // namespace settings

@@ -24,6 +24,12 @@ WebEngineBrowserTest::WebEngineBrowserTest() = default;
 
 WebEngineBrowserTest::~WebEngineBrowserTest() = default;
 
+void WebEngineBrowserTest::SetUp() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  SetUpCommandLine(command_line);
+  BrowserTestBase::SetUp();
+}
+
 void WebEngineBrowserTest::PreRunTestOnMainThread() {
   zx_status_t result = context_.Bind(zx::channel(g_context_channel));
   ZX_DCHECK(result == ZX_OK, result) << "Context::Bind";

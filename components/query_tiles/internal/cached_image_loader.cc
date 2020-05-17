@@ -11,6 +11,7 @@
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_service.h"
 #include "components/image_fetcher/core/request_metadata.h"
+#include "components/query_tiles/internal/stats.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -20,6 +21,7 @@ using image_fetcher::ImageDataFetcherCallback;
 using image_fetcher::ImageFetcher;
 using image_fetcher::ImageFetcherParams;
 using image_fetcher::RequestMetadata;
+using query_tiles::stats::ImagePreloadingEvent;
 
 namespace query_tiles {
 namespace {
@@ -66,17 +68,25 @@ ImageFetcherParams CreateImageFetcherParams() {
 
 void OnImageFetched(ImageLoader::BitmapCallback callback,
                     const gfx::Image& image,
-                    const image_fetcher::RequestMetadata&) {
+                    const image_fetcher::RequestMetadata& request_metadata) {
   DCHECK(callback);
   std::move(callback).Run(image.AsBitmap());
+
+  bool success = request_metadata.http_response_code == net::OK;
+  stats::RecordImageLoading(success ? ImagePreloadingEvent::kSuccess
+                                    : ImagePreloadingEvent::kFailure);
 }
 
 void OnImageDataPrefetched(ImageLoader::SuccessCallback callback,
                            const std::string&,
                            const RequestMetadata& request_metadata) {
+  DCHECK(callback);
   bool success = request_metadata.http_response_code == net::OK;
-  if (callback)
-    std::move(callback).Run(success);
+  std::move(callback).Run(success);
+
+  stats::RecordImageLoading(success
+                                ? ImagePreloadingEvent::kSuccessReducedMode
+                                : ImagePreloadingEvent::kFailureReducedMode);
 }
 
 }  // namespace
@@ -96,13 +106,16 @@ void CachedImageLoader::FetchImage(const GURL& url, BitmapCallback callback) {
   cached_image_fetcher_->FetchImage(
       url, base::BindOnce(&OnImageFetched, std::move(callback)),
       CreateImageFetcherParams());
+  stats::RecordImageLoading(ImagePreloadingEvent::kStart);
 }
 
 void CachedImageLoader::PrefetchImage(const GURL& url,
                                       SuccessCallback callback) {
+  // In reduced mode, the image will not be decoded immediately,
   reduced_mode_image_fetcher_->FetchImageData(
       url, base::BindOnce(&OnImageDataPrefetched, std::move(callback)),
       CreateImageFetcherParams());
+  stats::RecordImageLoading(ImagePreloadingEvent::kStartReducedMode);
 }
 
 }  // namespace query_tiles

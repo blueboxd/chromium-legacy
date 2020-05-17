@@ -390,6 +390,10 @@ class AX_EXPORT AXNode final {
   // Destroy the language info for this node.
   void ClearLanguageInfo();
 
+  // Returns true if node is a group and is a direct descendant of a set-like
+  // element.
+  bool IsEmbeddedGroup() const;
+
   // Returns true if node has ignored state or ignored role.
   bool IsIgnored() const;
 

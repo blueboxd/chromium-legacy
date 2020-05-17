@@ -248,7 +248,6 @@ void LocalDOMWindow::ClearDocument() {
   DCHECK(!document_->IsActive());
 
   unused_preloads_timer_.Stop();
-  document_->ClearDOMWindow();
   document_ = nullptr;
 }
 
@@ -883,12 +882,12 @@ void LocalDOMWindow::SchedulePostMessage(
   // surfaces often as a problem (see crbug.com/587012).
   std::unique_ptr<SourceLocation> location =
       SourceLocation::Capture(source->GetExecutionContext());
-  document_->GetTaskRunner(TaskType::kPostedMessage)
-      ->PostTask(FROM_HERE,
-                 WTF::Bind(&LocalDOMWindow::DispatchPostMessage,
-                           WrapPersistent(this), WrapPersistent(event),
-                           std::move(target), std::move(location),
-                           source->GetExecutionContext()->GetAgentClusterID()));
+  GetTaskRunner(TaskType::kPostedMessage)
+      ->PostTask(
+          FROM_HERE,
+          WTF::Bind(&LocalDOMWindow::DispatchPostMessage, WrapPersistent(this),
+                    WrapPersistent(event), std::move(target),
+                    std::move(location), source->GetAgent()->cluster_id()));
   probe::AsyncTaskScheduled(this, "postMessage", event->async_task_id());
 }
 

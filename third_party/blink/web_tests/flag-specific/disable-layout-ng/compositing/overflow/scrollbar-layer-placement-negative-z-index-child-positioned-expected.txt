@@ -30,7 +30,6 @@
       "name": "LayoutBlockFlow (relative positioned) DIV class='scroller'",
       "position": [-30, -30],
       "bounds": [290, 230],
-      "backgroundColor": "#FFFFFF",
       "transform": 2
     },
     {

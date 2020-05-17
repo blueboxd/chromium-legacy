@@ -49,7 +49,7 @@ public class ContextualSearchEntityHeuristicTest {
 
     private void setupInstanceToTest(Locale locale, int tapOffset) {
         mContext = new ContextualSearchContext.ChangeIgnoringContext();
-        mContext.setSurroundingText(UTF_8, SAMPLE_TEXT, tapOffset, tapOffset);
+        mContext.setSurroundingText(SAMPLE_TEXT, tapOffset, tapOffset);
         when(mContextJniMock.detectLanguage(anyLong(), eq(mContext)))
                 .thenReturn(locale.getLanguage());
         mEntityHeuristic = ContextualSearchEntityHeuristic.testInstance(mContext, true);
@@ -113,7 +113,7 @@ public class ContextualSearchEntityHeuristicTest {
         when(mContextJniMock.detectLanguage(anyLong(), eq(context))).thenReturn(language);
         assert text.startsWith(start);
         int tapOffset = start.length();
-        context.setSurroundingText(UTF_8, text, tapOffset, tapOffset);
+        context.setSurroundingText(text, tapOffset, tapOffset);
         return ContextualSearchEntityHeuristic.testInstance(context, true);
     }
 

@@ -119,6 +119,11 @@ Next, you will need to uprev the ebuild. Do this by renaming all files from the 
 E.g.
 Brltty-5.4.ebuild -> brltty-5.6.ebuild
 
+Start a build with your changes by doing
+
+emerge brltty
+(or emerge{$BOARD} brltty).
+
 Note: Manifest has various checksums computed based on the release you uploaded to GCS. Each of these will need to be replaced/updated.
 
 This should be enough to kick off a build. It is likely patches won’t apply cleanly.
@@ -140,6 +145,29 @@ commits to the file containing the conflict
 
 then understanding the history since the last release. If the patch is already
 upstreamed, you can remove it from the Chrome OS repo.
+
+### Chrome side changes
+
+Chrome communicates with brltty using libbrlapi.
+libbrlapi resides at //third_party/libbrlapi.
+
+Chrome loads this library dynamically and hard-codes the expected version of the api so in
+chrome/browser/extensions/api/braille_display_private/braille_controller_brlapi.cc
+
+which should match up with the header in
+third_party/libbrlapi/brlapi.h.
+
+During uppreving, if brltty increments its api version, it will be necessary to update the header for libbrlapi, as well as incrementing the supported api version of the libbrlapi shared object.
+
+First, grab the generated header from your Chrome OS build above.
+cp <chromeos root>/build/$BOARD/usr/include/brlapi.h <chrome_root>/third_party/libbrlapi/brlapi.h
+
+This header contains the specific socket path for Chrome OS which differs from brltty defaults.
+
+Next, ensure the version in
+chrome/browser/extensions/api/braille_display_private/braille_controller_brlapi.cc
+
+matches the one in the new brltty.
 
 ### Testing
 

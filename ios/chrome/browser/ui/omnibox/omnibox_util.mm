@@ -89,7 +89,6 @@ LocationBarSecurityIconType GetLocationBarSecurityIconTypeForSecurityState(
       if (security_state::ShouldShowDangerTriangleForWarningLevel())
         return NOT_SECURE_WARNING;
       return INFO;
-    case security_state::EV_SECURE:
     case security_state::SECURE:
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
       return SECURE;

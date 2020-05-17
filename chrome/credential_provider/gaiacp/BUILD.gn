@@ -69,6 +69,8 @@ source_set("gaiacp_lib") {
     "auth_utils.h",
     "chrome_availability_checker.cc",
     "chrome_availability_checker.h",
+    "credential_provider_broker_win.cc",
+    "credential_provider_broker_win.h",
     "event_logging_api_manager.cc",
     "event_logging_api_manager.h",
     "event_logs_upload_manager.cc",
@@ -118,6 +120,7 @@ source_set("gaiacp_lib") {
     "//build:branding_buildflags",
     "//chrome/common:non_code_constants",
     "//chrome/common:version_header",
+    "//chrome/credential_provider/gaiacp/mojom",
     "//chrome/installer/launcher_support",
     "//components/crash/core/app:app",
     "//components/crash/core/app:crash_export_thunks",
@@ -130,7 +133,11 @@ source_set("gaiacp_lib") {
   } else {
     deps += [ "//content/public/common:static_switches" ]
   }
-  libs = [ "wevtapi.lib" ]
+  libs = [
+    "hid.lib",
+    "setupapi.lib",
+    "wevtapi.lib",
+  ]
 }
 
 config("gaiacp_config") {

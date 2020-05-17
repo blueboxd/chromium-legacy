@@ -1937,6 +1937,7 @@ void TestRunner::ResetWebFrame(WebFrameTestProxy* web_frame_test_proxy) {
   if (web_frame_test_proxy->IsMainFrame()) {
     web_frame->SetMainFrameOverlayColor(SK_ColorTRANSPARENT);
   }
+  web_frame->EnableViewSourceMode(false);
 }
 
 void TestRunner::SetTestIsRunning(bool running) {

@@ -33,7 +33,7 @@ class PLATFORM_EXPORT MemoryManagedPaintCanvas final
                      const SkRect& src,
                      const SkRect& dst,
                      const cc::PaintFlags* flags,
-                     SrcRectConstraint constraint) override;
+                     SkCanvas::SrcRectConstraint constraint) override;
 
  private:
   void UpdateMemoryUsage(const cc::PaintImage& image);

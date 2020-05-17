@@ -43,8 +43,6 @@ class BrowserControlsNavigationStateHandler
                    const GURL& validated_url,
                    int error_code) override;
   void DidChangeVisibleSecurityState() override;
-  void DidAttachInterstitialPage() override;
-  void DidDetachInterstitialPage() override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void OnRendererUnresponsive(
       content::RenderProcessHost* render_process_host) override;

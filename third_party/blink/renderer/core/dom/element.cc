@@ -518,8 +518,11 @@ void EnqueueAutofocus(Element& element) {
     doc.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kSecurity,
         mojom::ConsoleMessageLevel::kError,
-        "Blocked autofocusing on a form control because the form's frame is "
-        "sandboxed and the 'allow-scripts' permission is not set."));
+        String::Format(
+            "Blocked autofocusing on a <%s> element because the element's "
+            "frame "
+            "is sandboxed and the 'allow-scripts' permission is not set.",
+            element.TagQName().ToString().Ascii().c_str())));
     return;
   }
 
@@ -532,7 +535,9 @@ void EnqueueAutofocus(Element& element) {
     doc.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kSecurity,
         mojom::ConsoleMessageLevel::kError,
-        "Blocked autofocusing on a form control in a cross-origin subframe."));
+        String::Format("Blocked autofocusing on a <%s> element in a "
+                       "cross-origin subframe.",
+                       element.TagQName().ToString().Ascii().c_str())));
     return;
   }
 

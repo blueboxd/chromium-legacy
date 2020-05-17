@@ -61,8 +61,6 @@ class CONTENT_EXPORT MediaPlayerRendererClient
   void Initialize(media::MediaResource* media_resource,
                   media::RendererClient* client,
                   media::PipelineStatusCallback init_cb) override;
-  void SetCdm(media::CdmContext* cdm_context,
-              CdmAttachedCB cdm_attached_cb) override;
 
   // media::mojom::MediaPlayerRendererClientExtension implementation
   void OnDurationChange(base::TimeDelta duration) override;

@@ -92,8 +92,6 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
   std::unique_ptr<ui::AXActionTarget> CreateActionTarget(
       const ui::AXNode& target_node) override;
 
-  bool ShowContextMenu();
-
  private:
   // Update the AXTreeData when the selected range changed.
   void UpdateAXTreeDataFromSelection();

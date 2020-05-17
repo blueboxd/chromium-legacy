@@ -2031,7 +2031,7 @@ void AXTree::RecursivelyPopulateOrderedSetItemsMap(
     // If |child| is an ignored container for ordered set and should not be used
     // to contribute to |items_map_to_be_populated|, we recurse into |child|'s
     // descendants to populate |items_map_to_be_populated|.
-    if (child->IsIgnoredContainerForOrderedSet()) {
+    if (child->IsIgnoredContainerForOrderedSet() || child->IsEmbeddedGroup()) {
       RecursivelyPopulateOrderedSetItemsMap(original_node, ordered_set, child,
                                             ordered_set_min_level, curr_level,
                                             items_map_to_be_populated);

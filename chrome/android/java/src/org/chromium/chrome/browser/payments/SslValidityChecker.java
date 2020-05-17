@@ -13,7 +13,7 @@ import org.chromium.content_public.browser.WebContents;
 public class SslValidityChecker {
     /**
      *  Returns a developer-facing error message for invalid SSL certificate state or an empty
-     *  string when the SSL certificate is valid. Only EV_SECURE, SECURE, and
+     *  string when the SSL certificate is valid. Only SECURE and
      *  SECURE_WITH_POLICY_INSTALLED_CERT are considered valid for web payments, unless
      *  --ignore-certificate-errors is specified on the command line.
      *

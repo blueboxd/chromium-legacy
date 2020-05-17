@@ -81,8 +81,7 @@ SkColor GetOmniboxSecurityChipColor(
                            OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
   }
 
-  if (security_level == security_state::EV_SECURE ||
-      security_level == security_state::SECURE) {
+  if (security_level == security_state::SECURE) {
     return theme_provider->GetColor(TP::COLOR_OMNIBOX_SECURITY_CHIP_SECURE);
   }
   if (security_level == security_state::DANGEROUS)

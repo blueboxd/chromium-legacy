@@ -74,18 +74,17 @@ BrailleControllerImpl::~BrailleControllerImpl() {
 
 void BrailleControllerImpl::TryLoadLibBrlApi() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (libbrlapi_loader_.loaded())
+  if (skip_libbrlapi_so_load_ || libbrlapi_loader_.loaded())
     return;
-  // These versions of libbrlapi work the same for the functions we
-  // are using.  (0.6.0 adds brlapi_writeWText).
-  static const char* const kSupportedVersions[] = {
-      "libbrlapi.so.0.5", "libbrlapi.so.0.6", "libbrlapi.so.0.7",
-      "libbrlapi.so.0.8"};
-  for (size_t i = 0; i < base::size(kSupportedVersions); ++i) {
-    if (libbrlapi_loader_.Load(kSupportedVersions[i]))
-      return;
+
+  // This api version needs to match the one contained in
+  // third_party/libbrlapi/brlapi.h.
+  static const char* const kSupportedVersion = "libbrlapi.so.0.8";
+
+  if (!libbrlapi_loader_.Load(kSupportedVersion)) {
+    LOG(WARNING) << "Couldn't load libbrlapi(" << kSupportedVersion << ": "
+                 << strerror(errno);
   }
-  LOG(WARNING) << "Couldn't load libbrlapi: " << strerror(errno);
 }
 
 std::unique_ptr<DisplayState> BrailleControllerImpl::GetDisplayState() {
@@ -102,6 +101,10 @@ std::unique_ptr<DisplayState> BrailleControllerImpl::GetDisplayState() {
       display_state->available = true;
       display_state->text_column_count.reset(new int(columns));
       display_state->text_row_count.reset(new int(rows));
+
+      unsigned int cell_size = 0;
+      if (connection_->GetCellSize(&cell_size))
+        display_state->cell_size.reset(new int(cell_size));
     }
   }
   return display_state;
@@ -168,7 +171,7 @@ void BrailleControllerImpl::StartConnecting() {
     return;
   started_connecting_ = true;
   TryLoadLibBrlApi();
-  if (!libbrlapi_loader_.loaded()) {
+  if (!libbrlapi_loader_.loaded() && !skip_libbrlapi_so_load_) {
     return;
   }
 
@@ -230,7 +233,7 @@ void BrailleControllerImpl::OnSocketDirChangedOnIOThread() {
 
 void BrailleControllerImpl::TryToConnect() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(libbrlapi_loader_.loaded());
+  DCHECK(skip_libbrlapi_so_load_ || libbrlapi_loader_.loaded());
   connect_scheduled_ = false;
   if (!connection_.get())
     connection_ = create_brlapi_connection_function_.Run();
@@ -288,7 +291,7 @@ void BrailleControllerImpl::Disconnect() {
 
 std::unique_ptr<BrlapiConnection>
 BrailleControllerImpl::CreateBrlapiConnection() {
-  DCHECK(libbrlapi_loader_.loaded());
+  DCHECK(skip_libbrlapi_so_load_ || libbrlapi_loader_.loaded());
   return BrlapiConnection::Create(&libbrlapi_loader_);
 }
 

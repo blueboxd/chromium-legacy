@@ -255,10 +255,6 @@ void PasswordGenerationPopupControllerImpl::GeneratedPasswordRejected() {
   Hide(PopupHidingReason::kUserAborted);
 }
 
-void PasswordGenerationPopupControllerImpl::DidAttachInterstitialPage() {
-  Hide(PopupHidingReason::kAttachInterstitialPage);
-}
-
 void PasswordGenerationPopupControllerImpl::WebContentsDestroyed() {
   Hide(PopupHidingReason::kTabGone);
 }

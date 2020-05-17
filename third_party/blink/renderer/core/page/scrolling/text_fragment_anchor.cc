@@ -166,6 +166,12 @@ TextFragmentAnchor::TextFragmentAnchor(
 }
 
 bool TextFragmentAnchor::Invoke() {
+  // Wait until the page has been made visible before searching.
+  if (!frame_->GetPage()->IsPageVisible() && !page_has_been_visible_)
+    return true;
+  else
+    page_has_been_visible_ = true;
+
   if (element_fragment_anchor_) {
     DCHECK(search_finished_);
     // We need to keep this TextFragmentAnchor alive if we're proxying an

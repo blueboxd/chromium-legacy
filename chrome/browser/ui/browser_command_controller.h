@@ -92,7 +92,6 @@ class BrowserCommandController : public CommandUpdater,
       Profile* profile);
 
  private:
-  class InterstitialObserver;
   FRIEND_TEST_ALL_PREFIXES(BrowserCommandControllerBrowserTest,
                            LockedFullscreen);
 
@@ -195,11 +194,6 @@ class BrowserCommandController : public CommandUpdater,
   // no tab has keyboard focus.
   void UpdateCommandsForTabKeyboardFocus(base::Optional<int> target_index);
 
-  // Add/remove observers for interstitial attachment/detachment from
-  // |contents|.
-  void AddInterstitialObservers(content::WebContents* contents);
-  void RemoveInterstitialObservers(content::WebContents* contents);
-
   inline BrowserWindow* window();
   inline Profile* profile();
 
@@ -207,8 +201,6 @@ class BrowserCommandController : public CommandUpdater,
 
   // The CommandUpdaterImpl that manages the browser window commands.
   CommandUpdaterImpl command_updater_;
-
-  std::vector<InterstitialObserver*> interstitial_observers_;
 
   PrefChangeRegistrar profile_pref_registrar_;
   PrefChangeRegistrar local_pref_registrar_;

@@ -149,8 +149,6 @@ class WEBVIEW_EXPORT WebView : public View,
   void DidDestroyFullscreenWidget() override;
   void DidToggleFullscreenModeForTab(bool entered_fullscreen,
                                      bool will_cause_resize) override;
-  void DidAttachInterstitialPage() override;
-  void DidDetachInterstitialPage() override;
   // Workaround for MSVC++ linker bug/feature that requires
   // instantiation of the inline IPC::Listener methods in all translation units.
   void OnChannelConnected(int32_t peer_id) override {}

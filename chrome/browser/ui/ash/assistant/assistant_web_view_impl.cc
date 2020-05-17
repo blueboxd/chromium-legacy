@@ -160,14 +160,6 @@ void AssistantWebViewImpl::NavigationEntriesDeleted() {
   UpdateCanGoBack();
 }
 
-void AssistantWebViewImpl::DidAttachInterstitialPage() {
-  UpdateCanGoBack();
-}
-
-void AssistantWebViewImpl::DidDetachInterstitialPage() {
-  UpdateCanGoBack();
-}
-
 void AssistantWebViewImpl::InitWebContents(Profile* profile) {
   web_contents_ =
       content::WebContents::Create(content::WebContents::CreateParams(

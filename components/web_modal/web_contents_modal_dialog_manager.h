@@ -55,7 +55,6 @@ class WEB_MODAL_EXPORT WebContentsModalDialogManager
         : manager_(manager) {}
 
     void CloseAllDialogs() { manager_->CloseAllDialogs(); }
-    void DidAttachInterstitialPage() { manager_->DidAttachInterstitialPage(); }
     void WebContentsVisibilityChanged(content::Visibility visibility) {
       manager_->OnVisibilityChanged(visibility);
     }
@@ -94,7 +93,6 @@ class WEB_MODAL_EXPORT WebContentsModalDialogManager
   void DidGetIgnoredUIEvent() override;
   void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
-  void DidAttachInterstitialPage() override;
 
   // Delegate for notifying our owner about stuff. Not owned by us.
   WebContentsModalDialogManagerDelegate* delegate_;

@@ -63,8 +63,6 @@ DEBIAN_PACKAGES="\
   libblkid1
   libbluetooth-dev
   libbluetooth3
-  libbrlapi-dev
-  libbrlapi0.7
   libbrotli1
   libbsd0
   libc6

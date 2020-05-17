@@ -1587,10 +1587,6 @@ void Controller::OnRunnableScriptsChanged(
   SetUserActions(std::move(user_actions));
 }
 
-void Controller::DidAttachInterstitialPage() {
-  client_->Shutdown(Metrics::DropOutReason::INTERSTITIAL_PAGE);
-}
-
 void Controller::DidFinishLoad(content::RenderFrameHost* render_frame_host,
                                const GURL& validated_url) {
   // validated_url might not be the page URL. Ignore it and always check the

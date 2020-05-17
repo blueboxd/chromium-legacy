@@ -74,6 +74,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
+#include "chrome/browser/ui/views/accessibility/accessibility_focus_highlight.h"
 #include "chrome/browser/ui/views/accessibility/invert_bubble_view.h"
 #include "chrome/browser/ui/views/autofill/autofill_bubble_handler_impl.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
@@ -156,6 +157,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -164,6 +166,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/content_accelerators/accelerator_util.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
@@ -801,6 +804,12 @@ void BrowserView::Show() {
       !frame_->GetFrameView()->ShouldHideTopUIForFullscreen() &&
       GetFocusManager() && !GetFocusManager()->GetFocusedView()) {
     SetFocusToLocationBar(false);
+  }
+
+  if (features::IsAccessibilityFocusHighlightEnabled() &&
+      !accessibility_focus_highlight_) {
+    accessibility_focus_highlight_ =
+        std::make_unique<AccessibilityFocusHighlight>(this);
   }
 }
 

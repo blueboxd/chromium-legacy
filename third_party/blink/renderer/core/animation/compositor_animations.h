@@ -92,11 +92,14 @@ class CORE_EXPORT CompositorAnimations {
     kMultipleTransformAnimationsOnSameTarget = 1 << 14,
     kMixedKeyframeValueTypes = 1 << 15,
 
+    // Cases where the scroll timeline source is not composited.
+    kTimelineSourceHasInvalidCompositingState = 1 << 16,
+
     // The maximum number of flags in this enum (excluding itself). New flags
     // should increment this number but it should never be decremented because
     // the values are used in UMA histograms. It should also be noted that it
     // excludes the kNoFailure value.
-    kFailureReasonCount = 16,
+    kFailureReasonCount = 17,
   };
 
   static FailureReasons CheckCanStartAnimationOnCompositor(

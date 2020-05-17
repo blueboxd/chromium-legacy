@@ -39,6 +39,7 @@
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "chrome/browser/background/background_contents.h"
 #include "chrome/browser/supervised_user/supervised_user_extensions_metrics_recorder.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -82,7 +83,8 @@ class ManagementApiUnitTest : public ExtensionServiceTestWithInstall {
                              const std::string& extension_id,
                              bool use_user_gesture,
                              bool accept_dialog,
-                             std::string* error);
+                             std::string* error,
+                             bool enabled = true);
 
   Browser* browser() { return browser_.get(); }
 
@@ -116,7 +118,8 @@ bool ManagementApiUnitTest::RunSetEnabledFunction(
     const std::string& extension_id,
     bool use_user_gesture,
     bool accept_dialog,
-    std::string* error) {
+    std::string* error,
+    bool enabled) {
   ScopedTestDialogAutoConfirm auto_confirm(
       accept_dialog ? ScopedTestDialogAutoConfirm::ACCEPT
                     : ScopedTestDialogAutoConfirm::CANCEL);
@@ -130,9 +133,10 @@ bool ManagementApiUnitTest::RunSetEnabledFunction(
   function->SetRenderFrameHost(web_contents->GetMainFrame());
   base::ListValue args;
   args.AppendString(extension_id);
-  args.AppendBoolean(/*enabled=*/true);
+  args.AppendBoolean(enabled);
   bool result = RunFunction(function, args);
-  *error = function->GetError();
+  if (error)
+    *error = function->GetError();
   return result;
 }
 
@@ -1326,6 +1330,73 @@ TEST_F(ManagementApiSupervisedUserTest, SetEnabled_UnsupportedRequirement) {
     EXPECT_TRUE(prefs->HasDisableReason(
         extension->id(), disable_reason::DISABLE_UNSUPPORTED_REQUIREMENT));
   }
+}
+
+// Tests UMA metrics related to supervised users enabling and disabling
+// extensions.
+TEST_F(ManagementApiSupervisedUserTest, SetEnabledDisabled_UmaMetrics) {
+  base::HistogramTester histogram_tester;
+  base::UserActionTester user_action_tester;
+
+  base::FilePath base_path = data_dir().AppendASCII("permissions_increase");
+  base::FilePath pem_path = base_path.AppendASCII("permissions.pem");
+
+  base::FilePath path = base_path.AppendASCII("v1");
+  const Extension* extension =
+      PackAndInstallCRX(path, pem_path, INSTALL_WITHOUT_LOAD);
+  ASSERT_TRUE(extension);
+
+  // The parent will approve.
+  supervised_user_delegate_->set_next_parent_permission_dialog_result(
+      SupervisedUserServiceDelegate::ParentPermissionDialogResult::
+          kParentPermissionReceived);
+
+  RunSetEnabledFunction(web_contents_.get(), extension->id(),
+                        /*use_user_gesture=*/true, /*accept_dialog=*/true,
+                        nullptr, /*enabled=*/true);
+  histogram_tester.ExpectUniqueSample(
+      SupervisedUserExtensionsMetricsRecorder::kEnablementHistogramName,
+      SupervisedUserExtensionsMetricsRecorder::EnablementState::kEnabled, 1);
+  histogram_tester.ExpectTotalCount(
+      SupervisedUserExtensionsMetricsRecorder::kEnablementHistogramName, 1);
+  EXPECT_EQ(1,
+            user_action_tester.GetActionCount(
+                SupervisedUserExtensionsMetricsRecorder::kEnabledActionName));
+  EXPECT_EQ(0,
+            user_action_tester.GetActionCount(
+                SupervisedUserExtensionsMetricsRecorder::kDisabledActionName));
+
+  // Simulate supervised user disabling extension.
+  RunSetEnabledFunction(web_contents_.get(), extension->id(),
+                        /*use_user_gesture=*/true, /*accept_dialog=*/true,
+                        nullptr, /*enabled=*/false);
+  histogram_tester.ExpectBucketCount(
+      SupervisedUserExtensionsMetricsRecorder::kEnablementHistogramName,
+      SupervisedUserExtensionsMetricsRecorder::EnablementState::kDisabled, 1);
+  histogram_tester.ExpectTotalCount(
+      SupervisedUserExtensionsMetricsRecorder::kEnablementHistogramName, 2);
+  EXPECT_EQ(1,
+            user_action_tester.GetActionCount(
+                SupervisedUserExtensionsMetricsRecorder::kEnabledActionName));
+  EXPECT_EQ(1,
+            user_action_tester.GetActionCount(
+                SupervisedUserExtensionsMetricsRecorder::kDisabledActionName));
+
+  // Simulate supervised user re-enabling extension.
+  RunSetEnabledFunction(web_contents_.get(), extension->id(),
+                        /*use_user_gesture=*/true, /*accept_dialog=*/true,
+                        nullptr, /*enabled=*/true);
+  histogram_tester.ExpectBucketCount(
+      SupervisedUserExtensionsMetricsRecorder::kEnablementHistogramName,
+      SupervisedUserExtensionsMetricsRecorder::EnablementState::kEnabled, 2);
+  histogram_tester.ExpectTotalCount(
+      SupervisedUserExtensionsMetricsRecorder::kEnablementHistogramName, 3);
+  EXPECT_EQ(2,
+            user_action_tester.GetActionCount(
+                SupervisedUserExtensionsMetricsRecorder::kEnabledActionName));
+  EXPECT_EQ(1,
+            user_action_tester.GetActionCount(
+                SupervisedUserExtensionsMetricsRecorder::kDisabledActionName));
 }
 
 // Tests for supervised users (child accounts) with additional setup code.

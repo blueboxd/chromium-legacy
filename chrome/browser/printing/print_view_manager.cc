@@ -89,8 +89,8 @@ bool PrintViewManager::PrintForSystemDialogNow(
 
   SetPrintingRFH(print_preview_rfh_);
 
-  // Don't print / print preview interstitials or crashed tabs.
-  if (IsInterstitialOrCrashed())
+  // Don't print / print preview crashed tabs.
+  if (IsCrashed())
     return false;
 
   GetPrintRenderFrame(print_preview_rfh_)->PrintForSystemDialog();
@@ -203,8 +203,8 @@ bool PrintViewManager::PrintPreview(
   if (print_preview_state_ != NOT_PREVIEWING)
     return false;
 
-  // Don't print / print preview interstitials or crashed tabs.
-  if (IsInterstitialOrCrashed())
+  // Don't print / print preview crashed tabs.
+  if (IsCrashed())
     return false;
 
   GetPrintRenderFrame(rfh)->InitiatePrintPreview(std::move(print_renderer),

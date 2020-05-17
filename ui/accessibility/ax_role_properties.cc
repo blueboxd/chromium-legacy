@@ -564,10 +564,10 @@ bool IsSetLike(const ax::mojom::Role role) {
     case ax::mojom::Role::kMenu:
     case ax::mojom::Role::kMenuBar:
     case ax::mojom::Role::kMenuListPopup:
+    case ax::mojom::Role::kPopUpButton:
     case ax::mojom::Role::kRadioGroup:
     case ax::mojom::Role::kTabList:
     case ax::mojom::Role::kTree:
-    case ax::mojom::Role::kPopUpButton:
       return true;
     default:
       return false;

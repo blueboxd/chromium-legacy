@@ -256,7 +256,7 @@ void PrintPreviewDialogController::PrintPreview(WebContents* initiator) {
   ModuleDatabase::DisableThirdPartyBlocking();
 #endif
 
-  if (initiator->ShowingInterstitialPage() || initiator->IsCrashed())
+  if (initiator->IsCrashed())
     return;
 
   PrintPreviewDialogController* dialog_controller = GetInstance();

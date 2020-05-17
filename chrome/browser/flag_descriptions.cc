@@ -2979,15 +2979,6 @@ const char kTabFreezeDescription[] =
     "Enables freezing eligible tabs when they have been backgrounded for 5 "
     "minutes.";
 
-const char kWebUIA11yEnhancementsName[] =
-    "Enable accessibility enhancements in WebUI";
-const char kWebUIA11yEnhancementsDescription[] =
-    "This flag covers a wide variety of accessibility enhancements in WebUI "
-    "and is used to demonstrate the enhancements for review and testing. When "
-    "a enhancement is ready to be released, the enhancement will be taken out "
-    "from behind this feature flag. This flag will remain disabled and ready "
-    "to be used for other enhancements.";
-
 const char kSyncSetupFriendlySettingsName[] = "Sync setup friendly settings";
 const char kSyncSetupFriendlySettingsDescription[] =
     "Enable the new sync setup friendly settings";

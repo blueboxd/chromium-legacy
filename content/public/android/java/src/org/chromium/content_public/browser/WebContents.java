@@ -245,11 +245,6 @@ public interface WebContents extends Parcelable {
     void setAudioMuted(boolean mute);
 
     /**
-     * @return Whether the page is currently showing an interstitial, such as a bad HTTPS page.
-     */
-    boolean isShowingInterstitialPage();
-
-    /**
      * @return Whether the location bar should be focused by default for this page.
      */
     boolean focusLocationBarByDefault();

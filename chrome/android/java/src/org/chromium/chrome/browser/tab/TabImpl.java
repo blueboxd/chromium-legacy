@@ -572,7 +572,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
 
     @Override
     public boolean isLoading() {
-        return mIsLoading && !isShowingInterstitialPage();
+        return mIsLoading;
     }
 
     @Override
@@ -639,7 +639,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
 
             // If the page is still loading, update the progress bar (otherwise it would not show
             // until the renderer notifies of new progress being made).
-            if (getProgress() < 100 && !isShowingInterstitialPage()) {
+            if (getProgress() < 100) {
                 notifyLoadProgress(getProgress());
             }
 
@@ -744,14 +744,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
      */
     public int getRootId() {
         return mRootId;
-    }
-
-    /**
-     * @return Whether or not the {@link Tab} is currently showing an interstitial page, such as
-     *         a bad HTTPS page.
-     */
-    public boolean isShowingInterstitialPage() {
-        return getWebContents() != null && getWebContents().isShowingInterstitialPage();
     }
 
     /**

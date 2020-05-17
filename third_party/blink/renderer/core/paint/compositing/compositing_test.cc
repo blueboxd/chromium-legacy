@@ -254,18 +254,12 @@ TEST_P(CompositingTest, BackgroundColorInScrollingContentsLayer) {
   ASSERT_TRUE(scroller_box->GetBackgroundPaintLocation() ==
               kBackgroundPaintInScrollingContents);
 
-  // In CAP mode, background_color is only set on the cc::Layer which draws the
-  // background; in pre-CAP mode, it is set on both the main layer and the
-  // scrolling contents layer.
-  bool cap_mode = RuntimeEnabledFeatures::CompositeAfterPaintEnabled();
-
   // The root layer and root scrolling contents layer get background_color by
   // blending the CSS background-color of the <html> element with
   // LocalFrameView::BaseBackgroundColor(), which is white by default.
   auto* layer = CcLayersByName(RootCcLayer(), "LayoutView #document")[0];
   SkColor expected_color = SkColorSetRGB(10, 20, 30);
-  EXPECT_EQ(layer->background_color(),
-            cap_mode ? SK_ColorTRANSPARENT : expected_color);
+  EXPECT_EQ(layer->background_color(), SK_ColorTRANSPARENT);
   auto* scrollable_area = GetLocalFrameView()->LayoutViewport();
   layer = ScrollingContentsCcLayerByScrollElementId(
       RootCcLayer(), scrollable_area->GetScrollElementId());
@@ -275,8 +269,7 @@ TEST_P(CompositingTest, BackgroundColorInScrollingContentsLayer) {
   // the layer-defining element.
   expected_color = SkColorSetRGB(30, 40, 50);
   layer = CcLayerByDOMElementId("scroller");
-  EXPECT_EQ(layer->background_color(),
-            cap_mode ? SK_ColorTRANSPARENT : expected_color);
+  EXPECT_EQ(layer->background_color(), SK_ColorTRANSPARENT);
   scrollable_area = scroller_box->GetScrollableArea();
   layer = ScrollingContentsCcLayerByScrollElementId(
       RootCcLayer(), scrollable_area->GetScrollElementId());
@@ -319,11 +312,6 @@ TEST_P(CompositingTest, BackgroundColorInGraphicsLayer) {
   ASSERT_TRUE(scroller_box->GetBackgroundPaintLocation() ==
               kBackgroundPaintInGraphicsLayer);
 
-  // In CAP mode, background_color is only set on the cc::Layer which draws the
-  // background; in pre-CAP mode, it is set on both the main layer and the
-  // scrolling contents layer.
-  bool cap_mode = RuntimeEnabledFeatures::CompositeAfterPaintEnabled();
-
   // The root layer and root scrolling contents layer get background_color by
   // blending the CSS background-color of the <html> element with
   // LocalFrameView::BaseBackgroundColor(), which is white by default. In this
@@ -334,8 +322,8 @@ TEST_P(CompositingTest, BackgroundColorInGraphicsLayer) {
   auto* scrollable_area = GetLocalFrameView()->LayoutViewport();
   layer = ScrollingContentsCcLayerByScrollElementId(
       RootCcLayer(), scrollable_area->GetScrollElementId());
-  EXPECT_EQ(layer->background_color(),
-            cap_mode ? SK_ColorTRANSPARENT : SK_ColorWHITE);
+  EXPECT_EQ(layer->background_color(), SK_ColorTRANSPARENT);
+  EXPECT_EQ(layer->SafeOpaqueBackgroundColor(), SK_ColorTRANSPARENT);
 
   // Non-root layers set background_color based on the CSS background color of
   // the layer-defining element.
@@ -345,8 +333,8 @@ TEST_P(CompositingTest, BackgroundColorInGraphicsLayer) {
   scrollable_area = scroller_box->GetScrollableArea();
   layer = ScrollingContentsCcLayerByScrollElementId(
       RootCcLayer(), scrollable_area->GetScrollElementId());
-  EXPECT_EQ(layer->background_color(),
-            cap_mode ? SK_ColorTRANSPARENT : expected_color);
+  EXPECT_EQ(layer->background_color(), SK_ColorTRANSPARENT);
+  EXPECT_EQ(layer->SafeOpaqueBackgroundColor(), SK_ColorTRANSPARENT);
 }
 
 class CompositingSimTest : public PaintTestConfigurations, public SimTest {

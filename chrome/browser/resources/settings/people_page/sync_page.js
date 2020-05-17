@@ -532,7 +532,7 @@ Polymer({
    */
   shouldShowSyncAccountControl_() {
     // <if expr="chromeos">
-    if (!loadTimeData.getBoolean('splitSyncConsent')) {
+    if (!loadTimeData.getBoolean('useBrowserSyncConsent')) {
       return false;
     }
     // </if>

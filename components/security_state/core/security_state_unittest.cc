@@ -14,7 +14,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/security_state/core/features.h"
 #include "components/security_state/core/insecure_input_event_data.h"
-#include "components/security_state/core/security_state.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -433,7 +432,6 @@ TEST(SecurityStateTest, LocalhostOrFileUrl) {
 // Tests IsSslCertificateValid function.
 TEST(SecurityStateTest, SslCertificateValid) {
   EXPECT_TRUE(IsSslCertificateValid(SecurityLevel::SECURE));
-  EXPECT_TRUE(IsSslCertificateValid(SecurityLevel::EV_SECURE));
   EXPECT_TRUE(
       IsSslCertificateValid(SecurityLevel::SECURE_WITH_POLICY_INSTALLED_CERT));
 

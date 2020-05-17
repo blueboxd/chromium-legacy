@@ -639,37 +639,6 @@ class SafeBrowsingBlockingPageBrowserTest
         ->GetReport();
   }
 
-  void MalwareRedirectCancelAndProceed(const std::string& open_function) {
-    GURL load_url = embedded_test_server()->GetURL(
-        "/safe_browsing/interstitial_cancel.html");
-    GURL malware_url = embedded_test_server()->GetURL(kMaliciousPage);
-    SetURLThreatType(malware_url, testing::get<0>(GetParam()));
-
-    // Load the test page.
-    ui_test_utils::NavigateToURL(browser(), load_url);
-    // Trigger the safe browsing interstitial page via a redirect in
-    // "openWin()".
-    ui_test_utils::NavigateToURLWithDisposition(
-        browser(), GURL("javascript:" + open_function + "()"),
-        WindowOpenDisposition::CURRENT_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
-    WebContents* contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    content::WaitForInterstitialAttach(contents);
-    // Cancel the redirect request while interstitial page is open.
-    browser()->tab_strip_model()->ActivateTabAt(
-        0, {TabStripModel::GestureType::kOther});
-    ui_test_utils::NavigateToURL(browser(), GURL("javascript:stopWin()"));
-    browser()->tab_strip_model()->ActivateTabAt(
-        1, {TabStripModel::GestureType::kOther});
-    // Simulate the user clicking "proceed", there should be no crash.  Since
-    // clicking proceed may do nothing (see comment in RedirectCanceled
-    // below, and crbug.com/76460), we use SendCommand to trigger the callback
-    // directly rather than using ClickAndWaitForDetach since there might not
-    // be a notification to wait for.
-    SendCommand(security_interstitials::CMD_PROCEED);
-  }
-
   content::RenderFrameHost* GetRenderFrameHost() {
     return ::safe_browsing::GetRenderFrameHost(browser());
   }
@@ -1265,7 +1234,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, LearnMore) {
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
   WebContents* new_tab = browser()->tab_strip_model()->GetWebContentsAt(1);
   ASSERT_TRUE(new_tab);
-  EXPECT_FALSE(new_tab->ShowingInterstitialPage());
+  EXPECT_FALSE(IsShowingInterstitial(new_tab));
 
   // Interstitial still displays in the background tab.
   browser()->tab_strip_model()->ActivateTabAt(

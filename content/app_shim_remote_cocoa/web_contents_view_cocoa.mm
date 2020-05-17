@@ -22,7 +22,9 @@ using content::DropData;
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewCocoa
 
-@implementation WebContentsViewCocoa
+@implementation WebContentsViewCocoa {
+  BOOL _inFullScreenTransition;
+}
 
 - (id)initWithViewsHostableView:(ui::ViewsHostableView*)v {
   self = [super initWithFrame:NSZeroRect];
@@ -257,7 +259,7 @@ using content::DropData;
 }
 
 - (void)updateWebContentsVisibility {
-  if (!_host)
+  if (!_host || _inFullScreenTransition)
     return;
   Visibility visibility = Visibility::kVisible;
   if ([self isHiddenOrHasHiddenAncestor] || ![self window])
@@ -290,22 +292,51 @@ using content::DropData;
   NSNotificationCenter* notificationCenter =
       [NSNotificationCenter defaultCenter];
 
-//  if (oldWindow) {
-//    [notificationCenter
-//        removeObserver:self
-//                  name:NSWindowDidChangeOcclusionStateNotification
-//                object:oldWindow];
-//  }
-//  if (newWindow) {
-//    [notificationCenter addObserver:self
-//                           selector:@selector(windowChangedOcclusionState:)
-//                               name:NSWindowDidChangeOcclusionStateNotification
-//                             object:newWindow];
-//  }
+  if (oldWindow) {
+    NSArray* notificationsToRemove = @[
+      NSWindowWillEnterFullScreenNotification,
+      NSWindowDidEnterFullScreenNotification,
+      NSWindowWillExitFullScreenNotification,
+      NSWindowDidExitFullScreenNotification
+    ];
+    for (NSString* notificationName in notificationsToRemove) {
+      [notificationCenter removeObserver:self
+                                    name:notificationName
+                                  object:oldWindow];
+    }
+  }
+  if (newWindow) {
+    // The fullscreen transition causes spurious occlusion notifications.
+    // See https://crbug.com/1081229
+    [notificationCenter addObserver:self
+                           selector:@selector(fullscreenTransitionStarted:)
+                               name:NSWindowWillEnterFullScreenNotification
+                             object:newWindow];
+    [notificationCenter addObserver:self
+                           selector:@selector(fullscreenTransitionComplete:)
+                               name:NSWindowDidEnterFullScreenNotification
+                             object:newWindow];
+    [notificationCenter addObserver:self
+                           selector:@selector(fullscreenTransitionStarted:)
+                               name:NSWindowWillExitFullScreenNotification
+                             object:newWindow];
+    [notificationCenter addObserver:self
+                           selector:@selector(fullscreenTransitionComplete:)
+                               name:NSWindowDidExitFullScreenNotification
+                             object:newWindow];
+  }
 }
 
 - (void)windowChangedOcclusionState:(NSNotification*)notification {
   [self updateWebContentsVisibility];
+}
+
+- (void)fullscreenTransitionStarted:(NSNotification*)notification {
+  _inFullScreenTransition = YES;
+}
+
+- (void)fullscreenTransitionComplete:(NSNotification*)notification {
+  _inFullScreenTransition = NO;
 }
 
 - (void)viewDidMoveToWindow {

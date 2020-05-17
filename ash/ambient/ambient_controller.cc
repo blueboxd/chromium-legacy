@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/fake_ambient_backend_controller_impl.h"
 #include "ash/ambient/model/ambient_backend_model_observer.h"
 #include "ash/ambient/ui/ambient_container_view.h"
@@ -87,9 +86,8 @@ AmbientController::~AmbientController() {
 }
 
 void AmbientController::OnWidgetDestroying(views::Widget* widget) {
-  refresh_timer_.Stop();
-  ambient_backend_model_.Clear();
-  weak_factory_.InvalidateWeakPtrs();
+  ambient_photo_controller_.StopScreenUpdate();
+
   container_view_->GetWidget()->RemoveObserver(this);
   container_view_ = nullptr;
 
@@ -103,7 +101,8 @@ void AmbientController::OnAmbientModeEnabled(bool enabled) {
   if (enabled) {
     CreateContainerView();
     container_view_->GetWidget()->Show();
-    RefreshImage();
+
+    ambient_photo_controller_.StartScreenUpdate();
   } else {
     DestroyContainerView();
   }
@@ -167,8 +166,12 @@ void AmbientController::Toggle() {
     Show();
 }
 
+AmbientBackendModel* AmbientController::ambient_backend_model() {
+  return ambient_photo_controller_.ambient_backend_model();
+}
+
 void AmbientController::OnBackgroundPhotoEvents() {
-  refresh_timer_.Stop();
+  ambient_photo_controller_.StopScreenUpdate();
 
   // Move the |AmbientModeContainer| beneath the |LockScreenWidget| to show
   // the lock screen contents on top before the fade-out animation.
@@ -203,57 +206,6 @@ void AmbientController::DestroyContainerView() {
   // |container_view_| to nullptr.
   if (container_view_)
     container_view_->GetWidget()->CloseNow();
-}
-
-void AmbientController::RefreshImage() {
-  if (ambient_backend_model_.ShouldFetchImmediately()) {
-    // TODO(b/140032139): Defer downloading image if it is animating.
-    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&AmbientController::GetNextImage,
-                       weak_factory_.GetWeakPtr()),
-        kAnimationDuration);
-  } else {
-    ambient_backend_model_.ShowNextImage();
-    ScheduleRefreshImage();
-  }
-}
-
-void AmbientController::ScheduleRefreshImage() {
-  const base::TimeDelta refresh_interval =
-      ambient_backend_model_.GetPhotoRefreshInterval();
-  refresh_timer_.Start(FROM_HERE, refresh_interval,
-                       base::BindOnce(&AmbientController::RefreshImage,
-                                      weak_factory_.GetWeakPtr()));
-}
-
-void AmbientController::GetNextImage() {
-  // Start requesting photo and weather information from the backdrop server.
-  ambient_photo_controller_.GetNextScreenUpdateInfo(
-      base::BindOnce(&AmbientController::OnPhotoDownloaded,
-                     weak_factory_.GetWeakPtr()),
-      base::BindOnce(&AmbientController::OnWeatherConditionIconDownloaded,
-                     weak_factory_.GetWeakPtr()));
-}
-
-void AmbientController::OnPhotoDownloaded(const gfx::ImageSkia& image) {
-  // TODO(b/148485116): Implement retry logic.
-  if (image.isNull())
-    return;
-
-  ambient_backend_model_.AddNextImage(image);
-  ScheduleRefreshImage();
-}
-
-void AmbientController::OnWeatherConditionIconDownloaded(
-    base::Optional<float> temp_f,
-    const gfx::ImageSkia& icon) {
-  // For now we only show the weather card when both fields have values.
-  // TODO(meilinw): optimize the behavior with more specific error handling.
-  if (icon.isNull() || !temp_f.has_value())
-    return;
-
-  ambient_backend_model_.UpdateWeatherInfo(icon, temp_f.value());
 }
 
 void AmbientController::set_backend_controller_for_testing(

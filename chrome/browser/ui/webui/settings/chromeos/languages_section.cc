@@ -161,5 +161,26 @@ void LanguagesSection::AddHandlers(content::WebUI* web_ui) {
       std::make_unique<::settings::LanguagesHandler>(profile()));
 }
 
+void LanguagesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
+  // Languages and input details.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kLanguagesAndInputDetails);
+  static constexpr mojom::Setting kLanguagesAndInputDetailsSettings[] = {
+      mojom::Setting::kAddLanguage,
+      mojom::Setting::kShowInputOptionsInShelf,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kLanguagesAndInputDetails,
+                            kLanguagesAndInputDetailsSettings, generator);
+
+  // Manage input methods.
+  generator->RegisterNestedSubpage(mojom::Subpage::kManageInputMethods,
+                                   mojom::Subpage::kLanguagesAndInputDetails);
+
+  // Smart inputs.
+  generator->RegisterTopLevelSubpage(mojom::Subpage::kSmartInputs);
+  generator->RegisterNestedSetting(
+      mojom::Setting::kShowPersonalInformationSuggestions,
+      mojom::Subpage::kSmartInputs);
+}
+
 }  // namespace settings
 }  // namespace chromeos

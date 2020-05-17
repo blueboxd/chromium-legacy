@@ -219,14 +219,6 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   }
   request.add_params("init=/init");
 
-  // TIP: When you want to see all dmesg logs from the Android system processes
-  // such as init, uncomment the following line. By default, the guest kernel
-  // rate-limits the logging and you might not be able to see all LOGs from
-  // them. The logs could be silently dropped. This is useful when modifying
-  // init.bertha.rc, for example.
-  //
-  // request.add_params("printk.devkmsg=on");
-
   for (auto& entry : kernel_cmdline)
     request.add_params(std::move(entry));
 

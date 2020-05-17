@@ -11,8 +11,7 @@
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [600, 250],
-      "backgroundColor": "#FFFFFF"
+      "bounds": [600, 250]
     }
   ]
 }
@@ -29,8 +28,7 @@
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [400, 250],
-      "backgroundColor": "#FFFFFF"
+      "bounds": [400, 250]
     }
   ]
 }
@@ -47,8 +45,7 @@
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [400, 600],
-      "backgroundColor": "#FFFFFF"
+      "bounds": [400, 600]
     }
   ]
 }
@@ -65,8 +62,7 @@
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [800, 600],
-      "backgroundColor": "#FFFFFF"
+      "bounds": [800, 600]
     }
   ]
 }

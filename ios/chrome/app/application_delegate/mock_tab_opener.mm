@@ -37,7 +37,7 @@
   // Stub.
 }
 
-- (BOOL)shouldOpenNTPTabOnActivationOfTabModel:(TabModel*)tabModel {
+- (BOOL)shouldOpenNTPTabOnActivationOfBrowser:(Browser*)browser {
   // Stub.
   return YES;
 }

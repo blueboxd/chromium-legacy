@@ -40,6 +40,7 @@ void AttachBrowserAgents(Browser* browser) {
   DeviceSharingBrowserAgent::CreateForBrowser(browser);
   UrlLoadingNotifierBrowserAgent::CreateForBrowser(browser);
   AppLauncherBrowserAgent::CreateForBrowser(browser);
+  WebStateListMetricsBrowserAgent::CreateForBrowser(browser);
 
   // Send Tab To Self is non-OTR only.
   if (!browser->GetBrowserState()->IsOffTheRecord())

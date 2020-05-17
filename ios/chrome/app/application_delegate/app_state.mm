@@ -42,7 +42,6 @@
 #import "ios/chrome/browser/ntp_snippets/content_suggestions_scheduler_notifications.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -389,8 +388,8 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
         handleStartupParametersWithTabOpener:tabOpener
                           startupInformation:_startupInformation
                                 browserState:currentInterface.browserState];
-  } else if ([tabOpener shouldOpenNTPTabOnActivationOfTabModel:currentInterface
-                                                                   .tabModel]) {
+  } else if ([tabOpener shouldOpenNTPTabOnActivationOfBrowser:currentInterface
+                                                                  .browser]) {
     // Opens an NTP if needed.
     // TODO(crbug.com/623491): opening a tab when the application is launched
     // without a tab should not be counted as a user action. Revisit the way tab
@@ -463,10 +462,11 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   UMA_HISTOGRAM_CUSTOM_TIMES("Session.TotalDurationMax1Day", duration,
                              base::TimeDelta::FromMilliseconds(1),
                              base::TimeDelta::FromHours(24), 50);
-  if (currentInterface.browser) {
-    WebStateListMetricsBrowserAgent::FromBrowser(currentInterface.browser)
-        ->RecordSessionMetrics();
-  }
+
+  WebStateListMetricsBrowserAgent* webStateListMetrics =
+      WebStateListMetricsBrowserAgent::FromBrowser(currentInterface.browser);
+  if (webStateListMetrics)
+    webStateListMetrics->RecordSessionMetrics();
 
   if (currentInterface.browserState) {
     IOSProfileSessionDurationsService* psdService =

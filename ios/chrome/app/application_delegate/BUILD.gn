@@ -106,6 +106,7 @@ source_set("tab_opening") {
     "//base",
     "//ios/chrome/app",
     "//ios/chrome/app:mode",
+    "//ios/chrome/browser/main:public",
     "//ui/base",
   ]
   libs = [

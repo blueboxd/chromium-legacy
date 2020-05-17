@@ -11,8 +11,8 @@
 #include "ui/base/page_transition_types.h"
 
 @class AppState;
+class Browser;
 class GURL;
-@class TabModel;
 @protocol StartupInformation;
 struct UrlLoadParams;
 
@@ -37,9 +37,9 @@ enum class ApplicationModeForTabOpening { NORMAL, INCOGNITO, CURRENT };
               startupInformation:(id<StartupInformation>)startupInformation
                         appState:(AppState*)appState;
 
-// Returns whether an NTP tab should be opened when the specified tabModel is
+// Returns whether an NTP tab should be opened when the specified browser is
 // made current.
-- (BOOL)shouldOpenNTPTabOnActivationOfTabModel:(TabModel*)tabModel;
+- (BOOL)shouldOpenNTPTabOnActivationOfBrowser:(Browser*)browser;
 
 // Returns a block that can be executed on the new tab to trigger one of the
 // commands. This block can be passed to

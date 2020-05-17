@@ -35,7 +35,8 @@ class JsUtil(object):
     """Given an OrderedDict of properties, returns a Code containing the
        description of an object.
     """
-    if not properties: return
+    if not properties:
+      return
 
     c.Sblock('{', new_line=new_line)
     first = True
@@ -77,10 +78,20 @@ class JsUtil(object):
         c.Comment(' %s' % description, comment_prefix='',
                   wrap_indent=4, new_line=False)
 
-    for param in function.params:
-      append_field(c, 'param',
-                   self._TypeToJsType(namespace_name, param.type_),
-                   param.name, param.optional, param.description)
+    for i, param in enumerate(function.params):
+      # Mark the parameter as optional, *only if* all following parameters are
+      # also optional, to avoid JSC_OPTIONAL_ARG_AT_END errors thrown by Closure
+      # Compiler.
+      optional = (all(p.optional for p in function.params[i:])
+                  and (function.callback is None or function.callback.optional))
+      js_type = self._TypeToJsType(namespace_name, param.type_)
+
+      # If the parameter was originally optional, but was followed by
+      # non-optional parameters, allow it to be `null` or `undefined` instead.
+      if not optional and param.optional:
+        js_type = Code().Append('?%s|undefined' % js_type.Render())
+
+      append_field(c, 'param', js_type, param.name, optional, param.description)
 
     if function.callback:
       append_field(c, 'param',

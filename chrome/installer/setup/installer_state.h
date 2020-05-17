@@ -86,18 +86,17 @@ class InstallerState {
   // The ClientState key by which we interact with Google Update.
   const base::string16& state_key() const { return state_key_; }
 
-  // Returns the currently installed version in |target_path|, or NULL if no
-  // products are installed. Ownership is passed to the caller.
-  std::unique_ptr<base::Version> GetCurrentVersion(
-      const InstallationState& machine_state) const;
+  // Returns the currently installed version in |target_path|.
+  // Use IsValid() predicate to detect if product not installed.
+  base::Version GetCurrentVersion(const InstallationState& machine_state) const;
 
   // Returns the critical update version if all of the following are true:
   // * --critical-update-version=CUV was specified on the command-line.
-  // * current_version == NULL or current_version < CUV.
+  // * !current_version.IsValid() or current_version < CUV.
   // * new_version >= CUV.
   // Otherwise, returns an invalid version.
   base::Version DetermineCriticalVersion(
-      const base::Version* current_version,
+      const base::Version& current_version,
       const base::Version& new_version) const;
 
   // Returns the path to the installer under Chrome version folder

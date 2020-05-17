@@ -175,7 +175,7 @@ class InstallUtil {
   // be used for Chrome install.
   static void AddUpdateDowngradeVersionItem(
       HKEY root,
-      const base::Version* current_version,
+      const base::Version& current_version,
       const base::Version& new_version,
       WorkItemList* list);
 

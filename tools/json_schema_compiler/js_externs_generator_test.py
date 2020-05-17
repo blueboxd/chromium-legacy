@@ -79,6 +79,16 @@ namespace fakeApi {
     [deprecated="Use a new method."] static DOMString returnString();
 
     static void optionalParam(optional OptionalParamCallback callback);
+
+    static void nonFinalOptionalParams(DOMString string,
+                                       optional double num,
+                                       object obj,
+                                       optional boolean bool,
+                                       VoidCallback callback);
+
+    static void multipleOptionalParams(optional DOMString param1,
+                                       optional DOMString param2,
+                                       optional VoidCallback callback);
   };
 
   interface Events {
@@ -213,6 +223,24 @@ chrome.fakeApi.returnString = function() {};
  * @see https://developer.chrome.com/extensions/fakeApi#method-optionalParam
  */
 chrome.fakeApi.optionalParam = function(callback) {};
+
+/**
+ * @param {string} string
+ * @param {?number|undefined} num
+ * @param {Object} obj
+ * @param {?boolean|undefined} bool
+ * @param {function():void} callback
+ * @see https://developer.chrome.com/extensions/fakeApi#method-nonFinalOptionalParams
+ */
+chrome.fakeApi.nonFinalOptionalParams = function(string, num, obj, bool, callback) {};
+
+/**
+ * @param {string=} param1
+ * @param {string=} param2
+ * @param {function():void=} callback
+ * @see https://developer.chrome.com/extensions/fakeApi#method-multipleOptionalParams
+ */
+chrome.fakeApi.multipleOptionalParams = function(param1, param2, callback) {};
 
 /**
  * Fired when we realize it's a trap!

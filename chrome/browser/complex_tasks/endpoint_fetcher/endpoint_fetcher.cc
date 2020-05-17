@@ -192,14 +192,31 @@ void EndpointFetcher::OnResponseFetched(
     EndpointFetcherCallback endpoint_fetcher_callback,
     std::unique_ptr<std::string> response_body) {
   simple_url_loader_.reset();
-  // TODO(crbug.com/1083463) Add JSON Sanitization
-  auto response = std::make_unique<EndpointResponse>();
   if (response_body) {
-    response->response = std::move(*response_body);
+    data_decoder::JsonSanitizer::Sanitize(
+        std::move(*response_body),
+        base::BindOnce(&EndpointFetcher::OnSanitizationResult,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(endpoint_fetcher_callback)));
   } else {
+    auto response = std::make_unique<EndpointResponse>();
     // TODO(crbug.com/993393) Add more detailed error messaging
     response->response = "There was a response error";
+    std::move(endpoint_fetcher_callback).Run(std::move(response));
   }
+}
+
+void EndpointFetcher::OnSanitizationResult(
+    EndpointFetcherCallback endpoint_fetcher_callback,
+    data_decoder::JsonSanitizer::Result result) {
+  auto response = std::make_unique<EndpointResponse>();
+  if (result.value.has_value())
+    response->response = result.value.value();
+  else if (result.error.has_value())
+    response->response =
+        "There was a sanitization error: " + result.error.value();
+  else
+    response->response = "There was an unknown sanitization error";
   std::move(endpoint_fetcher_callback).Run(std::move(response));
 }
 

@@ -29,13 +29,13 @@ struct ModifyParams {
   // Path to the executable (setup.exe)
   const base::FilePath& setup_path;
 
-  // Current active version (if any)
-  const base::Version* current_version;
+  // Current installed version if valid; otherwise, no version is installed.
+  const base::Version& current_version;
 
   ModifyParams(InstallerState& installer_state,
                InstallationState& installation_state,
                const base::FilePath& setup_path,
-               const base::Version* current_version)
+               const base::Version& current_version)
       : installer_state(installer_state),
         installation_state(installation_state),
         setup_path(setup_path),

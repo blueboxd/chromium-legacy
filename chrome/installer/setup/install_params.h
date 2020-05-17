@@ -36,7 +36,7 @@ struct InstallParams : public ModifyParams {
   InstallParams(InstallerState& installer_state,
                 InstallationState& installation_state,
                 const base::FilePath& setup_path,
-                const base::Version* current_version,
+                const base::Version& current_version,
                 const base::FilePath& archive_path,
                 const base::FilePath& src_path,
                 const base::FilePath& temp_path,

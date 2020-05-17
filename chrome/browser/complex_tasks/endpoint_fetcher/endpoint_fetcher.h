@@ -13,6 +13,7 @@
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "components/signin/public/identity_manager/scope_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/data_decoder/public/cpp/json_sanitizer.h"
 
 namespace network {
 struct ResourceRequest;
@@ -101,6 +102,8 @@ class EndpointFetcher {
                           signin::AccessTokenInfo access_token_info);
   void OnResponseFetched(EndpointFetcherCallback callback,
                          std::unique_ptr<std::string> response_body);
+  void OnSanitizationResult(EndpointFetcherCallback endpoint_fetcher_callback,
+                            data_decoder::JsonSanitizer::Result result);
 
   enum AuthType { CHROME_API_KEY, OAUTH };
   AuthType auth_type_;

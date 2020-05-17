@@ -124,10 +124,10 @@ void SetCrashKeysFromCommandLine(const base::CommandLine& command_line) {
   crash_keys::SetSwitchesFromCommandLine(command_line, nullptr);
 }
 
-void SetCurrentVersionCrashKey(const base::Version* current_version) {
+void SetCurrentVersionCrashKey(const base::Version& current_version) {
   static crash_reporter::CrashKeyString<32> version_key("current-version");
-  if (current_version)
-    version_key.Set(current_version->GetString());
+  if (current_version.IsValid())
+    version_key.Set(current_version.GetString());
   else
     version_key.Clear();
 }

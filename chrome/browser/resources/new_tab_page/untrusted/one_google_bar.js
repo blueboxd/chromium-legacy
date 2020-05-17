@@ -119,6 +119,12 @@ window.addEventListener('message', ({data}) => {
 // absolutely positioned.
 window.addEventListener('resize', sendOverlayUpdate);
 
+// When the account overlay is shown, it does not close on blur. It does close
+// when clicking the body.
+window.addEventListener('blur', () => {
+  document.body.click();
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   // TODO(crbug.com/1039913): remove after OneGoogleBar links are updated.
   // Updates <a>'s so they load on the top frame instead of the iframe.

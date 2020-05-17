@@ -449,21 +449,21 @@ TEST_F(InstallUtilTest, AddDowngradeVersion) {
 
   // Upgrade should not create the value.
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &current_version,
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, current_version,
                                              higer_new_version, list.get());
   ASSERT_TRUE(list->Do());
   ASSERT_FALSE(InstallUtil::GetDowngradeVersion());
 
   // Downgrade should create the value.
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &current_version,
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, current_version,
                                              lower_new_version_1, list.get());
   ASSERT_TRUE(list->Do());
   EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
 
   // Multiple downgrades should not change the value.
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &lower_new_version_1,
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, lower_new_version_1,
                                              lower_new_version_2, list.get());
   ASSERT_TRUE(list->Do());
   EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
@@ -482,7 +482,7 @@ TEST_F(InstallUtilTest, DeleteDowngradeVersion) {
   base::Version lower_new_version_2("1.1.0.0");
 
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &current_version,
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, current_version,
                                              lower_new_version_2, list.get());
   ASSERT_TRUE(list->Do());
   EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
@@ -490,33 +490,33 @@ TEST_F(InstallUtilTest, DeleteDowngradeVersion) {
   // Upgrade should not delete the value if it still lower than the version that
   // downgrade from.
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &lower_new_version_2,
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, lower_new_version_2,
                                              lower_new_version_1, list.get());
   ASSERT_TRUE(list->Do());
   EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
 
   // Repair should not delete the value.
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &lower_new_version_1,
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, lower_new_version_1,
                                              lower_new_version_1, list.get());
   ASSERT_TRUE(list->Do());
   EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
 
   // Fully upgrade should delete the value.
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &lower_new_version_1,
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, lower_new_version_1,
                                              higer_new_version, list.get());
   ASSERT_TRUE(list->Do());
   ASSERT_FALSE(InstallUtil::GetDowngradeVersion());
 
   // Fresh install should delete the value if it exists.
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &current_version,
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, current_version,
                                              lower_new_version_2, list.get());
   ASSERT_TRUE(list->Do());
   EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, nullptr,
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, base::Version(),
                                              lower_new_version_1, list.get());
   ASSERT_TRUE(list->Do());
   ASSERT_FALSE(InstallUtil::GetDowngradeVersion());

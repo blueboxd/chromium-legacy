@@ -223,15 +223,15 @@ void AddChromeWorkItems(const InstallParams& install_params,
   const base::FilePath& archive_path = install_params.archive_path;
   const base::FilePath& src_path = install_params.src_path;
   const base::FilePath& temp_path = install_params.temp_path;
-  const base::Version* current_version = install_params.current_version;
+  const base::Version& current_version = install_params.current_version;
   const base::Version& new_version = install_params.new_version;
 
   const base::FilePath& target_path = installer_state.target_path();
 
-  if (current_version) {
+  if (current_version.IsValid()) {
     // Delete the archive from an existing install to save some disk space.
     base::FilePath old_installer_dir(
-        installer_state.GetInstallerDirectory(*current_version));
+        installer_state.GetInstallerDirectory(current_version));
     base::FilePath old_archive(
         old_installer_dir.Append(installer::kChromeArchive));
     // Don't delete the archive that we are actually installing from.
@@ -283,8 +283,8 @@ void AddChromeWorkItems(const InstallParams& install_params,
   // otherwise), there is no need to do this.
   // Note that we pass true for check_duplicates to avoid failing on in-use
   // repair runs if the current_version is the same as the new_version.
-  bool check_for_duplicates = (current_version &&
-                               *current_version == new_version);
+  bool check_for_duplicates =
+      (current_version.IsValid() && current_version == new_version);
   install_list->AddMoveTreeWorkItem(
       src_path.AppendASCII(new_version.GetString()).value(),
       target_path.AppendASCII(new_version.GetString()).value(),
@@ -678,7 +678,7 @@ bool AppendPostInstallTasks(const InstallParams& install_params,
   const base::FilePath& setup_path = install_params.setup_path;
   const base::FilePath& src_path = install_params.src_path;
   const base::FilePath& temp_path = install_params.temp_path;
-  const base::Version* current_version = install_params.current_version;
+  const base::Version& current_version = install_params.current_version;
   const base::Version& new_version = install_params.new_version;
 
   HKEY root = installer_state.root_key();
@@ -705,11 +705,11 @@ bool AppendPostInstallTasks(const InstallParams& install_params,
 
     const base::string16 clients_key(install_static::GetClientsKeyPath());
 
-    if (current_version) {
+    if (current_version.IsValid()) {
       in_use_update_work_items->AddSetRegValueWorkItem(
           root, clients_key, KEY_WOW64_32KEY,
           google_update::kRegOldVersionField,
-          ASCIIToUTF16(current_version->GetString()), true);
+          ASCIIToUTF16(current_version.GetString()), true);
     }
     if (critical_version.IsValid()) {
       in_use_update_work_items->AddSetRegValueWorkItem(
@@ -805,7 +805,7 @@ void AddInstallWorkItems(const InstallParams& install_params,
   const InstallerState& installer_state = install_params.installer_state;
   const base::FilePath& setup_path = install_params.setup_path;
   const base::FilePath& temp_path = install_params.temp_path;
-  const base::Version* current_version = install_params.current_version;
+  const base::Version& current_version = install_params.current_version;
   const base::Version& new_version = install_params.new_version;
 
   const base::FilePath& target_path = installer_state.target_path();
@@ -880,7 +880,7 @@ void AddInstallWorkItems(const InstallParams& install_params,
   AddEnterpriseEnrollmentWorkItems(installer_state, setup_path, new_version,
                                    install_list);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING
-  AddFirewallRulesWorkItems(installer_state, current_version == nullptr,
+  AddFirewallRulesWorkItems(installer_state, !current_version.IsValid(),
                             install_list);
 
   // We don't have a version check for Win10+ here so that Windows upgrades

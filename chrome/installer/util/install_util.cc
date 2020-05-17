@@ -562,21 +562,21 @@ base::Optional<base::Version> InstallUtil::GetDowngradeVersion() {
 // static
 void InstallUtil::AddUpdateDowngradeVersionItem(
     HKEY root,
-    const base::Version* current_version,
+    const base::Version& current_version,
     const base::Version& new_version,
     WorkItemList* list) {
   DCHECK(list);
   const auto downgrade_version = GetDowngradeVersion();
-  if (current_version && new_version < *current_version) {
+  if (current_version.IsValid() && new_version < current_version) {
     // This is a downgrade. Write the value if this is the first one (i.e., no
     // previous value exists). Otherwise, leave any existing value in place.
     if (!downgrade_version) {
       list->AddSetRegValueWorkItem(
           root, install_static::GetClientStateKeyPath(), KEY_WOW64_32KEY,
-          kRegDowngradeVersion,
-          base::ASCIIToUTF16(current_version->GetString()), true);
+          kRegDowngradeVersion, base::ASCIIToUTF16(current_version.GetString()),
+          true);
     }
-  } else if (!current_version || new_version >= downgrade_version) {
+  } else if (!current_version.IsValid() || new_version >= downgrade_version) {
     // This is a new install or an upgrade to/past a previous DowngradeVersion.
     list->AddDeleteRegValueWorkItem(root,
                                     install_static::GetClientStateKeyPath(),

@@ -597,13 +597,13 @@ installer::InstallStatus UninstallProducts(InstallationState& original_state,
   const bool remove_all = !cmd_line.HasSwitch(
       installer::switches::kDoNotRemoveSharedItems);
 
-  std::unique_ptr<base::Version> current_version(
+  const base::Version current_version(
       installer_state.GetCurrentVersion(original_state));
   const installer::ModifyParams modify_params = {
       installer_state,
       original_state,
       setup_exe,
-      current_version.get(),
+      current_version,
   };
 
   install_status = UninstallProduct(modify_params, remove_all, force, cmd_line);
@@ -1172,12 +1172,12 @@ InstallStatus InstallProductsHelper(InstallationState& original_state,
       base::FilePath prefs_source_path(cmd_line.GetSwitchValueNative(
           switches::kInstallerData));
 
-      std::unique_ptr<base::Version> current_version(
+      const base::Version current_version(
           installer_state.GetCurrentVersion(original_state));
       InstallParams install_params = {
-          installer_state,       original_state,       setup_exe,
-          current_version.get(), uncompressed_archive, src_path,
-          temp_path.path(),      *installer_version,
+          installer_state,  original_state,       setup_exe,
+          current_version,  uncompressed_archive, src_path,
+          temp_path.path(), *installer_version,
       };
 
       install_status =
@@ -1411,13 +1411,13 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   base::FilePath setup_exe;
   base::PathService::Get(base::FILE_EXE, &setup_exe);
 
-  std::unique_ptr<base::Version> current_version(
+  const base::Version current_version(
       installer_state.GetCurrentVersion(original_state));
   installer::ModifyParams modify_params = {
       installer_state,
       original_state,
       setup_exe,
-      current_version.get(),
+      current_version,
   };
 
   int exit_code = 0;

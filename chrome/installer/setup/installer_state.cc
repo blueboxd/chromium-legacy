@@ -116,38 +116,34 @@ bool InstallerState::system_install() const {
   return level_ == SYSTEM_LEVEL;
 }
 
-std::unique_ptr<base::Version> InstallerState::GetCurrentVersion(
+base::Version InstallerState::GetCurrentVersion(
     const InstallationState& machine_state) const {
-  std::unique_ptr<base::Version> current_version;
+  base::Version current_version;
   const ProductState* product_state =
       machine_state.GetProductState(level_ == SYSTEM_LEVEL);
 
-  if (product_state != NULL) {
-    const base::Version* version = NULL;
-
+  if (product_state != nullptr) {
     // Be aware that there might be a pending "new_chrome.exe" already in the
     // installation path.  If so, we use old_version, which holds the version of
     // "chrome.exe" itself.
-    if (base::PathExists(target_path().Append(kChromeNewExe)))
-      version = product_state->old_version();
-
-    if (version == NULL)
-      version = &product_state->version();
-
-    current_version.reset(new base::Version(*version));
+    if (base::PathExists(target_path().Append(kChromeNewExe)) &&
+        product_state->old_version()) {
+      current_version = *(product_state->old_version());
+    } else {
+      current_version = product_state->version();
+    }
   }
 
   return current_version;
 }
 
 base::Version InstallerState::DetermineCriticalVersion(
-    const base::Version* current_version,
+    const base::Version& current_version,
     const base::Version& new_version) const {
-  DCHECK(current_version == NULL || current_version->IsValid());
   DCHECK(new_version.IsValid());
   if (critical_update_version_.IsValid() &&
-      (current_version == NULL ||
-       (current_version->CompareTo(critical_update_version_) < 0)) &&
+      (!current_version.IsValid() ||
+       (current_version.CompareTo(critical_update_version_) < 0)) &&
       new_version.CompareTo(critical_update_version_) >= 0) {
     return critical_update_version_;
   }

@@ -16,6 +16,9 @@ namespace {
 std::unique_ptr<JSONObject> GraphicsLayerAsJSON(const GraphicsLayer* layer,
                                                 LayerTreeFlags flags) {
   auto json = CCLayerAsJSON(layer->CcLayer(), flags);
+  // CCLayerAsJSON() doesn't know the name before paint or if the layer is a
+  // legacy GraphicsLayer which doesn't contribute to the cc layer list.
+  json->SetString("name", layer->DebugName());
 
   // Content dumped after this point, down to AppendAdditionalInfoAsJSON, is
   // specific to GraphicsLayer tree dumping when called from one of the methods

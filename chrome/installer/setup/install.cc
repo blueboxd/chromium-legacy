@@ -167,12 +167,12 @@ void CopyPreferenceFileForFirstRun(const InstallerState& installer_state,
 InstallStatus InstallNewVersion(const InstallParams& install_params,
                                 bool is_downgrade_allowed) {
   const InstallerState& installer_state = install_params.installer_state;
-  const base::Version* current_version = install_params.current_version;
+  const base::Version& current_version = install_params.current_version;
   const base::Version& new_version = install_params.new_version;
 
   installer_state.SetStage(BUILDING);
 
-  SetCurrentVersionCrashKey(install_params.current_version);
+  SetCurrentVersionCrashKey(current_version);
 
   std::unique_ptr<WorkItemList> install_list(WorkItem::CreateWorkItemList());
 
@@ -186,8 +186,8 @@ InstallStatus InstallNewVersion(const InstallParams& install_params,
   if (!install_list->Do()) {
     installer_state.SetStage(ROLLINGBACK);
     InstallStatus result = base::PathExists(new_chrome_exe) &&
-                                   current_version &&
-                                   new_version == *current_version
+                                   current_version.IsValid() &&
+                                   new_version == current_version
                                ? SAME_VERSION_REPAIR_FAILED
                                : INSTALL_FAILED;
     LOG(ERROR) << "Install failed, rolling back... result: " << result;
@@ -196,21 +196,21 @@ InstallStatus InstallNewVersion(const InstallParams& install_params,
     return result;
   }
 
-  if (!current_version) {
+  if (!current_version.IsValid()) {
     VLOG(1) << "First install of version " << new_version;
     return FIRST_INSTALL_SUCCESS;
   }
 
-  if (new_version == *current_version) {
+  if (new_version == current_version) {
     VLOG(1) << "Install repaired of version " << new_version;
     return INSTALL_REPAIRED;
   }
 
   bool new_chrome_exe_exists = base::PathExists(new_chrome_exe);
-  if (new_version > *current_version) {
+  if (new_version > current_version) {
     if (new_chrome_exe_exists) {
       VLOG(1) << "Version updated to " << new_version << " while running "
-              << *current_version;
+              << current_version;
       return IN_USE_UPDATED;
     }
     VLOG(1) << "Version updated to " << new_version;
@@ -220,7 +220,7 @@ InstallStatus InstallNewVersion(const InstallParams& install_params,
   if (is_downgrade_allowed) {
     if (new_chrome_exe_exists) {
       VLOG(1) << "Version downgraded to " << new_version << " while running "
-              << *current_version;
+              << current_version;
       return IN_USE_DOWNGRADE;
     }
     VLOG(1) << "Version downgraded to " << new_version;
@@ -229,7 +229,7 @@ InstallStatus InstallNewVersion(const InstallParams& install_params,
 
   LOG(ERROR) << "Not sure how we got here while updating"
              << ", new version: " << new_version
-             << ", old version: " << *current_version;
+             << ", old version: " << current_version;
 
   return INSTALL_FAILED;
 }

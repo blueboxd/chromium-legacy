@@ -317,10 +317,10 @@ TEST_F(InstallWorkerTest, TestInstallChromeSystem) {
   EXPECT_CALL(work_item_list, AddDeleteRegKeyWorkItem(_, _, _))
       .WillRepeatedly(Return(delete_reg_key_work_item.get()));
 
-  std::unique_ptr<base::Version> current_version(
+  const base::Version current_version(
       installer_state->GetCurrentVersion(*installation_state));
   installer::InstallParams install_params = {
-      *installer_state, *installation_state, setup_path_, current_version.get(),
+      *installer_state, *installation_state, setup_path_, current_version,
       archive_path_,    src_path_,           temp_dir_,   *new_version_,
   };
 

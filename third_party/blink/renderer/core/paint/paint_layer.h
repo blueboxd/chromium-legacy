@@ -326,8 +326,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return PixelSnappedIntSize(Size(), location);
   }
 
-  void SetSizeHackForLayoutTreeAsText(const LayoutSize& size) { size_ = size; }
-
 #if DCHECK_IS_ON()
   bool NeedsPositionUpdate() const { return needs_position_update_; }
 #endif

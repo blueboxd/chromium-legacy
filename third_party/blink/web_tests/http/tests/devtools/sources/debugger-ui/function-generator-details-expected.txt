@@ -6,7 +6,7 @@ iterNotStarted: type = object, subtype = generator
 lineNumber = 17
 columnNumber = 19
 script is valid: yes
-[[GeneratorStatus]] = suspended
+[[GeneratorState]] = suspended
 [[GeneratorFunction]] = function* gen()
       {
           yield 1;
@@ -21,7 +21,7 @@ iterSuspended: type = object, subtype = generator
 lineNumber = 19
 columnNumber = 10
 script is valid: yes
-[[GeneratorStatus]] = suspended
+[[GeneratorState]] = suspended
 [[GeneratorFunction]] = function* gen()
       {
           yield 1;
@@ -36,7 +36,7 @@ iterClosed: type = object, subtype = generator
 lineNumber = 17
 columnNumber = 19
 script is valid: yes
-[[GeneratorStatus]] = closed
+[[GeneratorState]] = closed
 [[GeneratorFunction]] = function* gen()
       {
           yield 1;
@@ -50,7 +50,7 @@ iterObjGenerator: type = object, subtype = generator
 lineNumber = 28
 columnNumber = 14
 script is valid: yes
-[[GeneratorStatus]] = suspended
+[[GeneratorState]] = suspended
 [[GeneratorFunction]] = function*()
           {
               yield 11;
@@ -65,7 +65,7 @@ anonymousGenIter: type = object, subtype = generator
 lineNumber = 42
 columnNumber = 10
 script is valid: yes
-[[GeneratorStatus]] = suspended
+[[GeneratorState]] = suspended
 [[GeneratorFunction]] = function*() {
           yield 21;
           yield 22;

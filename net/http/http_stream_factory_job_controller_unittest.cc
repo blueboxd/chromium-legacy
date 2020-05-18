@@ -3423,6 +3423,21 @@ TEST_F(HttpStreamFactoryJobControllerTest,
                                   quic::QUIC_VERSION_43)});
 }
 
+TEST_F(HttpStreamFactoryJobControllerTest,
+       AltSvcVersionSelectionWithInvalidOldFormat) {
+  // Q043 can use the old format but Q050 cannot. Make sure the client ignores
+  // Q050 even though it is preferred.
+  TestAltSvcVersionSelection(
+      "quic=\":443\"; ma=2592000; v=\"50,43\"",
+      quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
+                              quic::QUIC_VERSION_43),
+      quic::ParsedQuicVersionVector{
+          quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
+                                  quic::QUIC_VERSION_50),
+          quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
+                                  quic::QUIC_VERSION_43)});
+}
+
 // Tests that if HttpNetworkSession has a non-empty QUIC host allowlist,
 // then GetAlternativeServiceFor() will not return any QUIC alternative service
 // that's not on the allowlist.

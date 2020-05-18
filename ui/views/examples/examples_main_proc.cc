@@ -148,7 +148,6 @@ ExamplesExitCode ExamplesMainProc(bool under_test) {
 #if BUILDFLAG(ENABLE_DESKTOP_AURA)
     std::unique_ptr<display::Screen> desktop_screen =
         base::WrapUnique(views::CreateDesktopScreen());
-    display::Screen::SetScreenInstance(desktop_screen.get());
 #endif
 
     base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);

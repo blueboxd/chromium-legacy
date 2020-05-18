@@ -224,9 +224,6 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   // Media controls have not been dismissed initially.
   Shell::Get()->media_controller()->SetMediaControlsDismissed(false);
 
-  middle_spacing_ = std::make_unique<NonAccessibleView>();
-  middle_spacing_->set_owned_by_client();
-
   set_notify_enter_exit_on_child(true);
 
   contents_view_ = AddChildView(std::make_unique<views::View>());
@@ -478,10 +475,6 @@ void LockScreenMediaControlsView::OnMouseExited(const ui::MouseEvent& event) {
     return;
 
   header_row_->SetCloseButtonVisibility(false);
-}
-
-views::View* LockScreenMediaControlsView::GetMiddleSpacingView() {
-  return middle_spacing_.get();
 }
 
 void LockScreenMediaControlsView::MediaSessionInfoChanged(

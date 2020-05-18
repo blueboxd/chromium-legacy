@@ -7,6 +7,7 @@
  */
 
 GEN('#include "content/public/test/browser_test.h"');
+GEN('#include "chromeos/constants/chromeos_features.h"');
 
 const HOST_ORIGIN = 'chrome://telemetry-extension';
 const UNTRUSTED_HOST_ORIGIN = 'chrome-untrusted://telemetry-extension';
@@ -20,6 +21,11 @@ var TelemetryExtensionUIBrowserTest = class extends testing.Test {
   /** @override */
   get runAccessibilityChecks() {
     return false;
+  }
+
+  /** @override */
+  get featureList() {
+    return {enabled: ['chromeos::features::kTelemetryExtension']};
   }
 };
 

@@ -18,30 +18,12 @@ namespace ash {
 
 class SearchBoxModelObserver;
 
-// SearchBoxModel consists of an icon, a hint text, a user text and a selection
-// model. The icon is rendered to the side of the query editor. The hint text
-// is used as query edit control's placeholder text and displayed when there is
-// no user text in the control. The selection model and the text represents the
-// text, cursor position and selected text in edit control.
+// SearchBoxModel provides the user entered text, and the system state that
+// influences the search box behavior.
 class APP_LIST_MODEL_EXPORT SearchBoxModel {
  public:
   SearchBoxModel();
   ~SearchBoxModel();
-
-  // Sets/gets the hint text to display when there is in input.
-  void SetHintText(const base::string16& hint_text);
-  const base::string16& hint_text() const { return hint_text_; }
-
-  // Sets the text for screen readers on the search box, and updates the
-  // |accessible_name_|.
-  void SetTabletAndClamshellAccessibleName(
-      base::string16 tablet_accessible_name,
-      base::string16 clamshell_accessible_name);
-
-  // Changes the accessible name to clamshell or tablet friendly based on tablet
-  // mode.
-  void UpdateAccessibleName();
-  const base::string16& accessible_name() const { return accessible_name_; }
 
   void SetTabletMode(bool is_tablet_mode);
   bool is_tablet_mode() const { return is_tablet_mode_; }
@@ -62,10 +44,6 @@ class APP_LIST_MODEL_EXPORT SearchBoxModel {
   void RemoveObserver(SearchBoxModelObserver* observer);
 
  private:
-  base::string16 hint_text_;
-  base::string16 tablet_accessible_name_;
-  base::string16 clamshell_accessible_name_;
-  base::string16 accessible_name_;
   base::string16 text_;
   bool search_engine_is_google_ = false;
   bool is_tablet_mode_ = false;

@@ -4,6 +4,7 @@
 
 #include "media/cast/net/udp_packet_pipe.h"
 
+#include <cstring>
 #include <memory>
 #include <string>
 

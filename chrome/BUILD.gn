@@ -363,6 +363,8 @@ if (is_win) {
   chrome_framework_name = chrome_product_full_name + " Framework"
   chrome_framework_version = chrome_version_full
 
+  verify_dynamic_libraries = !is_component_build && !is_asan
+
   group("chrome") {
     deps = [ ":chrome_app" ]
 
@@ -370,6 +372,10 @@ if (is_win) {
 
     if (debug_devtools) {
       deps += [ ":devtools_debug_resources" ]
+    }
+
+    if (verify_dynamic_libraries) {
+      deps += [ ":verify_libraries_chrome_app" ]
     }
 
     if (is_chrome_branded && is_official_build) {
@@ -443,6 +449,31 @@ if (is_win) {
       # This is a bit of a hack, since GN deliberately terminates its search
       # for runtime_deps at create_bundle nodes (https://crbug.com/1010347).
       data_deps = [ ":chrome_framework" ]
+    }
+  }
+
+  if (verify_dynamic_libraries) {
+    action("verify_libraries_chrome_app") {
+      script = "//chrome/tools/build/mac/verify_dynamic_libraries.py"
+      inputs = [ "${root_out_dir}/${chrome_product_full_name}.app/Contents/MacOS/${chrome_product_full_name}" ]
+      outputs = [ "$target_out_dir/run_$target_name.stamp" ]
+      args = [
+        "--stamp",
+        rebase_path(outputs[0], root_out_dir),
+        "-B",
+        mac_bin_path,
+        "--image",
+        rebase_path(inputs[0], root_out_dir),
+        "--allow",
+        "/usr/lib/libSystem.B.dylib",
+        "--allow",
+        "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation",
+
+        # TODO(1082896): This should not be linked here.
+        "--allow",
+        "/System/Library/Frameworks/MediaPlayer.framework/Versions/A/MediaPlayer",
+      ]
+      deps = [ ":chrome_app" ]
     }
   }
 
@@ -644,6 +675,32 @@ if (is_win) {
       helper_name_suffix = _helper_suffix
       helper_bundle_id_suffix = _helper_bundle_id
     }
+
+    if (verify_dynamic_libraries) {
+      action("verify_libraries_chrome_helper_app_${_helper_target}") {
+        script = "//chrome/tools/build/mac/verify_dynamic_libraries.py"
+        inputs = [ "${root_out_dir}/${chrome_helper_name}${_helper_suffix}.app/Contents/MacOS/${chrome_helper_name}${_helper_suffix}" ]
+        outputs = [ "$target_out_dir/run_$target_name.stamp" ]
+        args = [
+          "--stamp",
+          rebase_path(outputs[0], root_out_dir),
+          "-B",
+          mac_bin_path,
+          "--image",
+          rebase_path(inputs[0], root_out_dir),
+
+          # Do not --allow more libraries here without consulting with the
+          # security team (security-dev@chromium.org).
+          "--allow",
+          "/usr/lib/libsandbox.1.dylib",
+          "--allow",
+          "/usr/lib/libSystem.B.dylib",
+          "--allow",
+          "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation",
+        ]
+        deps = [ ":chrome_helper_app_${_helper_target}" ]
+      }
+    }
   }
 
   bundle_data("chrome_framework_helpers") {
@@ -663,6 +720,10 @@ if (is_win) {
       sources +=
           [ "$root_out_dir/${chrome_helper_name}${helper_params[2]}.app" ]
       public_deps += [ ":chrome_helper_app_${helper_params[0]}" ]
+      if (verify_dynamic_libraries) {
+        public_deps +=
+            [ ":verify_libraries_chrome_helper_app_${helper_params[0]}" ]
+      }
     }
 
     if (is_asan) {

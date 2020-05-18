@@ -121,9 +121,10 @@ class UI_BASE_EXPORT ResourceBundle {
 
   // Initialize the ResourceBundle for this process. Does not take ownership of
   // the |delegate| value. Returns the language selected or an empty string if
-  // initialization failed (e.g. resource bundle not found or corrupted).
-  // NOTE: Mac ignores this and always loads up resources for the language
-  // defined by the Cocoa UI (i.e., NSBundle does the language work).
+  // no candidate bundle file could be determined, or crashes the process if a
+  // candidate could not be loaded (e.g., file not found or corrupted).  NOTE:
+  // Mac ignores this and always loads up resources for the language defined by
+  // the Cocoa UI (i.e., NSBundle does the language work).
   //
   // TODO(sergeyu): This method also loads common resources (i.e. chrome.pak).
   // There is no way to specify which resource files are loaded, i.e. names of
@@ -323,8 +324,10 @@ class UI_BASE_EXPORT ResourceBundle {
                                     const base::string16& string);
 
   // Returns the full pathname of the locale file to load, which may be a
-  // compressed locale file ending in .gz. Returns an empty string if no locale
-  // data files are found.
+  // compressed locale file ending in .gz. Returns an empty path if |app_locale|
+  // is empty, the directory of locale files cannot be determined, or if the
+  // path to the directory of locale files is relative. If not empty, the
+  // returned path is not guaranteed to reference an existing file.
   // Used on Android to load the local file in the browser process and pass it
   // to the sandboxed renderer process.
   static base::FilePath GetLocaleFilePath(const std::string& app_locale);
@@ -396,8 +399,11 @@ class UI_BASE_EXPORT ResourceBundle {
   void AddDataPack(std::unique_ptr<DataPack> data_pack);
 
   // Try to load the locale specific strings from an external data module.
-  // Returns the locale that is loaded.
-  std::string LoadLocaleResources(const std::string& pref_locale);
+  // Returns the locale that is loaded or an empty string if no resources were
+  // loaded. If |crash_on_failure| is true on non-Android platforms, the process
+  // is terminated if a candidate locale file could not be loaded.
+  std::string LoadLocaleResources(const std::string& pref_locale,
+                                  bool crash_on_failure);
 
   // Load test resources in given paths. If either path is empty an empty
   // resource pack is loaded.

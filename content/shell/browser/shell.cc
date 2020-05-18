@@ -118,12 +118,8 @@ Shell::~Shell() {
   web_contents_.reset();
 
   if (windows_.empty()) {
-    // TODO(danakj): Do we need both this one and the call in CloseAllWindows()?
-    // Can we just always destroy ShellPlatformDelegate in one place?
-    if (headless_) {
-      delete g_platform;
-      g_platform = nullptr;
-    }
+    delete g_platform;
+    g_platform = nullptr;
 
     for (auto it = RenderProcessHost::AllHostsIterator(); !it.IsAtEnd();
          it.Advance()) {
@@ -163,25 +159,13 @@ Shell* Shell::CreateShell(std::unique_ptr<WebContents> web_contents,
 void Shell::CloseAllWindows() {
   DevToolsAgentHost::DetachAllClients();
 
-  if (windows_.empty()) {
-    if (*g_quit_main_message_loop)
-      std::move(*g_quit_main_message_loop).Run();
-  } else {
-    std::vector<Shell*> open_windows(windows_);
-    for (Shell* open_window : open_windows)
-      open_window->Close();
-    DCHECK(windows_.empty());
+  std::vector<Shell*> open_windows(windows_);
+  for (Shell* open_window : open_windows)
+    open_window->Close();
+  DCHECK(windows_.empty());
 
-    // Pump the message loop to allow window teardown tasks to run.
-    base::RunLoop().RunUntilIdle();
-  }
-
-  // The |g_platform| is destroyed when the last window is closed, but only
-  // in headless mode.
-  if (g_platform) {
-    delete g_platform;
-    g_platform = nullptr;
-  }
+  // Pump the message loop to allow window teardown tasks to run.
+  base::RunLoop().RunUntilIdle();
 }
 
 void Shell::SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure) {

@@ -9,11 +9,18 @@
 
 #include <fuchsia/web/cpp/fidl.h>
 
+#include "base/callback.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_decoder_config.h"
+
+namespace network {
+namespace mojom {
+class NetworkContext;
+}  // namespace mojom
+}  // namespace network
 
 namespace cast_streaming {
 
@@ -21,6 +28,15 @@ namespace cast_streaming {
 // Cast Streaming Session for a provided FIDL MessagePort request.
 class CastStreamingSession {
  public:
+  using NetworkContextGetter =
+      base::RepeatingCallback<network::mojom::NetworkContext*()>;
+
+  // Sets the NetworkContextGetter. This must be called before any call to
+  // Start() and must only be called once. If the NetworkContext crashes, any
+  // existing Cast Streaming Session will eventually terminate and call
+  // OnReceiverSessionEnded().
+  static void SetNetworkContextGetter(NetworkContextGetter getter);
+
   class Client {
    public:
     // Called when the Cast Streaming Session has been successfully initialized.

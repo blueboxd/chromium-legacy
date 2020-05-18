@@ -72,6 +72,7 @@ class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
   void OnXDisplayListUpdated() override;
   float GetXDisplayScaleFactor() const override;
 
+  display::Screen* const old_screen_ = display::Screen::SetScreenInstance(this);
   std::unique_ptr<ui::XDisplayManager> x11_display_manager_ =
       std::make_unique<ui::XDisplayManager>(this);
   ScopedObserver<LinuxUI,

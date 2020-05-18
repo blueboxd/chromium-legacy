@@ -187,7 +187,6 @@ ExampleAppListClient::ExampleAppListClient(AppListControllerImpl* controller)
   controller_->SetClient(this);
 
   PopulateApps();
-  DecorateSearchBox();
 }
 
 ExampleAppListClient::~ExampleAppListClient() {
@@ -202,10 +201,6 @@ void ExampleAppListClient::PopulateApps() {
     controller_->AddItem(app->CloneMetadata());
     apps_.emplace_back(std::move(app));
   }
-}
-
-void ExampleAppListClient::DecorateSearchBox() {
-  controller_->SetSearchHintText(base::ASCIIToUTF16("Type to search..."));
 }
 
 void ExampleAppListClient::StartSearch(const base::string16& trimmed_query) {

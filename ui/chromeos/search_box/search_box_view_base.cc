@@ -357,7 +357,9 @@ void SearchBoxViewBase::SetSearchBoxActive(bool active,
   }
 
   UpdateSearchBoxBorder();
-  UpdateKeyboardVisibility();
+  // Keep the current keyboard visibility if the user already started typing.
+  if (event_type != ui::ET_KEY_PRESSED && event_type != ui::ET_KEY_RELEASED)
+    UpdateKeyboardVisibility();
   UpdateButtonsVisisbility();
 
   NotifyActiveChanged();
@@ -418,12 +420,6 @@ void SearchBoxViewBase::ButtonPressed(views::Button* sender,
   } else {
     NOTREACHED();
   }
-}
-
-void SearchBoxViewBase::OnTabletModeChanged(bool started) {
-  is_tablet_mode_ = started;
-  UpdateKeyboardVisibility();
-  UpdateSearchBoxBorder();
 }
 
 void SearchBoxViewBase::OnSearchBoxFocusedChanged() {

@@ -28,11 +28,9 @@ class ThemeSource : public content::URLDataSource {
       const content::WebContents::Getter& wc_getter,
       content::URLDataSource::GotDataCallback callback) override;
   std::string GetMimeType(const std::string& path) override;
-  scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerForRequestPath(
-      const std::string& path) override;
   bool AllowCaching() override;
   bool ShouldServiceRequest(const GURL& url,
-                            content::ResourceContext* resource_context,
+                            content::BrowserContext* browser_context,
                             int render_process_id) override;
   std::string GetAccessControlAllowOriginForOrigin(
       const std::string& origin) override;

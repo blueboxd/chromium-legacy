@@ -219,6 +219,91 @@ TEST_F(BasicInteractionsTest, ComputeValueToString) {
                           /* is_client_side_only = */ true));
   }
 
+  // Credit cards
+  autofill::CreditCard credit_card_a(base::GenerateGUID(),
+                                     "https://www.example.com");
+  autofill::test::SetCreditCardInfo(&credit_card_a, "Marion Mitchell",
+                                    "4111 1111 1111 1111", "01", "2050", "");
+  autofill::CreditCard credit_card_b(base::GenerateGUID(),
+                                     "https://www.example.com");
+  autofill::test::SetCreditCardInfo(&credit_card_b, "John Doe",
+                                    "4111 1111 1111 2222", "02", "2051", "");
+  auto credit_cards =
+      std::make_unique<std::vector<std::unique_ptr<autofill::CreditCard>>>();
+  credit_cards->emplace_back(
+      std::make_unique<autofill::CreditCard>(credit_card_a));
+  credit_cards->emplace_back(
+      std::make_unique<autofill::CreditCard>(credit_card_b));
+  user_model_.SetAutofillCreditCards(std::move(credit_cards));
+  ValueProto credit_cards_value;
+  credit_cards_value.mutable_credit_cards()->add_values()->set_guid(
+      credit_card_a.guid());
+  credit_cards_value.mutable_credit_cards()->add_values()->set_guid(
+      credit_card_b.guid());
+  user_model_.SetValue("value", credit_cards_value);
+  // Formatting credit cards fails if pattern or locale are not set.
+  proto.mutable_to_string()->mutable_autofill_format()->set_locale("en-US");
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+  // {name} {network} **** {last-4-digits} ({month/year})
+  proto.mutable_to_string()->mutable_autofill_format()->set_pattern(
+      "${51}. ${-5} **** ${-4} (${53}/${54})");
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  ValueProto expected_result;
+  expected_result.mutable_strings()->add_values(
+      "Marion Mitchell. Visa **** 1111 (01/50)");
+  expected_result.mutable_strings()->add_values(
+      "John Doe. Visa **** 2222 (02/51)");
+  EXPECT_EQ(*user_model_.GetValue("output"), expected_result);
+
+  // Profiles
+  autofill::AutofillProfile profile_a(base::GenerateGUID(),
+                                      "https://www.example.com");
+  autofill::test::SetProfileInfo(
+      &profile_a, "Marion", "Mitchell", "Morrison", "marion@me.xyz", "Fox",
+      "123 Zoo St.", "unit 5", "Hollywood", "CA", "91601", "US", "16505678910");
+  autofill::AutofillProfile profile_b(base::GenerateGUID(),
+                                      "https://www.example.com");
+  autofill::test::SetProfileInfo(&profile_b, "John", "", "Doe",
+                                 "editor@gmail.com", "", "203 Barfield Lane",
+                                 "apt A", "Mountain View", "CA", "94043", "US",
+                                 "+12345678901");
+  auto profiles = std::make_unique<
+      std::vector<std::unique_ptr<autofill::AutofillProfile>>>();
+  profiles->emplace_back(
+      std::make_unique<autofill::AutofillProfile>(profile_a));
+  profiles->emplace_back(
+      std::make_unique<autofill::AutofillProfile>(profile_b));
+  user_model_.SetAutofillProfiles(std::move(profiles));
+  ValueProto profiles_value;
+  profiles_value.mutable_profiles()->add_values()->set_guid(profile_a.guid());
+  profiles_value.mutable_profiles()->add_values()->set_guid(profile_b.guid());
+  user_model_.SetValue("value", profiles_value);
+  // Formatting profiles fails if pattern or locale are not set.
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+  // {name_full}, {address_line_1} {address_line_2} {zip code} {city} {country}
+  proto.mutable_to_string()->mutable_autofill_format()->set_pattern(
+      "${7} ${30} ${31} ${42} ${40} ${43}");
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  expected_result.Clear();
+  expected_result.mutable_strings()->add_values(
+      "Marion Mitchell Morrison 123 Zoo St. unit 5 91601 Hollywood United "
+      "States");
+  expected_result.mutable_strings()->add_values(
+      "John Doe 203 Barfield Lane apt A 94043 Mountain View United States");
+  EXPECT_EQ(*user_model_.GetValue("output"), expected_result);
+
+  // Different locale.
+  proto.mutable_to_string()->mutable_autofill_format()->set_locale("de-DE");
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  expected_result.Clear();
+  expected_result.mutable_strings()->add_values(
+      "Marion Mitchell Morrison 123 Zoo St. unit 5 91601 Hollywood Vereinigte "
+      "Staaten");
+  expected_result.mutable_strings()->add_values(
+      "John Doe 203 Barfield Lane apt A 94043 Mountain View Vereinigte "
+      "Staaten");
+  EXPECT_EQ(*user_model_.GetValue("output"), expected_result);
+
   // Empty value fails.
   user_model_.SetValue("value", ValueProto());
   EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
@@ -229,7 +314,7 @@ TEST_F(BasicInteractionsTest, ComputeValueToString) {
   multi_value.mutable_booleans()->add_values(false);
   user_model_.SetValue("value", multi_value);
   EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
-  ValueProto expected_result;
+  expected_result.Clear();
   expected_result.mutable_strings()->add_values("true");
   expected_result.mutable_strings()->add_values("false");
   EXPECT_EQ(*user_model_.GetValue("output"), expected_result);

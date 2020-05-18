@@ -583,6 +583,9 @@ bool DesksController::ActivateAdjacentDesk(bool going_left,
   if (AreDesksBeingModified())
     return false;
 
+  if (Shell::Get()->session_controller()->IsUserSessionBlocked())
+    return false;
+
   const Desk* desk_to_activate = going_left ? GetPreviousDesk() : GetNextDesk();
   if (desk_to_activate) {
     ActivateDesk(desk_to_activate, source);

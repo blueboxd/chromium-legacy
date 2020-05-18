@@ -21,4 +21,5 @@ const base::FeatureParam<bool> kImprovedCookieControlsDefaultInIncognito{
 const base::Feature kImprovedCookieControlsForThirdPartyCookieBlocking{
     "ImprovedCookieControlsForThirdPartyCookieBlocking",
     base::FEATURE_DISABLED_BY_DEFAULT};
-}
+
+}  // namespace content_settings

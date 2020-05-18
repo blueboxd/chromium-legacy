@@ -69,7 +69,7 @@ void Clean() {
   EXPECT_TRUE(base::DeleteFile(GetProductPath(), true));
   EXPECT_TRUE(Launchd::GetInstance()->DeletePlist(
       Launchd::User, Launchd::Agent,
-      info_plist->GoogleUpdateCheckLaunchdNameVersioned()));
+      info_plist->GoogleUpdateAdministrationLaunchdNameVersioned()));
   EXPECT_TRUE(Launchd::GetInstance()->DeletePlist(
       Launchd::User, Launchd::Agent,
       info_plist->GoogleUpdateServiceLaunchdNameVersioned()));
@@ -87,13 +87,13 @@ void ExpectClean() {
   EXPECT_FALSE(base::PathExists(GetProductPath()));
   EXPECT_FALSE(Launchd::GetInstance()->PlistExists(
       Launchd::User, Launchd::Agent,
-      info_plist->GoogleUpdateCheckLaunchdNameVersioned()));
+      info_plist->GoogleUpdateAdministrationLaunchdNameVersioned()));
   EXPECT_FALSE(Launchd::GetInstance()->PlistExists(
       Launchd::User, Launchd::Agent,
       info_plist->GoogleUpdateServiceLaunchdNameVersioned()));
   EXPECT_FALSE(Launchd::GetInstance()->PlistExists(
       Launchd::User, Launchd::Agent,
-      updater::CopyGoogleUpdateCheckLaunchDName()));
+      updater::CopyGoogleUpdateServiceLaunchDName()));
 }
 
 void ExpectInstalled() {
@@ -103,11 +103,9 @@ void ExpectInstalled() {
 
   // Files must exist on the file system.
   EXPECT_TRUE(base::PathExists(GetProductPath()));
-  EXPECT_FALSE(Launchd::GetInstance()->PlistExists(
-      Launchd::User, Launchd::Agent, CopyGoogleUpdateServiceLaunchDName()));
   EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
       Launchd::User, Launchd::Agent,
-      info_plist->GoogleUpdateCheckLaunchdNameVersioned()));
+      info_plist->GoogleUpdateAdministrationLaunchdNameVersioned()));
   EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
       Launchd::User, Launchd::Agent,
       info_plist->GoogleUpdateServiceLaunchdNameVersioned()));
@@ -123,7 +121,7 @@ void Install() {
   EXPECT_EQ(0, exit_code);
 }
 
-void ExpectSwapped() {
+void ExpectActive() {
   const std::unique_ptr<InfoPlist> info_plist =
       InfoPlist::Create(GetInfoPlistPath());
   EXPECT_TRUE(info_plist != nullptr);
@@ -132,7 +130,9 @@ void ExpectSwapped() {
   EXPECT_TRUE(base::PathExists(GetProductPath()));
   EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
       Launchd::User, Launchd::Agent,
-      info_plist->GoogleUpdateCheckLaunchdNameVersioned()));
+      info_plist->GoogleUpdateAdministrationLaunchdNameVersioned()));
+  EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
+      Launchd::User, Launchd::Agent, CopyGoogleUpdateServiceLaunchDName()));
   EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
       Launchd::User, Launchd::Agent, CopyGoogleUpdateServiceLaunchDName()));
   EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
@@ -140,11 +140,11 @@ void ExpectSwapped() {
       info_plist->GoogleUpdateServiceLaunchdNameVersioned()));
 }
 
-void Swap() {
+void PromoteCandidate() {
   const base::FilePath path = GetExecutablePath();
   ASSERT_FALSE(path.empty());
   base::CommandLine command_line(path);
-  command_line.AppendSwitch(kSwapUpdaterSwitch);
+  command_line.AppendSwitch(kPromoteCandidateSwitch);
   int exit_code = -1;
   ASSERT_TRUE(Run(command_line, &exit_code));
   EXPECT_EQ(0, exit_code);

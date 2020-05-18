@@ -20,6 +20,12 @@ class BrowserContext;
 class WebContents;
 }  // namespace content
 
+namespace network {
+namespace mojom {
+class NetworkContext;
+}  // namespace mojom
+}  // namespace network
+
 class FrameImpl;
 class WebEngineDevToolsController;
 
@@ -68,6 +74,9 @@ class WEB_ENGINE_EXPORT ContextImpl : public fuchsia::web::Context {
   }
 
  private:
+  // Returns the NetworkContext from the default StoragePartition.
+  network::mojom::NetworkContext* GetNetworkContext();
+
   // Reference to the browser implementation for this Context.
   content::BrowserContext* const browser_context_;
 

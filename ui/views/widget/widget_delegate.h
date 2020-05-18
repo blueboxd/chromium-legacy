@@ -193,8 +193,8 @@ class VIEWS_EXPORT WidgetDelegate {
   virtual void OnWindowEndUserBoundsChange() {}
 
   // Returns the Widget associated with this delegate.
-  virtual Widget* GetWidget() = 0;
-  virtual const Widget* GetWidget() const = 0;
+  virtual Widget* GetWidget();
+  virtual const Widget* GetWidget() const;
 
   // Returns the View that is contained within this Widget.
   virtual View* GetContentsView();
@@ -254,8 +254,10 @@ class VIEWS_EXPORT WidgetDelegate {
   void RegisterWindowClosingCallback(base::OnceClosure callback);
   void RegisterDeleteDelegateCallback(base::OnceClosure callback);
 
-  // Call this to notify the WidgetDelegate that its Widget is about to start
-  // closing.
+  // Called to notify the WidgetDelegate of changes to the state of its Widget.
+  // It is not usually necessary to call these from client code.
+  void WidgetInitialized(Widget* widget);
+  void WidgetDestroying();
   void WindowWillClose();
 
   // Returns true if the title text should be centered.
@@ -269,6 +271,9 @@ class VIEWS_EXPORT WidgetDelegate {
  private:
   friend class Widget;
 
+  // The Widget that was initialized with this instance as its WidgetDelegate,
+  // if any.
+  Widget* widget_ = nullptr;
   Params params_;
 
   View* default_contents_view_ = nullptr;
@@ -299,7 +304,7 @@ class VIEWS_EXPORT WidgetDelegateView : public WidgetDelegate, public View {
   void DeleteDelegate() override;
   Widget* GetWidget() override;
   const Widget* GetWidget() const override;
-  views::View* GetContentsView() override;
+  View* GetContentsView() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WidgetDelegateView);

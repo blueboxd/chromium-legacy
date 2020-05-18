@@ -4469,6 +4469,35 @@ TEST_F(UVTokenAuthenticatorImplTest, GetAssertionFallBackToPin) {
   EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
 }
 
+// Tests that a device supporting UV token with UV blocked at the start of a get
+// assertion request gets a touch and then falls back to PIN.
+TEST_F(UVTokenAuthenticatorImplTest, GetAssertionUvBlockedFallBackToPin) {
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+  device::VirtualCtap2Device::Config config;
+  config.internal_uv_support = true;
+  config.uv_token_support = true;
+  config.user_verification_succeeds = false;
+  config.pin_support = true;
+
+  virtual_device_factory_->SetCtap2Config(config);
+  virtual_device_factory_->mutable_state()->uv_retries = 0;
+  virtual_device_factory_->mutable_state()->fingerprints_enrolled = true;
+  virtual_device_factory_->mutable_state()->pin = kTestPIN;
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+      get_credential_options()->allow_credentials[0].id(),
+      kTestRelyingPartyId));
+
+  auto options = get_credential_options();
+  TestGetAssertionCallback callback_receiver;
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+
+  EXPECT_TRUE(test_client_.collected_pin());
+  EXPECT_EQ(5, virtual_device_factory_->mutable_state()->uv_retries);
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+}
+
 TEST_F(UVTokenAuthenticatorImplTest, MakeCredentialUVToken) {
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
@@ -4577,6 +4606,36 @@ TEST_F(UVTokenAuthenticatorImplTest, MakeCredentialFallBackToPin) {
   callback_receiver.WaitForCallback();
 
   EXPECT_EQ(0, expected_retries);
+  EXPECT_TRUE(test_client_.collected_pin());
+  EXPECT_EQ(5, virtual_device_factory_->mutable_state()->uv_retries);
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+}
+
+// Tests that a device supporting UV token with UV blocked at the start of a get
+// assertion request gets a touch and then falls back to PIN.
+TEST_F(UVTokenAuthenticatorImplTest, MakeCredentialUvBlockedFallBackToPin) {
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+  device::VirtualCtap2Device::Config config;
+  config.internal_uv_support = true;
+  config.uv_token_support = true;
+  config.user_verification_succeeds = false;
+  config.pin_support = true;
+
+  virtual_device_factory_->SetCtap2Config(config);
+  virtual_device_factory_->mutable_state()->uv_retries = 0;
+  virtual_device_factory_->mutable_state()->fingerprints_enrolled = true;
+  virtual_device_factory_->mutable_state()->pin = kTestPIN;
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+      get_credential_options()->allow_credentials[0].id(),
+      kTestRelyingPartyId));
+
+  auto options = make_credential_options();
+  TestMakeCredentialCallback callback_receiver;
+  authenticator->MakeCredential(std::move(options),
+                                callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+
   EXPECT_TRUE(test_client_.collected_pin());
   EXPECT_EQ(5, virtual_device_factory_->mutable_state()->uv_retries);
   EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());

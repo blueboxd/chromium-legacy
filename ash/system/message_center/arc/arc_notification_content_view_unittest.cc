@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/system/message_center/arc/arc_notification_content_view.h"
+
 #include <map>
 #include <memory>
 #include <set>
@@ -10,7 +12,6 @@
 
 #include "ash/shell.h"
 #include "ash/system/message_center/arc/arc_notification_constants.h"
-#include "ash/system/message_center/arc/arc_notification_content_view.h"
 #include "ash/system/message_center/arc/arc_notification_delegate.h"
 #include "ash/system/message_center/arc/arc_notification_item.h"
 #include "ash/system/message_center/arc/arc_notification_manager.h"
@@ -137,7 +138,7 @@ class ArcNotificationContentViewTest : public AshTestBase {
   }
 
   void TearDown() override {
-    // Widget and view need to be closed before TearDown() if have been created.
+    // Widget needs to be closed before TearDown() if have been created.
     EXPECT_FALSE(wrapper_widget_);
     EXPECT_FALSE(notification_view_);
 
@@ -170,36 +171,33 @@ class ArcNotificationContentViewTest : public AshTestBase {
     DCHECK(!notification_view_);
 
     auto result = CreateNotificationView(notification);
-    notification_view_ = std::move(result.first);
+    notification_view_ = result.first;
     wrapper_widget_ = std::move(result.second);
     wrapper_widget_->Show();
   }
 
-  std::pair<std::unique_ptr<ArcNotificationView>,
-            std::unique_ptr<views::Widget>>
+  std::pair<ArcNotificationView*, std::unique_ptr<views::Widget>>
   CreateNotificationView(const Notification& notification) {
     std::unique_ptr<ArcNotificationView> notification_view(
         static_cast<ArcNotificationView*>(
             message_center::MessageViewFactory::Create(notification)));
-    notification_view->set_owned_by_client();
 
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.context = Shell::GetPrimaryRootWindow();
     auto wrapper_widget = std::make_unique<views::Widget>();
     wrapper_widget->Init(std::move(params));
-    wrapper_widget->SetContentsView(notification_view.get());
-    wrapper_widget->SetSize(notification_view->GetPreferredSize());
+    ArcNotificationView* notification_view_ptr =
+        wrapper_widget->SetContentsView(std::move(notification_view));
+    wrapper_widget->SetSize(notification_view_ptr->GetPreferredSize());
 
-    return std::make_pair(std::move(notification_view),
-                          std::move(wrapper_widget));
+    return std::make_pair(notification_view_ptr, std::move(wrapper_widget));
   }
 
   void CloseNotificationView() {
     wrapper_widget_->Close();
     wrapper_widget_.reset();
-
-    notification_view_.reset();
+    notification_view_ = nullptr;
   }
 
   void PrepareSurface(const std::string& notification_key) {
@@ -238,7 +236,7 @@ class ArcNotificationContentViewTest : public AshTestBase {
   }
   views::Widget* widget() { return notification_view_->GetWidget(); }
   exo::Surface* surface() { return surface_.get(); }
-  ArcNotificationView* notification_view() { return notification_view_.get(); }
+  ArcNotificationView* notification_view() { return notification_view_; }
 
   message_center::NotificationControlButtonsView* GetControlButtonsView()
       const {
@@ -264,7 +262,9 @@ class ArcNotificationContentViewTest : public AshTestBase {
   std::unique_ptr<exo::Buffer> surface_buffer_;
   std::unique_ptr<exo::Surface> surface_;
   std::unique_ptr<exo::NotificationSurface> notification_surface_;
-  std::unique_ptr<ArcNotificationView> notification_view_;
+
+  // owned by the |wrapper_widget_|.
+  ArcNotificationView* notification_view_ = nullptr;
   std::unique_ptr<views::Widget> wrapper_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationContentViewTest);
@@ -493,9 +493,7 @@ TEST_F(ArcNotificationContentViewTest, ReuseAndCloseSurfaceBeforeClosing) {
   PrepareSurface(notification_key);
 
   // Create the first view.
-  auto result = CreateNotificationView(notification);
-  auto notification_view = std::move(result.first);
-  auto wrapper_widget = std::move(result.second);
+  auto wrapper_widget = std::move(CreateNotificationView(notification).second);
   wrapper_widget->Show();
 
   // Create the second view.
@@ -506,7 +504,6 @@ TEST_F(ArcNotificationContentViewTest, ReuseAndCloseSurfaceBeforeClosing) {
   // Close the first view.
   wrapper_widget->Close();
   wrapper_widget.reset();
-  notification_view.reset();
 }
 
 TEST_F(ArcNotificationContentViewTest, ReuseSurfaceBeforeClosing) {
@@ -519,9 +516,7 @@ TEST_F(ArcNotificationContentViewTest, ReuseSurfaceBeforeClosing) {
   PrepareSurface(notification_key);
 
   // Create the first view.
-  auto result = CreateNotificationView(notification);
-  auto notification_view = std::move(result.first);
-  auto wrapper_widget = std::move(result.second);
+  auto wrapper_widget = std::move(CreateNotificationView(notification).second);
   wrapper_widget->Show();
 
   // Create the second view.
@@ -530,7 +525,6 @@ TEST_F(ArcNotificationContentViewTest, ReuseSurfaceBeforeClosing) {
   // Close the first view.
   wrapper_widget->Close();
   wrapper_widget.reset();
-  notification_view.reset();
 
   // Close second view.
   CloseNotificationView();

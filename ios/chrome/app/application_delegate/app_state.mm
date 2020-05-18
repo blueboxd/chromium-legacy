@@ -190,6 +190,13 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   return _window;
 }
 
+- (void)setsceneShowingBlockingUI:(SceneState*)sceneState {
+  _sceneShowingBlockingUI = sceneState;
+  for (SceneState* state in self.connectedScenes) {
+    state.presentingModalOverlay = (state != sceneState) && (sceneState != nil);
+  }
+}
+
 #pragma mark - Public methods.
 
 - (void)applicationDidEnterBackground:(UIApplication*)application
@@ -610,6 +617,8 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
           base::mac::ObjCCastStrict<SceneDelegate>(scene.delegate);
       [self.observers appState:self
            firstSceneActivated:sceneDelegate.sceneState];
+      sceneDelegate.sceneState.presentingModalOverlay =
+          (self.sceneShowingBlockingUI != sceneDelegate.sceneState);
     }
   }
 }

@@ -22,7 +22,7 @@ class AppInstall : public App {
 
 void AppInstall::FirstTaskRun() {
   base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()}, base::BindOnce(&SetupUpdater),
+      FROM_HERE, {base::MayBlock()}, base::BindOnce(&InstallCandidate),
       base::BindOnce(&AppInstall::Shutdown, this));
 }
 

@@ -356,6 +356,10 @@ const base::Feature kSplitSettingsSync{"SplitSettingsSync",
 const base::Feature kSuggestedContentToggle{"SuggestedContentToggle",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables Chrome OS Telemetry Extension.
+const base::Feature kTelemetryExtension{"TelemetryExtension",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables unified media view in Files app to browse recently-modified media
 // files from local local, Google Drive, and Android.
 const base::Feature kUnifiedMediaView{"UnifiedMediaView",

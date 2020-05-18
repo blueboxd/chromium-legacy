@@ -558,17 +558,9 @@ void Page::SetLifecycleState(PageLifecycleState state) {
   }
 
   if (next_state) {
-    const bool dispatch_before_unload_on_freeze =
-        base::FeatureList::IsEnabled(features::kDispatchBeforeUnloadOnFreeze);
     for (Frame* frame = main_frame_.Get(); frame;
          frame = frame->Tree().TraverseNext()) {
       if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
-        // TODO(chrisha): Determine if dispatching the before unload
-        // makes sense and if so put it into a specification.
-        if (dispatch_before_unload_on_freeze &&
-            next_state == mojom::FrameLifecycleState::kFrozen) {
-          local_frame->DispatchBeforeUnloadEventForFreeze();
-        }
         local_frame->SetLifecycleState(next_state.value());
       }
     }

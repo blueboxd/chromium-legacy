@@ -179,6 +179,8 @@ Widget::Widget(InitParams params) {
 }
 
 Widget::~Widget() {
+  if (widget_delegate_)
+    widget_delegate_->WidgetDestroying();
   DestroyRootView();
   if (ownership_ == InitParams::WIDGET_OWNS_NATIVE_WIDGET) {
     delete native_widget_;
@@ -377,7 +379,7 @@ void Widget::Init(InitParams params) {
   native_widget_->OnWidgetInitDone();
 
   if (delegate)
-    delegate->OnWidgetInitialized();
+    delegate->WidgetInitialized(this);
 
   internal::AnyWidgetObserverSingleton::GetInstance()->OnAnyWidgetInitialized(
       this);

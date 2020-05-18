@@ -407,7 +407,8 @@ class ASH_EXPORT LockContentsView
   ScrollableUsersListView* users_list_ = nullptr;
 
   // View for media controls that appear on the lock screen if user enabled.
-  std::unique_ptr<LockScreenMediaControlsView> media_controls_view_;
+  LockScreenMediaControlsView* media_controls_view_ = nullptr;
+  views::View* middle_spacing_view_ = nullptr;
 
   // View that contains the note action button and the system info labels,
   // placed on the top right corner of the screen without affecting layout of

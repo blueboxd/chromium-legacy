@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Signal detector detects track change within reasonable time promise_test: Unhandled rejection with value: object "ReferenceError: doSignalingHandshake is not defined"
+Harness: the test ran to completion.
+

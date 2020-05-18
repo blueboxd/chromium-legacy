@@ -95,19 +95,14 @@ ViewEventTestBase::ViewEventTestBase() {
   // tests.
   DCHECK(!display::Screen::GetScreen());
 #if defined(USE_X11)
-  display::Screen::SetScreenInstance(
-      views::test::TestDesktopScreenX11::GetInstance());
+  views::test::TestDesktopScreenX11::GetInstance();
 #else
   screen_.reset(views::CreateDesktopScreen());
-  display::Screen::SetScreenInstance(screen_.get());
 #endif
 #endif
 }
 
 ViewEventTestBase::~ViewEventTestBase() {
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
-  display::Screen::SetScreenInstance(nullptr);
-#endif
   TestingBrowserProcess::DeleteInstance();
 }
 

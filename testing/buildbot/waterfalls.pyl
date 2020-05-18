@@ -1353,6 +1353,30 @@
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
+      'Dawn Win10 x64 ASAN Release': {
+        'os_type': 'win',
+        'browser_config': 'release',
+        'swarming': {
+          'dimension_sets': [
+            # This bot spawns jobs on multiple GPU types.
+            # TODO(kbr): figure out how to use mixins for these.
+            {
+              'gpu': '10de:1cb3-26.21.14.3102',
+              'os': 'Windows-10',
+              'pool': 'chromium.tests.gpu.template',
+            },
+            {
+              'gpu': '8086:5912-24.20.100.6286',
+              'os': 'Windows-10',
+              'pool': 'chromium.tests.gpu.template',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'gpu_dawn_integration_gtests',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts',
+        },
+      },
       'Dawn Win10 x64 Builder' : {},
       'Dawn Win10 x64 DEPS Builder' : {},
       'Dawn Win10 x64 DEPS Release (Intel HD 630)': {

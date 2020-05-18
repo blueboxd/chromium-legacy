@@ -9,10 +9,10 @@
 #include "base/mac/scoped_nsobject.h"
 
 namespace updater {
-base::ScopedCFTypeRef<CFStringRef> CopyGoogleUpdateCheckLaunchDName();
 base::ScopedCFTypeRef<CFStringRef> CopyGoogleUpdateServiceLaunchDName();
-base::scoped_nsobject<NSString> GetGoogleUpdateCheckLaunchDLabel();
+base::ScopedCFTypeRef<CFStringRef> CopyGoogleUpdateAdministrationLaunchDName();
 base::scoped_nsobject<NSString> GetGoogleUpdateServiceLaunchDLabel();
+base::scoped_nsobject<NSString> GetGoogleUpdateAdministrationLaunchDLabel();
 base::scoped_nsobject<NSString> GetGoogleUpdateServiceMachName(NSString* name);
 base::scoped_nsobject<NSString> GetGoogleUpdateServiceMachName();
 }  // namespace updater

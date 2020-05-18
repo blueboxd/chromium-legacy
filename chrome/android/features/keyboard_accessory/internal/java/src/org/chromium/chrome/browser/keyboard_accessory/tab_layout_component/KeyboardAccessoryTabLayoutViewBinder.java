@@ -54,11 +54,23 @@ class KeyboardAccessoryTabLayoutViewBinder
         }
     }
 
+    private void registerTabIconObservers(
+            KeyboardAccessoryTabLayoutView view, ListModel<KeyboardAccessoryData.Tab> model) {
+        for (int i = 0; i < model.size(); i++) {
+            final int observedIconIndex = i;
+            model.get(i).addIconObserver((unusedTypeId, unusedDrawable) -> {
+                onItemsChanged(model, view, observedIconIndex, 1);
+            });
+        }
+    }
+
     protected static void bind(
             PropertyModel model, KeyboardAccessoryTabLayoutView view, PropertyKey propertyKey) {
         if (propertyKey == TABS) {
-            KeyboardAccessoryTabLayoutCoordinator.createTabViewBinder(model, view)
-                    .updateAllTabs(view, model.get(TABS));
+            KeyboardAccessoryTabLayoutViewBinder viewBinder =
+                    KeyboardAccessoryTabLayoutCoordinator.createTabViewBinder(model, view);
+            viewBinder.updateAllTabs(view, model.get(TABS));
+            viewBinder.registerTabIconObservers(view, model.get(TABS));
         } else if (propertyKey == ACTIVE_TAB) {
             view.setActiveTabColor(model.get(ACTIVE_TAB));
             setActiveTabHint(model, view);

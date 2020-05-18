@@ -51,6 +51,11 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // by the app delegate.
 @property(nonatomic, strong) SceneState* mainSceneState;
 
+// When a modal UI (that requires user to interact with it before any further
+// interaction with the app is allowed) is shown, this tracks the scene where it
+// is shown. When there is no blocking UI shown in any scene, this is nil.
+@property(nonatomic, strong) SceneState* sceneShowingBlockingUI;
+
 // Saves the launchOptions to be used from -newTabFromLaunchOptions. If the
 // application is in background, initialize the browser to basic. If not, launch
 // the browser.

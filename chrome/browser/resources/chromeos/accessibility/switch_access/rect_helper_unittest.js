@@ -20,6 +20,69 @@ SwitchAccessRectHelperUnitTest.prototype = {
   ],
 };
 
+TEST_F('SwitchAccessRectHelperUnitTest', 'Adjacent', function() {
+  const baseRect = {left: 10, top: 10, width: 10, height: 10};
+  const adjacentRects = [
+    {left: 0, top: 0, width: 10, height: 10},
+    {left: 7, top: 0, width: 10, height: 10},
+    {left: 10, top: 0, width: 10, height: 10},
+    {left: 17, top: 0, width: 10, height: 10},
+    {left: 20, top: 0, width: 10, height: 10},
+    {left: 0, top: 7, width: 10, height: 10},
+    {left: 20, top: 7, width: 10, height: 10},
+    {left: 0, top: 10, width: 10, height: 10},
+    {left: 20, top: 10, width: 10, height: 10},
+    {left: 0, top: 17, width: 10, height: 10},
+    {left: 20, top: 17, width: 10, height: 10},
+    {left: 0, top: 20, width: 10, height: 10},
+    {left: 7, top: 20, width: 10, height: 10},
+    {left: 10, top: 20, width: 10, height: 10},
+    {left: 17, top: 20, width: 10, height: 10},
+    {left: 20, top: 20, width: 10, height: 10},
+  ];
+  const nonAdjacentRects = [
+    {left: 5, top: 0, width: 5, height: 5},
+    {left: 20, top: 0, width: 5, height: 5},
+    {left: 12, top: 4, width: 5, height: 5},
+    {left: 0, top: 5, width: 5, height: 5},
+    {left: 25, top: 5, width: 5, height: 5},
+    {left: 12, top: 6, width: 5, height: 5},
+    {left: 4, top: 12, width: 5, height: 5},
+    {left: 6, top: 12, width: 5, height: 5},
+    {left: 12, top: 12, width: 5, height: 5},
+    {left: 19, top: 12, width: 5, height: 5},
+    {left: 21, top: 12, width: 5, height: 5},
+    {left: 12, top: 19, width: 5, height: 5},
+    {left: 0, top: 20, width: 5, height: 5},
+    {left: 21, top: 20, width: 5, height: 5},
+    {left: 12, top: 21, width: 5, height: 5},
+    {left: 5, top: 25, width: 5, height: 5},
+    {left: 20, top: 25, width: 5, height: 5},
+  ];
+
+  for (const rect of adjacentRects) {
+    assertTrue(
+        RectHelper.areAdjacent(baseRect, rect),
+        RectHelper.toString(baseRect) + ' should be adjacent to ' +
+            RectHelper.toString(rect));
+    assertTrue(
+        RectHelper.areAdjacent(rect, baseRect),
+        RectHelper.toString(rect) + ' should be adjacent to ' +
+            RectHelper.toString(baseRect));
+  }
+
+  for (const rect of nonAdjacentRects) {
+    assertFalse(
+        RectHelper.areAdjacent(baseRect, rect),
+        RectHelper.toString(baseRect) + ' should not be adjacent to ' +
+            RectHelper.toString(rect));
+    assertFalse(
+        RectHelper.areAdjacent(rect, baseRect),
+        RectHelper.toString(rect) + ' should not be adjacent to ' +
+            RectHelper.toString(baseRect));
+  }
+});
+
 TEST_F('SwitchAccessRectHelperUnitTest', 'Equals', function() {
   const rect1 = {left: 0, top: 0, width: 10, height: 10};
   const rect2 = {left: 0, top: 0, width: 10, height: 10};

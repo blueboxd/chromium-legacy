@@ -154,9 +154,9 @@ constexpr int kComponentInfoIndices[] = {1, 2, -1};
 constexpr MessageInfo kComponentInfo = {kComponentInfoIndices, nullptr};
 
 // Proto Message: ChromeLatencyInfo
-constexpr int kChromeLatencyInfoIndices[] = {1, 2, 3, 4, 5, -1};
+constexpr int kChromeLatencyInfoIndices[] = {1, 2, 3, 4, 5, 6, -1};
 constexpr MessageInfo const* kChromeLatencyInfoComplexMessages[] = {
-    nullptr, nullptr, nullptr, &kComponentInfo, nullptr};
+    nullptr, nullptr, nullptr, &kComponentInfo, nullptr, nullptr};
 constexpr MessageInfo kChromeLatencyInfo = {kChromeLatencyInfoIndices,
                                             kChromeLatencyInfoComplexMessages};
 

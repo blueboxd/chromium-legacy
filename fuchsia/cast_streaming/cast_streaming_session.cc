@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/notreached.h"
+#include "components/openscreen_platform/network_context.h"
 #include "components/openscreen_platform/network_util.h"
 #include "components/openscreen_platform/task_runner.h"
 #include "fuchsia/cast_streaming/cast_message_port_impl.h"
@@ -26,6 +27,12 @@ constexpr char kVideoCodecVp8[] = "vp8";
 }  // namespace
 
 namespace cast_streaming {
+
+// static
+void CastStreamingSession::SetNetworkContextGetter(
+    NetworkContextGetter getter) {
+  openscreen_platform::SetNetworkContextGetter(std::move(getter));
+}
 
 // Owns the Open Screen ReceiverSession. The Cast Streaming Session is tied to
 // the lifespan of this object.

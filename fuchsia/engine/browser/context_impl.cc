@@ -11,8 +11,10 @@
 #include "base/bind.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "fuchsia/cast_streaming/public/cast_streaming_session.h"
 #include "fuchsia/engine/browser/frame_impl.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
 
@@ -27,6 +29,10 @@ ContextImpl::ContextImpl(content::BrowserContext* browser_context,
   DCHECK(browser_context_);
   DCHECK(devtools_controller_);
   devtools_controller_->OnContextCreated();
+
+  cast_streaming::CastStreamingSession::SetNetworkContextGetter(
+      base::BindRepeating(&ContextImpl::GetNetworkContext,
+                          base::Unretained(this)));
 }
 
 ContextImpl::~ContextImpl() {
@@ -129,4 +135,10 @@ FrameImpl* ContextImpl::GetFrameImplForTest(
   }
 
   return nullptr;
+}
+
+network::mojom::NetworkContext* ContextImpl::GetNetworkContext() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return content::BrowserContext::GetDefaultStoragePartition(browser_context_)
+      ->GetNetworkContext();
 }

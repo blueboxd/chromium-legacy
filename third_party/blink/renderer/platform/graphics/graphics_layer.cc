@@ -75,7 +75,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       painted_(false),
       painting_phase_(kGraphicsLayerPaintAllWithOverflowClip),
       parent_(nullptr),
-      mask_layer_(nullptr),
       raster_invalidation_function_(
           base::BindRepeating(&GraphicsLayer::SetNeedsDisplayInRect,
                               base::Unretained(this))) {
@@ -294,9 +293,6 @@ void GraphicsLayer::PaintRecursivelyInternal(
     if (Paint())
       repainted_layers.push_back(this);
   }
-
-  if (MaskLayer())
-    MaskLayer()->PaintRecursivelyInternal(repainted_layers);
 
   for (auto* child : Children())
     child->PaintRecursivelyInternal(repainted_layers);
@@ -569,13 +565,6 @@ void GraphicsLayer::SetContentsOpaque(bool opaque) {
 
 void GraphicsLayer::SetContentsOpaqueForText(bool opaque) {
   CcLayer()->SetContentsOpaqueForText(opaque);
-}
-
-void GraphicsLayer::SetMaskLayer(GraphicsLayer* mask_layer) {
-  if (mask_layer == mask_layer_)
-    return;
-
-  mask_layer_ = mask_layer;
 }
 
 void GraphicsLayer::SetHitTestable(bool should_hit_test) {

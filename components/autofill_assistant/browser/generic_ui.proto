@@ -158,7 +158,10 @@ message ToStringProto {
   optional ValueReferenceProto value = 3;
 
   // Optional format options.
-  oneof format_options { DateFormatProto date_format = 2; }
+  oneof format_options {
+    DateFormatProto date_format = 2;
+    AutofillFormatProto autofill_format = 4;
+  }
   reserved 1;
 }
 
@@ -166,6 +169,25 @@ message ToStringProto {
 // http://userguide.icu-project.org/formatparse/datetime for full specification.
 message DateFormatProto {
   optional string date_format = 1;
+}
+
+// Format options for autofill profiles and credit cards.
+message AutofillFormatProto {
+  // Fields we add that are not mapped to field_types.h. The values must be
+  // negative to avoid overlap with field_types.h.
+  enum AutofillAssistantCustomField {
+    UNDEFINED = 0;
+    CREDIT_CARD_NETWORK = -2;
+    CREDIT_CARD_NUMBER_LAST_FOUR_DIGITS = -4;
+    CREDIT_CARD_NETWORK_FOR_DISPLAY = -5;
+  }
+  // The format string to use. May contain one or multiple "${key}"
+  // placeholders, where the key is an integer corresponding to
+  // entries from field_types.h or AutofillAssistantCustomField.
+  optional string pattern = 1;
+  // The locale to use when stringifying data. Invalid locales will
+  // automatically default to "en-US".
+  optional string locale = 2;
 }
 
 // A comparison of two values in the form |value_a| <mode> |value_b|. EQUAL is

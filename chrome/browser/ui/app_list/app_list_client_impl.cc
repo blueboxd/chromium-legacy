@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/search/search_controller_factory.h"
-#include "chrome/browser/ui/app_list/search/search_resource_manager.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_data.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -342,7 +341,6 @@ void AppListClientImpl::SetProfile(Profile* new_profile) {
     DCHECK(current_model_updater_);
     current_model_updater_->SetActive(false);
 
-    search_resource_manager_.reset();
     search_controller_.reset();
     app_sync_ui_state_watcher_.reset();
     current_model_updater_ = nullptr;
@@ -389,9 +387,6 @@ void AppListClientImpl::SetProfile(Profile* new_profile) {
 }
 
 void AppListClientImpl::SetUpSearchUI() {
-  search_resource_manager_ = std::make_unique<app_list::SearchResourceManager>(
-      profile_, current_model_updater_);
-
   search_controller_ = app_list::CreateSearchController(
       profile_, current_model_updater_, this, GetNotifier());
 

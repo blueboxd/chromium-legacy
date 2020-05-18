@@ -9,7 +9,7 @@ import {isChromeOS, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {getToastManager} from 'chrome://settings/lazy_load.js';
-import {PasswordManagerImpl, PasswordManagerProxy, PluralStringProxyImpl, Router, routes} from 'chrome://settings/settings.js';
+import {MultiStorePasswordUiEntry, PasswordManagerImpl, PasswordManagerProxy, PluralStringProxyImpl, Router, routes} from 'chrome://settings/settings.js';
 import {createExceptionEntry, createPasswordEntry, makeCompromisedCredential, makePasswordCheckStatus, PasswordSectionElementFactory} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
 import {runCancelExportTest, runExportFlowErrorRetryTest, runExportFlowErrorTest, runExportFlowFastTest, runExportFlowSlowTest, runFireCloseEventAfterExportCompleteTest,runStartExportTest} from 'chrome://test/settings/passwords_export_test.js';
 import {getSyncAllPrefs, simulateStoredAccounts, simulateSyncStatus} from 'chrome://test/settings/sync_test_util.m.js';
@@ -43,7 +43,9 @@ function validatePasswordList(passwordsSection, passwordList) {
         passwordInfo.urls.shown, node.$$('#originUrl').textContent.trim());
     assertEquals(passwordInfo.urls.link, node.$$('#originUrl').href);
     assertEquals(passwordInfo.username, node.$$('#username').value);
-    assertDeepEquals(listElement.items[index].entry, passwordInfo);
+    assertDeepEquals(
+        listElement.items[index].entry,
+        new MultiStorePasswordUiEntry(passwordInfo));
   }
 }
 
@@ -183,7 +185,7 @@ suite('PasswordsSection', function() {
     // Assert that the data is passed into the iron list. If this fails,
     // then other expectations will also fail.
     assertDeepEquals(
-        passwordList,
+        passwordList.map(entry => new MultiStorePasswordUiEntry(entry)),
         passwordsSection.$.passwordList.items.map(entry => entry.entry));
 
     validatePasswordList(passwordsSection, passwordList);

@@ -25,6 +25,9 @@ declare_args() {
   # If non empty, rpath of executables is set to this.
   # If empty, default value is used.
   target_rpath = ""
+
+  # Set true to enable modular_updater.
+  enable_modular_updater = false
 }
 
 # Note(slan): This arg depends on the value of is_chromecast, and thus must be

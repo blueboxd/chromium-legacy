@@ -701,14 +701,17 @@ TEST_F(DiceResponseHandlerTest, SigninSignoutDifferentAccount) {
 }
 
 // Tests that the DiceResponseHandler is created for a normal profile but not
-// for an incognito profile.
-TEST(DiceResponseHandlerFactoryTest, NotInIncognito) {
+// for off-the-record profiles.
+TEST(DiceResponseHandlerFactoryTest, NotInOffTheRecord) {
   content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
   EXPECT_THAT(DiceResponseHandler::GetForProfile(&profile), testing::NotNull());
   EXPECT_THAT(
-      DiceResponseHandler::GetForProfile(profile.GetOffTheRecordProfile()),
+      DiceResponseHandler::GetForProfile(profile.GetPrimaryOTRProfile()),
       testing::IsNull());
+  EXPECT_THAT(DiceResponseHandler::GetForProfile(profile.GetOffTheRecordProfile(
+                  Profile::OTRProfileID("Test::Dice"))),
+              testing::IsNull());
 }
 
 }  // namespace

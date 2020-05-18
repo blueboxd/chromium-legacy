@@ -24,7 +24,7 @@ public class CreditCardAccessorySheetCoordinator extends AccessorySheetTabCoordi
     private AccessorySheetTabModel mModel = new AccessorySheetTabModel();
     private final AccessorySheetTabMediator mMediator =
             new AccessorySheetTabMediator(mModel, AccessoryTabType.CREDIT_CARDS,
-                    Type.CREDIT_CARD_INFO, AccessoryAction.MANAGE_CREDIT_CARDS);
+                    Type.CREDIT_CARD_INFO, AccessoryAction.MANAGE_CREDIT_CARDS, null);
 
     /**
      * Creates the credit cards tab.

@@ -6,6 +6,7 @@ import './settings_ui/settings_ui.js';
 
 export {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, PromoteUpdaterStatus, UpdateStatus} from './about_page/about_page_browser_proxy.m.js';
 export {AppearanceBrowserProxy, AppearanceBrowserProxyImpl} from './appearance_page/appearance_browser_proxy.js';
+export {MultiStorePasswordUiEntry, MultiStorePasswordUiEntryWithPassword} from './autofill_page/multi_store_password_ui_entry.js';
 export {PasswordManagerImpl, PasswordManagerProxy} from './autofill_page/password_manager_proxy.js';
 // <if expr="not chromeos">
 export {DefaultBrowserBrowserProxyImpl} from './default_browser_page/default_browser_browser_proxy.js';

@@ -1408,6 +1408,9 @@ Unknown properties are collapsed to zero. -->
   <int value="25" label="N_MR1"/>
   <int value="26" label="O"/>
   <int value="27" label="O_MR1"/>
+  <int value="28" label="P"/>
+  <int value="29" label="Q"/>
+  <int value="30" label="R"/>
 </enum>
 
 <enum name="AndroidArmFpu">
@@ -40082,6 +40085,7 @@ from previous Chrome versions.
   <int value="-100148609" label="EvDetailsInPageInfo:disabled"/>
   <int value="-99781021" label="disable-roboto-font-ui"/>
   <int value="-97145978" label="DesktopPWAsStayInWindow:enabled"/>
+  <int value="-94335249" label="UseAAudioDriver:enabled"/>
   <int value="-92116820" label="InlineUpdateFlow:enabled"/>
   <int value="-91767554" label="enable-de-jelly"/>
   <int value="-90521375" label="PDFTwoUpView:enabled"/>
@@ -41949,6 +41953,7 @@ from previous Chrome versions.
   <int value="2015335629" label="shelf-hover-previews"/>
   <int value="2015547864" label="NetworkServiceInProcess:enabled"/>
   <int value="2018386804" label="IPH_ReopenTab:disabled"/>
+  <int value="2018956925" label="UseAAudioDriver:disabled"/>
   <int value="2020107447" label="AndroidPayIntegrationV1:enabled"/>
   <int value="2024172900" label="KidsManagementUrlClassification:disabled"/>
   <int value="2032558514"

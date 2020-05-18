@@ -67,8 +67,8 @@ genFunction {<suspended>}
 Expanded all messages
 console-format-es6.js:15 Promise {<rejected>: -0}
     __proto__: Promise
-    [[PromiseStatus]]: "rejected"
-    [[PromiseValue]]: -0
+    [[PromiseState]]: "rejected"
+    [[PromiseResult]]: -0
 console-format-es6.js:16 [Promise]
     0: Promise {<rejected>: -0}
     length: 1
@@ -76,12 +76,12 @@ console-format-es6.js:16 [Promise]
 globals[0]
 Promise {<rejected>: -0}
     __proto__: Promise
-    [[PromiseStatus]]: "rejected"
-    [[PromiseValue]]: -0
+    [[PromiseState]]: "rejected"
+    [[PromiseResult]]: -0
 console-format-es6.js:15 Promise {<fulfilled>: 1}
     __proto__: Promise
-    [[PromiseStatus]]: "fulfilled"
-    [[PromiseValue]]: 1
+    [[PromiseState]]: "fulfilled"
+    [[PromiseResult]]: 1
 console-format-es6.js:16 [Promise]
     0: Promise {<fulfilled>: 1}
     length: 1
@@ -89,12 +89,12 @@ console-format-es6.js:16 [Promise]
 globals[1]
 Promise {<fulfilled>: 1}
     __proto__: Promise
-    [[PromiseStatus]]: "fulfilled"
-    [[PromiseValue]]: 1
+    [[PromiseState]]: "fulfilled"
+    [[PromiseResult]]: 1
 console-format-es6.js:15 Promise {<pending>}
     __proto__: Promise
-    [[PromiseStatus]]: "pending"
-    [[PromiseValue]]: undefined
+    [[PromiseState]]: "pending"
+    [[PromiseResult]]: undefined
 console-format-es6.js:16 [Promise]
     0: Promise {<pending>}
     length: 1
@@ -102,8 +102,8 @@ console-format-es6.js:16 [Promise]
 globals[2]
 Promise {<pending>}
     __proto__: Promise
-    [[PromiseStatus]]: "pending"
-    [[PromiseValue]]: undefined
+    [[PromiseState]]: "pending"
+    [[PromiseResult]]: undefined
 console-format-es6.js:15 Symbol()
 console-format-es6.js:16 [Symbol()]
     0: Symbol()
@@ -279,7 +279,7 @@ Map(6) {" from str " => " to str ", undefined => undefined, null => null, 42 =>
 console-format-es6.js:15 genFunction {<suspended>}
     __proto__: Generator
     [[GeneratorLocation]]: console-format-es6.js:62
-    [[GeneratorStatus]]: "suspended"
+    [[GeneratorState]]: "suspended"
     [[GeneratorFunction]]: ƒ *()
     [[GeneratorReceiver]]: Window
     [[Scopes]]: Scopes[2]
@@ -291,7 +291,7 @@ globals[15]
 genFunction {<suspended>}
     __proto__: Generator
     [[GeneratorLocation]]: console-format-es6.js:62
-    [[GeneratorStatus]]: "suspended"
+    [[GeneratorState]]: "suspended"
     [[GeneratorFunction]]: ƒ *()
     [[GeneratorReceiver]]: Window
     [[Scopes]]: Scopes[2]

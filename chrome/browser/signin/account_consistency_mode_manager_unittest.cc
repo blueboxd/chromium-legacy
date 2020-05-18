@@ -185,7 +185,7 @@ TEST(AccountConsistencyModeManagerTest, DiceOnlyForRegularProfile) {
         AccountConsistencyModeManager::ShouldBuildServiceForProfile(&profile));
 
     // Incognito profile.
-    Profile* incognito_profile = profile.GetOffTheRecordProfile();
+    Profile* incognito_profile = profile.GetPrimaryOTRProfile();
     EXPECT_FALSE(AccountConsistencyModeManager::IsDiceEnabledForProfile(
         incognito_profile));
     EXPECT_FALSE(
@@ -195,6 +195,17 @@ TEST(AccountConsistencyModeManagerTest, DiceOnlyForRegularProfile) {
         AccountConsistencyModeManager::GetMethodForProfile(incognito_profile));
     EXPECT_FALSE(AccountConsistencyModeManager::ShouldBuildServiceForProfile(
         incognito_profile));
+
+    // Non-primary off-the-record profile.
+    Profile* otr_profile = profile.GetOffTheRecordProfile(
+        Profile::OTRProfileID("Test::AccountConsistency"));
+    EXPECT_FALSE(
+        AccountConsistencyModeManager::IsDiceEnabledForProfile(otr_profile));
+    EXPECT_FALSE(AccountConsistencyModeManager::GetForProfile(otr_profile));
+    EXPECT_EQ(signin::AccountConsistencyMethod::kDisabled,
+              AccountConsistencyModeManager::GetMethodForProfile(otr_profile));
+    EXPECT_FALSE(AccountConsistencyModeManager::ShouldBuildServiceForProfile(
+        otr_profile));
   }
 
   {
@@ -256,12 +267,12 @@ TEST(AccountConsistencyModeManagerTest, MirrorDisabledForGuestSession) {
             AccountConsistencyModeManager::GetMethodForProfile(&profile));
 }
 
-TEST(AccountConsistencyModeManagerTest, MirrorDisabledForIncognitoProfile) {
+TEST(AccountConsistencyModeManagerTest, MirrorDisabledForOffTheRecordProfile) {
   // Creation of this object sets the current thread's id as UI thread.
   content::BrowserTaskEnvironment task_environment;
 
   TestingProfile profile;
-  Profile* incognito_profile = profile.GetOffTheRecordProfile();
+  Profile* incognito_profile = profile.GetPrimaryOTRProfile();
   EXPECT_FALSE(AccountConsistencyModeManager::IsMirrorEnabledForProfile(
       incognito_profile));
   EXPECT_FALSE(AccountConsistencyModeManager::IsDiceEnabledForProfile(
@@ -269,6 +280,15 @@ TEST(AccountConsistencyModeManagerTest, MirrorDisabledForIncognitoProfile) {
   EXPECT_EQ(
       signin::AccountConsistencyMethod::kDisabled,
       AccountConsistencyModeManager::GetMethodForProfile(incognito_profile));
+
+  Profile* otr_profile = profile.GetOffTheRecordProfile(
+      Profile::OTRProfileID("Test::AccountConsistency"));
+  EXPECT_FALSE(
+      AccountConsistencyModeManager::IsMirrorEnabledForProfile(otr_profile));
+  EXPECT_FALSE(
+      AccountConsistencyModeManager::IsDiceEnabledForProfile(otr_profile));
+  EXPECT_EQ(signin::AccountConsistencyMethod::kDisabled,
+            AccountConsistencyModeManager::GetMethodForProfile(otr_profile));
 }
 #endif  // defined(OS_CHROMEOS)
 

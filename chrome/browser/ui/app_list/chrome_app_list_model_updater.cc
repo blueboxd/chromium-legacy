@@ -121,22 +121,6 @@ void ChromeAppListModelUpdater::SetSearchEngineIsGoogle(bool is_google) {
     app_list_controller_->SetSearchEngineIsGoogle(is_google);
 }
 
-void ChromeAppListModelUpdater::SetSearchTabletAndClamshellAccessibleName(
-    const base::string16& tablet_accessible_name,
-    const base::string16& clamshell_accessible_name) {
-  if (!app_list_controller_)
-    return;
-  app_list_controller_->SetSearchTabletAndClamshellAccessibleName(
-      tablet_accessible_name, clamshell_accessible_name);
-}
-
-void ChromeAppListModelUpdater::SetSearchHintText(
-    const base::string16& hint_text) {
-  if (!app_list_controller_)
-    return;
-  app_list_controller_->SetSearchHintText(hint_text);
-}
-
 void ChromeAppListModelUpdater::UpdateSearchBox(const base::string16& text,
                                                 bool initiated_by_user) {
   if (!app_list_controller_)

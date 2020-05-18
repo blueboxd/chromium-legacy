@@ -63,15 +63,6 @@ class ASH_PUBLIC_EXPORT AppListController {
   // Sets whether the search engine is Google or not.
   virtual void SetSearchEngineIsGoogle(bool is_google) = 0;
 
-  // Sets the text for screen readers on the search box, and updates the
-  // accessible names.
-  virtual void SetSearchTabletAndClamshellAccessibleName(
-      const base::string16& tablet_accessible_name,
-      const base::string16& clamshell_accessible_name) = 0;
-
-  // Sets the hint text to display when there is in input.
-  virtual void SetSearchHintText(const base::string16& hint_text) = 0;
-
   // Sets the text for the search box's Textfield and the voice search flag.
   virtual void UpdateSearchBox(const base::string16& text,
                                bool initiated_by_user) = 0;

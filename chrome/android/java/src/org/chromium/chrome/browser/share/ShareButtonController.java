@@ -82,8 +82,10 @@ public class ShareButtonController implements ButtonDataProvider {
             assert shareDelegate
                     != null : "Share delegate became null after share button was displayed";
             if (shareDelegate == null) return;
-            RecordUserAction.record("MobileTopToolbarShareButton");
             Tab tab = mTabProvider.get();
+            assert tab != null : "Tab became null after share button was displayed";
+            if (tab == null) return;
+            RecordUserAction.record("MobileTopToolbarShareButton");
             shareDelegate.share(tab, /*shareDirectly=*/false);
         });
 
@@ -135,7 +137,8 @@ public class ShareButtonController implements ButtonDataProvider {
     }
 
     private void updateButtonVisibility(Tab tab) {
-        if (tab == null || tab.getWebContents() == null
+        if (tab == null || tab.getWebContents() == null || mTabProvider == null
+                || mTabProvider.get() == null
                 || !ChromeFeatureList.isEnabled(ChromeFeatureList.SHARE_BUTTON_IN_TOP_TOOLBAR)) {
             mButtonData.canShow = false;
             return;

@@ -357,11 +357,6 @@ bool IsRemoraRequisitioned() {
   return policy_manager && policy_manager->IsRemoraRequisition();
 }
 
-void DisablePolymer2(content::URLDataSource* shared_source) {
-  if (shared_source)
-    shared_source->DisablePolymer2ForHost(chrome::kChromeUIOobeHost);
-}
-
 }  // namespace
 
 // static
@@ -555,9 +550,6 @@ void OobeUI::BindInterface(
 
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
     : ui::MojoWebUIController(web_ui, true /* enable_chrome_send */) {
-  // TODO(crbug.com/1082670): Remove excessive logging after investigation.
-  LOG(ERROR) << "Creating new OobeUI";
-
   display_type_ = GetDisplayType(url);
 
   js_calls_container_ = std::make_unique<JSCallsContainer>();
@@ -599,10 +591,11 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   // TODO (https://crbug.com/739611): Remove this exception by migrating to
   // Polymer 2.
   if (base::FeatureList::IsEnabled(features::kWebUIPolymer2Exceptions)) {
-    content::URLDataSource::GetSourceForURL(
+    auto* shared_source = content::URLDataSource::GetSourceForURL(
         Profile::FromWebUI(web_ui),
-        GURL("chrome://resources/polymer/v1_0/polymer/polymer.html"),
-        base::BindOnce(DisablePolymer2));
+        GURL("chrome://resources/polymer/v1_0/polymer/polymer.html"));
+    if (shared_source)
+      shared_source->DisablePolymer2ForHost(chrome::kChromeUIOobeHost);
   }
 }
 
@@ -655,13 +648,7 @@ void OobeUI::AddScreenHandler(std::unique_ptr<BaseScreenHandler> handler) {
 }
 
 void OobeUI::InitializeHandlers() {
-  // TODO(crbug.com/1082670): Remove excessive logging after investigation.
-  LOG(ERROR) << "OobeUI::InitializeHandlers";
-
   js_calls_container_->ExecuteDeferredJSCalls(web_ui());
-
-  // TODO(crbug.com/1082670): Remove excessive logging after investigation.
-  LOG(ERROR) << "OobeUI::Marking as ready and executing callbacks";
 
   ready_ = true;
   for (size_t i = 0; i < ready_callbacks_.size(); ++i)
@@ -693,8 +680,6 @@ bool OobeUI::IsScreenInitialized(OobeScreenId screen) {
 }
 
 bool OobeUI::IsJSReady(const base::Closure& display_is_ready_callback) {
-  // TODO(crbug.com/1082670): Remove excessive logging after investigation.
-  LOG(ERROR) << "OobeUI::IsJSReady? = " << ready_;
   if (!ready_)
     ready_callbacks_.push_back(display_is_ready_callback);
   return ready_;

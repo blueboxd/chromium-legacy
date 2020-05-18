@@ -25,12 +25,12 @@ void ExpectInstalled();
 // Install the updater.
 void Install();
 
-// Expect that the updater is installed on the system and the launchd tasks are
-// updated correctly.
-void ExpectSwapped();
-
-// Finish up setup.
-void Swap();
+// Expect that the updater is installed on the system and the launchd tasks
+// are updated correctly.
+void ExpectActive();
+//
+// Make the candidate updater version active.
+void PromoteCandidate();
 
 // Uninstall the updater. If the updater was installed during the test, it
 // should be uninstalled before the end of the test to avoid having an actual

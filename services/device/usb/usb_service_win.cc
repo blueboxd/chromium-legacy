@@ -26,6 +26,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_devinfo.h"
 #include "base/win/scoped_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "services/device/usb/usb_descriptors.h"
@@ -36,13 +37,6 @@
 namespace device {
 
 namespace {
-
-struct DevInfoScopedTraits {
-  static HDEVINFO InvalidValue() { return INVALID_HANDLE_VALUE; }
-  static void Free(HDEVINFO h) { SetupDiDestroyDeviceInfoList(h); }
-};
-
-using ScopedDevInfo = base::ScopedGeneric<HDEVINFO, DevInfoScopedTraits>;
 
 base::Optional<uint32_t> GetDeviceUint32Property(HDEVINFO dev_info,
                                                  SP_DEVINFO_DATA* dev_info_data,
@@ -236,7 +230,7 @@ bool GetDeviceInterfaceDetails(HDEVINFO dev_info,
 
 base::string16 GetDevicePath(const base::string16& instance_id,
                              const GUID& device_interface_guid) {
-  ScopedDevInfo dev_info(
+  base::win::ScopedDevInfo dev_info(
       SetupDiGetClassDevs(&device_interface_guid, instance_id.c_str(), 0,
                           DIGCF_DEVICEINTERFACE | DIGCF_PRESENT));
   if (!dev_info.is_valid()) {
@@ -287,7 +281,8 @@ int GetInterfaceNumber(const base::string16& instance_id) {
 UsbDeviceWin::FunctionInfo GetFunctionInfo(const base::string16& instance_id) {
   UsbDeviceWin::FunctionInfo info;
 
-  ScopedDevInfo dev_info(SetupDiCreateDeviceInfoList(nullptr, nullptr));
+  base::win::ScopedDevInfo dev_info(
+      SetupDiCreateDeviceInfoList(nullptr, nullptr));
   if (!dev_info.is_valid()) {
     USB_PLOG(ERROR) << "SetupDiCreateDeviceInfoList";
     return info;
@@ -357,7 +352,7 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
   ~BlockingTaskRunnerHelper() {}
 
   void EnumerateDevices() {
-    ScopedDevInfo dev_info(
+    base::win::ScopedDevInfo dev_info(
         SetupDiGetClassDevs(&GUID_DEVINTERFACE_USB_DEVICE, nullptr, 0,
                             DIGCF_DEVICEINTERFACE | DIGCF_PRESENT));
     if (!dev_info.is_valid()) {
@@ -384,7 +379,7 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
   }
 
   void OnDeviceAdded(const GUID& guid, const base::string16& device_path) {
-    ScopedDevInfo dev_info(SetupDiGetClassDevs(
+    base::win::ScopedDevInfo dev_info(SetupDiGetClassDevs(
         &guid, nullptr, 0, DIGCF_DEVICEINTERFACE | DIGCF_PRESENT));
     if (!dev_info.is_valid()) {
       USB_PLOG(ERROR) << "Failed to set up device enumeration";

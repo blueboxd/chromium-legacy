@@ -983,6 +983,11 @@ message DiskInfo {
   optional string health = 6;
   // volume_id for volumes on this disk.
   repeated string volumes = 7;
+  // Read/write statistics for this disk.
+  optional uint64 bytes_read_since_last_boot = 8;
+  optional uint64 bytes_written_since_last_boot = 9;
+  optional uint64 read_time_seconds_since_last_boot = 10;
+  optional uint64 write_time_seconds_since_last_boot = 11;
 }
 
 // Status of the storage subsystem.

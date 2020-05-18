@@ -332,6 +332,10 @@ extern const char kReloadSadTabDescription[];
 extern const char kSafeBrowsingAvailableName[];
 extern const char kSafeBrowsingAvailableDescription[];
 
+// Title and description for the flag to enable safety check on iOS.
+extern const char kSafetyCheckIOSName[];
+extern const char kSafetyCheckIOSDescription[];
+
 // Title and description for the flag that enables Messages UI on
 // SaveCard Infobars.
 extern const char kSaveCardInfobarMessagesUIName[];

@@ -242,9 +242,10 @@ void WorkerFetchContext::PopulateResourceRequest(
     ResourceType type,
     const ClientHintsPreferences& hints_preferences,
     const FetchParameters::ResourceWidth& resource_width,
-    ResourceRequest& out_request) {
+    ResourceRequest& out_request,
+    const FetchInitiatorInfo& initiator_info) {
   if (!GetResourceFetcherProperties().IsDetached())
-    probe::SetDevToolsIds(Probe(), out_request);
+    probe::SetDevToolsIds(Probe(), out_request, initiator_info);
   MixedContentChecker::UpgradeInsecureRequest(
       out_request,
       &GetResourceFetcherProperties().GetFetchClientSettingsObject(),

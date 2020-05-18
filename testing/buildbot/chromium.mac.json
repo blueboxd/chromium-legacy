@@ -12882,12 +12882,12 @@
           "--xcode-build-version",
           "11e146"
         ],
-        "isolate_name": "ios_chrome_integration_egtests",
+        "isolate_name": "ios_chrome_integration_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_egtests_iPhone 6s 12.4",
+        "name": "ios_chrome_integration_eg2tests_module_iPhone 6s 12.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -12911,7 +12911,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_integration_egtests/"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/"
       },
       {
         "args": [
@@ -12924,12 +12924,12 @@
           "--xcode-build-version",
           "11e146"
         ],
-        "isolate_name": "ios_chrome_integration_egtests",
+        "isolate_name": "ios_chrome_integration_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_egtests_iPhone 6s 13.4",
+        "name": "ios_chrome_integration_eg2tests_module_iPhone 6s 13.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -12953,7 +12953,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_integration_egtests/"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/"
       },
       {
         "args": [
@@ -12966,12 +12966,12 @@
           "--xcode-build-version",
           "11e146"
         ],
-        "isolate_name": "ios_chrome_signin_egtests",
+        "isolate_name": "ios_chrome_signin_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_egtests_iPhone 6s 12.4",
+        "name": "ios_chrome_signin_eg2tests_module_iPhone 6s 12.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -12994,7 +12994,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_signin_egtests/"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
       {
         "args": [
@@ -13007,12 +13007,12 @@
           "--xcode-build-version",
           "11e146"
         ],
-        "isolate_name": "ios_chrome_signin_egtests",
+        "isolate_name": "ios_chrome_signin_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_egtests_iPhone 6s 13.4",
+        "name": "ios_chrome_signin_eg2tests_module_iPhone 6s 13.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -13035,7 +13035,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_signin_egtests/"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
       {
         "args": [
@@ -13048,12 +13048,12 @@
           "--xcode-build-version",
           "11e146"
         ],
-        "isolate_name": "ios_chrome_ui_egtests",
+        "isolate_name": "ios_chrome_ui_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_egtests_iPhone 6s 12.4",
+        "name": "ios_chrome_ui_eg2tests_module_iPhone 6s 12.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -13077,7 +13077,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_ui_egtests/"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/"
       },
       {
         "args": [
@@ -13090,12 +13090,12 @@
           "--xcode-build-version",
           "11e146"
         ],
-        "isolate_name": "ios_chrome_ui_egtests",
+        "isolate_name": "ios_chrome_ui_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_egtests_iPhone 6s 13.4",
+        "name": "ios_chrome_ui_eg2tests_module_iPhone 6s 13.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -13119,7 +13119,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_ui_egtests/"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/"
       },
       {
         "args": [
@@ -13788,12 +13788,12 @@
           "--xcode-build-version",
           "11e146"
         ],
-        "isolate_name": "ios_web_shell_egtests",
+        "isolate_name": "ios_web_shell_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_egtests_iPhone 6s 12.4",
+        "name": "ios_web_shell_eg2tests_module_iPhone 6s 12.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -13816,7 +13816,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_egtests/"
+        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/"
       },
       {
         "args": [
@@ -13829,12 +13829,12 @@
           "--xcode-build-version",
           "11e146"
         ],
-        "isolate_name": "ios_web_shell_egtests",
+        "isolate_name": "ios_web_shell_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_egtests_iPhone 6s 13.4",
+        "name": "ios_web_shell_eg2tests_module_iPhone 6s 13.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -13857,7 +13857,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_egtests/"
+        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/"
       },
       {
         "args": [
@@ -15230,12 +15230,12 @@
           "--xcode-build-version",
           "11e146"
         ],
-        "isolate_name": "ios_chrome_integration_egtests",
+        "isolate_name": "ios_chrome_integration_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_egtests_iPad Air 2 12.4",
+        "name": "ios_chrome_integration_eg2tests_module_iPad Air 2 12.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -15259,7 +15259,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_integration_egtests/"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/"
       },
       {
         "args": [
@@ -15272,12 +15272,12 @@
           "--xcode-build-version",
           "11e146"
         ],
-        "isolate_name": "ios_chrome_integration_egtests",
+        "isolate_name": "ios_chrome_integration_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_egtests_iPad Air 2 13.4",
+        "name": "ios_chrome_integration_eg2tests_module_iPad Air 2 13.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -15301,7 +15301,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_integration_egtests/"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/"
       },
       {
         "args": [
@@ -15314,12 +15314,12 @@
           "--xcode-build-version",
           "11e146"
         ],
-        "isolate_name": "ios_chrome_integration_egtests",
+        "isolate_name": "ios_chrome_integration_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_egtests_iPhone 7 13.4",
+        "name": "ios_chrome_integration_eg2tests_module_iPhone 7 13.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -15343,7 +15343,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_integration_egtests/"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/"
       },
       {
         "args": [
@@ -15771,12 +15771,12 @@
           "--xcode-build-version",
           "11e146"
         ],
-        "isolate_name": "ios_chrome_signin_egtests",
+        "isolate_name": "ios_chrome_signin_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_egtests_iPad Air 2 12.4",
+        "name": "ios_chrome_signin_eg2tests_module_iPad Air 2 12.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -15799,7 +15799,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_signin_egtests/"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
       {
         "args": [
@@ -15812,12 +15812,12 @@
           "--xcode-build-version",
           "11e146"
         ],
-        "isolate_name": "ios_chrome_signin_egtests",
+        "isolate_name": "ios_chrome_signin_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_egtests_iPad Air 2 13.4",
+        "name": "ios_chrome_signin_eg2tests_module_iPad Air 2 13.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -15840,7 +15840,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_signin_egtests/"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
       {
         "args": [
@@ -15853,12 +15853,12 @@
           "--xcode-build-version",
           "11e146"
         ],
-        "isolate_name": "ios_chrome_signin_egtests",
+        "isolate_name": "ios_chrome_signin_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_egtests_iPhone 7 13.4",
+        "name": "ios_chrome_signin_eg2tests_module_iPhone 7 13.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -15881,7 +15881,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_signin_egtests/"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
       {
         "args": [
@@ -16099,12 +16099,12 @@
           "--xcode-build-version",
           "11e146"
         ],
-        "isolate_name": "ios_chrome_ui_egtests",
+        "isolate_name": "ios_chrome_ui_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_egtests_iPad Air 2 12.4",
+        "name": "ios_chrome_ui_eg2tests_module_iPad Air 2 12.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -16128,7 +16128,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_ui_egtests/"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/"
       },
       {
         "args": [
@@ -16141,12 +16141,12 @@
           "--xcode-build-version",
           "11e146"
         ],
-        "isolate_name": "ios_chrome_ui_egtests",
+        "isolate_name": "ios_chrome_ui_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_egtests_iPad Air 2 13.4",
+        "name": "ios_chrome_ui_eg2tests_module_iPad Air 2 13.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -16170,7 +16170,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_ui_egtests/"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/"
       },
       {
         "args": [
@@ -16183,12 +16183,12 @@
           "--xcode-build-version",
           "11e146"
         ],
-        "isolate_name": "ios_chrome_ui_egtests",
+        "isolate_name": "ios_chrome_ui_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_egtests_iPhone 7 13.4",
+        "name": "ios_chrome_ui_eg2tests_module_iPhone 7 13.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -16212,7 +16212,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_ui_egtests/"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/"
       },
       {
         "args": [
@@ -16635,12 +16635,12 @@
           "--xcode-build-version",
           "11e146"
         ],
-        "isolate_name": "ios_web_shell_egtests",
+        "isolate_name": "ios_web_shell_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_egtests_iPad Air 2 12.4",
+        "name": "ios_web_shell_eg2tests_module_iPad Air 2 12.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -16663,7 +16663,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_egtests/"
+        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/"
       },
       {
         "args": [
@@ -16676,12 +16676,12 @@
           "--xcode-build-version",
           "11e146"
         ],
-        "isolate_name": "ios_web_shell_egtests",
+        "isolate_name": "ios_web_shell_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_egtests_iPad Air 2 13.4",
+        "name": "ios_web_shell_eg2tests_module_iPad Air 2 13.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -16704,7 +16704,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_egtests/"
+        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/"
       },
       {
         "args": [
@@ -16717,12 +16717,12 @@
           "--xcode-build-version",
           "11e146"
         ],
-        "isolate_name": "ios_web_shell_egtests",
+        "isolate_name": "ios_web_shell_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_egtests_iPhone 7 13.4",
+        "name": "ios_web_shell_eg2tests_module_iPhone 7 13.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -16745,7 +16745,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_egtests/"
+        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/"
       }
     ]
   }

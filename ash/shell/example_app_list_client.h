@@ -28,7 +28,6 @@ class ExampleAppListClient : public TestAppListClient {
 
  private:
   void PopulateApps();
-  void DecorateSearchBox();
 
   // TestAppListClient:
   void StartSearch(const base::string16& trimmed_query) override;

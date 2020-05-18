@@ -5,11 +5,11 @@
 #ifndef CONTENT_CHILD_WEBTHEMEENGINE_IMPL_MAC_H_
 #define CONTENT_CHILD_WEBTHEMEENGINE_IMPL_MAC_H_
 
-#include "third_party/blink/public/platform/web_theme_engine.h"
+#include "content/child/webthemeengine_impl_default.h"
 
 namespace content {
 
-class WebThemeEngineMac : public blink::WebThemeEngine {
+class WebThemeEngineMac : public WebThemeEngineDefault {
  public:
   ~WebThemeEngineMac() override {}
 

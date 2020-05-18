@@ -355,6 +355,34 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenVKeyboardEnabled) {
             GetAppListViewNativeWindow()->bounds());
 }
 
+// Verifies that the the virtual keyboard does not get shown if the search box
+// is activated by user typing when the app list in the peeking state.
+TEST_F(AppListControllerImplTest, VirtualKeyboardNotShownWhenUserStartsTyping) {
+  Shell::Get()->keyboard_controller()->SetEnableFlag(
+      keyboard::KeyboardEnableFlag::kShelfEnabled);
+
+  // Show the AppListView, then simulate a key press - verify that the virtual
+  // keyboard is not shown.
+  ShowAppListNow();
+  EXPECT_EQ(AppListViewState::kPeeking, GetAppListView()->app_list_state());
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
+  event_generator->ReleaseKey(ui::KeyboardCode::VKEY_0, 0);
+  EXPECT_EQ(AppListViewState::kHalf, GetAppListView()->app_list_state());
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(GetVirtualKeyboardWindow()->IsVisible());
+
+  // The keyboard should get shown if the user taps on the search box.
+  event_generator->GestureTapAt(
+      GetAppListView()->search_box_view()->GetBoundsInScreen().CenterPoint());
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+
+  DismissAppListNow();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
+}
+
 // Verifies that in clamshell mode the AppListView bounds remain in the
 // fullscreen size while the virtual keyboard is shown, even if the app list
 // view state changes.

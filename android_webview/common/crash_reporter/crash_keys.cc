@@ -39,8 +39,6 @@ const char* const kWebViewCrashKeyAllowList[] = {
     "gpu-psver",
     "gpu-vsver",
     "gpu-gl-vendor",
-    "gpu-gl-vendor__1",
-    "gpu-gl-vendor__2",
     "gpu-gl-renderer",
     "oop_read_failure",
 
@@ -49,10 +47,6 @@ const char* const kWebViewCrashKeyAllowList[] = {
     "discardable-memory-allocated",
     "discardable-memory-free",
     "mojo-message-error",
-    "mojo-message-error__1",
-    "mojo-message-error__2",
-    "mojo-message-error__3",
-    "mojo-message-error__4",
     "total-discardable-memory-allocated",
     // TODO(https://crbug.com/1006814): Remove this.
     "IsRenderFrameLive",
@@ -63,14 +57,6 @@ const char* const kWebViewCrashKeyAllowList[] = {
 
     // crash keys needed for recording finch trials
     "variations",
-    "variations__1",
-    "variations__2",
-    "variations__3",
-    "variations__4",
-    "variations__5",
-    "variations__6",
-    "variations__7",
-    "variations__8",
     "num-experiments",
 
     kWeblayerWebViewCompatMode,

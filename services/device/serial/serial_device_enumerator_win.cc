@@ -26,18 +26,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_devinfo.h"
 #include "third_party/re2/src/re2/re2.h"
 
 namespace device {
 
 namespace {
-
-struct DevInfoScopedTraits {
-  static HDEVINFO InvalidValue() { return INVALID_HANDLE_VALUE; }
-  static void Free(HDEVINFO h) { SetupDiDestroyDeviceInfoList(h); }
-};
-
-using ScopedDevInfo = base::ScopedGeneric<HDEVINFO, DevInfoScopedTraits>;
 
 // Searches the specified device info for a property with the specified key,
 // assigns the result to value, and returns whether the operation was
@@ -179,7 +173,8 @@ base::Optional<base::FilePath> SerialDeviceEnumeratorWin::GetPath(
 }
 
 void SerialDeviceEnumeratorWin::OnPathAdded(const base::string16& device_path) {
-  ScopedDevInfo dev_info(SetupDiCreateDeviceInfoList(nullptr, nullptr));
+  base::win::ScopedDevInfo dev_info(
+      SetupDiCreateDeviceInfoList(nullptr, nullptr));
   if (!dev_info.is_valid())
     return;
 
@@ -198,7 +193,8 @@ void SerialDeviceEnumeratorWin::OnPathAdded(const base::string16& device_path) {
 
 void SerialDeviceEnumeratorWin::OnPathRemoved(
     const base::string16& device_path) {
-  ScopedDevInfo dev_info(SetupDiCreateDeviceInfoList(nullptr, nullptr));
+  base::win::ScopedDevInfo dev_info(
+      SetupDiCreateDeviceInfoList(nullptr, nullptr));
   if (!dev_info.is_valid())
     return;
 
@@ -239,7 +235,7 @@ void SerialDeviceEnumeratorWin::DoInitialEnumeration() {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   // Make a device interface query to find all serial devices.
-  ScopedDevInfo dev_info(
+  base::win::ScopedDevInfo dev_info(
       SetupDiGetClassDevs(&GUID_DEVINTERFACE_COMPORT, nullptr, 0,
                           DIGCF_DEVICEINTERFACE | DIGCF_PRESENT));
   if (!dev_info.is_valid())

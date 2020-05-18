@@ -974,6 +974,14 @@ ci.dawn_builder(
     triggered_by = ['Dawn Win10 x64 Builder'],
 )
 
+ci.dawn_builder(
+    name = 'Dawn Win10 x64 ASAN Release',
+    console_view_entry = ci.console_view_entry(
+        category = 'ToT|Windows|ASAN',
+        short_name = 'x64',
+    ),
+    os = os.WINDOWS_ANY,
+)
 
 ci.fuzz_builder(
     name = 'ASAN Debug',

@@ -9,9 +9,11 @@ package fuzz_proto;
 import "testing/libfuzzer/proto/json.proto";
 
 message FuzzerInput {
-  // Using int64 to match base::Time's internal representation.
+  // Using int64 to match internal representation of base::Time and
+  // base::TimeTicks.
   required int64 parse_time = 1;
   required int64 serialize_time = 2;
+  required int64 now_ticks = 5;
   required BackoffEntryPolicy policy = 3;
   required json_proto.ArrayValue serialized_entry = 4;
 }

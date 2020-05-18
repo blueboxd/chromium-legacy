@@ -3,6 +3,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("mojom") {
   sources = [
     "nearby_connections.mojom",
+    "nearby_connections_types.mojom",
     "sharing.mojom",
     "webrtc.mojom",
   ]

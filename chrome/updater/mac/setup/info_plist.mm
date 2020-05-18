@@ -57,18 +57,21 @@ base::FilePath InfoPlist::UpdaterExecutablePath(
       .Append(updater_app_executable_path);
 }
 
-base::ScopedCFTypeRef<CFStringRef>
-InfoPlist::GoogleUpdateCheckLaunchdNameVersioned() const {
-  return base::ScopedCFTypeRef<CFStringRef>(CFStringCreateWithFormat(
-      kCFAllocatorDefault, nullptr, CFSTR("%@.%s"),
-      CopyGoogleUpdateCheckLaunchDName().get(), bundle_version_.c_str()));
+base::ScopedCFTypeRef<CFStringRef> InfoPlist::MakeVersionedLaunchdName(
+    base::ScopedCFTypeRef<CFStringRef> name) const {
+  return base::ScopedCFTypeRef<CFStringRef>(
+      CFStringCreateWithFormat(kCFAllocatorDefault, nullptr, CFSTR("%@.%s"),
+                               name.get(), bundle_version_.c_str()));
 }
 
 base::ScopedCFTypeRef<CFStringRef>
 InfoPlist::GoogleUpdateServiceLaunchdNameVersioned() const {
-  return base::ScopedCFTypeRef<CFStringRef>(CFStringCreateWithFormat(
-      kCFAllocatorDefault, nullptr, CFSTR("%@.%s"),
-      CopyGoogleUpdateServiceLaunchDName().get(), bundle_version_.c_str()));
+  return MakeVersionedLaunchdName(CopyGoogleUpdateServiceLaunchDName());
+}
+
+base::ScopedCFTypeRef<CFStringRef>
+InfoPlist::GoogleUpdateAdministrationLaunchdNameVersioned() const {
+  return MakeVersionedLaunchdName(CopyGoogleUpdateAdministrationLaunchDName());
 }
 
 base::FilePath InfoPlistPath(const base::FilePath& bundle_path) {

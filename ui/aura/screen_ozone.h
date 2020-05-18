@@ -53,6 +53,7 @@ class AURA_EXPORT ScreenOzone : public display::Screen {
   gfx::AcceleratedWidget GetAcceleratedWidgetForWindow(
       aura::Window* window) const;
 
+  display::Screen* const old_screen_ = display::Screen::SetScreenInstance(this);
   std::unique_ptr<ui::PlatformScreen> platform_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenOzone);

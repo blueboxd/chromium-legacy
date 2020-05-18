@@ -938,6 +938,12 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
       <message name="IDS_IOS_MANAGE_SYNC_SETTINGS_TITLE" desc="Title for the view in the Settings for enabling/disabling Sync. [iOS only]">
         Manage Sync
       </message>
+      <message name="IDS_IOS_REMOVE_ACCOUNT_ALERT_TITLE" desc="Title of the alert view when the remove account button is clicked.">
+      Remove account <ph name="USER_EMAIL">$1<ex>janedoe@google.com</ex></ph>?
+      </message>
+      <message name="IDS_IOS_REMOVE_ACCOUNT_LABEL" desc="Button label for removing an account.">
+      Remove
+      </message>
       <message name="IDS_IOS_MANAGE_SYNC_ENCRYPTION" desc="Title for the cell to open the encryption dialog.">
         Encryption
       </message>
@@ -1210,13 +1216,22 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_OVERSCROLL_RELOAD_LABEL" desc="The text to use for the tooltip for the overscroll reload action. [Length: 20em] [iOS only]">
         Reload
       </message>
+      <message name="IDS_IOS_PAGE_INFO_COOKIES_BLOCKED_LABEL" desc="Title of the item that displays the number of blocked Cookies in the site information screen.">
+        Blocked Cookies
+      </message>
+      <message name="IDS_IOS_PAGE_INFO_COOKIES_CLEAR_SITE_LABEL" desc="Title of the item that clears Cookies of the current site in the site information screen.">
+        Clear Site Cookies
+      </message>
       <message name="IDS_IOS_PAGE_INFO_COOKIES_DESCRIPTION" desc="Description of the button opening the third-party cookies information (in page info)">
         Blocking third-party cookies
+      </message>
+      <message name="IDS_IOS_PAGE_INFO_COOKIES_IN_USE_LABEL" desc="Title of the item that displays the number of Cookies in Use in the site information screen.">
+        Cookies in Use
       </message>
       <message name="IDS_IOS_PAGE_INFO_COOKIES_SWITCH_LABEL" desc="Title of the switch item that can be toggled to enable or disable Third-Party Cookies (in page info)">
         Block Third-Party Cookies
       </message>
-      <message name="IDS_IOS_PAGE_INFO_COOKIES_TITLE" desc="Title of the button opening the third-party cookies information (in page info)">
+      <message name="IDS_IOS_PAGE_INFO_COOKIES_HEADER" desc="Title of the Cookies section presented in the site information screen.">
         Cookies
       </message>
       <message name="IDS_IOS_PAGE_INFO_OFFLINE_PAGE" desc="Message to display in the page info when the page you are on is an offline page.">

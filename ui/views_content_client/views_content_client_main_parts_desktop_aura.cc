@@ -37,7 +37,7 @@ ViewsContentClientMainPartsDesktopAura::ViewsContentClientMainPartsDesktopAura(
 void ViewsContentClientMainPartsDesktopAura::PreMainMessageLoopRun() {
   ViewsContentClientMainPartsAura::PreMainMessageLoopRun();
 
-  display::Screen::SetScreenInstance(views::CreateDesktopScreen());
+  views::CreateDesktopScreen();
 
   views_content_client()->OnPreMainMessageLoopRun(browser_context(), nullptr);
 }

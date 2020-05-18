@@ -134,7 +134,8 @@ class PLATFORM_EXPORT FetchContext : public GarbageCollected<FetchContext> {
   virtual void PopulateResourceRequest(ResourceType,
                                        const ClientHintsPreferences&,
                                        const FetchParameters::ResourceWidth&,
-                                       ResourceRequest&);
+                                       ResourceRequest&,
+                                       const FetchInitiatorInfo&);
 
   // Called when the underlying context is detached. Note that some
   // FetchContexts continue working after detached (e.g., for fetch() operations

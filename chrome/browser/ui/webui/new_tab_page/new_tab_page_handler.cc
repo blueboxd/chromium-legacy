@@ -104,7 +104,7 @@ new_tab_page::mojom::ThemePtr MakeTheme(const NtpTheme& ntp_theme) {
   theme->shortcut_use_white_add_icon =
       color_utils::IsDark(ntp_theme.shortcut_color);
   theme->shortcut_use_title_pill = false;
-  theme->is_dark = color_utils::IsDark(ntp_theme.text_color);
+  theme->is_dark = !color_utils::IsDark(ntp_theme.text_color);
   if (ntp_theme.logo_alternate) {
     theme->logo_color = ntp_theme.logo_color;
   }

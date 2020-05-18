@@ -5,6 +5,7 @@
 // <if expr="chromeos">
 import {BlockingRequestManager} from './blocking_request_manager.js';
 // </if>
+import {MultiStorePasswordUiEntryWithPassword} from './multi_store_password_ui_entry.js';
 import {PasswordManagerImpl} from './password_manager_proxy.js';
 
 /**
@@ -18,7 +19,7 @@ export const ShowPasswordBehavior = {
   properties: {
     /**
      * The password that is being displayed.
-     * @type {!ShowPasswordBehavior.UiEntryWithPassword}
+     * @type {!MultiStorePasswordUiEntryWithPassword}
      */
     item: Object,
 
@@ -85,7 +86,8 @@ export const ShowPasswordBehavior = {
     }
     PasswordManagerImpl.getInstance()
         .requestPlaintextPassword(
-            this.item.entry.id, chrome.passwordsPrivate.PlaintextReason.VIEW)
+            this.item.entry.getAnyId(),
+            chrome.passwordsPrivate.PlaintextReason.VIEW)
         .then(
             password => {
               this.set('item.password', password);
@@ -99,11 +101,3 @@ export const ShowPasswordBehavior = {
             });
   },
 };
-
-/**
- * @typedef {{
- *    entry: !chrome.passwordsPrivate.PasswordUiEntry,
- *    password: string
- * }}
- */
-ShowPasswordBehavior.UiEntryWithPassword;

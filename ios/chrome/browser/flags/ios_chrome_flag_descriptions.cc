@@ -380,6 +380,11 @@ const char kSafeBrowsingAvailableDescription[] =
     "When enabled, navigation URLs are compared to Safe Browsing blocklists, "
     "subject to an opt-out preference.";
 
+const char kSafetyCheckIOSName[] = "Enable safety check on iOS";
+const char kSafetyCheckIOSDescription[] =
+    "When enabled, the iOS version of safety check is available in Chrome "
+    "settings.";
+
 const char kSaveCardInfobarMessagesUIName[] = "Save Card Infobar Messages UI";
 const char kSaveCardInfobarMessagesUIDescription[] =
     "When enabled, Save Card Infobar uses the new Messages UI.";

@@ -177,6 +177,8 @@
       'Dawn Win10 x64 Builder': 'dawn_tests_release_trybot',
       'Dawn Win10 x86 DEPS Builder': 'dawn_tests_release_trybot_x86',
       'Dawn Win10 x64 DEPS Builder': 'dawn_tests_release_trybot',
+
+      'Dawn Win10 x64 ASAN Release': 'dawn_tests_asan_release_trybot',
     },
 
     'chromium.devtools-frontend': {
@@ -798,6 +800,7 @@
       'linux-dawn-rel': 'dawn_tests_release_trybot',
       'mac-dawn-rel': 'dawn_tests_release_trybot',
       'win-dawn-rel': 'dawn_tests_release_trybot',
+      'dawn-try-win10-x64-asan-rel': 'dawn_tests_asan_release_trybot',
     },
 
     'tryserver.chromium.linux': {
@@ -1629,6 +1632,10 @@
 
     'codesearch_gen_chromium_bot': [
       'codesearch',
+    ],
+
+    'dawn_tests_asan_release_trybot': [
+      'dawn_tests', 'asan', 'release_trybot',
     ],
 
     'dawn_tests_release_trybot': [

@@ -104,8 +104,6 @@ class ASH_EXPORT LockScreenMediaControlsView
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
 
-  views::View* GetMiddleSpacingView();
-
   // media_session::mojom::MediaControllerObserver:
   void MediaSessionInfoChanged(
       media_session::mojom::MediaSessionInfoPtr session_info) override;
@@ -218,9 +216,6 @@ class ASH_EXPORT LockScreenMediaControlsView
 
   // The MediaPosition associated with the current media session.
   base::Optional<media_session::MediaPosition> position_;
-
-  // Spacing between controls and user.
-  std::unique_ptr<views::View> middle_spacing_;
 
   // Automatically hides the controls a few seconds if no media playing.
   std::unique_ptr<base::OneShotTimer> hide_controls_timer_;

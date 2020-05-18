@@ -1860,28 +1860,6 @@ void LocalFrame::ForciblyPurgeV8Memory() {
   Loader().StopAllLoaders();
 }
 
-void LocalFrame::DispatchBeforeUnloadEventForFreeze() {
-  auto* document_resource_coordinator = GetDocument()->GetResourceCoordinator();
-  if (document_resource_coordinator &&
-      lifecycle_state_ == mojom::FrameLifecycleState::kRunning &&
-      !RuntimeEnabledFeatures::BackForwardCacheEnabled()) {
-    // TODO(yuzus): Skip this block if DidFreeze is triggered by bfcache.
-
-    // Determine if there is a beforeunload handler by dispatching a
-    // beforeunload that will *not* launch a user dialog. If
-    // |proceed| is false then there is a non-empty beforeunload
-    // handler indicating potentially unsaved user state.
-    bool unused_did_allow_navigation = false;
-    bool proceed = GetDocument()->DispatchBeforeUnloadEvent(
-        nullptr, false /* is_reload */, unused_did_allow_navigation);
-
-    // DispatchBeforeUnloadEvent dispatches JS events, which may detach |this|.
-    if (!IsAttached())
-      return;
-    document_resource_coordinator->SetHasNonEmptyBeforeUnload(!proceed);
-  }
-}
-
 void LocalFrame::DidFreeze() {
   DCHECK(IsAttached());
   GetDocument()->DispatchFreezeEvent();
@@ -1931,20 +1909,6 @@ void LocalFrame::SetLifecycleState(mojom::FrameLifecycleState state) {
   // Don't allow lifecycle state changes for detached frames.
   if (!IsAttached())
     return;
-  // If we have asked to be frozen we will only do this once the
-  // load event has fired.
-  if ((state == mojom::FrameLifecycleState::kFrozen ||
-       state == mojom::FrameLifecycleState::kFrozenAutoResumeMedia) &&
-      IsLoading() && !RuntimeEnabledFeatures::BackForwardCacheEnabled()) {
-    // TODO(yuzus): We violate the spec and when bfcache is enabled,
-    // |pending_lifecycle_state_| is not set.
-    // With bfcache, the decision as to whether the frame gets frozen or not is
-    // already made on the browser side and should not be overridden here.
-    // https://wicg.github.io/page-lifecycle/#update-document-frozenness-steps
-    pending_lifecycle_state_ = state;
-    return;
-  }
-  pending_lifecycle_state_ = base::nullopt;
 
   if (state == lifecycle_state_)
     return;
@@ -2017,11 +1981,6 @@ void LocalFrame::CountUseIfFeatureWouldBeBlockedByFeaturePolicy(
 
 void LocalFrame::FinishedLoading(FrameLoader::NavigationFinishState state) {
   DomWindow()->FinishedLoading(state);
-
-  if (pending_lifecycle_state_) {
-    DCHECK(!IsLoading());
-    SetLifecycleState(pending_lifecycle_state_.value());
-  }
 }
 
 void LocalFrame::UpdateFaviconURL() {

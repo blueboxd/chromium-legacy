@@ -78,8 +78,6 @@ std::unique_ptr<blink::WebThemeEngine> GetWebThemeEngine() {
 #if defined(OS_ANDROID)
   return std::make_unique<WebThemeEngineAndroid>();
 #elif defined(OS_MACOSX)
-  if (features::IsFormControlsRefreshEnabled())
-    return std::make_unique<WebThemeEngineDefault>();
   return std::make_unique<WebThemeEngineMac>();
 #else
   return std::make_unique<WebThemeEngineDefault>();

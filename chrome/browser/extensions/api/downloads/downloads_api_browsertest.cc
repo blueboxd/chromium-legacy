@@ -882,14 +882,7 @@ downloads::InterruptReason InterruptReasonContentToExtension(
 
 }  // namespace
 
-#if defined(OS_CHROMEOS)
-// http://crbug.com/396510
-#define MAYBE_DownloadExtensionTest_Open DISABLED_DownloadExtensionTest_Open
-#else
-#define MAYBE_DownloadExtensionTest_Open DownloadExtensionTest_Open
-#endif
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       MAYBE_DownloadExtensionTest_Open) {
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadExtensionTest_Open) {
   LoadExtension("downloads_split");
   DownloadsOpenFunction* open_function = new DownloadsOpenFunction();
   open_function->set_user_gesture(true);

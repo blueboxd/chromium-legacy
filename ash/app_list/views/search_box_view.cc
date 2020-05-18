@@ -98,17 +98,27 @@ SearchBoxView::~SearchBoxView() {
 }
 
 void SearchBoxView::Init(bool is_tablet_mode) {
-  set_is_tablet_mode(is_tablet_mode);
+  is_tablet_mode_ = is_tablet_mode;
   if (app_list_features::IsZeroStateSuggestionsEnabled())
     set_show_close_button_when_active(true);
   SearchBoxViewBase::Init();
+  UpdatePlaceholderTextAndAccessibleName();
   current_query_ = search_box()->GetText();
+}
+
+void SearchBoxView::OnTabletModeChanged(bool started) {
+  is_tablet_mode_ = started;
+
+  UpdateKeyboardVisibility();
+  // Search box accessible name may change depending on tablet mode state.
+  UpdatePlaceholderTextAndAccessibleName();
+  UpdateSearchBoxBorder();
 }
 
 void SearchBoxView::ResetForShow() {
   // Avoid clearing an already inactive SearchBox in tablet mode because this
   // causes suggested chips to flash (http://crbug.com/979594).
-  if (!is_search_box_active() && is_tablet_mode())
+  if (!is_search_box_active() && is_tablet_mode_)
     return;
 
   ClearSearchAndDeactivateSearchBox();
@@ -148,7 +158,6 @@ void SearchBoxView::ModelChanged() {
   UpdateSearchIcon();
   search_model_->search_box()->AddObserver(this);
 
-  HintTextChanged();
   OnWallpaperColorsChanged();
   ShowAssistantChanged();
 }
@@ -264,7 +273,7 @@ void SearchBoxView::RecordSearchBoxActivationHistogram(
   }
 
   UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchBoxActivated", activation_type);
-  if (is_tablet_mode()) {
+  if (is_tablet_mode_) {
     UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchBoxActivated.TabletMode",
                               activation_type);
   } else {
@@ -434,6 +443,14 @@ void SearchBoxView::ProcessAutocomplete() {
   // Current text in the search_box does not match the first result's url or
   // search result text.
   ClearAutocompleteText();
+}
+
+void SearchBoxView::UpdatePlaceholderTextAndAccessibleName() {
+  search_box()->SetPlaceholderText(
+      l10n_util::GetStringUTF16(IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER));
+  search_box()->SetAccessibleName(l10n_util::GetStringUTF16(
+      is_tablet_mode_ ? IDS_APP_LIST_SEARCH_BOX_ACCESSIBILITY_NAME_TABLET
+                      : IDS_APP_LIST_SEARCH_BOX_ACCESSIBILITY_NAME_CLAMSHELL));
 }
 
 void SearchBoxView::AcceptAutocompleteText() {
@@ -725,13 +742,6 @@ void SearchBoxView::UpdateSearchBoxTextForSelectedResult(
     search_box()->SetText(selected_result->title());
   }
   search_box_has_query_ = false;
-}
-
-void SearchBoxView::HintTextChanged() {
-  const SearchBoxModel* search_box_model = search_model_->search_box();
-  search_box()->SetPlaceholderText(search_box_model->hint_text());
-  search_box()->SetAccessibleName(search_box_model->accessible_name());
-  SchedulePaint();
 }
 
 void SearchBoxView::Update() {

@@ -80,6 +80,13 @@ class PLATFORM_EXPORT ResourceError final {
   const String& LocalizedDescription() const { return localized_description_; }
 
   bool IsCancellation() const;
+
+  // If the error was due to a Trust Tokens cache hit, the purpose of this
+  // request was to update some state in the network stack (with a response from
+  // the server), but that this state was already present, so there was no need
+  // to send the request.
+  bool IsTrustTokenCacheHit() const;
+
   bool IsAccessCheck() const { return is_access_check_; }
   bool HasCopyInCache() const { return has_copy_in_cache_; }
   bool IsTimeout() const;

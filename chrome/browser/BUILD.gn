@@ -1536,8 +1536,6 @@ static_library("browser") {
     "resource_coordinator/utils.h",
     "resources_util.cc",
     "resources_util.h",
-    "search/instant_io_context.cc",
-    "search/instant_io_context.h",
     "search/search.cc",
     "search/search.h",
     "search/suggestions/suggestions_service_factory.cc",

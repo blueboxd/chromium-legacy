@@ -863,6 +863,14 @@ class DeviceStatusCollectorState : public StatusCollectorState {
             disk_info_out->set_model(storage->name);
             disk_info_out->set_type(storage->type);
             disk_info_out->set_size(storage->size);
+            disk_info_out->set_bytes_read_since_last_boot(
+                storage->bytes_read_since_last_boot);
+            disk_info_out->set_bytes_written_since_last_boot(
+                storage->bytes_written_since_last_boot);
+            disk_info_out->set_read_time_seconds_since_last_boot(
+                storage->read_time_seconds_since_last_boot);
+            disk_info_out->set_write_time_seconds_since_last_boot(
+                storage->write_time_seconds_since_last_boot);
           }
           break;
         }

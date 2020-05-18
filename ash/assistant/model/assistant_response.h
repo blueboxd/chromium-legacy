@@ -114,7 +114,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
   std::vector<std::unique_ptr<AssistantUiElement>> ui_elements_;
   std::unique_ptr<Processor> processor_;
 
-  base::ObserverList<AssistantResponseObserver> observers_;
+  mutable base::ObserverList<AssistantResponseObserver> observers_;
 
   base::WeakPtrFactory<AssistantResponse> weak_factory_{this};
 

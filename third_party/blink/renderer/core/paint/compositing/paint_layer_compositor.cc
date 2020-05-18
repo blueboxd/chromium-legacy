@@ -733,9 +733,6 @@ static void UpdateTrackingRasterInvalidationsRecursive(
 
   for (wtf_size_t i = 0; i < graphics_layer->Children().size(); ++i)
     UpdateTrackingRasterInvalidationsRecursive(graphics_layer->Children()[i]);
-
-  if (GraphicsLayer* mask_layer = graphics_layer->MaskLayer())
-    UpdateTrackingRasterInvalidationsRecursive(mask_layer);
 }
 
 void PaintLayerCompositor::UpdateTrackingRasterInvalidations() {

@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill_assistant/browser/autofill_field_formatter.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/user_model.h"
@@ -103,8 +104,6 @@ bool ValueToString(UserModel* user_model,
   switch (value->kind_case()) {
     case ValueProto::kUserActions:
     case ValueProto::kLoginOptions:
-    case ValueProto::kCreditCards:
-    case ValueProto::kProfiles:
     case ValueProto::kCreditCardResponse:
     case ValueProto::kLoginOptionResponse:
       DVLOG(2) << "Error evaluating " << __func__
@@ -156,10 +155,55 @@ bool ValueToString(UserModel* user_model,
                 time, proto.date_format().date_format().c_str())));
         break;
       }
+      case ValueProto::kCreditCards: {
+        if (proto.autofill_format().pattern().empty()) {
+          DVLOG(2) << "Error evaluating " << __func__ << ": pattern not set";
+          return false;
+        }
+        auto* credit_card =
+            user_model->GetCreditCard(value->credit_cards().values(i).guid());
+        if (!credit_card) {
+          DVLOG(2) << "Error evaluating " << __func__
+                   << ": credit card not found";
+          return false;
+        }
+        auto formatted_string = autofill_field_formatter::FormatString(
+            *credit_card, proto.autofill_format().pattern(),
+            proto.autofill_format().locale());
+        if (!formatted_string.has_value()) {
+          DVLOG(2) << "Error evaluating " << __func__
+                   << ": error formatting pattern '"
+                   << proto.autofill_format().pattern() << "'";
+          return false;
+        }
+        result.mutable_strings()->add_values(*formatted_string);
+        break;
+      }
+      case ValueProto::kProfiles: {
+        if (proto.autofill_format().pattern().empty()) {
+          DVLOG(2) << "Error evaluating " << __func__ << ": pattern not set";
+          return false;
+        }
+        auto* profile =
+            user_model->GetProfile(value->profiles().values(i).guid());
+        if (!profile) {
+          DVLOG(2) << "Error evaluating " << __func__ << ": profile not found";
+          return false;
+        }
+        auto formatted_string = autofill_field_formatter::FormatString(
+            *profile, proto.autofill_format().pattern(),
+            proto.autofill_format().locale());
+        if (!formatted_string.has_value()) {
+          DVLOG(2) << "Error evaluating " << __func__
+                   << ": error formatting pattern '"
+                   << proto.autofill_format().pattern() << "'";
+          return false;
+        }
+        result.mutable_strings()->add_values(*formatted_string);
+        break;
+      }
       case ValueProto::kUserActions:
       case ValueProto::kLoginOptions:
-      case ValueProto::kCreditCards:
-      case ValueProto::kProfiles:
       case ValueProto::kCreditCardResponse:
       case ValueProto::kLoginOptionResponse:
       case ValueProto::KIND_NOT_SET:

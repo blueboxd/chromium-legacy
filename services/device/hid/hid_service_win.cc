@@ -25,6 +25,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/win/scoped_devinfo.h"
 #include "components/device_event_log/device_event_log.h"
 #include "services/device/hid/hid_connection_win.h"
 #include "services/device/hid/hid_device_info.h"
@@ -81,23 +82,23 @@ base::WeakPtr<HidService> HidServiceWin::GetWeakPtr() {
 void HidServiceWin::EnumerateBlocking(
     base::WeakPtr<HidServiceWin> service,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  HDEVINFO device_info_set =
-      SetupDiGetClassDevs(&GUID_DEVINTERFACE_HID, NULL, NULL,
-                          DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+  base::win::ScopedDevInfo dev_info(
+      SetupDiGetClassDevs(&GUID_DEVINTERFACE_HID, nullptr, nullptr,
+                          DIGCF_PRESENT | DIGCF_DEVICEINTERFACE));
 
-  if (device_info_set != INVALID_HANDLE_VALUE) {
+  if (dev_info.is_valid()) {
     SP_DEVICE_INTERFACE_DATA device_interface_data;
     device_interface_data.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
 
     for (int device_index = 0; SetupDiEnumDeviceInterfaces(
-             device_info_set, NULL, &GUID_DEVINTERFACE_HID, device_index,
+             dev_info.get(), nullptr, &GUID_DEVINTERFACE_HID, device_index,
              &device_interface_data);
          ++device_index) {
       DWORD required_size = 0;
 
       // Determime the required size of detail struct.
-      SetupDiGetDeviceInterfaceDetail(device_info_set, &device_interface_data,
-                                      NULL, 0, &required_size, NULL);
+      SetupDiGetDeviceInterfaceDetail(dev_info.get(), &device_interface_data,
+                                      nullptr, 0, &required_size, nullptr);
 
       std::unique_ptr<SP_DEVICE_INTERFACE_DETAIL_DATA, base::FreeDeleter>
       device_interface_detail_data(
@@ -107,8 +108,8 @@ void HidServiceWin::EnumerateBlocking(
 
       // Get the detailed data for this device.
       BOOL res = SetupDiGetDeviceInterfaceDetail(
-          device_info_set, &device_interface_data,
-          device_interface_detail_data.get(), required_size, NULL, NULL);
+          dev_info.get(), &device_interface_data,
+          device_interface_detail_data.get(), required_size, nullptr, nullptr);
       if (!res) {
         continue;
       }

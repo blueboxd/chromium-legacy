@@ -104,10 +104,10 @@ source_set("updater_setup_sources") {
 
 source_set("install_app") {
   sources = [
+    "setup/app_swap.cc",
+    "setup/app_swap.h",
     "setup/install_app.cc",
     "setup/install_app.h",
-    "setup/swap_app.cc",
-    "setup/swap_app.h",
   ]
 
   deps = [

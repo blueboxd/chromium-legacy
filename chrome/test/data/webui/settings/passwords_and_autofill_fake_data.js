@@ -5,6 +5,7 @@
 // clang-format off
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {AutofillManager, PaymentsManager} from 'chrome://settings/lazy_load.js';
+import {MultiStorePasswordUiEntry} from 'chrome://settings/settings.js';
 
 import {assertEquals} from '../chai_assert.js';
 
@@ -230,7 +231,10 @@ export class PasswordSectionElementFactory {
    */
   createPasswordListItem(passwordEntry) {
     const passwordListItem = this.document.createElement('password-list-item');
-    passwordListItem.item = {entry: passwordEntry, password: ''};
+    passwordListItem.item = {
+      entry: new MultiStorePasswordUiEntry(passwordEntry),
+      password: ''
+    };
     this.document.body.appendChild(passwordListItem);
     flush();
     return passwordListItem;
@@ -243,7 +247,10 @@ export class PasswordSectionElementFactory {
    */
   createPasswordEditDialog(passwordEntry) {
     const passwordDialog = this.document.createElement('password-edit-dialog');
-    passwordDialog.item = {entry: passwordEntry, password: ''};
+    passwordDialog.item = {
+      entry: new MultiStorePasswordUiEntry(passwordEntry),
+      password: ''
+    };
     this.document.body.appendChild(passwordDialog);
     flush();
     return passwordDialog;

@@ -50,6 +50,7 @@ struct MockBrlapiConnectionData {
   bool connected;
   size_t display_columns;
   size_t display_rows;
+  size_t cell_size;
   brlapi_error_t error;
   std::vector<std::string> written_content;
   // List of brlapi key codes.  A negative number makes the connection mock
@@ -125,6 +126,11 @@ class MockBrlapiConnection : public BrlapiConnection {
     }
   }
 
+  bool GetCellSize(unsigned int* cell_size) override {
+    *cell_size = data_->cell_size;
+    return true;
+  }
+
  private:
   void NotifyDataReady() {
     on_data_ready_.Run();
@@ -152,6 +158,7 @@ class BrailleDisplayPrivateApiTest : public ExtensionApiTest {
         base::Bind(
             &BrailleDisplayPrivateApiTest::CreateBrlapiConnection,
             base::Unretained(this)));
+    BrailleControllerImpl::GetInstance()->skip_libbrlapi_so_load_ = true;
     DisableAccessibilityManagerBraille();
   }
 
@@ -259,6 +266,7 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, KeyEvents) {
 IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, DisplayStateChanges) {
   connection_data_.display_columns = 11;
   connection_data_.display_rows = 1;
+  connection_data_.cell_size = 6;
   connection_data_.pending_keys.push_back(kErrorKeyCode);
   connection_data_.reappear_on_disconnect = true;
   ASSERT_TRUE(RunComponentExtensionTest(

@@ -87,6 +87,16 @@ keyboard.onKeyDown_ = function(event) {
     return;
   }
 
+  // The networks list in the Chrome OOBE has an iron-list which uses arrow
+  // keys to navigate elements. Tab events will remove focus from the list.
+  //
+  // See crbug.com/1083145
+  if (document.activeElement === document.$('oobe-network-md') &&
+      document.activeElement.shadowRoot.activeElement.tagName ==
+      'NETWORK-SELECT-LOGIN') {
+    return;
+  }
+
   // Do not map arrow key events to tab events if the user is currently
   // focusing an input element and hits the left or right.
   var needsLeftRightKey =

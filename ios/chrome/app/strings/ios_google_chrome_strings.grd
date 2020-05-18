@@ -301,6 +301,9 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_UPGRADE_AVAILABLE" desc="Text to inform the user of the presence of a new version of the application">
         Chrome just got better! A new version is available.
       </message>
+      <message name="IDS_IOS_REMOVE_ACCOUNT_CONFIRMATION_MESSAGE" desc="Dialog message to emphasize the effects of removing an account.">
+      This account and any unsaved data will be removed from Chrome and other Google apps on this device.
+      </message>
     </messages>
   </release>
 </grit>

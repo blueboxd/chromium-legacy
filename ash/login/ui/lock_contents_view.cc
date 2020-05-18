@@ -340,7 +340,7 @@ ScrollableUsersListView* LockContentsView::TestApi::users_list() const {
 
 LockScreenMediaControlsView* LockContentsView::TestApi::media_controls_view()
     const {
-  return view_->media_controls_view_.get();
+  return view_->media_controls_view_;
 }
 
 views::View* LockContentsView::TestApi::note_action() const {
@@ -733,7 +733,8 @@ void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
   primary_big_view_ = nullptr;
   opt_secondary_big_view_ = nullptr;
   users_list_ = nullptr;
-  media_controls_view_.reset();
+  middle_spacing_view_ = nullptr;
+  media_controls_view_ = nullptr;
   layout_actions_.clear();
   // Removing child views can change focus, which may result in LockContentsView
   // getting focused. Make sure to clear internal references before that happens
@@ -1349,14 +1350,12 @@ void LockContentsView::SetLowDensitySpacing(views::View* spacing_middle,
 }
 
 void LockContentsView::SetMediaControlsSpacing(bool landscape) {
-  views::View* spacing_middle = media_controls_view_->GetMiddleSpacingView();
-
   int total_width = GetPreferredSize().width();
   int available_width =
       total_width - (primary_big_view_->GetPreferredSize().width() +
                      media_controls_view_->GetPreferredSize().width());
   if (available_width <= 0) {
-    SetPreferredWidthForView(spacing_middle, 0);
+    SetPreferredWidthForView(middle_spacing_view_, 0);
     return;
   }
 
@@ -1366,7 +1365,7 @@ void LockContentsView::SetMediaControlsSpacing(bool landscape) {
   else
     desired_width = available_width / kMediaControlsLargeSpaceFactor;
 
-  SetPreferredWidthForView(spacing_middle, desired_width);
+  SetPreferredWidthForView(middle_spacing_view_, desired_width);
 }
 
 bool LockContentsView::AreMediaControlsEnabled() const {
@@ -1376,8 +1375,10 @@ bool LockContentsView::AreMediaControlsEnabled() const {
 }
 
 void LockContentsView::HideMediaControlsLayout() {
-  main_view_->RemoveChildView(media_controls_view_->GetMiddleSpacingView());
-  main_view_->RemoveChildView(media_controls_view_.get());
+  DCHECK(middle_spacing_view_);
+  DCHECK(media_controls_view_);
+  middle_spacing_view_->SetVisible(false);
+  media_controls_view_->SetVisible(false);
 
   // Don't allow media keys to be used on lock screen since controls are hidden.
   Shell::Get()->media_controller()->SetMediaControlsDismissed(true);
@@ -1386,14 +1387,10 @@ void LockContentsView::HideMediaControlsLayout() {
 }
 
 void LockContentsView::CreateMediaControlsLayout() {
-  // |media_controls_view_| should not be attached to a parent.
-  DCHECK(!media_controls_view_->parent());
-
-  // Space between primary user and media controls.
-  main_view_->AddChildView(media_controls_view_->GetMiddleSpacingView());
-
-  // Media controls view.
-  main_view_->AddChildView(media_controls_view_.get());
+  DCHECK(middle_spacing_view_);
+  DCHECK(media_controls_view_);
+  media_controls_view_->SetVisible(true);
+  middle_spacing_view_->SetVisible(true);
 
   // Set |spacing_middle|.
   AddDisplayLayoutAction(base::BindRepeating(
@@ -1419,9 +1416,19 @@ void LockContentsView::CreateLowDensityLayout(
   media_controls_callbacks.show_media_controls = base::BindRepeating(
       &LockContentsView::CreateMediaControlsLayout, base::Unretained(this));
 
-  media_controls_view_ =
+  auto media_controls_view =
       std::make_unique<LockScreenMediaControlsView>(media_controls_callbacks);
-  media_controls_view_->set_owned_by_client();
+
+  // Space between primary user and media controls.
+  middle_spacing_view_ =
+      main_view_->AddChildView(std::make_unique<NonAccessibleView>());
+
+  // Media controls view.
+  media_controls_view_ =
+      main_view_->AddChildView(std::move(media_controls_view));
+
+  media_controls_view_->SetVisible(false);
+  middle_spacing_view_->SetVisible(false);
 
   if (users.size() > 1) {
     // Space between primary user and secondary user.

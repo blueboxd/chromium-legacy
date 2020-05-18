@@ -37,10 +37,6 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
                         const std::string& folder_id) override;
   void SetStatus(ash::AppListModelStatus status) override;
   void SetSearchEngineIsGoogle(bool is_google) override;
-  void SetSearchTabletAndClamshellAccessibleName(
-      const base::string16& tablet_accessible_name,
-      const base::string16& clamshell_accessible_name) override;
-  void SetSearchHintText(const base::string16& hint_text) override;
   void UpdateSearchBox(const base::string16& text,
                        bool initiated_by_user) override;
   void PublishSearchResults(

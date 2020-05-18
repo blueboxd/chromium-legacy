@@ -471,9 +471,7 @@
       'telemetry_perf_unittests': {
         'args': [
           '--browser=cros-chrome',
-          # By default, CrOS VMs' ssh servers listen on local port 9222.
-          '--remote=127.0.0.1',
-          '--remote-ssh-port=9222',
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
           '--xvfb',
         ],
         'swarming': {
@@ -485,9 +483,7 @@
         'args': [
           '--jobs=1',
           '--browser=cros-chrome',
-          # By default, CrOS VMs' ssh servers listen on local port 9222.
-          '--remote=127.0.0.1',
-          '--remote-ssh-port=9222',
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
         ],
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
@@ -500,8 +496,7 @@
       'telemetry_perf_unittests': {
         'args': [
           '--browser=cros-chrome',
-          # The magic hostname that resolves to a CrOS device in the test lab.
-          '--remote=variable_chromeos_device_hostname',
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
           '--xvfb',
         ],
         'swarming': {
@@ -512,8 +507,7 @@
       'telemetry_unittests': {
         'args': [
           '--browser=cros-chrome',
-          # The magic hostname that resolves to a CrOS device in the test lab.
-          '--remote=variable_chromeos_device_hostname',
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
           '--jobs=1',
         ],
         'swarming': {
@@ -1264,6 +1258,12 @@
     'fuchsia_gtests': {
       'accessibility_unittests': {},
       'angle_unittests': {},
+      'aura_unittests': {
+        'args': [
+          # http://crbug.com/865172
+          '--child-arg=--ozone-platform=headless',
+        ],
+      },
       'base_unittests': {},
       'base_util_unittests': {},
       'blink_common_unittests': {},
@@ -1303,6 +1303,7 @@
       'gpu_unittests': {},
       'http_service_tests': {},
       'ipc_tests': {},
+      'latency_unittests': {},
       'media_blink_unittests': {},
       'media_unittests': {},
       'mojo_unittests': {
@@ -1310,6 +1311,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_unittests.filter',
         ],
       },
+      'native_theme_unittests': {},
       'net_unittests': {
         'swarming': {
           'shards': 4,
@@ -1340,6 +1342,7 @@
       'url_unittests': {},
       'viz_unittests': {
         'args': [
+          # http://crbug.com/865172
           '--child-arg=--ozone-platform=headless',
         ],
       },
@@ -2591,12 +2594,7 @@
     'gpu_webgl_conformance_telemetry_tests': {
       'webgl_conformance': {
         'chromeos_args': [
-          # If we're testing on CrOS, assume we're running on VMs. So point
-          # telemetry to the default SSH port of the VM. Note that this won't
-          # work for hardware tests.
-          # TODO(bpastene): Make this work for hardware tests.
-          '--remote=127.0.0.1',
-          '--remote-ssh-port=9222',
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
         ],
         'args': [
           # On dual-GPU devices we want the high-performance GPU to be active
@@ -2619,12 +2617,7 @@
       'webgl_conformance_validating': {
         'telemetry_test_name': 'webgl_conformance',
         'chromeos_args': [
-          # If we're testing on CrOS, assume we're running on VMs. So point
-          # telemetry to the default SSH port of the VM. Note that this won't
-          # work for hardware tests.
-          # TODO(bpastene): Make this work for hardware tests.
-          '--remote=127.0.0.1',
-          '--remote-ssh-port=9222',
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
         ],
         'args': [
           # On dual-GPU devices we want the high-performance GPU to be active
@@ -2759,39 +2752,27 @@
       'cronet_test': {},
     },
 
-    'ios_eg2_tests': {
-      'ios_chrome_bookmarks_eg2tests_module': {},
+    'ios_eg2_cq_tests': {
       'ios_chrome_integration_eg2tests_module': {
-        'swarming': {
-          'shards': 2,
-        },
-      },
-      'ios_chrome_settings_eg2tests_module': {},
-      'ios_chrome_signin_eg2tests_module': {},
-      'ios_chrome_smoke_eg2tests_module': {},
-      'ios_chrome_ui_eg2tests_module': {
-        'swarming': {
-          'shards': 2,
-        },
-      },
-      'ios_chrome_web_eg2tests_module': {},
-      'ios_showcase_eg2tests_module': {},
-      'ios_web_shell_eg2tests_module': {},
-    },
-
-    'ios_eg_cq_tests': {
-      'ios_chrome_integration_egtests': {
         'swarming': {
           'shards': 3,
         }
       },
-      'ios_chrome_signin_egtests': {},
-      'ios_chrome_ui_egtests': {
+      'ios_chrome_signin_eg2tests_module': {},
+      'ios_chrome_ui_eg2tests_module': {
         'swarming': {
           'shards': 5,
         }
       },
-      'ios_web_shell_egtests': {},
+      'ios_web_shell_eg2tests_module': {},
+    },
+
+    'ios_eg2_tests': {
+      'ios_chrome_bookmarks_eg2tests_module': {},
+      'ios_chrome_settings_eg2tests_module': {},
+      'ios_chrome_smoke_eg2tests_module': {},
+      'ios_chrome_web_eg2tests_module': {},
+      'ios_showcase_eg2tests_module': {},
     },
 
     'ios_eg_tests': {
@@ -4925,12 +4906,15 @@
           'SIM_IPAD_6_GEN_12_4',
         ]
       },
-      'ios_eg_cq_tests': {
+      'ios_eg2_cq_tests': {
         'variants': [
+          'SIM_IPHONE_7_13_4',
           'SIM_IPHONE_X_13_4',
           'SIM_IPAD_PRO_13_4',
+          'SIM_IPAD_6_GEN_13_4',
           'SIM_IPHONE_X_12_4',
           'SIM_IPAD_PRO_12_4',
+          'SIM_IPAD_6_GEN_12_4',
         ]
       },
       'ios_eg_tests': {
@@ -4966,12 +4950,13 @@
           'SIM_IPAD_6_GEN_12_4',
         ]
       },
-      'ios_eg_cq_tests': {
+      'ios_eg2_cq_tests': {
         'variants': [
           'SIM_IPHONE_X_13_4',
           'SIM_IPAD_AIR_2_13_4',
           'SIM_IPHONE_X_12_4',
           'SIM_IPAD_PRO_12_4',
+          'SIM_IPAD_6_GEN_12_4',
         ]
       },
       'ios_eg_tests': {
@@ -5019,6 +5004,14 @@
           'SIM_IPHONE_X_13_4',
         ],
       },
+      'ios_eg2_cq_tests': {
+        'variants': [
+          'SIM_IPAD_AIR_2_12_4',
+          'SIM_IPAD_AIR_2_13_4',
+          'SIM_IPHONE_X_12_4',
+          'SIM_IPHONE_X_13_4',
+        ],
+      },
       'ios_eg2_tests': {
         'variants': [
           'SIM_IPAD_AIR_2_12_4',
@@ -5056,7 +5049,7 @@
           'SIM_IPHONE_X_13_4',
         ]
       },
-      'ios_eg_cq_tests': {
+      'ios_eg2_cq_tests': {
         'variants': [
           'SIM_IPAD_AIR_2_12_4',
           'SIM_IPHONE_7_13_4',
@@ -5090,7 +5083,7 @@
           'SIM_IPHONE_6S_13_4',
         ]
       },
-      'ios_eg_cq_tests': {
+      'ios_eg2_cq_tests': {
         'variants': [
           'SIM_IPHONE_6S_12_4',
           'SIM_IPHONE_6S_13_4',
@@ -5113,7 +5106,7 @@
           'SIM_IPAD_AIR_2_13_4',
         ]
       },
-      'ios_eg_cq_tests': {
+      'ios_eg2_cq_tests': {
         'variants': [
           'SIM_IPHONE_X_13_4',
           'SIM_IPAD_AIR_2_13_4',

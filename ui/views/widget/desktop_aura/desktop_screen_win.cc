@@ -13,7 +13,9 @@ namespace views {
 
 DesktopScreenWin::DesktopScreenWin() = default;
 
-DesktopScreenWin::~DesktopScreenWin() = default;
+DesktopScreenWin::~DesktopScreenWin() {
+  display::Screen::SetScreenInstance(old_screen_);
+}
 
 HWND DesktopScreenWin::GetHWNDFromNativeWindow(gfx::NativeWindow window) const {
   aura::WindowTreeHost* host = window->GetHost();

@@ -167,6 +167,10 @@ constexpr char kFakeStorageType[] = "fake_storage_type";
 constexpr uint8_t kFakeStorageManfid = 2;
 constexpr char kFakeStorageName[] = "fake_storage_name";
 constexpr int kFakeStorageSerial = 789;
+constexpr uint64_t kFakeStorageBytesRead = 9070;
+constexpr uint64_t kFakeStorageBytesWritten = 87653;
+constexpr uint64_t kFakeStorageReadTimeSeconds = 23570;
+constexpr uint64_t kFakeStorageWriteTimeSeconds = 5768;
 // Timezone test values:
 constexpr char kPosixTimezone[] = "MST7MDT,M3.2.0,M11.1.0";
 constexpr char kTimezoneRegion[] = "America/Denver";
@@ -469,7 +473,9 @@ cros_healthd::NonRemovableBlockDeviceResultPtr CreateBlockDeviceResult() {
   std::vector<cros_healthd::NonRemovableBlockDeviceInfoPtr> storage_vector;
   storage_vector.push_back(cros_healthd::NonRemovableBlockDeviceInfo::New(
       kFakeStoragePath, kFakeStorageSize, kFakeStorageType, kFakeStorageManfid,
-      kFakeStorageName, kFakeStorageSerial));
+      kFakeStorageName, kFakeStorageSerial, kFakeStorageBytesRead,
+      kFakeStorageBytesWritten, kFakeStorageReadTimeSeconds,
+      kFakeStorageWriteTimeSeconds));
   return cros_healthd::NonRemovableBlockDeviceResult::NewBlockDeviceInfo(
       std::move(storage_vector));
 }
@@ -3056,6 +3062,12 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   EXPECT_EQ(disk.manufacturer(), base::NumberToString(kFakeStorageManfid));
   EXPECT_EQ(disk.model(), kFakeStorageName);
   EXPECT_EQ(disk.serial(), base::NumberToString(kFakeStorageSerial));
+  EXPECT_EQ(disk.bytes_read_since_last_boot(), kFakeStorageBytesRead);
+  EXPECT_EQ(disk.bytes_written_since_last_boot(), kFakeStorageBytesWritten);
+  EXPECT_EQ(disk.read_time_seconds_since_last_boot(),
+            kFakeStorageReadTimeSeconds);
+  EXPECT_EQ(disk.write_time_seconds_since_last_boot(),
+            kFakeStorageWriteTimeSeconds);
 
   // Verify the Cached VPD.
   ASSERT_TRUE(device_status_.has_system_status());

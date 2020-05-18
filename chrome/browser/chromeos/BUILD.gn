@@ -2269,6 +2269,7 @@ source_set("chromeos") {
     "scheduler_configuration_manager.h",
     "secure_channel/secure_channel_client_provider.cc",
     "secure_channel/secure_channel_client_provider.h",
+    "service_sandbox_type.h",
     "session_length_limiter.cc",
     "session_length_limiter.h",
     "set_time_dialog.cc",

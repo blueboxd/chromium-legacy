@@ -50,9 +50,8 @@ bool HandleDesksSwitchHorizontalScroll(float scroll_x) {
   // This does not invert if the user changes their touchpad settings
   // currently. The scroll works Australian way (scroll left to go to the
   // desk on the right and vice versa).
-  DesksController::Get()->ActivateAdjacentDesk(
+  return DesksController::Get()->ActivateAdjacentDesk(
       /*going_left=*/scroll_x > 0, DesksSwitchSource::kDeskSwitchTouchpad);
-  return true;
 }
 
 }  // namespace

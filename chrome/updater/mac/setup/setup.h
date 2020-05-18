@@ -7,12 +7,16 @@
 
 namespace updater {
 
-// Sets up the updater by copying the bundle, creating launchd plists for
-// scheduled tasks and xpc service, and start both launchd jobs.
-int SetupUpdater();
+// Sets up the candidate updater by copying the bundle, creating launchd plists
+// for administration service and XPC service tasks, and start the corresponding
+// launchd jobs.
+int InstallCandidate();
 
-// Swaps out the old updater with the newly installed one.
-int SwapToUpgradedUpdater();
+// Uninstalls this version of the updater.
+int UninstallCandidate();
+
+// Sets up this version of the Updater as the active version.
+int PromoteCandidate();
 
 // Removes the launchd plists for scheduled tasks and xpc service. Deletes the
 // updater bundle from its installed location.

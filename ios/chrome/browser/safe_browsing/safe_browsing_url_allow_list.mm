@@ -27,8 +27,9 @@ SafeBrowsingUrlAllowList::~SafeBrowsingUrlAllowList() = default;
 
 bool SafeBrowsingUrlAllowList::AreUnsafeNavigationsAllowed(
     const GURL& url,
-    std::set<SBThreatType>* threat_types) {
-  auto& allowed_threats = GetUnsafeNavigationDecisions(url).allowed_threats;
+    std::set<SBThreatType>* threat_types) const {
+  const auto& allowed_threats =
+      GetUnsafeNavigationDecisions(url).allowed_threats;
   if (allowed_threats.empty())
     return false;
   if (threat_types)
@@ -53,8 +54,9 @@ void SafeBrowsingUrlAllowList::DisallowUnsafeNavigations(const GURL& url) {
 
 bool SafeBrowsingUrlAllowList::IsUnsafeNavigationDecisionPending(
     const GURL& url,
-    std::set<SBThreatType>* threat_types) {
-  auto& pending_threats = GetUnsafeNavigationDecisions(url).pending_threats;
+    std::set<SBThreatType>* threat_types) const {
+  const auto& pending_threats =
+      GetUnsafeNavigationDecisions(url).pending_threats;
   if (pending_threats.empty())
     return false;
   if (threat_types)
@@ -78,6 +80,15 @@ void SafeBrowsingUrlAllowList::RemovePendingUnsafeNavigationDecisions(
 SafeBrowsingUrlAllowList::UnsafeNavigationDecisions&
 SafeBrowsingUrlAllowList::GetUnsafeNavigationDecisions(const GURL& url) {
   return decisions_[url.GetWithEmptyPath()];
+}
+
+const SafeBrowsingUrlAllowList::UnsafeNavigationDecisions&
+SafeBrowsingUrlAllowList::GetUnsafeNavigationDecisions(const GURL& url) const {
+  static UnsafeNavigationDecisions kEmptyDecisions;
+  const auto& it = decisions_.find(url.GetWithEmptyPath());
+  if (it == decisions_.end())
+    return kEmptyDecisions;
+  return it->second;
 }
 
 SafeBrowsingUrlAllowList::UnsafeNavigationDecisions::

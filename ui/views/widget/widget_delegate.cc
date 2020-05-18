@@ -152,6 +152,15 @@ bool WidgetDelegate::ShouldRestoreWindowSize() const {
   return true;
 }
 
+void WidgetDelegate::WidgetInitialized(Widget* widget) {
+  widget_ = widget;
+  OnWidgetInitialized();
+}
+
+void WidgetDelegate::WidgetDestroying() {
+  widget_ = nullptr;
+}
+
 void WidgetDelegate::WindowWillClose() {
   // TODO(ellyjones): For this and the other callback methods, establish whether
   // any other code calls these methods. If not, DCHECK here and below that
@@ -168,6 +177,14 @@ void WidgetDelegate::WindowClosing() {
 void WidgetDelegate::DeleteDelegate() {
   for (auto&& callback : delete_delegate_callbacks_)
     std::move(callback).Run();
+}
+
+Widget* WidgetDelegate::GetWidget() {
+  return widget_;
+}
+
+const Widget* WidgetDelegate::GetWidget() const {
+  return widget_;
 }
 
 View* WidgetDelegate::GetContentsView() {

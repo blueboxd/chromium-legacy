@@ -34,13 +34,16 @@
 #include "content/public/common/was_activated_option.mojom.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/message_port.h"
+#include "fuchsia/cast_streaming/public/cast_streaming.h"
 #include "fuchsia/engine/browser/accessibility_bridge.h"
+#include "fuchsia/engine/browser/cast_streaming_session_client.h"
 #include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/event_filter.h"
 #include "fuchsia/engine/browser/frame_layout_manager.h"
 #include "fuchsia/engine/browser/frame_window_tree_host.h"
 #include "fuchsia/engine/browser/media_player_impl.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
+#include "fuchsia/engine/common/cast_streaming.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/net_errors.h"
@@ -495,6 +498,33 @@ void FrameImpl::OnMediaPlayerDisconnect() {
   media_player_ = nullptr;
 }
 
+bool FrameImpl::MaybeHandleCastStreamingMessage(
+    std::string* origin,
+    fuchsia::web::WebMessage* message,
+    PostMessageCallback* callback) {
+  if (!IsCastStreamingEnabled())
+    return false;
+
+  if (!cast_streaming::IsCastStreamingAppOrigin(*origin))
+    return false;
+
+  fuchsia::web::Frame_PostMessage_Result result;
+  if (cast_streaming_session_client_ ||
+      !cast_streaming::IsValidCastStreamingMessage(*message)) {
+    // The Cast Streaming MessagePort should only be set once and |message|
+    // should be a valid Cast Streaming Message.
+    result.set_err(fuchsia::web::FrameError::INVALID_ORIGIN);
+    (*callback)(std::move(result));
+    return true;
+  }
+
+  cast_streaming_session_client_ = std::make_unique<CastStreamingSessionClient>(
+      std::move((*message->mutable_outgoing_transfer())[0].message_port()));
+  result.set_response(fuchsia::web::Frame_PostMessage_Response());
+  (*callback)(std::move(result));
+  return true;
+}
+
 void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
   if (IsHeadless()) {
     LOG(WARNING) << "CreateView() called on a HEADLESS Context.";
@@ -619,6 +649,9 @@ void FrameImpl::RemoveBeforeLoadJavaScript(uint64_t id) {
 void FrameImpl::PostMessage(std::string origin,
                             fuchsia::web::WebMessage message,
                             PostMessageCallback callback) {
+  if (MaybeHandleCastStreamingMessage(&origin, &message, &callback))
+    return;
+
   constexpr char kWildcardOrigin[] = "*";
 
   fuchsia::web::Frame_PostMessage_Result result;

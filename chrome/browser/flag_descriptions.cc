@@ -2464,6 +2464,10 @@ const char kEnableOfflinePreviewsName[] = "Offline Page Previews";
 const char kEnableOfflinePreviewsDescription[] =
     "Enable showing offline page previews on slow networks.";
 
+const char kEnableUseAaudioDriverName[] = "Use AAudio Driver";
+const char kEnableUseAaudioDriverDescription[] =
+    "Enable the use of AAudio, if supported by the current Android version.";
+
 const char kEphemeralTabUsingBottomSheetName[] =
     "An ephemeral Preview Tab using the bottom sheet";
 const char kEphemeralTabUsingBottomSheetDescription[] =

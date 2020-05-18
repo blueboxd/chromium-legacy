@@ -92,7 +92,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   void PopulateResourceRequest(ResourceType,
                                const ClientHintsPreferences&,
                                const FetchParameters::ResourceWidth&,
-                               ResourceRequest&) override;
+                               ResourceRequest&,
+                               const FetchInitiatorInfo&) override;
 
   // Exposed for testing.
   void ModifyRequestForCSP(ResourceRequest&);

@@ -73,7 +73,8 @@ ExternalInstallOptions GetWindowedInstallOptions() {
 class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
  public:
   SystemWebAppManagerTest() {
-    scoped_feature_list_.InitWithFeatures({features::kSystemWebApps}, {});
+    scoped_feature_list_.InitWithFeatures(
+        {features::kSystemWebApps}, {features::kDesktopPWAsWithoutExtensions});
   }
 
   ~SystemWebAppManagerTest() override = default;

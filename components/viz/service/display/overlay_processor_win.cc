@@ -27,6 +27,12 @@ bool OverlayProcessorWin::IsOverlaySupported() const {
   return enable_dc_overlay_;
 }
 
+gfx::Rect OverlayProcessorWin::GetPreviousFrameOverlaysBoundingRect() const {
+  // TODO(dcastagna): Implement me.
+  NOTIMPLEMENTED();
+  return gfx::Rect();
+}
+
 gfx::Rect OverlayProcessorWin::GetAndResetOverlayDamage() {
   return gfx::Rect();
 }

@@ -112,9 +112,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   void RemoveAllChildren();
   void RemoveFromParent();
 
-  GraphicsLayer* MaskLayer() const { return mask_layer_; }
-  void SetMaskLayer(GraphicsLayer*);
-
   // The offset is the origin of the layoutObject minus the origin of the
   // graphics layer (so either zero or negative).
   IntSize OffsetFromLayoutObject() const { return offset_from_layout_object_; }
@@ -300,9 +297,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   Vector<GraphicsLayer*> children_;
   GraphicsLayer* parent_;
 
-  // Reference to mask layer. We don't own this.
-  GraphicsLayer* mask_layer_;
-
   IntRect contents_rect_;
 
   scoped_refptr<cc::PictureLayer> layer_;
@@ -328,8 +322,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
 
   DOMNodeId owner_node_id_ = kInvalidDOMNodeId;
   CompositingReasons compositing_reasons_ = CompositingReason::kNone;
-
-  FRIEND_TEST_ALL_PREFIXES(CompositingLayerPropertyUpdaterTest, MaskLayerState);
 
   DISALLOW_COPY_AND_ASSIGN(GraphicsLayer);
 };

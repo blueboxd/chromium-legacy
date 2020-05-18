@@ -50,7 +50,10 @@
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/widget.h"
 
@@ -1773,27 +1776,26 @@ class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
  public:
   BookmarkBarViewTest20() = default;
 
-  void TearDown() override {
-    // Explicitly delete |container_view_| here so it is removed from the view
-    // hierarchy before the superclass TearDown() runs.  Otherwise, if the
-    // RunUntilIdle() call in the superclass triggers a layout, it will call
-    // ContainerViewForMenuExit::Layout(), which will fail since |bb_view_| will
-    // already be gone by that point.
-    container_view_.reset();
-    BookmarkBarViewEventTestBase::TearDown();
-  }
-
  protected:
   void DoTestOnMessageLoop() override {
     // Add |test_view_| next to |bb_view_|.
     views::View* parent = bb_view_->parent();
     parent->RemoveChildView(bb_view_);
-    container_view_ = std::make_unique<ContainerViewForMenuExit>();
-    container_view_->set_owned_by_client();
-    container_view_->AddChildView(bb_view_);
+    auto* const container_view =
+        parent->AddChildView(std::make_unique<views::View>());
+    auto* const layout =
+        container_view->SetLayoutManager(std::make_unique<views::FlexLayout>());
+    layout->SetIgnoreDefaultMainAxisMargins(true)
+        .SetCollapseMargins(true)
+        .SetDefault(views::kMarginsKey, gfx::Insets(0, 2));
+    container_view->AddChildView(bb_view_);
+    bb_view_->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                                 views::MaximumFlexSizeRule::kUnbounded));
     test_view_ =
-        container_view_->AddChildView(std::make_unique<TestViewForMenuExit>());
-    parent->AddChildView(container_view_.get());
+        container_view->AddChildView(std::make_unique<TestViewForMenuExit>());
+    test_view_->SetPreferredSize(gfx::Size(20, 0));
     parent->Layout();
 
     EXPECT_EQ(0, test_view_->press_count());
@@ -1842,17 +1844,6 @@ class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
     Done();
   }
 
-  class ContainerViewForMenuExit : public views::View {
-   public:
-    ContainerViewForMenuExit() = default;
-
-    void Layout() override {
-      DCHECK_EQ(2u, children().size());
-      children()[0]->SetBounds(0, 0, width() - 22, height());
-      children()[1]->SetBounds(width() - 20, 0, 20, height());
-    }
-  };
-
   class TestViewForMenuExit : public views::View {
    public:
     TestViewForMenuExit() = default;
@@ -1867,7 +1858,6 @@ class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
     int press_count_ = 0;
   };
 
-  std::unique_ptr<ContainerViewForMenuExit> container_view_;
   TestViewForMenuExit* test_view_ = nullptr;
 };
 

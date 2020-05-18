@@ -35,6 +35,7 @@ namespace content {
 class FromRenderFrameHost;
 }  // namespace content
 
+class CastStreamingSessionClient;
 class ContextImpl;
 class FrameWindowTreeHost;
 class FrameLayoutManager;
@@ -83,6 +84,9 @@ class FrameImpl : public fuchsia::web::Frame,
   }
   void set_handle_actions_for_test(bool handle) {
     accessibility_bridge_->set_handle_actions_for_test(handle);
+  }
+  CastStreamingSessionClient* cast_streaming_session_client_for_test() {
+    return cast_streaming_session_client_.get();
   }
 
  private:
@@ -138,6 +142,15 @@ class FrameImpl : public fuchsia::web::Frame,
 
   // Destroys |this| and sends the FIDL |error| to the client.
   void CloseAndDestroyFrame(zx_status_t error);
+
+  // Determines whether |message| is a Cast Streaming message and if so, handles
+  // it. Returns whether it handled the message, regardless of whether that was
+  // successful. If true is returned, |callback| has been called. Returns false
+  // immediately if Cast Streaming support is not enabled. Called by
+  // PostMessage().
+  bool MaybeHandleCastStreamingMessage(std::string* origin,
+                                       fuchsia::web::WebMessage* message,
+                                       PostMessageCallback* callback);
 
   // fuchsia::web::Frame implementation.
   void CreateView(fuchsia::ui::views::ViewToken view_token) override;
@@ -272,6 +285,7 @@ class FrameImpl : public fuchsia::web::Frame,
   gfx::Size render_size_override_;
 
   std::unique_ptr<MediaPlayerImpl> media_player_;
+  std::unique_ptr<CastStreamingSessionClient> cast_streaming_session_client_;
 
   fidl::Binding<fuchsia::web::Frame> binding_;
   media_control::MediaBlocker media_blocker_;

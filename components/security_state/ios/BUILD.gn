@@ -16,6 +16,7 @@ component("ios") {
     "//base",
     "//components/autofill/ios/form_util",
     "//components/security_state/core",
+    "//ios/chrome/browser/safe_browsing:allow_list",
     "//ios/web/common",
     "//ios/web/public",
     "//ios/web/public/security",
@@ -29,6 +30,7 @@ source_set("unit_tests") {
   deps = [
     ":ios",
     "//components/security_state/core",
+    "//ios/chrome/browser/safe_browsing:allow_list",
     "//ios/web/public/security",
     "//ios/web/public/test",
   ]

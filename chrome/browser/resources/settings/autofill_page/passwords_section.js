@@ -17,6 +17,7 @@ let ExceptionEntryEntryEvent;
 import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import {MultiStorePasswordUiEntry, MultiStorePasswordUiEntryWithPassword} from './multi_store_password_ui_entry.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
@@ -99,12 +100,23 @@ Polymer({
     },
 
     /**
-     * An array of passwords to display.
+     * An array of passwords with all the stored versions.
      * @type {!Array<!PasswordManagerProxy.UiEntryWithPassword>}
      */
     savedPasswords: {
       type: Array,
       value: () => [],
+    },
+
+    /**
+     * Saved passwords after deduplicating versions that are repeated in the
+     * account and on the device.
+     * @type {!Array<!MultiStorePasswordUiEntryWithPassword>}
+     */
+    multiStoreSavedPasswords: {
+      type: Array,
+      value: () => [],
+      computed: 'computeMultiStoreSavedPasswords_(savedPasswords.splices)',
     },
 
     /**
@@ -227,7 +239,7 @@ Polymer({
       value: '',
     },
 
-    /** @private {!PasswordManagerProxy.UiEntryWithPassword} */
+    /** @private {!MultiStorePasswordUiEntryWithPassword} */
     lastFocused_: Object,
 
     /** @private */
@@ -454,6 +466,18 @@ Polymer({
   },
 
   /**
+   * @return {!Array<!MultiStorePasswordUiEntryWithPassword>}
+   * @private
+   */
+  computeMultiStoreSavedPasswords_() {
+    return this.savedPasswords.map(
+        item => ({
+          entry: new MultiStorePasswordUiEntry(item.entry),
+          password: item.password
+        }));
+  },
+
+  /**
    * @return {boolean}
    * @private
    */
@@ -484,15 +508,15 @@ Polymer({
 
   /**
    * @param {string} filter
-   * @return {!Array<!PasswordManagerProxy.UiEntryWithPassword>}
+   * @return {!Array<!MultiStorePasswordUiEntryWithPassword>}
    * @private
    */
-  getFilteredPasswords_(filter) {
+  getFilteredMultiStorePasswords_(filter) {
     if (!filter) {
-      return this.savedPasswords.slice();
+      return this.multiStoreSavedPasswords.slice();
     }
 
-    return this.savedPasswords.filter(
+    return this.multiStoreSavedPasswords.filter(
         p => [p.entry.urls.shown, p.entry.username].some(
             term => term.toLowerCase().includes(filter.toLowerCase())));
   },
@@ -513,7 +537,7 @@ Polymer({
    */
   onMenuRemovePasswordTap_() {
     this.passwordManager_.removeSavedPassword(
-        this.activePassword.item.entry.id);
+        this.activePassword.item.entry.getAnyId());
     getToastManager().show(
         this.getRemovePasswordText_(this.activePassword.item));
     this.fire('iron-announce', {
@@ -531,7 +555,7 @@ Polymer({
     // result back to javascript.
     this.passwordManager_
         .requestPlaintextPassword(
-            this.activePassword.item.entry.id,
+            this.activePassword.item.entry.getAnyId(),
             chrome.passwordsPrivate.PlaintextReason.COPY)
         .catch(error => {
           // <if expr="chromeos">
@@ -663,27 +687,7 @@ Polymer({
 
   /**
    * @private
-   * @param {!PasswordManagerProxy.ExceptionEntry} item This row's item.
-   * @return {string}
-   */
-  getStorageText_(item) {
-    // TODO(crbug.com/1049141): Add proper translated strings once we have them.
-    return item.fromAccountStore ? 'Account' : 'Local';
-  },
-
-  /**
-   * @private
-   * @param {!PasswordManagerProxy.ExceptionEntry} item This row's item.
-   * @return {string}
-   */
-  getStorageIcon_(item) {
-    // TODO(crbug.com/1049141): Add the proper icons once we know them.
-    return item.fromAccountStore ? 'cr:sync' : 'cr:computer';
-  },
-
-  /**
-   * @private
-   * @param {!PasswordManagerProxy.UiEntryWithPassword} item The deleted item.
+   * @param {!MultiStorePasswordUiEntryWithPassword} item The deleted item.
    * @return {string}
    */
   getRemovePasswordText_(item) {
@@ -691,7 +695,7 @@ Polymer({
     // both account and device.
     // TODO(crbug.com/1049141): Style the text according to mocks.
     if (this.eligibleForAccountStorage_ && this.isOptedInForAccountStorage_) {
-      return item.entry.fromAccountStore ?
+      return item.entry.isPresentInAccount() ?
           this.i18n('passwordDeletedFromAccount') :
           this.i18n('passwordDeletedFromDevice');
     }

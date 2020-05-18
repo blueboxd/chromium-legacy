@@ -3452,10 +3452,10 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcClear) {
   EXPECT_TRUE(alternatives.empty());
 }
 
-TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuic) {
+TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuicOldFormat) {
   quic::ParsedQuicVersionVector versions_with_quic_handshake;
   for (const auto& version : quic::AllSupportedVersions()) {
-    if (version.handshake_protocol == quic::PROTOCOL_QUIC_CRYPTO) {
+    if (version.UsesQuicCrypto() && version.SupportsGoogleAltSvcFormat()) {
       versions_with_quic_handshake.push_back(version);
     }
   }
@@ -3471,7 +3471,7 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuic) {
 
   scoped_refptr<HttpResponseHeaders> headers(
       base::MakeRefCounted<HttpResponseHeaders>(""));
-  headers->AddHeader("alt-svc", "quic=\":443\"; v=\"99,50,49,48,47,46,43,39\"");
+  headers->AddHeader("alt-svc", "quic=\":443\"; v=\"46,43\"");
 
   session_->http_stream_factory()->ProcessAlternativeServices(
       session_.get(), network_isolation_key, headers.get(), origin);
@@ -3494,7 +3494,7 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuic) {
 TEST_F(ProcessAlternativeServicesTest, AltSvcQuicDoesNotSupportTLSHandshake) {
   // In this example, QUIC v50 is only supported with TLS handshake.
   quic_context_.params()->supported_versions = {
-      {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_49},
+      {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_43},
       {quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_50}};
   session_ =
       std::make_unique<HttpNetworkSession>(session_params_, session_context_);
@@ -3507,7 +3507,7 @@ TEST_F(ProcessAlternativeServicesTest, AltSvcQuicDoesNotSupportTLSHandshake) {
   // Alt-Svc header only refers to PROTOCOL_QUIC_CRYPTO handshake.
   scoped_refptr<HttpResponseHeaders> headers(
       base::MakeRefCounted<HttpResponseHeaders>(""));
-  headers->AddHeader("alt-svc", "quic=\":443\"; v=\"50,49\"");
+  headers->AddHeader("alt-svc", "quic=\":443\"; v=\"50,43\"");
 
   session_->http_stream_factory()->ProcessAlternativeServices(
       session_.get(), network_isolation_key, headers.get(), origin);
@@ -3519,10 +3519,10 @@ TEST_F(ProcessAlternativeServicesTest, AltSvcQuicDoesNotSupportTLSHandshake) {
   EXPECT_EQ(kProtoQUIC, alternatives[0].protocol());
   EXPECT_EQ(HostPortPair("example.com", 443), alternatives[0].host_port_pair());
   EXPECT_EQ(1u, alternatives[0].advertised_versions().size());
-  // Q049 and T050 are supported.  Q049 and Q050 are advertised in the Alt-Svc
-  // header.  Therefore only Q049 is parsed.
+  // Q043 and T050 are supported.  Q043 and Q050 are advertised in the Alt-Svc
+  // header.  Therefore only Q043 is parsed.
   quic::ParsedQuicVersion expected_advertised_version = {
-      quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_49};
+      quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_43};
   EXPECT_EQ(expected_advertised_version,
             alternatives[0].advertised_versions()[0]);
 }

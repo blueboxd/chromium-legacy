@@ -130,6 +130,23 @@ public class NightModeReparentingControllerTest {
     }
 
     @Test
+    public void testReparenting_singleTab_reparentingAttemptedTwice() {
+        mForegroundTab = createAndAddMockTab(1, false);
+        mController.onNightModeStateChanged();
+        // Simulate the theme being changed twice before the application is recreated.
+        mController.onNightModeStateChanged();
+
+        AsyncTabParams params = AsyncTabParamsManager.getAsyncTabParams().get(1);
+        Assert.assertNotNull(params);
+        Assert.assertTrue(params instanceof TabReparentingParams);
+
+        TabReparentingParams trp = (TabReparentingParams) params;
+        Tab tab = trp.getTabToReparent();
+        Assert.assertNotNull(tab);
+        verify(mTask, times(1)).detach();
+    }
+
+    @Test
     public void testReparenting_multipleTabs() {
         mForegroundTab = createAndAddMockTab(1, false);
         createAndAddMockTab(2, false);

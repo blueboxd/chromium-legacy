@@ -58,7 +58,6 @@ class ScenicSurface : public ui::PlatformWindowSurface {
   scenic::Session scenic_session_;
   std::unique_ptr<scenic::View> parent_;
   scenic::ShapeNode shape_;
-  scenic::Material material_;
 
   ScenicSurfaceFactory* const scenic_surface_factory_;
   const gfx::AcceleratedWidget window_;

@@ -2241,6 +2241,11 @@
     "expiry_milestone": 84
   },
   {
+    "name": "enable-use-aaudio-driver",
+    "owners": [ "tguilbert" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "enable-use-hdr-transfer-function",
     "owners": [ "mcasas" ],
     "expiry_milestone": 89
@@ -3728,6 +3733,12 @@
   },
   {
     "name": "safety-check-android",
+    "owners": [ "andzaytsev", "harrisonsean", "msramek",
+      "chrome-friendly-settings@google.com"],
+    "expiry_milestone": 88
+  },
+  {
+    "name": "safety-check-ios",
     "owners": [ "andzaytsev", "harrisonsean", "msramek",
       "chrome-friendly-settings@google.com"],
     "expiry_milestone": 88

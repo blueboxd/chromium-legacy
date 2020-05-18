@@ -101,6 +101,16 @@
   return self.controller.interfaceProvider;
 }
 
+- (void)setPresentingModalOverlay:(BOOL)presentingModalOverlay {
+  if (presentingModalOverlay) {
+    [self.observers sceneStateWillShowModalOverlay:self];
+  } else {
+    [self.observers sceneStateWillHideModalOverlay:self];
+  }
+
+  _presentingModalOverlay = presentingModalOverlay;
+}
+
 #pragma mark - debug
 
 - (NSString*)description {

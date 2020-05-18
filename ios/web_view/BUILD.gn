@@ -240,6 +240,8 @@ source_set("web_view_sources") {
     "internal/web_view_web_state_policy_decider.mm",
     "internal/webdata_services/web_view_web_data_service_wrapper_factory.h",
     "internal/webdata_services/web_view_web_data_service_wrapper_factory.mm",
+    "internal/webui/web_view_sync_internals_ui.h",
+    "internal/webui/web_view_sync_internals_ui.mm",
     "internal/webui/web_view_web_ui_ios_controller_factory.h",
     "internal/webui/web_view_web_ui_ios_controller_factory.mm",
     "internal/webui/web_view_web_ui_provider.mm",

@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -243,12 +245,6 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
   bool CanMaximize() const override { return true; }
   bool CanMinimize() const override { return true; }
   base::string16 GetWindowTitle() const override { return title_; }
-  void WindowClosing() override {
-    if (shell_) {
-      delete shell_;
-      shell_ = nullptr;
-    }
-  }
 
   // Overridden from View
   gfx::Size GetMinimumSize() const override {
@@ -281,8 +277,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
   }
 
  private:
-  // Hold a reference of Shell for deleting it when the window is closing
-  Shell* shell_;
+  std::unique_ptr<Shell> shell_;
 
   // Window title
   base::string16 title_;

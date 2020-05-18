@@ -1364,7 +1364,8 @@ TEST_F(FrameFetchContextTest, PopulateResourceRequestWhenDetached) {
   dummy_page_holder = nullptr;
 
   GetFetchContext()->PopulateResourceRequest(
-      ResourceType::kRaw, client_hints_preferences, resource_width, request);
+      ResourceType::kRaw, client_hints_preferences, resource_width, request,
+      FetchInitiatorInfo());
   // Should not crash.
 }
 

@@ -8,7 +8,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/platform_screen.h"
 
@@ -22,7 +21,9 @@ ScreenOzone::ScreenOzone() {
   }
 }
 
-ScreenOzone::~ScreenOzone() = default;
+ScreenOzone::~ScreenOzone() {
+  display::Screen::SetScreenInstance(old_screen_);
+}
 
 gfx::Point ScreenOzone::GetCursorScreenPoint() {
   return platform_screen_->GetCursorScreenPoint();

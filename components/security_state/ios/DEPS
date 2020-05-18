@@ -1,6 +1,8 @@
 include_rules = [
   "+components/autofill/ios",
   "+components/security_state/core",
+  # TODO(crbug.com/1082521): Move safe browsing into iOS component code.
+  "+ios/chrome/browser/safe_browsing",
   "+ios/web/common",
   "+ios/web/public",
   "+services/network/public/cpp",

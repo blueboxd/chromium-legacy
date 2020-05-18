@@ -24,7 +24,7 @@ public class TouchToFillSheetCoordinator extends AccessorySheetTabCoordinator {
     private AccessorySheetTabModel mModel = new AccessorySheetTabModel();
     private final AccessorySheetTabMediator mMediator =
             new AccessorySheetTabMediator(mModel, AccessoryTabType.TOUCH_TO_FILL,
-                    Type.TOUCH_TO_FILL_INFO, AccessoryAction.MANAGE_PASSWORDS);
+                    Type.TOUCH_TO_FILL_INFO, AccessoryAction.MANAGE_PASSWORDS, null);
 
     /**
      * Creates the touch to fill tab.

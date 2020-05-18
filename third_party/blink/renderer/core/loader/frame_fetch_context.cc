@@ -702,9 +702,10 @@ void FrameFetchContext::PopulateResourceRequest(
     ResourceType type,
     const ClientHintsPreferences& hints_preferences,
     const FetchParameters::ResourceWidth& resource_width,
-    ResourceRequest& request) {
+    ResourceRequest& request,
+    const FetchInitiatorInfo& initiator_info) {
   if (!GetResourceFetcherProperties().IsDetached())
-    probe::SetDevToolsIds(Probe(), request);
+    probe::SetDevToolsIds(Probe(), request, initiator_info);
 
   ModifyRequestForCSP(request);
   AddClientHintsIfNecessary(hints_preferences, resource_width, request);

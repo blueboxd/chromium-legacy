@@ -331,6 +331,7 @@ source_set("unit_tests_internal") {
     "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/safe_browsing",
+    "//ios/chrome/browser/safe_browsing:allow_list",
     "//ios/chrome/browser/web",
     "//ios/chrome/test/fakes",
     "//ios/components/security_interstitials",

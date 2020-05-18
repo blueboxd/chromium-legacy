@@ -232,6 +232,34 @@ void GetGpuSupportedD3D12Version(Dx12VulkanVersionInfo* info) {
   }
 }
 
+bool BadAMDVulkanDriverVersion() {
+  // Both 32-bit and 64-bit dll are broken. If 64-bit doesn't exist,
+  // 32-bit dll will be used to detect the AMD Vulkan driver.
+  const base::FilePath kAmdDriver64(FILE_PATH_LITERAL("amdvlk64.dll"));
+  const base::FilePath kAmdDriver32(FILE_PATH_LITERAL("amdvlk32.dll"));
+  std::unique_ptr<FileVersionInfoWin> file_version_info =
+      FileVersionInfoWin::CreateFileVersionInfoWin(kAmdDriver64);
+  if (!file_version_info) {
+    file_version_info =
+        FileVersionInfoWin::CreateFileVersionInfoWin(kAmdDriver32);
+    if (!file_version_info)
+      return false;
+  }
+  base::Version amd_version = file_version_info->GetFileVersion();
+
+  // From the Canary crash logs, the broken amdvlk64.dll versions
+  // are 1.0.39.0, 1.0.51.0 and 1.0.54.0. In the manual test, version
+  // 9.2.10.1 dated 12/6/2017 works and version 1.0.54.0 dated 11/2/1017
+  // crashes. All version numbers small than 1.0.54.0 will be marked as
+  // broken.
+  const base::Version kBadAMDVulkanDriverVersion("1.0.54.0");
+  // CompareTo() returns -1, 0, 1 for <, ==, >.
+  if (amd_version.CompareTo(kBadAMDVulkanDriverVersion) == -1)
+    return true;
+
+  return false;
+}
+
 bool InitVulkan(base::NativeLibrary* vulkan_library,
                 PFN_vkGetInstanceProcAddr* vkGetInstanceProcAddr,
                 PFN_vkCreateInstance* vkCreateInstance,
@@ -327,6 +355,13 @@ void GetGpuSupportedVulkanVersionAndExtensions(
   uint32_t physical_device_count = 0;
   info->supports_vulkan = false;
   info->vulkan_version = 0;
+
+  // Skip if the system has an older AMD Vulkan driver amdvlk64.dll or
+  // amdvlk32.dll which crashes when vkCreateInstance() is called. This bug has
+  // been fixed in the latest AMD driver.
+  if (BadAMDVulkanDriverVersion()) {
+    return;
+  }
 
   // Only supports a version >= 1.1.0.
   if (!InitVulkan(&vulkan_library, &vkGetInstanceProcAddr, &vkCreateInstance,

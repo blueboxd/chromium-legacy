@@ -60,4 +60,7 @@ extern const base::Feature kEnableMyGoogle;
 // an enterprise policy.
 extern const base::Feature kEnableIOSManagedSettingsUI;
 
+// Enables the safety check in settings on iOS.
+extern const base::Feature kSafetyCheckIOS;
+
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

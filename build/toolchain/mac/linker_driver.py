@@ -278,8 +278,8 @@ _LINKER_DRIVER_ACTIONS = [
     ('dsymutilpath,', SetDsymutilPath),
     ('dsym,', RunDsymUtil),
     ('unstripped,', RunSaveUnstripped),
-    ('strip,', RunStrip),
     ('strippath,', SetStripPath),
+    ('strip,', RunStrip),
 ]
 
 

@@ -2636,6 +2636,12 @@ crbug.com/1078474 external/wpt/css/css-pseudo/cascade-highlight-002.html [ Failu
 crbug.com/1024156 external/wpt/css/css-pseudo/cascade-highlight-004.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-content/quotes-006.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/webrtc/RTCDataChannel-close.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/webrtc/RTCDataChannel-close.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/webrtc/RTCDataChannel-close.html [ Timeout ]
+crbug.com/626703 [ Mac10.15 ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
+crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-content/quotes-020.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-images/image-resolution/image-resolution-009.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-images/image-resolution/image-resolution-009.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-images/image-resolution/image-resolution-009.html [ Failure ]
@@ -4807,10 +4813,6 @@ crbug.com/840659 external/wpt/webrtc/simulcast/h264.https.html [ Pass Failure ]
 # Mac doesn't support lowLatency/desynchronized Canvas Contexts.
 crbug.com/922218 [ Mac ] fast/canvas-api/canvas-lowlatency-getContext.html [ Failure ]
 
-# Awaiting V8 roll.
-crbug.com/v8/5416 http/tests/devtools/sources/debugger-ui/function-generator-details.js [ Pass Failure ]
-crbug.com/v8/5416 http/tests/devtools/console/console-format-es6.js [ Pass Failure ]
-
 # Sheriff 2019-01-14
 crbug.com/921583 http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
 crbug.com/921151 [ Linux ] http/tests/security/mixedContent/insecure-iframe-with-hsts.https.html [ Failure Pass ]
@@ -5068,10 +5070,10 @@ crbug.com/963141 [ Mac ] media/video-aspect-ratio.html [ Pass Failure ]
 crbug.com/963141 [ Linux ] media/video-object-fit.html [ Pass Failure ]
 
 # Sheriff 2020-05-18
-crbug.com/965389 media/track/track-cue-rendering-position-auto.html [ Pass Failure ]
+crbug.com/988248 media/track/track-cue-rendering-position-auto.html [ Pass Failure ]
 
 # Flaky test on all platforms.
-crbug.com/979323 media/track/track-cue-rendering-position-auto-rtl.html [ Pass Failure ]
+crbug.com/988248 media/track/track-cue-rendering-position-auto-rtl.html [ Pass Failure ]
 
 # Failing because of revert of If931c1faff528a87d8a78808f30225ebe2377072.
 crbug.com/966345 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_tracks.html [ Failure ]
@@ -5228,12 +5230,12 @@ crbug.com/994692 [ Linux ] compositing/reflections/nested-reflection-anchor-poin
 crbug.com/994692 [ Win ] compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
 
 # Video flakily not being being rendered on Mac
-crbug.com/979298 [ Mac ] media/controls/captions-menu-always-visible.html [ Pass Failure ]
-crbug.com/979298 [ Mac ] media/controls/overflow-menu-always-visible.html [ Pass Failure ]
-crbug.com/979298 [ Mac ] media/controls/volumechange-muted-attribute.html [ Pass Failure ]
+crbug.com/988248 media/controls/captions-menu-always-visible.html [ Pass Failure ]
+crbug.com/988248 [ Mac ] media/controls/overflow-menu-always-visible.html [ Pass Failure ]
+crbug.com/988248 [ Mac ] media/controls/volumechange-muted-attribute.html [ Pass Failure ]
 crbug.com/988248 [ Mac ] media/video-persistence.html [ Pass Failure ]
 crbug.com/988248 [ Linux ] media/video-persistence.html [ Pass Failure ]
-crbug.com/979298 [ Mac ] media/video-zoom.html [ Pass Failure ]
+crbug.com/988248 [ Mac ] media/video-zoom.html [ Pass Failure ]
 
 crbug.com/996219 [ Win ] virtual/text-antialias/emoji-vertical-origin-visual.html [ Failure ]
 
@@ -5911,6 +5913,3 @@ crbug.com/1071915 fast/hidpi/image-srcset-png-canvas.html [ Pass Failure ]
 
 # Sheriff 2020-05-14
 crbug.com/1082820 [ Win ] media/video-layer-crash.html [ Pass Failure ]
-
-# Sheriff 2020-05-18
-crbug.com/1083454 [ Linux ] compositing/overflow/overflow-compositing-descendant.html [ Pass Failure ]

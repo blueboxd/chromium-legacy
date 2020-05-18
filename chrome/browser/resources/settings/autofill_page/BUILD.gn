@@ -16,6 +16,7 @@ js_type_check("closure_compile_module") {
     ":blocking_request_manager",
     ":credit_card_edit_dialog",
     ":credit_card_list_entry",
+    ":multi_store_password_ui_entry",
     ":password_check",
     ":password_check_behavior",
     ":password_check_edit_dialog",
@@ -152,6 +153,14 @@ js_library("password_edit_dialog") {
   ]
 }
 
+js_library("multi_store_password_ui_entry") {
+  sources = [ "multi_store_password_ui_entry.js" ]
+  deps = [
+    ":password_manager_proxy",
+    "//ui/webui/resources/js:assert.m",
+  ]
+}
+
 js_library("password_remove_confirmation_dialog") {
   deps = [
     ":password_manager_proxy",
@@ -185,6 +194,7 @@ js_library("passwords_export_dialog") {
 
 js_library("passwords_section") {
   deps = [
+    ":multi_store_password_ui_entry",
     ":password_edit_dialog",
     ":password_list_item",
     ":password_manager_proxy",

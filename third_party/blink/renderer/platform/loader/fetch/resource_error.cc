@@ -183,6 +183,10 @@ bool ResourceError::IsCancellation() const {
   return error_code_ == net::ERR_ABORTED;
 }
 
+bool ResourceError::IsTrustTokenCacheHit() const {
+  return error_code_ == net::ERR_TRUST_TOKEN_OPERATION_CACHE_HIT;
+}
+
 bool ResourceError::IsCacheMiss() const {
   return error_code_ == net::ERR_CACHE_MISS;
 }

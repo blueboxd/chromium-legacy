@@ -889,7 +889,15 @@ void InspectorNetworkAgent::WillSendNavigationRequest(
 // This method was pulled out of PrepareRequest(), because we want to be able
 // to create DevTools issues before the PrepareRequest() call. We need these
 // IDs to be set, to properly create a DevTools issue.
-void InspectorNetworkAgent::SetDevToolsIds(ResourceRequest& request) {
+void InspectorNetworkAgent::SetDevToolsIds(
+    ResourceRequest& request,
+    const FetchInitiatorInfo& initiator_info) {
+  // Network instrumentation ignores the requests initiated internally (these
+  // are unexpected to the user and usually do not hit the remote server).
+  // Ignore them and do not set the devtools id, so that other systems like
+  // network interceptor in the browser do not mistakenly report it.
+  if (initiator_info.name == fetch_initiator_type_names::kInternal)
+    return;
   request.SetDevToolsToken(devtools_token_);
 
   // The loader parameter is for generating a browser generated ID for a browser

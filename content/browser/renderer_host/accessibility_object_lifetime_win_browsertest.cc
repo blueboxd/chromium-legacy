@@ -27,16 +27,19 @@ class AccessibilityObjectLifetimeWinBrowserTest
         shell()->web_contents()->GetRenderWidgetHostView());
   }
 
+  LegacyRenderWidgetHostHWND* GetLegacyRenderWidgetHostHWND() {
+    return GetView()->legacy_render_widget_host_HWND_;
+  }
+
   void CacheRootNode(bool is_uia_request) {
-    GetView()
-        ->legacy_render_widget_host_HWND_
+    GetLegacyRenderWidgetHostHWND()
         ->GetOrCreateWindowRootAccessible(is_uia_request)
         ->QueryInterface(IID_PPV_ARGS(&test_node_));
   }
 
   void CacheCaretNode() {
-    GetView()
-        ->legacy_render_widget_host_HWND_->ax_system_caret_->GetCaret()
+    GetLegacyRenderWidgetHostHWND()
+        ->ax_system_caret_->GetCaret()
         ->QueryInterface(IID_PPV_ARGS(&test_node_));
   }
 
@@ -100,9 +103,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityObjectLifetimeWinBrowserTest,
 // this narrow window; see crbug.com/945584 for one example.
 class AccessibilityTeardownTestMessageFilter : public ui::HWNDMessageFilter {
  public:
-  AccessibilityTeardownTestMessageFilter(RenderWidgetHostViewAura* view)
-      : view_(view) {
-    HWND hwnd = view->AccessibilityGetAcceleratedWidget();
+  AccessibilityTeardownTestMessageFilter(
+      LegacyRenderWidgetHostHWND* legacy_render_widget_host_HWND)
+      : legacy_render_widget_host_HWND_(legacy_render_widget_host_HWND) {
+    HWND hwnd = legacy_render_widget_host_HWND->hwnd();
     CHECK(hwnd);
     ui::HWNDSubclass::AddFilterToTarget(hwnd, this);
   }
@@ -115,8 +119,9 @@ class AccessibilityTeardownTestMessageFilter : public ui::HWNDMessageFilter {
                      LPARAM l_param,
                      LRESULT* l_result) override {
     if (message == WM_DESTROY) {
-      // Verify that the view no longer exposes a NativeViewAccessible.
-      EXPECT_EQ(view_->GetNativeViewAccessible(), nullptr);
+      // Verify that the legacy window does not crash when asked for an
+      // accessibility object.
+      legacy_render_widget_host_HWND_->GetOrCreateWindowRootAccessible(false);
 
       // Remove ourselves as a subclass.
       ui::HWNDSubclass::RemoveFilterFromAllTargets(this);
@@ -126,16 +131,17 @@ class AccessibilityTeardownTestMessageFilter : public ui::HWNDMessageFilter {
   }
 
  private:
-  RenderWidgetHostViewAura* view_;
+  LegacyRenderWidgetHostHWND* legacy_render_widget_host_HWND_;
 };
 
 IN_PROC_BROWSER_TEST_F(AccessibilityObjectLifetimeWinBrowserTest,
-                       DoNotReturnObjectDuringTeardown) {
+                       DoNotCrashDuringLegacyWindowDestroy) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
-  AccessibilityTeardownTestMessageFilter test_message_filter(GetView());
+  AccessibilityTeardownTestMessageFilter test_message_filter(
+      GetLegacyRenderWidgetHostHWND());
 
-  shell()->Close();
+  GetView()->Destroy();
 }
 
 class AccessibilityObjectLifetimeUiaWinBrowserTest

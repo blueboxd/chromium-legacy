@@ -8,11 +8,6 @@
             "host": "ios_chrome_eg2tests"
         },
         {
-            "app": "ios_chrome_integration_eg2tests_module",
-            "host": "ios_chrome_eg2tests",
-            "swarming tasks": 2
-        },
-        {
             "app": "ios_chrome_smoke_eg2tests_module",
             "host": "ios_chrome_eg2tests"
         },
@@ -21,22 +16,8 @@
             "host": "ios_chrome_eg2tests"
         },
         {
-            "app": "ios_chrome_signin_eg2tests_module",
-            "host": "ios_chrome_eg2tests"
-        },
-        {
-            "app": "ios_chrome_ui_eg2tests_module",
-            "host": "ios_chrome_eg2tests",
-            "shards": 2,
-            "swarming tasks": 2
-        },
-        {
             "app": "ios_chrome_web_eg2tests_module",
             "host": "ios_chrome_eg2tests"
-        },
-        {
-            "app": "ios_web_shell_eg2tests_module",
-            "host": "ios_web_shell_eg2tests"
         },
         {
             "app":"ios_showcase_eg2tests_module",

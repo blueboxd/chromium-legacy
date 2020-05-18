@@ -21,6 +21,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
+#include "net/cookies/site_for_cookies.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -126,9 +127,8 @@ class ContextRequestPerformer {
 
     auto request = std::make_unique<network::ResourceRequest>();
     request->url = url;
-    // TODO(crbug.com/993801): This probably isn't needed here and can be
-    // removed if the test sets an appropriate site_for_cookies instead.
-    request->force_ignore_site_for_cookies = true;
+    // Allow access to SameSite cookies.
+    request->site_for_cookies = net::SiteForCookies::FromUrl(url);
 
     auto url_loader = network::SimpleURLLoader::Create(
         std::move(request), TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -376,7 +376,7 @@ IN_PROC_BROWSER_TEST_F(WilcoDtcSupportdNetworkContextTest,
 }
 
 // Verifies that WilcoDtcSupportdWebRequestService
-//     1) niether saves nor sends cookies;
+//     1) neither saves nor sends cookies;
 //     2) uses neither profile nor system network context cookies.
 IN_PROC_BROWSER_TEST_F(WilcoDtcSupportdNetworkContextTest, NoCookies) {
   ASSERT_NO_FATAL_FAILURE(StartServer());

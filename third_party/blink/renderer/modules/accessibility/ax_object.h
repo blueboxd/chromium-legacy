@@ -274,6 +274,12 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   class MODULES_EXPORT AncestorsIterator final
       : public GarbageCollected<AncestorsIterator> {
    public:
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = AXObject;
+    using difference_type = ptrdiff_t;
+    using pointer = value_type*;
+    using reference = value_type&;
+
     ~AncestorsIterator() = default;
 
     AncestorsIterator(const AncestorsIterator& other)

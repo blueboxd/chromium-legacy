@@ -4,9 +4,12 @@
 
 #include "ui/base/resource/resource_bundle_android.h"
 
+#include <utility>
+
 #include "base/android/apk_assets.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -100,11 +103,12 @@ bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
   }
   if (!GetPathForAndroidLocalePakWithinApk(locale, true).empty())
     return true;
-  return !GetLocaleFilePath(locale).empty();
+  const auto path = GetLocaleFilePath(locale);
+  return !path.empty() && base::PathExists(path);
 }
 
-std::string ResourceBundle::LoadLocaleResources(
-    const std::string& pref_locale) {
+std::string ResourceBundle::LoadLocaleResources(const std::string& pref_locale,
+                                                bool crash_on_failure) {
   DCHECK(!locale_resources_data_.get() &&
          !secondary_locale_resources_data_.get())
              << "locale.pak already loaded";
@@ -166,8 +170,11 @@ std::string ResourceBundle::LoadLocaleResources(
     }
     if (g_locale_pack_fd < 0) {
       // Otherwise, try to locate the extracted locale .pak file.
-      if (locale_file_path.empty())
-        locale_file_path = GetLocaleFilePath(app_locale);
+      if (locale_file_path.empty()) {
+        auto path = GetLocaleFilePath(app_locale);
+        if (base::PathExists(path))
+          locale_file_path = std::move(path);
+      }
 
       if (locale_file_path.empty()) {
         // It's possible that there is no locale.pak.

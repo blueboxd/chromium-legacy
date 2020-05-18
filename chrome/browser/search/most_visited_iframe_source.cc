@@ -8,7 +8,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/search/instant_io_context.h"
+#include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/local_ntp_resources.h"
@@ -137,10 +137,10 @@ bool MostVisitedIframeSource::AllowCaching() {
 
 bool MostVisitedIframeSource::ShouldServiceRequest(
     const GURL& url,
-    content::ResourceContext* resource_context,
+    content::BrowserContext* browser_context,
     int render_process_id) {
-  return InstantIOContext::ShouldServiceRequest(url, resource_context,
-                                                render_process_id) &&
+  return InstantService::ShouldServiceRequest(url, browser_context,
+                                              render_process_id) &&
          url.SchemeIs(chrome::kChromeSearchScheme) &&
          url.host_piece() == GetSource() && ServesPath(url.path());
 }

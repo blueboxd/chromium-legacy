@@ -10,6 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/optional.h"
 #include "base/strings/string_piece_forward.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/backoff_entry_serializer.h"
@@ -32,11 +33,18 @@ class ProtoTranslator {
   BackoffEntry::Policy policy() const {
     return PolicyFromProto(input_.policy());
   }
-  base::Time parse_time() const { return TimeFromProto(input_.parse_time()); }
-  base::Time serialize_time() const {
-    return TimeFromProto(input_.serialize_time());
+  base::Time parse_time() const {
+    return base::Time() +
+           base::TimeDelta::FromMicroseconds(input_.parse_time());
   }
-
+  base::Time serialize_time() const {
+    return base::Time() +
+           base::TimeDelta::FromMicroseconds(input_.serialize_time());
+  }
+  base::TimeTicks now_ticks() const {
+    return base::TimeTicks() +
+           base::TimeDelta::FromMicroseconds(input_.now_ticks());
+  }
   base::Optional<base::Value> serialized_entry() const {
     json_proto::JsonProtoConverter converter;
     std::string json_array = converter.Convert(input_.serialized_entry());
@@ -49,24 +57,33 @@ class ProtoTranslator {
 
   static BackoffEntry::Policy PolicyFromProto(
       const fuzz_proto::BackoffEntryPolicy& policy) {
-    return BackoffEntry::Policy{
-        .num_errors_to_ignore = policy.num_errors_to_ignore(),
-        .initial_delay_ms = policy.initial_delay_ms(),
-        .multiply_factor = policy.multiply_factor(),
-        .jitter_factor = policy.jitter_factor(),
-        .maximum_backoff_ms = policy.maximum_backoff_ms(),
-        .entry_lifetime_ms = policy.entry_lifetime_ms(),
-        .always_use_initial_delay = policy.always_use_initial_delay(),
-    };
-  }
-
-  static base::Time TimeFromProto(uint64_t raw_time) {
-    return base::Time() + base::TimeDelta::FromMicroseconds(raw_time);
+    BackoffEntry::Policy new_policy;
+    new_policy.num_errors_to_ignore = policy.num_errors_to_ignore();
+    new_policy.initial_delay_ms = policy.initial_delay_ms();
+    new_policy.multiply_factor = policy.multiply_factor();
+    new_policy.jitter_factor = policy.jitter_factor();
+    new_policy.maximum_backoff_ms = policy.maximum_backoff_ms();
+    new_policy.entry_lifetime_ms = policy.entry_lifetime_ms();
+    new_policy.always_use_initial_delay = policy.always_use_initial_delay();
+    return new_policy;
   }
 };
 
+class MockClock : public base::TickClock {
+ public:
+  MockClock() = default;
+  ~MockClock() override = default;
+
+  void SetNow(base::TimeTicks now) { now_ = now; }
+  base::TimeTicks NowTicks() const override { return now_; }
+
+ private:
+  base::TimeTicks now_;
+};
+
 // Tests the "deserialize-reserialize" property. Deserializes a BackoffEntry
-// from JSON, reserializes it, and checks that the JSON values match.
+// from JSON, reserializes it, then deserializes again. Holding time constant,
+// we check that the parsed BackoffEntry values are equivalent.
 void TestDeserialize(const ProtoTranslator& translator) {
   // Attempt to convert the json_proto.ArrayValue to a base::Value.
   base::Optional<base::Value> value = translator.serialized_entry();
@@ -76,19 +93,30 @@ void TestDeserialize(const ProtoTranslator& translator) {
 
   BackoffEntry::Policy policy = translator.policy();
 
+  MockClock clock;
+  clock.SetNow(translator.now_ticks());
+
   // Attempt to deserialize a BackoffEntry.
   std::unique_ptr<BackoffEntry> entry =
-      BackoffEntrySerializer::DeserializeFromValue(*value, &policy, nullptr,
+      BackoffEntrySerializer::DeserializeFromValue(*value, &policy, &clock,
                                                    translator.parse_time());
   if (!entry)
     return;
 
-  // Serializing |entry| it should recreate the original JSON input!
   std::unique_ptr<base::Value> reserialized =
-      BackoffEntrySerializer::SerializeToValue(*entry,
-                                               translator.serialize_time());
+      BackoffEntrySerializer::SerializeToValue(*entry, translator.parse_time());
   CHECK(reserialized);
-  CHECK_EQ(*reserialized, *value);
+
+  // Due to fuzzy interpretation in BackoffEntrySerializer::
+  // DeserializeFromValue, we cannot assert that |*reserialized == *value|.
+  // Rather, we can deserialize |reserialized| and check that the result is
+  // equivalent to |entry|.
+  std::unique_ptr<BackoffEntry> entry_reparsed =
+      BackoffEntrySerializer::DeserializeFromValue(
+          *reserialized, &policy, &clock, translator.parse_time());
+  CHECK(entry_reparsed);
+  CHECK_EQ(entry->failure_count(), entry_reparsed->failure_count());
+  CHECK_EQ(entry->GetReleaseTime(), entry_reparsed->GetReleaseTime());
 }
 
 // Tests the "serialize-deserialize" property. Serializes an arbitrary
@@ -105,10 +133,13 @@ void TestSerialize(const ProtoTranslator& translator) {
                                                translator.serialize_time());
   CHECK(serialized);
 
+  MockClock clock;
+  clock.SetNow(translator.now_ticks());
+
   // Deserialize it.
   std::unique_ptr<BackoffEntry> deserialized_entry =
-      BackoffEntrySerializer::DeserializeFromValue(
-          *serialized, &policy, nullptr, translator.parse_time());
+      BackoffEntrySerializer::DeserializeFromValue(*serialized, &policy, &clock,
+                                                   translator.parse_time());
   // Even though SerializeToValue was successful, we're not guaranteed to have a
   // |deserialized_entry|. One reason deserialization may fail is if the parsed
   // |absolute_release_time_us| is below zero.
@@ -134,8 +165,8 @@ DEFINE_PROTO_FUZZER(const fuzz_proto::FuzzerInput& input) {
   }
 
   ProtoTranslator translator(input);
-  TestSerialize(translator);
   TestDeserialize(translator);
+  TestSerialize(translator);
 }
 
 }  // namespace net

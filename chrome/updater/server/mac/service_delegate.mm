@@ -14,6 +14,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/version.h"
+#include "chrome/updater/mac/setup/setup.h"
 #import "chrome/updater/mac/xpc_service_names.h"
 #import "chrome/updater/server/mac/service_protocol.h"
 #import "chrome/updater/server/mac/update_service_wrappers.h"
@@ -227,26 +228,49 @@
       if (versionComparisonResult > 0) {
         // If the versioned service is a higher version than the active service,
         // activate the versioned service.
-        // TODO: crbug 1072061
-
+        updater::PromoteCandidate();
       } else if (versionComparisonResult < 0) {
         // If the versioned service is a lower version than the active service,
         // remove the versioned service.
-        // TODO: crbug 1072061
-      }
+        updater::UninstallCandidate();
+      } else {
+        // If the versioned service is the same version as the active service,
+        // check for updates.
+        auto updateCheckErrorHandler = ^(NSError* xpcError) {
+          LOG(ERROR) << "XPC connection failed: "
+                     << base::SysNSStringToUTF8([xpcError description]);
+        };
 
-      // If the versioned service is the same version as the active service, do
-      // nothing.
+        auto updateCheckReply = ^(int error) {
+          VLOG(0) << "UpdateAll complete: exit_code = " << error;
+        };
+
+        base::scoped_nsprotocol<id<CRUUpdateStateObserving>> stateObserver(
+            [[CRUUpdateStateObserver alloc]
+                initWithRepeatingCallback:
+                    base::BindRepeating(
+                        [](updater::UpdateService::UpdateState) {})
+                           callbackRunner:_callbackRunner]);
+
+        // TODO: crbug 1072061
+        // Need to wait for the async reply?
+        [[_updateCheckXPCConnection.get()
+            remoteObjectProxyWithErrorHandler:updateCheckErrorHandler]
+            checkForUpdatesWithUpdateState:stateObserver.get()
+                                     reply:updateCheckReply];
+      }
     } else {
-      // Active service vesion is nil. What now?
-      // TODO: crbug 1072061
+      // Active service version is nil.
+      LOG(ERROR) << "Active service version is nil.";
     }
   };
 
   if (!_updateCheckXPCConnection) {
     // Activate the service.
-    // TODO: crbug 1072061
+    updater::PromoteCandidate();
   } else {
+    // TODO: crbug 1072061
+    // Need to wait for the async reply?
     [[_updateCheckXPCConnection.get()
         remoteObjectProxyWithErrorHandler:errorHandler]
         getUpdaterVersionWithReply:reply];

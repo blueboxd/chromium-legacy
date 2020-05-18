@@ -37,30 +37,47 @@ typedef void (^SigninCompletionCallback)(ChromeIdentity* identity,
 // dismissal is due to sign-in being canceled.
 @property(nonatomic, readonly) BOOL isCanceling;
 
+// Deprecated.
+// Use |addAccountWithPresentingViewController:completion|.
+- (void)addAccountWithCompletion:(SigninCompletionCallback)completion;
+
+// Deprecated.
+// Use |addAccountWithPresentingViewController:userEmail:completion|.
+- (void)reauthenticateUserWithID:(NSString*)userID
+                           email:(NSString*)userEmail
+                      completion:(SigninCompletionCallback)completion;
+
+// Deprecated.
+// Use |cancelAddAccountWithAnimation|.
+- (void)cancelAndDismissAnimated:(BOOL)animated;
+
 // Starts the add account operation for a user. Presents user with the screen to
 // enter credentials.
 // Note: Calling this method will fail and the completion will be called with a
 // CHROME_IDENTITY_OPERATION_ONGOING error if there is already another add
 // account or reauthenticate operation ongoing.
+// * |viewController| will display the add account screens.
 // * |completion| will be called once the operation has finished.
-- (void)addAccountWithCompletion:(SigninCompletionCallback)completion;
+- (void)addAccountWithPresentingViewController:(UIViewController*)viewController
+                                    completion:
+                                        (SigninCompletionCallback)completion;
 
 // Starts the reauthentication operation for a user. Presents user with the
 // screen to enter credentials with the email pre-entered.
 // Note: Calling this method will fail and the completion will be called with a
 // CHROME_IDENTITY_OPERATION_ONGOING error if there is already another add
 // account or reauthenticate operation ongoing.
-// * |userID| is the unique identifier of the user.
+// * |viewController| will display the add account screens.
 // * |userEmail| will be pre-entered on the presented screen.
 // * |completion| will be called once the operation has finished.
-- (void)reauthenticateUserWithID:(NSString*)userID
-                           email:(NSString*)userEmail
-                      completion:(SigninCompletionCallback)completion;
+- (void)addAccountWithPresentingViewController:(UIViewController*)viewController
+                                     userEmail:(NSString*)userEmail
+                                    completion:
+                                        (SigninCompletionCallback)completion;
 
-// Cancels and dismisses any currently active operation. Completion will be
-// called with a cancel error.
+// Cancels and dismisses any currently active operation.
 // * |animated| represents whether the UI should be dismissed with an animation.
-- (void)cancelAndDismissAnimated:(BOOL)animated;
+- (void)cancelAddAccountWithAnimation:(BOOL)animated;
 
 @end
 

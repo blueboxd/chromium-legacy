@@ -18,13 +18,12 @@ source_set("safe_browsing") {
     "safe_browsing_tab_helper.mm",
     "safe_browsing_unsafe_resource_container.h",
     "safe_browsing_unsafe_resource_container.mm",
-    "safe_browsing_url_allow_list.h",
-    "safe_browsing_url_allow_list.mm",
     "url_checker_delegate_impl.h",
     "url_checker_delegate_impl.mm",
   ]
 
   deps = [
+    ":allow_list",
     ":util",
     "//base",
     "//build:branding_buildflags",
@@ -51,6 +50,21 @@ source_set("safe_browsing") {
     "//services/network/public/cpp",
     "//services/network/public/mojom",
     "//ui/base",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("allow_list") {
+  sources = [
+    "safe_browsing_url_allow_list.h",
+    "safe_browsing_url_allow_list.mm",
+  ]
+
+  deps = [
+    "//components/safe_browsing/core/db:v4_protocol_manager_util",
+    "//ios/web/public",
+    "//url",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -102,6 +116,7 @@ source_set("unit_tests") {
   ]
 
   deps = [
+    ":allow_list",
     ":safe_browsing",
     ":test_support",
     "//base/test:test_support",

@@ -269,17 +269,6 @@ void AppListControllerImpl::SetSearchEngineIsGoogle(bool is_google) {
   search_model_.SetSearchEngineIsGoogle(is_google);
 }
 
-void AppListControllerImpl::SetSearchTabletAndClamshellAccessibleName(
-    const base::string16& tablet_accessible_name,
-    const base::string16& clamshell_accessible_name) {
-  search_model_.search_box()->SetTabletAndClamshellAccessibleName(
-      tablet_accessible_name, clamshell_accessible_name);
-}
-
-void AppListControllerImpl::SetSearchHintText(const base::string16& hint_text) {
-  search_model_.search_box()->SetHintText(hint_text);
-}
-
 void AppListControllerImpl::UpdateSearchBox(const base::string16& text,
                                             bool initiated_by_user) {
   search_model_.search_box()->Update(text, initiated_by_user);

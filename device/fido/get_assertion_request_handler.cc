@@ -747,7 +747,7 @@ void GetAssertionRequestHandler::OnHaveUvToken(
       FIDO_LOG(DEBUG) << "Internal UV blocked for "
                       << authenticator->GetDisplayName()
                       << ", falling back to PIN.";
-      if (authenticator_->WillNeedPINToGetAssertion(request_, observer()) ==
+      if (authenticator->WillNeedPINToGetAssertion(request_, observer()) ==
           PINDisposition::kUsePINForFallback) {
         authenticator->GetTouch(base::BindOnce(
             &GetAssertionRequestHandler::StartPINFallbackForInternalUv,

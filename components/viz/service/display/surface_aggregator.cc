@@ -1763,6 +1763,7 @@ CompositorFrame SurfaceAggregator::Aggregate(
     const SurfaceId& surface_id,
     base::TimeTicks expected_display_time,
     gfx::OverlayTransform display_transform,
+    const gfx::Rect& target_damage,
     int64_t display_trace_id) {
   DCHECK(!expected_display_time.is_null());
 
@@ -1810,8 +1811,13 @@ CompositorFrame SurfaceAggregator::Aggregate(
   new_surfaces_.clear();
   DCHECK(referenced_surfaces_.empty());
   PrewalkResult prewalk_result;
-  root_damage_rect_ =
+  gfx::Rect surfaces_damage_rect =
       PrewalkTree(surface, false, 0, true /* will_draw */, &prewalk_result);
+
+  root_damage_rect_ = surfaces_damage_rect;
+  // |root_damage_rect_| is used to restrict aggregating quads only if they
+  // intersect this area.
+  root_damage_rect_.Union(target_damage);
   root_content_color_usage_ = prewalk_result.content_color_usage;
 
   if (prewalk_result.frame_sinks_changed)
@@ -1826,6 +1832,15 @@ CompositorFrame SurfaceAggregator::Aggregate(
   referenced_surfaces_.insert(surface_id);
   CopyPasses(root_surface_frame, surface);
   referenced_surfaces_.erase(surface_id);
+
+  // The root render pass damage might have been expanded by target_damage (the
+  // area that might need to be recomposited on the target surface). We restrict
+  // the damage_rect of the root render pass to the one caused by the source
+  // surfaces.
+  // The damage on the root render pass should not include the expanded area
+  // since Renderer and OverlayProcessor expect the non expanded damage.
+  if (!RenderPassNeedsFullDamage(dest_pass_list_->back().get()))
+    dest_pass_list_->back()->damage_rect.Intersect(surfaces_damage_rect);
 
   // Now that we've handled our main surface aggregation, apply de-jelly effect
   // if enabled.

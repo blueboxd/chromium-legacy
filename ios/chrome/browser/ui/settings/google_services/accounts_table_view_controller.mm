@@ -108,6 +108,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSDictionary<NSString*, TableViewItem*>* _identityMap;
 }
 
+// Modal alert for confirming account removal.
+@property(nonatomic, strong) AlertCoordinator* removeAccountCoordinator;
+
 // Stops observing browser state services. This is required during the shutdown
 // phase to avoid observing services for a browser state that is being killed.
 - (void)stopBrowserStateServiceObservers;
@@ -161,6 +164,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)settingsWillBeDismissed {
   [_alertCoordinator stop];
+  [self.removeAccountCoordinator stop];
   [self stopBrowserStateServiceObservers];
 }
 
@@ -451,13 +455,40 @@ typedef NS_ENUM(NSInteger, ItemType) {
                                                               /*animated=*/YES);
                   }
                    style:UIAlertActionStyleDefault];
-    [_alertCoordinator addItemWithTitle:l10n_util::GetNSString(
-                                            IDS_IOS_REMOVE_GOOGLE_ACCOUNT_TITLE)
-                                 action:^{
-                                   // TODO(crbug.com/1043080): Use Identity API
-                                   // to remove account.
-                                 }
-                                  style:UIAlertActionStyleDestructive];
+
+    self.removeAccountCoordinator = [[AlertCoordinator alloc]
+        initWithBaseViewController:self
+                           browser:_browser
+                             title:l10n_util::GetNSStringF(
+                                       IDS_IOS_REMOVE_ACCOUNT_ALERT_TITLE,
+                                       base::SysNSStringToUTF16(
+                                           identity.userEmail))
+                           message:
+                               l10n_util::GetNSString(
+                                   IDS_IOS_REMOVE_ACCOUNT_CONFIRMATION_MESSAGE)];
+
+    __weak AccountsTableViewController* weakSelf = self;
+    [_alertCoordinator
+        addItemWithTitle:l10n_util::GetNSString(
+                             IDS_IOS_REMOVE_GOOGLE_ACCOUNT_TITLE)
+                  action:^{
+                    [weakSelf.removeAccountCoordinator
+                        addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                                  action:nil
+                                   style:UIAlertActionStyleCancel];
+                    [weakSelf.removeAccountCoordinator
+                        addItemWithTitle:l10n_util::GetNSString(
+                                             IDS_IOS_REMOVE_ACCOUNT_LABEL)
+                                  action:^{
+                                    ios::GetChromeBrowserProvider()
+                                        ->GetChromeIdentityService()
+                                        ->ForgetIdentity(identity, nil);
+                                  }
+                                   style:UIAlertActionStyleDestructive];
+
+                    [weakSelf.removeAccountCoordinator start];
+                  }
+                   style:UIAlertActionStyleDestructive];
 
     [_alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
                                  action:nil
@@ -606,6 +637,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
   _isBeingDismissed = YES;
   [_alertCoordinator stop];
+  [_removeAccountCoordinator stop];
   [self.navigationController popToViewController:self animated:NO];
   [base::mac::ObjCCastStrict<SettingsNavigationController>(
       self.navigationController)

@@ -129,6 +129,14 @@ struct NonRemovableBlockDeviceInfo {
   string name;
   // PSN: Product serial number, 32 bits
   uint32 serial;
+  // Bytes read since last boot.
+  uint64 bytes_read_since_last_boot;
+  // Bytes written since last boot.
+  uint64 bytes_written_since_last_boot;
+  // Time spent reading since last boot.
+  uint64 read_time_seconds_since_last_boot;
+  // Time spent writing since last boot.
+  uint64 write_time_seconds_since_last_boot;
 };
 
 // Cached VPD probe result. Can either be populated with the CachedVpdInfo or an

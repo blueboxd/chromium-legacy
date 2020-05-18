@@ -27,12 +27,13 @@ public class KeyboardAccessoryData {
      */
     public static final class Tab {
         private final String mTitle;
-        private final Drawable mIcon;
+        private Drawable mIcon;
         private final @Nullable String mOpeningAnnouncement;
         private final String mContentDescription;
         private final int mTabLayout;
         private final @AccessoryTabType int mRecordingType;
         private final @Nullable Listener mListener;
+        private final PropertyProvider<Drawable> mIconProvider = new PropertyProvider<>();
 
         /**
          * A Tab's Listener get's notified when e.g. the Tab was assigned a view.
@@ -40,6 +41,7 @@ public class KeyboardAccessoryData {
         public interface Listener {
             /**
              * Triggered when the tab was successfully created.
+             *
              * @param view The newly created accessory sheet of the tab.
              */
             void onTabCreated(ViewGroup view);
@@ -65,6 +67,20 @@ public class KeyboardAccessoryData {
             mTabLayout = tabLayout;
             mListener = listener;
             mRecordingType = recordingType;
+        }
+
+        public void setIcon(Drawable icon) {
+            mIcon = icon;
+            mIconProvider.notifyObservers(mIcon);
+        }
+
+        /**
+         * Adds an observer to be notified of icon changes.
+         *
+         * @param observer The observer that will be notified of the icon change.
+         */
+        public void addIconObserver(Provider.Observer<Drawable> observer) {
+            mIconProvider.addObserver(observer);
         }
 
         /**

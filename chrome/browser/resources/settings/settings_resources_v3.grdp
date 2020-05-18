@@ -118,6 +118,9 @@
   <include name="IDR_SETTINGS_AUTOFILL_PAGE_PASSWORD_MANAGER_PROXY_JS"
            file="autofill_page/password_manager_proxy.js"
            compress="false" type="BINDATA" />
+ <include name="IDR_SETTINGS_AUTOFILL_PAGE_MULTI_STORE_PASSWORD_UI_ENTRY_JS"
+           file="autofill_page/multi_store_password_ui_entry.js"
+           compress="false" type="BINDATA" />
  <include name="IDR_SETTINGS_AUTOFILL_PAGE_PASSWORD_REMOVE_CONFIRMATION_DIALOG_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/password_remove_confirmation_dialog.js"
            use_base_dir="false"

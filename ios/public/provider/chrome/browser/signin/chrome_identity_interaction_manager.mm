@@ -21,17 +21,32 @@
 
 - (void)addAccountWithCompletion:(SigninCompletionCallback)completion {
   NOTREACHED() << "Subclasses must override this";
-  completion(nil, nil);
 }
 
 - (void)reauthenticateUserWithID:(NSString*)userID
                            email:(NSString*)userEmail
                       completion:(SigninCompletionCallback)completion {
   NOTREACHED() << "Subclasses must override this";
-  completion(nil, nil);
 }
 
 - (void)cancelAndDismissAnimated:(BOOL)animated {
+  NOTREACHED() << "Subclasses must override this";
+}
+
+- (void)addAccountWithPresentingViewController:(UIViewController*)viewController
+                                    completion:
+                                        (SigninCompletionCallback)completion {
+  NOTREACHED() << "Subclasses must override this";
+}
+
+- (void)addAccountWithPresentingViewController:(UIViewController*)viewController
+                                     userEmail:(NSString*)userEmail
+                                    completion:
+                                        (SigninCompletionCallback)completion {
+  NOTREACHED() << "Subclasses must override this";
+}
+
+- (void)cancelAddAccountWithAnimation:(BOOL)animated {
   NOTREACHED() << "Subclasses must override this";
 }
 

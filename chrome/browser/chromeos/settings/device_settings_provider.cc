@@ -762,6 +762,16 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                                        policy.tpm_firmware_update_settings())));
   }
 
+  if (policy.has_minimum_chrome_version_enforced()) {
+    const em::StringPolicyProto& container(
+        policy.minimum_chrome_version_enforced());
+    if (container.has_value()) {
+      SetJsonDeviceSetting(kMinimumChromeVersionEnforced,
+                           policy::key::kMinimumChromeVersionEnforced,
+                           container.value(), new_values_cache);
+    }
+  }
+
   if (policy.has_cast_receiver_name()) {
     const em::CastReceiverNameProto& container(policy.cast_receiver_name());
     if (container.has_name()) {

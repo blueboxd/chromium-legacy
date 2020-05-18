@@ -32,8 +32,8 @@ TEST_F(IntegrationTest, InstallUninstall) {
   Install();
   ExpectInstalled();
 #if defined(OS_MACOSX)
-  Swap();
-  ExpectSwapped();
+  PromoteCandidate();
+  ExpectActive();
 #endif  // OS_MACOSX
   Uninstall();
 }

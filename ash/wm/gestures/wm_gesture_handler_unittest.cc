@@ -4,6 +4,7 @@
 
 #include "ash/wm/gestures/wm_gesture_handler.h"
 
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/desks/desk.h"
@@ -227,6 +228,26 @@ TEST_F(DesksGestureHandlerTest, NoDoubleDeskChange) {
   Scroll(-long_scroll, 0, kNumFingersForDesksSwitch);
   waiter.Wait();
   EXPECT_EQ(desk_controller->desks()[1].get(), desk_controller->active_desk());
+}
+
+// Tests that touchpad gesture scrolls don't lead to any desk changes when the
+// screen is locked.
+TEST_F(DesksGestureHandlerTest, NoDeskChangesInLockScreen) {
+  auto* desk_controller = DesksController::Get();
+  desk_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  desk_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  ASSERT_EQ(3u, desk_controller->desks().size());
+  ASSERT_EQ(desk_controller->desks()[0].get(), desk_controller->active_desk());
+
+  auto* session_controller = Shell::Get()->session_controller();
+  session_controller->LockScreen();
+  GetSessionControllerClient()->FlushForTest();  // LockScreen is an async call.
+  ASSERT_TRUE(session_controller->IsScreenLocked());
+
+  const float long_scroll = WmGestureHandler::kHorizontalThresholdDp * 3;
+  Scroll(-long_scroll, 0, kNumFingersForDesksSwitch);
+  EXPECT_FALSE(desk_controller->AreDesksBeingModified());
+  EXPECT_EQ(desk_controller->desks()[0].get(), desk_controller->active_desk());
 }
 
 }  // namespace ash

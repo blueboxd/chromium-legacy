@@ -15,7 +15,7 @@ declare_args() {
   ios_enable_share_extension = true
 
   # Enable credential provider extension.
-  ios_enable_credential_provider_extension = false
+  ios_enable_credential_provider_extension = true
 
   # Label of the target providing implementation for AccountVerificationProvider.
   # Overridden when using the Google-internal repository to build Chrome on iOS.

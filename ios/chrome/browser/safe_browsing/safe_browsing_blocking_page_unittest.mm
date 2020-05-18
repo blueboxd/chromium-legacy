@@ -49,6 +49,8 @@ class SafeBrowsingBlockingPageTest : public PlatformTest {
     navigation_manager_ = navigation_manager.get();
     web_state_.SetNavigationManager(std::move(navigation_manager));
     SafeBrowsingUrlAllowList::CreateForWebState(&web_state_);
+    SafeBrowsingUrlAllowList::FromWebState(&web_state_)
+        ->AddPendingUnsafeNavigationDecision(url_, resource_.threat_type);
   }
 
   void SendCommand(SecurityInterstitialCommand command) {
@@ -122,4 +124,20 @@ TEST_F(SafeBrowsingBlockingPageTest, HandleDontProceedCommandWithoutSafeItem) {
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kSpinDelaySeconds, ^{
     return web_state_.IsClosed();
   }));
+}
+
+// Tests that the blocking page removes pending allow list decisions if
+// destroyed.
+TEST_F(SafeBrowsingBlockingPageTest, RemovePendingDecisionsUponDestruction) {
+  SafeBrowsingUrlAllowList* allow_list =
+      SafeBrowsingUrlAllowList::FromWebState(&web_state_);
+  std::set<safe_browsing::SBThreatType> pending_threats;
+  ASSERT_TRUE(
+      allow_list->IsUnsafeNavigationDecisionPending(url_, &pending_threats));
+  ASSERT_EQ(1U, pending_threats.size());
+  ASSERT_NE(pending_threats.find(resource_.threat_type), pending_threats.end());
+
+  page_ = nullptr;
+
+  EXPECT_FALSE(allow_list->IsUnsafeNavigationDecisionPending(url_));
 }

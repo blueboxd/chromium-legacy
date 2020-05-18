@@ -41,7 +41,7 @@ class ChromeBrowserState;
                           completionBlock:(ProceduralBlock)completionBlock;
 // MainController tracks EULA acceptance and performs delayed tasks when the
 // first run UI is dismissed.
-- (void)prepareForFirstRunUI;
+- (void)prepareForFirstRunUI:(SceneState*)presentingScene;
 // Returns whether or not the app can launch in incognito mode.
 - (BOOL)canLaunchInIncognito;
 

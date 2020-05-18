@@ -252,6 +252,9 @@ export class PasswordManagerProxy {
 /** @typedef {chrome.passwordsPrivate.PasswordUiEntry} */
 PasswordManagerProxy.PasswordUiEntry;
 
+/** @typedef {chrome.passwordsPrivate.UrlCollection} */
+PasswordManagerProxy.UrlCollection;
+
 /** @typedef {chrome.passwordsPrivate.ExceptionEntry} */
 PasswordManagerProxy.ExceptionEntry;
 

@@ -36,6 +36,11 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
 - (void)sceneState:(SceneState*)sceneState
     transitionedToActivationLevel:(SceneActivationLevel)level;
 
+// Notifies when presentingModalOverlay is being set to true.
+- (void)sceneStateWillShowModalOverlay:(SceneState*)sceneState;
+// Notifies when presentingModalOverlay is being set to false.
+- (void)sceneStateWillHideModalOverlay:(SceneState*)sceneState;
+
 @end
 
 // An object containing the state of a UIWindowScene. One state object
@@ -67,6 +72,9 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
 
 // The controller for this scene.
 @property(nonatomic, weak) SceneController* controller;
+
+// When this is YES, the scene is showing the modal overlay.
+@property(nonatomic, assign) BOOL presentingModalOverlay;
 
 // Adds an observer to this scene state. The observers will be notified about
 // scene state changes per SceneStateObserver protocol.

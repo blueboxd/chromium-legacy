@@ -17,6 +17,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
@@ -30,6 +31,7 @@
 #include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_url_loader.h"
 #include "chrome/browser/web_applications/test/web_app_registration_waiter.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -301,7 +303,10 @@ class TestPendingAppManagerImpl : public PendingAppManagerImpl {
 
 class PendingAppManagerImplTest : public ChromeRenderViewHostTestHarness {
  public:
-  PendingAppManagerImplTest() = default;
+  PendingAppManagerImplTest() {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kDesktopPWAsWithoutExtensions);
+  }
 
   ~PendingAppManagerImplTest() override = default;
 
@@ -444,6 +449,7 @@ class PendingAppManagerImplTest : public ChromeRenderViewHostTestHarness {
   TestInstallFinalizer* install_finalizer() { return install_finalizer_; }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   TestAppRegistrar* app_registrar_ = nullptr;
   TestPendingAppManagerImpl* pending_app_manager_impl_ = nullptr;
   TestInstallFinalizer* install_finalizer_ = nullptr;

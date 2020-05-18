@@ -27,8 +27,8 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "chrome/updater/mac/setup/app_swap.h"
 #include "chrome/updater/mac/setup/install_app.h"
-#include "chrome/updater/mac/setup/swap_app.h"
 #include "chrome/updater/server/mac/server.h"
 #endif
 
@@ -102,8 +102,10 @@ int HandleUpdaterCommands(const base::CommandLine* command_line) {
     return AppInstallInstance()->Run();
 
 #if defined(OS_MACOSX)
-  if (command_line->HasSwitch(kSwapUpdaterSwitch))
-    return AppSwapUpdaterInstance()->Run();
+  if (command_line->HasSwitch(kPromoteCandidateSwitch))
+    return AppPromoteCandidateInstance()->Run();
+  if (command_line->HasSwitch(kUninstallCandidateSwitch))
+    return AppUninstallCandidateInstance()->Run();
 #endif  // OS_MACOSX
 
   if (command_line->HasSwitch(kUninstallSwitch))

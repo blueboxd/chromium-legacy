@@ -13,6 +13,23 @@ const RectHelper = {
    */
   area: (rect) => rect ? rect.width * rect.height : 0,
 
+  areAdjacent: (rect1, rect2) => {
+    const verticallyStacked = rect1.top === RectHelper.bottom(rect2) ||
+        RectHelper.bottom(rect1) === rect2.top;
+    const horizontallyStacked = rect1.left === RectHelper.right(rect2) ||
+        RectHelper.right(rect1) === rect2.left;
+
+    const verticallyOverlap =
+        (rect1.top >= rect2.top && rect1.top <= RectHelper.bottom(rect2)) ||
+        (rect2.top >= rect1.top && rect2.top <= RectHelper.bottom(rect1));
+    const horizontallyOverlap =
+        (rect1.left >= rect2.left && rect1.left <= RectHelper.right(rect2)) ||
+        (rect2.left >= rect1.left && rect2.left <= RectHelper.right(rect1));
+
+    return (verticallyStacked && horizontallyOverlap) ||
+        (horizontallyStacked && verticallyOverlap);
+  },
+
   /**
    * Returns true if the two rects are equal.
    *

@@ -184,6 +184,13 @@ Polymer({
     this.networkConfig_.getDeviceStateList().then(response => {
       const devices = response.result;
       this.deviceState_ = devices.find(device => device.type == type) || null;
+      if (!this.deviceState_) {
+        // If the device type associated with the current network has been
+        // removed (e.g., due to unplugging a Cellular dongle), the details
+        // dialog, if visible, displays controls which are no longer
+        // functional. If this case occurs, close the dialog.
+        this.close_();
+      }
     });
   },
 

@@ -37,7 +37,6 @@
 #error "Instant is only used on desktop";
 #endif
 
-class InstantIOContext;
 class InstantServiceObserver;
 class Profile;
 struct CollectionImage;
@@ -74,6 +73,12 @@ class InstantService : public KeyedService,
 
   // Register prefs associated with the NTP.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+  // Determine if this chrome-search: request is coming from an Instant render
+  // process.
+  static bool ShouldServiceRequest(const GURL& url,
+                                   content::BrowserContext* browser_context,
+                                   int render_process_id);
 
 #if defined(UNIT_TEST)
   int GetInstantProcessCount() const {
@@ -304,8 +309,6 @@ class InstantService : public KeyedService,
   base::ObserverList<InstantServiceObserver>::Unchecked observers_;
 
   content::NotificationRegistrar registrar_;
-
-  scoped_refptr<InstantIOContext> instant_io_context_;
 
   // Data source for NTP tiles (aka Most Visited tiles). May be null.
   std::unique_ptr<ntp_tiles::MostVisitedSites> most_visited_sites_;

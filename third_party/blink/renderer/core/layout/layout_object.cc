@@ -978,20 +978,6 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
   if (!style->Width().IsFixed() || !style->Height().IsFixed())
     return false;
 
-  if (object->IsTextControl())
-    return true;
-
-  if (is_svg_root)
-    return true;
-
-  if (!object->HasOverflowClip())
-    return false;
-
-  // Scrollbar parts can be removed during layout. Avoid the complexity of
-  // having to deal with that.
-  if (object->IsLayoutCustomScrollbarPart())
-    return false;
-
   if (const LayoutBox* layout_box = ToLayoutBoxOrNull(object)) {
     // In general we can't relayout a flex item independently of its container;
     // not only is the result incorrect due to the override size that's set, it
@@ -1007,6 +993,20 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
             .HasOutOfFlowPositionedDescendants())
       return false;
   }
+
+  if (object->IsTextControl())
+    return true;
+
+  if (is_svg_root)
+    return true;
+
+  if (!object->HasOverflowClip())
+    return false;
+
+  // Scrollbar parts can be removed during layout. Avoid the complexity of
+  // having to deal with that.
+  if (object->IsLayoutCustomScrollbarPart())
+    return false;
 
   // Inside multicol it's generally problematic to allow relayout roots. The
   // multicol container itself may be scheduled for relayout as well (due to

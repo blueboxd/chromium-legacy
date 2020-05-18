@@ -162,19 +162,26 @@ SafeBrowsingBlockingPage::SafeBrowsingControllerClient::
       threat_type_(resource.threat_type) {}
 
 SafeBrowsingBlockingPage::SafeBrowsingControllerClient::
-    ~SafeBrowsingControllerClient() = default;
+    ~SafeBrowsingControllerClient() {
+  if (web_state()) {
+    SafeBrowsingUrlAllowList::FromWebState(web_state())
+        ->RemovePendingUnsafeNavigationDecisions(url_);
+  }
+}
 
 void SafeBrowsingBlockingPage::SafeBrowsingControllerClient::Proceed() {
-  SafeBrowsingUrlAllowList* allow_list =
-      SafeBrowsingUrlAllowList::FromWebState(web_state());
-  allow_list->AllowUnsafeNavigations(url_, threat_type_);
+  if (web_state()) {
+    SafeBrowsingUrlAllowList::FromWebState(web_state())
+        ->AllowUnsafeNavigations(url_, threat_type_);
+  }
   Reload();
 }
 
 void SafeBrowsingBlockingPage::SafeBrowsingControllerClient::GoBack() {
-  SafeBrowsingUrlAllowList* allow_list =
-      SafeBrowsingUrlAllowList::FromWebState(web_state());
-  allow_list->RemovePendingUnsafeNavigationDecisions(url_);
+  if (web_state()) {
+    SafeBrowsingUrlAllowList::FromWebState(web_state())
+        ->RemovePendingUnsafeNavigationDecisions(url_);
+  }
   security_interstitials::IOSBlockingPageControllerClient::GoBack();
 }
 

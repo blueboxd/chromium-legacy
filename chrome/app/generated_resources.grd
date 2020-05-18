@@ -9150,15 +9150,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
       <!-- App List. -->
       <if expr="chromeos">
-        <message name="IDS_SEARCH_BOX_ACCESSIBILITY_NAME" desc="Hint text for the search box in fullscreen app list window with additional instructions to use the arrow keys in Accessibility mode.">
-          Search your device, apps, and web. Use the arrow keys to navigate your apps.
-        </message>
-        <message name="IDS_SEARCH_BOX_ACCESSIBILITY_NAME_TABLET" desc="Hint text for the search box in fullscreen app list window. Tablet mode only, so we don't mention the arrow keys.">
-          Search your device, apps, and web.
-        </message>
-        <message name="IDS_SEARCH_BOX_HINT_FULLSCREEN" desc="Hint text for the search box in fullscreen app list window.">
-          Search your device, apps, web...
-        </message>
         <message name="IDS_APP_ACTION_SHORTCUT_ACCESSIBILITY_NAME" desc="Hint text for the search result that performs a specific action with an app.">
           <ph name="ACTION_NAME">$1<ex>Compose</ex></ph> with <ph name="APP_NAME">$2<ex>GMail</ex></ph> App
         </message>

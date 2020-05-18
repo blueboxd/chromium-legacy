@@ -163,16 +163,16 @@ TEST_F(ResourceBundleTest, DelegateGetPathForLocalePack) {
       .RetiresOnSaturation();
 
   EXPECT_FALSE(ResourceBundle::LocaleDataPakExists(locale));
-  EXPECT_EQ("",
-            ResourceBundle::GetSharedInstance().LoadLocaleResources(locale));
+  EXPECT_EQ("", ResourceBundle::GetSharedInstance().LoadLocaleResources(
+                    locale, /*crash_on_failure=*/false));
 
   // Allow the load to proceed.
   EXPECT_CALL(delegate, GetPathForLocalePack(_, _))
       .WillRepeatedly(ReturnArg<0>());
 
   EXPECT_TRUE(ResourceBundle::LocaleDataPakExists(locale));
-  EXPECT_EQ(locale,
-            ResourceBundle::GetSharedInstance().LoadLocaleResources(locale));
+  EXPECT_EQ(locale, ResourceBundle::GetSharedInstance().LoadLocaleResources(
+                        locale, /*crash_on_failure=*/false));
 
   ResourceBundle::CleanupSharedInstance();
   ResourceBundle::SwapSharedInstanceForTesting(orig_instance);

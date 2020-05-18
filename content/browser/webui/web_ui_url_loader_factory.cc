@@ -151,7 +151,7 @@ void StartURLLoader(
     const network::ResourceRequest& request,
     int frame_tree_node_id,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote,
-    ResourceContext* resource_context) {
+    BrowserContext* browser_context) {
   // NOTE: this duplicates code in URLDataManagerBackend::StartRequest.
   if (!URLDataManagerBackend::CheckURLIsValid(request.url)) {
     CallOnError(std::move(client_remote), net::ERR_INVALID_URL);
@@ -159,14 +159,14 @@ void StartURLLoader(
   }
 
   URLDataSourceImpl* source =
-      GetURLDataManagerForResourceContext(resource_context)
+      URLDataManagerBackend::GetForBrowserContext(browser_context)
           ->GetDataSourceFromURL(request.url);
   if (!source) {
     CallOnError(std::move(client_remote), net::ERR_INVALID_URL);
     return;
   }
 
-  if (!source->source()->ShouldServiceRequest(request.url, resource_context,
+  if (!source->source()->ShouldServiceRequest(request.url, browser_context,
                                               -1)) {
     CallOnError(std::move(client_remote), net::ERR_INVALID_URL);
     return;
@@ -208,24 +208,8 @@ void StartURLLoader(
       DataAvailable, std::move(resource_response), replacements, replace_in_js,
       base::RetainedRef(source), std::move(client_remote));
 
-  // TODO(jam): once we only have this code path for WebUI, and not the
-  // URLLRequestJob one, then we should switch data sources to run on the UI
-  // thread by default.
-  scoped_refptr<base::SingleThreadTaskRunner> target_runner =
-      source->source()->TaskRunnerForRequestPath(path);
-  if (!target_runner) {
-    source->source()->StartDataRequest(request.url, std::move(wc_getter),
-                                       std::move(data_available_callback));
-    return;
-  }
-
-  // The DataSource wants StartDataRequest to be called on a specific
-  // thread, usually the UI thread, for this path.
-  target_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&URLDataSource::StartDataRequest,
-                     base::Unretained(source->source()), request.url,
-                     std::move(wc_getter), std::move(data_available_callback)));
+  source->source()->StartDataRequest(request.url, std::move(wc_getter),
+                                     std::move(data_available_callback));
 }
 
 class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
@@ -307,12 +291,20 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
     // from frames can happen while the RFH is changed for a cross-process
     // navigation. The URLDataSources just need the WebContents; the specific
     // frame doesn't matter.
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+#if defined(OS_CHROMEOS)
+    // https://crbug.com/1082326 PFQ has test suites that flaked when the thread
+    // hop to IO thread got eliminated. So add an extra IO->UI thread hop to
+    // simulate old timing to avoid this flake for now. This should be fixed to
+    // remove these unnecessary hops.
+    base::PostTaskAndReply(
+        FROM_HERE, {BrowserThread::IO}, base::DoNothing(),
         base::BindOnce(
             &StartURLLoader, request, render_frame_host_->GetFrameTreeNodeId(),
-            std::move(client),
-            GetStoragePartition()->browser_context()->GetResourceContext()));
+            std::move(client), GetStoragePartition()->browser_context()));
+#else
+    StartURLLoader(request, render_frame_host_->GetFrameTreeNodeId(),
+                   std::move(client), GetStoragePartition()->browser_context());
+#endif
   }
 
   void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)

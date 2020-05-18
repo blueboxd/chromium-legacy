@@ -233,8 +233,7 @@ Display::Display(int64_t id, const gfx::Rect& bounds)
   if (HasForceDisplayColorProfile())
     color_space = GetForcedDisplayColorProfile();
 #endif
-  color_spaces_ =
-      gfx::DisplayColorSpaces(color_space, gfx::BufferFormat::RGBA_8888);
+  color_spaces_ = gfx::DisplayColorSpaces(color_space);
   if (color_spaces_.SupportsHDR()) {
     color_depth_ = kHDR10BitsPerPixel;
     depth_per_component_ = kHDR10BitsPerComponent;

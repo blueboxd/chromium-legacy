@@ -148,14 +148,8 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
       }
     }
 
-    if (!parented && !this_layer_children.IsEmpty()) {
-      // Ensure we don't clobber the decoration outline layer.
-      if (auto* layer = current_composited_layer_mapping
-                            ->DetachLayerForDecorationOutline()) {
-        this_layer_children.push_back(layer);
-      }
+    if (!parented && !this_layer_children.IsEmpty())
       current_composited_layer_mapping->SetSublayers(this_layer_children);
-    }
 
     if (ShouldAppendLayer(layer)) {
       child_layers.push_back(

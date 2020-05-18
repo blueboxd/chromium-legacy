@@ -129,7 +129,6 @@ class NativeInputMethodEngineTest : public InProcessBrowserTest,
 
  protected:
   void SetUp() override {
-    chromeos::input_method::DisableImeSandboxForTesting();
     mojo::core::Init();
     InProcessBrowserTest::SetUp();
     ui::IMEBridge::Initialize();

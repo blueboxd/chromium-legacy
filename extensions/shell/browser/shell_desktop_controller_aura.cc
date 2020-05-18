@@ -315,11 +315,13 @@ void ShellDesktopControllerAura::InitWindowManager() {
   if (!display::Screen::GetScreen()) {
 #if defined(OS_CHROMEOS)
     screen_ = std::make_unique<ShellScreen>(this, GetStartingWindowSize());
+    // TODO(pkasting): Make ShellScreen() call SetScreenInstance() as the
+    // classes in CreateDesktopScreen() do, and remove this.
+    display::Screen::SetScreenInstance(screen_.get());
 #else
     // TODO(crbug.com/756680): Refactor DesktopScreen out of views.
     screen_.reset(views::CreateDesktopScreen());
 #endif
-    display::Screen::SetScreenInstance(screen_.get());
   }
 
   focus_controller_ =
@@ -350,7 +352,9 @@ void ShellDesktopControllerAura::TearDownWindowManager() {
   cursor_manager_.reset();
   focus_controller_.reset();
   if (screen_) {
+#if defined(OS_CHROMEOS)
     display::Screen::SetScreenInstance(nullptr);
+#endif
     screen_.reset();
   }
   root_window_event_filter_.reset();

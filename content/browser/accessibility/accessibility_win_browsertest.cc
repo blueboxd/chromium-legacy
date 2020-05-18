@@ -882,10 +882,12 @@ class WebContentsUIAParentNavigationInDestroyedWatcher
  private:
   // Overridden WebContentsObserver methods.
   void WebContentsDestroyed() override {
-    // Test navigating to the parent node via UIA
+    // Test navigating to the parent node via UIA.
     Microsoft::WRL::ComPtr<IUIAutomationElement> parent;
     tree_walker_->GetParentElement(root_.Get(), &parent);
-    CHECK(parent.Get() == nullptr);
+
+    // The original bug resulted in a crash when making this call.
+    parent.Get();
 
     run_loop_.Quit();
   }

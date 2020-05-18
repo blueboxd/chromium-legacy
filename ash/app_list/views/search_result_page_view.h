@@ -89,7 +89,6 @@ class APP_LIST_EXPORT SearchResultPageView
   void OnSearchResultContainerResultsChanged() override;
 
   // Overridden from SearchBoxModelObserver:
-  void HintTextChanged() override;
   void Update() override;
   void SearchEngineChanged() override;
   void ShowAssistantChanged() override;

@@ -1177,7 +1177,7 @@ class PixelTestPages(object):
             test_rect=[0, 0, 240, 135],
             browser_args=browser_args,
             # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 19),
+            grace_period_end=datetime.date(2020, 5, 26),
             matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage(
             'pixel_video_mp4.html',
@@ -1185,7 +1185,7 @@ class PixelTestPages(object):
             browser_args=browser_args_DXVA,
             test_rect=[0, 0, 240, 135],
             # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 19),
+            grace_period_end=datetime.date(2020, 5, 26),
             matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage(
             'pixel_video_mp4_fullsize.html',
@@ -1194,7 +1194,7 @@ class PixelTestPages(object):
             test_rect=[0, 0, 960, 540],
             other_args={'zero_copy': True},
             # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 19),
+            grace_period_end=datetime.date(2020, 5, 26),
             matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage(
             'pixel_video_mp4.html',
@@ -1203,7 +1203,7 @@ class PixelTestPages(object):
             browser_args=browser_args_YUY2,
             other_args={'expect_yuy2': True},
             # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 19),
+            grace_period_end=datetime.date(2020, 5, 26),
             matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage(
             'pixel_video_mp4_four_colors_aspect_4x3.html',
@@ -1211,7 +1211,7 @@ class PixelTestPages(object):
             test_rect=[0, 0, 240, 135],
             browser_args=browser_args,
             # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 19),
+            grace_period_end=datetime.date(2020, 5, 26),
             matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage(
             'pixel_video_mp4_four_colors_rot_90.html',
@@ -1220,7 +1220,7 @@ class PixelTestPages(object):
             browser_args=browser_args,
             other_args={'video_is_rotated': True},
             # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 19),
+            grace_period_end=datetime.date(2020, 5, 26),
             matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage(
             'pixel_video_mp4_four_colors_rot_180.html',
@@ -1229,7 +1229,7 @@ class PixelTestPages(object):
             browser_args=browser_args,
             other_args={'video_is_rotated': True},
             # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 19),
+            grace_period_end=datetime.date(2020, 5, 26),
             matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage(
             'pixel_video_mp4_four_colors_rot_270.html',
@@ -1238,7 +1238,7 @@ class PixelTestPages(object):
             browser_args=browser_args,
             other_args={'video_is_rotated': True},
             # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 19),
+            grace_period_end=datetime.date(2020, 5, 26),
             matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage(
             'pixel_video_vp9.html',
@@ -1246,7 +1246,7 @@ class PixelTestPages(object):
             test_rect=[0, 0, 240, 135],
             browser_args=browser_args,
             # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 19),
+            grace_period_end=datetime.date(2020, 5, 26),
             matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage(
             'pixel_video_vp9.html',
@@ -1254,7 +1254,7 @@ class PixelTestPages(object):
             browser_args=browser_args_DXVA,
             test_rect=[0, 0, 240, 135],
             # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 19),
+            grace_period_end=datetime.date(2020, 5, 26),
             matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage(
             'pixel_video_vp9_fullsize.html',
@@ -1263,7 +1263,7 @@ class PixelTestPages(object):
             browser_args=browser_args,
             other_args={'zero_copy': True},
             # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 19),
+            grace_period_end=datetime.date(2020, 5, 26),
             matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage(
             'pixel_video_vp9.html',
@@ -1272,7 +1272,7 @@ class PixelTestPages(object):
             browser_args=browser_args_YUY2,
             other_args={'expect_yuy2': True},
             # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 19),
+            grace_period_end=datetime.date(2020, 5, 26),
             matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage(
             'pixel_video_vp9_i420a.html',
@@ -1281,7 +1281,7 @@ class PixelTestPages(object):
             browser_args=browser_args,
             other_args={'no_overlay': True},
             # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 19),
+            grace_period_end=datetime.date(2020, 5, 26),
             matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage(
             'pixel_video_underlay.html',
@@ -1289,7 +1289,7 @@ class PixelTestPages(object):
             test_rect=[0, 0, 240, 136],
             browser_args=browser_args,
             # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 19),
+            grace_period_end=datetime.date(2020, 5, 26),
             matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage(
             'pixel_video_underlay.html',
@@ -1297,7 +1297,7 @@ class PixelTestPages(object):
             test_rect=[0, 0, 240, 136],
             browser_args=browser_args_DXVA,
             # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 19),
+            grace_period_end=datetime.date(2020, 5, 26),
             matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage(
             'pixel_video_underlay_fullsize.html',
@@ -1306,7 +1306,7 @@ class PixelTestPages(object):
             browser_args=browser_args,
             other_args={'zero_copy': True},
             # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 19),
+            grace_period_end=datetime.date(2020, 5, 26),
             matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage(
             'pixel_video_nonroot.html',
@@ -1314,7 +1314,7 @@ class PixelTestPages(object):
             test_rect=[0, 0, 240, 136],
             browser_args=browser_args_Nonroot,
             # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 19),
+            grace_period_end=datetime.date(2020, 5, 26),
             matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage(
             'pixel_video_complex_overlays.html',
@@ -1323,7 +1323,7 @@ class PixelTestPages(object):
             browser_args=browser_args_Complex,
             other_args={'video_is_rotated': True},
             # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 19),
+            grace_period_end=datetime.date(2020, 5, 26),
             matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage('pixel_video_mp4_rounded_corner.html',
                       base_name + '_DirectComposition_Video_MP4_Rounded_Corner',
@@ -1342,7 +1342,7 @@ class PixelTestPages(object):
             browser_args=['--disable-direct-composition-video-overlays'],
             other_args={'no_overlay': True},
             # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 19),
+            grace_period_end=datetime.date(2020, 5, 26),
             matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
     ]
 

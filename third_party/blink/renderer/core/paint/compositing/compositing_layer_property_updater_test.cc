@@ -42,7 +42,7 @@ TEST_F(CompositingLayerPropertyUpdaterTest, MaskLayerState) {
   EXPECT_TRUE(paint_properties->CssClip());
   EXPECT_TRUE(paint_properties->MaskClip());
   EXPECT_EQ(paint_properties->MaskClip(),
-            &mask_layer->layer_state_->state.Clip());
+            &mask_layer->GetPropertyTreeState().Clip());
 }
 
 TEST_F(CompositingLayerPropertyUpdaterTest,

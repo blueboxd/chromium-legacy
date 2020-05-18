@@ -23,10 +23,6 @@ namespace chromeos {
 
 namespace input_method {
 
-// Only used in tests to disable sandboxing so that it can load a test shared
-// library.
-void DisableImeSandboxForTesting();
-
 // The connector of an ImeService which runs in its own process.
 class ImeServiceConnector : public ime::mojom::PlatformAccessProvider {
  public:

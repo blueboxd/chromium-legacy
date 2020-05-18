@@ -20,8 +20,9 @@ void ContextUrl::SetActiveUrl(const gpu::ContextUrl& active_url) {
 
   last_url_hash = active_url.hash();
 
-  // Note that the url is intentionally excluded from webview crash dumps
-  // using a whitelist for privacy reasons. See kWebViewCrashKeyWhiteList.
+  // Note that the url is intentionally excluded from WebView and WebLayer
+  // crash dumps using an allowlist for privacy reasons. See
+  // kWebViewCrashKeyAllowList and kWebLayerCrashKeyAllowList.
   static crash_reporter::CrashKeyString<1024> crash_key("url-chunk");
   crash_key.Set(active_url.url().possibly_invalid_spec());
 }

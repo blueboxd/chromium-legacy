@@ -219,6 +219,19 @@ TEST_F('CrSettingsPasswordsSectionV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
+var CrSettingsMultiStorePasswordUiEntryV3Test =
+    class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/multi_store_password_ui_entry_test.js';
+  }
+};
+
+TEST_F('CrSettingsMultiStorePasswordUiEntryV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var CrSettingsPasswordsCheckV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {

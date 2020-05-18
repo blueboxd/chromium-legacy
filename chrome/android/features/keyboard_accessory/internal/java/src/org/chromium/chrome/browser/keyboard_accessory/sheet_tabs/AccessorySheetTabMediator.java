@@ -23,6 +23,8 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 /**
  * This class contains the logic for the simple accessory sheets. Changes to its internal
  * {@link PropertyModel} are observed by a {@link PropertyModelChangeProcessor} and affect the
@@ -33,6 +35,20 @@ class AccessorySheetTabMediator implements Provider.Observer<AccessorySheetData>
     private final @AccessoryTabType int mTabType;
     private final @Type int mUserInfoType;
     private final @AccessoryAction int mManageActionToRecord;
+    private final ToggleChangeDelegate mToggleChangeDelegate;
+
+    /**
+     * Can be used to handle changes coming from the {@link OptionToggle}.
+     */
+    public interface ToggleChangeDelegate {
+        /**
+         * Is triggered when the toggle state changes, either on tap or when it is
+         * first initialized.
+         *
+         * @param enabled The new state of the toggle.
+         */
+        void onToggleChanged(boolean enabled);
+    }
 
     @Override
     public void onItemAvailable(int typeId, AccessorySheetData accessorySheetData) {
@@ -40,11 +56,13 @@ class AccessorySheetTabMediator implements Provider.Observer<AccessorySheetData>
     }
 
     AccessorySheetTabMediator(AccessorySheetTabModel model, @AccessoryTabType int tabType,
-            @Type int userInfoType, @AccessoryAction int manageActionToRecord) {
+            @Type int userInfoType, @AccessoryAction int manageActionToRecord,
+            @Nullable ToggleChangeDelegate toggleChangeDelegate) {
         mModel = model;
         mTabType = tabType;
         mUserInfoType = userInfoType;
         mManageActionToRecord = manageActionToRecord;
+        mToggleChangeDelegate = toggleChangeDelegate;
     }
 
     @CallSuper
@@ -82,9 +100,15 @@ class AccessorySheetTabMediator implements Provider.Observer<AccessorySheetData>
     }
 
     private AccessorySheetDataPiece createDataPieceForToggle(OptionToggle toggle) {
+        assert mToggleChangeDelegate
+                != null : "Toggles added in an accessorys sheet should have a"
+                          + "toggle change delegate.";
+        // Make sure the delegate knows the initial state of the toggle.
+        mToggleChangeDelegate.onToggleChanged(toggle.isEnabled());
         OptionToggle toggleWithAddedCallback =
                 new OptionToggle(toggle.getDisplayText(), toggle.isEnabled(), enabled -> {
                     updateOptionToggleEnabled();
+                    mToggleChangeDelegate.onToggleChanged(enabled);
                     toggle.getCallback().onResult(enabled);
                 });
         return new AccessorySheetDataPiece(toggleWithAddedCallback, Type.OPTION_TOGGLE);

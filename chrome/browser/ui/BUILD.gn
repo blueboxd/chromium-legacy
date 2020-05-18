@@ -3913,8 +3913,6 @@ static_library("ui") {
       "app_list/search/search_metrics_observer.h",
       "app_list/search/search_provider.cc",
       "app_list/search/search_provider.h",
-      "app_list/search/search_resource_manager.cc",
-      "app_list/search/search_resource_manager.h",
       "app_list/search/search_result_ranker/app_launch_data.cc",
       "app_list/search/search_result_ranker/app_launch_data.h",
       "app_list/search/search_result_ranker/app_launch_event_logger.cc",

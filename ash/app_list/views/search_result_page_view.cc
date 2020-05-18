@@ -431,8 +431,6 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
                                                true /* default_selection */);
 }
 
-void SearchResultPageView::HintTextChanged() {}
-
 void SearchResultPageView::Update() {
   notify_a11y_results_changed_timer_.Stop();
 }

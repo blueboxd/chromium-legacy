@@ -2046,6 +2046,10 @@ SkColor TabStrip::GetPaintedGroupColor(
 // TabStrip, views::AccessiblePaneView overrides:
 
 void TabStrip::Layout() {
+  if (is_doing_layout_)
+    return;
+  base::AutoReset<bool> layout_guard(&is_doing_layout_, true);
+
   if (IsAnimating()) {
     // Hide tabs that have animated at least partially out of the clip region.
     SetTabVisibility();
@@ -2053,7 +2057,7 @@ void TabStrip::Layout() {
   }
 
   // Only do a layout if our size changed.
-  if (last_layout_size_ == size())
+  if (last_layout_size_ == size() && last_available_width_ != 0)
     return;
   if (drag_context_->IsDragSessionActive())
     return;
@@ -3162,14 +3166,22 @@ int TabStrip::UpdateIdealBoundsForPinnedTabs(int* first_non_pinned_index) {
   return layout_helper_->first_non_pinned_tab_x();
 }
 
-int TabStrip::CalculateAvailableWidthForTabs() {
+int TabStrip::GetAvailableWidthForTabstrip() {
   // Layout the parent so that GetAvailableSize is well-defined.
   parent()->Layout();
   base::Optional<int> available_width =
       parent()->GetAvailableSize(this).width();
-  DCHECK(available_width.has_value());
+  // |available_width| might still be undefined in cases where the tabstrip is
+  // hidden (e.g. presentation mode on MacOS). In these cases we don't care
+  // about the resulting layout, since the tabstrip is not visible, so we can
+  // substitute 0 to ensure that we relayout once the width is defined again.
+  return available_width.value_or(0);
+}
+
+int TabStrip::CalculateAvailableWidthForTabs() {
+  last_available_width_ = GetAvailableWidthForTabstrip();
   return override_available_width_for_tabs_.value_or(
-      available_width.value() - GetRightSideReservedWidth());
+      last_available_width_ - GetRightSideReservedWidth());
 }
 
 void TabStrip::StartResizeLayoutAnimation() {

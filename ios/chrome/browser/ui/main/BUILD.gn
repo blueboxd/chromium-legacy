@@ -76,6 +76,7 @@ source_set("scene") {
     "//ios/chrome/browser/url_loading",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/browser/window_activities",
+    "//ios/chrome/common/ui/util",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/mailto",
     "//ios/public/provider/chrome/browser/signin",

@@ -270,11 +270,6 @@ base::string16 LocationBarModelImpl::GetSecureDisplayText() const {
       // interstitial list.
       if (visible_security_state->malicious_content_status ==
           security_state::MALICIOUS_CONTENT_STATUS_BILLING) {
-#if defined(OS_IOS)
-        // On iOS, we never expect this status, because there are no billing
-        // interstitials.
-        NOTREACHED();
-#endif
         return base::string16();
       }
 

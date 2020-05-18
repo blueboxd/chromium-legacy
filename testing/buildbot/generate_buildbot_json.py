@@ -21,6 +21,8 @@ import string
 import sys
 import traceback
 
+import buildbot_json_magic_substitutions as magic_substitutions
+
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -413,6 +415,34 @@ class BBJSONGenerator(object):
     arr = self.merge_command_line_args(arr, '--extra-browser-args=', ' ')
     return arr
 
+  def substitute_magic_args(self, test_config):
+    """Substitutes any magic substitution args present in |test_config|.
+
+    Substitutions are done in-place.
+
+    See buildbot_json_magic_substitutions.py for more information on this
+    feature.
+
+    Args:
+      test_config: A dict containing a configuration for a specific test on
+          a specific builder, e.g. the output of update_and_cleanup_test.
+    """
+    substituted_array = []
+    for arg in test_config.get('args', []):
+      if arg.startswith(magic_substitutions.MAGIC_SUBSTITUTION_PREFIX):
+        function = arg.replace(
+            magic_substitutions.MAGIC_SUBSTITUTION_PREFIX, '')
+        if hasattr(magic_substitutions, function):
+          substituted_array.extend(
+              getattr(magic_substitutions, function)(test_config))
+        else:
+          raise BBGenErr(
+              'Magic substitution function %s does not exist' % function)
+      else:
+        substituted_array.append(arg)
+    if substituted_array:
+      test_config['args'] = self.maybe_fixup_args_array(substituted_array)
+
   def dictionary_merge(self, a, b, path=None, update=True):
     """http://stackoverflow.com/questions/7204805/
         python-dictionaries-of-dictionaries-merge
@@ -670,6 +700,7 @@ class BBJSONGenerator(object):
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
     self.add_common_test_properties(result, tester_config)
+    self.substitute_magic_args(result)
 
     if not result.get('merge'):
       # TODO(https://crbug.com/958376): Consider adding the ability to not have
@@ -695,6 +726,7 @@ class BBJSONGenerator(object):
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
     self.add_common_test_properties(result, tester_config)
+    self.substitute_magic_args(result)
 
     if not result.get('merge'):
       # TODO(https://crbug.com/958376): Consider adding the ability to not have
@@ -722,6 +754,7 @@ class BBJSONGenerator(object):
     }
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
+    self.substitute_magic_args(result)
     return result
 
   def generate_junit_test(self, waterfall, tester_name, tester_config,
@@ -737,6 +770,7 @@ class BBJSONGenerator(object):
     self.initialize_args_for_test(result, tester_config)
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
+    self.substitute_magic_args(result)
     return result
 
   def generate_instrumentation_test(self, waterfall, tester_name, tester_config,
@@ -751,6 +785,7 @@ class BBJSONGenerator(object):
       result['test'] = test_name
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
+    self.substitute_magic_args(result)
     return result
 
   def substitute_gpu_args(self, tester_config, swarming_config, args):

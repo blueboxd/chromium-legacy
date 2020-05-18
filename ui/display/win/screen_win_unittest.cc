@@ -39,7 +39,7 @@ class TestScreenWin : public ScreenWin {
     UpdateFromDisplayInfos(display_infos);
   }
 
-  ~TestScreenWin() override = default;
+  ~TestScreenWin() override { Screen::SetScreenInstance(old_screen_); }
 
  protected:
   // win::ScreenWin:
@@ -122,6 +122,7 @@ class TestScreenWin : public ScreenWin {
     return metric;
   }
 
+  Screen* old_screen_ = Screen::SetScreenInstance(this);
   std::vector<MONITORINFOEX> monitor_infos_;
   std::unordered_map<HWND, gfx::Rect> hwnd_map_;
 
@@ -148,8 +149,7 @@ class TestScreenWinInitializer {
 class TestScreenWinManager final : public TestScreenWinInitializer {
  public:
   TestScreenWinManager() = default;
-
-  ~TestScreenWinManager() { Screen::SetScreenInstance(nullptr); }
+  ~TestScreenWinManager() = default;
 
   void AddMonitor(const gfx::Rect& pixel_bounds,
                   const gfx::Rect& pixel_work,
@@ -175,7 +175,6 @@ class TestScreenWinManager final : public TestScreenWinInitializer {
     ASSERT_EQ(screen_win_, nullptr);
     screen_win_ = std::make_unique<TestScreenWin>(display_infos_,
                                                   monitor_infos_, hwnd_map_);
-    Screen::SetScreenInstance(screen_win_.get());
   }
 
   ScreenWin* GetScreenWin() {

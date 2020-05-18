@@ -59,7 +59,11 @@ extern const char kInstallSwitch[];
 #if defined(OS_MACOSX)
 // Swaps the current version of the updater with the newly installed one.
 // Performs clean-up.
-extern const char kSwapUpdaterSwitch[];
+extern const char kPromoteCandidateSwitch[];
+// TODO: crbug 1072061
+// This switch should not be shipped.
+extern const char kUninstallCandidateSwitch[];
+extern const char kWakeSwitch[];
 #endif  // OS_MACOSX
 
 #if defined(OS_WIN)
@@ -74,6 +78,8 @@ extern const char kInstallFromOutDir[];
 extern const char kUninstallSwitch[];
 
 // Updates all apps registered with the updater.
+// TODO: crbug 1084010
+// This switch should be removed, as the new design relies on kWakeSwitch.
 extern const char kUpdateAppsSwitch[];
 
 // The updater needs to operate in the system context.

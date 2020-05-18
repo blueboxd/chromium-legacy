@@ -66,6 +66,8 @@ Shell::~Shell() {
   tab_.reset();
 
   if (windows_.empty()) {
+    PlatformExit();
+
     if (*g_quit_main_message_loop)
       std::move(*g_quit_main_message_loop).Run();
   }
@@ -90,13 +92,6 @@ void Shell::CloseAllWindows() {
 
   // Pump the message loop to allow window teardown tasks to run.
   base::RunLoop().RunUntilIdle();
-
-  // If there were no windows open then the message loop quit closure will
-  // not have been run.
-  if (*g_quit_main_message_loop)
-    std::move(*g_quit_main_message_loop).Run();
-
-  PlatformExit();
 }
 
 void Shell::SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure) {

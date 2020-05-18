@@ -1441,6 +1441,9 @@ extern const char kEnableRevampedContextMenuDescription[];
 extern const char kEnableOfflinePreviewsName[];
 extern const char kEnableOfflinePreviewsDescription[];
 
+extern const char kEnableUseAaudioDriverName[];
+extern const char kEnableUseAaudioDriverDescription[];
+
 extern const char kEphemeralTabUsingBottomSheetName[];
 extern const char kEphemeralTabUsingBottomSheetDescription[];
 

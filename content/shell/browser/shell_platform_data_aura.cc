@@ -11,7 +11,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/test/test_focus_client.h"
-#include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_parenting_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -82,10 +81,8 @@ ShellPlatformDataAura::ShellPlatformDataAura(const gfx::Size& initial_size) {
 
 #if defined(USE_OZONE)
   // Setup global display::Screen singleton.
-  if (!display::Screen::GetScreen()) {
+  if (!display::Screen::GetScreen())
     screen_ = std::make_unique<aura::ScreenOzone>();
-    display::Screen::SetScreenInstance(screen_.get());
-  }
 #endif  // defined(USE_OZONE)
 
   ui::PlatformWindowInitProperties properties;
@@ -116,12 +113,7 @@ ShellPlatformDataAura::ShellPlatformDataAura(const gfx::Size& initial_size) {
       std::make_unique<aura::test::TestWindowParentingClient>(host_->window());
 }
 
-ShellPlatformDataAura::~ShellPlatformDataAura() {
-#if defined(USE_OZONE)
-  if (screen_)
-    display::Screen::SetScreenInstance(nullptr);
-#endif
-}
+ShellPlatformDataAura::~ShellPlatformDataAura() = default;
 
 void ShellPlatformDataAura::ShowWindow() {
   host_->Show();

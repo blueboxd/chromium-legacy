@@ -5450,7 +5450,19 @@
     "note": "This policy is deprecated in M82 and doesn't map to a pref value anymore."
   },
 
-  "MinimumChromeVersionEnforced": {},
+  "MinimumChromeVersionEnforced": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "MinimumChromeVersionEnforced": [
+            {"chrome_version" : "82","warning_period" : 0, "eol_warning_period" : 14}
+          ]
+        },
+        "prefs": { "cros.min_version_enforced.chrome": {} }
+      }
+    ]
+  },
 
   "DeviceLoginScreenAutoSelectCertificateForUrls": {},
 

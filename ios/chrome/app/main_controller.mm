@@ -596,6 +596,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                                      [self setStartupParameters:nil];
                                    }];
   }
+
+  self.appState.sceneShowingBlockingUI = nil;
 }
 
 - (void)handleFirstRunUIDidFinish {
@@ -648,7 +650,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (BOOL)isPresentingFirstRunUI {
   BOOL isPresentingFirstRunUI = NO;
   for (SceneState* scene in self.appState.connectedScenes) {
-    isPresentingFirstRunUI &= scene.presentingFirstRunUI;
+    isPresentingFirstRunUI |= scene.presentingFirstRunUI;
   }
 
   return isPresentingFirstRunUI;
@@ -1051,7 +1053,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   return !(self.otrBrowser->GetWebStateList()->empty());
 }
 
-- (void)prepareForFirstRunUI {
+- (void)prepareForFirstRunUI:(SceneState*)presentingScene {
   // Register for notification when First Run is completed.
   // Some initializations are held back until First Run modal dialog
   // is dismissed.
@@ -1065,6 +1067,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
          selector:@selector(handleFirstRunUIDidFinish)
              name:kChromeFirstRunUIDidFinishNotification
            object:nil];
+
+  // Update the AppState.
+  self.appState.sceneShowingBlockingUI = presentingScene;
 }
 
 - (void)crashIfRequested {

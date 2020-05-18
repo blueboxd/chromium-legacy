@@ -57,9 +57,6 @@ class SpokenFeedbackAppListTest
   void SetUpOnMainThread() override {
     LoggedInSpokenFeedbackTest::SetUpOnMainThread();
     auto* controller = ash::Shell::Get()->app_list_controller();
-    controller->SetSearchTabletAndClamshellAccessibleName(
-        l10n_util::GetStringUTF16(IDS_SEARCH_BOX_ACCESSIBILITY_NAME_TABLET),
-        l10n_util::GetStringUTF16(IDS_SEARCH_BOX_ACCESSIBILITY_NAME));
     controller->SetAppListModelForTest(
         std::make_unique<ash::test::AppListTestModel>());
     app_list_test_model_ =

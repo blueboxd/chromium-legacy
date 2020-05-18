@@ -79,10 +79,16 @@ mojom::NonRemovableBlockDeviceResultPtr MakeNonRemovableBlockDeviceResult() {
   std::vector<mojom::NonRemovableBlockDeviceInfoPtr> info;
   info.push_back(mojom::NonRemovableBlockDeviceInfo::New(
       "test_path", 123 /* size */, "test_type", 10 /* manfid */, "test_name",
-      768 /* serial */));
+      768 /* serial */, 798123 /* bytes_read_since_last_boot */,
+      130971 /* bytes_written_since_last_boot */,
+      56768 /* read_time_seconds_since_last_boot */,
+      123123 /* write_time_seconds_since_last_boot */));
   info.push_back(mojom::NonRemovableBlockDeviceInfo::New(
       "test_path2", 124 /* size */, "test_type2", 11 /* manfid */, "test_name2",
-      767 /* serial */));
+      767 /* serial */, 293429 /* bytes_read_since_last_boot */,
+      2929 /* bytes_written_since_last_boot */,
+      438563 /* read_time_seconds_since_last_boot */,
+      530 /* write_time_seconds_since_last_boot */));
   return mojom::NonRemovableBlockDeviceResult::NewBlockDeviceInfo(
       std::move(info));
 }

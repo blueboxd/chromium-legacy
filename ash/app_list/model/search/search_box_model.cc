@@ -16,36 +16,8 @@ SearchBoxModel::SearchBoxModel() = default;
 
 SearchBoxModel::~SearchBoxModel() = default;
 
-void SearchBoxModel::SetHintText(const base::string16& hint_text) {
-  if (hint_text_ == hint_text)
-    return;
-
-  hint_text_ = hint_text;
-  for (auto& observer : observers_)
-    observer.HintTextChanged();
-}
-
-void SearchBoxModel::SetTabletAndClamshellAccessibleName(
-    base::string16 tablet_accessible_name,
-    base::string16 clamshell_accessible_name) {
-  tablet_accessible_name_ = tablet_accessible_name;
-  clamshell_accessible_name_ = clamshell_accessible_name;
-  UpdateAccessibleName();
-}
-
-void SearchBoxModel::UpdateAccessibleName() {
-  accessible_name_ =
-      is_tablet_mode_ ? tablet_accessible_name_ : clamshell_accessible_name_;
-
-  for (auto& observer : observers_)
-    observer.HintTextChanged();
-}
-
 void SearchBoxModel::SetTabletMode(bool is_tablet_mode) {
-  if (is_tablet_mode == is_tablet_mode_)
-    return;
   is_tablet_mode_ = is_tablet_mode;
-  UpdateAccessibleName();
 }
 
 void SearchBoxModel::SetShowAssistantButton(bool show) {

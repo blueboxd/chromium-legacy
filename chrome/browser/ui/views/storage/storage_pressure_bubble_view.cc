@@ -114,6 +114,7 @@ void StoragePressureBubbleView::Init() {
   auto origin_string = url_formatter::FormatUrl(
       origin_.GetURL(),
       url_formatter::kFormatUrlOmitDefaults |
+          url_formatter::kFormatUrlOmitTrivialSubdomains |
           url_formatter::kFormatUrlOmitHTTPS |
           url_formatter::kFormatUrlOmitTrailingSlashOnBareHostname,
       net::UnescapeRule::NONE, nullptr, nullptr, nullptr);

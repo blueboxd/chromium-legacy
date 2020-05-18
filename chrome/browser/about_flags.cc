@@ -4111,6 +4111,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kBackgroundTaskComponentUpdate)},
 #endif
 
+#if defined(OS_ANDROID)
+    {"enable-use-aaudio-driver", flag_descriptions::kEnableUseAaudioDriverName,
+     flag_descriptions::kEnableUseAaudioDriverDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kUseAAudioDriver)},
+#endif
+
 #if defined(OS_CHROMEOS)
     {"smart-text-selection", flag_descriptions::kSmartTextSelectionName,
      flag_descriptions::kSmartTextSelectionDescription, kOsCrOS,

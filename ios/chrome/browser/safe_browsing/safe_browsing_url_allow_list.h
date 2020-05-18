@@ -28,7 +28,7 @@ class SafeBrowsingUrlAllowList
   // is non-null, it is populated with the allowed threat types.
   bool AreUnsafeNavigationsAllowed(
       const GURL& url,
-      std::set<safe_browsing::SBThreatType>* threat_types = nullptr);
+      std::set<safe_browsing::SBThreatType>* threat_types = nullptr) const;
 
   // Allows future unsafe navigations to |url| that encounter threats with
   // |threat_type|.
@@ -43,7 +43,7 @@ class SafeBrowsingUrlAllowList
   // types.
   bool IsUnsafeNavigationDecisionPending(
       const GURL& url,
-      std::set<safe_browsing::SBThreatType>* threat_types = nullptr);
+      std::set<safe_browsing::SBThreatType>* threat_types = nullptr) const;
 
   // Records that a navigation to |url| has encountered |threat_type|, but the
   // user has not yet chosen whether to allow the navigation.
@@ -72,6 +72,8 @@ class SafeBrowsingUrlAllowList
   // is stripped from the URLs before accessing |decisions_| to allow unafe
   // navigation decisions to be shared across all URLs for a given domain.
   UnsafeNavigationDecisions& GetUnsafeNavigationDecisions(const GURL& url);
+  const UnsafeNavigationDecisions& GetUnsafeNavigationDecisions(
+      const GURL& url) const;
 
   // The WebState whose allowed navigations are recorded by this list.
   web::WebState* web_state_ = nullptr;

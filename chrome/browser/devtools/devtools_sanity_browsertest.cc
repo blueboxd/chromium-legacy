@@ -1115,8 +1115,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
 // Tests that iframes to a non-devtools extension embedded in a devtools
 // extension will be isolated from devtools and the devtools extension.
 // http://crbug.com/570483
+// Disabled due to flakiness https://crbug.com/1062802
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
-                       NonDevToolsExtensionInDevToolsExtension) {
+                       DISABLED_NonDevToolsExtensionInDevToolsExtension) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Install the dynamically-generated non-devtools extension.

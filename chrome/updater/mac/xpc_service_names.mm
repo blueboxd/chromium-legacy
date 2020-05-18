@@ -12,15 +12,6 @@
 
 namespace updater {
 
-base::ScopedCFTypeRef<CFStringRef> CopyGoogleUpdateCheckLaunchDName() {
-  return base::ScopedCFTypeRef<CFStringRef>(
-      base::SysUTF8ToCFStringRef(base::StrCat({
-          MAC_BUNDLE_IDENTIFIER_STRING,
-          ".check",
-      })),
-      base::scoped_policy::RETAIN);
-}
-
 base::ScopedCFTypeRef<CFStringRef> CopyGoogleUpdateServiceLaunchDName() {
   return base::ScopedCFTypeRef<CFStringRef>(
       base::SysUTF8ToCFStringRef(base::StrCat({
@@ -30,14 +21,23 @@ base::ScopedCFTypeRef<CFStringRef> CopyGoogleUpdateServiceLaunchDName() {
       base::scoped_policy::RETAIN);
 }
 
-base::scoped_nsobject<NSString> GetGoogleUpdateCheckLaunchDLabel() {
-  return base::scoped_nsobject<NSString>(
-      base::mac::CFToNSCast(CopyGoogleUpdateCheckLaunchDName()));
+base::ScopedCFTypeRef<CFStringRef> CopyGoogleUpdateAdministrationLaunchDName() {
+  return base::ScopedCFTypeRef<CFStringRef>(
+      base::SysUTF8ToCFStringRef(base::StrCat({
+          MAC_BUNDLE_IDENTIFIER_STRING,
+          ".admin",
+      })),
+      base::scoped_policy::RETAIN);
 }
 
 base::scoped_nsobject<NSString> GetGoogleUpdateServiceLaunchDLabel() {
   return base::scoped_nsobject<NSString>(
       base::mac::CFToNSCast(CopyGoogleUpdateServiceLaunchDName()));
+}
+
+base::scoped_nsobject<NSString> GetGoogleUpdateAdministrationLaunchDLabel() {
+  return base::scoped_nsobject<NSString>(
+      base::mac::CFToNSCast(CopyGoogleUpdateAdministrationLaunchDName()));
 }
 
 base::scoped_nsobject<NSString> GetGoogleUpdateServiceMachName(NSString* name) {

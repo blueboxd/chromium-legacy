@@ -2779,8 +2779,6 @@ static void ForAllDrawableGraphicsLayers(
     ForAllDrawableGraphicsLayers(child, main_layer_function,
                                  contents_layer_function);
   }
-  ForAllDrawableGraphicsLayers(layer->MaskLayer(), main_layer_function,
-                               contents_layer_function);
 }
 
 static void CollectDrawableLayersForLayerListRecursively(

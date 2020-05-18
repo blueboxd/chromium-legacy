@@ -81,6 +81,12 @@
       'Linux FYI GPU TSAN Release',
     ],
   },
+  'aura_unittests': {
+    'remove_from': [
+      'Fuchsia ARM64', # https://crbug.com/1075803
+      'Fuchsia x64', # https://crbug.com/1075803
+    ],
+  },
   'blink_web_tests': {
     'remove_from': [
       'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
@@ -1289,6 +1295,12 @@
       },
     },
   },
+  'latency_unittests': {
+    'remove_from': [
+      'Fuchsia ARM64', # https://crbug.com/1084174
+      'Fuchsia x64', # https://crbug.com/1084174
+    ],
+  },
   'maps_pixel_test': {
     # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
     # exception once there is enough capacity to run these tests.
@@ -1449,6 +1461,12 @@
       'Linux TSan Tests',  # The TSan bot sets enable_nacl=false
       'Mac ASan 64 Tests (1)',  # The mac asan bot sets enable_nacl=false
       'Mac10.15 Tests',  # All 10.15 builders set enable_nacl=false
+    ],
+  },
+  'native_theme_unittests': {
+    'remove_from': [
+      'Fuchsia ARM64', # https://crbug.com/1084174
+      'Fuchsia x64', # https://crbug.com/1084174
     ],
   },
   'net_unittests': {
@@ -2392,16 +2410,6 @@
       'chromeos-amd64-generic-rel': {
         'swarming': {
           'shards': 12,
-        },
-      },
-    },
-    'replacements': {
-      'chromeos-kevin-rel-hw-tests': {
-        # Replace VM args with the magic hostname that resolves to a CrOS
-        # device in the test lab.
-        'args': {
-          '--remote': 'variable_chromeos_device_hostname',
-          '--remote-ssh-port': None,
         },
       },
     },

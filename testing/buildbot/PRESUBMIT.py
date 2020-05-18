@@ -28,6 +28,13 @@ def CommonChecks(input_api, output_api):
       kwargs={}, message=output_api.PresubmitError),
 
     input_api.Command(
+      name='buildbot_json_magic_substitutions_unittest', cmd=[
+        input_api.python_executable,
+        'buildbot_json_magic_substitutions_unittest.py',
+      ], kwargs={}, message=output_api.PresubmitError
+    ),
+
+    input_api.Command(
       name='manage', cmd=[
         input_api.python_executable, 'manage.py', '--check'],
       kwargs={}, message=output_api.PresubmitError),

@@ -32,7 +32,9 @@ DesktopScreenX11::DesktopScreenX11() {
     display_scale_factor_observer_.Add(LinuxUI::instance());
 }
 
-DesktopScreenX11::~DesktopScreenX11() = default;
+DesktopScreenX11::~DesktopScreenX11() {
+  display::Screen::SetScreenInstance(old_screen_);
+}
 
 void DesktopScreenX11::Init() {
   if (x11_display_manager_->IsXrandrAvailable() &&

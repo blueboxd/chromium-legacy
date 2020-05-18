@@ -298,7 +298,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void RemoveSpellingMarkersUnderWords(const Vector<String>& words);
 
   bool ShouldThrottleRendering() const;
-  void DispatchBeforeUnloadEventForFreeze();
 
   // Returns frame scheduler for this frame.
   // FrameScheduler is destroyed during frame detach and nullptr will be
@@ -753,7 +752,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   base::Optional<base::UnguessableToken> embedding_token_;
 
   mojom::FrameLifecycleState lifecycle_state_;
-  base::Optional<mojom::FrameLifecycleState> pending_lifecycle_state_;
 
   std::unique_ptr<WebPrescientNetworking> prescient_networking_;
 

@@ -657,8 +657,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
   if (url.host_piece() == chromeos::kChromeUISampleSystemWebAppHost)
     return &NewWebUI<chromeos::SampleSystemWebAppUI>;
-  if (url.host_piece() == chromeos::kChromeUITelemetryExtensionHost)
-    return &NewWebUI<chromeos::TelemetryExtensionUI>;
+  if (url.host_piece() == chromeos::kChromeUITelemetryExtensionHost) {
+    if (base::FeatureList::IsEnabled(chromeos::features::kTelemetryExtension)) {
+      return &NewWebUI<chromeos::TelemetryExtensionUI>;
+    }
+  }
 #endif  // !defined(OFFICIAL_BUILD)
 #endif  // defined(OS_CHROMEOS)
 #if defined(OS_ANDROID)

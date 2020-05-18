@@ -1532,6 +1532,15 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                   nullptr);
   }
 
+  if (policy.has_minimum_chrome_version_enforced()) {
+    const em::StringPolicyProto& container(
+        policy.minimum_chrome_version_enforced());
+    if (container.has_value()) {
+      SetJsonDevicePolicy(key::kMinimumChromeVersionEnforced, container.value(),
+                          policies);
+    }
+  }
+
   if (policy.has_unaffiliated_arc_allowed()) {
     const em::UnaffiliatedArcAllowedProto& container(
         policy.unaffiliated_arc_allowed());

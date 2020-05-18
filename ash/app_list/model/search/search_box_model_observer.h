@@ -11,9 +11,6 @@ namespace ash {
 
 class APP_LIST_MODEL_EXPORT SearchBoxModelObserver {
  public:
-  // Invoked when hint text is changed.
-  virtual void HintTextChanged() = 0;
-
   // Invoked when text or voice search flag is changed.
   virtual void Update() = 0;
 

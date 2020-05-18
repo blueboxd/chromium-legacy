@@ -55,7 +55,8 @@ void FetchContext::PopulateResourceRequest(
     ResourceType,
     const ClientHintsPreferences&,
     const FetchParameters::ResourceWidth&,
-    ResourceRequest&) {}
+    ResourceRequest&,
+    const FetchInitiatorInfo&) {}
 
 mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
 FetchContext::TakePendingWorkerTimingReceiver(int request_id) {

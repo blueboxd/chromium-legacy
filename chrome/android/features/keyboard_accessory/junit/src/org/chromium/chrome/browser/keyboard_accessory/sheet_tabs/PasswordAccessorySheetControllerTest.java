@@ -10,7 +10,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -52,6 +54,7 @@ import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.OptionToggle;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.UserInfo;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
+import org.chromium.chrome.browser.keyboard_accessory.data.Provider;
 import org.chromium.chrome.browser.keyboard_accessory.data.UserInfoField;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.ui.modelutil.ListObservable;
@@ -205,8 +208,8 @@ public class PasswordAccessorySheetControllerTest {
 
         testProvider.notifyObservers(testData);
 
-        // Invoke callback on the option toggle that was stored in the model. This is not the same
-        // as the OptionToggle passed above, because the mediator repackages it to include an
+        // Invoke the callback on the option toggle that was stored in the model. This is not the
+        // same as the OptionToggle passed above, because the mediator repackages it to include an
         // additional method call in the callback.
         OptionToggle repackagedToggle = (OptionToggle) mSheetDataPieces.get(0).getDataPiece();
 
@@ -214,9 +217,52 @@ public class PasswordAccessorySheetControllerTest {
         repackagedToggle.getCallback().onResult(true);
 
         // Check that the original callback was called and that the model was updated with an
-        // enabled toggle
+        // enabled toggle.
         assertTrue(toggleEnabled.get());
         assertTrue(((OptionToggle) mSheetDataPieces.get(0).getDataPiece()).isEnabled());
+    }
+
+    @Test
+    public void testToggleChangeDelegateIsCalledWhenToggleIsAdded() {
+        Provider.Observer<Drawable> mMockObserver = mock(Provider.Observer.class);
+        mCoordinator.getTab().addIconObserver(mMockObserver);
+
+        final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
+        final AccessorySheetData testData =
+                new AccessorySheetData(AccessoryTabType.PASSWORDS, "Passwords", "");
+        testData.setOptionToggle(
+                new OptionToggle("Save passwords for this site", false, (Boolean enabled) -> {}));
+        mCoordinator.registerDataProvider(testProvider);
+
+        testProvider.notifyObservers(testData);
+        verify(mMockObserver).onItemAvailable(eq(Provider.Observer.DEFAULT_TYPE), any());
+    }
+
+    @Test
+    public void testToggleChangeDelegateIsCalledWhenToggleIsChanged() {
+        Provider.Observer<Drawable> mMockIconObserver = mock(Provider.Observer.class);
+        mCoordinator.getTab().addIconObserver(mMockIconObserver);
+
+        final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
+        final AccessorySheetData testData =
+                new AccessorySheetData(AccessoryTabType.PASSWORDS, "Passwords", "");
+        testData.setOptionToggle(
+                new OptionToggle("Save passwords for this site", false, (Boolean enabled) -> {}));
+        mCoordinator.registerDataProvider(testProvider);
+
+        testProvider.notifyObservers(testData);
+
+        // Invoke the callback on the option toggle that was stored in the model. This is not the
+        // same as the OptionToggle passed above, because the mediator repackages it to include an
+        // additional method call in the callback.
+        OptionToggle repackagedToggle = (OptionToggle) mSheetDataPieces.get(0).getDataPiece();
+
+        // Pretend to enable the toggle like a click would do.
+        repackagedToggle.getCallback().onResult(true);
+
+        // Note that the icon observer is called once for initialization and once for the change.
+        verify(mMockIconObserver, times(2))
+                .onItemAvailable(eq(Provider.Observer.DEFAULT_TYPE), any());
     }
 
     @Test

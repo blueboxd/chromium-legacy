@@ -23,6 +23,7 @@ source_set("interstitials") {
     "//ios/chrome/browser:chrome_url_constants",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/safe_browsing",
+    "//ios/chrome/browser/safe_browsing:allow_list",
     "//ios/chrome/browser/ssl",
     "//ios/components/security_interstitials",
     "//ios/web/public/security",

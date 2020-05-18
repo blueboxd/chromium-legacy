@@ -12,6 +12,7 @@
 
 #include "base/big_endian.h"
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -257,7 +258,9 @@ std::string ResourceBundle::InitSharedInstanceWithLocale(
   InitSharedInstance(delegate);
   if (load_resources == LOAD_COMMON_RESOURCES)
     g_shared_instance_->LoadCommonResources();
-  std::string result = g_shared_instance_->LoadLocaleResources(pref_locale);
+  std::string result =
+      g_shared_instance_->LoadLocaleResources(pref_locale,
+                                              /*crash_on_failure=*/true);
   g_shared_instance_->InitDefaultFontList();
   return result;
 }
@@ -326,7 +329,8 @@ void ResourceBundle::LoadSecondaryLocaleDataWithPakFileRegion(
 #if !defined(OS_ANDROID)
 // static
 bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
-  return !GetLocaleFilePath(locale).empty();
+  const auto path = GetLocaleFilePath(locale);
+  return !path.empty() && base::PathExists(path);
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -378,10 +382,7 @@ base::FilePath ResourceBundle::GetLocaleFilePath(
     return base::FilePath();
 
   base::FilePath locale_file_path;
-
-  base::PathService::Get(ui::DIR_LOCALES, &locale_file_path);
-
-  if (!locale_file_path.empty()) {
+  if (base::PathService::Get(ui::DIR_LOCALES, &locale_file_path)) {
 #if defined(OS_ANDROID)
     if (locale_file_path.value().find("chromium_tests") == std::string::npos) {
       std::string extracted_file_suffix =
@@ -410,20 +411,14 @@ base::FilePath ResourceBundle::GetLocaleFilePath(
         locale_file_path, app_locale);
   }
 
-  // Don't try to load empty values or values that are not absolute paths.
-  if (locale_file_path.empty() || !locale_file_path.IsAbsolute())
-    return base::FilePath();
-
-  if (base::PathExists(locale_file_path))
-    return locale_file_path;
-
-  return base::FilePath();
+  // Don't try to load from paths that are not absolute.
+  return locale_file_path.IsAbsolute() ? locale_file_path : base::FilePath();
 }
 #endif
 
 #if !defined(OS_ANDROID)
-std::string ResourceBundle::LoadLocaleResources(
-    const std::string& pref_locale) {
+std::string ResourceBundle::LoadLocaleResources(const std::string& pref_locale,
+                                                bool crash_on_failure) {
   DCHECK(!locale_resources_data_.get()) << "locale.pak already loaded";
   std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
   base::FilePath locale_file_path = GetOverriddenPakPath();
@@ -437,10 +432,18 @@ std::string ResourceBundle::LoadLocaleResources(
   }
 
   std::unique_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
-  if (!data_pack->LoadFromPath(locale_file_path)) {
-    LOG(ERROR) << "failed to load locale file: " << locale_file_path;
-    NOTREACHED();
-    return std::string();
+  if (!data_pack->LoadFromPath(locale_file_path) && crash_on_failure) {
+    // https://crbug.com/1076423: Chrome can't start when the locale file cannot
+    // be loaded. Crash early and gather some data.
+#if defined(OS_WIN)
+    const auto last_error = ::GetLastError();
+    base::debug::Alias(&last_error);
+    wchar_t path_copy[MAX_PATH];
+    base::wcslcpy(path_copy, locale_file_path.value().c_str(),
+                  base::size(path_copy));
+    base::debug::Alias(path_copy);
+#endif  // defined(OS_WIN)
+    CHECK(false);
   }
 
   locale_resources_data_ = std::move(data_pack);
@@ -518,7 +521,7 @@ std::string ResourceBundle::ReloadLocaleResources(
   overridden_locale_strings_.clear();
 
   UnloadLocaleResources();
-  return LoadLocaleResources(pref_locale);
+  return LoadLocaleResources(pref_locale, /*crash_on_failure=*/false);
 }
 
 gfx::ImageSkia* ResourceBundle::GetImageSkiaNamed(int resource_id) {

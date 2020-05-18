@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
+#import "ios/chrome/browser/safe_browsing/safe_browsing_url_allow_list.h"
 #include "ios/chrome/browser/ssl/ios_captive_portal_blocking_page.h"
 #include "ios/chrome/browser/ssl/ios_ssl_blocking_page.h"
 #import "ios/chrome/browser/ui/webui/interstitials/interstitial_ui_constants.h"
@@ -155,6 +156,9 @@ CreateSafeBrowsingBlockingPageDelegate(web::WebState* web_state,
       safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
   GURL request_url("http://example.com");
   GURL main_frame_url(request_url);
+
+  // The SafeBrowsingBlockingPage requires the allow list to be instantiated.
+  SafeBrowsingUrlAllowList::CreateForWebState(web_state);
 
   std::string url_param;
   if (net::GetValueForKeyInQuery(

@@ -119,7 +119,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
     return scrolling_contents_layer_.get();
   }
 
-  bool HasMaskLayer() const { return mask_layer_.get(); }
   GraphicsLayer* MaskLayer() const { return mask_layer_.get(); }
 
   GraphicsLayer* ParentForSublayers() const;
@@ -408,6 +407,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   //      |   + layer_for_horizontal_scrollbar_ [OPTIONAL]
   //      |   + layer_for_scroll_corner_ [OPTIONAL]
   //      + decoration_outline_layer_ [OPTIONAL]
+  //      + mask_layer_ [ OPTIONAL ]
   // The overflow controls may need to be repositioned in the graphics layer
   // tree by the RLC to ensure that they stack above scrolling content.
 
@@ -419,10 +419,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // Only used if the layer is using composited scrolling.
   std::unique_ptr<GraphicsLayer> scrolling_contents_layer_;
 
-  // This layer is also added to the hierarchy by the RLB, but in a different
-  // way than the layers above. It's added to graphics_layer_ as its mask layer
-  // (naturally) if we have a mask, and isn't part of the typical hierarchy (it
-  // has no children).
   // Only used if we have a mask.
   std::unique_ptr<GraphicsLayer> mask_layer_;
 

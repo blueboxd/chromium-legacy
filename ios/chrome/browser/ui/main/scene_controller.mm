@@ -69,6 +69,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/window_activities/window_activity_helpers.h"
+#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
@@ -193,6 +194,9 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 // time it is accessed.
 @property(nonatomic, strong) SigninCoordinator* signinCoordinator;
 
+// The view that blocks all interactions with the scene.
+@property(nonatomic, strong) UIView* blockingOverlayView;
+
 @end
 
 @implementation SceneController
@@ -269,6 +273,32 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
     [ContentSuggestionsSchedulerNotifications
         notifyForeground:self.mainInterface.browserState];
   }
+}
+
+- (void)sceneStateWillShowModalOverlay:(SceneState*)sceneState {
+  [self displayBlockingOverlay];
+}
+
+- (void)sceneStateWillHideModalOverlay:(SceneState*)sceneState {
+  [self.blockingOverlayView removeFromSuperview];
+}
+
+// TODO(crbug.com/1072408): factor out into a new class.
+- (void)displayBlockingOverlay {
+  self.blockingOverlayView = [[UIView alloc] init];
+  self.blockingOverlayView.backgroundColor = UIColor.blackColor;
+
+  [self.sceneState.window addSubview:self.blockingOverlayView];
+  AddSameConstraints(self.sceneState.window, self.blockingOverlayView);
+  self.blockingOverlayView.translatesAutoresizingMaskIntoConstraints = NO;
+
+  UILabel* label = [[UILabel alloc] init];
+  // TODO(crbug.com/1072408): use localized text if this goes into final UI.
+  label.text = @"Please finish the flow in the other window";
+  label.textColor = UIColor.whiteColor;
+  [self.blockingOverlayView addSubview:label];
+  AddSameCenterConstraints(label, self.blockingOverlayView);
+  label.translatesAutoresizingMaskIntoConstraints = NO;
 }
 
 - (void)presentSignInAccountsViewControllerIfNecessary {
@@ -448,10 +478,15 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   // If this is first run, show the first run UI on top of the new tab.
   // If this isn't first run, check if the sign-in promo needs to display.
   if (firstRun) {
-    [self.mainController prepareForFirstRunUI];
-    [self showFirstRunUI];
-    // Do not ever show the 'restore' infobar during first run.
-    self.mainController.restoreHelper = nil;
+    if (self.mainController.isPresentingFirstRunUI) {
+      [self displayBlockingOverlay];
+    } else {
+      [self.mainController prepareForFirstRunUI:self.sceneState];
+      [self showFirstRunUI];
+      // Do not ever show the 'restore' infobar during first run.
+      self.mainController.restoreHelper = nil;
+    }
+
   } else {
     [self scheduleShowPromo];
   }

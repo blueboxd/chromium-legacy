@@ -17,7 +17,7 @@ void InstallDesktopScreenIfNecessary() {
 
   // The screen may have already been set in test initialization.
   if (!display::Screen::GetScreen())
-    display::Screen::SetScreenInstance(CreateDesktopScreen());
+    CreateDesktopScreen();
 }
 
 }  // namespace views

@@ -50,6 +50,20 @@
 [ impl_lte_81 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentWithFallbackUrlAfterRedirectLaunched [ Skip ]
 [ impl_lte_81 ] org.chromium.weblayer.test.ExternalNavigationTest#testNonHandledExternalIntentWithFallbackUrlAfterRedirectGoesToFallbackUrl [ Skip ]
 
+# Required APIs are added in m83
+[ impl_lte_81 ] org.chromium.weblayer.test.ProfileTest#testDestroyAndDeleteDataFromDisk [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.ProfileTest#testDestroyAndDeleteDataFromDiskIncognito [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.ProfileTest#testEnumerateAllProfileNames [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.ProfileTest#testReuseProfile [ Skip ]
+
+# Required APIs are added in 82 or 83
+[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testDismissTransientUi [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testOnTitleUpdated [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testShowContextMenu [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testShowContextMenuImg [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testTabModalOverlay [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testTabModalOverlayOnBackgroundTab [ Skip ]
+
 # Many M81 tests are broken, see https://crbug.com/1081102.
 [ impl_lte_81 ] org.chromium.weblayer.test.BrowserFragmentLifecycleTest#restoreAfterRecreate [ Skip ]
 [ impl_lte_81 ] org.chromium.weblayer.test.BrowserFragmentLifecycleTest#restoreTabGuidAfterRecreate [ Skip ]
@@ -71,16 +85,6 @@
 [ impl_lte_81 ] org.chromium.weblayer.test.NavigationTest#testSetRequestHeaderThrowsExceptionInCompleted [ Skip ]
 [ impl_lte_81 ] org.chromium.weblayer.test.NavigationTest#testSetRequestHeaderThrowsExceptionWithInvalidValue [ Skip ]
 [ impl_lte_81 ] org.chromium.weblayer.test.NavigationTest#testStopFromOnNavigationStarted [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.ProfileTest#testDestroyAndDeleteDataFromDisk [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.ProfileTest#testDestroyAndDeleteDataFromDiskIncognito [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.ProfileTest#testEnumerateAllProfileNames [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.ProfileTest#testReuseProfile [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testDismissTransientUi [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testOnTitleUpdated [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testShowContextMenu [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testShowContextMenuImg [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testTabModalOverlay [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testTabModalOverlayOnBackgroundTab [ Skip ]
 
 # -------------------------------------
 # Tests against older WebLayer clients.

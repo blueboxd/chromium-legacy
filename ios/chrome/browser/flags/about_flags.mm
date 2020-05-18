@@ -643,6 +643,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableIOSManagedSettingsUIName,
      flag_descriptions::kEnableIOSManagedSettingsUIDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableIOSManagedSettingsUI)},
+    {"safety-check-ios", flag_descriptions::kSafetyCheckIOSName,
+     flag_descriptions::kSafetyCheckIOSDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kSafetyCheckIOS)},
+
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

@@ -39,7 +39,9 @@ class COLOR_SPACE_EXPORT DisplayColorSpaces {
   DisplayColorSpaces();
 
   // Initialize as |color_space| for all settings. If |color_space| is the
-  // default (invalid) color space, then initialize to sRGB.
+  // default (invalid) color space, then initialize to sRGB. The BufferFormat
+  // will be set to a default value (BGRA_8888 or RGBA_8888) depending on
+  // build configuration.
   explicit DisplayColorSpaces(const ColorSpace& color_space);
 
   // Initialize as |color_space| and |buffer_format| for all settings. If

@@ -4,9 +4,6 @@
 
 #include "content/child/webthemeengine_impl_mac.h"
 
-#include "content/child/webthemeengine_impl_conversions.h"
-#include "ui/native_theme/native_theme.h"
-
 namespace content {
 
 blink::ForcedColors WebThemeEngineMac::GetForcedColors() const {

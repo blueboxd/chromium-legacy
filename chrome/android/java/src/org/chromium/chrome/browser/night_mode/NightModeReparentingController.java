@@ -58,6 +58,9 @@ public class NightModeReparentingController implements NightModeStateProvider.Ob
         for (int i = 0; i < tabs.size(); i++) {
             Tab tab = tabs.get(i);
 
+            // The current tab has already been detached/stored and is waiting for andorid to
+            // recreate the activity.
+            if (AsyncTabParamsManager.hasParamsForTabId(tab.getId())) continue;
             // Intentionally skip new tab pages and allow them to reload and restore scroll
             // state themselves.
             if (mDelegate.isNTPUrl(tab.getUrlString())) continue;

@@ -79,9 +79,10 @@ class ArcNotificationViewTest : public AshTestBase {
 
     std::unique_ptr<Notification> notification = CreateSimpleNotification();
 
-    notification_view_.reset(static_cast<ArcNotificationView*>(
-        message_center::MessageViewFactory::Create(*notification)));
-    notification_view_->set_owned_by_client();
+    std::unique_ptr<ArcNotificationView> notification_view(
+        static_cast<ArcNotificationView*>(
+            message_center::MessageViewFactory::Create(*notification)));
+    notification_view_ = notification_view.get();
     surface_ =
         std::make_unique<MockArcNotificationSurface>(kDefaultNotificationKey);
     notification_view_->content_view_->SetSurface(surface_.get());
@@ -96,7 +97,7 @@ class ArcNotificationViewTest : public AshTestBase {
         views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     views::Widget* widget = new views::Widget();
     widget->Init(std::move(init_params));
-    widget->SetContentsView(notification_view_.get());
+    widget->SetContentsView(std::move(notification_view));
     widget->SetSize(notification_view_->GetPreferredSize());
     widget->Show();
     EXPECT_EQ(widget, notification_view_->GetWidget());
@@ -117,7 +118,6 @@ class ArcNotificationViewTest : public AshTestBase {
 
   void TearDown() override {
     widget()->Close();
-    notification_view_.reset();
     item_.reset();
     notification_.reset();
     surface_.reset();
@@ -145,7 +145,7 @@ class ArcNotificationViewTest : public AshTestBase {
   void UpdateNotificationViews(const Notification& notification) {
     MessageCenter::Get()->AddNotification(
         std::make_unique<Notification>(notification));
-    notification_view()->UpdateWithNotification(notification);
+    notification_view_->UpdateWithNotification(notification);
   }
 
   float GetNotificationSlideAmount() const {
@@ -182,7 +182,7 @@ class ArcNotificationViewTest : public AshTestBase {
     return notification_view_->content_view_;
   }
   views::Widget* widget() { return notification_view_->GetWidget(); }
-  ArcNotificationView* notification_view() { return notification_view_.get(); }
+  ArcNotificationView* notification_view() { return notification_view_; }
 
  protected:
   const std::string kDefaultNotificationKey = "notification_id";
@@ -201,7 +201,7 @@ class ArcNotificationViewTest : public AshTestBase {
 
   std::unique_ptr<MockArcNotificationSurface> surface_;
   std::unique_ptr<Notification> notification_;
-  std::unique_ptr<ArcNotificationView> notification_view_;
+  ArcNotificationView* notification_view_ = nullptr;  // owned by its widget.
 
   std::unique_ptr<MockArcNotificationItem> item_;
 

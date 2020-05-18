@@ -36,7 +36,8 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
  * Encapsulates the video player functionality of the Photo Picker dialog.
  */
 public class PickerVideoPlayer
-        extends FrameLayout implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
+        extends FrameLayout implements View.OnClickListener, SeekBar.OnSeekBarChangeListener,
+                                       View.OnSystemUiVisibilityChangeListener {
     /**
      * A callback interface for notifying about video playback status.
      */
@@ -53,6 +54,9 @@ public class PickerVideoPlayer
 
     // The amount of time (in milliseconds) to skip when fast forwarding/rewinding.
     private static final int SKIP_LENGTH_IN_MS = 10000;
+
+    // The DecorView for the dialog the player is shown in.
+    private View mDecorView;
 
     // The resources to use.
     private Resources mResources;
@@ -78,6 +82,16 @@ public class PickerVideoPlayer
     // Keeps track of whether audio track is enabled or not.
     private boolean mAudioOn = true;
 
+    // The Fullscreen button.
+    private final ImageView mFullscreenButton;
+
+    // Keeps track of whether full screen is enabled or not.
+    private boolean mFullScreenEnabled;
+
+    // Keeps track of whether full screen was toggled via the button in-app or via a system handled
+    // user gesture (such as dragging from the top).
+    private boolean mFullScreenToggledInApp;
+
     // The remaining video playback time.
     private final TextView mRemainingTime;
 
@@ -89,6 +103,9 @@ public class PickerVideoPlayer
 
     // A flag to control when the playback monitor schedules new tasks.
     private boolean mRunPlaybackMonitoringTask;
+
+    // The previous options for the System UI visibility.
+    private int mPreviousSystemUiVisibilityOptions;
 
     // The object to convert touch events into gestures.
     private GestureDetectorCompat mGestureDetector;
@@ -116,6 +133,7 @@ public class PickerVideoPlayer
         mLargePlayButton = findViewById(R.id.video_player_play_button);
         mMuteButton = findViewById(R.id.mute);
         mMuteButton.setImageResource(R.drawable.ic_volume_on_white_24dp);
+        mFullscreenButton = findViewById(R.id.fullscreen);
         mRemainingTime = findViewById(R.id.remaining_time);
         mSeekBar = findViewById(R.id.seek_bar);
         mFastForwardMessage = findViewById(R.id.fast_forward_message);
@@ -123,6 +141,7 @@ public class PickerVideoPlayer
         mVideoOverlayContainer.setOnClickListener(this);
         mLargePlayButton.setOnClickListener(this);
         mMuteButton.setOnClickListener(this);
+        mFullscreenButton.setOnClickListener(this);
         mSeekBar.setOnSeekBarChangeListener(this);
 
         mGestureDetector = new GestureDetectorCompat(context, new DoubleTapGestureListener());
@@ -148,8 +167,11 @@ public class PickerVideoPlayer
     /**
      * Start playback of a video in an overlay above the photo picker.
      * @param uri The uri of the video to start playing.
+     * @param decorView The decorView for the dialog.
      */
-    public void startVideoPlaybackAsync(Uri uri) {
+    public void startVideoPlaybackAsync(Uri uri, View decorView) {
+        mDecorView = decorView;
+
         setVisibility(View.VISIBLE);
 
         mVideoView.setVisibility(View.VISIBLE);
@@ -160,7 +182,13 @@ public class PickerVideoPlayer
             startVideoPlayback();
 
             mMediaPlayer.setOnVideoSizeChangedListener(
-                    (MediaPlayer player, int width, int height) -> { syncOverlayControlsSize(); });
+                    (MediaPlayer player, int width, int height) -> {
+                        // Once the size of the video player is known, it is possible to calculate
+                        // the correct size of the overlay container and show it. This way the
+                        // controls won't briefly appear in the wrong position.
+                        syncOverlayControlsSize();
+                        mVideoOverlayContainer.setVisibility(View.VISIBLE);
+                    });
 
             if (sProgressCallback != null) {
                 mMediaPlayer.setOnInfoListener((MediaPlayer player, int what, int extra) -> {
@@ -233,7 +261,33 @@ public class PickerVideoPlayer
             toggleVideoPlayback();
         } else if (id == R.id.mute) {
             toggleMute();
+        } else if (id == R.id.fullscreen) {
+            toggleAndroidSystemUiForFullscreen();
         }
+    }
+
+    // View.OnSystemUiVisibilityChangeListener:
+
+    @Override
+    public void onSystemUiVisibilityChange(int visibility) {
+        if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+            mDecorView.setOnSystemUiVisibilityChangeListener(null);
+            onExitFullScreenMode();
+
+            if (!mFullScreenToggledInApp) {
+                // When the user drops out of full screen via a system gesture, such as dragging
+                // from the top of the screen, the system sends the visibility change event before
+                // the resize has happened, so the new video size isn't known yet. Syncing
+                // immediately would make the overlay controls appear in the wrong location.
+                getHandler().post(() -> syncOverlayControlsSize());
+                return;
+            }
+        } else {
+            onEnterFullScreenMode();
+        }
+
+        syncOverlayControlsSize();
+        mFullScreenToggledInApp = false;
     }
 
     // SeekBar.OnSeekBarChangeListener:
@@ -316,6 +370,7 @@ public class PickerVideoPlayer
     private void enableClickableButtons(boolean enable) {
         mLargePlayButton.setClickable(enable);
         mMuteButton.setClickable(enable);
+        mFullscreenButton.setClickable(enable);
     }
 
     private void updateProgress() {
@@ -398,6 +453,41 @@ public class PickerVideoPlayer
             mMuteButton.setContentDescription(
                     mResources.getString(R.string.accessibility_unmute_video));
         }
+    }
+
+    private void onEnterFullScreenMode() {
+        assert !mFullScreenEnabled;
+        mFullscreenButton.setImageResource(R.drawable.ic_full_screen_exit_white_24dp);
+        mFullscreenButton.setContentDescription(
+                mResources.getString(R.string.accessibility_exit_full_screen));
+        mFullScreenEnabled = true;
+    }
+
+    private void onExitFullScreenMode() {
+        assert mFullScreenEnabled;
+        mFullscreenButton.setImageResource(R.drawable.ic_full_screen_white_24dp);
+        mFullscreenButton.setContentDescription(
+                mResources.getString(R.string.accessibility_full_screen));
+        mFullScreenEnabled = false;
+    }
+
+    private void toggleAndroidSystemUiForFullscreen() {
+        mFullScreenToggledInApp = true;
+        if (!mFullScreenEnabled) {
+            mDecorView.setOnSystemUiVisibilityChangeListener(this);
+            mPreviousSystemUiVisibilityOptions = mDecorView.getSystemUiVisibility();
+            mDecorView.setSystemUiVisibility(mPreviousSystemUiVisibilityOptions
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LOW_PROFILE);
+        } else {
+            mDecorView.setSystemUiVisibility(mPreviousSystemUiVisibilityOptions);
+        }
+
+        // Calling setSystemUiVisibility will result in Android showing/hiding its system UI to go
+        // into or out of full screen mode. This happens asynchronously and once that change is
+        // complete the video player needs to respond to those changes. Flow therefore continues in
+        // onSystemUiVisibilityChange, which the system calls when it is done.
     }
 
     private void startPlaybackMonitor() {

@@ -119,6 +119,10 @@ const UserData* ScriptExecutor::GetUserData() const {
   return user_data_;
 }
 
+UserModel* ScriptExecutor::GetUserModel() {
+  return delegate_->GetUserModel();
+}
+
 void ScriptExecutor::OnNavigationStateChanged() {
   NavigationInfoProto& navigation_info = current_action_data_.navigation_info;
   if (delegate_->IsNavigatingToNewDocument()) {
@@ -150,7 +154,9 @@ void ScriptExecutor::OnNavigationStateChanged() {
           std::move(on_expected_navigation_done_)
               .Run(!delegate_->HasNavigationError());
       }
-      break;
+      // Early return since current_action_data_ is no longer valid at this
+      // point.
+      return;
 
     case ExpectedNavigationStep::DONE:
       // nothing to do
@@ -274,8 +280,11 @@ void ScriptExecutor::OnTermsAndConditionsLinkClicked(
   std::move(callback).Run(link, user_data, user_model);
 }
 
-void ScriptExecutor::GetFullCard(GetFullCardCallback callback) {
-  DCHECK(GetUserData()->selected_card_.get());
+void ScriptExecutor::GetFullCard(
+    const autofill::CreditCard* credit_card,
+    base::OnceCallback<void(std::unique_ptr<autofill::CreditCard> card,
+                            const base::string16& cvc)> callback) {
+  DCHECK(credit_card);
 
   // User might be asked to provide the cvc.
   delegate_->EnterState(AutofillAssistantState::MODAL_DIALOG);
@@ -284,7 +293,7 @@ void ScriptExecutor::GetFullCard(GetFullCardCallback callback) {
   // so as to unit test it.
   (new SelfDeleteFullCardRequester())
       ->GetFullCard(
-          GetWebContents(), GetUserData()->selected_card_.get(),
+          GetWebContents(), credit_card,
           base::BindOnce(&ScriptExecutor::OnGetFullCard,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -771,6 +780,7 @@ void ScriptExecutor::OnProcessedAction(
   processed_action.set_direct_action(current_action_data_.direct_action);
   *processed_action.mutable_navigation_info() =
       current_action_data_.navigation_info;
+
   if (processed_action.status() != ProcessedActionStatusProto::ACTION_APPLIED) {
     if (delegate_->HasNavigationError()) {
       // Overwrite the original error, as the root cause is most likely a

@@ -4,7 +4,9 @@
 
 #import "ios/chrome/browser/ui/settings/privacy/cookies_coordinator.h"
 
-#include "base/check_op.h"
+#include "base/logging.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -17,7 +19,6 @@
 #endif
 
 @interface PrivacyCookiesCoordinator () <
-    PrivacyCookiesCommands,
     PrivacyCookiesViewControllerPresentationDelegate>
 
 @property(nonatomic, strong) PrivacyCookiesViewController* viewController;
@@ -48,21 +49,19 @@
   [self.baseNavigationController pushViewController:self.viewController
                                            animated:YES];
   self.viewController.presentationDelegate = self;
-  self.viewController.handler = self;
 
-  self.mediator = [[PrivacyCookiesMediator alloc] init];
+  self.mediator = [[PrivacyCookiesMediator alloc]
+      initWithPrefService:self.browser->GetBrowserState()->GetPrefs()
+              settingsMap:ios::HostContentSettingsMapFactory::
+                              GetForBrowserState(
+                                  self.browser->GetBrowserState())];
   self.mediator.consumer = self.viewController;
+  self.viewController.handler = self.mediator;
 }
 
 - (void)stop {
   self.viewController = nil;
   self.mediator = nil;
-}
-
-#pragma mark - PrivacyCookiesCommands
-
-- (void)selectedCookiesSettingType:(CookiesSettingType)settingType {
-  // TODO(crbug.com/1064961): Implement this.
 }
 
 #pragma mark - PrivacyCookiesViewControllerPresentationDelegate

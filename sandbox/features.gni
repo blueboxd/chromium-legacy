@@ -14,3 +14,8 @@ use_seccomp_bpf = (is_linux || is_android) &&
                    current_cpu == "mipsel" || current_cpu == "mips64el")
 
 use_seccomp_bpf = use_seccomp_bpf || is_nacl_nonsfi
+
+# SSBD (Speculative Store Bypass Disable) is a mitigation of Spectre Variant 4.
+# As Spectre Variant 4 can be mitigated by site isolation, opt-out SSBD on site
+# isolation fully applied platform.
+disable_seccomp_ssbd = use_seccomp_bpf && !is_android

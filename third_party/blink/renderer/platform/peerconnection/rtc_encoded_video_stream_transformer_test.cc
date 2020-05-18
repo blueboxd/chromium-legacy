@@ -20,7 +20,11 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/webrtc/api/frame_transformer_interface.h"
+#include "third_party/webrtc/api/test/mock_transformable_video_frame.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
+
+using ::testing::NiceMock;
+using ::testing::Return;
 
 namespace blink {
 
@@ -42,29 +46,11 @@ class MockTransformerCallbackHolder {
                void(std::unique_ptr<webrtc::TransformableVideoFrameInterface>));
 };
 
-class FakeVideoFrame : public webrtc::TransformableVideoFrameInterface {
- public:
-  explicit FakeVideoFrame(uint32_t ssrc) : ssrc_(ssrc) {}
-
-  rtc::ArrayView<const uint8_t> GetData() const override {
-    return rtc::ArrayView<const uint8_t>();
-  }
-
-  // Copies |data| into the owned frame payload data.
-  void SetData(rtc::ArrayView<const uint8_t> data) override {}
-  uint32_t GetTimestamp() const override { return 0; }
-  uint32_t GetSsrc() const override { return ssrc_; }
-  bool IsKeyFrame() const override { return true; }
-  std::vector<uint8_t> GetAdditionalData() const override {
-    return std::vector<uint8_t>();
-  }
-
- private:
-  uint32_t ssrc_;
-};
-
-std::unique_ptr<webrtc::TransformableVideoFrameInterface> CreateFakeFrame() {
-  return std::make_unique<FakeVideoFrame>(kSSRC);
+std::unique_ptr<webrtc::TransformableVideoFrameInterface> CreateMockFrame() {
+  auto mock_frame =
+      std::make_unique<NiceMock<webrtc::MockTransformableVideoFrame>>();
+  ON_CALL(*mock_frame.get(), GetSsrc).WillByDefault(Return(kSSRC));
+  return mock_frame;
 }
 
 }  // namespace
@@ -127,13 +113,13 @@ TEST_F(RTCEncodedVideoStreamTransformerTest,
       *webrtc_task_runner_, FROM_HERE,
       CrossThreadBindOnce(&webrtc::FrameTransformerInterface::Transform,
                           encoded_video_stream_transformer_.Delegate(),
-                          CreateFakeFrame()));
+                          CreateMockFrame()));
   task_environment_.RunUntilIdle();
 }
 
 TEST_F(RTCEncodedVideoStreamTransformerTest, TransformerForwardsFrameToWebRTC) {
   EXPECT_CALL(*webrtc_callback_, OnTransformedFrame);
-  encoded_video_stream_transformer_.SendFrameToSink(CreateFakeFrame());
+  encoded_video_stream_transformer_.SendFrameToSink(CreateMockFrame());
   task_environment_.RunUntilIdle();
 }
 

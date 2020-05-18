@@ -52,6 +52,7 @@ enum class SystemAppType {
   MEDIA,
   HELP,
   PRINT_MANAGEMENT,
+  TELEMETRY,
 #if !defined(OFFICIAL_BUILD)
   SAMPLE,
 #endif  // !defined(OFFICIAL_BUILD)

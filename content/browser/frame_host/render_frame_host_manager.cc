@@ -955,8 +955,11 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       // done earlier to keep browser and renderer state in sync.  This is
       // important to do before CommitPending(), which destroys the
       // corresponding proxy. See https://crbug.com/487872.
+      // TODO(https://crbug.com/1072817): Make this logic more robust to
+      // consider the case for failed navigations after CommitPending.
       if (GetRenderFrameProxyHost(dest_site_instance.get()))
         navigation_rfh->SwapIn();
+      navigation_rfh->OnCommittedSpeculativeBeforeNavigationCommit();
       CommitPending(std::move(speculative_render_frame_host_), nullptr,
                     request->require_coop_browsing_instance_swap());
     }

@@ -7,7 +7,7 @@
 [
     ActiveScriptWrappable
 ] interface mixin Body {
-    [RaisesException] readonly attribute boolean bodyUsed;
+    readonly attribute boolean bodyUsed;
     [CallWith=ScriptState, NewObject, RaisesException] Promise<ArrayBuffer> arrayBuffer();
     [CallWith=ScriptState, NewObject, RaisesException] Promise<Blob> blob();
     [CallWith=ScriptState, NewObject, RaisesException] Promise<FormData> formData();

@@ -781,6 +781,8 @@ chrome_java_resources = [
   "java/res/drawable/ic_file_download_24dp.xml",
   "java/res/drawable/ic_file_download_36dp.xml",
   "java/res/drawable/ic_fingerprint_grey500_36dp.xml",
+  "java/res/drawable/ic_full_screen_exit_white_24dp.xml",
+  "java/res/drawable/ic_full_screen_white_24dp.xml",
   "java/res/drawable/ic_globe_24dp.xml",
   "java/res/drawable/ic_google_round.xml",
   "java/res/drawable/ic_info_outline_grey.xml",

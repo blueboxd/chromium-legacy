@@ -198,16 +198,13 @@ Request* Request::CreateRequestWithRequestOrString(
   // Setup RequestInit's body first
   // - "If |input| is a Request object and it is disturbed, throw a
   //   TypeError."
-  if (input_request &&
-      input_request->IsBodyUsed(exception_state) == BodyUsed::kUsed) {
-    DCHECK(!exception_state.HadException());
+  if (input_request && input_request->IsBodyUsed()) {
     exception_state.ThrowTypeError(
         "Cannot construct a Request with a Request object that has already "
         "been used.");
     return nullptr;
   }
-  if (exception_state.HadException())
-    return nullptr;
+
   // - "Let |temporaryBody| be |input|'s request's body if |input| is a
   //   Request object, and null otherwise."
   BodyStreamBuffer* temporary_body =
@@ -871,14 +868,10 @@ bool Request::isHistoryNavigation() const {
 
 Request* Request::clone(ScriptState* script_state,
                         ExceptionState& exception_state) {
-  if (IsBodyLocked(exception_state) == BodyLocked::kLocked ||
-      IsBodyUsed(exception_state) == BodyUsed::kUsed) {
-    DCHECK(!exception_state.HadException());
+  if (IsBodyLocked() || IsBodyUsed()) {
     exception_state.ThrowTypeError("Request body is already used");
     return nullptr;
   }
-  if (exception_state.HadException())
-    return nullptr;
 
   FetchRequestData* request = request_->Clone(script_state, exception_state);
   if (exception_state.HadException())
@@ -893,7 +886,7 @@ Request* Request::clone(ScriptState* script_state,
 
 FetchRequestData* Request::PassRequestData(ScriptState* script_state,
                                            ExceptionState& exception_state) {
-  DCHECK(!IsBodyUsedForDCheck(exception_state));
+  DCHECK(!IsBodyUsed());
   FetchRequestData* data = request_->Pass(script_state, exception_state);
   if (exception_state.HadException())
     return nullptr;

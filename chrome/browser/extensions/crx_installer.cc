@@ -108,7 +108,7 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
       install_directory_(service_weak->install_directory()),
       install_source_(Manifest::INTERNAL),
       approved_(false),
-      verification_check_failed_(false),
+      hash_check_failed_(false),
       expected_manifest_check_level_(
           WebstoreInstaller::MANIFEST_CHECK_LEVEL_STRICT),
       fail_install_if_unexpected_version_(false),
@@ -317,7 +317,7 @@ void CrxInstaller::ConvertWebAppOnFileThread(
                   extension.get(), SkBitmap(), {} /* ruleset_checksums */);
 }
 
-base::Optional<CrxInstallError> CrxInstaller::CheckExpectations(
+base::Optional<CrxInstallError> CrxInstaller::AllowInstall(
     const Extension* extension) {
   DCHECK(installer_task_runner_->RunsTasksInCurrentSequence());
 
@@ -332,23 +332,6 @@ base::Optional<CrxInstallError> CrxInstaller::CheckExpectations(
                                    base::ASCIIToUTF16(extension->id())));
   }
 
-  if (expected_version_.IsValid() && fail_install_if_unexpected_version_ &&
-      expected_version_ != extension->version()) {
-    return CrxInstallError(
-        CrxInstallErrorType::OTHER, CrxInstallErrorDetail::MISMATCHED_VERSION,
-        l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_INSTALL_UNEXPECTED_VERSION,
-            base::ASCIIToUTF16(expected_version_.GetString()),
-            base::ASCIIToUTF16(extension->version().GetString())));
-  }
-
-  return base::nullopt;
-}
-
-base::Optional<CrxInstallError> CrxInstaller::AllowInstall(
-    const Extension* extension) {
-  DCHECK(installer_task_runner_->RunsTasksInCurrentSequence());
-
   if (minimum_version_.IsValid() &&
       extension->version().CompareTo(minimum_version_) < 0) {
     return CrxInstallError(
@@ -356,6 +339,16 @@ base::Optional<CrxInstallError> CrxInstaller::AllowInstall(
         l10n_util::GetStringFUTF16(
             IDS_EXTENSION_INSTALL_UNEXPECTED_VERSION,
             base::ASCIIToUTF16(minimum_version_.GetString() + "+"),
+            base::ASCIIToUTF16(extension->version().GetString())));
+  }
+
+  if (expected_version_.IsValid() && fail_install_if_unexpected_version_ &&
+      expected_version_ != extension->version()) {
+    return CrxInstallError(
+        CrxInstallErrorType::OTHER, CrxInstallErrorDetail::MISMATCHED_VERSION,
+        l10n_util::GetStringFUTF16(
+            IDS_EXTENSION_INSTALL_UNEXPECTED_VERSION,
+            base::ASCIIToUTF16(expected_version_.GetString()),
             base::ASCIIToUTF16(extension->version().GetString())));
   }
 
@@ -544,32 +537,6 @@ void CrxInstaller::OnUnpackSuccess(
   // We don't have to delete the unpack dir explicity since it is a child of
   // the temp dir.
   unpacked_extension_root_ = extension_dir;
-
-  // Check whether the crx matches the set expectations.
-  base::Optional<CrxInstallError> expectations_error =
-      CheckExpectations(extension);
-  if (expectations_error) {
-    DCHECK_NE(CrxInstallErrorType::NONE, expectations_error->type());
-    ReportFailureFromFileThread(*expectations_error);
-    return;
-  }
-
-  // The |expectations_error| could be non-null in case of version mismatch if
-  // |fail_install_if_unexpected_version_| is set to false.
-  // If |expectations_passed_callback_| is set, the installer owns the crx file,
-  // and there is no version mismatch, invoke the callback and transfer the
-  // ownership. The responsibility to delete the crx file now lies with the
-  // callback.
-  if (!expectations_verified_callback_.is_null() && delete_source_ &&
-      (!expected_version_.IsValid() ||
-       expected_version_ == extension->version())) {
-    delete_source_ = false;
-    if (!base::PostTask(
-            FROM_HERE, {BrowserThread::UI},
-            base::BindOnce(std::move(expectations_verified_callback_)))) {
-      NOTREACHED();
-    }
-  }
 
   base::Optional<CrxInstallError> error = AllowInstall(extension);
   if (error) {
@@ -1158,11 +1125,6 @@ void CrxInstaller::ConfirmReEnable() {
 
 void CrxInstaller::set_installer_callback(InstallerResultCallback callback) {
   installer_callback_ = std::move(callback);
-}
-
-void CrxInstaller::set_expectations_verified_callback(
-    ExpectationsVerifiedCallback callback) {
-  expectations_verified_callback_ = std::move(callback);
 }
 
 }  // namespace extensions

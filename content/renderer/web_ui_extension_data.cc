@@ -6,25 +6,15 @@
 
 #include "content/common/frame_messages.h"
 #include "content/public/renderer/render_frame.h"
-#include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 
 namespace content {
 
-void WebUIExtensionData::Create(RenderFrame* render_frame,
-                                mojo::PendingReceiver<mojom::WebUI> receiver) {
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<WebUIExtensionData>(render_frame), std::move(receiver));
-}
-
 WebUIExtensionData::WebUIExtensionData(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
-      RenderFrameObserverTracker<WebUIExtensionData>(render_frame) {
-  render_frame->GetBrowserInterfaceBroker()->GetInterface(
-      remote_.BindNewPipeAndPassReceiver());
-}
+      RenderFrameObserverTracker<WebUIExtensionData>(render_frame) {}
 
-WebUIExtensionData::~WebUIExtensionData() = default;
+WebUIExtensionData::~WebUIExtensionData() {
+}
 
 std::string WebUIExtensionData::GetValue(const std::string& key) const {
   auto it = variable_map_.find(key);
@@ -33,14 +23,22 @@ std::string WebUIExtensionData::GetValue(const std::string& key) const {
   return it->second;
 }
 
-void WebUIExtensionData::SendMessage(const std::string& message,
-                                     std::unique_ptr<base::ListValue> args) {
-  remote_->Send(message, std::move(*args));
+bool WebUIExtensionData::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(WebUIExtensionData, message)
+    IPC_MESSAGE_HANDLER(FrameMsg_SetWebUIProperty, OnSetWebUIProperty)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
-void WebUIExtensionData::SetProperty(const std::string& name,
-                                     const std::string& value) {
+void WebUIExtensionData::OnSetWebUIProperty(const std::string& name,
+                                            const std::string& value) {
   variable_map_[name] = value;
+}
+
+void WebUIExtensionData::OnDestruct() {
+  delete this;
 }
 
 }  // namespace content

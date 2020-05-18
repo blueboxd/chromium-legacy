@@ -10,13 +10,10 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.DataSetObserver;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -41,8 +38,8 @@ import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.android_webview.common.crash.CrashInfo;
 import org.chromium.android_webview.common.crash.CrashInfo.UploadState;
 import org.chromium.android_webview.common.crash.CrashUploadUtil;
+import org.chromium.android_webview.devui.util.CrashBugUrlFactory;
 import org.chromium.android_webview.devui.util.WebViewCrashInfoCollector;
-import org.chromium.android_webview.devui.util.WebViewPackageHelper;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
@@ -65,35 +62,6 @@ public class CrashesListFragment extends DevUiBaseFragment {
 
     private CrashListExpandableAdapter mCrashListViewAdapter;
     private Context mContext;
-
-    // There is a limit on the length of this query string, see https://crbug.com/1015923
-    // TODO(https://crbug.com/1052295): add assert statement to check the length of this String.
-    private static final String CRASH_REPORT_TEMPLATE = ""
-            + "Build fingerprint: %s\n"
-            + "Android API level: %s\n"
-            + "WebView package: %s (%s/%s)\n"
-            + "Application: %s\n"
-            + "Application version: %s\n"
-            + "If this app is available on Google Play, please include a URL:\n"
-            + "\n"
-            + "\n"
-            + "Steps to reproduce:\n"
-            + "(1)\n"
-            + "(2)\n"
-            + "(3)\n"
-            + "\n"
-            + "\n"
-            + "Expected result:\n"
-            + "(What should have happened?)\n"
-            + "\n"
-            + "\n"
-            + "<Any additional comments, you want to share>"
-            + "\n"
-            + "\n"
-            + "****DO NOT CHANGE BELOW THIS LINE****\n"
-            + "Crash ID: http://crash/%s\n"
-            + "Instructions for triaging this report (Chromium members only): "
-            + "https://bit.ly/2SM1Y9t\n";
 
     // These values are persisted to logs. Entries should not be renumbered and
     // numeric values should never be reused.
@@ -203,14 +171,13 @@ public class CrashesListFragment extends DevUiBaseFragment {
             CrashInfo crashInfo = (CrashInfo) getGroup(groupPosition);
 
             ImageView packageIcon = view.findViewById(R.id.crash_package_icon);
-            String packageName;
-            if (crashInfo.packageName == null) {
+            String packageName = crashInfo.getCrashKey(CrashInfo.APP_PACKAGE_NAME_KEY);
+            if (packageName == null) {
                 // This can happen if crash log file where we keep crash info is cleared but other
                 // log files like upload logs still exist.
                 packageName = "unknown app";
                 packageIcon.setImageResource(android.R.drawable.sym_def_app_icon);
             } else {
-                packageName = crashInfo.packageName;
                 try {
                     Drawable icon = mContext.getPackageManager().getApplicationIcon(packageName);
                     packageIcon.setImageDrawable(icon);
@@ -372,41 +339,6 @@ public class CrashesListFragment extends DevUiBaseFragment {
         }
     }
 
-    // Build a report uri to open an issue on https://bugs.chromium.org/p/chromium/issues/entry.
-    // It uses WebView Bugs Template and adds "User-Submitted" Label.
-    // It adds the upload id at the end of the template and populates the Application package
-    // name field.
-    private Uri getReportUri(CrashInfo crashInfo) {
-        String appPackage = "";
-        String appVersion = "";
-        if (crashInfo.packageName != null) {
-            try {
-                PackageManager pm = mContext.getPackageManager();
-                PackageInfo packageInfo = pm.getPackageInfo(crashInfo.packageName, 0);
-                appPackage = crashInfo.packageName;
-                appVersion = String.format(
-                        Locale.US, "%s/%s", packageInfo.versionName, packageInfo.versionCode);
-            } catch (PackageManager.NameNotFoundException e) {
-            }
-        }
-
-        PackageInfo webViewPackage = WebViewPackageHelper.getContextPackageInfo(mContext);
-
-        return new Uri.Builder()
-                .scheme("https")
-                .authority("bugs.chromium.org")
-                .path("/p/chromium/issues/entry")
-                .appendQueryParameter("template", "Webview+Bugs")
-                .appendQueryParameter("description",
-                        String.format(Locale.US, CRASH_REPORT_TEMPLATE, Build.FINGERPRINT,
-                                Build.VERSION.SDK_INT, webViewPackage.packageName,
-                                webViewPackage.versionName, webViewPackage.versionCode, appPackage,
-                                appVersion, crashInfo.uploadId))
-                .appendQueryParameter(
-                        "labels", "User-Submitted,Via-WebView-DevTools,Pri-3,Type-Bug,OS-Android")
-                .build();
-    }
-
     private static String uploadStateString(UploadState uploadState) {
         switch (uploadState) {
             case UPLOADED:
@@ -496,8 +428,7 @@ public class CrashesListFragment extends DevUiBaseFragment {
                 "This crash has already been reported to our crash system. Do you want to share "
                 + "more information, such as steps to reproduce the crash?");
         dialogBuilder.setPositiveButton("Provide more info",
-                (dialog, id)
-                        -> startActivity(new Intent(Intent.ACTION_VIEW, getReportUri(crashInfo))));
+                (dialog, id) -> startActivity(new CrashBugUrlFactory(crashInfo).getReportIntent()));
         dialogBuilder.setNegativeButton("Dismiss", (dialog, id) -> dialog.dismiss());
         return dialogBuilder.create();
     }

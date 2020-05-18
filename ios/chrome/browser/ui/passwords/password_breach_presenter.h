@@ -13,9 +13,6 @@
 // Presents more information related to the feature.
 - (void)presentLearnMore;
 
-// Dismisses more information related to the feature.
-- (void)dismissLearnMore;
-
 // Informs the presenter that the feature should dismiss.
 - (void)stop;
 

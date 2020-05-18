@@ -117,7 +117,7 @@ class WaylandDataDevice : public WaylandDataDeviceBase {
   void HandleReceivedData(std::unique_ptr<ui::OSExchangeData> received_data);
   // Returns the next MIME type to be received from the source process, or an
   // empty string if there are no more interesting MIME types left to process.
-  std::string SelectNextMimeType();
+  std::string GetNextUnprocessedMimeType();
 
   // Set drag operation decided by client.
   void SetOperation(const int operation);

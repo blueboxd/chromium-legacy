@@ -69,6 +69,7 @@ export const SafetyCheckPasswordsStatus = {
   SIGNED_OUT: 5,
   QUOTA_LIMIT: 6,
   ERROR: 7,
+  FEATURE_UNAVAILABLE: 8,
 };
 
 /**

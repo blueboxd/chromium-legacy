@@ -7,7 +7,6 @@ package org.chromium.android_webview.devui.util;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.android_webview.common.crash.CrashInfo;
-import org.chromium.android_webview.common.crash.CrashInfo.UploadState;
 import org.chromium.android_webview.common.crash.SystemWideCrashDirectories;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 
@@ -31,7 +30,6 @@ public class WebViewCrashInfoCollector {
         mCrashInfoLoaders = new CrashInfoLoader[] {
                 new UploadedCrashesInfoLoader(crashFileManager.getCrashUploadLogFile()),
                 new UnuploadedFilesStateLoader(crashFileManager),
-
                 new WebViewCrashLogParser(SystemWideCrashDirectories.getWebViewCrashLogDir())};
     }
 
@@ -63,10 +61,9 @@ public class WebViewCrashInfoCollector {
         for (CrashInfo c : crashesList) {
             CrashInfo previous = crashInfoMap.get(c.localId);
             if (previous != null) {
-                mergeCrashInfo(previous, c);
-            } else {
-                crashInfoMap.put(c.localId, c);
+                c = new CrashInfo(previous, c);
             }
+            crashInfoMap.put(c.localId, c);
         }
         return new ArrayList<CrashInfo>(crashInfoMap.values());
     }
@@ -82,45 +79,5 @@ public class WebViewCrashInfoCollector {
             if (a.uploadTime != b.uploadTime) return a.uploadTime < b.uploadTime ? 1 : -1;
             return 0;
         });
-    }
-
-    private static <T> T getFirstNonNull(T a, T b) {
-        return a != null ? a : b;
-    }
-
-    /**
-     * Merge values from the second object into the first object if the value in the first object is
-     * {@code null}.
-     */
-    @VisibleForTesting
-    public static void mergeCrashInfo(CrashInfo a, CrashInfo b) {
-        // localId is not merged since it's two CrashInfo objects should be only merged if they have
-        // the same localId.
-        a.captureTime = a.captureTime != -1 ? a.captureTime : b.captureTime;
-        a.uploadId = getFirstNonNull(a.uploadId, b.uploadId);
-        a.uploadTime = a.uploadTime != -1 ? a.uploadTime : b.uploadTime;
-        a.packageName = getFirstNonNull(a.packageName, b.packageName);
-        a.variations = getFirstNonNull(a.variations, b.variations);
-
-        // When merging two CrashInfos if one of the two UploadStates is UPLOADED then the merged
-        // object will have an UPLOADED state regardless of the order. Difference in UploadState my
-        // be caused by the file suffix not updated or deleted by the time
-        // UnuploadedFilesStateLoader parses the crash directory.
-        if (a.uploadState != null && b.uploadState != null) {
-            if (a.uploadState == UploadState.UPLOADED || b.uploadState == UploadState.UPLOADED) {
-                a.uploadState = UploadState.UPLOADED;
-            } else {
-                assert a.uploadState == b.uploadState;
-            }
-        } else {
-            a.uploadState = getFirstNonNull(a.uploadState, b.uploadState);
-        }
-        // Since capture time may be the last time the crash file is modified, the oldest capture
-        // time will be used regardless of the merging order.
-        if (a.captureTime != -1 && b.captureTime != -1) {
-            a.captureTime = Math.min(a.captureTime, b.captureTime);
-        } else {
-            a.captureTime = a.captureTime != -1 ? a.captureTime : b.captureTime;
-        }
     }
 }

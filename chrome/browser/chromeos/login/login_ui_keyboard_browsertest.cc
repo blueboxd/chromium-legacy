@@ -317,9 +317,9 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTestWithUsersAndOwner,
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
   CheckGaiaKeyboard();
 
+  const auto update_count = ash::LoginScreenTestApi::GetUiUpdateCount();
   // Switch back.
   test::ExecuteOobeJS("$('gaia-signin').cancel()");
-  const auto update_count = ash::LoginScreenTestApi::GetUiUpdateCount();
   ash::LoginScreenTestApi::WaitForUiUpdate(update_count);
   EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 

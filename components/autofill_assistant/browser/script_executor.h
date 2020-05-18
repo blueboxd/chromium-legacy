@@ -95,6 +95,7 @@ class ScriptExecutor : public ActionDelegate,
   void Run(const UserData* user_data, RunScriptCallback callback);
 
   const UserData* GetUserData() const override;
+  UserModel* GetUserModel() override;
 
   // Override ScriptExecutorDelegate::Listener
   void OnNavigationStateChanged() override;
@@ -125,7 +126,8 @@ class ScriptExecutor : public ActionDelegate,
       base::OnceCallback<void(UserData*, UserData::FieldChange*)>) override;
   void WriteUserModel(
       base::OnceCallback<void(UserModel*)> write_callback) override;
-  void GetFullCard(GetFullCardCallback callback) override;
+  void GetFullCard(const autofill::CreditCard* credit_card,
+                   GetFullCardCallback callback) override;
   void Prompt(std::unique_ptr<std::vector<UserAction>> user_actions,
               bool disable_force_expand_sheet,
               base::OnceCallback<void()> end_on_navigation_callback,

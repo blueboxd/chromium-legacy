@@ -3764,14 +3764,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   RenderFrameDeletedObserver delete_rfh_b(rfh_b);
   EXPECT_EQ(LifecycleState::kActive, rfh_b->lifecycle_state());
 
-  // 2) Disable the unload timer to ensure that the unload timer doesn't fire
-  // before we call OnDetach(). Act as if there was a slow unload handler on
-  // rfh_b. The non navigating frames are waiting for FrameHostMsg_Detach.
-  rfh_b->DisableUnloadTimerForTesting();
-  auto detach_filter = base::MakeRefCounted<DropMessageFilter>(
-      FrameMsgStart, FrameHostMsg_Detach::ID);
-  rfh_b->GetProcess()->AddFilter(detach_filter.get());
-  EXPECT_TRUE(ExecuteScript(rfh_b->frame_tree_node(), onunload_script));
+  // 2) Leave rfh_b in pending deletion state.
+  LeaveInPendingDeletionState(rfh_b);
 
   // 3) Check the IsCurrent state of rfh_a, rfh_b before navigating to C.
   EXPECT_TRUE(rfh_a->IsCurrent());
@@ -3788,8 +3782,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_FALSE(rfh_b->IsCurrent());
   EXPECT_TRUE(rfh_c->IsCurrent());
 
-  // 6) Run detach on rfh_b to delete its frame.
+  // 6) Resume deletion on rfh_b and run detach on rfh_b to delete its frame.
   EXPECT_FALSE(delete_rfh_b.deleted());
+  rfh_b->ResumeDeletionForTesting();
   rfh_b->OnDetach();
   EXPECT_TRUE(delete_rfh_b.deleted());
 }

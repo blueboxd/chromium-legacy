@@ -1364,9 +1364,10 @@ void ProfileSyncService::SyncAllowedByPlatformChanged(bool allowed) {
 
   if (!allowed) {
     StopImpl(KEEP_DATA);
+    // Try to start up again (in transport-only mode).
     // TODO(crbug.com/856179): Evaluate whether we can get away without a full
-    // restart (i.e. just reconfigure plus whatever cleanup is necessary). See
-    // also similar comment in OnSyncRequestedPrefChange().
+    // restart (i.e. just reconfigure). See also similar comment in
+    // OnSyncRequestedPrefChange().
     startup_controller_->TryStart(/*force_immediate=*/true);
   }
 }
@@ -1640,13 +1641,12 @@ void ProfileSyncService::OnSyncRequestedPrefChange(bool is_sync_requested) {
       is_stopping_and_clearing_ = false;
       StopImpl(CLEAR_DATA);
     } else {
+      // TODO(crbug.com/856179): Evaluate whether we can get away without a
+      // full restart in this case (i.e. just reconfigure).
       StopImpl(KEEP_DATA);
     }
 
-    // TODO(crbug.com/856179): Evaluate whether we can get away without a full
-    // restart (i.e. just reconfigure plus whatever cleanup is necessary).
-    // Especially in the CLEAR_DATA case, StopImpl does a lot of cleanup that
-    // might still be required.
+    // Try to start up again (in transport-only mode).
     // TODO(crbug.com/1035874): There's no real need to delay the startup here,
     // i.e. it should be fine to set force_immediate to true. However currently
     // some tests depend on the startup *not* happening immediately (because
@@ -1899,6 +1899,8 @@ void ProfileSyncService::StopAndClear() {
   // away or it treats all "Cancel the confirmation" cases?
   if (!user_settings_->IsSyncRequested()) {
     StopImpl(CLEAR_DATA);
+    // Try to start up again (in transport-only mode).
+    startup_controller_->TryStart(/*force_immediate=*/true);
     return;
   }
 

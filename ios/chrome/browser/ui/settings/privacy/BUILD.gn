@@ -58,11 +58,17 @@ source_set("privacy") {
   ]
   deps = [
     ":privacy_ui",
+    "//components/content_settings/core/browser",
+    "//components/content_settings/core/common",
+    "//components/prefs",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/settings:settings_root",
     "//ios/chrome/browser/ui/settings/clear_browsing_data",
+    "//ios/chrome/browser/ui/settings/utils",
     "//ios/chrome/browser/ui/table_view/cells",
   ]
   libs = [ "UIKit.framework" ]

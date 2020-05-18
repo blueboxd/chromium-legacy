@@ -138,31 +138,6 @@ class PasswordFormMetricsRecorder
     kCorrectedUsernameInForm = 200,
   };
 
-  // Result of comparing of the old and new form parsing for filling.
-  enum class ParsingComparisonResult {
-    kSame,
-    kDifferent,
-    // Old and new parsers use different identification mechanism for unnamed
-    // fields, so the difference in parsing of anonymous fields is expected.
-    kAnonymousFields,
-    kMax
-  };
-
-  // Result of comparing of the old and new form parsing for saving. Multiple
-  // values are meant to be combined and reported in a single number as a
-  // bitmask.
-  enum class ParsingOnSavingDifference {
-    // Different fields were identified for username or password.
-    kFields = 1 << 0,
-    // Signon_realms are different.
-    kSignonRealm = 1 << 1,
-    // One password form manager wants to update, the other to save as new.
-    kNewLoginStatus = 1 << 2,
-    // One password form manager thinks the password is generated, the other
-    // does not.
-    kGenerated = 1 << 3,
-  };
-
   // Indicator whether the user has seen a password generation popup and why.
   enum class PasswordGenerationPopupShown {
     kNotShown = 0,

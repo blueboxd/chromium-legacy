@@ -159,10 +159,13 @@ int AvatarToolbarButtonDelegate::GetIncognitoWindowsCount() const {
 }
 
 AvatarToolbarButton::State AvatarToolbarButtonDelegate::GetState() const {
-  if (profile_->IsIncognitoProfile())
-    return AvatarToolbarButton::State::kIncognitoProfile;
   if (profile_->IsGuestSession())
     return AvatarToolbarButton::State::kGuestSession;
+
+  // Return |kIncognitoProfile| state for all OffTheRecord profile types except
+  // guest mode.
+  if (profile_->IsOffTheRecord())
+    return AvatarToolbarButton::State::kIncognitoProfile;
 
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);

@@ -61,9 +61,7 @@ class WaylandSurface : public WaylandWindow,
   void OnDragEnter(const gfx::PointF& point,
                    std::unique_ptr<OSExchangeData> data,
                    int operation) override;
-  int OnDragMotion(const gfx::PointF& point,
-                   uint32_t time,
-                   int operation) override;
+  int OnDragMotion(const gfx::PointF& point, int operation) override;
   void OnDragDrop(std::unique_ptr<OSExchangeData> data) override;
   void OnDragLeave() override;
   void OnDragSessionClose(uint32_t dnd_action) override;

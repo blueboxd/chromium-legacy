@@ -142,9 +142,10 @@ class ActionDelegate {
       base::OnceCallback<void(std::unique_ptr<autofill::CreditCard> card,
                               const base::string16& cvc)>;
 
-  // Asks for the full card information for the selected card. Might require the
+  // Asks for the full card information for |credit_card|. Might require the
   // user entering CVC.
-  virtual void GetFullCard(GetFullCardCallback callback) = 0;
+  virtual void GetFullCard(const autofill::CreditCard* credit_card,
+                           GetFullCardCallback callback) = 0;
 
   // Fill the address form given by |selector| with the given address
   // |profile|. |profile| cannot be nullptr.
@@ -362,6 +363,9 @@ class ActionDelegate {
 
   // Gets the user data.
   virtual const UserData* GetUserData() const = 0;
+
+  // Access to the user model.
+  virtual UserModel* GetUserModel() = 0;
 
   // Show |generic_ui| to the user and call |end_action_callback| when done.
   // Note that this callback needs to be tied to one or multiple interactions

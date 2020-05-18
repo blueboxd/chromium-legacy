@@ -821,10 +821,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
   EXPECT_EQ(url, contents->GetVisibleURL());
 
   content::NavigationController& controller = contents->GetController();
-  EXPECT_FALSE(controller.GetPendingEntry());
-
-  contents->ClosePage();
-  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(controller.GetPendingEntry() == NULL);
 }
 
 // Tracks the URLs requested while running a browser test and returns a default

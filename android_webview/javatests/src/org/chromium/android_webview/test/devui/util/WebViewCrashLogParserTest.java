@@ -7,6 +7,8 @@ package org.chromium.android_webview.test.devui.util;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 
+import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PROCESS;
+
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -18,6 +20,7 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.common.crash.CrashInfo;
 import org.chromium.android_webview.devui.util.WebViewCrashLogParser;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
+import org.chromium.android_webview.test.OnlyRunIn;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -29,10 +32,11 @@ import java.util.List;
  * Unit tests for WebViewCrashLogParser.
  */
 @RunWith(AwJUnit4ClassRunner.class)
+@OnlyRunIn(SINGLE_PROCESS)
 public class WebViewCrashLogParserTest {
     private static final String TEST_LOG_ENTRY =
-            "{\"crash-local-id\":\"123456abc\",\"crash-capture-time\":1234567890,"
-            + "\"app-package-name\":\"test.package\",\"variations\":[\"123456\",\"7890\"]}";
+            "{'crash-local-id':'123456abc','crash-capture-time':1234567890,"
+            + "'crash-keys':{'app-package-name':'test.package','variations':'123456,7890'}}";
 
     @Rule
     public TemporaryFolder mTestLogDir = new TemporaryFolder();
@@ -51,8 +55,7 @@ public class WebViewCrashLogParserTest {
         final String[] expectedLocalIds = new String[] {"crash1", "crash2", "crash3", "crash4"};
         for (String localId : expectedLocalIds) {
             writeLogFile("crash_file_" + localId + ".json",
-                    "{\"crash-local-id\":\"" + localId
-                            + "\",\"app-package-name\":\"test.package\"}");
+                    "{'crash-local-id':'" + localId + "','app-package-name':'test.package'}");
         }
 
         List<CrashInfo> crashInfoList =
@@ -70,7 +73,7 @@ public class WebViewCrashLogParserTest {
         writeLogFile("crash_file_json", TEST_LOG_ENTRY);
         writeLogFile("crash_log", TEST_LOG_ENTRY);
         writeLogFile("crash_log.txt", TEST_LOG_ENTRY);
-        writeLogFile("crash_log.json", "{\"invalid_json\":\"value\"");
+        writeLogFile("crash_log.json", "{'invalid_json':'value'");
         List<CrashInfo> crashInfoList =
                 new WebViewCrashLogParser(mTestLogDir.getRoot()).loadCrashesInfo();
         Assert.assertThat(crashInfoList, empty());

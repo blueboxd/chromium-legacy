@@ -1533,6 +1533,7 @@ if (!is_android) {
         if (!is_official_build) {
           deps += [
             "//chromeos/components/sample_system_web_app_ui:browser_tests_js",
+            "//chromeos/components/telemetry_extension_ui:browser_tests_js",
           ]
         }
       }
@@ -2489,7 +2490,10 @@ if (!is_android) {
       data_deps +=
           [ "//chromeos/services/ime/public/cpp/shared_lib:fake_shared_lib" ]
       if (!is_official_build) {
-        sources += [ "../browser/chromeos/web_applications/sample_system_web_app_integration_browsertest.cc" ]
+        sources += [
+          "../browser/chromeos/web_applications/sample_system_web_app_integration_browsertest.cc",
+          "../browser/chromeos/web_applications/telemetry_extension_integration_browsertest.cc",
+        ]
       }
       if (use_cups) {
         sources += [

@@ -4,14 +4,16 @@
 
 #import "ios/chrome/browser/ui/passwords/password_breach_coordinator.h"
 
+#include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/password_breach_commands.h"
-#import "ios/chrome/browser/ui/passwords/password_breach_learn_more_view_controller.h"
 #import "ios/chrome/browser/ui/passwords/password_breach_mediator.h"
 #import "ios/chrome/browser/ui/passwords/password_breach_presenter.h"
 #import "ios/chrome/browser/ui/passwords/password_breach_view_controller.h"
+#import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -23,9 +25,9 @@
 // Main view controller for this coordinator.
 @property(nonatomic, strong) PasswordBreachViewController* viewController;
 
-// Learn more view controller, when presented.
+// Popover used to show learn more info, not nil when presented.
 @property(nonatomic, strong)
-    PasswordBreachLearnMoreViewController* learnMoreViewController;
+    PopoverLabelViewController* learnMoreViewController;
 
 // Main mediator for this coordinator.
 @property(nonatomic, strong) PasswordBreachMediator* mediator;
@@ -79,8 +81,10 @@
 #pragma mark - PasswordBreachPresenter
 
 - (void)presentLearnMore {
+  NSString* message =
+      l10n_util::GetNSString(IDS_PASSWORD_MANAGER_LEAK_HELP_MESSAGE);
   self.learnMoreViewController =
-      [[PasswordBreachLearnMoreViewController alloc] initWithPresenter:self];
+      [[PopoverLabelViewController alloc] initWithMessage:message];
   [self.viewController presentViewController:self.learnMoreViewController
                                     animated:YES
                                   completion:nil];
@@ -88,13 +92,6 @@
       self.viewController.helpButton;
   self.learnMoreViewController.popoverPresentationController
       .permittedArrowDirections = UIPopoverArrowDirectionUp;
-}
-
-- (void)dismissLearnMore {
-  [self.learnMoreViewController.presentingViewController
-      dismissViewControllerAnimated:YES
-                         completion:nil];
-  self.learnMoreViewController = nil;
 }
 
 @end

@@ -77,8 +77,6 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // A callback to be executed when the install finishes.
   using InstallerResultCallback = ExtensionSystem::InstallUpdateCallback;
 
-  using ExpectationsVerifiedCallback = base::OnceClosure;
-
   // Used in histograms; do not change order.
   enum OffStoreInstallAllowReason {
     OffStoreInstallDisallowed,
@@ -163,10 +161,8 @@ class CrxInstaller : public SandboxedUnpackerClient {
   const std::string& expected_hash() const { return expected_hash_; }
   void set_expected_hash(const std::string& val) { expected_hash_ = val; }
 
-  bool verification_check_failed() const { return verification_check_failed_; }
-  void set_verification_check_failed(bool val) {
-    verification_check_failed_ = val;
-  }
+  bool hash_check_failed() const { return hash_check_failed_; }
+  void set_hash_check_failed(bool val) { hash_check_failed_ = val; }
 
   // Set the exact version the installed extension should have. If
   // |fail_install_if_unexpected| is true, installation will fail if the actual
@@ -240,12 +236,6 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // Virtual for testing.
   virtual void set_installer_callback(InstallerResultCallback callback);
 
-  // Callback to be invoked when the crx file has passed the expectations check
-  // after unpack success and the ownership of the crx file lies with the
-  // installer. The callback is passed the ownership of the crx file.
-  void set_expectations_verified_callback(
-      ExpectationsVerifiedCallback callback);
-
   bool did_handle_successfully() const { return did_handle_successfully_; }
 
   Profile* profile() { return profile_; }
@@ -271,10 +261,6 @@ class CrxInstaller : public SandboxedUnpackerClient {
 
   // Converts the source web app to an extension.
   void ConvertWebAppOnFileThread(const WebApplicationInfo& web_app);
-
-  // Called after OnUnpackSuccess check to see whether the install expectations
-  // are met and the install process should continue.
-  base::Optional<CrxInstallError> CheckExpectations(const Extension* extension);
 
   // Called after OnUnpackSuccess as a last check to see whether the install
   // should complete.
@@ -379,9 +365,8 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // An expected hash sum for the .crx file.
   std::string expected_hash_;
 
-  // True if installation failed due to a hash sum mismatch or expectations
-  // mismatch.
-  bool verification_check_failed_;
+  // True if installation failed due to a hash sum mismatch.
+  bool hash_check_failed_;
 
   // A parsed copy of the expected manifest, before any transformations like
   // localization have taken place. If |approved_| is true, then the
@@ -512,10 +497,6 @@ class CrxInstaller : public SandboxedUnpackerClient {
 
   // Invoked when the install is completed.
   InstallerResultCallback installer_callback_;
-
-  // Invoked when the expectations from CRXFileInfo match with the crx file
-  // after unpack success.
-  ExpectationsVerifiedCallback expectations_verified_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CrxInstaller);
 };

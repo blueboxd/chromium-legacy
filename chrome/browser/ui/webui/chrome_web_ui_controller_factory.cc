@@ -206,6 +206,8 @@
 #include "chrome/browser/ui/webui/chromeos/emulator/device_emulator_ui.h"
 #include "chromeos/components/sample_system_web_app_ui/sample_system_web_app_ui.h"
 #include "chromeos/components/sample_system_web_app_ui/url_constants.h"
+#include "chromeos/components/telemetry_extension_ui/telemetry_extension_ui.h"
+#include "chromeos/components/telemetry_extension_ui/url_constants.h"
 #endif
 
 #if !defined(OS_CHROMEOS)
@@ -655,6 +657,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
   if (url.host_piece() == chromeos::kChromeUISampleSystemWebAppHost)
     return &NewWebUI<chromeos::SampleSystemWebAppUI>;
+  if (url.host_piece() == chromeos::kChromeUITelemetryExtensionHost)
+    return &NewWebUI<chromeos::TelemetryExtensionUI>;
 #endif  // !defined(OFFICIAL_BUILD)
 #endif  // defined(OS_CHROMEOS)
 #if defined(OS_ANDROID)

@@ -2570,6 +2570,11 @@ void RenderFrameHostImpl::OnDetach() {
     return;
   }
 
+  // Ignore FrameHostMsg_Detach IPC message, if the RenderFrameHost should be
+  // left in pending deletion state.
+  if (do_not_delete_for_testing_)
+    return;
+
   if (IsPendingDeletion()) {
     // The frame is pending deletion. FrameHostMsg_Detach is used to confirm
     // its unload handlers ran. Note that it is possible for a frame to already
@@ -3524,15 +3529,12 @@ int RenderFrameHostImpl::GetEnabledBindings() {
 
 void RenderFrameHostImpl::SetWebUIProperty(const std::string& name,
                                            const std::string& value) {
-  // WebUI allows to register SetProperties only for the main frame.
-  if (GetParent())
-    return;
   // This is a sanity check before telling the renderer to enable the property.
   // It could lie and send the corresponding IPC messages anyway, but we will
   // not act on them if enabled_bindings_ doesn't agree. If we get here without
   // WebUI bindings, terminate the renderer process.
   if (enabled_bindings_ & BINDINGS_POLICY_WEB_UI)
-    web_ui_->SetProperty(name, value);
+    Send(new FrameMsg_SetWebUIProperty(routing_id_, name, value));
   else
     ReceivedBadMessage(GetProcess(), bad_message::RVH_WEB_UI_BINDINGS_MISMATCH);
 }
@@ -3547,6 +3549,10 @@ bool RenderFrameHostImpl::IsBeforeUnloadHangMonitorDisabledForTesting() {
 
 void RenderFrameHostImpl::DoNotDeleteForTesting() {
   do_not_delete_for_testing_ = true;
+}
+
+void RenderFrameHostImpl::ResumeDeletionForTesting() {
+  do_not_delete_for_testing_ = false;
 }
 
 bool RenderFrameHostImpl::IsFeatureEnabled(
@@ -6365,7 +6371,7 @@ bool RenderFrameHostImpl::CreateWebUI(const GURL& dest_url,
     return false;
   }
 
-  web_ui_ = delegate_->CreateWebUIForRenderFrameHost(dest_url, this);
+  web_ui_ = delegate_->CreateWebUIForRenderFrameHost(dest_url);
   if (!web_ui_)
     return false;
 
@@ -7937,10 +7943,13 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     last_committed_cross_document_navigation_id_ =
         navigation_request->GetNavigationId();
 
-    if (IsCurrent()) {
+    if (IsCurrent() && !committed_speculative_rfh_before_navigation_commit_) {
       // Clear all the user data associated with the non speculative
       // RenderFrameHost when the navigation is a cross-document navigation not
-      // served from the back-forward cache.
+      // served from the back-forward cache. Make sure the data doesn't get
+      // cleared for the cases when the RenderFrameHost commits before the
+      // navigation commits. This happens when the current RenderFrameHost
+      // crashes before navigating to a new URL.
       document_associated_data_.ClearAllUserData();
     }
 
@@ -7979,6 +7988,9 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   frame_tree_node()->navigator()->DidNavigate(this, *params,
                                               std::move(navigation_request),
                                               is_same_document_navigation);
+
+  // Reset back the state to false after navigation commits.
+  committed_speculative_rfh_before_navigation_commit_ = false;
 
   if (IsBackForwardCacheEnabled()) {
     // Store the Commit params so they can be reused if the page is ever

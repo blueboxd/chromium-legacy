@@ -196,7 +196,6 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
     default:
       return;
   }
-  [self updateSelectedCookiesItemWithIndexPath:indexPath];
   [self.handler selectedCookiesSettingType:settingType];
 }
 
@@ -204,6 +203,9 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 
 - (void)cookiesSettingsOptionSelected:(CookiesSettingType)settingType {
   self.selectedSetting = [self itemTypeForCookiesSettingType:settingType];
+  NSIndexPath* indexPath = [self.tableViewModel
+      indexPathForItemType:[self itemTypeForCookiesSettingType:settingType]];
+  [self updateSelectedCookiesItemWithIndexPath:indexPath];
 }
 
 @end

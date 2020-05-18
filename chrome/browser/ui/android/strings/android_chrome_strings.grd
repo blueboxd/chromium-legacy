@@ -3000,6 +3000,12 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_ACCESSIBILITY_UNMUTE_VIDEO" desc="The accessibility string for the unmute video button.">
         Unmute video
       </message>
+      <message name="IDS_ACCESSIBILITY_FULL_SCREEN" desc="The accessibility string for the full screen video button.">
+        Full screen
+      </message>
+      <message name="IDS_ACCESSIBILITY_EXIT_FULL_SCREEN" desc="The accessibility string for the exiting of full screen video button.">
+        Exit full screen
+      </message>
       <message name="IDS_ACCESSIBILITY_VIDEO_PLAYER" desc="The accessibility string for the video player.">
         Video player
       </message>

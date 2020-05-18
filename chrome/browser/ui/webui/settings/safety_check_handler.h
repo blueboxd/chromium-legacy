@@ -70,8 +70,9 @@ class SafetyCheckHandler
     kSignedOut = 5,
     kQuotaLimit = 6,
     kError = 7,
+    kFeatureUnavailable = 8,
     // New enum values must go above here.
-    kMaxValue = kError,
+    kMaxValue = kFeatureUnavailable,
   };
   enum class ExtensionsStatus {
     kChecking = 0,

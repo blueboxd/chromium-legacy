@@ -101,6 +101,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/navigation_handle_observer.h"
+#include "content/public/test/render_frame_host_test_support.h"
 #include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -14818,11 +14819,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
   RenderFrameHostImpl* rfh_c = rfh_b->child_at(0)->current_frame_host();
 
-  // RFH C has an unload handler.
-  auto detach_filter_c = base::MakeRefCounted<DropMessageFilter>(
-      FrameMsgStart, FrameHostMsg_Detach::ID);
-  rfh_c->GetProcess()->AddFilter(detach_filter_c.get());
-  EXPECT_TRUE(ExecJs(rfh_c, "onunload=function(){}"));
+  // Leave rfh_c in pending deletion state.
+  LeaveInPendingDeletionState(rfh_c);
 
   // 2) Navigation from C to D. The server is slow to respond.
   TestNavigationManager navigation_observer(web_contents(), url_d);
@@ -14861,6 +14859,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // |rfh_b| and |rfh_c| will complete their deletion at some point:
   EXPECT_FALSE(delete_b.deleted());
   EXPECT_FALSE(delete_c.deleted());
+  rfh_c->ResumeDeletionForTesting();
   rfh_c->OnDetach();
   EXPECT_TRUE(delete_b.deleted());
   EXPECT_TRUE(delete_c.deleted());

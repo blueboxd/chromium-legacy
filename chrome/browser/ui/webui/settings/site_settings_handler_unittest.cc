@@ -424,9 +424,10 @@ class SiteSettingsHandlerTest : public testing::Test {
   }
 
   virtual void DestroyIncognitoProfile() {
-    profile_->SetOffTheRecordProfile(nullptr);
-    ASSERT_FALSE(profile_->HasOffTheRecordProfile());
-    incognito_profile_ = nullptr;
+    if (incognito_profile_) {
+      profile_->DestroyOffTheRecordProfile(incognito_profile_);
+      incognito_profile_ = nullptr;
+    }
   }
 
   // TODO(https://crbug.com/835712): Currently only set up the cookies and local

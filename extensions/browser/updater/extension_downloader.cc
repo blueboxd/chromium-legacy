@@ -1140,8 +1140,19 @@ void ExtensionDownloader::OnExtensionLoadComplete(base::FilePath crx_path) {
         extensions_queue_.reset_active_request();
     delegate_->OnExtensionDownloadStageChanged(
         id, ExtensionDownloaderDelegate::Stage::FINISHED);
-    NotifyDelegateDownloadFinished(std::move(fetch_data), false, crx_path,
-                                   true);
+    if (extension_cache_) {
+      const std::string& version = fetch_data->version;
+      const std::string& expected_hash = fetch_data->package_hash;
+      extension_cache_->PutExtension(
+          id, expected_hash, crx_path, version,
+          base::BindRepeating(
+              &ExtensionDownloader::NotifyDelegateDownloadFinished,
+              weak_ptr_factory_.GetWeakPtr(), base::Passed(&fetch_data),
+              false));
+    } else {
+      NotifyDelegateDownloadFinished(std::move(fetch_data), false, crx_path,
+                                     true);
+    }
   } else if (IterateFetchCredentialsAfterFailure(&active_request,
                                                  response_code)) {
     delegate_->OnExtensionDownloadStageChanged(

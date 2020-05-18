@@ -67,6 +67,19 @@
 #ifndef IPC_64
 #define IPC_64                   0x0100
 #endif
+#ifndef PR_SET_SPECULATION_CTRL
+#define PR_SET_SPECULATION_CTRL 53
+#define PR_GET_SPECULATION_CTRL 52
+#endif
+#ifndef PR_SPEC_INDIRECT_BRANCH
+#define PR_SPEC_INDIRECT_BRANCH 1
+#endif
+#ifndef PR_SPEC_PRCTL
+#define PR_SPEC_PRCTL (1UL << 0)
+#endif
+#ifndef PR_SPEC_FORCE_DISABLE
+#define PR_SPEC_FORCE_DISABLE (1UL << 3)
+#endif
 
 // In order to build will older tool chains, we currently have to avoid
 // including <linux/seccomp.h>. Until that can be fixed (if ever). Rely on
@@ -85,6 +98,9 @@
 #endif
 #ifndef SECCOMP_FILTER_FLAG_TSYNC
 #define SECCOMP_FILTER_FLAG_TSYNC 1
+#endif
+#ifndef SECCOMP_FILTER_FLAG_SPEC_ALLOW
+#define SECCOMP_FILTER_FLAG_SPEC_ALLOW (1UL << 2)
 #endif
 
 #ifndef SECCOMP_RET_KILL

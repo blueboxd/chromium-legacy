@@ -1595,6 +1595,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // - Ignore any OnUnloadACK sent by the renderer process.
   void DoNotDeleteForTesting();
 
+  // This method will unset the flag |do_not_delete_for_testing_| to resume
+  // deletion on the RenderFrameHost. Deletion will only be triggered if
+  // RenderFrameHostImpl::OnDetach() is called for the RenderFrameHost. This is
+  // a counterpart for DoNotDeleteForTesting() which sets the flag
+  // |do_not_delete_for_testing_|.
+  void ResumeDeletionForTesting();
+
   // Document-associated data. This is cleared whenever a new document is hosted
   // by this RenderFrameHost. Please refer to the description at
   // content/public/browser/render_document_host_user_data.h for more details.
@@ -1611,6 +1618,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void RemoveRenderDocumentHostUserData(const void* key) {
     document_associated_data_.RemoveUserData(key);
+  }
+
+  // Called when we commit speculative RFH early due to not having an alive
+  // current frame. This happens when the renderer crashes before navigating to
+  // a new URL using speculative RenderFrameHost.
+  // TODO(https://crbug.com/1072817): Undo this plumbing after removing the
+  // early post-crash CommitPending() call.
+  void OnCommittedSpeculativeBeforeNavigationCommit() {
+    committed_speculative_rfh_before_navigation_commit_ = true;
   }
 
   // Returns the child RenderFrameHostImpl if |child_frame_routing_id| is an
@@ -2955,6 +2971,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
     friend class RenderFrameHostImpl;
   };
   DocumentAssociatedData document_associated_data_;
+
+  // Keeps track of the scenario when RenderFrameHostManager::CommitPending is
+  // called before the navigation commits. This becomes true if the previous
+  // RenderFrameHost is not alive and the speculative RenderFrameHost is
+  // committed early (see RenderFrameHostManager::GetFrameHostForNavigation for
+  // more details). While |committed_speculative_rfh_before_navigation_commit_|
+  // is true the RenderFrameHost which we commit early will be live.
+  bool committed_speculative_rfh_before_navigation_commit_ = false;
 
   // This time is used to record the last WebXR DOM Overlay setup request.
   base::TimeTicks last_xr_overlay_setup_time_;

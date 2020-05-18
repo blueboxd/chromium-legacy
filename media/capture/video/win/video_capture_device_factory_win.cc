@@ -22,6 +22,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/scoped_thread_priority.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_variant.h"
@@ -149,6 +150,10 @@ bool LoadMediaFoundationDlls() {
       L"%WINDIR%\\system32\\mf.dll", L"%WINDIR%\\system32\\mfplat.dll",
       L"%WINDIR%\\system32\\mfreadwrite.dll",
       L"%WINDIR%\\system32\\MFCaptureEngine.dll"};
+
+  // Mitigate the issues caused by loading DLLs on a background thread
+  // (http://crbug/973868).
+  SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY_REPEATEDLY();
 
   for (const wchar_t* kMfDLL : kMfDLLs) {
     wchar_t path[MAX_PATH] = {0};

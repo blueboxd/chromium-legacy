@@ -633,8 +633,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       SiteInstance* source_site_instance) const override;
   void EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) override;
   std::unique_ptr<WebUIImpl> CreateWebUIForRenderFrameHost(
-      const GURL& url,
-      RenderFrameHost* frame_host) override;
+      const GURL& url) override;
   void SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) override;
   void DidCallFocus() override;
   RenderFrameHost* GetFocusedFrameIncludingInnerWebContents() override;
@@ -1574,8 +1573,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Internal helper to create WebUI objects associated with |this|. |url| is
   // used to determine which WebUI should be created (if any).
-  std::unique_ptr<WebUIImpl> CreateWebUI(const GURL& url,
-                                         RenderFrameHost* frame_host);
+  std::unique_ptr<WebUIImpl> CreateWebUI(const GURL& url);
 
   void SetJavaScriptDialogManagerForTesting(
       JavaScriptDialogManager* dialog_manager);

@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -35,17 +34,14 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "crypto/sha2.h"
-#include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/pref_names.h"
-#include "extensions/browser/updater/extension_cache.h"
 #include "extensions/browser/updater/extension_update_data.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/extension_updater_uma.h"
-#include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 
@@ -555,30 +551,6 @@ void ExtensionUpdater::UpdatePingData(const ExtensionId& id,
   }
 }
 
-void ExtensionUpdater::PutExtensionInCache(const CRXFileInfo& crx_info) {
-  if (extension_cache_) {
-    const std::string& extension_id = crx_info.extension_id;
-    const std::string& version = crx_info.expected_version;
-    const std::string& expected_hash = crx_info.expected_hash;
-    const base::FilePath& crx_path = crx_info.path;
-    extension_cache_->PutExtension(
-        extension_id, expected_hash, crx_path, version,
-        base::BindRepeating(&ExtensionUpdater::CleanUpCrxFileIfNeeded,
-                            weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    CleanUpCrxFileIfNeeded(crx_info.path, true);
-  }
-}
-
-void ExtensionUpdater::CleanUpCrxFileIfNeeded(const base::FilePath& crx_path,
-                                              bool file_ownership_passed) {
-  if (file_ownership_passed &&
-      !GetExtensionFileTaskRunner()->PostTask(
-          FROM_HERE, base::BindOnce(&file_util::DeleteFile, crx_path, false))) {
-    NOTREACHED();
-  }
-}
-
 void ExtensionUpdater::MaybeInstallCRXFile() {
   if (crx_install_is_running_ || fetched_crx_files_.empty())
     return;
@@ -599,12 +571,6 @@ void ExtensionUpdater::MaybeInstallCRXFile() {
                                   &installer)) {
       crx_install_is_running_ = true;
       current_crx_file_ = crx_file;
-      // If the crx file passes the expectations from the update manifest, this
-      // callback inserts an entry in the extension cache and deletes it, if
-      // required.
-      installer->set_expectations_verified_callback(
-          base::BindOnce(&ExtensionUpdater::PutExtensionInCache,
-                         weak_ptr_factory_.GetWeakPtr(), crx_file.info));
 
       for (const int request_id : crx_file.request_ids) {
         InProgressCheck& request = requests_in_progress_[request_id];
@@ -646,7 +612,7 @@ void ExtensionUpdater::Observe(int type,
 
   CrxInstaller* installer = content::Source<CrxInstaller>(source).ptr();
   const FetchedCRXFile& crx_file = current_crx_file_;
-  if (!extension && installer->verification_check_failed() &&
+  if (!extension && installer->hash_check_failed() &&
       !crx_file.callback.is_null()) {
     // If extension downloader asked us to notify it about failed installations,
     // it will resume a pending download from the manifest data it has already

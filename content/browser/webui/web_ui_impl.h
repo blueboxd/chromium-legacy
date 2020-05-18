@@ -14,21 +14,20 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/web_ui.mojom.h"
 #include "content/public/browser/web_ui.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
+
+namespace IPC {
+class Message;
+}
 
 namespace content {
 class RenderFrameHost;
 class WebContentsImpl;
 
 class CONTENT_EXPORT WebUIImpl : public WebUI,
-                                 public mojom::WebUIHost,
                                  public base::SupportsWeakPtr<WebUIImpl> {
  public:
-  explicit WebUIImpl(WebContentsImpl* contents, RenderFrameHost* frame_host);
+  explicit WebUIImpl(WebContentsImpl* contents);
   ~WebUIImpl() override;
 
   // Called when a RenderFrame is created for a WebUI (reload after a renderer
@@ -50,7 +49,6 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   float GetDeviceScaleFactor() override;
   const base::string16& GetOverriddenTitle() override;
   void OverrideTitle(const base::string16& title) override;
-  void SetProperty(const std::string& name, const std::string& value) override;
   int GetBindings() override;
   void SetBindings(int bindings) override;
   const std::vector<std::string>& GetRequestableSchemes() override;
@@ -83,13 +81,15 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   std::vector<std::unique_ptr<WebUIMessageHandler>>* GetHandlersForTesting()
       override;
 
-  void BindWebUIHost(mojo::PendingReceiver<mojom::WebUIHost> receiver);
+  bool OnMessageReceived(const IPC::Message& message, RenderFrameHost* sender);
 
  private:
   class MainFrameNavigationObserver;
 
-  // mojom::WebUIHost
-  void Send(const std::string& message, base::Value args) override;
+  // IPC message handling.
+  void OnWebUISend(RenderFrameHost* sender,
+                   const std::string& message,
+                   const base::ListValue& args);
 
   // Execute a string of raw JavaScript on the page.
   void ExecuteJavascript(const base::string16& javascript);
@@ -112,9 +112,6 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   // The WebUIMessageHandlers we own.
   std::vector<std::unique_ptr<WebUIMessageHandler>> handlers_;
 
-  // RenderFrameHost associated with |this|.
-  RenderFrameHost* frame_host_;
-
   // Non-owning pointer to the WebContentsImpl this WebUI is associated with.
   WebContentsImpl* web_contents_;
 
@@ -122,9 +119,6 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   std::unique_ptr<MainFrameNavigationObserver> web_contents_observer_;
 
   std::unique_ptr<WebUIController> controller_;
-
-  mojo::Remote<mojom::WebUI> remote_;
-  mojo::Receiver<mojom::WebUIHost> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebUIImpl);
 };

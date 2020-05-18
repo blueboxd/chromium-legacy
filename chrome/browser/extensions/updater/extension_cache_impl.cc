@@ -128,14 +128,13 @@ void ExtensionCacheImpl::Observe(int type,
     DVLOG(2) << "Extension install was declined, file kept";
     return;
   }
-  // Remove and retry download if the crx present in the cache is corrupted or
-  // not according to the expectations,
-  if (error->IsCrxVerificationFailedError() ||
-      error->IsCrxExpectationsFailedError()) {
+  if (error->IsCrxVerificationFailedError()) {
     if (cache_->ShouldRetryDownload(id, hash)) {
       cache_->RemoveExtension(id, hash);
-      installer->set_verification_check_failed(true);
+      installer->set_hash_check_failed(true);
     }
+    // We deliberately keep the file with incorrect hash sum, so that it
+    // will not be re-downloaded each time.
     return;
   }
 

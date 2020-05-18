@@ -562,6 +562,7 @@ suite('SafetyCheckPasswordsChildUiTests', function() {
         case SafetyCheckPasswordsStatus.SIGNED_OUT:
         case SafetyCheckPasswordsStatus.QUOTA_LIMIT:
         case SafetyCheckPasswordsStatus.ERROR:
+        case SafetyCheckPasswordsStatus.FEATURE_UNAVAILABLE:
           assertSafetyCheckChild({
             page: page,
             iconStatus: SafetyCheckIconStatus.INFO,

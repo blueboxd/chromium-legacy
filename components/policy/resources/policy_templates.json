@@ -9846,8 +9846,7 @@
           'caption': '''Camera''',
         },
       ],
-      'supported_on': ['chrome_os:83-'],
-      'future': True,
+      'supported_on': ['chrome_os:84-'],
       'features': {
         'can_be_recommended': False,
         'dynamic_refresh': True,
@@ -20289,12 +20288,12 @@
         {
           'name': 'BlockInsecureContent',
           'value': 2,
-          'caption': '''Do not allow any site to load blockable mixed content''',
+          'caption': '''Do not allow any site to load mixed content''',
         },
         {
           'name': 'AllowExceptionsInsecureContent',
           'value': 3,
-          'caption': '''Allow users to add exceptions to allow blockable mixed content''',
+          'caption': '''Allow users to add exceptions to allow mixed content''',
         },
       ],
       'supported_on': ['chrome.*:79-', 'chrome_os:79-'],

@@ -94,6 +94,7 @@ Polymer({
       case SafetyCheckPasswordsStatus.SIGNED_OUT:
       case SafetyCheckPasswordsStatus.QUOTA_LIMIT:
       case SafetyCheckPasswordsStatus.ERROR:
+      case SafetyCheckPasswordsStatus.FEATURE_UNAVAILABLE:
         return SafetyCheckIconStatus.INFO;
       default:
         assertNotReached();

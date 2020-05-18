@@ -129,8 +129,10 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(1000), *last_impression.expiry);
 }
 
-IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
-                       ImpressionTagNavigatesRemoteFrame_ImpressionReceived) {
+// Test is flaky: https://crbug.com/1077216
+IN_PROC_BROWSER_TEST_F(
+    ImpressionDeclarationBrowserTest,
+    DISABLED_ImpressionTagNavigatesRemoteFrame_ImpressionReceived) {
   EXPECT_TRUE(NavigateToURL(
       web_contents(),
       https_server()->GetURL("b.test", "/page_with_impression_creator.html")));

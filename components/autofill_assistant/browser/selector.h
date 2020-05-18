@@ -30,9 +30,15 @@ struct Selector {
   // of the element(s) matching selectors.
   std::string inner_text_pattern;
 
+  // If trie, the |inner_text_pattern| will be checked case sensitively.
+  bool inner_text_pattern_case_sensitive = false;
+
   // If non-empty, this must be a regular expression that matches the value
   // of the element(s) matching selectors.
   std::string value_pattern;
+
+  // If true, the |value_pattern| will be checked case sensitively.
+  bool value_pattern_case_sensitive = false;
 
   // An optional pseudo type. This pseudo type is associated to the final
   // element matched by |selectors|, which means that we currently don't handle
@@ -74,9 +80,24 @@ struct Selector {
     return *this;
   }
 
+  // Convenience function  to set inner_text_pattern matching with case
+  // sensitivity.
+  Selector& MatchingInnerText(const std::string& pattern, bool case_sensitive) {
+    inner_text_pattern = pattern;
+    inner_text_pattern_case_sensitive = case_sensitive;
+    return *this;
+  }
+
   // Convenience function to set inner_text_pattern in a fluent style.
   Selector& MatchingValue(const std::string& pattern) {
     value_pattern = pattern;
+    return *this;
+  }
+
+  // Convenience function to set value_pattern matchinng with case sensitivity.
+  Selector& MatchingValue(const std::string& pattern, bool case_sensitive) {
+    value_pattern = pattern;
+    value_pattern_case_sensitive = case_sensitive;
     return *this;
   }
 };

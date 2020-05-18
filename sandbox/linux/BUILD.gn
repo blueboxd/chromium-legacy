@@ -248,6 +248,7 @@ component("seccomp_bpf") {
     ":sandbox_services",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//sandbox:sandbox_buildflags",
   ]
 
   if (is_nacl_nonsfi) {

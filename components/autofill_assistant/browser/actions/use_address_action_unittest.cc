@@ -16,12 +16,20 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
 #include "components/autofill_assistant/browser/mock_personal_data_manager.h"
+#include "components/autofill_assistant/browser/user_model.h"
 #include "components/autofill_assistant/browser/web/mock_web_controller.h"
 #include "components/autofill_assistant/browser/web/web_controller_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
 namespace {
+const char kAddressName[] = "billing";
+const char kFakeSelector[] = "#selector";
+const char kFirstName[] = "FirstName";
+const char kLastName[] = "LastName";
+const char kEmail[] = "foobar@gmail.com";
+const char kPhoneNumber[] = "+41791234567";
+const char kModelIdentifier[] = "identifier";
 
 using ::base::test::RunOnceCallback;
 using ::testing::_;
@@ -30,25 +38,31 @@ using ::testing::Expectation;
 using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::NotNull;
+using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SaveArgPointee;
 
 class UseAddressActionTest : public testing::Test {
  public:
   void SetUp() override {
-    // Build two identical autofill profiles. One for the memory, one for the
-    // mock.
-    auto autofill_profile = std::make_unique<autofill::AutofillProfile>(
-        base::GenerateGUID(), autofill::test::kEmptyOrigin);
-    autofill::test::SetProfileInfo(autofill_profile.get(), kFirstName, "",
-                                   kLastName, kEmail, "", "", "", "", "", "",
-                                   "", kPhoneNumber);
-    user_data_.selected_addresses_[kAddressName] = std::move(autofill_profile);
+    autofill::test::SetProfileInfo(&profile_, kFirstName, "", kLastName, kEmail,
+                                   "", "", "", "", "", "", "", kPhoneNumber);
+    // Store copies of |profile_| in |user_data_| and |user_model_|.
+    user_data_.selected_addresses_[kAddressName] =
+        std::make_unique<autofill::AutofillProfile>(profile_);
+    auto profiles = std::make_unique<
+        std::vector<std::unique_ptr<autofill::AutofillProfile>>>();
+    profiles->emplace_back(
+        std::make_unique<autofill::AutofillProfile>(profile_));
+    user_model_.SetAutofillProfiles(std::move(profiles));
+    ValueProto profile_value;
+    profile_value.mutable_profiles()->add_values()->set_guid(profile_.guid());
+    user_model_.SetValue(kModelIdentifier, profile_value);
 
-    ON_CALL(mock_personal_data_manager_, GetProfileByGUID)
-        .WillByDefault(Return(&autofill_profile_));
     ON_CALL(mock_action_delegate_, GetUserData)
         .WillByDefault(Return(&user_data_));
+    ON_CALL(mock_action_delegate_, GetUserModel)
+        .WillByDefault(Return(&user_model_));
     ON_CALL(mock_action_delegate_, GetPersonalDataManager)
         .WillByDefault(Return(&mock_personal_data_manager_));
     ON_CALL(mock_action_delegate_, RunElementChecks)
@@ -60,14 +74,6 @@ class UseAddressActionTest : public testing::Test {
   }
 
  protected:
-  const char* const kAddressName = "billing";
-  const char* const kFakeSelector = "#selector";
-  const char* const kSelectionPrompt = "prompt";
-  const char* const kFirstName = "FirstName";
-  const char* const kLastName = "LastName";
-  const char* const kEmail = "foobar@gmail.com";
-  const char* const kPhoneNumber = "+41791234567";
-
   ActionProto CreateUseAddressAction() {
     ActionProto action;
     UseAddressProto* use_address = action.mutable_use_address();
@@ -98,8 +104,9 @@ class UseAddressActionTest : public testing::Test {
   MockActionDelegate mock_action_delegate_;
   MockWebController mock_web_controller_;
   UserData user_data_;
-
-  autofill::AutofillProfile autofill_profile_;
+  UserModel user_model_;
+  autofill::AutofillProfile profile_ = {base::GenerateGUID(),
+                                        autofill::test::kEmptyOrigin};
 };
 
 #if !defined(OS_ANDROID)
@@ -111,29 +118,89 @@ TEST_F(UseAddressActionTest, MAYBE_FillManually) {
   InSequence seq;
 
   ActionProto action_proto = CreateUseAddressAction();
-  action_proto.mutable_use_address()->set_prompt(kSelectionPrompt);
 
   EXPECT_EQ(ProcessedActionStatusProto::MANUAL_FALLBACK,
             ProcessAction(action_proto));
 }
 
-TEST_F(UseAddressActionTest, NoSelectedAddress) {
-  InSequence seq;
+TEST_F(UseAddressActionTest, InvalidActionNoSelectorSet) {
+  ActionProto action;
+  action.mutable_use_address();
+  EXPECT_EQ(ProcessedActionStatusProto::INVALID_ACTION, ProcessAction(action));
+}
 
-  ActionProto action_proto = CreateUseAddressAction();
-  action_proto.mutable_use_address()->set_prompt(kSelectionPrompt);
+TEST_F(UseAddressActionTest, InvalidActionNameSetButEmpty) {
+  ActionProto action;
+  UseAddressProto* use_address = action.mutable_use_address();
+  use_address->mutable_form_field_element()->add_selectors(kFakeSelector);
+  use_address->set_name("");
+  EXPECT_EQ(ProcessedActionStatusProto::INVALID_ACTION, ProcessAction(action));
+}
 
-  user_data_.selected_addresses_[kAddressName] = nullptr;
-
+TEST_F(UseAddressActionTest, PreconditionFailedNoProfileForName) {
+  ActionProto action;
+  UseAddressProto* use_address = action.mutable_use_address();
+  use_address->mutable_form_field_element()->add_selectors(kFakeSelector);
+  use_address->set_name("invalid");
   EXPECT_EQ(ProcessedActionStatusProto::PRECONDITION_FAILED,
-            ProcessAction(action_proto));
+            ProcessAction(action));
+}
+
+TEST_F(UseAddressActionTest, ResolveProfileByNameSucceeds) {
+  ON_CALL(mock_action_delegate_,
+          OnShortWaitForElement(Selector({kFakeSelector}).MustBeVisible(), _))
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
+  ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "not empty"));
+
+  ActionProto action;
+  UseAddressProto* use_address = action.mutable_use_address();
+  use_address->mutable_form_field_element()->add_selectors(kFakeSelector);
+  use_address->set_name(kAddressName);
+  EXPECT_CALL(mock_action_delegate_,
+              OnFillAddressForm(Pointee(Eq(profile_)), _, _))
+      .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+  EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED, ProcessAction(action));
+}
+
+TEST_F(UseAddressActionTest, InvalidActionModelIdentifierSetButEmpty) {
+  ActionProto action;
+  UseAddressProto* use_address = action.mutable_use_address();
+  use_address->mutable_form_field_element()->add_selectors(kFakeSelector);
+  use_address->set_model_identifier("");
+  EXPECT_EQ(ProcessedActionStatusProto::INVALID_ACTION, ProcessAction(action));
+}
+
+TEST_F(UseAddressActionTest, PreconditionFailedNoProfileForModelIdentifier) {
+  ActionProto action;
+  UseAddressProto* use_address = action.mutable_use_address();
+  use_address->mutable_form_field_element()->add_selectors(kFakeSelector);
+  use_address->set_model_identifier("invalid");
+  EXPECT_EQ(ProcessedActionStatusProto::PRECONDITION_FAILED,
+            ProcessAction(action));
+}
+
+TEST_F(UseAddressActionTest, ResolveProfileByModelIdentifierSucceeds) {
+  ON_CALL(mock_action_delegate_,
+          OnShortWaitForElement(Selector({kFakeSelector}).MustBeVisible(), _))
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
+  ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "not empty"));
+
+  ActionProto action;
+  UseAddressProto* use_address = action.mutable_use_address();
+  use_address->mutable_form_field_element()->add_selectors(kFakeSelector);
+  use_address->set_model_identifier(kModelIdentifier);
+  EXPECT_CALL(mock_action_delegate_,
+              OnFillAddressForm(Pointee(Eq(profile_)), _, _))
+      .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+  EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED, ProcessAction(action));
 }
 
 TEST_F(UseAddressActionTest, PreconditionFailedPopulatesUnexpectedErrorInfo) {
   InSequence seq;
 
   ActionProto action_proto = CreateUseAddressAction();
-  action_proto.mutable_use_address()->set_prompt(kSelectionPrompt);
   user_data_.selected_addresses_[kAddressName] = nullptr;
   user_data_.selected_addresses_["one_more"] = nullptr;
 

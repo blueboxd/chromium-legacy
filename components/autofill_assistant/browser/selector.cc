@@ -16,7 +16,9 @@ Selector::Selector(const ElementReferenceProto& proto) {
   }
   must_be_visible = proto.visibility_requirement() == MUST_BE_VISIBLE;
   inner_text_pattern = proto.inner_text_pattern();
+  inner_text_pattern_case_sensitive = proto.inner_text_pattern_case_sensitive();
   value_pattern = proto.value_pattern();
+  value_pattern_case_sensitive = proto.value_pattern_case_sensitive();
   pseudo_type = proto.pseudo_type();
 }
 
@@ -29,7 +31,10 @@ ElementReferenceProto Selector::ToElementReferenceProto() const {
     proto.set_visibility_requirement(MUST_BE_VISIBLE);
   }
   proto.set_inner_text_pattern(inner_text_pattern);
+  proto.set_inner_text_pattern_case_sensitive(
+      inner_text_pattern_case_sensitive);
   proto.set_value_pattern(value_pattern);
+  proto.set_value_pattern_case_sensitive(value_pattern_case_sensitive);
   proto.set_pseudo_type(pseudo_type);
   return proto;
 }
@@ -46,17 +51,22 @@ Selector& Selector::operator=(const Selector& other) = default;
 Selector& Selector::operator=(Selector&& other) = default;
 
 bool Selector::operator<(const Selector& other) const {
-  return std::tie(selectors, inner_text_pattern, value_pattern, must_be_visible,
-                  pseudo_type) <
+  return std::tie(selectors, inner_text_pattern,
+                  inner_text_pattern_case_sensitive, value_pattern,
+                  value_pattern_case_sensitive, must_be_visible, pseudo_type) <
          std::tie(other.selectors, other.inner_text_pattern,
-                  other.value_pattern, other.must_be_visible,
+                  other.inner_text_pattern_case_sensitive, other.value_pattern,
+                  other.value_pattern_case_sensitive, other.must_be_visible,
                   other.pseudo_type);
 }
 
 bool Selector::operator==(const Selector& other) const {
   return selectors == other.selectors &&
          inner_text_pattern == other.inner_text_pattern &&
+         inner_text_pattern_case_sensitive ==
+             other.inner_text_pattern_case_sensitive &&
          value_pattern == other.value_pattern &&
+         value_pattern_case_sensitive == other.value_pattern_case_sensitive &&
          must_be_visible == other.must_be_visible &&
          pseudo_type == other.pseudo_type;
 }
@@ -134,12 +144,12 @@ std::ostream& operator<<(std::ostream& out, const Selector& selector) {
   if (!selector.inner_text_pattern.empty()) {
     out << " innerText =~ /";
     out << selector.inner_text_pattern;
-    out << "/";
+    out << "/" << (selector.inner_text_pattern_case_sensitive ? "" : "i");
   }
   if (!selector.value_pattern.empty()) {
     out << " value =~ /";
     out << selector.value_pattern;
-    out << "/";
+    out << "/" << (selector.value_pattern_case_sensitive ? "" : "i");
   }
   if (selector.must_be_visible) {
     out << " must_be_visible";

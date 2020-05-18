@@ -17,3 +17,19 @@ source_set("elements") {
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }
+
+source_set("popover_label_view_controller") {
+  sources = [
+    "popover_label_view_controller.h",
+    "popover_label_view_controller.mm",
+  ]
+
+  libs = [ "UIKit.framework" ]
+
+  deps = [
+    "//ios/chrome/common/ui/colors",
+    "//ios/chrome/common/ui/util",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}

@@ -24,17 +24,19 @@ promise_test(async t => {
 // A more interoperable test would allow both |screenLock| to reject with
 // NotAllowedError as well as it resolving to a WakeLockSentinel that would fire
 // a "release" event upon page vsibility change.
-promise_test(async t => {
-  await internals.setPermission({name: 'screen-wake-lock'}, 'granted',
-                                location.origin, location.origin);
 
-  await setMainWindowHidden(false);
-
-  const screenLock = navigator.wakeLock.request('screen');
-  await setMainWindowHidden(true);
-  assert_true(document.hidden);
-  return promise_rejects_dom(t, "NotAllowedError", screenLock);
-}, "navigator.wakeLock.request('screen') aborts when the page is hidden");
+// crbug.com/1083585: Disabled due to flakiness.
+//promise_test(async t => {
+//  await internals.setPermission({name: 'screen-wake-lock'}, 'granted',
+//                                location.origin, location.origin);
+//
+//  await setMainWindowHidden(false);
+//
+//  const screenLock = navigator.wakeLock.request('screen');
+//  await setMainWindowHidden(true);
+//  assert_true(document.hidden);
+//  return promise_rejects_dom(t, "NotAllowedError", screenLock);
+//}, "navigator.wakeLock.request('screen') aborts when the page is hidden");
 
 promise_test(async t => {
   await internals.setPermission({name: 'screen-wake-lock'}, 'granted',

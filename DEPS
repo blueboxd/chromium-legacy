@@ -182,7 +182,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'f868d50932314ee8da53d75797829c5a5b969d23',
+  'v8_revision': '69ab806be2b5150fabd37740586f9d564b0be612',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -241,7 +241,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '1e4bfa55669d8083b39ad2c317087723325c32ad',
+  'catapult_revision': '77ed017015812dbdc5d5c0564481b052212333a9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -249,7 +249,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '074a542237bbc0d6f086560647f925d2c9421575',
+  'devtools_frontend_revision': '58544a7b8d2600c4534a2bea7c9a3f20267de074',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1220,7 +1220,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'ed409310e2c746232f70cf62ab2f3c63f6c0cd4e',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'df5f57764331db1d9e4a4818e23db433eecca6c6',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',

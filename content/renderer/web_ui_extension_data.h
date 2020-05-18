@@ -9,22 +9,15 @@
 #include <string>
 
 #include "base/macros.h"
-#include "content/common/web_ui.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
 
 class WebUIExtensionData
     : public RenderFrameObserver,
-      public RenderFrameObserverTracker<WebUIExtensionData>,
-      public mojom::WebUI {
+      public RenderFrameObserverTracker<WebUIExtensionData> {
  public:
-  static void Create(RenderFrame* render_frame,
-                     mojo::PendingReceiver<mojom::WebUI> receiver);
   explicit WebUIExtensionData(RenderFrame* render_frame);
   ~WebUIExtensionData() override;
 
@@ -32,19 +25,14 @@ class WebUIExtensionData
   // exists in the |variable_map_|.
   std::string GetValue(const std::string& key) const;
 
-  void SendMessage(const std::string& message,
-                   std::unique_ptr<base::ListValue> args);
-
  private:
-  // mojom::WebUI
-  void SetProperty(const std::string& name, const std::string& value) override;
+  // RenderFrameObserver implementation.
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnDestruct() override;
 
-  // RenderFrameObserver
-  void OnDestruct() override {}
+  void OnSetWebUIProperty(const std::string& name, const std::string& value);
 
   std::map<std::string, std::string> variable_map_;
-
-  mojo::Remote<mojom::WebUIHost> remote_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebUIExtensionData);
 };

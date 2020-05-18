@@ -450,6 +450,9 @@ base::string16 SafetyCheckHandler::GetStringForPasswords(
     case PasswordsStatus::kError:
       return l10n_util::GetStringUTF16(
           IDS_SETTINGS_CHECK_PASSWORDS_ERROR_GENERIC);
+    case PasswordsStatus::kFeatureUnavailable:
+      return l10n_util::GetStringUTF16(
+          IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_FEATURE_UNAVAILABLE);
   }
 }
 
@@ -627,6 +630,9 @@ void SafetyCheckHandler::OnStateChanged(
                              Done(0), Total(0));
       break;
     case BulkLeakCheckService::State::kTokenRequestFailure:
+      OnPasswordsCheckResult(PasswordsStatus::kFeatureUnavailable,
+                             Compromised(0), Done(0), Total(0));
+      break;
     case BulkLeakCheckService::State::kHashingFailure:
     case BulkLeakCheckService::State::kServiceError:
       OnPasswordsCheckResult(PasswordsStatus::kError, Compromised(0), Done(0),

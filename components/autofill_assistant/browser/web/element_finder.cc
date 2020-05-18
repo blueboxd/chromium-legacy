@@ -40,11 +40,16 @@ const char* const kQuerySelector =
 // Returns undefined if no elements are found, TOO_MANY_ELEMENTS (18) if too
 // many elements were found and strict mode is enabled.
 const char* const kQuerySelectorWithConditions =
-    R"(function (selector, strict, visible, inner_text_str, value_str) {
+    R"(function (selector, strict, visible, inner_text_str,
+            inner_text_case_sensitive, value_str, value_case_sensitive) {
         var found = this.querySelectorAll(selector);
         var found_index = -1;
-        var inner_text_re = inner_text_str ? RegExp(inner_text_str) : undefined;
-        var value_re = value_str ? RegExp(value_str) : undefined;
+        var inner_text_re = inner_text_str ?
+                RegExp(inner_text_str, inner_text_case_sensitive ? "" : "i") :
+                undefined;
+        var value_re = value_str ?
+                RegExp(value_str, value_case_sensitive ? "" : "i") :
+                undefined;
         var match = function(e) {
           if (visible && e.getClientRects().length == 0) return false;
           if (inner_text_re && !inner_text_re.test(e.innerText)) return false;
@@ -195,7 +200,11 @@ void ElementFinder::RecursiveFindElement(const std::string& object_id,
       function.assign(kQuerySelectorWithConditions);
       AddRuntimeCallArgument(selector_.must_be_visible, &arguments);
       AddRuntimeCallArgument(selector_.inner_text_pattern, &arguments);
+      AddRuntimeCallArgument(selector_.inner_text_pattern_case_sensitive,
+                             &arguments);
       AddRuntimeCallArgument(selector_.value_pattern, &arguments);
+      AddRuntimeCallArgument(selector_.value_pattern_case_sensitive,
+                             &arguments);
     }
   }
   if (function.empty()) {

@@ -144,7 +144,6 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
                            std::unique_ptr<OSExchangeData> data,
                            int operation);
   virtual int OnDragMotion(const gfx::PointF& point,
-                           uint32_t time,
                            int operation);
   virtual void OnDragDrop(std::unique_ptr<OSExchangeData> data);
   virtual void OnDragLeave();

@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_BODY_STREAM_BUFFER_H_
 
 #include <memory>
-#include "base/optional.h"
 #include "base/util/type_safety/pass_key.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
@@ -77,13 +76,11 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   void OnStateChange() override;
   String DebugName() const override { return "BodyStreamBuffer"; }
 
-  base::Optional<bool> IsStreamReadable(ExceptionState&);
-  base::Optional<bool> IsStreamClosed(ExceptionState&);
-  base::Optional<bool> IsStreamErrored(ExceptionState&);
-  base::Optional<bool> IsStreamLocked(ExceptionState&);
-  bool IsStreamLockedForDCheck(ExceptionState&);
-  base::Optional<bool> IsStreamDisturbed(ExceptionState&);
-  bool IsStreamDisturbedForDCheck(ExceptionState&);
+  bool IsStreamReadable() const;
+  bool IsStreamClosed() const;
+  bool IsStreamErrored() const;
+  bool IsStreamLocked() const;
+  bool IsStreamDisturbed() const;
   void CloseAndLockAndDisturb(ExceptionState&);
   ScriptState* GetScriptState() { return script_state_; }
 
@@ -116,15 +113,6 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   void EndLoading();
   void StopLoading();
 
-  // Implementation of IsStream*() methods. Delegates to |predicate|, one of the
-  // methods defined in ReadableStream. Sets |stream_broken_| and throws if
-  // |predicate| throws. Throws an exception if called when |stream_broken_|
-  // is already true.
-  base::Optional<bool> BooleanStreamOperation(
-      base::Optional<bool> (ReadableStream::*predicate)(ScriptState*,
-                                                        ExceptionState&) const,
-      ExceptionState& exception_state);
-
   Member<ScriptState> script_state_;
   Member<ReadableStream> stream_;
   Member<BytesConsumer> consumer_;
@@ -140,6 +128,8 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   bool stream_needs_more_ = false;
   bool made_from_readable_stream_;
   bool in_process_data_ = false;
+
+  // TODO(ricea): Remove remaining uses of |stream_broken_|.
   bool stream_broken_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BodyStreamBuffer);

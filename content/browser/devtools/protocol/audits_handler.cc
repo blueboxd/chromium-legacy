@@ -34,5 +34,11 @@ DispatchResponse AuditsHandler::Enable() {
   return Response::FallThrough();
 }
 
+void AuditsHandler::OnIssueAdded(protocol::Audits::InspectorIssue* issue) {
+  if (enabled_) {
+    frontend_->IssueAdded(issue->clone());
+  }
+}
+
 }  // namespace protocol
 }  // namespace content

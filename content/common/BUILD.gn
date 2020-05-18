@@ -464,7 +464,6 @@ mojom("mojo_bindings") {
     "renderer.mojom",
     "renderer_host.mojom",
     "renderer_variations_configuration.mojom",
-    "web_ui.mojom",
     "widget.mojom",
   ]
 

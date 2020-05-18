@@ -22,7 +22,6 @@ import org.chromium.components.minidump_uploader.CrashFileManager;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -149,16 +148,9 @@ public class CrashReceiverService extends Service {
             File logFile, File crashFile, Map<String, String> crashInfoMap) {
         try {
             String localId = CrashFileManager.getCrashLocalIdFromFileName(crashFile.getName());
-            if (localId == null) return false;
-            CrashInfo crashInfo = new CrashInfo(localId);
+            if (localId == null || crashInfoMap == null) return false;
+            CrashInfo crashInfo = new CrashInfo(localId, crashInfoMap);
             crashInfo.captureTime = crashFile.lastModified();
-
-            if (crashInfoMap == null) return false;
-            crashInfo.packageName = crashInfoMap.get("app-package-name");
-
-            if (crashInfoMap.containsKey("variations")) {
-                crashInfo.variations = Arrays.asList(crashInfoMap.get("variations").split(","));
-            }
 
             FileWriter writer = new FileWriter(logFile);
             try {

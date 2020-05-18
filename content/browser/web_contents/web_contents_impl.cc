@@ -909,6 +909,12 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHostImpl* render_view_host,
 
 bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                                         const IPC::Message& message) {
+  {
+    WebUIImpl* web_ui = render_frame_host->web_ui();
+    if (web_ui && web_ui->OnMessageReceived(message, render_frame_host))
+      return true;
+  }
+
   for (auto& observer : observers_) {
     if (observer.OnMessageReceived(message, render_frame_host))
       return true;
@@ -6517,9 +6523,8 @@ NavigationControllerImpl& WebContentsImpl::GetControllerForRenderManager() {
 }
 
 std::unique_ptr<WebUIImpl> WebContentsImpl::CreateWebUIForRenderFrameHost(
-    const GURL& url,
-    RenderFrameHost* frame_host) {
-  return CreateWebUI(url, frame_host);
+    const GURL& url) {
+  return CreateWebUI(url);
 }
 
 void WebContentsImpl::CreateRenderWidgetHostViewForRenderManager(
@@ -6772,11 +6777,8 @@ void WebContentsImpl::OnPreferredSizeChanged(const gfx::Size& old_size) {
     delegate_->UpdatePreferredSize(this, new_size);
 }
 
-std::unique_ptr<WebUIImpl> WebContentsImpl::CreateWebUI(
-    const GURL& url,
-    RenderFrameHost* frame_host) {
-  std::unique_ptr<WebUIImpl> web_ui =
-      std::make_unique<WebUIImpl>(this, frame_host);
+std::unique_ptr<WebUIImpl> WebContentsImpl::CreateWebUI(const GURL& url) {
+  std::unique_ptr<WebUIImpl> web_ui = std::make_unique<WebUIImpl>(this);
   std::unique_ptr<WebUIController> controller(
       WebUIControllerFactoryRegistry::GetInstance()
           ->CreateWebUIControllerForURL(web_ui.get(), url));

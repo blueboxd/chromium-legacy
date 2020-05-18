@@ -9,6 +9,7 @@
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #import "ios/chrome/common/credential_provider/constants.h"
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
+#import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
 #import "ios/chrome/credential_provider_extension/reauthentication_handler.h"
 #import "ios/chrome/credential_provider_extension/ui/consent_view_controller.h"
 
@@ -23,6 +24,10 @@
 
 // The view controller of this coordinator.
 @property(nonatomic, strong) ConsentViewController* viewController;
+
+// Popover used to show learn more info, not nil when presented.
+@property(nonatomic, strong)
+    PopoverLabelViewController* learnMoreViewController;
 
 // The extension context for the credential provider.
 @property(nonatomic, weak) ASCredentialProviderExtensionContext* context;
@@ -105,8 +110,18 @@
 }
 
 - (void)confirmationAlertLearnMoreAction {
-  // No-op.
-  // TODO(crbug.com/1045453) Implement.
+  NSString* message =
+      NSLocalizedString(@"IDS_IOS_CREDENTIAL_PROVIDER_CONSENT_MORE_INFO_STRING",
+                        @"The information provided in the consent popover.");
+  self.learnMoreViewController =
+      [[PopoverLabelViewController alloc] initWithMessage:message];
+  [self.viewController presentViewController:self.learnMoreViewController
+                                    animated:YES
+                                  completion:nil];
+  self.learnMoreViewController.popoverPresentationController.barButtonItem =
+      self.viewController.helpButton;
+  self.learnMoreViewController.popoverPresentationController
+      .permittedArrowDirections = UIPopoverArrowDirectionUp;
 }
 
 @end

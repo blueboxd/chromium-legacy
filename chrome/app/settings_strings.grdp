@@ -1101,6 +1101,9 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_PRIMARY_LABEL" desc="'Passwords' is an element in safety check that allows users to check for their passwords being compromised.">
     Passwords
   </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_FEATURE_UNAVAILABLE" desc="Explains that the password check feature is not available in this version of the browser.">
+    Password check is not available in Chromium
+  </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_BUTTON_ARIA_LABEL" desc="Accessibility text for the button that allows users to review their passwords.">
     Review passwords
   </message>

@@ -289,7 +289,7 @@ public class PickerCategoryView extends RelativeLayout
      * @param uri The uri of the video to start playing.
      */
     public void startVideoPlaybackAsync(Uri uri) {
-        mVideoPlayer.startVideoPlaybackAsync(uri);
+        mVideoPlayer.startVideoPlaybackAsync(uri, mDialog.getWindow().getDecorView());
     }
 
     /**

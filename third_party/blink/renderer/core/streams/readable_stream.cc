@@ -1210,8 +1210,7 @@ ReadableStream::ReadableStream() = default;
 
 ReadableStream::~ReadableStream() = default;
 
-bool ReadableStream::locked(ScriptState* script_state,
-                            ExceptionState& exception_state) const {
+bool ReadableStream::locked() const {
   // https://streams.spec.whatwg.org/#rs-locked
   // 2. Return ! IsReadableStreamLocked(this).
   return IsLocked(this);

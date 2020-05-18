@@ -143,6 +143,15 @@ declare_args() {
   # reduce TLB misses which gives performance improvement on cpu usage.
   # The gold linker by default has text section splitting enabled.
   use_text_section_splitting = false
+
+  # Token limits may not be accurate for build configs not covered by the CQ,
+  # so only enable them by default for mainstream build configs.
+  enable_wmax_tokens =
+      !is_official_build &&
+      (is_mac || (is_linux && !is_chromeos && target_cpu == "x64") ||
+       (is_win && target_cpu == "x86") || (is_win && target_cpu == "x64") ||
+       (is_android && target_cpu == "arm") ||
+       (is_android && target_cpu == "arm64"))
 }
 
 declare_args() {
@@ -1468,14 +1477,6 @@ config("default_warnings") {
         cflags += [ "-Wno-nonportable-include-path" ]
       }
 
-      if (target_os == "chromeos") {
-        # Disable clang warnings of "-Wmax-tokens" because CQ doesn't cover all CrOS use
-        # cases, so it's too late to fix when the error goes to CrOS side.
-        # Also nacl toolchain doesn't recognize the flag, so avoid passing to nacl clang
-        # See crbug.com/1079053 for more details.
-        cflags += [ "-Wno-max-tokens" ]
-      }
-
       if (current_toolchain == host_toolchain || !use_xcode_clang) {
         # Flags NaCl (Clang 3.7) and Xcode 9.2 (Clang clang-900.0.39.2) do not
         # recognize.
@@ -1504,6 +1505,13 @@ config("default_warnings") {
           # TODO(https://crbug.com/995993): Clean up and enable.
           "-Wno-implicit-fallthrough",
         ]
+
+        if (enable_wmax_tokens) {
+          cflags += [ "-Wmax-tokens" ]
+        } else {
+          # TODO(https://crbug.com/1049569): Remove after Clang 87b235db.
+          cflags += [ "-Wno-max-tokens" ]
+        }
       }
     }
   }

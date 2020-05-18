@@ -144,6 +144,13 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
     infos.at(SystemAppType::PRINT_MANAGEMENT).show_in_launcher = false;
   }
 
+  if (SystemWebAppManager::IsAppEnabled(SystemAppType::TELEMETRY)) {
+    infos.emplace(
+        SystemAppType::TELEMETRY,
+        SystemAppInfo("Telemetry",
+                      GURL("chrome://telemetry-extension/pwa.html")));
+  }
+
 #if !defined(OFFICIAL_BUILD)
   infos.emplace(
       SystemAppType::SAMPLE,
@@ -250,6 +257,12 @@ bool SystemWebAppManager::IsAppEnabled(SystemAppType type) {
     case SystemAppType::PRINT_MANAGEMENT:
       return base::FeatureList::IsEnabled(
           chromeos::features::kPrintJobManagementApp);
+    case SystemAppType::TELEMETRY:
+#if !defined(OFFICIAL_BUILD)
+      return true;
+#else
+      return false;
+#endif  // !defined(OFFICIAL_BUILD)
 #if !defined(OFFICIAL_BUILD)
     case SystemAppType::SAMPLE:
       NOTREACHED();

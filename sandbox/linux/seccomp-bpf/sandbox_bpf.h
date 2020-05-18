@@ -101,6 +101,13 @@ class SANDBOX_EXPORT SandboxBPF {
   // been configured with SetSandboxPolicy().
   void InstallFilter(bool must_sync_threads);
 
+  // Disable indirect branch speculation by prctl. This will be done by
+  // seccomp if SECCOMP_FILTER_FLAG_SPEC_ALLOW is not set. Seccomp will
+  // disable indirect branch speculation and speculative store bypass
+  // simultaneously. We use prctl in supplement to control the speculation
+  // features separately.
+  void DisableIBSpec();
+
   base::ScopedFD proc_fd_;
   bool sandbox_has_started_;
   std::unique_ptr<bpf_dsl::Policy> policy_;

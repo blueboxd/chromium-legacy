@@ -408,6 +408,13 @@ TEST_F(ProfileSyncServiceStartupTest, DisableSync) {
   // Sync-the-feature is still considered off.
   EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());
   EXPECT_FALSE(sync_service()->IsSyncFeatureActive());
+
+  // Call StopAndClear() again while the sync service is already in transport
+  // mode. It should immediately start up again in transport mode.
+  SetUpFakeSyncEngine();
+  data_type_manager = SetUpDataTypeManagerMock();
+  EXPECT_CALL(*data_type_manager, Configure(_, _));
+  sync_service()->StopAndClear();
 }
 
 // Test that we can recover from a case where a bug in the code resulted in

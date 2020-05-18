@@ -175,26 +175,20 @@ TEST_F(ReadableStreamTest, GetReader) {
       script_state, js_underlying_source, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(stream);
 
-  EXPECT_EQ(stream->IsLocked(script_state, ASSERT_NO_EXCEPTION),
-            base::make_optional(false));
-  EXPECT_EQ(stream->IsLocked(script_state, ASSERT_NO_EXCEPTION),
-            base::make_optional(false));
-  EXPECT_EQ(stream->IsDisturbed(script_state, ASSERT_NO_EXCEPTION),
-            base::make_optional(false));
+  EXPECT_FALSE(stream->locked());
+  EXPECT_FALSE(stream->IsLocked());
+  EXPECT_FALSE(stream->IsDisturbed());
 
   ReadableStreamDefaultReader* reader =
       stream->getReader(script_state, ASSERT_NO_EXCEPTION);
 
-  EXPECT_TRUE(stream->locked(script_state, ASSERT_NO_EXCEPTION));
-  EXPECT_EQ(stream->IsLocked(script_state, ASSERT_NO_EXCEPTION),
-            base::make_optional(true));
-  EXPECT_EQ(stream->IsDisturbed(script_state, ASSERT_NO_EXCEPTION),
-            base::make_optional(false));
+  EXPECT_TRUE(stream->locked());
+  EXPECT_TRUE(stream->IsLocked());
+  EXPECT_FALSE(stream->IsDisturbed());
 
   reader->read(script_state, ASSERT_NO_EXCEPTION);
 
-  EXPECT_EQ(stream->IsDisturbed(script_state, ASSERT_NO_EXCEPTION),
-            base::make_optional(true));
+  EXPECT_TRUE(stream->IsDisturbed());
 }
 
 TEST_F(ReadableStreamTest, Cancel) {
@@ -272,29 +266,22 @@ TEST_F(ReadableStreamTest, Tee) {
   ReadableStream* branch2 = nullptr;
   stream->Tee(script_state, &branch1, &branch2, ASSERT_NO_EXCEPTION);
 
-  EXPECT_EQ(stream->IsLocked(script_state, ASSERT_NO_EXCEPTION),
-            base::make_optional(true));
-  EXPECT_EQ(stream->IsDisturbed(script_state, ASSERT_NO_EXCEPTION),
-            base::make_optional(false));
+  EXPECT_TRUE(stream->IsLocked());
+  EXPECT_FALSE(stream->IsDisturbed());
 
   ASSERT_TRUE(branch1);
   ASSERT_TRUE(branch2);
 
-  EXPECT_EQ(branch1->IsLocked(script_state, ASSERT_NO_EXCEPTION),
-            base::make_optional(false));
-  EXPECT_EQ(branch1->IsDisturbed(script_state, ASSERT_NO_EXCEPTION),
-            base::make_optional(false));
-  EXPECT_EQ(branch2->IsLocked(script_state, ASSERT_NO_EXCEPTION),
-            base::make_optional(false));
-  EXPECT_EQ(branch2->IsDisturbed(script_state, ASSERT_NO_EXCEPTION),
-            base::make_optional(false));
+  EXPECT_FALSE(branch1->IsLocked());
+  EXPECT_FALSE(branch1->IsDisturbed());
+  EXPECT_FALSE(branch2->IsLocked());
+  EXPECT_FALSE(branch2->IsDisturbed());
 
   auto result1 = ReadAll(scope, branch1);
   ASSERT_TRUE(result1);
   EXPECT_EQ(*result1, "hello, bye");
 
-  EXPECT_EQ(stream->IsDisturbed(script_state, ASSERT_NO_EXCEPTION),
-            base::make_optional(true));
+  EXPECT_TRUE(stream->IsDisturbed());
 
   auto result2 = ReadAll(scope, branch2);
   ASSERT_TRUE(result2);
@@ -304,7 +291,6 @@ TEST_F(ReadableStreamTest, Tee) {
 TEST_F(ReadableStreamTest, Close) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
-  ExceptionState& exception_state = scope.GetExceptionState();
 
   auto* underlying_source =
       MakeGarbageCollected<TestUnderlyingSource>(script_state);
@@ -313,28 +299,21 @@ TEST_F(ReadableStreamTest, Close) {
 
   ASSERT_TRUE(stream);
 
-  EXPECT_EQ(stream->IsReadable(script_state, exception_state),
-            base::make_optional(true));
-  EXPECT_EQ(stream->IsClosed(script_state, exception_state),
-            base::make_optional(false));
-  EXPECT_EQ(stream->IsErrored(script_state, exception_state),
-            base::make_optional(false));
+  EXPECT_TRUE(stream->IsReadable());
+  EXPECT_FALSE(stream->IsClosed());
+  EXPECT_FALSE(stream->IsErrored());
 
   underlying_source->Close();
 
-  EXPECT_EQ(stream->IsReadable(script_state, exception_state),
-            base::make_optional(false));
-  EXPECT_EQ(stream->IsClosed(script_state, exception_state),
-            base::make_optional(true));
-  EXPECT_EQ(stream->IsErrored(script_state, exception_state),
-            base::make_optional(false));
+  EXPECT_FALSE(stream->IsReadable());
+  EXPECT_TRUE(stream->IsClosed());
+  EXPECT_FALSE(stream->IsErrored());
 }
 
 TEST_F(ReadableStreamTest, Error) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
   v8::Isolate* isolate = scope.GetIsolate();
-  ExceptionState& exception_state = scope.GetExceptionState();
 
   auto* underlying_source =
       MakeGarbageCollected<TestUnderlyingSource>(script_state);
@@ -343,21 +322,15 @@ TEST_F(ReadableStreamTest, Error) {
 
   ASSERT_TRUE(stream);
 
-  EXPECT_EQ(stream->IsReadable(script_state, exception_state),
-            base::make_optional(true));
-  EXPECT_EQ(stream->IsClosed(script_state, exception_state),
-            base::make_optional(false));
-  EXPECT_EQ(stream->IsErrored(script_state, exception_state),
-            base::make_optional(false));
+  EXPECT_TRUE(stream->IsReadable());
+  EXPECT_FALSE(stream->IsClosed());
+  EXPECT_FALSE(stream->IsErrored());
 
   underlying_source->Error(ScriptValue(isolate, v8::Undefined(isolate)));
 
-  EXPECT_EQ(stream->IsReadable(script_state, exception_state),
-            base::make_optional(false));
-  EXPECT_EQ(stream->IsClosed(script_state, exception_state),
-            base::make_optional(false));
-  EXPECT_EQ(stream->IsErrored(script_state, exception_state),
-            base::make_optional(true));
+  EXPECT_FALSE(stream->IsReadable());
+  EXPECT_FALSE(stream->IsClosed());
+  EXPECT_TRUE(stream->IsErrored());
 }
 
 TEST_F(ReadableStreamTest, LockAndDisturb) {
@@ -372,18 +345,14 @@ TEST_F(ReadableStreamTest, LockAndDisturb) {
 
   ASSERT_TRUE(stream);
 
-  EXPECT_EQ(stream->IsLocked(script_state, exception_state),
-            base::make_optional(false));
-  EXPECT_EQ(stream->IsDisturbed(script_state, exception_state),
-            base::make_optional(false));
+  EXPECT_FALSE(stream->IsLocked());
+  EXPECT_FALSE(stream->IsDisturbed());
 
   stream->LockAndDisturb(script_state, exception_state);
   ASSERT_FALSE(exception_state.HadException());
 
-  EXPECT_EQ(stream->IsLocked(script_state, exception_state),
-            base::make_optional(true));
-  EXPECT_EQ(stream->IsDisturbed(script_state, exception_state),
-            base::make_optional(true));
+  EXPECT_TRUE(stream->IsLocked());
+  EXPECT_TRUE(stream->IsDisturbed());
 }
 
 TEST_F(ReadableStreamTest, Serialize) {
@@ -403,7 +372,7 @@ TEST_F(ReadableStreamTest, Serialize) {
       MakeGarbageCollected<MessageChannel>(scope.GetExecutionContext());
 
   stream->Serialize(script_state, channel->port1(), ASSERT_NO_EXCEPTION);
-  EXPECT_TRUE(stream->IsLocked(script_state, ASSERT_NO_EXCEPTION));
+  EXPECT_TRUE(stream->IsLocked());
 
   auto* transferred = ReadableStream::Deserialize(
       script_state, channel->port2(), ASSERT_NO_EXCEPTION);

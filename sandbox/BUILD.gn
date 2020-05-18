@@ -34,7 +34,10 @@ group("sandbox") {
 
 buildflag_header("sandbox_buildflags") {
   header = "sandbox_buildflags.h"
-  flags = [ "USE_SECCOMP_BPF=$use_seccomp_bpf" ]
+  flags = [
+    "USE_SECCOMP_BPF=$use_seccomp_bpf",
+    "DISABLE_SECCOMP_SSBD=$disable_seccomp_ssbd",
+  ]
 }
 
 # This target must be here and not in win/ otherwise it would require a full

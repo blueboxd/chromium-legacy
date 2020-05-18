@@ -27,7 +27,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/sync/base/time.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/nigori/cryptographer_impl.h"
 #include "components/sync/nigori/nigori.h"
@@ -170,16 +169,10 @@ class PageTitleChecker : public StatusChangeChecker,
   DISALLOW_COPY_AND_ASSIGN(PageTitleChecker);
 };
 
-class SingleClientNigoriSyncTestWithUssTests
-    : public SyncTest,
-      public testing::WithParamInterface<bool> {
+class SingleClientNigoriSyncTest : public SyncTest {
  public:
-  SingleClientNigoriSyncTestWithUssTests() : SyncTest(SINGLE_CLIENT) {
-    override_features_.InitWithFeatureState(switches::kSyncUSSNigori,
-                                            GetParam());
-  }
-
-  ~SingleClientNigoriSyncTestWithUssTests() override = default;
+  SingleClientNigoriSyncTest() : SyncTest(SINGLE_CLIENT) {}
+  ~SingleClientNigoriSyncTest() override = default;
 
   bool WaitForPasswordForms(
       const std::vector<autofill::PasswordForm>& forms) const {
@@ -187,16 +180,14 @@ class SingleClientNigoriSyncTestWithUssTests
   }
 
  private:
-  base::test::ScopedFeatureList override_features_;
-
-  DISALLOW_COPY_AND_ASSIGN(SingleClientNigoriSyncTestWithUssTests);
+  DISALLOW_COPY_AND_ASSIGN(SingleClientNigoriSyncTest);
 };
 
 class SingleClientNigoriSyncTestWithNotAwaitQuiescence
-    : public SingleClientNigoriSyncTestWithUssTests {
+    : public SingleClientNigoriSyncTest {
  public:
   SingleClientNigoriSyncTestWithNotAwaitQuiescence() = default;
-  ~SingleClientNigoriSyncTestWithNotAwaitQuiescence() = default;
+  ~SingleClientNigoriSyncTestWithNotAwaitQuiescence() override = default;
 
   bool TestUsesSelfNotifications() override {
     // This test fixture is used with tests, which expect SetupSync() to be
@@ -209,20 +200,7 @@ class SingleClientNigoriSyncTestWithNotAwaitQuiescence
   DISALLOW_COPY_AND_ASSIGN(SingleClientNigoriSyncTestWithNotAwaitQuiescence);
 };
 
-class SingleClientKeystoreKeysMigrationSyncTest : public SyncTest {
- public:
-  SingleClientKeystoreKeysMigrationSyncTest() : SyncTest(SINGLE_CLIENT) {
-    override_features_.InitWithFeatureState(switches::kSyncUSSNigori,
-                                            !content::IsPreTest());
-  }
-
-  ~SingleClientKeystoreKeysMigrationSyncTest() override = default;
-
- private:
-  base::test::ScopedFeatureList override_features_;
-};
-
-IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
+IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest,
                        ShouldCommitKeystoreNigoriWhenReceivedDefault) {
   // SetupSync() should make FakeServer send default NigoriSpecifics.
   ASSERT_TRUE(SetupSync());
@@ -247,7 +225,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
 // Test first injects implicit passphrase Nigori and encrypted password form to
 // fake server and then checks that client successfully received and decrypted
 // this password form.
-IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
+IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest,
                        ShouldDecryptWithImplicitPassphraseNigori) {
   const KeyParamsForTesting kKeyParams = {
       syncer::KeyDerivationParams::CreateForPbkdf2(), "passphrase"};
@@ -274,7 +252,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
 // Nigori node contains only this key. We first inject keystore Nigori and
 // encrypted password form to fake server and then check that client
 // successfully received and decrypted this password form.
-IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
+IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest,
                        ShouldDecryptWithKeystoreNigori) {
   const std::vector<std::vector<uint8_t>>& keystore_keys =
       GetFakeServer()->GetKeystoreKeys();
@@ -300,7 +278,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
 // Nigori node is in backward-compatible keystore mode (i.e. default key isn't
 // a keystore key, but keystore decryptor token contains this key and encrypted
 // with a keystore key).
-IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
+IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest,
                        ShouldDecryptWithBackwardCompatibleKeystoreNigori) {
   const std::vector<std::vector<uint8_t>>& keystore_keys =
       GetFakeServer()->GetKeystoreKeys();
@@ -324,8 +302,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
   EXPECT_TRUE(WaitForPasswordForms({password_form}));
 }
 
-IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
-                       ShouldRotateKeystoreKey) {
+IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest, ShouldRotateKeystoreKey) {
   ASSERT_TRUE(SetupSync());
 
   GetFakeServer()->TriggerKeystoreKeyRotation();
@@ -345,8 +322,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
 // backward-compatible keystore mode, when |keystore_decryptor_token| is
 // non-decryptable (corrupted). Additionally verifies that there is no
 // regression causing crbug.com/1042203.
-IN_PROC_BROWSER_TEST_P(
-    SingleClientNigoriSyncTestWithUssTests,
+IN_PROC_BROWSER_TEST_F(
+    SingleClientNigoriSyncTest,
     ShouldDecryptWithImplicitPassphraseInBackwardCompatibleKeystoreMode) {
   const std::vector<std::vector<uint8_t>>& keystore_keys =
       GetFakeServer()->GetKeystoreKeys();
@@ -384,13 +361,9 @@ IN_PROC_BROWSER_TEST_P(
   // such behavior is supported.
 }
 
-INSTANTIATE_TEST_SUITE_P(USS,
-                         SingleClientNigoriSyncTestWithUssTests,
-                         ::testing::Values(false, true));
-
 // Performs initial sync for Nigori, but doesn't allow initialized Nigori to be
-// commited.
-IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithNotAwaitQuiescence,
+// committed.
+IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTestWithNotAwaitQuiescence,
                        PRE_ShouldCompleteKeystoreInitializationAfterRestart) {
   GetFakeServer()->TriggerCommitError(sync_pb::SyncEnums::THROTTLED);
   ASSERT_TRUE(SetupSync());
@@ -402,7 +375,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithNotAwaitQuiescence,
 }
 
 // After browser restart the client should commit initialized Nigori.
-IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithNotAwaitQuiescence,
+IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTestWithNotAwaitQuiescence,
                        ShouldCompleteKeystoreInitializationAfterRestart) {
   sync_pb::NigoriSpecifics specifics;
   ASSERT_TRUE(GetServerNigori(GetFakeServer(), &specifics));
@@ -415,47 +388,11 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithNotAwaitQuiescence,
                   .Wait());
 }
 
-INSTANTIATE_TEST_SUITE_P(USS,
-                         SingleClientNigoriSyncTestWithNotAwaitQuiescence,
-                         ::testing::Values(false, true));
-
-// Setups Sync with Directory Nigori, so keystore keys are persisted in prefs.
-IN_PROC_BROWSER_TEST_F(SingleClientKeystoreKeysMigrationSyncTest,
-                       PRE_ShouldMigrateKeystoreKeysFromPrefs) {
-  ASSERT_TRUE(SetupSync());
-}
-
-// Disallows population of keystore keys from the server, so preferences are
-// the only source for keystore keys.
-IN_PROC_BROWSER_TEST_F(SingleClientKeystoreKeysMigrationSyncTest,
-                       ShouldMigrateKeystoreKeysFromPrefs) {
-  GetFakeServer()->DisallowSendingEncryptionKeys();
-  EXPECT_TRUE(SetupClients());
-
-  // Ensure that client can decrypt with keystore keys.
-  const std::vector<std::vector<uint8_t>>& keystore_keys =
-      GetFakeServer()->GetKeystoreKeys();
-  ASSERT_THAT(keystore_keys, SizeIs(1));
-  const KeyParamsForTesting kKeystoreKeyParams =
-      Pbkdf2KeyParamsForTesting(keystore_keys.back());
-
-  const autofill::PasswordForm password_form =
-      passwords_helper::CreateTestPasswordForm(0);
-  passwords_helper::InjectEncryptedServerPassword(
-      password_form, kKeystoreKeyParams.password,
-      kKeystoreKeyParams.derivation_params, GetFakeServer());
-  EXPECT_TRUE(PasswordFormsChecker(0, {password_form}).Wait());
-}
-
 class SingleClientNigoriWithWebApiTest : public SyncTest {
  public:
   SingleClientNigoriWithWebApiTest() : SyncTest(SINGLE_CLIENT) {
-    // USS Nigori requires USS implementations to be enabled for all
-    // datatypes.
-    override_features_.InitWithFeatures(
-        /*enabled_features=*/{switches::kSyncUSSNigori,
-                              switches::kSyncSupportTrustedVaultPassphrase},
-        /*disabled_features=*/{});
+    override_features_.InitAndEnableFeature(
+        switches::kSyncSupportTrustedVaultPassphrase);
   }
   ~SingleClientNigoriWithWebApiTest() override = default;
 

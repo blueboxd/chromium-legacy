@@ -196,6 +196,133 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest, CheckForCrashedFrame) {
   EXPECT_FALSE(data);
 }
 
+// Tests that RenderDocumentHostUserData object is not cleared when speculative
+// RFH commits after the renderer hosting the current RFH (of old URL) crashes
+// i.e., while navigating to a new URL (using speculative RFH) and having the
+// current RFH (of old URL) not alive.
+IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,
+                       CheckWithFrameCrashDuringNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+
+  // Isolate "b.com" so we are guaranteed to get a different process
+  // for navigations to this origin on Android. Doing this ensures that a
+  // speculative RenderFrameHost is used.
+  IsolateOriginsForTesting(embedded_test_server(), shell()->web_contents(),
+                           {"b.com"});
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = top_frame_host();
+
+  // 2) Start navigation to B, but don't commit yet.
+  TestNavigationManager manager(shell()->web_contents(), url_b);
+  shell()->LoadURL(url_b);
+  EXPECT_TRUE(manager.WaitForRequestStart());
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  RenderFrameHostImpl* pending_rfh =
+      root->render_manager()->speculative_frame_host();
+  NavigationRequest* navigation_request = root->navigation_request();
+  EXPECT_EQ(navigation_request->associated_site_instance_type(),
+            NavigationRequest::AssociatedSiteInstanceType::SPECULATIVE);
+  EXPECT_TRUE(pending_rfh);
+
+  // 3) Get the RenderDocumentHostUserData associated with the speculative
+  // RenderFrameHost.
+  Data::CreateForCurrentDocument(pending_rfh);
+  base::WeakPtr<Data> data =
+      Data::GetForCurrentDocument(pending_rfh)->GetWeakPtr();
+  EXPECT_TRUE(data);
+
+  // 4) Crash the renderer hosting current RFH.
+  RenderProcessHost* renderer_process = rfh_a->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      renderer_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  renderer_process->Shutdown(0);
+  crash_observer.Wait();
+
+  // 5) Check that the RDHUD object is not cleared after renderer process
+  // crashes.
+  EXPECT_EQ(top_frame_host(), rfh_a);
+  EXPECT_FALSE(pending_rfh->IsCurrent());
+  EXPECT_FALSE(rfh_a->IsRenderFrameLive());
+  EXPECT_TRUE(pending_rfh->IsRenderFrameLive());
+  EXPECT_TRUE(data);
+
+  // 6) Let the navigation finish and make sure it has succeeded.
+  manager.WaitForNavigationFinished();
+  EXPECT_EQ(url_b, web_contents()->GetMainFrame()->GetLastCommittedURL());
+
+  // 7) Data shouldn't be cleared in this case, as state
+  // |committed_speculative_rfh_before_navigation_commit_| is true during the
+  // check in DidCommitInternalNavigation as the speculative RFH swaps with the
+  // crashed RFH and performs commit before navigation commit happens.
+  EXPECT_TRUE(data);
+}
+
+// Tests that RenderDocumentHostUserData object is not cleared when speculative
+// RFH commits after renderer hosting the current RFH (of old URL) which happens
+// before navigating to a new URL (using Speculative RFH) and having the current
+// RenderFrameHost (of old URL) not alive.
+IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,
+                       CheckWithFrameCrashBeforeNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+
+  // Isolate "b.com" so we are guaranteed to get a different process
+  // for navigations to this origin on Android. Doing this ensures that a
+  // speculative RenderFrameHost is used.
+  IsolateOriginsForTesting(embedded_test_server(), shell()->web_contents(),
+                           {"b.com"});
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = top_frame_host();
+
+  // 2) Crash the renderer hosting current RFH.
+  RenderProcessHost* renderer_process = rfh_a->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      renderer_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  renderer_process->Shutdown(0);
+  crash_observer.Wait();
+
+  // 3) Start navigation to B, but don't commit yet.
+  TestNavigationManager manager(shell()->web_contents(), url_b);
+  shell()->LoadURL(url_b);
+  EXPECT_TRUE(manager.WaitForRequestStart());
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  // Speculative RenderFrameHost for B will commit early because current rfh_a
+  // is not alive after the crash in step (2).
+  RenderFrameHostImpl* current_rfh =
+      root->render_manager()->current_frame_host();
+  NavigationRequest* navigation_request = root->navigation_request();
+  EXPECT_EQ(navigation_request->associated_site_instance_type(),
+            NavigationRequest::AssociatedSiteInstanceType::CURRENT);
+  EXPECT_TRUE(current_rfh);
+  EXPECT_TRUE(current_rfh->IsCurrent());
+
+  // 4) Get the RenderDocumentHostUserData associated with speculative
+  // RenderFrameHost.
+  Data::CreateForCurrentDocument(current_rfh);
+  base::WeakPtr<Data> data =
+      Data::GetForCurrentDocument(current_rfh)->GetWeakPtr();
+  EXPECT_TRUE(data);
+
+  // 5) Let the navigation finish and make sure it has succeeded.
+  manager.WaitForNavigationFinished();
+  EXPECT_EQ(url_b, web_contents()->GetMainFrame()->GetLastCommittedURL());
+
+  // 6) Data shouldn't be cleared in this case, as state
+  // |committed_speculative_rfh_before_navigation_commit_| is true during the
+  // check in DidCommitInternalNavigation as the speculative RFH swaps with the
+  // crashed RFH and performs commit before navigation commit happens.
+  EXPECT_TRUE(data);
+}
+
 // Tests that RenderDocumentHostUserData object is created for speculative
 // RenderFrameHost and check if they point to same object before and after
 // commit.
@@ -260,11 +387,8 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest, SpeculativeRFHDeleted) {
   RenderFrameHostImpl* rfh_a = web_contents()->GetMainFrame();
   RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
 
-  // RFH B has an unload handler.
-  auto detach_filter_b = base::MakeRefCounted<DropMessageFilter>(
-      FrameMsgStart, FrameHostMsg_Detach::ID);
-  rfh_b->GetProcess()->AddFilter(detach_filter_b.get());
-  EXPECT_TRUE(ExecJs(rfh_b, "onunload=function(){}"));
+  // Leave rfh_b in pending deletion state.
+  LeaveInPendingDeletionState(rfh_b);
 
   // 2) Navigation from B to C. The server is slow to respond.
   TestNavigationManager navigation_observer(web_contents(), url_c);
@@ -329,7 +453,6 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,
                        CheckInPendingDeletionState) {
   ASSERT_TRUE(embedded_test_server()->Start());
   IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
-  std::string onunload_script = "window.onunload = function(){ while(1); }";
   GURL url_ab(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
@@ -339,13 +462,9 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,
   RenderFrameHostImpl* rfh_a = top_frame_host();
   RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
 
-  // 2) Act as if there is a slow unload handler on rfh_a and rfh_b.
+  // 2) Leave both rfh_a and rfh_b in pending deletion state.
   LeaveInPendingDeletionState(rfh_a);
-  rfh_b->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
-  auto detach_filter = base::MakeRefCounted<DropMessageFilter>(
-      FrameMsgStart, FrameHostMsg_Detach::ID);
-  rfh_b->GetProcess()->AddFilter(detach_filter.get());
-  EXPECT_TRUE(ExecuteScript(rfh_b->frame_tree_node(), onunload_script));
+  LeaveInPendingDeletionState(rfh_b);
 
   // 3) Create RDHUD object for both rfh_a and rfh_b before running unload
   // handlers.

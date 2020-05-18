@@ -4906,10 +4906,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableSyncTrustedVaultDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncSupportTrustedVaultPassphrase)},
 
-    {"enable-sync-uss-nigori", flag_descriptions::kEnableSyncUSSNigoriName,
-     flag_descriptions::kEnableSyncUSSNigoriDescription, kOsAll,
-     FEATURE_VALUE_TYPE(switches::kSyncUSSNigori)},
-
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
     {"global-media-controls", flag_descriptions::kGlobalMediaControlsName,
      flag_descriptions::kGlobalMediaControlsDescription,
@@ -5615,6 +5611,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kConversionMeasurementDebugModeName,
      flag_descriptions::kConversionMeasurementDebugModeDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kConversionsDebugMode)},
+
+    {"client-storage-access-context-auditing",
+     flag_descriptions::kClientStorageAccessContextAuditingName,
+     flag_descriptions::kClientStorageAccessContextAuditingDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kClientStorageAccessContextAuditing)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

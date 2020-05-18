@@ -647,6 +647,15 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, InnerTextCondition) {
   RunLaxElementCheck(selector, true);
   RunStrictElementCheck(selector, true);
 
+  // Matches case (in)sensitive.
+  selector.inner_text_pattern = "HELLO, WORLD";
+  selector.must_be_visible = false;
+  RunLaxElementCheck(selector, true);
+  RunStrictElementCheck(selector, true);
+  selector.inner_text_pattern_case_sensitive = true;
+  RunLaxElementCheck(selector, false);
+  RunStrictElementCheck(selector, false);
+
   // Matches two visible elements
   selector.inner_text_pattern = "^hello";
   selector.must_be_visible = false;
@@ -679,6 +688,16 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ValueCondition) {
   RunLaxElementCheck(Selector({"#input1"}).MatchingValue("helloworld1"), true);
   RunStrictElementCheck(Selector({"#input1"}).MatchingValue("helloworld1"),
                         true);
+
+  // Case (in)sensitive match
+  RunLaxElementCheck(Selector({"#input1"}).MatchingValue("HELLOWORLD1", false),
+                     true);
+  RunLaxElementCheck(Selector({"#input1"}).MatchingValue("HELLOWORLD1", true),
+                     false);
+  RunStrictElementCheck(
+      Selector({"#input1"}).MatchingValue("HELLOWORLD1", false), true);
+  RunStrictElementCheck(
+      Selector({"#input1"}).MatchingValue("HELLOWORLD1", true), false);
 
   // No matches
   RunLaxElementCheck(Selector({"#input2"}).MatchingValue("doesnotmatch"),

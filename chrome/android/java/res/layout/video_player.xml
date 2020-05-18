@@ -17,10 +17,10 @@
         android:id="@+id/video_overlay_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="0.1dp"
         android:clickable="true"
         android:contentDescription="@string/accessibility_video_player"
-        android:layout_gravity="center">
+        android:layout_gravity="center"
+        android:visibility="gone">
         <FrameLayout
             android:id="@+id/video_controls_gradient"
             android:layout_width="match_parent"
@@ -87,10 +87,19 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|end"
-                android:layout_marginEnd="14dp"
+                android:layout_marginEnd="76dp"
                 android:paddingBottom="24dp"
                 android:contentDescription="@string/accessibility_mute_video"
                 app:srcCompat="@drawable/ic_volume_on_white_24dp" />
+            <ImageView
+                android:id="@+id/fullscreen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginEnd="32dp"
+                android:paddingBottom="24dp"
+                android:contentDescription="@string/accessibility_full_screen"
+                app:srcCompat="@drawable/ic_full_screen_white_24dp" />
             <SeekBar
                 android:id="@+id/seek_bar"
                 android:layout_width="match_parent"

@@ -38761,6 +38761,7 @@ from previous Chrome versions.
   <int value="-1575430234" label="DontPrefetchLibraries:disabled"/>
   <int value="-1575375861" label="enable-captive-portal-random-url"/>
   <int value="-1575131701" label="AppServiceAsh:disabled"/>
+  <int value="-1573468162" label="ClientStorageAccessContextAuditing:enabled"/>
   <int value="-1572010356" label="enable-privet-v3"/>
   <int value="-1571841513" label="enable-devtools-experiments"/>
   <int value="-1568559155" label="WebSocketHandshakeReuseConnection:enabled"/>
@@ -39065,6 +39066,7 @@ from previous Chrome versions.
   <int value="-1256823053" label="WebRtcHWVP9Encoding:enabled"/>
   <int value="-1256747007"
       label="OminboxUIExperimentUseGenericSearchEngineIcon:disabled"/>
+  <int value="-1256187739" label="ClientStorageAccessContextAuditing:disabled"/>
   <int value="-1255427595" label="HomePageButtonForceEnabled:enabled"/>
   <int value="-1254640444"
       label="OmniboxEnableClipboardProviderTextSuggestions:disabled"/>

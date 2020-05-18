@@ -303,9 +303,7 @@ void WaylandWindow::OnDragEnter(const gfx::PointF& point,
                                 std::unique_ptr<OSExchangeData> data,
                                 int operation) {}
 
-int WaylandWindow::OnDragMotion(const gfx::PointF& point,
-                                uint32_t time,
-                                int operation) {
+int WaylandWindow::OnDragMotion(const gfx::PointF& point, int operation) {
   return -1;
 }
 

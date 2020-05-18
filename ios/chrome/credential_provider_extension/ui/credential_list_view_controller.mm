@@ -80,7 +80,11 @@ const CGFloat kHeaderHeight = 70;
       [UIColor colorNamed:kBackgroundColor];
 
   self.tableView.tableHeaderView = self.searchController.searchBar;
-  self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
+  // Add en empty space at the bottom of the list, the size of the search bar,
+  // to allow scrolling up enough to see last result, otherwise it remains
+  // hidden under the accessories.
+  self.tableView.tableFooterView =
+      [[UIView alloc] initWithFrame:self.searchController.searchBar.frame];
 
   self.navigationController.navigationBar.translucent = NO;
   self.navigationController.navigationBar.barTintColor =
@@ -109,6 +113,7 @@ const CGFloat kHeaderHeight = 70;
   self.suggestedPasswords = suggested;
   self.allPasswords = all;
   [self.tableView reloadData];
+  [self.tableView layoutIfNeeded];
 }
 
 #pragma mark - UITableViewDataSource

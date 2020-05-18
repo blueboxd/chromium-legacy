@@ -5,6 +5,7 @@
 #include "sandbox/linux/tests/scoped_temporary_file.h"
 
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "base/check_op.h"

@@ -331,20 +331,11 @@ void StreamFromResponseCallback(
     return;
   }
 
-  Body::BodyLocked body_locked = response->IsBodyLocked(exception_state);
-  if (body_locked == Body::BodyLocked::kBroken)
-    return;
-
-  if (body_locked == Body::BodyLocked::kLocked ||
-      response->IsBodyUsed(exception_state) == Body::BodyUsed::kUsed) {
-    DCHECK(!exception_state.HadException());
+  if (response->IsBodyLocked() || response->IsBodyUsed()) {
     exception_state.ThrowTypeError(
         "Cannot compile WebAssembly.Module from an already read Response");
     return;
   }
-
-  if (exception_state.HadException())
-    return;
 
   if (!response->BodyBuffer()) {
     // Since the status is 2xx (ok), this must be status 204 (No Content),

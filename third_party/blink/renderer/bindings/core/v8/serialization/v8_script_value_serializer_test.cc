@@ -1900,8 +1900,8 @@ TEST(V8ScriptValueSerializerTest, RoundTripReadableStream) {
   ReadableStream* transferred =
       V8ReadableStream::ToImpl(result.As<v8::Object>());
   EXPECT_NE(rs, transferred);
-  EXPECT_TRUE(rs->locked(script_state, ASSERT_NO_EXCEPTION));
-  EXPECT_FALSE(transferred->locked(script_state, ASSERT_NO_EXCEPTION));
+  EXPECT_TRUE(rs->locked());
+  EXPECT_FALSE(transferred->locked());
 }
 
 TEST(V8ScriptValueSerializerTest, RoundTripDOMException) {

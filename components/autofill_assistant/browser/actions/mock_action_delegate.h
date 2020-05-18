@@ -137,23 +137,16 @@ class MockActionDelegate : public ActionDelegate {
       void(base::OnceCallback<void(UserData*, UserData::FieldChange*)>));
   MOCK_METHOD1(WriteUserModel, void(base::OnceCallback<void(UserModel*)>));
 
-  MOCK_METHOD1(OnGetFullCard,
-               void(base::OnceCallback<void(const autofill::CreditCard& card,
-                                            const base::string16& cvc)>&));
-
-  void GetFullCard(GetFullCardCallback callback) override {
-    // A local variable is necessary to allow OnGetFullCard to get a reference.
-    base::OnceCallback<void(const autofill::CreditCard& card,
-                            const base::string16& cvc)>
-        transformed_callback = base::BindOnce(
-            [](GetFullCardCallback real_callback,
-               const autofill::CreditCard& card, const base::string16& cvc) {
-              std::move(real_callback)
-                  .Run(std::make_unique<autofill::CreditCard>(card), cvc);
-            },
-            std::move(callback));
-    OnGetFullCard(transformed_callback);
+  void GetFullCard(const autofill::CreditCard* credit_card,
+                   ActionDelegate::GetFullCardCallback callback) override {
+    OnGetFullCard(credit_card, callback);
   }
+
+  MOCK_METHOD2(
+      OnGetFullCard,
+      void(const autofill::CreditCard* credit_card,
+           base::OnceCallback<void(std::unique_ptr<autofill::CreditCard> card,
+                                   const base::string16& cvc)>& callback));
 
   void GetFieldValue(const Selector& selector,
                      base::OnceCallback<void(const ClientStatus&,

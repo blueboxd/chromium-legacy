@@ -132,15 +132,10 @@ scoped_refptr<BlobDataHandle> ExtractBlobHandle(
     ExceptionState& exception_state) {
   DCHECK(request);
 
-  if (request->IsBodyLocked(exception_state) == Body::BodyLocked::kLocked ||
-      request->IsBodyUsed(exception_state) == Body::BodyUsed::kUsed) {
-    DCHECK(!exception_state.HadException());
+  if (request->IsBodyLocked() || request->IsBodyUsed()) {
     exception_state.ThrowTypeError("Request body is already used");
     return nullptr;
   }
-
-  if (exception_state.HadException())
-    return nullptr;
 
   BodyStreamBuffer* buffer = request->BodyBuffer();
   if (!buffer)

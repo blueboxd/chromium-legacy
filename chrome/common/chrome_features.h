@@ -87,6 +87,9 @@ extern const base::Feature kClearOldBrowsingData;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kClickToOpenPDFPlaceholder;
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kClientStorageAccessContextAuditing;
+
 #if defined(OS_MACOSX)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kImmersiveFullscreen;

@@ -34,7 +34,6 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace content {
 
@@ -82,47 +81,47 @@ base::string16 WebUI::GetJavascriptCall(
   return result;
 }
 
-WebUIImpl::WebUIImpl(WebContentsImpl* contents, RenderFrameHost* frame_host)
+WebUIImpl::WebUIImpl(WebContentsImpl* contents)
     : bindings_(BINDINGS_POLICY_WEB_UI),
       requestable_schemes_({kChromeUIScheme, url::kFileScheme}),
-      frame_host_(frame_host),
       web_contents_(contents),
       web_contents_observer_(new MainFrameNavigationObserver(this, contents)) {
   DCHECK(contents);
-
-  // TODO(nasko): WebUI mojo might be useful to be registered for
-  // subframes as well, though at this time there is no such usage.
-  if (!frame_host_->GetParent())
-    frame_host_->GetRemoteInterfaces()->GetInterface(
-        remote_.BindNewPipeAndPassReceiver());
 }
 
 WebUIImpl::~WebUIImpl() {
   // Delete the controller first, since it may also be keeping a pointer to some
   // of the handlers and can call them at destruction.
   controller_.reset();
-  remote_.reset();
-  receiver_.reset();
 }
 
-void WebUIImpl::BindWebUIHost(
-    mojo::PendingReceiver<mojom::WebUIHost> receiver) {
-  receiver_.Bind(std::move(receiver));
+// WebUIImpl, public: ----------------------------------------------------------
+
+bool WebUIImpl::OnMessageReceived(const IPC::Message& message,
+                                  RenderFrameHost* sender) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(WebUIImpl, message, sender)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_WebUISend, OnWebUISend)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
-void WebUIImpl::SetProperty(const std::string& name, const std::string& value) {
-  DCHECK(remote_);
-  remote_->SetProperty(name, value);
-}
+void WebUIImpl::OnWebUISend(RenderFrameHost* sender,
+                            const std::string& message,
+                            const base::ListValue& args) {
+  // Ignore IPCs from frames that are pending deletion.  See also
+  // https://crbug.com/780920.
+  if (!sender->IsCurrent())
+    return;
 
-void WebUIImpl::Send(const std::string& message, base::Value args) {
-  const GURL& source_url = frame_host_->GetLastCommittedURL();
+  const GURL& source_url = sender->GetLastCommittedURL();
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-          frame_host_->GetProcess()->GetID()) ||
+          sender->GetProcess()->GetID()) ||
       !WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
           web_contents_->GetBrowserContext(), source_url)) {
     bad_message::ReceivedBadMessage(
-        frame_host_->GetProcess(),
+        sender->GetProcess(),
         bad_message::WEBUI_SEND_FROM_UNAUTHORIZED_PROCESS);
     return;
   }
@@ -134,7 +133,7 @@ void WebUIImpl::Send(const std::string& message, base::Value args) {
     return;
   }
 
-  ProcessWebUIMessage(source_url, message, base::Value::AsListValue(args));
+  ProcessWebUIMessage(source_url, message, args);
 }
 
 void WebUIImpl::RenderFrameCreated(RenderFrameHost* render_frame_host) {

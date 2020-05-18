@@ -63,22 +63,6 @@ namespace {
 const base::FilePath::CharType kNigoriStorageFilename[] =
     FILE_PATH_LITERAL("Nigori.bin");
 
-bool ShouldEnableUSSNigori() {
-  return base::FeatureList::IsEnabled(switches::kSyncUSSNigori);
-}
-
-// Checks if there is at least one experiment for USS is disabled.
-bool ShouldClearDirectoryOnEmptyBirthday() {
-  return !base::FeatureList::IsEnabled(switches::kSyncUSSNigori);
-}
-
-std::unique_ptr<base::ListValue> GetNigoriNodeFromDirectory(
-    syncable::Directory* directory) {
-  DCHECK(directory);
-  syncable::ReadTransaction trans(FROM_HERE, directory);
-  return directory->GetNodeDetailsForType(&trans, NIGORI);
-}
-
 }  // namespace
 
 SyncEngineBackend::SyncEngineBackend(const std::string& name,
@@ -140,19 +124,7 @@ void SyncEngineBackend::OnInitializationComplete(
   js_backend_ = js_backend;
   debug_info_listener_ = debug_info_listener;
 
-  ModelTypeConnector* model_type_connector =
-      sync_manager_->GetModelTypeConnector();
-  if (nigori_controller_) {
-    // Having non-null |nigori_controller_| means that USS implementation of
-    // Nigori is enabled.
-    LoadAndConnectNigoriController();
-  } else {
-    // Control types don't have DataTypeControllers, but they need to have
-    // update handlers registered in ModelTypeRegistry.
-    for (ModelType control_type : ControlTypes()) {
-      model_type_connector->RegisterDirectoryType(control_type, GROUP_PASSIVE);
-    }
-  }
+  LoadAndConnectNigoriController();
 
   // Before proceeding any further, we need to download the control types and
   // purge any partial data (ie. data downloaded for a type that was on its way
@@ -314,10 +286,6 @@ void SyncEngineBackend::DoOnIncomingInvalidation(
 void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (params.birthday.empty() && ShouldClearDirectoryOnEmptyBirthday()) {
-    syncable::Directory::DeleteDirectoryFiles(sync_data_folder_);
-  }
-
   // Make sure that the directory exists before initializing the backend.
   // If it already exists, this will do no harm.
   if (!base::CreateDirectory(sync_data_folder_)) {
@@ -333,32 +301,20 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   DCHECK(params.registrar);
   registrar_ = std::move(params.registrar);
 
-  syncable::NigoriHandler* nigori_handler = nullptr;
-  if (ShouldEnableUSSNigori()) {
-    auto nigori_processor = std::make_unique<NigoriModelTypeProcessor>();
-    nigori_controller_ = std::make_unique<ModelTypeController>(
-        NIGORI, std::make_unique<ForwardingModelTypeControllerDelegate>(
-                    nigori_processor->GetControllerDelegate().get()));
-    sync_encryption_handler_ = std::make_unique<NigoriSyncBridgeImpl>(
-        std::move(nigori_processor),
-        std::make_unique<NigoriStorageImpl>(
-            sync_data_folder_.Append(kNigoriStorageFilename), &encryptor_),
-        &encryptor_, base::BindRepeating(&Nigori::GenerateScryptSalt),
-        params.restored_key_for_bootstrapping,
-        params.restored_keystore_key_for_bootstrapping);
-    nigori_handler_proxy_ =
-        std::make_unique<syncable::NigoriHandlerProxy>(&user_share_);
-    sync_encryption_handler_->AddObserver(nigori_handler_proxy_.get());
-    nigori_handler = nigori_handler_proxy_.get();
-  } else {
-    auto sync_encryption_handler_impl =
-        std::make_unique<SyncEncryptionHandlerImpl>(
-            &user_share_, &encryptor_, params.restored_key_for_bootstrapping,
-            params.restored_keystore_key_for_bootstrapping,
-            base::BindRepeating(&Nigori::GenerateScryptSalt));
-    nigori_handler = sync_encryption_handler_impl.get();
-    sync_encryption_handler_ = std::move(sync_encryption_handler_impl);
-  }
+  auto nigori_processor = std::make_unique<NigoriModelTypeProcessor>();
+  nigori_controller_ = std::make_unique<ModelTypeController>(
+      NIGORI, std::make_unique<ForwardingModelTypeControllerDelegate>(
+                  nigori_processor->GetControllerDelegate().get()));
+  sync_encryption_handler_ = std::make_unique<NigoriSyncBridgeImpl>(
+      std::move(nigori_processor),
+      std::make_unique<NigoriStorageImpl>(
+          sync_data_folder_.Append(kNigoriStorageFilename), &encryptor_),
+      &encryptor_, base::BindRepeating(&Nigori::GenerateScryptSalt),
+      params.restored_key_for_bootstrapping,
+      params.restored_keystore_key_for_bootstrapping);
+  nigori_handler_proxy_ =
+      std::make_unique<syncable::NigoriHandlerProxy>(&user_share_);
+  sync_encryption_handler_->AddObserver(nigori_handler_proxy_.get());
 
   sync_manager_ = params.sync_manager_factory->CreateSyncManager(name_);
   sync_manager_->AddObserver(this);
@@ -379,7 +335,7 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   args.engine_components_factory = std::move(params.engine_components_factory);
   args.user_share = &user_share_;
   args.encryption_handler = sync_encryption_handler_.get();
-  args.nigori_handler = nigori_handler;
+  args.nigori_handler = nigori_handler_proxy_.get();
   args.unrecoverable_error_handler = params.unrecoverable_error_handler;
   args.report_unrecoverable_error_function =
       params.report_unrecoverable_error_function;
@@ -547,7 +503,7 @@ void SyncEngineBackend::DoPurgeDisabledTypes(const ModelTypeSet& to_purge,
                                              const ModelTypeSet& to_unapply) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_manager_->PurgeDisabledTypes(to_purge, to_journal, to_unapply);
-  if (to_purge.Has(NIGORI) && nigori_controller_) {
+  if (to_purge.Has(NIGORI)) {
     // We are using USS implementation of Nigori and someone asked us to purge
     // it's data. For regular datatypes it's controlled DataTypeManager, but
     // for Nigori we need to do it here.
@@ -682,16 +638,7 @@ void SyncEngineBackend::DoOnInvalidatorClientIdChange(
 
 void SyncEngineBackend::GetNigoriNodeForDebugging(AllNodesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (nigori_controller_) {
-    // USS implementation of Nigori.
-    nigori_controller_->GetAllNodes(std::move(callback));
-  } else {
-    // Directory implementation of Nigori.
-    // TODO(crbug.com/1010397): Delete old codepath.
-    DCHECK(user_share_.directory);
-    std::move(callback).Run(
-        NIGORI, GetNigoriNodeFromDirectory(user_share_.directory.get()));
-  }
+  nigori_controller_->GetAllNodes(std::move(callback));
 }
 
 bool SyncEngineBackend::HasUnsyncedItemsForTest() const {

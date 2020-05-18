@@ -343,6 +343,11 @@ const char kClickToOpenPDFDescription[] =
     "When the PDF plugin is unavailable, show a click-to-open placeholder for "
     "embedded PDFs.";
 
+const char kClientStorageAccessContextAuditingName[] =
+    "Access contexts for client-side storage";
+const char kClientStorageAccessContextAuditingDescription[] =
+    "Record the first-party contexts in which client-side storage was accessed";
+
 const char kDecodeJpeg420ImagesToYUVName[] = "YUV decoding for JPEG";
 const char kDecodeJpeg420ImagesToYUVDescription[] =
     "Decode and render 4:2:0 formatted jpeg images from YUV instead of RGB."

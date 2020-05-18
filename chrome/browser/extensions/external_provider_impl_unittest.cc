@@ -216,7 +216,8 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
 }  // namespace
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-TEST_F(ExternalProviderImplTest, InAppPayments) {
+// https://crbug.com/1083959
+TEST_F(ExternalProviderImplTest, DISABLED_InAppPayments) {
   InitServiceWithExternalProviders();
 
   base::RunLoop run_loop;

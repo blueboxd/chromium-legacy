@@ -74,12 +74,11 @@ void DataAccessor::ConsumeBytesToBuffer(size_t length, uint8_t* string_buffer) {
   }
 
   size_t non_padded_length = std::min(length, size_);
-  std::memcpy(string_buffer, data_, non_padded_length);
+  memcpy(string_buffer, data_, non_padded_length);
 
   if (non_padded_length != length) {
     // Pad with zeroes as needed.
-    std::memset(string_buffer + non_padded_length, 0,
-                length - non_padded_length);
+    memset(string_buffer + non_padded_length, 0, length - non_padded_length);
     // The rest of the input string was not enough, so now it's certainly
     // depleted.
     size_ = 0;

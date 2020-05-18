@@ -626,14 +626,6 @@ bool ExtensionService::UpdateExtension(const CRXFileInfo& file,
   } else {
     installer->set_creation_flags(creation_flags);
   }
-
-  // If CRXFileInfo has a valid version from the manifest fetch result, it
-  // should take priority over the one in pending extension info.
-  base::Version crx_info_expected_version(file.expected_version);
-  if (crx_info_expected_version.IsValid())
-    installer->set_expected_version(crx_info_expected_version,
-                                    true /* fail_install_if_unexpected */);
-
   installer->set_delete_source(file_ownership_passed);
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_UPDATE);
   installer->InstallCrxFile(file);

@@ -153,12 +153,12 @@ class TestingProfile : public Profile {
     // Creates the TestingProfile using previously-set settings.
     std::unique_ptr<TestingProfile> Build();
 
-    // Build an incognito profile, owned by |original_profile|. Note: unless you
-    // need to customize the Builder, or access TestingProfile member functions,
-    // you can use original_profile->GetOffTheRecordProfile().
-    //
-    // TODO(https://crbug.com/1033903): Add BuildOffTheRecord to add possibility
-    // of creating non-primary OTRs.
+    // Build an OffTheRecord profile, owned by |original_profile|. Note: unless
+    // you need to customize the Builder, or access TestingProfile member
+    // functions, you can use original_profile->GetOffTheRecordProfile().
+    TestingProfile* BuildOffTheRecord(TestingProfile* original_profile,
+                                      const OTRProfileID& otr_profile_id);
+
     TestingProfile* BuildIncognito(TestingProfile* original_profile);
 
    private:
@@ -215,7 +215,8 @@ class TestingProfile : public Profile {
                  std::unique_ptr<policy::PolicyService> policy_service,
                  TestingFactories testing_factories,
                  const std::string& profile_name,
-                 base::Optional<bool> override_policy_connector_is_managed);
+                 base::Optional<bool> override_policy_connector_is_managed,
+                 base::Optional<OTRProfileID> otr_profile_id);
 
   ~TestingProfile() override;
 
@@ -270,6 +271,7 @@ class TestingProfile : public Profile {
   // Called on the parent of an OffTheRecord |otr_profile|. Usually called from
   // the constructor of an OffTheRecord TestingProfile, but can also be used by
   // tests to provide an OffTheRecordProfileImpl instance.
+  // |otr_profile| cannot be empty.
   void SetOffTheRecordProfile(std::unique_ptr<Profile> otr_profile);
 
   void SetSupervisedUserId(const std::string& id);
@@ -448,7 +450,7 @@ class TestingProfile : public Profile {
   std::unique_ptr<net::CookieStore, content::BrowserThread::DeleteOnIOThread>
       extensions_cookie_store_;
 
-  std::unique_ptr<Profile> incognito_profile_;
+  std::map<OTRProfileID, std::unique_ptr<Profile>> otr_profiles_;
   TestingProfile* original_profile_;
 
   bool guest_session_;
@@ -497,6 +499,7 @@ class TestingProfile : public Profile {
   std::string profile_name_;
 
   base::Optional<bool> override_policy_connector_is_managed_;
+  base::Optional<OTRProfileID> otr_profile_id_;
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<chromeos::ScopedCrosSettingsTestHelper>

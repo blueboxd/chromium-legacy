@@ -162,7 +162,7 @@ class BodyJsonConsumer final : public BodyConsumerBase {
 
 ScriptPromise Body::arrayBuffer(ScriptState* script_state,
                                 ExceptionState& exception_state) {
-  RejectInvalidConsumption(script_state, exception_state);
+  RejectInvalidConsumption(exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
 
@@ -195,7 +195,7 @@ ScriptPromise Body::arrayBuffer(ScriptState* script_state,
 
 ScriptPromise Body::blob(ScriptState* script_state,
                          ExceptionState& exception_state) {
-  RejectInvalidConsumption(script_state, exception_state);
+  RejectInvalidConsumption(exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
 
@@ -225,7 +225,7 @@ ScriptPromise Body::blob(ScriptState* script_state,
 
 ScriptPromise Body::formData(ScriptState* script_state,
                              ExceptionState& exception_state) {
-  RejectInvalidConsumption(script_state, exception_state);
+  RejectInvalidConsumption(exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
 
@@ -295,7 +295,7 @@ ScriptPromise Body::formData(ScriptState* script_state,
 
 ScriptPromise Body::json(ScriptState* script_state,
                          ExceptionState& exception_state) {
-  RejectInvalidConsumption(script_state, exception_state);
+  RejectInvalidConsumption(exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
 
@@ -324,7 +324,7 @@ ScriptPromise Body::json(ScriptState* script_state,
 
 ScriptPromise Body::text(ScriptState* script_state,
                          ExceptionState& exception_state) {
-  RejectInvalidConsumption(script_state, exception_state);
+  RejectInvalidConsumption(exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
 
@@ -365,25 +365,14 @@ ReadableStream* Body::body() {
   return BodyBuffer()->Stream();
 }
 
-Body::BodyUsed Body::IsBodyUsed(ExceptionState& exception_state) {
+bool Body::IsBodyUsed() const {
   auto* body_buffer = BodyBuffer();
-  if (!body_buffer)
-    return BodyUsed::kUnused;
-  base::Optional<bool> stream_disturbed =
-      body_buffer->IsStreamDisturbed(exception_state);
-  if (exception_state.HadException())
-    return BodyUsed::kBroken;
-  return stream_disturbed.value() ? BodyUsed::kUsed : BodyUsed::kUnused;
+  return body_buffer && body_buffer->IsStreamDisturbed();
 }
 
-Body::BodyLocked Body::IsBodyLocked(ExceptionState& exception_state) {
+bool Body::IsBodyLocked() const {
   auto* body_buffer = BodyBuffer();
-  if (!body_buffer)
-    return BodyLocked::kUnlocked;
-  base::Optional<bool> is_locked = body_buffer->IsStreamLocked(exception_state);
-  if (exception_state.HadException())
-    return BodyLocked::kBroken;
-  return is_locked.value() ? BodyLocked::kLocked : BodyLocked::kUnlocked;
+  return body_buffer && body_buffer->IsStreamLocked();
 }
 
 bool Body::HasPendingActivity() const {
@@ -395,31 +384,16 @@ bool Body::HasPendingActivity() const {
   return body_buffer->HasPendingActivity();
 }
 
-bool Body::IsBodyUsedForDCheck(ExceptionState& exception_state) {
-  return BodyBuffer() &&
-         BodyBuffer()->IsStreamDisturbedForDCheck(exception_state);
-}
-
 Body::Body(ExecutionContext* context) : ExecutionContextClient(context) {}
 
-void Body::RejectInvalidConsumption(ScriptState* script_state,
-                                    ExceptionState& exception_state) {
-  const auto used = IsBodyUsed(exception_state);
-  if (exception_state.HadException()) {
-    DCHECK_EQ(used, BodyUsed::kBroken);
-    return;
-  }
-  DCHECK_NE(used, BodyUsed::kBroken);
-
-  if (IsBodyLocked(exception_state) == BodyLocked::kLocked) {
-    DCHECK(!exception_state.HadException());
+void Body::RejectInvalidConsumption(ExceptionState& exception_state) const {
+  if (IsBodyLocked()) {
     exception_state.ThrowTypeError("body stream is locked");
   }
-  if (exception_state.HadException())
-    return;
 
-  if (used == BodyUsed::kUsed)
+  if (IsBodyUsed()) {
     exception_state.ThrowTypeError("body stream already read");
+  }
 }
 
 }  // namespace blink

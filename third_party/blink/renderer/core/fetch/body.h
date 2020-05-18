@@ -31,9 +31,6 @@ class ScriptState;
 // implementation.
 class CORE_EXPORT Body : public ExecutionContextClient {
  public:
-  enum class BodyUsed { kUsed, kUnused, kBroken };
-  enum class BodyLocked { kLocked, kUnlocked, kBroken };
-
   explicit Body(ExecutionContext*);
 
   ScriptPromise arrayBuffer(ScriptState*, ExceptionState&);
@@ -47,24 +44,15 @@ class CORE_EXPORT Body : public ExecutionContextClient {
 
   // This should only be called from the generated bindings. All other code
   // should use IsBodyUsed() instead.
-  bool bodyUsed(ExceptionState& exception_state) {
-    return IsBodyUsed(exception_state) == BodyUsed::kUsed;
-  }
+  bool bodyUsed() const { return IsBodyUsed(); }
 
-  // Returns kUsed, kUnused or kBroken. kBroken implies there is an exception
-  // pending and the caller should return to JavaScript immediately.
-  virtual BodyUsed IsBodyUsed(ExceptionState&);
+  // True if the body has been read from.
+  virtual bool IsBodyUsed() const;
 
-  // Returns kLocked, kUnlocked or kBroken. kBroken implies there is an
-  // exception pending and the caller should return to JavaScript immediately.
-  BodyLocked IsBodyLocked(ExceptionState&);
+  // True if the body is locked.
+  bool IsBodyLocked() const;
 
   bool HasPendingActivity() const;
-
- protected:
-  // A version of IsBodyUsed() which catches exceptions and returns
-  // false. Should never be used outside DCHECK().
-  virtual bool IsBodyUsedForDCheck(ExceptionState& exception_state);
 
  private:
   // TODO(e_hakkinen): Fix |MimeType()| to always contain parameters and
@@ -76,7 +64,7 @@ class CORE_EXPORT Body : public ExecutionContextClient {
   // error conditions. This method wraps those up into one call which throws
   // an exception if consumption cannot proceed. The caller must check
   // |exception_state| on return.
-  void RejectInvalidConsumption(ScriptState*, ExceptionState& exception_state);
+  void RejectInvalidConsumption(ExceptionState& exception_state) const;
   DISALLOW_COPY_AND_ASSIGN(Body);
 };
 

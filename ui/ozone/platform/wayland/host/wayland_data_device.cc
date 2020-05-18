@@ -5,49 +5,25 @@
 #include "ui/ozone/platform/wayland/host/wayland_data_device.h"
 
 #include <memory>
+#include <string>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
-#include "base/strings/string16.h"
-#include "base/strings/string_split.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/check.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/base/dragdrop/file_info/file_info.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_non_backed.h"
+#include "ui/ozone/platform/wayland/common/data_util.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_offer.h"
 #include "ui/ozone/platform/wayland/host/wayland_shm_buffer.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
-#include "url/gurl.h"
-#include "url/url_canon.h"
-#include "url/url_util.h"
 
 namespace ui {
 
 namespace {
-
-constexpr FilenameToURLPolicy kFilenameToURLPolicy = CONVERT_FILENAMES;
-
-// Converts raw data to either narrow or wide string.
-template <typename StringType>
-StringType BytesTo(const PlatformClipboard::Data& bytes) {
-  if (bytes.size() % sizeof(typename StringType::value_type) != 0U) {
-    // This is suspicious.
-    LOG(WARNING)
-        << "Data is possibly truncated, or a wrong conversion is requested.";
-  }
-
-  StringType result;
-  result.assign(reinterpret_cast<typename StringType::const_pointer>(&bytes[0]),
-                bytes.size() / sizeof(typename StringType::value_type));
-  return result;
-}
 
 // Returns actions possible with the given source and drag'n'drop actions.
 // Also converts enums: input params are wl_data_device_manager_dnd_action but
@@ -76,119 +52,6 @@ int GetPossibleActions(uint32_t source_actions, uint32_t dnd_action) {
   return operation;
 }
 
-void AddString(const PlatformClipboard::Data& data,
-               OSExchangeData* os_exchange_data) {
-  DCHECK(os_exchange_data);
-
-  if (data.empty())
-    return;
-
-  os_exchange_data->SetString(base::UTF8ToUTF16(BytesTo<std::string>(data)));
-}
-
-void AddHtml(const PlatformClipboard::Data& data,
-             OSExchangeData* os_exchange_data) {
-  DCHECK(os_exchange_data);
-
-  if (data.empty())
-    return;
-
-  os_exchange_data->SetHtml(base::UTF8ToUTF16(BytesTo<std::string>(data)),
-                            GURL());
-}
-
-// Parses |data| as if it had text/uri-list format.  Its brief spec is:
-// 1.  Any lines beginning with the '#' character are comment lines.
-// 2.  Non-comment lines shall be URIs (URNs or URLs).
-// 3.  Lines are terminated with a CRLF pair.
-// 4.  URL encoding is used.
-void AddFiles(const PlatformClipboard::Data& data,
-              OSExchangeData* os_exchange_data) {
-  DCHECK(os_exchange_data);
-
-  std::string data_as_string = BytesTo<std::string>(data);
-
-  const auto lines = base::SplitString(
-      data_as_string, "\r\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  std::vector<FileInfo> filenames;
-  for (const auto& line : lines) {
-    if (line.empty() || line[0] == '#')
-      continue;
-    GURL url(line);
-    if (!url.is_valid() || !url.SchemeIsFile()) {
-      LOG(WARNING) << "Invalid URI found: " << line;
-      continue;
-    }
-
-    std::string url_path = url.path();
-    url::RawCanonOutputT<base::char16> unescaped;
-    url::DecodeURLEscapeSequences(url_path.data(), url_path.size(),
-                                  url::DecodeURLMode::kUTF8OrIsomorphic,
-                                  &unescaped);
-
-    std::string path8;
-    base::UTF16ToUTF8(unescaped.data(), unescaped.length(), &path8);
-    const base::FilePath path(path8);
-    filenames.push_back({path, path.BaseName()});
-  }
-  if (filenames.empty())
-    return;
-
-  os_exchange_data->SetFilenames(filenames);
-}
-
-// Parses |data| as if it had text/x-moz-url format, which is basically
-// two lines separated with newline, where the first line is the URL and
-// the second one is page title.  The unpleasant feature of text/x-moz-url is
-// that the URL has UTF-16 encoding.
-void AddUrl(const PlatformClipboard::Data& data,
-            OSExchangeData* os_exchange_data) {
-  DCHECK(os_exchange_data);
-
-  if (data.empty())
-    return;
-
-  base::string16 data_as_string16 = BytesTo<base::string16>(data);
-
-  const auto lines =
-      base::SplitString(data_as_string16, base::ASCIIToUTF16("\r\n"),
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  if (lines.size() != 2U) {
-    LOG(WARNING) << "Invalid data passed as text/x-moz-url; it must contain "
-                 << "exactly 2 lines but has " << lines.size() << " instead.";
-    return;
-  }
-  GURL url(lines[0]);
-  if (!url.is_valid()) {
-    LOG(WARNING) << "Invalid data passed as text/x-moz-url; the first line "
-                 << "must contain a valid URL but it doesn't.";
-    return;
-  }
-
-  os_exchange_data->SetURL(url, lines[1]);
-}
-
-void AddToOSExchangeData(const PlatformClipboard::Data& data,
-                         const std::string& mime_type,
-                         OSExchangeData* os_exchange_data) {
-  DCHECK(os_exchange_data);
-  if ((mime_type == kMimeTypeText || mime_type == kMimeTypeTextUtf8)) {
-    DCHECK(!os_exchange_data->HasString());
-    AddString(data, os_exchange_data);
-  } else if (mime_type == kMimeTypeHTML) {
-    DCHECK(!os_exchange_data->HasHtml());
-    AddHtml(data, os_exchange_data);
-  } else if (mime_type == kMimeTypeMozillaURL) {
-    DCHECK(!os_exchange_data->HasURL(kFilenameToURLPolicy));
-    AddUrl(data, os_exchange_data);
-  } else if (mime_type == kMimeTypeURIList) {
-    DCHECK(!os_exchange_data->HasFile());
-    AddFiles(data, os_exchange_data);
-  } else {
-    LOG(WARNING) << "Unhandled MIME type: " << mime_type;
-  }
-}
-
 }  // namespace
 
 // static
@@ -207,6 +70,7 @@ WaylandDataDevice::~WaylandDataDevice() = default;
 void WaylandDataDevice::RequestDragData(
     const std::string& mime_type,
     base::OnceCallback<void(const PlatformClipboard::Data&)> callback) {
+  DCHECK(wl::IsMimeTypeSupported(mime_type));
   base::ScopedFD fd = drag_offer_->Receive(mime_type);
   if (!fd.is_valid()) {
     LOG(ERROR) << "Failed to open file descriptor.";
@@ -226,22 +90,7 @@ void WaylandDataDevice::DeliverDragData(const std::string& mime_type,
   DCHECK(buffer);
   DCHECK(source_data_);
 
-  if (mime_type == kMimeTypeMozillaURL &&
-      source_data_->HasURL(kFilenameToURLPolicy)) {
-    GURL url;
-    base::string16 title;
-    source_data_->GetURLAndTitle(kFilenameToURLPolicy, &url, &title);
-    buffer->append(url.spec());
-  } else if (mime_type == kMimeTypeHTML && source_data_->HasHtml()) {
-    base::string16 data;
-    GURL base_url;
-    source_data_->GetHtml(&data, &base_url);
-    buffer->append(base::UTF16ToUTF8(data));
-  } else if (source_data_->HasString()) {
-    base::string16 data;
-    source_data_->GetString(&data);
-    buffer->append(base::UTF16ToUTF8(data));
-  } else {
+  if (!wl::ExtractOSExchangeData(*source_data_, mime_type, buffer)) {
     LOG(WARNING) << "Cannot deliver data of type " << mime_type
                  << " and no text representation is available.";
   }
@@ -354,9 +203,8 @@ void WaylandDataDevice::OnMotion(void* data,
 
   gfx::PointF point(wl_fixed_to_double(x), wl_fixed_to_double(y));
   int client_operation = self->window_->OnDragMotion(
-      point, time,
-      GetPossibleActions(self->drag_offer_->source_actions(),
-                         self->drag_offer_->dnd_action()));
+      point, GetPossibleActions(self->drag_offer_->source_actions(),
+                                self->drag_offer_->dnd_action()));
   self->SetOperation(client_operation);
 }
 
@@ -458,7 +306,7 @@ void WaylandDataDevice::DrawDragIcon(const SkBitmap* icon_bitmap) {
 }
 
 void WaylandDataDevice::HandleUnprocessedMimeTypes() {
-  std::string mime_type = SelectNextMimeType();
+  std::string mime_type = GetNextUnprocessedMimeType();
   if (mime_type.empty()) {
     HandleReceivedData(std::move(received_data_));
   } else {
@@ -471,10 +319,9 @@ void WaylandDataDevice::HandleUnprocessedMimeTypes() {
 void WaylandDataDevice::OnDragDataReceived(
     const PlatformClipboard::Data& contents) {
   if (!contents.empty()) {
-    AddToOSExchangeData(contents, unprocessed_mime_types_.front(),
-                        received_data_.get());
+    std::string mime_type = unprocessed_mime_types_.front();
+    wl::AddToOSExchangeData(contents, mime_type, received_data_.get());
   }
-
   unprocessed_mime_types_.pop_front();
 
   // Continue reading data for other negotiated mime types.
@@ -491,24 +338,16 @@ void WaylandDataDevice::HandleReceivedData(
   HandleDeferredLeaveIfNeeded();
 }
 
-std::string WaylandDataDevice::SelectNextMimeType() {
+std::string WaylandDataDevice::GetNextUnprocessedMimeType() {
   while (!unprocessed_mime_types_.empty()) {
     const std::string& mime_type = unprocessed_mime_types_.front();
-    if ((mime_type == kMimeTypeText || mime_type == kMimeTypeTextUtf8) &&
-        !received_data_->HasString()) {
-      return mime_type;
+    // Skip unsupported or already processed mime types.
+    if (!wl::IsMimeTypeSupported(mime_type) ||
+        wl::ContainsMimeType(*received_data_, mime_type)) {
+      unprocessed_mime_types_.pop_front();
+      continue;
     }
-    if (mime_type == kMimeTypeURIList && !received_data_->HasFile()) {
-      return mime_type;
-    }
-    if (mime_type == kMimeTypeMozillaURL &&
-        !received_data_->HasURL(kFilenameToURLPolicy)) {
-      return mime_type;
-    }
-    if (mime_type == kMimeTypeHTML && !received_data_->HasHtml()) {
-      return mime_type;
-    }
-    unprocessed_mime_types_.pop_front();
+    return mime_type;
   }
   return {};
 }

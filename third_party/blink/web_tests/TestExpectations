@@ -1,5 +1,5 @@
 # tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12 Retina
-#         Mac10.13 Mac10.14 Win Win7 Win10 ]
+#         Mac10.13 Mac10.14 Mac10.15 Win Win7 Win10 ]
 # tags: [ Release Debug ]
 # results: [ Timeout Crash Pass Failure Skip ]
 
@@ -403,8 +403,8 @@ crbug.com/1056492 external/wpt/svg/painting/reftests/marker-path-001.svg [ Failu
 # Slightly flaky timeouts (about 1 in 30)
 crbug.com/1050993 [ Linux ] virtual/gpu-rasterization/images/drag-image-descendant-painting-sibling.html [ Crash Pass Timeout ]
 
-# Slightly flaky timeouts
-crbug.com/1054894 [ Mac ] http/tests/images/image-decode-in-frame.html [ Pass Timeout ]
+# Flaky test.
+crbug.com/1054894 [ Mac ] http/tests/images/image-decode-in-frame.html [ Pass Failure Timeout ]
 
 # ====== Paint team owned tests to here ======
 
@@ -1610,7 +1610,7 @@ crbug.com/944583 [ Mac ] fast/events/platform-wheelevent-paging-x-in-scrolling-p
 crbug.com/944583 [ Mac ] fast/events/platform-wheelevent-paging-y-in-scrolling-page.html [ Pass Failure Timeout ]
 # Sheriff: 2020-05-18
 crbug.com/1083820 [ Mac ] fast/scrolling/document-level-wheel-event-listener-passive-by-default.html [ Pass Failure ]
-crbug.com/1083824 [ Mac ] geolocation-api/watchPosition-page-visibility.html [ Pass Failure ]
+crbug.com/1083824 [ Mac ] geolocation-api/watchPosition-page-visibility.html [ Pass Failure Timeout ]
 
 # In external/wpt/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure
@@ -5067,8 +5067,8 @@ crbug.com/963141 [ Mac ] media/video-aspect-ratio.html [ Pass Failure ]
 # Sheriff 2019-05-16
 crbug.com/963141 [ Linux ] media/video-object-fit.html [ Pass Failure ]
 
-# Sheriff 2019-05-20
-crbug.com/965389 [ Mac ] media/track/track-cue-rendering-position-auto.html [ Pass Failure ]
+# Sheriff 2020-05-18
+crbug.com/965389 media/track/track-cue-rendering-position-auto.html [ Pass Failure ]
 
 # Flaky test on all platforms.
 crbug.com/979323 media/track/track-cue-rendering-position-auto-rtl.html [ Pass Failure ]
@@ -5911,3 +5911,6 @@ crbug.com/1071915 fast/hidpi/image-srcset-png-canvas.html [ Pass Failure ]
 
 # Sheriff 2020-05-14
 crbug.com/1082820 [ Win ] media/video-layer-crash.html [ Pass Failure ]
+
+# Sheriff 2020-05-18
+crbug.com/1083454 [ Linux ] compositing/overflow/overflow-compositing-descendant.html [ Pass Failure ]

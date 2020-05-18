@@ -690,13 +690,16 @@ def make_dict_trace_func(cg_context):
     arg_decls = ["Visitor* visitor"]
     return_type = "void"
 
-    func_decl = CxxFuncDeclNode(
-        name=name, arg_decls=arg_decls, return_type=return_type, override=True)
-    func_def = CxxFuncDefNode(
-        name=name,
-        class_name=cg_context.class_name,
-        arg_decls=arg_decls,
-        return_type=return_type)
+    func_decl = CxxFuncDeclNode(name=name,
+                                arg_decls=arg_decls,
+                                return_type=return_type,
+                                const=True,
+                                override=True)
+    func_def = CxxFuncDefNode(name=name,
+                              class_name=cg_context.class_name,
+                              arg_decls=arg_decls,
+                              return_type=return_type,
+                              const=True)
     func_def.set_base_template_vars(cg_context.template_bindings())
     body = func_def.body
 

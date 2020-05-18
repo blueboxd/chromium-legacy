@@ -204,6 +204,9 @@ extern const char kOmniboxContextMenuShowFullUrlsDescription[];
 extern const char kClickToOpenPDFName[];
 extern const char kClickToOpenPDFDescription[];
 
+extern const char kClientStorageAccessContextAuditingName[];
+extern const char kClientStorageAccessContextAuditingDescription[];
+
 extern const char kConditionalTabStripAndroidName[];
 extern const char kConditionalTabStripAndroidDescription[];
 

@@ -257,9 +257,7 @@ void WaylandSurface::OnDragEnter(const gfx::PointF& point,
       operation);
 }
 
-int WaylandSurface::OnDragMotion(const gfx::PointF& point,
-                                 uint32_t time,
-                                 int operation) {
+int WaylandSurface::OnDragMotion(const gfx::PointF& point, int operation) {
   WmDropHandler* drop_handler = GetWmDropHandler(*this);
   if (!drop_handler)
     return 0;

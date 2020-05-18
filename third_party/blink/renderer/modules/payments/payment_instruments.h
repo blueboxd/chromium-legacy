@@ -22,7 +22,6 @@ class PaymentInstrument;
 class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
-class PaymentInstrumentParameter;
 
 class MODULES_EXPORT PaymentInstruments final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -55,7 +54,7 @@ class MODULES_EXPORT PaymentInstruments final : public ScriptWrappable {
   mojom::blink::PermissionService* GetPermissionService(ScriptState*);
   void OnRequestPermission(ScriptPromiseResolver*,
                            const String&,
-                           PaymentInstrumentParameter*,
+                           const PaymentInstrument*,
                            mojom::blink::PermissionStatus);
 
   void onDeletePaymentInstrument(ScriptPromiseResolver*,

@@ -319,6 +319,9 @@
   "chromeos/components/sample_system_web_app_ui/resources/sample_system_web_app_resources.grd": {
     "includes": [2640],
   },
+  "chromeos/components/telemetry_extension_ui/resources/telemetry_extension_resources.grd": {
+    "includes": [2650],
+  },
   "chromeos/resources/chromeos_resources.grd": {
     "includes": [2660],
   },

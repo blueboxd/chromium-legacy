@@ -2,13 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/passwords/password_breach_learn_more_view_controller.h"
+#import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
 
-#include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/passwords/password_breach_presenter.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -23,19 +20,20 @@ constexpr CGFloat kWidthProportion = 0.75;
 
 }  // namespace
 
-@interface PasswordBreachLearnMoreViewController () <
+@interface PopoverLabelViewController () <
     UIPopoverPresentationControllerDelegate>
 
-// Presenter used to dismiss this when finished.
-@property(weak, readonly) id<PasswordBreachPresenter> presenter;
+// The message being presented.
+@property(nonatomic, strong, readonly) NSString* message;
+
 @end
 
-@implementation PasswordBreachLearnMoreViewController
+@implementation PopoverLabelViewController
 
-- (instancetype)initWithPresenter:(id<PasswordBreachPresenter>)presenter {
+- (instancetype)initWithMessage:(NSString*)message {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
-    _presenter = presenter;
+    _message = message;
     self.modalPresentationStyle = UIModalPresentationPopover;
     self.popoverPresentationController.delegate = self;
   }
@@ -61,7 +59,7 @@ constexpr CGFloat kWidthProportion = 0.75;
   label.textColor = [UIColor colorNamed:kTextSecondaryColor];
   label.textAlignment = NSTextAlignmentNatural;
   label.adjustsFontForContentSizeCategory = YES;
-  label.text = l10n_util::GetNSString(IDS_PASSWORD_MANAGER_LEAK_HELP_MESSAGE);
+  label.text = self.message;
   label.translatesAutoresizingMaskIntoConstraints = NO;
   label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
   [scrollView addSubview:label];
@@ -107,11 +105,6 @@ constexpr CGFloat kWidthProportion = 0.75;
                                verticalFittingPriority:500];
   self.preferredContentSize =
       CGSizeMake(size.width, size.height + 2 * kInsetValue);
-}
-
-// Done button was tapped, inform the presenter.
-- (void)didTapDoneButton {
-  [self.presenter dismissLearnMore];
 }
 
 @end

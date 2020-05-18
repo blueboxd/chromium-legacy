@@ -114,7 +114,7 @@ class CORE_EXPORT Response final : public ScriptWrappable,
     return response_->InternalBuffer();
   }
 
-  BodyUsed IsBodyUsed(ExceptionState&) override;
+  bool IsBodyUsed() const override;
 
   String ContentType() const override;
   String MimeType() const override;
@@ -125,11 +125,6 @@ class CORE_EXPORT Response final : public ScriptWrappable,
   FetchHeaderList* InternalHeaderList() const;
 
   void Trace(Visitor*) const override;
-
- protected:
-  // A version of IsBodyUsed() which catches exceptions and returns
-  // false. Should never be used outside DCHECK().
-  bool IsBodyUsedForDCheck(ExceptionState&) override;
 
  private:
   const Member<FetchResponseData> response_;

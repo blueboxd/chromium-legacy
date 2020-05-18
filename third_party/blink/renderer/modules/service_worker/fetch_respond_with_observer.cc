@@ -275,27 +275,13 @@ void FetchRespondWithObserver::OnResponseFulfilled(
     return;
   }
 
-  ExceptionState exception_state(script_state->GetIsolate(), context_type,
-                                 interface_name, property_name);
-  if (response->IsBodyLocked(exception_state) == Body::BodyLocked::kLocked) {
-    DCHECK(!exception_state.HadException());
+  if (response->IsBodyLocked()) {
     OnResponseRejected(ServiceWorkerResponseError::kBodyLocked);
     return;
   }
 
-  if (exception_state.HadException()) {
-    OnResponseRejected(ServiceWorkerResponseError::kResponseBodyBroken);
-    return;
-  }
-
-  if (response->IsBodyUsed(exception_state) == Body::BodyUsed::kUsed) {
-    DCHECK(!exception_state.HadException());
+  if (response->IsBodyUsed()) {
     OnResponseRejected(ServiceWorkerResponseError::kBodyUsed);
-    return;
-  }
-
-  if (exception_state.HadException()) {
-    OnResponseRejected(ServiceWorkerResponseError::kResponseBodyBroken);
     return;
   }
 
@@ -335,6 +321,9 @@ void FetchRespondWithObserver::OnResponseFulfilled(
     // The |side_data_blob| must be taken before the body buffer is
     // drained or loading begins.
     fetch_api_response->side_data_blob = buffer->TakeSideDataBlob();
+
+    ExceptionState exception_state(script_state->GetIsolate(), context_type,
+                                   interface_name, property_name);
 
     scoped_refptr<BlobDataHandle> blob_data_handle =
         buffer->DrainAsBlobDataHandle(

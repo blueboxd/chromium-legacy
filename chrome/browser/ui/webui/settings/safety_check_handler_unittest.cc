@@ -793,6 +793,25 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_Error) {
       SafetyCheckHandler::PasswordsStatus::kError, 1);
 }
 
+TEST_F(SafetyCheckHandlerTest, CheckPasswords_FeatureUnavailable) {
+  safety_check_->PerformSafetyCheck();
+  EXPECT_TRUE(test_passwords_delegate_.StartPasswordCheckTriggered());
+  static_cast<password_manager::BulkLeakCheckService::Observer*>(
+      safety_check_.get())
+      ->OnStateChanged(
+          password_manager::BulkLeakCheckService::State::kTokenRequestFailure);
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kPasswords,
+          static_cast<int>(
+              SafetyCheckHandler::PasswordsStatus::kFeatureUnavailable));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(event, "Password check is not available in Chromium");
+  histogram_tester_.ExpectBucketCount(
+      "Settings.SafetyCheck.PasswordsResult",
+      SafetyCheckHandler::PasswordsStatus::kFeatureUnavailable, 1);
+}
+
 TEST_F(SafetyCheckHandlerTest, CheckPasswords_RunningOneCompromised) {
   test_passwords_delegate_.SetNumCompromisedCredentials(1);
   safety_check_->PerformSafetyCheck();

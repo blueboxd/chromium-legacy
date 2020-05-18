@@ -54,6 +54,12 @@ class WebContents;
 
 struct SignedExchangeError;
 
+namespace protocol {
+namespace Audits {
+class InspectorIssue;
+}  // namespace Audits
+}  // namespace protocol
+
 namespace devtools_instrumentation {
 
 void ApplyNetworkRequestOverrides(FrameTreeNode* frame_tree_node,
@@ -179,6 +185,17 @@ void ReportSameSiteCookieIssue(
     const net::SiteForCookies& site_for_cookies,
     blink::mojom::SameSiteCookieOperation operation,
     const base::Optional<std::string>& devtools_request_id);
+
+// This function works similar to RenderFrameHostImpl::AddInspectorIssue, in
+// that it reports an InspectorIssue to DevTools clients. The difference is that
+// |ReportBrowserInitiatedIssue| sends issues directly to clients instead of
+// going through the issue storage in the renderer process. Sending issues
+// directly prevents them from being (potentially) lost during navigations.
+//
+// DevTools must be attached, otherwise issues reported through
+// |ReportBrowserInitiatedIssue| are lost.
+void ReportBrowserInitiatedIssue(RenderFrameHostImpl* frame,
+                                 protocol::Audits::InspectorIssue* issue);
 
 void OnQuicTransportHandshakeFailed(
     RenderFrameHostImpl* frame_host,

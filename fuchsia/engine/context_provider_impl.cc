@@ -158,6 +158,8 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
       switches::kAcceleratedCanvas2dMSAASampleCount,
       switches::kDisableFeatures,
       switches::kDisableGpuWatchdog,
+      // TODO(crbug.com/1082821): Remove this switch from the allow-list.
+      switches::kEnableCastStreamingReceiver,
       switches::kEnableFeatures,
       switches::kEnableLowEndDeviceMode,
       switches::kForceGpuMemAvailableMb,
@@ -210,12 +212,6 @@ bool IsFuchsiaCdmSupported() {
   return false;
 #endif
 }
-
-// Use the most significant bit to enable cast streaming receiver features.
-// TODO(crbug.com/1078919): Remove this when we have a better way of enabling
-// this feature.
-constexpr auto kCastStreamingFeatureFlag =
-    static_cast<fuchsia::web::ContextFeatureFlags>(1ULL << 63);
 
 }  // namespace
 
@@ -459,11 +455,6 @@ void ContextProviderImpl::Create(
 
     launch_command.AppendSwitch(switches::kDisableSoftwareVideoDecoders);
   }
-
-  const bool enable_cast_streaming_receiver =
-      (features & kCastStreamingFeatureFlag) == kCastStreamingFeatureFlag;
-  if (enable_cast_streaming_receiver)
-    launch_command.AppendSwitch(switches::kEnableCastStreamingReceiver);
 
   // Validate embedder-supplied product, and optional version, and pass it to
   // the Context to include in the UserAgent.

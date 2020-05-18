@@ -7,8 +7,7 @@
     Exposed=(Window,Worker,Worklet)
 ] interface ReadableStream {
     [CallWith=ScriptState, RaisesException] constructor(optional any underlyingSource, optional any strategy);
-    // As long as we use V8Extras, anything can raise an exception.
-    [RaisesException, CallWith=ScriptState, NotEnumerable] readonly attribute boolean locked;
+    [NotEnumerable] readonly attribute boolean locked;
 
     // TODO(yhirano): function length is different from what's specced. Fix it.
     [RaisesException, CallWith=ScriptState, NotEnumerable] Promise<any> cancel(

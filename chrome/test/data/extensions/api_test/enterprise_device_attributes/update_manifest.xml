@@ -8,6 +8,6 @@
   <app appid='nbiliclbejdndfpchgkbmfoppjplbdok'>
     <updatecheck
         codebase='http://mock.http/extensions/api_test/enterprise_device_attributes.crx'
-        version='1.0.0.0' />
+        version='0.1' />
    </app>
 </gupdate>

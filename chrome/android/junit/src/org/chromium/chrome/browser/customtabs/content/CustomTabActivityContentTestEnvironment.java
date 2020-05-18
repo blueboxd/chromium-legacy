@@ -190,7 +190,7 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
     public void reachNativeInit(CustomTabActivityTabController tabController) {
         tabController.onPreInflationStartup();
         tabController.onPostInflationStartup();
-        tabController.onFinishNativeInitialization();
+        tabController.finishNativeInitialization();
     }
 
     public WebContents prepareTransferredWebcontents() {

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "chromeos/services/machine_learning/public/mojom/graph_executor.mojom.h"
+#include "chromeos/services/machine_learning/public/mojom/handwriting_recognizer.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/tensor.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/text_classifier.mojom.h"
@@ -33,6 +34,7 @@ namespace machine_learning {
 class FakeServiceConnectionImpl : public ServiceConnection,
                                   public mojom::Model,
                                   public mojom::TextClassifier,
+                                  public mojom::HandwritingRecognizer,
                                   public mojom::GraphExecutor {
  public:
   FakeServiceConnectionImpl();
@@ -55,6 +57,11 @@ class FakeServiceConnectionImpl : public ServiceConnection,
       mojo::PendingReceiver<mojom::TextClassifier> receiver,
       mojom::MachineLearningService::LoadTextClassifierCallback callback)
       override;
+
+  void LoadHandwritingModel(
+      mojo::PendingReceiver<mojom::HandwritingRecognizer> receiver,
+      mojom::MachineLearningService::LoadHandwritingModelCallback
+          result_callback) override;
 
   // mojom::Model:
   void CreateGraphExecutor(
@@ -103,6 +110,11 @@ class FakeServiceConnectionImpl : public ServiceConnection,
   // selection.
   void SetOutputSelection(const mojom::CodepointSpanPtr& selection);
 
+  // Call SetOutputHandwritingRecognizerResult() before Recognize() to set the
+  // output of handwriting.
+  void SetOutputHandwritingRecognizerResult(
+      const mojom::HandwritingRecognizerResultPtr& result);
+
   // mojom::TextClassifier:
   void Annotate(mojom::TextAnnotationRequestPtr request,
                 mojom::TextClassifier::AnnotateCallback callback) override;
@@ -111,6 +123,11 @@ class FakeServiceConnectionImpl : public ServiceConnection,
   void SuggestSelection(
       mojom::TextSuggestSelectionRequestPtr request,
       mojom::TextClassifier::SuggestSelectionCallback callback) override;
+
+  // mojom::HandwritingRecognizer:
+  void Recognize(
+      mojom::HandwritingRecognitionQueryPtr query,
+      mojom::HandwritingRecognizer::RecognizeCallback callback) override;
 
  private:
   void ScheduleCall(base::OnceClosure call);
@@ -132,10 +149,17 @@ class FakeServiceConnectionImpl : public ServiceConnection,
   void HandleSuggestSelectionCall(
       mojom::TextSuggestSelectionRequestPtr request,
       mojom::TextClassifier::SuggestSelectionCallback callback);
+  void HandleLoadHandwritingModel(
+      mojo::PendingReceiver<mojom::HandwritingRecognizer> receiver,
+      mojom::MachineLearningService::LoadHandwritingModelCallback callback);
+  void HandleRecognize(
+      mojom::HandwritingRecognitionQueryPtr query,
+      mojom::HandwritingRecognizer::RecognizeCallback callback);
 
   mojo::ReceiverSet<mojom::Model> model_receivers_;
   mojo::ReceiverSet<mojom::GraphExecutor> graph_receivers_;
   mojo::ReceiverSet<mojom::TextClassifier> text_classifier_receivers_;
+  mojo::ReceiverSet<mojom::HandwritingRecognizer> handwriting_receivers_;
   mojom::TensorPtr output_tensor_;
   mojom::LoadModelResult load_model_result_;
   mojom::LoadModelResult load_text_classifier_result_;
@@ -143,6 +167,7 @@ class FakeServiceConnectionImpl : public ServiceConnection,
   mojom::ExecuteResult execute_result_;
   std::vector<mojom::TextAnnotationPtr> annotate_result_;
   mojom::CodepointSpanPtr suggest_selection_result_;
+  mojom::HandwritingRecognizerResultPtr handwriting_result_;
 
   bool async_mode_;
   std::vector<base::OnceClosure> pending_calls_;

@@ -15,6 +15,7 @@ module chromeos.machine_learning.mojom;
 
 // NOTE: The base directory for 'import' statements is expected to differ
 //       between Chromium and Chrome OS versions of this file.
+import "chromeos/services/machine_learning/public/mojom/handwriting_recognizer.mojom";
 import "chromeos/services/machine_learning/public/mojom/model.mojom";
 import "chromeos/services/machine_learning/public/mojom/text_classifier.mojom";
 
@@ -24,6 +25,7 @@ enum LoadModelResult {
   OK = 0,
   MODEL_SPEC_ERROR = 1,
   LOAD_MODEL_ERROR = 2,
+  FEATURE_NOT_SUPPORTED_ERROR = 3,
 };
 
 // Top-level interface between Chromium and the ML Service daemon.
@@ -39,5 +41,8 @@ interface MachineLearningService {
       => (LoadModelResult result);
   // Create a new TextClassifier.
   LoadTextClassifier(pending_receiver<TextClassifier> receiver)
+      => (LoadModelResult result);
+  // Create and initialize a handwriting recognizer.
+  LoadHandwritingModel(pending_receiver<HandwritingRecognizer> receiver)
       => (LoadModelResult result);
 };

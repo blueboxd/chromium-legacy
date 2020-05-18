@@ -1313,11 +1313,27 @@ TEST_F(InputMethodManagerImplTest, MigrateInputMethodTest) {
 TEST_F(InputMethodManagerImplTest, OverrideKeyboardUrlRefWithKeyset) {
   InitComponentExtension();
 
+  // Create an input method with a input view URL for testing.
   const GURL inputview_url(
       "chrome-extension://"
       "inputview.html#id=us.compact.qwerty&language=en-US&passwordLayout=us."
       "compact.qwerty&name=keyboard_us");
-  GetActiveIMEState()->input_view_url = inputview_url;
+
+  const auto ime_id =
+      extension_ime_util::GetInputMethodID(kExtensionId1, "test_engine_id");
+  InputMethodDescriptors descriptors;
+  descriptors.push_back(InputMethodDescriptor(ime_id, "test", "TE", {}, {},
+                                              /*is_login_keyboard=*/false,
+                                              GURL(), inputview_url));
+
+  MockInputMethodEngine engine;
+  std::vector<std::string> enabled_imes = {ime_id};
+  GetActiveIMEState()->SetEnabledExtensionImes(&enabled_imes);
+  GetActiveIMEState()->AddInputMethodExtension(kExtensionId1, descriptors,
+                                               &engine);
+  GetActiveIMEState()->ChangeInputMethod(ime_id, false);
+
+  GetActiveIMEState()->EnableInputView();
   EXPECT_THAT(GetActiveIMEState()->GetInputViewUrl().spec(),
               ::testing::StartsWith(inputview_url.spec()));
 
@@ -1331,7 +1347,6 @@ TEST_F(InputMethodManagerImplTest, OverrideKeyboardUrlRefWithKeyset) {
               ::testing::StartsWith(overridden_url_emoji.spec()));
 
   // Override the keyboard url ref with 'hwt'.
-  GetActiveIMEState()->input_view_url = inputview_url;
   const GURL overridden_url_hwt(
       "chrome-extension://"
       "inputview.html#id=us.compact.qwerty.hwt&language=en-US&passwordLayout="
@@ -1342,7 +1357,6 @@ TEST_F(InputMethodManagerImplTest, OverrideKeyboardUrlRefWithKeyset) {
               ::testing::StartsWith(overridden_url_hwt.spec()));
 
   // Override the keyboard url ref with 'voice'.
-  GetActiveIMEState()->input_view_url = inputview_url;
   const GURL overridden_url_voice(
       "chrome-extension://"
       "inputview.html#id=us.compact.qwerty.voice&language=en-US"
@@ -1354,13 +1368,64 @@ TEST_F(InputMethodManagerImplTest, OverrideKeyboardUrlRefWithKeyset) {
 
 TEST_F(InputMethodManagerImplTest, OverrideDefaultKeyboardUrlRef) {
   InitComponentExtension();
-  const GURL default_url("chrome://inputview.html");
-  GetActiveIMEState()->input_view_url = default_url;
 
-  EXPECT_EQ(default_url, GetActiveIMEState()->GetInputViewUrl());
+  const GURL default_url("chrome://inputview.html");
+
+  const auto ime_id =
+      extension_ime_util::GetInputMethodID(kExtensionId1, "test_engine_id");
+  InputMethodDescriptors descriptors;
+  descriptors.push_back(InputMethodDescriptor(ime_id, "test", "TE", {}, {},
+                                              /*is_login_keyboard=*/false,
+                                              GURL(), default_url));
+
+  MockInputMethodEngine engine;
+  std::vector<std::string> enabled_imes = {ime_id};
+  GetActiveIMEState()->SetEnabledExtensionImes(&enabled_imes);
+  GetActiveIMEState()->AddInputMethodExtension(kExtensionId1, descriptors,
+                                               &engine);
+  GetActiveIMEState()->ChangeInputMethod(ime_id, false);
+  GetActiveIMEState()->EnableInputView();
 
   manager_->OverrideKeyboardKeyset(chromeos::input_method::ImeKeyset::kEmoji);
   EXPECT_EQ(default_url, GetActiveIMEState()->GetInputViewUrl());
+}
+
+TEST_F(InputMethodManagerImplTest, DoesNotResetInputViewUrlWhenOverridden) {
+  InitComponentExtension();
+
+  // Create an input method with a input view URL for testing.
+  const GURL inputview_url(
+      "chrome-extension://"
+      "inputview.html#id=us.compact.qwerty&language=en-US&passwordLayout=us."
+      "compact.qwerty&name=keyboard_us");
+
+  const auto ime_id =
+      extension_ime_util::GetInputMethodID(kExtensionId1, "test_engine_id");
+  InputMethodDescriptors descriptors;
+  descriptors.push_back(InputMethodDescriptor(ime_id, "test", "TE", {}, {},
+                                              /*is_login_keyboard=*/false,
+                                              GURL(), inputview_url));
+
+  MockInputMethodEngine engine;
+  std::vector<std::string> enabled_imes = {ime_id};
+  GetActiveIMEState()->SetEnabledExtensionImes(&enabled_imes);
+  GetActiveIMEState()->AddInputMethodExtension(kExtensionId1, descriptors,
+                                               &engine);
+  GetActiveIMEState()->ChangeInputMethod(ime_id, false);
+  GetActiveIMEState()->EnableInputView();
+
+  const GURL overridden_url_emoji(
+      "chrome-extension://"
+      "inputview.html#id=us.compact.qwerty.emoji&language=en-US&passwordLayout="
+      "us.compact.qwerty&name=keyboard_us");
+
+  manager_->OverrideKeyboardKeyset(chromeos::input_method::ImeKeyset::kEmoji);
+  EXPECT_THAT(GetActiveIMEState()->GetInputViewUrl().spec(),
+              ::testing::StartsWith(overridden_url_emoji.spec()));
+
+  GetActiveIMEState()->EnableInputView();
+  EXPECT_THAT(GetActiveIMEState()->GetInputViewUrl().spec(),
+              ::testing::StartsWith(overridden_url_emoji.spec()));
 }
 
 TEST_F(InputMethodManagerImplTest, AllowedKeyboardLayoutsValid) {

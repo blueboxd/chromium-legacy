@@ -66,7 +66,7 @@ public class CustomTabActivityTabControllerTest {
     @Test
     public void returnsNewTab_IfTabChanges() {
         mTabController.onPreInflationStartup();
-        mTabController.onFinishNativeInitialization();
+        mTabController.finishNativeInitialization();
         Tab newTab = env.prepareTab();
         env.changeTab(newTab);
         assertEquals(newTab, env.tabProvider.getTab());
@@ -102,7 +102,7 @@ public class CustomTabActivityTabControllerTest {
         mTabController.onPreInflationStartup();
 
         clearInvocations(env.tabFactory);
-        mTabController.onFinishNativeInitialization();
+        mTabController.finishNativeInitialization();
         verify(env.tabFactory, never()).createTab(any(), any(), any());
     }
 

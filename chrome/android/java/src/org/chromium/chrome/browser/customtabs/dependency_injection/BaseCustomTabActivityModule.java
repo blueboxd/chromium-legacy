@@ -4,15 +4,18 @@
 
 package org.chromium.chrome.browser.customtabs.dependency_injection;
 
+import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabController;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaIntentHandlingStrategy;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TwaVerifier;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier;
 import org.chromium.chrome.browser.customtabs.CustomTabNightModeStateController;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandlingStrategy;
 import org.chromium.chrome.browser.customtabs.content.DefaultCustomTabIntentHandlingStrategy;
 import org.chromium.chrome.browser.flags.ActivityType;
+import org.chromium.chrome.browser.init.StartupTabPreloader;
 import org.chromium.chrome.browser.webapps.AddToHomescreenVerifier;
 import org.chromium.chrome.browser.webapps.WebApkPostShareTargetNavigator;
 import org.chromium.chrome.browser.webapps.WebApkVerifier;
@@ -28,14 +31,17 @@ import dagger.Reusable;
 @Module
 public class BaseCustomTabActivityModule {
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
+    private final StartupTabPreloader mStartupTabPreloader;
     private final @ActivityType int mActivityType;
     private final CustomTabNightModeStateController mNightModeController;
     private final IntentIgnoringCriterion mIntentIgnoringCriterion;
 
     public BaseCustomTabActivityModule(BrowserServicesIntentDataProvider intentDataProvider,
+            StartupTabPreloader startupTabPreloader,
             CustomTabNightModeStateController nightModeController,
             IntentIgnoringCriterion intentIgnoringCriterion) {
         mIntentDataProvider = intentDataProvider;
+        mStartupTabPreloader = startupTabPreloader;
         mActivityType = intentDataProvider.getActivityType();
         mNightModeController = nightModeController;
         mIntentIgnoringCriterion = intentIgnoringCriterion;
@@ -54,6 +60,11 @@ public class BaseCustomTabActivityModule {
                        || mActivityType == ActivityType.WEB_APK)
                 ? twaHandler.get()
                 : defaultHandler.get();
+    }
+
+    @Provides
+    public StartupTabPreloader provideStartupTabPreloader() {
+        return mStartupTabPreloader;
     }
 
     @Provides
@@ -82,5 +93,11 @@ public class BaseCustomTabActivityModule {
     @Reusable
     public WebApkPostShareTargetNavigator providePostShareTargetNavigator() {
         return new WebApkPostShareTargetNavigator();
+    }
+
+    @Provides
+    public BrowserServicesActivityTabController provideTabController(
+            CustomTabActivityTabController customTabActivityTabController) {
+        return customTabActivityTabController;
     }
 }

@@ -40,7 +40,6 @@ import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.init.StartupTabPreloader;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
-import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.RedirectHandlerTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
@@ -55,6 +54,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.translate.TranslateBridge;
+import org.chromium.chrome.browser.webapps.WebApkExtras;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
@@ -72,7 +72,7 @@ import dagger.Lazy;
  */
 @ActivityScope
 public class CustomTabActivityTabController
-        implements InflationObserver, NativeInitObserver, BrowserServicesActivityTabController {
+        implements InflationObserver, BrowserServicesActivityTabController {
     // For CustomTabs.WebContentsStateOnLaunch, see histograms.xml. Append only.
     @IntDef({WebContentsState.NO_WEBCONTENTS, WebContentsState.PRERENDERED_WEBCONTENTS,
             WebContentsState.SPARE_WEBCONTENTS, WebContentsState.TRANSFERRED_WEBCONTENTS})
@@ -221,8 +221,7 @@ public class CustomTabActivityTabController
     @Override
     public void onPostInflationStartup() {}
 
-    @Override
-    public void onFinishNativeInitialization() {
+    public void finishNativeInitialization() {
         // If extra headers have been passed, cancel any current speculation, as
         // speculation doesn't support extra headers.
         if (IntentHandler.getExtraHeadersFromIntent(mIntent) != null) {
@@ -257,12 +256,9 @@ public class CustomTabActivityTabController
         // Don't overwrite any pre-existing tab.
         if (mTabProvider.getTab() != null) return null;
 
-        ShareTarget shareTarget = mIntentDataProvider.getShareTarget();
-        if (mIntentDataProvider.getShareData() != null && shareTarget != null
-                && ShareTarget.METHOD_POST.equals(shareTarget.method)) {
-            // The navigation is likely a POST (We don't do a POST navigation if the POST
-            // target is outside of the TWA scope.) This does not match
-            // StartupTabPreloader's GET navigation.
+        if (checkIsLikelyPostNavigation()) {
+            // The navigation is likely a POST. This does not match StartupTabPreloader's GET
+            // navigation.
             return null;
         }
 
@@ -279,6 +275,23 @@ public class CustomTabActivityTabController
         TabAssociatedApp.from(tab).setAppId(mConnection.getClientPackageNameForSession(mSession));
         initializeTab(tab);
         return tab;
+    }
+
+    /**
+     * Checks if the launch intent is likely a POST navigation (likely because we don't do a POST
+     * navigation if the POST target is outside of the TWA/WebAPK scope.)
+     */
+    private boolean checkIsLikelyPostNavigation() {
+        if (mIntentDataProvider.getShareData() == null) return false;
+
+        WebApkExtras webApkExtras = mIntentDataProvider.getWebApkExtras();
+        if (webApkExtras != null && webApkExtras.shareTarget != null
+                && webApkExtras.shareTarget.isShareMethodPost()) {
+            return true;
+        }
+
+        ShareTarget shareTarget = mIntentDataProvider.getShareTarget();
+        return shareTarget != null && ShareTarget.METHOD_POST.equals(shareTarget.method);
     }
 
     // Creates the tab on native init, if it hasn't been created yet, and does all the additional
@@ -418,8 +431,11 @@ public class CustomTabActivityTabController
     }
 
     private void initializeTab(Tab tab) {
-        RedirectHandlerTabHelper.updateIntentInTab(tab, mIntent);
-        tab.getView().requestFocus();
+        // TODO(pkotwicz): Determine whether these should be done for webapps.
+        if (!mIntentDataProvider.isWebappOrWebApkActivity()) {
+            RedirectHandlerTabHelper.updateIntentInTab(tab, mIntent);
+            tab.getView().requestFocus();
+        }
 
         // TODO(pshmakov): invert these dependencies.
         // Please don't register new observers here. Instead, inject TabObserverRegistrar in classes

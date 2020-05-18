@@ -242,6 +242,21 @@ function showImportCrostiniImageDialogIsCalled(entries) {
 }
 
 /**
+ * Utility function that appends value under a given name in the store.
+ * @param {!Map<string, !Array<string|number>>} store
+ * @param {string} name
+ * @param {string|number} value
+ */
+function record(store, name, value) {
+  let recorded = store.get(name);
+  if (!recorded) {
+    recorded = [];
+    store.set(name, recorded);
+  }
+  recorded.push(value);
+}
+
+/**
  * Tests opening a .exe file.
  */
 function testToOpenExeFile(callback) {
@@ -628,4 +643,48 @@ function testGetViewFileType() {
     const type = FileTasks.getViewFileType(mockEntry);
     assertEquals(data.expected, type);
   }
+}
+
+/**
+ * Checks that we are correctly recording UMA about Share action.
+ */
+function testRecordSharingAction() {
+  // Setup: create a fake metrics object that can be examined for content.
+  const enumMap = new Map();
+  const countMap = new Map();
+  window.metrics = {
+    recordEnum: (name, value, valid) => {
+      assertTrue(valid.includes(value));
+      record(enumMap, name, value);
+    },
+    recordSmallCount: (name, value) => {
+      record(countMap, name, value);
+    },
+  };
+  const mockFileSystem = new MockFileSystem('volumeId');
+
+  // Actual tests.
+  FileTasks.recordSharingAction(
+      FileTasks.SharingActionSourceForUMA.CONTEXT_MENU, [
+        MockFileEntry.create(mockFileSystem, '/test.log'),
+        MockFileEntry.create(mockFileSystem, '/test.doc'),
+        MockFileEntry.create(mockFileSystem, '/test.__no_such_extension__'),
+      ]);
+  assertArrayEquals(
+      enumMap.get('Share.ActionSource'),
+      [FileTasks.SharingActionSourceForUMA.CONTEXT_MENU]);
+  assertArrayEquals(countMap.get('Share.FileCount'), [3]);
+  assertArrayEquals(enumMap.get('Share.FileType'), ['.log', '.doc', 'other']);
+
+  FileTasks.recordSharingAction(
+      FileTasks.SharingActionSourceForUMA.SHARE_BUTTON, [
+        MockFileEntry.create(mockFileSystem, '/test.log'),
+      ]);
+  assertArrayEquals(enumMap.get('Share.ActionSource'), [
+    FileTasks.SharingActionSourceForUMA.CONTEXT_MENU,
+    FileTasks.SharingActionSourceForUMA.SHARE_BUTTON,
+  ]);
+  assertArrayEquals(countMap.get('Share.FileCount'), [3, 1]);
+  assertArrayEquals(
+      enumMap.get('Share.FileType'), ['.log', '.doc', 'other', '.log']);
 }

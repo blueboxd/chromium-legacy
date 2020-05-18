@@ -11,6 +11,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
 import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabTaskDescriptionHelper;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler;
@@ -28,6 +29,7 @@ import org.chromium.chrome.browser.webapps.WebappActivityCoordinator;
 public interface BaseCustomTabActivityComponent extends ChromeActivityComponent {
     CurrentPageVerifier resolveCurrentPageVerifier();
     CustomTabActivityNavigationController resolveNavigationController();
+    CustomTabActivityTabController resolveTabController();
     CustomTabActivityTabFactory resolveTabFactory();
     CustomTabActivityTabProvider resolveTabProvider();
     CustomTabCompositorContentInitializer resolveCompositorContentInitializer();

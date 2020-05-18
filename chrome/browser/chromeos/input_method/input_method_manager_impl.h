@@ -116,6 +116,12 @@ class InputMethodManagerImpl : public InputMethodManager,
     void DisableInputView() override;
     const GURL& GetInputViewUrl() const override;
 
+    // Override the input view URL used to explicitly display some keyset.
+    void OverrideInputViewUrl(const GURL& url);
+
+    // Reset the input view URL to the default url of the current input method.
+    void ResetInputViewUrl();
+
     // Connect to an InputEngineManager instance in an IME Mojo service.
     void ConnectMojoManager(
         mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager>
@@ -149,10 +155,6 @@ class InputMethodManagerImpl : public InputMethodManager,
     // True if the opt-in IME menu is activated.
     bool menu_activated;
 
-    // The URL of the input view of the active ime with parameters (e.g. layout,
-    // keyset).
-    GURL input_view_url;
-
    protected:
     friend base::RefCounted<chromeos::input_method::InputMethodManager::State>;
     ~StateImpl() override;
@@ -167,6 +169,14 @@ class InputMethodManagerImpl : public InputMethodManager,
     // Returns the first hardware input method that is allowed or the first
     // allowed input method, if no hardware input method is allowed.
     std::string GetAllowedFallBackKeyboardLayout() const;
+
+    // The URL of the input view of the active ime with parameters (e.g. layout,
+    // keyset).
+    GURL input_view_url;
+
+    // Whether the input view URL has been forcibly overridden e.g. to show a
+    // specific keyset.
+    bool input_view_url_overridden = false;
 
     std::unique_ptr<ImeServiceConnector> ime_service_connector_;
   };

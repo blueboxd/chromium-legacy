@@ -232,7 +232,7 @@ struct URLRequestContextConfigBuilder {
   std::unique_ptr<URLRequestContextConfig> Build();
 
   // Enable QUIC.
-  bool enable_quic = true;
+  bool enable_quic = false;
   // QUIC User Agent ID.
   std::string quic_user_agent_id = "";
   // Enable SPDY.

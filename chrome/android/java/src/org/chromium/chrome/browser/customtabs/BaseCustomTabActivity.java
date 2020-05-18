@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.ui.trustedwebactivity.TrustedWebActivityCoordinator;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler;
@@ -65,6 +66,7 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
     protected CustomTabDelegateFactory mDelegateFactory;
     protected CustomTabToolbarCoordinator mToolbarCoordinator;
     protected CustomTabActivityNavigationController mNavigationController;
+    protected CustomTabActivityTabController mTabController;
     protected CustomTabActivityTabProvider mTabProvider;
     protected CustomTabStatusBarColorProvider mStatusBarColorProvider;
     protected CustomTabActivityTabFactory mTabFactory;
@@ -141,6 +143,11 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
                 mTabModelProfileSupplier, mBookmarkBridgeSupplier);
     }
 
+    @Override
+    public boolean shouldAllocateChildConnection() {
+        return mTabController.shouldAllocateChildConnection();
+    }
+
     /**
      * Called when the {@link BaseCustomTabActivityComponent} was created.
      */
@@ -148,6 +155,7 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
         mDelegateFactory = component.resolveTabDelegateFactory();
         mToolbarCoordinator = component.resolveToolbarCoordinator();
         mNavigationController = component.resolveNavigationController();
+        mTabController = component.resolveTabController();
         mTabProvider = component.resolveTabProvider();
         mStatusBarColorProvider = component.resolveCustomTabStatusBarColorProvider();
         mTabFactory = component.resolveTabFactory();
@@ -276,9 +284,23 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
     }
 
     @Override
+    public void initializeState() {
+        super.initializeState();
+
+        // TODO(pkotwicz): Determine whether finishing tab initialization in initializeState() has a
+        // positive performance impact.
+        if (getIntentDataProvider().isWebappOrWebApkActivity()) {
+            mTabController.finishNativeInitialization();
+        }
+    }
+
+    @Override
     public void finishNativeInitialization() {
         if (isTaskRoot() && UsageStatsService.isEnabled()) {
             UsageStatsService.getInstance().createPageViewObserver(getTabModelSelector(), this);
+        }
+        if (!getIntentDataProvider().isWebappOrWebApkActivity()) {
+            mTabController.finishNativeInitialization();
         }
 
         super.finishNativeInitialization();

@@ -8,8 +8,6 @@ import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTab
 import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityModule;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
-import org.chromium.chrome.browser.webapps.WebApkUpdateManager;
-import org.chromium.chrome.browser.webapps.WebappActivityTabController;
 
 import dagger.Subcomponent;
 
@@ -17,10 +15,6 @@ import dagger.Subcomponent;
  * Activity-scoped component associated with
  * {@link org.chromium.chrome.browser.webapps.WebappActivity}.
  */
-@Subcomponent(modules = {ChromeActivityCommonsModule.class, BaseCustomTabActivityModule.class,
-                      WebappActivityModule.class})
+@Subcomponent(modules = {ChromeActivityCommonsModule.class, BaseCustomTabActivityModule.class})
 @ActivityScope
-public interface WebappActivityComponent extends BaseCustomTabActivityComponent {
-    WebappActivityTabController resolveTabController();
-    WebApkUpdateManager resolveWebApkUpdateManager();
-}
+public interface WebappActivityComponent extends BaseCustomTabActivityComponent {}

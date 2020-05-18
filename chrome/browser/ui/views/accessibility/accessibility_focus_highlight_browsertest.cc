@@ -4,6 +4,7 @@
 
 #include "math.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/views/accessibility/accessibility_focus_highlight.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -114,7 +115,15 @@ class AccessibilityFocusHighlightBrowserTest : public InProcessBrowserTest {
 
 // Smoke test that ensures that when a node gets focus, the layer with the
 // focus highlight actually gets drawn.
-IN_PROC_BROWSER_TEST_F(AccessibilityFocusHighlightBrowserTest, DrawsHighlight) {
+//
+// Flaky on Mac. TODO(crbug.com/1083806): Enable this test.
+#if defined(OS_MACOSX)
+#define MAYBE_DrawsHighlight DISABLED_DrawsHighlight
+#else
+#define MAYBE_DrawsHighlight DrawsHighlight
+#endif
+IN_PROC_BROWSER_TEST_F(AccessibilityFocusHighlightBrowserTest,
+                       MAYBE_DrawsHighlight) {
   ui_test_utils::NavigateToURL(
       browser(), GURL("data:text/html,"
                       "<body style='background-color: rgb(204, 255, 255)'>"

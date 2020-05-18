@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
-import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
 import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityModule;
@@ -62,10 +61,8 @@ import org.chromium.content_public.browser.WebContents;
  */
 public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityComponent> {
     private CustomTabsSessionToken mSession;
-    private CustomTabActivityTabController mTabController;
 
     private final CustomTabsConnection mConnection = CustomTabsConnection.getInstance();
-
 
     private CustomTabActivityTabProvider.Observer mTabChangeObserver =
             new CustomTabActivityTabProvider.Observer() {
@@ -105,11 +102,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
         mSession = mIntentDataProvider.getSession();
 
         CustomTabNavigationBarController.updateNavigationBarColor(this, mIntentDataProvider);
-    }
-
-    @Override
-    public boolean shouldAllocateChildConnection() {
-        return mTabController.shouldAllocateChildConnection();
     }
 
     @Override
@@ -301,10 +293,10 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
         IntentIgnoringCriterion intentIgnoringCriterion =
                 (intent) -> mIntentHandler.shouldIgnoreIntent(intent);
 
-        BaseCustomTabActivityModule baseCustomTabsModule = new BaseCustomTabActivityModule(
-                mIntentDataProvider, mNightModeStateController, intentIgnoringCriterion);
-        CustomTabActivityModule customTabsModule =
-                new CustomTabActivityModule(getStartupTabPreloader());
+        BaseCustomTabActivityModule baseCustomTabsModule =
+                new BaseCustomTabActivityModule(mIntentDataProvider, getStartupTabPreloader(),
+                        mNightModeStateController, intentIgnoringCriterion);
+        CustomTabActivityModule customTabsModule = new CustomTabActivityModule();
 
         CustomTabActivityComponent component =
                 ChromeApplication.getComponent().createCustomTabActivityComponent(
@@ -312,7 +304,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
 
         onComponentCreated(component);
 
-        mTabController = component.resolveTabController();
         component.resolveUmaTracker();
         CustomTabActivityClientConnectionKeeper connectionKeeper =
                 component.resolveConnectionKeeper();

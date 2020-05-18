@@ -1251,35 +1251,6 @@ public class CronetUrlRequestContextTest {
     // translated to a native UrlRequestContextConfig.
     private static native void nativeVerifyUrlRequestContextConfig(long config, String storagePath);
 
-    @Test
-    @SmallTest
-    @Feature({"Cronet"})
-    public void testCronetEngineQuicOffConfig() throws Exception {
-        // This is to prompt load of native library.
-        mTestRule.startCronetTestFramework();
-        // Verify CronetEngine.Builder config is passed down accurately to native code.
-        ExperimentalCronetEngine.Builder builder =
-                new ExperimentalCronetEngine.Builder(getContext());
-        builder.enableHttp2(false);
-        // QUIC is on by default. Disabling it here to make sure the built config can correctly
-        // reflect the change.
-        builder.enableQuic(false);
-        builder.enableHttpCache(HTTP_CACHE_IN_MEMORY, 54321);
-        builder.setUserAgent("efgh");
-        builder.setExperimentalOptions("ijkl");
-        builder.setStoragePath(getTestStorage(getContext()));
-        builder.enablePublicKeyPinningBypassForLocalTrustAnchors(false);
-        nativeVerifyUrlRequestContextQuicOffConfig(
-                CronetUrlRequestContext.createNativeUrlRequestContextConfig(
-                        (CronetEngineBuilderImpl) builder.mBuilderDelegate),
-                getTestStorage(getContext()));
-    }
-
-    // Verifies that CronetEngine.Builder config from testCronetEngineQuicOffConfig() is properly
-    // translated to a native UrlRequestContextConfig and QUIC is turned off.
-    private static native void nativeVerifyUrlRequestContextQuicOffConfig(
-            long config, String storagePath);
-
     private static class TestBadLibraryLoader extends CronetEngine.Builder.LibraryLoader {
         private boolean mWasCalled;
 

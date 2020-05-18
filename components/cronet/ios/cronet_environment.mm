@@ -238,7 +238,7 @@ void CronetEnvironment::AddQuicHint(const std::string& host,
 CronetEnvironment::CronetEnvironment(const std::string& user_agent,
                                      bool user_agent_partial)
     : http2_enabled_(false),
-      quic_enabled_(true),
+      quic_enabled_(false),
       brotli_enabled_(false),
       http_cache_(URLRequestContextConfig::HttpCacheType::DISK),
       user_agent_(user_agent),

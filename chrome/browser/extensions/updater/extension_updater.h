@@ -248,6 +248,15 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   void ExtensionCheckFinished(const std::string& extension_id,
                               FinishedCallback callback);
 
+  // Callback set in the crx installer and invoked when the crx file has passed
+  // the expectations check. It takes the ownership of the file pointed to by
+  // |crx_info|.
+  void PutExtensionInCache(const CRXFileInfo& crx_info);
+
+  // Deletes the crx file at |crx_path| if ownership is passed.
+  void CleanUpCrxFileIfNeeded(const base::FilePath& crx_path,
+                              bool file_ownership_passed);
+
   // Whether Start() has been called but not Stop().
   bool alive_;
 

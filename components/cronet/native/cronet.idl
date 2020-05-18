@@ -528,7 +528,7 @@ struct EngineParams {
    * is enabled. If QUIC is enabled, then QUIC User Agent Id
    * containing application name and Cronet version is sent to the server.
    */
-  bool enable_quic = true;
+  bool enable_quic = false;
 
   /**
    * Whether <a href="https://tools.ietf.org/html/rfc7540">HTTP/2</a>

@@ -45,26 +45,4 @@ static void JNI_CronetUrlRequestContextTest_VerifyUrlRequestContextConfig(
            base::android::ConvertJavaStringToUTF8(env, jstorage_path));
 }
 
-// Verify that QUIC can be turned off in CronetEngine.Builder.
-// Note that the config expectation is hard coded here because it's very hard to
-// create an expected config in the JAVA package.
-static void
-JNI_CronetUrlRequestContextTest_VerifyUrlRequestContextQuicOffConfig(
-    JNIEnv* env,
-    jlong jurl_request_context_config,
-    const JavaParamRef<jstring>& jstorage_path) {
-  URLRequestContextConfig* config =
-      reinterpret_cast<URLRequestContextConfig*>(jurl_request_context_config);
-  CHECK_EQ(config->enable_spdy, false);
-  CHECK_EQ(config->enable_quic, false);
-  CHECK_EQ(config->bypass_public_key_pinning_for_local_trust_anchors, false);
-  CHECK_EQ(config->load_disable_cache, false);
-  CHECK_EQ(config->http_cache, URLRequestContextConfig::HttpCacheType::MEMORY);
-  CHECK_EQ(config->http_cache_max_size, 54321);
-  CHECK_EQ(config->user_agent, "efgh");
-  CHECK(!config->effective_experimental_options);
-  CHECK_EQ(config->storage_path,
-           base::android::ConvertJavaStringToUTF8(env, jstorage_path));
-}
-
 }  // namespace cronet

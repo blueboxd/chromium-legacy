@@ -63,26 +63,16 @@ bool IsDeviceOwner() {
          user_manager::UserManager::Get()->GetOwnerAccountId();
 }
 
-std::string GetStringFromONCDictionary(const base::Value* dict,
-                                       const char* key,
-                                       bool required) {
+std::string GetString(const base::Value* dict, const char* key) {
   DCHECK(dict->is_dict());
   const base::Value* string_value =
       dict->FindKeyOfType(key, base::Value::Type::STRING);
-  if (!string_value) {
-    LOG_IF(ERROR, required) << "Required property " << key << " not found.";
-    return std::string();
-  }
-  std::string result = string_value->GetString();
-  LOG_IF(ERROR, required && result.empty())
-      << "Required property " << key << " is empty.";
-  return result;
+  return string_value ? string_value->GetString() : std::string();
 }
 
 arc::mojom::SecurityType TranslateONCWifiSecurityType(
     const base::DictionaryValue* dict) {
-  std::string type = GetStringFromONCDictionary(dict, onc::wifi::kSecurity,
-                                                true /* required */);
+  std::string type = GetString(dict, onc::wifi::kSecurity);
   if (type == onc::wifi::kWEP_PSK)
     return arc::mojom::SecurityType::WEP_PSK;
   if (type == onc::wifi::kWEP_8021X)
@@ -91,6 +81,8 @@ arc::mojom::SecurityType TranslateONCWifiSecurityType(
     return arc::mojom::SecurityType::WPA_PSK;
   if (type == onc::wifi::kWPA_EAP)
     return arc::mojom::SecurityType::WPA_EAP;
+  if (type.empty())
+    LOG(WARNING) << "WiFi security type property not found";
   return arc::mojom::SecurityType::NONE;
 }
 
@@ -112,10 +104,8 @@ arc::mojom::WiFiPtr TranslateONCWifi(const base::DictionaryValue* dict) {
   // Optional; defaults to 0.
   dict->GetInteger(onc::wifi::kFrequency, &wifi->frequency);
 
-  wifi->bssid =
-      GetStringFromONCDictionary(dict, onc::wifi::kBSSID, false /* required */);
-  wifi->hex_ssid = GetStringFromONCDictionary(dict, onc::wifi::kHexSSID,
-                                              true /* required */);
+  wifi->bssid = GetString(dict, onc::wifi::kBSSID);
+  wifi->hex_ssid = GetString(dict, onc::wifi::kHexSSID);
 
   // Optional; defaults to false.
   dict->GetBoolean(onc::wifi::kHiddenSSID, &wifi->hidden_ssid);
@@ -152,9 +142,10 @@ arc::mojom::IPConfigurationPtr TranslateONCIPConfig(
     if (routing_prefix)
       configuration->routing_prefix = routing_prefix->GetInt();
     else
-      LOG(ERROR) << "Required property RoutingPrefix not found.";
-    configuration->gateway = GetStringFromONCDictionary(
-        ip_dict, onc::ipconfig::kGateway, true /* required */);
+      LOG(WARNING) << "RoutingPrefix property not found.";
+    configuration->gateway = GetString(ip_dict, onc::ipconfig::kGateway);
+    if (configuration->gateway.empty())
+      LOG(WARNING) << "Gateway address property not found";
   }
 
   const base::Value* name_servers = ip_dict->FindKeyOfType(
@@ -170,8 +161,8 @@ arc::mojom::IPConfigurationPtr TranslateONCIPConfig(
                             ? arc::mojom::IPAddressType::IPV6
                             : arc::mojom::IPAddressType::IPV4;
 
-  configuration->web_proxy_auto_discovery_url = GetStringFromONCDictionary(
-      ip_dict, onc::ipconfig::kWebProxyAutoDiscoveryUrl, false /* required */);
+  configuration->web_proxy_auto_discovery_url =
+      GetString(ip_dict, onc::ipconfig::kWebProxyAutoDiscoveryUrl);
 
   return configuration;
 }
@@ -218,8 +209,8 @@ std::vector<arc::mojom::IPConfigurationPtr> IPConfigurationsFromONCProperty(
 
 arc::mojom::ConnectionStateType TranslateONCConnectionState(
     const base::DictionaryValue* dict) {
-  std::string connection_state = GetStringFromONCDictionary(
-      dict, onc::network_config::kConnectionState, false /* required */);
+  std::string connection_state =
+      GetString(dict, onc::network_config::kConnectionState);
 
   if (connection_state == onc::connection_state::kConnected)
     return arc::mojom::ConnectionStateType::CONNECTED;
@@ -255,12 +246,13 @@ arc::mojom::ConnectionStateType TranslateConnectionState(
 
 void TranslateONCNetworkTypeDetails(const base::DictionaryValue* dict,
                                     arc::mojom::NetworkConfiguration* mojo) {
-  std::string type = GetStringFromONCDictionary(
-      dict, onc::network_config::kType, true /* required */);
+  std::string type = GetString(dict, onc::network_config::kType);
   // This property will be updated as required by the relevant network types
   // below.
   mojo->tethering_client_state = arc::mojom::TetheringClientState::NOT_DETECTED;
-  if (type == onc::network_type::kCellular) {
+  if (type.empty()) {
+    LOG(ERROR) << "Required network type property not found";
+  } else if (type == onc::network_type::kCellular) {
     mojo->type = arc::mojom::NetworkType::CELLULAR;
   } else if (type == onc::network_type::kEthernet) {
     mojo->type = arc::mojom::NetworkType::ETHERNET;
@@ -335,8 +327,9 @@ arc::mojom::NetworkConfigurationPtr TranslateONCConfiguration(
 
   mojo->connection_state = TranslateONCConnectionState(dict);
 
-  mojo->guid = GetStringFromONCDictionary(dict, onc::network_config::kGUID,
-                                          true /* required */);
+  mojo->guid = GetString(dict, onc::network_config::kGUID);
+  if (mojo->guid.empty())
+    LOG(ERROR) << "Missing GUID property for network " << network_state->path();
 
   // crbug.com/761708 - VPNs do not currently have an IPConfigs array,
   // so in order to fetch the parameters (particularly the DNS server list),
@@ -353,8 +346,6 @@ arc::mojom::NetworkConfigurationPtr TranslateONCConfiguration(
   }
   mojo->ip_configs = std::move(ip_configs);
 
-  mojo->guid = GetStringFromONCDictionary(dict, onc::network_config::kGUID,
-                                          true /* required */);
   TranslateONCNetworkTypeDetails(dict, mojo.get());
 
   if (network_state) {
@@ -423,7 +414,6 @@ void ForgetNetworkFailureCallback(
     base::OnceCallback<void(arc::mojom::NetworkResult)> callback,
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
-  VLOG(1) << "ForgetNetworkFailureCallback: " << error_name;
   std::move(callback).Run(arc::mojom::NetworkResult::FAILURE);
 }
 
@@ -436,7 +426,6 @@ void StartConnectFailureCallback(
     base::OnceCallback<void(arc::mojom::NetworkResult)> callback,
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
-  VLOG(1) << "StartConnectFailureCallback: " << error_name;
   std::move(callback).Run(arc::mojom::NetworkResult::FAILURE);
 }
 
@@ -449,17 +438,15 @@ void StartDisconnectFailureCallback(
     base::OnceCallback<void(arc::mojom::NetworkResult)> callback,
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
-  VLOG(1) << "StartDisconnectFailureCallback: " << error_name;
   std::move(callback).Run(arc::mojom::NetworkResult::FAILURE);
 }
 
-void ArcVpnSuccessCallback() {
-  DVLOG(1) << "ArcVpnSuccessCallback";
-}
+void ArcVpnSuccessCallback() {}
 
-void ArcVpnErrorCallback(const std::string& error_name,
+void ArcVpnErrorCallback(const std::string& operation,
+                         const std::string& error_name,
                          std::unique_ptr<base::DictionaryValue> error_data) {
-  LOG(ERROR) << "ArcVpnErrorCallback: " << error_name;
+  LOG(ERROR) << "ArcVpnErrorCallback: " << operation << ": " << error_name;
 }
 
 }  // namespace
@@ -536,10 +523,9 @@ void ArcNetHostImpl::OnConnectionReady() {
       GetShillBackedNetwork(GetStateHandler()->DefaultNetwork());
   if (default_network && default_network->type() == shill::kTypeVPN &&
       default_network->GetVpnProviderType() == shill::kProviderArcVpn) {
-    VLOG(0) << "Disconnecting stale ARC VPN " << default_network->path();
     GetNetworkConnectionHandler()->DisconnectNetwork(
         default_network->path(), base::Bind(&ArcVpnSuccessCallback),
-        base::Bind(&ArcVpnErrorCallback));
+        base::Bind(&ArcVpnErrorCallback, "disconnecting stale ARC VPN"));
   }
 }
 
@@ -586,8 +572,6 @@ void ArcNetHostImpl::CreateNetworkSuccessCallback(
     base::OnceCallback<void(const std::string&)> callback,
     const std::string& service_path,
     const std::string& guid) {
-  VLOG(1) << "CreateNetworkSuccessCallback";
-
   cached_guid_ = guid;
   cached_service_path_ = service_path;
 
@@ -598,13 +582,14 @@ void ArcNetHostImpl::CreateNetworkFailureCallback(
     base::OnceCallback<void(const std::string&)> callback,
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
-  VLOG(1) << "CreateNetworkFailureCallback: " << error_name;
+  LOG(ERROR) << "CreateNetworkFailureCallback: " << error_name;
   std::move(callback).Run(std::string());
 }
 
 void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
                                    CreateNetworkCallback callback) {
   if (!IsDeviceOwner()) {
+    LOG(ERROR) << "Only device owner can create WiFi networks";
     std::move(callback).Run(std::string());
     return;
   }
@@ -613,12 +598,16 @@ void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
   std::unique_ptr<base::DictionaryValue> wifi_dict(new base::DictionaryValue);
 
   if (!cfg->hexssid.has_value() || !cfg->details) {
+    LOG(ERROR)
+        << "Cannot create WiFi network without hex ssid or WiFi properties";
     std::move(callback).Run(std::string());
     return;
   }
+
   mojom::ConfiguredNetworkDetailsPtr details =
       std::move(cfg->details->get_configured());
   if (!details) {
+    LOG(ERROR) << "Cannot create WiFi network without WiFi properties";
     std::move(callback).Run(std::string());
     return;
   }
@@ -672,12 +661,14 @@ bool ArcNetHostImpl::GetNetworkPathFromGuid(const std::string& guid,
 void ArcNetHostImpl::ForgetNetwork(const std::string& guid,
                                    ForgetNetworkCallback callback) {
   if (!IsDeviceOwner()) {
+    LOG(ERROR) << "Only device owner can remove WiFi networks";
     std::move(callback).Run(mojom::NetworkResult::FAILURE);
     return;
   }
 
   std::string path;
   if (!GetNetworkPathFromGuid(guid, &path)) {
+    LOG(ERROR) << "Could not retrieve Service path from GUID " << guid;
     std::move(callback).Run(mojom::NetworkResult::FAILURE);
     return;
   }
@@ -696,6 +687,7 @@ void ArcNetHostImpl::StartConnect(const std::string& guid,
                                   StartConnectCallback callback) {
   std::string path;
   if (!GetNetworkPathFromGuid(guid, &path)) {
+    LOG(ERROR) << "Could not retrieve Service path from GUID " << guid;
     std::move(callback).Run(mojom::NetworkResult::FAILURE);
     return;
   }
@@ -714,6 +706,7 @@ void ArcNetHostImpl::StartDisconnect(const std::string& guid,
                                      StartDisconnectCallback callback) {
   std::string path;
   if (!GetNetworkPathFromGuid(guid, &path)) {
+    LOG(ERROR) << "Could not retrieve Service path from GUID " << guid;
     std::move(callback).Run(mojom::NetworkResult::FAILURE);
     return;
   }
@@ -743,10 +736,11 @@ void ArcNetHostImpl::SetWifiEnabledState(bool is_enabled,
   if ((state == chromeos::NetworkStateHandler::TECHNOLOGY_PROHIBITED) ||
       (state == chromeos::NetworkStateHandler::TECHNOLOGY_UNINITIALIZED) ||
       (state == chromeos::NetworkStateHandler::TECHNOLOGY_UNAVAILABLE)) {
-    VLOG(1) << "SetWifiEnabledState failed due to WiFi state: " << state;
+    LOG(ERROR) << "SetWifiEnabledState failed due to WiFi state: " << state;
     std::move(callback).Run(false);
     return;
   }
+
   GetStateHandler()->SetTechnologyEnabled(
       chromeos::NetworkTypePattern::WiFi(), is_enabled,
       chromeos::network_handler::ErrorCallback());
@@ -809,12 +803,12 @@ std::string ArcNetHostImpl::LookupArcVpnServicePath() {
 
 void ArcNetHostImpl::ConnectArcVpn(const std::string& service_path,
                                    const std::string& /* guid */) {
-  DVLOG(1) << "ConnectArcVpn " << service_path;
   arc_vpn_service_path_ = service_path;
 
   GetNetworkConnectionHandler()->ConnectToNetwork(
       service_path, base::Bind(&ArcVpnSuccessCallback),
-      base::Bind(&ArcVpnErrorCallback), false /* check_error_state */,
+      base::Bind(&ArcVpnErrorCallback, "connecting ARC VPN"),
+      false /* check_error_state */,
       chromeos::ConnectCallbackMode::ON_COMPLETED);
 }
 
@@ -894,27 +888,23 @@ void ArcNetHostImpl::AndroidVpnConnected(
       TranslateVpnConfigurationToOnc(*cfg);
   std::string service_path = LookupArcVpnServicePath();
   if (!service_path.empty()) {
-    VLOG(1) << "AndroidVpnConnected: reusing " << service_path;
     GetManagedConfigurationHandler()->SetProperties(
         service_path, *properties,
         base::Bind(&ArcNetHostImpl::ConnectArcVpn, weak_factory_.GetWeakPtr(),
                    service_path, std::string()),
-        base::Bind(&ArcVpnErrorCallback));
+        base::Bind(&ArcVpnErrorCallback,
+                   "reconnecting ARC VPN " + service_path));
     return;
   }
 
-  VLOG(1) << "AndroidVpnConnected: creating new ARC VPN";
   std::string user_id_hash = chromeos::LoginState::Get()->primary_user_hash();
   GetManagedConfigurationHandler()->CreateConfiguration(
       user_id_hash, *properties,
       base::Bind(&ArcNetHostImpl::ConnectArcVpn, weak_factory_.GetWeakPtr()),
-      base::Bind(&ArcVpnErrorCallback));
+      base::Bind(&ArcVpnErrorCallback, "connecting new ARC VPN"));
 }
 
 void ArcNetHostImpl::AndroidVpnStateChanged(mojom::ConnectionStateType state) {
-  VLOG(1) << "AndroidVpnStateChanged: state=" << state
-          << " service=" << arc_vpn_service_path_;
-
   if (state != arc::mojom::ConnectionStateType::NOT_CONNECTED ||
       arc_vpn_service_path_.empty()) {
     return;
@@ -928,7 +918,7 @@ void ArcNetHostImpl::AndroidVpnStateChanged(mojom::ConnectionStateType state) {
 
   GetNetworkConnectionHandler()->DisconnectNetwork(
       service_path, base::Bind(&ArcVpnSuccessCallback),
-      base::Bind(&ArcVpnErrorCallback));
+      base::Bind(&ArcVpnErrorCallback, "disconnecting ARC VPN"));
 }
 
 void ArcNetHostImpl::SetAlwaysOnVpn(const std::string& vpn_package,
@@ -944,10 +934,9 @@ void ArcNetHostImpl::DisconnectArcVpn() {
 
   auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->net(),
                                                    DisconnectAndroidVpn);
-  if (!net_instance) {
-    LOG(ERROR) << "User requested VPN disconnection but API is unavailable";
+  if (!net_instance)
     return;
-  }
+
   net_instance->DisconnectAndroidVpn();
 }
 
@@ -959,7 +948,6 @@ void ArcNetHostImpl::DisconnectRequested(const std::string& service_path) {
   // This code path is taken when a user clicks the blue Disconnect button
   // in Chrome OS.  Chrome is about to send the Disconnect call to shill,
   // so update our local state and tell Android to disconnect the VPN.
-  VLOG(1) << "DisconnectRequested " << service_path;
   DisconnectArcVpn();
 }
 
@@ -979,7 +967,6 @@ void ArcNetHostImpl::NetworkConnectionStateChanged(
   // service.  This can happen if a user tries to connect to a Chrome OS
   // VPN, and shill's VPNProvider::DisconnectAll() forcibly disconnects
   // all other VPN services to avoid a conflict.
-  VLOG(1) << "NetworkConnectionStateChanged " << shill_backed_network->path();
   DisconnectArcVpn();
 }
 

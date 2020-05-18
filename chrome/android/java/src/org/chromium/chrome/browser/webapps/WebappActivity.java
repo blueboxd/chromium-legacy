@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
-import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityModule;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.util.ArrayList;
@@ -44,7 +43,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
     private static BrowserServicesIntentDataProvider sIntentDataProviderOverride;
 
-    private WebappActivityTabController mTabController;
     private TabObserverRegistrar mTabObserverRegistrar;
 
     @Override
@@ -80,26 +78,18 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     }
 
     @Override
-    public void initializeState() {
-        super.initializeState();
-
-        mTabController.initializeState();
-    }
-
-    @Override
     protected WebappActivityComponent createComponent(ChromeActivityCommonsModule commonsModule) {
         IntentIgnoringCriterion intentIgnoringCriterion =
                 (intent) -> mIntentHandler.shouldIgnoreIntent(intent);
 
-        BaseCustomTabActivityModule baseCustomTabModule = new BaseCustomTabActivityModule(
-                mIntentDataProvider, mNightModeStateController, intentIgnoringCriterion);
-        WebappActivityModule webappModule = new WebappActivityModule();
+        BaseCustomTabActivityModule baseCustomTabModule =
+                new BaseCustomTabActivityModule(mIntentDataProvider, getStartupTabPreloader(),
+                        mNightModeStateController, intentIgnoringCriterion);
         WebappActivityComponent component =
                 ChromeApplication.getComponent().createWebappActivityComponent(
-                        commonsModule, baseCustomTabModule, webappModule);
+                        commonsModule, baseCustomTabModule);
         onComponentCreated(component);
 
-        mTabController = component.resolveTabController();
         mTabObserverRegistrar = component.resolveTabObserverRegistrar();
 
         mNavigationController.setFinishHandler((reason) -> { handleFinishAndClose(); });

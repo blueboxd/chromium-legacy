@@ -253,6 +253,24 @@ class FileTasks {
   }
 
   /**
+   * Records UMA statistics about Share action.
+   * @param {!FileTasks.SharingActionSourceForUMA} source The enum representing
+   *     the UI element that triggered the share action.
+   * @param {!Array<!FileEntry>} entries File entries to be shared.
+   */
+  static recordSharingAction(source, entries) {
+    metrics.recordEnum(
+        'Share.ActionSource', source, FileTasks.ValidSharingActionSource);
+    metrics.recordSmallCount('Share.FileCount', entries.length);
+    for (const entry of entries) {
+      metrics.recordEnum(
+          'Share.FileType', FileTasks.getViewFileType(entry),
+          FileTasks.UMA_INDEX_KNOWN_EXTENSIONS);
+    }
+    // TODO(crbug.com/1063169): record Share.AppId AppID for each entity.
+  }
+
+  /**
    * Records trial of opening file grouped by extensions.
    *
    * @param {!VolumeManager} volumeManager
@@ -1295,6 +1313,27 @@ FileTasks.UMA_CROSTINI_SHARE_DIALOG_TYPES_ = Object.freeze([
   FileTasks.CrostiniShareDialogType.None,
   FileTasks.CrostiniShareDialogType.ShareBeforeOpen,
   FileTasks.CrostiniShareDialogType.UnableToOpen,
+]);
+
+/**
+ * Possible share action sources for UMA.
+ * @enum {string}
+ * @const
+ */
+FileTasks.SharingActionSourceForUMA = {
+  UNKNOWN: 'Unknown',
+  CONTEXT_MENU: 'Context Menu',
+  SHARE_BUTTON: 'Share Button',
+};
+
+/**
+ * A list of supported values for SharingActionSource enum. Keep this in sync
+ * with SharingActionSource defined in //tools/metrics/histograms/enums.xml.
+ */
+FileTasks.ValidSharingActionSource = Object.freeze([
+  FileTasks.SharingActionSourceForUMA.UNKNOWN,
+  FileTasks.SharingActionSourceForUMA.CONTEXT_MENU,
+  FileTasks.SharingActionSourceForUMA.SHARE_BUTTON,
 ]);
 
 /**

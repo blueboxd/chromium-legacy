@@ -82,6 +82,7 @@ class CrxInstallError {
   CrxInstallErrorDetail detail() const;
   SandboxedUnpackerFailureReason sandbox_failure_detail() const;
   bool IsCrxVerificationFailedError() const;
+  bool IsCrxExpectationsFailedError() const;
 
  private:
   CrxInstallErrorType type_;

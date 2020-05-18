@@ -845,7 +845,9 @@ bool InputMethodManagerImpl::StateImpl::InputMethodIsActivated(
 }
 
 void InputMethodManagerImpl::StateImpl::EnableInputView() {
-  input_view_url = current_input_method.input_view_url();
+  if (!input_view_url_overridden) {
+    input_view_url = current_input_method.input_view_url();
+  }
 }
 
 void InputMethodManagerImpl::StateImpl::DisableInputView() {
@@ -854,6 +856,16 @@ void InputMethodManagerImpl::StateImpl::DisableInputView() {
 
 const GURL& InputMethodManagerImpl::StateImpl::GetInputViewUrl() const {
   return input_view_url;
+}
+
+void InputMethodManagerImpl::StateImpl::OverrideInputViewUrl(const GURL& url) {
+  input_view_url = url;
+  input_view_url_overridden = true;
+}
+
+void InputMethodManagerImpl::StateImpl::ResetInputViewUrl() {
+  input_view_url = current_input_method.input_view_url();
+  input_view_url_overridden = false;
 }
 
 void InputMethodManagerImpl::StateImpl::ConnectMojoManager(
@@ -1334,7 +1346,7 @@ void InputMethodManagerImpl::OverrideKeyboardKeyset(
   if (keyset == chromeos::input_method::ImeKeyset::kNone) {
     // Resets the url as the input method default url and notify the hash
     // changed to VK.
-    state_->input_view_url = state_->current_input_method.input_view_url();
+    state_->ResetInputViewUrl();
     ReloadKeyboard();
     return;
   }
@@ -1378,8 +1390,7 @@ void InputMethodManagerImpl::OverrideKeyboardKeyset(
 
   GURL::Replacements replacements;
   replacements.SetRefStr(overridden_ref);
-  state_->input_view_url = url.ReplaceComponents(replacements);
-
+  state_->OverrideInputViewUrl(url.ReplaceComponents(replacements));
   ReloadKeyboard();
 }
 

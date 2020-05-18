@@ -1111,24 +1111,6 @@ TEST(URLURLRequestContextConfigTest, TurningOffQuic) {
   EXPECT_EQ(false, params->enable_quic);
 }
 
-TEST(URLURLRequestContextConfigTest, DefaultEnableQuic) {
-  base::test::TaskEnvironment task_environment_(
-      base::test::TaskEnvironment::MainThreadType::IO);
-
-  URLRequestContextConfigBuilder config_builder;
-  std::unique_ptr<URLRequestContextConfig> config = config_builder.Build();
-  net::URLRequestContextBuilder builder;
-  config->ConfigureURLRequestContextBuilder(&builder);
-  // Set a ProxyConfigService to avoid DCHECK failure when building.
-  builder.set_proxy_config_service(
-      std::make_unique<net::ProxyConfigServiceFixed>(
-          net::ProxyConfigWithAnnotation::CreateDirect()));
-  std::unique_ptr<net::URLRequestContext> context(builder.Build());
-  const net::HttpNetworkSession::Params* params =
-      context->GetNetworkSessionParams();
-  EXPECT_EQ(true, params->enable_quic);
-}
-
 // See stale_host_resolver_unittest.cc for test of StaleDNS options.
 
 }  // namespace cronet

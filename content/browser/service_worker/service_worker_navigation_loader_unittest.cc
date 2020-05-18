@@ -491,6 +491,7 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
     request->mode = network::mojom::RequestMode::kNavigate;
     request->credentials_mode = network::mojom::CredentialsMode::kInclude;
     request->redirect_mode = network::mojom::RedirectMode::kManual;
+    request->destination = network::mojom::RequestDestination::kDocument;
     return request;
   }
 

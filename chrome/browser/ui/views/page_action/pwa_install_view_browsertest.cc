@@ -281,7 +281,8 @@ IN_PROC_BROWSER_TEST_P(PwaInstallViewBrowserTest,
 
   EXPECT_EQ(
       result.app_banner_manager->GetInstallableWebAppCheckResultForTesting(),
-      banners::AppBannerManager::InstallableWebAppCheckResult::kNo);
+      banners::AppBannerManager::InstallableWebAppCheckResult::
+          kNoAlreadyInstalled);
   EXPECT_FALSE(pwa_install_view_->GetVisible());
 }
 
@@ -304,7 +305,8 @@ IN_PROC_BROWSER_TEST_P(PwaInstallViewBrowserTest,
   // The nested PWA should now not be installable.
   EXPECT_EQ(
       result.app_banner_manager->GetInstallableWebAppCheckResultForTesting(),
-      banners::AppBannerManager::InstallableWebAppCheckResult::kNo);
+      banners::AppBannerManager::InstallableWebAppCheckResult::
+          kNoAlreadyInstalled);
   EXPECT_FALSE(pwa_install_view_->GetVisible());
 }
 

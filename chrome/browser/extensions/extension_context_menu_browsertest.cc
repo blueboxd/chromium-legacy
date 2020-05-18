@@ -904,7 +904,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionContextMenuLazyTest,
                                                  false);
 
   // Create an incognito profile.
-  ASSERT_TRUE(browser()->profile()->GetOffTheRecordProfile());
+  Profile* incognito = browser()->profile()->GetPrimaryOTRProfile();
+  ASSERT_TRUE(incognito);
   ASSERT_TRUE(LoadContextMenuExtensionWithIncognitoFlags("incognito"));
 
   // Wait for the extension's processes to tell us they've created an item.
@@ -912,7 +913,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionContextMenuLazyTest,
   ASSERT_TRUE(created_incognito.WaitUntilSatisfied());
   ASSERT_EQ(2u, GetItems().size());
 
-  browser()->profile()->DestroyOffTheRecordProfile();
+  browser()->profile()->DestroyOffTheRecordProfile(incognito);
   ASSERT_EQ(1u, GetItems().size());
 }
 

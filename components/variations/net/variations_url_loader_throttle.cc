@@ -21,7 +21,7 @@ VariationsURLLoaderThrottle::~VariationsURLLoaderThrottle() = default;
 void VariationsURLLoaderThrottle::AppendThrottleIfNeeded(
     const variations::VariationsClient* variations_client,
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>>* throttles) {
-  if (!variations_client || variations_client->IsIncognito())
+  if (!variations_client || variations_client->IsOffTheRecord())
     return;
 
   throttles->push_back(std::make_unique<VariationsURLLoaderThrottle>(

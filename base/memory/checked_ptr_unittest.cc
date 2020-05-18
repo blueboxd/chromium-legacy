@@ -397,32 +397,49 @@ TEST(CheckedPtr, StdSwap) {
   EXPECT_EQ(g_checked_ptr_swap_cnt, 0);
 }
 
-TEST(CheckedPtr, AdvanceIntArray) {
-  // operator++
+TEST(CheckedPtr, PostIncrementOperator) {
+  int foo[] = {42, 43, 44, 45};
+  CheckedPtr<int> ptr = foo;
+  for (int i = 0; i < 4; ++i) {
+    ASSERT_EQ(*ptr++, 42 + i);
+  }
+}
+
+TEST(CheckedPtr, PostDecrementOperator) {
+  int foo[] = {42, 43, 44, 45};
+  CheckedPtr<int> ptr = &foo[3];
+  for (int i = 3; i >= 0; --i) {
+    ASSERT_EQ(*ptr--, 42 + i);
+  }
+}
+
+TEST(CheckedPtr, PreIncrementOperator) {
   int foo[] = {42, 43, 44, 45};
   CheckedPtr<int> ptr = foo;
   for (int i = 0; i < 4; ++i, ++ptr) {
     ASSERT_EQ(*ptr, 42 + i);
   }
-  ptr = &foo[1];
-  for (int i = 1; i < 4; ++i, ++ptr) {
-    ASSERT_EQ(*ptr, 42 + i);
-  }
+}
 
-  // operator--
-  ptr = &foo[3];
+TEST(CheckedPtr, PreDecrementOperator) {
+  int foo[] = {42, 43, 44, 45};
+  CheckedPtr<int> ptr = &foo[3];
   for (int i = 3; i >= 0; --i, --ptr) {
     ASSERT_EQ(*ptr, 42 + i);
   }
+}
 
-  // operator+=
-  ptr = foo;
+TEST(CheckedPtr, PlusEqualsOperator) {
+  int foo[] = {42, 43, 44, 45};
+  CheckedPtr<int> ptr = foo;
   for (int i = 0; i < 4; i += 2, ptr += 2) {
     ASSERT_EQ(*ptr, 42 + i);
   }
+}
 
-  // operator-=
-  ptr = &foo[3];
+TEST(CheckedPtr, PlusMinusOperator) {
+  int foo[] = {42, 43, 44, 45};
+  CheckedPtr<int> ptr = &foo[3];
   for (int i = 3; i >= 0; i -= 2, ptr -= 2) {
     ASSERT_EQ(*ptr, 42 + i);
   }

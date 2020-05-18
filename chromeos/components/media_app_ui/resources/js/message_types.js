@@ -47,11 +47,17 @@ let DeleteFileMessage;
 let DeleteFileResponse;
 
 /**
+ * Representation of a file passed in on the LoadFilesMessage.
+ * @typedef {{token: number, file: ?File, name: string, error: string}}
+ */
+let FileContext;
+
+/**
  * Message sent by the privileged context to the unprivileged context indicating
  * the files available to open.
  * @typedef {{
  *    writableFileIndex: number,
- *    files: !Array<{token: number, file: ?File, name: string, error: string}>
+ *    files: !Array<!FileContext>
  * }}
  */
 let LoadFilesMessage;

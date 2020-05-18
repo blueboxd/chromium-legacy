@@ -620,6 +620,7 @@ class ListBoxSelectType final : public SelectType {
   void DidBlur() override;
   void DidSetSuggestedOption(HTMLOptionElement* option) override;
   void SaveLastSelection() override;
+  HTMLOptionElement* SpatialNavigationFocusedOption() override;
   void ScrollToSelection() override;
   void ScrollToOption(HTMLOptionElement* option) override;
   void SelectAll() override;
@@ -947,6 +948,14 @@ void ListBoxSelectType::UpdateMultiSelectFocus() {
   ScrollToSelection();
 }
 
+HTMLOptionElement* ListBoxSelectType::SpatialNavigationFocusedOption() {
+  if (!IsSpatialNavigationEnabled(select_->GetDocument().GetFrame()))
+    return nullptr;
+  if (HTMLOptionElement* option = select_->ActiveSelectionEnd())
+    return option;
+  return FirstSelectableOption();
+}
+
 void ListBoxSelectType::ScrollToSelection() {
   if (!select_->IsFinishedParsingChildren())
     return;
@@ -1232,6 +1241,10 @@ const ComputedStyle* SelectType::OptionStyle() const {
 }
 
 void SelectType::MaximumOptionWidthMightBeChanged() const {}
+
+HTMLOptionElement* SelectType::SpatialNavigationFocusedOption() {
+  return nullptr;
+}
 
 void SelectType::ScrollToSelection() {}
 

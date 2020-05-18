@@ -118,6 +118,7 @@
     'app_service': {
       'filepath': 'chrome/browser/apps/app_service/'\
                   '|chrome/browser/ui/app_list/app_service/'\
+                  '|chrome/browser/ui/ash/launcher/app_service/'\
                   '|chrome/services/app_service/'\
                   '|components/services/app_service/',
     },
@@ -2088,7 +2089,8 @@
     'android_webview_network_service': ['timvolodine@chromium.org'],
     'animation_worklet': ['yigu@chromium.org',
                           'majidvp@chromium.org'],
-    'app_service': ['dominickn+watch-app_service@chromium.org'],
+    'app_service': ['dominickn+watch-app_service@chromium.org',
+                    'nancylingwang@chromium.org'],
     'app_shortcuts': ['dominickn+watch-app_shortcuts@chromium.org',
                       'loyso+watch@chromium.org',
                       'mgiuca+watch@chromium.org',

@@ -323,10 +323,6 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("offlineLogin", IDS_OFFLINE_LOGIN_HTML);
   builder->Add("ownerUserPattern", IDS_LOGIN_POD_OWNER_USER);
   builder->Add("removeUser", IDS_LOGIN_POD_REMOVE_USER);
-  builder->Add("errorTpmFailureTitle", IDS_LOGIN_ERROR_TPM_FAILURE_TITLE);
-  builder->Add("errorTpmFailureReboot", IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT);
-  builder->Add("errorTpmFailureRebootButton",
-               IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT_BUTTON);
 
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
@@ -929,17 +925,6 @@ void SigninScreenHandler::ShowError(int login_attempts,
                                     HelpAppLauncher::HelpTopic help_topic_id) {
   core_oobe_view_->ShowSignInError(login_attempts, error_text, help_link_text,
                                    help_topic_id);
-}
-
-void SigninScreenHandler::ShowErrorScreen(LoginDisplay::SigninError error_id) {
-  switch (error_id) {
-    case LoginDisplay::TPM_ERROR:
-      core_oobe_view_->ShowTpmError();
-      break;
-    default:
-      NOTREACHED() << "Unknown sign in error";
-      break;
-  }
 }
 
 void SigninScreenHandler::ShowSigninUI(const std::string& email) {

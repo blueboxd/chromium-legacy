@@ -65,6 +65,8 @@ constexpr const char kArcVmPerBoardFeaturesJobName[] =
 constexpr const char kArcVmBootNotificationServerJobName[] =
     "arcvm_2dboot_2dnotification_2dserver";
 
+constexpr const char kFactoryImagePath[] =
+    "/run/arcvm/host_generated/factory.img";
 constexpr const char kCrosSystemPath[] = "/usr/bin/crossystem";
 constexpr const char kArcVmBootNotificationServerSocketPath[] =
     "/run/arcvm_boot_notification_server/host.socket";
@@ -239,10 +241,9 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   disk_image->set_writable(false);
   disk_image->set_do_mount(true);
 
-  // Add /vendor as /dev/vdc.
-  // TODO(yusukes): Remove /dev/vdc once Android side stops using it.
+  // Add /factory as /dev/vdc.
   disk_image = request.add_disks();
-  disk_image->set_path(file_system_status.vendor_image_path().value());
+  disk_image->set_path(kFactoryImagePath);
   disk_image->set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
   disk_image->set_writable(false);
   disk_image->set_do_mount(true);

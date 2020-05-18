@@ -150,13 +150,6 @@ void LoginDisplayWebUI::ShowError(int error_msg_id,
                             help_topic_id);
 }
 
-void LoginDisplayWebUI::ShowErrorScreen(LoginDisplay::SigninError error_id) {
-  VLOG(1) << "Show error screen, error_id: " << error_id;
-  if (!webui_handler_)
-    return;
-  webui_handler_->ShowErrorScreen(error_id);
-}
-
 void LoginDisplayWebUI::ShowPasswordChangedDialog(bool show_password_error,
                                                   const std::string& email) {
   if (webui_handler_)

@@ -1,6 +1,7 @@
 include_rules = [
   "+chrome/android/features/autofill_assistant/test_support_jni_headers",
   "+components/autofill",
+  "+components/google/core/common",
   "+components/password_manager/core/browser",
   "+components/version_info",
   "+content/public/browser",

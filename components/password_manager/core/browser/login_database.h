@@ -236,7 +236,7 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   base::StringPiece GetMetricsSuffixForStore() const;
 
   void ReportNumberOfAccountsMetrics(bool custom_passphrase_sync_enabled);
-  void RecordTimesPasswordUsedMetrics(bool custom_passphrase_sync_enabled);
+  void ReportTimesPasswordUsedMetrics(bool custom_passphrase_sync_enabled);
   void ReportSyncingAccountStateMetrics(const std::string& sync_username);
   void ReportEmptyUsernamesMetrics();
   void ReportLoginsWithSchemesMetrics();

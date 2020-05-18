@@ -131,6 +131,7 @@ class WindowedAppShimLaunchObserver : public apps::AppShimManager {
       run_loop_->Quit();
   }
   void OnShimFocus(AppShimHost* host) override {}
+  void OnShimReopen(AppShimHost* host) override {}
   void OnShimOpenedFiles(AppShimHost* host,
                          const std::vector<base::FilePath>& files) override {}
   void OnShimSelectedProfile(AppShimHost* host,

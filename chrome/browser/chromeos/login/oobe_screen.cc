@@ -43,7 +43,6 @@ OobeScreenId StaticOobeScreenId::AsId() const {
 
 // static
 constexpr StaticOobeScreenId OobeScreen::SCREEN_ACCOUNT_PICKER;
-constexpr StaticOobeScreenId OobeScreen::SCREEN_TPM_ERROR;
 constexpr StaticOobeScreenId OobeScreen::SCREEN_PASSWORD_CHANGED;
 constexpr StaticOobeScreenId
     OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW_DEPRECATED;

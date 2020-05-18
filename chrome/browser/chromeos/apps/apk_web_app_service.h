@@ -47,10 +47,13 @@ class ApkWebAppService : public KeyedService,
 
   void SetArcAppListPrefsForTesting(ArcAppListPrefs* prefs);
 
-  bool IsWebOnlyTwa(const web_app::AppId& web_app_id);
+  bool IsWebOnlyTwa(const web_app::AppId& app_id);
+
+  base::Optional<std::string> GetPackageNameForWebApp(
+      const web_app::AppId& app_id);
 
   base::Optional<std::string> GetCertificateSha256Fingerprint(
-      const web_app::AppId& web_app_id);
+      const web_app::AppId& app_id);
 
   using WebAppCallbackForTesting =
       base::OnceCallback<void(const std::string& package_name,

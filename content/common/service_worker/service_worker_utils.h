@@ -28,6 +28,9 @@ class ServiceWorkerUtils {
  public:
   static bool IsMainResourceType(blink::mojom::ResourceType type);
 
+  static bool IsMainRequestDestination(
+      network::mojom::RequestDestination destination);
+
   // Returns true if |scope| matches |url|.
   CONTENT_EXPORT static bool ScopeMatches(const GURL& scope, const GURL& url);
 

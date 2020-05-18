@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
+#include <memory>
 
 #include "base/bind.h"
 #include "base/check_op.h"
@@ -163,7 +164,6 @@ PageSchedulerImpl::PageSchedulerImpl(
       this, kDefaultPageVisibility == PageVisibilityState::kVisible
                 ? PageLifecycleState::kActive
                 : PageLifecycleState::kHiddenBackgrounded));
-  main_thread_scheduler->AddPageScheduler(this);
   do_throttle_page_callback_.Reset(base::BindRepeating(
       &PageSchedulerImpl::DoThrottlePage, base::Unretained(this)));
   on_audio_silent_closure_.Reset(base::BindRepeating(
@@ -333,7 +333,10 @@ std::unique_ptr<blink::FrameScheduler> PageSchedulerImpl::CreateFrameScheduler(
     FrameScheduler::Delegate* delegate,
     blink::BlameContext* blame_context,
     FrameScheduler::FrameType frame_type) {
-  return FrameSchedulerImpl::Create(this, delegate, blame_context, frame_type);
+  auto frame_scheduler = std::make_unique<FrameSchedulerImpl>(
+      this, delegate, blame_context, frame_type);
+  RegisterFrameSchedulerImpl(frame_scheduler.get());
+  return frame_scheduler;
 }
 
 void PageSchedulerImpl::Unregister(FrameSchedulerImpl* frame_scheduler) {

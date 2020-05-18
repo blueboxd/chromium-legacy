@@ -275,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
     EXPECT_EQ(State::COMPLETE, manager->state());
   }
 
-  EXPECT_EQ(AppBannerManager::InstallableWebAppCheckResult::kNo,
+  EXPECT_EQ(AppBannerManager::InstallableWebAppCheckResult::kNoAlreadyInstalled,
             manager->GetInstallableWebAppCheckResultForTesting());
   EXPECT_FALSE(manager->IsPromptAvailableForTesting());
 }

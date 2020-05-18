@@ -43,7 +43,7 @@ EnableAdbSideloadingScreen::EnableAdbSideloadingScreen(
     EnableAdbSideloadingScreenView* view,
     const base::RepeatingClosure& exit_callback)
     : BaseScreen(EnableAdbSideloadingScreenView::kScreenId,
-                 OobeScreenPriority::SCREEN_ADB_SIDELOADING),
+                 OobeScreenPriority::SCREEN_DEVICE_DEVELOPER_MODIFICATION),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

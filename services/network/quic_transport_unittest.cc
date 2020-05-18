@@ -69,7 +69,8 @@ class TestHandshakeClient final : public mojom::QuicTransportHandshakeClient {
     std::move(callback_).Run();
   }
 
-  void OnHandshakeFailed(mojom::QuicTransportErrorPtr error) override {
+  void OnHandshakeFailed(
+      const base::Optional<net::QuicTransportError>& error) override {
     has_seen_handshake_failure_ = true;
     receiver_.reset();
     std::move(callback_).Run();

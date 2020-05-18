@@ -76,6 +76,21 @@ mojom("mojom_ip_address") {
           [ "//services/network/public/cpp/address_list_mojom_traits.h" ]
       traits_public_deps = [ "//net" ]
     },
+    {
+      types = [
+        {
+          mojom = "network.mojom.QuicTransportError"
+          cpp = "::net::QuicTransportError"
+        },
+      ]
+      traits_headers = [
+        "//services/network/public/cpp/quic_transport_error_mojom_traits.h",
+      ]
+      traits_public_deps = [
+        "//net",
+        "//services/network/public/cpp:cpp_base",
+      ]
+    },
   ]
   cpp_typemaps += shared_cpp_typemaps
 

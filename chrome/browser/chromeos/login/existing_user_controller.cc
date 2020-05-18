@@ -75,6 +75,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
+#include "chrome/browser/ui/webui/chromeos/login/tpm_error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
 #include "chrome/common/channel_info.h"
@@ -970,7 +971,7 @@ void ExistingUserController::ShowEncryptionMigrationScreen(
 
 void ExistingUserController::ShowTPMError() {
   GetLoginDisplay()->SetUIEnabled(false);
-  GetLoginDisplay()->ShowErrorScreen(LoginDisplay::TPM_ERROR);
+  GetLoginDisplayHost()->StartWizard(TpmErrorView::kScreenId);
 }
 
 void ExistingUserController::ShowPasswordChangedDialog() {

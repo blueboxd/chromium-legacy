@@ -32,8 +32,7 @@ blink::mojom::FetchAPIRequestPtr TypeConverter<
                           input.referrer_policy));
   output->mode = input.mode;
   output->is_main_resource_load =
-      content::ServiceWorkerUtils::IsMainResourceType(
-          static_cast<blink::mojom::ResourceType>(input.resource_type));
+      content::ServiceWorkerUtils::IsMainRequestDestination(input.destination);
   output->credentials_mode = input.credentials_mode;
   output->cache_mode =
       content::ServiceWorkerUtils::GetCacheModeFromLoadFlags(input.load_flags);

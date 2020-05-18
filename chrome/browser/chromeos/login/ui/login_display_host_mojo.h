@@ -56,9 +56,6 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // signin but whitelist check fails.
   void ShowWhitelistCheckFailedError();
 
-  // Displays detailed error screen for error with ID |error_id|.
-  void ShowErrorScreen(LoginDisplay::SigninError error_id);
-
   // Shows signin UI with specified email.
   void ShowSigninUI(const std::string& email);
 

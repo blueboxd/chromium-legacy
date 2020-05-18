@@ -45,8 +45,8 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.share.LensUtils;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.ShareHelper;
-import org.chromium.chrome.browser.share.ShareImageFileUtils;
-import org.chromium.chrome.browser.share.ShareParams;
+import org.chromium.components.browser_ui.share.ShareImageFileUtils;
+import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.feature_engagement.FeatureConstants;
@@ -652,10 +652,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             recordContextMenuSelection(params, ContextMenuUma.Action.SHARE_LINK);
             ShareParams linkShareParams =
                     new ShareParams.Builder(getWindow(), params.getUrl(), params.getUrl())
-                            .setShareDirectly(false)
-                            .setSaveLastUsed(true)
                             .build();
-            mShareDelegateSupplier.get().share(linkShareParams);
+            mShareDelegateSupplier.get().share(
+                    linkShareParams, /* shareDirectly */ false, /* saveLastUsed */ true);
         } else if (itemId == R.id.contextmenu_search_with_google_lens) {
             recordContextMenuSelection(params, ContextMenuUma.Action.SEARCH_WITH_GOOGLE_LENS);
             searchWithGoogleLens(params, renderFrameHost, mDelegate.isIncognito());

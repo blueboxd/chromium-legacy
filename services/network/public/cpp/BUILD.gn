@@ -203,6 +203,8 @@ jumbo_component("cpp_base") {
     "proxy_config_mojom_traits.h",
     "proxy_config_with_annotation_mojom_traits.cc",
     "proxy_config_with_annotation_mojom_traits.h",
+    "quic_transport_error_mojom_traits.cc",
+    "quic_transport_error_mojom_traits.h",
     "resource_request.cc",
     "resource_request.h",
     "resource_request_body.cc",

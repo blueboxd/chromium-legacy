@@ -13,7 +13,7 @@ EnableDebuggingScreen::EnableDebuggingScreen(
     EnableDebuggingScreenView* view,
     const base::RepeatingClosure& exit_callback)
     : BaseScreen(EnableDebuggingScreenView::kScreenId,
-                 OobeScreenPriority::SCREEN_ENABLE_DEBUGGING),
+                 OobeScreenPriority::SCREEN_DEVICE_DEVELOPER_MODIFICATION),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

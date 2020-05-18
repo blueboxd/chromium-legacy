@@ -48,3 +48,4 @@
 // <include src="enterprise_enrollment.js">
 // <include src="security_token_pin.js">
 // <include src="gesture_navigation.js">
+// <include src="screen_tpm_error.js">

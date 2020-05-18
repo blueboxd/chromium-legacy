@@ -27,13 +27,6 @@ class UserContext;
 // An abstract class that defines login UI implementation.
 class LoginDisplay {
  public:
-  // Sign in error IDs that require detailed error screen and not just
-  // a simple error bubble.
-  enum SigninError {
-    // Shown in case of critical TPM error.
-    TPM_ERROR,
-  };
-
   class Delegate {
    public:
     // Sign in using |username| and |password| specified.
@@ -105,9 +98,6 @@ class LoginDisplay {
   virtual void ShowError(int error_msg_id,
                          int login_attempts,
                          HelpAppLauncher::HelpTopic help_topic_id) = 0;
-
-  // Displays detailed error screen for error with ID |error_id|.
-  virtual void ShowErrorScreen(LoginDisplay::SigninError error_id) = 0;
 
   // Show password changed dialog. If |show_password_error| is not null
   // user already tried to enter old password but it turned out to be incorrect.

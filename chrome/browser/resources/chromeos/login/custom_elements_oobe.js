@@ -62,3 +62,4 @@
 // <include src="packaged_license_screen.js">
 // <include src="gesture_navigation.js">
 // <include src="checking_downloading_update.js">
+// <include src="screen_tpm_error.js">

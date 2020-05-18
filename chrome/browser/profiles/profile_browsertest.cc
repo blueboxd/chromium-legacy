@@ -693,8 +693,10 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, Notifications) {
         chrome::NOTIFICATION_PROFILE_DESTROYED,
         content::Source<Profile>(otr_profile));
 
-    profile->DestroyOffTheRecordProfile();
-    profile_destroyed_observer.Wait();
+    if (profile->HasPrimaryOTRProfile()) {
+      profile->DestroyOffTheRecordProfile(profile->GetPrimaryOTRProfile());
+      profile_destroyed_observer.Wait();
+    }
 
     EXPECT_FALSE(profile->HasOffTheRecordProfile());
   }

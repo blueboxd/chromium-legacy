@@ -941,6 +941,8 @@ component("net") {
       "quic/quic_stream_factory.h",
       "quic/quic_transport_client.cc",
       "quic/quic_transport_client.h",
+      "quic/quic_transport_error.cc",
+      "quic/quic_transport_error.h",
       "quic/quic_utils_chromium.cc",
       "quic/quic_utils_chromium.h",
       "quiche/common/platform/impl/quiche_arraysize_impl.h",

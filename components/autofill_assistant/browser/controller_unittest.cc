@@ -1587,6 +1587,77 @@ TEST_F(ControllerTest, UnexpectedNavigationDuringPromptAction) {
                                    AutofillAssistantState::STOPPED));
 }
 
+TEST_F(ControllerTest, NavigationToGooglePropertyDestroysUI) {
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "autostart")
+      ->mutable_presentation()
+      ->set_autostart(true);
+  SetNextScriptResponse(script_response);
+
+  ActionsResponseProto autostart_script;
+  autostart_script.add_actions()
+      ->mutable_prompt()
+      ->add_choices()
+      ->mutable_chip()
+      ->set_text("continue");
+  SetupActionsForScript("autostart", autostart_script);
+
+  Start();
+  EXPECT_EQ(AutofillAssistantState::PROMPT, controller_->GetState());
+
+  EXPECT_CALL(mock_client_, Shutdown(Metrics::DropOutReason::NAVIGATION));
+  EXPECT_CALL(mock_client_, DestroyUI);
+  GURL google("https://google.com/search");
+  SetLastCommittedUrl(google);
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                             google);
+
+  EXPECT_EQ(AutofillAssistantState::STOPPED, controller_->GetState());
+
+  // Full history of state transitions.
+  EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::STARTING,
+                                   AutofillAssistantState::RUNNING,
+                                   AutofillAssistantState::PROMPT,
+                                   AutofillAssistantState::STOPPED));
+}
+
+TEST_F(ControllerTest, DomainChangeToGooglePropertyDuringBrowseDestroysUI) {
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "runnable")
+      ->mutable_presentation()
+      ->set_autostart(true);
+  ActionsResponseProto runnable_script;
+  auto* prompt = runnable_script.add_actions()->mutable_prompt();
+  prompt->set_browse_mode(true);
+  prompt->add_choices()->mutable_chip()->set_text("continue");
+  SetupActionsForScript("runnable", runnable_script);
+  std::string response_str;
+  script_response.SerializeToString(&response_str);
+  EXPECT_CALL(*mock_service_,
+              OnGetScriptsForUrl(GURL("http://a.example.com/"), _, _))
+      .WillOnce(RunOnceCallback<2>(true, response_str));
+
+  Start("http://a.example.com/");
+  EXPECT_EQ(AutofillAssistantState::BROWSE, controller_->GetState());
+
+  EXPECT_CALL(
+      mock_client_,
+      Shutdown(Metrics::DropOutReason::DOMAIN_CHANGE_DURING_BROWSE_MODE));
+  EXPECT_CALL(mock_client_, DestroyUI);
+  GURL google("https://google.com/search");
+  SetLastCommittedUrl(google);
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                             google);
+
+  EXPECT_EQ(AutofillAssistantState::STOPPED, controller_->GetState());
+
+  // Full history of state transitions.
+  EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::STARTING,
+                                   AutofillAssistantState::RUNNING,
+                                   AutofillAssistantState::BROWSE,
+                                   AutofillAssistantState::STOPPED));
+}
+
 TEST_F(ControllerTest, UserDataFormEmpty) {
   auto options = std::make_unique<MockCollectUserDataOptions>();
   auto user_data = std::make_unique<UserData>();

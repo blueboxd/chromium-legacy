@@ -320,10 +320,6 @@ class TestingProfile : public Profile {
       const OTRProfileID& otr_profile_id = OTRProfileID::PrimaryID()) override;
   std::vector<Profile*> GetAllOffTheRecordProfiles() override;
   void DestroyOffTheRecordProfile(Profile* otr_profile) override;
-  // TODO(https://crbug.com/1033903): Remove this function when all the use
-  // cases are migrated to above version. The parameter-less version destroys
-  // the primary off the record profile.
-  void DestroyOffTheRecordProfile();
   // TODO(https://crbug.com/1033903): Remove the default value.
   bool HasOffTheRecordProfile(
       const OTRProfileID& otr_profile_id = OTRProfileID::PrimaryID()) override;

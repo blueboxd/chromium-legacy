@@ -252,6 +252,13 @@ class SingleClientWalletSyncTest : public SyncTest {
     }
   }
 
+  void WaitForCreditCardCloudTokenData(size_t expected_count,
+                                       autofill::PersonalDataManager* pdm) {
+    while (pdm->GetCreditCardCloudTokenData().size() != expected_count) {
+      WaitForOnPersonalDataChanged(pdm);
+    }
+  }
+
   bool TriggerGetUpdatesAndWait() {
     const base::Time now = base::Time::Now();
     // Trigger a sync and wait for the new data to arrive.
@@ -381,17 +388,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletWithAccountStorageSyncTest,
 // Wallet data should get cleared from the database when the user signs out and
 // different data should get downstreamed when the user signs in with a
 // different account.
-//
-// Flaky on Windows ASAN. TODO(crbug.com/1083061): Enable this test.
-#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
-#define MAYBE_ClearOnSignOutAndDownstreamOnSignIn \
-  DISABLED_ClearOnSignOutAndDownstreamOnSignIn
-#else
-#define MAYBE_ClearOnSignOutAndDownstreamOnSignIn \
-  ClearOnSignOutAndDownstreamOnSignIn
-#endif
 IN_PROC_BROWSER_TEST_F(SingleClientWalletWithAccountStorageSyncTest,
-                       MAYBE_ClearOnSignOutAndDownstreamOnSignIn) {
+                       ClearOnSignOutAndDownstreamOnSignIn) {
   ASSERT_TRUE(SetupClients());
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
@@ -408,10 +406,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletWithAccountStorageSyncTest,
   ASSERT_TRUE(AwaitQuiescence());
 
   // Make sure the data & metadata is in the DB.
-  ASSERT_EQ(1uL, pdm->GetServerProfiles().size());
-  ASSERT_EQ(1uL, pdm->GetCreditCards().size());
-  ASSERT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
-  ASSERT_EQ(1uL, pdm->GetCreditCardCloudTokenData().size());
+  WaitForNumberOfCards(1, pdm);
+  WaitForNumberOfServerProfiles(1, pdm);
+  WaitForPaymentsCustomerData(kDefaultCustomerID, pdm);
+  WaitForCreditCardCloudTokenData(1, pdm);
 
   // Signout, the data & metadata should be gone.
   GetClient(0)->SignOutPrimaryAccount();

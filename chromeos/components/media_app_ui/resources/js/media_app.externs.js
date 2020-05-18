@@ -41,6 +41,11 @@ mediaApp.AbstractFile.prototype.size;
  */
 mediaApp.AbstractFile.prototype.mimeType;
 /**
+ * An error associated with this file.
+ * @type {string|undefined}
+ */
+mediaApp.AbstractFile.prototype.error;
+/**
  * A function that will overwrite the original file with the provided Blob.
  * Returns a promise that resolves when the write operations are complete. Or
  * rejects. Upon success, `size` will reflect the new file size.

@@ -967,11 +967,6 @@ const char kWebXrRuntimeOpenVr[] = "openvr";
 const char kWebXrRuntimeOpenXr[] = "openxr";
 const char kWebXrRuntimeWMR[] = "windows-mixed-reality";
 
-// This switch allows the Web Components v0 APIs to be re-enabled temporarily
-// from M80 through M84.
-// TODO(937746): Remove this after M84.
-const char kWebComponentsV0Enabled[] = "web-components-v0-enabled";
-
 // This switch allows the FormControlsRefresh feature to be disabled temporarily
 // from M81 through M84.
 // TODO(1034611): Remove this after M84.

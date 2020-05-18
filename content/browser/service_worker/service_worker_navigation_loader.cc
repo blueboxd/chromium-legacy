@@ -119,8 +119,8 @@ void ServiceWorkerNavigationLoader::StartRequest(
                          "ServiceWorkerNavigationLoader::StartRequest", this,
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                          "url", resource_request.url.spec());
-  DCHECK(ServiceWorkerUtils::IsMainResourceType(
-      static_cast<blink::mojom::ResourceType>(resource_request.resource_type)));
+  DCHECK(ServiceWorkerUtils::IsMainRequestDestination(
+      resource_request.destination));
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   resource_request_ = resource_request;

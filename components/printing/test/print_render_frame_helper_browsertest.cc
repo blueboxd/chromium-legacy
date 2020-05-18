@@ -177,6 +177,8 @@ class FakePrintPreviewUI : public mojom::PrintPreviewUI {
   // mojom::PrintPreviewUI:
   void SetOptionsFromDocument(const mojom::OptionsFromDocumentParamsPtr params,
                               int32_t request_id) override {}
+  void DidPrepareDocumentForPreview(int32_t document_cookie,
+                                    int32_t request_id) override {}
   void PrintPreviewFailed(int32_t document_cookie,
                           int32_t request_id) override {
     preview_failed_ = true;

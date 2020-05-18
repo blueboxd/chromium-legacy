@@ -149,6 +149,10 @@ void AppShimHost::FocusApp() {
   client_->OnShimFocus(this);
 }
 
+void AppShimHost::ReopenApp() {
+  client_->OnShimReopen(this);
+}
+
 void AppShimHost::FilesOpened(const std::vector<base::FilePath>& files) {
   client_->OnShimOpenedFiles(this, files);
 }

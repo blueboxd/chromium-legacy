@@ -69,6 +69,7 @@ class FrameSchedulerImplTest;
 namespace main_thread_scheduler_impl_unittest {
 class MainThreadSchedulerImplForTest;
 class MainThreadSchedulerImplTest;
+class MockPageSchedulerImpl;
 FORWARD_DECLARE_TEST(MainThreadSchedulerImplTest, ShouldIgnoreTaskForUkm);
 FORWARD_DECLARE_TEST(MainThreadSchedulerImplTest, Tracing);
 }  // namespace main_thread_scheduler_impl_unittest
@@ -313,7 +314,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void DecrementVirtualTimePauseCount();
   void MaybeAdvanceVirtualTime(base::TimeTicks new_virtual_time);
 
-  void AddPageScheduler(PageSchedulerImpl*);
   void RemovePageScheduler(PageSchedulerImpl*);
 
   // Called by an associated PageScheduler when frozen or resumed.
@@ -454,6 +454,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   friend class frame_scheduler_impl_unittest::FrameSchedulerImplTest;
   friend class main_thread_scheduler_impl_unittest::
       MainThreadSchedulerImplForTest;
+  friend class main_thread_scheduler_impl_unittest::MockPageSchedulerImpl;
   friend class main_thread_scheduler_impl_unittest::MainThreadSchedulerImplTest;
 
   friend class CompositorPriorityExperiments;
@@ -472,6 +473,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   };
 
   static const char* TimeDomainTypeToString(TimeDomainType domain_type);
+
+  void AddPageScheduler(PageSchedulerImpl*);
 
   bool ContainsLocalMainFrame();
 

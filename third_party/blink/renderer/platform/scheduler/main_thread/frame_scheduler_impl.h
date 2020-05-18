@@ -73,11 +73,10 @@ class PageSchedulerImplTest;
 class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
                                            FrameTaskQueueController::Delegate {
  public:
-  static std::unique_ptr<FrameSchedulerImpl> Create(
-      PageSchedulerImpl* page_scheduler,
-      FrameScheduler::Delegate* delegate,
-      base::trace_event::BlameContext* blame_context,
-      FrameScheduler::FrameType frame_type);
+  FrameSchedulerImpl(PageSchedulerImpl* page_scheduler,
+                     FrameScheduler::Delegate* delegate,
+                     base::trace_event::BlameContext* blame_context,
+                     FrameScheduler::FrameType frame_type);
   ~FrameSchedulerImpl() override;
 
   // FrameOrWorkerScheduler implementation:

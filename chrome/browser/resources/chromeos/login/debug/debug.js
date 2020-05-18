@@ -182,6 +182,10 @@ cr.define('cr.ui.login.debug', function() {
       kind: ScreenKind.ERROR,
     },
     {
+      id: 'tpm-error-message',
+      kind: ScreenKind.ERROR,
+    },
+    {
       id: 'reset',
       kind: ScreenKind.OTHER,
     },

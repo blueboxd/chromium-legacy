@@ -800,10 +800,6 @@ void TestingProfile::DestroyOffTheRecordProfile(Profile* otr_profile) {
   incognito_profile_.reset();
 }
 
-void TestingProfile::DestroyOffTheRecordProfile() {
-  DestroyOffTheRecordProfile(incognito_profile_.get());
-}
-
 bool TestingProfile::HasOffTheRecordProfile(
     const OTRProfileID& otr_profile_id) {
   // TODO(https://crbug.com//1033903): Add support for non-primary OTRs.

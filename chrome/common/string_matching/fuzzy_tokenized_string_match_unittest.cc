@@ -161,7 +161,7 @@ TEST_F(FuzzyTokenizedStringMatchTest, WeightedRatio) {
     EXPECT_NEAR(
         match.WeightedRatio(TokenizedString(query), TokenizedString(text),
                             kPartialMatchPenaltyRate, false),
-        0.85, 0.01);
+        0.49, 0.01);
   }
 }
 

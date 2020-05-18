@@ -188,6 +188,7 @@ jumbo_static_library("browser") {
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//components/autofill_assistant/browser/devtools",
+    "//components/google/core/common:common",
     "//components/password_manager/core/browser:browser",
     "//components/signin/public/identity_manager",
     "//components/strings:components_strings_grit",

@@ -1202,7 +1202,7 @@ class WebRtcEventLogManagerTestIncognito
     incognito_rph_.reset();
     if (incognito_profile_) {
       DCHECK(browser_context_);
-      browser_context_->DestroyOffTheRecordProfile();
+      browser_context_->DestroyOffTheRecordProfile(incognito_profile_);
     }
   }
 

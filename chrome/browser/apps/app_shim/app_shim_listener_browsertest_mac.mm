@@ -143,6 +143,7 @@ class AppShimListenerBrowserTest : public InProcessBrowserTest,
  private:
   // chrome::mojom::AppShimHost.
   void FocusApp() override {}
+  void ReopenApp() override {}
   void FilesOpened(const std::vector<base::FilePath>& files) override {}
   void ProfileSelectedFromMenu(const base::FilePath& profile_path) override {}
 

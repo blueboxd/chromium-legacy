@@ -9,12 +9,9 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/banners/test_app_banner_manager_desktop.h"
-#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -65,6 +62,7 @@ AppId WebAppControllerBrowserTestBase::InstallPWA(const GURL& app_url) {
   web_app_info->app_url = app_url;
   web_app_info->scope = app_url.GetWithoutFilename();
   web_app_info->open_as_window = true;
+  web_app_info->title = base::ASCIIToUTF16("A Web App");
   return web_app::InstallWebApp(profile(), std::move(web_app_info));
 }
 
@@ -81,6 +79,16 @@ Browser* WebAppControllerBrowserTestBase::LaunchWebAppBrowser(
 Browser* WebAppControllerBrowserTestBase::LaunchWebAppBrowserAndWait(
     const AppId& app_id) {
   return web_app::LaunchWebAppBrowserAndWait(profile(), app_id);
+}
+
+Browser*
+WebAppControllerBrowserTestBase::LaunchWebAppBrowserAndAwaitInstallabilityCheck(
+    const AppId& app_id) {
+  Browser* browser = web_app::LaunchWebAppBrowserAndWait(profile(), app_id);
+  banners::TestAppBannerManagerDesktop::FromWebContents(
+      browser->tab_strip_model()->GetActiveWebContents())
+      ->WaitForInstallableCheck();
+  return browser;
 }
 
 Browser* WebAppControllerBrowserTestBase::LaunchBrowserForWebAppInTab(

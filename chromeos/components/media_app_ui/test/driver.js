@@ -47,6 +47,18 @@ async function runTestInGuest(testCase) {
   await guestMessagePipe.sendMessage('run-test-case', message);
 }
 
+/**
+ * Gets a concatenated list of errors on the currently loaded files. Note the
+ * currently open file is always at index 0.
+ * @return {!Promise<string>}
+ */
+async function getFileErrors() {
+  const message = {getFileErrors: true};
+  const response = /** @type {TestMessageResponseData} */ (
+      await guestMessagePipe.sendMessage('test', message));
+  return response.testQueryResult;
+}
+
 /** @implements FileSystemWritableFileStream */
 class FakeWritableFileStream {
   constructor(/** !Blob= */ data = new Blob()) {
@@ -260,6 +272,39 @@ async function loadMultipleFiles(files) {
   }
   entryIndex = 0;
   await sendFilesToGuest();
+}
+
+/**
+ * Helper to "launch" with the given handles, by populating a fake directory,
+ * then launching with the first file in the provided array as the focus file.
+ * @param {!Array<!FakeFileSystemFileHandle>} handles
+ * @return {!Promise<FakeFileSystemDirectoryHandle>}
+ */
+async function launchWithHandles(handles) {
+  const directory = new FakeFileSystemDirectoryHandle();
+  for (const handle of handles) {
+    directory.addFileHandleForTest(handle);
+  }
+  await launchWithDirectory(directory, handles[0]);
+  return directory;
+}
+
+/**
+ * Wraps a file in a FakeFileSystemFileHandle.
+ * @param {!File} file
+ * @return {!FakeFileSystemFileHandle}
+ */
+function fileToFileHandle(file) {
+  return new FakeFileSystemFileHandle(file.name, file.type, file);
+}
+
+/**
+ * Helper to invoke launchWithHandles after wrapping `files` in fake handles.
+ * @param {!Array<!File>} files
+ * @return {!Promise<FakeFileSystemDirectoryHandle>}
+ */
+async function launchWithFiles(files) {
+  return launchWithHandles(files.map(fileToFileHandle));
 }
 
 /**

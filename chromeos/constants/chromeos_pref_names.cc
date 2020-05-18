@@ -7,6 +7,10 @@
 namespace chromeos {
 namespace prefs {
 
+// Map of strings to values used for assistive input settings.
+const char kAssistiveInputFeatureSettings[] =
+    "assistive_input_feature_settings";
+
 // A dictionary pref to hold the mute setting for all the currently known
 // audio devices.
 const char kAudioDevicesMute[] = "settings.audio.devices.mute";

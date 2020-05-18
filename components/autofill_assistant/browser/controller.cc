@@ -23,6 +23,7 @@
 #include "components/autofill_assistant/browser/service_impl.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/user_data.h"
+#include "components/google/core/common/google_util.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -1661,6 +1662,15 @@ void Controller::DidFinishNavigation(
       OnScriptError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP),
                     Metrics::DropOutReason::DOMAIN_CHANGE_DURING_BROWSE_MODE);
     }
+  }
+  // When in STOPPED state, entered by an unexpected DidStartNavigation or
+  // domain change while in BROWSE state (above), and the new URL is on a
+  // Google property, destroy the UI immediately.
+  if (state_ == AutofillAssistantState::STOPPED &&
+      google_util::IsGoogleDomainUrl(
+          web_contents()->GetLastCommittedURL(), google_util::ALLOW_SUBDOMAIN,
+          google_util::DISALLOW_NON_STANDARD_PORTS)) {
+    client_->DestroyUI();
   }
 
   if (start_after_navigation_) {

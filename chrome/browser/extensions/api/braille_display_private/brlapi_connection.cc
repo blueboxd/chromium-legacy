@@ -44,7 +44,6 @@ class BrlapiConnectionImpl : public BrlapiConnection {
   bool GetDisplaySize(unsigned int* rows, unsigned int* columns) override;
   bool WriteDots(const std::vector<unsigned char>& cells) override;
   int ReadKey(brlapi_keyCode_t* keyCode) override;
-  bool GetCellSize(unsigned int* cell_size) override;
 
  private:
   bool CheckConnected();
@@ -179,23 +178,6 @@ int BrlapiConnectionImpl::ReadKey(brlapi_keyCode_t* key_code) {
     return -1;
   return libbrlapi_loader_->brlapi__readKey(
       handle_.get(), 0 /*wait*/, key_code);
-}
-
-bool BrlapiConnectionImpl::GetCellSize(unsigned int* cell_size) {
-  if (!CheckConnected()) {
-    return false;
-  }
-
-  brlapi_param_deviceCellSize_t device_cell_size;
-  ssize_t result = libbrlapi_loader_->brlapi__getParameter(
-      handle_.get(), BRLAPI_PARAM_DEVICE_CELL_SIZE, 0, BRLAPI_PARAMF_GLOBAL,
-      &device_cell_size, sizeof(device_cell_size));
-
-  if (result == -1 || result != sizeof(device_cell_size))
-    return false;
-
-  *cell_size = device_cell_size;
-  return true;
 }
 
 bool BrlapiConnectionImpl::CheckConnected() {

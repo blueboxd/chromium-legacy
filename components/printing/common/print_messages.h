@@ -387,13 +387,6 @@ IPC_MESSAGE_ROUTED2(PrintHostMsg_DidStartPreview,
                     PrintHostMsg_DidStartPreview_Params /* params */,
                     PrintHostMsg_PreviewIds /* ids */)
 
-// Notify the browser of preparing to print the document, for cases where
-// the document will be collected from the individual pages instead of being
-// provided by an extra metafile at end containing all pages.
-IPC_MESSAGE_ROUTED2(PrintHostMsg_DidPrepareDocumentForPreview,
-                    int /* document_cookie */,
-                    PrintHostMsg_PreviewIds /* ids */)
-
 // Notify the browser of the default page layout according to the currently
 // selected printer and page size.
 // |printable_area_in_points| Specifies the printable area in points.

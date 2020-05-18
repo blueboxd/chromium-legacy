@@ -27,6 +27,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.DummyUiActivity;
 
@@ -107,8 +108,8 @@ public final class ShareSheetPropertyModelBuilderTest {
         ShareSheetPropertyModelBuilder builder =
                 new ShareSheetPropertyModelBuilder(null, mPackageManager);
 
-        ArrayList<PropertyModel> propertyModels =
-                builder.selectThirdPartyApps(null, mParams, /*shareStartTime=*/0);
+        ArrayList<PropertyModel> propertyModels = builder.selectThirdPartyApps(
+                null, mParams, /*saveLastUsed=*/false, /*shareStartTime=*/0);
         Assert.assertEquals("Incorrect number of property models.", 3, propertyModels.size());
         Assert.assertEquals("First property model isn't testModel3", "testModel3",
                 propertyModels.get(0).get(ShareSheetItemViewProperties.LABEL));

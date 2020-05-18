@@ -56,6 +56,17 @@ bool ServiceWorkerUtils::IsMainResourceType(blink::mojom::ResourceType type) {
 }
 
 // static
+bool ServiceWorkerUtils::IsMainRequestDestination(
+    network::mojom::RequestDestination destination) {
+  // When PlzDedicatedWorker is enabled, a dedicated worker script is considered
+  // to be a main resource.
+  if (destination == network::mojom::RequestDestination::kWorker)
+    return base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker);
+  return blink::IsRequestDestinationFrame(destination) ||
+         destination == network::mojom::RequestDestination::kSharedWorker;
+}
+
+// static
 bool ServiceWorkerUtils::ScopeMatches(const GURL& scope, const GURL& url) {
   DCHECK(!scope.has_ref());
   return base::StartsWith(url.spec(), scope.spec(),

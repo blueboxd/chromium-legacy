@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.share.ShareDelegateImpl.ShareSheetDelegate;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.components.ui_metrics.CanonicalURLResult;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -113,8 +114,9 @@ public class ShareDelegateImplIntegrationTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ShareSheetDelegate delegate = new ShareSheetDelegate() {
                 @Override
-                void share(ShareParams params, BottomSheetController controller,
-                        ActivityTabProvider tabProvider, long shareStartTime) {
+                void share(ShareParams params, boolean shareDirectly, boolean saveLastUsed,
+                        BottomSheetController controller, ActivityTabProvider tabProvider,
+                        long shareStartTime) {
                     paramsRef.set(params);
                     helper.notifyCalled();
                 }

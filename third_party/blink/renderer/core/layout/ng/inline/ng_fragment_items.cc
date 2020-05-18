@@ -12,14 +12,6 @@
 
 namespace blink {
 
-namespace {
-
-inline bool ShouldSetFirstAndLastForNode() {
-  return RuntimeEnabledFeatures::LayoutNGFragmentTraversalEnabled();
-}
-
-}  // namespace
-
 NGFragmentItems::NGFragmentItems(NGFragmentItemsBuilder* builder)
     : text_content_(std::move(builder->text_content_)),
       first_line_text_content_(std::move(builder->first_line_text_content_)),
@@ -47,14 +39,17 @@ bool NGFragmentItems::IsSubSpan(const Span& span) const {
 
 void NGFragmentItems::FinalizeAfterLayout(
     const Vector<scoped_refptr<const NGLayoutResult>, 1>& results) {
-  HashMap<const LayoutObject*, const NGFragmentItem*> first_and_last;
+  struct LastItem {
+    const NGFragmentItem* item;
+    wtf_size_t item_index;
+  };
+  HashMap<const LayoutObject*, LastItem> last_items;
   for (const auto& result : results) {
     const auto& fragment =
         To<NGPhysicalBoxFragment>(result->PhysicalFragment());
     const NGFragmentItems* current = fragment.Items();
     if (UNLIKELY(!current))
       continue;
-    HashMap<const LayoutObject*, wtf_size_t> last_fragment_map;
     const Span items = current->Items();
     wtf_size_t index = 0;
     for (const scoped_refptr<const NGFragmentItem>& item : items) {
@@ -72,38 +67,43 @@ void NGFragmentItems::FinalizeAfterLayout(
       DCHECK(layout_object->IsInLayoutNGInlineFormattingContext()) << *item;
       item->SetDeltaToNextForSameLayoutObject(0);
 
-      if (ShouldSetFirstAndLastForNode()) {
-        bool is_first_for_node =
-            first_and_last.Set(layout_object, item.get()).is_new_entry;
-        item->SetIsFirstForNode(is_first_for_node);
-        item->SetIsLastForNode(false);
-      }
-
       // TODO(layout-dev): Make this work for multiple box fragments (block
       // fragmentation).
-      if (!fragment.IsFirstForNode())
+      if (!fragment.IsFirstForNode()) {
+        bool is_first_for_node =
+            last_items.Set(layout_object, LastItem{item.get(), index})
+                .is_new_entry;
+        item->SetIsFirstForNode(is_first_for_node);
+        item->SetIsLastForNode(false);
         continue;
+      }
 
-      auto insert_result = last_fragment_map.insert(layout_object, index);
-      if (insert_result.is_new_entry) {
+      const auto last_item_result =
+          last_items.insert(layout_object, LastItem{item.get(), index});
+
+      if (last_item_result.is_new_entry) {
+        item->SetIsFirstForNode(true);
+        item->SetIsLastForNode(false);
         DCHECK_EQ(layout_object->FirstInlineFragmentItemIndex(), 0u);
         layout_object->SetFirstInlineFragmentItemIndex(index);
         continue;
       }
-      const wtf_size_t last_index = insert_result.stored_value->value;
-      insert_result.stored_value->value = index;
+
+      item->SetIsFirstForNode(false);
+      item->SetIsLastForNode(false);
+      LastItem* last = &last_item_result.stored_value->value;
+      const wtf_size_t last_index = last->item_index;
       DCHECK_GT(last_index, 0u) << *item;
       DCHECK_LT(last_index, items.size());
       DCHECK_LT(last_index, index);
-      DCHECK_EQ(items[last_index - 1]->DeltaToNextForSameLayoutObject(), 0u);
-      items[last_index - 1]->SetDeltaToNextForSameLayoutObject(index -
-                                                               last_index);
+      DCHECK_EQ(last->item->DeltaToNextForSameLayoutObject(), 0u);
+      last->item->SetDeltaToNextForSameLayoutObject(index - last_index);
+      last->item = item.get();
+      last->item_index = index;
     }
   }
-  if (!ShouldSetFirstAndLastForNode())
-    return;
-  for (const auto& iter : first_and_last)
-    iter.value->SetIsLastForNode(true);
+  for (const auto& iter : last_items)
+    iter.value.item->SetIsLastForNode(true);
 }
 
 void NGFragmentItems::ClearAssociatedFragments(LayoutObject* container) {

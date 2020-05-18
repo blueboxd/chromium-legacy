@@ -2368,7 +2368,9 @@ MainThreadSchedulerImpl::NonWakingTaskRunner() {
 
 std::unique_ptr<PageScheduler> MainThreadSchedulerImpl::CreatePageScheduler(
     PageScheduler::Delegate* delegate) {
-  return std::make_unique<PageSchedulerImpl>(delegate, this);
+  auto page_scheduler = std::make_unique<PageSchedulerImpl>(delegate, this);
+  AddPageScheduler(page_scheduler.get());
+  return page_scheduler;
 }
 
 std::unique_ptr<ThreadScheduler::RendererPauseHandle>

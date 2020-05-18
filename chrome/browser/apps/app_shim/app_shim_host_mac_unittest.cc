@@ -178,6 +178,7 @@ class AppShimHostTest : public testing::Test,
     ++close_count_;
   }
   void OnShimFocus(AppShimHost* host) override { ++focus_count_; }
+  void OnShimReopen(AppShimHost* host) override {}
   void OnShimOpenedFiles(AppShimHost* host,
                          const std::vector<base::FilePath>& files) override {}
   void OnShimSelectedProfile(AppShimHost* host,

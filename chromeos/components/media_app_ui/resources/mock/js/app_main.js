@@ -33,7 +33,13 @@ const createImgChild = async (blobSrc, altText) => {
   const img = /** @type{!HTMLImageElement} */ (document.createElement('img'));
   img.src = blobSrc;
   img.alt = altText;
-  await img.decode();
+  try {
+    await img.decode();
+  } catch (error) {
+    // Mimic what the real app does on decode errors so we can test error
+    // handling for file access.
+    img.src = '/assets/error.png';
+  }
   return img;
 };
 

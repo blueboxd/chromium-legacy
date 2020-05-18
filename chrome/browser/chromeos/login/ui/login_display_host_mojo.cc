@@ -117,12 +117,6 @@ void LoginDisplayHostMojo::ShowWhitelistCheckFailedError() {
   ShowDialog();
 }
 
-void LoginDisplayHostMojo::ShowErrorScreen(LoginDisplay::SigninError error_id) {
-  DCHECK(GetOobeUI());
-  GetOobeUI()->signin_screen_handler()->ShowErrorScreen(error_id);
-  ShowDialog();
-}
-
 void LoginDisplayHostMojo::ShowSigninUI(const std::string& email) {
   DCHECK(GetOobeUI());
   GetOobeUI()->signin_screen_handler()->ShowSigninUI(email);

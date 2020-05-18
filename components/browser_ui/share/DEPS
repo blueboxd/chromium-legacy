@@ -1,0 +1,5 @@
+include_rules = [
+  "+components/dom_distiller/core/android",
+  "+content/public/android",
+  "+ui/android",
+]

@@ -6,11 +6,13 @@
  * Wrapper around a file handle that allows the privileged context to arbitrate
  * read and write access as well as file navigation. `token` uniquely identifies
  * the file, `file` temporarily holds the object passed over postMessage, and
- * `handle` allows it to be reopened upon navigation.
+ * `handle` allows it to be reopened upon navigation. If an error occurred on
+ * the last attempt to open `handle`, `lastError` holds the error name.
  * @typedef {{
  *     token: number,
  *     file: ?File,
  *     handle: !FileSystemFileHandle,
+ *     lastError: (string|undefined),
  * }}
  */
 let FileDescriptor;
@@ -71,31 +73,33 @@ guestMessagePipe.registerHandler(Message.OVERWRITE_FILE, async (message) => {
 
 guestMessagePipe.registerHandler(Message.DELETE_FILE, async (message) => {
   const deleteMsg = /** @type{DeleteFileMessage} */ (message);
-  assertFileAndDirectoryMutable(deleteMsg.token, 'Delete');
+  const {file, directory} =
+      assertFileAndDirectoryMutable(deleteMsg.token, 'Delete');
 
   if (!(await isCurrentHandleInCurrentDirectory())) {
     return {deleteResult: DeleteResult.FILE_MOVED};
   }
 
   // Get the name from the file reference. Handles file renames.
-  const currentFilename = (await currentlyWritableFile.handle.getFile()).name;
+  const currentFilename = (await file.handle.getFile()).name;
 
-  await currentDirectoryHandle.removeEntry(currentFilename);
+  await directory.removeEntry(currentFilename);
   return {deleteResult: DeleteResult.SUCCESS};
 });
 
 /** Handler to rename the currently focused file. */
 guestMessagePipe.registerHandler(Message.RENAME_FILE, async (message) => {
   const renameMsg = /** @type{RenameFileMessage} */ (message);
-  assertFileAndDirectoryMutable(renameMsg.token, 'Rename');
+  const {file, directory} =
+      assertFileAndDirectoryMutable(renameMsg.token, 'Rename');
 
   if (await filenameExistsInCurrentDirectory(renameMsg.newFilename)) {
     return {renameResult: RenameResult.FILE_EXISTS};
   }
 
-  const originalFile = await currentlyWritableFile.handle.getFile();
-  const renamedFileHandle = await currentDirectoryHandle.getFile(
-      renameMsg.newFilename, {create: true});
+  const originalFile = await file.handle.getFile();
+  const renamedFileHandle =
+      await directory.getFile(renameMsg.newFilename, {create: true});
   // Copy file data over to the new file.
   const writer = await renamedFileHandle.createWritable();
   // TODO(b/153021155): Use originalFile.stream().
@@ -108,12 +112,12 @@ guestMessagePipe.registerHandler(Message.RENAME_FILE, async (message) => {
   // success, we first check the `currentlyWritableFile.handle` is the same as
   // the handle for the file with that filename in the `currentDirectoryHandle`.
   if (await isCurrentHandleInCurrentDirectory()) {
-    await currentDirectoryHandle.removeEntry(originalFile.name);
+    await directory.removeEntry(originalFile.name);
   }
 
   // Reload current file so it is in an editable state, this is done before
   // removing the old file so the relaunch starts sooner.
-  await launchWithDirectory(currentDirectoryHandle, renamedFileHandle);
+  await launchWithDirectory(directory, renamedFileHandle);
 
   return {renameResult: RenameResult.SUCCESS};
 });
@@ -153,7 +157,9 @@ guestMessagePipe.registerHandler(Message.SAVE_COPY, async (message) => {
   }
 
   const {handle} = await getFileFromHandle(fileSystemHandle);
-  if (await handle.isSameEntry(currentlyWritableFile.handle)) {
+  // Note there may be no currently writable file (e.g. save from clipboard).
+  if (currentlyWritableFile &&
+      await handle.isSameEntry(currentlyWritableFile.handle)) {
     return 'attemptedCurrentlyWritableFileOverwrite';
   }
 
@@ -189,6 +195,20 @@ async function loadSingleFile(fileHandle) {
 }
 
 /**
+ * Warns if a given exception is "uncommon". That is, one that the guest might
+ * not provide UX for and should be dumped to console to give additional
+ * context.
+ * @param {!DOMException} e
+ * @param {string} fileName
+ */
+function warnIfUncommon(e, fileName) {
+  if (e.name === 'NotFoundError' || e.name === 'NotAllowedError') {
+    return;
+  }
+  console.warn(`Unexpected ${e.name} on ${fileName}: ${e.message}`);
+}
+
+/**
  * If `fd.file` is null, re-opens the file handle in `fd`.
  * @param {!FileDescriptor} fd
  */
@@ -196,23 +216,19 @@ async function refreshFile(fd) {
   if (fd.file) {
     return;
   }
+  fd.lastError = '';
   try {
     fd.file = (await getFileFromHandle(fd.handle)).file;
-  } catch (/** @type{DOMException} */ e) {
+  } catch (/** @type{!DOMException} */ e) {
+    fd.lastError = e.name;
     // A failure here is only a problem for the "current" file (and that needs
     // to be handled in the unprivileged context), so ignore known errors.
-    // TODO(b/156049174): Pin down the UX for this case and implement something
-    // similar in the mock app to test it.
-    if (e.name === 'NotFoundError') {
-      return;
-    }
-    console.error(fd.handle.name, e.message);
-    throw new Error(`${e.message} (${e.name})`);
+    warnIfUncommon(e, fd.handle.name);
   }
 }
 
 /**
- * Loads the current file list into the guest.
+ * Loads the current file list into the guest, enabling writes.
  * @return {!Promise<undefined>}
  */
 async function sendFilesToGuest() {
@@ -223,26 +239,35 @@ async function sendFilesToGuest() {
   }
   currentlyWritableFile = currentFiles[entryIndex];
   currentlyWritableFile.token = ++fileToken;
+  return sendSnapshotToGuest([...currentFiles]);  // Shallow copy.
+}
 
+/**
+ * Loads the provided file list into the guest without making any file writable.
+ * @param {!Array<!FileDescriptor>} snapshot
+ * @return {!Promise<undefined>}
+ */
+async function sendSnapshotToGuest(snapshot) {
   // On first launch, files are opened to determine navigation candidates. Don't
   // reopen in that case. Otherwise, attempt to reopen here. Some files may be
   // assigned null, e.g., if they have been moved to a different folder.
-  await Promise.all(currentFiles.map(refreshFile));
+  await Promise.all(snapshot.map(refreshFile));
 
   /** @type {!LoadFilesMessage} */
   const loadFilesMessage = {
     writableFileIndex: entryIndex,
     // Handle can't be passed through a message pipe.
-    files: currentFiles.map(fd => ({
-                              token: fd.token,
-                              file: fd.file,
-                              name: fd.handle.name,
-                            }))
+    files: snapshot.map(fd => ({
+                          token: fd.token,
+                          file: fd.file,
+                          name: fd.handle.name,
+                          error: fd.lastError,
+                        }))
   };
   // Clear handles to the open files in the privileged context so they are
   // refreshed on a navigation request. The refcount to the File will be alive
   // in the postMessage object until the guest takes its own reference.
-  for (const fd of currentFiles) {
+  for (const fd of snapshot) {
     fd.file = null;
   }
   await guestMessagePipe.sendMessage(Message.LOAD_FILES, loadFilesMessage);
@@ -253,6 +278,7 @@ async function sendFilesToGuest() {
  * the file to be mutated is incorrect.
  * @param {number} editFileToken
  * @param {string} operation
+ * @return {{file: !FileDescriptor, directory: !FileSystemDirectoryHandle}}
  */
 function assertFileAndDirectoryMutable(editFileToken, operation) {
   if (!currentlyWritableFile || editFileToken !== fileToken) {
@@ -262,6 +288,7 @@ function assertFileAndDirectoryMutable(editFileToken, operation) {
   if (!currentDirectoryHandle) {
     throw new Error(`${operation} failed. File without launch directory.`);
   }
+  return {file: currentlyWritableFile, directory: currentDirectoryHandle};
 }
 
 /**
@@ -270,6 +297,9 @@ function assertFileAndDirectoryMutable(editFileToken, operation) {
  * @return {!Promise<!boolean>}
  */
 async function isCurrentHandleInCurrentDirectory() {
+  if (!currentlyWritableFile) {
+    return false;
+  }
   // Get the name from the file reference. Handles file renames.
   const currentFilename = (await currentlyWritableFile.handle.getFile()).name;
   const fileHandle = await getFileHandleFromCurrentDirectory(currentFilename);
@@ -295,6 +325,9 @@ async function filenameExistsInCurrentDirectory(filename) {
  */
 async function getFileHandleFromCurrentDirectory(
     filename, suppressError = false) {
+  if (!currentDirectoryHandle) {
+    return null;
+  }
   try {
     return (await currentDirectoryHandle.getFile(filename, {create: false}));
   } catch (/** @type {Object} */ e) {
@@ -306,16 +339,20 @@ async function getFileHandleFromCurrentDirectory(
 }
 
 /**
- * Gets a file from a handle received via the fileHandling API.
+ * Gets a file from a handle received via the fileHandling API. Only handles
+ * expected to be files should be passed to this function. Throws a DOMException
+ * if opening the file fails - usually because the handle is stale.
  * @param {?FileSystemHandle} fileSystemHandle
- * @return {Promise<?{file: !File, handle: !FileSystemFileHandle}>}
+ * @return {!Promise<!{file: !File, handle: !FileSystemFileHandle}>}
  */
 async function getFileFromHandle(fileSystemHandle) {
   if (!fileSystemHandle || !fileSystemHandle.isFile) {
-    return null;
+    // Invent our own exception for this corner case. It might happen if a file
+    // is deleted and replaced with a directory with the same name.
+    throw new DOMException('Not a file.', 'NotAFile');
   }
   const handle = /** @type {!FileSystemFileHandle} */ (fileSystemHandle);
-  const file = await handle.getFile();
+  const file = await handle.getFile();  // Note: throws DOMException.
   return {file, handle};
 }
 
@@ -351,32 +388,49 @@ function isFileRelated(focusFile, siblingFile) {
  * @param {?File} focusFile
  */
 async function setCurrentDirectory(directory, focusFile) {
-  if (!focusFile) {
+  if (!focusFile || !focusFile.name) {
     return;
   }
   currentFiles.length = 0;
   for await (const /** !FileSystemHandle */ handle of directory.getEntries()) {
-    const asFile = await getFileFromHandle(handle);
-    if (!asFile) {
+    if (!handle.isFile) {
       continue;
+    }
+    let entry = null;
+    try {
+      entry = await getFileFromHandle(handle);
+    } catch (/** @type{!DOMException} */ e) {
+      // Ignore exceptions thrown trying to open "other" files in the folder,
+      // and skip adding that file to `currentFiles`.
+      // Note the focusFile is passed in as `File`, so should be openable.
+      warnIfUncommon(e, handle.name);
     }
 
     // Only allow traversal of related file types.
-    if (isFileRelated(focusFile, asFile.file)) {
-      currentFiles.push({token: -1, file: asFile.file, handle: asFile.handle});
+    if (entry && isFileRelated(focusFile, entry.file)) {
+      currentFiles.push({token: -1, file: entry.file, handle: entry.handle});
     }
   }
-  entryIndex = currentFiles.findIndex(i => i.file.name === focusFile.name);
+  const name = focusFile.name;
+  entryIndex = currentFiles.findIndex(i => !!i.file && i.file.name === name);
   currentDirectoryHandle = directory;
 }
 
 /**
- * Launch the media app with the files in the provided directory.
+ * Launch the media app with the files in the provided directory, using `handle`
+ * as the initial launch entry.
  * @param {!FileSystemDirectoryHandle} directory
- * @param {?FileSystemHandle} initialFileEntry
+ * @param {!FileSystemHandle} handle
  */
-async function launchWithDirectory(directory, initialFileEntry) {
-  const asFile = await getFileFromHandle(initialFileEntry);
+async function launchWithDirectory(directory, handle) {
+  let asFile;
+  try {
+    asFile = await getFileFromHandle(handle);
+  } catch (/** @type{!DOMException} */ e) {
+    console.warn(`${handle.name}: ${e.message}`);
+    sendSnapshotToGuest([{token: -1, file: null, handle, error: e.name}]);
+    return;
+  }
   await setCurrentDirectory(directory, asFile.file);
 
   // Load currentFiles into the guest.
@@ -403,18 +457,23 @@ async function advance(direction) {
 // Wait for 'load' (and not DOMContentLoaded) to ensure the subframe has been
 // loaded and is ready to respond to postMessage.
 window.addEventListener('load', () => {
+  if (!window.launchQueue) {
+    console.error('FileHandling API missing.');
+    return;
+  }
   window.launchQueue.setConsumer(params => {
     if (!params || !params.files || params.files.length < 2) {
       console.error('Invalid launch (missing files): ', params);
       return;
     }
 
-    if (!params.files[0].isDirectory) {
+    if (!assertCast(params.files[0]).isDirectory) {
       console.error('Invalid launch: files[0] is not a directory: ', params);
       return;
     }
     const directory =
         /** @type{!FileSystemDirectoryHandle} */ (params.files[0]);
-    launchWithDirectory(directory, params.files[1]);
+    const focusEntry = assertCast(params.files[1]);
+    launchWithDirectory(directory, focusEntry);
   });
 });

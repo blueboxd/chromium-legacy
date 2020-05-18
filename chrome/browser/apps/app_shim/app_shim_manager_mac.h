@@ -139,6 +139,7 @@ class AppShimManager : public AppShimHostBootstrap::Client,
       base::OnceClosure terminated_callback) override;
   void OnShimProcessDisconnected(AppShimHost* host) override;
   void OnShimFocus(AppShimHost* host) override;
+  void OnShimReopen(AppShimHost* host) override;
   void OnShimOpenedFiles(AppShimHost* host,
                          const std::vector<base::FilePath>& files) override;
   void OnShimSelectedProfile(AppShimHost* host,

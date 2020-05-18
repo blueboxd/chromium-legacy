@@ -519,6 +519,10 @@ TerminalPrivateGetCroshSettingsFunction::Run() {
   const Extension* crosh_extension =
       TerminalExtensionHelper::GetTerminalExtension(
           Profile::FromBrowserContext(browser_context()));
+  if (!crosh_extension) {
+    return RespondNow(OneArgument(std::make_unique<base::DictionaryValue>()));
+  }
+
   StorageFrontend* frontend = StorageFrontend::Get(browser_context());
   frontend->RunWithStorage(
       crosh_extension, settings_namespace::SYNC,

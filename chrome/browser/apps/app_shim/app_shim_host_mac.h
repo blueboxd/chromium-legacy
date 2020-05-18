@@ -53,6 +53,9 @@ class AppShimHost : public chrome::mojom::AppShimHost {
     // Invoked by the shim host when the shim process receives a focus event.
     virtual void OnShimFocus(AppShimHost* host) = 0;
 
+    // Invoked by the shim host when the shim process should reopen if needed.
+    virtual void OnShimReopen(AppShimHost* host) = 0;
+
     // Invoked by the shim host when the shim opens a file, e.g, by dragging
     // a file onto the dock icon.
     virtual void OnShimOpenedFiles(
@@ -112,6 +115,7 @@ class AppShimHost : public chrome::mojom::AppShimHost {
 
   // chrome::mojom::AppShimHost.
   void FocusApp() override;
+  void ReopenApp() override;
   void FilesOpened(const std::vector<base::FilePath>& files) override;
   void ProfileSelectedFromMenu(const base::FilePath& profile_path) override;
 

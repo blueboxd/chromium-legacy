@@ -552,8 +552,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
     network::ResourceRequest request;
     request.url = url;
     request.method = "GET";
-    request.resource_type =
-        static_cast<int>(blink::mojom::ResourceType::kSubResource);
+    request.destination = network::mojom::RequestDestination::kEmpty;
     return request;
   }
 
@@ -601,8 +600,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
         CreateSubresourceLoaderFactory();
     network::ResourceRequest request =
         CreateRequest(GURL("https://www.example.com/big-file"));
-    request.resource_type =
-        static_cast<int>(blink::mojom::ResourceType::kMedia);
+    request.destination = network::mojom::RequestDestination::kVideo;
     request.headers.SetHeader("Range", range_header);
     mojo::Remote<network::mojom::URLLoader> loader;
     std::unique_ptr<network::TestURLLoaderClient> client;
@@ -1026,7 +1024,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponse) {
   // Perform the request.
   network::ResourceRequest request =
       CreateRequest(GURL("https://www.example.com/foo.js"));
-  request.resource_type = static_cast<int>(blink::mojom::ResourceType::kScript);
+  request.destination = network::mojom::RequestDestination::kScript;
   mojo::Remote<network::mojom::URLLoader> loader;
   std::unique_ptr<network::TestURLLoaderClient> client;
   StartRequest(factory, request, &loader, &client);
@@ -1083,7 +1081,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponseWithoutMetadata) {
   // Perform the request.
   network::ResourceRequest request =
       CreateRequest(GURL("https://www.example.com/foo.js"));
-  request.resource_type = static_cast<int>(blink::mojom::ResourceType::kScript);
+  request.destination = network::mojom::RequestDestination::kScript;
   mojo::Remote<network::mojom::URLLoader> loader;
   std::unique_ptr<network::TestURLLoaderClient> client;
   StartRequest(factory, request, &loader, &client);
@@ -1130,8 +1128,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponseNonScript) {
   // Perform the request.
   network::ResourceRequest request =
       CreateRequest(GURL("https://www.example.com/foo.txt"));
-  request.resource_type =
-      static_cast<int>(blink::mojom::ResourceType::kSubResource);
+  request.destination = network::mojom::RequestDestination::kEmpty;
   mojo::Remote<network::mojom::URLLoader> loader;
   std::unique_ptr<network::TestURLLoaderClient> client;
   StartRequest(factory, request, &loader, &client);

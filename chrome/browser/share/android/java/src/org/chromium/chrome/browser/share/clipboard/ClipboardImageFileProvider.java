@@ -8,7 +8,7 @@ import android.content.Context;
 import android.net.Uri;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.share.ShareImageFileUtils;
+import org.chromium.components.browser_ui.share.ShareImageFileUtils;
 import org.chromium.ui.base.Clipboard;
 
 /**

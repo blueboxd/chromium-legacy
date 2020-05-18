@@ -29,7 +29,6 @@
 // <include src="screen_arc_terms_of_service.js">
 // <include src="screen_error_message.js">
 // <include src="screen_password_changed.js">
-// <include src="screen_tpm_error.js">
 // <include src="screen_wrong_hwid.js">
 // <include src="screen_confirm_password.js">
 // <include src="screen_fatal_error.js">
@@ -74,7 +73,6 @@ cr.define('cr.ui.Oobe', function() {
       login.AccountPickerScreen.register();
       login.OAuthEnrollmentScreen.register();
       login.ErrorMessageScreen.register();
-      login.TPMErrorMessageScreen.register();
       login.PasswordChangedScreen.register();
       login.SyncConsentScreen.register();
       login.FingerprintSetupScreen.register();

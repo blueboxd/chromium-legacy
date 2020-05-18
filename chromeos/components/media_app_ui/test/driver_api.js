@@ -6,8 +6,10 @@
 let TestMessageResponseData;
 
 /**
+ * Object sent over postMessage to run a command or extract data.
  * @typedef {{
  *     deleteLastFile: (boolean|undefined),
+ *     getFileErrors: (boolean|undefined),
  *     navigate: (string|undefined),
  *     overwriteLastFile: (string|undefined),
  *     pathToRoot: (Array<string>|undefined),

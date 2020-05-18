@@ -139,13 +139,6 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * Shows TPM error screen.
-   */
-  Oobe.showTpmError = function() {
-    DisplayManager.showTpmError();
-  };
-
-  /**
    * Shows Active Directory password change screen.
    * @param {string} username Name of the user that should change the password.
    */

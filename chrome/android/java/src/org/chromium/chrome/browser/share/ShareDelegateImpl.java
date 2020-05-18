@@ -27,6 +27,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.share.ShareImageFileUtils;
+import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.ui_metrics.CanonicalURLResult;
 import org.chromium.content_public.browser.WebContents;
@@ -65,11 +67,12 @@ public class ShareDelegateImpl implements ShareDelegate {
 
     // ShareDelegate implementation.
     @Override
-    public void share(ShareParams params) {
+    public void share(ShareParams params, boolean shareDirectly, boolean saveLastUsed) {
         if (mShareStartTime == 0L) {
             mShareStartTime = System.currentTimeMillis();
         }
-        mDelegate.share(params, mBottomSheetController, mActivityTabProvider, mShareStartTime);
+        mDelegate.share(params, shareDirectly, saveLastUsed, mBottomSheetController,
+                mActivityTabProvider, mShareStartTime);
         mShareStartTime = 0;
     }
 
@@ -125,7 +128,7 @@ public class ShareDelegateImpl implements ShareDelegate {
 
         OfflinePageUtils.maybeShareOfflinePage(currentTab, (ShareParams p) -> {
             if (p != null) {
-                share(p);
+                share(p, /* shareDirectly */ false, /* saveLastUsed */ false);
             } else {
                 WindowAndroid window = currentTab.getWindowAndroid();
                 // Could not share as an offline page.
@@ -161,10 +164,8 @@ public class ShareDelegateImpl implements ShareDelegate {
                 : ChromeFileProvider.generateUriAndBlockAccess();
         ShareParams.Builder builder =
                 new ShareParams.Builder(window, title, getUrlToShare(visibleUrl, canonicalUrl))
-                        .setShareDirectly(shareDirectly)
-                        .setSaveLastUsed(!shareDirectly)
                         .setScreenshotUri(blockingUri);
-        share(builder.build());
+        share(builder.build(), shareDirectly, !shareDirectly);
         if (shareDirectly) {
             RecordUserAction.record("MobileMenuDirectShare");
         } else {
@@ -256,10 +257,11 @@ public class ShareDelegateImpl implements ShareDelegate {
         /**
          * Trigger the share action for the specified params.
          */
-        void share(ShareParams params, BottomSheetController controller,
-                ActivityTabProvider tabProvider, long shareStartTime) {
-            if (params.shareDirectly()) {
-                ShareHelper.shareDirectly(params);
+        void share(ShareParams params, boolean shareDirectly, boolean saveLastUsed,
+                BottomSheetController controller, ActivityTabProvider tabProvider,
+                long shareStartTime) {
+            if (shareDirectly) {
+                ShareHelper.shareWithLastUsedComponent(params);
             } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB)) {
                 ShareSheetCoordinator coordinator =
                         new ShareSheetCoordinator(controller, tabProvider,
@@ -267,9 +269,9 @@ public class ShareDelegateImpl implements ShareDelegate {
                                         ContextUtils.getApplicationContext().getPackageManager()),
                                 PrefServiceBridge.getInstance());
                 // TODO(crbug/1009124): open custom share sheet.
-                coordinator.showShareSheet(params, shareStartTime);
+                coordinator.showShareSheet(params, saveLastUsed, shareStartTime);
             } else {
-                ShareHelper.showDefaultShareUi(params);
+                ShareHelper.showDefaultShareUi(params, saveLastUsed);
             }
         }
     }

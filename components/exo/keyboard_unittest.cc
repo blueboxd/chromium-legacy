@@ -50,6 +50,7 @@ class MockKeyboardDelegate : public KeyboardDelegate {
   MOCK_METHOD3(OnKeyRepeatSettingsChanged,
                void(bool, base::TimeDelta, base::TimeDelta));
 };
+using NiceMockKeyboardDelegate = ::testing::NiceMock<MockKeyboardDelegate>;
 
 class MockKeyboardDeviceConfigurationDelegate
     : public KeyboardDeviceConfigurationDelegate {
@@ -80,7 +81,7 @@ class TestShellSurface : public ShellSurface {
 // key events. https://crbug.com/1008574.
 TEST_F(KeyboardTest, CorrectSeatPressedKeysOnSwitchingDesks) {
   Seat seat;
-  MockKeyboardDelegate delegate;
+  NiceMockKeyboardDelegate delegate;
   auto keyboard = std::make_unique<Keyboard>(&delegate, &seat);
 
   // Create 2 desks.
@@ -155,7 +156,7 @@ TEST_F(KeyboardTest, OnKeyboardEnter) {
   focus_client->FocusWindow(surface->window());
 
   // Keyboard should try to set initial focus to surface.
-  MockKeyboardDelegate delegate;
+  NiceMockKeyboardDelegate delegate;
   EXPECT_CALL(delegate, CanAcceptKeyboardEventsForSurface(surface.get()))
       .WillOnce(testing::Return(false));
   auto keyboard = std::make_unique<Keyboard>(&delegate, &seat);
@@ -201,7 +202,7 @@ TEST_F(KeyboardTest, OnKeyboardLeave) {
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->FocusWindow(nullptr);
 
-  MockKeyboardDelegate delegate;
+  NiceMockKeyboardDelegate delegate;
   Seat seat;
   auto keyboard = std::make_unique<Keyboard>(&delegate, &seat);
 
@@ -242,7 +243,7 @@ TEST_F(KeyboardTest, OnKeyboardKey) {
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->FocusWindow(nullptr);
 
-  MockKeyboardDelegate delegate;
+  NiceMockKeyboardDelegate delegate;
   Seat seat;
   auto keyboard = std::make_unique<Keyboard>(&delegate, &seat);
 
@@ -341,7 +342,7 @@ TEST_F(KeyboardTest, OnKeyboardModifiers) {
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->FocusWindow(nullptr);
 
-  MockKeyboardDelegate delegate;
+  NiceMockKeyboardDelegate delegate;
   Seat seat;
   auto keyboard = std::make_unique<Keyboard>(&delegate, &seat);
 
@@ -407,7 +408,7 @@ TEST_F(KeyboardTest, OnKeyboardTypeChanged) {
       ash::Shell::Get()->tablet_mode_controller();
   tablet_mode_controller->SetEnabledForTest(true);
 
-  MockKeyboardDelegate delegate;
+  NiceMockKeyboardDelegate delegate;
   Seat seat;
   auto keyboard = std::make_unique<Keyboard>(&delegate, &seat);
   MockKeyboardDeviceConfigurationDelegate configuration_delegate;
@@ -452,7 +453,7 @@ TEST_F(KeyboardTest, OnKeyboardTypeChanged_AccessibilityKeyboard) {
       ui::InputDevice(2, ui::InputDeviceType::INPUT_DEVICE_USB, "keyboard")};
   device_data_manager->OnKeyboardDevicesUpdated(keyboards);
 
-  MockKeyboardDelegate delegate;
+  NiceMockKeyboardDelegate delegate;
   Seat seat;
   auto keyboard = std::make_unique<Keyboard>(&delegate, &seat);
   MockKeyboardDeviceConfigurationDelegate configuration_delegate;
@@ -586,7 +587,7 @@ TEST_F(KeyboardTest, KeyRepeatSettingsUpdateOnProfileChange) {
 }
 
 TEST_F(KeyboardTest, KeyboardObserver) {
-  MockKeyboardDelegate delegate;
+  NiceMockKeyboardDelegate delegate;
   Seat seat;
   auto keyboard = std::make_unique<Keyboard>(&delegate, &seat);
   MockKeyboardObserver observer1;
@@ -619,7 +620,7 @@ TEST_F(KeyboardTest, NeedKeyboardKeyAcks) {
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->FocusWindow(nullptr);
 
-  MockKeyboardDelegate delegate;
+  NiceMockKeyboardDelegate delegate;
   Seat seat;
   auto keyboard = std::make_unique<Keyboard>(&delegate, &seat);
 
@@ -645,7 +646,7 @@ TEST_F(KeyboardTest, AckKeyboardKey) {
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->FocusWindow(nullptr);
 
-  MockKeyboardDelegate delegate;
+  NiceMockKeyboardDelegate delegate;
   Seat seat;
   auto keyboard = std::make_unique<Keyboard>(&delegate, &seat);
 
@@ -743,7 +744,7 @@ TEST_F(KeyboardTest, AckKeyboardKeyMoveFocus) {
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->FocusWindow(nullptr);
 
-  MockKeyboardDelegate delegate;
+  NiceMockKeyboardDelegate delegate;
   Seat seat;
   auto keyboard = std::make_unique<Keyboard>(&delegate, &seat);
 
@@ -789,7 +790,7 @@ TEST_F(KeyboardTest, AckKeyboardKeyExpired) {
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->FocusWindow(nullptr);
 
-  MockKeyboardDelegate delegate;
+  NiceMockKeyboardDelegate delegate;
   Seat seat;
   auto keyboard = std::make_unique<Keyboard>(&delegate, &seat);
 
@@ -874,7 +875,7 @@ TEST_F(KeyboardTest, AckKeyboardKeyExpiredWithMovingFocusAccelerator) {
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->FocusWindow(nullptr);
 
-  MockKeyboardDelegate delegate;
+  NiceMockKeyboardDelegate delegate;
   Seat seat;
   auto keyboard = std::make_unique<Keyboard>(&delegate, &seat);
 
@@ -929,7 +930,7 @@ TEST_F(KeyboardTest, AckKeyboardKeyWithSpokenFeedback) {
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->FocusWindow(nullptr);
 
-  MockKeyboardDelegate delegate;
+  NiceMockKeyboardDelegate delegate;
   Seat seat;
   auto keyboard = std::make_unique<Keyboard>(&delegate, &seat);
 

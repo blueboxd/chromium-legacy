@@ -26,6 +26,8 @@ import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -118,9 +120,9 @@ public class DirectActionInitializer implements NativeInitObserver, Destroyable 
      * @param cancellationSignal Signal used to cancel a direct action from the caller.
      * @param callback Callback to run when the action is done.
      */
-    public void onGetDirectActions(CancellationSignal cancellationSignal, Consumer callback) {
+    public void onGetDirectActions(CancellationSignal cancellationSignal, Consumer<List> callback) {
         if (mCoordinator == null || !mDirectActionsRegistered) {
-            callback.accept(Bundle.EMPTY);
+            callback.accept(Collections.emptyList());
             return;
         }
         mCoordinator.onGetDirectActions(callback);

@@ -3,7 +3,4 @@
 # found in the LICENSE file.
 
 # TODO(crbug.com/1022172): This should be a separate build target when circular dependencies are removed.
-share_test_java_sources = [
-  "//chrome/browser/share/android/javatests/src/org/chromium/chrome/browser/share/ShareImageFileUtilsTest.java",
-  "//chrome/browser/share/android/javatests/src/org/chromium/chrome/browser/share/clipboard/ClipboardImageFileProviderTest.java",
-]
+share_test_java_sources = [ "//chrome/browser/share/android/javatests/src/org/chromium/chrome/browser/share/clipboard/ClipboardImageFileProviderTest.java" ]

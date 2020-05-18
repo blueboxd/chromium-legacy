@@ -83,9 +83,6 @@ class BrailleControllerImpl : public BrailleController {
   // Manipulated by the SequencedTaskRunner.
   base::FilePathWatcher file_path_watcher_;
 
-  // Set by tests to skip libbrlapi.so loading.
-  bool skip_libbrlapi_so_load_ = false;
-
   friend struct base::DefaultSingletonTraits<BrailleControllerImpl>;
 
   DISALLOW_COPY_AND_ASSIGN(BrailleControllerImpl);

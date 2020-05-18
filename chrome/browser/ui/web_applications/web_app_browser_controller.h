@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_BROWSER_CONTROLLER_H_
 #define CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_BROWSER_CONTROLLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -20,8 +21,16 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image_skia.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/installable/digital_asset_links/digital_asset_links_handler.h"
+#endif
+
 class Browser;
 class SkBitmap;
+
+namespace digital_asset_links {
+class DigitalAssetLinksHandler;
+}
 
 namespace web_app {
 
@@ -56,6 +65,10 @@ class WebAppBrowserController : public AppBrowserController,
   bool IsInstalled() const override;
   bool IsHostedApp() const override;
 
+#if defined(OS_CHROMEOS)
+  bool ShouldShowCustomTabBar() const override;
+#endif  // OS_CHROMEOS
+
   // AppRegistrarObserver:
   void OnWebAppUninstalled(const AppId& app_id) override;
   void OnAppRegistrarDestroyed() override;
@@ -71,9 +84,24 @@ class WebAppBrowserController : public AppBrowserController,
   const AppRegistrar& registrar() const;
 
   void OnReadIcon(const SkBitmap& bitmap);
+  void PerformDigitalAssetLinkVerification(Browser* browser);
+
+#if defined(OS_CHROMEOS)
+  void OnRelationshipCheckComplete(
+      digital_asset_links::RelationshipCheckResult result);
+#endif  // OS_CHROMEOS
 
   WebAppProvider& provider_;
   mutable base::Optional<gfx::ImageSkia> app_icon_;
+
+#if defined(OS_CHROMEOS)
+  // The result of digital asset link verification of the web app.
+  // Only used for web-only TWAs installed through the Play Store.
+  base::Optional<bool> is_verified_;
+
+  std::unique_ptr<digital_asset_links::DigitalAssetLinksHandler>
+      asset_link_handler_;
+#endif  // OS_CHROMEOS
 
   ScopedObserver<AppRegistrar, AppRegistrarObserver> registrar_observer_{this};
 

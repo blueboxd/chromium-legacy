@@ -16,6 +16,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
@@ -60,11 +61,11 @@ class ShareSheetPropertyModelBuilder {
         mPackageManager = packageManager;
     }
 
-    ArrayList<PropertyModel> selectThirdPartyApps(
-            ShareSheetBottomSheetContent bottomSheet, ShareParams params, long shareStartTime) {
+    ArrayList<PropertyModel> selectThirdPartyApps(ShareSheetBottomSheetContent bottomSheet,
+            ShareParams params, boolean saveLastUsed, long shareStartTime) {
         List<String> thirdPartyActivityNames = getThirdPartyActivityNames();
         Intent intent = ShareHelper.getShareLinkAppCompatibilityIntent();
-        final ShareHelper.TargetChosenCallback callback = params.getCallback();
+        final ShareParams.TargetChosenCallback callback = params.getCallback();
         List<ResolveInfo> resolveInfoList = mPackageManager.queryIntentActivities(intent, 0);
         List<ResolveInfo> thirdPartyActivities = new ArrayList<>();
 
@@ -111,11 +112,11 @@ class ShareSheetPropertyModelBuilder {
                                 if (callback != null) {
                                     callback.onTargetChosen(component);
                                 }
-                                if (params.saveLastUsed()) {
+                                if (saveLastUsed) {
                                     ShareHelper.setLastShareComponentName(component);
                                 }
                                 mBottomSheetController.hideContent(bottomSheet, true);
-                                ShareHelper.makeIntentAndShare(params, component);
+                                ShareHelper.shareDirectly(params, component);
                             }, /*isFirstParty=*/false);
             models.add(propertyModel);
         }

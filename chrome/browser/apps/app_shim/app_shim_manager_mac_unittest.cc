@@ -268,6 +268,7 @@ class TestHost : public AppShimHost {
 
   using AppShimHost::FilesOpened;
   using AppShimHost::ProfileSelectedFromMenu;
+  using AppShimHost::ReopenApp;
 
   std::unique_ptr<TestAppShim> test_app_shim_;
 
@@ -594,10 +595,7 @@ TEST_F(AppShimManagerTest, LaunchAndCloseShim) {
   EXPECT_EQ(chrome::mojom::AppShimLaunchResult::kSuccess,
             *bootstrap_aa_result_);
 
-  // Starting and closing a second host just focuses the original host of the
-  // app.
-  EXPECT_CALL(*manager_, OnShimFocus(host_aa_.get()));
-
+  // Starting and closing a second host does nothing.
   DoShimLaunch(bootstrap_aa_duplicate_, std::move(host_aa_duplicate_unique_),
                chrome::mojom::AppShimLaunchType::kNormal, some_file);
   EXPECT_EQ(chrome::mojom::AppShimLaunchResult::kDuplicateHost,
@@ -626,17 +624,23 @@ TEST_F(AppShimManagerTest, AppLifetime) {
             *bootstrap_aa_result_);
   EXPECT_EQ(host_aa_.get(), manager_->FindHost(&profile_a_, kTestAppIdA));
 
-  // Return no app windows for OnShimFocus. This will result in a launch call.
+  // Return no app windows for OnShimFocus. This will do nothing.
+  EXPECT_CALL(*delegate_, ShowAppWindows(&profile_a_, kTestAppIdA))
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*delegate_, LaunchApp(&profile_a_, kTestAppIdA, _)).Times(0);
+  ShimNormalFocus(host_aa_.get());
+
+  // Return no app windows for OnShimReopen. This will result in a launch call.
   EXPECT_CALL(*delegate_, ShowAppWindows(&profile_a_, kTestAppIdA))
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*delegate_, LaunchApp(&profile_a_, kTestAppIdA, _)).Times(1);
-  ShimNormalFocus(host_aa_.get());
+  host_aa_->ReopenApp();
 
   // Return one window. This should do nothing.
   EXPECT_CALL(*delegate_, ShowAppWindows(&profile_a_, kTestAppIdA))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*delegate_, LaunchApp(&profile_a_, kTestAppIdA, _)).Times(0);
-  ShimNormalFocus(host_aa_.get());
+  host_aa_->ReopenApp();
 
   // Open files should trigger a launch with those files.
   std::vector<base::FilePath> some_file(1, base::FilePath("some_file"));
@@ -821,10 +825,10 @@ TEST_F(AppShimManagerTest, ExtensionUninstalled) {
   EXPECT_CALL(*delegate_, AppIsInstalled(&profile_a_, kTestAppIdA))
       .WillRepeatedly(Return(false));
 
-  // Now trying to focus should automatically close the shim, and not try to
-  // get the window list.
+  // Trying to focus will do nothing -- the shim will have to be closed by
+  // the user manually.
   ShimNormalFocus(host_aa_.get());
-  EXPECT_EQ(nullptr, host_aa_.get());
+  EXPECT_NE(nullptr, host_aa_.get());
 }
 
 TEST_F(AppShimManagerTest, PreExistingHost) {
@@ -839,7 +843,6 @@ TEST_F(AppShimManagerTest, PreExistingHost) {
 
   // Launch the app for this host. It should find the pre-existing host, and the
   // pre-existing host's launch result should be set.
-  EXPECT_CALL(*manager_, OnShimFocus(host_aa_.get())).Times(1);
   EXPECT_CALL(*delegate_, LaunchApp(&profile_a_, kTestAppIdA, _)).Times(0);
   EXPECT_FALSE(host_aa_->did_connect_to_host());
   DoShimLaunch(bootstrap_aa_, nullptr,

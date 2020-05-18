@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.share;
 
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
@@ -72,7 +73,8 @@ public final class ShareSheetCoordinatorTest {
 
         ArrayList<PropertyModel> thirdPartyPropertyModels =
                 new ArrayList<>(Arrays.asList(testModel1, testModel2));
-        Mockito.when(mPropertyModelBuilder.selectThirdPartyApps(any(), any(), anyLong()))
+        Mockito.when(mPropertyModelBuilder.selectThirdPartyApps(
+                             any(), any(), anyBoolean(), anyLong()))
                 .thenReturn(thirdPartyPropertyModels);
         // Return true to indicate printing is enabled.
         Mockito.when(mPrefServiceBridge.getBoolean(anyInt())).thenReturn(true);
@@ -176,7 +178,7 @@ public final class ShareSheetCoordinatorTest {
         ShareSheetBottomSheetContent bottomSheet = new ShareSheetBottomSheetContent(activity);
 
         ArrayList<PropertyModel> propertyModels = coordinator.createBottomRowPropertyModels(
-                bottomSheet, activity, /*shareParams=*/null);
+                bottomSheet, activity, /*shareParams=*/null, /*saveLastUsed=*/false);
         Assert.assertEquals("Incorrect number of property models.", 3, propertyModels.size());
         Assert.assertEquals("First property model isn't testModel1.", "testModel1",
                 propertyModels.get(0).get(ShareSheetItemViewProperties.LABEL));

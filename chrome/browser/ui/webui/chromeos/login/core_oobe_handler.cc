@@ -234,10 +234,6 @@ void CoreOobeHandler::ShowSignInError(
          help_link_text, static_cast<int>(help_topic_id));
 }
 
-void CoreOobeHandler::ShowTpmError() {
-  CallJS("cr.ui.Oobe.showTpmError");
-}
-
 void CoreOobeHandler::ShowDeviceResetScreen() {
   LaunchResetScreen();
 }

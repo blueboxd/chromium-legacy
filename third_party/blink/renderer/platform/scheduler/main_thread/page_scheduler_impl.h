@@ -100,8 +100,6 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // owned by a web view.
   bool IsOrdinary() const;
 
-  void RegisterFrameSchedulerImpl(FrameSchedulerImpl* frame_scheduler);
-
   MainThreadSchedulerImpl* GetMainThreadScheduler() const;
 
   void Unregister(FrameSchedulerImpl*);
@@ -191,6 +189,8 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
 
     DISALLOW_COPY_AND_ASSIGN(PageLifecycleStateTracker);
   };
+
+  void RegisterFrameSchedulerImpl(FrameSchedulerImpl* frame_scheduler);
 
   // We do not throttle anything while audio is played and shortly after that.
   static constexpr base::TimeDelta kRecentAudioDelay =

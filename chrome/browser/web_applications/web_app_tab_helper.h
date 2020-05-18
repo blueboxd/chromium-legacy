@@ -64,7 +64,8 @@ class WebAppTabHelper : public WebAppTabHelperBase,
   void ResetAppId();
 
   // Runs any logic when the associated app either changes or is removed.
-  void OnAssociatedAppChanged();
+  void OnAssociatedAppChanged(const AppId& previous_app_id,
+                              const AppId& new_app_id);
 
   // Updates the audio focus group id based on the current web app.
   void UpdateAudioFocusGroupId();

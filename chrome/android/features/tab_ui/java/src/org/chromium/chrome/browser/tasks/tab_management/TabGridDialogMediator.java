@@ -21,8 +21,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.share.ShareDelegate;
-import org.chromium.chrome.browser.share.ShareHelper;
-import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabImpl;
@@ -38,6 +36,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -231,10 +230,8 @@ public class TabGridDialogMediator {
                         new ShareParams
                                 .Builder(tab.getWindowAndroid(),
                                         mModel.get(TabGridPanelProperties.HEADER_TITLE), "")
-                                .setShareDirectly(false)
-                                .setSaveLastUsed(true)
                                 .setText(getTabGroupStringForSharing())
-                                .setCallback(new ShareHelper.TargetChosenCallback() {
+                                .setCallback(new ShareParams.TargetChosenCallback() {
                                     @Override
                                     public void onTargetChosen(ComponentName chosenComponent) {
                                         RecordUserAction.record(
@@ -245,7 +242,8 @@ public class TabGridDialogMediator {
                                     public void onCancel() {}
                                 })
                                 .build();
-                mShareDelegateSupplier.get().share(shareParams);
+                mShareDelegateSupplier.get().share(
+                        shareParams, /* shareDirectly */ false, /* saveLastUsed */ true);
             }
         };
 

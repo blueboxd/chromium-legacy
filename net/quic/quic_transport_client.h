@@ -13,6 +13,7 @@
 #include "net/quic/quic_chromium_packet_reader.h"
 #include "net/quic/quic_chromium_packet_writer.h"
 #include "net/quic/quic_context.h"
+#include "net/quic/quic_transport_error.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_client_config.h"
 #include "net/third_party/quiche/src/quic/core/quic_config.h"
@@ -25,29 +26,6 @@ namespace net {
 class ProxyResolutionRequest;
 class QuicChromiumAlarmFactory;
 class URLRequestContext;
-
-struct NET_EXPORT QuicTransportError {
-  // |net_error| is always set to a meaningful value.
-  int net_error = OK;
-
-  // |quic_error| is set to a QUIC error, or to quic::QUIC_NO_ERROR if the error
-  // originates non-QUIC parts of the stack.
-  quic::QuicErrorCode quic_error = quic::QUIC_NO_ERROR;
-
-  // Human-readable error summary.
-  std::string details;
-
-  // QuicTransport requires that the connection errors have to be
-  // undistinguishable until the peer is confirmed to be a QuicTransport
-  // endpoint.  See https://wicg.github.io/web-transport/#protocol-security
-  bool safe_to_report_details = false;
-};
-
-NET_EXPORT
-std::string QuicTransportErrorToString(const QuicTransportError& error);
-
-NET_EXPORT
-std::ostream& operator<<(std::ostream& os, const QuicTransportError& error);
 
 // QuicTransportClient is the top-level API for QuicTransport in //net.
 class NET_EXPORT QuicTransportClient

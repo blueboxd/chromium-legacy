@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/tpm_error_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -1099,14 +1100,12 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerAuthFailureTest,
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerAuthFailureTest, TpmError) {
   SetUpStubAuthenticatorAndAttemptLogin(AuthFailure::TPM_ERROR);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_TPM_ERROR).Wait();
+  OobeScreenWaiter(TpmErrorView::kScreenId).Wait();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
 
-  test::OobeJS().ExpectVisiblePath({"tpm-error-message"});
-  test::OobeJS().ExpectVisiblePath({"tpm-restart-button"});
-  test::OobeJS().Evaluate(
-      "document.getElementById('tpm-restart-button').click()");
+  test::OobeJS().ClickOnPath({"tpm-error-message", "restartButton"});
 
   EXPECT_EQ(1, FakePowerManagerClient::Get()->num_request_restart_calls());
 }

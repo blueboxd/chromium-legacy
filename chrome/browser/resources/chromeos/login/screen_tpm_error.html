@@ -1,12 +1,23 @@
-<div id="tpm-error-message" class="step faded hidden" hidden>
-  <oobe-dialog id="tpm-error-dialog" role="dialog" has-buttons
-      title-key="errorTpmFailureTitle" subtitle-key="errorTpmFailureReboot">
-    <iron-icon slot="oobe-icon" icon="cr:warning" class="warning">
-    </iron-icon>
-    <div slot="bottom-buttons" class="layout horizontal end-justified">
-      <oobe-text-button id="tpm-restart-button" inverse
-          text-key="errorTpmFailureRebootButton">
-      </oobe-text-button>
-    </div>
-  </oobe-dialog>
-</div>
+<!-- Copyright 2020 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<dom-module id="tpm-error-message">
+  <template>
+    <style include="oobe-dialog-host">
+      oobe-dialog > iron-icon.warning {
+        --iron-icon-fill-color: rgb(219, 68, 55);
+      }
+    </style>
+    <oobe-dialog id="errorDialog" role="dialog" has-buttons
+        title-key="errorTpmFailureTitle" subtitle-key="errorTpmFailureReboot">
+      <iron-icon slot="oobe-icon" icon="cr:warning" class="warning">
+      </iron-icon>
+      <div slot="bottom-buttons" class="layout horizontal end-justified">
+        <oobe-text-button id="restartButton" inverse
+            text-key="errorTpmFailureRebootButton" on-tap="onRestartTap_">
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

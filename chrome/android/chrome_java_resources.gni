@@ -1081,7 +1081,6 @@ chrome_java_resources = [
   "java/res/layout/send_tab_to_self_device_picker_toolbar.xml",
   "java/res/layout/send_tab_to_self_feature_unavailable_prompt.xml",
   "java/res/layout/settings_action_bar_shadow.xml",
-  "java/res/layout/share_dialog_item.xml",
   "java/res/layout/share_sheet_content.xml",
   "java/res/layout/share_sheet_item.xml",
   "java/res/layout/sharing_device_picker.xml",

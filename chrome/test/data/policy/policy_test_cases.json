@@ -3462,7 +3462,7 @@
   },
 
   "WebComponentsV0Enabled": {
-    "note": "This policy has been removed. See https://bugs.chromium.org/p/chromium/issues/detail?id=1083085"
+    "note": "This policy has been removed, as of M85."
   },
 
   "UseLegacyFormControls": {

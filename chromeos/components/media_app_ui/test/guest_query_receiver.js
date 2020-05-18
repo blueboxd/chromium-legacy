@@ -87,6 +87,8 @@ async function runTestQuery(data) {
       DELEGATE.saveCopy(existingFile);
       result = 'boo yah!';
     }
+  } else if (data.getFileErrors) {
+    result = lastReceivedFileList.files.map(file => file.error).join();
   }
   return {testQueryResult: result};
 }

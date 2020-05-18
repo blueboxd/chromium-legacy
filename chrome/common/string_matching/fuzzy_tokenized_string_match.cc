@@ -253,9 +253,13 @@ double FuzzyTokenizedStringMatch::WeightedRatio(
                TokenSortRatio(query, text, use_partial /*partial*/,
                               partial_match_penalty_rate, use_edit_distance) *
                    unbase_scale * partial_scale);
+
+  // Do not use partial match for token set because the match between the
+  // intersection string and query/text rewrites will always return an extremely
+  // high value.
   weighted_ratio =
       std::max(weighted_ratio,
-               TokenSetRatio(query, text, use_partial /*partial*/,
+               TokenSetRatio(query, text, false /*partial*/,
                              partial_match_penalty_rate, use_edit_distance) *
                    unbase_scale * partial_scale);
   return weighted_ratio;

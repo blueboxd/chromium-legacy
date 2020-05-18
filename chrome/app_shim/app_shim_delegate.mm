@@ -38,6 +38,12 @@
   return _appShimController->host()->FocusApp();
 }
 
+- (BOOL)applicationShouldHandleReopen:(NSApplication*)sender
+                    hasVisibleWindows:(BOOL)flag {
+  _appShimController->host()->ReopenApp();
+  return YES;
+}
+
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
   return NO;
 }

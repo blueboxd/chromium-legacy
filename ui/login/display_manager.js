@@ -24,7 +24,6 @@
 /** @const */ var SCREEN_GAIA_SIGNIN = 'gaia-signin';
 /** @const */ var SCREEN_ACCOUNT_PICKER = 'account-picker';
 /** @const */ var SCREEN_ERROR_MESSAGE = 'error-message';
-/** @const */ var SCREEN_TPM_ERROR = 'tpm-error-message';
 /** @const */ var SCREEN_PASSWORD_CHANGED = 'password-changed';
 /** @const */ var SCREEN_APP_LAUNCH_SPLASH = 'app-launch-splash';
 /** @const */ var SCREEN_CONFIRM_PASSWORD = 'confirm-password';
@@ -103,7 +102,6 @@ cr.define('cr.ui.login', function() {
     SCREEN_ACCOUNT_PICKER,
     SCREEN_KIOSK_ENABLE,
     SCREEN_ERROR_MESSAGE,
-    SCREEN_TPM_ERROR,
     SCREEN_PASSWORD_CHANGED,
     SCREEN_ARC_TERMS_OF_SERVICE,
     SCREEN_WRONG_HWID,
@@ -1186,13 +1184,6 @@ cr.define('cr.ui.login', function() {
    */
   DisplayManager.showPasswordChangedScreen = function(showError, email) {
     login.PasswordChangedScreen.show(showError, email);
-  };
-
-  /**
-   * Shows TPM error screen.
-   */
-  DisplayManager.showTpmError = function() {
-    login.TPMErrorMessageScreen.show();
   };
 
   /**

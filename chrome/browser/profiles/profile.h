@@ -254,11 +254,6 @@ class Profile : public content::BrowserContext {
   // Destroys the OffTheRecord profile.
   virtual void DestroyOffTheRecordProfile(Profile* otr_profile) = 0;
 
-  // TODO(https://crbug.com/1033903): Remove this function when all the use
-  // cases are migrated to above version. The parameter-less version destroys
-  // the primary OffTheRecord profile.
-  void DestroyOffTheRecordProfile();
-
   // True if an OffTheRecord profile with given id exists.
   // TODO(https://crbug.com/1033903): Remove the default value.
   virtual bool HasOffTheRecordProfile(

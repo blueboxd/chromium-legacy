@@ -95,17 +95,16 @@ FrameSchedulerImpl::PauseSubresourceLoadingHandleImpl::
     frame_scheduler_->RemovePauseSubresourceLoadingHandle();
 }
 
-std::unique_ptr<FrameSchedulerImpl> FrameSchedulerImpl::Create(
+FrameSchedulerImpl::FrameSchedulerImpl(
     PageSchedulerImpl* parent_page_scheduler,
     FrameScheduler::Delegate* delegate,
     base::trace_event::BlameContext* blame_context,
-    FrameScheduler::FrameType frame_type) {
-  std::unique_ptr<FrameSchedulerImpl> frame_scheduler(new FrameSchedulerImpl(
-      parent_page_scheduler->GetMainThreadScheduler(), parent_page_scheduler,
-      delegate, blame_context, frame_type));
-  parent_page_scheduler->RegisterFrameSchedulerImpl(frame_scheduler.get());
-  return frame_scheduler;
-}
+    FrameScheduler::FrameType frame_type)
+    : FrameSchedulerImpl(parent_page_scheduler->GetMainThreadScheduler(),
+                         parent_page_scheduler,
+                         delegate,
+                         blame_context,
+                         frame_type) {}
 
 FrameSchedulerImpl::FrameSchedulerImpl(
     MainThreadSchedulerImpl* main_thread_scheduler,

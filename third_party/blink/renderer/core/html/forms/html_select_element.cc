@@ -1241,12 +1241,7 @@ Element& HTMLSelectElement::InnerElement() const {
 }
 
 HTMLOptionElement* HTMLSelectElement::SpatialNavigationFocusedOption() {
-  if (!IsSpatialNavigationEnabled(GetDocument().GetFrame()))
-    return nullptr;
-  HTMLOptionElement* focused_option = ActiveSelectionEnd();
-  if (!focused_option)
-    focused_option = select_type_->FirstSelectableOption();
-  return focused_option;
+  return select_type_->SpatialNavigationFocusedOption();
 }
 
 String HTMLSelectElement::ItemText(const Element& element) const {

@@ -21,4 +21,5 @@ include_rules = [
   "+chrome/android/java/src/org/chromium/chrome/browser/notifications/PendingIntentProvider.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/notifications/channels/ChromeChannelDefinitions.java",
   "+components/browser_ui/notifications/android",
+  "+components/browser_ui/share/android",
 ]

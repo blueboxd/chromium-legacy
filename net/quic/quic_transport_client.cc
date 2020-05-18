@@ -386,17 +386,4 @@ void QuicTransportClient::OnConnectionClosed(
   TransitionToState(FAILED);
 }
 
-std::string QuicTransportErrorToString(const QuicTransportError& error) {
-  std::string message =
-      ExtendedErrorToString(error.net_error, error.quic_error);
-  if (error.details == message)
-    return message;
-  return quiche::QuicheStrCat(message, " (", error.details, ")");
-}
-
-std::ostream& operator<<(std::ostream& os, const QuicTransportError& error) {
-  os << QuicTransportErrorToString(error);
-  return os;
-}
-
 }  // namespace net

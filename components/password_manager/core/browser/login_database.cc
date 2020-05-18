@@ -279,10 +279,13 @@ void LogTimesUsedStat(const std::string& name, int sample) {
   base::UmaHistogramCustomCounts(name, sample, 0, 100, 10);
 }
 
-void LogNumberOfAccountsForScheme(const std::string& scheme, int sample) {
+void LogNumberOfAccountsForScheme(base::StringPiece suffix_for_store,
+                                  const std::string& scheme,
+                                  int sample) {
   base::UmaHistogramCustomCounts(
-      "PasswordManager.TotalAccountsHiRes.WithScheme." + scheme, sample, 1,
-      1000, 100);
+      base::StrCat({kPasswordManager, suffix_for_store,
+                    ".TotalAccountsHiRes.WithScheme.", scheme}),
+      sample, 1, 1000, 100);
 }
 
 bool ClearAllSyncMetadata(sql::Database* db) {
@@ -866,7 +869,7 @@ void LoginDatabase::ReportNumberOfAccountsMetrics(
       blacklisted_sites);
 }
 
-void LoginDatabase::RecordTimesPasswordUsedMetrics(
+void LoginDatabase::ReportTimesPasswordUsedMetrics(
     bool custom_passphrase_sync_enabled) {
   sql::Statement usage_statement(db_.GetCachedStatement(
       SQL_FROM_HERE, "SELECT password_type, times_used FROM logins"));
@@ -939,8 +942,10 @@ void LoginDatabase::ReportEmptyUsernamesMetrics() {
       "WHERE blacklisted_by_user=0 AND username_value=''"));
   if (empty_usernames_statement.Step()) {
     int empty_forms = empty_usernames_statement.ColumnInt(0);
-    UMA_HISTOGRAM_COUNTS_100("PasswordManager.EmptyUsernames.CountInDatabase",
-                             empty_forms);
+    base::UmaHistogramCounts100(
+        base::StrCat({kPasswordManager, GetMetricsSuffixForStore(),
+                      ".EmptyUsernames.CountInDatabase"}),
+        empty_forms);
   }
 }
 
@@ -977,11 +982,13 @@ void LoginDatabase::ReportLoginsWithSchemesMetrics() {
     }
   }
 
-  LogNumberOfAccountsForScheme("Android", android_logins);
-  LogNumberOfAccountsForScheme("Ftp", ftp_logins);
-  LogNumberOfAccountsForScheme("Http", http_logins);
-  LogNumberOfAccountsForScheme("Https", https_logins);
-  LogNumberOfAccountsForScheme("Other", other_logins);
+  base::StringPiece suffix_for_store = GetMetricsSuffixForStore();
+
+  LogNumberOfAccountsForScheme(suffix_for_store, "Android", android_logins);
+  LogNumberOfAccountsForScheme(suffix_for_store, "Ftp", ftp_logins);
+  LogNumberOfAccountsForScheme(suffix_for_store, "Http", http_logins);
+  LogNumberOfAccountsForScheme(suffix_for_store, "Https", https_logins);
+  LogNumberOfAccountsForScheme(suffix_for_store, "Other", other_logins);
 }
 
 void LoginDatabase::ReportBubbleSuppressionMetrics() {
@@ -1015,8 +1022,10 @@ void LoginDatabase::ReportInaccessiblePasswordsMetrics() {
       ++failed_encryption;
     }
   }
-  UMA_HISTOGRAM_COUNTS_100("PasswordManager.InaccessiblePasswords",
-                           failed_encryption);
+  base::UmaHistogramCounts100(
+      base::StrCat({kPasswordManager, GetMetricsSuffixForStore(),
+                    ".InaccessiblePasswords"}),
+      failed_encryption);
 }
 
 void LoginDatabase::ReportDuplicateCredentialsMetrics() {
@@ -1083,20 +1092,23 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username,
   TRACE_EVENT0("passwords", "LoginDatabase::ReportMetrics");
 
   ReportNumberOfAccountsMetrics(custom_passphrase_sync_enabled);
-  RecordTimesPasswordUsedMetrics(custom_passphrase_sync_enabled);
+  ReportLoginsWithSchemesMetrics();
+  ReportTimesPasswordUsedMetrics(custom_passphrase_sync_enabled);
+  ReportEmptyUsernamesMetrics();
+  ReportInaccessiblePasswordsMetrics();
 
-  // TODO(crbug.com/1063852): For now, don't record the remaining metrics for
-  // the account store, so as to not break the existing profile store metrics.
-  // Ultimately, many of these metrics should be recorded for both stores, but
-  // split into separate histograms.
+  // The remaining metrics are not recorded for the account store:
+  // - SyncingAccountState just doesn't make sense, since syncing users only use
+  //   the profile store.
+  // - BubbleSuppression fields aren't used in the account store.
+  // - DuplicateCredentials *could* be recorded for the profile store, but are
+  //   not very critical.
+  // - Compromised credentials are only stored in the profile store.
   if (is_account_store_.value())
     return;
 
   ReportSyncingAccountStateMetrics(sync_username);
-  ReportEmptyUsernamesMetrics();
-  ReportLoginsWithSchemesMetrics();
   ReportBubbleSuppressionMetrics();
-  ReportInaccessiblePasswordsMetrics();
   ReportDuplicateCredentialsMetrics();
 
   compromised_credentials_table_.ReportMetrics(bulk_check_done);

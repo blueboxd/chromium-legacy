@@ -261,7 +261,7 @@ class BrowserContextImpl::WebLayerVariationsClient
 
   ~WebLayerVariationsClient() override = default;
 
-  bool IsIncognito() const override {
+  bool IsOffTheRecord() const override {
     return browser_context_->IsOffTheRecord();
   }
 

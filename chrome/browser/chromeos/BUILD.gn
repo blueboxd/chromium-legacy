@@ -1575,6 +1575,8 @@ source_set("chromeos") {
     "login/screens/sync_consent_screen.h",
     "login/screens/terms_of_service_screen.cc",
     "login/screens/terms_of_service_screen.h",
+    "login/screens/tpm_error_screen.cc",
+    "login/screens/tpm_error_screen.h",
     "login/screens/update_required_screen.cc",
     "login/screens/update_required_screen.h",
     "login/screens/update_screen.cc",

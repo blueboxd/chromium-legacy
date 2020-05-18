@@ -2965,11 +2965,6 @@ const char kCorsLegacyModeEnabled[] = "cors.legacy_mode.enabled";
 const char kExternalProtocolDialogShowAlwaysOpenCheckbox[] =
     "external_protocol_dialog.show_always_open_checkbox";
 
-// This pref allows the Web Components v0 APIs to be re-enabled temporarily
-// from M80 through M84.
-// TODO(937746): Remove this after M84.
-const char kWebComponentsV0Enabled[] = "web_components_v0_enabled";
-
 // This pref allows the FormControlsRefresh feature to be disabled temporarily
 // from M81 through M84.
 // TODO(1034611): Remove this after M84.

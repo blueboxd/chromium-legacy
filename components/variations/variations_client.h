@@ -14,10 +14,10 @@ class VariationsClient {
  public:
   virtual ~VariationsClient() = default;
 
-  // Returns whether the user is operating in an incognito context.
+  // Returns whether the user is operating in an OffTheRecord context.
   // Note components/variations code can't call the BrowserContext method
   // directly or we'd end up with a circular dependency.
-  virtual bool IsIncognito() const = 0;
+  virtual bool IsOffTheRecord() const = 0;
 
   // Returns the variations header that should be appended for google requests.
   virtual std::string GetVariationsHeader() const = 0;

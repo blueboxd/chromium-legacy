@@ -23,7 +23,6 @@
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "components/printing/browser/print_composite_client.h"
-#include "components/printing/browser/print_manager_utils.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -58,10 +57,6 @@ void StopWorker(int document_cookie) {
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&PrinterQuery::StopWorker, std::move(printer_query)));
   }
-}
-
-bool ShouldUseCompositor(PrintPreviewUI* print_preview_ui) {
-  return IsOopifEnabled() && print_preview_ui->source_is_modifiable();
 }
 
 bool IsValidPageNumber(int page_number, int page_count) {
@@ -140,36 +135,6 @@ void PrintPreviewMessageHandler::OnDidStartPreview(
   print_preview_ui->OnDidStartPreview(params, ids.request_id);
 }
 
-void PrintPreviewMessageHandler::OnDidPrepareForDocumentToPdf(
-    int document_cookie,
-    const PrintHostMsg_PreviewIds& ids) {
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
-  if (!print_preview_ui)
-    return;
-
-  // Determine if document composition from individual pages with the print
-  // compositor is the desired configuration. Issue a preparation call to the
-  // PrintCompositeClient if that hasn't been done yet. Otherwise, return early.
-  if (!ShouldUseCompositor(print_preview_ui))
-    return;
-
-  // For case of print preview, page metafile is used to composite into
-  // the document PDF at same time.  Need to indicate that this scenario
-  // is at play for the compositor.
-  auto* client = PrintCompositeClient::FromWebContents(web_contents());
-  DCHECK(client);
-  if (client->GetIsDocumentConcurrentlyComposited(document_cookie))
-    return;
-
-  client->DoPrepareForDocumentToPdf(
-      document_cookie,
-      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-          base::BindOnce(
-              &PrintPreviewMessageHandler::OnPrepareForDocumentToPdfDone,
-              weak_ptr_factory_.GetWeakPtr(), ids),
-          mojom::PrintCompositor::Status::kCompositingFailure));
-}
-
 void PrintPreviewMessageHandler::OnDidPreviewPage(
     content::RenderFrameHost* render_frame_host,
     const PrintHostMsg_DidPreviewPage_Params& params,
@@ -188,7 +153,7 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
     return;
   }
 
-  if (ShouldUseCompositor(print_preview_ui)) {
+  if (print_preview_ui->ShouldUseCompositor()) {
     // Don't bother compositing if this request has been cancelled already.
     if (PrintPreviewUI::ShouldCancelRequest(ids))
       return;
@@ -225,7 +190,7 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
     return;
 
   const bool composite_document_using_individual_pages =
-      ShouldUseCompositor(print_preview_ui);
+      print_preview_ui->ShouldUseCompositor();
   const base::ReadOnlySharedMemoryRegion& metafile =
       params.content.metafile_data_region;
 
@@ -433,17 +398,6 @@ void PrintPreviewMessageHandler::OnCompositeToPdfDone(
   }
 }
 
-void PrintPreviewMessageHandler::OnPrepareForDocumentToPdfDone(
-    const PrintHostMsg_PreviewIds& ids,
-    mojom::PrintCompositor::Status status) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (status != mojom::PrintCompositor::Status::kSuccess) {
-    PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
-    if (print_preview_ui)
-      print_preview_ui->OnPrintPreviewFailed(ids.request_id);
-  }
-}
-
 void PrintPreviewMessageHandler::OnNupPdfDocumentConvertDone(
     const PrintHostMsg_PreviewIds& ids,
     mojom::PdfNupConverter::Status status,
@@ -484,8 +438,6 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
   handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintPreviewMessageHandler, message)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidStartPreview, OnDidStartPreview)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrepareDocumentForPreview,
-                        OnDidPrepareForDocumentToPdf)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetDefaultPageLayout,
                         OnDidGetDefaultPageLayout)
     IPC_MESSAGE_UNHANDLED(handled = false)

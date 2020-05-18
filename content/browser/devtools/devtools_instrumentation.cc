@@ -27,7 +27,7 @@
 #include "net/base/load_flags.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/http/http_request_headers.h"
-#include "net/quic/quic_transport_client.h"
+#include "net/quic/quic_transport_error.h"
 #include "net/ssl/ssl_info.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"

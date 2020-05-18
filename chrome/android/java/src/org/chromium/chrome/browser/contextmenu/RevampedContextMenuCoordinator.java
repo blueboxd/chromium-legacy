@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver;
 import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver.PerformanceClass;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareHelper;
-import org.chromium.chrome.browser.share.ShareParams;
+import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.components.browser_ui.widget.ContextMenuDialog;
 import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
 import org.chromium.content_public.browser.WebContents;
@@ -240,11 +240,8 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
             mDialog.dismiss();
             if (item.isShareLink()) {
                 final ShareParams shareParams =
-                        new ShareParams.Builder(window, params.getUrl(), params.getUrl())
-                                .setShareDirectly(true)
-                                .setSaveLastUsed(false)
-                                .build();
-                ShareHelper.shareDirectly(shareParams);
+                        new ShareParams.Builder(window, params.getUrl(), params.getUrl()).build();
+                ShareHelper.shareWithLastUsedComponent(shareParams);
             } else {
                 mOnShareImageDirectly.run();
             }

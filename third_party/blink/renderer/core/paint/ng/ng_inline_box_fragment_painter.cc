@@ -33,23 +33,16 @@ inline bool HasMultiplePaintFragments(const LayoutObject& layout_object) {
   return HasMultipleItems(NGPaintFragment::InlineFragmentsFor(&layout_object));
 }
 
-inline bool MayHaveMultipleFragmentItems(const LayoutObject& layout_object) {
-  // TODO(crbug.com/1061423): NGInlineCursor is currently unable to deal with
-  // objects split into multiple fragmentainers (e.g. columns). Just return true
-  // if it's possible that this object participates in a fragmentation
-  // context. This will give false positives, but that should be harmless, given
-  // the way the return value is used by the caller.
-  if (layout_object.IsInsideFlowThread())
-    return true;
-
-  NGInlineCursor cursor;
-  cursor.MoveTo(layout_object);
-  DCHECK(cursor);
-  if (cursor) {
-    cursor.MoveToNextForSameLayoutObject();
-    return cursor;
-  }
-  return false;
+inline bool MayHaveMultipleFragmentItems(const NGFragmentItem& item,
+                                         const LayoutObject& layout_object) {
+  return !item.IsFirstForNode() || !item.IsLastForNode() ||
+         // TODO(crbug.com/1061423): NGInlineCursor is currently unable to deal
+         // with objects split into multiple fragmentainers (e.g. columns). Just
+         // return true if it's possible that this object participates in a
+         // fragmentation context. This will give false positives, but that
+         // should be harmless, given the way the return value is used by the
+         // caller.
+         UNLIKELY(layout_object.IsInsideFlowThread());
 }
 
 }  // namespace
@@ -121,9 +114,11 @@ void NGInlineBoxFragmentPainterBase::PaintBackgroundBorderShadow(
 
   DCHECK(inline_box_fragment_.GetLayoutObject());
   const LayoutObject& layout_object = *inline_box_fragment_.GetLayoutObject();
+  DCHECK(inline_box_paint_fragment_ || inline_box_item_);
   bool object_may_have_multiple_boxes =
-      inline_box_paint_fragment_ ? HasMultiplePaintFragments(layout_object)
-                                 : MayHaveMultipleFragmentItems(layout_object);
+      inline_box_paint_fragment_
+          ? HasMultiplePaintFragments(layout_object)
+          : MayHaveMultipleFragmentItems(*inline_box_item_, layout_object);
 
   // TODO(eae): Switch to LayoutNG version of BackgroundImageGeometry.
   BackgroundImageGeometry geometry(*static_cast<const LayoutBoxModelObject*>(

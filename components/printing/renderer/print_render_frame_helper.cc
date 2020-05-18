@@ -1533,8 +1533,8 @@ PrintRenderFrameHelper::CreatePreviewDocument() {
     // Want modifiable content of MSKP type to be collected into a document
     // during individual page preview generation (to avoid separate document
     // version for composition), notify to prepare to do this collection.
-    Send(new PrintHostMsg_DidPrepareDocumentForPreview(
-        routing_id(), print_pages_params_->params.document_cookie, ids));
+    preview_ui_->DidPrepareDocumentForPreview(
+        print_pages_params_->params.document_cookie, ids.request_id);
   }
 
   while (!print_preview_context_.IsFinalPageRendered()) {

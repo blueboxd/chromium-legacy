@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
@@ -42,6 +41,7 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.offline_items_collection.LaunchLocation;
@@ -598,8 +598,7 @@ public class OfflinePageUtils {
             }
             @Override
             protected void onPostExecute(Uri uri) {
-                ShareParams.Builder builder =
-                        new ShareParams.Builder(window, pageTitle, pageUrl).setShareDirectly(false);
+                ShareParams.Builder builder = new ShareParams.Builder(window, pageTitle, pageUrl);
                 // Only try to share the offline page if we have a content URI making the actual
                 // file available.
                 // TODO(985699): Sharing the page's online URL is a temporary fix for crashes when

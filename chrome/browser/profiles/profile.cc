@@ -87,7 +87,7 @@ class ChromeVariationsClient : public variations::VariationsClient {
 
   ~ChromeVariationsClient() override = default;
 
-  bool IsIncognito() const override {
+  bool IsOffTheRecord() const override {
     return browser_context_->IsOffTheRecord();
   }
 
@@ -492,11 +492,4 @@ variations::VariationsClient* Profile::GetVariationsClient() {
   if (!chrome_variations_client_)
     chrome_variations_client_ = std::make_unique<ChromeVariationsClient>(this);
   return chrome_variations_client_.get();
-}
-
-void Profile::DestroyOffTheRecordProfile() {
-  OTRProfileID primary_otr_id = OTRProfileID::PrimaryID();
-  if (!HasOffTheRecordProfile(primary_otr_id))
-    return;
-  DestroyOffTheRecordProfile(GetOffTheRecordProfile(primary_otr_id));
 }

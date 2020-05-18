@@ -6,8 +6,10 @@
 
 #include "base/bind_helpers.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
@@ -20,6 +22,14 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/apps/apk_web_app_service.h"
+
+namespace {
+constexpr char kRelationship[] = "delegate_permission/common.handle_all_urls";
+}
+#endif
+
 namespace web_app {
 
 WebAppBrowserController::WebAppBrowserController(Browser* browser)
@@ -27,6 +37,7 @@ WebAppBrowserController::WebAppBrowserController(Browser* browser)
                            GetAppIdFromApplicationName(browser->app_name())),
       provider_(*WebAppProvider::Get(browser->profile())) {
   registrar_observer_.Add(&provider_.registrar());
+  PerformDigitalAssetLinkVerification(browser);
 }
 
 WebAppBrowserController::~WebAppBrowserController() = default;
@@ -39,6 +50,32 @@ bool WebAppBrowserController::HasMinimalUiButtons() const {
 bool WebAppBrowserController::IsHostedApp() const {
   return true;
 }
+
+#if defined(OS_CHROMEOS)
+bool WebAppBrowserController::ShouldShowCustomTabBar() const {
+  if (AppBrowserController::ShouldShowCustomTabBar())
+    return true;
+
+  return is_verified_.value_or(false);
+}
+
+void WebAppBrowserController::OnRelationshipCheckComplete(
+    digital_asset_links::RelationshipCheckResult result) {
+  bool should_show_cct = false;
+  switch (result) {
+    case digital_asset_links::RelationshipCheckResult::kSuccess:
+      should_show_cct = false;
+      break;
+    case digital_asset_links::RelationshipCheckResult::kFailure:
+    case digital_asset_links::RelationshipCheckResult::kNoConnection:
+      should_show_cct = true;
+      break;
+  }
+  is_verified_ = should_show_cct;
+  browser()->window()->UpdateCustomTabBarVisibility(should_show_cct,
+                                                    false /* animate */);
+}
+#endif  // OS_CHROMEOS
 
 void WebAppBrowserController::OnWebAppUninstalled(const AppId& app_id) {
   if (HasAppId() && app_id == GetAppId())
@@ -184,4 +221,38 @@ void WebAppBrowserController::OnReadIcon(const SkBitmap& bitmap) {
     std::move(callback_for_testing_).Run();
 }
 
+void WebAppBrowserController::PerformDigitalAssetLinkVerification(
+    Browser* browser) {
+#if defined(OS_CHROMEOS)
+  asset_link_handler_ =
+      std::make_unique<digital_asset_links::DigitalAssetLinksHandler>(
+          browser->profile()->GetURLLoaderFactory());
+  is_verified_ = base::nullopt;
+
+  if (!HasAppId())
+    return;
+
+  chromeos::ApkWebAppService* apk_web_app_service =
+      chromeos::ApkWebAppService::Get(browser->profile());
+  if (!apk_web_app_service || !apk_web_app_service->IsWebOnlyTwa(GetAppId()))
+    return;
+
+  const std::string origin = GetAppLaunchURL().GetOrigin().spec();
+  const base::Optional<std::string> package_name =
+      apk_web_app_service->GetPackageNameForWebApp(GetAppId());
+  const base::Optional<std::string> fingerprint =
+      apk_web_app_service->GetCertificateSha256Fingerprint(GetAppId());
+
+  // Any web-only TWA should have an associated package name and fingerprint.
+  DCHECK(package_name.has_value());
+  DCHECK(fingerprint.has_value());
+
+  // base::Unretained is safe as |asset_link_handler_| is owned by this object
+  // and will be destroyed if this object is destroyed.
+  asset_link_handler_->CheckDigitalAssetLinkRelationshipForAndroidApp(
+      origin, kRelationship, fingerprint.value(), package_name.value(),
+      base::BindOnce(&WebAppBrowserController::OnRelationshipCheckComplete,
+                     base::Unretained(this)));
+#endif
+}
 }  // namespace web_app

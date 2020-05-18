@@ -48,6 +48,7 @@ namespace scheduler {
 // To avoid symbol collisions in jumbo builds.
 namespace main_thread_scheduler_impl_unittest {
 
+namespace {
 using testing::InSequence;
 using testing::Mock;
 using testing::NiceMock;
@@ -56,6 +57,34 @@ using testing::Return;
 using InputEventState = WebThreadScheduler::InputEventState;
 using base::sequence_manager::FakeTask;
 using base::sequence_manager::FakeTaskTiming;
+
+// This is a wrapper around MainThreadSchedulerImpl::CreatePageScheduler, that
+// returns the PageScheduler as a PageSchedulerImpl.
+std::unique_ptr<PageSchedulerImpl> CreatePageScheduler(
+    PageScheduler::Delegate* page_scheduler_delegate,
+    ThreadSchedulerImpl* scheduler) {
+  std::unique_ptr<PageScheduler> page_scheduler =
+      scheduler->CreatePageScheduler(page_scheduler_delegate);
+  std::unique_ptr<PageSchedulerImpl> page_scheduler_impl(
+      static_cast<PageSchedulerImpl*>(page_scheduler.release()));
+  return page_scheduler_impl;
+}
+
+// This is a wrapper around PageSchedulerImpl::CreateFrameScheduler, that
+// returns the FrameScheduler as a FrameSchedulerImpl.
+std::unique_ptr<FrameSchedulerImpl> CreateFrameScheduler(
+    PageSchedulerImpl* page_scheduler,
+    FrameScheduler::Delegate* delegate,
+    blink::BlameContext* blame_context,
+    FrameScheduler::FrameType frame_type) {
+  auto frame_scheduler =
+      page_scheduler->CreateFrameScheduler(delegate, blame_context, frame_type);
+  std::unique_ptr<FrameSchedulerImpl> frame_scheduler_impl(
+      static_cast<FrameSchedulerImpl*>(frame_scheduler.release()));
+  return frame_scheduler_impl;
+}
+
+}  // namespace
 
 class FakeInputEvent : public blink::WebInputEvent {
  public:
@@ -247,6 +276,10 @@ class MockPageSchedulerImpl : public PageSchedulerImpl {
  public:
   explicit MockPageSchedulerImpl(MainThreadSchedulerImpl* scheduler)
       : PageSchedulerImpl(nullptr, scheduler) {
+    // This would normally be called by
+    // MainThreadSchedulerImpl::CreatePageScheduler.
+    scheduler->AddPageScheduler(this);
+
     ON_CALL(*this, IsWaitingForMainFrameContentfulPaint)
         .WillByDefault(Return(true));
     ON_CALL(*this, IsWaitingForMainFrameMeaningfulPaint)
@@ -392,8 +425,8 @@ class MainThreadSchedulerImplTest : public testing::Test {
     page_scheduler_ =
         std::make_unique<NiceMock<MockPageSchedulerImpl>>(scheduler_.get());
     main_frame_scheduler_ =
-        FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr, nullptr,
-                                   FrameScheduler::FrameType::kMainFrame);
+        CreateFrameScheduler(page_scheduler_.get(), nullptr, nullptr,
+                             FrameScheduler::FrameType::kMainFrame);
 
     widget_scheduler_ = scheduler_->CreateWidgetScheduler();
     input_task_runner_ = widget_scheduler_->InputTaskRunner();
@@ -3085,13 +3118,11 @@ TEST_F(MainThreadSchedulerImplTest, EnableVirtualTime) {
 }
 
 TEST_F(MainThreadSchedulerImplTest, EnableVirtualTimeAfterThrottling) {
-  std::unique_ptr<PageSchedulerImpl> page_scheduler =
-      base::WrapUnique(new PageSchedulerImpl(nullptr, scheduler_.get()));
-  scheduler_->AddPageScheduler(page_scheduler.get());
+  auto page_scheduler = CreatePageScheduler(nullptr, scheduler_.get());
 
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
-      FrameSchedulerImpl::Create(page_scheduler.get(), nullptr, nullptr,
-                                 FrameScheduler::FrameType::kSubframe);
+      CreateFrameScheduler(page_scheduler.get(), nullptr, nullptr,
+                           FrameScheduler::FrameType::kSubframe);
 
   TaskQueue* timer_tq = ThrottleableTaskQueue(frame_scheduler.get()).get();
 
@@ -3221,15 +3252,15 @@ TEST_F(MainThreadSchedulerImplTest, Tracing) {
   // traced value. This test checks that no internal checks fire during this.
 
   std::unique_ptr<PageSchedulerImpl> page_scheduler1 =
-      base::WrapUnique(new PageSchedulerImpl(nullptr, scheduler_.get()));
+      CreatePageScheduler(nullptr, scheduler_.get());
   scheduler_->AddPageScheduler(page_scheduler1.get());
 
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
-      FrameSchedulerImpl::Create(page_scheduler1.get(), nullptr, nullptr,
-                                 FrameScheduler::FrameType::kSubframe);
+      CreateFrameScheduler(page_scheduler1.get(), nullptr, nullptr,
+                           FrameScheduler::FrameType::kSubframe);
 
   std::unique_ptr<PageSchedulerImpl> page_scheduler2 =
-      base::WrapUnique(new PageSchedulerImpl(nullptr, scheduler_.get()));
+      CreatePageScheduler(nullptr, scheduler_.get());
   scheduler_->AddPageScheduler(page_scheduler2.get());
 
   CPUTimeBudgetPool* time_budget_pool =

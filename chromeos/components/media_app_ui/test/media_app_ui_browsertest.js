@@ -14,7 +14,34 @@ GEN('#include "third_party/blink/public/common/features.h"');
 const HOST_ORIGIN = 'chrome://media-app';
 const GUEST_ORIGIN = 'chrome-untrusted://media-app';
 
+/**
+ * Regex to match against text of a "generic" error. This just checks for
+ * something message-like (a string with at least one letter). Note we can't
+ * update error messages in the same patch as this test currently. See
+ * https://crbug.com/1080473.
+ */
+const GENERIC_ERROR_MESSAGE_REGEX = '^".*[A-Za-z].*"$';
+
 let driver = null;
+
+/**
+ * Runs a CSS selector until it detects the "error" UX being loaded.
+ * @return {!Promise<string>} alt= text of the element showing the error.
+ */
+function waitForErrorUX() {
+  const ERROR_UX_SELECTOR = 'img[src^="/assets/error.png"]';
+  return driver.waitForElementInGuest(ERROR_UX_SELECTOR, 'alt');
+}
+
+/**
+ * Runs a CSS selector that waits for an image to load with the given alt= text
+ * and returns its width.
+ * @param {string} altText
+ * @return {!Promise<string>} The value of the width attribute.
+ */
+function waitForImageAndGetWidth(altText) {
+  return driver.waitForElementInGuest(`img[alt="${altText}"]`, 'naturalWidth');
+}
 
 // js2gtest fixtures require var here (https://crbug.com/1033337).
 // eslint-disable-next-line no-var
@@ -79,14 +106,16 @@ const TEST_IMAGE_HEIGHT = 456;
 /**
  * @param {number=} width
  * @param {number=} height
+ * @param {string=} name
  * @return {Promise<File>} A {width}x{height} transparent encoded image/png.
  */
 async function createTestImageFile(
-    width = TEST_IMAGE_WIDTH, height = TEST_IMAGE_HEIGHT) {
+    width = TEST_IMAGE_WIDTH, height = TEST_IMAGE_HEIGHT,
+    name = 'test_file.png') {
   const canvas = new OffscreenCanvas(width, height);
   canvas.getContext('2d');  // convertToBlob fails without a rendering context.
   const blob = await canvas.convertToBlob();
-  return new File([blob], 'test_file.png', {type: 'image/png'});
+  return new File([blob], name, {type: 'image/png'});
 }
 
 // Tests that chrome://media-app is allowed to frame
@@ -114,12 +143,135 @@ TEST_F('MediaAppUIBrowserTest', 'HasTitleAndLang', () => {
   testDone();
 });
 
-TEST_F('MediaAppUIBrowserTest', 'LoadFile', async () => {
-  await loadFile(await createTestImageFile(), new FakeFileSystemFileHandle());
+// Tests that regular launch for an image succeeds.
+TEST_F('MediaAppUIBrowserTest', 'LaunchFile', async () => {
+  await launchWithFiles([await createTestImageFile()]);
   const result =
       await driver.waitForElementInGuest('img[src^="blob:"]', 'naturalWidth');
 
   assertEquals(`${TEST_IMAGE_WIDTH}`, result);
+  assertEquals(currentFiles.length, 1);
+  assertEquals(await getFileErrors(), '');
+  testDone();
+});
+
+// Tests that we show error UX when trying to launch an unopenable file.
+TEST_F('MediaAppUIBrowserTest', 'LaunchUnopenableFile', async () => {
+  const mockFileHandle =
+      new FakeFileSystemFileHandle('not_allowed.png', 'image/png');
+  mockFileHandle.getFileSync = () => {
+    throw new DOMException(
+        'Fake NotAllowedError for LoadUnopenableFile test.', 'NotAllowedError');
+  };
+  await launchWithHandles([mockFileHandle]);
+  const result = await waitForErrorUX();
+
+  assertMatch(result, GENERIC_ERROR_MESSAGE_REGEX);
+  assertEquals(currentFiles.length, 0);
+  assertEquals(await getFileErrors(), 'NotAllowedError');
+  testDone();
+});
+
+// Tests that unopenable files in the same directory are ignored at launch.
+TEST_F('MediaAppUIBrowserTest', 'LaunchWithUnopenableSibling', async () => {
+  const validHandle =
+      fileToFileHandle(await createTestImageFile(123, 456, 'allowed.png'));
+  const notAllowedHandle =
+      new FakeFileSystemFileHandle('not_allowed.png', 'image/png');
+  notAllowedHandle.getFileSync = () => {
+    throw new DOMException(
+        'Fake NotAllowedError for LaunchWithUnopenableSibling test.',
+        'NotAllowedError');
+  };
+
+  await launchWithHandles([validHandle, notAllowedHandle]);
+  const result = await waitForImageAndGetWidth('allowed.png');
+
+  assertEquals(`${TEST_IMAGE_WIDTH}`, result);
+  assertEquals(currentFiles.length, 1);  // Unopenable file ignored at launch.
+  assertEquals(currentFiles[0].handle.name, 'allowed.png');
+  assertEquals(await getFileErrors(), '');  // Ignored => no errors.
+  testDone();
+});
+
+// Tests that a file that becomes inaccessible after the initial app launch is
+// ignored on navigation, and shows an error when navigated to itself.
+TEST_F('MediaAppUIBrowserTest', 'NavigateWithUnopenableSibling', async () => {
+  const handles = [
+    fileToFileHandle(await createTestImageFile(111 /* width */, 10, '1.png')),
+    fileToFileHandle(await createTestImageFile(222 /* width */, 10, '2.png')),
+    fileToFileHandle(await createTestImageFile(333 /* width */, 10, '3.png')),
+  ];
+
+  await launchWithHandles(handles);
+  let result = await waitForImageAndGetWidth('1.png');
+  assertEquals(result, '111');
+  assertEquals(currentFiles.length, 3);
+  assertEquals(await getFileErrors(), ',,');
+
+  // Now that we've launched, make the *last* handle unopenable. This is only
+  // interesting if we know the file will be re-opened, so check that first.
+  // Note that if the file is non-null, no "reopen" occurs: launch.js does not
+  // open files a second time after examining siblings for relevance to the
+  // focus file.
+  assertEquals(currentFiles[2].file, null);
+  handles[2].getFileSync = () => {
+    throw new DOMException(
+        'Fake NotAllowedError for NavigateToUnopenableSibling test.',
+        'NotAllowedError');
+  };
+  await advance(1);  // Navigate to the still-openable second file.
+
+  result = await waitForImageAndGetWidth('2.png');
+  assertEquals(result, '222');
+  assertEquals(currentFiles.length, 3);
+
+  // The error stays on the third, now unopenable. But, since we've advanced,
+  // it has now rotated into the second slot.
+  assertEquals(await getFileErrors(), ',NotAllowedError,');
+
+  // Navigate to the unopenable file and expect a graceful error.
+  await advance(1);
+  result = await waitForErrorUX();
+  assertMatch(result, GENERIC_ERROR_MESSAGE_REGEX);
+  assertEquals(currentFiles.length, 3);
+  assertEquals(await getFileErrors(), 'NotAllowedError,,');
+
+  // Navigating back to an openable file should still work.
+  await advance(1);
+  result = await waitForImageAndGetWidth('1.png');
+  assertEquals(result, '111');
+  assertEquals(currentFiles.length, 3);
+  assertEquals(await getFileErrors(), ',,NotAllowedError');
+
+  testDone();
+});
+
+// Tests a hypothetical scenario where a file may be deleted and replaced with
+// an openable directory with the same name while the app is running.
+TEST_F('MediaAppUIBrowserTest', 'FileThatBecomesDirectory', async () => {
+  const handles = [
+    fileToFileHandle(await createTestImageFile(111 /* width */, 10, '1.png')),
+    fileToFileHandle(await createTestImageFile(222 /* width */, 10, '2.png')),
+  ];
+
+  await launchWithHandles(handles);
+  let result = await waitForImageAndGetWidth('1.png');
+  assertEquals(await getFileErrors(), ',');
+
+  handles[1].isFile = false;
+  handles[1].isDirectory = true;
+  handles[1].getFileSync = () => {
+    throw new Error(
+        '(in test) FileThatBecomesDirectory: getFileSync should not be called');
+  };
+
+  await advance(1);
+  result = await waitForErrorUX();
+  assertMatch(result, GENERIC_ERROR_MESSAGE_REGEX);
+  assertEquals(currentFiles.length, 2);
+  assertEquals(await getFileErrors(), 'NotAFile,');
+
   testDone();
 });
 

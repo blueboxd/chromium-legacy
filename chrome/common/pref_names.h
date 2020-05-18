@@ -1040,8 +1040,6 @@ extern const char kCorsLegacyModeEnabled[];
 
 extern const char kExternalProtocolDialogShowAlwaysOpenCheckbox[];
 
-extern const char kWebComponentsV0Enabled[];
-
 extern const char kUseLegacyFormControls[];
 
 extern const char kScrollToTextFragmentEnabled[];

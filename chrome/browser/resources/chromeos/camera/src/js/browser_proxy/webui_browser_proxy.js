@@ -31,6 +31,7 @@ class WebUIBrowserProxy {
 
   /** @override */
   async localStorageGet(keys) {
+    let result = {};
     let sanitizedKeys = [];
     if (typeof keys === 'string') {
       sanitizedKeys = [keys];
@@ -38,19 +39,24 @@ class WebUIBrowserProxy {
       sanitizedKeys = keys;
     } else if (keys !== null && typeof keys === 'object') {
       sanitizedKeys = Object.keys(keys);
+
+      // If any key does not exist, use the default value specified in the
+      // input.
+      result = Object.assign({}, keys);
     } else {
       throw new Error('WebUI localStorageGet() cannot be run with ' + keys);
     }
 
-    const result = {};
     for (const key of sanitizedKeys) {
-      let value = window.localStorage.getItem(key);
+      const value = window.localStorage.getItem(key);
       if (value !== null) {
-        value = JSON.parse(value);
+        result[key] = JSON.parse(value);
+      } else if (result[key] === undefined) {
+        // For key that does not exist and does not have a default value, set it
+        // to null.
+        result[key] = null;
       }
-      result[key] = value === null ? {} : value;
     }
-
     return result;
   }
 

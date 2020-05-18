@@ -853,6 +853,10 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/flowthread-with-floa
 ### With LayoutNGBlockFragmentation enabled:
 
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos-with-overflow.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-between-avoid-000.html [ Pass ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-between-avoid-001.html [ Pass ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-between-avoid-003.html [ Pass ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-between-avoid-004.html [ Pass ]
 crbug.com/1028595 virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-001.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/floats-and-text-narrow-and-short-dynamic.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/line-after-unbreakable-float-after-padding.html [ Failure ]
@@ -1604,6 +1608,9 @@ crbug.com/944583 [ Mac ] fast/scrolling/percentage-mousewheel-scroll-on-iframe.h
 crbug.com/944583 [ Mac ] fast/scrolling/percentage-mousewheel-scroll.html [ Pass Failure ]
 crbug.com/944583 [ Mac ] fast/events/platform-wheelevent-paging-x-in-scrolling-page.html [ Pass Failure Timeout ]
 crbug.com/944583 [ Mac ] fast/events/platform-wheelevent-paging-y-in-scrolling-page.html [ Pass Failure Timeout ]
+# Sheriff: 2020-05-18
+crbug.com/1083820 [ Mac ] fast/scrolling/document-level-wheel-event-listener-passive-by-default.html [ Pass Failure ]
+crbug.com/1083824 [ Mac ] geolocation-api/watchPosition-page-visibility.html [ Pass Failure ]
 
 # In external/wpt/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure
@@ -3532,6 +3539,10 @@ crbug.com/1034807 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css
 crbug.com/982116 http/tests/devtools/elements/styles-4/styles-new-API.js [ Pass Timeout ]
 
 crbug.com/829028 external/wpt/css/css-break/avoid-border-break.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/break-between-avoid-000.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/break-between-avoid-001.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/break-between-avoid-003.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/break-between-avoid-004.html [ Failure ]
 crbug.com/967329 external/wpt/css/css-multicol/columnfill-auto-max-height-001.html [ Failure ]
 crbug.com/967329 external/wpt/css/css-multicol/columnfill-auto-max-height-002.html [ Failure ]
 crbug.com/990240 external/wpt/css/css-multicol/multicol-breaking-000.html [ Failure ]
@@ -3817,15 +3828,6 @@ crbug.com/789139 http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ F
 # ====== Begin web-components-v0-disabled virtual suite tests ======
 
 # Ignore these - they are tests of the disabled features. Eventually remove these.
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/callback-context.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/crash-without-dom-wrapper.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/created-callback.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/document-register-on-create-callback.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/imports-custom-element-abort.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/registration-context-delete-during-attribute-changed.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/registration-context-delete-during-callback-recursion.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/registration-context-delete-during-upgrade.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/registration-context-sharing.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/access-document-of-detached-stylesheetlist-crash.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-after-style.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-in-media-element.html [ Skip ]
@@ -3864,7 +3866,6 @@ crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadow-inser
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/style-sharing-with-content-and-host.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/svg-style-in-shadow-tree.xhtml [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/text-node-in-shadow.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/lifecycle-created-parser-only.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-fallback-display-none-dynamic.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-outside-shadow-style.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-select-namespace.html [ Skip ]

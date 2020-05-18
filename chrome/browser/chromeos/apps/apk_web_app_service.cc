@@ -91,8 +91,8 @@ ApkWebAppService::ApkWebAppService(Profile* profile) : profile_(profile) {
 
 ApkWebAppService::~ApkWebAppService() = default;
 
-bool ApkWebAppService::IsWebOnlyTwa(const web_app::AppId& web_app_id) {
-  if (!IsWebAppInstalledFromArc(web_app_id))
+bool ApkWebAppService::IsWebOnlyTwa(const web_app::AppId& app_id) {
+  if (!IsWebAppInstalledFromArc(app_id))
     return false;
 
   DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
@@ -100,13 +100,28 @@ bool ApkWebAppService::IsWebOnlyTwa(const web_app::AppId& web_app_id) {
 
   // Find the entry associated with the provided web app id.
   const base::Value* v = web_apps_to_apks->FindPathOfType(
-      {web_app_id, kIsWebOnlyTwaKey}, base::Value::Type::BOOLEAN);
+      {app_id, kIsWebOnlyTwaKey}, base::Value::Type::BOOLEAN);
   return v && v->GetBool();
 }
 
+base::Optional<std::string> ApkWebAppService::GetPackageNameForWebApp(
+    const web_app::AppId& app_id) {
+  DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
+                                        kWebAppToApkDictPref);
+
+  // Find the entry associated with the provided web app id.
+  const base::Value* v = web_apps_to_apks->FindPathOfType(
+      {app_id, kPackageNameKey}, base::Value::Type::STRING);
+
+  if (!v)
+    return base::nullopt;
+
+  return base::Optional<std::string>(v->GetString());
+}
+
 base::Optional<std::string> ApkWebAppService::GetCertificateSha256Fingerprint(
-    const web_app::AppId& web_app_id) {
-  if (!IsWebAppInstalledFromArc(web_app_id))
+    const web_app::AppId& app_id) {
+  if (!IsWebAppInstalledFromArc(app_id))
     return base::nullopt;
 
   DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
@@ -114,11 +129,10 @@ base::Optional<std::string> ApkWebAppService::GetCertificateSha256Fingerprint(
 
   // Find the entry associated with the provided web app id.
   const base::Value* v = web_apps_to_apks->FindPathOfType(
-      {web_app_id, kSha256FingerprintKey}, base::Value::Type::STRING);
+      {app_id, kSha256FingerprintKey}, base::Value::Type::STRING);
 
-  if (!v) {
+  if (!v)
     return base::nullopt;
-  }
 
   return base::Optional<std::string>(v->GetString());
 }

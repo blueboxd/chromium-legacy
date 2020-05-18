@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.offlinepages;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.browser_ui.share.ShareParams;
 
 import java.util.List;
 

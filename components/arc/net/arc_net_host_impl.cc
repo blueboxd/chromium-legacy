@@ -99,7 +99,7 @@ arc::mojom::TetheringClientState TranslateTetheringState(
 }
 
 arc::mojom::WiFiPtr TranslateONCWifi(const base::DictionaryValue* dict) {
-  arc::mojom::WiFiPtr wifi = arc::mojom::WiFi::New();
+  auto wifi = arc::mojom::WiFi::New();
 
   // Optional; defaults to 0.
   dict->GetInteger(onc::wifi::kFrequency, &wifi->frequency);
@@ -182,9 +182,10 @@ std::vector<arc::mojom::IPConfigurationPtr> IPConfigurationsFromONCIPConfigs(
       dict->FindKey(onc::network_config::kIPConfigs);
   if (!ip_config_list || !ip_config_list->is_list())
     return {};
+
   std::vector<arc::mojom::IPConfigurationPtr> result;
   for (const auto& entry : ip_config_list->GetList()) {
-    arc::mojom::IPConfigurationPtr config = TranslateONCIPConfig(&entry);
+    auto config = TranslateONCIPConfig(&entry);
     if (config && IsValidIPConfiguration(*config))
       result.push_back(std::move(config));
   }
@@ -199,9 +200,11 @@ std::vector<arc::mojom::IPConfigurationPtr> IPConfigurationsFromONCProperty(
   const base::Value* ip_dict = dict->FindKey(property_key);
   if (!ip_dict)
     return {};
-  arc::mojom::IPConfigurationPtr config = TranslateONCIPConfig(ip_dict);
+
+  auto config = TranslateONCIPConfig(ip_dict);
   if (!config || !IsValidIPConfiguration(*config))
     return {};
+
   std::vector<arc::mojom::IPConfigurationPtr> result;
   result.push_back(std::move(config));
   return result;
@@ -211,7 +214,6 @@ arc::mojom::ConnectionStateType TranslateONCConnectionState(
     const base::DictionaryValue* dict) {
   std::string connection_state =
       GetString(dict, onc::network_config::kConnectionState);
-
   if (connection_state == onc::connection_state::kConnected)
     return arc::mojom::ConnectionStateType::CONNECTED;
   if (connection_state == onc::connection_state::kConnecting)
@@ -322,8 +324,7 @@ void AddDeviceProperties(arc::mojom::NetworkConfiguration* network,
 arc::mojom::NetworkConfigurationPtr TranslateONCConfiguration(
     const chromeos::NetworkState* network_state,
     const base::DictionaryValue* dict) {
-  arc::mojom::NetworkConfigurationPtr mojo =
-      arc::mojom::NetworkConfiguration::New();
+  auto mojo = arc::mojom::NetworkConfiguration::New();
 
   mojo->connection_state = TranslateONCConnectionState(dict);
 
@@ -384,18 +385,18 @@ std::vector<arc::mojom::NetworkConfigurationPtr> TranslateNetworkStates(
   std::vector<arc::mojom::NetworkConfigurationPtr> networks;
   for (const chromeos::NetworkState* state : network_states) {
     const std::string& network_path = state->path();
-    if (network_path == arc_vpn_path) {
-      // Never tell Android about its own VPN.
+    // Never tell Android about its own VPN.
+    if (network_path == arc_vpn_path)
       continue;
-    }
+
     // For tethered networks, the underlying WiFi networks are not part of
     // active networks. Replace any such tethered network with its underlying
     // backing network, because ARC cannot match its datapath with the tethered
     // network configuration.
     state = GetShillBackedNetwork(state);
-    if (!state) {
+    if (!state)
       continue;
-    }
+
     auto network = TranslateONCConfiguration(
         state, chromeos::network_util::TranslateNetworkStateToONC(state).get());
     network->is_default_network = state == GetStateHandler()->DefaultNetwork();
@@ -644,7 +645,7 @@ void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
 
 bool ArcNetHostImpl::GetNetworkPathFromGuid(const std::string& guid,
                                             std::string* path) {
-  const chromeos::NetworkState* network =
+  const auto* network =
       GetShillBackedNetwork(GetStateHandler()->GetNetworkStateFromGuid(guid));
   if (network) {
     *path = network->path();
@@ -655,6 +656,7 @@ bool ArcNetHostImpl::GetNetworkPathFromGuid(const std::string& guid,
     *path = cached_service_path_;
     return true;
   }
+
   return false;
 }
 
@@ -729,9 +731,8 @@ void ArcNetHostImpl::GetWifiEnabledState(GetWifiEnabledStateCallback callback) {
 void ArcNetHostImpl::SetWifiEnabledState(bool is_enabled,
                                          SetWifiEnabledStateCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  chromeos::NetworkStateHandler::TechnologyState state =
-      GetStateHandler()->GetTechnologyState(
-          chromeos::NetworkTypePattern::WiFi());
+  auto state = GetStateHandler()->GetTechnologyState(
+      chromeos::NetworkTypePattern::WiFi());
   // WiFi can't be enabled or disabled in these states.
   if ((state == chromeos::NetworkStateHandler::TECHNOLOGY_PROHIBITED) ||
       (state == chromeos::NetworkStateHandler::TECHNOLOGY_UNINITIALIZED) ||
@@ -790,13 +791,12 @@ std::string ArcNetHostImpl::LookupArcVpnServicePath() {
       false /* visible_only */, kGetNetworksListLimit, &state_list);
 
   for (const chromeos::NetworkState* state : state_list) {
-    const chromeos::NetworkState* shill_backed_network =
-        GetShillBackedNetwork(state);
+    const auto* shill_backed_network = GetShillBackedNetwork(state);
     if (!shill_backed_network)
       continue;
-    if (shill_backed_network->GetVpnProviderType() == shill::kProviderArcVpn) {
+
+    if (shill_backed_network->GetVpnProviderType() == shill::kProviderArcVpn)
       return shill_backed_network->path();
-    }
   }
   return std::string();
 }
@@ -814,19 +814,16 @@ void ArcNetHostImpl::ConnectArcVpn(const std::string& service_path,
 
 std::unique_ptr<base::Value> ArcNetHostImpl::TranslateStringListToValue(
     const std::vector<std::string>& string_list) {
-  std::unique_ptr<base::Value> result =
-      std::make_unique<base::Value>(base::Value::Type::LIST);
-  for (const auto& item : string_list) {
+  auto result = std::make_unique<base::Value>(base::Value::Type::LIST);
+  for (const auto& item : string_list)
     result->Append(item);
-  }
   return result;
 }
 
 std::unique_ptr<base::DictionaryValue>
 ArcNetHostImpl::TranslateVpnConfigurationToOnc(
     const mojom::AndroidVpnConfiguration& cfg) {
-  std::unique_ptr<base::DictionaryValue> top_dict =
-      std::make_unique<base::DictionaryValue>();
+  auto top_dict = std::make_unique<base::DictionaryValue>();
 
   // Name, Type
   top_dict->SetKey(
@@ -884,8 +881,7 @@ ArcNetHostImpl::TranslateVpnConfigurationToOnc(
 
 void ArcNetHostImpl::AndroidVpnConnected(
     mojom::AndroidVpnConfigurationPtr cfg) {
-  std::unique_ptr<base::DictionaryValue> properties =
-      TranslateVpnConfigurationToOnc(*cfg);
+  auto properties = TranslateVpnConfigurationToOnc(*cfg);
   std::string service_path = LookupArcVpnServicePath();
   if (!service_path.empty()) {
     GetManagedConfigurationHandler()->SetProperties(
@@ -953,15 +949,13 @@ void ArcNetHostImpl::DisconnectRequested(const std::string& service_path) {
 
 void ArcNetHostImpl::NetworkConnectionStateChanged(
     const chromeos::NetworkState* network) {
-  const chromeos::NetworkState* shill_backed_network =
-      GetShillBackedNetwork(network);
+  const auto* shill_backed_network = GetShillBackedNetwork(network);
   if (!shill_backed_network)
     return;
 
   if (arc_vpn_service_path_ != shill_backed_network->path() ||
-      shill_backed_network->IsConnectingOrConnected()) {
+      shill_backed_network->IsConnectingOrConnected())
     return;
-  }
 
   // This code path is taken when shill disconnects the Android VPN
   // service.  This can happen if a user tries to connect to a Chrome OS
@@ -977,7 +971,7 @@ void ArcNetHostImpl::ActiveNetworksChanged(
   if (!net_instance)
     return;
 
-  std::vector<arc::mojom::NetworkConfigurationPtr> network_configurations =
+  auto network_configurations =
       TranslateNetworkStates(arc_vpn_service_path_, active_networks);
 
   // A newly connected network may not immediately have any usable IP config

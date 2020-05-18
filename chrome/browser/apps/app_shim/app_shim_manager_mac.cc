@@ -508,10 +508,6 @@ void AppShimManager::OnShimProcessConnectedAndAllLaunchesDone(
   // If we already have a host attached (e.g, due to multiple launches racing),
   // close down the app shim that didn't win the race.
   if (host->HasBootstrapConnected()) {
-    // If another app shim process has already connected to this (profile,
-    // app_id) pair, then focus the windows for the existing process. Note
-    // that this only does anything for non-RemoveCocoa apps.
-    OnShimFocus(profile_state->GetHost());
     bootstrap->OnFailedToConnectToHost(
         chrome::mojom::AppShimLaunchResult::kDuplicateHost);
     return;
@@ -721,12 +717,21 @@ void AppShimManager::OnShimFocus(AppShimHost* host) {
   if (host->UsesRemoteViews())
     return;
 
+  // Legacy apps don't own their own windows, so when we focus the app,
+  // what we really want to do is focus the Chrome windows.
   Profile* profile = ProfileForPath(host->GetProfilePath());
-  if (!delegate_->AppIsInstalled(profile, host->GetAppId())) {
-    CloseShimForApp(profile, host->GetAppId());
-    return;
-  }
+  delegate_->ShowAppWindows(profile, host->GetAppId());
+}
 
+void AppShimManager::OnShimReopen(AppShimHost* host) {
+  // TODO(https://crbug.com/1080729): If the app has no windows open, this
+  // should trigger an app launch for PWAs as well.
+  if (host->UsesRemoteViews())
+    return;
+
+  // Legacy apps don't own their own windows, so when we focus the app,
+  // what we really want to do is focus the Chrome windows.
+  Profile* profile = ProfileForPath(host->GetProfilePath());
   if (delegate_->ShowAppWindows(profile, host->GetAppId()))
     return;
 

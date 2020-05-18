@@ -1938,6 +1938,8 @@ static_library("ui") {
       "webui/chromeos/login/sync_consent_screen_handler.h",
       "webui/chromeos/login/terms_of_service_screen_handler.cc",
       "webui/chromeos/login/terms_of_service_screen_handler.h",
+      "webui/chromeos/login/tpm_error_screen_handler.cc",
+      "webui/chromeos/login/tpm_error_screen_handler.h",
       "webui/chromeos/login/update_required_screen_handler.cc",
       "webui/chromeos/login/update_required_screen_handler.h",
       "webui/chromeos/login/update_screen_handler.cc",
@@ -4263,6 +4265,7 @@ static_library("ui") {
     ]
     deps += [
       "//components/printing/common:mojo_interfaces",
+      "//components/services/print_compositor/public/mojom",
       "//printing/mojom",
       "//services/device/public/cpp/usb",
       "//services/device/public/mojom:usb",

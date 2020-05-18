@@ -277,6 +277,8 @@ void Preferences::RegisterProfilePrefs(
                                hardware_keyboard_id);
   registry->RegisterStringPref(::prefs::kLanguageEnabledImes, "");
   registry->RegisterDictionaryPref(
+      chromeos::prefs::kAssistiveInputFeatureSettings);
+  registry->RegisterDictionaryPref(
       ::prefs::kLanguageInputMethodSpecificSettings);
 
   registry->RegisterIntegerPref(

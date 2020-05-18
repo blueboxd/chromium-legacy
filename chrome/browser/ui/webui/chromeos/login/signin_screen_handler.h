@@ -73,7 +73,6 @@ class LoginDisplayWebUIHandler {
                          const std::string& error_text,
                          const std::string& help_link_text,
                          HelpAppLauncher::HelpTopic help_topic_id) = 0;
-  virtual void ShowErrorScreen(LoginDisplay::SigninError error_id) = 0;
   virtual void ShowSigninUI(const std::string& email) = 0;
   virtual void ShowPasswordChangedDialog(bool show_password_error,
                                          const std::string& email) = 0;
@@ -274,7 +273,6 @@ class SigninScreenHandler
   void ShowSigninUI(const std::string& email) override;
   void ShowPasswordChangedDialog(bool show_password_error,
                                  const std::string& email) override;
-  void ShowErrorScreen(LoginDisplay::SigninError error_id) override;
   void ShowWhitelistCheckFailedError() override;
   void LoadUsers(const user_manager::UserList& users,
                  const base::ListValue& users_list) override;

@@ -6,21 +6,19 @@
 const parentMessagePipe = new MessagePipe('chrome://media-app', window.parent);
 
 /**
- * A file received from the privileged context.
+ * A file received from the privileged context, and decorated with IPC methods
+ * added in the untrusted (this) context to communicate back.
  * @implements {mediaApp.AbstractFile}
  */
 class ReceivedFile {
-  /**
-   * @param {?File} file The received file.
-   * @param {number} token A token that identifies the file.
-   * @param {string} fallbackName The name to use when `file` is null/empty.
-   */
-  constructor(file, token, fallbackName) {
-    this.blob = file || new File([], fallbackName);
+  /** @param {!FileContext} file */
+  constructor(file) {
+    this.blob = file.file || new File([], file.name);
     this.name = this.blob.name;
     this.size = this.blob.size;
     this.mimeType = this.blob.type;
-    this.token = token;
+    this.token = file.token;
+    this.error = file.error;
   }
 
   /**
@@ -102,7 +100,7 @@ class ReceivedFileList {
 
     this.length = files.length;
     /** @type {!Array<!ReceivedFile>} */
-    this.files = files.map(f => new ReceivedFile(f.file, f.token, f.name));
+    this.files = files.map(f => new ReceivedFile(f));
     /** @type {number} */
     this.writableFileIndex = 0;
   }

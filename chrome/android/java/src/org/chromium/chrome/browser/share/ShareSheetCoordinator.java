@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ class ShareSheetCoordinator {
         mExcludeFirstParty = false;
     }
 
-    void showShareSheet(ShareParams params, long shareStartTime) {
+    void showShareSheet(ShareParams params, boolean saveLastUsed, long shareStartTime) {
         Activity activity = params.getWindow().getActivity().get();
         if (activity == null) {
             return;
@@ -58,7 +59,7 @@ class ShareSheetCoordinator {
         mShareStartTime = shareStartTime;
         ArrayList<PropertyModel> chromeFeatures = createTopRowPropertyModels(bottomSheet, activity);
         ArrayList<PropertyModel> thirdPartyApps =
-                createBottomRowPropertyModels(bottomSheet, activity, params);
+                createBottomRowPropertyModels(bottomSheet, activity, params, saveLastUsed);
 
         bottomSheet.createRecyclerViews(chromeFeatures, thirdPartyApps);
 
@@ -71,9 +72,9 @@ class ShareSheetCoordinator {
     }
 
     // Used by first party features to share with only non-chrome apps.
-    protected void showThirdPartyShareSheet(ShareParams params) {
+    protected void showThirdPartyShareSheet(ShareParams params, boolean saveLastUsed, long shareStartTime) {
         mExcludeFirstParty = true;
-        showShareSheet(params, System.currentTimeMillis());
+        showShareSheet(params, saveLastUsed, shareStartTime);
     }
 
     @VisibleForTesting
@@ -100,10 +101,10 @@ class ShareSheetCoordinator {
     }
 
     @VisibleForTesting
-    ArrayList<PropertyModel> createBottomRowPropertyModels(
-            ShareSheetBottomSheetContent bottomSheet, Activity activity, ShareParams params) {
-        ArrayList<PropertyModel> models =
-                mPropertyModelBuilder.selectThirdPartyApps(bottomSheet, params, mShareStartTime);
+    ArrayList<PropertyModel> createBottomRowPropertyModels(ShareSheetBottomSheetContent bottomSheet,
+            Activity activity, ShareParams params, boolean saveLastUsed) {
+        ArrayList<PropertyModel> models = mPropertyModelBuilder.selectThirdPartyApps(
+                bottomSheet, params, saveLastUsed, mShareStartTime);
         // More...
         PropertyModel morePropertyModel = ShareSheetPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(activity, R.drawable.sharing_more),
@@ -112,7 +113,7 @@ class ShareSheetCoordinator {
                         -> {
                     RecordUserAction.record("SharingHubAndroid.MoreSelected");
                     mBottomSheetController.hideContent(bottomSheet, true);
-                    ShareHelper.showDefaultShareUi(params);
+                    ShareHelper.showDefaultShareUi(params, saveLastUsed);
                 },
                 /*isFirstParty=*/true);
         models.add(morePropertyModel);

@@ -97,10 +97,11 @@ void SkiaOutputDeviceX11::PostSubBuffer(
     image.height = rect.height();
     image.depth = 32;
     image.bits_per_pixel = 32;
-    image.format = ZPixmap;
-    image.byte_order = LSBFirst;
+    image.format = static_cast<int>(x11::XProto::ImageFormat::ZPixmap);
+    image.byte_order = static_cast<int>(x11::XProto::ImageOrder::LSBFirst);
     image.bitmap_unit = 8;
-    image.bitmap_bit_order = LSBFirst;
+    image.bitmap_bit_order =
+        static_cast<int>(x11::XProto::ImageOrder::LSBFirst);
     image.bytes_per_line = sk_pixmap.rowBytes();
 
     image.red_mask = 0xff << SK_R32_SHIFT;

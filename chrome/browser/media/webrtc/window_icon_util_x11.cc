@@ -13,31 +13,9 @@
 gfx::ImageSkia GetWindowIcon(content::DesktopMediaID id) {
   DCHECK(id.type == content::DesktopMediaID::TYPE_WINDOW);
 
-  Display* display = gfx::GetXDisplay();
-  Atom property = gfx::GetAtom("_NET_WM_ICON");
-  Atom actual_type;
-  int actual_format;
-  unsigned long bytes_after;  // NOLINT: type required by XGetWindowProperty
-  unsigned long size;
-  long* data;
-
-  // The |error_tracker| essentially provides an empty X error handler for
-  // the call of XGetWindowProperty. The motivation is to guard against crash
-  // for any reason that XGetWindowProperty fails. For example, at the time that
-  // XGetWindowProperty is called, the window handler (a.k.a |id.id|) may
-  // already be invalid due to the fact that the end user has closed the
-  // corresponding window, etc.
-  std::unique_ptr<gfx::X11ErrorTracker> error_tracker(
-      new gfx::X11ErrorTracker());
-  int status = XGetWindowProperty(display, id.id, property, 0L, ~0L, x11::False,
-                                  AnyPropertyType, &actual_type, &actual_format,
-                                  &size, &bytes_after,
-                                  reinterpret_cast<unsigned char**>(&data));
-  error_tracker.reset();
-
-  if (status != x11::Success) {
+  std::vector<uint32_t> data;
+  if (!ui::GetArrayProperty(id.id, gfx::GetAtom("_NET_WM_ICON"), &data))
     return gfx::ImageSkia();
-  }
 
   // The format of |data| is concatenation of sections like
   // [width, height, pixel data of size width * height], and the total bytes
@@ -45,10 +23,10 @@ gfx::ImageSkia GetWindowIcon(content::DesktopMediaID id) {
   int width = 0;
   int height = 0;
   int start = 0;
-  int i = 0;
-  while (i + 1 < static_cast<int>(size)) {
+  size_t i = 0;
+  while (i + 1 < data.size()) {
     if ((i == 0 || static_cast<int>(data[i] * data[i + 1]) > width * height) &&
-        (i + 1 + data[i] * data[i + 1] < static_cast<int>(size))) {
+        (i + 1 + data[i] * data[i + 1] < data.size())) {
       width = static_cast<int>(data[i]);
       height = static_cast<int>(data[i + 1]);
       start = i + 2;
@@ -69,6 +47,5 @@ gfx::ImageSkia GetWindowIcon(content::DesktopMediaID id) {
     }
   }
 
-  XFree(data);
   return gfx::ImageSkia::CreateFrom1xBitmap(result);
 }

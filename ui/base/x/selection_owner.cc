@@ -7,7 +7,9 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/memory/ref_counted_memory.h"
 #include "ui/base/x/selection_utils.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/x/x11_window_event_manager.h"
 #include "ui/gfx/x/x11.h"
@@ -48,43 +50,38 @@ size_t GetMaxRequestSize(XDisplay* display) {
 
 // Gets the value of an atom pair array property. On success, true is returned
 // and the value is stored in |value|.
-bool GetAtomPairArrayProperty(XID window,
-                              XAtom property,
-                              std::vector<std::pair<XAtom,XAtom> >* value) {
-  XAtom type = x11::None;
-  int format = 0;  // size in bits of each item in 'property'
-  unsigned long num_items = 0;
-  unsigned char* properties = nullptr;
-  unsigned long remaining_bytes = 0;
-
-  int result = XGetWindowProperty(gfx::GetXDisplay(), window, property,
-                                  0,           // offset into property data to
-                                               // read
-                                  (~0L),       // entire array
-                                  x11::False,  // deleted
-                                  AnyPropertyType, &type, &format, &num_items,
-                                  &remaining_bytes, &properties);
-  gfx::XScopedPtr<unsigned char> scoped_properties(properties);
-
-  if (result != x11::Success)
+bool GetAtomPairArrayProperty(
+    XID window,
+    x11::Atom property,
+    std::vector<std::pair<x11::Atom, x11::Atom>>* value) {
+  std::vector<x11::Atom> atoms;
+  if (!ui::GetArrayProperty(window, property, &atoms))
     return false;
 
-  // GTK does not require |type| to be kAtomPair.
-  if (format != 32 || num_items % 2 != 0)
-    return false;
-
-  XAtom* atom_properties = reinterpret_cast<XAtom*>(properties);
   value->clear();
-  for (size_t i = 0; i < num_items; i+=2)
-    value->push_back(std::make_pair(atom_properties[i], atom_properties[i+1]));
+  for (size_t i = 0; i < atoms.size(); i += 2)
+    value->push_back(std::make_pair(atoms[i], atoms[i + 1]));
   return true;
+}
+
+XID GetSelectionOwner(x11::Atom selection) {
+  auto response = x11::Connection::Get()->GetSelectionOwner({selection}).Sync();
+  return response ? static_cast<XID>(response->owner) : x11::None;
+}
+
+void SetSelectionOwner(
+    XID window,
+    x11::Atom selection,
+    x11::XProto::Time time = x11::XProto::Time::CurrentTime) {
+  x11::Connection::Get()->SetSelectionOwner(
+      {static_cast<x11::Window>(window), selection, time});
 }
 
 }  // namespace
 
 SelectionOwner::SelectionOwner(XDisplay* x_display,
                                XID x_window,
-                               XAtom selection_name)
+                               x11::Atom selection_name)
     : x_display_(x_display),
       x_window_(x_window),
       selection_name_(selection_name),
@@ -94,37 +91,38 @@ SelectionOwner::~SelectionOwner() {
   // If we are the selection owner, we need to release the selection so we
   // don't receive further events. However, we don't call ClearSelectionOwner()
   // because we don't want to do this indiscriminately.
-  if (XGetSelectionOwner(x_display_, selection_name_) == x_window_)
-    XSetSelectionOwner(x_display_, selection_name_, x11::None,
-                       x11::CurrentTime);
+  if (GetSelectionOwner(selection_name_) == x_window_)
+    SetSelectionOwner(x11::None, selection_name_);
 }
 
-void SelectionOwner::RetrieveTargets(std::vector<XAtom>* targets) {
+void SelectionOwner::RetrieveTargets(std::vector<x11::Atom>* targets) {
   for (const auto& format_target : format_map_)
     targets->push_back(format_target.first);
 }
 
-void SelectionOwner::TakeOwnershipOfSelection(
-    const SelectionFormatMap& data) {
+void SelectionOwner::TakeOwnershipOfSelection(const SelectionFormatMap& data) {
   acquired_selection_timestamp_ = X11EventSource::GetInstance()->GetTimestamp();
-  XSetSelectionOwner(x_display_, selection_name_, x_window_,
-                     acquired_selection_timestamp_);
+  SetSelectionOwner(
+      x_window_, selection_name_,
+      static_cast<x11::XProto::Time>(acquired_selection_timestamp_));
 
-  if (XGetSelectionOwner(x_display_, selection_name_) == x_window_) {
+  if (GetSelectionOwner(selection_name_) == x_window_) {
     // The X server agrees that we are the selection owner. Commit our data.
     format_map_ = data;
   }
 }
 
 void SelectionOwner::ClearSelectionOwner() {
-  XSetSelectionOwner(x_display_, selection_name_, x11::None, x11::CurrentTime);
+  SetSelectionOwner(x11::None, selection_name_);
   format_map_ = SelectionFormatMap();
 }
 
 void SelectionOwner::OnSelectionRequest(const XEvent& event) {
   XID requestor = event.xselectionrequest.requestor;
-  XAtom requested_target = event.xselectionrequest.target;
-  XAtom requested_property = event.xselectionrequest.property;
+  x11::Atom requested_target =
+      static_cast<x11::Atom>(event.xselectionrequest.target);
+  x11::Atom requested_property =
+      static_cast<x11::Atom>(event.xselectionrequest.property);
 
   // Incrementally build our selection. By default this is a refusal, and we'll
   // override the parts indicating success in the different cases.
@@ -132,39 +130,34 @@ void SelectionOwner::OnSelectionRequest(const XEvent& event) {
   reply.xselection.type = SelectionNotify;
   reply.xselection.requestor = requestor;
   reply.xselection.selection = event.xselectionrequest.selection;
-  reply.xselection.target = requested_target;
+  reply.xselection.target = static_cast<uint32_t>(requested_target);
   reply.xselection.property = x11::None;  // Indicates failure
   reply.xselection.time = event.xselectionrequest.time;
 
   if (requested_target == gfx::GetAtom(kMultiple)) {
     // The contents of |requested_property| should be a list of
     // <target,property> pairs.
-    std::vector<std::pair<XAtom,XAtom> > conversions;
-    if (GetAtomPairArrayProperty(requestor,
-                                 requested_property,
-                                 &conversions)) {
-      std::vector<XAtom> conversion_results;
-      for (const std::pair<XAtom, XAtom>& conversion : conversions) {
+    std::vector<std::pair<x11::Atom, x11::Atom>> conversions;
+    if (GetAtomPairArrayProperty(requestor, requested_property, &conversions)) {
+      std::vector<x11::Atom> conversion_results;
+      for (const std::pair<x11::Atom, x11::Atom>& conversion : conversions) {
         bool conversion_successful =
             ProcessTarget(conversion.first, requestor, conversion.second);
         conversion_results.push_back(conversion.first);
         conversion_results.push_back(conversion_successful ? conversion.second
-                                                           : x11::None);
+                                                           : x11::Atom::None);
       }
 
       // Set the property to indicate which conversions succeeded. This matches
       // what GTK does.
-      XChangeProperty(
-          x_display_, requestor, requested_property, gfx::GetAtom(kAtomPair),
-          32, PropModeReplace,
-          reinterpret_cast<const unsigned char*>(&conversion_results.front()),
-          conversion_results.size());
+      ui::SetArrayProperty(requestor, requested_property,
+                           gfx::GetAtom(kAtomPair), conversion_results);
 
-      reply.xselection.property = requested_property;
+      reply.xselection.property = static_cast<uint32_t>(requested_property);
     }
   } else {
     if (ProcessTarget(requested_target, requestor, requested_property))
-      reply.xselection.property = requested_property;
+      reply.xselection.property = static_cast<uint32_t>(requested_property);
   }
 
   // Send off the reply.
@@ -193,35 +186,31 @@ void SelectionOwner::OnPropertyEvent(const XEvent& event) {
     CompleteIncrementalTransfer(it);
 }
 
-bool SelectionOwner::ProcessTarget(XAtom target,
+bool SelectionOwner::ProcessTarget(x11::Atom target,
                                    XID requestor,
-                                   XAtom property) {
-  XAtom multiple_atom = gfx::GetAtom(kMultiple);
-  XAtom save_targets_atom = gfx::GetAtom(kSaveTargets);
-  XAtom targets_atom = gfx::GetAtom(kTargets);
-  XAtom timestamp_atom = gfx::GetAtom(kTimestamp);
+                                   x11::Atom property) {
+  x11::Atom multiple_atom = gfx::GetAtom(kMultiple);
+  x11::Atom save_targets_atom = gfx::GetAtom(kSaveTargets);
+  x11::Atom targets_atom = gfx::GetAtom(kTargets);
+  x11::Atom timestamp_atom = gfx::GetAtom(kTimestamp);
 
   if (target == multiple_atom || target == save_targets_atom)
     return false;
 
   if (target == timestamp_atom) {
-    XChangeProperty(
-        x_display_, requestor, property, XA_INTEGER, 32, PropModeReplace,
-        reinterpret_cast<unsigned char*>(&acquired_selection_timestamp_), 1);
+    ui::SetProperty(requestor, property, x11::Atom::INTEGER,
+                    acquired_selection_timestamp_);
     return true;
   }
 
   if (target == targets_atom) {
     // We have been asked for TARGETS. Send an atom array back with the data
     // types we support.
-    std::vector<XAtom> targets = {timestamp_atom, targets_atom,
-                                  save_targets_atom, multiple_atom};
+    std::vector<x11::Atom> targets = {timestamp_atom, targets_atom,
+                                      save_targets_atom, multiple_atom};
     RetrieveTargets(&targets);
 
-    XChangeProperty(x_display_, requestor, property, XA_ATOM, 32,
-                    PropModeReplace,
-                    reinterpret_cast<unsigned char*>(&targets.front()),
-                    targets.size());
+    ui::SetArrayProperty(requestor, property, x11::Atom::ATOM, targets);
     return true;
   }
 
@@ -232,10 +221,8 @@ bool SelectionOwner::ProcessTarget(XAtom target,
       // We must send the data back in several chunks due to a limitation in
       // the size of X requests. Notify the selection requestor that the data
       // will be sent incrementally by returning data of type "INCR".
-      long length = it->second->size();
-      XChangeProperty(x_display_, requestor, property, gfx::GetAtom(kIncr), 32,
-                      PropModeReplace,
-                      reinterpret_cast<unsigned char*>(&length), 1);
+      uint32_t length = it->second->size();
+      ui::SetProperty(requestor, property, gfx::GetAtom(kIncr), length);
 
       // Wait for the selection requestor to indicate that it has processed
       // the selection result before sending the first chunk of data. The
@@ -258,15 +245,9 @@ bool SelectionOwner::ProcessTarget(XAtom target,
             this, &SelectionOwner::AbortStaleIncrementalTransfers);
       }
     } else {
-      XChangeProperty(
-          x_display_,
-          requestor,
-          property,
-          target,
-          8,
-          PropModeReplace,
-          const_cast<unsigned char*>(it->second->front()),
-          it->second->size());
+      auto& mem = it->second;
+      std::vector<uint8_t> data(mem->data(), mem->data() + mem->size());
+      ui::SetArrayProperty(requestor, property, target, data);
     }
     return true;
   }
@@ -279,17 +260,13 @@ bool SelectionOwner::ProcessTarget(XAtom target,
 void SelectionOwner::ProcessIncrementalTransfer(IncrementalTransfer* transfer) {
   size_t remaining = transfer->data->size() - transfer->offset;
   size_t chunk_length = std::min(remaining, max_request_size_);
-  XChangeProperty(
-      x_display_,
-      transfer->window,
-      transfer->property,
-      transfer->target,
-      8,
-      PropModeReplace,
-      const_cast<unsigned char*>(transfer->data->front() + transfer->offset),
-      chunk_length);
+  const uint8_t* data = transfer->data->front() + transfer->offset;
+  std::vector<uint8_t> buf(data, data + chunk_length);
+  ui::SetArrayProperty(transfer->window, transfer->property, transfer->target,
+                       buf);
   transfer->offset += chunk_length;
-  transfer->timeout = base::TimeTicks::Now() +
+  transfer->timeout =
+      base::TimeTicks::Now() +
       base::TimeDelta::FromMilliseconds(kIncrementalTransferTimeoutMs);
 
   // When offset == data->size(), we still need to transfer a zero-sized chunk
@@ -302,8 +279,8 @@ void SelectionOwner::ProcessIncrementalTransfer(IncrementalTransfer* transfer) {
 
 void SelectionOwner::AbortStaleIncrementalTransfers() {
   base::TimeTicks now = base::TimeTicks::Now();
-  for (int i = static_cast<int>(incremental_transfers_.size()) - 1;
-       i >= 0; --i) {
+  for (int i = static_cast<int>(incremental_transfers_.size()) - 1; i >= 0;
+       --i) {
     if (incremental_transfers_[i].timeout <= now)
       CompleteIncrementalTransfer(incremental_transfers_.begin() + i);
   }
@@ -318,11 +295,11 @@ void SelectionOwner::CompleteIncrementalTransfer(
 }
 
 std::vector<SelectionOwner::IncrementalTransfer>::iterator
-    SelectionOwner::FindIncrementalTransferForEvent(const XEvent& event) {
+SelectionOwner::FindIncrementalTransferForEvent(const XEvent& event) {
   for (auto it = incremental_transfers_.begin();
        it != incremental_transfers_.end(); ++it) {
     if (it->window == event.xproperty.window &&
-        it->property == event.xproperty.atom) {
+        it->property == static_cast<x11::Atom>(event.xproperty.atom)) {
       return it;
     }
   }
@@ -331,8 +308,8 @@ std::vector<SelectionOwner::IncrementalTransfer>::iterator
 
 SelectionOwner::IncrementalTransfer::IncrementalTransfer(
     XID window,
-    XAtom target,
-    XAtom property,
+    x11::Atom target,
+    x11::Atom property,
     std::unique_ptr<XScopedEventSelector> event_selector,
     const scoped_refptr<base::RefCountedMemory>& data,
     int offset,
@@ -348,10 +325,9 @@ SelectionOwner::IncrementalTransfer::IncrementalTransfer(
 SelectionOwner::IncrementalTransfer::IncrementalTransfer(
     IncrementalTransfer&& other) = default;
 
-SelectionOwner::IncrementalTransfer& SelectionOwner::IncrementalTransfer::
-operator=(IncrementalTransfer&&) = default;
+SelectionOwner::IncrementalTransfer&
+SelectionOwner::IncrementalTransfer::operator=(IncrementalTransfer&&) = default;
 
-SelectionOwner::IncrementalTransfer::~IncrementalTransfer() {
-}
+SelectionOwner::IncrementalTransfer::~IncrementalTransfer() = default;
 
 }  // namespace ui

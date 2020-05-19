@@ -64,7 +64,8 @@ bool XDisplayManager::CanProcessEvent(const XEvent& xev) {
          xev.type - xrandr_event_base_ == RRNotify ||
          (xev.type == PropertyNotify &&
           xev.xproperty.window == x_root_window_ &&
-          xev.xproperty.atom == gfx::GetAtom("_NET_WORKAREA"));
+          xev.xproperty.atom ==
+              static_cast<uint32_t>(gfx::GetAtom("_NET_WORKAREA")));
 }
 
 bool XDisplayManager::ProcessEvent(XEvent* xev) {
@@ -77,7 +78,8 @@ bool XDisplayManager::ProcessEvent(XEvent* xev) {
   }
   if (ev_type == RRNotify ||
       (xev->type == PropertyNotify &&
-       xev->xproperty.atom == gfx::GetAtom("_NET_WORKAREA"))) {
+       xev->xproperty.atom ==
+           static_cast<uint32_t>(gfx::GetAtom("_NET_WORKAREA")))) {
     DispatchDelayedDisplayListUpdate();
     return true;
   }

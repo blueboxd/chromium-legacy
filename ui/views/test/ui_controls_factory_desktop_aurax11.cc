@@ -46,7 +46,7 @@ unsigned button_down_mask = 0;
 
 // Restore Xlib constants that were #undef'ed by gen/ui/gfx/x/xproto.h.
 constexpr int CopyFromParent = 0;
-constexpr int InputOnly = 1;
+constexpr int InputOnly = 2;
 constexpr int KeyPress = 2;
 constexpr int KeyRelease = 3;
 constexpr int ButtonPress = 4;

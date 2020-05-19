@@ -53,7 +53,7 @@ class WMStateWaiter : public ui::X11PropertyChangeWaiter {
  private:
   // X11PropertyChangeWaiter:
   bool ShouldKeepOnWaiting(XEvent* event) override {
-    std::vector<Atom> hints;
+    std::vector<x11::Atom> hints;
     if (ui::GetAtomArrayProperty(xwindow(), "_NET_WM_STATE", &hints))
       return base::Contains(hints, gfx::GetAtom(hint_)) != wait_till_set_;
     return true;
@@ -354,10 +354,12 @@ TEST_F(DesktopWindowTreeHostX11Test, WindowManagerTogglesFullscreen) {
     memset(&xclient, 0, sizeof(xclient));
     xclient.type = ClientMessage;
     xclient.xclient.window = xid;
-    xclient.xclient.message_type = gfx::GetAtom("_NET_WM_STATE");
+    xclient.xclient.message_type =
+        static_cast<uint32_t>(gfx::GetAtom("_NET_WM_STATE"));
     xclient.xclient.format = 32;
     xclient.xclient.data.l[0] = 0;
-    xclient.xclient.data.l[1] = gfx::GetAtom("_NET_WM_STATE_FULLSCREEN");
+    xclient.xclient.data.l[1] =
+        static_cast<uint32_t>(gfx::GetAtom("_NET_WM_STATE_FULLSCREEN"));
     xclient.xclient.data.l[2] = 0;
     xclient.xclient.data.l[3] = 1;
     xclient.xclient.data.l[4] = 0;
@@ -414,7 +416,7 @@ TEST_F(DesktopWindowTreeHostX11Test, ToggleMinimizePropogateToContentWindow) {
 
   // Minimize by sending _NET_WM_STATE_HIDDEN
   {
-    std::vector<::Atom> atom_list;
+    std::vector<x11::Atom> atom_list;
     atom_list.push_back(gfx::GetAtom("_NET_WM_STATE_HIDDEN"));
     ui::SetAtomArrayProperty(xid, "_NET_WM_STATE", "ATOM", atom_list);
 
@@ -425,7 +427,8 @@ TEST_F(DesktopWindowTreeHostX11Test, ToggleMinimizePropogateToContentWindow) {
     xevent.xproperty.send_event = 1;
     xevent.xproperty.display = display;
     xevent.xproperty.window = xid;
-    xevent.xproperty.atom = gfx::GetAtom("_NET_WM_STATE");
+    xevent.xproperty.atom =
+        static_cast<uint32_t>(gfx::GetAtom("_NET_WM_STATE"));
     xevent.xproperty.state = 0;
     XSendEvent(display, DefaultRootWindow(display), x11::False,
                SubstructureRedirectMask | SubstructureNotifyMask, &xevent);
@@ -437,7 +440,7 @@ TEST_F(DesktopWindowTreeHostX11Test, ToggleMinimizePropogateToContentWindow) {
 
   // Show from minimized by sending _NET_WM_STATE_FOCUSED
   {
-    std::vector<::Atom> atom_list;
+    std::vector<x11::Atom> atom_list;
     atom_list.push_back(gfx::GetAtom("_NET_WM_STATE_FOCUSED"));
     ui::SetAtomArrayProperty(xid, "_NET_WM_STATE", "ATOM", atom_list);
 
@@ -448,7 +451,8 @@ TEST_F(DesktopWindowTreeHostX11Test, ToggleMinimizePropogateToContentWindow) {
     xevent.xproperty.send_event = 1;
     xevent.xproperty.display = display;
     xevent.xproperty.window = xid;
-    xevent.xproperty.atom = gfx::GetAtom("_NET_WM_STATE");
+    xevent.xproperty.atom =
+        static_cast<uint32_t>(gfx::GetAtom("_NET_WM_STATE"));
     xevent.xproperty.state = 0;
     XSendEvent(display, DefaultRootWindow(display), x11::False,
                SubstructureRedirectMask | SubstructureNotifyMask, &xevent);

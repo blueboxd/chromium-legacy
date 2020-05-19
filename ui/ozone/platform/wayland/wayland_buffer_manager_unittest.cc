@@ -894,8 +894,19 @@ TEST_P(WaylandBufferManagerTest, DestroyedWindowNoSubmissionMultipleBuffers) {
   constexpr uint32_t kBufferId2 = 2;
 
   auto temp_window = CreateWindow();
+  temp_window->Show(false);
+
+  Sync();
+
   auto widget = temp_window->GetWidget();
   auto bounds = temp_window->GetBounds();
+
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(widget);
+  ASSERT_TRUE(mock_surface);
+
+  ActivateSurface(mock_surface->xdg_surface());
+
+  Sync();
 
   EXPECT_CALL(*server_.zwp_linux_dmabuf_v1(), CreateParams(_, _, _)).Times(1);
   CreateDmabufBasedBufferAndSetTerminateExpecation(false /*fail*/, kBufferId1);
@@ -915,7 +926,6 @@ TEST_P(WaylandBufferManagerTest, DestroyedWindowNoSubmissionMultipleBuffers) {
 
   Sync();
 
-  auto* mock_surface = server_.GetObject<wl::MockSurface>(widget);
   mock_surface->SendFrameCallback();
 
   Sync();

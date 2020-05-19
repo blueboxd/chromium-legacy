@@ -67,6 +67,9 @@ class BrlapiConnection {
   // value.
   virtual int ReadKey(brlapi_keyCode_t* keyCode) = 0;
 
+  // Gets the number of dots in a braille cell.
+  virtual bool GetCellSize(unsigned int* cell_size) = 0;
+
  protected:
   BrlapiConnection();
   DISALLOW_COPY_AND_ASSIGN(BrlapiConnection);

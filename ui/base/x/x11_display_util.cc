@@ -128,7 +128,10 @@ int DefaultBitsPerComponent(XDisplay* xdisplay) {
   Visual* visual = DefaultVisual(xdisplay, DefaultScreen(xdisplay));
 
   // The mask fields are only valid for DirectColor and TrueColor classes.
-  if (visual->c_class == DirectColor || visual->c_class == TrueColor) {
+  if (visual->c_class ==
+          static_cast<int>(x11::XProto::VisualClass::DirectColor) ||
+      visual->c_class ==
+          static_cast<int>(x11::XProto::VisualClass::TrueColor)) {
     // RGB components are packed into fixed size integers for each visual.  The
     // layout of bits in the packing is given by
     // |visual->{red,green,blue}_mask|.  Count the number of bits to get the
@@ -168,14 +171,14 @@ void GetEDIDProperty(XID output, std::vector<uint8_t>* edid) {
 
   Display* display = gfx::GetXDisplay();
 
-  Atom edid_property = gfx::GetAtom(RR_PROPERTY_RANDR_EDID);
+  x11::Atom edid_property = gfx::GetAtom(RR_PROPERTY_RANDR_EDID);
 
   bool has_edid_property = false;
   int num_properties = 0;
   gfx::XScopedPtr<Atom[]> properties(
       XRRListOutputProperties(display, output, &num_properties));
   for (int i = 0; i < num_properties; ++i) {
-    if (properties[i] == edid_property) {
+    if (static_cast<x11::Atom>(properties[i]) == edid_property) {
       has_edid_property = true;
       break;
     }
@@ -188,7 +191,7 @@ void GetEDIDProperty(XID output, std::vector<uint8_t>* edid) {
   unsigned long bytes_after;
   unsigned long nitems = 0;
   unsigned char* prop = nullptr;
-  XRRGetOutputProperty(display, output, edid_property,
+  XRRGetOutputProperty(display, output, static_cast<uint32_t>(edid_property),
                        0,                // offset
                        128,              // length
                        false,            // _delete

@@ -23,5 +23,6 @@ generate_library_loader("libbrlapi") {
     "brlapi__leaveTtyMode",
     "brlapi__writeDots",
     "brlapi__readKey",
+    "brlapi__getParameter",
   ]
 }

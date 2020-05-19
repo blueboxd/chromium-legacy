@@ -509,8 +509,10 @@ bool X11Window::HandleAsAtkEvent(XEvent* xev) {
 #else
   DCHECK(xev);
   if (!x11_extension_delegate_ ||
-      (xev->type != KeyPress && xev->type != KeyRelease))
+      (xev->type != x11::XProto::KeyPressEvent::opcode &&
+       xev->type != x11::XProto::KeyReleaseEvent::opcode)) {
     return false;
+  }
   auto atk_key_event = AtkKeyEventFromXEvent(xev);
   return x11_extension_delegate_->OnAtkKeyEvent(atk_key_event.get());
 #endif

@@ -20,76 +20,76 @@ namespace {
 
 struct {
   const char* atom_name;
-  Atom atom_value;
+  x11::Atom atom_value;
 } const kPredefinedAtoms[] = {
-    // {"PRIMARY", XA_PRIMARY},
-    // {"SECONDARY", XA_SECONDARY},
-    // {"ARC", XA_ARC},
-    {"ATOM", XA_ATOM},
-    // {"BITMAP", XA_BITMAP},
-    {"CARDINAL", XA_CARDINAL},
-    // {"COLORMAP", XA_COLORMAP},
-    // {"CURSOR", XA_CURSOR},
-    // {"CUT_BUFFER0", XA_CUT_BUFFER0},
-    // {"CUT_BUFFER1", XA_CUT_BUFFER1},
-    // {"CUT_BUFFER2", XA_CUT_BUFFER2},
-    // {"CUT_BUFFER3", XA_CUT_BUFFER3},
-    // {"CUT_BUFFER4", XA_CUT_BUFFER4},
-    // {"CUT_BUFFER5", XA_CUT_BUFFER5},
-    // {"CUT_BUFFER6", XA_CUT_BUFFER6},
-    // {"CUT_BUFFER7", XA_CUT_BUFFER7},
-    // {"DRAWABLE", XA_DRAWABLE},
-    // {"FONT", XA_FONT},
-    // {"INTEGER", XA_INTEGER},
-    // {"PIXMAP", XA_PIXMAP},
-    // {"POINT", XA_POINT},
-    // {"RECTANGLE", XA_RECTANGLE},
-    // {"RESOURCE_MANAGER", XA_RESOURCE_MANAGER},
-    // {"RGB_COLOR_MAP", XA_RGB_COLOR_MAP},
-    // {"RGB_BEST_MAP", XA_RGB_BEST_MAP},
-    // {"RGB_BLUE_MAP", XA_RGB_BLUE_MAP},
-    // {"RGB_DEFAULT_MAP", XA_RGB_DEFAULT_MAP},
-    // {"RGB_GRAY_MAP", XA_RGB_GRAY_MAP},
-    // {"RGB_GREEN_MAP", XA_RGB_GREEN_MAP},
-    // {"RGB_RED_MAP", XA_RGB_RED_MAP},
-    {"STRING", XA_STRING},
-    // {"VISUALID", XA_VISUALID},
-    // {"WINDOW", XA_WINDOW},
-    // {"WM_COMMAND", XA_WM_COMMAND},
-    // {"WM_HINTS", XA_WM_HINTS},
-    // {"WM_CLIENT_MACHINE", XA_WM_CLIENT_MACHINE},
-    // {"WM_ICON_NAME", XA_WM_ICON_NAME},
-    // {"WM_ICON_SIZE", XA_WM_ICON_SIZE},
-    // {"WM_NAME", XA_WM_NAME},
-    // {"WM_NORMAL_HINTS", XA_WM_NORMAL_HINTS},
-    // {"WM_SIZE_HINTS", XA_WM_SIZE_HINTS},
-    // {"WM_ZOOM_HINTS", XA_WM_ZOOM_HINTS},
-    // {"MIN_SPACE", XA_MIN_SPACE},
-    // {"NORM_SPACE", XA_NORM_SPACE},
-    // {"MAX_SPACE", XA_MAX_SPACE},
-    // {"END_SPACE", XA_END_SPACE},
-    // {"SUPERSCRIPT_X", XA_SUPERSCRIPT_X},
-    // {"SUPERSCRIPT_Y", XA_SUPERSCRIPT_Y},
-    // {"SUBSCRIPT_X", XA_SUBSCRIPT_X},
-    // {"SUBSCRIPT_Y", XA_SUBSCRIPT_Y},
-    // {"UNDERLINE_POSITION", XA_UNDERLINE_POSITION},
-    // {"UNDERLINE_THICKNESS", XA_UNDERLINE_THICKNESS},
-    // {"STRIKEOUT_ASCENT", XA_STRIKEOUT_ASCENT},
-    // {"STRIKEOUT_DESCENT", XA_STRIKEOUT_DESCENT},
-    // {"ITALIC_ANGLE", XA_ITALIC_ANGLE},
-    // {"X_HEIGHT", XA_X_HEIGHT},
-    // {"QUAD_WIDTH", XA_QUAD_WIDTH},
-    // {"WEIGHT", XA_WEIGHT},
-    // {"POINT_SIZE", XA_POINT_SIZE},
-    // {"RESOLUTION", XA_RESOLUTION},
-    // {"COPYRIGHT", XA_COPYRIGHT},
-    // {"NOTICE", XA_NOTICE},
-    // {"FONT_NAME", XA_FONT_NAME},
-    // {"FAMILY_NAME", XA_FAMILY_NAME},
-    // {"FULL_NAME", XA_FULL_NAME},
-    // {"CAP_HEIGHT", XA_CAP_HEIGHT},
-    {"WM_CLASS", XA_WM_CLASS},
-    // {"WM_TRANSIENT_FOR", XA_WM_TRANSIENT_FOR},
+    // {"PRIMARY", x11::Atom::PRIMARY},
+    // {"SECONDARY", x11::Atom::SECONDARY},
+    // {"ARC", x11::Atom::ARC},
+    {"ATOM", x11::Atom::ATOM},
+    // {"BITMAP", x11::Atom::BITMAP},
+    {"CARDINAL", x11::Atom::CARDINAL},
+    // {"COLORMAP", x11::Atom::COLORMAP},
+    // {"CURSOR", x11::Atom::CURSOR},
+    // {"CUT_BUFFER0", x11::Atom::CUT_BUFFER0},
+    // {"CUT_BUFFER1", x11::Atom::CUT_BUFFER1},
+    // {"CUT_BUFFER2", x11::Atom::CUT_BUFFER2},
+    // {"CUT_BUFFER3", x11::Atom::CUT_BUFFER3},
+    // {"CUT_BUFFER4", x11::Atom::CUT_BUFFER4},
+    // {"CUT_BUFFER5", x11::Atom::CUT_BUFFER5},
+    // {"CUT_BUFFER6", x11::Atom::CUT_BUFFER6},
+    // {"CUT_BUFFER7", x11::Atom::CUT_BUFFER7},
+    // {"DRAWABLE", x11::Atom::DRAWABLE},
+    // {"FONT", x11::Atom::FONT},
+    // {"INTEGER", x11::Atom::INTEGER},
+    // {"PIXMAP", x11::Atom::PIXMAP},
+    // {"POINT", x11::Atom::POINT},
+    // {"RECTANGLE", x11::Atom::RECTANGLE},
+    // {"RESOURCE_MANAGER", x11::Atom::RESOURCE_MANAGER},
+    // {"RGB_COLOR_MAP", x11::Atom::RGB_COLOR_MAP},
+    // {"RGB_BEST_MAP", x11::Atom::RGB_BEST_MAP},
+    // {"RGB_BLUE_MAP", x11::Atom::RGB_BLUE_MAP},
+    // {"RGB_DEFAULT_MAP", x11::Atom::RGB_DEFAULT_MAP},
+    // {"RGB_GRAY_MAP", x11::Atom::RGB_GRAY_MAP},
+    // {"RGB_GREEN_MAP", x11::Atom::RGB_GREEN_MAP},
+    // {"RGB_RED_MAP", x11::Atom::RGB_RED_MAP},
+    {"STRING", x11::Atom::STRING},
+    // {"VISUALID", x11::Atom::VISUALID},
+    // {"WINDOW", x11::Atom::WINDOW},
+    // {"WM_COMMAND", x11::Atom::WM_COMMAND},
+    // {"WM_HINTS", x11::Atom::WM_HINTS},
+    // {"WM_CLIENT_MACHINE", x11::Atom::WM_CLIENT_MACHINE},
+    // {"WM_ICON_NAME", x11::Atom::WM_ICON_NAME},
+    // {"WM_ICON_SIZE", x11::Atom::WM_ICON_SIZE},
+    // {"WM_NAME", x11::Atom::WM_NAME},
+    // {"WM_NORMAL_HINTS", x11::Atom::WM_NORMAL_HINTS},
+    // {"WM_SIZE_HINTS", x11::Atom::WM_SIZE_HINTS},
+    // {"WM_ZOOM_HINTS", x11::Atom::WM_ZOOM_HINTS},
+    // {"MIN_SPACE", x11::Atom::MIN_SPACE},
+    // {"NORM_SPACE", x11::Atom::NORM_SPACE},
+    // {"MAX_SPACE", x11::Atom::MAX_SPACE},
+    // {"END_SPACE", x11::Atom::END_SPACE},
+    // {"SUPERSCRIPT_X", x11::Atom::SUPERSCRIPT_X},
+    // {"SUPERSCRIPT_Y", x11::Atom::SUPERSCRIPT_Y},
+    // {"SUBSCRIPT_X", x11::Atom::SUBSCRIPT_X},
+    // {"SUBSCRIPT_Y", x11::Atom::SUBSCRIPT_Y},
+    // {"UNDERLINE_POSITION", x11::Atom::UNDERLINE_POSITION},
+    // {"UNDERLINE_THICKNESS", x11::Atom::UNDERLINE_THICKNESS},
+    // {"STRIKEOUT_ASCENT", x11::Atom::STRIKEOUT_ASCENT},
+    // {"STRIKEOUT_DESCENT", x11::Atom::STRIKEOUT_DESCENT},
+    // {"ITALIC_ANGLE", x11::Atom::ITALIC_ANGLE},
+    // {"X_HEIGHT", x11::Atom::X_HEIGHT},
+    // {"QUAD_WIDTH", x11::Atom::QUAD_WIDTH},
+    // {"WEIGHT", x11::Atom::WEIGHT},
+    // {"POINT_SIZE", x11::Atom::POINT_SIZE},
+    // {"RESOLUTION", x11::Atom::RESOLUTION},
+    // {"COPYRIGHT", x11::Atom::COPYRIGHT},
+    // {"NOTICE", x11::Atom::NOTICE},
+    // {"FONT_NAME", x11::Atom::FONT_NAME},
+    // {"FAMILY_NAME", x11::Atom::FAMILY_NAME},
+    // {"FULL_NAME", x11::Atom::FULL_NAME},
+    // {"CAP_HEIGHT", x11::Atom::CAP_HEIGHT},
+    {"WM_CLASS", x11::Atom::WM_CLASS},
+    // {"WM_TRANSIENT_FOR", x11::Atom::WM_TRANSIENT_FOR},
 };
 
 constexpr const char* kAtomsToCache[] = {
@@ -244,7 +244,7 @@ constexpr int kCacheCount = base::size(kAtomsToCache);
 
 namespace gfx {
 
-XAtom GetAtom(const char* name) {
+x11::Atom GetAtom(const std::string& name) {
   return X11AtomCache::GetInstance()->GetAtom(name);
 }
 
@@ -262,21 +262,20 @@ X11AtomCache::X11AtomCache() : connection_(x11::Connection::Get()) {
     requests.push_back(connection_->InternAtom({.name = name}));
   for (size_t i = 0; i < kCacheCount; ++i) {
     if (auto response = requests[i].Sync())
-      cached_atoms_[kAtomsToCache[i]] = static_cast<XAtom>(response->atom);
+      cached_atoms_[kAtomsToCache[i]] = static_cast<x11::Atom>(response->atom);
   }
 }
 
 X11AtomCache::~X11AtomCache() = default;
 
-XAtom X11AtomCache::GetAtom(const char* name) const {
-  DCHECK(name);
+x11::Atom X11AtomCache::GetAtom(const std::string& name) const {
   const auto it = cached_atoms_.find(name);
   if (it != cached_atoms_.end())
     return it->second;
 
-  XAtom atom = 0;
+  x11::Atom atom = x11::Atom::None;
   if (auto response = connection_->InternAtom({.name = name}).Sync()) {
-    atom = static_cast<XAtom>(response->atom);
+    atom = static_cast<x11::Atom>(response->atom);
     cached_atoms_.emplace(name, atom);
   } else {
     static int error_count = 0;

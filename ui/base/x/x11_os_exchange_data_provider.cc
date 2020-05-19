@@ -47,18 +47,19 @@ XOSExchangeDataProvider::XOSExchangeDataProvider()
     : x_display_(gfx::GetXDisplay()),
       x_root_window_(DefaultRootWindow(x_display_)),
       own_window_(true),
-      x_window_(XCreateWindow(x_display_,
-                              x_root_window_,
-                              -100,            // x
-                              -100,            // y
-                              10,              // width
-                              10,              // height
-                              0,               // border width
-                              CopyFromParent,  // depth
-                              InputOnly,
-                              CopyFromParent,  // visual
-                              0,
-                              nullptr)),
+      x_window_(XCreateWindow(
+          x_display_,
+          x_root_window_,
+          -100,  // x
+          -100,  // y
+          10,    // width
+          10,    // height
+          0,     // border width
+          static_cast<int>(x11::XProto::WindowClass::CopyFromParent),  // depth
+          static_cast<int>(x11::XProto::WindowClass::InputOnly),
+          nullptr,  // visual
+          0,
+          nullptr)),
       selection_owner_(x_display_, x_window_, gfx::GetAtom(kDndSelection)) {
   XStoreName(x_display_, x_window_, "Chromium Drag & Drop Window");
 }
@@ -73,7 +74,7 @@ void XOSExchangeDataProvider::TakeOwnershipOfSelection() const {
 }
 
 void XOSExchangeDataProvider::RetrieveTargets(
-    std::vector<Atom>* targets) const {
+    std::vector<x11::Atom>* targets) const {
   selection_owner_.RetrieveTargets(targets);
 }
 
@@ -199,8 +200,8 @@ bool XOSExchangeDataProvider::GetString(base::string16* result) const {
     return false;
   }
 
-  std::vector<Atom> text_atoms = ui::GetTextAtomsFrom();
-  std::vector<Atom> requested_types;
+  std::vector<x11::Atom> text_atoms = ui::GetTextAtomsFrom();
+  std::vector<x11::Atom> requested_types;
   GetAtomIntersection(text_atoms, GetTargets(), &requested_types);
 
   ui::SelectionData data(format_map_.GetFirstOf(requested_types));
@@ -216,8 +217,8 @@ bool XOSExchangeDataProvider::GetString(base::string16* result) const {
 bool XOSExchangeDataProvider::GetURLAndTitle(FilenameToURLPolicy policy,
                                              GURL* url,
                                              base::string16* title) const {
-  std::vector<Atom> url_atoms = ui::GetURLAtomsFrom();
-  std::vector<Atom> requested_types;
+  std::vector<x11::Atom> url_atoms = ui::GetURLAtomsFrom();
+  std::vector<x11::Atom> requested_types;
   GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
   ui::SelectionData data(format_map_.GetFirstOf(requested_types));
@@ -271,8 +272,8 @@ bool XOSExchangeDataProvider::GetFilename(base::FilePath* path) const {
 
 bool XOSExchangeDataProvider::GetFilenames(
     std::vector<FileInfo>* filenames) const {
-  std::vector<Atom> url_atoms = ui::GetURIListAtomsFrom();
-  std::vector<Atom> requested_types;
+  std::vector<x11::Atom> url_atoms = ui::GetURIListAtomsFrom();
+  std::vector<x11::Atom> requested_types;
   GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
   filenames->clear();
@@ -293,7 +294,7 @@ bool XOSExchangeDataProvider::GetFilenames(
 
 bool XOSExchangeDataProvider::GetPickledData(const ClipboardFormatType& format,
                                              base::Pickle* pickle) const {
-  std::vector<Atom> requested_types;
+  std::vector<x11::Atom> requested_types;
   requested_types.push_back(gfx::GetAtom(format.GetName().c_str()));
 
   ui::SelectionData data(format_map_.GetFirstOf(requested_types));
@@ -309,15 +310,15 @@ bool XOSExchangeDataProvider::GetPickledData(const ClipboardFormatType& format,
 }
 
 bool XOSExchangeDataProvider::HasString() const {
-  std::vector<Atom> text_atoms = ui::GetTextAtomsFrom();
-  std::vector<Atom> requested_types;
+  std::vector<x11::Atom> text_atoms = ui::GetTextAtomsFrom();
+  std::vector<x11::Atom> requested_types;
   GetAtomIntersection(text_atoms, GetTargets(), &requested_types);
   return !requested_types.empty() && !HasFile();
 }
 
 bool XOSExchangeDataProvider::HasURL(FilenameToURLPolicy policy) const {
-  std::vector<Atom> url_atoms = ui::GetURLAtomsFrom();
-  std::vector<Atom> requested_types;
+  std::vector<x11::Atom> url_atoms = ui::GetURLAtomsFrom();
+  std::vector<x11::Atom> requested_types;
   GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
   if (requested_types.empty())
@@ -345,8 +346,8 @@ bool XOSExchangeDataProvider::HasURL(FilenameToURLPolicy policy) const {
 }
 
 bool XOSExchangeDataProvider::HasFile() const {
-  std::vector<Atom> url_atoms = ui::GetURIListAtomsFrom();
-  std::vector<Atom> requested_types;
+  std::vector<x11::Atom> url_atoms = ui::GetURIListAtomsFrom();
+  std::vector<x11::Atom> requested_types;
   GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
   if (requested_types.empty())
@@ -371,9 +372,9 @@ bool XOSExchangeDataProvider::HasFile() const {
 
 bool XOSExchangeDataProvider::HasCustomFormat(
     const ClipboardFormatType& format) const {
-  std::vector<Atom> url_atoms;
+  std::vector<x11::Atom> url_atoms;
   url_atoms.push_back(gfx::GetAtom(format.GetName().c_str()));
-  std::vector<Atom> requested_types;
+  std::vector<x11::Atom> requested_types;
   GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
   return !requested_types.empty();
@@ -395,9 +396,9 @@ void XOSExchangeDataProvider::SetHtml(const base::string16& html,
 
 bool XOSExchangeDataProvider::GetHtml(base::string16* html,
                                       GURL* base_url) const {
-  std::vector<Atom> url_atoms;
+  std::vector<x11::Atom> url_atoms;
   url_atoms.push_back(gfx::GetAtom(kMimeTypeHTML));
-  std::vector<Atom> requested_types;
+  std::vector<x11::Atom> requested_types;
   GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
   ui::SelectionData data(format_map_.GetFirstOf(requested_types));
@@ -411,9 +412,9 @@ bool XOSExchangeDataProvider::GetHtml(base::string16* html,
 }
 
 bool XOSExchangeDataProvider::HasHtml() const {
-  std::vector<Atom> url_atoms;
+  std::vector<x11::Atom> url_atoms;
   url_atoms.push_back(gfx::GetAtom(kMimeTypeHTML));
-  std::vector<Atom> requested_types;
+  std::vector<x11::Atom> requested_types;
   GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
   return !requested_types.empty();
@@ -446,12 +447,12 @@ bool XOSExchangeDataProvider::GetPlainTextURL(GURL* url) const {
   return false;
 }
 
-std::vector<Atom> XOSExchangeDataProvider::GetTargets() const {
+std::vector<x11::Atom> XOSExchangeDataProvider::GetTargets() const {
   return format_map_.GetTypes();
 }
 
 void XOSExchangeDataProvider::InsertData(
-    Atom format,
+    x11::Atom format,
     const scoped_refptr<base::RefCountedMemory>& data) {
   format_map_.Insert(format, data);
 }

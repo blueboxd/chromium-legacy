@@ -85,11 +85,11 @@ bool InitializeXkb(XDisplay* display) {
 
 Time ExtractTimeFromXEvent(const XEvent& xevent) {
   switch (xevent.type) {
-    case KeyPress:
-    case KeyRelease:
+    case x11::XProto::KeyPressEvent::opcode:
+    case x11::XProto::KeyReleaseEvent::opcode:
       return xevent.xkey.time;
-    case ButtonPress:
-    case ButtonRelease:
+    case x11::XProto::ButtonPressEvent::opcode:
+    case x11::XProto::ButtonReleaseEvent::opcode:
       return xevent.xbutton.time;
     case MotionNotify:
       return xevent.xmotion.time;
@@ -268,10 +268,17 @@ Time X11EventSource::GetCurrentServerTime() {
     start = base::TimeTicks::Now();
 
   // Make a no-op property change on |dummy_window_|.
-  XChangeProperty(display_, dummy_window_, dummy_atom_, XA_STRING, 8,
-                  PropModeAppend, nullptr, 0);
+  x11::Connection::Get()->ChangeProperty({
+      .window = static_cast<x11::Window>(dummy_window_),
+      .property = dummy_atom_,
+      .type = x11::Atom::STRING,
+      .format = CHAR_BIT,
+      .data_len = 1,
+      .data = std::vector<uint8_t>{0},
+  });
 
   // Observe the resulting PropertyNotify event to obtain the timestamp.
+  XFlush(display_);
   XEvent event;
   XIfEvent(display_, &event, IsPropertyNotifyForTimestamp,
            reinterpret_cast<XPointer>(&dummy_window_));
@@ -309,14 +316,15 @@ X11EventSource::GetRootCursorLocationFromCurrentEvent() const {
                        : event->type;
 
   bool is_valid_event = false;
-  static_assert(XI_ButtonPress == ButtonPress, "");
-  static_assert(XI_ButtonRelease == ButtonRelease, "");
+  static_assert(XI_ButtonPress == x11::XProto::ButtonPressEvent::opcode, "");
+  static_assert(XI_ButtonRelease == x11::XProto::ButtonReleaseEvent::opcode,
+                "");
   static_assert(XI_Motion == MotionNotify, "");
   static_assert(XI_Enter == EnterNotify, "");
   static_assert(XI_Leave == LeaveNotify, "");
   switch (event_type) {
-    case ButtonPress:
-    case ButtonRelease:
+    case x11::XProto::ButtonPressEvent::opcode:
+    case x11::XProto::ButtonReleaseEvent::opcode:
     case MotionNotify:
     case EnterNotify:
     case LeaveNotify:

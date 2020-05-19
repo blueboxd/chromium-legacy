@@ -46,7 +46,7 @@ const int kAllWorkspaces = 0xFFFFFFFF;
 
 constexpr char kX11WindowRolePopup[] = "popup";
 constexpr char kX11WindowRoleBubble[] = "bubble";
-constexpr unsigned char kDarkGtkThemeVariant[] = "dark";
+constexpr char kDarkGtkThemeVariant[] = "dark";
 
 constexpr long kSystemTrayRequestDock = 0;
 
@@ -64,17 +64,17 @@ gfx::Rect SanitizeBounds(const gfx::Rect& bounds) {
 }
 
 void SerializeImageRepresentation(const gfx::ImageSkiaRep& rep,
-                                  std::vector<unsigned long>* data) {
-  int width = rep.GetWidth();
+                                  std::vector<uint32_t>* data) {
+  uint32_t width = rep.GetWidth();
   data->push_back(width);
 
-  int height = rep.GetHeight();
+  uint32_t height = rep.GetHeight();
   data->push_back(height);
 
   const SkBitmap& bitmap = rep.GetBitmap();
 
-  for (int y = 0; y < height; ++y)
-    for (int x = 0; x < width; ++x)
+  for (uint32_t y = 0; y < height; ++y)
+    for (uint32_t x = 0; x < width; ++x)
       data->push_back(bitmap.getColor(x, y));
 }
 
@@ -166,7 +166,7 @@ void XWindow::Init(const Configuration& config) {
                              ? config.background_color.value()
                              : WhitePixel(xdisplay_, DefaultScreen(xdisplay_));
 
-  XAtom window_type;
+  x11::Atom window_type;
   switch (config.type) {
     case WindowType::kMenu:
       swa.override_redirect = x11::True;
@@ -227,15 +227,16 @@ void XWindow::Init(const Configuration& config) {
   if (config.wm_role_name == kStatusIconWmRoleName) {
     std::string atom_name =
         "_NET_SYSTEM_TRAY_S" + base::NumberToString(DefaultScreen(xdisplay_));
-    XID manager =
-        XGetSelectionOwner(xdisplay_, gfx::GetAtom(atom_name.c_str()));
+    XID manager = XGetSelectionOwner(
+        xdisplay_, static_cast<uint32_t>(gfx::GetAtom(atom_name.c_str())));
     if (ui::GetIntProperty(manager, "_NET_SYSTEM_TRAY_VISUAL", &visual_id))
       visual_id_ = visual_id;
   }
 
-  Visual* visual = CopyFromParent;
-  int depth = CopyFromParent;
-  Colormap colormap = CopyFromParent;
+  Visual* visual = nullptr;
+  int depth = static_cast<int>(x11::XProto::WindowClass::CopyFromParent);
+  Colormap colormap =
+      static_cast<int>(x11::XProto::WindowClass::CopyFromParent);
   ui::XVisualManager* visual_manager = ui::XVisualManager::GetInstance();
   if (!visual_id_ ||
       !visual_manager->GetVisualInfo(visual_id_, &visual, &depth, &colormap,
@@ -245,7 +246,7 @@ void XWindow::Init(const Configuration& config) {
                                           &visual_has_alpha_);
   }
 
-  if (colormap != CopyFromParent) {
+  if (colormap != static_cast<int>(x11::XProto::WindowClass::CopyFromParent)) {
     attribute_mask |= CWColormap;
     swa.colormap = colormap;
   }
@@ -256,11 +257,12 @@ void XWindow::Init(const Configuration& config) {
   swa.border_pixel = 0;
 
   bounds_in_pixels_ = SanitizeBounds(config.bounds);
-  xwindow_ = XCreateWindow(xdisplay_, x_root_window_, bounds_in_pixels_.x(),
-                           bounds_in_pixels_.y(), bounds_in_pixels_.width(),
-                           bounds_in_pixels_.height(),
-                           0,  // border width
-                           depth, InputOutput, visual, attribute_mask, &swa);
+  xwindow_ = XCreateWindow(
+      xdisplay_, x_root_window_, bounds_in_pixels_.x(), bounds_in_pixels_.y(),
+      bounds_in_pixels_.width(), bounds_in_pixels_.height(),
+      0,  // border width
+      depth, static_cast<int>(x11::XProto::WindowClass::InputOutput), visual,
+      attribute_mask, &swa);
 
   // It can be a status icon window. If it fails to initialize, don't provide
   // him with a native window handle, close self and let the client destroy
@@ -287,9 +289,6 @@ void XWindow::Init(const Configuration& config) {
   if (ui::IsXInput2Available())
     ui::TouchFactory::GetInstance()->SetupXI2ForXWindow(xwindow_);
 
-  // TODO(erg): We currently only request window deletion events. We also
-  // should listen for activation events and anything else that GTK+ listens
-  // for, and do something useful.
   // Request the _NET_WM_SYNC_REQUEST protocol which is used for synchronizing
   // between chrome and desktop compositor (or WM) during resizing.
   // The resizing behavior with _NET_WM_SYNC_REQUEST is:
@@ -305,12 +304,13 @@ void XWindow::Init(const Configuration& config) {
   //    frame with new content from chrome.
   // 7. Desktop compositor responses user mouse move events, and starts a new
   //    resize process, go to step 1.
-  XAtom protocols[] = {
+  std::vector<x11::Atom> protocols = {
       gfx::GetAtom("WM_DELETE_WINDOW"),
       gfx::GetAtom("_NET_WM_PING"),
       gfx::GetAtom("_NET_WM_SYNC_REQUEST"),
   };
-  XSetWMProtocols(xdisplay_, xwindow_, protocols, base::size(protocols));
+  ui::SetArrayProperty(xwindow_, gfx::GetAtom("WM_PROTOCOLS"), x11::Atom::ATOM,
+                       protocols);
 
   // We need a WM_CLIENT_MACHINE and WM_LOCALE_NAME value so we integrate with
   // the desktop environment.
@@ -322,14 +322,12 @@ void XWindow::Init(const Configuration& config) {
   // XChangeProperty() expects "pid" to be long.
   static_assert(sizeof(long) >= sizeof(pid_t),
                 "pid_t should not be larger than long");
-  long pid = getpid();
-  XChangeProperty(xdisplay_, xwindow_, gfx::GetAtom("_NET_WM_PID"), XA_CARDINAL,
-                  32, PropModeReplace, reinterpret_cast<unsigned char*>(&pid),
-                  1);
+  uint32_t pid = getpid();
+  ui::SetProperty(xwindow_, gfx::GetAtom("_NET_WM_PID"), x11::Atom::CARDINAL,
+                  pid);
 
-  XChangeProperty(xdisplay_, xwindow_, gfx::GetAtom("_NET_WM_WINDOW_TYPE"),
-                  XA_ATOM, 32, PropModeReplace,
-                  reinterpret_cast<unsigned char*>(&window_type), 1);
+  ui::SetProperty(xwindow_, gfx::GetAtom("_NET_WM_WINDOW_TYPE"),
+                  x11::Atom::ATOM, window_type);
 
   // The changes to |window_properties_| here will be sent to the X server just
   // before the window is mapped.
@@ -390,9 +388,8 @@ void XWindow::Init(const Configuration& config) {
   }
 
   if (config.prefer_dark_theme) {
-    XChangeProperty(xdisplay_, xwindow_, gfx::GetAtom("_GTK_THEME_VARIANT"),
-                    gfx::GetAtom("UTF8_STRING"), 8, PropModeReplace,
-                    kDarkGtkThemeVariant, base::size(kDarkGtkThemeVariant) - 1);
+    ui::SetStringProperty(xwindow_, gfx::GetAtom("_GTK_THEME_VARIANT"),
+                          gfx::GetAtom("UTF8_STRING"), kDarkGtkThemeVariant);
   }
 
   if (ui::IsSyncExtensionAvailable()) {
@@ -400,14 +397,12 @@ void XWindow::Init(const Configuration& config) {
     XSyncIntToValue(&value, 0);
     update_counter_ = XSyncCreateCounter(xdisplay_, value);
     extended_update_counter_ = XSyncCreateCounter(xdisplay_, value);
-    XID counters[]{update_counter_, extended_update_counter_};
+    std::vector<uint32_t> counters{update_counter_, extended_update_counter_};
 
     // Set XSyncCounter as window property _NET_WM_SYNC_REQUEST_COUNTER. the
     // compositor will listen on them during resizing.
-    XChangeProperty(
-        xdisplay_, xwindow_, gfx::GetAtom("_NET_WM_SYNC_REQUEST_COUNTER"),
-        XA_CARDINAL, 32, PropModeReplace,
-        reinterpret_cast<const unsigned char*>(counters), base::size(counters));
+    ui::SetArrayProperty(xwindow_, gfx::GetAtom("_NET_WM_SYNC_REQUEST_COUNTER"),
+                         x11::Atom::CARDINAL, counters);
   }
 
   // Always composite Chromium windows if a compositing WM is used.  Sometimes,
@@ -432,24 +427,23 @@ void XWindow::Map(bool inactive) {
   XSetWMNormalHints(xdisplay_, xwindow_, &size_hints);
 
   ignore_keyboard_input_ = inactive;
-  unsigned long wm_user_time_ms =
+  uint32_t wm_user_time_ms =
       ignore_keyboard_input_ ? 0
                              : X11EventSource::GetInstance()->GetTimestamp();
   if (inactive || wm_user_time_ms != 0) {
-    XChangeProperty(xdisplay_, xwindow_, gfx::GetAtom("_NET_WM_USER_TIME"),
-                    XA_CARDINAL, 32, PropModeReplace,
-                    reinterpret_cast<const unsigned char*>(&wm_user_time_ms),
-                    1);
+    ui::SetProperty(xwindow_, gfx::GetAtom("_NET_WM_USER_TIME"),
+                    x11::Atom::CARDINAL, wm_user_time_ms);
   }
 
   UpdateMinAndMaxSize();
 
   if (window_properties_.empty()) {
-    XDeleteProperty(xdisplay_, xwindow_, gfx::GetAtom("_NET_WM_STATE"));
+    ui::DeleteProperty(xwindow_, gfx::GetAtom("_NET_WM_STATE"));
   } else {
-    ui::SetAtomArrayProperty(xwindow_, "_NET_WM_STATE", "ATOM",
-                             std::vector<XAtom>(std::begin(window_properties_),
-                                                std::end(window_properties_)));
+    ui::SetAtomArrayProperty(
+        xwindow_, "_NET_WM_STATE", "ATOM",
+        std::vector<x11::Atom>(std::begin(window_properties_),
+                               std::end(window_properties_)));
   }
 
   XMapWindow(xdisplay_, xwindow_);
@@ -490,7 +484,7 @@ void XWindow::Minimize() {
   if (window_mapped_in_client_)
     XIconifyWindow(xdisplay_, xwindow_, 0);
   else
-    SetWMSpecState(true, gfx::GetAtom("_NET_WM_STATE_HIDDEN"), x11::None);
+    SetWMSpecState(true, gfx::GetAtom("_NET_WM_STATE_HIDDEN"), x11::Atom::None);
 }
 
 void XWindow::Unmaximize() {
@@ -512,12 +506,12 @@ bool XWindow::Hide() {
 }
 
 void XWindow::Unhide() {
-  SetWMSpecState(false, gfx::GetAtom("_NET_WM_STATE_HIDDEN"), x11::None);
+  SetWMSpecState(false, gfx::GetAtom("_NET_WM_STATE_HIDDEN"), x11::Atom::None);
 }
 
 void XWindow::SetFullscreen(bool fullscreen) {
   SetWMSpecState(fullscreen, gfx::GetAtom("_NET_WM_STATE_FULLSCREEN"),
-                 x11::None);
+                 x11::Atom::None);
 }
 
 void XWindow::Activate() {
@@ -543,7 +537,8 @@ void XWindow::Activate() {
     memset(&xclient, 0, sizeof(xclient));
     xclient.type = ClientMessage;
     xclient.xclient.window = xwindow_;
-    xclient.xclient.message_type = gfx::GetAtom("_NET_ACTIVE_WINDOW");
+    xclient.xclient.message_type =
+        static_cast<uint32_t>(gfx::GetAtom("_NET_ACTIVE_WINDOW"));
     xclient.xclient.format = 32;
     xclient.xclient.data.l[0] = 1;  // Specified we are an app.
     xclient.xclient.data.l[1] = timestamp;
@@ -736,10 +731,8 @@ bool XWindow::SetTitle(base::string16 title) {
 
   window_title_ = title;
   std::string utf8str = base::UTF16ToUTF8(title);
-  XChangeProperty(xdisplay_, xwindow_, gfx::GetAtom("_NET_WM_NAME"),
-                  gfx::GetAtom("UTF8_STRING"), 8, PropModeReplace,
-                  reinterpret_cast<const unsigned char*>(utf8str.c_str()),
-                  utf8str.size());
+  ui::SetStringProperty(xwindow_, gfx::GetAtom("_NET_WM_NAME"),
+                        gfx::GetAtom("UTF8_STRING"), utf8str);
   XTextProperty xtp;
   char* c_utf8_str = const_cast<char*>(utf8str.c_str());
   if (Xutf8TextListToTextProperty(xdisplay_, &c_utf8_str, 1, XUTF8StringStyle,
@@ -756,19 +749,16 @@ void XWindow::SetXWindowOpacity(float opacity) {
   // XChangeProperty() expects "cardinality" to be long.
 
   // Scale opacity to [0 .. 255] range.
-  unsigned long opacity_8bit =
-      static_cast<unsigned long>(opacity * 255.0f) & 0xFF;
+  uint32_t opacity_8bit = static_cast<uint32_t>(opacity * 255.0f) & 0xFF;
   // Use opacity value for all channels.
-  const unsigned long channel_multiplier = 0x1010101;
-  unsigned long cardinality = opacity_8bit * channel_multiplier;
+  uint32_t channel_multiplier = 0x1010101;
+  uint32_t cardinality = opacity_8bit * channel_multiplier;
 
   if (cardinality == 0xffffffff) {
-    XDeleteProperty(xdisplay_, xwindow_,
-                    gfx::GetAtom("_NET_WM_WINDOW_OPACITY"));
+    ui::DeleteProperty(xwindow_, gfx::GetAtom("_NET_WM_WINDOW_OPACITY"));
   } else {
-    XChangeProperty(xdisplay_, xwindow_, gfx::GetAtom("_NET_WM_WINDOW_OPACITY"),
-                    XA_CARDINAL, 32, PropModeReplace,
-                    reinterpret_cast<unsigned char*>(&cardinality), 1);
+    ui::SetProperty(xwindow_, gfx::GetAtom("_NET_WM_WINDOW_OPACITY"),
+                    x11::Atom::CARDINAL, cardinality);
   }
 }
 
@@ -797,7 +787,7 @@ void XWindow::SetXWindowIcons(const gfx::ImageSkia& window_icon,
   // so that we can pass to the WM.
   //
   // All of this could be made much, much better.
-  std::vector<unsigned long> data;
+  std::vector<uint32_t> data;
 
   if (!window_icon.isNull())
     SerializeImageRepresentation(window_icon.GetRepresentation(1.0f), &data);
@@ -805,12 +795,15 @@ void XWindow::SetXWindowIcons(const gfx::ImageSkia& window_icon,
   if (!app_icon.isNull())
     SerializeImageRepresentation(app_icon.GetRepresentation(1.0f), &data);
 
-  if (!data.empty())
-    ui::SetAtomArrayProperty(xwindow_, "_NET_WM_ICON", "CARDINAL", data);
+  if (!data.empty()) {
+    ui::SetArrayProperty(xwindow_, gfx::GetAtom("_NET_WM_ICON"),
+                         x11::Atom::CARDINAL, data);
+  }
 }
 
 void XWindow::SetXWindowVisibleOnAllWorkspaces(bool visible) {
-  SetWMSpecState(visible, gfx::GetAtom("_NET_WM_STATE_STICKY"), x11::None);
+  SetWMSpecState(visible, gfx::GetAtom("_NET_WM_STATE_STICKY"),
+                 x11::Atom::None);
 
   int new_desktop = 0;
   if (visible) {
@@ -825,7 +818,8 @@ void XWindow::SetXWindowVisibleOnAllWorkspaces(bool visible) {
   memset(&xevent, 0, sizeof(xevent));
   xevent.type = ClientMessage;
   xevent.xclient.window = xwindow_;
-  xevent.xclient.message_type = gfx::GetAtom("_NET_WM_DESKTOP");
+  xevent.xclient.message_type =
+      static_cast<uint32_t>(gfx::GetAtom("_NET_WM_DESKTOP"));
   xevent.xclient.format = 32;
   xevent.xclient.data.l[0] = new_desktop;
   xevent.xclient.data.l[1] = 0;
@@ -877,7 +871,8 @@ void XWindow::OnWorkspaceUpdated() {
 
 void XWindow::SetAlwaysOnTop(bool always_on_top) {
   is_always_on_top_ = always_on_top;
-  SetWMSpecState(always_on_top, gfx::GetAtom("_NET_WM_STATE_ABOVE"), x11::None);
+  SetWMSpecState(always_on_top, gfx::GetAtom("_NET_WM_STATE_ABOVE"),
+                 x11::Atom::None);
 }
 
 void XWindow::SetFlashFrameHint(bool flash_frame) {
@@ -1177,9 +1172,10 @@ void XWindow::ProcessEvent(XEvent* xev) {
       break;
     }
     case ClientMessage: {
-      Atom message_type = xev->xclient.message_type;
+      x11::Atom message_type =
+          static_cast<x11::Atom>(xev->xclient.message_type);
       if (message_type == gfx::GetAtom("WM_PROTOCOLS")) {
-        Atom protocol = static_cast<Atom>(xev->xclient.data.l[0]);
+        x11::Atom protocol = static_cast<x11::Atom>(xev->xclient.data.l[0]);
         if (protocol == gfx::GetAtom("WM_DELETE_WINDOW")) {
           // We have received a close message from the window manager.
           OnXWindowCloseRequested();
@@ -1217,7 +1213,7 @@ void XWindow::ProcessEvent(XEvent* xev) {
       break;
     }
     case PropertyNotify: {
-      XAtom changed_atom = xev->xproperty.atom;
+      x11::Atom changed_atom = static_cast<x11::Atom>(xev->xproperty.atom);
       if (changed_atom == gfx::GetAtom("_NET_WM_STATE")) {
         OnWMStateUpdated();
       } else if (changed_atom == gfx::GetAtom("_NET_FRAME_EXTENTS")) {
@@ -1241,12 +1237,10 @@ void XWindow::UpdateWMUserTime(ui::Event* event) {
   ui::EventType type = event->type();
   if (type == ui::ET_MOUSE_PRESSED || type == ui::ET_KEY_PRESSED ||
       type == ui::ET_TOUCH_PRESSED) {
-    unsigned long wm_user_time_ms =
+    uint32_t wm_user_time_ms =
         (event->time_stamp() - base::TimeTicks()).InMilliseconds();
-    XChangeProperty(xdisplay_, xwindow_, gfx::GetAtom("_NET_WM_USER_TIME"),
-                    XA_CARDINAL, 32, PropModeReplace,
-                    reinterpret_cast<const unsigned char*>(&wm_user_time_ms),
-                    1);
+    ui::SetProperty(xwindow_, gfx::GetAtom("_NET_WM_USER_TIME"),
+                    x11::Atom::CARDINAL, wm_user_time_ms);
   }
 }
 
@@ -1268,7 +1262,7 @@ void XWindow::OnConfigureEvent(XEvent* xev) {
     DCHECK(!configure_counter_value_);
     configure_counter_value_ = pending_counter_value_;
     configure_counter_value_is_extended_ = pending_counter_value_is_extended_;
-    pending_counter_value_is_extended_ = 0;
+    pending_counter_value_is_extended_ = false;
     pending_counter_value_ = 0;
   }
 
@@ -1296,13 +1290,13 @@ void XWindow::OnConfigureEvent(XEvent* xev) {
     NotifyBoundsChanged(bounds_in_pixels_);
 }
 
-void XWindow::SetWMSpecState(bool enabled, XAtom state1, XAtom state2) {
+void XWindow::SetWMSpecState(bool enabled, x11::Atom state1, x11::Atom state2) {
   if (window_mapped_in_client_) {
     ui::SetWMSpecState(xwindow_, enabled, state1, state2);
   } else {
     // The updated state will be set when the window is (re)mapped.
-    base::flat_set<XAtom> new_window_properties = window_properties_;
-    for (XAtom atom : {state1, state2}) {
+    base::flat_set<x11::Atom> new_window_properties = window_properties_;
+    for (x11::Atom atom : {state1, state2}) {
       if (enabled)
         new_window_properties.insert(atom);
       else
@@ -1318,16 +1312,16 @@ void XWindow::OnWMStateUpdated() {
   // persist across a Hide() and Show().  So if the window is currently
   // unmapped, leave the state unchanged so it will be restored when the window
   // is remapped.
-  std::vector<XAtom> atom_list;
+  std::vector<x11::Atom> atom_list;
   if (ui::GetAtomArrayProperty(xwindow_, "_NET_WM_STATE", &atom_list) ||
       window_mapped_in_client_) {
     UpdateWindowProperties(
-        base::flat_set<XAtom>(std::begin(atom_list), std::end(atom_list)));
+        base::flat_set<x11::Atom>(std::begin(atom_list), std::end(atom_list)));
   }
 }
 
 void XWindow::UpdateWindowProperties(
-    const base::flat_set<XAtom>& new_window_properties) {
+    const base::flat_set<x11::Atom>& new_window_properties) {
   was_minimized_ = IsMinimized();
 
   window_properties_ = new_window_properties;
@@ -1549,8 +1543,9 @@ void XWindow::UpdateWindowRegion(XRegion* xregion) {
     XRectangle r = {0, 0,
                     static_cast<unsigned short>(bounds_in_pixels_.width()),
                     static_cast<unsigned short>(bounds_in_pixels_.height())};
-    XShapeCombineRectangles(xdisplay_, xwindow_, ShapeBounding, 0, 0, &r, 1,
-                            ShapeSet, YXBanded);
+    XShapeCombineRectangles(
+        xdisplay_, xwindow_, ShapeBounding, 0, 0, &r, 1, ShapeSet,
+        static_cast<int>(x11::XProto::ClipOrdering::YXBanded));
   }
 }
 
@@ -1562,7 +1557,8 @@ void XWindow::NotifyBoundsChanged(const gfx::Rect& new_bounds_in_px) {
 bool XWindow::InitializeAsStatusIcon() {
   std::string atom_name =
       "_NET_SYSTEM_TRAY_S" + base::NumberToString(DefaultScreen(xdisplay_));
-  XID manager = XGetSelectionOwner(xdisplay_, gfx::GetAtom(atom_name.c_str()));
+  XID manager = XGetSelectionOwner(
+      xdisplay_, static_cast<uint32_t>(gfx::GetAtom(atom_name.c_str())));
   if (manager == x11::None)
     return false;
 
@@ -1577,14 +1573,16 @@ bool XWindow::InitializeAsStatusIcon() {
   } else {
     ui::SetIntProperty(xwindow_, "CHROMIUM_COMPOSITE_WINDOW", "CARDINAL", 1);
     flags |= CWBackPixmap;
-    attrs.background_pixmap = ParentRelative;
+    attrs.background_pixmap =
+        static_cast<int>(x11::XProto::BackPixmap::ParentRelative);
   }
   XChangeWindowAttributes(xdisplay_, xwindow_, flags, &attrs);
   XEvent ev;
   memset(&ev, 0, sizeof(ev));
   ev.xclient.type = ClientMessage;
   ev.xclient.window = manager;
-  ev.xclient.message_type = gfx::GetAtom("_NET_SYSTEM_TRAY_OPCODE");
+  ev.xclient.message_type =
+      static_cast<uint32_t>(gfx::GetAtom("_NET_SYSTEM_TRAY_OPCODE"));
   ev.xclient.format = 32;
   ev.xclient.data.l[0] = ui::X11EventSource::GetInstance()->GetTimestamp();
   ev.xclient.data.l[1] = kSystemTrayRequestDock;

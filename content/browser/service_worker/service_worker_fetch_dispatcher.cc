@@ -598,16 +598,7 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   auto params = blink::mojom::DispatchFetchEventParams::New();
   params->request = std::move(request_);
   params->client_id = client_id_;
-  if (is_offline_capability_check_) {
-    // TODO(crbug.com/1031950): We have to set up |preload_handle_| correctly so
-    // that event.preloadResponse is valid one if navigation preload is enabled.
-
-    // At present, an offline-capability-check fetch event is not calling
-    // MayStartNavigationPreload() so |preload_handle_| is null here.
-    DCHECK(!preload_handle_);
-  } else {
-    params->preload_handle = std::move(preload_handle_);
-  }
+  params->preload_handle = std::move(preload_handle_);
   params->is_offline_capability_check = is_offline_capability_check_;
 
   // TODO(https://crbug.com/900700): Make the remote connected to a receiver
@@ -683,6 +674,23 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   // TODO(horo): Currently NavigationPreload doesn't support request body.
   if (request_->body)
     return false;
+
+  // When the fetch event is for an offline capability check, respond to the
+  // navigation preload with a network disconnected error, to simulate offline.
+  if (is_offline_capability_check_) {
+    mojo::PendingRemote<network::mojom::URLLoader> url_loader_to_pass;
+    mojo::Remote<network::mojom::URLLoaderClient> url_loader_client;
+    auto dummy_receiver = url_loader_to_pass.InitWithNewPipeAndPassReceiver();
+
+    preload_handle_ = blink::mojom::FetchEventPreloadHandle::New();
+    preload_handle_->url_loader = std::move(url_loader_to_pass);
+    preload_handle_->url_loader_client_receiver =
+        url_loader_client.BindNewPipeAndPassReceiver();
+
+    url_loader_client->OnComplete(
+        network::URLLoaderCompletionStatus(net::ERR_INTERNET_DISCONNECTED));
+    return true;
+  }
 
   network::ResourceRequest resource_request(original_request);
   if (resource_type_ == blink::mojom::ResourceType::kMainFrame) {

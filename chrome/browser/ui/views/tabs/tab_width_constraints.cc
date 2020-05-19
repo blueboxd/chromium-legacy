@@ -10,12 +10,10 @@
 TabWidthConstraints::TabWidthConstraints(
     const TabAnimationState& state,
     const TabLayoutConstants& layout_constants,
-    const TabSizeInfo& size_info,
-    bool is_collapsed)
+    const TabSizeInfo& size_info)
     : state_(state),
       layout_constants_(layout_constants),
-      size_info_(size_info),
-      is_collapsed_(is_collapsed) {}
+      size_info_(size_info) {}
 
 float TabWidthConstraints::GetMinimumWidth() const {
   const float min_width = gfx::Tween::FloatValueBetween(

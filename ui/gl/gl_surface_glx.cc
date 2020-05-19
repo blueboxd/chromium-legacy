@@ -55,8 +55,9 @@ bool g_glx_sgi_video_sync_supported = false;
 
 // A 24-bit RGB visual and colormap to use when creating offscreen surfaces.
 Visual* g_visual = nullptr;
-int g_depth = CopyFromParent;
-Colormap g_colormap = CopyFromParent;
+int g_depth = static_cast<int>(x11::XProto::WindowClass::CopyFromParent);
+Colormap g_colormap =
+    static_cast<int>(x11::XProto::WindowClass::CopyFromParent);
 
 GLXFBConfig GetConfigForWindow(Display* display,
                                gfx::AcceleratedWidget window) {
@@ -118,8 +119,10 @@ bool CreateDummyWindow(Display* display) {
   gfx::AcceleratedWidget parent_window =
       XRootWindow(display, DefaultScreen(display));
   gfx::AcceleratedWidget window =
-      XCreateWindow(display, parent_window, 0, 0, 1, 1, 0, CopyFromParent,
-                    InputOutput, CopyFromParent, 0, nullptr);
+      XCreateWindow(display, parent_window, 0, 0, 1, 1, 0,
+                    static_cast<int>(x11::XProto::WindowClass::CopyFromParent),
+                    static_cast<int>(x11::XProto::WindowClass::InputOutput),
+                    nullptr, 0, nullptr);
   if (!window) {
     LOG(ERROR) << "XCreateWindow failed";
     return false;
@@ -146,7 +149,7 @@ class OMLSyncControlVSyncProvider : public SyncControlVSyncProvider {
   explicit OMLSyncControlVSyncProvider(GLXWindow glx_window)
       : SyncControlVSyncProvider(), glx_window_(glx_window) {}
 
-  ~OMLSyncControlVSyncProvider() override {}
+  ~OMLSyncControlVSyncProvider() override = default;
 
  protected:
   bool GetSyncValues(int64_t* system_time,
@@ -249,7 +252,7 @@ class SGIVideoSyncThread : public base::Thread,
   }
 
   static SGIVideoSyncThread* g_video_sync_thread;
-  GLXContext context_ = 0;
+  GLXContext context_ = nullptr;
 
   THREAD_CHECKER(thread_checker_);
 
@@ -287,9 +290,11 @@ class SGIVideoSyncProviderThreadShim {
   void Initialize() {
     DCHECK(vsync_thread_->GetDisplay());
 
-    window_ = XCreateWindow(vsync_thread_->GetDisplay(), parent_window_, 0, 0,
-                            1, 1, 0, CopyFromParent, InputOutput,
-                            CopyFromParent, 0, nullptr);
+    window_ = XCreateWindow(
+        vsync_thread_->GetDisplay(), parent_window_, 0, 0, 1, 1, 0,
+        static_cast<int>(x11::XProto::WindowClass::CopyFromParent),
+        static_cast<int>(x11::XProto::WindowClass::InputOutput), nullptr, 0,
+        nullptr);
     if (!window_) {
       LOG(ERROR) << "video_sync: XCreateWindow failed";
       return;
@@ -430,7 +435,7 @@ SGIVideoSyncThread* SGIVideoSyncThread::g_video_sync_thread = nullptr;
 
 bool GLSurfaceGLX::initialized_ = false;
 
-GLSurfaceGLX::GLSurfaceGLX() {}
+GLSurfaceGLX::GLSurfaceGLX() = default;
 
 bool GLSurfaceGLX::InitializeOneOff() {
   if (initialized_)
@@ -524,8 +529,8 @@ void GLSurfaceGLX::ShutdownOneOff() {
   g_glx_sgi_video_sync_supported = false;
 
   g_visual = nullptr;
-  g_depth = CopyFromParent;
-  g_colormap = CopyFromParent;
+  g_depth = static_cast<int>(x11::XProto::WindowClass::CopyFromParent);
+  g_colormap = static_cast<int>(x11::XProto::WindowClass::CopyFromParent);
 }
 
 // static
@@ -597,7 +602,7 @@ void* GLSurfaceGLX::GetDisplay() {
   return gfx::GetXDisplay();
 }
 
-GLSurfaceGLX::~GLSurfaceGLX() {}
+GLSurfaceGLX::~GLSurfaceGLX() = default;
 
 NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX(gfx::AcceleratedWidget window)
     : parent_window_(window),
@@ -635,10 +640,11 @@ bool NativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
     value_mask |= CWBackPixel;
   }
 
-  window_ =
-      XCreateWindow(gfx::GetXDisplay(), parent_window_, 0 /* x */, 0 /* y */,
-                    size_.width(), size_.height(), 0 /* border_width */,
-                    g_depth, InputOutput, g_visual, value_mask, &swa);
+  window_ = XCreateWindow(
+      gfx::GetXDisplay(), parent_window_, 0 /* x */, 0 /* y */, size_.width(),
+      size_.height(), 0 /* border_width */, g_depth,
+      static_cast<int>(x11::XProto::WindowClass::InputOutput), g_visual,
+      value_mask, &swa);
   if (!window_) {
     LOG(ERROR) << "XCreateWindow failed";
     return false;
@@ -653,7 +659,7 @@ bool NativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
     LOG(ERROR) << "Failed to get GLXConfig";
     return false;
   }
-  glx_window_ = glXCreateWindow(gfx::GetXDisplay(), config_, window_, NULL);
+  glx_window_ = glXCreateWindow(gfx::GetXDisplay(), config_, window_, nullptr);
   if (!glx_window_) {
     LOG(ERROR) << "glXCreateWindow failed";
     return false;
@@ -837,7 +843,8 @@ bool UnmappedNativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
   attrs.colormap = g_colormap;
   window_ = XCreateWindow(
       gfx::GetXDisplay(), parent_window, 0, 0, size_.width(), size_.height(), 0,
-      g_depth, InputOutput, g_visual, CWBorderPixel | CWColormap, &attrs);
+      g_depth, static_cast<int>(x11::XProto::WindowClass::InputOutput),
+      g_visual, CWBorderPixel | CWColormap, &attrs);
   if (!window_) {
     LOG(ERROR) << "XCreateWindow failed";
     return false;
@@ -847,7 +854,7 @@ bool UnmappedNativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
     LOG(ERROR) << "Failed to get GLXConfig";
     return false;
   }
-  glx_window_ = glXCreateWindow(gfx::GetXDisplay(), config_, window_, NULL);
+  glx_window_ = glXCreateWindow(gfx::GetXDisplay(), config_, window_, nullptr);
   if (!glx_window_) {
     LOG(ERROR) << "glXCreateWindow failed";
     return false;

@@ -56,7 +56,7 @@ TestCompositorHostX11::TestCompositorHostX11(
                   base::ThreadTaskRunnerHandle::Get(),
                   false /* enable_pixel_canvas */) {}
 
-TestCompositorHostX11::~TestCompositorHostX11() {}
+TestCompositorHostX11::~TestCompositorHostX11() = default;
 
 void TestCompositorHostX11::Show() {
   XDisplay* display = gfx::GetXDisplay();
@@ -65,16 +65,16 @@ void TestCompositorHostX11::Show() {
   window_ = XCreateWindow(
       display, XRootWindow(display, DefaultScreen(display)),  // parent
       bounds_.x(), bounds_.y(), bounds_.width(), bounds_.height(),
-      0,               // border width
-      CopyFromParent,  // depth
-      InputOutput,
-      CopyFromParent,  // visual
+      0,  // border width
+      static_cast<int>(x11::XProto::WindowClass::CopyFromParent),  // depth
+      static_cast<int>(x11::XProto::WindowClass::InputOutput),
+      nullptr,  // visual
       CWOverrideRedirect, &swa);
   window_events_.reset(
       new XScopedEventSelector(window_, StructureNotifyMask | ExposureMask));
   XMapWindow(display, window_);
 
-  while (1) {
+  while (true) {
     XEvent event;
     XNextEvent(display, &event);
     if (event.type == MapNotify && event.xmap.window == window_)

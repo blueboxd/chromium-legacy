@@ -222,7 +222,7 @@ def adjust_type_case(name):
             'SUBPICTURE': 'SubPicture',
             'SYSTEMCOUNTER': 'SystemCounter',
             'TIMECOORD': 'TimeCoord',
-            'TIMESTAMP': 'TimeStamp',
+            'TIMESTAMP': 'Time',
             'VISUALID': 'VisualId',
             'VISUALTYPE': 'VisualType',
             'WAITCONDITION': 'WaitCondition',
@@ -706,7 +706,7 @@ class GenXproto:
         # The size of enum types may be different depending on the
         # context, so they should always be casted to the contextual
         # underlying type before calling Read() or Write().
-        underlying_type = self.fieldtype(field)
+        underlying_type = self.qualtype(field.type, field.type.name)
         tmp_name = 'tmp%d' % self.new_uid()
         real_name = safe_name(field.field_name)
         self.write('%s %s;' % (underlying_type, tmp_name))
@@ -723,6 +723,9 @@ class GenXproto:
         name = struct.name[-1] + self.type_suffix(struct)
         self.undef(name)
         with Indent(self, 'struct %s {' % adjust_type_case(name), '};'):
+            if struct.is_event:
+                self.write('static constexpr uint8_t opcode = %s;' %
+                           struct.opcodes[struct.name])
             for field in struct.fields:
                 for field_type_name in self.declare_field(field):
                     self.write('%s %s{};' % field_type_name)

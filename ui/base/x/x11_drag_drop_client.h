@@ -92,7 +92,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
   // During the blocking StartDragAndDrop() call, this converts the views-style
   // |drag_operation_| bitfield into a vector of Atoms to offer to other
   // processes.
-  std::vector<Atom> GetOfferedDragOperations() const;
+  std::vector<x11::Atom> GetOfferedDragOperations() const;
 
   // Tries to handle the XDND event.  Returns true for all known event types:
   // XdndEnter, XdndLeave, XdndPosition, XdndStatus, XdndDrop, and XdndFinished;
@@ -179,7 +179,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
   // Virtual for testing.
   virtual void SendXClientEvent(XID xid, XEvent* xev);
 
-  void SendXdndEnter(XID dest_window, const std::vector<Atom>& targets);
+  void SendXdndEnter(XID dest_window, const std::vector<x11::Atom>& targets);
   void SendXdndPosition(XID dest_window,
                         const gfx::Point& screen_point,
                         unsigned long event_time);

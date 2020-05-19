@@ -58,7 +58,8 @@ bool X11WorkspaceHandler::DispatchXEvent(XEvent* event) {
   }
   switch (event->type) {
     case PropertyNotify: {
-      if (event->xproperty.atom == gfx::GetAtom("_NET_CURRENT_DESKTOP")) {
+      if (event->xproperty.atom ==
+          static_cast<uint32_t>(gfx::GetAtom("_NET_CURRENT_DESKTOP"))) {
         GetWorkspace().OnResponse(
             base::BindOnce(&X11WorkspaceHandler::OnWorkspaceResponse,
                            weak_factory_.GetWeakPtr()));

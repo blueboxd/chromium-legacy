@@ -15,8 +15,7 @@ class TabWidthConstraints {
  public:
   TabWidthConstraints(const TabAnimationState& state,
                       const TabLayoutConstants& layout_constants,
-                      const TabSizeInfo& size_info,
-                      bool is_collapsed = false);
+                      const TabSizeInfo& size_info);
 
   // The smallest width this tab should ever have.
   float GetMinimumWidth() const;
@@ -30,8 +29,6 @@ class TabWidthConstraints {
   // The width this tab would like to have, if space is available.
   float GetPreferredWidth() const;
 
-  bool IsCollapsed() const { return is_collapsed_; }
-
  private:
   // All widths are affected by pinnedness and activeness in the same way.
   float TransformForPinnednessAndOpenness(float width) const;
@@ -39,8 +36,6 @@ class TabWidthConstraints {
   TabAnimationState state_;
   TabLayoutConstants layout_constants_;
   TabSizeInfo size_info_;
-
-  bool is_collapsed_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_WIDTH_CONSTRAINTS_H_

@@ -43,12 +43,9 @@ namespace {
 // Names of all known internal devices that should not be considered as
 // keyboards.
 // TODO(rsadam@): Identify these devices using udev rules. (Crbug.com/420728.)
-const char* kKnownInvalidKeyboardDeviceNames[] = {"Power Button",
-                                                  "Sleep Button",
-                                                  "Video Bus",
-                                                  "gpio-keys.5",
-                                                  "gpio-keys.12",
-                                                  "ROCKCHIP-I2S Headset Jack"};
+const char* kKnownInvalidKeyboardDeviceNames[] = {
+    "Power Button", "Sleep Button", "Video Bus",
+    "gpio-keys.5",  "gpio-keys.12", "ROCKCHIP-I2S Headset Jack"};
 
 enum DeviceType {
   DEVICE_TYPE_KEYBOARD,
@@ -80,14 +77,14 @@ struct UiCallbacks {
 // Stores a copy of the XIValuatorClassInfo values so X11 device processing can
 // happen on a worker thread. This is needed since X11 structs are not copyable.
 struct ValuatorClassInfo {
-  ValuatorClassInfo(const XIValuatorClassInfo& info)
-      : label(info.label),
+  explicit ValuatorClassInfo(const XIValuatorClassInfo& info)
+      : label(static_cast<x11::Atom>(info.label)),
         max(info.max),
         min(info.min),
         mode(info.mode),
         number(info.number) {}
 
-  Atom label;
+  x11::Atom label;
   double max;
   double min;
   int mode;
@@ -157,8 +154,8 @@ struct DeviceInfo {
 // X11 display cache used on worker threads. This is filled on the UI thread and
 // passed in to the worker threads.
 struct DisplayState {
-  Atom mt_position_x;
-  Atom mt_position_y;
+  x11::Atom mt_position_x;
+  x11::Atom mt_position_y;
 };
 
 // Returns true if |name| is the name of a known invalid keyboard device. Note,
@@ -187,8 +184,8 @@ base::FilePath GetDevicePath(XDisplay* dpy, const XIDeviceInfo& device) {
 
   // Input device has a property "Device Node" pointing to its dev input node,
   // e.g.   Device Node (250): "/dev/input/event8"
-  Atom device_node = gfx::GetAtom("Device Node");
-  if (device_node == x11::None)
+  x11::Atom device_node = gfx::GetAtom("Device Node");
+  if (device_node == x11::Atom::None)
     return base::FilePath();
 
   Atom actual_type;
@@ -203,9 +200,10 @@ base::FilePath GetDevicePath(XDisplay* dpy, const XIDeviceInfo& device) {
   if (!dev || dev->device_id != base::checked_cast<XID>(device.deviceid))
     return base::FilePath();
 
-  if (XGetDeviceProperty(dpy, dev, device_node, 0, 1000, x11::False,
-                         AnyPropertyType, &actual_type, &actual_format, &nitems,
-                         &bytes_after, &data) != x11::Success) {
+  if (XGetDeviceProperty(dpy, dev, static_cast<uint32_t>(device_node), 0, 1000,
+                         x11::False, AnyPropertyType, &actual_type,
+                         &actual_format, &nitems, &bytes_after,
+                         &data) != x11::Success) {
     XCloseDevice(dpy, dev);
     return base::FilePath();
   }
@@ -292,8 +290,8 @@ void HandleTouchscreenDevicesInWorker(
     scoped_refptr<base::TaskRunner> reply_runner,
     TouchscreenDeviceCallback callback) {
   std::vector<TouchscreenDevice> devices;
-  if (display_state.mt_position_x == x11::None ||
-      display_state.mt_position_y == x11::None)
+  if (display_state.mt_position_x == x11::Atom::None ||
+      display_state.mt_position_y == x11::Atom::None)
     return;
 
   for (const DeviceInfo& device_info : device_infos) {
@@ -387,10 +385,9 @@ void OnHotplugFinished() {
 
 }  // namespace
 
-X11HotplugEventHandler::X11HotplugEventHandler() {}
+X11HotplugEventHandler::X11HotplugEventHandler() = default;
 
-X11HotplugEventHandler::~X11HotplugEventHandler() {
-}
+X11HotplugEventHandler::~X11HotplugEventHandler() = default;
 
 void X11HotplugEventHandler::OnHotplugEvent() {
   Display* display = gfx::GetXDisplay();
@@ -401,15 +398,15 @@ void X11HotplugEventHandler::OnHotplugEvent() {
 
   const int kMaxDeviceNum = 128;
   DeviceType device_types[kMaxDeviceNum];
-  for (int i = 0; i < kMaxDeviceNum; ++i)
-    device_types[i] = DEVICE_TYPE_OTHER;
+  for (auto& device_type : device_types)
+    device_type = DEVICE_TYPE_OTHER;
 
   for (int i = 0; i < device_list_xi.count; ++i) {
     int id = device_list_xi[i].id;
     if (id < 0 || id >= kMaxDeviceNum)
       continue;
 
-    Atom type = device_list_xi[i].type;
+    x11::Atom type = static_cast<x11::Atom>(device_list_xi[i].type);
     if (type == gfx::GetAtom(XI_KEYBOARD))
       device_types[id] = DEVICE_TYPE_KEYBOARD;
     else if (type == gfx::GetAtom(XI_MOUSE))

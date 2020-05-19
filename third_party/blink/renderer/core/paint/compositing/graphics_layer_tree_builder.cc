@@ -153,7 +153,7 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
 
     if (ShouldAppendLayer(layer)) {
       child_layers.push_back(
-          current_composited_layer_mapping->ChildForSuperlayers());
+          current_composited_layer_mapping->MainGraphicsLayer());
     }
   }
 

@@ -53,14 +53,6 @@
       "transform": 4
     },
     {
-      "name": "LayoutNGBlockFlow (relative positioned) DIV class='content'",
-      "position": [17, 17],
-      "bounds": [196, 212],
-      "contentsOpaque": true,
-      "backgroundColor": "#DDDDDD",
-      "transform": 4
-    },
-    {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
       "position": [218, 5],
       "bounds": [7, 160],
@@ -84,14 +76,6 @@
       "bounds": [220, 236],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "transform": 6
-    },
-    {
-      "name": "LayoutNGBlockFlow (relative positioned) DIV class='content'",
-      "position": [17, 17],
-      "bounds": [196, 212],
-      "contentsOpaque": true,
-      "backgroundColor": "#DDDDDD",
       "transform": 6
     },
     {
@@ -124,14 +108,6 @@
       "bounds": [220, 236],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "transform": 9
-    },
-    {
-      "name": "LayoutNGBlockFlow (relative positioned) DIV class='content'",
-      "position": [17, 17],
-      "bounds": [196, 212],
-      "contentsOpaque": true,
-      "backgroundColor": "#DDDDDD",
       "transform": 9
     },
     {

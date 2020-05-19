@@ -26,6 +26,7 @@
 #include "components/sessions/core/tab_restore_service_observer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {

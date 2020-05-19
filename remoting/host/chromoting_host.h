@@ -44,11 +44,11 @@ class DesktopEnvironmentFactory;
 // Here's the work flow of this class:
 // 1. We should load the saved GAIA ID token or if this is the first
 //    time the host process runs we should prompt user for the
-//    credential. We will use this token or credentials to authenicate
+//    credential. We will use this token or credentials to authenticate
 //    and register the host.
 //
-// 2. We listen for incoming connection using libjingle. We will create
-//    a ConnectionToClient object that wraps around linjingle for transport.
+// 2. We listen for an incoming connection using libjingle. We will create
+//    a ConnectionToClient object that wraps around libjingle for transport.
 //    A VideoFramePump is created with an Encoder and a webrtc::DesktopCapturer.
 //    A ConnectionToClient is added to the ScreenRecorder for transporting
 //    the screen captures. An InputStub is created and registered with the
@@ -59,8 +59,8 @@ class DesktopEnvironmentFactory;
 //
 // 3. When the user is disconnected, we will pause the ScreenRecorder
 //    and try to terminate the threads we have created. This will allow
-//    all pending tasks to complete. After all of that completed we
-//    return to the idle state. We then go to step (2) if there a new
+//    all pending tasks to complete. After all of that has completed, we
+//    return to the idle state. We then go to step (2) to wait for a new
 //    incoming connection.
 class ChromotingHost : public ClientSession::EventHandler {
  public:
@@ -78,8 +78,7 @@ class ChromotingHost : public ClientSession::EventHandler {
 
   // Asynchronously starts the host.
   //
-  // After this is invoked, the host process will connect to the talk
-  // network and start listening for incoming connections.
+  // Once this is called, the host will start listening for inbound connections.
   //
   // This method can only be called once during the lifetime of this object.
   void Start(const std::string& host_owner);
@@ -140,7 +139,7 @@ class ChromotingHost : public ClientSession::EventHandler {
  private:
   friend class ChromotingHostTest;
 
-  // Unless specified otherwise all members of this class must be
+  // Unless specified otherwise, all members of this class must be
   // used on the network thread only.
 
   // Parameters specified when the host was created.

@@ -24,7 +24,7 @@ class Connection;
 namespace gfx {
 
 // Gets the X atom for default display corresponding to atom_name.
-GFX_EXPORT XAtom GetAtom(const char* atom_name);
+GFX_EXPORT x11::Atom GetAtom(const std::string& atom_name);
 
 // Pre-caches all Atoms on first use to minimize roundtrips to the X11
 // server. By default, GetAtom() will CHECK() that atoms accessed through
@@ -35,7 +35,7 @@ class GFX_EXPORT X11AtomCache {
   static X11AtomCache* GetInstance();
 
  private:
-  friend XAtom GetAtom(const char* atom_name);
+  friend x11::Atom GetAtom(const std::string& atom_name);
   friend struct base::DefaultSingletonTraits<X11AtomCache>;
 
   X11AtomCache();
@@ -43,12 +43,12 @@ class GFX_EXPORT X11AtomCache {
 
   // Returns the pre-interned Atom without having to go to the x server.
   // On failure, x11::None is returned.
-  XAtom GetAtom(const char*) const;
+  x11::Atom GetAtom(const std::string&) const;
 
   x11::Connection* connection_;
 
   // Using std::map, as it is possible for thousands of atoms to be registered.
-  mutable std::map<std::string, XAtom> cached_atoms_;
+  mutable std::map<std::string, x11::Atom> cached_atoms_;
 
   DISALLOW_COPY_AND_ASSIGN(X11AtomCache);
 };

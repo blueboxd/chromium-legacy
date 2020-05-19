@@ -41,6 +41,73 @@ namespace ui {
 // These functions use the default display and this /must/ be called from
 // the UI thread. Thus, they don't support multiple displays.
 
+template <typename T>
+bool GetArrayProperty(XID window,
+                      x11::Atom name,
+                      std::vector<T>* value,
+                      x11::Atom* out_type = nullptr,
+                      size_t amount = 0) {
+  static_assert(sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4, "");
+
+  size_t bytes = amount * sizeof(T);
+  // The length field specifies the maximum amount of data we would like the
+  // server to give us.  It's specified in units of 4 bytes, so divide by 4.
+  // Add 3 before division to round up.
+  size_t length = (bytes + 3) / 4;
+  using lentype = decltype(x11::XProto::GetPropertyRequest::long_length);
+  auto response =
+      x11::Connection::Get()
+          ->GetProperty(
+              {.window = static_cast<x11::Window>(window),
+               .property = name,
+               .long_length =
+                   amount ? length : std::numeric_limits<lentype>::max()})
+          .Sync();
+  if (!response || response->format != CHAR_BIT * sizeof(T))
+    return false;
+
+  DCHECK_EQ(response->format / CHAR_BIT * response->value_len,
+            response->value.size());
+  value->resize(response->value_len);
+  memcpy(value->data(), response->value.data(), response->value.size());
+  if (out_type)
+    *out_type = response->type;
+  return true;
+}
+
+template <typename T>
+bool GetProperty(XID window, const x11::Atom name, T* value) {
+  std::vector<T> values;
+  if (!GetArrayProperty(window, name, &values, nullptr, 1) || values.empty())
+    return false;
+  *value = values[0];
+  return true;
+}
+
+template <typename T>
+void SetArrayProperty(XID window,
+                      x11::Atom name,
+                      x11::Atom type,
+                      const std::vector<T>& values) {
+  static_assert(sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4, "");
+  std::vector<uint8_t> data(sizeof(T) * values.size());
+  memcpy(data.data(), values.data(), sizeof(T) * values.size());
+  x11::Connection::Get()->ChangeProperty(
+      {.window = static_cast<x11::Window>(window),
+       .property = name,
+       .type = type,
+       .format = CHAR_BIT * sizeof(T),
+       .data_len = values.size(),
+       .data = data});
+}
+
+template <typename T>
+void SetProperty(XID window, x11::Atom name, x11::Atom type, const T& value) {
+  SetArrayProperty(window, name, type, std::vector<T>{value});
+}
+
+COMPONENT_EXPORT(UI_BASE_X) void DeleteProperty(XID window, x11::Atom name);
+
 // These functions cache their results ---------------------------------
 
 // Returns true if the system supports XINPUT2.
@@ -100,7 +167,7 @@ COMPONENT_EXPORT(UI_BASE_X) XID GetX11RootWindow();
 // Returns the user's current desktop.
 COMPONENT_EXPORT(UI_BASE_X) bool GetCurrentDesktop(int* desktop);
 
-enum HideTitlebarWhenMaximized {
+enum HideTitlebarWhenMaximized : uint32_t {
   SHOW_TITLEBAR_WHEN_MAXIMIZED = 0,
   HIDE_TITLEBAR_WHEN_MAXIMIZED = 1,
 };
@@ -142,58 +209,58 @@ bool PropertyExists(XID window, const std::string& property_name);
 // interpretation. |out_data| should be freed by XFree() after use.
 COMPONENT_EXPORT(UI_BASE_X)
 bool GetRawBytesOfProperty(XID window,
-                           XAtom property,
-                           scoped_refptr<base::RefCountedMemory>* out_data,
-                           size_t* out_data_items,
-                           XAtom* out_type);
+                           x11::Atom property,
+                           std::vector<uint8_t>* out_data,
+                           x11::Atom* out_type);
 
 // Get the value of an int, int array, atom array or string property.  On
 // success, true is returned and the value is stored in |value|.
 //
-// TODO(erg): Once we remove the gtk port and are 100% aura, all of these
-// should accept an XAtom instead of a string.
+// These functions should no longer be used.  TODO(thomasanderson): migrate
+// existing callers to {Set,Get}{,Array}Property<> instead.
 COMPONENT_EXPORT(UI_BASE_X)
-bool GetIntProperty(XID window, const std::string& property_name, int* value);
+bool GetIntProperty(XID window,
+                    const std::string& property_name,
+                    int32_t* value);
 COMPONENT_EXPORT(UI_BASE_X)
 bool GetXIDProperty(XID window, const std::string& property_name, XID* value);
 COMPONENT_EXPORT(UI_BASE_X)
 bool GetIntArrayProperty(XID window,
                          const std::string& property_name,
-                         std::vector<int>* value);
+                         std::vector<int32_t>* value);
 COMPONENT_EXPORT(UI_BASE_X)
 bool GetAtomArrayProperty(XID window,
                           const std::string& property_name,
-                          std::vector<XAtom>* value);
+                          std::vector<x11::Atom>* value);
 COMPONENT_EXPORT(UI_BASE_X)
 bool GetStringProperty(XID window,
                        const std::string& property_name,
                        std::string* value);
 
-// These setters all make round trips.
 COMPONENT_EXPORT(UI_BASE_X)
-bool SetIntProperty(XID window,
+void SetIntProperty(XID window,
                     const std::string& name,
                     const std::string& type,
-                    int value);
+                    int32_t value);
 COMPONENT_EXPORT(UI_BASE_X)
-bool SetIntArrayProperty(XID window,
+void SetIntArrayProperty(XID window,
                          const std::string& name,
                          const std::string& type,
-                         const std::vector<int>& value);
+                         const std::vector<int32_t>& value);
 COMPONENT_EXPORT(UI_BASE_X)
-bool SetAtomProperty(XID window,
+void SetAtomProperty(XID window,
                      const std::string& name,
                      const std::string& type,
-                     XAtom value);
+                     x11::Atom value);
 COMPONENT_EXPORT(UI_BASE_X)
-bool SetAtomArrayProperty(XID window,
+void SetAtomArrayProperty(XID window,
                           const std::string& name,
                           const std::string& type,
-                          const std::vector<XAtom>& value);
+                          const std::vector<x11::Atom>& value);
 COMPONENT_EXPORT(UI_BASE_X)
-bool SetStringProperty(XID window,
-                       XAtom property,
-                       XAtom type,
+void SetStringProperty(XID window,
+                       x11::Atom property,
+                       x11::Atom type,
                        const std::string& value);
 
 // Sets the WM_CLASS attribute for a given X11 window.
@@ -210,7 +277,10 @@ void SetWindowRole(XDisplay* display, XID window, const std::string& role);
 // Sends a message to the x11 window manager, enabling or disabling the
 // states |state1| and |state2|.
 COMPONENT_EXPORT(UI_BASE_X)
-void SetWMSpecState(XID window, bool enabled, XAtom state1, XAtom state2);
+void SetWMSpecState(XID window,
+                    bool enabled,
+                    x11::Atom state1,
+                    x11::Atom state2);
 
 // Sends a NET_WM_MOVERESIZE message to the x11 window manager, enabling the
 // move/resize mode.  As per NET_WM_MOVERESIZE spec, |location| is the position
@@ -226,7 +296,8 @@ void DoWMMoveResize(XDisplay* display,
 
 // Checks if the window manager has set a specific state.
 COMPONENT_EXPORT(UI_BASE_X)
-bool HasWMSpecProperty(const base::flat_set<XAtom>& properties, XAtom atom);
+bool HasWMSpecProperty(const base::flat_set<x11::Atom>& properties,
+                       x11::Atom atom);
 
 // Determine whether we should default to native decorations or the custom
 // frame based on the currently-running window manager.
@@ -250,7 +321,7 @@ class EnumerateWindowsDelegate {
   virtual bool ShouldStopIterating(XID xid) = 0;
 
  protected:
-  virtual ~EnumerateWindowsDelegate() {}
+  virtual ~EnumerateWindowsDelegate() = default;
 };
 
 // Enumerates all windows in the current display.  Will recurse into child
@@ -319,7 +390,7 @@ COMPONENT_EXPORT(UI_BASE_X) void SetDefaultX11ErrorHandlers();
 COMPONENT_EXPORT(UI_BASE_X) bool IsX11WindowFullScreen(XID window);
 
 // Returns true if the window manager supports the given hint.
-COMPONENT_EXPORT(UI_BASE_X) bool WmSupportsHint(XAtom atom);
+COMPONENT_EXPORT(UI_BASE_X) bool WmSupportsHint(x11::Atom atom);
 
 // Returns the ICCProfile corresponding to |monitor| using XGetWindowProperty.
 COMPONENT_EXPORT(UI_BASE_X)

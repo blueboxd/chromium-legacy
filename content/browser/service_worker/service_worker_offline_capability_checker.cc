@@ -11,6 +11,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/common/fetch/fetch_request_type_converters.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -82,18 +83,35 @@ void ServiceWorkerOfflineCapabilityChecker::DidFindRegistration(
     return;
   }
 
-  auto request = blink::mojom::FetchAPIRequest::New();
-  request->url = url_;
-  request->method = "GET";
-  request->is_main_resource_load = true;
+  network::ResourceRequest resource_request;
+  resource_request.url = url_;
+  resource_request.method = "GET";
+  resource_request.mode = network::mojom::RequestMode::kNavigate;
+  resource_request.resource_type =
+      static_cast<int>(blink::mojom::ResourceType::kMainFrame);
+
+  // Store the weak reference to ServiceWorkerContextCore before
+  // |preferred_version| moves.
+  base::WeakPtr<ServiceWorkerContextCore> context =
+      preferred_version->context();
+  if (!context) {
+    std::move(callback_).Run(OfflineCapability::kUnsupported);
+    return;
+  }
 
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
-      std::move(request), blink::mojom::ResourceType::kMainFrame,
+      blink::mojom::FetchAPIRequest::From(resource_request),
+      static_cast<blink::mojom::ResourceType>(resource_request.resource_type),
       base::GenerateGUID() /* client_id */, std::move(preferred_version),
       base::DoNothing() /* prepare callback */,
       base::BindOnce(&ServiceWorkerOfflineCapabilityChecker::OnFetchResult,
                      base::Unretained(this)),
       /*is_offline_capability_check=*/true);
+
+  fetch_dispatcher_->MaybeStartNavigationPreload(
+      resource_request, context->loader_factory_getter(),
+      context->wrapper(), /*frame_tree_node_id=*/-1);
+
   fetch_dispatcher_->Run();
 }
 

@@ -10,7 +10,7 @@
 #include "base/component_export.h"
 #include "ui/events/event.h"
 #include "ui/events/events_export.h"
-#include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/x11.h"
 
 namespace ui {
 

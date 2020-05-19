@@ -76,6 +76,9 @@ extern "C" {
 #include <X11/Sunkeysym.h>
 #include <X11/XF86keysym.h>
 #include <X11/keysym.h>
+}
+
+#include "ui/gfx/x/connection.h"
 
 // These commonly used names are undefined and if necessary recreated
 // in the x11 namespace below. This is the main purpose of this header
@@ -97,14 +100,13 @@ extern "C" {
 #undef DeviceAdded    // Defined by X11/extensions/XI.h to 0
 #undef DeviceMode     // Defined by X11/extensions/XI.h to 1
 #undef DeviceRemoved  // Defined by X11/extensions/XI.h to 1
-#undef FocusIn   // Defined by X.h to 9
-#undef FocusOut  // Defined by X.h to 10
-#undef None  // Defined by X11/X.h to 0L
-#undef True   // Defined by X11/Xlib.h to 1
-#undef False  // Defined by X11/Xlib.h to 0
-#undef CurrentTime  // Defined by X11/X.h to 0L
-#undef Success  // Defined by X11/X.h to 0
-}
+#undef FocusIn        // Defined by X.h to 9
+#undef FocusOut       // Defined by X.h to 10
+#undef None           // Defined by X11/X.h to 0L
+#undef True           // Defined by X11/Xlib.h to 1
+#undef False          // Defined by X11/Xlib.h to 0
+#undef CurrentTime    // Defined by X11/X.h to 0L
+#undef Success        // Defined by X11/X.h to 0
 
 // The x11 namespace allows to scope X11 constants and types that
 // would be problematic at the default preprocessor level.

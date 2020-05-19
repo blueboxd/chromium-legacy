@@ -119,7 +119,6 @@ class COMPONENT_EXPORT(UI_BASE_X) XVisualManager {
   VisualID system_visual_id_;
   VisualID transparent_visual_id_;
 
-  bool using_compositing_wm_;
   bool using_software_rendering_;
   bool have_gpu_argb_visual_;
 

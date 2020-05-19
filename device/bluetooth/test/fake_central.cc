@@ -204,6 +204,7 @@ void FakeCentral::SimulateGATTDisconnection(
   FakePeripheral* fake_peripheral = GetFakePeripheral(address);
   if (fake_peripheral == nullptr) {
     std::move(callback).Run(false);
+    return;
   }
 
   fake_peripheral->SimulateGATTDisconnection();
@@ -289,6 +290,7 @@ void FakeCentral::AddFakeDescriptor(
                                       characteristic_id);
   if (fake_remote_gatt_characteristic == nullptr) {
     std::move(callback).Run(base::nullopt);
+    return;
   }
 
   std::move(callback).Run(
@@ -324,6 +326,7 @@ void FakeCentral::SetNextReadCharacteristicResponse(
                                       characteristic_id);
   if (fake_remote_gatt_characteristic == nullptr) {
     std::move(callback).Run(false);
+    return;
   }
 
   fake_remote_gatt_characteristic->SetNextReadResponse(gatt_code, value);
@@ -341,6 +344,7 @@ void FakeCentral::SetNextWriteCharacteristicResponse(
                                       characteristic_id);
   if (fake_remote_gatt_characteristic == nullptr) {
     std::move(callback).Run(false);
+    return;
   }
 
   fake_remote_gatt_characteristic->SetNextWriteResponse(gatt_code);
@@ -358,6 +362,7 @@ void FakeCentral::SetNextSubscribeToNotificationsResponse(
                                       characteristic_id);
   if (fake_remote_gatt_characteristic == nullptr) {
     std::move(callback).Run(false);
+    return;
   }
 
   fake_remote_gatt_characteristic->SetNextSubscribeToNotificationsResponse(
@@ -376,6 +381,7 @@ void FakeCentral::SetNextUnsubscribeFromNotificationsResponse(
                                       characteristic_id);
   if (fake_remote_gatt_characteristic == nullptr) {
     std::move(callback).Run(false);
+    return;
   }
 
   fake_remote_gatt_characteristic->SetNextUnsubscribeFromNotificationsResponse(
@@ -392,6 +398,7 @@ void FakeCentral::IsNotifying(const std::string& characteristic_id,
                                       characteristic_id);
   if (!fake_remote_gatt_characteristic) {
     std::move(callback).Run(false, false);
+    return;
   }
 
   std::move(callback).Run(true, fake_remote_gatt_characteristic->IsNotifying());
@@ -407,6 +414,7 @@ void FakeCentral::GetLastWrittenCharacteristicValue(
                                       characteristic_id);
   if (fake_remote_gatt_characteristic == nullptr) {
     std::move(callback).Run(false, base::nullopt);
+    return;
   }
 
   std::move(callback).Run(
@@ -426,6 +434,7 @@ void FakeCentral::SetNextReadDescriptorResponse(
                                   characteristic_id, descriptor_id);
   if (fake_remote_gatt_descriptor == nullptr) {
     std::move(callback).Run(false);
+    return;
   }
 
   fake_remote_gatt_descriptor->SetNextReadResponse(gatt_code, value);
@@ -444,6 +453,7 @@ void FakeCentral::SetNextWriteDescriptorResponse(
                                   characteristic_id, descriptor_id);
   if (!fake_remote_gatt_descriptor) {
     std::move(callback).Run(false);
+    return;
   }
 
   fake_remote_gatt_descriptor->SetNextWriteResponse(gatt_code);
@@ -461,6 +471,7 @@ void FakeCentral::GetLastWrittenDescriptorValue(
                                   characteristic_id, descriptor_id);
   if (!fake_remote_gatt_descriptor) {
     std::move(callback).Run(false, base::nullopt);
+    return;
   }
 
   std::move(callback).Run(true,

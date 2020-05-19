@@ -564,7 +564,8 @@ void PaintLayer::MapPointInPaintInvalidationContainerToBacking(
     return;
 
   GraphicsLayer* squashing_layer =
-      paint_invalidation_layer->GroupedMapping()->SquashingLayer();
+      paint_invalidation_layer->GroupedMapping()->SquashingLayer(
+          *paint_invalidation_layer);
 
   PropertyTreeState source_state =
       paint_invalidation_container.FirstFragment().LocalBorderBoxProperties();
@@ -588,7 +589,8 @@ void PaintLayer::MapQuadInPaintInvalidationContainerToBacking(
     return;
 
   GraphicsLayer* squashing_layer =
-      paint_invalidation_layer->GroupedMapping()->SquashingLayer();
+      paint_invalidation_layer->GroupedMapping()->SquashingLayer(
+          *paint_invalidation_layer);
 
   PropertyTreeState source_state =
       paint_invalidation_container.FirstFragment().LocalBorderBoxProperties();
@@ -2786,7 +2788,7 @@ GraphicsLayer* PaintLayer::GraphicsLayerBacking(const LayoutObject* obj) const {
     case kNotComposited:
       return nullptr;
     case kPaintsIntoGroupedBacking:
-      return GroupedMapping()->SquashingLayer();
+      return GroupedMapping()->SquashingLayer(*this);
     default:
       return (obj != &GetLayoutObject() &&
               GetCompositedLayerMapping()->ScrollingContentsLayer())
@@ -2848,13 +2850,13 @@ void PaintLayer::SetGroupedMapping(CompositedLayerMapping* grouped_mapping,
   if (options == kInvalidateLayerAndRemoveFromMapping && old_grouped_mapping) {
     old_grouped_mapping->SetNeedsGraphicsLayerUpdate(
         kGraphicsLayerUpdateSubtree);
-    old_grouped_mapping->RemoveLayerFromSquashingGraphicsLayer(this);
+    old_grouped_mapping->RemoveLayerFromSquashingGraphicsLayer(*this);
   }
   if (rare_data_ || grouped_mapping)
     EnsureRareData().grouped_mapping = grouped_mapping;
 #if DCHECK_IS_ON()
-  DCHECK(!grouped_mapping ||
-         grouped_mapping->VerifyLayerInSquashingVector(this));
+  if (grouped_mapping)
+    grouped_mapping->AssertInSquashedLayersVector(*this);
 #endif
   if (options == kInvalidateLayerAndRemoveFromMapping && grouped_mapping)
     grouped_mapping->SetNeedsGraphicsLayerUpdate(kGraphicsLayerUpdateSubtree);

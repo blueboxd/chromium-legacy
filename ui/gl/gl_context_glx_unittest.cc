@@ -35,13 +35,14 @@ TEST(GLContextGLXTest, MAYBE_DoNotDestroyOnFailedMakeCurrent) {
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = 0;
   swa.override_redirect = x11::True;
-  auto xwindow = XCreateWindow(xdisplay, DefaultRootWindow(xdisplay), 0, 0, 10,
-                               10,              // x, y, width, height
-                               0,               // border width
-                               CopyFromParent,  // depth
-                               InputOutput,
-                               CopyFromParent,  // visual
-                               CWBackPixmap | CWOverrideRedirect, &swa);
+  auto xwindow = XCreateWindow(
+      xdisplay, DefaultRootWindow(xdisplay), 0, 0, 10,
+      10,  // x, y, width, height
+      0,   // border width
+      static_cast<int>(x11::XProto::WindowClass::CopyFromParent),  // depth
+      static_cast<int>(x11::XProto::WindowClass::InputOutput),
+      nullptr,  // visual
+      CWBackPixmap | CWOverrideRedirect, &swa);
   XSelectInput(xdisplay, xwindow, StructureNotifyMask);
 
   XEvent xevent;

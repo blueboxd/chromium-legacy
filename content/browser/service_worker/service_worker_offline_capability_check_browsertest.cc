@@ -689,4 +689,24 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerOfflineCapabilityCheckBrowserTest,
             CheckOfflineCapability("/service_worker/empty.html?offline"));
 }
 
+// Sites with a service worker that enable navigation preload are identified
+// as supporting offline capability only when they return a valid response in
+// offline mode.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerOfflineCapabilityCheckBrowserTest,
+                       CheckOfflineCapabilityForNavigationPreload) {
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            embedded_test_server()->GetURL(
+                                "/service_worker/create_service_worker.html")));
+  EXPECT_EQ("DONE", EvalJs(shell(),
+                           "register('navigation_preload_worker.js')"));
+
+  EXPECT_EQ(OfflineCapability::kUnsupported,
+            CheckOfflineCapability("/service_worker/empty.html"));
+
+  EXPECT_EQ(
+      OfflineCapability::kSupported,
+      CheckOfflineCapability(
+          "/service_worker/empty.html?navpreload_or_offline"));
+}
+
 }  // namespace content

@@ -50,7 +50,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XOSExchangeDataProvider
 
   // Retrieves a list of types we're offering. Noop if we haven't taken the
   // selection.
-  void RetrieveTargets(std::vector<Atom>* targets) const;
+  void RetrieveTargets(std::vector<x11::Atom>* targets) const;
 
   // Makes a copy of the format map currently being offered.
   SelectionFormatMap GetFormatMap() const;
@@ -112,10 +112,10 @@ class COMPONENT_EXPORT(UI_BASE_X) XOSExchangeDataProvider
   bool GetPlainTextURL(GURL* url) const;
 
   // Returns the targets in |format_map_|.
-  std::vector<Atom> GetTargets() const;
+  std::vector<x11::Atom> GetTargets() const;
 
   // Inserts data into the format map.
-  void InsertData(Atom format,
+  void InsertData(x11::Atom format,
                   const scoped_refptr<base::RefCountedMemory>& data);
 
  private:

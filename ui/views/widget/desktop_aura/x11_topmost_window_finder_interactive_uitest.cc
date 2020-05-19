@@ -39,7 +39,7 @@ class MinimizeWaiter : public ui::X11PropertyChangeWaiter {
  private:
   // ui::X11PropertyChangeWaiter:
   bool ShouldKeepOnWaiting(XEvent* event) override {
-    std::vector<Atom> wm_states;
+    std::vector<x11::Atom> wm_states;
     if (ui::GetAtomArrayProperty(xwindow(), "_NET_WM_STATE", &wm_states)) {
       return !base::Contains(wm_states, gfx::GetAtom("_NET_WM_STATE_HIDDEN"));
     }
@@ -362,12 +362,13 @@ TEST_F(X11TopmostWindowFinderTest, Menu) {
   XID root = DefaultRootWindow(xdisplay());
   XSetWindowAttributes swa;
   swa.override_redirect = x11::True;
-  XID menu_xid = XCreateWindow(xdisplay(), root, 0, 0, 1, 1,
-                               0,               // border width
-                               CopyFromParent,  // depth
-                               InputOutput,
-                               CopyFromParent,  // visual
-                               CWOverrideRedirect, &swa);
+  XID menu_xid = XCreateWindow(
+      xdisplay(), root, 0, 0, 1, 1,
+      0,  // border width
+      static_cast<int>(x11::XProto::WindowClass::CopyFromParent),  // depth
+      static_cast<int>(x11::XProto::WindowClass::InputOutput),
+      nullptr,  // visual
+      CWOverrideRedirect, &swa);
   {
     ui::SetAtomProperty(menu_xid, "_NET_WM_WINDOW_TYPE", "ATOM",
                         gfx::GetAtom("_NET_WM_WINDOW_TYPE_MENU"));

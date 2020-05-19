@@ -88,7 +88,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
         layout_view_.Layer()->GetCompositedLayerMapping() &&
         layout_view_.Layer()
             ->GetCompositedLayerMapping()
-            ->HasScrollingLayer()) {
+            ->ScrollingContentsLayer()) {
       paints_scroll_hit_test = false;
     }
   }

@@ -28,14 +28,14 @@ class SelectionRequestorTest : public testing::Test {
   SelectionRequestorTest()
       : x_display_(gfx::GetXDisplay()), x_window_(x11::None) {}
 
-  ~SelectionRequestorTest() override {}
+  ~SelectionRequestorTest() override = default;
 
   // Responds to the SelectionRequestor's XConvertSelection() request by
   // - Setting the property passed into the XConvertSelection() request to
   //   |value|.
   // - Sending a SelectionNotify event.
-  void SendSelectionNotify(XAtom selection,
-                           XAtom target,
+  void SendSelectionNotify(x11::Atom selection,
+                           x11::Atom target,
                            const std::string& value) {
     ui::SetStringProperty(x_window_, requestor_->x_property_,
                           gfx::GetAtom("STRING"), value);
@@ -45,9 +45,9 @@ class SelectionRequestorTest : public testing::Test {
     xev.xselection.serial = 0u;
     xev.xselection.display = x_display_;
     xev.xselection.requestor = x_window_;
-    xev.xselection.selection = selection;
-    xev.xselection.target = target;
-    xev.xselection.property = requestor_->x_property_;
+    xev.xselection.selection = static_cast<uint32_t>(selection);
+    xev.xselection.target = static_cast<uint32_t>(target);
+    xev.xselection.property = static_cast<uint32_t>(requestor_->x_property_);
     xev.xselection.time = x11::CurrentTime;
     xev.xselection.type = SelectionNotify;
     requestor_->OnSelectionNotify(xev);
@@ -59,15 +59,14 @@ class SelectionRequestorTest : public testing::Test {
     XSynchronize(x_display_, x11::True);
 
     // Create a window for the selection requestor to use.
-    x_window_ = XCreateWindow(x_display_,
-                              DefaultRootWindow(x_display_),
-                              0, 0, 10, 10,    // x, y, width, height
-                              0,               // border width
-                              CopyFromParent,  // depth
-                              InputOnly,
-                              CopyFromParent,  // visual
-                              0,
-                              nullptr);
+    x_window_ = XCreateWindow(
+        x_display_, DefaultRootWindow(x_display_), 0, 0, 10,
+        10,  // x, y, width, height
+        0,   // border width
+        static_cast<int>(x11::XProto::WindowClass::CopyFromParent),  // depth
+        static_cast<int>(x11::XProto::WindowClass::InputOnly),
+        nullptr,  // visual
+        0, nullptr);
 
     event_source_ = PlatformEventSource::CreateDefault();
     CHECK(PlatformEventSource::GetInstance());
@@ -101,16 +100,16 @@ namespace {
 
 // Converts |selection| to |target| and checks the returned values.
 void PerformBlockingConvertSelection(SelectionRequestor* requestor,
-                                     XAtom selection,
-                                     XAtom target,
+                                     x11::Atom selection,
+                                     x11::Atom target,
                                      const std::string& expected_data) {
-  scoped_refptr<base::RefCountedMemory> out_data;
-  size_t out_data_items = 0u;
-  XAtom out_type = x11::None;
-  EXPECT_TRUE(requestor->PerformBlockingConvertSelection(
-      selection, target, &out_data, &out_data_items, &out_type));
-  EXPECT_EQ(expected_data, ui::RefCountedMemoryToString(out_data));
-  EXPECT_EQ(expected_data.size(), out_data_items);
+  std::vector<uint8_t> out_data;
+  x11::Atom out_type = x11::Atom::None;
+  EXPECT_TRUE(requestor->PerformBlockingConvertSelection(selection, target,
+                                                         &out_data, &out_type));
+  EXPECT_EQ(expected_data.size(), out_data.size());
+  EXPECT_EQ(expected_data, ui::RefCountedMemoryToString(
+                               base::RefCountedBytes::TakeVector(&out_data)));
   EXPECT_EQ(gfx::GetAtom("STRING"), out_type);
 }
 
@@ -122,10 +121,10 @@ TEST_F(SelectionRequestorTest, NestedRequests) {
   // Assume that |selection| will have no owner. If there is an owner, the owner
   // will set the property passed into the XConvertSelection() request which is
   // undesirable.
-  XAtom selection = gfx::GetAtom("FAKE_SELECTION");
+  x11::Atom selection = gfx::GetAtom("FAKE_SELECTION");
 
-  XAtom target1 = gfx::GetAtom("TARGET1");
-  XAtom target2 = gfx::GetAtom("TARGET2");
+  x11::Atom target1 = gfx::GetAtom("TARGET1");
+  x11::Atom target2 = gfx::GetAtom("TARGET2");
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&PerformBlockingConvertSelection,

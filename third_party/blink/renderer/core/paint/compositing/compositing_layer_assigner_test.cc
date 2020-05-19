@@ -30,6 +30,11 @@ TEST_F(CompositedLayerAssignerTest, SquashingSimple) {
   PaintLayer* squashed =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("squashed"))->Layer();
   EXPECT_EQ(kPaintsIntoGroupedBacking, squashed->GetCompositingState());
+  CompositedLayerMapping* mapping = squashed->GroupedMapping();
+  EXPECT_EQ(mapping->NonScrollingSquashingLayer(),
+            mapping->SquashingLayer(*squashed));
+  EXPECT_EQ(mapping->NonScrollingSquashingLayer(),
+            squashed->GraphicsLayerBacking());
 }
 
 TEST_F(CompositedLayerAssignerTest, SquashingAcrossClipPathDisallowed) {

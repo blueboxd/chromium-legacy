@@ -74,9 +74,7 @@ using CompositingReasons = uint64_t;
   V(LayerForOverflowControlsHost)                                             \
   V(LayerForScrollCorner)                                                     \
   V(LayerForScrollingContents)                                                \
-  V(LayerForScrollingContainer)                                               \
   V(LayerForSquashingContents)                                                \
-  V(LayerForSquashingContainer)                                               \
   V(LayerForForeground)                                                       \
   V(LayerForMask)                                                             \
   /* Composited layer painted on top of all other layers as decoration. */    \

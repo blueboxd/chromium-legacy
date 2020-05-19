@@ -10,8 +10,8 @@
 #include <memory>
 
 #include "ui/gfx/gfx_export.h"
+#include "ui/gfx/x/connection.h"
 
-typedef unsigned long XAtom;
 typedef unsigned long XID;
 typedef unsigned long VisualID;
 typedef struct _XcursorImage XcursorImage;

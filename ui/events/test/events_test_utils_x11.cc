@@ -20,27 +20,26 @@ namespace {
 
 // Converts ui::EventType to state for X*Events.
 unsigned int XEventState(int flags) {
-  return
-      ((flags & ui::EF_SHIFT_DOWN) ? ShiftMask : 0) |
-      ((flags & ui::EF_CAPS_LOCK_ON) ? LockMask : 0) |
-      ((flags & ui::EF_CONTROL_DOWN) ? ControlMask : 0) |
-      ((flags & ui::EF_ALT_DOWN) ? Mod1Mask : 0) |
-      ((flags & ui::EF_NUM_LOCK_ON) ? Mod2Mask : 0) |
-      ((flags & ui::EF_MOD3_DOWN) ? Mod3Mask : 0) |
-      ((flags & ui::EF_COMMAND_DOWN) ? Mod4Mask : 0) |
-      ((flags & ui::EF_ALTGR_DOWN) ? Mod5Mask : 0) |
-      ((flags & ui::EF_LEFT_MOUSE_BUTTON) ? Button1Mask: 0) |
-      ((flags & ui::EF_MIDDLE_MOUSE_BUTTON) ? Button2Mask: 0) |
-      ((flags & ui::EF_RIGHT_MOUSE_BUTTON) ? Button3Mask: 0);
+  return ((flags & ui::EF_SHIFT_DOWN) ? ShiftMask : 0) |
+         ((flags & ui::EF_CAPS_LOCK_ON) ? LockMask : 0) |
+         ((flags & ui::EF_CONTROL_DOWN) ? ControlMask : 0) |
+         ((flags & ui::EF_ALT_DOWN) ? Mod1Mask : 0) |
+         ((flags & ui::EF_NUM_LOCK_ON) ? Mod2Mask : 0) |
+         ((flags & ui::EF_MOD3_DOWN) ? Mod3Mask : 0) |
+         ((flags & ui::EF_COMMAND_DOWN) ? Mod4Mask : 0) |
+         ((flags & ui::EF_ALTGR_DOWN) ? Mod5Mask : 0) |
+         ((flags & ui::EF_LEFT_MOUSE_BUTTON) ? Button1Mask : 0) |
+         ((flags & ui::EF_MIDDLE_MOUSE_BUTTON) ? Button2Mask : 0) |
+         ((flags & ui::EF_RIGHT_MOUSE_BUTTON) ? Button3Mask : 0);
 }
 
 // Converts EventType to XKeyEvent type.
 int XKeyEventType(ui::EventType type) {
   switch (type) {
     case ui::ET_KEY_PRESSED:
-      return KeyPress;
+      return x11::XProto::KeyPressEvent::opcode;
     case ui::ET_KEY_RELEASED:
-      return KeyRelease;
+      return x11::XProto::KeyReleaseEvent::opcode;
     default:
       return 0;
   }
@@ -73,19 +72,18 @@ int XIButtonEventType(ui::EventType type) {
 }
 
 // Converts Aura event type and flag to X button event.
-unsigned int XButtonEventButton(ui::EventType type,
-                                int flags) {
+unsigned int XButtonEventButton(ui::EventType type, int flags) {
   // Aura events don't keep track of mouse wheel button, so just return
   // the first mouse wheel button.
   if (type == ui::ET_MOUSEWHEEL)
-    return Button4;
+    return 4;
 
   if (flags & ui::EF_LEFT_MOUSE_BUTTON)
-    return Button1;
+    return 1;
   if (flags & ui::EF_MIDDLE_MOUSE_BUTTON)
-    return Button2;
+    return 2;
   if (flags & ui::EF_RIGHT_MOUSE_BUTTON)
-    return Button3;
+    return 3;
 
   return 0;
 }
@@ -106,8 +104,7 @@ XEvent* CreateXInput2Event(int deviceid,
   memset(event, 0, sizeof(*event));
   event->type = GenericEvent;
   event->xcookie.data = new XIDeviceEvent;
-  XIDeviceEvent* xiev =
-      static_cast<XIDeviceEvent*>(event->xcookie.data);
+  XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(event->xcookie.data);
   memset(xiev, 0, sizeof(XIDeviceEvent));
   xiev->deviceid = deviceid;
   xiev->sourceid = deviceid;
@@ -132,8 +129,7 @@ namespace ui {
 // |CreateXInput2Event()|.
 void XEventDeleter::operator()(XEvent* event) {
   if (event->type == GenericEvent) {
-    XIDeviceEvent* xiev =
-        static_cast<XIDeviceEvent*>(event->xcookie.data);
+    XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(event->xcookie.data);
     if (xiev) {
       delete[] xiev->valuators.mask;
       delete[] xiev->valuators.values;
@@ -144,8 +140,8 @@ void XEventDeleter::operator()(XEvent* event) {
   delete event;
 }
 
-ScopedXI2Event::ScopedXI2Event() {}
-ScopedXI2Event::~ScopedXI2Event() {}
+ScopedXI2Event::ScopedXI2Event() = default;
+ScopedXI2Event::~ScopedXI2Event() = default;
 
 void ScopedXI2Event::InitKeyEvent(EventType type,
                                   KeyboardCode key_code,
@@ -198,7 +194,9 @@ void ScopedXI2Event::InitButtonEvent(EventType type,
                                      int flags) {
   event_.reset(new XEvent);
   memset(event_.get(), 0, sizeof(XEvent));
-  event_->type = (type == ui::ET_MOUSE_PRESSED) ? ButtonPress : ButtonRelease;
+  event_->type = (type == ui::ET_MOUSE_PRESSED)
+                     ? x11::XProto::ButtonPressEvent::opcode
+                     : x11::XProto::ButtonReleaseEvent::opcode;
   event_->xbutton.serial = 0;
   event_->xbutton.send_event = 0;
   event_->xbutton.display = gfx::GetXDisplay();
@@ -235,8 +233,8 @@ void ScopedXI2Event::InitGenericButtonEvent(int deviceid,
                                             EventType type,
                                             const gfx::Point& location,
                                             int flags) {
-  event_.reset(CreateXInput2Event(deviceid,
-                                  XIButtonEventType(type), 0, gfx::Point()));
+  event_.reset(
+      CreateXInput2Event(deviceid, XIButtonEventType(type), 0, gfx::Point()));
   XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(event_->xcookie.data);
   xievent->mods.effective = XEventState(flags);
   xievent->detail = XButtonEventButton(type, flags);
@@ -252,7 +250,7 @@ void ScopedXI2Event::InitGenericMouseWheelEvent(int deviceid,
                                                 int flags) {
   InitGenericButtonEvent(deviceid, ui::ET_MOUSEWHEEL, gfx::Point(), flags);
   XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(event_->xcookie.data);
-  xievent->detail = wheel_delta > 0 ? Button4 : Button5;
+  xievent->detail = wheel_delta > 0 ? 4 : 5;
 }
 
 void ScopedXI2Event::InitScrollEvent(int deviceid,
@@ -264,12 +262,11 @@ void ScopedXI2Event::InitScrollEvent(int deviceid,
   event_.reset(CreateXInput2Event(deviceid, XI_Motion, 0, gfx::Point()));
 
   Valuator valuators[] = {
-    Valuator(DeviceDataManagerX11::DT_CMT_SCROLL_X, x_offset),
-    Valuator(DeviceDataManagerX11::DT_CMT_SCROLL_Y, y_offset),
-    Valuator(DeviceDataManagerX11::DT_CMT_ORDINAL_X, x_offset_ordinal),
-    Valuator(DeviceDataManagerX11::DT_CMT_ORDINAL_Y, y_offset_ordinal),
-    Valuator(DeviceDataManagerX11::DT_CMT_FINGER_COUNT, finger_count)
-  };
+      Valuator(DeviceDataManagerX11::DT_CMT_SCROLL_X, x_offset),
+      Valuator(DeviceDataManagerX11::DT_CMT_SCROLL_Y, y_offset),
+      Valuator(DeviceDataManagerX11::DT_CMT_ORDINAL_X, x_offset_ordinal),
+      Valuator(DeviceDataManagerX11::DT_CMT_ORDINAL_Y, y_offset_ordinal),
+      Valuator(DeviceDataManagerX11::DT_CMT_FINGER_COUNT, finger_count)};
   SetUpValuators(
       std::vector<Valuator>(valuators, valuators + base::size(valuators)));
 }
@@ -283,12 +280,11 @@ void ScopedXI2Event::InitFlingScrollEvent(int deviceid,
   event_.reset(CreateXInput2Event(deviceid, XI_Motion, deviceid, gfx::Point()));
 
   Valuator valuators[] = {
-    Valuator(DeviceDataManagerX11::DT_CMT_FLING_STATE, is_cancel ? 1 : 0),
-    Valuator(DeviceDataManagerX11::DT_CMT_FLING_Y, y_velocity),
-    Valuator(DeviceDataManagerX11::DT_CMT_ORDINAL_Y, y_velocity_ordinal),
-    Valuator(DeviceDataManagerX11::DT_CMT_FLING_X, x_velocity),
-    Valuator(DeviceDataManagerX11::DT_CMT_ORDINAL_X, x_velocity_ordinal)
-  };
+      Valuator(DeviceDataManagerX11::DT_CMT_FLING_STATE, is_cancel ? 1 : 0),
+      Valuator(DeviceDataManagerX11::DT_CMT_FLING_Y, y_velocity),
+      Valuator(DeviceDataManagerX11::DT_CMT_ORDINAL_Y, y_velocity_ordinal),
+      Valuator(DeviceDataManagerX11::DT_CMT_FLING_X, x_velocity),
+      Valuator(DeviceDataManagerX11::DT_CMT_ORDINAL_X, x_velocity_ordinal)};
 
   SetUpValuators(
       std::vector<Valuator>(valuators, valuators + base::size(valuators)));
@@ -324,10 +320,8 @@ void ScopedXI2Event::SetUpValuators(const std::vector<Valuator>& valuators) {
   XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(event_->xcookie.data);
   InitValuatorsForXIDeviceEvent(xiev);
   ui::DeviceDataManagerX11* manager = ui::DeviceDataManagerX11::GetInstance();
-  for (size_t i = 0; i < valuators.size(); ++i) {
-    manager->SetValuatorDataForTest(xiev, valuators[i].data_type,
-                                    valuators[i].value);
-  }
+  for (auto valuator : valuators)
+    manager->SetValuatorDataForTest(xiev, valuator.data_type, valuator.value);
 }
 
 void SetUpTouchPadForTest(int deviceid) {

@@ -215,11 +215,11 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   // be invalid to unset the maximized state by making two calls like
   // (_NET_WM_STATE_MAXIMIZED_VERT, x11::None), (_NET_WM_STATE_MAXIMIZED_HORZ,
   // x11::None).
-  void SetWMSpecState(bool enabled, XAtom state1, XAtom state2);
+  void SetWMSpecState(bool enabled, x11::Atom state1, x11::Atom state2);
 
   // Updates |window_properties_| with |new_window_properties|.
   void UpdateWindowProperties(
-      const base::flat_set<XAtom>& new_window_properties);
+      const base::flat_set<x11::Atom>& new_window_properties);
 
   void UnconfineCursor();
 
@@ -257,7 +257,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   std::unique_ptr<ui::XScopedEventSelector> xwindow_events_;
 
   // The window manager state bits.
-  base::flat_set<XAtom> window_properties_;
+  base::flat_set<x11::Atom> window_properties_;
 
   // Is this window able to receive focus?
   bool activatable_ = true;

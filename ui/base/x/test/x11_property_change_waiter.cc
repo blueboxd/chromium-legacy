@@ -50,7 +50,7 @@ bool X11PropertyChangeWaiter::ShouldKeepOnWaiting(XEvent* event) {
 bool X11PropertyChangeWaiter::DispatchXEvent(XEvent* xev) {
   if (!xev || !wait_ || xev->type != PropertyNotify ||
       xev->xproperty.window != x_window_ ||
-      xev->xproperty.atom != gfx::GetAtom(property_) ||
+      static_cast<x11::Atom>(xev->xproperty.atom) != gfx::GetAtom(property_) ||
       ShouldKeepOnWaiting(xev)) {
     return false;
   }

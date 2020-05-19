@@ -217,8 +217,13 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
   // scrolling layer is not on the stacking context ancestor chain of |layer|.
   // See the definition of the scrollParent property in Layer for more detail.
   if (const PaintLayer* scrolling_ancestor = layer.AncestorScrollingLayer()) {
-    if (scrolling_ancestor->NeedsCompositedScrolling() && layer.ScrollParent())
+    if (scrolling_ancestor->NeedsCompositedScrolling() &&
+        layer.ScrollParent()) {
+      DCHECK(!scrolling_ancestor->GetLayoutObject()
+                  .StyleRef()
+                  .IsStackingContext());
       direct_reasons |= CompositingReason::kOverflowScrollingParent;
+    }
   }
 
   if (RequiresCompositingForScrollDependentPosition(layer))

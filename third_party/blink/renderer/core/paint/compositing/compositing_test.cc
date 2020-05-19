@@ -1089,7 +1089,8 @@ TEST_P(CompositingSimTest, SafeOpaqueBackgroundColorGetsSet) {
 
   auto* grouped_mapping =
       GetElementById("topleft")->GetLayoutBox()->Layer()->GroupedMapping();
-  auto* squashed_layer = grouped_mapping->SquashingLayer()->CcLayer();
+  auto* squashed_layer =
+      grouped_mapping->NonScrollingSquashingLayer()->CcLayer();
   ASSERT_NE(nullptr, squashed_layer);
 
   // Top left and bottom right are squashed.

@@ -10,6 +10,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_screen.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
+#include "ui/ozone/platform/wayland/test/scoped_wl_array.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 #if BUILDFLAG(USE_XKBCOMMON)
@@ -66,6 +67,11 @@ void WaylandTest::SetUp() {
   surface_ = server_.GetObject<wl::MockSurface>(widget_);
   ASSERT_TRUE(surface_);
 
+  // The surface must be activated before buffers are attached.
+  ActivateSurface(server_.GetObject<wl::MockSurface>(widget_)->xdg_surface());
+
+  Sync();
+
   initialized_ = true;
 }
 
@@ -84,6 +90,30 @@ void WaylandTest::Sync() {
   // Pause the server, after it has finished processing any follow-up requests
   // from the client.
   server_.Pause();
+}
+
+void WaylandTest::SendConfigureEvent(wl::MockXdgSurface* xdg_surface,
+                                     int width,
+                                     int height,
+                                     uint32_t serial,
+                                     struct wl_array* states) {
+  DCHECK(xdg_surface->xdg_toplevel());
+  // In xdg_shell_v6+, both surfaces send serial configure event and toplevel
+  // surfaces send other data like states, heights and widths.
+  if (GetParam() == kXdgShellV6) {
+    zxdg_surface_v6_send_configure(xdg_surface->resource(), serial);
+    zxdg_toplevel_v6_send_configure(xdg_surface->xdg_toplevel()->resource(),
+                                    width, height, states);
+  } else {
+    xdg_surface_send_configure(xdg_surface->resource(), serial);
+    xdg_toplevel_send_configure(xdg_surface->xdg_toplevel()->resource(), width,
+                                height, states);
+  }
+}
+
+void WaylandTest::ActivateSurface(wl::MockXdgSurface* xdg_surface) {
+  wl::ScopedWlArray state({XDG_TOPLEVEL_STATE_ACTIVATED});
+  SendConfigureEvent(xdg_surface, 0, 0, 1, state.get());
 }
 
 }  // namespace ui

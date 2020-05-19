@@ -38,7 +38,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragContext {
   // message. If we have that data already, dispatch immediately. Otherwise,
   // delay dispatching until we do.
   void OnXdndPositionMessage(XDragDropClient* client,
-                             Atom suggested_action,
+                             x11::Atom suggested_action,
                              XID source_window,
                              Time time_stamp,
                              const gfx::Point& screen_point);
@@ -64,7 +64,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragContext {
 
   // Masks the X11 atom |xdnd_operation|'s views representation onto
   // |drag_operation|.
-  void MaskOperation(Atom xdnd_operation, int* drag_operation) const;
+  void MaskOperation(x11::Atom xdnd_operation, int* drag_operation) const;
 
   // The XID of our chrome local aura window handling our events.
   XID local_window_;
@@ -96,14 +96,14 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragContext {
 
   // The names of various data types offered by the other window that we
   // haven't fetched and put in |fetched_targets_| yet.
-  std::vector<Atom> unfetched_targets_;
+  std::vector<x11::Atom> unfetched_targets_;
 
   // XdndPosition messages have a suggested action. Qt applications exclusively
   // use this, instead of the XdndActionList which is backed by |actions_|.
-  Atom suggested_action_ = x11::None;
+  x11::Atom suggested_action_ = x11::Atom::None;
 
   // Possible actions.
-  std::vector<Atom> actions_;
+  std::vector<x11::Atom> actions_;
 };
 
 }  // namespace ui

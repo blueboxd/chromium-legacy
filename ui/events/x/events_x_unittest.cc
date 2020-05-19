@@ -43,7 +43,8 @@ void InitButtonEvent(XEvent* event,
   // We don't bother setting fields that the event code doesn't use, such as
   // x_root/y_root and window/root/subwindow.
   XButtonEvent* button_event = &(event->xbutton);
-  button_event->type = is_press ? ButtonPress : ButtonRelease;
+  button_event->type = is_press ? x11::XProto::ButtonPressEvent::opcode
+                                : x11::XProto::ButtonReleaseEvent::opcode;
   button_event->x = location.x();
   button_event->y = location.y();
   button_event->button = button;
@@ -63,7 +64,8 @@ void InitKeyEvent(Display* display,
   // x_root/y_root and window/root/subwindow.
   XKeyEvent* key_event = &(event->xkey);
   key_event->display = display;
-  key_event->type = is_press ? KeyPress : KeyRelease;
+  key_event->type = is_press ? x11::XProto::KeyPressEvent::opcode
+                             : x11::XProto::KeyReleaseEvent::opcode;
   key_event->keycode = keycode;
   key_event->state = state;
 }
@@ -87,8 +89,8 @@ std::string FlooredEventLocationString(const XEvent& xev) {
 
 class EventsXTest : public testing::Test {
  public:
-  EventsXTest() {}
-  ~EventsXTest() override {}
+  EventsXTest() = default;
+  ~EventsXTest() override = default;
 
   void SetUp() override {
     DeviceDataManagerX11::CreateInstance();
@@ -251,8 +253,8 @@ TEST_F(EventsXTest, TouchEventBasic) {
       Valuator(DeviceDataManagerX11::DT_TOUCH_ORIENTATION, 0.3f));
   valuators.push_back(Valuator(DeviceDataManagerX11::DT_TOUCH_PRESSURE, 100));
   ui::ScopedXI2Event scoped_xevent;
-  scoped_xevent.InitTouchEvent(
-      0, XI_TouchBegin, 5, gfx::Point(10, 10), valuators);
+  scoped_xevent.InitTouchEvent(0, XI_TouchBegin, 5, gfx::Point(10, 10),
+                               valuators);
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, ui::EventTypeFromXEvent(*scoped_xevent));
   EXPECT_EQ("10,10", FlooredEventLocationString(*scoped_xevent));
   EXPECT_EQ(GetTouchIdFromXEvent(*scoped_xevent), 0);
@@ -266,8 +268,8 @@ TEST_F(EventsXTest, TouchEventBasic) {
   valuators.clear();
   valuators.push_back(
       Valuator(DeviceDataManagerX11::DT_TOUCH_ORIENTATION, 0.5f));
-  scoped_xevent.InitTouchEvent(
-      0, XI_TouchUpdate, 5, gfx::Point(20, 20), valuators);
+  scoped_xevent.InitTouchEvent(0, XI_TouchUpdate, 5, gfx::Point(20, 20),
+                               valuators);
   EXPECT_EQ(ui::ET_TOUCH_MOVED, ui::EventTypeFromXEvent(*scoped_xevent));
   EXPECT_EQ("20,20", FlooredEventLocationString(*scoped_xevent));
   EXPECT_EQ(GetTouchIdFromXEvent(*scoped_xevent), 0);
@@ -279,11 +281,11 @@ TEST_F(EventsXTest, TouchEventBasic) {
   // Another touch with tracking id 6, touch id 1.
   valuators.clear();
   valuators.push_back(Valuator(DeviceDataManagerX11::DT_TOUCH_MAJOR, 100));
-  valuators.push_back(Valuator(
-      DeviceDataManagerX11::DT_TOUCH_ORIENTATION, 0.9f));
+  valuators.push_back(
+      Valuator(DeviceDataManagerX11::DT_TOUCH_ORIENTATION, 0.9f));
   valuators.push_back(Valuator(DeviceDataManagerX11::DT_TOUCH_PRESSURE, 500));
-  scoped_xevent.InitTouchEvent(
-      0, XI_TouchBegin, 6, gfx::Point(200, 200), valuators);
+  scoped_xevent.InitTouchEvent(0, XI_TouchBegin, 6, gfx::Point(200, 200),
+                               valuators);
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, ui::EventTypeFromXEvent(*scoped_xevent));
   EXPECT_EQ("200,200", FlooredEventLocationString(*scoped_xevent));
   EXPECT_EQ(GetTouchIdFromXEvent(*scoped_xevent), 1);
@@ -296,8 +298,8 @@ TEST_F(EventsXTest, TouchEventBasic) {
   // value.
   valuators.clear();
   valuators.push_back(Valuator(DeviceDataManagerX11::DT_TOUCH_PRESSURE, 50));
-  scoped_xevent.InitTouchEvent(
-      0, XI_TouchEnd, 5, gfx::Point(30, 30), valuators);
+  scoped_xevent.InitTouchEvent(0, XI_TouchEnd, 5, gfx::Point(30, 30),
+                               valuators);
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromXEvent(*scoped_xevent));
   EXPECT_EQ("30,30", FlooredEventLocationString(*scoped_xevent));
   EXPECT_EQ(GetTouchIdFromXEvent(*scoped_xevent), 0);
@@ -310,8 +312,8 @@ TEST_F(EventsXTest, TouchEventBasic) {
   // radius value.
   valuators.clear();
   valuators.push_back(Valuator(DeviceDataManagerX11::DT_TOUCH_MAJOR, 50));
-  scoped_xevent.InitTouchEvent(
-      0, XI_TouchEnd, 6, gfx::Point(200, 200), valuators);
+  scoped_xevent.InitTouchEvent(0, XI_TouchEnd, 6, gfx::Point(200, 200),
+                               valuators);
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromXEvent(*scoped_xevent));
   EXPECT_EQ("200,200", FlooredEventLocationString(*scoped_xevent));
   EXPECT_EQ(GetTouchIdFromXEvent(*scoped_xevent), 1);
@@ -384,8 +386,7 @@ TEST_F(EventsXTest, CopiedTouchEventNotRemovingFromXEventMapping) {
 // that an exception list of keys can still be processed.
 TEST_F(EventsXTest, DisableKeyboard) {
   DeviceDataManagerX11* device_data_manager =
-      static_cast<DeviceDataManagerX11*>(
-          DeviceDataManager::GetInstance());
+      static_cast<DeviceDataManagerX11*>(DeviceDataManager::GetInstance());
   int blocked_device_id = 1;
   int other_device_id = 2;
   int master_device_id = 3;
@@ -398,52 +399,36 @@ TEST_F(EventsXTest, DisableKeyboard) {
 
   ScopedXI2Event xev;
   // A is not allowed on the blocked keyboard, and should return ET_UNKNOWN.
-  xev.InitGenericKeyEvent(master_device_id,
-                          blocked_device_id,
-                          ui::ET_KEY_PRESSED,
-                          ui::VKEY_A,
-                          0);
+  xev.InitGenericKeyEvent(master_device_id, blocked_device_id,
+                          ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
   EXPECT_EQ(ui::ET_UNKNOWN, ui::EventTypeFromXEvent(*xev));
 
   // The B key is allowed as an exception, and should return KEY_PRESSED.
-  xev.InitGenericKeyEvent(master_device_id,
-                          blocked_device_id,
-                          ui::ET_KEY_PRESSED,
-                          ui::VKEY_B,
-                          0);
+  xev.InitGenericKeyEvent(master_device_id, blocked_device_id,
+                          ui::ET_KEY_PRESSED, ui::VKEY_B, 0);
   EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromXEvent(*xev));
 
   // Both A and B are allowed on an unblocked keyboard device.
-  xev.InitGenericKeyEvent(master_device_id,
-                          other_device_id,
-                          ui::ET_KEY_PRESSED,
-                          ui::VKEY_A,
-                          0);
+  xev.InitGenericKeyEvent(master_device_id, other_device_id, ui::ET_KEY_PRESSED,
+                          ui::VKEY_A, 0);
   EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromXEvent(*xev));
-  xev.InitGenericKeyEvent(master_device_id,
-                          other_device_id,
-                          ui::ET_KEY_PRESSED,
-                          ui::VKEY_B,
-                          0);
+  xev.InitGenericKeyEvent(master_device_id, other_device_id, ui::ET_KEY_PRESSED,
+                          ui::VKEY_B, 0);
   EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromXEvent(*xev));
 
   device_data_manager->EnableDevice(blocked_device_id);
   device_data_manager->SetDisabledKeyboardAllowedKeys(nullptr);
 
   // A key returns KEY_PRESSED as per usual now that keyboard was re-enabled.
-  xev.InitGenericKeyEvent(master_device_id,
-                          blocked_device_id,
-                          ui::ET_KEY_PRESSED,
-                          ui::VKEY_A,
-                          0);
+  xev.InitGenericKeyEvent(master_device_id, blocked_device_id,
+                          ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
   EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromXEvent(*xev));
 }
 
 // Verifies that the type of events from a disabled mouse is ET_UNKNOWN.
 TEST_F(EventsXTest, DisableMouse) {
   DeviceDataManagerX11* device_data_manager =
-      static_cast<DeviceDataManagerX11*>(
-          DeviceDataManager::GetInstance());
+      static_cast<DeviceDataManagerX11*>(DeviceDataManager::GetInstance());
   int blocked_device_id = 1;
   int other_device_id = 2;
   std::vector<int> device_list;
@@ -455,17 +440,17 @@ TEST_F(EventsXTest, DisableMouse) {
 
   ScopedXI2Event xev;
   xev.InitGenericButtonEvent(blocked_device_id, ET_MOUSE_PRESSED, gfx::Point(),
-      EF_LEFT_MOUSE_BUTTON);
+                             EF_LEFT_MOUSE_BUTTON);
   EXPECT_EQ(ui::ET_UNKNOWN, ui::EventTypeFromXEvent(*xev));
 
   xev.InitGenericButtonEvent(other_device_id, ET_MOUSE_PRESSED, gfx::Point(),
-      EF_LEFT_MOUSE_BUTTON);
+                             EF_LEFT_MOUSE_BUTTON);
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromXEvent(*xev));
 
   device_data_manager->EnableDevice(blocked_device_id);
 
   xev.InitGenericButtonEvent(blocked_device_id, ET_MOUSE_PRESSED, gfx::Point(),
-      EF_LEFT_MOUSE_BUTTON);
+                             EF_LEFT_MOUSE_BUTTON);
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromXEvent(*xev));
 }
 
@@ -474,10 +459,12 @@ TEST_F(EventsXTest, ImeFabricatedKeyEvents) {
   Display* display = gfx::GetXDisplay();
 
   unsigned int state_to_be_fabricated[] = {
-    0, ShiftMask, LockMask, ShiftMask | LockMask,
+      0,
+      ShiftMask,
+      LockMask,
+      ShiftMask | LockMask,
   };
-  for (size_t i = 0; i < base::size(state_to_be_fabricated); ++i) {
-    unsigned int state = state_to_be_fabricated[i];
+  for (unsigned int state : state_to_be_fabricated) {
     for (int is_char = 0; is_char < 2; ++is_char) {
       XEvent x_event;
       InitKeyEvent(display, &x_event, true, 0, state);
@@ -491,10 +478,12 @@ TEST_F(EventsXTest, ImeFabricatedKeyEvents) {
   }
 
   unsigned int state_to_be_not_fabricated[] = {
-    ControlMask, Mod1Mask, Mod2Mask, ShiftMask | ControlMask,
+      ControlMask,
+      Mod1Mask,
+      Mod2Mask,
+      ShiftMask | ControlMask,
   };
-  for (size_t i = 0; i < base::size(state_to_be_not_fabricated); ++i) {
-    unsigned int state = state_to_be_not_fabricated[i];
+  for (unsigned int state : state_to_be_not_fabricated) {
     for (int is_char = 0; is_char < 2; ++is_char) {
       XEvent x_event;
       InitKeyEvent(display, &x_event, true, 0, state);

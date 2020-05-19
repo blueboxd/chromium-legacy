@@ -106,7 +106,9 @@ void BoxPainter::PaintBoxDecorationBackground(
     // composited in PaintArtifactCompositor::UpdateNonFastScrollableRegions.
     if (layout_box_.HasLayer() &&
         layout_box_.Layer()->GetCompositedLayerMapping() &&
-        layout_box_.Layer()->GetCompositedLayerMapping()->HasScrollingLayer()) {
+        layout_box_.Layer()
+            ->GetCompositedLayerMapping()
+            ->ScrollingContentsLayer()) {
       needs_scroll_hit_test = false;
     }
   }

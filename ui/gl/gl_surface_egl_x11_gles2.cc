@@ -35,10 +35,11 @@ bool NativeViewGLSurfaceEGLX11GLES2::InitializeNativeWindow() {
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = 0;
   swa.bit_gravity = NorthWestGravity;
-  window_ = XCreateWindow(x11_display, parent_window_, 0, 0, size_.width(),
-                          size_.height(), 0, 0 /* CopyFromParent */,
-                          1 /* InputOutput */, 0 /* CopyFromParent */,
-                          CWBackPixmap | CWBitGravity, &swa);
+  window_ = XCreateWindow(
+      x11_display, parent_window_, 0, 0, size_.width(), size_.height(), 0,
+      static_cast<int>(x11::XProto::WindowClass::CopyFromParent),
+      static_cast<int>(x11::XProto::WindowClass::InputOutput), nullptr,
+      CWBackPixmap | CWBitGravity, &swa);
   XMapWindow(x11_display, window_);
   XSelectInput(x11_display, window_, ExposureMask);
   XFlush(x11_display);

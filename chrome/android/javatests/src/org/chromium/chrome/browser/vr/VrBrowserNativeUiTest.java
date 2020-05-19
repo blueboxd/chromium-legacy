@@ -60,6 +60,7 @@ public class VrBrowserNativeUiTest {
             new RenderTestRule.SkiaGoldBuilder()
                     .setCorpus(RenderTestRule.Corpus.ANDROID_VR_RENDER_TESTS)
                     .setFailOnUnsupportedConfigs(true)
+                    .setRevision(2)
                     .build();
 
     private VrBrowserTestFramework mVrBrowserTestFramework;

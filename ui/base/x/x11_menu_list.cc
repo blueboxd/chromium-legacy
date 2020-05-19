@@ -27,7 +27,7 @@ XMenuList::~XMenuList() {
 void XMenuList::MaybeRegisterMenu(XID menu) {
   int value = 0;
   if (!GetIntProperty(menu, "_NET_WM_WINDOW_TYPE", &value) ||
-      static_cast<XAtom>(value) != menu_type_atom_) {
+      static_cast<x11::Atom>(value) != menu_type_atom_) {
     return;
   }
   menus_.push_back(menu);

@@ -899,7 +899,7 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
     // composited in PaintArtifactCompositor::UpdateNonFastScrollableRegions.
     const auto* layer = PhysicalFragment().Layer();
     if (layer && layer->GetCompositedLayerMapping() &&
-        layer->GetCompositedLayerMapping()->HasScrollingLayer()) {
+        layer->GetCompositedLayerMapping()->ScrollingContentsLayer()) {
       needs_scroll_hit_test = false;
     }
   }

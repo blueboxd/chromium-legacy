@@ -21,7 +21,7 @@ XEventWaiter* XEventWaiter::Create(XID window, base::OnceClosure callback) {
     marker_event->xclient.window = window;
     marker_event->xclient.format = 8;
   }
-  marker_event->xclient.message_type = MarkerEventAtom();
+  marker_event->xclient.message_type = static_cast<uint32_t>(MarkerEventAtom());
 
   XSendEvent(display, window, x11::False, 0, marker_event);
   XFlush(display);
@@ -42,7 +42,7 @@ XEventWaiter::~XEventWaiter() {
 
 void XEventWaiter::WillProcessXEvent(XEvent* xev) {
   if (xev->xany.type == ClientMessage &&
-      xev->xclient.message_type == MarkerEventAtom()) {
+      static_cast<x11::Atom>(xev->xclient.message_type) == MarkerEventAtom()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   std::move(success_callback_));
     delete this;
@@ -50,7 +50,7 @@ void XEventWaiter::WillProcessXEvent(XEvent* xev) {
 }
 
 // Returns atom that indidates that the XEvent is marker event.
-XAtom XEventWaiter::MarkerEventAtom() {
+x11::Atom XEventWaiter::MarkerEventAtom() {
   return gfx::GetAtom("marker_event");
 }
 

@@ -38,8 +38,7 @@ unsigned button_down_mask = 0;
 
 class UIControlsX11 : public UIControlsAura {
  public:
-  UIControlsX11(WindowTreeHost* host) : host_(host) {
-  }
+  explicit UIControlsX11(WindowTreeHost* host) : host_(host) {}
 
   bool SendKeyPress(gfx::NativeWindow window,
                     ui::KeyboardCode key,
@@ -59,7 +58,7 @@ class UIControlsX11 : public UIControlsAura {
                                   base::OnceClosure closure) override {
     XEvent xevent;
     xevent.xkey = {};
-    xevent.xkey.type = KeyPress;
+    xevent.xkey.type = x11::XProto::KeyPressEvent::opcode;
     if (control)
       SetKeycodeAndSendThenMask(&xevent, XK_Control_L, ControlMask);
     if (shift)
@@ -68,13 +67,12 @@ class UIControlsX11 : public UIControlsAura {
       SetKeycodeAndSendThenMask(&xevent, XK_Alt_L, Mod1Mask);
     if (command)
       SetKeycodeAndSendThenMask(&xevent, XK_Meta_L, Mod4Mask);
-    xevent.xkey.keycode =
-        XKeysymToKeycode(gfx::GetXDisplay(),
-                         ui::XKeysymForWindowsKeyCode(key, shift));
+    xevent.xkey.keycode = XKeysymToKeycode(
+        gfx::GetXDisplay(), ui::XKeysymForWindowsKeyCode(key, shift));
     PostEventToWindowTreeHost(xevent, host_);
 
     // Send key release events.
-    xevent.xkey.type = KeyRelease;
+    xevent.xkey.type = x11::XProto::KeyReleaseEvent::opcode;
     PostEventToWindowTreeHost(xevent, host_);
     if (alt)
       UnmaskAndSetKeycodeThenSend(&xevent, Mod1Mask, XK_Alt_L);
@@ -140,7 +138,7 @@ class UIControlsX11 : public UIControlsAura {
     XButtonEvent* xbutton = &xevent.xbutton;
     gfx::Point mouse_loc = Env::GetInstance()->last_mouse_location();
     aura::client::ScreenPositionClient* screen_position_client =
-          aura::client::GetScreenPositionClient(host_->window());
+        aura::client::GetScreenPositionClient(host_->window());
     if (screen_position_client) {
       screen_position_client->ConvertPointFromScreen(host_->window(),
                                                      &mouse_loc);
@@ -150,15 +148,15 @@ class UIControlsX11 : public UIControlsAura {
     xbutton->same_screen = x11::True;
     switch (type) {
       case LEFT:
-        xbutton->button = Button1;
+        xbutton->button = 1;
         xbutton->state = Button1Mask;
         break;
       case MIDDLE:
-        xbutton->button = Button2;
+        xbutton->button = 2;
         xbutton->state = Button2Mask;
         break;
       case RIGHT:
-        xbutton->button = Button3;
+        xbutton->button = 3;
         xbutton->state = Button3Mask;
         break;
     }
@@ -175,12 +173,12 @@ class UIControlsX11 : public UIControlsAura {
 
     // WindowEventDispatcher will take care of other necessary fields.
     if (button_state & DOWN) {
-      xevent.xbutton.type = ButtonPress;
+      xevent.xbutton.type = x11::XProto::ButtonPressEvent::opcode;
       PostEventToWindowTreeHost(xevent, host_);
       button_down_mask |= xbutton->state;
     }
     if (button_state & UP) {
-      xevent.xbutton.type = ButtonRelease;
+      xevent.xbutton.type = x11::XProto::ButtonReleaseEvent::opcode;
       PostEventToWindowTreeHost(xevent, host_);
       button_down_mask = (button_down_mask | xbutton->state) ^ xbutton->state;
     }
@@ -195,12 +193,12 @@ class UIControlsX11 : public UIControlsAura {
       return;
     ui::XEventWaiter::Create(host_->GetAcceleratedWidget(), std::move(closure));
   }
+
  private:
   void SetKeycodeAndSendThenMask(XEvent* xevent,
                                  KeySym keysym,
                                  unsigned int mask) {
-    xevent->xkey.keycode =
-        XKeysymToKeycode(gfx::GetXDisplay(), keysym);
+    xevent->xkey.keycode = XKeysymToKeycode(gfx::GetXDisplay(), keysym);
     PostEventToWindowTreeHost(*xevent, host_);
     xevent->xkey.state |= mask;
   }
@@ -209,8 +207,7 @@ class UIControlsX11 : public UIControlsAura {
                                    unsigned int mask,
                                    KeySym keysym) {
     xevent->xkey.state ^= mask;
-    xevent->xkey.keycode =
-        XKeysymToKeycode(gfx::GetXDisplay(), keysym);
+    xevent->xkey.keycode = XKeysymToKeycode(gfx::GetXDisplay(), keysym);
     PostEventToWindowTreeHost(*xevent, host_);
   }
 

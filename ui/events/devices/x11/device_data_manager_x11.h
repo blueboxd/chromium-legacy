@@ -317,7 +317,7 @@ class EVENTS_DEVICES_X11_EXPORT DeviceDataManagerX11
   // Updates a device based on a Valuator class info. Returns true if the
   // device is a possible CMT device.
   bool UpdateValuatorClassDevice(XIValuatorClassInfo* valuator_class_info,
-                                 Atom* atoms,
+                                 x11::Atom* atoms,
                                  int deviceid);
 
   // Updates a device based on a Scroll class info.

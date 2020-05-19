@@ -87,21 +87,6 @@
       "transform": 3
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='positioned-absolute-grandchildren' class='positionAbsolute positioned'",
-      "position": [27, 67],
-      "bounds": [80, 40],
-      "contentsOpaque": true,
-      "backgroundColor": "#800080",
-      "transform": 4
-    },
-    {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV id='scrolled-absolute-grandchildren' class='scrolled')",
-      "position": [6, 34],
-      "bounds": [75, 80],
-      "contentsOpaqueForText": true,
-      "transform": 4
-    },
-    {
       "name": "LayoutBlockFlow DIV id='container-absolute-not-contained' class='overflow'",
       "bounds": [104, 104],
       "transform": 5
@@ -227,21 +212,6 @@
       "transform": 9
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='positioned-absolute-sibling-grandchildren' class='positionAbsolute positioned'",
-      "position": [27, 67],
-      "bounds": [80, 40],
-      "contentsOpaque": true,
-      "backgroundColor": "#800080",
-      "transform": 10
-    },
-    {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV id='scrolled-absolute-sibling-grandchildren' class='scrolled')",
-      "position": [6, 34],
-      "bounds": [75, 80],
-      "contentsOpaqueForText": true,
-      "transform": 10
-    },
-    {
       "name": "LayoutBlockFlow DIV id='container-absolute-sibling-not-contained' class='overflow'",
       "bounds": [104, 104],
       "transform": 11
@@ -292,6 +262,12 @@
       "transform": 13
     },
     {
+      "name": "Scrolling Contents Layer",
+      "position": [2, 2],
+      "bounds": [105, 144],
+      "transform": 14
+    },
+    {
       "name": "ContentsLayer for Horizontal Scrollbar Layer",
       "position": [2, 87],
       "bounds": [85, 15],
@@ -308,21 +284,6 @@
       "position": [87, 87],
       "bounds": [15, 15],
       "transform": 13
-    },
-    {
-      "name": "LayoutBlockFlow (positioned) DIV id='positioned-absolute-sibling' class='positionAbsolute positioned'",
-      "position": [27, 67],
-      "bounds": [80, 40],
-      "contentsOpaque": true,
-      "backgroundColor": "#800080",
-      "transform": 14
-    },
-    {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV id='scrolled-absolute-sibling' class='scrolled')",
-      "position": [6, 34],
-      "bounds": [75, 80],
-      "contentsOpaqueForText": true,
-      "transform": 14
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='container-absolute' class='positionAbsolute overflow'",
@@ -330,6 +291,12 @@
       "transform": 15
     },
     {
+      "name": "Scrolling Contents Layer",
+      "position": [2, 2],
+      "bounds": [105, 144],
+      "transform": 16
+    },
+    {
       "name": "ContentsLayer for Horizontal Scrollbar Layer",
       "position": [2, 87],
       "bounds": [85, 15],
@@ -346,21 +313,6 @@
       "position": [87, 87],
       "bounds": [15, 15],
       "transform": 15
-    },
-    {
-      "name": "LayoutBlockFlow (positioned) DIV id='positioned-absolute' class='positionAbsolute positioned'",
-      "position": [27, 67],
-      "bounds": [80, 40],
-      "contentsOpaque": true,
-      "backgroundColor": "#800080",
-      "transform": 16
-    },
-    {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV id='scrolled-absolute' class='scrolled')",
-      "position": [6, 34],
-      "bounds": [75, 80],
-      "contentsOpaqueForText": true,
-      "transform": 16
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='container-fixed-sibling-grandchildren' class='positionAbsolute overflow'",

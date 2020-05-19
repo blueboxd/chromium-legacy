@@ -18,8 +18,8 @@ namespace blink {
 // garbage-collected object. Blink is expected to use HeapMojoRemote by
 // default. HeapMojoRemote must be associated with context.
 // HeapMojoRemote's constructor takes context as a mandatory parameter.
-// HeapMojoRemote resets the mojo connection when 1) the owner object is
-// garbage-collected and 2) the associated ExecutionContext is detached.
+// HeapMojoRemote resets the mojo connection when the associated
+// ExecutionContext is detached.
 
 // TODO(crbug.com/1058076) HeapMojoWrapperMode should be removed once we ensure
 // that the interface is not used after ContextDestroyed().
@@ -73,10 +73,9 @@ class HeapMojoRemote {
   void Trace(Visitor* visitor) const { visitor->Trace(wrapper_); }
 
  private:
-  // Garbage collected wrapper class to add a prefinalizer.
+  // Garbage collected wrapper class to add ContextLifecycleObserver.
   class Wrapper final : public GarbageCollected<Wrapper>,
                         public ContextLifecycleObserver {
-    USING_PRE_FINALIZER(Wrapper, Dispose);
     USING_GARBAGE_COLLECTED_MIXIN(Wrapper);
 
    public:
@@ -91,8 +90,6 @@ class HeapMojoRemote {
     void Trace(Visitor* visitor) const override {
       ContextLifecycleObserver::Trace(visitor);
     }
-
-    void Dispose() { remote_.reset(); }
 
     mojo::Remote<Interface>& remote() { return remote_; }
 

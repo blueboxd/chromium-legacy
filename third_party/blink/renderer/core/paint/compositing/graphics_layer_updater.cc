@@ -122,13 +122,13 @@ void GraphicsLayerUpdater::UpdateRecursive(
     CompositedLayerMapping* mapping = layer.GetCompositedLayerMapping();
 
     if (update_type == kForceUpdate || mapping->NeedsGraphicsLayerUpdate()) {
-      bool had_scrolling_layer = mapping->ScrollingLayer();
+      bool had_scrolling_layer = mapping->ScrollingContentsLayer();
       const auto* compositing_container = context.CompositingContainer(layer);
       if (mapping->UpdateGraphicsLayerConfiguration(compositing_container)) {
         needs_rebuild_tree_ = true;
         // Change of existence of scrolling layer affects visual rect offsets of
         // descendants via LayoutObject::ScrollAdjustmentForPaintInvalidation().
-        if (had_scrolling_layer != !!mapping->ScrollingLayer())
+        if (had_scrolling_layer != !!mapping->ScrollingContentsLayer())
           layers_needing_paint_invalidation.push_back(&layer);
       }
       mapping->UpdateGraphicsLayerGeometry(compositing_container,

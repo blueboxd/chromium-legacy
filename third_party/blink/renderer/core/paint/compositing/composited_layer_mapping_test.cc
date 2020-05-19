@@ -21,6 +21,8 @@
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 
+#include "third_party/blink/renderer/core/paint/compositing/graphics_layer_tree_as_text.h"
+
 namespace blink {
 
 // TODO(wangxianzhu): Though these tests don't directly apply in
@@ -52,6 +54,17 @@ class CompositedLayerMappingTest : public RenderingTest {
 
   IntRect PreviousInterestRect(const GraphicsLayer* graphics_layer) {
     return graphics_layer->previous_interest_rect_;
+  }
+
+  const GraphicsLayerPaintInfo* GetSquashedLayerInScrollingContents(
+      const CompositedLayerMapping& mapping,
+      const PaintLayer& layer) {
+    for (const auto& squashed_layer :
+         mapping.squashed_layers_in_scrolling_contents_) {
+      if (squashed_layer.paint_layer == &layer)
+        return &squashed_layer;
+    }
+    return nullptr;
   }
 
  private:
@@ -819,7 +832,7 @@ TEST_F(CompositedLayerMappingTest,
   // The following rect is at (-4000, 190, 4100, 100) in viewport coordinates.
   EXPECT_EQ(IntRect(6000, 0, 4100, 100),
             grouped_mapping->ComputeInterestRect(
-                grouped_mapping->SquashingLayer(), IntRect()));
+                grouped_mapping->NonScrollingSquashingLayer(), IntRect()));
 }
 
 TEST_F(CompositedLayerMappingTest,
@@ -846,7 +859,7 @@ TEST_F(CompositedLayerMappingTest,
   // The following rect is at (-4000, 0, 4400, 1000) in viewport coordinates.
   EXPECT_EQ(IntRect(5600, 0, 4400, 1000),
             grouped_mapping->ComputeInterestRect(
-                grouped_mapping->SquashingLayer(), IntRect()));
+                grouped_mapping->NonScrollingSquashingLayer(), IntRect()));
 }
 
 TEST_F(CompositedLayerMappingTest, InterestRectOfIframeInScrolledDiv) {
@@ -1157,7 +1170,7 @@ TEST_F(CompositedLayerMappingTest,
   // contents layer we don't have a scrolling contents layer to paint into in
   // this case.
   const auto* mapping = container->Layer()->GetCompositedLayerMapping();
-  EXPECT_FALSE(mapping->HasScrollingLayer());
+  EXPECT_FALSE(mapping->ScrollingContentsLayer());
   EXPECT_EQ(kBackgroundPaintInGraphicsLayer,
             container->GetBackgroundPaintLocation());
 }
@@ -1490,9 +1503,9 @@ TEST_F(CompositedLayerMappingTest, ScrollingLayerBackgroundColor) {
 
 TEST_F(CompositedLayerMappingTest, ScrollLayerSizingSubpixelAccumulation) {
   // This test verifies that when subpixel accumulation causes snapping it
-  // applies to both the scrolling and scrolling contents layers. Verify that
-  // the mapping doesn't have any vertical scrolling introduced as a result of
-  // the snapping behavior. https://crbug.com/801381.
+  // applies to the scrolling contents layer. Verify that the mapping doesn't
+  // have any vertical scrolling introduced as a result of the snapping
+  // behavior. https://crbug.com/801381.
   GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
       true);
 
@@ -1525,10 +1538,9 @@ TEST_F(CompositedLayerMappingTest, ScrollLayerSizingSubpixelAccumulation) {
                       ->Layer()
                       ->GetCompositedLayerMapping();
   ASSERT_TRUE(mapping);
-  ASSERT_TRUE(mapping->ScrollingLayer());
   ASSERT_TRUE(mapping->ScrollingContentsLayer());
-  EXPECT_EQ(mapping->ScrollingLayer()->Size().height(),
-            mapping->ScrollingContentsLayer()->Size().height());
+  EXPECT_EQ(gfx::Size(200, 200), mapping->MainGraphicsLayer()->Size());
+  EXPECT_EQ(gfx::Size(1000, 200), mapping->ScrollingContentsLayer()->Size());
 }
 
 TEST_F(CompositedLayerMappingTest, SquashingScrollInterestRect) {
@@ -1550,8 +1562,9 @@ TEST_F(CompositedLayerMappingTest, SquashingScrollInterestRect) {
       ScrollOffset(0, 5000), mojom::blink::ScrollType::kUser);
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_EQ(IntRect(0, 1000, 200, 5000),
-            squashed->GroupedMapping()->SquashingLayer()->InterestRect());
+  EXPECT_EQ(
+      IntRect(0, 1000, 200, 5000),
+      squashed->GroupedMapping()->SquashingLayer(*squashed)->InterestRect());
 }
 
 TEST_F(CompositedLayerMappingTest,
@@ -1866,6 +1879,60 @@ TEST_F(CompositedLayerMappingTest, FrameAttribution) {
             CompositorElementIdFromUniqueObjectId(
                 DOMNodeIds::IdForNode(subframe->contentDocument()),
                 CompositorElementIdNamespace::kDOMNodeId));
+}
+
+TEST_F(CompositedLayerMappingTest, SquashIntoScrollingContents) {
+  GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
+      true);
+  SetBodyInnerHTML(R"HTML(
+    <div style="position: absolute; top: 0.5px; left: 0.75px; z-index: 1">
+      <div style="height: 0.75px"></div>
+      <div id="scroller" style="width: 100px; height: 100px; overflow: scroll;
+           border: 10px solid blue">
+        <div id="target1" style="position: relative; top: 10.5px; left: 5.5px;
+             width: 10px; height: 10px; background: green"></div>
+        <div style="height: 300px"></div>
+        <div id="target2" style="position: relative; z-index: 2;
+             width: 10px; height: 10px; background: green"></div>
+      </div>
+      <div style="position: absolute; z-index: 1; top: 50px;
+           width: 10px; height: 10px; background: blue">
+      </div>
+    </div>
+  )HTML");
+
+  auto* scroller = ToLayoutBox(GetLayoutObjectByElementId("scroller"))->Layer();
+  auto* target1 = ToLayoutBox(GetLayoutObjectByElementId("target1"))->Layer();
+  auto* target2 = ToLayoutBox(GetLayoutObjectByElementId("target2"))->Layer();
+
+  auto* scroller_mapping = scroller->GetCompositedLayerMapping();
+  ASSERT_TRUE(scroller_mapping);
+  EXPECT_EQ(IntSize(),
+            scroller_mapping->MainGraphicsLayer()->OffsetFromLayoutObject());
+  EXPECT_EQ(
+      IntSize(10, 10),
+      scroller_mapping->ScrollingContentsLayer()->OffsetFromLayoutObject());
+  EXPECT_EQ(PhysicalOffset(LayoutUnit(-0.25), LayoutUnit(0.25)),
+            scroller->SubpixelAccumulation());
+
+  EXPECT_EQ(scroller_mapping, target1->GroupedMapping());
+  EXPECT_EQ(scroller_mapping->ScrollingContentsLayer(),
+            scroller_mapping->SquashingLayer(*target1));
+  EXPECT_EQ(scroller_mapping->ScrollingContentsLayer(),
+            target1->GraphicsLayerBacking());
+  EXPECT_EQ(PhysicalOffset(LayoutUnit(0.25), LayoutUnit(-0.25)),
+            target1->SubpixelAccumulation());
+  const GraphicsLayerPaintInfo* target1_info =
+      GetSquashedLayerInScrollingContents(*scroller_mapping, *target1);
+  ASSERT_TRUE(target1_info);
+  EXPECT_TRUE(target1_info->offset_from_layout_object_set);
+  EXPECT_EQ(IntSize(-5, -11), target1_info->offset_from_layout_object);
+  EXPECT_EQ(ClipRect(), target1_info->local_clip_rect_for_squashed_layer);
+
+  // target2 can't be squashed because the absolute position div is between
+  // the scrolling contents and target2.
+  EXPECT_FALSE(target2->GroupedMapping());
+  EXPECT_TRUE(target2->HasCompositedLayerMapping());
 }
 
 }  // namespace blink

@@ -84,7 +84,6 @@ class HeapMojoAssociatedRemote {
   // Garbage collected wrapper class to add a prefinalizer.
   class Wrapper final : public GarbageCollected<Wrapper>,
                         public ContextLifecycleObserver {
-    USING_PRE_FINALIZER(Wrapper, Dispose);
     USING_GARBAGE_COLLECTED_MIXIN(Wrapper);
 
    public:
@@ -100,8 +99,6 @@ class HeapMojoAssociatedRemote {
     void Trace(Visitor* visitor) const override {
       ContextLifecycleObserver::Trace(visitor);
     }
-
-    void Dispose() { associated_remote_.reset(); }
 
     mojo::AssociatedRemote<Interface>& associated_remote() {
       return associated_remote_;

@@ -426,9 +426,8 @@ void PaintLayerCompositor::UpdateIfNeeded(
   // Save off our current parent. We need this in subframes, because our
   // parent attached us to itself via AttachFrameContentLayersToIframeLayer().
   if (!IsMainFrame() && update_root->GetCompositedLayerMapping()) {
-    current_parent = update_root->GetCompositedLayerMapping()
-                         ->ChildForSuperlayers()
-                         ->Parent();
+    current_parent =
+        update_root->GetCompositedLayerMapping()->MainGraphicsLayer()->Parent();
   }
 
 #if DCHECK_IS_ON()
@@ -612,10 +611,8 @@ bool PaintLayerCompositor::AttachFrameContentLayersToIframeLayer(
 }
 
 static void FullyInvalidatePaintRecursive(PaintLayer* layer) {
-  if (layer->GetCompositingState() == kPaintsIntoOwnBacking) {
-    layer->GetCompositedLayerMapping()->SetContentsNeedDisplay();
-    layer->GetCompositedLayerMapping()->SetSquashingContentsNeedDisplay();
-  }
+  if (layer->GetCompositingState() == kPaintsIntoOwnBacking)
+    layer->GetCompositedLayerMapping()->SetAllLayersNeedDisplay();
 
   for (PaintLayer* child = layer->FirstChild(); child;
        child = child->NextSibling())
@@ -637,7 +634,7 @@ PaintLayer* PaintLayerCompositor::RootLayer() const {
 
 GraphicsLayer* PaintLayerCompositor::RootGraphicsLayer() const {
   if (CompositedLayerMapping* clm = RootLayer()->GetCompositedLayerMapping())
-    return clm->ChildForSuperlayers();
+    return clm->MainGraphicsLayer();
   return nullptr;
 }
 

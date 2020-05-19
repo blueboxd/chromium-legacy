@@ -22,10 +22,10 @@ void PostEventToWindowTreeHost(const XEvent& xevent, WindowTreeHost* host) {
     case EnterNotify:
     case LeaveNotify:
     case MotionNotify:
-    case KeyPress:
-    case KeyRelease:
-    case ButtonPress:
-    case ButtonRelease: {
+    case x11::XProto::KeyPressEvent::opcode:
+    case x11::XProto::KeyReleaseEvent::opcode:
+    case x11::XProto::ButtonPressEvent::opcode:
+    case x11::XProto::ButtonReleaseEvent::opcode: {
       // The fields used below are in the same place for all of events
       // above. Using xmotion from XEvent's unions to avoid repeating
       // the code.

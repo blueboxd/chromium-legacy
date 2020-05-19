@@ -4,6 +4,7 @@
 
 #include "ui/base/x/x11_drag_context.h"
 
+#include "base/memory/ref_counted_memory.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/x/x11_drag_drop_client.h"
 #include "ui/base/x/x11_util.h"
@@ -55,14 +56,14 @@ XDragContext::XDragContext(XID local_window,
       // data.l[2,3,4] contain the first three types. Unused slots can be None.
       for (size_t i = 2; i < 5; ++i) {
         if (event.data.l[i] != x11::None)
-          unfetched_targets_.push_back(event.data.l[i]);
+          unfetched_targets_.push_back(static_cast<x11::Atom>(event.data.l[i]));
       }
     }
 
 #if DCHECK_IS_ON()
     DVLOG(1) << "XdndEnter has " << unfetched_targets_.size() << " data types";
-    for (Atom target : unfetched_targets_)
-      DVLOG(1) << "XdndEnter data type: " << target;
+    for (x11::Atom target : unfetched_targets_)
+      DVLOG(1) << "XdndEnter data type: " << static_cast<uint32_t>(target);
 #endif  // DCHECK_IS_ON()
 
     // We must perform a full sync here because we could be racing
@@ -81,7 +82,7 @@ XDragContext::XDragContext(XID local_window,
 XDragContext::~XDragContext() = default;
 
 void XDragContext::OnXdndPositionMessage(XDragDropClient* client,
-                                         Atom suggested_action,
+                                         x11::Atom suggested_action,
                                          XID source_window,
                                          Time time_stamp,
                                          const gfx::Point& screen_point) {
@@ -108,12 +109,14 @@ void XDragContext::RequestNextTarget() {
   DCHECK(drag_drop_client_);
   DCHECK(waiting_to_handle_position_);
 
-  Atom target = unfetched_targets_.back();
+  x11::Atom target = unfetched_targets_.back();
   unfetched_targets_.pop_back();
 
-  XConvertSelection(gfx::GetXDisplay(), gfx::GetAtom(kXdndSelection), target,
-                    gfx::GetAtom(kChromiumDragReciever), local_window_,
-                    position_time_stamp_);
+  XConvertSelection(gfx::GetXDisplay(),
+                    static_cast<uint32_t>(gfx::GetAtom(kXdndSelection)),
+                    static_cast<uint32_t>(target),
+                    static_cast<uint32_t>(gfx::GetAtom(kChromiumDragReciever)),
+                    local_window_, position_time_stamp_);
 }
 
 void XDragContext::OnSelectionNotify(const XSelectionEvent& event) {
@@ -126,15 +129,16 @@ void XDragContext::OnSelectionNotify(const XSelectionEvent& event) {
 
   DVLOG(1) << "SelectionNotify, format " << event.target;
 
-  if (event.property != x11::None) {
-    DCHECK_EQ(event.property, gfx::GetAtom(kChromiumDragReciever));
+  auto property = static_cast<x11::Atom>(event.property);
+  auto target = static_cast<x11::Atom>(event.target);
 
-    scoped_refptr<base::RefCountedMemory> data;
-    Atom type = x11::None;
-    if (GetRawBytesOfProperty(local_window_, event.property, &data, nullptr,
-                              &type)) {
-      fetched_targets_.Insert(event.target, data);
-    }
+  if (event.property != x11::None) {
+    DCHECK_EQ(property, gfx::GetAtom(kChromiumDragReciever));
+
+    std::vector<uint8_t> data;
+    x11::Atom type = x11::Atom::None;
+    if (GetRawBytesOfProperty(local_window_, property, &data, &type))
+      fetched_targets_.Insert(target, base::RefCountedBytes::TakeVector(&data));
   } else {
     // The source failed to convert the drop data to the format (target in X11
     // parlance) that we asked for. This happens, even though we only ask for
@@ -154,7 +158,7 @@ void XDragContext::OnSelectionNotify(const XSelectionEvent& event) {
 
 void XDragContext::ReadActions() {
   if (!source_client_) {
-    std::vector<Atom> atom_array;
+    std::vector<x11::Atom> atom_array;
     if (!GetAtomArrayProperty(source_window_, kXdndActionList, &atom_array))
       actions_.clear();
     else
@@ -177,7 +181,7 @@ int XDragContext::GetDragOperation() const {
   return drag_operation;
 }
 
-void XDragContext::MaskOperation(Atom xdnd_operation,
+void XDragContext::MaskOperation(x11::Atom xdnd_operation,
                                  int* drag_operation) const {
   if (xdnd_operation == gfx::GetAtom(kXdndActionCopy))
     *drag_operation |= DragDropTypes::DRAG_COPY;
@@ -189,7 +193,8 @@ void XDragContext::MaskOperation(Atom xdnd_operation,
 
 bool XDragContext::DispatchXEvent(XEvent* xev) {
   if (xev->type == PropertyNotify &&
-      xev->xproperty.atom == gfx::GetAtom(kXdndActionList)) {
+      static_cast<x11::Atom>(xev->xproperty.atom) ==
+          gfx::GetAtom(kXdndActionList)) {
     ReadActions();
     return true;
   }

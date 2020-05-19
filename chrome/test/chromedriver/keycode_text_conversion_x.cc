@@ -217,7 +217,7 @@ bool ConvertKeyCodeToText(
       GetXModifierMask(display, kNumLockKeyModifierMask, &x_modifier)) {
     key_event->state |= x_modifier;
   }
-  key_event->type = KeyPress;
+  key_event->type = x11::XProto::KeyPressEvent::opcode;
   uint16_t character = ui::GetCharacterFromXEvent(&event);
 
   if (!character)
@@ -244,8 +244,8 @@ bool ConvertCharToKeyCode(
   int test_modifiers;
   *error_msg = std::string();
   std::string conv_string;
-  for (size_t i = 0; i < base::size(kKeyCodeToXKeyCode); ++i) {
-    test_code = kKeyCodeToXKeyCode[i].key_code;
+  for (auto& i : kKeyCodeToXKeyCode) {
+    test_code = i.key_code;
     // Skip the numpad keys.
     if (test_code >= ui::VKEY_NUMPAD0 && test_code <= ui::VKEY_DIVIDE)
       continue;

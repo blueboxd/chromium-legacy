@@ -33,16 +33,14 @@ COMPONENT_EXPORT(UI_BASE_X) extern const char kTargets[];
 // processes.
 class COMPONENT_EXPORT(UI_BASE_X) SelectionOwner {
  public:
-  SelectionOwner(XDisplay* xdisplay,
-                 XID xwindow,
-                 XAtom selection_name);
+  SelectionOwner(XDisplay* xdisplay, XID xwindow, x11::Atom selection_name);
   ~SelectionOwner();
 
   // Returns the current selection data. Useful for fast paths.
   const SelectionFormatMap& selection_format_map() { return format_map_; }
 
   // Appends a list of types we're offering to |targets|.
-  void RetrieveTargets(std::vector<XAtom>* targets);
+  void RetrieveTargets(std::vector<x11::Atom>* targets);
 
   // Attempts to take ownership of the selection. If we're successful, present
   // |data| to other windows.
@@ -66,8 +64,8 @@ class COMPONENT_EXPORT(UI_BASE_X) SelectionOwner {
   // Holds state related to an incremental data transfer.
   struct IncrementalTransfer {
     IncrementalTransfer(XID window,
-                        XAtom target,
-                        XAtom property,
+                        x11::Atom target,
+                        x11::Atom property,
                         std::unique_ptr<XScopedEventSelector> event_selector,
                         const scoped_refptr<base::RefCountedMemory>& data,
                         int offset,
@@ -81,8 +79,8 @@ class COMPONENT_EXPORT(UI_BASE_X) SelectionOwner {
     // Parameters from the XSelectionRequest. The data is transferred over
     // |property| on |window|.
     XID window;
-    XAtom target;
-    XAtom property;
+    x11::Atom target;
+    x11::Atom property;
 
     // Selects events on |window|.
     std::unique_ptr<XScopedEventSelector> event_selector;
@@ -105,7 +103,7 @@ class COMPONENT_EXPORT(UI_BASE_X) SelectionOwner {
   // Attempts to convert the selection to |target|. If the conversion is
   // successful, true is returned and the result is stored in the |property|
   // of |requestor|.
-  bool ProcessTarget(XAtom target, XID requestor, XAtom property);
+  bool ProcessTarget(x11::Atom target, XID requestor, x11::Atom property);
 
   // Sends the next chunk of data for given the incremental data transfer.
   void ProcessIncrementalTransfer(IncrementalTransfer* transfer);
@@ -127,10 +125,10 @@ class COMPONENT_EXPORT(UI_BASE_X) SelectionOwner {
   XID x_window_;
 
   // The X11 selection that this instance communicates on.
-  XAtom selection_name_;
+  x11::Atom selection_name_;
 
   // The time that this instance took ownership of its selection.
-  Time acquired_selection_timestamp_;
+  uint32_t acquired_selection_timestamp_;
 
   // The maximum size of data we can put in XChangeProperty().
   size_t max_request_size_;

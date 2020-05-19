@@ -32,6 +32,7 @@
 #include "ui/events/x/x11_window_event_manager.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 
@@ -65,7 +66,7 @@ class SelectionChangeObserver : public XEventObserver {
   void DidProcessXEvent(XEvent* xev) override {}
 
   int event_base_;
-  Atom clipboard_atom_;
+  x11::Atom clipboard_atom_;
   uint64_t clipboard_sequence_number_;
   uint64_t primary_sequence_number_;
 
@@ -74,14 +75,14 @@ class SelectionChangeObserver : public XEventObserver {
 
 SelectionChangeObserver::SelectionChangeObserver()
     : event_base_(-1),
-      clipboard_atom_(x11::None),
+      clipboard_atom_(x11::Atom::None),
       clipboard_sequence_number_(0),
       primary_sequence_number_(0) {
   int ignored;
   if (XFixesQueryExtension(gfx::GetXDisplay(), &event_base_, &ignored)) {
     clipboard_atom_ = gfx::GetAtom(kClipboard);
     XFixesSelectSelectionInput(gfx::GetXDisplay(), GetX11RootWindow(),
-                               clipboard_atom_,
+                               static_cast<uint32_t>(clipboard_atom_),
                                XFixesSetSelectionOwnerNotifyMask |
                                    XFixesSelectionWindowDestroyNotifyMask |
                                    XFixesSelectionClientCloseNotifyMask);
@@ -110,7 +111,7 @@ void SelectionChangeObserver::WillProcessXEvent(XEvent* xev) {
   if (xev->type == event_base_ + XFixesSelectionNotify) {
     XFixesSelectionNotifyEvent* ev =
         reinterpret_cast<XFixesSelectionNotifyEvent*>(xev);
-    if (ev->selection == clipboard_atom_) {
+    if (static_cast<x11::Atom>(ev->selection) == clipboard_atom_) {
       clipboard_sequence_number_++;
       ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
     } else if (ev->selection == XA_PRIMARY) {
@@ -126,7 +127,7 @@ void SelectionChangeObserver::WillProcessXEvent(XEvent* xev) {
 // Represents a list of possible return types. Copy constructable.
 class TargetList {
  public:
-  using AtomVector = std::vector<::Atom>;
+  using AtomVector = std::vector<x11::Atom>;
 
   explicit TargetList(const AtomVector& target_list);
 
@@ -134,7 +135,7 @@ class TargetList {
 
   bool ContainsText() const;
   bool ContainsFormat(const ClipboardFormatType& format_type) const;
-  bool ContainsAtom(::Atom atom) const;
+  bool ContainsAtom(x11::Atom atom) const;
 
  private:
   AtomVector target_list_;
@@ -144,7 +145,7 @@ TargetList::TargetList(const AtomVector& target_list)
     : target_list_(target_list) {}
 
 bool TargetList::ContainsText() const {
-  std::vector<::Atom> atoms = GetTextAtomsFrom();
+  std::vector<x11::Atom> atoms = GetTextAtomsFrom();
   for (const auto& atom : atoms) {
     if (ContainsAtom(atom))
       return true;
@@ -154,12 +155,17 @@ bool TargetList::ContainsText() const {
 }
 
 bool TargetList::ContainsFormat(const ClipboardFormatType& format_type) const {
-  ::Atom atom = gfx::GetAtom(format_type.GetName().c_str());
+  x11::Atom atom = gfx::GetAtom(format_type.GetName().c_str());
   return ContainsAtom(atom);
 }
 
-bool TargetList::ContainsAtom(::Atom atom) const {
+bool TargetList::ContainsAtom(x11::Atom atom) const {
   return base::Contains(target_list_, atom);
+}
+
+XID GetSelectionOwner(x11::Atom selection) {
+  auto response = x11::Connection::Get()->GetSelectionOwner({selection}).Sync();
+  return response ? static_cast<XID>(response->owner) : x11::None;
 }
 
 }  // namespace
@@ -176,14 +182,14 @@ class ClipboardX11::X11Details : public XEventDispatcher {
 
   // Returns the X11 selection atom that we pass to various XSelection functions
   // for the given buffer.
-  ::Atom LookupSelectionForClipboardBuffer(ClipboardBuffer buffer) const;
+  x11::Atom LookupSelectionForClipboardBuffer(ClipboardBuffer buffer) const;
 
   // Returns the X11 selection atom that we pass to various XSelection functions
   // for ClipboardBuffer::kCopyPaste.
-  ::Atom GetCopyPasteSelection() const;
+  x11::Atom GetCopyPasteSelection() const;
 
   // Finds the SelectionFormatMap for the incoming selection atom.
-  const SelectionFormatMap& LookupStorageForAtom(::Atom atom);
+  const SelectionFormatMap& LookupStorageForAtom(x11::Atom atom);
 
   // As we need to collect all the data types before we tell X11 that we own a
   // particular selection, we create a temporary clipboard mapping that
@@ -208,7 +214,7 @@ class ClipboardX11::X11Details : public XEventDispatcher {
   // and do the asynchronous dance with whatever application is holding the
   // selection.
   SelectionData RequestAndWaitForTypes(ClipboardBuffer buffer,
-                                       const std::vector<::Atom>& types);
+                                       const std::vector<x11::Atom>& types);
 
   // Retrieves the list of possible data types the current clipboard owner has.
   //
@@ -217,10 +223,10 @@ class ClipboardX11::X11Details : public XEventDispatcher {
   TargetList WaitAndGetTargetsList(ClipboardBuffer buffer);
 
   // Returns a list of all text atoms that we handle.
-  std::vector<::Atom> GetTextAtoms() const;
+  std::vector<x11::Atom> GetTextAtoms() const;
 
   // Returns a vector with a |format| converted to an X11 atom.
-  std::vector<::Atom> GetAtomsForFormat(const ClipboardFormatType& format);
+  std::vector<x11::Atom> GetAtomsForFormat(const ClipboardFormatType& format);
 
   // Clears a certain clipboard buffer, whether we own it or not.
   void Clear(ClipboardBuffer buffer);
@@ -261,21 +267,22 @@ class ClipboardX11::X11Details : public XEventDispatcher {
 ClipboardX11::X11Details::X11Details()
     : x_display_(gfx::GetXDisplay()),
       x_root_window_(DefaultRootWindow(x_display_)),
-      x_window_(XCreateWindow(x_display_,
-                              x_root_window_,
-                              -100,
-                              -100,
-                              10,
-                              10,              // x, y, width, height
-                              0,               // border width
-                              CopyFromParent,  // depth
-                              InputOnly,
-                              CopyFromParent,  // visual
-                              0,
-                              nullptr)),
+      x_window_(XCreateWindow(
+          x_display_,
+          x_root_window_,
+          -100,
+          -100,
+          10,
+          10,  // x, y, width, height
+          0,   // border width
+          static_cast<int>(x11::XProto::WindowClass::CopyFromParent),  // depth
+          static_cast<int>(x11::XProto::WindowClass::InputOnly),
+          nullptr,  // visual
+          0,
+          nullptr)),
       selection_requestor_(x_display_, x_window_, this),
       clipboard_owner_(x_display_, x_window_, gfx::GetAtom(kClipboard)),
-      primary_owner_(x_display_, x_window_, XA_PRIMARY) {
+      primary_owner_(x_display_, x_window_, x11::Atom::PRIMARY) {
   XStoreName(x_display_, x_window_, "Chromium clipboard");
   x_window_events_.reset(
       new XScopedEventSelector(x_window_, PropertyChangeMask));
@@ -291,21 +298,21 @@ ClipboardX11::X11Details::~X11Details() {
   XDestroyWindow(x_display_, x_window_);
 }
 
-::Atom ClipboardX11::X11Details::LookupSelectionForClipboardBuffer(
+x11::Atom ClipboardX11::X11Details::LookupSelectionForClipboardBuffer(
     ClipboardBuffer buffer) const {
   if (buffer == ClipboardBuffer::kCopyPaste)
     return GetCopyPasteSelection();
 
-  return XA_PRIMARY;
+  return x11::Atom::PRIMARY;
 }
 
-::Atom ClipboardX11::X11Details::GetCopyPasteSelection() const {
+x11::Atom ClipboardX11::X11Details::GetCopyPasteSelection() const {
   return gfx::GetAtom(kClipboard);
 }
 
 const SelectionFormatMap& ClipboardX11::X11Details::LookupStorageForAtom(
-    ::Atom atom) {
-  if (atom == XA_PRIMARY)
+    x11::Atom atom) {
+  if (atom == x11::Atom::PRIMARY)
     return primary_owner_.selection_format_map();
 
   DCHECK_EQ(GetCopyPasteSelection(), atom);
@@ -319,7 +326,7 @@ void ClipboardX11::X11Details::CreateNewClipboardData() {
 void ClipboardX11::X11Details::InsertMapping(
     const std::string& key,
     const scoped_refptr<base::RefCountedMemory>& memory) {
-  ::Atom atom_key = gfx::GetAtom(key.c_str());
+  x11::Atom atom_key = gfx::GetAtom(key.c_str());
   clipboard_data_.Insert(atom_key, memory);
 }
 
@@ -333,9 +340,9 @@ void ClipboardX11::X11Details::TakeOwnershipOfSelection(
 
 SelectionData ClipboardX11::X11Details::RequestAndWaitForTypes(
     ClipboardBuffer buffer,
-    const std::vector<::Atom>& types) {
-  ::Atom selection_name = LookupSelectionForClipboardBuffer(buffer);
-  if (XGetSelectionOwner(x_display_, selection_name) == x_window_) {
+    const std::vector<x11::Atom>& types) {
+  x11::Atom selection_name = LookupSelectionForClipboardBuffer(buffer);
+  if (GetSelectionOwner(selection_name) == x_window_) {
     // We can local fastpath instead of playing the nested run loop game
     // with the X server.
     const SelectionFormatMap& format_map = LookupStorageForAtom(selection_name);
@@ -348,8 +355,8 @@ SelectionData ClipboardX11::X11Details::RequestAndWaitForTypes(
   } else {
     TargetList targets = WaitAndGetTargetsList(buffer);
 
-    ::Atom selection_name = LookupSelectionForClipboardBuffer(buffer);
-    std::vector<::Atom> intersection;
+    x11::Atom selection_name = LookupSelectionForClipboardBuffer(buffer);
+    std::vector<x11::Atom> intersection;
     GetAtomIntersection(types, targets.target_list(), &intersection);
     return selection_requestor_.RequestAndWaitForTypes(selection_name,
                                                        intersection);
@@ -360,27 +367,25 @@ SelectionData ClipboardX11::X11Details::RequestAndWaitForTypes(
 
 TargetList ClipboardX11::X11Details::WaitAndGetTargetsList(
     ClipboardBuffer buffer) {
-  ::Atom selection_name = LookupSelectionForClipboardBuffer(buffer);
-  std::vector<::Atom> out;
-  if (XGetSelectionOwner(x_display_, selection_name) == x_window_) {
+  x11::Atom selection_name = LookupSelectionForClipboardBuffer(buffer);
+  std::vector<x11::Atom> out;
+  if (GetSelectionOwner(selection_name) == x_window_) {
     // We can local fastpath and return the list of local targets.
     const SelectionFormatMap& format_map = LookupStorageForAtom(selection_name);
 
     for (const auto& format : format_map)
       out.push_back(format.first);
   } else {
-    scoped_refptr<base::RefCountedMemory> data;
-    size_t out_data_items = 0;
-    ::Atom out_type = x11::None;
+    std::vector<uint8_t> data;
+    x11::Atom out_type = x11::Atom::None;
 
     if (selection_requestor_.PerformBlockingConvertSelection(
-            selection_name, gfx::GetAtom(kTargets), &data, &out_data_items,
-            &out_type)) {
+            selection_name, gfx::GetAtom(kTargets), &data, &out_type)) {
       // Some apps return an |out_type| of "TARGETS". (crbug.com/377893)
-      if (out_type == XA_ATOM || out_type == gfx::GetAtom(kTargets)) {
-        const ::Atom* atom_array =
-            reinterpret_cast<const ::Atom*>(data->front());
-        for (size_t i = 0; i < out_data_items; ++i)
+      if (out_type == x11::Atom::ATOM || out_type == gfx::GetAtom(kTargets)) {
+        const x11::Atom* atom_array =
+            reinterpret_cast<const x11::Atom*>(data.front());
+        for (size_t i = 0; i < data.size() / sizeof(x11::Atom); ++i)
           out.push_back(atom_array[i]);
       }
     } else {
@@ -390,11 +395,11 @@ TargetList ClipboardX11::X11Details::WaitAndGetTargetsList(
       // text. This is pretty unfortunate since it means we have to actually
       // copy the data to see if it is available, but at least this path
       // shouldn't be hit for conforming programs.
-      std::vector<::Atom> types = GetTextAtoms();
+      std::vector<x11::Atom> types = GetTextAtoms();
       for (const auto& text_atom : types) {
-        ::Atom type = x11::None;
+        x11::Atom type = x11::Atom::None;
         if (selection_requestor_.PerformBlockingConvertSelection(
-                selection_name, text_atom, nullptr, nullptr, &type) &&
+                selection_name, text_atom, nullptr, &type) &&
             type == text_atom) {
           out.push_back(text_atom);
         }
@@ -405,11 +410,11 @@ TargetList ClipboardX11::X11Details::WaitAndGetTargetsList(
   return TargetList(out);
 }
 
-std::vector<::Atom> ClipboardX11::X11Details::GetTextAtoms() const {
+std::vector<x11::Atom> ClipboardX11::X11Details::GetTextAtoms() const {
   return GetTextAtomsFrom();
 }
 
-std::vector<::Atom> ClipboardX11::X11Details::GetAtomsForFormat(
+std::vector<x11::Atom> ClipboardX11::X11Details::GetAtomsForFormat(
     const ClipboardFormatType& format) {
   return {gfx::GetAtom(format.GetName().c_str())};
 }
@@ -422,18 +427,18 @@ void ClipboardX11::X11Details::Clear(ClipboardBuffer buffer) {
 }
 
 void ClipboardX11::X11Details::StoreCopyPasteDataAndWait() {
-  ::Atom selection = GetCopyPasteSelection();
-  if (XGetSelectionOwner(x_display_, selection) != x_window_)
+  x11::Atom selection = GetCopyPasteSelection();
+  if (GetSelectionOwner(selection) != x_window_)
     return;
 
-  ::Atom clipboard_manager_atom = gfx::GetAtom(kClipboardManager);
-  if (XGetSelectionOwner(x_display_, clipboard_manager_atom) == x11::None)
+  x11::Atom clipboard_manager_atom = gfx::GetAtom(kClipboardManager);
+  if (GetSelectionOwner(clipboard_manager_atom) == x11::None)
     return;
 
   const SelectionFormatMap& format_map = LookupStorageForAtom(selection);
   if (format_map.size() == 0)
     return;
-  std::vector<Atom> targets = format_map.GetTypes();
+  std::vector<x11::Atom> targets = format_map.GetTypes();
 
   base::TimeTicks start = base::TimeTicks::Now();
   selection_requestor_.PerformBlockingConvertSelectionWithParameter(
@@ -465,7 +470,8 @@ bool ClipboardX11::X11Details::DispatchXEvent(XEvent* xev) {
       } else {
         // We should not get requests for the CLIPBOARD_MANAGER selection
         // because we never take ownership of it.
-        DCHECK_EQ(GetCopyPasteSelection(), xev->xselectionrequest.selection);
+        DCHECK_EQ(GetCopyPasteSelection(),
+                  static_cast<x11::Atom>(xev->xselectionrequest.selection));
         clipboard_owner_.OnSelectionRequest(*xev);
       }
       break;
@@ -480,7 +486,8 @@ bool ClipboardX11::X11Details::DispatchXEvent(XEvent* xev) {
       } else {
         // We should not get requests for the CLIPBOARD_MANAGER selection
         // because we never take ownership of it.
-        DCHECK_EQ(GetCopyPasteSelection(), xev->xselection.selection);
+        DCHECK_EQ(GetCopyPasteSelection(),
+                  static_cast<x11::Atom>(xev->xselection.selection));
         clipboard_owner_.OnSelectionClear(*xev);
       }
       break;
@@ -586,17 +593,16 @@ ClipboardX11::ReadAvailablePlatformSpecificFormatNames(
   if (target_list.empty())
     return {};
 
-  std::vector<char*> types_buffer(target_list.size());
-  // Call XGetAtomNames to minimize trips to the X11 server.
-  int status = XGetAtomNames(gfx::GetXDisplay(), target_list.data(),
-                             target_list.size(), types_buffer.data());
-  DCHECK(status) << "XGetAtomNames failed! An invalid Atom was passed in.";
-
+  std::vector<x11::Future<x11::XProto::GetAtomNameReply>> futures;
+  for (x11::Atom target : target_list)
+    futures.push_back(x11::Connection::Get()->GetAtomName({target}));
   std::vector<base::string16> types;
   types.reserve(target_list.size());
-  for (char* type : types_buffer) {
-    types.push_back(base::UTF8ToUTF16(type));
-    XFree(type);
+  for (auto& future : futures) {
+    if (auto response = future.Sync())
+      types.push_back(base::UTF8ToUTF16(response->name));
+    else
+      types.push_back({});
   }
 
   return types;

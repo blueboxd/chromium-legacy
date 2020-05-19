@@ -141,7 +141,7 @@ class TestDragDropClient : public SimpleTestDragDropClient {
   ::Window source_xwindow() { return source_xid_; }
 
   // Returns the Atom with |name|.
-  Atom GetAtom(const char* name);
+  x11::Atom GetAtom(const char* name);
 
   // Returns true if the event's message has |type|.
   bool MessageHasType(const XClientMessageEvent& event, const char* type);
@@ -155,13 +155,13 @@ class TestDragDropClient : public SimpleTestDragDropClient {
   // DesktopDragDropClientAuraX11.
   void OnStatus(XID target_window,
                 bool will_accept_drop,
-                ::Atom accepted_action);
+                x11::Atom accepted_action);
 
   // Builds an XdndFinished message and sends it to
   // DesktopDragDropClientAuraX11.
   void OnFinished(XID target_window,
                   bool accepted_drop,
-                  ::Atom performed_action);
+                  x11::Atom performed_action);
 
   // Sets |xid| as the topmost window at the current mouse position and
   // generates a synthetic mouse move.
@@ -280,13 +280,13 @@ TestDragDropClient::TestDragDropClient(
 
 TestDragDropClient::~TestDragDropClient() = default;
 
-Atom TestDragDropClient::GetAtom(const char* name) {
+x11::Atom TestDragDropClient::GetAtom(const char* name) {
   return gfx::GetAtom(name);
 }
 
 bool TestDragDropClient::MessageHasType(const XClientMessageEvent& event,
                                         const char* type) {
-  return event.message_type == GetAtom(type);
+  return static_cast<x11::Atom>(event.message_type) == GetAtom(type);
 }
 
 void TestDragDropClient::SetEventCollectorFor(
@@ -300,29 +300,29 @@ void TestDragDropClient::SetEventCollectorFor(
 
 void TestDragDropClient::OnStatus(XID target_window,
                                   bool will_accept_drop,
-                                  ::Atom accepted_action) {
+                                  x11::Atom accepted_action) {
   XClientMessageEvent event;
-  event.message_type = GetAtom("XdndStatus");
+  event.message_type = static_cast<uint32_t>(GetAtom("XdndStatus"));
   event.format = 32;
   event.window = source_xid_;
   event.data.l[0] = target_window;
   event.data.l[1] = will_accept_drop ? 1 : 0;
   event.data.l[2] = 0;
   event.data.l[3] = 0;
-  event.data.l[4] = accepted_action;
+  event.data.l[4] = static_cast<uint32_t>(accepted_action);
   HandleXdndEvent(event);
 }
 
 void TestDragDropClient::OnFinished(XID target_window,
                                     bool accepted_drop,
-                                    ::Atom performed_action) {
+                                    x11::Atom performed_action) {
   XClientMessageEvent event;
-  event.message_type = GetAtom("XdndFinished");
+  event.message_type = static_cast<uint32_t>(GetAtom("XdndFinished"));
   event.format = 32;
   event.window = source_xid_;
   event.data.l[0] = target_window;
   event.data.l[1] = accepted_drop ? 1 : 0;
-  event.data.l[2] = performed_action;
+  event.data.l[2] = static_cast<uint32_t>(performed_action);
   event.data.l[3] = 0;
   event.data.l[4] = 0;
   HandleXdndEvent(event);
@@ -418,7 +418,7 @@ void BasicStep2(TestDragDropClient* client, XID toplevel) {
   EXPECT_TRUE(client->MessageHasType(events[0], "XdndEnter"));
   EXPECT_EQ(client->source_xwindow(), static_cast<XID>(events[0].data.l[0]));
   EXPECT_EQ(1, events[0].data.l[1] & 1);
-  std::vector<Atom> targets;
+  std::vector<x11::Atom> targets;
   ui::GetAtomArrayProperty(client->source_xwindow(), "XdndTypeList", &targets);
   EXPECT_FALSE(targets.empty());
 
@@ -428,7 +428,7 @@ void BasicStep2(TestDragDropClient* client, XID toplevel) {
       TestDragDropClient::kMouseMoveX << 16 | TestDragDropClient::kMouseMoveY;
   EXPECT_EQ(kCoords, events[1].data.l[2]);
   EXPECT_EQ(client->GetAtom("XdndActionCopy"),
-            static_cast<Atom>(events[1].data.l[4]));
+            static_cast<x11::Atom>(events[1].data.l[4]));
 
   client->OnStatus(toplevel, true, client->GetAtom("XdndActionCopy"));
 
@@ -698,7 +698,7 @@ void RejectAfterMouseReleaseStep2(TestDragDropClient* client) {
 
   client->OnMouseReleased();
   // Reject the drop.
-  client->OnStatus(toplevel, false, x11::None);
+  client->OnStatus(toplevel, false, x11::Atom::None);
 
   events = collector.PopAllEvents();
   ASSERT_EQ(1u, events.size());
@@ -727,7 +727,7 @@ void RejectAfterMouseReleaseStep3(TestDragDropClient* client) {
   EXPECT_TRUE(client->MessageHasType(events[0], "XdndDrop"));
 
   EXPECT_TRUE(client->IsMoveLoopRunning());
-  client->OnFinished(toplevel, false, x11::None);
+  client->OnFinished(toplevel, false, x11::Atom::None);
   EXPECT_FALSE(client->IsMoveLoopRunning());
 }
 

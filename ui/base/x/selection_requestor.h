@@ -16,6 +16,7 @@
 #include "base/timer/timer.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/events/platform_event.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
@@ -40,24 +41,22 @@ class UI_BASE_EXPORT SelectionRequestor {
   // nested run loop, and reading the resulting data back. The result is
   // stored in |out_data|.
   // |out_data_items| is the length of |out_data| in |out_type| items.
-  bool PerformBlockingConvertSelection(
-      XAtom selection,
-      XAtom target,
-      scoped_refptr<base::RefCountedMemory>* out_data,
-      size_t* out_data_items,
-      XAtom* out_type);
+  bool PerformBlockingConvertSelection(x11::Atom selection,
+                                       x11::Atom target,
+                                       std::vector<uint8_t>* out_data,
+                                       x11::Atom* out_type);
 
   // Requests |target| from |selection|, passing |parameter| as a parameter to
   // XConvertSelection().
   void PerformBlockingConvertSelectionWithParameter(
-      XAtom selection,
-      XAtom target,
-      const std::vector<XAtom>& parameter);
+      x11::Atom selection,
+      x11::Atom target,
+      const std::vector<x11::Atom>& parameter);
 
   // Returns the first of |types| offered by the current owner of |selection|.
   // Returns an empty SelectionData object if none of |types| are available.
-  SelectionData RequestAndWaitForTypes(XAtom selection,
-                                       const std::vector<XAtom>& types);
+  SelectionData RequestAndWaitForTypes(x11::Atom selection,
+                                       const std::vector<x11::Atom>& types);
 
   // It is our owner's responsibility to plumb X11 SelectionNotify events on
   // |xwindow_| to us.
@@ -74,22 +73,21 @@ class UI_BASE_EXPORT SelectionRequestor {
 
   // A request that has been issued.
   struct Request {
-    Request(XAtom selection, XAtom target, base::TimeTicks timeout);
+    Request(x11::Atom selection, x11::Atom target, base::TimeTicks timeout);
     ~Request();
 
     // The target and selection requested in the XConvertSelection() request.
     // Used for error detection.
-    XAtom selection;
-    XAtom target;
+    x11::Atom selection;
+    x11::Atom target;
 
     // Whether the result of the XConvertSelection() request is being sent
     // incrementally.
     bool data_sent_incrementally;
 
     // The result data for the XConvertSelection() request.
-    std::vector<scoped_refptr<base::RefCountedMemory> > out_data;
-    size_t out_data_items;
-    XAtom out_type;
+    std::vector<std::vector<uint8_t>> out_data;
+    x11::Atom out_type;
 
     // Whether the XConvertSelection() request was successful.
     bool success;
@@ -127,7 +125,7 @@ class UI_BASE_EXPORT SelectionRequestor {
 
   // The property on |x_window_| set by the selection owner with the value of
   // the selection.
-  XAtom x_property_;
+  x11::Atom x_property_;
 
   // Dispatcher which handles SelectionNotify and SelectionRequest for
   // |selection_name_|. PerformBlockingConvertSelection() calls the

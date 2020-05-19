@@ -68,8 +68,9 @@ void GtkEventLoopX11::ProcessGdkEventKey(const GdkEventKey& gdk_event_key) {
 
   XEvent x_event;
   x_event.xkey = {};
-  x_event.xkey.type =
-      gdk_event_key.type == GDK_KEY_PRESS ? KeyPress : KeyRelease;
+  x_event.xkey.type = gdk_event_key.type == GDK_KEY_PRESS
+                          ? x11::XProto::KeyPressEvent::opcode
+                          : x11::XProto::KeyReleaseEvent::opcode;
   x_event.xkey.send_event = gdk_event_key.send_event;
   x_event.xkey.display = gfx::GetXDisplay();
   x_event.xkey.window = GDK_WINDOW_XID(gdk_event_key.window);

@@ -29,7 +29,7 @@ class XEventWaiter : public ui::XEventObserver {
   void WillProcessXEvent(XEvent* xev) override;
 
   // Returns atom that indidates that the XEvent is marker event.
-  static XAtom MarkerEventAtom();
+  static x11::Atom MarkerEventAtom();
 
   base::OnceClosure success_callback_;
   std::unique_ptr<ui::ScopedXEventDispatcher> dispatcher_;

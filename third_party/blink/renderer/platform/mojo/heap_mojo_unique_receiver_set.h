@@ -18,8 +18,7 @@ namespace blink {
 // HeapMojoUniqueReceiverSet by default. HeapMojoUniqueReceiverSet must be
 // associated with context. HeapMojoUniqueReceiverSet's constructor takes
 // context as a mandatory parameter. HeapMojoUniqueReceiverSet resets the mojo
-// connection when 1) the owner object is garbage-collected or 2) the associated
-// ExecutionContext is detached.
+// connection when the associated ExecutionContext is detached.
 template <typename Interface,
           typename Deleter = std::default_delete<Interface>,
           HeapMojoWrapperMode Mode = HeapMojoWrapperMode::kWithContextObserver>
@@ -60,10 +59,9 @@ class HeapMojoUniqueReceiverSet {
   void Trace(Visitor* visitor) const { visitor->Trace(wrapper_); }
 
  private:
-  // Garbage collected wrapper class to add a prefinalizer.
+  // Garbage collected wrapper class to add ContextLifecycleObserver.
   class Wrapper final : public GarbageCollected<Wrapper>,
                         public ContextLifecycleObserver {
-    USING_PRE_FINALIZER(Wrapper, Dispose);
     USING_GARBAGE_COLLECTED_MIXIN(Wrapper);
 
    public:
@@ -74,8 +72,6 @@ class HeapMojoUniqueReceiverSet {
     void Trace(Visitor* visitor) const override {
       ContextLifecycleObserver::Trace(visitor);
     }
-
-    void Dispose() { receiver_set_.Clear(); }
 
     mojo::UniqueReceiverSet<Interface, void, Deleter>& receiver_set() {
       return receiver_set_;

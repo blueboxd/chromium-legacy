@@ -133,57 +133,57 @@ const struct MAP0 {
     return m1.ch0 < m2.ch0;
   }
 } map0[] = {
-      {0x0025, 0x35},  // XK_percent: VKEY_5
-      {0x0026, 0x31},  // XK_ampersand: VKEY_1
-      {0x003C, 0xDC},  // XK_less: VKEY_OEM_5
-      {0x007B, 0xDE},  // XK_braceleft: VKEY_OEM_7
-      {0x007C, 0xDC},  // XK_bar: VKEY_OEM_5
-      {0x007D, 0xBF},  // XK_braceright: VKEY_OEM_2
-      {0x007E, 0xDC},  // XK_asciitilde: VKEY_OEM_5
-      {0x00A1, 0xDD},  // XK_exclamdown: VKEY_OEM_6
-      {0x00AD, 0xC0},  // XK_hyphen: VKEY_OEM_3
-      {0x00B2, 0xDE},  // XK_twosuperior: VKEY_OEM_7
-      {0x00B5, 0xDC},  // XK_mu: VKEY_OEM_5
-      {0x00BB, 0x39},  // XK_guillemotright: VKEY_9
-      {0x00BD, 0xDC},  // XK_onehalf: VKEY_OEM_5
-      {0x00BF, 0xDD},  // XK_questiondown: VKEY_OEM_6
-      {0x00DF, 0xDB},  // XK_ssharp: VKEY_OEM_4
-      {0x00E5, 0xDD},  // XK_aring: VKEY_OEM_6
-      {0x00EA, 0x33},  // XK_ecircumflex: VKEY_3
-      {0x00EB, 0xBA},  // XK_ediaeresis: VKEY_OEM_1
-      {0x00EC, 0xDD},  // XK_igrave: VKEY_OEM_6
-      {0x00EE, 0xDD},  // XK_icircumflex: VKEY_OEM_6
-      {0x00F1, 0xC0},  // XK_ntilde: VKEY_OEM_3
-      {0x00F2, 0xC0},  // XK_ograve: VKEY_OEM_3
-      {0x00F5, 0xDB},  // XK_otilde: VKEY_OEM_4
-      {0x00F7, 0xDD},  // XK_division: VKEY_OEM_6
-      {0x00FD, 0x37},  // XK_yacute: VKEY_7
-      {0x00FE, 0xBD},  // XK_thorn: VKEY_OEM_MINUS
-      {0x01A1, 0xDD},  // XK_ohorn: VKEY_OEM_6
-      {0x01B0, 0xDB},  // XK_uhorn: VKEY_OEM_4
-      {0x01B5, 0x32},  // XK_lcaron: VKEY_2
-      {0x01B6, 0xDD},  // XK_zstroke: VKEY_OEM_6
-      {0x01BB, 0x35},  // XK_tcaron: VKEY_5
-      {0x01E6, 0xDE},  // XK_cacute: VKEY_OEM_7
-      {0x01EC, 0x32},  // XK_ecaron: VKEY_2
-      {0x01F2, 0xDC},  // XK_ncaron: VKEY_OEM_5
-      {0x01F5, 0xDB},  // XK_odoubleacute: VKEY_OEM_4
-      {0x01F8, 0x35},  // XK_rcaron: VKEY_5
-      {0x01F9, 0xBA},  // XK_uring: VKEY_OEM_1
-      {0x01FB, 0xDC},  // XK_udoubleacute: VKEY_OEM_5
-      {0x01FE, 0xDE},  // XK_tcedilla: VKEY_OEM_7
-      {0x0259, 0xC0},  // XK_schwa: VKEY_OEM_3
-      {0x02B1, 0xDD},  // XK_hstroke: VKEY_OEM_6
-      {0x02B9, 0xBA},  // XK_idotless: VKEY_OEM_1
-      {0x02BB, 0xDD},  // XK_gbreve: VKEY_OEM_6
-      {0x02E5, 0xC0},  // XK_cabovedot: VKEY_OEM_3
-      {0x02F5, 0xDB},  // XK_gabovedot: VKEY_OEM_4
-      {0x03B6, 0xBF},  // XK_lcedilla: VKEY_OEM_2
-      {0x03BA, 0x57},  // XK_emacron: VKEY_W
-      {0x03E0, 0xDF},  // XK_amacron: VKEY_OEM_8
-      {0x03EF, 0xDD},  // XK_imacron: VKEY_OEM_6
-      {0x03F1, 0xDB},  // XK_ncedilla: VKEY_OEM_4
-      {0x03F3, 0xDC},  // XK_kcedilla: VKEY_OEM_5
+    {0x0025, 0x35},  // XK_percent: VKEY_5
+    {0x0026, 0x31},  // XK_ampersand: VKEY_1
+    {0x003C, 0xDC},  // XK_less: VKEY_OEM_5
+    {0x007B, 0xDE},  // XK_braceleft: VKEY_OEM_7
+    {0x007C, 0xDC},  // XK_bar: VKEY_OEM_5
+    {0x007D, 0xBF},  // XK_braceright: VKEY_OEM_2
+    {0x007E, 0xDC},  // XK_asciitilde: VKEY_OEM_5
+    {0x00A1, 0xDD},  // XK_exclamdown: VKEY_OEM_6
+    {0x00AD, 0xC0},  // XK_hyphen: VKEY_OEM_3
+    {0x00B2, 0xDE},  // XK_twosuperior: VKEY_OEM_7
+    {0x00B5, 0xDC},  // XK_mu: VKEY_OEM_5
+    {0x00BB, 0x39},  // XK_guillemotright: VKEY_9
+    {0x00BD, 0xDC},  // XK_onehalf: VKEY_OEM_5
+    {0x00BF, 0xDD},  // XK_questiondown: VKEY_OEM_6
+    {0x00DF, 0xDB},  // XK_ssharp: VKEY_OEM_4
+    {0x00E5, 0xDD},  // XK_aring: VKEY_OEM_6
+    {0x00EA, 0x33},  // XK_ecircumflex: VKEY_3
+    {0x00EB, 0xBA},  // XK_ediaeresis: VKEY_OEM_1
+    {0x00EC, 0xDD},  // XK_igrave: VKEY_OEM_6
+    {0x00EE, 0xDD},  // XK_icircumflex: VKEY_OEM_6
+    {0x00F1, 0xC0},  // XK_ntilde: VKEY_OEM_3
+    {0x00F2, 0xC0},  // XK_ograve: VKEY_OEM_3
+    {0x00F5, 0xDB},  // XK_otilde: VKEY_OEM_4
+    {0x00F7, 0xDD},  // XK_division: VKEY_OEM_6
+    {0x00FD, 0x37},  // XK_yacute: VKEY_7
+    {0x00FE, 0xBD},  // XK_thorn: VKEY_OEM_MINUS
+    {0x01A1, 0xDD},  // XK_ohorn: VKEY_OEM_6
+    {0x01B0, 0xDB},  // XK_uhorn: VKEY_OEM_4
+    {0x01B5, 0x32},  // XK_lcaron: VKEY_2
+    {0x01B6, 0xDD},  // XK_zstroke: VKEY_OEM_6
+    {0x01BB, 0x35},  // XK_tcaron: VKEY_5
+    {0x01E6, 0xDE},  // XK_cacute: VKEY_OEM_7
+    {0x01EC, 0x32},  // XK_ecaron: VKEY_2
+    {0x01F2, 0xDC},  // XK_ncaron: VKEY_OEM_5
+    {0x01F5, 0xDB},  // XK_odoubleacute: VKEY_OEM_4
+    {0x01F8, 0x35},  // XK_rcaron: VKEY_5
+    {0x01F9, 0xBA},  // XK_uring: VKEY_OEM_1
+    {0x01FB, 0xDC},  // XK_udoubleacute: VKEY_OEM_5
+    {0x01FE, 0xDE},  // XK_tcedilla: VKEY_OEM_7
+    {0x0259, 0xC0},  // XK_schwa: VKEY_OEM_3
+    {0x02B1, 0xDD},  // XK_hstroke: VKEY_OEM_6
+    {0x02B9, 0xBA},  // XK_idotless: VKEY_OEM_1
+    {0x02BB, 0xDD},  // XK_gbreve: VKEY_OEM_6
+    {0x02E5, 0xC0},  // XK_cabovedot: VKEY_OEM_3
+    {0x02F5, 0xDB},  // XK_gabovedot: VKEY_OEM_4
+    {0x03B6, 0xBF},  // XK_lcedilla: VKEY_OEM_2
+    {0x03BA, 0x57},  // XK_emacron: VKEY_W
+    {0x03E0, 0xDF},  // XK_amacron: VKEY_OEM_8
+    {0x03EF, 0xDD},  // XK_imacron: VKEY_OEM_6
+    {0x03F1, 0xDB},  // XK_ncedilla: VKEY_OEM_4
+    {0x03F3, 0xDC},  // XK_kcedilla: VKEY_OEM_5
 };
 
 const struct MAP1 {
@@ -388,34 +388,32 @@ const struct MAP2 {
     return m1.ch0 < m2.ch0;
   }
 } map2[] = {
-      {0x0023, 0x33, 0x0027,
-       0xBF},  // XK_numbersign+BKSL+XK_quoteright: VKEY_OEM_2
-      {0x0027, 0x30, 0x0022,
-       0xDE},  // XK_quoteright+AC11+XK_quotedbl: VKEY_OEM_7
-      {0x0027, 0x31, 0x0022,
-       0xC0},  // XK_quoteright+TLDE+XK_quotedbl: VKEY_OEM_3
-      {0x0027, 0x31, 0x00B7,
-       0xDC},  // XK_quoteright+TLDE+XK_periodcentered: VKEY_OEM_5
-      {0x0027, 0x33, 0x0000, 0xDC},  // XK_quoteright+BKSL+NoSymbol: VKEY_OEM_5
-      {0x002D, 0x3D, 0x003D, 0xBD},  // XK_minus+AB10+XK_equal: VKEY_OEM_MINUS
-      {0x002F, 0x0C, 0x0033, 0x33},  // XK_slash+AE03+XK_3: VKEY_3
-      {0x002F, 0x0C, 0x003F, 0xBF},  // XK_slash+AE03+XK_question: VKEY_OEM_2
-      {0x002F, 0x13, 0x0030, 0x30},  // XK_slash+AE10+XK_0: VKEY_0
-      {0x002F, 0x13, 0x003F, 0xBF},  // XK_slash+AE10+XK_question: VKEY_OEM_2
-      {0x003D, 0x3D, 0x0025, 0xDF},  // XK_equal+AB10+XK_percent: VKEY_OEM_8
-      {0x003D, 0x3D, 0x002B, 0xBB},  // XK_equal+AB10+XK_plus: VKEY_OEM_PLUS
-      {0x005C, 0x33, 0x007C, 0xDC},  // XK_backslash+BKSL+XK_bar: VKEY_OEM_5
-      {0x0060, 0x31, 0x0000, 0xC0},  // XK_quoteleft+TLDE+NoSymbol: VKEY_OEM_3
-      {0x0060, 0x31, 0x00AC, 0xDF},  // XK_quoteleft+TLDE+XK_notsign: VKEY_OEM_8
-      {0x00A7, 0x31, 0x00B0, 0xBF},  // XK_section+TLDE+XK_degree: VKEY_OEM_2
-      {0x00A7, 0x31, 0x00BD, 0xDC},  // XK_section+TLDE+XK_onehalf: VKEY_OEM_5
-      {0x00E0, 0x30, 0x00B0, 0xDE},  // XK_agrave+AC11+XK_degree: VKEY_OEM_7
-      {0x00E0, 0x30, 0x00E4, 0xDC},  // XK_agrave+AC11+XK_adiaeresis: VKEY_OEM_5
-      {0x00E4, 0x30, 0x00E0, 0xDC},  // XK_adiaeresis+AC11+XK_agrave: VKEY_OEM_5
-      {0x00E9, 0x2F, 0x00C9, 0xBA},  // XK_eacute+AC10+XK_Eacute: VKEY_OEM_1
-      {0x00E9, 0x2F, 0x00F6, 0xDE},  // XK_eacute+AC10+XK_odiaeresis: VKEY_OEM_7
-      {0x00F6, 0x2F, 0x00E9, 0xDE},  // XK_odiaeresis+AC10+XK_eacute: VKEY_OEM_7
-      {0x00FC, 0x22, 0x00E8, 0xBA},  // XK_udiaeresis+AD11+XK_egrave: VKEY_OEM_1
+    {0x0023, 0x33, 0x0027,
+     0xBF},  // XK_numbersign+BKSL+XK_quoteright: VKEY_OEM_2
+    {0x0027, 0x30, 0x0022, 0xDE},  // XK_quoteright+AC11+XK_quotedbl: VKEY_OEM_7
+    {0x0027, 0x31, 0x0022, 0xC0},  // XK_quoteright+TLDE+XK_quotedbl: VKEY_OEM_3
+    {0x0027, 0x31, 0x00B7,
+     0xDC},  // XK_quoteright+TLDE+XK_periodcentered: VKEY_OEM_5
+    {0x0027, 0x33, 0x0000, 0xDC},  // XK_quoteright+BKSL+NoSymbol: VKEY_OEM_5
+    {0x002D, 0x3D, 0x003D, 0xBD},  // XK_minus+AB10+XK_equal: VKEY_OEM_MINUS
+    {0x002F, 0x0C, 0x0033, 0x33},  // XK_slash+AE03+XK_3: VKEY_3
+    {0x002F, 0x0C, 0x003F, 0xBF},  // XK_slash+AE03+XK_question: VKEY_OEM_2
+    {0x002F, 0x13, 0x0030, 0x30},  // XK_slash+AE10+XK_0: VKEY_0
+    {0x002F, 0x13, 0x003F, 0xBF},  // XK_slash+AE10+XK_question: VKEY_OEM_2
+    {0x003D, 0x3D, 0x0025, 0xDF},  // XK_equal+AB10+XK_percent: VKEY_OEM_8
+    {0x003D, 0x3D, 0x002B, 0xBB},  // XK_equal+AB10+XK_plus: VKEY_OEM_PLUS
+    {0x005C, 0x33, 0x007C, 0xDC},  // XK_backslash+BKSL+XK_bar: VKEY_OEM_5
+    {0x0060, 0x31, 0x0000, 0xC0},  // XK_quoteleft+TLDE+NoSymbol: VKEY_OEM_3
+    {0x0060, 0x31, 0x00AC, 0xDF},  // XK_quoteleft+TLDE+XK_notsign: VKEY_OEM_8
+    {0x00A7, 0x31, 0x00B0, 0xBF},  // XK_section+TLDE+XK_degree: VKEY_OEM_2
+    {0x00A7, 0x31, 0x00BD, 0xDC},  // XK_section+TLDE+XK_onehalf: VKEY_OEM_5
+    {0x00E0, 0x30, 0x00B0, 0xDE},  // XK_agrave+AC11+XK_degree: VKEY_OEM_7
+    {0x00E0, 0x30, 0x00E4, 0xDC},  // XK_agrave+AC11+XK_adiaeresis: VKEY_OEM_5
+    {0x00E4, 0x30, 0x00E0, 0xDC},  // XK_adiaeresis+AC11+XK_agrave: VKEY_OEM_5
+    {0x00E9, 0x2F, 0x00C9, 0xBA},  // XK_eacute+AC10+XK_Eacute: VKEY_OEM_1
+    {0x00E9, 0x2F, 0x00F6, 0xDE},  // XK_eacute+AC10+XK_odiaeresis: VKEY_OEM_7
+    {0x00F6, 0x2F, 0x00E9, 0xDE},  // XK_odiaeresis+AC10+XK_eacute: VKEY_OEM_7
+    {0x00FC, 0x22, 0x00E8, 0xBA},  // XK_udiaeresis+AD11+XK_egrave: VKEY_OEM_1
 };
 
 const struct MAP3 {
@@ -542,22 +540,12 @@ KeyboardCode FindVK(const T_MAP& key, const T_MAP* map, size_t size) {
 // generate them by applying the Control/AltGr modifier to some other key.
 // e.g. in de(neo), AltGr+V generates XK_Enter.
 bool IsTtyFunctionOrSpaceKey(KeySym keysym) {
-  KeySym keysyms[] = {
-    XK_BackSpace,
-    XK_Tab,
-    XK_Linefeed,
-    XK_Clear,
-    XK_Return,
-    XK_Pause,
-    XK_Scroll_Lock,
-    XK_Sys_Req,
-    XK_Escape,
-    XK_Delete,
-    XK_space
-  };
+  KeySym keysyms[] = {XK_BackSpace, XK_Tab,    XK_Linefeed,    XK_Clear,
+                      XK_Return,    XK_Pause,  XK_Scroll_Lock, XK_Sys_Req,
+                      XK_Escape,    XK_Delete, XK_space};
 
-  for (size_t i = 0; i < base::size(keysyms); ++i) {
-    if (keysyms[i] == keysym)
+  for (unsigned long i : keysyms) {
+    if (i == keysym)
       return true;
   }
   return false;
@@ -594,7 +582,7 @@ KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
   XKeyEvent* xkey = &xkeyevent.xkey;
   // XLookupKeysym does not take into consideration the state of the lock/shift
   // etc. keys. So it is necessary to use XLookupString instead.
-  XLookupString(xkey, NULL, 0, &keysym, NULL);
+  XLookupString(xkey, nullptr, 0, &keysym, nullptr);
   if (IsKeypadKey(keysym) || IsPrivateKeypadKey(keysym) ||
       IsCursorKey(keysym) || IsPFKey(keysym) || IsFunctionKey(keysym) ||
       IsModifierKey(keysym) || IsTtyFunctionOrSpaceKey(keysym)) {
@@ -606,7 +594,7 @@ KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
   // generates VKEY_D.
   if (xkey->state & 0xFF & ~Mod2Mask) {
     xkey->state &= (~0xFF | Mod2Mask);
-    XLookupString(xkey, NULL, 0, &keysym, NULL);
+    XLookupString(xkey, nullptr, 0, &keysym, nullptr);
   }
 
   // [a-z] cases.
@@ -632,7 +620,7 @@ KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
 
     KeySym keysym_shift = NoSymbol;
     xkey->state |= ShiftMask;
-    XLookupString(xkey, NULL, 0, &keysym_shift, NULL);
+    XLookupString(xkey, nullptr, 0, &keysym_shift, nullptr);
     MAP2 key2 = {keysym & 0xFFFF, xkey->keycode, keysym_shift & 0xFFFF, 0};
     keycode = FindVK(key2, map2, base::size(map2));
     if (keycode != VKEY_UNKNOWN)
@@ -641,7 +629,7 @@ KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
     KeySym keysym_altgr = NoSymbol;
     xkey->state &= ~ShiftMask;
     xkey->state |= Mod1Mask;
-    XLookupString(xkey, NULL, 0, &keysym_altgr, NULL);
+    XLookupString(xkey, nullptr, 0, &keysym_altgr, nullptr);
     MAP3 key3 = {keysym & 0xFFFF, xkey->keycode, keysym_shift & 0xFFFF,
                  keysym_altgr & 0xFFFF, 0};
     keycode = FindVK(key3, map3, base::size(map3));
@@ -651,8 +639,7 @@ KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
     // On Linux some keys has AltGr char but not on Windows.
     // So if cannot find VKEY with (ch0+sc+ch1+ch2) in map3, tries to fallback
     // to just find VKEY with (ch0+sc+ch1). This is the best we could do.
-    MAP3 key4 = {keysym & 0xFFFF, xkey->keycode, keysym_shift & 0xFFFF, 0,
-                 0};
+    MAP3 key4 = {keysym & 0xFFFF, xkey->keycode, keysym_shift & 0xFFFF, 0, 0};
     const MAP3* p =
         std::lower_bound(map3, map3 + base::size(map3), key4, MAP3());
     if (p != map3 + base::size(map3) && p->ch0 == key4.ch0 &&
@@ -949,7 +936,7 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
     case XF86XK_KbdBrightnessUp:
       return VKEY_KBD_BRIGHTNESS_UP;
 
-    // TODO(sad): some keycodes are still missing.
+      // TODO(sad): some keycodes are still missing.
   }
   DVLOG(1) << "Unknown keysym: " << base::StringPrintf("0x%x", keysym);
   return VKEY_UNKNOWN;
@@ -965,7 +952,7 @@ DomCode CodeFromXEvent(const XEvent* xev) {
 uint16_t GetCharacterFromXEvent(const XEvent* xev) {
   XEvent xkeyevent;
   xkeyevent.xkey = {};
-  const XKeyEvent* xkey = NULL;
+  const XKeyEvent* xkey = nullptr;
   if (xev->type == GenericEvent) {
     // Convert the XI2 key event into a core key event so that we can
     // continue to use XLookupString() until crbug.com/367732 is complete.
@@ -975,7 +962,7 @@ uint16_t GetCharacterFromXEvent(const XEvent* xev) {
     xkey = &xev->xkey;
   }
   KeySym keysym = XK_VoidSymbol;
-  XLookupString(const_cast<XKeyEvent*>(xkey), NULL, 0, &keysym, NULL);
+  XLookupString(const_cast<XKeyEvent*>(xkey), nullptr, 0, &keysym, nullptr);
   return GetUnicodeCharacterFromXKeySym(keysym);
 }
 
@@ -1002,7 +989,7 @@ DomKey GetDomKeyFromXEvent(const XEvent* xev) {
   // https://crbug.com/633838
   xkey.state &= ~ControlMask;
   KeySym keysym = XK_VoidSymbol;
-  XLookupString(&xkey, NULL, 0, &keysym, NULL);
+  XLookupString(&xkey, nullptr, 0, &keysym, nullptr);
   base::char16 ch = GetUnicodeCharacterFromXKeySym(keysym);
   return XKeySymToDomKey(keysym, ch);
 }
@@ -1440,7 +1427,7 @@ int XKeysymForWindowsKeyCode(KeyboardCode keycode, bool shift) {
     default:
       LOG(WARNING) << "Unknown keycode:" << keycode;
       return 0;
-    }
+  }
 }
 
 void InitXKeyEventFromXIDeviceEvent(const XEvent& src, XEvent* xkeyevent) {
@@ -1448,10 +1435,10 @@ void InitXKeyEventFromXIDeviceEvent(const XEvent& src, XEvent* xkeyevent) {
   XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(src.xcookie.data);
   switch (xievent->evtype) {
     case XI_KeyPress:
-      xkeyevent->type = KeyPress;
+      xkeyevent->type = x11::XProto::KeyPressEvent::opcode;
       break;
     case XI_KeyRelease:
-      xkeyevent->type = KeyRelease;
+      xkeyevent->type = x11::XProto::KeyReleaseEvent::opcode;
       break;
     default:
       NOTREACHED();

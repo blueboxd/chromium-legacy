@@ -152,12 +152,10 @@ std::vector<gfx::Rect> CalculateTabBounds(
   int next_x = 0;
   std::vector<gfx::Rect> bounds;
   for (const TabWidthConstraints& tab : tabs) {
-    const int tab_width =
-        tab.IsCollapsed() ? 0 : tab_sizer.CalculateTabWidth(tab);
+    const int tab_width = tab_sizer.CalculateTabWidth(tab);
     bounds.push_back(
         gfx::Rect(next_x, 0, tab_width, layout_constants.tab_height));
-    if (!tab.IsCollapsed())
-      next_x += tab_width - layout_constants.tab_overlap;
+    next_x += tab_width - layout_constants.tab_overlap;
   }
 
   const base::Optional<int> calculated_extra_space =

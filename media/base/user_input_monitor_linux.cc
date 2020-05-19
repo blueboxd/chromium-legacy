@@ -96,9 +96,9 @@ class UserInputMonitorLinux : public UserInputMonitorBase {
 UserInputMonitorLinuxCore::UserInputMonitorLinuxCore(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : io_task_runner_(io_task_runner),
-      x_control_display_(NULL),
-      x_record_display_(NULL),
-      x_record_range_(NULL),
+      x_control_display_(nullptr),
+      x_record_display_(nullptr),
+      x_record_range_(nullptr),
       x_record_context_(0) {}
 
 UserInputMonitorLinuxCore::~UserInputMonitorLinuxCore() {
@@ -138,8 +138,8 @@ void UserInputMonitorLinuxCore::StartMonitor() {
   }
 
   int xr_opcode, xr_event, xr_error;
-  if (!XQueryExtension(
-           x_control_display_, "RECORD", &xr_opcode, &xr_event, &xr_error)) {
+  if (!XQueryExtension(x_control_display_, "RECORD", &xr_opcode, &xr_event,
+                       &xr_error)) {
     LOG(ERROR) << "X Record extension not available.";
     StopMonitor();
     return;
@@ -154,8 +154,8 @@ void UserInputMonitorLinuxCore::StartMonitor() {
     return;
   }
 
-  x_record_range_->device_events.first = KeyPress;
-  x_record_range_->device_events.last = KeyRelease;
+  x_record_range_->device_events.first = x11::XProto::KeyPressEvent::opcode;
+  x_record_range_->device_events.last = x11::XProto::KeyReleaseEvent::opcode;
 
   if (x_record_context_) {
     XRecordDisableContext(x_control_display_, x_record_context_);
@@ -175,8 +175,7 @@ void UserInputMonitorLinuxCore::StartMonitor() {
     return;
   }
 
-  if (!XRecordEnableContextAsync(x_record_display_,
-                                 x_record_context_,
+  if (!XRecordEnableContextAsync(x_record_display_, x_record_context_,
                                  &UserInputMonitorLinuxCore::ProcessReply,
                                  reinterpret_cast<XPointer>(this))) {
     LOG(ERROR) << "XRecordEnableContextAsync failed.";
@@ -210,7 +209,7 @@ void UserInputMonitorLinuxCore::StopMonitor() {
 
   if (x_record_range_) {
     XFree(x_record_range_);
-    x_record_range_ = NULL;
+    x_record_range_ = nullptr;
   }
 
   // Context must be disabled via the control channel because we can't send
@@ -225,11 +224,11 @@ void UserInputMonitorLinuxCore::StopMonitor() {
   }
   if (x_record_display_) {
     XCloseDisplay(x_record_display_);
-    x_record_display_ = NULL;
+    x_record_display_ = nullptr;
   }
   if (x_control_display_) {
     XCloseDisplay(x_control_display_);
-    x_control_display_ = NULL;
+    x_control_display_ = nullptr;
   }
 
   key_press_count_mapping_.reset();
@@ -249,10 +248,12 @@ void UserInputMonitorLinuxCore::OnXEvent() {
 
 void UserInputMonitorLinuxCore::ProcessXEvent(xEvent* event) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  DCHECK(event->u.u.type == KeyRelease || event->u.u.type == KeyPress);
+  DCHECK(event->u.u.type == x11::XProto::KeyReleaseEvent::opcode ||
+         event->u.u.type == x11::XProto::KeyPressEvent::opcode);
 
-  ui::EventType type =
-      (event->u.u.type == KeyPress) ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED;
+  ui::EventType type = (event->u.u.type == x11::XProto::KeyPressEvent::opcode)
+                           ? ui::ET_KEY_PRESSED
+                           : ui::ET_KEY_RELEASED;
 
   KeySym key_sym =
       XkbKeycodeToKeysym(x_control_display_, event->u.u.detail, 0, 0);

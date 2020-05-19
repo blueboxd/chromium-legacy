@@ -10,7 +10,7 @@
 namespace {
 
 unsigned char g_x11_error_code = 0;
-static gfx::X11ErrorTracker* g_handler = NULL;
+static gfx::X11ErrorTracker* g_handler = nullptr;
 
 int X11ErrorHandler(Display* display, XErrorEvent* error) {
   g_x11_error_code = error->error_code;
@@ -24,7 +24,7 @@ namespace gfx {
 X11ErrorTracker::X11ErrorTracker() {
   // This is a non-exhaustive check for incorrect usage. It disallows nested
   // X11ErrorTracker instances on the same thread.
-  DCHECK(g_handler == NULL);
+  DCHECK(g_handler == nullptr);
   g_handler = this;
   XSync(GetXDisplay(), False);
   old_handler_ = XSetErrorHandler(X11ErrorHandler);
@@ -32,7 +32,7 @@ X11ErrorTracker::X11ErrorTracker() {
 }
 
 X11ErrorTracker::~X11ErrorTracker() {
-  g_handler = NULL;
+  g_handler = nullptr;
   XSetErrorHandler(old_handler_);
 }
 

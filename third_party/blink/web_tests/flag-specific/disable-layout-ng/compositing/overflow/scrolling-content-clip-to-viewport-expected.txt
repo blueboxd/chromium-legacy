@@ -11,6 +11,10 @@
       "bounds": [320, 340]
     },
     {
+      "name": "Scrolling Contents Layer",
+      "bounds": [305, 1224]
+    },
+    {
       "name": "ContentsLayer for Horizontal Scrollbar Layer",
       "position": [0, 325],
       "bounds": [305, 15]
@@ -24,13 +28,6 @@
       "name": "Scroll Corner Layer",
       "position": [305, 325],
       "bounds": [15, 15]
-    },
-    {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='column'",
-      "position": [10, 10],
-      "bounds": [284, 1204],
-      "contentsOpaque": true,
-      "backgroundColor": "#C0C0C0"
     }
   ]
 }

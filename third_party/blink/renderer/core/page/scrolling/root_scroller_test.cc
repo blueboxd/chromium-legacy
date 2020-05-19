@@ -681,7 +681,6 @@ TEST_F(RootScrollerTest, AlwaysCreateCompositedScrollingLayers) {
 
   ASSERT_TRUE(layer->HasCompositedLayerMapping());
   EXPECT_TRUE(layer->GetCompositedLayerMapping()->ScrollingContentsLayer());
-  EXPECT_TRUE(layer->GetCompositedLayerMapping()->ScrollingLayer());
 
   SetAndSelectRootScroller(*MainFrame()->GetDocument(), nullptr);
 

@@ -244,6 +244,8 @@ source_set("test_support") {
     "test/mock_zwp_linux_dmabuf.h",
     "test/mock_zwp_text_input.cc",
     "test/mock_zwp_text_input.h",
+    "test/scoped_wl_array.cc",
+    "test/scoped_wl_array.h",
     "test/server_object.cc",
     "test/server_object.h",
     "test/test_compositor.cc",

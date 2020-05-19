@@ -245,8 +245,8 @@ void It2MeHost::OnAccessDenied(const std::string& jid) {
 void It2MeHost::OnClientConnected(const std::string& jid) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
-  // ChromotingHost doesn't allow multiple concurrent connection and the
-  // host is destroyed in OnClientDisconnected() after the first connection.
+  // ChromotingHost doesn't allow concurrent connections and the host is
+  // destroyed in OnClientDisconnected() after the first connection.
   CHECK_NE(state_, kConnected);
 
   std::string client_username;
@@ -358,7 +358,7 @@ void It2MeHost::UpdateClientDomainListPolicy(
   VLOG(2) << "UpdateClientDomainPolicy: "
           << base::JoinString(client_domain_list, ", ");
 
-  // When setting a client  domain policy, disconnect any existing session.
+  // When setting a client domain policy, disconnect any existing session.
   if (!client_domain_list.empty() && IsRunning()) {
     DisconnectOnNetworkThread();
   }
@@ -478,7 +478,7 @@ void It2MeHost::OnReceivedSupportID(const std::string& support_id,
 void It2MeHost::DisconnectOnNetworkThread() {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
-  // Disconnect() may be called even when after the host been already stopped.
+  // Disconnect() may be called even after the host has already been stopped.
   // Ignore repeated calls.
   if (state_ == kDisconnected) {
     return;

@@ -221,11 +221,11 @@ std::unique_ptr<Event> TranslateFromXEvent(const XEvent& xev) {
     case EnterNotify:
     case MotionNotify:
       return CreateMouseEvent(event_type, xev);
-    case KeyPress:
-    case KeyRelease:
+    case x11::XProto::KeyPressEvent::opcode:
+    case x11::XProto::KeyReleaseEvent::opcode:
       return CreateKeyEvent(event_type, xev);
-    case ButtonPress:
-    case ButtonRelease: {
+    case x11::XProto::ButtonPressEvent::opcode:
+    case x11::XProto::ButtonReleaseEvent::opcode: {
       switch (event_type) {
         case ET_MOUSEWHEEL:
           return CreateMouseWheelEvent(xev);

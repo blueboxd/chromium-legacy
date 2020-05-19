@@ -32,7 +32,7 @@ bool ScreensaverWindowFinder::ScreensaverWindowExists() {
   // info.state == ScreenSaverOff or info.state == ScreenSaverDisabled does not
   // necessarily mean that a screensaver is not active, so add a special check
   // for xscreensaver.
-  XAtom lock_atom = gfx::GetAtom("LOCK");
+  x11::Atom lock_atom = gfx::GetAtom("LOCK");
   std::vector<int> atom_properties;
   if (GetIntArrayProperty(root, "_SCREENSAVER_STATUS", &atom_properties) &&
       atom_properties.size() > 0) {

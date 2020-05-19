@@ -168,8 +168,8 @@ void LocalHotkeyInputMonitorX11::Core::StartOnInputThread() {
     LOG(ERROR) << "XRecordAllocRange failed.";
     return;
   }
-  x_record_range_->device_events.first = KeyPress;
-  x_record_range_->device_events.last = KeyRelease;
+  x_record_range_->device_events.first = x11::XProto::KeyPressEvent::opcode;
+  x_record_range_->device_events.last = x11::XProto::KeyReleaseEvent::opcode;
   XRecordClientSpec client_spec = XRecordAllClients;
 
   x_record_context_ = XRecordCreateContext(x_record_display_, 0, &client_spec,
@@ -248,7 +248,7 @@ void LocalHotkeyInputMonitorX11::Core::ProcessXEvent(xEvent* event) {
   }
 
   int key_code = event->u.u.detail;
-  bool down = event->u.u.type == KeyPress;
+  bool down = event->u.u.type == x11::XProto::KeyPressEvent::opcode;
   KeySym key_sym = XkbKeycodeToKeysym(display_, key_code, 0, 0);
   if (key_sym == XK_Control_L || key_sym == XK_Control_R) {
     ctrl_pressed_ = down;

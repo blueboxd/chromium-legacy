@@ -41,8 +41,8 @@ void LinuxOutputWindow::CreateWindow(int x_pos,
                                      int width,
                                      int height,
                                      const std::string& name) {
-  display_ = XOpenDisplay(NULL);
-  if (display_ == NULL) {
+  display_ = XOpenDisplay(nullptr);
+  if (display_ == nullptr) {
     // There's no point to continue if this happens: nothing will work anyway.
     VLOG(1) << "Failed to connect to X server: X environment likely broken";
     NOTREACHED();
@@ -53,7 +53,9 @@ void LinuxOutputWindow::CreateWindow(int x_pos,
   // Try to establish a 24-bit TrueColor display.
   // (our environment must allow this).
   XVisualInfo visual_info;
-  if (XMatchVisualInfo(display_, screen, 24, TrueColor, &visual_info) == 0) {
+  if (XMatchVisualInfo(display_, screen, 24,
+                       static_cast<int>(x11::XProto::VisualClass::TrueColor),
+                       &visual_info) == 0) {
     VLOG(1) << "Failed to establish 24-bit TrueColor in X environment.";
     NOTREACHED();
   }
@@ -69,18 +71,11 @@ void LinuxOutputWindow::CreateWindow(int x_pos,
   unsigned long attribute_mask =
       CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
 
-  window_ = XCreateWindow(display_,
-                          DefaultRootWindow(display_),
-                          x_pos,
-                          y_pos,
-                          width,
-                          height,
-                          0,
-                          visual_info.depth,
-                          InputOutput,
-                          visual_info.visual,
-                          attribute_mask,
-                          &window_attributes);
+  window_ =
+      XCreateWindow(display_, DefaultRootWindow(display_), x_pos, y_pos, width,
+                    height, 0, visual_info.depth,
+                    static_cast<int>(x11::XProto::WindowClass::InputOutput),
+                    visual_info.visual, attribute_mask, &window_attributes);
 
   // Set window name.
   XStoreName(display_, window_, name.c_str());
@@ -98,14 +93,16 @@ void LinuxOutputWindow::CreateWindow(int x_pos,
     XNextEvent(display_, &event);
   } while (event.type != MapNotify || event.xmap.event != window_);
 
-  gc_ = XCreateGC(display_, window_, 0, 0);
+  gc_ = XCreateGC(display_, window_, 0, nullptr);
 
   // create shared memory image
-  image_ = XShmCreateImage(
-      display_, CopyFromParent, 24, ZPixmap, NULL, &shminfo_, width, height);
+  image_ = XShmCreateImage(display_, nullptr, 24,
+                           static_cast<int>(x11::XProto::ImageFormat::ZPixmap),
+                           nullptr, &shminfo_, width, height);
   shminfo_.shmid = shmget(
       IPC_PRIVATE, (image_->bytes_per_line * image_->height), IPC_CREAT | 0777);
-  shminfo_.shmaddr = image_->data = (char*)shmat(shminfo_.shmid, 0, 0);
+  shminfo_.shmaddr = image_->data =
+      static_cast<char*>(shmat(shminfo_.shmid, nullptr, 0));
   if (image_->data == reinterpret_cast<char*>(-1)) {
     VLOG(1) << "XShmCreateImage failed";
     NOTREACHED();
@@ -142,17 +139,8 @@ void LinuxOutputWindow::RenderFrame(const media::VideoFrame& video_frame) {
   }
 
   // Place image in window.
-  XShmPutImage(display_,
-               window_,
-               gc_,
-               image_,
-               0,
-               0,
-               0,
-               0,
-               image_->width,
-               image_->height,
-               true);
+  XShmPutImage(display_, window_, gc_, image_, 0, 0, 0, 0, image_->width,
+               image_->height, true);
 
   // Very important for the image to update properly!
   XSync(display_, false);

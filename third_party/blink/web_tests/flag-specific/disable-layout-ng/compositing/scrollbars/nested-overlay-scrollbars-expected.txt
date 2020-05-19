@@ -29,20 +29,6 @@
       "transform": 3
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='grey'",
-      "position": [2, 2],
-      "bounds": [100, 800],
-      "contentsOpaque": true,
-      "backgroundColor": "#808080",
-      "transform": 3
-    },
-    {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='spacer')",
-      "position": [2, 2002],
-      "bounds": [5000, 1000],
-      "transform": 3
-    },
-    {
       "name": "ContentsLayer for Horizontal Scrollbar Layer",
       "position": [2, 195],
       "bounds": [193, 7],

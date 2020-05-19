@@ -121,16 +121,8 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
      "Secondary layer, the scroll corner layer"},
     {CompositingReason::kLayerForScrollingContents, "layerForScrollingContents",
      "Secondary layer, to house contents that can be scrolled"},
-    {CompositingReason::kLayerForScrollingContainer,
-     "layerForScrollingContainer",
-     "Secondary layer, used to position the scrolling contents while "
-     "scrolling"},
     {CompositingReason::kLayerForSquashingContents, "layerForSquashingContents",
      "Secondary layer, home for a group of squashable content"},
-    {CompositingReason::kLayerForSquashingContainer,
-     "layerForSquashingContainer",
-     "Secondary layer, no-op layer to place the squashing layer correctly in "
-     "the composited layer tree"},
     {CompositingReason::kLayerForForeground, "layerForForeground",
      "Secondary layer, to contain any normal flow and positive z-index "
      "contents on top of a negative z-index layer"},

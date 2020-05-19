@@ -66,10 +66,10 @@ class XModifierStateWatcher {
     // floating devices such as touch screen. Issue 106426 is one example
     // of why we need the modifier states for floating device.
     switch (xev.type) {
-      case KeyPress:
+      case x11::XProto::KeyPressEvent::opcode:
         state_ = xev.xkey.state | mask;
         break;
-      case KeyRelease:
+      case x11::XProto::KeyReleaseEvent::opcode:
         state_ = xev.xkey.state & ~mask;
         break;
       case GenericEvent: {
@@ -165,7 +165,8 @@ int GetEventFlagsFromXState(unsigned int state) {
 }
 
 int GetEventFlagsFromXKeyEvent(const XEvent& xev) {
-  DCHECK(xev.type == KeyPress || xev.type == KeyRelease);
+  DCHECK(xev.type == x11::XProto::KeyPressEvent::opcode ||
+         xev.type == x11::XProto::KeyReleaseEvent::opcode);
 
 #if defined(OS_CHROMEOS)
   const int ime_fabricated_flag = 0;
@@ -347,11 +348,11 @@ base::TimeTicks TimeTicksFromXEventTime(Time timestamp) {
 
 base::TimeTicks TimeTicksFromXEvent(const XEvent& xev) {
   switch (xev.type) {
-    case KeyPress:
-    case KeyRelease:
+    case x11::XProto::KeyPressEvent::opcode:
+    case x11::XProto::KeyReleaseEvent::opcode:
       return TimeTicksFromXEventTime(xev.xkey.time);
-    case ButtonPress:
-    case ButtonRelease:
+    case x11::XProto::ButtonPressEvent::opcode:
+    case x11::XProto::ButtonReleaseEvent::opcode:
       return TimeTicksFromXEventTime(xev.xbutton.time);
     case MotionNotify:
       return TimeTicksFromXEventTime(xev.xmotion.time);
@@ -391,16 +392,16 @@ EventType EventTypeFromXEvent(const XEvent& xev) {
   }
 
   switch (xev.type) {
-    case KeyPress:
+    case x11::XProto::KeyPressEvent::opcode:
       return ET_KEY_PRESSED;
-    case KeyRelease:
+    case x11::XProto::KeyReleaseEvent::opcode:
       return ET_KEY_RELEASED;
-    case ButtonPress:
+    case x11::XProto::ButtonPressEvent::opcode:
       if (static_cast<int>(xev.xbutton.button) >= kMinWheelButton &&
           static_cast<int>(xev.xbutton.button) <= kMaxWheelButton)
         return ET_MOUSEWHEEL;
       return ET_MOUSE_PRESSED;
-    case ButtonRelease:
+    case x11::XProto::ButtonReleaseEvent::opcode:
       // Drop wheel events; we should've already scrolled on the press.
       if (static_cast<int>(xev.xbutton.button) >= kMinWheelButton &&
           static_cast<int>(xev.xbutton.button) <= kMaxWheelButton)
@@ -453,7 +454,8 @@ EventType EventTypeFromXEvent(const XEvent& xev) {
         case XI_Motion: {
           bool is_cancel;
           DeviceDataManagerX11* devices = DeviceDataManagerX11::GetInstance();
-          if (GetFlingDataFromXEvent(xev, NULL, NULL, NULL, NULL, &is_cancel))
+          if (GetFlingDataFromXEvent(xev, nullptr, nullptr, nullptr, nullptr,
+                                     &is_cancel))
             return is_cancel ? ET_SCROLL_FLING_CANCEL : ET_SCROLL_FLING_START;
           if (devices->IsScrollEvent(xev)) {
             return devices->IsTouchpadXInputEvent(xev) ? ET_SCROLL
@@ -492,13 +494,13 @@ EventType EventTypeFromXEvent(const XEvent& xev) {
 
 int EventFlagsFromXEvent(const XEvent& xev) {
   switch (xev.type) {
-    case KeyPress:
-    case KeyRelease: {
+    case x11::XProto::KeyPressEvent::opcode:
+    case x11::XProto::KeyReleaseEvent::opcode: {
       XModifierStateWatcher::GetInstance()->UpdateStateFromXEvent(xev);
       return GetEventFlagsFromXKeyEvent(xev);
     }
-    case ButtonPress:
-    case ButtonRelease: {
+    case x11::XProto::ButtonPressEvent::opcode:
+    case x11::XProto::ButtonReleaseEvent::opcode: {
       int flags = GetEventFlagsFromXState(xev.xbutton.state);
       const EventType type = EventTypeFromXEvent(xev);
       if (type == ET_MOUSE_PRESSED || type == ET_MOUSE_RELEASED)
@@ -566,8 +568,8 @@ gfx::Point EventLocationFromXEvent(const XEvent& xev) {
     case EnterNotify:
     case LeaveNotify:
       return gfx::Point(xev.xcrossing.x, xev.xcrossing.y);
-    case ButtonPress:
-    case ButtonRelease:
+    case x11::XProto::ButtonPressEvent::opcode:
+    case x11::XProto::ButtonReleaseEvent::opcode:
       return gfx::Point(xev.xbutton.x, xev.xbutton.y);
     case MotionNotify:
       return gfx::Point(xev.xmotion.x, xev.xmotion.y);
@@ -599,8 +601,8 @@ gfx::Point EventSystemLocationFromXEvent(const XEvent& xev) {
     case LeaveNotify: {
       return gfx::Point(xev.xcrossing.x_root, xev.xcrossing.y_root);
     }
-    case ButtonPress:
-    case ButtonRelease: {
+    case x11::XProto::ButtonPressEvent::opcode:
+    case x11::XProto::ButtonReleaseEvent::opcode: {
       return gfx::Point(xev.xbutton.x_root, xev.xbutton.y_root);
     }
     case MotionNotify: {
@@ -627,8 +629,8 @@ int EventButtonFromXEvent(const XEvent& xev) {
 
 int GetChangedMouseButtonFlagsFromXEvent(const XEvent& xev) {
   switch (xev.type) {
-    case ButtonPress:
-    case ButtonRelease:
+    case x11::XProto::ButtonPressEvent::opcode:
+    case x11::XProto::ButtonReleaseEvent::opcode:
       return GetEventFlagsForButton(xev.xbutton.button);
     case GenericEvent: {
       XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev.xcookie.data);
@@ -649,7 +651,8 @@ int GetChangedMouseButtonFlagsFromXEvent(const XEvent& xev) {
 
 gfx::Vector2d GetMouseWheelOffsetFromXEvent(const XEvent& xev) {
   float x_offset, y_offset;
-  if (GetScrollOffsetsFromXEvent(xev, &x_offset, &y_offset, NULL, NULL, NULL)) {
+  if (GetScrollOffsetsFromXEvent(xev, &x_offset, &y_offset, nullptr, nullptr,
+                                 nullptr)) {
     return gfx::Vector2d(static_cast<int>(x_offset),
                          static_cast<int>(y_offset));
   }
@@ -750,7 +753,7 @@ bool GetScrollOffsetsFromXEvent(const XEvent& xev,
                                 float* x_offset_ordinal,
                                 float* y_offset_ordinal,
                                 int* finger_count) {
-  // Temp values to prevent passing NULLs to DeviceDataManager.
+  // Temp values to prevent passing nullptrs to DeviceDataManager.
   float x_scroll_offset, y_scroll_offset;
   float x_scroll_offset_ordinal, y_scroll_offset_ordinal;
   int finger;

@@ -58,34 +58,34 @@ class X11ClipboardOzone : public PlatformClipboard, public XEventDispatcher {
   bool OnSetSelectionOwnerNotify(XEvent* xev);
 
   // Returns an X atom for a clipboard buffer type.
-  XAtom SelectionAtomForBuffer(ClipboardBuffer buffer) const;
+  x11::Atom SelectionAtomForBuffer(ClipboardBuffer buffer) const;
 
   // Returns a clipboard buffer type for an X atom for a selection name of the
   // system clipboard buffer.
-  ClipboardBuffer BufferForSelectionAtom(XAtom selection) const;
+  ClipboardBuffer BufferForSelectionAtom(x11::Atom selection) const;
 
   // Returns the state for the given selection;
-  SelectionState& GetSelectionState(XAtom selection);
+  SelectionState& GetSelectionState(x11::Atom selection);
 
   // Queries the current clipboard owner for what mime types are available by
   // sending XConvertSelection with target=TARGETS.  After sending this, we
   // will receive a SelectionNotify event with xselection.target=TARGETS which
   // is processed in |OnSelectionNotify|.
-  void QueryTargets(XAtom selection);
+  void QueryTargets(x11::Atom selection);
 
   // Reads the contents of the remote clipboard by sending XConvertSelection
   // with target=<mime-type>.  After sending this, we will receive a
   // SelectionNotify event with xselection.target=<mime-type> which is processed
   // in |OnSelectionNotify|.
-  void ReadRemoteClipboard(XAtom selection);
+  void ReadRemoteClipboard(x11::Atom selection);
 
   // Local cache of atoms.
-  const XAtom atom_clipboard_;
-  const XAtom atom_targets_;
-  const XAtom atom_timestamp_;
+  const x11::Atom atom_clipboard_;
+  const x11::Atom atom_targets_;
+  const x11::Atom atom_timestamp_;
 
   // The property on |x_window_| which will receive remote clipboard contents.
-  const XAtom x_property_;
+  const x11::Atom x_property_;
 
   // Our X11 state.
   Display* const x_display_;
@@ -105,7 +105,7 @@ class X11ClipboardOzone : public PlatformClipboard, public XEventDispatcher {
   PlatformClipboard::SequenceNumberUpdateCb update_sequence_cb_;
 
   // State of selections served by this instance.
-  base::flat_map<XAtom, std::unique_ptr<SelectionState>> selection_state_;
+  base::flat_map<x11::Atom, std::unique_ptr<SelectionState>> selection_state_;
 
   DISALLOW_COPY_AND_ASSIGN(X11ClipboardOzone);
 };

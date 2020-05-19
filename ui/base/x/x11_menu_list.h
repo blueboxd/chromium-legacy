@@ -39,7 +39,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XMenuList {
   ~XMenuList();
 
   std::vector<XID> menus_;
-  XAtom menu_type_atom_;
+  x11::Atom menu_type_atom_;
   DISALLOW_COPY_AND_ASSIGN(XMenuList);
 };
 

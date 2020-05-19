@@ -32,12 +32,18 @@ const base::Feature kNetworkService {
 };
 
 // Out of Blink CORS for browsers is launched at m79 (http://crbug.com/1001450),
-// and one for WebView will be at m81 (http://crbug.com/1035763).
-// The legacy CORS will be also maintained at least until m81 for enterprise
+// and one for WebView will be at m83 (http://crbug.com/1035763).
+// The legacy CORS will be also maintained at least until m83 for enterprise
 // users. See https://sites.google.com/a/chromium.org/dev/Home/loading/oor-cors
 // for FYI Builders information.
-const base::Feature kOutOfBlinkCors{"OutOfBlinkCors",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kOutOfBlinkCors {
+  "OutOfBlinkCors",
+#if defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 const base::Feature kReporting{"Reporting", base::FEATURE_ENABLED_BY_DEFAULT};
 

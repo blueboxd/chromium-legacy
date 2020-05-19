@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/inspector/devtools_session.h"
 #include "third_party/blink/renderer/core/inspector/inspector_audits_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_emulation_agent.h"
+#include "third_party/blink/renderer/core/inspector/inspector_issue_reporter.h"
 #include "third_party/blink/renderer/core/inspector/inspector_log_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_network_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
@@ -74,6 +75,9 @@ WorkerInspectorController::WorkerInspectorController(
       thread_(thread),
       inspected_frames_(nullptr),
       probe_sink_(MakeGarbageCollected<CoreProbeSink>()) {
+  probe_sink_->AddInspectorIssueReporter(
+      MakeGarbageCollected<InspectorIssueReporter>(
+          thread->GetInspectorIssueStorage()));
   probe_sink_->AddInspectorTraceEvents(
       MakeGarbageCollected<InspectorTraceEvents>());
   worker_devtools_token_ = devtools_params->devtools_worker_token;

@@ -51,6 +51,7 @@ void UserMediaController::Trace(Visitor* visitor) const {
 UserMediaClient* UserMediaController::Client() {
   auto* window = To<LocalDOMWindow>(GetExecutionContext());
   if (!client_ && window) {
+    DCHECK(window->GetFrame());
     client_ = MakeGarbageCollected<UserMediaClient>(
         window->GetFrame(), window->GetTaskRunner(TaskType::kInternalMedia));
   }

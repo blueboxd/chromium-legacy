@@ -4,7 +4,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 
 <dom-module id="oobe-eula-md">
@@ -46,18 +46,20 @@
             [[i18nDynamic(locale, 'eulaSystemInstallationSettings')]]
           </a>
           <div id="logging" class="layout horizontal">
-            <cr-toggle id="usageStats" checked="{{usageStatsChecked}}"
-                on-change="onUsageChanged_" aria-labelledby="usageStatsLabel">
-            </cr-toggle>
-            <div id="usageStatsLabelContainer">
-              <span id="usageStatsLabel" on-tap="usageStatsLabelClicked_">
-                [[i18nDynamic(locale, 'checkboxLogging')]]
-              </span>
-              <a id="learn-more" href="#" on-tap="onUsageStatsHelpLinkClicked_"
-                  class="oobe-local-link">
-                [[i18nDynamic(locale, 'learnMore')]]
-              </a>
-            </div>
+            <cr-checkbox id="usageStats" class="layout start self-center"
+                checked="{{usageStatsChecked}}" on-change="onUsageChanged_"
+                aria-labelledby="usageStatsLabel">
+              <div id="usageStatsLabelContainer">
+                <span id="usageStatsLabel" on-tap="usageStatsLabelClicked_">
+                  [[i18nDynamic(locale, 'checkboxLogging')]]
+                </span>
+                <a id="learn-more" href="#"
+                    on-tap="onUsageStatsHelpLinkClicked_"
+                    class="oobe-local-link">
+                  [[i18nDynamic(locale, 'learnMore')]]
+                </a>
+              </div>
+            </cr-checkbox>
           </div>
         </div>
       </div>

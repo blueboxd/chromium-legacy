@@ -95,6 +95,12 @@ tweak_info_plist("info_plist") {
   } else if (ios_enable_scene_startup) {
     info_plists += [ "resources/MultiWindowDisabled+Info.plist" ]
   }
+  if (ios_chrome_info_plist_addition_targets != []) {
+    if (!defined(deps)) {
+      deps = []
+    }
+    deps += ios_chrome_info_plist_addition_targets
+  }
   args = [
     "--breakpad=$breakpad_enabled_as_int",
     "--branding=$chromium_short_name",

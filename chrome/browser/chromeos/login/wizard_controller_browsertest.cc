@@ -169,11 +169,6 @@ class PrefStoreStub : public TestingPrefStore {
   ~PrefStoreStub() override {}
 };
 
-// Matches on non-empty DictionaryValue* object.
-MATCHER(NonEmptyConfiguration, "") {
-  return arg && !arg->DictEmpty();
-}
-
 // Used to set up a |FakeAutoEnrollmentClientFactory| for the duration of a
 // test.
 class ScopedFakeAutoEnrollmentClientFactory {
@@ -371,19 +366,6 @@ class WizardControllerTest : public OobeBaseTest {
     if (!host)
       return nullptr;
     return host->GetOobeWebContents();
-  }
-
-  void WaitUntilJSIsReady() {
-    LoginDisplayHost* host = LoginDisplayHost::default_host();
-    if (!host)
-      return;
-    chromeos::OobeUI* oobe_ui = host->GetOobeUI();
-    if (!oobe_ui)
-      return;
-    base::RunLoop run_loop;
-    const bool oobe_ui_ready = oobe_ui->IsJSReady(run_loop.QuitClosure());
-    if (!oobe_ui_ready)
-      run_loop.Run();
   }
 
   bool JSExecute(const std::string& script) {
@@ -692,8 +674,6 @@ class WizardControllerFlowTest : public WizardControllerTest {
 
   void TestControlFlowMain() {
     CheckCurrentScreen(WelcomeView::kScreenId);
-
-    WaitUntilJSIsReady();
 
     test_url_loader_factory_.SetInterceptor(base::BindLambdaForTesting(
         [&](const network::ResourceRequest& request) {
@@ -1345,7 +1325,6 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
   EXPECT_EQ(AutoEnrollmentCheckScreenView::kScreenId.AsId(),
             GetErrorScreen()->GetParentScreen());
 
-  WaitUntilJSIsReady();
   constexpr char guest_session_link_display[] =
       "window.getComputedStyle($('error-guest-signin-fix-network')).display";
   if (IsFREExplicitlyRequired()) {
@@ -1448,7 +1427,6 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     EXPECT_EQ(AutoEnrollmentCheckScreenView::kScreenId.AsId(),
               GetErrorScreen()->GetParentScreen());
 
-    WaitUntilJSIsReady();
     constexpr char guest_session_link_display[] =
         "window.getComputedStyle($('error-guest-signin-fix-network'))."
         "display";
@@ -1663,7 +1641,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   EXPECT_EQ(AutoEnrollmentCheckScreenView::kScreenId.AsId(),
             GetErrorScreen()->GetParentScreen());
 
-  WaitUntilJSIsReady();
   constexpr char guest_session_link_display[] =
       "window.getComputedStyle($('error-guest-signin-fix-network'))."
       "display";
@@ -2110,7 +2087,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerBrokenLocalStateTest,
   ASSERT_EQ(NetworkError::UI_STATE_LOCAL_STATE_ERROR,
             GetErrorScreen()->GetUIState());
 
-  WaitUntilJSIsReady();
   OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
 
   // Checks visibility of the error message and powerwash button.
@@ -2305,7 +2281,6 @@ class WizardControllerEnableAdbSideloadingTest
 IN_PROC_BROWSER_TEST_F(WizardControllerEnableAdbSideloadingTest,
                        ShowAndEnableSideloading) {
   CheckCurrentScreen(WelcomeView::kScreenId);
-  WaitUntilJSIsReady();
 
   EXPECT_CALL(*mock_welcome_screen_, HideImpl()).Times(1);
   EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull())).Times(1);
@@ -2334,7 +2309,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerEnableAdbSideloadingTest,
 IN_PROC_BROWSER_TEST_F(WizardControllerEnableAdbSideloadingTest,
                        ShowAndDoNotEnableSideloading) {
   CheckCurrentScreen(WelcomeView::kScreenId);
-  WaitUntilJSIsReady();
 
   EXPECT_CALL(*mock_welcome_screen_, HideImpl()).Times(1);
   EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull())).Times(1);
@@ -2377,7 +2351,6 @@ class WizardControllerEnableDebuggingTest : public WizardControllerFlowTest {
 IN_PROC_BROWSER_TEST_F(WizardControllerEnableDebuggingTest,
                        ShowAndCancelEnableDebugging) {
   CheckCurrentScreen(WelcomeView::kScreenId);
-  WaitUntilJSIsReady();
 
   EXPECT_CALL(*mock_welcome_screen_, HideImpl()).Times(1);
   EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull())).Times(1);
@@ -2430,7 +2403,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
                        OnlineDemoSetupFlowFinished) {
   CheckCurrentScreen(WelcomeView::kScreenId);
   EXPECT_FALSE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
-  WaitUntilJSIsReady();
 
   EXPECT_CALL(*mock_welcome_screen_, HideImpl()).Times(1);
   EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull())).Times(1);
@@ -2505,7 +2477,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
                        OfflineDemoSetupFlowFinished) {
   CheckCurrentScreen(WelcomeView::kScreenId);
   EXPECT_FALSE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
-  WaitUntilJSIsReady();
 
   EXPECT_CALL(*mock_welcome_screen_, HideImpl()).Times(1);
   EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull())).Times(1);
@@ -2563,7 +2534,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
 IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoSetupCanceled) {
   CheckCurrentScreen(WelcomeView::kScreenId);
   EXPECT_FALSE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
-  WaitUntilJSIsReady();
 
   EXPECT_CALL(*mock_welcome_screen_, HideImpl()).Times(1);
   EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull())).Times(1);
@@ -2641,7 +2611,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoSetupCanceled) {
 IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoPreferencesCanceled) {
   CheckCurrentScreen(WelcomeView::kScreenId);
   EXPECT_FALSE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
-  WaitUntilJSIsReady();
   SkipToScreen(DemoPreferencesScreenView::kScreenId,
                mock_demo_preferences_screen_);
 
@@ -2661,7 +2630,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoPreferencesCanceled) {
 IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, NetworkBackPressed) {
   CheckCurrentScreen(WelcomeView::kScreenId);
   EXPECT_FALSE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
-  WaitUntilJSIsReady();
   SkipToScreen(NetworkScreenView::kScreenId, mock_network_screen_);
 
   CheckCurrentScreen(NetworkScreenView::kScreenId);
@@ -2679,7 +2647,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, NetworkBackPressed) {
 IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, EulaBackPressed) {
   CheckCurrentScreen(WelcomeView::kScreenId);
   EXPECT_FALSE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
-  WaitUntilJSIsReady();
   SkipToScreen(EulaView::kScreenId, mock_eula_screen_);
 
   CheckCurrentScreen(EulaView::kScreenId);
@@ -2697,7 +2664,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, EulaBackPressed) {
 IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, ArcTosBackPressed) {
   CheckCurrentScreen(WelcomeView::kScreenId);
   EXPECT_FALSE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
-  WaitUntilJSIsReady();
 
   // User cannot go to ARC ToS screen without accepting eula - simulate that.
   StartupUtils::MarkEulaAccepted();
@@ -2737,7 +2703,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupDeviceDisabledTest,
                        OnlineDemoSetup) {
   CheckCurrentScreen(WelcomeView::kScreenId);
   EXPECT_FALSE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
-  WaitUntilJSIsReady();
 
   EXPECT_CALL(*mock_welcome_screen_, HideImpl()).Times(1);
   EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull())).Times(1);
@@ -2924,7 +2889,7 @@ class WizardControllerOobeConfigurationTest : public WizardControllerTest {
 
   // WizardControllerTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    WizardControllerTest ::SetUpCommandLine(command_line);
+    WizardControllerTest::SetUpCommandLine(command_line);
 
     base::FilePath configuration_file;
     ASSERT_TRUE(chromeos::test_utils::GetTestDataPath(
@@ -2937,49 +2902,22 @@ class WizardControllerOobeConfigurationTest : public WizardControllerTest {
   // WizardControllerTest:
   void SetUpOnMainThread() override {
     WizardControllerTest::SetUpOnMainThread();
-
-    // Make sure that OOBE is run as an "official" build.
-    branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
-
     // Clear portal list (as it is by default in OOBE).
     NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
-
-    mock_welcome_view_ = std::make_unique<MockWelcomeView>();
-    mock_welcome_screen_ =
-        MockScreenExpectLifecycle(std::make_unique<MockWelcomeScreen>(
-            mock_welcome_view_.get(),
-            base::BindRepeating(
-                &WizardController::OnWelcomeScreenExit,
-                base::Unretained(WizardController::default_controller()))));
   }
-
-  void WaitForConfigurationLoaded() {
-    base::RunLoop run_loop;
-    OOBEConfigurationWaiter waiter;
-    const bool ready = waiter.IsConfigurationLoaded(run_loop.QuitClosure());
-    if (!ready)
-      run_loop.Run();
-  }
-
- protected:
-  std::unique_ptr<MockWelcomeView> mock_welcome_view_;
-  MockWelcomeScreen* mock_welcome_screen_ = nullptr;
-  std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WizardControllerOobeConfigurationTest);
 };
 
-// TODO: fix, test is flaky. https://crbug.com/904841.
 IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
-                       DISABLED_ConfigurationIsLoaded) {
-  WaitForConfigurationLoaded();
-  EXPECT_CALL(*mock_welcome_screen_, ShowImpl()).Times(1);
-  EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(NonEmptyConfiguration()))
-      .Times(1);
-  WizardController::default_controller()->AdvanceToScreen(
-      WelcomeView::kScreenId);
-  CheckCurrentScreen(WelcomeView::kScreenId);
+                       ConfigurationIsLoaded) {
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
+  WelcomeScreen* screen = WelcomeScreen::Get(
+      WizardController::default_controller()->screen_manager());
+  base::Value* configuration = screen->GetConfigurationForTesting();
+  ASSERT_NE(configuration, nullptr);
+  EXPECT_FALSE(configuration->DictEmpty());
 }
 
 // TODO(dzhioev): Add test emulating device with wrong HWID.

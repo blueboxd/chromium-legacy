@@ -1,5 +1,6 @@
 include_rules = [
   "+chrome/browser/image_fetcher",
+  "+chrome/browser/profiles/android/java",
   "+chrome/browser/ui/messages/android/java",
   "+components/autofill/android",
   "+components/browser_ui/widget/android",

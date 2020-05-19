@@ -911,24 +911,6 @@
           android:name="android.appwidget.provider"
           android:resource="@xml/search_widget_info"/>
     </receiver>
-    <receiver
-        android:name="org.chromium.chrome.browser.media.ui.MediaNotificationManager$CastMediaButtonReceiver">
-      <intent-filter>
-        <action android:name="android.intent.action.MEDIA_BUTTON"/>
-      </intent-filter>
-    </receiver>
-    <receiver
-        android:name="org.chromium.chrome.browser.media.ui.MediaNotificationManager$PlaybackMediaButtonReceiver">
-      <intent-filter>
-        <action android:name="android.intent.action.MEDIA_BUTTON"/>
-      </intent-filter>
-    </receiver>
-    <receiver
-        android:name="org.chromium.chrome.browser.media.ui.MediaNotificationManager$PresentationMediaButtonReceiver">
-      <intent-filter>
-        <action android:name="android.intent.action.MEDIA_BUTTON"/>
-      </intent-filter>
-    </receiver>
     <receiver android:name="org.chromium.chrome.browser.services.AccountsChangedReceiver">
       <intent-filter>
         <action android:name="android.accounts.LOGIN_ACCOUNTS_CHANGED"/>

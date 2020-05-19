@@ -250,7 +250,9 @@ void ResourceLoadObserverForFrame::DidFailLoading(
   LocalFrame* frame = document_->GetFrame();
   DCHECK(frame);
   frame->Loader().Progress().CompleteProgress(identifier);
-  probe::DidFailLoading(GetProbe(), identifier, document_loader_, error);
+
+  probe::DidFailLoading(GetProbe(), identifier, document_loader_, error,
+                        frame->GetDevToolsFrameToken());
 
   // Notification to FrameConsole should come AFTER InspectorInstrumentation
   // call, DevTools front-end relies on this.

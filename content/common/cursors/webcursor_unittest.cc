@@ -9,7 +9,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/cursor/cursor_lookup.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 
 #if defined(OS_WIN)
@@ -53,7 +52,7 @@ TEST(WebCursorTest, WebCursorCursorConstructorCustom) {
   // Test if the custom cursor is correctly cached and updated
   // on aura platform.
   gfx::NativeCursor native_cursor = webcursor.GetNativeCursor();
-  EXPECT_EQ(gfx::Point(5, 10), GetCursorHotspot(native_cursor));
+  EXPECT_EQ(gfx::Point(5, 10), native_cursor.custom_hotspot());
   EXPECT_TRUE(webcursor.has_custom_cursor_for_test());
   webcursor.SetCursor(cursor);
   EXPECT_FALSE(webcursor.has_custom_cursor_for_test());
@@ -71,7 +70,7 @@ TEST(WebCursorTest, WebCursorCursorConstructorCustom) {
   // Hotspot should be scaled & rotated.  We're using the icon created for 2.0,
   // on the display with dsf=1.0, so the host spot should be
   // ((32 - 20) / 2, 10 / 2) = (6, 5).
-  EXPECT_EQ(gfx::Point(6, 5), GetCursorHotspot(native_cursor));
+  EXPECT_EQ(gfx::Point(6, 5), native_cursor.custom_hotspot());
 #endif
 #endif
 }

@@ -249,8 +249,8 @@ CertificateProviderStopPinRequestFunction::
 
 ExtensionFunction::ResponseAction
 CertificateProviderStopPinRequestFunction::Run() {
-  std::unique_ptr<api_cp::RequestPin::Params> params(
-      api_cp::RequestPin::Params::Create(*args_));
+  std::unique_ptr<api_cp::StopPinRequest::Params> params(
+      api_cp::StopPinRequest::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // TODO(crbug.com/1046860): Remove logging after stabilizing the feature.

@@ -19,6 +19,8 @@ class CertProvisioningSchedulerUserService : public KeyedService {
   explicit CertProvisioningSchedulerUserService(Profile* profile);
   ~CertProvisioningSchedulerUserService() override;
 
+  CertProvisioningScheduler* scheduler() { return scheduler_.get(); }
+
  private:
   std::unique_ptr<CertProvisioningScheduler> scheduler_;
 };

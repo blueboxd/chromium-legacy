@@ -6,6 +6,7 @@ module blink.mojom;
 
 import "url/mojom/url.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
+import "services/network/public/mojom/blocked_by_response_reason.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
 
 // A code that uniquely identifies an issue. This type should be descriptive
@@ -13,6 +14,7 @@ import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
 enum InspectorIssueCode {
   kSameSiteCookieIssue,
   kMixedContentIssue,
+  kBlockedByResponseIssue
 };
 
 // Information about a cookie that is affected by an issue.
@@ -29,6 +31,12 @@ struct AffectedRequest {
 
 struct AffectedFrame {
   string frame_id;
+};
+
+struct BlockedByResponseIssueDetails {
+  AffectedRequest request;
+  AffectedFrame? frame;
+  network.mojom.BlockedByResponseReason reason;
 };
 
 enum MixedContentResolutionStatus {
@@ -82,6 +90,7 @@ struct SameSiteCookieIssueDetails {
 struct InspectorIssueDetails {
   SameSiteCookieIssueDetails? sameSiteCookieIssueDetails;
   MixedContentIssueDetails? mixed_content_issue_details;
+  BlockedByResponseIssueDetails? blocked_by_response_issue_details;
 };
 
 struct InspectorIssueInfo {

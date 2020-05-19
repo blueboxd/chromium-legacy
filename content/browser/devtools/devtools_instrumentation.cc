@@ -111,11 +111,68 @@ void OnNavigationResponseReceived(
                    frame_id);
 }
 
+namespace {
+protocol::String BuildBlockedByResponseReason(
+    network::mojom::BlockedByResponseReason reason) {
+  switch (reason) {
+    case network::mojom::BlockedByResponseReason::
+        kCoepFrameResourceNeedsCoepHeader:
+      return protocol::Audits::BlockedByResponseReasonEnum::
+          CoepFrameResourceNeedsCoepHeader;
+    case network::mojom::BlockedByResponseReason::
+        kCoopSandboxedIFrameCannotNavigateToCoopPage:
+      return protocol::Audits::BlockedByResponseReasonEnum::
+          CoopSandboxedIFrameCannotNavigateToCoopPage;
+    case network::mojom::BlockedByResponseReason::kCorpNotSameOrigin:
+      return protocol::Audits::BlockedByResponseReasonEnum::CorpNotSameOrigin;
+    case network::mojom::BlockedByResponseReason::
+        kCorpNotSameOriginAfterDefaultedToSameOriginByCoep:
+      return protocol::Audits::BlockedByResponseReasonEnum::
+          CorpNotSameOriginAfterDefaultedToSameOriginByCoep;
+    case network::mojom::BlockedByResponseReason::kCorpNotSameSite:
+      return protocol::Audits::BlockedByResponseReasonEnum::CorpNotSameSite;
+  }
+}
+}  // namespace
+
 void OnNavigationRequestFailed(
     const NavigationRequest& nav_request,
     const network::URLLoaderCompletionStatus& status) {
   FrameTreeNode* ftn = nav_request.frame_tree_node();
   std::string id = nav_request.devtools_navigation_token().ToString();
+
+  if (status.blocked_by_response_reason) {
+    auto issueDetails = protocol::Audits::InspectorIssueDetails::Create();
+    auto request =
+        protocol::Audits::AffectedRequest::Create()
+            .SetRequestId(id)
+            .SetUrl(const_cast<NavigationRequest&>(nav_request).GetURL().spec())
+            .Build();
+    auto blockedByResponseDetails =
+        protocol::Audits::BlockedByResponseIssueDetails::Create()
+            .SetRequest(std::move(request))
+            .SetReason(BuildBlockedByResponseReason(
+                *status.blocked_by_response_reason))
+            .Build();
+
+    blockedByResponseDetails->SetFrame(
+        protocol::Audits::AffectedFrame::Create()
+            .SetFrameId(ftn->devtools_frame_token().ToString())
+            .Build());
+    issueDetails.SetBlockedByResponseIssueDetails(
+        std::move(blockedByResponseDetails));
+
+    auto inspector_issue =
+        protocol::Audits::InspectorIssue::Create()
+            .SetCode(protocol::Audits::InspectorIssueCodeEnum::
+                         BlockedByResponseIssue)
+            .SetDetails(issueDetails.Build())
+            .Build();
+
+    DispatchToAgents(ftn, &protocol::AuditsHandler::OnIssueAdded,
+                     inspector_issue.get());
+  }
+
   DispatchToAgents(ftn, &protocol::NetworkHandler::LoadingComplete, id,
                    protocol::Network::ResourceTypeEnum::Document, status);
 }
@@ -766,7 +823,7 @@ void OnQuicTransportHandshakeFailed(
                    .SetText(text)
                    .SetTimestamp(base::Time::Now().ToDoubleT() * 1000.0)
                    .Build();
-  DispatchToAgents(ftn, &protocol::LogHandler::EntryAdded, std::move(entry));
+  DispatchToAgents(ftn, &protocol::LogHandler::EntryAdded, entry.get());
 }
 
 }  // namespace devtools_instrumentation

@@ -3356,7 +3356,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kTraceToConsole,
     switches::kUseFakeCodecForPeerConnection,
     switches::kUseFakeUIForMediaStream,
-    switches::kUseLegacyFormControls,
     switches::kUseMobileUserAgent,
     switches::kV,
     switches::kVideoCaptureUseGpuMemoryBuffer,

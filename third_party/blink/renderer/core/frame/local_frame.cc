@@ -119,6 +119,7 @@
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/inspector_issue_reporter.h"
 #include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
@@ -378,6 +379,7 @@ void LocalFrame::Trace(Visitor* visitor) const {
   visitor->Trace(probe_sink_);
   visitor->Trace(performance_monitor_);
   visitor->Trace(idleness_detector_);
+  visitor->Trace(inspector_issue_reporter_);
   visitor->Trace(inspector_trace_events_);
   visitor->Trace(loader_);
   visitor->Trace(view_);
@@ -452,6 +454,8 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
       ad_tracker_->Shutdown();
   }
   idleness_detector_->Shutdown();
+  if (inspector_issue_reporter_)
+    probe_sink_->RemoveInspectorIssueReporter(inspector_issue_reporter_);
   if (inspector_trace_events_)
     probe_sink_->RemoveInspectorTraceEvents(inspector_trace_events_);
   inspector_task_runner_->Dispose();
@@ -1056,6 +1060,9 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
   if (IsLocalRoot()) {
     probe_sink_ = MakeGarbageCollected<CoreProbeSink>();
     performance_monitor_ = MakeGarbageCollected<PerformanceMonitor>(this);
+    inspector_issue_reporter_ = MakeGarbageCollected<InspectorIssueReporter>(
+        &page.GetInspectorIssueStorage());
+    probe_sink_->AddInspectorIssueReporter(inspector_issue_reporter_);
     inspector_trace_events_ = MakeGarbageCollected<InspectorTraceEvents>();
     probe_sink_->AddInspectorTraceEvents(inspector_trace_events_);
     if (RuntimeEnabledFeatures::AdTaggingEnabled()) {

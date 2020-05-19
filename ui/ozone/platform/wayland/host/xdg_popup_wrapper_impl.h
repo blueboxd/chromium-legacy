@@ -44,6 +44,8 @@ class XDGPopupWrapperImpl : public ShellPopupWrapper {
   MenuType GetMenuTypeForPositioner(WaylandConnection* connection,
                                     WaylandWindow* parent_window) const;
 
+  bool CanGrabPopup(WaylandConnection* connection) const;
+
   // xdg_popup_listener
   static void Configure(void* data,
                         int32_t x,

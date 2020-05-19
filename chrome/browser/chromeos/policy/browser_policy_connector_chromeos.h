@@ -179,6 +179,13 @@ class BrowserPolicyConnectorChromeOS
     return hostname_handler_.get();
   }
 
+  // Return a pointer to the device-wide client certificate provisioning
+  // scheduler. The callers do not take ownership of that pointer.
+  chromeos::cert_provisioning::CertProvisioningScheduler*
+  GetDeviceCertProvisioningScheduler() {
+    return device_cert_provisioning_scheduler_.get();
+  }
+
   // Returns device's market segment.
   MarketSegment GetEnterpriseMarketSegment() const;
 

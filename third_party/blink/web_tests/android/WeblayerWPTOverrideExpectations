@@ -1637,7 +1637,7 @@ crbug.com/1050754 external/wpt/html/cross-origin-embedder-policy/data.https.html
 crbug.com/1050754 external/wpt/html/cross-origin-embedder-policy/dedicated-worker-cache-storage.https.html [ Failure ]
 crbug.com/1050754 external/wpt/html/cross-origin-embedder-policy/javascript.https.html [ Failure ]
 crbug.com/1050754 external/wpt/html/cross-origin-embedder-policy/none-sw-from-require-corp.https.html [ Failure ]
-crbug.com/1050754 external/wpt/html/cross-origin-embedder-policy/reporting.https.html [ Failure ]
+crbug.com/1050754 external/wpt/html/cross-origin-embedder-policy/reporting-to-endpoint.https.html [ Failure ]
 crbug.com/1050754 external/wpt/html/cross-origin-embedder-policy/require-corp-load-from-cache-storage.https.html [ Failure ]
 crbug.com/1050754 external/wpt/html/cross-origin-embedder-policy/require-corp-sw-from-none.https.html [ Failure ]
 crbug.com/1050754 external/wpt/html/cross-origin-embedder-policy/require-corp-sw-from-require-corp.https.html [ Failure ]

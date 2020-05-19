@@ -32,11 +32,11 @@ DispatchResponse LogHandler::Enable() {
   return Response::FallThrough();
 }
 
-void LogHandler::EntryAdded(std::unique_ptr<Log::LogEntry> entry) {
+void LogHandler::EntryAdded(Log::LogEntry* entry) {
   if (!enabled_) {
     return;
   }
-  frontend_->EntryAdded(std::move(entry));
+  frontend_->EntryAdded(entry->clone());
 }
 
 }  // namespace protocol

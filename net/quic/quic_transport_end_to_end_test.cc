@@ -40,7 +40,7 @@ class MockVisitor : public QuicTransportClient::Visitor {
 class QuicTransportEndToEndTest : public TestWithTaskEnvironment {
  public:
   QuicTransportEndToEndTest() {
-    quic::QuicEnableVersion(quic::DefaultVersionForQuicTransport());
+    quic::QuicEnableVersion(QuicTransportClient::kQuicVersionForOriginTrial);
     origin_ = url::Origin::Create(GURL{"https://example.org"});
     isolation_key_ = NetworkIsolationKey(origin_, origin_);
 
@@ -57,8 +57,7 @@ class QuicTransportEndToEndTest : public TestWithTaskEnvironment {
     builder.set_host_resolver(std::move(host_resolver));
 
     auto quic_context = std::make_unique<QuicContext>();
-    quic_context->params()->supported_versions.push_back(
-        quic::DefaultVersionForQuicTransport());
+    quic_context->params()->supported_versions.clear();
     // This is required to bypass the check that only allows known certificate
     // roots in QUIC.
     quic_context->params()->origins_to_force_quic_on.insert(

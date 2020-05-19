@@ -4,12 +4,10 @@
 
 #include "ui/base/cursor/cursor.h"
 
-#include <algorithm>
-
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/cursor/cursor_lookup.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/skia_util.h"
 
 namespace ui {
@@ -38,22 +36,21 @@ TEST(CursorTest, CustomType) {
 
   const gfx::Point kHotspot = gfx::Point(5, 2);
   cursor.set_custom_hotspot(kHotspot);
-  EXPECT_EQ(kHotspot, GetCursorHotspot(cursor));
+  EXPECT_EQ(kHotspot, cursor.custom_hotspot());
 
   SkBitmap bitmap;
   bitmap.allocN32Pixels(10, 10);
   bitmap.eraseColor(SK_ColorRED);
   cursor.set_custom_bitmap(bitmap);
 
-  EXPECT_EQ(bitmap.getGenerationID(),
-            GetCursorBitmap(cursor).getGenerationID());
-  EXPECT_TRUE(gfx::BitmapsAreEqual(bitmap, GetCursorBitmap(cursor)));
+  EXPECT_EQ(bitmap.getGenerationID(), cursor.custom_bitmap().getGenerationID());
+  EXPECT_TRUE(gfx::BitmapsAreEqual(bitmap, cursor.custom_bitmap()));
 
   Cursor copy(cursor);
-  EXPECT_EQ(GetCursorBitmap(cursor).getGenerationID(),
-            GetCursorBitmap(copy).getGenerationID());
+  EXPECT_EQ(cursor.custom_bitmap().getGenerationID(),
+            copy.custom_bitmap().getGenerationID());
   EXPECT_TRUE(
-      gfx::BitmapsAreEqual(GetCursorBitmap(cursor), GetCursorBitmap(copy)));
+      gfx::BitmapsAreEqual(cursor.custom_bitmap(), copy.custom_bitmap()));
   EXPECT_EQ(cursor, copy);
 }
 
@@ -71,10 +68,10 @@ TEST(CursorTest, CustomTypeComparesBitmapPixels) {
   bitmap2.eraseColor(SK_ColorRED);
   cursor2.set_custom_bitmap(bitmap2);
 
-  EXPECT_NE(GetCursorBitmap(cursor1).getGenerationID(),
-            GetCursorBitmap(cursor2).getGenerationID());
+  EXPECT_NE(cursor1.custom_bitmap().getGenerationID(),
+            cursor2.custom_bitmap().getGenerationID());
   EXPECT_TRUE(
-      gfx::BitmapsAreEqual(GetCursorBitmap(cursor1), GetCursorBitmap(cursor2)));
+      gfx::BitmapsAreEqual(cursor1.custom_bitmap(), cursor2.custom_bitmap()));
   EXPECT_EQ(cursor1, cursor2);
 }
 

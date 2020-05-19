@@ -106,8 +106,6 @@ static_library("common") {
     "chrome_descriptors.h",
     "chrome_isolated_world_ids.h",
     "chrome_result_codes.h",
-    "chrome_ui_features_prefs.cc",
-    "chrome_ui_features_prefs.h",
     "common_message_generator.cc",
     "common_message_generator.h",
     "component_flash_hint_file_linux.cc",

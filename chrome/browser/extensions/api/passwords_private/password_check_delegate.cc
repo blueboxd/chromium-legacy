@@ -36,7 +36,7 @@
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
-#include "components/password_manager/core/browser/ui/compromised_credentials_provider.h"
+#include "components/password_manager/core/browser/ui/compromised_credentials_manager.h"
 #include "components/password_manager/core/browser/ui/credential_utils.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -54,20 +54,16 @@ namespace {
 
 using autofill::PasswordForm;
 using password_manager::CanonicalizeUsername;
-using password_manager::CompromiseType;
+using password_manager::CompromiseTypeFlags;
 using password_manager::CredentialWithPassword;
 using password_manager::LeakCheckCredential;
-using password_manager::PasswordCredentialLess;
 using ui::TimeFormat;
 
 using CompromisedCredentialsView =
-    password_manager::CompromisedCredentialsProvider::CredentialsView;
+    password_manager::CompromisedCredentialsManager::CredentialsView;
 using SavedPasswordsView =
     password_manager::SavedPasswordsPresenter::SavedPasswordsView;
 using State = password_manager::BulkLeakCheckService::State;
-
-using CompromisedCredentialSet =
-    base::flat_set<CredentialWithPassword, PasswordCredentialLess>;
 
 }  // namespace
 
@@ -165,35 +161,6 @@ api::passwords_private::PasswordCheckState ConvertPasswordCheckState(
   return api::passwords_private::PASSWORD_CHECK_STATE_NONE;
 }
 
-// Computes a map that matches compromised credentials with corresponding saved
-// passwords in the store. This is needed to reflect changes to the underlying
-// password store when a compromised credential gets modified or removed through
-// the UI. Also it allows to inject affiliation information to be displayed in
-// the UI.
-PasswordCheckDelegate::CredentialPasswordsMap
-MapCompromisedCredentialsToSavedPasswords(
-    CompromisedCredentialsView compromised_credentials_view,
-    SavedPasswordsView saved_passwords) {
-  // Create a set to turn queries to look up a matching credential from O(n) to
-  // O(log n).
-  CompromisedCredentialSet compromised_credentials(
-      compromised_credentials_view.begin(), compromised_credentials_view.end());
-
-  // Populate the map. The values are vectors, because it is possible that
-  // multiple saved passwords match to the same compromised credential. In most
-  // cases there should be a 1-1 relationship, though.
-  PasswordCheckDelegate::CredentialPasswordsMap passwords_map;
-  for (const auto& saved_password : saved_passwords) {
-    auto it = compromised_credentials.find(
-        password_manager::CredentialView(saved_password));
-    if (it != compromised_credentials.end()) {
-      passwords_map[*it].push_back(saved_password);
-    }
-  }
-
-  return passwords_map;
-}
-
 std::string FormatElapsedTime(base::Time time) {
   const base::TimeDelta elapsed_time = base::Time::Now() - time;
   if (elapsed_time < base::TimeDelta::FromMinutes(1))
@@ -204,9 +171,7 @@ std::string FormatElapsedTime(base::Time time) {
 }
 
 // Helper struct that bundles a CredentialWithPassword with a corresponding
-// passwords_private::CompromiseType. This is necessary to support the both
-// PHISHED_AND_LEAKED case, which does not exists in password_manager's
-// CompromiseType.
+// passwords_private::CompromiseType.
 struct CompromisedCredentialAndType {
   CredentialWithPassword credential;
   api::passwords_private::CompromiseType type;
@@ -214,65 +179,24 @@ struct CompromisedCredentialAndType {
 
 // Orders |compromised_credentials| in such a way that phished credentials
 // precede leaked credentials, and that credentials of the same compromise type
-// are ordered by recency. Furthermore it de-duplicates credentials that are
-// both phished and leaked, making sure they only appear once in the final list.
+// are ordered by recency.
 std::vector<CompromisedCredentialAndType> OrderCompromisedCredentials(
-    CompromisedCredentialsView compromised_credentials) {
-  // Partition the compromised credentials into phished and leaked.
-  std::vector<CredentialWithPassword> phished_storage;
-  std::vector<CredentialWithPassword> leaked_storage;
-  std::partition_copy(
-      compromised_credentials.begin(), compromised_credentials.end(),
-      std::back_inserter(phished_storage), std::back_inserter(leaked_storage),
-      [](const auto& credential) {
-        return credential.compromise_type == CompromiseType::kPhished;
-      });
-
-  // Perform a set intersection to find credentials that are both phished and
-  // leaked. Operate on flat_sets, since they provide a more convenient API.
-  CompromisedCredentialSet phished = std::move(phished_storage);
-  CompromisedCredentialSet leaked = std::move(leaked_storage);
-  CompromisedCredentialSet phished_and_leaked;
-  std::set_intersection(
-      phished.begin(), phished.end(), leaked.begin(), leaked.end(),
-      std::inserter(phished_and_leaked, phished_and_leaked.end()),
-      PasswordCredentialLess());
-
-  // Iterate through the phished and leaked credentials and update their
-  // timestamp to be the most recent compromise event.
-  for (auto& phished_and_leaked : phished_and_leaked) {
-    phished_and_leaked.create_time =
-        std::max(phished.find(phished_and_leaked)->create_time,
-                 leaked.find(phished_and_leaked)->create_time);
-  }
-
-  // Erase phished and leaked credentials from the other two sets.
-  auto is_phished_and_leaked = [&](const auto& credential) {
-    return phished_and_leaked.contains(credential);
-  };
-  base::EraseIf(phished, is_phished_and_leaked);
-  base::EraseIf(leaked, is_phished_and_leaked);
-
-  // Finally move all credentials into a single list, associating with the
+    std::vector<CredentialWithPassword> compromised_credentials) {
+  // Move all credentials into a single list, associating with the
   // corresponding CompromiseType.
-  const size_t num_phished = phished.size() + phished_and_leaked.size();
   std::vector<CompromisedCredentialAndType> results;
   results.reserve(compromised_credentials.size());
-  for (auto& credential : std::move(phished).extract()) {
-    results.push_back({std::move(credential),
-                       api::passwords_private::COMPROMISE_TYPE_PHISHED});
+  for (auto& credential : compromised_credentials) {
+    auto type = static_cast<api::passwords_private::CompromiseType>(
+        credential.compromise_type);
+    results.push_back({std::move(credential), type});
   }
-
-  for (auto& credential : std::move(phished_and_leaked).extract()) {
-    results.push_back(
-        {std::move(credential),
-         api::passwords_private::COMPROMISE_TYPE_PHISHED_AND_LEAKED});
-  }
-
-  for (auto& credential : std::move(leaked).extract()) {
-    results.push_back({std::move(credential),
-                       api::passwords_private::COMPROMISE_TYPE_LEAKED});
-  }
+  // Reordering phished credential to the beginning.
+  auto last_phished = std::partition(
+      results.begin(), results.end(), [](const auto& credential) {
+        return credential.type !=
+               api::passwords_private::COMPROMISE_TYPE_LEAKED;
+      });
 
   // By construction the phished credentials precede the leaked credentials in
   // |results|. Now sort both groups by their creation date so that most recent
@@ -280,8 +204,8 @@ std::vector<CompromisedCredentialAndType> OrderCompromisedCredentials(
   auto create_time_cmp = [](const auto& lhs, const auto& rhs) {
     return lhs.credential.create_time > rhs.credential.create_time;
   };
-  std::sort(results.begin(), results.begin() + num_phished, create_time_cmp);
-  std::sort(results.begin() + num_phished, results.end(), create_time_cmp);
+  std::sort(results.begin(), last_phished, create_time_cmp);
+  std::sort(last_phished, results.end(), create_time_cmp);
   return results;
 }
 
@@ -293,25 +217,24 @@ PasswordCheckDelegate::PasswordCheckDelegate(Profile* profile)
           profile,
           ServiceAccessType::EXPLICIT_ACCESS)),
       saved_passwords_presenter_(password_store_),
-      compromised_credentials_provider_(password_store_,
-                                        &saved_passwords_presenter_),
+      compromised_credentials_manager_(password_store_,
+                                       &saved_passwords_presenter_),
       bulk_leak_check_service_adapter_(
           &saved_passwords_presenter_,
           BulkLeakCheckServiceFactory::GetForProfile(profile_),
           profile_->GetPrefs()) {
   observed_saved_passwords_presenter_.Add(&saved_passwords_presenter_);
-  observed_compromised_credentials_provider_.Add(
-      &compromised_credentials_provider_);
+  observed_compromised_credentials_manager_.Add(
+      &compromised_credentials_manager_);
   observed_bulk_leak_check_service_.Add(
       BulkLeakCheckServiceFactory::GetForProfile(profile_));
 
   // Instructs the presenter and provider to initialize and built their caches.
-  // This will soon after invoke OnCompromisedCredentialsChanged(), which then
-  // initializes |credentials_to_forms_| as well. Calls to
+  // This will soon after invoke OnCompromisedCredentialsChanged(). Calls to
   // GetCompromisedCredentials() that might happen until then will return an
   // empty list.
   saved_passwords_presenter_.Init();
-  compromised_credentials_provider_.Init();
+  compromised_credentials_manager_.Init();
 }
 
 PasswordCheckDelegate::~PasswordCheckDelegate() = default;
@@ -320,7 +243,7 @@ std::vector<api::passwords_private::CompromisedCredential>
 PasswordCheckDelegate::GetCompromisedCredentials() {
   std::vector<CompromisedCredentialAndType>
       ordered_compromised_credential_and_types = OrderCompromisedCredentials(
-          compromised_credentials_provider_.GetCompromisedCredentials());
+          compromised_credentials_manager_.GetCompromisedCredentials());
 
   std::vector<api::passwords_private::CompromisedCredential>
       compromised_credentials;
@@ -338,7 +261,7 @@ PasswordCheckDelegate::GetCompromisedCredentials() {
       // special handling for Android. Here we use affiliation information
       // instead of the signon_realm.
       const PasswordForm& android_form =
-          credentials_to_forms_.at(credential).at(0);
+          compromised_credentials_manager_.GetSavedPasswordsFor(credential)[0];
       if (!android_form.app_display_name.empty()) {
         api_credential.formatted_origin = android_form.app_display_name;
         api_credential.detailed_origin = android_form.app_display_name;
@@ -401,52 +324,26 @@ PasswordCheckDelegate::GetPlaintextCompromisedPassword(
 bool PasswordCheckDelegate::ChangeCompromisedCredential(
     const api::passwords_private::CompromisedCredential& credential,
     base::StringPiece new_password) {
-  // Try to obtain the original CredentialWithPassword and try to find it in
-  // |credentials_to_forms_|. Return false if either one fails.
+  // Try to obtain the original CredentialWithPassword. Return false if fails.
   const CredentialWithPassword* compromised_credential =
       FindMatchingCompromisedCredential(credential);
   if (!compromised_credential)
     return false;
 
-  auto it = credentials_to_forms_.find(*compromised_credential);
-  if (it == credentials_to_forms_.end())
-    return false;
-
-  // Make sure there are matching password forms. Also erase duplicates if there
-  // are any.
-  const auto& forms = it->second;
-  if (forms.empty())
-    return false;
-
-  for (size_t i = 1; i < forms.size(); ++i)
-    password_store_->RemoveLogin(forms[i]);
-
-  // Note: We Invoke EditPassword on the presenter rather than UpdateLogin() on
-  // the store, so that observers of the presenter get notified of this event.
-  return saved_passwords_presenter_.EditPassword(
-      forms[0], base::UTF8ToUTF16(new_password));
+  return compromised_credentials_manager_.UpdateCompromisedCredentials(
+      *compromised_credential, new_password);
 }
 
 bool PasswordCheckDelegate::RemoveCompromisedCredential(
     const api::passwords_private::CompromisedCredential& credential) {
-  // Try to obtain the original CredentialWithPassword and try to find it in
-  // |credentials_to_forms_|. Return false if either one fails.
+  // Try to obtain the original CredentialWithPassword. Return false if fails.
   const CredentialWithPassword* compromised_credential =
       FindMatchingCompromisedCredential(credential);
   if (!compromised_credential)
     return false;
 
-  auto it = credentials_to_forms_.find(*compromised_credential);
-  if (it == credentials_to_forms_.end())
-    return false;
-
-  // Erase all matching credentials from the store. Return whether any
-  // credentials were deleted.
-  SavedPasswordsView saved_passwords = it->second;
-  for (const PasswordForm& saved_password : saved_passwords)
-    password_store_->RemoveLogin(saved_password);
-
-  return !saved_passwords.empty();
+  return compromised_credentials_manager_.RemoveCompromisedCredential(
+      *compromised_credential);
 }
 
 void PasswordCheckDelegate::StartPasswordCheck(
@@ -547,8 +444,6 @@ void PasswordCheckDelegate::OnSavedPasswordsChanged(SavedPasswordsView) {
 
 void PasswordCheckDelegate::OnCompromisedCredentialsChanged(
     CompromisedCredentialsView credentials) {
-  credentials_to_forms_ = MapCompromisedCredentialsToSavedPasswords(
-      credentials, saved_passwords_presenter_.GetSavedPasswords());
   if (auto* event_router =
           PasswordsPrivateEventRouterFactory::GetForProfile(profile_)) {
     event_router->OnCompromisedCredentialsChanged(GetCompromisedCredentials());
@@ -584,24 +479,7 @@ void PasswordCheckDelegate::OnCredentialDone(
     const LeakCheckCredential& credential,
     password_manager::IsLeaked is_leaked) {
   if (is_leaked) {
-    // In case the credential is leaked, iterate over all currently saved
-    // credentials and mark those as compromised that have the same
-    // canonicalized username and password.
-    const base::string16 canocalized_username =
-        CanonicalizeUsername(credential.username());
-    for (const PasswordForm& saved_password :
-         saved_passwords_presenter_.GetSavedPasswords()) {
-      if (saved_password.password_value == credential.password() &&
-          CanonicalizeUsername(saved_password.username_value) ==
-              canocalized_username) {
-        password_store_->AddCompromisedCredentials({
-            .signon_realm = saved_password.signon_realm,
-            .username = saved_password.username_value,
-            .create_time = base::Time::Now(),
-            .compromise_type = CompromiseType::kLeaked,
-        });
-      }
-    }
+    compromised_credentials_manager_.SaveCompromisedCredential(credential);
   }
 
   // Update the progress in case there is one.

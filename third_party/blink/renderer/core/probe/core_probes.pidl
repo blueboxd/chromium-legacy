@@ -101,7 +101,7 @@ interface CoreProbes {
   void DidReceiveEncodedDataLength(CoreProbeSink*, DocumentLoader* loader, uint64_t identifier, size_t encoded_data_length);
   void DidFinishLoading(CoreProbeSink*, uint64_t identifier, DocumentLoader*, base::TimeTicks finish_time, int64_t encoded_data_length, int64_t decoded_body_length, bool should_report_corb_blocking);
   void DidReceiveCorsRedirectResponse(ExecutionContext*, uint64_t identifier, DocumentLoader*, const ResourceResponse&, Resource*);
-  void DidFailLoading(CoreProbeSink*, uint64_t identifier, DocumentLoader*, const ResourceError&);
+  void DidFailLoading([Keep] CoreProbeSink*, uint64_t identifier, DocumentLoader*, const ResourceError&, const base::UnguessableToken&);
   void WillSendEventSourceRequest(ExecutionContext*);
   void WillDispatchEventSourceEvent(ExecutionContext*, uint64_t identifier, const AtomicString& event_name, const AtomicString& event_id, const String& data);
   void WillLoadXHR([Keep] ExecutionContext*, const AtomicString& method, const KURL& url, bool async, const HTTPHeaderMap& headers, bool include_credentials);
@@ -144,7 +144,7 @@ interface CoreProbes {
   void AnimationPlayStateChanged(Document*, Animation*, Animation::AnimationPlayState old_play_state, Animation::AnimationPlayState new_play_state);
   void WindowOpen([Keep] Document*, const String& url, const AtomicString& window_name, const WebWindowFeatures& window_features, bool user_gestrue);
   void ConsoleMessageAdded(ExecutionContext*, ConsoleMessage*);
-  void InspectorIssueAdded(ExecutionContext*, InspectorIssue*);
+  void InspectorIssueAdded(CoreProbeSink*, InspectorIssue*);
   void WillRunJavaScriptDialog(LocalFrame* frame);
   void DidRunJavaScriptDialog(LocalFrame* frame);
   void DocumentWriteFetchScript([Keep] Document*);

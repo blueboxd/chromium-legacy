@@ -113,13 +113,16 @@ content::WebUI* OobeBaseTest::GetLoginUI() {
 }
 
 void OobeBaseTest::WaitForOobeUI() {
+  // Wait for notification first. Otherwise LoginDisplayHost might not be
+  // created yet.
+  MaybeWaitForLoginScreenLoad();
+
   // Wait for OobeUI to finish loading.
   base::RunLoop run_loop;
   if (!LoginDisplayHost::default_host()->GetOobeUI()->IsJSReady(
           run_loop.QuitClosure())) {
     run_loop.Run();
   }
-  MaybeWaitForLoginScreenLoad();
 }
 
 void OobeBaseTest::WaitForGaiaPageLoad() {

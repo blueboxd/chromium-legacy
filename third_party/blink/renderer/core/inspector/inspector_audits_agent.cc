@@ -187,6 +187,8 @@ blink::protocol::String InspectorIssueCodeValue(
       return protocol::Audits::InspectorIssueCodeEnum::SameSiteCookieIssue;
     case mojom::blink::InspectorIssueCode::kMixedContentIssue:
       return protocol::Audits::InspectorIssueCodeEnum::MixedContentIssue;
+    case mojom::blink::InspectorIssueCode::kBlockedByResponseIssue:
+      return protocol::Audits::InspectorIssueCodeEnum::BlockedByResponseIssue;
   }
 }
 
@@ -364,6 +366,28 @@ protocol::String BuildMixedContentResourceType(
   }
 }
 
+protocol::String BuildBlockedByResponseReason(
+    network::mojom::blink::BlockedByResponseReason reason) {
+  switch (reason) {
+    case network::mojom::blink::BlockedByResponseReason::
+        kCoepFrameResourceNeedsCoepHeader:
+      return protocol::Audits::BlockedByResponseReasonEnum::
+          CoepFrameResourceNeedsCoepHeader;
+    case network::mojom::blink::BlockedByResponseReason::
+        kCoopSandboxedIFrameCannotNavigateToCoopPage:
+      return protocol::Audits::BlockedByResponseReasonEnum::
+          CoopSandboxedIFrameCannotNavigateToCoopPage;
+    case network::mojom::blink::BlockedByResponseReason::kCorpNotSameOrigin:
+      return protocol::Audits::BlockedByResponseReasonEnum::CorpNotSameOrigin;
+    case network::mojom::blink::BlockedByResponseReason::
+        kCorpNotSameOriginAfterDefaultedToSameOriginByCoep:
+      return protocol::Audits::BlockedByResponseReasonEnum::
+          CorpNotSameOriginAfterDefaultedToSameOriginByCoep;
+    case network::mojom::blink::BlockedByResponseReason::kCorpNotSameSite:
+      return protocol::Audits::BlockedByResponseReasonEnum::CorpNotSameSite;
+  }
+}
+
 }  // namespace
 
 void InspectorAuditsAgent::InspectorIssueAdded(InspectorIssue* issue) {
@@ -407,6 +431,20 @@ void InspectorAuditsAgent::InspectorIssueAdded(InspectorIssue* issue) {
       mixedContentDetails->setFrame(BuildAffectedFrame(d->frame));
     }
     issueDetails.setMixedContentIssueDetails(std::move(mixedContentDetails));
+  }
+
+  if (const auto* d =
+          issue->Details()->blocked_by_response_issue_details.get()) {
+    auto blockedByResponseDetails =
+        protocol::Audits::BlockedByResponseIssueDetails::create()
+            .setRequest(BuildAffectedRequest(d->request))
+            .setReason(BuildBlockedByResponseReason(d->reason))
+            .build();
+    if (d->frame) {
+      blockedByResponseDetails->setFrame(BuildAffectedFrame(d->frame));
+    }
+    issueDetails.setBlockedByResponseIssueDetails(
+        std::move(blockedByResponseDetails));
   }
 
   auto inspector_issue = protocol::Audits::InspectorIssue::create()

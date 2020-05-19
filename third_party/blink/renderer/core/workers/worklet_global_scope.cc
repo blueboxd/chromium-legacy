@@ -191,6 +191,13 @@ WorkerThread* WorkletGlobalScope::GetThread() const {
   return worker_thread_;
 }
 
+const base::UnguessableToken& WorkletGlobalScope::GetDevToolsToken() const {
+  if (IsMainThreadWorkletGlobalScope()) {
+    return frame_->GetDevToolsFrameToken();
+  }
+  return GetThread()->GetDevToolsWorkerToken();
+}
+
 CoreProbeSink* WorkletGlobalScope::GetProbeSink() {
   if (IsMainThreadWorkletGlobalScope())
     return probe::ToCoreProbeSink(frame_);

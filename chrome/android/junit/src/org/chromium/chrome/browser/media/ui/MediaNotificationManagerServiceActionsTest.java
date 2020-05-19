@@ -6,14 +6,11 @@ package org.chromium.chrome.browser.media.ui;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 
 import android.content.Intent;
 import android.media.AudioManager;
-import android.view.KeyEvent;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,7 +21,7 @@ import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerSer
 import org.chromium.media_session.mojom.MediaSessionAction;
 
 /**
- * JUnit tests for checking {@link MediaNotificationManager.ListenerService} handles intent actionss
+ * JUnit tests for checking {@link MediaNotificationManager.ListenerService} handles intent actions
  * correctly.
  */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -46,110 +43,6 @@ public class MediaNotificationManagerServiceActionsTest extends MediaNotificatio
         Intent intentWithAction = new Intent().setAction("foo");
         assertTrue(mService.processIntent(intentWithAction));
         verify(mService).processAction(intentWithAction, getManager());
-    }
-
-    @Test
-    public void testProcessMediaButton_Play() {
-        setUpService();
-
-        mService.processAction(
-                createMediaButtonActionIntent(KeyEvent.KEYCODE_MEDIA_PLAY), getManager());
-        verify(getManager()).onPlay(MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
-    }
-
-    @Test
-    public void testProcessMediaButton_Pause() {
-        setUpService();
-
-        mService.processAction(
-                createMediaButtonActionIntent(KeyEvent.KEYCODE_MEDIA_PAUSE), getManager());
-        verify(getManager()).onPause(MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
-    }
-
-    @Test
-    public void testProcessMediaButton_HeadsetHook() {
-        setUpService();
-
-        mMediaNotificationInfoBuilder.setPaused(false);
-        getManager().mMediaNotificationInfo = mMediaNotificationInfoBuilder.build();
-
-        mService.processAction(
-                createMediaButtonActionIntent(KeyEvent.KEYCODE_HEADSETHOOK), getManager());
-        verify(getManager()).onPause(MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
-    }
-
-    @Test
-    public void testProcessMediaButton_PlayPause() {
-        setUpService();
-
-        mService.processAction(
-                createMediaButtonActionIntent(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE), getManager());
-        verify(getManager()).onPause(MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
-    }
-
-    @Test
-    public void testProcessMediaButton_Previous() {
-        setUpService();
-
-        mService.processAction(
-                createMediaButtonActionIntent(KeyEvent.KEYCODE_MEDIA_PREVIOUS), getManager());
-        verify(getManager()).onMediaSessionAction(MediaSessionAction.PREVIOUS_TRACK);
-    }
-
-    @Test
-    public void testProcessMediaButton_Next() {
-        setUpService();
-
-        mService.processAction(
-                createMediaButtonActionIntent(KeyEvent.KEYCODE_MEDIA_NEXT), getManager());
-        verify(getManager()).onMediaSessionAction(MediaSessionAction.NEXT_TRACK);
-    }
-
-    @Test
-    public void testProcessMediaButton_Rewind() {
-        setUpService();
-
-        mService.processAction(
-                createMediaButtonActionIntent(KeyEvent.KEYCODE_MEDIA_FAST_FORWARD), getManager());
-        verify(getManager()).onMediaSessionAction(MediaSessionAction.SEEK_FORWARD);
-    }
-
-    @Test
-    public void testProcessMediaButton_Backward() {
-        setUpService();
-
-        mService.processAction(
-                createMediaButtonActionIntent(KeyEvent.KEYCODE_MEDIA_REWIND), getManager());
-        verify(getManager()).onMediaSessionAction(MediaSessionAction.SEEK_BACKWARD);
-    }
-
-    @Test
-    public void testProcessMediaButtonActionWithNoKeyEvent() {
-        setUpService();
-
-        clearInvocations(getManager());
-        mService.processAction(new Intent(Intent.ACTION_MEDIA_BUTTON), getManager());
-
-        verifyZeroInteractions(getManager());
-    }
-
-    @Test
-    public void testProcessMediaButtonActionWithWrongTypeKeyEvent() {
-        setUpService();
-
-        clearInvocations(getManager());
-        mService.processAction(
-                new Intent(Intent.ACTION_MEDIA_BUTTON)
-                        .putExtra(Intent.EXTRA_KEY_EVENT,
-                                new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY)),
-                getManager());
-        mService.processAction(new Intent(Intent.ACTION_MEDIA_BUTTON)
-                                       .putExtra(Intent.EXTRA_KEY_EVENT,
-                                               new KeyEvent(KeyEvent.ACTION_MULTIPLE,
-                                                       KeyEvent.KEYCODE_MEDIA_PLAY)),
-                getManager());
-
-        verifyZeroInteractions(getManager());
     }
 
     @Test

@@ -406,7 +406,7 @@ class PolicyUpdateServiceTest : public ExtensionUpdateClientBaseTest,
     const base::FilePath crx_path =
         test_data_dir_.AppendASCII("updater/v1.crx");
     ExtensionDownloader::set_test_delegate(&downloader_);
-    downloader_.AddResponse(id_, "2", crx_path);
+    downloader_.AddResponse(id_, "0.10", crx_path);
   }
 
   void SetUpNetworkInterceptors() override {

@@ -359,7 +359,8 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
     fetcher->SetResourceLoadObserver(
         MakeGarbageCollected<ResourceLoadObserverForWorker>(
             *probe::ToCoreProbeSink(static_cast<ExecutionContext*>(this)),
-            fetcher->GetProperties(), web_worker_fetch_context_));
+            fetcher->GetProperties(), web_worker_fetch_context_,
+            GetDevToolsToken()));
   } else {
     auto& properties =
         *MakeGarbageCollected<DetachableResourceFetcherProperties>(

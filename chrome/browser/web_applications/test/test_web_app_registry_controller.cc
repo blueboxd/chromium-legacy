@@ -6,10 +6,12 @@
 
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace web_app {
 
@@ -50,6 +52,37 @@ void TestWebAppRegistryController::UnregisterAll() {
   ScopedRegistryUpdate update(sync_bridge_.get());
   for (const AppId& app_id : registrar().GetAppIds())
     update->DeleteApp(app_id);
+}
+
+void TestWebAppRegistryController::ApplySyncChanges_AddApps(
+    std::vector<GURL> apps_to_add) {
+  std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
+      sync_bridge().CreateMetadataChangeList();
+  syncer::EntityChangeList entity_changes;
+
+  for (const GURL& app_url : apps_to_add) {
+    const AppId app_id = GenerateAppIdFromURL(app_url);
+
+    auto web_app_server_data = std::make_unique<WebApp>(app_id);
+    web_app_server_data->SetName("WebApp name");
+    web_app_server_data->SetLaunchUrl(app_url);
+    web_app_server_data->SetUserDisplayMode(DisplayMode::kStandalone);
+
+    WebApp::SyncData sync_data;
+    sync_data.name = "WebApp sync data name";
+    sync_data.theme_color = SK_ColorWHITE;
+    web_app_server_data->SetSyncData(std::move(sync_data));
+
+    std::unique_ptr<syncer::EntityData> entity_data =
+        CreateSyncEntityData(*web_app_server_data);
+
+    auto entity_change =
+        syncer::EntityChange::CreateAdd(app_id, std::move(*entity_data));
+    entity_changes.push_back(std::move(entity_change));
+  }
+
+  sync_bridge().ApplySyncChanges(std::move(metadata_change_list),
+                                 std::move(entity_changes));
 }
 
 void TestWebAppRegistryController::ApplySyncChanges_DeleteApps(

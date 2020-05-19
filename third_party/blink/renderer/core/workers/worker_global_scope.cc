@@ -178,6 +178,10 @@ void WorkerGlobalScope::Dispose() {
   WorkerOrWorkletGlobalScope::Dispose();
 }
 
+const base::UnguessableToken& WorkerGlobalScope::GetDevToolsToken() const {
+  return GetThread()->GetDevToolsWorkerToken();
+}
+
 void WorkerGlobalScope::ExceptionUnhandled(int exception_id) {
   ErrorEvent* event = pending_error_events_.Take(exception_id);
   DCHECK(event);

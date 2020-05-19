@@ -14,6 +14,10 @@ p {
   padding: 0;
 }
 
+cr-checkbox {
+  --cr-checkbox-label-padding-start: 16px;
+}
+
 .arc-tos-loaded .arc-tos-loading,
 .arc-tos-loaded .arc-tos-error,
 .arc-tos-loaded #arcTosRetryButton,

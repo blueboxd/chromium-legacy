@@ -2065,6 +2065,21 @@ TEST_P(WaylandWindowTest, NestedPopupWindowsGetCorrectParent) {
   EXPECT_TRUE(menu_window4->parent_window() == menu_window3.get());
 }
 
+TEST_P(WaylandWindowTest, DoesNotGrabPopupIfNoSeat) {
+  // Create a popup window and verify the grab serial is not set.
+  MockPlatformWindowDelegate delegate;
+  auto popup = CreateWaylandWindowWithParams(
+      PlatformWindowType::kMenu, window_->GetWidget(), gfx::Rect(0, 0, 50, 50),
+      &delegate);
+  ASSERT_TRUE(popup);
+
+  Sync();
+
+  auto* test_popup = GetPopupByWidget(popup->GetWidget());
+  ASSERT_TRUE(test_popup);
+  EXPECT_EQ(test_popup->grab_serial(), 0u);
+}
+
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandWindowTest,
                          ::testing::Values(kXdgShellStable));

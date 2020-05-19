@@ -103,6 +103,7 @@ class FrameOverlay;
 class FrameSelection;
 class FrameWidget;
 class InputMethodController;
+class InspectorIssueReporter;
 class InspectorTraceEvents;
 class CoreProbeSink;
 class IdlenessDetector;
@@ -713,6 +714,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   Member<PerformanceMonitor> performance_monitor_;
   Member<AdTracker> ad_tracker_;
   Member<IdlenessDetector> idleness_detector_;
+  Member<InspectorIssueReporter> inspector_issue_reporter_;
   Member<InspectorTraceEvents> inspector_trace_events_;
   // SmoothScrollSequencer is only populated for local roots; all local frames
   // use the instance owned by their local root.

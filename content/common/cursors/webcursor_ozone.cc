@@ -6,17 +6,20 @@
 
 #include <algorithm>
 
+#include "base/check_op.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/cursor/cursor_lookup.h"
-#include "ui/base/cursor/cursor_util.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 
 namespace content {
 
 ui::PlatformCursor WebCursor::GetPlatformCursor(const ui::Cursor& cursor) {
+  // The other cursor types are set in CursorLoaderOzone
+  DCHECK_EQ(cursor.type(), ui::mojom::CursorType::kCustom);
+
   if (!platform_cursor_) {
     platform_cursor_ = ui::CursorFactoryOzone::GetInstance()->CreateImageCursor(
-        GetCursorBitmap(cursor), GetCursorHotspot(cursor),
+        cursor.custom_bitmap(), cursor.custom_hotspot(),
         cursor.image_scale_factor());
   }
 

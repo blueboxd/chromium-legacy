@@ -223,6 +223,10 @@ HRESULT GetCommandLineForEntrypoint(HINSTANCE dll_handle,
 // failure or no name is associated with the |sid|.
 HRESULT LookupLocalizedNameBySid(PSID sid, base::string16* localized_name);
 
+// Gets localalized name for builtin administrator account.
+HRESULT GetLocalizedNameBuiltinAdministratorAccount(
+    base::string16* builtin_localized_admin_name);
+
 // Looks up the name associated to the well known |sid_type| (if any). Returns
 // an error on any failure or no name is associated with the |sid_type|.
 HRESULT LookupLocalizedNameForWellKnownSid(WELL_KNOWN_SID_TYPE sid_type,

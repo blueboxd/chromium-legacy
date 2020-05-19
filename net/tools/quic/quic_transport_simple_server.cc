@@ -33,6 +33,17 @@ constexpr size_t kMaxReadsPerEvent = 32;
 constexpr size_t kMaxNewConnectionsPerEvent = 32;
 constexpr int kReadBufferSize = 2 * quic::kMaxIncomingPacketSize;
 
+// TODO(vasilvv): move this into the shared code.
+quic::ParsedQuicVersionVector AllVersionsValidForQuicTransport() {
+  quic::ParsedQuicVersionVector result;
+  for (quic::ParsedQuicVersion version : quic::AllSupportedVersions()) {
+    if (!quic::IsVersionValidForQuicTransport(version))
+      continue;
+    result.push_back(version);
+  }
+  return result;
+}
+
 }  // namespace
 
 class QuicTransportSimpleServerSessionHelper
@@ -52,7 +63,7 @@ QuicTransportSimpleServer::QuicTransportSimpleServer(
     std::vector<url::Origin> accepted_origins,
     std::unique_ptr<quic::ProofSource> proof_source)
     : port_(port),
-      version_manager_({quic::DefaultVersionForQuicTransport()}),
+      version_manager_(AllVersionsValidForQuicTransport()),
       clock_(QuicChromiumClock::GetInstance()),
       crypto_config_(kSourceAddressTokenSecret,
                      quic::QuicRandom::GetInstance(),

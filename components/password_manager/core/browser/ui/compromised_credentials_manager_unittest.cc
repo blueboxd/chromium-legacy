@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/ui/compromised_credentials_provider.h"
+#include "components/password_manager/core/browser/ui/compromised_credentials_manager.h"
 
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece_forward.h"
@@ -33,16 +33,16 @@ using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::IsEmpty;
 
-struct MockCompromisedCredentialsProviderObserver
-    : CompromisedCredentialsProvider::Observer {
+struct MockCompromisedCredentialsManagerObserver
+    : CompromisedCredentialsManager::Observer {
   MOCK_METHOD(void,
               OnCompromisedCredentialsChanged,
-              (CompromisedCredentialsProvider::CredentialsView),
+              (CompromisedCredentialsManager::CredentialsView),
               (override));
 };
 
-using StrictMockCompromisedCredentialsProviderObserver =
-    ::testing::StrictMock<MockCompromisedCredentialsProviderObserver>;
+using StrictMockCompromisedCredentialsManagerObserver =
+    ::testing::StrictMock<MockCompromisedCredentialsManagerObserver>;
 
 CompromisedCredentials MakeCompromised(
     base::StringPiece signon_realm,
@@ -65,37 +65,74 @@ PasswordForm MakeSavedPassword(base::StringPiece signon_realm,
   return form;
 }
 
-class CompromisedCredentialsProviderTest : public ::testing::Test {
- protected:
-  CompromisedCredentialsProviderTest() { store_->Init(/*prefs=*/nullptr); }
+LeakCheckCredential MakeLeakCredential(base::StringPiece username,
+                                       base::StringPiece password) {
+  return LeakCheckCredential(base::ASCIIToUTF16(username),
+                             base::ASCIIToUTF16(password));
+}
 
-  ~CompromisedCredentialsProviderTest() override {
+CredentialWithPassword MakeComprmisedCredential(
+    PasswordForm form,
+    CompromisedCredentials credential) {
+  CredentialWithPassword credential_with_password((CredentialView(form)));
+  credential_with_password.create_time = credential.create_time;
+  credential_with_password.compromise_type =
+      credential.compromise_type == CompromiseType::kLeaked
+          ? CompromiseTypeFlags::kCredentialLeaked
+          : CompromiseTypeFlags::kCredentialPhished;
+  return credential_with_password;
+}
+
+class CompromisedCredentialsManagerTest : public ::testing::Test {
+ protected:
+  CompromisedCredentialsManagerTest() { store_->Init(/*prefs=*/nullptr); }
+
+  ~CompromisedCredentialsManagerTest() override {
     store_->ShutdownOnUIThread();
     task_env_.RunUntilIdle();
   }
 
   TestPasswordStore& store() { return *store_; }
-  CompromisedCredentialsProvider& provider() { return provider_; }
+  CompromisedCredentialsManager& provider() { return provider_; }
 
   void RunUntilIdle() { task_env_.RunUntilIdle(); }
 
  private:
-  base::test::SingleThreadTaskEnvironment task_env_;
+  base::test::SingleThreadTaskEnvironment task_env_{
+      base::test::SingleThreadTaskEnvironment::TimeSource::MOCK_TIME};
   scoped_refptr<TestPasswordStore> store_ =
       base::MakeRefCounted<TestPasswordStore>();
   SavedPasswordsPresenter presenter_{store_};
-  CompromisedCredentialsProvider provider_{store_, &presenter_};
+  CompromisedCredentialsManager provider_{store_, &presenter_};
 };
 
 }  // namespace
 
+bool operator==(const CredentialWithPassword& lhs,
+                const CredentialWithPassword& rhs) {
+  return lhs.signon_realm == rhs.signon_realm && lhs.username == rhs.username &&
+         lhs.create_time == rhs.create_time &&
+         lhs.compromise_type == rhs.compromise_type &&
+         lhs.password == rhs.password;
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const CredentialWithPassword& credential) {
+  return out << "{ signon_realm: " << credential.signon_realm
+             << ", username: " << credential.username
+             << ", create_time: " << credential.create_time
+             << ", compromise_type: "
+             << static_cast<int>(credential.compromise_type)
+             << ", password: " << credential.password << " }";
+}
+
 // Tests whether adding and removing an observer works as expected.
-TEST_F(CompromisedCredentialsProviderTest,
+TEST_F(CompromisedCredentialsManagerTest,
        NotifyObserversAboutCompromisedCredentialChanges) {
   std::vector<CompromisedCredentials> credentials = {
       MakeCompromised(kExampleCom, kUsername1)};
 
-  StrictMockCompromisedCredentialsProviderObserver observer;
+  StrictMockCompromisedCredentialsManagerObserver observer;
   provider().AddObserver(&observer);
 
   // Adding a compromised credential should notify observers.
@@ -135,14 +172,14 @@ TEST_F(CompromisedCredentialsProviderTest,
 
 // Tests removing a compromised credentials by compromise type triggers an
 // observer works as expected.
-TEST_F(CompromisedCredentialsProviderTest,
+TEST_F(CompromisedCredentialsManagerTest,
        NotifyObserversAboutRemovingCompromisedCredentialsByCompromisedType) {
   CompromisedCredentials phished_credentials =
       MakeCompromised(kExampleCom, kUsername1, CompromiseType::kPhished);
   CompromisedCredentials leaked_credentials =
       MakeCompromised(kExampleCom, kUsername1, CompromiseType::kLeaked);
 
-  StrictMockCompromisedCredentialsProviderObserver observer;
+  StrictMockCompromisedCredentialsManagerObserver observer;
   provider().AddObserver(&observer);
   EXPECT_CALL(observer, OnCompromisedCredentialsChanged);
   store().AddCompromisedCredentials(phished_credentials);
@@ -169,9 +206,9 @@ TEST_F(CompromisedCredentialsProviderTest,
 }
 
 // Tests whether adding and removing an observer works as expected.
-TEST_F(CompromisedCredentialsProviderTest,
+TEST_F(CompromisedCredentialsManagerTest,
        NotifyObserversAboutSavedPasswordsChanges) {
-  StrictMockCompromisedCredentialsProviderObserver observer;
+  StrictMockCompromisedCredentialsManagerObserver observer;
   provider().AddObserver(&observer);
 
   PasswordForm saved_password =
@@ -202,7 +239,7 @@ TEST_F(CompromisedCredentialsProviderTest,
 
 // Tests that the provider is able to join a single password with a compromised
 // credential.
-TEST_F(CompromisedCredentialsProviderTest, JoinSingleCredentials) {
+TEST_F(CompromisedCredentialsManagerTest, JoinSingleCredentials) {
   PasswordForm password =
       MakeSavedPassword(kExampleCom, kUsername1, kPassword1);
   CompromisedCredentials credential = MakeCompromised(kExampleCom, kUsername1);
@@ -211,14 +248,15 @@ TEST_F(CompromisedCredentialsProviderTest, JoinSingleCredentials) {
   store().AddCompromisedCredentials(credential);
   RunUntilIdle();
 
-  CredentialWithPassword expected(credential);
+  CredentialWithPassword expected =
+      MakeComprmisedCredential(password, credential);
   expected.password = password.password_value;
   EXPECT_THAT(provider().GetCompromisedCredentials(), ElementsAre(expected));
 }
 
 // Tests that the provider is able to join a password with a credential that was
 // compromised in multiple ways.
-TEST_F(CompromisedCredentialsProviderTest, JoinPhishedAndLeaked) {
+TEST_F(CompromisedCredentialsManagerTest, JoinPhishedAndLeaked) {
   PasswordForm password =
       MakeSavedPassword(kExampleCom, kUsername1, kPassword1);
   CompromisedCredentials leaked =
@@ -231,17 +269,17 @@ TEST_F(CompromisedCredentialsProviderTest, JoinPhishedAndLeaked) {
   store().AddCompromisedCredentials(phished);
   RunUntilIdle();
 
-  CredentialWithPassword expected1(leaked);
-  expected1.password = password.password_value;
-  CredentialWithPassword expected2(phished);
-  expected2.password = password.password_value;
-  EXPECT_THAT(provider().GetCompromisedCredentials(),
-              ElementsAre(expected1, expected2));
+  CredentialWithPassword expected = MakeComprmisedCredential(password, leaked);
+  expected.password = password.password_value;
+  expected.compromise_type = (CompromiseTypeFlags::kCredentialLeaked |
+                              CompromiseTypeFlags::kCredentialPhished);
+
+  EXPECT_THAT(provider().GetCompromisedCredentials(), ElementsAre(expected));
 }
 
 // Tests that the provider reacts whenever the saved passwords or the
 // compromised credentials change.
-TEST_F(CompromisedCredentialsProviderTest, ReactToChangesInBothTables) {
+TEST_F(CompromisedCredentialsManagerTest, ReactToChangesInBothTables) {
   std::vector<PasswordForm> passwords = {
       MakeSavedPassword(kExampleCom, kUsername1, kPassword1),
       MakeSavedPassword(kExampleCom, kUsername2, kPassword2)};
@@ -250,10 +288,9 @@ TEST_F(CompromisedCredentialsProviderTest, ReactToChangesInBothTables) {
       MakeCompromised(kExampleCom, kUsername1),
       MakeCompromised(kExampleCom, kUsername2)};
 
-  std::vector<CredentialWithPassword> expected(credentials.begin(),
-                                               credentials.end());
-  expected[0].password = passwords[0].password_value;
-  expected[1].password = passwords[1].password_value;
+  std::vector<CredentialWithPassword> expected;
+  expected.push_back(MakeComprmisedCredential(passwords[0], credentials[0]));
+  expected.push_back(MakeComprmisedCredential(passwords[1], credentials[1]));
 
   store().AddLogin(passwords[0]);
   RunUntilIdle();
@@ -283,7 +320,7 @@ TEST_F(CompromisedCredentialsProviderTest, ReactToChangesInBothTables) {
 
 // Tests that the provider is able to join multiple passwords with compromised
 // credentials.
-TEST_F(CompromisedCredentialsProviderTest, JoinMultipleCredentials) {
+TEST_F(CompromisedCredentialsManagerTest, JoinMultipleCredentials) {
   std::vector<PasswordForm> passwords = {
       MakeSavedPassword(kExampleCom, kUsername1, kPassword1),
       MakeSavedPassword(kExampleCom, kUsername2, kPassword2)};
@@ -298,11 +335,10 @@ TEST_F(CompromisedCredentialsProviderTest, JoinMultipleCredentials) {
   store().AddCompromisedCredentials(credentials[1]);
   RunUntilIdle();
 
-  CredentialWithPassword expected1(credentials[0]);
-  expected1.password = passwords[0].password_value;
-
-  CredentialWithPassword expected2(credentials[1]);
-  expected2.password = passwords[1].password_value;
+  CredentialWithPassword expected1 =
+      MakeComprmisedCredential(passwords[0], credentials[0]);
+  CredentialWithPassword expected2 =
+      MakeComprmisedCredential(passwords[1], credentials[1]);
 
   EXPECT_THAT(provider().GetCompromisedCredentials(),
               ElementsAre(expected1, expected2));
@@ -310,7 +346,7 @@ TEST_F(CompromisedCredentialsProviderTest, JoinMultipleCredentials) {
 
 // Tests that joining a compromised credential with saved passwords with a
 // different username results in an empty list.
-TEST_F(CompromisedCredentialsProviderTest, JoinWitDifferentUsername) {
+TEST_F(CompromisedCredentialsManagerTest, JoinWitDifferentUsername) {
   std::vector<PasswordForm> passwords = {
       MakeSavedPassword(kExampleCom, kUsername2, kPassword1),
       MakeSavedPassword(kExampleCom, kUsername2, kPassword2)};
@@ -327,7 +363,7 @@ TEST_F(CompromisedCredentialsProviderTest, JoinWitDifferentUsername) {
 
 // Tests that joining a compromised credential with saved passwords with a
 // matching username but different signon_realm results in an empty list.
-TEST_F(CompromisedCredentialsProviderTest, JoinWitDifferentSignonRealm) {
+TEST_F(CompromisedCredentialsManagerTest, JoinWitDifferentSignonRealm) {
   std::vector<PasswordForm> passwords = {
       MakeSavedPassword(kExampleOrg, kUsername1, kPassword1),
       MakeSavedPassword(kExampleOrg, kUsername1, kPassword2)};
@@ -345,7 +381,7 @@ TEST_F(CompromisedCredentialsProviderTest, JoinWitDifferentSignonRealm) {
 // Tests that joining a compromised credential with multiple saved passwords for
 // the same signon_realm and username combination results in multiple entries
 // when the passwords are distinct.
-TEST_F(CompromisedCredentialsProviderTest, JoinWithMultipleDistinctPasswords) {
+TEST_F(CompromisedCredentialsManagerTest, JoinWithMultipleDistinctPasswords) {
   std::vector<PasswordForm> passwords = {
       MakeSavedPassword(kExampleCom, kUsername1, kPassword1, "element_1"),
       MakeSavedPassword(kExampleCom, kUsername1, kPassword2, "element_2")};
@@ -357,11 +393,10 @@ TEST_F(CompromisedCredentialsProviderTest, JoinWithMultipleDistinctPasswords) {
   store().AddCompromisedCredentials(credential);
   RunUntilIdle();
 
-  CredentialWithPassword expected1(credential);
-  expected1.password = passwords[0].password_value;
-
-  CredentialWithPassword expected2(credential);
-  expected2.password = passwords[1].password_value;
+  CredentialWithPassword expected1 =
+      MakeComprmisedCredential(passwords[0], credential);
+  CredentialWithPassword expected2 =
+      MakeComprmisedCredential(passwords[1], credential);
 
   EXPECT_THAT(provider().GetCompromisedCredentials(),
               ElementsAre(expected1, expected2));
@@ -370,7 +405,7 @@ TEST_F(CompromisedCredentialsProviderTest, JoinWithMultipleDistinctPasswords) {
 // Tests that joining a compromised credential with multiple saved passwords for
 // the same signon_realm and username combination results in a single entry
 // when the passwords are the same.
-TEST_F(CompromisedCredentialsProviderTest, JoinWithMultipleRepeatedPasswords) {
+TEST_F(CompromisedCredentialsManagerTest, JoinWithMultipleRepeatedPasswords) {
   CompromisedCredentials credential = MakeCompromised(kExampleCom, kUsername1);
   std::vector<PasswordForm> passwords = {
       MakeSavedPassword(kExampleCom, kUsername1, kPassword1, "element_1"),
@@ -381,10 +416,110 @@ TEST_F(CompromisedCredentialsProviderTest, JoinWithMultipleRepeatedPasswords) {
   store().AddCompromisedCredentials(credential);
   RunUntilIdle();
 
-  CredentialWithPassword expected(credential);
-  expected.password = passwords[0].password_value;
+  CredentialWithPassword expected =
+      MakeComprmisedCredential(passwords[0], credential);
 
   EXPECT_THAT(provider().GetCompromisedCredentials(), ElementsAre(expected));
+}
+
+// Tests that verifies mapping compromised credentials to passwords works
+// correctly.
+TEST_F(CompromisedCredentialsManagerTest, MapCompromisedPasswordsToPasswords) {
+  std::vector<PasswordForm> passwords = {
+      MakeSavedPassword(kExampleCom, kUsername1, kPassword1, "element_1"),
+      MakeSavedPassword(kExampleCom, kUsername1, kPassword1, "element_2"),
+      MakeSavedPassword(kExampleOrg, kUsername2, kPassword2)};
+
+  std::vector<CompromisedCredentials> credentials = {
+      MakeCompromised(kExampleCom, kUsername1),
+      MakeCompromised(kExampleOrg, kUsername2)};
+
+  std::vector<CredentialWithPassword> credentuals_with_password;
+  credentuals_with_password.push_back(
+      MakeComprmisedCredential(passwords[0], credentials[0]));
+  credentuals_with_password.push_back(
+      MakeComprmisedCredential(passwords[1], credentials[0]));
+  credentuals_with_password.push_back(
+      MakeComprmisedCredential(passwords[2], credentials[1]));
+
+  store().AddLogin(passwords[0]);
+  store().AddLogin(passwords[1]);
+  store().AddLogin(passwords[2]);
+  store().AddCompromisedCredentials(credentials[0]);
+  store().AddCompromisedCredentials(credentials[1]);
+
+  RunUntilIdle();
+  EXPECT_THAT(provider().GetSavedPasswordsFor(credentuals_with_password[0]),
+              ElementsAreArray(store().stored_passwords().at(kExampleCom)));
+
+  EXPECT_THAT(provider().GetSavedPasswordsFor(credentuals_with_password[1]),
+              ElementsAreArray(store().stored_passwords().at(kExampleCom)));
+
+  EXPECT_THAT(provider().GetSavedPasswordsFor(credentuals_with_password[2]),
+              ElementsAreArray(store().stored_passwords().at(kExampleOrg)));
+}
+
+// Test verifies that saving LeakCheckCredential via provider adds expected
+// compromised credential.
+TEST_F(CompromisedCredentialsManagerTest, SaveCompromisedPassword) {
+  PasswordForm password_form =
+      MakeSavedPassword(kExampleCom, kUsername1, kPassword1);
+  LeakCheckCredential credential = MakeLeakCredential(kUsername1, kPassword1);
+  CompromisedCredentials compromised_credential =
+      MakeCompromised(kExampleCom, kUsername1);
+
+  store().AddLogin(password_form);
+  RunUntilIdle();
+
+  CredentialWithPassword expected =
+      MakeComprmisedCredential(password_form, compromised_credential);
+  expected.create_time = base::Time::Now();
+
+  provider().SaveCompromisedCredential(credential);
+  RunUntilIdle();
+
+  EXPECT_THAT(provider().GetCompromisedCredentials(), ElementsAre(expected));
+}
+
+// Test verifies that editing Compromised Credential via provider change the
+// original password form.
+TEST_F(CompromisedCredentialsManagerTest, UpdateCompromisedPassword) {
+  PasswordForm password_form =
+      MakeSavedPassword(kExampleCom, kUsername1, kPassword1);
+  CompromisedCredentials credential = MakeCompromised(kExampleCom, kUsername1);
+
+  store().AddLogin(password_form);
+  store().AddCompromisedCredentials(credential);
+
+  RunUntilIdle();
+  CredentialWithPassword expected =
+      MakeComprmisedCredential(password_form, credential);
+
+  provider().UpdateCompromisedCredentials(expected, kPassword2);
+  RunUntilIdle();
+  expected.password = base::UTF8ToUTF16(kPassword2);
+
+  EXPECT_THAT(provider().GetCompromisedCredentials(), ElementsAre(expected));
+}
+
+TEST_F(CompromisedCredentialsManagerTest, RemoveCompromisedCredential) {
+  CompromisedCredentials credential = MakeCompromised(kExampleCom, kUsername1);
+  PasswordForm password =
+      MakeSavedPassword(kExampleCom, kUsername1, kPassword1);
+
+  store().AddLogin(password);
+  store().AddCompromisedCredentials(credential);
+  RunUntilIdle();
+
+  CredentialWithPassword expected =
+      MakeComprmisedCredential(password, credential);
+  expected.password = password.password_value;
+
+  EXPECT_THAT(provider().GetCompromisedCredentials(), ElementsAre(expected));
+
+  EXPECT_TRUE(provider().RemoveCompromisedCredential(expected));
+  RunUntilIdle();
+  EXPECT_THAT(provider().GetCompromisedCredentials(), IsEmpty());
 }
 
 }  // namespace password_manager

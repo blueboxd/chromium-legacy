@@ -1440,15 +1440,15 @@ FloatRoundedRect ComputedStyle::GetRoundedInnerBorderFor(
   bool horizontal = IsHorizontalWritingMode();
 
   int left_width = (!horizontal || include_logical_left_edge)
-                       ? roundf(BorderLeftWidth())
+                       ? floorf(BorderLeftWidth())
                        : 0;
   int right_width = (!horizontal || include_logical_right_edge)
-                        ? roundf(BorderRightWidth())
+                        ? floorf(BorderRightWidth())
                         : 0;
   int top_width =
-      (horizontal || include_logical_left_edge) ? roundf(BorderTopWidth()) : 0;
+      (horizontal || include_logical_left_edge) ? floorf(BorderTopWidth()) : 0;
   int bottom_width = (horizontal || include_logical_right_edge)
-                         ? roundf(BorderBottomWidth())
+                         ? floorf(BorderBottomWidth())
                          : 0;
 
   return GetRoundedInnerBorderFor(

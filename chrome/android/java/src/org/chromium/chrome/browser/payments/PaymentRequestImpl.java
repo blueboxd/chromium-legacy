@@ -897,14 +897,12 @@ public class PaymentRequestImpl
         mUI = new PaymentRequestUI(activity, this, mMerchantSupportsAutofillCards,
                 !PaymentPreferencesUtil.isPaymentCompleteOnce(), mMerchantName, mTopLevelOrigin,
                 SecurityStateModel.getSecurityLevelForWebContents(mWebContents),
-                new ShippingStrings(mShippingType), mPaymentUisShowStateReconciler);
+                new ShippingStrings(mShippingType), mPaymentUisShowStateReconciler,
+                Profile.fromWebContents(mWebContents));
         activity.getLifecycleDispatcher().register(mUI);
 
-        // TODO(https://crbug.com/1048632): Use the current profile (i.e., regular profile or
-        // incognito profile) instead of always using regular profile. It works correctly now, but
-        // it is not safe.
         final FaviconHelper faviconHelper = new FaviconHelper();
-        faviconHelper.getLocalFaviconImageForURL(Profile.getLastUsedRegularProfile(),
+        faviconHelper.getLocalFaviconImageForURL(Profile.fromWebContents(mWebContents),
                 mWebContents.getLastCommittedUrl(),
                 activity.getResources().getDimensionPixelSize(R.dimen.payments_favicon_size),
                 (bitmap, iconUrl) -> {

@@ -2194,7 +2194,8 @@ TEST_F(WebMediaPlayerImplTest, MemDumpReporting) {
 }
 
 // Verify that a demuxer override is used when specified.
-TEST_F(WebMediaPlayerImplTest, DemuxerOverride) {
+// TODO(https://crbug.com/1084476): This test is flaky.
+TEST_F(WebMediaPlayerImplTest, DISABLED_DemuxerOverride) {
   std::unique_ptr<MockDemuxer> demuxer =
       std::make_unique<NiceMock<MockDemuxer>>();
   StrictMock<MockDemuxerStream> stream(DemuxerStream::AUDIO);

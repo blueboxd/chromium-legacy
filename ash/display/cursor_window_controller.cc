@@ -23,7 +23,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/cursor/cursor_lookup.h"
 #include "ui/base/cursor/cursors_aura.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -304,11 +303,11 @@ void CursorWindowController::UpdateCursorImage() {
 
   gfx::ImageSkia image;
   if (cursor_.type() == ui::mojom::CursorType::kCustom) {
-    SkBitmap bitmap = GetCursorBitmap(cursor_);
+    const SkBitmap& bitmap = cursor_.custom_bitmap();
     if (bitmap.isNull())
       return;
     image = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-    hot_point_ = GetCursorHotspot(cursor_);
+    hot_point_ = cursor_.custom_hotspot();
   } else {
     int resource_id;
     if (!ui::GetCursorDataFor(cursor_size_, cursor_.type(), cursor_scale,

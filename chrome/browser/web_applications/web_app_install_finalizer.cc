@@ -193,7 +193,16 @@ void WebAppInstallFinalizer::FinalizeFallbackInstallAfterSync(
     InstallFinalizedCallback callback) {
   const WebApp* app_in_sync_install = GetWebAppRegistrar().GetAppById(app_id);
   DCHECK(app_in_sync_install);
-  DCHECK(app_in_sync_install->is_in_sync_install());
+
+  // This |is_in_sync_install| web app entry might be already overwritten by
+  // FinalizeInstall from a parallel bookmark app install. Do not overwrite
+  // the web app entry, ignore this fallback install to prefer bookmark app
+  // install data.
+  if (!app_in_sync_install->is_in_sync_install()) {
+    std::move(callback).Run(app_id,
+                            InstallResultCode::kSuccessAlreadyInstalled);
+    return;
+  }
 
   // Promote the app in sync install to a full user-visible app using the poor
   // data that we've got from sync. Prepare copy-on-write:

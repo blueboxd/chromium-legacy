@@ -7,7 +7,9 @@
 
 #include <map>
 #include <queue>
+#include <vector>
 
+#include "base/containers/queue.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
 #include "url/gurl.h"
 
@@ -27,8 +29,12 @@ class TestWebAppUrlLoader : public WebAppUrlLoader {
   // order they were issued.
   void ProcessLoadUrlRequests();
 
-  // Sets the result for the next loader that will be created.
+  // Sets the result for the next loader that will be created. Will load with
+  // the result just once.
   void SetNextLoadUrlResult(const GURL& url, Result result);
+  // Sets sequential results for next multiple loads of the given |url|.
+  void AddNextLoadUrlResults(const GURL& url,
+                             const std::vector<Result>& results);
 
   // WebAppUrlLoader
   void LoadUrl(const GURL& url,
@@ -42,7 +48,15 @@ class TestWebAppUrlLoader : public WebAppUrlLoader {
  private:
   bool should_save_requests_ = false;
 
-  std::map<GURL, Result> next_result_map_;
+  struct UrlResponses {
+    UrlResponses();
+    ~UrlResponses();
+
+    // Each LoadUrl() gets next result for a given url.
+    base::queue<Result> results;
+  };
+
+  std::map<GURL, UrlResponses> next_result_map_;
 
   std::queue<std::pair<GURL, ResultCallback>> pending_requests_;
 

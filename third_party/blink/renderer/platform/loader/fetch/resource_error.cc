@@ -202,7 +202,6 @@ bool ResourceError::ShouldCollapseInitiator() const {
 }
 
 namespace {
-
 blink::ResourceRequestBlockedReason
 BlockedByResponseReasonToResourceRequestBlockedReason(
     network::mojom::BlockedByResponseReason reason) {
@@ -227,8 +226,8 @@ BlockedByResponseReasonToResourceRequestBlockedReason(
   NOTREACHED();
   return blink::ResourceRequestBlockedReason::kOther;
 }
-
 }  // namespace
+
 base::Optional<ResourceRequestBlockedReason>
 ResourceError::GetResourceRequestBlockedReason() const {
   if (error_code_ != net::ERR_BLOCKED_BY_CLIENT &&
@@ -240,6 +239,15 @@ ResourceError::GetResourceRequestBlockedReason() const {
         *blocked_by_response_reason_);
   }
   return static_cast<ResourceRequestBlockedReason>(extended_error_code_);
+}
+
+base::Optional<network::mojom::BlockedByResponseReason>
+ResourceError::GetBlockedByResponseReason() const {
+  if (error_code_ != net::ERR_BLOCKED_BY_CLIENT &&
+      error_code_ != net::ERR_BLOCKED_BY_RESPONSE) {
+    return base::nullopt;
+  }
+  return blocked_by_response_reason_;
 }
 
 namespace {

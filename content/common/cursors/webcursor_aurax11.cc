@@ -4,23 +4,23 @@
 
 #include "content/common/cursors/webcursor.h"
 
-
+#include "base/check_op.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/cursor/cursor_loader_x11.h"
-#include "ui/base/cursor/cursor_lookup.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/x/x11.h"
 
 namespace content {
 
 ui::PlatformCursor WebCursor::GetPlatformCursor(const ui::Cursor& cursor) {
+  // The other cursor types are set in CursorLoaderX11
+  DCHECK_EQ(cursor.type(), ui::mojom::CursorType::kCustom);
+
   if (platform_cursor_)
     return platform_cursor_;
 
-  SkBitmap bitmap = GetCursorBitmap(cursor);
-
-  XcursorImage* image =
-      ui::SkBitmapToXcursorImage(bitmap, GetCursorHotspot(cursor));
+  XcursorImage* image = ui::SkBitmapToXcursorImage(cursor.custom_bitmap(),
+                                                   cursor.custom_hotspot());
   platform_cursor_ = ui::CreateReffedCustomXCursor(image);
   return platform_cursor_;
 }

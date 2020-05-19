@@ -664,6 +664,39 @@ HRESULT GetCommandLineForEntrypoint(HINSTANCE dll_handle,
   return hr;
 }
 
+// Gets localized name for builtin administrator account. Extracting
+// localized name for builtin administrator account requires DomainSid
+// to be passed onto the CreateWellKnownSid function unlike any other
+// WellKnownSid as per microsoft documentation. That's why we need to
+// first extract the DomainSid (even for local accounts) and pass it as
+// a parameter to the CreateWellKnownSid function call.
+HRESULT GetLocalizedNameBuiltinAdministratorAccount(
+    base::string16* builtin_localized_admin_name) {
+  LSA_HANDLE PolicyHandle;
+  LSA_OBJECT_ATTRIBUTES oa = {sizeof(oa)};
+  NTSTATUS status =
+      LsaOpenPolicy(0, &oa, POLICY_VIEW_LOCAL_INFORMATION, &PolicyHandle);
+  if (status >= 0) {
+    PPOLICY_ACCOUNT_DOMAIN_INFO ppadi;
+    status = LsaQueryInformationPolicy(
+        PolicyHandle, PolicyAccountDomainInformation, (void**)&ppadi);
+    if (status >= 0) {
+      BYTE well_known_sid[SECURITY_MAX_SID_SIZE];
+      DWORD size_local_users_group_sid = base::size(well_known_sid);
+      if (CreateWellKnownSid(::WinAccountAdministratorSid, ppadi->DomainSid,
+                             well_known_sid, &size_local_users_group_sid)) {
+        return LookupLocalizedNameBySid(well_known_sid,
+                                        builtin_localized_admin_name);
+      } else {
+        status = GetLastError();
+      }
+      LsaFreeMemory(ppadi);
+    }
+    LsaClose(PolicyHandle);
+  }
+  return status >= 0 ? S_OK : E_FAIL;
+}
+
 HRESULT LookupLocalizedNameBySid(PSID sid, base::string16* localized_name) {
   DCHECK(localized_name);
   std::vector<wchar_t> localized_name_buffer;

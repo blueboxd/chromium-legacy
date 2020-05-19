@@ -26,6 +26,9 @@ std::set<std::string> HostsFromOrigins(std::set<HostPortPair> origins) {
 }
 }  // namespace
 
+constexpr quic::ParsedQuicVersion
+    QuicTransportClient::kQuicVersionForOriginTrial;
+
 QuicTransportClient::QuicTransportClient(
     const GURL& url,
     const url::Origin& origin,
@@ -134,13 +137,16 @@ int QuicTransportClient::DoInit() {
 
   // TODO(vasilvv): check if QUIC is disabled by policy.
 
+  // Ensure that for the duration of the origin trial, a fixed QUIC transport
+  // version is available.
+  supported_versions_.push_back(kQuicVersionForOriginTrial);
+  // Add other supported versions if available.
   for (quic::ParsedQuicVersion& version :
        quic_context_->params()->supported_versions) {
-    // QuicTransport requires TLS-style ALPN.
-    if (version.handshake_protocol != quic::PROTOCOL_TLS1_3)
+    if (!quic::IsVersionValidForQuicTransport(version))
       continue;
-    if (!quic::VersionSupportsMessageFrames(version.transport_version))
-      continue;
+    if (version == kQuicVersionForOriginTrial)
+      continue;  // Skip as we've already added it above.
     supported_versions_.push_back(version);
   }
   if (supported_versions_.empty()) {

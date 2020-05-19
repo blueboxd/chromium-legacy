@@ -6,21 +6,21 @@
 
 #include <windows.h>
 
-#include "ui/base/cursor/cursor_lookup.h"
+#include "base/check_op.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/icon_util.h"
 
 namespace content {
 
 ui::PlatformCursor WebCursor::GetPlatformCursor(const ui::Cursor& cursor) {
-  if (cursor_.type() != ui::mojom::CursorType::kCustom)
-    return LoadCursor(nullptr, IDC_ARROW);
+  // The other cursor types are set in CursorLoaderWin
+  DCHECK_EQ(cursor.type(), ui::mojom::CursorType::kCustom);
 
   if (platform_cursor_)
     return platform_cursor_;
 
-  platform_cursor_ = IconUtil::CreateCursorFromSkBitmap(
-                         GetCursorBitmap(cursor), GetCursorHotspot(cursor))
+  platform_cursor_ = IconUtil::CreateCursorFromSkBitmap(cursor.custom_bitmap(),
+                                                        cursor.custom_hotspot())
                          .release();
   return platform_cursor_;
 }

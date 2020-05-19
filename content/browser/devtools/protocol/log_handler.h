@@ -31,7 +31,7 @@ class LogHandler final : public DevToolsDomainHandler, public Log::Backend {
   DispatchResponse Disable() override;
   DispatchResponse Enable() override;
 
-  void EntryAdded(std::unique_ptr<Log::LogEntry> entry);
+  void EntryAdded(Log::LogEntry* entry);
 
  private:
   std::unique_ptr<Log::Frontend> frontend_;

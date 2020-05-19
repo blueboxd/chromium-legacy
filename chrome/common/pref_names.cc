@@ -2972,11 +2972,6 @@ const char kCorsLegacyModeEnabled[] = "cors.legacy_mode.enabled";
 const char kExternalProtocolDialogShowAlwaysOpenCheckbox[] =
     "external_protocol_dialog.show_always_open_checkbox";
 
-// This pref allows the FormControlsRefresh feature to be disabled temporarily
-// from M81 through M84.
-// TODO(1034611): Remove this after M84.
-const char kUseLegacyFormControls[] = "use_legacy_form_controls";
-
 // This pref enables the ScrollToTextFragment feature.
 const char kScrollToTextFragmentEnabled[] = "scroll_to_text_fragment_enabled";
 

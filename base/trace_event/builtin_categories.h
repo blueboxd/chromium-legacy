@@ -228,7 +228,6 @@
   X(TRACE_DISABLED_BY_DEFAULT("user_action_samples"))                    \
   X(TRACE_DISABLED_BY_DEFAULT("v8.compile"))                             \
   X(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profiler"))                        \
-  X(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profiler.hires"))                  \
   X(TRACE_DISABLED_BY_DEFAULT("v8.gc"))                                  \
   X(TRACE_DISABLED_BY_DEFAULT("v8.gc_stats"))                            \
   X(TRACE_DISABLED_BY_DEFAULT("v8.ic_stats"))                            \

@@ -667,7 +667,8 @@ void DocumentLoader::BodyLoadingFinished(
   }
   GetFrameLoader().Progress().CompleteProgress(main_resource_identifier_);
   probe::DidFailLoading(probe::ToCoreProbeSink(GetFrame()),
-                        main_resource_identifier_, this, resource_error);
+                        main_resource_identifier_, this, resource_error,
+                        frame_->GetDevToolsFrameToken());
   GetFrame()->Console().DidFailLoading(this, main_resource_identifier_,
                                        resource_error);
   LoadFailed(resource_error);

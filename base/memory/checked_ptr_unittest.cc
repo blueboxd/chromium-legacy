@@ -4,6 +4,7 @@
 
 #include "base/memory/checked_ptr.h"
 
+#include <climits>
 #include <string>
 #include <tuple>
 #include <type_traits>

@@ -18,8 +18,6 @@
 #include "ui/android/view_android_observer.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-class SkBitmap;
-
 namespace cc {
 class Layer;
 }
@@ -34,6 +32,7 @@ class CopyOutputRequest;
 }
 
 namespace ui {
+class Cursor;
 class DragEventAndroid;
 class EventForwarder;
 class EventHandlerAndroid;
@@ -154,9 +153,7 @@ class UI_ANDROID_EXPORT ViewAndroid {
 
   void OnSizeChanged(int width, int height);
   void OnPhysicalBackingSizeChanged(const gfx::Size& size);
-  void OnCursorChanged(int type,
-                       const SkBitmap& custom_image,
-                       const gfx::Point& hotspot);
+  void OnCursorChanged(const Cursor& cursor);
   void OnBackgroundColorChanged(unsigned int color);
   void OnTopControlsChanged(float top_controls_offset,
                             float top_content_offset,

@@ -120,7 +120,6 @@
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include "ui/base/cursor/cursor_lookup.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/web_input_event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -2715,7 +2714,7 @@ PP_Bool PepperPluginInstanceImpl::SetCursor(PP_Instance instance,
   SkBitmap bitmap(image_data->GetMappedBitmap());
   // Make a deep copy, so that the cursor remains valid even after the original
   // image data gets freed.
-  SkBitmap dst = GetCursorBitmap(*custom_cursor);
+  SkBitmap dst = custom_cursor->custom_bitmap();
   if (!dst.tryAllocPixels(bitmap.info()) ||
       !bitmap.readPixels(dst.info(), dst.getPixels(), dst.rowBytes(), 0, 0)) {
     return PP_FALSE;

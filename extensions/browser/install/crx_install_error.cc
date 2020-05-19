@@ -84,4 +84,14 @@ bool CrxInstallError::IsCrxVerificationFailedError() const {
          std::end(kVerificationFailureReasons);
 }
 
+// Returns true if the error occurred during crx installation due to mismatch in
+// expectations from the manifest.
+bool CrxInstallError::IsCrxExpectationsFailedError() const {
+  if (type() != CrxInstallErrorType::OTHER)
+    return false;
+  const CrxInstallErrorDetail failure_reason = detail();
+  return failure_reason == CrxInstallErrorDetail::UNEXPECTED_ID ||
+         failure_reason == CrxInstallErrorDetail::MISMATCHED_VERSION;
+}
+
 }  // namespace extensions

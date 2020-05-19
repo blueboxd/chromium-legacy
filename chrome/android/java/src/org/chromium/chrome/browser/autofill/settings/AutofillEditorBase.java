@@ -28,6 +28,7 @@ import androidx.fragment.app.Fragment;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorDialog;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.browser_ui.widget.FadingEdgeScrollView;
 
@@ -93,7 +94,7 @@ public abstract class AutofillEditorBase
             getActivity().finish();
             return true;
         } else if (item.getItemId() == R.id.help_menu_id) {
-            EditorDialog.launchAutofillHelpPage(getActivity());
+            EditorDialog.launchAutofillHelpPage(getActivity(), Profile.getLastUsedRegularProfile());
             return true;
         }
 

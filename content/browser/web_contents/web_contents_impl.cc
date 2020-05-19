@@ -4301,9 +4301,6 @@ void WebContentsImpl::DidStartNavigation(NavigationHandle* navigation_handle) {
   for (auto& observer : observers_)
     observer.DidStartNavigation(navigation_handle);
 
-  if (display_cutout_host_impl_)
-    display_cutout_host_impl_->DidStartNavigation(navigation_handle);
-
   if (navigation_handle->IsInMainFrame()) {
     // When the browser is started with about:blank as the startup URL, focus
     // the location bar (which will also select its contents) so people can

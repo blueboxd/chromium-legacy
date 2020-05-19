@@ -27,7 +27,11 @@ void TestWebAppUrlLoader::ProcessLoadUrlRequests() {
     pending_requests_.pop();
 
     DCHECK(base::Contains(next_result_map_, url));
-    auto result = next_result_map_[url];
+
+    const UrlResponses& url_responses = next_result_map_[url];
+    DCHECK_EQ(1u, url_responses.results.size());
+
+    Result result = url_responses.results.front();
     next_result_map_.erase(url);
 
     std::move(callback).Run(result);
@@ -35,8 +39,17 @@ void TestWebAppUrlLoader::ProcessLoadUrlRequests() {
 }
 
 void TestWebAppUrlLoader::SetNextLoadUrlResult(const GURL& url, Result result) {
+  AddNextLoadUrlResults(url, {result});
+}
+
+void TestWebAppUrlLoader::AddNextLoadUrlResults(
+    const GURL& url,
+    const std::vector<Result>& results) {
   DCHECK(!base::Contains(next_result_map_, url)) << url;
-  next_result_map_[url] = result;
+  UrlResponses& responses = next_result_map_[url];
+
+  for (Result result : results)
+    responses.results.push(result);
 }
 
 void TestWebAppUrlLoader::LoadUrl(const GURL& url,
@@ -49,8 +62,14 @@ void TestWebAppUrlLoader::LoadUrl(const GURL& url,
   }
 
   DCHECK(base::Contains(next_result_map_, url)) << url;
-  auto result = next_result_map_[url];
-  next_result_map_.erase(url);
+  UrlResponses& responses = next_result_map_[url];
+  DCHECK(!responses.results.empty());
+
+  Result result = responses.results.front();
+  responses.results.pop();
+
+  if (responses.results.empty())
+    next_result_map_.erase(url);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), result));
@@ -60,5 +79,9 @@ void TestWebAppUrlLoader::SetAboutBlankResultLoaded() {
   SetNextLoadUrlResult(GURL("about:blank"),
                        WebAppUrlLoader::Result::kUrlLoaded);
 }
+
+TestWebAppUrlLoader::UrlResponses::UrlResponses() = default;
+
+TestWebAppUrlLoader::UrlResponses::~UrlResponses() = default;
 
 }  // namespace web_app

@@ -228,7 +228,10 @@ public class MultiWindowUtils implements ActivityStateListener {
      * Determines the name of an activity from its {@link AppTask}.
      * @param task The AppTask to get the name of.
      */
+    @TargetApi(Build.VERSION_CODES.M)
     public static String getActivityNameFromTask(AppTask task) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return "";
+
         if (task.getTaskInfo() == null || task.getTaskInfo().baseActivity == null) return "";
 
         String baseActivity = task.getTaskInfo().baseActivity.getClassName();

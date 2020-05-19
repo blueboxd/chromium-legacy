@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.autofill.prefeditor.EditorObserverForTest;
 import org.chromium.chrome.browser.payments.AddressEditor;
 import org.chromium.chrome.browser.payments.AutofillAddress;
 import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 
@@ -177,7 +178,7 @@ public class AutofillProfilesFragment extends PreferenceFragmentCompat
             }
         };
 
-        return new EditorDialog(getActivity(), runnable);
+        return new EditorDialog(getActivity(), runnable, Profile.getLastUsedRegularProfile());
     }
 
     private void editAddress(EditorDialog dialog, AutofillAddress autofillAddress) {

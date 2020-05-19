@@ -17,10 +17,12 @@ namespace blink {
 ResourceLoadObserverForWorker::ResourceLoadObserverForWorker(
     CoreProbeSink& probe,
     const ResourceFetcherProperties& properties,
-    scoped_refptr<WebWorkerFetchContext> web_context)
+    scoped_refptr<WebWorkerFetchContext> web_context,
+    const base::UnguessableToken& devtools_worker_token)
     : probe_(probe),
       fetcher_properties_(properties),
-      web_context_(std::move(web_context)) {}
+      web_context_(std::move(web_context)),
+      devtools_worker_token_(devtools_worker_token) {}
 
 ResourceLoadObserverForWorker::~ResourceLoadObserverForWorker() = default;
 
@@ -99,7 +101,8 @@ void ResourceLoadObserverForWorker::DidFailLoading(const KURL&,
                                                    const ResourceError& error,
                                                    int64_t,
                                                    IsInternalRequest) {
-  probe::DidFailLoading(probe_, identifier, nullptr, error);
+  probe::DidFailLoading(probe_, identifier, nullptr, error,
+                        devtools_worker_token_);
 }
 
 void ResourceLoadObserverForWorker::Trace(Visitor* visitor) const {

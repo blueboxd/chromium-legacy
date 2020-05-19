@@ -1173,24 +1173,6 @@ by a child template that "extends" this file.
             </intent-filter>
         </service>
 
-
-        <receiver android:name="org.chromium.chrome.browser.media.ui.MediaNotificationManager$PlaybackMediaButtonReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
-        </receiver>
-        <receiver android:name="org.chromium.chrome.browser.media.ui.MediaNotificationManager$PresentationMediaButtonReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
-        </receiver>
-        <receiver android:name="org.chromium.chrome.browser.media.ui.MediaNotificationManager$CastMediaButtonReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
-        </receiver>
-
-
         <service android:name="org.chromium.chrome.browser.tracing.TracingNotificationService"
             android:exported="false"/>
 

@@ -68,6 +68,7 @@ class CORE_EXPORT WorkletGlobalScope
   // WorkerOrWorkletGlobalScope
   void Dispose() override;
   WorkerThread* GetThread() const final;
+  const base::UnguessableToken& GetDevToolsToken() const override;
 
   virtual LocalFrame* GetFrame() const;
 

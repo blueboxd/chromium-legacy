@@ -13,10 +13,10 @@ static const unsigned kMaxIssueCount = 1000;
 
 InspectorIssueStorage::InspectorIssueStorage() = default;
 
-void InspectorIssueStorage::AddInspectorIssue(ExecutionContext* context,
+void InspectorIssueStorage::AddInspectorIssue(CoreProbeSink* sink,
                                               InspectorIssue* issue) {
   DCHECK(issues_.size() <= kMaxIssueCount);
-  probe::InspectorIssueAdded(context, issue);
+  probe::InspectorIssueAdded(sink, issue);
   if (issues_.size() == kMaxIssueCount) {
     issues_.pop_front();
   }
@@ -24,9 +24,16 @@ void InspectorIssueStorage::AddInspectorIssue(ExecutionContext* context,
 }
 
 void InspectorIssueStorage::AddInspectorIssue(
+    CoreProbeSink* sink,
+    mojom::blink::InspectorIssueInfoPtr info) {
+  AddInspectorIssue(sink, InspectorIssue::Create(std::move(info)));
+}
+
+void InspectorIssueStorage::AddInspectorIssue(
     ExecutionContext* context,
     mojom::blink::InspectorIssueInfoPtr info) {
-  AddInspectorIssue(context, InspectorIssue::Create(std::move(info)));
+  AddInspectorIssue(probe::ToCoreProbeSink(context),
+                    InspectorIssue::Create(std::move(info)));
 }
 
 void InspectorIssueStorage::Clear() {

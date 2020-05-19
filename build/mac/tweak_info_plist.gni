@@ -31,7 +31,11 @@ template("tweak_info_plist") {
     _deps = [ ":" + target_name + "_merge_plist" ]
 
     action(target_name + "_merge_plist") {
-      forward_variables_from(invoker, [ "testonly" ])
+      forward_variables_from(invoker,
+                             [
+                               "testonly",
+                               "deps",
+                             ])
       script = "//build/config/mac/plist_util.py"
       sources = invoker.info_plists
       outputs = [ _source_name ]
@@ -47,6 +51,9 @@ template("tweak_info_plist") {
 
     _source_name = invoker.info_plist
     _deps = []
+    if (defined(invoker.deps)) {
+      _deps += invoker.deps
+    }
   }
 
   action(target_name) {

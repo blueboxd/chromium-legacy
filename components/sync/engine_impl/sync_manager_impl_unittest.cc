@@ -258,7 +258,6 @@ class SyncApiTest : public testing::Test {
   syncable::Directory* dir();
   SyncEncryptionHandler* encryption_handler();
   PassphraseType GetPassphraseType(BaseTransaction* trans);
-  DirectoryCryptographer* GetCryptographer(BaseTransaction* trans);
 
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
@@ -279,10 +278,6 @@ SyncEncryptionHandler* SyncApiTest::encryption_handler() {
 
 PassphraseType SyncApiTest::GetPassphraseType(BaseTransaction* trans) {
   return dir()->GetNigoriHandler()->GetPassphraseType(trans->GetWrappedTrans());
-}
-
-DirectoryCryptographer* SyncApiTest::GetCryptographer(BaseTransaction* trans) {
-  return test_user_share_.GetCryptographer(trans->GetWrappedTrans());
 }
 
 bool SyncApiTest::ReloadDir() {
@@ -509,114 +504,6 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
   }
 }
 
-TEST_F(SyncApiTest, WriteAndReadPassword) {
-  KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "passphrase"};
-  {
-    ReadTransaction trans(FROM_HERE, user_share());
-    GetCryptographer(&trans)->AddKey(params);
-  }
-
-  {
-    WriteTransaction trans(FROM_HERE, user_share());
-    ReadNode root_node(&trans);
-    root_node.InitByRootLookup();
-
-    WriteNode password_node(&trans);
-    WriteNode::InitUniqueByCreationResult result =
-        password_node.InitUniqueByCreation(PASSWORDS, root_node, kClientTag);
-    EXPECT_EQ(WriteNode::INIT_SUCCESS, result);
-    sync_pb::PasswordSpecificsData data;
-    data.set_password_value(kPasswordValue);
-    password_node.SetPasswordSpecifics(data);
-  }
-  {
-    ReadTransaction trans(FROM_HERE, user_share());
-
-    ReadNode password_node(&trans);
-    EXPECT_EQ(BaseNode::INIT_OK,
-              password_node.InitByClientTagLookup(PASSWORDS, kClientTag));
-    const sync_pb::PasswordSpecificsData& data =
-        password_node.GetPasswordSpecifics();
-    EXPECT_EQ(kPasswordValue, data.password_value());
-  }
-}
-
-TEST_F(SyncApiTest, WritePasswordAndCheckMetadata) {
-  KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "passphrase"};
-  {
-    ReadTransaction trans(FROM_HERE, user_share());
-    GetCryptographer(&trans)->AddKey(params);
-  }
-
-  {
-    WriteTransaction trans(FROM_HERE, user_share());
-    ReadNode root_node(&trans);
-    root_node.InitByRootLookup();
-
-    WriteNode password_node(&trans);
-    WriteNode::InitUniqueByCreationResult result =
-        password_node.InitUniqueByCreation(PASSWORDS, root_node, kClientTag);
-    EXPECT_EQ(WriteNode::INIT_SUCCESS, result);
-    sync_pb::PasswordSpecificsData data;
-    data.set_password_value(kPasswordValue);
-    data.set_signon_realm(kUrl);
-    password_node.SetPasswordSpecifics(data);
-  }
-  {
-    ReadTransaction trans(FROM_HERE, user_share());
-
-    ReadNode password_node(&trans);
-    EXPECT_EQ(BaseNode::INIT_OK,
-              password_node.InitByClientTagLookup(PASSWORDS, kClientTag));
-    const sync_pb::PasswordSpecificsData& data =
-        password_node.GetPasswordSpecifics();
-    EXPECT_EQ(kPasswordValue, data.password_value());
-    EXPECT_EQ(kUrl, password_node.GetEntitySpecifics()
-                        .password()
-                        .unencrypted_metadata()
-                        .url());
-  }
-}
-
-TEST_F(SyncApiTest, WriteEncryptedTitle) {
-  KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "passphrase"};
-  {
-    ReadTransaction trans(FROM_HERE, user_share());
-    GetCryptographer(&trans)->AddKey(params);
-  }
-  encryption_handler()->EnableEncryptEverything();
-  int bookmark_id;
-  {
-    WriteTransaction trans(FROM_HERE, user_share());
-    ReadNode root_node(&trans);
-    root_node.InitByRootLookup();
-
-    WriteNode bookmark_node(&trans);
-    ASSERT_TRUE(bookmark_node.InitBookmarkByCreation(root_node, nullptr));
-    bookmark_id = bookmark_node.GetId();
-    bookmark_node.SetTitle("foo");
-
-    WriteNode pref_node(&trans);
-    WriteNode::InitUniqueByCreationResult result =
-        pref_node.InitUniqueByCreation(PREFERENCES, root_node, "bar");
-    ASSERT_EQ(WriteNode::INIT_SUCCESS, result);
-    pref_node.SetTitle("bar");
-  }
-  {
-    ReadTransaction trans(FROM_HERE, user_share());
-
-    ReadNode bookmark_node(&trans);
-    ASSERT_EQ(BaseNode::INIT_OK, bookmark_node.InitByIdLookup(bookmark_id));
-    EXPECT_EQ("foo", bookmark_node.GetTitle());
-    EXPECT_EQ(kEncryptedString, bookmark_node.GetEntry()->GetNonUniqueName());
-
-    ReadNode pref_node(&trans);
-    ASSERT_EQ(BaseNode::INIT_OK,
-              pref_node.InitByClientTagLookup(PREFERENCES, "bar"));
-    EXPECT_EQ(kEncryptedString, pref_node.GetTitle());
-  }
-}
-
 // Non-unique name should not be empty. For bookmarks non-unique name is copied
 // from bookmark title. This test verifies that setting bookmark title to ""
 // results in single space title and non-unique name in internal representation.
@@ -782,78 +669,6 @@ TEST_F(SyncApiTest, WriteNode_UniqueByCreation_UndeleteCase) {
 
   // Verify that it is gone from the index.
   EXPECT_EQ(1, GetTotalNodeCount(user_share(), preferences_root));
-}
-
-// Tests that InitUniqueByCreation called for existing encrypted entry properly
-// decrypts specifics and pust them in BaseNode::unencrypted_data_.
-TEST_F(SyncApiTest, WriteNode_UniqueByCreation_EncryptedExistingEntry) {
-  KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "passphrase"};
-  {
-    ReadTransaction trans(FROM_HERE, user_share());
-    GetCryptographer(&trans)->AddKey(params);
-  }
-  encryption_handler()->EnableEncryptEverything();
-  WriteTransaction trans(FROM_HERE, user_share());
-  ReadNode root_node(&trans);
-  root_node.InitByRootLookup();
-
-  {
-    WriteNode pref_node(&trans);
-    WriteNode::InitUniqueByCreationResult result =
-        pref_node.InitUniqueByCreation(PREFERENCES, root_node, "bar");
-    ASSERT_EQ(WriteNode::INIT_SUCCESS, result);
-    pref_node.SetTitle("bar");
-    sync_pb::EntitySpecifics entity_specifics;
-    entity_specifics.mutable_preference();
-    pref_node.SetEntitySpecifics(entity_specifics);
-  }
-  {
-    WriteNode pref_node(&trans);
-    WriteNode::InitUniqueByCreationResult result =
-        pref_node.InitUniqueByCreation(PREFERENCES, root_node, "bar");
-    ASSERT_EQ(WriteNode::INIT_SUCCESS, result);
-    // Call GetEntitySpecifics, ensure it doesn't DCHECK.
-    pref_node.GetEntitySpecifics();
-  }
-}
-
-// Tests that undeleting deleted password doesn't trigger any issues.
-// See crbug/440430.
-TEST_F(SyncApiTest, WriteNode_PasswordUniqueByCreationAfterDelete) {
-  KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "passphrase"};
-  {
-    ReadTransaction trans(FROM_HERE, user_share());
-    GetCryptographer(&trans)->AddKey(params);
-  }
-
-  WriteTransaction trans(FROM_HERE, user_share());
-  ReadNode root_node(&trans);
-  root_node.InitByRootLookup();
-  // Create new password.
-  {
-    WriteNode password_node(&trans);
-    WriteNode::InitUniqueByCreationResult result =
-        password_node.InitUniqueByCreation(PASSWORDS, root_node, "foo");
-    ASSERT_EQ(WriteNode::INIT_SUCCESS, result);
-    sync_pb::PasswordSpecificsData password_specifics;
-    password_specifics.set_password_value("secret");
-    password_node.SetPasswordSpecifics(password_specifics);
-  }
-  // Delete password.
-  {
-    WriteNode password_node(&trans);
-    BaseNode::InitByLookupResult result =
-        password_node.InitByClientTagLookup(PASSWORDS, "foo");
-    ASSERT_EQ(BaseNode::INIT_OK, result);
-    password_node.Tombstone();
-  }
-  // Create password again triggering undeletion.
-  {
-    WriteNode password_node(&trans);
-    WriteNode::InitUniqueByCreationResult result =
-        password_node.InitUniqueByCreation(PASSWORDS, root_node, "foo");
-    ASSERT_EQ(WriteNode::INIT_SUCCESS, result);
-  }
 }
 
 namespace {

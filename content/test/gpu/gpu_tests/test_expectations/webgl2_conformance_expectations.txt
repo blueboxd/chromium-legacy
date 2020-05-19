@@ -725,6 +725,7 @@ crbug.com/809595 [ no-angle linux amd ] conformance2/uniforms/simple-buffer-chan
 crbug.com/696345 [ no-angle linux amd-0x6613 ] conformance2/transform_feedback/switching-objects.html [ Failure ]
 crbug.com/913301 [ linux amd-0x6613 ] conformance2/textures/misc/generate-mipmap-with-large-base-level.html [ Failure ]
 crbug.com/809237 [ linux amd-0x6613 ] conformance2/uniforms/incompatible-texture-type-for-sampler.html [ Skip ]
+crbug.com/1018028 [ linux amd-0x6613 ] conformance/rendering/bind-framebuffer-flush-bug.html [ Failure ]
 
 ####################
 # Android failures #

@@ -10,6 +10,7 @@
 #include "base/containers/span.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_offset.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -43,7 +44,7 @@ struct PhysicalSize;
 // is faster than moving to |NGFragmentItem|.
 class CORE_EXPORT NGInlineCursorPosition {
  public:
-  using ItemsSpan = base::span<const scoped_refptr<const NGFragmentItem>>;
+  using ItemsSpan = NGFragmentItems::Span;
 
   const NGPaintFragment* PaintFragment() const { return paint_fragment_; }
   const NGFragmentItem* Item() const { return item_; }
@@ -203,7 +204,7 @@ class CORE_EXPORT NGInlineCursor {
   STACK_ALLOCATED();
 
  public:
-  using ItemsSpan = base::span<const scoped_refptr<const NGFragmentItem>>;
+  using ItemsSpan = NGFragmentItems::Span;
 
   explicit NGInlineCursor(const LayoutBlockFlow& block_flow);
   explicit NGInlineCursor(const NGFragmentItems& items);

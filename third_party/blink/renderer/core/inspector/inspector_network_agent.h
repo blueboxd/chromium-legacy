@@ -136,9 +136,12 @@ class CORE_EXPORT InspectorNetworkAgent final
                                       DocumentLoader*,
                                       const ResourceResponse&,
                                       Resource*);
-  void DidFailLoading(uint64_t identifier,
-                      DocumentLoader*,
-                      const ResourceError&);
+  void DidFailLoading(
+      CoreProbeSink* sink,
+      uint64_t identifier,
+      DocumentLoader*,
+      const ResourceError&,
+      const base::UnguessableToken& devtools_frame_or_worker_token);
   void DidCommitLoad(LocalFrame*, DocumentLoader*);
   void ScriptImported(uint64_t identifier, const String& source_string);
   void DidReceiveScriptResponse(uint64_t identifier);

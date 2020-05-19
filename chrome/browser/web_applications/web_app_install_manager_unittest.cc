@@ -399,6 +399,7 @@ class WebAppInstallManagerTest : public WebAppTest {
 
     install_manager().SetDataRetrieverFactoryForTesting(
         base::BindLambdaForTesting([this]() {
+          DCHECK(data_retriever_);
           return std::unique_ptr<WebAppDataRetriever>(
               std::move(data_retriever_));
         }));
@@ -1214,6 +1215,127 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_ExpectAppIdFailed) {
 
   // Make sure that icons have been generated for all sub sizes.
   EXPECT_TRUE(ContainsOneIconOfEachSize(icon_bitmaps));
+}
+
+TEST_F(WebAppInstallManagerTest,
+       SyncRace_InstallBookmarkAppFullThenWebAppFull) {
+  InitEmptyRegistrar();
+
+  const GURL url{"https://example.com/path"};
+  const AppId app_id = GenerateAppIdFromURL(url);
+
+  // The web site url will be loaded twice in a sequence.
+  url_loader().AddNextLoadUrlResults(url,
+                                     {WebAppUrlLoader::Result::kUrlLoaded,
+                                      WebAppUrlLoader::Result::kUrlLoaded});
+
+  // Prepare web site data for next enqueued full install (the bookmark app).
+  BuildDefaultDataRetriever(url);
+
+  auto server_bookmark_app_info = std::make_unique<WebApplicationInfo>();
+  server_bookmark_app_info->app_url = url;
+
+  bool bookmark_app_installed = false;
+  // The bookmark app object arrives first from the server, enqueue full
+  // install.
+  install_manager().InstallBookmarkAppFromSync(
+      app_id, std::move(server_bookmark_app_info),
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(app_id, installed_app_id);
+            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
+            bookmark_app_installed = true;
+          }));
+
+  base::RunLoop run_loop;
+  controller().SetInstallWebAppsAfterSyncDelegate(base::BindLambdaForTesting(
+      [&](std::vector<WebApp*> web_apps_installed,
+          SyncInstallDelegate::RepeatingInstallCallback callback) {
+        EXPECT_EQ(1u, web_apps_installed.size());
+        EXPECT_EQ(app_id, web_apps_installed[0]->app_id());
+        EXPECT_EQ(url, web_apps_installed[0]->launch_url());
+
+        // Prepare web site data for next enqueued full install (the web app).
+        BuildDefaultDataRetriever(url);
+
+        install_manager().InstallWebAppsAfterSync(
+            std::move(web_apps_installed),
+            base::BindLambdaForTesting(
+                [&](const AppId& installed_app_id, InstallResultCode code) {
+                  EXPECT_EQ(app_id, installed_app_id);
+                  EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
+                  run_loop.Quit();
+                }));
+      }));
+
+  // The web app object arrives second from the server but it creates a registry
+  // entry immediately (with is_in_sync_install() flag set to true).
+  controller().ApplySyncChanges_AddApps({url});
+  run_loop.Run();
+
+  EXPECT_TRUE(bookmark_app_installed);
+}
+
+TEST_F(WebAppInstallManagerTest,
+       SyncRace_InstallBookmarkAppFullThenWebAppFallback) {
+  InitEmptyRegistrar();
+
+  const GURL url{"https://example.com/path"};
+  const AppId app_id = GenerateAppIdFromURL(url);
+
+  // The web site url will be loaded twice in a sequence. The second load fails
+  // (the web app).
+  url_loader().AddNextLoadUrlResults(
+      url, {WebAppUrlLoader::Result::kUrlLoaded,
+            WebAppUrlLoader::Result::kFailedPageTookTooLong});
+
+  // Prepare web site data for next enqueued full install (the bookmark app).
+  BuildDefaultDataRetriever(url);
+
+  auto server_bookmark_app_info = std::make_unique<WebApplicationInfo>();
+  server_bookmark_app_info->app_url = url;
+
+  bool bookmark_app_installed = false;
+  // The bookmark app object arrives first from the server, enqueue full
+  // install.
+  install_manager().InstallBookmarkAppFromSync(
+      app_id, std::move(server_bookmark_app_info),
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(app_id, installed_app_id);
+            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
+            bookmark_app_installed = true;
+          }));
+
+  base::RunLoop run_loop;
+  controller().SetInstallWebAppsAfterSyncDelegate(base::BindLambdaForTesting(
+      [&](std::vector<WebApp*> web_apps_installed,
+          SyncInstallDelegate::RepeatingInstallCallback callback) {
+        EXPECT_EQ(1u, web_apps_installed.size());
+        EXPECT_EQ(app_id, web_apps_installed[0]->app_id());
+        EXPECT_EQ(url, web_apps_installed[0]->launch_url());
+
+        // Prepare web site data for next enqueued full install (the web app).
+        BuildDefaultDataRetriever(url);
+
+        install_manager().InstallWebAppsAfterSync(
+            std::move(web_apps_installed),
+            base::BindLambdaForTesting(
+                [&](const AppId& installed_app_id, InstallResultCode code) {
+                  EXPECT_EQ(app_id, installed_app_id);
+                  // Full web app install fails, the web app fallback install
+                  // returns early.
+                  EXPECT_EQ(InstallResultCode::kSuccessAlreadyInstalled, code);
+                  run_loop.Quit();
+                }));
+      }));
+
+  // The web app object arrives second from the server but it creates a registry
+  // entry immediately (with is_in_sync_install() flag set to true).
+  controller().ApplySyncChanges_AddApps({url});
+  run_loop.Run();
+
+  EXPECT_TRUE(bookmark_app_installed);
 }
 
 }  // namespace web_app

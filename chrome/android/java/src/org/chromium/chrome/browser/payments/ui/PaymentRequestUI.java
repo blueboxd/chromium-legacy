@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.payments.ShippingStrings;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.LineItemBreakdownSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.SectionSeparator;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.components.autofill.EditableOption;
 import org.chromium.components.browser_ui.widget.FadingEdgeScrollView;
@@ -352,11 +353,12 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
      * https://www.chromium.org/Home/chromium-security/enamel#TOC-Eliding-Origin-Names-And-Hostnames
      * @param securityLevel   The security level of the page that invoked PaymentRequest.
      * @param shippingStrings The string resource identifiers to use in the shipping sections.
+     * @param profile         The current profile that creates the PaymentRequestUI.
      */
     public PaymentRequestUI(Activity activity, Client client, boolean canAddCards,
             boolean showDataSource, String title, String origin, int securityLevel,
             ShippingStrings shippingStrings,
-            PaymentUisShowStateReconciler paymentUisShowStateReconciler) {
+            PaymentUisShowStateReconciler paymentUisShowStateReconciler, Profile profile) {
         mContext = activity;
         mClient = client;
         mShowDataSource = showDataSource;
@@ -405,10 +407,10 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
                 (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.payment_request, null);
         prepareRequestView(mContext, title, origin, securityLevel, canAddCards);
 
-        mEditorDialog = new EditorDialog(activity, /*deleteRunnable =*/null);
+        mEditorDialog = new EditorDialog(activity, /*deleteRunnable =*/null, profile);
         DimmingDialog.setVisibleStatusBarIconColor(mEditorDialog.getWindow());
 
-        mCardEditorDialog = new EditorDialog(activity, /*deleteRunnable =*/null);
+        mCardEditorDialog = new EditorDialog(activity, /*deleteRunnable =*/null, profile);
         DimmingDialog.setVisibleStatusBarIconColor(mCardEditorDialog.getWindow());
 
         // Allow screenshots of the credit card number in Canary, Dev, and developer builds.

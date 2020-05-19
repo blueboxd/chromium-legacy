@@ -27,7 +27,6 @@ class DisplayCutoutHostImpl : public blink::mojom::DisplayCutoutHost {
   // Called by WebContents when various events occur.
   void DidAcquireFullscreen(RenderFrameHost* rfh);
   void DidExitFullscreen();
-  void DidStartNavigation(NavigationHandle* navigation_handle);
   void DidFinishNavigation(NavigationHandle* navigation_handle);
   void RenderFrameDeleted(RenderFrameHost* rfh);
   void RenderFrameCreated(RenderFrameHost* rfh);
@@ -39,6 +38,7 @@ class DisplayCutoutHostImpl : public blink::mojom::DisplayCutoutHost {
  private:
   // Stores the data for a pending UKM event.
   struct PendingUKMEvent {
+    ukm::SourceId source_id;
     bool is_main_frame;
     blink::mojom::ViewportFit applied_value;
     blink::mojom::ViewportFit supplied_value;

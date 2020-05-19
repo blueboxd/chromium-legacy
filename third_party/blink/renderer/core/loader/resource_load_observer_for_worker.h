@@ -8,6 +8,7 @@
 #include <inttypes.h>
 
 #include "base/containers/span.h"
+#include "base/unguessable_token.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_observer.h"
 
 namespace blink {
@@ -19,9 +20,11 @@ class WebWorkerFetchContext;
 // ResourceLoadObserver implementation associated with a worker or worklet.
 class ResourceLoadObserverForWorker final : public ResourceLoadObserver {
  public:
-  ResourceLoadObserverForWorker(CoreProbeSink& probe,
-                                const ResourceFetcherProperties& properties,
-                                scoped_refptr<WebWorkerFetchContext>);
+  ResourceLoadObserverForWorker(
+      CoreProbeSink& probe,
+      const ResourceFetcherProperties& properties,
+      scoped_refptr<WebWorkerFetchContext>,
+      const base::UnguessableToken& devtools_worker_token);
   ~ResourceLoadObserverForWorker() override;
 
   // ResourceLoadObserver implementation.
@@ -60,6 +63,7 @@ class ResourceLoadObserverForWorker final : public ResourceLoadObserver {
   const Member<CoreProbeSink> probe_;
   const Member<const ResourceFetcherProperties> fetcher_properties_;
   const scoped_refptr<WebWorkerFetchContext> web_context_;
+  const base::UnguessableToken devtools_worker_token_;
 };
 
 }  // namespace blink

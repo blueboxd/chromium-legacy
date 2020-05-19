@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class CoreProbeSink;
 class InspectorIssue;
 class ExecutionContext;
 
@@ -21,7 +22,8 @@ class CORE_EXPORT InspectorIssueStorage
  public:
   InspectorIssueStorage();
 
-  void AddInspectorIssue(ExecutionContext*, InspectorIssue*);
+  void AddInspectorIssue(CoreProbeSink*, InspectorIssue*);
+  void AddInspectorIssue(CoreProbeSink*, mojom::blink::InspectorIssueInfoPtr);
   void AddInspectorIssue(ExecutionContext*,
                          mojom::blink::InspectorIssueInfoPtr);
   void Clear();

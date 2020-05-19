@@ -967,11 +967,6 @@ const char kWebXrRuntimeOpenVr[] = "openvr";
 const char kWebXrRuntimeOpenXr[] = "openxr";
 const char kWebXrRuntimeWMR[] = "windows-mixed-reality";
 
-// This switch allows the FormControlsRefresh feature to be disabled temporarily
-// from M81 through M84.
-// TODO(1034611): Remove this after M84.
-const char kUseLegacyFormControls[] = "use-legacy-form-controls";
-
 // This switch disables the ScrollToTextFragment feature.
 const char kDisableScrollToTextFragment[] = "disable-scroll-to-text-fragment";
 

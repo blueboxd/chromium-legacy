@@ -77,7 +77,9 @@ typedef void (^SigninCompletionCallback)(ChromeIdentity* identity,
 
 // Cancels and dismisses any currently active operation.
 // * |animated| represents whether the UI should be dismissed with an animation.
-- (void)cancelAddAccountWithAnimation:(BOOL)animated;
+// * |completion| will be called once the operation has finished.
+- (void)cancelAddAccountWithAnimation:(BOOL)animated
+                           completion:(void (^)(void))completion;
 
 @end
 

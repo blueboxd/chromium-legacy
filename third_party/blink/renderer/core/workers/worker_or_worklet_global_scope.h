@@ -7,6 +7,7 @@
 
 #include <bitset>
 #include "base/single_thread_task_runner.h"
+#include "base/unguessable_token.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -135,6 +136,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   const base::UnguessableToken& GetParentDevToolsToken() {
     return parent_devtools_token_;
   }
+  virtual const base::UnguessableToken& GetDevToolsToken() const = 0;
 
   WorkerClients* Clients() const { return worker_clients_.Get(); }
 

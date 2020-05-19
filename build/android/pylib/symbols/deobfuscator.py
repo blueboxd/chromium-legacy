@@ -150,7 +150,7 @@ class DeobfuscatorPool(object):
 
       # De-obfuscation is broken.
       if self._num_restarts == _MAX_RESTARTS:
-        return lines
+        raise Exception('Deobfuscation seems broken.')
 
       # Restart any closed Deobfuscators.
       for i, d in enumerate(self._pool):

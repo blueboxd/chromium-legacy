@@ -1134,9 +1134,12 @@ void InspectorNetworkAgent::DidReceiveCorsRedirectResponse(
                    WebURLLoaderClient::kUnknownEncodedDataLength, 0, false);
 }
 
-void InspectorNetworkAgent::DidFailLoading(uint64_t identifier,
-                                           DocumentLoader* loader,
-                                           const ResourceError& error) {
+void InspectorNetworkAgent::DidFailLoading(
+    CoreProbeSink* sink,
+    uint64_t identifier,
+    DocumentLoader* loader,
+    const ResourceError& error,
+    const base::UnguessableToken& devtools_frame_or_worker_token) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
   bool canceled = error.IsCancellation();
   base::Optional<ResourceRequestBlockedReason> resource_request_blocked_reason =

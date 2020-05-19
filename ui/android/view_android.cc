@@ -14,9 +14,11 @@
 #include "base/stl_util.h"
 #include "cc/layers/layer.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/android/event_forwarder.h"
 #include "ui/android/ui_android_jni_headers/ViewAndroidDelegate_jni.h"
 #include "ui/android/window_android.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/layout.h"
 #include "ui/events/android/drag_event_android.h"
@@ -25,6 +27,7 @@
 #include "ui/events/android/key_event_android.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/geometry/point.h"
 #include "url/gurl.h"
 
 namespace ui {
@@ -389,25 +392,25 @@ bool ViewAndroid::StartDragAndDrop(const JavaRef<jstring>& jtext,
                                                    jimage);
 }
 
-void ViewAndroid::OnCursorChanged(int type,
-                                  const SkBitmap& custom_image,
-                                  const gfx::Point& hotspot) {
+void ViewAndroid::OnCursorChanged(const Cursor& cursor) {
   ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
   if (delegate.is_null())
     return;
   JNIEnv* env = base::android::AttachCurrentThread();
-  if (type == static_cast<int>(ui::mojom::CursorType::kCustom)) {
-    if (custom_image.drawsNothing()) {
+  if (cursor.type() == mojom::CursorType::kCustom) {
+    const SkBitmap& bitmap = cursor.custom_bitmap();
+    const gfx::Point& hotspot = cursor.custom_hotspot();
+    if (bitmap.drawsNothing()) {
       Java_ViewAndroidDelegate_onCursorChanged(
-          env, delegate, static_cast<int>(ui::mojom::CursorType::kPointer));
+          env, delegate, static_cast<int>(mojom::CursorType::kPointer));
       return;
     }
-    ScopedJavaLocalRef<jobject> java_bitmap =
-        gfx::ConvertToJavaBitmap(&custom_image);
+    ScopedJavaLocalRef<jobject> java_bitmap = gfx::ConvertToJavaBitmap(&bitmap);
     Java_ViewAndroidDelegate_onCursorChangedToCustom(env, delegate, java_bitmap,
                                                      hotspot.x(), hotspot.y());
   } else {
-    Java_ViewAndroidDelegate_onCursorChanged(env, delegate, type);
+    Java_ViewAndroidDelegate_onCursorChanged(env, delegate,
+                                             static_cast<int>(cursor.type()));
   }
 }
 

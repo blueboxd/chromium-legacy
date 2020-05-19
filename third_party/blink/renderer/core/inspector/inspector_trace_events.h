@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/core_probe_sink.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -109,9 +110,12 @@ class CORE_EXPORT InspectorTraceEvents
                         int64_t encoded_data_length,
                         int64_t decoded_body_length,
                         bool should_report_corb_blocking);
-  void DidFailLoading(uint64_t identifier,
-                      DocumentLoader*,
-                      const ResourceError&);
+  void DidFailLoading(
+      CoreProbeSink* sink,
+      uint64_t identifier,
+      DocumentLoader*,
+      const ResourceError&,
+      const base::UnguessableToken& devtools_frame_or_worker_token);
   void MarkResourceAsCached(DocumentLoader* loader, uint64_t identifier);
 
   void Will(const probe::ExecuteScript&);

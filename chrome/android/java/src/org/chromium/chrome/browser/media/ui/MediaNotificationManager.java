@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.media.ui;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -27,7 +26,6 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 import android.util.SparseArray;
-import android.view.KeyEvent;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -102,15 +100,13 @@ public class MediaNotificationManager {
 
         sMapNotificationIdToOptions.put(PlaybackListenerService.NOTIFICATION_ID,
                 new NotificationOptions(PlaybackListenerService.class,
-                        PlaybackMediaButtonReceiver.class,
                         NotificationConstants.GROUP_MEDIA_PLAYBACK));
         sMapNotificationIdToOptions.put(PresentationListenerService.NOTIFICATION_ID,
                 new NotificationOptions(PresentationListenerService.class,
-                        PresentationMediaButtonReceiver.class,
                         NotificationConstants.GROUP_MEDIA_PRESENTATION));
         sMapNotificationIdToOptions.put(CastListenerService.NOTIFICATION_ID,
-                new NotificationOptions(CastListenerService.class, CastMediaButtonReceiver.class,
-                        NotificationConstants.GROUP_MEDIA_REMOTE));
+                new NotificationOptions(
+                        CastListenerService.class, NotificationConstants.GROUP_MEDIA_REMOTE));
     }
 
     private final NotificationUmaTracker mNotificationUmaTracker;
@@ -275,13 +271,10 @@ public class MediaNotificationManager {
     @VisibleForTesting
     static class NotificationOptions {
         public Class<?> serviceClass;
-        public Class<?> receiverClass;
         public String groupName;
 
-        public NotificationOptions(
-                Class<?> serviceClass, Class<?> receiverClass, String groupName) {
+        public NotificationOptions(Class<?> serviceClass, String groupName) {
             this.serviceClass = serviceClass;
-            this.receiverClass = receiverClass;
             this.groupName = groupName;
         }
     }
@@ -397,47 +390,7 @@ public class MediaNotificationManager {
         void processAction(Intent intent, MediaNotificationManager manager) {
             String action = intent.getAction();
 
-            // Before Android L, instead of using the MediaSession callback, the system will fire
-            // ACTION_MEDIA_BUTTON intents which stores the information about the key event.
-            if (Intent.ACTION_MEDIA_BUTTON.equals(action)) {
-                KeyEvent event = (KeyEvent) intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
-                if (event == null) return;
-                if (event.getAction() != KeyEvent.ACTION_DOWN) return;
-                switch (event.getKeyCode()) {
-                    case KeyEvent.KEYCODE_MEDIA_PLAY:
-                        manager.onPlay(
-                                MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
-                        break;
-                    case KeyEvent.KEYCODE_MEDIA_PAUSE:
-                        manager.onPause(
-                                MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
-                        break;
-                    case KeyEvent.KEYCODE_HEADSETHOOK:
-                    case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-                        if (manager.mMediaNotificationInfo.isPaused) {
-                            manager.onPlay(MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
-                        } else {
-                            manager.onPause(
-                                    MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
-                        }
-                        break;
-                    case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-                        manager.onMediaSessionAction(MediaSessionAction.PREVIOUS_TRACK);
-                        break;
-                    case KeyEvent.KEYCODE_MEDIA_NEXT:
-                        manager.onMediaSessionAction(MediaSessionAction.NEXT_TRACK);
-                        break;
-                    case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
-                        manager.onMediaSessionAction(MediaSessionAction.SEEK_FORWARD);
-                        break;
-                    case KeyEvent.KEYCODE_MEDIA_REWIND:
-                        manager.onMediaSessionAction(MediaSessionAction.SEEK_BACKWARD);
-                        break;
-                    default:
-                        break;
-                }
-            } else if (ACTION_STOP.equals(action)
-                    || ACTION_SWIPE.equals(action)
+            if (ACTION_STOP.equals(action) || ACTION_SWIPE.equals(action)
                     || ACTION_CANCEL.equals(action)) {
                 manager.onStop(
                         MediaNotificationListener.ACTION_SOURCE_MEDIA_NOTIFICATION);
@@ -522,38 +475,6 @@ public class MediaNotificationManager {
         }
     }
 
-    // Three classes to specify the right notification id in the intent.
-
-    /**
-     * This class is used internally but have to be public to be able to launch the service.
-     */
-    public static final class PlaybackMediaButtonReceiver extends MediaButtonReceiver {
-        @Override
-        public Class<?> getServiceClass() {
-            return PlaybackListenerService.class;
-        }
-    }
-
-    /**
-     * This class is used internally but have to be public to be able to launch the service.
-     */
-    public static final class PresentationMediaButtonReceiver extends MediaButtonReceiver {
-        @Override
-        public Class<?> getServiceClass() {
-            return PresentationListenerService.class;
-        }
-    }
-
-    /**
-     * This class is used internally but have to be public to be able to launch the service.
-     */
-    public static final class CastMediaButtonReceiver extends MediaButtonReceiver {
-        @Override
-        public Class<?> getServiceClass() {
-            return CastListenerService.class;
-        }
-    }
-
     @VisibleForTesting
     Intent createIntent() {
         Class<?> serviceClass = sMapNotificationIdToOptions.get(mNotificationId).serviceClass;
@@ -564,13 +485,6 @@ public class MediaNotificationManager {
     private PendingIntent createPendingIntent(String action) {
         Intent intent = createIntent().setAction(action);
         return PendingIntent.getService(getContext(), 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-    }
-
-    private Class<?> getButtonReceiverClass() {
-        Class<?> receiverClass = sMapNotificationIdToOptions.get(mNotificationId).receiverClass;
-
-        assert receiverClass != null;
-        return receiverClass;
     }
 
     // Returns the notification group name used to prevent automatic grouping.
@@ -880,7 +794,6 @@ public class MediaNotificationManager {
         manager.cancel(mMediaNotificationInfo.id);
 
         if (mMediaSession != null) {
-            mMediaSession.setMediaButtonReceiver(null);
             mMediaSession.setCallback(null);
             mMediaSession.setActive(false);
             mMediaSession.release();
@@ -1091,25 +1004,9 @@ public class MediaNotificationManager {
     private MediaSessionCompat createMediaSession() {
         Context context = getContext();
         MediaSessionCompat mediaSession =
-                new MediaSessionCompat(context, context.getString(R.string.app_name),
-                        new ComponentName(context, getButtonReceiverClass()), null);
-        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
-                | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+                new MediaSessionCompat(context, context.getString(R.string.app_name));
         mediaSession.setCallback(mMediaSessionCallback);
-
-        // TODO(mlamouri): the following code is to work around a bug that hopefully
-        // MediaSessionCompat will handle directly. see b/24051980.
-        try {
-            mediaSession.setActive(true);
-        } catch (NullPointerException e) {
-            // Some versions of KitKat do not support AudioManager.registerMediaButtonIntent
-            // with a PendingIntent. They will throw a NullPointerException, in which case
-            // they should be able to activate a MediaSessionCompat with only transport
-            // controls.
-            mediaSession.setActive(false);
-            mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
-            mediaSession.setActive(true);
-        }
+        mediaSession.setActive(true);
         return mediaSession;
     }
 

@@ -18,19 +18,6 @@
 
 namespace password_manager {
 
-// A view over a PasswordForm that only stores the signon_realm, username and
-// password. An implicit constructor is provided for convenience.
-struct CredentialView {
-  CredentialView(const autofill::PasswordForm& form)
-      : signon_realm(form.signon_realm),
-        username(form.username_value),
-        password(form.password_value) {}
-
-  std::string signon_realm;
-  base::string16 username;
-  base::string16 password;
-};
-
 // Simple struct that stores a canonicalized credential. Allows implicit
 // constructon from PasswordForm and LeakCheckCredentail for convenience.
 struct CanonicalizedCredential {
@@ -51,18 +38,6 @@ inline bool operator<(const CanonicalizedCredential& lhs,
   return std::tie(lhs.canonicalized_username, lhs.password) <
          std::tie(rhs.canonicalized_username, rhs.password);
 }
-
-// Transparent comparator that can compare various types like CredentialView or
-// CredentialsWithPasswords.
-struct PasswordCredentialLess {
-  template <typename T, typename U>
-  bool operator()(const T& lhs, const U& rhs) const {
-    return std::tie(lhs.signon_realm, lhs.username, lhs.password) <
-           std::tie(rhs.signon_realm, rhs.username, rhs.password);
-  }
-
-  using is_transparent = void;
-};
 
 }  // namespace password_manager
 

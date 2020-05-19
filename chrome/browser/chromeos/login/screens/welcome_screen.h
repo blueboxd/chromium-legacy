@@ -70,6 +70,8 @@ class WelcomeScreen : public BaseScreen,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  base::Value* GetConfigurationForTesting() { return GetConfiguration(); }
+
  protected:
   // Exposes exit callback to test overrides.
   base::RepeatingClosure* exit_callback() { return &exit_callback_; }

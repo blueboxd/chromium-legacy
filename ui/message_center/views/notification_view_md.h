@@ -276,7 +276,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   views::InkDropContainerView* const ink_drop_container_;
 
   // View containing close and settings buttons
-  std::unique_ptr<NotificationControlButtonsView> control_buttons_view_;
+  NotificationControlButtonsView* control_buttons_view_;
 
   // Whether this notification is expanded or not.
   bool expanded_ = false;

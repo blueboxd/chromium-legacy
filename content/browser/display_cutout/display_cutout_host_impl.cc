@@ -47,7 +47,7 @@ void DisplayCutoutHostImpl::DidExitFullscreen() {
   SetCurrentRenderFrameHost(nullptr);
 }
 
-void DisplayCutoutHostImpl::DidStartNavigation(
+void DisplayCutoutHostImpl::DidFinishNavigation(
     NavigationHandle* navigation_handle) {
   // If the navigation is not in the main frame or if we are a same document
   // navigation then we should stop now.
@@ -57,16 +57,6 @@ void DisplayCutoutHostImpl::DidStartNavigation(
   }
 
   RecordPendingUKMEvents();
-}
-
-void DisplayCutoutHostImpl::DidFinishNavigation(
-    NavigationHandle* navigation_handle) {
-  // If the navigation is not in the main frame or if we are a same document
-  // navigation then we should stop now.
-  if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument()) {
-    return;
-  }
 
   // If we finish a main frame navigation and the |WebDisplayMode| is
   // fullscreen then we should make the main frame the current
@@ -182,6 +172,7 @@ void DisplayCutoutHostImpl::MaybeQueueUKMEvent(RenderFrameHost* frame) {
 
   // Adds the UKM event to the list of pending events.
   PendingUKMEvent pending_event;
+  pending_event.source_id = frame->GetPageUkmSourceId();
   pending_event.is_main_frame = !frame->GetParent();
   pending_event.applied_value = applied_value;
   pending_event.supplied_value = supplied_value;
@@ -192,12 +183,8 @@ void DisplayCutoutHostImpl::MaybeQueueUKMEvent(RenderFrameHost* frame) {
 }
 
 void DisplayCutoutHostImpl::RecordPendingUKMEvents() {
-  // TODO(crbug.com/1061899): The code here should take an explicit reference
-  // to the corresponding frame instead of using the current main frame.
-
   for (const auto& event : pending_ukm_events_) {
-    ukm::builders::Layout_DisplayCutout_StateChanged builder(
-        web_contents_impl_->GetMainFrame()->GetPageUkmSourceId());
+    ukm::builders::Layout_DisplayCutout_StateChanged builder(event.source_id);
     builder.SetIsMainFrame(event.is_main_frame);
     builder.SetViewportFit_Applied(static_cast<int>(event.applied_value));
     builder.SetViewportFit_Supplied(static_cast<int>(event.supplied_value));

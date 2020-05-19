@@ -24,6 +24,8 @@ extern const base::Feature kArcAdbSideloadingFeature;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kArcManagedAdbSideloadingSupport;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kArcPreImeKeyEventSupport;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAutoScreenBrightness;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAssistAutoCorrect;

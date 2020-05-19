@@ -103,6 +103,7 @@
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ui/webui/certificate_provisioning_ui_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/account_manager_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/android_apps_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/multidevice_handler.h"
@@ -170,6 +171,11 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 #elif defined(OS_WIN) || defined(OS_MACOSX)
   AddSettingsPageUIHandler(std::make_unique<NativeCertificatesHandler>());
 #endif  // defined(USE_NSS_CERTS)
+#if defined(OS_CHROMEOS)
+  AddSettingsPageUIHandler(
+      std::make_unique<
+          chromeos::cert_provisioning::CertificateProvisioningUiHandler>());
+#endif
 
   AddSettingsPageUIHandler(std::make_unique<AccessibilityMainHandler>());
   AddSettingsPageUIHandler(std::make_unique<BrowserLifetimeHandler>());

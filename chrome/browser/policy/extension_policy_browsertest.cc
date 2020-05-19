@@ -48,6 +48,7 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/scoped_ignore_content_verifier_for_test.h"
 #include "extensions/browser/test_extension_registry_observer.h"
@@ -68,6 +69,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
+#include "chrome/browser/extensions/updater/local_extension_cache.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chromeos/constants/chromeos_switches.h"
 #endif
@@ -99,6 +101,8 @@ const base::FilePath::CharType kHostedAppCrxName[] =
 const char kGoodCrxId[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char kSimpleWithIconCrxId[] = "dehdlahnlebladnfleagmjdapdjdcnlp";
 const char kHostedAppCrxId[] = "kbmnembihfiondgfjekmnmcbddelicoi";
+
+const char kGoodCrxVersion[] = "1.0.0.1";
 
 const base::FilePath::CharType kGoodV1CrxName[] =
     FILE_PATH_LITERAL("good_v1.crx");
@@ -146,8 +150,9 @@ class ExtensionPolicyTest : public PolicyTest {
             ENFORCE_STRICT);
     ignore_content_verifier_ =
         std::make_unique<extensions::ScopedIgnoreContentVerifierForTest>();
-    PolicyTest::SetUp();
     test_extension_cache_ = std::make_unique<extensions::ExtensionCacheFake>();
+    // Base class SetUp() should be invoked at the end as it runs the test body.
+    PolicyTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
@@ -160,6 +165,10 @@ class ExtensionPolicyTest : public PolicyTest {
     web_app::WebAppProviderBase::GetProviderBase(browser()->profile())
         ->shortcut_manager()
         .SuppressShortcutsForTesting();
+  }
+
+  extensions::ExtensionCacheFake* extension_cache() {
+    return test_extension_cache_.get();
   }
 
   extensions::ExtensionService* extension_service() {
@@ -950,6 +959,145 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
       kGoodCrxId, extensions::ExtensionRegistry::EVERYTHING));
 }
 
+// Verifies that extension is not installed if its version does not match
+// with that in the update manifest.
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
+                       CrxVersionInconsistencyFromManifest) {
+  // Intercepts the call to download the crx file and responds with the test crx
+  // file.
+  ExtensionRequestInterceptor interceptor;
+  extensions::ExtensionRegistry* registry = extension_registry();
+  ASSERT_FALSE(registry->GetExtensionById(
+      kGoodCrxId, extensions::ExtensionRegistry::EVERYTHING));
+
+  // Allow caching for the extension in case it is inserted in the cache.
+  extension_cache()->AllowCaching(kGoodCrxId);
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(
+      "/extensions/good_v1_wrong_version_update_manifest.xml");
+  PolicyMap policies;
+  // Add an entry in the extension force list policy.
+  AddExtensionToForceList(&policies, kGoodCrxId, url);
+
+  content::WindowedNotificationObserver observer(
+      extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+      content::NotificationService::AllSources());
+
+  // Updating the policy triggers the extension installation process.
+  UpdateProviderPolicy(policies);
+  // Wait till the installer has finished by receiving the notification
+  // NOTIFICATION_CRX_INSTALLER_DONE.
+  observer.Wait();
+  content::Details<const extensions::Extension> details = observer.details();
+  // Check the extension is not installed.
+  EXPECT_FALSE(details.ptr());
+  EXPECT_FALSE(registry->GetExtensionById(
+      kGoodCrxId, extensions::ExtensionRegistry::EVERYTHING));
+  // Check the extension in not inserted in the cache.
+  EXPECT_FALSE(
+      extension_cache()->GetExtension(kGoodCrxId, "", nullptr, nullptr));
+}
+
+#if defined(OS_CHROMEOS)
+// Verifies that if the cache entry contains inconsistent extension version,
+// the crx installation fails and download of a new crx file is attempted.
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, CrxVersionInconsistencyInCache) {
+  base::ScopedAllowBlockingForTesting allow_io;
+  // Intercepts the call to download the crx file and responds with the test crx
+  // file.
+  ExtensionRequestInterceptor interceptor;
+  extensions::ExtensionRegistry* registry = extension_registry();
+  ASSERT_FALSE(registry->GetExtensionById(
+      kGoodCrxId, extensions::ExtensionRegistry::EVERYTHING));
+
+  // Override the fake extension cache set in SetUpOnMainThread() as the test
+  // requires real extension cache to retry download of crx file when
+  // installation fails due to version mismatch.
+  extensions::ExtensionCache* cache =
+      extensions::ExtensionsBrowserClient::Get()->GetExtensionCache();
+  extension_service()->updater()->SetExtensionCacheForTesting(cache);
+
+  base::FilePath extension_path(ui_test_utils::GetTestFilePath(
+      base::FilePath(kTestExtensionsDir), base::FilePath(kGoodCrxName)));
+  cache->AllowCaching(kGoodCrxId);
+
+  // Copy the crx file to a temp directory so that the test file is not deleted
+  // when cache entry is removed on version mismatch.
+  base::ScopedTempDir tmp_dir;
+  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
+  const base::FilePath tmp_path = tmp_dir.GetPath();
+  const base::FilePath filename =
+      tmp_path.Append(extensions::LocalExtensionCache::ExtensionFileName(
+          kGoodCrxId, kGoodCrxVersion, "" /* hash */));
+  EXPECT_TRUE(CopyFile(extension_path, filename));
+
+  // Wait for the extension cache to get ready.
+  base::RunLoop cache_init_run_loop;
+  cache->Start(cache_init_run_loop.QuitClosure());
+  cache_init_run_loop.Run();
+
+  base::RunLoop put_extension_run_loop;
+  // Insert a cache entry with version "1.0.0.1" while the crx file it points to
+  // belongs to version "1.0.0.0".
+  cache->PutExtension(
+      kGoodCrxId, "" /* expected hash */, filename, kGoodCrxVersion,
+      base::BindLambdaForTesting(
+          [&put_extension_run_loop](const base::FilePath& file_path,
+                                    bool file_ownership_passed) {
+            put_extension_run_loop.Quit();
+          }));
+  put_extension_run_loop.Run();
+  EXPECT_TRUE(cache->GetExtension(kGoodCrxId, "", nullptr, nullptr));
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url =
+      embedded_test_server()->GetURL("/extensions/good2_update_manifest.xml");
+  PolicyMap policies;
+  // Add an entry in the extension force list policy.
+  AddExtensionToForceList(&policies, kGoodCrxId, url);
+
+  // Observes notification for failed crx installation.
+  content::WindowedNotificationObserver failed_installation_observer(
+      extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+      base::BindLambdaForTesting(
+          [&](const content::NotificationSource& source,
+              const content::NotificationDetails& details) {
+            return content::Details<const extensions::Extension>(details)
+                       .ptr() == nullptr;
+          }));
+  // Observes notification for passed crx installation.
+  content::WindowedNotificationObserver passed_installation_observer(
+      extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+      base::BindLambdaForTesting(
+          [&](const content::NotificationSource& source,
+              const content::NotificationDetails& details) {
+            return content::Details<const extensions::Extension>(details)
+                       .ptr() != nullptr;
+          }));
+  // Updating the policy triggers the extension installation process.
+  UpdateProviderPolicy(policies);
+  // Wait till extension entry is found in the cache and installation fails due
+  // to version mismatch as the cache entry informs extension version as
+  // "1.0.0.1" while the crx file it points to belongs to "1.0.0.0".
+  failed_installation_observer.Wait();
+
+  // Wait till extension is freshly downloaded from the server and installation
+  // succeeds.
+  passed_installation_observer.Wait();
+
+  EXPECT_TRUE(registry->GetExtensionById(
+      kGoodCrxId, extensions::ExtensionRegistry::EVERYTHING));
+  std::string version;
+  base::FilePath file_path;
+  // Check extension is inserted in the cache with a new filepath to the
+  // downloaded correct crx.
+  EXPECT_TRUE(cache->GetExtension(kGoodCrxId, "", &file_path, &version));
+  EXPECT_EQ(version, kGoodCrxVersion);
+  EXPECT_NE(file_path, filename);
+}
+#endif  // defined(OS_CHROMEOS)
+
 IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallForcelist) {
   // Verifies that extensions that are force-installed by policies are
   // installed and can't be uninstalled.
@@ -970,6 +1118,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallForcelist) {
 
   PolicyMap policies;
   AddExtensionToForceList(&policies, kGoodCrxId, url);
+  extension_cache()->AllowCaching(kGoodCrxId);
+  EXPECT_FALSE(
+      extension_cache()->GetExtension(kGoodCrxId, "", nullptr, nullptr));
 
   extensions::TestExtensionRegistryObserver observer(extension_registry());
   MockedInstallationReporterObserver reporter_observer(browser()->profile());
@@ -1017,7 +1168,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallForcelist) {
   // Note: Cannot check that the notification details match the expected
   // exception, since the details object has already been freed prior to
   // the completion of observer.WaitForExtensionWillBeInstalled().
-
+  EXPECT_TRUE(
+      extension_cache()->GetExtension(kGoodCrxId, "", nullptr, nullptr));
   EXPECT_TRUE(registry->enabled_extensions().GetByID(kGoodCrxId));
 
   // The user is not allowed to uninstall force-installed extensions.
@@ -1541,7 +1693,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionMinimumVersionRequired) {
   EXPECT_TRUE(update_extension_count.IsZero());
   {
     extensions::ExtensionManagementPolicyUpdater management_policy(&provider_);
-    management_policy.SetMinimumVersionRequired(kGoodCrxId, "1.0.0.1");
+    management_policy.SetMinimumVersionRequired(kGoodCrxId, kGoodCrxVersion);
   }
   first_update_extension_runloop.Run();
   EXPECT_TRUE(update_extension_count.IsOne());
@@ -1561,7 +1713,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionMinimumVersionRequired) {
   EXPECT_EQ(2, update_extension_count.SubtleRefCountForDebug());
 
   // The extension should be auto-updated to newer version and re-enabled.
-  EXPECT_EQ("1.0.0.1",
+  EXPECT_EQ(kGoodCrxVersion,
             registry->GetInstalledExtension(kGoodCrxId)->version().GetString());
   EXPECT_TRUE(registry->enabled_extensions().Contains(kGoodCrxId));
 }
@@ -1621,7 +1773,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
   EXPECT_TRUE(update_extension_count.IsOne());
 
   // It should be updated to 1.0.0.1 but remain disabled.
-  EXPECT_EQ("1.0.0.1",
+  EXPECT_EQ(kGoodCrxVersion,
             registry->GetInstalledExtension(kGoodCrxId)->version().GetString());
   EXPECT_TRUE(registry->disabled_extensions().Contains(kGoodCrxId));
   EXPECT_EQ(extensions::disable_reason::DISABLE_UPDATE_REQUIRED_BY_POLICY,
@@ -1677,7 +1829,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
   // disabled.
   {
     extensions::ExtensionManagementPolicyUpdater management_policy(&provider_);
-    management_policy.SetMinimumVersionRequired(kGoodCrxId, "1.0.0.1");
+    management_policy.SetMinimumVersionRequired(kGoodCrxId, kGoodCrxVersion);
   }
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(registry->enabled_extensions().Contains(kGoodCrxId));

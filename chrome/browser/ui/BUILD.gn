@@ -1741,6 +1741,8 @@ static_library("ui") {
       "views/touch_selection_menu_chromeos.h",
       "views/touch_selection_menu_runner_chromeos.cc",
       "views/touch_selection_menu_runner_chromeos.h",
+      "webui/certificate_provisioning_ui_handler.cc",
+      "webui/certificate_provisioning_ui_handler.h",
       "webui/chromeos/account_manager_error_ui.cc",
       "webui/chromeos/account_manager_error_ui.h",
       "webui/chromeos/account_manager_welcome_dialog.cc",

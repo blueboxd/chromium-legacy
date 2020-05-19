@@ -895,7 +895,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/media/PictureInPictureActivity.java",
   "java/src/org/chromium/chrome/browser/media/PictureInPictureController.java",
   "java/src/org/chromium/chrome/browser/media/remote/RecordCastAction.java",
-  "java/src/org/chromium/chrome/browser/media/ui/MediaButtonReceiver.java",
   "java/src/org/chromium/chrome/browser/media/ui/MediaImageCallback.java",
   "java/src/org/chromium/chrome/browser/media/ui/MediaImageManager.java",
   "java/src/org/chromium/chrome/browser/media/ui/MediaNotificationInfo.java",

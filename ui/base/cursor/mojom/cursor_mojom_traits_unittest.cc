@@ -7,7 +7,6 @@
 #include "skia/public/mojom/bitmap_skbitmap_mojom_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/cursor/cursor_lookup.h"
 #include "ui/base/cursor/mojom/cursor.mojom.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
@@ -59,18 +58,18 @@ TEST_F(CursorStructTraitsTest, TestBitmapCursor) {
 
   EXPECT_EQ(ui::mojom::CursorType::kCustom, output.type());
   EXPECT_EQ(kScale, output.image_scale_factor());
-  EXPECT_EQ(kHotspot, GetCursorHotspot(output));
+  EXPECT_EQ(kHotspot, output.custom_hotspot());
 
   // Even though the pixel data is the same, the bitmap generation ids differ.
   EXPECT_TRUE(
-      gfx::BitmapsAreEqual(GetCursorBitmap(input), GetCursorBitmap(output)));
-  EXPECT_NE(GetCursorBitmap(input).getGenerationID(),
-            GetCursorBitmap(output).getGenerationID());
+      gfx::BitmapsAreEqual(input.custom_bitmap(), output.custom_bitmap()));
+  EXPECT_NE(input.custom_bitmap().getGenerationID(),
+            output.custom_bitmap().getGenerationID());
 
   // Make a copy of output; the bitmap generation ids should be the same.
   ui::Cursor copy = output;
-  EXPECT_EQ(GetCursorBitmap(output).getGenerationID(),
-            GetCursorBitmap(copy).getGenerationID());
+  EXPECT_EQ(output.custom_bitmap().getGenerationID(),
+            copy.custom_bitmap().getGenerationID());
   EXPECT_EQ(input, output);
 }
 
@@ -88,7 +87,7 @@ TEST_F(CursorStructTraitsTest, TestEmptyCursor) {
   ui::Cursor output;
   ASSERT_TRUE(EchoCursor(input, &output));
 
-  EXPECT_TRUE(GetCursorBitmap(output).empty());
+  EXPECT_TRUE(output.custom_bitmap().empty());
 }
 
 // Test that various device scale factors are passed correctly over the wire.

@@ -21,7 +21,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.support.v4.media.session.MediaSessionCompat;
-import android.view.KeyEvent;
 
 import org.junit.After;
 import org.junit.Before;
@@ -83,13 +82,6 @@ public class MediaNotificationManagerTestBase {
         }
     }
 
-    static class MockMediaButtonReceiver extends MediaButtonReceiver {
-        @Override
-        public Class<?> getServiceClass() {
-            return MockListenerService.class;
-        }
-    }
-
     @Before
     public void setUp() {
         // For checking the notification presented to NotificationManager.
@@ -103,8 +95,8 @@ public class MediaNotificationManagerTestBase {
         mListener = mock(MediaNotificationListener.class);
 
         MediaNotificationManager.sMapNotificationIdToOptions.put(getNotificationId(),
-                new MediaNotificationManager.NotificationOptions(MockListenerService.class,
-                        MockMediaButtonReceiver.class, NOTIFICATION_GROUP_NAME));
+                new MediaNotificationManager.NotificationOptions(
+                        MockListenerService.class, NOTIFICATION_GROUP_NAME));
 
         mMockUmaTracker = mock(NotificationUmaTracker.class);
         MediaNotificationManager.setManagerForTesting(getNotificationId(),
@@ -195,14 +187,6 @@ public class MediaNotificationManagerTestBase {
         })
                 .when(mService)
                 .stopListenerService();
-    }
-
-    Intent createMediaButtonActionIntent(int keyCode) {
-        Intent intent = new Intent(Intent.ACTION_MEDIA_BUTTON);
-        KeyEvent keyEvent = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
-        intent.putExtra(Intent.EXTRA_KEY_EVENT, keyEvent);
-
-        return intent;
     }
 
     Bitmap iconToBitmap(Icon icon) {

@@ -50,6 +50,8 @@ const char kMacAddressParameterName[] = "wlan_mac_addr";
 const char kUploadDeviceDetailsResponseDeviceResourceIdParameterName[] =
     "deviceResourceId";
 const char kOsVersion[] = "os_edition";
+const char kBuiltInAdminNameParameterName[] = "built_in_admin_name";
+const char kAdminGroupNameParameterName[] = "admin_group_name";
 
 // Maximum number of retries if a HTTP call to the backend fails.
 constexpr unsigned int kMaxNumHttpRetries = 3;
@@ -81,9 +83,10 @@ GURL GemDeviceDetailsManager::GetGemServiceUploadDeviceDetailsUrl() {
   return gem_service_url.Resolve(kGemServiceUploadDeviceDetailsPath);
 }
 
-// Uploads the device details into GEM database using |access_token| for
-// authentication and authorization. The GEM service would use |serial_number|
-// and |machine_guid| for identifying the device entry in GEM database.
+// Uploads the device details into GEM database using |access_token|
+// for authentication and authorization. The GEM service would use
+// |serial_number| and |machine_guid| for identifying the device
+// entry in GEM database.
 HRESULT GemDeviceDetailsManager::UploadDeviceDetails(
     const std::string& access_token,
     const base::string16& sid,
@@ -101,6 +104,14 @@ HRESULT GemDeviceDetailsManager::UploadDeviceDetails(
   // Get OS version of the windows device.
   std::string version;
   GetOsVersion(&version);
+
+  // Extract built-in administrator and administrator group name
+  // in device locale.
+  base::string16 admin_group_name = L"";
+  hr = LookupLocalizedNameForWellKnownSid(WinBuiltinAdministratorsSid,
+                                          &admin_group_name);
+  base::string16 built_in_admin_name = L"";
+  hr = GetLocalizedNameBuiltinAdministratorAccount(&built_in_admin_name);
 
   base::Value mac_address_value_list(base::Value::Type::LIST);
   for (const std::string& mac_address : mac_addresses)
@@ -124,6 +135,9 @@ HRESULT GemDeviceDetailsManager::UploadDeviceDetails(
   request_dict_->SetKey(kMacAddressParameterName,
                         std::move(mac_address_value_list));
   request_dict_->SetStringKey(kOsVersion, version);
+  request_dict_->SetStringKey(kBuiltInAdminNameParameterName,
+                              built_in_admin_name);
+  request_dict_->SetStringKey(kAdminGroupNameParameterName, admin_group_name);
 
   base::string16 known_resource_id = GetUserDeviceResourceId(sid);
   if (!known_resource_id.empty()) {

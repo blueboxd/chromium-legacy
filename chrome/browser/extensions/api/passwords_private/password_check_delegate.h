@@ -18,7 +18,7 @@
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/ui/bulk_leak_check_service_adapter.h"
-#include "components/password_manager/core/browser/ui/compromised_credentials_provider.h"
+#include "components/password_manager/core/browser/ui/compromised_credentials_manager.h"
 #include "components/password_manager/core/browser/ui/credential_utils.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 
@@ -38,16 +38,11 @@ class PasswordCheckProgress;
 // with the bulk password check feature.
 class PasswordCheckDelegate
     : public password_manager::SavedPasswordsPresenter::Observer,
-      public password_manager::CompromisedCredentialsProvider::Observer,
+      public password_manager::CompromisedCredentialsManager::Observer,
       public password_manager::BulkLeakCheckService::Observer {
  public:
   using StartPasswordCheckCallback =
       PasswordsPrivateDelegate::StartPasswordCheckCallback;
-
-  using CredentialPasswordsMap =
-      std::map<password_manager::CredentialWithPassword,
-               std::vector<autofill::PasswordForm>,
-               password_manager::PasswordCredentialLess>;
 
   explicit PasswordCheckDelegate(Profile* profile);
   PasswordCheckDelegate(const PasswordCheckDelegate&) = delete;
@@ -98,7 +93,7 @@ class PasswordCheckDelegate
   // Invokes PasswordsPrivateEventRouter::OnCompromisedCredentialsChanged if
   // a valid pointer can be obtained.
   void OnCompromisedCredentialsChanged(
-      password_manager::CompromisedCredentialsProvider::CredentialsView
+      password_manager::CompromisedCredentialsManager::CredentialsView
           credentials) override;
 
   // password_manager::BulkLeakCheckService::Observer:
@@ -126,16 +121,16 @@ class PasswordCheckDelegate
   Profile* profile_ = nullptr;
 
   // Handle to the password store, powering both |saved_passwords_presenter_|
-  // and |compromised_credentials_provider_|.
+  // and |compromised_credentials_manager_|.
   scoped_refptr<password_manager::PasswordStore> password_store_;
 
-  // Used by |compromised_credentials_provider_| to obtain the list of saved
+  // Used by |compromised_credentials_manager_| to obtain the list of saved
   // passwords.
   password_manager::SavedPasswordsPresenter saved_passwords_presenter_;
 
   // Used to obtain the list of compromised credentials.
-  password_manager::CompromisedCredentialsProvider
-      compromised_credentials_provider_;
+  password_manager::CompromisedCredentialsManager
+      compromised_credentials_manager_;
 
   // Adapter used to start, monitor and stop a bulk leak check.
   password_manager::BulkLeakCheckServiceAdapter
@@ -162,21 +157,15 @@ class PasswordCheckDelegate
                  password_manager::SavedPasswordsPresenter::Observer>
       observed_saved_passwords_presenter_{this};
 
-  // A scoped observer for |compromised_credentials_provider_|.
-  ScopedObserver<password_manager::CompromisedCredentialsProvider,
-                 password_manager::CompromisedCredentialsProvider::Observer>
-      observed_compromised_credentials_provider_{this};
+  // A scoped observer for |compromised_credentials_manager_|.
+  ScopedObserver<password_manager::CompromisedCredentialsManager,
+                 password_manager::CompromisedCredentialsManager::Observer>
+      observed_compromised_credentials_manager_{this};
 
   // A scoped observer for the BulkLeakCheckService.
   ScopedObserver<password_manager::BulkLeakCheckService,
                  password_manager::BulkLeakCheckService::Observer>
       observed_bulk_leak_check_service_{this};
-
-  // A map that matches CredentialWithPasswords to corresponding PasswordForms.
-  // This is required to inject affiliation information into Android
-  // credentials, as well as being able to reflect edits and removals of
-  // compromised credentials in the underlying password store.
-  CredentialPasswordsMap credentials_to_forms_;
 
   // An id generator for compromised credentials. Required to match
   // api::passwords_private::CompromisedCredential instances passed to the UI

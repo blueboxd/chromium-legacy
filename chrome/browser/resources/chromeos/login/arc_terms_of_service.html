@@ -45,6 +45,7 @@
             disabled="[[backupRestoreManaged]]"
             hidden="[[demoMode]]">
           <cr-checkbox id="arcEnableBackupRestore"
+              class="layout start"
               checked="{{backupRestore}}"
               disabled="[[backupRestoreManaged]]">
             <p>
@@ -62,6 +63,7 @@
               disabled="[[locationServiceManaged]]"
               hidden="[[demoMode]]">
             <cr-checkbox id="arcEnableLocationService"
+                class="layout start"
                 checked="{{locationService}}"
                 disabled="[[locationServiceManaged]]">
               <p>
@@ -90,6 +92,7 @@
             class="parameter-section arc-tos-content"
             hidden="[[demoMode]]">
             <cr-checkbox id="arcReviewSettingsCheckbox"
+                class="layout start"
                 checked="{{reviewSettings}}">
               <p>[[i18nDynamic(locale, 'arcTextReviewSettings')]]</p>
             </cr-checkbox>

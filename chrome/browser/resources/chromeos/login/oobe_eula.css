@@ -37,14 +37,13 @@ a {
   color: rgba(0, 0, 0, 0.54);
 }
 
-cr-toggle {
-  align-self: center;
+cr-checkbox {
+  --cr-checkbox-label-padding-start: 16px;
 }
 
 #usageStatsLabelContainer {
   color: var(--google-grey-refresh-700); /* #5F6368 */
   line-height: 20px;
-  margin-inline-start: 16px;
 }
 
 #usageStatsLabel {

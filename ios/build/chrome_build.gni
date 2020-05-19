@@ -37,6 +37,10 @@ declare_args() {
   # List of plist templates to merge when generating chrome Info.plist.
   ios_chrome_info_plist_additions = []
 
+  # List of targets used to generate the plist listed in
+  # ios_chrome_info_plist_additions variable (if any).
+  ios_chrome_info_plist_addition_targets = []
+
   # List of plist templates to merge when generating chrome entitlements.
   ios_chrome_entitlements_additions = []
 

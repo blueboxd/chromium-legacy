@@ -95,6 +95,8 @@ class PLATFORM_EXPORT ResourceError final {
   bool ShouldCollapseInitiator() const;
   base::Optional<ResourceRequestBlockedReason> GetResourceRequestBlockedReason()
       const;
+  base::Optional<network::mojom::BlockedByResponseReason>
+  GetBlockedByResponseReason() const;
 
   base::Optional<network::CorsErrorStatus> CorsErrorStatus() const {
     return cors_error_status_;

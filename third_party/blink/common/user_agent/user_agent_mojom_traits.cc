@@ -51,6 +51,7 @@ bool StructTraits<blink::mojom::UserAgentMetadataDataView,
   if (!data.ReadModel(&string))
     return false;
   out->model = string;
+  out->mobile = data.mobile();
 
   return true;
 }

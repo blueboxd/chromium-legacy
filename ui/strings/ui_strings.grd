@@ -1134,7 +1134,7 @@ need to be translated for each locale.-->
       <if expr="is_android">
         <!-- DevUI DFM Loader error strings -->
         <message name="IDS_DEV_UI_LOADER_ERROR_HEADING" desc="Heading text for error page shown when Chrome fails to dynamically install the DevUI module.">
-          Something went wrong
+          Page load failed because the developer UI module (dev_ui) is not installed
         </message>
         <message name="IDS_DEV_UI_LOADER_ERROR_SUGGEST_RELOAD" desc="Suggests to reload page to retry install of the DevUI module.">
           Reloading this page

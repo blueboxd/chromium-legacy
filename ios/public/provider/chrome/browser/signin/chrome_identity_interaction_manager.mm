@@ -46,7 +46,8 @@
   NOTREACHED() << "Subclasses must override this";
 }
 
-- (void)cancelAddAccountWithAnimation:(BOOL)animated {
+- (void)cancelAddAccountWithAnimation:(BOOL)animated
+                           completion:(void (^)(void))completion {
   NOTREACHED() << "Subclasses must override this";
 }
 

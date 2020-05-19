@@ -8,6 +8,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/certificate_manager_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/certificate_provisioning_ui_handler.h"
 #include "chrome/browser/ui/webui/certificates_handler.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_dialog_localized_strings_provider.h"
 #include "chrome/common/url_constants.h"
@@ -59,6 +60,9 @@ CertificateManagerDialogUI::CertificateManagerDialogUI(content::WebUI* web_ui)
 
   web_ui->AddMessageHandler(
       std::make_unique<certificate_manager::CertificatesHandler>());
+  web_ui->AddMessageHandler(
+      std::make_unique<
+          chromeos::cert_provisioning::CertificateProvisioningUiHandler>());
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }

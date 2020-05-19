@@ -24,6 +24,11 @@
         "ExecuteScript",
       ]
     },
+    InspectorIssueReporter: {
+      probes: [
+        "DidFailLoading",
+      ]
+    },
     InspectorAnimationAgent: {
       probes: [
         "AnimationPlayStateChanged",

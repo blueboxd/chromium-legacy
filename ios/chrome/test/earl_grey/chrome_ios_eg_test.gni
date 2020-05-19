@@ -73,6 +73,12 @@ template("chrome_ios_eg_test") {
       if (ios_chrome_info_plist_additions != []) {
         info_plists += ios_chrome_info_plist_additions
       }
+      if (ios_chrome_info_plist_addition_targets != []) {
+        if (!defined(deps)) {
+          deps = []
+        }
+        deps += ios_chrome_info_plist_addition_targets
+      }
       if (defined(invoker.extra_info_plists)) {
         info_plists += invoker.extra_info_plists
       }

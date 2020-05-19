@@ -16,15 +16,15 @@ static int ComputeEdgeWidth(const BorderImageLength& border_slice,
                             int image_side,
                             int box_extent) {
   if (border_slice.IsNumber())
-    return LayoutUnit(border_slice.Number() * border_side).Round();
+    return LayoutUnit(border_slice.Number() * border_side).Floor();
   if (border_slice.length().IsAuto())
     return image_side;
-  return ValueForLength(border_slice.length(), LayoutUnit(box_extent)).Round();
+  return ValueForLength(border_slice.length(), LayoutUnit(box_extent)).Floor();
 }
 
 static int ComputeEdgeSlice(const Length& slice, int maximum) {
   return std::min<int>(maximum,
-                       ValueForLength(slice, LayoutUnit(maximum)).Round());
+                       ValueForLength(slice, LayoutUnit(maximum)).Floor());
 }
 
 // Scale the width of the |start| and |end| edges using |scale_factor|.

@@ -222,7 +222,7 @@ const base::Feature kDesktopCaptureTabSharingInfobar{
 // Enables or disables new Desktop PWAs implementation that does not use
 // extensions.
 const base::Feature kDesktopPWAsWithoutExtensions{
-    "DesktopPWAsWithoutExtensions", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DesktopPWAsWithoutExtensions", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When installing default installed PWAs, we wait for service workers
 // to cache resources.

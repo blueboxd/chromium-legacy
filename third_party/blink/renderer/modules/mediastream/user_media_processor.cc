@@ -31,6 +31,7 @@
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/modules/mediastream/local_media_stream_audio_source.h"
@@ -540,7 +541,8 @@ UserMediaProcessor::UserMediaProcessor(
     LocalFrame* frame,
     MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : media_devices_dispatcher_cb_(std::move(media_devices_dispatcher_cb)),
+    : dispatcher_host_(frame->DomWindow()),
+      media_devices_dispatcher_cb_(std::move(media_devices_dispatcher_cb)),
       frame_(frame),
       task_runner_(std::move(task_runner)) {}
 
@@ -1183,6 +1185,7 @@ void UserMediaProcessor::OnDeviceChanged(const MediaStreamDevice& old_device,
 }
 
 void UserMediaProcessor::Trace(Visitor* visitor) const {
+  visitor->Trace(dispatcher_host_);
   visitor->Trace(frame_);
   visitor->Trace(current_request_info_);
 }
@@ -1795,9 +1798,9 @@ bool UserMediaProcessor::HasActiveSources() const {
 
 blink::mojom::blink::MediaStreamDispatcherHost*
 UserMediaProcessor::GetMediaStreamDispatcherHost() {
-  if (!dispatcher_host_) {
+  if (!dispatcher_host_.is_bound()) {
     frame_->GetBrowserInterfaceBroker().GetInterface(
-        dispatcher_host_.BindNewPipeAndPassReceiver());
+        dispatcher_host_.BindNewPipeAndPassReceiver(task_runner_));
   }
   return dispatcher_host_.get();
 }

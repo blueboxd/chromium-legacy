@@ -74,6 +74,7 @@ using password_manager::BulkLeakCheckDelegateInterface;
 using password_manager::BulkLeakCheckService;
 using password_manager::CompromisedCredentials;
 using password_manager::CompromiseType;
+using password_manager::CompromiseTypeFlags;
 using password_manager::IsLeaked;
 using password_manager::LeakCheckCredential;
 using password_manager::TestPasswordStore;
@@ -247,6 +248,27 @@ class PasswordCheckDelegateTest : public ::testing::Test {
 };
 
 }  // namespace
+
+TEST_F(PasswordCheckDelegateTest, VerifyCastingOfCompromisedCredentialTypes) {
+  static_assert(
+      static_cast<int>(api::passwords_private::COMPROMISE_TYPE_NONE) ==
+          static_cast<int>(CompromiseTypeFlags::kNotCompromised),
+      "");
+  static_assert(
+      static_cast<int>(api::passwords_private::COMPROMISE_TYPE_LEAKED) ==
+          static_cast<int>(CompromiseTypeFlags::kCredentialLeaked),
+      "");
+  static_assert(
+      static_cast<int>(api::passwords_private::COMPROMISE_TYPE_PHISHED) ==
+          static_cast<int>(CompromiseTypeFlags::kCredentialPhished),
+      "");
+  static_assert(
+      static_cast<int>(
+          api::passwords_private::COMPROMISE_TYPE_PHISHED_AND_LEAKED) ==
+          static_cast<int>(CompromiseTypeFlags::kCredentialLeaked |
+                           CompromiseTypeFlags::kCredentialPhished),
+      "");
+}
 
 // Sets up the password store with a couple of passwords and compromised
 // credentials. Verifies that the result is ordered in such a way that phished

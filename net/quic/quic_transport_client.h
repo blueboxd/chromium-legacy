@@ -17,6 +17,7 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_client_config.h"
 #include "net/third_party/quiche/src/quic/core/quic_config.h"
+#include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/quic_transport/quic_transport_client_session.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -73,6 +74,11 @@ class NET_EXPORT QuicTransportClient
     virtual void OnCanCreateNewOutgoingBidirectionalStream() = 0;
     virtual void OnCanCreateNewOutgoingUnidirectionalStream() = 0;
   };
+
+  // QUIC protocol version that is used in the origin trial.
+  static constexpr quic::ParsedQuicVersion kQuicVersionForOriginTrial =
+      quic::ParsedQuicVersion(quic::PROTOCOL_TLS1_3,
+                              quic::QUIC_VERSION_IETF_DRAFT_27);
 
   // |visitor| and |context| must outlive this object.
   QuicTransportClient(const GURL& url,

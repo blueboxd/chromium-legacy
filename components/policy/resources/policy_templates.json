@@ -6752,15 +6752,9 @@
       'id': 563,
       'caption': '''Enable App Recommendations in Zero State of Search Box''',
       'tags': [],
-      'desc': '''Enable App Recommendation in Zero State of search box in launcher.
+      'desc': '''Setting the policy to True can make app recommendations appear in the zero-state search. Setting the policy to False means these recommendations don't appear.
 
-          If this policy is set to true, App recommendations may appear in the zero state search.
-
-          If this policy is set to false, App recommendations will not appear in the zero state search.
-
-          If you set this policy, users cannot change or override it.
-
-          If this policy is left unset, the default is False for managed devices.'''
+      If you set the policy, users can't change it. If not set, managed devices default to a False setting.'''
     },
     {
       'name': 'TranslateEnabled',
@@ -13331,13 +13325,7 @@
       'caption': '''Enable ARC''',
       'tags': [],
       'desc':
-      '''When this policy is set to true, ARC will be enabled for the user
-      (subject to additional policy settings checks - ARC will still be
-      unavailable if either ephemeral mode or multiple sign-in is enabled
-      in the current user session).
-
-      If this setting is disabled or not configured then enterprise users are
-      unable to use ARC.''',
+      '''Unless Ephemeral mode or multiple sign-in is on during the user's session, setting ArcEnabled to True turns ARC on for the user. Setting the policy to False or leaving it unset means enterprise users can't use ARC.''',
     },
     {
       'name': 'ArcPolicy',
@@ -13395,9 +13383,7 @@
       'caption': '''Configure ARC''',
       'tags': [],
       'desc':
-      '''Specifies a set of policies that will be handed over to the ARC runtime. The value must be valid JSON.
-
-      This policy can be used to configure which Android apps are automatically installed on the device.
+      '''Setting the policy specifies a set of policies to hand over to the ARC runtime. Admins can use it to select the Android apps that autoinstall. Enter value in valid JSON format.
 
       To pin apps to the launcher, see PinnedLauncherApps.'''
     },
@@ -13870,9 +13856,9 @@
       'id': 330,
       'caption': '''Set certificate availability for ARC-apps''',
       'tags': ['system-security'],
-      'desc': '''If set to SyncDisabled or not configured, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> certificates are not available for ARC-apps.
+      'desc': '''Setting the policy to CopyCaCerts makes all ONC-installed CA certificates with <ph name="WEB_TRUSTED_BIT">Web TrustBit</ph> available for ARC-apps.
 
-      If set to CopyCaCerts, all ONC-installed CA certificates with <ph name="WEB_TRUSTED_BIT">Web TrustBit</ph> are available for ARC-apps.''',
+       Setting to None or leaving it unset makes <ph name="PRODUCT_OS_NAME">$2<ex>Chrome OS</ex></ph> certificates unavailable for ARC-apps.''',
     },
     {
       'name': 'AllowedDomainsForApps',
@@ -15364,11 +15350,9 @@
       'id': 397,
       'caption': '''Allow unaffiliated users to use ARC''',
       'tags': [],
-      'desc': '''If the policy is set to false, unaffiliated users will not be allowed to use ARC.
+      'desc': '''Unless ARC is turned off by other means, then setting the policy to True or leaving it unset lets users use ARC. Setting the policy to False means unaffiliated users may not use ARC.
 
-      If the policy is unset or set to true, all users are allowed to use ARC (unless ARC is disabled by other means).
-
-      Changes to the policy will only be applied while ARC is not running, e.g. while Chrome OS is starting.''',
+      Changes to the policy only apply while ARC isn't running, for example, while starting Chrome OS.''',
     },
     {
       'name': 'IsolateOrigins',
@@ -15973,7 +15957,7 @@
       'supported_on': ['chrome_os:70-'],
       'features': {
         'dynamic_refresh': True,
-        'per_profile': True,
+        'per_profile': False,
       },
       'example_value': False,
       'id': 481,
@@ -16014,7 +15998,7 @@
       'supported_on': ['chrome_os:74-'],
       'features': {
         'dynamic_refresh': True,
-        'per_profile': True,
+        'per_profile': False,
       },
       'example_value': False,
       'id': 523,
@@ -16031,7 +16015,7 @@
       'future': True,
       'features': {
         'dynamic_refresh': True,
-        'per_profile': True,
+        'per_profile': False,
       },
       'example_value': False,
       'id': 576,
@@ -16063,7 +16047,7 @@
       'future': True,
       'features': {
         'dynamic_refresh': True,
-        'per_profile': True,
+        'per_profile': False,
       },
       'example_value': {
         "url": "https://example.com/ansibleplaybook",
@@ -16151,7 +16135,6 @@
       'supported_on': ['chrome_os:84-'],
       'features': {
         'dynamic_refresh': True,
-        'per_profile': False,
       },
       'example_value': 1,
       'id': 695,
@@ -16553,10 +16536,7 @@
       'id': 447,
       'caption': '''Log events for Android app installs''',
       'tags': ['google-sharing'],
-      'desc': '''Enables reporting of key events during Android app installation to Google. Events are captured only for apps whose installation was triggered via policy.
-
-      If the policy is set to true, events will be logged.
-      If the policy is set to false or unset, events will not be logged.''',
+      'desc': '''Setting the policy to True sends reports of key, policy-triggered Android app installation events to Google. Setting the policy to False means no events are captured.''',
     },
     {
       'name': 'UsageTimeLimit',
@@ -16763,15 +16743,11 @@
       'caption': '''Control Android backup and restore service''',
       'tags': ['google-sharing'],
       'desc':
-      '''This policy controls the initial state of Android backup and restore.
+      '''Setting the policy to <ph name="BR_ENABLED">BackupAndRestoreEnabled</ph> means Android backup and restore is initially on. Setting the policy to <ph name="BR_DISABLED">BackupAndRestoreDisabled</ph> or leaving it unset keeps backup and restore off during setup.
 
-      When this policy is not configured or set to <ph name="BR_DISABLED">BackupAndRestoreDisabled</ph>, Android backup and restore is initially disabled.
+      Setting the policy to <ph name="BR_UNDER_USER_CONTROL">BackupAndRestoreUnderUserControl</ph> means users see prompts to use backup and restore. If they turn on backup and restore, Android app data is uploaded to Android backup servers and restored during reinstallations of compatible apps.
 
-      When this policy is set to <ph name="BR_ENABLED">BackupAndRestoreEnabled</ph>, Android backup and restore is initially enabled.
-
-      When this policy is set to <ph name="BR_UNDER_USER_CONTROL">BackupAndRestoreUnderUserControl</ph>, the user is asked to choose whether to use Android backup and restore. If the user enables backup and restore, Android app data is uploaded to Android backup servers and restored from them upon app re-installations for compatible apps.
-
-      Note that this policy controls the state of Android backup and restore during initial setup only. The user can open Android settings afterward and turn Android backup and restore on/off.''',
+      After initial setup, users can turn backup and restore on or off.''',
     },
     {
       'name': 'ArcGoogleLocationServicesEnabled',
@@ -16809,17 +16785,11 @@
       'caption': '''Control Android Google location services''',
       'tags': ['google-sharing'],
       'desc':
-      '''This policy controls the initial state of Google location services.
+      '''Unless the <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME">DefaultGeolocationSetting</ph> policy is set to <ph name="BLOCK_GEOLOCATION_SETTING">BlockGeolocation</ph>, then setting <ph name="GLS_ENABLED">GoogleLocationServicesEnabled</ph> turns Google location services on during initial setup. Setting the policy to <ph name="GLS_DISABLED">GoogleLocationServicesDisabled</ph> or leaving it unset keeps location services off during setup.
 
-      When this policy is not configured or set to <ph name="GLS_DISABLED">GoogleLocationServicesDisabled</ph>, Google location services are initially disabled.
+      Setting policy to <ph name="BR_UNDER_USER_CONTROL">BackupAndRestoreUnderUserControl</ph> prompts users about whether or not to use Google location services. If they turn it on, Android apps use the services to search the device location and send anonymous location data to Google.
 
-      When this policy is set to <ph name="GLS_ENABLED">GoogleLocationServicesEnabled</ph>, Google location services are initially enabled.
-
-      When this policy is set to <ph name="GLS_UNDER_USER_CONTROL">GoogleLocationServicesUnderUserControl</ph>, the user is asked to choose whether to use Google location services. This will allow Android apps to use the services to query the device location, and also will enable submitting of anonymous location data to Google.
-
-      Note that this policy controls the state of Google location services during initial setup only. The user can open Android settings afterward and turn Google location services on/off.
-
-      Note that this policy is ignored and Google location services are always disabled when the <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME">DefaultGeolocationSetting</ph> policy is set to <ph name="BLOCK_GEOLOCATION_SETTING">BlockGeolocation</ph>.''',
+      After initial setup, users can turn Google location services on or off.''',
     },
     {
       'name': 'EnableSyncConsent',
@@ -20567,6 +20537,7 @@
       'example_value': True,
       'id': 683,
       'supported_on': ['chrome.*:81-84', 'chrome_os:81-84', 'android:81-84', 'webview_android:81-84'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': False,
         'per_profile': True,

@@ -62,6 +62,8 @@ blink_core_sources("inspector") {
     "inspector_io_agent.h",
     "inspector_issue.cc",
     "inspector_issue.h",
+    "inspector_issue_reporter.cc",
+    "inspector_issue_reporter.h",
     "inspector_issue_storage.cc",
     "inspector_issue_storage.h",
     "inspector_layer_tree_agent.cc",

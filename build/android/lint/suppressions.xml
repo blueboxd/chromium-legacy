@@ -275,8 +275,6 @@ Still reading?
     <ignore regexp="Field requires API level .*`android.app.TaskInfo"/>
     <!-- 1: This is for testonly target android_support_chromium_java in android_sdk. -->
     <ignore regexp="third_party/android_sdk/public/extras/chromium/support/src/org/chromium/android/support/PackageManagerWrapper.java"/>
-    <!-- 1: TODO(crbug.com/1081242): Fix -->
-    <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/multiwindow/MultiWindowUtils.java"/>
     <!-- 1: TODO(crbug.com/1081243): Fix -->
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/photo_picker/PickerVideoPlayer.java"/>
     <!-- 1: TODO(crbug.com/1082222): Fix -->

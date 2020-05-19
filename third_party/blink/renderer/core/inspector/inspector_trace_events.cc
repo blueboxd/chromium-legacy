@@ -177,9 +177,12 @@ void InspectorTraceEvents::DidFinishLoading(uint64_t identifier,
                                             decoded_body_length));
 }
 
-void InspectorTraceEvents::DidFailLoading(uint64_t identifier,
-                                          DocumentLoader* loader,
-                                          const ResourceError&) {
+void InspectorTraceEvents::DidFailLoading(
+    CoreProbeSink* sink,
+    uint64_t identifier,
+    DocumentLoader* loader,
+    const ResourceError&,
+    const base::UnguessableToken& devtools_frame_or_worker_token) {
   TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish",
                        TRACE_EVENT_SCOPE_THREAD, "data",
                        inspector_resource_finish_event::Data(

@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread_checker.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
@@ -20,6 +19,8 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_audio.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -90,7 +91,7 @@ class MODULES_EXPORT UserMediaProcessor
   void set_media_stream_dispatcher_host_for_testing(
       mojo::PendingRemote<blink::mojom::blink::MediaStreamDispatcherHost>
           dispatcher_host) {
-    dispatcher_host_.Bind(std::move(dispatcher_host));
+    dispatcher_host_.Bind(std::move(dispatcher_host), task_runner_);
   }
 
   void Trace(Visitor*) const;
@@ -283,7 +284,9 @@ class MODULES_EXPORT UserMediaProcessor
   LocalStreamSources local_sources_;
   LocalStreamSources pending_local_sources_;
 
-  mojo::Remote<blink::mojom::blink::MediaStreamDispatcherHost> dispatcher_host_;
+  HeapMojoRemote<blink::mojom::blink::MediaStreamDispatcherHost,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      dispatcher_host_;
 
   // UserMedia requests are processed sequentially. |current_request_info_|
   // contains the request currently being processed.

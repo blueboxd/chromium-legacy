@@ -466,6 +466,7 @@
 <translation id="488187801263602086">Необходимо переименовать файл</translation>
 <translation id="4882831918239250449">Использование данных о посещенных страницах для персонализации Поиска, рекламы и т. д.</translation>
 <translation id="4885273946141277891">Конфликт версий Chrome</translation>
+<translation id="4908869848243824489">Рекомендации от Google</translation>
 <translation id="4910889077668685004">Платежные приложения</translation>
 <translation id="4913161338056004800">Сбросить статистику</translation>
 <translation id="4913169188695071480">Остановить обновление</translation>
@@ -481,7 +482,6 @@
 <translation id="4988210275050210843">Скачивание файла (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Страницы</translation>
 <translation id="4994033804516042629">Контакты не найдены</translation>
-<translation id="4996978546172906250">Способ отправки</translation>
 <translation id="5004416275253351869">Отслеживание действий в Google</translation>
 <translation id="5005498671520578047">Для копирования пароля</translation>
 <translation id="5011311129201317034">Сайт <ph name="SITE" /> запрашивает подключение</translation>
@@ -643,6 +643,7 @@
 <translation id="6381421346744604172">Затемнять сайты</translation>
 <translation id="6395288395575013217">ССЫЛКА</translation>
 <translation id="6397616442223433927">Подключение восстановлено</translation>
+<translation id="6398765197997659313">Обычный режим</translation>
 <translation id="6404511346730675251">Изменить закладку</translation>
 <translation id="6406506848690869874">Синхронизация...</translation>
 <translation id="6410973561433500075">Войти в режим дополненной реальности на сайте <ph name="DOMAIN" />?</translation>
@@ -702,6 +703,7 @@
 <translation id="6846298663435243399">Загрузка…</translation>
 <translation id="6850409657436465440">Выполняется скачивание</translation>
 <translation id="6850830437481525139">Закрыто вкладок: <ph name="TAB_COUNT" /></translation>
+<translation id="685850645784703949">Рекомендации от Google отключены</translation>
 <translation id="6864459304226931083">Скачать изображение</translation>
 <translation id="6865313869410766144">Данные для автозаполнения</translation>
 <translation id="6884306546558072722">Доступ к контенту в офлайн-режиме</translation>
@@ -904,6 +906,7 @@
 <translation id="8514577642972634246">Включить режим инкогнито</translation>
 <translation id="8516012719330875537">Редактор изображений</translation>
 <translation id="8523928698583292556">Удалить сохраненный пароль</translation>
+<translation id="8525306231823319788">Полноэкранный режим</translation>
 <translation id="854522910157234410">Открыть эту страницу</translation>
 <translation id="8558485628462305855">Чтобы просматривать контент в режиме дополненной реальности, обновите приложение ARCore.</translation>
 <translation id="8559990750235505898">Предлагать перевести страницы на других языках</translation>

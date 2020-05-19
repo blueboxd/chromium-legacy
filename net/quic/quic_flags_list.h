@@ -347,7 +347,7 @@ QUIC_FLAG(bool,
 // quic_time_wait_list_manager with a new TimeWaitAction.
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_replace_time_wait_list_encryption_level,
-          false)
+          true)
 
 // If true, move Goolge QUIC stream accounting to LegacyQuicStreamIdManager.
 QUIC_FLAG(bool,
@@ -359,9 +359,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_tls_resumption, false)
 
 // When true, QUIC's BBRv2 ignores inflight_lo in PROBE_BW.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_ignore_inflight_lo, false)
-
-// If true, returns min_rtt in rtt_stats_ if it is available.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_use_available_min_rtt, true)
 
 // If true, notify handshakers when connection closes.
 QUIC_FLAG(bool,

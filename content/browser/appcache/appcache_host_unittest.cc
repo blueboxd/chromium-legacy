@@ -213,11 +213,12 @@ TEST_F(AppCacheHostTest, Basic) {
 }
 
 TEST_F(AppCacheHostTest, SelectNoCache) {
-  // Lock process to |kProcessLockURL| so we can only accept URLs from
-  // that site.
-  const GURL kProcessLockURL("http://whatever/");
-  ChildProcessSecurityPolicyImpl::GetInstance()->LockToOrigin(
-      IsolationContext(&browser_context_), kProcessIdForTest, kProcessLockURL);
+  // Lock process with |kInitialDocumentURL| so we can only accept URLs that
+  // generate the same lock as |kInitialDocumentURL|.
+  const GURL kInitialDocumentURL("http://whatever/document");
+  ChildProcessSecurityPolicyImpl::GetInstance()->LockProcessForTesting(
+      IsolationContext(&browser_context_), kProcessIdForTest,
+      kInitialDocumentURL);
 
   const std::vector<GURL> kDocumentURLs = {
       GURL("http://whatever/"),
@@ -656,11 +657,12 @@ TEST_F(AppCacheHostTest, SelectCacheInvalidCacheId) {
 }
 
 TEST_F(AppCacheHostTest, SelectCacheURLsForWrongSite) {
-  // Lock process to |kProcessLockURL| so we can only accept URLs from
-  // that site.
-  const GURL kProcessLockURL("http://foo.com");
-  ChildProcessSecurityPolicyImpl::GetInstance()->LockToOrigin(
-      IsolationContext(&browser_context_), kProcessIdForTest, kProcessLockURL);
+  // Lock process with |kInitialDocumentURL| so we can only accept URLs that
+  // generate the same lock as |kInitialDocumentURL|.
+  const GURL kInitialDocumentURL("http://foo.com/document");
+  ChildProcessSecurityPolicyImpl::GetInstance()->LockProcessForTesting(
+      IsolationContext(&browser_context_), kProcessIdForTest,
+      kInitialDocumentURL);
 
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
                     mojo::NullRemote(), &service_);
@@ -670,10 +672,10 @@ TEST_F(AppCacheHostTest, SelectCacheURLsForWrongSite) {
 
   // Verify that a document URL from the wrong site triggers a bad message.
   {
-    const GURL kDocumentURL("http://whatever/");
+    const GURL kWrongSiteDocumentURL("http://whatever/");
     mojo::test::BadMessageObserver bad_message_observer;
-    host_remote->SelectCache(kDocumentURL, blink::mojom::kAppCacheNoCacheId,
-                             GURL());
+    host_remote->SelectCache(kWrongSiteDocumentURL,
+                             blink::mojom::kAppCacheNoCacheId, GURL());
 
     EXPECT_EQ("ACH_SELECT_CACHE_DOCUMENT_URL_ACCESS_NOT_ALLOWED",
               bad_message_observer.WaitForBadMessage());
@@ -682,7 +684,7 @@ TEST_F(AppCacheHostTest, SelectCacheURLsForWrongSite) {
   // Verify that a document URL with an inner hostname from the wrong site
   // triggers a bad message.
   {
-    const GURL kDocumentURL = kProcessLockURL;
+    const GURL kDocumentURL = kInitialDocumentURL;
     mojo::test::BadMessageObserver bad_message_observer;
     host_remote->SelectCache(
         kDocumentURL, blink::mojom::kAppCacheNoCacheId,
@@ -694,7 +696,7 @@ TEST_F(AppCacheHostTest, SelectCacheURLsForWrongSite) {
 
   // Verify that a manifest URL from the wrong site triggers a bad message.
   {
-    const GURL kDocumentURL = kProcessLockURL;
+    const GURL kDocumentURL = kInitialDocumentURL;
     const GURL kManifestURL("http://whatever/");
     mojo::test::BadMessageObserver bad_message_observer;
     host_remote->SelectCache(kDocumentURL, blink::mojom::kAppCacheNoCacheId,
@@ -706,11 +708,12 @@ TEST_F(AppCacheHostTest, SelectCacheURLsForWrongSite) {
 }
 
 TEST_F(AppCacheHostTest, ForeignEntryForWrongSite) {
-  // Lock process to |kProcessLockURL| so we can only accept URLs from
-  // that site.
-  const GURL kProcessLockURL("http://foo.com");
-  ChildProcessSecurityPolicyImpl::GetInstance()->LockToOrigin(
-      IsolationContext(&browser_context_), kProcessIdForTest, kProcessLockURL);
+  // Lock process with |kInitialDocumentURL| so we can only accept URLs that
+  // generate the same lock as |kInitialDocumentURL|.
+  const GURL kInitialDocumentURL("http://foo.com");
+  ChildProcessSecurityPolicyImpl::GetInstance()->LockProcessForTesting(
+      IsolationContext(&browser_context_), kProcessIdForTest,
+      kInitialDocumentURL);
 
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
                     mojo::NullRemote(), &service_);
@@ -720,9 +723,9 @@ TEST_F(AppCacheHostTest, ForeignEntryForWrongSite) {
 
   // Verify that a document URL from the wrong site triggers a bad message.
   {
-    const GURL kDocumentURL("http://origin/document");
+    const GURL kWrongSiteDocumentURL("http://origin/document");
     mojo::test::BadMessageObserver bad_message_observer;
-    host_remote->MarkAsForeignEntry(kDocumentURL,
+    host_remote->MarkAsForeignEntry(kWrongSiteDocumentURL,
                                     blink::mojom::kAppCacheNoCacheId);
     EXPECT_EQ("ACH_MARK_AS_FOREIGN_ENTRY_DOCUMENT_URL_ACCESS_NOT_ALLOWED",
               bad_message_observer.WaitForBadMessage());
@@ -730,15 +733,14 @@ TEST_F(AppCacheHostTest, ForeignEntryForWrongSite) {
 }
 
 TEST_F(AppCacheHostTest, SelectCacheAfterProcessCleanup) {
-  // Lock process to |kProcessLockURL| so we can only accept URLs from
-  // that site.
-  const GURL kProcessLockURL("http://foo.com");
+  // Lock process with |kDocumentURL| so we can only accept URLs that
+  // generate the same lock as |kDocumentURL|.
   const GURL kDocumentURL("http://foo.com/document");
   const GURL kManifestURL("http://foo.com/manifest");
 
   auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  security_policy->LockToOrigin(IsolationContext(&browser_context_),
-                                kProcessIdForTest, kProcessLockURL);
+  security_policy->LockProcessForTesting(IsolationContext(&browser_context_),
+                                         kProcessIdForTest, kDocumentURL);
 
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
                     mojo::NullRemote(), &service_);
@@ -783,14 +785,13 @@ TEST_F(AppCacheHostTest, SelectCacheAfterProcessCleanup) {
 }
 
 TEST_F(AppCacheHostTest, ForeignEntryAfterProcessCleanup) {
-  // Lock process to |kProcessLockURL| so we can only accept URLs from
-  // that site.
-  const GURL kProcessLockURL("http://foo.com");
+  // Lock process with |kDocumentURL| so we can only accept URLs that
+  // generate the same lock as |kDocumentURL|.
   const GURL kDocumentURL("http://foo.com/document");
 
   auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  security_policy->LockToOrigin(IsolationContext(&browser_context_),
-                                kProcessIdForTest, kProcessLockURL);
+  security_policy->LockProcessForTesting(IsolationContext(&browser_context_),
+                                         kProcessIdForTest, kDocumentURL);
 
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
                     mojo::NullRemote(), &service_);

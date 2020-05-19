@@ -253,9 +253,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ContextDeletedBeforeFrameWithView) {
   fuchsia::web::FramePtr frame = CreateFrame();
   EXPECT_TRUE(frame);
 
-  auto view_tokens = scenic::NewViewTokenPair();
+  auto view_tokens = scenic::ViewTokenPair::New();
 
-  frame->CreateView(std::move(view_tokens.first));
+  frame->CreateView(std::move(view_tokens.view_token));
   base::RunLoop().RunUntilIdle();
 
   base::RunLoop run_loop;

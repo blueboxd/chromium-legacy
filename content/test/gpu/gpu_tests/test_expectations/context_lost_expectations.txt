@@ -1,4 +1,4 @@
-# tags: [ android linux lion mac mountainlion win win7 win8 win10]
+# tags: [ android fuchsia linux lion mac mountainlion win win7 win8 win10]
 # tags: [ debug ]
 # tags: [ intel nvidia qualcomm-adreno-(tm)-418 qualcomm-adreno-(tm)-420 ]
 # tags: [ asan no-asan ]
@@ -56,3 +56,6 @@ crbug.com/1034008 [ linux intel ] ContextLost_WebGLContextLostInHiddenTab [ Retr
 # On Android, this returns a process killed exit code.
 crbug.com/1078566 [ android ] GpuNormalTermination_OriginalWebGLNotBlocked [ Skip ]
 crbug.com/1078566 [ android ] GpuNormalTermination_NewWebGLNotBlocked [ Skip ]
+
+# Fuchsia cannot launch a new tab.
+[ fuchsia ] ContextLost_WebGLContextLostInHiddenTab [ Skip ]

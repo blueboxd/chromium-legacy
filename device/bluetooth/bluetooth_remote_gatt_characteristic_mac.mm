@@ -154,6 +154,46 @@ void BluetoothRemoteGattCharacteristicMac::ReadRemoteCharacteristic(
 
 void BluetoothRemoteGattCharacteristicMac::WriteRemoteCharacteristic(
     const std::vector<uint8_t>& value,
+    WriteType write_type,
+    base::OnceClosure callback,
+    ErrorCallback error_callback) {
+  if (HasPendingRead() || HasPendingWrite()) {
+    DVLOG(1) << *this << ": Characteristic write already in progress.";
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(error_callback),
+                       BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
+    return;
+  }
+  DVLOG(1) << *this << ": Write characteristic.";
+  write_characteristic_value_callbacks_ =
+      std::make_pair(std::move(callback), std::move(error_callback));
+  base::scoped_nsobject<NSData> nsdata_value(
+      [[NSData alloc] initWithBytes:value.data() length:value.size()]);
+
+  CBCharacteristicWriteType cb_write_type;
+  switch (write_type) {
+    case WriteType::kWithResponse:
+      cb_write_type = CBCharacteristicWriteWithResponse;
+      break;
+    case WriteType::kWithoutResponse:
+      cb_write_type = CBCharacteristicWriteWithoutResponse;
+      break;
+  }
+
+  [GetCBPeripheral() writeValue:nsdata_value
+              forCharacteristic:cb_characteristic_
+                           type:cb_write_type];
+  if (cb_write_type == CBCharacteristicWriteWithoutResponse) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&BluetoothRemoteGattCharacteristicMac::DidWriteValue,
+                       weak_ptr_factory_.GetWeakPtr(), nil));
+  }
+}
+
+void BluetoothRemoteGattCharacteristicMac::DeprecatedWriteRemoteCharacteristic(
+    const std::vector<uint8_t>& value,
     base::OnceClosure callback,
     ErrorCallback error_callback) {
   if (!IsWritable()) {

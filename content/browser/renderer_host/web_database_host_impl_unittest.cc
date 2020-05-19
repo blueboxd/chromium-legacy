@@ -115,8 +115,8 @@ class WebDatabaseHostImplTest : public ::testing::Test {
 };
 
 TEST_F(WebDatabaseHostImplTest, BadMessagesUnauthorized) {
-  const url::Origin correct_origin =
-      url::Origin::Create(GURL("http://correct.com"));
+  const GURL correct_url("http://correct.com");
+  const url::Origin correct_origin = url::Origin::Create(correct_url);
   const url::Origin incorrect_origin =
       url::Origin::Create(GURL("http://incorrect.net"));
   const base::string16 db_name(base::ASCIIToUTF16("db_name"));
@@ -128,9 +128,8 @@ TEST_F(WebDatabaseHostImplTest, BadMessagesUnauthorized) {
   security_policy->AddIsolatedOrigins(
       {correct_origin, incorrect_origin},
       ChildProcessSecurityPolicy::IsolatedOriginSource::TEST);
-
-  security_policy->LockToOrigin(IsolationContext(browser_context()),
-                                process_id(), correct_origin.GetURL());
+  security_policy->LockProcessForTesting(IsolationContext(browser_context()),
+                                         process_id(), correct_url);
   ASSERT_TRUE(
       security_policy->CanAccessDataForOrigin(process_id(), correct_origin));
   ASSERT_FALSE(
@@ -202,8 +201,8 @@ TEST_F(WebDatabaseHostImplTest, BadMessagesInvalid) {
 }
 
 TEST_F(WebDatabaseHostImplTest, ProcessShutdown) {
-  const url::Origin correct_origin =
-      url::Origin::Create(GURL("http://correct.com"));
+  const GURL correct_url("http://correct.com");
+  const url::Origin correct_origin = url::Origin::Create(correct_url);
   const url::Origin incorrect_origin =
       url::Origin::Create(GURL("http://incorrect.net"));
   const base::string16 db_name(base::ASCIIToUTF16("db_name"));
@@ -215,8 +214,8 @@ TEST_F(WebDatabaseHostImplTest, ProcessShutdown) {
   security_policy->AddIsolatedOrigins(
       {correct_origin, incorrect_origin},
       ChildProcessSecurityPolicy::IsolatedOriginSource::TEST);
-  security_policy->LockToOrigin(IsolationContext(browser_context()),
-                                process_id(), correct_origin.GetURL());
+  security_policy->LockProcessForTesting(IsolationContext(browser_context()),
+                                         process_id(), correct_url);
 
   bool success_callback_was_called = false;
   auto success_callback = base::BindLambdaForTesting(

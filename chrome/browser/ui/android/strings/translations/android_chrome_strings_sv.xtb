@@ -466,6 +466,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="488187801263602086">Byt namn på fil</translation>
 <translation id="4882831918239250449">Styr hur Sök, annonser och annat ska anpassas utifrån webbhistoriken</translation>
 <translation id="4885273946141277891">Fler Chrome-förekomster än det finns stöd för.</translation>
+<translation id="4908869848243824489">Förslag från Google</translation>
 <translation id="4910889077668685004">Betalningsappar</translation>
 <translation id="4913161338056004800">Återställ statistik</translation>
 <translation id="4913169188695071480">Sluta uppdatera</translation>
@@ -481,7 +482,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4988210275050210843">En fil laddas ned (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Sidor</translation>
 <translation id="4994033804516042629">Inga kontakter hittades</translation>
-<translation id="4996978546172906250">Dela via</translation>
 <translation id="5004416275253351869">Googles aktivitetsinställningar</translation>
 <translation id="5005498671520578047">Kopiera lösenord</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> vill ansluta</translation>
@@ -643,6 +643,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6381421346744604172">Gör webbplatser mörkare</translation>
 <translation id="6395288395575013217">LÄNK</translation>
 <translation id="6397616442223433927">Online igen</translation>
+<translation id="6398765197997659313">Avsluta helskärmsläge</translation>
 <translation id="6404511346730675251">Redigera bokmärke</translation>
 <translation id="6406506848690869874">Synkronisera</translation>
 <translation id="6410973561433500075">Vill du starta AR från <ph name="DOMAIN" />?</translation>
@@ -699,9 +700,10 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Översätt</translation>
 <translation id="6845325883481699275">Bidra till att göra Chrome säkrare</translation>
-<translation id="6846298663435243399">Läser in…</translation>
+<translation id="6846298663435243399">Läser in …</translation>
 <translation id="6850409657436465440">Nedladdningen pågår fortfarande</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> flikar har stängts</translation>
+<translation id="685850645784703949">Förslag från Google – av</translation>
 <translation id="6864459304226931083">Ladda ned bild</translation>
 <translation id="6865313869410766144">Formuläruppgifter för Autofyll</translation>
 <translation id="6884306546558072722">Fortsätta utforska offline</translation>
@@ -904,6 +906,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8514577642972634246">Starta inkognitoläget</translation>
 <translation id="8516012719330875537">Bildredigeringsverktyget</translation>
 <translation id="8523928698583292556">Radera sparat lösenord</translation>
+<translation id="8525306231823319788">Helskärm</translation>
 <translation id="854522910157234410">Öppna sidan</translation>
 <translation id="8558485628462305855">Uppdatera ARCore om du vill visa innehåll med förstärkt verklighet</translation>
 <translation id="8559990750235505898">Erbjud översättning av sidor till andra språk</translation>

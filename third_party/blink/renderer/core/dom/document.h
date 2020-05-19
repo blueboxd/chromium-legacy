@@ -2241,6 +2241,11 @@ class CORE_EXPORT Document : public ContainerNode,
   bool had_find_in_page_request_ = false;
   bool had_find_in_page_render_subtree_active_match_ = false;
 
+  // To reduce the API noisiness an explicit deny decision will set a
+  // flag that auto rejects the promise without the need for an IPC
+  // call or potential user prompt.
+  bool expressly_denied_storage_access_ = false;
+
   HeapHashMap<Member<HTMLFormElement>, TaskHandle> form_to_pending_submission_;
 
   // Mojo remote used to determine if the document has permission to access

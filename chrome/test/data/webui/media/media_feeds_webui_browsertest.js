@@ -136,6 +136,7 @@ MediaFeedsWebUIBrowserTest.prototype = {
     GEN('result.status = media_feeds::mojom::FetchResult::kSuccess;');
     GEN('result.logos = std::move(logos);');
     GEN('result.display_name = "Test Feed";');
+    GEN('result.cookie_name_filter = "TEST";');
     GEN('result.associated_origins = {');
     GEN('  url::Origin::Create(GURL("https://www.google1.com")),');
     GEN('  url::Origin::Create(GURL("https://www.google2.com"))');
@@ -178,8 +179,8 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
           'User Status', 'User ID', 'Last Fetch Result', 'Fetch Failed Count',
           'Last Fetch Time (not cache hit)', 'Last Fetch Item Count',
           'Last Fetch Play Next Count', 'Last Fetch Content Types',
-          'Last Display Time', 'Reset Reason', 'Associated Origins', 'Logos',
-          'Actions'
+          'Last Display Time', 'Reset Reason', 'Associated Origins',
+          'Cookie Name Filter', 'Logos', 'Actions'
         ],
         feedsHeaders.map(x => x.textContent.trim()));
 
@@ -206,15 +207,16 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
     assertEquals(
         'https://example.com, https://www.google1.com, https://www.google2.com',
         feedsContents.childNodes[15].textContent.trim());
+    assertEquals('TEST', feedsContents.childNodes[16].textContent.trim());
     assertEquals(
         'https://www.example.org/logo1.pngContentAttributes=HasTitle, ForLightBackgroundhttps://www.example.org/logo2.pngContentAttributes=NoTitle, ForDarkBackground',
-        feedsContents.childNodes[16].textContent.trim());
+        feedsContents.childNodes[17].textContent.trim());
     assertEquals(
         'Show ContentsFetch Feed',
-        feedsContents.childNodes[17].textContent.trim());
+        feedsContents.childNodes[18].textContent.trim());
 
     // Click on the show contents button.
-    feedsContents.childNodes[17].firstChild.click();
+    feedsContents.childNodes[18].firstChild.click();
 
     return whenFeedTableIsPopulatedForTest().then(() => {
       assertEquals(

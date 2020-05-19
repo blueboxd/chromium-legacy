@@ -43,7 +43,9 @@ class BackGestureContextualNudgeControllerTest : public NoSessionAshTestBase {
     }
     NoSessionAshTestBase::SetUp(std::move(delegate));
 
-    scoped_feature_list_.InitAndEnableFeature(features::kContextualNudges);
+    scoped_feature_list_.InitWithFeatures(
+        {features::kContextualNudges, features::kHideShelfControlsInTabletMode},
+        {});
     nudge_controller_ =
         std::make_unique<BackGestureContextualNudgeControllerImpl>();
 

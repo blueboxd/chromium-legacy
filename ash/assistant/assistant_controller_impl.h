@@ -71,6 +71,7 @@ class ASH_EXPORT AssistantControllerImpl
   // AssistantController:
   void AddObserver(AssistantControllerObserver* observer) override;
   void RemoveObserver(AssistantControllerObserver* observer) override;
+  void OpenAssistantSettings() override;
   void OpenUrl(const GURL& url, bool in_background, bool from_server) override;
   base::WeakPtr<ash::AssistantController> GetWeakPtr() override;
   // TODO(updowndota): Refactor Set() calls to use a factory pattern.

@@ -267,7 +267,7 @@ void FidoBleConnection::WriteControlPoint(const std::vector<uint8_t>& data,
 
   FIDO_LOG(DEBUG) << "Wrote Control Point.";
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
-  control_point->WriteRemoteCharacteristic(
+  control_point->DeprecatedWriteRemoteCharacteristic(
       data, base::BindOnce(OnWriteRemoteCharacteristic, copyable_callback),
       base::BindOnce(OnWriteRemoteCharacteristicError, copyable_callback));
 }
@@ -416,7 +416,7 @@ void FidoBleConnection::WriteServiceRevision(ServiceRevision service_revision) {
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   DCHECK(service_revision_bitfield_id_);
   fido_service->GetCharacteristic(*service_revision_bitfield_id_)
-      ->WriteRemoteCharacteristic(
+      ->DeprecatedWriteRemoteCharacteristic(
           {static_cast<uint8_t>(service_revision)},
           base::BindOnce(OnWriteRemoteCharacteristic, copyable_callback),
           base::BindOnce(OnWriteRemoteCharacteristicError, copyable_callback));

@@ -179,7 +179,9 @@ android_library("test_java") {
   testonly = true
   sources = [ "org/chromium/weblayer_private/test/TestWebLayerImpl.java" ]
   deps = [
+    ":java",
     ":weblayer_test_resources",
+    "//base:jni_java",
     "//components/permissions/android:java",
     "//content/public/test/android:content_java_test_support",
     "//net/android:net_java",
@@ -188,6 +190,12 @@ android_library("test_java") {
     "//ui/android:ui_full_java",
   ]
   srcjar_deps = [ ":test_aidl" ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+}
+
+generate_jni("test_jni") {
+  testonly = true
+  sources = [ "org/chromium/weblayer_private/test/TestWebLayerImpl.java" ]
 }
 
 generate_jni("jni") {

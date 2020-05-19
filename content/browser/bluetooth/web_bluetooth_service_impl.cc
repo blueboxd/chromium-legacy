@@ -1084,7 +1084,7 @@ void WebBluetoothServiceImpl::RemoteCharacteristicWriteValue(
   // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
   // the callee interface.
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
-  query_result.characteristic->WriteRemoteCharacteristic(
+  query_result.characteristic->DeprecatedWriteRemoteCharacteristic(
       value,
       base::BindOnce(
           &WebBluetoothServiceImpl::OnCharacteristicWriteValueSuccess,

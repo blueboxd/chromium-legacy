@@ -55,20 +55,21 @@ class TileFetcherImpl : public TileFetcher {
       const std::string& experiment_tag,
       const std::string& client_version,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-      : url_loader_factory_(url_loader_factory) {
-    tile_info_request_status_ = TileInfoRequestStatus::kInit;
-    auto resource_request =
-        BuildGetRequest(url, country_code, accept_languages, api_key,
-                        experiment_tag, client_version);
-    url_loader_ = network::SimpleURLLoader::Create(
-        std::move(resource_request), kQueryTilesFetcherTrafficAnnotation);
-  }
+      : url_loader_factory_(url_loader_factory),
+        url_(url),
+        country_code_(country_code),
+        accept_languages_(accept_languages),
+        api_key_(api_key),
+        experiment_tag_(experiment_tag),
+        client_version_(client_version),
+        tile_info_request_status_(TileInfoRequestStatus::kInit) {}
 
  private:
   // TileFetcher implementation.
   void StartFetchForTiles(FinishedCallback callback) override {
-    // TODO(hesen): Estimate max size of response then replace to
-    // DownloadToString method.
+    auto resource_request = BuildGetRequest();
+    url_loader_ = network::SimpleURLLoader::Create(
+        std::move(resource_request), kQueryTilesFetcherTrafficAnnotation);
     url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
         url_loader_factory_.get(),
         base::BindOnce(&TileFetcherImpl::OnDownloadComplete,
@@ -76,28 +77,22 @@ class TileFetcherImpl : public TileFetcher {
   }
 
   // Build the request to get tile info.
-  std::unique_ptr<network::ResourceRequest> BuildGetRequest(
-      const GURL& url,
-      const std::string& country_code,
-      const std::string& accept_languages,
-      const std::string& api_key,
-      const std::string& experiment_tag,
-      const std::string& client_version) {
+  std::unique_ptr<network::ResourceRequest> BuildGetRequest() {
     auto request = std::make_unique<network::ResourceRequest>();
     request->method = net::HttpRequestHeaders::kGetMethod;
-    request->headers.SetHeader("x-goog-api-key", api_key);
-    request->headers.SetHeader("X-Client-Version", client_version);
+    request->headers.SetHeader("x-goog-api-key", api_key_);
+    request->headers.SetHeader("X-Client-Version", client_version_);
     request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
                                kRequestContentType);
     request->url =
-        net::AppendOrReplaceQueryParameter(url, "country_code", country_code);
-    if (!experiment_tag.empty()) {
+        net::AppendOrReplaceQueryParameter(url_, "country_code", country_code_);
+    if (!experiment_tag_.empty()) {
       request->url = net::AppendOrReplaceQueryParameter(
-          request->url, "experiment_tag", experiment_tag);
+          request->url, "experiment_tag", experiment_tag_);
     }
-    if (!accept_languages.empty()) {
+    if (!accept_languages_.empty()) {
       request->headers.SetHeader(net::HttpRequestHeaders::kAcceptLanguage,
-                                 accept_languages);
+                                 accept_languages_);
     }
     return request;
   }
@@ -142,12 +137,21 @@ class TileFetcherImpl : public TileFetcher {
     std::move(callback).Run(tile_info_request_status_,
                             std::move(response_body));
     tile_info_request_status_ = TileInfoRequestStatus::kInit;
+    url_loader_.reset();
   }
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Simple URL loader to fetch proto from network.
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
+
+  // Params of resource request.
+  GURL url_;
+  std::string country_code_;
+  std::string accept_languages_;
+  std::string api_key_;
+  std::string experiment_tag_;
+  std::string client_version_;
 
   // Status of the tile info request.
   TileInfoRequestStatus tile_info_request_status_;

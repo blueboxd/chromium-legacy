@@ -297,6 +297,11 @@ try_.chromium_dawn_builder(
 )
 
 try_.chromium_dawn_builder(
+    name = 'dawn-try-win10-x86-rel',
+    os = os.WINDOWS_ANY,
+)
+
+try_.chromium_dawn_builder(
     name = 'dawn-try-win10-x64-asan-rel',
     os = os.WINDOWS_ANY,
 )
@@ -626,15 +631,6 @@ try_.chromium_win_builder(
         'pool_size': 20,
         'tests': '*',
     },
-)
-
-try_.chromium_win_builder(
-    name = 'win10_chromium_x64_coverage_rel_ng',
-    os = os.WINDOWS_10,
-    use_clang_coverage = True,
-    goma_jobs = goma.jobs.J150,
-    ssd = True,
-    tryjob = try_.job(experiment_percentage = 3),
 )
 
 try_.chromium_win_builder(

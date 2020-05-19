@@ -757,7 +757,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, WriteCharacteristicValue) {
       .WillRepeatedly(Return(chrc0_.get()));
 
   std::vector<uint8_t> write_value;
-  EXPECT_CALL(*chrc0_, WriteRemoteCharacteristic_(_, _, _))
+  EXPECT_CALL(*chrc0_, DeprecatedWriteRemoteCharacteristic_(_, _, _))
       .Times(2)
       .WillOnce(InvokeCallbackArgument<2>(
           BluetoothRemoteGattService::GATT_ERROR_FAILED))

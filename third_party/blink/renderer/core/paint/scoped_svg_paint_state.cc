@@ -37,7 +37,8 @@ SVGFilterRecordingContext::SVGFilterRecordingContext(
     const PaintInfo& initial_paint_info)
     // Create a new controller and context so the contents of the filter can be
     // drawn and cached.
-    : paint_controller_(std::make_unique<PaintController>()),
+    : paint_controller_(
+          std::make_unique<PaintController>(PaintController::kTransient)),
       context_(std::make_unique<GraphicsContext>(*paint_controller_)),
       paint_info_(*context_, initial_paint_info) {
   // Use initial_paint_info's current paint chunk properties so that any new

@@ -790,7 +790,6 @@
 
       このポリシーを設定した場合、ユーザーは設定を変更できません。このポリシーを未設定のままにするか False に設定した場合、このポリシーによる影響はありません。</translation>
 <translation id="2201555246697292490">ネイティブ メッセージングのホワイトリストを設定する</translation>
-<translation id="220280840901385239">ブロック可能な混合コンテンツを許可する例外をユーザーが追加できるようにする</translation>
 <translation id="2204753382813641270">シェルフの自動非表示を指定する</translation>
 <translation id="2208976000652006649">POST を使用する検索 URL のパラメータ</translation>
 <translation id="2214880135980649323">このポリシーが有効に設定されている場合は、エンタープライズ ポリシーによってインストールされた拡張機能に対して Enterprise Hardware Platform API の使用が許可されます。
@@ -2358,6 +2357,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       この設定を有効または無効にすると、ユーザーは <ph name="PRODUCT_NAME" /> でこの設定の変更やオーバーライドができなくなります。
 
       このポリシーが未設定の場合は有効になりますが、ユーザーはこの設定を変更できます。</translation>
+<translation id="453031441196755904">このポリシーはサポートを終了しました。</translation>
 <translation id="4531706050939927436">Android アプリを強制的にインストールするには、Google 管理コンソールで Google Play からのインストールを指定します。Android アプリでこのポリシーは使用されません。</translation>
 <translation id="4534500438517478692">Android の制限名:</translation>
 <translation id="4541530620466526913">デバイスのローカル アカウント</translation>
@@ -4461,7 +4461,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
           このポリシーを設定しない場合、ログイン画面でユーザー補助機能のショートカットはデフォルトで有効になります。</translation>
 <translation id="7777535871204167559">外部ストレージ デバイスを読み取り専用にする</translation>
 <translation id="7788511847830146438">プロフィール単位</translation>
-<translation id="7792973482799545782">すべてのサイトに対してブロック可能な混合コンテンツの読み込みを許可しない</translation>
 <translation id="780603170519840350">リストで指定された subjectPublicKeyInfo ハッシュに対して、Certificate Transparency（証明書の透明性）の要件の適用を無効にします。
 
       このポリシーを使用すると、指定された subjectPublicKeyInfo ハッシュの 1 つを使用している証明書を含む証明書チェーンに対して、Certificate Transparency（証明書の透明性）の開示要件を無効にできます。これにより、適切に公開されていないことを理由に通常であれば信頼できないものとして扱われる証明書を、企業のホストで引き続き使用できるようになります。

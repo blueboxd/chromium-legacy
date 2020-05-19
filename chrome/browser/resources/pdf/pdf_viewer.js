@@ -339,10 +339,14 @@ export class PDFViewer {
         'two-up-view-changed',
         e => this.twoUpViewChanged_(
             /** @type {!CustomEvent<!TwoUpViewAction>} */ (e)));
-    this.zoomToolbar_.addEventListener(
-        'zoom-in', () => this.viewport_.zoomIn());
-    this.zoomToolbar_.addEventListener(
-        'zoom-out', () => this.viewport_.zoomOut());
+    this.zoomToolbar_.addEventListener('zoom-in', () => {
+      this.viewport_.zoomIn();
+      PDFMetrics.recordZoomAction(/*isZoomIn=*/ true);
+    });
+    this.zoomToolbar_.addEventListener('zoom-out', () => {
+      this.viewport_.zoomOut();
+      PDFMetrics.recordZoomAction(/*isZoomIn=*/ false);
+    });
 
     /** @private {!GestureDetector} */
     this.gestureDetector_ = new GestureDetector(assert($('content')));

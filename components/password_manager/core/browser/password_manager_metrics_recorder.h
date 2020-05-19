@@ -81,9 +81,23 @@ class PasswordManagerMetricsRecorder {
     kObsoleteShowAllPasswordsWhileNoneAreSuggested = 2,
   };
 
+  // This purpose of this interface is to allow browser to record metrics
+  // about the current navigation.
+  class NavigationMetricRecorderDelegate {
+   public:
+    // Called the first time the user types into a password field.
+    virtual void OnUserModifiedPasswordFieldFirstTime(
+        const GURL& main_frame_url) = 0;
+
+    virtual ~NavigationMetricRecorderDelegate() = default;
+  };
+
   // Records UKM metrics and reports them on destruction.
-  PasswordManagerMetricsRecorder(ukm::SourceId source_id,
-                                 const GURL& main_frame_url);
+  PasswordManagerMetricsRecorder(
+      ukm::SourceId source_id,
+      const GURL& main_frame_url,
+      std::unique_ptr<NavigationMetricRecorderDelegate>
+          navigation_metric_recorder);
 
   PasswordManagerMetricsRecorder(
       PasswordManagerMetricsRecorder&& that) noexcept;
@@ -121,6 +135,8 @@ class PasswordManagerMetricsRecorder {
   // Stores the value most recently reported via RecordFormManagerAvailable.
   FormManagerAvailable form_manager_availability_ =
       FormManagerAvailable::kNotSet;
+
+  std::unique_ptr<NavigationMetricRecorderDelegate> navigation_metric_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerMetricsRecorder);
 };

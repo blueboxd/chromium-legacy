@@ -84,9 +84,18 @@ ExtensionUrlPatternIndexMatcher::GetAllowAllRequestsAction(
 
 std::vector<RequestAction>
 ExtensionUrlPatternIndexMatcher::GetModifyHeadersActions(
-    const RequestParams& params) const {
+    const RequestParams& params,
+    base::Optional<uint64_t> min_priority) const {
+  // TODO(crbug.com/1083178): Plumb |min_priority| into UrlPatternIndexMatcher
+  // to prune more rules before matching on url filters.
   std::vector<const flat_rule::UrlRule*> rules =
       GetAllMatchingRules(params, flat::IndexType_modify_headers);
+
+  if (min_priority) {
+    base::EraseIf(rules, [&min_priority](const flat_rule::UrlRule* rule) {
+      return rule->priority() <= *min_priority;
+    });
+  }
 
   return GetModifyHeadersActionsFromMetadata(params, rules, *metadata_list_);
 }

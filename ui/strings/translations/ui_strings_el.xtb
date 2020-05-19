@@ -4,6 +4,7 @@
 <translation id="1028699632127661925">Αποστολή στη συσκευή <ph name="DEVICE_NAME" />…</translation>
 <translation id="111910763555783249">Ρυθμίσεις ειδοποιήσεων</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Πριν από 1 ημέρα}other{Πριν από # ημέρες}}</translation>
+<translation id="1145532888383813076">Κάντε αναζήτηση στη συσκευή, στις εφαρμογές και στον ιστό.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Πριν από 1 λεπτό}other{Πριν από # λεπτά}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1λ.}other{#λ.}}</translation>
 <translation id="1181037720776840403">Κατάργηση</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">ενεργοποίηση συγχρονισμού</translation>
 <translation id="5329858601952122676">&amp;Διαγραφή</translation>
 <translation id="5395308026110844773">Η εφαρμογή <ph name="DRAGGED_APP_NAME" /> πάνω από την εφαρμογή <ph name="IN_PLACE_APP" />, αφήστε για να δημιουργήσετε φάκελο.</translation>
+<translation id="5432996274932278848">Αναζήτηση στη συσκευή, στις εφαρμογές και στον ιστό. Χρησιμοποιήστε τα πλήκτρα βέλους για πλοήγηση στις εφαρμογές σας.</translation>
 <translation id="5463830097259460683">Emoji και σύμβολα</translation>
 <translation id="5476505524087279545">απενεργοποίηση</translation>
 <translation id="547979256943495781">Ράφι στα δεξιά</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">Να διαγραφεί αυτή η αναζήτηση από το ιστορικό σας;</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
+<translation id="7611008212562900400">Αναζήτηση στη συσκευή, στις εφαρμογές, στον ιστό…</translation>
 <translation id="7658239707568436148">Ακύρωση</translation>
 <translation id="7781829728241885113">Χθες</translation>
 <translation id="7814458197256864873">&amp;Αντιγραφή</translation>

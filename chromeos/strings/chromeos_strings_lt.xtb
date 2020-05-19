@@ -43,6 +43,7 @@ Palieskite mikrofoną, kad užduotumėte reikiamus klausimus.</translation>
 <translation id="6058625436358447366">Norėdami užbaigti įveskite seną ir naują slaptažodžius</translation>
 <translation id="6106186594183574873">Norėdami užbaigti įveskite seną slaptažodį</translation>
 <translation id="6146993107019042706">Norėdami užbaigti įveskite naują slaptažodį</translation>
+<translation id="6517239166834772319">Naršymas</translation>
 <translation id="6643016212128521049">Išvalyti</translation>
 <translation id="7162487448488904999">Galerija</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
@@ -50,6 +51,7 @@ Palieskite mikrofoną, kad užduotumėte reikiamus klausimus.</translation>
 <translation id="7805768142964895445">Būsena</translation>
 <translation id="808894953321890993">Keisti slaptažodį</translation>
 <translation id="8208861521865154048">Privilegijos</translation>
+<translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> valdo šį naudotoją. Jis gali nuotoliniu būdu valdyti nustatymus ir stebėti naudotojo veiklą.</translation>
 <translation id="8747900814994928677">Patvirtinti pakeitimą</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" />. Liko bandymų: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="910415269708673980">Atnaujinkite <ph name="PRINCIPAL_NAME" /> bilietą</translation>

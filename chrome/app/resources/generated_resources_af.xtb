@@ -112,7 +112,6 @@
 <translation id="1140746652461896221">Blokkeer inhoud op enige bladsy wat jy besoek</translation>
 <translation id="1143142264369994168">Sertifikaatondertekenaar</translation>
 <translation id="1145292499998999162">Inprop geblokkeer</translation>
-<translation id="1145532888383813076">Deursoek jou toestel, programme en die web.</translation>
 <translation id="1145593918056169051">Drukker het gestop</translation>
 <translation id="1146678959555564648">Gaan na VR</translation>
 <translation id="114721135501989771">Kry Google-slimhede in Chrome</translation>
@@ -403,7 +402,7 @@
     instaanbediener gebruik nie, verstel jou <ph name="LINK_START" />instaanbedienerinstellings<ph name="LINK_END" />.</translation>
 <translation id="1511997356770098059">Hierdie sekuriteitsleutel kan geen aanmelddata berg nie</translation>
 <translation id="1512210426710821809">Die enigste manier om dit te ontdoen, is om <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> te herinstalleer.</translation>
-<translation id="1512642802859169995"><ph name="FILE_NAME" /> is geënkripteer. Vra sy eienaar om dit te dekripteer.</translation>
+<translation id="1512642802859169995"><ph name="FILE_NAME" /> is geënkripteer. Vra die eienaar om dit te dekripteer.</translation>
 <translation id="151501797353681931">Van Safari af ingevoer</translation>
 <translation id="1515163294334130951">Begin</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> – Gasheer</translation>
@@ -1876,7 +1875,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="338583716107319301">Skeier</translation>
 <translation id="338691029516748599">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" />%, deur jou administrateur bestuur, koppel</translation>
 <translation id="3387614642886316601">Gebruik verbeterde speltoets</translation>
-<translation id="3388788256054548012">Hierdie lêer is geënkripteer. Vra sy eienaar om dit te dekripteer.</translation>
+<translation id="3388788256054548012">Hierdie lêer is geënkripteer. Vra die eienaar om dit te dekripteer.</translation>
 <translation id="3390741581549395454">Linux-programme en -lêers is suksesvol gerugsteun. Opgradering sal binnekort begin.</translation>
 <translation id="3396800784455899911">Deur die "Aanvaar en gaan voort"-knoppie te klik, stem jy in tot die verwerking wat hierbo vir hierdie Google-dienste beskryf word.</translation>
 <translation id="3399432415385675819">Kennisgewings sal gedeaktiveer word</translation>
@@ -3425,7 +3424,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="5430931332414098647">Kitsverbinding</translation>
 <translation id="5431318178759467895">Kleur</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="5432996274932278848">Deursoek jou toestel, programme en die web. Gebruik die pylsleutels om deur jou programme te navigeer.</translation>
 <translation id="543338862236136125">Wysig wagwoord</translation>
 <translation id="5434065355175441495">PKCS #1 RSA-enkripsie</translation>
 <translation id="5436492226391861498">Wag tans vir instaanbedienertonnel …</translation>
@@ -5094,7 +5092,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7606992457248886637">Outoriteite</translation>
 <translation id="7607002721634913082">Laat wag</translation>
 <translation id="7609148976235050828">Koppel aan die internet en probeer weer.</translation>
-<translation id="7611008212562900400">Deursoek jou toestel, programme, web …</translation>
 <translation id="7614260613810441905">Vra wanneer 'n werf lêers of vouers op jou toestel wil wysig (aanbeveel)</translation>
 <translation id="761530003705945209">Rugsteun in Google Drive. Laai jou data maklik terug of wissel enige tyd jou toestel. Jou rugsteun sluit programdata in. Jou rugsteune word na Google toe opgelaai en met jou Google-rekeningwagwoord geënkripteer.</translation>
 <translation id="7616214729753637086">Skryf tans toestel in …</translation>
@@ -5495,7 +5492,7 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8084114998886531721">Gestoorde wagwoord</translation>
 <translation id="8086015605808120405">Stel <ph name="PRINTER_NAME" /> tans op …</translation>
 <translation id="8086442853986205778">Stel <ph name="PRINTER_NAME" /> op</translation>
-<translation id="80866457114322936">{NUM_FILES,plural, =1{Hierdie lêer is geënkripteer. Vra sy eienaar om dit te dekripteer.}other{Sommige van hierdie lêers is geënkripteer. Vra hul eienaar om hulle te dekripteer.}}</translation>
+<translation id="80866457114322936">{NUM_FILES,plural, =1{Hierdie lêer is geënkripteer. Vra die eienaar om dit te dekripteer.}other{Sommige van hierdie lêers is geënkripteer. Vra hul eienaar om hulle te dekripteer.}}</translation>
 <translation id="808894953321890993">Verander wagwoord</translation>
 <translation id="8090234456044969073">Lees 'n lys van jou mees besoekte webwerwe</translation>
 <translation id="8093359998839330381"><ph name="PLUGIN_NAME" /> reageer tans nie</translation>

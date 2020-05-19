@@ -22,7 +22,7 @@ namespace extensions {
 struct WebRequestInfo;
 
 namespace declarative_net_request {
-class RulesetMatcher;
+class CompositeMatcher;
 
 // Struct to hold parameters for a network request.
 struct RequestParams {
@@ -44,10 +44,12 @@ struct RequestParams {
   // ID of the parent RenderFrameHost.
   content::GlobalFrameRoutingId parent_routing_id;
 
-  // A map from RulesetMatchers to whether it has a matching allow or
-  // allowAllRequests rule. Used as a cache to prevent additional calls to
+  // A map from CompositeMatcher to the priority of its highest priority
+  // matching allow or allowAllRequests rule if there is one, or base::nullopt
+  // otherwise. Used as a cache to prevent additional calls to
   // GetBeforeRequestAction.
-  mutable base::flat_map<const RulesetMatcher*, bool> allow_rule_cache;
+  mutable base::flat_map<const CompositeMatcher*, base::Optional<uint64_t>>
+      allow_rule_max_priority;
 
   // Lower cased url, used for regex matching. Cached for performance.
   mutable base::Optional<std::string> lower_cased_url_spec;

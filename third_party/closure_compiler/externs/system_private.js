@@ -13,9 +13,7 @@
  */
 var UpdateStatus;
 
-/**
- * @const
- */
+/** @const */
 chrome.systemPrivate = {};
 
 /**

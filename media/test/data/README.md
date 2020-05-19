@@ -504,6 +504,17 @@ using key ID [1] and key [2].
 Unless noted otherwise, the codec string is `av01.0.04M.08` for 8-bit files,
 and `av01.0.04M.10` for 10-bit files.
 
+#### av1-I-frame-320x240
+vpxdec media/test/data/bear-vp9.webm -o bear.y4m
+aomenc -o bear.ivf -p 2 --target-bitrate=150 bear.y4m --limit=1 --ivf
+tail -c +45 bear.ivf > av1-I-frame-320x240
+
+#### av1-I-frame-1280x720
+Same as av1-I-frame-320x240 but using bear-1280x720.webm as input.
+
+#### av1-monochrome-I-frame-320x240-[8,10,12]bpp
+Same as av1-I-frame-320x240 with --monochrome and -b=[8,10,12] aomenc options.
+
 #### bear-av1-cenc.mp4
 Encrypted version of bear-av1.mp4. Encrypted by [Shaka Packager] built locally
 at commit 53aa775ea488c0ffd3a2e1cb78ad000154e414e1 using key ID [1] and key [2].

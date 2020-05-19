@@ -112,7 +112,6 @@
 <translation id="1140746652461896221">Bloker indhold på en hvilken som helst side, du besøger</translation>
 <translation id="1143142264369994168">Certifikatunderskriver</translation>
 <translation id="1145292499998999162">Pluginnet blev blokeret</translation>
-<translation id="1145532888383813076">Søg på din enhed, i apps og på nettet.</translation>
 <translation id="1145593918056169051">Printeren er stoppet</translation>
 <translation id="1146678959555564648">Angiv VR</translation>
 <translation id="114721135501989771">Få Googles smarte funktioner i Chrome</translation>
@@ -3425,7 +3424,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5430931332414098647">Øjeblikkelig netdeling</translation>
 <translation id="5431318178759467895">Farve</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="5432996274932278848">Søg på din enhed, i dine apps og på nettet. Brug piletasterne til at navigere i dine apps.</translation>
 <translation id="543338862236136125">Rediger adgangskode</translation>
 <translation id="5434065355175441495">PKCS #1 RSA-kryptering</translation>
 <translation id="5436492226391861498">Venter på proxytunnel...</translation>
@@ -5094,7 +5092,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7606992457248886637">Autoriteter</translation>
 <translation id="7607002721634913082">Sat på pause</translation>
 <translation id="7609148976235050828">Opret forbindelse til internettet, og prøv igen.</translation>
-<translation id="7611008212562900400">Søg på din enhed, i apps, på nettet...</translation>
 <translation id="7614260613810441905">Spørg, når et website vil redigere filer eller mapper på din enhed (anbefales)</translation>
 <translation id="761530003705945209">Sikkerhedskopiér i Google Drev. Gendan nemt dine data, eller skift enhed når som helst. Din backup omfatter appdata. Dine backups uploades til Google og krypteres ved hjælp af adgangskoden til din Google-konto.</translation>
 <translation id="7616214729753637086">Tilmelder enhed...</translation>

@@ -4,6 +4,7 @@
 <translation id="1028699632127661925">Verzenden naar <ph name="DEVICE_NAME" />…</translation>
 <translation id="111910763555783249">Instellingen voor meldingen</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 dag geleden}other{# dagen geleden}}</translation>
+<translation id="1145532888383813076">Zoek op je apparaat, in apps en op internet.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 minuut geleden}other{# minuten geleden}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}other{# m}}</translation>
 <translation id="1181037720776840403">Verwijderen</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">synchronisatie inschakelen</translation>
 <translation id="5329858601952122676">Verwij&amp;deren</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> bovenop <ph name="IN_PLACE_APP" />, laat los om een map te maken.</translation>
+<translation id="5432996274932278848">Zoek op je apparaat, in apps en op internet. Gebruik de pijltoetsen om te navigeren in je apps.</translation>
 <translation id="5463830097259460683">Emoji en symbolen</translation>
 <translation id="5476505524087279545">uitvinken</translation>
 <translation id="547979256943495781">Plank aan rechterkant</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">Deze zoekopdracht uit je geschiedenis verwijderen?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji's</translation>
+<translation id="7611008212562900400">Zoeken op je apparaat, in apps, op internet...</translation>
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="7781829728241885113">Gisteren</translation>
 <translation id="7814458197256864873">&amp;Kopiëren</translation>

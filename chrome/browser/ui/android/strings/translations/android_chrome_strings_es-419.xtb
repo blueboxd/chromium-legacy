@@ -466,6 +466,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="488187801263602086">Cambiar el nombre del archivo</translation>
 <translation id="4882831918239250449">Controlar cómo se usa tu historial de navegación para personalizar la Búsqueda, los anuncios y mucho más</translation>
 <translation id="4885273946141277891">Cantidad de instancias de Chrome no admitidas</translation>
+<translation id="4908869848243824489">Descubre de Google</translation>
 <translation id="4910889077668685004">Apps de pago</translation>
 <translation id="4913161338056004800">Restablecer estadísticas</translation>
 <translation id="4913169188695071480">Detener actualización</translation>
@@ -481,7 +482,6 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="4988210275050210843">Descargando archivo (<ph name="MEGABYTES" />)</translation>
 <translation id="4988526792673242964">Páginas</translation>
 <translation id="4994033804516042629">No se encontraron contactos</translation>
-<translation id="4996978546172906250">Compartir mediante</translation>
 <translation id="5004416275253351869">Controles de actividad de Google</translation>
 <translation id="5005498671520578047">Copiar contraseña</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> desea conectarse</translation>
@@ -643,6 +643,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6381421346744604172">Oscurecer sitios web</translation>
 <translation id="6395288395575013217">VÍNCULO</translation>
 <translation id="6397616442223433927">De nuevo en línea</translation>
+<translation id="6398765197997659313">Salir de pantalla completa</translation>
 <translation id="6404511346730675251">Editar marcador</translation>
 <translation id="6406506848690869874">Sincronización</translation>
 <translation id="6410973561433500075">¿Quieres ingresar al modo de RA desde <ph name="DOMAIN" />?</translation>
@@ -702,6 +703,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6846298663435243399">Cargando…</translation>
 <translation id="6850409657436465440">La descarga sigue en curso</translation>
 <translation id="6850830437481525139">Pestañas cerradas: <ph name="TAB_COUNT" /></translation>
+<translation id="685850645784703949">Descubre de Google (desactivado)</translation>
 <translation id="6864459304226931083">Descargar imagen</translation>
 <translation id="6865313869410766144">Datos del formulario de autocompletar</translation>
 <translation id="6884306546558072722">Seguir explorando sin conexión</translation>
@@ -904,6 +906,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8514577642972634246">Acceder al modo de navegación de incógnito</translation>
 <translation id="8516012719330875537">Editor de imágenes</translation>
 <translation id="8523928698583292556">Borrar contraseña almacenada</translation>
+<translation id="8525306231823319788">Pantalla completa</translation>
 <translation id="854522910157234410">Abrir esta página</translation>
 <translation id="8558485628462305855">Para ver contenido de realidad aumentada, actualiza ARCore</translation>
 <translation id="8559990750235505898">Ofrecer la traducción de páginas en otros idiomas</translation>

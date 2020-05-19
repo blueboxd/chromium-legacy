@@ -383,42 +383,6 @@ void CheckForContentLengthHeader(const GetResult& get_result) {
   EXPECT_GT(length_value, 0);
 }
 
-#if defined(OS_CHROMEOS)
-// Tests getting a resource for a component extension works correctly where
-// there is no mime type. Such a resource currently only exists for Chrome OS
-// build.
-TEST_F(ExtensionProtocolsTest, ComponentResourceRequestNoMimeType) {
-  SetProtocolHandler(false);
-  std::unique_ptr<base::DictionaryValue> manifest =
-      DictionaryBuilder()
-          .Set("name", "pdf")
-          .Set("version", "1")
-          .Set("manifest_version", 2)
-          .Set("web_accessible_resources",
-               // Registered by chrome_component_extension_resource_manager.cc
-               ListBuilder().Append("ink/glcore_base.js.mem").Build())
-          .Build();
-
-  base::FilePath path;
-  EXPECT_TRUE(base::PathService::Get(chrome::DIR_RESOURCES, &path));
-  path = path.AppendASCII("pdf");
-
-  std::string error;
-  scoped_refptr<Extension> extension(Extension::Create(
-      path, Manifest::COMPONENT, *manifest, Extension::NO_FLAGS, &error));
-  EXPECT_TRUE(extension.get()) << error;
-  AddExtension(extension, false, false);
-
-  auto get_result =
-      RequestOrLoad(extension->GetResourceURL("ink/glcore_base.js.mem"),
-                    blink::mojom::ResourceType::kXhr);
-  EXPECT_EQ(net::OK, get_result.result());
-  CheckForContentLengthHeader(get_result);
-  EXPECT_EQ("", get_result.GetResponseHeaderByName(
-                    net::HttpRequestHeaders::kContentType));
-}
-#endif
-
 // Tests getting a resource for a component extension works correctly, both when
 // the extension is enabled and when it is disabled.
 TEST_F(ExtensionProtocolsTest, ComponentResourceRequest) {

@@ -2664,18 +2664,13 @@ void LocalFrameView::RunPaintLifecyclePhase() {
 
     // Notify the controller that the artifact has been pushed and some
     // lifecycle state can be freed (such as raster invalidations).
-    if (paint_controller_)
+    if (paint_controller_) {
       paint_controller_->FinishCycle();
+      paint_controller_->ClearPropertyTreeChangedStateTo(
+          PropertyTreeState::Root());
+    }
 
     if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      // Property tree changed state is typically cleared through
-      // |PaintController::FinishCycle| but that will be a no-op because
-      // the paint controller is transient, so force the changed state to be
-      // cleared here.
-      if (paint_controller_) {
-        paint_controller_->ClearPropertyTreeChangedStateTo(
-            PropertyTreeState::Root());
-      }
       auto* root = GetLayoutView()->Compositor()->PaintRootGraphicsLayer();
       if (root) {
         ForAllGraphicsLayers(*root, [](GraphicsLayer& layer) {

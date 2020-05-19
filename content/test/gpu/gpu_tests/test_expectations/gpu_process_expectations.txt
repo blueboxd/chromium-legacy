@@ -1,4 +1,4 @@
-# tags: [ linux mac win ]
+# tags: [ android fuchsia linux mac win ]
 # tags: [ nvidia ]
 # results: [ Failure RetryOnFailure Skip ]
 
@@ -13,3 +13,14 @@ crbug.com/1028974 [ linux ] GpuProcess_feature_status_under_swiftshader [ RetryO
 crbug.com/681341 [ mac nvidia ] GpuProcess_mac_webgl_backgrounded_high_performance [ Skip ]
 crbug.com/681341 [ mac nvidia ] GpuProcess_mac_webgl_high_performance [ Skip ]
 crbug.com/681341 [ mac nvidia ] GpuProcess_mac_webgl_terminated_high_performance [ Skip ]
+
+# Android and Fuchsia do not support software fallback.
+[ android ] GpuProcess_disable_gpu [ Skip ]
+[ android ] GpuProcess_disable_gpu_and_swiftshader [ Skip ]
+[ android ] GpuProcess_feature_status_under_swiftshader [ Skip ]
+[ android ] GpuProcess_swiftshader_for_webgl [ Skip ]
+[ fuchsia ] GpuProcess_disable_gpu [ Skip ]
+[ fuchsia ] GpuProcess_disable_gpu_and_swiftshader [ Skip ]
+[ fuchsia ] GpuProcess_feature_status_under_swiftshader [ Skip ]
+[ fuchsia ] GpuProcess_swiftshader_for_webgl [ Skip ]
+

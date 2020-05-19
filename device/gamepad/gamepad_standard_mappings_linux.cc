@@ -781,7 +781,6 @@ void MapperSnakebyteIDroidCon(const Gamepad& input, Gamepad* mapped) {
         AxisNegativeAsButton(input.axes[5]);
     mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
         AxisPositiveAsButton(input.axes[5]);
-    mapped->buttons[BUTTON_INDEX_META] = NullButton();
     mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = input.axes[3];
     mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[4];
   } else {

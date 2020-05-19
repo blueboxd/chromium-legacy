@@ -70,6 +70,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void SetFocus(bool) override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
   WebURL GetURLForDebugTrace() override;
+  WebString GetLastToolTipTextForTesting() const override;
 
   // WebFrameWidget overrides:
   void DidDetachLocalFrameTree() override;

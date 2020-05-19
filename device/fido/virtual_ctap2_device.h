@@ -181,12 +181,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
   AttestedCredentialData ConstructAttestedCredentialData(
       base::span<const uint8_t> key_handle,
       std::unique_ptr<PublicKey> public_key);
-  AuthenticatorData ConstructAuthenticatorData(
-      base::span<const uint8_t, kRpIdHashLength> rp_id_hash,
-      bool user_verified,
-      uint32_t current_signature_count,
-      base::Optional<AttestedCredentialData> attested_credential_data,
-      base::Optional<cbor::Value> extensions);
 
   std::unique_ptr<VirtualU2fDevice> u2f_device_;
 

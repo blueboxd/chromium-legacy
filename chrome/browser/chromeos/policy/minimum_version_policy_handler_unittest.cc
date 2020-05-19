@@ -5,10 +5,13 @@
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -77,16 +80,19 @@ class MinimumVersionPolicyHandlerTest
 
   void SetUserManaged(bool managed) { user_managed_ = managed; }
 
+  base::test::TaskEnvironment task_environment{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+
  private:
   bool user_managed_ = true;
-
-  base::test::TaskEnvironment task_environment;
+  ScopedTestingLocalState local_state_;
   chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   std::unique_ptr<base::Version> current_version_;
   std::unique_ptr<MinimumVersionPolicyHandler> minimum_version_policy_handler_;
 };
 
-MinimumVersionPolicyHandlerTest::MinimumVersionPolicyHandlerTest() {}
+MinimumVersionPolicyHandlerTest::MinimumVersionPolicyHandlerTest()
+    : local_state_(TestingBrowserProcess::GetGlobal()) {}
 
 void MinimumVersionPolicyHandlerTest::SetUp() {
   auto fake_update_engine_client =
@@ -170,7 +176,6 @@ TEST_F(MinimumVersionPolicyHandlerTest, RequirementsNotMetState) {
 
   // Create policy value as a list of requirements.
   base::Value requirement_list(base::Value::Type::LIST);
-
   base::Value new_version_short_warning =
       CreateRequirement(kNewVersion, kShortWarning, kNoWarning);
   auto strongest_requirement = MinimumVersionRequirement::CreateInstanceIfValid(
@@ -296,6 +301,43 @@ TEST_F(MinimumVersionPolicyHandlerTest, RequirementsMetState) {
   SetPolicyPref(std::move(requirement_list));
   EXPECT_TRUE(GetMinimumVersionPolicyHandler()->RequirementsAreSatisfied());
   EXPECT_FALSE(GetState());
+}
+
+TEST_F(MinimumVersionPolicyHandlerTest, DeadlineTimerExpired) {
+  // Checks the user is logged out of the session when the deadline is reached.
+  EXPECT_TRUE(GetMinimumVersionPolicyHandler()->RequirementsAreSatisfied());
+
+  // This is needed to wait till EOL status is fetched from the update_engine.
+  base::RunLoop run_loop;
+  GetMinimumVersionPolicyHandler()->set_fetch_eol_callback_for_testing(
+      run_loop.QuitClosure());
+
+  // Expect calls to make sure that user is not logged out.
+  EXPECT_CALL(*this, RestartToLoginScreen()).Times(0);
+  EXPECT_CALL(*this, ShowUpdateRequiredScreen()).Times(0);
+
+  // Create and set pref value to invoke policy handler such that update is
+  // required with a long warning time.
+  base::Value requirement_list(base::Value::Type::LIST);
+  requirement_list.Append(
+      CreateRequirement(kNewVersion, kLongWarning, kLongWarning));
+  SetPolicyPref(std::move(requirement_list));
+
+  run_loop.Run();
+  EXPECT_TRUE(
+      GetMinimumVersionPolicyHandler()->IsDeadlineTimerRunningForTesting());
+  EXPECT_FALSE(GetMinimumVersionPolicyHandler()->RequirementsAreSatisfied());
+
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  // Expire the timer and check that user is logged out of the session.
+  EXPECT_CALL(*this, IsLoginSessionState()).Times(1);
+  EXPECT_CALL(*this, RestartToLoginScreen()).Times(1);
+  const base::TimeDelta warning = base::TimeDelta::FromDays(kLongWarning);
+  task_environment.FastForwardBy(warning);
+  EXPECT_FALSE(
+      GetMinimumVersionPolicyHandler()->IsDeadlineTimerRunningForTesting());
+  EXPECT_FALSE(GetMinimumVersionPolicyHandler()->RequirementsAreSatisfied());
 }
 
 }  // namespace policy

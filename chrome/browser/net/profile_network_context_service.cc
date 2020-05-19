@@ -203,6 +203,53 @@ bool IsAmbientAuthAllowedForProfile(Profile* profile) {
   return false;
 }
 
+void UpdateCookieSettings(Profile* profile) {
+  ContentSettingsForOneType settings;
+  HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
+      ContentSettingsType::COOKIES, std::string(), &settings);
+  content::BrowserContext::ForEachStoragePartition(
+      profile, base::BindRepeating(
+                   [](ContentSettingsForOneType settings,
+                      content::StoragePartition* storage_partition) {
+                     storage_partition->GetCookieManagerForBrowserProcess()
+                         ->SetContentSettings(settings);
+                   },
+                   settings));
+}
+
+void UpdateLegacyCookieSettings(Profile* profile) {
+  ContentSettingsForOneType settings;
+  HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
+      ContentSettingsType::LEGACY_COOKIE_ACCESS, std::string(), &settings);
+  content::BrowserContext::ForEachStoragePartition(
+      profile, base::BindRepeating(
+                   [](ContentSettingsForOneType settings,
+                      content::StoragePartition* storage_partition) {
+                     storage_partition->GetCookieManagerForBrowserProcess()
+                         ->SetContentSettingsForLegacyCookieAccess(settings);
+                   },
+                   settings));
+}
+
+void UpdateStorageAccessSettings(Profile* profile) {
+  if (base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
+    ContentSettingsForOneType settings;
+    HostContentSettingsMapFactory::GetForProfile(profile)
+        ->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS,
+                                std::string(), &settings);
+
+    content::BrowserContext::ForEachStoragePartition(
+        profile, base::BindRepeating(
+                     [](ContentSettingsForOneType settings,
+                        content::StoragePartition* storage_partition) {
+                       storage_partition->GetCookieManagerForBrowserProcess()
+                           ->SetStorageAccessGrantSettings(settings,
+                                                           base::DoNothing());
+                     },
+                     settings));
+  }
+}
+
 }  // namespace
 
 ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
@@ -861,41 +908,22 @@ void ProfileNetworkContextService::OnContentSettingChanged(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const std::string& resource_identifier) {
-  if (content_type != ContentSettingsType::COOKIES &&
-      content_type != ContentSettingsType::LEGACY_COOKIE_ACCESS &&
-      content_type != ContentSettingsType::DEFAULT) {
-    return;
-  }
-
-  if (content_type == ContentSettingsType::COOKIES ||
-      content_type == ContentSettingsType::DEFAULT) {
-    ContentSettingsForOneType cookies_settings;
-    HostContentSettingsMapFactory::GetForProfile(profile_)
-        ->GetSettingsForOneType(ContentSettingsType::COOKIES, std::string(),
-                                &cookies_settings);
-    content::BrowserContext::ForEachStoragePartition(
-        profile_, base::BindRepeating(
-                      [](ContentSettingsForOneType settings,
-                         content::StoragePartition* storage_partition) {
-                        storage_partition->GetCookieManagerForBrowserProcess()
-                            ->SetContentSettings(settings);
-                      },
-                      cookies_settings));
-  }
-
-  if (content_type == ContentSettingsType::LEGACY_COOKIE_ACCESS ||
-      content_type == ContentSettingsType::DEFAULT) {
-    ContentSettingsForOneType legacy_cookie_access_settings;
-    HostContentSettingsMapFactory::GetForProfile(profile_)
-        ->GetSettingsForOneType(ContentSettingsType::LEGACY_COOKIE_ACCESS,
-                                std::string(), &legacy_cookie_access_settings);
-    content::BrowserContext::ForEachStoragePartition(
-        profile_, base::BindRepeating(
-                      [](ContentSettingsForOneType settings,
-                         content::StoragePartition* storage_partition) {
-                        storage_partition->GetCookieManagerForBrowserProcess()
-                            ->SetContentSettingsForLegacyCookieAccess(settings);
-                      },
-                      legacy_cookie_access_settings));
+  switch (content_type) {
+    case ContentSettingsType::COOKIES:
+      UpdateCookieSettings(profile_);
+      break;
+    case ContentSettingsType::LEGACY_COOKIE_ACCESS:
+      UpdateLegacyCookieSettings(profile_);
+      break;
+    case ContentSettingsType::STORAGE_ACCESS:
+      UpdateStorageAccessSettings(profile_);
+      break;
+    case ContentSettingsType::DEFAULT:
+      UpdateCookieSettings(profile_);
+      UpdateLegacyCookieSettings(profile_);
+      UpdateStorageAccessSettings(profile_);
+      break;
+    default:
+      return;
   }
 }

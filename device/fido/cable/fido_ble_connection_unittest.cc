@@ -165,7 +165,8 @@ class FidoBleConnectionTest : public ::testing::Test {
                                                 {kDefaultServiceRevision})));
             }));
 
-    ON_CALL(*fido_service_revision_bitfield_, WriteRemoteCharacteristic_)
+    ON_CALL(*fido_service_revision_bitfield_,
+            DeprecatedWriteRemoteCharacteristic_)
         .WillByDefault(Invoke(
             [=](auto&, base::OnceClosure& callback,
                 const BluetoothRemoteGattCharacteristic::ErrorCallback&) {
@@ -293,7 +294,8 @@ class FidoBleConnectionTest : public ::testing::Test {
     EXPECT_CALL(*fido_control_point_, WriteWithoutResponse).Times(0);
 #endif  // defined(OS_MACOSX)
 
-    EXPECT_CALL(*fido_control_point_, WriteRemoteCharacteristic_(_, _, _))
+    EXPECT_CALL(*fido_control_point_,
+                DeprecatedWriteRemoteCharacteristic_(_, _, _))
         .WillOnce(Invoke([success](
                              const auto& data, base::OnceClosure& callback,
                              BluetoothRemoteGattCharacteristic::ErrorCallback&
@@ -310,7 +312,7 @@ class FidoBleConnectionTest : public ::testing::Test {
   void SetNextWriteServiceRevisionResponse(std::vector<uint8_t> expected_data,
                                            bool success) {
     EXPECT_CALL(*fido_service_revision_bitfield_,
-                WriteRemoteCharacteristic_(expected_data, _, _))
+                DeprecatedWriteRemoteCharacteristic_(expected_data, _, _))
         .WillOnce(Invoke([success](
                              const auto& data, base::OnceClosure& callback,
                              BluetoothRemoteGattCharacteristic::ErrorCallback&

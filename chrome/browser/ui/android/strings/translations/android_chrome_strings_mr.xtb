@@ -482,7 +482,6 @@
 <translation id="4988210275050210843">(<ph name="MEGABYTES" />) ची फाइल डाउनलोड करत आहे.</translation>
 <translation id="4988526792673242964">पेज</translation>
 <translation id="4994033804516042629">संपर्क सापडले नाहीत</translation>
-<translation id="4996978546172906250">याद्वारे शेअर करा</translation>
 <translation id="5004416275253351869">Google ॲक्टिव्हिटी नियंत्रणे</translation>
 <translation id="5005498671520578047">पासवर्ड कॉपी करा</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> कनेक्ट करू इच्छिते</translation>
@@ -644,6 +643,7 @@
 <translation id="6381421346744604172">डार्कन वेबसाइट</translation>
 <translation id="6395288395575013217">लिंक</translation>
 <translation id="6397616442223433927">पुन्हा ऑनलाइन</translation>
+<translation id="6398765197997659313">पूर्ण स्क्रीनमधून निर्गमन करा</translation>
 <translation id="6404511346730675251">बुकमार्क संपादित करा</translation>
 <translation id="6406506848690869874">Sync</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" /> मधून AR एंटर करायचे आहे का?</translation>
@@ -700,7 +700,7 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">भाषांतर करा</translation>
 <translation id="6845325883481699275">Chrome सुरक्षेमध्ये सुधारणा करण्यात मदत करा</translation>
-<translation id="6846298663435243399">लोड करीत आहे...</translation>
+<translation id="6846298663435243399">लोड करत आहे...</translation>
 <translation id="6850409657436465440">तुमचे डाउनलोड अजून प्रगतीपथावर आहे</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> टॅब बंद केले</translation>
 <translation id="685850645784703949">Google चे Discover - बंद आहे</translation>
@@ -906,6 +906,7 @@
 <translation id="8514577642972634246">गुप्त मोडमध्ये प्रवेश करा</translation>
 <translation id="8516012719330875537">इमेज संपादक</translation>
 <translation id="8523928698583292556">स्टोअर केलेला पासवर्ड हटवा</translation>
+<translation id="8525306231823319788">फुल स्क्रीन</translation>
 <translation id="854522910157234410">हे पृष्ठ उघडा</translation>
 <translation id="8558485628462305855">ऑगमेंटेड रीअ‍ॅलिटी आशय पाहण्यासाठी, ARCore अपडेट करा</translation>
 <translation id="8559990750235505898">पेज अन्य भाषांमध्ये भाषांतरित करण्यास ऑफर करा</translation>

@@ -255,7 +255,7 @@ Polymer({
     const tool = element.id;
     const options = element.querySelector('viewer-pen-options') || {
       selectedSize: 1,
-      selectedColor: null,
+      selectedColor: undefined,
     };
     const attributeStyleMap = element.attributeStyleMap;
     attributeStyleMap.set('--pen-tip-fill', options.selectedColor);

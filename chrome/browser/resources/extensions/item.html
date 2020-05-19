@@ -21,6 +21,10 @@
     flex-shrink: 1;
   }
 
+  cr-tooltip-icon {
+    margin-inline-end: 8px;
+  }
+
   #icon-wrapper {
     align-self: flex-start;
     display: flex;
@@ -303,6 +307,12 @@
         $i18n{itemReload}
       </cr-button>
     </template>
+    <cr-tooltip-icon id="parentDisabledPermissionsToolTip"
+        hidden$="[[!data.disableReasons.parentDisabledPermissions]]"
+        tooltip-text="$i18n{parentDisabledPermissions}"
+        icon-class="cr20:kite"
+        icon-aria-label="$i18n{parentDisabledPermissions}">
+    </cr-tooltip-icon>
     <cr-toggle id="enableToggle"
         aria-label$="[[appOrExtension(
             data.type,

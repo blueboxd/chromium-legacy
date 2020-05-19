@@ -731,6 +731,11 @@ inline int SnapSizeToPixel(LayoutUnit size, LayoutUnit location) {
   return result;
 }
 
+inline int SnapSizeToPixelAllowingZero(LayoutUnit size, LayoutUnit location) {
+  LayoutUnit fraction = location.Fraction();
+  return (fraction + size).Round() - fraction.Round();
+}
+
 inline int RoundToInt(LayoutUnit value) {
   return value.Round();
 }

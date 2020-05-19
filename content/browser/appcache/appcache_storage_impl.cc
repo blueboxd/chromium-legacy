@@ -1398,15 +1398,7 @@ void AppCacheStorageImpl::UpdateEvictionTimesTask::Run() {
 // AppCacheStorageImpl ---------------------------------------------------
 
 AppCacheStorageImpl::AppCacheStorageImpl(AppCacheServiceImpl* service)
-    : AppCacheStorage(service),
-      is_incognito_(false),
-      is_response_deletion_scheduled_(false),
-      did_start_deleting_responses_(false),
-      last_deletable_response_rowid_(0),
-      database_(nullptr),
-      is_disabled_(false),
-      delete_and_start_over_pending_(false),
-      expecting_cleanup_complete_on_disable_(false) {}
+    : AppCacheStorage(service) {}
 
 AppCacheStorageImpl::~AppCacheStorageImpl() {
   for (StoreGroupAndCacheTask* task : pending_quota_queries_)
@@ -1414,13 +1406,12 @@ AppCacheStorageImpl::~AppCacheStorageImpl() {
   for (DatabaseTask* task : scheduled_database_tasks_)
     task->CancelCompletion();
 
-  if (database_ &&
-      !db_task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(
-              &ClearSessionOnlyOrigins, std::move(database_),
-              base::WrapRefCounted(service_->special_storage_policy()),
-              service()->force_keep_session_state()))) {
+  if (database_) {
+    db_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ClearSessionOnlyOrigins, std::move(database_),
+                       base::WrapRefCounted(service_->special_storage_policy()),
+                       service()->force_keep_session_state()));
   }
 }
 

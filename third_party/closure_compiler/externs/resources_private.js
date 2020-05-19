@@ -11,9 +11,7 @@
 
 /** @fileoverview Externs generated from namespace: resourcesPrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.resourcesPrivate = {};
 
 /**

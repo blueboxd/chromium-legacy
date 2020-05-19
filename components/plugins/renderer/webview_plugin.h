@@ -11,7 +11,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
+#include "third_party/blink/public/mojom/page/widget.mojom.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/blink.h"
@@ -154,7 +157,8 @@ class WebViewPlugin : public blink::WebPlugin,
   // A helper that handles interaction from WebViewPlugin's internal WebView.
   class WebViewHelper : public blink::WebViewClient,
                         public blink::WebWidgetClient,
-                        public blink::WebLocalFrameClient {
+                        public blink::WebLocalFrameClient,
+                        public blink::mojom::WidgetHost {
    public:
     WebViewHelper(WebViewPlugin* plugin,
                   const content::WebPreferences& preferences);
@@ -171,8 +175,6 @@ class WebViewPlugin : public blink::WebPlugin,
     void DidInvalidateRect(const blink::WebRect&) override;
 
     // WebWidgetClient methods:
-    void SetToolTipText(const blink::WebString&,
-                        base::i18n::TextDirection) override;
     void StartDragging(network::mojom::ReferrerPolicy,
                        const blink::WebDragData&,
                        blink::WebDragOperationsMask,
@@ -188,12 +190,21 @@ class WebViewPlugin : public blink::WebPlugin,
     std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory()
         override;
 
+    // blink::mojom::WidgetHost implementation.
+    void SetCursor(const ui::Cursor& cursor) override {}
+    void SetToolTipText(const base::string16& tooltip_text,
+                        base::i18n::TextDirection hint) override;
+
    private:
     WebViewPlugin* plugin_;
     blink::WebNavigationControl* frame_ = nullptr;
 
     // Owned by us, deleted via |close()|.
     blink::WebView* web_view_;
+
+    mojo::AssociatedReceiver<blink::mojom::WidgetHost>
+        blink_widget_host_receiver_{this};
+    mojo::AssociatedRemote<blink::mojom::Widget> blink_widget_;
   };
   WebViewHelper web_view_helper_;
 

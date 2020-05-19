@@ -21,6 +21,10 @@ class Profile;
 
 namespace chromeos {
 
+const char kPersonalInfoSuggesterTabAcceptanceCount[] =
+    "personal_info_suggester_tab_acceptance_count";
+const int kMaxTabAcceptanceCount = 10;
+
 AssistiveType ProposeAssistiveAction(const base::string16& text);
 
 class TtsHandler : public content::UtteranceEventDelegate {
@@ -79,6 +83,8 @@ class PersonalInfoSuggester : public Suggester {
                       const size_t confirmed_length);
 
   void AcceptSuggestion();
+
+  int GetTabAcceptanceCount();
 
   SuggestionHandlerInterface* const suggestion_handler_;
 

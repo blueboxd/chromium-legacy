@@ -207,7 +207,7 @@ std::string HashesToBase64String(const HashValueVector& hashes) {
   return str;
 }
 
-std::string HashHost(const std::string& canonicalized_host) {
+std::string HashHost(base::StringPiece canonicalized_host) {
   char hashed[crypto::kSHA256Length];
   crypto::SHA256HashString(canonicalized_host, hashed, sizeof(hashed));
   return std::string(hashed, sizeof(hashed));
@@ -1238,8 +1238,8 @@ bool TransportSecurityState::GetDynamicSTSState(const std::string& host,
 
   bool first_match = true;
   for (size_t i = 0; canonicalized_host[i]; i += canonicalized_host[i] + 1) {
-    std::string host_sub_chunk(&canonicalized_host[i],
-                               canonicalized_host.size() - i);
+    base::StringPiece host_sub_chunk =
+        base::StringPiece(canonicalized_host).substr(i);
     auto j = enabled_sts_hosts_.find(HashHost(host_sub_chunk));
     if (j == enabled_sts_hosts_.end())
       continue;
@@ -1288,8 +1288,8 @@ bool TransportSecurityState::GetDynamicPKPState(const std::string& host,
   base::Time current_time(base::Time::Now());
 
   for (size_t i = 0; canonicalized_host[i]; i += canonicalized_host[i] + 1) {
-    std::string host_sub_chunk(&canonicalized_host[i],
-                               canonicalized_host.size() - i);
+    base::StringPiece host_sub_chunk =
+        base::StringPiece(canonicalized_host).substr(i);
     auto j = enabled_pkp_hosts_.find(HashHost(host_sub_chunk));
     if (j == enabled_pkp_hosts_.end())
       continue;

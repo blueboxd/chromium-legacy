@@ -238,7 +238,7 @@ void UpdateClientImpl::SendUninstallPing(const std::string& id,
 
   RunTask(base::MakeRefCounted<TaskSendUninstallPing>(
       update_engine_.get(), id, version, reason,
-      base::BindOnce(&UpdateClientImpl::OnTaskComplete, base::Unretained(this),
+      base::BindOnce(&UpdateClientImpl::OnTaskComplete, this,
                      std::move(callback))));
 }
 

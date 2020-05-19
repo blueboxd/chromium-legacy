@@ -5,6 +5,7 @@
 package org.chromium.weblayer.test;
 
 import android.os.Build;
+import android.os.RemoteException;
 import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.widget.TextView;
@@ -21,6 +22,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.weblayer.TestWebLayer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 /**
@@ -34,6 +36,8 @@ public class BottomControlsTest {
             new InstrumentationActivityTestRule();
 
     private int mMaxControlsHeight;
+    private int mTopControlsHeight;
+    private int mBottomControlsHeight;
     private int mInitialVisiblePageHeight;
 
     /**
@@ -44,26 +48,49 @@ public class BottomControlsTest {
         return mActivityTestRule.executeScriptAndExtractInt("window.innerHeight");
     }
 
+    private void waitForBrowserControlsViewToBeVisible(View v) {
+        CriteriaHelper.pollUiThread(() -> {
+            Assert.assertTrue(v.getHeight() > 0);
+            Assert.assertEquals(View.VISIBLE, v.getVisibility());
+        });
+    }
+
+    // See TestWebLayer.waitForBrowserControlsMetadataState() for details on this.
+    private void waitForBrowserControlsMetadataState(
+            InstrumentationActivity activity, int top, int bottom) throws Exception {
+        BoundedCountDownLatch latch = new BoundedCountDownLatch(1);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            try {
+                TestWebLayer.getTestWebLayer(activity.getApplicationContext())
+                        .waitForBrowserControlsMetadataState(activity.getBrowser().getActiveTab(),
+                                top, bottom, () -> { latch.countDown(); });
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        latch.timedAwait();
+    }
+
     // Disabled on L bots due to unexplained flakes. See crbug.com/1035894.
     @MinAndroidSdkLevel(Build.VERSION_CODES.M)
     @Test
     @SmallTest
-    @DisabledTest
     public void testBasic() throws Exception {
-        final String url = UrlUtils.encodeHtmlDataUri("<body><p style='height:5000px'>");
+        final String url = mActivityTestRule.getTestDataURL("tall_page.html");
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(url);
 
         // Poll until the top view becomes visible.
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                View.VISIBLE, () -> activity.getTopContentsContainer().getVisibility()));
+        waitForBrowserControlsViewToBeVisible(activity.getTopContentsContainer());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mMaxControlsHeight = activity.getTopContentsContainer().getHeight();
+            mMaxControlsHeight = mTopControlsHeight =
+                    activity.getTopContentsContainer().getHeight();
             Assert.assertTrue(mMaxControlsHeight > 0);
         });
 
-        // Ask for the page height. While the height isn't needed, the call to the renderer helps
-        // ensure the renderer's height has updated based on the top-control.
-        getVisiblePageHeight();
+        // Wait for cc to see the top-controls height.
+        waitForBrowserControlsMetadataState(activity, mTopControlsHeight, 0);
+
+        int pageHeightWithTopView = getVisiblePageHeight();
 
         View bottomView = TestThreadUtils.runOnUiThreadBlocking(() -> {
             TextView view = new TextView(activity);
@@ -72,36 +99,43 @@ public class BottomControlsTest {
             return view;
         });
 
-        // Poll until the bottom view becomes visible.
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(View.VISIBLE, () -> bottomView.getVisibility()));
-
-        // Ask for the page height. While the height isn't needed, the call to the renderer helps
-        // ensure the renderer's height has updated based on the top-control.
-        getVisiblePageHeight();
+        waitForBrowserControlsViewToBeVisible(bottomView);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Scrolling code ends up using the max height.
-            mMaxControlsHeight = Math.max(mMaxControlsHeight, bottomView.getHeight());
-            Assert.assertTrue(mMaxControlsHeight > 0);
-            Assert.assertTrue(bottomView.getHeight() > 0);
+            // The amount necessary to scroll is the sum of the two views. This is because the page
+            // height is reduced by the sum of these two.
+            mBottomControlsHeight = bottomView.getHeight();
+            Assert.assertTrue(mBottomControlsHeight > 0);
+            mMaxControlsHeight += mBottomControlsHeight;
         });
+
+        // Wait for cc to see the bottom height. This is very important, as scrolling is gated by
+        // cc getting the bottom height.
+        waitForBrowserControlsMetadataState(activity, mTopControlsHeight, mBottomControlsHeight);
+
+        // Adding a bottom view should change the page height.
+        CriteriaHelper.pollInstrumentationThread(
+                () -> Assert.assertNotEquals(getVisiblePageHeight(), pageHeightWithTopView));
+        int pageHeightWithTopAndBottomViews = getVisiblePageHeight();
+        Assert.assertTrue(pageHeightWithTopAndBottomViews < pageHeightWithTopView);
 
         // Move by the size of the controls.
         EventUtils.simulateDragFromCenterOfView(
                 activity.getWindow().getDecorView(), 0, -mMaxControlsHeight);
 
-        // Moving should hide the bottom-controls View.
+        // Moving should hide the bottom View.
         CriteriaHelper.pollUiThread(
                 Criteria.equals(View.INVISIBLE, () -> bottomView.getVisibility()));
+        CriteriaHelper.pollInstrumentationThread(
+                Criteria.equals(true, () -> getVisiblePageHeight() > pageHeightWithTopView));
 
-        // Move so bottom-controls are shown again.
+        // Move so top and bottom-controls are shown again.
         EventUtils.simulateDragFromCenterOfView(
                 activity.getWindow().getDecorView(), 0, mMaxControlsHeight);
 
-        // bottom-controls are shown async.
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(View.VISIBLE, () -> bottomView.getVisibility()));
+        waitForBrowserControlsViewToBeVisible(bottomView);
+        CriteriaHelper.pollInstrumentationThread(
+                () -> Assert.assertEquals(getVisiblePageHeight(), pageHeightWithTopAndBottomViews));
     }
 
     // Disabled on L bots due to unexplained flakes. See crbug.com/1035894.

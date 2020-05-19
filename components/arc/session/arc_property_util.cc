@@ -315,11 +315,7 @@ bool ExpandPropertyFiles(const base::FilePath& source_path,
       return false;
     }
   }
-  if (single_file)
-    return true;
-  // Use the same permissions as stock Android for /vendor/build.prop.
-  return base::SetPosixFilePermissions(dest_path.Append("vendor_build.prop"),
-                                       0600);
+  return true;
 }
 
 }  // namespace arc

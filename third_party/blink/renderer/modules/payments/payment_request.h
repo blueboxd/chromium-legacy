@@ -65,6 +65,8 @@ class MODULES_EXPORT PaymentRequest final
                  const HeapVector<Member<PaymentMethodData>>&,
                  const PaymentDetailsInit*,
                  const PaymentOptions*,
+                 mojo::PendingRemote<payments::mojom::blink::PaymentRequest>
+                     mock_payment_provider,
                  ExceptionState&);
   ~PaymentRequest() override;
 
@@ -179,6 +181,7 @@ class MODULES_EXPORT PaymentRequest final
   TaskRunnerTimer<PaymentRequest> complete_timer_;
   TaskRunnerTimer<PaymentRequest> update_payment_details_timer_;
   bool is_waiting_for_show_promise_to_resolve_;
+  bool ignore_total_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };

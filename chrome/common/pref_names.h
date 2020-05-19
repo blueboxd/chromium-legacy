@@ -335,6 +335,8 @@ extern const char kLoginExtensionApiLaunchExtensionId[];
 extern const char kSettingsShowBrowserBanner[];
 extern const char kSettingsShowOSBanner[];
 extern const char kDeviceLoginScreenWebUsbAllowDevicesForUrls[];
+extern const char kUpdateRequiredTimerStartTime[];
+extern const char kUpdateRequiredWarningPeriod[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kSpeechRecognitionFilterProfanities[];

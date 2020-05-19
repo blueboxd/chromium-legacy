@@ -7,7 +7,11 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 
 using input_method::InputMethodEngineBase;
 
@@ -30,20 +34,29 @@ bool IsAssistPersonalInfoEnabled() {
   return base::FeatureList::IsEnabled(chromeos::features::kAssistPersonalInfo);
 }
 
-bool IsEmojiSuggestAdditionEnabled() {
-  return base::FeatureList::IsEnabled(
-      chromeos::features::kEmojiSuggestAddition);
-}
-
 }  // namespace
-
-bool IsAssistiveFeatureEnabled() {
-  return IsAssistPersonalInfoEnabled() || IsEmojiSuggestAdditionEnabled();
-}
 
 AssistiveSuggester::AssistiveSuggester(InputMethodEngine* engine,
                                        Profile* profile)
-    : personal_info_suggester_(engine, profile), emoji_suggester_(engine) {}
+    : profile_(profile),
+      personal_info_suggester_(engine, profile),
+      emoji_suggester_(engine) {}
+
+bool AssistiveSuggester::IsAssistiveFeatureEnabled() {
+  return IsAssistPersonalInfoEnabled() || IsEmojiSuggestAdditionEnabled();
+}
+
+bool AssistiveSuggester::IsEmojiSuggestAdditionEnabled() {
+  if (!base::FeatureList::IsEnabled(chromeos::features::kEmojiSuggestAddition))
+    return false;
+  base::Optional<bool> enabled =
+      profile_->GetPrefs()
+          ->GetDictionary(prefs::kAssistiveInputFeatureSettings)
+          ->FindBoolPath(kEmojiSuggestAdditionEnabledPrefName);
+  if (!enabled.has_value())
+    return true;
+  return enabled.value();
+}
 
 void AssistiveSuggester::OnFocus(int context_id) {
   context_id_ = context_id;

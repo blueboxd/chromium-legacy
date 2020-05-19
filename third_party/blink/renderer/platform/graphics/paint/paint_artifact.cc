@@ -107,16 +107,8 @@ SkColor PaintArtifact::SafeOpaqueBackgroundColor(
 }
 
 void PaintArtifact::FinishCycle() {
-  // Until CompositeAfterPaint, PaintController::ClearPropertyTreeChangedStateTo
-  // is used for clearing the property tree changed state at the end of paint
-  // instead of in FinishCycle. See: LocalFrameView::RunPaintLifecyclePhase.
-  bool clear_property_tree_changed =
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled();
-  for (auto& chunk : chunks_) {
+  for (auto& chunk : chunks_)
     chunk.client_is_just_created = false;
-    if (clear_property_tree_changed)
-      chunk.properties.ClearChangedToRoot();
-  }
 }
 
 }  // namespace blink

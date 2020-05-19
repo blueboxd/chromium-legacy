@@ -28,7 +28,7 @@ using UkmEntry = ukm::builders::PageWithPassword;
 
 // Creates a PasswordManagerMetricsRecorder that reports metrics for kTestUrl.
 PasswordManagerMetricsRecorder CreateMetricsRecorder() {
-  return PasswordManagerMetricsRecorder(kTestSourceId, GURL(kTestUrl));
+  return PasswordManagerMetricsRecorder(kTestSourceId, GURL(kTestUrl), nullptr);
 }
 
 }  // namespace

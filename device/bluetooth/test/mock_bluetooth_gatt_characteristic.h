@@ -75,11 +75,22 @@ class MockBluetoothGattCharacteristic
   }
   MOCK_METHOD2(ReadRemoteCharacteristic_, void(ValueCallback&, ErrorCallback&));
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& v,
+                                 WriteType t,
                                  base::OnceClosure c,
                                  ErrorCallback ec) override {
-    WriteRemoteCharacteristic_(v, c, ec);
+    WriteRemoteCharacteristic_(v, t, c, ec);
   }
-  MOCK_METHOD3(WriteRemoteCharacteristic_,
+  MOCK_METHOD4(WriteRemoteCharacteristic_,
+               void(const std::vector<uint8_t>&,
+                    WriteType,
+                    base::OnceClosure&,
+                    ErrorCallback&));
+  void DeprecatedWriteRemoteCharacteristic(const std::vector<uint8_t>& v,
+                                           base::OnceClosure c,
+                                           ErrorCallback ec) override {
+    DeprecatedWriteRemoteCharacteristic_(v, c, ec);
+  }
+  MOCK_METHOD3(DeprecatedWriteRemoteCharacteristic_,
                void(const std::vector<uint8_t>&,
                     base::OnceClosure&,
                     ErrorCallback&));

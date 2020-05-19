@@ -22,6 +22,7 @@
 #include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -70,11 +71,20 @@ ExternalInstallOptions GetWindowedInstallOptions() {
 
 }  // namespace
 
-class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
+class SystemWebAppManagerTest
+    : public ChromeRenderViewHostTestHarness,
+      public ::testing::WithParamInterface<ProviderType> {
  public:
   SystemWebAppManagerTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kSystemWebApps}, {features::kDesktopPWAsWithoutExtensions});
+    if (GetParam() == ProviderType::kWebApps) {
+      scoped_feature_list_.InitWithFeatures(
+          {features::kSystemWebApps, features::kDesktopPWAsWithoutExtensions},
+          {});
+    } else if (GetParam() == ProviderType::kBookmarkApps) {
+      scoped_feature_list_.InitWithFeatures(
+          {features::kSystemWebApps},
+          {features::kDesktopPWAsWithoutExtensions});
+    }
   }
 
   ~SystemWebAppManagerTest() override = default;
@@ -142,7 +152,7 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
 };
 
 // Test that System Apps are uninstalled with the feature disabled.
-TEST_F(SystemWebAppManagerTest, Disabled) {
+TEST_P(SystemWebAppManagerTest, Disabled) {
   base::test::ScopedFeatureList disable_feature_list;
   disable_feature_list.InitWithFeatures({}, {features::kSystemWebApps});
 
@@ -168,7 +178,7 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
 }
 
 // Test that System Apps do install with the feature enabled.
-TEST_F(SystemWebAppManagerTest, Enabled) {
+TEST_P(SystemWebAppManagerTest, Enabled) {
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
   system_apps.emplace(SystemAppType::SETTINGS,
                       SystemAppInfo(kSettingsAppNameForLogging, AppUrl1()));
@@ -184,7 +194,7 @@ TEST_F(SystemWebAppManagerTest, Enabled) {
 }
 
 // Test that changing the set of System Apps uninstalls apps.
-TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
+TEST_P(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
   // Simulate System Apps and a regular app that were installed in the
   // previous session.
   SimulatePreviouslyInstalledApp(AppUrl1(),
@@ -214,7 +224,7 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
             pending_app_manager()->uninstall_requests());
 }
 
-TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
+TEST_P(SystemWebAppManagerTest, AlwaysUpdate) {
   system_web_app_manager()->SetUpdatePolicy(
       SystemWebAppManager::UpdatePolicy::kAlwaysUpdate);
 
@@ -257,7 +267,7 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
   EXPECT_EQ(5u, pending_app_manager()->install_requests().size());
 }
 
-TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
+TEST_P(SystemWebAppManagerTest, UpdateOnVersionChange) {
   const std::vector<ExternalInstallOptions>& install_requests =
       pending_app_manager()->install_requests();
 
@@ -342,7 +352,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   EXPECT_TRUE(IsInstalled(AppUrl3()));
 }
 
-TEST_F(SystemWebAppManagerTest, UpdateOnLocaleChange) {
+TEST_P(SystemWebAppManagerTest, UpdateOnLocaleChange) {
   const std::vector<ExternalInstallOptions>& install_requests =
       pending_app_manager()->install_requests();
 
@@ -383,7 +393,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnLocaleChange) {
   EXPECT_FALSE(install_requests[2].force_reinstall);
 }
 
-TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
+TEST_P(SystemWebAppManagerTest, InstallResultHistogram) {
   base::HistogramTester histograms;
   const std::string settings_app_install_result_histogram =
       std::string(SystemWebAppManager::kInstallResultHistogramName) + ".Apps." +
@@ -489,5 +499,11 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
         SystemWebAppManager::kInstallDurationHistogramName, 2);
   }
 }
+
+// TODO(crbug.com/1082880): Test with BMO enabled.
+INSTANTIATE_TEST_SUITE_P(All,
+                         SystemWebAppManagerTest,
+                         ::testing::Values(ProviderType::kBookmarkApps),
+                         ProviderTypeParamToString);
 
 }  // namespace web_app

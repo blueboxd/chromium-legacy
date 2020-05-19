@@ -11,9 +11,7 @@
 
 /** @fileoverview Externs generated from namespace: networkingPrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.networkingPrivate = {};
 
 /**

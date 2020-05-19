@@ -212,12 +212,7 @@ double AudioDevicesPrefHandlerImpl::GetVolumeGainPrefValue(
   if (!device_volume_settings_->HasKey(device_id_str))
     MigrateDeviceVolumeGainSettings(device_id_str, device);
 
-  // TODO(jennyz, rkc): Return a meaningful input gain default value, when
-  // cras has added support for normalizing input gain range.
-  double value = device.is_input ?
-      0.0 : GetDeviceDefaultOutputVolume(device);
-  // TODO(rkc): The above code is completely ignored since we 'always' have a
-  // default pref value. Fix this. http://crbug.com/442489
+  double value;
   device_volume_settings_->GetDouble(device_id_str, &value);
 
   return value;
@@ -325,8 +320,11 @@ void AudioDevicesPrefHandlerImpl::MigrateDeviceVolumeGainSettings(
   if (!MigrateDeviceIdInSettings(device_volume_settings_.get(), device_key,
                                  device)) {
     // If there was no recorded value for deprecated device ID, use value from
-    // global vloume pref.
-    double old_volume = local_state_->GetDouble(prefs::kAudioVolumePercent);
+    // global vloume pref. For input devices, use the DefaultInputGainPercent
+    // rather than the kAudioVolumePercent.
+    double old_volume =
+        device.is_input ? kDefaultInputGainPercent
+                        : local_state_->GetDouble(prefs::kAudioVolumePercent);
     device_volume_settings_->SetDouble(device_key, old_volume);
   }
   SaveDevicesVolumePref();

@@ -271,6 +271,24 @@ VirtualFidoDevice::PrivateKey::FromPKCS8(
   }
 }
 
+// static
+std::unique_ptr<VirtualFidoDevice::PrivateKey>
+VirtualFidoDevice::PrivateKey::FreshP256Key() {
+  return std::make_unique<P256PrivateKey>();
+}
+
+// static
+std::unique_ptr<VirtualFidoDevice::PrivateKey>
+VirtualFidoDevice::PrivateKey::FreshRSAKey() {
+  return std::unique_ptr<PrivateKey>(new RSAPrivateKey);
+}
+
+// static
+std::unique_ptr<VirtualFidoDevice::PrivateKey>
+VirtualFidoDevice::PrivateKey::FreshEd25519Key() {
+  return std::unique_ptr<PrivateKey>(new Ed25519PrivateKey);
+}
+
 // VirtualFidoDevice::RegistrationData ----------------------------------------
 
 VirtualFidoDevice::RegistrationData::RegistrationData() = default;
@@ -286,8 +304,9 @@ VirtualFidoDevice::RegistrationData::RegistrationData(RegistrationData&& data) =
     default;
 VirtualFidoDevice::RegistrationData::~RegistrationData() = default;
 
-VirtualFidoDevice::RegistrationData& VirtualFidoDevice::RegistrationData::
-operator=(RegistrationData&& other) = default;
+VirtualFidoDevice::RegistrationData&
+VirtualFidoDevice::RegistrationData::operator=(RegistrationData&& other) =
+    default;
 
 // VirtualFidoDevice::State ---------------------------------------------------
 
@@ -302,7 +321,7 @@ bool VirtualFidoDevice::State::InjectRegistration(
   auto application_parameter =
       fido_parsing_utils::CreateSHA256Hash(relying_party_id);
 
-  RegistrationData registration(FreshP256Key(),
+  RegistrationData registration(PrivateKey::FreshP256Key(),
                                 std::move(application_parameter),
                                 0 /* signature counter */);
 
@@ -348,7 +367,7 @@ bool VirtualFidoDevice::State::InjectResidentKey(
     device::PublicKeyCredentialUserEntity user) {
   return InjectResidentKey(std::move(credential_id), std::move(rp),
                            std::move(user), /*signature_counter=*/0,
-                           FreshP256Key());
+                           PrivateKey::FreshP256Key());
 }
 
 bool VirtualFidoDevice::State::InjectResidentKey(
@@ -377,24 +396,6 @@ VirtualFidoDevice::~VirtualFidoDevice() = default;
 // static
 std::vector<uint8_t> VirtualFidoDevice::GetAttestationKey() {
   return fido_parsing_utils::Materialize(kAttestationKey);
-}
-
-// static
-std::unique_ptr<VirtualFidoDevice::PrivateKey>
-VirtualFidoDevice::FreshP256Key() {
-  return std::make_unique<P256PrivateKey>();
-}
-
-// static
-std::unique_ptr<VirtualFidoDevice::PrivateKey>
-VirtualFidoDevice::FreshRSAKey() {
-  return std::unique_ptr<PrivateKey>(new RSAPrivateKey);
-}
-
-// static
-std::unique_ptr<VirtualFidoDevice::PrivateKey>
-VirtualFidoDevice::FreshEd25519Key() {
-  return std::unique_ptr<PrivateKey>(new Ed25519PrivateKey);
 }
 
 bool VirtualFidoDevice::Sign(crypto::ECPrivateKey* private_key,

@@ -481,7 +481,6 @@
 <translation id="4988210275050210843">ఫైల్‌ను డౌన్‌లోడ్ చేస్తోంది (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">పేజీలు</translation>
 <translation id="4994033804516042629">పరిచయాలు కనుగొనబడలేదు</translation>
-<translation id="4996978546172906250">దీని ద్వారా భాగస్వామ్యం చే.</translation>
 <translation id="5004416275253351869">Google కార్యకలాప నియంత్రణలు</translation>
 <translation id="5005498671520578047">పాస్‌వర్డ్ కాపీచేయడం</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> దీనికి కనెక్ట్ చేయాలనుకుంటోంది</translation>
@@ -643,6 +642,7 @@
 <translation id="6381421346744604172">వెబ్‌సైట్‌లు ముదురు రంగులో చేయి</translation>
 <translation id="6395288395575013217">లింక్</translation>
 <translation id="6397616442223433927">తిరిగి ఆన్‌లైన్‌లోకి వచ్చింది</translation>
+<translation id="6398765197997659313">పూర్తి స్క్రీన్ నుండి నిష్క్రమించు</translation>
 <translation id="6404511346730675251">బుక్‌మార్క్‌ను సవరించు</translation>
 <translation id="6406506848690869874">Sync</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" /> నుండి AR మోడ్‌లోకి ప్రవేశించాలా?</translation>
@@ -699,7 +699,7 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">అనువదించు</translation>
 <translation id="6845325883481699275">Chrome భద్రతను మెరుగుపరచడంలో సహాయం చేయండి</translation>
-<translation id="6846298663435243399">లోడ్ అవుతోంది...</translation>
+<translation id="6846298663435243399">లోడ్ చేస్తున్నాము…</translation>
 <translation id="6850409657436465440">మీ డౌన్‌లోడ్‌‌ ఇప్పటికీ జరుగుతోంది</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> ట్యాబ్‌లు మూసివేయబడ్డాయి</translation>
 <translation id="685850645784703949">Google ద్వారా Discover - ఆఫ్‌లో ఉంది</translation>
@@ -905,6 +905,7 @@
 <translation id="8514577642972634246">అజ్ఞాత మోడ్‌లోకి ప్రవేశించండి</translation>
 <translation id="8516012719330875537">చిత్ర ఎడిటర్</translation>
 <translation id="8523928698583292556">నిల్వ చేసిన పాస్‌వర్డ్‌ను తొలగిస్తుంది</translation>
+<translation id="8525306231823319788">పూర్తి స్క్రీన్</translation>
 <translation id="854522910157234410">ఈ పేజీని తెరవండి</translation>
 <translation id="8558485628462305855">మెరుగైన వాస్తవిక అనుభవ కంటెంట్‌ను చూడడానికి, ARCoreని అప్‌డేట్ చేయండి</translation>
 <translation id="8559990750235505898">ఇతర భాషలలో పేజీలను అనువదించడాన్ని ఆఫర్ చేస్తుంది</translation>

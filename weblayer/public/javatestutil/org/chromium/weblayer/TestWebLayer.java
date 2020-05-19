@@ -13,6 +13,7 @@ import android.util.AndroidRuntimeException;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.test_interfaces.ITestWebLayer;
 
 /**
@@ -74,5 +75,13 @@ public final class TestWebLayer {
 
     public void setSystemLocationSettingEnabled(boolean enabled) throws RemoteException {
         mITestWebLayer.setSystemLocationSettingEnabled(enabled);
+    }
+
+    // Runs |runnable| when cc::RenderFrameMetadata's |top_controls_height| and
+    // |bottom_controls_height| matches the supplied values. |runnable| may be run synchronously.
+    public void waitForBrowserControlsMetadataState(Tab tab, int top, int bottom, Runnable runnable)
+            throws RemoteException {
+        mITestWebLayer.waitForBrowserControlsMetadataState(
+                tab.getITab(), top, bottom, ObjectWrapper.wrap(runnable));
     }
 }

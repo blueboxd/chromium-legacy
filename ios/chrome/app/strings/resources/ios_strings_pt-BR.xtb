@@ -133,6 +133,7 @@
 <translation id="2578571896248130439">Enviar página da Web</translation>
 <translation id="2584132361465095047">Adicionar conta…</translation>
 <translation id="2625189173221582860">Senha copiada</translation>
+<translation id="2647269890314209800">Cookies em uso</translation>
 <translation id="2648803196158606475">Excluir lidas</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2690858294534178585">A câmera está sendo usada</translation>
@@ -417,6 +418,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="6362362396625799311">Não há guias anônimas</translation>
 <translation id="6363526231572697780">Sem nome de usuário</translation>
 <translation id="6374469231428023295">Repetir</translation>
+<translation id="6377118281273296434">Segurança do site</translation>
 <translation id="6380866119319257197">Se você esquecer a senha longa ou quiser alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincronização<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Nome no cartão</translation>
 <translation id="6406506848690869874">Sincronizar</translation>
@@ -524,11 +526,13 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 
 Como a conta é gerenciada por <ph name="HOSTED_DOMAIN" />, seus dados do Chrome serão excluídos deste dispositivo quando você sair. Os dados sincronizados permanecerão na sua Conta do Google.</translation>
 <translation id="7772032839648071052">Confirmar senha</translation>
+<translation id="7778472311864276518">Remover conta deste dispositivo</translation>
 <translation id="7781011649027948662">Traduzir página?</translation>
 <translation id="7781829728241885113">Ontem</translation>
 <translation id="778855399387580014">Inicie uma pesquisa em uma nova guia do Chrome.</translation>
 <translation id="7791543448312431591">Adicionar</translation>
 <translation id="7828557259026017104">Os cookies são arquivos criados pelos sites que você visita, usados por esses sites para lembrar suas preferências. Os cookies de terceiros são criados por outros sites que possuem uma parte do conteúdo, como anúncios ou imagens, que você vê na página da Web acessada.</translation>
+<translation id="7839985698273989086">Página offline</translation>
 <translation id="7840771868269352570">Os itens selec. serão removidos.</translation>
 <translation id="7856733331829174190">Falha no download</translation>
 <translation id="7859704718976024901">Histórico de navegação</translation>

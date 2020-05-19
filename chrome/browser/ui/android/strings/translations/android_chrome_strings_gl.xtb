@@ -466,6 +466,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="488187801263602086">Cambia o nome do ficheiro</translation>
 <translation id="4882831918239250449">Controla como se utiliza o historial de navegación para personalizar a Busca, os anuncios e moito máis</translation>
 <translation id="4885273946141277891">Non se admite este número de instancias de Chrome.</translation>
+<translation id="4908869848243824489">Discover, de Google</translation>
 <translation id="4910889077668685004">Aplicacións de pagos</translation>
 <translation id="4913161338056004800">Restablecer estatísticas</translation>
 <translation id="4913169188695071480">Deter a actualización</translation>
@@ -481,7 +482,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="4988210275050210843">Descargando ficheiro (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Páxinas</translation>
 <translation id="4994033804516042629">Non se atopou ningún contacto</translation>
-<translation id="4996978546172906250">Compartir a través de</translation>
 <translation id="5004416275253351869">Controis de actividade de Google</translation>
 <translation id="5005498671520578047">Copiar contrasinal</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> quere conectarse</translation>
@@ -643,6 +643,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="6381421346744604172">Escurecer sitios web</translation>
 <translation id="6395288395575013217">LIGAZÓN</translation>
 <translation id="6397616442223433927">De novo en liña</translation>
+<translation id="6398765197997659313">Saír do modo de pantalla completa</translation>
 <translation id="6404511346730675251">Editar marcador</translation>
 <translation id="6406506848690869874">Sincronización</translation>
 <translation id="6410973561433500075">Queres acceder á realidade aumentada desde <ph name="DOMAIN" />?</translation>
@@ -702,6 +703,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="6846298663435243399">Cargando…</translation>
 <translation id="6850409657436465440">A descarga aínda está en curso</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> pestanas pechadas</translation>
+<translation id="685850645784703949">Discover, de Google: desconectado</translation>
 <translation id="6864459304226931083">Descargar imaxe</translation>
 <translation id="6865313869410766144">Autocompletar datos do formulario</translation>
 <translation id="6884306546558072722">Continuar explorando contido sen conexión</translation>
@@ -904,6 +906,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="8514577642972634246">Entra no modo de incógnito</translation>
 <translation id="8516012719330875537">Editor de imaxes</translation>
 <translation id="8523928698583292556">Elimina o contrasinal almacenado</translation>
+<translation id="8525306231823319788">Pantalla completa</translation>
 <translation id="854522910157234410">Abrir esta páxina</translation>
 <translation id="8558485628462305855">Para ver contido de realidade aumentada, actualiza ARCore</translation>
 <translation id="8559990750235505898">Ofrece a tradución de páxinas noutros idiomas</translation>

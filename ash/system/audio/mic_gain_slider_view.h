@@ -15,7 +15,9 @@ class MicGainSliderController;
 class MicGainSliderView : public UnifiedSliderView,
                           public chromeos::CrasAudioHandler::AudioObserver {
  public:
-  MicGainSliderView(MicGainSliderController* controller, uint64_t device_id);
+  MicGainSliderView(MicGainSliderController* controller,
+                    uint64_t device_id,
+                    bool internal);
   ~MicGainSliderView() override;
 
   uint64_t device_id() const { return device_id_; }
@@ -33,6 +35,9 @@ class MicGainSliderView : public UnifiedSliderView,
 
   // device id for the input device tied to this slider.
   const uint64_t device_id_;
+
+  // True if the audio device this slider represents is internal.
+  const bool internal_;
 };
 
 }  // namespace ash

@@ -10,9 +10,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chromeos/constants/chromeos_pref_names.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 
 using input_method::InputMethodEngineBase;
 
@@ -25,6 +27,7 @@ const char kAssistEmailPrefix[] = "my email is ";
 const char kAssistNamePrefix[] = "my name is ";
 const char kAssistAddressPrefix[] = "my address is ";
 const char kAssistPhoneNumberPrefix[] = "my phone number is ";
+const char kAnnounceShowTab[] = "Press tab to insert.";
 
 constexpr base::TimeDelta kTtsShowDelay =
     base::TimeDelta::FromMilliseconds(1200);
@@ -114,6 +117,13 @@ SuggestionStatus PersonalInfoSuggester::HandleKeyEvent(
   if (suggestion_shown_) {
     if (event.key == "Tab" || event.key == "Right") {
       AcceptSuggestion();
+      int tab_acceptance_count = GetTabAcceptanceCount();
+      if (tab_acceptance_count < kMaxTabAcceptanceCount) {
+        DictionaryPrefUpdate update(profile_->GetPrefs(),
+                                    prefs::kAssistiveInputFeatureSettings);
+        update->SetIntKey(kPersonalInfoSuggesterTabAcceptanceCount,
+                          tab_acceptance_count + 1);
+      }
       return SuggestionStatus::kAccept;
     } else if (event.key == "Esc") {
       DismissSuggestion();
@@ -195,8 +205,9 @@ base::string16 PersonalInfoSuggester::GetSuggestion(
 void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
                                            const size_t confirmed_length) {
   std::string error;
-  suggestion_handler_->SetSuggestion(context_id_, text, confirmed_length, true,
-                                     &error);
+  bool show_tab = GetTabAcceptanceCount() < kMaxTabAcceptanceCount;
+  suggestion_handler_->SetSuggestion(context_id_, text, confirmed_length,
+                                     show_tab, &error);
   if (!error.empty()) {
     LOG(ERROR) << "Fail to show suggestion. " << error;
   }
@@ -205,12 +216,25 @@ void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
     tts_handler_->Announce(
         // TODO(jiwan): Add translation to other languages when we support more
         // than English.
-        base::StringPrintf("Suggested text %s. Press tab to insert.",
-                           base::UTF16ToUTF8(text).c_str()),
+        base::StringPrintf(
+            "Suggested text %s. %s", base::UTF16ToUTF8(text).c_str(),
+            show_tab ? kAnnounceShowTab : base::EmptyString().c_str()),
         kTtsShowDelay);
   }
 
   suggestion_shown_ = true;
+}
+
+int PersonalInfoSuggester::GetTabAcceptanceCount() {
+  DictionaryPrefUpdate update(profile_->GetPrefs(),
+                              prefs::kAssistiveInputFeatureSettings);
+  auto tab_acceptance_count =
+      update->FindIntKey(kPersonalInfoSuggesterTabAcceptanceCount);
+  if (!tab_acceptance_count.has_value()) {
+    update->SetIntKey(kPersonalInfoSuggesterTabAcceptanceCount, 0);
+    return 0;
+  }
+  return *tab_acceptance_count;
 }
 
 AssistiveType PersonalInfoSuggester::GetProposeActionType() {

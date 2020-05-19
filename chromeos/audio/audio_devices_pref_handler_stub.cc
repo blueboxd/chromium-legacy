@@ -27,6 +27,9 @@ double AudioDevicesPrefHandlerStub::GetInputGainValue(
   // TODO(rkc): The default value for gain is wrong. http://crbug.com/442489
   if (!device || !base::Contains(audio_device_volume_gain_map_,
                                  device->stable_device_id)) {
+    if (device->is_input) {
+      return 50.0;
+    }
     return 75.0;
   }
   return audio_device_volume_gain_map_[device->stable_device_id];

@@ -481,7 +481,6 @@
 <translation id="4988210275050210843">फाइलहरू डाउनलोड गर्दै (<ph name="MEGABYTES" />)।</translation>
 <translation id="4988526792673242964">पृष्ठहरू</translation>
 <translation id="4994033804516042629">कुनै पनि सम्पर्क ठेगाना भेटिएन</translation>
-<translation id="4996978546172906250">मार्फत साझा गर्नुहोस्</translation>
 <translation id="5004416275253351869">Google का क्रियाकलापसम्बन्धी नियन्त्रणहरू</translation>
 <translation id="5005498671520578047">पासवर्ड प्रतिलिपि गर्नुहोस्</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> जडान गर्न चाहन्छ</translation>
@@ -643,6 +642,7 @@
 <translation id="6381421346744604172">वेबसाइटहरू अँध्यारो पार्नुहोस्</translation>
 <translation id="6395288395575013217">लिंक</translation>
 <translation id="6397616442223433927">यन्त्र फेरि अनलाइन भयो</translation>
+<translation id="6398765197997659313">पूर्ण स्क्रिनलाई हटाउनुहोस्</translation>
 <translation id="6404511346730675251">बुकमार्क सम्पादन गर्नुहोस्</translation>
 <translation id="6406506848690869874">समक्रमण</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" /> बाट AR मा प्रवेश गर्ने हो?</translation>
@@ -905,6 +905,7 @@
 <translation id="8514577642972634246">इनकगनिटो मोड प्रविष्टि गर्नुहोस्</translation>
 <translation id="8516012719330875537">छवि सम्पादक</translation>
 <translation id="8523928698583292556">भण्डारण गरिएको पासवर्ड मेट्नुहोस्</translation>
+<translation id="8525306231823319788">पूर्ण स्क्रीन</translation>
 <translation id="854522910157234410">यो पृष्ठ खोल्नुहोस्:</translation>
 <translation id="8558485628462305855">अग्मेन्टेड रियालिटी सामग्री हेर्न ARCore अद्यावधिक गर्नुहोस्</translation>
 <translation id="8559990750235505898">अन्य भाषाहरूमा पृष्ठहरूको अनुवाद गर्न प्रस्ताव गर्नुहोस्</translation>

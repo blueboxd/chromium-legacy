@@ -105,6 +105,29 @@ chrome.test.runTests(function() {
       chrome.test.succeed();
     },
 
+    function testMetricsZoomAction() {
+      PDFMetrics.resetForTesting();
+
+      chrome.metricsPrivate = new MockMetricsPrivate();
+      PDFMetrics.record(PDFMetrics.UserAction.DOCUMENT_OPENED);
+      PDFMetrics.recordZoomAction(/*isZoomIn=*/ true);
+      PDFMetrics.recordZoomAction(/*isZoomIn=*/ false);
+      PDFMetrics.recordZoomAction(/*isZoomIn=*/ true);
+      PDFMetrics.recordZoomAction(/*isZoomIn=*/ false);
+      PDFMetrics.recordZoomAction(/*isZoomIn=*/ true);
+
+      chrome.test.assertEq(
+          {
+            [PDFMetrics.UserAction.DOCUMENT_OPENED]: 1,
+            [PDFMetrics.UserAction.ZOOM_IN_FIRST]: 1,
+            [PDFMetrics.UserAction.ZOOM_IN]: 3,
+            [PDFMetrics.UserAction.ZOOM_OUT_FIRST]: 1,
+            [PDFMetrics.UserAction.ZOOM_OUT]: 2
+          },
+          chrome.metricsPrivate.actionCounter);
+      chrome.test.succeed();
+    },
+
     function testMetricsBookmarks() {
       PDFMetrics.resetForTesting();
 

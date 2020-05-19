@@ -118,6 +118,19 @@ bool IsNonEmptyString(const Property& property) {
                           }));
 }
 
+// Returns the non-empty string in the first position. If there is more than
+// one string value or it is empty then returns nullopt.
+base::Optional<std::string> GetFirstNonEmptyString(const Property& prop) {
+  if (prop.values->string_values.size() != 1)
+    return base::nullopt;
+
+  auto& string = prop.values->string_values[0];
+  if (string.empty())
+    return base::nullopt;
+
+  return string;
+}
+
 // Checks that the property contains at least one valid email address.
 bool IsEmail(const Property& email) {
   if (email.values->string_values.empty())
@@ -449,29 +462,44 @@ bool GetAssociatedOriginURLs(
   return true;
 }
 
-// Gets the associated origins information and validates against the spec.
-bool GetAssociatedOrigins(
+// Gets the feed additional properties.
+bool GetFeedAdditionalProperties(
     const Property& property,
     media_history::MediaHistoryKeyedService::MediaFeedFetchResult* result) {
   if (property.values->entity_values.empty())
     return false;
 
-  auto& entity = property.values->entity_values[0];
-  if (!entity || entity->type != schema_org::entity::kPropertyValue)
-    return false;
+  for (const auto& entity : property.values->entity_values) {
+    if (!entity || entity->type != schema_org::entity::kPropertyValue)
+      continue;
 
-  if (!ValidateProperty(entity.get(), schema_org::property::kName,
-                        base::BindOnce([](const Property& name) {
-                          return !name.values->string_values.empty() &&
-                                 name.values->string_values[0] ==
-                                     "associatedOrigin";
-                        }))) {
-    return false;
-  }
+    auto* name_prop = GetProperty(entity.get(), schema_org::property::kName);
+    if (!name_prop)
+      continue;
 
-  if (!ConvertProperty(entity.get(), result, schema_org::property::kValue,
-                       false, base::BindOnce(&GetAssociatedOriginURLs))) {
-    return false;
+    auto name = GetFirstNonEmptyString(*name_prop);
+    if (!name)
+      continue;
+
+    // If the property is "associatedOrigin" then the value should be a list
+    // of URLs.
+    if (name == "associatedOrigin") {
+      if (!ConvertProperty(entity.get(), result, schema_org::property::kValue,
+                           false, base::BindOnce(&GetAssociatedOriginURLs))) {
+        continue;
+      }
+    }
+
+    // If the property is "cookieNameFilter" then the value should be a single
+    // non-empty string.
+    if (name == "cookieNameFilter") {
+      auto* value = GetProperty(entity.get(), schema_org::property::kValue);
+      if (!value)
+        continue;
+
+      result->cookie_name_filter =
+          GetFirstNonEmptyString(*value).value_or(std::string());
+    }
   }
 
   return true;
@@ -1240,7 +1268,7 @@ bool ConvertMediaFeed(
 
   if (!ConvertProperty(entity.get(), result,
                        schema_org::property::kAdditionalProperty, false,
-                       base::BindOnce(&GetAssociatedOrigins))) {
+                       base::BindOnce(&GetFeedAdditionalProperties))) {
     return false;
   }
 

@@ -607,8 +607,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       bool internal,
       std::vector<content::AccessibilityTreeFormatter::PropertyFilter>
           property_filters) override;
-  void RecordAccessibilityEvents(AccessibilityEventCallback callback,
-                                 bool start) override;
+  void RecordAccessibilityEvents(
+      bool start_recording,
+      base::Optional<AccessibilityEventCallback> callback) override;
   RenderFrameHost* GetGuestByInstanceID(
       RenderFrameHost* render_frame_host,
       int browser_plugin_instance_id) override;

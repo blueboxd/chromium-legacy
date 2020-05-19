@@ -90,6 +90,9 @@ class FeedService : public KeyedService {
     return refresh_task_scheduler_.get();
   }
 
+  // Whether Feedv2 is enabled. If false, the FeedService should not be created.
+  static bool IsEnabled(const PrefService& pref_service);
+
  private:
   class StreamDelegateImpl;
   class NetworkDelegateImpl;

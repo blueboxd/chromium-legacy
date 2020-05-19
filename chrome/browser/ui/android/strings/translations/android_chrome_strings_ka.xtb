@@ -466,6 +466,7 @@
 <translation id="488187801263602086">ფაილის გადარქმევა</translation>
 <translation id="4882831918239250449">მართეთ თქვენი დათვალიერების ისტორიის გამოყენების სპეციფიკა Search-ის, სარეკლამო კონტენტის და სხვა სერვისების პერსონალიზებისთვის</translation>
 <translation id="4885273946141277891">Chrome-ის ეგზემპლარების მხარდაუჭერელი რაოდენობა.</translation>
+<translation id="4908869848243824489">Discover by Google</translation>
 <translation id="4910889077668685004">გადახდის აპები</translation>
 <translation id="4913161338056004800">სტატისტიკის გადაყენება</translation>
 <translation id="4913169188695071480">განახლების შეწყვეტა</translation>
@@ -481,7 +482,6 @@
 <translation id="4988210275050210843">მიმდინარეობს ფაილის ჩამოტვირთვა (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">გვერდები</translation>
 <translation id="4994033804516042629">კონტაქტები ვერ მოიძებნა</translation>
-<translation id="4996978546172906250">გაზიარების პროგრამა</translation>
 <translation id="5004416275253351869">Google აქტივობის მართვის საშუალებები</translation>
 <translation id="5005498671520578047">პაროლის კოპირება</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> დაკავშირებას ითხოვს</translation>
@@ -643,6 +643,7 @@
 <translation id="6381421346744604172">ვებსაიტების გამუქება</translation>
 <translation id="6395288395575013217">ბმული</translation>
 <translation id="6397616442223433927">კვლავ ონლაინ ხართ</translation>
+<translation id="6398765197997659313">სრულეკრანიანი რეჟიმიდან გამოსვლა</translation>
 <translation id="6404511346730675251">სანიშნის რედაქტირება</translation>
 <translation id="6406506848690869874">სინქრონიზაცია</translation>
 <translation id="6410973561433500075">გსურთ აუგმენტური რეალობის რეჟიმზე გადასვლა <ph name="DOMAIN" />-დან?</translation>
@@ -702,6 +703,7 @@
 <translation id="6846298663435243399">იტვირთება…</translation>
 <translation id="6850409657436465440">ჩამოტვირთვა ჯერ კიდევ მიმდინარეობს</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> ჩანართი დაიხურა</translation>
+<translation id="685850645784703949">Discover by Google — გამორთული</translation>
 <translation id="6864459304226931083">სურათის ჩამოტვირთვა</translation>
 <translation id="6865313869410766144">ფორმათა მონაცემების ავტომატური შევსება</translation>
 <translation id="6884306546558072722">დათვალიერების ხაზგარეშე რეჟიმში გაგრძელება</translation>
@@ -904,6 +906,7 @@
 <translation id="8514577642972634246">ინკოგნიტო რეჟიმში შესვლა</translation>
 <translation id="8516012719330875537">სურათების რედაქტორი</translation>
 <translation id="8523928698583292556">შენახული პაროლის წაშლა</translation>
+<translation id="8525306231823319788">მთელ ეკრანზე</translation>
 <translation id="854522910157234410">ამ გვერდის გახსნა</translation>
 <translation id="8558485628462305855">აუგმენტური რეალობის კონტენტის სანახავად განაახლეთ ARCore</translation>
 <translation id="8559990750235505898">სხვა ენებზე არსებული გვერდების თარგმნის შემოთავაზება</translation>

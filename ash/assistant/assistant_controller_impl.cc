@@ -174,6 +174,12 @@ void AssistantControllerImpl::OpenUrl(const GURL& url,
   NotifyUrlOpened(url, from_server);
 }
 
+void AssistantControllerImpl::OpenAssistantSettings() {
+  // Launch Assistant settings via deeplink.
+  OpenUrl(assistant::util::CreateAssistantSettingsDeepLink(),
+          /*in_background=*/false, /*from_server=*/false);
+}
+
 base::WeakPtr<ash::AssistantController> AssistantControllerImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }

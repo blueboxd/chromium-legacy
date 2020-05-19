@@ -1419,31 +1419,27 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
   }
 }
 
-// TODO(crbug/1081450): FakeWinWebAuthnApi needs to support injecting
-// credentials in order for assertion responses to pass response validation.
-IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
-                       DISABLED_WinGetAssertion) {
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinGetAssertion) {
   EXPECT_TRUE(
       NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html")));
 
+  constexpr uint8_t credential_id[] = {'A', 'A', 'A'};
+
   device::FakeWinWebAuthnApi fake_api;
-  fake_api.set_hresult(S_OK);
+  fake_api.InjectNonDiscoverableCredential(credential_id, "www.acme.com");
   auto* virtual_device_factory = InjectVirtualFidoDeviceFactory();
   virtual_device_factory->set_win_webauthn_api(&fake_api);
 
+  GetParameters get_parameters;
+  get_parameters.allow_credentials =
+      "allowCredentials: [{ type: 'public-key', id: new "
+      "TextEncoder().encode('AAA')}]";
+
   base::Optional<std::string> result = ExecuteScriptAndExtractPrefixedString(
-      shell()->web_contents(), BuildGetCallWithParameters(GetParameters()),
+      shell()->web_contents(), BuildGetCallWithParameters(get_parameters),
       "webauth: ");
   ASSERT_TRUE(result);
   ASSERT_EQ(kOkMessage, *result);
-
-  // The authenticator response was good but the return code indicated failure.
-  fake_api.set_hresult(E_FAIL);
-  result = ExecuteScriptAndExtractPrefixedString(
-      shell()->web_contents(), BuildGetCallWithParameters(GetParameters()),
-      "webauth: ");
-  ASSERT_TRUE(result);
-  ASSERT_EQ(kNotAllowedErrorMessage, *result);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,

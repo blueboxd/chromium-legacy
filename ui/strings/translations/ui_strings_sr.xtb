@@ -4,6 +4,7 @@
 <translation id="1028699632127661925">Шаље се на уређај <ph name="DEVICE_NAME" />...</translation>
 <translation id="111910763555783249">Подешавања обавештења</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Пре 1 дан}one{Пре # дан}few{Пре # дана}other{Пре # дана}}</translation>
+<translation id="1145532888383813076">Претражите уређај, апликације и веб.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Пре 1 минут}one{Пре # минут}few{Пре # минута}other{Пре # минута}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 м}one{# м}few{# м}other{# м}}</translation>
 <translation id="1181037720776840403">Уклони</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">укључите синхронизацију</translation>
 <translation id="5329858601952122676">&amp;Избриши</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> преко апликације <ph name="IN_PLACE_APP" />, отпустите да бисте направили директоријум.</translation>
+<translation id="5432996274932278848">Претражујте уређај, апликације и веб. Користите тастере са стрелицама да бисте се кретали кроз апликације.</translation>
 <translation id="5463830097259460683">Емоџи и симболи</translation>
 <translation id="5476505524087279545">опозови избор</translation>
 <translation id="547979256943495781">Полица на десној страни</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">Желите ли да избришете ову претрагу из историје?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Емоџи</translation>
+<translation id="7611008212562900400">Претражите уређај, апликације, веб...</translation>
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="7781829728241885113">Јуче</translation>
 <translation id="7814458197256864873">&amp;Копирај</translation>

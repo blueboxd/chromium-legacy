@@ -11,7 +11,6 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 
@@ -209,7 +208,7 @@ public class AutofillPopupTest {
         loadForm(formDataUrl, inputText, updateActivity);
 
         final WebContents webContents = mActivityTestRule.getActivity().getCurrentWebContents();
-        final ViewGroup view = webContents.getViewAndroidDelegate().getContainerView();
+        final View view = webContents.getViewAndroidDelegate().getContainerView();
         waitForAnchorViewAdd(view);
         View anchorView = view.findViewById(R.id.dropdown_popup_window);
 
@@ -359,7 +358,7 @@ public class AutofillPopupTest {
         final Configuration config = activity.getResources().getConfiguration();
         final boolean shouldShowPopup = config.orientation == Configuration.ORIENTATION_PORTRAIT
                 || config.isLayoutSizeAtLeast(Configuration.SCREENLAYOUT_SIZE_XLARGE);
-        final ViewGroup view = webContents.getViewAndroidDelegate().getContainerView();
+        final View view = webContents.getViewAndroidDelegate().getContainerView();
         if (shouldShowPopup) {
             waitForAnchorViewAdd(view);
         } else {
@@ -385,7 +384,7 @@ public class AutofillPopupTest {
                 Criteria.equals(count, () -> immw.getShowSoftInputCounter()));
     }
 
-    private void waitForAnchorViewAdd(final ViewGroup view) {
+    private void waitForAnchorViewAdd(final View view) {
         CriteriaHelper.pollUiThread(new Criteria(
                 "Autofill Popup anchor view was never added.") {
             @Override

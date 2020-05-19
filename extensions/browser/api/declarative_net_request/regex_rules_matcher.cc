@@ -96,13 +96,20 @@ RegexRulesMatcher::RegexRulesMatcher(const ExtensionId& extension_id,
 RegexRulesMatcher::~RegexRulesMatcher() = default;
 
 std::vector<RequestAction> RegexRulesMatcher::GetModifyHeadersActions(
-    const RequestParams& params) const {
+    const RequestParams& params,
+    base::Optional<uint64_t> min_priority) const {
   const std::vector<RegexRuleInfo>& potential_matches =
       GetPotentialMatches(params);
 
   std::vector<const flat_rule::UrlRule*> rules;
   for (const RegexRuleInfo& info : potential_matches) {
-    if (info.regex_rule->action_type() == flat::ActionType_modify_headers &&
+    // Check for the rule's priority iff |min_priority| is specified.
+    bool has_sufficient_priority =
+        !min_priority ||
+        info.regex_rule->url_rule()->priority() > *min_priority;
+
+    if (has_sufficient_priority &&
+        info.regex_rule->action_type() == flat::ActionType_modify_headers &&
         re2::RE2::PartialMatch(params.url->spec(), *info.regex)) {
       rules.push_back(info.regex_rule->url_rule());
     }

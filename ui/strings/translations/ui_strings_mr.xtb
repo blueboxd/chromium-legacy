@@ -4,6 +4,7 @@
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" /> ला पाठवत आहे…</translation>
 <translation id="111910763555783249">सूचना सेटिंग्ज</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 दिवसापूर्वी}other{# दिवसांपूर्वी}}</translation>
+<translation id="1145532888383813076">तुमच्या डिव्हाइस, ॲप्स आणि वेबवर शोधा.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 मिनिटापूर्वी}other{# मिनिटांपूर्वी}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1मि}other{#मि}}</translation>
 <translation id="1181037720776840403">काढून टाका</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">सिंक सुरू करा</translation>
 <translation id="5329858601952122676">&amp;हटवा</translation>
 <translation id="5395308026110844773"><ph name="IN_PLACE_APP" /> च्या वर <ph name="DRAGGED_APP_NAME" />, फोल्डर तयार करण्यासाठी रिलीझ करा.</translation>
+<translation id="5432996274932278848">तुमचे डिव्हाइस, अ‍ॅप्स आणि वेब शोधा. तुमची अ‍ॅप्स नेव्हिगेट करण्यासाठी बाण की वापरा.</translation>
 <translation id="5463830097259460683">इमोजी &amp;&amp; चिन्हे</translation>
 <translation id="5476505524087279545">चौकटीतली खूण काढा</translation>
 <translation id="547979256943495781">शेल्फ उजवीकडे आहे</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">तुमच्या इतिहासातून हा शोध हटवायचा आहे का?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">इमोजी</translation>
+<translation id="7611008212562900400">तुमचे डिव्हाइस, अ‍ॅप्स, वेब शोधा...</translation>
 <translation id="7658239707568436148">रद्द करा</translation>
 <translation id="7781829728241885113">काल</translation>
 <translation id="7814458197256864873">&amp;कॉपी करा</translation>

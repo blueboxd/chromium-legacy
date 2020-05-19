@@ -18,6 +18,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -180,7 +181,7 @@ class V4UpdateProtocolManager {
 
   // The time when the next update is scheduled to be requested. This is valid
   // only when |update_timer_| is running.
-  base::Time next_update_time_;
+  base::Optional<base::Time> next_update_time_ = base::nullopt;
 
   // The config of the client making Pver4 requests.
   const V4ProtocolConfig config_;

@@ -1382,6 +1382,7 @@ void DrawingBuffer::RestoreAllState() {
   client_->DrawingBufferClientRestoreMaskAndClearValues();
   client_->DrawingBufferClientRestorePixelPackParameters();
   client_->DrawingBufferClientRestoreTexture2DBinding();
+  client_->DrawingBufferClientRestoreTextureCubeMapBinding();
   client_->DrawingBufferClientRestoreRenderbufferBinding();
   client_->DrawingBufferClientRestoreFramebufferBinding();
   client_->DrawingBufferClientRestorePixelUnpackBufferBinding();

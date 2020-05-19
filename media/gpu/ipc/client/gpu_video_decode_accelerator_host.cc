@@ -292,8 +292,8 @@ void GpuVideoDecodeAcceleratorHost::OnNotifyError(uint32_t error) {
 
   // Client::NotifyError() may Destroy() |this|, so calling it needs to be the
   // last thing done on this stack!
-  VideoDecodeAccelerator::Client* client = nullptr;
-  std::swap(client, client_);
+  VideoDecodeAccelerator::Client* client = client_;
+  client_ = nullptr;
   client->NotifyError(static_cast<VideoDecodeAccelerator::Error>(error));
 }
 

@@ -14662,9 +14662,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   params->origin = url::Origin::Create(another_url);
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   int process_id = root->current_frame_host()->GetProcess()->GetID();
-  EXPECT_EQ("http://a.com/", policy->GetOriginLock(process_id));
-  EXPECT_EQ(start_url.host(), policy->GetOriginLock(process_id).host());
-  EXPECT_NE(another_url.host(), policy->GetOriginLock(process_id).host());
+  IsolationContext isolation_context(controller.GetBrowserContext());
+  auto start_url_lock =
+      SiteInstanceImpl::DetermineProcessLockURL(isolation_context, start_url);
+  auto another_url_lock =
+      SiteInstanceImpl::DetermineProcessLockURL(isolation_context, another_url);
+  EXPECT_EQ(start_url_lock, policy->GetOriginLock(process_id));
+  EXPECT_NE(another_url_lock, policy->GetOriginLock(process_id));
 
   // Transfer the NavigationRequest ownership to the RenderFrameHost. The test
   // for NavigationRequest match happens before the check of origin lock and

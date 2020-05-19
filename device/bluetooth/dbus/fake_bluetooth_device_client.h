@@ -384,7 +384,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
   bool delay_start_discovery_;
 
   // Pending prepare write requests.
-  std::vector<std::pair<dbus::ObjectPath, std::vector<uint8_t>>>
+  std::vector<std::tuple<dbus::ObjectPath, std::vector<uint8_t>, std::string>>
       prepare_write_requests_;
 
   bool should_leave_connections_pending_;

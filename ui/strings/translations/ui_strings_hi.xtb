@@ -4,6 +4,7 @@
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" /> पर भेजा जा रहा है...</translation>
 <translation id="111910763555783249">सूचना सेटिंग</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 दिन पहले}one{# दिन पहले}other{# दिन पहले}}</translation>
+<translation id="1145532888383813076">अपने डिवाइस, ऐप्लिकेशन और वेब पर खोजें.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 मिनट पहले}one{# मिनट पहले}other{# मिनट पहले}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 मिनट}one{# मिनट}other{# मिनट}}</translation>
 <translation id="1181037720776840403">हटाएं</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">'सिंक करें' चालू करें</translation>
 <translation id="5329858601952122676">&amp;हटाएं</translation>
 <translation id="5395308026110844773"><ph name="IN_PLACE_APP" /> पर<ph name="DRAGGED_APP_NAME" /> को खींचकर लाया जा रहा है, फ़ोल्डर बनाने के लिए इसे छोड़ें.</translation>
+<translation id="5432996274932278848">अपने डिवाइस, ऐप और वेब पर खोजें. अपने ऐप नेविगेट करने के लिए 'तीर का निशान' वाली कुंजियों का इस्तेमाल करें.</translation>
 <translation id="5463830097259460683">इमोजी और चिह्न</translation>
 <translation id="5476505524087279545">सही का निशान हटाएं</translation>
 <translation id="547979256943495781">शेल्फ़ स्क्रीन पर दाईं ओर है</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">अपने इतिहास से यह खोज मिटाना चाहते हैं?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">इमोजी</translation>
+<translation id="7611008212562900400">अपना डिवाइस, ऐप्लिकेशन, वेब... खोजें</translation>
 <translation id="7658239707568436148">अभी नहीं</translation>
 <translation id="7781829728241885113">बीता कल</translation>
 <translation id="7814458197256864873">&amp;प्रतिलिपि बनाएं</translation>

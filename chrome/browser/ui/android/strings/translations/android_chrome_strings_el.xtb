@@ -466,6 +466,7 @@
 <translation id="488187801263602086">Μετονομασία αρχείου</translation>
 <translation id="4882831918239250449">Ελέγξτε τον τρόπο με τον οποίο το ιστορικό περιήγησής σας χρησιμοποιείται για την εξατομίκευση της Αναζήτησης, των διαφημίσεων και άλλων στοιχείων</translation>
 <translation id="4885273946141277891">Μη υποστηριζόμενος αριθμός παρουσιών Chrome.</translation>
+<translation id="4908869848243824489">Discover από την Google</translation>
 <translation id="4910889077668685004">Εφαρμογές πληρωμών</translation>
 <translation id="4913161338056004800">Επαναφορά στατιστικών στοιχείων</translation>
 <translation id="4913169188695071480">Διακοπή ανανέωσης</translation>
@@ -481,7 +482,6 @@
 <translation id="4988210275050210843">Λήψη αρχείου (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Σελίδες</translation>
 <translation id="4994033804516042629">Δεν βρέθηκαν επαφές</translation>
-<translation id="4996978546172906250">Μοιραστείτε μέσω</translation>
 <translation id="5004416275253351869">Στοιχεία ελέγχου δραστηριότητας Google</translation>
 <translation id="5005498671520578047">Αντιγραφή κωδικού πρόσβασης</translation>
 <translation id="5011311129201317034">Ο ιστότοπος <ph name="SITE" /> επιθυμεί σύνδεση</translation>
@@ -643,6 +643,7 @@
 <translation id="6381421346744604172">Μείωση φωτισμού ιστοτόπων</translation>
 <translation id="6395288395575013217">ΣΥΝΔΕΣΜΟΣ</translation>
 <translation id="6397616442223433927">Επιστροφή στο διαδίκτυο</translation>
+<translation id="6398765197997659313">Έξοδος από πλήρη οθόνη</translation>
 <translation id="6404511346730675251">Επεξεργασία σελιδοδείκτη</translation>
 <translation id="6406506848690869874">Συγχρονισμός</translation>
 <translation id="6410973561433500075">Εισαγωγή σε λειτουργία AR από τον τομέα <ph name="DOMAIN" />;</translation>
@@ -702,6 +703,7 @@
 <translation id="6846298663435243399">Φόρτωση…</translation>
 <translation id="6850409657436465440">Η λήψη σας βρίσκεται ακόμα σε εξέλιξη</translation>
 <translation id="6850830437481525139">Έκλεισαν <ph name="TAB_COUNT" /> καρτέλες</translation>
+<translation id="685850645784703949">Discover από την Google - ανενεργό</translation>
 <translation id="6864459304226931083">Λήψη εικόνας</translation>
 <translation id="6865313869410766144">Δεδομένα φόρμας αυτόματης συμπλήρωσης</translation>
 <translation id="6884306546558072722">Συνεχίστε την αναζήτηση εκτός σύνδεσης</translation>
@@ -904,6 +906,7 @@
 <translation id="8514577642972634246">Είσοδος στην κατάσταση ανώνυμης περιήγησης</translation>
 <translation id="8516012719330875537">Πρόγραμμα επεξεργασίας εικόνας</translation>
 <translation id="8523928698583292556">Διαγραφή αποθηκευμένου κωδικού πρόσβασης</translation>
+<translation id="8525306231823319788">Πλήρης οθόνη</translation>
 <translation id="854522910157234410">Άνοιγμα αυτής της σελίδας</translation>
 <translation id="8558485628462305855">Για να δείτε περιεχόμενο επαυξημένης πραγματικότητας, ενημερώστε το ARCore</translation>
 <translation id="8559990750235505898">Προσφορά για μετάφραση σελίδων που είναι σε άλλη γλώσσα</translation>

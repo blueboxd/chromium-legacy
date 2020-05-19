@@ -38,7 +38,7 @@ class QuickAnswersDelegate {
       std::unique_ptr<QuickAnswer> quick_answer) {}
 
   // Invoked when the query is rewritten.
-  virtual void OnRequestPreprocessFinish(
+  virtual void OnRequestPreprocessFinished(
       const QuickAnswersRequest& processed_request) {}
 
   // Invoked when feature eligibility changed.

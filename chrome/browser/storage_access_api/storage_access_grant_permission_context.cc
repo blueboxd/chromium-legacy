@@ -68,14 +68,12 @@ void StorageAccessGrantPermissionContext::DecidePermission(
     permissions::BrowserPermissionCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!user_gesture ||
-      !base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
+      !base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI) ||
+      !requesting_origin.is_valid() || !embedding_origin.is_valid()) {
     std::move(callback).Run(CONTENT_SETTING_BLOCK);
     return;
   }
 
-  // TODO(https://crbug.com/989663): Completely adhere to feature logic
-  // regarding prompt/auto-granting access. For now we will perform the most
-  // common/basic auto-grant/prompt check.
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser_context());
   DCHECK(settings_map);
@@ -96,11 +94,9 @@ void StorageAccessGrantPermissionContext::DecidePermission(
   // If we have fewer grants than our limit, we can just set an implicit grant
   // now and skip prompting the user.
   if (existing_implicit_grants < GetImplicitGrantLimit()) {
-    NotifyPermissionSet(id, requesting_origin, embedding_origin,
-                        std::move(callback), /*persist=*/true,
-                        CONTENT_SETTING_SESSION_ONLY);
-    // TODO(https://crbug.com/989663): Cleanup intermediary usage of
-    // CONTENT_SETTING_SESSION_ONLY for implicit grants.
+    NotifyPermissionSetInternal(
+        id, requesting_origin, embedding_origin, std::move(callback),
+        /*persist=*/true, CONTENT_SETTING_ALLOW, /*implicit_result=*/true);
     return;
   }
 
@@ -130,17 +126,23 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSet(
     bool persist,
     ContentSetting content_setting) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  NotifyPermissionSetInternal(id, requesting_origin, embedding_origin,
+                              std::move(callback), persist, content_setting,
+                              /*implicit_result=*/false);
+}
+
+void StorageAccessGrantPermissionContext::NotifyPermissionSetInternal(
+    const permissions::PermissionRequestID& id,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin,
+    permissions::BrowserPermissionCallback callback,
+    bool persist,
+    ContentSetting content_setting,
+    bool implicit_result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
     return;
-  }
-
-  // If we were allowed without prompting we can store that state then treat
-  // this as if it was just allowed.
-  const bool implicit_permission =
-      (content_setting == CONTENT_SETTING_SESSION_ONLY);
-  if (implicit_permission) {
-    content_setting = CONTENT_SETTING_ALLOW;
   }
 
   const bool permission_allowed = (content_setting == CONTENT_SETTING_ALLOW);
@@ -155,13 +157,10 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSet(
     return;
   }
 
-  // TODO(https://crbug.com/989663): Potentially set time boxed storage access
-  // exemption based on current grants and relay populated content settings to
-  // the network service. Also persist setting to HostContentSettingsMapFactory
-  // as either persistent or in-memory depending on the grant type.
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser_context());
   DCHECK(settings_map);
+  DCHECK(persist);
 
   static const content_settings::ContentSettingConstraints implicit_grant = {
       content_settings::GetConstraintExpiration(kImplicitGrantDuration),
@@ -173,15 +172,18 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSet(
   // This permission was allowed so store it either ephemerally or more
   // permanently depending on if the allow came from a prompt or automatic
   // grant.
-  settings_map->SetContentSettingCustomScope(
-      ContentSettingsPattern::FromURL(requesting_origin),
-      ContentSettingsPattern::FromURL(embedding_origin),
-      ContentSettingsType::STORAGE_ACCESS, std::string(), content_setting,
-      implicit_permission ? implicit_grant : explicit_grant);
+  settings_map->SetContentSettingDefaultScope(
+      requesting_origin, embedding_origin, ContentSettingsType::STORAGE_ACCESS,
+      std::string(), content_setting,
+      implicit_result ? implicit_grant : explicit_grant);
 
   ContentSettingsForOneType grants;
   settings_map->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS,
                                       std::string(), &grants);
+
+  // TODO(https://crbug.com/989663): Ensure that this update of settings doesn't
+  // cause a double update with
+  // ProfileNetworkContextService::OnContentSettingChanged.
 
   // We only want to signal the renderer process once the default storage
   // partition has updated and ack'd the update. This prevents a race where

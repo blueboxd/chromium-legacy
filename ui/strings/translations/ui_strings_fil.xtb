@@ -4,6 +4,7 @@
 <translation id="1028699632127661925">Ipinapadala sa <ph name="DEVICE_NAME" />...</translation>
 <translation id="111910763555783249">Mga setting ng notification</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 araw ang nakalipas}one{# araw ang nakalipas}other{# na araw ang nakalipas}}</translation>
+<translation id="1145532888383813076">Maghanap sa iyong device, mga app, at web.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 minuto ang nakalipas}one{# minuto ang nakalipas}other{# na minuto ang nakalipas}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 minuto}one{# minuto}other{# na minuto}}</translation>
 <translation id="1181037720776840403">Alisin</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">i-on ang pag-sync</translation>
 <translation id="5329858601952122676">&amp;Tanggalin</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> sa ibabaw ng <ph name="IN_PLACE_APP" />, bitawan para gumawa ng folder.</translation>
+<translation id="5432996274932278848">Maghanap sa iyong device, mga app, at web. Gamitin ang mga arrow key upang mag-navigate sa mga app mo.</translation>
 <translation id="5463830097259460683">Emoji at Mga Simbolo</translation>
 <translation id="5476505524087279545">i-uncheck</translation>
 <translation id="547979256943495781">Nasa kanan ang shelf</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">I-delete ang paghahanap na ito mula sa iyong history?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> (na) TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
+<translation id="7611008212562900400">Hanapin ang iyong device, mga app, web...</translation>
 <translation id="7658239707568436148">Kanselahin</translation>
 <translation id="7781829728241885113">Kahapon</translation>
 <translation id="7814458197256864873">&amp;Kopyahin</translation>

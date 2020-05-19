@@ -356,6 +356,15 @@ suite(extension_item_tests.suiteName, function() {
     item.set('data.disableReasons.blockedByPolicy', false);
     flush();
 
+    testVisible(item, '#parentDisabledPermissionsToolTip', false);
+    item.set('data.disableReasons.parentDisabledPermissions', true);
+    flush();
+    testVisible(item, '#enableToggle', true);
+    expectFalse(item.$['enableToggle'].disabled);
+    testVisible(item, '#parentDisabledPermissionsToolTip', true);
+    item.set('data.disableReasons.parentDisabledPermissions', false);
+    flush();
+
     item.set('data.disableReasons.custodianApprovalRequired', true);
     flush();
     testVisible(item, '#enableToggle', true);

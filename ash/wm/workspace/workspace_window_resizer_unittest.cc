@@ -5,6 +5,7 @@
 #include "ash/wm/workspace/workspace_window_resizer.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -2086,6 +2087,54 @@ TEST_F(MultiDisplayWorkspaceWindowResizerTest, Magnetism) {
   // `win2`. Expect that `win1` will snap to `win2` on its left edge.
   resizer->Drag(CalculateDragPoint(*resizer, 1135, 0), /*event_flags=*/0);
   EXPECT_EQ(gfx::Rect(1150, 10, 100, 100), win1->GetBoundsInScreen());
+}
+
+// Make sure metrics is recorded during tab dragging.
+TEST_F(WorkspaceWindowResizerTest, TabDraggingHistogram) {
+  UpdateDisplay("800x600,800x600");
+  ASSERT_EQ(2, display::Screen::GetScreen()->GetNumDisplays());
+
+  struct {
+    bool is_dragging_tab;
+    gfx::PointF drag_to_point;
+    int expected_latency_count;
+    int expected_max_latency_count;
+  } kTestCases[] = {// A tab dragging should generate a histogram.
+                    {/*is_dragging_tab*/ true, gfx::PointF(200, 200), 1, 1},
+                    // A window dragging should not generate a histogram.
+                    {/*is_dragging_tab*/ false, gfx::PointF(200, 200), 0, 0},
+                    // A tab dragging should not generate a histogram when
+                    // the drag touches a different display.
+                    {/*is_dragging_tab*/ true, gfx::PointF(850, 200), 0, 0}};
+
+  for (const auto& test : kTestCases) {
+    SCOPED_TRACE(testing::Message()
+                 << "is_dragging_tab=" << test.is_dragging_tab);
+
+    base::HistogramTester histogram_tester;
+    window_->SetBounds(gfx::Rect(100, 100, 100, 100));
+    window_->SetProperty(ash::kIsDraggingTabsKey, test.is_dragging_tab);
+
+    std::unique_ptr<WindowResizer> resizer =
+        CreateWindowResizer(window_.get(), gfx::PointF(), HTCAPTION,
+                            ::wm::WINDOW_MOVE_SOURCE_MOUSE);
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(test.drag_to_point, 0);
+
+    EXPECT_TRUE(
+        ui::WaitForNextFrameToBePresented(window_->GetHost()->compositor()));
+
+    resizer->CompleteDrag();
+    resizer.reset(nullptr);
+
+    histogram_tester.ExpectTotalCount(
+        "Ash.WorkspaceWindowResizer.TabDragging.PresentationTime.ClamshellMode",
+        test.expected_latency_count);
+    histogram_tester.ExpectTotalCount(
+        "Ash.WorkspaceWindowResizer.TabDragging.PresentationTime.MaxLatency."
+        "ClamshellMode",
+        test.expected_max_latency_count);
+  }
 }
 
 }  // namespace ash

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_node_info_data_wrapper.h"
 
+#include <algorithm>
+
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_util.h"
@@ -353,7 +355,7 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
     if (cached_name_ && !(*cached_name_).empty())
       names.push_back(*cached_name_);
 
-    // TODO (sarakato): Exposing all possible labels for a node, may result in
+    // TODO(sarakato): Exposing all possible labels for a node, may result in
     // too much being spoken. For ARC ++, this may result in divergent behaviour
     // from Talkback.
     if (!names.empty())

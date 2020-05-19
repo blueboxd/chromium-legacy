@@ -29,6 +29,8 @@ class MockAssistantController : public AssistantController {
               (const GURL& url, bool in_background, bool from_server),
               (override));
 
+  MOCK_METHOD(void, OpenAssistantSettings, (), (override));
+
   MOCK_METHOD(base::WeakPtr<AssistantController>, GetWeakPtr, (), (override));
 
   MOCK_METHOD(

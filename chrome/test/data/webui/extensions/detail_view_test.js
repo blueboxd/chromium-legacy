@@ -8,7 +8,7 @@ import {navigation, Page} from 'chrome://extensions/extensions.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {isChildVisible} from '../test_util.m.js';
+import {isChildVisible, isVisible} from '../test_util.m.js';
 
 import {createExtensionInfo, MockItemDelegate} from './test_util.js';
 
@@ -18,6 +18,7 @@ extension_detail_view_tests.suiteName = 'ExtensionDetailViewTest';
 extension_detail_view_tests.TestNames = {
   Layout: 'layout',
   LayoutSource: 'layout of source section',
+  SupervisedUserDisableReasons: 'supervised user disable reasons',
   ClickableElements: 'clickable elements',
   Indicator: 'indicator',
   Warnings: 'warnings',
@@ -63,7 +64,6 @@ suite(extension_detail_view_tests.suiteName, function() {
     const testIsVisible = isChildVisible.bind(null, item);
     expectTrue(testIsVisible('#closeButton'));
     expectTrue(testIsVisible('#icon'));
-    expectTrue(testIsVisible('#enableToggle'));
     expectFalse(testIsVisible('#extensions-options'));
     expectTrue(
         item.$.description.textContent.indexOf('This is an extension') !== -1);
@@ -174,24 +174,6 @@ suite(extension_detail_view_tests.suiteName, function() {
 
     expectTrue(testIsVisible('#enableToggle'));
     expectFalse(testIsVisible('#terminated-reload-button'));
-
-    // This section tests that the enable toggle is visible but disabled when
-    // disableReasons.blockedByPolicy is true. This test prevents a regression
-    // to crbug/1003014.
-    item.set('data.disableReasons.blockedByPolicy', true);
-    flush();
-    expectTrue(testIsVisible('#enableToggle'));
-    expectTrue(item.$$('#enableToggle').disabled);
-    item.set('data.disableReasons.blockedByPolicy', false);
-    flush();
-
-    item.set('data.disableReasons.custodianApprovalRequired', true);
-    flush();
-    expectTrue(testIsVisible('#enableToggle'));
-    expectFalse(item.$$('#enableToggle').disabled);
-    item.set('data.disableReasons.custodianApprovalRequired', false);
-    flush();
-
     item.set('data.state', chrome.developerPrivate.ExtensionState.TERMINATED);
     flush();
     expectFalse(testIsVisible('#enableToggle'));
@@ -274,6 +256,42 @@ suite(extension_detail_view_tests.suiteName, function() {
     assertEquals('Foo', item.$.source.textContent.trim());
     assertFalse(isChildVisible(item, '#load-path'));
   });
+
+  test(
+      assert(
+          extension_detail_view_tests.TestNames.SupervisedUserDisableReasons),
+      function() {
+        flush();
+        const toggle = item.$$('#enableToggle');
+        const tooltip = item.$$('#parentDisabledPermissionsToolTip');
+        expectTrue(isVisible(toggle));
+        expectFalse(isVisible(tooltip));
+
+        // This section tests that the enable toggle is visible but disabled
+        // when disableReasons.blockedByPolicy is true. This test prevents a
+        // regression to crbug/1003014.
+        item.set('data.disableReasons.blockedByPolicy', true);
+        flush();
+        expectTrue(isVisible(toggle));
+        expectTrue(toggle.disabled);
+        item.set('data.disableReasons.blockedByPolicy', false);
+        flush();
+
+        item.set('data.disableReasons.parentDisabledPermissions', true);
+        flush();
+        expectTrue(isVisible(toggle));
+        expectFalse(toggle.disabled);
+        expectTrue(isVisible(tooltip));
+        item.set('data.disableReasons.parentDisabledPermissions', false);
+        flush();
+
+        item.set('data.disableReasons.custodianApprovalRequired', true);
+        flush();
+        expectTrue(isVisible(toggle));
+        expectFalse(toggle.disabled);
+        item.set('data.disableReasons.custodianApprovalRequired', false);
+        flush();
+      });
 
   test(
       assert(extension_detail_view_tests.TestNames.ClickableElements),

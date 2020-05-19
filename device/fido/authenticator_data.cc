@@ -21,6 +21,26 @@ namespace {
 constexpr size_t kAttestedCredentialDataOffset =
     kRpIdHashLength + kFlagsLength + kSignCounterLength;
 
+uint8_t AuthenticatorDataFlags(bool user_present,
+                               bool user_verified,
+                               bool has_attested_credential_data,
+                               bool has_extension_data) {
+  return (user_present ? base::strict_cast<uint8_t>(
+                             AuthenticatorData::Flag::kTestOfUserPresence)
+                       : 0) |
+         (user_verified ? base::strict_cast<uint8_t>(
+                              AuthenticatorData::Flag::kTestOfUserVerification)
+                        : 0) |
+         (has_attested_credential_data
+              ? base::strict_cast<uint8_t>(
+                    AuthenticatorData::Flag::kAttestation)
+              : 0) |
+         (has_extension_data
+              ? base::strict_cast<uint8_t>(
+                    AuthenticatorData::Flag::kExtensionDataIncluded)
+              : 0);
+}
+
 }  // namespace
 
 // static
@@ -71,13 +91,12 @@ base::Optional<AuthenticatorData> AuthenticatorData::DecodeAuthenticatorData(
 }
 
 AuthenticatorData::AuthenticatorData(
-    base::span<const uint8_t, kRpIdHashLength> application_parameter,
+    base::span<const uint8_t, kRpIdHashLength> rp_id_hash,
     uint8_t flags,
     base::span<const uint8_t, kSignCounterLength> counter,
     base::Optional<AttestedCredentialData> data,
     base::Optional<cbor::Value> extensions)
-    : application_parameter_(
-          fido_parsing_utils::Materialize(application_parameter)),
+    : application_parameter_(fido_parsing_utils::Materialize(rp_id_hash)),
       flags_(flags),
       counter_(fido_parsing_utils::Materialize(counter)),
       attested_data_(std::move(data)),
@@ -88,6 +107,25 @@ AuthenticatorData::AuthenticatorData(
   DCHECK_EQ(((flags_ & static_cast<uint8_t>(Flag::kAttestation)) != 0),
             !!attested_data_);
 }
+
+AuthenticatorData::AuthenticatorData(
+    base::span<const uint8_t, kRpIdHashLength> rp_id_hash,
+    bool user_present,
+    bool user_verified,
+    uint32_t sign_counter,
+    base::Optional<AttestedCredentialData> attested_credential_data,
+    base::Optional<cbor::Value> extensions)
+    : AuthenticatorData(
+          rp_id_hash,
+          AuthenticatorDataFlags(user_present,
+                                 user_verified,
+                                 attested_credential_data.has_value(),
+                                 extensions.has_value()),
+          std::array<uint8_t, kSignCounterLength>{
+              (sign_counter >> 24) & 0xff, (sign_counter >> 16) & 0xff,
+              (sign_counter >> 8) & 0xff, sign_counter & 0xff},
+          std::move(attested_credential_data),
+          std::move(extensions)) {}
 
 AuthenticatorData::AuthenticatorData(AuthenticatorData&& other) = default;
 AuthenticatorData& AuthenticatorData::operator=(AuthenticatorData&& other) =

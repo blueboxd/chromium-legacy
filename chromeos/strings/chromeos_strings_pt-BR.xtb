@@ -43,6 +43,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="6058625436358447366">Para concluir, insira a senha antiga e a nova</translation>
 <translation id="6106186594183574873">Para concluir, insira sua senha antiga</translation>
 <translation id="6146993107019042706">Para concluir, insira a nova senha</translation>
+<translation id="6517239166834772319">Explorar</translation>
 <translation id="6643016212128521049">Limpar</translation>
 <translation id="7162487448488904999">Galeria</translation>
 <translation id="7658239707568436148">Cancelar</translation>
@@ -50,6 +51,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Alterar senha</translation>
 <translation id="8208861521865154048">Benefícios</translation>
+<translation id="8701136875688985581">O domínio <ph name="ENROLLMENT_DOMAIN" /> gerencia esta conta. Ele pode gerenciar configurações e monitorar a atividade do usuário remotamente.</translation>
 <translation id="8747900814994928677">Confirmar alteração</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> tentativas restantes</translation>
 <translation id="910415269708673980">Atualizar tíquete para <ph name="PRINCIPAL_NAME" /></translation>

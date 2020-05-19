@@ -162,7 +162,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
 
   // The directory in which we place files in the file system.
   base::FilePath cache_directory_;
-  bool is_incognito_;
+  bool is_incognito_ = false;
 
   // This class operates primarily on the IO thread, but schedules
   // its DatabaseTasks on the db thread.
@@ -178,24 +178,24 @@ class AppCacheStorageImpl : public AppCacheStorage {
   // Structures to keep track of lazy response deletion.
   base::circular_deque<int64_t> deletable_response_ids_;
   std::vector<int64_t> deleted_response_ids_;
-  bool is_response_deletion_scheduled_;
-  bool did_start_deleting_responses_;
-  int64_t last_deletable_response_rowid_;
+  bool is_response_deletion_scheduled_ = false;
+  bool did_start_deleting_responses_ = false;
+  int64_t last_deletable_response_rowid_ = 0;
 
   // Created on the IO thread, but only used on the DB thread.
   std::unique_ptr<AppCacheDatabase> database_;
 
   // Set if we discover a fatal error like a corrupt SQL database or
   // disk cache and cannot continue.
-  bool is_disabled_;
+  bool is_disabled_ = false;
 
   // This is set when we want to use the post-cleanup callback to initiate
   // directory deletion.
-  bool delete_and_start_over_pending_;
+  bool delete_and_start_over_pending_ = false;
 
   // This is set when we know that a call to Disable() will result in
   // OnDiskCacheCleanupComplete() eventually called.
-  bool expecting_cleanup_complete_on_disable_;
+  bool expecting_cleanup_complete_on_disable_ = false;
 
   std::unique_ptr<AppCacheDiskCache> disk_cache_;
   base::OneShotTimer lazy_commit_timer_;

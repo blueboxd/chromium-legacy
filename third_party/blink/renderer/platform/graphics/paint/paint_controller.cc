@@ -27,9 +27,12 @@ PaintController::PaintController(Usage usage)
 }
 
 PaintController::~PaintController() {
-  // New display items should be committed before PaintController is destroyed,
-  // except for transient paint controllers.
-  DCHECK(usage_ == kTransient || new_display_item_list_.IsEmpty());
+  if (usage_ == kMultiplePaints) {
+    // New display items should have been committed.
+    DCHECK(new_display_item_list_.IsEmpty());
+    // And the committed_ flag should have been cleared by FinishCycle().
+    DCHECK(!committed_);
+  }
 }
 
 // For micro benchmarks of record time.
@@ -277,6 +280,9 @@ void PaintController::DidAppendItem(DisplayItem& display_item) {
   if (usage_ == kTransient)
     return;
 
+  if (!display_item.IsMovedFromCachedSubsequence())
+    display_item.Client().SetIsInPaintControllerBeforeFinishCycle(true);
+
 #if DCHECK_IS_ON()
   if (display_item.IsCacheable()) {
     auto index = FindMatchingItemFromIndex(display_item.GetId(),
@@ -328,6 +334,12 @@ DisplayItem& PaintController::MoveItemFromCurrentListToNewList(
 }
 
 void PaintController::DidAppendChunk() {
+  if (usage_ == kMultiplePaints &&
+      !new_paint_chunks_.LastChunk().is_moved_from_cached_subsequence) {
+    new_paint_chunks_.LastChunk()
+        .id.client.SetIsInPaintControllerBeforeFinishCycle(true);
+  }
+
 #if DCHECK_IS_ON()
   if (new_paint_chunks_.LastChunk().is_cacheable) {
     AddToIndicesByClientMap(new_paint_chunks_.LastChunk().id.client,
@@ -591,69 +603,65 @@ void PaintController::CommitNewDisplayItems() {
 }
 
 void PaintController::FinishCycle() {
-  if (usage_ != kTransient) {
+  if (usage_ == kTransient || !committed_)
+    return;
+
 #if DCHECK_IS_ON()
-    DCHECK(new_display_item_list_.IsEmpty());
-    DCHECK(new_paint_chunks_.IsInInitialState());
+  DCHECK(new_display_item_list_.IsEmpty());
+  DCHECK(new_paint_chunks_.IsInInitialState());
 #endif
 
-    if (committed_) {
-      committed_ = false;
+  committed_ = false;
 
-      // Validate display item clients that have validly cached subsequence or
-      // display items in this PaintController.
-      for (auto& item : current_cached_subsequences_) {
-        if (item.key->IsCacheable())
-          item.key->Validate();
-      }
-      for (const auto& item : current_paint_artifact_->GetDisplayItemList()) {
-        const auto& client = item.Client();
-        if (item.IsMovedFromCachedSubsequence()) {
-          // We don't need to validate the clients of a display item that is
-          // copied from a cached subsequence, because it should be already
-          // valid. See http://crbug.com/1050090 for more details.
+  // Validate display item clients that have validly cached subsequence or
+  // display items in this PaintController.
+  for (auto& item : current_cached_subsequences_) {
+    if (item.key->IsCacheable())
+      item.key->Validate();
+  }
+  for (const auto& item : current_paint_artifact_->GetDisplayItemList()) {
+    const auto& client = item.Client();
+    if (item.IsMovedFromCachedSubsequence()) {
+      // We don't need to validate the clients of a display item that is
+      // copied from a cached subsequence, because it should be already
+      // valid. See http://crbug.com/1050090 for more details.
 #if DCHECK_IS_ON()
-          DCHECK(client.IsAlive());
-          DCHECK(client.IsValid() || !client.IsCacheable());
+      DCHECK(client.IsAlive());
+      DCHECK(client.IsValid() || !client.IsCacheable());
 #endif
-          continue;
-        }
-        client.ClearPartialInvalidationVisualRect();
-        if (client.IsCacheable())
-          client.Validate();
-      }
-      for (const auto& chunk : current_paint_artifact_->PaintChunks()) {
-        const auto& client = chunk.id.client;
-        if (chunk.is_moved_from_cached_subsequence) {
-#if DCHECK_IS_ON()
-          DCHECK(client.IsAlive());
-          DCHECK(client.IsValid() || !client.IsCacheable());
-#endif
-          continue;
-        }
-        if (client.IsCacheable())
-          client.Validate();
-      }
+      continue;
     }
-
-    current_paint_artifact_->FinishCycle();
+    client.ClearPartialInvalidationVisualRect();
+    if (client.IsCacheable())
+      client.Validate();
+    client.SetIsInPaintControllerBeforeFinishCycle(false);
+  }
+  for (const auto& chunk : current_paint_artifact_->PaintChunks()) {
+    const auto& client = chunk.id.client;
+    if (chunk.is_moved_from_cached_subsequence) {
+#if DCHECK_IS_ON()
+      DCHECK(client.IsAlive());
+      DCHECK(client.IsValid() || !client.IsCacheable());
+#endif
+      continue;
+    }
+    if (client.IsCacheable())
+      client.Validate();
+    client.SetIsInPaintControllerBeforeFinishCycle(false);
   }
 
+  current_paint_artifact_->FinishCycle();
+
   if (VLOG_IS_ON(1)) {
-    // Only log for non-transient paint controllers. Before CompositeAfterPaint,
-    // there is an additional paint controller used to collect foreign layers,
-    // and this can be logged by removing the "usage_ != kTransient" condition.
-    if (usage_ != kTransient) {
-      LOG(ERROR) << "PaintController::FinishCycle() completed";
+    LOG(ERROR) << "PaintController::FinishCycle() completed";
 #if DCHECK_IS_ON()
-      if (VLOG_IS_ON(3))
-        ShowDebugDataWithPaintRecords();
-      else if (VLOG_IS_ON(2))
-        ShowDebugData();
-      else if (VLOG_IS_ON(1))
-        ShowCompactDebugData();
+    if (VLOG_IS_ON(3))
+      ShowDebugDataWithPaintRecords();
+    else if (VLOG_IS_ON(2))
+      ShowDebugData();
+    else if (VLOG_IS_ON(1))
+      ShowCompactDebugData();
 #endif
-    }
   }
 }
 

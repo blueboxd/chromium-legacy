@@ -99,6 +99,9 @@ class SearchSuggestService::SigninObserver
 
 // static
 bool SearchSuggestService::IsEnabled() {
+  if (base::FeatureList::IsEnabled(ntp_features::kDisableSearchSuggestChips))
+    return false;
+
   if (base::FeatureList::IsEnabled(ntp_features::kSearchSuggestChips))
     return true;
 

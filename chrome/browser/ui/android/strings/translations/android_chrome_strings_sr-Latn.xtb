@@ -466,6 +466,7 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="488187801263602086">Preimenujte datoteku</translation>
 <translation id="4882831918239250449">Kontrolišite način na koji se istorija pregledanja koristi za personalizaciju Pretrage, oglasa i drugih usluga</translation>
 <translation id="4885273946141277891">Nepodržan broj Chrome instanci.</translation>
+<translation id="4908869848243824489">Google Discover</translation>
 <translation id="4910889077668685004">Aplikacije za plaćanje</translation>
 <translation id="4913161338056004800">Resetuj statistiku</translation>
 <translation id="4913169188695071480">Zaustavi osvežavanje</translation>
@@ -481,7 +482,6 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="4988210275050210843">Preuzima se datoteka (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Stranice</translation>
 <translation id="4994033804516042629">Nije pronađen nijedan kontakt</translation>
-<translation id="4996978546172906250">Deljenje preko</translation>
 <translation id="5004416275253351869">Google kontrole aktivnosti</translation>
 <translation id="5005498671520578047">Kopiranje lozinke</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> želi da se poveže</translation>
@@ -643,6 +643,7 @@ Na primer, neki veb-sajtovi mogu da odgovore na ovaj zahtev prikazivanjem oglasa
 <translation id="6381421346744604172">Zatamni veb-sajtove</translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6397616442223433927">Ponovo ste onlajn</translation>
+<translation id="6398765197997659313">Izađi iz režima celog ekrana</translation>
 <translation id="6404511346730675251">Izmena obeleživača</translation>
 <translation id="6406506848690869874">Sinhronizacija</translation>
 <translation id="6410973561433500075">Želite da aktivirate proširenu realnost sa <ph name="DOMAIN" />?</translation>
@@ -699,9 +700,10 @@ Na primer, neki veb-sajtovi mogu da odgovore na ovaj zahtev prikazivanjem oglasa
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Prevedi</translation>
 <translation id="6845325883481699275">Pomozite nam da poboljšamo Chrome bezbednost</translation>
-<translation id="6846298663435243399">Učitavanje…</translation>
+<translation id="6846298663435243399">Učitava se...</translation>
 <translation id="6850409657436465440">Preuzimanje je još uvek u toku</translation>
 <translation id="6850830437481525139">Zatvorenih kartica: <ph name="TAB_COUNT" /></translation>
+<translation id="685850645784703949">Google Discover – isključeno</translation>
 <translation id="6864459304226931083">Preuzmi sliku</translation>
 <translation id="6865313869410766144">Podaci Automatskog popunjavanja za obrasce</translation>
 <translation id="6884306546558072722">Nastavite sa oflajn istraživanjem</translation>
@@ -904,6 +906,7 @@ Na primer, neki veb-sajtovi mogu da odgovore na ovaj zahtev prikazivanjem oglasa
 <translation id="8514577642972634246">Uđi u režim bez arhiviranja</translation>
 <translation id="8516012719330875537">Uređivač slika</translation>
 <translation id="8523928698583292556">Izbriši sačuvanu lozinku</translation>
+<translation id="8525306231823319788">Ceo ekran</translation>
 <translation id="854522910157234410">Otvori ovu stranicu</translation>
 <translation id="8558485628462305855">Da biste videli sadržaj proširene realnosti, ažurirajte ARCore</translation>
 <translation id="8559990750235505898">Ponudi prevod stranica na druge jezike</translation>

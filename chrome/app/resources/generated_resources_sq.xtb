@@ -112,7 +112,6 @@
 <translation id="1140746652461896221">Blloko përmbajtjen në çdo faqe që viziton</translation>
 <translation id="1143142264369994168">Nënshkruesi i certifikatës</translation>
 <translation id="1145292499998999162">Përbërësi shtesë u bllokua</translation>
-<translation id="1145532888383813076">Kërko në pajisjen tënde, në aplikacione dhe në ueb.</translation>
 <translation id="1145593918056169051">Printeri ka ndaluar</translation>
 <translation id="1146678959555564648">Hyr në VR</translation>
 <translation id="114721135501989771">Merr funksionet inteligjente të Google në Chrome</translation>
@@ -3421,7 +3420,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5430931332414098647">Ndarja e internetit në çast</translation>
 <translation id="5431318178759467895">Ngjyra</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="5432996274932278848">Kërko në pajisjen tënde, aplikacione dhe ueb. Përdor tastet e shigjetave për të naviguar nëpër aplikacione.</translation>
 <translation id="543338862236136125">Redakto fjalëkalimin</translation>
 <translation id="5434065355175441495">Enkriptimi PKCS #1 RSA</translation>
 <translation id="5436492226391861498">Po pret për tunelin ndërmjetës...</translation>
@@ -3911,7 +3909,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6055392876709372977">PKCS #1 SHA-256 me enkriptim RSA</translation>
 <translation id="6055907707645252013">Rrjeti <ph name="NETWORK_TYPE" />, nuk është lidhur</translation>
 <translation id="6056710589053485679">Ringarkim normal</translation>
-<translation id="6057312498756061228">Ky skedar është shumë i madh për kontroll sigurie. Mund të hapësh skedarë deri në 50 MB.</translation>
+<translation id="6057312498756061228">Ky skedar është shumë i madh për kontroll sigurie. Mund të hapësh skedarë deri në 50 MB.</translation>
 <translation id="6057381398996433816">Kësaj faqeje i është bllokuar përdorimi i sensorëve të lëvizjes dhe të dritës.</translation>
 <translation id="6058567592298841668">Pajisja virtuale e shtesës: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Hierarkia e certifikatave</translation>
@@ -5088,7 +5086,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7606992457248886637">Autoritetet</translation>
 <translation id="7607002721634913082">Ndërprerë</translation>
 <translation id="7609148976235050828">Lidhu me internetin dhe provo sërish</translation>
-<translation id="7611008212562900400">Kërko pajisjen tënde, aplikacionet, uebin...</translation>
 <translation id="7614260613810441905">Pyet kur një sajt dëshiron të modifikojë skedarë ose dosje në pajisjen tënde (rekomandohet)</translation>
 <translation id="761530003705945209">Rezervo në "Diskun e Google". Restauro të dhënat e tua ose ndërro me lehtësi pajisjen në çdo kohë. Rezervimi yt përfshin të dhënat e aplikacioneve. Rezervimet e tua ngarkohen te Google dhe enkriptohen duke përdorur fjalëkalimin e "Llogarisë sate të Google".</translation>
 <translation id="7616214729753637086">Pajisja po regjistrohet...</translation>
@@ -5873,7 +5870,7 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8609465669617005112">Lëviz lart</translation>
 <translation id="8610103157987623234">Format i pasaktë! Provo përsëri më vonë</translation>
 <translation id="8613164732773110792">Vetëm shkronja të vogla, shifra, viza poshtë ose viza ndarëse</translation>
-<translation id="8613786722548417558"><ph name="FILE_NAME" /> është shumë i madh për kontroll sigurie. Mund të hapësh skedarë deri në 50 MB.</translation>
+<translation id="8613786722548417558"><ph name="FILE_NAME" /> është shumë i madh për kontroll sigurie. Mund të hapësh skedarë deri në 50 MB.</translation>
 <translation id="8615618338313291042">Aplikacioni "i fshehur": <ph name="APP_NAME" /></translation>
 <translation id="8619803522055190423">Me hijezim</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
@@ -6364,7 +6361,7 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="930268624053534560">Stampimet kohore të detajuara</translation>
 <translation id="932327136139879170">Faqja kryesore</translation>
 <translation id="932508678520956232">Printimi nuk mund të iniciohej.</translation>
-<translation id="933427034780221291">{NUM_FILES,plural, =1{Ky skedar është shumë i madh për kontroll sigurie. Mund të ngarkosh skedarë deri në 50 MB.}other{Disa prej këtyre skedarëve janë shumë të mëdhenj për kontroll sigurie. Mund të ngarkosh skedarë deri në 50 MB.}}</translation>
+<translation id="933427034780221291">{NUM_FILES,plural, =1{Ky skedar është shumë i madh për kontroll sigurie. Mund të ngarkosh skedarë deri në 50 MB.}other{Disa prej këtyre skedarëve janë shumë të mëdhenj për kontroll sigurie. Mund të ngarkosh skedarë deri në 50 MB.}}</translation>
 <translation id="93343527085570547">Shko te <ph name="BEGIN_LINK1" />faqja "Ndihmë ligjore"<ph name="END_LINK1" /> për të kërkuar ndryshime të përmbajtjes për arsye ligjore.  Disa nga informacionet e llogarisë dhe të sistemit mund t'i dërgohen Google.  Informacionet që na jepni do t'i përdorim për zgjidhjen e problemeve teknike për përmirësimin e shërbimeve tona, sipas <ph name="BEGIN_LINK2" />Politikës së privatësisë<ph name="END_LINK2" /> dhe <ph name="BEGIN_LINK3" />Kushteve të shërbimit<ph name="END_LINK3" />.</translation>
 <translation id="93393615658292258">Vetëm fjalëkalimi</translation>
 <translation id="934244546219308557">Emërtoje këtë grup</translation>

@@ -5,8 +5,12 @@
 #ifndef NET_BASE_FEATURES_H_
 #define NET_BASE_FEATURES_H_
 
+#include <string>
+
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/strings/string_piece.h"
+#include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/net_buildflags.h"
 
@@ -32,6 +36,10 @@ NET_EXPORT extern const base::Feature kDnsHttpssvc;
 NET_EXPORT extern const base::FeatureParam<bool> kDnsHttpssvcUseHttpssvc;
 NET_EXPORT extern const base::FeatureParam<bool> kDnsHttpssvcUseIntegrity;
 
+// Enable HTTPSSVC or INTEGRITY to be queried over insecure DNS.
+NET_EXPORT extern const base::FeatureParam<bool>
+    kDnsHttpssvcEnableQueryOverInsecure;
+
 // If we are still waiting for an HTTPSSVC or INTEGRITY query after all the
 // other queries in a DnsTask have completed, we will compute a timeout for the
 // remaining query. The timeout will be the min of:
@@ -40,6 +48,37 @@ NET_EXPORT extern const base::FeatureParam<bool> kDnsHttpssvcUseIntegrity;
 //       number of milliseconds since the first query began.
 NET_EXPORT extern const base::FeatureParam<int> kDnsHttpssvcExtraTimeMs;
 NET_EXPORT extern const base::FeatureParam<int> kDnsHttpssvcExtraTimePercent;
+
+// These parameters, respectively, are the list of experimental and control
+// domains for which we will query HTTPSSVC or INTEGRITY records. We expect
+// valid INTEGRITY results for experiment domains. We expect no INTEGRITY
+// results for control domains.
+//
+// The format of both parameters is a comma-separated list of domains.
+// Whitespace around domain names is permitted. Trailing comma is optional.
+//
+// See helper functions:
+// |dns_httpssvc_experiment::GetDnsHttpssvcExperimentDomains| and
+// |dns_httpssvc_experiment::GetDnsHttpssvcControlDomains|.
+NET_EXPORT extern const base::FeatureParam<std::string>
+    kDnsHttpssvcExperimentDomains;
+NET_EXPORT extern const base::FeatureParam<std::string>
+    kDnsHttpssvcControlDomains;
+
+// This param controls how we determine whether a domain is an experimental or
+// control domain. When false, domains must be in |kDnsHttpssvcControlDomains|
+// to be considered a control. When true, we ignore |kDnsHttpssvcControlDomains|
+// and any non-experiment domain (not in |kDnsHttpssvcExperimentDomains|) is
+// considered a control domain.
+NET_EXPORT extern const base::FeatureParam<bool>
+    kDnsHttpssvcControlDomainWildcard;
+
+namespace dns_httpssvc_experiment {
+// Get the value of |kDnsHttpssvcExtraTimeMs|.
+base::TimeDelta GetExtraTimeAbsolute();
+bool IsExperimentDomain(base::StringPiece domain);
+bool IsControlDomain(base::StringPiece domain);
+}  // namespace dns_httpssvc_experiment
 
 // Enables optimizing the network quality estimation algorithms in network
 // quality estimator (NQE).

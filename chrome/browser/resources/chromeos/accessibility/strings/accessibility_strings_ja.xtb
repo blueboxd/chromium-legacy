@@ -51,6 +51,7 @@
 <translation id="1291286136605998134">切り替えボタン</translation>
 <translation id="1299774449519412690">ライト スカイブルー</translation>
 <translation id="1303806948938513162">ChromeVox メニューを開くには 4 本の指でタップします</translation>
+<translation id="1325363694295259631"><ph name="NAME" />、選択されていないメニュー項目のラジオボタン</translation>
 <translation id="1325946044405407859">タン</translation>
 <translation id="1331702245475014624"><ph name="TOTAL" /> 分 の <ph name="INDEX" /></translation>
 <translation id="1334095593597963605">文字と単語の読み上げ</translation>
@@ -514,6 +515,7 @@
 <translation id="4994420463726586413">現在の電池の状態を読み上げる</translation>
 <translation id="4997282455736854877"><ph name="NAME" />、選択されたラジオボタン</translation>
 <translation id="5011664330025416377">検索+スペースキーで有効にします</translation>
+<translation id="5012724933919010465"><ph name="NAME" />、選択されたメニュー項目のラジオボタン</translation>
 <translation id="5020651427400641814">読み上げのログを有効にする</translation>
 <translation id="5041394372352067729">ブライユ点字表示をページ上部に移動</translation>
 <translation id="5042770794184672516">読み上げの音量を上げる</translation>

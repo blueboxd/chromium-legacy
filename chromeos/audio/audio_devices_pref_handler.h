@@ -20,6 +20,7 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) AudioDevicesPrefHandler
     : public base::RefCountedThreadSafe<AudioDevicesPrefHandler> {
  public:
   // Integer because C++ does not allow static const double in header files.
+  static const int kDefaultInputGainPercent = 50;
   static const int kDefaultOutputVolumePercent = 75;
   static const int kDefaultHdmiOutputVolumePercent = 100;
 

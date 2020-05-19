@@ -143,7 +143,8 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
     frame_rect.SetHeight(frame_rect.Height() + 1);
     GetDummyPageHolder().GetFrameView().SetFrameRect(frame_rect);
   }
-  auto paint_controller = std::make_unique<PaintController>();
+  auto paint_controller =
+      std::make_unique<PaintController>(PaintController::kTransient);
   {
     GraphicsContext context(*paint_controller);
     paint_controller->UpdateCurrentPaintChunkProperties(

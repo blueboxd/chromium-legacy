@@ -13,7 +13,7 @@ import android.os.Build;
 import android.os.PowerManager;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
-import android.view.ViewGroup;
+import android.view.View;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -219,7 +219,7 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
     /**
      * Returns the current container view or null if there is no WebContents.
      */
-    public ViewGroup getContainerView() {
+    public View getContainerView() {
         final WebContents webContents = getWebContents();
         try {
             return TestThreadUtils.runOnUiThreadBlocking(() -> {

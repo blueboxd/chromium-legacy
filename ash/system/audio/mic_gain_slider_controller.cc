@@ -14,8 +14,9 @@ namespace ash {
 MicGainSliderController::MicGainSliderController() = default;
 
 std::unique_ptr<MicGainSliderView> MicGainSliderController::CreateMicGainSlider(
-    uint64_t device_id) {
-  return std::make_unique<MicGainSliderView>(this, device_id);
+    uint64_t device_id,
+    bool internal) {
+  return std::make_unique<MicGainSliderView>(this, device_id, internal);
 }
 
 views::View* MicGainSliderController::CreateView() {

@@ -34,10 +34,11 @@ QuickAnswersUiController::~QuickAnswersUiController() {
 
 void QuickAnswersUiController::CreateQuickAnswersView(
     const gfx::Rect& bounds,
-    const std::string& title) {
+    const std::string& title,
+    const std::string& query) {
   DCHECK(!quick_answers_view_);
   DCHECK(!user_consent_view_);
-  SetActiveQuery(title);
+  SetActiveQuery(query);
   quick_answers_view_ = new QuickAnswersView(bounds, title, this);
   quick_answers_view_->GetWidget()->ShowInactive();
 }

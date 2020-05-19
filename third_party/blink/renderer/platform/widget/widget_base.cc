@@ -236,4 +236,12 @@ void WidgetBase::SetCursor(const ui::Cursor& cursor) {
   widget_host_->SetCursor(cursor);
 }
 
+void WidgetBase::SetToolTipText(const String& tooltip_text, TextDirection dir) {
+  widget_host_->SetToolTipText(
+      tooltip_text.IsEmpty() ? "" : tooltip_text,
+      dir == TextDirection::kLtr
+          ? mojo_base::mojom::blink::TextDirection::LEFT_TO_RIGHT
+          : mojo_base::mojom::blink::TextDirection::RIGHT_TO_LEFT);
+}
+
 }  // namespace blink

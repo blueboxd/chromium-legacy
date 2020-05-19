@@ -6,6 +6,7 @@
 
 #include <stack>
 #include <string>
+#include <utility>
 
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -108,7 +109,7 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     }
   }
   std::vector<bool> is_important(event_data->node_data.size());
-  BuildImportanceTable(event_data, node_data_index_map, is_important);
+  BuildImportanceTable(event_data, node_data_index_map, &is_important);
   for (int i = event_data->node_data.size() - 1; i >= 0; --i) {
     int32_t id = event_data->node_data[i]->id;
     AXNodeInfoData* node = event_data->node_data[i].get();
@@ -179,7 +180,7 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
 
   if (!android_focused_id_ || !GetFromId(*android_focused_id_)) {
     AccessibilityInfoDataWrapper* root = GetRoot();
-    // TODO (sarakato): Add proper fix once cause of invalid node is known.
+    // TODO(sarakato): Add proper fix once cause of invalid node is known.
     if (!IsValid(root)) {
       return;
     } else {
@@ -329,16 +330,17 @@ gfx::Rect AXTreeSourceArc::ComputeEnclosingBounds(
   if (!info_data->IsVisibleToUser())
     return computed_bounds;
 
-  ComputeEnclosingBoundsInternal(info_data, computed_bounds);
+  ComputeEnclosingBoundsInternal(info_data, &computed_bounds);
   return computed_bounds;
 }
 
 void AXTreeSourceArc::ComputeEnclosingBoundsInternal(
     AccessibilityInfoDataWrapper* info_data,
-    gfx::Rect& computed_bounds) const {
+    gfx::Rect* computed_bounds) const {
+  DCHECK(computed_bounds);
   auto cached_bounds = computed_bounds_.find(info_data->GetId());
   if (cached_bounds != computed_bounds_.end()) {
-    computed_bounds.Union(cached_bounds->second);
+    computed_bounds->Union(cached_bounds->second);
     return;
   }
 
@@ -346,7 +348,7 @@ void AXTreeSourceArc::ComputeEnclosingBoundsInternal(
     return;
   if (info_data->CanBeAccessibilityFocused()) {
     // Only consider nodes that can possibly be accessibility focused.
-    computed_bounds.Union(info_data->GetBounds());
+    computed_bounds->Union(info_data->GetBounds());
     return;
   }
   std::vector<AccessibilityInfoDataWrapper*> children;
@@ -391,8 +393,9 @@ bool AXTreeSourceArc::ComputeIsClickableLeaf(
 void AXTreeSourceArc::BuildImportanceTable(
     AXEventData* event_data,
     const std::map<int32_t, int32_t>& node_id_to_nodes_index,
-    std::vector<bool>& out_values) const {
-  DCHECK(out_values.size() == event_data->node_data.size());
+    std::vector<bool>* out_values) const {
+  DCHECK(out_values);
+  DCHECK(out_values->size() == event_data->node_data.size());
 
   // First, compute whether each node has important properties in its subtree.
   for (size_t i = 0; i < event_data->window_data->size(); ++i) {
@@ -409,15 +412,16 @@ void AXTreeSourceArc::BuildImportanceTable(
   // Second, node is important in Chrome if it's important in Android and has
   // any important property.
   for (size_t i = 0; i < event_data->node_data.size(); ++i)
-    out_values[i] =
-        out_values[i] & IsImportantInAndroid(event_data->node_data[i].get());
+    out_values->at(i) = out_values->at(i) &
+                        IsImportantInAndroid(event_data->node_data[i].get());
 }
 
 bool AXTreeSourceArc::BuildHasImportantProperty(
     int32_t nodes_index,
     const std::vector<AXNodeInfoDataPtr>& nodes,
     const std::map<int32_t, int32_t>& node_id_to_nodes_index,
-    std::vector<bool>& has_important_prop_cache) const {
+    std::vector<bool>* has_important_prop_cache) const {
+  DCHECK(has_important_prop_cache);
   AXNodeInfoData* node = nodes[nodes_index].get();
 
   bool has_important_prop = HasImportantProperty(node) ||
@@ -433,7 +437,7 @@ bool AXTreeSourceArc::BuildHasImportantProperty(
     }
   }
 
-  has_important_prop_cache[nodes_index] = has_important_prop;
+  has_important_prop_cache->at(nodes_index) = has_important_prop;
   return has_important_prop;
 }
 

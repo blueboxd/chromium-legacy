@@ -4,6 +4,9 @@
 
 package org.chromium.weblayer_private.test_interfaces;
 
+import org.chromium.weblayer_private.interfaces.IObjectWrapper;
+import org.chromium.weblayer_private.interfaces.ITab;
+
 interface ITestWebLayer {
   // Force network connectivity state.
   boolean isNetworkChangeAutoDetectOn() = 1;
@@ -19,4 +22,10 @@ interface ITestWebLayer {
 
   // Forces the system location setting to enabled.
   void setSystemLocationSettingEnabled(boolean enabled) = 6;
+
+  // See comments in TestWebLayer for details.
+  void waitForBrowserControlsMetadataState(in ITab tab,
+                                           in int top,
+                                           in int bottom,
+                                           in IObjectWrapper runnable) = 7;
 }

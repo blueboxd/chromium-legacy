@@ -66,8 +66,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
   void ReadRemoteCharacteristic(ValueCallback callback,
                                 ErrorCallback error_callback) override;
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,
+                                 WriteType write_type,
                                  base::OnceClosure callback,
                                  ErrorCallback error_callback) override;
+  void DeprecatedWriteRemoteCharacteristic(
+      const std::vector<uint8_t>& value,
+      base::OnceClosure callback,
+      ErrorCallback error_callback) override;
 
   // Called when value changed event occurs.
   void OnChanged(JNIEnv* env,
@@ -108,6 +113,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
       ErrorCallback error_callback) override;
 
  private:
+  // Android API characteristic write type flags.
+  // https://developer.android.com/reference/android/bluetooth/BluetoothGattCharacteristic.html
+  enum class AndroidWriteType {
+    kNone = 0,
+    kNoResponse = 1 << 0,
+    kDefault = 1 << 1,
+    kSigned = 1 << 2,
+  };
+
   BluetoothRemoteGattCharacteristicAndroid(
       BluetoothAdapterAndroid* adapter,
       BluetoothRemoteGattServiceAndroid* service,

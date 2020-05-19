@@ -196,7 +196,7 @@ void QuickAnswersClient::IntentGeneratorCallback(
   processed_request.preprocessed_output =
       PreprocessRequest(quick_answers_request, intent_text, intent_type);
 
-  delegate_->OnRequestPreprocessFinish(processed_request);
+  delegate_->OnRequestPreprocessFinished(processed_request);
 
   if (features::IsQuickAnswersTextAnnotatorEnabled() &&
       processed_request.preprocessed_output.intent_type ==

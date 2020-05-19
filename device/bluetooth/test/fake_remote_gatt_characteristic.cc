@@ -140,6 +140,28 @@ void FakeRemoteGattCharacteristic::ReadRemoteCharacteristic(
 
 void FakeRemoteGattCharacteristic::WriteRemoteCharacteristic(
     const std::vector<uint8_t>& value,
+    WriteType write_type,
+    base::OnceClosure callback,
+    ErrorCallback error_callback) {
+  // It doesn't make sense to dispatch a custom write response if the
+  // characteristic only supports write without response but we still need to
+  // run the callback because that's the guarantee the API makes.
+  if (write_type == WriteType::kWithoutResponse) {
+    last_written_value_ = value;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
+    return;
+  }
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&FakeRemoteGattCharacteristic::DispatchWriteResponse,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(error_callback), value));
+}
+
+void FakeRemoteGattCharacteristic::DeprecatedWriteRemoteCharacteristic(
+    const std::vector<uint8_t>& value,
     base::OnceClosure callback,
     ErrorCallback error_callback) {
   // It doesn't make sense to dispatch a custom write response if the

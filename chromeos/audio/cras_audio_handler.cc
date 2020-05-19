@@ -910,8 +910,8 @@ void CrasAudioHandler::SetupAudioInputState() {
   VLOG(1) << "SetupAudioInputState for active device id="
           << "0x" << std::hex << device->id << " mute=" << input_mute_on_;
   SetInputMuteInternal(input_mute_on_);
-  // TODO(rkc,jennyz): Set input gain once we decide on how to store
-  // the gain values since the range and step are both device specific.
+
+  SetInputNodeGain(active_input_node_id_, input_gain_);
 }
 
 void CrasAudioHandler::SetupAudioOutputState() {

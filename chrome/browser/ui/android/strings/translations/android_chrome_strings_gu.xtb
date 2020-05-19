@@ -482,7 +482,6 @@
 <translation id="4988210275050210843">(<ph name="MEGABYTES" />)ની ફાઇલ ડાઉનલોડ કરી રહ્યાં છીએ.</translation>
 <translation id="4988526792673242964">પૃષ્ઠો</translation>
 <translation id="4994033804516042629">કોઈ સંપર્કો મળ્યા નથી</translation>
-<translation id="4996978546172906250">આનાથી શેર કરો</translation>
 <translation id="5004416275253351869">Google પ્રવૃત્તિ નિયંત્રણો</translation>
 <translation id="5005498671520578047">પાસવર્ડની કૉપિ કરો</translation>
 <translation id="5011311129201317034"><ph name="SITE" />, કનેક્ટ કરવા માગે છે</translation>
@@ -644,6 +643,7 @@
 <translation id="6381421346744604172">ડાર્કન વેબસાઇટ</translation>
 <translation id="6395288395575013217">લિંક</translation>
 <translation id="6397616442223433927">પાછા ઑનલાઇન થયા</translation>
+<translation id="6398765197997659313">પૂર્ણ સ્ક્રીનથી બહાર નીકળો</translation>
 <translation id="6404511346730675251">બુકમાર્કમાં ફેરફાર કરો</translation>
 <translation id="6406506848690869874">સમન્વયન</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" />માંથી ARમાં દાખલ થવું છે?</translation>
@@ -700,7 +700,7 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">અનુવાદ કરો</translation>
 <translation id="6845325883481699275">Chrome સુરક્ષાને વધુ સારી બનાવવામાં સહાય કરો</translation>
-<translation id="6846298663435243399">લોડ કરી રહ્યું છે...</translation>
+<translation id="6846298663435243399">લોડ કરી રહ્યાં છે…</translation>
 <translation id="6850409657436465440">તમારું ડાઉનલોડ હજી પણ પ્રક્રિયામાં છે</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> ટેબ્સ બંધ કર્યા</translation>
 <translation id="685850645784703949">Googleનું Discover - બંધ</translation>
@@ -906,6 +906,7 @@
 <translation id="8514577642972634246">છુપા મોડમાં દાખલ થાઓ</translation>
 <translation id="8516012719330875537">ઇમેજ એડિટર</translation>
 <translation id="8523928698583292556">સંગ્રહિત કરેલ પાસવર્ડ ડિલીટ કરો</translation>
+<translation id="8525306231823319788">પૂર્ણ સ્ક્રીન</translation>
 <translation id="854522910157234410">આ પૃષ્ઠ ખોલો</translation>
 <translation id="8558485628462305855">ઑગ્મેન્ટેડ રિયાલિટી કન્ટેન્ટ જોવા માટે ARCore અપડેટ કરો</translation>
 <translation id="8559990750235505898">પેજનો અન્ય ભાષાઓમાં અનુવાદ કરવાની ઑફર કરો</translation>

@@ -4,6 +4,7 @@
 <translation id="1028699632127661925">Przesyłam na: <ph name="DEVICE_NAME" />…</translation>
 <translation id="111910763555783249">Ustawienia powiadomień</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 dzień temu}few{# dni temu}many{# dni temu}other{# dnia temu}}</translation>
+<translation id="1145532888383813076">Przeszukaj urządzenie, aplikacje i internet.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{minutę temu}few{# minuty temu}many{# minut temu}other{# minuty temu}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
 <translation id="1181037720776840403">Usuń</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">włącz synchronizację</translation>
 <translation id="5329858601952122676">&amp;Usuń</translation>
 <translation id="5395308026110844773">Aplikacja <ph name="DRAGGED_APP_NAME" /> jest nad aplikacją <ph name="IN_PLACE_APP" /> – puść, by utworzyć folder.</translation>
+<translation id="5432996274932278848">Przeszukaj urządzenie, aplikacje i internet. Aby poruszać się po aplikacjach, użyj klawiszy strzałek.</translation>
 <translation id="5463830097259460683">Emotikony i symbole</translation>
 <translation id="5476505524087279545">odznacz</translation>
 <translation id="547979256943495781">Półka po prawej</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">Usunąć to hasło z historii wyszukiwania?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emotikony</translation>
+<translation id="7611008212562900400">Przeszukaj urządzenie, aplikacje, internet…</translation>
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="7781829728241885113">Wczoraj</translation>
 <translation id="7814458197256864873">&amp;Kopiuj</translation>

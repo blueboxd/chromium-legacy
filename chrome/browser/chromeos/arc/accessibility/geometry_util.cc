@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_ACCESSIBILITY_GEOMETRY_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_ACCESSIBILITY_GEOMETRY_UTIL_H_
 
+#include "chrome/browser/chromeos/arc/accessibility/geometry_util.h"
+
 #include "components/exo/wm_helper.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"

@@ -6,6 +6,8 @@ package org.chromium.weblayer_private.test;
 
 import android.os.IBinder;
 
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.components.permissions.PermissionDialogController;
@@ -14,6 +16,10 @@ import org.chromium.device.geolocation.LocationProviderOverrider;
 import org.chromium.device.geolocation.MockLocationProvider;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.weblayer_private.TabImpl;
+import org.chromium.weblayer_private.interfaces.IObjectWrapper;
+import org.chromium.weblayer_private.interfaces.ITab;
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.test_interfaces.ITestWebLayer;
 
 import java.util.concurrent.ExecutionException;
@@ -21,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * Root implementation class for TestWebLayer.
  */
+@JNINamespace("weblayer")
 @UsedByReflection("WebLayer")
 public final class TestWebLayerImpl extends ITestWebLayer.Stub {
     private MockLocationProvider mMockLocationProvider;
@@ -85,5 +92,19 @@ public final class TestWebLayerImpl extends ITestWebLayer.Stub {
                 };
             });
         });
+    }
+
+    @Override
+    public void waitForBrowserControlsMetadataState(
+            ITab tab, int topHeight, int bottomHeight, IObjectWrapper runnable) {
+        TestWebLayerImplJni.get().waitForBrowserControlsMetadataState(
+                ((TabImpl) tab).getNativeTab(), topHeight, bottomHeight,
+                ObjectWrapper.unwrap(runnable, Runnable.class));
+    }
+
+    @NativeMethods
+    interface Natives {
+        void waitForBrowserControlsMetadataState(
+                long tabImpl, int top, int bottom, Runnable runnable);
     }
 }

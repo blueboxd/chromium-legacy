@@ -37,7 +37,10 @@ Polymer({
     browserProfiles_: Array,
 
     /** @private {!BrowserProfile} */
-    selected_: Object,
+    selected_: {
+      type: Object,
+      observer: 'updateImportDataTypesSelected_',
+    },
 
     /**
      * Whether none of the import data categories is selected.
@@ -64,9 +67,9 @@ Polymer({
     },
   },
 
-  observers: [
-    'prefsChanged_(selected_, prefs.*)',
-  ],
+  listeners: {
+    'settings-boolean-control-change': 'updateImportDataTypesSelected_',
+  },
 
   /** @private {?ImportDataBrowserProxy} */
   browserProxy_: null,
@@ -102,22 +105,10 @@ Polymer({
   },
 
   /** @private */
-  prefsChanged_() {
-    if (this.selected_ == undefined || this.prefs == undefined) {
-      return;
-    }
-
-    this.noImportDataTypeSelected_ =
-        !(this.getPref('import_dialog_history').value &&
-          this.selected_.history) &&
-        !(this.getPref('import_dialog_bookmarks').value &&
-          this.selected_.favorites) &&
-        !(this.getPref('import_dialog_saved_passwords').value &&
-          this.selected_.passwords) &&
-        !(this.getPref('import_dialog_search_engine').value &&
-          this.selected_.search) &&
-        !(this.getPref('import_dialog_autofill_form_data').value &&
-          this.selected_.autofillFormData);
+  updateImportDataTypesSelected_() {
+    const checkboxes = this.shadowRoot.querySelectorAll(
+        'settings-checkbox[checked]:not([hidden])');
+    this.noImportDataTypeSelected_ = checkboxes.length === 0;
   },
 
   /**

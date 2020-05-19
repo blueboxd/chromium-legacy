@@ -801,20 +801,15 @@ HRESULT BluetoothLowEnergyWrapper::ReadCharacteristicValue(
 HRESULT BluetoothLowEnergyWrapper::WriteCharacteristicValue(
     base::FilePath& service_path,
     const PBTH_LE_GATT_CHARACTERISTIC characteristic,
-    PBTH_LE_GATT_CHARACTERISTIC_VALUE new_value) {
+    PBTH_LE_GATT_CHARACTERISTIC_VALUE new_value,
+    ULONG flags) {
   base::File file(service_path, base::File::FLAG_OPEN | base::File::FLAG_READ |
                                     base::File::FLAG_WRITE);
   if (!file.IsValid())
     return HRESULT_FROM_WIN32(ERROR_OPEN_FAILED);
 
-  ULONG flag = BLUETOOTH_GATT_FLAG_NONE;
-  if (!characteristic->IsWritable) {
-    DCHECK(characteristic->IsWritableWithoutResponse);
-    flag |= BLUETOOTH_GATT_FLAG_WRITE_WITHOUT_RESPONSE;
-  }
-
   return BluetoothGATTSetCharacteristicValue(
-      file.GetPlatformFile(), characteristic, new_value, NULL, flag);
+      file.GetPlatformFile(), characteristic, new_value, {}, flags);
 }
 
 HRESULT BluetoothLowEnergyWrapper::RegisterGattEvents(

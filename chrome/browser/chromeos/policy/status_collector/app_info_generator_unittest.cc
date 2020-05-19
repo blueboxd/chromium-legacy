@@ -7,16 +7,19 @@
 #include <memory>
 
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "content/public/test/browser_task_environment.h"
@@ -26,6 +29,8 @@
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Property;
+
+using web_app::ProviderType;
 
 namespace em = enterprise_management;
 
@@ -43,7 +48,18 @@ auto EqApp(const std::string& app_id,
                Property(&em::AppInfo::app_type, app_type));
 }
 
-class AppInfoGeneratorTest : public ::testing::Test {
+class AppInfoGeneratorTest : public ::testing::TestWithParam<ProviderType> {
+ public:
+  AppInfoGeneratorTest() {
+    if (GetParam() == web_app::ProviderType::kWebApps) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kDesktopPWAsWithoutExtensions);
+    } else if (GetParam() == web_app::ProviderType::kBookmarkApps) {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kDesktopPWAsWithoutExtensions);
+    }
+  }
+
  protected:
   static apps::mojom::AppPtr MakeApp(const std::string& app_id,
                                      const std::string& name,
@@ -92,12 +108,13 @@ class AppInfoGeneratorTest : public ::testing::Test {
   Profile& profile() { return *profile_; }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   web_app::TestAppRegistrar* app_registrar_;
 };
 
-TEST_F(AppInfoGeneratorTest, GenerateInventoryList) {
+TEST_P(AppInfoGeneratorTest, GenerateInventoryList) {
   std::vector<apps::mojom::AppPtr> deltas;
   deltas.push_back(MakeApp("a", "FirstApp",
                            apps::mojom::Readiness::kDisabledByPolicy, "1.1",
@@ -121,7 +138,7 @@ TEST_F(AppInfoGeneratorTest, GenerateInventoryList) {
                         "", em::AppInfo_AppType_TYPE_CROSTINI)));
 }
 
-TEST_F(AppInfoGeneratorTest, GenerateWebApp) {
+TEST_P(AppInfoGeneratorTest, GenerateWebApp) {
   std::vector<apps::mojom::AppPtr> deltas;
   deltas.push_back(MakeApp("c", "App",
                            apps::mojom::Readiness::kUninstalledByUser, "",
@@ -140,5 +157,11 @@ TEST_F(AppInfoGeneratorTest, GenerateWebApp) {
                                 em::AppInfo_Status_STATUS_UNINSTALLED, "",
                                 em::AppInfo_AppType_TYPE_WEB)));
 }
+
+// TODO(crbug.com/1083855): Test with BMO enabled.
+INSTANTIATE_TEST_SUITE_P(All,
+                         AppInfoGeneratorTest,
+                         ::testing::Values(ProviderType::kBookmarkApps),
+                         web_app::ProviderTypeParamToString);
 
 }  // namespace policy

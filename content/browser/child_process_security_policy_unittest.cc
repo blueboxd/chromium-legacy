@@ -89,7 +89,7 @@ void LockProcessIfNeeded(int process_id,
                                            site_instance->IsGuest())) {
     ChildProcessSecurityPolicyImpl::GetInstance()->LockToOrigin(
         site_instance->GetIsolationContext(), process_id,
-        site_instance->GetSiteURL());
+        site_instance->lock_url());
   }
 }
 

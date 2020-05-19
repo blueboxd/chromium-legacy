@@ -130,7 +130,6 @@
 #include "services/service_manager/zygote/common/common_sandbox_support_linux.h"
 #include "third_party/blink/public/platform/web_font_render_style.h"
 #include "third_party/boringssl/src/include/openssl/crypto.h"
-#include "third_party/boringssl/src/include/openssl/rand.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkFontMgr_android.h"
 #include "third_party/webrtc_overrides/init_webrtc.h"  // nogncheck
@@ -330,15 +329,9 @@ void PreloadLibraryCdms() {
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
 void PreSandboxInit() {
-#if defined(ARCH_CPU_ARM_FAMILY)
-  // On ARM, BoringSSL requires access to /proc/cpuinfo to determine processor
-  // features. Query this before entering the sandbox.
-  CRYPTO_library_init();
-#endif
-
-  // Pass BoringSSL a copy of the /dev/urandom file descriptor so RAND_bytes
-  // will work inside the sandbox.
-  RAND_set_urandom_fd(base::GetUrandomFD());
+  // Pre-acquire resources needed by BoringSSL. See
+  // https://boringssl.googlesource.com/boringssl/+/HEAD/SANDBOXING.md
+  CRYPTO_pre_sandbox_init();
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Ensure access to the Pepper plugins before the sandbox is turned on.

@@ -21,6 +21,7 @@ class ListValue;
 
 namespace content {
 struct AXEventNotificationDetails;
+class WebContents;
 }  // namespace content
 
 namespace user_prefs {
@@ -68,6 +69,7 @@ class AccessibilityUIMessageHandler : public content::WebUIMessageHandler {
   void RequestNativeUITree(const base::ListValue* args);
   void RequestAccessibilityEvents(const base::ListValue* args);
   void Callback(const std::string&);
+  void StopRecording(content::WebContents* web_contents);
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityUIMessageHandler);
 };

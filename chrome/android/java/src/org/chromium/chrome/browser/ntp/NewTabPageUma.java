@@ -83,11 +83,11 @@ public class NewTabPageUma {
     /** User triggered a block content action. **/
     public static final int ACTION_BLOCK_CONTENT = 13;
 
-    /** User clicked on the "Manage activity" item in the feed header menu. */
-    public static final int ACTION_CLICKED_MANAGE_ACTIVITY = 14;
+    /** (Obsolete)  User clicked on the "Manage activity" item in the feed header menu. */
+    // public static final int ACTION_CLICKED_MANAGE_ACTIVITY = 14;
 
-    /** User clicked on the feed header menu button item in the feed header menu. */
-    public static final int ACTION_CLICKED_FEED_HEADER_MENU = 15;
+    /** (Obsolete) User clicked on the feed header menu button item in the feed header menu. */
+    // public static final int ACTION_CLICKED_FEED_HEADER_MENU = 15;
 
     /** The number of possible actions. */
     private static final int NUM_ACTIONS = 16;

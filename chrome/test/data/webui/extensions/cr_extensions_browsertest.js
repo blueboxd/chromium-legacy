@@ -287,6 +287,12 @@ TEST_F('CrExtensionsDetailViewTest', 'LayoutSource', function() {
   this.runMochaTest(extension_detail_view_tests.TestNames.LayoutSource);
 });
 
+TEST_F(
+    'CrExtensionsDetailViewTest', 'SupervisedUserDisableReasons', function() {
+      this.runMochaTest(
+          extension_detail_view_tests.TestNames.SupervisedUserDisableReasons);
+    });
+
 TEST_F('CrExtensionsDetailViewTest', 'ClickableElements', function() {
   this.runMochaTest(extension_detail_view_tests.TestNames.ClickableElements);
 });

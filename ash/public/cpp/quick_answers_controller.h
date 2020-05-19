@@ -36,7 +36,8 @@ class ASH_PUBLIC_EXPORT QuickAnswersController {
   // is the bounds of the anchor view (which is the context menu for browser).
   // |title| is the text selected by the user.
   virtual void MaybeShowQuickAnswers(const gfx::Rect& anchor_bounds,
-                                     const std::string& title) = 0;
+                                     const std::string& title,
+                                     const std::string& device_language) = 0;
 
   // Dismiss the quick-answers view (and/or any associated views like
   // user-consent view) currently shown. |is_active| is true if the quick-answer

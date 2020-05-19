@@ -1899,10 +1899,8 @@ void StyleResolver::MaybeAddToMatchedPropertiesCache(
       MatchedPropertiesCache::IsCacheable(state)) {
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                   matched_property_cache_added, 1);
-    // TODO(crbug.com/1057072): Pass dependencies to MatchedPropertiesCache.
-    HashSet<CSSPropertyName> unused_dependencies;
     matched_properties_cache_.Add(cache_success.key, *state.Style(),
-                                  *state.ParentStyle(), unused_dependencies);
+                                  *state.ParentStyle(), state.Dependencies());
   }
 }
 

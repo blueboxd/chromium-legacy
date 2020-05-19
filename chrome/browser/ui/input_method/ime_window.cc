@@ -41,14 +41,17 @@ ImeWindow::ImeWindow(Profile* profile,
                      const std::string& url,
                      Mode mode,
                      const gfx::Rect& bounds)
-    : mode_(mode), native_window_(nullptr) {
-  if (extension) {  // Allow nullable |extension| for testability.
-    title_ = extension->name();
-    icon_ = std::make_unique<extensions::IconImage>(
-        profile, extension, extensions::IconsInfo::GetIcons(extension),
-        extension_misc::EXTENSION_ICON_BITTY, gfx::ImageSkia(), this);
-  }
-
+    : mode_(mode),
+      title_(extension ? extension->name() : std::string()),
+      icon_(extension ? std::make_unique<extensions::IconImage>(
+                            profile,
+                            extension,
+                            extensions::IconsInfo::GetIcons(extension),
+                            extension_misc::EXTENSION_ICON_BITTY,
+                            gfx::ImageSkia(),
+                            this)
+                      : nullptr),
+      native_window_(nullptr) {
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
 

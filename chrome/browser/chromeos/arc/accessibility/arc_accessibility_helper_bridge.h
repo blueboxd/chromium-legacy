@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <tuple>
 
 #include "ash/system/message_center/arc/arc_notification_surface_manager.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"

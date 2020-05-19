@@ -51,6 +51,7 @@ struct MEDIA_EXPORT Vp8Metadata final {
 //  |vp8|, if set, contains metadata specific to VP8. See above.
 struct MEDIA_EXPORT BitstreamBufferMetadata final {
   BitstreamBufferMetadata();
+  BitstreamBufferMetadata(const BitstreamBufferMetadata& other);
   BitstreamBufferMetadata(BitstreamBufferMetadata&& other);
   BitstreamBufferMetadata(size_t payload_size_bytes,
                           bool key_frame,

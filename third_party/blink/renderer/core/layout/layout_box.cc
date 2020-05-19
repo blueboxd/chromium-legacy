@@ -3100,6 +3100,14 @@ bool LayoutBox::NeedsForcedBreakBefore(
   return IsForcedFragmentainerBreakValue(break_value);
 }
 
+const AtomicString LayoutBox::StartPageName() const {
+  return StyleRef().Page();
+}
+
+const AtomicString LayoutBox::EndPageName() const {
+  return StyleRef().Page();
+}
+
 PhysicalRect LayoutBox::LocalVisualRectIgnoringVisibility() const {
   return PhysicalSelfVisualOverflowRect();
 }

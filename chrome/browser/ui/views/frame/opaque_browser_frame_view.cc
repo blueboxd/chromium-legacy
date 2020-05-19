@@ -513,7 +513,7 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   frame_background_->set_top_area_height(GetTopAreaHeight());
 
   if (GetFrameButtonStyle() == FrameButtonStyle::kMdButton) {
-    for (auto* button :
+    for (views::Button* button :
          {minimize_button_, maximize_button_, restore_button_, close_button_}) {
       DCHECK_EQ(std::string(views::FrameCaptionButton::kViewClassName),
                 button->GetClassName());

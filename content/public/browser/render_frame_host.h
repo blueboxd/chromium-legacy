@@ -77,6 +77,7 @@ class RenderWidgetHostView;
 class SiteInstance;
 class BrowserContext;
 class StoragePartition;
+class WebUI;
 
 // The interface provides a communication conduit with a frame in the renderer.
 class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
@@ -368,6 +369,10 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Generates an intervention report in this frame.
   virtual void SendInterventionReport(const std::string& id,
                                       const std::string& message) = 0;
+
+  // Returns the WebUI object associated wit this RenderFrameHost or nullptr
+  // otherwise.
+  virtual WebUI* GetWebUI() = 0;
 
   // Tell the render frame to enable a set of javascript bindings. The argument
   // should be a combination of values from BindingsPolicy.

@@ -336,7 +336,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4961318399572185831">Transmitir pantalla</translation>
 <translation id="5030687792513154421">Se acabó el tiempo</translation>
 <translation id="5035236842988137213">Se conectó el dispositivo <ph name="DEVICE_NAME" /> a un teléfono nuevo</translation>
-<translation id="5035389544768382859">Acepta la configuración de la pantalla</translation>
+<translation id="5035389544768382859">Confirma la configuración de la pantalla</translation>
 <translation id="5083553833479578423">Desbloquea más funciones del Asistente.</translation>
 <translation id="5136175204352732067">Se conectó otro teclado</translation>
 <translation id="5168181903108465623">Dispositivos de transmisión disponibles</translation>
@@ -535,6 +535,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7647488630410863958">Desbloquea el dispositivo para ver tus notificaciones</translation>
 <translation id="7649070708921625228">Ayuda</translation>
 <translation id="7654687942625752712">Mantén presionadas las teclas de volumen durante cinco segundos para inhabilitar los comentarios por voz.</translation>
+<translation id="7658239707568436148">Cancelar</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notificación}other{# notificaciones}}</translation>
 <translation id="7724603315864178912">Cortar</translation>
@@ -583,6 +584,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8190698733819146287">Personalizar idiomas y la entrada de datos</translation>
 <translation id="8192202700944119416">Las notificaciones están ocultas.</translation>
 <translation id="8196787716797768628">Usa gestos para cambiar rápidamente de app o interactuar con la Chromebook en el modo tablet.</translation>
+<translation id="8200772114523450471">Reanudar</translation>
 <translation id="8203795194971602413">Clic con botón derecho</translation>
 <translation id="8236042855478648955">Es hora de descansar</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" />, nivel de batería del teléfono: <ph name="BATTERY_STATUS" /></translation>

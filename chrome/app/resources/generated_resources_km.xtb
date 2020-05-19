@@ -112,7 +112,6 @@
 <translation id="1140746652461896221">ទប់ស្កាត់​ខ្លឹមសារ​នៅលើទំព័រទាំងឡាយដែលអ្នកចូលមើល</translation>
 <translation id="1143142264369994168">អ្នកចុះហត្ថលេខាវិញ្ញាបនប័ត្រ</translation>
 <translation id="1145292499998999162">រារាំងកម្មវិធីជំនួយ</translation>
-<translation id="1145532888383813076">ស្វែងរក​ឧបករណ៍ កម្មវិធី និងបណ្ដាញរបស់អ្នក។</translation>
 <translation id="1145593918056169051">ម៉ាស៊ីនបោះពុម្ព​បានឈប់</translation>
 <translation id="1146678959555564648">បញ្ចូល VR</translation>
 <translation id="114721135501989771">ទទួលបាន​មុខងារ​ឆ្លាតវៃ​របស់ Google នៅក្នុង Chrome</translation>
@@ -1396,7 +1395,7 @@
 <translation id="274290345632688601">កំពុងស្ដារ​កម្មវិធី និងឯកសារ Linux</translation>
 <translation id="2743387203779672305">ចម្លងទៅផ្ទាំងឃ្លីបបត</translation>
 <translation id="2745080116229976798">Microsoft Qualified Subordination</translation>
-<translation id="2747266560080989517">ឯកសារនេះមានខ្លឹមសាររសើប ឬគ្រោះថ្នាក់។ សូមស្នើឱ្យម្ចាស់ឯកសារ​នេះកែខ្លឹមសារ។</translation>
+<translation id="2747266560080989517">ឯកសារនេះមានខ្លឹមសាររសើប ឬគ្រោះថ្នាក់។ សូមស្នើឱ្យម្ចាស់ឯកសារ​នេះធ្វើការកែប្រែ។</translation>
 <translation id="2748061034695037846"><ph name="DOMAIN" /> ត្រូវបានផ្អាក</translation>
 <translation id="2749756011735116528">ចូលទៅ <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">ពិនិត្យវេយ្យាករណ៍ជាមួយការប្រកប</translation>
@@ -1663,7 +1662,7 @@
 <translation id="3088052000289932193">គេហទំព័រ​កំពុង​ប្រើប្រាស់ MIDI</translation>
 <translation id="3088128611727407543">កំពុង​រៀបចំ​កម្រងព័ត៌មាន​កម្មវិធី...</translation>
 <translation id="3088325635286126843">ប្តូរឈ្មោះ...</translation>
-<translation id="3089064280130434511">ទប់ស្កាត់គេហទំព័រមិនឱ្យបើក ឬដាក់វិនដូនៅលើអេក្រង់របស់អ្នក</translation>
+<translation id="3089064280130434511">ទប់ស្កាត់គេហទំព័រមិនឱ្យបើក និងដាក់វិនដូនៅលើអេក្រង់របស់អ្នក</translation>
 <translation id="3089137131053189723">បានសម្អាត​ការស្វែងរក</translation>
 <translation id="3090819949319990166">មិនអាចចម្លងឯកសារ crx ខាងក្រៅទៅ <ph name="TEMP_CRX_FILE" /> ទេ។</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" ត្រូវបានភ្ជាប់</translation>
@@ -3425,7 +3424,6 @@
 <translation id="5430931332414098647">ការ​ភ្ជាប់​ភ្លាមៗ</translation>
 <translation id="5431318178759467895">ពណ៌</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="5432996274932278848">ស្វែងរក​ឧបករណ៍ កម្មវិធី និងបណ្ដាញរបស់អ្នក។ សូមប្រើ​គ្រាប់ចុច​ព្រួញដើម្បីរុករក​កម្មវិធី​របស់អ្នក។</translation>
 <translation id="543338862236136125">កែពាក្យ​សម្ងាត់</translation>
 <translation id="5434065355175441495">ការអ៊ីនគ្រីប PKCS #1 RSA</translation>
 <translation id="5436492226391861498">កំពុងរង់ចាំបណ្តាញផ្លូវប្រូកស៊ី...</translation>
@@ -4349,7 +4347,7 @@
 <translation id="662080504995468778">នៅដដែល</translation>
 <translation id="6621715389962683284">មិនអាច​បង្កើត​ការតភ្ជាប់​បណ្តាញ​បានទេ។</translation>
 <translation id="6622980291894852883">បន្តការរារាំងរូបភាព</translation>
-<translation id="6624535038674360844"><ph name="FILE_NAME" /> មានខ្លឹមសាររសើប ឬគ្រោះថ្នាក់។ សូមស្នើឱ្យម្ចាស់ឯកសារ​នេះកែខ្លឹមសារ។</translation>
+<translation id="6624535038674360844"><ph name="FILE_NAME" /> មានខ្លឹមសាររសើប ឬគ្រោះថ្នាក់។ សូមស្នើឱ្យម្ចាស់ឯកសារ​នេះធ្វើការកែប្រែ។</translation>
 <translation id="6624687053722465643">ភាពផ្អែម</translation>
 <translation id="6628328486509726751">បានទាញឡើង <ph name="WEBRTC_LOG_UPLOAD_TIME" /></translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> ចង់ចូលប្រើវិញ្ញាបនបត្រជាអចិន្ត្រៃយ៍ដើម្បីផ្ទៀងផ្ទាត់ដោយខ្លួនវាផ្ទាល់ជំនួសឲ្យអ្នក។</translation>
@@ -5094,7 +5092,6 @@
 <translation id="7606992457248886637">អាជ្ញាធរ</translation>
 <translation id="7607002721634913082">បានផ្អាក</translation>
 <translation id="7609148976235050828">សូមភ្ជាប់​អ៊ីនធឺណិត រួច​ព្យាយាម​ម្តងទៀត។</translation>
-<translation id="7611008212562900400">ស្វែងរក​ឧបករណ៍របស់អ្នក កម្មវិធី បណ្តាញ...</translation>
 <translation id="7614260613810441905">សួរ​នៅពេល​គេហទំព័រចង់កែឯកសារ ឬថត​នៅលើឧបករណ៍​របស់អ្នក (បានណែនាំ)</translation>
 <translation id="761530003705945209">បម្រុង​ទុក​ទៅ​ក្នុង Google ថាស។ ងាយស្រួល​ក្នុងការ​ស្ដារ​ទិន្នន័យ​របស់​អ្នក ឬ​ប្ដូរ​ឧបករណ៍បានគ្រប់ពេល។ ការបម្រុង​ទុក​របស់អ្នក​រួមបញ្ចូល​ទាំង​ទិន្នន័យ​កម្មវិធី។ ការបម្រុងទុក​របស់អ្នក​ត្រូវបាន​បង្ហោះ​ទៅ Google និង​អ៊ីនគ្រីប​ដោយប្រើ​ពាក្យសម្ងាត់​គណនី Google របស់អ្នក។</translation>
 <translation id="7616214729753637086">កំពុង​ចុះឈ្មោះ​ឧបករណ៍...</translation>

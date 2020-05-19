@@ -427,9 +427,13 @@
       }
     }]
   },
-  "additionalProperty": {
+  "additionalProperty": [{
     "@type": "PropertyValue",
     "name": "associatedOrigin",
     "value": ["https://www.github.com"]
-  }
+  }, {
+    "@type": "PropertyValue",
+    "name": "cookieNameFilter",
+    "value": "TEST"
+  }]
 }

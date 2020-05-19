@@ -128,10 +128,10 @@ class ImeWindow : public content::NotificationObserver,
   Mode mode_;
 
   // The window title which is shown in the non client view.
-  std::string title_;
+  const std::string title_;
 
   // The window icon which is shown in the non client view.
-  std::unique_ptr<extensions::IconImage> icon_;
+  const std::unique_ptr<extensions::IconImage> icon_;
 
   // The web contents for the IME window page web UI.
   std::unique_ptr<content::WebContents> web_contents_;

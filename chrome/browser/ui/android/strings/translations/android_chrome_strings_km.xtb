@@ -466,6 +466,7 @@
 <translation id="488187801263602086">ប្តូរ​ឈ្មោះ​ឯកសារ</translation>
 <translation id="4882831918239250449">គ្រប់គ្រង​របៀបដែល​ប្រវត្តិរុករក​របស់អ្នក​ត្រូវបាន​ប្រើ​ ដើម្បីកំណត់ឱ្យ​ការស្វែងរក​ ការផ្សាយពាណិជ្ជកម្ម និងអ្វី​ៗ​ជាច្រើន​ទៀតស្របនឹង​អ្នក</translation>
 <translation id="4885273946141277891">លេខមិនគាំទ្ររបស់ Chrome instances។</translation>
+<translation id="4908869848243824489">Discover by Google</translation>
 <translation id="4910889077668685004">កម្មវិធី​បង់ប្រាក់</translation>
 <translation id="4913161338056004800">កំណត់​ស្ថិតិ​ឡើងវិញ</translation>
 <translation id="4913169188695071480">បញ្ឃប់ការផ្ទុក​ឡើងវិញ</translation>
@@ -481,7 +482,6 @@
 <translation id="4988210275050210843">កំពុង​ទាញយក​ឯកសារ (<ph name="MEGABYTES" />)។</translation>
 <translation id="4988526792673242964">ទំព័រ</translation>
 <translation id="4994033804516042629">រកមិនឃើញ​ទំនាក់ទំនង​ទេ</translation>
-<translation id="4996978546172906250">ចែករំលែកតាមរយៈ</translation>
 <translation id="5004416275253351869">ការគ្រប់គ្រងសកម្មភាព Google</translation>
 <translation id="5005498671520578047">ថតចម្លងពាក្យសម្ងាត់</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> ចង់ភ្ជាប់</translation>
@@ -643,6 +643,7 @@
 <translation id="6381421346744604172">ធ្វើឱ្យគេហទំព័រប្រែជាងងឹត</translation>
 <translation id="6395288395575013217">តំណ</translation>
 <translation id="6397616442223433927">មានអ៊ីនធឺណិត​វិញ</translation>
+<translation id="6398765197997659313">ចាកចេញពីអេក្រង់ពេញ</translation>
 <translation id="6404511346730675251">កែប្រែចំណាំ</translation>
 <translation id="6406506848690869874">សមកាលកម្ម</translation>
 <translation id="6410973561433500075">ចូល AR ពី <ph name="DOMAIN" /> ឬ?</translation>
@@ -702,6 +703,7 @@
 <translation id="6846298663435243399">កំពុងដំណើរការ...</translation>
 <translation id="6850409657436465440">ការទាញយក​របស់អ្នក​កំពុង​ដំណើរការ​នៅឡើយ</translation>
 <translation id="6850830437481525139">បានបិទផ្ទាំង <ph name="TAB_COUNT" /></translation>
+<translation id="685850645784703949">Discover by Google - បិទ</translation>
 <translation id="6864459304226931083">ទាញយករូបភាព</translation>
 <translation id="6865313869410766144">បំពេញទិន្នន័យបែបបទស្វ័យប្រវត្តិ</translation>
 <translation id="6884306546558072722">បន្តរុករក​ដោយគ្មាន​អ៊ីនធឺណិត</translation>
@@ -904,6 +906,7 @@
 <translation id="8514577642972634246">ចូលរបៀបអនាមិក</translation>
 <translation id="8516012719330875537">កម្មវិធីកែ​រូបភាព</translation>
 <translation id="8523928698583292556">លុបពាក្យសម្ងាត់ដែលបានផ្ទុក</translation>
+<translation id="8525306231823319788">ពេញអេក្រង់</translation>
 <translation id="854522910157234410">បើកទំព័រនេះ</translation>
 <translation id="8558485628462305855">ដើម្បី​មើលខ្លឹមសារ AR សូមដំឡើងជំនាន់ ARCore</translation>
 <translation id="8559990750235505898">ផ្តល់ជូន​ការ​បកប្រែ​ទំព័រ​ជាភាសា​ផ្សេងទៀត</translation>

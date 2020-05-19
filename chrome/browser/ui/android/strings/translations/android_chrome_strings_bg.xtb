@@ -482,7 +482,6 @@
 <translation id="4988210275050210843">Изтегля се файл (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Страници</translation>
 <translation id="4994033804516042629">Няма намерени контакти</translation>
-<translation id="4996978546172906250">Споделяне чрез</translation>
 <translation id="5004416275253351869">Контроли за активността в Google</translation>
 <translation id="5005498671520578047">Копиране на паролата</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> иска да се свърже</translation>
@@ -644,6 +643,7 @@
 <translation id="6381421346744604172">Потъмняване на уебсайтовете</translation>
 <translation id="6395288395575013217">ВРЪЗКА</translation>
 <translation id="6397616442223433927">Отново онлайн</translation>
+<translation id="6398765197997659313">Изход от цял екран</translation>
 <translation id="6404511346730675251">Редактиране на отметката</translation>
 <translation id="6406506848690869874">Синхронизиранe</translation>
 <translation id="6410973561433500075">Да се стартира ли AR от <ph name="DOMAIN" />?</translation>
@@ -906,6 +906,7 @@
 <translation id="8514577642972634246">Влизане в режим „инкогнито“</translation>
 <translation id="8516012719330875537">Редактор на изображения</translation>
 <translation id="8523928698583292556">Изтриване на съхранената парола</translation>
+<translation id="8525306231823319788">На цял екран</translation>
 <translation id="854522910157234410">Отваряне на тази страница</translation>
 <translation id="8558485628462305855">За да гледате съдържание с обогатена реалност, актуализирайте ARCore</translation>
 <translation id="8559990750235505898">Извеждане на предложения за превод на страниците, написани на други езици</translation>

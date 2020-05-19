@@ -1,5 +1,7 @@
 <html>
     <head>
+        <script src="../resources/testharness.js"></script>
+        <script src="../resources/testharnessreport.js"></script>
         <script src="media-file.js"></script>
         <script src="video-paint-test.js"></script>
         <style>
@@ -13,8 +15,13 @@
         &nbsp;<video style="transform:skew(20deg)"></video><br>
         <script>
             setSrcByTagName('video', 'content/test.ogv');
-            document.body.removeChild(document.getElementById('one')); document.body.offsetLeft;
-            init();
+            document.body.removeChild(document.getElementById('one'));
+            document.body.offsetLeft;
+            async_test(t => {
+                waitForMultipleEvents("canplaythrough", 2, () => {
+                    t.done();
+                });
+            });
         </script>
     </body>
 </html>

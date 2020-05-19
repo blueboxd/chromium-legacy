@@ -150,8 +150,20 @@ void CallStackProfileBuilder::OnSampleCompleted(
     }
 
     // Write CallStackProfile::Location protobuf message.
+    uintptr_t instruction_pointer = frame.instruction_pointer;
+#if defined(OS_IOS)
+#if !TARGET_IPHONE_SIMULATOR
+    // Some iOS devices enable pointer authentication, which uses the
+    // higher-order bits of pointers to store a signature. Strip that signature
+    // off before computing the module_offset.
+    // TODO(crbug.com/1084272): Use the ptrauth_strip() macro once it is
+    // available.
+    instruction_pointer &= 0xFFFFFFFFF;
+#endif  // !TARGET_IPHONE_SIMULATOR
+#endif  // defined(OS_IOS)
+
     ptrdiff_t module_offset =
-        reinterpret_cast<const char*>(frame.instruction_pointer) -
+        reinterpret_cast<const char*>(instruction_pointer) -
         reinterpret_cast<const char*>(frame.module->GetBaseAddress());
     DCHECK_GE(module_offset, 0);
     location->set_address(static_cast<uint64_t>(module_offset));

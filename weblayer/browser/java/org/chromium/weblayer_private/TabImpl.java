@@ -18,6 +18,8 @@ import android.view.ViewStructure;
 import android.view.autofill.AutofillValue;
 import android.webkit.ValueCallback;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -365,7 +367,9 @@ public final class TabImpl extends ITab.Stub {
         return mWebContents;
     }
 
-    long getNativeTab() {
+    // Public for tests.
+    @VisibleForTesting
+    public long getNativeTab() {
         return mNativeTab;
     }
 

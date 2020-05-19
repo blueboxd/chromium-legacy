@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/animation/css/css_animation_update.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_pending_substitution_value.h"
+#include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
@@ -224,6 +225,38 @@ class CORE_EXPORT StyleResolverState {
   // stored in the MatchedPropertiesCache.
   const CSSValue& ResolveLightDarkPair(const CSSProperty&, const CSSValue&);
 
+  // Mark the ComputedStyle as possibly dependent on the specified property.
+  //
+  // A "dependency" in this context means that one or more of the computed
+  // values held by the ComputedStyle depends on the computed value of the
+  // parent ComputedStyle.
+  //
+  // For example, a declaration such as background-color:var(--x) would incur
+  // a dependency on --x.
+  void MarkDependency(const CSSProperty&);
+
+  // Returns the set of all properties seen by MarkDependency.
+  //
+  // Note that this set might be larger than the actual set of dependencies,
+  // as we do some degree of over-marking to keep the implementation simple.
+  //
+  // For example, we mark all custom properties referenced as dependencies, even
+  // though the ComputedStyle itself may define a value for some or all of those
+  // custom properties. In the following example, both --x and --y will be
+  // added to this set, even though only --y is a true dependency:
+  //
+  //  div {
+  //    --x: 10px;
+  //    margin: var(--x) (--y);
+  //  }
+  //
+  const HashSet<CSSPropertyName>& Dependencies() const { return dependencies_; }
+
+  // True if there's a dependency without the kComputedValueComparable flag.
+  bool HasIncomparableDependency() const {
+    return has_incomparable_dependency_;
+  }
+
  private:
   enum class AnimatingElementType { kElement, kPseudoElement };
 
@@ -275,6 +308,13 @@ class CORE_EXPORT StyleResolverState {
   ElementStyleResources element_style_resources_;
   Element* pseudo_element_;
   AnimatingElementType animating_element_type_;
+
+  // Properties depended on by the ComputedStyle. This is known after the
+  // cascade is applied.
+  HashSet<CSSPropertyName> dependencies_;
+  // True if there's an entry in 'dependencies_' which does not have the
+  // CSSProperty::kComputedValueComparable flag set.
+  bool has_incomparable_dependency_ = false;
 
   mutable HeapHashMap<
       Member<const cssvalue::CSSPendingSubstitutionValue>,

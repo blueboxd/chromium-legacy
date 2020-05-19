@@ -64,7 +64,8 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
       const std::vector<media_feeds::mojom::MediaImagePtr>& logos,
       const media_feeds::mojom::UserIdentifier* user_identifier,
       const std::string& display_name,
-      const int item_safe_count);
+      const int item_safe_count,
+      const std::string& cookie_name_filter);
 
   // Returns the feed rows in the database.
   std::vector<media_feeds::mojom::MediaFeedPtr> GetRows(
@@ -93,6 +94,9 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
 
   // Clears the reset reason for a feed and returns a boolean if it was saved.
   bool ClearResetReason(const int64_t feed_id);
+
+  // Returns the cookie name filter for |feed_id| or an empty string.
+  std::string GetCookieNameFilter(const int64_t feed_id);
 };
 
 }  // namespace media_history

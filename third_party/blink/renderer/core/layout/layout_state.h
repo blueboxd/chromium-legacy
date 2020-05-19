@@ -91,7 +91,11 @@ class LayoutState {
     height_offset_for_table_footers_ = offset;
   }
 
-  const AtomicString& PageName() const { return page_name_; }
+  // The input page name is the name specified by the element itself, if any. If
+  // the element doesn't specify one, but an ancestor does, return that.
+  // Otherwise it's an empty string. This is the page name that will be used on
+  // all descendants if none of them override it.
+  const AtomicString& InputPageName() const { return input_page_name_; }
 
   const LayoutSize& PaginationOffset() const { return pagination_offset_; }
   bool ContainingBlockLogicalWidthChanged() const {
@@ -131,7 +135,7 @@ class LayoutState {
   // paginated layout.
   LayoutUnit height_offset_for_table_footers_;
 
-  AtomicString page_name_;
+  AtomicString input_page_name_;
 
   LayoutObject& layout_object_;
   DISALLOW_COPY_AND_ASSIGN(LayoutState);

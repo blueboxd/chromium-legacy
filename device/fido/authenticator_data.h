@@ -38,14 +38,22 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorData {
   //  The attested credential |data| must be specified iff |flags| have
   //  kAttestation set; and |extensions| must be specified iff |flags| have
   //  kExtensionDataIncluded set.
-  AuthenticatorData(
-      base::span<const uint8_t, kRpIdHashLength> application_parameter,
-      uint8_t flags,
-      base::span<const uint8_t, kSignCounterLength> counter,
-      base::Optional<AttestedCredentialData> data,
-      base::Optional<cbor::Value> extensions = base::nullopt);
+  AuthenticatorData(base::span<const uint8_t, kRpIdHashLength> rp_id_hash,
+                    uint8_t flags,
+                    base::span<const uint8_t, kSignCounterLength> sign_counter,
+                    base::Optional<AttestedCredentialData> data,
+                    base::Optional<cbor::Value> extensions = base::nullopt);
 
-  // Moveable.
+  // Creates an AuthenticatorData with flags and signature counter encoded
+  // according to the supplied arguments.
+  AuthenticatorData(
+      base::span<const uint8_t, kRpIdHashLength> rp_id_hash,
+      bool user_present,
+      bool user_verified,
+      uint32_t sign_counter,
+      base::Optional<AttestedCredentialData> attested_credential_data,
+      base::Optional<cbor::Value> extensions);
+
   AuthenticatorData(AuthenticatorData&& other);
   AuthenticatorData& operator=(AuthenticatorData&& other);
 

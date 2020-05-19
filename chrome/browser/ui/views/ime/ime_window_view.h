@@ -61,12 +61,6 @@ class ImeWindowView : public ImeNativeWindow,
   // views::WidgetDelegateView:
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
-  bool CanActivate() const override;
-  bool CanResize() const override;
-  bool CanMaximize() const override;
-  bool CanMinimize() const override;
-  base::string16 GetWindowTitle() const override;
-  gfx::ImageSkia GetWindowIcon() override;
   void DeleteDelegate() override;
 
   ImeWindowFrameView* GetFrameView() const;

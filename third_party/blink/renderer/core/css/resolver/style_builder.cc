@@ -98,8 +98,8 @@ void StyleBuilder::ApplyProperty(const CSSProperty& property,
   // isInherit => (state.parentNode() && state.parentStyle())
   DCHECK(!is_inherit || (state.ParentNode() && state.ParentStyle()));
 
-  if (is_inherit && !state.ParentStyle()->HasExplicitlyInheritedProperties() &&
-      !is_inherited) {
+  if (is_inherit && !is_inherited) {
+    state.MarkDependency(property);
     state.ParentStyle()->SetHasExplicitlyInheritedProperties();
   } else if (value.IsUnsetValue()) {
     DCHECK(!is_inherit && !is_initial);

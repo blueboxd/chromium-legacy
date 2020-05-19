@@ -4,6 +4,7 @@
 <translation id="1028699632127661925">Отправка на устройство "<ph name="DEVICE_NAME" />"…</translation>
 <translation id="111910763555783249">Настройки уведомлений</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 день назад}one{# день назад}few{# дня назад}many{# дней назад}other{# дня назад}}</translation>
+<translation id="1145532888383813076">Введите запрос для поиска на устройстве, в приложениях и Интернете.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{минуту назад}one{# минуту назад}few{# минуты назад}many{# минут назад}other{# минуты назад}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 мин.}one{# мин.}few{# мин.}many{# мин.}other{# мин.}}</translation>
 <translation id="1181037720776840403">Удалить</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">включите синхронизацию</translation>
 <translation id="5329858601952122676">&amp;Удалить</translation>
 <translation id="5395308026110844773">Вы поместили ярлык приложения "<ph name="DRAGGED_APP_NAME" />" над ярлыком приложения "<ph name="IN_PLACE_APP" />". Чтобы создать папку, отпустите палец.</translation>
+<translation id="5432996274932278848">Поиск на устройстве, в приложениях и Интернете. Чтобы перемещаться между приложениями, используйте клавиши со стрелками.</translation>
 <translation id="5463830097259460683">Эмодзи и символы</translation>
 <translation id="5476505524087279545">снять галочку</translation>
 <translation id="547979256943495781">Временное хранилище расположено справа</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">Удалить этот запрос из истории поиска?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ТБ</translation>
 <translation id="7507604095951736240">Эмодзи</translation>
+<translation id="7611008212562900400">Поиск на устройстве, в приложениях и в Интернете…</translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="7814458197256864873">&amp;Копировать</translation>

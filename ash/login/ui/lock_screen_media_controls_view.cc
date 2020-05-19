@@ -39,6 +39,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace ash {
 
@@ -85,9 +86,6 @@ constexpr base::TimeDelta kAnimationDuration =
 // How long to wait (in milliseconds) for a new media session to begin.
 constexpr base::TimeDelta kNextMediaDelay =
     base::TimeDelta::FromMilliseconds(2500);
-
-constexpr const char kLockScreenMediaControlsViewName[] =
-    "LockScreenMediaControlsView";
 
 // Scales |size| to fit |view_size| while preserving proportions.
 gfx::Size ScaleSizeToFitView(const gfx::Size& size,
@@ -209,9 +207,7 @@ LockScreenMediaControlsView::Callbacks::~Callbacks() = default;
 
 LockScreenMediaControlsView::LockScreenMediaControlsView(
     const Callbacks& callbacks)
-    : hide_controls_timer_(new base::OneShotTimer()),
-      hide_artwork_timer_(new base::OneShotTimer()),
-      media_controls_enabled_(callbacks.media_controls_enabled),
+    : media_controls_enabled_(callbacks.media_controls_enabled),
       hide_media_controls_(callbacks.hide_media_controls),
       show_media_controls_(callbacks.show_media_controls) {
   DCHECK(callbacks.media_controls_enabled);
@@ -437,10 +433,6 @@ LockScreenMediaControlsView::~LockScreenMediaControlsView() {
   }
 
   base::PowerMonitor::RemoveObserver(this);
-}
-
-const char* LockScreenMediaControlsView::GetClassName() const {
-  return kLockScreenMediaControlsViewName;
 }
 
 gfx::Size LockScreenMediaControlsView::CalculatePreferredSize() const {
@@ -872,5 +864,9 @@ void LockScreenMediaControlsView::RunResetControlsAnimation() {
   contents_view_->layer()->SetTransform(gfx::Transform());
   contents_view_->layer()->SetOpacity(1);
 }
+
+BEGIN_METADATA(LockScreenMediaControlsView)
+METADATA_PARENT_CLASS(views::View)
+END_METADATA()
 
 }  // namespace ash

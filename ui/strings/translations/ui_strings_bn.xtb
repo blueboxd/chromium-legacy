@@ -4,6 +4,7 @@
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" />-এ পাঠানো হচ্ছে...</translation>
 <translation id="111910763555783249">বিজ্ঞপ্তি সেটিংস</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{১ দিন পূর্বে}one{# দিন পূর্বে}other{# দিন পূর্বে}}</translation>
+<translation id="1145532888383813076">আপনার ডিভাইস, অ্যাপ এবং ওয়েব সার্চ করুন</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{১ মিনিট আগে}one{# মিনিট আগে}other{# মিনিট আগে}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{১ মিনিট}one{# মিনিট}other{# মিনিট}}</translation>
 <translation id="1181037720776840403">সরান</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">সিঙ্ক চালু করুন</translation>
 <translation id="5329858601952122676">&amp;মুছুন</translation>
 <translation id="5395308026110844773">ফোল্ডার তৈরি করতে <ph name="IN_PLACE_APP" />-এর উপরে <ph name="DRAGGED_APP_NAME" /> টেনে এনে ছেড়ে দিন।</translation>
+<translation id="5432996274932278848">আপনার ডিভাইস, অ্যাপ এবং ওয়েব সার্চ করুন। আপনার অ্যাপগুলি নেভিগেট করতে তীর কী ব্যবহার করুন।</translation>
 <translation id="5463830097259460683">ইমোজি ও প্রতীকগুলি</translation>
 <translation id="5476505524087279545">আনচেক</translation>
 <translation id="547979256943495781">শেল্ফ ডান দিকে দেখানো হচ্ছে</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">এই সার্চ কি ইতিহাস থেকে মুছে দিতে চান?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">ইমোজি</translation>
+<translation id="7611008212562900400">আপনার ডিভাইস, অ্যাপ, ওয়েব খুঁজুন...</translation>
 <translation id="7658239707568436148">বাতিল</translation>
 <translation id="7781829728241885113">গতকাল</translation>
 <translation id="7814458197256864873">&amp;কপি করুন</translation>

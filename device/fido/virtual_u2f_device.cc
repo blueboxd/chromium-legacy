@@ -143,7 +143,7 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
   // Create key to register.
   // Note: Non-deterministic, you need to mock this out if you rely on
   // deterministic behavior.
-  std::unique_ptr<PrivateKey> private_key(FreshP256Key());
+  std::unique_ptr<PrivateKey> private_key(PrivateKey::FreshP256Key());
   const std::vector<uint8_t> x962 = private_key->GetX962PublicKey();
 
   // Our key handles are simple hashes of the public key.

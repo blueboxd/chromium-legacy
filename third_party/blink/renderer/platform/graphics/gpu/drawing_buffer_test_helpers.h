@@ -92,6 +92,8 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   void BindTexture(GLenum target, GLuint texture) override {
     if (target == GL_TEXTURE_2D)
       state_.active_texture2d_binding = texture;
+    if (target == GL_TEXTURE_CUBE_MAP)
+      state_.active_texturecubemap_binding = texture;
     bound_textures_.insert(target, texture);
   }
 
@@ -318,6 +320,10 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   void DrawingBufferClientRestoreTexture2DBinding() override {
     state_.active_texture2d_binding = saved_state_.active_texture2d_binding;
   }
+  void DrawingBufferClientRestoreTextureCubeMapBinding() override {
+    state_.active_texturecubemap_binding =
+        saved_state_.active_texturecubemap_binding;
+  }
   void DrawingBufferClientRestoreRenderbufferBinding() override {
     state_.renderbuffer_binding = saved_state_.renderbuffer_binding;
   }
@@ -367,6 +373,8 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
     EXPECT_EQ(state_.pack_alignment, saved_state_.pack_alignment);
     EXPECT_EQ(state_.active_texture2d_binding,
               saved_state_.active_texture2d_binding);
+    EXPECT_EQ(state_.active_texturecubemap_binding,
+              saved_state_.active_texturecubemap_binding);
     EXPECT_EQ(state_.renderbuffer_binding, saved_state_.renderbuffer_binding);
     EXPECT_EQ(state_.draw_framebuffer_binding,
               saved_state_.draw_framebuffer_binding);
@@ -408,6 +416,8 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
 
     // The bound 2D texture for the active texture unit.
     GLuint active_texture2d_binding = 0;
+    // The bound cube map texture for the active texture unit.
+    GLuint active_texturecubemap_binding = 0;
     GLuint renderbuffer_binding = 0;
     GLuint draw_framebuffer_binding = 0;
     GLuint read_framebuffer_binding = 0;

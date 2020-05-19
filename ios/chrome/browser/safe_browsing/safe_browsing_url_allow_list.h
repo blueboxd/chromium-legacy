@@ -8,6 +8,8 @@
 #include <map>
 #include <set>
 
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #import "ios/web/public/web_state_user_data.h"
 #include "url/gurl.h"
@@ -19,10 +21,38 @@
 class SafeBrowsingUrlAllowList
     : public web::WebStateUserData<SafeBrowsingUrlAllowList> {
  public:
-  // SafeBrowsingUrlAllowList is move-only.
-  SafeBrowsingUrlAllowList(SafeBrowsingUrlAllowList&& other);
-  SafeBrowsingUrlAllowList& operator=(SafeBrowsingUrlAllowList&& other);
+  // Enum describing the policy for navigations with a particular threat type to
+  // a URL.
+  enum class Policy : short { kDisallowed, kPending, kAllowed };
+
+  // Observer class for the allow list.
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called when the policy for navigations to |url| with |threat_type| is
+    // updated to |policy|.
+    virtual void ThreatPolicyUpdated(SafeBrowsingUrlAllowList* allow_list,
+                                     const GURL& url,
+                                     safe_browsing::SBThreatType threat_type,
+                                     Policy policy) {}
+
+    // Called when the policies for navigations to |url| with the threats in
+    // |threat_types| are updated to |policy|.
+    virtual void ThreatPolicyBatchUpdated(
+        SafeBrowsingUrlAllowList* allow_list,
+        const GURL& url,
+        const std::set<safe_browsing::SBThreatType>& threat_type,
+        Policy policy) {}
+
+    // Called when |allow_list| is about to be destroyed.
+    virtual void SafeBrowsingAllowListDestroyed(
+        SafeBrowsingUrlAllowList* allow_list) {}
+  };
+
   ~SafeBrowsingUrlAllowList() override;
+
+  // Adds and removes observers.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Returns whether unsafe navigations to |url| are allowed.  If |threat_types|
   // is non-null, it is populated with the allowed threat types.
@@ -75,10 +105,27 @@ class SafeBrowsingUrlAllowList
   const UnsafeNavigationDecisions& GetUnsafeNavigationDecisions(
       const GURL& url) const;
 
+  // Setter for the policy for navigations to |url| with |threat_type|.
+  void SetThreatPolicy(const GURL& url,
+                       safe_browsing::SBThreatType threat_type,
+                       Policy policy);
+
+  // Returns whether the list contains any |policy| decisions for |url|.
+  // Populates |threat_types| with found threats if provided.
+  bool ContainsThreats(
+      const GURL& url,
+      Policy policy,
+      std::set<safe_browsing::SBThreatType>* threat_types) const;
+
+  // Disallows all threats that for |url| that are currently allowed under
+  // |policy|.
+  void RevertPolicy(const GURL& url, Policy policy);
+
   // The WebState whose allowed navigations are recorded by this list.
   web::WebState* web_state_ = nullptr;
   // Map storing the whitelist decisions for each URL.
   std::map<GURL, UnsafeNavigationDecisions> decisions_;
+  base::ObserverList<Observer, /*check_empty=*/true> observers_;
 };
 
 #endif  // IOS_CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_URL_ALLOW_LIST_H_

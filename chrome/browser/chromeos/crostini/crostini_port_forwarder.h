@@ -110,6 +110,7 @@ class CrostiniPortForwarder : public KeyedService {
   size_t GetNumberOfForwardedPortsForTesting();
   base::Optional<base::Value> ReadPortPreferenceForTesting(
       const PortRuleKey& key);
+  void ActiveNetworksChanged(const std::string& interface);
 
   static CrostiniPortForwarder* GetForProfile(Profile* profile);
 
@@ -129,9 +130,9 @@ class CrostiniPortForwarder : public KeyedService {
   bool RemovePortPreference(const PortRuleKey& key);
   base::Optional<base::Value> ReadPortPreference(const PortRuleKey& key);
 
-  void OnAddOrActivatePortCompleted(ResultCallback result_callback,
-                                    PortRuleKey key,
-                                    bool success);
+  void OnActivatePortCompleted(ResultCallback result_callback,
+                               PortRuleKey key,
+                               bool success);
   void OnRemoveOrDeactivatePortCompleted(ResultCallback result_callback,
                                          PortRuleKey key,
                                          bool success);
@@ -141,11 +142,15 @@ class CrostiniPortForwarder : public KeyedService {
   void TryActivatePort(const PortRuleKey& key,
                        const ContainerId& container_id,
                        base::OnceCallback<void(bool)> result_callback);
+  void UpdateActivePortInterfaces();
 
   // For each port rule (protocol, port, interface), keep track of the fd which
   // requested it so we can release it on removal / deactivate.
   std::unordered_map<PortRuleKey, base::ScopedFD, PortRuleKeyHasher>
       forwarded_ports_;
+
+  // Current interface to forward ports on.
+  std::string current_interface_;
 
   base::ObserverList<Observer> observers_;
 

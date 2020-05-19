@@ -77,6 +77,15 @@ class IsolatedOriginTestBase : public ContentBrowserTest {
     return static_cast<WebContentsImpl*>(shell()->web_contents());
   }
 
+  // Helper function that computes an appropriate origin lock that corresponds
+  // to |url|'s origin (without converting to sites, handling effective URLs,
+  // etc). This must be equivalent to what
+  // SiteInstanceImpl::DetermineProcessLockURL() would return
+  // for strict origin isolation.
+  GURL GetStrictOriginLock(const GURL& url) {
+    return url::Origin::Create(url).GetURL();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(IsolatedOriginTestBase);
 };
@@ -309,6 +318,8 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInOriginPolicyTest,
                                        "foo.com(foo.com)"));
   GURL isolated_suborigin_url(
       https_server()->GetURL("isolated.foo.com", "/isolate_origin"));
+  auto expected_isolated_suborigin_lock =
+      GetStrictOriginLock(isolated_suborigin_url);
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
   EXPECT_EQ(2u, shell()->web_contents()->GetAllFrames().size());
 
@@ -321,13 +332,17 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInOriginPolicyTest,
                   ->GetSiteInstance()
                   ->RequiresDedicatedProcess());
   GURL expected_isolated_sub_origin =
-      https_server()->GetURL("isolated.foo.com", "/");
+      url::Origin::Create(isolated_suborigin_url).GetURL();
   EXPECT_EQ(
       expected_isolated_sub_origin,
       child_frame_node->current_frame_host()->GetSiteInstance()->GetSiteURL());
-  EXPECT_EQ(expected_isolated_sub_origin,
-            ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
-                child_frame_node->current_frame_host()->GetProcess()->GetID()));
+  EXPECT_EQ(
+      expected_isolated_suborigin_lock,
+      child_frame_node->current_frame_host()->GetSiteInstance()->lock_url());
+  EXPECT_EQ(
+      child_frame_node->current_frame_host()->GetSiteInstance()->lock_url(),
+      ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+          child_frame_node->current_frame_host()->GetProcess()->GetID()));
 }
 
 // In this test the sub-origin isn't isolated because the origin policy doesn't
@@ -962,6 +977,12 @@ class StrictOriginIsolationTest : public IsolatedOriginTestBase {
     embedded_test_server()->StartAcceptingConnections();
   }
 
+  // Helper function that creates an http URL for |host| that includes the test
+  // server's port and returns the strict origin lock for that URL.
+  GURL GetStrictOriginLockForHost(const std::string& host) {
+    return GetStrictOriginLock(embedded_test_server()->GetURL(host, "/"));
+  }
+
  private:
   base::test::ScopedFeatureList feature_list_;
 
@@ -994,23 +1015,22 @@ IN_PROC_BROWSER_TEST_F(StrictOriginIsolationTest, SubframesAreIsolated) {
   EXPECT_EQ(main_frame_id, child_frame2_id);
   EXPECT_EQ(main_frame_id, grandchild_frame0_id);
 
-  std::string port_string =
-      base::StringPrintf(":%u", embedded_test_server()->port());
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  EXPECT_EQ(GURL("http://foo.com" + port_string),
+  EXPECT_EQ(GetStrictOriginLockForHost("foo.com"),
             policy->GetOriginLock(main_frame_id));
-  EXPECT_EQ(GURL("http://mail.foo.com" + port_string),
+  EXPECT_EQ(GetStrictOriginLockForHost("mail.foo.com"),
             policy->GetOriginLock(child_frame0_id));
-  EXPECT_EQ(GURL("http://bar.foo.com" + port_string),
+  EXPECT_EQ(GetStrictOriginLockForHost("bar.foo.com"),
             policy->GetOriginLock(child_frame1_id));
-  EXPECT_EQ(GURL("http://foo.com" + port_string),
+  EXPECT_EQ(GetStrictOriginLockForHost("foo.com"),
             policy->GetOriginLock(child_frame2_id));
-  EXPECT_EQ(GURL("http://foo.com" + port_string),
+  EXPECT_EQ(GetStrictOriginLockForHost("foo.com"),
             policy->GetOriginLock(grandchild_frame0_id));
 
   // Navigate child_frame1 to a new origin ... it should get its own process.
   FrameTreeNode* child_frame2_node = root->child_at(2);
   GURL foo_url(embedded_test_server()->GetURL("www.foo.com", "/title1.html"));
+  const auto expected_foo_lock = GetStrictOriginLock(foo_url);
   NavigateFrameToURL(child_frame2_node, foo_url);
   EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
             child_frame2_node->current_frame_host()->GetSiteInstance());
@@ -1019,28 +1039,32 @@ IN_PROC_BROWSER_TEST_F(StrictOriginIsolationTest, SubframesAreIsolated) {
   child_frame2 = root->child_at(2)->current_frame_host();
   EXPECT_NE(main_frame->GetProcess()->GetID(),
             child_frame2->GetProcess()->GetID());
-  EXPECT_EQ(GURL("http://www.foo.com" + port_string),
+  EXPECT_EQ(expected_foo_lock,
             policy->GetOriginLock(child_frame2->GetProcess()->GetID()));
 }
 
 IN_PROC_BROWSER_TEST_F(StrictOriginIsolationTest, MainframesAreIsolated) {
   GURL foo_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  const auto expected_foo_lock = GetStrictOriginLock(foo_url);
   EXPECT_TRUE(NavigateToURL(shell(), foo_url));
   EXPECT_EQ(1u, web_contents()->GetAllFrames().size());
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
 
   auto foo_process_id = web_contents()->GetMainFrame()->GetProcess()->GetID();
-  SiteInstance* foo_site_instance = shell()->web_contents()->GetSiteInstance();
-  EXPECT_EQ(foo_site_instance->GetSiteURL(),
+  SiteInstanceImpl* foo_site_instance = web_contents()->GetSiteInstance();
+  EXPECT_EQ(expected_foo_lock, foo_site_instance->lock_url());
+  EXPECT_EQ(foo_site_instance->lock_url(),
             policy->GetOriginLock(foo_process_id));
 
-  EXPECT_TRUE(NavigateToURL(
-      shell(), embedded_test_server()->GetURL("sub.foo.com", "/title1.html")));
+  GURL sub_foo_url =
+      embedded_test_server()->GetURL("sub.foo.com", "/title1.html");
+  const auto expected_sub_foo_lock = GetStrictOriginLock(sub_foo_url);
+  EXPECT_TRUE(NavigateToURL(shell(), sub_foo_url));
   auto sub_foo_process_id =
       shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
-  SiteInstance* sub_foo_site_instance =
-      shell()->web_contents()->GetSiteInstance();
-  EXPECT_EQ(sub_foo_site_instance->GetSiteURL(),
+  SiteInstanceImpl* sub_foo_site_instance = web_contents()->GetSiteInstance();
+  EXPECT_EQ(expected_sub_foo_lock, sub_foo_site_instance->lock_url());
+  EXPECT_EQ(sub_foo_site_instance->lock_url(),
             policy->GetOriginLock(sub_foo_process_id));
 
   EXPECT_NE(foo_process_id, sub_foo_process_id);
@@ -1050,16 +1074,22 @@ IN_PROC_BROWSER_TEST_F(StrictOriginIsolationTest, MainframesAreIsolated) {
   // Now verify with a renderer-initiated navigation.
   GURL another_foo_url(
       embedded_test_server()->GetURL("another.foo.com", "/title2.html"));
+  const auto expected_another_foo_lock = GetStrictOriginLock(another_foo_url);
   EXPECT_TRUE(NavigateToURLFromRenderer(shell(), another_foo_url));
   auto another_foo_process_id =
       shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
-  SiteInstance* another_foo_site_instance =
-      shell()->web_contents()->GetSiteInstance();
+  SiteInstanceImpl* another_foo_site_instance =
+      web_contents()->GetSiteInstance();
   EXPECT_NE(another_foo_process_id, sub_foo_process_id);
   EXPECT_NE(another_foo_process_id, foo_process_id);
-  EXPECT_EQ(another_foo_site_instance->GetSiteURL(),
+  EXPECT_EQ(expected_another_foo_lock, another_foo_site_instance->lock_url());
+  EXPECT_EQ(another_foo_site_instance->lock_url(),
             policy->GetOriginLock(another_foo_process_id));
   EXPECT_NE(another_foo_site_instance, foo_site_instance);
+
+  EXPECT_NE(expected_foo_lock, expected_sub_foo_lock);
+  EXPECT_NE(expected_sub_foo_lock, expected_another_foo_lock);
+  EXPECT_NE(expected_another_foo_lock, expected_foo_lock);
 }
 
 // Check that navigating a main frame from an non-isolated origin to an

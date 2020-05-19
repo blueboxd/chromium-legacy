@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "media/gpu/macros.h"
+#include "media/gpu/test/bitstream_helpers.h"
 #include "media/gpu/test/video.h"
 #include "media/gpu/test/video_encoder/video_encoder_client.h"
 

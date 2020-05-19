@@ -381,9 +381,11 @@ public class FeedLoggingBridge implements BasicLoggingApi {
                 break;
             case ActionType.LEARN_MORE:
                 NewTabPageUma.recordAction(NewTabPageUma.ACTION_CLICKED_LEARN_MORE);
+                FeedUma.recordFeedControlsAction(FeedUma.CONTROLS_ACTION_CLICKED_LEARN_MORE);
                 break;
             case ActionType.MANAGE_INTERESTS:
                 NewTabPageUma.recordAction(NewTabPageUma.ACTION_CLICKED_MANAGE_INTERESTS);
+                FeedUma.recordFeedControlsAction(FeedUma.CONTROLS_ACTION_CLICKED_MANAGE_INTERESTS);
                 break;
             case ActionType.DOWNLOAD:
             case ActionType.UNKNOWN:

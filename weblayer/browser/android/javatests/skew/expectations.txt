@@ -31,10 +31,6 @@
 # Fixed in https://crrev.com/c/2180022, see https://crbug.com/1077243.
 [ impl_lte_83 ] org.chromium.weblayer.test.FullscreenCallbackTest#testExitFullscreenWhenTabDestroyed [ Skip ]
 
-# https://crbug.com/1079489.
-[ impl_lte_83 ] org.chromium.weblayer.test.BottomControlsTest#testBasic [ Skip ]
-[ impl_lte_83 ] org.chromium.weblayer.test.BottomControlsTest#testNoTopControl [ Skip ]
-
 # https://crbug.com/1079491.
 [ impl_lte_83 ] org.chromium.weblayer.test.NavigationTest#testSetUserAgentString [ Skip ]
 

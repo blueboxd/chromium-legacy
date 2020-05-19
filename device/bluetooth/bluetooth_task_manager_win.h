@@ -186,6 +186,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
       const base::FilePath& service_path,
       const PBTH_LE_GATT_CHARACTERISTIC characteristic,
       const std::vector<uint8_t>& new_value,
+      ULONG flags,
       const HResultCallback& callback);
 
   // Post a task to register to receive value changed notifications from
@@ -319,6 +320,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
   void WriteGattCharacteristicValue(base::FilePath service_path,
                                     BTH_LE_GATT_CHARACTERISTIC characteristic,
                                     std::vector<uint8_t> new_value,
+                                    ULONG flags,
                                     const HResultCallback& callback);
   void RegisterGattCharacteristicValueChangedEvent(
       base::FilePath service_path,

@@ -32,8 +32,6 @@ const uint64_t kOtherTypeInputId = 90002;
 const char kPresetInputDeprecatedPrefKey[] = "10001 : 1";
 const char kPresetOutputDeprecatedPrefKey[] = "10004 : 0";
 
-const double kDefaultSoundLevel = 75.0;
-
 const struct {
   bool active;
   bool activate_by_user;
@@ -198,6 +196,11 @@ class AudioDevicesPrefHandlerTest : public testing::TestWithParam<bool> {
     audio_pref_handler_->SetMuteValue(device, value);
   }
 
+  double GetDefaultSoundLevelValue() {
+    return GetParam() ? AudioDevicesPrefHandler::kDefaultInputGainPercent
+                      : AudioDevicesPrefHandler::kDefaultOutputVolumePercent;
+  }
+
   scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
 
@@ -214,8 +217,8 @@ TEST_P(AudioDevicesPrefHandlerTest, TestDefaultValuesV1) {
 
   // TODO(rkc): Once the bug with default preferences is fixed, fix this test
   // also. http://crbug.com/442489
-  EXPECT_EQ(kDefaultSoundLevel, GetSoundLevelValue(device));
-  EXPECT_EQ(kDefaultSoundLevel, GetSoundLevelValue(secondary_device));
+  EXPECT_EQ(GetDefaultSoundLevelValue(), GetSoundLevelValue(device));
+  EXPECT_EQ(GetDefaultSoundLevelValue(), GetSoundLevelValue(secondary_device));
 
   EXPECT_FALSE(DeviceStateExists(device));
   EXPECT_FALSE(DeviceStateExists(secondary_device));
@@ -230,8 +233,8 @@ TEST_P(AudioDevicesPrefHandlerTest, TestDefaultValuesV2) {
 
   // TODO(rkc): Once the bug with default preferences is fixed, fix this test
   // also. http://crbug.com/442489
-  EXPECT_EQ(kDefaultSoundLevel, GetSoundLevelValue(device));
-  EXPECT_EQ(kDefaultSoundLevel, GetSoundLevelValue(secondary_device));
+  EXPECT_EQ(GetDefaultSoundLevelValue(), GetSoundLevelValue(device));
+  EXPECT_EQ(GetDefaultSoundLevelValue(), GetSoundLevelValue(secondary_device));
 
   EXPECT_FALSE(DeviceStateExists(device));
   EXPECT_FALSE(DeviceStateExists(secondary_device));
@@ -262,17 +265,17 @@ TEST_P(AudioDevicesPrefHandlerTest, SoundLevelMigratedFromV1StableId) {
 
   // Sanity check for test params - preset state should be different than the
   // default one in order for this test to make sense.
-  ASSERT_NE(kDefaultSoundLevel, kPresetState.sound_level);
+  ASSERT_NE(GetDefaultSoundLevelValue(), kPresetState.sound_level);
 
   EXPECT_EQ(kPresetState.sound_level, GetSoundLevelValue(device_v1));
   EXPECT_EQ(kPresetState.sound_level, GetSoundLevelValue(device_v2));
   // Test that v1 entry does not exist after migration - the method should
   // return default value.
-  EXPECT_EQ(kDefaultSoundLevel, GetSoundLevelValue(device_v1));
+  EXPECT_EQ(GetDefaultSoundLevelValue(), GetSoundLevelValue(device_v1));
 
   // Test that values are persisted when audio pref handler is reset.
   ReloadPrefHandler();
-  EXPECT_EQ(kDefaultSoundLevel, GetSoundLevelValue(device_v1));
+  EXPECT_EQ(GetDefaultSoundLevelValue(), GetSoundLevelValue(device_v1));
   EXPECT_EQ(kPresetState.sound_level, GetSoundLevelValue(device_v2));
 }
 
@@ -284,16 +287,21 @@ TEST_P(AudioDevicesPrefHandlerTest, SettingV2DeviceSoundLevelRemovesV1Entry) {
   EXPECT_EQ(13.37, GetSoundLevelValue(device_v1));
 
   SetSoundLevelValue(device_v2, 13.38);
-  EXPECT_EQ(kDefaultSoundLevel, GetSoundLevelValue(device_v1));
+  EXPECT_EQ(GetDefaultSoundLevelValue(), GetSoundLevelValue(device_v1));
   EXPECT_EQ(13.38, GetSoundLevelValue(device_v2));
 
   // Test that values are persisted when audio pref handler is reset.
   ReloadPrefHandler();
-  EXPECT_EQ(kDefaultSoundLevel, GetSoundLevelValue(device_v1));
+  EXPECT_EQ(GetDefaultSoundLevelValue(), GetSoundLevelValue(device_v1));
   EXPECT_EQ(13.38, GetSoundLevelValue(device_v2));
 }
 
 TEST_P(AudioDevicesPrefHandlerTest, MigrateFromGlobalSoundLevelPref) {
+  if (GetParam()) {
+    // For any new input devices, the default volume is set from a constant
+    // rather than the default kAudioVolumePercent.
+    return;
+  }
   pref_service_->SetDouble(prefs::kAudioVolumePercent, 13.37);
 
   // For devices with v1 stable device id.

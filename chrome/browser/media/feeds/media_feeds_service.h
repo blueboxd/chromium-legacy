@@ -108,7 +108,9 @@ class MediaFeedsService : public KeyedService {
   void OnSafeSearchPrefChanged();
 
   void OnResetOriginFromCookie(const url::Origin& origin,
-                               const bool include_subdomains);
+                               const bool include_subdomains,
+                               const std::string& name,
+                               const net::CookieChangeCause& cause);
 
   media_history::MediaHistoryKeyedService* GetMediaHistoryService();
 

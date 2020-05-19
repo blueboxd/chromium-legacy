@@ -11,9 +11,7 @@
 
 /** @fileoverview Externs generated from namespace: developerPrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.developerPrivate = {};
 
 /**
@@ -183,7 +181,8 @@ chrome.developerPrivate.RuntimeError;
  *   corruptInstall: boolean,
  *   updateRequired: boolean,
  *   blockedByPolicy: boolean,
- *   custodianApprovalRequired: boolean
+ *   custodianApprovalRequired: boolean,
+ *   parentDisabledPermissions: boolean
  * }}
  */
 chrome.developerPrivate.DisableReasons;

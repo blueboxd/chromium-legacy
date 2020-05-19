@@ -152,6 +152,7 @@ void BluetoothRemoteGattCharacteristicAndroid::ReadRemoteCharacteristic(
 
 void BluetoothRemoteGattCharacteristicAndroid::WriteRemoteCharacteristic(
     const std::vector<uint8_t>& value,
+    WriteType write_type,
     base::OnceClosure callback,
     ErrorCallback error_callback) {
   if (read_pending_ || write_pending_) {
@@ -162,9 +163,48 @@ void BluetoothRemoteGattCharacteristicAndroid::WriteRemoteCharacteristic(
     return;
   }
 
+  AndroidWriteType android_write_type;
+  switch (write_type) {
+    case WriteType::kWithResponse:
+      android_write_type = AndroidWriteType::kDefault;
+      break;
+    case WriteType::kWithoutResponse:
+      android_write_type = AndroidWriteType::kNoResponse;
+      break;
+  }
+
   JNIEnv* env = AttachCurrentThread();
   if (!Java_ChromeBluetoothRemoteGattCharacteristic_writeRemoteCharacteristic(
-          env, j_characteristic_, base::android::ToJavaByteArray(env, value))) {
+          env, j_characteristic_, base::android::ToJavaByteArray(env, value),
+          static_cast<int>(android_write_type))) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(error_callback),
+                       BluetoothRemoteGattService::GATT_ERROR_FAILED));
+    return;
+  }
+
+  write_pending_ = true;
+  write_callback_ = std::move(callback);
+  write_error_callback_ = std::move(error_callback);
+}
+
+void BluetoothRemoteGattCharacteristicAndroid::
+    DeprecatedWriteRemoteCharacteristic(const std::vector<uint8_t>& value,
+                                        base::OnceClosure callback,
+                                        ErrorCallback error_callback) {
+  if (read_pending_ || write_pending_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(error_callback),
+                       BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
+    return;
+  }
+
+  JNIEnv* env = AttachCurrentThread();
+  if (!Java_ChromeBluetoothRemoteGattCharacteristic_writeRemoteCharacteristic(
+          env, j_characteristic_, base::android::ToJavaByteArray(env, value),
+          static_cast<int>(AndroidWriteType::kNone))) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(error_callback),

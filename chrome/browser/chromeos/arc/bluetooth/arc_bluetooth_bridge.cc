@@ -1668,7 +1668,7 @@ void ArcBluetoothBridge::WriteGattCharacteristic(
         value->value, base::BindOnce(&OnGattOperationDone, repeating_callback),
         base::BindOnce(&OnGattOperationError, repeating_callback));
   } else {
-    characteristic->WriteRemoteCharacteristic(
+    characteristic->DeprecatedWriteRemoteCharacteristic(
         value->value, base::BindOnce(&OnGattOperationDone, repeating_callback),
         base::BindOnce(&OnGattOperationError, repeating_callback));
   }

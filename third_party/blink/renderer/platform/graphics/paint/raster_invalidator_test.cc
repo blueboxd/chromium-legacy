@@ -40,7 +40,6 @@ class RasterInvalidatorTest : public testing::Test,
   void FinishCycle(PaintArtifact& artifact) {
     artifact.FinishCycle();
     ClearGeometryMapperCache();
-    // See PaintArtifact::FinishCycle() for the reason of doing this.
     for (auto& chunk : artifact.PaintChunks())
       chunk.properties.ClearChangedToRoot();
   }

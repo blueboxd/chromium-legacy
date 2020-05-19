@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -235,6 +236,13 @@ const CSSValue& StyleResolverState::ResolveLightDarkPair(
     return pair->Second();
   }
   return value;
+}
+
+void StyleResolverState::MarkDependency(const CSSProperty& property) {
+  if (!RuntimeEnabledFeatures::MPCDependenciesEnabled())
+    return;
+  has_incomparable_dependency_ |= !property.IsComputedValueComparable();
+  dependencies_.insert(property.GetCSSPropertyName());
 }
 
 }  // namespace blink

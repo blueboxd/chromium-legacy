@@ -808,7 +808,6 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
 
       Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi được. Nếu bạn đặt thành false hoặc không đặt, thì chính sách này sẽ không có hiệu lực.</translation>
 <translation id="2201555246697292490">Định cấu hình danh sách cho phép nhắn tin gốc</translation>
-<translation id="220280840901385239">Cho phép người dùng thêm trường hợp ngoại lệ để cho phép nội dung hỗn hợp có thể chặn</translation>
 <translation id="2204753382813641270">Kiểm soát tự động ẩn giá</translation>
 <translation id="2208976000652006649">Tham số cho URL tìm kiếm sử dụng POST</translation>
 <translation id="2214880135980649323">Khi đặt chính sách này thành bật, các tiện ích được cài đặt theo chính sách doanh nghiệp sẽ được phép sử dụng Enterprise Hardware Platform API.
@@ -4580,7 +4579,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
           Nếu chưa đặt chính sách này, thì phím tắt của tính năng hỗ trợ tiếp cận sẽ bật theo mặc định trên màn hình đăng nhập.</translation>
 <translation id="7777535871204167559">Coi thiết bị lưu trữ bên ngoài là thiết bị chỉ đọc</translation>
 <translation id="7788511847830146438">Cho mỗi hồ sơ</translation>
-<translation id="7792973482799545782">Không cho phép bất kỳ trang web nào tải nội dung hỗn hợp có thể chặn</translation>
 <translation id="780603170519840350">Tắt buộc thực thi các yêu cầu về Tính minh bạch của chứng chỉ cho một danh sách các hàm băm subjectPublicKeyInfo.
 
       Chính sách này cho phép tắt các yêu cầu tiết lộ Tính minh bạch của chứng chỉ cho các chuỗi chứng chỉ chứa chứng chỉ có một trong các hàm băm subjectPublicKeyInfo đã được chỉ định. Điều này cho phép các chứng chỉ lẽ ra không được tin cậy vì không được tiết lộ công khai một cách thích hợp, vẫn tiếp tục được sử dụng cho các máy chủ Doanh nghiệp.

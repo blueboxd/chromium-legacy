@@ -12,7 +12,12 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/common/extensions/api/developer_private.h"
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+class SupervisedUserService;
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 namespace content {
 class BrowserContext;
@@ -81,6 +86,9 @@ class ExtensionInfoGenerator {
   WarningService* warning_service_;
   ErrorConsole* error_console_;
   ImageLoader* image_loader_;
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  SupervisedUserService* supervised_user_service_;
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
   // The number of pending image loads.
   size_t pending_image_loads_;

@@ -13,7 +13,6 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -378,9 +377,9 @@ public class Shell extends LinearLayout {
     }
 
     /**
-     * @return The {@link ViewGroup} currently shown by this Shell.
+     * @return The {@link View} currently shown by this Shell.
      */
-    public ViewGroup getContentView() {
+    public View getContentView() {
         ViewAndroidDelegate viewDelegate = mWebContents.getViewAndroidDelegate();
         return viewDelegate != null ? viewDelegate.getContainerView() : null;
     }

@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/services/app_service/public/cpp/stub_icon_loader.h"
@@ -56,6 +57,8 @@
 #include "extensions/common/extension_set.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using web_app::ProviderType;
 
 namespace app_list {
 namespace test {
@@ -693,7 +696,27 @@ TEST_F(AppSearchProviderTest, FetchInternalApp) {
   EXPECT_EQ(kSettingsInternalName, RunQuery("Set"));
 }
 
-TEST_F(AppSearchProviderTest, CrostiniTerminal) {
+class AppSearchProviderCrostiniTest
+    : public AppSearchProviderTest,
+      public ::testing::WithParamInterface<ProviderType> {
+ protected:
+  AppSearchProviderCrostiniTest() {
+    if (GetParam() == web_app::ProviderType::kWebApps) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kDesktopPWAsWithoutExtensions);
+    } else if (GetParam() == web_app::ProviderType::kBookmarkApps) {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kDesktopPWAsWithoutExtensions);
+    }
+  }
+
+  ~AppSearchProviderCrostiniTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_P(AppSearchProviderCrostiniTest, CrostiniTerminal) {
   CreateSearch();
 
   // Crostini UI is not allowed yet.
@@ -726,7 +749,7 @@ TEST_F(AppSearchProviderTest, CrostiniTerminal) {
   EXPECT_EQ("Terminal", RunQuery("cros"));
 }
 
-TEST_F(AppSearchProviderTest, CrostiniApp) {
+TEST_P(AppSearchProviderCrostiniTest, CrostiniApp) {
   // This both allows Crostini UI and enables Crostini.
   crostini::CrostiniTestHelper crostini_test_helper(testing_profile());
   crostini_test_helper.ReInitializeAppServiceIntegration();
@@ -935,14 +958,6 @@ TEST_P(AppSearchProviderWithExtensionInstallType, OemResultsOnFirstBoot) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    AppSearchProviderWithExtensionInstallType,
-    ::testing::ValuesIn({TestExtensionInstallType::CONTROLLED_BY_POLICY,
-                         TestExtensionInstallType::CHROME_COMPONENT,
-                         TestExtensionInstallType::INSTALLED_BY_DEFAULT,
-                         TestExtensionInstallType::INSTALLED_BY_OEM}));
-
 enum class TestArcAppInstallType {
   CONTROLLED_BY_POLICY,
   INSTALLED_BY_DEFAULT,
@@ -1028,9 +1043,23 @@ TEST_P(AppSearchProviderWithArcAppInstallType,
 
 INSTANTIATE_TEST_SUITE_P(
     All,
+    AppSearchProviderWithExtensionInstallType,
+    ::testing::ValuesIn({TestExtensionInstallType::CONTROLLED_BY_POLICY,
+                         TestExtensionInstallType::CHROME_COMPONENT,
+                         TestExtensionInstallType::INSTALLED_BY_DEFAULT,
+                         TestExtensionInstallType::INSTALLED_BY_OEM}));
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
     AppSearchProviderWithArcAppInstallType,
     ::testing::ValuesIn({TestArcAppInstallType::CONTROLLED_BY_POLICY,
                          TestArcAppInstallType::INSTALLED_BY_DEFAULT}));
+
+// TODO(crbug.com/1082884): Test with BMO enabled.
+INSTANTIATE_TEST_SUITE_P(All,
+                         AppSearchProviderCrostiniTest,
+                         ::testing::Values(ProviderType::kBookmarkApps),
+                         web_app::ProviderTypeParamToString);
 
 }  // namespace test
 }  // namespace app_list

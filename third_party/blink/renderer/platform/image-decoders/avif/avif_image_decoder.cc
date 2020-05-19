@@ -405,6 +405,7 @@ bool AVIFImageDecoder::DecodeImage(size_t index) {
 
 bool AVIFImageDecoder::UpdateColorTransform(const gfx::ColorSpace& src_cs,
                                             const gfx::ColorSpace& dest_cs) {
+  DCHECK_EQ(src_cs.GetRangeID(), gfx::ColorSpace::RangeID::FULL);
   if (color_transform_ && color_transform_->GetSrcColorSpace() == src_cs)
     return true;
   color_transform_ = gfx::ColorTransform::NewColorTransform(
@@ -422,6 +423,14 @@ bool AVIFImageDecoder::CanSetColorSpace() const {
 bool AVIFImageDecoder::RenderImage(const avifImage* image,
                                    const gfx::ColorSpace& frame_cs,
                                    ImageFrame* buffer) {
+  // Although gfx::ColorTransform can perform range adjustment (from limited
+  // range to full range), it uses the 8-bit equations for all bit depths, which
+  // are not very accurate for high bit depths. So YUVAToRGBA() performs range
+  // adjustment (using libavif) before calling gfx::ColorTransform::Transform().
+  // Therefore, the source color space passed to UpdateColorTransform() should
+  // be full range.
+  const gfx::ColorSpace frame_cs_full_range = frame_cs.GetWithMatrixAndRange(
+      frame_cs.GetMatrixID(), gfx::ColorSpace::RangeID::FULL);
   const gfx::ColorSpace dest_rgb_cs(*buffer->Bitmap().colorSpace());
 
   const bool is_mono = !image->yuvPlanes[AVIF_CHAN_U];
@@ -430,7 +439,7 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image,
   // TODO(dalecurtis): We should decode to YUV when possible. Currently the
   // YUV path seems to only support still-image YUV8.
   if (decode_to_half_float_) {
-    if (!UpdateColorTransform(frame_cs, dest_rgb_cs)) {
+    if (!UpdateColorTransform(frame_cs_full_range, dest_rgb_cs)) {
       DVLOG(1) << "Failed to update color transform...";
       return false;
     }
@@ -503,7 +512,7 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image,
     return true;
   }
 
-  if (!UpdateColorTransform(frame_cs, dest_rgb_cs)) {
+  if (!UpdateColorTransform(frame_cs_full_range, dest_rgb_cs)) {
     DVLOG(1) << "Failed to update color transform...";
     return false;
   }

@@ -4,6 +4,7 @@
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" /> சாதனத்திற்கு அனுப்புகிறது...</translation>
 <translation id="111910763555783249">அறிவிப்பு அமைப்புகள்</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 நாள் முன்பு}other{# நாட்கள் உள்ளன}}</translation>
+<translation id="1145532888383813076">சாதனம், ஆப்ஸ், இணையம் ஆகியவற்றில் தேடவும்.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 நிமிடத்திற்கு முன்பு}other{# நிமிடங்களுக்கு முன்பு}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1நி}other{#நி}}</translation>
 <translation id="1181037720776840403">அகற்று</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">ஒத்திசைவை இயக்கவும்</translation>
 <translation id="5329858601952122676">&amp;நீக்கு</translation>
 <translation id="5395308026110844773"><ph name="IN_PLACE_APP" />ன் மேல் <ph name="DRAGGED_APP_NAME" />ஐ இழுத்துவிடுகிறீர்கள். கோப்புறையை உருவாக்க, விடுவிக்கவும்.</translation>
+<translation id="5432996274932278848">உங்கள் சாதனம், ஆப்ஸ், இணையம் ஆகியவற்றில் தேடவும். ஆப்ஸுக்குச் செல்ல அம்புக்குறி விசைகளைப் பயன்படுத்தவும்.</translation>
 <translation id="5463830097259460683">ஈமோஜி &amp;&amp; குறியீடுகள்</translation>
 <translation id="5476505524087279545">தேர்வு நீக்கு</translation>
 <translation id="547979256943495781">ஷெல்ஃப் வலப்புறம் உள்ளது</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">இதுவரை தேடியவற்றிலிருந்து இந்தத் தேடலை நீக்கவா?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> டெ.பை</translation>
 <translation id="7507604095951736240">ஈமோஜி</translation>
+<translation id="7611008212562900400">சாதனம், ஆப்ஸ், இணையத்தில் தேடவும்...</translation>
 <translation id="7658239707568436148">ரத்து செய்</translation>
 <translation id="7781829728241885113">நேற்று</translation>
 <translation id="7814458197256864873">&amp;நகலெடு</translation>

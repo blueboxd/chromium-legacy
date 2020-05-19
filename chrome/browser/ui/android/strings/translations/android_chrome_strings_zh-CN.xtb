@@ -466,6 +466,7 @@
 <translation id="488187801263602086">重命名文件</translation>
 <translation id="4882831918239250449">控制 Google 如何利用您的浏览记录为您提供个性化的搜索、广告和其他服务</translation>
 <translation id="4885273946141277891">Chrome 实例数量已超出上限。</translation>
+<translation id="4908869848243824489">Google 探索</translation>
 <translation id="4910889077668685004">付款应用</translation>
 <translation id="4913161338056004800">重置统计信息</translation>
 <translation id="4913169188695071480">停止刷新</translation>
@@ -481,7 +482,6 @@
 <translation id="4988210275050210843">正在下载文件 (<ph name="MEGABYTES" />)。</translation>
 <translation id="4988526792673242964">网页</translation>
 <translation id="4994033804516042629">找不到任何联系人</translation>
-<translation id="4996978546172906250">分享方式</translation>
 <translation id="5004416275253351869">Google 活动控件</translation>
 <translation id="5005498671520578047">复制密码</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> 希望连接到以下所选设备：</translation>
@@ -643,6 +643,7 @@
 <translation id="6381421346744604172">调暗网站颜色</translation>
 <translation id="6395288395575013217">链接</translation>
 <translation id="6397616442223433927">已恢复在线状态</translation>
+<translation id="6398765197997659313">退出全屏模式</translation>
 <translation id="6404511346730675251">修改书签</translation>
 <translation id="6406506848690869874">同步</translation>
 <translation id="6410973561433500075">从 <ph name="DOMAIN" /> 进入 AR 环境？</translation>
@@ -699,9 +700,10 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">翻译</translation>
 <translation id="6845325883481699275">帮助我们改善 Chrome 安全性</translation>
-<translation id="6846298663435243399">正在加载...</translation>
+<translation id="6846298663435243399">正在加载…</translation>
 <translation id="6850409657436465440">您的下载仍在进行中</translation>
 <translation id="6850830437481525139">已关闭 <ph name="TAB_COUNT" /> 个标签页</translation>
+<translation id="685850645784703949">Google 探索 - 已关闭</translation>
 <translation id="6864459304226931083">下载图片</translation>
 <translation id="6865313869410766144">自动填充表单数据</translation>
 <translation id="6884306546558072722">离线时也能畅享网络内容</translation>
@@ -904,6 +906,7 @@
 <translation id="8514577642972634246">进入隐身模式</translation>
 <translation id="8516012719330875537">图片编辑器</translation>
 <translation id="8523928698583292556">删除存储的密码</translation>
+<translation id="8525306231823319788">全屏</translation>
 <translation id="854522910157234410">打开此网页</translation>
 <translation id="8558485628462305855">要查看增强现实内容，请更新 ARCore</translation>
 <translation id="8559990750235505898">询问是否翻译其他语言版本的网页</translation>

@@ -18,7 +18,8 @@ class MicGainSliderController : public UnifiedSliderListener {
   MicGainSliderController();
 
   // Create a slider view for a specific input device.
-  std::unique_ptr<MicGainSliderView> CreateMicGainSlider(uint64_t device_id);
+  std::unique_ptr<MicGainSliderView> CreateMicGainSlider(uint64_t device_id,
+                                                         bool internal);
 
   // UnifiedSliderListener:
   views::View* CreateView() override;

@@ -152,7 +152,7 @@
 <translation id="218608176142494674">பகிர்தல்</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> ஆகத் தொடர்க</translation>
 <translation id="2234876718134438132">ஒத்திசைவு &amp; Google சேவைகள்</translation>
-<translation id="2239812875700136898">கண்டறி பட்டனுக்கான விருப்பங்களிலிருந்து உங்கள் செய்திகளைக் கட்டுப்படுத்தலாம்</translation>
+<translation id="2239812875700136898">கண்டறிவதற்கான விருப்பங்கள் என்ற பட்டன் மூலம் உங்கள் செய்திகளைக் கட்டுப்படுத்தலாம்</translation>
 <translation id="2259659629660284697">கடவுச்சொற்களை ஏற்று…</translation>
 <translation id="2268044343513325586">துல்லியமாக்கு</translation>
 <translation id="2286841657746966508">பில்லிங் முகவரி</translation>
@@ -482,7 +482,6 @@
 <translation id="4988210275050210843">கோப்பைப் பதிவிறக்குகிறது (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">பக்கங்கள்</translation>
 <translation id="4994033804516042629">தொடர்புகள் எதுவும் இல்லை</translation>
-<translation id="4996978546172906250">இதன்வழியாக பகிர்</translation>
 <translation id="5004416275253351869">Google செயல்பாட்டுக் கட்டுப்பாடுகள்</translation>
 <translation id="5005498671520578047">கடவுச்சொல்லை நகலெடு</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> இணைய விரும்புகிறது</translation>
@@ -644,6 +643,7 @@
 <translation id="6381421346744604172">இணையதளங்களை டார்க்காக மாற்று</translation>
 <translation id="6395288395575013217">இணைப்பு</translation>
 <translation id="6397616442223433927">இணைப்பு வந்துவிட்டது</translation>
+<translation id="6398765197997659313">முழுத்திரையிலிருந்து வெளியேறு</translation>
 <translation id="6404511346730675251">புக்மார்க்களைத் திருத்து</translation>
 <translation id="6406506848690869874">Sync</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" /> இல் இருந்து ARரில் நுழையவா?</translation>
@@ -700,7 +700,7 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">மொழிபெயர்</translation>
 <translation id="6845325883481699275">Chromeமின் பாதுகாப்பை மேம்படுத்த உதவுக</translation>
-<translation id="6846298663435243399">ஏற்றுகிறது…</translation>
+<translation id="6846298663435243399">ஏற்றுகிறது...</translation>
 <translation id="6850409657436465440">பதிவிறக்கம் செயலில் உள்ளது</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> தாவல்கள் மூடப்பட்டன</translation>
 <translation id="685850645784703949">Discover by Google - முடக்கப்பட்டுள்ளது</translation>
@@ -906,6 +906,7 @@
 <translation id="8514577642972634246">மறைநிலைக்குச் செல்</translation>
 <translation id="8516012719330875537">படத் திருத்தி</translation>
 <translation id="8523928698583292556">சேமித்த கடவுச்சொல்லை நீக்குவதற்கான பட்டன்</translation>
+<translation id="8525306231823319788">முழுத்திரை</translation>
 <translation id="854522910157234410">இந்தப் பக்கத்தைத் திற</translation>
 <translation id="8558485628462305855">ஆக்மென்ட்டட் ரியாலிட்டி உள்ளடக்கத்தைப் பார்க்க, ARCoreஐப் புதுப்பிக்கவும்</translation>
 <translation id="8559990750235505898">பக்கங்களைப் பிற மொழிகளில் மொழிபெயர்ப்பதற்கான சலுகை</translation>

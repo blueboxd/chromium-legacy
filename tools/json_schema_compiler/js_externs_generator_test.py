@@ -112,9 +112,7 @@ fake_idl_expected = """// Copyright %s The Chromium Authors. All rights reserved
 
 /** @fileoverview Externs generated from namespace: fakeApi */
 
-/**
- * @const
- */
+/** @const */
 chrome.fakeApi = {};
 
 /**
@@ -289,9 +287,7 @@ fake_private_idl_expected = """// Copyright %s The Chromium Authors. All rights 
 
 /** @fileoverview Externs generated from namespace: fakeApiPrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.fakeApiPrivate = {};
 
 /**
@@ -411,9 +407,7 @@ fake_json_expected = """// Copyright %s The Chromium Authors. All rights reserve
 
 /** @fileoverview Externs generated from namespace: fakeJson */
 
-/**
- * @const
- */
+/** @const */
 chrome.fakeJson = {};
 
 /**

@@ -169,17 +169,6 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     if unexpected_workaround:
       self._ValidateDriverBugWorkaroundsImpl(False, unexpected_workaround)
 
-  # This can only be called from one of the tests, i.e., after the
-  # browser's been brought up once.
-  def _RunningOnAndroid(self):
-    options = self.GetOriginalFinderOptions().browser_options
-    return options.browser_type.startswith('android')
-
-  def _SupportsSwiftShader(self):
-    # Currently we enable SwiftShader on Windows, Linux and MacOS.
-    return (sys.platform in ('cygwin', 'win32', 'darwin') or
-            (sys.platform.startswith('linux') and not self._RunningOnAndroid()))
-
   @staticmethod
   def _Filterer(workaround):
     # Filter all entries starting with "disabled_extension_" and
@@ -293,8 +282,6 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       self.fail('WebGL readback setup failed: %s' % feature_status_list)
 
   def _GpuProcess_feature_status_under_swiftshader(self, test_path):
-    if not self._SupportsSwiftShader():
-      return
     # Hit test group 2 with entry 153 from kSoftwareRenderingListEntries.
     self.RestartBrowserIfNecessaryWithArgs(
         self._AddDefaultArgs(['--gpu-blacklist-test-group=2']))
@@ -368,30 +355,16 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # This test loads functional_webgl.html so that there is a
     # deliberate attempt to use an API which would start the GPU
     # process.
-    if self._RunningOnAndroid():
-      # Chrome on Android doesn't support software fallback, skip it.
-      # TODO(zmo): If this test runs on ChromeOS, we also need to skip it.
-      return
     self.RestartBrowserIfNecessaryWithArgs(
         self._AddDefaultArgs(['--disable-gpu']))
     self._NavigateAndWait(test_path)
-    # On Windows, Linux or MacOS, SwiftShader is enabled, so GPU process
-    # will still launch with SwiftShader.
-    supports_swiftshader = self._SupportsSwiftShader()
     has_gpu_process = self.tab.EvaluateJavaScript(
         'chrome.gpuBenchmarking.hasGpuProcess()')
-    if supports_swiftshader and not has_gpu_process:
+    if not has_gpu_process:
       self.fail('GPU process not detected')
-    elif not supports_swiftshader and has_gpu_process:
-      self.fail('GPU process detected')
 
   def _GpuProcess_disable_gpu_and_swiftshader(self, test_path):
     # Disable SwiftShader, so GPU process should not launch anywhere.
-    if self._RunningOnAndroid():
-      # Chrome on Android doesn't support software fallback, skip it.
-      # TODO(zmo): If this test runs on ChromeOS, we also need to skip it.
-      return
-
     self.RestartBrowserIfNecessaryWithArgs(
         self._AddDefaultArgs(['--disable-gpu',
                               '--disable-software-rasterizer']))
@@ -432,9 +405,6 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def _GpuProcess_swiftshader_for_webgl(self, test_path):
     # This test loads functional_webgl.html so that there is a deliberate
     # attempt to use an API which would start the GPU process.
-    # On platforms where SwiftShader is not supported, skip this test.
-    if not self._SupportsSwiftShader():
-      return
     args_list = (
         # Triggering test_group 2 where WebGL is blacklisted.
         ['--gpu-blacklist-test-group=2'],

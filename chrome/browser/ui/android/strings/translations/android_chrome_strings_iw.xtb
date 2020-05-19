@@ -152,6 +152,7 @@
 <translation id="218608176142494674">שיתוף</translation>
 <translation id="2227444325776770048">המשך בשם <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">‏סנכרון ושירותי Google</translation>
+<translation id="2239812875700136898">‏בעזרת הלחצן 'אפשרויות של Discover' ניתן לקבוע אילו מאמרים יוצגו</translation>
 <translation id="2259659629660284697">ייצוא סיסמאות…</translation>
 <translation id="2268044343513325586">צמצם</translation>
 <translation id="2286841657746966508">כתובת לחיוב</translation>
@@ -465,6 +466,7 @@
 <translation id="488187801263602086">שינוי שם של קובץ</translation>
 <translation id="4882831918239250449">הגדרת השימוש בהיסטוריית הגלישה לצורך התאמה אישית של החיפוש, המודעות ועוד</translation>
 <translation id="4885273946141277891">‏מספר בלתי נתמך של מופעי Chrome.</translation>
+<translation id="4908869848243824489">Discover by Google</translation>
 <translation id="4910889077668685004">אפליקציות תשלום</translation>
 <translation id="4913161338056004800">איפוס הנתונים הסטטיסטיים</translation>
 <translation id="4913169188695071480">הפסק לרענן</translation>
@@ -480,7 +482,6 @@
 <translation id="4988210275050210843">מתבצעת הורדה של קובץ (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">דפים</translation>
 <translation id="4994033804516042629">לא נמצאו אנשי קשר</translation>
-<translation id="4996978546172906250">שיתוף באמצעות</translation>
 <translation id="5004416275253351869">‏בחירת פעילויות של Google</translation>
 <translation id="5005498671520578047">העתק סיסמה</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> מבקש להתחבר אל</translation>
@@ -642,6 +643,7 @@
 <translation id="6381421346744604172">תצוגה כהה יותר של אתרים</translation>
 <translation id="6395288395575013217">קישור</translation>
 <translation id="6397616442223433927">חזרה למצב אונליין</translation>
+<translation id="6398765197997659313">צא ממסך מלא</translation>
 <translation id="6404511346730675251">ערוך סימניה</translation>
 <translation id="6406506848690869874">סנכרון</translation>
 <translation id="6410973561433500075">‏האם לעבור ל-AR מהדומיין <ph name="DOMAIN" />?</translation>
@@ -698,9 +700,10 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">תרגום</translation>
 <translation id="6845325883481699275">‏עזרה בשיפור האבטחה של Chrome</translation>
-<translation id="6846298663435243399">טוען…</translation>
+<translation id="6846298663435243399">הטעינה מתבצעת...</translation>
 <translation id="6850409657436465440">ההורדה עדיין מתבצעת</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> כרטיסיות נסגרו</translation>
+<translation id="685850645784703949">‏Discover by Google – מושבת</translation>
 <translation id="6864459304226931083">הורד תמונה</translation>
 <translation id="6865313869410766144">נתוני טפסים למילוי אוטומטי</translation>
 <translation id="6884306546558072722">המשך גלישה ללא חיבור לאינטרנט</translation>
@@ -903,6 +906,7 @@
 <translation id="8514577642972634246">עבור למצב גלישה בסתר</translation>
 <translation id="8516012719330875537">עורך תמונות</translation>
 <translation id="8523928698583292556">מחק את הסיסמה השמורה</translation>
+<translation id="8525306231823319788">מסך מלא</translation>
 <translation id="854522910157234410">פתח דף זה</translation>
 <translation id="8558485628462305855">‏כדי להציג תוכן של מציאות רבודה, צריך לעדכן את ARCore</translation>
 <translation id="8559990750235505898">הצעה לתרגם דפים בשפות אחרות</translation>

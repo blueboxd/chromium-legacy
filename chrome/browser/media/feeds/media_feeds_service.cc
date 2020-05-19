@@ -66,7 +66,9 @@ class CookieChangeListener : public network::mojom::CookieChangeListener {
  public:
   using CookieCallback =
       base::RepeatingCallback<void(const url::Origin&,
-                                   const bool /* include_subdomains */)>;
+                                   const bool /* include_subdomains */,
+                                   const std::string& /* name */,
+                                   const net::CookieChangeCause& /* cause */)>;
 
   CookieChangeListener(Profile* profile, CookieCallback callback)
       : profile_(profile), callback_(std::move(callback)) {
@@ -84,9 +86,6 @@ class CookieChangeListener : public network::mojom::CookieChangeListener {
   void OnCookieChange(const net::CookieChangeInfo& change) override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-    if (!ShouldCookieChangeTriggerReset(change.cause))
-      return;
-
     if (change.cookie.Domain().empty())
       return;
 
@@ -94,19 +93,11 @@ class CookieChangeListener : public network::mojom::CookieChangeListener {
         net::cookie_util::CookieOriginToURL(change.cookie.Domain(), true);
     DCHECK(url.SchemeIsCryptographic());
 
-    callback_.Run(url::Origin::Create(url), change.cookie.IsDomainCookie());
+    callback_.Run(url::Origin::Create(url), change.cookie.IsDomainCookie(),
+                  change.cookie.Name(), change.cause);
   }
 
  private:
-  bool ShouldCookieChangeTriggerReset(
-      const net::CookieChangeCause& cause) const {
-    return cause == net::CookieChangeCause::UNKNOWN_DELETION ||
-           cause == net::CookieChangeCause::EXPIRED ||
-           cause == net::CookieChangeCause::EXPIRED_OVERWRITE ||
-           cause == net::CookieChangeCause::EXPLICIT ||
-           cause == net::CookieChangeCause::EVICTED;
-  }
-
   void MaybeStartListening() {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     DCHECK(profile_);
@@ -480,10 +471,13 @@ void MediaFeedsService::OnSafeSearchPrefChanged() {
                      weak_factory_.GetWeakPtr()));
 }
 
-void MediaFeedsService::OnResetOriginFromCookie(const url::Origin& origin,
-                                                const bool include_subdomains) {
-  GetMediaHistoryService()->ResetMediaFeed(
-      origin, media_feeds::mojom::ResetReason::kCookies, include_subdomains);
+void MediaFeedsService::OnResetOriginFromCookie(
+    const url::Origin& origin,
+    const bool include_subdomains,
+    const std::string& name,
+    const net::CookieChangeCause& cause) {
+  GetMediaHistoryService()->ResetMediaFeedDueToCookies(
+      origin, include_subdomains, name, cause);
 
   if (!cookie_change_callback_.is_null())
     std::move(cookie_change_callback_).Run();

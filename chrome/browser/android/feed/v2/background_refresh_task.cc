@@ -7,9 +7,12 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/feature_list.h"
 #include "chrome/browser/android/feed/v2/feed_service_factory.h"
 #include "chrome/browser/android/feed/v2/refresh_task_scheduler_impl.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/feed/core/v2/public/feed_service.h"
+#include "components/feed/feed_feature_list.h"
 
 namespace feed {
 
@@ -47,6 +50,10 @@ bool BackgroundRefreshTask::OnStopTask(
 // Kicks off the Feed refresh. Called only after the full browser is started.
 void BackgroundRefreshTask::Run(background_task::TaskFinishedCallback callback,
                                 content::BrowserContext* browser_context) {
+  if (!FeedService::IsEnabled(
+          *Profile::FromBrowserContext(browser_context)->GetPrefs()))
+    return std::move(callback).Run(false);
+
   FeedService* service =
       FeedServiceFactory::GetForBrowserContext(browser_context);
   if (!service)

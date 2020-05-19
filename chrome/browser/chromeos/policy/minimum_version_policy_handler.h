@@ -11,20 +11,25 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "base/util/timer/wall_clock_timer.h"
 #include "base/version.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/upgrade_detector/build_state_observer.h"
 #include "chromeos/dbus/update_engine_client.h"
+
+class PrefRegistrySimple;
 
 namespace base {
 class Clock;
 class DictionaryValue;
+class Time;
 }
 
 namespace policy {
 
 // This class observes the device setting |kMinimumChromeVersionEnforced|, and
 // checks if respective requirement is met.
-class MinimumVersionPolicyHandler {
+class MinimumVersionPolicyHandler : public BuildStateObserver {
  public:
   static const char kChromeVersion[];
   static const char kWarningPeriod[];
@@ -105,7 +110,10 @@ class MinimumVersionPolicyHandler {
 
   explicit MinimumVersionPolicyHandler(Delegate* delegate,
                                        chromeos::CrosSettings* cros_settings);
-  ~MinimumVersionPolicyHandler();
+  ~MinimumVersionPolicyHandler() override;
+
+  // BuildStateObserver
+  void OnUpdate(const BuildState* build_state) override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -119,11 +127,19 @@ class MinimumVersionPolicyHandler {
 
   bool DeadlineReached() { return deadline_reached; }
 
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
+  // Callback used in tests and invoked after end-of-life status has been
+  // fetched from the update_engine.
+  void set_fetch_eol_callback_for_testing(base::OnceClosure callback) {
+    fetch_eol_callback_ = std::move(callback);
+  }
+
+  bool IsDeadlineTimerRunningForTesting();
+
  private:
   void OnPolicyChanged();
-
   bool IsPolicyApplicable();
-
   void Reset();
 
   // Handles the state when update is required as per the policy. If on the
@@ -138,12 +154,28 @@ class MinimumVersionPolicyHandler {
   void FetchEolInfo();
 
   // Callback after fetching end-of-life info from the update_engine_client.
-  void OnFetchEolInfo(const chromeos::UpdateEngineClient::EolInfo info);
+  void OnFetchEolInfo(chromeos::UpdateEngineClient::EolInfo info);
 
   // Called when the warning time to apply updates has expired. If the user on
   // the login screen, the update required screen is shown else the current user
   // session is terminated to bring the user back to the login screen.
   void OnDeadlineReached();
+
+  // Starts the timer to expire when |deadline| is reached.
+  void StartDeadlineTimer(base::Time deadline);
+
+  // Starts observing the BuildState for any updates in Chrome and resets the
+  // state if new version satisfies the minimum version requirement.
+  void StartObservingUpdate();
+
+  // Updates pref |kUpdateRequiredWarningPeriod| in local state to
+  // |warning_time|. If |kUpdateRequiredTimerStartTime| is not null, it means
+  // update is already required and hence, the timer start time should not be
+  // updated.
+  void UpdateLocalState(base::TimeDelta warning_time);
+
+  // Resets the local state prefs to default values.
+  void ResetLocalState();
 
   // This delegate instance is owned by the owner of
   // MinimumVersionPolicyHandler. The owner is responsible to make sure that the
@@ -157,6 +189,7 @@ class MinimumVersionPolicyHandler {
   std::unique_ptr<MinimumVersionRequirement> state_;
 
   bool requirements_met_ = true;
+  bool eol_reached_ = false;
 
   // If this flag is true, user should restricted to use the session by logging
   // out and/or showing update required screen.
@@ -164,11 +197,16 @@ class MinimumVersionPolicyHandler {
 
   base::Time update_required_time_;
 
+  // Fires when the deadline to update the device has reached or passed.
+  util::WallClockTimer update_required_deadline_timer_;
+
   // Non-owning reference to CrosSettings. This class have shorter lifetime than
   // CrosSettings.
   chromeos::CrosSettings* cros_settings_;
 
   base::Clock* const clock_;
+
+  base::OnceClosure fetch_eol_callback_;
 
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       policy_subscription_;

@@ -27,7 +27,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/google/core/common/google_util.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
+#include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
@@ -41,6 +43,7 @@
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_status_code.h"
+#include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -787,6 +790,8 @@ void IsolatedPrerenderTabHelper::CreateIsolatedURLLoaderFactory() {
 
   auto context_params = network::mojom::NetworkContextParams::New();
   context_params->user_agent = ::GetUserAgent();
+  context_params->accept_language = net::HttpUtil::GenerateAcceptLanguageHeader(
+      profile_->GetPrefs()->GetString(language::prefs::kAcceptLanguages));
   context_params->initial_custom_proxy_config =
       isolated_prerender_service->proxy_configurator()
           ->CreateCustomProxyConfig();

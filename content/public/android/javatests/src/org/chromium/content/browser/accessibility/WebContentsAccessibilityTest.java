@@ -258,8 +258,10 @@ public class WebContentsAccessibilityTest {
     private void setUpEditTextDelegate(int editTextVirtualViewId) throws Throwable {
         // Add an accessibility delegate to capture TEXT_TRAVERSED_AT_MOVEMENT_GRANULARITY and
         // TYPE_VIEW_TEXT_SELECTION_CHANGED events and store their ToIndex and FromIndex.
-        mActivityTestRule.getContainerView().setAccessibilityDelegate(
-                new View.AccessibilityDelegate() {
+        // The delegate is set on the parent as WebContentsAccessibilityImpl sends events using the
+        // parent.
+        ((ViewGroup) mActivityTestRule.getContainerView().getParent())
+                .setAccessibilityDelegate(new View.AccessibilityDelegate() {
                     @Override
                     public boolean onRequestSendAccessibilityEvent(
                             ViewGroup host, View child, AccessibilityEvent event) {

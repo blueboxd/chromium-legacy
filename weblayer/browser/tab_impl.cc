@@ -52,6 +52,7 @@
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/tab_specific_content_settings_delegate.h"
 #include "weblayer/browser/translate_client_impl.h"
+#include "weblayer/browser/weblayer_features.h"
 #include "weblayer/common/isolated_world_ids.h"
 #include "weblayer/public/fullscreen_delegate.h"
 #include "weblayer/public/new_tab_delegate.h"
@@ -569,6 +570,8 @@ void TabImpl::UpdateBrowserControlsStateImpl(
     content::BrowserControlsState old_state,
     bool animate) {
   current_browser_controls_state_ = new_state;
+  if (base::FeatureList::IsEnabled(kImmediatelyHideBrowserControlsForTest))
+    animate = false;
   web_contents_->GetMainFrame()->UpdateBrowserControlsState(new_state,
                                                             old_state, animate);
 }
@@ -673,10 +676,9 @@ void TabImpl::RunFileChooser(
 
 int TabImpl::GetTopControlsHeight() {
 #if defined(OS_ANDROID)
-  int height = top_controls_container_view_
-                   ? top_controls_container_view_->GetControlsHeight()
-                   : 0;
-  return height;
+  return top_controls_container_view_
+             ? top_controls_container_view_->GetControlsHeight()
+             : 0;
 #else
   return 0;
 #endif

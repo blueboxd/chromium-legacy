@@ -36,7 +36,8 @@ class ASH_EXPORT QuickAnswersUiController {
 
   // Constructs/resets |quick_answers_view_|.
   void CreateQuickAnswersView(const gfx::Rect& anchor_bounds,
-                              const std::string& title);
+                              const std::string& title,
+                              const std::string& query);
 
   void CloseQuickAnswersView();
 

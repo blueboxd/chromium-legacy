@@ -39,8 +39,9 @@
 namespace blink {
 
 Navigator::Navigator(LocalFrame* frame)
-    : NavigatorLanguage(frame ? frame->DomWindow() : nullptr),
-      ExecutionContextClient(frame) {}
+    : ExecutionContextClient(frame),
+      NavigatorDeviceMemory(frame ? frame->GetDocument() : nullptr),
+      NavigatorLanguage(frame ? frame->DomWindow() : nullptr) {}
 
 String Navigator::productSub() const {
   return "20030107";
@@ -119,6 +120,7 @@ void Navigator::Trace(Visitor* visitor) const {
   NavigatorLanguage::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
   Supplementable<Navigator>::Trace(visitor);
+  NavigatorDeviceMemory::Trace(visitor);
 }
 
 ExecutionContext* Navigator::GetUAExecutionContext() const {

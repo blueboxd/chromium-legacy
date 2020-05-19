@@ -11,9 +11,7 @@
 
 /** @fileoverview Externs generated from namespace: metricsPrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.metricsPrivate = {};
 
 /**

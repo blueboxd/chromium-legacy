@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -97,7 +98,7 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
   // Helper to recursively compute bounds for |info_data|. Returns true if
   // non-empty bounds were encountered.
   void ComputeEnclosingBoundsInternal(AccessibilityInfoDataWrapper* info_data,
-                                      gfx::Rect& computed_bounds) const;
+                                      gfx::Rect* computed_bounds) const;
 
   // Computes if the node is clickable and has no clickable descendants.
   bool ComputeIsClickableLeaf(
@@ -110,13 +111,13 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
   void BuildImportanceTable(
       mojom::AccessibilityEventData* event_data,
       const std::map<int32_t, int32_t>& node_id_to_nodes_index,
-      std::vector<bool>& out_node) const;
+      std::vector<bool>* out_node) const;
 
   bool BuildHasImportantProperty(
       int32_t nodes_index,
       const std::vector<mojom::AccessibilityNodeInfoDataPtr>& nodes,
       const std::map<int32_t, int32_t>& node_id_to_nodes_index,
-      std::vector<bool>& has_important_prop_cache) const;
+      std::vector<bool>* has_important_prop_cache) const;
 
   // Find the most top-left focusable node under the given node.
   AccessibilityInfoDataWrapper* FindFirstFocusableNode(

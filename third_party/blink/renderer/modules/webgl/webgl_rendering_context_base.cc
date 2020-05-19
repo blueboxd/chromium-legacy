@@ -6815,6 +6815,15 @@ void WebGLRenderingContextBase::DrawingBufferClientRestoreTexture2DBinding() {
 }
 
 void WebGLRenderingContextBase::
+    DrawingBufferClientRestoreTextureCubeMapBinding() {
+  if (destruction_in_progress_)
+    return;
+  if (!ContextGL())
+    return;
+  RestoreCurrentTextureCubeMap();
+}
+
+void WebGLRenderingContextBase::
     DrawingBufferClientRestoreRenderbufferBinding() {
   if (destruction_in_progress_)
     return;
@@ -8236,6 +8245,12 @@ void WebGLRenderingContextBase::RestoreCurrentFramebuffer() {
 void WebGLRenderingContextBase::RestoreCurrentTexture2D() {
   bindTexture(GL_TEXTURE_2D,
               texture_units_[active_texture_unit_].texture2d_binding_.Get());
+}
+
+void WebGLRenderingContextBase::RestoreCurrentTextureCubeMap() {
+  bindTexture(
+      GL_TEXTURE_CUBE_MAP,
+      texture_units_[active_texture_unit_].texture_cube_map_binding_.Get());
 }
 
 void WebGLRenderingContextBase::FindNewMaxNonDefaultTextureUnit() {

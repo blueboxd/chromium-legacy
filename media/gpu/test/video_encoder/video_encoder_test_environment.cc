@@ -4,6 +4,7 @@
 
 #include "media/gpu/test/video_encoder/video_encoder_test_environment.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
@@ -12,12 +13,23 @@
 
 namespace media {
 namespace test {
+namespace {
+struct CodecParamToProfile {
+  const char* codec;
+  const VideoCodecProfile profile;
+} kCodecParamToProfile[] = {
+    {"h264baseline", H264PROFILE_BASELINE}, {"h264", H264PROFILE_MAIN},
+    {"h264main", H264PROFILE_MAIN},         {"vp8", VP8PROFILE_ANY},
+    {"vp9", VP9PROFILE_PROFILE0},
+};
+}  // namespace
 
 // static
 VideoEncoderTestEnvironment* VideoEncoderTestEnvironment::Create(
     const base::FilePath& video_path,
     const base::FilePath& video_metadata_path,
-    const base::FilePath& output_folder) {
+    const base::FilePath& output_folder,
+    const std::string& codec) {
   if (video_path.empty()) {
     LOG(ERROR) << "No video specified";
     return nullptr;
@@ -47,14 +59,25 @@ VideoEncoderTestEnvironment* VideoEncoderTestEnvironment::Create(
     return nullptr;
   }
 
-  return new VideoEncoderTestEnvironment(std::move(video), output_folder);
+  const auto* it = std::find_if(
+      std::begin(kCodecParamToProfile), std::end(kCodecParamToProfile),
+      [codec](const auto& cp) { return cp.codec == codec; });
+  if (it == std::end(kCodecParamToProfile)) {
+    LOG(ERROR) << "Unknown codec: " << codec;
+    return nullptr;
+  }
+  VideoCodecProfile profile = it->profile;
+  return new VideoEncoderTestEnvironment(std::move(video), output_folder,
+                                         profile);
 }
 
 VideoEncoderTestEnvironment::VideoEncoderTestEnvironment(
     std::unique_ptr<media::test::Video> video,
-    const base::FilePath& output_folder)
+    const base::FilePath& output_folder,
+    VideoCodecProfile profile)
     : video_(std::move(video)),
       output_folder_(output_folder),
+      profile_(profile),
       gpu_memory_buffer_factory_(
           gpu::GpuMemoryBufferFactory::CreateNativeType(nullptr)) {}
 
@@ -66,6 +89,10 @@ const media::test::Video* VideoEncoderTestEnvironment::Video() const {
 
 const base::FilePath& VideoEncoderTestEnvironment::OutputFolder() const {
   return output_folder_;
+}
+
+VideoCodecProfile VideoEncoderTestEnvironment::Profile() const {
+  return profile_;
 }
 
 gpu::GpuMemoryBufferFactory*

@@ -14,9 +14,7 @@
 
 /** @fileoverview Externs generated from namespace: bookmarkManagerPrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.bookmarkManagerPrivate = {};
 
 /**

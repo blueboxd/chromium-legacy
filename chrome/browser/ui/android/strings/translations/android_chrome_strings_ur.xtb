@@ -152,7 +152,7 @@
 <translation id="218608176142494674">اشتراک</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> کے بطور جاری رکھیں</translation>
 <translation id="2234876718134438132">‏مطابقت پذیری اور Google سروسز</translation>
-<translation id="2239812875700136898">اختیارات برائے دریافت بٹن سے اپنی کہانیاں کنٹرول کریں</translation>
+<translation id="2239812875700136898">‏اختیارات برائے Discover بٹن سے اپنی کہانیاں کنٹرول کریں</translation>
 <translation id="2259659629660284697">پاسورڈز برآمد کریں…</translation>
 <translation id="2268044343513325586">بہتر بنائیں</translation>
 <translation id="2286841657746966508">بلنگ پتہ</translation>
@@ -481,7 +481,6 @@
 <translation id="4988210275050210843">فائل (<ph name="MEGABYTES" />) ڈاؤن لوڈ ہو رہی ہے۔</translation>
 <translation id="4988526792673242964">صفحات</translation>
 <translation id="4994033804516042629">کوئی رابطہ نہیں ملا</translation>
-<translation id="4996978546172906250">اشتراک کریں بذریعہ</translation>
 <translation id="5004416275253351869">‏Google سرگرمی کنٹرولز</translation>
 <translation id="5005498671520578047">پاس ورڈ کاپی کریں</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> منسلک ہونا چاہتی ہے</translation>
@@ -643,6 +642,7 @@
 <translation id="6381421346744604172">ویب سائٹس کو تاریک کریں</translation>
 <translation id="6395288395575013217">لنک</translation>
 <translation id="6397616442223433927">نیٹ ورک کنکشن بحال ہو گیا</translation>
+<translation id="6398765197997659313">پوری سکرین سے خارج ہوں</translation>
 <translation id="6404511346730675251">بک مارک میں ترمیم کریں</translation>
 <translation id="6406506848690869874">مطابقت پذیر بنائیں</translation>
 <translation id="6410973561433500075">‏<ph name="DOMAIN" /> سے AR میں داخل ہوں؟</translation>
@@ -905,6 +905,7 @@
 <translation id="8514577642972634246">پوشیدگی وضع میں داخل ہوں</translation>
 <translation id="8516012719330875537">امیج ایڈیٹر</translation>
 <translation id="8523928698583292556">اسٹور کردہ پاس ورڈ حذف کریں</translation>
+<translation id="8525306231823319788">پوری اسکرین</translation>
 <translation id="854522910157234410">یہ صفحہ کھولیں</translation>
 <translation id="8558485628462305855">‏افزودہ حقیقت کا مواد دیکھنے کیلئے، ARCore کو اپ ڈیٹ کریں</translation>
 <translation id="8559990750235505898">صفحات کو دیگر زبانوں میں ترجمہ کرنے کی پیشکش کریں</translation>

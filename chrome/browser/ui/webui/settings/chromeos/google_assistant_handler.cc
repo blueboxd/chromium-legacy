@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "ash/public/cpp/assistant/assistant_settings.h"
 #include "ash/public/cpp/assistant/assistant_setup.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/values.h"
@@ -74,7 +74,7 @@ void GoogleAssistantHandler::RegisterMessages() {
 void GoogleAssistantHandler::HandleShowGoogleAssistantSettings(
     const base::ListValue* args) {
   CHECK_EQ(0U, args->GetSize());
-  ash::OpenAssistantSettings();
+  ash::AssistantController::Get()->OpenAssistantSettings();
 }
 
 void GoogleAssistantHandler::HandleRetrainVoiceModel(

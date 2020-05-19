@@ -3,6 +3,11 @@
 // found in the LICENSE file.
 
 #include "net/base/features.h"
+
+#include <vector>
+
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 
 namespace net {
@@ -20,11 +25,56 @@ const base::FeatureParam<bool> kDnsHttpssvcUseHttpssvc{
 const base::FeatureParam<bool> kDnsHttpssvcUseIntegrity{
     &kDnsHttpssvc, "DnsHttpssvcUseIntegrity", false};
 
+const base::FeatureParam<bool> kDnsHttpssvcEnableQueryOverInsecure{
+    &kDnsHttpssvc, "DnsHttpssvcEnableQueryOverInsecure", false};
+
 const base::FeatureParam<int> kDnsHttpssvcExtraTimeMs{
     &kDnsHttpssvc, "DnsHttpssvcExtraTimeMs", 10};
 
 const base::FeatureParam<int> kDnsHttpssvcExtraTimePercent{
     &kDnsHttpssvc, "DnsHttpssvcExtraTimePercent", 5};
+
+const base::FeatureParam<std::string> kDnsHttpssvcExperimentDomains{
+    &kDnsHttpssvc, "DnsHttpssvcExperimentDomains", ""};
+
+const base::FeatureParam<std::string> kDnsHttpssvcControlDomains{
+    &kDnsHttpssvc, "DnsHttpssvcControlDomains", ""};
+
+const base::FeatureParam<bool> kDnsHttpssvcControlDomainWildcard{
+    &kDnsHttpssvc, "DnsHttpssvcControlDomainWildcard", false};
+
+namespace dns_httpssvc_experiment {
+namespace {
+bool ListContainsDomain(const std::string& domain_list,
+                        base::StringPiece domain) {
+  std::vector<base::StringPiece> parsed_list = base::SplitStringPiece(
+      domain_list, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  return std::find(parsed_list.begin(), parsed_list.end(), domain) !=
+         parsed_list.end();
+}
+}  // namespace
+
+base::TimeDelta GetExtraTimeAbsolute() {
+  DCHECK(base::FeatureList::IsEnabled(features::kDnsHttpssvc));
+  return base::TimeDelta::FromMilliseconds(kDnsHttpssvcExtraTimeMs.Get());
+}
+
+bool IsExperimentDomain(base::StringPiece domain) {
+  if (!base::FeatureList::IsEnabled(features::kDnsHttpssvc))
+    return false;
+  // TODO(dmcardle): Can we cache the results to avoid reparsing the
+  // comma-separated lists once per DnsTask?
+  return ListContainsDomain(kDnsHttpssvcExperimentDomains.Get(), domain);
+}
+
+bool IsControlDomain(base::StringPiece domain) {
+  if (!base::FeatureList::IsEnabled(features::kDnsHttpssvc))
+    return false;
+  if (kDnsHttpssvcControlDomainWildcard.Get())
+    return !IsExperimentDomain(domain);
+  return ListContainsDomain(kDnsHttpssvcControlDomains.Get(), domain);
+}
+}  // namespace dns_httpssvc_experiment
 
 const base::Feature kEnableTLS13EarlyData{"EnableTLS13EarlyData",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

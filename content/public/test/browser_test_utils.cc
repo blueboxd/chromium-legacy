@@ -2671,6 +2671,13 @@ RenderFrameSubmissionObserver::LastRenderFrameMetadata() const {
   return render_frame_metadata_provider_->LastRenderFrameMetadata();
 }
 
+void RenderFrameSubmissionObserver::NotifyOnNextMetadataChange(
+    base::OnceClosure closure) {
+  DCHECK(closure);
+  DCHECK(metadata_change_closure_.is_null());
+  metadata_change_closure_ = std::move(closure);
+}
+
 void RenderFrameSubmissionObserver::Quit() {
   if (quit_closure_)
     std::move(quit_closure_).Run();
@@ -2689,6 +2696,8 @@ void RenderFrameSubmissionObserver::
 void RenderFrameSubmissionObserver::
     OnRenderFrameMetadataChangedAfterActivation() {
   Quit();
+  if (metadata_change_closure_)
+    std::move(metadata_change_closure_).Run();
 }
 
 void RenderFrameSubmissionObserver::OnRenderFrameSubmission() {

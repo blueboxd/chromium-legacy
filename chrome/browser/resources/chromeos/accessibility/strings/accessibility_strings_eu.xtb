@@ -796,7 +796,7 @@ Chrome arakatzaileko menua irekitzeko, sakatu Alt tekla eta F.</translation>
 <translation id="7317017974771324508">partzialki hautatuta</translation>
 <translation id="7356165926712028380">Aldatu 8 puntuko braillera</translation>
 <translation id="7356610683936413584">Azalpenen zerrendaren xehetasunak</translation>
-<translation id="7370432716629432284">{COUNT,plural, =1{&amp; ikur}other{# &amp; ikur}}</translation>
+<translation id="7370432716629432284">{COUNT,plural, =1{et ikur}other{# et ikur}}</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="738899727977260036">Arbel-urdina</translation>
 <translation id="739763518212184081">Aurreko lerroa</translation>

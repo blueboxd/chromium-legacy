@@ -65,7 +65,9 @@ CrostiniPortForwarder* CrostiniPortForwarder::GetForProfile(Profile* profile) {
 }
 
 CrostiniPortForwarder::CrostiniPortForwarder(Profile* profile)
-    : profile_(profile) {}
+    : profile_(profile) {
+  current_interface_ = kWlanInterface;
+}
 
 CrostiniPortForwarder::~CrostiniPortForwarder() = default;
 
@@ -142,7 +144,7 @@ base::Optional<base::Value> CrostiniPortForwarder::ReadPortPreference(
   return base::Optional<base::Value>(it->Clone());
 }
 
-void CrostiniPortForwarder::OnAddOrActivatePortCompleted(
+void CrostiniPortForwarder::OnActivatePortCompleted(
     ResultCallback result_callback,
     PortRuleKey key,
     bool success) {
@@ -198,13 +200,13 @@ void CrostiniPortForwarder::TryActivatePort(
   switch (key.protocol_type) {
     case Protocol::TCP:
       client->RequestTcpPortForward(
-          key.port_number, kWlanInterface, info->ipv4_address, key.port_number,
-          lifeline_remote.get(), std::move(result_callback));
+          key.port_number, current_interface_, info->ipv4_address,
+          key.port_number, lifeline_remote.get(), std::move(result_callback));
       break;
     case Protocol::UDP:
       client->RequestUdpPortForward(
-          key.port_number, kWlanInterface, info->ipv4_address, key.port_number,
-          lifeline_remote.get(), std::move(result_callback));
+          key.port_number, current_interface_, info->ipv4_address,
+          key.port_number, lifeline_remote.get(), std::move(result_callback));
       break;
   }
 }
@@ -238,11 +240,11 @@ void CrostiniPortForwarder::TryDeactivatePort(
   // TODO(matterchen): Determining how to release all interfaces.
   switch (key.protocol_type) {
     case Protocol::TCP:
-      client->ReleaseTcpPortForward(key.port_number, kWlanInterface,
+      client->ReleaseTcpPortForward(key.port_number, current_interface_,
                                     std::move(result_callback));
       break;
     case Protocol::UDP:
-      client->ReleaseUdpPortForward(key.port_number, kWlanInterface,
+      client->ReleaseUdpPortForward(key.port_number, current_interface_,
                                     std::move(result_callback));
   }
 }
@@ -265,10 +267,8 @@ void CrostiniPortForwarder::AddPort(const ContainerId& container_id,
     return;
   }
   AddNewPortPreference(new_port_key, label);
-  base::OnceCallback<void(bool)> on_add_port_completed = base::BindOnce(
-      &CrostiniPortForwarder::OnAddOrActivatePortCompleted,
-      weak_ptr_factory_.GetWeakPtr(), std::move(result_callback), new_port_key);
-  TryActivatePort(new_port_key, container_id, std::move(on_add_port_completed));
+  ActivatePort(container_id, port_number, protocol_type,
+               std::move(result_callback));
 }
 
 void CrostiniPortForwarder::ActivatePort(const ContainerId& container_id,
@@ -294,7 +294,7 @@ void CrostiniPortForwarder::ActivatePort(const ContainerId& container_id,
   }
 
   base::OnceCallback<void(bool)> on_activate_port_completed =
-      base::BindOnce(&CrostiniPortForwarder::OnAddOrActivatePortCompleted,
+      base::BindOnce(&CrostiniPortForwarder::OnActivatePortCompleted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(result_callback),
                      existing_port_key);
 
@@ -395,6 +395,22 @@ size_t CrostiniPortForwarder::GetNumberOfForwardedPortsForTesting() {
 base::Optional<base::Value> CrostiniPortForwarder::ReadPortPreferenceForTesting(
     const PortRuleKey& key) {
   return ReadPortPreference(key);
+}
+
+void CrostiniPortForwarder::UpdateActivePortInterfaces() {
+  for (auto& port : forwarded_ports_) {
+    TryActivatePort(port.first, port.first.container_id, base::DoNothing());
+  }
+}
+
+void CrostiniPortForwarder::ActiveNetworksChanged(
+    const std::string& interface) {
+  if (interface.empty())
+    return;
+  if (interface == current_interface_)
+    return;
+  current_interface_ = interface;
+  UpdateActivePortInterfaces();
 }
 
 }  // namespace crostini

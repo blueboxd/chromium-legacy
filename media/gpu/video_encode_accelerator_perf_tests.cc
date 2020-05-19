@@ -29,6 +29,7 @@ namespace {
 // TODO(dstaessens): Add video_encoder_perf_test_usage.md
 constexpr const char* usage_msg =
     "usage: video_encode_accelerator_perf_tests\n"
+    "           [--codec=<codec>]\n"
     "           [-v=<level>] [--vmodule=<config>] [--output_folder]\n"
     "           [--gtest_help] [--help]\n"
     "           [<video path>] [<video metadata path>]\n";
@@ -42,6 +43,8 @@ constexpr const char* help_msg =
     "containing the video's metadata. By default <video path>.json will be\n"
     "used.\n"
     "\nThe following arguments are supported:\n"
+    "  --codec              codec profile to encode, \"h264 (baseline)\",\n"
+    "                       \"h264main, \"h264high\", \"vp8\" and \"vp9\"\n"
     "   -v                  enable verbose mode, e.g. -v=2.\n"
     "  --vmodule            enable verbose mode for the specified module,\n"
     "  --output_folder      overwrite the output folder used to store\n"
@@ -270,7 +273,8 @@ void PerformanceMetrics::WriteToFile() const {
 class VideoEncoderTest : public ::testing::Test {
  public:
   // Create a new video encoder instance.
-  std::unique_ptr<VideoEncoder> CreateVideoEncoder(const Video* video) {
+  std::unique_ptr<VideoEncoder> CreateVideoEncoder(const Video* video,
+                                                   VideoCodecProfile profile) {
     LOG_ASSERT(video);
 
     std::vector<std::unique_ptr<BitstreamProcessor>> bitstream_processors;
@@ -280,6 +284,7 @@ class VideoEncoderTest : public ::testing::Test {
 
     VideoEncoderClientConfig config;
     config.framerate = video->FrameRate();
+    config.output_profile = profile;
     auto video_encoder =
         VideoEncoder::Create(config, std::move(bitstream_processors));
     LOG_ASSERT(video_encoder);
@@ -297,7 +302,7 @@ class VideoEncoderTest : public ::testing::Test {
 // test will encode a video as fast as possible, and gives an idea about the
 // maximum output of the encoder.
 TEST_F(VideoEncoderTest, MeasureUncappedPerformance) {
-  auto encoder = CreateVideoEncoder(g_env->Video());
+  auto encoder = CreateVideoEncoder(g_env->Video(), g_env->Profile());
 
   performance_evaluator_->StartMeasuring();
   encoder->Encode();
@@ -336,6 +341,7 @@ int main(int argc, char** argv) {
                          : base::FilePath(media::test::kDefaultTestVideoPath);
   base::FilePath video_metadata_path =
       (args.size() >= 2) ? base::FilePath(args[1]) : base::FilePath();
+  std::string codec = "h264";
 
   // Parse command line arguments.
   base::FilePath::StringType output_folder = media::test::kDefaultOutputFolder;
@@ -349,6 +355,8 @@ int main(int argc, char** argv) {
 
     if (it->first == "output_folder") {
       output_folder = it->second;
+    } else if (it->first == "codec") {
+      codec = it->second;
     } else {
       std::cout << "unknown option: --" << it->first << "\n"
                 << media::test::usage_msg;
@@ -361,7 +369,8 @@ int main(int argc, char** argv) {
   // Set up our test environment.
   media::test::VideoEncoderTestEnvironment* test_environment =
       media::test::VideoEncoderTestEnvironment::Create(
-          video_path, video_metadata_path, base::FilePath(output_folder));
+          video_path, video_metadata_path, base::FilePath(output_folder),
+          codec);
   if (!test_environment)
     return EXIT_FAILURE;
 

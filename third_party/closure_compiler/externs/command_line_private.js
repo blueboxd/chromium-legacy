@@ -4,9 +4,7 @@
 
 /** @fileoverview Externs generated from namespace: commandLinePrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.commandLinePrivate = {};
 
 /**

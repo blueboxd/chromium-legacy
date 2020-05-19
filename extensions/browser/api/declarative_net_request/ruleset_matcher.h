@@ -74,8 +74,12 @@ class RulesetMatcher {
 
   base::Optional<RequestAction> GetBeforeRequestAction(
       const RequestParams& params) const;
+
+  // Returns a list of actions corresponding to all matched
+  // modifyHeaders rules with priority greater than |min_priority| if specified.
   std::vector<RequestAction> GetModifyHeadersActions(
-      const RequestParams& params) const;
+      const RequestParams& params,
+      base::Optional<uint64_t> min_priority) const;
 
   bool IsExtraHeadersMatcher() const;
   size_t GetRulesCount() const;

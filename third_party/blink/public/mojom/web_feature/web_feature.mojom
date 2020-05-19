@@ -2638,6 +2638,7 @@ enum WebFeature {
   kPopupGestureTapExceedsOwnerWindowBounds = 3301,
   kPopupMouseDownExceedsOwnerWindowBounds = 3302,
   kPopupMouseWheelExceedsOwnerWindowBounds = 3303,
+  kV8VarRedeclaredCatchBinding = 3304,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

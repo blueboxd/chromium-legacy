@@ -71,12 +71,13 @@ base::Optional<RequestAction> RulesetMatcher::GetBeforeRequestAction(
 }
 
 std::vector<RequestAction> RulesetMatcher::GetModifyHeadersActions(
-    const RequestParams& params) const {
+    const RequestParams& params,
+    base::Optional<uint64_t> min_priority) const {
   std::vector<RequestAction> modify_header_actions =
-      url_pattern_index_matcher_.GetModifyHeadersActions(params);
+      url_pattern_index_matcher_.GetModifyHeadersActions(params, min_priority);
 
   std::vector<RequestAction> regex_modify_header_actions =
-      regex_matcher_.GetModifyHeadersActions(params);
+      regex_matcher_.GetModifyHeadersActions(params, min_priority);
 
   modify_header_actions.insert(
       modify_header_actions.end(),

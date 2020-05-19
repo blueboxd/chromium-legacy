@@ -74,17 +74,23 @@ BrailleControllerImpl::~BrailleControllerImpl() {
 
 void BrailleControllerImpl::TryLoadLibBrlApi() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (skip_libbrlapi_so_load_ || libbrlapi_loader_.loaded())
+  if (libbrlapi_loader_.loaded())
     return;
 
-  // This api version needs to match the one contained in
-  // third_party/libbrlapi/brlapi.h.
-  static const char* const kSupportedVersion = "libbrlapi.so.0.8";
-
-  if (!libbrlapi_loader_.Load(kSupportedVersion)) {
-    LOG(WARNING) << "Couldn't load libbrlapi(" << kSupportedVersion << ": "
-                 << strerror(errno);
+  // This list of api versions needs to contain the one used by the
+  // corresponding brltty used by Chrome OS for this version of Chrome. For
+  // example, in Chrome OS 84, we use brltty 6.1, which is using brlapi 0.8.
+  // The relevant header is checked into //third_party/libbrlapi/. Ensure to
+  // keep this list in descendning order. Note that we keep older versions so
+  // that tests will continue to work.
+  static const char* const kSupportedVersions[] = {
+      "libbrlapi.so.0.8", "libbrlapi.so.0.7", "libbrlapi.so.0.6",
+      "libbrlapi.so.0.5"};
+  for (size_t i = 0; i < base::size(kSupportedVersions); ++i) {
+    if (libbrlapi_loader_.Load(kSupportedVersions[i]))
+      return;
   }
+  LOG(WARNING) << "Couldn't load libbrlapi: " << strerror(errno);
 }
 
 std::unique_ptr<DisplayState> BrailleControllerImpl::GetDisplayState() {
@@ -101,10 +107,6 @@ std::unique_ptr<DisplayState> BrailleControllerImpl::GetDisplayState() {
       display_state->available = true;
       display_state->text_column_count.reset(new int(columns));
       display_state->text_row_count.reset(new int(rows));
-
-      unsigned int cell_size = 0;
-      connection_->GetCellSize(&cell_size);
-    display_state->cell_size.reset(new int(cell_size));
     }
   }
   return display_state;
@@ -171,7 +173,7 @@ void BrailleControllerImpl::StartConnecting() {
     return;
   started_connecting_ = true;
   TryLoadLibBrlApi();
-  if (!libbrlapi_loader_.loaded() && !skip_libbrlapi_so_load_) {
+  if (!libbrlapi_loader_.loaded()) {
     return;
   }
 
@@ -233,7 +235,7 @@ void BrailleControllerImpl::OnSocketDirChangedOnIOThread() {
 
 void BrailleControllerImpl::TryToConnect() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(skip_libbrlapi_so_load_ || libbrlapi_loader_.loaded());
+  DCHECK(libbrlapi_loader_.loaded());
   connect_scheduled_ = false;
   if (!connection_.get())
     connection_ = create_brlapi_connection_function_.Run();
@@ -291,7 +293,7 @@ void BrailleControllerImpl::Disconnect() {
 
 std::unique_ptr<BrlapiConnection>
 BrailleControllerImpl::CreateBrlapiConnection() {
-  DCHECK(skip_libbrlapi_so_load_ || libbrlapi_loader_.loaded());
+  DCHECK(libbrlapi_loader_.loaded());
   return BrlapiConnection::Create(&libbrlapi_loader_);
 }
 

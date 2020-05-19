@@ -1057,6 +1057,16 @@ const char kSettingsShowOSBanner[] = "settings.cros.show_os_banner";
 // urls to be used via the WebUSB API on the login screen.
 const char kDeviceLoginScreenWebUsbAllowDevicesForUrls[] =
     "device_login_screen_webusb_allow_devices_for_urls";
+
+// Int64 pref indicating the time in microseconds since Windows epoch when the
+// timer for update required which will block user session was started. If the
+// timer is not started the pref holds the default value base::Time().
+const char kUpdateRequiredTimerStartTime[] = "update_required_timer_start_time";
+
+// Int64 pref indicating the waiting time in microseconds after which the update
+// required timer will expire and block user session. If the timer is not
+// started the pref holds the default value base::TimeDelta().
+const char kUpdateRequiredWarningPeriod[] = "update_required_warning_period";
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

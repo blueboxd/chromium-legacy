@@ -75,125 +75,6 @@ mojom::RoutineUpdatePtr MakeNonInteractiveRoutineUpdate() {
       /*output=*/mojo::ScopedHandle(), update_union.Clone());
 }
 
-mojom::NonRemovableBlockDeviceResultPtr MakeNonRemovableBlockDeviceResult() {
-  std::vector<mojom::NonRemovableBlockDeviceInfoPtr> info;
-  info.push_back(mojom::NonRemovableBlockDeviceInfo::New(
-      "test_path", 123 /* size */, "test_type", 10 /* manfid */, "test_name",
-      768 /* serial */, 798123 /* bytes_read_since_last_boot */,
-      130971 /* bytes_written_since_last_boot */,
-      56768 /* read_time_seconds_since_last_boot */,
-      123123 /* write_time_seconds_since_last_boot */));
-  info.push_back(mojom::NonRemovableBlockDeviceInfo::New(
-      "test_path2", 124 /* size */, "test_type2", 11 /* manfid */, "test_name2",
-      767 /* serial */, 293429 /* bytes_read_since_last_boot */,
-      2929 /* bytes_written_since_last_boot */,
-      438563 /* read_time_seconds_since_last_boot */,
-      530 /* write_time_seconds_since_last_boot */));
-  return mojom::NonRemovableBlockDeviceResult::NewBlockDeviceInfo(
-      std::move(info));
-}
-
-mojom::BatteryResultPtr MakeBatteryResult() {
-  return mojom::BatteryResult::NewBatteryInfo(mojom::BatteryInfo::New(
-      2 /* cycle_count */, 12.9 /* voltage_now */,
-      "battery_vendor" /* vendor */, "serial_number" /* serial_number */,
-      5.275 /* charge_full_design */, 5.292 /* charge_full */,
-      11.55 /* voltage_min_design */, "battery_model" /* model_name */,
-      5.123 /* charge_now */, 98.123 /* current_now */,
-      "battery_technology" /* technology */, "battery_status" /* status */,
-      "2018-08-06" /* manufacture_date */,
-      mojom::UInt64Value::New(981729) /* temperature */));
-}
-
-mojom::CachedVpdResultPtr MakeCachedVpdResult() {
-  return mojom::CachedVpdResult::NewVpdInfo(
-      mojom::CachedVpdInfo::New("fake_sku_number" /* sku_number */));
-}
-
-std::vector<mojom::CpuCStateInfoPtr> MakeCStateInfo() {
-  std::vector<mojom::CpuCStateInfoPtr> c_states;
-  c_states.push_back(mojom::CpuCStateInfo::New(
-      "c_state_0" /* name */, 679 /* time_in_state_since_last_boot_us */));
-  c_states.push_back(mojom::CpuCStateInfo::New(
-      "c_state_1" /* name */, 12354 /* time_in_state_since_last_boot_us */));
-  return c_states;
-}
-
-std::vector<mojom::LogicalCpuInfoPtr> MakeLogicalCpus() {
-  std::vector<mojom::LogicalCpuInfoPtr> logical_cpus;
-  logical_cpus.push_back(mojom::LogicalCpuInfo::New(
-      11 /* max_clock_speed_khz */, 14 /* scaling_max_frequency_khz */,
-      99 /* scaling_current_frequency_khz */, 889 /* idle_time_user_hz */,
-      MakeCStateInfo()));
-  logical_cpus.push_back(mojom::LogicalCpuInfo::New(
-      987 /* max_clock_speed_khz */, 543 /* scaling_max_frequency_khz */,
-      2349 /* scaling_current_frequency_khz */, 688 /* idle_time_user_hz */,
-      MakeCStateInfo()));
-  return logical_cpus;
-}
-
-std::vector<mojom::PhysicalCpuInfoPtr> MakePhysicalCpus() {
-  std::vector<mojom::PhysicalCpuInfoPtr> physical_cpus;
-  physical_cpus.push_back(mojom::PhysicalCpuInfo::New(
-      "Dank CPU 1" /* model_name */, MakeLogicalCpus()));
-  physical_cpus.push_back(mojom::PhysicalCpuInfo::New(
-      "Dank CPU 2" /* model_name */, MakeLogicalCpus()));
-  return physical_cpus;
-}
-
-mojom::CpuResultPtr MakeCpuResult() {
-  return mojom::CpuResult::NewCpuInfo(mojom::CpuInfo::New(
-      10 /* num_total_threads */,
-      mojom::CpuArchitectureEnum::kX86_64 /* architecture */,
-      MakePhysicalCpus()));
-}
-
-mojom::TimezoneResultPtr MakeTimezoneResult() {
-  return mojom::TimezoneResult::NewTimezoneInfo(mojom::TimezoneInfo::New(
-      "MST7MDT,M3.2.0,M11.1.0" /* posix */, "America/Denver" /* region */));
-}
-
-mojom::MemoryResultPtr MakeMemoryResult() {
-  return mojom::MemoryResult::NewMemoryInfo(mojom::MemoryInfo::New(
-      987123 /* total_memory_kib */, 346432 /* free_memory_kib */,
-      45863 /* available_memory_kib */,
-      43264 /* page_faults_since_last_boot */));
-}
-
-mojom::BacklightResultPtr MakeBacklightResult() {
-  std::vector<mojom::BacklightInfoPtr> backlight_info;
-  backlight_info.push_back(mojom::BacklightInfo::New(
-      "path_1" /* path */, 6537 /* max_brightness */, 987 /* brightness */));
-  backlight_info.push_back(mojom::BacklightInfo::New(
-      "path_2" /* path */, 3242 /* max_brightness */, 65 /* brightness */));
-  return mojom::BacklightResult::NewBacklightInfo(std::move(backlight_info));
-}
-
-mojom::FanResultPtr MakeFanResult() {
-  std::vector<mojom::FanInfoPtr> fan_vector;
-  fan_vector.push_back(mojom::FanInfo::New(1200 /* speed_rpm */));
-  fan_vector.push_back(mojom::FanInfo::New(2650 /* speed_rpm */));
-  return mojom::FanResult::NewFanInfo(std::move(fan_vector));
-}
-
-mojom::StatefulPartitionResultPtr MakeStatefulPartitionResult() {
-  return mojom::StatefulPartitionResult::NewPartitionInfo(
-      mojom::StatefulPartitionInfo::New(9238571212ul, 23420982409ul));
-}
-
-mojom::TelemetryInfoPtr MakeTelemetryInfo() {
-  return mojom::TelemetryInfo::New(
-      MakeBatteryResult() /* battery_result */,
-      MakeNonRemovableBlockDeviceResult() /* block_device_result */,
-      MakeCachedVpdResult() /* vpd_result */, MakeCpuResult() /* cpu_result */,
-      MakeTimezoneResult() /* timezone_result */,
-      MakeMemoryResult() /* memory_result */,
-      MakeBacklightResult() /* backlight_result */,
-      MakeFanResult() /* fan_result */,
-      MakeStatefulPartitionResult() /* partition_result */
-  );
-}
-
 class MockCrosHealthdBluetoothObserver
     : public mojom::CrosHealthdBluetoothObserver {
  public:
@@ -569,46 +450,16 @@ TEST_F(CrosHealthdServiceConnectionTest, AddPowerObserver) {
 }
 
 TEST_F(CrosHealthdServiceConnectionTest, ProbeTelemetryInfo) {
-  // Test that we can send a request without categories.
-  auto empty_info = mojom::TelemetryInfo::New();
+  auto response = mojom::TelemetryInfo::New();
   FakeCrosHealthdClient::Get()->SetProbeTelemetryInfoResponseForTesting(
-      empty_info);
-  const std::vector<mojom::ProbeCategoryEnum> no_categories = {};
-  bool callback_done = false;
+      response);
+  base::RunLoop run_loop;
   ServiceConnection::GetInstance()->ProbeTelemetryInfo(
-      no_categories, base::BindOnce(
-                         [](bool* callback_done, mojom::TelemetryInfoPtr info) {
-                           EXPECT_EQ(info, mojom::TelemetryInfo::New());
-                           *callback_done = true;
-                         },
-                         &callback_done));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(callback_done);
-
-  // Test that we can request all categories.
-  auto response_info = MakeTelemetryInfo();
-  FakeCrosHealthdClient::Get()->SetProbeTelemetryInfoResponseForTesting(
-      response_info);
-  const std::vector<mojom::ProbeCategoryEnum> categories_to_test = {
-      mojom::ProbeCategoryEnum::kBattery,
-      mojom::ProbeCategoryEnum::kNonRemovableBlockDevices,
-      mojom::ProbeCategoryEnum::kCachedVpdData,
-      mojom::ProbeCategoryEnum::kCpu,
-      mojom::ProbeCategoryEnum::kTimezone,
-      mojom::ProbeCategoryEnum::kMemory,
-      mojom::ProbeCategoryEnum::kBacklight,
-      mojom::ProbeCategoryEnum::kFan};
-  callback_done = false;
-  ServiceConnection::GetInstance()->ProbeTelemetryInfo(
-      categories_to_test,
-      base::BindOnce(
-          [](bool* callback_done, mojom::TelemetryInfoPtr info) {
-            EXPECT_EQ(info, MakeTelemetryInfo());
-            *callback_done = true;
-          },
-          &callback_done));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(callback_done);
+      {}, base::BindLambdaForTesting([&](mojom::TelemetryInfoPtr info) {
+        EXPECT_EQ(info, response);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
 }
 
 }  // namespace

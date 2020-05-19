@@ -19,11 +19,13 @@ using chromeos::CrasAudioHandler;
 namespace ash {
 
 MicGainSliderView::MicGainSliderView(MicGainSliderController* controller,
-                                     uint64_t device_id)
+                                     uint64_t device_id,
+                                     bool internal)
     : UnifiedSliderView(controller,
                         kImeMenuMicrophoneIcon,
                         IDS_ASH_STATUS_TRAY_VOLUME_SLIDER_LABEL),
-      device_id_(device_id) {
+      device_id_(device_id),
+      internal_(internal) {
   CrasAudioHandler::Get()->AddAudioObserver(this);
 
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -42,14 +44,26 @@ MicGainSliderView::~MicGainSliderView() {
 }
 
 void MicGainSliderView::Update(bool by_user) {
-  if (CrasAudioHandler::Get()->GetPrimaryActiveInputNode() != device_id_) {
+  auto* audio_handler = CrasAudioHandler::Get();
+  uint64_t active_device_id = audio_handler->GetPrimaryActiveInputNode();
+  auto* active_device = audio_handler->GetDeviceFromId(active_device_id);
+
+  // If the device has dual internal mics the internal mic shown in the ui is a
+  // stub. We need to show this slider despite the device_id_ not matching the
+  // active input node.
+  bool show_internal_stub = internal_ &&
+                            (active_device && active_device->IsInternalMic()) &&
+                            audio_handler->HasDualInternalMic();
+
+  if (audio_handler->GetPrimaryActiveInputNode() != device_id_ &&
+      !show_internal_stub) {
     SetVisible(false);
     return;
   }
 
   SetVisible(true);
-  bool is_muted = CrasAudioHandler::Get()->IsInputMuted();
-  float level = CrasAudioHandler::Get()->GetInputGainPercent() / 100.f;
+  bool is_muted = audio_handler->IsInputMuted();
+  float level = audio_handler->GetInputGainPercent() / 100.f;
   // To indicate that the volume is muted, set the volume slider to the minimal
   // visual style.
   slider()->SetRenderingStyle(

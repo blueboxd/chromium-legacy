@@ -4,6 +4,7 @@
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" /> എന്നതിലേക്ക് അയ‌യ്‌ക്കുന്നു...</translation>
 <translation id="111910763555783249">അറിയിപ്പ് ക്രമീകരണം</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{ഒരു ദിവസം മുമ്പ്}other{# ദിവസം മുമ്പ്}}</translation>
+<translation id="1145532888383813076">നിങ്ങളുടെ ഉപകരണം, ആപ്പുകൾ, വെബ് എന്നിവ തിരയുക.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{ഒരു മിനിറ്റിന് മുമ്പ്}other{# മിനിറ്റ് മുമ്പ്}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{ 1 മീറ്റര്‍}other{# മീറ്റർ}}</translation>
 <translation id="1181037720776840403">നീക്കംചെയ്യൂ</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">സമന്വയിപ്പിക്കൽ ഓണാക്കുക</translation>
 <translation id="5329858601952122676">&amp;ഇല്ലാതാക്കൂ</translation>
 <translation id="5395308026110844773"><ph name="IN_PLACE_APP" /> എന്നതിന് മുകളിലാണ് <ph name="DRAGGED_APP_NAME" />, ഫോൾഡർ സൃഷ്‌ടിക്കാൻ റിലീസ് ചെയ്യുക.</translation>
+<translation id="5432996274932278848">നിങ്ങളുടെ ഉപകരണം, ആപ്പുകൾ, വെബ് എന്നിവ തിരയുക. നിങ്ങളുടെ ആപ്പുകൾ നാവിഗേറ്റ് ചെയ്യാൻ അമ്പടയാള കീകൾ ഉപയോഗിക്കുക.</translation>
 <translation id="5463830097259460683">ഇമോജിയും ചിഹ്നങ്ങളും</translation>
 <translation id="5476505524087279545">അണ്‍ചെക്ക് ചെയ്യുക</translation>
 <translation id="547979256943495781">സ്‌ക്രീനിൻ്റെ വലതുഭാഗത്താണ് ഷെൽഫ്</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">നിങ്ങളുടെ ചരിത്രത്തിൽ നിന്ന് ഈ തിരയൽ ഇല്ലാതാക്കണോ?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">ഇമോജി</translation>
+<translation id="7611008212562900400">നിങ്ങളുടെ ഉപകരണം, ആപ്പ്, വെബ് എന്നിവ തിരയുക...</translation>
 <translation id="7658239707568436148">റദ്ദാക്കൂ</translation>
 <translation id="7781829728241885113">ഇന്നലെ</translation>
 <translation id="7814458197256864873">&amp;പകര്‍ത്തൂ</translation>

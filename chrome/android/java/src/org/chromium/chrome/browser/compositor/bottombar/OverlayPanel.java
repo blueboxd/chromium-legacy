@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.RectF;
 import android.os.Handler;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.IntDef;
@@ -343,7 +344,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     // Claim or lose focus of the content view of the base WebContents. This keeps
     // the state of the text selected for overlay in consistent way.
     private static void updateFocus(WebContents baseWebContents, boolean focusBaseView) {
-        ViewGroup baseContentView = baseWebContents.getViewAndroidDelegate() != null
+        View baseContentView = baseWebContents.getViewAndroidDelegate() != null
                 ? baseWebContents.getViewAndroidDelegate().getContainerView()
                 : null;
         if (baseContentView == null) return;

@@ -168,7 +168,6 @@ luci.list_view(
         'try/win7-rel',
         'try/win10_chromium_x64_dbg_ng',
         'try/win10_chromium_x64_rel_ng',
-        'try/win10_chromium_x64_coverage_rel_ng',
         'try/win10_chromium_x64_rel_ng_exp',
         'try/win-angle-deqp-rel-32',
         'try/win-angle-deqp-rel-64',

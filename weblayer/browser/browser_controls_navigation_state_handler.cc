@@ -13,11 +13,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "weblayer/browser/browser_controls_navigation_state_handler_delegate.h"
+#include "weblayer/browser/weblayer_features.h"
 
 namespace weblayer {
 namespace {
-const base::Feature kImmediatelyHideBrowserControlsForTest{
-    "ImmediatelyHideBrowserControlsForTest", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // The time that must elapse after a navigation before the browser controls can
 // be hidden. This value matches what chrome has in

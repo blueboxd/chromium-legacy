@@ -402,6 +402,12 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
                     int child_id,
                     const GURL& lock_url);
 
+  // Testing helper method that generates a lock_url from |url| and then
+  // calls LockToOrigin() with that lock URL.
+  void LockProcessForTesting(const IsolationContext& isolation_context,
+                             int child_id,
+                             const GURL& url);
+
   // Retrieves the current origin lock of process |child_id|.  Returns an empty
   // GURL if the process does not exist or if it is not locked to an origin.
   GURL GetOriginLock(int child_id);

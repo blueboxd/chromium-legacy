@@ -50,6 +50,9 @@ const base::Feature kStrictHasEnrolledAutofillInstrument{
 const base::Feature kPaymentRequestSkipToGPay{
     "PaymentRequestSkipToGPay", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kPaymentRequestOptionalTotal{
+    "PaymentRequestOptionalTotal", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kPaymentRequestSkipToGPayIfNoCard{
     "PaymentRequestSkipToGPayIfNoCard", base::FEATURE_DISABLED_BY_DEFAULT};
 

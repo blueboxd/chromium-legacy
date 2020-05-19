@@ -16,6 +16,7 @@
 namespace chromeos {
 namespace quick_answers {
 struct QuickAnswer;
+struct QuickAnswersRequest;
 class QuickAnswersConsent;
 }  // namespace quick_answers
 }  // namespace chromeos
@@ -42,7 +43,8 @@ class ASH_EXPORT QuickAnswersControllerImpl
   // SetClient is required to be called before using these methods.
   // TODO(yanxiao): refactor to delegate to browser.
   void MaybeShowQuickAnswers(const gfx::Rect& anchor_bounds,
-                             const std::string& title) override;
+                             const std::string& title,
+                             const std::string& device_language) override;
 
   void DismissQuickAnswers(bool is_active) override;
 
@@ -57,6 +59,9 @@ class ASH_EXPORT QuickAnswersControllerImpl
       std::unique_ptr<chromeos::quick_answers::QuickAnswer> answer) override;
   void OnEligibilityChanged(bool eligible) override;
   void OnNetworkError() override;
+  void OnRequestPreprocessFinished(
+      const chromeos::quick_answers::QuickAnswersRequest& processed_request)
+      override;
 
   // Retry sending quick answers request to backend.
   void OnRetryQuickAnswersRequest();
@@ -76,7 +81,6 @@ class ASH_EXPORT QuickAnswersControllerImpl
   void OpenQuickAnswersDogfoodLink();
 
  private:
-  void SendAssistantQuery(const std::string& query);
   void MaybeDismissQuickAnswersConsent();
 
   // Bounds of the anchor view.
@@ -84,6 +88,12 @@ class ASH_EXPORT QuickAnswersControllerImpl
 
   // Query used to retrieve quick answer.
   std::string query_;
+
+  // Title to be shown on the QuickAnswers view.
+  std::string title_;
+
+  // Device language.
+  std::string device_language_;
 
   std::unique_ptr<chromeos::quick_answers::QuickAnswersClient>
       quick_answers_client_;

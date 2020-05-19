@@ -4,10 +4,12 @@
 
 #include "ash/system/gesture_education/gesture_education_notification_controller.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
@@ -16,7 +18,10 @@ namespace ash {
 
 class GestureEducationNotificationControllerTest : public AshTestBase {
  public:
-  GestureEducationNotificationControllerTest() = default;
+  GestureEducationNotificationControllerTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {ash::features::kHideShelfControlsInTabletMode}, {});
+  }
   ~GestureEducationNotificationControllerTest() override = default;
 
   // AshTestBase:
@@ -67,6 +72,8 @@ class GestureEducationNotificationControllerTest : public AshTestBase {
  private:
   std::unique_ptr<GestureEducationNotificationController> controller_;
   std::unique_ptr<TabletModeControllerTestApi> test_api_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(GestureEducationNotificationControllerTest, Notification) {

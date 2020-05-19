@@ -466,6 +466,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="488187801263602086">Файлдын аталышын өзгөртүү</translation>
 <translation id="4882831918239250449">Издөөнү, жарнамаларды жана башка кызматтарды жекечелештирүү үчүн серептөө таржымалыңыз кандайча пайдаланыларын көзөмөлдөңүз</translation>
 <translation id="4885273946141277891">Мындай сандагы Chrome нускалары колдоого алынбайт.</translation>
+<translation id="4908869848243824489">Google сунуштайт</translation>
 <translation id="4910889077668685004">Төлөм колдонмолору</translation>
 <translation id="4913161338056004800">Статистиканы баштапкы абалга келтирүү</translation>
 <translation id="4913169188695071480">Жаңыртуу токтотулсун</translation>
@@ -481,7 +482,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="4988210275050210843">Файл жүктөлүп алынууда (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Барактар</translation>
 <translation id="4994033804516042629">Байланыштар табылган жок</translation>
-<translation id="4996978546172906250">Төмөнкү аркылуу бөлүшүү</translation>
 <translation id="5004416275253351869">Google'дагы аракеттерди көзөмөлдөө</translation>
 <translation id="5005498671520578047">Сырсөздү көчүрүү</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> сайты туташканы жатат</translation>
@@ -643,6 +643,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6381421346744604172">Күңүрттөлгөн вебсайттар</translation>
 <translation id="6395288395575013217">ШИЛТЕМЕ</translation>
 <translation id="6397616442223433927">Кайрадан онлайн</translation>
+<translation id="6398765197997659313">Толук экран режиминен чыгуу</translation>
 <translation id="6404511346730675251">Кыстарманы түзөтүү</translation>
 <translation id="6406506848690869874">Шайкештирүү</translation>
 <translation id="6410973561433500075">AR режимине <ph name="DOMAIN" /> доменинен киресизби?</translation>
@@ -702,6 +703,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6846298663435243399">Жүктөлүүдө…</translation>
 <translation id="6850409657436465440">Файлыңыз дагы эле жүктөлүп алынууда</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> өтмөк жабылды</translation>
+<translation id="685850645784703949">Google сунуштайт – өчүк</translation>
 <translation id="6864459304226931083">Сүрөттү жүктөп алуу</translation>
 <translation id="6865313869410766144">Автотолтуруу формасынын дайындары</translation>
 <translation id="6884306546558072722">Оффлайн режиминде изилдей бериңиз</translation>
@@ -904,6 +906,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="8514577642972634246">Жашыруун режимге кириңиз</translation>
 <translation id="8516012719330875537">Сүрөттү түзөткүч</translation>
 <translation id="8523928698583292556">Сакталган сырсөздү жок кылуу</translation>
+<translation id="8525306231823319788">Толук экран</translation>
 <translation id="854522910157234410">Бул бетти ачыңыз</translation>
 <translation id="8558485628462305855">Кошумчаланган чындыкты көрүү үчүн ARCore кызматын жаңыртыңыз</translation>
 <translation id="8559990750235505898">Башка тилдердеги барактарды которуу сунушталсын</translation>

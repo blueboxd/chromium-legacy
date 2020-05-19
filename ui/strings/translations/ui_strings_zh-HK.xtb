@@ -4,6 +4,7 @@
 <translation id="1028699632127661925">正在傳送至 <ph name="DEVICE_NAME" />…</translation>
 <translation id="111910763555783249">通知設定</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 天前}other{# 天前}}</translation>
+<translation id="1145532888383813076">搜尋您的裝置、應用程式和網絡。</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 分鐘前}other{# 分鐘前}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 分鐘}other{# 分鐘}}</translation>
 <translation id="1181037720776840403">移除</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">開啟同步處理功能</translation>
 <translation id="5329858601952122676">刪除(&amp;D)</translation>
 <translation id="5395308026110844773">「<ph name="DRAGGED_APP_NAME" />」宜家拉咗去「<ph name="IN_PLACE_APP" />」上面，放開滑鼠就可以建立資料夾。</translation>
+<translation id="5432996274932278848">搜尋您的裝置、應用程式及網絡。使用箭咀鍵可瀏覽應用程式。</translation>
 <translation id="5463830097259460683">Emoji 和符號</translation>
 <translation id="5476505524087279545">取消勾選</translation>
 <translation id="547979256943495781">檔案櫃喺螢幕右邊</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">要從記錄中刪除此搜尋嗎？</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
+<translation id="7611008212562900400">搜尋您的裝置、應用程式、網絡…</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7781829728241885113">昨天</translation>
 <translation id="7814458197256864873">複製(&amp;C)</translation>

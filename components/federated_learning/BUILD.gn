@@ -1,0 +1,24 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("federated_learning") {
+  sources = [
+    "floc_id.cc",
+    "floc_id.h",
+    "sim_hash.cc",
+    "sim_hash.h",
+  ]
+
+  deps = [ "//base" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "sim_hash_unittest.cc" ]
+  deps = [
+    ":federated_learning",
+    "//base",
+    "//testing/gtest",
+  ]
+}

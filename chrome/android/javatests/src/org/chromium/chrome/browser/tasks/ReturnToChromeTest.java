@@ -36,6 +36,7 @@ import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
@@ -59,6 +60,7 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.test.util.UiDisableIf;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.Arrays;
@@ -134,6 +136,7 @@ public class ReturnToChromeTest {
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/100000"
             + "/start_surface_variation/single/open_ntp_instead_of_start/true"})
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // See https://crbug.com/1081754.
     public void testTabSwitcherModeNotTriggeredWithinThreshold() throws Exception {
         // clang-format on
         InstantStartTest.createTabStateFile(new int[] {0, 1});
@@ -205,6 +208,7 @@ public class ReturnToChromeTest {
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/100000"
             + "/start_surface_variation/single/open_ntp_instead_of_start/true"})
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // See https://crbug.com/1081754.
     public void testTabSwitcherModeTriggeredWithinThreshold_NoTab() {
         // clang-format on
         startMainActivityWithURLWithoutCurrentTab(null);
@@ -237,6 +241,7 @@ public class ReturnToChromeTest {
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/100000"
             + "/start_surface_variation/single"})
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // See https://crbug.com/1081754.
     public void testTabSwitcherModeTriggeredWithinThreshold_NTP() throws Exception {
         // clang-format on
         InstantStartTest.createTabStateFile(new int[] {0, 1});

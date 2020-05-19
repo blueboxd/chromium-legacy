@@ -57,6 +57,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattCharacteristicClient
                  ErrorCallback error_callback) override;
   void WriteValue(const dbus::ObjectPath& object_path,
                   const std::vector<uint8_t>& value,
+                  base::StringPiece type_option,
                   base::OnceClosure callback,
                   ErrorCallback error_callback) override;
   void PrepareWriteValue(const dbus::ObjectPath& object_path,

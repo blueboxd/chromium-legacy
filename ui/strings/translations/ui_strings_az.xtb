@@ -4,6 +4,7 @@
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" /> cihazına göndərilir...</translation>
 <translation id="111910763555783249">Bildiriş ayarları</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 gün öncə}other{# gün öncə}}</translation>
+<translation id="1145532888383813076">Cihaz, tətbiq və vebdə axtarın.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 dəqiqə əvvəl}other{# dəqiqə əvvəl}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1dəq}other{#dəq}}</translation>
 <translation id="1181037720776840403">Silin</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">sinxronizasiyanı aktiv edin</translation>
 <translation id="5329858601952122676">&amp;Silin</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> <ph name="IN_PLACE_APP" /> tətbiqinin üzərindədir, qovluq yaratmaq üçün buraxın.</translation>
+<translation id="5432996274932278848">Cihaz, tətbiq və vebdə axtarın. Tətbiqləri axtarmaq üçün ox klavişlərindən istifadə edin.</translation>
 <translation id="5463830097259460683">Emoji və Simvollar</translation>
 <translation id="5476505524087279545">qeydi qaldırın</translation>
 <translation id="547979256943495781">Rəf sağdadır</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">Bu axtarış tarixçədən silinsin?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
+<translation id="7611008212562900400">Cihazda, tətbiqdə, vebdə axtarın...</translation>
 <translation id="7658239707568436148">Ləğv edin</translation>
 <translation id="7781829728241885113">Dünən</translation>
 <translation id="7814458197256864873">&amp;Kopyalayın</translation>

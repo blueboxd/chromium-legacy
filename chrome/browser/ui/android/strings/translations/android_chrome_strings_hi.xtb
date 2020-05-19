@@ -466,6 +466,7 @@
 <translation id="488187801263602086">फ़ाइल का नाम बदलें</translation>
 <translation id="4882831918239250449">यह नियंत्रित करें कि खोज, विज्ञापनों वगैरह को मनमुताबिक बनाने के लिए आपके ब्राउज़िंग इतिहास का इस्तेमाल कैसे किया जाए</translation>
 <translation id="4885273946141277891">Chrome इंस्टेंस की असमर्थित संख्या.</translation>
+<translation id="4908869848243824489">Google का 'डिस्कवर'</translation>
 <translation id="4910889077668685004">भुगतान ऐप्लिकेशन</translation>
 <translation id="4913161338056004800">आंकड़े रीसेट करें</translation>
 <translation id="4913169188695071480">रीफ्रेश करना बंद करें</translation>
@@ -481,7 +482,6 @@
 <translation id="4988210275050210843">फ़ाइल डाउनलोड हो रही है (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">पेज</translation>
 <translation id="4994033804516042629">कोई संपर्क नहीं मिला</translation>
-<translation id="4996978546172906250">इससे शेयर करें</translation>
 <translation id="5004416275253351869">Google गतिविधि नियंत्रण</translation>
 <translation id="5005498671520578047">पासवर्ड कॉपी करें</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> कनेक्ट करना चाहती है</translation>
@@ -643,6 +643,7 @@
 <translation id="6381421346744604172">वेबसाइटों को गहरा करने का विकल्प</translation>
 <translation id="6395288395575013217">लिंक</translation>
 <translation id="6397616442223433927">इंटरनेट कनेक्शन फिर से जुड़ गया</translation>
+<translation id="6398765197997659313">फ़ुल स्क्रीन से बाहर निकलें</translation>
 <translation id="6404511346730675251">बुकमार्क में बदलाव करें</translation>
 <translation id="6406506848690869874">सिंक</translation>
 <translation id="6410973561433500075">क्या आप <ph name="DOMAIN" /> से एआर (ऑगमेंटेड रिएलिटी) में जाना चाहते हैं?</translation>
@@ -699,9 +700,10 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">अनुवाद करें</translation>
 <translation id="6845325883481699275">'Chrome सुरक्षा' को बेहतर बनाने में मदद करें</translation>
-<translation id="6846298663435243399">लोड हो रहा है...</translation>
+<translation id="6846298663435243399">लोड हो रहा है…</translation>
 <translation id="6850409657436465440">आपका डाउनलोड अब भी जारी है</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> टैब बंद किए गए</translation>
+<translation id="685850645784703949">Google का 'डिस्कवर' - बंद है</translation>
 <translation id="6864459304226931083">इमेज डाउनलोड करें</translation>
 <translation id="6865313869410766144">ऑटोमैटिक भरने वाले फ़ॉर्म का डेटा</translation>
 <translation id="6884306546558072722">ऑफ़लाइन फ़ीड देखते रहें</translation>
@@ -904,6 +906,7 @@
 <translation id="8514577642972634246">गुप्त मोड में प्रवेश करें</translation>
 <translation id="8516012719330875537">इमेज एडिटर</translation>
 <translation id="8523928698583292556">स्टोर किया गया पासवर्ड मिटाएं</translation>
+<translation id="8525306231823319788">फ़ुल स्‍क्रीन</translation>
 <translation id="854522910157234410">यह पेज खोलें</translation>
 <translation id="8558485628462305855">'बढ़ी हुई वास्तविकता' की सामग्री देखने के लिए, ARCore अपडेट करें</translation>
 <translation id="8559990750235505898">अन्य भाषाओं में पेज का अनुवाद करना ऑफ़र करें</translation>

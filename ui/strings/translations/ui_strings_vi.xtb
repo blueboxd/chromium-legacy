@@ -4,6 +4,7 @@
 <translation id="1028699632127661925">Đang gửi đến <ph name="DEVICE_NAME" />...</translation>
 <translation id="111910763555783249">Cài đặt thông báo</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 ngày trước}other{# ngày trước}}</translation>
+<translation id="1145532888383813076">Tìm kiếm trong thiết bị, ứng dụng và trên web.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 phút trước}other{# phút trước}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 phút}other{# phút}}</translation>
 <translation id="1181037720776840403">Xóa</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">bật tính năng đồng bộ hóa</translation>
 <translation id="5329858601952122676">&amp;Xoá</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> nằm trên <ph name="IN_PLACE_APP" />, thả để tạo thư mục.</translation>
+<translation id="5432996274932278848">Tìm kiếm thiết bị, ứng dụng và web của bạn. Hãy sử dụng các phím mũi tên để di chuyển đến ứng dụng của bạn.</translation>
 <translation id="5463830097259460683">Các ký hiệu &amp;&amp; biểu tượng cảm xúc</translation>
 <translation id="5476505524087279545">bỏ chọn</translation>
 <translation id="547979256943495781">Giá ở bên phải</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">Xóa nội dung tìm kiếm này khỏi lịch sử của bạn?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Biểu tượng cảm xúc</translation>
+<translation id="7611008212562900400">Tìm kiếm thiết bị, ứng dụng, web... của bạn</translation>
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7781829728241885113">Hôm qua</translation>
 <translation id="7814458197256864873">Sao &amp;chép</translation>

@@ -277,10 +277,8 @@ WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
           blink::mojom::FrameWidgetHostInterfaceBase>(),
       blink::CrossVariantMojoAssociatedReceiver<
           blink::mojom::FrameWidgetInterfaceBase>(),
-      blink::CrossVariantMojoAssociatedRemote<
-          blink::mojom::WidgetHostInterfaceBase>(),
-      blink::CrossVariantMojoAssociatedReceiver<
-          blink::mojom::WidgetInterfaceBase>());
+      blink_widget_host_receiver_.BindNewEndpointAndPassRemote(),
+      blink_widget_.BindNewEndpointAndPassReceiver());
 
   // The WebFrame created here was already attached to the Page as its
   // main frame, and the WebFrameWidget has been initialized, so we can call
@@ -311,10 +309,12 @@ blink::WebScreenInfo WebViewPlugin::WebViewHelper::GetScreenInfo() {
 }
 
 void WebViewPlugin::WebViewHelper::SetToolTipText(
-    const WebString& text,
+    const base::string16& tooltip_text,
     base::i18n::TextDirection hint) {
-  if (plugin_->container_)
-    plugin_->container_->GetElement().SetAttribute("title", text);
+  if (plugin_->container_) {
+    plugin_->container_->GetElement().SetAttribute(
+        "title", WebString::FromUTF16(tooltip_text));
+  }
 }
 
 void WebViewPlugin::WebViewHelper::StartDragging(network::mojom::ReferrerPolicy,

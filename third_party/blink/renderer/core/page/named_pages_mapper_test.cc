@@ -121,5 +121,25 @@ TEST(NamedPagesMapperTest, FirstPageIsNamed) {
   EXPECT_EQ(mapper.NamedPageAtIndex(100), "xxx");
 }
 
+TEST(NamedPagesMapperTest, NameFirstPage) {
+  NamedPagesMapper mapper;
+  mapper.AddNamedPage("named", 2);
+  mapper.AddNamedPage("another", 3);
+  EXPECT_EQ(mapper.LastPageName(), "another");
+  EXPECT_EQ(mapper.NamedPageAtIndex(0), AtomicString());
+  EXPECT_EQ(mapper.NamedPageAtIndex(1), AtomicString());
+  EXPECT_EQ(mapper.NamedPageAtIndex(2), "named");
+  EXPECT_EQ(mapper.NamedPageAtIndex(3), "another");
+  EXPECT_EQ(mapper.NamedPageAtIndex(100), "another");
+
+  mapper.NameFirstPage("rootname");
+  EXPECT_EQ(mapper.LastPageName(), "another");
+  EXPECT_EQ(mapper.NamedPageAtIndex(0), "rootname");
+  EXPECT_EQ(mapper.NamedPageAtIndex(1), "rootname");
+  EXPECT_EQ(mapper.NamedPageAtIndex(2), "named");
+  EXPECT_EQ(mapper.NamedPageAtIndex(3), "another");
+  EXPECT_EQ(mapper.NamedPageAtIndex(100), "another");
+}
+
 }  // anonymous namespace
 }  // namespace blink

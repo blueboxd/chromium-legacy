@@ -11,9 +11,7 @@
 
 /** @fileoverview Externs generated from namespace: arcAppsPrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.arcAppsPrivate = {};
 
 /**

@@ -28,7 +28,7 @@ class TestInternalAuthenticator : public InternalAuthenticator {
   void IsUserVerifyingPlatformAuthenticatorAvailable(
       blink::mojom::Authenticator::
           IsUserVerifyingPlatformAuthenticatorAvailableCallback callback)
-      override {}
+      override;
   void Cancel() override {}
 };
 

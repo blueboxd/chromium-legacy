@@ -1465,7 +1465,8 @@ TEST_F(WebPluginContainerTest, CompositedPluginCAP) {
   const auto* plugin =
       static_cast<const CompositedPlugin*>(container->Plugin());
 
-  auto paint_controller = std::make_unique<PaintController>();
+  auto paint_controller =
+      std::make_unique<PaintController>(PaintController::kTransient);
   paint_controller->UpdateCurrentPaintChunkProperties(
       nullptr, PropertyTreeState::Root());
   GraphicsContext graphics_context(*paint_controller);

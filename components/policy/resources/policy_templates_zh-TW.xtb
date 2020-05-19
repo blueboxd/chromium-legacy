@@ -770,7 +770,6 @@
 
       如果設定這項政策，使用者將無法變更。如果不設定或將其設為 False，這項政策將不會生效。</translation>
 <translation id="2201555246697292490">設定內建訊息傳遞許可清單</translation>
-<translation id="220280840901385239">允許使用者新增例外網站，允許特定網站顯示可封鎖的混合內容</translation>
 <translation id="2204753382813641270">控制檔案櫃自動隱藏功能</translation>
 <translation id="2208976000652006649">使用 POST 的搜尋網址參數</translation>
 <translation id="2214880135980649323">如果將這項政策設為啟用，系統將允許由企業政策安裝的擴充功能使用 Enterprise Hardware Platform API。
@@ -4415,7 +4414,6 @@
            如果不設定這項政策，系統會在登入畫面上預設啟用無障礙功能快速鍵。</translation>
 <translation id="7777535871204167559">以唯讀模式處理外部儲存裝置</translation>
 <translation id="7788511847830146438">根據設定檔</translation>
-<translation id="7792973482799545782">不允許任何網站載入可封鎖的混合內容</translation>
 <translation id="780603170519840350">不強制要求列出的 subjectPublicKeyInfo 雜湊符合憑證透明化規定。
 
       使用這項政策時，如果憑證鏈結中的憑證包含其中一種指定 subjectPublicKeyInfo 雜湊，系統就不會強制要求這類憑證鏈結符合憑證透明化規定。原本不受信任的憑證 (因未依規定對外公開) 將因此可繼續供企業主機使用。

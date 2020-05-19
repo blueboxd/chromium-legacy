@@ -14,6 +14,7 @@
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/widget/compositing/layer_tree_view_delegate.h"
 
@@ -114,6 +115,8 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   static bool ShouldRecordBeginMainFrameMetrics();
 
   void SetCursor(const ui::Cursor& cursor);
+
+  void SetToolTipText(const String& tooltip_text, TextDirection dir);
 
  private:
   std::unique_ptr<LayerTreeView> layer_tree_view_;

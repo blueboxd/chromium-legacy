@@ -34,6 +34,9 @@ ImeWindowView::ImeWindowView(ImeWindow* ime_window,
       dragging_state_(DragState::NO_DRAG),
       window_(nullptr),
       web_view_(nullptr) {
+  SetCanActivate(false);
+  SetTitle(base::UTF8ToUTF16(ime_window_->title()));
+
   window_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = this;
@@ -47,7 +50,7 @@ ImeWindowView::ImeWindowView(ImeWindow* ime_window,
   window_->set_frame_type(views::Widget::FrameType::kForceCustom);
   window_->Init(std::move(params));
   window_->UpdateWindowTitle();
-  window_->UpdateWindowIcon();
+  UpdateWindowIcon();
 
   web_view_ = new views::WebView(nullptr);
   web_view_->SetWebContents(contents);
@@ -84,6 +87,8 @@ gfx::Rect ImeWindowView::GetBounds() const {
 }
 
 void ImeWindowView::UpdateWindowIcon() {
+  SetIcon(ime_window_->icon() ? ime_window_->icon()->image_skia()
+                              : gfx::ImageSkia());
   window_->UpdateWindowIcon();
 }
 
@@ -151,31 +156,6 @@ views::NonClientFrameView* ImeWindowView::CreateNonClientFrameView(
       this, ime_window_->mode());
   frame_view->Init();
   return frame_view;
-}
-
-bool ImeWindowView::CanActivate() const {
-  return false;
-}
-
-bool ImeWindowView::CanResize() const {
-  return false;
-}
-
-bool ImeWindowView::CanMaximize() const {
-  return false;
-}
-
-bool ImeWindowView::CanMinimize() const {
-  return false;
-}
-
-base::string16 ImeWindowView::GetWindowTitle() const {
-  return base::UTF8ToUTF16(ime_window_->title());
-}
-
-gfx::ImageSkia ImeWindowView::GetWindowIcon() {
-  return ime_window_->icon() ? ime_window_->icon()->image_skia()
-                             : gfx::ImageSkia();
 }
 
 void ImeWindowView::DeleteDelegate() {

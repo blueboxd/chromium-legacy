@@ -1752,9 +1752,11 @@ std::string TestRunnerBindings::PlatformName() {
 }
 
 std::string TestRunnerBindings::TooltipText() {
-  if (runner_)
-    return runner_->tooltip_text_;
-  return std::string();
+  blink::WebString tooltip_text = static_cast<RenderFrameImpl*>(frame_)
+                                      ->GetLocalRootRenderWidget()
+                                      ->GetWebWidget()
+                                      ->GetLastToolTipTextForTesting();
+  return tooltip_text.Utf8();
 }
 
 int TestRunnerBindings::WebHistoryItemCount() {
@@ -1912,7 +1914,6 @@ void TestRunner::Reset() {
   clear_referrer_ = false;
 
   platform_name_ = "chromium";
-  tooltip_text_ = std::string();
   web_history_item_count_ = 0;
 
   weak_factory_.InvalidateWeakPtrs();
@@ -2257,10 +2258,6 @@ bool TestRunner::PolicyDelegateIsPermissive() const {
 
 bool TestRunner::PolicyDelegateShouldNotifyDone() const {
   return web_test_runtime_flags_.policy_delegate_should_notify_done();
-}
-
-void TestRunner::SetToolTipText(const blink::WebString& text) {
-  tooltip_text_ = text.Utf8();
 }
 
 void TestRunner::SetDragImage(const SkBitmap& drag_image) {

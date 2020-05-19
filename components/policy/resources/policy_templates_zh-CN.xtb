@@ -747,7 +747,6 @@
 
       如果您设置了此政策，用户便无法更改它。如果此政策未设置或设为 false，它将不会产生任何效力。</translation>
 <translation id="2201555246697292490">配置本地消息传递主机白名单</translation>
-<translation id="220280840901385239">让用户能够添加例外情况以允许显示可屏蔽的混合内容</translation>
 <translation id="2204753382813641270">控制任务栏是否自动隐藏</translation>
 <translation id="2208976000652006649">在使用 POST 的搜索网址中所需的参数</translation>
 <translation id="2214880135980649323">如果启用了此政策，由企业政策安装的扩展程序将可以使用 Enterprise Hardware Platform API。
@@ -4396,7 +4395,6 @@
           如果未设置此政策，默认情况下，无障碍功能快捷方式在登录屏幕上会处于启用状态。</translation>
 <translation id="7777535871204167559">以只读模式处理外部存储设备</translation>
 <translation id="7788511847830146438">根据个人资料</translation>
-<translation id="7792973482799545782">不允许任何网站加载可屏蔽的混合内容</translation>
 <translation id="780603170519840350">对于指定的一系列 subjectPublicKeyInfo 哈希，不强制执行证书透明化要求。
 
       如果证书链中的证书含有某个指定的 subjectPublicKeyInfo 哈希，则此政策允许针对此类证书链停用证书透明化披露要求。这样一来，本应不受信任的证书（因为并未适当地公开披露）将可以继续用于企业主机。

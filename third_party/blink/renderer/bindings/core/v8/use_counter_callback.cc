@@ -327,6 +327,9 @@ void UseCounterCallback(v8::Isolate* isolate,
       blink_feature =
           WebFeature::kV8InvalidatedTypedArraySpeciesLookupChainProtector;
       break;
+    case v8::Isolate::kVarRedeclaredCatchBinding:
+      blink_feature = WebFeature::kV8VarRedeclaredCatchBinding;
+      break;
 
     default:
       // This can happen if V8 has added counters that this version of Blink

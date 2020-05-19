@@ -535,6 +535,7 @@
 <translation id="7647488630410863958">Отклучете го уредот за приказ на известувањата</translation>
 <translation id="7649070708921625228">Помош</translation>
 <translation id="7654687942625752712">Притиснете ги и задржете ги двете копчиња за јачина на звук пет секунди за да оневозможите говорни повратни информации.</translation>
+<translation id="7658239707568436148">Откажи</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 известување}one{# известување}other{# известувања}}</translation>
 <translation id="7724603315864178912">Исечи</translation>
@@ -583,6 +584,7 @@
 <translation id="8190698733819146287">Приспособи јазици и внесување...</translation>
 <translation id="8192202700944119416">Известувањата се скриени.</translation>
 <translation id="8196787716797768628">Користете движења за брзо префрлање помеѓу апликациите и за да комуницирате со вашиот Chromebook во режим на таблет.</translation>
+<translation id="8200772114523450471">Продолжи</translation>
 <translation id="8203795194971602413">Десен клик</translation>
 <translation id="8236042855478648955">Време за пауза</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" />, батерија на телефонот: <ph name="BATTERY_STATUS" /></translation>

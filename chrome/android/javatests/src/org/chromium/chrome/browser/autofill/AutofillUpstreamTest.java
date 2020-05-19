@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.autofill;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
-import android.view.ViewGroup;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -81,7 +80,7 @@ public class AutofillUpstreamTest {
         Assert.assertEquals(buttonLabel, primaryButton.getText().toString());
     }
 
-    private void waitForSaveCardInfoBar(final ViewGroup view) {
+    private void waitForSaveCardInfoBar() {
         CriteriaHelper.pollUiThread(
                 new Criteria("Autofill Save Card Infobar view was never added.") {
                     @Override
@@ -122,8 +121,7 @@ public class AutofillUpstreamTest {
 
         DOMUtils.clickNode(webContents, "fill_form");
         DOMUtils.clickNode(webContents, "submit");
-        final ViewGroup view = webContents.getViewAndroidDelegate().getContainerView();
-        waitForSaveCardInfoBar(view);
+        waitForSaveCardInfoBar();
 
         assertPrimaryButtonLabel(SAVE_BUTTON_LABEL);
     }
@@ -139,8 +137,7 @@ public class AutofillUpstreamTest {
         // Clear the month field
         DOMUtils.clickNode(webContents, "clear_month");
         DOMUtils.clickNode(webContents, "submit");
-        final ViewGroup view = webContents.getViewAndroidDelegate().getContainerView();
-        waitForSaveCardInfoBar(view);
+        waitForSaveCardInfoBar();
 
         assertPrimaryButtonLabel(CONTINUE_BUTTON_LABEL);
     }
@@ -156,8 +153,7 @@ public class AutofillUpstreamTest {
         // Clear the year field
         DOMUtils.clickNode(webContents, "clear_year");
         DOMUtils.clickNode(webContents, "submit");
-        final ViewGroup view = webContents.getViewAndroidDelegate().getContainerView();
-        waitForSaveCardInfoBar(view);
+        waitForSaveCardInfoBar();
 
         assertPrimaryButtonLabel(CONTINUE_BUTTON_LABEL);
     }
@@ -173,8 +169,7 @@ public class AutofillUpstreamTest {
         // Clear the month and year field
         DOMUtils.clickNode(webContents, "clear_expiration_date");
         DOMUtils.clickNode(webContents, "submit");
-        final ViewGroup view = webContents.getViewAndroidDelegate().getContainerView();
-        waitForSaveCardInfoBar(view);
+        waitForSaveCardInfoBar();
 
         assertPrimaryButtonLabel(CONTINUE_BUTTON_LABEL);
     }
@@ -191,8 +186,7 @@ public class AutofillUpstreamTest {
         // Clear the month and year field
         DOMUtils.clickNode(webContents, "clear_expiration_date");
         DOMUtils.clickNode(webContents, "submit");
-        final ViewGroup view = webContents.getViewAndroidDelegate().getContainerView();
-        waitForSaveCardInfoBar(view);
+        waitForSaveCardInfoBar();
         // Click on the continue button
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> getAutofillSaveCardInfoBar().onButtonClicked(true));
@@ -213,8 +207,7 @@ public class AutofillUpstreamTest {
         // Clear the name field
         DOMUtils.clickNode(webContents, "clear_name");
         DOMUtils.clickNode(webContents, "submit");
-        final ViewGroup view = webContents.getViewAndroidDelegate().getContainerView();
-        waitForSaveCardInfoBar(view);
+        waitForSaveCardInfoBar();
 
         assertPrimaryButtonLabel(CONTINUE_BUTTON_LABEL);
     }
@@ -231,8 +224,7 @@ public class AutofillUpstreamTest {
         // Clear the name field
         DOMUtils.clickNode(webContents, "clear_name");
         DOMUtils.clickNode(webContents, "submit");
-        final ViewGroup view = webContents.getViewAndroidDelegate().getContainerView();
-        waitForSaveCardInfoBar(view);
+        waitForSaveCardInfoBar();
         // Click on the continue button
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> getAutofillSaveCardInfoBar().onButtonClicked(true));

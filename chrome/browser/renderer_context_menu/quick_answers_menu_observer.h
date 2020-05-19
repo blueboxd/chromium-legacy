@@ -55,6 +55,7 @@ class QuickAnswersMenuObserver
  private:
   bool IsRichUiEnabled();
   void SendAssistantQuery(const std::string& query);
+  std::string GetDeviceLanguage();
 
   // The interface to add a context-menu item and update it.
   RenderViewContextMenuProxy* proxy_;

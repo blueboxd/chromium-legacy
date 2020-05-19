@@ -217,6 +217,9 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // be set to the bounds of the window when the drag was started.
   gfx::Rect pre_drag_window_bounds_;
 
+  // Presentation time recorder for tab dragging in clamshell mode.
+  std::unique_ptr<PresentationTimeRecorder> tab_dragging_recorder_;
+
   // Used to determine if this has been deleted during a drag such as when a tab
   // gets dragged into another browser window.
   base::WeakPtrFactory<WorkspaceWindowResizer> weak_ptr_factory_{this};

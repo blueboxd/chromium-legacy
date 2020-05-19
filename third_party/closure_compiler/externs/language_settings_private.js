@@ -11,9 +11,7 @@
 
 /** @fileoverview Externs generated from namespace: languageSettingsPrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.languageSettingsPrivate = {};
 
 /**

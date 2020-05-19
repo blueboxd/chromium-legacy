@@ -3058,7 +3058,7 @@ TEST_F(PasswordManagerTest, ProvisionallySaveFailure) {
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   auto metrics_recorder = std::make_unique<PasswordManagerMetricsRecorder>(
-      1234, GURL("http://example.com"));
+      1234, GURL("http://example.com"), nullptr);
   EXPECT_CALL(client_, GetMetricsRecorder())
       .WillRepeatedly(Return(metrics_recorder.get()));
 
@@ -3192,7 +3192,7 @@ TEST_F(PasswordManagerTest, ReportMissingFormManager) {
 
     ukm::TestAutoSetUkmRecorder test_ukm_recorder;
     auto metrics_recorder = std::make_unique<PasswordManagerMetricsRecorder>(
-        1234, GURL("http://example.com"));
+        1234, GURL("http://example.com"), nullptr);
     EXPECT_CALL(client_, GetMetricsRecorder())
         .WillRepeatedly(Return(metrics_recorder.get()));
 

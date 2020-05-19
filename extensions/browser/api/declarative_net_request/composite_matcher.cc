@@ -120,11 +120,21 @@ ActionInfo CompositeMatcher::GetBeforeRequestAction(
 
   bool notify_request_withheld = false;
   base::Optional<RequestAction> final_action;
+
+  // The priority of the highest priority matching allow or allowAllRequests
+  // rule within this matcher, or base::nullopt otherwise.
+  base::Optional<uint64_t> max_allow_rule_priority;
+
   for (const auto& matcher : matchers_) {
     base::Optional<RequestAction> action =
         matcher->GetBeforeRequestAction(params);
-    params.allow_rule_cache[matcher.get()] =
-        action && action->IsAllowOrAllowAllRequests();
+
+    if (action && action->IsAllowOrAllowAllRequests()) {
+      max_allow_rule_priority =
+          max_allow_rule_priority
+              ? std::max(*max_allow_rule_priority, action->index_priority)
+              : action->index_priority;
+    }
 
     if (action && action->type == RequestAction::Type::REDIRECT) {
       // Redirecting requires host permissions.
@@ -142,6 +152,8 @@ ActionInfo CompositeMatcher::GetBeforeRequestAction(
         GetMaxPriorityAction(std::move(final_action), std::move(action));
   }
 
+  params.allow_rule_max_priority[this] = max_allow_rule_priority;
+
   if (final_action)
     return ActionInfo(std::move(final_action), false);
   return ActionInfo(base::nullopt, notify_request_withheld);
@@ -150,16 +162,19 @@ ActionInfo CompositeMatcher::GetBeforeRequestAction(
 std::vector<RequestAction> CompositeMatcher::GetModifyHeadersActions(
     const RequestParams& params) const {
   std::vector<RequestAction> modify_headers_actions;
+  DCHECK(params.allow_rule_max_priority.contains(this));
+
+  // The priority of the highest priority matching allow or allowAllRequests
+  // rule within this matcher, or base::nullopt if no such rule exists.
+  base::Optional<uint64_t> max_allow_rule_priority =
+      params.allow_rule_max_priority[this];
 
   for (const auto& matcher : matchers_) {
-    // TODO(crbug.com/947591): An allow or allowAllRequests rule should override
-    // all equal or lower priority modifyHeaders rules specified by |matcher|.
-    DCHECK(params.allow_rule_cache.contains(matcher.get()));
-    if (params.allow_rule_cache[matcher.get()])
-      return std::vector<RequestAction>();
-
+    // Plumb |max_allow_rule_priority| into GetModifyHeadersActions so that
+    // modifyHeaders rules with priorities less than or equal to the highest
+    // priority matching allow/allowAllRequests rule are ignored.
     std::vector<RequestAction> actions_for_matcher =
-        matcher->GetModifyHeadersActions(params);
+        matcher->GetModifyHeadersActions(params, max_allow_rule_priority);
 
     modify_headers_actions.insert(
         modify_headers_actions.end(),

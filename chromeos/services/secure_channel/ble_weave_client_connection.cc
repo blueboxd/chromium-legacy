@@ -692,7 +692,7 @@ void BluetoothLowEnergyWeaveClientConnection::SendPendingWriteRequest() {
   if (sub_status() == SubStatus::CONNECTED_AND_IDLE)
     SetSubStatus(SubStatus::CONNECTED_AND_SENDING_MESSAGE);
 
-  characteristic->WriteRemoteCharacteristic(
+  characteristic->DeprecatedWriteRemoteCharacteristic(
       pending_write_request_->value,
       base::BindOnce(&BluetoothLowEnergyWeaveClientConnection::
                          OnRemoteCharacteristicWritten,

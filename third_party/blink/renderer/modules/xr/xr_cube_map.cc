@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_texture.h"
 #include "third_party/blink/renderer/modules/xr/xr_cube_map.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 
 namespace {
 bool IsPowerOfTwo(uint32_t value) {
@@ -84,7 +85,9 @@ WebGLTexture* XRCubeMap::updateWebGLEnvironmentCube(
   }
 
   // TODO(https://crbug.com/1079007): Restore the texture binding
-  gl->BindTexture(GL_TEXTURE_CUBE_MAP, 0);
+  // gl->BindTexture(GL_TEXTURE_CUBE_MAP, 0);
+  DrawingBuffer::Client* client = static_cast<DrawingBuffer::Client*>(context);
+  client->DrawingBufferClientRestoreTextureCubeMapBinding();
 
   // Debug check for success
   DCHECK(gl->GetError() == GL_NO_ERROR);

@@ -8,6 +8,8 @@
 #include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 
+class SafeBrowsingUrlAllowList;
+
 // Runs |resource|'s callback on the appropriate thread.
 void RunUnsafeResourceCallback(
     const security_interstitials::UnsafeResource& resource,
@@ -21,6 +23,10 @@ GetUnsafeResourceInterstitialReason(
 
 // Returns the metric prefix for error pages for |resource|.
 std::string GetUnsafeResourceMetricPrefix(
+    const security_interstitials::UnsafeResource& resource);
+
+// Returns the SafeBrowsingUrlAllowList for |resource|.
+SafeBrowsingUrlAllowList* GetAllowListForResource(
     const security_interstitials::UnsafeResource& resource);
 
 #endif  // IOS_CHROME_BROWSER_SAFE_BROWSING_UNSAFE_RESOURCE_UTIL_H_

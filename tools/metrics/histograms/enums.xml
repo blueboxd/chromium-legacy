@@ -9086,6 +9086,10 @@ histogram as enum -->
   <int value="36" label="TwoUpViewEnable"/>
   <int value="37" label="TwoUpViewDisableFirst"/>
   <int value="38" label="TwoUpViewDisable"/>
+  <int value="39" label="ZoomInFirst"/>
+  <int value="40" label="ZoomIn"/>
+  <int value="41" label="ZoomOutFirst"/>
+  <int value="42" label="ZoomOut"/>
 </enum>
 
 <enum name="ChromePDFViewerAnnotationType">
@@ -27402,6 +27406,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3301" label="PopupGestureTapExceedsOwnerWindowBounds"/>
   <int value="3302" label="PopupMouseDownExceedsOwnerWindowBounds"/>
   <int value="3303" label="PopupMouseWheelExceedsOwnerWindowBounds"/>
+  <int value="3304" label="V8VarRedeclaredCatchBinding"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -27516,6 +27521,14 @@ Called by update_feature_policy_enum.py.-->
   <int value="6" label="SadTab Page"/>
   <int value="7" label="Supervised User Interstitial"/>
   <int value="8" label="Assistant"/>
+</enum>
+
+<enum name="FeedControlsActions">
+  <int value="0" label="Clicked on My activity"/>
+  <int value="1" label="Clicked on Manage interests"/>
+  <int value="2" label="Clicked on Learn more"/>
+  <int value="3" label="Toggled the feed"/>
+  <int value="4" label="Clicked on the feed menu button"/>
 </enum>
 
 <enum name="FeedEngagementType">
@@ -41417,6 +41430,7 @@ from previous Chrome versions.
   <int value="1418054870" label="SpecialLocale:enabled"/>
   <int value="1421620678" label="simple-clear-browsing-data-support-string"/>
   <int value="1427905064" label="CreditCardAutofillTouchBar:enabled"/>
+  <int value="1428004502" label="PaymentRequestOptionalTotal:enabled"/>
   <int value="1431050645" label="PayWithGoogleV1:disabled"/>
   <int value="1431934725" label="OmniboxAutocompleteTitles:disabled"/>
   <int value="1434515920" label="ReaderModeInCCT:enabled"/>
@@ -41649,6 +41663,7 @@ from previous Chrome versions.
   <int value="1694854500" label="disable-save-password-bubble"/>
   <int value="1696139514" label="enable-ble-advertising-in-apps"/>
   <int value="1697189972" label="WebPaymentsSingleAppUiSkip:disabled"/>
+  <int value="1699180023" label="PaymentRequestOptionalTotal:disabled"/>
   <int value="1699182601" label="DockedMagnifier:disabled"/>
   <int value="1700394127" label="OverlayScrollbar:disabled"/>
   <int value="1701972870" label="NTPSnippetsIncreasedVisibility:enabled"/>
@@ -48219,6 +48234,8 @@ Called by update_net_trust_anchors.py.-->
       label="Triggered a block content action, which typically results in the
              content being removed from the feed, and a setting written
              server side to avoid serving that content again."/>
+  <int value="14" label="Clicked on Manage activity (obsolete)"/>
+  <int value="15" label="Clicked on the feed header menu button (obsolete)"/>
 </enum>
 
 <enum name="NewTabPageActioniOS">
@@ -69523,6 +69540,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="VRPresentationResult">
+  <obsolete>
+    As of 5/18/2020 this enum is no longer in code.
+  </obsolete>
   <int value="0" label="Requested"/>
   <int value="1" label="Success"/>
   <int value="2" label="SuccessAlreadyPresenting"/>

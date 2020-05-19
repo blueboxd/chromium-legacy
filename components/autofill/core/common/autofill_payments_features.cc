@@ -39,7 +39,14 @@ const base::Feature kAutofillCreditCardAblationExperiment{
 // Enables the use of platform authenticators through WebAuthn to retrieve
 // credit cards from Google payments.
 const base::Feature kAutofillCreditCardAuthentication{
-    "AutofillCreditCardAuthentication", base::FEATURE_DISABLED_BY_DEFAULT};
+  "AutofillCreditCardAuthentication",
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+      // Better Auth project is fully launched on Win/Mac.
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // When enabled, if credit card upload succeeded, the avatar icon will show a
 // highlight otherwise, the credit card icon image will be updated and if user

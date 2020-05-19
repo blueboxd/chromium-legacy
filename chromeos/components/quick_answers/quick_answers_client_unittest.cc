@@ -62,7 +62,7 @@ MATCHER_P(QuickAnswersRequestWithOutputEqual, quick_answers_request, "") {
 
 class MockIntentGenerator : public IntentGenerator {
  public:
-  MockIntentGenerator(IntentGeneratorCallback complete_callback)
+  explicit MockIntentGenerator(IntentGeneratorCallback complete_callback)
       : IntentGenerator(std::move(complete_callback)) {}
 
   MockIntentGenerator(const MockIntentGenerator&) = delete;
@@ -335,7 +335,7 @@ TEST_F(QuickAnswersClientTest, PreprocessDefinitionIntent) {
       std::make_unique<QuickAnswersRequest>();
   quick_answers_request->selected_text = "unfathomable";
 
-  // Verify that |OnRequestPreprocessFinish| is called.
+  // Verify that |OnRequestPreprocessFinished| is called.
   std::unique_ptr<QuickAnswersRequest> processed_request =
       std::make_unique<QuickAnswersRequest>();
   processed_request->selected_text = "unfathomable";
@@ -345,7 +345,7 @@ TEST_F(QuickAnswersClientTest, PreprocessDefinitionIntent) {
   expected_processed_output.intent_type = IntentType::kDictionary;
   processed_request->preprocessed_output = expected_processed_output;
   EXPECT_CALL(*mock_delegate_,
-              OnRequestPreprocessFinish(
+              OnRequestPreprocessFinished(
                   QuickAnswersRequestWithOutputEqual(*processed_request)));
 
   client_->IntentGeneratorCallback(*quick_answers_request, "unfathomable",
@@ -357,7 +357,7 @@ TEST_F(QuickAnswersClientTest, PreprocessTranslationIntent) {
       std::make_unique<QuickAnswersRequest>();
   quick_answers_request->selected_text = "sel";
 
-  // Verify that |OnRequestPreprocessFinish| is called.
+  // Verify that |OnRequestPreprocessFinished| is called.
   std::unique_ptr<QuickAnswersRequest> processed_request =
       std::make_unique<QuickAnswersRequest>();
   processed_request->selected_text = "sel";
@@ -367,7 +367,7 @@ TEST_F(QuickAnswersClientTest, PreprocessTranslationIntent) {
   expected_processed_output.intent_type = IntentType::kTranslation;
   processed_request->preprocessed_output = expected_processed_output;
   EXPECT_CALL(*mock_delegate_,
-              OnRequestPreprocessFinish(
+              OnRequestPreprocessFinished(
                   QuickAnswersRequestWithOutputEqual(*processed_request)));
 
   client_->IntentGeneratorCallback(*quick_answers_request, "intent text",

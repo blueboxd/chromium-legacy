@@ -105,10 +105,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicClient
                          ErrorCallback error_callback) = 0;
 
   // Issues a request to write the value of GATT characteristic with object path
-  // |object_path| with value |value|. Invokes |callback| on success and
-  // |error_callback| on failure.
+  // |object_path| with value |value| and |type_option|. |type_option| is
+  // bluetooth_gatt_characteristic::kTypeRequest or kTypeCommand, or "" to omit
+  // the option. Invokes |callback| on success and |error_callback| on failure.
   virtual void WriteValue(const dbus::ObjectPath& object_path,
                           const std::vector<uint8_t>& value,
+                          base::StringPiece type_option,
                           base::OnceClosure callback,
                           ErrorCallback error_callback) = 0;
 

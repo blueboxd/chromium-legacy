@@ -204,6 +204,9 @@ DEBIAN_PACKAGES="\
   libnss-db
   libnss3
   libnss3-dev
+  libncurses-dev
+  libncurses6
+  libncursesw6
   libogg-dev
   libogg0
   libopengl0
@@ -268,6 +271,7 @@ DEBIAN_PACKAGES="\
   libtasn1-6
   libthai0
   libtiff5
+  libtinfo6
   libudev-dev
   libudev1
   libunbound8

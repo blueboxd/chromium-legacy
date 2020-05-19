@@ -12,9 +12,7 @@
 
 /** @fileoverview Externs generated from namespace: passwordsPrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.passwordsPrivate = {};
 
 /**

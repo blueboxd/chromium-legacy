@@ -112,7 +112,6 @@
 <translation id="1140746652461896221">Lokaðu fyrir efni á þeim síðum sem þú heimsækir</translation>
 <translation id="1143142264369994168">Vottorðsundirritari</translation>
 <translation id="1145292499998999162">Viðbót útilokuð</translation>
-<translation id="1145532888383813076">Leitaðu í tækinu þínu, forritum og á netinu.</translation>
 <translation id="1145593918056169051">Prentun stöðvaðist</translation>
 <translation id="1146678959555564648">Hefja sýndarveruleika</translation>
 <translation id="114721135501989771">Fá Google snjalltæki í Chrome</translation>
@@ -3425,7 +3424,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5430931332414098647">Skynditjóðrun</translation>
 <translation id="5431318178759467895">Í lit</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="5432996274932278848">Leitaðu í tækinu þínu, forritum og á vefnum. Notaðu örvatakkana til að fletta í gegnum forrit.</translation>
 <translation id="543338862236136125">Breyta aðgangsorði</translation>
 <translation id="5434065355175441495">PKCS #1 RSA-dulkóðun</translation>
 <translation id="5436492226391861498">Bíður eftir proxy-gögnum...</translation>
@@ -3915,7 +3913,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6055392876709372977">PKCS #1 SHA-256 með RSA-dulkóðun</translation>
 <translation id="6055907707645252013"><ph name="NETWORK_TYPE" /> net, ekki tengt</translation>
 <translation id="6056710589053485679">Endurhlaða venjulega</translation>
-<translation id="6057312498756061228">Þessi skrá er of stór fyrir öryggisathugun. Þú getur opnað allt að 50 MB stórar skrár.</translation>
+<translation id="6057312498756061228">Þessi skrá er of stór fyrir öryggisathugun. Þú getur opnað allt að 50 MB skrár.</translation>
 <translation id="6057381398996433816">Lokað hefur verið á aðgang þessa vefsvæðis að hreyfi- og birtuskynjurum.</translation>
 <translation id="6058567592298841668">Viðbót, sýndarvél: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Stigveldi vottorða</translation>
@@ -5093,7 +5091,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7606992457248886637">Vottunarstöðvar</translation>
 <translation id="7607002721634913082">Hlé</translation>
 <translation id="7609148976235050828">Tengstu internetinu og reyndu aftur.</translation>
-<translation id="7611008212562900400">Leitaðu í tækinu þínu, forritum, netinu...</translation>
 <translation id="7614260613810441905">Spyrja þegar vefsvæði vill breyta skrám eða möppum í tækinu (ráðlagt)</translation>
 <translation id="761530003705945209">Taka afrit á Google Drive. Endurheimtu gögnin þín eða skiptu um tæki hvenær sem er. Öryggisafritið inniheldur forritsgögn. Öryggisafritunum þínum er hlaðið inn á Google og þau dulkóðuð með aðgangsorði Google reikningsins.</translation>
 <translation id="7616214729753637086">Skráir tæki...</translation>
@@ -5879,7 +5876,7 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8609465669617005112">Færa upp</translation>
 <translation id="8610103157987623234">Rangt snið. Reyndu aftur</translation>
 <translation id="8613164732773110792">Aðeins lágstafir, tölustafir, undirstrik eða bandstrik</translation>
-<translation id="8613786722548417558"><ph name="FILE_NAME" /> er of stór fyrir öryggisathugun. Þú getur opnað allt að 50 MB stórar skrár.</translation>
+<translation id="8613786722548417558"><ph name="FILE_NAME" /> er of stór fyrir öryggisathugun. Þú getur opnað allt að 50 MB skrár.</translation>
 <translation id="8615618338313291042">Huliðsforrit: <ph name="APP_NAME" /></translation>
 <translation id="8619803522055190423">Skuggi</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
@@ -6370,7 +6367,7 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="930268624053534560">Nákvæmir tímastimplar</translation>
 <translation id="932327136139879170">Heim</translation>
 <translation id="932508678520956232">Ekki var hægt að hefja prentun.</translation>
-<translation id="933427034780221291">{NUM_FILES,plural, =1{Þessi skrá er of stór fyrir öryggisathugun. Þú getur hlaðið upp allt að 50 MB stórum skrám.}one{Sumar þessara skráa eru of stórar fyrir öryggisathugun. Þú getur hlaðið upp allt að 50 MB stórum skrám.}other{Sumar þessara skráa eru of stórar fyrir öryggisathugun. Þú getur hlaðið upp allt að 50 MB stórum skrám.}}</translation>
+<translation id="933427034780221291">{NUM_FILES,plural, =1{Þessi skrá er of stór fyrir öryggisathugun. Þú getur hlaðið upp allt að 50 MB skrám.}one{Sumar þessara skráa eru of stórar fyrir öryggisathugun. Þú getur hlaðið upp allt að 50 MB skrám.}other{Sumar þessara skráa eru of stórar fyrir öryggisathugun. Þú getur hlaðið upp allt að 50 MB skrám.}}</translation>
 <translation id="93343527085570547">Farðu á <ph name="BEGIN_LINK1" />hjálparsíðu lagalegra atriða<ph name="END_LINK1" /> til að fara fram á breytingar á efni af lagalegum ástæðum. Einhverjar reiknings- og kerfisupplýsingar kunna að verða sendar til Google. Við munum nota upplýsingarnar sem þú veitir okkur til að laga tæknileg vandamál og bæta þjónustu okkar, í samræmi við <ph name="BEGIN_LINK2" />persónuverndarstefnu<ph name="END_LINK2" /> okkar og <ph name="BEGIN_LINK3" />þjónustuskilmála<ph name="END_LINK3" />.</translation>
 <translation id="93393615658292258">Einungis aðgangsorð</translation>
 <translation id="934244546219308557">Nefna hóp</translation>

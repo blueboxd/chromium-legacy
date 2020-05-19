@@ -758,13 +758,13 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
       default:
         continue;
       case static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256):
-        private_key = FreshP256Key();
+        private_key = PrivateKey::FreshP256Key();
         break;
       case static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseRs256):
-        private_key = FreshRSAKey();
+        private_key = PrivateKey::FreshRSAKey();
         break;
       case static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEdDSA):
-        private_key = FreshEd25519Key();
+        private_key = PrivateKey::FreshEd25519Key();
         break;
     }
     break;
@@ -820,8 +820,8 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
     extensions = cbor::Value(std::move(extensions_map));
   }
 
-  auto authenticator_data = ConstructAuthenticatorData(
-      rp_id_hash, user_verified, 01ul,
+  AuthenticatorData authenticator_data(
+      rp_id_hash, /*user_present=*/true, user_verified, 01ul,
       ConstructAttestedCredentialData(key_handle, std::move(public_key)),
       std::move(extensions));
 
@@ -1062,9 +1062,9 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
           registration.second->private_key->GetPublicKey()));
     }
 
-    auto authenticator_data = ConstructAuthenticatorData(
-        rp_id_hash, user_verified, registration.second->counter,
-        std::move(opt_attested_cred_data),
+    AuthenticatorData authenticator_data(
+        rp_id_hash, /*user_present=*/true, user_verified,
+        registration.second->counter, std::move(opt_attested_cred_data),
         extensions ? base::make_optional(extensions->Clone()) : base::nullopt);
 
     base::Optional<std::string> opt_android_client_data_json;
@@ -1877,35 +1877,5 @@ AttestedCredentialData VirtualCtap2Device::ConstructAttestedCredentialData(
   return AttestedCredentialData(aaguid, sha256_length,
                                 fido_parsing_utils::Materialize(key_handle),
                                 std::move(public_key));
-}
-
-AuthenticatorData VirtualCtap2Device::ConstructAuthenticatorData(
-    base::span<const uint8_t, kRpIdHashLength> rp_id_hash,
-    bool user_verified,
-    uint32_t current_signature_count,
-    base::Optional<AttestedCredentialData> attested_credential_data,
-    base::Optional<cbor::Value> extensions) {
-  uint8_t flag =
-      base::strict_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence);
-  if (user_verified) {
-    flag |= base::strict_cast<uint8_t>(
-        AuthenticatorData::Flag::kTestOfUserVerification);
-  }
-  if (attested_credential_data)
-    flag |= base::strict_cast<uint8_t>(AuthenticatorData::Flag::kAttestation);
-  if (extensions) {
-    flag |= base::strict_cast<uint8_t>(
-        AuthenticatorData::Flag::kExtensionDataIncluded);
-  }
-
-  std::array<uint8_t, kSignCounterLength> signature_counter;
-  signature_counter[0] = (current_signature_count >> 24) & 0xff;
-  signature_counter[1] = (current_signature_count >> 16) & 0xff;
-  signature_counter[2] = (current_signature_count >> 8) & 0xff;
-  signature_counter[3] = (current_signature_count)&0xff;
-
-  return AuthenticatorData(rp_id_hash, flag, signature_counter,
-                           std::move(attested_credential_data),
-                           std::move(extensions));
 }
 }  // namespace device

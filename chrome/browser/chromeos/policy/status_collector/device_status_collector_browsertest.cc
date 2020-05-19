@@ -579,12 +579,16 @@ void FetchFakeFullCrosHealthdData(
     policy::DeviceStatusCollector::CrosHealthdDataReceiver receiver) {
   switch (mode) {
     case policy::CrosHealthdCollectionMode::kFull: {
-      cros_healthd::TelemetryInfo fake_info(
-          CreateBatteryResult(), CreateBlockDeviceResult(), CreateVpdResult(),
-          CreateCpuResult(), CreateTimezoneResult(), CreateMemoryResult(),
-          CreateBacklightResult(), CreateFanResult(),
-          CreateStatefulPartitionResult());
-
+      cros_healthd::TelemetryInfo fake_info;
+      fake_info.battery_result = CreateBatteryResult();
+      fake_info.block_device_result = CreateBlockDeviceResult();
+      fake_info.vpd_result = CreateVpdResult();
+      fake_info.cpu_result = CreateCpuResult();
+      fake_info.timezone_result = CreateTimezoneResult();
+      fake_info.memory_result = CreateMemoryResult();
+      fake_info.backlight_result = CreateBacklightResult();
+      fake_info.fan_result = CreateFanResult();
+      fake_info.stateful_partition_result = CreateStatefulPartitionResult();
       std::move(receiver).Run(fake_info.Clone(), CreateFakeSampleData());
       return;
     }

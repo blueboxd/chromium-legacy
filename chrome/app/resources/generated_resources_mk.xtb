@@ -112,7 +112,6 @@
 <translation id="1140746652461896221">Блокирајте ги содржините на сите страници што ги посетувате</translation>
 <translation id="1143142264369994168">Потписник на сертификат</translation>
 <translation id="1145292499998999162">Приклучокот е блокиран</translation>
-<translation id="1145532888383813076">Пребарувајте низ уредот, апликациите и интернетот.</translation>
 <translation id="1145593918056169051">Печатачот запре</translation>
 <translation id="1146678959555564648">Влези во VR</translation>
 <translation id="114721135501989771">Добијте ги паметните опции на Google во Chrome</translation>
@@ -1925,7 +1924,7 @@
 <translation id="3445047461171030979">Брзи одговори од „Помошникот на Google“</translation>
 <translation id="3445925074670675829">USB-Ц уред</translation>
 <translation id="344630545793878684">Читајте ги вашите податоци на голем број веб-локации</translation>
-<translation id="3446650212859500694">Датотекава содржи чувствителени содржини</translation>
+<translation id="3446650212859500694">Датотекава содржи чувствителни содржини</translation>
 <translation id="3448086340637592206">Дополнителни услови на Google Chrome и Chrome OS</translation>
 <translation id="3448492834076427715">Ажурирајте ја сметката</translation>
 <translation id="3449393517661170867">Нов прозорец со картички</translation>
@@ -3425,7 +3424,6 @@
 <translation id="5430931332414098647">Инстант врзување</translation>
 <translation id="5431318178759467895">Боја</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="5432996274932278848">Пребарувајте низ уредот, апликациите и интернетот. Користете ги копчињата со стрелки за навигација низ апликациите.</translation>
 <translation id="543338862236136125">Измени ја лозинката</translation>
 <translation id="5434065355175441495">PKCS #1 RSA шифрирање</translation>
 <translation id="5436492226391861498">Се чека прокси тунел…</translation>
@@ -5093,7 +5091,6 @@
 <translation id="7606992457248886637">Органи</translation>
 <translation id="7607002721634913082">Паузирано</translation>
 <translation id="7609148976235050828">Поврзете се на интернет и обидете се повторно.</translation>
-<translation id="7611008212562900400">Пребарајте на вашиот уред, апликациите, интернетот…</translation>
 <translation id="7614260613810441905">Прашувај кога некој сајт сака да изменува датотеки или папки на уредот (препорачано)</translation>
 <translation id="761530003705945209">Направете бекап на Google Drive. Лесно враќајте ги податоците или менувајте ги уредите во секое време. Бекапот опфаќа податоци од апликациите. Вашиот бекап се прикачува во Google и се шифрира со лозинката за вашата сметка на Google.</translation>
 <translation id="7616214729753637086">Уредот се регистрира…</translation>
@@ -5882,7 +5879,7 @@
 <translation id="8609465669617005112">Премести нагоре</translation>
 <translation id="8610103157987623234">Погрешен формат. Обидете се повторно</translation>
 <translation id="8613164732773110792">Само мали букви, цифри, долни црти и црти</translation>
-<translation id="8613786722548417558"><ph name="FILE_NAME" /> е премногу голема за безбедносна проверка. Може да отворате датотеки до 50 MB.</translation>
+<translation id="8613786722548417558"><ph name="FILE_NAME" /> е преголема за безбедносна проверка. Може да отворате датотеки до 50 MB.</translation>
 <translation id="8615618338313291042">Инкогнито апликација: <ph name="APP_NAME" /></translation>
 <translation id="8619803522055190423">Со сенка</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
@@ -6189,7 +6186,7 @@
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Проверете кај мрежниот администратор за да се осигурите дека заштитниот ѕид не ги блокира преземањата од серверите на Google.</translation>
 <translation id="8973557916016709913">Отстрани ниво на зумирање</translation>
-<translation id="8973596347849323817">Уредот може да го приспособите да одговара на вашите потреби. Овие карактеристики за пристапност може да ги смените подоцна во „Поставки“.</translation>
+<translation id="8973596347849323817">Уредот може да го приспособите да одговара на вашите потреби. Овие функции за пристапност може да ги смените подоцна во „Поставки“.</translation>
 <translation id="897414447285476047">Целната датотека не е целосна поради проблем со врската.</translation>
 <translation id="897525204902889653">Услуга за карантин</translation>
 <translation id="8975562453115131273">{NUM_OTHER_TABS,plural, =0{„<ph name="TAB_TITLE" />“}=1{„<ph name="TAB_TITLE" />“ и уште 1 картичка}one{„<ph name="TAB_TITLE" />“ и уште # картичка}other{„<ph name="TAB_TITLE" />“ и уште # картички}}</translation>

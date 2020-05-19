@@ -112,7 +112,6 @@
 <translation id="1140746652461896221">Bloquear contenido en cualquier página que visites</translation>
 <translation id="1143142264369994168">Firmante del certificado</translation>
 <translation id="1145292499998999162">Complemento bloqueado</translation>
-<translation id="1145532888383813076">Busca en el dispositivo, la Web y las apps.</translation>
 <translation id="1145593918056169051">Se detuvo la impresora</translation>
 <translation id="1146678959555564648">Entrar al modo RV</translation>
 <translation id="114721135501989771">Obtén las mejores funciones de Google en Chrome</translation>
@@ -151,7 +150,7 @@
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Acceso a un archivo almacenado en la computadora}other{Acceso a # archivos almacenados en la computadora}}</translation>
 <translation id="119092896208640858">Para borrar los datos de navegación solo de este dispositivo y conservarlos en tu Cuenta de Google, <ph name="BEGIN_LINK" />sal de ella<ph name="END_LINK" />.</translation>
 <translation id="1193273168751563528">Ingresar a sesión administrada</translation>
-<translation id="1193927020065025187">Es posible que este sitio esté tratando de engañarte para que permitas notificaciones intrusivas</translation>
+<translation id="1193927020065025187">Es posible que este sitio esté intentando engañarte para que permitas notificaciones intrusivas</translation>
 <translation id="1195447618553298278">Error desconocido.</translation>
 <translation id="1195558154361252544">Se bloquearon automáticamente las notificaciones para todos los sitios, excepto en los sitios en que las permites</translation>
 <translation id="1197088940767939838">Naranja</translation>
@@ -488,7 +487,7 @@
 <translation id="161460670679785907">No se puede detectar tu teléfono</translation>
 <translation id="1616206807336925449">Esta extensión no requiere permisos especiales.</translation>
 <translation id="1616298854599875024">No se puede importar la extensión "<ph name="IMPORT_NAME" />" porque no es un módulo compartido</translation>
-<translation id="1617765145568323981">{NUM_FILES,plural, =0{Controlando que estos datos cumplan con las políticas de seguridad de tu organización…}=1{Controlando que este archivo cumpla con las políticas de seguridad de tu organización…}other{Controlando que estos archivos cumplan con las políticas de seguridad de tu organización…}}</translation>
+<translation id="1617765145568323981">{NUM_FILES,plural, =0{Controlando los datos respecto de las políticas de seguridad de tu organización…}=1{Controlando el archivo respecto de las políticas de seguridad de tu organización…}other{Controlando los archivos respecto de las políticas de seguridad de tu organización…}}</translation>
 <translation id="1618268899808219593">C&amp;entro de ayuda</translation>
 <translation id="1620307519959413822">La contraseña es incorrecta. Vuelve a intentarlo o haz clic en "¿Olvidaste la contraseña?" para restablecerla.</translation>
 <translation id="1620510694547887537">Cámara</translation>
@@ -1213,7 +1212,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2517472476991765520">Buscar</translation>
 <translation id="2518024842978892609">Usar los certificados de cliente</translation>
 <translation id="2520644704042891903">Esperando el socket disponible…</translation>
-<translation id="2521854691574443804">Controlando que <ph name="FILE_NAME" /> cumpla con las políticas de seguridad de tu organización…</translation>
+<translation id="2521854691574443804">Controlando <ph name="FILE_NAME" /> respecto de las políticas de seguridad de tu organización…</translation>
 <translation id="252219247728877310">Componente no actualizado</translation>
 <translation id="2523184218357549926">Envía a Google las URL de las páginas que visitas</translation>
 <translation id="2526277209479171883">Instalar y continuar</translation>
@@ -1832,7 +1831,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3317678681329786349">Cámara y micrófono bloqueados</translation>
 <translation id="3319048459796106952">Nueva ventana de &amp;incógnito</translation>
 <translation id="3320630259304269485">Navegación segura (protección contra sitios peligrosos) y otras opciones de configuración de seguridad</translation>
-<translation id="3323295311852517824">{NUM_FILES,plural, =0{Estos datos incluyen contenido sensible o peligroso. Quítalo y vuelve a intentarlo.}=1{Este archivo incluye contenido sensible o peligroso. Quítalo y vuelve a intentarlo.}other{Estos archivos incluyen contenido sensible o peligroso. Quítalo y vuelve a intentarlo.}}</translation>
+<translation id="3323295311852517824">{NUM_FILES,plural, =0{Estos datos incluyen contenido sensible o peligroso. Quita el contenido correspondiente y vuelve a intentarlo.}=1{Este archivo incluye contenido sensible o peligroso. Quita el contenido correspondiente y vuelve a intentarlo.}other{Estos archivos incluyen contenido sensible o peligroso. Quita el contenido correspondiente y vuelve a intentarlo.}}</translation>
 <translation id="3323521181261657960">Bonus: Disfruta de más tiempo de uso</translation>
 <translation id="3325910708063135066">La cámara y el micrófono están desactivados en las Preferencias del Sistema de Mac</translation>
 <translation id="3328489342742826322">Si implementas una copia de seguridad, se borrarán los datos y apps de Linux existentes en tu carpeta de archivos de Linux.</translation>
@@ -3422,7 +3421,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5430931332414098647">Conexión instantánea mediante dispositivo móvil</translation>
 <translation id="5431318178759467895">Color</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="5432996274932278848">Realiza búsquedas en tu dispositivo, la Web y entre las apps. Usa las teclas de flecha para navegar por las apps.</translation>
 <translation id="543338862236136125">Editar la contraseña</translation>
 <translation id="5434065355175441495">PKCS N. º 1, Encriptación RSA</translation>
 <translation id="5436492226391861498">Esperando túnel proxy...</translation>
@@ -3912,7 +3910,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6055392876709372977">PKCS N. º 1 SHA-256 con encriptación RSA</translation>
 <translation id="6055907707645252013">Red <ph name="NETWORK_TYPE" />, no conectada</translation>
 <translation id="6056710589053485679">Volver a cargar normalmente</translation>
-<translation id="6057312498756061228">Este archivo es demasiado grande para realizarle un control de seguridad. Se permite abrir archivos de hasta 50 MB.</translation>
+<translation id="6057312498756061228">Este archivo es demasiado grande para hacer un control de seguridad. Se permite abrir archivos de hasta 50 MB.</translation>
 <translation id="6057381398996433816">Este sitio no tiene permiso para usar los sensores de movimiento y luz.</translation>
 <translation id="6058567592298841668">Máquina virtual de complementos: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Jerarquía de certificados</translation>
@@ -5005,7 +5003,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7487067081878637334">Tecnología</translation>
 <translation id="7487141338393529395">Activa el corrector ortográfico mejorado</translation>
 <translation id="7487969577036436319">No hay componentes instalados.</translation>
-<translation id="7488682689406685343">Es posible que este sitio esté tratando de engañarte para que permitas notificaciones intrusivas.</translation>
+<translation id="7488682689406685343">Es posible que este sitio esté intentando engañarte para que permitas notificaciones intrusivas.</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Abrir todo}=1{&amp;Abrir favorito}other{&amp;Abrir todo (#)}}</translation>
 <translation id="7489761397368794366">Llamar desde tu dispositivo</translation>
 <translation id="749028671485790643">Persona <ph name="VALUE" /></translation>
@@ -5090,7 +5088,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7606992457248886637">Autoridades</translation>
 <translation id="7607002721634913082">Detenido</translation>
 <translation id="7609148976235050828">Conéctate a Internet y vuelve a intentarlo.</translation>
-<translation id="7611008212562900400">Busca en el dispositivo, las apps, la Web…</translation>
 <translation id="7614260613810441905">Preguntar cuando un sitio quiera editar archivos o carpetas de tu dispositivo (recomendado)</translation>
 <translation id="761530003705945209">Crea una copia de seguridad en Google Drive. Restaura tus datos o cambia de dispositivo en cualquier momento con facilidad. Se incluyen datos de apps. Se suben las copias de seguridad a Google y se encriptan con la contraseña de tu Cuenta de Google.</translation>
 <translation id="7616214729753637086">Registrando dispositivo…</translation>
@@ -5877,7 +5874,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8609465669617005112">Subir</translation>
 <translation id="8610103157987623234">El formato es incorrecto; vuelve a intentarlo</translation>
 <translation id="8613164732773110792">Solo se permiten caracteres en minúscula, números, guiones bajos o rayas</translation>
-<translation id="8613786722548417558"><ph name="FILE_NAME" /> es demasiado grande para hacerle un control de seguridad. Se permite abrir archivos de hasta 50 MB.</translation>
+<translation id="8613786722548417558"><ph name="FILE_NAME" /> es demasiado grande para hacer un control de seguridad. Se permite abrir archivos de hasta 50 MB.</translation>
 <translation id="8615618338313291042">Aplicación de incógnito: <ph name="APP_NAME" /></translation>
 <translation id="8619803522055190423">Sombra paralela</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
@@ -6368,7 +6365,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="930268624053534560">Marcas de tiempo detalladas</translation>
 <translation id="932327136139879170">Página principal</translation>
 <translation id="932508678520956232">No se pudo iniciar la impresión.</translation>
-<translation id="933427034780221291">{NUM_FILES,plural, =1{Este archivo es demasiado grande para realizarle un control de seguridad. Puedes subir archivos de hasta 50 MB.}other{Algunos archivos son demasiado grandes para realizarles un control de seguridad. Puedes subir archivos de hasta 50 MB.}}</translation>
+<translation id="933427034780221291">{NUM_FILES,plural, =1{Este archivo es demasiado grande para hacer un control de seguridad. Puedes subir archivos de hasta 50 MB.}other{Algunos archivos son demasiado grandes para hacer un control de seguridad. Puedes subir archivos de hasta 50 MB.}}</translation>
 <translation id="93343527085570547">Para solicitar cambios en el contenido por motivos legales, visita la <ph name="BEGIN_LINK1" />página de ayuda legal<ph name="END_LINK1" />. Es posible que se envíe a Google información sobre el sistema y la cuenta. Según lo establecido en nuestra <ph name="BEGIN_LINK2" />Política de Privacidad<ph name="END_LINK2" /> y las <ph name="BEGIN_LINK3" />Condiciones del Servicio<ph name="END_LINK3" />, la información que nos brindes se usará para solucionar problemas técnicos y mejorar nuestros servicios.</translation>
 <translation id="93393615658292258">Solo contraseña</translation>
 <translation id="934244546219308557">Escribe un nombre para este grupo</translation>

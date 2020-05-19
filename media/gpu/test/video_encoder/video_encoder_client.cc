@@ -58,9 +58,9 @@ VideoEncoderClient::~VideoEncoderClient() {
 
   Destroy();
 
-  // Wait until the bitstream processors are done before destroying them. This
-  // needs to be done after destroying the encoder so no new bitstream buffers
-  // will be queued while waiting.
+  // Wait until the bitstream processors are done before destroying them.
+  // This needs to be done after destroying the encoder so no new bitstream
+  // buffers will be queued while waiting.
   WaitForBitstreamProcessors();
   bitstream_processors_.clear();
 }
@@ -148,7 +148,6 @@ void VideoEncoderClient::RequireBitstreamBuffers(
 
   output_buffer_size_ = output_buffer_size;
 
-  // Create output buffers.
   for (unsigned int i = 0; i < input_count; ++i) {
     auto shm = base::UnsafeSharedMemoryRegion::Create(output_buffer_size_);
     LOG_ASSERT(shm.IsValid());
@@ -167,6 +166,25 @@ void VideoEncoderClient::RequireBitstreamBuffers(
   FireEvent(VideoEncoder::EncoderEvent::kInitialized);
 }
 
+scoped_refptr<BitstreamProcessor::BitstreamRef>
+VideoEncoderClient::CreateBitstreamRef(
+    int32_t bitstream_buffer_id,
+    const BitstreamBufferMetadata& metadata) {
+  auto it = bitstream_buffers_.find(bitstream_buffer_id);
+  LOG_ASSERT(it != bitstream_buffers_.end());
+  auto decoder_buffer = DecoderBuffer::FromSharedMemoryRegion(
+      base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+          it->second.Duplicate()),
+      0u /* offset */, output_buffer_size_);
+  if (!decoder_buffer)
+    return nullptr;
+
+  return BitstreamProcessor::BitstreamRef::Create(
+      std::move(decoder_buffer), metadata, bitstream_buffer_id,
+      base::BindOnce(&VideoEncoderClient::BitstreamBufferProcessed, weak_this_,
+                     bitstream_buffer_id));
+}
+
 void VideoEncoderClient::BitstreamBufferReady(
     int32_t bitstream_buffer_id,
     const BitstreamBufferMetadata& metadata) {
@@ -175,16 +193,30 @@ void VideoEncoderClient::BitstreamBufferReady(
   auto it = bitstream_buffers_.find(bitstream_buffer_id);
   ASSERT_NE(it, bitstream_buffers_.end());
 
-  // TODO(hiroh): Execute bitstream buffers processors.
-
   // Notify the test an encoded bitstream buffer is ready. We should only do
   // this after scheduling the bitstream to be processed, so calling
   // WaitForBitstreamProcessors() after receiving this event will always
   // guarantee the bitstream to be processed.
   FireEvent(VideoEncoder::EncoderEvent::kBitstreamReady);
 
-  // Currently output buffers are returned immediately to the encoder.
-  // TODO(dstaessens): Add support for asynchronous bitstream buffer processing.
+  if (bitstream_processors_.empty()) {
+    BitstreamBufferProcessed(bitstream_buffer_id);
+    return;
+  }
+
+  auto bitstream_ref = CreateBitstreamRef(bitstream_buffer_id, metadata);
+  ASSERT_TRUE(bitstream_ref);
+  for (auto& bitstream_processor_ : bitstream_processors_) {
+    bitstream_processor_->ProcessBitstream(bitstream_ref, frame_index_);
+  }
+  frame_index_++;
+}
+
+void VideoEncoderClient::BitstreamBufferProcessed(int32_t bitstream_buffer_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_client_sequence_checker_);
+  auto it = bitstream_buffers_.find(bitstream_buffer_id);
+  ASSERT_NE(it, bitstream_buffers_.end());
+
   BitstreamBuffer bitstream_buffer(bitstream_buffer_id, it->second.Duplicate(),
                                    output_buffer_size_);
   encoder_->UseOutputBitstreamBuffer(std::move(bitstream_buffer));

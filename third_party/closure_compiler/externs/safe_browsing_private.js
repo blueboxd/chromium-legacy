@@ -11,9 +11,7 @@
 
 /** @fileoverview Externs generated from namespace: safeBrowsingPrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.safeBrowsingPrivate = {};
 
 /**

@@ -425,12 +425,15 @@ class WebContents : public PageNavigator,
   using AccessibilityEventCallback =
       base::RepeatingCallback<void(const std::string&)>;
 
-  // Starts or stops recording accessibility events. While accessibility events
-  // are being recorded, the callback will be called when an accessibility
-  // event is received. The start paramater says whether the recording is
-  // starting or stopping.
-  virtual void RecordAccessibilityEvents(AccessibilityEventCallback callback,
-                                         bool start) = 0;
+  // Starts or stops recording accessibility events. |start_recording| is true
+  // when recording should start and false when recording should stop.
+  // |callback| is an optional function which is called when an accessibility
+  // event is received while accessibility events are being recorded. When
+  // |start_recording| is true, it is expected that |callback| has a value; when
+  // |start_recording| is false, it is expected that |callback| does not.
+  virtual void RecordAccessibilityEvents(
+      bool start_recording,
+      base::Optional<AccessibilityEventCallback> callback) = 0;
 
   // Tab navigation state ------------------------------------------------------
 

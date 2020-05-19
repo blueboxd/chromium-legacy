@@ -63,6 +63,11 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/skbitmap_operations.h"
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+
 namespace extensions {
 
 namespace developer = api::developer_private;
@@ -407,7 +412,12 @@ ExtensionInfoGenerator::ExtensionInfoGenerator(
       warning_service_(WarningService::Get(browser_context)),
       error_console_(ErrorConsole::Get(browser_context)),
       image_loader_(ImageLoader::Get(browser_context)),
-      pending_image_loads_(0u) {}
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+      supervised_user_service_(
+          SupervisedUserServiceFactory::GetForBrowserContext(browser_context)),
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+      pending_image_loads_(0u) {
+}
 
 ExtensionInfoGenerator::~ExtensionInfoGenerator() {
 }
@@ -559,9 +569,19 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
       0;
   info->disable_reasons.blocked_by_policy =
       (disable_reasons & disable_reason::DISABLE_BLOCKED_BY_POLICY) != 0;
-  info->disable_reasons.custodian_approval_required =
+  bool custodian_approval_required =
       (disable_reasons & disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED) !=
       0;
+  info->disable_reasons.custodian_approval_required =
+      custodian_approval_required;
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  bool permissions_increase =
+      (disable_reasons & disable_reason::DISABLE_PERMISSIONS_INCREASE) != 0;
+  info->disable_reasons.parent_disabled_permissions =
+      !supervised_user_service_
+           ->GetSupervisedUserExtensionsMayRequestPermissionsPref() &&
+      (custodian_approval_required || permissions_increase);
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
   // Error collection.
   bool error_console_enabled =

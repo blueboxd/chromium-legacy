@@ -185,21 +185,6 @@ std::string GetOrCreateSerialNumber(PrefService* prefs) {
   return serial_number;
 }
 
-bool ExpandPropertyFilesInternal(const base::FilePath& source_path,
-                                 const base::FilePath& dest_path) {
-  if (arc::IsArcVmEnabled()) {
-    // TODO(yusukes): Remove this later.
-    arc::ExpandPropertyFiles(source_path, dest_path, /*single_file=*/false);
-
-    // For ARCVM, generate <dest_path>/factory/factory.prop.
-    return arc::ExpandPropertyFiles(source_path, dest_path.Append("factory"),
-                                    /*single_file=*/true);
-  }
-  // For ARC, generate <dest_path>/{default,build,vendor_build}.prop.
-  return arc::ExpandPropertyFiles(source_path, dest_path,
-                                  /*single_file=*/false);
-}
-
 }  // namespace
 
 // This class is used to track statuses on OptIn flow. It is created in case ARC
@@ -1298,10 +1283,16 @@ void ArcSessionManager::EmitLoginPromptVisibleCalled() {
 
 void ArcSessionManager::ExpandPropertyFiles() {
   VLOG(1) << "Started expanding *.prop files";
+
+  // For ARCVM, generate <dest_path>/factory/factory.prop. For ARC, generate
+  // <dest_path>/{default,build,vendor_build}.prop.
+  const bool is_arcvm = arc::IsArcVmEnabled();
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&ExpandPropertyFilesInternal, property_files_source_dir_,
-                     property_files_dest_dir_),
+      base::BindOnce(&arc::ExpandPropertyFiles, property_files_source_dir_,
+                     is_arcvm ? property_files_dest_dir_.Append("factory")
+                              : property_files_dest_dir_,
+                     /*single_file=*/is_arcvm),
       base::BindOnce(&ArcSessionManager::OnExpandPropertyFiles,
                      weak_ptr_factory_.GetWeakPtr()));
 }

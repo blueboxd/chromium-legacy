@@ -330,6 +330,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       int max_length) override;
   void SendInterventionReport(const std::string& id,
                               const std::string& message) override;
+  WebUI* GetWebUI() override;
   void AllowBindings(int binding_flags) override;
   int GetEnabledBindings() override;
   void SetWebUIProperty(const std::string& name,

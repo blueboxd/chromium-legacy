@@ -4,6 +4,9 @@
 
 #import "ios/chrome/browser/safe_browsing/unsafe_resource_util.h"
 
+#import "ios/chrome/browser/safe_browsing/safe_browsing_url_allow_list.h"
+#import "ios/web/public/web_state.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -72,4 +75,14 @@ std::string GetUnsafeResourceMetricPrefix(
   if (resource.is_subresource)
     prefix += "_subresource";
   return prefix;
+}
+
+SafeBrowsingUrlAllowList* GetAllowListForResource(
+    const security_interstitials::UnsafeResource& resource) {
+  if (resource.web_state_getter.is_null())
+    return nullptr;
+  web::WebState* web_state = resource.web_state_getter.Run();
+  if (!web_state)
+    return nullptr;
+  return SafeBrowsingUrlAllowList::FromWebState(web_state);
 }

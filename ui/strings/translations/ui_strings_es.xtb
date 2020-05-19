@@ -4,6 +4,7 @@
 <translation id="1028699632127661925">Enviando a <ph name="DEVICE_NAME" />...</translation>
 <translation id="111910763555783249">Configuración de notificaciones</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Hace 1 día}other{Hace # días}}</translation>
+<translation id="1145532888383813076">Busca en el dispositivo, las aplicaciones y la Web.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Hace 1 minuto}other{Hace # minutos}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="1181037720776840403">Quitar</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">activa la sincronización</translation>
 <translation id="5329858601952122676">&amp;Suprimir</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> está encima de <ph name="IN_PLACE_APP" />. Suelta para crear una carpeta.</translation>
+<translation id="5432996274932278848">Haz búsquedas en tu dispositivo, en tus aplicaciones y en la Web. Utiliza las teclas de flecha para desplazarte por las aplicaciones.</translation>
 <translation id="5463830097259460683">Emojis y símbolos</translation>
 <translation id="5476505524087279545">desmarcar</translation>
 <translation id="547979256943495781">La estantería está en la parte derecha</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">¿Quieres eliminar esta búsqueda de tu historial?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
+<translation id="7611008212562900400">Busca en tu dispositivo, aplicaciones, páginas web…</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7781829728241885113">Ayer</translation>
 <translation id="7814458197256864873">&amp;Copiar</translation>

@@ -1289,6 +1289,9 @@ class RenderFrameSubmissionObserver
   // Returns the number of frames submitted since the observer's creation.
   int render_frame_count() const { return render_frame_count_; }
 
+  // Runs |closure| the next time metadata changes.
+  void NotifyOnNextMetadataChange(base::OnceClosure closure);
+
  private:
   // Exits |run_loop_| unblocking the UI thread. Execution will resume in Wait.
   void Quit();
@@ -1311,6 +1314,8 @@ class RenderFrameSubmissionObserver
 
   RenderFrameMetadataProviderImpl* render_frame_metadata_provider_ = nullptr;
   base::OnceClosure quit_closure_;
+  // If non-null, run when metadata changes.
+  base::OnceClosure metadata_change_closure_;
   int render_frame_count_ = 0;
 };
 

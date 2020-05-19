@@ -444,8 +444,9 @@ void V4UpdateProtocolManager::CollectUpdateInfo(
     update_info->set_last_update_time_millis(last_response_time_.ToJavaTime());
   }
 
-  if (update_timer_.IsRunning()) {
-    update_info->set_next_update_time_millis(next_update_time_.ToJavaTime());
+  if (next_update_time_) {
+    update_info->set_next_update_time_millis(
+        next_update_time_.value().ToJavaTime());
   }
 }
 

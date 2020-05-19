@@ -112,7 +112,6 @@
 <translation id="1140746652461896221">Blokirajte sadržaj na stranicama koje posetite</translation>
 <translation id="1143142264369994168">Potpisnik sertifikata</translation>
 <translation id="1145292499998999162">Dodatna komponenta je blokirana</translation>
-<translation id="1145532888383813076">Pretražite uređaj, aplikacije i veb.</translation>
 <translation id="1145593918056169051">Štampač je prestao da radi</translation>
 <translation id="1146678959555564648">Uđi u VR</translation>
 <translation id="114721135501989771">Pametne Google funkcije</translation>
@@ -3422,7 +3421,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="5430931332414098647">Trenutno privezivanje</translation>
 <translation id="5431318178759467895">U boji</translation>
 <translation id="5431825016875453137">Otvoreni VPN/L2TP</translation>
-<translation id="5432996274932278848">Pretražujte uređaj, aplikacije i veb. Koristite tastere sa strelicama da biste se kretali kroz aplikacije.</translation>
 <translation id="543338862236136125">Izmenite lozinku</translation>
 <translation id="5434065355175441495">PKCS #1 RSA šifrovanje</translation>
 <translation id="5436492226391861498">Čekanje na proksi tunel...</translation>
@@ -5091,7 +5089,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="7606992457248886637">Autoriteti za sertifikate</translation>
 <translation id="7607002721634913082">Pauzirano</translation>
 <translation id="7609148976235050828">Povežite se na internet i probajte ponovo.</translation>
-<translation id="7611008212562900400">Pretražite uređaj, aplikacije, veb...</translation>
 <translation id="7614260613810441905">Pitaj kada sajt želi da izmeni datoteke ili direktorijume na uređaju (preporučeno)</translation>
 <translation id="761530003705945209">Pravite rezervne kopije na Google disku. Lako vratite podatke ili pređite na drugi uređaj u bilo kom trenutku. Rezervna kopija obuhvata podatke aplikacija. Rezervne kopije se otpremaju na Google i šifruju pomoću lozinke za Google nalog.</translation>
 <translation id="7616214729753637086">Uređaj se registruje...</translation>
@@ -5508,7 +5505,7 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="8102159139658438129">Idite u <ph name="LINK_BEGIN" />Podešavanja<ph name="LINK_END" /> da biste videli opcije za povezani telefon</translation>
 <translation id="8104696615244072556">Obavite Powerwash uređaja <ph name="IDS_SHORT_PRODUCT_NAME" /> i vratite ga na prethodnu verziju.</translation>
 <translation id="8107015733319732394">Google Play prodavnica se instalira na uređaju <ph name="DEVICE_TYPE" />. To može da potraje nekoliko minuta.</translation>
-<translation id="810728361871746125">Rezolucija prikaza</translation>
+<translation id="810728361871746125">Rezolucija ekrana</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Nema kolačića treće strane}=1{1 kolačić treće strane je blokiran}one{# kolačić treće strane je blokiran}few{# kolačića treće strane su blokirana}other{# kolačića treće strane je blokirano}}</translation>
 <translation id="810875025413331850">Nije pronađen nijedan uređaj u blizini.</translation>
 <translation id="8114199541033039755">Idite na početnu stranicu ili nazad i menjajte aplikacije pomoću dugmadi u režimu tableta. Uključeno je kada su ChromeVox ili Automatski klikovi omogućeni.</translation>
@@ -5518,7 +5515,7 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="8117752106453549166">Administrator konfiguriše Linux. Konfigurisanje će potrajati par minuta.</translation>
 <translation id="8118362518458010043">Chrome je onemogućio dodatak. Ovaj dodatak možda nije bezbedan.</translation>
 <translation id="8118488170956489476">Organizacija <ph name="BEGIN_LINK" />upravlja pregledačem<ph name="END_LINK" /></translation>
-<translation id="8118515372935001629">Učestalost osvežavanja prikaza</translation>
+<translation id="8118515372935001629">Učestalost osvežavanja ekrana</translation>
 <translation id="8118860139461251237">Upravljanje preuzimanjima</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> i drugo</translation>
 <translation id="8123590694679414600">Podaci su šifrovani pomoću pristupne fraze za sinhronizaciju

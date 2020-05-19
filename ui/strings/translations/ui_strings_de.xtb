@@ -4,6 +4,7 @@
 <translation id="1028699632127661925">Wird an <ph name="DEVICE_NAME" /> gesendet…</translation>
 <translation id="111910763555783249">Benachrichtigungseinstellungen</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 Tag her}other{# Tage her}}</translation>
+<translation id="1145532888383813076">Durchsuchen Sie Ihr Gerät, Ihre Apps und das Web.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{vor 1 Minute}other{vor # Minuten}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 Min.}other{# Min.}}</translation>
 <translation id="1181037720776840403">Entfernen</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">Synchronisierung aktivieren</translation>
 <translation id="5329858601952122676">&amp;Löschen</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> über <ph name="IN_PLACE_APP" />; loslassen, um Ordner zu erstellen.</translation>
+<translation id="5432996274932278848">Sie können Ihr Gerät, Ihre Apps und das Web durchsuchen. Navigieren Sie mit den Pfeiltasten in den entsprechenden Apps.</translation>
 <translation id="5463830097259460683">Emojis &amp;&amp; Symbole</translation>
 <translation id="5476505524087279545">Auswahl aufheben</translation>
 <translation id="547979256943495781">Ablage rechts</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">Diese Suchanfrage aus dem Verlauf löschen?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emojis</translation>
+<translation id="7611008212562900400">Gerät, Apps, Internet durchsuchen…</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7781829728241885113">Gestern</translation>
 <translation id="7814458197256864873">&amp;Kopieren</translation>

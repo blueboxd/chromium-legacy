@@ -11,9 +11,7 @@
 
 /** @fileoverview Externs generated from namespace: chromeosInfoPrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.chromeosInfoPrivate = {};
 
 /**

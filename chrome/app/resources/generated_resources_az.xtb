@@ -110,7 +110,6 @@
 <translation id="1140746652461896221">Daxil olduğunuz istənilən səhifədə məzmunu blok edin</translation>
 <translation id="1143142264369994168">Sertifikat İmzaçısı</translation>
 <translation id="1145292499998999162">Plaqin bloklandı</translation>
-<translation id="1145532888383813076">Cihaz, tətbiq və vebdə axtarın.</translation>
 <translation id="1145593918056169051">Printer dayanıb</translation>
 <translation id="1146678959555564648">VR daxil edin</translation>
 <translation id="114721135501989771">Chrome'da Google yenilikləri əldə edin</translation>
@@ -487,7 +486,7 @@
 <translation id="161460670679785907">Telefonu aşkarlamaq alınmadı</translation>
 <translation id="1616206807336925449">Bu artırma xüsusi icazələr tələb etmir.</translation>
 <translation id="1616298854599875024">"<ph name="IMPORT_NAME" />" artırmasını import etmək olmur, çünki o paylaşılmış modul deyil</translation>
-<translation id="1617765145568323981">{NUM_FILES,plural, =0{Bu data təşkilatınızın təhlükəsizlik siyasətlərinə əsasən yoxlanılır...}=1{Bu fayl təşkilatınızın təhlükəsizlik siyasətlərinə əsasən yoxlanılır...}other{Bu fayllar təşkilatınızın təhlükəsizlik siyasətlərinə əsasən yoxlanılır...}}</translation>
+<translation id="1617765145568323981">{NUM_FILES,plural, =0{Bu data təşkilatınızın Güvənlik siyasətlərinə əsasən yoxlanılır...}=1{Bu fayl təşkilatınızın Güvənlik siyasətlərinə əsasən yoxlanılır...}other{Bu fayllar təşkilatınızın Güvənlik siyasətlərinə əsasən yoxlanılır...}}</translation>
 <translation id="1618268899808219593">Yardım mərkəzi</translation>
 <translation id="1620307519959413822">Yanlış parol. Yenidən cəhd edin və ya sıfırlamaq üçün "Parolu unutmuşam" seçiminə klikləyin.</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -1211,7 +1210,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="2517472476991765520">Skan edin</translation>
 <translation id="2518024842978892609">Müştəri sertifikatlarınızı istifadə edin</translation>
 <translation id="2520644704042891903">Əlçatan soket gözlənir...</translation>
-<translation id="2521854691574443804"><ph name="FILE_NAME" /> təşkilatınızın təhlükəsizlik siyasətlərinə əsasən yoxlanılır...</translation>
+<translation id="2521854691574443804"><ph name="FILE_NAME" /> təşkilatınızın Güvənlik siyasətlərinə əsasən yoxlanılır...</translation>
 <translation id="252219247728877310">Komponent güncəlləşməyib</translation>
 <translation id="2523184218357549926">Daxil olduğunuz səhifələrin linkləri Google'a göndərilir</translation>
 <translation id="2526277209479171883">Quraşdırın və davam edin</translation>
@@ -2124,7 +2123,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="3693415264595406141">Parol:</translation>
 <translation id="3694027410380121301">Öncəki Tabı Seçin</translation>
 <translation id="369489984217678710">Parollar və digər giriş datası</translation>
-<translation id="369522892592566391">{NUM_FILES,plural, =0{Təhlükəsizlik yoxlanışları tamamlanıb. Datanız yüklənəcək.}=1{Təhlükəsizlik yoxlanışları tamamlanıb. Faylınız yüklənəcək.}other{Təhlükəsizlik yoxlanışları tamamlanıb. Fayllarınız yüklənəcək.}}</translation>
+<translation id="369522892592566391">{NUM_FILES,plural, =0{Güvənlik yoxlanışları tamamlanıb. Datanız yüklənəcək.}=1{Güvənlik yoxlanışları tamamlanıb. Faylınız yüklənəcək.}other{Güvənlik yoxlanışları tamamlanıb. Fayllarınız yüklənəcək.}}</translation>
 <translation id="3699624789011381381">E-poçt ünvanı</translation>
 <translation id="3699920817649120894">Sinxronizasiya və fərdiləşdirmə deaktiv edilsin?</translation>
 <translation id="3700888195348409686">Təqdim olunur (<ph name="PAGE_ORIGIN" />)</translation>
@@ -2319,7 +2318,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="3909791450649380159">Kəsin</translation>
 <translation id="3911824782900911339">Yeni vərəqə</translation>
 <translation id="3915280005470252504">Səsli axtarış</translation>
-<translation id="3916233823027929090">Təhlükəsizlik yoxlanışları tamamlanıb</translation>
+<translation id="3916233823027929090">Güvənlik yoxlanışları tamamlanıb</translation>
 <translation id="3916445069167113093">Bu fayl növü kompüterinizi zədələyə bilər. <ph name="FILE_NAME" /> faylını yenə də saxlamaq istəyirsiniz?</translation>
 <translation id="3918972485393593704">Detalları Google'a bildirin</translation>
 <translation id="3919145445993746351">Artırmaları bütün kompüterlərdə əldə etmək üçün sinxronizasiyanı aktiv edin</translation>
@@ -3417,7 +3416,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5430931332414098647">Ani Birləşmə</translation>
 <translation id="5431318178759467895">Rəng</translation>
 <translation id="5431825016875453137">VPN / L2TP açın</translation>
-<translation id="5432996274932278848">Cihaz, tətbiq və vebdə axtarın. Tətbiqləri axtarmaq üçün ox klavişlərindən istifadə edin.</translation>
 <translation id="543338862236136125">Parolu redaktə edin</translation>
 <translation id="5434065355175441495">PKCS #1 RSA Şifrələmə</translation>
 <translation id="5436492226391861498">Proksi tunel gözlənilir...</translation>
@@ -3905,7 +3903,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="6055392876709372977">PKCS #1 SHA-256 With RSA Şifrələnmə</translation>
 <translation id="6055907707645252013"><ph name="NETWORK_TYPE" /> şəbəkəsi, qoşulu deyil</translation>
 <translation id="6056710589053485679">Normal yenidən yükləmə</translation>
-<translation id="6057312498756061228">Bu fayl təhlükəsizlik yoxlanışı üçün çox böyükdür. 50 MB-a qədər faylları aça bilərsiniz.</translation>
+<translation id="6057312498756061228">Bu fayl Güvənlik yoxlanışı üçün çox böyükdür. 50 MB-a qədər faylları aça bilərsiniz.</translation>
 <translation id="6057381398996433816">Bu saytın hərəkət və zəif sensorlardan istifadə etməsi blok edilib.</translation>
 <translation id="6058567592298841668">Qoşma Virtual Cihazı: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Sertifikat İyerarxiyası</translation>
@@ -5082,7 +5080,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="7606992457248886637">Doğrulamalar</translation>
 <translation id="7607002721634913082">Durduruldu</translation>
 <translation id="7609148976235050828">İnternetə qoşulun və yenidən cəhd edin.</translation>
-<translation id="7611008212562900400">Cihazda, tətbiqdə, vebdə axtarın...</translation>
 <translation id="7614260613810441905">Sayt cihazınızdakı fayl və qovluqları redaktə etmək istədikdə icazə tələb edilsin (tövsiyə edilir)</translation>
 <translation id="761530003705945209">Google Diskə yedəkləyin. İstənilən vaxt datanızı asanlıqla bərpa edin və ya cihazı dəyişin. Yedəkləmənizə tətbiq datası daxildir. Yedəkləmələriniz Google'a yüklənir və Google Hesabı parolunuzdan istifadə etməklə şifrlənir.</translation>
 <translation id="7616214729753637086">Cihaz qeydiyyatdan keçirilir...</translation>
@@ -5867,7 +5864,7 @@ Bu saytın blok edilməsini düşünmürəm!</translation>
 <translation id="8609465669617005112">Yuxarı köçürün</translation>
 <translation id="8610103157987623234">Yanlış format. Yenidən cəhd edin</translation>
 <translation id="8613164732773110792">Yalnız kiçik hərf simvolları, rəqəmlər, altdan xətt və ya tirelər</translation>
-<translation id="8613786722548417558"><ph name="FILE_NAME" /> təhlükəsizlik yoxlanışı üçün çox böyükdür. 50 MB-a qədər faylları aça bilərsiniz.</translation>
+<translation id="8613786722548417558"><ph name="FILE_NAME" /> Güvənlik yoxlanışı üçün çox böyükdür. 50 MB-a qədər faylları aça bilərsiniz.</translation>
 <translation id="8615618338313291042">Gizli tətbiq: <ph name="APP_NAME" /></translation>
 <translation id="8619803522055190423">Düşən kölgə</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
@@ -6356,7 +6353,7 @@ Bu saytın blok edilməsini düşünmürəm!</translation>
 <translation id="930268624053534560">Detallı Zaman Damğaları</translation>
 <translation id="932327136139879170">Ev</translation>
 <translation id="932508678520956232">Çapa başlamaq alınmadı.</translation>
-<translation id="933427034780221291">{NUM_FILES,plural, =1{Bu fayl təhlükəsizlik yoxlanışı üçün çox böyükdür. 50 MB-a qədər faylları yükləyə bilərsiniz.}other{Bu fayllardan bəziləri təhlükəsizlik yoxlanışı üçün çox böyükdür. 50 MB-a qədər faylları yükləyə bilərsiniz.}}</translation>
+<translation id="933427034780221291">{NUM_FILES,plural, =1{Bu fayl Güvənlik yoxlanışı üçün çox böyükdür. 50 MB-a qədər faylları yükləyə bilərsiniz.}other{Bu fayllardan bəziləri Güvənlik yoxlanışı üçün çox böyükdür. 50 MB-a qədər faylları yükləyə bilərsiniz.}}</translation>
 <translation id="93343527085570547">Hüquqi səbəblərdən kontent dəyişiklikləri tələb etmək üçün <ph name="BEGIN_LINK1" />Hüquqi Yardım səhifəsinə<ph name="END_LINK1" /> daxil olun. Bəzi hesab və sistem məlumatı Google'a göndərilə bilər. Verdiyiniz məlumatdan <ph name="BEGIN_LINK2" />Məxfilik Siyasəti<ph name="END_LINK2" /> və <ph name="BEGIN_LINK3" />Xidmət Şərtlərinə<ph name="END_LINK3" /> uyğun olaraq texniki məsələləri həll etmək və xidmətlərimizi təkmilləşdirmək üçün istifadə edəcəyik.</translation>
 <translation id="93393615658292258">Yalnız parol</translation>
 <translation id="934244546219308557">Bu qrupu adlandırın</translation>

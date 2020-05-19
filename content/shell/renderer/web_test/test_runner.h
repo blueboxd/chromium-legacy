@@ -559,9 +559,6 @@ class TestRunner {
   // Bound variable to return the name of this platform (chromium).
   std::string platform_name_;
 
-  // Bound variable to store the last tooltip text
-  std::string tooltip_text_;
-
   // Bound variable counting the number of top URLs visited.
   int web_history_item_count_ = 0;
 

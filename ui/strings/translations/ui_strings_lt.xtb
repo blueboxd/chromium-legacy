@@ -4,6 +4,7 @@
 <translation id="1028699632127661925">Siunčiama į „<ph name="DEVICE_NAME" />“...</translation>
 <translation id="111910763555783249">Pranešimų nustatymai</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Prieš 1 dieną}one{Prieš # dieną}few{Prieš # dienas}many{Prieš # dienos}other{Prieš # dienų}}</translation>
+<translation id="1145532888383813076">Ieškokite įrenginyje, programose, žiniatinklyje.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Prieš 1 minutę}one{Prieš # minutę}few{Prieš # minutes}many{Prieš # minutės}other{Prieš # minučių}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min.}one{# min.}few{# min.}many{# min.}other{# min.}}</translation>
 <translation id="1181037720776840403">Pašalinti</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">įjungti sinchronizavimą</translation>
 <translation id="5329858601952122676">&amp;Pašalinti</translation>
 <translation id="5395308026110844773">„<ph name="DRAGGED_APP_NAME" />“ ant „<ph name="IN_PLACE_APP" />“, paleiskite, kad sukurtumėte aplanką.</translation>
+<translation id="5432996274932278848">Ieškokite įrenginyje, programose ir žiniatinklyje. Naudokite rodyklių klavišus, kad galėtumėte naršyti programas.</translation>
 <translation id="5463830097259460683">Jaustukai ir simboliai</translation>
 <translation id="5476505524087279545">Nuimti žymėjimą</translation>
 <translation id="547979256943495781">Lentyna dešinėje</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">Ištrinti šią paiešką iš istorijos?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Jaustukai</translation>
+<translation id="7611008212562900400">Ieškokite įrenginyje, programose, žiniatinklyje...</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="7781829728241885113">Vakar</translation>
 <translation id="7814458197256864873">&amp;Kopijuoti</translation>

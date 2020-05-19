@@ -4,6 +4,7 @@
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" /> түзмөгүнө жөнөтүлүүдө...</translation>
 <translation id="111910763555783249">Эскертме жөндөөлөрү</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 күн мурун}other{# күн мурун}}</translation>
+<translation id="1145532888383813076">Түзмөктөн, колдонмолордон жана Интернеттен издөө.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 мүнөт мурун}other{# мүнөт мурун}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1мүн}other{#мүн}}</translation>
 <translation id="1181037720776840403">Алып салуу</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">шайкештирүүнү күйгүзүү</translation>
 <translation id="5329858601952122676">&amp;Жок кылуу</translation>
 <translation id="5395308026110844773">Папка түзүү үчүн, <ph name="DRAGGED_APP_NAME" /> колдонмосун <ph name="IN_PLACE_APP" /> колдонмосунун үстүнө сүйрөп барып, коё бериңиз.</translation>
+<translation id="5432996274932278848">Түзмөктөн, колдонмолордон жана Интернеттен издеңиз. Колдонмолоруңузда чабыттоо үчүн жебе баскычтарын пайдаланыңыз.</translation>
 <translation id="5463830097259460683">Быйтыкчалар жана Символдор</translation>
 <translation id="5476505524087279545">белгилебөө</translation>
 <translation id="547979256943495781">Текче экрандын оң жагында</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">Бул издөө таржымалыңыздан жок кылынсынбы?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> Тб</translation>
 <translation id="7507604095951736240">Быйтыкча</translation>
+<translation id="7611008212562900400">Түзмөктөн, колдонмолордон жана Интернеттен издөө…</translation>
 <translation id="7658239707568436148">Жокко чыгаруу</translation>
 <translation id="7781829728241885113">Кечээ</translation>
 <translation id="7814458197256864873">&amp;Көчүрүү</translation>

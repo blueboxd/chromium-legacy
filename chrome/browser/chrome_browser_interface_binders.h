@@ -96,10 +96,9 @@ void RegisterWebUIControllerInterfaceBinder(
         }
 
         const int size = sizeof...(WebUIControllerSubclasses);
-        auto* contents = content::WebContents::FromRenderFrameHost(host);
         bool is_bound = BinderHelper<Interface, size - 1,
                                      std::tuple<WebUIControllerSubclasses...>>::
-            BindInterface(contents->GetWebUI(), std::move(receiver));
+            BindInterface(host->GetWebUI(), std::move(receiver));
 
         // This is expected to be called only for the right WebUI pages matching
         // the same WebUI associated to the RenderFrameHost.

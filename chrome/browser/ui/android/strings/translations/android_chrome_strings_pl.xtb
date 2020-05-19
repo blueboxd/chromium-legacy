@@ -466,6 +466,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="488187801263602086">Zmień nazwę pliku</translation>
 <translation id="4882831918239250449">Zarządzaj personalizacją wyszukiwarki, reklam i innych funkcji na podstawie historii przeglądania</translation>
 <translation id="4885273946141277891">Nieobsługiwana liczba wystąpień Chrome.</translation>
+<translation id="4908869848243824489">Discover od Google</translation>
 <translation id="4910889077668685004">Aplikacje do płatności</translation>
 <translation id="4913161338056004800">Resetuj statystyki</translation>
 <translation id="4913169188695071480">Zatrzymaj odświeżanie</translation>
@@ -481,7 +482,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="4988210275050210843">Pobieram plik (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Strony</translation>
 <translation id="4994033804516042629">Nie znaleziono kontaktów</translation>
-<translation id="4996978546172906250">Udostępnij przez</translation>
 <translation id="5004416275253351869">Zarządzanie aktywnością w Google</translation>
 <translation id="5005498671520578047">Skopiuj hasło</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> chce się połączyć</translation>
@@ -643,6 +643,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6381421346744604172">Przyciemnij strony internetowe</translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6397616442223433927">Jesteś znowu online</translation>
+<translation id="6398765197997659313">Zamknij pełny ekran</translation>
 <translation id="6404511346730675251">Edytuj zakładkę</translation>
 <translation id="6406506848690869874">Synchronizacja</translation>
 <translation id="6410973561433500075">Włączyć tryb AR z domeny <ph name="DOMAIN" />?</translation>
@@ -702,6 +703,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6846298663435243399">Wczytuję…</translation>
 <translation id="6850409657436465440">Pobieranie wciąż trwa</translation>
 <translation id="6850830437481525139">Zamknięte karty: <ph name="TAB_COUNT" /></translation>
+<translation id="685850645784703949">Discover od Google – wyłączono</translation>
 <translation id="6864459304226931083">Pobierz obraz</translation>
 <translation id="6865313869410766144">Autouzupełnianie danych formularzy</translation>
 <translation id="6884306546558072722">Strony internetowe offline</translation>
@@ -904,6 +906,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8514577642972634246">Włącz tryb incognito</translation>
 <translation id="8516012719330875537">Edytor obrazów</translation>
 <translation id="8523928698583292556">Usuń zapisane hasło</translation>
+<translation id="8525306231823319788">Pełny ekran</translation>
 <translation id="854522910157234410">Otwórz tę stronę</translation>
 <translation id="8558485628462305855">Aby oglądać treści rzeczywistości rozszerzonej, zaktualizuj ARCore</translation>
 <translation id="8559990750235505898">Proponuj tłumaczenie stron w innych językach</translation>

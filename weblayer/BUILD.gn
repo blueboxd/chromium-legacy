@@ -223,6 +223,8 @@ source_set("weblayer_lib_base") {
     "browser/weblayer_browser_interface_binders.h",
     "browser/weblayer_content_browser_overlay_manifest.cc",
     "browser/weblayer_content_browser_overlay_manifest.h",
+    "browser/weblayer_features.cc",
+    "browser/weblayer_features.h",
     "browser/weblayer_field_trials.h",
     "browser/weblayer_security_blocking_page_factory.cc",
     "browser/weblayer_security_blocking_page_factory.h",
@@ -524,10 +526,50 @@ source_set("weblayer_lib_base") {
 }
 
 if (is_android) {
+  source_set("weblayer_android_test_jni_impl") {
+    testonly = true
+    sources = [ "browser/test/test_weblayer_impl.cc" ]
+    deps = [
+      ":weblayer_lib_base",
+      "//base",
+      "//content/public/browser",
+      "//content/test:test_support",
+      "//testing/gtest",
+      "//weblayer/browser/java:test_jni",
+    ]
+  }
+
   # Lib used in standalone WebView which allows manual JNI registration.
   static_library("weblayer_lib_webview") {
     public_deps = [ ":weblayer_lib_base" ]
     deps = [
+      "//base",
+      "//weblayer/browser/java:jni",
+      "//weblayer/browser/java:weblayer_jni_registration",
+    ]
+    sources = [
+      "$target_gen_dir/browser/java/weblayer_jni_registration.h",
+      "browser/web_view_compatibility_helper_impl.cc",
+      "browser/web_view_compatibility_helper_impl.h",
+    ]
+    defines = [ "WEBLAYER_MANUAL_JNI_REGISTRATION" ]
+
+    # Explicit dependency required for JNI registration to be able to
+    # find the native side functions.
+    if (is_component_build) {
+      deps += [
+        "//device/gamepad",
+        "//media/midi",
+        "//ui/events/devices",
+      ]
+    }
+  }
+
+  static_library("weblayer_lib_webview_test") {
+    testonly = true
+    public_deps = [ ":weblayer_lib_base" ]
+    deps = [
+      ":weblayer_android_test_jni_impl",
       "//base",
       "//weblayer/browser/java:jni",
       "//weblayer/browser/java:weblayer_jni_registration",
@@ -560,6 +602,18 @@ if (is_android) {
       "browser/web_view_compatibility_helper_impl.h",
     ]
   }
+
+  shared_library("libweblayer_test") {
+    testonly = true
+    sources = [ "app/entry_point.cc" ]
+    deps = [
+      ":weblayer_lib_webview_test",
+      "//base",
+      "//content/public/app",
+    ]
+    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+    configs += [ "//build/config/android:hide_all_but_jni" ]
+  }
 } else {
   source_set("weblayer_lib") {
     public_deps = [ ":weblayer_lib_base" ]
@@ -579,19 +633,5 @@ grit("resources") {
   ]
   deps = [ "//weblayer/browser/webui:mojo_bindings_js" ]
 }
-
 # TODO(jam): move weblayer_shell_resources_grit and copy_shell_resources here in
 # a way that's shareable?
-
-if (is_android) {
-  shared_library("libweblayer") {
-    sources = [ "app/entry_point.cc" ]
-    deps = [
-      ":weblayer_lib_webview",
-      "//base",
-      "//content/public/app",
-    ]
-    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
-    configs += [ "//build/config/android:hide_all_but_jni" ]
-  }
-}

@@ -112,7 +112,6 @@
 <translation id="1140746652461896221">Bloquear o contido en calquera páxina que visites</translation>
 <translation id="1143142264369994168">Titular do certificado</translation>
 <translation id="1145292499998999162">Bloqueouse o plugin</translation>
-<translation id="1145532888383813076">Realiza buscas no teu dispositivo, nas aplicacións e na web.</translation>
 <translation id="1145593918056169051">A impresora deixou de funcionar</translation>
 <translation id="1146678959555564648">Entrar en RV</translation>
 <translation id="114721135501989771">Obter tecnoloxía de Google en Chrome</translation>
@@ -2323,7 +2322,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3909791450649380159">Cor&amp;tar</translation>
 <translation id="3911824782900911339">Páxina da pestana nova</translation>
 <translation id="3915280005470252504">Busca por voz</translation>
-<translation id="3916233823027929090">Xa se realizaron as comprobacións de seguranza</translation>
+<translation id="3916233823027929090">Realizáronse comprobacións de seguranza</translation>
 <translation id="3916445069167113093">Este tipo de ficheiro pode danar o teu ordenador. Queres descargar <ph name="FILE_NAME" /> igualmente?</translation>
 <translation id="3918972485393593704">Informar dos detalles a Google</translation>
 <translation id="3919145445993746351">Para dispoñer das túas extensións en todos os ordenadores, activa a sincronización</translation>
@@ -3424,7 +3423,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5430931332414098647">Conexión compartida instantánea</translation>
 <translation id="5431318178759467895">Cor</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="5432996274932278848">Realiza buscas no teu dispositivo, nas aplicacións e na web. Utiliza as teclas das frechas para navegar polas aplicacións.</translation>
 <translation id="543338862236136125">Editar contrasinal</translation>
 <translation id="5434065355175441495">Cifrado PKCS n.º 1 RSA</translation>
 <translation id="5436492226391861498">Agardando túnel proxy...</translation>
@@ -5092,7 +5090,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7606992457248886637">Autoridades</translation>
 <translation id="7607002721634913082">En pausa</translation>
 <translation id="7609148976235050828">Conéctate a Internet e téntao de novo.</translation>
-<translation id="7611008212562900400">Busca na web, o teu dispositivo, aplicacións...</translation>
 <translation id="7614260613810441905">Preguntar cando un sitio queira modificar ficheiros ou cartafoles do teu dispositivo (recomendado)</translation>
 <translation id="761530003705945209">Facer copia de seguranza en Drive. Restaura os teus datos facilmente ou cambia de dispositivo en calquera momento. A túa copia de seguranza inclúe os datos das aplicacións. As copias de seguranza cárganse en Google e encríptanse co contrasinal da túa Conta de Google.</translation>
 <translation id="7616214729753637086">Inscribindo dispositivo…</translation>

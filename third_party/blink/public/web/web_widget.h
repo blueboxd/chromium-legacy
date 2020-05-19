@@ -186,6 +186,9 @@ class WebWidget {
 
   virtual void SetCursor(const ui::Cursor& cursor) = 0;
 
+  // Get the current tooltip text.
+  virtual WebString GetLastToolTipTextForTesting() const { return WebString(); }
+
  protected:
   ~WebWidget() = default;
 };

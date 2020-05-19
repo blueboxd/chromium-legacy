@@ -35,6 +35,44 @@ function verifyXRLightEstimate(lightEstimate) {
   assert_equals(lightEstimate.primaryLightIntensity.w, 1);
 }
 
+// Verifies the behavior of querying reflection cube maps
+// Defined in 'third_party/blink/renderer/modules/xr/xr_webgl_binding.idl'
+function verifyReflectionCubeMap(session, lightProbe) {
+  // Currently reflection cube maps only work on WebGL 2.
+  const gl2Canvas = document.createElement('canvas');
+  const gl = gl2Canvas.getContext('webgl2', { xrCompatible: true });
+  if (!gl) {
+    return;
+  }
+
+  const glBinding = new XRWebGLBinding(session, gl);
+
+  assert_true(glBinding instanceof XRWebGLBinding);
+
+  assert_defined(glBinding.getReflectionCubeMap, "getReflectionCubeMap was not defined on XRWebGLBinding");
+
+  // Bind a different cube map prior to fetching the reflection cube map so we
+  // can ensure the binding is preserved.
+  const tmpCubeMap = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_CUBE_MAP, tmpCubeMap);
+
+  // Make sure we get back a valid cube map
+  const cubeMap = glBinding.getReflectionCubeMap(lightProbe);
+  assert_true(cubeMap instanceof WebGLTexture);
+
+  const boundCubeMap = gl.getParameter(gl.TEXTURE_BINDING_CUBE_MAP);
+  assert_equals(boundCubeMap, tmpCubeMap);
+
+  // Ensure that we can't bind the returned cube map to the TEXTURE_2D bind
+  // target but can bind it to the TEXTURE_CUBE_MAP bind point. This effectively
+  // tests that the texture was created as a cube map.
+  gl.bindTexture(gl.TEXTURE_2D, cubeMap);
+  assert_equals(gl.getError(), gl.INVALID_OPERATION);
+
+  gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubeMap);
+  assert_equals(gl.getError(), gl.NO_ERROR);
+}
+
 // Verifies the structure of |XRFrame| (as it relates to light estimation)
 // for a session that's expected to suppot light estimation.
 // Defined in 'third_party/blink/renderer/modules/xr/xr_frame.idl'
@@ -51,6 +89,7 @@ function verifyXRLightEstimateExists(t, resolve, count, session, frame, lightPro
       });
     } else {
       verifyXRLightEstimate(lightEstimate);
+      verifyReflectionCubeMap(session, lightProbe);
       resolve();
     }
   });
@@ -63,7 +102,7 @@ function verifyXRLightProbe(lightProbe) {
 }
 
 const lightingInformationExistsName = "Ensures lighting estimation feature works when enabled";
-function lightingInformationExists(session, fakeDeviceController, t) {
+function lightingInformationExists(session, fakeDeviceController, t, sessionObjects) {
   t.step(() => {
     assert_defined(session.requestLightProbe, "requestLightProbe was not defined on XRSession");
   });
@@ -80,7 +119,7 @@ function lightingInformationExists(session, fakeDeviceController, t) {
 }
 
 const lightingInformationDoesNotExistName = "Ensure lighting estimation feature does not work when not explicitly enabled";
-function lightingInformationDoesNotExist(session, fakeDeviceController, t) {
+function lightingInformationDoesNotExist(session, fakeDeviceController, t, sessionObjects) {
   t.step(() => {
     assert_defined(session.requestLightProbe, "requestLightProbe was not defined on XRSession");
   });

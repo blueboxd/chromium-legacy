@@ -9,14 +9,17 @@
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
+#include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/core/v2/feed_network_impl.h"
 #include "components/feed/core/v2/feed_store.h"
 #include "components/feed/core/v2/feed_stream.h"
 #include "components/feed/core/v2/metrics_reporter.h"
 #include "components/feed/core/v2/refresh_task_scheduler.h"
+#include "components/feed/feed_feature_list.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/prefs/pref_service.h"
 #include "net/base/network_change_notifier.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -172,6 +175,12 @@ FeedStreamApi* FeedService::GetStream() {
 
 void FeedService::ClearCachedData() {
   stream_->OnCacheDataCleared();
+}
+
+// static
+bool FeedService::IsEnabled(const PrefService& pref_service) {
+  return base::FeatureList::IsEnabled(feed::kInterestFeedV2) &&
+         pref_service.GetBoolean(feed::prefs::kEnableSnippets);
 }
 
 #if defined(OS_ANDROID)

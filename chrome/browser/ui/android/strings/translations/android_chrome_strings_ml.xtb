@@ -482,7 +482,6 @@
 <translation id="4988210275050210843">ഫയൽ ഡൗൺലോഡ് ചെയ്യുന്നു (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">പേജുകള്‍</translation>
 <translation id="4994033804516042629">കോൺടാക്റ്റുകളൊന്നും കണ്ടെത്തിയില്ല</translation>
-<translation id="4996978546172906250">ഇതുവഴി പങ്കിടുക</translation>
 <translation id="5004416275253351869">Google പ്രവർത്തന നിയന്ത്രണങ്ങൾ</translation>
 <translation id="5005498671520578047">പാസ്‌വേഡ് പകർത്തുക</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> കണക്‌റ്റുചെയ്യാൻ താൽപ്പര്യപ്പെടുന്നു</translation>
@@ -644,6 +643,7 @@
 <translation id="6381421346744604172">വെബ്‌സൈറ്റുകൾ ഇരുണ്ടതാക്കുക</translation>
 <translation id="6395288395575013217">ലിങ്ക്</translation>
 <translation id="6397616442223433927">ഓൺലൈനിൽ തിരിച്ചെത്തി</translation>
+<translation id="6398765197997659313">പൂര്‍ണ്ണ സ്ക്രീനില്‍ നിന്ന് പുറത്തുകടക്കുക</translation>
 <translation id="6404511346730675251">ബുക്ക്‌മാർക്ക് എഡിറ്റ് ചെയ്യുക</translation>
 <translation id="6406506848690869874">Sync</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" /> എന്നതിൽ നിന്ന് AR-ൽ കടക്കണോ?</translation>
@@ -906,6 +906,7 @@
 <translation id="8514577642972634246">അദൃശ്യ മോഡ് നൽകുക</translation>
 <translation id="8516012719330875537">ചിത്ര എഡിറ്റർ</translation>
 <translation id="8523928698583292556">സംഭരിച്ചിരിക്കുന്ന പാസ്‌വേഡ് ഇല്ലാതാക്കുക</translation>
+<translation id="8525306231823319788">പൂര്‍ണ്ണ സ്ക്രീന്‍</translation>
 <translation id="854522910157234410">ഈ പേജ് തുറക്കുക</translation>
 <translation id="8558485628462305855">അനുബന്ധ യാഥാർത്ഥ്യ ഉള്ളടക്കം കാണാൻ, ARCore അപ്‌ഡേറ്റ് ചെയ്യൂ</translation>
 <translation id="8559990750235505898">പേജുകൾ മറ്റ് ഭാഷകളിലേക്ക് വിവർത്തനം ചെയ്യാനുള്ള ഓഫർ</translation>

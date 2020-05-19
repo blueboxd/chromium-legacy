@@ -11,9 +11,7 @@
 
 /** @fileoverview Externs generated from namespace: accessibilityPrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.accessibilityPrivate = {};
 
 /**

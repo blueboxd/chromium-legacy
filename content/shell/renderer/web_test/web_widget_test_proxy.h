@@ -17,7 +17,6 @@
 
 namespace blink {
 class WebLocalFrame;
-class WebString;
 }  // namespace blink
 
 namespace content {
@@ -70,8 +69,6 @@ class WebWidgetTestProxy : public RenderWidget {
                           bool request_unajusted_movement) override;
   void RequestPointerUnlock() override;
   bool IsPointerLocked() override;
-  void SetToolTipText(const blink::WebString& text,
-                      base::i18n::TextDirection hint) override;
   void StartDragging(network::mojom::ReferrerPolicy policy,
                      const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,

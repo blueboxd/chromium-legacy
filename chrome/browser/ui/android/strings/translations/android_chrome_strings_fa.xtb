@@ -466,6 +466,7 @@
 <translation id="488187801263602086">تغییر نام فایل</translation>
 <translation id="4882831918239250449">کنترل نحوه استفاده از سابقه مرور برای شخصی‌سازی «جستجو»، آگهی‌ها و موارد دیگر</translation>
 <translation id="4885273946141277891">‏این تعداد از نسخه‌های Chrome پشتیبانی نمی‌شود.</translation>
+<translation id="4908869848243824489">‏«یافته‌ها» از Google</translation>
 <translation id="4910889077668685004">برنامه‌های پرداخت</translation>
 <translation id="4913161338056004800">بازنشانی آمار</translation>
 <translation id="4913169188695071480">توقف تازه‌سازی</translation>
@@ -481,7 +482,6 @@
 <translation id="4988210275050210843">درحال بارگیری فایل (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">صفحات</translation>
 <translation id="4994033804516042629">مخاطبی پیدا نشد</translation>
-<translation id="4996978546172906250">اشتراک‌گذاری از طریق</translation>
 <translation id="5004416275253351869">‏کنترل‌های فعالیت Google</translation>
 <translation id="5005498671520578047">کپی گذرواژه</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> می‌خواهد مرتبط شود</translation>
@@ -643,6 +643,7 @@
 <translation id="6381421346744604172">تاریک کردن وب‌سایت‌ها</translation>
 <translation id="6395288395575013217">پیوند</translation>
 <translation id="6397616442223433927">دوباره آنلاین شدید</translation>
+<translation id="6398765197997659313">خروج از حالت تمام صفحه</translation>
 <translation id="6404511346730675251">ویرایش نشانک</translation>
 <translation id="6406506848690869874">همگام‌سازی</translation>
 <translation id="6410973561433500075">‏از <ph name="DOMAIN" /> وارد حالت AR می‌شوید؟</translation>
@@ -699,9 +700,10 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">ترجمه</translation>
 <translation id="6845325883481699275">‏کمک به بهبود امنیت Chrome</translation>
-<translation id="6846298663435243399">در حال بارگیری…</translation>
+<translation id="6846298663435243399">درحال بارگیری…</translation>
 <translation id="6850409657436465440">بارگیری هنوز درحال انجام است</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> برگه بسته شد</translation>
+<translation id="685850645784703949">‏«یافته‌ها» از Google - خاموش</translation>
 <translation id="6864459304226931083">بارگیری تصویر</translation>
 <translation id="6865313869410766144">تکمیل خودکار داده‌های فرم</translation>
 <translation id="6884306546558072722">به‌صورت آفلاین به کاوش ادامه دهید</translation>
@@ -904,6 +906,7 @@
 <translation id="8514577642972634246">ورود به حالت ناشناس</translation>
 <translation id="8516012719330875537">ویرایشگر تصویر</translation>
 <translation id="8523928698583292556">حذف گذرواژه ذخیره‌شده</translation>
+<translation id="8525306231823319788">تمام صفحه</translation>
 <translation id="854522910157234410">باز کردن این صفحه</translation>
 <translation id="8558485628462305855">‏برای مشاهده محتوای واقعیت افزوده، ARCore را به‌روزرسانی کنید</translation>
 <translation id="8559990750235505898">پیشنهاد ترجمه صفحات نوشته‌شده به زبان‌های دیگر</translation>

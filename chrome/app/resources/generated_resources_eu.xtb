@@ -112,7 +112,6 @@
 <translation id="1140746652461896221">Blokeatu edukiak ikusten dituzun orrietan</translation>
 <translation id="1143142264369994168">Ziurtagiriaren sinatzailea</translation>
 <translation id="1145292499998999162">Plugina blokeatu da</translation>
-<translation id="1145532888383813076">Bilatu zure gailuan, aplikazioetan eta sarean.</translation>
 <translation id="1145593918056169051">Inprimagailua gelditu egin da</translation>
 <translation id="1146678959555564648">Sartu EB moduan</translation>
 <translation id="114721135501989771">Lortu Google eginbide aurreratuak Chrome-n</translation>
@@ -491,7 +490,7 @@
 <translation id="161460670679785907">Ezin da hauteman telefonoa</translation>
 <translation id="1616206807336925449">Luzapen honek ez du baimen berezirik behar.</translation>
 <translation id="1616298854599875024">Ezin izan da inportatu "<ph name="IMPORT_NAME" />" luzapena, ez baita partekatutako modulua</translation>
-<translation id="1617765145568323981">{NUM_FILES,plural, =0{Datuak zure erakundeko segurtasun-gidalerroekin egiaztatzen...}=1{Fitxategia zure erakundeko segurtasun-gidalerroekin egiaztatzen...}other{Fitxategiak zure erakundeko segurtasun-gidalerroekin egiaztatzen...}}</translation>
+<translation id="1617765145568323981">{NUM_FILES,plural, =0{Datuak zure erakundeko segurtasun-gidalerroekin egiaztatzen…}=1{Fitxategia zure erakundeko segurtasun-gidalerroekin egiaztatzen…}other{Fitxategiak zure erakundeko segurtasun-gidalerroekin egiaztatzen…}}</translation>
 <translation id="1618268899808219593">&amp;Laguntza-zentroa</translation>
 <translation id="1620307519959413822">Pasahitza ez da zuzena. Saiatu berriro, edo sakatu "Pasahitza ahaztu zaizu?" eta berrezarri pasahitza.</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -3425,7 +3424,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5430931332414098647">Konexioaren partekatze bizkorra</translation>
 <translation id="5431318178759467895">Kolorez</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="5432996274932278848">Bilatu gailuan, aplikazioetan eta sarean. Aplikazio batetik bestera pasatzeko, erabili gezi-teklak.</translation>
 <translation id="543338862236136125">Editatu pasahitza</translation>
 <translation id="5434065355175441495">PKCS #1 RSA enkriptatzea</translation>
 <translation id="5436492226391861498">Proxy-tunelaren zain…</translation>
@@ -5093,7 +5091,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="7606992457248886637">Ziurtagiri-emaileak</translation>
 <translation id="7607002721634913082">Pausatuta</translation>
 <translation id="7609148976235050828">Konektatu Internetera eta saiatu berriro.</translation>
-<translation id="7611008212562900400">Bilatu zure gailuan, aplikazioetan, sarean…</translation>
 <translation id="7614260613810441905">Galdetu webgune batek gailuko fitxategiak edo karpetak editatu nahi dituenean (gomendatua)</translation>
 <translation id="761530003705945209">Egin babeskopiak Google Drive-n. Leheneratu gailuaren datuak edo aldatu gailua edonoiz. Aplikazioetako datuak sartzen dira babeskopietan. Babeskopiak Google-ra kargatzen dira, eta Google-ko kontuaren pasahitza erabilita enkriptatzen.</translation>
 <translation id="7616214729753637086">Gailua erregistratzen…</translation>
@@ -6292,7 +6289,7 @@ Gorde gakoen fitxategia leku seguru batean. Zure luzapenaren bertsio berriak sor
 <translation id="9103868373786083162">Sakatu itzultzeko, laster-menua historia ikusteko</translation>
 <translation id="9108808586816295166">Baliteke DNS segurua beti erabilgarri ez egotea</translation>
 <translation id="9109122242323516435">Tokia egiteko, ezabatu gailuko memorian dauden fitxategiak.</translation>
-<translation id="9109283579179481106">Konektatu sare mugikorrera</translation>
+<translation id="9109283579179481106">Konektatu sare mugikor batera</translation>
 <translation id="9111102763498581341">Desblokeatu</translation>
 <translation id="9111395131601239814"><ph name="NETWORKDEVICE" />: <ph name="STATUS" /></translation>
 <translation id="9112748030372401671">Aldatu horma-papera</translation>

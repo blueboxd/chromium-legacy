@@ -33,6 +33,7 @@
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
 #include "ui/views/controls/styled_label_listener.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 namespace keyboard {
@@ -73,6 +74,7 @@ class ASH_EXPORT LockContentsView
       public KeyboardControllerObserver,
       public chromeos::PowerManagerClient::Observer {
  public:
+  METADATA_HEADER(LockContentsView);
   class AuthErrorBubble;
   class UserState;
 
@@ -272,12 +274,18 @@ class ASH_EXPORT LockContentsView
   void SetMediaControlsSpacing(bool landscape);
 
   // 1-2 users.
-  void CreateLowDensityLayout(const std::vector<LoginUserInfo>& users);
+  void CreateLowDensityLayout(
+      const std::vector<LoginUserInfo>& users,
+      std::unique_ptr<LoginBigUserView> primary_big_view);
   // 3-6 users.
-  void CreateMediumDensityLayout(const std::vector<LoginUserInfo>& users);
+  void CreateMediumDensityLayout(
+      const std::vector<LoginUserInfo>& users,
+      std::unique_ptr<LoginBigUserView> primary_big_view);
   // 7+ users.
-  void CreateHighDensityLayout(const std::vector<LoginUserInfo>& users,
-                               views::BoxLayout* main_layout);
+  void CreateHighDensityLayout(
+      const std::vector<LoginUserInfo>& users,
+      views::BoxLayout* main_layout,
+      std::unique_ptr<LoginBigUserView> primary_big_view);
 
   // Lay out the entire view. This is called when the view is attached to a
   // widget and when the screen is rotated.
@@ -361,8 +369,9 @@ class ASH_EXPORT LockContentsView
   void OnPublicAccountTapped(bool is_primary);
 
   // Helper method to allocate a LoginBigUserView instance.
-  LoginBigUserView* AllocateLoginBigUserView(const LoginUserInfo& user,
-                                             bool is_primary);
+  std::unique_ptr<LoginBigUserView> AllocateLoginBigUserView(
+      const LoginUserInfo& user,
+      bool is_primary);
 
   // Returns the big view for |user| if |user| is one of the active
   // big views. If |require_auth_active| is true then the view must
@@ -374,7 +383,7 @@ class ASH_EXPORT LockContentsView
   LoginUserView* TryToFindUserView(const AccountId& user);
 
   // Returns scrollable view with initialized size and rows for all |users|.
-  ScrollableUsersListView* BuildScrollableUsersListView(
+  std::unique_ptr<ScrollableUsersListView> BuildScrollableUsersListView(
       const std::vector<LoginUserInfo>& users,
       LoginDisplayStyle display_style);
 

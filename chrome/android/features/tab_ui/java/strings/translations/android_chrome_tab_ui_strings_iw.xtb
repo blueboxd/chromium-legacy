@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">יצירת קבוצה</translation>
 <translation id="2671423594960767771">שיתוף קבוצה</translation>
 <translation id="2977480621796371840">הסרה מהקבוצה</translation>
+<translation id="3328308545011660196">הצעות: יש <ph name="NUMBER_OF_TABS" /> כרטיסיות שנראות קשורות. לקבץ אותן?</translation>
+<translation id="4133493477912226187">יש <ph name="NUMBER_OF_TABS" /> כרטיסיות שנראות קשורות. לקבץ אותן?</translation>
 <translation id="4212246570487010370">המשך הגלישה</translation>
 <translation id="4450893287417543264">אין להציג שוב</translation>
 <translation id="4648718555153979859">הכרטיסיות שלך מסודרות כאן בקבוצה</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">הסרת כרטיסיות מהקבוצה</translation>
 <translation id="7559245342362162951">הצגת כרטיסיות הקבוצה ברשת מסך מלא</translation>
 <translation id="7792771145871471484">עיון בהצעות.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{קיבוץ כרטיסייה אחת (<ph name="TABS_COUNT_ONE" />) שנבחרה}two{קיבוץ <ph name="TABS_COUNT_MANY" /> כרטיסיות שנבחרו}many{קיבוץ <ph name="TABS_COUNT_MANY" /> כרטיסיות שנבחרו}other{קיבוץ <ph name="TABS_COUNT_MANY" /> כרטיסיות שנבחרו}}</translation>
 <translation id="7885132941432959125">העברת הכרטיסייה שמאלה</translation>
 <translation id="7966321538264951561">סגירת ההצעות.</translation>
 <translation id="814503310257431685">הצג הכל</translation>

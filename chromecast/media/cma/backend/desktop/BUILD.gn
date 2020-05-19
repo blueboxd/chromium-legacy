@@ -36,3 +36,16 @@ cast_source_set("desktop") {
     sources += [ "volume_control_desktop.cc" ]
   }
 }
+
+cast_source_set("mixer_output") {
+  sources = [
+    "mixer_output_stream_desktop.h",
+    "mixer_output_stream_desktop.cc"
+  ]
+  deps = [
+    "//base",
+    "//chromecast/public/media",
+    "//media",
+  ]
+}
+

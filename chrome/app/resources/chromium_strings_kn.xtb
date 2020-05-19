@@ -154,6 +154,7 @@
 <translation id="6717134281241384636">Chromium ನ ಹೊಸ ಆವೃತ್ತಿಯಾಗಿರುವುದರಿಂದ ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಅನ್ನು ಬಳಸಲಾಗುವುದಿಲ್ಲ. ಕೆಲವೊಂದು ವೈಶಿಷ್ಟ್ಯಗಳು ಲಭ್ಯವಿಲ್ಲದಿರಬಹುದು. ದಯವಿಟ್ಟು ಬೇರೆ ಒಂದು ಪೊಫೈಲ್ ಡೈರೆಕ್ಟರಿ ಅನ್ನು ನಿರ್ದಿಷ್ಟಪಡಿಸಿ ಅಥವಾ Chromium ನ ಹೊಸ ಆವೃತ್ತಿಯನ್ನು ಬಳಸಿ.</translation>
 <translation id="6734080038664603509">&amp;Chromium ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ</translation>
 <translation id="6734291798041940871">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿನ ಎಲ್ಲ ಬಳಕೆದಾರರಿಗೆ ಈಗಾಗಲೇ Chromium ಸ್ಥಾಪಿತವಾಗಿದೆ.</translation>
+<translation id="6774082503108938489">ನಿಮ್ಮ ಪೋಷಕರು Chromium ನಲ್ಲಿ "ಸೈಟ್‌ಗಳು, ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ವಿಸ್ತರಣೆಗಳಿಗಾಗಿ ಅನುಮತಿಗಳನ್ನು" ಆಫ್ ಮಾಡಿದ್ದಾರೆ. ಈ <ph name="EXTENSION_TYPE_PARAMETER" /> ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲು ಅನುಮತಿಯಿಲ್ಲ.</translation>
 <translation id="6847869444787758381">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಎಂದಾದರೂ ಹ್ಯಾಕ್‌ ಆಗಿವೆಯೇ ಎಂಬುದನ್ನು Chromium ನಿಮಗೆ ತಿಳಿಸುತ್ತದೆ</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium ಗೆ ನಕಲಿಸಲಾಗಿದೆ)</translation>
@@ -209,6 +210,7 @@
 <translation id="8417404458978023919">{0,plural, =1{ಒಂದು ದಿನದ ಒಳಗೆ Chromium ಮರುಪ್ರಾರಂಭಿಸಿ}one{# ದಿನಗಳ ಒಳಗೆ Chromium ಮರುಪ್ರಾರಂಭಿಸಿ}other{# ದಿನಗಳ ಒಳಗೆ Chromium ಮರುಪ್ರಾರಂಭಿಸಿ}}</translation>
 <translation id="8453117565092476964">ಸ್ಥಾಪಕ ಆರ್ಕೈವ್ ದೋಷಪೂರಿತವಾಗಿದೆ ಅಥವಾ ಅಮಾನ್ಯವಾಗಿದೆ. ದಯವಿಟ್ಟು Chromium ಅನ್ನು ಪುನಃ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.</translation>
 <translation id="8493179195440786826">Chromium ನ ಅವಧಿ ಮುಗಿದಿದೆ</translation>
+<translation id="8558383651099478961">ನಿಮ್ಮ ಪೋಷಕರು Chromium ನಲ್ಲಿ "ಸೈಟ್‌ಗಳು, ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ವಿಸ್ತರಣೆಗಳಿಗಾಗಿ ಅನುಮತಿಗಳನ್ನು" ಆಫ್ ಮಾಡಿದ್ದಾರೆ. ಈ <ph name="EXTENSION_TYPE_PARAMETER" /> ಅನ್ನು ಸೇರಿಸಲು ಅನುಮತಿಯಿಲ್ಲ.</translation>
 <translation id="8568283329061645092">ನೀವು Google ಖಾತೆಯ ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿದಾಗ, Chromium ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಬಲ್ಲದು</translation>
 <translation id="8586442755830160949">ಹಕ್ಕುಸ್ವಾಮ್ಯ <ph name="YEAR" /> Chromium ಲೇಖಕರು. ಎಲ್ಲಾ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ.</translation>
 <translation id="8619360774459241877">Chromium ಅನ್ನು ಪ್ರಾರಂಭಿಸಲಾಗುತ್ತಿದೆ...</translation>

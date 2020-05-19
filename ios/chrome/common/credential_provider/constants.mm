@@ -28,7 +28,6 @@ NSURL* CredentialProviderSharedArchivableStoreURL() {
   NSURL* groupURL = [[NSFileManager defaultManager]
       containerURLForSecurityApplicationGroupIdentifier:app_group::
                                                             ApplicationGroup()];
-  DCHECK(groupURL) << "This should never be nil. Maybe check the entitlements.";
   NSURL* credentialProviderURL =
       [groupURL URLByAppendingPathComponent:kCredentialProviderContainer];
   return [credentialProviderURL

@@ -312,6 +312,11 @@ void BrowserPolicyConnectorChromeOS::Shutdown() {
 
   device_scheduled_update_checker_.reset();
 
+  // The policy handler is registered as an observer to BuildState which gets
+  // destructed before BrowserPolicyConnectorChromeOS. So destruct the policy
+  // handler here so that it can de-register itself as an observer.
+  minimum_version_policy_handler_.reset();
+
   if (hostname_handler_)
     hostname_handler_->Shutdown();
 

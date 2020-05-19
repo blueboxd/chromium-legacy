@@ -10,6 +10,7 @@
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -36,12 +37,11 @@ class DOMStorageContextWrapperTest : public testing::Test {
     security_policy->AddIsolatedOrigins(
         {test_origin1_, test_origin2_},
         ChildProcessSecurityPolicy::IsolatedOriginSource::TEST);
-    security_policy->LockToOrigin(IsolationContext(&browser_context_),
-                                  kTestProcessIdOrigin1,
-                                  test_origin1_.GetURL());
-    security_policy->LockToOrigin(IsolationContext(&browser_context_),
-                                  kTestProcessIdOrigin2,
-                                  test_origin2_.GetURL());
+    IsolationContext isolation_context(&browser_context_);
+    security_policy->LockProcessForTesting(
+        isolation_context, kTestProcessIdOrigin1, test_origin1_.GetURL());
+    security_policy->LockProcessForTesting(
+        isolation_context, kTestProcessIdOrigin2, test_origin2_.GetURL());
   }
 
   void TearDown() override {

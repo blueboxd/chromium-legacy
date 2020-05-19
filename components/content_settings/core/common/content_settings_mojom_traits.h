@@ -103,6 +103,10 @@ struct StructTraits<
     return r.setting_value;
   }
 
+  static const base::Time& expiration(const ContentSettingPatternSource& r) {
+    return r.expiration;
+  }
+
   static const std::string& source(const ContentSettingPatternSource& r) {
     return r.source;
   }

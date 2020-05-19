@@ -203,14 +203,10 @@ class _Generator(object):
     """Appends the code creating namespace object.
        For example:
 
-       /**
-        * @const
-        */
+       /** @const */
        chrome.bookmarks = {};
     """
-    c.Append("""/**
- * @const
- */""")
+    c.Append('/** @const */')
     c.Append('chrome.%s = {};' % self._namespace.name)
     c.Append()
 

@@ -20,7 +20,6 @@ import android.text.style.URLSpan;
 import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.ViewStructure;
 import android.view.accessibility.AccessibilityEvent;
@@ -127,7 +126,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     private boolean mIsHovering;
     private int mLastHoverId = View.NO_ID;
     private int mCurrentRootId;
-    protected ViewGroup mView;
+    protected View mView;
     private boolean mUserHasTouchExplored;
     private boolean mPendingScrollToMakeNodeVisible;
     private boolean mNotifyFrameInfoInitializedCalled;
@@ -244,7 +243,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                                 buildAccessibilityEvent(virtualViewId, eventType);
                         if (event == null) return false;
 
-                        mView.requestSendAccessibilityEvent(mView, event);
+                        requestSendAccessibilityEvent(event);
 
                         // Always send the ENTER and then the EXIT event, to match a standard
                         // Android View.
@@ -252,7 +251,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                             AccessibilityEvent exitEvent = buildAccessibilityEvent(
                                     mLastHoverId, AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
                             if (exitEvent != null) {
-                                mView.requestSendAccessibilityEvent(mView, exitEvent);
+                                requestSendAccessibilityEvent(exitEvent);
                                 mLastHoverId = virtualViewId;
                             }
                         }
@@ -954,8 +953,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         traverseEvent.setContentDescription(text);
         traverseEvent.setAction(AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY);
 
-        mView.requestSendAccessibilityEvent(mView, selectionEvent);
-        mView.requestSendAccessibilityEvent(mView, traverseEvent);
+        requestSendAccessibilityEvent(selectionEvent);
+        requestSendAccessibilityEvent(traverseEvent);
 
         // Suppress the next event since we have already sent traverse and selection for this move
         mSuppressNextSelectionEvent = true;
@@ -1012,8 +1011,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         traverseEvent.setContentDescription(text);
         traverseEvent.setAction(AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY);
 
-        mView.requestSendAccessibilityEvent(mView, selectionEvent);
-        mView.requestSendAccessibilityEvent(mView, traverseEvent);
+        requestSendAccessibilityEvent(selectionEvent);
+        requestSendAccessibilityEvent(traverseEvent);
 
         // Suppress the next event since we have already sent traverse and selection for this move
         mSuppressNextSelectionEvent = true;
@@ -1512,6 +1511,14 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         int viewportRectBottom = viewportRectTop + rc.getLastFrameViewportHeightPixInt();
         if (rect.top < viewportRectTop) rect.top = viewportRectTop;
         if (rect.bottom > viewportRectBottom) rect.bottom = viewportRectBottom;
+    }
+
+    private void requestSendAccessibilityEvent(AccessibilityEvent event) {
+        // If there is no parent, then the event can be ignored. In general the parent is only
+        // transiently null (such as during teardown, switching tabs...).
+        if (mView.getParent() != null) {
+            mView.getParent().requestSendAccessibilityEvent(mView, event);
+        }
     }
 
     @CalledByNative

@@ -36,6 +36,11 @@ import org.chromium.ui.base.EventForwarder;
 /**
  * The containing view for {@link WebContents} that exists in the Android UI hierarchy and exposes
  * the various {@link View} functionality to it.
+ *
+ * While ContentView is a ViewGroup, the only place that should add children is ViewAndroidDelegate,
+ * and only for cases that WebContentsAccessibility handles (such as anchoring popups). This is
+ * because the accessibility support provided by WebContentsAccessibility ignores all child views.
+ * In other words, any children added to this are *not* accessible.
  */
 public class ContentView extends FrameLayout
         implements ViewEventSink.InternalAccessDelegate, SmartClipProvider,

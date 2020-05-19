@@ -7,6 +7,8 @@
 
 #include "components/arc/mojom/accessibility_helper.mojom.h"
 
+#include <vector>
+
 namespace ui {
 struct AXNodeData;
 }  // namespace ui

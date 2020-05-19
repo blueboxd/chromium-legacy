@@ -36,6 +36,18 @@ export class PDFMetrics {
   }
 
   /**
+   * Records zoom in and zoom out actions.
+   *
+   * @param {boolean} isZoomIn True when the action is zooming in, false when
+   * the action is zooming out.
+   */
+  static recordZoomAction(isZoomIn) {
+    PDFMetrics.record(
+        isZoomIn ? PDFMetrics.UserAction.ZOOM_IN :
+                   PDFMetrics.UserAction.ZOOM_OUT);
+  }
+
+  /**
    * Records the given action to chrome.metricsPrivate.
    *
    * @param {PDFMetrics.UserAction} action
@@ -169,7 +181,15 @@ PDFMetrics.UserAction = {
   TWO_UP_VIEW_DISABLE_FIRST: 37,
   TWO_UP_VIEW_DISABLE: 38,
 
-  NUMBER_OF_ACTIONS: 39,
+  /** Recorded when zoom in button is clicked. */
+  ZOOM_IN_FIRST: 39,
+  ZOOM_IN: 40,
+
+  /** Recorded when zoom out button is clicked. */
+  ZOOM_OUT_FIRST: 41,
+  ZOOM_OUT: 42,
+
+  NUMBER_OF_ACTIONS: 43,
 };
 
 // Map from UserAction to the 'FIRST' action. These metrics are recorded
@@ -251,5 +271,13 @@ PDFMetrics.firstMap_ = new Map([
   [
     PDFMetrics.UserAction.TWO_UP_VIEW_DISABLE,
     PDFMetrics.UserAction.TWO_UP_VIEW_DISABLE_FIRST,
+  ],
+  [
+    PDFMetrics.UserAction.ZOOM_IN,
+    PDFMetrics.UserAction.ZOOM_IN_FIRST,
+  ],
+  [
+    PDFMetrics.UserAction.ZOOM_OUT,
+    PDFMetrics.UserAction.ZOOM_OUT_FIRST,
   ],
 ]);

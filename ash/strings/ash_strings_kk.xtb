@@ -534,6 +534,7 @@
 <translation id="7647488630410863958">Хабарландыруларды көру үшін құрылғының құлпын ашыңыз</translation>
 <translation id="7649070708921625228">Анықтама</translation>
 <translation id="7654687942625752712">Дауыстап оқу функциясын өшіру үшін дыбыс түймелерін бірге бес секунд басып тұрыңыз.</translation>
+<translation id="7658239707568436148">Бас тарту</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 хабарландыру}other{# хабарландыру}}</translation>
 <translation id="7724603315864178912">Қиып алу</translation>
@@ -582,6 +583,7 @@
 <translation id="8190698733819146287">Тілдер мен енгізуді реттеу…</translation>
 <translation id="8192202700944119416">Хабарландырулар жасырулы.</translation>
 <translation id="8196787716797768628">Қолданбалар арасында жылдам ауысып, Chromebook-ті планшет режимінде қолдану үшін қимылдарды пайдаланыңыз.</translation>
+<translation id="8200772114523450471">Жалғастыру</translation>
 <translation id="8203795194971602413">Тінтуірдің оң жақ түймесін басу</translation>
 <translation id="8236042855478648955">Үзіліс жасайтын кез келді</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, сигнал күші: <ph name="SIGNAL_STRENGTH" />, телефонның батарея заряды: <ph name="BATTERY_STATUS" /></translation>

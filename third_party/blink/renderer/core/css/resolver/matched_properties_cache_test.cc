@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -82,8 +83,11 @@ class MatchedPropertiesCacheTestCache {
 
 using TestCache = MatchedPropertiesCacheTestCache;
 
-class MatchedPropertiesCacheTest : public PageTestBase {
+class MatchedPropertiesCacheTest : public PageTestBase,
+                                   private ScopedMPCDependenciesForTest {
  public:
+  MatchedPropertiesCacheTest() : ScopedMPCDependenciesForTest(true) {}
+
   scoped_refptr<ComputedStyle> CreateStyle() {
     return StyleResolver::InitialStyleForElement(GetDocument());
   }
@@ -242,6 +246,166 @@ TEST_F(MatchedPropertiesCacheTest, HitWithMixedDependencies) {
 
   cache.Add(key, *style, *parent1, Vector<String>{"left", "--x"});
   EXPECT_TRUE(cache.Find(key, *style, *parent2));
+}
+
+TEST_F(MatchedPropertiesCacheTest, ExplicitlyInheritedCacheable) {
+  ASSERT_TRUE(GetCSSPropertyVerticalAlign().IsComputedValueComparable());
+
+  TestCache cache(GetDocument());
+
+  auto style = CreateStyle();
+  auto parent = CreateStyle();
+  parent->SetHasExplicitlyInheritedProperties();
+
+  StyleResolverState state(GetDocument(), *GetDocument().body(), parent.get(),
+                           parent.get());
+  state.SetStyle(style);
+  // Simulate explicit inheritance on vertical-align.
+  state.MarkDependency(GetCSSPropertyVerticalAlign());
+
+  EXPECT_TRUE(MatchedPropertiesCache::IsCacheable(state));
+}
+
+TEST_F(MatchedPropertiesCacheTest, NotCacheableWithIncomparableDependency) {
+  const CSSProperty& incomparable = GetCSSPropertyInternalEmptyLineHeight();
+  ASSERT_FALSE(incomparable.IsComputedValueComparable());
+
+  TestCache cache(GetDocument());
+
+  auto style = CreateStyle();
+  auto parent = CreateStyle();
+  parent->SetHasExplicitlyInheritedProperties();
+
+  StyleResolverState state(GetDocument(), *GetDocument().body(), parent.get(),
+                           parent.get());
+  state.SetStyle(style);
+  // Simulate explicit inheritance on the incomparable property.
+  state.MarkDependency(incomparable);
+
+  EXPECT_FALSE(MatchedPropertiesCache::IsCacheable(state));
+}
+
+TEST_F(MatchedPropertiesCacheTest, WritingModeCacheable) {
+  ASSERT_NE(WritingMode::kVerticalRl,
+            ComputedStyleInitialValues::InitialWritingMode());
+
+  TestCache cache(GetDocument());
+
+  auto style = CreateStyle();
+  auto parent = CreateStyle();
+  style->SetWritingMode(WritingMode::kVerticalRl);
+
+  StyleResolverState state(GetDocument(), *GetDocument().body(), parent.get(),
+                           parent.get());
+  state.SetStyle(style);
+
+  EXPECT_TRUE(MatchedPropertiesCache::IsCacheable(state));
+}
+
+TEST_F(MatchedPropertiesCacheTest, DirectionCacheable) {
+  ASSERT_NE(TextDirection::kRtl,
+            ComputedStyleInitialValues::InitialDirection());
+
+  TestCache cache(GetDocument());
+
+  auto style = CreateStyle();
+  auto parent = CreateStyle();
+  style->SetDirection(TextDirection::kRtl);
+
+  StyleResolverState state(GetDocument(), *GetDocument().body(), parent.get(),
+                           parent.get());
+  state.SetStyle(style);
+
+  EXPECT_TRUE(MatchedPropertiesCache::IsCacheable(state));
+}
+
+TEST_F(MatchedPropertiesCacheTest, VarInNonInheritedPropertyCachable) {
+  TestCache cache(GetDocument());
+
+  auto style = CreateStyle();
+  // Simulate non-inherited-property: var(--my-prop)
+  style->SetHasVariableReferenceFromNonInheritedProperty();
+
+  auto parent = CreateStyle();
+
+  StyleResolverState state(GetDocument(), *GetDocument().body(), parent.get(),
+                           parent.get());
+  state.SetStyle(style);
+
+  EXPECT_TRUE(MatchedPropertiesCache::IsCacheable(state));
+}
+
+TEST_F(MatchedPropertiesCacheTest,
+       ExplicitlyInheritedNotCacheableWithoutFeature) {
+  ScopedMPCDependenciesForTest scoped_feature(false);
+
+  TestCache cache(GetDocument());
+
+  auto style = CreateStyle();
+  auto parent = CreateStyle();
+  parent->SetHasExplicitlyInheritedProperties();
+
+  StyleResolverState state(GetDocument(), *GetDocument().body(), parent.get(),
+                           parent.get());
+  state.SetStyle(style);
+
+  EXPECT_FALSE(MatchedPropertiesCache::IsCacheable(state));
+}
+
+TEST_F(MatchedPropertiesCacheTest,
+       VarInNonInheritedPropertyNotCachableWithoutFeature) {
+  ScopedMPCDependenciesForTest scoped_feature(false);
+
+  TestCache cache(GetDocument());
+
+  auto style = CreateStyle();
+  auto parent = CreateStyle();
+  // Simulate non-inherited-property: var(--my-prop)
+  style->SetHasVariableReferenceFromNonInheritedProperty();
+
+  StyleResolverState state(GetDocument(), *GetDocument().body(), parent.get(),
+                           parent.get());
+  state.SetStyle(style);
+
+  EXPECT_FALSE(MatchedPropertiesCache::IsCacheable(state));
+}
+
+TEST_F(MatchedPropertiesCacheTest, WritingModeNotCacheableWithoutFeature) {
+  ScopedMPCDependenciesForTest scoped_feature(false);
+
+  ASSERT_NE(WritingMode::kVerticalRl,
+            ComputedStyleInitialValues::InitialWritingMode());
+
+  TestCache cache(GetDocument());
+
+  auto style = CreateStyle();
+  auto parent = CreateStyle();
+  style->SetWritingMode(WritingMode::kVerticalRl);
+
+  StyleResolverState state(GetDocument(), *GetDocument().body(), parent.get(),
+                           parent.get());
+  state.SetStyle(style);
+
+  EXPECT_FALSE(MatchedPropertiesCache::IsCacheable(state));
+}
+
+TEST_F(MatchedPropertiesCacheTest, DirectionNotCacheableWithoutFeature) {
+  ScopedMPCDependenciesForTest scoped_feature(false);
+
+  ASSERT_NE(TextDirection::kRtl,
+            ComputedStyleInitialValues::InitialDirection());
+
+  TestCache cache(GetDocument());
+
+  auto style = CreateStyle();
+  auto parent = CreateStyle();
+  style->SetDirection(TextDirection::kRtl);
+
+  StyleResolverState state(GetDocument(), *GetDocument().body(), parent.get(),
+                           parent.get());
+  state.SetStyle(style);
+
+  EXPECT_FALSE(MatchedPropertiesCache::IsCacheable(state));
 }
 
 }  // namespace blink

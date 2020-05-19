@@ -315,8 +315,8 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
   const size_t result_size = model_->result().size();
   if (base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup)) {
     if (!webui_view_) {
-      AddChildView(webui_view_ = new WebUIOmniboxPopupView(
-                       location_bar_view_->profile()));
+      webui_view_ = AddChildView(std::make_unique<WebUIOmniboxPopupView>(
+          location_bar_view_->profile()));
     }
   } else {
     base::Optional<int> previous_row_group_id = base::nullopt;

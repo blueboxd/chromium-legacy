@@ -1886,8 +1886,6 @@ jumbo_source_set("browser") {
     "web_contents/web_contents_view_mac.mm",
     "web_contents/web_drag_dest_mac.h",
     "web_contents/web_drag_dest_mac.mm",
-    "web_contents/web_drag_utils_win.cc",
-    "web_contents/web_drag_utils_win.h",
     "web_package/prefetched_signed_exchange_cache.cc",
     "web_package/prefetched_signed_exchange_cache.h",
     "web_package/prefetched_signed_exchange_cache_adapter.cc",

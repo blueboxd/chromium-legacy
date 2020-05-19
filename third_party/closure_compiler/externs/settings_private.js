@@ -11,9 +11,7 @@
 
 /** @fileoverview Externs generated from namespace: settingsPrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.settingsPrivate = {};
 
 /**

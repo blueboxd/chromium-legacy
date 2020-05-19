@@ -7,6 +7,7 @@
 #include <memory>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "ash/public/cpp/app_types.h"
 #include "ash/system/message_center/arc/arc_notification_constants.h"

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_command_line.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
@@ -15,6 +16,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/query_tiles/internal/tile_config.h"
 #include "components/query_tiles/internal/tile_store.h"
+#include "components/query_tiles/switches.h"
 #include "components/query_tiles/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,8 +36,6 @@ class MockBackgroundTaskScheduler
   MOCK_METHOD1(Cancel, void(int));
 };
 
-// TODO(crbug.com/1082529): Verify the schedule timing range matches task_info,
-// also add more cross status situation tests.
 class TileServiceSchedulerTest : public testing::Test {
  public:
   TileServiceSchedulerTest() = default;
@@ -57,11 +57,13 @@ class TileServiceSchedulerTest : public testing::Test {
     tile_service_scheduler_ =
         TileServiceScheduler::Create(&mocked_native_scheduler_, &prefs_,
                                      &clock_, &tick_clock_, std::move(policy));
+    EXPECT_CALL(
+        *native_scheduler(),
+        Cancel(static_cast<int>(background_task::TaskIds::QUERY_TILE_JOB_ID)));
+    tile_service_scheduler()->CancelTask();
   }
 
  protected:
-  base::Clock* clock() { return &clock_; }
-  base::TickClock* tick_clock() { return &tick_clock_; }
   MockBackgroundTaskScheduler* native_scheduler() {
     return &mocked_native_scheduler_;
   }
@@ -81,27 +83,65 @@ class TileServiceSchedulerTest : public testing::Test {
   std::unique_ptr<TileServiceScheduler> tile_service_scheduler_;
 };
 
-TEST_F(TileServiceSchedulerTest, CancelTask) {
-  EXPECT_CALL(
-      *native_scheduler(),
-      Cancel(static_cast<int>(background_task::TaskIds::QUERY_TILE_JOB_ID)));
-  tile_service_scheduler()->CancelTask();
+MATCHER_P2(TaskInfoEq,
+           min_window_start_time_ms,
+           max_window_start_time_ms,
+           "Verify window range in TaskInfo.") {
+  EXPECT_TRUE(arg.one_off_info.has_value());
+  EXPECT_GE(arg.one_off_info->window_start_time_ms, min_window_start_time_ms);
+  EXPECT_LE(arg.one_off_info->window_start_time_ms, max_window_start_time_ms)
+      << "Actual window start time in ms: "
+      << arg.one_off_info->window_start_time_ms;
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kQueryTilesInstantBackgroundTask)) {
+    EXPECT_EQ(arg.one_off_info->window_end_time_ms -
+                  arg.one_off_info->window_start_time_ms,
+              10 * 1000)
+        << "Actual window end time in ms: "
+        << arg.one_off_info->window_end_time_ms;
+  } else {
+    EXPECT_EQ(arg.one_off_info->window_end_time_ms -
+                  arg.one_off_info->window_start_time_ms,
+              TileConfig::GetOneoffTaskWindowInMs())
+        << "Actual window end time in ms: "
+        << arg.one_off_info->window_end_time_ms;
+  }
+
+  return true;
 }
 
 TEST_F(TileServiceSchedulerTest, OnFetchCompletedSuccess) {
-  EXPECT_CALL(*native_scheduler(), Schedule(_));
+  auto expected_range_start = TileConfig::GetScheduleIntervalInMs();
+  auto expected_range_end =
+      expected_range_start + TileConfig::GetMaxRandomWindowInMs();
+  EXPECT_CALL(*native_scheduler(),
+              Schedule(TaskInfoEq(expected_range_start, expected_range_end)));
+  tile_service_scheduler()->OnFetchCompleted(TileInfoRequestStatus::kSuccess);
+}
+
+TEST_F(TileServiceSchedulerTest, OnFetchCompletedSuccessInstantFetchOn) {
+  base::test::ScopedCommandLine scoped_command_line;
+  scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+      query_tiles::switches::kQueryTilesInstantBackgroundTask, "true");
+
+  EXPECT_CALL(*native_scheduler(), Schedule(_)).Times(0);
   tile_service_scheduler()->OnFetchCompleted(TileInfoRequestStatus::kSuccess);
 }
 
 TEST_F(TileServiceSchedulerTest, OnFetchCompletedSuspend) {
-  EXPECT_CALL(*native_scheduler(), Schedule(_));
+  EXPECT_CALL(*native_scheduler(), Schedule(TaskInfoEq(4000, 4000)));
   tile_service_scheduler()->OnFetchCompleted(
       TileInfoRequestStatus::kShouldSuspend);
 }
 
+// Verify the failure will add delay that using test backoff policy.
 TEST_F(TileServiceSchedulerTest, OnFetchCompletedFailure) {
-  EXPECT_CALL(*native_scheduler(), Schedule(_));
-  tile_service_scheduler()->OnFetchCompleted(TileInfoRequestStatus::kFailure);
+  for (int i = 0; i <= 2; i++) {
+    EXPECT_CALL(*native_scheduler(),
+                Schedule(TaskInfoEq(1000 * pow(2, i), 1000 * pow(2, i))));
+    tile_service_scheduler()->OnFetchCompleted(TileInfoRequestStatus::kFailure);
+  }
 }
 
 TEST_F(TileServiceSchedulerTest, OnFetchCompletedOtherStatus) {
@@ -114,12 +154,24 @@ TEST_F(TileServiceSchedulerTest, OnFetchCompletedOtherStatus) {
 }
 
 TEST_F(TileServiceSchedulerTest, OnTileGroupLoadedWithNoTiles) {
-  EXPECT_CALL(*native_scheduler(), Schedule(_));
+  auto expected_range_start = TileConfig::GetScheduleIntervalInMs();
+  auto expected_range_end =
+      expected_range_start + TileConfig::GetMaxRandomWindowInMs();
+  EXPECT_CALL(*native_scheduler(),
+              Schedule(TaskInfoEq(expected_range_start, expected_range_end)));
   tile_service_scheduler()->OnTileManagerInitialized(TileGroupStatus::kNoTiles);
 }
 
+TEST_F(TileServiceSchedulerTest, OnTileGroupLoadedInstantFetchOn) {
+  base::test::ScopedCommandLine scoped_command_line;
+  scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+      query_tiles::switches::kQueryTilesInstantBackgroundTask, "true");
+  EXPECT_CALL(*native_scheduler(), Schedule(TaskInfoEq(10 * 1000, 10 * 1000)));
+  tile_service_scheduler()->OnTileManagerInitialized(TileGroupStatus::kSuccess);
+}
+
 TEST_F(TileServiceSchedulerTest, OnTileGroupLoadedWithFailure) {
-  EXPECT_CALL(*native_scheduler(), Schedule(_));
+  EXPECT_CALL(*native_scheduler(), Schedule(TaskInfoEq(4000, 4000)));
   tile_service_scheduler()->OnTileManagerInitialized(
       TileGroupStatus::kFailureDbOperation);
 }

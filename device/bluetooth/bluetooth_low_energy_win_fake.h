@@ -130,7 +130,8 @@ class BluetoothLowEnergyWrapperFake : public BluetoothLowEnergyWrapper {
   HRESULT WriteCharacteristicValue(
       base::FilePath& service_path,
       const PBTH_LE_GATT_CHARACTERISTIC characteristic,
-      PBTH_LE_GATT_CHARACTERISTIC_VALUE new_value) override;
+      PBTH_LE_GATT_CHARACTERISTIC_VALUE new_value,
+      ULONG flags) override;
   HRESULT RegisterGattEvents(
       base::FilePath& service_path,
       BTH_LE_GATT_EVENT_TYPE type,

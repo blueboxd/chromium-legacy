@@ -183,6 +183,10 @@ WebURL WebViewFrameWidget::GetURLForDebugTrace() {
   return web_view_->GetURLForDebugTrace();
 }
 
+WebString WebViewFrameWidget::GetLastToolTipTextForTesting() const {
+  return GetPage()->GetChromeClient().GetLastToolTipTextForTesting();
+}
+
 void WebViewFrameWidget::DidDetachLocalFrameTree() {
   web_view_->DidDetachLocalMainFrame();
 }

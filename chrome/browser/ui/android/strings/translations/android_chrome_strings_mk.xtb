@@ -466,6 +466,7 @@
 <translation id="488187801263602086">Преименување датотеката</translation>
 <translation id="4882831918239250449">Контролирајте како вашата историја на прелистување се користи за персонализирање на „Пребарувањето“, рекламите и друго</translation>
 <translation id="4885273946141277891">Неподдржан број примероци на Chrome.</translation>
+<translation id="4908869848243824489">Discover од Google</translation>
 <translation id="4910889077668685004">Апликации за плаќање</translation>
 <translation id="4913161338056004800">Ресетирај ја статистиката</translation>
 <translation id="4913169188695071480">Сопри го освежувањето</translation>
@@ -481,7 +482,6 @@
 <translation id="4988210275050210843">Се презема датотека (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Страници</translation>
 <translation id="4994033804516042629">Не се најдени контакти</translation>
-<translation id="4996978546172906250">Сподели преку</translation>
 <translation id="5004416275253351869">Контроли на активноста на Google</translation>
 <translation id="5005498671520578047">Копирање лозинка</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> сака да се поврзе</translation>
@@ -643,6 +643,7 @@
 <translation id="6381421346744604172">Затемнете ги веб-сајтовите</translation>
 <translation id="6395288395575013217">ЛИНК</translation>
 <translation id="6397616442223433927">Повторно сте онлајн</translation>
+<translation id="6398765197997659313">Излези од цел екран</translation>
 <translation id="6404511346730675251">Измени обележувач</translation>
 <translation id="6406506848690869874">Синхронизација</translation>
 <translation id="6410973561433500075">Дали да се влезе во AR од <ph name="DOMAIN" />?</translation>
@@ -702,6 +703,7 @@
 <translation id="6846298663435243399">Се вчитува…</translation>
 <translation id="6850409657436465440">Вашето преземање е сѐ уште е во тек</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> затворени картички</translation>
+<translation id="685850645784703949">Discover од Google - исклучена</translation>
 <translation id="6864459304226931083">Преземи слика</translation>
 <translation id="6865313869410766144">Автоматско пополнување податоци во формулар</translation>
 <translation id="6884306546558072722">Продолжете да истражувате офлајн</translation>
@@ -904,6 +906,7 @@
 <translation id="8514577642972634246">Влези во инкогнито-режим</translation>
 <translation id="8516012719330875537">Уредувач на слики</translation>
 <translation id="8523928698583292556">Избриши ја зачуваната лозинка</translation>
+<translation id="8525306231823319788">Цел екран</translation>
 <translation id="854522910157234410">Отвори ја страницава</translation>
 <translation id="8558485628462305855">За да прегледувате содржини во проширена реалност, ажурирајте го ARCore</translation>
 <translation id="8559990750235505898">Понудувај превод на страниците на други јазици</translation>

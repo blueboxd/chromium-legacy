@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
+#include "base/optional.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -367,7 +368,14 @@ void AccessibilityUIObserver::AccessibilityEventReceived(
 
 AccessibilityUIMessageHandler::AccessibilityUIMessageHandler() = default;
 
-AccessibilityUIMessageHandler::~AccessibilityUIMessageHandler() = default;
+AccessibilityUIMessageHandler::~AccessibilityUIMessageHandler() {
+  if (!observer_)
+    return;
+  content::WebContents* web_contents = observer_->web_contents();
+  if (!web_contents)
+    return;
+  StopRecording(web_contents);
+}
 
 void AccessibilityUIMessageHandler::RegisterMessages() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -641,6 +649,12 @@ void AccessibilityUIMessageHandler::Callback(const std::string& str) {
   event_logs_.push_back(str);
 }
 
+void AccessibilityUIMessageHandler::StopRecording(
+    content::WebContents* web_contents) {
+  web_contents->RecordAccessibilityEvents(false, base::nullopt);
+  observer_.reset(nullptr);
+}
+
 void AccessibilityUIMessageHandler::RequestAccessibilityEvents(
     const base::ListValue* args) {
   const base::DictionaryValue* data;
@@ -648,7 +662,7 @@ void AccessibilityUIMessageHandler::RequestAccessibilityEvents(
 
   int process_id = *data->FindIntPath(kProcessIdField);
   int routing_id = *data->FindIntPath(kRoutingIdField);
-  bool start = *data->FindBoolPath(kStartField);
+  bool start_recording = *data->FindBoolPath(kStartField);
 
   AllowJavascript();
 
@@ -661,22 +675,17 @@ void AccessibilityUIMessageHandler::RequestAccessibilityEvents(
   std::unique_ptr<base::DictionaryValue> result(BuildTargetDescriptor(rvh));
   content::WebContents* web_contents =
       content::WebContents::FromRenderViewHost(rvh);
-  if (start) {
+  if (start_recording) {
     if (observer_) {
       return;
     }
     web_contents->RecordAccessibilityEvents(
-        base::BindRepeating(&AccessibilityUIMessageHandler::Callback,
-                            base::Unretained(this)),
-        true);
+        true, base::BindRepeating(&AccessibilityUIMessageHandler::Callback,
+                                  base::Unretained(this)));
     observer_ =
         std::make_unique<AccessibilityUIObserver>(web_contents, &event_logs_);
   } else {
-    web_contents->RecordAccessibilityEvents(
-        base::BindRepeating(&AccessibilityUIMessageHandler::Callback,
-                            base::Unretained(this)),
-        false);
-    observer_.release();
+    StopRecording(web_contents);
 
     std::string event_logs_str;
     for (std::string log : event_logs_) {

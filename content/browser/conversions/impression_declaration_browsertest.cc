@@ -157,9 +157,10 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(1UL, impression_observer.last_impression().impression_data);
 }
 
+// Test frequently flakes due to timeout. ( https://crbug.com/1084201 )
 IN_PROC_BROWSER_TEST_F(
     ImpressionDeclarationBrowserTest,
-    ImpressionTagNavigatesExistingRemoteFrame_ImpressionReceived) {
+    DISABLED_ImpressionTagNavigatesExistingRemoteFrame_ImpressionReceived) {
   EXPECT_TRUE(NavigateToURL(
       web_contents(),
       https_server()->GetURL("b.test", "/page_with_impression_creator.html")));

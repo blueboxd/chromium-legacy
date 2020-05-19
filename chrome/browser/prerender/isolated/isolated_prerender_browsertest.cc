@@ -45,6 +45,8 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
+#include "components/language/core/browser/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/navigation_controller.h"
@@ -60,6 +62,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -577,6 +580,13 @@ class IsolatedPrerenderBrowserTest
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     origin_server_request_count_++;
     origin_server_requests_.push_back(request.GetURL());
+
+    EXPECT_TRUE(request.headers.find("Accept-Language") !=
+                request.headers.end());
+    EXPECT_EQ(request.headers.find("Accept-Language")->second,
+              net::HttpUtil::GenerateAcceptLanguageHeader(
+                  browser()->profile()->GetPrefs()->GetString(
+                      language::prefs::kAcceptLanguages)));
   }
 
   // Called when |config_server_| receives a request for config fetch.

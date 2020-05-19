@@ -311,15 +311,15 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
                                  const GURL& site_url,
                                  const bool is_guest);
 
-  // Converts |site_url| into an origin that can be used as
+  // Converts |lock_url| into an origin that can be used as
   // |URLLoaderFactoryParams::request_initiator_site_lock|.
   // This means that the returned origin can be safely used in a eTLD+1
   // comparison against |network::ResourceRequest::request_initiator|.
   //
-  // base::nullopt is returned if |site_url| cannot be used as a
+  // base::nullopt is returned if |lock_url| cannot be used as a
   // |request_initiator_site_lock| (e.g. in case of site_url =
   // chrome-guest://...).
-  static base::Optional<url::Origin> GetRequestInitiatorSiteLock(GURL site_url);
+  static base::Optional<url::Origin> GetRequestInitiatorSiteLock(GURL lock_url);
 
   // Return an ID of the next BrowsingInstance to be created.  This ID is
   // guaranteed to be higher than any ID of an existing BrowsingInstance.

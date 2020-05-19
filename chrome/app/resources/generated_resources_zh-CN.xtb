@@ -112,7 +112,6 @@
 <translation id="1140746652461896221">屏蔽您访问的任意网页上的内容</translation>
 <translation id="1143142264369994168">证书签名人</translation>
 <translation id="1145292499998999162">插件已被拦截</translation>
-<translation id="1145532888383813076">搜索您的设备、应用和网站。</translation>
 <translation id="1145593918056169051">打印机已停止运行</translation>
 <translation id="1146678959555564648">进入 VR</translation>
 <translation id="114721135501989771">在 Chrome 中畅享 Google 的智能技术</translation>
@@ -3035,7 +3034,7 @@
 <translation id="4898011734382862273">证书“<ph name="CERTIFICATE_NAME" />”代表一个证书授权中心</translation>
 <translation id="489985760463306091">要完成有害软件的移除，请重新启动计算机</translation>
 <translation id="4900392736118574277">您的启动页已改为 <ph name="URL" />。</translation>
-<translation id="490051679772058907"><ph name="REFRESH_RATE" /> 赫兹 - 交错</translation>
+<translation id="490051679772058907"><ph name="REFRESH_RATE" /> 赫兹 - 隔行扫描</translation>
 <translation id="4902546322522096650">第 <ph name="NETWORK_INDEX" /> 个网络（共 <ph name="NETWORK_COUNT" /> 个），<ph name="NETWORK_NAME" />，<ph name="SECURITY_STATUS" />，信号强度为 <ph name="SIGNAL_STRENGTH" />%，连接</translation>
 <translation id="49027928311173603">从服务器下载的策略无效：<ph name="VALIDATION_ERROR" />。</translation>
 <translation id="4906490889887219338">设置或管理网络文件共享。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
@@ -3420,7 +3419,6 @@
 <translation id="5430931332414098647">即时网络共享</translation>
 <translation id="5431318178759467895">彩色</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="5432996274932278848">搜索您的设备、应用和网站。使用箭头键可浏览应用。</translation>
 <translation id="543338862236136125">修改密码</translation>
 <translation id="5434065355175441495">PKCS #1 RSA 加密</translation>
 <translation id="5436492226391861498">正在等待代理隧道的响应...</translation>
@@ -5088,7 +5086,6 @@
 <translation id="7606992457248886637">授权中心</translation>
 <translation id="7607002721634913082">已暂停</translation>
 <translation id="7609148976235050828">请连接到互联网，然后重试。</translation>
-<translation id="7611008212562900400">搜索您的设备、应用、网站…</translation>
 <translation id="7614260613810441905">在网站想要修改您设备上的文件或文件夹时先询问您（推荐）</translation>
 <translation id="761530003705945209">备份到 Google 云端硬盘。您随时可以轻松地恢复数据或更换设备。您的备份内容包含应用数据。您的备份内容将上传到 Google 并使用您的 Google 帐号密码进行加密。</translation>
 <translation id="7616214729753637086">正在注册设备…</translation>

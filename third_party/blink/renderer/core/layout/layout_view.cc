@@ -345,6 +345,15 @@ void LayoutView::UpdateLayout() {
 
   LayoutBlockFlow::UpdateLayout();
 
+  if (named_pages_mapper_) {
+    // If a start page name got propagated all the way up to the root, that will
+    // be the name for the first page. Usually we insert names into the mapper
+    // as part of inserting forced breaks, but in this case there'll be no
+    // break, since we're at the first page.
+    if (const AtomicString first_page_name = StartPageName())
+      named_pages_mapper_->NameFirstPage(first_page_name);
+  }
+
 #if DCHECK_IS_ON()
   CheckLayoutState();
 #endif

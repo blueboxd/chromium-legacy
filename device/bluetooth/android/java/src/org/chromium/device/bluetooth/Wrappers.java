@@ -605,6 +605,10 @@ class Wrappers {
         public boolean setValue(byte[] value) {
             return mCharacteristic.setValue(value);
         }
+
+        public void setWriteType(int writeType) {
+            mCharacteristic.setWriteType(writeType);
+        }
     }
 
     /**

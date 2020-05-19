@@ -74,6 +74,7 @@
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 
@@ -114,7 +115,6 @@ constexpr int kBottomStatusIndicatorChildSpacingDp = 8;
 // Spacing between child of LoginBaseBubbleView.
 constexpr int kBubbleBetweenChildSpacingDp = 16;
 
-constexpr char kLockContentsViewName[] = "LockContentsView";
 constexpr char kAuthErrorContainerName[] = "AuthErrorContainer";
 
 // Sets the preferred width for |view| with an arbitrary height.
@@ -452,7 +452,7 @@ LockContentsView::LockContentsView(
     LockScreen::ScreenType screen_type,
     LoginDataDispatcher* data_dispatcher,
     std::unique_ptr<LoginDetachableBaseModel> detachable_base_model)
-    : NonAccessibleView(kLockContentsViewName),
+    : NonAccessibleView(),
       screen_type_(screen_type),
       data_dispatcher_(data_dispatcher),
       detachable_base_model_(std::move(detachable_base_model)) {
@@ -472,29 +472,27 @@ LockContentsView::LockContentsView(
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  main_view_ = new NonAccessibleView();
-  AddChildView(main_view_);
+  main_view_ = AddChildView(std::make_unique<NonAccessibleView>());
 
   // The top header view.
-  top_header_ = new views::View();
+  top_header_ = AddChildView(std::make_unique<views::View>());
   auto top_header_layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal);
   top_header_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kEnd);
   top_header_->SetLayoutManager(std::move(top_header_layout));
-  AddChildView(top_header_);
 
-  system_info_ = new views::View();
+  system_info_ = top_header_->AddChildView(std::make_unique<views::View>());
   auto* system_info_layout =
       system_info_->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kVertical, gfx::Insets(6, 8)));
   system_info_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kEnd);
   system_info_->SetVisible(false);
-  top_header_->AddChildView(system_info_);
 
   // The bottom status indicator view.
-  bottom_status_indicator_ = new BottomStatusIndicator();
+  bottom_status_indicator_ =
+      AddChildView(std::make_unique<BottomStatusIndicator>());
   auto bottom_status_indicator_layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
       kBottomStatusIndicatorChildSpacingDp);
@@ -502,36 +500,32 @@ LockContentsView::LockContentsView(
       views::BoxLayout::MainAxisAlignment::kEnd);
   bottom_status_indicator_->SetLayoutManager(
       std::move(bottom_status_indicator_layout));
-  AddChildView(bottom_status_indicator_);
 
-  note_action_ = new NoteActionLaunchButton(initial_note_action_state);
-  top_header_->AddChildView(note_action_);
+  note_action_ = top_header_->AddChildView(
+      std::make_unique<NoteActionLaunchButton>(initial_note_action_state));
 
   // Public Session expanded view.
-  expanded_view_ = new LoginExpandedPublicAccountView(
-      base::BindRepeating(&LockContentsView::SetDisplayStyle,
-                          base::Unretained(this), DisplayStyle::kAll));
+  expanded_view_ =
+      AddChildView(std::make_unique<LoginExpandedPublicAccountView>(
+          base::BindRepeating(&LockContentsView::SetDisplayStyle,
+                              base::Unretained(this), DisplayStyle::kAll)));
   expanded_view_->SetVisible(false);
-  AddChildView(expanded_view_);
 
-  supervised_user_deprecation_bubble_ = new LoginErrorBubble();
+  supervised_user_deprecation_bubble_ =
+      AddChildView(std::make_unique<LoginErrorBubble>());
   supervised_user_deprecation_bubble_->SetPersistent(true);
-  AddChildView(supervised_user_deprecation_bubble_);
 
-  detachable_base_error_bubble_ = new LoginErrorBubble();
+  detachable_base_error_bubble_ =
+      AddChildView(std::make_unique<LoginErrorBubble>());
   detachable_base_error_bubble_->SetPersistent(true);
-  AddChildView(detachable_base_error_bubble_);
 
-  tooltip_bubble_ = new LoginTooltipView(base::UTF8ToUTF16("") /*message*/,
-                                         nullptr /*anchor_view*/);
-  AddChildView(tooltip_bubble_);
+  tooltip_bubble_ = AddChildView(std::make_unique<LoginTooltipView>(
+      base::UTF8ToUTF16("") /*message*/, nullptr /*anchor_view*/));
 
-  warning_banner_bubble_ = new LoginErrorBubble();
+  warning_banner_bubble_ = AddChildView(std::make_unique<LoginErrorBubble>());
   warning_banner_bubble_->SetPersistent(true);
-  AddChildView(warning_banner_bubble_);
 
-  auth_error_bubble_ = new AuthErrorBubble();
-  AddChildView(auth_error_bubble_);
+  auth_error_bubble_ = AddChildView(std::make_unique<AuthErrorBubble>());
 
   OnLockScreenNoteStateChanged(initial_note_action_state);
   chromeos::PowerManagerClient::Get()->AddObserver(this);
@@ -775,15 +769,19 @@ void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
   if (!users.empty()) {
-    primary_big_view_ = AllocateLoginBigUserView(users[0], true /*is_primary*/);
+    auto primary_big_view =
+        AllocateLoginBigUserView(users[0], true /*is_primary*/);
 
     // Build layout for additional users.
     if (users.size() <= 2)
-      CreateLowDensityLayout(users);
+      CreateLowDensityLayout(users, std::move(primary_big_view));
     else if (users.size() >= 3 && users.size() <= 6)
-      CreateMediumDensityLayout(users);
+      CreateMediumDensityLayout(users, std::move(primary_big_view));
     else if (users.size() >= 7)
-      CreateHighDensityLayout(users, main_layout);
+      CreateHighDensityLayout(users, main_layout, std::move(primary_big_view));
+
+    // |primary_big_view_| must have been set by one of the above functions.
+    DCHECK(primary_big_view_);
 
     LayoutAuth(primary_big_view_, opt_secondary_big_view_, false /*animate*/);
 
@@ -1057,8 +1055,8 @@ void LockContentsView::OnSystemInfoChanged(
          !bluetooth_name.empty());
 
   // Helper function to create a label for the system info view.
-  auto create_info_label = []() -> views::Label* {
-    views::Label* label = new views::Label();
+  auto create_info_label = []() {
+    auto label = std::make_unique<views::Label>();
     label->SetAutoColorReadabilityEnabled(false);
     label->SetEnabledColor(SK_ColorWHITE);
     label->SetFontList(views::Label::GetDefaultFontList().Derive(
@@ -1400,10 +1398,11 @@ void LockContentsView::CreateMediaControlsLayout() {
 }
 
 void LockContentsView::CreateLowDensityLayout(
-    const std::vector<LoginUserInfo>& users) {
+    const std::vector<LoginUserInfo>& users,
+    std::unique_ptr<LoginBigUserView> primary_big_view) {
   DCHECK_LE(users.size(), 2u);
 
-  main_view_->AddChildView(primary_big_view_);
+  primary_big_view_ = main_view_->AddChildView(std::move(primary_big_view));
 
   // Build media controls view. Using base::Unretained(this) is safe here
   // because these callbacks are used by |media_controls_view_|, which is
@@ -1432,13 +1431,12 @@ void LockContentsView::CreateLowDensityLayout(
 
   if (users.size() > 1) {
     // Space between primary user and secondary user.
-    auto* spacing_middle = new NonAccessibleView();
-    main_view_->AddChildView(spacing_middle);
+    auto* spacing_middle =
+        main_view_->AddChildView(std::make_unique<NonAccessibleView>());
 
     // Build secondary auth user.
-    opt_secondary_big_view_ =
-        AllocateLoginBigUserView(users[1], false /*is_primary*/);
-    main_view_->AddChildView(opt_secondary_big_view_);
+    opt_secondary_big_view_ = main_view_->AddChildView(
+        AllocateLoginBigUserView(users[1], false /*is_primary*/));
 
     // Set |spacing_middle|.
     AddDisplayLayoutAction(base::BindRepeating(
@@ -1450,7 +1448,8 @@ void LockContentsView::CreateLowDensityLayout(
 }
 
 void LockContentsView::CreateMediumDensityLayout(
-    const std::vector<LoginUserInfo>& users) {
+    const std::vector<LoginUserInfo>& users,
+    std::unique_ptr<LoginBigUserView> primary_big_view) {
   // Here is a diagram of this layout:
   //
   //    a A x B y b
@@ -1469,18 +1468,16 @@ void LockContentsView::CreateMediumDensityLayout(
   // [0,x]). Custom layout logic is used instead, which is contained inside of
   // the AddDisplayLayoutAction call below.
 
-  // Construct instances.
-  auto* spacing_left = new NonAccessibleView();
-  auto* spacing_middle = new NonAccessibleView();
-  auto* spacing_right = new NonAccessibleView();
-  users_list_ = BuildScrollableUsersListView(users, LoginDisplayStyle::kSmall);
-
-  // Add views as described above.
-  main_view_->AddChildView(spacing_left);
-  main_view_->AddChildView(primary_big_view_);
-  main_view_->AddChildView(spacing_middle);
-  main_view_->AddChildView(users_list_);
-  main_view_->AddChildView(spacing_right);
+  // Construct and add views as described above.
+  auto* spacing_left =
+      main_view_->AddChildView(std::make_unique<NonAccessibleView>());
+  primary_big_view_ = main_view_->AddChildView(std::move(primary_big_view));
+  auto* spacing_middle =
+      main_view_->AddChildView(std::make_unique<NonAccessibleView>());
+  users_list_ = main_view_->AddChildView(
+      BuildScrollableUsersListView(users, LoginDisplayStyle::kSmall));
+  auto* spacing_right =
+      main_view_->AddChildView(std::make_unique<NonAccessibleView>());
 
   // Set width for the |spacing_*| views.
   AddDisplayLayoutAction(base::BindRepeating(
@@ -1520,22 +1517,20 @@ void LockContentsView::CreateMediumDensityLayout(
 
 void LockContentsView::CreateHighDensityLayout(
     const std::vector<LoginUserInfo>& users,
-    views::BoxLayout* main_layout) {
+    views::BoxLayout* main_layout,
+    std::unique_ptr<LoginBigUserView> primary_big_view) {
   // Insert spacing before the auth view.
-  auto* fill = new NonAccessibleView();
-  main_view_->AddChildView(fill);
+  auto* fill = main_view_->AddChildView(std::make_unique<NonAccessibleView>());
   main_layout->SetFlexForView(fill, 1);
 
-  main_view_->AddChildView(primary_big_view_);
+  primary_big_view_ = main_view_->AddChildView(std::move(primary_big_view));
 
   // Insert spacing after the auth view.
-  fill = new NonAccessibleView();
-  main_view_->AddChildView(fill);
+  fill = main_view_->AddChildView(std::make_unique<NonAccessibleView>());
   main_layout->SetFlexForView(fill, 1);
 
-  users_list_ =
-      BuildScrollableUsersListView(users, LoginDisplayStyle::kExtraSmall);
-  main_view_->AddChildView(users_list_);
+  users_list_ = main_view_->AddChildView(
+      BuildScrollableUsersListView(users, LoginDisplayStyle::kExtraSmall));
 
   // User list size may change after a display metric change.
   AddDisplayLayoutAction(base::BindRepeating(
@@ -1901,26 +1896,26 @@ void LockContentsView::ShowAuthErrorMessage() {
     *bold_start += shortcut_offset_in_string;
   }
 
-  views::StyledLabel* label = new views::StyledLabel(error_text, this);
-  MakeSectionBold(label, error_text, bold_start, bold_length);
+  auto label = std::make_unique<views::StyledLabel>(error_text, this);
+  MakeSectionBold(label.get(), error_text, bold_start, bold_length);
   label->SetAutoColorReadabilityEnabled(false);
 
-  auto* learn_more_button = new SystemLabelButton(
+  auto learn_more_button = std::make_unique<SystemLabelButton>(
       auth_error_bubble_, l10n_util::GetStringUTF16(IDS_ASH_LEARN_MORE),
       SystemLabelButton::DisplayType::DEFAULT);
 
-  auto* container = new NonAccessibleView(kAuthErrorContainerName);
+  auto container = std::make_unique<NonAccessibleView>(kAuthErrorContainerName);
   auto* container_layout =
       container->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kVertical, gfx::Insets(),
           kBubbleBetweenChildSpacingDp));
   container_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
-  container->AddChildView(label);
-  container->AddChildView(learn_more_button);
+  container->AddChildView(std::move(label));
+  container->AddChildView(std::move(learn_more_button));
 
   auth_error_bubble_->SetAnchorView(big_view->auth_user()->password_view());
-  auth_error_bubble_->SetContent(container);
+  auth_error_bubble_->SetContent(container.release());
   auth_error_bubble_->SetAccessibleName(error_text);
   auth_error_bubble_->SetPersistent(false);
   auth_error_bubble_->Show();
@@ -2004,7 +1999,7 @@ void LockContentsView::OnPublicAccountTapped(bool is_primary) {
   SetDisplayStyle(DisplayStyle::kExclusivePublicAccountExpandedView);
 }
 
-LoginBigUserView* LockContentsView::AllocateLoginBigUserView(
+std::unique_ptr<LoginBigUserView> LockContentsView::AllocateLoginBigUserView(
     const LoginUserInfo& user,
     bool is_primary) {
   LoginAuthUserView::Callbacks auth_user_callbacks;
@@ -2029,8 +2024,8 @@ LoginBigUserView* LockContentsView::AllocateLoginBigUserView(
       base::BindRepeating(&LockContentsView::OnPublicAccountTapped,
                           base::Unretained(this), is_primary);
 
-  return new LoginBigUserView(user, auth_user_callbacks,
-                              public_account_callbacks);
+  return std::make_unique<LoginBigUserView>(user, auth_user_callbacks,
+                                            public_account_callbacks);
 }
 
 LoginBigUserView* LockContentsView::TryToFindBigUser(const AccountId& user,
@@ -2065,16 +2060,18 @@ LoginUserView* LockContentsView::TryToFindUserView(const AccountId& user) {
   return users_list_->GetUserView(user);
 }
 
-ScrollableUsersListView* LockContentsView::BuildScrollableUsersListView(
+std::unique_ptr<ScrollableUsersListView>
+LockContentsView::BuildScrollableUsersListView(
     const std::vector<LoginUserInfo>& users,
     LoginDisplayStyle display_style) {
-  auto* view = new ScrollableUsersListView(
+  auto user_list_view = std::make_unique<ScrollableUsersListView>(
       users,
       base::BindRepeating(&LockContentsView::SwapToBigUser,
                           base::Unretained(this)),
       display_style);
-  view->ClipHeightTo(view->contents()->size().height(), size().height());
-  return view;
+  user_list_view->ClipHeightTo(user_list_view->contents()->size().height(),
+                               size().height());
+  return user_list_view;
 }
 
 void LockContentsView::SetDisplayStyle(DisplayStyle style) {
@@ -2158,5 +2155,9 @@ void LockContentsView::UpdateBottomStatusIndicatorVisibility() {
                  BottomStatusIndicator::ContentType::kAdbSideLoadingEnabled;
   bottom_status_indicator_->SetVisible(visible);
 }
+
+BEGIN_METADATA(LockContentsView)
+METADATA_PARENT_CLASS(NonAccessibleView)
+END_METADATA()
 
 }  // namespace ash

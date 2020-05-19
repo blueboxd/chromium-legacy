@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/services/app_service/public/cpp/app_update.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -35,6 +36,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+using web_app::ProviderType;
 
 namespace chromeos {
 namespace app_time {
@@ -57,7 +60,7 @@ constexpr char kWebAppName2[] = "WebApp2";
 
 }  // namespace
 
-class AppServiceWrapperTest : public testing::Test {
+class AppServiceWrapperTest : public ::testing::TestWithParam<ProviderType> {
  public:
   class MockListener : public AppServiceWrapper::EventListener {
    public:
@@ -73,7 +76,16 @@ class AppServiceWrapperTest : public testing::Test {
   };
 
  protected:
-  AppServiceWrapperTest() = default;
+  AppServiceWrapperTest() {
+    if (GetParam() == web_app::ProviderType::kWebApps) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kDesktopPWAsWithoutExtensions);
+    } else if (GetParam() == web_app::ProviderType::kBookmarkApps) {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kDesktopPWAsWithoutExtensions);
+    }
+  }
+
   AppServiceWrapperTest(const AppServiceWrapperTest&) = delete;
   AppServiceWrapperTest& operator=(const AppServiceWrapperTest&) = delete;
   ~AppServiceWrapperTest() override = default;
@@ -193,6 +205,7 @@ class AppServiceWrapperTest : public testing::Test {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   base::test::ScopedFeatureList feature_list_;
 
@@ -207,7 +220,7 @@ class AppServiceWrapperTest : public testing::Test {
 };
 
 // Tests GetInstalledApps() method.
-TEST_F(AppServiceWrapperTest, GetInstalledApps) {
+TEST_P(AppServiceWrapperTest, GetInstalledApps) {
   // Chrome is the only 'preinstalled' app.
   const AppId chrome =
       AppId(apps::mojom::AppType::kExtension, extension_misc::kChromeAppId);
@@ -243,7 +256,7 @@ TEST_F(AppServiceWrapperTest, GetInstalledApps) {
   }
 }
 
-TEST_F(AppServiceWrapperTest, GetAppName) {
+TEST_P(AppServiceWrapperTest, GetAppName) {
   const AppId chrome(apps::mojom::AppType::kExtension,
                      extension_misc::kChromeAppId);
   EXPECT_EQ(kExtensionNameChrome, tested_wrapper().GetAppName(chrome));
@@ -269,7 +282,7 @@ TEST_F(AppServiceWrapperTest, GetAppName) {
 }
 
 // Tests installs and uninstalls of Arc apps.
-TEST_F(AppServiceWrapperTest, ArcAppInstallation) {
+TEST_P(AppServiceWrapperTest, ArcAppInstallation) {
   // Only Chrome installed.
   EXPECT_EQ(1u, tested_wrapper().GetInstalledApps().size());
 
@@ -301,7 +314,7 @@ TEST_F(AppServiceWrapperTest, ArcAppInstallation) {
 }
 
 // Tests installs and uninstalls of web apps.
-TEST_F(AppServiceWrapperTest, WebAppInstallation) {
+TEST_P(AppServiceWrapperTest, WebAppInstallation) {
   // Only Chrome installed.
   EXPECT_EQ(1u, tested_wrapper().GetInstalledApps().size());
 
@@ -334,7 +347,7 @@ TEST_F(AppServiceWrapperTest, WebAppInstallation) {
   EXPECT_TRUE(base::Contains(installed_apps, app2));
 }
 
-TEST_F(AppServiceWrapperTest, ArcAppDisabled) {
+TEST_P(AppServiceWrapperTest, ArcAppDisabled) {
   // Install ARC app.
   const AppId app(apps::mojom::AppType::kArc, kArcPackage1);
   EXPECT_CALL(test_listener(), OnAppInstalled(app)).Times(1);
@@ -349,7 +362,7 @@ TEST_F(AppServiceWrapperTest, ArcAppDisabled) {
   SimulateAppDisabled(app, kArcApp1, false);
 }
 
-TEST_F(AppServiceWrapperTest, WebAppDisabled) {
+TEST_P(AppServiceWrapperTest, WebAppDisabled) {
   // Install web app.
   const AppId app(apps::mojom::AppType::kWeb,
                   web_app::GenerateAppIdFromURL(GURL(kWebAppUrl1)));
@@ -366,7 +379,7 @@ TEST_F(AppServiceWrapperTest, WebAppDisabled) {
 }
 
 // PATL v1 does not support 'extensions' other than Chrome.
-TEST_F(AppServiceWrapperTest, IgnoreOtherExtensions) {
+TEST_P(AppServiceWrapperTest, IgnoreOtherExtensions) {
   const AppId chrome(apps::mojom::AppType::kExtension,
                      extension_misc::kChromeAppId);
   std::vector<AppId> installed_apps = tested_wrapper().GetInstalledApps();
@@ -388,6 +401,12 @@ TEST_F(AppServiceWrapperTest, IgnoreOtherExtensions) {
 
 // TODO(agawronska): Add tests for ARC apps activity once crrev.com/c/1906614 is
 // landed.
+
+// TODO(crbug.com/1082878): Test with BMO enabled.
+INSTANTIATE_TEST_SUITE_P(All,
+                         AppServiceWrapperTest,
+                         ::testing::Values(ProviderType::kBookmarkApps),
+                         web_app::ProviderTypeParamToString);
 
 }  // namespace app_time
 }  // namespace chromeos

@@ -24,6 +24,7 @@ extern const base::Feature kWebUIRealbox;
 extern const base::Feature kRealbox;
 
 extern const base::Feature kSearchSuggestChips;
+extern const base::Feature kDisableSearchSuggestChips;
 
 // Returns true if either kRealbox or omnibox::kZeroSuggestionsOnNTPRealbox
 // are enabled; or omnibox::kOnFocusSuggestions is enabled and configured to

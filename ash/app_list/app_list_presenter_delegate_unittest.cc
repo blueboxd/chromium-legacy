@@ -1196,6 +1196,72 @@ TEST_F(PopulatedAppListTest, AppsGridItemReparentToFolderDrag) {
             apps_grid_view_->GetItemViewAt(3)->item()->id());
 }
 
+// Tests that an item can be removed just after creating a folder that contains
+// that item. See https://crbug.com/1083942
+TEST_F(PopulatedAppListTest, RemoveFolderItemAfterFolderCreation) {
+  InitializeAppsGrid();
+  const int kItemCount = 5;
+  app_list_test_model_->PopulateApps(kItemCount);
+  ShowAppListInAppsFullScreen();
+
+  // Dragging the item with index 4.
+  AppListItemView* const dragged_view = apps_grid_view_->GetItemViewAt(4);
+  AppListItem* const dragged_item = dragged_view->item();
+
+  // Drag the item on top of the item with index 3.
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(dragged_view->GetBoundsInScreen().CenterPoint());
+  event_generator->PressLeftButton();
+  dragged_view->FireMouseDragTimerForTest();
+  event_generator->MoveMouseTo(
+      apps_grid_view_->GetItemViewAt(3)->GetBoundsInScreen().CenterPoint());
+  EXPECT_TRUE(apps_grid_view_->FireFolderDroppingTimerForTest());
+  event_generator->ReleaseLeftButton();
+  EXPECT_FALSE(apps_grid_view_->dragging());
+
+  EXPECT_TRUE(apps_grid_view_->GetItemViewAt(3)->item()->is_folder());
+  EXPECT_EQ(dragged_item->folder_id(),
+            apps_grid_view_->GetItemViewAt(3)->item()->id());
+
+  // Verify that item layers have been destroyed after the drag operation ended.
+  apps_grid_test_api_->WaitForItemMoveAnimationDone();
+
+  for (int i = 0; i < apps_grid_view_->view_model()->view_size(); ++i) {
+    views::View* item_view = apps_grid_view_->view_model()->view_at(i);
+    EXPECT_FALSE(item_view->layer()) << "at " << i;
+  }
+
+  // Open the newly created folder.
+  event_generator->MoveMouseTo(
+      apps_grid_view_->GetItemViewAt(3)->GetBoundsInScreen().CenterPoint());
+  event_generator->ClickLeftButton();
+  event_generator->ReleaseLeftButton();
+
+  // Verify that item views have no layers after the folder has been opened.
+  apps_grid_test_api_->WaitForItemMoveAnimationDone();
+  EXPECT_TRUE(AppListIsInFolderView());
+
+  for (int i = 0; i < apps_grid_view_->view_model()->view_size(); ++i) {
+    views::View* item_view = apps_grid_view_->view_model()->view_at(i);
+    EXPECT_FALSE(item_view->layer()) << "at " << i;
+  }
+
+  // Verify that a pending layout, if any, does not cause a crash.
+  apps_grid_view_->InvalidateLayout();
+  apps_grid_view_->GetWidget()->LayoutRootViewIfNecessary();
+
+  // Remove the original drag view item.
+  app_list_test_model_->DeleteUninstalledItem(dragged_item->id());
+  apps_grid_test_api_->WaitForItemMoveAnimationDone();
+
+  EXPECT_FALSE(AppListIsInFolderView());
+  EXPECT_FALSE(apps_grid_view_->GetItemViewAt(3)->item()->is_folder());
+
+  // Verify that a pending layout, if any, does not cause a crash.
+  apps_grid_view_->InvalidateLayout();
+  apps_grid_view_->GetWidget()->LayoutRootViewIfNecessary();
+}
+
 TEST_F(PopulatedAppListWithVKEnabledTest,
        TappingAppsGridClosesVirtualKeyboard) {
   InitializeAppsGrid();

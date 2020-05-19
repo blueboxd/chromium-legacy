@@ -192,8 +192,7 @@ chrome.test.runTests([
       const inkHost = contentElement();
       inkHost.resetPenMode();
       const events = [];
-      inkHost.ink_.dispatchPointerEvent = (type, init) =>
-          events.push({type: type, init: init});
+      inkHost.ink_.dispatchPointerEvent = (ev) => void events.push(ev);
 
       const mouse = {pointerId: 1, pointerType: 'mouse', buttons: 1};
       const pen = {
@@ -214,7 +213,7 @@ chrome.test.runTests([
           const expectation = expectations.shift();
           chrome.test.assertEq(expectation.type, event.type);
           for (const key of Object.keys(expectation.init)) {
-            chrome.test.assertEq(expectation.init[key], event.init[key]);
+            chrome.test.assertEq(expectation.init[key], event[key]);
           }
         }
       }

@@ -4,6 +4,7 @@
 <translation id="1028699632127661925">Šalje se na uređaj <ph name="DEVICE_NAME" />...</translation>
 <translation id="111910763555783249">Podešavanja obaveštenja</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Pre 1 dan}one{Pre # dan}few{Pre # dana}other{Pre # dana}}</translation>
+<translation id="1145532888383813076">Pretražite uređaj, aplikacije i veb.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Pre 1 minut}one{Pre # minut}few{Pre # minuta}other{Pre # minuta}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}one{# m}few{# m}other{# m}}</translation>
 <translation id="1181037720776840403">Ukloni</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">uključite sinhronizaciju</translation>
 <translation id="5329858601952122676">&amp;Izbriši</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> preko aplikacije <ph name="IN_PLACE_APP" />, otpustite da biste napravili direktorijum.</translation>
+<translation id="5432996274932278848">Pretražujte uređaj, aplikacije i veb. Koristite tastere sa strelicama da biste se kretali kroz aplikacije.</translation>
 <translation id="5463830097259460683">Emodži i simboli</translation>
 <translation id="5476505524087279545">opozovi izbor</translation>
 <translation id="547979256943495781">Polica na desnoj strani</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">Želite li da izbrišete ovu pretragu iz istorije?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emodži</translation>
+<translation id="7611008212562900400">Pretražite uređaj, aplikacije, veb...</translation>
 <translation id="7658239707568436148">Otkaži</translation>
 <translation id="7781829728241885113">Juče</translation>
 <translation id="7814458197256864873">&amp;Kopiraj</translation>

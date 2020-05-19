@@ -69,7 +69,6 @@ namespace blink {
 class WebDragData;
 class WebGestureEvent;
 struct WebFloatRect;
-class WebString;
 class WebWidget;
 class WebLocalFrame;
 
@@ -106,10 +105,6 @@ class WebWidgetClient {
   // Called to get the view rect in screen coordinates. This is the actual
   // content view area, i.e. doesn't include any window decorations.
   virtual WebRect ViewRect() { return WebRect(); }
-
-  // Called when a tooltip should be shown at the current cursor position.
-  virtual void SetToolTipText(const WebString&,
-                              base::i18n::TextDirection hint) {}
 
   // Requests to lock the mouse cursor for the |requester_frame| in the
   // widget. If true is returned, the success result will be asynchronously

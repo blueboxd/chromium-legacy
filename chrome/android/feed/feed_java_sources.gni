@@ -43,6 +43,7 @@ if (enable_feed_in_chrome) {
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedSchedulerBridge.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedSurfaceCoordinator.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedSurfaceMediator.java",
+    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedUma.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FutureTaskConsumer.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/HeaderIphScrollListener.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/NtpStreamLifecycleManager.java",

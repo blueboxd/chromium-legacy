@@ -74,6 +74,10 @@ struct MediaFeed {
 
   // Contains details about the user signed into the website.
   UserIdentifier? user_identifier;
+
+  // If set then changes to the cookie name provided on the feed origin or any
+  // associated origin will trigger the feed to be reset.
+  string cookie_name_filter;
 };
 
 // Contains details about the user signed into the website.

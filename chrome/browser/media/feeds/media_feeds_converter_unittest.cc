@@ -65,6 +65,8 @@ class MediaFeedsConverterTest : public testing::Test {
   EntityPtr ValidMediaImage();
   EntityPtr WithContentAttributes(EntityPtr image);
   EntityPtr WithAssociatedOrigins(EntityPtr feed);
+  EntityPtr WithCookieNameFilter(EntityPtr feed);
+  EntityPtr WithCookieNameFilterAndAssociatedOrigins(EntityPtr feed);
   EntityPtr WithImage(EntityPtr entity);
   mojom::MediaFeedItemPtr ExpectedFeedItem();
   mojom::MediaImagePtr ExpectedMediaImage();
@@ -303,6 +305,51 @@ EntityPtr MediaFeedsConverterTest::WithAssociatedOrigins(EntityPtr feed) {
   return feed;
 }
 
+EntityPtr MediaFeedsConverterTest::WithCookieNameFilter(EntityPtr feed) {
+  auto cookie_name_filter = ConvertJSONToEntityPtr(
+      R"END(
+      {
+        "@type": "PropertyValue",
+        "name": "cookieNameFilter",
+        "value": "test"
+      }
+    )END");
+
+  feed->properties.push_back(
+      CreateEntityProperty(schema_org::property::kAdditionalProperty,
+                           std::move(cookie_name_filter)));
+
+  return feed;
+}
+
+EntityPtr MediaFeedsConverterTest::WithCookieNameFilterAndAssociatedOrigins(
+    EntityPtr feed) {
+  auto origins = ConvertJSONToEntityPtr(
+      R"END(
+      {
+        "@type": "PropertyValue",
+        "name": "associatedOrigin",
+        "value": ["https://www.github.com", "https://www.github.com",
+                  "https://www.github1.com", "https://www.github2.com" ]
+      }
+    )END");
+  auto cookie_name_filter = ConvertJSONToEntityPtr(
+      R"END(
+      {
+        "@type": "PropertyValue",
+        "name": "cookieNameFilter",
+        "value": "test"
+      }
+    )END");
+
+  auto property = CreateEntityProperty(
+      schema_org::property::kAdditionalProperty, std::move(origins));
+  property->values->entity_values.push_back(std::move(cookie_name_filter));
+  feed->properties.push_back(std::move(property));
+
+  return feed;
+}
+
 EntityPtr MediaFeedsConverterTest::WithImage(EntityPtr entity) {
   entity->properties.push_back(
       CreateEntityProperty(schema_org::property::kImage, ValidMediaImage()));
@@ -397,6 +444,27 @@ TEST_F(MediaFeedsConverterTest, SucceedsOnValidFeedWithAssociatedOrigins) {
   expected_origins.insert(url::Origin::Create(GURL("https://www.github2.com")));
 
   EXPECT_EQ(expected_origins, result.associated_origins);
+}
+
+TEST_F(MediaFeedsConverterTest, SucceedsOnValidFeedWithCookieNameFilter) {
+  media_history::MediaHistoryKeyedService::MediaFeedFetchResult result;
+  ConvertMediaFeed(WithCookieNameFilter(ValidMediaFeed()), &result);
+  EXPECT_EQ("test", result.cookie_name_filter);
+}
+
+TEST_F(MediaFeedsConverterTest,
+       SucceedsOnValidFeedWithAssociatedOriginsAndCookieNameFilter) {
+  media_history::MediaHistoryKeyedService::MediaFeedFetchResult result;
+  ConvertMediaFeed(WithCookieNameFilterAndAssociatedOrigins(ValidMediaFeed()),
+                   &result);
+
+  std::set<::url::Origin> expected_origins;
+  expected_origins.insert(url::Origin::Create(GURL("https://www.github.com")));
+  expected_origins.insert(url::Origin::Create(GURL("https://www.github1.com")));
+  expected_origins.insert(url::Origin::Create(GURL("https://www.github2.com")));
+
+  EXPECT_EQ(expected_origins, result.associated_origins);
+  EXPECT_EQ("test", result.cookie_name_filter);
 }
 
 TEST_F(MediaFeedsConverterTest, SucceedsOnValidCompleteDataFeedWithUser) {

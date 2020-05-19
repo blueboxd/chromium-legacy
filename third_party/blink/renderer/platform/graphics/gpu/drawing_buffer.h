@@ -98,6 +98,8 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     virtual void DrawingBufferClientRestorePixelPackParameters() = 0;
     // Restores the GL_TEXTURE_2D binding for the active texture unit only.
     virtual void DrawingBufferClientRestoreTexture2DBinding() = 0;
+    // Restores the GL_TEXTURE_CUBE_MAP binding for the active texture unit.
+    virtual void DrawingBufferClientRestoreTextureCubeMapBinding() = 0;
     virtual void DrawingBufferClientRestoreRenderbufferBinding() = 0;
     virtual void DrawingBufferClientRestoreFramebufferBinding() = 0;
     virtual void DrawingBufferClientRestorePixelUnpackBufferBinding() = 0;

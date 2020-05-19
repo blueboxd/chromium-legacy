@@ -333,7 +333,11 @@ class BrowserControlsContainerView extends FrameLayout {
     private void finishScroll(int contentOffsetY) {
         mInScroll = false;
         setControlsOffset(0, contentOffsetY);
-        mContentViewRenderView.postOnAnimation(() -> showControls());
+        if (BrowserControlsContainerViewJni.get().shouldDelayVisibilityChange()) {
+            mContentViewRenderView.postOnAnimation(() -> showControls());
+        } else {
+            showControls();
+        }
     }
 
     private void setControlsOffset(int controlsOffsetY, int contentOffsetY) {
@@ -359,7 +363,11 @@ class BrowserControlsContainerView extends FrameLayout {
 
     private void prepareForScroll() {
         mInScroll = true;
-        mContentViewRenderView.postOnAnimation(() -> hideControls());
+        if (BrowserControlsContainerViewJni.get().shouldDelayVisibilityChange()) {
+            mContentViewRenderView.postOnAnimation(() -> hideControls());
+        } else {
+            hideControls();
+        }
     }
 
     private void hideControls() {
@@ -416,5 +424,6 @@ class BrowserControlsContainerView extends FrameLayout {
         void setControlsSize(long nativeBrowserControlsContainerView, int width, int height);
         void updateControlsResource(long nativeBrowserControlsContainerView);
         void setWebContents(long nativeBrowserControlsContainerView, WebContents webContents);
+        boolean shouldDelayVisibilityChange();
     }
 }

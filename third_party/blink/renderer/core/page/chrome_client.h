@@ -313,6 +313,9 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
                                const HitTestResult&);
   virtual void SetToolTip(LocalFrame&, const String&, TextDirection) = 0;
   void ClearToolTip(LocalFrame&);
+  String GetLastToolTipTextForTesting() {
+    return current_tool_tip_text_for_test_;
+  }
 
   bool Print(LocalFrame*);
 
@@ -537,6 +540,9 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   WeakMember<Node> last_mouse_over_node_;
   PhysicalOffset last_tool_tip_point_;
   String last_tool_tip_text_;
+  // |last_tool_tip_text_| is kept even if ClearToolTip is called. This is for
+  // the tooltip text that is cleared when ClearToolTip is called.
+  String current_tool_tip_text_for_test_;
 
   FRIEND_TEST_ALL_PREFIXES(ChromeClientTest, SetToolTipFlood);
   FRIEND_TEST_ALL_PREFIXES(ChromeClientTest, SetToolTipEmptyString);

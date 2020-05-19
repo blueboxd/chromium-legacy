@@ -40,6 +40,7 @@ WorkerNavigator::WorkerNavigator(const String& user_agent,
                                  const UserAgentMetadata& ua_metadata,
                                  ExecutionContext* execution_context)
     : ExecutionContextClient(execution_context),
+      NavigatorDeviceMemory(nullptr),
       NavigatorLanguage(execution_context),
       user_agent_(user_agent),
       ua_metadata_(ua_metadata) {}
@@ -73,6 +74,7 @@ void WorkerNavigator::Trace(Visitor* visitor) const {
   ExecutionContextClient::Trace(visitor);
   NavigatorLanguage::Trace(visitor);
   Supplementable<WorkerNavigator>::Trace(visitor);
+  NavigatorDeviceMemory::Trace(visitor);
 }
 
 }  // namespace blink

@@ -15,6 +15,8 @@ Vp8Metadata::Vp8Metadata()
 BitstreamBufferMetadata::BitstreamBufferMetadata()
     : payload_size_bytes(0), key_frame(false) {}
 BitstreamBufferMetadata::BitstreamBufferMetadata(
+    const BitstreamBufferMetadata& other) = default;
+BitstreamBufferMetadata::BitstreamBufferMetadata(
     BitstreamBufferMetadata&& other) = default;
 BitstreamBufferMetadata::BitstreamBufferMetadata(size_t payload_size_bytes,
                                                  bool key_frame,

@@ -28,6 +28,7 @@
 
 namespace extensions {
 namespace declarative_net_request {
+namespace {
 
 using PageAccess = PermissionsData::PageAccess;
 using ActionInfo = CompositeMatcher::ActionInfo;
@@ -35,6 +36,28 @@ using ActionInfo = CompositeMatcher::ActionInfo;
 namespace dnr_api = api::declarative_net_request;
 
 using CompositeMatcherTest = ::testing::Test;
+
+TestRule CreateModifyHeadersRule(
+    int id,
+    int priority,
+    base::Optional<std::string> url_filter,
+    base::Optional<std::string> regex_filter,
+    std::vector<TestHeaderInfo> request_headers_list) {
+  TestRule rule = CreateGenericRule();
+  rule.id = id;
+  rule.priority = priority;
+
+  if (url_filter)
+    rule.condition->url_filter = url_filter;
+  else if (regex_filter) {
+    rule.condition->url_filter.reset();
+    rule.condition->regex_filter = regex_filter;
+  }
+
+  rule.action->type = std::string("modifyHeaders");
+  rule.action->request_headers = std::move(request_headers_list);
+  return rule;
+}
 
 // Ensure that the rules in a CompositeMatcher are in the same priority space.
 TEST_F(CompositeMatcherTest, SamePrioritySpace) {
@@ -102,25 +125,13 @@ TEST_F(CompositeMatcherTest, GetModifyHeadersActions) {
   // modifyHeaders action is complete.
   ScopedCurrentChannel channel(::version_info::Channel::UNKNOWN);
 
-  auto create_modify_headers_rule =
-      [](int id, int priority, const std::string& url_filter,
-         std::vector<TestHeaderInfo> request_headers_list) {
-        TestRule rule = CreateGenericRule();
-        rule.id = id;
-        rule.priority = priority;
-        rule.condition->url_filter = url_filter;
-        rule.action->type = std::string("modifyHeaders");
-        rule.action->request_headers = std::move(request_headers_list);
-        return rule;
-      };
-
-  TestRule rule_1 = create_modify_headers_rule(
-      kMinValidID, kMinValidPriority, "google.com",
+  TestRule rule_1 = CreateModifyHeadersRule(
+      kMinValidID, kMinValidPriority, "google.com", base::nullopt,
       std::vector<TestHeaderInfo>({TestHeaderInfo("header1", "remove"),
                                    TestHeaderInfo("header2", "remove")}));
 
-  TestRule rule_2 = create_modify_headers_rule(
-      kMinValidID, kMinValidPriority + 1, "/path",
+  TestRule rule_2 = CreateModifyHeadersRule(
+      kMinValidID, kMinValidPriority + 1, "/path", base::nullopt,
       std::vector<TestHeaderInfo>({TestHeaderInfo("header1", "remove"),
                                    TestHeaderInfo("header3", "remove")}));
 
@@ -221,6 +232,143 @@ TEST_F(CompositeMatcherTest, GetModifyHeadersActions) {
   EXPECT_THAT(actions, ::testing::ElementsAre(
                            ::testing::Eq(::testing::ByRef(action_1)),
                            ::testing::Eq(::testing::ByRef(action_2))));
+}
+
+// Tests that GetModifyHeadersActions method omits rules with an equal or lower
+// priority than a matched allow or allowAllRequests rule.
+TEST_F(CompositeMatcherTest, GetModifyHeadersActions_Priority) {
+  using HeaderInfo = RequestAction::HeaderInfo;
+
+  // TODO(crbug.com/947591): Remove the channel override once implementation of
+  // modifyHeaders action is complete.
+  ScopedCurrentChannel channel(::version_info::Channel::UNKNOWN);
+
+  int allow_rule_priority = kMinValidPriority + 1;
+
+  TestRule allow_rule = CreateGenericRule();
+  allow_rule.id = kMinValidID;
+  allow_rule.condition->url_filter = std::string("google.com/1");
+  allow_rule.action->type = std::string("allow");
+  allow_rule.priority = allow_rule_priority;
+
+  TestRule url_rule_1 = CreateModifyHeadersRule(
+      kMinValidID + 1, allow_rule_priority - 1, "google.com", base::nullopt,
+      std::vector<TestHeaderInfo>({TestHeaderInfo("header1", "remove")}));
+
+  TestRule url_rule_2 = CreateModifyHeadersRule(
+      kMinValidID + 2, allow_rule_priority, "google.com", base::nullopt,
+      std::vector<TestHeaderInfo>({TestHeaderInfo("header2", "remove")}));
+
+  TestRule url_rule_3 = CreateModifyHeadersRule(
+      kMinValidID + 3, allow_rule_priority + 1, "google.com", base::nullopt,
+      std::vector<TestHeaderInfo>({TestHeaderInfo("header3", "remove")}));
+
+  TestRule regex_rule_1 = CreateModifyHeadersRule(
+      kMinValidID + 4, allow_rule_priority - 1, base::nullopt, R"(google\.com)",
+      std::vector<TestHeaderInfo>({TestHeaderInfo("header4", "remove")}));
+
+  TestRule regex_rule_2 = CreateModifyHeadersRule(
+      kMinValidID + 5, allow_rule_priority, base::nullopt, R"(google\.com)",
+      std::vector<TestHeaderInfo>({TestHeaderInfo("header5", "remove")}));
+
+  TestRule regex_rule_3 = CreateModifyHeadersRule(
+      kMinValidID + 6, allow_rule_priority + 1, base::nullopt, R"(google\.com)",
+      std::vector<TestHeaderInfo>({TestHeaderInfo("header6", "remove")}));
+
+  const RulesetID kSource1ID(1);
+  std::unique_ptr<RulesetMatcher> matcher_1;
+  ASSERT_TRUE(
+      CreateVerifiedMatcher({allow_rule, url_rule_1, url_rule_2, url_rule_3},
+                            CreateTemporarySource(kSource1ID), &matcher_1));
+
+  const RulesetID kSource2ID(2);
+  std::unique_ptr<RulesetMatcher> matcher_2;
+  ASSERT_TRUE(CreateVerifiedMatcher({regex_rule_1, regex_rule_2, regex_rule_3},
+                                    CreateTemporarySource(kSource2ID),
+                                    &matcher_2));
+
+  // Create a CompositeMatcher with the rulesets.
+  std::vector<std::unique_ptr<RulesetMatcher>> matchers;
+  matchers.push_back(std::move(matcher_1));
+  matchers.push_back(std::move(matcher_2));
+  auto composite_matcher =
+      std::make_unique<CompositeMatcher>(std::move(matchers));
+
+  // Make a request to "http://google.com/1" which matches with all
+  // modifyHeaders rules and |allow_rule|.
+  GURL google_url = GURL("http://google.com/1");
+  RequestParams google_params;
+  google_params.url = &google_url;
+  google_params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
+  google_params.is_third_party = false;
+
+  // Call GetBeforeRequestAction first to ensure that test and production code
+  // paths are consistent.
+  composite_matcher->GetBeforeRequestAction(google_params,
+                                            PageAccess::kAllowed);
+
+  std::vector<RequestAction> actions =
+      composite_matcher->GetModifyHeadersActions(google_params);
+
+  auto create_action_for_rule =
+      [](const TestRule& rule, const RulesetID& ruleset_id,
+         const std::vector<HeaderInfo>& request_headers) {
+        RequestAction action =
+            CreateRequestActionForTesting(RequestAction::Type::MODIFY_HEADERS,
+                                          *rule.id, *rule.priority, ruleset_id);
+
+        action.request_headers_to_modify = request_headers;
+        return action;
+      };
+
+  RequestAction header_3_action = create_action_for_rule(
+      url_rule_3, kSource1ID,
+      {HeaderInfo("header3", dnr_api::HEADER_OPERATION_REMOVE)});
+  RequestAction header_6_action = create_action_for_rule(
+      regex_rule_3, kSource2ID,
+      {HeaderInfo("header6", dnr_api::HEADER_OPERATION_REMOVE)});
+
+  // For the request to "http://google.com/1", since |url_rule_3| and
+  // |regex_rule_3| are the only rules with a greater priority than
+  // |allow_rule|, "header3" and "header4" should be removed.
+  EXPECT_THAT(actions, ::testing::UnorderedElementsAre(
+                           ::testing::Eq(::testing::ByRef(header_3_action)),
+                           ::testing::Eq(::testing::ByRef(header_6_action))));
+
+  // Make a request to "http://google.com/2" which should match with all
+  // modifyHeaders rules but not |allow_rule|.
+  google_url = GURL("http://google.com/2");
+  google_params.url = &google_url;
+
+  // Call GetBeforeRequestAction first to ensure that test and production code
+  // paths are consistent.
+  composite_matcher->GetBeforeRequestAction(google_params,
+                                            PageAccess::kAllowed);
+  actions = composite_matcher->GetModifyHeadersActions(google_params);
+
+  RequestAction header_1_action = create_action_for_rule(
+      url_rule_1, kSource1ID,
+      {HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE)});
+  RequestAction header_2_action = create_action_for_rule(
+      url_rule_2, kSource1ID,
+      {HeaderInfo("header2", dnr_api::HEADER_OPERATION_REMOVE)});
+  RequestAction header_4_action = create_action_for_rule(
+      regex_rule_1, kSource2ID,
+      {HeaderInfo("header4", dnr_api::HEADER_OPERATION_REMOVE)});
+  RequestAction header_5_action = create_action_for_rule(
+      regex_rule_2, kSource2ID,
+      {HeaderInfo("header5", dnr_api::HEADER_OPERATION_REMOVE)});
+
+  // For the request to "http://google.com/2", "header1" to "header6" should be
+  // removed since all modifyHeaders rules are matched and there is no matching
+  // allow/allowAllRequests rule.
+  EXPECT_THAT(actions, ::testing::UnorderedElementsAre(
+                           ::testing::Eq(::testing::ByRef(header_1_action)),
+                           ::testing::Eq(::testing::ByRef(header_2_action)),
+                           ::testing::Eq(::testing::ByRef(header_3_action)),
+                           ::testing::Eq(::testing::ByRef(header_4_action)),
+                           ::testing::Eq(::testing::ByRef(header_5_action)),
+                           ::testing::Eq(::testing::ByRef(header_6_action))));
 }
 
 // Ensure CompositeMatcher detects requests to be notified based on the rule
@@ -393,5 +541,6 @@ TEST_F(CompositeMatcherTest, GetRedirectUrlFromPriority) {
   }
 }
 
+}  // namespace
 }  // namespace declarative_net_request
 }  // namespace extensions

@@ -259,7 +259,7 @@ public class ManualFillingTestHelper {
 
     public DropdownPopupWindowInterface waitForAutofillPopup(String filterInput) {
         final WebContents webContents = mActivityTestRule.getActivity().getCurrentWebContents();
-        final ViewGroup view = webContents.getViewAndroidDelegate().getContainerView();
+        final View view = webContents.getViewAndroidDelegate().getContainerView();
 
         // Wait for InputConnection to be ready and fill the filterInput. Then wait for the anchor.
         CriteriaHelper.pollUiThread(

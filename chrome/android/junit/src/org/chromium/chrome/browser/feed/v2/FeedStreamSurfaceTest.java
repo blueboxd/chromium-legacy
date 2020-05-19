@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.feed.v2;
 
 import static org.junit.Assert.assertEquals;
 
+import android.app.Activity;
+import android.content.Context;
 import android.support.test.filters.SmallTest;
 
 import com.google.protobuf.ByteString;
@@ -16,11 +18,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
-import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.components.feed.proto.FeedUiProto.Slice;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate.SliceUpdate;
@@ -32,6 +34,7 @@ import org.chromium.components.feed.proto.FeedUiProto.XSurfaceSlice;
 public class FeedStreamSurfaceTest {
     private static final String TEST_DATA = "test";
     private FeedStreamSurface mFeedStreamSurface;
+    private Context mContext;
 
     @Rule
     public JniMocker mocker = new JniMocker();
@@ -42,8 +45,9 @@ public class FeedStreamSurfaceTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        mContext = Robolectric.buildActivity(Activity.class).get();
         mocker.mock(FeedStreamSurfaceJni.TEST_HOOKS, mFeedStreamSurfaceJniMock);
-        mFeedStreamSurface = new FeedStreamSurface(null, () -> new MockTab(0, false), null);
+        mFeedStreamSurface = new FeedStreamSurface(null, () -> null, mContext);
     }
 
     @Test

@@ -4,6 +4,7 @@
 <translation id="1028699632127661925">ກຳລັງສົ່ງຫາ <ph name="DEVICE_NAME" />...</translation>
 <translation id="111910763555783249">ການ​ຕັ້ງ​ຄ່າ​ການ​ແຈ້ງ​ເຕືອນ</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 ວັນ​ກ່ອນ​ນີ້}other{ # ວັນ​ກ່ອນ​ນີ້}}</translation>
+<translation id="1145532888383813076">ຊອກຫາໃນອຸປະກອນ, ແອັບ ແລະ ເວັບ.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 ນາທີກ່ອນນີ້}other{# ນາທີກ່ອນນີ້}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 ແມັດ}other{# ແມັດ}}</translation>
 <translation id="1181037720776840403">ລຶບອອກ</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">ເປີດການຊິ້ງຂໍ້ມູນ</translation>
 <translation id="5329858601952122676">ລຶບ</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> ຢູ່ເທິງ <ph name="IN_PLACE_APP" />, ປ່ອຍເພື່ອສ້າງໂຟນເດີ.</translation>
+<translation id="5432996274932278848">ຊອກຫາໃນອຸປະກອນ, ແອັບ ແລະ ເວັບຂອງທ່ານ. ໃຊ້ປຸ່ມລູກສອນເພື່ອນຳທາງໃນແອັບຂອງທ່ານ.</translation>
 <translation id="5463830097259460683">ອີໂມຈິ ແລະ ສັນຍາລັກ</translation>
 <translation id="5476505524087279545">ຖອນໝາຍຕິກ</translation>
 <translation id="547979256943495781">ຊັ້ນວາງຢູ່ເບື້ອງຂວາ</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">ລຶບການຊອກຫາອອກຈາກປະຫວັດຂອງທ່ານບໍ?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">ອີໂມຈິ</translation>
+<translation id="7611008212562900400">ຊອກຫາອຸປະກອນຂອງທ່ານ, ແອັບ, ເວັບ...</translation>
 <translation id="7658239707568436148">ຍົກ​ເລີກ​</translation>
 <translation id="7781829728241885113">ມື້​ວານ​ນີ້</translation>
 <translation id="7814458197256864873">ກັອບປີ້</translation>

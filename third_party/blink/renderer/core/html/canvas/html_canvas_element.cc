@@ -1003,6 +1003,9 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
     return;
   }
 
+  if (!GetExecutionContext())
+    return;
+
   if (!IsPaintable()) {
     // If the canvas element's bitmap has no pixels
     GetDocument()

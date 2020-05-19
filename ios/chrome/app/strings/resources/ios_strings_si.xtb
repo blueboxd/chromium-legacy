@@ -133,6 +133,7 @@
 <translation id="2578571896248130439">වෙබ් පිටුව යවන්න</translation>
 <translation id="2584132361465095047">ගිණුම එක් කරන්න...</translation>
 <translation id="2625189173221582860">මුරපදය පිටපත් කරන ලදී</translation>
+<translation id="2647269890314209800">භාවිතයේ ඇති කුකීස්</translation>
 <translation id="2648803196158606475">කියවීම මකන්න</translation>
 <translation id="2653659639078652383">ඉදිරිපත් කරන්න</translation>
 <translation id="2690858294534178585">කැමරාව භාවිතයේ පවතී</translation>
@@ -417,6 +418,7 @@
 <translation id="6362362396625799311">අප්‍රසිද්ධ පටිති නැත</translation>
 <translation id="6363526231572697780">පරිශීලක නමක් නැත</translation>
 <translation id="6374469231428023295">නැවත උත්සහ කරන්න</translation>
+<translation id="6377118281273296434">වෙබ් අඩවි ආරක්‍ෂාව</translation>
 <translation id="6380866119319257197">ඔබට ඔබේ මුර-වැකිකඩ අමතක නම් හෝ මෙම සැකසීම් වෙනස් කිරීමට අවශ්‍ය නම්, <ph name="BEGIN_LINK" />සමමුහුර්ත කිරීම නැවත සකසන්න<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">කාඩ්පතෙහි ඇති නම</translation>
 <translation id="6406506848690869874">සමමුහුව</translation>
@@ -524,11 +526,13 @@
 
 ඔබේ ගිණුම <ph name="HOSTED_DOMAIN" /> විසින් කළමනාකරණය කර ඇති නිසා, වරනය වන විට ඔබේ Chrome දත්ත මෙම උපාංගයෙන් මැකෙනු ඇත. ඔබේ සමමුහුර්ත දත්ත ඔබේ Google ගිණුමේ පවතිනු ඇත.</translation>
 <translation id="7772032839648071052">රහස්පදය ස්ථිර කරන්න</translation>
+<translation id="7778472311864276518">මෙම උපාංගයෙන් ගිණුම ඉවත් කරන්න</translation>
 <translation id="7781011649027948662">පිටුව පරිවර්තන කරන්නද?</translation>
 <translation id="7781829728241885113">ඊයේ</translation>
 <translation id="778855399387580014">නව Chrome පටිත්තක් තුළ සෙවීම ආරම්භ කරන්න.</translation>
 <translation id="7791543448312431591">එක් කරන්න</translation>
 <translation id="7828557259026017104">කුකීස් යනු ඔබ පැමිණෙන වෙබ් අඩවිවලින් නිර්මාණ කෙරෙන ගොනු වේ. වෙබ් අඩවි ඔබේ මනාප මතක තබා ගැනීමට ඒවා භාවිත කරයි. තෙවන පාර්ශ්ව කුකී වෙනත් වෙබ් අඩවිවලින් නිර්මාණ කෙරේ. මෙම වෙබ් පිටුවලට ඔබ පැමිණෙන වෙබ් අඩවිය මත ඔබ දකින රූප හෝ දැන්වීම් වැනි සමහර අන්තර්ගත හිමි වේ.</translation>
+<translation id="7839985698273989086">නොබැඳි පිටුව</translation>
 <translation id="7840771868269352570">ඔබ තෝරාගත් අයිතම ඉවත් කෙරෙනු ඇත.</translation>
 <translation id="7856733331829174190">බාගැනීමට නොහැකි විය</translation>
 <translation id="7859704718976024901">බ්‍රවුස් කිරීමේ ඉතිහාසය</translation>

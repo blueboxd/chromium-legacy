@@ -217,10 +217,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
   void SetToolTip(LocalFrame&,
                   const String& tooltip_text,
                   TextDirection dir) override {
-    if (popup_->WidgetClient()) {
-      popup_->WidgetClient()->SetToolTipText(tooltip_text,
-                                             ToBaseTextDirection(dir));
-    }
+    popup_->widget_base_->SetToolTipText(tooltip_text, dir);
   }
 
   void InjectGestureScrollEvent(LocalFrame& local_frame,

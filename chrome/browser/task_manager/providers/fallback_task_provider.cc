@@ -35,47 +35,57 @@ Task* GetTaskByPidFromVector(base::ProcessId process_id,
 }  // namespace
 
 FallbackTaskProvider::FallbackTaskProvider(
-    std::unique_ptr<TaskProvider> primary_subprovider,
+    std::vector<std::unique_ptr<TaskProvider>> primary_subproviders,
     std::unique_ptr<TaskProvider> secondary_subprovider)
-    : sources_{
-          std::make_unique<SubproviderSource>(this,
-                                              std::move(primary_subprovider)),
-          std::make_unique<SubproviderSource>(
-              this,
-              std::move(secondary_subprovider))} {
+    : secondary_source_(std::make_unique<SubproviderSource>(
+          this,
+          std::move(secondary_subprovider))) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  for (auto& provider : primary_subproviders) {
+    primary_sources_.push_back(
+        std::make_unique<SubproviderSource>(this, std::move(provider)));
+  }
 }
 
 FallbackTaskProvider::~FallbackTaskProvider() {}
 
 Task* FallbackTaskProvider::GetTaskOfUrlRequest(int child_id, int route_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  Task* task_of_url_request;
-  for (const auto& source : sources_) {
-    task_of_url_request =
-        source->subprovider()->GetTaskOfUrlRequest(child_id, route_id);
-    if (base::Contains(shown_tasks_, task_of_url_request))
-      return task_of_url_request;
+
+  for (const auto& source : primary_sources_) {
+    Task* task = source->subprovider()->GetTaskOfUrlRequest(child_id, route_id);
+    if (task)
+      return task;
   }
-  return nullptr;
+
+  return secondary_source_->subprovider()->GetTaskOfUrlRequest(child_id,
+                                                               route_id);
 }
 
 void FallbackTaskProvider::StartUpdating() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(shown_tasks_.empty());
-  for (auto& source : sources_) {
+
+  for (auto& source : primary_sources_) {
     DCHECK(source->tasks()->empty());
     source->subprovider()->SetObserver(source.get());
   }
+
+  DCHECK(secondary_source_->tasks()->empty());
+  secondary_source_->subprovider()->SetObserver(secondary_source_.get());
 }
 
 void FallbackTaskProvider::StopUpdating() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  for (auto& source : sources_) {
+  for (auto& source : primary_sources_) {
     source->subprovider()->ClearObserver();
     source->tasks()->clear();
   }
+
+  secondary_source_->subprovider()->ClearObserver();
+  secondary_source_->tasks()->clear();
 
   shown_tasks_.clear();
   pending_shown_tasks_.clear();
@@ -120,46 +130,47 @@ void FallbackTaskProvider::HideTask(Task* task) {
 
 void FallbackTaskProvider::OnTaskAddedBySource(Task* task,
                                                SubproviderSource* source) {
-  DCHECK(source == primary_source() || source == secondary_source());
+  if (source == secondary_source_.get()) {
+    // If a secondary task is added but a primary task is already shown for it,
+    // we can ignore showing the secondary.
+    for (const auto& primary_source : primary_sources_) {
+      if (GetTaskByPidFromVector(task->process_id(), primary_source->tasks()))
+        return;
+    }
 
-  // If a secondary task is added but a primary task is already shown for it, we
-  // can ignore showing the secondary.
-  if (source == secondary_source()) {
-    if (GetTaskByPidFromVector(task->process_id(), primary_source()->tasks()))
-      return;
+    // Always delay showing a secondary source in case a primary source comes in
+    // soon after.
+    ShowTaskLater(task);
+    return;
   }
 
   // If we get a primary task that has a secondary task that is both known and
   // shown we then hide the secondary task and then show the primary task.
-  if (source == primary_source()) {
-    ShowTask(task);
-    for (Task* secondary_task : *secondary_source()->tasks()) {
-      if (task->process_id() == secondary_task->process_id())
-        HideTask(secondary_task);
-    }
-  } else {
-    ShowTaskLater(task);
+  ShowTask(task);
+  for (Task* secondary_task : *secondary_source_->tasks()) {
+    if (task->process_id() == secondary_task->process_id())
+      HideTask(secondary_task);
   }
 }
 
 void FallbackTaskProvider::OnTaskRemovedBySource(Task* task,
                                                  SubproviderSource* source) {
-  DCHECK(source == primary_source() || source == secondary_source());
-  // When a task from the primary subprovider is removed, see if there
-  // are any other primary tasks for that process. If not, but there are
-  // secondary tasks, show them.
-  if (source == primary_source()) {
-    Task* primary_task =
-        GetTaskByPidFromVector(task->process_id(), primary_source()->tasks());
-    if (!primary_task) {
-      for (Task* secondary_task : *secondary_source()->tasks()) {
-        if (task->process_id() == secondary_task->process_id()) {
-          ShowTaskLater(secondary_task);
-        }
-      }
+  HideTask(task);
+
+  // When a task from a primary subprovider is removed, see if there are any
+  // other primary tasks for that process. If not, but there are secondary
+  // tasks, show them.
+  if (source != secondary_source_.get()) {
+    for (const auto& primary_source : primary_sources_) {
+      if (GetTaskByPidFromVector(task->process_id(), primary_source->tasks()))
+        return;
+    }
+
+    for (Task* secondary_task : *secondary_source_->tasks()) {
+      if (task->process_id() == secondary_task->process_id())
+        ShowTaskLater(secondary_task);
     }
   }
-  HideTask(task);
 }
 
 void FallbackTaskProvider::OnTaskUnresponsive(Task* task) {

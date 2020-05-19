@@ -485,7 +485,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4988210275050210843">Downloading file (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Pages</translation>
 <translation id="4994033804516042629">No contacts found</translation>
-<translation id="4996978546172906250">Share via</translation>
 <translation id="5004416275253351869">Google activity controls</translation>
 <translation id="5005498671520578047">Copy password</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> wants to connect</translation>
@@ -650,6 +649,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6381421346744604172">Darken websites</translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6397616442223433927">Back online</translation>
+<translation id="6398765197997659313">Exit full screen</translation>
 <translation id="6404511346730675251">Edit bookmark</translation>
 <translation id="6406506848690869874">Sync</translation>
 <translation id="6410973561433500075">Enter AR from <ph name="DOMAIN" />?</translation>
@@ -914,6 +914,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8514577642972634246">Enter incognito mode</translation>
 <translation id="8516012719330875537">Image editor</translation>
 <translation id="8523928698583292556">Delete stored password</translation>
+<translation id="8525306231823319788">Full screen</translation>
 <translation id="854522910157234410">Open this page:</translation>
 <translation id="8558485628462305855">To view augmented reality content, update ARCore</translation>
 <translation id="8559990750235505898">Offer to translate pages in other languages</translation>

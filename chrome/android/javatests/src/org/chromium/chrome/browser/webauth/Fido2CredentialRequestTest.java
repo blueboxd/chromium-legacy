@@ -31,6 +31,7 @@ import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.blink.mojom.AuthenticatorStatus;
 import org.chromium.blink.mojom.GetAssertionAuthenticatorResponse;
 import org.chromium.blink.mojom.MakeCredentialAuthenticatorResponse;
@@ -345,6 +346,7 @@ public class Fido2CredentialRequestTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/1083360")
     public void testConvertOriginToString_defaultPortRemoved() {
         MockOrigin origin = new MockOrigin();
         origin.setUrl("https://www.example.com:443");

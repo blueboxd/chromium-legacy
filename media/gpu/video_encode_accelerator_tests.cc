@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "media/base/test_data_util.h"
 #include "media/gpu/test/video.h"
+#include "media/gpu/test/video_encoder/decoder_buffer_validator.h"
 #include "media/gpu/test/video_encoder/video_encoder.h"
 #include "media/gpu/test/video_encoder/video_encoder_client.h"
 #include "media/gpu/test/video_encoder/video_encoder_test_environment.h"
@@ -23,6 +24,7 @@ namespace {
 // TODO(dstaessens): Add video_encoder_test_usage.md
 constexpr const char* usage_msg =
     "usage: video_encode_accelerator_tests\n"
+    "           [--codec=<codec>]\n"
     "           [-v=<level>] [--vmodule=<config>] [--gtest_help] [--help]\n"
     "           [<video path>] [<video metadata path>]\n";
 
@@ -35,6 +37,8 @@ constexpr const char* help_msg =
     "containing the video's metadata, such as frame checksums. By default\n"
     "<video path>.json will be used.\n"
     "\nThe following arguments are supported:\n"
+    "  --codec              codec profile to encode, \"h264 (baseline)\",\n"
+    "                       \"h264main, \"h264high\", \"vp8\" and \"vp9\"\n"
     "   -v                  enable verbose mode, e.g. -v=2.\n"
     "  --vmodule            enable verbose mode for the specified module,\n"
     "                       e.g. --vmodule=*media/gpu*=2.\n\n"
@@ -55,7 +59,28 @@ class VideoEncoderTest : public ::testing::Test {
       VideoEncoderClientConfig config = VideoEncoderClientConfig()) {
     LOG_ASSERT(video);
 
-    auto video_encoder = VideoEncoder::Create(config);
+    std::vector<std::unique_ptr<BitstreamProcessor>> bitstream_processors;
+    const gfx::Rect visible_rect(video->Resolution());
+    switch (VideoCodecProfileToVideoCodec(config.output_profile)) {
+      case kCodecH264:
+        bitstream_processors.emplace_back(
+            new H264Validator(config.output_profile, visible_rect));
+        break;
+      case kCodecVP8:
+        bitstream_processors.emplace_back(new VP8Validator(visible_rect));
+        break;
+      case kCodecVP9:
+        bitstream_processors.emplace_back(
+            new VP9Validator(config.output_profile, visible_rect));
+        break;
+      default:
+        LOG(ERROR) << "Unsupported profile: "
+                   << GetProfileName(config.output_profile);
+        break;
+    }
+
+    auto video_encoder =
+        VideoEncoder::Create(config, std::move(bitstream_processors));
 
     LOG_ASSERT(video_encoder);
     LOG_ASSERT(video_encoder->Initialize(video));
@@ -77,6 +102,7 @@ class VideoEncoderTest : public ::testing::Test {
 TEST_F(VideoEncoderTest, FlushAtEndOfStream) {
   VideoEncoderClientConfig config = VideoEncoderClientConfig();
   config.framerate = g_env->Video()->FrameRate();
+  config.output_profile = g_env->Profile();
   auto encoder = CreateVideoEncoder(g_env->Video(), config);
 
   encoder->Encode();
@@ -111,6 +137,7 @@ int main(int argc, char** argv) {
                          : base::FilePath(media::test::kDefaultTestVideoPath);
   base::FilePath video_metadata_path =
       (args.size() >= 2) ? base::FilePath(args[1]) : base::FilePath();
+  std::string codec = "h264";
 
   // Parse command line arguments.
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
@@ -121,9 +148,13 @@ int main(int argc, char** argv) {
       continue;
     }
 
-    std::cout << "unknown option: --" << it->first << "\n"
-              << media::test::usage_msg;
-    return EXIT_FAILURE;
+    if (it->first == "codec") {
+      codec = it->second;
+    } else {
+      std::cout << "unknown option: --" << it->first << "\n"
+                << media::test::usage_msg;
+      return EXIT_FAILURE;
+    }
   }
 
   testing::InitGoogleTest(&argc, argv);
@@ -131,7 +162,7 @@ int main(int argc, char** argv) {
   // Set up our test environment.
   media::test::VideoEncoderTestEnvironment* test_environment =
       media::test::VideoEncoderTestEnvironment::Create(
-          video_path, video_metadata_path, base::FilePath());
+          video_path, video_metadata_path, base::FilePath(), codec);
   if (!test_environment)
     return EXIT_FAILURE;
 

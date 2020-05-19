@@ -121,8 +121,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   const gfx::Size& Size() const;
   void SetSize(const gfx::Size&);
 
-  void SetRenderingContext(int id);
-
   bool DrawsContent() const { return draws_content_; }
   void SetDrawsContent(bool);
 
@@ -152,8 +150,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
 
   void SetHitTestable(bool);
   bool GetHitTestable() const { return hit_testable_; }
-
-  void SetFilterQuality(SkFilterQuality);
 
   // Some GraphicsLayers paint only the foreground or the background content
   GraphicsLayerPaintingPhase PaintingPhase() const { return painting_phase_; }
@@ -290,8 +286,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   bool hit_testable_ : 1;
   bool needs_check_raster_invalidation_ : 1;
 
-  bool painted_ : 1;
-
   GraphicsLayerPaintingPhase painting_phase_;
 
   Vector<GraphicsLayer*> children_;
@@ -300,7 +294,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   IntRect contents_rect_;
 
   scoped_refptr<cc::PictureLayer> layer_;
-  IntSize image_size_;
   scoped_refptr<cc::Layer> contents_layer_;
 
   SquashingDisallowedReasons squashing_disallowed_reasons_ =

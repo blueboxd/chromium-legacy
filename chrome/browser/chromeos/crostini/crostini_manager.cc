@@ -55,6 +55,8 @@
 #include "chromeos/dbus/image_loader_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
+#include "chromeos/network/device_state.h"
+#include "chromeos/network/network_device_handler.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -910,6 +912,10 @@ CrostiniManager::CrostiniManager(Profile* profile)
   GetConciergeClient()->AddVmObserver(this);
   GetConciergeClient()->AddContainerObserver(this);
   GetAnomalyDetectorClient()->AddObserver(this);
+  if (chromeos::NetworkHandler::IsInitialized()) {
+    chromeos::NetworkHandler::Get()->network_state_handler()->AddObserver(
+        this, ::base::Location::Current());
+  }
   if (chromeos::PowerManagerClient::Get()) {
     chromeos::PowerManagerClient::Get()->AddObserver(this);
   }
@@ -918,6 +924,10 @@ CrostiniManager::CrostiniManager(Profile* profile)
 
 CrostiniManager::~CrostiniManager() {
   RemoveDBusObservers();
+  if (chromeos::NetworkHandler::IsInitialized()) {
+    chromeos::NetworkHandler::Get()->network_state_handler()->RemoveObserver(
+        this, ::base::Location::Current());
+  }
 }
 
 base::WeakPtr<CrostiniManager> CrostiniManager::GetWeakPtr() {
@@ -3545,6 +3555,28 @@ void CrostiniManager::OnPendingAppListUpdates(
   for (auto& observer : pending_app_list_updates_observers_) {
     observer.OnPendingAppListUpdates(container_id, signal.count());
   }
+}
+
+// TODO(danielng): Consider handling instant tethering.
+void CrostiniManager::ActiveNetworksChanged(
+    const std::vector<const chromeos::NetworkState*>& active_networks) {
+  chromeos::NetworkStateHandler::NetworkStateList active_physical_networks;
+  chromeos::NetworkHandler::Get()
+      ->network_state_handler()
+      ->GetActiveNetworkListByType(chromeos::NetworkTypePattern::Physical(),
+                                   &active_physical_networks);
+  if (active_physical_networks.empty())
+    return;
+  const chromeos::NetworkState* network = active_physical_networks.at(0);
+  if (!network)
+    return;
+  const chromeos::DeviceState* device =
+      chromeos::NetworkHandler::Get()->network_state_handler()->GetDeviceState(
+          network->device_path());
+  if (!device)
+    return;
+  crostini::CrostiniPortForwarder::GetForProfile(profile_)
+      ->ActiveNetworksChanged(device->interface());
 }
 
 void CrostiniManager::SuspendImminent(

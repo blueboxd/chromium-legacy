@@ -216,7 +216,15 @@ HRESULT BluetoothLowEnergyWrapperFake::ReadCharacteristicValue(
 HRESULT BluetoothLowEnergyWrapperFake::WriteCharacteristicValue(
     base::FilePath& service_path,
     const PBTH_LE_GATT_CHARACTERISTIC characteristic,
-    PBTH_LE_GATT_CHARACTERISTIC_VALUE new_value) {
+    PBTH_LE_GATT_CHARACTERISTIC_VALUE new_value,
+    ULONG flags) {
+  // Web Bluetooth implementation currently only supports no flags or write
+  // without response flag even if Windows supports other flags
+  if (flags != BLUETOOTH_GATT_FLAG_NONE &&
+      flags != BLUETOOTH_GATT_FLAG_WRITE_WITHOUT_RESPONSE) {
+    return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
+  }
+
   GattCharacteristic* target_characteristic =
       GetSimulatedGattCharacteristic(service_path, characteristic);
   if (target_characteristic == nullptr)

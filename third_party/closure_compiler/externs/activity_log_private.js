@@ -11,9 +11,7 @@
 
 /** @fileoverview Externs generated from namespace: activityLogPrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.activityLogPrivate = {};
 
 /**

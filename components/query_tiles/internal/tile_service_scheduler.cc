@@ -18,6 +18,10 @@
 namespace query_tiles {
 namespace {
 
+// Schedule window params in instant schedule mode.
+const int kInstantScheduleWindowStartMs = 10 * 1000;  // 10 seconds
+const int kInstantScheduleWindowEndMs = 20 * 1000;    // 20 seconds
+
 class TileServiceSchedulerImpl : public TileServiceScheduler {
  public:
   TileServiceSchedulerImpl(
@@ -42,6 +46,9 @@ class TileServiceSchedulerImpl : public TileServiceScheduler {
   }
 
   void OnFetchCompleted(TileInfoRequestStatus status) override {
+    if (IsInstantFetchMode())
+      return;
+
     if (status == TileInfoRequestStatus::kShouldSuspend) {
       MaximizeBackoff();
       ScheduleTask(false);
@@ -56,6 +63,12 @@ class TileServiceSchedulerImpl : public TileServiceScheduler {
   }
 
   void OnTileManagerInitialized(TileGroupStatus status) override {
+    if (IsInstantFetchMode()) {
+      ResetBackoff();
+      ScheduleTask(true);
+      return;
+    }
+
     if (status == TileGroupStatus::kNoTiles && !is_suspend_) {
       ResetBackoff();
       ScheduleTask(true);
@@ -68,9 +81,7 @@ class TileServiceSchedulerImpl : public TileServiceScheduler {
 
   void ScheduleTask(bool is_init_schedule) {
     background_task::OneOffInfo one_off_task_info;
-    bool instant_fetch_task = base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kQueryTilesInstantBackgroundTask);
-    if (instant_fetch_task) {
+    if (IsInstantFetchMode()) {
       GetInstantTaskWindow(&one_off_task_info.window_start_time_ms,
                            &one_off_task_info.window_end_time_ms,
                            is_init_schedule);
@@ -119,22 +130,20 @@ class TileServiceSchedulerImpl : public TileServiceScheduler {
   void GetInstantTaskWindow(int64_t* start_time_ms,
                             int64_t* end_time_ms,
                             bool is_init_schedule) {
-    auto now = clock_->Now().ToDeltaSinceWindowsEpoch().InMilliseconds();
     if (is_init_schedule) {
-      *start_time_ms = now + 10 * 1000;
+      *start_time_ms = kInstantScheduleWindowStartMs;
     } else {
       *start_time_ms = GetDelaysFromBackoff();
     }
-    *end_time_ms = now + 20 * 1000;
+    *end_time_ms = kInstantScheduleWindowEndMs;
   }
 
   void GetTaskWindow(int64_t* start_time_ms,
                      int64_t* end_time_ms,
                      bool is_init_schedule) {
-    auto now = clock_->Now().ToDeltaSinceWindowsEpoch().InMilliseconds();
     if (is_init_schedule) {
       *start_time_ms =
-          now + TileConfig::GetScheduleIntervalInMs() +
+          TileConfig::GetScheduleIntervalInMs() +
           base::RandGenerator(TileConfig::GetMaxRandomWindowInMs());
     } else {
       *start_time_ms = GetDelaysFromBackoff();
@@ -160,6 +169,11 @@ class TileServiceSchedulerImpl : public TileServiceScheduler {
     std::unique_ptr<base::Value> value =
         net::BackoffEntrySerializer::SerializeToValue(*backoff, clock_->Now());
     prefs_->Set(kBackoffEntryKey, *value);
+  }
+
+  bool IsInstantFetchMode() const {
+    return base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kQueryTilesInstantBackgroundTask);
   }
 
   // Native Background Scheduler instance.

@@ -8,10 +8,12 @@
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/constants/chromeos_pref_names.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,6 +36,7 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
                      std::string* error) override {
     suggestion_text_ = text;
     confirmed_length_ = confirmed_length;
+    show_tab_ = show_tab;
     return true;
   }
 
@@ -50,11 +53,14 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
     EXPECT_EQ(confirmed_length_, confirmed_length);
   }
 
+  void VerifyShowTab(const bool show_tab) { EXPECT_EQ(show_tab_, show_tab); }
+
   bool IsSuggestionAccepted() { return suggestion_accepted_; }
 
  private:
   base::string16 suggestion_text_;
   size_t confirmed_length_ = 0;
+  bool show_tab_ = false;
   bool suggestion_accepted_ = false;
 };
 
@@ -226,6 +232,37 @@ TEST_F(PersonalInfoSuggesterTest, AnnounceSpokenFeedbackWhenChromeVoxIsOn) {
   task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(200));
   tts_handler_->VerifyAnnouncement(base::StringPrintf(
       "Inserted suggestion %s.", base::UTF16ToUTF8(email_).c_str()));
+}
+
+TEST_F(PersonalInfoSuggesterTest, DoNotShowTabAfterMaxTabAcceptanceCount) {
+  for (int i = 0; i < kMaxTabAcceptanceCount; i++) {
+    suggester_->Suggest(base::UTF8ToUTF16("my email is "));
+    ::input_method::InputMethodEngineBase::KeyboardEvent event;
+    event.key = "Tab";
+    suggester_->HandleKeyEvent(event);
+    suggestion_handler_->VerifyShowTab(true);
+  }
+  suggester_->Suggest(base::UTF8ToUTF16("my email is "));
+  suggestion_handler_->VerifyShowTab(false);
+}
+
+TEST_F(PersonalInfoSuggesterTest, DoNotAnnouncePressTabWhenTabNotShown) {
+  profile_->set_profile_name(base::UTF16ToUTF8(email_));
+  profile_->GetPrefs()->SetBoolean(
+      ash::prefs::kAccessibilitySpokenFeedbackEnabled, true);
+  DictionaryPrefUpdate update(profile_->GetPrefs(),
+                              prefs::kAssistiveInputFeatureSettings);
+  update->SetIntKey(kPersonalInfoSuggesterTabAcceptanceCount,
+                    kMaxTabAcceptanceCount);
+
+  suggester_->Suggest(base::UTF8ToUTF16("my email is "));
+  suggestion_handler_->VerifyShowTab(false);
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(500));
+  tts_handler_->VerifyAnnouncement("");
+
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1000));
+  tts_handler_->VerifyAnnouncement(base::StringPrintf(
+      "Suggested text %s. ", base::UTF16ToUTF8(email_).c_str()));
 }
 
 }  // namespace chromeos

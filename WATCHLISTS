@@ -825,6 +825,9 @@
                   'chromeos/services/network_config/|'\
                   'chrome/browser/chromeos/net/|'\
                   'chrome/browser/extensions/api/networking_private/|'\
+                  'chrome/browser/resources/chromeos/internet_config_dialog/|'\
+                  'chrome/browser/resources/chromeos/internet_detail_dialog/|'\
+                  'chrome/browser/resources/chromeos/network_ui/|'\
                   'chrome/browser/resources/settings/chromeos/internet_page/|'\
                   'extensions/browser/api/networking_private/|'\
                   'ui/chromeos/network/|'\

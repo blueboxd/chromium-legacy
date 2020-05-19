@@ -534,6 +534,7 @@
 <translation id="7647488630410863958">ដោះសោឧបករណ៍ដើម្បីមើលការជូនដំណឹងរបស់អ្នក</translation>
 <translation id="7649070708921625228">ជំនួយ</translation>
 <translation id="7654687942625752712">ចុច​គ្រាប់​ចុច​កម្រិត​សំឡេង​ទាំងពីរ​ឱ្យ​ជាប់​រយៈ​ពេល​ប្រាំ​វិនាទី ដើម្បី​បិទ​ការ​អាន​អេក្រង់។</translation>
+<translation id="7658239707568436148">បដិសេធ</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{ការ​ជូនដំណឹង 1}other{ការ​ជូន​ដំណឹង #}}</translation>
 <translation id="7724603315864178912">កាត់</translation>
@@ -582,6 +583,7 @@
 <translation id="8190698733819146287">កែសម្រូលភាសា និងធាតុបញ្ចូល...</translation>
 <translation id="8192202700944119416">ការជូនដំណឹងត្រូវបាន​លាក់។</translation>
 <translation id="8196787716797768628">ប្រើចលនា​ ដើម្បី​ប្ដូររវាង​កម្មវិធីនានា និង​ធ្វើអន្តរកម្ម​ជាមួយ Chromebook របស់អ្នក​នៅក្នុង​មុខងារ​ថេប្លេត​បានយ៉ាងរហ័ស។</translation>
+<translation id="8200772114523450471">បន្ត</translation>
 <translation id="8203795194971602413">ចុចកណ្ដុរខាងស្ដាំ</translation>
 <translation id="8236042855478648955">ដល់​ពេល​សម្រាក​ហើយ</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, កម្លាំង​រលកសញ្ញា <ph name="SIGNAL_STRENGTH" />, ថ្មទូរសព្ទ <ph name="BATTERY_STATUS" /></translation>

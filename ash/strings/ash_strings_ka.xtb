@@ -534,6 +534,7 @@
 <translation id="7647488630410863958">შეტყობინებების სანახავად, განბლოკეთ მოწყობილობა</translation>
 <translation id="7649070708921625228">დახმარება</translation>
 <translation id="7654687942625752712">გახმოვანებული უკუკავშირის გასათიშად დააჭირეთ ხმის ორივე ღილაკს ხუთი წამის განმავლობაში.</translation>
+<translation id="7658239707568436148">გაუქმება</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 შეტყობინება}other{# შეტყობინება}}</translation>
 <translation id="7724603315864178912">ამოჭრა</translation>
@@ -582,6 +583,7 @@
 <translation id="8190698733819146287">ენების და შეყვანის მორგება…</translation>
 <translation id="8192202700944119416">შეტყობინებები დამალულია.</translation>
 <translation id="8196787716797768628">გამოიყენეთ ჟესტები აპებს შორის სწრაფად გადასართავად ან თქვენს Chromebook-თან ტაბლეტის რეჟიმში ურთიერთქმედებისთვის.</translation>
+<translation id="8200772114523450471">გაგრძელება</translation>
 <translation id="8203795194971602413">მარჯვენა დაწკაპუნება</translation>
 <translation id="8236042855478648955">შესვენების დროა</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, სიგნალის სიძლიერე: <ph name="SIGNAL_STRENGTH" />, ტელეფონის ბატარეა: <ph name="BATTERY_STATUS" /></translation>

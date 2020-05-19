@@ -14,9 +14,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
@@ -188,6 +190,29 @@ void HideSavePasswordInfobar(content::WebContents* web_contents) {
   }
 }
 #endif  // defined(OS_ANDROID)
+
+class NavigationPasswordMetricsRecorder
+    : public PasswordManagerMetricsRecorder::NavigationMetricRecorderDelegate {
+ public:
+  explicit NavigationPasswordMetricsRecorder(content::WebContents* web_contents)
+      : web_contents_(web_contents) {}
+
+  void OnUserModifiedPasswordFieldFirstTime(
+      const GURL& main_frame_url) override {
+    if (main_frame_url.SchemeIsHTTPOrHTTPS()) {
+      SiteEngagementService* site_engagement_service =
+          SiteEngagementService::Get(
+              Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+      blink::mojom::EngagementLevel engagement_level =
+          site_engagement_service->GetEngagementLevel(main_frame_url);
+      UMA_HISTOGRAM_ENUMERATION("Security.PasswordEntry.SiteEngagementLevel",
+                                engagement_level);
+    }
+  }
+
+ private:
+  content::WebContents* web_contents_;
+};
 
 }  // namespace
 
@@ -772,7 +797,9 @@ ukm::SourceId ChromePasswordManagerClient::GetUkmSourceId() {
 PasswordManagerMetricsRecorder*
 ChromePasswordManagerClient::GetMetricsRecorder() {
   if (!metrics_recorder_) {
-    metrics_recorder_.emplace(GetUkmSourceId(), GetMainFrameURL());
+    metrics_recorder_.emplace(
+        GetUkmSourceId(), GetMainFrameURL(),
+        std::make_unique<NavigationPasswordMetricsRecorder>(web_contents()));
   }
   return base::OptionalOrNullptr(metrics_recorder_);
 }

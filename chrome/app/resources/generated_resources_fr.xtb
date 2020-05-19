@@ -112,7 +112,6 @@
 <translation id="1140746652461896221">Bloquer le contenu sur toutes les pages visitées</translation>
 <translation id="1143142264369994168">Signataire du certificat </translation>
 <translation id="1145292499998999162">Plug-in bloqué</translation>
-<translation id="1145532888383813076">Effectuez des recherches sur votre appareil, dans vos applications et sur le Web.</translation>
 <translation id="1145593918056169051">L'imprimante s'est arrêtée</translation>
 <translation id="1146678959555564648">Activer la réalité virtuelle</translation>
 <translation id="114721135501989771">Profitez des fonctionnalités intelligentes de Google dans Chrome</translation>
@@ -3425,7 +3424,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5430931332414098647">Partage de connexion instantané</translation>
 <translation id="5431318178759467895">Couleur</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="5432996274932278848">Effectuez des recherches sur votre appareil, dans vos applications et sur le Web. Utilisez les touches fléchées pour naviguer dans vos applications.</translation>
 <translation id="543338862236136125">Modifier le mot de passe</translation>
 <translation id="5434065355175441495">Chiffrement RSA PKCS #1</translation>
 <translation id="5436492226391861498">En attente du tunnel proxy...</translation>
@@ -5094,7 +5092,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7606992457248886637">Autorités</translation>
 <translation id="7607002721634913082">Suspendu</translation>
 <translation id="7609148976235050828">Veuillez vous connecter à Internet, puis réessayer.</translation>
-<translation id="7611008212562900400">Rechercher sur votre appareil, dans vos applications, sur le Web…</translation>
 <translation id="7614260613810441905">Vous demander lorsqu'un site souhaite modifier des fichiers ou des dossiers sur votre appareil (recommandé)</translation>
 <translation id="761530003705945209">Sauvegarder dans Google Drive. Restaurez vos données ou changez d'appareil facilement et à tout moment. Les données des applications sont également sauvegardées. Vos sauvegardes sont importées dans Google et chiffrées à l'aide du mot de passe de votre compte Google.</translation>
 <translation id="7616214729753637086">Enregistrement de l'appareil...</translation>

@@ -1076,13 +1076,13 @@ bool SiteInstanceImpl::ShouldLockToOrigin(
 
 // static
 base::Optional<url::Origin> SiteInstanceImpl::GetRequestInitiatorSiteLock(
-    GURL site_url) {
+    GURL lock_url) {
   // The following schemes are safe for sites that require a process lock:
   // - data: - locking |request_initiator| to an opaque origin
   // - http/https - requiring |request_initiator| to match |site_url| with
   //   DomainIs (i.e. suffix-based) comparison.
-  if (site_url.SchemeIsHTTPOrHTTPS() || site_url.SchemeIs(url::kDataScheme))
-    return url::Origin::Create(site_url);
+  if (lock_url.SchemeIsHTTPOrHTTPS() || lock_url.SchemeIs(url::kDataScheme))
+    return url::Origin::Create(lock_url);
 
   // Other schemes might not be safe to use as |request_initiator_site_lock|.
   // One example is chrome-guest://...

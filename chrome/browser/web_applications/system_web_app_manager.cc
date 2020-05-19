@@ -543,6 +543,9 @@ const std::string& SystemWebAppManager::CurrentLocale() const {
 void SystemWebAppManager::RecordSystemWebAppInstallMetrics(
     const std::map<GURL, InstallResultCode>& install_results,
     const base::TimeDelta& install_duration) const {
+  // Install duration should be positive.
+  DCHECK_GT(install_duration.InMicroseconds(), 0);
+
   // Record the time spent to install system web apps.
   if (!shutting_down_) {
     base::UmaHistogramMediumTimes(kInstallDurationHistogramName,
@@ -605,7 +608,7 @@ void SystemWebAppManager::OnAppsSynchronized(
   }
 
   const base::TimeDelta install_duration =
-      install_start_time - base::TimeTicks::Now();
+      base::TimeTicks::Now() - install_start_time;
 
   if (IsEnabled()) {
     // TODO(qjw): Figure out where install_results come from, decide if

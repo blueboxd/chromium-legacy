@@ -4,6 +4,7 @@
 <translation id="1028699632127661925">Ідзе адпраўка на прыладу "<ph name="DEVICE_NAME" />"...</translation>
 <translation id="111910763555783249">Налады апавяшчэнняў</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 дзень таму}one{# дзень таму}few{# дні таму}many{# дзён таму}other{# дня таму}}</translation>
+<translation id="1145532888383813076">Шукаць на прыладзе, у праграмах і інтэрнэце.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 хвіліну таму}one{# хвіліну таму}few{# хвіліны таму}many{# хвілін таму}other{# хвіліны таму}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 хв}one{# хв}few{# хв}many{# хв}other{# хв}}</translation>
 <translation id="1181037720776840403">Выдаліць</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">уключыце сінхранізацыю</translation>
 <translation id="5329858601952122676">&amp;Выдаліць</translation>
 <translation id="5395308026110844773">Праграма "<ph name="DRAGGED_APP_NAME" />" зараз над праграмай "<ph name="IN_PLACE_APP" />". Каб стварыць папку, адпусціце праграму.</translation>
+<translation id="5432996274932278848">Шукаць на прыладзе, у праграмах і інтэрнэце. Пераход паміж праграмамі ажыццяўляецца клавішамі са стрэлкамі.</translation>
 <translation id="5463830097259460683">Эмодзі і сімвалы</translation>
 <translation id="5476505524087279545">зняць птушку</translation>
 <translation id="547979256943495781">Паліца справа</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">Выдаліць гэты пошукавы запыт з вашай гісторыі?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ТБ</translation>
 <translation id="7507604095951736240">Эмодзі</translation>
+<translation id="7611008212562900400">Пошук на прыладзе, у праграмах і інтэрнэце...</translation>
 <translation id="7658239707568436148">Скасаваць</translation>
 <translation id="7781829728241885113">Учора</translation>
 <translation id="7814458197256864873">&amp;Капіраваць</translation>

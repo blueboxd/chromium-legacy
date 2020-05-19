@@ -53,6 +53,9 @@ class TaskUpdate : public Task {
   // it has been canceled.
   void TaskComplete(Error error);
 
+  // Runs the task update callback.
+  void RunCallback(Error error);
+
   base::ThreadChecker thread_checker_;
   scoped_refptr<UpdateEngine> update_engine_;
   const bool is_foreground_;

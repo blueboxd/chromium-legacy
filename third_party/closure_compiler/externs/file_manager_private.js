@@ -4,9 +4,7 @@
 
 /** @fileoverview Externs generated from namespace: fileManagerPrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.fileManagerPrivate = {};
 
 /** @enum {string} */

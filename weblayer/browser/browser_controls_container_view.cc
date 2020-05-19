@@ -5,6 +5,7 @@
 #include "weblayer/browser/browser_controls_container_view.h"
 
 #include "base/android/jni_string.h"
+#include "base/feature_list.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/render_view_host.h"
@@ -16,6 +17,7 @@
 #include "ui/android/view_android.h"
 #include "weblayer/browser/content_view_render_view.h"
 #include "weblayer/browser/java/jni/BrowserControlsContainerView_jni.h"
+#include "weblayer/browser/weblayer_features.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
@@ -149,6 +151,11 @@ JNI_BrowserControlsContainerView_CreateBrowserControlsContainerView(
       java_browser_controls_container_view,
       reinterpret_cast<ContentViewRenderView*>(native_content_view_render_view),
       is_top));
+}
+
+static jboolean JNI_BrowserControlsContainerView_ShouldDelayVisibilityChange(
+    JNIEnv* env) {
+  return !base::FeatureList::IsEnabled(kImmediatelyHideBrowserControlsForTest);
 }
 
 }  // namespace weblayer

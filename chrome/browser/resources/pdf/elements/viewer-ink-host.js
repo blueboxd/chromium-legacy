@@ -100,15 +100,7 @@ Polymer({
    * @param {PointerEvent} e
    */
   dispatchPointerEvent_(e) {
-    // TODO(dstockwell) come up with a solution to propagate e.timeStamp.
-    this.ink_.dispatchPointerEvent(e.type, {
-      pointerId: e.pointerId,
-      pointerType: e.pointerType,
-      clientX: e.clientX,
-      clientY: e.clientY,
-      pressure: e.pressure,
-      buttons: e.buttons,
-    });
+    this.ink_.dispatchPointerEvent(e);
   },
 
   /** @param {TouchEvent} e */
@@ -135,10 +127,10 @@ Polymer({
         // A multi-touch gesture has started with the active pointer. Cancel
         // the active pointer and suppress further events until it is released.
         this.pointerGesture_ = true;
-        this.ink_.dispatchPointerEvent('pointercancel', {
+        this.ink_.dispatchPointerEvent(new PointerEvent('pointercancel', {
           pointerId: this.activePointer_.pointerId,
           pointerType: this.activePointer_.pointerType,
-        });
+        }));
       }
       return;
     }

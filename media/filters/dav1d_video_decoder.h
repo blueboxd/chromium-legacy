@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
@@ -56,7 +57,7 @@ class MEDIA_EXPORT Dav1dVideoDecoder : public OffloadableVideoDecoder {
   // Invokes the decoder and calls |output_cb_| for any returned frames.
   bool DecodeBuffer(scoped_refptr<DecoderBuffer> buffer);
 
-  scoped_refptr<VideoFrame> CopyImageToVideoFrame(const Dav1dPicture* img);
+  scoped_refptr<VideoFrame> BindImageToVideoFrame(const Dav1dPicture* img);
 
   // Used to report error messages to the client.
   MediaLog* const media_log_ = nullptr;
@@ -66,6 +67,10 @@ class MEDIA_EXPORT Dav1dVideoDecoder : public OffloadableVideoDecoder {
   const bool bind_callbacks_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  // "Zero" filled UV data for monochrome images to use since Chromium doesn't
+  // have support for I400P(8|10|12) images.
+  scoped_refptr<base::RefCountedBytes> fake_uv_data_;
 
   // Current decoder state. Used to ensure methods are called as expected.
   DecoderState state_ = DecoderState::kUninitialized;

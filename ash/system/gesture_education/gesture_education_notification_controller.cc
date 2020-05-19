@@ -4,6 +4,7 @@
 
 #include "ash/system/gesture_education/gesture_education_notification_controller.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/shelf_config.h"
@@ -40,7 +41,8 @@ GestureEducationNotificationController::
 void GestureEducationNotificationController::MaybeShowNotification() {
   bool is_user_session_blocked =
       Shell::Get()->session_controller()->IsUserSessionBlocked();
-  if (TabletModeController::Get()->InTabletMode() && !is_user_session_blocked &&
+  if (features::IsHideShelfControlsInTabletModeEnabled() &&
+      TabletModeController::Get()->InTabletMode() && !is_user_session_blocked &&
       (active_user_prefs_ && !active_user_prefs_->GetBoolean(
                                  prefs::kGestureEducationNotificationShown)) &&
       !ShelfConfig::Get()->ShelfControlsForcedShownForAccessibility()) {

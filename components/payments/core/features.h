@@ -60,6 +60,9 @@ extern const base::Feature kPaymentRequestSkipToGPay;
 // eligible credit card.
 extern const base::Feature kPaymentRequestSkipToGPayIfNoCard;
 
+// Enables the total field of PaymentRequest API to be optional.
+extern const base::Feature kPaymentRequestOptionalTotal;
+
 // If enabled, just-in-time installable payment handlers are ranked lower than
 // complete autofill instruments in payment sheet's method selection section.
 extern const base::Feature kDownRankJustInTimePaymentApp;

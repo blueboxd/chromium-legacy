@@ -30,11 +30,13 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
@@ -47,6 +49,12 @@ namespace policy {
 namespace {
 const char kNewVersion[] = "99999.4.2";
 const int kNoWarning = 0;
+const int kShortWarningInDays = 2;
+const int kLongWarningInDays = 10;
+constexpr base::TimeDelta kShortWarning =
+    base::TimeDelta::FromDays(kShortWarningInDays);
+constexpr base::TimeDelta kLongWarning =
+    base::TimeDelta::FromDays(kLongWarningInDays);
 const char kPublicSessionId[] = "demo@example.com";
 // This is a randomly chosen long delay in milliseconds to make sure that the
 // timer keeps running for a long time in case it is started.
@@ -70,6 +78,7 @@ class MinimumVersionPolicyTestBase : public chromeos::LoginManagerTest {
     LoginManagerTest::SetUpInProcessBrowserTestFixture();
     auto fake_update_engine_client =
         std::make_unique<chromeos::FakeUpdateEngineClient>();
+    fake_update_engine_client_ = fake_update_engine_client.get();
     chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
         std::move(fake_update_engine_client));
   }
@@ -89,6 +98,7 @@ class MinimumVersionPolicyTestBase : public chromeos::LoginManagerTest {
   void SetMinimumChromeVersionPolicy(const base::Value& value);
 
   DevicePolicyCrosTestHelper helper_;
+  chromeos::FakeUpdateEngineClient* fake_update_engine_client_ = nullptr;
   chromeos::DeviceStateMixin device_state_{
       &mixin_host_,
       chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
@@ -217,6 +227,74 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest, CriticalUpdateInSession) {
   // logged out of session due to critical update required by policy.
   EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
   EXPECT_EQ(user_manager::UserManager::Get()->GetLoggedInUsers().size(), 0u);
+}
+
+IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest, NonCriticalUpdateGoodNetwork) {
+  // Login the user into the session and mark as managed.
+  Login();
+
+  // Check deadline timer is not running and local state is not set.
+  PrefService* prefs = g_browser_process->local_state();
+  base::Time timer_start_time =
+      prefs->GetTime(prefs::kUpdateRequiredTimerStartTime);
+  EXPECT_TRUE(timer_start_time.is_null());
+  EXPECT_FALSE(
+      GetMinimumVersionPolicyHandler()->IsDeadlineTimerRunningForTesting());
+
+  // Create and set policy value with short warning time.
+  base::Value requirement_short_warning(base::Value::Type::LIST);
+  requirement_short_warning.Append(
+      CreateRequirement(kNewVersion, kShortWarningInDays, kShortWarningInDays));
+  SetDevicePolicyAndWaitForSettingChange(requirement_short_warning);
+
+  // Policy handler sets the local state and starts the deadline timer.
+  timer_start_time = prefs->GetTime(prefs::kUpdateRequiredTimerStartTime);
+  EXPECT_FALSE(timer_start_time.is_null());
+  EXPECT_EQ(prefs->GetTimeDelta(prefs::kUpdateRequiredWarningPeriod),
+            kShortWarning);
+  EXPECT_TRUE(
+      GetMinimumVersionPolicyHandler()->IsDeadlineTimerRunningForTesting());
+
+  // Create and set policy value with long warning time.
+  base::Value requirement_long_warning(base::Value::Type::LIST);
+  requirement_long_warning.Append(
+      CreateRequirement(kNewVersion, kLongWarningInDays, kLongWarningInDays));
+  SetDevicePolicyAndWaitForSettingChange(requirement_long_warning);
+
+  // Warning time is increased but timer start time does not change.
+  EXPECT_EQ(prefs->GetTime(prefs::kUpdateRequiredTimerStartTime),
+            timer_start_time);
+  EXPECT_EQ(prefs->GetTimeDelta(prefs::kUpdateRequiredWarningPeriod),
+            kLongWarning);
+
+  // Create and set policy value with no warning time.
+  base::Value requirement_no_warning(base::Value::Type::LIST);
+  requirement_no_warning.Append(
+      CreateRequirement(kNewVersion, kNoWarning, kNoWarning));
+  SetDevicePolicyAndWaitForSettingChange(requirement_no_warning);
+
+  // Warning time is not reduced as policy does not allow to reduce deadline.
+  EXPECT_EQ(prefs->GetTime(prefs::kUpdateRequiredTimerStartTime),
+            timer_start_time);
+  EXPECT_EQ(prefs->GetTimeDelta(prefs::kUpdateRequiredWarningPeriod),
+            kLongWarning);
+
+  EXPECT_TRUE(
+      GetMinimumVersionPolicyHandler()->IsDeadlineTimerRunningForTesting());
+  EXPECT_TRUE(GetMinimumVersionPolicyHandler()->GetState());
+
+  // Simulate update installed from update_engine_client and check that timer
+  // and the local state is reset.
+  update_engine::StatusResult status;
+  status.set_current_operation(update_engine::Operation::UPDATED_NEED_REBOOT);
+  status.set_new_version("99999.9");
+  fake_update_engine_client_->set_default_status(status);
+  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+
+  EXPECT_FALSE(
+      GetMinimumVersionPolicyHandler()->IsDeadlineTimerRunningForTesting());
+  EXPECT_FALSE(GetMinimumVersionPolicyHandler()->GetState());
+  EXPECT_TRUE(prefs->GetTime(prefs::kUpdateRequiredTimerStartTime).is_null());
 }
 
 IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest,
@@ -384,6 +462,46 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionPublicSessionAutoLoginTest,
                    ->IsSigninInProgress());
   EXPECT_FALSE(chromeos::ExistingUserController::current_controller()
                    ->IsAutoLoginTimerRunningForTesting());
+}
+
+class MinimumVersionTimerExpiredOnLogin
+    : public MinimumVersionPolicyTestBase,
+      public chromeos::LocalStateMixin::Delegate {
+ public:
+  MinimumVersionTimerExpiredOnLogin() = default;
+  ~MinimumVersionTimerExpiredOnLogin() override = default;
+
+  // chromeos::LocalStateMixin::Delegate:
+  void SetUpLocalState() override {
+    // Set up local state to reflect that update required deadline has passed
+    // when device is rebooted.
+    const base::TimeDelta delta = base::TimeDelta::FromDays(5);
+    PrefService* prefs = g_browser_process->local_state();
+    prefs->SetTime(prefs::kUpdateRequiredTimerStartTime,
+                   base::Time::Now() - delta);
+    prefs->SetTimeDelta(prefs::kUpdateRequiredWarningPeriod, kShortWarning);
+  }
+
+  // MinimumVersionPolicyTestBase:
+  void SetUpInProcessBrowserTestFixture() override {
+    MinimumVersionPolicyTestBase::SetUpInProcessBrowserTestFixture();
+    // Create and set policy value as a list of requirements.
+    base::Value requirement_list(base::Value::Type::LIST);
+    requirement_list.Append(CreateRequirement(kNewVersion, kShortWarningInDays,
+                                              kShortWarningInDays));
+    SetAndRefreshMinimumChromeVersionPolicy(requirement_list);
+  }
+
+ private:
+  chromeos::LocalStateMixin local_state_mixin_{&mixin_host_, this};
+};
+
+IN_PROC_BROWSER_TEST_F(MinimumVersionTimerExpiredOnLogin, DeadlinePassed) {
+  // Show update required screen as deadline to update the device has passed.
+  EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
+            session_manager::SessionState::LOGIN_PRIMARY);
+  chromeos::OobeScreenWaiter(chromeos::UpdateRequiredView::kScreenId).Wait();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 }
 
 }  // namespace policy

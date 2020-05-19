@@ -28,6 +28,9 @@ class ASH_PUBLIC_EXPORT AssistantController {
   virtual void AddObserver(AssistantControllerObserver* observer) = 0;
   virtual void RemoveObserver(AssistantControllerObserver* observer) = 0;
 
+  // Opens Google Assistant settings.
+  virtual void OpenAssistantSettings() = 0;
+
   // Opens the specified |url| in a new browser tab. Special handling is applied
   // to deep links which may cause deviation from this behavior.
   virtual void OpenUrl(const GURL& url,

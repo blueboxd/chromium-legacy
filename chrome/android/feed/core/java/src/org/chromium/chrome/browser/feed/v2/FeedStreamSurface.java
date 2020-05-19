@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.feed.v2;
 
-import android.app.Activity;
 import android.content.Context;
 import android.view.View;
 
@@ -109,8 +108,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      * Creates a {@link FeedStreamSurface} for creating native side bridge to access native feed
      * client implementation.
      */
-    public FeedStreamSurface(TabModelSelector tabModelSelector, Supplier<Tab> tabProvider,
-            Activity activityContext) {
+    public FeedStreamSurface(
+            TabModelSelector tabModelSelector, Supplier<Tab> tabProvider, Context activityContext) {
         mNativeFeedStreamSurface = FeedStreamSurfaceJni.get().init(FeedStreamSurface.this);
         mTabModelSelector = tabModelSelector;
         mTabProvider = tabProvider;
@@ -127,7 +126,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         if (mSurfaceScope != null) {
             mHybridListRenderer = mSurfaceScope.provideListRenderer();
         } else {
-            mHybridListRenderer = new NativeViewListRenderer(mTabProvider.get().getContext());
+            mHybridListRenderer = new NativeViewListRenderer(activityContext);
         }
 
         if (mHybridListRenderer != null) {
@@ -230,19 +229,25 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
     @Override
     public void navigateTab(String url) {
+        Tab tab = mTabProvider.get();
+        if (tab == null) {
+            navigateNewTab(url);
+            return;
+        }
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
         loadUrlParams.setTransitionType(PageTransition.AUTO_BOOKMARK);
-        mTabProvider.get().loadUrl(loadUrlParams);
+        tab.loadUrl(loadUrlParams);
         FeedStreamSurfaceJni.get().reportNavigationStarted(
                 mNativeFeedStreamSurface, FeedStreamSurface.this, url, false /*inNewTab*/);
-        mTabProvider.get().addObserver(new FeedTabNavigationObserver(false));
+        tab.addObserver(new FeedTabNavigationObserver(false));
     }
 
     @Override
     public void navigateNewTab(String url) {
         Tab tab = mTabProvider.get();
+        boolean isIncognito = (tab != null) ? tab.isIncognito() : false;
         Tab newTab = mTabModelSelector.openNewTab(
-                new LoadUrlParams(url), TabLaunchType.FROM_CHROME_UI, tab, tab.isIncognito());
+                new LoadUrlParams(url), TabLaunchType.FROM_CHROME_UI, tab, isIncognito);
         FeedStreamSurfaceJni.get().reportNavigationStarted(
                 mNativeFeedStreamSurface, FeedStreamSurface.this, url, true /*inNewTab*/);
         newTab.addObserver(new FeedTabNavigationObserver(true));

@@ -159,6 +159,40 @@ void BluetoothRemoteGattCharacteristicWin::ReadRemoteCharacteristic(
 
 void BluetoothRemoteGattCharacteristicWin::WriteRemoteCharacteristic(
     const std::vector<uint8_t>& value,
+    WriteType write_type,
+    base::OnceClosure callback,
+    ErrorCallback error_callback) {
+  DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
+
+  if (characteristic_value_read_or_write_in_progress_) {
+    std::move(error_callback)
+        .Run(BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS);
+    return;
+  }
+
+  ULONG flags;
+  switch (write_type) {
+    case WriteType::kWithResponse:
+      flags = BLUETOOTH_GATT_FLAG_NONE;
+      break;
+    case WriteType::kWithoutResponse:
+      flags = BLUETOOTH_GATT_FLAG_WRITE_WITHOUT_RESPONSE;
+      break;
+  }
+
+  characteristic_value_read_or_write_in_progress_ = true;
+  write_characteristic_value_callbacks_ =
+      std::make_pair(std::move(callback), std::move(error_callback));
+  task_manager_->PostWriteGattCharacteristicValue(
+      parent_service_->GetServicePath(), characteristic_info_.get(), value,
+      flags,
+      base::Bind(&BluetoothRemoteGattCharacteristicWin::
+                     OnWriteRemoteCharacteristicValueCallback,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void BluetoothRemoteGattCharacteristicWin::DeprecatedWriteRemoteCharacteristic(
+    const std::vector<uint8_t>& value,
     base::OnceClosure callback,
     ErrorCallback error_callback) {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
@@ -176,11 +210,17 @@ void BluetoothRemoteGattCharacteristicWin::WriteRemoteCharacteristic(
     return;
   }
 
+  ULONG flags = BLUETOOTH_GATT_FLAG_NONE;
+  if (!characteristic_info_->IsWritable) {
+    flags |= BLUETOOTH_GATT_FLAG_WRITE_WITHOUT_RESPONSE;
+  }
+
   characteristic_value_read_or_write_in_progress_ = true;
   write_characteristic_value_callbacks_ =
       std::make_pair(std::move(callback), std::move(error_callback));
   task_manager_->PostWriteGattCharacteristicValue(
       parent_service_->GetServicePath(), characteristic_info_.get(), value,
+      flags,
       base::Bind(&BluetoothRemoteGattCharacteristicWin::
                      OnWriteRemoteCharacteristicValueCallback,
                  weak_ptr_factory_.GetWeakPtr()));

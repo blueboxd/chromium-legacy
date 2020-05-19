@@ -75,6 +75,15 @@ constexpr int kMinOnscreenSize = 20;
 // snapped window before the window restores.
 constexpr int kResizeRestoreDragThresholdDp = 5;
 
+// The UMA histogram that records presentation time for tab dragging between
+// windows in clamshell mode.
+constexpr char kTabDraggingInClamshellModeHistogram[] =
+    "Ash.WorkspaceWindowResizer.TabDragging.PresentationTime.ClamshellMode";
+
+constexpr char kTabDraggingInClamshellModeMaxLatencyHistogram[] =
+    "Ash.WorkspaceWindowResizer.TabDragging.PresentationTime.MaxLatency."
+    "ClamshellMode";
+
 // Current instance for use by the WorkspaceWindowResizerTest.
 WorkspaceWindowResizer* instance = nullptr;
 
@@ -548,6 +557,20 @@ void WorkspaceWindowResizer::Drag(const gfx::PointF& location_in_parent,
         SnapType::kMaximize;
   }
   UpdateSnapPhantomWindow(location_in_screen, bounds);
+
+  if (tab_dragging_recorder_) {
+    // The recorder only works with a single ui::Compositor. ui::Compositor is
+    // per display so the recorder does not work correctly across different
+    // displays. Thus, we give up tab dragging latency data collection if the
+    // drag touches a different display, i.e. not inside the current parent's
+    // bounds.
+    if (!gfx::Rect(GetTarget()->parent()->bounds().size())
+             .Contains(gfx::ToRoundedPoint(location_in_parent))) {
+      tab_dragging_recorder_.reset();
+      return;
+    }
+    tab_dragging_recorder_->RequestNext();
+  }
 }
 
 void WorkspaceWindowResizer::CompleteDrag() {
@@ -618,10 +641,10 @@ void WorkspaceWindowResizer::CompleteDrag() {
     return;
   }
 
-    // Keep the window snapped if the user resizes the window such that the
-    // window has valid bounds for a snapped window. Always unsnap the window
-    // if the user dragged the window via the caption area because doing this
-    // is slightly less confusing.
+  // Keep the window snapped if the user resizes the window such that the
+  // window has valid bounds for a snapped window. Always unsnap the window
+  // if the user dragged the window via the caption area because doing this
+  // is slightly less confusing.
   if (window_state()->IsSnapped()) {
     if (details().window_component == HTCAPTION ||
         !AreBoundsValidSnappedBounds(window_state()->GetStateType(),
@@ -788,6 +811,13 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
 
   window_state->OnDragStarted(details().window_component);
   StartDragForAttachedWindows();
+
+  if (window_util::IsDraggingTabs(window_state->window())) {
+    tab_dragging_recorder_ = CreatePresentationTimeHistogramRecorder(
+        GetTarget()->layer()->GetCompositor(),
+        kTabDraggingInClamshellModeHistogram,
+        kTabDraggingInClamshellModeMaxLatencyHistogram);
+  }
 }
 
 void WorkspaceWindowResizer::LayoutAttachedWindows(gfx::Rect* bounds) {

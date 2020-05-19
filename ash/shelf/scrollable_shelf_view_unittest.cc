@@ -995,8 +995,10 @@ class ScrollableShelfViewWithAppScalingTest : public ScrollableShelfViewTest {
   ~ScrollableShelfViewWithAppScalingTest() override = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures({ash::features::kShelfAppScaling},
-                                          {});
+    scoped_feature_list_.InitWithFeatures(
+        {ash::features::kShelfAppScaling,
+         features::kHideShelfControlsInTabletMode},
+        {});
     ScrollableShelfViewTest::SetUp();
 
     // Display should be big enough (width and height are bigger than 600).

@@ -2244,7 +2244,10 @@
       # to keep this new script simpler and to just configure this by
       # hand in waterfalls.pyl.
       'noop_sleep': {
-      }
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
+      },
     },
 
     'gpu_skia_renderer_dawn_gtests': {

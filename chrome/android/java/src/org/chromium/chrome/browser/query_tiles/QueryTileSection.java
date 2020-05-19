@@ -57,6 +57,7 @@ public class QueryTileSection {
     private TileUmaLogger mTileUmaLogger;
     private ImageFetcher mImageFetcher;
     private Integer mTileWidth;
+    private float mAnimationPercent;
 
     /** Constructor. */
     public QueryTileSection(ViewGroup queryTileSectionView,
@@ -85,6 +86,8 @@ public class QueryTileSection {
      * @param percent The animation progress.
      */
     public void onUrlFocusAnimationChanged(float percent) {
+        if (mAnimationPercent == percent) return;
+        mAnimationPercent = percent;
         if (percent == 0) reloadTiles();
     }
 

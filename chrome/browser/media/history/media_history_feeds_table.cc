@@ -66,6 +66,7 @@ sql::InitStatus MediaHistoryFeedsTable::CreateTableIfNonExistent() {
                          "last_display_time_s INTEGER, "
                          "reset_reason INTEGER DEFAULT 0, "
                          "reset_token BLOB, "
+                         "cookie_name_filter TEXT, "
                          "CONSTRAINT fk_origin "
                          "FOREIGN KEY (origin_id) "
                          "REFERENCES origin(id) "
@@ -185,7 +186,8 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
       "mediaFeed.display_name, "
       "mediaFeed.last_display_time_s, "
       "mediaFeed.reset_reason, "
-      "mediaFeed.user_identifier");
+      "mediaFeed.user_identifier, "
+      "mediaFeed.cookie_name_filter ");
 
   sql::Statement statement;
 
@@ -349,6 +351,9 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
         feed->user_identifier->image = ProtoToMediaImage(identifier.image());
     }
 
+    if (statement.GetColumnType(17) == sql::ColumnType::kText)
+      feed->cookie_name_filter = statement.ColumnString(17);
+
     feeds.push_back(std::move(feed));
 
     // If we are returning top feeds then we should apply a limit here.
@@ -370,7 +375,8 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
     const std::vector<media_feeds::mojom::MediaImagePtr>& logos,
     const media_feeds::mojom::UserIdentifier* user_identifier,
     const std::string& display_name,
-    const int item_safe_count) {
+    const int item_safe_count,
+    const std::string& cookie_name_filter) {
   DCHECK_LT(0, DB()->transaction_nesting());
   if (!CanAccessDatabase())
     return false;
@@ -400,7 +406,7 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
         "fetch_failed_count = ?, last_fetch_item_count = ?, "
         "last_fetch_play_next_count = ?, last_fetch_content_types = ?, "
         "logo = ?, display_name = ?, last_fetch_safe_item_count = ?, "
-        "user_identifier = ? WHERE id = ?"));
+        "user_identifier = ?, cookie_name_filter = ? WHERE id = ?"));
   } else {
     statement.Assign(DB()->GetCachedStatement(
         SQL_FROM_HERE,
@@ -408,7 +414,8 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
         "fetch_failed_count = ?, last_fetch_item_count = ?, "
         "last_fetch_play_next_count = ?, last_fetch_content_types = ?, "
         "logo = ?, display_name = ?, last_fetch_safe_item_count = ?, "
-        "user_identifier = ?, last_fetch_time_not_cache_hit_s = ? "
+        "user_identifier = ?, cookie_name_filter = ?, "
+        "last_fetch_time_not_cache_hit_s = ? "
         "WHERE id = ?"));
   }
 
@@ -444,12 +451,18 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
     statement.BindNull(9);
   }
 
+  if (!cookie_name_filter.empty()) {
+    statement.BindString(10, cookie_name_filter);
+  } else {
+    statement.BindNull(10);
+  }
+
   if (was_fetched_from_cache) {
-    statement.BindInt64(10, feed_id);
+    statement.BindInt64(11, feed_id);
   } else {
     statement.BindInt64(
-        10, base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
-    statement.BindInt64(11, feed_id);
+        11, base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
+    statement.BindInt64(12, feed_id);
   }
 
   return statement.Run() && DB()->GetLastChangeCount() == 1;
@@ -590,6 +603,21 @@ bool MediaHistoryFeedsTable::ClearResetReason(const int64_t feed_id) {
                       static_cast<int>(media_feeds::mojom::ResetReason::kNone));
   statement.BindInt64(1, feed_id);
   return statement.Run() && DB()->GetLastChangeCount() == 1;
+}
+
+std::string MediaHistoryFeedsTable::GetCookieNameFilter(const int64_t feed_id) {
+  DCHECK_LT(0, DB()->transaction_nesting());
+  if (!CanAccessDatabase())
+    return std::string();
+
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE, "SELECT cookie_name_filter FROM mediaFeed WHERE id = ?"));
+  statement.BindInt64(0, feed_id);
+
+  while (statement.Step())
+    return statement.ColumnString(0);
+
+  return std::string();
 }
 
 }  // namespace media_history

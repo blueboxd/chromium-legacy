@@ -4,6 +4,7 @@
 <translation id="1028699632127661925">Sender til <ph name="DEVICE_NAME" /> …</translation>
 <translation id="111910763555783249">Varslingsinnstillinger</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{For 1 dag siden}other{For # dager siden}}</translation>
+<translation id="1145532888383813076">Søk på enheten din, appene dine og på nettet.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{for 1 minutt siden}other{for # minutter siden}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}other{# m}}</translation>
 <translation id="1181037720776840403">Fjern</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">slå på synkronisering</translation>
 <translation id="5329858601952122676">&amp;Slett</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> oppå <ph name="IN_PLACE_APP" /> – slipp for å opprette en mappe.</translation>
+<translation id="5432996274932278848">Søk på enheten, i apper og på nettet. Bruk piltastene til å navigere i appene.</translation>
 <translation id="5463830097259460683">Emoji og symboler</translation>
 <translation id="5476505524087279545">fjern merke</translation>
 <translation id="547979256943495781">Hyllen er til høyre</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">Vil du slette dette søket fra loggen?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
+<translation id="7611008212562900400">Søk på enheten, i apper, på nettet osv.</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7781829728241885113">I går</translation>
 <translation id="7814458197256864873">&amp;Kopier</translation>

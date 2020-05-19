@@ -1468,7 +1468,16 @@ FloatRoundedRect ComputedStyle::GetRoundedInnerBorderFor(
   inner_rect_size.ClampNegativeToZero();
   inner_rect.SetSize(inner_rect_size);
 
-  FloatRoundedRect rounded_rect(PixelSnappedIntRect(inner_rect));
+  // The standard LayoutRect::PixelSnappedIntRect() method will not
+  // let small sizes snap to zero, but that has the side effect here of
+  // preventing an inner border for a very thin element from snapping to
+  // zero size as occurs when a unit width border is applied to a sub-pixel
+  // sized element. So round without forcing non-near-zero sizes to one.
+  FloatRoundedRect rounded_rect(IntRect(
+      RoundedIntPoint(inner_rect.Location()),
+      IntSize(
+          SnapSizeToPixelAllowingZero(inner_rect.Width(), inner_rect.X()),
+          SnapSizeToPixelAllowingZero(inner_rect.Height(), inner_rect.Y()))));
 
   if (HasBorderRadius()) {
     FloatRoundedRect::Radii radii = GetRoundedBorderFor(border_rect).GetRadii();

@@ -174,6 +174,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
       callback_(callback),
       script_promise_resolver_(resolver) {
   DCHECK(image);
+  DCHECK(context);
 
   mime_type_ = ImageEncoderUtils::ToEncodingMimeType(
       encode_options_->type(),

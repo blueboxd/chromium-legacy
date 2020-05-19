@@ -501,6 +501,7 @@ jumbo_static_library("test_support") {
     sources += [
       "payments/test_credit_card_fido_authenticator.cc",
       "payments/test_credit_card_fido_authenticator.h",
+      "payments/test_internal_authenticator.cc",
       "payments/test_internal_authenticator.h",
     ]
 

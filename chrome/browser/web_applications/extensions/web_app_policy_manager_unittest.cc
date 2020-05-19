@@ -10,6 +10,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
@@ -19,7 +20,9 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/test/test_pending_app_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -165,9 +168,19 @@ ExternalInstallOptions GetCreateDesktopShorcutTrueInstallOptions() {
 
 }  // namespace
 
-class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
+class WebAppPolicyManagerTest
+    : public ChromeRenderViewHostTestHarness,
+      public ::testing::WithParamInterface<ProviderType> {
  public:
-  WebAppPolicyManagerTest() {}
+  WebAppPolicyManagerTest() {
+    if (GetParam() == web_app::ProviderType::kWebApps) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kDesktopPWAsWithoutExtensions);
+    } else if (GetParam() == web_app::ProviderType::kBookmarkApps) {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kDesktopPWAsWithoutExtensions);
+    }
+  }
 
   ~WebAppPolicyManagerTest() override = default;
 
@@ -206,6 +219,7 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
   WebAppPolicyManager* policy_manager() { return web_app_policy_manager_; }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   TestAppRegistrar* test_app_registrar_ = nullptr;
   TestPendingAppManager* test_pending_app_manager_ = nullptr;
   WebAppPolicyManager* web_app_policy_manager_ = nullptr;
@@ -213,7 +227,7 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
   DISALLOW_COPY_AND_ASSIGN(WebAppPolicyManagerTest);
 };
 
-TEST_F(WebAppPolicyManagerTest, NoForceInstalledAppsPrefValue) {
+TEST_P(WebAppPolicyManagerTest, NoForceInstalledAppsPrefValue) {
   policy_manager()->Start();
 
   base::RunLoop().RunUntilIdle();
@@ -222,7 +236,7 @@ TEST_F(WebAppPolicyManagerTest, NoForceInstalledAppsPrefValue) {
   EXPECT_TRUE(install_requests.empty());
 }
 
-TEST_F(WebAppPolicyManagerTest, NoForceInstalledApps) {
+TEST_P(WebAppPolicyManagerTest, NoForceInstalledApps) {
   profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList,
                              base::Value(base::Value::Type::LIST));
 
@@ -233,7 +247,7 @@ TEST_F(WebAppPolicyManagerTest, NoForceInstalledApps) {
   EXPECT_TRUE(install_requests.empty());
 }
 
-TEST_F(WebAppPolicyManagerTest, TwoForceInstalledApps) {
+TEST_P(WebAppPolicyManagerTest, TwoForceInstalledApps) {
   // Add two sites, one that opens in a window and one that opens in a tab.
   base::Value list(base::Value::Type::LIST);
   list.Append(GetWindowedItem());
@@ -252,7 +266,7 @@ TEST_F(WebAppPolicyManagerTest, TwoForceInstalledApps) {
   EXPECT_EQ(install_requests, expected_install_options_list);
 }
 
-TEST_F(WebAppPolicyManagerTest, ForceInstallAppWithNoDefaultLaunchContainer) {
+TEST_P(WebAppPolicyManagerTest, ForceInstallAppWithNoDefaultLaunchContainer) {
   base::Value list(base::Value::Type::LIST);
   list.Append(GetNoContainerItem());
   profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));
@@ -268,7 +282,7 @@ TEST_F(WebAppPolicyManagerTest, ForceInstallAppWithNoDefaultLaunchContainer) {
   EXPECT_EQ(install_requests, expected_install_options_list);
 }
 
-TEST_F(WebAppPolicyManagerTest,
+TEST_P(WebAppPolicyManagerTest,
        ForceInstallAppWithDefaultCreateDesktopShorcut) {
   base::Value list(base::Value::Type::LIST);
   list.Append(GetCreateDesktopShorcutDefaultItem());
@@ -286,7 +300,7 @@ TEST_F(WebAppPolicyManagerTest,
   EXPECT_EQ(install_requests, expected_install_options_list);
 }
 
-TEST_F(WebAppPolicyManagerTest, ForceInstallAppWithCreateDesktopShortcut) {
+TEST_P(WebAppPolicyManagerTest, ForceInstallAppWithCreateDesktopShortcut) {
   base::Value list(base::Value::Type::LIST);
   list.Append(GetCreateDesktopShorcutFalseItem());
   list.Append(GetCreateDesktopShorcutTrueItem());
@@ -306,7 +320,7 @@ TEST_F(WebAppPolicyManagerTest, ForceInstallAppWithCreateDesktopShortcut) {
   EXPECT_EQ(install_requests, expected_install_options_list);
 }
 
-TEST_F(WebAppPolicyManagerTest, DynamicRefresh) {
+TEST_P(WebAppPolicyManagerTest, DynamicRefresh) {
   base::Value first_list(base::Value::Type::LIST);
   first_list.Append(GetWindowedItem());
   profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList,
@@ -334,7 +348,7 @@ TEST_F(WebAppPolicyManagerTest, DynamicRefresh) {
   EXPECT_EQ(install_requests, expected_install_options_list);
 }
 
-TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInPreviousSession) {
+TEST_P(WebAppPolicyManagerTest, UninstallAppInstalledInPreviousSession) {
   // Simulate two policy apps and a regular app that were installed in the
   // previous session.
   SimulatePreviouslyInstalledApp(WindowedUrl(),
@@ -366,7 +380,7 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInPreviousSession) {
 
 // Tests that we correctly uninstall an app that we installed in the same
 // session.
-TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInCurrentSession) {
+TEST_P(WebAppPolicyManagerTest, UninstallAppInstalledInCurrentSession) {
   policy_manager()->Start();
   base::RunLoop().RunUntilIdle();
 
@@ -404,7 +418,7 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInCurrentSession) {
 }
 
 // Tests that we correctly reinstall a placeholder app.
-TEST_F(WebAppPolicyManagerTest, ReinstallPlaceholderApp) {
+TEST_P(WebAppPolicyManagerTest, ReinstallPlaceholderApp) {
   base::Value list(base::Value::Type::LIST);
   list.Append(GetWindowedItem());
   profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));
@@ -430,7 +444,7 @@ TEST_F(WebAppPolicyManagerTest, ReinstallPlaceholderApp) {
   EXPECT_EQ(expected_options_list, install_options_list);
 }
 
-TEST_F(WebAppPolicyManagerTest, TryToInexistentPlaceholderApp) {
+TEST_P(WebAppPolicyManagerTest, TryToInexistentPlaceholderApp) {
   base::Value list(base::Value::Type::LIST);
   list.Append(GetWindowedItem());
   profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));
@@ -451,7 +465,7 @@ TEST_F(WebAppPolicyManagerTest, TryToInexistentPlaceholderApp) {
   EXPECT_EQ(expected_options_list, install_options_list);
 }
 
-TEST_F(WebAppPolicyManagerTest, SayRefreshTwoTimesQuickly) {
+TEST_P(WebAppPolicyManagerTest, SayRefreshTwoTimesQuickly) {
   policy_manager()->Start();
   base::RunLoop().RunUntilIdle();
   // Add an app.
@@ -488,7 +502,7 @@ TEST_F(WebAppPolicyManagerTest, SayRefreshTwoTimesQuickly) {
     EXPECT_EQ(it.second, TabbedUrl());
 }
 
-TEST_F(WebAppPolicyManagerTest, InstallResultHistogram) {
+TEST_P(WebAppPolicyManagerTest, InstallResultHistogram) {
   base::HistogramTester histograms;
   policy_manager()->Start();
   {
@@ -524,5 +538,11 @@ TEST_F(WebAppPolicyManagerTest, InstallResultHistogram) {
         InstallResultCode::kCancelledOnWebAppProviderShuttingDown, 2);
   }
 }
+
+// TODO(crbug.com/1082881): Test with BMO enabled.
+INSTANTIATE_TEST_SUITE_P(All,
+                         WebAppPolicyManagerTest,
+                         ::testing::Values(ProviderType::kBookmarkApps),
+                         ProviderTypeParamToString);
 
 }  // namespace web_app

@@ -204,6 +204,7 @@
 <translation id="2647434099613338025">භාෂාව එක් කරන්න</translation>
 <translation id="2650751991977523696">ගොනුව නැවත බාගන්නද?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ශ්‍රව්‍ය ගොනුවක්}one{ශ්‍රව්‍ය ගොනු #ක්}other{ශ්‍රව්‍ය ගොනු #ක්}}</translation>
+<translation id="2656405586795711023">වෙබ් යෙදුම්</translation>
 <translation id="2689830683995595741">Chrome භාවිත කිරීමෙන්, ඔබ <ph name="BEGIN_LINK1" />Google සේවා නියමවලට<ph name="END_LINK1" />, සහ <ph name="BEGIN_LINK2" />Google Chrome සහ Chrome OS අතිරේක සේවා නියමවලට<ph name="END_LINK2" /> එකඟ වෙයි. <ph name="BEGIN_LINK3" />Family Link මඟින් කළමනා කෙරෙන Google ගිණුම් සඳහා වන පෞද්ගලිකත්ව දැනුම්දීම<ph name="END_LINK3" /> ද යෙදේ.</translation>
 <translation id="2707726405694321444">පිටුව නැවුම් කරන්න</translation>
 <translation id="2709516037105925701">ස්වයං පිරවීම</translation>
@@ -365,6 +366,7 @@
 <translation id="3997476611815694295">නොවැදගත් ආචයනය</translation>
 <translation id="4000212216660919741">නොබැඳි මුල්පිටුව</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{පැය #}one{පැය #}other{පැය #}}</translation>
+<translation id="403687620286099920">QR කේතය විවෘත කිරීමට තට්ටු කරන්න</translation>
 <translation id="4046123991198612571">ඊළඟ ඛණ්ඩය</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">තිරයේ ඉහළට ආසන්නව විකල්ප තිබේ</translation>
@@ -449,6 +451,7 @@
 <translation id="4749960740855309258">නව ටැබයක් විවෘත කරන්න</translation>
 <translation id="4759238208242260848">බාගැනීම්</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{බාගැනීම් 1ක් සම්පූර්ණයි.}one{බාගැනීම් #ක් සම්පූර්ණයි.}other{බාගැනීම් #ක් සම්පූර්ණයි.}}</translation>
+<translation id="478981486571169252">ඔබ Chrome තුළ ඔබේ <ph name="SITE_NAME" /> පුරන තත්ත්‍වය, බ්‍රවුස් කිරීමේ දත්ත, සහ වෙබ් අඩවි දත්ත දකියි.</translation>
 <translation id="4802417911091824046">මුර-වැකිකඩ සංකේතනයට Google Pay වෙතින් ගෙවීමේ ක්‍රම සහ ලිපින ඇතුළු නොවේ.
 
 මෙම සැකසීම වෙනස් කිරීමට, <ph name="BEGIN_LINK" />සමමුහූර්තය යළි සකසන්න<ph name="END_LINK" /></translation>
@@ -482,7 +485,6 @@
 <translation id="4988210275050210843">ගොනුව බාගනිමින් (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">පිටු</translation>
 <translation id="4994033804516042629">සම්බන්ධතා කිසිවක් හමු නොවීය</translation>
-<translation id="4996978546172906250">හරහා බෙදාගන්න</translation>
 <translation id="5004416275253351869">Google ක්‍රියාකාරකම් පාලන</translation>
 <translation id="5005498671520578047">මුරපදය පිටපත් කරන්න</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> හට සම්බන්ධ වීමට අවශ්‍යයි</translation>
@@ -560,6 +562,7 @@
 <translation id="5659593005791499971">ඊතැපෑල</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> තුළ සිදුවීමක් සාදන්න</translation>
 <translation id="5668404140385795438">විශාලනය වැඩි කිරීම සඳහා වෙබ් අඩවියෙහි ඉල්ලීමක් අතික්‍රමණය කරන්න</translation>
+<translation id="5681394891799747640">QR කේතය බාගත නොහැක</translation>
 <translation id="5684874026226664614">අපොයි. මෙම පිටුව පැටවිය නොහැකි විය.</translation>
 <translation id="5686790454216892815">ගොනු නාමය දිග වැඩිය</translation>
 <translation id="5694049548840660018">පහසුවෙන් ආපසු නිවසට යන්න</translation>
@@ -608,6 +611,7 @@
 <translation id="6042308850641462728">වැඩිදුර</translation>
 <translation id="604996488070107836">නොදන්නා දෝෂයක් නිසා <ph name="FILE_NAME" /> බාගැනීම අසාර්ථක විය.</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6059830886158432458">මෙහි ඔබේ කතා සහ ක්‍රියාකාරකම් පාලන කරන්න</translation>
 <translation id="60923314841986378">පැය <ph name="HOURS" />ක් ඉතිරියි</translation>
 <translation id="6108923351542677676">පිහිටුවීම දැනට සිදුවෙමින් පවතී...</translation>
 <translation id="6111020039983847643">භාවිත කළ දත්ත</translation>
@@ -631,6 +635,7 @@
 <translation id="629730747756840877">ගිණුම</translation>
 <translation id="6297765934698848803">ඔබේ උපාංගය කළමනා කරන ආයතනය ඔබේ කැමරාව අක්‍රිය කර ඇත.</translation>
 <translation id="6303969859164067831">වරනය වී සමමුහුව ක්‍රියාවිරහිත කරන්න</translation>
+<translation id="6312687380483398334">වෙබ් යෙදුම් (නිහඬ)</translation>
 <translation id="6316139424528454185">Android අනුවාදයට සහය දක්වනු නොලැබේ</translation>
 <translation id="6324034347079777476">Android පද්ධති සම්මුහුර්තය අබලයි</translation>
 <translation id="6333140779060797560"><ph name="APPLICATION" /> හරහා බෙදාගන්න</translation>
@@ -644,6 +649,7 @@
 <translation id="6381421346744604172">වෙබ් අඩවි අඳුරු කරන්න</translation>
 <translation id="6395288395575013217">සබැඳිය</translation>
 <translation id="6397616442223433927">ආපසු සබැඳියි</translation>
+<translation id="6398765197997659313">සම්පුර්ණ තිරයෙන් ඉවත් වන්න</translation>
 <translation id="6404511346730675251">පිටු සලකුණ සංස්කරණය කරන්න</translation>
 <translation id="6406506848690869874">සමමුහුව</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" /> සිට VR වෙත ඇතුළු වන්න ද?</translation>
@@ -790,6 +796,7 @@
 <translation id="7605594153474022051">සමමුහුර්තය වැඩ නොකරයි</translation>
 <translation id="7606077192958116810">සැහැල්ලු ප්‍රකාරය ක්‍රියාත්මකයි. එය සැකසීම්වල කළමනාකරණය කරන්න.</translation>
 <translation id="7612619742409846846">Google වෙත පුරනය වූයේ</translation>
+<translation id="7614971007231847352">QR කේතය බාගත්තා</translation>
 <translation id="7619072057915878432">ජාල දෝෂ නිසා <ph name="FILE_NAME" /> බාගැනීම අසාර්ථක විය.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />උදවු ලබා ගන්න<ph name="END_LINK1" /> නැතහොත් <ph name="BEGIN_LINK2" />නැවත ස්කෑන් කරන්න<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chrome වෙත පිළිගනිමු</translation>
@@ -817,6 +824,7 @@
 <translation id="7821588508402923572">ඔබගේ දත්ත සුරැකුම් මෙහි දිස් වනු ඇත</translation>
 <translation id="7835852323729233924">මාධ්‍ය ධාවනය</translation>
 <translation id="783819812427904514">වීඩියෝව නිහඬ නොකරන්න</translation>
+<translation id="7846296061357476882">Google සේවා</translation>
 <translation id="784934925303690534">කාල පරාසය</translation>
 <translation id="7851858861565204677">වෙනත් උපාංග</translation>
 <translation id="7875915731392087153">ඊ-තැපෑල සාදන්න</translation>
@@ -906,6 +914,7 @@
 <translation id="8514577642972634246">අප්‍රසිද්ධ ප්‍රකාරයට ඇතුළු වන්න</translation>
 <translation id="8516012719330875537">රූප සංස්කාරක</translation>
 <translation id="8523928698583292556">ගබඩා කරන ලද මුරපදය මකන්න</translation>
+<translation id="8525306231823319788">සම්පුර්ණ තිරය</translation>
 <translation id="854522910157234410">මෙම පිටුව විවෘත කරන්න</translation>
 <translation id="8558485628462305855">වැඩි දියුණු කළ යතාර්ථ අන්තර්ගතය බැලීමට, ARCore යාවත්කාලීන කරන්න</translation>
 <translation id="8559990750235505898">වෙනත් භාෂාවල පිටු පරිවර්තනයට පිරිනමන්න</translation>

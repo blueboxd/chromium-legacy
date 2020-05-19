@@ -4,6 +4,7 @@
 <translation id="1028699632127661925">Küldés a következő eszközre: <ph name="DEVICE_NAME" />…</translation>
 <translation id="111910763555783249">Értesítési beállítások</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 napja}other{# napja}}</translation>
+<translation id="1145532888383813076">Kereshet az eszközén, az alkalmazások között és az interneten.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 perce}other{# perce}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 p}other{# p}}</translation>
 <translation id="1181037720776840403">Eltávolítás</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">szinkronizálás bekapcsolása</translation>
 <translation id="5329858601952122676">&amp;Törlés</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> az alatta lévő <ph name="IN_PLACE_APP" /> alkalmazáson; mappa létrehozásához engedje el.</translation>
+<translation id="5432996274932278848">Kereshet eszközén, az alkalmazásokban és az interneten. A nyílbillentyűkkel navigálhat alkalmazásai között.</translation>
 <translation id="5463830097259460683">Hangulatjelek és szimbólumok</translation>
 <translation id="5476505524087279545">Megjelölés eltávolítása</translation>
 <translation id="547979256943495781">A polc a jobb oldalon található</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">Törli ezt a keresést az előzmények közül?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Hangulatjel</translation>
+<translation id="7611008212562900400">Kereshet az eszközén, az alkalmazások között és az interneten…</translation>
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="7781829728241885113">Tegnap</translation>
 <translation id="7814458197256864873">&amp;Másolás</translation>

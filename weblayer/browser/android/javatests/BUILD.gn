@@ -9,7 +9,6 @@ import("//build/config/android/rules.gni")
 android_library("weblayer_java_tests") {
   testonly = true
   sources = [
-    "src/org/chromium/weblayer/test/BottomControlsTest.java",
     "src/org/chromium/weblayer/test/BrowserFragmentLifecycleTest.java",
     "src/org/chromium/weblayer/test/CookieManagerTest.java",
     "src/org/chromium/weblayer/test/CrashReporterTest.java",
@@ -17,7 +16,6 @@ android_library("weblayer_java_tests") {
     "src/org/chromium/weblayer/test/DowngradeTest.java",
     "src/org/chromium/weblayer/test/DownloadCallbackTest.java",
     "src/org/chromium/weblayer/test/ErrorPageCallbackTest.java",
-    "src/org/chromium/weblayer/test/EventUtils.java",
     "src/org/chromium/weblayer/test/ExecuteScriptTest.java",
     "src/org/chromium/weblayer/test/ExternalNavigationTest.java",
     "src/org/chromium/weblayer/test/FindInPageTest.java",
@@ -62,6 +60,7 @@ android_library("weblayer_java_tests") {
 android_library("weblayer_private_java_tests") {
   testonly = true
   sources = [
+    "src/org/chromium/weblayer/test/BottomControlsTest.java",
     "src/org/chromium/weblayer/test/GeolocationTest.java",
     "src/org/chromium/weblayer/test/MediaCaptureTest.java",
     "src/org/chromium/weblayer/test/NetworkChangeNotifierTest.java",
@@ -87,6 +86,7 @@ android_library("weblayer_java_test_support") {
   testonly = true
   sources = [
     "src/org/chromium/weblayer/test/BoundedCountDownLatch.java",
+    "src/org/chromium/weblayer/test/EventUtils.java",
     "src/org/chromium/weblayer/test/InstrumentationActivityTestRule.java",
     "src/org/chromium/weblayer/test/MinWebLayerVersion.java",
     "src/org/chromium/weblayer/test/MinWebLayerVersionSkipCheck.java",

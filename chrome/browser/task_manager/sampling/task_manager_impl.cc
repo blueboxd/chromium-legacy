@@ -85,25 +85,30 @@ TaskManagerImpl::TaskManagerImpl()
       waiting_for_memory_dump_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  task_providers_.emplace_back(new BrowserProcessTaskProvider());
-  task_providers_.emplace_back(new ChildProcessTaskProvider());
-  task_providers_.emplace_back(new WorkerTaskProvider());
+  task_providers_.push_back(std::make_unique<BrowserProcessTaskProvider>());
+  task_providers_.push_back(std::make_unique<ChildProcessTaskProvider>());
+
+  // Put all task providers for various types of RenderProcessHosts in this
+  // section. All of them should be added as primary subproviders for the
+  // FallbackTaskProvider, so that a fallback task can be shown for a renderer
+  // process if no other provider is shown for it.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kTaskManagerShowExtraRenderers)) {
-    task_providers_.emplace_back(new WebContentsTaskProvider());
+    task_providers_.push_back(std::make_unique<WorkerTaskProvider>());
+    task_providers_.push_back(std::make_unique<WebContentsTaskProvider>());
   } else {
-    std::unique_ptr<TaskProvider> primary_subprovider(
-        new WebContentsTaskProvider());
-    std::unique_ptr<TaskProvider> secondary_subprovider(
-        new RenderProcessHostTaskProvider());
-    task_providers_.emplace_back(new FallbackTaskProvider(
-        std::move(primary_subprovider), std::move(secondary_subprovider)));
+    std::vector<std::unique_ptr<TaskProvider>> primary_subproviders;
+    primary_subproviders.push_back(std::make_unique<WorkerTaskProvider>());
+    primary_subproviders.push_back(std::make_unique<WebContentsTaskProvider>());
+    task_providers_.push_back(std::make_unique<FallbackTaskProvider>(
+        std::move(primary_subproviders),
+        std::make_unique<RenderProcessHostTaskProvider>()));
   }
 
 #if defined(OS_CHROMEOS)
   if (arc::IsArcAvailable())
-    task_providers_.emplace_back(new ArcProcessTaskProvider());
-  task_providers_.emplace_back(new VmProcessTaskProvider());
+    task_providers_.push_back(std::make_unique<ArcProcessTaskProvider>());
+  task_providers_.push_back(std::make_unique<VmProcessTaskProvider>());
   arc_shared_sampler_ = std::make_unique<ArcSharedSampler>();
 #endif  // defined(OS_CHROMEOS)
 }

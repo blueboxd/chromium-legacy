@@ -1529,6 +1529,10 @@ void AppsGridView::AnimateToIdealBounds(AppListItemView* released_drag_view) {
       view->SetBoundsRect(target);
     }
   }
+
+  // Destroy layers created for drag if they're not longer necessary.
+  if (!bounds_animator_->IsAnimating())
+    OnBoundsAnimatorDone(bounds_animator_.get());
 }
 
 void AppsGridView::AnimationBetweenRows(AppListItemView* view,
@@ -2106,7 +2110,7 @@ void AppsGridView::UpdateOpacity(bool restore_opacity) {
     // opacity (the layers will be deleted when drag operation completes).
     if (items_need_layer_for_drag_) {
       for (const auto& entry : view_model_.entries()) {
-        if (drag_view_ != entry.view)
+        if (drag_view_ != entry.view && entry.view->layer())
           entry.view->layer()->SetOpacity(1.0f);
       }
       return;

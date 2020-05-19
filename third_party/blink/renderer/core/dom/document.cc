@@ -6163,13 +6163,10 @@ void Document::PermissionServiceConnectionError() {
 
 ScriptPromise Document::hasStorageAccess(ScriptState* script_state) const {
   const bool has_access =
-      TopFrameOrigin() &&
-      GetSecurityOrigin()->IsSameOriginWith(TopFrameOrigin().get());
+      TopFrameOrigin() && !GetSecurityOrigin()->IsOpaque() && CookiesEnabled();
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
-  // TODO (http://crbug.com/989663)
-  // Hookup actual logic to Resolve/Reject this request properly.
   ScriptPromise promise = resolver->Promise();
   resolver->Resolve(has_access);
   return promise;
@@ -6180,34 +6177,95 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
-  // TODO (http://crbug.com/989663)
-  // Hookup actual logic to Resolve/Reject this request properly.
-
   // Access the promise first to ensure it is created so that the proper state
   // can be changed when it is resolved or rejected.
   ScriptPromise promise = resolver->Promise();
 
   const bool has_user_gesture = LocalFrame::HasTransientUserActivation(frame_);
-  if (has_user_gesture) {
-    auto descriptor = mojom::blink::PermissionDescriptor::New();
-    descriptor->name = mojom::blink::PermissionName::STORAGE_ACCESS;
-    GetPermissionService(ExecutionContext::From(script_state))
-        ->RequestPermission(
-            std::move(descriptor), has_user_gesture,
-            WTF::Bind(
-                [](ScriptPromiseResolver* resolver,
-                   mojom::blink::PermissionStatus status) {
-                  DCHECK(resolver);
-                  (status == mojom::blink::PermissionStatus::GRANTED)
-                      ? resolver->Resolve()
-                      : resolver->Reject();
-                },
-                WrapPersistent(resolver)));
-  } else {
-    // Without a user gesture any request for storage access is immediately
-    // denied.
+  if (!has_user_gesture) {
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kSecurity,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "requestStorageAccess: Must be handling a user gesture to use."));
+
     resolver->Reject();
+    return promise;
   }
+
+  if (!TopFrameOrigin()) {
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kSecurity,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "requestStorageAccess: Cannot execute in documents lacking top-frame "
+        "origins."));
+
+    resolver->Reject();
+    return promise;
+  }
+
+  if (GetSecurityOrigin()->IsOpaque()) {
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kSecurity,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "requestStorageAccess: Cannot be used by opaque origins."));
+
+    resolver->Reject();
+    return promise;
+  }
+
+  if (IsSandboxed(network::mojom::blink::WebSandboxFlags::
+                      kStorageAccessByUserActivation)) {
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kSecurity,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "requestStorageAccess: Refused to execute request. The document is "
+        "sandboxed, and the 'allow-storage-access-by-user-activation' keyword "
+        "is not set."));
+
+    resolver->Reject();
+    return promise;
+  }
+
+  if (CookiesEnabled()) {
+    // If there is current access to storage we no longer need to make a request
+    // and can resolve the promise.
+    resolver->Resolve();
+    return promise;
+  }
+
+  if (expressly_denied_storage_access_) {
+    // If a previous rejection has been received the promise can be immediately
+    // rejected without further action.
+    resolver->Reject();
+    return promise;
+  }
+
+  auto descriptor = mojom::blink::PermissionDescriptor::New();
+  descriptor->name = mojom::blink::PermissionName::STORAGE_ACCESS;
+  GetPermissionService(ExecutionContext::From(script_state))
+      ->RequestPermission(
+          std::move(descriptor), has_user_gesture,
+          WTF::Bind(
+              [](ScriptPromiseResolver* resolver, Document* document,
+                 mojom::blink::PermissionStatus status) {
+                DCHECK(resolver);
+                DCHECK(document);
+
+                switch (status) {
+                  case mojom::blink::PermissionStatus::GRANTED:
+                    document->expressly_denied_storage_access_ = false;
+                    resolver->Resolve();
+                    break;
+                  case mojom::blink::PermissionStatus::DENIED:
+                    document->expressly_denied_storage_access_ = true;
+                    FALLTHROUGH;
+                  case mojom::blink::PermissionStatus::ASK:
+                  default:
+                    resolver->Reject();
+                }
+              },
+              WrapPersistent(resolver), WrapPersistent(this)));
+
   return promise;
 }
 

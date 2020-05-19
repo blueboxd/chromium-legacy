@@ -308,6 +308,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
       feeds[0]->associated_origins,
       testing::Contains(url::Origin::Create(GURL("https://www.github.com"))));
   EXPECT_EQ(user_id, feeds[0]->user_identifier);
+  EXPECT_EQ("TEST", feeds[0]->cookie_name_filter);
 
   auto items = GetItemsForMediaFeedSync(discovered_feeds[0]->id);
 
@@ -692,6 +693,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetchMinimal) {
   ASSERT_EQ(2u, feeds[0]->logos.size());
   EXPECT_EQ(logo1, feeds[0]->logos[0]);
   EXPECT_EQ(logo2, feeds[0]->logos[1]);
+  EXPECT_TRUE(feeds[0]->cookie_name_filter.empty());
 
   auto items = GetItemsForMediaFeedSync(discovered_feeds[0]->id);
 

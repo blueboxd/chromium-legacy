@@ -642,16 +642,17 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
                             ->root();
-  RenderFrameHost* webui_rfh = root->current_frame_host();
-  scoped_refptr<SiteInstance> webui_site_instance =
+  RenderFrameHostImpl* webui_rfh = root->current_frame_host();
+  scoped_refptr<SiteInstanceImpl> webui_site_instance =
       webui_rfh->GetSiteInstance();
 
   EXPECT_EQ(main_frame_url, webui_rfh->GetLastCommittedURL());
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
       webui_rfh->GetProcess()->GetID()));
+  EXPECT_FALSE(webui_site_instance->lock_url().is_empty());
   EXPECT_EQ(ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
                 root->current_frame_host()->GetProcess()->GetID()),
-            webui_site_instance->GetSiteURL());
+            webui_site_instance->lock_url());
 
   TestUntrustedDataSourceCSP csp;
   std::vector<std::string> frame_ancestors({"chrome://web-ui"});
@@ -836,8 +837,8 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest, WebUIMainFrameToWebAllowed) {
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
                             ->root();
-  RenderFrameHost* webui_rfh = root->current_frame_host();
-  scoped_refptr<SiteInstance> webui_site_instance =
+  RenderFrameHostImpl* webui_rfh = root->current_frame_host();
+  scoped_refptr<SiteInstanceImpl> webui_site_instance =
       webui_rfh->GetSiteInstance();
 
   EXPECT_EQ(chrome_url, webui_rfh->GetLastCommittedURL());
@@ -845,7 +846,7 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest, WebUIMainFrameToWebAllowed) {
       webui_rfh->GetProcess()->GetID()));
   EXPECT_EQ(ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
                 root->current_frame_host()->GetProcess()->GetID()),
-            webui_site_instance->GetSiteURL());
+            webui_site_instance->lock_url());
 
   GURL web_url(embedded_test_server()->GetURL("/title2.html"));
   std::string script =
@@ -864,7 +865,7 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest, WebUIMainFrameToWebAllowed) {
       root->current_frame_host()->GetProcess()->GetID()));
   EXPECT_NE(ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
                 root->current_frame_host()->GetProcess()->GetID()),
-            webui_site_instance->GetSiteURL());
+            webui_site_instance->lock_url());
 }
 
 #if !defined(OS_ANDROID)

@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hasher.h"
 
 namespace blink {
@@ -60,6 +61,8 @@ void CachedMatchedProperties::Set(
   this->computed_style = ComputedStyle::Clone(style);
   this->parent_computed_style = ComputedStyle::Clone(parent_style);
 
+  DCHECK(RuntimeEnabledFeatures::MPCDependenciesEnabled() ||
+         dependencies.IsEmpty());
   for (const CSSPropertyName& name : dependencies)
     this->dependencies.push_back(name);
 }
@@ -194,14 +197,18 @@ bool MatchedPropertiesCache::IsStyleCacheable(const ComputedStyle& style) {
     return false;
   if (style.TextAutosizingMultiplier() != 1)
     return false;
-  if (style.GetWritingMode() !=
-          ComputedStyleInitialValues::InitialWritingMode() ||
-      style.Direction() != ComputedStyleInitialValues::InitialDirection())
-    return false;
-  // styles with non inherited properties that reference variables are not
-  // cacheable.
-  if (style.HasVariableReferenceFromNonInheritedProperty())
-    return false;
+  if (!RuntimeEnabledFeatures::MPCDependenciesEnabled()) {
+    if (style.GetWritingMode() !=
+            ComputedStyleInitialValues::InitialWritingMode() ||
+        style.Direction() != ComputedStyleInitialValues::InitialDirection()) {
+      return false;
+    }
+
+    // styles with non inherited properties that reference variables are not
+    // cacheable.
+    if (style.HasVariableReferenceFromNonInheritedProperty())
+      return false;
+  }
   // -internal-light-dark() values in UA sheets have different computed values
   // based on the used value of color-scheme.
   if (style.HasNonInheritedLightDarkValue())
@@ -215,12 +222,17 @@ bool MatchedPropertiesCache::IsCacheable(const StyleResolverState& state) {
 
   if (!IsStyleCacheable(style))
     return false;
-  // The cache assumes static knowledge about which properties are inherited.
-  // Without a flat tree parent, StyleBuilder::ApplyProperty will not
-  // SetHasExplicitlyInheritedProperties on the parent style.
-  if (!state.ParentNode() || parent_style.HasExplicitlyInheritedProperties())
-    return false;
-  return true;
+
+  if (!RuntimeEnabledFeatures::MPCDependenciesEnabled()) {
+    // The cache assumes static knowledge about which properties are inherited.
+    // Without a flat tree parent, StyleBuilder::ApplyProperty will not
+    // SetHasExplicitlyInheritedProperties on the parent style.
+    if (!state.ParentNode() || parent_style.HasExplicitlyInheritedProperties())
+      return false;
+    return true;
+  }
+
+  return !state.HasIncomparableDependency();
 }
 
 void MatchedPropertiesCache::Trace(Visitor* visitor) const {

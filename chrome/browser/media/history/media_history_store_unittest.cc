@@ -978,6 +978,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult) {
     result.display_name = kExpectedDisplayName;
     result.associated_origins = GetExpectedAssociatedOrigins();
     result.user_identifier = GetExpectedUserIdentifier();
+    result.cookie_name_filter = "test";
     service()->StoreMediaFeedFetchResult(std::move(result), base::DoNothing());
     WaitForDB();
 
@@ -1006,6 +1007,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult) {
       EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
       EXPECT_EQ(GetExpectedAssociatedOrigins(feed_url),
                 ToSet(feeds[0]->associated_origins));
+      EXPECT_EQ("test", feeds[0]->cookie_name_filter);
 
       EXPECT_EQ(GetExpectedItems(), items);
     }
@@ -1047,6 +1049,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult) {
       EXPECT_FALSE(feeds[0]->user_identifier);
       EXPECT_FALSE(feeds[0]->last_display_time.has_value());
       EXPECT_EQ(ToSet(feed_url), ToSet(feeds[0]->associated_origins));
+      EXPECT_TRUE(feeds[0]->cookie_name_filter.empty());
 
       EXPECT_EQ(GetAltExpectedItems(), items);
 

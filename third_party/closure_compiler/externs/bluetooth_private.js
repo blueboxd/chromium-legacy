@@ -14,9 +14,7 @@
 
 /** @fileoverview Externs generated from namespace: bluetoothPrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.bluetoothPrivate = {};
 
 /**

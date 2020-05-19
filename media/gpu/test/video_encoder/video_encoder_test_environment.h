@@ -7,8 +7,10 @@
 
 #include <limits>
 #include <memory>
+#include <string>
 
 #include "base/files/file_path.h"
+#include "media/base/video_codecs.h"
 #include "media/gpu/test/video_test_environment.h"
 
 namespace gpu {
@@ -27,13 +29,16 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
   static VideoEncoderTestEnvironment* Create(
       const base::FilePath& video_path,
       const base::FilePath& video_metadata_path,
-      const base::FilePath& output_folder);
+      const base::FilePath& output_folder,
+      const std::string& codec);
   ~VideoEncoderTestEnvironment() override;
 
   // Get the video the tests will be ran on.
   const media::test::Video* Video() const;
   // Get the output folder.
   const base::FilePath& OutputFolder() const;
+  // Get the output codec profile.
+  VideoCodecProfile Profile() const;
 
   // Get the GpuMemoryBufferFactory for doing buffer allocations. This needs to
   // survive as long as the process is alive just like in production which is
@@ -43,12 +48,15 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
 
  private:
   VideoEncoderTestEnvironment(std::unique_ptr<media::test::Video> video,
-                              const base::FilePath& output_folder);
+                              const base::FilePath& output_folder,
+                              VideoCodecProfile profile);
 
   // Video file to be used for testing.
   const std::unique_ptr<media::test::Video> video_;
   // Output folder to be used to store test artifacts (e.g. perf metrics).
   const base::FilePath output_folder_;
+  // VideoCodecProfile to be produced by VideoEncoder.
+  const VideoCodecProfile profile_;
 
   std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 };

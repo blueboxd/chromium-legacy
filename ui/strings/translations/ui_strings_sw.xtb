@@ -4,6 +4,7 @@
 <translation id="1028699632127661925">Unatuma kwenye <ph name="DEVICE_NAME" />...</translation>
 <translation id="111910763555783249">Mipangilio ya arifa</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Siku 1 iliyopita}other{Siku # zilizopita}}</translation>
+<translation id="1145532888383813076">Tafuta kwenye wavuti, programu na kifaa chako.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Dakika 1 iliyopita}other{Dakika # zilizopita}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{Dak 1}other{Dak #}}</translation>
 <translation id="1181037720776840403">Ondoa</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">washa kipengele cha kusawazisha</translation>
 <translation id="5329858601952122676">&amp;Futa</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> iko juu ya <ph name="IN_PLACE_APP" />, achilia ili ufungue folda mpya.</translation>
+<translation id="5432996274932278848">Tafuta kwenye programu, wavuti na kifaa chako. Tumia vitufe vya vishale ili kusogeza programu zako.</translation>
 <translation id="5463830097259460683">Emoji na Ishara</translation>
 <translation id="5476505524087279545">toa tiki</translation>
 <translation id="547979256943495781">Rafu iko upande wa kulia</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">Ungependa kufuta utafutaji huu kwenye historia yako?</translation>
 <translation id="7460907917090416791">TB <ph name="QUANTITY" /></translation>
 <translation id="7507604095951736240">Emoji</translation>
+<translation id="7611008212562900400">Tafuta kifaa, programu, wavuti wako...</translation>
 <translation id="7658239707568436148">Ghairi</translation>
 <translation id="7781829728241885113">Jana</translation>
 <translation id="7814458197256864873">&amp;Nakili</translation>

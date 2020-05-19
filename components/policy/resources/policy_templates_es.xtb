@@ -806,7 +806,6 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
 
       Si se configura la política, los usuarios no podrán cambiarla. Si no se le asigna ningún valor o se le asigna el valor "false", no tiene ningún efecto.</translation>
 <translation id="2201555246697292490">Configurar la lista blanca de mensajes nativos</translation>
-<translation id="220280840901385239">Permite que los usuarios añadan excepciones para permitir el contenido mixto bloqueable.</translation>
 <translation id="2204753382813641270">Controlar opción para ocultar archivos automáticamente</translation>
 <translation id="2208976000652006649">Parámetros para URL de búsqueda que utiliza POST</translation>
 <translation id="2214880135980649323">Si esta política está habilitada, las extensiones que instalen las políticas de empresa pueden usar la API Enterprise Hardware Platform.
@@ -4589,7 +4588,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
           Si no se le asigna ningún valor, las combinaciones de teclas para las funciones de accesibilidad estarán habilitadas de forma predeterminada en la pantalla de inicio de sesión.</translation>
 <translation id="7777535871204167559">Usar los dispositivos de almacenamiento externo como dispositivos de solo lectura</translation>
 <translation id="7788511847830146438">Por perfil</translation>
-<translation id="7792973482799545782">Se usa para impedir que ningún sitio web pueda cargar contenido mixto bloqueable.</translation>
 <translation id="780603170519840350">Inhabilita los requisitos de transparencia en los certificados en una lista de hashes subjectPublicKeyInfo.
 
       Esta política permite inhabilitar los requisitos de comunicación de transparencia en los certificados en cadenas que contienen certificados con uno de los hashes subjectPublicKeyInfo especificados. Esto permite que se sigan usando en hosts empresariales los certificados que, de otra forma, no serían de confianza por no haberse comunicado públicamente de forma correcta.

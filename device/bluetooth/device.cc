@@ -180,7 +180,7 @@ void Device::WriteValueForCharacteristic(
   }
 
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
-  characteristic->WriteRemoteCharacteristic(
+  characteristic->DeprecatedWriteRemoteCharacteristic(
       value,
       base::BindOnce(&Device::OnWriteRemoteCharacteristic,
                      weak_ptr_factory_.GetWeakPtr(), copyable_callback),

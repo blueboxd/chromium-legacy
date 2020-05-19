@@ -14,14 +14,18 @@
 #include "build/branding_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_metrics.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "components/language/core/browser/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/renderer_context_menu/render_view_context_menu_proxy.h"
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/storage_partition.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
 
@@ -118,6 +122,7 @@ void QuickAnswersMenuObserver::InitMenu(
   // Fetch Quick Answer.
   QuickAnswersRequest request;
   request.selected_text = selected_text;
+  request.device_properties.language = GetDeviceLanguage();
   query_ = request.selected_text;
   quick_answers_client_->SendRequest(request);
 }
@@ -139,8 +144,8 @@ void QuickAnswersMenuObserver::OnContextMenuShown(
   if (selected_text.empty())
     return;
 
-  quick_answers_controller_->MaybeShowQuickAnswers(bounds_in_screen,
-                                                   selected_text);
+  quick_answers_controller_->MaybeShowQuickAnswers(
+      bounds_in_screen, selected_text, GetDeviceLanguage());
 }
 
 void QuickAnswersMenuObserver::OnContextMenuViewBoundsChanged(
@@ -237,4 +242,8 @@ void QuickAnswersMenuObserver::SendAssistantQuery(const std::string& query) {
   ash::AssistantInteractionController::Get()->StartTextInteraction(
       query, /*allow_tts=*/false,
       chromeos::assistant::mojom::AssistantQuerySource::kQuickAnswers);
+}
+
+std::string QuickAnswersMenuObserver::GetDeviceLanguage() {
+  return l10n_util::GetLanguage(g_browser_process->GetApplicationLocale());
 }

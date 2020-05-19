@@ -693,6 +693,7 @@ class Fakes {
         final int mProperties;
         final UUID mUuid;
         byte[] mValue;
+        int mWriteType;
         static FakeBluetoothGattCharacteristic sRememberedCharacteristic;
         final ArrayList<Wrappers.BluetoothGattDescriptorWrapper> mDescriptors;
 
@@ -845,6 +846,11 @@ class Fakes {
         public boolean setValue(byte[] value) {
             mValue = value;
             return true;
+        }
+
+        @Override
+        public void setWriteType(int writeType) {
+            mWriteType = writeType;
         }
     }
 

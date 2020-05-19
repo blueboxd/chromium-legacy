@@ -112,6 +112,7 @@ TEST_P(FrameOverlayTest, AcceleratedCompositing) {
               graphics_layer->GetPropertyTreeState());
     graphics_layer->Paint();
     graphics_layer->CapturePaintRecord()->Playback(&canvas);
+    graphics_layer->GetPaintController().FinishCycle();
   }
 }
 
@@ -161,6 +162,7 @@ TEST_P(FrameOverlayTest, DeviceEmulationScale) {
     EXPECT_EQ(state, graphics_layer->GetPropertyTreeState());
     graphics_layer->Paint();
     check_paint_results(graphics_layer->GetPaintController());
+    graphics_layer->GetPaintController().FinishCycle();
   }
 }
 

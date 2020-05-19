@@ -112,7 +112,6 @@
 <translation id="1140746652461896221">Ziyaret ettiğiniz tüm sayfalardaki içerik engellensin</translation>
 <translation id="1143142264369994168">Sertifika İmza Sahibi</translation>
 <translation id="1145292499998999162">Eklenti engellendi</translation>
-<translation id="1145532888383813076">Cihazınızda, uygulamalarda, web'de arama yapın.</translation>
 <translation id="1145593918056169051">Yazıcı durdu</translation>
 <translation id="1146678959555564648">VR'ye Gir</translation>
 <translation id="114721135501989771">Google zekası Chrome'da</translation>
@@ -3425,7 +3424,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5430931332414098647">Anında Tethering</translation>
 <translation id="5431318178759467895">Renk</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="5432996274932278848">Cihazınızda, uygulamalarınızda ve web'de arama yapın. Uygulamalarınız arasında gezinmek için ok tuşlarını kullanın.</translation>
 <translation id="543338862236136125">Şifreyi düzenle</translation>
 <translation id="5434065355175441495">PKCS #1 RSA Şifrelemesi</translation>
 <translation id="5436492226391861498">Proxy tüneli bekleniyor...</translation>
@@ -5094,7 +5092,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7606992457248886637">Yetkililer</translation>
 <translation id="7607002721634913082">Duraklatıldı</translation>
 <translation id="7609148976235050828">Lütfen internete bağlanın ve tekrar deneyin.</translation>
-<translation id="7611008212562900400">Cihazınızda, uygulamalarda, web'de arama yapın...</translation>
 <translation id="7614260613810441905">Bir site, cihazımdaki dosyaları veya klasörleri düzenlemek istediğinde sor (önerilir)</translation>
 <translation id="761530003705945209">Google Drive'a yedekle. Verilerinizi istediğiniz zaman kolayca geri yükleyin veya cihazlar arasında geçiş yapın. Yedeklemeniz, uygulama verilerini içerir. Yedek verileriniz Google'a yüklenir ve Google Hesabınızın şifresi kullanılarak şifrelenir.</translation>
 <translation id="7616214729753637086">Cihaz kaydediliyor...</translation>

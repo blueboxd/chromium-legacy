@@ -57,10 +57,10 @@ LayoutState::LayoutState(LayoutBox& layout_object,
   height_offset_for_table_footers_ = next_->HeightOffsetForTableFooters();
   layout_object.View()->PushLayoutState(*this);
 
-  if (const AtomicString& named_page = layout_object.StyleRef().Page())
-    page_name_ = named_page;
+  if (const AtomicString& page_name = layout_object.StyleRef().Page())
+    input_page_name_ = page_name;
   else
-    page_name_ = next_->page_name_;
+    input_page_name_ = next_->input_page_name_;
 
   if (layout_object.IsLayoutFlowThread()) {
     // Entering a new pagination context.

@@ -466,6 +466,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="488187801263602086">Přejmenovat soubor</translation>
 <translation id="4882831918239250449">Nastavte, jak se má vaše historie procházení používat k personalizaci Vyhledávání, reklam a dalších služeb</translation>
 <translation id="4885273946141277891">Nepodporovaný počet instancí Chromu.</translation>
+<translation id="4908869848243824489">Kanál Objevit od Googlu</translation>
 <translation id="4910889077668685004">Platební aplikace</translation>
 <translation id="4913161338056004800">Obnovit statistiky</translation>
 <translation id="4913169188695071480">Zastavit obnovování</translation>
@@ -481,7 +482,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="4988210275050210843">Stahování souboru (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Stránky</translation>
 <translation id="4994033804516042629">Nebyly nalezeny žádné kontakty</translation>
-<translation id="4996978546172906250">Sdílet prostřednictvím</translation>
 <translation id="5004416275253351869">Ovládací prvky aktivity Google</translation>
 <translation id="5005498671520578047">Kopírování hesla</translation>
 <translation id="5011311129201317034">Web <ph name="SITE" /> žádá o připojení</translation>
@@ -643,6 +643,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6381421346744604172">Ztmavit webové stránky</translation>
 <translation id="6395288395575013217">ODKAZ</translation>
 <translation id="6397616442223433927">Opět online</translation>
+<translation id="6398765197997659313">Ukončit režim celé obrazovky</translation>
 <translation id="6404511346730675251">Upravit záložku</translation>
 <translation id="6406506848690869874">Synchronizace</translation>
 <translation id="6410973561433500075">Spustit rozšířenou realitu z webu <ph name="DOMAIN" />?</translation>
@@ -702,6 +703,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6846298663435243399">Načítání…</translation>
 <translation id="6850409657436465440">Stahování stále probíhá</translation>
 <translation id="6850830437481525139">Zavřené karty: <ph name="TAB_COUNT" /></translation>
+<translation id="685850645784703949">Kanál Objevit od Googlu – vypnuto</translation>
 <translation id="6864459304226931083">Stáhnout obrázek</translation>
 <translation id="6865313869410766144">Automatické vyplňování formulářů</translation>
 <translation id="6884306546558072722">Pokračujte v objevování i offline</translation>
@@ -904,6 +906,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8514577642972634246">Přejít do anonymního režimu</translation>
 <translation id="8516012719330875537">Editor obrázků</translation>
 <translation id="8523928698583292556">Vymazat uložené heslo</translation>
+<translation id="8525306231823319788">Celá obrazovka</translation>
 <translation id="854522910157234410">Otevřít tuto stránku</translation>
 <translation id="8558485628462305855">Chcete-li zobrazit obsah pro rozšířenou realitu, aktualizujte ARCore</translation>
 <translation id="8559990750235505898">Nabízet překlad stránek v jiných jazycích</translation>

@@ -50,6 +50,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     static base::Optional<std::unique_ptr<PrivateKey>> FromPKCS8(
         base::span<const uint8_t> pkcs8_private_key);
 
+    // FreshP256Key returns a randomly generated P-256 PrivateKey.
+    static std::unique_ptr<PrivateKey> FreshP256Key();
+
+    // FreshP256Key returns a randomly generated RSA PrivateKey.
+    static std::unique_ptr<PrivateKey> FreshRSAKey();
+
+    // FreshP256Key returns a randomly generated Ed25519 PrivateKey.
+    static std::unique_ptr<PrivateKey> FreshEd25519Key();
+
     virtual ~PrivateKey();
 
     // Sign returns a signature over |message|.
@@ -258,9 +267,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
 
   scoped_refptr<State> NewReferenceToState() const { return state_; }
 
-  static std::unique_ptr<PrivateKey> FreshP256Key();
-  static std::unique_ptr<PrivateKey> FreshRSAKey();
-  static std::unique_ptr<PrivateKey> FreshEd25519Key();
   static bool Sign(crypto::ECPrivateKey* private_key,
                    base::span<const uint8_t> sign_buffer,
                    std::vector<uint8_t>* signature);

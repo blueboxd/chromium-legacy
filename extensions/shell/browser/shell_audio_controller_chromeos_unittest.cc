@@ -133,7 +133,6 @@ TEST_F(ShellAudioControllerTest, InitialVolume) {
                 chromeos::AudioDevicesPrefHandler::kDefaultOutputVolumePercent),
             audio_handler()->GetOutputVolumePercent());
 
-  // TODO(rkc): The default value for gain is wrong. http://crbug.com/442489
   EXPECT_EQ(75.0, audio_handler()->GetInputGainPercent());
 }
 

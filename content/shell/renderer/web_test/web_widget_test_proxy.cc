@@ -114,12 +114,6 @@ bool WebWidgetTestProxy::IsPointerLocked() {
   return GetViewTestRunner()->isPointerLocked();
 }
 
-void WebWidgetTestProxy::SetToolTipText(const blink::WebString& text,
-                                        base::i18n::TextDirection hint) {
-  RenderWidget::SetToolTipText(text, hint);
-  GetTestRunner()->SetToolTipText(text);
-}
-
 void WebWidgetTestProxy::StartDragging(network::mojom::ReferrerPolicy policy,
                                        const blink::WebDragData& data,
                                        blink::WebDragOperationsMask mask,

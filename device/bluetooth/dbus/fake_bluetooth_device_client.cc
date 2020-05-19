@@ -649,8 +649,10 @@ void FakeBluetoothDeviceClient::ExecuteWrite(
   for (const auto& prepare_write_request : prepare_write_requests_) {
     bluez::BluezDBusManager::Get()
         ->GetBluetoothGattCharacteristicClient()
-        ->WriteValue(prepare_write_request.first, prepare_write_request.second,
-                     base::DoNothing(), base::DoNothing());
+        ->WriteValue(std::get<0>(prepare_write_request),
+                     std::get<1>(prepare_write_request),
+                     std::get<2>(prepare_write_request), base::DoNothing(),
+                     base::DoNothing());
   }
   prepare_write_requests_.clear();
   std::move(callback).Run();

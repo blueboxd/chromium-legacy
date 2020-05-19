@@ -869,6 +869,7 @@ void BluetoothTaskManagerWin::WriteGattCharacteristicValue(
     base::FilePath service_path,
     BTH_LE_GATT_CHARACTERISTIC characteristic,
     std::vector<uint8_t> new_value,
+    ULONG flags,
     const HResultCallback& callback) {
   ULONG length = (ULONG)(sizeof(ULONG) + new_value.size());
   std::vector<UCHAR> data(length);
@@ -880,7 +881,7 @@ void BluetoothTaskManagerWin::WriteGattCharacteristicValue(
 
   HRESULT hr = le_wrapper_->WriteCharacteristicValue(
       service_path, (PBTH_LE_GATT_CHARACTERISTIC)(&characteristic),
-      win_new_value);
+      win_new_value, flags);
 
   ui_task_runner_->PostTask(FROM_HERE, base::BindOnce(callback, hr));
 }
@@ -987,12 +988,14 @@ void BluetoothTaskManagerWin::PostWriteGattCharacteristicValue(
     const base::FilePath& service_path,
     const PBTH_LE_GATT_CHARACTERISTIC characteristic,
     const std::vector<uint8_t>& new_value,
+    ULONG flags,
     const HResultCallback& callback) {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   bluetooth_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&BluetoothTaskManagerWin::WriteGattCharacteristicValue,
-                     this, service_path, *characteristic, new_value, callback));
+                     this, service_path, *characteristic, new_value, flags,
+                     callback));
 }
 
 void BluetoothTaskManagerWin::PostRegisterGattCharacteristicValueChangedEvent(

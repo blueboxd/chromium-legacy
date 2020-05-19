@@ -112,7 +112,6 @@
 <translation id="1140746652461896221">Blockera innehåll på alla sidor du besöker</translation>
 <translation id="1143142264369994168">Certifikatsignerare</translation>
 <translation id="1145292499998999162">Pluginprogrammet har blockerats</translation>
-<translation id="1145532888383813076">Sök på enheten, i appar och på webben.</translation>
 <translation id="1145593918056169051">Skrivaren har stannat</translation>
 <translation id="1146678959555564648">Kliv in i VR</translation>
 <translation id="114721135501989771">Få Google-teknik i Chrome</translation>
@@ -3425,7 +3424,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5430931332414098647">Direktinternetdelning</translation>
 <translation id="5431318178759467895">Färg</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="5432996274932278848">Sök på enheten, i appar och på webben. Flytta mellan apparna med piltangenterna.</translation>
 <translation id="543338862236136125">Redigera lösenord</translation>
 <translation id="5434065355175441495">PKCS #1 RSA-kryptering</translation>
 <translation id="5436492226391861498">Väntar på proxytunnel...</translation>
@@ -5093,7 +5091,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7606992457248886637">Auktoriteter</translation>
 <translation id="7607002721634913082">Pausad</translation>
 <translation id="7609148976235050828">Anslut till internet och försök igen.</translation>
-<translation id="7611008212562900400">Sök på enheten, i appar, på webben …</translation>
 <translation id="7614260613810441905">Fråga när en webbplats vill kunna redigera filer eller mappar på enheten (rekommenderas)</translation>
 <translation id="761530003705945209">Säkerhetskopiera på Google Drive. Återställ data eller byt enkelt enhet när du vill. Säkerhetskopian innehåller appdata. Säkerhetskopiorna krypteras med hjälp av Google-kontots lösenord och laddas upp på Google.</translation>
 <translation id="7616214729753637086">Enheten registreras …</translation>

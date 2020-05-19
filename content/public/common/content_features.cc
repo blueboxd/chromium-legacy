@@ -809,6 +809,10 @@ const base::Feature kWebPayments{"WebPayments",
 const base::Feature kWebPaymentsMinimalUI{"WebPaymentsMinimalUI",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allows the total field of PaymentRequest API to be optional.
+const base::Feature kPaymentRequestOptionalTotal{
+    "PaymentRequestOptionalTotal", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Makes WebRTC use ECDSA certs by default (i.e., when no cert type was
 // specified in JS).
 const base::Feature kWebRtcEcdsaDefault{"WebRTC-EnableWebRtcEcdsa",

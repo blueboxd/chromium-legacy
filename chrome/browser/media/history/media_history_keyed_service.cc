@@ -407,14 +407,26 @@ void MediaHistoryKeyedService::MarkMediaFeedItemAsClicked(
 
 void MediaHistoryKeyedService::ResetMediaFeed(
     const url::Origin& origin,
-    media_feeds::mojom::ResetReason reason,
-    const bool include_subdomains) {
+    media_feeds::mojom::ResetReason reason) {
   CHECK_NE(media_feeds::mojom::ResetReason::kNone, reason);
 
   if (auto* store = store_->GetForDelete()) {
     store->db_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&MediaHistoryStore::ResetMediaFeed, store,
-                                  origin, reason, include_subdomains));
+                                  origin, reason));
+  }
+}
+
+void MediaHistoryKeyedService::ResetMediaFeedDueToCookies(
+    const url::Origin& origin,
+    const bool include_subdomains,
+    const std::string& name,
+    const net::CookieChangeCause& cause) {
+  if (auto* store = store_->GetForDelete()) {
+    store->db_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&MediaHistoryStore::ResetMediaFeedDueToCookies, store,
+                       origin, include_subdomains, name, cause));
   }
 }
 

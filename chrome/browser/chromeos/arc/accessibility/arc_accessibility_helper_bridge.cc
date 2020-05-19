@@ -502,7 +502,7 @@ void ArcAccessibilityHelperBridge::OnAction(
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->accessibility_helper(), PerformAction);
   if (!instance) {
-    // TODO (b/146809329): This case should probably destroy all trees.
+    // TODO(b/146809329): This case should probably destroy all trees.
     OnActionResult(data, false);
     return;
   }

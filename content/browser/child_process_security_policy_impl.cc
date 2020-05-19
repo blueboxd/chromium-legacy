@@ -442,10 +442,11 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     return false;
   }
 
-  void LockToOrigin(const GURL& gurl, BrowsingInstanceId browsing_instance_id) {
+  void LockToOrigin(const GURL& lock_url,
+                    BrowsingInstanceId browsing_instance_id) {
     DCHECK(origin_lock_.is_empty());
-    DCHECK_NE(SiteInstanceImpl::GetDefaultSiteURL(), gurl);
-    origin_lock_ = gurl;
+    DCHECK_NE(SiteInstanceImpl::GetDefaultSiteURL(), lock_url);
+    origin_lock_ = lock_url;
     lowest_browsing_instance_id_ = browsing_instance_id;
   }
 
@@ -1567,7 +1568,7 @@ void ChildProcessSecurityPolicyImpl::IncludeIsolationContext(
 void ChildProcessSecurityPolicyImpl::LockToOrigin(
     const IsolationContext& context,
     int child_id,
-    const GURL& gurl) {
+    const GURL& lock_url) {
   // LockToOrigin should only be called on the UI thread (OTOH, it is okay to
   // call GetOriginLock from any thread).
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1576,13 +1577,23 @@ void ChildProcessSecurityPolicyImpl::LockToOrigin(
   // Sanity-check that the |gurl| argument can be used as a lock.
   RenderProcessHost* rph = RenderProcessHostImpl::FromID(child_id);
   if (rph)  // |rph| can be null in unittests.
-    DCHECK_EQ(SiteInstanceImpl::DetermineProcessLockURL(context, gurl), gurl);
+    DCHECK_EQ(SiteInstanceImpl::DetermineProcessLockURL(context, lock_url),
+              lock_url);
 #endif
 
   base::AutoLock lock(lock_);
   auto state = security_state_.find(child_id);
   DCHECK(state != security_state_.end());
-  state->second->LockToOrigin(gurl, context.browsing_instance_id());
+  state->second->LockToOrigin(lock_url, context.browsing_instance_id());
+}
+
+void ChildProcessSecurityPolicyImpl::LockProcessForTesting(
+    const IsolationContext& isolation_context,
+    int child_id,
+    const GURL& url) {
+  auto lock_url =
+      SiteInstanceImpl::DetermineProcessLockURL(isolation_context, url);
+  LockToOrigin(isolation_context, child_id, lock_url);
 }
 
 GURL ChildProcessSecurityPolicyImpl::GetOriginLock(int child_id) {

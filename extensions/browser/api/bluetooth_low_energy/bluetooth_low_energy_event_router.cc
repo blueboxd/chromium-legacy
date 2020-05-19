@@ -669,7 +669,7 @@ void BluetoothLowEnergyEventRouter::WriteCharacteristicValue(
     return;
   }
 
-  characteristic->WriteRemoteCharacteristic(
+  characteristic->DeprecatedWriteRemoteCharacteristic(
       value, callback,
       base::BindOnce(&BluetoothLowEnergyEventRouter::OnError,
                      weak_ptr_factory_.GetWeakPtr(), error_callback));

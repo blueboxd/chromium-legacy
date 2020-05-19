@@ -32,6 +32,11 @@ void NamedPagesMapper::AddNamedPage(const AtomicString& page_name,
   entries_.emplace_back(page_name);
 }
 
+void NamedPagesMapper::NameFirstPage(const AtomicString& page_name) {
+  DCHECK_GE(entries_.size(), 1u);
+  entries_.front().page_name = page_name;
+}
+
 const AtomicString& NamedPagesMapper::NamedPageAtIndex(int page_index) const {
   for (const Entry& entry : entries_) {
     if (page_index <= entry.last_page_index)

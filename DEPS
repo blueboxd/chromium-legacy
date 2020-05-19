@@ -178,19 +178,19 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '329091623b915b26d98210a373769ceebdab5448',
+  'skia_revision': '98bc22c68981f1fc092d532bc6351c985b0eb43d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'd136b6ae2c666e9a3ab43b3c2117516a9556477e',
+  'v8_revision': '36aad4479dbad56a519ef6cd317208e1359b3f02',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
-  'swarming_revision': '160b445a44e0daacf6f3f8570ca2707ec451f374',
+  'swarming_revision': '7e8636295f4763a5f5aace1e700b17a4af3c81b7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'd34ab323f3681e91e3a0589a5f360899054f3c2f',
+  'angle_revision': '8a90905cc0c832d465d871c33f3a14d5d6efc5d6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -241,7 +241,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '77ed017015812dbdc5d5c0564481b052212333a9',
+  'catapult_revision': '4d12fe258b55e13e0d404c3489eabe854abb63f9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -249,7 +249,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '72f39d314b92b2a7d2a434b5c383df6573bb85f3',
+  'devtools_frontend_revision': '4e79dd6ea5f38a20e95ae88e65b62e74435484ee',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -301,11 +301,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '275a95c1dc64638ef4eddc8df8eab66efa516bea',
+  'dawn_revision': 'e25ee25e774366f8c178ee5a9cb29def31ce9611',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '8963f60663337706a28d7f448384daa7baeba74e',
+  'quiche_revision': '281f7a98285d4e1543863c36f08d5e9266970fb1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -851,7 +851,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '170d0709bfc1e3adda902ed73739340b1a0797ed',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'e4ad8580e0f59bc1762a6e959009dfa9e843758d',
       'condition': 'checkout_linux',
   },
 
@@ -871,7 +871,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'c4fb1974191f0d09fcb932f76ae7b5abce1f0ce5',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'e67e41aa899458e3f68d49f17dcc6e2368d43534',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -896,7 +896,7 @@ deps = {
   },
 
   'src/third_party/ffmpeg':
-    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + '75cc116fa06d7f7ec29c9cb655332deed39d8300',
+    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + 'be66dc5fd0e3c53646107b2dc5d7594a869ebdc6',
 
   'src/third_party/flac':
     Var('chromium_git') + '/chromium/deps/flac.git' + '@' + 'af862024c8c8fa0ae07ced05e89013d881b00596',
@@ -927,7 +927,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + '638ef84819f8b3cd614dcf63378fe4814aa4cb2a',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '24dcbd1b1f68ff268bfa22dc4b72bec73d52abe7',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '0ab78114a9e1b28a48cd37252ec59fdcf85e187d',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1203,7 +1203,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + 'a5473711f3e20c6bd1c33d81b6c7b9a0618aa18f',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + 'ca609c305ed10d10cc2f8c07e772f17d5f94f474',
+    Var('chromium_git') + '/openscreen' + '@' + '763905cc688491b82434afd755547e2d65aca3a5',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '9e97b73e7dd2bfc07745489d728f6a36665c648f',
@@ -1453,7 +1453,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '3a35312b64a0f272516095d6dce5019181479a22',
+    Var('webrtc_git') + '/src.git' + '@' + 'ef93a26180660eaed00571996bb8e530be89320c',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1491,7 +1491,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/linux-amd64',
-          'version': 'git_revision:5e13f25e0c481b68c2aa830b726c6ac2fdd1f684',
+          'version': 'git_revision:745c8d8ea93a4a96cd1e2a1569ab73b27bb9e18e',
         },
       ],
       'dep_type': 'cipd',
@@ -1501,7 +1501,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/windows-amd64',
-          'version': 'git_revision:5e13f25e0c481b68c2aa830b726c6ac2fdd1f684',
+          'version': 'git_revision:745c8d8ea93a4a96cd1e2a1569ab73b27bb9e18e',
         },
       ],
       'dep_type': 'cipd',
@@ -1511,7 +1511,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'git_revision:5e13f25e0c481b68c2aa830b726c6ac2fdd1f684',
+          'version': 'git_revision:745c8d8ea93a4a96cd1e2a1569ab73b27bb9e18e',
         },
       ],
       'dep_type': 'cipd',
@@ -1525,7 +1525,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ec469805684746bdbc898b7c829f0d8b0549123e',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@1c8cab8f9441e05bb07e76918026414c0fb88c92',
     'condition': 'checkout_src_internal',
   },
 
@@ -4620,34 +4620,6 @@ hooks = [
                 '--num_threads=4',
                 '--bucket', 'chromium-ink',
                 '-d', 'src/third_party/ink/build',
-    ],
-  },
-  # Download wasm ink resources for chromeos.
-  {
-    'name': 'ink-build-wasm',
-    'pattern': '.',
-    'condition': 'checkout_chromeos',
-    'action': [ 'python',
-                'src/third_party/depot_tools/download_from_google_storage.py',
-                '--no_resume',
-                '--no_auth',
-                '--num_threads=4',
-                '--bucket', 'chromium-ink',
-                '-d', 'src/third_party/ink/build/wasm',
-    ],
-  },
-  # Download wasm threaded ink resources for chromeos.
-  {
-    'name': 'ink-build-wasm',
-    'pattern': '.',
-    'condition': 'checkout_chromeos',
-    'action': [ 'python',
-                'src/third_party/depot_tools/download_from_google_storage.py',
-                '--no_resume',
-                '--no_auth',
-                '--num_threads=4',
-                '--bucket', 'chromium-ink',
-                '-d', 'src/third_party/ink/build/wasm-threads',
     ],
   },
   {

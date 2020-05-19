@@ -843,10 +843,8 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
       frame_, HitTestLocation(document_point),
       HitTestRequest::kReadOnly | HitTestRequest::kRetargetForInert);
   InputDeviceCapabilities* source_capabilities =
-      frame_->GetDocument()
-          ->domWindow()
-          ->GetInputDeviceCapabilities()
-          ->FiresTouchEvents(mouse_event.FromTouch());
+      frame_->DomWindow()->GetInputDeviceCapabilities()->FiresTouchEvents(
+          mouse_event.FromTouch());
 
   if (event_result == WebInputEventResult::kNotHandled) {
     event_result = mouse_event_manager_->HandleMouseFocus(hit_test_result,

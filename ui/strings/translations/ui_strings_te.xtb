@@ -4,6 +4,7 @@
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" />కు పంపుతోంది...</translation>
 <translation id="111910763555783249">నోటిఫికేషన్ సెట్టింగ్‌లు</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 రోజు క్రితం}other{# రోజుల క్రితం}}</translation>
+<translation id="1145532888383813076">మీ పరికరం, యాప్‌లు మరియు వెబ్‌ను శోధించండి.</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 నిమిషం క్రితం}other{# నిమిషాల క్రితం}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1ని}other{#ని}}</translation>
 <translation id="1181037720776840403">తీసివేయి</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">సమకాలీకరణను ఆన్ చేయండి</translation>
 <translation id="5329858601952122676">&amp;తొలగించు</translation>
 <translation id="5395308026110844773"><ph name="IN_PLACE_APP" />పై భాగాన <ph name="DRAGGED_APP_NAME" /> ఉంది, ఫోల్డర్ సృష్టించడానికి రిలీజ్ చేయండి.</translation>
+<translation id="5432996274932278848">మీ పరికరం, యాప్‌లు మరియు వెబ్‌ను శోధించండి. మీ యాప్‌లను నావిగేట్ చేయడానికి బాణం కీలను ఉపయోగించండి.</translation>
 <translation id="5463830097259460683">ఎమోజి &amp;&amp; చిహ్నాలు</translation>
 <translation id="5476505524087279545">ఎంపిక చేయబడలేదు</translation>
 <translation id="547979256943495781">అర కుడి వైపున ఉంది</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">మీ చరిత్ర నుండి ఈ శోధనను తొలగించాలా?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">ఎమోజి</translation>
+<translation id="7611008212562900400">మీ పరికరం, యాప్‌లు, వెబ్‌ను వెతకండి...</translation>
 <translation id="7658239707568436148">రద్దు చేయి</translation>
 <translation id="7781829728241885113">నిన్న</translation>
 <translation id="7814458197256864873">&amp;కాపీ</translation>

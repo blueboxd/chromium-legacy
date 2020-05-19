@@ -3347,20 +3347,23 @@ base::string16 WebContentsImpl::DumpAccessibilityTree(
 }
 
 void WebContentsImpl::RecordAccessibilityEvents(
-    AccessibilityEventCallback callback,
-    bool start) {
-  if (start) {
+    bool start_recording,
+    base::Optional<AccessibilityEventCallback> callback) {
+  // Only pass a callback to RecordAccessibilityEvents when starting to record.
+  DCHECK_EQ(start_recording, callback.has_value());
+  if (start_recording) {
     SetAccessibilityMode(ui::AXMode::kWebContents);
     auto* ax_mgr = GetOrCreateRootBrowserAccessibilityManager();
     DCHECK(ax_mgr);
     base::ProcessId pid = base::Process::Current().Pid();
     event_recorder_ = content::AccessibilityEventRecorder::Create(
         ax_mgr, pid, base::StringPiece{});
-    event_recorder_->ListenToEvents(callback);
+    event_recorder_->ListenToEvents(*callback);
   } else {
-    DCHECK(event_recorder_);
-    event_recorder_->FlushAsyncEvents();
-    event_recorder_ = nullptr;
+    if (event_recorder_) {
+      event_recorder_->FlushAsyncEvents();
+      event_recorder_.reset(nullptr);
+    }
   }
 }
 

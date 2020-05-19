@@ -16,14 +16,16 @@
 
 namespace chromeos {
 
-// Check if any assistive feature is enabled.
-bool IsAssistiveFeatureEnabled();
+const char kEmojiSuggestAdditionEnabledPrefName[] =
+    "emoji_suggest_addition_enabled";
 
 // An agent to suggest assistive information when the user types, and adopt or
 // dismiss the suggestion according to the user action.
 class AssistiveSuggester {
  public:
   AssistiveSuggester(InputMethodEngine* engine, Profile* profile);
+
+  bool IsAssistiveFeatureEnabled();
 
   // Called when a text field gains focus, and suggester starts working.
   void OnFocus(int context_id);
@@ -59,6 +61,9 @@ class AssistiveSuggester {
   // Check if suggestion is being shown.
   bool IsSuggestionShown();
 
+  bool IsEmojiSuggestAdditionEnabled();
+
+  Profile* profile_;
   PersonalInfoSuggester personal_info_suggester_;
   EmojiSuggester emoji_suggester_;
 

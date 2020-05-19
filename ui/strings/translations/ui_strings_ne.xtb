@@ -4,6 +4,7 @@
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" /> लाई पठाउँदै...</translation>
 <translation id="111910763555783249">सूचना सेटिङहरू</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{ १ दिनअघि}other{ # दिनअघि}}</translation>
+<translation id="1145532888383813076">आफ्नो यन्त्र, एप र वेब खोज्नुहोस्‌।</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{१ मिनट अगाडि}other{# मिनट अगाडि}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{१ मिनेट}other{# मिनेट}}</translation>
 <translation id="1181037720776840403">हटाउनुहोस्</translation>
@@ -132,6 +133,7 @@
 <translation id="5327567770033251652">सिंक सुविधा सक्रिय गर्नुहोस्</translation>
 <translation id="5329858601952122676">&amp;मेट्नुहोस्</translation>
 <translation id="5395308026110844773"><ph name="IN_PLACE_APP" /> का माथि <ph name="DRAGGED_APP_NAME" />, फोल्डर सिर्जना गर्न विमोचन गर्नुहोस्।</translation>
+<translation id="5432996274932278848">आफ्नो यन्त्र, एपहरू तथा वेब खोज्नुहोस्। आफ्ना एपहरू नेभिगेसन गर्न तीर कुञ्जीहरूको प्रयोग गर्नुहोस्।</translation>
 <translation id="5463830097259460683">इमोजी र प्रतीकहरू</translation>
 <translation id="5476505524087279545">अचयनित</translation>
 <translation id="547979256943495781">सेल्फ दायाँतिर छ</translation>
@@ -199,6 +201,7 @@
 <translation id="7430878839542012341">आफ्नो इतिहासबाट यो खोज मेटाउने हो?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> टीबी</translation>
 <translation id="7507604095951736240">इमोजी</translation>
+<translation id="7611008212562900400">आफ्नो यन्त्र, एपहरू, वेब खोज्नुहोस्‌...</translation>
 <translation id="7658239707568436148">रद्द गर्नुहोस्</translation>
 <translation id="7781829728241885113">हिजो</translation>
 <translation id="7814458197256864873">&amp;प्रतिलिपि बनाउनुहोस्</translation>

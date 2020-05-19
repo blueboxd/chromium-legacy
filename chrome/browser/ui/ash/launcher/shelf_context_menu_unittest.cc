@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
@@ -36,6 +37,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/extension_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/internal_app_shelf_context_menu.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
@@ -49,6 +51,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/views/widget/widget.h"
+
+using web_app::ProviderType;
 
 namespace {
 
@@ -71,9 +75,20 @@ std::string GetAppNameInShelfGroup(uint32_t task_id) {
   return base::StringPrintf("AppInShelfGroup%d", task_id);
 }
 
-class ShelfContextMenuTest : public ChromeAshTestBase {
+class ShelfContextMenuTest
+    : public ChromeAshTestBase,
+      public ::testing::WithParamInterface<ProviderType> {
  protected:
-  ShelfContextMenuTest() = default;
+  ShelfContextMenuTest() {
+    if (GetParam() == web_app::ProviderType::kWebApps) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kDesktopPWAsWithoutExtensions);
+    } else if (GetParam() == web_app::ProviderType::kBookmarkApps) {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kDesktopPWAsWithoutExtensions);
+    }
+  }
+
   ~ShelfContextMenuTest() override = default;
 
   void SetUp() override {
@@ -172,6 +187,7 @@ class ShelfContextMenuTest : public ChromeAshTestBase {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   TestingProfile profile_;
   ArcAppTest arc_test_;
   apps::AppServiceTest app_service_test_;
@@ -184,7 +200,7 @@ class ShelfContextMenuTest : public ChromeAshTestBase {
 
 // Verifies that "New Incognito window" menu item in the launcher context
 // menu is disabled when Incognito mode is switched off (by a policy).
-TEST_F(ShelfContextMenuTest,
+TEST_P(ShelfContextMenuTest,
        NewIncognitoWindowMenuIsDisabledWhenIncognitoModeOff) {
   const int64_t display_id = GetPrimaryDisplay().id();
   // Initially, "New Incognito window" should be enabled.
@@ -209,7 +225,7 @@ TEST_F(ShelfContextMenuTest,
 
 // Verifies that "New window" menu item in the launcher context
 // menu is disabled when Incognito mode is forced (by a policy).
-TEST_F(ShelfContextMenuTest, NewWindowMenuIsDisabledWhenIncognitoModeForced) {
+TEST_P(ShelfContextMenuTest, NewWindowMenuIsDisabledWhenIncognitoModeForced) {
   const int64_t display_id = GetPrimaryDisplay().id();
   // Initially, "New window" should be enabled.
   std::unique_ptr<ShelfContextMenu> shelf_context_menu =
@@ -230,7 +246,7 @@ TEST_F(ShelfContextMenuTest, NewWindowMenuIsDisabledWhenIncognitoModeForced) {
 
 // Verifies that "Close" is not shown in context menu if no browser window is
 // opened.
-TEST_F(ShelfContextMenuTest, DesktopShellShelfContextMenuVerifyCloseItem) {
+TEST_P(ShelfContextMenuTest, DesktopShellShelfContextMenuVerifyCloseItem) {
   const int64_t display_id = GetPrimaryDisplay().id();
   std::unique_ptr<ShelfContextMenu> shelf_context_menu =
       CreateShelfContextMenu(ash::TYPE_BROWSER_SHORTCUT, display_id);
@@ -240,7 +256,7 @@ TEST_F(ShelfContextMenuTest, DesktopShellShelfContextMenuVerifyCloseItem) {
 
 // Verifies context menu and app menu items for ARC app.
 // The 0th item is sticky but not the following.
-TEST_F(ShelfContextMenuTest, ArcLauncherMenusCheck) {
+TEST_P(ShelfContextMenuTest, ArcLauncherMenusCheck) {
   arc_test().app_instance()->SendRefreshAppList(
       std::vector<arc::mojom::AppInfo>(arc_test().fake_apps().begin(),
                                        arc_test().fake_apps().begin() + 1));
@@ -379,7 +395,7 @@ TEST_F(ShelfContextMenuTest, ArcLauncherMenusCheck) {
   }
 }
 
-TEST_F(ShelfContextMenuTest, ArcLauncherSuspendAppMenu) {
+TEST_P(ShelfContextMenuTest, ArcLauncherSuspendAppMenu) {
   arc::mojom::AppInfo app = arc_test().fake_apps()[0];
   app.suspended = true;
   SendRefreshAppList({app});
@@ -407,7 +423,7 @@ TEST_F(ShelfContextMenuTest, ArcLauncherSuspendAppMenu) {
   EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
 }
 
-TEST_F(ShelfContextMenuTest, ArcDeferredShelfContextMenuItemCheck) {
+TEST_P(ShelfContextMenuTest, ArcDeferredShelfContextMenuItemCheck) {
   SendRefreshAppList(std::vector<arc::mojom::AppInfo>(
       arc_test().fake_apps().begin(), arc_test().fake_apps().begin() + 2));
   const std::string app_id1 = ArcAppTest::GetAppId(arc_test().fake_apps()[0]);
@@ -454,7 +470,7 @@ TEST_F(ShelfContextMenuTest, ArcDeferredShelfContextMenuItemCheck) {
   EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
 }
 
-TEST_F(ShelfContextMenuTest, CommandIdsMatchEnumsForHistograms) {
+TEST_P(ShelfContextMenuTest, CommandIdsMatchEnumsForHistograms) {
   // Tests that CommandId enums are not changed as the values are used in
   // histograms.
   EXPECT_EQ(0, ash::MENU_OPEN_NEW);
@@ -469,7 +485,7 @@ TEST_F(ShelfContextMenuTest, CommandIdsMatchEnumsForHistograms) {
   EXPECT_EQ(9, ash::NOTIFICATION_CONTAINER);
 }
 
-TEST_F(ShelfContextMenuTest, ArcContextMenuOptions) {
+TEST_P(ShelfContextMenuTest, ArcContextMenuOptions) {
   // Tests that there are the right number of ARC app context menu options. If
   // you're adding a context menu option ensure that you have added the enum to
   // tools/metrics/histograms/enums.xml and that you haven't modified the order
@@ -494,7 +510,7 @@ TEST_F(ShelfContextMenuTest, ArcContextMenuOptions) {
 }
 
 // Tests that the context menu of internal app  is correct.
-TEST_F(ShelfContextMenuTest, InternalAppShelfContextMenu) {
+TEST_P(ShelfContextMenuTest, InternalAppShelfContextMenu) {
   const std::vector<app_list::InternalApp> internal_apps(
       app_list::GetInternalAppList(profile()));
   for (const auto& internal_app : internal_apps) {
@@ -526,7 +542,7 @@ TEST_F(ShelfContextMenuTest, InternalAppShelfContextMenu) {
 }
 
 // Tests that the number of context menu options of internal app is correct.
-TEST_F(ShelfContextMenuTest, InternalAppShelfContextMenuOptionsNumber) {
+TEST_P(ShelfContextMenuTest, InternalAppShelfContextMenuOptionsNumber) {
   const std::vector<app_list::InternalApp> internal_apps(
       app_list::GetInternalAppList(profile()));
   for (const auto& internal_app : internal_apps) {
@@ -551,7 +567,7 @@ TEST_F(ShelfContextMenuTest, InternalAppShelfContextMenuOptionsNumber) {
 
 // Checks some properties for crostini's terminal app's context menu,
 // specifically that every menu item has an icon.
-TEST_F(ShelfContextMenuTest, CrostiniTerminalApp) {
+TEST_P(ShelfContextMenuTest, CrostiniTerminalApp) {
   crostini::CrostiniTestHelper crostini_helper(profile());
   crostini_helper.ReInitializeAppServiceIntegration();
   const std::string app_id = crostini::GetTerminalId();
@@ -580,7 +596,7 @@ TEST_F(ShelfContextMenuTest, CrostiniTerminalApp) {
 
 // Checks the context menu for a "normal" crostini app (i.e. a registered one).
 // Particularly, we ensure that the density changing option exists.
-TEST_F(ShelfContextMenuTest, CrostiniNormalApp) {
+TEST_P(ShelfContextMenuTest, CrostiniNormalApp) {
   crostini::CrostiniTestHelper crostini_helper(profile());
   crostini_helper.ReInitializeAppServiceIntegration();
 
@@ -623,7 +639,7 @@ TEST_F(ShelfContextMenuTest, CrostiniNormalApp) {
 
 // Confirms the menu items for unregistered crostini apps (i.e. apps that do not
 // have an associated .desktop file, and therefore can only be closed).
-TEST_F(ShelfContextMenuTest, CrostiniUnregisteredApps) {
+TEST_P(ShelfContextMenuTest, CrostiniUnregisteredApps) {
   crostini::CrostiniTestHelper crostini_helper(profile());
   crostini_helper.ReInitializeAppServiceIntegration();
 
@@ -645,5 +661,11 @@ TEST_F(ShelfContextMenuTest, CrostiniUnregisteredApps) {
   EXPECT_EQ(menu->GetItemCount(), 1);
   EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::MENU_NEW_WINDOW));
 }
+
+// TODO(crbug.com/1082887): Test with BMO enabled.
+INSTANTIATE_TEST_SUITE_P(All,
+                         ShelfContextMenuTest,
+                         ::testing::Values(ProviderType::kBookmarkApps),
+                         web_app::ProviderTypeParamToString);
 
 }  // namespace

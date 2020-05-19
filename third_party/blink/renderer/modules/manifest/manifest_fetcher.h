@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -40,6 +41,7 @@ class ManifestFetcher final : public GarbageCollected<ManifestFetcher>,
 
   void Start(LocalDOMWindow& window,
              bool use_credentials,
+             ResourceFetcher* resource_fetcher,
              ManifestFetcher::Callback callback);
   void Cancel();
 

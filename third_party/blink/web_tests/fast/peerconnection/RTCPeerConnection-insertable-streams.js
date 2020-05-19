@@ -23,21 +23,21 @@ function areFrameInfosEqual(frame1, frame2) {
          areArrayBuffersEqual(frame1.data, frame2.data);
 }
 
-async function doSignalingHandshake(pc1, pc2) {
+async function exchangeOfferAnswer(pc1, pc2) {
   const offer = await pc2.createOffer({offerToReceiveAudio: true, offerToReceiveVideo: true});
   // TODO(crbug.com/1066819): remove this hack when we do not receive duplicates from RTX
   //   anymore.
   // Munge the SDP to disable bandwidth probing via RTX.
   const sdp = offer.sdp.replace(new RegExp('rtx', 'g'), 'invalid');
-  await pc1.setRemoteDescription({type: 'offer', sdp});
   await pc2.setLocalDescription(offer);
+  await pc1.setRemoteDescription({type: 'offer', sdp});
 
   const answer = await pc1.createAnswer();
-  await pc2.setRemoteDescription(answer);
   await pc1.setLocalDescription(answer);
+  await pc2.setRemoteDescription(answer);
 }
 
-async function doInverseSignalingHandshake(pc1, pc2) {
+async function exchangeOfferAnswerReverse(pc1, pc2) {
   const offer = await pc2.createOffer({offerToReceiveAudio: true, offerToReceiveVideo: true});
   // Munge the SDP to disable bandwidth probing via RTX.
   const sdp = offer.sdp.replace(new RegExp('rtx', 'g'), 'invalid');

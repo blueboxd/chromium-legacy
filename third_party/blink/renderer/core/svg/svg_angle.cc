@@ -366,21 +366,19 @@ void SVGAngle::Add(SVGPropertyBase* other, SVGElement*) {
 
   // Only respect by animations, if from and by are both specified in angles
   // (and not, for example, 'auto').
-  if (OrientType()->EnumValue() != kSVGMarkerOrientAngle ||
-      other_angle->OrientType()->EnumValue() != kSVGMarkerOrientAngle)
+  if (!IsNumeric() || !other_angle->IsNumeric())
     return;
 
   SetValue(Value() + other_angle->Value());
 }
 
 void SVGAngle::Assign(const SVGAngle& other) {
-  SVGMarkerOrientType other_orient_type = other.OrientType()->EnumValue();
-  if (other_orient_type == kSVGMarkerOrientAngle) {
+  if (other.IsNumeric()) {
     NewValueSpecifiedUnits(other.UnitType(), other.ValueInSpecifiedUnits());
     return;
   }
   value_in_specified_units_ = 0;
-  orient_type_->SetEnumValue(other_orient_type);
+  orient_type_->SetEnumValue(other.OrientType()->EnumValue());
 }
 
 void SVGAngle::CalculateAnimatedValue(
@@ -393,13 +391,10 @@ void SVGAngle::CalculateAnimatedValue(
     SVGElement*) {
   auto* from_angle = To<SVGAngle>(from);
   auto* to_angle = To<SVGAngle>(to);
-  SVGMarkerOrientType from_orient_type = from_angle->OrientType()->EnumValue();
-  SVGMarkerOrientType to_orient_type = to_angle->OrientType()->EnumValue();
 
   // We can only interpolate between two SVGAngles with orient-type 'angle',
   // all other cases will use discrete animation.
-  if (from_orient_type != to_orient_type ||
-      from_orient_type != kSVGMarkerOrientAngle) {
+  if (!from_angle->IsNumeric() || !to_angle->IsNumeric()) {
     Assign(percentage < 0.5f ? *from_angle : *to_angle);
     return;
   }
@@ -417,11 +412,14 @@ float SVGAngle::CalculateDistance(SVGPropertyBase* other, SVGElement*) {
 }
 
 void SVGAngle::OrientTypeChanged() {
-  if (OrientType()->EnumValue() == kSVGMarkerOrientAuto ||
-      OrientType()->EnumValue() == kSVGMarkerOrientAutoStartReverse) {
-    unit_type_ = kSvgAngletypeUnspecified;
-    value_in_specified_units_ = 0;
-  }
+  if (IsNumeric())
+    return;
+  unit_type_ = kSvgAngletypeUnspecified;
+  value_in_specified_units_ = 0;
+}
+
+bool SVGAngle::IsNumeric() const {
+  return orient_type_->EnumValue() == kSVGMarkerOrientAngle;
 }
 
 }  // namespace blink

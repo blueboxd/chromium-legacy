@@ -330,19 +330,14 @@ void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {
   }
 }
 
-void PasswordManagerPresenter::RemoveSavedPassword(
-    const std::string& sort_key) {
-  if (TryRemovePasswordEntries(&password_map_, sort_key)) {
-    base::RecordAction(
-        base::UserMetricsAction("PasswordManager_RemoveSavedPassword"));
-  }
-}
-
 void PasswordManagerPresenter::RemoveSavedPasswords(
     const std::vector<std::string>& sort_keys) {
   undo_manager_.StartGroupingActions();
   for (const std::string& sort_key : sort_keys) {
-    RemoveSavedPassword(sort_key);
+    if (TryRemovePasswordEntries(&password_map_, sort_key)) {
+      base::RecordAction(
+          base::UserMetricsAction("PasswordManager_RemoveSavedPassword"));
+    }
   }
   undo_manager_.EndGroupingActions();
 }
@@ -354,19 +349,14 @@ void PasswordManagerPresenter::RemovePasswordException(size_t index) {
   }
 }
 
-void PasswordManagerPresenter::RemovePasswordException(
-    const std::string& sort_key) {
-  if (TryRemovePasswordEntries(&exception_map_, sort_key)) {
-    base::RecordAction(
-        base::UserMetricsAction("PasswordManager_RemovePasswordException"));
-  }
-}
-
 void PasswordManagerPresenter::RemovePasswordExceptions(
     const std::vector<std::string>& sort_keys) {
   undo_manager_.StartGroupingActions();
   for (const std::string& sort_key : sort_keys) {
-    RemovePasswordException(sort_key);
+    if (TryRemovePasswordEntries(&exception_map_, sort_key)) {
+      base::RecordAction(
+          base::UserMetricsAction("PasswordManager_RemovePasswordException"));
+    }
   }
   undo_manager_.EndGroupingActions();
 }

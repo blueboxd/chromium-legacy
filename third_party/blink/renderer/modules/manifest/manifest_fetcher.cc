@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 
 namespace blink {
 
@@ -18,6 +19,7 @@ ManifestFetcher::~ManifestFetcher() = default;
 
 void ManifestFetcher::Start(LocalDOMWindow& window,
                             bool use_credentials,
+                            ResourceFetcher* resource_fetcher,
                             ManifestFetcher::Callback callback) {
   callback_ = std::move(callback);
 
@@ -33,8 +35,8 @@ void ManifestFetcher::Start(LocalDOMWindow& window,
   ResourceLoaderOptions resource_loader_options;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
 
-  loader_ = MakeGarbageCollected<ThreadableLoader>(window, this,
-                                                   resource_loader_options);
+  loader_ = MakeGarbageCollected<ThreadableLoader>(
+      window, this, resource_loader_options, resource_fetcher);
   loader_->Start(std::move(request));
 }
 

@@ -10,5 +10,8 @@ namespace switches {
 // Stops new Shell objects from navigating to a default url.
 const char kNoInitialNavigation[] = "no-initial-navigation";
 
+// Starts the shell with the profile in incognito mode.
+const char kStartInIncognito[] = "start-in-incognito";
+
 }  // namespace switches
 }  //  namespace weblayer

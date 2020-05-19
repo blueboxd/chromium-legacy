@@ -198,7 +198,7 @@ const char kCorbAllowlistAlsoAppliesToOorCorsParamName[] =
 // existing sites might fail to load. The feature flag controls whether a strict
 // check will be used or not.
 const base::Feature kStrictAccessControlAllowListCheck = {
-    "StrictAccessControlAllowListCheck", base::FEATURE_ENABLED_BY_DEFAULT};
+    "StrictAccessControlAllowListCheck", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables preprocessing requests with the Trust Tokens API Fetch flags set,
 // and handling their responses, according to the protocol.

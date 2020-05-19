@@ -1024,7 +1024,7 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
       collect_user_data.privacy_notice_text();
 
   collect_user_data_options_->default_email =
-      delegate_->GetAccountEmailAddress();
+      delegate_->GetEmailAddressForAccessTokenAccount();
 
   return true;
 }

@@ -40,7 +40,7 @@ suite(destination_dialog_interactive_test.suiteName, function() {
     nativeLayer = new NativeLayerStub();
     NativeLayerImpl.instance_ = nativeLayer;
     const localDestinations = [];
-    const destinations = getDestinations(nativeLayer, localDestinations);
+    const destinations = getDestinations(localDestinations);
     const recentDestinations = [makeRecentDestination(destinations[4])];
     nativeLayer.setLocalDestinations(localDestinations);
     const cloudPrintInterface = new CloudPrintInterfaceStub();

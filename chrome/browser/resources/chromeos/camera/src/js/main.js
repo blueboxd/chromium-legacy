@@ -176,36 +176,37 @@ export class App {
    */
   async start() {
     await this.cameraView_.initialize();
-    let ackMigrate = false;
-    filesystem
-        .initialize(() => {
-          // Prompt to migrate pictures if needed.
-          const message = browserProxy.getI18nMessage('migrate_pictures_msg');
-          return nav
-              .open(ViewName.MESSAGE_DIALOG, {message, cancellable: false})
-              .then((acked) => {
-                if (!acked) {
-                  throw new Error('no-migrate');
-                }
-                ackMigrate = true;
-              });
-        })
-        .then(() => {
-          const externalDir = filesystem.getExternalDirectory();
-          assert(externalDir !== null);
-          this.galleryButton_.initialize(externalDir);
-        })
-        .catch((error) => {
-          console.error(error);
-          if (error && error.message === 'no-migrate') {
-            chrome.app.window.current().close();
-            return;
-          }
-          nav.open(ViewName.WARNING, 'filesystem-failure');
-        })
-        .finally(() => {
-          metrics.log(metrics.Type.LAUNCH, ackMigrate);
-        });
+
+    try {
+      await filesystem.initialize();
+
+      const promptMigrate = async () => {
+        // Prompt to migrate pictures if needed.
+        const message = browserProxy.getI18nMessage('migrate_pictures_msg');
+        const acked = await nav.open(
+            ViewName.MESSAGE_DIALOG, {message, cancellable: false});
+        if (!acked) {
+          throw new Error('no-migrate');
+        }
+      };
+      // Migrate pictures might take some time. Since it won't affect other
+      // camera functions, we don't await here to avoid harming UX.
+      filesystem.checkMigration(promptMigrate).then((ackMigrate) => {
+        metrics.log(metrics.Type.LAUNCH, ackMigrate);
+      });
+
+      const externalDir = filesystem.getExternalDirectory();
+      assert(externalDir !== null);
+      this.galleryButton_.initialize(externalDir);
+    } catch (error) {
+      console.error(error);
+      if (error && error.message === 'no-migrate') {
+        chrome.app.window.current().close();
+        return;
+      }
+      nav.open(ViewName.WARNING, 'filesystem-failure');
+    }
+
     const showWindow = (async () => {
       await util.fitWindow();
       chrome.app.window.current().show();

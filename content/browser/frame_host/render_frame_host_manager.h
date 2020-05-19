@@ -305,6 +305,12 @@ class CONTENT_EXPORT RenderFrameHostManager
   // RenderFrameHostManager. Returns MSG_ROUTING_NONE if none is found.
   int GetRoutingIdForSiteInstance(SiteInstance* site_instance);
 
+  // Returns the frame token for a RenderFrameHost or RenderFrameProxyHost
+  // that has the given SiteInstance and is associated with this
+  // RenderFrameHostManager. Returns base::nullopt if none is found.
+  base::Optional<base::UnguessableToken> GetFrameTokenForSiteInstance(
+      SiteInstance* site_instance);
+
   // Notifies the RenderFrameHostManager that a new NavigationRequest has been
   // created and set in the FrameTreeNode so that it can speculatively create a
   // new RenderFrameHost (and potentially a new process) if needed.

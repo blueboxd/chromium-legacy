@@ -322,7 +322,8 @@ version_info::Channel AutofillAssistantPrivateAPI::GetChannel() const {
   return chrome::GetChannel();
 }
 
-std::string AutofillAssistantPrivateAPI::GetAccountEmailAddress() const {
+std::string AutofillAssistantPrivateAPI::GetEmailAddressForAccessTokenAccount()
+    const {
   return "joe@example.com";
 }
 

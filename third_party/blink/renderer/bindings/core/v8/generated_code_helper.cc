@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_processing_stack.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/xml/dom_parser.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 
@@ -186,6 +187,25 @@ base::Optional<size_t> FindIndexInEnumStringTable(
       return i;
   }
   return base::nullopt;
+}
+
+void ReportInvalidEnumSetToAttribute(v8::Isolate* isolate,
+                                     const String& value,
+                                     const String& enum_type_name,
+                                     ExceptionState& exception_state) {
+  ScriptState* script_state = ScriptState::From(isolate->GetCurrentContext());
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+
+  exception_state.ThrowTypeError("The provided value '" + value +
+                                 "' is not a valid enum value of type " +
+                                 enum_type_name + ".");
+  String message = exception_state.Message();
+  exception_state.ClearException();
+
+  execution_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+      mojom::blink::ConsoleMessageSource::kJavaScript,
+      mojom::blink::ConsoleMessageLevel::kWarning, message,
+      SourceLocation::Capture(execution_context)));
 }
 
 bool IsEsIterableObject(v8::Isolate* isolate,

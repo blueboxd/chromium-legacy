@@ -13,6 +13,9 @@
 namespace chromeos {
 namespace ime {
 
+// Only used in tests to create a fake `ImeEngineMainEntry`.
+void FakeEngineMainEntryForTesting();
+
 // An enhanced implementation of the basic InputEngine which allows the input
 // engine to call a customized transliteration library (aka decoder) to provide
 // a premium typing experience.

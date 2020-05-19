@@ -34,11 +34,6 @@ class LoginScreenClient : public ash::LoginScreenClient {
         const std::string& password,
         bool authenticated_by_pin,
         base::OnceCallback<void(bool)> callback) = 0;
-    virtual void HandleAuthenticateUserWithExternalBinary(
-        const AccountId& account_id,
-        base::OnceCallback<void(bool)> callback) = 0;
-    virtual void HandleEnrollUserWithExternalBinary(
-        base::OnceCallback<void(bool)> callback) = 0;
     virtual void HandleAuthenticateUserWithEasyUnlock(
         const AccountId& account_id) = 0;
     virtual void HandleAuthenticateUserWithChallengeResponse(
@@ -86,11 +81,6 @@ class LoginScreenClient : public ash::LoginScreenClient {
       const AccountId& account_id,
       const std::string& password,
       bool authenticated_by_pin,
-      base::OnceCallback<void(bool)> callback) override;
-  void AuthenticateUserWithExternalBinary(
-      const AccountId& account_id,
-      base::OnceCallback<void(bool)> callback) override;
-  void EnrollUserWithExternalBinary(
       base::OnceCallback<void(bool)> callback) override;
   void AuthenticateUserWithEasyUnlock(const AccountId& account_id) override;
   void AuthenticateUserWithChallengeResponse(

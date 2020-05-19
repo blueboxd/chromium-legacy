@@ -8,6 +8,6 @@ PASS Calling replaceTrack(null) on sender not set to session description should 
 PASS Calling replaceTrack(null) on sender set to session description should resolve with sender.track set to null
 PASS Calling replaceTrack on sender with stopped track and and set to session description should resolve with sender.track set to given track
 PASS Calling replaceTrack on sender with similar track and and set to session description should resolve with sender.track set to new track
-FAIL ReplaceTrack transmits the new track not the old track promise_test: Unhandled rejection with value: object "ReferenceError: doSignalingHandshake is not defined"
+PASS ReplaceTrack transmits the new track not the old track
 Harness: the test ran to completion.
 

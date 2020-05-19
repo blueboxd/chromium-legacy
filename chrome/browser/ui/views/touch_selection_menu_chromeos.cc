@@ -51,8 +51,9 @@ void TouchSelectionMenuChromeOS::SetActionsForTesting(
 
 void TouchSelectionMenuChromeOS::CreateButtons() {
   if (action_) {
-    views::LabelButton* button = CreateButton(base::UTF8ToUTF16(action_->title),
-                                              kSmartTextSelectionActionTag);
+    views::LabelButton* button =
+        CreateButton(base::UTF8ToUTF16(action_->title));
+    button->set_tag(kSmartTextSelectionActionTag);
 
     if (action_->bitmap_icon) {
       gfx::ImageSkia original(

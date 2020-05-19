@@ -1042,7 +1042,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnGetSavableResourceLinks();
   void OnGetSerializedHtmlWithLocalLinks(
       const std::map<GURL, base::FilePath>& url_to_local_path,
-      const std::map<int, base::FilePath>& frame_routing_id_to_local_path,
+      const std::map<base::UnguessableToken, base::FilePath>&
+          frame_token_to_local_path,
       bool save_with_empty_url);
   void OnSuppressFurtherDialogs();
   void OnMixedContentFound(const FrameMsg_MixedContentFound_Params& params);

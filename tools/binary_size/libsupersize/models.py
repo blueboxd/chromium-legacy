@@ -626,6 +626,7 @@ class SymbolGroup(BaseSymbol):
                name='',
                section_name=None,
                is_default_sorted=False):
+    assert isinstance(symbols, list)  # Rejects non-reusable generators.
     self._padding = None
     self._size = None
     self._pss = None
@@ -744,15 +745,19 @@ class SymbolGroup(BaseSymbol):
     self.template_name = full_name if template_name is None else template_name
     self.name = full_name if name is None else name
 
-  def IterUniqueSymbols(self):
-    """Yields all symbols, but only one from each alias group."""
+  @staticmethod
+  def _IterUnique(symbol_iter):
     seen_aliases_lists = set()
-    for s in self:
+    for s in symbol_iter:
       if not s.aliases:
         yield s
       elif id(s.aliases) not in seen_aliases_lists:
         seen_aliases_lists.add(id(s.aliases))
         yield s
+
+  def IterUniqueSymbols(self):
+    """Yields all symbols, but only one from each alias group."""
+    return SymbolGroup._IterUnique(self)
 
   def IterLeafSymbols(self):
     """Yields all symbols, recursing into subgroups."""
@@ -775,14 +780,13 @@ class SymbolGroup(BaseSymbol):
       is_default_sorted = self.is_default_sorted
     if section_name is None:
       section_name = self.section_name
-    return self.__class__(
-        symbols,
-        filtered_symbols=filtered_symbols,
-        full_name=full_name,
-        template_name=template_name,
-        name=name,
-        section_name=section_name,
-        is_default_sorted=is_default_sorted)
+    return self.__class__(symbols,
+                          filtered_symbols=filtered_symbols,
+                          full_name=full_name,
+                          template_name=template_name,
+                          name=name,
+                          section_name=section_name,
+                          is_default_sorted=is_default_sorted)
 
   def Sorted(self, cmp_func=None, key=None, reverse=False):
     """Sorts by abs(PSS)."""
@@ -937,10 +941,9 @@ class SymbolGroup(BaseSymbol):
         # Symbols within third_party that do not contain the string "foo".
         symbols.WherePathMatches(r'third_party').WhereMatches('foo').Inverted()
     """
-    return self._CreateTransformed(
-        self._filtered_symbols,
-        filtered_symbols=self._symbols,
-        section_name=SECTION_MULTIPLE)
+    return self._CreateTransformed(self._filtered_symbols,
+                                   filtered_symbols=self._symbols,
+                                   section_name=SECTION_MULTIPLE)
 
   def GroupedBy(self, func, min_count=0, group_factory=None):
     """Returns a SymbolGroup of SymbolGroups, indexed by |func|.
@@ -1042,18 +1045,16 @@ class SymbolGroup(BaseSymbol):
       full_name = token[1]
       sym = symbols[0]
       if token[1].startswith('*'):
-        return self._CreateTransformed(
-            symbols,
-            full_name=full_name,
-            template_name=full_name,
-            name=full_name,
-            section_name=sym.section_name)
-      return self._CreateTransformed(
-          symbols,
-          full_name=full_name,
-          template_name=sym.template_name,
-          name=sym.name,
-          section_name=sym.section_name)
+        return self._CreateTransformed(symbols,
+                                       full_name=full_name,
+                                       template_name=full_name,
+                                       name=full_name,
+                                       section_name=sym.section_name)
+      return self._CreateTransformed(symbols,
+                                     full_name=full_name,
+                                     template_name=sym.template_name,
+                                     name=sym.name,
+                                     section_name=sym.section_name)
 
     # A full second faster to cluster per-section. Plus, don't need create
     # (section_name, name) tuples in cluster_func.
@@ -1080,12 +1081,11 @@ class SymbolGroup(BaseSymbol):
     """
     def group_factory(_, symbols):
       sym = symbols[0]
-      return self._CreateTransformed(
-          symbols,
-          full_name=sym.full_name,
-          template_name=sym.template_name,
-          name=sym.name,
-          section_name=sym.section_name)
+      return self._CreateTransformed(symbols,
+                                     full_name=sym.full_name,
+                                     template_name=sym.template_name,
+                                     name=sym.name,
+                                     section_name=sym.section_name)
 
     return self.GroupedBy(
         lambda s: (same_name_only and s.full_name, id(s.aliases or s)),
@@ -1195,10 +1195,12 @@ class DeltaSymbolGroup(SymbolGroup):
 
   def CountUniqueSymbols(self):
     """Returns (num_unique_before_symbols, num_unique_after_symbols)."""
-    syms = (s.before_symbol for s in self.IterLeafSymbols() if s.before_symbol)
-    before_count = SymbolGroup(syms).CountUniqueSymbols()
-    syms = (s.after_symbol for s in self.IterLeafSymbols() if s.after_symbol)
-    after_count = SymbolGroup(syms).CountUniqueSymbols()
+    syms_iter = (s.before_symbol for s in self.IterLeafSymbols()
+                 if s.before_symbol)
+    before_count = sum(1 for _ in SymbolGroup._IterUnique(syms_iter))
+    syms_iter = (s.after_symbol for s in self.IterLeafSymbols()
+                 if s.after_symbol)
+    after_count = sum(1 for _ in SymbolGroup._IterUnique(syms_iter))
     return before_count, after_count
 
   @property

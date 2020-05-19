@@ -7,6 +7,7 @@ import sys
 import collections
 import re
 import textwrap
+import path_overrides
 from color import Color
 
 _FILE_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -89,13 +90,14 @@ class BaseGenerator:
             raise ValueError('\n%s:\n    %s' % (path, err))
 
     def ApplyTemplate(self, style_generator, path_to_template, params):
-        current_dir = os.path.dirname(os.path.realpath(__file__))
+        loader_root_dir = path_overrides.GetFileSystemLoaderRootDirectory()
         jinja_env = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(current_dir),
+            loader=jinja2.FileSystemLoader(loader_root_dir),
             keep_trailing_newline=True)
         jinja_env.globals.update(style_generator.GetGlobals())
         jinja_env.filters.update(style_generator.GetFilters())
-        template = jinja_env.get_template(path_to_template)
+        template = jinja_env.get_template(
+            path_overrides.GetPathToTemplate(path_to_template))
         return template.render(params)
 
     def Validate(self):

@@ -6,7 +6,7 @@ import {NativeLayer, NativeLayerImpl, PluginProxy} from 'chrome://print/print_pr
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
 import {PDFPluginStub} from 'chrome://test/print_preview/plugin_stub.js';
-import {getCddTemplate, getDefaultInitialSettings, getPdfPrinter} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {getDefaultInitialSettings} from 'chrome://test/print_preview/print_preview_test_utils.js';
 
 window.print_button_test = {};
 print_button_test.suiteName = 'PrintButtonTest';
@@ -42,9 +42,6 @@ suite(print_button_test.suiteName, function() {
       {printerName: 'FooName', deviceName: 'FooDevice'},
     ];
     nativeLayer.setLocalDestinations(localDestinationInfos);
-    nativeLayer.setLocalDestinationCapabilities(
-        getCddTemplate(initialSettings.printerName));
-    nativeLayer.setLocalDestinationCapabilities(getPdfPrinter());
 
     const pluginProxy = new PDFPluginStub();
     pluginProxy.setPluginCompatible(true);

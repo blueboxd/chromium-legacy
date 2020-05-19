@@ -1666,7 +1666,7 @@ TEST_F(CollectUserDataActionTest, InitialSelectsProfileFromDefaultEmail) {
   contact_details->set_request_payer_email(true);
   contact_details->set_contact_details_name("profile");
 
-  ON_CALL(mock_action_delegate_, GetAccountEmailAddress())
+  ON_CALL(mock_action_delegate_, GetEmailAddressForAccessTokenAccount())
       .WillByDefault(Return("berta.west@gmail.com"));
 
   EXPECT_CALL(

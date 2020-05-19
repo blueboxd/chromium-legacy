@@ -52,6 +52,7 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/types/event_type.h"
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
@@ -286,8 +287,10 @@ void SimulateTouchGestureAt(WebContents* web_contents,
                             blink::WebInputEvent::Type type);
 
 #if defined(USE_AURA)
-// Generates a TouchStart at |point|.
-void SimulateTouchPressAt(WebContents* web_contents, const gfx::Point& point);
+// Generates a TouchEvent of |event_type| at |point|.
+void SimulateTouchEventAt(WebContents* web_contents,
+                          ui::EventType event_type,
+                          const gfx::Point& point);
 
 void SimulateLongTapAt(WebContents* web_contents, const gfx::Point& point);
 #endif

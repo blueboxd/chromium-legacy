@@ -156,8 +156,9 @@ void ManifestManager::FetchManifest() {
   }
 
   LocalDOMWindow& window = *GetSupplementable();
+  ResourceFetcher* document_fetcher = window.document()->Fetcher();
   fetcher_ = MakeGarbageCollected<ManifestFetcher>(manifest_url_);
-  fetcher_->Start(window, ManifestUseCredentials(),
+  fetcher_->Start(window, ManifestUseCredentials(), document_fetcher,
                   WTF::Bind(&ManifestManager::OnManifestFetchComplete,
                             WrapWeakPersistent(this), window.Url()));
 }

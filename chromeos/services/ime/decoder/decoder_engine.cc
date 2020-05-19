@@ -16,6 +16,9 @@ namespace ime {
 
 namespace {
 
+// Whether to create a fake main entry.
+bool g_fake_main_entry_for_testing = false;
+
 #if BUILDFLAG(ENABLE_CROS_IME_SANITY_TEST_SO)
 // This is for development purposes only.
 const char kDecoderLibName[] = "imesanitytest";
@@ -61,9 +64,17 @@ class ClientDelegate : public ImeClientDelegate {
 
 }  // namespace
 
+void FakeEngineMainEntryForTesting() {
+  g_fake_main_entry_for_testing = true;
+}
+
 DecoderEngine::DecoderEngine(ImeCrosPlatform* platform) : platform_(platform) {
-  if (!TryLoadDecoder()) {
-    LOG(ERROR) << "DecoderEngine INIT FAILED!";
+  if (g_fake_main_entry_for_testing) {
+    // TODO(b/156897880): Impl the fake main entry.
+  } else {
+    if (!TryLoadDecoder()) {
+      LOG(ERROR) << "DecoderEngine INIT FAILED!";
+    }
   }
 }
 

@@ -98,7 +98,8 @@ class ClientAndroid : public Client,
   void AttachUI() override;
   void DestroyUI() override;
   version_info::Channel GetChannel() const override;
-  std::string GetAccountEmailAddress() const override;
+  std::string GetEmailAddressForAccessTokenAccount() const override;
+  std::string GetChromeSignedInEmailAddress() const override;
   AccessTokenFetcher* GetAccessTokenFetcher() override;
   autofill::PersonalDataManager* GetPersonalDataManager() const override;
   password_manager::PasswordManagerClient* GetPasswordManagerClient()

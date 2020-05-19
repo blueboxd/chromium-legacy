@@ -197,7 +197,7 @@ class AutofillAssistantPrivateAPI : public BrowserContextKeyedAPI,
   void AttachUI() override;
   void DestroyUI() override;
   version_info::Channel GetChannel() const override;
-  std::string GetAccountEmailAddress() const override;
+  std::string GetEmailAddressForAccessTokenAccount() const override;
   autofill_assistant::AccessTokenFetcher* GetAccessTokenFetcher() override;
   autofill::PersonalDataManager* GetPersonalDataManager() const override;
   password_manager::PasswordManagerClient* GetPasswordManagerClient()

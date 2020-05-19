@@ -307,7 +307,7 @@ void ServiceImpl::OnFetchAccessToken(bool success,
 
 std::string ServiceImpl::GetClientAccountHash() const {
   std::string chrome_account_sha_bin =
-      crypto::SHA256HashString(client_->GetAccountEmailAddress());
+      crypto::SHA256HashString(client_->GetChromeSignedInEmailAddress());
   return base::ToLowerASCII(base::HexEncode(chrome_account_sha_bin.data(),
                                             chrome_account_sha_bin.size()));
 }

@@ -42,18 +42,6 @@ export class BrowserProxy {
   async localStorageRemove(items) {}
 
   /**
-   * @return {!Promise<boolean>}
-   * @abstract
-   */
-  async checkMigrated() {}
-
-  /**
-   * @return {!Promise}
-   * @abstract
-   */
-  async doneMigrate() {}
-
-  /**
    * @return {!Promise<string>}
    * @abstract
    */

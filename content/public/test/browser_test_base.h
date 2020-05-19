@@ -127,6 +127,8 @@ class BrowserTestBase : public testing::Test {
     return embedded_test_server_.get();
   }
 
+  bool set_up_called() { return set_up_called_; }
+
 #if defined(OS_POSIX)
   // This is only needed by a test that raises SIGTERM to ensure that a specific
   // codepath is taken.

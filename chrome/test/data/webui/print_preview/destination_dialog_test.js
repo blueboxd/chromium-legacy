@@ -56,13 +56,13 @@ suite(destination_dialog_test.suiteName, function() {
     cloudPrintInterface = new CloudPrintInterfaceStub();
     destinationStore = createDestinationStore();
     destinationStore.setCloudPrintInterface(cloudPrintInterface);
-    destinations = getDestinations(nativeLayer, localDestinations);
+    destinations = getDestinations(localDestinations);
     recentDestinations = [makeRecentDestination(destinations[4])];
+    nativeLayer.setLocalDestinations(localDestinations);
     destinationStore.init(
         false /* pdfPrinterDisabled */, 'FooDevice' /* printerName */,
         '' /* serializedDefaultDestinationSelectionRulesStr */,
         recentDestinations /* recentDestinations */);
-    nativeLayer.setLocalDestinations(localDestinations);
 
     // Set up dialog
     dialog = document.createElement('print-preview-destination-dialog');

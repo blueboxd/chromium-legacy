@@ -18741,8 +18741,14 @@
               'type': 'object',
               'properties': {
                 'day': { '$ref': 'WeekDay' },
-                'charge_start_time': { '$ref': 'Time' },
-                'charge_end_time': { '$ref': 'Time' }
+                'charge_start_time': {
+                  'description': '''Time when the device will start charging, interpreted in the device's local time zone.''',
+                  '$ref': 'Time'
+                },
+                'charge_end_time': {
+                  'description': '''Time when the device will stop charging, interpreted in the device's local time zone.''',
+                  '$ref': 'Time'
+                }
               }
             }
           }

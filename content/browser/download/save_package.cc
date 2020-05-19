@@ -23,6 +23,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_item_impl.h"
 #include "components/download/public/common/download_stats.h"
@@ -994,7 +995,7 @@ void SavePackage::GetSerializedHtmlWithLocalLinksForFrame(
   // those that the given frame had access to already (because it contained
   // the savable resources / subframes associated with save items).
   std::map<GURL, base::FilePath> url_to_local_path;
-  std::map<int, base::FilePath> routing_id_to_local_path;
+  std::map<base::UnguessableToken, base::FilePath> frame_token_to_local_path;
   auto it = frame_tree_node_id_to_contained_save_items_.find(
       target_frame_tree_node_id);
   if (it != frame_tree_node_id_to_contained_save_items_.end()) {
@@ -1013,7 +1014,8 @@ void SavePackage::GetSerializedHtmlWithLocalLinksForFrame(
       }
       local_path = local_path.Append(save_item->full_path().BaseName());
 
-      // Insert the link into |url_to_local_path| or |routing_id_to_local_path|.
+      // Insert the link into |url_to_local_path| or
+      // |frame_token_to_local_path|.
       if (save_item->save_source() != SaveFileCreateInfo::SAVE_FILE_FROM_DOM) {
         DCHECK_EQ(FrameTreeNode::kFrameTreeNodeInvalidId,
                   save_item->frame_tree_node_id());
@@ -1027,19 +1029,20 @@ void SavePackage::GetSerializedHtmlWithLocalLinksForFrame(
           continue;
         }
 
-        int routing_id =
+        base::Optional<base::UnguessableToken> frame_token =
             save_item_frame_tree_node->render_manager()
-                ->GetRoutingIdForSiteInstance(target->GetSiteInstance());
-        DCHECK_NE(MSG_ROUTING_NONE, routing_id);
+                ->GetFrameTokenForSiteInstance(target->GetSiteInstance());
 
-        routing_id_to_local_path[routing_id] = local_path;
+        DCHECK(frame_token.has_value());
+
+        frame_token_to_local_path[frame_token.value()] = local_path;
       }
     }
   }
 
   // Ask target frame to serialize itself.
   target->Send(new FrameMsg_GetSerializedHtmlWithLocalLinks(
-      target->GetRoutingID(), url_to_local_path, routing_id_to_local_path,
+      target->GetRoutingID(), url_to_local_path, frame_token_to_local_path,
       web_contents()->GetBrowserContext()->IsOffTheRecord()));
 }
 

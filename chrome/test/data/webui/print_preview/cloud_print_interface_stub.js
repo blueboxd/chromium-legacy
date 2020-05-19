@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CloudPrintInterfaceEventType, createDestinationKey, DestinationOrigin} from 'chrome://print/print_preview.js';
+import {CloudPrintInterface, CloudPrintInterfaceEventType, createDestinationKey, Destination, DestinationOrigin} from 'chrome://print/print_preview.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
-import {getCddTemplate} from 'chrome://test/print_preview/print_preview_test_utils.js';
-import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+
+import {TestBrowserProxy} from '../test_browser_proxy.m.js';
+
+import {getCddTemplate} from './print_preview_test_utils.js';
 
 /**
  * Test version of the cloud print interface.
@@ -59,6 +61,12 @@ export class CloudPrintInterfaceStub extends TestBrowserProxy {
     this.users_ = users;
   }
 
+  /** @override */
+  areCookieDestinationsDisabled() {}
+
+  /** @override */
+  processInvite() {}
+
   /**
    * @param {!Destination} printer The destination to return
    *     when the printer is requested.
@@ -92,8 +100,9 @@ export class CloudPrintInterfaceStub extends TestBrowserProxy {
   search(account) {
     this.methodCalled('search', account);
     this.searchInProgress_ = true;
-    const activeUser =
-        this.users_.includes(account) ? account : (this.users_[0] || '');
+    const activeUser = !!account && this.users_.includes(account) ?
+        account :
+        (this.users_[0] || '');
     if (activeUser) {
       this.eventTarget_.dispatchEvent(new CustomEvent(
           CloudPrintInterfaceEventType.UPDATE_USERS,
@@ -138,11 +147,12 @@ export class CloudPrintInterfaceStub extends TestBrowserProxy {
       this.methodCalled(
           'printer', {id: printerId, origin: origin, account: account});
       const printer = this.cloudPrintersMap_.get(
-          createDestinationKey(printerId, origin, account));
+          createDestinationKey(printerId, origin, account || ''));
 
       if (!this.initialized_) {
-        const activeUser =
-            this.users_.includes(account) ? account : (this.users_[0] || '');
+        const activeUser = !!account && this.users_.includes(account) ?
+            account :
+            (this.users_[0] || '');
         if (activeUser) {
           this.eventTarget_.dispatchEvent(new CustomEvent(
               CloudPrintInterfaceEventType.UPDATE_USERS,
@@ -151,7 +161,7 @@ export class CloudPrintInterfaceStub extends TestBrowserProxy {
         }
       }
       if (printer) {
-        printer.capabilities = getCddTemplate(printerId);
+        printer.capabilities = getCddTemplate(printerId).capabilities;
         this.eventTarget_.dispatchEvent(new CustomEvent(
             CloudPrintInterfaceEventType.PRINTER_DONE, {detail: printer}));
       } else {

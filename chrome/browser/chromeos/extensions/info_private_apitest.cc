@@ -72,8 +72,6 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, TestGetAndSet) {
 
   ASSERT_FALSE(profile()->GetPrefs()->GetBoolean(
       prefs::kLanguageSendFunctionKeys));
-  ASSERT_FALSE(
-      profile()->GetPrefs()->GetBoolean(prefs::kCameraMediaConsolidated));
 
   ASSERT_TRUE(RunComponentExtensionTest("chromeos_info_private/basic"))
       << message_;
@@ -89,7 +87,6 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, TestGetAndSet) {
   ASSERT_TRUE(prefs->GetBoolean(ash::prefs::kAccessibilityAutoclickEnabled));
 
   ASSERT_TRUE(prefs->GetBoolean(prefs::kLanguageSendFunctionKeys));
-  ASSERT_TRUE(prefs->GetBoolean(prefs::kCameraMediaConsolidated));
 }
 
 // TODO(steel): Investigate merging the following tests.

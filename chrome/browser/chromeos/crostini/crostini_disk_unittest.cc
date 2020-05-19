@@ -263,5 +263,21 @@ TEST_F(CrostiniDiskTestDbus, DiskResizeEventualSuccessReportsSuccess) {
   EXPECT_EQ(result, true);
 }
 
+TEST_F(CrostiniDiskTestDbus, DiskResizeNegativeHeadroom) {
+  vm_tools::concierge::ListVmDisksResponse response;
+  auto* image = response.add_images();
+  response.set_success(true);
+  image->set_name("vm_name");
+  image->set_image_type(vm_tools::concierge::DiskImageType::DISK_IMAGE_RAW);
+  image->set_min_size(1000);
+  image->set_size(3 * kGiB);
+  auto disk_info =
+      OnListVmDisksWithResult("vm_name", kDiskHeadroomBytes - 1, response);
+  ASSERT_TRUE(disk_info);
+
+  ASSERT_TRUE(disk_info->ticks.size() > 0);
+  ASSERT_EQ(disk_info->ticks.at(disk_info->ticks.size() - 1)->value, 3 * kGiB);
+}
+
 }  // namespace disk
 }  // namespace crostini

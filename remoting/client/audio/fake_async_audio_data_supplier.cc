@@ -4,6 +4,7 @@
 
 #include "remoting/client/audio/fake_async_audio_data_supplier.h"
 
+#include <string.h>
 #include <utility>
 
 #include "base/check_op.h"

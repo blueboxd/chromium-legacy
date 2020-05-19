@@ -467,7 +467,7 @@ suite(model_test.suiteName, function() {
 
     // Confirm toggles.
     assertEquals(true, model.getSettingValue('color'));
-    assertEquals('CUSTOM_SQUARE', model.getSettingValue('mediaSize').name);
+    assertEquals('CUSTOM', model.getSettingValue('mediaSize').name);
     assertEquals(100, model.getSettingValue('dpi').horizontal_dpi);
     assertEquals(true, model.getSettingValue('duplex'));
 

@@ -112,7 +112,33 @@ TEST_F(DurableStoragePermissionContextTest, Bookmarked) {
 
 TEST_F(DurableStoragePermissionContextTest, BookmarkAndIncognitoMode) {
   TestDurablePermissionContext permission_context(
-      profile()->GetOffTheRecordProfile());
+      profile()->GetPrimaryOTRProfile());
+  GURL url("https://www.google.com");
+  MakeOriginImportant(url);
+  NavigateAndCommit(url);
+
+  const permissions::PermissionRequestID id(
+      web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      web_contents()->GetMainFrame()->GetRoutingID(), -1);
+
+  ASSERT_EQ(0, permission_context.permission_set_count());
+  ASSERT_FALSE(permission_context.last_permission_set_persisted());
+  ASSERT_EQ(CONTENT_SETTING_DEFAULT,
+            permission_context.last_permission_set_setting());
+
+  permission_context.DecidePermission(
+      web_contents(), id, url, url, true /* user_gesture */, base::DoNothing());
+  // Success.
+  EXPECT_EQ(1, permission_context.permission_set_count());
+  EXPECT_TRUE(permission_context.last_permission_set_persisted());
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            permission_context.last_permission_set_setting());
+}
+
+TEST_F(DurableStoragePermissionContextTest, BookmarkAndNonPrimaryOTRProfile) {
+  TestDurablePermissionContext permission_context(
+      profile()->GetOffTheRecordProfile(
+          Profile::OTRProfileID("Test::DurableStorage")));
   GURL url("https://www.google.com");
   MakeOriginImportant(url);
   NavigateAndCommit(url);

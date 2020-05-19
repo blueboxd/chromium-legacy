@@ -2,16 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CloudPrintInterfaceEventType, CloudPrintInterfaceImpl, Destination, DestinationConnectionStatus, DestinationErrorType, DestinationOrigin, DestinationState, DestinationStore, DestinationType, Error, makeRecentDestination, NativeLayer, NativeLayerImpl, State} from 'chrome://print/print_preview.js';
+import {CloudPrintInterface, CloudPrintInterfaceEventType, CloudPrintInterfaceImpl, Destination, DestinationConnectionStatus, DestinationErrorType, DestinationOrigin, DestinationState, DestinationStore, DestinationType, Error, LocalDestinationInfo, makeRecentDestination, NativeLayer, NativeLayerImpl, RecentDestination, State} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isChromeOS, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {CloudPrintInterfaceStub} from 'chrome://test/print_preview/cloud_print_interface_stub.js';
-import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
-import {getDestinations, getGoogleDriveDestination, getSaveAsPdfDestination, setupTestListenerElement} from 'chrome://test/print_preview/print_preview_test_utils.js';
-import {eventToPromise, fakeDataBind, waitBeforeNextRender} from 'chrome://test/test_util.m.js';
+
+import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+import {eventToPromise, fakeDataBind, waitBeforeNextRender} from '../test_util.m.js';
+
+import {CloudPrintInterfaceStub} from './cloud_print_interface_stub.js';
+import {NativeLayerStub} from './native_layer_stub.js';
+import {getDestinations, getGoogleDriveDestination, getSaveAsPdfDestination, setupTestListenerElement} from './print_preview_test_utils.js';
 
 window.destination_settings_test = {};
+const destination_settings_test = window.destination_settings_test;
 destination_settings_test.suiteName = 'DestinationSettingsTest';
 /** @enum {string} */
 destination_settings_test.TestNames = {
@@ -35,13 +39,13 @@ destination_settings_test.TestNames = {
 };
 
 suite(destination_settings_test.suiteName, function() {
-  /** @type {?PrintPreviewDestinationSettingsElement} */
-  let destinationSettings = null;
+  /** @type {!PrintPreviewDestinationSettingsElement} */
+  let destinationSettings;
 
-  /** @type {?NativeLayer} */
+  /** @type {?NativeLayerStub} */
   let nativeLayer = null;
 
-  /** @type {?CloudPrintInterface} */
+  /** @type {?CloudPrintInterfaceStub} */
   let cloudPrintInterface = null;
 
   /** @type {!Array<!RecentDestination>} */
@@ -75,7 +79,7 @@ suite(destination_settings_test.suiteName, function() {
     nativeLayer = new NativeLayerStub();
     NativeLayerImpl.instance_ = nativeLayer;
     localDestinations = [];
-    destinations = getDestinations(nativeLayer, localDestinations);
+    destinations = getDestinations(localDestinations);
     nativeLayer.setLocalDestinations(localDestinations);
     cloudPrintInterface = new CloudPrintInterfaceStub();
     CloudPrintInterfaceImpl.instance_ = cloudPrintInterface;
@@ -85,7 +89,8 @@ suite(destination_settings_test.suiteName, function() {
     document.body.appendChild(model);
 
     destinationSettings =
-        document.createElement('print-preview-destination-settings');
+        /** @type {!PrintPreviewDestinationSettingsElement} */ (
+            document.createElement('print-preview-destination-settings'));
     destinationSettings.settings = model.settings;
     destinationSettings.state = State.NOT_READY;
     destinationSettings.disabled = true;
@@ -98,7 +103,7 @@ suite(destination_settings_test.suiteName, function() {
   test(
       assert(destination_settings_test.TestNames.ChangeDropdownState),
       function() {
-        const dropdown = destinationSettings.$.destinationSelect;
+        const dropdown = destinationSettings.$$('#destinationSelect');
         // Initial state: No destination store means that there is no
         // destination yet.
         assertFalse(dropdown.loaded);
@@ -115,7 +120,7 @@ suite(destination_settings_test.suiteName, function() {
         return eventToPromise(
                    DestinationStore.EventType
                        .SELECTED_DESTINATION_CAPABILITIES_READY,
-                   destinationSettings.destinationStore_)
+                   destinationSettings.getDestinationStoreForTest())
             .then(() => {
               // The capabilities ready event results in |destinationState|
               // changing to SELECTED, which enables and shows the dropdown even
@@ -137,7 +142,7 @@ suite(destination_settings_test.suiteName, function() {
               // user can fix the error.
               destinationSettings.state = State.READY;
               destinationSettings.disabled = false;
-              destinationSettings.destinationStore_.dispatchEvent(
+              destinationSettings.getDestinationStoreForTest().dispatchEvent(
                   new CustomEvent(
                       DestinationStore.EventType.ERROR,
                       {detail: DestinationErrorType.INVALID}));
@@ -151,7 +156,7 @@ suite(destination_settings_test.suiteName, function() {
               assertFalse(dropdown.disabled);
 
               // Simulate the user having no printers.
-              destinationSettings.destinationStore_.dispatchEvent(
+              destinationSettings.getDestinationStoreForTest().dispatchEvent(
                   new CustomEvent(
                       DestinationStore.EventType.ERROR,
                       {detail: DestinationErrorType.NO_DESTINATIONS}));
@@ -196,7 +201,7 @@ suite(destination_settings_test.suiteName, function() {
     return eventToPromise(
                CloudPrintInterfaceEventType.PRINTER_DONE,
                cloudPrintInterface.getEventTarget())
-        .then(waitBeforeNextRender(destinationSettings));
+        .then(() => waitBeforeNextRender(destinationSettings));
   }
 
   /**
@@ -213,9 +218,8 @@ suite(destination_settings_test.suiteName, function() {
    *     destinations in the dropdown.
    */
   function assertDropdownItems(expectedDestinations) {
-    const options =
-        destinationSettings.$.destinationSelect.shadowRoot.querySelectorAll(
-            'option:not([hidden])');
+    const options = destinationSettings.$$('#destinationSelect')
+                        .shadowRoot.querySelectorAll('option:not([hidden])');
     assertEquals(expectedDestinations.length + 1, options.length);
     expectedDestinations.forEach((expectedValue, index) => {
       assertEquals(expectedValue, options[index].value);
@@ -236,7 +240,8 @@ suite(destination_settings_test.suiteName, function() {
               assertEquals(
                   Destination.GooglePromotedId.SAVE_AS_PDF,
                   destinationSettings.destination.id);
-              assertFalse(destinationSettings.$.destinationSelect.disabled);
+              assertFalse(
+                  destinationSettings.$$('#destinationSelect').disabled);
               assertDropdownItems(['Save as PDF/local/']);
 
               // If the user is signed in, Save to Drive should be displayed.
@@ -270,7 +275,8 @@ suite(destination_settings_test.suiteName, function() {
               // This will result in the destination store setting the most
               // recent destination.
               assertEquals('ID1', destinationSettings.destination.id);
-              assertFalse(destinationSettings.$.destinationSelect.disabled);
+              assertFalse(
+                  destinationSettings.$$('#destinationSelect').disabled);
               assertDropdownItems([
                 makeLocalDestinationKey('ID1'),
                 makeLocalDestinationKey('ID2'),
@@ -299,13 +305,14 @@ suite(destination_settings_test.suiteName, function() {
       function() {
         recentDestinations = destinations.slice(0, 3).map(
             destination => makeRecentDestination(destination));
+        const missing = localDestinations.splice(1, 1)[0];
+        nativeLayer.setLocalDestinations(localDestinations);
         nativeLayer.setLocalDestinationCapabilities(
             {
-              printer: localDestinations[1],
+              printer: missing,
               capabilities: null,
             },
             true);
-        nativeLayer.setLocalDestinations(localDestinations.splice(1, 1));
         const whenCapabilitiesDone = nativeLayer.waitForMultipleCapabilities(3);
 
         initialize();
@@ -319,7 +326,8 @@ suite(destination_settings_test.suiteName, function() {
               // This will result in the destination store setting the most
               // recent destination.
               assertEquals('ID1', destinationSettings.destination.id);
-              assertFalse(destinationSettings.$.destinationSelect.disabled);
+              assertFalse(
+                  destinationSettings.$$('#destinationSelect').disabled);
               assertDropdownItems([
                 makeLocalDestinationKey('ID1'),
                 makeLocalDestinationKey('ID3'),
@@ -357,7 +365,7 @@ suite(destination_settings_test.suiteName, function() {
           // This will result in the destination store setting the most recent
           // destination.
           assertEquals('ID1', destinationSettings.destination.id);
-          assertFalse(destinationSettings.$.destinationSelect.disabled);
+          assertFalse(destinationSettings.$$('#destinationSelect').disabled);
           assertDropdownItems([
             makeLocalDestinationKey('ID1'),
             makeLocalDestinationKey('ID3'),
@@ -398,7 +406,8 @@ suite(destination_settings_test.suiteName, function() {
               // This will result in the destination store setting the most
               // recent destination.
               assertEquals('ID1', destinationSettings.destination.id);
-              assertFalse(destinationSettings.$.destinationSelect.disabled);
+              assertFalse(
+                  destinationSettings.$$('#destinationSelect').disabled);
 
               // Google Drive does not show up even though it is recent, since
               // the user is not signed in and the destination is not available.
@@ -434,7 +443,7 @@ suite(destination_settings_test.suiteName, function() {
             makeRecentDestination(getGoogleDriveDestination(defaultUser)));
         const whenSelected = eventToPromise(
             DestinationStore.EventType.DESTINATION_SELECT,
-            destinationSettings.destinationStore_);
+            destinationSettings.getDestinationStoreForTest());
         initialAccounts = [defaultUser];
         cloudPrintInterface.setPrinter(getGoogleDriveDestination(defaultUser));
         initialize();
@@ -448,7 +457,8 @@ suite(destination_settings_test.suiteName, function() {
               // recent destination.
               assertEquals(
                   '__google__docs', destinationSettings.destination.id);
-              assertFalse(destinationSettings.$.destinationSelect.disabled);
+              assertFalse(
+                  destinationSettings.$$('#destinationSelect').disabled);
 
               assertDropdownItems([
                 makeLocalDestinationKey('ID2'),
@@ -470,7 +480,7 @@ suite(destination_settings_test.suiteName, function() {
     const whenCapabilitiesDone = nativeLayer.waitForMultipleCapabilities(2);
     initialize();
 
-    const dropdown = destinationSettings.$.destinationSelect;
+    const dropdown = destinationSettings.$$('#destinationSelect');
 
     return whenCapabilitiesDone
         .then(() => {
@@ -492,7 +502,7 @@ suite(destination_settings_test.suiteName, function() {
           // Simulate selection of Save as PDF printer.
           const whenDestinationSelect = eventToPromise(
               DestinationStore.EventType.DESTINATION_SELECT,
-              destinationSettings.destinationStore_);
+              destinationSettings.getDestinationStoreForTest());
           dropdown.fire('selected-option-change', 'Save as PDF/local/');
 
           // Ensure this fires the destination select event.
@@ -518,7 +528,7 @@ suite(destination_settings_test.suiteName, function() {
             makeRecentDestination(getGoogleDriveDestination(defaultUser)));
         const whenCapabilitiesDone = nativeLayer.waitForMultipleCapabilities(2);
         initialize();
-        const dropdown = destinationSettings.$.destinationSelect;
+        const dropdown = destinationSettings.$$('#destinationSelect');
 
         return whenCapabilitiesDone
             .then(() => {
@@ -552,7 +562,7 @@ suite(destination_settings_test.suiteName, function() {
               // Simulate selection of Google Drive printer.
               const whenDestinationSelect = eventToPromise(
                   DestinationStore.EventType.DESTINATION_SELECT,
-                  destinationSettings.destinationStore_);
+                  destinationSettings.getDestinationStoreForTest());
               dropdown.fire(
                   'selected-option-change',
                   '__google__docs/cookies/foo@chromium.org');
@@ -575,7 +585,7 @@ suite(destination_settings_test.suiteName, function() {
             destination => makeRecentDestination(destination));
         const whenCapabilitiesDone = nativeLayer.waitForMultipleCapabilities(3);
         initialize();
-        const dropdown = destinationSettings.$.destinationSelect;
+        const dropdown = destinationSettings.$$('#destinationSelect');
 
         return whenCapabilitiesDone
             .then(() => {
@@ -596,7 +606,7 @@ suite(destination_settings_test.suiteName, function() {
               // Simulate selection of Save as PDF printer.
               const whenDestinationSelect = eventToPromise(
                   DestinationStore.EventType.DESTINATION_SELECT,
-                  destinationSettings.destinationStore_);
+                  destinationSettings.getDestinationStoreForTest());
               dropdown.fire(
                   'selected-option-change', makeLocalDestinationKey('ID2'));
               return whenDestinationSelect;
@@ -612,7 +622,7 @@ suite(destination_settings_test.suiteName, function() {
         destination => makeRecentDestination(destination));
     const whenCapabilitiesDone = nativeLayer.waitForMultipleCapabilities(3);
     initialize();
-    const dropdown = destinationSettings.$.destinationSelect;
+    const dropdown = destinationSettings.$$('#destinationSelect');
 
     return whenCapabilitiesDone
         .then(() => {
@@ -666,7 +676,7 @@ suite(destination_settings_test.suiteName, function() {
         initialize();
         flush();
 
-        const dropdown = destinationSettings.$.destinationSelect;
+        const dropdown = destinationSettings.$$('#destinationSelect');
 
         return cloudPrintInterface.whenCalled('printer')
             .then(() => {
@@ -694,7 +704,7 @@ suite(destination_settings_test.suiteName, function() {
               assertTrue(dialog.isOpen());
               const whenAdded = eventToPromise(
                   DestinationStore.EventType.DESTINATIONS_INSERTED,
-                  destinationSettings.destinationStore_);
+                  destinationSettings.getDestinationStoreForTest());
               // Simulate setting a new account.
               dialog.fire('account-change', account2);
               flush();
@@ -725,9 +735,10 @@ suite(destination_settings_test.suiteName, function() {
 
   function selectDestination(destination) {
     const storeDestination =
-        destinationSettings.destinationStore_.destinations().find(
+        destinationSettings.getDestinationStoreForTest().destinations().find(
             d => d.key === destination.key);
-    destinationSettings.destinationStore_.selectDestination(storeDestination);
+    destinationSettings.getDestinationStoreForTest().selectDestination(
+        assert(storeDestination));
     flush();
   }
 
@@ -752,7 +763,8 @@ suite(destination_settings_test.suiteName, function() {
 
               // Add printers to store.
               nativeLayer.resetResolver('getPrinterCapabilities');
-              destinationSettings.destinationStore_.startLoadAllDestinations();
+              destinationSettings.getDestinationStoreForTest()
+                  .startLoadAllDestinations();
               return nativeLayer.whenCalled('getPrinters');
             })
             .then(() => {
@@ -768,8 +780,8 @@ suite(destination_settings_test.suiteName, function() {
               // Reselect a recent destination. Still 2 destinations, but in a
               // different order.
               nativeLayer.resetResolver('getPrinterCapabilities');
-              destinationSettings.$.destinationSelect.dispatchEvent(
-                  new CustomEvent('selected-option-change', {
+              destinationSettings.$$('#destinationSelect')
+                  .dispatchEvent(new CustomEvent('selected-option-change', {
                     detail: 'Save as PDF/local/',
                   }));
               flush();
@@ -823,7 +835,8 @@ suite(destination_settings_test.suiteName, function() {
               assertEquals(
                   Destination.GooglePromotedId.DOCS,
                   destinationSettings.destination.id);
-              assertFalse(destinationSettings.$.destinationSelect.disabled);
+              assertFalse(
+                  destinationSettings.$$('#destinationSelect').disabled);
               assertDropdownItems([
                 makeLocalDestinationKey('ID2'),
                 makeLocalDestinationKey('ID3'),
@@ -836,7 +849,8 @@ suite(destination_settings_test.suiteName, function() {
               flush();
 
               assertEquals('ID2', destinationSettings.destination.id);
-              assertFalse(destinationSettings.$.destinationSelect.disabled);
+              assertFalse(
+                  destinationSettings.$$('#destinationSelect').disabled);
               assertDropdownItems([
                 makeLocalDestinationKey('ID2'),
                 makeLocalDestinationKey('ID3'),
@@ -916,7 +930,7 @@ suite(destination_settings_test.suiteName, function() {
                 nativeLayer.resetResolver('getEulaUrl');
 
                 // Add printers to the store.
-                destinationSettings.destinationStore_
+                destinationSettings.getDestinationStoreForTest()
                     .startLoadAllDestinations();
                 return nativeLayer.whenCalled('getPrinters');
               })
@@ -948,8 +962,8 @@ suite(destination_settings_test.suiteName, function() {
                 // it. Since capabilities for this destination are already set,
                 // we don't try to fetch the license again.
                 nativeLayer.resetResolver('getPrinterCapabilities');
-                destinationSettings.$.destinationSelect.fire(
-                    'selected-option-change', 'ID1/chrome_os/');
+                destinationSettings.$$('#destinationSelect')
+                    .fire('selected-option-change', 'ID1/chrome_os/');
               })
               .then(() => {
                 assertEquals(

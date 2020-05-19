@@ -1124,8 +1124,10 @@ void SimulateTapWithModifiersAt(WebContents* web_contents,
 }
 
 #if defined(USE_AURA)
-void SimulateTouchPressAt(WebContents* web_contents, const gfx::Point& point) {
-  ui::TouchEvent touch(ui::ET_TOUCH_PRESSED, point, base::TimeTicks(),
+void SimulateTouchEventAt(WebContents* web_contents,
+                          ui::EventType event_type,
+                          const gfx::Point& point) {
+  ui::TouchEvent touch(event_type, point, base::TimeTicks(),
                        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   static_cast<RenderWidgetHostViewAura*>(
       web_contents->GetRenderWidgetHostView())

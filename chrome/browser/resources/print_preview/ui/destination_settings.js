@@ -66,7 +66,7 @@ Polymer({
       value: null,
     },
 
-    /** @private {!DestinationState} */
+    /** @type {!DestinationState} */
     destinationState: {
       type: Number,
       notify: true,
@@ -525,6 +525,11 @@ Polymer({
         this.$.destinationSelect.focus();
       }
     });
+  },
+
+  /** @return {!DestinationStore} */
+  getDestinationStoreForTest() {
+    return assert(this.destinationStore_);
   },
 
   // <if expr="chromeos">

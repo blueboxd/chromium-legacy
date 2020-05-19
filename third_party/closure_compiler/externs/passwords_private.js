@@ -145,11 +145,25 @@ chrome.passwordsPrivate.changeSavedPassword = function(
 chrome.passwordsPrivate.removeSavedPassword = function(id) {};
 
 /**
- * Removes the saved password exception corresponding to |exceptionUrl|. If no
- * exception with this URL exists, this function is a no-op.
+ * Removes the saved passwords corresponding to |ids|. If no saved password
+ * exists for a certain id, that id is ignored.
+ * @param {Array<number>} ids The ids for the password entries being removed.
+ */
+chrome.passwordsPrivate.removeSavedPasswords = function(ids) {};
+
+/**
+ * Removes the saved password exception corresponding to |id|. If no
+ * exception with this id exists, this function is a no-op.
  * @param {number} id The id for the exception url entry being removed.
  */
 chrome.passwordsPrivate.removePasswordException = function(id) {};
+
+/**
+ * Removes the saved password exceptions corresponding to |ids|. If no
+ * exception exists for a certain id, that id is ignored.
+ * @param {Array<number>} ids The ids for the exception entries being removed.
+ */
+chrome.passwordsPrivate.removePasswordExceptions = function(ids) {};
 
 /**
  * Undoes the last removal of a saved password or exception.

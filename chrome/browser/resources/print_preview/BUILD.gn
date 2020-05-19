@@ -74,7 +74,20 @@ js_type_check("print_preview_module_resources") {
     ":dark_mode_behavior",
     ":metrics",
     ":native_layer",
+    ":print_preview",
     ":print_preview_utils",
+  ]
+}
+
+js_library("print_preview") {
+  deps = [
+    ":cloud_print_interface",
+    ":native_layer",
+    "data:destination",
+    "data:destination_store",
+    "data:measurement_system",
+    "ui:app",
+    "ui:settings_select",
   ]
 }
 

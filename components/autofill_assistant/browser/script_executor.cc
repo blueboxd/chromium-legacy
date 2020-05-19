@@ -563,8 +563,8 @@ content::WebContents* ScriptExecutor::GetWebContents() {
   return delegate_->GetWebContents();
 }
 
-std::string ScriptExecutor::GetAccountEmailAddress() {
-  return delegate_->GetAccountEmailAddress();
+std::string ScriptExecutor::GetEmailAddressForAccessTokenAccount() {
+  return delegate_->GetEmailAddressForAccessTokenAccount();
 }
 
 std::string ScriptExecutor::GetLocale() {

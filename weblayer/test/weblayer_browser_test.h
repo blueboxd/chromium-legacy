@@ -24,6 +24,10 @@ class WebLayerBrowserTest : public content::BrowserTestBase {
   void PreRunTestOnMainThread() override;
   void PostRunTestOnMainThread() override;
 
+  // Configures this object such that when it starts the shell it does so in
+  // incognito mode. Must be invoked before SetUp() has been called.
+  void SetShellStartsInIncognitoMode();
+
   // Returns the window for the test.
   Shell* shell() const { return shell_; }
 
@@ -31,6 +35,7 @@ class WebLayerBrowserTest : public content::BrowserTestBase {
 
  private:
   Shell* shell_ = nullptr;
+  bool start_in_incognito_mode_ = false;
 
   base::test::ScopedFeatureList feature_list_;
 

@@ -67,7 +67,7 @@ suite(destination_store_test.suiteName, function() {
     initialSettings = getDefaultInitialSettings();
     initialSettings.userAccounts = [];
     localDestinations = [];
-    destinations = getDestinations(nativeLayer, localDestinations);
+    destinations = getDestinations(localDestinations);
   });
 
   /*
@@ -448,7 +448,7 @@ suite(destination_store_test.suiteName, function() {
   test(
       assert(destination_store_test.TestNames.LoadAndSelectDestination),
       function() {
-        destinations = getDestinations(nativeLayer, localDestinations);
+        destinations = getDestinations(localDestinations);
         initialSettings.printerName = '';
         const id1 = 'ID1';
         const name1 = 'One';

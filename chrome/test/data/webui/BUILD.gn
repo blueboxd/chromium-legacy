@@ -333,6 +333,7 @@ group("closure_compile") {
   deps = [
     ":closure_compile_local",
     "cr_elements:closure_compile",
+    "print_preview:closure_compile",
     "settings:closure_compile",
     "tab_strip:closure_compile",
 
@@ -354,6 +355,7 @@ js_library("test_util.m") {
   deps = [
     ":chai_assert",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js/cr:event_target.m",
   ]
   extra_deps = [ ":modulize_local" ]
 }

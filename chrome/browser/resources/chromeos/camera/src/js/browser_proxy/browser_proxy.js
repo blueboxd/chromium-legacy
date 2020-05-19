@@ -52,18 +52,6 @@ class ChromeAppBrowserProxy {
   }
 
   /** @override */
-  async checkMigrated() {
-    const values = await util.promisify(chrome.chromeosInfoPrivate.get)(
-        ['cameraMediaConsolidated']);
-    return values['cameraMediaConsolidated'];
-  }
-
-  /** @override */
-  async doneMigrate() {
-    chrome.chromeosInfoPrivate.set('cameraMediaConsolidated', true);
-  }
-
-  /** @override */
   async getBoard() {
     const values =
         await util.promisify(chrome.chromeosInfoPrivate.get)(['board']);

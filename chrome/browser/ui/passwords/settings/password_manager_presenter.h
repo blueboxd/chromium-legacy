@@ -80,7 +80,6 @@ class PasswordManagerPresenter
   // TODO(https://crbug.com/778146): Unify these methods and the implementation
   // across Desktop and Android.
   void RemoveSavedPassword(size_t index);
-  void RemoveSavedPassword(const std::string& sort_key);
   void RemoveSavedPasswords(const std::vector<std::string>& sort_keys);
 
   // Removes the saved exception entries at |index|, or corresponding to
@@ -88,7 +87,6 @@ class PasswordManagerPresenter
   // TODO(https://crbug.com/778146): Unify these methods and the implementation
   // across Desktop and Android.
   void RemovePasswordException(size_t index);
-  void RemovePasswordException(const std::string& sort_key);
   void RemovePasswordExceptions(const std::vector<std::string>& sort_keys);
 
   // Undoes the last saved password or exception removal.

@@ -124,8 +124,6 @@ void OnListVmDisks(
     std::move(callback).Run(nullptr);
     return;
   }
-  // User has to leave at least kDiskHeadroomBytes for the host system.
-  int64_t max_size = free_space - kDiskHeadroomBytes;
   auto disk_info = std::make_unique<CrostiniDiskInfo>();
   auto image =
       std::find_if(response->images().begin(), response->images().end(),
@@ -152,6 +150,12 @@ void OnListVmDisks(
   if (image->min_size() == 0) {
     VLOG(1) << "Unable to get minimum disk size. VM not running yet?";
   }
+  // User has to leave at least kDiskHeadroomBytes for the host system.
+  // In some cases we can be over-provisioned (e.g. we increased the headroom
+  // required), when that happens the user can still go up to their currently
+  // allocated size.
+  int64_t max_size =
+      std::max(free_space - kDiskHeadroomBytes + image->size(), image->size());
   disk_info->is_user_chosen_size = image->user_chosen_size();
   disk_info->can_resize =
       image->image_type() == vm_tools::concierge::DiskImageType::DISK_IMAGE_RAW;
@@ -160,12 +164,11 @@ void OnListVmDisks(
   const int64_t min_size =
       std::max(static_cast<int64_t>(image->min_size()), kMinimumDiskSizeBytes);
   std::vector<crostini::mojom::DiskSliderTickPtr> ticks =
-      GetTicks(min_size, image->size(), max_size + image->size(),
-               &(disk_info->default_index));
+      GetTicks(min_size, image->size(), max_size, &(disk_info->default_index));
   if (ticks.size() == 0) {
     LOG(ERROR) << "Unable to calculate the number of ticks for min: "
                << min_size << " current: " << image->size()
-               << " max: " << max_size + image->size();
+               << " max: " << max_size;
     std::move(callback).Run(nullptr);
     return;
   }

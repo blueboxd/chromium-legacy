@@ -48,11 +48,9 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
-#include "components/variations/net/variations_http_headers.h"
 #include "components/visitedlink/browser/visitedlink_writer.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
@@ -511,11 +509,6 @@ void AwBrowserContext::ConfigureNetworkContextParams(
 
   context_params->check_clear_text_permitted =
       AwContentBrowserClient::get_check_cleartext_permitted();
-
-  // Update the cors_exempt_header_list to include internally-added headers, to
-  // avoid triggering CORS checks.
-  content::UpdateCorsExemptHeader(context_params);
-  variations::UpdateCorsExemptHeaderForVariations(context_params);
 
   // Add proxy settings
   AwProxyConfigMonitor::GetInstance()->AddProxyToNetworkContextParams(

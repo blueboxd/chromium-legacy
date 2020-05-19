@@ -40,15 +40,6 @@ class ASH_PUBLIC_EXPORT LoginScreenClient {
       bool authenticated_by_pin,
       base::OnceCallback<void(bool)> callback) = 0;
 
-  // Attempt to authenticate the user with with an external binary.
-  virtual void AuthenticateUserWithExternalBinary(
-      const AccountId& account_id,
-      base::OnceCallback<void(bool)> callback) = 0;
-
-  // Attempt to enroll a user in the external binary authentication system.
-  virtual void EnrollUserWithExternalBinary(
-      base::OnceCallback<void(bool)> callback) = 0;
-
   // Try to authenticate |account_id| using easy unlock. This can be used on the
   // login or lock screen.
   // |account_id|: The account id of the user we are authenticating.

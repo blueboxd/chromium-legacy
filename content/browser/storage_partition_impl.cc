@@ -37,6 +37,7 @@
 #include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "components/services/storage/public/mojom/storage_service.mojom.h"
 #include "components/services/storage/storage_service_impl.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -70,7 +71,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/native_file_system_entry_factory.h"
@@ -81,6 +81,7 @@
 #include "content/public/browser/storage_notification_service.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -2383,6 +2384,15 @@ void StoragePartitionImpl::InitNetworkContext() {
 
   context_params->cert_verifier_creation_params =
       std::move(cert_verifier_creation_params);
+
+  // This mechanisms should be used only for legacy internal headers. You can
+  // find a recommended alternative approach on URLRequest::cors_exempt_headers
+  // at services/network/public/mojom/url_loader.mojom.
+  context_params->cors_exempt_header_list.push_back(
+      kCorsExemptPurposeHeaderName);
+  context_params->cors_exempt_header_list.push_back(
+      kCorsExemptRequestedWithHeaderName);
+  variations::UpdateCorsExemptHeaderForVariations(context_params.get());
 
   network_context_.reset();
   GetNetworkService()->CreateNetworkContext(

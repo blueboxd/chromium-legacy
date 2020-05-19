@@ -134,8 +134,10 @@ void WebAppsChromeOs::Uninstall(const std::string& app_id,
   DCHECK(provider());
   DCHECK(provider()->install_finalizer().CanUserUninstallExternalApp(app_id));
 
+  auto origin = url::Origin::Create(web_app->launch_url());
   provider()->install_finalizer().UninstallExternalAppByUser(app_id,
                                                              base::DoNothing());
+  web_app = nullptr;
 
   if (!clear_site_data) {
     // TODO(loyso): Add UMA_HISTOGRAM_ENUMERATION here.
@@ -152,8 +154,7 @@ void WebAppsChromeOs::Uninstall(const std::string& app_id,
                                return browser_context;
                              },
                              base::Unretained(profile())),
-                         url::Origin::Create(web_app->launch_url()),
-                         kClearCookies, kClearStorage, kClearCache,
+                         origin, kClearCookies, kClearStorage, kClearCache,
                          kAvoidClosingConnections, base::DoNothing());
 }
 

@@ -25,7 +25,7 @@ class InputEngineManager;
 template <>
 content::SandboxType
 content::GetServiceSandboxType<chromeos::ime::mojom::InputEngineManager>() {
-  if (chromeos::features::IsImeDecoderWithSandboxEnabled())
+  if (chromeos::features::IsImeSandboxEnabled())
     return content::SandboxType::kIme;
 
   return content::SandboxType::kUtility;

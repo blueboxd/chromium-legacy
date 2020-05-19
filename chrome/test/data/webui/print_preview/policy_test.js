@@ -236,7 +236,7 @@ suite(policy_tests.suiteName, function() {
       {
         // Change default paper size setting.
         defaultMode: {width: 215900, height: 215900},
-        expectedName: 'CUSTOM_SQUARE',
+        expectedName: 'CUSTOM',
       }
     ];
     for (const subtestParams of tests) {

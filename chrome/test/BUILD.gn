@@ -2488,10 +2488,6 @@ if (!is_android) {
         "base/interactive_test_utils_aura.h",
         "base/interactive_test_utils_views.cc",
       ]
-
-      # For input_method/native_input_method_engine_browsertest.cc
-      data_deps +=
-          [ "//chromeos/services/ime/public/cpp/shared_lib:fake_shared_lib" ]
       if (!is_official_build) {
         sources += [
           "../browser/chromeos/web_applications/sample_system_web_app_integration_browsertest.cc",
@@ -6574,6 +6570,8 @@ if (!is_fuchsia && !is_android) {
       "//testing/gtest",
       "//testing/perf",
     ]
+
+    data_deps = [ "//chrome:packed_resources" ]
 
     if (is_mac) {
       # Dictionary sync is disabled on Mac.

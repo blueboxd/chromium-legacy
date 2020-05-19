@@ -3690,9 +3690,9 @@ const char kImeMozcProtoDescription[] =
     "Enable Japanese IME to use protobuf as interactive message format to "
     "replace JSON";
 
-const char kImeNativeDecoderName[] = "Enable native decoders in IME Service";
-const char kImeNativeDecoderDescription[] =
-    "Enable native decoders in IME service to deprecate NaCl decoders";
+const char kImeServiceSandboxName[] = "Use CrOS 'ime' sandbox";
+const char kImeServiceSandboxDescription[] =
+    "Controls whether the IME service on CrOS uses the 'ime' sandbox.";
 
 const char kIntentPickerPWAPersistenceName[] = "Intent picker PWA Persistence";
 const char kIntentPickerPWAPersistenceDescription[] =

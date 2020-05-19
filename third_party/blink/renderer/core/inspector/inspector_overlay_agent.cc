@@ -902,6 +902,18 @@ void InspectorOverlayAgent::PaintOverlayPage() {
   if (!view || !frame)
     return;
 
+  auto now = base::Time::Now();
+  if (!backend_node_id_changed_ &&
+      now - last_paint_time_ < base::TimeDelta::FromMilliseconds(100)) {
+    OverlayMainFrame()->View()->UpdateAllLifecyclePhases(
+        DocumentUpdateReason::kInspector);
+    return;
+  }
+  if (backend_node_id_changed_) {
+    backend_node_id_changed_ = false;
+  }
+  last_paint_time_ = now;
+
   LocalFrame* overlay_frame = OverlayMainFrame();
   // To make overlay render the same size text with any emulation scale,
   // compensate the emulation scale using page scale.
@@ -1180,6 +1192,7 @@ void InspectorOverlayAgent::Inspect(Node* inspected_node) {
   DOMNodeId backend_node_id = DOMNodeIds::IdForNode(node);
   if (!enabled_.Get()) {
     backend_node_id_to_inspect_ = backend_node_id;
+    backend_node_id_changed_ = true;
     return;
   }
 

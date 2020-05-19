@@ -6,10 +6,14 @@ import {Destination, DestinationConnectionStatus, DestinationOrigin, Destination
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {getCddTemplateWithAdvancedSettings} from 'chrome://test/print_preview/print_preview_test_utils.js';
-import {eventToPromise, fakeDataBind} from 'chrome://test/test_util.m.js';
+
+import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+import {eventToPromise, fakeDataBind} from '../test_util.m.js';
+
+import {getCddTemplateWithAdvancedSettings} from './print_preview_test_utils.js';
 
 window.advanced_dialog_test = {};
+const advanced_dialog_test = window.advanced_dialog_test;
 advanced_dialog_test.suiteName = 'AdvancedDialogTest';
 /** @enum {string} */
 advanced_dialog_test.TestNames = {
@@ -20,6 +24,15 @@ advanced_dialog_test.TestNames = {
   AdvancedSettingsClose: 'advanced settings close',
   AdvancedSettingsFilter: 'advanced settings filter',
 };
+
+/**
+ * @typedef {{
+ *   printArea: (number|undefined),
+ *   paperType: (number|undefined),
+ *   watermark: (string|undefined),
+ * }}
+ */
+let TestVendorSettings;
 
 suite(advanced_dialog_test.suiteName, function() {
   /** @type {?PrintPreviewAdvancedSettingsDialogElement} */
@@ -40,12 +53,12 @@ suite(advanced_dialog_test.suiteName, function() {
     destination = new Destination(
         printerId, DestinationType.GOOGLE, DestinationOrigin.COOKIES,
         printerName, DestinationConnectionStatus.ONLINE);
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     const model = document.createElement('print-preview-model');
     document.body.appendChild(model);
     model.set('settings.vendorItems.available', true);
-
-    dialog = document.createElement('print-preview-advanced-settings-dialog');
+    dialog = /** @type {!PrintPreviewAdvancedSettingsDialogElement} */ (
+        document.createElement('print-preview-advanced-settings-dialog'));
 
     // Set up settings. Only need the vendor items.
     dialog.settings = model.settings;
@@ -63,6 +76,7 @@ suite(advanced_dialog_test.suiteName, function() {
     dialog.destination = destination;
 
     document.body.appendChild(dialog);
+
     flush();
   }
 
@@ -74,7 +88,7 @@ suite(advanced_dialog_test.suiteName, function() {
    */
   function verifyListWithItemCount(count) {
     // Search box should be hidden if there is only 1 item.
-    const searchBox = dialog.$.searchBox;
+    const searchBox = dialog.$$('#searchBox');
     assertEquals(count === 1, searchBox.hidden);
 
     // Verify item is displayed.
@@ -132,7 +146,8 @@ suite(advanced_dialog_test.suiteName, function() {
         buttons[1].click();
         return whenDialogClose.then(() => {
           // Check that the setting has been set.
-          const setting = dialog.getSettingValue('vendorItems');
+          const setting = /** @type {!TestVendorSettings} */ (
+              dialog.getSettingValue('vendorItems'));
           assertEquals(6, setting.printArea);
           assertEquals(1, setting.paperType);
           assertEquals('XYZ', setting.watermark);
@@ -197,7 +212,7 @@ suite(advanced_dialog_test.suiteName, function() {
       assert(advanced_dialog_test.TestNames.AdvancedSettingsFilter),
       function() {
         setupDialog(3);
-        const searchBox = dialog.$.searchBox;
+        const searchBox = dialog.$$('#searchBox');
         const items = dialog.shadowRoot.querySelectorAll(
             'print-preview-advanced-settings-item');
         const noMatchHint = dialog.$$('.no-settings-match-hint');

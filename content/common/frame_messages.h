@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "cc/input/touch_action.h"
 #include "components/viz/common/surfaces/surface_id.h"
@@ -91,8 +92,8 @@
 
 using FrameMsg_GetSerializedHtmlWithLocalLinks_UrlMap =
     std::map<GURL, base::FilePath>;
-using FrameMsg_GetSerializedHtmlWithLocalLinks_FrameRoutingIdMap =
-    std::map<int, base::FilePath>;
+using FrameMsg_GetSerializedHtmlWithLocalLinks_FrameTokenMap =
+    std::map<base::UnguessableToken, base::FilePath>;
 
 #endif  // INTERNAL_CONTENT_COMMON_FRAME_MESSAGES_H_
 
@@ -510,7 +511,7 @@ IPC_MESSAGE_ROUTED0(FrameMsg_GetSavableResourceLinks)
 // links with a path to the local copy passed in the message payload.
 IPC_MESSAGE_ROUTED3(FrameMsg_GetSerializedHtmlWithLocalLinks,
                     FrameMsg_GetSerializedHtmlWithLocalLinks_UrlMap,
-                    FrameMsg_GetSerializedHtmlWithLocalLinks_FrameRoutingIdMap,
+                    FrameMsg_GetSerializedHtmlWithLocalLinks_FrameTokenMap,
                     bool /* save_with_empty_url */)
 
 #if BUILDFLAG(ENABLE_PLUGINS)

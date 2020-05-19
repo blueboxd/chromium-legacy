@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+FAIL Preflight response with a bad Access-Control-Allow-Headers assert_unreached: Should have rejected: undefined Reached unreachable code
+FAIL Preflight response with a bad Access-Control-Allow-Methods assert_unreached: Should have rejected: undefined Reached unreachable code
+Harness: the test ran to completion.
+

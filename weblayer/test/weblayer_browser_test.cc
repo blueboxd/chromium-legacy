@@ -29,6 +29,10 @@ WebLayerBrowserTest::~WebLayerBrowserTest() = default;
 void WebLayerBrowserTest::SetUp() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(switches::kNoInitialNavigation);
+
+  if (start_in_incognito_mode_)
+    command_line->AppendSwitch(switches::kStartInIncognito);
+
   SetUpCommandLine(command_line);
   content::BrowserTestBase::SetUp();
 }
@@ -49,6 +53,11 @@ void WebLayerBrowserTest::PreRunTestOnMainThread() {
 
 void WebLayerBrowserTest::PostRunTestOnMainThread() {
   Shell::CloseAllWindows();
+}
+
+void WebLayerBrowserTest::SetShellStartsInIncognitoMode() {
+  DCHECK(!set_up_called());
+  start_in_incognito_mode_ = true;
 }
 
 ProfileImpl* WebLayerBrowserTest::GetProfile() {

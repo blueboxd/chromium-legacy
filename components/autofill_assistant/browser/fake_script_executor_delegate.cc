@@ -54,7 +54,7 @@ content::WebContents* FakeScriptExecutorDelegate::GetWebContents() {
   return nullptr;
 }
 
-std::string FakeScriptExecutorDelegate::GetAccountEmailAddress() {
+std::string FakeScriptExecutorDelegate::GetEmailAddressForAccessTokenAccount() {
   return std::string();
 }
 

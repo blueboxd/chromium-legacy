@@ -17,7 +17,7 @@ promise_test(async t => {
   let stream = await navigator.mediaDevices.getUserMedia({ video: true });
   let videoSender = pc1.addTrack(stream.getVideoTracks()[0], stream);
 
-  await doSignalingHandshake(pc1, pc2);
+  await exchangeOfferAnswer(pc1, pc2);
   let videoParameters = videoSender.getParameters();
   videoParameters.encodings[0].active = false;
   videoParameters.encodings[0].priority = 'high';
@@ -40,7 +40,7 @@ promise_test(async t => {
   let stream = await navigator.mediaDevices.getUserMedia({ video: true });
   let videoSender = pc1.addTrack(stream.getVideoTracks()[0], stream);
 
-  await doSignalingHandshake(pc1, pc2);
+  await exchangeOfferAnswer(pc1, pc2);
   let videoParameters = videoSender.getParameters();
   videoParameters.encodings[0].maxBitrate = 0xFFFFFFFF;
   await videoSender.setParameters(videoParameters);
@@ -58,7 +58,7 @@ promise_test(async (t) => {
 
   let stream = await navigator.mediaDevices.getUserMedia({ video: true }, 1);
   let videoSender = pc1.addTrack(stream.getVideoTracks()[0], stream);
-  await doSignalingHandshake(pc1, pc2);
+  await exchangeOfferAnswer(pc1, pc2);
 
   let videoParameters = videoSender.getParameters();
   videoParameters.encodings[0].active = false;
@@ -84,7 +84,7 @@ promise_test(async (t) => {
 
   let stream = await navigator.mediaDevices.getUserMedia({ video: true }, 1);
   let videoSender = pc1.addTrack(stream.getVideoTracks()[0], stream);
-  await doSignalingHandshake(pc1, pc2);
+  await exchangeOfferAnswer(pc1, pc2);
 
   return promise_rejects_dom(
     t,
@@ -238,7 +238,7 @@ for (testCase of readOnlyParameters) {
 
     let stream = await navigator.mediaDevices.getUserMedia({ video: true }, 1);
     let videoSender = pc1.addTrack(stream.getVideoTracks()[0], stream);
-    await doSignalingHandshake(pc1, pc2);
+    await exchangeOfferAnswer(pc1, pc2);
 
     let videoParameters = videoSender.getParameters();
     if (!check || check(videoParameters)) {
@@ -258,7 +258,7 @@ for (testCase of readOnlyParameters) {
 
     let stream = await navigator.mediaDevices.getUserMedia({ audio: true }, 1);
     let audioSender = pc1.addTrack(stream.getAudioTracks()[0], stream);
-    await doSignalingHandshake(pc1, pc2);
+    await exchangeOfferAnswer(pc1, pc2);
 
     let audioParameters = audioSender.getParameters();
     if (!check || check(audioParameters)) {
@@ -321,7 +321,7 @@ for (testCase of requiredParameters) {
 
     let stream = await navigator.mediaDevices.getUserMedia({ video: true }, 1);
     let videoSender = pc1.addTrack(stream.getVideoTracks()[0], stream);
-    await doSignalingHandshake(pc1, pc2);
+    await exchangeOfferAnswer(pc1, pc2);
 
     let videoParameters = videoSender.getParameters();
     transform(videoParameters);
@@ -342,7 +342,7 @@ promise_test(async t => {
   let stream = await navigator.mediaDevices.getUserMedia({video:true});
   let videoSender = pc1.addTrack(stream.getVideoTracks()[0], stream);
 
-  await doSignalingHandshake(pc1, pc2);
+  await exchangeOfferAnswer(pc1, pc2);
   let videoParameters = videoSender.getParameters();
   videoParameters.encodings[0].maxBitrate = 50;
   await videoSender.setParameters(videoParameters);
@@ -354,7 +354,7 @@ promise_test(async t => {
 /**
   * Helper functions to tests.
   */
-async function doSignalingHandshake(localPc, remotePc) {
+async function exchangeOfferAnswer(localPc, remotePc) {
   let offer = await localPc.createOffer();
   await localPc.setLocalDescription(offer);
   await remotePc.setRemoteDescription(offer);

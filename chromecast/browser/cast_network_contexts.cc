@@ -19,7 +19,6 @@
 #include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -151,8 +150,6 @@ void CastNetworkContexts::ConfigureNetworkContextParams(
 
   ConfigureDefaultNetworkContextParams(network_context_params);
 
-  content::UpdateCorsExemptHeader(network_context_params);
-
   // Copy of what's in ContentBrowserClient::CreateNetworkContext for now.
   network_context_params->accept_language = "en-us,en";
 }
@@ -209,7 +206,9 @@ void CastNetworkContexts::ConfigureDefaultNetworkContextParams(
 
   AddProxyToNetworkContextParams(network_context_params);
 
-  network_context_params->cors_exempt_header_list = cors_exempt_headers_list_;
+  network_context_params->cors_exempt_header_list.insert(
+      network_context_params->cors_exempt_header_list.end(),
+      cors_exempt_headers_list_.begin(), cors_exempt_headers_list_.end());
 }
 
 network::mojom::NetworkContextParamsPtr
@@ -217,7 +216,6 @@ CastNetworkContexts::CreateSystemNetworkContextParams() {
   network::mojom::NetworkContextParamsPtr network_context_params =
       network::mojom::NetworkContextParams::New();
   ConfigureDefaultNetworkContextParams(network_context_params.get());
-  content::UpdateCorsExemptHeader(network_context_params.get());
 
   network_context_params->context_name = std::string("system");
 

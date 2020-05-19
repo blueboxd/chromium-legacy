@@ -2270,9 +2270,6 @@ const char kArcAppInstallEventLoggingEnabled[] =
 // with removing the users while at the login screen.
 const char kRemoveUsersRemoteCommand[] = "remove_users_remote_command";
 
-// Whether camera-produced media files have been consolidated to one place.
-const char kCameraMediaConsolidated[] = "camera_media_consolidated";
-
 // Integer pref used by the metrics::DailyEvent owned by
 // chromeos::power::auto_screen_brightness::MetricsReporter.
 const char kAutoScreenBrightnessMetricsDailySample[] =

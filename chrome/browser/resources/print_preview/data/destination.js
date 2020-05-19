@@ -139,7 +139,7 @@ export let VendorCapability;
  * only on Chrome OS.
  *
  * @typedef {{
- *   vendor_capability: !Array<!VendorCapability>,
+ *   vendor_capability: (Array<!VendorCapability>|undefined),
  *   collate: ({default: (boolean|undefined)}|undefined),
  *   color: ({
  *     option: !Array<{
@@ -162,7 +162,8 @@ export let VendorCapability;
  *       type: (string|undefined),
  *       vendor_id: (string|undefined),
  *       custom_display_name: (string|undefined),
- *       is_default: (boolean|undefined)
+ *       is_default: (boolean|undefined),
+ *       name: (string|undefined),
  *     }>
  *   }|undefined),
  *   dpi: ({

@@ -299,7 +299,7 @@ class ActionDelegate {
 
   // Returns the e-mail address that corresponds to the access token or an empty
   // string.
-  virtual std::string GetAccountEmailAddress() = 0;
+  virtual std::string GetEmailAddressForAccessTokenAccount() = 0;
 
   // Returns the locale for the current device or platform.
   virtual std::string GetLocale() = 0;

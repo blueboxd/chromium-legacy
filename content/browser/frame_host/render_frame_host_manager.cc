@@ -2617,6 +2617,19 @@ int RenderFrameHostManager::GetRoutingIdForSiteInstance(
   return MSG_ROUTING_NONE;
 }
 
+base::Optional<base::UnguessableToken>
+RenderFrameHostManager::GetFrameTokenForSiteInstance(
+    SiteInstance* site_instance) {
+  if (render_frame_host_->GetSiteInstance() == site_instance)
+    return render_frame_host_->frame_token();
+
+  RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(site_instance);
+  if (proxy)
+    return proxy->GetFrameToken();
+
+  return base::nullopt;
+}
+
 void RenderFrameHostManager::CommitPending(
     std::unique_ptr<RenderFrameHostImpl> pending_rfh,
     std::unique_ptr<BackForwardCacheImpl::Entry> pending_bfcache_entry,

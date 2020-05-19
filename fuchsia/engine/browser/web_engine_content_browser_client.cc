@@ -11,7 +11,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "components/version_info/version_info.h"
-#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/user_agent.h"
@@ -206,8 +205,4 @@ void WebEngineContentBrowserClient::ConfigureNetworkContextParams(
   // starting with the headers passed in via
   // |CreateContextParams.cors_exempt_headers|.
   network_context_params->cors_exempt_header_list = cors_exempt_headers_;
-
-  // Exempt the minimal headers needed for CORS preflight checks (Purpose,
-  // X-Requested-With).
-  content::UpdateCorsExemptHeader(network_context_params);
 }

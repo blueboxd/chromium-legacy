@@ -53,8 +53,8 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
       int id,
       base::string16 new_username,
       base::Optional<base::string16> new_password) override;
-  void RemoveSavedPassword(int id) override;
-  void RemovePasswordException(int id) override;
+  void RemoveSavedPasswords(const std::vector<int>& ids) override;
+  void RemovePasswordExceptions(const std::vector<int>& ids) override;
   void UndoRemoveSavedPasswordOrException() override;
   void RequestPlaintextPassword(int id,
                                 api::passwords_private::PlaintextReason reason,
@@ -123,8 +123,8 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   void SendSavedPasswordsList();
   void SendPasswordExceptionsList();
 
-  void RemoveSavedPasswordInternal(int id);
-  void RemovePasswordExceptionInternal(int id);
+  void RemoveSavedPasswordsInternal(const std::vector<int>& ids);
+  void RemovePasswordExceptionsInternal(const std::vector<int>& ids);
   void UndoRemoveSavedPasswordOrExceptionInternal();
 
   // Callback for when the password list has been written to the destination.

@@ -130,8 +130,6 @@ jumbo_source_set("browser_sources") {
     "cookie_access_details.cc",
     "cookie_access_details.h",
     "cookie_store_factory.h",
-    "cors_exempt_headers.cc",
-    "cors_exempt_headers.h",
     "cors_origin_pattern_setter.cc",
     "cors_origin_pattern_setter.h",
     "dedicated_worker_id.h",

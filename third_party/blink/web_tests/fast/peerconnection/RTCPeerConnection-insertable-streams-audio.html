@@ -115,11 +115,11 @@ async function testAudioFlow(t, negotiationFunction) {
 }
 
 promise_test(async t => {
-  return testAudioFlow(t, doSignalingHandshake);
+  return testAudioFlow(t, exchangeOfferAnswer);
 }, 'Frames flow correctly using insertable streams');
 
 promise_test(async t => {
-  return testAudioFlow(t, doInverseSignalingHandshake);
+  return testAudioFlow(t, exchangeOfferAnswerReverse);
 }, 'Frames flow correctly using insertable streams when receiver starts negotiation');
 
 promise_test(async t => {
@@ -132,7 +132,7 @@ promise_test(async t => {
   t.add_cleanup(() => audioTrack.stop());
 
   exchangeIceCandidates(caller, callee);
-  await doSignalingHandshake(caller, callee);
+  await exchangeOfferAnswer(caller, callee);
 
   const audioSender = caller.addTrack(audioTrack);
   assert_throws_dom("InvalidStateError", () => audioSender.createEncodedStreams());
@@ -158,7 +158,7 @@ promise_test(async t => {
   });
 
   exchangeIceCandidates(caller, callee);
-  await doSignalingHandshake(caller, callee);
+  await exchangeOfferAnswer(caller, callee);
   return ontrackPromise;
 }, 'RTCRtpReceiver.createEncodedStream() throws if not requested in PC configuration');
 
@@ -207,7 +207,7 @@ promise_test(async t => {
   });
 
   exchangeIceCandidates(caller, callee);
-  await doSignalingHandshake(caller, callee);
+  await exchangeOfferAnswer(caller, callee);
 
   return onmessagePromise;
 }, 'RTCRtpSender readable stream transferred to a Worker and the Worker sends an RTCEncodedAudioFrame back');
@@ -234,7 +234,7 @@ promise_test(async t => {
   });
 
   exchangeIceCandidates(caller, callee);
-  await doSignalingHandshake(caller, callee);
+  await exchangeOfferAnswer(caller, callee);
 
   await promise_rejects_dom(
       t, 'OperationError',
@@ -271,7 +271,7 @@ promise_test(async t => {
   });
 
   exchangeIceCandidates(caller, callee);
-  await doSignalingHandshake(caller, callee);
+  await exchangeOfferAnswer(caller, callee);
 
   // Pass frames as they come from the encoder.
   const result = await senderReader.read()

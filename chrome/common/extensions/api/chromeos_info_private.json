@@ -26,8 +26,7 @@
                  "a11yFocusHighlightEnabled",
                  "a11ySelectToSpeakEnabled",
                  "a11ySwitchAccessEnabled",
-                 "sendFunctionKeys",
-                 "cameraMediaConsolidated"],
+                 "sendFunctionKeys"],
         "description": "Chrome OS system property name"
       },
       {
@@ -110,7 +109,6 @@
                   "a11yAutoClickEnabled" : {"type": "boolean", "optional": true, "description": "If true, auto mouse click accessibility feature is turned on."},
                   "a11yVirtualKeyboardEnabled" : {"type": "boolean", "optional": true, "description": "If true, virtual keyboard will be enabled."},
                   "sendFunctionKeys" : {"type": "boolean", "optional": true, "description": "If true, the ChromeOS top row keys send function keys."},
-                  "cameraMediaConsolidated" : {"type": "boolean", "optional": true, "description": "True if camera photos and videos have been consolidated to one place."},
                   "supportedTimezones" : {
                     "type": "array",
                     "items": {

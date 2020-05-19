@@ -14,6 +14,7 @@ import android.widget.RelativeLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.native_test.NativeBrowserTest;
@@ -76,7 +77,10 @@ public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
                 new RelativeLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
-        Fragment fragment = WebLayer.createBrowserFragment("BrowserTestProfile");
+        CommandLine commandLine = CommandLine.getInstance();
+        String path = (commandLine.hasSwitch("start-in-incognito")) ? null : "BrowserTestProfile";
+
+        Fragment fragment = WebLayer.createBrowserFragment(path);
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.add(viewId, fragment);

@@ -105,6 +105,15 @@
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #endif
 
+#if defined(TOOLKIT_VIEWS) && defined(USE_AURA)
+#include "ui/events/base_event_utils.h"
+#include "ui/events/event.h"
+#include "ui/events/gesture_event_details.h"
+#include "ui/events/types/event_type.h"
+#include "ui/views/touchui/touch_selection_menu_views.h"
+#include "ui/views/widget/any_widget_observer.h"
+#endif  // defined(TOOLKIT_VIEWS) && defined(USE_AURA)
+
 using content::WebContents;
 using extensions::ExtensionsAPIClient;
 using guest_view::GuestViewManager;
@@ -2185,6 +2194,47 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionHitTestTest, ContextMenuCoordinates) {
   // message is sent with the same coordinates as in the
   // UntrustworthyContextMenuParams.
 }
+
+#if defined(TOOLKIT_VIEWS) && defined(USE_AURA)
+// On text selection, a touch selection menu should pop up. On clicking ellipsis
+// icon on the menu, the context menu should open up.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest,
+                       ContextMenuOpensFromTouchSelectionMenu) {
+  const GURL url = embedded_test_server()->GetURL("/pdf/text_large.pdf");
+  WebContents* const guest_contents = LoadPdfGetGuestContents(url);
+  ASSERT_TRUE(guest_contents);
+
+  views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
+                                       "TouchSelectionMenuViews");
+  gfx::Point text_selection_position(10, 10);
+  ConvertPageCoordToScreenCoord(guest_contents, &text_selection_position);
+  content::SimulateTouchEventAt(GetActiveWebContents(), ui::ET_TOUCH_PRESSED,
+                                text_selection_position);
+  bool success = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetActiveWebContents(),
+      "window.addEventListener('message', function(event) {"
+      "  if (event.data.type == 'touchSelectionOccurred')"
+      "    window.domAutomationController.send(true);"
+      "});",
+      &success));
+  ASSERT_TRUE(success);
+  content::SimulateTouchEventAt(GetActiveWebContents(), ui::ET_TOUCH_RELEASED,
+                                text_selection_position);
+  views::Widget* widget = waiter.WaitIfNeededAndGet();
+  ASSERT_TRUE(widget);
+  views::View* menu = widget->GetContentsView();
+  ASSERT_TRUE(menu);
+  views::View* ellipsis_button = menu->GetViewByID(
+      views::TouchSelectionMenuViews::ButtonViewId::kEllipsisButton);
+  ASSERT_TRUE(ellipsis_button);
+  ContextMenuWaiter context_menu_observer;
+  ui::GestureEvent tap(0, 0, 0, ui::EventTimeForNow(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  ellipsis_button->OnGestureEvent(&tap);
+  context_menu_observer.WaitForMenuOpenAndClose();
+}
+#endif  // defined(TOOLKIT_VIEWS) && defined(USE_AURA)
 
 // The plugin document and the mime handler should both use the same background
 // color.

@@ -99,29 +99,6 @@ void LoginScreenClient::AuthenticateUserWithPasswordOrPin(
   }
 }
 
-void LoginScreenClient::AuthenticateUserWithExternalBinary(
-    const AccountId& account_id,
-    base::OnceCallback<void(bool)> callback) {
-  if (!delegate_)
-    LOG(FATAL) << "Failed AuthenticateUserWithExternalBinary; no delegate";
-
-  delegate_->HandleAuthenticateUserWithExternalBinary(account_id,
-                                                      std::move(callback));
-  // TODO: Record auth method attempt here
-  NOTIMPLEMENTED() << "Missing UMA recording for external binary auth";
-}
-
-void LoginScreenClient::EnrollUserWithExternalBinary(
-    base::OnceCallback<void(bool)> callback) {
-  if (!delegate_)
-    LOG(FATAL) << "Failed EnrollUserWithExternalBinary; no delegate";
-
-  delegate_->HandleEnrollUserWithExternalBinary(std::move(callback));
-
-  // TODO: Record enrollment attempt here
-  NOTIMPLEMENTED() << "Missing UMA recording for external binary enrollment";
-}
-
 void LoginScreenClient::AuthenticateUserWithEasyUnlock(
     const AccountId& account_id) {
   if (delegate_) {

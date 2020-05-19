@@ -17,9 +17,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/scoped_observer.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/power/power_manager_client.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -38,10 +36,8 @@ class LoginPinView;
 // This class will make call mojo authentication APIs directly. The embedder can
 // receive some events about the results of those mojo
 // authentication attempts (ie, success/failure).
-class ASH_EXPORT LoginAuthUserView
-    : public NonAccessibleView,
-      public views::ButtonListener,
-      public chromeos::PowerManagerClient::Observer {
+class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
+                                     public views::ButtonListener {
  public:
   // Flags which describe the set of currently visible auth methods.
   enum AuthMethods {
@@ -51,10 +47,9 @@ class ASH_EXPORT LoginAuthUserView
     AUTH_TAP = 1 << 2,                 // Tap to unlock.
     AUTH_ONLINE_SIGN_IN = 1 << 3,      // Force online sign-in.
     AUTH_FINGERPRINT = 1 << 4,         // Use fingerprint to unlock.
-    AUTH_EXTERNAL_BINARY = 1 << 5,     // Authenticate via an external binary.
-    AUTH_CHALLENGE_RESPONSE = 1 << 6,  // Authenticate via challenge-response
+    AUTH_CHALLENGE_RESPONSE = 1 << 5,  // Authenticate via challenge-response
                                        // protocol using security token.
-    AUTH_DISABLED = 1 << 7,  // Disable all the auth methods and show a
+    AUTH_DISABLED = 1 << 6,  // Disable all the auth methods and show a
                              // message to user.
   };
 
@@ -149,10 +144,6 @@ class ASH_EXPORT LoginAuthUserView
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // chromeos::PowerManagerClient::Observer:
-  void LidEventReceived(chromeos::PowerManagerClient::LidState state,
-                        const base::TimeTicks& timestamp) override;
-
  private:
   struct AnimationState;
   class FingerprintView;
@@ -167,8 +158,6 @@ class ASH_EXPORT LoginAuthUserView
   // Called with the result of the request started in
   // |AttemptAuthenticateWithChallengeResponse|.
   void OnChallengeResponseAuthComplete(base::Optional<bool> auth_success);
-  // Called with the result of the external binary enrollment request.
-  void OnEnrollmentComplete(base::Optional<bool> enrollment_success);
 
   // Called when the user view has been tapped. This will run |on_auth_| if tap
   // to unlock is enabled, or run |OnOnlineSignInMessageTap| if the online
@@ -206,8 +195,6 @@ class ASH_EXPORT LoginAuthUserView
   DisabledAuthMessageView* disabled_auth_message_ = nullptr;
   FingerprintView* fingerprint_view_ = nullptr;
   ChallengeResponseView* challenge_response_view_ = nullptr;
-  views::LabelButton* external_binary_auth_button_ = nullptr;
-  views::LabelButton* external_binary_enrollment_button_ = nullptr;
 
   // Displays padding between:
   // 1. Password field and pin keyboard
@@ -221,10 +208,6 @@ class ASH_EXPORT LoginAuthUserView
   // |CaptureStateForAnimationPreLayout| and consumed by
   // |ApplyAnimationPostLayout|.
   std::unique_ptr<AnimationState> cached_animation_state_;
-
-  ScopedObserver<chromeos::PowerManagerClient,
-                 chromeos::PowerManagerClient::Observer>
-      power_manager_client_observer_{this};
 
   base::WeakPtrFactory<LoginAuthUserView> weak_factory_{this};
 

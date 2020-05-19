@@ -67,11 +67,18 @@ void UpdateNotificationController::GenerateUpdateNotification(
     slow_boot_file_path_exists_ = slow_boot_file_path_exists.value();
   }
 
+  const bool is_rollback = model_->rollback();
+  const NotificationStyle notification_style = model_->notification_style();
+
   message_center::SystemNotificationWarningLevel warning_level =
-      (model_->rollback() ||
-       model_->notification_style() == NotificationStyle::kAdminRequired)
+      (is_rollback || notification_style == NotificationStyle::kAdminRequired)
           ? message_center::SystemNotificationWarningLevel::WARNING
           : message_center::SystemNotificationWarningLevel::NORMAL;
+  const gfx::VectorIcon& notification_icon =
+      is_rollback ? kSystemMenuRollbackIcon
+                  : (notification_style == NotificationStyle::kDefault)
+                        ? kSystemMenuUpdateIcon
+                        : vector_icons::kBusinessIcon;
   std::unique_ptr<Notification> notification = CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
       GetNotificationTitle(), GetNotificationMessage(),
@@ -83,9 +90,7 @@ void UpdateNotificationController::GenerateUpdateNotification(
           base::BindRepeating(
               &UpdateNotificationController::HandleNotificationClick,
               weak_ptr_factory_.GetWeakPtr())),
-      model_->rollback() ? kSystemMenuRollbackIcon
-                         : vector_icons::kBusinessIcon,
-      warning_level);
+      notification_icon, warning_level);
   notification->set_pinned(true);
 
   if (model_->notification_style() == NotificationStyle::kAdminRequired)
@@ -93,7 +98,7 @@ void UpdateNotificationController::GenerateUpdateNotification(
 
   if (model_->update_required()) {
     std::vector<message_center::ButtonInfo> notification_actions;
-    if (model_->rollback()) {
+    if (is_rollback) {
       notification_actions.push_back(message_center::ButtonInfo(
           l10n_util::GetStringUTF16(IDS_ROLLBACK_NOTIFICATION_RESTART_BUTTON)));
     } else {

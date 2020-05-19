@@ -32,7 +32,7 @@ class ServiceImplTest : public ::testing::Test {
 };
 
 TEST_F(ServiceImplTest, CreatesValidHashFromEmail) {
-  ON_CALL(mock_client_, GetAccountEmailAddress)
+  ON_CALL(mock_client_, GetChromeSignedInEmailAddress)
       .WillByDefault(Return("john.doe@chromium.org"));
   EXPECT_EQ(GetClientAccountHash(),
             "2c8fa87717fab622bb5cc4d18135fe30dae339efd274b450022d361be92b48c3");

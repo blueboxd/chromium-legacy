@@ -350,19 +350,6 @@ void LoginDisplayHostMojo::HandleAuthenticateUserWithPasswordOrPin(
   existing_user_controller_->Login(user_context, chromeos::SigninSpecifics());
 }
 
-void LoginDisplayHostMojo::HandleAuthenticateUserWithExternalBinary(
-    const AccountId& account_id,
-    base::OnceCallback<void(bool)> callback) {
-  // Authenticating with an external binary is not supported for login.
-  std::move(callback).Run(false);
-}
-
-void LoginDisplayHostMojo::HandleEnrollUserWithExternalBinary(
-    base::OnceCallback<void(bool)> callback) {
-  // Enroll in external binary auth system is not supported for login.
-  std::move(callback).Run(false);
-}
-
 void LoginDisplayHostMojo::HandleAuthenticateUserWithEasyUnlock(
     const AccountId& account_id) {
   user_selection_screen_->AttemptEasyUnlock(account_id);

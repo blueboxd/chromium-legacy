@@ -184,6 +184,10 @@ const base::Feature kFilesZipNoNaCl{"FilesZipNoNaCl",
 const base::Feature kMojoDBusRelay{"MojoDBusRelay",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to launch IME service with an 'ime' sandbox.
+const base::Feature kEnableImeSandbox{"EnableImeSandbox",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, will display blocking screens during re-authentication after a
 // supervision transition occurred.
 const base::Feature kEnableSupervisionTransitionScreens{
@@ -218,10 +222,6 @@ const base::Feature kImeInputLogicFst{"ImeInputLogicFst",
 // on Chrome OS.
 const base::Feature kImeInputLogicMozc{"ImeInputLogicMozc",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enable or disable IME service decoder engine and 'ime' sandbox on Chrome OS.
-const base::Feature kImeDecoderWithSandbox{"ImeDecoderWithSandbox",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable or disable using the floating virtual keyboard as the default option
 // on Chrome OS.
@@ -419,8 +419,8 @@ bool IsEduCoexistenceEnabled() {
   return base::FeatureList::IsEnabled(kEduCoexistence);
 }
 
-bool IsImeDecoderWithSandboxEnabled() {
-  return base::FeatureList::IsEnabled(kImeDecoderWithSandbox);
+bool IsImeSandboxEnabled() {
+  return base::FeatureList::IsEnabled(kEnableImeSandbox);
 }
 
 bool IsInstantTetheringBackgroundAdvertisingSupported() {

@@ -208,11 +208,8 @@ void ClientAndroid::TransferUITo(
 base::android::ScopedJavaLocalRef<jstring> ClientAndroid::GetPrimaryAccountName(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
-  CoreAccountInfo account_info =
-      IdentityManagerFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents_->GetBrowserContext()))
-          ->GetPrimaryAccountInfo();
-  return base::android::ConvertUTF8ToJavaString(env, account_info.email);
+  return base::android::ConvertUTF8ToJavaString(
+      env, GetChromeSignedInEmailAddress());
 }
 
 void ClientAndroid::OnAccessToken(JNIEnv* env,
@@ -443,10 +440,19 @@ version_info::Channel ClientAndroid::GetChannel() const {
   return chrome::GetChannel();
 }
 
-std::string ClientAndroid::GetAccountEmailAddress() const {
+std::string ClientAndroid::GetEmailAddressForAccessTokenAccount() const {
   JNIEnv* env = AttachCurrentThread();
   return base::android::ConvertJavaStringToUTF8(
-      Java_AutofillAssistantClient_getAccountEmailAddress(env, java_object_));
+      Java_AutofillAssistantClient_getEmailAddressForAccessTokenAccount(
+          env, java_object_));
+}
+
+std::string ClientAndroid::GetChromeSignedInEmailAddress() const {
+  CoreAccountInfo account_info =
+      IdentityManagerFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents_->GetBrowserContext()))
+          ->GetPrimaryAccountInfo();
+  return account_info.email;
 }
 
 AccessTokenFetcher* ClientAndroid::GetAccessTokenFetcher() {

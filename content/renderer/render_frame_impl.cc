@@ -634,16 +634,19 @@ WebString ConvertRelativePathToHtmlAttribute(const base::FilePath& path) {
 // based on the payload of FrameMsg_GetSerializedHtmlWithLocalLinks.
 class LinkRewritingDelegate : public WebFrameSerializer::LinkRewritingDelegate {
  public:
-  LinkRewritingDelegate(
-      const std::map<GURL, base::FilePath>& url_to_local_path,
-      const std::map<int, base::FilePath>& frame_routing_id_to_local_path)
+  LinkRewritingDelegate(const std::map<GURL, base::FilePath>& url_to_local_path,
+                        const std::map<base::UnguessableToken, base::FilePath>&
+                            frame_token_to_local_path)
       : url_to_local_path_(url_to_local_path),
-        frame_routing_id_to_local_path_(frame_routing_id_to_local_path) {}
+        frame_token_to_local_path_(frame_token_to_local_path) {}
 
   bool RewriteFrameSource(WebFrame* frame, WebString* rewritten_link) override {
-    int routing_id = RenderFrame::GetRoutingIdForWebFrame(frame);
-    auto it = frame_routing_id_to_local_path_.find(routing_id);
-    if (it == frame_routing_id_to_local_path_.end())
+    const base::Optional<base::UnguessableToken>& frame_token =
+        frame->GetFrameToken();
+
+    DCHECK(frame_token.has_value());
+    auto it = frame_token_to_local_path_.find(frame_token.value());
+    if (it == frame_token_to_local_path_.end())
       return false;  // This can happen because of https://crbug.com/541354.
 
     const base::FilePath& local_path = it->second;
@@ -663,7 +666,8 @@ class LinkRewritingDelegate : public WebFrameSerializer::LinkRewritingDelegate {
 
  private:
   const std::map<GURL, base::FilePath>& url_to_local_path_;
-  const std::map<int, base::FilePath>& frame_routing_id_to_local_path_;
+  const std::map<base::UnguessableToken, base::FilePath>&
+      frame_token_to_local_path_;
 };
 
 // Implementation of WebFrameSerializer::MHTMLPartsGenerationDelegate that
@@ -5653,11 +5657,11 @@ void RenderFrameImpl::OnGetSavableResourceLinks() {
 
 void RenderFrameImpl::OnGetSerializedHtmlWithLocalLinks(
     const std::map<GURL, base::FilePath>& url_to_local_path,
-    const std::map<int, base::FilePath>& frame_routing_id_to_local_path,
+    const std::map<base::UnguessableToken, base::FilePath>&
+        frame_token_to_local_path,
     bool save_with_empty_url) {
   // Convert input to the canonical way of passing a map into a Blink API.
-  LinkRewritingDelegate delegate(url_to_local_path,
-                                 frame_routing_id_to_local_path);
+  LinkRewritingDelegate delegate(url_to_local_path, frame_token_to_local_path);
 
   // Serialize the frame (without recursing into subframes).
   WebFrameSerializer::Serialize(GetWebFrame(),

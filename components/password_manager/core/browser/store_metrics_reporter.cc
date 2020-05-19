@@ -18,14 +18,18 @@ StoreMetricsReporter::StoreMetricsReporter(
     const syncer::SyncService* sync_service,
     const signin::IdentityManager* identity_manager,
     PrefService* prefs) {
-  // May be null in tests.
-  if (PasswordStore* store = client->GetProfilePasswordStore()) {
-    store->ReportMetrics(
-        password_manager::sync_util::GetSyncUsernameIfSyncingPasswords(
-            sync_service, identity_manager),
-        client->GetPasswordSyncState() ==
-            password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE,
-        client->IsUnderAdvancedProtection());
+  for (PasswordStore* store :
+       {client->GetProfilePasswordStore(), client->GetAccountPasswordStore()}) {
+    // May be null in tests. The account store is also null if the
+    // kEnablePasswordsAccountStorage feature is disabled.
+    if (store) {
+      store->ReportMetrics(
+          password_manager::sync_util::GetSyncUsernameIfSyncingPasswords(
+              sync_service, identity_manager),
+          client->GetPasswordSyncState() ==
+              password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE,
+          client->IsUnderAdvancedProtection());
+    }
   }
   base::UmaHistogramBoolean(
       "PasswordManager.Enabled",

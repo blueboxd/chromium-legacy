@@ -1699,12 +1699,6 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
           to_update_auth |= LoginAuthUserView::AUTH_TAP;
         if (state->fingerprint_state != FingerprintState::UNAVAILABLE)
           to_update_auth |= LoginAuthUserView::AUTH_FINGERPRINT;
-
-        // External binary based authentication is only available for unlock.
-        if (screen_type_ == LockScreen::ScreenType::kLock &&
-            base::FeatureList::IsEnabled(features::kUnlockWithExternalBinary)) {
-          to_update_auth |= LoginAuthUserView::AUTH_EXTERNAL_BINARY;
-        }
       }
       view->auth_user()->SetAuthMethods(to_update_auth, state->show_pin);
     } else if (view->public_account()) {

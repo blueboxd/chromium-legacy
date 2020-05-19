@@ -20,6 +20,10 @@ jumbo_component("clipboard_types") {
     "clipboard_constants.h",
   ]
 
+  if (!is_ios) {
+    sources += [ "clipboard_format_type.h" ]
+  }
+
   if (is_android) {
     sources += [ "clipboard_format_type_android.cc" ]
   }
@@ -35,14 +39,10 @@ jumbo_component("clipboard_types") {
     sources += [ "clipboard_format_type_win.cc" ]
   }
 
-  if (!is_ios) {
-    if (use_aura) {
-      if ((use_x11 && is_desktop_linux) || !is_win) {
-        sources += [ "clipboard_format_type_aura.cc" ]
-      }
+  if (use_aura) {
+    if ((use_x11 && is_desktop_linux) || !is_win) {
+      sources += [ "clipboard_format_type_aura.cc" ]
     }
-
-    sources += [ "clipboard_format_type.h" ]
   }
 
   defines = [ "IS_UI_BASE_CLIPBOARD_TYPES_IMPL" ]
@@ -181,10 +181,10 @@ jumbo_source_set("clipboard_test_support") {
       "test/test_clipboard.cc",
       "test/test_clipboard.h",
     ]
+  }
 
-    if (is_android) {
-      sources += [ "clipboard_android_test_support.cc" ]
-    }
+  if (is_android) {
+    sources += [ "clipboard_android_test_support.cc" ]
   }
 
   public_deps = [
@@ -206,17 +206,17 @@ source_set("clipboard_test") {
   sources = []
   output_name = "ui_base_clipboard_test"
 
-  if (is_mac) {
-    sources += [
-      "clipboard_mac_unittest.mm",
-      "clipboard_util_mac_unittest.mm",
-    ]
-  }
-
   if (!is_ios) {
     sources += [
       "custom_data_helper_unittest.cc",
       "test/test_clipboard_unittest.cc",
+    ]
+  }
+
+  if (is_mac) {
+    sources += [
+      "clipboard_mac_unittest.mm",
+      "clipboard_util_mac_unittest.mm",
     ]
   }
 

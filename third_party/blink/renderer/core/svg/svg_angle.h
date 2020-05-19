@@ -109,6 +109,7 @@ class SVGAngle final : public SVGPropertyHelper<SVGAngle> {
   const SVGEnumeration<SVGMarkerOrientType>* OrientType() const {
     return orient_type_.Get();
   }
+  bool IsNumeric() const;
   void OrientTypeChanged();
 
   // SVGPropertyBase:

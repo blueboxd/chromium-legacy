@@ -61,6 +61,7 @@ void FillClientContext(const ClientContextProto& client_context,
   if (trigger_context.is_direct_action()) {
     proto->set_is_direct_action(true);
   }
+  // TODO(b/156882027): Add an integration test for accounts handling.
   if (trigger_context.get_caller_account_hash().empty()) {
     proto->set_accounts_matching_status(ClientContextProto::UNKNOWN);
   } else {

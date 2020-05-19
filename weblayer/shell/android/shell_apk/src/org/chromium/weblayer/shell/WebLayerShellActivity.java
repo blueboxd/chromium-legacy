@@ -32,6 +32,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.IntentUtils;
 import org.chromium.weblayer.Browser;
 import org.chromium.weblayer.ContextMenuParams;
@@ -58,7 +59,7 @@ import java.util.List;
  * Activity for managing the Demo Shell.
  */
 public class WebLayerShellActivity extends FragmentActivity {
-    private static final String PROFILE_NAME = "DefaultProfile";
+    private static final String NON_INCOGNITO_PROFILE_NAME = "DefaultProfile";
 
     private static class ContextMenuCreator
             implements View.OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener {
@@ -133,6 +134,7 @@ public class WebLayerShellActivity extends FragmentActivity {
     private List<Tab> mPreviousTabList = new ArrayList<>();
     private Runnable mExitFullscreenRunnable;
     private View mBottomView;
+    private boolean mInIncognitoMode;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -205,8 +207,11 @@ public class WebLayerShellActivity extends FragmentActivity {
                 }
 
                 if (item.getItemId() == R.id.site_settings_menu_id) {
-                    Intent intent =
-                            SiteSettingsActivity.createIntentForCategoryList(this, PROFILE_NAME);
+                    // TODO(crbug.com/1083233): Figure out the right long-term behavior here.
+                    if (mInIncognitoMode) return true;
+
+                    Intent intent = SiteSettingsActivity.createIntentForCategoryList(
+                            this, NON_INCOGNITO_PROFILE_NAME);
                     IntentUtils.safeStartActivity(this, intent);
                     return true;
                 }
@@ -427,7 +432,14 @@ public class WebLayerShellActivity extends FragmentActivity {
             }
         }
 
-        Fragment fragment = WebLayer.createBrowserFragment(PROFILE_NAME);
+        if (CommandLine.isInitialized()
+                && CommandLine.getInstance().hasSwitch("start-in-incognito")) {
+            mInIncognitoMode = true;
+        }
+
+        String profileName = mInIncognitoMode ? null : NON_INCOGNITO_PROFILE_NAME;
+
+        Fragment fragment = WebLayer.createBrowserFragment(profileName);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.add(mMainViewId, fragment);
 

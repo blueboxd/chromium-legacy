@@ -117,9 +117,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kSeparateNetworkIcons;
 // Enables trilinear filtering.
 ASH_PUBLIC_EXPORT extern const base::Feature kTrilinearFiltering;
 
-// Enables running an external binary which provides lock screen authentication.
-ASH_PUBLIC_EXPORT extern const base::Feature kUnlockWithExternalBinary;
-
 // Enables using the BluetoothSystem Mojo interface for Bluetooth operations.
 ASH_PUBLIC_EXPORT extern const base::Feature kUseBluetoothSystemInAsh;
 

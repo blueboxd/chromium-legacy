@@ -97,11 +97,6 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
       const std::string& password,
       bool authenticated_by_pin,
       base::OnceCallback<void(bool)> callback) override;
-  void HandleAuthenticateUserWithExternalBinary(
-      const AccountId& account_id,
-      base::OnceCallback<void(bool)> callback) override;
-  void HandleEnrollUserWithExternalBinary(
-      base::OnceCallback<void(bool)> callback) override;
   void HandleAuthenticateUserWithEasyUnlock(
       const AccountId& account_id) override;
   void HandleAuthenticateUserWithChallengeResponse(

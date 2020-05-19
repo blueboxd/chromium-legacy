@@ -118,7 +118,7 @@ export let PrivetPrinterDescription;
  *   printer:(PrivetPrinterDescription |
  *            LocalDestinationInfo |
  *            undefined),
- *   capabilities: !Cdd,
+ *   capabilities: ?Cdd,
  * }}
  */
 export let CapabilitiesResponse;

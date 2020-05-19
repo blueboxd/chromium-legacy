@@ -46,7 +46,7 @@ suite('UserManagerTest', function() {
     destinationStore = createDestinationStore();
     destinationStore.setCloudPrintInterface(cloudPrintInterface);
     const localDestinations = [];
-    const destinations = getDestinations(nativeLayer, localDestinations);
+    const destinations = getDestinations(localDestinations);
     destinationStore.init(
         false /* isInAppKioskMode */, 'FooDevice' /* printerName */,
         '' /* serializedDefaultDestinationSelectionRulesStr */, []);

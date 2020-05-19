@@ -269,6 +269,9 @@ class CORE_EXPORT InspectorOverlayAgent final
   InspectorAgentState::String paused_in_debugger_message_;
   InspectorAgentState::String inspect_mode_;
   InspectorAgentState::Bytes inspect_mode_protocol_config_;
+  base::Time last_paint_time_;
+  bool backend_node_id_changed_;
+
   DISALLOW_COPY_AND_ASSIGN(InspectorOverlayAgent);
 };
 

@@ -2165,8 +2165,8 @@ extern const char kImeInputLogicMozcDescription[];
 extern const char kImeMozcProtoName[];
 extern const char kImeMozcProtoDescription[];
 
-extern const char kImeNativeDecoderName[];
-extern const char kImeNativeDecoderDescription[];
+extern const char kImeServiceSandboxName[];
+extern const char kImeServiceSandboxDescription[];
 
 extern const char kIntentPickerPWAPersistenceName[];
 extern const char kIntentPickerPWAPersistenceDescription[];

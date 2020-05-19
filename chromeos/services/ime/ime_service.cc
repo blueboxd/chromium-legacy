@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
 #include "build/buildflag.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -35,7 +36,7 @@ enum SimpleDownloadError {
 ImeService::ImeService(mojo::PendingReceiver<mojom::ImeService> receiver)
     : receiver_(this, std::move(receiver)),
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
-  input_engine_ = chromeos::features::IsImeDecoderWithSandboxEnabled()
+  input_engine_ = chromeos::features::IsImeSandboxEnabled()
                       ? std::make_unique<DecoderEngine>(this)
                       : std::make_unique<InputEngine>();
 }
@@ -82,6 +83,7 @@ const char* ImeService::GetImeBundleDir() {
 
 const char* ImeService::GetImeGlobalDir() {
   // Global IME data is supported yet.
+  NOTIMPLEMENTED();
   return "";
 }
 
@@ -125,6 +127,7 @@ int ImeService::SimpleDownloadToFile(const char* url,
 ImeCrosDownloader* ImeService::GetDownloader() {
   // TODO(https://crbug.com/837156): Create an ImeCrosDownloader based on its
   // specification defined in interfaces. The caller should free it after use.
+  NOTIMPLEMENTED();
   return nullptr;
 }
 

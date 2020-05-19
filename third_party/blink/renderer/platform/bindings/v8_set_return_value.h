@@ -28,6 +28,10 @@ struct V8ReturnValue {
   // Support compile-time overload resolution by making each value have its own
   // type.
 
+  // Applies strict typing to IDL primitive types.
+  template <typename T>
+  struct PrimitiveType {};
+
   // Nullable or not
   enum NonNullable { kNonNullable };
   enum Nullable { kNullable };
@@ -164,6 +168,28 @@ void V8SetReturnValue(const CallbackInfo& info, uint64_t value) {
 template <typename CallbackInfo>
 void V8SetReturnValue(const CallbackInfo& info, double value) {
   info.GetReturnValue().Set(value);
+}
+
+// Primitive types with IDL type
+//
+// |IdlType| represents a C++ type corresponding to an IDL type, and |value| is
+// passed from Blink implementation and its type occasionally does not match
+// the IDL type because Blink is not always respectful to IDL types.  These
+// functions fix such a type mismatch.
+template <typename CallbackInfo, typename BlinkType, typename IdlType>
+typename std::enable_if_t<std::is_arithmetic<BlinkType>::value ||
+                          std::is_enum<BlinkType>::value>
+V8SetReturnValue(const CallbackInfo& info,
+                 BlinkType value,
+                 V8ReturnValue::PrimitiveType<IdlType>) {
+  V8SetReturnValue(info, IdlType(value));
+}
+
+template <typename CallbackInfo, typename BlinkType>
+void V8SetReturnValue(const CallbackInfo& info,
+                      BlinkType* value,
+                      V8ReturnValue::PrimitiveType<bool>) {
+  V8SetReturnValue(info, bool(value));
 }
 
 // String types
@@ -334,12 +360,16 @@ void V8SetReturnValue(const CallbackInfo& info,
 }
 
 // Nullable types
-template <typename CallbackInfo, typename T>
-void V8SetReturnValue(const CallbackInfo& info, base::Optional<T> value) {
-  if (value.has_value())
-    V8SetReturnValue(info, value.value());
-  else
+template <typename CallbackInfo, typename T, typename... ExtraArgs>
+void V8SetReturnValue(const CallbackInfo& info,
+                      base::Optional<T> value,
+                      ExtraArgs... extra_args) {
+  if (value.has_value()) {
+    V8SetReturnValue(info, value.value(),
+                     std::forward<ExtraArgs>(extra_args)...);
+  } else {
     info.GetReturnValue().SetNull();
+  }
 }
 
 }  // namespace bindings

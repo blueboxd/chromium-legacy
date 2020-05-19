@@ -78,17 +78,6 @@ class WebUIBrowserProxy {
   }
 
   /** @override */
-  async checkMigrated() {
-    NOTIMPLEMENTED();
-    return false;
-  }
-
-  /** @override */
-  async doneMigrate() {
-    NOTIMPLEMENTED();
-  }
-
-  /** @override */
   async getBoard() {
     NOTIMPLEMENTED();
     return '';

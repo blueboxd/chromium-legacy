@@ -189,33 +189,6 @@ TEST_F(LoginAuthUserViewUnittest,
   EXPECT_FALSE(has_password());
 }
 
-TEST_F(LoginAuthUserViewUnittest, AttemptsUnlockOnLidOpen) {
-  LoginAuthUserView::TestApi test_auth_user_view(view_);
-  auto client = std::make_unique<MockLoginScreenClient>();
-
-  SetAuthMethods(LoginAuthUserView::AUTH_EXTERNAL_BINARY);
-
-  client->set_authenticate_user_callback_result(false);
-
-  EXPECT_CALL(*client, AuthenticateUserWithExternalBinary_(
-                           test_auth_user_view.user_view()
-                               ->current_user()
-                               .basic_user_info.account_id,
-                           _));
-  power_manager_client()->SetLidState(
-      chromeos::PowerManagerClient::LidState::OPEN, base::TimeTicks::Now());
-
-  base::RunLoop().RunUntilIdle();
-
-  LoginPasswordView::TestApi password_test(test_auth_user_view.password_view());
-  EXPECT_FALSE(password_test.textfield()->GetReadOnly());
-  EXPECT_TRUE(test_auth_user_view.external_binary_auth_button()->state() ==
-              views::Button::STATE_NORMAL);
-  EXPECT_TRUE(
-      test_auth_user_view.external_binary_enrollment_button()->state() ==
-      views::Button::STATE_NORMAL);
-}
-
 TEST_F(LoginAuthUserViewUnittest, PasswordFieldChangeOnUpdateUser) {
   LoginAuthUserView::TestApi test_auth_user_view(view_);
   LoginPasswordView::TestApi password_test(test_auth_user_view.password_view());

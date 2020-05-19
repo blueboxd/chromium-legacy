@@ -122,6 +122,20 @@ password_manager::PlaintextReason ConvertPlaintextReason(
   return password_manager::PlaintextReason::kView;
 }
 
+// Gets all the existing keys in |generator| corresponding to |ids|. If no key
+// is found for an id, it is simply ignored.
+std::vector<std::string> GetSortKeys(
+    const extensions::IdGenerator<std::string>& generator,
+    const std::vector<int> ids) {
+  std::vector<std::string> sort_keys;
+  sort_keys.reserve(ids.size());
+  for (int id : ids) {
+    if (const std::string* sort_key = generator.TryGetKey(id))
+      sort_keys.emplace_back(*sort_key);
+  }
+  return sort_keys;
+}
+
 }  // namespace
 
 namespace extensions {
@@ -197,28 +211,30 @@ void PasswordsPrivateDelegateImpl::ChangeSavedPassword(
       *sort_key, std::move(new_username), std::move(new_password));
 }
 
-void PasswordsPrivateDelegateImpl::RemoveSavedPassword(int id) {
+void PasswordsPrivateDelegateImpl::RemoveSavedPasswords(
+    const std::vector<int>& ids) {
   ExecuteFunction(
-      base::Bind(&PasswordsPrivateDelegateImpl::RemoveSavedPasswordInternal,
-                 base::Unretained(this), id));
+      base::Bind(&PasswordsPrivateDelegateImpl::RemoveSavedPasswordsInternal,
+                 base::Unretained(this), ids));
 }
 
-void PasswordsPrivateDelegateImpl::RemoveSavedPasswordInternal(int id) {
-  const std::string* sort_key = password_id_generator_.TryGetKey(id);
-  if (sort_key)
-    password_manager_presenter_->RemoveSavedPassword(*sort_key);
+void PasswordsPrivateDelegateImpl::RemoveSavedPasswordsInternal(
+    const std::vector<int>& ids) {
+  password_manager_presenter_->RemoveSavedPasswords(
+      GetSortKeys(password_id_generator_, ids));
 }
 
-void PasswordsPrivateDelegateImpl::RemovePasswordException(int id) {
-  ExecuteFunction(
-      base::Bind(&PasswordsPrivateDelegateImpl::RemovePasswordExceptionInternal,
-                 base::Unretained(this), id));
+void PasswordsPrivateDelegateImpl::RemovePasswordExceptions(
+    const std::vector<int>& ids) {
+  ExecuteFunction(base::Bind(
+      &PasswordsPrivateDelegateImpl::RemovePasswordExceptionsInternal,
+      base::Unretained(this), ids));
 }
 
-void PasswordsPrivateDelegateImpl::RemovePasswordExceptionInternal(int id) {
-  const std::string* sort_key = exception_id_generator_.TryGetKey(id);
-  if (sort_key)
-    password_manager_presenter_->RemovePasswordException(*sort_key);
+void PasswordsPrivateDelegateImpl::RemovePasswordExceptionsInternal(
+    const std::vector<int>& ids) {
+  password_manager_presenter_->RemovePasswordExceptions(
+      GetSortKeys(exception_id_generator_, ids));
 }
 
 void PasswordsPrivateDelegateImpl::UndoRemoveSavedPasswordOrException() {

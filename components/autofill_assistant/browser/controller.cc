@@ -192,8 +192,8 @@ content::WebContents* Controller::GetWebContents() {
   return web_contents();
 }
 
-std::string Controller::GetAccountEmailAddress() {
-  return client_->GetAccountEmailAddress();
+std::string Controller::GetEmailAddressForAccessTokenAccount() {
+  return client_->GetEmailAddressForAccessTokenAccount();
 }
 
 std::string Controller::GetLocale() {

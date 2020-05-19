@@ -222,13 +222,17 @@ if (${exception_state}.HadException())
 // step 4.6.2. If S is not one of the enumeration's values, then return
 //   undefined.
 const auto arg1_value_maybe_enum = {enum_type}::Create(arg1_value_string);
-if (!arg1_value_maybe_enum)
+if (!arg1_value_maybe_enum) {{
+  bindings::ReportInvalidEnumSetToAttribute(
+      ${isolate}, arg1_value_string, "{enum_type_name}", ${exception_state});
   return;  // Return undefined.
+}}
 const auto ${arg1_value} = arg1_value_maybe_enum.value();
 """
-            text = _format(
-                pattern,
-                enum_type=blink_class_name(real_type.type_definition_object))
+            text = _format(pattern,
+                           enum_type=blink_class_name(
+                               real_type.type_definition_object),
+                           enum_type_name=real_type.identifier)
             code_node.register_code_symbol(SymbolNode("arg1_value", text))
             return
 
@@ -1467,6 +1471,7 @@ def make_v8_set_return_value(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
     T = TextNode
+    F = lambda *args, **kwargs: T(_format(*args, **kwargs))
 
     if cg_context.does_override_idl_return_type:
         return T("bindings::V8SetReturnValue(${info}, ${return_value});")
@@ -1495,10 +1500,28 @@ def make_v8_set_return_value(cg_context):
     return_type = return_type.unwrap(typedef=True)
     return_type_body = return_type.unwrap()
 
-    V8_RETURN_VALUE_FAST_TYPES = ("boolean", "byte", "octet", "short",
-                                  "unsigned short", "long", "unsigned long")
-    if return_type.keyword_typename in V8_RETURN_VALUE_FAST_TYPES:
-        return T("bindings::V8SetReturnValue(${info}, ${return_value});")
+    PRIMITIVE_TYPE_TO_CXX_TYPE = {
+        "boolean": "bool",
+        "byte": "int8_t",
+        "octet": "uint8_t",
+        "short": "int16_t",
+        "unsigned short": "uint16_t",
+        "long": "int32_t",
+        "unsigned long": "uint32_t",
+        "long long": "int64_t",
+        "unsigned long long": "uint64_t",
+        "float": "float",
+        "unrestricted float": "float",
+        "double": "double",
+        "unrestricted double": "double",
+    }
+    cxx_type = PRIMITIVE_TYPE_TO_CXX_TYPE.get(
+        return_type_body.keyword_typename)
+    if cxx_type:
+        return F(
+            "bindings::V8SetReturnValue(${info}, ${return_value}, "
+            "bindings::V8ReturnValue::PrimitiveType<{cxx_type}>());",
+            cxx_type=cxx_type)
 
     # TODO(yukishiino): Remove |return_type_body.is_enumeration| below once
     # the migration from String to V8Enum type is done.

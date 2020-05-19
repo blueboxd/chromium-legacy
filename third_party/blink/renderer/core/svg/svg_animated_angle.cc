@@ -61,7 +61,7 @@ bool SVGAnimatedAngle::NeedsSynchronizeAttribute() const {
 void SVGAnimatedAngle::SynchronizeAttribute() {
   // If the value is not an <angle> we synchronize the value of the wrapped
   // enumeration.
-  if (BaseValue()->OrientType()->EnumValue() != kSVGMarkerOrientAngle) {
+  if (!BaseValue()->IsNumeric()) {
     orient_type_->SynchronizeAttribute();
     return;
   }

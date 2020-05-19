@@ -31,10 +31,11 @@ export const SelectBehavior = {
     }
 
     this.debounce('select-change', () => {
-      this.onProcessSelectChange(this.selectedValue);
-
-      // For testing only
-      this.fire('process-select-change');
+      if (this.isConnected) {
+        this.onProcessSelectChange(this.selectedValue);
+        // For testing only
+        this.fire('process-select-change');
+      }
     }, 100);
   },
 

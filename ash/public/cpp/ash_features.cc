@@ -114,9 +114,6 @@ const base::Feature kSeparateNetworkIcons{"SeparateNetworkIcons",
 const base::Feature kTrilinearFiltering{"TrilinearFiltering",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kUnlockWithExternalBinary{
-    "UnlockWithExternalBinary", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kUseBluetoothSystemInAsh{"UseBluetoothSystemInAsh",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 

@@ -48,7 +48,11 @@ class Client {
 
   // Returns the e-mail address that corresponds to the auth credentials. Might
   // be empty.
-  virtual std::string GetAccountEmailAddress() const = 0;
+  virtual std::string GetEmailAddressForAccessTokenAccount() const = 0;
+
+  // Returns the e-mail address used to sign into Chrome, or an empty string if
+  // the user is not signed in.
+  virtual std::string GetChromeSignedInEmailAddress() const = 0;
 
   // Returns the AccessTokenFetcher to use to get oauth credentials.
   virtual AccessTokenFetcher* GetAccessTokenFetcher() = 0;

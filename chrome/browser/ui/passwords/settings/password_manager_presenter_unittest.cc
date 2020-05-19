@@ -443,8 +443,8 @@ TEST_F(PasswordManagerPresenterTest, TestPasswordRemovalAndUndo) {
               UnorderedElementsAre(Pair(kUsername, kPassword),
                                    Pair(kUsername2, kPassword2)));
 
-  GetUIController().GetPasswordManagerPresenter()->RemoveSavedPassword(
-      password_manager::CreateSortKey(password1));
+  GetUIController().GetPasswordManagerPresenter()->RemoveSavedPasswords(
+      {password_manager::CreateSortKey(password1)});
   UpdatePasswordLists();
   EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
               UnorderedElementsAre(Pair(kUsername2, kPassword2)));
@@ -463,8 +463,8 @@ TEST_F(PasswordManagerPresenterTest, TestExceptionRemovalAndUndo) {
   autofill::PasswordForm exception2 = AddPasswordException(GURL(kExampleOrg));
   UpdatePasswordLists();
 
-  GetUIController().GetPasswordManagerPresenter()->RemovePasswordException(
-      password_manager::CreateSortKey(exception1));
+  GetUIController().GetPasswordManagerPresenter()->RemovePasswordExceptions(
+      {password_manager::CreateSortKey(exception1)});
   EXPECT_CALL(GetUIController(), SetPasswordExceptionList(UnorderedElementsAre(
                                      HasOrigin(exception2.origin))));
   UpdatePasswordLists();

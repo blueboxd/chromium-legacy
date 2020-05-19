@@ -207,116 +207,103 @@ function parseInternalEntries(
  * Migrates all picture-files from internal storage to external storage.
  * @return {!Promise} Promise for the operation.
  */
-function migratePictures() {
-  const migratePicture = (pictureEntry, thumbnailEntry) => {
+async function migratePictures() {
+  const migratePicture = async (pictureEntry, thumbnailEntry) => {
     const name = regulatePictureName(pictureEntry);
     const targetDir = externalDir;
     assert(targetDir !== null);
-    return getFile(targetDir, name, true).then((entry) => {
-      return new Promise((resolve, reject) => {
-        pictureEntry.copyTo(targetDir, entry.name, (result) => {
-          if (result.name !== pictureEntry.name && thumbnailEntry) {
-            // Thumbnails can be recreated later if failing to rename them here.
-            thumbnailEntry.moveTo(internalDir, getThumbnailName(result));
-          }
-          pictureEntry.remove(() => {});
-          resolve();
-        }, reject);
-      });
+
+    const entry = await getFile(targetDir, name, true);
+    return new Promise((resolve, reject) => {
+      pictureEntry.copyTo(targetDir, entry.name, (result) => {
+        if (result.name !== pictureEntry.name && thumbnailEntry) {
+          // Thumbnails can be recreated later if failing to rename them here.
+          thumbnailEntry.moveTo(internalDir, getThumbnailName(result));
+        }
+        pictureEntry.remove(() => {});
+        resolve();
+      }, reject);
     });
   };
 
-  return readDir(internalDir).then((internalEntries) => {
-    const pictureEntries = [];
-    const thumbnailEntriesByName = {};
-    parseInternalEntries(
-        internalEntries, thumbnailEntriesByName, pictureEntries);
+  const internalEntries = await readDir(internalDir);
+  const pictureEntries = [];
+  const thumbnailEntriesByName = {};
+  parseInternalEntries(internalEntries, thumbnailEntriesByName, pictureEntries);
 
-    const migrated = [];
-    for (let index = 0; index < pictureEntries.length; index++) {
-      const entry = pictureEntries[index];
-      const thumbnailName = getThumbnailName(entry);
-      const thumbnailEntry = thumbnailEntriesByName[thumbnailName];
-      migrated.push(migratePicture(entry, thumbnailEntry));
-    }
-    return Promise.all(migrated);
-  });
+  const migrated = [];
+  for (let index = 0; index < pictureEntries.length; index++) {
+    const entry = pictureEntries[index];
+    const thumbnailName = getThumbnailName(entry);
+    const thumbnailEntry = thumbnailEntriesByName[thumbnailName];
+    migrated.push(migratePicture(entry, thumbnailEntry));
+  }
+  await Promise.all(migrated);
 }
 
 /**
- * Initializes file systems, migrating pictures if needed. This function
- * should be called only once in the beginning of the app.
- * @param {function()} promptMigrate Callback to instantiate a promise that
-       prompts users to migrate pictures if no acknowledgement yet.
- * @return {!Promise<boolean>} Promise for the external-fs result.
+ * Initializes file systems. This function should be called only once in the
+ * beginning of the app.
+ * @return {!Promise}
  */
-export function initialize(promptMigrate) {
-  const checkAcked = new Promise((resolve) => {
-    // ack 0: User has not yet acknowledged to migrate pictures.
-    // ack 1: User acknowledges to migrate pictures to Downloads.
-    browserProxy.localStorageGet({ackMigratePictures: 0})
-        .then((values) => resolve(values.ackMigratePictures >= 1));
-  });
+export async function initialize() {
+  internalDir = await initInternalDir();
+  assert(internalDir !== null);
+
+  internalTempDir = await initInternalTempDir();
+  assert(internalTempDir !== null);
+
+  externalDir = await initExternalDir();
+  assert(externalDir !== null);
+}
+
+/**
+ * Checks and performs migration if it's needed.
+ * @param {function(): !Promise} promptMigrate Callback to instantiate a promise
+ *     that prompts users to migrate pictures if no acknowledgement yet.
+ * @return {!Promise<boolean>} Return a promise that will be resolved to a
+ *     boolean indicates if the user ackes the migration dialog once the
+ *     migration is skipped or completed.
+ */
+export async function checkMigration(promptMigrate) {
+  const isDoneMigration =
+      (await browserProxy.localStorageGet({doneMigration: 0}))['doneMigration'];
+  if (isDoneMigration) {
+    return false;
+  }
+
+  const doneMigrate = () => browserProxy.localStorageSet({doneMigration: 1});
   const ackMigrate = () =>
       browserProxy.localStorageSet({ackMigratePictures: 1});
-  const doneMigrate = () => browserProxy.doneMigrate();
 
-  return Promise
-      .all([
-        initInternalDir(),
-        initInternalTempDir(),
-        initExternalDir(),
-        checkAcked,
-        browserProxy.checkMigrated(),
-      ])
-      .then((results) => {
-        let /** boolean */ acked;
-        let /** boolean */ migrated;
-        [internalDir, internalTempDir, externalDir, acked, migrated] = results;
-        if (migrated && !externalDir) {
-          throw new Error('External file system should be available.');
-        }
-        // Check if acknowledge-prompt and migrate-pictures are needed.
-        if (migrated || !externalDir) {
-          return [false, false];
-        }
-        // Check if any internal picture other than thumbnail needs migration.
-        // Pictures taken by old Camera App may not have IMG_ or VID_ prefix.
-        return readDir(internalDir)
-            .then((entries) => {
-              return entries.some((entry) => {
-                if (entry.isDirectory) {
-                  return false;
-                }
-                const fileEntry = /** @type {!FileEntry} */ (entry);
-                return !hasThumbnailPrefix(fileEntry);
-              });
-            })
-            .then((migrateNeeded) => {
-              if (migrateNeeded) {
-                return [!acked, true];
-              }
-              // If the external file system is supported and there is already
-              // no picture in the internal file system, it implies done
-              // migration and then doesn't need acknowledge-prompt.
-              ackMigrate();
-              doneMigrate();
-              return [false, false];
-            });
-      })
-      .then(
-          ([promptNeeded, migrateNeeded]) => {  // Prompt to migrate if needed.
-            return !promptNeeded ? migrateNeeded : promptMigrate().then(() => {
-              ackMigrate();
-              return migrateNeeded;
-            });
-          })
-      .then((migrateNeeded) => {  // Migrate pictures if needed.
-        const external = externalDir !== null;
-        return !migrateNeeded ?
-            external :
-            migratePictures().then(doneMigrate).then(() => external);
-      });
+  // Check if any internal picture other than thumbnail needs migration.
+  // Pictures taken by old Camera App may not have IMG_ or VID_ prefix.
+  const internalEntries = await readDir(internalDir);
+  const migrationNeeded = internalEntries.some((entry) => {
+    if (entry.isDirectory) {
+      return false;
+    }
+    const fileEntry = /** @type {!FileEntry} */ (entry);
+    return !hasThumbnailPrefix(fileEntry);
+  });
+  if (!migrationNeeded) {
+    // If there is already no picture in the internal file system, it implies
+    // done migration and then doesn't need acknowledge-prompt.
+    await ackMigrate();
+    await doneMigrate();
+    return false;
+  }
+
+  const isAckedMigration = (await browserProxy.localStorageGet(
+      {ackMigratePictures: 0}))['ackMigratePictures'];
+  if (!isAckedMigration) {
+    await promptMigrate();
+    await ackMigrate();
+  }
+  await migratePictures();
+  await doneMigrate();
+
+  return !isAckedMigration;
 }
 
 /**

@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {DEFAULT_MAX_COPIES, Destination, DestinationCertificateStatus, DestinationConnectionStatus, DestinationOrigin, DestinationStore, DestinationType} from 'chrome://print/print_preview.js';
+import {CapabilitiesResponse, DEFAULT_MAX_COPIES, Destination, DestinationCertificateStatus, DestinationConnectionStatus, DestinationOrigin, DestinationStore, DestinationType, LocalDestinationInfo, MeasurementSystemUnitType, NativeInitialSettings, SelectOption} from 'chrome://print/print_preview.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
 import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {eventToPromise} from 'chrome://test/test_util.m.js';
+import {eventToPromise} from '../test_util.m.js';
 
 /** @return {!NativeInitialSettings} */
 export function getDefaultInitialSettings() {
@@ -16,24 +18,26 @@ export function getDefaultInitialSettings() {
     pdfPrinterDisabled: false,
     thousandsDelimiter: ',',
     decimalDelimiter: '.',
-    unitType: 1,
     previewIsPdf: false,
     previewModifiable: true,
     documentTitle: 'title',
     documentHasSelection: true,
     shouldPrintSelectionOnly: false,
+    previewIsFromArc: false,
     printerName: 'FooDevice',
     serializedAppStateStr: null,
     serializedDefaultDestinationSelectionRulesStr: null,
-    pdfPrinterDisabled: false,
     destinationsManaged: false,
+    syncAvailable: false,
+    uiLocale: 'en-us',
+    unitType: MeasurementSystemUnitType.IMPERIAL,
   };
 }
 
 /**
  * @param {string} printerId
  * @param {string=} opt_printerName Defaults to an empty string.
- * @return {!PrinterCapabilitiesResponse}
+ * @return {!CapabilitiesResponse}
  */
 export function getCddTemplate(printerId, opt_printerName) {
   const template = {
@@ -81,7 +85,7 @@ export function getCddTemplate(printerId, opt_printerName) {
               custom_display_name: 'Letter',
             },
             {
-              name: 'CUSTOM_SQUARE',
+              name: 'CUSTOM',
               width_microns: 215900,
               height_microns: 215900,
               custom_display_name: 'CUSTOM_SQUARE',
@@ -105,7 +109,7 @@ export function getCddTemplate(printerId, opt_printerName) {
  * @param {number} numSettings
  * @param {string} printerId
  * @param {string=} opt_printerName Defaults to an empty string.
- * @return {!PrinterCapabilitiesResponse}
+ * @return {!CapabilitiesResponse}
  */
 export function getCddTemplateWithAdvancedSettings(
     numSettings, printerId, opt_printerName) {
@@ -195,14 +199,11 @@ export function createDestinationWithCertificateStatus(id, name, invalid) {
 }
 
 /**
- * @return {!PrinterCapabilitiesResponse} The capabilities of
+ * @return {!CapabilitiesResponse} The capabilities of
  *     the Save as PDF destination.
  */
 export function getPdfPrinter() {
   return {
-    printer: {
-      deviceName: 'Save as PDF',
-    },
     capabilities: {
       version: '1.0',
       printer: {
@@ -228,14 +229,14 @@ export function getPdfPrinter() {
 
 /**
  * Get the default media size for |device|.
- * @param {!PrinterCapabilitiesResponse} device
+ * @param {!CapabilitiesResponse} device
  * @return {{width_microns: number,
  *           height_microns: number}} The width and height of the default
  *     media.
  */
 export function getDefaultMediaSize(device) {
-  const size =
-      device.capabilities.printer.media_size.option.find(opt => opt.is_default);
+  const size = device.capabilities.printer.media_size.option.find(
+      opt => !!opt.is_default);
   return {
     width_microns: size.width_microns,
     height_microns: size.height_microns
@@ -244,23 +245,20 @@ export function getDefaultMediaSize(device) {
 
 /**
  * Get the default page orientation for |device|.
- * @param {!PrinterCapabilitiesResponse} device
+ * @param {!CapabilitiesResponse} device
  * @return {string} The default orientation.
  */
 export function getDefaultOrientation(device) {
-  return device.capabilities.printer.page_orientation.option
-      .find(opt => opt.is_default)
-      .type;
+  const options = device.capabilities.printer.page_orientation.option;
+  return assert(options.find(opt => !!opt.is_default).type);
 }
 
 /**
- * Creates 5 local destinations, adds them to |localDestinations| and
- * sets the capabilities in |nativeLayer|, if it is non-null.
- * @param {?NativeLayerStub} nativeLayer
+ * Creates 5 local destinations, adds them to |localDestinations|.
  * @param {!Array<!LocalDestinationInfo>} localDestinations
  * @return {!Array<!Destination>}
  */
-export function getDestinations(nativeLayer, localDestinations) {
+export function getDestinations(localDestinations) {
   const destinations = [];
   const origin = isChromeOS ? DestinationOrigin.CROS : DestinationOrigin.LOCAL;
   // Five destinations. FooDevice is the system default.
@@ -273,12 +271,6 @@ export function getDestinations(nativeLayer, localDestinations) {
         const destination = new Destination(
             info.deviceName, DestinationType.LOCAL, origin, info.printerName,
             DestinationConnectionStatus.ONLINE);
-        if (nativeLayer) {
-          nativeLayer.setLocalDestinationCapabilities({
-            printer: info,
-            capabilities: getCddTemplate(info.deviceName, info.printerName),
-          });
-        }
         localDestinations.push(info);
         destinations.push(destination);
       });

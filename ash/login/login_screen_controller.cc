@@ -136,41 +136,6 @@ void LoginScreenController::AuthenticateUserWithPasswordOrPin(
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void LoginScreenController::AuthenticateUserWithExternalBinary(
-    const AccountId& account_id,
-    OnAuthenticateCallback callback) {
-  // It is an error to call this function while an authentication is in
-  // progress.
-  LOG_IF(FATAL, IsAuthenticating())
-      << "Duplicate authentication attempt; current authentication stage is "
-      << static_cast<int>(authentication_stage_);
-
-  if (!client_) {
-    std::move(callback).Run(base::nullopt);
-    return;
-  }
-
-  authentication_stage_ = AuthenticationStage::kDoAuthenticate;
-  client_->AuthenticateUserWithExternalBinary(
-      account_id,
-      base::BindOnce(&LoginScreenController::OnAuthenticateComplete,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void LoginScreenController::EnrollUserWithExternalBinary(
-    OnAuthenticateCallback callback) {
-  if (!client_) {
-    std::move(callback).Run(base::nullopt);
-    return;
-  }
-
-  client_->EnrollUserWithExternalBinary(base::BindOnce(
-      [](OnAuthenticateCallback callback, bool success) {
-        std::move(callback).Run(base::make_optional<bool>(success));
-      },
-      std::move(callback)));
-}
-
 void LoginScreenController::AuthenticateUserWithEasyUnlock(
     const AccountId& account_id) {
   // TODO(jdufault): integrate this into authenticate stage after mojom is

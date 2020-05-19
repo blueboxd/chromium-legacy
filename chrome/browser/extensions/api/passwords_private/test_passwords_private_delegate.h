@@ -25,8 +25,8 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
   void ChangeSavedPassword(int id,
                            base::string16 username,
                            base::Optional<base::string16> password) override;
-  void RemoveSavedPassword(int id) override;
-  void RemovePasswordException(int id) override;
+  void RemoveSavedPasswords(const std::vector<int>& id) override;
+  void RemovePasswordExceptions(const std::vector<int>& ids) override;
   // Simplified version of undo logic, only use for testing.
   void UndoRemoveSavedPasswordOrException() override;
   void RequestPlaintextPassword(int id,
@@ -93,11 +93,15 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
   // having to request them from |password_manager_presenter_| again.
   std::vector<api::passwords_private::PasswordUiEntry> current_entries_;
   std::vector<api::passwords_private::ExceptionEntry> current_exceptions_;
-  // Simplified version of a undo manager that only allows undoing and redoing
-  // the very last deletion.
-  base::Optional<api::passwords_private::PasswordUiEntry> last_deleted_entry_;
-  base::Optional<api::passwords_private::ExceptionEntry>
-      last_deleted_exception_;
+
+  // Simplified version of an undo manager that only allows undoing and redoing
+  // the very last deletion. When the batches are *empty*, this means there is
+  // no previous deletion to undo.
+  std::vector<api::passwords_private::PasswordUiEntry>
+      last_deleted_entries_batch_;
+  std::vector<api::passwords_private::ExceptionEntry>
+      last_deleted_exceptions_batch_;
+
   base::Optional<base::string16> plaintext_password_ =
       base::ASCIIToUTF16("plaintext");
 

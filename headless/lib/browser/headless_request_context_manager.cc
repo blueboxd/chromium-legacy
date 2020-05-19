@@ -9,7 +9,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/resource_context.h"
 #include "headless/app/headless_shell_switches.h"
@@ -273,7 +272,6 @@ void HeadlessRequestContextManager::ConfigureNetworkContextParamsInternal(
   } else {
     proxy_config_monitor_->AddToNetworkContextParams(context_params);
   }
-  content::UpdateCorsExemptHeader(context_params);
 }
 
 }  // namespace headless

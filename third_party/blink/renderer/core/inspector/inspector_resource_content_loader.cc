@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/inspector/inspector_css_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_page_agent.h"
@@ -136,6 +137,37 @@ void InspectorResourceContentLoader::Start() {
       // mark the client as pending if it already finished.
       if (resource_client->GetResource())
         pending_resource_clients_.insert(resource_client);
+    }
+
+    // Fetch app manifest if available.
+    // TODO (alexrudenko): This code duplicates the code in manifest_manager.cc
+    // and manifest_fetcher.cc. Move it to a shared place.
+    HTMLLinkElement* link_element = document->LinkManifest();
+    if (link_element) {
+      auto link = link_element->Href();
+      auto use_credentials = EqualIgnoringASCIICase(
+          link_element->FastGetAttribute(html_names::kCrossoriginAttr),
+          "use-credentials");
+      ResourceRequest manifest_request(link);
+      manifest_request.SetMode(network::mojom::RequestMode::kCors);
+      // See https://w3c.github.io/manifest/. Use "include" when use_credentials
+      // is true, and "omit" otherwise.
+      manifest_request.SetCredentialsMode(
+          use_credentials ? network::mojom::CredentialsMode::kInclude
+                          : network::mojom::CredentialsMode::kOmit);
+      manifest_request.SetRequestContext(
+          mojom::blink::RequestContextType::MANIFEST);
+      ResourceLoaderOptions manifest_options;
+      manifest_options.initiator_info.name =
+          fetch_initiator_type_names::kInternal;
+      FetchParameters manifest_params(std::move(manifest_request),
+                                      manifest_options);
+      ResourceClient* manifest_client =
+          MakeGarbageCollected<ResourceClient>(this);
+      resources_.push_back(
+          RawResource::Fetch(manifest_params, fetcher, manifest_client));
+      if (manifest_client->GetResource())
+        pending_resource_clients_.insert(manifest_client);
     }
   }
 

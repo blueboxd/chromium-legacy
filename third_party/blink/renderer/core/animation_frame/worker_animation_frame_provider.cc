@@ -43,7 +43,7 @@ void WorkerAnimationFrameProvider::BeginFrame(const viz::BeginFrameArgs& args) {
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   Microtask::EnqueueMicrotask(WTF::Bind(
-      [](base::WeakPtr<WorkerAnimationFrameProvider> provider,
+      [](WeakPersistent<WorkerAnimationFrameProvider> provider,
          const viz::BeginFrameArgs& args) {
         if (!provider)
           return;
@@ -67,7 +67,7 @@ void WorkerAnimationFrameProvider::BeginFrame(const viz::BeginFrameArgs& args) {
         }
         provider->begin_frame_provider_->FinishBeginFrame(args);
       },
-      weak_factory_.GetWeakPtr(), args));
+      WrapWeakPersistent(this), args));
 }
 
 void WorkerAnimationFrameProvider::RegisterOffscreenCanvas(

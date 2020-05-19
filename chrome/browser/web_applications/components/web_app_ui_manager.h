@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_UI_MANAGER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_UI_MANAGER_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/callback_forward.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 

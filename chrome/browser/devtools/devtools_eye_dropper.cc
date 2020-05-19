@@ -182,9 +182,11 @@ void DevToolsEyeDropper::UpdateCursor() {
   host_->GetScreenInfo(&screen_info);
   double device_scale_factor = screen_info.device_scale_factor;
 
+  SkImageInfo info = SkImageInfo::MakeN32Premul(
+      kCursorSize * device_scale_factor, kCursorSize * device_scale_factor,
+      screen_info.color_space.ToSkColorSpace());
   SkBitmap result;
-  result.allocN32Pixels(kCursorSize * device_scale_factor,
-                        kCursorSize * device_scale_factor);
+  result.allocPixels(info);
   result.eraseARGB(0, 0, 0, 0);
 
   SkCanvas canvas(result);

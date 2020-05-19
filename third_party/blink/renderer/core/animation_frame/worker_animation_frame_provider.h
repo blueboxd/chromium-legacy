@@ -57,8 +57,6 @@ class CORE_EXPORT WorkerAnimationFrameProvider
   HeapLinkedHashSet<WeakMember<OffscreenCanvas>> offscreen_canvases_;
 
   Member<ExecutionContext> context_;
-
-  base::WeakPtrFactory<WorkerAnimationFrameProvider> weak_factory_{this};
 };
 
 }  // namespace blink

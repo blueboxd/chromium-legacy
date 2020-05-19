@@ -313,7 +313,7 @@ class AutofillAssistantClient {
 
     /** Returns the e-mail address that corresponds to the access token or an empty string. */
     @CalledByNative
-    private String getAccountEmailAddress() {
+    private String getEmailAddressForAccessTokenAccount() {
         return mAccount != null ? mAccount.name : "";
     }
 
